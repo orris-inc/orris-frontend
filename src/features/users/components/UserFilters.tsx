@@ -2,8 +2,17 @@
  * 用户筛选器组件
  */
 
-import { Box, TextField, MenuItem, Button, Grid } from '@mui/material';
-import FilterListOffIcon from '@mui/icons-material/FilterListOff';
+import { FilterX } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import type { UserFilters as UserFiltersType, UserStatus, UserRole } from '../types/users.types';
 
 interface UserFiltersComponentProps {
@@ -29,67 +38,56 @@ export const UserFilters: React.FC<UserFiltersComponentProps> = ({ filters, onCh
   };
 
   return (
-    <Box>
-      <Grid container spacing={2} alignItems="center">
-        {/* 状态筛选 */}
-        <Grid size={{ xs: 12, sm: 4, md: 3 }}>
-          <TextField
-            select
-            fullWidth
-            label="状态"
-            value={filters.status || ''}
-            onChange={(e) => handleStatusChange(e.target.value)}
-            size="small"
-          >
-            <MenuItem value="">全部</MenuItem>
-            <MenuItem value="active">激活</MenuItem>
-            <MenuItem value="inactive">未激活</MenuItem>
-            <MenuItem value="pending">待处理</MenuItem>
-            <MenuItem value="suspended">暂停</MenuItem>
-          </TextField>
-        </Grid>
+    <div className="grid gap-4 md:grid-cols-4">
+      {/* 状态筛选 */}
+      <div className="space-y-2">
+        <Label>状态</Label>
+        <Select value={filters.status || ''} onValueChange={handleStatusChange}>
+          <SelectTrigger>
+            <SelectValue placeholder="全部" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="">全部</SelectItem>
+            <SelectItem value="active">激活</SelectItem>
+            <SelectItem value="inactive">未激活</SelectItem>
+            <SelectItem value="pending">待处理</SelectItem>
+            <SelectItem value="suspended">暂停</SelectItem>
+          </SelectContent>
+        </Select>
+      </div>
 
-        {/* 角色筛选 */}
-        <Grid size={{ xs: 12, sm: 4, md: 3 }}>
-          <TextField
-            select
-            fullWidth
-            label="角色"
-            value={filters.role || ''}
-            onChange={(e) => handleRoleChange(e.target.value)}
-            size="small"
-          >
-            <MenuItem value="">全部</MenuItem>
-            <MenuItem value="user">普通用户</MenuItem>
-            <MenuItem value="admin">管理员</MenuItem>
-          </TextField>
-        </Grid>
+      {/* 角色筛选 */}
+      <div className="space-y-2">
+        <Label>角色</Label>
+        <Select value={filters.role || ''} onValueChange={handleRoleChange}>
+          <SelectTrigger>
+            <SelectValue placeholder="全部" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="">全部</SelectItem>
+            <SelectItem value="user">普通用户</SelectItem>
+            <SelectItem value="admin">管理员</SelectItem>
+          </SelectContent>
+        </Select>
+      </div>
 
-        {/* 关键词搜索 */}
-        <Grid size={{ xs: 12, sm: 4, md: 4 }}>
-          <TextField
-            fullWidth
-            label="搜索"
-            placeholder="邮箱或姓名"
-            value={filters.search || ''}
-            onChange={(e) => handleSearchChange(e.target.value)}
-            size="small"
-          />
-        </Grid>
+      {/* 关键词搜索 */}
+      <div className="space-y-2">
+        <Label>搜索</Label>
+        <Input
+          placeholder="邮箱或姓名"
+          value={filters.search || ''}
+          onChange={(e) => handleSearchChange(e.target.value)}
+        />
+      </div>
 
-        {/* 重置按钮 */}
-        <Grid size={{ xs: 12, sm: 12, md: 2 }}>
-          <Button
-            fullWidth
-            variant="outlined"
-            startIcon={<FilterListOffIcon />}
-            onClick={handleReset}
-            size="medium"
-          >
-            重置
-          </Button>
-        </Grid>
-      </Grid>
-    </Box>
+      {/* 重置按钮 */}
+      <div className="flex items-end">
+        <Button variant="outline" onClick={handleReset} className="w-full">
+          <FilterX className="mr-2 size-4" />
+          重置
+        </Button>
+      </div>
+    </div>
   );
 };

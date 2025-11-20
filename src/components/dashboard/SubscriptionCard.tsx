@@ -4,28 +4,18 @@
  */
 
 import { useEffect, useState } from 'react';
+import { CheckCircle, XCircle, Info, AlertTriangle } from 'lucide-react';
+import { Card, CardContent } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Skeleton } from '@/components/ui/skeleton';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 import {
-  Card,
-  CardContent,
-  Typography,
-  Stack,
-  Box,
-  Chip,
-  List,
-  ListItem,
-  ListItemText,
-  CircularProgress,
-  Alert,
-  Button,
   Accordion,
-  AccordionSummary,
-  AccordionDetails,
-} from '@mui/material';
-import CheckCircleIcon from '@mui/icons-material/CheckCircle';
-import ErrorIcon from '@mui/icons-material/Error';
-import InfoIcon from '@mui/icons-material/Info';
-import WarningIcon from '@mui/icons-material/Warning';
-import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from '@/components/ui/accordion';
 import { getSubscriptions } from '@/features/subscriptions/api/subscriptions-api';
 import type { Subscription } from '@/features/subscriptions/types/subscriptions.types';
 
@@ -36,16 +26,16 @@ const getStatusConfig = (subscription: Subscription) => {
   if (subscription.IsExpired) {
     return {
       label: '已过期',
-      color: 'error' as const,
-      icon: <ErrorIcon fontSize="small" />,
+      variant: 'destructive' as const,
+      icon: <XCircle className="size-4" />,
     };
   }
 
   if (!subscription.IsActive) {
     return {
       label: '未激活',
-      color: 'default' as const,
-      icon: <InfoIcon fontSize="small" />,
+      variant: 'secondary' as const,
+      icon: <Info className="size-4" />,
     };
   }
 
@@ -53,26 +43,26 @@ const getStatusConfig = (subscription: Subscription) => {
     case 'active':
       return {
         label: '激活中',
-        color: 'success' as const,
-        icon: <CheckCircleIcon fontSize="small" />,
+        variant: 'default' as const,
+        icon: <CheckCircle className="size-4" />,
       };
     case 'cancelled':
       return {
         label: '已取消',
-        color: 'warning' as const,
-        icon: <WarningIcon fontSize="small" />,
+        variant: 'outline' as const,
+        icon: <AlertTriangle className="size-4" />,
       };
     case 'pending':
       return {
         label: '待处理',
-        color: 'info' as const,
-        icon: <InfoIcon fontSize="small" />,
+        variant: 'secondary' as const,
+        icon: <Info className="size-4" />,
       };
     default:
       return {
         label: subscription.Status,
-        color: 'default' as const,
-        icon: <InfoIcon fontSize="small" />,
+        variant: 'secondary' as const,
+        icon: <Info className="size-4" />,
       };
   }
 };
@@ -133,14 +123,12 @@ export const SubscriptionCard = () => {
   // 加载中状态
   if (loading) {
     return (
-      <Card elevation={2}>
-        <CardContent>
-          <Typography variant="h6" fontWeight="bold" gutterBottom>
-            我的订阅
-          </Typography>
-          <Box sx={{ display: 'flex', justifyContent: 'center', py: 3 }}>
-            <CircularProgress size={32} />
-          </Box>
+      <Card className="shadow-sm hover:shadow-md transition-shadow h-full">
+        <CardContent className="p-6">
+          <h3 className="text-xl font-bold mb-4">我的订阅</h3>
+          <div className="flex justify-center py-8">
+            <Skeleton className="size-12 rounded-full" />
+          </div>
         </CardContent>
       </Card>
     );
@@ -149,12 +137,13 @@ export const SubscriptionCard = () => {
   // 错误状态
   if (error) {
     return (
-      <Card elevation={2}>
-        <CardContent>
-          <Typography variant="h6" fontWeight="bold" gutterBottom>
-            我的订阅
-          </Typography>
-          <Alert severity="error">{error}</Alert>
+      <Card className="shadow-sm hover:shadow-md transition-shadow h-full">
+        <CardContent className="p-6">
+          <h3 className="text-xl font-bold mb-4">我的订阅</h3>
+          <Alert variant="destructive">
+            <XCircle className="size-4" />
+            <AlertDescription>{error}</AlertDescription>
+          </Alert>
         </CardContent>
       </Card>
     );
@@ -163,19 +152,20 @@ export const SubscriptionCard = () => {
   // 无订阅状态
   if (subscriptions.length === 0) {
     return (
-      <Card elevation={2}>
-        <CardContent>
-          <Typography variant="h6" fontWeight="bold" gutterBottom>
-            我的订阅
-          </Typography>
-          <Box sx={{ py: 2 }}>
-            <Alert severity="info" sx={{ mb: 2 }}>
-              您还没有任何订阅
-            </Alert>
-            <Button variant="contained" color="primary" fullWidth href="/pricing">
-              查看订阅计划
-            </Button>
-          </Box>
+      <Card className="shadow-sm hover:shadow-md transition-shadow h-full">
+        <CardContent className="p-6">
+          <h3 className="text-xl font-bold mb-4">我的订阅</h3>
+          <div className="py-6 space-y-4 text-center">
+            <div className="inline-flex items-center justify-center size-16 rounded-full bg-muted">
+              <CreditCard className="size-8 text-muted-foreground" />
+            </div>
+            <div>
+              <p className="text-muted-foreground mb-4">您还没有任何订阅</p>
+              <Button variant="default" className="w-full" asChild>
+                <a href="/pricing">查看订阅计划</a>
+              </Button>
+            </div>
+          </div>
         </CardContent>
       </Card>
     );
@@ -194,183 +184,130 @@ export const SubscriptionCard = () => {
   const displaySubscriptions = showAll ? subscriptions : activeSubscriptions;
 
   return (
-    <Card elevation={2}>
-      <CardContent>
-        <Stack direction="row" justifyContent="space-between" alignItems="center" mb={2}>
-          <Typography variant="h6" fontWeight="bold">
-            我的订阅
-          </Typography>
-          <Stack direction="row" spacing={1} alignItems="center">
-            <Chip
-              label={`${activeSubscriptions.length} 个激活`}
-              size="small"
-              color="success"
-              variant="outlined"
-            />
+    <Card className="shadow-sm hover:shadow-md transition-shadow h-full">
+      <CardContent className="p-6">
+        <div className="flex items-center justify-between mb-5">
+          <h3 className="text-xl font-bold">我的订阅</h3>
+          <div className="flex items-center gap-2">
+            <Badge variant="default" className="bg-green-600 hover:bg-green-600">
+              {activeSubscriptions.length}
+            </Badge>
             {inactiveSubscriptions.length > 0 && (
-              <Chip
-                label={`${inactiveSubscriptions.length} 个其他`}
-                size="small"
-                variant="outlined"
-              />
+              <Badge variant="secondary">{inactiveSubscriptions.length}</Badge>
             )}
-          </Stack>
-        </Stack>
+          </div>
+        </div>
 
         {/* 显示激活订阅或全部订阅 */}
         {displaySubscriptions.length === 0 ? (
-          <Alert severity="info">
-            {showAll ? '没有订阅' : '没有激活的订阅'}
+          <Alert>
+            <Info className="size-4" />
+            <AlertDescription>
+              {showAll ? '没有订阅' : '没有激活的订阅'}
+            </AlertDescription>
           </Alert>
         ) : (
-          <Stack spacing={1}>
-            {displaySubscriptions.map((subscription) => {
-            const statusConfig = getStatusConfig(subscription);
-            const isActive = subscription.IsActive && !subscription.IsExpired;
+          <Accordion type="single" collapsible className="space-y-3">
+            {displaySubscriptions.map((subscription, index) => {
+              const statusConfig = getStatusConfig(subscription);
+              const isActive = subscription.IsActive && !subscription.IsExpired;
 
-            return (
-              <Accordion
-                key={subscription.ID}
-                elevation={0}
-                sx={{
-                  border: isActive ? 2 : 1,
-                  borderColor: isActive ? 'success.main' : 'divider',
-                  borderRadius: 1,
-                  '&:before': { display: 'none' },
-                  '&.Mui-expanded': { margin: 0 },
-                }}
-              >
-                {/* 折叠头部 - 简要信息 */}
-                <AccordionSummary
-                  expandIcon={<ExpandMoreIcon />}
-                  sx={{
-                    bgcolor: isActive ? 'success.lighter' : 'background.paper',
-                    '&.Mui-expanded': { minHeight: 48 },
-                    '& .MuiAccordionSummary-content.Mui-expanded': { margin: '12px 0' },
-                  }}
+              return (
+                <AccordionItem
+                  key={subscription.ID}
+                  value={`item-${index}`}
+                  className={`border-2 rounded-xl overflow-hidden transition-all ${
+                    isActive
+                      ? 'border-green-500/50 bg-green-50 dark:bg-green-950/30 shadow-sm'
+                      : 'border-border bg-card'
+                  }`}
                 >
-                  <Stack
-                    direction="row"
-                    justifyContent="space-between"
-                    alignItems="center"
-                    sx={{ width: '100%', pr: 1 }}
-                  >
-                    <Typography variant="subtitle1" fontWeight={600}>
-                      {subscription.Plan?.Name || '未知计划'}
-                    </Typography>
-                    <Stack direction="row" spacing={0.5} alignItems="center">
-                      {statusConfig.icon}
-                      <Typography
-                        variant="body2"
-                        color={`${statusConfig.color}.main`}
-                        fontWeight={500}
-                      >
-                        {statusConfig.label}
-                      </Typography>
-                    </Stack>
-                  </Stack>
-                </AccordionSummary>
+                  {/* 折叠头部 - 简要信息 */}
+                  <AccordionTrigger className="px-5 hover:no-underline group">
+                    <div className="flex items-center justify-between w-full pr-2">
+                      <span className="font-semibold text-left">
+                        {subscription.Plan?.Name || '未知计划'}
+                      </span>
+                      <div className="flex items-center gap-2">
+                        {statusConfig.icon}
+                        <span className="text-sm font-medium">
+                          {statusConfig.label}
+                        </span>
+                      </div>
+                    </div>
+                  </AccordionTrigger>
 
-                {/* 折叠内容 - 详细信息 */}
-                <AccordionDetails sx={{ pt: 0 }}>
-                  <List disablePadding dense>
-                    {/* 价格 */}
-                    {subscription.Plan?.Price !== undefined && (
-                      <ListItem disablePadding sx={{ py: 0.5 }}>
-                        <ListItemText
-                          primary="价格"
-                          primaryTypographyProps={{
-                            variant: 'body2',
-                            color: 'text.secondary',
-                          }}
-                        />
-                        <Typography variant="body2" fontWeight={500}>
-                          {formatPrice(subscription.Plan.Price, subscription.Plan.Currency)}
-                        </Typography>
-                      </ListItem>
-                    )}
+                  {/* 折叠内容 - 详细信息 */}
+                  <AccordionContent className="px-5 pb-5">
+                    <div className="space-y-3 pt-3">
+                      {/* 价格 */}
+                      {subscription.Plan?.Price !== undefined && (
+                        <div className="flex items-center justify-between py-2 px-3 rounded-lg bg-background/80">
+                          <span className="text-sm text-muted-foreground">价格</span>
+                          <span className="text-sm font-semibold text-foreground">
+                            {formatPrice(subscription.Plan.Price, subscription.Plan.Currency)}
+                          </span>
+                        </div>
+                      )}
 
-                    {/* 自动续费 */}
-                    <ListItem disablePadding sx={{ py: 0.5 }}>
-                      <ListItemText
-                        primary="自动续费"
-                        primaryTypographyProps={{
-                          variant: 'body2',
-                          color: 'text.secondary',
-                        }}
-                      />
-                      <Chip
-                        label={subscription.AutoRenew ? '已开启' : '已关闭'}
-                        size="small"
-                        color={subscription.AutoRenew ? 'success' : 'default'}
-                        variant="outlined"
-                      />
-                    </ListItem>
+                      {/* 自动续费 */}
+                      <div className="flex items-center justify-between py-2 px-3 rounded-lg bg-background/80">
+                        <span className="text-sm text-muted-foreground">自动续费</span>
+                        <Badge
+                          variant={subscription.AutoRenew ? 'default' : 'outline'}
+                          className={subscription.AutoRenew ? 'bg-green-600 hover:bg-green-600' : ''}
+                        >
+                          {subscription.AutoRenew ? '已开启' : '已关闭'}
+                        </Badge>
+                      </div>
 
-                    {/* 开始日期 */}
-                    <ListItem disablePadding sx={{ py: 0.5 }}>
-                      <ListItemText
-                        primary="开始日期"
-                        primaryTypographyProps={{
-                          variant: 'body2',
-                          color: 'text.secondary',
-                        }}
-                      />
-                      <Typography variant="body2" fontWeight={500}>
-                        {formatDate(subscription.StartDate)}
-                      </Typography>
-                    </ListItem>
+                      {/* 开始日期 */}
+                      <div className="flex items-center justify-between py-2 px-3 rounded-lg bg-background/80">
+                        <span className="text-sm text-muted-foreground">开始日期</span>
+                        <span className="text-sm font-medium text-foreground">
+                          {formatDate(subscription.StartDate)}
+                        </span>
+                      </div>
 
-                    {/* 到期日期 */}
-                    {subscription.EndDate && (
-                      <ListItem disablePadding sx={{ py: 0.5 }}>
-                        <ListItemText
-                          primary="到期日期"
-                          primaryTypographyProps={{
-                            variant: 'body2',
-                            color: 'text.secondary',
-                          }}
-                        />
-                        <Typography variant="body2" fontWeight={500}>
-                          {formatDate(subscription.EndDate)}
-                        </Typography>
-                      </ListItem>
-                    )}
+                      {/* 到期日期 */}
+                      {subscription.EndDate && (
+                        <div className="flex items-center justify-between py-2 px-3 rounded-lg bg-background/80">
+                          <span className="text-sm text-muted-foreground">到期日期</span>
+                          <span className="text-sm font-medium text-foreground">
+                            {formatDate(subscription.EndDate)}
+                          </span>
+                        </div>
+                      )}
 
-                    {/* 当前计费周期 */}
-                    {subscription.CurrentPeriodEnd && isActive && (
-                      <ListItem disablePadding sx={{ py: 0.5 }}>
-                        <ListItemText
-                          primary="下次续费"
-                          primaryTypographyProps={{
-                            variant: 'body2',
-                            color: 'text.secondary',
-                          }}
-                        />
-                        <Typography variant="body2" fontWeight={500}>
-                          {formatDate(subscription.CurrentPeriodEnd)}
-                        </Typography>
-                      </ListItem>
-                    )}
-                  </List>
-                </AccordionDetails>
-              </Accordion>
-            );
-          })}
-        </Stack>
+                      {/* 当前计费周期 */}
+                      {subscription.CurrentPeriodEnd && isActive && (
+                        <div className="flex items-center justify-between py-2 px-3 rounded-lg bg-background/80">
+                          <span className="text-sm text-muted-foreground">下次续费</span>
+                          <span className="text-sm font-medium text-foreground">
+                            {formatDate(subscription.CurrentPeriodEnd)}
+                          </span>
+                        </div>
+                      )}
+                    </div>
+                  </AccordionContent>
+                </AccordionItem>
+              );
+            })}
+          </Accordion>
         )}
 
         {/* 切换显示全部/仅激活 */}
         {inactiveSubscriptions.length > 0 && (
-          <Box sx={{ mt: 2, textAlign: 'center' }}>
+          <div className="mt-5 text-center">
             <Button
-              size="small"
-              variant="text"
+              variant="ghost"
+              size="sm"
               onClick={() => setShowAll(!showAll)}
+              className="text-xs"
             >
               {showAll ? '只看激活订阅' : `查看全部订阅 (${subscriptions.length})`}
             </Button>
-          </Box>
+          </div>
         )}
       </CardContent>
     </Card>

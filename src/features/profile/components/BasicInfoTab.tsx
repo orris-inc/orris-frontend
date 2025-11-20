@@ -1,15 +1,11 @@
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import {
-  Box,
-  TextField,
-  Stack,
-  Typography,
-  Chip,
-  Alert,
-} from '@mui/material';
-import { LoadingButton } from '@mui/lab';
-import { Verified, Email, Warning } from '@mui/icons-material';
+import { Mail, CheckCircle2, AlertCircle, Loader2 } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Badge } from '@/components/ui/badge';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 import { useProfile } from '../hooks/useProfile';
 import {
   updateProfileSchema,
@@ -57,80 +53,87 @@ export const BasicInfoTab = ({ user }: BasicInfoTabProps) => {
   };
 
   return (
-    <Box sx={{ py: 2 }}>
+    <div className="py-2">
       {/* 基本信息表单 */}
-      <Box component="form" onSubmit={handleSubmit(onSubmit)}>
-        <Stack spacing={3}>
-          {/* 用户名 */}
-          <TextField
+      <form onSubmit={handleSubmit(onSubmit)} className="grid gap-6">
+        {/* 用户名 */}
+        <div className="grid gap-2">
+          <Label htmlFor="name">用户名</Label>
+          <Input
+            id="name"
             {...register('name')}
-            label="用户名"
-            error={!!errors.name}
-            helperText={errors.name?.message || '2-100个字符'}
-            fullWidth
+            aria-invalid={!!errors.name}
           />
+          <p className="text-sm text-muted-foreground">
+            {errors.name?.message || '2-100个字符'}
+          </p>
+        </div>
 
-          {/* 邮箱 */}
-          <Box>
-            <TextField
-              {...register('email')}
-              label="邮箱"
+        {/* 邮箱 */}
+        <div className="grid gap-2">
+          <Label htmlFor="email">邮箱</Label>
+          <div className="relative">
+            <Mail className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+            <Input
+              id="email"
               type="email"
-              error={!!errors.email}
-              helperText={errors.email?.message || '修改邮箱后需要重新验证'}
-              fullWidth
-              InputProps={{
-                startAdornment: <Email sx={{ mr: 1, color: 'action.active' }} />,
-              }}
+              className="pl-10"
+              {...register('email')}
+              aria-invalid={!!errors.email}
             />
-            <Box sx={{ mt: 1, display: 'flex', gap: 1, alignItems: 'center' }}>
-              {user.email_verified ? (
-                <Chip
-                  label="已验证"
-                  size="small"
-                  color="success"
-                  icon={<Verified />}
-                />
-              ) : (
-                <Chip
-                  label="未验证"
-                  size="small"
-                  color="warning"
-                  icon={<Warning />}
-                />
-              )}
-            </Box>
-          </Box>
+          </div>
+          <p className="text-sm text-muted-foreground">
+            {errors.email?.message || '修改邮箱后需要重新验证'}
+          </p>
+          <div className="flex items-center gap-2">
+            {user.email_verified ? (
+              <Badge variant="default" className="gap-1">
+                <CheckCircle2 className="size-3" />
+                已验证
+              </Badge>
+            ) : (
+              <Badge variant="secondary" className="gap-1">
+                <AlertCircle className="size-3" />
+                未验证
+              </Badge>
+            )}
+          </div>
+        </div>
 
-          {/* 显示名称（只读，由后端生成） */}
-          {user.display_name && (
-            <TextField
-              label="显示名称"
+        {/* 显示名称（只读，由后端生成） */}
+        {user.display_name && (
+          <div className="grid gap-2">
+            <Label htmlFor="display_name">显示名称</Label>
+            <Input
+              id="display_name"
               value={user.display_name}
-              fullWidth
               disabled
-              helperText="由系统自动生成"
             />
-          )}
+            <p className="text-sm text-muted-foreground">由系统自动生成</p>
+          </div>
+        )}
 
-          {/* 用户标识（只读） */}
-          {user.initials && (
-            <TextField
-              label="姓名首字母"
+        {/* 用户标识（只读） */}
+        {user.initials && (
+          <div className="grid gap-2">
+            <Label htmlFor="initials">姓名首字母</Label>
+            <Input
+              id="initials"
               value={user.initials}
-              fullWidth
               disabled
-              helperText="由系统自动生成"
             />
-          )}
+            <p className="text-sm text-muted-foreground">由系统自动生成</p>
+          </div>
+        )}
 
-          {/* 账号状态 */}
-          <Box>
-            <Typography variant="body2" color="text.secondary" gutterBottom>
-              账号状态
-            </Typography>
-            <Chip
-              label={
+        {/* 账号状态 */}
+        <div className="grid gap-2">
+          <Label>账号状态</Label>
+          <div>
+            <Badge
+              variant={user.status === 'active' ? 'default' : 'secondary'}
+            >
+              {
                 user.status === 'active'
                   ? '正常'
                   : user.status === 'inactive'
@@ -141,72 +144,66 @@ export const BasicInfoTab = ({ user }: BasicInfoTabProps) => {
                   ? '待处理'
                   : '未知'
               }
-              size="small"
-              color={user.status === 'active' ? 'success' : 'default'}
-            />
-          </Box>
+            </Badge>
+          </div>
+        </div>
 
-          {/* OAuth提供商 */}
-          {user.oauth_provider && (
-            <Box>
-              <Typography variant="body2" color="text.secondary" gutterBottom>
-                登录方式
-              </Typography>
-              <Chip
-                label={
+        {/* OAuth提供商 */}
+        {user.oauth_provider && (
+          <div className="grid gap-2">
+            <Label>登录方式</Label>
+            <div>
+              <Badge variant="outline">
+                {
                   user.oauth_provider === 'google'
                     ? 'Google'
                     : user.oauth_provider === 'github'
                     ? 'GitHub'
                     : user.oauth_provider
                 }
-                size="small"
-                color="primary"
-              />
-            </Box>
-          )}
+              </Badge>
+            </div>
+          </div>
+        )}
 
-          {/* 注册时间 */}
-          <Box>
-            <Typography variant="body2" color="text.secondary" gutterBottom>
-              注册时间
-            </Typography>
-            <Typography variant="body2">
-              {new Date(user.created_at).toLocaleString('zh-CN')}
-            </Typography>
-          </Box>
+        {/* 注册时间 */}
+        <div className="grid gap-2">
+          <Label>注册时间</Label>
+          <p className="text-sm">
+            {new Date(user.created_at).toLocaleString('zh-CN')}
+          </p>
+        </div>
 
-          {/* 最后更新时间 */}
-          {user.updated_at && (
-            <Box>
-              <Typography variant="body2" color="text.secondary" gutterBottom>
-                最后更新
-              </Typography>
-              <Typography variant="body2">
-                {new Date(user.updated_at).toLocaleString('zh-CN')}
-              </Typography>
-            </Box>
-          )}
+        {/* 最后更新时间 */}
+        {user.updated_at && (
+          <div className="grid gap-2">
+            <Label>最后更新</Label>
+            <p className="text-sm">
+              {new Date(user.updated_at).toLocaleString('zh-CN')}
+            </p>
+          </div>
+        )}
 
-          {/* 邮箱修改提醒 */}
-          {isDirty && (
-            <Alert severity="info" icon={<Email />}>
+        {/* 邮箱修改提醒 */}
+        {isDirty && (
+          <Alert>
+            <Mail className="size-4" />
+            <AlertDescription>
               修改邮箱地址后需要重新验证，请查收验证邮件
-            </Alert>
-          )}
+            </AlertDescription>
+          </Alert>
+        )}
 
-          {/* 保存按钮 */}
-          <LoadingButton
-            type="submit"
-            variant="contained"
-            loading={isLoading}
-            disabled={!isDirty}
-            fullWidth
-          >
-            保存更改
-          </LoadingButton>
-        </Stack>
-      </Box>
-    </Box>
+        {/* 保存按钮 */}
+        <Button
+          type="submit"
+          disabled={!isDirty || isLoading}
+          className="w-full"
+        >
+          {isLoading && <Loader2 className="animate-spin" />}
+          保存更改
+        </Button>
+      </form>
+    </div>
   );
 };

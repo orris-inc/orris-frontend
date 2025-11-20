@@ -5,21 +5,13 @@
 
 import { useEffect, useState } from 'react';
 import { useSearchParams, useNavigate } from 'react-router';
-import {
-  Box,
-  Container,
-  Card,
-  CardContent,
-  Typography,
-  Button,
-  CircularProgress,
-  Alert,
-  Stack,
-} from '@mui/material';
-import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
-import ErrorOutlineIcon from '@mui/icons-material/ErrorOutline';
+import { Loader2, CircleCheck, CircleAlert, Info } from 'lucide-react';
 import { verifyEmail } from '@/features/auth/api/auth-api';
 import { handleApiError } from '@/shared/lib/axios';
+
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardTitle, CardDescription } from '@/components/ui/card';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 
 type VerificationStatus = 'loading' | 'success' | 'error' | 'already_verified';
 
@@ -72,96 +64,108 @@ export const EmailVerificationPage = () => {
     switch (status) {
       case 'loading':
         return (
-          <Stack spacing={3} alignItems="center">
-            <CircularProgress size={60} />
-            <Typography variant="h5" textAlign="center">
-              正在验证您的邮箱...
-            </Typography>
-            <Typography variant="body2" color="text.secondary" textAlign="center">
-              请稍候，我们正在确认您的邮箱地址
-            </Typography>
-          </Stack>
+          <div className="grid gap-6 text-center">
+            <div className="flex justify-center">
+              <Loader2 className="size-16 animate-spin text-primary" />
+            </div>
+            <div className="grid gap-2">
+              <CardTitle className="text-2xl">正在验证您的邮箱...</CardTitle>
+              <CardDescription>
+                请稍候，我们正在确认您的邮箱地址
+              </CardDescription>
+            </div>
+          </div>
         );
 
       case 'success':
         return (
-          <Stack spacing={3} alignItems="center">
-            <CheckCircleOutlineIcon sx={{ fontSize: 80, color: 'success.main' }} />
-            <Typography variant="h5" textAlign="center" fontWeight="bold">
-              邮箱验证成功！
-            </Typography>
-            <Typography variant="body1" color="text.secondary" textAlign="center">
-              您的邮箱已成功验证，现在可以登录您的账号了
-            </Typography>
+          <div className="grid gap-6 text-center">
+            <div className="flex justify-center">
+              <div className="p-4 bg-green-500/10 rounded-full">
+                <CircleCheck className="size-12 text-green-500" />
+              </div>
+            </div>
+            <div className="grid gap-2">
+              <CardTitle className="text-2xl">邮箱验证成功！</CardTitle>
+              <CardDescription>
+                您的邮箱已成功验证，现在可以登录您的账号了
+              </CardDescription>
+            </div>
             <Button
-              variant="contained"
-              size="large"
-              fullWidth
+              size="lg"
               onClick={handleGoToLogin}
-              sx={{ mt: 2 }}
+              className="w-full"
             >
               前往登录
             </Button>
-          </Stack>
+          </div>
         );
 
       case 'already_verified':
         return (
-          <Stack spacing={3} alignItems="center">
-            <CheckCircleOutlineIcon sx={{ fontSize: 80, color: 'info.main' }} />
-            <Typography variant="h5" textAlign="center" fontWeight="bold">
-              邮箱已验证
-            </Typography>
-            <Typography variant="body1" color="text.secondary" textAlign="center">
-              您的邮箱之前已经验证过了，可以直接登录
-            </Typography>
+          <div className="grid gap-6 text-center">
+            <div className="flex justify-center">
+              <div className="p-4 bg-blue-500/10 rounded-full">
+                <Info className="size-12 text-blue-500" />
+              </div>
+            </div>
+            <div className="grid gap-2">
+              <CardTitle className="text-2xl">邮箱已验证</CardTitle>
+              <CardDescription>
+                您的邮箱之前已经验证过了，可以直接登录
+              </CardDescription>
+            </div>
             <Button
-              variant="contained"
-              size="large"
-              fullWidth
+              size="lg"
               onClick={handleGoToLogin}
-              sx={{ mt: 2 }}
+              className="w-full"
             >
               前往登录
             </Button>
-          </Stack>
+          </div>
         );
 
       case 'error':
         return (
-          <Stack spacing={3} alignItems="center">
-            <ErrorOutlineIcon sx={{ fontSize: 80, color: 'error.main' }} />
-            <Typography variant="h5" textAlign="center" fontWeight="bold">
-              验证失败
-            </Typography>
+          <div className="grid gap-6 text-center">
+            <div className="flex justify-center">
+              <div className="p-4 bg-destructive/10 rounded-full">
+                <CircleAlert className="size-12 text-destructive" />
+              </div>
+            </div>
+            <div className="grid gap-4">
+              <CardTitle className="text-2xl">验证失败</CardTitle>
 
-            <Alert severity="error" sx={{ width: '100%' }}>
-              {errorMessage || '验证链接已失效或无效'}
-            </Alert>
+              <Alert variant="destructive">
+                <CircleAlert className="size-4" />
+                <AlertDescription>
+                  {errorMessage || '验证链接已失效或无效'}
+                </AlertDescription>
+              </Alert>
 
-            <Typography variant="body2" color="text.secondary" textAlign="center">
-              验证链接可能已过期或无效，请尝试重新发送验证邮件
-            </Typography>
+              <CardDescription>
+                验证链接可能已过期或无效，请尝试重新发送验证邮件
+              </CardDescription>
 
-            <Stack spacing={2} sx={{ width: '100%' }}>
-              <Button
-                variant="contained"
-                size="large"
-                fullWidth
-                onClick={handleResendEmail}
-              >
-                重新发送验证邮件
-              </Button>
-              <Button
-                variant="outlined"
-                size="large"
-                fullWidth
-                onClick={handleGoToLogin}
-              >
-                返回登录
-              </Button>
-            </Stack>
-          </Stack>
+              <div className="grid gap-2">
+                <Button
+                  size="lg"
+                  onClick={handleResendEmail}
+                  className="w-full"
+                >
+                  重新发送验证邮件
+                </Button>
+                <Button
+                  variant="outline"
+                  size="lg"
+                  onClick={handleGoToLogin}
+                  className="w-full"
+                >
+                  返回登录
+                </Button>
+              </div>
+            </div>
+          </div>
         );
 
       default:
@@ -170,22 +174,14 @@ export const EmailVerificationPage = () => {
   };
 
   return (
-    <Container maxWidth="sm">
-      <Box
-        sx={{
-          minHeight: '100vh',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          py: 4,
-        }}
-      >
-        <Card sx={{ width: '100%' }}>
-          <CardContent sx={{ p: 4 }}>
+    <div className="min-h-screen flex items-center justify-center p-4 bg-background">
+      <div className="w-full max-w-md">
+        <Card>
+          <CardContent className="pt-6">
             {renderContent()}
           </CardContent>
         </Card>
-      </Box>
-    </Container>
+      </div>
+    </div>
   );
 };

@@ -8,25 +8,16 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { Link as RouterLink, useSearchParams, useNavigate } from 'react-router';
 import { useState } from 'react';
-import {
-  Box,
-  Container,
-  Card,
-  CardContent,
-  TextField,
-  Typography,
-  Stack,
-  Link,
-  Alert,
-  IconButton,
-  InputAdornment,
-} from '@mui/material';
-import { LoadingButton } from '@mui/lab';
-import VisibilityIcon from '@mui/icons-material/Visibility';
-import VisibilityOffIcon from '@mui/icons-material/VisibilityOff';
+import { Eye, EyeOff, Loader2, CircleAlert } from 'lucide-react';
 import * as authApi from '@/features/auth/api/auth-api';
 import { extractErrorMessage } from '@/shared/utils/error-messages';
 import { useNotificationStore } from '@/shared/stores/notification-store';
+
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 
 // Zod验证
 const resetPasswordSchema = z
@@ -63,31 +54,26 @@ export const ResetPasswordPage = () => {
   // 检查token
   if (!token) {
     return (
-      <Container maxWidth="sm">
-        <Box
-          sx={{
-            minHeight: '100vh',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            py: 4,
-          }}
-        >
-          <Card sx={{ width: '100%' }}>
-            <CardContent sx={{ p: 4, textAlign: 'center' }}>
-              <Typography variant="h5" component="h1" gutterBottom fontWeight="bold">
-                无效的重置链接
-              </Typography>
-              <Typography variant="body1" color="text.secondary" sx={{ mb: 3 }}>
+      <div className="min-h-screen flex items-center justify-center p-4 bg-background">
+        <div className="w-full max-w-md">
+          <Card>
+            <CardHeader className="text-center">
+              <CardTitle>无效的重置链接</CardTitle>
+              <CardDescription>
                 该密码重置链接无效或已过期，请重新申请。
-              </Typography>
-              <Link component={RouterLink} to="/forgot-password">
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="text-center">
+              <RouterLink
+                to="/forgot-password"
+                className="text-primary underline-offset-4 hover:underline"
+              >
                 重新申请
-              </Link>
+              </RouterLink>
             </CardContent>
           </Card>
-        </Box>
-      </Container>
+        </div>
+      </div>
     );
   }
 
@@ -117,106 +103,107 @@ export const ResetPasswordPage = () => {
   };
 
   return (
-    <Container maxWidth="sm">
-      <Box
-        sx={{
-          minHeight: '100vh',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          py: 4,
-        }}
-      >
-        <Card sx={{ width: '100%' }}>
-          <CardContent sx={{ p: 4 }}>
-            {/* 标题 */}
-            <Typography variant="h4" component="h1" gutterBottom textAlign="center" fontWeight="bold">
-              重置密码
-            </Typography>
-            <Typography variant="body2" color="text.secondary" textAlign="center" sx={{ mb: 4 }}>
-              请输入您的新密码
-            </Typography>
-
+    <div className="min-h-screen flex items-center justify-center p-4 bg-background">
+      <div className="w-full max-w-md">
+        <Card>
+          <CardHeader className="text-center">
+            <CardTitle className="text-3xl">重置密码</CardTitle>
+            <CardDescription>请输入您的新密码</CardDescription>
+          </CardHeader>
+          <CardContent className="grid gap-6">
             {/* 错误提示 */}
             {error && (
-              <Alert severity="error" sx={{ mb: 3 }}>
-                {error}
+              <Alert variant="destructive">
+                <CircleAlert />
+                <AlertDescription>{error}</AlertDescription>
               </Alert>
             )}
 
             {/* 表单 */}
-            <Stack component="form" spacing={3} onSubmit={handleSubmit(onSubmit)}>
-              <TextField
-                {...register('password')}
-                label="新密码"
-                type={showPassword ? 'text' : 'password'}
-                fullWidth
-                error={!!errors.password}
-                helperText={errors.password?.message}
-                autoComplete="new-password"
-                autoFocus
-                slotProps={{
-                  input: {
-                    endAdornment: (
-                      <InputAdornment position="end">
-                        <IconButton
-                          onClick={() => setShowPassword(!showPassword)}
-                          edge="end"
-                          aria-label="切换密码显示"
-                        >
-                          {showPassword ? <VisibilityOffIcon /> : <VisibilityIcon />}
-                        </IconButton>
-                      </InputAdornment>
-                    ),
-                  },
-                }}
-              />
+            <form onSubmit={handleSubmit(onSubmit)} className="grid gap-4">
+              <div className="grid gap-2">
+                <Label htmlFor="password">新密码</Label>
+                <div className="relative">
+                  <Input
+                    id="password"
+                    type={showPassword ? 'text' : 'password'}
+                    autoComplete="new-password"
+                    autoFocus
+                    aria-invalid={!!errors.password}
+                    className="pr-10"
+                    {...register('password')}
+                  />
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon-sm"
+                    className="absolute right-1 top-1/2 -translate-y-1/2"
+                    onClick={() => setShowPassword(!showPassword)}
+                    aria-label="切换密码显示"
+                    tabIndex={-1}
+                  >
+                    {showPassword ? (
+                      <EyeOff className="size-4" />
+                    ) : (
+                      <Eye className="size-4" />
+                    )}
+                  </Button>
+                </div>
+                {errors.password && (
+                  <p className="text-sm text-destructive">{errors.password.message}</p>
+                )}
+              </div>
 
-              <TextField
-                {...register('confirmPassword')}
-                label="确认新密码"
-                type={showConfirmPassword ? 'text' : 'password'}
-                fullWidth
-                error={!!errors.confirmPassword}
-                helperText={errors.confirmPassword?.message}
-                autoComplete="new-password"
-                slotProps={{
-                  input: {
-                    endAdornment: (
-                      <InputAdornment position="end">
-                        <IconButton
-                          onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                          edge="end"
-                          aria-label="切换密码显示"
-                        >
-                          {showConfirmPassword ? <VisibilityOffIcon /> : <VisibilityIcon />}
-                        </IconButton>
-                      </InputAdornment>
-                    ),
-                  },
-                }}
-              />
+              <div className="grid gap-2">
+                <Label htmlFor="confirmPassword">确认新密码</Label>
+                <div className="relative">
+                  <Input
+                    id="confirmPassword"
+                    type={showConfirmPassword ? 'text' : 'password'}
+                    autoComplete="new-password"
+                    aria-invalid={!!errors.confirmPassword}
+                    className="pr-10"
+                    {...register('confirmPassword')}
+                  />
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon-sm"
+                    className="absolute right-1 top-1/2 -translate-y-1/2"
+                    onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                    aria-label="切换密码显示"
+                    tabIndex={-1}
+                  >
+                    {showConfirmPassword ? (
+                      <EyeOff className="size-4" />
+                    ) : (
+                      <Eye className="size-4" />
+                    )}
+                  </Button>
+                </div>
+                {errors.confirmPassword && (
+                  <p className="text-sm text-destructive">{errors.confirmPassword.message}</p>
+                )}
+              </div>
 
-              <LoadingButton
-                type="submit"
-                variant="contained"
-                size="large"
-                fullWidth
-                loading={isLoading}
-              >
+              <Button type="submit" size="lg" disabled={isLoading} className="w-full">
+                {isLoading && <Loader2 className="animate-spin" />}
                 重置密码
-              </LoadingButton>
-            </Stack>
+              </Button>
+            </form>
 
             {/* 返回登录 */}
-            <Box sx={{ mt: 3, textAlign: 'center' }}>
-              <Link component={RouterLink} to="/login" underline="hover">
+            <div className="text-center text-sm text-muted-foreground">
+              <RouterLink
+                to="/login"
+                className="text-primary underline-offset-4 hover:underline"
+              >
                 返回登录
-              </Link>
-            </Box>
+              </RouterLink>
+            </div>
           </CardContent>
         </Card>
-      </Box>
-    </Container>
+      </div>
+    </div>
   );
 };

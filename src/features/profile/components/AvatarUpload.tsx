@@ -1,6 +1,8 @@
 import { useState, useRef } from 'react';
-import { Box, Avatar, Button, Typography, Alert } from '@mui/material';
-import { PhotoCamera, InfoOutlined } from '@mui/icons-material';
+import { Camera, Info } from 'lucide-react';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Button } from '@/components/ui/button';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 import { AvatarCropDialog } from './AvatarCropDialog';
 import { useProfile } from '../hooks/useProfile';
 import { useNotificationStore } from '@/shared/stores/notification-store';
@@ -69,10 +71,7 @@ export const AvatarUpload = ({ avatar, name }: AvatarUploadProps) => {
   /**
    * 获取头像显示内容
    */
-  const getAvatarContent = () => {
-    if (avatar) {
-      return undefined; // 使用src显示图片
-    }
+  const getAvatarFallback = () => {
     if (name) {
       return name[0]?.toUpperCase();
     }
@@ -80,50 +79,43 @@ export const AvatarUpload = ({ avatar, name }: AvatarUploadProps) => {
   };
 
   return (
-    <Box sx={{ textAlign: 'center' }}>
+    <div className="text-center">
       <input
         ref={inputRef}
         type="file"
         accept={ALLOWED_TYPES.join(',')}
-        style={{ display: 'none' }}
+        className="hidden"
         onChange={handleFileChange}
       />
 
       <Avatar
-        src={avatar}
-        sx={{
-          width: 120,
-          height: 120,
-          mx: 'auto',
-          mb: 2,
-          cursor: 'pointer',
-          fontSize: 48,
-          '&:hover': {
-            opacity: 0.8,
-          },
-        }}
+        className="mx-auto mb-4 size-32 cursor-pointer transition-opacity hover:opacity-80"
         onClick={() => inputRef.current?.click()}
       >
-        {getAvatarContent()}
+        <AvatarImage src={avatar} alt={name} />
+        <AvatarFallback className="text-5xl">{getAvatarFallback()}</AvatarFallback>
       </Avatar>
 
       <Button
-        variant="outlined"
-        startIcon={<PhotoCamera />}
+        variant="outline"
         onClick={() => inputRef.current?.click()}
         disabled={true}
-        sx={{ mb: 1 }}
+        className="mb-2"
       >
+        <Camera />
         更换头像（暂不可用）
       </Button>
 
-      <Typography variant="caption" display="block" color="text.secondary" sx={{ mb: 2 }}>
+      <p className="mb-4 text-xs text-muted-foreground">
         支持JPG、PNG、WebP格式，最大2MB
-      </Typography>
+      </p>
 
       {/* 后端API开发中提示 */}
-      <Alert severity="info" icon={<InfoOutlined />} sx={{ textAlign: 'left' }}>
-        头像上传功能正在开发中，后端API尚未就绪。请耐心等待更新。
+      <Alert>
+        <Info className="size-4" />
+        <AlertDescription>
+          头像上传功能正在开发中，后端API尚未就绪。请耐心等待更新。
+        </AlertDescription>
       </Alert>
 
       {/* 裁剪对话框 */}
@@ -133,6 +125,6 @@ export const AvatarUpload = ({ avatar, name }: AvatarUploadProps) => {
         onClose={() => setCropDialogOpen(false)}
         onConfirm={handleCropConfirm}
       />
-    </Box>
+    </div>
   );
 };

@@ -2,12 +2,11 @@
  * 计费周期标签组件
  */
 
-import { Chip } from '@mui/material';
+import { Badge } from '@/components/ui/badge';
 import type { BillingCycle } from '../types/subscription-plans.types';
 
 interface BillingCycleBadgeProps {
   billingCycle: BillingCycle;
-  size?: 'small' | 'medium';
 }
 
 const BILLING_CYCLE_LABELS: Record<BillingCycle, string> = {
@@ -18,23 +17,20 @@ const BILLING_CYCLE_LABELS: Record<BillingCycle, string> = {
   lifetime: '终身',
 };
 
-const BILLING_CYCLE_COLORS: Record<BillingCycle, 'default' | 'primary' | 'secondary' | 'success' | 'warning' | 'info'> = {
-  monthly: 'default',
-  quarterly: 'info',
-  semi_annual: 'primary',
-  annual: 'success',
-  lifetime: 'warning',
+const BILLING_CYCLE_VARIANTS: Record<BillingCycle, 'default' | 'secondary' | 'destructive' | 'outline'> = {
+  monthly: 'secondary',
+  quarterly: 'outline',
+  semi_annual: 'default',
+  annual: 'default',
+  lifetime: 'destructive',
 };
 
 export const BillingCycleBadge: React.FC<BillingCycleBadgeProps> = ({
   billingCycle,
-  size = 'small'
 }) => {
   return (
-    <Chip
-      label={BILLING_CYCLE_LABELS[billingCycle]}
-      color={BILLING_CYCLE_COLORS[billingCycle]}
-      size={size}
-    />
+    <Badge variant={BILLING_CYCLE_VARIANTS[billingCycle]}>
+      {BILLING_CYCLE_LABELS[billingCycle]}
+    </Badge>
   );
 };

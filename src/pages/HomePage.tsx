@@ -3,107 +3,104 @@
  * 登录后的主页面
  */
 
-import { Container, Box, Typography, Card, CardContent, Button, Stack, Avatar } from '@mui/material';
 import { useAuthStore } from '@/features/auth/stores/auth-store';
 import { useAuth } from '@/features/auth/hooks/useAuth';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent } from '@/components/ui/card';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Badge } from '@/components/ui/badge';
+import { Loader2 } from 'lucide-react';
 
 export const HomePage = () => {
   const { user } = useAuthStore();
   const { logout, isLoading } = useAuth();
 
   return (
-    <Container maxWidth="md">
-      <Box sx={{ py: 8 }}>
+    <div className="min-h-screen flex items-center justify-center p-4 bg-background">
+      <div className="w-full max-w-2xl">
         <Card>
-          <CardContent sx={{ p: 4 }}>
-            <Stack spacing={3} alignItems="center">
+          <CardContent className="p-8">
+            <div className="grid gap-6">
               {/* 用户头像 */}
-              <Avatar
-                src={user?.avatar}
-                alt={user?.name}
-                sx={{
-                  width: 100,
-                  height: 100,
-                  fontSize: '2.5rem',
-                  bgcolor: 'primary.main',
-                }}
-              >
-                {user?.name?.charAt(0).toUpperCase()}
-              </Avatar>
+              <div className="flex justify-center">
+                <Avatar className="size-24">
+                  <AvatarImage src={user?.avatar} alt={user?.name} />
+                  <AvatarFallback className="text-4xl">
+                    {user?.name?.charAt(0).toUpperCase()}
+                  </AvatarFallback>
+                </Avatar>
+              </div>
 
               {/* 欢迎信息 */}
-              <Box textAlign="center">
-                <Typography variant="h4" component="h1" gutterBottom fontWeight="bold">
+              <div className="text-center grid gap-2">
+                <h1 className="text-4xl font-bold">
                   欢迎回来，{user?.name}！
-                </Typography>
-                <Typography variant="body1" color="text.secondary">
+                </h1>
+                <p className="text-muted-foreground">
                   您已成功登录 Orris
-                </Typography>
-              </Box>
+                </p>
+              </div>
 
               {/* 用户信息 */}
-              <Card variant="outlined" sx={{ width: '100%' }}>
-                <CardContent>
-                  <Stack spacing={2}>
-                    <Box>
-                      <Typography variant="body2" color="text.secondary">
-                        邮箱
-                      </Typography>
-                      <Typography variant="body1">{user?.email}</Typography>
-                    </Box>
+              <Card className="border">
+                <CardContent className="p-6 grid gap-4">
+                  <div className="grid gap-1">
+                    <p className="text-sm text-muted-foreground">
+                      邮箱
+                    </p>
+                    <p className="text-base">{user?.email}</p>
+                  </div>
 
-                    <Box>
-                      <Typography variant="body2" color="text.secondary">
-                        账号ID
-                      </Typography>
-                      <Typography variant="body1" sx={{ fontFamily: 'monospace' }}>
-                        {user?.id}
-                      </Typography>
-                    </Box>
+                  <div className="grid gap-1">
+                    <p className="text-sm text-muted-foreground">
+                      账号ID
+                    </p>
+                    <p className="font-mono text-base">
+                      {user?.id}
+                    </p>
+                  </div>
 
-                    <Box>
-                      <Typography variant="body2" color="text.secondary">
-                        邮箱验证状态
-                      </Typography>
-                      <Typography
-                        variant="body1"
-                        sx={{
-                          color: user?.email_verified ? 'success.main' : 'warning.main',
-                        }}
-                      >
+                  <div className="grid gap-1">
+                    <p className="text-sm text-muted-foreground">
+                      邮箱验证状态
+                    </p>
+                    <div>
+                      <Badge variant={user?.email_verified ? 'default' : 'secondary'}>
                         {user?.email_verified ? '已验证' : '未验证'}
-                      </Typography>
-                    </Box>
+                      </Badge>
+                    </div>
+                  </div>
 
-                    {user?.oauth_provider && (
-                      <Box>
-                        <Typography variant="body2" color="text.secondary">
-                          OAuth提供商
-                        </Typography>
-                        <Typography variant="body1" sx={{ textTransform: 'capitalize' }}>
-                          {user.oauth_provider}
-                        </Typography>
-                      </Box>
-                    )}
-                  </Stack>
+                  {user?.oauth_provider && (
+                    <div className="grid gap-1">
+                      <p className="text-sm text-muted-foreground">
+                        OAuth提供商
+                      </p>
+                      <p className="capitalize text-base">
+                        {user.oauth_provider}
+                      </p>
+                    </div>
+                  )}
                 </CardContent>
               </Card>
 
               {/* 登出按钮 */}
-              <Button
-                variant="outlined"
-                color="error"
-                size="large"
-                onClick={logout}
-                disabled={isLoading}
-                sx={{ mt: 2 }}
-              >
-                退出登录
-              </Button>
-            </Stack>
+              <div className="flex justify-center mt-2">
+                <Button
+                  variant="outline"
+                  size="lg"
+                  onClick={logout}
+                  disabled={isLoading}
+                  className="text-destructive border-destructive hover:bg-destructive hover:text-destructive-foreground"
+                >
+                  {isLoading && <Loader2 className="animate-spin" />}
+                  退出登录
+                </Button>
+              </div>
+            </div>
           </CardContent>
         </Card>
-      </Box>
-    </Container>
+      </div>
+    </div>
   );
 };

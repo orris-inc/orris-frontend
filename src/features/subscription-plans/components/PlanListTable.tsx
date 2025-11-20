@@ -2,24 +2,30 @@
  * 订阅计划列表表格组件（管理端）
  */
 
+import { Edit, Power, Loader2 } from 'lucide-react';
 import {
   Table,
   TableBody,
   TableCell,
-  TableContainer,
   TableHead,
+  TableHeader,
   TableRow,
-  Paper,
-  IconButton,
-  Chip,
-  Box,
-  Typography,
-  TablePagination,
-  CircularProgress,
+} from '@/components/ui/table';
+import { Card, CardContent } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import {
   Tooltip,
-} from '@mui/material';
-import EditIcon from '@mui/icons-material/Edit';
-import PowerSettingsNewIcon from '@mui/icons-material/PowerSettingsNew';
+  TooltipContent,
+  TooltipTrigger,
+} from '@/components/ui/tooltip';
 import { BillingCycleBadge } from './BillingCycleBadge';
 import type { SubscriptionPlan, PlanStatus } from '../types/subscription-plans.types';
 
@@ -72,10 +78,10 @@ const STATUS_LABELS: Record<PlanStatus, string> = {
   archived: '已归档',
 };
 
-const STATUS_COLORS: Record<PlanStatus, 'success' | 'default' | 'warning'> = {
-  active: 'success',
-  inactive: 'default',
-  archived: 'warning',
+const STATUS_VARIANTS: Record<PlanStatus, 'default' | 'secondary' | 'destructive' | 'outline'> = {
+  active: 'default',
+  inactive: 'secondary',
+  archived: 'destructive',
 };
 
 export const PlanListTable: React.FC<PlanListTableProps> = ({
@@ -89,141 +95,180 @@ export const PlanListTable: React.FC<PlanListTableProps> = ({
   onEdit,
   onToggleStatus,
 }) => {
-  if (loading) {
-    return (
-      <Box display="flex" justifyContent="center" alignItems="center" minHeight="400px">
-        <CircularProgress />
-      </Box>
-    );
-  }
-
-  if (!plans || plans.length === 0) {
-    return (
-      <Box textAlign="center" py={8}>
-        <Typography variant="h6" color="text.secondary">
-          暂无订阅计划
-        </Typography>
-      </Box>
-    );
-  }
+  // 计算分页信息
+  const totalPages = Math.ceil(total / pageSize);
+  const startIndex = (page - 1) * pageSize + 1;
+  const endIndex = Math.min(page * pageSize, total);
 
   return (
-    <Paper>
-      <TableContainer>
+    <Card>
+      <CardContent className="p-0">
         <Table>
-          <TableHead>
+          <TableHeader>
             <TableRow>
-              <TableCell>计划名称</TableCell>
-              <TableCell>价格</TableCell>
-              <TableCell>计费周期</TableCell>
-              <TableCell>状态</TableCell>
-              <TableCell>公开</TableCell>
-              <TableCell>试用天数</TableCell>
-              <TableCell>排序</TableCell>
-              <TableCell align="right">操作</TableCell>
+              <TableHead>计划名称</TableHead>
+              <TableHead>价格</TableHead>
+              <TableHead>计费周期</TableHead>
+              <TableHead>状态</TableHead>
+              <TableHead>公开</TableHead>
+              <TableHead>试用天数</TableHead>
+              <TableHead>排序</TableHead>
+              <TableHead className="text-right">操作</TableHead>
             </TableRow>
-          </TableHead>
+          </TableHeader>
           <TableBody>
-            {plans.map((plan) => (
-              <TableRow key={plan.ID} hover>
-                <TableCell>
-                  <Typography variant="body2" fontWeight="bold">
-                    {plan.Name}
-                  </Typography>
-                  <Typography variant="caption" color="text.secondary">
-                    {plan.Slug}
-                  </Typography>
-                </TableCell>
-                <TableCell>
-                  {(() => {
-                    const priceRange = getPriceRange(plan);
-                    if (priceRange.details) {
-                      // 多定价：显示价格范围 + Tooltip
-                      return (
-                        <Tooltip
-                          title={
-                            <Box>
-                              <Typography variant="caption" display="block" gutterBottom fontWeight="bold">
-                                所有定价选项：
-                              </Typography>
-                              {priceRange.details.map((detail, idx) => (
-                                <Typography key={idx} variant="caption" display="block">
-                                  {detail.cycle}: {detail.price}
-                                </Typography>
-                              ))}
-                            </Box>
-                          }
-                          arrow
-                        >
-                          <Typography variant="body2" sx={{ cursor: 'help', textDecoration: 'underline dotted' }}>
-                            {priceRange.display}
-                          </Typography>
-                        </Tooltip>
-                      );
-                    }
-                    // 单一价格
-                    return (
-                      <Typography variant="body2">
-                        {priceRange.display}
-                      </Typography>
-                    );
-                  })()}
-                </TableCell>
-                <TableCell>
-                  <BillingCycleBadge billingCycle={plan.BillingCycle} />
-                </TableCell>
-                <TableCell>
-                  <Chip
-                    label={STATUS_LABELS[plan.Status]}
-                    color={STATUS_COLORS[plan.Status]}
-                    size="small"
-                  />
-                </TableCell>
-                <TableCell>
-                  <Chip
-                    label={plan.IsPublic ? '是' : '否'}
-                    color={plan.IsPublic ? 'primary' : 'default'}
-                    size="small"
-                    variant="outlined"
-                  />
-                </TableCell>
-                <TableCell>
-                  {plan.TrialDays ? `${plan.TrialDays} 天` : '-'}
-                </TableCell>
-                <TableCell>{plan.SortOrder || '-'}</TableCell>
-                <TableCell align="right">
-                  <IconButton
-                    size="small"
-                    onClick={() => onEdit(plan)}
-                    title="编辑"
-                  >
-                    <EditIcon fontSize="small" />
-                  </IconButton>
-                  <IconButton
-                    size="small"
-                    onClick={() => onToggleStatus(plan)}
-                    title={plan.Status === 'active' ? '停用' : '激活'}
-                    color={plan.Status === 'active' ? 'default' : 'primary'}
-                  >
-                    <PowerSettingsNewIcon fontSize="small" />
-                  </IconButton>
+            {loading && plans.length === 0 ? (
+              <TableRow>
+                <TableCell colSpan={8} className="h-64 text-center">
+                  <div className="flex items-center justify-center">
+                    <Loader2 className="size-8 animate-spin text-muted-foreground" />
+                  </div>
                 </TableCell>
               </TableRow>
-            ))}
+            ) : plans.length === 0 ? (
+              <TableRow>
+                <TableCell colSpan={8} className="h-64 text-center">
+                  <p className="text-muted-foreground">暂无订阅计划</p>
+                </TableCell>
+              </TableRow>
+            ) : (
+              plans.map((plan) => (
+                <TableRow key={plan.ID}>
+                  <TableCell>
+                    <div>
+                      <div className="text-sm font-medium">{plan.Name}</div>
+                      <div className="text-xs text-muted-foreground">{plan.Slug}</div>
+                    </div>
+                  </TableCell>
+                  <TableCell>
+                    {(() => {
+                      const priceRange = getPriceRange(plan);
+                      if (priceRange.details) {
+                        // 多定价：显示价格范围 + Tooltip
+                        return (
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <span className="cursor-help border-b border-dotted text-sm">
+                                {priceRange.display}
+                              </span>
+                            </TooltipTrigger>
+                            <TooltipContent>
+                              <div>
+                                <p className="mb-1 text-xs font-bold">所有定价选项：</p>
+                                {priceRange.details.map((detail, idx) => (
+                                  <p key={idx} className="text-xs">
+                                    {detail.cycle}: {detail.price}
+                                  </p>
+                                ))}
+                              </div>
+                            </TooltipContent>
+                          </Tooltip>
+                        );
+                      }
+                      // 单一价格
+                      return <span className="text-sm">{priceRange.display}</span>;
+                    })()}
+                  </TableCell>
+                  <TableCell>
+                    <BillingCycleBadge billingCycle={plan.BillingCycle} />
+                  </TableCell>
+                  <TableCell>
+                    <Badge variant={STATUS_VARIANTS[plan.Status]}>
+                      {STATUS_LABELS[plan.Status]}
+                    </Badge>
+                  </TableCell>
+                  <TableCell>
+                    <Badge variant={plan.IsPublic ? 'default' : 'outline'}>
+                      {plan.IsPublic ? '是' : '否'}
+                    </Badge>
+                  </TableCell>
+                  <TableCell>
+                    {plan.TrialDays ? `${plan.TrialDays} 天` : '-'}
+                  </TableCell>
+                  <TableCell>{plan.SortOrder || '-'}</TableCell>
+                  <TableCell className="text-right">
+                    <div className="flex justify-end gap-2">
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => onEdit(plan)}
+                          >
+                            <Edit className="size-4" />
+                          </Button>
+                        </TooltipTrigger>
+                        <TooltipContent>编辑</TooltipContent>
+                      </Tooltip>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <Button
+                            variant={plan.Status === 'active' ? 'ghost' : 'default'}
+                            size="icon"
+                            onClick={() => onToggleStatus(plan)}
+                          >
+                            <Power className="size-4" />
+                          </Button>
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          {plan.Status === 'active' ? '停用' : '激活'}
+                        </TooltipContent>
+                      </Tooltip>
+                    </div>
+                  </TableCell>
+                </TableRow>
+              ))
+            )}
           </TableBody>
         </Table>
-      </TableContainer>
-      <TablePagination
-        component="div"
-        count={total}
-        page={page - 1} // MUI uses 0-based index
-        rowsPerPage={pageSize}
-        onPageChange={(_, newPage) => onPageChange(newPage + 1)} // Convert back to 1-based
-        onRowsPerPageChange={(e) => onPageSizeChange(parseInt(e.target.value, 10))}
-        rowsPerPageOptions={[10, 20, 50]}
-        labelRowsPerPage="每页条数:"
-        labelDisplayedRows={({ from, to, count }) => `${from}-${to} / 共 ${count} 条`}
-      />
-    </Paper>
+
+        {/* 分页控制 */}
+        {total > 0 && (
+          <div className="flex items-center justify-between border-t px-4 py-3">
+            <div className="flex items-center gap-2 text-sm text-muted-foreground">
+              <span>每页显示</span>
+              <Select
+                value={pageSize.toString()}
+                onValueChange={(value) => onPageSizeChange(parseInt(value, 10))}
+              >
+                <SelectTrigger className="h-8 w-[70px]">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="10">10</SelectItem>
+                  <SelectItem value="20">20</SelectItem>
+                  <SelectItem value="50">50</SelectItem>
+                </SelectContent>
+              </Select>
+              <span>共 {total} 条</span>
+            </div>
+
+            <div className="flex items-center gap-2">
+              <span className="text-sm text-muted-foreground">
+                {startIndex}-{endIndex} / {total}
+              </span>
+              <div className="flex gap-1">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => onPageChange(page - 1)}
+                  disabled={page === 1 || loading}
+                >
+                  上一页
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => onPageChange(page + 1)}
+                  disabled={page >= totalPages || loading}
+                >
+                  下一页
+                </Button>
+              </div>
+            </div>
+          </div>
+        )}
+      </CardContent>
+    </Card>
   );
 };

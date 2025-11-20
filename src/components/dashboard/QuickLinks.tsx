@@ -3,20 +3,10 @@
  * 提供实用的导航链接
  */
 
-import {
-  Card,
-  CardContent,
-  Typography,
-  Box,
-  Button,
-  Stack,
-  Chip,
-} from '@mui/material';
-import PersonIcon from '@mui/icons-material/Person';
-import SubscriptionsIcon from '@mui/icons-material/Subscriptions';
-import StorageIcon from '@mui/icons-material/Storage';
-import LocalOfferIcon from '@mui/icons-material/LocalOffer';
-import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
+import { User, CreditCard, Database, Tag, ArrowRight } from 'lucide-react';
+import { Card, CardContent } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
 import { useNavigate } from 'react-router-dom';
 import { useAuthStore } from '@/features/auth/stores/auth-store';
 
@@ -36,20 +26,20 @@ export const QuickLinks = () => {
 
   const links: QuickLink[] = [
     {
-      icon: <PersonIcon />,
+      icon: <User className="size-5" />,
       title: '个人设置',
       description: '管理您的个人信息和偏好',
       path: '/dashboard/profile',
       implemented: true,
     },
     {
-      icon: <SubscriptionsIcon />,
+      icon: <CreditCard className="size-5" />,
       title: '订阅管理',
       description: '查看和管理您的订阅计划',
       implemented: false, // 待实现
     },
     {
-      icon: <StorageIcon />,
+      icon: <Database className="size-5" />,
       title: '节点管理',
       description: '管理您的节点配置',
       path: '/admin/nodes',
@@ -57,7 +47,7 @@ export const QuickLinks = () => {
       implemented: true,
     },
     {
-      icon: <LocalOfferIcon />,
+      icon: <Tag className="size-5" />,
       title: '价格方案',
       description: '浏览可用的订阅套餐',
       path: '/pricing',
@@ -75,81 +65,61 @@ export const QuickLinks = () => {
   };
 
   return (
-    <Card elevation={2}>
-      <CardContent>
-        <Typography variant="h6" fontWeight="bold" gutterBottom>
-          快速访问
-        </Typography>
+    <Card className="shadow-sm hover:shadow-md transition-shadow h-full">
+      <CardContent className="p-6">
+        <h3 className="text-xl font-bold mb-5">快速访问</h3>
 
-        <Stack spacing={1.5}>
+        <div className="space-y-3">
           {visibleLinks.map((link, index) => (
             <Button
               key={index}
               onClick={() => handleLinkClick(link)}
-              variant="outlined"
+              variant="outline"
               disabled={!link.implemented}
-              sx={{
-                justifyContent: 'space-between',
-                textAlign: 'left',
-                p: 2,
-                height: 'auto',
-                textTransform: 'none',
-                borderColor: 'divider',
-                opacity: link.implemented ? 1 : 0.5,
-                cursor: link.implemented ? 'pointer' : 'not-allowed',
-                '&:hover': link.implemented
-                  ? {
-                      borderColor: 'primary.main',
-                      bgcolor: 'action.hover',
-                    }
-                  : {},
-              }}
-              endIcon={link.implemented ? <ArrowForwardIcon /> : null}
+              className={`h-auto w-full justify-start p-4 text-left transition-all ${
+                link.implemented
+                  ? 'hover:border-primary hover:bg-accent/50 hover:shadow-sm cursor-pointer'
+                  : 'opacity-50 cursor-not-allowed'
+              }`}
             >
-              <Stack direction="row" spacing={2} alignItems="center" flex={1}>
-                <Box
-                  sx={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    width: 40,
-                    height: 40,
-                    borderRadius: 1,
-                    bgcolor: link.implemented ? 'action.hover' : 'action.disabledBackground',
-                    color: link.implemented ? 'text.primary' : 'action.disabled',
-                  }}
+              <div className="flex items-center gap-4 flex-1">
+                <div
+                  className={`flex items-center justify-center size-11 rounded-xl transition-colors ${
+                    link.implemented
+                      ? 'bg-primary text-primary-foreground'
+                      : 'bg-muted text-muted-foreground'
+                  }`}
                 >
                   {link.icon}
-                </Box>
-                <Box flex={1}>
-                  <Stack direction="row" spacing={1} alignItems="center">
-                    <Typography
-                      variant="body1"
-                      fontWeight={600}
-                      color={link.implemented ? 'text.primary' : 'text.disabled'}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2 mb-1">
+                    <span
+                      className={`font-semibold text-sm ${
+                        link.implemented ? 'text-foreground' : 'text-muted-foreground'
+                      }`}
                     >
                       {link.title}
-                    </Typography>
+                    </span>
                     {!link.implemented && (
-                      <Chip
-                        label="待实现"
-                        size="small"
-                        variant="outlined"
-                        sx={{ height: 20, fontSize: '0.7rem' }}
-                      />
+                      <Badge variant="outline" className="h-5 text-xs px-2">
+                        待实现
+                      </Badge>
                     )}
-                  </Stack>
-                  <Typography
-                    variant="caption"
-                    color={link.implemented ? 'text.secondary' : 'text.disabled'}
+                  </div>
+                  <span
+                    className={`text-xs line-clamp-1 ${
+                      link.implemented ? 'text-muted-foreground' : 'text-muted-foreground/60'
+                    }`}
                   >
                     {link.description}
-                  </Typography>
-                </Box>
-              </Stack>
+                  </span>
+                </div>
+                {link.implemented && <ArrowRight className="size-5 ml-2 text-muted-foreground group-hover:text-primary transition-colors" />}
+              </div>
             </Button>
           ))}
-        </Stack>
+        </div>
       </CardContent>
     </Card>
   );

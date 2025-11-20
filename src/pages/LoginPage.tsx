@@ -7,34 +7,20 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { Link as RouterLink, useNavigate, useLocation } from 'react-router';
-import { useEffect } from 'react';
-import {
-  Box,
-  Container,
-  Card,
-  CardContent,
-  TextField,
-  Button,
-  Typography,
-  Stack,
-  Divider,
-  Link,
-  Alert,
-  IconButton,
-  InputAdornment,
-  FormControlLabel,
-  Checkbox,
-} from '@mui/material';
-import { LoadingButton } from '@mui/lab';
-import GoogleIcon from '@mui/icons-material/Google';
-import GitHubIcon from '@mui/icons-material/GitHub';
-import VisibilityIcon from '@mui/icons-material/Visibility';
-import VisibilityOffIcon from '@mui/icons-material/VisibilityOff';
+import { useEffect, useState } from 'react';
+import { Eye, EyeOff, Chrome, Github, Loader2, CircleCheck, CircleAlert } from 'lucide-react';
 import { useAuth } from '@/features/auth/hooks/useAuth';
 import { useAuthStore } from '@/features/auth/stores/auth-store';
 import { useNotificationStore } from '@/shared/stores/notification-store';
-import { useState } from 'react';
 import { isAccountNotActiveError } from '@/shared/utils/error-messages';
+
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Separator } from '@/components/ui/separator';
 
 // Zod 4 登录表单验证
 const loginSchema = z.object({
@@ -71,6 +57,8 @@ export const LoginPage = () => {
     register,
     handleSubmit,
     formState: { errors },
+    setValue,
+    watch,
   } = useForm<LoginFormData>({
     resolver: zodResolver(loginSchema),
     defaultValues: {
@@ -79,6 +67,8 @@ export const LoginPage = () => {
       rememberMe: false,
     },
   });
+
+  const rememberMe = watch('rememberMe');
 
   const onSubmit = async (data: LoginFormData) => {
     setShowResendVerification(false);
@@ -115,180 +105,171 @@ export const LoginPage = () => {
   };
 
   return (
-    <Container maxWidth="sm">
-      <Box
-        sx={{
-          minHeight: '100vh',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          py: 4,
-        }}
-      >
-        <Card sx={{ width: '100%' }}>
-          <CardContent sx={{ p: 4 }}>
-            {/* 标题 */}
-            <Typography variant="h4" component="h1" gutterBottom textAlign="center" fontWeight="bold">
-              欢迎回来
-            </Typography>
-            <Typography variant="body2" color="text.secondary" textAlign="center" sx={{ mb: 4 }}>
-              登录您的 Orris 账号
-            </Typography>
-
+    <div className="min-h-screen flex items-center justify-center p-4 bg-background">
+      <div className="w-full max-w-md">
+        <Card>
+          <CardHeader className="text-center">
+            <CardTitle className="text-3xl">欢迎回来</CardTitle>
+            <CardDescription>登录您的 Orris 账号</CardDescription>
+          </CardHeader>
+          <CardContent className="grid gap-6">
             {/* 成功消息提示（如注册成功、密码重置成功等） */}
             {successMessage && (
-              <Alert severity="success" sx={{ mb: 3 }}>
-                {successMessage}
+              <Alert>
+                <CircleCheck />
+                <AlertDescription>{successMessage}</AlertDescription>
               </Alert>
             )}
 
             {/* 错误提示 */}
             {error && (
-              <Alert
-                severity="error"
-                sx={{ mb: 3 }}
-                action={
-                  showResendVerification ? (
-                    <Button
-                      color="inherit"
-                      size="small"
-                      onClick={handleResendVerification}
-                    >
-                      前往验证
-                    </Button>
-                  ) : undefined
-                }
-              >
-                {error}
+              <Alert variant="destructive">
+                <CircleAlert />
+                <AlertDescription>
+                  <div className="flex items-center justify-between gap-2">
+                    <span>{error}</span>
+                    {showResendVerification && (
+                      <Button
+                        variant="link"
+                        size="sm"
+                        onClick={handleResendVerification}
+                        className="h-auto p-0 text-current"
+                      >
+                        前往验证
+                      </Button>
+                    )}
+                  </div>
+                </AlertDescription>
               </Alert>
             )}
 
             {/* 登录表单 */}
-            <Stack component="form" spacing={3} onSubmit={handleSubmit(onSubmit)}>
-              <TextField
-                {...register('email')}
-                label="邮箱"
-                type="email"
-                fullWidth
-                error={!!errors.email}
-                helperText={errors.email?.message}
-                autoComplete="email"
-                autoFocus
-              />
-
-              <TextField
-                {...register('password')}
-                label="密码"
-                type={showPassword ? 'text' : 'password'}
-                fullWidth
-                error={!!errors.password}
-                helperText={errors.password?.message}
-                autoComplete="current-password"
-                slotProps={{
-                  input: {
-                    endAdornment: (
-                      <InputAdornment position="end">
-                        <IconButton
-                          onClick={() => setShowPassword(!showPassword)}
-                          edge="end"
-                          aria-label="切换密码显示"
-                        >
-                          {showPassword ? <VisibilityOffIcon /> : <VisibilityIcon />}
-                        </IconButton>
-                      </InputAdornment>
-                    ),
-                  },
-                }}
-              />
-
-              <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                <FormControlLabel
-                  control={
-                    <Checkbox
-                      {...register('rememberMe')}
-                      defaultChecked={false}
-                      color="primary"
-                    />
-                  }
-                  label="记住我"
+            <form onSubmit={handleSubmit(onSubmit)} className="grid gap-4">
+              <div className="grid gap-2">
+                <Label htmlFor="email">邮箱</Label>
+                <Input
+                  id="email"
+                  type="email"
+                  autoComplete="email"
+                  autoFocus
+                  aria-invalid={!!errors.email}
+                  {...register('email')}
                 />
-                <Link
-                  component={RouterLink}
+                {errors.email && (
+                  <p className="text-sm text-destructive">{errors.email.message}</p>
+                )}
+              </div>
+
+              <div className="grid gap-2">
+                <Label htmlFor="password">密码</Label>
+                <div className="relative">
+                  <Input
+                    id="password"
+                    type={showPassword ? 'text' : 'password'}
+                    autoComplete="current-password"
+                    aria-invalid={!!errors.password}
+                    className="pr-10"
+                    {...register('password')}
+                  />
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon-sm"
+                    className="absolute right-1 top-1/2 -translate-y-1/2"
+                    onClick={() => setShowPassword(!showPassword)}
+                    aria-label="切换密码显示"
+                    tabIndex={-1}
+                  >
+                    {showPassword ? (
+                      <EyeOff className="size-4" />
+                    ) : (
+                      <Eye className="size-4" />
+                    )}
+                  </Button>
+                </div>
+                {errors.password && (
+                  <p className="text-sm text-destructive">{errors.password.message}</p>
+                )}
+              </div>
+
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <Checkbox
+                    id="rememberMe"
+                    checked={rememberMe}
+                    onCheckedChange={(checked) => {
+                      setValue('rememberMe', checked === true);
+                    }}
+                  />
+                  <Label
+                    htmlFor="rememberMe"
+                    className="text-sm font-normal cursor-pointer"
+                  >
+                    记住我
+                  </Label>
+                </div>
+                <RouterLink
                   to="/forgot-password"
-                  variant="body2"
-                  underline="hover"
+                  className="text-sm text-primary underline-offset-4 hover:underline"
                 >
                   忘记密码？
-                </Link>
-              </Box>
+                </RouterLink>
+              </div>
 
-              <LoadingButton
-                type="submit"
-                variant="contained"
-                size="large"
-                fullWidth
-                loading={isLoading}
-              >
+              <Button type="submit" size="lg" disabled={isLoading} className="w-full">
+                {isLoading && <Loader2 className="animate-spin" />}
                 登录
-              </LoadingButton>
-            </Stack>
+              </Button>
+            </form>
 
             {/* 分隔线 */}
-            <Divider sx={{ my: 3 }}>或</Divider>
+            <div className="relative">
+              <div className="absolute inset-0 flex items-center">
+                <Separator />
+              </div>
+              <div className="relative flex justify-center text-xs uppercase">
+                <span className="bg-card px-2 text-muted-foreground">或</span>
+              </div>
+            </div>
 
             {/* OAuth 登录按钮 */}
-            <Stack spacing={2}>
+            <div className="grid gap-2">
               <Button
-                variant="outlined"
-                size="large"
-                fullWidth
-                startIcon={<GoogleIcon />}
+                type="button"
+                variant="outline"
+                size="lg"
                 onClick={() => handleOAuthLogin('google')}
                 disabled={isLoading}
-                sx={{
-                  color: '#DB4437',
-                  borderColor: '#DB4437',
-                  '&:hover': {
-                    borderColor: '#DB4437',
-                    bgcolor: 'rgba(219, 68, 55, 0.04)',
-                  },
-                }}
               >
+                <Chrome />
                 使用 Google 登录
               </Button>
 
               <Button
-                variant="outlined"
-                size="large"
-                fullWidth
-                startIcon={<GitHubIcon />}
+                type="button"
+                variant="outline"
+                size="lg"
                 onClick={() => handleOAuthLogin('github')}
                 disabled={isLoading}
-                sx={{
-                  color: '#24292e',
-                  borderColor: '#24292e',
-                  '&:hover': {
-                    borderColor: '#24292e',
-                    bgcolor: 'rgba(36, 41, 46, 0.04)',
-                  },
-                }}
               >
+                <Github />
                 使用 GitHub 登录
               </Button>
-            </Stack>
+            </div>
 
             {/* 注册链接 */}
-            <Box sx={{ mt: 3, textAlign: 'center' }}>
-              <Typography variant="body2" color="text.secondary">
-                还没有账号？{' '}
-                <Link component={RouterLink} to="/register" underline="hover">
-                  立即注册
-                </Link>
-              </Typography>
-            </Box>
+            <div className="text-center text-sm text-muted-foreground">
+              还没有账号？{' '}
+              <RouterLink
+                to="/register"
+                className="text-primary underline-offset-4 hover:underline"
+              >
+                立即注册
+              </RouterLink>
+            </div>
           </CardContent>
         </Card>
-      </Box>
-    </Container>
+      </div>
+    </div>
   );
 };

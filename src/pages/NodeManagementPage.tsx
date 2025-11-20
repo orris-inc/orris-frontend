@@ -3,23 +3,7 @@
  */
 
 import { useState } from 'react';
-import {
-  Container,
-  Box,
-  Typography,
-  Paper,
-  Button,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogContentText,
-  DialogActions,
-  TextField,
-  IconButton,
-  Tooltip,
-} from '@mui/material';
-import AddIcon from '@mui/icons-material/Add';
-import RefreshIcon from '@mui/icons-material/Refresh';
+import { Plus, RefreshCw } from 'lucide-react';
 import { NodeListTable } from '@/features/nodes/components/NodeListTable';
 import { NodeFilters } from '@/features/nodes/components/NodeFilters';
 import { EditNodeDialog } from '@/features/nodes/components/EditNodeDialog';
@@ -28,6 +12,18 @@ import { NodeStatsCards } from '@/features/nodes/components/NodeStatsCards';
 import { NodeDetailDialog } from '@/features/nodes/components/NodeDetailDialog';
 import { useNodes } from '@/features/nodes/hooks/useNodes';
 import { AdminLayout } from '@/layouts/AdminLayout';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent } from '@/components/ui/card';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
+import { Textarea } from '@/components/ui/textarea';
 import type { NodeListItem, UpdateNodeRequest, CreateNodeRequest } from '@/features/nodes/types/nodes.types';
 
 export const NodeManagementPage = () => {
@@ -119,128 +115,123 @@ export const NodeManagementPage = () => {
 
   return (
     <AdminLayout>
-      <Container maxWidth="xl">
-        <Box py={4}>
-          {/* 页面标题 */}
-          <Box display="flex" justifyContent="space-between" alignItems="center" mb={4}>
-            <Box>
-              <Typography variant="h4" component="h1" gutterBottom fontWeight="bold">
-                节点管理
-              </Typography>
-              <Typography variant="body2" color="text.secondary">
-                管理系统中的所有代理节点
-              </Typography>
-            </Box>
-            <Box display="flex" gap={1}>
-              <Tooltip title="刷新">
-                <IconButton
+      <div className="container mx-auto max-w-7xl py-6">
+        {/* 页面标题 */}
+        <div className="mb-6 flex items-center justify-between">
+          <div>
+            <h1 className="mb-2 text-3xl font-bold">节点管理</h1>
+            <p className="text-sm text-muted-foreground">
+              管理系统中的所有代理节点
+            </p>
+          </div>
+          <div className="flex gap-2">
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  variant="outline"
+                  size="icon"
                   onClick={handleRefresh}
                   disabled={loading}
-                  sx={{
-                    border: 1,
-                    borderColor: 'divider',
-                  }}
                 >
-                  <RefreshIcon />
-                </IconButton>
-              </Tooltip>
-              <Button
-                variant="contained"
-                startIcon={<AddIcon />}
-                onClick={() => setCreateDialogOpen(true)}
-              >
-                新增节点
-              </Button>
-            </Box>
-          </Box>
+                  <RefreshCw className={loading ? 'animate-spin' : ''} />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>刷新</TooltipContent>
+            </Tooltip>
+            <Button onClick={() => setCreateDialogOpen(true)}>
+              <Plus className="mr-2" />
+              新增节点
+            </Button>
+          </div>
+        </div>
 
-          {/* 统计卡片 */}
-          <NodeStatsCards nodes={nodes} loading={loading} />
+        {/* 统计卡片 */}
+        <NodeStatsCards nodes={nodes} loading={loading} />
 
-          {/* 筛选器 */}
-          <Paper sx={{ p: 3, mb: 3 }}>
+        {/* 筛选器 */}
+        <Card className="mb-6">
+          <CardContent className="p-6">
             <NodeFilters filters={filters} onChange={setFilters} />
-          </Paper>
+          </CardContent>
+        </Card>
 
-          {/* 节点列表表格 */}
-          <NodeListTable
-            nodes={nodes}
-            loading={loading}
-            page={pagination.page}
-            pageSize={pagination.page_size}
-            total={pagination.total}
-            onPageChange={handlePageChange}
-            onPageSizeChange={handlePageSizeChange}
-            onEdit={handleEdit}
-            onDelete={handleDelete}
-            onActivate={handleActivate}
-            onDeactivate={handleDeactivate}
-            onGenerateToken={handleGenerateToken}
-            onViewDetail={handleViewDetail}
-          />
+        {/* 节点列表表格 */}
+        <NodeListTable
+          nodes={nodes}
+          loading={loading}
+          page={pagination.page}
+          pageSize={pagination.page_size}
+          total={pagination.total}
+          onPageChange={handlePageChange}
+          onPageSizeChange={handlePageSizeChange}
+          onEdit={handleEdit}
+          onDelete={handleDelete}
+          onActivate={handleActivate}
+          onDeactivate={handleDeactivate}
+          onGenerateToken={handleGenerateToken}
+          onViewDetail={handleViewDetail}
+        />
 
-          {/* 新增节点对话框 */}
-          <CreateNodeDialog
-            open={createDialogOpen}
-            onClose={() => setCreateDialogOpen(false)}
-            onSubmit={handleCreateSubmit}
-          />
+        {/* 新增节点对话框 */}
+        <CreateNodeDialog
+          open={createDialogOpen}
+          onClose={() => setCreateDialogOpen(false)}
+          onSubmit={handleCreateSubmit}
+        />
 
-          {/* 编辑节点对话框 */}
-          <EditNodeDialog
-            open={editDialogOpen}
-            node={selectedNode}
-            onClose={() => {
-              setEditDialogOpen(false);
-              setSelectedNode(null);
-            }}
-            onSubmit={handleUpdateSubmit}
-          />
+        {/* 编辑节点对话框 */}
+        <EditNodeDialog
+          open={editDialogOpen}
+          node={selectedNode}
+          onClose={() => {
+            setEditDialogOpen(false);
+            setSelectedNode(null);
+          }}
+          onSubmit={handleUpdateSubmit}
+        />
 
-          {/* 节点详情对话框 */}
-          <NodeDetailDialog
-            open={detailDialogOpen}
-            node={selectedNode}
-            onClose={() => {
-              setDetailDialogOpen(false);
-              setSelectedNode(null);
-            }}
-          />
+        {/* 节点详情对话框 */}
+        <NodeDetailDialog
+          open={detailDialogOpen}
+          node={selectedNode}
+          onClose={() => {
+            setDetailDialogOpen(false);
+            setSelectedNode(null);
+          }}
+        />
 
-          {/* Token显示对话框 */}
-          <Dialog
-            open={tokenDialogOpen}
-            onClose={() => setTokenDialogOpen(false)}
-            maxWidth="sm"
-            fullWidth
-          >
-            <DialogTitle>节点Token</DialogTitle>
-            <DialogContent>
-              <DialogContentText gutterBottom>
+        {/* Token显示对话框 */}
+        <Dialog
+          open={tokenDialogOpen}
+          onOpenChange={(open) => !open && setTokenDialogOpen(false)}
+        >
+          <DialogContent className="sm:max-w-md">
+            <DialogHeader>
+              <DialogTitle>节点Token</DialogTitle>
+              <DialogDescription>
                 Token已生成，请妥善保存。此Token仅显示一次。
-              </DialogContentText>
-              <TextField
-                fullWidth
-                multiline
-                rows={4}
-                value={generatedToken}
-                slotProps={{
-                  input: {
-                    readOnly: true,
-                  }
-                }}
-                sx={{ mt: 2, fontFamily: 'monospace' }}
-              />
-            </DialogContent>
-            <DialogActions>
-              <Button onClick={() => setTokenDialogOpen(false)}>关闭</Button>
-              <Button onClick={handleCopyToken} variant="contained">
+              </DialogDescription>
+            </DialogHeader>
+            <Textarea
+              value={generatedToken}
+              readOnly
+              rows={4}
+              className="mt-2 font-mono"
+            />
+            <DialogFooter>
+              <Button
+                variant="outline"
+                onClick={() => setTokenDialogOpen(false)}
+              >
+                关闭
+              </Button>
+              <Button onClick={handleCopyToken}>
                 复制Token
               </Button>
-            </DialogActions>
-          </Dialog>
-        </Box>
-      </Container>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+      </div>
     </AdminLayout>
   );
 };

@@ -1,16 +1,17 @@
 import { useState, useCallback } from 'react';
+import Cropper, { Area } from 'react-easy-crop';
+import { Loader2 } from 'lucide-react';
 import {
   Dialog,
-  DialogTitle,
   DialogContent,
-  DialogActions,
-  Button,
-  Box,
-  Slider,
-  Typography,
-} from '@mui/material';
-import Cropper, { Area } from 'react-easy-crop';
-import { LoadingButton } from '@mui/lab';
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
+import { Button } from '@/components/ui/button';
+import { Slider } from '@/components/ui/slider';
+import { Label } from '@/components/ui/label';
 
 interface AvatarCropDialogProps {
   open: boolean;
@@ -112,48 +113,54 @@ export const AvatarCropDialog = ({
   };
 
   return (
-    <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth>
-      <DialogTitle>裁剪头像</DialogTitle>
-      <DialogContent>
-        <Box sx={{ position: 'relative', width: '100%', height: 400, mb: 2 }}>
-          <Cropper
-            image={imageSrc}
-            crop={crop}
-            zoom={zoom}
-            aspect={1}
-            cropShape="round"
-            showGrid={false}
-            onCropChange={setCrop}
-            onZoomChange={setZoom}
-            onCropComplete={onCropComplete}
-          />
-        </Box>
+    <Dialog open={open} onOpenChange={(open) => !open && onClose()}>
+      <DialogContent className="sm:max-w-[600px]">
+        <DialogHeader>
+          <DialogTitle>裁剪头像</DialogTitle>
+          <DialogDescription>
+            调整图片位置和缩放比例，裁剪出您满意的头像
+          </DialogDescription>
+        </DialogHeader>
 
-        <Box sx={{ px: 2 }}>
-          <Typography variant="body2" gutterBottom>
-            缩放
-          </Typography>
-          <Slider
-            value={zoom}
-            min={1}
-            max={3}
-            step={0.1}
-            onChange={(_e, value) => setZoom(value as number)}
-          />
-        </Box>
+        <div className="grid gap-4 py-4">
+          <div className="relative h-[400px] w-full">
+            <Cropper
+              image={imageSrc}
+              crop={crop}
+              zoom={zoom}
+              aspect={1}
+              cropShape="round"
+              showGrid={false}
+              onCropChange={setCrop}
+              onZoomChange={setZoom}
+              onCropComplete={onCropComplete}
+            />
+          </div>
+
+          <div className="grid gap-2 px-2">
+            <Label htmlFor="zoom">缩放</Label>
+            <Slider
+              id="zoom"
+              value={[zoom]}
+              min={1}
+              max={3}
+              step={0.1}
+              onValueChange={(value) => setZoom(value[0])}
+              disabled={isUploading}
+            />
+          </div>
+        </div>
+
+        <DialogFooter>
+          <Button variant="outline" onClick={onClose} disabled={isUploading}>
+            取消
+          </Button>
+          <Button onClick={handleConfirm} disabled={isUploading}>
+            {isUploading && <Loader2 className="animate-spin" />}
+            确认
+          </Button>
+        </DialogFooter>
       </DialogContent>
-      <DialogActions>
-        <Button onClick={onClose} disabled={isUploading}>
-          取消
-        </Button>
-        <LoadingButton
-          onClick={handleConfirm}
-          variant="contained"
-          loading={isUploading}
-        >
-          确认
-        </LoadingButton>
-      </DialogActions>
     </Dialog>
   );
 };

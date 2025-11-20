@@ -3,17 +3,7 @@
  */
 
 import { useState } from 'react';
-import {
-  Container,
-  Box,
-  Typography,
-  Paper,
-  Button,
-  IconButton,
-  Tooltip,
-} from '@mui/material';
-import AddIcon from '@mui/icons-material/Add';
-import RefreshIcon from '@mui/icons-material/Refresh';
+import { Plus, RefreshCw } from 'lucide-react';
 import { NodeGroupListTable } from '@/features/node-groups/components/NodeGroupListTable';
 import { NodeGroupFilters } from '@/features/node-groups/components/NodeGroupFilters';
 import { CreateNodeGroupDialog } from '@/features/node-groups/components/CreateNodeGroupDialog';
@@ -23,6 +13,9 @@ import { ManageGroupNodesDialog } from '@/features/node-groups/components/Manage
 import { NodeGroupStatsCards } from '@/features/node-groups/components/NodeGroupStatsCards';
 import { useNodeGroups } from '@/features/node-groups/hooks/useNodeGroups';
 import { AdminLayout } from '@/layouts/AdminLayout';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent } from '@/components/ui/card';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import type {
   NodeGroupListItem,
   CreateNodeGroupRequest,
@@ -105,103 +98,99 @@ export const NodeGroupManagementPage = () => {
 
   return (
     <AdminLayout>
-      <Container maxWidth="xl">
-        <Box py={4}>
-          {/* 页面标题 */}
-          <Box display="flex" justifyContent="space-between" alignItems="center" mb={4}>
-            <Box>
-              <Typography variant="h4" component="h1" gutterBottom fontWeight="bold">
-                节点组管理
-              </Typography>
-              <Typography variant="body2" color="text.secondary">
-                管理系统中的节点分组，组织和控制节点访问权限
-              </Typography>
-            </Box>
-            <Box display="flex" gap={1}>
-              <Tooltip title="刷新">
-                <IconButton
+      <div className="container mx-auto max-w-7xl py-6">
+        {/* 页面标题 */}
+        <div className="mb-6 flex items-center justify-between">
+          <div>
+            <h1 className="mb-2 text-3xl font-bold">节点组管理</h1>
+            <p className="text-sm text-muted-foreground">
+              管理系统中的节点分组，组织和控制节点访问权限
+            </p>
+          </div>
+          <div className="flex gap-2">
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  variant="outline"
+                  size="icon"
                   onClick={handleRefresh}
                   disabled={loading}
-                  sx={{
-                    border: 1,
-                    borderColor: 'divider',
-                  }}
                 >
-                  <RefreshIcon />
-                </IconButton>
-              </Tooltip>
-              <Button
-                variant="contained"
-                startIcon={<AddIcon />}
-                onClick={() => setCreateDialogOpen(true)}
-              >
-                新增节点组
-              </Button>
-            </Box>
-          </Box>
+                  <RefreshCw className={loading ? 'animate-spin' : ''} />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>刷新</TooltipContent>
+            </Tooltip>
+            <Button onClick={() => setCreateDialogOpen(true)}>
+              <Plus className="mr-2" />
+              新增节点组
+            </Button>
+          </div>
+        </div>
 
-          {/* 统计卡片 */}
-          <NodeGroupStatsCards nodeGroups={nodeGroups} loading={loading} />
+        {/* 统计卡片 */}
+        <NodeGroupStatsCards nodeGroups={nodeGroups} loading={loading} />
 
-          {/* 筛选器 */}
-          <Paper sx={{ p: 3, mb: 3 }}>
+        {/* 筛选器 */}
+        <Card className="mb-6">
+          <CardContent className="p-6">
             <NodeGroupFilters filters={filters} onChange={setFilters} />
-          </Paper>
+          </CardContent>
+        </Card>
 
-          {/* 节点组列表表格 */}
-          <NodeGroupListTable
-            nodeGroups={nodeGroups}
-            loading={loading}
-            page={pagination.page}
-            pageSize={pagination.page_size}
-            total={pagination.total}
-            onPageChange={handlePageChange}
-            onPageSizeChange={handlePageSizeChange}
-            onEdit={handleEdit}
-            onDelete={handleDelete}
-            onManageNodes={handleManageNodes}
-            onViewDetail={handleViewDetail}
-          />
+        {/* 节点组列表表格 */}
+        <NodeGroupListTable
+          nodeGroups={nodeGroups}
+          loading={loading}
+          page={pagination.page}
+          pageSize={pagination.page_size}
+          total={pagination.total}
+          onPageChange={handlePageChange}
+          onPageSizeChange={handlePageSizeChange}
+          onEdit={handleEdit}
+          onDelete={handleDelete}
+          onManageNodes={handleManageNodes}
+          onViewDetail={handleViewDetail}
+        />
 
-          {/* 新增节点组对话框 */}
-          <CreateNodeGroupDialog
-            open={createDialogOpen}
-            onClose={() => setCreateDialogOpen(false)}
-            onSubmit={handleCreateSubmit}
-          />
+        {/* 新增节点组对话框 */}
+        <CreateNodeGroupDialog
+          open={createDialogOpen}
+          onClose={() => setCreateDialogOpen(false)}
+          onSubmit={handleCreateSubmit}
+        />
 
-          {/* 编辑节点组对话框 */}
-          <EditNodeGroupDialog
-            open={editDialogOpen}
-            group={selectedGroup}
-            onClose={() => {
-              setEditDialogOpen(false);
-              setSelectedGroup(null);
-            }}
-            onSubmit={handleUpdateSubmit}
-          />
+        {/* 编辑节点组对话框 */}
+        <EditNodeGroupDialog
+          open={editDialogOpen}
+          group={selectedGroup}
+          onClose={() => {
+            setEditDialogOpen(false);
+            setSelectedGroup(null);
+          }}
+          onSubmit={handleUpdateSubmit}
+        />
 
-          {/* 节点组详情对话框 */}
-          <NodeGroupDetailDialog
-            open={detailDialogOpen}
-            group={selectedGroup}
-            onClose={() => {
-              setDetailDialogOpen(false);
-              setSelectedGroup(null);
-            }}
-          />
+        {/* 节点组详情对话框 */}
+        <NodeGroupDetailDialog
+          open={detailDialogOpen}
+          group={selectedGroup}
+          onClose={() => {
+            setDetailDialogOpen(false);
+            setSelectedGroup(null);
+          }}
+        />
 
-          {/* 管理节点对话框 */}
-          <ManageGroupNodesDialog
-            open={manageNodesDialogOpen}
-            group={selectedGroup}
-            onClose={() => {
-              setManageNodesDialogOpen(false);
-              setSelectedGroup(null);
-            }}
-          />
-        </Box>
-      </Container>
+        {/* 管理节点对话框 */}
+        <ManageGroupNodesDialog
+          open={manageNodesDialogOpen}
+          group={selectedGroup}
+          onClose={() => {
+            setManageNodesDialogOpen(false);
+            setSelectedGroup(null);
+          }}
+        />
+      </div>
     </AdminLayout>
   );
 };

@@ -9,7 +9,7 @@
  * - 展示系统关键数据统计（用户数、订阅数、收入等）
  * - 提供快速操作入口（用户管理、订阅计划管理）
  * - 响应式布局设计，适配不同屏幕尺寸
- * - 使用 Material-UI 组件实现现代化界面
+ * - 使用 shadcn/ui 组件实现现代化界面
  *
  * TODO: 后续需要接入实际的 API 获取动态数据
  * - 接入用户统计 API
@@ -20,18 +20,23 @@
  * - 添加错误处理
  */
 
-import { Box, Typography, Card, CardContent, Button, Stack, Alert } from '@mui/material';
 import { useNavigate } from 'react-router';
 import { AdminLayout } from '@/layouts/AdminLayout';
 import { useAuthStore } from '@/features/auth/stores/auth-store';
-import DashboardIcon from '@mui/icons-material/Dashboard';
-import PeopleIcon from '@mui/icons-material/People';
-import SubscriptionsIcon from '@mui/icons-material/Subscriptions';
-import AttachMoneyIcon from '@mui/icons-material/AttachMoney';
-import TrendingUpIcon from '@mui/icons-material/TrendingUp';
-import GroupAddIcon from '@mui/icons-material/GroupAdd';
-import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
-import SettingsIcon from '@mui/icons-material/Settings';
+import {
+  LayoutDashboard,
+  Users,
+  CreditCard,
+  DollarSign,
+  TrendingUp,
+  UserPlus,
+  ArrowRight,
+  Settings,
+  Info,
+} from 'lucide-react';
+import { Card, CardContent } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 
 /**
  * 数据统计卡片的属性接口
@@ -62,74 +67,44 @@ interface StatCardProps {
  * <StatCard
  *   title="总用户数"
  *   value={1234}
- *   icon={<PeopleIcon />}
+ *   icon={<Users />}
  *   color="primary"
  *   subtitle="活跃用户"
  *   trend="+12%"
  * />
  */
 const StatCard = ({ title, value, icon, color, subtitle, trend }: StatCardProps) => {
+  // 根据颜色映射背景样式
+  const colorClassMap = {
+    primary: 'bg-blue-500',
+    secondary: 'bg-purple-500',
+    success: 'bg-green-500',
+    warning: 'bg-amber-500',
+    error: 'bg-red-500',
+    info: 'bg-cyan-500',
+  };
+
   return (
-    <Card
-      elevation={2}
-      sx={{
-        height: '100%',
-        transition: 'transform 0.2s, box-shadow 0.2s',
-        '&:hover': {
-          transform: 'translateY(-4px)',
-          boxShadow: 4,
-        },
-      }}
-    >
-      <CardContent>
-        <Box sx={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', mb: 2 }}>
-          <Box
-            sx={{
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              width: 56,
-              height: 56,
-              borderRadius: 2,
-              bgcolor: `${color}.main`,
-              color: 'white',
-            }}
-          >
+    <Card className="h-full transition-transform hover:-translate-y-1 hover:shadow-lg">
+      <CardContent className="pt-6">
+        <div className="flex items-start justify-between mb-4">
+          <div className={`flex items-center justify-center w-14 h-14 rounded-lg text-white ${colorClassMap[color]}`}>
             {icon}
-          </Box>
+          </div>
           {trend && (
-            <Box
-              sx={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: 0.5,
-                px: 1,
-                py: 0.5,
-                borderRadius: 1,
-                bgcolor: 'success.light',
-                color: 'success.dark',
-              }}
-            >
-              <TrendingUpIcon fontSize="small" />
-              <Typography variant="caption" fontWeight="bold">
-                {trend}
-              </Typography>
-            </Box>
+            <div className="flex items-center gap-1 px-2 py-1 rounded bg-green-100 text-green-700">
+              <TrendingUp className="size-4" />
+              <span className="text-xs font-bold">{trend}</span>
+            </div>
           )}
-        </Box>
+        </div>
 
-        <Typography variant="h4" fontWeight="bold" gutterBottom>
-          {value}
-        </Typography>
+        <h3 className="text-3xl font-bold mb-1">{value}</h3>
 
-        <Typography variant="body2" color="text.secondary" fontWeight={500}>
-          {title}
-        </Typography>
+        <p className="text-sm text-muted-foreground font-medium">{title}</p>
 
         {subtitle && (
-          <Typography variant="caption" color="text.secondary" sx={{ mt: 0.5, display: 'block' }}>
-            {subtitle}
-          </Typography>
+          <p className="text-xs text-muted-foreground mt-1">{subtitle}</p>
         )}
       </CardContent>
     </Card>
@@ -163,52 +138,38 @@ interface QuickActionProps {
  * <QuickActionButton
  *   title="用户管理"
  *   description="管理系统用户"
- *   icon={<PeopleIcon />}
+ *   icon={<Users />}
  *   onClick={() => navigate('/dashboard/users')}
  *   color="primary"
  * />
  */
 const QuickActionButton = ({ title, description, icon, onClick, color = 'primary' }: QuickActionProps) => {
+  // 根据颜色映射背景样式
+  const colorClassMap = {
+    primary: 'bg-blue-50 text-blue-600',
+    secondary: 'bg-purple-50 text-purple-600',
+    success: 'bg-green-50 text-green-600',
+    warning: 'bg-amber-50 text-amber-600',
+    error: 'bg-red-50 text-red-600',
+    info: 'bg-cyan-50 text-cyan-600',
+  };
+
   return (
     <Card
-      elevation={2}
-      sx={{
-        height: '100%',
-        cursor: 'pointer',
-        transition: 'transform 0.2s, box-shadow 0.2s',
-        '&:hover': {
-          transform: 'translateY(-2px)',
-          boxShadow: 4,
-        },
-      }}
+      className="h-full cursor-pointer transition-transform hover:-translate-y-0.5 hover:shadow-lg"
       onClick={onClick}
     >
-      <CardContent>
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-          <Box
-            sx={{
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              width: 48,
-              height: 48,
-              borderRadius: 2,
-              bgcolor: `${color}.light`,
-              color: `${color}.main`,
-            }}
-          >
+      <CardContent className="pt-6">
+        <div className="flex items-center gap-4">
+          <div className={`flex items-center justify-center w-12 h-12 rounded-lg ${colorClassMap[color]}`}>
             {icon}
-          </Box>
-          <Box sx={{ flex: 1 }}>
-            <Typography variant="h6" fontWeight="bold" gutterBottom>
-              {title}
-            </Typography>
-            <Typography variant="body2" color="text.secondary">
-              {description}
-            </Typography>
-          </Box>
-          <ArrowForwardIcon color="action" />
-        </Box>
+          </div>
+          <div className="flex-1">
+            <h3 className="text-lg font-bold mb-1">{title}</h3>
+            <p className="text-sm text-muted-foreground">{description}</p>
+          </div>
+          <ArrowRight className="size-5 text-muted-foreground" />
+        </div>
       </CardContent>
     </Card>
   );
@@ -239,7 +200,9 @@ export const AdminDashboardPage = () => {
   if (!user) {
     return (
       <AdminLayout>
-        <Alert severity="error">无法加载用户信息</Alert>
+        <Alert variant="destructive">
+          <AlertDescription>无法加载用户信息</AlertDescription>
+        </Alert>
       </AdminLayout>
     );
   }
@@ -250,7 +213,7 @@ export const AdminDashboardPage = () => {
     {
       title: '总用户数',
       value: '1,234',
-      icon: <PeopleIcon sx={{ fontSize: 28 }} />,
+      icon: <Users className="size-7" />,
       color: 'primary' as const,
       subtitle: '本月新增 89 位用户',
       trend: '+12%',
@@ -258,7 +221,7 @@ export const AdminDashboardPage = () => {
     {
       title: '活跃订阅',
       value: '456',
-      icon: <SubscriptionsIcon sx={{ fontSize: 28 }} />,
+      icon: <CreditCard className="size-7" />,
       color: 'success' as const,
       subtitle: '订阅转化率 37%',
       trend: '+8%',
@@ -266,7 +229,7 @@ export const AdminDashboardPage = () => {
     {
       title: '本月收入',
       value: '¥23,456',
-      icon: <AttachMoneyIcon sx={{ fontSize: 28 }} />,
+      icon: <DollarSign className="size-7" />,
       color: 'warning' as const,
       subtitle: '环比上月增长',
       trend: '+15%',
@@ -274,7 +237,7 @@ export const AdminDashboardPage = () => {
     {
       title: '待处理事项',
       value: '12',
-      icon: <SettingsIcon sx={{ fontSize: 28 }} />,
+      icon: <Settings className="size-7" />,
       color: 'error' as const,
       subtitle: '需要您的关注',
     },
@@ -285,14 +248,14 @@ export const AdminDashboardPage = () => {
     {
       title: '用户管理',
       description: '查看和管理系统用户',
-      icon: <PeopleIcon sx={{ fontSize: 28 }} />,
+      icon: <Users className="size-7" />,
       color: 'primary' as const,
       onClick: () => navigate('/admin/users'),
     },
     {
       title: '订阅计划管理',
       description: '配置和管理订阅计划',
-      icon: <SubscriptionsIcon sx={{ fontSize: 28 }} />,
+      icon: <CreditCard className="size-7" />,
       color: 'secondary' as const,
       onClick: () => navigate('/admin/subscription-plans'),
     },
@@ -300,126 +263,83 @@ export const AdminDashboardPage = () => {
 
   return (
     <AdminLayout>
-      <Box sx={{ py: { xs: 2, sm: 4 } }}>
+      <div className="py-4 sm:py-6">
         {/* 欢迎标题 */}
-        <Box sx={{ mb: 4 }}>
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 1 }}>
-            <DashboardIcon sx={{ fontSize: 36, color: 'primary.main' }} />
-            <Typography variant="h4" component="h1" fontWeight="bold">
-              管理员控制面板
-            </Typography>
-          </Box>
-          <Typography variant="body1" color="text.secondary">
+        <div className="mb-6">
+          <div className="flex items-center gap-3 mb-2">
+            <LayoutDashboard className="size-9 text-primary" />
+            <h1 className="text-4xl font-bold">管理员控制面板</h1>
+          </div>
+          <p className="text-muted-foreground">
             欢迎回来，{user.display_name || user.name || user.email?.split('@')[0]}！
             这是您的管理中心，您可以在这里查看系统运营数据和进行管理操作。
-          </Typography>
-        </Box>
+          </p>
+        </div>
 
         {/* 提示信息 */}
-        <Alert severity="info" sx={{ mb: 4 }}>
-          当前显示的是静态演示数据。正式环境中，数据将实时从后端 API 获取。
+        <Alert className="mb-6">
+          <Info className="size-4" />
+          <AlertDescription>
+            当前显示的是静态演示数据。正式环境中，数据将实时从后端 API 获取。
+          </AlertDescription>
         </Alert>
 
         {/* 数据统计卡片 - 响应式 CSS Grid 布局 */}
-        <Typography variant="h5" fontWeight="bold" gutterBottom sx={{ mb: 2 }}>
-          数据概览
-        </Typography>
-        <Box
-          sx={{
-            display: 'grid',
-            gridTemplateColumns: {
-              xs: '1fr',
-              sm: 'repeat(2, 1fr)',
-              md: 'repeat(4, 1fr)',
-            },
-            gap: 3,
-            mb: 4,
-          }}
-        >
+        <h2 className="text-xl font-bold mb-4">数据概览</h2>
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6 mb-6">
           {statisticsData.map((stat, index) => (
-            <Box key={index}>
-              <StatCard
-                title={stat.title}
-                value={stat.value}
-                icon={stat.icon}
-                color={stat.color}
-                subtitle={stat.subtitle}
-                trend={stat.trend}
-              />
-            </Box>
+            <StatCard
+              key={index}
+              title={stat.title}
+              value={stat.value}
+              icon={stat.icon}
+              color={stat.color}
+              subtitle={stat.subtitle}
+              trend={stat.trend}
+            />
           ))}
-        </Box>
+        </div>
 
         {/* 快速操作 */}
-        <Typography variant="h5" fontWeight="bold" gutterBottom sx={{ mb: 2 }}>
-          快速操作
-        </Typography>
-        <Box
-          sx={{
-            display: 'grid',
-            gridTemplateColumns: {
-              xs: '1fr',
-              md: 'repeat(2, 1fr)',
-            },
-            gap: 3,
-          }}
-        >
+        <h2 className="text-xl font-bold mb-4">快速操作</h2>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {quickActions.map((action, index) => (
-            <Box key={index}>
-              <QuickActionButton
-                title={action.title}
-                description={action.description}
-                icon={action.icon}
-                onClick={action.onClick}
-                color={action.color}
-              />
-            </Box>
+            <QuickActionButton
+              key={index}
+              title={action.title}
+              description={action.description}
+              icon={action.icon}
+              onClick={action.onClick}
+              color={action.color}
+            />
           ))}
-        </Box>
+        </div>
 
         {/* 新用户增长卡片（额外的视觉元素） */}
-        <Card elevation={2} sx={{ mt: 3, background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)' }}>
-          <CardContent>
-            <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} alignItems="center">
-              <Box
-                sx={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  width: 64,
-                  height: 64,
-                  borderRadius: 2,
-                  bgcolor: 'rgba(255, 255, 255, 0.2)',
-                }}
-              >
-                <GroupAddIcon sx={{ fontSize: 36, color: 'white' }} />
-              </Box>
-              <Box sx={{ flex: 1 }}>
-                <Typography variant="h6" fontWeight="bold" color="white" gutterBottom>
-                  用户增长趋势良好
-                </Typography>
-                <Typography variant="body2" color="rgba(255, 255, 255, 0.9)">
+        <Card className="mt-6 bg-gradient-to-br from-purple-600 to-purple-800 text-white">
+          <CardContent className="pt-6">
+            <div className="flex flex-col sm:flex-row gap-4 items-center">
+              <div className="flex items-center justify-center w-16 h-16 rounded-lg bg-white/20">
+                <UserPlus className="size-9 text-white" />
+              </div>
+              <div className="flex-1 text-center sm:text-left">
+                <h3 className="text-lg font-bold mb-1">用户增长趋势良好</h3>
+                <p className="text-sm text-white/90">
                   本月新增用户数较上月增长 12%，活跃度提升 8%。继续保持！
-                </Typography>
-              </Box>
+                </p>
+              </div>
               <Button
-                variant="contained"
-                sx={{
-                  bgcolor: 'white',
-                  color: 'primary.main',
-                  '&:hover': {
-                    bgcolor: 'rgba(255, 255, 255, 0.9)',
-                  },
-                }}
-                endIcon={<ArrowForwardIcon />}
+                variant="secondary"
+                className="bg-white text-purple-700 hover:bg-white/90"
                 onClick={() => navigate('/admin/users')}
               >
                 查看详情
+                <ArrowRight className="size-4" />
               </Button>
-            </Stack>
+            </div>
           </CardContent>
         </Card>
-      </Box>
+      </div>
     </AdminLayout>
   );
 };

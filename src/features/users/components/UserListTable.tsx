@@ -2,24 +2,32 @@
  * 用户列表表格组件（管理端）
  */
 
+import { Edit, Trash2, CreditCard, Loader2 } from 'lucide-react';
 import {
   Table,
   TableBody,
   TableCell,
-  TableContainer,
   TableHead,
+  TableHeader,
   TableRow,
-  Paper,
-  IconButton,
-  Chip,
-  Box,
-  Typography,
-  TablePagination,
-  CircularProgress,
-} from '@mui/material';
-import EditIcon from '@mui/icons-material/Edit';
-import DeleteIcon from '@mui/icons-material/Delete';
-import CardMembershipIcon from '@mui/icons-material/CardMembership';
+} from '@/components/ui/table';
+import { Card, CardContent } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import { formatDate } from '@/shared/utils/date-utils';
 import type { UserListItem } from '../types/users.types';
 
 interface UserListTableProps {
@@ -44,13 +52,13 @@ const STATUS_LABELS: Record<string, string> = {
   deleted: '已删除',
 };
 
-// 状态颜色映射
-const STATUS_COLORS: Record<string, 'success' | 'error' | 'default' | 'warning'> = {
-  active: 'success',
-  inactive: 'default',
-  pending: 'warning',
-  suspended: 'error',
-  deleted: 'error',
+// 状态样式映射
+const STATUS_VARIANTS: Record<string, 'default' | 'secondary' | 'destructive' | 'outline'> = {
+  active: 'default',
+  inactive: 'secondary',
+  pending: 'outline',
+  suspended: 'destructive',
+  deleted: 'destructive',
 };
 
 // 角色标签映射
@@ -59,22 +67,10 @@ const ROLE_LABELS: Record<string, string> = {
   admin: '管理员',
 };
 
-// 角色颜色映射
-const ROLE_COLORS: Record<string, 'primary' | 'secondary'> = {
+// 角色样式映射
+const ROLE_VARIANTS: Record<string, 'default' | 'secondary' | 'destructive' | 'outline'> = {
   user: 'secondary',
-  admin: 'primary',
-};
-
-// 格式化时间
-const formatDate = (dateString: string) => {
-  const date = new Date(dateString);
-  return date.toLocaleString('zh-CN', {
-    year: 'numeric',
-    month: '2-digit',
-    day: '2-digit',
-    hour: '2-digit',
-    minute: '2-digit',
-  });
+  admin: 'default',
 };
 
 export const UserListTable: React.FC<UserListTableProps> = ({
@@ -89,122 +85,148 @@ export const UserListTable: React.FC<UserListTableProps> = ({
   onDelete,
   onAssignSubscription,
 }) => {
-  if (loading) {
-    return (
-      <Box display="flex" justifyContent="center" alignItems="center" minHeight="400px">
-        <CircularProgress />
-      </Box>
-    );
-  }
-
-  if (!users || users.length === 0) {
-    return (
-      <Box textAlign="center" py={8}>
-        <Typography variant="h6" color="text.secondary">
-          暂无用户数据
-        </Typography>
-      </Box>
-    );
-  }
+  // 计算分页信息
+  const totalPages = Math.ceil(total / pageSize);
+  const startIndex = (page - 1) * pageSize + 1;
+  const endIndex = Math.min(page * pageSize, total);
 
   return (
-    <Paper>
-      <TableContainer>
+    <Card>
+      <CardContent className="p-0">
         <Table>
-          <TableHead>
+          <TableHeader>
             <TableRow>
-              <TableCell>ID</TableCell>
-              <TableCell>邮箱</TableCell>
-              <TableCell>姓名</TableCell>
-              <TableCell>角色</TableCell>
-              <TableCell>状态</TableCell>
-              <TableCell>创建时间</TableCell>
-              <TableCell align="right">操作</TableCell>
+              <TableHead>ID</TableHead>
+              <TableHead>邮箱</TableHead>
+              <TableHead>姓名</TableHead>
+              <TableHead>角色</TableHead>
+              <TableHead>状态</TableHead>
+              <TableHead>创建时间</TableHead>
+              <TableHead className="text-center">操作</TableHead>
             </TableRow>
-          </TableHead>
+          </TableHeader>
           <TableBody>
-            {users.map((user) => (
-              <TableRow key={user.id} hover>
-                <TableCell>
-                  <Typography variant="body2" fontWeight="medium">
-                    {user.id}
-                  </Typography>
-                </TableCell>
-                <TableCell>
-                  <Typography variant="body2">
-                    {user.email}
-                  </Typography>
-                </TableCell>
-                <TableCell>
-                  <Typography variant="body2">
-                    {user.name || '-'}
-                  </Typography>
-                  {user.display_name && (
-                    <Typography variant="caption" color="text.secondary" display="block">
-                      {user.display_name}
-                    </Typography>
-                  )}
-                </TableCell>
-                <TableCell>
-                  <Chip
-                    label={ROLE_LABELS[user.role || 'user'] || user.role || '用户'}
-                    color={ROLE_COLORS[user.role || 'user'] || 'secondary'}
-                    size="small"
-                  />
-                </TableCell>
-                <TableCell>
-                  <Chip
-                    label={STATUS_LABELS[user.status] || user.status}
-                    color={STATUS_COLORS[user.status] || 'default'}
-                    size="small"
-                  />
-                </TableCell>
-                <TableCell>
-                  <Typography variant="body2" color="text.secondary">
-                    {formatDate(user.created_at)}
-                  </Typography>
-                </TableCell>
-                <TableCell align="right">
-                  <IconButton
-                    size="small"
-                    onClick={() => onAssignSubscription(user)}
-                    title="分配订阅"
-                    color="primary"
-                  >
-                    <CardMembershipIcon fontSize="small" />
-                  </IconButton>
-                  <IconButton
-                    size="small"
-                    onClick={() => onEdit(user)}
-                    title="编辑"
-                  >
-                    <EditIcon fontSize="small" />
-                  </IconButton>
-                  <IconButton
-                    size="small"
-                    onClick={() => onDelete(user)}
-                    title="删除"
-                    color="error"
-                  >
-                    <DeleteIcon fontSize="small" />
-                  </IconButton>
+            {loading && users.length === 0 ? (
+              <TableRow>
+                <TableCell colSpan={7} className="h-64 text-center">
+                  <div className="flex items-center justify-center">
+                    <Loader2 className="size-8 animate-spin text-muted-foreground" />
+                  </div>
                 </TableCell>
               </TableRow>
-            ))}
+            ) : users.length === 0 ? (
+              <TableRow>
+                <TableCell colSpan={7} className="h-64 text-center">
+                  <p className="text-muted-foreground">暂无用户数据</p>
+                </TableCell>
+              </TableRow>
+            ) : (
+              users.map((user) => (
+                <TableRow key={user.id}>
+                  <TableCell className="font-medium">{user.id}</TableCell>
+                  <TableCell>{user.email}</TableCell>
+                  <TableCell>
+                    <div>
+                      <div className="text-sm font-medium">{user.name || '-'}</div>
+                      {user.display_name && (
+                        <div className="text-xs text-muted-foreground">
+                          {user.display_name}
+                        </div>
+                      )}
+                    </div>
+                  </TableCell>
+                  <TableCell>
+                    <Badge variant={ROLE_VARIANTS[user.role || 'user'] || 'secondary'}>
+                      {ROLE_LABELS[user.role || 'user'] || user.role || '用户'}
+                    </Badge>
+                  </TableCell>
+                  <TableCell>
+                    <Badge variant={STATUS_VARIANTS[user.status] || 'secondary'}>
+                      {STATUS_LABELS[user.status] || user.status}
+                    </Badge>
+                  </TableCell>
+                  <TableCell className="text-muted-foreground">
+                    {formatDate(user.created_at)}
+                  </TableCell>
+                  <TableCell className="text-center">
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button variant="ghost" size="sm">
+                          操作
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end">
+                        <DropdownMenuItem onClick={() => onAssignSubscription(user)}>
+                          <CreditCard className="mr-2 size-4" />
+                          分配订阅
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => onEdit(user)}>
+                          <Edit className="mr-2 size-4" />
+                          编辑
+                        </DropdownMenuItem>
+                        <DropdownMenuItem
+                          onClick={() => onDelete(user)}
+                          className="text-destructive"
+                        >
+                          <Trash2 className="mr-2 size-4" />
+                          删除
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  </TableCell>
+                </TableRow>
+              ))
+            )}
           </TableBody>
         </Table>
-      </TableContainer>
-      <TablePagination
-        component="div"
-        count={total}
-        page={page - 1} // MUI uses 0-based index
-        rowsPerPage={pageSize}
-        onPageChange={(_, newPage) => onPageChange(newPage + 1)} // Convert back to 1-based
-        onRowsPerPageChange={(e) => onPageSizeChange(parseInt(e.target.value, 10))}
-        rowsPerPageOptions={[10, 20, 50]}
-        labelRowsPerPage="每页条数:"
-        labelDisplayedRows={({ from, to, count }) => `${from}-${to} / 共 ${count} 条`}
-      />
-    </Paper>
+
+        {/* 分页控制 */}
+        {total > 0 && (
+          <div className="flex items-center justify-between border-t px-4 py-3">
+            <div className="flex items-center gap-2 text-sm text-muted-foreground">
+              <span>每页显示</span>
+              <Select
+                value={pageSize.toString()}
+                onValueChange={(value) => onPageSizeChange(parseInt(value, 10))}
+              >
+                <SelectTrigger className="h-8 w-[70px]">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="10">10</SelectItem>
+                  <SelectItem value="20">20</SelectItem>
+                  <SelectItem value="50">50</SelectItem>
+                </SelectContent>
+              </Select>
+              <span>共 {total} 条</span>
+            </div>
+
+            <div className="flex items-center gap-2">
+              <span className="text-sm text-muted-foreground">
+                {startIndex}-{endIndex} / {total}
+              </span>
+              <div className="flex gap-1">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => onPageChange(page - 1)}
+                  disabled={page === 1 || loading}
+                >
+                  上一页
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => onPageChange(page + 1)}
+                  disabled={page >= totalPages || loading}
+                >
+                  下一页
+                </Button>
+              </div>
+            </div>
+          </div>
+        )}
+      </CardContent>
+    </Card>
   );
 };

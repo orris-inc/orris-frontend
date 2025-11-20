@@ -3,20 +3,15 @@
  */
 
 import { useState } from 'react';
-import {
-  Container,
-  Box,
-  Typography,
-  Button,
-  Paper,
-} from '@mui/material';
-import AddIcon from '@mui/icons-material/Add';
+import { Plus } from 'lucide-react';
+import { AdminLayout } from '@/layouts/AdminLayout';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent } from '@/components/ui/card';
 import { PlanListTable } from '@/features/subscription-plans/components/PlanListTable';
 import { PlanFilters } from '@/features/subscription-plans/components/PlanFilters';
 import { CreatePlanDialog } from '@/features/subscription-plans/components/CreatePlanDialog';
 import { EditPlanDialog } from '@/features/subscription-plans/components/EditPlanDialog';
 import { useSubscriptionPlans } from '@/features/subscription-plans/hooks/useSubscriptionPlans';
-import { AdminLayout } from '@/layouts/AdminLayout';
 import type { SubscriptionPlan } from '@/features/subscription-plans/types/subscription-plans.types';
 
 export const SubscriptionPlansManagementPage = () => {
@@ -70,65 +65,59 @@ export const SubscriptionPlansManagementPage = () => {
 
   return (
     <AdminLayout>
-      <Container maxWidth="xl">
-        <Box py={4}>
-          {/* 页面标题 */}
-          <Box display="flex" justifyContent="space-between" alignItems="center" mb={4}>
-            <Box>
-              <Typography variant="h4" component="h1" gutterBottom fontWeight="bold">
-                订阅计划管理
-              </Typography>
-              <Typography variant="body2" color="text.secondary">
-                管理所有订阅计划和定价方案
-              </Typography>
-            </Box>
-            <Button
-              variant="contained"
-              startIcon={<AddIcon />}
-              onClick={() => setCreateDialogOpen(true)}
-              size="large"
-            >
-              创建计划
-            </Button>
-          </Box>
+      <div className="container mx-auto max-w-7xl py-6">
+        {/* 页面标题 */}
+        <div className="mb-6 flex items-start justify-between">
+          <div>
+            <h1 className="text-3xl font-bold">订阅计划管理</h1>
+            <p className="mt-1 text-sm text-muted-foreground">
+              管理所有订阅计划和定价方案
+            </p>
+          </div>
+          <Button onClick={() => setCreateDialogOpen(true)} size="lg">
+            <Plus className="mr-2 size-4" />
+            创建计划
+          </Button>
+        </div>
 
-          {/* 筛选器 */}
-          <Paper sx={{ p: 3, mb: 3 }}>
+        {/* 筛选器 */}
+        <Card className="mb-4">
+          <CardContent className="pt-6">
             <PlanFilters filters={filters} onChange={setFilters} />
-          </Paper>
+          </CardContent>
+        </Card>
 
-          {/* 计划列表表格 */}
-          <PlanListTable
-            plans={plans}
-            loading={loading}
-            page={pagination.page}
-            pageSize={pagination.page_size}
-            total={pagination.total}
-            onPageChange={handlePageChange}
-            onPageSizeChange={handlePageSizeChange}
-            onEdit={handleEdit}
-            onToggleStatus={handleToggleStatus}
-          />
+        {/* 计划列表表格 */}
+        <PlanListTable
+          plans={plans}
+          loading={loading}
+          page={pagination.page}
+          pageSize={pagination.page_size}
+          total={pagination.total}
+          onPageChange={handlePageChange}
+          onPageSizeChange={handlePageSizeChange}
+          onEdit={handleEdit}
+          onToggleStatus={handleToggleStatus}
+        />
 
-          {/* 创建计划对话框 */}
-          <CreatePlanDialog
-            open={createDialogOpen}
-            onClose={() => setCreateDialogOpen(false)}
-            onSubmit={handleCreateSubmit}
-          />
+        {/* 创建计划对话框 */}
+        <CreatePlanDialog
+          open={createDialogOpen}
+          onClose={() => setCreateDialogOpen(false)}
+          onSubmit={handleCreateSubmit}
+        />
 
-          {/* 编辑计划对话框 */}
-          <EditPlanDialog
-            open={editDialogOpen}
-            plan={selectedPlan}
-            onClose={() => {
-              setEditDialogOpen(false);
-              setSelectedPlan(null);
-            }}
-            onSubmit={handleUpdateSubmit}
-          />
-        </Box>
-      </Container>
+        {/* 编辑计划对话框 */}
+        <EditPlanDialog
+          open={editDialogOpen}
+          plan={selectedPlan}
+          onClose={() => {
+            setEditDialogOpen(false);
+            setSelectedPlan(null);
+          }}
+          onSubmit={handleUpdateSubmit}
+        />
+      </div>
     </AdminLayout>
   );
 };

@@ -8,23 +8,16 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { Link as RouterLink } from 'react-router';
 import { useState } from 'react';
-import {
-  Box,
-  Container,
-  Card,
-  CardContent,
-  TextField,
-  Typography,
-  Stack,
-  Link,
-  Alert,
-} from '@mui/material';
-import { LoadingButton } from '@mui/lab';
-import ArrowBackIcon from '@mui/icons-material/ArrowBack';
-import EmailIcon from '@mui/icons-material/Email';
+import { ArrowLeft, Mail, Loader2, CircleAlert } from 'lucide-react';
 import * as authApi from '@/features/auth/api/auth-api';
 import { extractErrorMessage } from '@/shared/utils/error-messages';
 import { useNotificationStore } from '@/shared/stores/notification-store';
+
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 
 // Zod验证
 const forgotPasswordSchema = z.object({
@@ -54,7 +47,7 @@ export const ForgotPasswordPage = () => {
     try {
       await authApi.forgotPassword(data);
       setSuccess(true);
-      showSuccess('重置邮件已发送，请查收邮箱');
+      showSuccess('重置邮件已发送,请查收邮箱');
     } catch (err) {
       console.error('忘记密码错误:', err);
       const errorMsg = extractErrorMessage(err);
@@ -67,128 +60,93 @@ export const ForgotPasswordPage = () => {
 
   if (success) {
     return (
-      <Container maxWidth="sm">
-        <Box
-          sx={{
-            minHeight: '100vh',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            py: 4,
-          }}
-        >
-          <Card sx={{ width: '100%' }}>
-            <CardContent sx={{ p: 4, textAlign: 'center' }}>
-              <Box
-                sx={{
-                  width: 80,
-                  height: 80,
-                  borderRadius: '50%',
-                  bgcolor: 'success.lighter',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  mx: 'auto',
-                  mb: 3,
-                }}
-              >
-                <EmailIcon sx={{ fontSize: 40, color: 'success.main' }} />
-              </Box>
+      <div className="min-h-screen flex items-center justify-center p-4 bg-background">
+        <div className="w-full max-w-md">
+          <Card>
+            <CardContent className="pt-6 text-center grid gap-6">
+              <div className="flex justify-center">
+                <div className="size-20 rounded-full bg-green-100 dark:bg-green-900/20 flex items-center justify-center">
+                  <Mail className="size-10 text-green-600 dark:text-green-500" />
+                </div>
+              </div>
 
-              <Typography variant="h5" component="h1" gutterBottom fontWeight="bold">
-                邮件已发送
-              </Typography>
+              <div className="grid gap-2">
+                <h1 className="text-2xl font-bold">邮件已发送</h1>
+                <p className="text-muted-foreground">
+                  我们已经向您的邮箱发送了密码重置链接,请查收邮件并按照指引重置密码。
+                </p>
+                <p className="text-sm text-muted-foreground">
+                  如果您没有收到邮件,请检查垃圾邮件文件夹或稍后重试。
+                </p>
+              </div>
 
-              <Typography variant="body1" color="text.secondary" sx={{ mb: 3 }}>
-                我们已经向您的邮箱发送了密码重置链接，请查收邮件并按照指引重置密码。
-              </Typography>
-
-              <Typography variant="body2" color="text.secondary" sx={{ mb: 4 }}>
-                如果您没有收到邮件，请检查垃圾邮件文件夹或稍后重试。
-              </Typography>
-
-              <Link
-                component={RouterLink}
+              <RouterLink
                 to="/login"
-                sx={{ display: 'inline-flex', alignItems: 'center', gap: 0.5 }}
+                className="inline-flex items-center justify-center gap-2 text-sm text-primary underline-offset-4 hover:underline"
               >
-                <ArrowBackIcon fontSize="small" />
+                <ArrowLeft className="size-4" />
                 返回登录
-              </Link>
+              </RouterLink>
             </CardContent>
           </Card>
-        </Box>
-      </Container>
+        </div>
+      </div>
     );
   }
 
   return (
-    <Container maxWidth="sm">
-      <Box
-        sx={{
-          minHeight: '100vh',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          py: 4,
-        }}
-      >
-        <Card sx={{ width: '100%' }}>
-          <CardContent sx={{ p: 4 }}>
-            {/* 标题 */}
-            <Typography variant="h4" component="h1" gutterBottom textAlign="center" fontWeight="bold">
-              忘记密码
-            </Typography>
-            <Typography variant="body2" color="text.secondary" textAlign="center" sx={{ mb: 4 }}>
-              输入您的邮箱地址，我们将发送密码重置链接
-            </Typography>
-
+    <div className="min-h-screen flex items-center justify-center p-4 bg-background">
+      <div className="w-full max-w-md">
+        <Card>
+          <CardHeader className="text-center">
+            <CardTitle className="text-3xl">忘记密码</CardTitle>
+            <CardDescription>输入您的邮箱地址,我们将发送密码重置链接</CardDescription>
+          </CardHeader>
+          <CardContent className="grid gap-6">
             {/* 错误提示 */}
             {error && (
-              <Alert severity="error" sx={{ mb: 3 }}>
-                {error}
+              <Alert variant="destructive">
+                <CircleAlert />
+                <AlertDescription>{error}</AlertDescription>
               </Alert>
             )}
 
             {/* 表单 */}
-            <Stack component="form" spacing={3} onSubmit={handleSubmit(onSubmit)}>
-              <TextField
-                {...register('email')}
-                label="邮箱"
-                type="email"
-                fullWidth
-                error={!!errors.email}
-                helperText={errors.email?.message}
-                autoComplete="email"
-                autoFocus
-              />
+            <form onSubmit={handleSubmit(onSubmit)} className="grid gap-4">
+              <div className="grid gap-2">
+                <Label htmlFor="email">邮箱</Label>
+                <Input
+                  id="email"
+                  type="email"
+                  autoComplete="email"
+                  autoFocus
+                  aria-invalid={!!errors.email}
+                  {...register('email')}
+                />
+                {errors.email && (
+                  <p className="text-sm text-destructive">{errors.email.message}</p>
+                )}
+              </div>
 
-              <LoadingButton
-                type="submit"
-                variant="contained"
-                size="large"
-                fullWidth
-                loading={isLoading}
-              >
+              <Button type="submit" size="lg" disabled={isLoading} className="w-full">
+                {isLoading && <Loader2 className="animate-spin" />}
                 发送重置链接
-              </LoadingButton>
-            </Stack>
+              </Button>
+            </form>
 
             {/* 返回登录 */}
-            <Box sx={{ mt: 3, textAlign: 'center' }}>
-              <Link
-                component={RouterLink}
+            <div className="text-center">
+              <RouterLink
                 to="/login"
-                underline="hover"
-                sx={{ display: 'inline-flex', alignItems: 'center', gap: 0.5 }}
+                className="inline-flex items-center gap-2 text-sm text-primary underline-offset-4 hover:underline"
               >
-                <ArrowBackIcon fontSize="small" />
+                <ArrowLeft className="size-4" />
                 返回登录
-              </Link>
-            </Box>
+              </RouterLink>
+            </div>
           </CardContent>
         </Card>
-      </Box>
-    </Container>
+      </div>
+    </div>
   );
 };

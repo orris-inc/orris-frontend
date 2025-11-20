@@ -3,14 +3,7 @@
  */
 
 import { useState } from 'react';
-import {
-  Container,
-  Box,
-  Typography,
-  Paper,
-  Button,
-} from '@mui/material';
-import AddIcon from '@mui/icons-material/Add';
+import { Plus } from 'lucide-react';
 import { UserListTable } from '@/features/users/components/UserListTable';
 import { UserFilters } from '@/features/users/components/UserFilters';
 import { EditUserDialog } from '@/features/users/components/EditUserDialog';
@@ -20,6 +13,8 @@ import { useUsers } from '@/features/users/hooks/useUsers';
 import { AdminLayout } from '@/layouts/AdminLayout';
 import { createSubscription } from '@/features/subscriptions/api/subscriptions-api';
 import { useNotificationStore } from '@/shared/stores/notification-store';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent } from '@/components/ui/card';
 import type { UserListItem, UpdateUserRequest, CreateUserRequest } from '@/features/users/types/users.types';
 import type { CreateSubscriptionRequest } from '@/features/subscriptions/types/subscriptions.types';
 
@@ -99,76 +94,71 @@ export const UserManagementPage = () => {
 
   return (
     <AdminLayout>
-      <Container maxWidth="xl">
-        <Box py={4}>
-          {/* 页面标题 */}
-          <Box display="flex" justifyContent="space-between" alignItems="center" mb={4}>
-            <Box>
-              <Typography variant="h4" component="h1" gutterBottom fontWeight="bold">
-                用户管理
-              </Typography>
-              <Typography variant="body2" color="text.secondary">
-                管理系统中的所有用户账户
-              </Typography>
-            </Box>
-            <Button
-              variant="contained"
-              startIcon={<AddIcon />}
-              onClick={() => setCreateDialogOpen(true)}
-            >
-              新增用户
-            </Button>
-          </Box>
+      <div className="container mx-auto max-w-7xl py-6">
+        {/* 页面标题 */}
+        <div className="mb-6 flex items-center justify-between">
+          <div>
+            <h1 className="text-3xl font-bold">用户管理</h1>
+            <p className="mt-1 text-sm text-muted-foreground">
+              管理系统中的所有用户账户
+            </p>
+          </div>
+          <Button onClick={() => setCreateDialogOpen(true)}>
+            <Plus className="mr-2 size-4" />
+            新增用户
+          </Button>
+        </div>
 
-          {/* 筛选器 */}
-          <Paper sx={{ p: 3, mb: 3 }}>
+        {/* 筛选器 */}
+        <Card className="mb-6">
+          <CardContent className="pt-6">
             <UserFilters filters={filters} onChange={setFilters} />
-          </Paper>
+          </CardContent>
+        </Card>
 
-          {/* 用户列表表格 */}
-          <UserListTable
-            users={users}
-            loading={loading}
-            page={pagination.page}
-            pageSize={pagination.page_size}
-            total={pagination.total}
-            onPageChange={handlePageChange}
-            onPageSizeChange={handlePageSizeChange}
-            onEdit={handleEdit}
-            onDelete={handleDelete}
-            onAssignSubscription={handleAssignSubscription}
-          />
+        {/* 用户列表表格 */}
+        <UserListTable
+          users={users}
+          loading={loading}
+          page={pagination.page}
+          pageSize={pagination.page_size}
+          total={pagination.total}
+          onPageChange={handlePageChange}
+          onPageSizeChange={handlePageSizeChange}
+          onEdit={handleEdit}
+          onDelete={handleDelete}
+          onAssignSubscription={handleAssignSubscription}
+        />
 
-          {/* 新增用户对话框 */}
-          <CreateUserDialog
-            open={createDialogOpen}
-            onClose={() => setCreateDialogOpen(false)}
-            onSubmit={handleCreateSubmit}
-          />
+        {/* 新增用户对话框 */}
+        <CreateUserDialog
+          open={createDialogOpen}
+          onClose={() => setCreateDialogOpen(false)}
+          onSubmit={handleCreateSubmit}
+        />
 
-          {/* 编辑用户对话框 */}
-          <EditUserDialog
-            open={editDialogOpen}
-            user={selectedUser}
-            onClose={() => {
-              setEditDialogOpen(false);
-              setSelectedUser(null);
-            }}
-            onSubmit={handleUpdateSubmit}
-          />
+        {/* 编辑用户对话框 */}
+        <EditUserDialog
+          open={editDialogOpen}
+          user={selectedUser}
+          onClose={() => {
+            setEditDialogOpen(false);
+            setSelectedUser(null);
+          }}
+          onSubmit={handleUpdateSubmit}
+        />
 
-          {/* 分配订阅对话框 */}
-          <AssignSubscriptionDialog
-            open={assignSubscriptionDialogOpen}
-            user={selectedUser}
-            onClose={() => {
-              setAssignSubscriptionDialogOpen(false);
-              setSelectedUser(null);
-            }}
-            onSubmit={handleAssignSubscriptionSubmit}
-          />
-        </Box>
-      </Container>
+        {/* 分配订阅对话框 */}
+        <AssignSubscriptionDialog
+          open={assignSubscriptionDialogOpen}
+          user={selectedUser}
+          onClose={() => {
+            setAssignSubscriptionDialogOpen(false);
+            setSelectedUser(null);
+          }}
+          onSubmit={handleAssignSubscriptionSubmit}
+        />
+      </div>
     </AdminLayout>
   );
 };

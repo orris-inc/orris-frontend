@@ -8,30 +8,18 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { Link as RouterLink, useNavigate } from 'react-router';
 import { useState, useEffect } from 'react';
-import {
-  Box,
-  Container,
-  Card,
-  CardContent,
-  TextField,
-  Button,
-  Typography,
-  Stack,
-  Divider,
-  Link,
-  Alert,
-  IconButton,
-  InputAdornment,
-  LinearProgress,
-} from '@mui/material';
-import { LoadingButton } from '@mui/lab';
-import GoogleIcon from '@mui/icons-material/Google';
-import GitHubIcon from '@mui/icons-material/GitHub';
-import VisibilityIcon from '@mui/icons-material/Visibility';
-import VisibilityOffIcon from '@mui/icons-material/VisibilityOff';
+import { Eye, EyeOff, Chrome, Github, Loader2, CircleAlert } from 'lucide-react';
 import { useAuth } from '@/features/auth/hooks/useAuth';
 import { useAuthStore } from '@/features/auth/stores/auth-store';
 import { useNotificationStore } from '@/shared/stores/notification-store';
+
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Separator } from '@/components/ui/separator';
+import { Progress } from '@/components/ui/progress';
 
 // Zod 4 注册表单验证
 const registerSchema = z
@@ -117,201 +105,201 @@ export const RegisterPage = () => {
   };
 
   const getPasswordStrengthColor = () => {
-    if (passwordStrength < 25) return 'error';
-    if (passwordStrength < 50) return 'warning';
-    if (passwordStrength < 75) return 'info';
-    return 'success';
+    if (passwordStrength < 25) return 'hsl(var(--destructive))';
+    if (passwordStrength < 50) return 'hsl(var(--warning))';
+    if (passwordStrength < 75) return 'hsl(var(--chart-2))';
+    return 'hsl(var(--chart-1))';
+  };
+
+  const getPasswordStrengthText = () => {
+    if (passwordStrength < 25) return '弱';
+    if (passwordStrength < 50) return '中';
+    if (passwordStrength < 75) return '良';
+    return '强';
   };
 
   return (
-    <Container maxWidth="sm">
-      <Box
-        sx={{
-          minHeight: '100vh',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          py: 4,
-        }}
-      >
-        <Card sx={{ width: '100%' }}>
-          <CardContent sx={{ p: 4 }}>
-            {/* 标题 */}
-            <Typography variant="h4" component="h1" gutterBottom textAlign="center" fontWeight="bold">
-              创建账号
-            </Typography>
-            <Typography variant="body2" color="text.secondary" textAlign="center" sx={{ mb: 4 }}>
-              加入 Orris，开始您的旅程
-            </Typography>
-
+    <div className="min-h-screen flex items-center justify-center p-4 bg-background">
+      <div className="w-full max-w-md">
+        <Card>
+          <CardHeader className="text-center">
+            <CardTitle className="text-3xl">创建账号</CardTitle>
+            <CardDescription>加入 Orris，开始您的旅程</CardDescription>
+          </CardHeader>
+          <CardContent className="grid gap-6">
             {/* 错误提示 */}
             {error && (
-              <Alert severity="error" sx={{ mb: 3 }}>
-                {error}
+              <Alert variant="destructive">
+                <CircleAlert />
+                <AlertDescription>{error}</AlertDescription>
               </Alert>
             )}
 
             {/* 注册表单 */}
-            <Stack component="form" spacing={3} onSubmit={handleSubmit(onSubmit)}>
-              <TextField
-                {...register('name')}
-                label="姓名"
-                fullWidth
-                error={!!errors.name}
-                helperText={errors.name?.message}
-                autoComplete="name"
-                autoFocus
-              />
-
-              <TextField
-                {...register('email')}
-                label="邮箱"
-                type="email"
-                fullWidth
-                error={!!errors.email}
-                helperText={errors.email?.message}
-                autoComplete="email"
-              />
-
-              <Box>
-                <TextField
-                  {...register('password')}
-                  label="密码"
-                  type={showPassword ? 'text' : 'password'}
-                  fullWidth
-                  error={!!errors.password}
-                  helperText={errors.password?.message}
-                  autoComplete="new-password"
-                  onChange={(e) => {
-                    register('password').onChange(e);
-                    handlePasswordChange(e.target.value);
-                  }}
-                  slotProps={{
-                    input: {
-                      endAdornment: (
-                        <InputAdornment position="end">
-                          <IconButton
-                            onClick={() => setShowPassword(!showPassword)}
-                            edge="end"
-                            aria-label="切换密码显示"
-                          >
-                            {showPassword ? <VisibilityOffIcon /> : <VisibilityIcon />}
-                          </IconButton>
-                        </InputAdornment>
-                      ),
-                    },
-                  }}
+            <form onSubmit={handleSubmit(onSubmit)} className="grid gap-4">
+              <div className="grid gap-2">
+                <Label htmlFor="name">姓名</Label>
+                <Input
+                  id="name"
+                  autoComplete="name"
+                  autoFocus
+                  aria-invalid={!!errors.name}
+                  {...register('name')}
                 />
-                {password && (
-                  <Box sx={{ mt: 1 }}>
-                    <LinearProgress
-                      variant="determinate"
-                      value={passwordStrength}
-                      color={getPasswordStrengthColor()}
-                    />
-                    <Typography variant="caption" color="text.secondary">
-                      密码强度：
-                      {passwordStrength < 25 && '弱'}
-                      {passwordStrength >= 25 && passwordStrength < 50 && '中'}
-                      {passwordStrength >= 50 && passwordStrength < 75 && '良'}
-                      {passwordStrength >= 75 && '强'}
-                    </Typography>
-                  </Box>
+                {errors.name && (
+                  <p className="text-sm text-destructive">{errors.name.message}</p>
                 )}
-              </Box>
+              </div>
 
-              <TextField
-                {...register('confirmPassword')}
-                label="确认密码"
-                type={showConfirmPassword ? 'text' : 'password'}
-                fullWidth
-                error={!!errors.confirmPassword}
-                helperText={errors.confirmPassword?.message}
-                autoComplete="new-password"
-                slotProps={{
-                  input: {
-                    endAdornment: (
-                      <InputAdornment position="end">
-                        <IconButton
-                          onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                          edge="end"
-                          aria-label="切换密码显示"
-                        >
-                          {showConfirmPassword ? <VisibilityOffIcon /> : <VisibilityIcon />}
-                        </IconButton>
-                      </InputAdornment>
-                    ),
-                  },
-                }}
-              />
+              <div className="grid gap-2">
+                <Label htmlFor="email">邮箱</Label>
+                <Input
+                  id="email"
+                  type="email"
+                  autoComplete="email"
+                  aria-invalid={!!errors.email}
+                  {...register('email')}
+                />
+                {errors.email && (
+                  <p className="text-sm text-destructive">{errors.email.message}</p>
+                )}
+              </div>
 
-              <LoadingButton
-                type="submit"
-                variant="contained"
-                size="large"
-                fullWidth
-                loading={isLoading}
-              >
+              <div className="grid gap-2">
+                <Label htmlFor="password">密码</Label>
+                <div className="relative">
+                  <Input
+                    id="password"
+                    type={showPassword ? 'text' : 'password'}
+                    autoComplete="new-password"
+                    aria-invalid={!!errors.password}
+                    className="pr-10"
+                    {...register('password', {
+                      onChange: (e) => handlePasswordChange(e.target.value),
+                    })}
+                  />
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon-sm"
+                    className="absolute right-1 top-1/2 -translate-y-1/2"
+                    onClick={() => setShowPassword(!showPassword)}
+                    aria-label="切换密码显示"
+                    tabIndex={-1}
+                  >
+                    {showPassword ? (
+                      <EyeOff className="size-4" />
+                    ) : (
+                      <Eye className="size-4" />
+                    )}
+                  </Button>
+                </div>
+                {errors.password && (
+                  <p className="text-sm text-destructive">{errors.password.message}</p>
+                )}
+                {password && (
+                  <div className="grid gap-1">
+                    <Progress
+                      value={passwordStrength}
+                      className="h-2"
+                      style={{
+                        // @ts-ignore - CSS custom property
+                        '--progress-background': getPasswordStrengthColor(),
+                      }}
+                    />
+                    <p className="text-xs text-muted-foreground">
+                      密码强度：{getPasswordStrengthText()}
+                    </p>
+                  </div>
+                )}
+              </div>
+
+              <div className="grid gap-2">
+                <Label htmlFor="confirmPassword">确认密码</Label>
+                <div className="relative">
+                  <Input
+                    id="confirmPassword"
+                    type={showConfirmPassword ? 'text' : 'password'}
+                    autoComplete="new-password"
+                    aria-invalid={!!errors.confirmPassword}
+                    className="pr-10"
+                    {...register('confirmPassword')}
+                  />
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon-sm"
+                    className="absolute right-1 top-1/2 -translate-y-1/2"
+                    onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                    aria-label="切换密码显示"
+                    tabIndex={-1}
+                  >
+                    {showConfirmPassword ? (
+                      <EyeOff className="size-4" />
+                    ) : (
+                      <Eye className="size-4" />
+                    )}
+                  </Button>
+                </div>
+                {errors.confirmPassword && (
+                  <p className="text-sm text-destructive">{errors.confirmPassword.message}</p>
+                )}
+              </div>
+
+              <Button type="submit" size="lg" disabled={isLoading} className="w-full">
+                {isLoading && <Loader2 className="animate-spin" />}
                 注册
-              </LoadingButton>
-            </Stack>
+              </Button>
+            </form>
 
             {/* 分隔线 */}
-            <Divider sx={{ my: 3 }}>或</Divider>
+            <div className="relative">
+              <div className="absolute inset-0 flex items-center">
+                <Separator />
+              </div>
+              <div className="relative flex justify-center text-xs uppercase">
+                <span className="bg-card px-2 text-muted-foreground">或</span>
+              </div>
+            </div>
 
             {/* OAuth 注册按钮 */}
-            <Stack spacing={2}>
+            <div className="grid gap-2">
               <Button
-                variant="outlined"
-                size="large"
-                fullWidth
-                startIcon={<GoogleIcon />}
+                type="button"
+                variant="outline"
+                size="lg"
                 onClick={() => handleOAuthRegister('google')}
                 disabled={isLoading}
-                sx={{
-                  color: '#DB4437',
-                  borderColor: '#DB4437',
-                  '&:hover': {
-                    borderColor: '#DB4437',
-                    bgcolor: 'rgba(219, 68, 55, 0.04)',
-                  },
-                }}
               >
+                <Chrome />
                 使用 Google 注册
               </Button>
 
               <Button
-                variant="outlined"
-                size="large"
-                fullWidth
-                startIcon={<GitHubIcon />}
+                type="button"
+                variant="outline"
+                size="lg"
                 onClick={() => handleOAuthRegister('github')}
                 disabled={isLoading}
-                sx={{
-                  color: '#24292e',
-                  borderColor: '#24292e',
-                  '&:hover': {
-                    borderColor: '#24292e',
-                    bgcolor: 'rgba(36, 41, 46, 0.04)',
-                  },
-                }}
               >
+                <Github />
                 使用 GitHub 注册
               </Button>
-            </Stack>
+            </div>
 
             {/* 登录链接 */}
-            <Box sx={{ mt: 3, textAlign: 'center' }}>
-              <Typography variant="body2" color="text.secondary">
-                已有账号？{' '}
-                <Link component={RouterLink} to="/login" underline="hover">
-                  立即登录
-                </Link>
-              </Typography>
-            </Box>
+            <div className="text-center text-sm text-muted-foreground">
+              已有账号？{' '}
+              <RouterLink
+                to="/login"
+                className="text-primary underline-offset-4 hover:underline"
+              >
+                立即登录
+              </RouterLink>
+            </div>
           </CardContent>
         </Card>
-      </Box>
-    </Container>
+      </div>
+    </div>
   );
 };

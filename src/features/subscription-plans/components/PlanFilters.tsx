@@ -2,14 +2,16 @@
  * 订阅计划筛选组件
  */
 
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Checkbox } from '@/components/ui/checkbox';
 import {
-  Box,
-  TextField,
-  MenuItem,
-  FormControlLabel,
-  Checkbox,
-  Grid,
-} from '@mui/material';
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import type { BillingCycle, PlanStatus, SubscriptionPlanFilters } from '../types/subscription-plans.types';
 
 interface PlanFiltersProps {
@@ -36,67 +38,68 @@ export const PlanFilters: React.FC<PlanFiltersProps> = ({
   onChange,
 }) => {
   return (
-    <Box mb={3}>
-      <Grid container spacing={2} alignItems="center">
-        <Grid size={{ xs: 12, sm: 3 }}>
-          <TextField
-            fullWidth
-            select
-            label="状态"
-            value={filters.status || ''}
-            onChange={(e) => onChange({ status: e.target.value as PlanStatus || undefined })}
-            size="small"
-          >
-            <MenuItem value="">全部</MenuItem>
+    <div className="grid grid-cols-1 gap-4 sm:grid-cols-4">
+      <div className="space-y-2">
+        <Label>状态</Label>
+        <Select
+          value={filters.status || ''}
+          onValueChange={(value) => onChange({ status: value as PlanStatus || undefined })}
+        >
+          <SelectTrigger>
+            <SelectValue placeholder="全部" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="">全部</SelectItem>
             {STATUSES.map((option) => (
-              <MenuItem key={option.value} value={option.value}>
+              <SelectItem key={option.value} value={option.value}>
                 {option.label}
-              </MenuItem>
+              </SelectItem>
             ))}
-          </TextField>
-        </Grid>
+          </SelectContent>
+        </Select>
+      </div>
 
-        <Grid size={{ xs: 12, sm: 3 }}>
-          <TextField
-            fullWidth
-            select
-            label="计费周期"
-            value={filters.billing_cycle || ''}
-            onChange={(e) => onChange({ billing_cycle: e.target.value as BillingCycle || undefined })}
-            size="small"
-          >
-            <MenuItem value="">全部</MenuItem>
+      <div className="space-y-2">
+        <Label>计费周期</Label>
+        <Select
+          value={filters.billing_cycle || ''}
+          onValueChange={(value) => onChange({ billing_cycle: value as BillingCycle || undefined })}
+        >
+          <SelectTrigger>
+            <SelectValue placeholder="全部" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="">全部</SelectItem>
             {BILLING_CYCLES.map((option) => (
-              <MenuItem key={option.value} value={option.value}>
+              <SelectItem key={option.value} value={option.value}>
                 {option.label}
-              </MenuItem>
+              </SelectItem>
             ))}
-          </TextField>
-        </Grid>
+          </SelectContent>
+        </Select>
+      </div>
 
-        <Grid size={{ xs: 12, sm: 3 }}>
-          <TextField
-            fullWidth
-            label="搜索名称"
-            value={filters.search || ''}
-            onChange={(e) => onChange({ search: e.target.value })}
-            size="small"
-            placeholder="输入计划名称..."
-          />
-        </Grid>
+      <div className="space-y-2">
+        <Label>搜索名称</Label>
+        <Input
+          placeholder="输入计划名称..."
+          value={filters.search || ''}
+          onChange={(e) => onChange({ search: e.target.value })}
+        />
+      </div>
 
-        <Grid size={{ xs: 12, sm: 3 }}>
-          <FormControlLabel
-            control={
-              <Checkbox
-                checked={filters.is_public ?? false}
-                onChange={(e) => onChange({ is_public: e.target.checked ? true : undefined })}
-              />
-            }
-            label="仅公开计划"
+      <div className="flex items-end space-y-2">
+        <div className="flex items-center space-x-2">
+          <Checkbox
+            id="is-public"
+            checked={filters.is_public ?? false}
+            onCheckedChange={(checked) => onChange({ is_public: checked ? true : undefined })}
           />
-        </Grid>
-      </Grid>
-    </Box>
+          <Label htmlFor="is-public" className="cursor-pointer">
+            仅公开计划
+          </Label>
+        </div>
+      </div>
+    </div>
   );
 };

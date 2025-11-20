@@ -8,21 +8,15 @@ import { useLocation, Link as RouterLink } from 'react-router';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import {
-  Box,
-  Container,
-  Card,
-  CardContent,
-  Typography,
-  Alert,
-  Stack,
-  TextField,
-  Link,
-} from '@mui/material';
-import { LoadingButton } from '@mui/lab';
-import EmailIcon from '@mui/icons-material/Email';
+import { Mail, Loader2, Info, CircleCheck, TriangleAlert } from 'lucide-react';
 import { resendVerificationEmail } from '@/features/auth/api/auth-api';
 import { handleApiError } from '@/shared/lib/axios';
+
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 
 // 表单验证
 const resendSchema = z.object({
@@ -68,127 +62,111 @@ export const VerificationPendingPage = () => {
   };
 
   return (
-    <Container maxWidth="sm">
-      <Box
-        sx={{
-          minHeight: '100vh',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          py: 4,
-        }}
-      >
-        <Card sx={{ width: '100%' }}>
-          <CardContent sx={{ p: 4 }}>
-            <Stack spacing={3} alignItems="center">
-              {/* 图标 */}
-              <EmailIcon sx={{ fontSize: 80, color: 'primary.main' }} />
-
-              {/* 标题 */}
-              <Typography variant="h5" textAlign="center" fontWeight="bold">
-                验证您的邮箱
-              </Typography>
-
-              {/* 说明文字 */}
-              <Typography variant="body1" color="text.secondary" textAlign="center">
-                我们已向您的邮箱发送了一封验证邮件
-              </Typography>
-
-              {emailFromState && (
-                <Alert severity="info" sx={{ width: '100%' }}>
-                  <Typography variant="body2">
-                    验证邮件已发送至：<strong>{emailFromState}</strong>
-                  </Typography>
-                </Alert>
-              )}
-
-              {/* 成功提示 */}
-              {success && (
-                <Alert severity="success" sx={{ width: '100%' }}>
-                  验证邮件已重新发送，请查收您的邮箱
-                </Alert>
-              )}
-
-              {/* 错误提示 */}
-              {error && (
-                <Alert severity="error" sx={{ width: '100%' }}>
-                  {error}
-                </Alert>
-              )}
-
-              {/* 操作说明 */}
-              <Box sx={{ width: '100%' }}>
-                <Typography variant="body2" color="text.secondary" gutterBottom>
-                  请按照以下步骤完成验证：
-                </Typography>
-                <Stack component="ol" spacing={1} sx={{ pl: 2 }}>
-                  <Typography component="li" variant="body2" color="text.secondary">
-                    打开您的邮箱收件箱
-                  </Typography>
-                  <Typography component="li" variant="body2" color="text.secondary">
-                    找到来自 Orris 的验证邮件
-                  </Typography>
-                  <Typography component="li" variant="body2" color="text.secondary">
-                    点击邮件中的验证链接
-                  </Typography>
-                </Stack>
-              </Box>
-
-              {/* 重发表单 */}
-              <Box sx={{ width: '100%', pt: 2 }}>
-                <Typography variant="body2" color="text.secondary" gutterBottom>
-                  没有收到邮件？请输入您的邮箱地址重新发送：
-                </Typography>
-
-                <Stack
-                  component="form"
-                  spacing={2}
-                  onSubmit={handleSubmit(onSubmit)}
-                  sx={{ mt: 2 }}
-                >
-                  <TextField
-                    {...register('email')}
-                    label="邮箱地址"
-                    type="email"
-                    fullWidth
-                    error={!!errors.email}
-                    helperText={errors.email?.message}
-                    autoComplete="email"
-                    disabled={resending}
-                  />
-
-                  <LoadingButton
-                    type="submit"
-                    variant="contained"
-                    size="large"
-                    fullWidth
-                    loading={resending}
-                  >
-                    重新发送验证邮件
-                  </LoadingButton>
-                </Stack>
-              </Box>
-
-              {/* 提示信息 */}
-              <Alert severity="warning" sx={{ width: '100%' }}>
-                <Typography variant="body2">
-                  请注意检查垃圾邮件文件夹。验证链接将在 24 小时后失效。
-                </Typography>
+    <div className="min-h-screen flex items-center justify-center p-4 bg-background">
+      <div className="w-full max-w-md">
+        <Card>
+          <CardHeader className="text-center">
+            <div className="flex justify-center mb-4">
+              <div className="p-4 bg-primary/10 rounded-full">
+                <Mail className="size-12 text-primary" />
+              </div>
+            </div>
+            <CardTitle className="text-2xl">验证您的邮箱</CardTitle>
+            <CardDescription>
+              我们已向您的邮箱发送了一封验证邮件
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="grid gap-6">
+            {/* 邮箱提示 */}
+            {emailFromState && (
+              <Alert>
+                <Info className="size-4" />
+                <AlertDescription>
+                  验证邮件已发送至：<strong>{emailFromState}</strong>
+                </AlertDescription>
               </Alert>
+            )}
 
-              {/* 返回登录 */}
-              <Box sx={{ textAlign: 'center', width: '100%' }}>
-                <Typography variant="body2" color="text.secondary">
-                  已经验证过了？{' '}
-                  <Link component={RouterLink} to="/login" underline="hover">
-                    返回登录
-                  </Link>
-                </Typography>
-              </Box>
-            </Stack>
+            {/* 成功提示 */}
+            {success && (
+              <Alert>
+                <CircleCheck className="size-4" />
+                <AlertDescription>
+                  验证邮件已重新发送，请查收您的邮箱
+                </AlertDescription>
+              </Alert>
+            )}
+
+            {/* 错误提示 */}
+            {error && (
+              <Alert variant="destructive">
+                <TriangleAlert className="size-4" />
+                <AlertDescription>{error}</AlertDescription>
+              </Alert>
+            )}
+
+            {/* 操作说明 */}
+            <div className="grid gap-2">
+              <p className="text-sm text-muted-foreground">
+                请按照以下步骤完成验证：
+              </p>
+              <ol className="grid gap-2 list-decimal list-inside text-sm text-muted-foreground">
+                <li>打开您的邮箱收件箱</li>
+                <li>找到来自 Orris 的验证邮件</li>
+                <li>点击邮件中的验证链接</li>
+              </ol>
+            </div>
+
+            {/* 重发表单 */}
+            <div className="grid gap-4">
+              <p className="text-sm text-muted-foreground">
+                没有收到邮件？请输入您的邮箱地址重新发送：
+              </p>
+
+              <form onSubmit={handleSubmit(onSubmit)} className="grid gap-4">
+                <div className="grid gap-2">
+                  <Label htmlFor="email">邮箱地址</Label>
+                  <Input
+                    id="email"
+                    type="email"
+                    autoComplete="email"
+                    aria-invalid={!!errors.email}
+                    disabled={resending}
+                    {...register('email')}
+                  />
+                  {errors.email && (
+                    <p className="text-sm text-destructive">{errors.email.message}</p>
+                  )}
+                </div>
+
+                <Button type="submit" size="lg" disabled={resending} className="w-full">
+                  {resending && <Loader2 className="animate-spin" />}
+                  重新发送验证邮件
+                </Button>
+              </form>
+            </div>
+
+            {/* 提示信息 */}
+            <Alert>
+              <TriangleAlert className="size-4" />
+              <AlertDescription>
+                请注意检查垃圾邮件文件夹。验证链接将在 24 小时后失效。
+              </AlertDescription>
+            </Alert>
+
+            {/* 返回登录 */}
+            <div className="text-center text-sm text-muted-foreground">
+              已经验证过了？{' '}
+              <RouterLink
+                to="/login"
+                className="text-primary underline-offset-4 hover:underline"
+              >
+                返回登录
+              </RouterLink>
+            </div>
           </CardContent>
         </Card>
-      </Box>
-    </Container>
+      </div>
+    </div>
   );
 };
