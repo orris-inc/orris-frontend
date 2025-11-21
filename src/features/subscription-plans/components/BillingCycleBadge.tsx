@@ -2,7 +2,7 @@
  * 计费周期标签组件
  */
 
-import { Badge } from '@/components/ui/badge';
+import { getBadgeClass } from '@/lib/ui-styles';
 import type { BillingCycle } from '../types/subscription-plans.types';
 
 interface BillingCycleBadgeProps {
@@ -17,20 +17,20 @@ const BILLING_CYCLE_LABELS: Record<BillingCycle, string> = {
   lifetime: '终身',
 };
 
-const BILLING_CYCLE_VARIANTS: Record<BillingCycle, 'default' | 'secondary' | 'destructive' | 'outline'> = {
-  monthly: 'secondary',
-  quarterly: 'outline',
-  semi_annual: 'default',
-  annual: 'default',
-  lifetime: 'destructive',
-};
-
 export const BillingCycleBadge: React.FC<BillingCycleBadgeProps> = ({
   billingCycle,
 }) => {
+  const variantMap: Record<BillingCycle, 'default' | 'secondary' | 'destructive' | 'outline'> = {
+    monthly: 'secondary',
+    quarterly: 'outline',
+    semi_annual: 'default',
+    annual: 'default',
+    lifetime: 'destructive',
+  };
+
   return (
-    <Badge variant={BILLING_CYCLE_VARIANTS[billingCycle]}>
+    <span className={getBadgeClass(variantMap[billingCycle])}>
       {BILLING_CYCLE_LABELS[billingCycle]}
-    </Badge>
+    </span>
   );
 };

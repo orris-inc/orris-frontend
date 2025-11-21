@@ -9,15 +9,23 @@ import { z } from 'zod';
 import { Link as RouterLink } from 'react-router';
 import { useState } from 'react';
 import { ArrowLeft, Mail, Loader2, CircleAlert } from 'lucide-react';
+import * as LabelPrimitive from '@radix-ui/react-label';
 import * as authApi from '@/features/auth/api/auth-api';
 import { extractErrorMessage } from '@/shared/utils/error-messages';
 import { useNotificationStore } from '@/shared/stores/notification-store';
-
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { Alert, AlertDescription } from '@/components/ui/alert';
+import {
+  getButtonClass,
+  inputStyles,
+  labelStyles,
+  cardStyles,
+  cardHeaderStyles,
+  cardTitleStyles,
+  cardDescriptionStyles,
+  cardContentStyles,
+  getAlertClass,
+  alertDescriptionStyles
+} from '@/lib/ui-styles';
+import { cn } from '@/lib/utils';
 
 // Zod验证
 const forgotPasswordSchema = z.object({
@@ -62,8 +70,8 @@ export const ForgotPasswordPage = () => {
     return (
       <div className="min-h-screen flex items-center justify-center p-4 bg-background">
         <div className="w-full max-w-md">
-          <Card>
-            <CardContent className="pt-6 text-center grid gap-6">
+          <div className={cardStyles}>
+            <div className={cn(cardContentStyles, "pt-6 text-center grid gap-6")}>
               <div className="flex justify-center">
                 <div className="size-20 rounded-full bg-green-100 dark:bg-green-900/20 flex items-center justify-center">
                   <Mail className="size-10 text-green-600 dark:text-green-500" />
@@ -87,8 +95,8 @@ export const ForgotPasswordPage = () => {
                 <ArrowLeft className="size-4" />
                 返回登录
               </RouterLink>
-            </CardContent>
-          </Card>
+            </div>
+          </div>
         </div>
       </div>
     );
@@ -97,30 +105,31 @@ export const ForgotPasswordPage = () => {
   return (
     <div className="min-h-screen flex items-center justify-center p-4 bg-background">
       <div className="w-full max-w-md">
-        <Card>
-          <CardHeader className="text-center">
-            <CardTitle className="text-3xl">忘记密码</CardTitle>
-            <CardDescription>输入您的邮箱地址,我们将发送密码重置链接</CardDescription>
-          </CardHeader>
-          <CardContent className="grid gap-6">
+        <div className={cardStyles}>
+          <div className={cn(cardHeaderStyles, "text-center")}>
+            <h3 className={cardTitleStyles}>忘记密码</h3>
+            <p className={cardDescriptionStyles}>输入您的邮箱地址,我们将发送密码重置链接</p>
+          </div>
+          <div className={cn(cardContentStyles, "grid gap-6")}>
             {/* 错误提示 */}
             {error && (
-              <Alert variant="destructive">
-                <CircleAlert />
-                <AlertDescription>{error}</AlertDescription>
-              </Alert>
+              <div className={getAlertClass('destructive')}>
+                <CircleAlert className="h-4 w-4" />
+                <div className={alertDescriptionStyles}>{error}</div>
+              </div>
             )}
 
             {/* 表单 */}
             <form onSubmit={handleSubmit(onSubmit)} className="grid gap-4">
               <div className="grid gap-2">
-                <Label htmlFor="email">邮箱</Label>
-                <Input
+                <LabelPrimitive.Root htmlFor="email" className={labelStyles}>邮箱</LabelPrimitive.Root>
+                <input
                   id="email"
                   type="email"
                   autoComplete="email"
                   autoFocus
                   aria-invalid={!!errors.email}
+                  className={inputStyles}
                   {...register('email')}
                 />
                 {errors.email && (
@@ -128,10 +137,10 @@ export const ForgotPasswordPage = () => {
                 )}
               </div>
 
-              <Button type="submit" size="lg" disabled={isLoading} className="w-full">
-                {isLoading && <Loader2 className="animate-spin" />}
+              <button type="submit" disabled={isLoading} className={cn(getButtonClass('default', 'lg'), "w-full")}>
+                {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                 发送重置链接
-              </Button>
+              </button>
             </form>
 
             {/* 返回登录 */}
@@ -144,8 +153,8 @@ export const ForgotPasswordPage = () => {
                 返回登录
               </RouterLink>
             </div>
-          </CardContent>
-        </Card>
+          </div>
+        </div>
       </div>
     </div>
   );

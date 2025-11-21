@@ -1,17 +1,11 @@
 /**
- * 订阅计划筛选组件
+ * 订阅计划筛选组件 - Radix UI 实现
  */
 
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Checkbox } from '@/components/ui/checkbox';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
+import * as Select from '@radix-ui/react-select';
+import * as Checkbox from '@radix-ui/react-checkbox';
+import * as Label from '@radix-ui/react-label';
+import { Check, ChevronDown } from 'lucide-react';
 import type { BillingCycle, PlanStatus, SubscriptionPlanFilters } from '../types/subscription-plans.types';
 
 interface PlanFiltersProps {
@@ -39,65 +33,105 @@ export const PlanFilters: React.FC<PlanFiltersProps> = ({
 }) => {
   return (
     <div className="grid grid-cols-1 gap-4 sm:grid-cols-4">
+      {/* 状态筛选 */}
       <div className="space-y-2">
-        <Label>状态</Label>
-        <Select
-          value={filters.status || ''}
-          onValueChange={(value) => onChange({ status: value as PlanStatus || undefined })}
+        <Label.Root className="text-sm font-medium">状态</Label.Root>
+        <Select.Root
+          value={filters.status || 'all'}
+          onValueChange={(value) => onChange({ status: value !== 'all' ? value as PlanStatus : undefined })}
         >
-          <SelectTrigger>
-            <SelectValue placeholder="全部" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="">全部</SelectItem>
-            {STATUSES.map((option) => (
-              <SelectItem key={option.value} value={option.value}>
-                {option.label}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+          <Select.Trigger className="flex h-9 w-full items-center justify-between rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-ring disabled:cursor-not-allowed disabled:opacity-50">
+            <Select.Value placeholder="全部" />
+            <Select.Icon>
+              <ChevronDown className="size-4 opacity-50" />
+            </Select.Icon>
+          </Select.Trigger>
+          <Select.Portal>
+            <Select.Content className="relative z-50 min-w-[8rem] overflow-hidden rounded-md border bg-popover text-popover-foreground shadow-md animate-in fade-in-80">
+              <Select.Viewport className="p-1">
+                <Select.Item value="all" className="relative flex w-full cursor-default select-none items-center rounded-sm py-1.5 pl-2 pr-8 text-sm outline-none focus:bg-accent focus:text-accent-foreground data-[disabled]:pointer-events-none data-[disabled]:opacity-50">
+                  <Select.ItemText>全部</Select.ItemText>
+                  <Select.ItemIndicator className="absolute right-2 flex items-center justify-center">
+                    <Check className="size-4" />
+                  </Select.ItemIndicator>
+                </Select.Item>
+                {STATUSES.map((option) => (
+                  <Select.Item key={option.value} value={option.value} className="relative flex w-full cursor-default select-none items-center rounded-sm py-1.5 pl-2 pr-8 text-sm outline-none focus:bg-accent focus:text-accent-foreground data-[disabled]:pointer-events-none data-[disabled]:opacity-50">
+                    <Select.ItemText>{option.label}</Select.ItemText>
+                    <Select.ItemIndicator className="absolute right-2 flex items-center justify-center">
+                      <Check className="size-4" />
+                    </Select.ItemIndicator>
+                  </Select.Item>
+                ))}
+              </Select.Viewport>
+            </Select.Content>
+          </Select.Portal>
+        </Select.Root>
       </div>
 
+      {/* 计费周期筛选 */}
       <div className="space-y-2">
-        <Label>计费周期</Label>
-        <Select
-          value={filters.billing_cycle || ''}
-          onValueChange={(value) => onChange({ billing_cycle: value as BillingCycle || undefined })}
+        <Label.Root className="text-sm font-medium">计费周期</Label.Root>
+        <Select.Root
+          value={filters.billing_cycle || 'all'}
+          onValueChange={(value) => onChange({ billing_cycle: value !== 'all' ? value as BillingCycle : undefined })}
         >
-          <SelectTrigger>
-            <SelectValue placeholder="全部" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="">全部</SelectItem>
-            {BILLING_CYCLES.map((option) => (
-              <SelectItem key={option.value} value={option.value}>
-                {option.label}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+          <Select.Trigger className="flex h-9 w-full items-center justify-between rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-ring disabled:cursor-not-allowed disabled:opacity-50">
+            <Select.Value placeholder="全部" />
+            <Select.Icon>
+              <ChevronDown className="size-4 opacity-50" />
+            </Select.Icon>
+          </Select.Trigger>
+          <Select.Portal>
+            <Select.Content className="relative z-50 min-w-[8rem] overflow-hidden rounded-md border bg-popover text-popover-foreground shadow-md animate-in fade-in-80">
+              <Select.Viewport className="p-1">
+                <Select.Item value="all" className="relative flex w-full cursor-default select-none items-center rounded-sm py-1.5 pl-2 pr-8 text-sm outline-none focus:bg-accent focus:text-accent-foreground data-[disabled]:pointer-events-none data-[disabled]:opacity-50">
+                  <Select.ItemText>全部</Select.ItemText>
+                  <Select.ItemIndicator className="absolute right-2 flex items-center justify-center">
+                    <Check className="size-4" />
+                  </Select.ItemIndicator>
+                </Select.Item>
+                {BILLING_CYCLES.map((option) => (
+                  <Select.Item key={option.value} value={option.value} className="relative flex w-full cursor-default select-none items-center rounded-sm py-1.5 pl-2 pr-8 text-sm outline-none focus:bg-accent focus:text-accent-foreground data-[disabled]:pointer-events-none data-[disabled]:opacity-50">
+                    <Select.ItemText>{option.label}</Select.ItemText>
+                    <Select.ItemIndicator className="absolute right-2 flex items-center justify-center">
+                      <Check className="size-4" />
+                    </Select.ItemIndicator>
+                  </Select.Item>
+                ))}
+              </Select.Viewport>
+            </Select.Content>
+          </Select.Portal>
+        </Select.Root>
       </div>
 
+      {/* 搜索名称 */}
       <div className="space-y-2">
-        <Label>搜索名称</Label>
-        <Input
+        <Label.Root className="text-sm font-medium">搜索名称</Label.Root>
+        <input
+          className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
           placeholder="输入计划名称..."
           value={filters.search || ''}
           onChange={(e) => onChange({ search: e.target.value })}
         />
       </div>
 
+      {/* 仅公开计划 */}
       <div className="flex items-end space-y-2">
-        <div className="flex items-center space-x-2">
-          <Checkbox
+        <div className="flex items-center gap-2">
+          <Checkbox.Root
             id="is-public"
             checked={filters.is_public ?? false}
             onCheckedChange={(checked) => onChange({ is_public: checked ? true : undefined })}
-          />
-          <Label htmlFor="is-public" className="cursor-pointer">
+            className="peer size-4 shrink-0 rounded-sm border border-primary shadow focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 data-[state=checked]:bg-primary data-[state=checked]:text-primary-foreground"
+          >
+            <Checkbox.Indicator className="flex items-center justify-center text-current">
+              <Check className="size-4" />
+            </Checkbox.Indicator>
+          </Checkbox.Root>
+          <Label.Root htmlFor="is-public" className="cursor-pointer text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
             仅公开计划
-          </Label>
+          </Label.Root>
         </div>
       </div>
     </div>

@@ -7,8 +7,8 @@
 import { Navigate, useLocation } from 'react-router';
 import { useAuthStore } from '@/features/auth/stores/auth-store';
 import { usePermissions } from '@/features/auth/hooks/usePermissions';
-import { Box, CircularProgress, Container, Typography, Button } from '@mui/material';
-import { Lock as LockIcon } from '@mui/icons-material';
+import { Loader2, Lock } from 'lucide-react';
+import { getButtonClass } from '@/lib/ui-styles';
 
 /**
  * AdminRoute 组件的属性接口
@@ -47,41 +47,25 @@ const UnauthorizedMessage = () => {
   };
 
   return (
-    <Container maxWidth="sm">
-      <Box
-        sx={{
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-          justifyContent: 'center',
-          minHeight: '100vh',
-          textAlign: 'center',
-          gap: 3,
-        }}
-      >
-        <LockIcon
-          sx={{
-            fontSize: 80,
-            color: 'error.main',
-            opacity: 0.8,
-          }}
-        />
-        <Typography variant="h4" component="h1" gutterBottom>
+    <div className="container mx-auto flex max-w-sm min-h-screen flex-col items-center justify-center gap-6 text-center">
+      <Lock className="h-20 w-20 text-destructive opacity-80" />
+      <div>
+        <h1 className="mb-2 text-3xl font-bold tracking-tight">
           访问受限
-        </Typography>
-        <Typography variant="body1" color="text.secondary" paragraph>
+        </h1>
+        <p className="text-muted-foreground">
           抱歉，您没有权限访问此页面。此页面仅限管理员访问。
-        </Typography>
-        <Box sx={{ display: 'flex', gap: 2, mt: 2 }}>
-          <Button variant="outlined" onClick={handleGoBack}>
-            返回上一页
-          </Button>
-          <Button variant="contained" onClick={handleGoToDashboard}>
-            前往仪表板
-          </Button>
-        </Box>
-      </Box>
-    </Container>
+        </p>
+      </div>
+      <div className="mt-2 flex gap-4">
+        <button className={getButtonClass('outline')} onClick={handleGoBack}>
+          返回上一页
+        </button>
+        <button className={getButtonClass('default')} onClick={handleGoToDashboard}>
+          前往仪表板
+        </button>
+      </div>
+    </div>
   );
 };
 
@@ -91,7 +75,7 @@ const UnauthorizedMessage = () => {
  * 此组件用于保护需要管理员权限的路由，执行以下检查：
  * 1. 检查用户是否已登录（通过 useAuthStore 的 isAuthenticated）
  * 2. 检查用户角色是否为 'admin'（通过 usePermissions hook）
- * 3. 加载状态显示 CircularProgress
+ * 3. 加载状态显示 Loader2
  * 4. 未登录则重定向到 /login，并保存当前路径用于登录后返回
  * 5. 已登录但非admin角色，则根据配置显示无权限提示或重定向
  *
@@ -150,16 +134,9 @@ export const AdminRoute = ({
   // 等待认证状态初始化完成
   if (isLoading) {
     return (
-      <Box
-        sx={{
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          minHeight: '100vh',
-        }}
-      >
-        <CircularProgress />
-      </Box>
+      <div className="flex min-h-screen items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
     );
   }
 

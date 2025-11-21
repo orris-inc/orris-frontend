@@ -1,9 +1,10 @@
 /**
  * 节点管理页面（管理端）
+ * 使用统一的精致商务风格组件
  */
 
 import { useState } from 'react';
-import { Plus, RefreshCw } from 'lucide-react';
+import { Server, Plus, RefreshCw } from 'lucide-react';
 import { NodeListTable } from '@/features/nodes/components/NodeListTable';
 import { NodeFilters } from '@/features/nodes/components/NodeFilters';
 import { EditNodeDialog } from '@/features/nodes/components/EditNodeDialog';
@@ -12,9 +13,8 @@ import { NodeStatsCards } from '@/features/nodes/components/NodeStatsCards';
 import { NodeDetailDialog } from '@/features/nodes/components/NodeDetailDialog';
 import { useNodes } from '@/features/nodes/hooks/useNodes';
 import { AdminLayout } from '@/layouts/AdminLayout';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent } from '@/components/ui/card';
-import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
+import { textareaStyles } from '@/lib/ui-styles';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/common/Tooltip';
 import {
   Dialog,
   DialogContent,
@@ -22,8 +22,13 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from '@/components/ui/dialog';
-import { Textarea } from '@/components/ui/textarea';
+} from '@/components/common/Dialog';
+import {
+  AdminPageLayout,
+  AdminButton,
+  AdminCard,
+  AdminFilterCard,
+} from '@/components/admin';
 import type { NodeListItem, UpdateNodeRequest, CreateNodeRequest } from '@/features/nodes/types/nodes.types';
 
 export const NodeManagementPage = () => {
@@ -115,123 +120,126 @@ export const NodeManagementPage = () => {
 
   return (
     <AdminLayout>
-      <div className="container mx-auto max-w-7xl py-6">
-        {/* 页面标题 */}
-        <div className="mb-6 flex items-center justify-between">
-          <div>
-            <h1 className="mb-2 text-3xl font-bold">节点管理</h1>
-            <p className="text-sm text-muted-foreground">
-              管理系统中的所有代理节点
-            </p>
-          </div>
+      <AdminPageLayout
+        title="节点管理"
+        description="管理系统中的所有代理节点"
+        icon={Server}
+        action={
           <div className="flex gap-2">
             <Tooltip>
               <TooltipTrigger asChild>
-                <Button
+                <AdminButton
                   variant="outline"
-                  size="icon"
+                  size="md"
                   onClick={handleRefresh}
                   disabled={loading}
+                  icon={<RefreshCw className={`size-4 ${loading ? 'animate-spin' : ''}`} strokeWidth={1.5} />}
                 >
-                  <RefreshCw className={loading ? 'animate-spin' : ''} />
-                </Button>
+                  刷新
+                </AdminButton>
               </TooltipTrigger>
-              <TooltipContent>刷新</TooltipContent>
+              <TooltipContent>刷新节点列表</TooltipContent>
             </Tooltip>
-            <Button onClick={() => setCreateDialogOpen(true)}>
-              <Plus className="mr-2" />
+            <AdminButton
+              variant="primary"
+              icon={<Plus className="size-4" strokeWidth={1.5} />}
+              onClick={() => setCreateDialogOpen(true)}
+            >
               新增节点
-            </Button>
+            </AdminButton>
           </div>
-        </div>
-
+        }
+      >
         {/* 统计卡片 */}
         <NodeStatsCards nodes={nodes} loading={loading} />
 
         {/* 筛选器 */}
-        <Card className="mb-6">
-          <CardContent className="p-6">
-            <NodeFilters filters={filters} onChange={setFilters} />
-          </CardContent>
-        </Card>
+        <AdminFilterCard>
+          <NodeFilters filters={filters} onChange={setFilters} />
+        </AdminFilterCard>
 
         {/* 节点列表表格 */}
-        <NodeListTable
-          nodes={nodes}
-          loading={loading}
-          page={pagination.page}
-          pageSize={pagination.page_size}
-          total={pagination.total}
-          onPageChange={handlePageChange}
-          onPageSizeChange={handlePageSizeChange}
-          onEdit={handleEdit}
-          onDelete={handleDelete}
-          onActivate={handleActivate}
-          onDeactivate={handleDeactivate}
-          onGenerateToken={handleGenerateToken}
-          onViewDetail={handleViewDetail}
-        />
+        <AdminCard noPadding>
+          <NodeListTable
+            nodes={nodes}
+            loading={loading}
+            page={pagination.page}
+            pageSize={pagination.page_size}
+            total={pagination.total}
+            onPageChange={handlePageChange}
+            onPageSizeChange={handlePageSizeChange}
+            onEdit={handleEdit}
+            onDelete={handleDelete}
+            onActivate={handleActivate}
+            onDeactivate={handleDeactivate}
+            onGenerateToken={handleGenerateToken}
+            onViewDetail={handleViewDetail}
+          />
+        </AdminCard>
+      </AdminPageLayout>
 
-        {/* 新增节点对话框 */}
-        <CreateNodeDialog
-          open={createDialogOpen}
-          onClose={() => setCreateDialogOpen(false)}
-          onSubmit={handleCreateSubmit}
-        />
+      {/* 新增节点对话框 */}
+      <CreateNodeDialog
+        open={createDialogOpen}
+        onClose={() => setCreateDialogOpen(false)}
+        onSubmit={handleCreateSubmit}
+      />
 
-        {/* 编辑节点对话框 */}
-        <EditNodeDialog
-          open={editDialogOpen}
-          node={selectedNode}
-          onClose={() => {
-            setEditDialogOpen(false);
-            setSelectedNode(null);
-          }}
-          onSubmit={handleUpdateSubmit}
-        />
+      {/* 编辑节点对话框 */}
+      <EditNodeDialog
+        open={editDialogOpen}
+        node={selectedNode}
+        onClose={() => {
+          setEditDialogOpen(false);
+          setSelectedNode(null);
+        }}
+        onSubmit={handleUpdateSubmit}
+      />
 
-        {/* 节点详情对话框 */}
-        <NodeDetailDialog
-          open={detailDialogOpen}
-          node={selectedNode}
-          onClose={() => {
-            setDetailDialogOpen(false);
-            setSelectedNode(null);
-          }}
-        />
+      {/* 节点详情对话框 */}
+      <NodeDetailDialog
+        open={detailDialogOpen}
+        node={selectedNode}
+        onClose={() => {
+          setDetailDialogOpen(false);
+          setSelectedNode(null);
+        }}
+      />
 
-        {/* Token显示对话框 */}
-        <Dialog
-          open={tokenDialogOpen}
-          onOpenChange={(open) => !open && setTokenDialogOpen(false)}
-        >
-          <DialogContent className="sm:max-w-md">
-            <DialogHeader>
-              <DialogTitle>节点Token</DialogTitle>
-              <DialogDescription>
-                Token已生成，请妥善保存。此Token仅显示一次。
-              </DialogDescription>
-            </DialogHeader>
-            <Textarea
-              value={generatedToken}
-              readOnly
-              rows={4}
-              className="mt-2 font-mono"
-            />
-            <DialogFooter>
-              <Button
-                variant="outline"
-                onClick={() => setTokenDialogOpen(false)}
-              >
-                关闭
-              </Button>
-              <Button onClick={handleCopyToken}>
-                复制Token
-              </Button>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
-      </div>
+      {/* Token显示对话框 */}
+      <Dialog
+        open={tokenDialogOpen}
+        onOpenChange={(open) => !open && setTokenDialogOpen(false)}
+      >
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>节点Token</DialogTitle>
+            <DialogDescription>
+              Token已生成，请妥善保存。此Token仅显示一次。
+            </DialogDescription>
+          </DialogHeader>
+          <textarea
+            value={generatedToken}
+            readOnly
+            rows={4}
+            className={`${textareaStyles} mt-2 font-mono`}
+          />
+          <DialogFooter>
+            <AdminButton
+              variant="outline"
+              onClick={() => setTokenDialogOpen(false)}
+            >
+              关闭
+            </AdminButton>
+            <AdminButton
+              variant="primary"
+              onClick={handleCopyToken}
+            >
+              复制Token
+            </AdminButton>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </AdminLayout>
   );
 };

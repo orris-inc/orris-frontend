@@ -100,3 +100,41 @@ export interface SubscriptionListParams {
   page_size?: number;                // 每页数量，默认 20
   status?: SubscriptionStatus;       // 状态筛选
 }
+
+/**
+ * 订阅令牌（Token）
+ * 用于生成订阅链接
+ * 基于后端实际返回格式（PascalCase）
+ */
+export interface SubscriptionToken {
+  ID: number;                        // 令牌ID
+  SubscriptionID: number;            // 所属订阅ID
+  Token?: string;                    // 令牌字符串（可能为空，需要使用ID或Prefix）
+  Prefix?: string;                   // 令牌前缀（如"sub"）
+  Name: string;                      // 令牌名称
+  Scope: string;                     // 作用域
+  ExpiresAt?: string;                // 过期时间
+  IsActive: boolean;                 // 是否活跃
+  LastUsedAt?: string;               // 最后使用时间
+  UsageCount?: number;               // 使用次数
+  CreatedAt: string;                 // 创建时间
+  UpdatedAt?: string;                // 更新时间
+}
+
+/**
+ * 生成令牌请求
+ * POST /subscriptions/{id}/tokens
+ */
+export interface GenerateTokenRequest {
+  name: string;                      // 必需：令牌名称
+  scope: string;                     // 必需：作用域
+  expires_at?: string;               // 可选：过期时间
+}
+
+/**
+ * 获取令牌列表参数
+ * GET /subscriptions/{id}/tokens
+ */
+export interface GetTokensParams {
+  active_only?: boolean;             // 是否只显示活跃令牌，默认false
+}

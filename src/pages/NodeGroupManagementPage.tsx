@@ -1,11 +1,11 @@
 /**
  * 节点组管理页面（管理端）
+ * 精致商务风格 - 统一设计系统
  */
 
 import { useState } from 'react';
-import { Plus, RefreshCw } from 'lucide-react';
+import { Layers, Plus, FilterX } from 'lucide-react';
 import { NodeGroupListTable } from '@/features/node-groups/components/NodeGroupListTable';
-import { NodeGroupFilters } from '@/features/node-groups/components/NodeGroupFilters';
 import { CreateNodeGroupDialog } from '@/features/node-groups/components/CreateNodeGroupDialog';
 import { EditNodeGroupDialog } from '@/features/node-groups/components/EditNodeGroupDialog';
 import { NodeGroupDetailDialog } from '@/features/node-groups/components/NodeGroupDetailDialog';
@@ -13,9 +13,16 @@ import { ManageGroupNodesDialog } from '@/features/node-groups/components/Manage
 import { NodeGroupStatsCards } from '@/features/node-groups/components/NodeGroupStatsCards';
 import { useNodeGroups } from '@/features/node-groups/hooks/useNodeGroups';
 import { AdminLayout } from '@/layouts/AdminLayout';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent } from '@/components/ui/card';
-import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
+import {
+  AdminPageLayout,
+  AdminButton,
+  AdminCard,
+  AdminFilterCard,
+  FilterRow,
+} from '@/components/admin';
+import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from '@/components/common/Select';
+import { Label } from '@/components/common/Label';
+import { inputStyles } from '@/lib/ui-styles';
 import type {
   NodeGroupListItem,
   CreateNodeGroupRequest,
@@ -74,10 +81,6 @@ export const NodeGroupManagementPage = () => {
     setDetailDialogOpen(true);
   };
 
-  const handleRefresh = () => {
-    fetchNodeGroups(pagination.page, pagination.page_size);
-  };
-
   const handleCreateSubmit = async (data: CreateNodeGroupRequest) => {
     const result = await createNodeGroup(data);
     if (result) {
@@ -96,101 +99,140 @@ export const NodeGroupManagementPage = () => {
     }
   };
 
+  // Filter handlers
+  const handlePublicChange = (value: string) => {
+    setFilters({
+      is_public: value === 'all' ? undefined : value === 'true',
+    });
+  };
+
+  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setFilters({ search: e.target.value });
+  };
+
+  const handleResetFilters = () => {
+    setFilters({ is_public: undefined, search: '' });
+  };
+
   return (
     <AdminLayout>
-      <div className="container mx-auto max-w-7xl py-6">
-        {/* 页面标题 */}
-        <div className="mb-6 flex items-center justify-between">
-          <div>
-            <h1 className="mb-2 text-3xl font-bold">节点组管理</h1>
-            <p className="text-sm text-muted-foreground">
-              管理系统中的节点分组，组织和控制节点访问权限
-            </p>
-          </div>
-          <div className="flex gap-2">
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button
-                  variant="outline"
-                  size="icon"
-                  onClick={handleRefresh}
-                  disabled={loading}
-                >
-                  <RefreshCw className={loading ? 'animate-spin' : ''} />
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent>刷新</TooltipContent>
-            </Tooltip>
-            <Button onClick={() => setCreateDialogOpen(true)}>
-              <Plus className="mr-2" />
-              新增节点组
-            </Button>
-          </div>
-        </div>
-
+      <AdminPageLayout
+        title="节点组管理"
+        description="管理系统中的节点分组，组织和控制节点访问权限"
+        icon={Layers}
+        info="创建和管理节点组，控制用户对不同节点的访问权限。"
+        action={
+          <AdminButton
+            variant="primary"
+            icon={<Plus className="size-4" strokeWidth={1.5} />}
+            onClick={() => setCreateDialogOpen(true)}
+          >
+            新增节点组
+          </AdminButton>
+        }
+      >
         {/* 统计卡片 */}
         <NodeGroupStatsCards nodeGroups={nodeGroups} loading={loading} />
 
         {/* 筛选器 */}
-        <Card className="mb-6">
-          <CardContent className="p-6">
-            <NodeGroupFilters filters={filters} onChange={setFilters} />
-          </CardContent>
-        </Card>
+        <AdminFilterCard>
+          <FilterRow columns={3}>
+            {/* 公开性筛选 */}
+            <div className="space-y-2">
+              <Label>公开性</Label>
+              <Select
+                value={filters.is_public === undefined ? 'all' : String(filters.is_public)}
+                onValueChange={handlePublicChange}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="全部" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">全部</SelectItem>
+                  <SelectItem value="true">公开</SelectItem>
+                  <SelectItem value="false">私有</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            {/* 搜索 */}
+            <div className="space-y-2">
+              <Label>搜索</Label>
+              <input
+                type="text"
+                placeholder="搜索名称或描述"
+                value={filters.search || ''}
+                onChange={handleSearchChange}
+                className={inputStyles}
+              />
+            </div>
+
+            {/* 重置按钮 */}
+            <div className="space-y-2">
+              <Label>&nbsp;</Label>
+              <AdminButton
+                variant="outline"
+                onClick={handleResetFilters}
+                icon={<FilterX className="size-4" strokeWidth={1.5} />}
+              >
+                重置筛选
+              </AdminButton>
+            </div>
+          </FilterRow>
+        </AdminFilterCard>
 
         {/* 节点组列表表格 */}
-        <NodeGroupListTable
-          nodeGroups={nodeGroups}
-          loading={loading}
-          page={pagination.page}
-          pageSize={pagination.page_size}
-          total={pagination.total}
-          onPageChange={handlePageChange}
-          onPageSizeChange={handlePageSizeChange}
-          onEdit={handleEdit}
-          onDelete={handleDelete}
-          onManageNodes={handleManageNodes}
-          onViewDetail={handleViewDetail}
-        />
+        <AdminCard noPadding>
+          <NodeGroupListTable
+            nodeGroups={nodeGroups}
+            loading={loading}
+            page={pagination.page}
+            pageSize={pagination.page_size}
+            total={pagination.total}
+            onPageChange={handlePageChange}
+            onPageSizeChange={handlePageSizeChange}
+            onEdit={handleEdit}
+            onDelete={handleDelete}
+            onManageNodes={handleManageNodes}
+            onViewDetail={handleViewDetail}
+          />
+        </AdminCard>
+      </AdminPageLayout>
 
-        {/* 新增节点组对话框 */}
-        <CreateNodeGroupDialog
-          open={createDialogOpen}
-          onClose={() => setCreateDialogOpen(false)}
-          onSubmit={handleCreateSubmit}
-        />
+      {/* 对话框 */}
+      <CreateNodeGroupDialog
+        open={createDialogOpen}
+        onClose={() => setCreateDialogOpen(false)}
+        onSubmit={handleCreateSubmit}
+      />
 
-        {/* 编辑节点组对话框 */}
-        <EditNodeGroupDialog
-          open={editDialogOpen}
-          group={selectedGroup}
-          onClose={() => {
-            setEditDialogOpen(false);
-            setSelectedGroup(null);
-          }}
-          onSubmit={handleUpdateSubmit}
-        />
+      <EditNodeGroupDialog
+        open={editDialogOpen}
+        group={selectedGroup}
+        onClose={() => {
+          setEditDialogOpen(false);
+          setSelectedGroup(null);
+        }}
+        onSubmit={handleUpdateSubmit}
+      />
 
-        {/* 节点组详情对话框 */}
-        <NodeGroupDetailDialog
-          open={detailDialogOpen}
-          group={selectedGroup}
-          onClose={() => {
-            setDetailDialogOpen(false);
-            setSelectedGroup(null);
-          }}
-        />
+      <NodeGroupDetailDialog
+        open={detailDialogOpen}
+        group={selectedGroup}
+        onClose={() => {
+          setDetailDialogOpen(false);
+          setSelectedGroup(null);
+        }}
+      />
 
-        {/* 管理节点对话框 */}
-        <ManageGroupNodesDialog
-          open={manageNodesDialogOpen}
-          group={selectedGroup}
-          onClose={() => {
-            setManageNodesDialogOpen(false);
-            setSelectedGroup(null);
-          }}
-        />
-      </div>
+      <ManageGroupNodesDialog
+        open={manageNodesDialogOpen}
+        group={selectedGroup}
+        onClose={() => {
+          setManageNodesDialogOpen(false);
+          setSelectedGroup(null);
+        }}
+      />
     </AdminLayout>
   );
 };

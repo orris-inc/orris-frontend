@@ -3,19 +3,13 @@
  */
 
 import { useState, useEffect } from 'react';
-import {
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
-  Button,
-  TextField,
-  MenuItem,
-  Grid,
-  Box,
-  Typography,
-  Divider,
-} from '@mui/material';
+import * as Dialog from '@radix-ui/react-dialog';
+import * as LabelPrimitive from '@radix-ui/react-label';
+import * as Separator from '@radix-ui/react-separator';
+import { X } from 'lucide-react';
+import { SimpleSelect } from '@/lib/SimpleSelect';
+import { getButtonClass, inputStyles, labelStyles } from '@/lib/ui-styles';
+import { cn } from '@/lib/utils';
 import type { UserListItem, UpdateUserRequest, UserStatus, UserRole } from '../types/users.types';
 
 interface EditUserDialogProps {
@@ -49,7 +43,7 @@ export const EditUserDialog: React.FC<EditUserDialogProps> = ({
   const [name, setName] = useState('');
   const [status, setStatus] = useState<UserStatus>('active');
   const [role, setRole] = useState<UserRole>('user');
-  const [errors, setErrors] = useState<{email?: string; name?: string}>({});
+  const [errors, setErrors] = useState<{ email?: string; name?: string }>({});
 
   useEffect(() => {
     if (user) {
@@ -62,7 +56,7 @@ export const EditUserDialog: React.FC<EditUserDialogProps> = ({
   }, [user]);
 
   const validate = () => {
-    const newErrors: {email?: string; name?: string} = {};
+    const newErrors: { email?: string; name?: string } = {};
 
     // 邮箱验证（如果填写了）
     if (email.trim() && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
@@ -94,6 +88,12 @@ export const EditUserDialog: React.FC<EditUserDialogProps> = ({
     }
   };
 
+  const handleOpenChange = (open: boolean) => {
+    if (!open) {
+      onClose();
+    }
+  };
+
   // 检查是否有变化
   const hasChanges = user && (
     email !== user.email ||
@@ -105,117 +105,122 @@ export const EditUserDialog: React.FC<EditUserDialogProps> = ({
   if (!user) return null;
 
   return (
-    <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth>
-      <DialogTitle>编辑用户</DialogTitle>
-      <DialogContent>
-        <Box sx={{ pt: 2 }}>
-          <Grid container spacing={2.5}>
+    <Dialog.Root open={open} onOpenChange={handleOpenChange}>
+      <Dialog.Portal>
+        <Dialog.Overlay className="fixed inset-0 z-50 bg-black/80 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0" />
+        <Dialog.Content className="fixed left-[50%] top-[50%] z-50 w-full max-w-lg translate-x-[-50%] translate-y-[-50%] gap-4 border bg-background p-6 shadow-lg duration-200 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[state=closed]:slide-out-to-left-1/2 data-[state=closed]:slide-out-to-top-[48%] data-[state=open]:slide-in-from-left-1/2 data-[state=open]:slide-in-from-top-[48%] sm:rounded-lg">
+          <div className="flex items-center justify-between">
+            <Dialog.Title className="text-lg font-semibold leading-none tracking-tight">
+              编辑用户
+            </Dialog.Title>
+            <Dialog.Close className="rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none data-[state=open]:bg-accent data-[state=open]:text-muted-foreground">
+              <X className="h-4 w-4" />
+              <span className="sr-only">Close</span>
+            </Dialog.Close>
+          </div>
+
+          <div className="grid gap-6 py-4">
             {/* 用户基本信息（只读） */}
-            <Grid size={{ xs: 12 }}>
-              <Typography variant="subtitle2" color="text.secondary" gutterBottom>
-                基本信息
-              </Typography>
-              <Divider sx={{ mb: 2 }} />
-            </Grid>
-
-            <Grid size={{ xs: 12 }}>
-              <TextField
-                fullWidth
-                label="用户ID"
-                value={user.id}
-                disabled
-                size="small"
-              />
-            </Grid>
-
-            <Grid size={{ xs: 12 }}>
-              <TextField
-                fullWidth
-                label="创建时间"
-                value={new Date(user.created_at).toLocaleString('zh-CN')}
-                disabled
-                size="small"
-              />
-            </Grid>
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <h4 className="text-sm font-medium text-muted-foreground">基本信息</h4>
+              </div>
+              <Separator.Root className="shrink-0 bg-border h-[1px] w-full" />
+              <div className="grid gap-4">
+                <div className="grid gap-2">
+                  <LabelPrimitive.Root className={labelStyles}>用户ID</LabelPrimitive.Root>
+                  <input value={user.id} disabled className={cn(inputStyles, "bg-muted")} />
+                </div>
+                <div className="grid gap-2">
+                  <LabelPrimitive.Root className={labelStyles}>创建时间</LabelPrimitive.Root>
+                  <input
+                    value={new Date(user.created_at).toLocaleString('zh-CN')}
+                    disabled
+                    className={cn(inputStyles, "bg-muted")}
+                  />
+                </div>
+              </div>
+            </div>
 
             {/* 可编辑字段 */}
-            <Grid size={{ xs: 12 }}>
-              <Typography variant="subtitle2" color="text.secondary" gutterBottom sx={{ mt: 2 }}>
-                可编辑信息
-              </Typography>
-              <Divider sx={{ mb: 2 }} />
-            </Grid>
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <h4 className="text-sm font-medium text-muted-foreground">可编辑信息</h4>
+              </div>
+              <Separator.Root className="shrink-0 bg-border h-[1px] w-full" />
+              <div className="grid gap-4">
+                <div className="grid gap-2">
+                  <LabelPrimitive.Root htmlFor="email" className={labelStyles}>
+                    邮箱
+                  </LabelPrimitive.Root>
+                  <input
+                    id="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    className={cn(inputStyles, errors.email && "border-destructive")}
+                  />
+                  {errors.email && (
+                    <span className="text-sm text-destructive">{errors.email}</span>
+                  )}
+                </div>
 
-            <Grid size={{ xs: 12 }}>
-              <TextField
-                fullWidth
-                label="邮箱"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                error={!!errors.email}
-                helperText={errors.email}
-                size="small"
-              />
-            </Grid>
+                <div className="grid gap-2">
+                  <LabelPrimitive.Root htmlFor="name" className={labelStyles}>
+                    姓名
+                  </LabelPrimitive.Root>
+                  <input
+                    id="name"
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    className={cn(inputStyles, errors.name && "border-destructive")}
+                  />
+                  {errors.name ? (
+                    <span className="text-sm text-destructive">{errors.name}</span>
+                  ) : (
+                    <span className="text-sm text-muted-foreground">长度2-100个字符</span>
+                  )}
+                </div>
 
-            <Grid size={{ xs: 12 }}>
-              <TextField
-                fullWidth
-                label="姓名"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                error={!!errors.name}
-                helperText={errors.name || '长度2-100个字符'}
-                size="small"
-              />
-            </Grid>
+                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                  <div className="grid gap-2">
+                    <LabelPrimitive.Root className={labelStyles}>状态</LabelPrimitive.Root>
+                    <SimpleSelect
+                      value={status}
+                      onValueChange={(value) => setStatus(value as UserStatus)}
+                      options={STATUS_OPTIONS}
+                    />
+                  </div>
 
-            <Grid size={{ xs: 12, sm: 6 }}>
-              <TextField
-                select
-                fullWidth
-                label="状态"
-                value={status}
-                onChange={(e) => setStatus(e.target.value as UserStatus)}
-                size="small"
-              >
-                {STATUS_OPTIONS.map(option => (
-                  <MenuItem key={option.value} value={option.value}>
-                    {option.label}
-                  </MenuItem>
-                ))}
-              </TextField>
-            </Grid>
+                  <div className="grid gap-2">
+                    <LabelPrimitive.Root className={labelStyles}>角色</LabelPrimitive.Root>
+                    <SimpleSelect
+                      value={role}
+                      onValueChange={(value) => setRole(value as UserRole)}
+                      options={ROLE_OPTIONS}
+                    />
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
 
-            <Grid size={{ xs: 12, sm: 6 }}>
-              <TextField
-                select
-                fullWidth
-                label="角色"
-                value={role}
-                onChange={(e) => setRole(e.target.value as UserRole)}
-                size="small"
-              >
-                {ROLE_OPTIONS.map(option => (
-                  <MenuItem key={option.value} value={option.value}>
-                    {option.label}
-                  </MenuItem>
-                ))}
-              </TextField>
-            </Grid>
-          </Grid>
-        </Box>
-      </DialogContent>
-      <DialogActions>
-        <Button onClick={onClose}>取消</Button>
-        <Button
-          onClick={handleSubmit}
-          variant="contained"
-          disabled={!hasChanges}
-        >
-          保存
-        </Button>
-      </DialogActions>
-    </Dialog>
+          <div className="flex justify-end gap-2">
+            <button
+              onClick={onClose}
+              className={getButtonClass('outline', 'default')}
+            >
+              取消
+            </button>
+            <button
+              onClick={handleSubmit}
+              disabled={!hasChanges}
+              className={getButtonClass('default', 'default')}
+            >
+              保存
+            </button>
+          </div>
+        </Dialog.Content>
+      </Dialog.Portal>
+    </Dialog.Root>
   );
 };

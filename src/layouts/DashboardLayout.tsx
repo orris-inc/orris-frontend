@@ -4,26 +4,11 @@
  */
 
 import { useState } from 'react';
-import {
-  AppBar,
-  Box,
-  Toolbar,
-  Typography,
-  IconButton,
-  Avatar,
-  Menu,
-  MenuItem,
-  Divider,
-  ListItemIcon,
-  ListItemText,
-  Container,
-} from '@mui/material';
-import MenuIcon from '@mui/icons-material/Menu';
-import AccountCircleIcon from '@mui/icons-material/AccountCircle';
-import SettingsIcon from '@mui/icons-material/Settings';
-import LogoutIcon from '@mui/icons-material/Logout';
-import AdminPanelSettingsIcon from '@mui/icons-material/AdminPanelSettings';
 import { useNavigate } from 'react-router';
+import { Menu, User as UserIcon, Settings, LogOut, Shield } from 'lucide-react';
+import * as DropdownMenuPrimitive from '@radix-ui/react-dropdown-menu';
+import * as AvatarPrimitive from '@radix-ui/react-avatar';
+
 import { useAuthStore } from '@/features/auth/stores/auth-store';
 import { useAuth } from '@/features/auth/hooks/useAuth';
 import { ProfileDialog } from '@/features/profile/components/ProfileDialog';
@@ -43,7 +28,6 @@ export const DashboardLayout = ({ children }: DashboardLayoutProps) => {
   const { logout } = useAuth();
   const { filterNavigationByPermission, userRole } = usePermissions();
 
-  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const [profileDialogOpen, setProfileDialogOpen] = useState(false);
   const [mobileDrawerOpen, setMobileDrawerOpen] = useState(false);
 
@@ -58,65 +42,37 @@ export const DashboardLayout = ({ children }: DashboardLayoutProps) => {
   const shouldShowNavigation = true;
   const shouldShowBreadcrumbs = false;
 
-  const handleMenuOpen = (event: React.MouseEvent<HTMLElement>) => {
-    setAnchorEl(event.currentTarget);
-  };
-
-  const handleMenuClose = () => {
-    setAnchorEl(null);
-  };
-
   const handleLogout = async () => {
-    handleMenuClose();
     await logout();
   };
 
-  const handleOpenProfile = () => {
-    handleMenuClose();
-    setProfileDialogOpen(true);
-  };
-
   const handleGoToAdmin = () => {
-    handleMenuClose();
     navigate('/admin');
   };
 
-  const handleMobileDrawerToggle = () => {
-    setMobileDrawerOpen(!mobileDrawerOpen);
-  };
-
   return (
-    <Box sx={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
+    <div className="flex min-h-screen flex-col bg-background">
       {/* 顶部导航栏 */}
-      <AppBar position="fixed" elevation={1}>
-        <Toolbar>
+      <header className="sticky top-0 z-40 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+        <div className="container flex h-16 items-center px-4 sm:px-8">
           {/* 移动端菜单按钮 - 仅用户端显示 */}
           {shouldShowNavigation && (
-            <IconButton
-              size="large"
-              edge="start"
-              color="inherit"
-              aria-label="menu"
-              onClick={handleMobileDrawerToggle}
-              sx={{ mr: 2, display: { xs: 'flex', md: 'none' } }}
+            <button
+              className="mr-2 inline-flex items-center justify-center rounded-md hover:bg-accent hover:text-accent-foreground h-9 w-9 transition-colors md:hidden"
+              onClick={() => setMobileDrawerOpen(true)}
             >
-              <MenuIcon />
-            </IconButton>
+              <Menu className="h-5 w-5" />
+              <span className="sr-only">打开菜单</span>
+            </button>
           )}
 
           {/* Logo/品牌 */}
-          <Typography
-            variant="h6"
-            component="div"
-            sx={{
-              flexGrow: 0,
-              fontWeight: 700,
-              letterSpacing: 0.5,
-              mr: { xs: 2, md: 0 },
-            }}
-          >
-            Orris
-          </Typography>
+          <div className="mr-4 hidden md:flex">
+            <span className="text-lg font-bold tracking-tight">Orris</span>
+          </div>
+          <div className="flex md:hidden flex-1">
+            <span className="text-lg font-bold tracking-tight">Orris</span>
+          </div>
 
           {/* 桌面端导航链接 - 仅用户端显示 */}
           {shouldShowNavigation && (
@@ -124,127 +80,84 @@ export const DashboardLayout = ({ children }: DashboardLayoutProps) => {
           )}
 
           {/* 占位符 - 将用户菜单推到右侧 */}
-          <Box sx={{ flexGrow: 1 }} />
+          <div className="flex-1 md:flex-none" />
 
           {/* 用户信息和菜单 */}
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-            <Box sx={{ display: { xs: 'none', sm: 'block' }, textAlign: 'right' }}>
-              <Typography variant="body2" sx={{ fontWeight: 600 }}>
-                {user?.name}
-              </Typography>
-              <Typography variant="caption" sx={{ opacity: 0.8 }}>
-                {user?.email}
-              </Typography>
-            </Box>
+          <div className="flex items-center gap-4">
+            <div className="hidden sm:block text-right">
+              <p className="text-sm font-medium leading-none">{user?.name}</p>
+              <p className="text-xs text-muted-foreground">{user?.email}</p>
+            </div>
 
-            <IconButton
-              onClick={handleMenuOpen}
-              size="small"
-              aria-controls={anchorEl ? 'user-menu' : undefined}
-              aria-haspopup="true"
-              aria-expanded={anchorEl ? 'true' : undefined}
-            >
-              <Avatar
-                src={user?.avatar}
-                alt={user?.name}
-                sx={{
-                  width: 40,
-                  height: 40,
-                  bgcolor: 'secondary.main',
-                  fontSize: '1.2rem',
-                }}
-              >
-                {user?.name?.charAt(0).toUpperCase()}
-              </Avatar>
-            </IconButton>
-          </Box>
+            <DropdownMenuPrimitive.Root>
+              <DropdownMenuPrimitive.Trigger asChild>
+                <button className="relative inline-flex h-8 w-8 items-center justify-center rounded-full hover:bg-accent hover:text-accent-foreground transition-colors">
+                  <AvatarPrimitive.Root className="h-8 w-8">
+                    <AvatarPrimitive.Image src={user?.avatar} alt={user?.name} className="h-full w-full rounded-full object-cover" />
+                    <AvatarPrimitive.Fallback className="flex h-full w-full items-center justify-center rounded-full bg-muted text-sm font-medium">
+                      {user?.name?.charAt(0).toUpperCase()}
+                    </AvatarPrimitive.Fallback>
+                  </AvatarPrimitive.Root>
+                </button>
+              </DropdownMenuPrimitive.Trigger>
+              <DropdownMenuPrimitive.Portal>
+                <DropdownMenuPrimitive.Content
+                  className="z-50 min-w-[14rem] overflow-hidden rounded-md border bg-popover p-1 text-popover-foreground shadow-md data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2"
+                  align="end"
+                  sideOffset={4}
+                >
+                  <DropdownMenuPrimitive.Label className="px-2 py-1.5 text-sm font-normal">
+                    <div className="flex flex-col space-y-1">
+                      <p className="text-sm font-medium leading-none">{user?.name}</p>
+                      <p className="text-xs leading-none text-muted-foreground">
+                        {user?.email}
+                      </p>
+                    </div>
+                  </DropdownMenuPrimitive.Label>
+                  <DropdownMenuPrimitive.Separator className="mx-1 my-1 h-px bg-muted" />
+                  <DropdownMenuPrimitive.Item
+                    className="relative flex cursor-default select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none transition-colors focus:bg-accent focus:text-accent-foreground data-[disabled]:pointer-events-none data-[disabled]:opacity-50"
+                    onSelect={() => setProfileDialogOpen(true)}
+                  >
+                    <UserIcon className="mr-2 h-4 w-4" />
+                    <span>个人资料</span>
+                  </DropdownMenuPrimitive.Item>
+                  <DropdownMenuPrimitive.Item
+                    className="relative flex cursor-default select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none transition-colors focus:bg-accent focus:text-accent-foreground data-[disabled]:pointer-events-none data-[disabled]:opacity-50"
+                    disabled
+                  >
+                    <Settings className="mr-2 h-4 w-4" />
+                    <span>账户设置</span>
+                  </DropdownMenuPrimitive.Item>
 
-          {/* 用户下拉菜单 */}
-          <Menu
-            id="user-menu"
-            anchorEl={anchorEl}
-            open={Boolean(anchorEl)}
-            onClose={handleMenuClose}
-            onClick={handleMenuClose}
-            slotProps={{
-              paper: {
-                elevation: 3,
-                sx: {
-                  mt: 1.5,
-                  minWidth: 220,
-                  overflow: 'visible',
-                  '&::before': {
-                    content: '""',
-                    display: 'block',
-                    position: 'absolute',
-                    top: 0,
-                    right: 14,
-                    width: 10,
-                    height: 10,
-                    bgcolor: 'background.paper',
-                    transform: 'translateY(-50%) rotate(45deg)',
-                    zIndex: 0,
-                  },
-                },
-              },
-            }}
-            transformOrigin={{ horizontal: 'right', vertical: 'top' }}
-            anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
-          >
-            {/* 用户信息（移动端显示） */}
-            <Box sx={{ px: 2, py: 1.5, display: { sm: 'none' } }}>
-              <Typography variant="subtitle2" fontWeight={600}>
-                {user?.name}
-              </Typography>
-              <Typography variant="body2" color="text.secondary" noWrap>
-                {user?.email}
-              </Typography>
-            </Box>
+                  {/* 管理端入口（仅管理员显示） */}
+                  {userRole === 'admin' && (
+                    <>
+                      <DropdownMenuPrimitive.Separator className="mx-1 my-1 h-px bg-muted" />
+                      <DropdownMenuPrimitive.Item
+                        className="relative flex cursor-default select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none transition-colors focus:bg-accent focus:text-accent-foreground data-[disabled]:pointer-events-none data-[disabled]:opacity-50"
+                        onSelect={handleGoToAdmin}
+                      >
+                        <Shield className="mr-2 h-4 w-4 text-primary" />
+                        <span className="text-primary">切换到管理端</span>
+                      </DropdownMenuPrimitive.Item>
+                    </>
+                  )}
 
-            <Divider sx={{ display: { sm: 'none' } }} />
-
-            <MenuItem onClick={handleOpenProfile}>
-              <ListItemIcon>
-                <AccountCircleIcon fontSize="small" />
-              </ListItemIcon>
-              <ListItemText>个人资料</ListItemText>
-            </MenuItem>
-
-            <MenuItem disabled>
-              <ListItemIcon>
-                <SettingsIcon fontSize="small" />
-              </ListItemIcon>
-              <ListItemText>账户设置</ListItemText>
-            </MenuItem>
-
-            {/* 管理端入口（仅管理员显示） */}
-            {userRole === 'admin' && (
-              <>
-                <Divider />
-                <MenuItem onClick={handleGoToAdmin}>
-                  <ListItemIcon>
-                    <AdminPanelSettingsIcon fontSize="small" color="primary" />
-                  </ListItemIcon>
-                  <ListItemText>
-                    <Typography color="primary">切换到管理端</Typography>
-                  </ListItemText>
-                </MenuItem>
-              </>
-            )}
-
-            <Divider />
-
-            <MenuItem onClick={handleLogout}>
-              <ListItemIcon>
-                <LogoutIcon fontSize="small" color="error" />
-              </ListItemIcon>
-              <ListItemText>
-                <Typography color="error">退出登录</Typography>
-              </ListItemText>
-            </MenuItem>
-          </Menu>
-        </Toolbar>
-      </AppBar>
+                  <DropdownMenuPrimitive.Separator className="mx-1 my-1 h-px bg-muted" />
+                  <DropdownMenuPrimitive.Item
+                    className="relative flex cursor-default select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none transition-colors focus:bg-accent focus:text-accent-foreground data-[disabled]:pointer-events-none data-[disabled]:opacity-50 text-red-600 focus:text-red-600"
+                    onSelect={handleLogout}
+                  >
+                    <LogOut className="mr-2 h-4 w-4" />
+                    <span>退出登录</span>
+                  </DropdownMenuPrimitive.Item>
+                </DropdownMenuPrimitive.Content>
+              </DropdownMenuPrimitive.Portal>
+            </DropdownMenuPrimitive.Root>
+          </div>
+        </div>
+      </header>
 
       {/* 移动端抽屉菜单 - 仅用户端显示 */}
       {shouldShowNavigation && (
@@ -257,29 +170,21 @@ export const DashboardLayout = ({ children }: DashboardLayoutProps) => {
       )}
 
       {/* 主内容区域 */}
-      <Box
-        component="main"
-        sx={{
-          flexGrow: 1,
-          bgcolor: 'background.default',
-          pt: { xs: shouldShowNavigation ? 7 : 2, sm: shouldShowNavigation ? 8 : 2 },
-          pb: 4,
-        }}
-      >
-        <Container maxWidth="lg">
-          {/* 增强型面包屑导航 - 仅管理端显示 */}
+      <main className="flex-1 py-6">
+        <div className="container px-4 sm:px-8">
+          {/* 增强型面包屑导航 - 仅管理端显示 (DashboardLayout中通常不显示，除非配置开启) */}
           {shouldShowBreadcrumbs && <EnhancedBreadcrumbs />}
 
           {/* 页面内容 */}
           {children}
-        </Container>
-      </Box>
+        </div>
+      </main>
 
       {/* 个人资料对话框 */}
       <ProfileDialog
         open={profileDialogOpen}
         onClose={() => setProfileDialogOpen(false)}
       />
-    </Box>
+    </div>
   );
 };

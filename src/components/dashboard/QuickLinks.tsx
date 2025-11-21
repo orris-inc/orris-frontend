@@ -4,11 +4,10 @@
  */
 
 import { User, CreditCard, Database, Tag, ArrowRight } from 'lucide-react';
-import { Card, CardContent } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
+import { cardStyles, getButtonClass, getBadgeClass } from '@/lib/ui-styles';
 import { useNavigate } from 'react-router-dom';
 import { useAuthStore } from '@/features/auth/stores/auth-store';
+import { cn } from '@/lib/utils';
 
 interface QuickLink {
   icon: React.ReactNode;
@@ -65,62 +64,65 @@ export const QuickLinks = () => {
   };
 
   return (
-    <Card className="shadow-sm hover:shadow-md transition-shadow h-full">
-      <CardContent className="p-6">
+    <div className={cn(cardStyles, 'shadow-sm hover:shadow-md transition-shadow h-full')}>
+      <div className="p-6">
         <h3 className="text-xl font-bold mb-5">快速访问</h3>
 
         <div className="space-y-3">
           {visibleLinks.map((link, index) => (
-            <Button
+            <button
               key={index}
               onClick={() => handleLinkClick(link)}
-              variant="outline"
               disabled={!link.implemented}
-              className={`h-auto w-full justify-start p-4 text-left transition-all ${
+              className={cn(
+                getButtonClass('outline', 'default', 'h-auto w-full justify-start p-4 text-left transition-all'),
                 link.implemented
                   ? 'hover:border-primary hover:bg-accent/50 hover:shadow-sm cursor-pointer'
                   : 'opacity-50 cursor-not-allowed'
-              }`}
+              )}
             >
               <div className="flex items-center gap-4 flex-1">
                 <div
-                  className={`flex items-center justify-center size-11 rounded-xl transition-colors ${
+                  className={cn(
+                    'flex items-center justify-center size-11 rounded-xl transition-colors',
                     link.implemented
                       ? 'bg-primary text-primary-foreground'
                       : 'bg-muted text-muted-foreground'
-                  }`}
+                  )}
                 >
                   {link.icon}
                 </div>
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 mb-1">
                     <span
-                      className={`font-semibold text-sm ${
+                      className={cn(
+                        'font-semibold text-sm',
                         link.implemented ? 'text-foreground' : 'text-muted-foreground'
-                      }`}
+                      )}
                     >
                       {link.title}
                     </span>
                     {!link.implemented && (
-                      <Badge variant="outline" className="h-5 text-xs px-2">
+                      <span className={getBadgeClass('outline', 'h-5 text-xs px-2')}>
                         待实现
-                      </Badge>
+                      </span>
                     )}
                   </div>
                   <span
-                    className={`text-xs line-clamp-1 ${
+                    className={cn(
+                      'text-xs line-clamp-1',
                       link.implemented ? 'text-muted-foreground' : 'text-muted-foreground/60'
-                    }`}
+                    )}
                   >
                     {link.description}
                   </span>
                 </div>
                 {link.implemented && <ArrowRight className="size-5 ml-2 text-muted-foreground group-hover:text-primary transition-colors" />}
               </div>
-            </Button>
+            </button>
           ))}
         </div>
-      </CardContent>
-    </Card>
+      </div>
+    </div>
   );
 };

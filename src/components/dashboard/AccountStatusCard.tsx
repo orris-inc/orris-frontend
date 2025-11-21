@@ -1,21 +1,9 @@
 /**
  * 账户状态卡片
  */
-
-import {
-  Card,
-  CardContent,
-  Typography,
-  Stack,
-  Box,
-  Chip,
-  List,
-  ListItem,
-  ListItemText,
-} from '@mui/material';
-import CheckCircleIcon from '@mui/icons-material/CheckCircle';
-import WarningIcon from '@mui/icons-material/Warning';
 import type { User } from '@/features/auth/types/auth.types';
+import { CheckCircle, AlertTriangle } from 'lucide-react';
+import { cardStyles, cardHeaderStyles, cardTitleStyles, cardContentStyles, getBadgeClass } from '@/lib/ui-styles';
 
 interface AccountStatusCardProps {
   user: User;
@@ -23,102 +11,63 @@ interface AccountStatusCardProps {
 
 export const AccountStatusCard = ({ user }: AccountStatusCardProps) => {
   return (
-    <Card elevation={2}>
-      <CardContent>
-        <Typography variant="h6" fontWeight="bold" gutterBottom>
-          账户状态
-        </Typography>
-
-        <List disablePadding>
+    <div className={cardStyles}>
+      <div className={cardHeaderStyles}>
+        <h3 className={cardTitleStyles}>账户状态</h3>
+      </div>
+      <div className={cardContentStyles}>
+        <div className="space-y-4">
           {/* 账户ID */}
-          <ListItem disablePadding sx={{ py: 1.5 }}>
-            <ListItemText
-              primary="账户 ID"
-              secondary={user.id}
-              primaryTypographyProps={{
-                variant: 'body2',
-                color: 'text.secondary',
-              }}
-              secondaryTypographyProps={{
-                variant: 'body2',
-                fontWeight: 500,
-                sx: { fontFamily: 'monospace', fontSize: '0.875rem' },
-              }}
-            />
-          </ListItem>
+          <div className="flex items-center justify-between">
+            <span className="text-sm text-muted-foreground">账户 ID</span>
+            <span className="font-mono text-sm font-medium">{user.id}</span>
+          </div>
 
           {/* 邮箱验证状态 */}
-          <ListItem disablePadding sx={{ py: 1.5 }}>
-            <ListItemText
-              primary="邮箱验证"
-              primaryTypographyProps={{
-                variant: 'body2',
-                color: 'text.secondary',
-              }}
-            />
-            <Box>
-              {user.email_verified ? (
-                <Stack direction="row" spacing={0.5} alignItems="center">
-                  <CheckCircleIcon color="success" fontSize="small" />
-                  <Typography variant="body2" color="success.main" fontWeight={500}>
-                    已验证
-                  </Typography>
-                </Stack>
-              ) : (
-                <Stack direction="row" spacing={0.5} alignItems="center">
-                  <WarningIcon color="warning" fontSize="small" />
-                  <Typography variant="body2" color="warning.main" fontWeight={500}>
-                    未验证
-                  </Typography>
-                </Stack>
-              )}
-            </Box>
-          </ListItem>
+          <div className="flex items-center justify-between">
+            <span className="text-sm text-muted-foreground">邮箱验证</span>
+            {user.email_verified ? (
+              <div className="flex items-center space-x-1">
+                <CheckCircle className="h-4 w-4 text-green-500" />
+                <span className="text-sm font-medium text-green-500">
+                  已验证
+                </span>
+              </div>
+            ) : (
+              <div className="flex items-center space-x-1">
+                <AlertTriangle className="h-4 w-4 text-yellow-500" />
+                <span className="text-sm font-medium text-yellow-500">
+                  未验证
+                </span>
+              </div>
+            )}
+          </div>
 
           {/* OAuth提供商 */}
           {user.oauth_provider && (
-            <ListItem disablePadding sx={{ py: 1.5 }}>
-              <ListItemText
-                primary="登录方式"
-                primaryTypographyProps={{
-                  variant: 'body2',
-                  color: 'text.secondary',
-                }}
-              />
-              <Chip
-                label={user.oauth_provider.toUpperCase()}
-                size="small"
-                color="primary"
-                sx={{ textTransform: 'capitalize' }}
-              />
-            </ListItem>
+            <div className="flex items-center justify-between">
+              <span className="text-sm text-muted-foreground">登录方式</span>
+              <span className={getBadgeClass('default')}>{user.oauth_provider.toUpperCase()}</span>
+            </div>
           )}
 
-          {/* 最后更新时间 - 仅在有数据时显示 */}
+          {/* 最后更新时间 */}
           {user.updated_at && (
-            <ListItem disablePadding sx={{ py: 1.5 }}>
-              <ListItemText
-                primary="最后更新"
-                secondary={new Date(user.updated_at).toLocaleString('zh-CN', {
+            <div className="flex items-center justify-between">
+              <span className="text-sm text-muted-foreground">最后更新</span>
+              <span className="text-sm font-medium">
+                {new Date(user.updated_at).toLocaleString('zh-CN', {
                   year: 'numeric',
                   month: '2-digit',
                   day: '2-digit',
                   hour: '2-digit',
                   minute: '2-digit',
                 })}
-                primaryTypographyProps={{
-                  variant: 'body2',
-                  color: 'text.secondary',
-                }}
-                secondaryTypographyProps={{
-                  variant: 'body2',
-                  fontWeight: 500,
-                }}
-              />
-            </ListItem>
+              </span>
+            </div>
           )}
-        </List>
-      </CardContent>
-    </Card>
+        </div>
+      </div>
+    </div>
   );
 };

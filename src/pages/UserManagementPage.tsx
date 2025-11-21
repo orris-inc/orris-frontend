@@ -1,11 +1,11 @@
 /**
  * 用户管理页面（管理端）
+ * 精致商务风格 - 统一设计系统
  */
 
 import { useState } from 'react';
-import { Plus } from 'lucide-react';
+import { Users, Plus, FilterX } from 'lucide-react';
 import { UserListTable } from '@/features/users/components/UserListTable';
-import { UserFilters } from '@/features/users/components/UserFilters';
 import { EditUserDialog } from '@/features/users/components/EditUserDialog';
 import { CreateUserDialog } from '@/features/users/components/CreateUserDialog';
 import { AssignSubscriptionDialog } from '@/features/subscriptions/components/AssignSubscriptionDialog';
@@ -13,9 +13,17 @@ import { useUsers } from '@/features/users/hooks/useUsers';
 import { AdminLayout } from '@/layouts/AdminLayout';
 import { createSubscription } from '@/features/subscriptions/api/subscriptions-api';
 import { useNotificationStore } from '@/shared/stores/notification-store';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent } from '@/components/ui/card';
-import type { UserListItem, UpdateUserRequest, CreateUserRequest } from '@/features/users/types/users.types';
+import {
+  AdminPageLayout,
+  AdminButton,
+  AdminCard,
+  AdminFilterCard,
+  FilterRow,
+} from '@/components/admin';
+import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from '@/components/common/Select';
+import { Label } from '@/components/common/Label';
+import { inputStyles } from '@/lib/ui-styles';
+import type { UserListItem, UpdateUserRequest, CreateUserRequest, UserStatus, UserRole } from '@/features/users/types/users.types';
 import type { CreateSubscriptionRequest } from '@/features/subscriptions/types/subscriptions.types';
 
 export const UserManagementPage = () => {
@@ -92,73 +100,144 @@ export const UserManagementPage = () => {
     }
   };
 
+  // Filter handlers
+  const handleStatusChange = (value: string) => {
+    setFilters({ status: value !== 'all' ? (value as UserStatus) : undefined });
+  };
+
+  const handleRoleChange = (value: string) => {
+    setFilters({ role: value !== 'all' ? (value as UserRole) : undefined });
+  };
+
+  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setFilters({ search: e.target.value });
+  };
+
+  const handleResetFilters = () => {
+    setFilters({ status: undefined, role: undefined, search: '' });
+  };
+
   return (
     <AdminLayout>
-      <div className="container mx-auto max-w-7xl py-6">
-        {/* 页面标题 */}
-        <div className="mb-6 flex items-center justify-between">
-          <div>
-            <h1 className="text-3xl font-bold">用户管理</h1>
-            <p className="mt-1 text-sm text-muted-foreground">
-              管理系统中的所有用户账户
-            </p>
-          </div>
-          <Button onClick={() => setCreateDialogOpen(true)}>
-            <Plus className="mr-2 size-4" />
+      <AdminPageLayout
+        title="用户管理"
+        description="管理系统中的所有用户账户"
+        icon={Users}
+        info="在这里管理系统用户。您可以新增、编辑、禁用用户，或为用户分配订阅计划。"
+        action={
+          <AdminButton
+            variant="primary"
+            icon={<Plus className="size-4" strokeWidth={1.5} />}
+            onClick={() => setCreateDialogOpen(true)}
+          >
             新增用户
-          </Button>
-        </div>
-
+          </AdminButton>
+        }
+      >
         {/* 筛选器 */}
-        <Card className="mb-6">
-          <CardContent className="pt-6">
-            <UserFilters filters={filters} onChange={setFilters} />
-          </CardContent>
-        </Card>
+        <AdminFilterCard>
+          <FilterRow columns={4}>
+            {/* 状态筛选 */}
+            <div className="space-y-2">
+              <Label>状态</Label>
+              <Select value={filters.status || 'all'} onValueChange={handleStatusChange}>
+                <SelectTrigger>
+                  <SelectValue placeholder="全部" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">全部</SelectItem>
+                  <SelectItem value="active">激活</SelectItem>
+                  <SelectItem value="inactive">未激活</SelectItem>
+                  <SelectItem value="pending">待处理</SelectItem>
+                  <SelectItem value="suspended">暂停</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            {/* 角色筛选 */}
+            <div className="space-y-2">
+              <Label>角色</Label>
+              <Select value={filters.role || 'all'} onValueChange={handleRoleChange}>
+                <SelectTrigger>
+                  <SelectValue placeholder="全部" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">全部</SelectItem>
+                  <SelectItem value="user">普通用户</SelectItem>
+                  <SelectItem value="admin">管理员</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            {/* 搜索 */}
+            <div className="space-y-2">
+              <Label>搜索</Label>
+              <input
+                type="text"
+                placeholder="搜索用户名或邮箱"
+                value={filters.search || ''}
+                onChange={handleSearchChange}
+                className={inputStyles}
+              />
+            </div>
+
+            {/* 重置按钮 */}
+            <div className="space-y-2">
+              <Label>&nbsp;</Label>
+              <AdminButton
+                variant="outline"
+                onClick={handleResetFilters}
+                icon={<FilterX className="size-4" strokeWidth={1.5} />}
+              >
+                重置筛选
+              </AdminButton>
+            </div>
+          </FilterRow>
+        </AdminFilterCard>
 
         {/* 用户列表表格 */}
-        <UserListTable
-          users={users}
-          loading={loading}
-          page={pagination.page}
-          pageSize={pagination.page_size}
-          total={pagination.total}
-          onPageChange={handlePageChange}
-          onPageSizeChange={handlePageSizeChange}
-          onEdit={handleEdit}
-          onDelete={handleDelete}
-          onAssignSubscription={handleAssignSubscription}
-        />
+        <AdminCard noPadding>
+          <UserListTable
+            users={users}
+            loading={loading}
+            page={pagination.page}
+            pageSize={pagination.page_size}
+            total={pagination.total}
+            onPageChange={handlePageChange}
+            onPageSizeChange={handlePageSizeChange}
+            onEdit={handleEdit}
+            onDelete={handleDelete}
+            onAssignSubscription={handleAssignSubscription}
+          />
+        </AdminCard>
+      </AdminPageLayout>
 
-        {/* 新增用户对话框 */}
-        <CreateUserDialog
-          open={createDialogOpen}
-          onClose={() => setCreateDialogOpen(false)}
-          onSubmit={handleCreateSubmit}
-        />
+      {/* 对话框 */}
+      <CreateUserDialog
+        open={createDialogOpen}
+        onClose={() => setCreateDialogOpen(false)}
+        onSubmit={handleCreateSubmit}
+      />
 
-        {/* 编辑用户对话框 */}
-        <EditUserDialog
-          open={editDialogOpen}
-          user={selectedUser}
-          onClose={() => {
-            setEditDialogOpen(false);
-            setSelectedUser(null);
-          }}
-          onSubmit={handleUpdateSubmit}
-        />
+      <EditUserDialog
+        open={editDialogOpen}
+        user={selectedUser}
+        onClose={() => {
+          setEditDialogOpen(false);
+          setSelectedUser(null);
+        }}
+        onSubmit={handleUpdateSubmit}
+      />
 
-        {/* 分配订阅对话框 */}
-        <AssignSubscriptionDialog
-          open={assignSubscriptionDialogOpen}
-          user={selectedUser}
-          onClose={() => {
-            setAssignSubscriptionDialogOpen(false);
-            setSelectedUser(null);
-          }}
-          onSubmit={handleAssignSubscriptionSubmit}
-        />
-      </div>
+      <AssignSubscriptionDialog
+        open={assignSubscriptionDialogOpen}
+        user={selectedUser}
+        onClose={() => {
+          setAssignSubscriptionDialogOpen(false);
+          setSelectedUser(null);
+        }}
+        onSubmit={handleAssignSubscriptionSubmit}
+      />
     </AdminLayout>
   );
 };

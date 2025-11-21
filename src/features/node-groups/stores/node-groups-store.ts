@@ -25,7 +25,6 @@ import {
   batchAddNodesToGroup as batchAddNodesToGroupApi,
   batchRemoveNodesFromGroup as batchRemoveNodesFromGroupApi,
   removeNodeFromGroup as removeNodeFromGroupApi,
-  getNodeGroupPlans as getNodeGroupPlansApi,
   associatePlanToGroup as associatePlanToGroupApi,
   dissociatePlanFromGroup as dissociatePlanFromGroupApi,
 } from '../api/node-groups-api';
@@ -302,11 +301,13 @@ export const useNodeGroupsStore = create<NodeGroupsState>()(
 
       // ==================== 订阅计划关联管理 ====================
 
-      // 获取节点组关联的订阅计划
+      // 获取节点组关联的订阅计划ID列表
+      // 注意：后端不提供 GET /node-groups/{id}/plans 接口
+      // 需要通过 GET /node-groups/{id} 获取详情，从 subscription_plan_ids 字段获取
       fetchGroupPlans: async (groupId: number | string) => {
         try {
-          const plans = await getNodeGroupPlansApi(groupId);
-          return plans || [];
+          const detail = await fetchNodeGroupByIdApi(groupId);
+          return detail.subscription_plan_ids || [];
         } catch (error) {
           const errorMessage = handleApiError(error);
           showNotification(errorMessage, 'error');
@@ -317,7 +318,7 @@ export const useNodeGroupsStore = create<NodeGroupsState>()(
       // 关联订阅计划到节点组
       associatePlan: async (groupId: number | string, planId: number | string) => {
         try {
-          await associatePlanToGroupApi(groupId, planId);
+          await associatePlanToGroupApi(Number(groupId), Number(planId));
           showNotification('订阅计划关联成功', 'success');
           return true;
         } catch (error) {

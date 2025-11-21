@@ -22,7 +22,7 @@ import { UserManagementPage } from '@/pages/UserManagementPage';
 import { NodeManagementPage } from '@/pages/NodeManagementPage';
 import { NodeGroupManagementPage } from '@/pages/NodeGroupManagementPage';
 import { ProfileSettingsPage } from '@/pages/ProfileSettingsPage';
-import { AdminDashboardPage } from '@/pages/AdminDashboardPage';
+import { NewAdminDashboardPage } from '@/pages/NewAdminDashboardPage';
 import { ProtectedRoute } from '@/shared/components/ProtectedRoute';
 import { AdminRoute } from '@/shared/components/AdminRoute';
 
@@ -68,7 +68,7 @@ export const router = createBrowserRouter([
     path: '/admin',
     element: (
       <AdminRoute>
-        <AdminDashboardPage />
+        <NewAdminDashboardPage />
       </AdminRoute>
     ),
   },

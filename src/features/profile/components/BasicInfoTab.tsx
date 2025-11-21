@@ -1,11 +1,7 @@
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Mail, CheckCircle2, AlertCircle, Loader2 } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Badge } from '@/components/ui/badge';
-import { Alert, AlertDescription } from '@/components/ui/alert';
+import * as LabelPrimitive from '@radix-ui/react-label';
 import { useProfile } from '../hooks/useProfile';
 import {
   updateProfileSchema,
@@ -58,9 +54,12 @@ export const BasicInfoTab = ({ user }: BasicInfoTabProps) => {
       <form onSubmit={handleSubmit(onSubmit)} className="grid gap-6">
         {/* 用户名 */}
         <div className="grid gap-2">
-          <Label htmlFor="name">用户名</Label>
-          <Input
+          <LabelPrimitive.Root htmlFor="name" className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
+            用户名
+          </LabelPrimitive.Root>
+          <input
             id="name"
+            className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
             {...register('name')}
             aria-invalid={!!errors.name}
           />
@@ -71,13 +70,15 @@ export const BasicInfoTab = ({ user }: BasicInfoTabProps) => {
 
         {/* 邮箱 */}
         <div className="grid gap-2">
-          <Label htmlFor="email">邮箱</Label>
+          <LabelPrimitive.Root htmlFor="email" className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
+            邮箱
+          </LabelPrimitive.Root>
           <div className="relative">
             <Mail className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
-            <Input
+            <input
               id="email"
               type="email"
-              className="pl-10"
+              className="flex h-10 w-full rounded-md border border-input bg-background pl-10 pr-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
               {...register('email')}
               aria-invalid={!!errors.email}
             />
@@ -87,15 +88,15 @@ export const BasicInfoTab = ({ user }: BasicInfoTabProps) => {
           </p>
           <div className="flex items-center gap-2">
             {user.email_verified ? (
-              <Badge variant="default" className="gap-1">
+              <span className="inline-flex items-center gap-1 rounded-full border px-2.5 py-0.5 text-xs font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 border-transparent bg-primary text-primary-foreground hover:bg-primary/80">
                 <CheckCircle2 className="size-3" />
                 已验证
-              </Badge>
+              </span>
             ) : (
-              <Badge variant="secondary" className="gap-1">
+              <span className="inline-flex items-center gap-1 rounded-full border px-2.5 py-0.5 text-xs font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 border-transparent bg-secondary text-secondary-foreground hover:bg-secondary/80">
                 <AlertCircle className="size-3" />
                 未验证
-              </Badge>
+              </span>
             )}
           </div>
         </div>
@@ -103,11 +104,14 @@ export const BasicInfoTab = ({ user }: BasicInfoTabProps) => {
         {/* 显示名称（只读，由后端生成） */}
         {user.display_name && (
           <div className="grid gap-2">
-            <Label htmlFor="display_name">显示名称</Label>
-            <Input
+            <LabelPrimitive.Root htmlFor="display_name" className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
+              显示名称
+            </LabelPrimitive.Root>
+            <input
               id="display_name"
               value={user.display_name}
               disabled
+              className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
             />
             <p className="text-sm text-muted-foreground">由系统自动生成</p>
           </div>
@@ -116,11 +120,14 @@ export const BasicInfoTab = ({ user }: BasicInfoTabProps) => {
         {/* 用户标识（只读） */}
         {user.initials && (
           <div className="grid gap-2">
-            <Label htmlFor="initials">姓名首字母</Label>
-            <Input
+            <LabelPrimitive.Root htmlFor="initials" className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
+              姓名首字母
+            </LabelPrimitive.Root>
+            <input
               id="initials"
               value={user.initials}
               disabled
+              className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
             />
             <p className="text-sm text-muted-foreground">由系统自动生成</p>
           </div>
@@ -128,47 +135,54 @@ export const BasicInfoTab = ({ user }: BasicInfoTabProps) => {
 
         {/* 账号状态 */}
         <div className="grid gap-2">
-          <Label>账号状态</Label>
+          <LabelPrimitive.Root className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
+            账号状态
+          </LabelPrimitive.Root>
           <div>
-            <Badge
-              variant={user.status === 'active' ? 'default' : 'secondary'}
-            >
+            <span className={`inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 ${user.status === 'active'
+                ? 'border-transparent bg-primary text-primary-foreground hover:bg-primary/80'
+                : 'border-transparent bg-secondary text-secondary-foreground hover:bg-secondary/80'
+              }`}>
               {
                 user.status === 'active'
                   ? '正常'
                   : user.status === 'inactive'
-                  ? '未激活'
-                  : user.status === 'suspended'
-                  ? '已暂停'
-                  : user.status === 'pending'
-                  ? '待处理'
-                  : '未知'
+                    ? '未激活'
+                    : user.status === 'suspended'
+                      ? '已暂停'
+                      : user.status === 'pending'
+                        ? '待处理'
+                        : '未知'
               }
-            </Badge>
+            </span>
           </div>
         </div>
 
         {/* OAuth提供商 */}
         {user.oauth_provider && (
           <div className="grid gap-2">
-            <Label>登录方式</Label>
+            <LabelPrimitive.Root className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
+              登录方式
+            </LabelPrimitive.Root>
             <div>
-              <Badge variant="outline">
+              <span className="inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 bg-background hover:bg-accent hover:text-accent-foreground">
                 {
                   user.oauth_provider === 'google'
                     ? 'Google'
                     : user.oauth_provider === 'github'
-                    ? 'GitHub'
-                    : user.oauth_provider
+                      ? 'GitHub'
+                      : user.oauth_provider
                 }
-              </Badge>
+              </span>
             </div>
           </div>
         )}
 
         {/* 注册时间 */}
         <div className="grid gap-2">
-          <Label>注册时间</Label>
+          <LabelPrimitive.Root className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
+            注册时间
+          </LabelPrimitive.Root>
           <p className="text-sm">
             {new Date(user.created_at).toLocaleString('zh-CN')}
           </p>
@@ -177,7 +191,9 @@ export const BasicInfoTab = ({ user }: BasicInfoTabProps) => {
         {/* 最后更新时间 */}
         {user.updated_at && (
           <div className="grid gap-2">
-            <Label>最后更新</Label>
+            <LabelPrimitive.Root className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
+              最后更新
+            </LabelPrimitive.Root>
             <p className="text-sm">
               {new Date(user.updated_at).toLocaleString('zh-CN')}
             </p>
@@ -186,23 +202,23 @@ export const BasicInfoTab = ({ user }: BasicInfoTabProps) => {
 
         {/* 邮箱修改提醒 */}
         {isDirty && (
-          <Alert>
+          <div className="relative w-full rounded-lg border p-4 [&>svg~*]:pl-7 [&>svg+div]:translate-y-[-3px] [&>svg]:absolute [&>svg]:left-4 [&>svg]:top-4 [&>svg]:text-foreground">
             <Mail className="size-4" />
-            <AlertDescription>
+            <div className="text-sm [&_p]:leading-relaxed">
               修改邮箱地址后需要重新验证，请查收验证邮件
-            </AlertDescription>
-          </Alert>
+            </div>
+          </div>
         )}
 
         {/* 保存按钮 */}
-        <Button
+        <button
           type="submit"
           disabled={!isDirty || isLoading}
-          className="w-full"
+          className="inline-flex items-center justify-center rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 bg-primary text-primary-foreground hover:bg-primary/90 h-10 px-4 py-2 w-full"
         >
-          {isLoading && <Loader2 className="animate-spin" />}
+          {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
           保存更改
-        </Button>
+        </button>
       </form>
     </div>
   );

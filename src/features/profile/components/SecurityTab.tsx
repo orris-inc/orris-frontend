@@ -1,4 +1,4 @@
-import { Box, Typography, Paper, Divider } from '@mui/material';
+import * as Separator from '@radix-ui/react-separator';
 import { ChangePasswordForm } from './ChangePasswordForm';
 
 /**
@@ -6,53 +6,61 @@ import { ChangePasswordForm } from './ChangePasswordForm';
  */
 export const SecurityTab = () => {
   return (
-    <Box sx={{ py: 2 }}>
-      <Typography variant="h6" gutterBottom>
-        修改密码
-      </Typography>
-      <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
-        设置一个强密码以保护您的账号安全
-      </Typography>
+    <div className="space-y-6 py-4">
+      <div className="space-y-4">
+        <div>
+          <h3 className="text-lg font-medium">修改密码</h3>
+          <p className="text-sm text-muted-foreground">
+            设置一个强密码以保护您的账号安全
+          </p>
+        </div>
 
-      <Paper variant="outlined" sx={{ p: 3 }}>
-        <ChangePasswordForm />
-      </Paper>
+        <div className="rounded-lg border bg-card text-card-foreground shadow-sm">
+          <div className="p-6">
+            <ChangePasswordForm />
+          </div>
+        </div>
+      </div>
 
-      <Divider sx={{ my: 4 }} />
+      <Separator.Root className="shrink-0 bg-border h-[1px] w-full" />
 
       {/* OAuth绑定管理（占位） */}
-      <Box>
-        <Typography variant="h6" gutterBottom>
-          OAuth账号绑定
-        </Typography>
-        <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-          绑定OAuth账号后可使用快捷登录
-        </Typography>
+      <div className="space-y-4">
+        <div>
+          <h3 className="text-lg font-medium">OAuth账号绑定</h3>
+          <p className="text-sm text-muted-foreground">
+            绑定OAuth账号后可使用快捷登录
+          </p>
+        </div>
 
-        <Paper variant="outlined" sx={{ p: 3 }}>
-          <Typography variant="body2" color="text.secondary">
-            OAuth绑定管理功能即将推出
-          </Typography>
-        </Paper>
-      </Box>
+        <div className="rounded-lg border bg-card text-card-foreground shadow-sm">
+          <div className="p-6">
+            <p className="text-sm text-muted-foreground">
+              OAuth绑定管理功能即将推出
+            </p>
+          </div>
+        </div>
+      </div>
 
-      <Divider sx={{ my: 4 }} />
+      <Separator.Root className="shrink-0 bg-border h-[1px] w-full" />
 
       {/* 危险操作区域（占位） */}
-      <Box>
-        <Typography variant="h6" color="error" gutterBottom>
-          危险操作
-        </Typography>
-        <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-          这些操作将永久影响您的账号
-        </Typography>
+      <div className="space-y-4">
+        <div>
+          <h3 className="text-lg font-medium text-destructive">危险操作</h3>
+          <p className="text-sm text-muted-foreground">
+            这些操作将永久影响您的账号
+          </p>
+        </div>
 
-        <Paper variant="outlined" sx={{ p: 3, borderColor: 'error.main' }}>
-          <Typography variant="body2" color="text.secondary">
-            账号注销功能即将推出
-          </Typography>
-        </Paper>
-      </Box>
-    </Box>
+        <div className="rounded-lg border border-destructive/50 bg-card text-card-foreground shadow-sm">
+          <div className="p-6">
+            <p className="text-sm text-muted-foreground">
+              账号注销功能即将推出
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
   );
 };

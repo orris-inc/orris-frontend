@@ -8,10 +8,16 @@ import { useSearchParams, useNavigate } from 'react-router';
 import { Loader2, CircleCheck, CircleAlert, Info } from 'lucide-react';
 import { verifyEmail } from '@/features/auth/api/auth-api';
 import { handleApiError } from '@/shared/lib/axios';
-
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardTitle, CardDescription } from '@/components/ui/card';
-import { Alert, AlertDescription } from '@/components/ui/alert';
+import {
+  getButtonClass,
+  cardStyles,
+  cardContentStyles,
+  cardTitleStyles,
+  cardDescriptionStyles,
+  getAlertClass,
+  alertDescriptionStyles
+} from '@/lib/ui-styles';
+import { cn } from '@/lib/utils';
 
 type VerificationStatus = 'loading' | 'success' | 'error' | 'already_verified';
 
@@ -69,10 +75,10 @@ export const EmailVerificationPage = () => {
               <Loader2 className="size-16 animate-spin text-primary" />
             </div>
             <div className="grid gap-2">
-              <CardTitle className="text-2xl">正在验证您的邮箱...</CardTitle>
-              <CardDescription>
+              <h3 className={cardTitleStyles}>正在验证您的邮箱...</h3>
+              <p className={cardDescriptionStyles}>
                 请稍候，我们正在确认您的邮箱地址
-              </CardDescription>
+              </p>
             </div>
           </div>
         );
@@ -86,18 +92,17 @@ export const EmailVerificationPage = () => {
               </div>
             </div>
             <div className="grid gap-2">
-              <CardTitle className="text-2xl">邮箱验证成功！</CardTitle>
-              <CardDescription>
+              <h3 className={cardTitleStyles}>邮箱验证成功！</h3>
+              <p className={cardDescriptionStyles}>
                 您的邮箱已成功验证，现在可以登录您的账号了
-              </CardDescription>
+              </p>
             </div>
-            <Button
-              size="lg"
+            <button
               onClick={handleGoToLogin}
-              className="w-full"
+              className={cn(getButtonClass('default', 'lg'), "w-full")}
             >
               前往登录
-            </Button>
+            </button>
           </div>
         );
 
@@ -110,18 +115,17 @@ export const EmailVerificationPage = () => {
               </div>
             </div>
             <div className="grid gap-2">
-              <CardTitle className="text-2xl">邮箱已验证</CardTitle>
-              <CardDescription>
+              <h3 className={cardTitleStyles}>邮箱已验证</h3>
+              <p className={cardDescriptionStyles}>
                 您的邮箱之前已经验证过了，可以直接登录
-              </CardDescription>
+              </p>
             </div>
-            <Button
-              size="lg"
+            <button
               onClick={handleGoToLogin}
-              className="w-full"
+              className={cn(getButtonClass('default', 'lg'), "w-full")}
             >
               前往登录
-            </Button>
+            </button>
           </div>
         );
 
@@ -134,35 +138,32 @@ export const EmailVerificationPage = () => {
               </div>
             </div>
             <div className="grid gap-4">
-              <CardTitle className="text-2xl">验证失败</CardTitle>
+              <h3 className={cardTitleStyles}>验证失败</h3>
 
-              <Alert variant="destructive">
+              <div className={getAlertClass('destructive')}>
                 <CircleAlert className="size-4" />
-                <AlertDescription>
+                <div className={alertDescriptionStyles}>
                   {errorMessage || '验证链接已失效或无效'}
-                </AlertDescription>
-              </Alert>
+                </div>
+              </div>
 
-              <CardDescription>
+              <p className={cardDescriptionStyles}>
                 验证链接可能已过期或无效，请尝试重新发送验证邮件
-              </CardDescription>
+              </p>
 
               <div className="grid gap-2">
-                <Button
-                  size="lg"
+                <button
                   onClick={handleResendEmail}
-                  className="w-full"
+                  className={cn(getButtonClass('default', 'lg'), "w-full")}
                 >
                   重新发送验证邮件
-                </Button>
-                <Button
-                  variant="outline"
-                  size="lg"
+                </button>
+                <button
                   onClick={handleGoToLogin}
-                  className="w-full"
+                  className={cn(getButtonClass('outline', 'lg'), "w-full")}
                 >
                   返回登录
-                </Button>
+                </button>
               </div>
             </div>
           </div>
@@ -176,11 +177,11 @@ export const EmailVerificationPage = () => {
   return (
     <div className="min-h-screen flex items-center justify-center p-4 bg-background">
       <div className="w-full max-w-md">
-        <Card>
-          <CardContent className="pt-6">
+        <div className={cardStyles}>
+          <div className={cardContentStyles}>
             {renderContent()}
-          </CardContent>
-        </Card>
+          </div>
+        </div>
       </div>
     </div>
   );

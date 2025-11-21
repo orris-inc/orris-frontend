@@ -9,17 +9,25 @@ import { z } from 'zod';
 import { Link as RouterLink, useNavigate } from 'react-router';
 import { useState, useEffect } from 'react';
 import { Eye, EyeOff, Chrome, Github, Loader2, CircleAlert } from 'lucide-react';
+import * as LabelPrimitive from '@radix-ui/react-label';
+import * as Separator from '@radix-ui/react-separator';
+import * as Progress from '@radix-ui/react-progress';
 import { useAuth } from '@/features/auth/hooks/useAuth';
 import { useAuthStore } from '@/features/auth/stores/auth-store';
 import { useNotificationStore } from '@/shared/stores/notification-store';
-
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Separator } from '@/components/ui/separator';
-import { Progress } from '@/components/ui/progress';
+import {
+  getButtonClass,
+  inputStyles,
+  labelStyles,
+  cardStyles,
+  cardHeaderStyles,
+  cardTitleStyles,
+  cardDescriptionStyles,
+  cardContentStyles,
+  getAlertClass,
+  alertDescriptionStyles
+} from '@/lib/ui-styles';
+import { cn } from '@/lib/utils';
 
 // Zod 4 注册表单验证
 const registerSchema = z
@@ -121,29 +129,30 @@ export const RegisterPage = () => {
   return (
     <div className="min-h-screen flex items-center justify-center p-4 bg-background">
       <div className="w-full max-w-md">
-        <Card>
-          <CardHeader className="text-center">
-            <CardTitle className="text-3xl">创建账号</CardTitle>
-            <CardDescription>加入 Orris，开始您的旅程</CardDescription>
-          </CardHeader>
-          <CardContent className="grid gap-6">
+        <div className={cardStyles}>
+          <div className={cn(cardHeaderStyles, "text-center")}>
+            <h3 className={cn(cardTitleStyles, "text-3xl")}>创建账号</h3>
+            <p className={cardDescriptionStyles}>加入 Orris，开始您的旅程</p>
+          </div>
+          <div className={cn(cardContentStyles, "grid gap-6")}>
             {/* 错误提示 */}
             {error && (
-              <Alert variant="destructive">
-                <CircleAlert />
-                <AlertDescription>{error}</AlertDescription>
-              </Alert>
+              <div className={getAlertClass('destructive')}>
+                <CircleAlert className="h-4 w-4" />
+                <div className={alertDescriptionStyles}>{error}</div>
+              </div>
             )}
 
             {/* 注册表单 */}
             <form onSubmit={handleSubmit(onSubmit)} className="grid gap-4">
               <div className="grid gap-2">
-                <Label htmlFor="name">姓名</Label>
-                <Input
+                <LabelPrimitive.Root htmlFor="name" className={labelStyles}>姓名</LabelPrimitive.Root>
+                <input
                   id="name"
                   autoComplete="name"
                   autoFocus
                   aria-invalid={!!errors.name}
+                  className={inputStyles}
                   {...register('name')}
                 />
                 {errors.name && (
@@ -152,12 +161,13 @@ export const RegisterPage = () => {
               </div>
 
               <div className="grid gap-2">
-                <Label htmlFor="email">邮箱</Label>
-                <Input
+                <LabelPrimitive.Root htmlFor="email" className={labelStyles}>邮箱</LabelPrimitive.Root>
+                <input
                   id="email"
                   type="email"
                   autoComplete="email"
                   aria-invalid={!!errors.email}
+                  className={inputStyles}
                   {...register('email')}
                 />
                 {errors.email && (
@@ -166,23 +176,21 @@ export const RegisterPage = () => {
               </div>
 
               <div className="grid gap-2">
-                <Label htmlFor="password">密码</Label>
+                <LabelPrimitive.Root htmlFor="password" className={labelStyles}>密码</LabelPrimitive.Root>
                 <div className="relative">
-                  <Input
+                  <input
                     id="password"
                     type={showPassword ? 'text' : 'password'}
                     autoComplete="new-password"
                     aria-invalid={!!errors.password}
-                    className="pr-10"
+                    className={cn(inputStyles, "pr-10")}
                     {...register('password', {
                       onChange: (e) => handlePasswordChange(e.target.value),
                     })}
                   />
-                  <Button
+                  <button
                     type="button"
-                    variant="ghost"
-                    size="icon-sm"
-                    className="absolute right-1 top-1/2 -translate-y-1/2"
+                    className="absolute right-1 top-1/2 -translate-y-1/2 inline-flex items-center justify-center rounded-md hover:bg-accent hover:text-accent-foreground h-8 w-8 transition-colors"
                     onClick={() => setShowPassword(!showPassword)}
                     aria-label="切换密码显示"
                     tabIndex={-1}
@@ -192,21 +200,25 @@ export const RegisterPage = () => {
                     ) : (
                       <Eye className="size-4" />
                     )}
-                  </Button>
+                  </button>
                 </div>
                 {errors.password && (
                   <p className="text-sm text-destructive">{errors.password.message}</p>
                 )}
                 {password && (
                   <div className="grid gap-1">
-                    <Progress
+                    <Progress.Root
                       value={passwordStrength}
-                      className="h-2"
-                      style={{
-                        // @ts-ignore - CSS custom property
-                        '--progress-background': getPasswordStrengthColor(),
-                      }}
-                    />
+                      className="relative h-2 w-full overflow-hidden rounded-full bg-secondary"
+                    >
+                      <Progress.Indicator
+                        className="h-full w-full flex-1 transition-all"
+                        style={{
+                          backgroundColor: getPasswordStrengthColor(),
+                          transform: `translateX(-${100 - passwordStrength}%)`,
+                        }}
+                      />
+                    </Progress.Root>
                     <p className="text-xs text-muted-foreground">
                       密码强度：{getPasswordStrengthText()}
                     </p>
@@ -215,21 +227,19 @@ export const RegisterPage = () => {
               </div>
 
               <div className="grid gap-2">
-                <Label htmlFor="confirmPassword">确认密码</Label>
+                <LabelPrimitive.Root htmlFor="confirmPassword" className={labelStyles}>确认密码</LabelPrimitive.Root>
                 <div className="relative">
-                  <Input
+                  <input
                     id="confirmPassword"
                     type={showConfirmPassword ? 'text' : 'password'}
                     autoComplete="new-password"
                     aria-invalid={!!errors.confirmPassword}
-                    className="pr-10"
+                    className={cn(inputStyles, "pr-10")}
                     {...register('confirmPassword')}
                   />
-                  <Button
+                  <button
                     type="button"
-                    variant="ghost"
-                    size="icon-sm"
-                    className="absolute right-1 top-1/2 -translate-y-1/2"
+                    className="absolute right-1 top-1/2 -translate-y-1/2 inline-flex items-center justify-center rounded-md hover:bg-accent hover:text-accent-foreground h-8 w-8 transition-colors"
                     onClick={() => setShowConfirmPassword(!showConfirmPassword)}
                     aria-label="切换密码显示"
                     tabIndex={-1}
@@ -239,23 +249,23 @@ export const RegisterPage = () => {
                     ) : (
                       <Eye className="size-4" />
                     )}
-                  </Button>
+                  </button>
                 </div>
                 {errors.confirmPassword && (
                   <p className="text-sm text-destructive">{errors.confirmPassword.message}</p>
                 )}
               </div>
 
-              <Button type="submit" size="lg" disabled={isLoading} className="w-full">
-                {isLoading && <Loader2 className="animate-spin" />}
+              <button type="submit" disabled={isLoading} className={cn(getButtonClass('default', 'lg'), "w-full")}>
+                {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                 注册
-              </Button>
+              </button>
             </form>
 
             {/* 分隔线 */}
             <div className="relative">
               <div className="absolute inset-0 flex items-center">
-                <Separator />
+                <Separator.Root className="w-full h-[1px] bg-border" />
               </div>
               <div className="relative flex justify-center text-xs uppercase">
                 <span className="bg-card px-2 text-muted-foreground">或</span>
@@ -264,27 +274,25 @@ export const RegisterPage = () => {
 
             {/* OAuth 注册按钮 */}
             <div className="grid gap-2">
-              <Button
+              <button
                 type="button"
-                variant="outline"
-                size="lg"
                 onClick={() => handleOAuthRegister('google')}
                 disabled={isLoading}
+                className={getButtonClass('outline', 'lg')}
               >
-                <Chrome />
+                <Chrome className="mr-2 h-4 w-4" />
                 使用 Google 注册
-              </Button>
+              </button>
 
-              <Button
+              <button
                 type="button"
-                variant="outline"
-                size="lg"
                 onClick={() => handleOAuthRegister('github')}
                 disabled={isLoading}
+                className={getButtonClass('outline', 'lg')}
               >
-                <Github />
+                <Github className="mr-2 h-4 w-4" />
                 使用 GitHub 注册
-              </Button>
+              </button>
             </div>
 
             {/* 登录链接 */}
@@ -297,8 +305,8 @@ export const RegisterPage = () => {
                 立即登录
               </RouterLink>
             </div>
-          </CardContent>
-        </Card>
+          </div>
+        </div>
       </div>
     </div>
   );

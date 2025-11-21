@@ -4,12 +4,7 @@
  */
 
 import { useState } from 'react';
-import {
-  Box,
-  ToggleButton,
-  ToggleButtonGroup,
-  Typography,
-} from '@mui/material';
+import { ToggleGroup, ToggleGroupItem } from '@/components/common/ToggleGroup';
 import type { PlanPricing, BillingCycle } from '../types/subscription-plans.types';
 
 interface PlanPricingSelectorProps {
@@ -47,10 +42,7 @@ export const PlanPricingSelector: React.FC<PlanPricingSelectorProps> = ({
 
   const [selectedPricing, setSelectedPricing] = useState<PlanPricing>(defaultPricing);
 
-  const handlePricingChange = (
-    _event: React.MouseEvent<HTMLElement>,
-    newBillingCycle: BillingCycle | null
-  ) => {
+  const handlePricingChange = (newBillingCycle: string) => {
     if (!newBillingCycle) return;
 
     const newPricing = activePricings.find((p) => p.billing_cycle === newBillingCycle);
@@ -71,50 +63,45 @@ export const PlanPricingSelector: React.FC<PlanPricingSelectorProps> = ({
   if (activePricings.length === 1) {
     const pricing = activePricings[0];
     return (
-      <Box>
-        <Typography variant="h3" component="div" fontWeight="bold">
+      <div>
+        <div className="text-3xl font-bold">
           {formatPrice(pricing.price, pricing.currency)}
-        </Typography>
-        <Typography variant="body2" color="text.secondary">
+        </div>
+        <p className="text-sm text-muted-foreground mt-1">
           {billingCycleLabels[pricing.billing_cycle]}
-        </Typography>
-      </Box>
+        </p>
+      </div>
     );
   }
 
   // 多个定价选项，显示选择器
   return (
-    <Box>
+    <div>
       {/* 计费周期选择器 */}
-      <ToggleButtonGroup
+      <ToggleGroup
+        type="single"
         value={selectedPricing.billing_cycle}
-        exclusive
-        onChange={handlePricingChange}
-        size="small"
-        fullWidth
-        sx={{ mb: 2 }}
+        onValueChange={handlePricingChange}
+        className="flex-wrap justify-start mb-3"
       >
         {activePricings.map((pricing) => (
-          <ToggleButton
+          <ToggleGroupItem
             key={pricing.billing_cycle}
             value={pricing.billing_cycle}
-            sx={{
-              textTransform: 'none',
-              fontSize: '0.875rem',
-            }}
+            className="text-xs"
           >
             {billingCycleLabels[pricing.billing_cycle]}
-          </ToggleButton>
+          </ToggleGroupItem>
         ))}
-      </ToggleButtonGroup>
+      </ToggleGroup>
 
       {/* 选中的价格 */}
-      <Typography variant="h3" component="div" fontWeight="bold">
+      <div className="text-3xl font-bold">
         {formatPrice(selectedPricing.price, selectedPricing.currency)}
-      </Typography>
-      <Typography variant="body2" color="text.secondary">
+      </div>
+      <p className="text-sm text-muted-foreground mt-1">
         {billingCycleLabels[selectedPricing.billing_cycle]}
-      </Typography>
-    </Box>
+      </p>
+    </div>
   );
 };

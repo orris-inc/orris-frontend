@@ -4,64 +4,21 @@
  */
 
 import { useMemo } from 'react';
-import {
-  Drawer,
-  List,
-  ListItem,
-  ListItemButton,
-  ListItemIcon,
-  ListItemText,
-  Box,
-  Toolbar,
-  Typography,
-  Divider,
-} from '@mui/material';
 import { Link as RouterLink, useLocation } from 'react-router-dom';
+import * as Dialog from '@radix-ui/react-dialog';
+import * as Separator from '@radix-ui/react-separator';
+import { X } from 'lucide-react';
+import { cn } from '@/lib/utils';
 
 import type { NavigationItem } from '../../types/navigation.types';
 
-/**
- * MobileDrawer 组件属性
- */
 interface MobileDrawerProps {
-  /** 抽屉是否打开 */
   open: boolean;
-  /** 抽屉关闭回调 */
   onClose: () => void;
-  /** 导航项列表 */
   navigationItems: NavigationItem[];
-  /** 品牌名称(显示在顶部) */
   brandName?: string;
 }
 
-/**
- * 移动端抽屉菜单组件
- *
- * 特点:
- * - 只在移动端显示(xs和sm断点)
- * - 临时抽屉,从左侧滑出
- * - 点击导航项后自动关闭
- * - 顶部带品牌区域
- * - 高亮当前激活的页面
- * - 完整的TypeScript类型定义
- *
- * @example
- * ```tsx
- * import { MobileDrawer } from '@/components/navigation/MobileDrawer';
- * import { navigationConfig } from '@/config/navigation';
- * import { usePermissions } from '@/features/auth/hooks/usePermissions';
- *
- * const { filterNavigationByPermission } = usePermissions();
- * const visibleItems = filterNavigationByPermission(navigationConfig);
- *
- * <MobileDrawer
- *   open={drawerOpen}
- *   onClose={() => setDrawerOpen(false)}
- *   navigationItems={visibleItems}
- *   brandName="Orris"
- * />
- * ```
- */
 export const MobileDrawer = ({
   open,
   onClose,
@@ -70,136 +27,63 @@ export const MobileDrawer = ({
 }: MobileDrawerProps) => {
   const location = useLocation();
 
-  /**
-   * 渲染导航项
-   * 根据是否为分隔符渲染不同的内容
-   */
   const renderNavigationItems = useMemo(() => {
-    /**
-     * 处理导航项点击
-     * 点击后自动关闭抽屉
-     */
-    const handleNavigationItemClick = () => {
-      onClose();
-    };
-
     return navigationItems.map((item) => {
-      // 渲染分隔符
       if (item.divider) {
-        return <Divider key={item.id} sx={{ my: 1 }} />;
+        return <Separator.Root key={item.id} className="my-2 shrink-0 bg-border h-[1px] w-full" />;
       }
 
-      // 渲染导航项
       const Icon = item.icon;
       const isActive = location.pathname === item.path;
 
       return (
-        <ListItem key={item.id} disablePadding>
-          <ListItemButton
-            component={RouterLink}
-            to={item.path}
-            onClick={handleNavigationItemClick}
-            disabled={item.disabled}
-            selected={isActive}
-            sx={{
-              py: 1.5,
-              '&:hover': {
-                bgcolor: 'action.hover',
-              },
-              '&.Mui-selected': {
-                bgcolor: 'primary.main',
-                color: 'primary.contrastText',
-                '&:hover': {
-                  bgcolor: 'primary.dark',
-                },
-                '& .MuiListItemIcon-root': {
-                  color: 'primary.contrastText',
-                },
-              },
-            }}
-          >
-            {Icon && (
-              <ListItemIcon
-                sx={{
-                  minWidth: 40,
-                  color: item.disabled ? 'action.disabled' : 'inherit',
-                }}
-              >
-                <Icon />
-              </ListItemIcon>
-            )}
-            <ListItemText
-              primary={item.label}
-              sx={{
-                '& .MuiTypography-root': {
-                  fontSize: '0.95rem',
-                  fontWeight: isActive ? 600 : 500,
-                },
-              }}
+        <RouterLink
+          key={item.id}
+          to={item.path}
+          onClick={onClose}
+          className={cn(
+            "flex items-center rounded-md px-3 py-2 text-sm font-medium transition-colors",
+            isActive
+              ? "bg-primary text-primary-foreground"
+              : "text-muted-foreground hover:bg-accent hover:text-accent-foreground",
+            item.disabled && "pointer-events-none opacity-50"
+          )}
+        >
+          {Icon && (
+            <Icon
+              className={cn(
+                "mr-3 h-5 w-5 flex-shrink-0",
+                isActive ? "text-primary-foreground" : "text-muted-foreground"
+              )}
             />
-          </ListItemButton>
-        </ListItem>
+          )}
+          {item.label}
+        </RouterLink>
       );
     });
   }, [navigationItems, location.pathname, onClose]);
 
   return (
-    <Drawer
-      anchor="left"
-      open={open}
-      onClose={onClose}
-      variant="temporary"
-      sx={{
-        display: { xs: 'block', md: 'none' },
-        '& .MuiDrawer-paper': {
-          width: 280,
-          boxSizing: 'border-box',
-        },
-      }}
-    >
-      {/* 顶部品牌区域 - 与AppBar高度对齐 */}
-      <Toolbar
-        sx={{
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'flex-start',
-          bgcolor: 'primary.main',
-          color: 'primary.contrastText',
-          minHeight: 64,
-        }}
-      >
-        <Typography
-          variant="h6"
-          component="div"
-          sx={{
-            fontWeight: 700,
-            letterSpacing: 0.5,
-            fontSize: '1.4rem',
-          }}
-        >
-          {brandName}
-        </Typography>
-      </Toolbar>
-
-      {/* 导航列表 */}
-      <Box
-        role="presentation"
-        sx={{
-          flexGrow: 1,
-          overflow: 'auto',
-        }}
-      >
-        <List
-          sx={{
-            py: 1,
-            px: 0,
-          }}
-        >
-          {renderNavigationItems}
-        </List>
-      </Box>
-    </Drawer>
+    <Dialog.Root open={open} onOpenChange={(isOpen) => !isOpen && onClose()}>
+      <Dialog.Portal>
+        <Dialog.Overlay className="fixed inset-0 z-50 bg-black/80 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0" />
+        <Dialog.Content className="fixed inset-y-0 left-0 z-50 h-full w-72 gap-4 border-r bg-background p-0 shadow-lg transition ease-in-out data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:duration-300 data-[state=open]:duration-500 data-[state=closed]:slide-out-to-left data-[state=open]:slide-in-from-left">
+          <div className="bg-primary px-6 py-4 text-primary-foreground flex items-center justify-between">
+            <Dialog.Title className="text-left text-xl font-bold">
+              {brandName}
+            </Dialog.Title>
+            <Dialog.Close className="rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none">
+              <X className="h-4 w-4" />
+              <span className="sr-only">Close</span>
+            </Dialog.Close>
+          </div>
+          <div className="flex-1 overflow-y-auto py-4">
+            <nav className="space-y-1 px-2">
+              {renderNavigationItems}
+            </nav>
+          </div>
+        </Dialog.Content>
+      </Dialog.Portal>
+    </Dialog.Root>
   );
 };
-
-export type { MobileDrawerProps };

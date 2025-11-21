@@ -5,11 +5,10 @@
 
 import { useAuthStore } from '@/features/auth/stores/auth-store';
 import { useAuth } from '@/features/auth/hooks/useAuth';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent } from '@/components/ui/card';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Badge } from '@/components/ui/badge';
+import * as AvatarPrimitive from '@radix-ui/react-avatar';
 import { Loader2 } from 'lucide-react';
+import { cardStyles, getBadgeClass, getButtonClass } from '@/lib/ui-styles';
+import { cn } from '@/lib/utils';
 
 export const HomePage = () => {
   const { user } = useAuthStore();
@@ -18,17 +17,21 @@ export const HomePage = () => {
   return (
     <div className="min-h-screen flex items-center justify-center p-4 bg-background">
       <div className="w-full max-w-2xl">
-        <Card>
-          <CardContent className="p-8">
+        <div className={cardStyles}>
+          <div className="p-8">
             <div className="grid gap-6">
               {/* 用户头像 */}
               <div className="flex justify-center">
-                <Avatar className="size-24">
-                  <AvatarImage src={user?.avatar} alt={user?.name} />
-                  <AvatarFallback className="text-4xl">
+                <AvatarPrimitive.Root className="size-24 relative flex shrink-0 overflow-hidden rounded-full">
+                  <AvatarPrimitive.Image
+                    src={user?.avatar}
+                    alt={user?.name}
+                    className="aspect-square h-full w-full"
+                  />
+                  <AvatarPrimitive.Fallback className="flex h-full w-full items-center justify-center rounded-full bg-muted text-4xl">
                     {user?.name?.charAt(0).toUpperCase()}
-                  </AvatarFallback>
-                </Avatar>
+                  </AvatarPrimitive.Fallback>
+                </AvatarPrimitive.Root>
               </div>
 
               {/* 欢迎信息 */}
@@ -42,8 +45,8 @@ export const HomePage = () => {
               </div>
 
               {/* 用户信息 */}
-              <Card className="border">
-                <CardContent className="p-6 grid gap-4">
+              <div className={cn(cardStyles, "border")}>
+                <div className="p-6 grid gap-4">
                   <div className="grid gap-1">
                     <p className="text-sm text-muted-foreground">
                       邮箱
@@ -65,9 +68,9 @@ export const HomePage = () => {
                       邮箱验证状态
                     </p>
                     <div>
-                      <Badge variant={user?.email_verified ? 'default' : 'secondary'}>
+                      <span className={getBadgeClass(user?.email_verified ? 'default' : 'secondary')}>
                         {user?.email_verified ? '已验证' : '未验证'}
-                      </Badge>
+                      </span>
                     </div>
                   </div>
 
@@ -81,25 +84,26 @@ export const HomePage = () => {
                       </p>
                     </div>
                   )}
-                </CardContent>
-              </Card>
+                </div>
+              </div>
 
               {/* 登出按钮 */}
               <div className="flex justify-center mt-2">
-                <Button
-                  variant="outline"
-                  size="lg"
+                <button
                   onClick={logout}
                   disabled={isLoading}
-                  className="text-destructive border-destructive hover:bg-destructive hover:text-destructive-foreground"
+                  className={cn(
+                    getButtonClass('outline', 'lg'),
+                    "text-destructive border-destructive hover:bg-destructive hover:text-destructive-foreground"
+                  )}
                 >
-                  {isLoading && <Loader2 className="animate-spin" />}
+                  {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                   退出登录
-                </Button>
+                </button>
               </div>
             </div>
-          </CardContent>
-        </Card>
+          </div>
+        </div>
       </div>
     </div>
   );

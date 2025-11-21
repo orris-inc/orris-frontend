@@ -1,18 +1,11 @@
 /**
  * 用户个人信息卡片
  */
-
-import {
-  Card,
-  CardContent,
-  Avatar,
-  Typography,
-  Stack,
-  Box,
-  Chip,
-} from '@mui/material';
-import VerifiedIcon from '@mui/icons-material/Verified';
+import * as Avatar from '@radix-ui/react-avatar';
 import type { User } from '@/features/auth/types/auth.types';
+import { BadgeCheck } from 'lucide-react';
+import { cardStyles, cardContentStyles, getBadgeClass } from '@/lib/ui-styles';
+import { cn } from '@/lib/utils';
 
 interface UserInfoCardProps {
   user: User;
@@ -23,67 +16,46 @@ export const UserInfoCard = ({ user }: UserInfoCardProps) => {
   const avatarText = user.initials || user.display_name?.charAt(0).toUpperCase() || user.name?.charAt(0).toUpperCase() || user.email?.charAt(0).toUpperCase();
 
   return (
-    <Card elevation={2}>
-      <CardContent>
-        <Stack spacing={3} alignItems="center">
+    <div className={cardStyles}>
+      <div className={cn(cardContentStyles, 'p-6')}>
+        <div className="flex flex-col items-center space-y-4">
           {/* 用户头像 */}
-          <Avatar
-            src={user.avatar}
-            alt={displayName}
-            sx={{
-              width: 100,
-              height: 100,
-              fontSize: '2.5rem',
-              bgcolor: 'primary.main',
-              border: '4px solid',
-              borderColor: 'background.paper',
-              boxShadow: 3,
-            }}
-          >
-            {avatarText}
-          </Avatar>
+          <Avatar.Root className="h-24 w-24 border-4 border-background shadow-lg rounded-full overflow-hidden">
+            <Avatar.Image src={user.avatar} alt={displayName} className="h-full w-full object-cover" />
+            <Avatar.Fallback className="flex h-full w-full items-center justify-center text-3xl bg-primary/20 text-primary">
+              {avatarText}
+            </Avatar.Fallback>
+          </Avatar.Root>
 
           {/* 用户名 */}
-          <Box textAlign="center" width="100%">
-            <Stack direction="row" spacing={1} justifyContent="center" alignItems="center">
-              <Typography variant="h5" fontWeight="bold">
-                {displayName}
-              </Typography>
+          <div className="text-center">
+            <div className="flex items-center justify-center space-x-1.5">
+              <h2 className="text-xl font-bold">{displayName}</h2>
               {user.email_verified && (
-                <VerifiedIcon color="primary" fontSize="small" />
+                <BadgeCheck className="h-5 w-5 text-blue-500" />
               )}
-            </Stack>
-
-            <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
-              {user.email}
-            </Typography>
-          </Box>
+            </div>
+            <p className="mt-1 text-sm text-muted-foreground">{user.email}</p>
+          </div>
 
           {/* OAuth标签 */}
           {user.oauth_provider && (
-            <Chip
-              label={`${user.oauth_provider.toUpperCase()} 账号`}
-              size="small"
-              color="primary"
-              variant="outlined"
-            />
+            <span className={getBadgeClass('outline')}>{`${user.oauth_provider.toUpperCase()} 账号`}</span>
           )}
 
           {/* 加入时间 */}
-          <Box width="100%" sx={{ pt: 2, borderTop: 1, borderColor: 'divider' }}>
-            <Typography variant="caption" color="text.secondary" display="block">
-              加入时间
-            </Typography>
-            <Typography variant="body2" fontWeight={500}>
+          <div className="w-full border-t border-border/50 pt-4 text-center">
+            <p className="text-xs text-muted-foreground">加入时间</p>
+            <p className="text-sm font-medium">
               {new Date(user.created_at).toLocaleDateString('zh-CN', {
                 year: 'numeric',
                 month: 'long',
                 day: 'numeric',
               })}
-            </Typography>
-          </Box>
-        </Stack>
-      </CardContent>
-    </Card>
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
   );
 };

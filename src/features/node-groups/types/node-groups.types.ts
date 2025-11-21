@@ -4,8 +4,6 @@
  * 来源: backend/swagger.json /node-groups
  */
 
-import type { NodeListItem } from '@/features/nodes/types/nodes.types';
-
 /**
  * 节点组列表项
  * GET /node-groups 接口返回数据
@@ -22,12 +20,14 @@ export interface NodeGroupListItem {
 }
 
 /**
- * 节点组详情（包含关联的节点）
+ * 节点组详情（包含关联的节点和订阅计划）
  * GET /node-groups/{id} 接口返回数据
  */
 export interface NodeGroupDetail extends NodeGroupListItem {
-  nodes?: NodeListItem[];
-  subscription_plans?: SubscriptionPlanBasic[];
+  node_ids?: number[];                 // 关联的节点ID列表
+  subscription_plan_ids?: number[];    // 关联的订阅计划ID列表
+  metadata?: Record<string, any>;      // 元数据
+  version?: number;                     // 版本号
 }
 
 /**

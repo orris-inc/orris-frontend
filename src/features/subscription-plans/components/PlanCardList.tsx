@@ -2,7 +2,7 @@
  * 订阅计划卡片列表组件（用户端）
  */
 
-import { Box, Typography, CircularProgress } from '@mui/material';
+import { Loader2 } from 'lucide-react';
 import { PlanCard } from './PlanCard';
 import type { SubscriptionPlan } from '../types/subscription-plans.types';
 
@@ -21,33 +21,32 @@ export const PlanCardList: React.FC<PlanCardListProps> = ({
 }) => {
   if (loading) {
     return (
-      <Box display="flex" justifyContent="center" alignItems="center" minHeight="400px">
-        <CircularProgress />
-      </Box>
+      <div className="flex justify-center items-center min-h-[400px]">
+        <Loader2 className="size-8 animate-spin text-muted-foreground" />
+      </div>
     );
   }
 
   if (!plans || plans.length === 0) {
     return (
-      <Box textAlign="center" py={8}>
-        <Typography variant="h6" color="text.secondary">
+      <div className="text-center py-16">
+        <p className="text-lg text-muted-foreground">
           暂无可用的订阅计划
-        </Typography>
-      </Box>
+        </p>
+      </div>
     );
   }
 
   return (
-    <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, 1fr)', md: 'repeat(3, 1fr)' }, gap: 3 }}>
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8">
       {plans.map((plan) => (
-        <Box key={plan.ID}>
-          <PlanCard
-            plan={plan}
-            recommended={plan.ID === recommendedPlanId}
-            onSelect={onSelectPlan}
-          />
-        </Box>
+        <PlanCard
+          key={plan.ID}
+          plan={plan}
+          recommended={plan.ID === recommendedPlanId}
+          onSelect={onSelectPlan}
+        />
       ))}
-    </Box>
+    </div>
   );
 };

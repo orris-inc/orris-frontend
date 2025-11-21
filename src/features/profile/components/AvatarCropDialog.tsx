@@ -1,17 +1,10 @@
 import { useState, useCallback } from 'react';
 import Cropper, { Area } from 'react-easy-crop';
-import { Loader2 } from 'lucide-react';
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog';
-import { Button } from '@/components/ui/button';
-import { Slider } from '@/components/ui/slider';
-import { Label } from '@/components/ui/label';
+import * as Dialog from '@radix-ui/react-dialog';
+import * as Slider from '@radix-ui/react-slider';
+import * as LabelPrimitive from '@radix-ui/react-label';
+import { Loader2, X } from 'lucide-react';
+import { getButtonClass } from '@/lib/ui-styles';
 
 interface AvatarCropDialogProps {
   open: boolean;
@@ -113,54 +106,83 @@ export const AvatarCropDialog = ({
   };
 
   return (
-    <Dialog open={open} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="sm:max-w-[600px]">
-        <DialogHeader>
-          <DialogTitle>裁剪头像</DialogTitle>
-          <DialogDescription>
+    <Dialog.Root open={open} onOpenChange={(isOpen) => !isOpen && onClose()}>
+      <Dialog.Portal>
+        <Dialog.Overlay className="fixed inset-0 z-50 bg-black/80 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0" />
+        <Dialog.Content className="fixed left-[50%] top-[50%] z-50 translate-x-[-50%] translate-y-[-50%] border bg-background p-6 shadow-lg duration-200 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[state=closed]:slide-out-to-left-1/2 data-[state=closed]:slide-out-to-top-[48%] data-[state=open]:slide-in-from-left-1/2 data-[state=open]:slide-in-from-top-[48%] sm:rounded-lg sm:max-w-[600px] w-full">
+          <div className="flex items-center justify-between mb-4">
+            <Dialog.Title className="text-lg font-semibold leading-none tracking-tight">
+              裁剪头像
+            </Dialog.Title>
+            <Dialog.Close className="rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none data-[state=open]:bg-accent data-[state=open]:text-muted-foreground">
+              <X className="h-4 w-4" />
+              <span className="sr-only">Close</span>
+            </Dialog.Close>
+          </div>
+
+          <Dialog.Description className="text-sm text-muted-foreground mb-4">
             调整图片位置和缩放比例，裁剪出您满意的头像
-          </DialogDescription>
-        </DialogHeader>
+          </Dialog.Description>
 
-        <div className="grid gap-4 py-4">
-          <div className="relative h-[400px] w-full">
-            <Cropper
-              image={imageSrc}
-              crop={crop}
-              zoom={zoom}
-              aspect={1}
-              cropShape="round"
-              showGrid={false}
-              onCropChange={setCrop}
-              onZoomChange={setZoom}
-              onCropComplete={onCropComplete}
-            />
+          <div className="grid gap-4 py-4">
+            <div className="relative h-[400px] w-full">
+              <Cropper
+                image={imageSrc}
+                crop={crop}
+                zoom={zoom}
+                aspect={1}
+                cropShape="round"
+                showGrid={false}
+                onCropChange={setCrop}
+                onZoomChange={setZoom}
+                onCropComplete={onCropComplete}
+              />
+            </div>
+
+            <div className="grid gap-2 px-2">
+              <LabelPrimitive.Root
+                htmlFor="zoom"
+                className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+              >
+                缩放
+              </LabelPrimitive.Root>
+              <Slider.Root
+                id="zoom"
+                value={[zoom]}
+                min={1}
+                max={3}
+                step={0.1}
+                onValueChange={(value) => setZoom(value[0])}
+                disabled={isUploading}
+                className="relative flex w-full touch-none select-none items-center"
+              >
+                <Slider.Track className="relative h-2 w-full grow overflow-hidden rounded-full bg-secondary">
+                  <Slider.Range className="absolute h-full bg-primary" />
+                </Slider.Track>
+                <Slider.Thumb className="block h-5 w-5 rounded-full border-2 border-primary bg-background ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50" />
+              </Slider.Root>
+            </div>
           </div>
 
-          <div className="grid gap-2 px-2">
-            <Label htmlFor="zoom">缩放</Label>
-            <Slider
-              id="zoom"
-              value={[zoom]}
-              min={1}
-              max={3}
-              step={0.1}
-              onValueChange={(value) => setZoom(value[0])}
+          <div className="flex items-center justify-end gap-2 mt-4">
+            <button
+              className={getButtonClass('outline')}
+              onClick={onClose}
               disabled={isUploading}
-            />
+            >
+              取消
+            </button>
+            <button
+              className={getButtonClass('default')}
+              onClick={handleConfirm}
+              disabled={isUploading}
+            >
+              {isUploading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+              确认
+            </button>
           </div>
-        </div>
-
-        <DialogFooter>
-          <Button variant="outline" onClick={onClose} disabled={isUploading}>
-            取消
-          </Button>
-          <Button onClick={handleConfirm} disabled={isUploading}>
-            {isUploading && <Loader2 className="animate-spin" />}
-            确认
-          </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
+        </Dialog.Content>
+      </Dialog.Portal>
+    </Dialog.Root>
   );
 };

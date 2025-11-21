@@ -3,16 +3,11 @@
  */
 
 import { useState } from 'react';
-import {
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
-  Button,
-  TextField,
-  Grid,
-  Box,
-} from '@mui/material';
+import * as Dialog from '@radix-ui/react-dialog';
+import * as LabelPrimitive from '@radix-ui/react-label';
+import { X } from 'lucide-react';
+import { getButtonClass, inputStyles, labelStyles } from '@/lib/ui-styles';
+import { cn } from '@/lib/utils';
 import type { CreateUserRequest } from '../types/users.types';
 
 interface CreateUserDialogProps {
@@ -28,7 +23,7 @@ export const CreateUserDialog: React.FC<CreateUserDialogProps> = ({
 }) => {
   const [email, setEmail] = useState('');
   const [name, setName] = useState('');
-  const [errors, setErrors] = useState<{email?: string; name?: string}>({});
+  const [errors, setErrors] = useState<{ email?: string; name?: string }>({});
 
   const handleClose = () => {
     setEmail('');
@@ -37,8 +32,14 @@ export const CreateUserDialog: React.FC<CreateUserDialogProps> = ({
     onClose();
   };
 
+  const handleOpenChange = (open: boolean) => {
+    if (!open) {
+      handleClose();
+    }
+  };
+
   const validate = () => {
-    const newErrors: {email?: string; name?: string} = {};
+    const newErrors: { email?: string; name?: string } = {};
 
     if (!email.trim()) {
       newErrors.email = '邮箱不能为空';
@@ -64,50 +65,73 @@ export const CreateUserDialog: React.FC<CreateUserDialogProps> = ({
   };
 
   return (
-    <Dialog open={open} onClose={handleClose} maxWidth="sm" fullWidth>
-      <DialogTitle>新增用户</DialogTitle>
-      <DialogContent>
-        <Box sx={{ pt: 2 }}>
-          <Grid container spacing={2.5}>
-            <Grid size={{ xs: 12 }}>
-              <TextField
-                fullWidth
-                label="邮箱"
+    <Dialog.Root open={open} onOpenChange={handleOpenChange}>
+      <Dialog.Portal>
+        <Dialog.Overlay className="fixed inset-0 z-50 bg-black/80 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0" />
+        <Dialog.Content className="fixed left-[50%] top-[50%] z-50 w-full max-w-lg translate-x-[-50%] translate-y-[-50%] gap-4 border bg-background p-6 shadow-lg duration-200 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[state=closed]:slide-out-to-left-1/2 data-[state=closed]:slide-out-to-top-[48%] data-[state=open]:slide-in-from-left-1/2 data-[state=open]:slide-in-from-top-[48%] sm:rounded-lg">
+          <div className="flex items-center justify-between">
+            <Dialog.Title className="text-lg font-semibold leading-none tracking-tight">
+              新增用户
+            </Dialog.Title>
+            <Dialog.Close className="rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none data-[state=open]:bg-accent data-[state=open]:text-muted-foreground">
+              <X className="h-4 w-4" />
+              <span className="sr-only">Close</span>
+            </Dialog.Close>
+          </div>
+
+          <div className="grid gap-4 py-4">
+            <div className="grid gap-2">
+              <LabelPrimitive.Root htmlFor="email" className={labelStyles}>
+                邮箱
+              </LabelPrimitive.Root>
+              <input
+                id="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                error={!!errors.email}
-                helperText={errors.email || '必填项'}
-                required
-                size="small"
+                placeholder="example@domain.com"
+                className={cn(inputStyles, errors.email && "border-destructive")}
                 autoFocus
               />
-            </Grid>
-
-            <Grid size={{ xs: 12 }}>
-              <TextField
-                fullWidth
-                label="姓名"
+              {errors.email && (
+                <span className="text-sm text-destructive">{errors.email}</span>
+              )}
+            </div>
+            <div className="grid gap-2">
+              <LabelPrimitive.Root htmlFor="name" className={labelStyles}>
+                姓名
+              </LabelPrimitive.Root>
+              <input
+                id="name"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                error={!!errors.name}
-                helperText={errors.name || '必填项，长度2-100个字符'}
-                required
-                size="small"
+                placeholder="用户姓名"
+                className={cn(inputStyles, errors.name && "border-destructive")}
               />
-            </Grid>
-          </Grid>
-        </Box>
-      </DialogContent>
-      <DialogActions>
-        <Button onClick={handleClose}>取消</Button>
-        <Button
-          onClick={handleSubmit}
-          variant="contained"
-          disabled={!email.trim() || !name.trim()}
-        >
-          创建
-        </Button>
-      </DialogActions>
-    </Dialog>
+              {errors.name ? (
+                <span className="text-sm text-destructive">{errors.name}</span>
+              ) : (
+                <span className="text-sm text-muted-foreground">长度2-100个字符</span>
+              )}
+            </div>
+          </div>
+
+          <div className="flex justify-end gap-2">
+            <button
+              onClick={handleClose}
+              className={getButtonClass('outline', 'default')}
+            >
+              取消
+            </button>
+            <button
+              onClick={handleSubmit}
+              disabled={!email.trim() || !name.trim()}
+              className={getButtonClass('default', 'default')}
+            >
+              创建
+            </button>
+          </div>
+        </Dialog.Content>
+      </Dialog.Portal>
+    </Dialog.Root>
   );
 };

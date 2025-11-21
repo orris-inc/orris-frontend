@@ -1,32 +1,27 @@
 /**
  * 用户列表表格组件（管理端）
+ * 使用统一的 AdminTable 组件
  */
 
-import { Edit, Trash2, CreditCard, Loader2 } from 'lucide-react';
+import { Edit, Trash2, CreditCard } from 'lucide-react';
 import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table';
-import { Card, CardContent } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
+  AdminTable,
+  AdminTableHeader,
+  AdminTableBody,
+  AdminTableRow,
+  AdminTableHead,
+  AdminTableCell,
+  AdminTableEmpty,
+  AdminTableLoading,
+  AdminTablePagination,
+  AdminBadge,
+} from '@/components/admin';
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
+} from '@/components/common/DropdownMenu';
 import { formatDate } from '@/shared/utils/date-utils';
 import type { UserListItem } from '../types/users.types';
 
@@ -43,35 +38,22 @@ interface UserListTableProps {
   onAssignSubscription: (user: UserListItem) => void;
 }
 
-// 状态标签映射
-const STATUS_LABELS: Record<string, string> = {
-  active: '激活',
-  inactive: '未激活',
-  pending: '待处理',
-  suspended: '暂停',
-  deleted: '已删除',
+// 状态配置
+const STATUS_CONFIG: Record<string, { label: string; variant: 'success' | 'default' | 'warning' | 'danger' }> = {
+  active: { label: '激活', variant: 'success' },
+  inactive: { label: '未激活', variant: 'default' },
+  pending: { label: '待处理', variant: 'warning' },
+  suspended: { label: '暂停', variant: 'danger' },
+  deleted: { label: '已删除', variant: 'danger' },
 };
 
-// 状态样式映射
-const STATUS_VARIANTS: Record<string, 'default' | 'secondary' | 'destructive' | 'outline'> = {
-  active: 'default',
-  inactive: 'secondary',
-  pending: 'outline',
-  suspended: 'destructive',
-  deleted: 'destructive',
+// 角色配置
+const ROLE_CONFIG: Record<string, { label: string; variant: 'info' | 'default' }> = {
+  user: { label: '用户', variant: 'default' },
+  admin: { label: '管理员', variant: 'info' },
 };
 
-// 角色标签映射
-const ROLE_LABELS: Record<string, string> = {
-  user: '用户',
-  admin: '管理员',
-};
-
-// 角色样式映射
-const ROLE_VARIANTS: Record<string, 'default' | 'secondary' | 'destructive' | 'outline'> = {
-  user: 'secondary',
-  admin: 'default',
-};
+const COLUMNS = 7;
 
 export const UserListTable: React.FC<UserListTableProps> = ({
   users,
@@ -85,75 +67,67 @@ export const UserListTable: React.FC<UserListTableProps> = ({
   onDelete,
   onAssignSubscription,
 }) => {
-  // 计算分页信息
-  const totalPages = Math.ceil(total / pageSize);
-  const startIndex = (page - 1) * pageSize + 1;
-  const endIndex = Math.min(page * pageSize, total);
-
   return (
-    <Card>
-      <CardContent className="p-0">
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>ID</TableHead>
-              <TableHead>邮箱</TableHead>
-              <TableHead>姓名</TableHead>
-              <TableHead>角色</TableHead>
-              <TableHead>状态</TableHead>
-              <TableHead>创建时间</TableHead>
-              <TableHead className="text-center">操作</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {loading && users.length === 0 ? (
-              <TableRow>
-                <TableCell colSpan={7} className="h-64 text-center">
-                  <div className="flex items-center justify-center">
-                    <Loader2 className="size-8 animate-spin text-muted-foreground" />
-                  </div>
-                </TableCell>
-              </TableRow>
-            ) : users.length === 0 ? (
-              <TableRow>
-                <TableCell colSpan={7} className="h-64 text-center">
-                  <p className="text-muted-foreground">暂无用户数据</p>
-                </TableCell>
-              </TableRow>
-            ) : (
-              users.map((user) => (
-                <TableRow key={user.id}>
-                  <TableCell className="font-medium">{user.id}</TableCell>
-                  <TableCell>{user.email}</TableCell>
-                  <TableCell>
+    <>
+      <AdminTable>
+        <AdminTableHeader>
+          <AdminTableRow>
+            <AdminTableHead width={60}>ID</AdminTableHead>
+            <AdminTableHead>邮箱</AdminTableHead>
+            <AdminTableHead>姓名</AdminTableHead>
+            <AdminTableHead width={80}>角色</AdminTableHead>
+            <AdminTableHead width={80}>状态</AdminTableHead>
+            <AdminTableHead width={140}>创建时间</AdminTableHead>
+            <AdminTableHead width={80} align="center">操作</AdminTableHead>
+          </AdminTableRow>
+        </AdminTableHeader>
+        <AdminTableBody>
+          {loading && users.length === 0 ? (
+            <AdminTableLoading colSpan={COLUMNS} />
+          ) : users.length === 0 ? (
+            <AdminTableEmpty message="暂无用户数据" colSpan={COLUMNS} />
+          ) : (
+            users.map((user) => {
+              const statusConfig = STATUS_CONFIG[user.status] || { label: user.status, variant: 'default' as const };
+              const roleConfig = ROLE_CONFIG[user.role || 'user'] || { label: '用户', variant: 'default' as const };
+
+              return (
+                <AdminTableRow key={user.id}>
+                  <AdminTableCell className="font-medium text-slate-900 dark:text-white">
+                    {user.id}
+                  </AdminTableCell>
+                  <AdminTableCell>{user.email}</AdminTableCell>
+                  <AdminTableCell>
                     <div>
-                      <div className="text-sm font-medium">{user.name || '-'}</div>
+                      <div className="font-medium text-slate-900 dark:text-white">
+                        {user.name || '-'}
+                      </div>
                       {user.display_name && (
-                        <div className="text-xs text-muted-foreground">
+                        <div className="text-xs text-slate-500 dark:text-slate-400">
                           {user.display_name}
                         </div>
                       )}
                     </div>
-                  </TableCell>
-                  <TableCell>
-                    <Badge variant={ROLE_VARIANTS[user.role || 'user'] || 'secondary'}>
-                      {ROLE_LABELS[user.role || 'user'] || user.role || '用户'}
-                    </Badge>
-                  </TableCell>
-                  <TableCell>
-                    <Badge variant={STATUS_VARIANTS[user.status] || 'secondary'}>
-                      {STATUS_LABELS[user.status] || user.status}
-                    </Badge>
-                  </TableCell>
-                  <TableCell className="text-muted-foreground">
+                  </AdminTableCell>
+                  <AdminTableCell>
+                    <AdminBadge variant={roleConfig.variant}>
+                      {roleConfig.label}
+                    </AdminBadge>
+                  </AdminTableCell>
+                  <AdminTableCell>
+                    <AdminBadge variant={statusConfig.variant}>
+                      {statusConfig.label}
+                    </AdminBadge>
+                  </AdminTableCell>
+                  <AdminTableCell className="text-slate-500 dark:text-slate-400 text-sm">
                     {formatDate(user.created_at)}
-                  </TableCell>
-                  <TableCell className="text-center">
+                  </AdminTableCell>
+                  <AdminTableCell align="center">
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" size="sm">
+                        <button className="px-2 py-1 text-xs text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-700 rounded transition-colors">
                           操作
-                        </Button>
+                        </button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end">
                         <DropdownMenuItem onClick={() => onAssignSubscription(user)}>
@@ -166,67 +140,28 @@ export const UserListTable: React.FC<UserListTableProps> = ({
                         </DropdownMenuItem>
                         <DropdownMenuItem
                           onClick={() => onDelete(user)}
-                          className="text-destructive"
+                          className="text-red-600 dark:text-red-400"
                         >
                           <Trash2 className="mr-2 size-4" />
                           删除
                         </DropdownMenuItem>
                       </DropdownMenuContent>
                     </DropdownMenu>
-                  </TableCell>
-                </TableRow>
-              ))
-            )}
-          </TableBody>
-        </Table>
-
-        {/* 分页控制 */}
-        {total > 0 && (
-          <div className="flex items-center justify-between border-t px-4 py-3">
-            <div className="flex items-center gap-2 text-sm text-muted-foreground">
-              <span>每页显示</span>
-              <Select
-                value={pageSize.toString()}
-                onValueChange={(value) => onPageSizeChange(parseInt(value, 10))}
-              >
-                <SelectTrigger className="h-8 w-[70px]">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="10">10</SelectItem>
-                  <SelectItem value="20">20</SelectItem>
-                  <SelectItem value="50">50</SelectItem>
-                </SelectContent>
-              </Select>
-              <span>共 {total} 条</span>
-            </div>
-
-            <div className="flex items-center gap-2">
-              <span className="text-sm text-muted-foreground">
-                {startIndex}-{endIndex} / {total}
-              </span>
-              <div className="flex gap-1">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => onPageChange(page - 1)}
-                  disabled={page === 1 || loading}
-                >
-                  上一页
-                </Button>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => onPageChange(page + 1)}
-                  disabled={page >= totalPages || loading}
-                >
-                  下一页
-                </Button>
-              </div>
-            </div>
-          </div>
-        )}
-      </CardContent>
-    </Card>
+                  </AdminTableCell>
+                </AdminTableRow>
+              );
+            })
+          )}
+        </AdminTableBody>
+      </AdminTable>
+      <AdminTablePagination
+        page={page}
+        pageSize={pageSize}
+        total={total}
+        onPageChange={onPageChange}
+        onPageSizeChange={onPageSizeChange}
+        loading={loading}
+      />
+    </>
   );
 };

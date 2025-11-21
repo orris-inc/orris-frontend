@@ -10,6 +10,9 @@ import type {
   CreateSubscriptionRequest,
   SubscriptionCreateResult,
   SubscriptionListParams,
+  SubscriptionToken,
+  GetTokensParams,
+  GenerateTokenRequest,
 } from '../types/subscriptions.types';
 
 /**
@@ -80,6 +83,40 @@ export const cancelSubscription = async (id: number): Promise<Subscription> => {
 export const activateSubscription = async (id: number): Promise<Subscription> => {
   const response = await apiClient.post<APIResponse<Subscription>>(
     `/subscriptions/${id}/activate`
+  );
+  return response.data.data;
+};
+
+/**
+ * 获取订阅的令牌列表
+ * GET /subscriptions/{id}/tokens
+ * 来源: swagger.json line 4690-4762
+ * 需要认证: Bearer Token
+ */
+export const getSubscriptionTokens = async (
+  subscriptionId: number,
+  params?: GetTokensParams
+): Promise<SubscriptionToken[]> => {
+  const response = await apiClient.get<APIResponse<SubscriptionToken[]>>(
+    `/subscriptions/${subscriptionId}/tokens`,
+    { params }
+  );
+  return response.data.data;
+};
+
+/**
+ * 生成订阅令牌
+ * POST /subscriptions/{id}/tokens
+ * 来源: swagger.json line 4763-4836
+ * 需要认证: Bearer Token
+ */
+export const generateSubscriptionToken = async (
+  subscriptionId: number,
+  data: GenerateTokenRequest
+): Promise<SubscriptionToken> => {
+  const response = await apiClient.post<APIResponse<SubscriptionToken>>(
+    `/subscriptions/${subscriptionId}/tokens`,
+    data
   );
   return response.data.data;
 };

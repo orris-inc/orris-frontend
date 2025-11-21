@@ -4,20 +4,19 @@
  */
 
 import { useEffect, useState } from 'react';
-import { CheckCircle, XCircle, Info, AlertTriangle } from 'lucide-react';
-import { Card, CardContent } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { Skeleton } from '@/components/ui/skeleton';
-import { Alert, AlertDescription } from '@/components/ui/alert';
+import { CheckCircle, XCircle, Info, AlertTriangle, CreditCard, Link2, Copy, Check, Plus } from 'lucide-react';
+import { cardStyles, getButtonClass, getBadgeClass, getAlertClass, alertDescriptionStyles } from '@/lib/ui-styles';
+import { Skeleton } from '@/components/common/Skeleton';
 import {
   Accordion,
   AccordionContent,
   AccordionItem,
   AccordionTrigger,
-} from '@/components/ui/accordion';
+} from '@/components/common/Accordion';
 import { getSubscriptions } from '@/features/subscriptions/api/subscriptions-api';
-import type { Subscription } from '@/features/subscriptions/types/subscriptions.types';
+import { generateSubscriptionToken } from '@/features/subscriptions/api/subscriptions-api';
+import type { Subscription, SubscriptionToken } from '@/features/subscriptions/types/subscriptions.types';
+import { cn } from '@/lib/utils';
 
 /**
  * 获取订阅状态的显示配置
@@ -89,11 +88,68 @@ const formatPrice = (price?: number, currency?: string) => {
   return `${currencySymbol}${formattedPrice}`;
 };
 
+/**
+ * 获取API基础URL
+ */
+const getApiBaseUrl = () => {
+  return import.meta.env.VITE_API_BASE_URL || 'http://localhost:8081';
+};
+
+/**
+ * 订阅链接类型
+ */
+const SUBSCRIPTION_LINK_TYPES = [
+  { name: 'Base64', path: '' },
+  { name: 'Clash', path: '/clash' },
+  { name: 'V2Ray', path: '/v2ray' },
+  { name: 'SIP008', path: '/sip008' },
+  { name: 'Surge', path: '/surge' },
+];
+
+/**
+ * 复制按钮组件
+ */
+const CopyButton = ({ text, label }: { text: string; label: string }) => {
+  const [copied, setCopied] = useState(false);
+
+  const handleCopy = async () => {
+    try {
+      await navigator.clipboard.writeText(text);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch (err) {
+      console.error('复制失败:', err);
+      alert('复制失败，请手动复制');
+    }
+  };
+
+  return (
+    <button
+      onClick={handleCopy}
+      className={getButtonClass('ghost', 'sm', 'h-8 gap-2')}
+    >
+      {copied ? (
+        <>
+          <Check className="size-3" />
+          已复制
+        </>
+      ) : (
+        <>
+          <Copy className="size-3" />
+          复制{label}
+        </>
+      )}
+    </button>
+  );
+};
+
 export const SubscriptionCard = () => {
   const [subscriptions, setSubscriptions] = useState<Subscription[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [showAll, setShowAll] = useState(false); // 是否显示全部订阅
+  const [generatedTokens, setGeneratedTokens] = useState<Record<number, SubscriptionToken>>({}); // 存储每个订阅生成的token
+  const [generatingTokens, setGeneratingTokens] = useState<Record<number, boolean>>({}); // 存储token生成状态
 
   useEffect(() => {
     const fetchSubscriptions = async () => {
@@ -120,54 +176,73 @@ export const SubscriptionCard = () => {
     fetchSubscriptions();
   }, []);
 
+  // 生成订阅token
+  const handleGenerateToken = async (subscriptionId: number) => {
+    setGeneratingTokens((prev) => ({ ...prev, [subscriptionId]: true }));
+
+    try {
+      const token = await generateSubscriptionToken(subscriptionId, {
+        name: 'Default Token',
+        scope: 'full',
+      });
+      console.log('生成的token数据:', token);
+      setGeneratedTokens((prev) => ({ ...prev, [subscriptionId]: token }));
+    } catch (err) {
+      console.error('生成订阅令牌失败:', err);
+      alert('生成订阅链接失败，请稍后重试');
+    } finally {
+      setGeneratingTokens((prev) => ({ ...prev, [subscriptionId]: false }));
+    }
+  };
+
   // 加载中状态
   if (loading) {
     return (
-      <Card className="shadow-sm hover:shadow-md transition-shadow h-full">
-        <CardContent className="p-6">
-          <h3 className="text-xl font-bold mb-4">我的订阅</h3>
-          <div className="flex justify-center py-8">
-            <Skeleton className="size-12 rounded-full" />
+      <div className={cardStyles}>
+        <div className="p-8">
+          <h3 className="text-2xl font-semibold mb-6">我的订阅</h3>
+          <div className="flex justify-center py-12">
+            <Skeleton className="size-16 rounded-full" />
           </div>
-        </CardContent>
-      </Card>
+        </div>
+      </div>
     );
   }
 
   // 错误状态
   if (error) {
     return (
-      <Card className="shadow-sm hover:shadow-md transition-shadow h-full">
-        <CardContent className="p-6">
-          <h3 className="text-xl font-bold mb-4">我的订阅</h3>
-          <Alert variant="destructive">
+      <div className={cardStyles}>
+        <div className="p-8">
+          <h3 className="text-2xl font-semibold mb-6">我的订阅</h3>
+          <div className={getAlertClass('destructive', 'border-none bg-destructive/10')}>
             <XCircle className="size-4" />
-            <AlertDescription>{error}</AlertDescription>
-          </Alert>
-        </CardContent>
-      </Card>
+            <div className={alertDescriptionStyles}>{error}</div>
+          </div>
+        </div>
+      </div>
     );
   }
 
   // 无订阅状态
   if (subscriptions.length === 0) {
     return (
-      <Card className="shadow-sm hover:shadow-md transition-shadow h-full">
-        <CardContent className="p-6">
-          <h3 className="text-xl font-bold mb-4">我的订阅</h3>
-          <div className="py-6 space-y-4 text-center">
-            <div className="inline-flex items-center justify-center size-16 rounded-full bg-muted">
-              <CreditCard className="size-8 text-muted-foreground" />
+      <div className={cardStyles}>
+        <div className="p-8">
+          <h3 className="text-2xl font-semibold mb-6">我的订阅</h3>
+          <div className="py-12 space-y-6 text-center">
+            <div className="inline-flex items-center justify-center size-20 rounded-full bg-muted/50">
+              <CreditCard className="size-10 text-muted-foreground" />
             </div>
             <div>
-              <p className="text-muted-foreground mb-4">您还没有任何订阅</p>
-              <Button variant="default" className="w-full" asChild>
-                <a href="/pricing">查看订阅计划</a>
-              </Button>
+              <p className="text-muted-foreground mb-6">您还没有任何订阅</p>
+              <a href="/pricing" className={getButtonClass('default', 'lg', 'rounded-xl')}>
+                查看订阅计划
+              </a>
             </div>
           </div>
-        </CardContent>
-      </Card>
+        </div>
+      </div>
     );
   }
 
@@ -184,30 +259,34 @@ export const SubscriptionCard = () => {
   const displaySubscriptions = showAll ? subscriptions : activeSubscriptions;
 
   return (
-    <Card className="shadow-sm hover:shadow-md transition-shadow h-full">
-      <CardContent className="p-6">
-        <div className="flex items-center justify-between mb-5">
-          <h3 className="text-xl font-bold">我的订阅</h3>
+    <div className={cardStyles}>
+      <div className="p-8">
+        <div className="flex items-center justify-between mb-6">
+          <h3 className="text-2xl font-semibold">我的订阅</h3>
           <div className="flex items-center gap-2">
-            <Badge variant="default" className="bg-green-600 hover:bg-green-600">
+            <span className={getBadgeClass('success', 'px-3 py-1')}>
               {activeSubscriptions.length}
-            </Badge>
+            </span>
             {inactiveSubscriptions.length > 0 && (
-              <Badge variant="secondary">{inactiveSubscriptions.length}</Badge>
+              <span className={getBadgeClass('secondary', 'px-3 py-1')}>{inactiveSubscriptions.length}</span>
             )}
           </div>
         </div>
 
         {/* 显示激活订阅或全部订阅 */}
         {displaySubscriptions.length === 0 ? (
-          <Alert>
+          <div className={getAlertClass('default', 'border-none bg-muted/50')}>
             <Info className="size-4" />
-            <AlertDescription>
+            <div className={alertDescriptionStyles}>
               {showAll ? '没有订阅' : '没有激活的订阅'}
-            </AlertDescription>
-          </Alert>
+            </div>
+          </div>
         ) : (
-          <Accordion type="single" collapsible className="space-y-3">
+          <Accordion
+            type="single"
+            collapsible
+            className="space-y-4"
+          >
             {displaySubscriptions.map((subscription, index) => {
               const statusConfig = getStatusConfig(subscription);
               const isActive = subscription.IsActive && !subscription.IsExpired;
@@ -216,76 +295,156 @@ export const SubscriptionCard = () => {
                 <AccordionItem
                   key={subscription.ID}
                   value={`item-${index}`}
-                  className={`border-2 rounded-xl overflow-hidden transition-all ${
+                  className={cn(
+                    'border-0 rounded-2xl overflow-hidden',
                     isActive
-                      ? 'border-green-500/50 bg-green-50 dark:bg-green-950/30 shadow-sm'
-                      : 'border-border bg-card'
-                  }`}
+                      ? 'bg-gradient-to-br from-emerald-50 to-emerald-50/50 dark:from-emerald-950/30 dark:to-emerald-950/10'
+                      : 'bg-muted/30'
+                  )}
                 >
                   {/* 折叠头部 - 简要信息 */}
-                  <AccordionTrigger className="px-5 hover:no-underline group">
+                  <AccordionTrigger className="px-6 py-5 hover:no-underline">
                     <div className="flex items-center justify-between w-full pr-2">
-                      <span className="font-semibold text-left">
+                      <span className="font-semibold text-lg text-left">
                         {subscription.Plan?.Name || '未知计划'}
                       </span>
-                      <div className="flex items-center gap-2">
-                        {statusConfig.icon}
-                        <span className="text-sm font-medium">
-                          {statusConfig.label}
-                        </span>
-                      </div>
+                      <span className={getBadgeClass(isActive ? 'success' : 'secondary', 'ml-2 px-3 py-1')}>
+                        {statusConfig.label}
+                      </span>
                     </div>
                   </AccordionTrigger>
 
                   {/* 折叠内容 - 详细信息 */}
-                  <AccordionContent className="px-5 pb-5">
-                    <div className="space-y-3 pt-3">
+                  <AccordionContent className="px-6 pb-6">
+                    <div className="space-y-4 pt-4">
                       {/* 价格 */}
                       {subscription.Plan?.Price !== undefined && (
-                        <div className="flex items-center justify-between py-2 px-3 rounded-lg bg-background/80">
-                          <span className="text-sm text-muted-foreground">价格</span>
-                          <span className="text-sm font-semibold text-foreground">
+                        <div className="flex items-center justify-between py-3 px-4 rounded-xl bg-background/50">
+                          <span className="text-muted-foreground">价格</span>
+                          <span className="font-semibold text-lg">
                             {formatPrice(subscription.Plan.Price, subscription.Plan.Currency)}
                           </span>
                         </div>
                       )}
 
                       {/* 自动续费 */}
-                      <div className="flex items-center justify-between py-2 px-3 rounded-lg bg-background/80">
-                        <span className="text-sm text-muted-foreground">自动续费</span>
-                        <Badge
-                          variant={subscription.AutoRenew ? 'default' : 'outline'}
-                          className={subscription.AutoRenew ? 'bg-green-600 hover:bg-green-600' : ''}
-                        >
+                      <div className="flex items-center justify-between py-3 px-4 rounded-xl bg-background/50">
+                        <span className="text-muted-foreground">自动续费</span>
+                        <span className={getBadgeClass(subscription.AutoRenew ? 'success' : 'outline', 'px-3 py-1')}>
                           {subscription.AutoRenew ? '已开启' : '已关闭'}
-                        </Badge>
+                        </span>
                       </div>
 
                       {/* 开始日期 */}
-                      <div className="flex items-center justify-between py-2 px-3 rounded-lg bg-background/80">
-                        <span className="text-sm text-muted-foreground">开始日期</span>
-                        <span className="text-sm font-medium text-foreground">
-                          {formatDate(subscription.StartDate)}
-                        </span>
+                      <div className="flex items-center justify-between py-3 px-4 rounded-xl bg-background/50">
+                        <span className="text-muted-foreground">开始日期</span>
+                        <span className="font-medium">{formatDate(subscription.StartDate)}</span>
                       </div>
 
                       {/* 到期日期 */}
                       {subscription.EndDate && (
-                        <div className="flex items-center justify-between py-2 px-3 rounded-lg bg-background/80">
-                          <span className="text-sm text-muted-foreground">到期日期</span>
-                          <span className="text-sm font-medium text-foreground">
-                            {formatDate(subscription.EndDate)}
-                          </span>
+                        <div className="flex items-center justify-between py-3 px-4 rounded-xl bg-background/50">
+                          <span className="text-muted-foreground">到期日期</span>
+                          <span className="font-medium">{formatDate(subscription.EndDate)}</span>
                         </div>
                       )}
 
                       {/* 当前计费周期 */}
                       {subscription.CurrentPeriodEnd && isActive && (
-                        <div className="flex items-center justify-between py-2 px-3 rounded-lg bg-background/80">
-                          <span className="text-sm text-muted-foreground">下次续费</span>
-                          <span className="text-sm font-medium text-foreground">
-                            {formatDate(subscription.CurrentPeriodEnd)}
-                          </span>
+                        <div className="flex items-center justify-between py-3 px-4 rounded-xl bg-background/50">
+                          <span className="text-muted-foreground">下次续费</span>
+                          <span className="font-medium">{formatDate(subscription.CurrentPeriodEnd)}</span>
+                        </div>
+                      )}
+
+                      {/* 订阅链接 */}
+                      {isActive && (
+                        <div className="mt-6 space-y-3">
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-2 text-muted-foreground">
+                              <Link2 className="size-4" />
+                              <span className="font-medium">订阅链接</span>
+                            </div>
+                            {!generatedTokens[subscription.ID] && (
+                              <button
+                                onClick={() => handleGenerateToken(subscription.ID)}
+                                disabled={generatingTokens[subscription.ID]}
+                                className={getButtonClass('outline', 'sm', 'gap-2')}
+                              >
+                                {generatingTokens[subscription.ID] ? (
+                                  <>生成中...</>
+                                ) : (
+                                  <>
+                                    <Plus className="size-3" />
+                                    生成订阅链接
+                                  </>
+                                )}
+                              </button>
+                            )}
+                          </div>
+
+                          {generatingTokens[subscription.ID] ? (
+                            <div className="py-4 px-4 rounded-xl bg-background/50">
+                              <Skeleton className="h-4 w-full" />
+                            </div>
+                          ) : generatedTokens[subscription.ID] ? (
+                            <div className="p-4 rounded-xl bg-background/50 border border-border/50">
+                              <div className="flex items-center justify-between mb-3">
+                                <div>
+                                  <span className="font-medium text-sm block">
+                                    {generatedTokens[subscription.ID].Name}
+                                  </span>
+                                  <span className="text-xs text-muted-foreground">
+                                    作用域: {generatedTokens[subscription.ID].Scope}
+                                  </span>
+                                </div>
+                                {generatedTokens[subscription.ID].ExpiresAt && (
+                                  <span className="text-xs text-muted-foreground">
+                                    到期: {formatDate(generatedTokens[subscription.ID].ExpiresAt)}
+                                  </span>
+                                )}
+                              </div>
+
+                              {generatedTokens[subscription.ID].Token ? (
+                                <div className="space-y-2">
+                                  {SUBSCRIPTION_LINK_TYPES.map((type) => {
+                                    const baseUrl = getApiBaseUrl();
+                                    const url = `${baseUrl}/sub/${generatedTokens[subscription.ID].Token}${type.path}`;
+                                    return (
+                                      <div
+                                        key={type.name}
+                                        className="flex items-center justify-between gap-2 p-2 rounded-lg bg-muted/30"
+                                      >
+                                        <div className="flex-1 min-w-0">
+                                          <div className="text-xs text-muted-foreground mb-1">
+                                            {type.name}
+                                          </div>
+                                          <div className="text-xs font-mono truncate">
+                                            {url}
+                                          </div>
+                                        </div>
+                                        <CopyButton text={url} label={type.name} />
+                                      </div>
+                                    );
+                                  })}
+                                </div>
+                              ) : (
+                                <div className={getAlertClass('default', 'border-none bg-amber-50/50 dark:bg-amber-950/20')}>
+                                  <Info className="size-4 text-amber-600" />
+                                  <div className={cn(alertDescriptionStyles, 'text-xs text-amber-800 dark:text-amber-200')}>
+                                    Token字段为空，请检查后端API实现
+                                  </div>
+                                </div>
+                              )}
+                            </div>
+                          ) : (
+                            <div className={getAlertClass('default', 'border-none bg-muted/50')}>
+                              <Info className="size-4" />
+                              <div className={cn(alertDescriptionStyles, 'text-sm')}>
+                                点击"生成订阅链接"按钮创建您的订阅链接
+                              </div>
+                            </div>
+                          )}
                         </div>
                       )}
                     </div>
@@ -298,18 +457,16 @@ export const SubscriptionCard = () => {
 
         {/* 切换显示全部/仅激活 */}
         {inactiveSubscriptions.length > 0 && (
-          <div className="mt-5 text-center">
-            <Button
-              variant="ghost"
-              size="sm"
+          <div className="mt-6 text-center">
+            <button
               onClick={() => setShowAll(!showAll)}
-              className="text-xs"
+              className={getButtonClass('ghost', 'sm', 'text-primary')}
             >
               {showAll ? '只看激活订阅' : `查看全部订阅 (${subscriptions.length})`}
-            </Button>
+            </button>
           </div>
         )}
-      </CardContent>
-    </Card>
+      </div>
+    </div>
   );
 };

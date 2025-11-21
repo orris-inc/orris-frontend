@@ -1,31 +1,29 @@
 /**
  * 订阅计划列表表格组件（管理端）
+ * Frontend Design 优化：精致商务风格，细节至上
  */
 
-import { Edit, Power, Loader2 } from 'lucide-react';
+import { Edit, Power, Network, MoreHorizontal } from 'lucide-react';
 import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table';
-import { Card, CardContent } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
+  AdminTable,
+  AdminTableHeader,
+  AdminTableBody,
+  AdminTableRow,
+  AdminTableHead,
+  AdminTableCell,
+  AdminTableEmpty,
+  AdminTableLoading,
+  AdminTablePagination,
+  AdminBadge,
+} from '@/components/admin';
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from '@/components/ui/tooltip';
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/common/DropdownMenu';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/common/Tooltip';
 import { BillingCycleBadge } from './BillingCycleBadge';
 import type { SubscriptionPlan, PlanStatus } from '../types/subscription-plans.types';
 
@@ -70,19 +68,16 @@ interface PlanListTableProps {
   onPageSizeChange: (pageSize: number) => void;
   onEdit: (plan: SubscriptionPlan) => void;
   onToggleStatus: (plan: SubscriptionPlan) => void;
+  onManageNodeGroups?: (plan: SubscriptionPlan) => void;
 }
 
-const STATUS_LABELS: Record<PlanStatus, string> = {
-  active: '激活',
-  inactive: '未激活',
-  archived: '已归档',
+const STATUS_CONFIG: Record<PlanStatus, { label: string; variant: 'success' | 'default' | 'danger' }> = {
+  active: { label: '激活', variant: 'success' },
+  inactive: { label: '未激活', variant: 'default' },
+  archived: { label: '已归档', variant: 'danger' },
 };
 
-const STATUS_VARIANTS: Record<PlanStatus, 'default' | 'secondary' | 'destructive' | 'outline'> = {
-  active: 'default',
-  inactive: 'secondary',
-  archived: 'destructive',
-};
+const COLUMNS = 8;
 
 export const PlanListTable: React.FC<PlanListTableProps> = ({
   plans,
@@ -94,181 +89,154 @@ export const PlanListTable: React.FC<PlanListTableProps> = ({
   onPageSizeChange,
   onEdit,
   onToggleStatus,
+  onManageNodeGroups,
 }) => {
-  // 计算分页信息
-  const totalPages = Math.ceil(total / pageSize);
-  const startIndex = (page - 1) * pageSize + 1;
-  const endIndex = Math.min(page * pageSize, total);
-
   return (
-    <Card>
-      <CardContent className="p-0">
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>计划名称</TableHead>
-              <TableHead>价格</TableHead>
-              <TableHead>计费周期</TableHead>
-              <TableHead>状态</TableHead>
-              <TableHead>公开</TableHead>
-              <TableHead>试用天数</TableHead>
-              <TableHead>排序</TableHead>
-              <TableHead className="text-right">操作</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {loading && plans.length === 0 ? (
-              <TableRow>
-                <TableCell colSpan={8} className="h-64 text-center">
-                  <div className="flex items-center justify-center">
-                    <Loader2 className="size-8 animate-spin text-muted-foreground" />
-                  </div>
-                </TableCell>
-              </TableRow>
-            ) : plans.length === 0 ? (
-              <TableRow>
-                <TableCell colSpan={8} className="h-64 text-center">
-                  <p className="text-muted-foreground">暂无订阅计划</p>
-                </TableCell>
-              </TableRow>
-            ) : (
-              plans.map((plan) => (
-                <TableRow key={plan.ID}>
-                  <TableCell>
-                    <div>
-                      <div className="text-sm font-medium">{plan.Name}</div>
-                      <div className="text-xs text-muted-foreground">{plan.Slug}</div>
+    <>
+      <AdminTable>
+        <AdminTableHeader>
+          <AdminTableRow>
+            <AdminTableHead width={240} align="center">计划名称</AdminTableHead>
+            <AdminTableHead width={130} align="right">价格</AdminTableHead>
+            <AdminTableHead width={100} align="center">计费周期</AdminTableHead>
+            <AdminTableHead width={80} align="center">状态</AdminTableHead>
+            <AdminTableHead width={70} align="center">公开</AdminTableHead>
+            <AdminTableHead width={90} align="right">试用天数</AdminTableHead>
+            <AdminTableHead width={70} align="center">排序</AdminTableHead>
+            <AdminTableHead width={60} align="center">操作</AdminTableHead>
+          </AdminTableRow>
+        </AdminTableHeader>
+        <AdminTableBody>
+          {loading && plans.length === 0 ? (
+            <AdminTableLoading colSpan={COLUMNS} />
+          ) : plans.length === 0 ? (
+            <AdminTableEmpty message="暂无订阅计划" colSpan={COLUMNS} />
+          ) : (
+            plans.map((plan) => {
+              const statusConfig = STATUS_CONFIG[plan.Status] || { label: plan.Status, variant: 'default' as const };
+              const priceRange = getPriceRange(plan);
+
+              return (
+                <AdminTableRow key={plan.ID}>
+                  {/* 计划名称 */}
+                  <AdminTableCell align="center">
+                    <div className="space-y-1">
+                      <div className="text-[15px] text-slate-900 dark:text-white leading-tight">
+                        {plan.Name}
+                      </div>
+                      <div className="text-xs text-slate-400 dark:text-slate-500 leading-tight font-mono">
+                        {plan.Slug}
+                      </div>
                     </div>
-                  </TableCell>
-                  <TableCell>
-                    {(() => {
-                      const priceRange = getPriceRange(plan);
-                      if (priceRange.details) {
-                        // 多定价：显示价格范围 + Tooltip
-                        return (
-                          <Tooltip>
-                            <TooltipTrigger asChild>
-                              <span className="cursor-help border-b border-dotted text-sm">
-                                {priceRange.display}
-                              </span>
-                            </TooltipTrigger>
-                            <TooltipContent>
-                              <div>
-                                <p className="mb-1 text-xs font-bold">所有定价选项：</p>
-                                {priceRange.details.map((detail, idx) => (
-                                  <p key={idx} className="text-xs">
-                                    {detail.cycle}: {detail.price}
-                                  </p>
-                                ))}
-                              </div>
-                            </TooltipContent>
-                          </Tooltip>
-                        );
-                      }
-                      // 单一价格
-                      return <span className="text-sm">{priceRange.display}</span>;
-                    })()}
-                  </TableCell>
-                  <TableCell>
-                    <BillingCycleBadge billingCycle={plan.BillingCycle} />
-                  </TableCell>
-                  <TableCell>
-                    <Badge variant={STATUS_VARIANTS[plan.Status]}>
-                      {STATUS_LABELS[plan.Status]}
-                    </Badge>
-                  </TableCell>
-                  <TableCell>
-                    <Badge variant={plan.IsPublic ? 'default' : 'outline'}>
-                      {plan.IsPublic ? '是' : '否'}
-                    </Badge>
-                  </TableCell>
-                  <TableCell>
-                    {plan.TrialDays ? `${plan.TrialDays} 天` : '-'}
-                  </TableCell>
-                  <TableCell>{plan.SortOrder || '-'}</TableCell>
-                  <TableCell className="text-right">
-                    <div className="flex justify-end gap-2">
+                  </AdminTableCell>
+
+                  {/* 价格 */}
+                  <AdminTableCell align="right">
+                    {priceRange.details ? (
                       <Tooltip>
                         <TooltipTrigger asChild>
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            onClick={() => onEdit(plan)}
-                          >
-                            <Edit className="size-4" />
-                          </Button>
-                        </TooltipTrigger>
-                        <TooltipContent>编辑</TooltipContent>
-                      </Tooltip>
-                      <Tooltip>
-                        <TooltipTrigger asChild>
-                          <Button
-                            variant={plan.Status === 'active' ? 'ghost' : 'default'}
-                            size="icon"
-                            onClick={() => onToggleStatus(plan)}
-                          >
-                            <Power className="size-4" />
-                          </Button>
+                          <span className="inline-flex items-center gap-1 cursor-help group">
+                            <span className="font-mono text-[15px] tabular-nums text-slate-900 dark:text-white group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">
+                              {priceRange.display}
+                            </span>
+                            <svg className="size-3.5 text-slate-400 group-hover:text-indigo-500 transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
+                          </span>
                         </TooltipTrigger>
                         <TooltipContent>
-                          {plan.Status === 'active' ? '停用' : '激活'}
+                          <div className="text-xs space-y-1">
+                            <p className="font-semibold text-white mb-1.5">所有定价选项：</p>
+                            {priceRange.details.map((detail, idx) => (
+                              <p key={idx} className="font-mono text-indigo-100">{detail.cycle}: {detail.price}</p>
+                            ))}
+                          </div>
                         </TooltipContent>
                       </Tooltip>
-                    </div>
-                  </TableCell>
-                </TableRow>
-              ))
-            )}
-          </TableBody>
-        </Table>
+                    ) : (
+                      <span className="font-mono text-[15px] tabular-nums text-slate-900 dark:text-white">
+                        {priceRange.display}
+                      </span>
+                    )}
+                  </AdminTableCell>
 
-        {/* 分页控制 */}
-        {total > 0 && (
-          <div className="flex items-center justify-between border-t px-4 py-3">
-            <div className="flex items-center gap-2 text-sm text-muted-foreground">
-              <span>每页显示</span>
-              <Select
-                value={pageSize.toString()}
-                onValueChange={(value) => onPageSizeChange(parseInt(value, 10))}
-              >
-                <SelectTrigger className="h-8 w-[70px]">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="10">10</SelectItem>
-                  <SelectItem value="20">20</SelectItem>
-                  <SelectItem value="50">50</SelectItem>
-                </SelectContent>
-              </Select>
-              <span>共 {total} 条</span>
-            </div>
+                  {/* 计费周期 */}
+                  <AdminTableCell align="center">
+                    <BillingCycleBadge billingCycle={plan.BillingCycle} />
+                  </AdminTableCell>
 
-            <div className="flex items-center gap-2">
-              <span className="text-sm text-muted-foreground">
-                {startIndex}-{endIndex} / {total}
-              </span>
-              <div className="flex gap-1">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => onPageChange(page - 1)}
-                  disabled={page === 1 || loading}
-                >
-                  上一页
-                </Button>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => onPageChange(page + 1)}
-                  disabled={page >= totalPages || loading}
-                >
-                  下一页
-                </Button>
-              </div>
-            </div>
-          </div>
-        )}
-      </CardContent>
-    </Card>
+                  {/* 状态 */}
+                  <AdminTableCell align="center">
+                    <AdminBadge variant={statusConfig.variant}>
+                      {statusConfig.label}
+                    </AdminBadge>
+                  </AdminTableCell>
+
+                  {/* 公开 */}
+                  <AdminTableCell align="center">
+                    <AdminBadge variant={plan.IsPublic ? 'success' : 'outline'}>
+                      {plan.IsPublic ? '是' : '否'}
+                    </AdminBadge>
+                  </AdminTableCell>
+
+                  {/* 试用天数 */}
+                  <AdminTableCell align="right" className="font-mono tabular-nums text-slate-700 dark:text-slate-300">
+                    {plan.TrialDays ? (
+                      <span className="inline-flex items-center gap-1">
+                        <span>{plan.TrialDays}</span>
+                        <span className="text-xs text-slate-400">天</span>
+                      </span>
+                    ) : (
+                      <span className="text-slate-400">-</span>
+                    )}
+                  </AdminTableCell>
+
+                  {/* 排序 */}
+                  <AdminTableCell align="center" className="font-mono tabular-nums text-slate-600 dark:text-slate-400">
+                    {plan.SortOrder || '-'}
+                  </AdminTableCell>
+
+                  {/* 操作 - 图标优化 */}
+                  <AdminTableCell align="center">
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <button className="inline-flex items-center justify-center size-8 rounded-lg text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-700 transition-all duration-200 group">
+                          <MoreHorizontal className="size-4 group-hover:scale-110 transition-transform" strokeWidth={2} />
+                        </button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end">
+                        <DropdownMenuItem onClick={() => onEdit(plan)}>
+                          <Edit className="mr-2 size-4" />
+                          编辑
+                        </DropdownMenuItem>
+                        {onManageNodeGroups && (
+                          <DropdownMenuItem onClick={() => onManageNodeGroups(plan)}>
+                            <Network className="mr-2 size-4" />
+                            管理节点组
+                          </DropdownMenuItem>
+                        )}
+                        <DropdownMenuSeparator />
+                        <DropdownMenuItem onClick={() => onToggleStatus(plan)}>
+                          <Power className="mr-2 size-4" />
+                          {plan.Status === 'active' ? '停用' : '激活'}
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  </AdminTableCell>
+                </AdminTableRow>
+              );
+            })
+          )}
+        </AdminTableBody>
+      </AdminTable>
+      <AdminTablePagination
+        page={page}
+        pageSize={pageSize}
+        total={total}
+        onPageChange={onPageChange}
+        onPageSizeChange={onPageSizeChange}
+        loading={loading}
+      />
+    </>
   );
 };

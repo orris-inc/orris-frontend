@@ -5,9 +5,7 @@
 
 import { useMemo } from 'react';
 import { useLocation, Link as RouterLink } from 'react-router-dom';
-import { Breadcrumbs, Link, Typography, Box } from '@mui/material';
-import HomeIcon from '@mui/icons-material/Home';
-import NavigateNextIcon from '@mui/icons-material/NavigateNext';
+import { Home as HomeIcon, ChevronRight as NavigateNextIcon } from 'lucide-react';
 
 import { getNavigationItemBySegment } from '../../config/navigation';
 import { usePermissions } from '../../features/auth/hooks/usePermissions';
@@ -121,72 +119,44 @@ export const EnhancedBreadcrumbs = () => {
   }
 
   return (
-    <Box sx={{ mb: 3 }}>
-      <Breadcrumbs
-        separator={<NavigateNextIcon fontSize="small" />}
-        aria-label="breadcrumb"
-        sx={{
-          '& .MuiBreadcrumbs-ol': {
-            flexWrap: 'nowrap',
-          },
-        }}
-      >
+    <nav aria-label="breadcrumb">
+      <ol className="flex flex-wrap items-center gap-1.5 sm:gap-2 break-words text-xs sm:text-sm text-muted-foreground">
         {breadcrumbs.map((item, index) => {
           const isHome = index === 0;
           const isLast = index === breadcrumbs.length - 1;
           // 管理端始终显示所有项,用户端移动端只显示首页和当前页
           const shouldShowOnMobile = shouldShowFullPath || isHome || isLast;
 
+          if (!shouldShowOnMobile) return null;
+
           return (
-            <Box
-              key={item.path}
-              sx={{
-                display: {
-                  xs: shouldShowOnMobile ? 'flex' : 'none',
-                  md: 'flex',
-                },
-                alignItems: 'center',
-              }}
-            >
-              {item.isActive ? (
-                // 当前页 - 不可点击
-                <Typography
-                  color="text.primary"
-                  sx={{
-                    fontWeight: 600,
-                    display: 'flex',
-                    alignItems: 'center',
-                    fontSize: { xs: '0.875rem', md: '0.95rem' },
-                  }}
-                >
-                  {isHome && <HomeIcon sx={{ mr: 0.5, fontSize: 20 }} />}
-                  {item.label}
-                </Typography>
-              ) : (
-                // 父级页面 - 可点击
-                <Link
-                  component={RouterLink}
-                  to={item.path}
-                  underline="hover"
-                  color="inherit"
-                  sx={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    fontSize: { xs: '0.875rem', md: '0.95rem' },
-                    '&:hover': {
-                      color: 'primary.main',
-                    },
-                  }}
-                >
-                  {isHome && <HomeIcon sx={{ mr: 0.5, fontSize: 20 }} />}
-                  {item.label}
-                </Link>
+            <li key={item.path} className="inline-flex items-center gap-1.5 sm:gap-2">
+              {index > 0 && (
+                <NavigateNextIcon className="size-3 sm:size-4" />
               )}
-            </Box>
+
+              {item.isActive ? (
+                <span
+                  className="font-normal text-foreground flex items-center gap-1"
+                  aria-current="page"
+                >
+                  {isHome && <HomeIcon className="size-3 sm:size-4" />}
+                  {item.label}
+                </span>
+              ) : (
+                <RouterLink
+                  to={item.path}
+                  className="transition-colors hover:text-foreground flex items-center gap-1"
+                >
+                  {isHome && <HomeIcon className="size-3 sm:size-4" />}
+                  {item.label}
+                </RouterLink>
+              )}
+            </li>
           );
         })}
-      </Breadcrumbs>
-    </Box>
+      </ol>
+    </nav>
   );
 };
 

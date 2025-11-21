@@ -9,14 +9,22 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { Mail, Loader2, Info, CircleCheck, TriangleAlert } from 'lucide-react';
+import * as LabelPrimitive from '@radix-ui/react-label';
 import { resendVerificationEmail } from '@/features/auth/api/auth-api';
 import { handleApiError } from '@/shared/lib/axios';
-
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { Alert, AlertDescription } from '@/components/ui/alert';
+import {
+  getButtonClass,
+  inputStyles,
+  labelStyles,
+  cardStyles,
+  cardHeaderStyles,
+  cardTitleStyles,
+  cardDescriptionStyles,
+  cardContentStyles,
+  getAlertClass,
+  alertDescriptionStyles,
+} from '@/lib/ui-styles';
+import { cn } from '@/lib/utils';
 
 // 表单验证
 const resendSchema = z.object({
@@ -64,45 +72,45 @@ export const VerificationPendingPage = () => {
   return (
     <div className="min-h-screen flex items-center justify-center p-4 bg-background">
       <div className="w-full max-w-md">
-        <Card>
-          <CardHeader className="text-center">
+        <div className={cardStyles}>
+          <div className={cn(cardHeaderStyles, "text-center")}>
             <div className="flex justify-center mb-4">
               <div className="p-4 bg-primary/10 rounded-full">
                 <Mail className="size-12 text-primary" />
               </div>
             </div>
-            <CardTitle className="text-2xl">验证您的邮箱</CardTitle>
-            <CardDescription>
+            <h3 className={cn(cardTitleStyles, "text-2xl")}>验证您的邮箱</h3>
+            <p className={cardDescriptionStyles}>
               我们已向您的邮箱发送了一封验证邮件
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="grid gap-6">
+            </p>
+          </div>
+          <div className={cn(cardContentStyles, "grid gap-6")}>
             {/* 邮箱提示 */}
             {emailFromState && (
-              <Alert>
+              <div className={getAlertClass('default')}>
                 <Info className="size-4" />
-                <AlertDescription>
+                <div className={alertDescriptionStyles}>
                   验证邮件已发送至：<strong>{emailFromState}</strong>
-                </AlertDescription>
-              </Alert>
+                </div>
+              </div>
             )}
 
             {/* 成功提示 */}
             {success && (
-              <Alert>
+              <div className={getAlertClass('default')}>
                 <CircleCheck className="size-4" />
-                <AlertDescription>
+                <div className={alertDescriptionStyles}>
                   验证邮件已重新发送，请查收您的邮箱
-                </AlertDescription>
-              </Alert>
+                </div>
+              </div>
             )}
 
             {/* 错误提示 */}
             {error && (
-              <Alert variant="destructive">
+              <div className={getAlertClass('destructive')}>
                 <TriangleAlert className="size-4" />
-                <AlertDescription>{error}</AlertDescription>
-              </Alert>
+                <div className={alertDescriptionStyles}>{error}</div>
+              </div>
             )}
 
             {/* 操作说明 */}
@@ -125,13 +133,16 @@ export const VerificationPendingPage = () => {
 
               <form onSubmit={handleSubmit(onSubmit)} className="grid gap-4">
                 <div className="grid gap-2">
-                  <Label htmlFor="email">邮箱地址</Label>
-                  <Input
+                  <LabelPrimitive.Root htmlFor="email" className={labelStyles}>
+                    邮箱地址
+                  </LabelPrimitive.Root>
+                  <input
                     id="email"
                     type="email"
                     autoComplete="email"
                     aria-invalid={!!errors.email}
                     disabled={resending}
+                    className={inputStyles}
                     {...register('email')}
                   />
                   {errors.email && (
@@ -139,20 +150,24 @@ export const VerificationPendingPage = () => {
                   )}
                 </div>
 
-                <Button type="submit" size="lg" disabled={resending} className="w-full">
+                <button
+                  type="submit"
+                  disabled={resending}
+                  className={cn(getButtonClass('default', 'lg'), "w-full")}
+                >
                   {resending && <Loader2 className="animate-spin" />}
                   重新发送验证邮件
-                </Button>
+                </button>
               </form>
             </div>
 
             {/* 提示信息 */}
-            <Alert>
+            <div className={getAlertClass('default')}>
               <TriangleAlert className="size-4" />
-              <AlertDescription>
+              <div className={alertDescriptionStyles}>
                 请注意检查垃圾邮件文件夹。验证链接将在 24 小时后失效。
-              </AlertDescription>
-            </Alert>
+              </div>
+            </div>
 
             {/* 返回登录 */}
             <div className="text-center text-sm text-muted-foreground">
@@ -164,8 +179,8 @@ export const VerificationPendingPage = () => {
                 返回登录
               </RouterLink>
             </div>
-          </CardContent>
-        </Card>
+          </div>
+        </div>
       </div>
     </div>
   );

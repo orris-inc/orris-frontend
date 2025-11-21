@@ -5,14 +5,16 @@
  * 包含导航栏、面包屑、路由标签等所有导航相关配置。
  */
 
-import DashboardIcon from '@mui/icons-material/Dashboard';
-import SubscriptionsIcon from '@mui/icons-material/Subscriptions';
-import CardMembershipIcon from '@mui/icons-material/CardMembership';
-import PeopleIcon from '@mui/icons-material/People';
-import PriceCheckIcon from '@mui/icons-material/PriceCheck';
-import AccountCircleIcon from '@mui/icons-material/AccountCircle';
-import StorageIcon from '@mui/icons-material/Storage';
-import GroupWorkIcon from '@mui/icons-material/GroupWork';
+import {
+  LayoutDashboard,
+  CreditCard,
+  BadgeCheck,
+  Users,
+  DollarSign,
+  User,
+  Server,
+  Network,
+} from 'lucide-react';
 
 import type { NavigationItem } from '../types/navigation.types';
 
@@ -39,7 +41,7 @@ export const navigationConfig: readonly NavigationItem[] = [
     id: 'dashboard',
     label: '首页',
     path: '/dashboard',
-    icon: DashboardIcon,
+    icon: LayoutDashboard,
     roles: ['user', 'admin'],
     showInNav: true,
     showInBreadcrumb: true,
@@ -49,7 +51,7 @@ export const navigationConfig: readonly NavigationItem[] = [
     id: 'pricing',
     label: '定价方案',
     path: '/pricing',
-    icon: PriceCheckIcon,
+    icon: DollarSign,
     roles: ['user', 'admin'],
     showInNav: true,
     showInBreadcrumb: true,
@@ -59,7 +61,7 @@ export const navigationConfig: readonly NavigationItem[] = [
     id: 'profile',
     label: '个人资料',
     path: '/dashboard/profile',
-    icon: AccountCircleIcon,
+    icon: User,
     roles: ['user', 'admin'],
     showInNav: false, // 不在主导航显示(通过用户菜单访问)
     showInBreadcrumb: true,
@@ -72,7 +74,7 @@ export const navigationConfig: readonly NavigationItem[] = [
     id: 'admin-dashboard',
     label: '管理控制台',
     path: '/admin',
-    icon: DashboardIcon,
+    icon: LayoutDashboard,
     roles: ['admin'], // 仅管理员可访问
     showInNav: true,
     showInBreadcrumb: true,
@@ -82,7 +84,7 @@ export const navigationConfig: readonly NavigationItem[] = [
     id: 'subscription-plans',
     label: '订阅计划管理',
     path: '/admin/subscription-plans',
-    icon: SubscriptionsIcon,
+    icon: CreditCard,
     roles: ['admin'], // 仅管理员可访问
     showInNav: true,
     showInBreadcrumb: true,
@@ -93,7 +95,7 @@ export const navigationConfig: readonly NavigationItem[] = [
     id: 'subscriptions',
     label: '订阅管理',
     path: '/admin/subscriptions',
-    icon: CardMembershipIcon,
+    icon: BadgeCheck,
     roles: ['admin'], // 仅管理员可访问
     showInNav: true,
     showInBreadcrumb: true,
@@ -104,7 +106,7 @@ export const navigationConfig: readonly NavigationItem[] = [
     id: 'users',
     label: '用户管理',
     path: '/admin/users',
-    icon: PeopleIcon,
+    icon: Users,
     roles: ['admin'], // 仅管理员可访问
     showInNav: true,
     showInBreadcrumb: true,
@@ -115,7 +117,7 @@ export const navigationConfig: readonly NavigationItem[] = [
     id: 'nodes',
     label: '节点管理',
     path: '/admin/nodes',
-    icon: StorageIcon,
+    icon: Server,
     roles: ['admin'], // 仅管理员可访问
     showInNav: true,
     showInBreadcrumb: true,
@@ -126,7 +128,7 @@ export const navigationConfig: readonly NavigationItem[] = [
     id: 'node-groups',
     label: '节点组管理',
     path: '/admin/node-groups',
-    icon: GroupWorkIcon,
+    icon: Network,
     roles: ['admin'], // 仅管理员可访问
     showInNav: true,
     showInBreadcrumb: true,

@@ -2,15 +2,8 @@
  * 订阅计划卡片组件（用户端）
  */
 
-import {
-  Card,
-  CardContent,
-  CardActions,
-  Typography,
-  Button,
-  Box,
-  Divider,
-} from '@mui/material';
+import { Separator } from '@/components/common/Separator';
+import { getButtonClass, getBadgeClass, cardStyles, cardContentStyles } from '@/lib/ui-styles';
 import { BillingCycleBadge } from './BillingCycleBadge';
 import { PlanFeatureList } from './PlanFeatureList';
 import { PlanPricingSelector } from './PlanPricingSelector';
@@ -35,57 +28,37 @@ export const PlanCard: React.FC<PlanCardProps> = ({
   const currencySymbol = plan.Currency === 'CNY' ? '¥' : '$';
 
   return (
-    <Card
-      sx={{
-        height: '100%',
-        display: 'flex',
-        flexDirection: 'column',
-        position: 'relative',
-        border: recommended ? 2 : 1,
-        borderColor: recommended ? 'primary.main' : 'divider',
-        transition: 'transform 0.2s, box-shadow 0.2s',
-        '&:hover': {
-          transform: 'translateY(-4px)',
-          boxShadow: 4,
-        },
-      }}
+    <div
+      className={`${cardStyles} relative h-full flex flex-col overflow-hidden rounded-2xl transition-all duration-200 hover:-translate-y-1 hover:shadow-lg ${
+        recommended
+          ? 'border-2 border-primary bg-gradient-to-br from-blue-50 to-blue-50/50 dark:from-blue-950/30 dark:to-blue-950/10'
+          : 'border bg-card'
+      }`}
     >
       {/* 推荐标签 */}
       {recommended && (
-        <Box
-          sx={{
-            position: 'absolute',
-            top: -12,
-            left: '50%',
-            transform: 'translateX(-50%)',
-            bgcolor: 'primary.main',
-            color: 'white',
-            px: 2,
-            py: 0.5,
-            borderRadius: 1,
-            fontSize: '0.75rem',
-            fontWeight: 'bold',
-          }}
-        >
-          推荐
-        </Box>
+        <div className="absolute -top-3 left-1/2 -translate-x-1/2 z-10">
+          <span className={getBadgeClass('default', 'px-4 py-1 rounded-full font-semibold shadow-sm')}>
+            推荐
+          </span>
+        </div>
       )}
 
-      <CardContent sx={{ flexGrow: 1, pt: recommended ? 3 : 2 }}>
+      <div className={`${cardContentStyles} flex-1 flex flex-col p-6 ${recommended ? 'pt-8' : ''}`}>
         {/* 计划名称 */}
-        <Typography variant="h5" component="h2" gutterBottom fontWeight="bold">
+        <h2 className="text-2xl font-bold mb-3">
           {plan.Name}
-        </Typography>
+        </h2>
 
         {/* 计费周期标签 - 仅在没有多定价时显示 */}
         {!hasPricings && (
-          <Box mb={2}>
+          <div className="mb-4">
             <BillingCycleBadge billingCycle={plan.BillingCycle} />
-          </Box>
+          </div>
         )}
 
         {/* 价格展示 */}
-        <Box mb={2}>
+        <div className="mb-4">
           {hasPricings ? (
             // 使用新的定价选择器组件
             <PlanPricingSelector
@@ -95,66 +68,63 @@ export const PlanCard: React.FC<PlanCardProps> = ({
           ) : (
             // 向后兼容：使用单一价格
             <>
-              <Typography variant="h3" component="div" fontWeight="bold">
+              <div className="text-3xl font-bold">
                 {currencySymbol}{formattedPrice}
-              </Typography>
-              <Typography variant="body2" color="text.secondary">
+              </div>
+              <p className="text-sm text-muted-foreground mt-1">
                 每{plan.BillingCycle === 'monthly' ? '月' : plan.BillingCycle === 'annual' ? '年' : '周期'}
-              </Typography>
+              </p>
             </>
           )}
-        </Box>
+        </div>
 
         {/* 描述 */}
         {plan.Description && (
-          <Typography variant="body2" color="text.secondary" mb={2}>
+          <p className="text-sm text-muted-foreground mb-4">
             {plan.Description}
-          </Typography>
+          </p>
         )}
 
-        <Divider sx={{ my: 2 }} />
+        <Separator className="my-4" />
 
         {/* 功能列表 */}
         {plan.Features && plan.Features.length > 0 && (
-          <Box>
-            <Typography variant="subtitle2" gutterBottom fontWeight="bold">
+          <div className="mb-4 flex-1">
+            <h3 className="text-sm font-semibold mb-3">
               功能特性
-            </Typography>
+            </h3>
             <PlanFeatureList features={plan.Features} />
-          </Box>
+          </div>
         )}
 
         {/* 限制信息 */}
         {(plan.MaxUsers || plan.MaxProjects) && (
-          <Box mt={2}>
-            <Typography variant="caption" color="text.secondary" display="block">
+          <div className="mb-3">
+            <p className="text-xs text-muted-foreground">
               {plan.MaxUsers && `最多 ${plan.MaxUsers} 个用户`}
               {plan.MaxUsers && plan.MaxProjects && ' · '}
               {plan.MaxProjects && `${plan.MaxProjects} 个项目`}
-            </Typography>
-          </Box>
+            </p>
+          </div>
         )}
 
         {/* 试用天数 */}
         {plan.TrialDays && plan.TrialDays > 0 && (
-          <Box mt={1}>
-            <Typography variant="caption" color="success.main" fontWeight="bold">
+          <div className="mb-4">
+            <span className={getBadgeClass('secondary', 'font-semibold')}>
               免费试用 {plan.TrialDays} 天
-            </Typography>
-          </Box>
+            </span>
+          </div>
         )}
-      </CardContent>
 
-      <CardActions sx={{ p: 2, pt: 0 }}>
-        <Button
-          variant={recommended ? 'contained' : 'outlined'}
-          fullWidth
-          size="large"
+        {/* 选择按钮 */}
+        <button
+          className={getButtonClass(recommended ? 'default' : 'outline', 'lg', 'w-full rounded-xl mt-auto')}
           onClick={() => onSelect?.(plan)}
         >
           选择计划
-        </Button>
-      </CardActions>
-    </Card>
+        </button>
+      </div>
+    </div>
   );
 };

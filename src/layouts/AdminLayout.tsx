@@ -11,49 +11,24 @@
  * - 订阅计划管理页面
  * - 用户管理页面
  * - 其他管理员专用页面
- *
- * @example
- * ```tsx
- * import { AdminLayout } from '@/layouts/AdminLayout';
- *
- * function SubscriptionPlansPage() {
- *   return (
- *     <AdminLayout>
- *       <SubscriptionPlansContent />
- *     </AdminLayout>
- *   );
- * }
- * ```
  */
 
 import { useState } from 'react';
-import {
-  AppBar,
-  Box,
-  Toolbar,
-  Typography,
-  IconButton,
-  Avatar,
-  Menu,
-  MenuItem,
-  Divider,
-  ListItemIcon,
-  ListItemText,
-  Drawer,
-  List,
-  ListItem,
-  ListItemButton,
-  useTheme,
-  useMediaQuery,
-  Container,
-} from '@mui/material';
-import MenuIcon from '@mui/icons-material/Menu';
-import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
-import AccountCircleIcon from '@mui/icons-material/AccountCircle';
-import SettingsIcon from '@mui/icons-material/Settings';
-import LogoutIcon from '@mui/icons-material/Logout';
-import SwapHorizIcon from '@mui/icons-material/SwapHoriz';
 import { Link as RouterLink, useLocation } from 'react-router-dom';
+import {
+  Menu,
+  ChevronLeft,
+  User as UserIcon,
+  Settings,
+  LogOut,
+  ArrowLeftRight,
+  PanelLeft,
+  X,
+} from 'lucide-react';
+import * as Dialog from '@radix-ui/react-dialog';
+import * as DropdownMenuPrimitive from '@radix-ui/react-dropdown-menu';
+import * as AvatarPrimitive from '@radix-ui/react-avatar';
+import { TooltipProvider } from '@/components/common/Tooltip';
 
 import { useAuthStore } from '@/features/auth/stores/auth-store';
 import { useAuth } from '@/features/auth/hooks/useAuth';
@@ -61,6 +36,7 @@ import { usePermissions } from '@/features/auth/hooks/usePermissions';
 import { ProfileDialog } from '@/features/profile/components/ProfileDialog';
 import { EnhancedBreadcrumbs } from '@/components/navigation/EnhancedBreadcrumbs';
 import { getNavItems } from '@/config/navigation';
+import { cn } from '@/lib/utils';
 
 /**
  * AdminLayout 组件属性
@@ -71,46 +47,17 @@ interface AdminLayoutProps {
 }
 
 /**
- * 侧边栏宽度（展开状态）
- */
-const DRAWER_WIDTH = 240;
-
-/**
  * AdminLayout 管理端布局组件
- *
- * 特性：
- * - 持久化侧边栏：桌面端默认展开，可手动折叠
- * - 临时侧边栏：移动端默认隐藏，点击菜单按钮显示
- * - 权限过滤：自动根据用户权限显示可访问的菜单项
- * - 响应式布局：自动适配不同屏幕尺寸
- * - 面包屑导航：显示当前页面路径
- * - 用户菜单：显示用户信息和退出登录
- *
- * 布局结构：
- * ```
- * ┌─────────────────────────────────────┐
- * │          AppBar (顶部导航)            │
- * ├─────────┬───────────────────────────┤
- * │         │                           │
- * │  Drawer │   Main Content            │
- * │ (侧边栏) │   (主内容区域)             │
- * │         │                           │
- * └─────────┴───────────────────────────┘
- * ```
  */
 export const AdminLayout = ({ children }: AdminLayoutProps) => {
-  const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   const location = useLocation();
-
   const { user } = useAuthStore();
   const { logout } = useAuth();
   const { filterNavigationByPermission } = usePermissions();
 
   // 状态管理
-  const [mobileDrawerOpen, setMobileDrawerOpen] = useState(false); // 移动端侧边栏状态
-  const [desktopDrawerOpen, setDesktopDrawerOpen] = useState(true); // 桌面端侧边栏状态
-  const [userMenuAnchorEl, setUserMenuAnchorEl] = useState<null | HTMLElement>(null);
+  const [mobileDrawerOpen, setMobileDrawerOpen] = useState(false);
+  const [desktopDrawerOpen, setDesktopDrawerOpen] = useState(true);
   const [profileDialogOpen, setProfileDialogOpen] = useState(false);
 
   // 根据权限过滤导航项（只显示管理员可访问的菜单）
@@ -120,471 +67,226 @@ export const AdminLayout = ({ children }: AdminLayoutProps) => {
   const adminNavItems = filterNavigationByPermission(adminOnlyNavItems);
 
   /**
-   * 处理移动端侧边栏切换
-   */
-  const handleMobileDrawerToggle = () => {
-    setMobileDrawerOpen(!mobileDrawerOpen);
-  };
-
-  /**
-   * 处理桌面端侧边栏切换
-   */
-  const handleDesktopDrawerToggle = () => {
-    setDesktopDrawerOpen(!desktopDrawerOpen);
-  };
-
-  /**
-   * 处理用户菜单打开
-   */
-  const handleUserMenuOpen = (event: React.MouseEvent<HTMLElement>) => {
-    setUserMenuAnchorEl(event.currentTarget);
-  };
-
-  /**
-   * 处理用户菜单关闭
-   */
-  const handleUserMenuClose = () => {
-    setUserMenuAnchorEl(null);
-  };
-
-  /**
    * 处理退出登录
    */
   const handleLogout = async () => {
-    handleUserMenuClose();
     await logout();
   };
 
   /**
-   * 处理打开个人资料对话框
+   * 侧边栏内容组件
    */
-  const handleOpenProfile = () => {
-    handleUserMenuClose();
-    setProfileDialogOpen(true);
-  };
-
-  /**
-   * 渲染侧边栏内容
-   * 包含导航菜单列表
-   */
-  const drawerContent = (
-    <Box
-      sx={{
-        display: 'flex',
-        flexDirection: 'column',
-        height: '100%',
-        bgcolor: 'background.paper',
-      }}
-    >
+  const SidebarContent = () => (
+    <div className="flex h-full flex-col bg-background">
       {/* 侧边栏头部 */}
-      <Toolbar
-        sx={{
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          px: 2,
-          minHeight: 64,
-          borderBottom: 1,
-          borderColor: 'divider',
-        }}
-      >
-        <Typography
-          variant="h6"
-          sx={{
-            fontWeight: 700,
-            color: 'primary.main',
-            letterSpacing: 0.5,
-          }}
-        >
+      <div className="flex h-16 items-center justify-between border-b px-4">
+        <span className="text-base sm:text-lg font-bold tracking-tight text-primary">
           管理控制台
-        </Typography>
+        </span>
         {/* 桌面端折叠按钮 */}
-        {!isMobile && (
-          <IconButton onClick={handleDesktopDrawerToggle} size="small">
-            <ChevronLeftIcon />
-          </IconButton>
-        )}
-      </Toolbar>
+        <button
+          className="hidden md:flex h-8 w-8 items-center justify-center rounded-md hover:bg-accent hover:text-accent-foreground transition-colors"
+          onClick={() => setDesktopDrawerOpen(false)}
+        >
+          <ChevronLeft className="h-4 w-4" />
+        </button>
+      </div>
 
       {/* 导航菜单列表 */}
-      <List
-        sx={{
-          flexGrow: 1,
-          py: 2,
-          px: 1,
-          overflow: 'auto',
-        }}
-      >
-        {adminNavItems.map((item) => {
-          const Icon = item.icon;
-          const isActive = location.pathname === item.path;
+      <div className="flex-1 overflow-y-auto py-4">
+        <nav className="space-y-1 px-2">
+          {adminNavItems.map((item) => {
+            const Icon = item.icon;
+            const isActive = location.pathname === item.path;
 
-          return (
-            <ListItem key={item.id} disablePadding sx={{ mb: 0.5 }}>
-              <ListItemButton
-                component={RouterLink}
+            return (
+              <RouterLink
+                key={item.id}
                 to={item.path}
-                onClick={() => {
-                  // 移动端点击后关闭侧边栏
-                  if (isMobile) {
-                    setMobileDrawerOpen(false);
-                  }
-                }}
-                disabled={item.disabled}
-                selected={isActive}
-                sx={{
-                  py: 1.5,
-                  px: 2,
-                  borderRadius: 1,
-                  transition: 'all 0.2s',
-                  '&:hover': {
-                    bgcolor: 'action.hover',
-                  },
-                  '&.Mui-selected': {
-                    bgcolor: 'primary.main',
-                    color: 'primary.contrastText',
-                    fontWeight: 600,
-                    '&:hover': {
-                      bgcolor: 'primary.dark',
-                    },
-                    '& .MuiListItemIcon-root': {
-                      color: 'primary.contrastText',
-                    },
-                  },
-                }}
+                onClick={() => setMobileDrawerOpen(false)}
+                className={cn(
+                  "group flex items-center rounded-md px-3 py-2 text-xs sm:text-sm font-medium transition-colors",
+                  isActive
+                    ? "bg-primary text-primary-foreground"
+                    : "text-muted-foreground hover:bg-accent hover:text-accent-foreground"
+                )}
               >
                 {Icon && (
-                  <ListItemIcon
-                    sx={{
-                      minWidth: 40,
-                      color: item.disabled ? 'action.disabled' : 'inherit',
-                    }}
-                  >
-                    <Icon />
-                  </ListItemIcon>
+                  <Icon
+                    className={cn(
+                      "mr-2 sm:mr-3 h-4 w-4 sm:h-5 sm:w-5 flex-shrink-0",
+                      isActive ? "text-primary-foreground" : "text-muted-foreground group-hover:text-foreground"
+                    )}
+                  />
                 )}
-                <ListItemText
-                  primary={item.label}
-                  sx={{
-                    '& .MuiTypography-root': {
-                      fontSize: '0.95rem',
-                      fontWeight: isActive ? 600 : 500,
-                    },
-                  }}
-                />
-              </ListItemButton>
-            </ListItem>
-          );
-        })}
-      </List>
+                {item.label}
+              </RouterLink>
+            );
+          })}
+        </nav>
+      </div>
 
       {/* 侧边栏底部 */}
-      <Box
-        sx={{
-          borderTop: 1,
-          borderColor: 'divider',
-        }}
-      >
-        {/* 切换到用户视图按钮 */}
-        <Box sx={{ p: 1 }}>
-          <ListItemButton
-            component={RouterLink}
-            to="/dashboard"
-            onClick={() => {
-              // 移动端点击后关闭侧边栏
-              if (isMobile) {
-                setMobileDrawerOpen(false);
-              }
-            }}
-            sx={{
-              py: 1.5,
-              px: 2,
-              borderRadius: 1,
-              transition: 'all 0.2s',
-              bgcolor: 'action.hover',
-              '&:hover': {
-                bgcolor: 'primary.light',
-                '& .MuiListItemIcon-root': {
-                  color: 'primary.main',
-                },
-              },
-            }}
-          >
-            <ListItemIcon sx={{ minWidth: 40 }}>
-              <SwapHorizIcon />
-            </ListItemIcon>
-            <ListItemText
-              primary="切换到用户视图"
-              sx={{
-                '& .MuiTypography-root': {
-                  fontSize: '0.9rem',
-                  fontWeight: 500,
-                },
-              }}
-            />
-          </ListItemButton>
-        </Box>
+      <div className="border-t p-4">
+        <RouterLink
+          to="/dashboard"
+          onClick={() => setMobileDrawerOpen(false)}
+          className="flex items-center rounded-md px-3 py-2 text-xs sm:text-sm font-medium text-muted-foreground transition-colors hover:bg-accent hover:text-accent-foreground"
+        >
+          <ArrowLeftRight className="mr-2 sm:mr-3 h-4 w-4 sm:h-5 sm:w-5" />
+          切换到用户视图
+        </RouterLink>
 
-        {/* 版本信息 */}
-        <Box sx={{ px: 2, pb: 2 }}>
-          <Typography variant="caption" color="text.secondary">
-            Orris 管理系统
-          </Typography>
-          <Typography variant="caption" display="block" color="text.secondary">
-            v1.0.0
-          </Typography>
-        </Box>
-      </Box>
-    </Box>
+        <div className="mt-4 px-3">
+          <p className="text-[10px] sm:text-xs text-muted-foreground">Orris 管理系统</p>
+          <p className="text-[10px] sm:text-xs text-muted-foreground">v1.0.0</p>
+        </div>
+      </div>
+    </div>
   );
 
   return (
-    <Box sx={{ display: 'flex', minHeight: '100vh' }}>
-      {/* 顶部导航栏 */}
-      <AppBar
-        position="fixed"
-        elevation={1}
-        sx={{
-          zIndex: theme.zIndex.drawer + 1,
-          transition: theme.transitions.create(['width', 'margin'], {
-            easing: theme.transitions.easing.sharp,
-            duration: theme.transitions.duration.leavingScreen,
-          }),
-          ...(desktopDrawerOpen &&
-            !isMobile && {
-              marginLeft: DRAWER_WIDTH,
-              width: `calc(100% - ${DRAWER_WIDTH}px)`,
-              transition: theme.transitions.create(['width', 'margin'], {
-                easing: theme.transitions.easing.sharp,
-                duration: theme.transitions.duration.enteringScreen,
-              }),
-            }),
-        }}
+    <TooltipProvider>
+    <div className="min-h-screen bg-muted/10">
+      {/* 移动端侧边栏 (Dialog) */}
+      <Dialog.Root open={mobileDrawerOpen} onOpenChange={setMobileDrawerOpen}>
+        <Dialog.Portal>
+          <Dialog.Overlay className="fixed inset-0 z-50 bg-black/80 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0" />
+          <Dialog.Content className="fixed inset-y-0 left-0 z-50 h-full w-64 gap-4 border-r bg-background p-0 shadow-lg transition ease-in-out data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:duration-300 data-[state=open]:duration-500 data-[state=closed]:slide-out-to-left data-[state=open]:slide-in-from-left">
+            <Dialog.Close className="absolute right-4 top-4 rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none data-[state=open]:bg-accent data-[state=open]:text-muted-foreground">
+              <X className="h-4 w-4" />
+              <span className="sr-only">Close</span>
+            </Dialog.Close>
+            <Dialog.Title className="sr-only">导航菜单</Dialog.Title>
+            <SidebarContent />
+          </Dialog.Content>
+        </Dialog.Portal>
+      </Dialog.Root>
+
+      {/* 桌面端侧边栏 (Fixed) */}
+      <aside
+        className={cn(
+          "fixed inset-y-0 left-0 z-50 hidden flex-col border-r bg-background transition-all duration-300 md:flex",
+          desktopDrawerOpen ? "w-64" : "w-0 -translate-x-full opacity-0"
+        )}
       >
-        <Toolbar>
-          {/* 菜单按钮 */}
-          <IconButton
-            size="large"
-            edge="start"
-            color="inherit"
-            aria-label="open drawer"
-            onClick={isMobile ? handleMobileDrawerToggle : handleDesktopDrawerToggle}
-            sx={{
-              mr: 2,
-              ...(desktopDrawerOpen && !isMobile && { display: 'none' }),
-            }}
-          >
-            <MenuIcon />
-          </IconButton>
-
-          {/* Logo/品牌 */}
-          <Typography
-            variant="h6"
-            component="div"
-            sx={{
-              flexGrow: 0,
-              fontWeight: 700,
-              letterSpacing: 0.5,
-              mr: 2,
-            }}
-          >
-            Orris
-          </Typography>
-
-          {/* 占位符 - 将用户菜单推到右侧 */}
-          <Box sx={{ flexGrow: 1 }} />
-
-          {/* 用户信息和菜单 */}
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-            {/* 用户名和邮箱（移动端隐藏） */}
-            <Box sx={{ display: { xs: 'none', sm: 'block' }, textAlign: 'right' }}>
-              <Typography variant="body2" sx={{ fontWeight: 600 }}>
-                {user?.name}
-              </Typography>
-              <Typography variant="caption" sx={{ opacity: 0.8 }}>
-                {user?.email}
-              </Typography>
-            </Box>
-
-            {/* 用户头像按钮 */}
-            <IconButton
-              onClick={handleUserMenuOpen}
-              size="small"
-              aria-controls={userMenuAnchorEl ? 'user-menu' : undefined}
-              aria-haspopup="true"
-              aria-expanded={userMenuAnchorEl ? 'true' : undefined}
-            >
-              <Avatar
-                src={user?.avatar}
-                alt={user?.name}
-                sx={{
-                  width: 40,
-                  height: 40,
-                  bgcolor: 'secondary.main',
-                  fontSize: '1.2rem',
-                }}
-              >
-                {user?.name?.charAt(0).toUpperCase()}
-              </Avatar>
-            </IconButton>
-          </Box>
-
-          {/* 用户下拉菜单 */}
-          <Menu
-            id="user-menu"
-            anchorEl={userMenuAnchorEl}
-            open={Boolean(userMenuAnchorEl)}
-            onClose={handleUserMenuClose}
-            onClick={handleUserMenuClose}
-            slotProps={{
-              paper: {
-                elevation: 3,
-                sx: {
-                  mt: 1.5,
-                  minWidth: 220,
-                  overflow: 'visible',
-                  '&::before': {
-                    content: '""',
-                    display: 'block',
-                    position: 'absolute',
-                    top: 0,
-                    right: 14,
-                    width: 10,
-                    height: 10,
-                    bgcolor: 'background.paper',
-                    transform: 'translateY(-50%) rotate(45deg)',
-                    zIndex: 0,
-                  },
-                },
-              },
-            }}
-            transformOrigin={{ horizontal: 'right', vertical: 'top' }}
-            anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
-          >
-            {/* 用户信息（移动端显示） */}
-            <Box sx={{ px: 2, py: 1.5, display: { sm: 'none' } }}>
-              <Typography variant="subtitle2" fontWeight={600}>
-                {user?.name}
-              </Typography>
-              <Typography variant="body2" color="text.secondary" noWrap>
-                {user?.email}
-              </Typography>
-            </Box>
-
-            <Divider sx={{ display: { sm: 'none' } }} />
-
-            {/* 个人资料 */}
-            <MenuItem onClick={handleOpenProfile}>
-              <ListItemIcon>
-                <AccountCircleIcon fontSize="small" />
-              </ListItemIcon>
-              <ListItemText>个人资料</ListItemText>
-            </MenuItem>
-
-            {/* 账户设置 */}
-            <MenuItem disabled>
-              <ListItemIcon>
-                <SettingsIcon fontSize="small" />
-              </ListItemIcon>
-              <ListItemText>账户设置</ListItemText>
-            </MenuItem>
-
-            <Divider />
-
-            {/* 退出登录 */}
-            <MenuItem onClick={handleLogout}>
-              <ListItemIcon>
-                <LogoutIcon fontSize="small" color="error" />
-              </ListItemIcon>
-              <ListItemText>
-                <Typography color="error">退出登录</Typography>
-              </ListItemText>
-            </MenuItem>
-          </Menu>
-        </Toolbar>
-      </AppBar>
-
-      {/* 左侧边栏 - 移动端（临时抽屉） */}
-      <Drawer
-        variant="temporary"
-        open={mobileDrawerOpen}
-        onClose={handleMobileDrawerToggle}
-        ModalProps={{
-          keepMounted: true, // 优化移动端性能
-        }}
-        sx={{
-          display: { xs: 'block', md: 'none' },
-          '& .MuiDrawer-paper': {
-            width: DRAWER_WIDTH,
-            boxSizing: 'border-box',
-          },
-        }}
-      >
-        {drawerContent}
-      </Drawer>
-
-      {/* 左侧边栏 - 桌面端（持久化抽屉） */}
-      <Drawer
-        variant="persistent"
-        open={desktopDrawerOpen}
-        sx={{
-          display: { xs: 'none', md: 'block' },
-          width: DRAWER_WIDTH,
-          flexShrink: 0,
-          '& .MuiDrawer-paper': {
-            width: DRAWER_WIDTH,
-            boxSizing: 'border-box',
-          },
-        }}
-      >
-        {drawerContent}
-      </Drawer>
+        <SidebarContent />
+      </aside>
 
       {/* 主内容区域 */}
-      <Box
-        component="main"
-        sx={{
-          flexGrow: 1,
-          bgcolor: 'background.default',
-          minHeight: '100vh',
-          transition: theme.transitions.create('margin', {
-            easing: theme.transitions.easing.sharp,
-            duration: theme.transitions.duration.leavingScreen,
-          }),
-          ...(desktopDrawerOpen &&
-            !isMobile && {
-              marginLeft: 0,
-              transition: theme.transitions.create('margin', {
-                easing: theme.transitions.easing.easeOut,
-                duration: theme.transitions.duration.enteringScreen,
-              }),
-            }),
-        }}
+      <div
+        className={cn(
+          "flex min-h-screen flex-col transition-all duration-300",
+          desktopDrawerOpen ? "md:pl-64" : "md:pl-0"
+        )}
       >
-        {/* 顶部占位（防止内容被 AppBar 遮挡） */}
-        <Toolbar />
+        {/* 顶部导航栏 */}
+        <header className="sticky top-0 z-40 flex h-16 items-center gap-x-4 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 px-4 shadow-sm sm:gap-x-6 sm:px-6 lg:px-8">
+          {/* 移动端菜单按钮 */}
+          <button
+            className="md:hidden inline-flex items-center justify-center rounded-md hover:bg-accent hover:text-accent-foreground h-9 w-9 transition-colors"
+            onClick={() => setMobileDrawerOpen(true)}
+          >
+            <Menu className="h-5 w-5" />
+            <span className="sr-only">打开菜单</span>
+          </button>
 
-        {/* 页面内容容器 */}
-        <Container
-          maxWidth="xl"
-          sx={{
-            py: 3,
-          }}
-        >
-          {/* 面包屑导航 */}
-          <EnhancedBreadcrumbs />
+          {/* 桌面端展开按钮 (当侧边栏关闭时显示) */}
+          {!desktopDrawerOpen && (
+            <button
+              className="hidden md:inline-flex items-center justify-center rounded-md hover:bg-accent hover:text-accent-foreground h-9 w-9 transition-colors"
+              onClick={() => setDesktopDrawerOpen(true)}
+            >
+              <PanelLeft className="h-5 w-5" />
+              <span className="sr-only">展开侧边栏</span>
+            </button>
+          )}
 
-          {/* 页面内容 */}
-          {children}
-        </Container>
-      </Box>
+          <div className="flex flex-1 items-center gap-x-4 lg:gap-x-6">
+            {/* Logo (仅移动端或侧边栏关闭时显示) */}
+            {(!desktopDrawerOpen || window.innerWidth < 768) && (
+              <div className="flex items-center">
+                <span className="text-sm sm:text-base font-semibold tracking-tight">Orris</span>
+              </div>
+            )}
+
+            {/* 面包屑导航 */}
+            <div className="flex flex-1 items-center min-w-0">
+              <EnhancedBreadcrumbs />
+            </div>
+
+            <div className="flex items-center gap-x-4 lg:gap-x-6">
+              {/* 用户菜单 */}
+              <DropdownMenuPrimitive.Root>
+                <DropdownMenuPrimitive.Trigger asChild>
+                  <button className="relative inline-flex h-8 w-8 items-center justify-center rounded-full hover:bg-accent hover:text-accent-foreground transition-colors">
+                    <AvatarPrimitive.Root className="h-8 w-8">
+                      <AvatarPrimitive.Image src={user?.avatar} alt={user?.name} className="h-full w-full rounded-full object-cover" />
+                      <AvatarPrimitive.Fallback className="flex h-full w-full items-center justify-center rounded-full bg-muted text-sm font-medium">
+                        {user?.name?.charAt(0).toUpperCase()}
+                      </AvatarPrimitive.Fallback>
+                    </AvatarPrimitive.Root>
+                  </button>
+                </DropdownMenuPrimitive.Trigger>
+                <DropdownMenuPrimitive.Portal>
+                  <DropdownMenuPrimitive.Content
+                    className="z-50 min-w-[14rem] overflow-hidden rounded-md border bg-popover p-1 text-popover-foreground shadow-md data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2"
+                    align="end"
+                    sideOffset={4}
+                  >
+                    <DropdownMenuPrimitive.Label className="px-2 py-1.5 text-sm font-normal">
+                      <div className="flex flex-col space-y-1">
+                        <p className="text-sm font-medium leading-none">{user?.name}</p>
+                        <p className="text-xs leading-none text-muted-foreground">
+                          {user?.email}
+                        </p>
+                      </div>
+                    </DropdownMenuPrimitive.Label>
+                    <DropdownMenuPrimitive.Separator className="mx-1 my-1 h-px bg-muted" />
+                    <DropdownMenuPrimitive.Item
+                      className="relative flex cursor-default select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none transition-colors focus:bg-accent focus:text-accent-foreground data-[disabled]:pointer-events-none data-[disabled]:opacity-50"
+                      onSelect={() => setProfileDialogOpen(true)}
+                    >
+                      <UserIcon className="mr-2 h-4 w-4" />
+                      <span>个人资料</span>
+                    </DropdownMenuPrimitive.Item>
+                    <DropdownMenuPrimitive.Item
+                      className="relative flex cursor-default select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none transition-colors focus:bg-accent focus:text-accent-foreground data-[disabled]:pointer-events-none data-[disabled]:opacity-50"
+                      disabled
+                    >
+                      <Settings className="mr-2 h-4 w-4" />
+                      <span>账户设置</span>
+                    </DropdownMenuPrimitive.Item>
+                    <DropdownMenuPrimitive.Separator className="mx-1 my-1 h-px bg-muted" />
+                    <DropdownMenuPrimitive.Item
+                      className="relative flex cursor-default select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none transition-colors focus:bg-accent focus:text-accent-foreground data-[disabled]:pointer-events-none data-[disabled]:opacity-50 text-red-600 focus:text-red-600"
+                      onSelect={handleLogout}
+                    >
+                      <LogOut className="mr-2 h-4 w-4" />
+                      <span>退出登录</span>
+                    </DropdownMenuPrimitive.Item>
+                  </DropdownMenuPrimitive.Content>
+                </DropdownMenuPrimitive.Portal>
+              </DropdownMenuPrimitive.Root>
+            </div>
+          </div>
+        </header>
+
+        {/* 页面内容 */}
+        <main className="flex-1 py-6">
+          <div className="px-4 sm:px-6 lg:px-8">
+            {children}
+          </div>
+        </main>
+      </div>
 
       {/* 个人资料对话框 */}
       <ProfileDialog
         open={profileDialogOpen}
         onClose={() => setProfileDialogOpen(false)}
       />
-    </Box>
+    </div>
+    </TooltipProvider>
   );
 };
 

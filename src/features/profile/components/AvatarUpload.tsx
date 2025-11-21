@@ -1,11 +1,10 @@
 import { useState, useRef } from 'react';
 import { Camera, Info } from 'lucide-react';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Button } from '@/components/ui/button';
-import { Alert, AlertDescription } from '@/components/ui/alert';
+import * as AvatarPrimitive from '@radix-ui/react-avatar';
 import { AvatarCropDialog } from './AvatarCropDialog';
 import { useProfile } from '../hooks/useProfile';
 import { useNotificationStore } from '@/shared/stores/notification-store';
+import { getButtonClass, getAlertClass, alertDescriptionStyles } from '@/lib/ui-styles';
 
 interface AvatarUploadProps {
   avatar?: string;
@@ -88,35 +87,40 @@ export const AvatarUpload = ({ avatar, name }: AvatarUploadProps) => {
         onChange={handleFileChange}
       />
 
-      <Avatar
-        className="mx-auto mb-4 size-32 cursor-pointer transition-opacity hover:opacity-80"
+      <AvatarPrimitive.Root
+        className="mx-auto mb-4 size-32 cursor-pointer transition-opacity hover:opacity-80 relative inline-flex shrink-0 overflow-hidden rounded-full"
         onClick={() => inputRef.current?.click()}
       >
-        <AvatarImage src={avatar} alt={name} />
-        <AvatarFallback className="text-5xl">{getAvatarFallback()}</AvatarFallback>
-      </Avatar>
+        <AvatarPrimitive.Image
+          src={avatar}
+          alt={name}
+          className="aspect-square h-full w-full"
+        />
+        <AvatarPrimitive.Fallback className="flex h-full w-full items-center justify-center rounded-full bg-muted text-5xl">
+          {getAvatarFallback()}
+        </AvatarPrimitive.Fallback>
+      </AvatarPrimitive.Root>
 
-      <Button
-        variant="outline"
+      <button
         onClick={() => inputRef.current?.click()}
         disabled={true}
-        className="mb-2"
+        className={getButtonClass('outline', 'default', 'mb-2 gap-2')}
       >
-        <Camera />
+        <Camera className="h-4 w-4" />
         更换头像（暂不可用）
-      </Button>
+      </button>
 
       <p className="mb-4 text-xs text-muted-foreground">
         支持JPG、PNG、WebP格式，最大2MB
       </p>
 
       {/* 后端API开发中提示 */}
-      <Alert>
+      <div className={getAlertClass('default')}>
         <Info className="size-4" />
-        <AlertDescription>
+        <div className={alertDescriptionStyles}>
           头像上传功能正在开发中，后端API尚未就绪。请耐心等待更新。
-        </AlertDescription>
-      </Alert>
+        </div>
+      </div>
 
       {/* 裁剪对话框 */}
       <AvatarCropDialog

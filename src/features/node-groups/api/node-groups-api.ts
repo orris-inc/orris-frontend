@@ -16,7 +16,6 @@ import type {
   AddNodeToGroupRequest,
   BatchAddNodesToGroupRequest,
   BatchRemoveNodesFromGroupRequest,
-  SubscriptionPlanBasic,
 } from '../types/node-groups.types';
 
 // ==================== 基础 CRUD API ====================
@@ -191,39 +190,23 @@ export const removeNodeFromGroup = async (
 // ==================== 订阅计划关联管理 API ====================
 
 /**
- * 获取节点组关联的订阅计划
- * GET /node-groups/{id}/plans
- * 来源: swagger.json line 1913
- * 需要认证: Bearer Token
- * 需要权限: Admin
- */
-export const getNodeGroupPlans = async (
-  id: number | string
-): Promise<SubscriptionPlanBasic[]> => {
-  const response = await apiClient.get<APIResponse<SubscriptionPlanBasic[]>>(
-    `/node-groups/${id}/plans`
-  );
-  return response.data.data;
-};
-
-/**
  * 关联订阅计划到节点组
- * POST /node-groups/{id}/plans/{planId}
- * 来源: swagger.json line 1989 (推测)
+ * POST /node-groups/{id}/plans
+ * 来源: swagger.json line 1913-1987
  * 需要认证: Bearer Token
  * 需要权限: Admin
  */
 export const associatePlanToGroup = async (
   groupId: number | string,
-  planId: number | string
+  planId: number
 ): Promise<void> => {
-  await apiClient.post(`/node-groups/${groupId}/plans/${planId}`);
+  await apiClient.post(`/node-groups/${groupId}/plans`, { plan_id: planId });
 };
 
 /**
  * 取消订阅计划关联
  * DELETE /node-groups/{id}/plans/{planId}
- * 来源: swagger.json line 1989 (推测)
+ * 来源: swagger.json line 1989-2056
  * 需要认证: Bearer Token
  * 需要权限: Admin
  */
