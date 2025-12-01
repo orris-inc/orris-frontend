@@ -54,7 +54,7 @@ export const DashboardLayout = ({ children }: DashboardLayoutProps) => {
     <div className="flex min-h-screen flex-col bg-background">
       {/* 顶部导航栏 */}
       <header className="sticky top-0 z-40 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-        <div className="container flex h-16 items-center px-4 sm:px-8">
+        <div className="container mx-auto max-w-6xl flex h-16 items-center px-4 sm:px-8">
           {/* 移动端菜单按钮 - 仅用户端显示 */}
           {shouldShowNavigation && (
             <button
@@ -171,7 +171,7 @@ export const DashboardLayout = ({ children }: DashboardLayoutProps) => {
 
       {/* 主内容区域 */}
       <main className="flex-1 py-6">
-        <div className="container px-4 sm:px-8">
+        <div className="container mx-auto px-4 sm:px-8 max-w-6xl">
           {/* 增强型面包屑导航 - 仅管理端显示 (DashboardLayout中通常不显示，除非配置开启) */}
           {shouldShowBreadcrumbs && <EnhancedBreadcrumbs />}
 

@@ -9,6 +9,7 @@ import type {
   SubscriptionPlan,
   CreatePlanRequest,
   UpdatePlanRequest,
+  UpdatePlanStatusRequest,
   SubscriptionPlanListParams,
   PlanPricing,
 } from '../types/subscription-plans.types';
@@ -89,27 +90,19 @@ export const updateSubscriptionPlan = async (
 };
 
 /**
- * 激活订阅计划
- * POST /subscription-plans/{id}/activate
- * 来源: swagger.json
+ * 更新订阅计划状态
+ * PATCH /subscription-plans/{id}/status
+ * 来源: swagger.json /subscription-plans/{id}/status
  * 需要认证: Bearer Token
+ * 支持状态: active, inactive
  */
-export const activateSubscriptionPlan = async (id: number): Promise<SubscriptionPlan> => {
-  const response = await apiClient.post<APIResponse<SubscriptionPlan>>(
-    `/subscription-plans/${id}/activate`
-  );
-  return response.data.data;
-};
-
-/**
- * 停用订阅计划
- * POST /subscription-plans/{id}/deactivate
- * 来源: swagger.json
- * 需要认证: Bearer Token
- */
-export const deactivateSubscriptionPlan = async (id: number): Promise<SubscriptionPlan> => {
-  const response = await apiClient.post<APIResponse<SubscriptionPlan>>(
-    `/subscription-plans/${id}/deactivate`
+export const updatePlanStatus = async (
+  id: number,
+  data: UpdatePlanStatusRequest
+): Promise<SubscriptionPlan> => {
+  const response = await apiClient.patch<APIResponse<SubscriptionPlan>>(
+    `/subscription-plans/${id}/status`,
+    data
   );
   return response.data.data;
 };

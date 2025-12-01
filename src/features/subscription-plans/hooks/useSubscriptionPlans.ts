@@ -19,8 +19,7 @@ export const useSubscriptionPlans = () => {
     fetchPlanById,
     createPlan,
     updatePlan,
-    activatePlan,
-    deactivatePlan,
+    updatePlanStatus,
     setFilters,
     setSelectedPlan,
     clearError,
@@ -44,11 +43,8 @@ export const useSubscriptionPlans = () => {
 
   // 切换计划状态（激活/停用）
   const togglePlanStatus = async (id: number, currentStatus: string) => {
-    if (currentStatus === 'active') {
-      return await deactivatePlan(id);
-    } else {
-      return await activatePlan(id);
-    }
+    const newStatus = currentStatus === 'active' ? 'inactive' : 'active';
+    return await updatePlanStatus(id, newStatus);
   };
 
   return {
@@ -65,8 +61,7 @@ export const useSubscriptionPlans = () => {
     fetchPlanById,
     createPlan: handleCreatePlan,
     updatePlan: handleUpdatePlan,
-    activatePlan,
-    deactivatePlan,
+    updatePlanStatus,
     togglePlanStatus,
     setFilters,
     setSelectedPlan,

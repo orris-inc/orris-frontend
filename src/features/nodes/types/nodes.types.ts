@@ -126,27 +126,12 @@ export interface NodeTokenResponse {
 }
 
 /**
- * 节点流量统计数据
- * GET /nodes/{id}/traffic 接口返回数据
+ * 更新节点状态请求
+ * PATCH /nodes/{id}/status
+ * 来源: swagger.json internal_interfaces_http_handlers_node.UpdateNodeStatusRequest
  */
-export interface NodeTrafficData {
-  node_id: number;
-  upload_bytes: number;
-  download_bytes: number;
-  total_bytes: number;
-  start_time: string;
-  end_time: string;
-  data_points?: TrafficDataPoint[];
-}
-
-/**
- * 流量数据点（用于图表展示）
- */
-export interface TrafficDataPoint {
-  timestamp: string;
-  upload_bytes: number;
-  download_bytes: number;
-  total_bytes: number;
+export interface UpdateNodeStatusRequest {
+  status: 'active' | 'inactive' | 'maintenance';  // 必需
 }
 
 /**

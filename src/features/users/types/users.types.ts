@@ -81,3 +81,24 @@ export interface UserFilters {
   role?: UserRole;              // 角色筛选
   search?: string;              // 前端本地搜索（按邮箱/姓名）
 }
+
+/**
+ * 修改密码请求
+ * POST /users/change-password
+ * 来源: swagger.json internal_application_user_dto.ChangePasswordRequest
+ */
+export interface ChangePasswordRequest {
+  old_password: string;         // 必需：旧密码（最少8位）
+  new_password: string;         // 必需：新密码（最少8位）
+  logout_all_devices?: boolean; // 可选：是否登出所有设备
+}
+
+/**
+ * 更新个人资料请求
+ * PUT /users/profile
+ * 来源: swagger.json internal_application_user_dto.UpdateProfileRequest
+ */
+export interface UpdateProfileRequest {
+  name?: string;                // 可选：用户名（2-100字符）
+  email?: string;               // 可选：邮箱
+}

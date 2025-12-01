@@ -41,8 +41,7 @@ export const NodeManagementPage = () => {
     createNode,
     updateNode,
     deleteNode,
-    activateNode,
-    deactivateNode,
+    updateNodeStatus,
     generateToken,
     setFilters,
   } = useNodes();
@@ -74,11 +73,11 @@ export const NodeManagementPage = () => {
   };
 
   const handleActivate = async (node: NodeListItem) => {
-    await activateNode(node.id);
+    await updateNodeStatus(node.id, 'active');
   };
 
   const handleDeactivate = async (node: NodeListItem) => {
-    await deactivateNode(node.id);
+    await updateNodeStatus(node.id, 'inactive');
   };
 
   const handleGenerateToken = async (node: NodeListItem) => {

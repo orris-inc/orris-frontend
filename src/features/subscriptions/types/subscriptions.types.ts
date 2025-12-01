@@ -93,12 +93,14 @@ export interface SubscriptionCreateResult {
 }
 
 /**
- * 订阅��表查询参数
+ * 订阅列表查询参数
+ * 注意：管理员调用时后端应该返回所有用户的订阅
  */
 export interface SubscriptionListParams {
   page?: number;                     // 页码，默认 1
   page_size?: number;                // 每页数量，默认 20
   status?: SubscriptionStatus;       // 状态筛选
+  user_id?: number;                  // 可选：按用户ID筛选（管理员功能）
 }
 
 /**
@@ -137,4 +139,33 @@ export interface GenerateTokenRequest {
  */
 export interface GetTokensParams {
   active_only?: boolean;             // 是否只显示活跃令牌，默认false
+}
+
+/**
+ * 更换订阅计划请求
+ * PATCH /subscriptions/{id}/plan
+ * 来源: swagger.json internal_interfaces_http_handlers.ChangePlanRequest
+ */
+export interface ChangePlanRequest {
+  new_plan_id: number;               // 必需：新计划ID
+  change_type: 'upgrade' | 'downgrade';  // 必需：更换类型
+  effective_date: 'immediate' | 'period_end';  // 必需：生效时间
+}
+
+/**
+ * 更新订阅状态请求
+ * PATCH /subscriptions/{id}/status
+ * 来源: swagger.json internal_interfaces_http_handlers.UpdateSubscriptionStatusRequest
+ *
+ * 支持的操作：
+ * - active: 激活订阅
+ * - cancelled: 取消订阅（需要提供reason）
+ * - renewed: 续费订阅
+ *
+ * 注意：不支持设置为 inactive 状态
+ */
+export interface UpdateSubscriptionStatusRequest {
+  status: 'active' | 'cancelled' | 'renewed';  // 必需：新状态
+  reason?: string;                   // status为cancelled时必填
+  immediate?: boolean;               // 可选：取消时是否立即生效
 }

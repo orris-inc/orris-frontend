@@ -13,10 +13,8 @@ import {
   createNode as createNodeApi,
   updateNode as updateNodeApi,
   deleteNode as deleteNodeApi,
-  activateNode as activateNodeApi,
-  deactivateNode as deactivateNodeApi,
+  updateNodeStatus as updateNodeStatusApi,
   generateNodeToken as generateNodeTokenApi,
-  getNodeTraffic as getNodeTrafficApi,
 } from '../api/nodes-api';
 import { handleApiError } from '@/shared/lib/axios';
 import { useNotificationStore } from '@/shared/stores/notification-store';
@@ -60,10 +58,8 @@ interface NodesState {
   createNode: (data: CreateNodeRequest) => Promise<NodeListItem | null>;
   updateNode: (id: number | string, data: UpdateNodeRequest) => Promise<NodeListItem | null>;
   deleteNode: (id: number | string) => Promise<boolean>;
-  activateNode: (id: number | string) => Promise<boolean>;
-  deactivateNode: (id: number | string) => Promise<boolean>;
+  updateNodeStatus: (id: number | string, status: 'active' | 'inactive' | 'maintenance') => Promise<boolean>;
   generateToken: (id: number | string) => Promise<string | null>;
-  getTraffic: (id: number | string, start?: string, end?: string) => Promise<any>;
   setFilters: (filters: Partial<NodeFilters>) => void;
   setSelectedNode: (node: NodeListItem | null) => void;
   clearError: () => void;
@@ -191,28 +187,16 @@ export const useNodesStore = create<NodesState>()(
         }
       },
 
-      // 激活节点
-      activateNode: async (id: number | string) => {
+      // 更新节点状态
+      updateNodeStatus: async (id: number | string, status: 'active' | 'inactive' | 'maintenance') => {
         try {
-          await activateNodeApi(id);
-          showNotification('节点已激活', 'success');
-
-          // 刷新列表
-          await get().fetchNodes(get().pagination.page, get().pagination.page_size);
-
-          return true;
-        } catch (error) {
-          const errorMessage = handleApiError(error);
-          showNotification(errorMessage, 'error');
-          return false;
-        }
-      },
-
-      // 停用节点
-      deactivateNode: async (id: number | string) => {
-        try {
-          await deactivateNodeApi(id);
-          showNotification('节点已停用', 'success');
+          await updateNodeStatusApi(id, { status });
+          const statusMessages = {
+            active: '节点已激活',
+            inactive: '节点已停用',
+            maintenance: '节点已设为维护中',
+          };
+          showNotification(statusMessages[status], 'success');
 
           // 刷新列表
           await get().fetchNodes(get().pagination.page, get().pagination.page_size);
@@ -229,11 +213,9 @@ export const useNodesStore = create<NodesState>()(
       generateToken: async (id: number | string) => {
         try {
           const response = await generateNodeTokenApi(id);
-          console.log('[generateToken] API response:', response);
 
           // 后端返回的是PascalCase的Token字段
           const token = response?.Token;
-          console.log('[generateToken] Token value:', token);
 
           if (!token || typeof token !== 'string') {
             showNotification('Token生成失败：未返回有效的Token', 'error');
@@ -242,18 +224,6 @@ export const useNodesStore = create<NodesState>()(
 
           showNotification('Token生成成功', 'success');
           return token;
-        } catch (error) {
-          const errorMessage = handleApiError(error);
-          showNotification(errorMessage, 'error');
-          return null;
-        }
-      },
-
-      // 获取节点流量统计
-      getTraffic: async (id: number | string, start?: string, end?: string) => {
-        try {
-          const traffic = await getNodeTrafficApi(id, { start, end });
-          return traffic;
         } catch (error) {
           const errorMessage = handleApiError(error);
           showNotification(errorMessage, 'error');

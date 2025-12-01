@@ -3,7 +3,7 @@
  */
 
 import { useState, useCallback } from 'react';
-import { getSubscriptions, activateSubscription } from '../api/subscriptions-api';
+import { getSubscriptions, updateSubscriptionStatus } from '../api/subscriptions-api';
 import type { Subscription, SubscriptionListParams } from '../types/subscriptions.types';
 import { useNotificationStore } from '@/shared/stores/notification-store';
 
@@ -43,18 +43,32 @@ export const useSubscriptions = () => {
   }, [page, pageSize, showError]);
 
   /**
-   * 激活订阅
+   * 更新订阅状态
+   * @param id 订阅ID
+   * @param status 新状态: active | cancelled | renewed
+   * @param reason 取消原因（status为cancelled时必填）
+   * @param immediate 是否立即生效（仅用于取消）
    */
-  const activate = useCallback(async (id: number) => {
+  const changeStatus = useCallback(async (
+    id: number,
+    status: 'active' | 'cancelled' | 'renewed',
+    reason?: string,
+    immediate?: boolean
+  ) => {
     try {
-      await activateSubscription(id);
-      showSuccess('订阅已激活');
+      await updateSubscriptionStatus(id, { status, reason, immediate });
+      const messages = {
+        active: '订阅已激活',
+        cancelled: '订阅已取消',
+        renewed: '订阅已续费',
+      };
+      showSuccess(messages[status]);
       // 刷新列表
       await fetchSubscriptions(page, pageSize);
       return true;
     } catch (error) {
-      console.error('激活订阅失败:', error);
-      showError('激活订阅失败');
+      console.error('更新订阅状态失败:', error);
+      showError('更新订阅状态失败');
       return false;
     }
   }, [page, pageSize, fetchSubscriptions, showSuccess, showError]);
@@ -66,6 +80,6 @@ export const useSubscriptions = () => {
     page,
     pageSize,
     fetchSubscriptions,
-    activate,
+    changeStatus,
   };
 };

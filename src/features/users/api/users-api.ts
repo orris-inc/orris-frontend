@@ -11,6 +11,8 @@ import type {
   CreateUserRequest,
   UpdateUserRequest,
   UserListParams,
+  ChangePasswordRequest,
+  UpdateProfileRequest,
 } from '../types/users.types';
 
 /**
@@ -89,4 +91,28 @@ export const updateUser = async (
  */
 export const deleteUser = async (id: number | string): Promise<void> => {
   await apiClient.delete(`/users/${id}`);
+};
+
+/**
+ * 修改当前用户密码
+ * POST /users/change-password
+ * 来源: swagger.json /users/change-password
+ * 需要认证: Bearer Token
+ */
+export const changePassword = async (data: ChangePasswordRequest): Promise<void> => {
+  await apiClient.post('/users/change-password', data);
+};
+
+/**
+ * 更新当前用户个人资料
+ * PUT /users/profile
+ * 来源: swagger.json /users/profile
+ * 需要认证: Bearer Token
+ */
+export const updateProfile = async (data: UpdateProfileRequest): Promise<UserListItem> => {
+  const response = await apiClient.put<APIResponse<UserListItem>>(
+    '/users/profile',
+    data
+  );
+  return response.data.data;
 };

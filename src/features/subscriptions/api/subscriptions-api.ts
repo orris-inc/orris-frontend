@@ -13,6 +13,8 @@ import type {
   SubscriptionToken,
   GetTokensParams,
   GenerateTokenRequest,
+  ChangePlanRequest,
+  UpdateSubscriptionStatusRequest,
 } from '../types/subscriptions.types';
 
 /**
@@ -62,32 +64,6 @@ export const createSubscription = async (
 };
 
 /**
- * 取消订阅
- * POST /subscriptions/{id}/cancel
- * 需要认证: Bearer Token
- */
-export const cancelSubscription = async (id: number): Promise<Subscription> => {
-  const response = await apiClient.post<APIResponse<Subscription>>(
-    `/subscriptions/${id}/cancel`
-  );
-  return response.data.data;
-};
-
-/**
- * 激活订阅（管理员功能）
- * POST /subscriptions/{id}/activate
- * 来源: swagger.json line 4404-4469
- * 需要认证: Bearer Token
- * 需要权限: Admin
- */
-export const activateSubscription = async (id: number): Promise<Subscription> => {
-  const response = await apiClient.post<APIResponse<Subscription>>(
-    `/subscriptions/${id}/activate`
-  );
-  return response.data.data;
-};
-
-/**
  * 获取订阅的令牌列表
  * GET /subscriptions/{id}/tokens
  * 来源: swagger.json line 4690-4762
@@ -116,6 +92,70 @@ export const generateSubscriptionToken = async (
 ): Promise<SubscriptionToken> => {
   const response = await apiClient.post<APIResponse<SubscriptionToken>>(
     `/subscriptions/${subscriptionId}/tokens`,
+    data
+  );
+  return response.data.data;
+};
+
+/**
+ * 删除订阅令牌
+ * DELETE /subscriptions/{id}/tokens/{token_id}
+ * 来源: swagger.json /subscriptions/{id}/tokens/{token_id}
+ * 需要认证: Bearer Token
+ */
+export const revokeSubscriptionToken = async (
+  subscriptionId: number,
+  tokenId: number
+): Promise<void> => {
+  await apiClient.delete(`/subscriptions/${subscriptionId}/tokens/${tokenId}`);
+};
+
+/**
+ * 刷新订阅令牌
+ * POST /subscriptions/{id}/tokens/{token_id}/refresh
+ * 来源: swagger.json /subscriptions/{id}/tokens/{token_id}/refresh
+ * 需要认证: Bearer Token
+ */
+export const refreshSubscriptionToken = async (
+  subscriptionId: number,
+  tokenId: number
+): Promise<SubscriptionToken> => {
+  const response = await apiClient.post<APIResponse<SubscriptionToken>>(
+    `/subscriptions/${subscriptionId}/tokens/${tokenId}/refresh`
+  );
+  return response.data.data;
+};
+
+/**
+ * 更换订阅计划
+ * PATCH /subscriptions/{id}/plan
+ * 来源: swagger.json /subscriptions/{id}/plan
+ * 需要认证: Bearer Token
+ */
+export const changeSubscriptionPlan = async (
+  subscriptionId: number,
+  data: ChangePlanRequest
+): Promise<Subscription> => {
+  const response = await apiClient.patch<APIResponse<Subscription>>(
+    `/subscriptions/${subscriptionId}/plan`,
+    data
+  );
+  return response.data.data;
+};
+
+/**
+ * 更新订阅状态
+ * PATCH /subscriptions/{id}/status
+ * 来源: swagger.json /subscriptions/{id}/status
+ * 需要认证: Bearer Token
+ * 支持操作: activate, cancel, renew
+ */
+export const updateSubscriptionStatus = async (
+  subscriptionId: number,
+  data: UpdateSubscriptionStatusRequest
+): Promise<Subscription> => {
+  const response = await apiClient.patch<APIResponse<Subscription>>(
+    `/subscriptions/${subscriptionId}/status`,
     data
   );
   return response.data.data;

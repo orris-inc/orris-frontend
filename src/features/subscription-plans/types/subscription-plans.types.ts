@@ -133,3 +133,12 @@ export interface PlanPricing {
   currency: string;                  // 货币代码
   is_active: boolean;                // 是否激活
 }
+
+/**
+ * 更新订阅计划状态请求
+ * PATCH /subscription-plans/{id}/status
+ * 来源: swagger.json internal_interfaces_http_handlers.UpdatePlanStatusRequest
+ */
+export interface UpdatePlanStatusRequest {
+  status: 'active' | 'inactive';     // 必需：激活或未激活
+}

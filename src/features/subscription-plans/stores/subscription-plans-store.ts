@@ -13,8 +13,7 @@ import {
   getSubscriptionPlanById as fetchPlanByIdApi,
   createSubscriptionPlan as createPlanApi,
   updateSubscriptionPlan as updatePlanApi,
-  activateSubscriptionPlan as activatePlanApi,
-  deactivateSubscriptionPlan as deactivatePlanApi,
+  updatePlanStatus as updatePlanStatusApi,
   getPlanPricings as fetchPlanPricingsApi,
 } from '../api/subscription-plans-api';
 import { handleApiError } from '@/shared/lib/axios';
@@ -62,8 +61,7 @@ interface SubscriptionPlansState {
   fetchPlanPricings: (id: number) => Promise<PlanPricing[]>;
   createPlan: (data: any) => Promise<SubscriptionPlan | null>;
   updatePlan: (id: number, data: any) => Promise<SubscriptionPlan | null>;
-  activatePlan: (id: number) => Promise<boolean>;
-  deactivatePlan: (id: number) => Promise<boolean>;
+  updatePlanStatus: (id: number, status: 'active' | 'inactive') => Promise<boolean>;
   setFilters: (filters: Partial<SubscriptionPlanFilters>) => void;
   setSelectedPlan: (plan: SubscriptionPlan | null) => void;
   clearError: () => void;
@@ -219,35 +217,15 @@ export const useSubscriptionPlansStore = create<SubscriptionPlansState>()(
         }
       },
 
-      // 激活订阅计划
-      activatePlan: async (id: number) => {
+      // 更新订阅计划状态
+      updatePlanStatus: async (id: number, status: 'active' | 'inactive') => {
         set({ loading: true, error: null });
 
         try {
-          await activatePlanApi(id);
+          await updatePlanStatusApi(id, { status });
           set({ loading: false });
-          showNotification('订阅计划已激活', 'success');
-
-          // 重新获取列表
-          await get().fetchPlans();
-
-          return true;
-        } catch (error) {
-          const errorMessage = handleApiError(error);
-          set({ error: errorMessage, loading: false });
-          showNotification(errorMessage, 'error');
-          return false;
-        }
-      },
-
-      // 停用订阅计划
-      deactivatePlan: async (id: number) => {
-        set({ loading: true, error: null });
-
-        try {
-          await deactivatePlanApi(id);
-          set({ loading: false });
-          showNotification('订阅计划已停用', 'success');
+          const message = status === 'active' ? '订阅计划已激活' : '订阅计划已停用';
+          showNotification(message, 'success');
 
           // 重新获取列表
           await get().fetchPlans();

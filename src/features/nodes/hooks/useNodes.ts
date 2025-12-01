@@ -20,10 +20,8 @@ export const useNodes = () => {
     createNode,
     updateNode,
     deleteNode,
-    activateNode,
-    deactivateNode,
+    updateNodeStatus,
     generateToken,
-    getTraffic,
     setFilters,
     setSelectedNode,
     clearError,
@@ -57,24 +55,17 @@ export const useNodes = () => {
     return await deleteNode(id);
   };
 
-  // 激活节点
-  const handleActivateNode = async (id: number | string) => {
-    return await activateNode(id);
-  };
-
-  // 停用节点
-  const handleDeactivateNode = async (id: number | string) => {
-    return await deactivateNode(id);
+  // 更新节点状态
+  const handleUpdateNodeStatus = async (
+    id: number | string,
+    status: 'active' | 'inactive' | 'maintenance'
+  ) => {
+    return await updateNodeStatus(id, status);
   };
 
   // 生成Token
   const handleGenerateToken = async (id: number | string) => {
     return await generateToken(id);
-  };
-
-  // 获取流量统计
-  const handleGetTraffic = async (id: number | string, start?: string, end?: string) => {
-    return await getTraffic(id, start, end);
   };
 
   return {
@@ -92,10 +83,8 @@ export const useNodes = () => {
     createNode: handleCreateNode,
     updateNode: handleUpdateNode,
     deleteNode: handleDeleteNode,
-    activateNode: handleActivateNode,
-    deactivateNode: handleDeactivateNode,
+    updateNodeStatus: handleUpdateNodeStatus,
     generateToken: handleGenerateToken,
-    getTraffic: handleGetTraffic,
     setFilters,
     setSelectedNode,
     clearError,

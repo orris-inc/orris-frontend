@@ -10,9 +10,9 @@ import type {
   NodeListItem,
   CreateNodeRequest,
   UpdateNodeRequest,
+  UpdateNodeStatusRequest,
   NodeListParams,
   NodeTokenResponse,
-  NodeTrafficData,
 } from '../types/nodes.types';
 
 // 不做任何转换，直接使用后端返回的数据格式
@@ -110,37 +110,28 @@ export const deleteNode = async (id: number | string): Promise<void> => {
 };
 
 /**
- * 激活节点
- * POST /nodes/{id}/activate
- * 来源: swagger.json line 2248
+ * 更新节点状态
+ * PATCH /nodes/{id}/status
+ * 来源: swagger.json /nodes/{id}/status
  * 需要认证: Bearer Token
  * 需要权限: Admin
+ * 支持状态: active, inactive, maintenance
  */
-export const activateNode = async (id: number | string): Promise<NodeListItem> => {
-  const response = await apiClient.post<APIResponse<NodeListItem>>(
-    `/nodes/${id}/activate`
-  );
-  return response.data.data;
-};
-
-/**
- * 停用节点
- * POST /nodes/{id}/deactivate
- * 来源: swagger.json line 2315
- * 需要认证: Bearer Token
- * 需要权限: Admin
- */
-export const deactivateNode = async (id: number | string): Promise<NodeListItem> => {
-  const response = await apiClient.post<APIResponse<NodeListItem>>(
-    `/nodes/${id}/deactivate`
+export const updateNodeStatus = async (
+  id: number | string,
+  data: UpdateNodeStatusRequest
+): Promise<NodeListItem> => {
+  const response = await apiClient.patch<APIResponse<NodeListItem>>(
+    `/nodes/${id}/status`,
+    data
   );
   return response.data.data;
 };
 
 /**
  * 生成节点API Token
- * POST /nodes/{id}/token
- * 来源: swagger.json line 2382
+ * POST /nodes/{id}/tokens
+ * 来源: swagger.json /nodes/{id}/tokens
  * 需要认证: Bearer Token
  * 需要权限: Admin
  */
@@ -148,27 +139,7 @@ export const generateNodeToken = async (
   id: number | string
 ): Promise<NodeTokenResponse> => {
   const response = await apiClient.post<APIResponse<NodeTokenResponse>>(
-    `/nodes/${id}/token`
-  );
-
-  return response.data.data;
-};
-
-/**
- * 获取节点流量统计
- * 注意: 此接口在当前swagger文档中不存在
- * 如果后端未实现此接口，此方法将返回错误
- * GET /nodes/{id}/traffic
- * 需要认证: Bearer Token
- * 需要权限: Admin
- */
-export const getNodeTraffic = async (
-  id: number | string,
-  params?: { start?: string; end?: string }
-): Promise<NodeTrafficData> => {
-  const response = await apiClient.get<APIResponse<NodeTrafficData>>(
-    `/nodes/${id}/traffic`,
-    { params }
+    `/nodes/${id}/tokens`
   );
   return response.data.data;
 };

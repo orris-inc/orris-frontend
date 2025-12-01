@@ -4,10 +4,10 @@
  */
 
 import { useEffect, useState } from 'react';
-import { CheckCircle, X, RefreshCw, Loader2, Receipt } from 'lucide-react';
+import { CheckCircle, X, RefreshCw, Loader2, Receipt, Play, XCircle, RotateCcw } from 'lucide-react';
 import { AdminLayout } from '@/layouts/AdminLayout';
 import { useSubscriptions } from '../features/subscriptions/hooks/useSubscriptions';
-import type { SubscriptionStatus } from '../features/subscriptions/types/subscriptions.types';
+import type { SubscriptionStatus, Subscription } from '../features/subscriptions/types/subscriptions.types';
 import { formatDate } from '@/shared/utils/date-utils';
 import {
   tableStyles,
@@ -17,10 +17,19 @@ import {
   tableHeadStyles,
   tableCellStyles,
   getBadgeClass,
+  textareaStyles,
 } from '@/lib/ui-styles';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/common/Select';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/common/Tooltip';
 import { Label } from '@/components/common/Label';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/common/Dialog';
 import {
   AdminPageLayout,
   AdminButton,
@@ -48,9 +57,15 @@ const STATUS_LABELS: Record<SubscriptionStatus, string> = {
 };
 
 export const SubscriptionManagementPage: React.FC = () => {
-  const { subscriptions, loading, total, page, pageSize, fetchSubscriptions, activate } = useSubscriptions();
+  const { subscriptions, loading, total, page, pageSize, fetchSubscriptions, changeStatus } = useSubscriptions();
   const [statusFilter, setStatusFilter] = useState<SubscriptionStatus | 'all'>('all');
-  const [activating, setActivating] = useState<number | null>(null);
+  const [processing, setProcessing] = useState<number | null>(null);
+
+  // 取消对话框状态
+  const [cancelDialogOpen, setCancelDialogOpen] = useState(false);
+  const [cancelTarget, setCancelTarget] = useState<Subscription | null>(null);
+  const [cancelReason, setCancelReason] = useState('');
+  const [cancelImmediate, setCancelImmediate] = useState(false);
 
   // 初始加载
   useEffect(() => {
@@ -77,17 +92,92 @@ export const SubscriptionManagementPage: React.FC = () => {
 
   // 激活订阅
   const handleActivate = async (id: number) => {
-    setActivating(id);
+    setProcessing(id);
     try {
-      await activate(id);
+      await changeStatus(id, 'active');
     } finally {
-      setActivating(null);
+      setProcessing(null);
+    }
+  };
+
+  // 打开取消对话框
+  const openCancelDialog = (subscription: Subscription) => {
+    setCancelTarget(subscription);
+    setCancelReason('');
+    setCancelImmediate(false);
+    setCancelDialogOpen(true);
+  };
+
+  // 确认取消订阅
+  const handleCancelConfirm = async () => {
+    if (!cancelTarget || !cancelReason.trim()) return;
+
+    setProcessing(cancelTarget.ID);
+    try {
+      await changeStatus(cancelTarget.ID, 'cancelled', cancelReason.trim(), cancelImmediate);
+      setCancelDialogOpen(false);
+      setCancelTarget(null);
+      setCancelReason('');
+      setCancelImmediate(false);
+    } finally {
+      setProcessing(null);
+    }
+  };
+
+  // 续费订阅
+  const handleRenew = async (id: number) => {
+    setProcessing(id);
+    try {
+      await changeStatus(id, 'renewed');
+    } finally {
+      setProcessing(null);
     }
   };
 
   // 刷新列表
   const handleRefresh = () => {
     fetchSubscriptions(page, pageSize, statusFilter !== 'all' ? { status: statusFilter as SubscriptionStatus } : undefined);
+  };
+
+  // 根据订阅状态获取可用操作
+  const getAvailableActions = (subscription: Subscription) => {
+    const actions: Array<{
+      label: string;
+      icon: React.ReactNode;
+      onClick: () => void;
+      variant: 'primary' | 'outline' | 'danger';
+    }> = [];
+
+    switch (subscription.Status) {
+      case 'inactive':
+      case 'pending':
+        actions.push({
+          label: '激活',
+          icon: <Play className="size-3.5" strokeWidth={1.5} />,
+          onClick: () => handleActivate(subscription.ID),
+          variant: 'primary',
+        });
+        break;
+      case 'active':
+        actions.push({
+          label: '取消',
+          icon: <XCircle className="size-3.5" strokeWidth={1.5} />,
+          onClick: () => openCancelDialog(subscription),
+          variant: 'danger',
+        });
+        break;
+      case 'cancelled':
+      case 'expired':
+        actions.push({
+          label: '续费',
+          icon: <RotateCcw className="size-3.5" strokeWidth={1.5} />,
+          onClick: () => handleRenew(subscription.ID),
+          variant: 'primary',
+        });
+        break;
+    }
+
+    return actions;
   };
 
   // 计算分页信息
@@ -215,17 +305,28 @@ export const SubscriptionManagementPage: React.FC = () => {
                       </td>
                       <td className={tableCellStyles}>{formatDate(subscription.CreatedAt)}</td>
                       <td className={`${tableCellStyles} text-center`}>
-                        {subscription.Status === 'inactive' && (
-                          <AdminButton
-                            variant="primary"
-                            size="sm"
-                            onClick={() => handleActivate(subscription.ID)}
-                            disabled={activating === subscription.ID}
-                            loading={activating === subscription.ID}
-                          >
-                            {activating === subscription.ID ? '激活中...' : '激活'}
-                          </AdminButton>
-                        )}
+                        <div className="flex items-center justify-center gap-1">
+                          {getAvailableActions(subscription).map((action, index) => (
+                            <Tooltip key={index}>
+                              <TooltipTrigger asChild>
+                                <AdminButton
+                                  variant={action.variant}
+                                  size="sm"
+                                  onClick={action.onClick}
+                                  disabled={processing === subscription.ID}
+                                  loading={processing === subscription.ID}
+                                  icon={action.icon}
+                                >
+                                  {action.label}
+                                </AdminButton>
+                              </TooltipTrigger>
+                              <TooltipContent>{action.label}订阅</TooltipContent>
+                            </Tooltip>
+                          ))}
+                          {getAvailableActions(subscription).length === 0 && (
+                            <span className="text-xs text-slate-400">-</span>
+                          )}
+                        </div>
                       </td>
                     </tr>
                   ))
@@ -279,6 +380,81 @@ export const SubscriptionManagementPage: React.FC = () => {
             )}
         </AdminCard>
       </AdminPageLayout>
+
+      {/* 取消订阅对话框 */}
+      <Dialog
+        open={cancelDialogOpen}
+        onOpenChange={(open) => {
+          if (!open) {
+            setCancelDialogOpen(false);
+            setCancelTarget(null);
+            setCancelReason('');
+          }
+        }}
+      >
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>取消订阅</DialogTitle>
+            <DialogDescription>
+              {cancelTarget && (
+                <>
+                  确认取消用户 <strong>{cancelTarget.User?.Name || cancelTarget.User?.Email}</strong> 的订阅？
+                  <br />
+                  计划：{cancelTarget.Plan?.Name || '-'}
+                </>
+              )}
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <Label htmlFor="cancel-reason">取消原因 *</Label>
+              <textarea
+                id="cancel-reason"
+                value={cancelReason}
+                onChange={(e) => setCancelReason(e.target.value)}
+                placeholder="请输入取消原因..."
+                rows={3}
+                className={textareaStyles}
+              />
+            </div>
+
+            <div className="flex items-center gap-2">
+              <input
+                type="checkbox"
+                id="cancel-immediate"
+                checked={cancelImmediate}
+                onChange={(e) => setCancelImmediate(e.target.checked)}
+                className="size-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500"
+              />
+              <Label htmlFor="cancel-immediate" className="text-sm font-normal">
+                立即生效（否则在当前周期结束后生效）
+              </Label>
+            </div>
+          </div>
+
+          <DialogFooter>
+            <AdminButton
+              variant="outline"
+              onClick={() => {
+                setCancelDialogOpen(false);
+                setCancelTarget(null);
+                setCancelReason('');
+              }}
+            >
+              取消
+            </AdminButton>
+            <AdminButton
+              variant="danger"
+              onClick={handleCancelConfirm}
+              disabled={!cancelReason.trim() || processing === cancelTarget?.ID}
+              loading={processing === cancelTarget?.ID}
+            >
+              确认取消
+            </AdminButton>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </AdminLayout>
   );
 };
