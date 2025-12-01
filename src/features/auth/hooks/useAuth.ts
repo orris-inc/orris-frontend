@@ -15,7 +15,19 @@ import { openOAuthPopup } from '../utils/oauth-popup';
  */
 const isSafeRedirectUrl = (url: string): boolean => {
   // 只允许相对路径，防止开放重定向漏洞
-  return url.startsWith('/') && !url.startsWith('//');
+  // 检查是否以 / 开头，但不是 // 或包含协议
+  if (!url.startsWith('/') || url.startsWith('//')) {
+    return false;
+  }
+  
+  // 防止 javascript:, data:, vbscript: 等协议
+  const lowerUrl = url.toLowerCase();
+  const dangerousProtocols = ['javascript:', 'data:', 'vbscript:', 'file:'];
+  if (dangerousProtocols.some(protocol => lowerUrl.includes(protocol))) {
+    return false;
+  }
+  
+  return true;
 };
 
 /**

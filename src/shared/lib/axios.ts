@@ -25,7 +25,7 @@ let refreshTokenPromise: Promise<void> | null = null;
 
 // 记录最后一次刷新时间，防止频繁刷新
 let lastRefreshTime = 0;
-const REFRESH_COOLDOWN = 1000; // 1秒内不重复刷新
+const REFRESH_COOLDOWN = 5000; // 5秒内不重复刷新
 
 /**
  * 请求拦截器：记录所有请求
@@ -76,7 +76,12 @@ const refreshAccessToken = async (): Promise<void> => {
       // 刷新失败，只在非公开页面时跳转到登录页
       // 避免在登录页、注册页等公开页面造成重定向循环
       if (typeof window !== 'undefined') {
-        const publicPaths = ['/login', '/register', '/forgot-password', '/reset-password', '/verify-email', '/verification-pending', '/pricing'];
+        const publicPaths = [
+          '/login', '/login-new', '/login-minimal', '/login-glass', 
+          '/login-apple', '/login-selector', '/register', 
+          '/forgot-password', '/reset-password', '/verify-email', 
+          '/verification-pending', '/pricing'
+        ];
         const currentPath = window.location.pathname;
 
         if (!publicPaths.includes(currentPath)) {

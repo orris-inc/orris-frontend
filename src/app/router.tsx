@@ -9,6 +9,11 @@
 
 import { createBrowserRouter, Navigate } from 'react-router';
 import { LoginPage } from '@/pages/LoginPage';
+import { LoginPageNew } from '@/pages/LoginPageNew';
+import { LoginPageMinimal } from '@/pages/LoginPageMinimal';
+import { LoginPageGlass } from '@/pages/LoginPageGlass';
+import { LoginPageApple } from '@/pages/LoginPageApple';
+import { LoginSelector } from '@/pages/LoginSelector';
 import { RegisterPage } from '@/pages/RegisterPage';
 import { ForgotPasswordPage } from '@/pages/ForgotPasswordPage';
 import { ResetPasswordPage } from '@/pages/ResetPasswordPage';
@@ -27,10 +32,16 @@ import { ProtectedRoute } from '@/shared/components/ProtectedRoute';
 import { AdminRoute } from '@/shared/components/AdminRoute';
 
 export const router = createBrowserRouter([
-  // 根路径重定向到登录页
+  // 根路径重定向到登录选择器（临时用于预览不同设计）
   {
     path: '/',
-    element: <Navigate to="/login" replace />,
+    element: <Navigate to="/login-selector" replace />,
+  },
+
+  // 登录页面选择器
+  {
+    path: '/login-selector',
+    element: <LoginSelector />,
   },
 
   // ==================== 用户端路由 ====================
@@ -125,10 +136,34 @@ export const router = createBrowserRouter([
 
   // ==================== 公共路由 ====================
 
-  // 登录
+  // 登录（旧版）
   {
     path: '/login',
     element: <LoginPage />,
+  },
+
+  // 登录（新设计 - Art Deco）
+  {
+    path: '/login-new',
+    element: <LoginPageNew />,
+  },
+
+  // 登录（极简风格）
+  {
+    path: '/login-minimal',
+    element: <LoginPageMinimal />,
+  },
+
+  // 登录（流动光影 - Tailwind）
+  {
+    path: '/login-glass',
+    element: <LoginPageGlass />,
+  },
+
+  // 登录（Apple 简约风格）
+  {
+    path: '/login-apple',
+    element: <LoginPageApple />,
   },
 
   // 注册
