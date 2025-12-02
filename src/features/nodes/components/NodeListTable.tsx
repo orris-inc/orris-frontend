@@ -1,21 +1,11 @@
 /**
  * 节点列表表格组件（管理端）
- * 使用统一的 AdminTable 组件
+ * 使用 TanStack Table 实现
  */
 
-import { Edit, Trash2, Key, Eye, Power, PowerOff } from 'lucide-react';
-import {
-  AdminTable,
-  AdminTableHeader,
-  AdminTableBody,
-  AdminTableRow,
-  AdminTableHead,
-  AdminTableCell,
-  AdminTableEmpty,
-  AdminTableLoading,
-  AdminTablePagination,
-  AdminBadge,
-} from '@/components/admin';
+import { useMemo } from 'react';
+import { Edit, Trash2, Key, Eye, Power, PowerOff, MoreHorizontal } from 'lucide-react';
+import { DataTable, AdminBadge, type ColumnDef } from '@/components/admin';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -68,8 +58,6 @@ const formatDate = (dateString: string) => {
   });
 };
 
-const COLUMNS = 9;
-
 export const NodeListTable: React.FC<NodeListTableProps> = ({
   nodes,
   loading = false,
@@ -85,131 +73,169 @@ export const NodeListTable: React.FC<NodeListTableProps> = ({
   onGenerateToken,
   onViewDetail,
 }) => {
-  return (
-    <>
-      <AdminTable>
-        <AdminTableHeader>
-          <AdminTableRow>
-            <AdminTableHead width={60}>ID</AdminTableHead>
-            <AdminTableHead>名称</AdminTableHead>
-            <AdminTableHead width={100}>协议</AdminTableHead>
-            <AdminTableHead>服务器地址</AdminTableHead>
-            <AdminTableHead width={80}>地区</AdminTableHead>
-            <AdminTableHead width={120}>加密方法</AdminTableHead>
-            <AdminTableHead width={80}>状态</AdminTableHead>
-            <AdminTableHead width={140}>创建时间</AdminTableHead>
-            <AdminTableHead width={80} align="center">操作</AdminTableHead>
-          </AdminTableRow>
-        </AdminTableHeader>
-        <AdminTableBody>
-          {loading && nodes.length === 0 ? (
-            <AdminTableLoading colSpan={COLUMNS} />
-          ) : nodes.length === 0 ? (
-            <AdminTableEmpty message="暂无节点数据" colSpan={COLUMNS} />
-          ) : (
-            nodes.map((node) => {
-              const statusConfig = STATUS_CONFIG[node.status] || { label: node.status, variant: 'default' as const };
-
-              return (
-                <AdminTableRow key={node.id}>
-                  <AdminTableCell className="font-medium text-slate-900 dark:text-white">
-                    {node.id}
-                  </AdminTableCell>
-                  <AdminTableCell>
-                    <div>
-                      <div className="font-medium text-slate-900 dark:text-white">{node.name}</div>
-                      {node.description && (
-                        <div className="text-xs text-slate-500 dark:text-slate-400 mt-0.5 line-clamp-1">
-                          {node.description}
-                        </div>
-                      )}
-                    </div>
-                  </AdminTableCell>
-                  <AdminTableCell>
-                    <AdminBadge variant="outline">
-                      {PROTOCOL_LABELS[node.protocol] || node.protocol}
-                    </AdminBadge>
-                  </AdminTableCell>
-                  <AdminTableCell className="font-mono text-sm">
-                    {node.server_address}:{node.server_port}
-                  </AdminTableCell>
-                  <AdminTableCell>{node.region || '-'}</AdminTableCell>
-                  <AdminTableCell className="font-mono text-xs">
-                    {node.method}
-                  </AdminTableCell>
-                  <AdminTableCell>
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <span>
-                          <AdminBadge
-                            variant={statusConfig.variant}
-                            onClick={() => node.status === 'active' ? onDeactivate(node) : onActivate(node)}
-                          >
-                            {statusConfig.label}
-                          </AdminBadge>
-                        </span>
-                      </TooltipTrigger>
-                      <TooltipContent>
-                        {node.status === 'active' ? '点击停用' : '点击激活'}
-                      </TooltipContent>
-                    </Tooltip>
-                  </AdminTableCell>
-                  <AdminTableCell className="text-slate-500 dark:text-slate-400 text-sm">
-                    {formatDate(node.created_at)}
-                  </AdminTableCell>
-                  <AdminTableCell align="center">
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <button className="px-2 py-1 text-xs text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-700 rounded transition-colors">
-                          操作
-                        </button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end">
-                        <DropdownMenuItem onClick={() => onViewDetail(node)}>
-                          <Eye className="mr-2 size-4" />
-                          查看详情
-                        </DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => onEdit(node)}>
-                          <Edit className="mr-2 size-4" />
-                          编辑
-                        </DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => onGenerateToken(node)}>
-                          <Key className="mr-2 size-4" />
-                          生成Token
-                        </DropdownMenuItem>
-                        <DropdownMenuSeparator />
-                        {node.status === 'active' ? (
-                          <DropdownMenuItem onClick={() => onDeactivate(node)}>
-                            <PowerOff className="mr-2 size-4" />
-                            停用
-                          </DropdownMenuItem>
-                        ) : (
-                          <DropdownMenuItem onClick={() => onActivate(node)}>
-                            <Power className="mr-2 size-4" />
-                            激活
-                          </DropdownMenuItem>
-                        )}
-                        <DropdownMenuItem onClick={() => onDelete(node)} className="text-red-600 dark:text-red-400">
-                          <Trash2 className="mr-2 size-4" />
-                          删除
-                        </DropdownMenuItem>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
-                  </AdminTableCell>
-                </AdminTableRow>
-              );
-            })
+  const columns = useMemo<ColumnDef<NodeListItem>[]>(() => [
+    {
+      accessorKey: 'id',
+      header: 'ID',
+      size: 56,
+      cell: ({ row }) => (
+        <span className="font-mono text-slate-600 dark:text-slate-400">
+          {row.original.id}
+        </span>
+      ),
+    },
+    {
+      accessorKey: 'name',
+      header: '名称',
+      cell: ({ row }) => (
+        <div className="space-y-1">
+          <div className="font-medium text-slate-900 dark:text-white">{row.original.name}</div>
+          {row.original.description && (
+            <div className="text-xs text-slate-500 dark:text-slate-400 line-clamp-1">
+              {row.original.description}
+            </div>
           )}
-        </AdminTableBody>
-      </AdminTable>
-      <AdminTablePagination
-        page={page}
-        pageSize={pageSize}
-        total={total}
-        onPageChange={onPageChange}
-        onPageSizeChange={onPageSizeChange}
-        loading={loading}
-      />
-    </>
+        </div>
+      ),
+    },
+    {
+      accessorKey: 'protocol',
+      header: '协议',
+      size: 100,
+      cell: ({ row }) => (
+        <AdminBadge variant="outline">
+          {PROTOCOL_LABELS[row.original.protocol] || row.original.protocol}
+        </AdminBadge>
+      ),
+    },
+    {
+      id: 'server',
+      header: '服务器地址',
+      size: 180,
+      cell: ({ row }) => (
+        <span className="font-mono text-sm text-slate-700 dark:text-slate-300">
+          {row.original.server_address}:{row.original.server_port}
+        </span>
+      ),
+    },
+    {
+      accessorKey: 'region',
+      header: '地区',
+      size: 72,
+      cell: ({ row }) => (
+        <span className="text-slate-700 dark:text-slate-300">
+          {row.original.region || '-'}
+        </span>
+      ),
+    },
+    {
+      accessorKey: 'method',
+      header: '加密方法',
+      size: 120,
+      cell: ({ row }) => (
+        <span className="font-mono text-xs text-slate-600 dark:text-slate-400">
+          {row.original.method}
+        </span>
+      ),
+    },
+    {
+      accessorKey: 'status',
+      header: '状态',
+      size: 72,
+      cell: ({ row }) => {
+        const node = row.original;
+        const statusConfig = STATUS_CONFIG[node.status] || { label: node.status, variant: 'default' as const };
+        return (
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <span>
+                <AdminBadge
+                  variant={statusConfig.variant}
+                  onClick={() => node.status === 'active' ? onDeactivate(node) : onActivate(node)}
+                >
+                  {statusConfig.label}
+                </AdminBadge>
+              </span>
+            </TooltipTrigger>
+            <TooltipContent>
+              {node.status === 'active' ? '点击停用' : '点击激活'}
+            </TooltipContent>
+          </Tooltip>
+        );
+      },
+    },
+    {
+      accessorKey: 'created_at',
+      header: '创建时间',
+      size: 140,
+      cell: ({ row }) => (
+        <span className="text-slate-500 dark:text-slate-400 text-sm">
+          {formatDate(row.original.created_at)}
+        </span>
+      ),
+    },
+    {
+      id: 'actions',
+      header: '操作',
+      size: 56,
+      enableSorting: false,
+      cell: ({ row }) => {
+        const node = row.original;
+        return (
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <button className="inline-flex items-center justify-center size-8 rounded-lg text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-700 transition-all duration-200 group">
+                <MoreHorizontal className="size-4 group-hover:scale-110 transition-transform" strokeWidth={2} />
+              </button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuItem onClick={() => onViewDetail(node)}>
+                <Eye className="mr-2 size-4" />
+                查看详情
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => onEdit(node)}>
+                <Edit className="mr-2 size-4" />
+                编辑
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => onGenerateToken(node)}>
+                <Key className="mr-2 size-4" />
+                生成Token
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+              {node.status === 'active' ? (
+                <DropdownMenuItem onClick={() => onDeactivate(node)}>
+                  <PowerOff className="mr-2 size-4" />
+                  停用
+                </DropdownMenuItem>
+              ) : (
+                <DropdownMenuItem onClick={() => onActivate(node)}>
+                  <Power className="mr-2 size-4" />
+                  激活
+                </DropdownMenuItem>
+              )}
+              <DropdownMenuItem onClick={() => onDelete(node)} className="text-red-600 dark:text-red-400">
+                <Trash2 className="mr-2 size-4" />
+                删除
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        );
+      },
+    },
+  ], [onEdit, onDelete, onActivate, onDeactivate, onGenerateToken, onViewDetail]);
+
+  return (
+    <DataTable
+      columns={columns}
+      data={nodes}
+      loading={loading}
+      page={page}
+      pageSize={pageSize}
+      total={total}
+      onPageChange={onPageChange}
+      onPageSizeChange={onPageSizeChange}
+      emptyMessage="暂无节点数据"
+      getRowId={(row) => String(row.id)}
+    />
   );
 };

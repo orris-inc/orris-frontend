@@ -14,7 +14,6 @@ import type {
   GetTokensParams,
   GenerateTokenRequest,
   ChangePlanRequest,
-  UpdateSubscriptionStatusRequest,
 } from '../types/subscriptions.types';
 
 /**
@@ -27,7 +26,7 @@ export const getSubscriptions = async (
   params?: SubscriptionListParams
 ): Promise<ListResponse<Subscription>> => {
   const response = await apiClient.get<APIResponse<ListResponse<Subscription>>>(
-    '/subscriptions',
+    '/admin/subscriptions',
     { params }
   );
   return response.data.data;
@@ -41,7 +40,7 @@ export const getSubscriptions = async (
  */
 export const getSubscriptionById = async (id: number): Promise<Subscription> => {
   const response = await apiClient.get<APIResponse<Subscription>>(
-    `/subscriptions/${id}`
+    `/admin/subscriptions/${id}`
   );
   return response.data.data;
 };
@@ -57,7 +56,7 @@ export const createSubscription = async (
   data: CreateSubscriptionRequest
 ): Promise<SubscriptionCreateResult> => {
   const response = await apiClient.post<APIResponse<SubscriptionCreateResult>>(
-    '/subscriptions',
+    '/admin/subscriptions',
     data
   );
   return response.data.data;
@@ -74,7 +73,7 @@ export const getSubscriptionTokens = async (
   params?: GetTokensParams
 ): Promise<SubscriptionToken[]> => {
   const response = await apiClient.get<APIResponse<SubscriptionToken[]>>(
-    `/subscriptions/${subscriptionId}/tokens`,
+    `/admin/subscriptions/${subscriptionId}/tokens`,
     { params }
   );
   return response.data.data;
@@ -91,7 +90,7 @@ export const generateSubscriptionToken = async (
   data: GenerateTokenRequest
 ): Promise<SubscriptionToken> => {
   const response = await apiClient.post<APIResponse<SubscriptionToken>>(
-    `/subscriptions/${subscriptionId}/tokens`,
+    `/admin/subscriptions/${subscriptionId}/tokens`,
     data
   );
   return response.data.data;
@@ -107,7 +106,7 @@ export const revokeSubscriptionToken = async (
   subscriptionId: number,
   tokenId: number
 ): Promise<void> => {
-  await apiClient.delete(`/subscriptions/${subscriptionId}/tokens/${tokenId}`);
+  await apiClient.delete(`/admin/subscriptions/${subscriptionId}/tokens/${tokenId}`);
 };
 
 /**
@@ -121,7 +120,7 @@ export const refreshSubscriptionToken = async (
   tokenId: number
 ): Promise<SubscriptionToken> => {
   const response = await apiClient.post<APIResponse<SubscriptionToken>>(
-    `/subscriptions/${subscriptionId}/tokens/${tokenId}/refresh`
+    `/admin/subscriptions/${subscriptionId}/tokens/${tokenId}/refresh`
   );
   return response.data.data;
 };
@@ -137,26 +136,9 @@ export const changeSubscriptionPlan = async (
   data: ChangePlanRequest
 ): Promise<Subscription> => {
   const response = await apiClient.patch<APIResponse<Subscription>>(
-    `/subscriptions/${subscriptionId}/plan`,
+    `/admin/subscriptions/${subscriptionId}/plan`,
     data
   );
   return response.data.data;
 };
 
-/**
- * 更新订阅状态
- * PATCH /subscriptions/{id}/status
- * 来源: swagger.json /subscriptions/{id}/status
- * 需要认证: Bearer Token
- * 支持操作: activate, cancel, renew
- */
-export const updateSubscriptionStatus = async (
-  subscriptionId: number,
-  data: UpdateSubscriptionStatusRequest
-): Promise<Subscription> => {
-  const response = await apiClient.patch<APIResponse<Subscription>>(
-    `/subscriptions/${subscriptionId}/status`,
-    data
-  );
-  return response.data.data;
-};

@@ -8,7 +8,7 @@ import { LucideIcon } from 'lucide-react';
 
 interface AdminPageLayoutProps {
   title: string;
-  description: string;
+  description?: string;
   icon?: LucideIcon;
   action?: ReactNode;
   info?: string;
@@ -31,19 +31,21 @@ export const AdminPageLayout = ({
     <div className="space-y-8 py-8">
       {/* 标题区 - 统一样式 */}
       <div className="flex items-center justify-between">
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-3">
           {Icon && (
-            <div className="p-3 bg-slate-100 dark:bg-slate-800 rounded-xl">
-              <Icon className="size-6 text-slate-700 dark:text-slate-300" strokeWidth={1.5} />
+            <div className="p-2.5 bg-slate-100 dark:bg-slate-800 rounded-lg">
+              <Icon className="size-5 text-slate-600 dark:text-slate-400" strokeWidth={1.5} />
             </div>
           )}
           <div>
-            <h1 className="text-3xl font-bold tracking-tight text-slate-900 dark:text-white">
+            <h1 className="text-xl font-semibold text-slate-900 dark:text-white">
               {title}
             </h1>
-            <p className="text-base text-slate-500 dark:text-slate-400 mt-1">
-              {description}
-            </p>
+            {description && (
+              <p className="text-sm text-slate-500 dark:text-slate-400 mt-0.5">
+                {description}
+              </p>
+            )}
           </div>
         </div>
         {action && <div>{action}</div>}

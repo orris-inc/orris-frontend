@@ -1,84 +1,88 @@
 /**
  * 管理端控制台 - 精致商务风格
- * 清晰的视觉层次，优雅的色彩分离
+ * 使用真实 API 数据
  */
 
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router';
+import {
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer,
+  Cell,
+} from 'recharts';
 import { AdminLayout } from '@/layouts/AdminLayout';
 import { useAuthStore } from '@/features/auth/stores/auth-store';
+import { getUsers } from '@/features/users/api/users-api';
+import { getSubscriptions } from '@/features/subscriptions/api/subscriptions-api';
+import { getNodes } from '@/features/nodes/api/nodes-api';
+import type { Subscription } from '@/features/subscriptions/types/subscriptions.types';
 import {
   Users,
   CreditCard,
-  TrendingUp,
-  TrendingDown,
   ArrowUpRight,
   Server,
-  Zap,
-  AlertTriangle,
-  CheckCircle2,
-  Wallet,
-  UserPlus,
-  ShoppingCart,
   Activity,
-  Globe,
   Shield,
-  Sparkles,
+  Layers,
+  HardDrive,
+  BarChart3,
 } from 'lucide-react';
+
+// ============ 流量格式化工具 ============
+const formatBytes = (bytes: number): string => {
+  if (bytes === 0) return '0 B';
+  const k = 1024;
+  const sizes = ['B', 'KB', 'MB', 'GB', 'TB', 'PB'];
+  const i = Math.floor(Math.log(bytes) / Math.log(k));
+  return `${parseFloat((bytes / Math.pow(k, i)).toFixed(2))} ${sizes[i]}`;
+};
+
+const formatBytesShort = (bytes: number): string => {
+  if (bytes === 0) return '0';
+  const k = 1024;
+  const sizes = ['B', 'K', 'M', 'G', 'T', 'P'];
+  const i = Math.floor(Math.log(bytes) / Math.log(k));
+  return `${parseFloat((bytes / Math.pow(k, i)).toFixed(1))}${sizes[i]}`;
+};
 
 // ============ 统计卡片组件 ============
 interface StatsCardProps {
   title: string;
   value: string;
-  change: string;
-  changeType: 'increase' | 'decrease' | 'neutral';
   icon: React.ReactNode;
   iconBg: string;
   iconColor: string;
-  accentColor: string;
+  loading?: boolean;
 }
 
 const StatsCard = ({
   title,
   value,
-  change,
-  changeType,
   icon,
   iconBg,
   iconColor,
-  accentColor
+  loading,
 }: StatsCardProps) => {
-  const changeStyles = {
-    increase: 'text-emerald-600 bg-emerald-50 dark:bg-emerald-900/20 dark:text-emerald-400',
-    decrease: 'text-rose-600 bg-rose-50 dark:bg-rose-900/20 dark:text-rose-400',
-    neutral: 'text-slate-600 bg-slate-50 dark:bg-slate-900/20 dark:text-slate-400',
-  };
-
-  const ChangeIcon = changeType === 'increase' ? TrendingUp : changeType === 'decrease' ? TrendingDown : Activity;
-
   return (
     <div className="group relative bg-white dark:bg-slate-900 rounded-2xl p-6 border border-slate-100 dark:border-slate-800 hover:border-slate-200 dark:hover:border-slate-700 transition-all duration-300 hover:shadow-lg hover:shadow-slate-200/50 dark:hover:shadow-slate-900/50">
-      {/* 顶部装饰线 */}
-      <div className={`absolute top-0 left-6 right-6 h-0.5 ${accentColor} rounded-full opacity-0 group-hover:opacity-100 transition-opacity`} />
-
       <div className="flex items-start justify-between mb-5">
-        {/* 图标容器 - 清晰的背景分离 */}
         <div className={`${iconBg} p-3.5 rounded-xl shadow-sm`}>
-          <div className={iconColor}>
-            {icon}
-          </div>
-        </div>
-
-        {/* 变化指标 */}
-        <div className={`flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold ${changeStyles[changeType]}`}>
-          <ChangeIcon className="size-3.5" />
-          <span>{change}</span>
+          <div className={iconColor}>{icon}</div>
         </div>
       </div>
 
-      {/* 数值和标题 */}
       <div className="space-y-1">
         <div className="text-3xl font-bold tracking-tight text-slate-900 dark:text-white">
-          {value}
+          {loading ? (
+            <div className="h-9 w-20 bg-slate-200 dark:bg-slate-700 rounded animate-pulse" />
+          ) : (
+            value
+          )}
         </div>
         <div className="text-sm font-medium text-slate-500 dark:text-slate-400">
           {title}
@@ -96,7 +100,6 @@ interface QuickActionCardProps {
   iconBg: string;
   iconColor: string;
   onClick: () => void;
-  badge?: string;
 }
 
 const QuickActionCard = ({
@@ -106,7 +109,6 @@ const QuickActionCard = ({
   iconBg,
   iconColor,
   onClick,
-  badge
 }: QuickActionCardProps) => {
   return (
     <button
@@ -114,24 +116,16 @@ const QuickActionCard = ({
       className="group w-full text-left p-5 rounded-xl bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 hover:border-slate-200 dark:hover:border-slate-700 hover:shadow-lg hover:shadow-slate-200/50 dark:hover:shadow-slate-900/50 transition-all duration-300"
     >
       <div className="flex items-center gap-4">
-        {/* 清晰的图标容器 */}
-        <div className={`${iconBg} p-3 rounded-xl shadow-sm group-hover:scale-105 transition-transform`}>
-          <div className={iconColor}>
-            {icon}
-          </div>
+        <div
+          className={`${iconBg} p-3 rounded-xl shadow-sm group-hover:scale-105 transition-transform`}
+        >
+          <div className={iconColor}>{icon}</div>
         </div>
 
         <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-2 mb-0.5">
-            <h3 className="font-semibold text-slate-900 dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
-              {title}
-            </h3>
-            {badge && (
-              <span className="px-2 py-0.5 text-xs font-bold rounded-full bg-rose-100 dark:bg-rose-900/30 text-rose-600 dark:text-rose-400">
-                {badge}
-              </span>
-            )}
-          </div>
+          <h3 className="font-semibold text-slate-900 dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
+            {title}
+          </h3>
           <p className="text-sm text-slate-500 dark:text-slate-400">
             {description}
           </p>
@@ -140,66 +134,6 @@ const QuickActionCard = ({
         <ArrowUpRight className="size-5 text-slate-300 dark:text-slate-600 group-hover:text-blue-500 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-all" />
       </div>
     </button>
-  );
-};
-
-// ============ 活动项 ============
-interface ActivityItemProps {
-  type: 'success' | 'warning' | 'error' | 'info';
-  title: string;
-  description: string;
-  time: string;
-  icon: React.ReactNode;
-}
-
-const ActivityItem = ({ type, title, description, time, icon }: ActivityItemProps) => {
-  const typeStyles = {
-    success: {
-      bg: 'bg-emerald-50 dark:bg-emerald-900/20',
-      icon: 'text-emerald-600 dark:text-emerald-400',
-      dot: 'bg-emerald-500',
-    },
-    warning: {
-      bg: 'bg-amber-50 dark:bg-amber-900/20',
-      icon: 'text-amber-600 dark:text-amber-400',
-      dot: 'bg-amber-500',
-    },
-    error: {
-      bg: 'bg-rose-50 dark:bg-rose-900/20',
-      icon: 'text-rose-600 dark:text-rose-400',
-      dot: 'bg-rose-500',
-    },
-    info: {
-      bg: 'bg-blue-50 dark:bg-blue-900/20',
-      icon: 'text-blue-600 dark:text-blue-400',
-      dot: 'bg-blue-500',
-    },
-  };
-
-  const styles = typeStyles[type];
-
-  return (
-    <div className="flex items-start gap-3 p-3 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors group">
-      <div className={`${styles.bg} p-2 rounded-lg shrink-0`}>
-        <div className={styles.icon}>
-          {icon}
-        </div>
-      </div>
-      <div className="flex-1 min-w-0">
-        <div className="flex items-center gap-2">
-          <div className={`size-1.5 rounded-full ${styles.dot}`} />
-          <p className="text-sm font-medium text-slate-900 dark:text-white">
-            {title}
-          </p>
-        </div>
-        <p className="text-sm text-slate-500 dark:text-slate-400 mt-0.5 ml-3.5">
-          {description}
-        </p>
-      </div>
-      <span className="text-xs text-slate-400 dark:text-slate-500 shrink-0">
-        {time}
-      </span>
-    </div>
   );
 };
 
@@ -235,21 +169,19 @@ const SystemStatus = ({ label, status, value, icon }: SystemStatusProps) => {
   return (
     <div className="flex items-center justify-between py-3 border-b border-slate-100 dark:border-slate-800 last:border-0">
       <div className="flex items-center gap-3">
-        <div className="text-slate-400 dark:text-slate-500">
-          {icon}
-        </div>
+        <div className="text-slate-400 dark:text-slate-500">{icon}</div>
         <span className="text-sm font-medium text-slate-700 dark:text-slate-300">
           {label}
         </span>
       </div>
       <div className="flex items-center gap-2">
-        <span className={`text-sm font-semibold ${config.text}`}>
-          {value}
-        </span>
+        <span className={`text-sm font-semibold ${config.text}`}>{value}</span>
         <div className="relative">
           <div className={`size-2 rounded-full ${config.dot}`} />
           {config.pulse && (
-            <div className={`absolute inset-0 rounded-full ${config.dot} animate-ping opacity-50`} />
+            <div
+              className={`absolute inset-0 rounded-full ${config.dot} animate-ping opacity-50`}
+            />
           )}
         </div>
       </div>
@@ -257,61 +189,170 @@ const SystemStatus = ({ label, status, value, icon }: SystemStatusProps) => {
   );
 };
 
+// ============ 自定义 Tooltip ============
+interface CustomTooltipProps {
+  active?: boolean;
+  payload?: Array<{ value: number; payload: { name: string; trafficLimit: number } }>;
+}
+
+const CustomTooltip = ({ active, payload }: CustomTooltipProps) => {
+  if (active && payload && payload.length) {
+    const data = payload[0];
+    return (
+      <div className="bg-white dark:bg-slate-800 p-3 rounded-lg shadow-lg border border-slate-200 dark:border-slate-700">
+        <p className="font-medium text-slate-900 dark:text-white mb-1">{data.payload.name}</p>
+        <p className="text-sm text-slate-600 dark:text-slate-300">
+          已使用: <span className="font-mono">{formatBytes(data.value)}</span>
+        </p>
+        {data.payload.trafficLimit > 0 && (
+          <p className="text-sm text-slate-500 dark:text-slate-400">
+            配额: <span className="font-mono">{formatBytes(data.payload.trafficLimit)}</span>
+          </p>
+        )}
+      </div>
+    );
+  }
+  return null;
+};
+
+// ============ Dashboard 数据 Hook ============
+interface NodeTrafficItem {
+  id: number;
+  name: string;
+  status: string;
+  trafficUsed: number;
+  trafficLimit: number;
+}
+
+interface UserSubscriptionItem {
+  userId: number;
+  userName: string;
+  userEmail: string;
+  planName: string;
+  status: string;
+  isActive: boolean;
+}
+
+interface DashboardStats {
+  totalUsers: number;
+  activeSubscriptions: number;
+  totalNodes: number;
+  activeNodes: number;
+  nodeTrafficList: NodeTrafficItem[];
+  userSubscriptions: UserSubscriptionItem[];
+}
+
+const useDashboardStats = () => {
+  const [stats, setStats] = useState<DashboardStats>({
+    totalUsers: 0,
+    activeSubscriptions: 0,
+    totalNodes: 0,
+    activeNodes: 0,
+    nodeTrafficList: [],
+    userSubscriptions: [],
+  });
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchStats = async () => {
+      try {
+        setLoading(true);
+        const [usersRes, subscriptionsRes, nodesRes] = await Promise.all([
+          getUsers({ page: 1, page_size: 1 }),
+          getSubscriptions({ page: 1, page_size: 20 }),
+          getNodes({ page: 1, page_size: 100 }),
+        ]);
+
+        const nodes = nodesRes.items || [];
+        const activeNodes = nodes.filter((node) => node.status === 'active').length;
+
+        // 节点流量列表
+        const nodeTrafficList: NodeTrafficItem[] = nodes.map((node) => ({
+          id: node.id,
+          name: node.name,
+          status: node.status,
+          trafficUsed: node.traffic_used || 0,
+          trafficLimit: node.traffic_limit || 0,
+        }));
+
+        // 用户订阅列表
+        const subscriptions = subscriptionsRes.items || [];
+        const userSubscriptions: UserSubscriptionItem[] = subscriptions.map((sub: Subscription) => ({
+          userId: sub.UserID,
+          userName: sub.User?.Name || '-',
+          userEmail: sub.User?.Email || '-',
+          planName: sub.Plan?.Name || '-',
+          status: sub.Status,
+          isActive: sub.IsActive,
+        }));
+
+        setStats({
+          totalUsers: usersRes.total || 0,
+          activeSubscriptions: subscriptionsRes.total || 0,
+          totalNodes: nodesRes.total || 0,
+          activeNodes,
+          nodeTrafficList,
+          userSubscriptions,
+        });
+      } catch (error) {
+        console.error('获取统计数据失败:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchStats();
+  }, []);
+
+  return { stats, loading };
+};
+
 // ============ 主页面组件 ============
 export const NewAdminDashboardPage = () => {
   const { user } = useAuthStore();
   const navigate = useNavigate();
+  const { stats, loading } = useDashboardStats();
 
   if (!user) {
     return (
       <AdminLayout>
         <div className="p-4 rounded-lg border border-rose-200 dark:border-rose-900 bg-rose-50 dark:bg-rose-950/30">
-          <p className="text-sm text-rose-900 dark:text-rose-200">无法加载用户信息</p>
+          <p className="text-sm text-rose-900 dark:text-rose-200">
+            无法加载用户信息
+          </p>
         </div>
       </AdminLayout>
     );
   }
 
-  const stats = [
+  const statsCards = [
     {
       title: '总用户数',
-      value: '2,847',
-      change: '+12.5%',
-      changeType: 'increase' as const,
+      value: stats.totalUsers.toLocaleString(),
       icon: <Users className="size-6" strokeWidth={1.5} />,
       iconBg: 'bg-blue-50 dark:bg-blue-900/20',
       iconColor: 'text-blue-600 dark:text-blue-400',
-      accentColor: 'bg-blue-500',
     },
     {
-      title: '活跃订阅',
-      value: '1,428',
-      change: '+8.2%',
-      changeType: 'increase' as const,
+      title: '订阅总数',
+      value: stats.activeSubscriptions.toLocaleString(),
       icon: <CreditCard className="size-6" strokeWidth={1.5} />,
       iconBg: 'bg-emerald-50 dark:bg-emerald-900/20',
       iconColor: 'text-emerald-600 dark:text-emerald-400',
-      accentColor: 'bg-emerald-500',
     },
     {
-      title: '月度收入',
-      value: '¥156,890',
-      change: '+23.1%',
-      changeType: 'increase' as const,
-      icon: <Wallet className="size-6" strokeWidth={1.5} />,
+      title: '节点总数',
+      value: stats.totalNodes.toLocaleString(),
+      icon: <Server className="size-6" strokeWidth={1.5} />,
       iconBg: 'bg-violet-50 dark:bg-violet-900/20',
       iconColor: 'text-violet-600 dark:text-violet-400',
-      accentColor: 'bg-violet-500',
     },
     {
-      title: '系统负载',
-      value: '45%',
-      change: '-5.3%',
-      changeType: 'increase' as const,
+      title: '在线节点',
+      value: stats.activeNodes.toLocaleString(),
       icon: <Activity className="size-6" strokeWidth={1.5} />,
       iconBg: 'bg-orange-50 dark:bg-orange-900/20',
       iconColor: 'text-orange-600 dark:text-orange-400',
-      accentColor: 'bg-orange-500',
     },
   ];
 
@@ -325,75 +366,84 @@ export const NewAdminDashboardPage = () => {
       onClick: () => navigate('/admin/users'),
     },
     {
-      title: '订阅计划',
-      description: '配置和管理订阅套餐',
-      icon: <ShoppingCart className="size-5" strokeWidth={1.5} />,
-      iconBg: 'bg-violet-50 dark:bg-violet-900/20',
-      iconColor: 'text-violet-600 dark:text-violet-400',
-      onClick: () => navigate('/admin/subscription-plans'),
+      title: '订阅管理',
+      description: '查看和管理用户订阅',
+      icon: <CreditCard className="size-5" strokeWidth={1.5} />,
+      iconBg: 'bg-emerald-50 dark:bg-emerald-900/20',
+      iconColor: 'text-emerald-600 dark:text-emerald-400',
+      onClick: () => navigate('/admin/subscriptions'),
     },
     {
       title: '节点管理',
       description: '监控和配置服务器节点',
       icon: <Server className="size-5" strokeWidth={1.5} />,
-      iconBg: 'bg-emerald-50 dark:bg-emerald-900/20',
-      iconColor: 'text-emerald-600 dark:text-emerald-400',
+      iconBg: 'bg-violet-50 dark:bg-violet-900/20',
+      iconColor: 'text-violet-600 dark:text-violet-400',
       onClick: () => navigate('/admin/nodes'),
-      badge: '2',
     },
     {
-      title: '系统设置',
-      description: '配置全局系统参数',
-      icon: <Shield className="size-5" strokeWidth={1.5} />,
+      title: '节点组管理',
+      description: '管理节点分组和权限',
+      icon: <Layers className="size-5" strokeWidth={1.5} />,
       iconBg: 'bg-amber-50 dark:bg-amber-900/20',
       iconColor: 'text-amber-600 dark:text-amber-400',
-      onClick: () => {},
+      onClick: () => navigate('/admin/node-groups'),
     },
   ];
 
-  const recentActivities = [
-    {
-      type: 'success' as const,
-      title: '新用户注册',
-      description: 'zhang.wei@example.com 已完成验证',
-      time: '2分钟前',
-      icon: <UserPlus className="size-4" strokeWidth={1.5} />,
-    },
-    {
-      type: 'info' as const,
-      title: '订阅更新',
-      description: 'test@gmail.com 升级到企业版',
-      time: '15分钟前',
-      icon: <CreditCard className="size-4" strokeWidth={1.5} />,
-    },
-    {
-      type: 'warning' as const,
-      title: '节点性能警告',
-      description: '东京节点 JP-02 延迟超过阈值',
-      time: '1小时前',
-      icon: <AlertTriangle className="size-4" strokeWidth={1.5} />,
-    },
-    {
-      type: 'success' as const,
-      title: '支付成功',
-      description: '收到订单 #12847 付款 ¥299',
-      time: '2小时前',
-      icon: <Wallet className="size-4" strokeWidth={1.5} />,
-    },
-    {
-      type: 'info' as const,
-      title: '系统备份',
-      description: '数据库自动备份已完成',
-      time: '3小时前',
-      icon: <CheckCircle2 className="size-4" strokeWidth={1.5} />,
-    },
-  ];
+  const nodeOnlineRate =
+    stats.totalNodes > 0
+      ? Math.round((stats.activeNodes / stats.totalNodes) * 100)
+      : 0;
+
+  // 计算流量汇总
+  const totalTrafficUsed = stats.nodeTrafficList.reduce((sum, node) => sum + node.trafficUsed, 0);
+  const totalTrafficLimit = stats.nodeTrafficList.reduce((sum, node) => sum + node.trafficLimit, 0);
+
+  // 图表数据
+  const chartData = stats.nodeTrafficList.map((node) => ({
+    name: node.name.length > 8 ? node.name.slice(0, 8) + '...' : node.name,
+    fullName: node.name,
+    trafficUsed: node.trafficUsed,
+    trafficLimit: node.trafficLimit,
+    status: node.status,
+  }));
+
+  // 图表颜色
+  const getBarColor = (status: string, trafficUsed: number, trafficLimit: number) => {
+    if (status !== 'active') return '#94a3b8'; // slate-400
+    if (trafficLimit > 0) {
+      const rate = trafficUsed / trafficLimit;
+      if (rate >= 0.9) return '#f43f5e'; // rose-500
+      if (rate >= 0.7) return '#f59e0b'; // amber-500
+    }
+    return '#06b6d4'; // cyan-500
+  };
 
   const systemStatuses = [
-    { label: 'API 服务', status: 'online' as const, value: '运行中', icon: <Globe className="size-4" strokeWidth={1.5} /> },
-    { label: '数据库', status: 'online' as const, value: '99.9%', icon: <Server className="size-4" strokeWidth={1.5} /> },
-    { label: '缓存服务', status: 'online' as const, value: '正常', icon: <Zap className="size-4" strokeWidth={1.5} /> },
-    { label: '消息队列', status: 'warning' as const, value: '85%', icon: <Activity className="size-4" strokeWidth={1.5} /> },
+    {
+      label: '节点在线率',
+      status:
+        nodeOnlineRate >= 90
+          ? ('online' as const)
+          : nodeOnlineRate >= 70
+            ? ('warning' as const)
+            : ('offline' as const),
+      value: `${nodeOnlineRate}%`,
+      icon: <Server className="size-4" strokeWidth={1.5} />,
+    },
+    {
+      label: '活跃节点',
+      status: stats.activeNodes > 0 ? ('online' as const) : ('offline' as const),
+      value: `${stats.activeNodes} 个`,
+      icon: <Activity className="size-4" strokeWidth={1.5} />,
+    },
+    {
+      label: '系统状态',
+      status: 'online' as const,
+      value: '正常',
+      icon: <Shield className="size-4" strokeWidth={1.5} />,
+    },
   ];
 
   return (
@@ -403,36 +453,224 @@ export const NewAdminDashboardPage = () => {
         <div className="flex items-center justify-between">
           <div>
             <div className="flex items-center gap-3 mb-2">
-              <h1 className="text-3xl font-bold text-slate-900 dark:text-white tracking-tight">
+              <h1 className="text-2xl font-semibold text-slate-900 dark:text-white tracking-tight">
                 控制台总览
               </h1>
-              <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 dark:text-emerald-400 text-xs font-semibold">
-                <Sparkles className="size-3.5" />
-                在线
-              </div>
             </div>
-            <p className="text-base text-slate-500 dark:text-slate-400">
-              欢迎回来，{user.display_name || user.name || user.email?.split('@')[0]}
+            <p className="text-sm text-slate-500 dark:text-slate-400">
+              欢迎回来，
+              {user.display_name || user.name || user.email?.split('@')[0]}
             </p>
           </div>
-          <button className="flex items-center gap-2 px-5 py-2.5 bg-slate-900 dark:bg-white text-white dark:text-slate-900 rounded-xl font-medium hover:bg-slate-800 dark:hover:bg-slate-100 transition-colors shadow-lg shadow-slate-900/10 dark:shadow-white/10">
-            <Zap className="size-4" />
-            快速操作
-          </button>
         </div>
 
         {/* 核心数据指标 */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
-          {stats.map((stat, index) => (
-            <StatsCard key={index} {...stat} />
+          {statsCards.map((stat, index) => (
+            <StatsCard key={index} {...stat} loading={loading} />
           ))}
+        </div>
+
+        {/* 流量统计区域 - 图表 + 表格 */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          {/* 节点流量图表 */}
+          <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-800 overflow-hidden">
+            <div className="flex items-center gap-3 p-5 border-b border-slate-100 dark:border-slate-800">
+              <div className="p-2.5 bg-violet-50 dark:bg-violet-900/20 rounded-xl">
+                <BarChart3 className="size-5 text-violet-600 dark:text-violet-400" strokeWidth={1.5} />
+              </div>
+              <div>
+                <h3 className="text-base font-semibold text-slate-900 dark:text-white">
+                  节点流量分布
+                </h3>
+                <p className="text-sm text-slate-500 dark:text-slate-400">
+                  各节点流量使用图表
+                </p>
+              </div>
+            </div>
+
+            <div className="p-5">
+              {loading ? (
+                <div className="h-64 bg-slate-100 dark:bg-slate-800 rounded animate-pulse" />
+              ) : stats.nodeTrafficList.length === 0 ? (
+                <div className="h-64 flex items-center justify-center text-slate-500 dark:text-slate-400">
+                  暂无节点数据
+                </div>
+              ) : (
+                <ResponsiveContainer width="100%" height={260}>
+                  <BarChart data={chartData} margin={{ top: 10, right: 10, left: -10, bottom: 0 }}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" vertical={false} />
+                    <XAxis
+                      dataKey="name"
+                      tick={{ fontSize: 12, fill: '#64748b' }}
+                      axisLine={{ stroke: '#e2e8f0' }}
+                      tickLine={false}
+                    />
+                    <YAxis
+                      tickFormatter={(value) => formatBytesShort(value)}
+                      tick={{ fontSize: 12, fill: '#64748b' }}
+                      axisLine={false}
+                      tickLine={false}
+                    />
+                    <Tooltip content={<CustomTooltip />} />
+                    <Bar dataKey="trafficUsed" radius={[4, 4, 0, 0]}>
+                      {chartData.map((entry, index) => (
+                        <Cell
+                          key={`cell-${index}`}
+                          fill={getBarColor(entry.status, entry.trafficUsed, entry.trafficLimit)}
+                        />
+                      ))}
+                    </Bar>
+                  </BarChart>
+                </ResponsiveContainer>
+              )}
+            </div>
+          </div>
+
+          {/* 节点流量表格 */}
+          <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-800 overflow-hidden">
+            <div className="flex items-center gap-3 p-5 border-b border-slate-100 dark:border-slate-800">
+              <div className="p-2.5 bg-cyan-50 dark:bg-cyan-900/20 rounded-xl">
+                <HardDrive className="size-5 text-cyan-600 dark:text-cyan-400" strokeWidth={1.5} />
+              </div>
+              <div>
+                <h3 className="text-base font-semibold text-slate-900 dark:text-white">
+                  节点流量明细
+                </h3>
+                <p className="text-sm text-slate-500 dark:text-slate-400">
+                  总计: {formatBytes(totalTrafficUsed)} / {totalTrafficLimit > 0 ? formatBytes(totalTrafficLimit) : '无限制'}
+                </p>
+              </div>
+            </div>
+
+            <div className="overflow-x-auto max-h-72">
+              {loading ? (
+                <div className="p-5 space-y-3">
+                  {[1, 2, 3].map((i) => (
+                    <div key={i} className="h-10 bg-slate-100 dark:bg-slate-800 rounded animate-pulse" />
+                  ))}
+                </div>
+              ) : (
+                <table className="w-full">
+                  <thead className="sticky top-0 bg-slate-50 dark:bg-slate-800/80 backdrop-blur">
+                    <tr>
+                      <th className="px-5 py-3 text-left text-xs font-medium text-slate-500 dark:text-slate-400 uppercase">节点</th>
+                      <th className="px-5 py-3 text-right text-xs font-medium text-slate-500 dark:text-slate-400 uppercase">已用</th>
+                      <th className="px-5 py-3 text-right text-xs font-medium text-slate-500 dark:text-slate-400 uppercase">使用率</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+                    {stats.nodeTrafficList.length === 0 ? (
+                      <tr>
+                        <td colSpan={3} className="px-5 py-8 text-center text-sm text-slate-500">暂无数据</td>
+                      </tr>
+                    ) : (
+                      stats.nodeTrafficList.map((node) => {
+                        const rate = node.trafficLimit > 0 ? Math.round((node.trafficUsed / node.trafficLimit) * 100) : 0;
+                        return (
+                          <tr key={node.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/50">
+                            <td className="px-5 py-3">
+                              <div className="flex items-center gap-2">
+                                <span className={`size-2 rounded-full ${node.status === 'active' ? 'bg-emerald-500' : 'bg-slate-400'}`} />
+                                <span className="text-sm font-medium text-slate-900 dark:text-white">{node.name}</span>
+                              </div>
+                            </td>
+                            <td className="px-5 py-3 text-sm text-right font-mono text-slate-700 dark:text-slate-300">
+                              {formatBytes(node.trafficUsed)}
+                            </td>
+                            <td className="px-5 py-3 text-sm text-right">
+                              {node.trafficLimit > 0 ? (
+                                <span className={`font-medium ${
+                                  rate >= 90 ? 'text-rose-600' : rate >= 70 ? 'text-amber-600' : 'text-slate-700 dark:text-slate-300'
+                                }`}>{rate}%</span>
+                              ) : (
+                                <span className="text-slate-400">-</span>
+                              )}
+                            </td>
+                          </tr>
+                        );
+                      })
+                    )}
+                  </tbody>
+                </table>
+              )}
+            </div>
+          </div>
+        </div>
+
+        {/* 用户订阅统计 */}
+        <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-800 overflow-hidden">
+          <div className="flex items-center gap-3 p-5 border-b border-slate-100 dark:border-slate-800">
+            <div className="p-2.5 bg-blue-50 dark:bg-blue-900/20 rounded-xl">
+              <Users className="size-5 text-blue-600 dark:text-blue-400" strokeWidth={1.5} />
+            </div>
+            <div>
+              <h3 className="text-base font-semibold text-slate-900 dark:text-white">
+                用户订阅统计
+              </h3>
+              <p className="text-sm text-slate-500 dark:text-slate-400">
+                最近订阅用户列表
+              </p>
+            </div>
+          </div>
+
+          <div className="overflow-x-auto">
+            {loading ? (
+              <div className="p-5 space-y-3">
+                {[1, 2, 3].map((i) => (
+                  <div key={i} className="h-10 bg-slate-100 dark:bg-slate-800 rounded animate-pulse" />
+                ))}
+              </div>
+            ) : (
+              <table className="w-full">
+                <thead>
+                  <tr className="bg-slate-50 dark:bg-slate-800/50">
+                    <th className="px-5 py-3 text-left text-xs font-medium text-slate-500 dark:text-slate-400 uppercase">用户</th>
+                    <th className="px-5 py-3 text-left text-xs font-medium text-slate-500 dark:text-slate-400 uppercase">邮箱</th>
+                    <th className="px-5 py-3 text-left text-xs font-medium text-slate-500 dark:text-slate-400 uppercase">套餐</th>
+                    <th className="px-5 py-3 text-left text-xs font-medium text-slate-500 dark:text-slate-400 uppercase">状态</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+                  {stats.userSubscriptions.length === 0 ? (
+                    <tr>
+                      <td colSpan={4} className="px-5 py-8 text-center text-sm text-slate-500">暂无订阅数据</td>
+                    </tr>
+                  ) : (
+                    stats.userSubscriptions.map((sub, index) => (
+                      <tr key={index} className="hover:bg-slate-50 dark:hover:bg-slate-800/50">
+                        <td className="px-5 py-3 text-sm font-medium text-slate-900 dark:text-white">
+                          {sub.userName}
+                        </td>
+                        <td className="px-5 py-3 text-sm text-slate-600 dark:text-slate-400">
+                          {sub.userEmail}
+                        </td>
+                        <td className="px-5 py-3 text-sm text-slate-700 dark:text-slate-300">
+                          {sub.planName}
+                        </td>
+                        <td className="px-5 py-3">
+                          <span className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-xs font-medium ${
+                            sub.isActive
+                              ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-900/20 dark:text-emerald-400'
+                              : 'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400'
+                          }`}>
+                            <span className={`size-1.5 rounded-full ${sub.isActive ? 'bg-emerald-500' : 'bg-slate-400'}`} />
+                            {sub.isActive ? '活跃' : '未激活'}
+                          </span>
+                        </td>
+                      </tr>
+                    ))
+                  )}
+                </tbody>
+              </table>
+            )}
+          </div>
         </div>
 
         {/* 主要内容区 */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* 左侧：快速操作 + 系统状态 */}
+          {/* 左侧：快速操作 */}
           <div className="lg:col-span-2 space-y-6">
-            {/* 快速操作 */}
             <div>
               <h2 className="text-lg font-semibold text-slate-900 dark:text-white mb-4">
                 快速访问
@@ -443,66 +681,31 @@ export const NewAdminDashboardPage = () => {
                 ))}
               </div>
             </div>
-
-            {/* 系统状态 */}
-            <div className="bg-white dark:bg-slate-900 rounded-xl p-5 border border-slate-100 dark:border-slate-800">
-              <div className="flex items-center justify-between mb-4">
-                <h3 className="text-base font-semibold text-slate-900 dark:text-white">
-                  系统状态
-                </h3>
-                <span className="text-xs font-medium text-slate-400 dark:text-slate-500">
-                  实时监控
-                </span>
-              </div>
-              <div>
-                {systemStatuses.map((status, index) => (
-                  <SystemStatus key={index} {...status} />
-                ))}
-              </div>
-            </div>
           </div>
 
-          {/* 右侧：实时动态 */}
+          {/* 右侧：系统状态 */}
           <div>
             <h2 className="text-lg font-semibold text-slate-900 dark:text-white mb-4">
-              实时动态
+              系统状态
             </h2>
-            <div className="bg-white dark:bg-slate-900 rounded-xl p-4 border border-slate-100 dark:border-slate-800">
-              <div className="space-y-1">
-                {recentActivities.map((activity, index) => (
-                  <ActivityItem key={index} {...activity} />
-                ))}
-              </div>
-              <button className="w-full mt-3 py-2.5 text-sm font-medium text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition-colors">
-                查看全部活动
-              </button>
+            <div className="bg-white dark:bg-slate-900 rounded-xl p-5 border border-slate-100 dark:border-slate-800">
+              {loading ? (
+                <div className="space-y-4">
+                  {[1, 2, 3].map((i) => (
+                    <div
+                      key={i}
+                      className="h-10 bg-slate-100 dark:bg-slate-800 rounded animate-pulse"
+                    />
+                  ))}
+                </div>
+              ) : (
+                <div>
+                  {systemStatuses.map((status, index) => (
+                    <SystemStatus key={index} {...status} />
+                  ))}
+                </div>
+              )}
             </div>
-          </div>
-        </div>
-
-        {/* 底部横幅 */}
-        <div className="relative overflow-hidden rounded-2xl bg-slate-900 dark:bg-slate-800 p-8">
-          {/* 装饰元素 */}
-          <div className="absolute top-0 right-0 w-64 h-64 bg-gradient-to-bl from-blue-500/20 to-transparent rounded-full blur-3xl" />
-          <div className="absolute bottom-0 left-0 w-48 h-48 bg-gradient-to-tr from-violet-500/20 to-transparent rounded-full blur-3xl" />
-
-          <div className="relative z-10 flex items-center justify-between">
-            <div className="flex items-center gap-5">
-              <div className="p-4 bg-white/10 backdrop-blur-sm rounded-2xl">
-                <Zap className="size-7 text-white" strokeWidth={1.5} />
-              </div>
-              <div>
-                <h3 className="text-xl font-bold text-white mb-1">
-                  系统运行稳定
-                </h3>
-                <p className="text-slate-300">
-                  平台已稳定运行 128 天，服务可用率 99.98%
-                </p>
-              </div>
-            </div>
-            <button className="px-5 py-2.5 bg-white text-slate-900 rounded-xl font-semibold hover:bg-slate-100 transition-colors shadow-lg">
-              查看详情
-            </button>
           </div>
         </div>
       </div>

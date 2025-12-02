@@ -2,7 +2,7 @@
  * 管理节点组中的节点对话框组件
  */
 
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import {
   Dialog,
   DialogTitle,
@@ -27,7 +27,7 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import AddIcon from '@mui/icons-material/Add';
 import type { NodeGroupListItem } from '../types/node-groups.types';
 import type { NodeListItem } from '@/features/nodes/types/nodes.types';
-import { useNodeGroups } from '../hooks/useNodeGroups';
+import { useNodeGroups, useNodeGroupNodes } from '../hooks/useNodeGroups';
 import { useNodes } from '@/features/nodes/hooks/useNodes';
 
 interface ManageGroupNodesDialogProps {
@@ -39,63 +39,55 @@ interface ManageGroupNodesDialogProps {
 export const ManageGroupNodesDialog = ({
   open,
   group,
-  onClose,
 }: ManageGroupNodesDialogProps) => {
-  const {
-    fetchGroupNodes,
-    groupNodes,
-    addNodeToGroup,
-    removeNodeFromGroup,
-    batchAddNodesToGroup,
-  } = useNodeGroups();
+  const { addNodesToGroup, removeNodesFromGroup } = useNodeGroups();
+  const { nodes: groupNodes, isLoading: groupNodesLoading } = useNodeGroupNodes(open && group ? group.id : null);
+  const { nodes, isLoading: nodesLoading } = useNodes({ enabled: open });
 
-  const { nodes, fetchNodes } = useNodes();
-
-  const [loading, setLoading] = useState(false);
   const [selectedNodes, setSelectedNodes] = useState<NodeListItem[]>([]);
+  const [processing, setProcessing] = useState(false);
 
-  // 加载数据
-  useEffect(() => {
-    if (open && group) {
-      setLoading(true);
-      Promise.all([
-        fetchGroupNodes(group.id),
-        fetchNodes(1, 100), // 获取所有可用节点
-      ]).finally(() => setLoading(false));
-    }
-  }, [open, group, fetchGroupNodes, fetchNodes]);
+  const loading = groupNodesLoading || nodesLoading || processing;
 
   // 获取可添加的节点（排除已在组中的节点）
   const availableNodes = nodes.filter(
-    (node) => !Array.isArray(groupNodes) || !groupNodes.some((gn) => gn.id === node.id)
+    (node) => !groupNodes.some((gn) => gn.id === node.id)
   );
 
   const handleRemoveNode = async (nodeId: number | string) => {
     if (!group) return;
 
     if (window.confirm('确认要从该节点组中移除此节点吗？')) {
-      await removeNodeFromGroup(group.id, nodeId);
+      setProcessing(true);
+      try {
+        await removeNodesFromGroup(group.id, [Number(nodeId)]);
+      } finally {
+        setProcessing(false);
+      }
     }
   };
 
   const handleAddNodes = async () => {
     if (!group || selectedNodes.length === 0) return;
 
-    const nodeIds = selectedNodes.map((node) => node.id);
-
-    if (nodeIds.length === 1) {
-      await addNodeToGroup(group.id, nodeIds[0]);
-    } else {
-      await batchAddNodesToGroup(group.id, nodeIds);
+    setProcessing(true);
+    try {
+      const nodeIds = selectedNodes.map((node) => node.id);
+      await addNodesToGroup(group.id, nodeIds);
+      setSelectedNodes([]);
+    } finally {
+      setProcessing(false);
     }
+  };
 
+  const handleClose = () => {
     setSelectedNodes([]);
   };
 
   if (!group) return null;
 
   return (
-    <Dialog open={open} onClose={onClose} maxWidth="md" fullWidth>
+    <Dialog open={open} onClose={handleClose} maxWidth="md" fullWidth>
       <DialogTitle>
         管理节点组节点 - {group.name}
       </DialogTitle>
@@ -143,7 +135,7 @@ export const ManageGroupNodesDialog = ({
                 添加
               </Button>
             </Box>
-            {availableNodes.length === 0 && (
+            {availableNodes.length === 0 && !nodesLoading && (
               <Alert severity="info" sx={{ mt: 1 }}>
                 所有节点都已添加到此节点组
               </Alert>
@@ -155,13 +147,13 @@ export const ManageGroupNodesDialog = ({
           {/* 当前节点列表 */}
           <Box>
             <Typography variant="subtitle2" gutterBottom>
-              当前节点 ({Array.isArray(groupNodes) ? groupNodes.length : 0})
+              当前节点 ({groupNodes.length})
             </Typography>
-            {loading ? (
+            {groupNodesLoading ? (
               <Box display="flex" justifyContent="center" py={3}>
                 <CircularProgress size={32} />
               </Box>
-            ) : Array.isArray(groupNodes) && groupNodes.length > 0 ? (
+            ) : groupNodes.length > 0 ? (
               <List sx={{ maxHeight: 400, overflow: 'auto' }}>
                 {groupNodes.map((node: NodeListItem) => (
                   <ListItem key={node.id} divider>
@@ -210,7 +202,7 @@ export const ManageGroupNodesDialog = ({
         </Box>
       </DialogContent>
       <DialogActions>
-        <Button onClick={onClose}>关闭</Button>
+        <Button onClick={handleClose}>关闭</Button>
       </DialogActions>
     </Dialog>
   );

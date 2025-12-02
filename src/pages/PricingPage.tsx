@@ -12,7 +12,7 @@ import { DashboardLayout } from '@/layouts/DashboardLayout';
 export const PricingPage = () => {
   const [selectedPlan, setSelectedPlan] = useState<SubscriptionPlan | null>(null);
   const [confirmDialogOpen, setConfirmDialogOpen] = useState(false);
-  const { publicPlans, loading } = usePublicPlans();
+  const { publicPlans, isLoading } = usePublicPlans();
 
   const handleSelectPlan = (plan: SubscriptionPlan) => {
     setSelectedPlan(plan);
@@ -35,7 +35,7 @@ export const PricingPage = () => {
         {/* 计划卡片列表 */}
         <PlanCardList
           plans={publicPlans}
-          loading={loading}
+          loading={isLoading}
           onSelectPlan={handleSelectPlan}
         />
 

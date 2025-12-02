@@ -152,20 +152,3 @@ export interface ChangePlanRequest {
   effective_date: 'immediate' | 'period_end';  // 必需：生效时间
 }
 
-/**
- * 更新订阅状态请求
- * PATCH /subscriptions/{id}/status
- * 来源: swagger.json internal_interfaces_http_handlers.UpdateSubscriptionStatusRequest
- *
- * 支持的操作：
- * - active: 激活订阅
- * - cancelled: 取消订阅（需要提供reason）
- * - renewed: 续费订阅
- *
- * 注意：不支持设置为 inactive 状态
- */
-export interface UpdateSubscriptionStatusRequest {
-  status: 'active' | 'cancelled' | 'renewed';  // 必需：新状态
-  reason?: string;                   // status为cancelled时必填
-  immediate?: boolean;               // 可选：取消时是否立即生效
-}

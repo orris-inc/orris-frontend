@@ -1,21 +1,11 @@
 /**
  * 订阅计划列表表格组件（管理端）
- * Frontend Design 优化：精致商务风格，细节至上
+ * 使用 TanStack Table 实现
  */
 
+import { useMemo } from 'react';
 import { Edit, Power, Network, MoreHorizontal } from 'lucide-react';
-import {
-  AdminTable,
-  AdminTableHeader,
-  AdminTableBody,
-  AdminTableRow,
-  AdminTableHead,
-  AdminTableCell,
-  AdminTableEmpty,
-  AdminTableLoading,
-  AdminTablePagination,
-  AdminBadge,
-} from '@/components/admin';
+import { DataTable, AdminBadge, type ColumnDef } from '@/components/admin';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -77,8 +67,6 @@ const STATUS_CONFIG: Record<PlanStatus, { label: string; variant: 'success' | 'd
   archived: { label: '已归档', variant: 'danger' },
 };
 
-const COLUMNS = 8;
-
 export const PlanListTable: React.FC<PlanListTableProps> = ({
   plans,
   loading = false,
@@ -91,152 +79,153 @@ export const PlanListTable: React.FC<PlanListTableProps> = ({
   onToggleStatus,
   onManageNodeGroups,
 }) => {
+  const columns = useMemo<ColumnDef<SubscriptionPlan>[]>(() => [
+    {
+      accessorKey: 'Name',
+      header: '计划名称',
+      cell: ({ row }) => (
+        <div className="space-y-1">
+          <div className="text-[15px] text-slate-900 dark:text-white leading-tight">
+            {row.original.Name}
+          </div>
+          <div className="text-xs text-slate-400 dark:text-slate-500 leading-tight font-mono">
+            {row.original.Slug}
+          </div>
+        </div>
+      ),
+    },
+    {
+      accessorKey: 'Price',
+      header: '价格',
+      size: 100,
+      cell: ({ row }) => {
+        const priceRange = getPriceRange(row.original);
+        return priceRange.details ? (
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <span className="inline-flex items-center gap-1 cursor-help group">
+                <span className="font-mono text-[15px] tabular-nums text-slate-900 dark:text-white group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">
+                  {priceRange.display}
+                </span>
+                <svg className="size-3.5 text-slate-400 group-hover:text-indigo-500 transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+              </span>
+            </TooltipTrigger>
+            <TooltipContent>
+              <div className="text-xs space-y-1">
+                <p className="font-semibold text-white mb-1.5">所有定价选项：</p>
+                {priceRange.details.map((detail, idx) => (
+                  <p key={idx} className="font-mono text-indigo-100">{detail.cycle}: {detail.price}</p>
+                ))}
+              </div>
+            </TooltipContent>
+          </Tooltip>
+        ) : (
+          <span className="font-mono text-[15px] tabular-nums text-slate-900 dark:text-white">
+            {priceRange.display}
+          </span>
+        );
+      },
+    },
+    {
+      accessorKey: 'BillingCycle',
+      header: '计费周期',
+      size: 80,
+      cell: ({ row }) => <BillingCycleBadge billingCycle={row.original.BillingCycle} />,
+    },
+    {
+      accessorKey: 'Status',
+      header: '状态',
+      size: 72,
+      cell: ({ row }) => {
+        const statusConfig = STATUS_CONFIG[row.original.Status] || { label: row.original.Status, variant: 'default' as const };
+        return (
+          <AdminBadge variant={statusConfig.variant}>
+            {statusConfig.label}
+          </AdminBadge>
+        );
+      },
+    },
+    {
+      accessorKey: 'IsPublic',
+      header: '公开',
+      size: 64,
+      cell: ({ row }) => (
+        <AdminBadge variant={row.original.IsPublic ? 'success' : 'outline'}>
+          {row.original.IsPublic ? '是' : '否'}
+        </AdminBadge>
+      ),
+    },
+    {
+      accessorKey: 'TrialDays',
+      header: '试用天数',
+      size: 80,
+      cell: ({ row }) => (
+        <span className="font-mono tabular-nums text-slate-700 dark:text-slate-300">
+          {row.original.TrialDays ? `${row.original.TrialDays}天` : '-'}
+        </span>
+      ),
+    },
+    {
+      accessorKey: 'SortOrder',
+      header: '排序',
+      size: 56,
+      cell: ({ row }) => (
+        <span className="font-mono tabular-nums text-slate-600 dark:text-slate-400">
+          {row.original.SortOrder || '-'}
+        </span>
+      ),
+    },
+    {
+      id: 'actions',
+      header: '操作',
+      size: 56,
+      enableSorting: false,
+      cell: ({ row }) => {
+        const plan = row.original;
+        return (
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <button className="inline-flex items-center justify-center size-8 rounded-lg text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-700 transition-all duration-200 group">
+                <MoreHorizontal className="size-4 group-hover:scale-110 transition-transform" strokeWidth={2} />
+              </button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuItem onClick={() => onEdit(plan)}>
+                <Edit className="mr-2 size-4" />
+                编辑
+              </DropdownMenuItem>
+              {onManageNodeGroups && (
+                <DropdownMenuItem onClick={() => onManageNodeGroups(plan)}>
+                  <Network className="mr-2 size-4" />
+                  管理节点组
+                </DropdownMenuItem>
+              )}
+              <DropdownMenuSeparator />
+              <DropdownMenuItem onClick={() => onToggleStatus(plan)}>
+                <Power className="mr-2 size-4" />
+                {plan.Status === 'active' ? '停用' : '激活'}
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        );
+      },
+    },
+  ], [onEdit, onToggleStatus, onManageNodeGroups]);
+
   return (
-    <>
-      <AdminTable>
-        <AdminTableHeader>
-          <AdminTableRow>
-            <AdminTableHead width={240} align="center">计划名称</AdminTableHead>
-            <AdminTableHead width={130} align="right">价格</AdminTableHead>
-            <AdminTableHead width={100} align="center">计费周期</AdminTableHead>
-            <AdminTableHead width={80} align="center">状态</AdminTableHead>
-            <AdminTableHead width={70} align="center">公开</AdminTableHead>
-            <AdminTableHead width={90} align="right">试用天数</AdminTableHead>
-            <AdminTableHead width={70} align="center">排序</AdminTableHead>
-            <AdminTableHead width={60} align="center">操作</AdminTableHead>
-          </AdminTableRow>
-        </AdminTableHeader>
-        <AdminTableBody>
-          {loading && plans.length === 0 ? (
-            <AdminTableLoading colSpan={COLUMNS} />
-          ) : plans.length === 0 ? (
-            <AdminTableEmpty message="暂无订阅计划" colSpan={COLUMNS} />
-          ) : (
-            plans.map((plan) => {
-              const statusConfig = STATUS_CONFIG[plan.Status] || { label: plan.Status, variant: 'default' as const };
-              const priceRange = getPriceRange(plan);
-
-              return (
-                <AdminTableRow key={plan.ID}>
-                  {/* 计划名称 */}
-                  <AdminTableCell align="center">
-                    <div className="space-y-1">
-                      <div className="text-[15px] text-slate-900 dark:text-white leading-tight">
-                        {plan.Name}
-                      </div>
-                      <div className="text-xs text-slate-400 dark:text-slate-500 leading-tight font-mono">
-                        {plan.Slug}
-                      </div>
-                    </div>
-                  </AdminTableCell>
-
-                  {/* 价格 */}
-                  <AdminTableCell align="right">
-                    {priceRange.details ? (
-                      <Tooltip>
-                        <TooltipTrigger asChild>
-                          <span className="inline-flex items-center gap-1 cursor-help group">
-                            <span className="font-mono text-[15px] tabular-nums text-slate-900 dark:text-white group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">
-                              {priceRange.display}
-                            </span>
-                            <svg className="size-3.5 text-slate-400 group-hover:text-indigo-500 transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                            </svg>
-                          </span>
-                        </TooltipTrigger>
-                        <TooltipContent>
-                          <div className="text-xs space-y-1">
-                            <p className="font-semibold text-white mb-1.5">所有定价选项：</p>
-                            {priceRange.details.map((detail, idx) => (
-                              <p key={idx} className="font-mono text-indigo-100">{detail.cycle}: {detail.price}</p>
-                            ))}
-                          </div>
-                        </TooltipContent>
-                      </Tooltip>
-                    ) : (
-                      <span className="font-mono text-[15px] tabular-nums text-slate-900 dark:text-white">
-                        {priceRange.display}
-                      </span>
-                    )}
-                  </AdminTableCell>
-
-                  {/* 计费周期 */}
-                  <AdminTableCell align="center">
-                    <BillingCycleBadge billingCycle={plan.BillingCycle} />
-                  </AdminTableCell>
-
-                  {/* 状态 */}
-                  <AdminTableCell align="center">
-                    <AdminBadge variant={statusConfig.variant}>
-                      {statusConfig.label}
-                    </AdminBadge>
-                  </AdminTableCell>
-
-                  {/* 公开 */}
-                  <AdminTableCell align="center">
-                    <AdminBadge variant={plan.IsPublic ? 'success' : 'outline'}>
-                      {plan.IsPublic ? '是' : '否'}
-                    </AdminBadge>
-                  </AdminTableCell>
-
-                  {/* 试用天数 */}
-                  <AdminTableCell align="right" className="font-mono tabular-nums text-slate-700 dark:text-slate-300">
-                    {plan.TrialDays ? (
-                      <span className="inline-flex items-center gap-1">
-                        <span>{plan.TrialDays}</span>
-                        <span className="text-xs text-slate-400">天</span>
-                      </span>
-                    ) : (
-                      <span className="text-slate-400">-</span>
-                    )}
-                  </AdminTableCell>
-
-                  {/* 排序 */}
-                  <AdminTableCell align="center" className="font-mono tabular-nums text-slate-600 dark:text-slate-400">
-                    {plan.SortOrder || '-'}
-                  </AdminTableCell>
-
-                  {/* 操作 - 图标优化 */}
-                  <AdminTableCell align="center">
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <button className="inline-flex items-center justify-center size-8 rounded-lg text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-700 transition-all duration-200 group">
-                          <MoreHorizontal className="size-4 group-hover:scale-110 transition-transform" strokeWidth={2} />
-                        </button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end">
-                        <DropdownMenuItem onClick={() => onEdit(plan)}>
-                          <Edit className="mr-2 size-4" />
-                          编辑
-                        </DropdownMenuItem>
-                        {onManageNodeGroups && (
-                          <DropdownMenuItem onClick={() => onManageNodeGroups(plan)}>
-                            <Network className="mr-2 size-4" />
-                            管理节点组
-                          </DropdownMenuItem>
-                        )}
-                        <DropdownMenuSeparator />
-                        <DropdownMenuItem onClick={() => onToggleStatus(plan)}>
-                          <Power className="mr-2 size-4" />
-                          {plan.Status === 'active' ? '停用' : '激活'}
-                        </DropdownMenuItem>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
-                  </AdminTableCell>
-                </AdminTableRow>
-              );
-            })
-          )}
-        </AdminTableBody>
-      </AdminTable>
-      <AdminTablePagination
-        page={page}
-        pageSize={pageSize}
-        total={total}
-        onPageChange={onPageChange}
-        onPageSizeChange={onPageSizeChange}
-        loading={loading}
-      />
-    </>
+    <DataTable
+      columns={columns}
+      data={plans}
+      loading={loading}
+      page={page}
+      pageSize={pageSize}
+      total={total}
+      onPageChange={onPageChange}
+      onPageSizeChange={onPageSizeChange}
+      emptyMessage="暂无订阅计划"
+      getRowId={(row) => String(row.ID)}
+    />
   );
 };

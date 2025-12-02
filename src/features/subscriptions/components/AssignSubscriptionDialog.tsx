@@ -37,20 +37,13 @@ export const AssignSubscriptionDialog: React.FC<AssignSubscriptionDialogProps> =
   onClose,
   onSubmit,
 }) => {
-  const { plans, loading: plansLoading, fetchPlans } = useSubscriptionPlans();
+  const { plans, isLoading: plansLoading } = useSubscriptionPlans({ enabled: open });
   const [submitting, setSubmitting] = useState(false);
   const [formData, setFormData] = useState<CreateSubscriptionRequest>({
     plan_id: 0,
     billing_cycle: 'monthly',
     auto_renew: true,
   });
-
-  // 加载订阅计划列表
-  useEffect(() => {
-    if (open) {
-      fetchPlans(1, 100); // 加载所有计划
-    }
-  }, [open, fetchPlans]);
 
   // 重置表单
   useEffect(() => {

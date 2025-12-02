@@ -1,69 +1,173 @@
 /**
  * useUsers Hook
- * 管理端使用，包含完整的用户管理操作
+ * 基于 TanStack Query 实现
  */
 
-import { useEffect } from 'react';
-import { useUsersStore } from '../stores/users-store';
-import type { CreateUserRequest, UpdateUserRequest } from '../types/users.types';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useState } from 'react';
+import { queryKeys } from '@/shared/lib/query-client';
+import { useNotificationStore } from '@/shared/stores/notification-store';
+import { handleApiError } from '@/shared/lib/axios';
+import {
+  getUsers,
+  getUserById,
+  createUser,
+  updateUser,
+  deleteUser,
+} from '../api/users-api';
+import type {
+  UserListItem,
+  UserListParams,
+  UserFilters,
+  CreateUserRequest,
+  UpdateUserRequest,
+} from '../types/users.types';
 
-export const useUsers = () => {
+interface UseUsersOptions {
+  page?: number;
+  pageSize?: number;
+  filters?: UserFilters;
+  enabled?: boolean;
+}
+
+export const useUsers = (options: UseUsersOptions = {}) => {
+  const { page = 1, pageSize = 20, filters = {}, enabled = true } = options;
+  const queryClient = useQueryClient();
+  const { showSuccess, showError } = useNotificationStore();
+
+  // 构建查询参数
+  const params: UserListParams = {
+    page,
+    page_size: pageSize,
+    ...filters,
+  };
+
+  // 查询用户列表
   const {
-    users,
-    selectedUser,
-    filters,
-    pagination,
-    loading,
+    data,
+    isLoading,
+    isFetching,
     error,
-    fetchUsers,
-    fetchUserById,
-    createUser,
-    updateUser,
-    deleteUser,
-    setFilters,
-    setSelectedUser,
-    clearError,
-    reset,
-  } = useUsersStore();
+    refetch,
+  } = useQuery({
+    queryKey: queryKeys.users.list(params),
+    queryFn: () => getUsers(params),
+    enabled,
+  });
 
-  // 组件挂载时获取数据
-  useEffect(() => {
-    fetchUsers();
-  }, [fetchUsers]);
+  // 创建用户
+  const createMutation = useMutation({
+    mutationFn: createUser,
+    onSuccess: () => {
+      showSuccess('用户创建成功');
+      queryClient.invalidateQueries({ queryKey: queryKeys.users.lists() });
+    },
+    onError: (error) => {
+      showError(handleApiError(error));
+    },
+  });
 
-  // 创建用户（带类型）
-  const handleCreateUser = async (data: CreateUserRequest) => {
-    return await createUser(data);
-  };
-
-  // 更新用户信息（带类型）
-  const handleUpdateUser = async (id: number | string, data: UpdateUserRequest) => {
-    return await updateUser(id, data);
-  };
+  // 更新用户
+  const updateMutation = useMutation({
+    mutationFn: ({ id, data }: { id: number | string; data: UpdateUserRequest }) =>
+      updateUser(id, data),
+    onSuccess: () => {
+      showSuccess('用户信息更新成功');
+      queryClient.invalidateQueries({ queryKey: queryKeys.users.lists() });
+    },
+    onError: (error) => {
+      showError(handleApiError(error));
+    },
+  });
 
   // 删除用户
-  const handleDeleteUser = async (id: number | string) => {
-    return await deleteUser(id);
+  const deleteMutation = useMutation({
+    mutationFn: deleteUser,
+    onSuccess: () => {
+      showSuccess('用户删除成功');
+      queryClient.invalidateQueries({ queryKey: queryKeys.users.lists() });
+    },
+    onError: (error) => {
+      showError(handleApiError(error));
+    },
+  });
+
+  return {
+    // 数据
+    users: data?.items ?? [],
+    pagination: {
+      page: data?.page ?? page,
+      pageSize: data?.page_size ?? pageSize,
+      total: data?.total ?? 0,
+      totalPages: data?.total_pages ?? 0,
+    },
+
+    // 状态
+    isLoading,
+    isFetching,
+    error: error ? handleApiError(error) : null,
+
+    // 操作
+    refetch,
+    createUser: (data: CreateUserRequest) => createMutation.mutateAsync(data),
+    updateUser: (id: number | string, data: UpdateUserRequest) =>
+      updateMutation.mutateAsync({ id, data }),
+    deleteUser: (id: number | string) => deleteMutation.mutateAsync(id),
+
+    // Mutation 状态
+    isCreating: createMutation.isPending,
+    isUpdating: updateMutation.isPending,
+    isDeleting: deleteMutation.isPending,
+  };
+};
+
+// 获取单个用户详情
+export const useUser = (id: number | string | null) => {
+  const { data, isLoading, error } = useQuery({
+    queryKey: queryKeys.users.detail(id!),
+    queryFn: () => getUserById(id!),
+    enabled: !!id,
+  });
+
+  return {
+    user: data ?? null,
+    isLoading,
+    error: error ? handleApiError(error) : null,
+  };
+};
+
+// 用户列表状态管理 hook（用于页面级状态）
+export const useUsersPage = () => {
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(20);
+  const [filters, setFilters] = useState<UserFilters>({});
+  const [selectedUser, setSelectedUser] = useState<UserListItem | null>(null);
+
+  const usersQuery = useUsers({ page, pageSize, filters });
+
+  const handlePageChange = (newPage: number) => {
+    setPage(newPage);
+  };
+
+  const handlePageSizeChange = (newPageSize: number) => {
+    setPageSize(newPageSize);
+    setPage(1);
+  };
+
+  const handleFiltersChange = (newFilters: Partial<UserFilters>) => {
+    setFilters((prev) => ({ ...prev, ...newFilters }));
+    setPage(1);
   };
 
   return {
-    // 状态
-    users,
-    selectedUser,
+    ...usersQuery,
+    page,
+    pageSize,
     filters,
-    pagination,
-    loading,
-    error,
-
-    // 方法
-    fetchUsers,
-    fetchUserById,
-    createUser: handleCreateUser,
-    updateUser: handleUpdateUser,
-    deleteUser: handleDeleteUser,
-    setFilters,
+    selectedUser,
     setSelectedUser,
-    clearError,
-    reset,
+    handlePageChange,
+    handlePageSizeChange,
+    handleFiltersChange,
   };
 };

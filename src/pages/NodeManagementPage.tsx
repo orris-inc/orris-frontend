@@ -6,12 +6,10 @@
 import { useState } from 'react';
 import { Server, Plus, RefreshCw } from 'lucide-react';
 import { NodeListTable } from '@/features/nodes/components/NodeListTable';
-import { NodeFilters } from '@/features/nodes/components/NodeFilters';
 import { EditNodeDialog } from '@/features/nodes/components/EditNodeDialog';
 import { CreateNodeDialog } from '@/features/nodes/components/CreateNodeDialog';
-import { NodeStatsCards } from '@/features/nodes/components/NodeStatsCards';
 import { NodeDetailDialog } from '@/features/nodes/components/NodeDetailDialog';
-import { useNodes } from '@/features/nodes/hooks/useNodes';
+import { useNodesPage } from '@/features/nodes/hooks/useNodes';
 import { AdminLayout } from '@/layouts/AdminLayout';
 import { textareaStyles } from '@/lib/ui-styles';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/common/Tooltip';
@@ -27,7 +25,6 @@ import {
   AdminPageLayout,
   AdminButton,
   AdminCard,
-  AdminFilterCard,
 } from '@/components/admin';
 import type { NodeListItem, UpdateNodeRequest, CreateNodeRequest } from '@/features/nodes/types/nodes.types';
 
@@ -35,31 +32,24 @@ export const NodeManagementPage = () => {
   const {
     nodes,
     pagination,
-    filters,
-    loading,
-    fetchNodes,
+    isLoading,
+    refetch,
     createNode,
     updateNode,
     deleteNode,
     updateNodeStatus,
-    generateToken,
-    setFilters,
-  } = useNodes();
+    handleGenerateToken,
+    generatedToken,
+    setGeneratedToken,
+    handlePageChange,
+    handlePageSizeChange,
+  } = useNodesPage();
 
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
   const [detailDialogOpen, setDetailDialogOpen] = useState(false);
   const [selectedNode, setSelectedNode] = useState<NodeListItem | null>(null);
   const [tokenDialogOpen, setTokenDialogOpen] = useState(false);
-  const [generatedToken, setGeneratedToken] = useState('');
-
-  const handlePageChange = (page: number) => {
-    fetchNodes(page, pagination.page_size);
-  };
-
-  const handlePageSizeChange = (pageSize: number) => {
-    fetchNodes(1, pageSize);
-  };
 
   const handleEdit = (node: NodeListItem) => {
     setSelectedNode(node);
@@ -80,10 +70,9 @@ export const NodeManagementPage = () => {
     await updateNodeStatus(node.id, 'inactive');
   };
 
-  const handleGenerateToken = async (node: NodeListItem) => {
-    const token = await generateToken(node.id);
+  const handleTokenGenerate = async (node: NodeListItem) => {
+    const token = await handleGenerateToken(node.id);
     if (token) {
-      setGeneratedToken(token);
       setTokenDialogOpen(true);
     }
   };
@@ -94,27 +83,33 @@ export const NodeManagementPage = () => {
   };
 
   const handleRefresh = () => {
-    fetchNodes(pagination.page, pagination.page_size);
+    refetch();
   };
 
   const handleCreateSubmit = async (data: CreateNodeRequest) => {
-    const result = await createNode(data);
-    if (result) {
+    try {
+      await createNode(data);
       setCreateDialogOpen(false);
+    } catch {
+      // 错误已在 hook 中处理
     }
   };
 
   const handleUpdateSubmit = async (id: number | string, data: UpdateNodeRequest) => {
-    const result = await updateNode(id, data);
-    if (result) {
+    try {
+      await updateNode(id, data);
       setEditDialogOpen(false);
       setSelectedNode(null);
+    } catch {
+      // 错误已在 hook 中处理
     }
   };
 
   const handleCopyToken = () => {
-    navigator.clipboard.writeText(generatedToken);
-    alert('Token已复制到剪贴板');
+    if (generatedToken) {
+      navigator.clipboard.writeText(generatedToken.Token);
+      alert('Token已复制到剪贴板');
+    }
   };
 
   return (
@@ -131,8 +126,8 @@ export const NodeManagementPage = () => {
                   variant="outline"
                   size="md"
                   onClick={handleRefresh}
-                  disabled={loading}
-                  icon={<RefreshCw className={`size-4 ${loading ? 'animate-spin' : ''}`} strokeWidth={1.5} />}
+                  disabled={isLoading}
+                  icon={<RefreshCw className={`size-4 ${isLoading ? 'animate-spin' : ''}`} strokeWidth={1.5} />}
                 >
                   刷新
                 </AdminButton>
@@ -149,21 +144,13 @@ export const NodeManagementPage = () => {
           </div>
         }
       >
-        {/* 统计卡片 */}
-        <NodeStatsCards nodes={nodes} loading={loading} />
-
-        {/* 筛选器 */}
-        <AdminFilterCard>
-          <NodeFilters filters={filters} onChange={setFilters} />
-        </AdminFilterCard>
-
         {/* 节点列表表格 */}
         <AdminCard noPadding>
           <NodeListTable
             nodes={nodes}
-            loading={loading}
+            loading={isLoading}
             page={pagination.page}
-            pageSize={pagination.page_size}
+            pageSize={pagination.pageSize}
             total={pagination.total}
             onPageChange={handlePageChange}
             onPageSizeChange={handlePageSizeChange}
@@ -171,7 +158,7 @@ export const NodeManagementPage = () => {
             onDelete={handleDelete}
             onActivate={handleActivate}
             onDeactivate={handleDeactivate}
-            onGenerateToken={handleGenerateToken}
+            onGenerateToken={handleTokenGenerate}
             onViewDetail={handleViewDetail}
           />
         </AdminCard>
@@ -208,7 +195,12 @@ export const NodeManagementPage = () => {
       {/* Token显示对话框 */}
       <Dialog
         open={tokenDialogOpen}
-        onOpenChange={(open) => !open && setTokenDialogOpen(false)}
+        onOpenChange={(open) => {
+          if (!open) {
+            setTokenDialogOpen(false);
+            setGeneratedToken(null);
+          }
+        }}
       >
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
@@ -218,7 +210,7 @@ export const NodeManagementPage = () => {
             </DialogDescription>
           </DialogHeader>
           <textarea
-            value={generatedToken}
+            value={generatedToken?.Token || ''}
             readOnly
             rows={4}
             className={`${textareaStyles} mt-2 font-mono`}
@@ -226,7 +218,10 @@ export const NodeManagementPage = () => {
           <DialogFooter>
             <AdminButton
               variant="outline"
-              onClick={() => setTokenDialogOpen(false)}
+              onClick={() => {
+                setTokenDialogOpen(false);
+                setGeneratedToken(null);
+              }}
             >
               关闭
             </AdminButton>

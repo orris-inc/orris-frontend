@@ -1,13 +1,15 @@
 /**
  * 主应用组件
- * React 19 + MUI v7 + React Router v7
+ * React 19 + MUI v7 + React Router v7 + TanStack Query
  */
 
 import { RouterProvider } from 'react-router';
 import { ThemeProvider } from '@mui/material/styles';
 import CssBaseline from '@mui/material/CssBaseline';
+import { QueryClientProvider } from '@tanstack/react-query';
 import { theme } from './theme';
 import { router } from './router';
+import { queryClient } from '@/shared/lib/query-client';
 import { GlobalSnackbar } from '@/shared/components/GlobalSnackbar';
 import { useAuthInitializer } from '@/features/auth/hooks/useAuthInitializer';
 import { useAuthStore } from '@/features/auth/stores/auth-store';
@@ -40,10 +42,12 @@ export const App = () => {
   }
 
   return (
-    <ThemeProvider theme={theme}>
-      <CssBaseline />
-      <RouterProvider router={router} />
-      <GlobalSnackbar />
-    </ThemeProvider>
+    <QueryClientProvider client={queryClient}>
+      <ThemeProvider theme={theme}>
+        <CssBaseline />
+        <RouterProvider router={router} />
+        <GlobalSnackbar />
+      </ThemeProvider>
+    </QueryClientProvider>
   );
 };

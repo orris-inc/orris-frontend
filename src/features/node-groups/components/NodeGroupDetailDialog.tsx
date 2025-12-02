@@ -17,11 +17,10 @@ import {
   ListItemText,
   CircularProgress,
 } from '@mui/material';
-import { useEffect, useState } from 'react';
 import type { NodeGroupListItem } from '../types/node-groups.types';
 import type { NodeListItem } from '@/features/nodes/types/nodes.types';
 import { formatDateTime } from '@/shared/utils/date-utils';
-import { useNodeGroups } from '../hooks/useNodeGroups';
+import { useNodeGroupNodes } from '../hooks/useNodeGroups';
 
 interface NodeGroupDetailDialogProps {
   open: boolean;
@@ -34,15 +33,7 @@ export const NodeGroupDetailDialog = ({
   group,
   onClose,
 }: NodeGroupDetailDialogProps) => {
-  const { fetchGroupNodes, groupNodes } = useNodeGroups();
-  const [loading, setLoading] = useState(false);
-
-  useEffect(() => {
-    if (open && group) {
-      setLoading(true);
-      fetchGroupNodes(group.id).finally(() => setLoading(false));
-    }
-  }, [open, group, fetchGroupNodes]);
+  const { nodes: groupNodes, isLoading } = useNodeGroupNodes(open && group ? group.id : null);
 
   if (!group) return null;
 
@@ -99,13 +90,13 @@ export const NodeGroupDetailDialog = ({
           {/* 关联节点 */}
           <Box>
             <Typography variant="subtitle2" color="text.secondary" gutterBottom>
-              关联节点 ({Array.isArray(groupNodes) ? groupNodes.length : 0})
+              关联节点 ({groupNodes.length})
             </Typography>
-            {loading ? (
+            {isLoading ? (
               <Box display="flex" justifyContent="center" py={2}>
                 <CircularProgress size={24} />
               </Box>
-            ) : Array.isArray(groupNodes) && groupNodes.length > 0 ? (
+            ) : groupNodes.length > 0 ? (
               <List dense sx={{ maxHeight: 300, overflow: 'auto' }}>
                 {groupNodes.map((node: NodeListItem) => (
                   <ListItem key={node.id} divider>
