@@ -10,7 +10,7 @@ import { Link as RouterLink, useSearchParams, useNavigate } from 'react-router';
 import { useState } from 'react';
 import { Eye, EyeOff, Loader2, CircleAlert } from 'lucide-react';
 import * as LabelPrimitive from '@radix-ui/react-label';
-import * as authApi from '@/features/auth/api/auth-api';
+import * as authApi from '@/api/auth';
 import { extractErrorMessage } from '@/shared/utils/error-messages';
 import { useNotificationStore } from '@/shared/stores/notification-store';
 import {

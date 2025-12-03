@@ -8,7 +8,7 @@ import * as Select from '@radix-ui/react-select';
 import * as Checkbox from '@radix-ui/react-checkbox';
 import * as Label from '@radix-ui/react-label';
 import { Plus, X, Check, ChevronDown } from 'lucide-react';
-import type { SubscriptionPlan, UpdatePlanRequest } from '../types/subscription-plans.types';
+import type { SubscriptionPlan, UpdatePlanRequest } from '@/api/subscription/types';
 
 interface EditPlanDialogProps {
   open: boolean;
@@ -31,15 +31,15 @@ export const EditPlanDialog: React.FC<EditPlanDialogProps> = ({
   useEffect(() => {
     if (plan) {
       setFormData({
-        price: plan.Price,
-        currency: plan.Currency,
-        description: plan.Description,
-        features: plan.Features || [],
-        is_public: plan.IsPublic,
-        max_users: plan.MaxUsers,
-        max_projects: plan.MaxProjects,
-        api_rate_limit: plan.APIRateLimit,
-        sort_order: plan.SortOrder,
+        price: plan.price,
+        currency: plan.currency,
+        description: plan.description,
+        features: plan.features || [],
+        isPublic: plan.isPublic,
+        maxUsers: plan.maxUsers,
+        maxProjects: plan.maxProjects,
+        apiRateLimit: plan.apiRateLimit,
+        sortOrder: plan.sortOrder,
       });
     }
   }, [plan]);
@@ -74,7 +74,7 @@ export const EditPlanDialog: React.FC<EditPlanDialogProps> = ({
         ...formData,
         price: formData.price,
       };
-      await onSubmit(plan.ID, submitData);
+      await onSubmit(plan.id, submitData);
       onClose();
     } finally {
       setLoading(false);
@@ -89,7 +89,7 @@ export const EditPlanDialog: React.FC<EditPlanDialogProps> = ({
         <Dialog.Overlay className="fixed inset-0 z-50 bg-black/80 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0" />
         <Dialog.Content className="fixed left-[50%] top-[50%] z-50 grid w-full max-w-3xl translate-x-[-50%] translate-y-[-50%] gap-4 border bg-background p-6 shadow-lg duration-200 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[state=closed]:slide-out-to-left-1/2 data-[state=closed]:slide-out-to-top-[48%] data-[state=open]:slide-in-from-left-1/2 data-[state=open]:slide-in-from-top-[48%] sm:rounded-lg max-h-[90vh] overflow-y-auto">
           <div className="flex flex-col space-y-1.5 text-center sm:text-left">
-            <Dialog.Title className="text-lg font-semibold leading-none tracking-tight">编辑订阅计划: {plan.Name}</Dialog.Title>
+            <Dialog.Title className="text-lg font-semibold leading-none tracking-tight">编辑订阅计划: {plan.name}</Dialog.Title>
             <Dialog.Description className="text-sm text-muted-foreground">修改订阅计划的配置信息</Dialog.Description>
           </div>
 
@@ -102,7 +102,7 @@ export const EditPlanDialog: React.FC<EditPlanDialogProps> = ({
                   <Label.Root className="text-sm font-medium leading-none">计划名称</Label.Root>
                   <input
                     className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm disabled:cursor-not-allowed disabled:opacity-50"
-                    value={plan.Name}
+                    value={plan.name}
                     disabled
                   />
                 </div>
@@ -111,7 +111,7 @@ export const EditPlanDialog: React.FC<EditPlanDialogProps> = ({
                   <Label.Root className="text-sm font-medium leading-none">Slug</Label.Root>
                   <input
                     className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm disabled:cursor-not-allowed disabled:opacity-50"
-                    value={plan.Slug}
+                    value={plan.slug}
                     disabled
                   />
                 </div>
@@ -120,7 +120,7 @@ export const EditPlanDialog: React.FC<EditPlanDialogProps> = ({
                   <Label.Root className="text-sm font-medium leading-none">计费周期</Label.Root>
                   <input
                     className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm disabled:cursor-not-allowed disabled:opacity-50"
-                    value={plan.BillingCycle}
+                    value={plan.billingCycle}
                     disabled
                   />
                 </div>
@@ -147,7 +147,7 @@ export const EditPlanDialog: React.FC<EditPlanDialogProps> = ({
                 <div className="space-y-2">
                   <Label.Root htmlFor="currency" className="text-sm font-medium leading-none">货币</Label.Root>
                   <Select.Root
-                    value={formData.currency || plan.Currency}
+                    value={formData.currency || plan.currency}
                     onValueChange={(value) => handleChange('currency', value)}
                   >
                     <Select.Trigger id="currency" className="flex h-9 w-full items-center justify-between rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-ring disabled:cursor-not-allowed disabled:opacity-50">
@@ -231,65 +231,65 @@ export const EditPlanDialog: React.FC<EditPlanDialogProps> = ({
               <h3 className="text-sm font-semibold">限制配置</h3>
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                 <div className="space-y-2">
-                  <Label.Root htmlFor="max_users" className="text-sm font-medium leading-none">最大用户数</Label.Root>
+                  <Label.Root htmlFor="maxUsers" className="text-sm font-medium leading-none">最大用户数</Label.Root>
                   <input
-                    id="max_users"
+                    id="maxUsers"
                     type="number"
                     min="0"
                     className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
-                    value={formData.max_users || ''}
-                    onChange={(e) => handleChange('max_users', e.target.value === '' ? undefined : Number(e.target.value))}
+                    value={formData.maxUsers || ''}
+                    onChange={(e) => handleChange('maxUsers', e.target.value === '' ? undefined : Number(e.target.value))}
                   />
                 </div>
 
                 <div className="space-y-2">
-                  <Label.Root htmlFor="max_projects" className="text-sm font-medium leading-none">最大项目数</Label.Root>
+                  <Label.Root htmlFor="maxProjects" className="text-sm font-medium leading-none">最大项目数</Label.Root>
                   <input
-                    id="max_projects"
+                    id="maxProjects"
                     type="number"
                     min="0"
                     className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
-                    value={formData.max_projects || ''}
-                    onChange={(e) => handleChange('max_projects', e.target.value === '' ? undefined : Number(e.target.value))}
+                    value={formData.maxProjects || ''}
+                    onChange={(e) => handleChange('maxProjects', e.target.value === '' ? undefined : Number(e.target.value))}
                   />
                 </div>
 
                 <div className="space-y-2">
-                  <Label.Root htmlFor="api_rate_limit" className="text-sm font-medium leading-none">API速率限制（次/小时）</Label.Root>
+                  <Label.Root htmlFor="apiRateLimit" className="text-sm font-medium leading-none">API速率限制（次/小时）</Label.Root>
                   <input
-                    id="api_rate_limit"
+                    id="apiRateLimit"
                     type="number"
                     min="0"
                     className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
-                    value={formData.api_rate_limit || ''}
-                    onChange={(e) => handleChange('api_rate_limit', e.target.value === '' ? undefined : Number(e.target.value))}
+                    value={formData.apiRateLimit || ''}
+                    onChange={(e) => handleChange('apiRateLimit', e.target.value === '' ? undefined : Number(e.target.value))}
                   />
                 </div>
 
                 <div className="space-y-2">
-                  <Label.Root htmlFor="sort_order" className="text-sm font-medium leading-none">排序顺序</Label.Root>
+                  <Label.Root htmlFor="sortOrder" className="text-sm font-medium leading-none">排序顺序</Label.Root>
                   <input
-                    id="sort_order"
+                    id="sortOrder"
                     type="number"
                     className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
-                    value={formData.sort_order || 0}
-                    onChange={(e) => handleChange('sort_order', e.target.value === '' ? undefined : Number(e.target.value))}
+                    value={formData.sortOrder || 0}
+                    onChange={(e) => handleChange('sortOrder', e.target.value === '' ? undefined : Number(e.target.value))}
                   />
                   <p className="text-xs text-muted-foreground">数字越小越靠前</p>
                 </div>
 
                 <div className="flex items-center gap-2">
                   <Checkbox.Root
-                    id="is_public"
-                    checked={formData.is_public ?? plan.IsPublic}
-                    onCheckedChange={(checked) => handleChange('is_public', checked)}
+                    id="isPublic"
+                    checked={formData.isPublic ?? plan.isPublic}
+                    onCheckedChange={(checked) => handleChange('isPublic', checked)}
                     className="peer size-4 shrink-0 rounded-sm border border-primary shadow focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 data-[state=checked]:bg-primary data-[state=checked]:text-primary-foreground"
                   >
                     <Checkbox.Indicator className="flex items-center justify-center text-current">
                       <Check className="size-4" />
                     </Checkbox.Indicator>
                   </Checkbox.Root>
-                  <Label.Root htmlFor="is_public" className="cursor-pointer text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
+                  <Label.Root htmlFor="isPublic" className="cursor-pointer text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
                     公开显示此计划
                   </Label.Root>
                 </div>

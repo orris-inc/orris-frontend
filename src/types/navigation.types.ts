@@ -5,7 +5,7 @@
  * 所有导航相关组件都应该使用这里定义的类型。
  */
 
-import type { SvgIconProps } from '@mui/material';
+import type { LucideIcon } from 'lucide-react';
 
 /**
  * 用户角色类型
@@ -34,10 +34,10 @@ export interface NavigationItem {
   path: string;
 
   /** 图标组件(可选) */
-  icon?: React.ComponentType<SvgIconProps>;
+  icon?: LucideIcon;
 
   /** 需要的角色权限 */
-  roles: UserRole[];
+  roles: readonly UserRole[];
 
   /** 是否禁用 */
   disabled?: boolean;

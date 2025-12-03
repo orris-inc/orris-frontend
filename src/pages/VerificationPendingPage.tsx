@@ -10,8 +10,8 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { Mail, Loader2, Info, CircleCheck, TriangleAlert } from 'lucide-react';
 import * as LabelPrimitive from '@radix-ui/react-label';
-import { resendVerificationEmail } from '@/features/auth/api/auth-api';
-import { handleApiError } from '@/shared/lib/axios';
+import { handleApiError, apiClient } from '@/shared/lib/axios';
+import type { APIResponse } from '@/shared/types/api.types';
 import {
   getButtonClass,
   inputStyles,
@@ -25,6 +25,11 @@ import {
   alertDescriptionStyles,
 } from '@/lib/ui-styles';
 import { cn } from '@/lib/utils';
+
+// 临时实现 - 等待后端自动生成的API支持此功能
+const resendVerificationEmail = async (email: string): Promise<void> => {
+  await apiClient.post<APIResponse<null>>('/auth/resend-verification', { email });
+};
 
 // 表单验证
 const resendSchema = z.object({

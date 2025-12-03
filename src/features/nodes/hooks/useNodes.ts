@@ -9,22 +9,31 @@ import { queryKeys } from '@/shared/lib/query-client';
 import { useNotificationStore } from '@/shared/stores/notification-store';
 import { handleApiError } from '@/shared/lib/axios';
 import {
-  getNodes,
-  getNodeById,
+  listNodes,
+  getNode,
   createNode,
   updateNode,
   deleteNode,
   updateNodeStatus,
   generateNodeToken,
-} from '../api/nodes-api';
+} from '@/api/node';
 import type {
-  NodeListItem,
-  NodeListParams,
-  NodeFilters,
+  Node,
+  ListNodesParams,
   CreateNodeRequest,
   UpdateNodeRequest,
   NodeTokenResponse,
-} from '../types/nodes.types';
+} from '@/api/node';
+
+// 前端使用的筛选条件类型
+interface NodeFilters {
+  status?: 'active' | 'inactive' | 'maintenance' | 'error';
+  region?: string;
+  tags?: string[];
+  orderBy?: string;
+  order?: 'asc' | 'desc';
+  search?: string;
+}
 
 interface UseNodesOptions {
   page?: number;
@@ -39,13 +48,13 @@ export const useNodes = (options: UseNodesOptions = {}) => {
   const { showSuccess, showError } = useNotificationStore();
 
   // 构建查询参数
-  const params: NodeListParams = {
+  const params: ListNodesParams = {
     page,
-    page_size: pageSize,
+    pageSize,
     status: filters.status,
     region: filters.region,
     tags: filters.tags,
-    order_by: filters.order_by,
+    orderBy: filters.orderBy,
     order: filters.order,
   };
 
@@ -58,7 +67,7 @@ export const useNodes = (options: UseNodesOptions = {}) => {
     refetch,
   } = useQuery({
     queryKey: queryKeys.nodes.list(params),
-    queryFn: () => getNodes(params),
+    queryFn: () => listNodes(params),
     enabled,
   });
 
@@ -77,7 +86,7 @@ export const useNodes = (options: UseNodesOptions = {}) => {
   // 更新节点
   const updateMutation = useMutation({
     mutationFn: ({ id, data }: { id: number | string; data: UpdateNodeRequest }) =>
-      updateNode(id, data),
+      updateNode(typeof id === 'string' ? parseInt(id, 10) : id, data),
     onSuccess: () => {
       showSuccess('节点信息更新成功');
       queryClient.invalidateQueries({ queryKey: queryKeys.nodes.lists() });
@@ -89,7 +98,7 @@ export const useNodes = (options: UseNodesOptions = {}) => {
 
   // 删除节点
   const deleteMutation = useMutation({
-    mutationFn: deleteNode,
+    mutationFn: (id: number | string) => deleteNode(typeof id === 'string' ? parseInt(id, 10) : id),
     onSuccess: () => {
       showSuccess('节点删除成功');
       queryClient.invalidateQueries({ queryKey: queryKeys.nodes.lists() });
@@ -102,7 +111,7 @@ export const useNodes = (options: UseNodesOptions = {}) => {
   // 更新节点状态
   const statusMutation = useMutation({
     mutationFn: ({ id, status }: { id: number | string; status: 'active' | 'inactive' | 'maintenance' }) =>
-      updateNodeStatus(id, { status }),
+      updateNodeStatus(typeof id === 'string' ? parseInt(id, 10) : id, { status }),
     onSuccess: (_, { status }) => {
       const statusText = status === 'active' ? '激活' : status === 'inactive' ? '停用' : '维护';
       showSuccess(`节点已${statusText}`);
@@ -115,7 +124,7 @@ export const useNodes = (options: UseNodesOptions = {}) => {
 
   // 生成 Token
   const tokenMutation = useMutation({
-    mutationFn: generateNodeToken,
+    mutationFn: (id: number | string) => generateNodeToken(typeof id === 'string' ? parseInt(id, 10) : id),
     onSuccess: () => {
       showSuccess('Token 生成成功');
     },
@@ -129,9 +138,9 @@ export const useNodes = (options: UseNodesOptions = {}) => {
     nodes: data?.items ?? [],
     pagination: {
       page: data?.page ?? page,
-      pageSize: data?.page_size ?? pageSize,
+      pageSize: data?.pageSize ?? pageSize,
       total: data?.total ?? 0,
-      totalPages: data?.total_pages ?? 0,
+      totalPages: data?.totalPages ?? 0,
     },
 
     // 状态
@@ -160,10 +169,11 @@ export const useNodes = (options: UseNodesOptions = {}) => {
 
 // 获取单个节点详情
 export const useNode = (id: number | string | null) => {
+  const numericId = id !== null ? (typeof id === 'string' ? parseInt(id, 10) : id) : null;
   const { data, isLoading, error } = useQuery({
-    queryKey: queryKeys.nodes.detail(id!),
-    queryFn: () => getNodeById(id!),
-    enabled: !!id,
+    queryKey: queryKeys.nodes.detail(numericId!),
+    queryFn: () => getNode(numericId!),
+    enabled: !!numericId,
   });
 
   return {
@@ -178,7 +188,7 @@ export const useNodesPage = () => {
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(20);
   const [filters, setFilters] = useState<NodeFilters>({});
-  const [selectedNode, setSelectedNode] = useState<NodeListItem | null>(null);
+  const [selectedNode, setSelectedNode] = useState<Node | null>(null);
   const [generatedToken, setGeneratedToken] = useState<NodeTokenResponse | null>(null);
 
   const nodesQuery = useNodes({ page, pageSize, filters });

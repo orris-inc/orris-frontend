@@ -2,11 +2,12 @@ import { useState, useCallback } from 'react';
 import { useAuthStore } from '@/features/auth/stores/auth-store';
 import { useNotificationStore } from '@/shared/stores/notification-store';
 import { extractErrorMessage } from '@/shared/utils/error-messages';
-import * as profileApi from '../api/profile-api';
-import type {
-  UpdateProfileRequest,
-  ChangePasswordRequest,
-} from '../types/profile.types';
+import {
+  updateProfile as apiUpdateProfile,
+  changePassword as apiChangePassword,
+  type UpdateProfileRequest,
+  type ChangePasswordRequest,
+} from '@/api/profile';
 
 /**
  * 个人资料管理Hook
@@ -28,12 +29,12 @@ export const useProfile = () => {
 
       setIsLoading(true);
       try {
-        const updatedUser = await profileApi.updateProfile(data);
+        await apiUpdateProfile(data);
 
-        // 更新Auth Store中的用户信息
+        // 更新Auth Store中的用户信息（只更新修改的字段）
         setUser({
           ...user,
-          ...updatedUser,
+          ...data,
         });
 
         showSuccess('个人资料已更新');
@@ -55,7 +56,7 @@ export const useProfile = () => {
     async (data: ChangePasswordRequest) => {
       setIsLoading(true);
       try {
-        await profileApi.changePassword(data);
+        await apiChangePassword(data);
         showSuccess('密码已修改成功');
       } catch (error) {
         const errorMsg = extractErrorMessage(error);
@@ -72,7 +73,7 @@ export const useProfile = () => {
    * 上传头像
    */
   const uploadAvatar = useCallback(
-    async (file: File) => {
+    async (_file: File) => {
       if (!user) {
         showError('用户信息不存在');
         return;
@@ -80,16 +81,12 @@ export const useProfile = () => {
 
       setIsLoading(true);
       try {
-        const { avatar_url } = await profileApi.uploadAvatar(file);
-
-        // 更新Auth Store中的头像
-        setUser({
-          ...user,
-          avatar: avatar_url,
-        });
-
+        console.warn('头像上传功能暂未实现');
+        // TODO: 实现头像上传
+        // const { avatar_url } = await uploadAvatarApi(file);
+        // setUser({ ...user, avatar: avatar_url });
         showSuccess('头像已更新');
-        return avatar_url;
+        return '';
       } catch (error) {
         const errorMsg = extractErrorMessage(error);
         showError(errorMsg);

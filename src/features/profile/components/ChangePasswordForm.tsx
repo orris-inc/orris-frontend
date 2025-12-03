@@ -66,11 +66,11 @@ export const ChangePasswordForm = () => {
   } = useForm<ChangePasswordFormData>({
     resolver: zodResolver(changePasswordSchema),
     defaultValues: {
-      logout_all_devices: false,
+      logoutAllDevices: false,
     },
   });
 
-  const newPassword = watch('new_password');
+  const newPassword = watch('newPassword');
 
   // 监听新密码变化，更新强度指示器
   useEffect(() => {
@@ -97,16 +97,16 @@ export const ChangePasswordForm = () => {
     >
       {/* 当前密码 */}
       <div className="grid gap-2">
-        <LabelPrimitive.Root htmlFor="old_password" className={labelStyles}>
+        <LabelPrimitive.Root htmlFor="oldPassword" className={labelStyles}>
           当前密码
         </LabelPrimitive.Root>
         <div className="relative">
           <input
-            id="old_password"
+            id="oldPassword"
             type={showOldPassword ? 'text' : 'password'}
             className={inputStyles}
-            {...register('old_password')}
-            aria-invalid={!!errors.old_password}
+            {...register('oldPassword')}
+            aria-invalid={!!errors.oldPassword}
           />
           <button
             type="button"
@@ -120,23 +120,23 @@ export const ChangePasswordForm = () => {
             )}
           </button>
         </div>
-        {errors.old_password && (
-          <p className="text-sm text-destructive">{errors.old_password.message}</p>
+        {errors.oldPassword && (
+          <p className="text-sm text-destructive">{errors.oldPassword.message}</p>
         )}
       </div>
 
       {/* 新密码 */}
       <div className="grid gap-2">
-        <LabelPrimitive.Root htmlFor="new_password" className={labelStyles}>
+        <LabelPrimitive.Root htmlFor="newPassword" className={labelStyles}>
           新密码
         </LabelPrimitive.Root>
         <div className="relative">
           <input
-            id="new_password"
+            id="newPassword"
             type={showNewPassword ? 'text' : 'password'}
             className={inputStyles}
-            {...register('new_password')}
-            aria-invalid={!!errors.new_password}
+            {...register('newPassword')}
+            aria-invalid={!!errors.newPassword}
           />
           <button
             type="button"
@@ -150,8 +150,8 @@ export const ChangePasswordForm = () => {
             )}
           </button>
         </div>
-        {errors.new_password && (
-          <p className="text-sm text-destructive">{errors.new_password.message}</p>
+        {errors.newPassword && (
+          <p className="text-sm text-destructive">{errors.newPassword.message}</p>
         )}
 
         {/* 密码强度指示器 */}
@@ -172,16 +172,16 @@ export const ChangePasswordForm = () => {
 
       {/* 确认新密码 */}
       <div className="grid gap-2">
-        <LabelPrimitive.Root htmlFor="confirm_password" className={labelStyles}>
+        <LabelPrimitive.Root htmlFor="confirmPassword" className={labelStyles}>
           确认新密码
         </LabelPrimitive.Root>
         <div className="relative">
           <input
-            id="confirm_password"
+            id="confirmPassword"
             type={showConfirmPassword ? 'text' : 'password'}
             className={inputStyles}
-            {...register('confirm_password')}
-            aria-invalid={!!errors.confirm_password}
+            {...register('confirmPassword')}
+            aria-invalid={!!errors.confirmPassword}
           />
           <button
             type="button"
@@ -195,25 +195,25 @@ export const ChangePasswordForm = () => {
             )}
           </button>
         </div>
-        {errors.confirm_password && (
-          <p className="text-sm text-destructive">{errors.confirm_password.message}</p>
+        {errors.confirmPassword && (
+          <p className="text-sm text-destructive">{errors.confirmPassword.message}</p>
         )}
       </div>
 
       {/* 登出所有设备选项 */}
       <div className="flex items-start space-x-3 space-y-0 rounded-md border p-4">
         <CheckboxPrimitive.Root
-          id="logout_all_devices"
+          id="logoutAllDevices"
           className="peer h-4 w-4 shrink-0 rounded-sm border border-primary ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 data-[state=checked]:bg-primary data-[state=checked]:text-primary-foreground"
-          {...register('logout_all_devices')}
+          {...register('logoutAllDevices')}
           onCheckedChange={(checked) => {
             const event = {
               target: {
-                name: 'logout_all_devices',
+                name: 'logoutAllDevices',
                 value: checked,
               },
             };
-            register('logout_all_devices').onChange(event as any);
+            register('logoutAllDevices').onChange(event as any);
           }}
         >
           <CheckboxPrimitive.Indicator className="flex items-center justify-center text-current">
@@ -222,7 +222,7 @@ export const ChangePasswordForm = () => {
         </CheckboxPrimitive.Root>
         <div className="grid gap-1.5 leading-none">
           <label
-            htmlFor="logout_all_devices"
+            htmlFor="logoutAllDevices"
             className="flex items-center gap-2 text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
           >
             <Smartphone className="h-4 w-4" />

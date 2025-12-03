@@ -26,7 +26,7 @@ import {
   AdminButton,
   AdminCard,
 } from '@/components/admin';
-import type { NodeListItem, UpdateNodeRequest, CreateNodeRequest } from '@/features/nodes/types/nodes.types';
+import type { Node, UpdateNodeRequest, CreateNodeRequest } from '@/api/node';
 
 export const NodeManagementPage = () => {
   const {
@@ -48,36 +48,36 @@ export const NodeManagementPage = () => {
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
   const [detailDialogOpen, setDetailDialogOpen] = useState(false);
-  const [selectedNode, setSelectedNode] = useState<NodeListItem | null>(null);
+  const [selectedNode, setSelectedNode] = useState<Node | null>(null);
   const [tokenDialogOpen, setTokenDialogOpen] = useState(false);
 
-  const handleEdit = (node: NodeListItem) => {
+  const handleEdit = (node: Node) => {
     setSelectedNode(node);
     setEditDialogOpen(true);
   };
 
-  const handleDelete = async (node: NodeListItem) => {
-    if (window.confirm(`确认删除节点 "${node.name}" (${node.server_address}:${node.server_port}) 吗？此操作不可恢复。`)) {
+  const handleDelete = async (node: Node) => {
+    if (window.confirm(`确认删除节点 "${node.name}" (${node.serverAddress}:${node.serverPort}) 吗？此操作不可恢复。`)) {
       await deleteNode(node.id);
     }
   };
 
-  const handleActivate = async (node: NodeListItem) => {
+  const handleActivate = async (node: Node) => {
     await updateNodeStatus(node.id, 'active');
   };
 
-  const handleDeactivate = async (node: NodeListItem) => {
+  const handleDeactivate = async (node: Node) => {
     await updateNodeStatus(node.id, 'inactive');
   };
 
-  const handleTokenGenerate = async (node: NodeListItem) => {
+  const handleTokenGenerate = async (node: Node) => {
     const token = await handleGenerateToken(node.id);
     if (token) {
       setTokenDialogOpen(true);
     }
   };
 
-  const handleViewDetail = (node: NodeListItem) => {
+  const handleViewDetail = (node: Node) => {
     setSelectedNode(node);
     setDetailDialogOpen(true);
   };
@@ -107,7 +107,7 @@ export const NodeManagementPage = () => {
 
   const handleCopyToken = () => {
     if (generatedToken) {
-      navigator.clipboard.writeText(generatedToken.Token);
+      navigator.clipboard.writeText(generatedToken.token);
       alert('Token已复制到剪贴板');
     }
   };
@@ -210,7 +210,7 @@ export const NodeManagementPage = () => {
             </DialogDescription>
           </DialogHeader>
           <textarea
-            value={generatedToken?.Token || ''}
+            value={generatedToken?.token || ''}
             readOnly
             rows={4}
             className={`${textareaStyles} mt-2 font-mono`}

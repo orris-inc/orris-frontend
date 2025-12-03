@@ -13,19 +13,19 @@ import {
   DropdownMenuTrigger,
 } from '@/components/common/DropdownMenu';
 import { formatDate } from '@/shared/utils/date-utils';
-import type { UserListItem } from '../types/users.types';
+import type { User } from '@/api/user';
 
 interface UserListTableProps {
-  users: UserListItem[];
+  users: User[];
   loading?: boolean;
   page: number;
   pageSize: number;
   total: number;
   onPageChange: (page: number) => void;
   onPageSizeChange: (pageSize: number) => void;
-  onEdit: (user: UserListItem) => void;
-  onDelete: (user: UserListItem) => void;
-  onAssignSubscription: (user: UserListItem) => void;
+  onEdit: (user: User) => void;
+  onDelete: (user: User) => void;
+  onAssignSubscription: (user: User) => void;
 }
 
 // 状态配置
@@ -55,7 +55,7 @@ export const UserListTable: React.FC<UserListTableProps> = ({
   onDelete,
   onAssignSubscription,
 }) => {
-  const columns = useMemo<ColumnDef<UserListItem>[]>(() => [
+  const columns = useMemo<ColumnDef<User>[]>(() => [
     {
       accessorKey: 'id',
       header: 'ID',
@@ -84,11 +84,6 @@ export const UserListTable: React.FC<UserListTableProps> = ({
           <div className="font-medium text-slate-900 dark:text-white">
             {row.original.name || '-'}
           </div>
-          {row.original.display_name && (
-            <div className="text-xs text-slate-500 dark:text-slate-400">
-              {row.original.display_name}
-            </div>
-          )}
         </div>
       ),
     },
@@ -119,12 +114,12 @@ export const UserListTable: React.FC<UserListTableProps> = ({
       },
     },
     {
-      accessorKey: 'created_at',
+      accessorKey: 'createdAt',
       header: '创建时间',
       size: 140,
       cell: ({ row }) => (
         <span className="text-slate-500 dark:text-slate-400 text-sm">
-          {formatDate(row.original.created_at)}
+          {formatDate(row.original.createdAt)}
         </span>
       ),
     },

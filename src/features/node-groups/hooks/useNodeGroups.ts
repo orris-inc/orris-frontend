@@ -9,22 +9,24 @@ import { queryKeys } from '@/shared/lib/query-client';
 import { useNotificationStore } from '@/shared/stores/notification-store';
 import { handleApiError } from '@/shared/lib/axios';
 import {
-  getNodeGroups,
-  getNodeGroupById,
+  listNodeGroups,
+  getNodeGroup,
   createNodeGroup,
   updateNodeGroup,
   deleteNodeGroup,
-  getNodeGroupNodes,
+  listGroupNodes,
   batchAddNodesToGroup,
   batchRemoveNodesFromGroup,
-} from '../api/node-groups-api';
-import type {
-  NodeGroupListItem,
-  NodeGroupListParams,
-  NodeGroupFilters,
-  CreateNodeGroupRequest,
-  UpdateNodeGroupRequest,
-} from '../types/node-groups.types';
+  type NodeGroup,
+  type ListNodeGroupsParams,
+  type CreateNodeGroupRequest,
+  type UpdateNodeGroupRequest,
+} from '@/api/node';
+
+interface NodeGroupFilters {
+  isPublic?: boolean;
+  search?: string;
+}
 
 interface UseNodeGroupsOptions {
   page?: number;
@@ -39,10 +41,10 @@ export const useNodeGroups = (options: UseNodeGroupsOptions = {}) => {
   const { showSuccess, showError } = useNotificationStore();
 
   // 构建查询参数
-  const params: NodeGroupListParams = {
+  const params: ListNodeGroupsParams = {
     page,
-    page_size: pageSize,
-    is_public: filters.is_public,
+    pageSize,
+    isPublic: filters.isPublic,
   };
 
   // 查询节点组列表
@@ -54,7 +56,7 @@ export const useNodeGroups = (options: UseNodeGroupsOptions = {}) => {
     refetch,
   } = useQuery({
     queryKey: queryKeys.nodeGroups.list(params),
-    queryFn: () => getNodeGroups(params),
+    queryFn: () => listNodeGroups(params),
     enabled,
   });
 
@@ -73,7 +75,7 @@ export const useNodeGroups = (options: UseNodeGroupsOptions = {}) => {
   // 更新节点组
   const updateMutation = useMutation({
     mutationFn: ({ id, data }: { id: number | string; data: UpdateNodeGroupRequest }) =>
-      updateNodeGroup(id, data),
+      updateNodeGroup(typeof id === 'string' ? parseInt(id, 10) : id, data),
     onSuccess: () => {
       showSuccess('节点组更新成功');
       queryClient.invalidateQueries({ queryKey: queryKeys.nodeGroups.lists() });
@@ -85,7 +87,7 @@ export const useNodeGroups = (options: UseNodeGroupsOptions = {}) => {
 
   // 删除节点组
   const deleteMutation = useMutation({
-    mutationFn: deleteNodeGroup,
+    mutationFn: (id: number | string) => deleteNodeGroup(typeof id === 'string' ? parseInt(id, 10) : id),
     onSuccess: () => {
       showSuccess('节点组删除成功');
       queryClient.invalidateQueries({ queryKey: queryKeys.nodeGroups.lists() });
@@ -98,7 +100,7 @@ export const useNodeGroups = (options: UseNodeGroupsOptions = {}) => {
   // 批量添加节点到组
   const addNodesMutation = useMutation({
     mutationFn: ({ groupId, nodeIds }: { groupId: number | string; nodeIds: number[] }) =>
-      batchAddNodesToGroup(groupId, { node_ids: nodeIds }),
+      batchAddNodesToGroup(typeof groupId === 'string' ? parseInt(groupId, 10) : groupId, { nodeIds }),
     onSuccess: (_, { groupId }) => {
       showSuccess('节点添加成功');
       queryClient.invalidateQueries({ queryKey: queryKeys.nodeGroups.nodes(groupId) });
@@ -112,7 +114,7 @@ export const useNodeGroups = (options: UseNodeGroupsOptions = {}) => {
   // 批量从组中移除节点
   const removeNodesMutation = useMutation({
     mutationFn: ({ groupId, nodeIds }: { groupId: number | string; nodeIds: number[] }) =>
-      batchRemoveNodesFromGroup(groupId, { node_ids: nodeIds }),
+      batchRemoveNodesFromGroup(typeof groupId === 'string' ? parseInt(groupId, 10) : groupId, { nodeIds }),
     onSuccess: (_, { groupId }) => {
       showSuccess('节点移除成功');
       queryClient.invalidateQueries({ queryKey: queryKeys.nodeGroups.nodes(groupId) });
@@ -128,9 +130,9 @@ export const useNodeGroups = (options: UseNodeGroupsOptions = {}) => {
     nodeGroups: data?.items ?? [],
     pagination: {
       page: data?.page ?? page,
-      pageSize: data?.page_size ?? pageSize,
+      pageSize: data?.pageSize ?? pageSize,
       total: data?.total ?? 0,
-      totalPages: data?.total_pages ?? 0,
+      totalPages: data?.totalPages ?? 0,
     },
 
     // 状态
@@ -160,10 +162,11 @@ export const useNodeGroups = (options: UseNodeGroupsOptions = {}) => {
 
 // 获取单个节点组详情
 export const useNodeGroup = (id: number | string | null) => {
+  const numericId = id !== null ? (typeof id === 'string' ? parseInt(id, 10) : id) : null;
   const { data, isLoading, error } = useQuery({
-    queryKey: queryKeys.nodeGroups.detail(id!),
-    queryFn: () => getNodeGroupById(id!),
-    enabled: !!id,
+    queryKey: queryKeys.nodeGroups.detail(numericId!),
+    queryFn: () => getNodeGroup(numericId!),
+    enabled: !!numericId,
   });
 
   return {
@@ -175,10 +178,11 @@ export const useNodeGroup = (id: number | string | null) => {
 
 // 获取节点组中的节点列表
 export const useNodeGroupNodes = (groupId: number | string | null) => {
+  const numericGroupId = groupId !== null ? (typeof groupId === 'string' ? parseInt(groupId, 10) : groupId) : null;
   const { data, isLoading, error, refetch } = useQuery({
-    queryKey: queryKeys.nodeGroups.nodes(groupId!),
-    queryFn: () => getNodeGroupNodes(groupId!),
-    enabled: !!groupId,
+    queryKey: queryKeys.nodeGroups.nodes(numericGroupId!),
+    queryFn: () => listGroupNodes(numericGroupId!),
+    enabled: !!numericGroupId,
   });
 
   return {
@@ -194,7 +198,7 @@ export const useNodeGroupsPage = () => {
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(20);
   const [filters, setFilters] = useState<NodeGroupFilters>({});
-  const [selectedNodeGroup, setSelectedNodeGroup] = useState<NodeGroupListItem | null>(null);
+  const [selectedNodeGroup, setSelectedNodeGroup] = useState<NodeGroup | null>(null);
 
   const nodeGroupsQuery = useNodeGroups({ page, pageSize, filters });
 

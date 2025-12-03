@@ -4,27 +4,22 @@
 
 import {
   Dialog,
-  DialogTitle,
   DialogContent,
-  DialogActions,
-  Button,
-  Box,
-  Typography,
-  Divider,
-  Chip,
-  List,
-  ListItem,
-  ListItemText,
-  CircularProgress,
-} from '@mui/material';
-import type { NodeGroupListItem } from '../types/node-groups.types';
-import type { NodeListItem } from '@/features/nodes/types/nodes.types';
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from '@/components/common/Dialog';
+import { Button } from '@/components/common/Button';
+import { Badge } from '@/components/common/Badge';
+import { Separator } from '@/components/common/Separator';
+import type { NodeGroup, Node } from '@/api/node';
 import { formatDateTime } from '@/shared/utils/date-utils';
 import { useNodeGroupNodes } from '../hooks/useNodeGroups';
+import { Loader2 } from 'lucide-react';
 
 interface NodeGroupDetailDialogProps {
   open: boolean;
-  group: NodeGroupListItem | null;
+  group: NodeGroup | null;
   onClose: () => void;
 }
 
@@ -38,91 +33,96 @@ export const NodeGroupDetailDialog = ({
   if (!group) return null;
 
   return (
-    <Dialog open={open} onClose={onClose} maxWidth="md" fullWidth>
-      <DialogTitle>节点组详情</DialogTitle>
-      <DialogContent>
-        <Box display="flex" flexDirection="column" gap={2}>
-          {/* 基本信息 */}
-          <Box>
-            <Typography variant="subtitle2" color="text.secondary" gutterBottom>
-              基本信息
-            </Typography>
-            <Box display="flex" flexDirection="column" gap={1.5}>
-              <Box display="flex" justifyContent="space-between">
-                <Typography variant="body2" color="text.secondary">ID:</Typography>
-                <Typography variant="body2">{group.id}</Typography>
-              </Box>
-              <Box display="flex" justifyContent="space-between">
-                <Typography variant="body2" color="text.secondary">名称:</Typography>
-                <Typography variant="body2" fontWeight="medium">{group.name}</Typography>
-              </Box>
-              <Box display="flex" justifyContent="space-between">
-                <Typography variant="body2" color="text.secondary">描述:</Typography>
-                <Typography variant="body2">{group.description || '-'}</Typography>
-              </Box>
-              <Box display="flex" justifyContent="space-between">
-                <Typography variant="body2" color="text.secondary">公开性:</Typography>
-                <Chip
-                  label={group.is_public ? '公开' : '私有'}
-                  color={group.is_public ? 'success' : 'default'}
-                  size="small"
-                />
-              </Box>
-              <Box display="flex" justifyContent="space-between">
-                <Typography variant="body2" color="text.secondary">排序顺序:</Typography>
-                <Typography variant="body2">{group.sort_order ?? '-'}</Typography>
-              </Box>
-              <Box display="flex" justifyContent="space-between">
-                <Typography variant="body2" color="text.secondary">创建时间:</Typography>
-                <Typography variant="body2">{formatDateTime(group.created_at)}</Typography>
-              </Box>
-              {group.updated_at && (
-                <Box display="flex" justifyContent="space-between">
-                  <Typography variant="body2" color="text.secondary">更新时间:</Typography>
-                  <Typography variant="body2">{formatDateTime(group.updated_at)}</Typography>
-                </Box>
-              )}
-            </Box>
-          </Box>
+    <Dialog open={open} onOpenChange={(open) => !open && onClose()}>
+      <DialogContent className="sm:max-w-[600px]">
+        <DialogHeader>
+          <DialogTitle>节点组详情</DialogTitle>
+        </DialogHeader>
 
-          <Divider />
+        <div className="flex flex-col gap-4">
+          {/* 基本信息 */}
+          <div>
+            <h3 className="text-sm font-medium text-muted-foreground mb-3">基本信息</h3>
+            <div className="flex flex-col gap-3">
+              <div className="flex justify-between items-center">
+                <span className="text-sm text-muted-foreground">ID:</span>
+                <span className="text-sm">{group.id}</span>
+              </div>
+              <div className="flex justify-between items-center">
+                <span className="text-sm text-muted-foreground">名称:</span>
+                <span className="text-sm font-medium">{group.name}</span>
+              </div>
+              <div className="flex justify-between items-center">
+                <span className="text-sm text-muted-foreground">描述:</span>
+                <span className="text-sm">{group.description || '-'}</span>
+              </div>
+              <div className="flex justify-between items-center">
+                <span className="text-sm text-muted-foreground">公开性:</span>
+                <Badge variant={group.isPublic ? 'default' : 'secondary'}>
+                  {group.isPublic ? '公开' : '私有'}
+                </Badge>
+              </div>
+              <div className="flex justify-between items-center">
+                <span className="text-sm text-muted-foreground">排序顺序:</span>
+                <span className="text-sm">{group.sortOrder ?? '-'}</span>
+              </div>
+              <div className="flex justify-between items-center">
+                <span className="text-sm text-muted-foreground">创建时间:</span>
+                <span className="text-sm">{formatDateTime(group.createdAt)}</span>
+              </div>
+              {group.updatedAt && (
+                <div className="flex justify-between items-center">
+                  <span className="text-sm text-muted-foreground">更新时间:</span>
+                  <span className="text-sm">{formatDateTime(group.updatedAt)}</span>
+                </div>
+              )}
+            </div>
+          </div>
+
+          <Separator />
 
           {/* 关联节点 */}
-          <Box>
-            <Typography variant="subtitle2" color="text.secondary" gutterBottom>
+          <div>
+            <h3 className="text-sm font-medium text-muted-foreground mb-3">
               关联节点 ({groupNodes.length})
-            </Typography>
+            </h3>
             {isLoading ? (
-              <Box display="flex" justifyContent="center" py={2}>
-                <CircularProgress size={24} />
-              </Box>
+              <div className="flex justify-center py-4">
+                <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+              </div>
             ) : groupNodes.length > 0 ? (
-              <List dense sx={{ maxHeight: 300, overflow: 'auto' }}>
-                {groupNodes.map((node: NodeListItem) => (
-                  <ListItem key={node.id} divider>
-                    <ListItemText
-                      primary={node.name}
-                      secondary={`${node.server_address}:${node.server_port} - ${node.protocol}`}
-                    />
-                    <Chip
-                      label={node.status}
-                      color={node.status === 'active' ? 'success' : 'default'}
-                      size="small"
-                    />
-                  </ListItem>
+              <ul className="max-h-[300px] overflow-auto space-y-2">
+                {groupNodes.map((node: Node) => (
+                  <li
+                    key={node.id}
+                    className="flex items-center justify-between py-2 px-3 border-b last:border-b-0"
+                  >
+                    <div className="flex flex-col">
+                      <span className="text-sm font-medium">{node.name}</span>
+                      <span className="text-xs text-muted-foreground">
+                        {node.serverAddress}:{node.serverPort} - {node.protocol}
+                      </span>
+                    </div>
+                    <Badge variant={node.status === 'active' ? 'default' : 'secondary'}>
+                      {node.status}
+                    </Badge>
+                  </li>
                 ))}
-              </List>
+              </ul>
             ) : (
-              <Typography variant="body2" color="text.secondary" sx={{ py: 2, textAlign: 'center' }}>
+              <p className="text-sm text-muted-foreground text-center py-4">
                 暂无关联节点
-              </Typography>
+              </p>
             )}
-          </Box>
-        </Box>
+          </div>
+        </div>
+
+        <DialogFooter>
+          <Button variant="outline" onClick={onClose}>
+            关闭
+          </Button>
+        </DialogFooter>
       </DialogContent>
-      <DialogActions>
-        <Button onClick={onClose}>关闭</Button>
-      </DialogActions>
     </Dialog>
   );
 };

@@ -4,21 +4,24 @@
  */
 
 import axios, { AxiosError, InternalAxiosRequestConfig, AxiosResponse } from 'axios';
+import applyCaseMiddleware from 'axios-case-converter';
 import type { APIResponse } from '@/shared/types/api.types';
 import { extractErrorMessage } from '@/shared/utils/error-messages';
 
 // API 基础 URL
 const baseURL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8081';
 
-// 创建 Axios 实例
-export const apiClient = axios.create({
-  baseURL,
-  headers: {
-    'Content-Type': 'application/json',
-  },
-  timeout: 30000,
-  withCredentials: true, // 允许携带 Cookie
-});
+// 创建 Axios 实例，应用 snake_case <-> camelCase 自动转换
+export const apiClient = applyCaseMiddleware(
+  axios.create({
+    baseURL,
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    timeout: 30000,
+    withCredentials: true, // 允许携带 Cookie
+  })
+);
 
 // 存储刷新token的promise，避免并发刷新
 let refreshTokenPromise: Promise<void> | null = null;

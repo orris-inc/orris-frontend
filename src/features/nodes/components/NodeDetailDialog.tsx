@@ -4,23 +4,19 @@
 
 import {
   Dialog,
-  DialogTitle,
   DialogContent,
-  DialogActions,
-  Button,
-  Grid,
-  Typography,
-  Box,
-  Chip,
-  Divider,
-  ListItem,
-  ListItemText,
-} from '@mui/material';
-import type { NodeListItem } from '../types/nodes.types';
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from '@/components/common/Dialog';
+import { Button } from '@/components/common/Button';
+import { Badge } from '@/components/common/Badge';
+import { Separator } from '@/components/common/Separator';
+import type { Node } from '@/api/node';
 
 interface NodeDetailDialogProps {
   open: boolean;
-  node: NodeListItem | null;
+  node: Node | null;
   onClose: () => void;
 }
 
@@ -30,14 +26,6 @@ const STATUS_LABELS: Record<string, string> = {
   inactive: '未激活',
   maintenance: '维护中',
   error: '错误',
-};
-
-// 状态颜色映射
-const STATUS_COLORS: Record<string, 'success' | 'error' | 'default' | 'warning'> = {
-  active: 'success',
-  inactive: 'default',
-  maintenance: 'warning',
-  error: 'error',
 };
 
 // 协议类型标签映射
@@ -81,295 +69,183 @@ export const NodeDetailDialog: React.FC<NodeDetailDialogProps> = ({
   if (!node) return null;
 
   return (
-    <Dialog open={open} onClose={onClose} maxWidth="md" fullWidth>
-      <DialogTitle>
-        <Box display="flex" alignItems="center" justifyContent="space-between">
-          <Typography variant="h6">节点详情</Typography>
-          <Chip
-            label={STATUS_LABELS[node.status] || node.status}
-            color={STATUS_COLORS[node.status] || 'default'}
-            size="small"
-          />
-        </Box>
-      </DialogTitle>
-      <DialogContent dividers>
-        <Grid container spacing={3}>
+    <Dialog open={open} onOpenChange={(open) => !open && onClose()}>
+      <DialogContent className="sm:max-w-[700px] max-h-[90vh] overflow-y-auto">
+        <DialogHeader>
+          <div className="flex items-center justify-between">
+            <DialogTitle>节点详情</DialogTitle>
+            <Badge
+              variant={
+                node.status === 'active'
+                  ? 'default'
+                  : node.status === 'error'
+                    ? 'destructive'
+                    : 'secondary'
+              }
+            >
+              {STATUS_LABELS[node.status] || node.status}
+            </Badge>
+          </div>
+        </DialogHeader>
+
+        <div className="space-y-6">
           {/* 基本信息 */}
-          <Grid size={{ xs: 12 }}>
-            <Typography variant="subtitle1" fontWeight="bold" gutterBottom>
-              基本信息
-            </Typography>
-            <Divider sx={{ mb: 2 }} />
-          </Grid>
+          <div>
+            <h3 className="text-sm font-semibold mb-3">基本信息</h3>
+            <Separator className="mb-4" />
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="space-y-1">
+                <p className="text-sm text-muted-foreground">节点ID</p>
+                <p className="text-sm">{node.id}</p>
+              </div>
 
-          <Grid size={{ xs: 12, md: 6 }}>
-            <ListItem dense>
-              <ListItemText
-                primary="节点ID"
-                secondary={node.id}
-                primaryTypographyProps={{ variant: 'body2', color: 'text.secondary' }}
-                secondaryTypographyProps={{ variant: 'body1', color: 'text.primary' }}
-              />
-            </ListItem>
-          </Grid>
+              <div className="space-y-1">
+                <p className="text-sm text-muted-foreground">节点名称</p>
+                <p className="text-sm">{node.name}</p>
+              </div>
 
-          <Grid size={{ xs: 12, md: 6 }}>
-            <ListItem dense>
-              <ListItemText
-                primary="节点名称"
-                secondary={node.name}
-                primaryTypographyProps={{ variant: 'body2', color: 'text.secondary' }}
-                secondaryTypographyProps={{ variant: 'body1', color: 'text.primary' }}
-              />
-            </ListItem>
-          </Grid>
+              <div className="space-y-1">
+                <p className="text-sm text-muted-foreground">协议类型</p>
+                <p className="text-sm">{PROTOCOL_LABELS[node.protocol] || node.protocol}</p>
+              </div>
 
-          <Grid size={{ xs: 12, md: 6 }}>
-            <ListItem dense>
-              <ListItemText
-                primary="协议类型"
-                secondary={PROTOCOL_LABELS[node.protocol] || node.protocol}
-                primaryTypographyProps={{ variant: 'body2', color: 'text.secondary' }}
-                secondaryTypographyProps={{ variant: 'body1', color: 'text.primary' }}
-              />
-            </ListItem>
-          </Grid>
-
-          <Grid size={{ xs: 12, md: 6 }}>
-            <ListItem dense>
-              <ListItemText
-                primary="加密方法"
-                secondary={node.method}
-                primaryTypographyProps={{ variant: 'body2', color: 'text.secondary' }}
-                secondaryTypographyProps={{ variant: 'body1', color: 'text.primary', fontFamily: 'monospace' }}
-              />
-            </ListItem>
-          </Grid>
+              <div className="space-y-1">
+                <p className="text-sm text-muted-foreground">加密方法</p>
+                <p className="text-sm font-mono">{node.encryptionMethod}</p>
+              </div>
+            </div>
+          </div>
 
           {/* 连接信息 */}
-          <Grid size={{ xs: 12 }}>
-            <Typography variant="subtitle1" fontWeight="bold" gutterBottom sx={{ mt: 2 }}>
-              连接信息
-            </Typography>
-            <Divider sx={{ mb: 2 }} />
-          </Grid>
+          <div>
+            <h3 className="text-sm font-semibold mb-3">连接信息</h3>
+            <Separator className="mb-4" />
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="space-y-1 md:col-span-2">
+                <p className="text-sm text-muted-foreground">服务器地址</p>
+                <p className="text-sm font-mono">{node.serverAddress}</p>
+              </div>
 
-          <Grid size={{ xs: 12, md: 8 }}>
-            <ListItem dense>
-              <ListItemText
-                primary="服务器地址"
-                secondary={node.server_address}
-                primaryTypographyProps={{ variant: 'body2', color: 'text.secondary' }}
-                secondaryTypographyProps={{ variant: 'body1', color: 'text.primary', fontFamily: 'monospace' }}
-              />
-            </ListItem>
-          </Grid>
+              <div className="space-y-1">
+                <p className="text-sm text-muted-foreground">端口</p>
+                <p className="text-sm font-mono">{node.serverPort}</p>
+              </div>
 
-          <Grid size={{ xs: 12, md: 4 }}>
-            <ListItem dense>
-              <ListItemText
-                primary="端口"
-                secondary={node.server_port}
-                primaryTypographyProps={{ variant: 'body2', color: 'text.secondary' }}
-                secondaryTypographyProps={{ variant: 'body1', color: 'text.primary', fontFamily: 'monospace' }}
-              />
-            </ListItem>
-          </Grid>
-
-          {node.region && (
-            <Grid size={{ xs: 12, md: 6 }}>
-              <ListItem dense>
-                <ListItemText
-                  primary="地区"
-                  secondary={node.region}
-                  primaryTypographyProps={{ variant: 'body2', color: 'text.secondary' }}
-                  secondaryTypographyProps={{ variant: 'body1', color: 'text.primary' }}
-                />
-              </ListItem>
-            </Grid>
-          )}
+              {node.region && (
+                <div className="space-y-1">
+                  <p className="text-sm text-muted-foreground">地区</p>
+                  <p className="text-sm">{node.region}</p>
+                </div>
+              )}
+            </div>
+          </div>
 
           {/* 插件信息 */}
-          {(node.plugin || node.plugin_opts) && (
-            <>
-              <Grid size={{ xs: 12 }}>
-                <Typography variant="subtitle1" fontWeight="bold" gutterBottom sx={{ mt: 2 }}>
-                  插件信息
-                </Typography>
-                <Divider sx={{ mb: 2 }} />
-              </Grid>
+          {(node.plugin || node.pluginOpts) && (
+            <div>
+              <h3 className="text-sm font-semibold mb-3">插件信息</h3>
+              <Separator className="mb-4" />
+              <div className="space-y-4">
+                {node.plugin && (
+                  <div className="space-y-1">
+                    <p className="text-sm text-muted-foreground">插件</p>
+                    <p className="text-sm font-mono">{node.plugin}</p>
+                  </div>
+                )}
 
-              {node.plugin && (
-                <Grid size={{ xs: 12 }}>
-                  <ListItem dense>
-                    <ListItemText
-                      primary="插件"
-                      secondary={node.plugin}
-                      primaryTypographyProps={{ variant: 'body2', color: 'text.secondary' }}
-                      secondaryTypographyProps={{ variant: 'body1', color: 'text.primary', fontFamily: 'monospace' }}
-                    />
-                  </ListItem>
-                </Grid>
-              )}
-
-              {node.plugin_opts && Object.keys(node.plugin_opts).length > 0 && (
-                <Grid size={{ xs: 12 }}>
-                  <ListItem dense>
-                    <ListItemText
-                      primary="插件选项"
-                      secondary={JSON.stringify(node.plugin_opts, null, 2)}
-                      primaryTypographyProps={{ variant: 'body2', color: 'text.secondary' }}
-                      secondaryTypographyProps={{
-                        variant: 'body2',
-                        color: 'text.primary',
-                        fontFamily: 'monospace',
-                        component: 'pre',
-                        sx: { whiteSpace: 'pre-wrap', wordBreak: 'break-all' }
-                      }}
-                    />
-                  </ListItem>
-                </Grid>
-              )}
-            </>
+                {node.pluginOpts && Object.keys(node.pluginOpts).length > 0 && (
+                  <div className="space-y-1">
+                    <p className="text-sm text-muted-foreground">插件选项</p>
+                    <pre className="text-xs font-mono whitespace-pre-wrap break-all bg-muted p-3 rounded-md">
+                      {JSON.stringify(node.pluginOpts, null, 2)}
+                    </pre>
+                  </div>
+                )}
+              </div>
+            </div>
           )}
 
           {/* 流量信息 */}
-          {(node.traffic_limit || node.traffic_used) && (
-            <>
-              <Grid size={{ xs: 12 }}>
-                <Typography variant="subtitle1" fontWeight="bold" gutterBottom sx={{ mt: 2 }}>
-                  流量信息
-                </Typography>
-                <Divider sx={{ mb: 2 }} />
-              </Grid>
+          {(node.trafficLimit || node.trafficUsed) && (
+            <div>
+              <h3 className="text-sm font-semibold mb-3">流量信息</h3>
+              <Separator className="mb-4" />
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {node.trafficLimit && (
+                  <div className="space-y-1">
+                    <p className="text-sm text-muted-foreground">流量限制</p>
+                    <p className="text-sm">{formatBytes(node.trafficLimit)}</p>
+                  </div>
+                )}
 
-              {node.traffic_limit && (
-                <Grid size={{ xs: 12, md: 6 }}>
-                  <ListItem dense>
-                    <ListItemText
-                      primary="流量限制"
-                      secondary={formatBytes(node.traffic_limit)}
-                      primaryTypographyProps={{ variant: 'body2', color: 'text.secondary' }}
-                      secondaryTypographyProps={{ variant: 'body1', color: 'text.primary' }}
-                    />
-                  </ListItem>
-                </Grid>
-              )}
-
-              {node.traffic_used !== undefined && (
-                <Grid size={{ xs: 12, md: 6 }}>
-                  <ListItem dense>
-                    <ListItemText
-                      primary="已使用流量"
-                      secondary={formatBytes(node.traffic_used)}
-                      primaryTypographyProps={{ variant: 'body2', color: 'text.secondary' }}
-                      secondaryTypographyProps={{ variant: 'body1', color: 'text.primary' }}
-                    />
-                  </ListItem>
-                </Grid>
-              )}
-            </>
+                {node.trafficUsed !== undefined && (
+                  <div className="space-y-1">
+                    <p className="text-sm text-muted-foreground">已使用流量</p>
+                    <p className="text-sm">{formatBytes(node.trafficUsed)}</p>
+                  </div>
+                )}
+              </div>
+            </div>
           )}
 
           {/* 其他信息 */}
-          <Grid size={{ xs: 12 }}>
-            <Typography variant="subtitle1" fontWeight="bold" gutterBottom sx={{ mt: 2 }}>
-              其他信息
-            </Typography>
-            <Divider sx={{ mb: 2 }} />
-          </Grid>
+          <div>
+            <h3 className="text-sm font-semibold mb-3">其他信息</h3>
+            <Separator className="mb-4" />
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {node.description && (
+                <div className="space-y-1 md:col-span-2">
+                  <p className="text-sm text-muted-foreground">描述</p>
+                  <p className="text-sm">{node.description}</p>
+                </div>
+              )}
 
-          {node.description && (
-            <Grid size={{ xs: 12 }}>
-              <ListItem dense>
-                <ListItemText
-                  primary="描述"
-                  secondary={node.description}
-                  primaryTypographyProps={{ variant: 'body2', color: 'text.secondary' }}
-                  secondaryTypographyProps={{ variant: 'body1', color: 'text.primary' }}
-                />
-              </ListItem>
-            </Grid>
-          )}
+              <div className="space-y-1">
+                <p className="text-sm text-muted-foreground">排序顺序</p>
+                <p className="text-sm">{node.sortOrder ?? 0}</p>
+              </div>
 
-          <Grid size={{ xs: 12, md: 6 }}>
-            <ListItem dense>
-              <ListItemText
-                primary="排序顺序"
-                secondary={node.sort_order ?? 0}
-                primaryTypographyProps={{ variant: 'body2', color: 'text.secondary' }}
-                secondaryTypographyProps={{ variant: 'body1', color: 'text.primary' }}
-              />
-            </ListItem>
-          </Grid>
-
-          {node.tags && node.tags.length > 0 && (
-            <Grid size={{ xs: 12, md: 6 }}>
-              <ListItem dense>
-                <ListItemText
-                  primary="标签"
-                  secondary={
-                    <Box display="flex" gap={0.5} mt={0.5} flexWrap="wrap">
-                      {node.tags.map((tag, index) => (
-                        <Chip key={index} label={tag} size="small" />
-                      ))}
-                    </Box>
-                  }
-                  primaryTypographyProps={{ variant: 'body2', color: 'text.secondary' }}
-                />
-              </ListItem>
-            </Grid>
-          )}
+              {node.tags && node.tags.length > 0 && (
+                <div className="space-y-1">
+                  <p className="text-sm text-muted-foreground">标签</p>
+                  <div className="flex gap-1 flex-wrap mt-1">
+                    {node.tags.map((tag, index) => (
+                      <Badge key={index} variant="secondary">
+                        {tag}
+                      </Badge>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
 
           {/* 时间信息 */}
-          <Grid size={{ xs: 12 }}>
-            <Typography variant="subtitle1" fontWeight="bold" gutterBottom sx={{ mt: 2 }}>
-              时间信息
-            </Typography>
-            <Divider sx={{ mb: 2 }} />
-          </Grid>
+          <div>
+            <h3 className="text-sm font-semibold mb-3">时间信息</h3>
+            <Separator className="mb-4" />
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="space-y-1">
+                <p className="text-sm text-muted-foreground">创建时间</p>
+                <p className="text-xs">{formatDate(node.createdAt)}</p>
+              </div>
 
-          <Grid size={{ xs: 12, md: 6 }}>
-            <ListItem dense>
-              <ListItemText
-                primary="创建时间"
-                secondary={formatDate(node.created_at)}
-                primaryTypographyProps={{ variant: 'body2', color: 'text.secondary' }}
-                secondaryTypographyProps={{ variant: 'body2', color: 'text.primary' }}
-              />
-            </ListItem>
-          </Grid>
+              {node.updatedAt && (
+                <div className="space-y-1">
+                  <p className="text-sm text-muted-foreground">更新时间</p>
+                  <p className="text-xs">{formatDate(node.updatedAt)}</p>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
 
-          {node.updated_at && (
-            <Grid size={{ xs: 12, md: 6 }}>
-              <ListItem dense>
-                <ListItemText
-                  primary="更新时间"
-                  secondary={formatDate(node.updated_at)}
-                  primaryTypographyProps={{ variant: 'body2', color: 'text.secondary' }}
-                  secondaryTypographyProps={{ variant: 'body2', color: 'text.primary' }}
-                />
-              </ListItem>
-            </Grid>
-          )}
-
-          {node.last_heartbeat && (
-            <Grid size={{ xs: 12, md: 6 }}>
-              <ListItem dense>
-                <ListItemText
-                  primary="最后心跳"
-                  secondary={formatDate(node.last_heartbeat)}
-                  primaryTypographyProps={{ variant: 'body2', color: 'text.secondary' }}
-                  secondaryTypographyProps={{ variant: 'body2', color: 'text.primary' }}
-                />
-              </ListItem>
-            </Grid>
-          )}
-        </Grid>
+        <DialogFooter>
+          <Button variant="outline" onClick={onClose}>
+            关闭
+          </Button>
+        </DialogFooter>
       </DialogContent>
-      <DialogActions>
-        <Button onClick={onClose}>关闭</Button>
-      </DialogActions>
     </Dialog>
   );
 };

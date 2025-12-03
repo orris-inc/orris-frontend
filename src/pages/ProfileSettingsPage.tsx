@@ -48,7 +48,7 @@ export const ProfileSettingsPage = () => {
             </p>
           </div>
           <div className={`${cardContentStyles} pt-6`}>
-            <AvatarUpload avatar={user.avatar} name={user.name} />
+            <AvatarUpload avatar={user.avatar} name={user.displayName} />
           </div>
 
           <Separator.Root className="my-0 h-[1px] bg-border" />

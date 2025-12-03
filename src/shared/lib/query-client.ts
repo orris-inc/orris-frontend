@@ -80,4 +80,22 @@ export const queryKeys = {
     all: ['profile'] as const,
     current: () => [...queryKeys.profile.all, 'current'] as const,
   },
+
+  // Forward Rules
+  forwardRules: {
+    all: ['forwardRules'] as const,
+    lists: () => [...queryKeys.forwardRules.all, 'list'] as const,
+    list: (params: object) => [...queryKeys.forwardRules.lists(), params] as const,
+    details: () => [...queryKeys.forwardRules.all, 'detail'] as const,
+    detail: (id: number | string) => [...queryKeys.forwardRules.details(), id] as const,
+  },
+
+  // Forward Agents
+  forwardAgents: {
+    all: ['forwardAgents'] as const,
+    lists: () => [...queryKeys.forwardAgents.all, 'list'] as const,
+    list: (params: object) => [...queryKeys.forwardAgents.lists(), params] as const,
+    details: () => [...queryKeys.forwardAgents.all, 'detail'] as const,
+    detail: (id: number | string) => [...queryKeys.forwardAgents.details(), id] as const,
+  },
 };

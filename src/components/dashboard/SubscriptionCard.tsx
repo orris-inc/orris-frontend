@@ -13,37 +13,26 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from '@/components/common/Accordion';
-import { getSubscriptions } from '@/features/subscriptions/api/subscriptions-api';
-import { generateSubscriptionToken } from '@/features/subscriptions/api/subscriptions-api';
-import type { Subscription, SubscriptionToken } from '@/features/subscriptions/types/subscriptions.types';
+import { listSubscriptions, generateToken } from '@/api/subscription';
+import type { Subscription, GenerateTokenResponse } from '@/api/subscription/types';
 import { cn } from '@/lib/utils';
 
 /**
  * 获取订阅状态的显示配置
  */
 const getStatusConfig = (subscription: Subscription) => {
-  if (subscription.IsExpired) {
-    return {
-      label: '已过期',
-      variant: 'destructive' as const,
-      icon: <XCircle className="size-4" />,
-    };
-  }
-
-  if (!subscription.IsActive) {
-    return {
-      label: '未激活',
-      variant: 'secondary' as const,
-      icon: <Info className="size-4" />,
-    };
-  }
-
-  switch (subscription.Status) {
+  switch (subscription.status) {
     case 'active':
       return {
         label: '激活中',
         variant: 'default' as const,
         icon: <CheckCircle className="size-4" />,
+      };
+    case 'expired':
+      return {
+        label: '已过期',
+        variant: 'destructive' as const,
+        icon: <XCircle className="size-4" />,
       };
     case 'cancelled':
       return {
@@ -57,9 +46,15 @@ const getStatusConfig = (subscription: Subscription) => {
         variant: 'secondary' as const,
         icon: <Info className="size-4" />,
       };
+    case 'renewed':
+      return {
+        label: '已续费',
+        variant: 'default' as const,
+        icon: <CheckCircle className="size-4" />,
+      };
     default:
       return {
-        label: subscription.Status,
+        label: subscription.status,
         variant: 'secondary' as const,
         icon: <Info className="size-4" />,
       };
@@ -69,7 +64,7 @@ const getStatusConfig = (subscription: Subscription) => {
 /**
  * 格式化日期显示
  */
-const formatDate = (dateString?: string) => {
+const formatDate = (dateString?: string): string => {
   if (!dateString) return '-';
   return new Date(dateString).toLocaleDateString('zh-CN', {
     year: 'numeric',
@@ -79,19 +74,9 @@ const formatDate = (dateString?: string) => {
 };
 
 /**
- * 格式化价格显示
- */
-const formatPrice = (price?: number, currency?: string) => {
-  if (price === undefined) return '-';
-  const formattedPrice = (price / 100).toFixed(2);
-  const currencySymbol = currency === 'CNY' ? '¥' : currency === 'USD' ? '$' : currency || '';
-  return `${currencySymbol}${formattedPrice}`;
-};
-
-/**
  * 获取API基础URL
  */
-const getApiBaseUrl = () => {
+const getApiBaseUrl = (): string => {
   return import.meta.env.VITE_API_BASE_URL || 'http://localhost:8081';
 };
 
@@ -148,7 +133,7 @@ export const SubscriptionCard = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [showAll, setShowAll] = useState(false); // 是否显示全部订阅
-  const [generatedTokens, setGeneratedTokens] = useState<Record<number, SubscriptionToken>>({}); // 存储每个订阅生成的token
+  const [generatedTokens, setGeneratedTokens] = useState<Record<number, GenerateTokenResponse>>({}); // 存储每个订阅生成的token
   const [generatingTokens, setGeneratingTokens] = useState<Record<number, boolean>>({}); // 存储token生成状态
 
   useEffect(() => {
@@ -158,7 +143,7 @@ export const SubscriptionCard = () => {
         setError(null);
 
         // 获取用户的所有订阅
-        const result = await getSubscriptions({ page: 1, page_size: 100 });
+        const result = await listSubscriptions({ page: 1, pageSize: 100 });
 
         if (result.items && result.items.length > 0) {
           setSubscriptions(result.items);
@@ -177,12 +162,13 @@ export const SubscriptionCard = () => {
   }, []);
 
   // 生成订阅token
-  const handleGenerateToken = async (subscriptionId: number) => {
+  const handleGenerateToken = async (subscriptionId: number): Promise<void> => {
     setGeneratingTokens((prev) => ({ ...prev, [subscriptionId]: true }));
 
     try {
-      const token = await generateSubscriptionToken(subscriptionId, {
-        name: 'Default Token',
+      // 使用用户端API生成订阅令牌
+      const token = await generateToken(subscriptionId, {
+        name: 'Default token',
         scope: 'full',
       });
       console.log('生成的token数据:', token);
@@ -249,10 +235,10 @@ export const SubscriptionCard = () => {
   // 有订阅数据 - 显示折叠列表
   // 分离激活和非激活的订阅
   const activeSubscriptions = subscriptions.filter(
-    (sub) => sub.IsActive && !sub.IsExpired
+    (sub) => sub.status === "active"
   );
   const inactiveSubscriptions = subscriptions.filter(
-    (sub) => !sub.IsActive || sub.IsExpired
+    (sub) => sub.status !== "active"
   );
 
   // 决定显示哪些订阅
@@ -289,11 +275,11 @@ export const SubscriptionCard = () => {
           >
             {displaySubscriptions.map((subscription, index) => {
               const statusConfig = getStatusConfig(subscription);
-              const isActive = subscription.IsActive && !subscription.IsExpired;
+              const isActive = subscription.status === "active";
 
               return (
                 <AccordionItem
-                  key={subscription.ID}
+                  key={subscription.id}
                   value={`item-${index}`}
                   className={cn(
                     'border-0 rounded-2xl overflow-hidden',
@@ -306,7 +292,7 @@ export const SubscriptionCard = () => {
                   <AccordionTrigger className="px-6 py-5 hover:no-underline">
                     <div className="flex items-center justify-between w-full pr-2">
                       <span className="font-semibold text-lg text-left">
-                        {subscription.Plan?.Name || '未知计划'}
+                        {subscription.plan?.name || '未知计划'}
                       </span>
                       <span className={getBadgeClass(isActive ? 'success' : 'secondary', 'ml-2 px-3 py-1')}>
                         {statusConfig.label}
@@ -317,43 +303,33 @@ export const SubscriptionCard = () => {
                   {/* 折叠内容 - 详细信息 */}
                   <AccordionContent className="px-6 pb-6">
                     <div className="space-y-4 pt-4">
-                      {/* 价格 */}
-                      {subscription.Plan?.Price !== undefined && (
-                        <div className="flex items-center justify-between py-3 px-4 rounded-xl bg-background/50">
-                          <span className="text-muted-foreground">价格</span>
-                          <span className="font-semibold text-lg">
-                            {formatPrice(subscription.Plan.Price, subscription.Plan.Currency)}
-                          </span>
-                        </div>
-                      )}
-
                       {/* 自动续费 */}
                       <div className="flex items-center justify-between py-3 px-4 rounded-xl bg-background/50">
                         <span className="text-muted-foreground">自动续费</span>
-                        <span className={getBadgeClass(subscription.AutoRenew ? 'success' : 'outline', 'px-3 py-1')}>
-                          {subscription.AutoRenew ? '已开启' : '已关闭'}
+                        <span className={getBadgeClass(subscription.autoRenew ? 'success' : 'outline', 'px-3 py-1')}>
+                          {subscription.autoRenew ? '已开启' : '已关闭'}
                         </span>
                       </div>
 
                       {/* 开始日期 */}
                       <div className="flex items-center justify-between py-3 px-4 rounded-xl bg-background/50">
                         <span className="text-muted-foreground">开始日期</span>
-                        <span className="font-medium">{formatDate(subscription.StartDate)}</span>
+                        <span className="font-medium">{formatDate(subscription.startDate)}</span>
                       </div>
 
                       {/* 到期日期 */}
-                      {subscription.EndDate && (
+                      {subscription.endDate && (
                         <div className="flex items-center justify-between py-3 px-4 rounded-xl bg-background/50">
                           <span className="text-muted-foreground">到期日期</span>
-                          <span className="font-medium">{formatDate(subscription.EndDate)}</span>
+                          <span className="font-medium">{formatDate(subscription.endDate)}</span>
                         </div>
                       )}
 
                       {/* 当前计费周期 */}
-                      {subscription.CurrentPeriodEnd && isActive && (
+                      {subscription.endDate && isActive && (
                         <div className="flex items-center justify-between py-3 px-4 rounded-xl bg-background/50">
                           <span className="text-muted-foreground">下次续费</span>
-                          <span className="font-medium">{formatDate(subscription.CurrentPeriodEnd)}</span>
+                          <span className="font-medium">{formatDate(subscription.endDate)}</span>
                         </div>
                       )}
 
@@ -365,13 +341,13 @@ export const SubscriptionCard = () => {
                               <Link2 className="size-4" />
                               <span className="font-medium">订阅链接</span>
                             </div>
-                            {!generatedTokens[subscription.ID] && (
+                            {!generatedTokens[subscription.id] && (
                               <button
-                                onClick={() => handleGenerateToken(subscription.ID)}
-                                disabled={generatingTokens[subscription.ID]}
+                                onClick={() => handleGenerateToken(subscription.id)}
+                                disabled={generatingTokens[subscription.id]}
                                 className={getButtonClass('outline', 'sm', 'gap-2')}
                               >
-                                {generatingTokens[subscription.ID] ? (
+                                {generatingTokens[subscription.id] ? (
                                   <>生成中...</>
                                 ) : (
                                   <>
@@ -383,33 +359,33 @@ export const SubscriptionCard = () => {
                             )}
                           </div>
 
-                          {generatingTokens[subscription.ID] ? (
+                          {generatingTokens[subscription.id] ? (
                             <div className="py-4 px-4 rounded-xl bg-background/50">
                               <Skeleton className="h-4 w-full" />
                             </div>
-                          ) : generatedTokens[subscription.ID] ? (
+                          ) : generatedTokens[subscription.id] ? (
                             <div className="p-4 rounded-xl bg-background/50 border border-border/50">
                               <div className="flex items-center justify-between mb-3">
                                 <div>
                                   <span className="font-medium text-sm block">
-                                    {generatedTokens[subscription.ID].Name}
+                                    {generatedTokens[subscription.id].prefix}
                                   </span>
                                   <span className="text-xs text-muted-foreground">
-                                    作用域: {generatedTokens[subscription.ID].Scope}
+                                    Token ID: {generatedTokens[subscription.id].tokenId}
                                   </span>
                                 </div>
-                                {generatedTokens[subscription.ID].ExpiresAt && (
+                                {generatedTokens[subscription.id].expiresAt && (
                                   <span className="text-xs text-muted-foreground">
-                                    到期: {formatDate(generatedTokens[subscription.ID].ExpiresAt)}
+                                    到期: {formatDate(generatedTokens[subscription.id].expiresAt)}
                                   </span>
                                 )}
                               </div>
 
-                              {generatedTokens[subscription.ID].Token ? (
+                              {generatedTokens[subscription.id].token ? (
                                 <div className="space-y-2">
                                   {SUBSCRIPTION_LINK_TYPES.map((type) => {
                                     const baseUrl = getApiBaseUrl();
-                                    const url = `${baseUrl}/sub/${generatedTokens[subscription.ID].Token}${type.path}`;
+                                    const url = `${baseUrl}/sub/${generatedTokens[subscription.id].token}${type.path}`;
                                     return (
                                       <div
                                         key={type.name}
@@ -432,7 +408,7 @@ export const SubscriptionCard = () => {
                                 <div className={getAlertClass('default', 'border-none bg-amber-50/50 dark:bg-amber-950/20')}>
                                   <Info className="size-4 text-amber-600" />
                                   <div className={cn(alertDescriptionStyles, 'text-xs text-amber-800 dark:text-amber-200')}>
-                                    Token字段为空，请检查后端API实现
+                                    token字段为空，请检查后端API实现
                                   </div>
                                 </div>
                               )}

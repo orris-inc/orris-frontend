@@ -1,8 +1,9 @@
 /**
  * 分配订阅对话框组件（管理端）
+ * 支持多定价选择
  */
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { Loader2, Info, X } from 'lucide-react';
 import * as Dialog from '@radix-ui/react-dialog';
 import * as LabelPrimitive from '@radix-ui/react-label';
@@ -11,17 +12,18 @@ import { Check } from 'lucide-react';
 import { SimpleSelect } from '@/lib/SimpleSelect';
 import { useSubscriptionPlans } from '@/features/subscription-plans/hooks/useSubscriptionPlans';
 import { getButtonClass, labelStyles, alertStyles, alertDescriptionStyles } from '@/lib/ui-styles';
-import type { CreateSubscriptionRequest, BillingCycle } from '../types/subscriptions.types';
+import type { BillingCycle, PricingOption, SubscriptionPlan } from '@/api/subscription/types';
+import type { AdminCreateSubscriptionRequest } from '@/api/admin/types';
 import type { UserListItem } from '@/features/users/types/users.types';
 
 interface AssignSubscriptionDialogProps {
   open: boolean;
   user: UserListItem | null;
   onClose: () => void;
-  onSubmit: (data: CreateSubscriptionRequest) => Promise<void>;
+  onSubmit: (data: AdminCreateSubscriptionRequest) => Promise<void>;
 }
 
-// 计费周期选项
+// 计费周期选项（用于无多定价的情况）
 const BILLING_CYCLE_OPTIONS: { value: BillingCycle; label: string }[] = [
   { value: 'weekly', label: '周付' },
   { value: 'monthly', label: '月付' },
@@ -31,6 +33,36 @@ const BILLING_CYCLE_OPTIONS: { value: BillingCycle; label: string }[] = [
   { value: 'lifetime', label: '终身' },
 ];
 
+// 计费周期显示名称映射
+const BILLING_CYCLE_LABELS: Record<BillingCycle, string> = {
+  weekly: '周付',
+  monthly: '月付',
+  quarterly: '季付',
+  semi_annual: '半年付',
+  yearly: '年付',
+  lifetime: '终身',
+};
+
+// 获取计划可用的定价选项
+const getAvailablePricings = (plan: SubscriptionPlan): PricingOption[] => {
+  if (plan.pricings && plan.pricings.length > 0) {
+    return plan.pricings.filter(p => p.isActive);
+  }
+  // 向后兼容：使用旧字段构建定价选项
+  return [{
+    billingCycle: plan.billingCycle as BillingCycle,
+    price: plan.price,
+    currency: plan.currency,
+    isActive: true,
+  }];
+};
+
+// 格式化价格显示
+const formatPrice = (price: number, currency: string): string => {
+  const symbol = currency === 'CNY' ? '¥' : '$';
+  return `${symbol}${(price / 100).toFixed(2)}`;
+};
+
 export const AssignSubscriptionDialog: React.FC<AssignSubscriptionDialogProps> = ({
   open,
   user,
@@ -39,26 +71,56 @@ export const AssignSubscriptionDialog: React.FC<AssignSubscriptionDialogProps> =
 }) => {
   const { plans, isLoading: plansLoading } = useSubscriptionPlans({ enabled: open });
   const [submitting, setSubmitting] = useState(false);
-  const [formData, setFormData] = useState<CreateSubscriptionRequest>({
-    plan_id: 0,
-    billing_cycle: 'monthly',
-    auto_renew: true,
+  const [formData, setFormData] = useState<AdminCreateSubscriptionRequest>({
+    userId: 0,
+    planId: 0,
+    billingCycle: 'monthly',
+    autoRenew: true,
   });
+
+  // 获取选中的计划
+  const selectedPlan = useMemo(() => {
+    return plans.find(p => p.id === formData.planId) || null;
+  }, [plans, formData.planId]);
+
+  // 获取选中计划的可用定价选项
+  const availablePricings = useMemo(() => {
+    if (!selectedPlan) return [];
+    return getAvailablePricings(selectedPlan);
+  }, [selectedPlan]);
+
+  // 获取选中的定价
+  const selectedPricing = useMemo(() => {
+    return availablePricings.find(p => p.billingCycle === formData.billingCycle) || availablePricings[0] || null;
+  }, [availablePricings, formData.billingCycle]);
 
   // 重置表单
   useEffect(() => {
     if (open && user) {
       setFormData({
-        plan_id: 0,
-        billing_cycle: 'monthly',
-        auto_renew: true,
-        user_id: user.id,
+        userId: user?.id || 0,
+        planId: 0,
+        billingCycle: 'monthly',
+        autoRenew: true,
       });
     }
   }, [open, user]);
 
+  // 当选择计划变化时，自动设置默认的计费周期
+  useEffect(() => {
+    if (selectedPlan && availablePricings.length > 0) {
+      const currentCycleAvailable = availablePricings.some(p => p.billingCycle === formData.billingCycle);
+      if (!currentCycleAvailable) {
+        setFormData(prev => ({
+          ...prev,
+          billingCycle: availablePricings[0].billingCycle,
+        }));
+      }
+    }
+  }, [selectedPlan, availablePricings, formData.billingCycle]);
+
   const handleSubmit = async () => {
-    if (!formData.plan_id) {
+    if (!formData.planId) {
       return;
     }
 
@@ -71,21 +133,49 @@ export const AssignSubscriptionDialog: React.FC<AssignSubscriptionDialogProps> =
     }
   };
 
-  const handleOpenChange = (open: boolean) => {
-    if (!open && !submitting) {
+  const handleOpenChange = (openState: boolean) => {
+    if (!openState && !submitting) {
       onClose();
     }
   };
 
-  const selectedPlan = plans.find(p => p.ID === formData.plan_id);
+  // 准备计划选项（显示价格范围）
+  const planOptions = useMemo(() => {
+    return plans
+      .filter(plan => plan.status === 'active')
+      .map(plan => {
+        const pricings = getAvailablePricings(plan);
+        let priceDisplay: string;
+        if (pricings.length > 1) {
+          const prices = pricings.map(p => p.price);
+          const minPrice = Math.min(...prices);
+          const maxPrice = Math.max(...prices);
+          const currency = pricings[0].currency;
+          priceDisplay = minPrice === maxPrice
+            ? formatPrice(minPrice, currency)
+            : `${formatPrice(minPrice, currency)} - ${formatPrice(maxPrice, currency)}`;
+        } else if (pricings.length === 1) {
+          priceDisplay = formatPrice(pricings[0].price, pricings[0].currency);
+        } else {
+          priceDisplay = formatPrice(plan.price, plan.currency);
+        }
+        return {
+          value: plan.id.toString(),
+          label: `${plan.name} - ${priceDisplay}`
+        };
+      });
+  }, [plans]);
 
-  // 准备计划选项
-  const planOptions = plans
-    .filter(plan => plan.Status === 'active')
-    .map(plan => ({
-      value: plan.ID.toString(),
-      label: `${plan.Name} - ${(plan.Price / 100).toFixed(2)} ${plan.Currency}`
-    }));
+  // 准备计费周期选项（基于选中计划的可用定价）
+  const billingCycleOptions = useMemo(() => {
+    if (availablePricings.length > 0) {
+      return availablePricings.map(p => ({
+        value: p.billingCycle,
+        label: `${BILLING_CYCLE_LABELS[p.billingCycle]} - ${formatPrice(p.price, p.currency)}`,
+      }));
+    }
+    return BILLING_CYCLE_OPTIONS;
+  }, [availablePricings]);
 
   return (
     <Dialog.Root open={open} onOpenChange={handleOpenChange}>
@@ -119,8 +209,8 @@ export const AssignSubscriptionDialog: React.FC<AssignSubscriptionDialogProps> =
               <div className="grid gap-2">
                 <LabelPrimitive.Root className={labelStyles}>订阅计划</LabelPrimitive.Root>
                 <SimpleSelect
-                  value={formData.plan_id ? formData.plan_id.toString() : ''}
-                  onValueChange={(value) => setFormData({ ...formData, plan_id: Number(value) })}
+                  value={formData.planId ? formData.planId.toString() : ''}
+                  onValueChange={(value) => setFormData({ ...formData, planId: Number(value) })}
                   options={planOptions}
                   placeholder="请选择计划"
                 />
@@ -128,11 +218,19 @@ export const AssignSubscriptionDialog: React.FC<AssignSubscriptionDialogProps> =
 
               {/* 计费周期选择 */}
               <div className="grid gap-2">
-                <LabelPrimitive.Root className={labelStyles}>计费周期</LabelPrimitive.Root>
+                <LabelPrimitive.Root className={labelStyles}>
+                  计费周期
+                  {availablePricings.length > 1 && (
+                    <span className="ml-2 text-xs text-muted-foreground">
+                      ({availablePricings.length} 个可选)
+                    </span>
+                  )}
+                </LabelPrimitive.Root>
                 <SimpleSelect
-                  value={formData.billing_cycle}
-                  onValueChange={(value) => setFormData({ ...formData, billing_cycle: value as BillingCycle })}
-                  options={BILLING_CYCLE_OPTIONS}
+                  value={formData.billingCycle}
+                  onValueChange={(value) => setFormData({ ...formData, billingCycle: value as BillingCycle })}
+                  options={billingCycleOptions}
+                  disabled={!selectedPlan}
                 />
               </div>
 
@@ -140,8 +238,8 @@ export const AssignSubscriptionDialog: React.FC<AssignSubscriptionDialogProps> =
               <div className="flex items-center space-x-2">
                 <Checkbox.Root
                   id="auto_renew"
-                  checked={formData.auto_renew}
-                  onCheckedChange={(checked) => setFormData({ ...formData, auto_renew: checked === true })}
+                  checked={formData.autoRenew}
+                  onCheckedChange={(checked) => setFormData({ ...formData, autoRenew: checked === true })}
                   className="peer h-4 w-4 shrink-0 rounded-sm border border-primary ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 data-[state=checked]:bg-primary data-[state=checked]:text-primary-foreground"
                 >
                   <Checkbox.Indicator className="flex items-center justify-center text-current">
@@ -161,16 +259,22 @@ export const AssignSubscriptionDialog: React.FC<AssignSubscriptionDialogProps> =
                 <div className="rounded-md bg-muted p-4 text-sm">
                   <h4 className="font-medium mb-2">计划详情</h4>
                   <div className="space-y-1 text-muted-foreground">
-                    <p>名称: {selectedPlan.Name}</p>
-                    <p>价格: {(selectedPlan.Price / 100).toFixed(2)} {selectedPlan.Currency}</p>
-                    {selectedPlan.Description && (
-                      <p className="mt-1">{selectedPlan.Description}</p>
+                    <p>名称: {selectedPlan.name}</p>
+                    {selectedPricing ? (
+                      <p>
+                        价格: {formatPrice(selectedPricing.price, selectedPricing.currency)} / {BILLING_CYCLE_LABELS[selectedPricing.billingCycle]}
+                      </p>
+                    ) : (
+                      <p>价格: {formatPrice(selectedPlan.price, selectedPlan.currency)}</p>
                     )}
-                    {selectedPlan.Features && selectedPlan.Features.length > 0 && (
+                    {selectedPlan.description && (
+                      <p className="mt-1">{selectedPlan.description}</p>
+                    )}
+                    {selectedPlan.features && selectedPlan.features.length > 0 && (
                       <div className="mt-2">
                         <p>功能:</p>
                         <ul className="list-disc pl-5 mt-1 space-y-1">
-                          {selectedPlan.Features.map((feature, index) => (
+                          {selectedPlan.features.map((feature, index) => (
                             <li key={index}>{feature}</li>
                           ))}
                         </ul>
@@ -199,7 +303,7 @@ export const AssignSubscriptionDialog: React.FC<AssignSubscriptionDialogProps> =
             </button>
             <button
               onClick={handleSubmit}
-              disabled={!formData.plan_id || submitting}
+              disabled={!formData.planId || submitting}
               className={getButtonClass('default', 'default')}
             >
               {submitting ? (

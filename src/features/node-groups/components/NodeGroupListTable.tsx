@@ -13,21 +13,21 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/common/DropdownMenu';
-import type { NodeGroupListItem } from '../types/node-groups.types';
+import type { NodeGroup } from '@/api/node';
 import { formatDateTime } from '@/shared/utils/date-utils';
 
 interface NodeGroupListTableProps {
-  nodeGroups: NodeGroupListItem[];
+  nodeGroups: NodeGroup[];
   loading?: boolean;
   page: number;
   pageSize: number;
   total: number;
   onPageChange: (page: number) => void;
   onPageSizeChange: (pageSize: number) => void;
-  onEdit: (group: NodeGroupListItem) => void;
-  onDelete: (group: NodeGroupListItem) => void;
-  onManageNodes: (group: NodeGroupListItem) => void;
-  onViewDetail: (group: NodeGroupListItem) => void;
+  onEdit: (group: NodeGroup) => void;
+  onDelete: (group: NodeGroup) => void;
+  onManageNodes: (group: NodeGroup) => void;
+  onViewDetail: (group: NodeGroup) => void;
 }
 
 export const NodeGroupListTable = ({
@@ -43,7 +43,7 @@ export const NodeGroupListTable = ({
   onManageNodes,
   onViewDetail,
 }: NodeGroupListTableProps) => {
-  const columns = useMemo<ColumnDef<NodeGroupListItem>[]>(() => [
+  const columns = useMemo<ColumnDef<NodeGroup>[]>(() => [
     {
       accessorKey: 'id',
       header: 'ID',
@@ -71,42 +71,42 @@ export const NodeGroupListTable = ({
       ),
     },
     {
-      accessorKey: 'is_public',
+      accessorKey: 'isPublic',
       header: '公开性',
       size: 72,
       cell: ({ row }) => (
-        <AdminBadge variant={row.original.is_public ? 'success' : 'default'}>
-          {row.original.is_public ? '公开' : '私有'}
+        <AdminBadge variant={row.original.isPublic ? 'success' : 'default'}>
+          {row.original.isPublic ? '公开' : '私有'}
         </AdminBadge>
       ),
     },
     {
-      accessorKey: 'node_count',
+      accessorKey: 'nodeCount',
       header: '节点数',
       size: 72,
       cell: ({ row }) => (
         <span className="font-mono tabular-nums text-slate-700 dark:text-slate-300">
-          {row.original.node_count || 0}
+          {row.original.nodeCount || 0}
         </span>
       ),
     },
     {
-      accessorKey: 'sort_order',
+      accessorKey: 'sortOrder',
       header: '排序',
       size: 56,
       cell: ({ row }) => (
         <span className="font-mono tabular-nums text-slate-600 dark:text-slate-400">
-          {row.original.sort_order ?? '-'}
+          {row.original.sortOrder ?? '-'}
         </span>
       ),
     },
     {
-      accessorKey: 'created_at',
+      accessorKey: 'createdAt',
       header: '创建时间',
       size: 140,
       cell: ({ row }) => (
         <span className="text-slate-500 dark:text-slate-400 text-sm">
-          {formatDateTime(row.original.created_at)}
+          {formatDateTime(row.original.createdAt)}
         </span>
       ),
     },

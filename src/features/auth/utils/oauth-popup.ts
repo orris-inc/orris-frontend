@@ -3,7 +3,7 @@
  * 使用 window.open + postMessage 实现
  */
 
-import type { OAuthProvider, OAuthCallbackMessage, User } from '../types/auth.types';
+import type { OAuthProvider, OAuthCallbackMessage, User } from '@/api/auth';
 import { translateErrorMessage } from '@/shared/utils/error-messages';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8081';
@@ -71,18 +71,22 @@ export const openOAuthPopup = (provider: OAuthProvider): Promise<User> => {
       }
 
       // 处理OAuth成功
-      if (message.type === 'oauth_success') {
+      if (message.type === 'oauth-success') {
         if (isSettled) return;
         isSettled = true;
         cleanup();
         popup.close();
 
         // Token 已存储在 HttpOnly Cookie 中，只返回用户信息
-        resolve(message.user);
+        if (message.user) {
+          resolve(message.user);
+        } else {
+          reject(new Error('OAuth 登录成功但未返回用户信息'));
+        }
       }
 
       // 处理OAuth失败
-      if (message.type === 'oauth_error') {
+      if (message.type === 'oauth-error') {
         if (isSettled) return;
         isSettled = true;
         cleanup();

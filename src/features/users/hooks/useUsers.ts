@@ -9,18 +9,18 @@ import { queryKeys } from '@/shared/lib/query-client';
 import { useNotificationStore } from '@/shared/stores/notification-store';
 import { handleApiError } from '@/shared/lib/axios';
 import {
-  getUsers,
+  listUsers,
   getUserById,
   createUser,
   updateUser,
   deleteUser,
-} from '../api/users-api';
+  type User,
+  type CreateUserRequest,
+  type UpdateUserRequest,
+  type ListUsersParams,
+} from '@/api/user';
 import type {
-  UserListItem,
-  UserListParams,
   UserFilters,
-  CreateUserRequest,
-  UpdateUserRequest,
 } from '../types/users.types';
 
 interface UseUsersOptions {
@@ -36,10 +36,11 @@ export const useUsers = (options: UseUsersOptions = {}) => {
   const { showSuccess, showError } = useNotificationStore();
 
   // 构建查询参数
-  const params: UserListParams = {
+  const params: ListUsersParams = {
     page,
-    page_size: pageSize,
-    ...filters,
+    pageSize,
+    status: filters.status as ListUsersParams['status'],
+    role: filters.role as ListUsersParams['role'],
   };
 
   // 查询用户列表
@@ -51,7 +52,7 @@ export const useUsers = (options: UseUsersOptions = {}) => {
     refetch,
   } = useQuery({
     queryKey: queryKeys.users.list(params),
-    queryFn: () => getUsers(params),
+    queryFn: () => listUsers(params),
     enabled,
   });
 
@@ -97,9 +98,9 @@ export const useUsers = (options: UseUsersOptions = {}) => {
     users: data?.items ?? [],
     pagination: {
       page: data?.page ?? page,
-      pageSize: data?.page_size ?? pageSize,
+      pageSize: data?.pageSize ?? pageSize,
       total: data?.total ?? 0,
-      totalPages: data?.total_pages ?? 0,
+      totalPages: data?.totalPages ?? 0,
     },
 
     // 状态
@@ -141,7 +142,7 @@ export const useUsersPage = () => {
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(20);
   const [filters, setFilters] = useState<UserFilters>({});
-  const [selectedUser, setSelectedUser] = useState<UserListItem | null>(null);
+  const [selectedUser, setSelectedUser] = useState<User | null>(null);
 
   const usersQuery = useUsers({ page, pageSize, filters });
 

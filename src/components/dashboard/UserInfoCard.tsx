@@ -2,7 +2,7 @@
  * 用户个人信息卡片
  */
 import * as Avatar from '@radix-ui/react-avatar';
-import type { User } from '@/features/auth/types/auth.types';
+import type { User } from '@/api/auth';
 import { BadgeCheck } from 'lucide-react';
 import { cardStyles, cardContentStyles, getBadgeClass } from '@/lib/ui-styles';
 import { cn } from '@/lib/utils';
@@ -12,8 +12,8 @@ interface UserInfoCardProps {
 }
 
 export const UserInfoCard = ({ user }: UserInfoCardProps) => {
-  const displayName = user.display_name || user.name || user.email?.split('@')[0] || '用户';
-  const avatarText = user.initials || user.display_name?.charAt(0).toUpperCase() || user.name?.charAt(0).toUpperCase() || user.email?.charAt(0).toUpperCase();
+  const displayName = user.displayName || user.email?.split('@')[0] || '用户';
+  const avatarText = user.displayName?.charAt(0).toUpperCase() || user.email?.charAt(0).toUpperCase();
 
   return (
     <div className={cardStyles}>
@@ -31,7 +31,7 @@ export const UserInfoCard = ({ user }: UserInfoCardProps) => {
           <div className="text-center">
             <div className="flex items-center justify-center space-x-1.5">
               <h2 className="text-xl font-bold">{displayName}</h2>
-              {user.email_verified && (
+              {user.emailVerified && (
                 <BadgeCheck className="h-5 w-5 text-blue-500" />
               )}
             </div>
@@ -39,19 +39,19 @@ export const UserInfoCard = ({ user }: UserInfoCardProps) => {
           </div>
 
           {/* OAuth标签 */}
-          {user.oauth_provider && (
-            <span className={getBadgeClass('outline')}>{`${user.oauth_provider.toUpperCase()} 账号`}</span>
+          {user.oauthProvider && (
+            <span className={getBadgeClass('outline')}>{`${user.oauthProvider.toUpperCase()} 账号`}</span>
           )}
 
           {/* 加入时间 */}
           <div className="w-full border-t border-border/50 pt-4 text-center">
             <p className="text-xs text-muted-foreground">加入时间</p>
             <p className="text-sm font-medium">
-              {new Date(user.created_at).toLocaleDateString('zh-CN', {
+              {user.createdAt ? new Date(user.createdAt).toLocaleDateString('zh-CN', {
                 year: 'numeric',
                 month: 'long',
                 day: 'numeric',
-              })}
+              }) : '-'}
             </p>
           </div>
         </div>

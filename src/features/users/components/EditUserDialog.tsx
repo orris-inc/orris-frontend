@@ -10,11 +10,12 @@ import { X } from 'lucide-react';
 import { SimpleSelect } from '@/lib/SimpleSelect';
 import { getButtonClass, inputStyles, labelStyles } from '@/lib/ui-styles';
 import { cn } from '@/lib/utils';
-import type { UserListItem, UpdateUserRequest, UserStatus, UserRole } from '../types/users.types';
+import type { User, UpdateUserRequest } from '@/api/user';
+import type { UserStatus, UserRole } from '../types/users.types';
 
 interface EditUserDialogProps {
   open: boolean;
-  user: UserListItem | null;
+  user: User | null;
   onClose: () => void;
   onSubmit: (id: number | string, data: UpdateUserRequest) => void;
 }
@@ -48,7 +49,7 @@ export const EditUserDialog: React.FC<EditUserDialogProps> = ({
   useEffect(() => {
     if (user) {
       setEmail(user.email);
-      setName(user.name);
+      setName(user.name || '');
       setStatus((user.status as UserStatus) || 'active');
       setRole((user.role as UserRole) || 'user');
       setErrors({});
@@ -78,8 +79,8 @@ export const EditUserDialog: React.FC<EditUserDialogProps> = ({
       const updates: UpdateUserRequest = {};
       if (email !== user.email) updates.email = email;
       if (name !== user.name) updates.name = name;
-      if (status !== user.status) updates.status = status;
-      if (role !== user.role) updates.role = role;
+      if (status !== user.status) updates.status = status as UpdateUserRequest['status'];
+      if (role !== user.role) updates.role = role as UpdateUserRequest['role'];
 
       // 如果有任何变化，提交更新
       if (Object.keys(updates).length > 0) {
@@ -134,7 +135,7 @@ export const EditUserDialog: React.FC<EditUserDialogProps> = ({
                 <div className="grid gap-2">
                   <LabelPrimitive.Root className={labelStyles}>创建时间</LabelPrimitive.Root>
                   <input
-                    value={new Date(user.created_at).toLocaleString('zh-CN')}
+                    value={new Date(user.createdAt).toLocaleString('zh-CN')}
                     disabled
                     className={cn(inputStyles, "bg-muted")}
                   />

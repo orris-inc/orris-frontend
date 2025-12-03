@@ -9,20 +9,20 @@ import { queryKeys } from '@/shared/lib/query-client';
 import { useNotificationStore } from '@/shared/stores/notification-store';
 import { handleApiError } from '@/shared/lib/axios';
 import {
-  getSubscriptionPlans,
-  getSubscriptionPlanById,
-  createSubscriptionPlan,
-  updateSubscriptionPlan,
+  listPlans,
+  getPlan,
+  createPlan,
+  updatePlan,
   updatePlanStatus,
   getPublicPlans,
-} from '../api/subscription-plans-api';
+} from '@/api/subscription';
 import type {
   SubscriptionPlan,
-  SubscriptionPlanListParams,
-  SubscriptionPlanFilters,
+  ListPlansParams,
   CreatePlanRequest,
   UpdatePlanRequest,
-} from '../types/subscription-plans.types';
+} from '@/api/subscription/types';
+import type { SubscriptionPlanFilters } from '../types';
 
 interface UseSubscriptionPlansOptions {
   page?: number;
@@ -37,12 +37,12 @@ export const useSubscriptionPlans = (options: UseSubscriptionPlansOptions = {}) 
   const { showSuccess, showError } = useNotificationStore();
 
   // 构建查询参数
-  const params: SubscriptionPlanListParams = {
+  const params: ListPlansParams = {
     page,
-    page_size: pageSize,
+    pageSize,
     status: filters.status,
-    is_public: filters.is_public,
-    billing_cycle: filters.billing_cycle,
+    isPublic: filters.isPublic,
+    billingCycle: filters.billingCycle,
   };
 
   // 查询订阅计划列表
@@ -54,13 +54,13 @@ export const useSubscriptionPlans = (options: UseSubscriptionPlansOptions = {}) 
     refetch,
   } = useQuery({
     queryKey: queryKeys.subscriptionPlans.list(params),
-    queryFn: () => getSubscriptionPlans(params),
+    queryFn: () => listPlans(params),
     enabled,
   });
 
   // 创建订阅计划
   const createMutation = useMutation({
-    mutationFn: createSubscriptionPlan,
+    mutationFn: createPlan,
     onSuccess: () => {
       showSuccess('订阅计划创建成功');
       queryClient.invalidateQueries({ queryKey: queryKeys.subscriptionPlans.lists() });
@@ -73,7 +73,7 @@ export const useSubscriptionPlans = (options: UseSubscriptionPlansOptions = {}) 
   // 更新订阅计划
   const updateMutation = useMutation({
     mutationFn: ({ id, data }: { id: number; data: UpdatePlanRequest }) =>
-      updateSubscriptionPlan(id, data),
+      updatePlan(id, data),
     onSuccess: () => {
       showSuccess('订阅计划更新成功');
       queryClient.invalidateQueries({ queryKey: queryKeys.subscriptionPlans.lists() });
@@ -102,9 +102,9 @@ export const useSubscriptionPlans = (options: UseSubscriptionPlansOptions = {}) 
     plans: data?.items ?? [],
     pagination: {
       page: data?.page ?? page,
-      pageSize: data?.page_size ?? pageSize,
+      pageSize: data?.pageSize ?? pageSize,
       total: data?.total ?? 0,
-      totalPages: data?.total_pages ?? 0,
+      totalPages: data?.totalPages ?? 0,
     },
 
     // 状态
@@ -121,8 +121,8 @@ export const useSubscriptionPlans = (options: UseSubscriptionPlansOptions = {}) 
       statusMutation.mutateAsync({ id, status }),
     togglePlanStatus: (plan: SubscriptionPlan) =>
       statusMutation.mutateAsync({
-        id: plan.ID,
-        status: plan.Status === 'active' ? 'inactive' : 'active',
+        id: plan.id,
+        status: plan.status === 'active' ? 'inactive' : 'active',
       }),
 
     // Mutation 状态
@@ -136,7 +136,7 @@ export const useSubscriptionPlans = (options: UseSubscriptionPlansOptions = {}) 
 export const useSubscriptionPlan = (id: number | null) => {
   const { data, isLoading, error } = useQuery({
     queryKey: queryKeys.subscriptionPlans.detail(id!),
-    queryFn: () => getSubscriptionPlanById(id!),
+    queryFn: () => getPlan(id!),
     enabled: !!id,
   });
 

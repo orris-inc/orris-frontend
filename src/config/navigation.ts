@@ -14,6 +14,9 @@ import {
   User,
   Server,
   Network,
+  ArrowLeftRight,
+  Cpu,
+  Link2,
 } from 'lucide-react';
 
 import type { NavigationItem } from '../types/navigation.types';
@@ -134,6 +137,39 @@ export const navigationConfig: readonly NavigationItem[] = [
     showInBreadcrumb: true,
     parentId: 'admin-dashboard',
     order: 15,
+  },
+  {
+    id: 'forward-rules',
+    label: '转发规则',
+    path: '/admin/forward-rules',
+    icon: ArrowLeftRight,
+    roles: ['admin'], // 仅管理员可访问
+    showInNav: true,
+    showInBreadcrumb: true,
+    parentId: 'admin-dashboard',
+    order: 16,
+  },
+  {
+    id: 'forward-agents',
+    label: '转发节点',
+    path: '/admin/forward-agents',
+    icon: Cpu,
+    roles: ['admin'], // 仅管理员可访问
+    showInNav: true,
+    showInBreadcrumb: true,
+    parentId: 'admin-dashboard',
+    order: 17,
+  },
+  {
+    id: 'forward-chains',
+    label: '转发链',
+    path: '/admin/forward-chains',
+    icon: Link2,
+    roles: ['admin'], // 仅管理员可访问
+    showInNav: true,
+    showInBreadcrumb: true,
+    parentId: 'admin-dashboard',
+    order: 18,
   },
 ] as const;
 

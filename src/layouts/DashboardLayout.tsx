@@ -85,7 +85,7 @@ export const DashboardLayout = ({ children }: DashboardLayoutProps) => {
           {/* 用户信息和菜单 */}
           <div className="flex items-center gap-4">
             <div className="hidden sm:block text-right">
-              <p className="text-sm font-medium leading-none">{user?.name}</p>
+              <p className="text-sm font-medium leading-none">{user?.displayName}</p>
               <p className="text-xs text-muted-foreground">{user?.email}</p>
             </div>
 
@@ -93,9 +93,9 @@ export const DashboardLayout = ({ children }: DashboardLayoutProps) => {
               <DropdownMenuPrimitive.Trigger asChild>
                 <button className="relative inline-flex h-8 w-8 items-center justify-center rounded-full hover:bg-accent hover:text-accent-foreground transition-colors">
                   <AvatarPrimitive.Root className="h-8 w-8">
-                    <AvatarPrimitive.Image src={user?.avatar} alt={user?.name} className="h-full w-full rounded-full object-cover" />
+                    <AvatarPrimitive.Image src={user?.avatar} alt={user?.displayName} className="h-full w-full rounded-full object-cover" />
                     <AvatarPrimitive.Fallback className="flex h-full w-full items-center justify-center rounded-full bg-muted text-sm font-medium">
-                      {user?.name?.charAt(0).toUpperCase()}
+                      {user?.displayName?.charAt(0).toUpperCase()}
                     </AvatarPrimitive.Fallback>
                   </AvatarPrimitive.Root>
                 </button>
@@ -108,7 +108,7 @@ export const DashboardLayout = ({ children }: DashboardLayoutProps) => {
                 >
                   <DropdownMenuPrimitive.Label className="px-2 py-1.5 text-sm font-normal">
                     <div className="flex flex-col space-y-1">
-                      <p className="text-sm font-medium leading-none">{user?.name}</p>
+                      <p className="text-sm font-medium leading-none">{user?.displayName}</p>
                       <p className="text-xs leading-none text-muted-foreground">
                         {user?.email}
                       </p>

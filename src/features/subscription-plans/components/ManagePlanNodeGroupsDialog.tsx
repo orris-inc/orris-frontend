@@ -16,9 +16,9 @@ import { ScrollArea } from '@/components/common/ScrollArea';
 import { Separator } from '@/components/common/Separator';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/common/Tooltip';
 import { getButtonClass, getBadgeClass, inputStyles } from '@/lib/ui-styles';
-import { getNodeGroups, getNodeGroupById, associatePlanToGroup, dissociatePlanFromGroup } from '@/features/node-groups/api/node-groups-api';
-import type { NodeGroupListItem } from '@/features/node-groups/types/node-groups.types';
-import type { SubscriptionPlan } from '../types/subscription-plans.types';
+import { listNodeGroups, getNodeGroup, associatePlanWithGroup, disassociatePlanFromGroup } from '@/api/node';
+import type { NodeGroup } from '@/api/node';
+import type { SubscriptionPlan } from '@/api/subscription/types';
 
 interface ManagePlanNodeGroupsDialogProps {
   open: boolean;
@@ -26,7 +26,7 @@ interface ManagePlanNodeGroupsDialogProps {
   plan: SubscriptionPlan | null;
 }
 
-interface NodeGroupWithBinding extends NodeGroupListItem {
+interface NodeGroupWithBinding extends NodeGroup {
   isBound: boolean;
   isLoading: boolean;
 }
@@ -48,7 +48,7 @@ export const ManagePlanNodeGroupsDialog: React.FC<ManagePlanNodeGroupsDialogProp
     setLoading(true);
     try {
       // 获取所有节点组
-      const response = await getNodeGroups({ page: 1, page_size: 100 });
+      const response = await listNodeGroups({ page: 1, pageSize: 100 });
       const groups = response.items || [];
 
       // 初始化节点组列表
@@ -61,10 +61,11 @@ export const ManagePlanNodeGroupsDialog: React.FC<ManagePlanNodeGroupsDialogProp
 
       // 异步检查每个节点组的绑定状态
       await Promise.all(
-        groups.map(async (group, index) => {
+        groups.map(async (group: NodeGroup, index: number) => {
           try {
-            const detail = await getNodeGroupById(group.id);
-            const isBound = detail.subscription_plan_ids?.includes(plan.ID) || false;
+            const detail = await getNodeGroup(group.id);
+            // TODO: 需要后端API支持返回subscription_plan_ids字段
+            const isBound = (detail as any).subscriptionPlanIds?.includes(plan.id) || false;
 
             setNodeGroups(prev => {
               const updated = [...prev];
@@ -102,9 +103,9 @@ export const ManagePlanNodeGroupsDialog: React.FC<ManagePlanNodeGroupsDialogProp
     setSubmitting(true);
     try {
       if (currentlyBound) {
-        await dissociatePlanFromGroup(groupId, plan.ID);
+        await disassociatePlanFromGroup(groupId, plan.id);
       } else {
-        await associatePlanToGroup(groupId, plan.ID);
+        await associatePlanWithGroup(groupId, { planId: plan.id });
       }
 
       // 更新本地状态
@@ -133,10 +134,10 @@ export const ManagePlanNodeGroupsDialog: React.FC<ManagePlanNodeGroupsDialogProp
         filteredGroups.map(async (group) => {
           if (allBound && group.isBound) {
             // 全部解绑
-            await dissociatePlanFromGroup(group.id, plan.ID);
+            await disassociatePlanFromGroup(group.id, plan.id);
           } else if (!allBound && !group.isBound) {
             // 全部绑定
-            await associatePlanToGroup(group.id, plan.ID);
+            await associatePlanWithGroup(group.id, { planId: plan.id });
           }
         })
       );
@@ -191,7 +192,7 @@ export const ManagePlanNodeGroupsDialog: React.FC<ManagePlanNodeGroupsDialogProp
           <DialogTitle>管理节点组绑定</DialogTitle>
         </div>
         <DialogDescription>
-          为订阅计划 <span className="font-semibold text-foreground">{plan?.Name}</span> 管理节点组关联
+          为订阅计划 <span className="font-semibold text-foreground">{plan?.name}</span> 管理节点组关联
         </DialogDescription>
 
         <Separator />
@@ -296,7 +297,7 @@ export const ManagePlanNodeGroupsDialog: React.FC<ManagePlanNodeGroupsDialogProp
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2">
                         <span className="font-medium truncate">{group.name}</span>
-                        {group.is_public && (
+                        {group.isPublic && (
                           <span className={getBadgeClass('outline', 'text-xs shrink-0')}>
                             公开
                           </span>
@@ -315,9 +316,9 @@ export const ManagePlanNodeGroupsDialog: React.FC<ManagePlanNodeGroupsDialogProp
                           {group.description}
                         </p>
                       )}
-                      {group.node_count !== undefined && group.node_count > 0 && (
+                      {group.nodeCount !== undefined && group.nodeCount > 0 && (
                         <p className="text-xs text-muted-foreground mt-0.5">
-                          包含 {group.node_count} 个节点
+                          包含 {group.nodeCount} 个节点
                         </p>
                       )}
                     </div>

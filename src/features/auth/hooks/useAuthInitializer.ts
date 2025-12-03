@@ -5,7 +5,7 @@
 
 import { useEffect, useRef } from 'react';
 import { useAuthStore } from '../stores/auth-store';
-import * as authApi from '../api/auth-api';
+import * as authApi from '@/api/auth';
 
 // 使用全局变量而非 useRef，防止 StrictMode 重新挂载时重置
 // 这确保整个应用生命周期内只初始化一次

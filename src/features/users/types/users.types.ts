@@ -26,27 +26,30 @@ export type UserRole =
 /**
  * 用户列表项（管理端使用）
  * 来源: swagger.json UserResponse 定义
+ * @deprecated 请使用 @/api/user 中的 User 类型
  */
 export interface UserListItem {
   id: number;
   email: string;
   name: string;
-  display_name?: string;
+  displayName?: string;
   initials?: string;
   status: string;
   role?: string;
-  created_at: string;
-  updated_at?: string;
+  createdAt: string;
+  updatedAt?: string;
 }
 
 /**
  * 创建用户请求
  * 来源: swagger.json CreateUserRequest 定义
  * POST /users
+ * @deprecated 请使用 @/api/user 中的 CreateUserRequest
  */
 export interface CreateUserRequest {
   email: string;      // 必需
   name: string;       // 必需，长度 2-100
+  password: string;   // 必需
 }
 
 /**

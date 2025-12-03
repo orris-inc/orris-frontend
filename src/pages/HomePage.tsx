@@ -25,11 +25,11 @@ export const HomePage = () => {
                 <AvatarPrimitive.Root className="size-24 relative flex shrink-0 overflow-hidden rounded-full">
                   <AvatarPrimitive.Image
                     src={user?.avatar}
-                    alt={user?.name}
+                    alt={user?.displayName}
                     className="aspect-square h-full w-full"
                   />
                   <AvatarPrimitive.Fallback className="flex h-full w-full items-center justify-center rounded-full bg-muted text-4xl">
-                    {user?.name?.charAt(0).toUpperCase()}
+                    {user?.displayName?.charAt(0).toUpperCase()}
                   </AvatarPrimitive.Fallback>
                 </AvatarPrimitive.Root>
               </div>
@@ -37,7 +37,7 @@ export const HomePage = () => {
               {/* 欢迎信息 */}
               <div className="text-center grid gap-2">
                 <h1 className="text-4xl font-bold">
-                  欢迎回来，{user?.name}！
+                  欢迎回来，{user?.displayName}！
                 </h1>
                 <p className="text-muted-foreground">
                   您已成功登录 Orris
@@ -68,19 +68,19 @@ export const HomePage = () => {
                       邮箱验证状态
                     </p>
                     <div>
-                      <span className={getBadgeClass(user?.email_verified ? 'default' : 'secondary')}>
-                        {user?.email_verified ? '已验证' : '未验证'}
+                      <span className={getBadgeClass(user?.emailVerified ? 'default' : 'secondary')}>
+                        {user?.emailVerified ? '已验证' : '未验证'}
                       </span>
                     </div>
                   </div>
 
-                  {user?.oauth_provider && (
+                  {user?.oauthProvider && (
                     <div className="grid gap-1">
                       <p className="text-sm text-muted-foreground">
                         OAuth提供商
                       </p>
                       <p className="capitalize text-base">
-                        {user.oauth_provider}
+                        {user.oauthProvider}
                       </p>
                     </div>
                   )}

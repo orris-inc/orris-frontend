@@ -11,15 +11,15 @@ import { CreateUserDialog } from '@/features/users/components/CreateUserDialog';
 import { AssignSubscriptionDialog } from '@/features/subscriptions/components/AssignSubscriptionDialog';
 import { useUsersPage } from '@/features/users/hooks/useUsers';
 import { AdminLayout } from '@/layouts/AdminLayout';
-import { createSubscription } from '@/features/subscriptions/api/subscriptions-api';
+import { adminCreateSubscription } from '@/api/admin';
 import { useNotificationStore } from '@/shared/stores/notification-store';
 import {
   AdminPageLayout,
   AdminButton,
   AdminCard,
 } from '@/components/admin';
-import type { UserListItem, UpdateUserRequest, CreateUserRequest } from '@/features/users/types/users.types';
-import type { CreateSubscriptionRequest } from '@/features/subscriptions/types/subscriptions.types';
+import type { User, UpdateUserRequest, CreateUserRequest } from '@/api/user';
+import type { AdminCreateSubscriptionRequest } from '@/api/admin/types';
 
 export const UserManagementPage = () => {
   const {
@@ -40,14 +40,14 @@ export const UserManagementPage = () => {
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
   const [assignSubscriptionDialogOpen, setAssignSubscriptionDialogOpen] = useState(false);
-  const [selectedUser, setSelectedUser] = useState<UserListItem | null>(null);
+  const [selectedUser, setSelectedUser] = useState<User | null>(null);
 
-  const handleEdit = (user: UserListItem) => {
+  const handleEdit = (user: User) => {
     setSelectedUser(user);
     setEditDialogOpen(true);
   };
 
-  const handleDelete = async (user: UserListItem) => {
+  const handleDelete = async (user: User) => {
     if (window.confirm(`确认删除用户 "${user.name}" (${user.email}) 吗？此操作不可恢复。`)) {
       await deleteUser(user.id);
     }
@@ -72,14 +72,14 @@ export const UserManagementPage = () => {
     }
   };
 
-  const handleAssignSubscription = (user: UserListItem) => {
+  const handleAssignSubscription = (user: User) => {
     setSelectedUser(user);
     setAssignSubscriptionDialogOpen(true);
   };
 
-  const handleAssignSubscriptionSubmit = async (data: CreateSubscriptionRequest) => {
+  const handleAssignSubscriptionSubmit = async (data: AdminCreateSubscriptionRequest) => {
     try {
-      await createSubscription(data);
+      await adminCreateSubscription(data);
       showSuccess(`成功为用户 ${selectedUser?.name} 分配订阅`);
       setAssignSubscriptionDialogOpen(false);
       setSelectedUser(null);

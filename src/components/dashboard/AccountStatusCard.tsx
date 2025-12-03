@@ -1,7 +1,7 @@
 /**
  * 账户状态卡片
  */
-import type { User } from '@/features/auth/types/auth.types';
+import type { User } from '@/api/auth';
 import { CheckCircle, AlertTriangle } from 'lucide-react';
 import { cardStyles, cardHeaderStyles, cardTitleStyles, cardContentStyles, getBadgeClass } from '@/lib/ui-styles';
 
@@ -26,7 +26,7 @@ export const AccountStatusCard = ({ user }: AccountStatusCardProps) => {
           {/* 邮箱验证状态 */}
           <div className="flex items-center justify-between">
             <span className="text-sm text-muted-foreground">邮箱验证</span>
-            {user.email_verified ? (
+            {user.emailVerified ? (
               <div className="flex items-center space-x-1">
                 <CheckCircle className="h-4 w-4 text-green-500" />
                 <span className="text-sm font-medium text-green-500">
@@ -44,19 +44,19 @@ export const AccountStatusCard = ({ user }: AccountStatusCardProps) => {
           </div>
 
           {/* OAuth提供商 */}
-          {user.oauth_provider && (
+          {user.oauthProvider && (
             <div className="flex items-center justify-between">
               <span className="text-sm text-muted-foreground">登录方式</span>
-              <span className={getBadgeClass('default')}>{user.oauth_provider.toUpperCase()}</span>
+              <span className={getBadgeClass('default')}>{user.oauthProvider.toUpperCase()}</span>
             </div>
           )}
 
           {/* 最后更新时间 */}
-          {user.updated_at && (
+          {user.updatedAt && (
             <div className="flex items-center justify-between">
               <span className="text-sm text-muted-foreground">最后更新</span>
               <span className="text-sm font-medium">
-                {new Date(user.updated_at).toLocaleString('zh-CN', {
+                {new Date(user.updatedAt).toLocaleString('zh-CN', {
                   year: 'numeric',
                   month: '2-digit',
                   day: '2-digit',

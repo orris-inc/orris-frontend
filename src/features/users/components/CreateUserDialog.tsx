@@ -23,11 +23,13 @@ export const CreateUserDialog: React.FC<CreateUserDialogProps> = ({
 }) => {
   const [email, setEmail] = useState('');
   const [name, setName] = useState('');
-  const [errors, setErrors] = useState<{ email?: string; name?: string }>({});
+  const [password, setPassword] = useState('');
+  const [errors, setErrors] = useState<{ email?: string; name?: string; password?: string }>({});
 
   const handleClose = () => {
     setEmail('');
     setName('');
+    setPassword('');
     setErrors({});
     onClose();
   };
@@ -39,7 +41,7 @@ export const CreateUserDialog: React.FC<CreateUserDialogProps> = ({
   };
 
   const validate = () => {
-    const newErrors: { email?: string; name?: string } = {};
+    const newErrors: { email?: string; name?: string; password?: string } = {};
 
     if (!email.trim()) {
       newErrors.email = '邮箱不能为空';
@@ -53,13 +55,19 @@ export const CreateUserDialog: React.FC<CreateUserDialogProps> = ({
       newErrors.name = '姓名长度必须在2-100个字符之间';
     }
 
+    if (!password.trim()) {
+      newErrors.password = '密码不能为空';
+    } else if (password.trim().length < 8) {
+      newErrors.password = '密码长度至少需要8个字符';
+    }
+
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
 
   const handleSubmit = () => {
     if (validate()) {
-      onSubmit({ email: email.trim(), name: name.trim() });
+      onSubmit({ email: email.trim(), name: name.trim(), password: password.trim() });
       handleClose();
     }
   };
@@ -113,6 +121,24 @@ export const CreateUserDialog: React.FC<CreateUserDialogProps> = ({
                 <span className="text-sm text-muted-foreground">长度2-100个字符</span>
               )}
             </div>
+            <div className="grid gap-2">
+              <LabelPrimitive.Root htmlFor="password" className={labelStyles}>
+                密码
+              </LabelPrimitive.Root>
+              <input
+                id="password"
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder="设置初始密码"
+                className={cn(inputStyles, errors.password && "border-destructive")}
+              />
+              {errors.password ? (
+                <span className="text-sm text-destructive">{errors.password}</span>
+              ) : (
+                <span className="text-sm text-muted-foreground">至少8个字符</span>
+              )}
+            </div>
           </div>
 
           <div className="flex justify-end gap-2">
@@ -124,7 +150,7 @@ export const CreateUserDialog: React.FC<CreateUserDialogProps> = ({
             </button>
             <button
               onClick={handleSubmit}
-              disabled={!email.trim() || !name.trim()}
+              disabled={!email.trim() || !name.trim() || !password.trim()}
               className={getButtonClass('default', 'default')}
             >
               创建

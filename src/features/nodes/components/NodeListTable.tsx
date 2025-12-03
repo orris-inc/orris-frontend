@@ -14,22 +14,22 @@ import {
   DropdownMenuTrigger,
 } from '@/components/common/DropdownMenu';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/common/Tooltip';
-import type { NodeListItem } from '../types/nodes.types';
+import type { Node } from '@/api/node';
 
 interface NodeListTableProps {
-  nodes: NodeListItem[];
+  nodes: Node[];
   loading?: boolean;
   page: number;
   pageSize: number;
   total: number;
   onPageChange: (page: number) => void;
   onPageSizeChange: (pageSize: number) => void;
-  onEdit: (node: NodeListItem) => void;
-  onDelete: (node: NodeListItem) => void;
-  onActivate: (node: NodeListItem) => void;
-  onDeactivate: (node: NodeListItem) => void;
-  onGenerateToken: (node: NodeListItem) => void;
-  onViewDetail: (node: NodeListItem) => void;
+  onEdit: (node: Node) => void;
+  onDelete: (node: Node) => void;
+  onActivate: (node: Node) => void;
+  onDeactivate: (node: Node) => void;
+  onGenerateToken: (node: Node) => void;
+  onViewDetail: (node: Node) => void;
 }
 
 // 状态配置
@@ -73,7 +73,7 @@ export const NodeListTable: React.FC<NodeListTableProps> = ({
   onGenerateToken,
   onViewDetail,
 }) => {
-  const columns = useMemo<ColumnDef<NodeListItem>[]>(() => [
+  const columns = useMemo<ColumnDef<Node>[]>(() => [
     {
       accessorKey: 'id',
       header: 'ID',
@@ -114,7 +114,7 @@ export const NodeListTable: React.FC<NodeListTableProps> = ({
       size: 180,
       cell: ({ row }) => (
         <span className="font-mono text-sm text-slate-700 dark:text-slate-300">
-          {row.original.server_address}:{row.original.server_port}
+          {row.original.serverAddress}:{row.original.serverPort}
         </span>
       ),
     },
@@ -129,12 +129,12 @@ export const NodeListTable: React.FC<NodeListTableProps> = ({
       ),
     },
     {
-      accessorKey: 'method',
+      accessorKey: 'encryptionMethod',
       header: '加密方法',
       size: 120,
       cell: ({ row }) => (
         <span className="font-mono text-xs text-slate-600 dark:text-slate-400">
-          {row.original.method}
+          {row.original.encryptionMethod}
         </span>
       ),
     },
@@ -165,12 +165,12 @@ export const NodeListTable: React.FC<NodeListTableProps> = ({
       },
     },
     {
-      accessorKey: 'created_at',
+      accessorKey: 'createdAt',
       header: '创建时间',
       size: 140,
       cell: ({ row }) => (
         <span className="text-slate-500 dark:text-slate-400 text-sm">
-          {formatDate(row.original.created_at)}
+          {formatDate(row.original.createdAt)}
         </span>
       ),
     },

@@ -18,10 +18,10 @@ import {
   AdminCard,
 } from '@/components/admin';
 import type {
-  NodeGroupListItem,
+  NodeGroup,
   CreateNodeGroupRequest,
   UpdateNodeGroupRequest,
-} from '@/features/node-groups/types/node-groups.types';
+} from '@/api/node';
 
 export const NodeGroupManagementPage = () => {
   const {
@@ -39,14 +39,14 @@ export const NodeGroupManagementPage = () => {
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [detailDialogOpen, setDetailDialogOpen] = useState(false);
   const [manageNodesDialogOpen, setManageNodesDialogOpen] = useState(false);
-  const [selectedGroup, setSelectedGroup] = useState<NodeGroupListItem | null>(null);
+  const [selectedGroup, setSelectedGroup] = useState<NodeGroup | null>(null);
 
-  const handleEdit = (group: NodeGroupListItem) => {
+  const handleEdit = (group: NodeGroup) => {
     setSelectedGroup(group);
     setEditDialogOpen(true);
   };
 
-  const handleDelete = async (group: NodeGroupListItem) => {
+  const handleDelete = async (group: NodeGroup) => {
     if (
       window.confirm(
         `确认删除节点组 "${group.name}" 吗？\n\n此操作不可恢复。删除节点组不会删除其中的节点。`
@@ -56,12 +56,12 @@ export const NodeGroupManagementPage = () => {
     }
   };
 
-  const handleManageNodes = (group: NodeGroupListItem) => {
+  const handleManageNodes = (group: NodeGroup) => {
     setSelectedGroup(group);
     setManageNodesDialogOpen(true);
   };
 
-  const handleViewDetail = (group: NodeGroupListItem) => {
+  const handleViewDetail = (group: NodeGroup) => {
     setSelectedGroup(group);
     setDetailDialogOpen(true);
   };

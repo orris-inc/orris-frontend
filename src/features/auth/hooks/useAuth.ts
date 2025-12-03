@@ -5,9 +5,10 @@
 import { useState, useCallback } from 'react';
 import { useNavigate, useLocation } from 'react-router';
 import { useAuthStore } from '../stores/auth-store';
-import * as authApi from '../api/auth-api';
+import * as authApi from '@/api/auth';
 import { extractErrorMessage } from '@/shared/utils/error-messages';
-import type { LoginRequest, RegisterRequest, OAuthProvider } from '../types/auth.types';
+import type { LoginRequest, OAuthProvider } from '@/api/auth';
+import type { RegisterRequest } from '@/api/auth';
 import { openOAuthPopup } from '../utils/oauth-popup';
 
 /**
@@ -78,11 +79,11 @@ export const useAuth = () => {
 
       try {
         // 登录接口返回用户信息，Token 存储在 HttpOnly Cookie 中
-        const user = await authApi.login(data);
-        storeLogin(user);
+        const response = await authApi.login(data);
+        storeLogin(response.user);
 
         // 登录成功后根据用户角色跳转
-        const redirectUrl = getRedirectUrl(user.role);
+        const redirectUrl = getRedirectUrl(response.user.role as any);
         navigate(redirectUrl, { replace: true });
       } catch (err) {
         // 记录原始错误用于调试
@@ -112,7 +113,7 @@ export const useAuth = () => {
         storeLogin(user);
 
         // OAuth登录成功后根据用户角色跳转
-        const redirectUrl = getRedirectUrl(user.role);
+        const redirectUrl = getRedirectUrl(user.role as any);
         navigate(redirectUrl, { replace: true });
       } catch (err) {
         console.error('OAuth登录错误:', err);

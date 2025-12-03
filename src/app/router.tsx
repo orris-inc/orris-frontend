@@ -26,6 +26,9 @@ import { SubscriptionManagementPage } from '@/pages/SubscriptionManagementPage';
 import { UserManagementPage } from '@/pages/UserManagementPage';
 import { NodeManagementPage } from '@/pages/NodeManagementPage';
 import { NodeGroupManagementPage } from '@/pages/NodeGroupManagementPage';
+import { ForwardRulesPage } from '@/pages/ForwardRulesPage';
+import { ForwardAgentsPage } from '@/pages/ForwardAgentsPage';
+import { ForwardChainsPage } from '@/pages/ForwardChainsPage';
 import { ProfileSettingsPage } from '@/pages/ProfileSettingsPage';
 import { NewAdminDashboardPage } from '@/pages/NewAdminDashboardPage';
 import { ProtectedRoute } from '@/shared/components/ProtectedRoute';
@@ -130,6 +133,36 @@ export const router = createBrowserRouter([
     element: (
       <AdminRoute>
         <NodeGroupManagementPage />
+      </AdminRoute>
+    ),
+  },
+
+  // 转发规则管理（管理端）
+  {
+    path: '/admin/forward-rules',
+    element: (
+      <AdminRoute>
+        <ForwardRulesPage />
+      </AdminRoute>
+    ),
+  },
+
+  // 转发节点管理（管理端）
+  {
+    path: '/admin/forward-agents',
+    element: (
+      <AdminRoute>
+        <ForwardAgentsPage />
+      </AdminRoute>
+    ),
+  },
+
+  // 转发链管理（管理端）
+  {
+    path: '/admin/forward-chains',
+    element: (
+      <AdminRoute>
+        <ForwardChainsPage />
       </AdminRoute>
     ),
   },

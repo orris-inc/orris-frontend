@@ -5,22 +5,28 @@
 import { useState, useEffect } from 'react';
 import {
   Dialog,
-  DialogTitle,
   DialogContent,
-  DialogActions,
-  Button,
-  TextField,
-  MenuItem,
-  Grid,
-  Box,
-  Typography,
-  Divider,
-} from '@mui/material';
-import type { NodeListItem, UpdateNodeRequest } from '../types/nodes.types';
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from '@/components/common/Dialog';
+import { Button } from '@/components/common/Button';
+import { Input } from '@/components/common/Input';
+import { Textarea } from '@/components/common/Textarea';
+import { Label } from '@/components/common/Label';
+import { Separator } from '@/components/common/Separator';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/common/Select';
+import type { Node, UpdateNodeRequest } from '@/api/node';
 
 interface EditNodeDialogProps {
   open: boolean;
-  node: NodeListItem | null;
+  node: Node | null;
   onClose: () => void;
   onSubmit: (id: number | string, data: UpdateNodeRequest) => void;
 }
@@ -32,7 +38,7 @@ const ENCRYPTION_METHODS = [
   'chacha20-ietf-poly1305',
   'aes-128-cfb',
   'aes-256-cfb',
-];
+] as const;
 
 export const EditNodeDialog: React.FC<EditNodeDialogProps> = ({
   open,
@@ -51,18 +57,18 @@ export const EditNodeDialog: React.FC<EditNodeDialogProps> = ({
       setFormData({
         name: node.name,
         description: node.description,
-        server_address: node.server_address,
-        server_port: node.server_port,
-        method: node.method,
+        serverAddress: node.serverAddress,
+        serverPort: node.serverPort,
+        encryptionMethod: node.encryptionMethod,
         region: node.region,
         status: editableStatus,
-        sort_order: node.sort_order,
+        sortOrder: node.sortOrder,
       });
       setErrors({});
     }
   }, [node]);
 
-  const handleChange = (field: keyof UpdateNodeRequest, value: any) => {
+  const handleChange = (field: keyof UpdateNodeRequest, value: string | number) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
     if (errors[field]) {
       setErrors((prev) => {
@@ -80,12 +86,12 @@ export const EditNodeDialog: React.FC<EditNodeDialogProps> = ({
       newErrors.name = '节点名称不能为空';
     }
 
-    if (formData.server_address !== undefined && !formData.server_address.trim()) {
-      newErrors.server_address = '服务器地址不能为空';
+    if (formData.serverAddress !== undefined && !formData.serverAddress.trim()) {
+      newErrors.serverAddress = '服务器地址不能为空';
     }
 
-    if (formData.server_port !== undefined && (formData.server_port < 1 || formData.server_port > 65535)) {
-      newErrors.server_port = '端口必须在1-65535之间';
+    if (formData.serverPort !== undefined && (formData.serverPort < 1 || formData.serverPort > 65535)) {
+      newErrors.serverPort = '端口必须在1-65535之间';
     }
 
     setErrors(newErrors);
@@ -99,12 +105,12 @@ export const EditNodeDialog: React.FC<EditNodeDialogProps> = ({
 
       if (formData.name !== node.name) updates.name = formData.name;
       if (formData.description !== node.description) updates.description = formData.description;
-      if (formData.server_address !== node.server_address) updates.server_address = formData.server_address;
-      if (formData.server_port !== node.server_port) updates.server_port = formData.server_port;
-      if (formData.method !== node.method) updates.method = formData.method;
+      if (formData.serverAddress !== node.serverAddress) updates.serverAddress = formData.serverAddress;
+      if (formData.serverPort !== node.serverPort) updates.serverPort = formData.serverPort;
+      if (formData.encryptionMethod !== node.encryptionMethod) updates.encryptionMethod = formData.encryptionMethod;
       if (formData.region !== node.region) updates.region = formData.region;
       if (formData.status !== node.status) updates.status = formData.status as any;
-      if (formData.sort_order !== node.sort_order) updates.sort_order = formData.sort_order;
+      if (formData.sortOrder !== node.sortOrder) updates.sortOrder = formData.sortOrder;
 
       // 如果有任何变化，提交更新
       if (Object.keys(updates).length > 0) {
@@ -115,191 +121,188 @@ export const EditNodeDialog: React.FC<EditNodeDialogProps> = ({
 
   // 检查是否有变化
   const hasChanges = node && Object.keys(formData).some(
-    (key) => formData[key as keyof UpdateNodeRequest] !== node[key as keyof NodeListItem]
+    (key) => formData[key as keyof UpdateNodeRequest] !== node[key as keyof Node]
   );
 
   if (!node) return null;
 
   return (
-    <Dialog open={open} onClose={onClose} maxWidth="md" fullWidth>
-      <DialogTitle>编辑节点</DialogTitle>
-      <DialogContent>
-        <Box sx={{ pt: 2 }}>
-          <Grid container spacing={2.5}>
-            {/* 节点基本信息（只读） */}
-            <Grid size={{ xs: 12 }}>
-              <Typography variant="subtitle2" color="text.secondary" gutterBottom>
-                基本信息
-              </Typography>
-              <Divider sx={{ mb: 2 }} />
-            </Grid>
+    <Dialog open={open} onOpenChange={(open) => !open && onClose()}>
+      <DialogContent className="sm:max-w-[700px] max-h-[90vh] overflow-y-auto">
+        <DialogHeader>
+          <DialogTitle>编辑节点</DialogTitle>
+        </DialogHeader>
 
-            <Grid size={{ xs: 12, md: 6 }}>
-              <TextField
-                fullWidth
-                label="节点ID"
-                value={node.id}
-                disabled
-                size="small"
-              />
-            </Grid>
+        <div className="space-y-6">
+          {/* 节点基本信息（只读） */}
+          <div>
+            <h3 className="text-sm font-medium text-muted-foreground mb-3">基本信息</h3>
+            <Separator className="mb-4" />
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="flex flex-col gap-2">
+                <Label htmlFor="node_id">节点ID</Label>
+                <Input id="node_id" value={node.id} disabled />
+              </div>
 
-            <Grid size={{ xs: 12, md: 6 }}>
-              <TextField
-                fullWidth
-                label="创建时间"
-                value={new Date(node.created_at).toLocaleString('zh-CN')}
-                disabled
-                size="small"
-              />
-            </Grid>
+              <div className="flex flex-col gap-2">
+                <Label htmlFor="createdAt">创建时间</Label>
+                <Input
+                  id="createdAt"
+                  value={new Date(node.createdAt).toLocaleString('zh-CN')}
+                  disabled
+                />
+              </div>
+            </div>
+          </div>
 
-            {/* 可编辑字段 */}
-            <Grid size={{ xs: 12 }}>
-              <Typography variant="subtitle2" color="text.secondary" gutterBottom sx={{ mt: 2 }}>
-                可编辑信息
-              </Typography>
-              <Divider sx={{ mb: 2 }} />
-            </Grid>
+          {/* 可编辑字段 */}
+          <div>
+            <h3 className="text-sm font-medium text-muted-foreground mb-3">可编辑信息</h3>
+            <Separator className="mb-4" />
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {/* 节点名称 */}
+              <div className="flex flex-col gap-2">
+                <Label htmlFor="name">节点名称</Label>
+                <Input
+                  id="name"
+                  value={formData.name || ''}
+                  onChange={(e) => handleChange('name', e.target.value)}
+                  error={!!errors.name}
+                />
+                {errors.name && (
+                  <p className="text-xs text-destructive">{errors.name}</p>
+                )}
+              </div>
 
-            {/* 节点名称 */}
-            <Grid size={{ xs: 12, md: 6 }}>
-              <TextField
-                fullWidth
-                label="节点名称"
-                value={formData.name || ''}
-                onChange={(e) => handleChange('name', e.target.value)}
-                error={!!errors.name}
-                helperText={errors.name}
-                size="small"
-              />
-            </Grid>
+              {/* 协议类型（只读） */}
+              <div className="flex flex-col gap-2">
+                <Label htmlFor="protocol">协议类型</Label>
+                <Input
+                  id="protocol"
+                  value={node.protocol === 'shadowsocks' ? 'Shadowsocks' : 'Trojan'}
+                  disabled
+                />
+                <p className="text-xs text-muted-foreground">协议创建后不可修改</p>
+              </div>
 
-            {/* 协议类型（只读） */}
-            <Grid size={{ xs: 12, md: 6 }}>
-              <TextField
-                fullWidth
-                label="协议类型"
-                value={node.protocol === 'shadowsocks' ? 'Shadowsocks' : 'Trojan'}
-                disabled
-                size="small"
-                helperText="协议创建后不可修改"
-              />
-            </Grid>
+              {/* 状态 */}
+              <div className="flex flex-col gap-2">
+                <Label htmlFor="status">状态</Label>
+                <Select
+                  value={formData.status || 'inactive'}
+                  onValueChange={(value) => handleChange('status', value)}
+                >
+                  <SelectTrigger id="status">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="active">激活</SelectItem>
+                    <SelectItem value="inactive">未激活</SelectItem>
+                    <SelectItem value="maintenance">维护中</SelectItem>
+                  </SelectContent>
+                </Select>
+                {node.status === 'error' && (
+                  <p className="text-xs text-muted-foreground">
+                    原状态为错误，已自动设置为未激活
+                  </p>
+                )}
+              </div>
 
-            {/* 状态 */}
-            <Grid size={{ xs: 12, md: 6 }}>
-              <TextField
-                select
-                fullWidth
-                label="状态"
-                value={formData.status || 'inactive'}
-                onChange={(e) => handleChange('status', e.target.value)}
-                size="small"
-                helperText={node.status === 'error' ? '原状态为错误，已自动设置为未激活' : ''}
-              >
-                <MenuItem value="active">激活</MenuItem>
-                <MenuItem value="inactive">未激活</MenuItem>
-                <MenuItem value="maintenance">维护中</MenuItem>
-              </TextField>
-            </Grid>
+              {/* 服务器地址 */}
+              <div className="flex flex-col gap-2 md:col-span-2">
+                <Label htmlFor="serverAddress">服务器地址</Label>
+                <Input
+                  id="serverAddress"
+                  value={formData.serverAddress || ''}
+                  onChange={(e) => handleChange('serverAddress', e.target.value)}
+                  error={!!errors.serverAddress}
+                />
+                {errors.serverAddress && (
+                  <p className="text-xs text-destructive">{errors.serverAddress}</p>
+                )}
+              </div>
 
-            {/* 服务器地址 */}
-            <Grid size={{ xs: 12, md: 8 }}>
-              <TextField
-                fullWidth
-                label="服务器地址"
-                value={formData.server_address || ''}
-                onChange={(e) => handleChange('server_address', e.target.value)}
-                error={!!errors.server_address}
-                helperText={errors.server_address}
-                size="small"
-              />
-            </Grid>
+              {/* 端口 */}
+              <div className="flex flex-col gap-2">
+                <Label htmlFor="serverPort">端口</Label>
+                <Input
+                  id="serverPort"
+                  type="number"
+                  min={1}
+                  max={65535}
+                  value={formData.serverPort || ''}
+                  onChange={(e) => handleChange('serverPort', parseInt(e.target.value, 10))}
+                  error={!!errors.serverPort}
+                />
+                {errors.serverPort && (
+                  <p className="text-xs text-destructive">{errors.serverPort}</p>
+                )}
+              </div>
 
-            {/* 端口 */}
-            <Grid size={{ xs: 12, md: 4 }}>
-              <TextField
-                fullWidth
-                label="端口"
-                type="number"
-                value={formData.server_port || ''}
-                onChange={(e) => handleChange('server_port', parseInt(e.target.value, 10))}
-                error={!!errors.server_port}
-                helperText={errors.server_port}
-                size="small"
-                slotProps={{
-                  htmlInput: { min: 1, max: 65535 }
-                }}
-              />
-            </Grid>
+              {/* 加密方法 */}
+              <div className="flex flex-col gap-2">
+                <Label htmlFor="encryptionMethod">加密方法</Label>
+                <Select
+                  value={formData.encryptionMethod || ''}
+                  onValueChange={(value) => handleChange('encryptionMethod', value)}
+                >
+                  <SelectTrigger id="encryptionMethod">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {ENCRYPTION_METHODS.map((method) => (
+                      <SelectItem key={method} value={method}>
+                        {method}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
 
-            {/* 加密方法 */}
-            <Grid size={{ xs: 12, md: 6 }}>
-              <TextField
-                select
-                fullWidth
-                label="加密方法"
-                value={formData.method || ''}
-                onChange={(e) => handleChange('method', e.target.value)}
-                size="small"
-              >
-                {ENCRYPTION_METHODS.map((method) => (
-                  <MenuItem key={method} value={method}>
-                    {method}
-                  </MenuItem>
-                ))}
-              </TextField>
-            </Grid>
+              {/* 地区 */}
+              <div className="flex flex-col gap-2">
+                <Label htmlFor="region">地区</Label>
+                <Input
+                  id="region"
+                  value={formData.region || ''}
+                  onChange={(e) => handleChange('region', e.target.value)}
+                />
+              </div>
 
-            {/* 地区 */}
-            <Grid size={{ xs: 12, md: 6 }}>
-              <TextField
-                fullWidth
-                label="地区"
-                value={formData.region || ''}
-                onChange={(e) => handleChange('region', e.target.value)}
-                size="small"
-              />
-            </Grid>
+              {/* 排序顺序 */}
+              <div className="flex flex-col gap-2">
+                <Label htmlFor="sortOrder">排序顺序</Label>
+                <Input
+                  id="sortOrder"
+                  type="number"
+                  value={formData.sortOrder ?? 0}
+                  onChange={(e) => handleChange('sortOrder', parseInt(e.target.value, 10) || 0)}
+                />
+              </div>
 
-            {/* 排序顺序 */}
-            <Grid size={{ xs: 12, md: 6 }}>
-              <TextField
-                fullWidth
-                label="排序顺序"
-                type="number"
-                value={formData.sort_order ?? 0}
-                onChange={(e) => handleChange('sort_order', parseInt(e.target.value, 10) || 0)}
-                size="small"
-              />
-            </Grid>
+              {/* 描述 */}
+              <div className="flex flex-col gap-2 md:col-span-2">
+                <Label htmlFor="description">描述</Label>
+                <Textarea
+                  id="description"
+                  rows={2}
+                  value={formData.description || ''}
+                  onChange={(e) => handleChange('description', e.target.value)}
+                />
+              </div>
+            </div>
+          </div>
+        </div>
 
-            {/* 描述 */}
-            <Grid size={{ xs: 12 }}>
-              <TextField
-                fullWidth
-                label="描述"
-                multiline
-                rows={2}
-                value={formData.description || ''}
-                onChange={(e) => handleChange('description', e.target.value)}
-                size="small"
-              />
-            </Grid>
-          </Grid>
-        </Box>
+        <DialogFooter>
+          <Button variant="outline" onClick={onClose}>
+            取消
+          </Button>
+          <Button onClick={handleSubmit} disabled={!hasChanges}>
+            保存
+          </Button>
+        </DialogFooter>
       </DialogContent>
-      <DialogActions>
-        <Button onClick={onClose}>取消</Button>
-        <Button
-          onClick={handleSubmit}
-          variant="contained"
-          disabled={!hasChanges}
-        >
-          保存
-        </Button>
-      </DialogActions>
     </Dialog>
   );
 };

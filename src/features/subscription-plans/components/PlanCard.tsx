@@ -7,7 +7,7 @@ import { getButtonClass, getBadgeClass, cardStyles, cardContentStyles } from '@/
 import { BillingCycleBadge } from './BillingCycleBadge';
 import { PlanFeatureList } from './PlanFeatureList';
 import { PlanPricingSelector } from './PlanPricingSelector';
-import type { SubscriptionPlan } from '../types/subscription-plans.types';
+import type { SubscriptionPlan, BillingCycle } from '@/api/subscription/types';
 
 interface PlanCardProps {
   plan: SubscriptionPlan;
@@ -24,8 +24,8 @@ export const PlanCard: React.FC<PlanCardProps> = ({
   const hasPricings = plan.pricings && plan.pricings.length > 0;
 
   // 格式化价格（分转元）- 用于向后兼容，当没有pricings时使用
-  const formattedPrice = (plan.Price / 100).toFixed(2);
-  const currencySymbol = plan.Currency === 'CNY' ? '¥' : '$';
+  const formattedPrice = (plan.price / 100).toFixed(2);
+  const currencySymbol = plan.currency === 'CNY' ? '¥' : '$';
 
   return (
     <div
@@ -47,13 +47,13 @@ export const PlanCard: React.FC<PlanCardProps> = ({
       <div className={`${cardContentStyles} flex-1 flex flex-col p-6 ${recommended ? 'pt-8' : ''}`}>
         {/* 计划名称 */}
         <h2 className="text-2xl font-bold mb-3">
-          {plan.Name}
+          {plan.name}
         </h2>
 
         {/* 计费周期标签 - 仅在没有多定价时显示 */}
         {!hasPricings && (
           <div className="mb-4">
-            <BillingCycleBadge billingCycle={plan.BillingCycle} />
+            <BillingCycleBadge billingCycle={plan.billingCycle as BillingCycle} />
           </div>
         )}
 
@@ -63,7 +63,7 @@ export const PlanCard: React.FC<PlanCardProps> = ({
             // 使用新的定价选择器组件
             <PlanPricingSelector
               pricings={plan.pricings!}
-              defaultBillingCycle={plan.BillingCycle}
+              defaultBillingCycle={plan.billingCycle as BillingCycle}
             />
           ) : (
             // 向后兼容：使用单一价格
@@ -72,47 +72,47 @@ export const PlanCard: React.FC<PlanCardProps> = ({
                 {currencySymbol}{formattedPrice}
               </div>
               <p className="text-sm text-muted-foreground mt-1">
-                每{plan.BillingCycle === 'monthly' ? '月' : plan.BillingCycle === 'annual' ? '年' : '周期'}
+                每{plan.billingCycle === 'monthly' ? '月' : plan.billingCycle === 'annual' ? '年' : '周期'}
               </p>
             </>
           )}
         </div>
 
         {/* 描述 */}
-        {plan.Description && (
+        {plan.description && (
           <p className="text-sm text-muted-foreground mb-4">
-            {plan.Description}
+            {plan.description}
           </p>
         )}
 
         <Separator className="my-4" />
 
         {/* 功能列表 */}
-        {plan.Features && plan.Features.length > 0 && (
+        {plan.features && plan.features.length > 0 && (
           <div className="mb-4 flex-1">
             <h3 className="text-sm font-semibold mb-3">
               功能特性
             </h3>
-            <PlanFeatureList features={plan.Features} />
+            <PlanFeatureList features={plan.features} />
           </div>
         )}
 
         {/* 限制信息 */}
-        {(plan.MaxUsers || plan.MaxProjects) && (
+        {(plan.maxUsers || plan.maxProjects) && (
           <div className="mb-3">
             <p className="text-xs text-muted-foreground">
-              {plan.MaxUsers && `最多 ${plan.MaxUsers} 个用户`}
-              {plan.MaxUsers && plan.MaxProjects && ' · '}
-              {plan.MaxProjects && `${plan.MaxProjects} 个项目`}
+              {plan.maxUsers && `最多 ${plan.maxUsers} 个用户`}
+              {plan.maxUsers && plan.maxProjects && ' · '}
+              {plan.maxProjects && `${plan.maxProjects} 个项目`}
             </p>
           </div>
         )}
 
         {/* 试用天数 */}
-        {plan.TrialDays && plan.TrialDays > 0 && (
+        {plan.trialDays && plan.trialDays > 0 && (
           <div className="mb-4">
             <span className={getBadgeClass('secondary', 'font-semibold')}>
-              免费试用 {plan.TrialDays} 天
+              免费试用 {plan.trialDays} 天
             </span>
           </div>
         )}

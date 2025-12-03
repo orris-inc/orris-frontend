@@ -6,7 +6,7 @@ import { useState } from 'react';
 import { PlanCardList } from '@/features/subscription-plans/components/PlanCardList';
 import { SubscriptionConfirmDialog } from '@/features/subscription-plans/components/SubscriptionConfirmDialog';
 import { usePublicPlans } from '@/features/subscription-plans/hooks/usePublicPlans';
-import type { SubscriptionPlan } from '@/features/subscription-plans/types/subscription-plans.types';
+import type { SubscriptionPlan } from '@/api/subscription/types';
 import { DashboardLayout } from '@/layouts/DashboardLayout';
 
 export const PricingPage = () => {

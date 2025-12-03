@@ -17,10 +17,10 @@ import {
 } from 'recharts';
 import { AdminLayout } from '@/layouts/AdminLayout';
 import { useAuthStore } from '@/features/auth/stores/auth-store';
-import { getUsers } from '@/features/users/api/users-api';
-import { getSubscriptions } from '@/features/subscriptions/api/subscriptions-api';
-import { getNodes } from '@/features/nodes/api/nodes-api';
-import type { Subscription } from '@/features/subscriptions/types/subscriptions.types';
+import { listUsers } from '@/api/user';
+import { adminListSubscriptions } from '@/api/admin';
+import { listNodes } from '@/api/node';
+import type { Subscription } from '@/api/subscription';
 import {
   Users,
   CreditCard,
@@ -258,9 +258,9 @@ const useDashboardStats = () => {
       try {
         setLoading(true);
         const [usersRes, subscriptionsRes, nodesRes] = await Promise.all([
-          getUsers({ page: 1, page_size: 1 }),
-          getSubscriptions({ page: 1, page_size: 20 }),
-          getNodes({ page: 1, page_size: 100 }),
+          listUsers({ page: 1, pageSize: 1 }),
+          adminListSubscriptions({ page: 1, pageSize: 20 }),
+          listNodes({ page: 1, pageSize: 100 }),
         ]);
 
         const nodes = nodesRes.items || [];
@@ -271,19 +271,19 @@ const useDashboardStats = () => {
           id: node.id,
           name: node.name,
           status: node.status,
-          trafficUsed: node.traffic_used || 0,
-          trafficLimit: node.traffic_limit || 0,
+          trafficUsed: node.trafficUsed || 0,
+          trafficLimit: node.trafficLimit || 0,
         }));
 
         // 用户订阅列表
         const subscriptions = subscriptionsRes.items || [];
         const userSubscriptions: UserSubscriptionItem[] = subscriptions.map((sub: Subscription) => ({
-          userId: sub.UserID,
-          userName: sub.User?.Name || '-',
-          userEmail: sub.User?.Email || '-',
-          planName: sub.Plan?.Name || '-',
-          status: sub.Status,
-          isActive: sub.IsActive,
+          userId: sub.userId,
+          userName: '-', // User 字段需要后端提供
+          userEmail: '-', // User 字段需要后端提供
+          planName: sub.plan?.name || '-',
+          status: sub.status,
+          isActive: sub.status === 'active',
         }));
 
         setStats({
@@ -459,7 +459,7 @@ export const NewAdminDashboardPage = () => {
             </div>
             <p className="text-sm text-slate-500 dark:text-slate-400">
               欢迎回来，
-              {user.display_name || user.name || user.email?.split('@')[0]}
+              {user.displayName || user.email?.split('@')[0]}
             </p>
           </div>
         </div>

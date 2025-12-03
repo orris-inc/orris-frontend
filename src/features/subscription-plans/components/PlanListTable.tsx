@@ -15,36 +15,70 @@ import {
 } from '@/components/common/DropdownMenu';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/common/Tooltip';
 import { BillingCycleBadge } from './BillingCycleBadge';
-import type { SubscriptionPlan, PlanStatus } from '../types/subscription-plans.types';
+import type { SubscriptionPlan, PlanStatus, BillingCycle } from '@/api/subscription/types';
+
+// 计费周期显示名称
+const BILLING_CYCLE_LABELS: Record<BillingCycle, string> = {
+  weekly: '周付',
+  monthly: '月付',
+  quarterly: '季付',
+  semi_annual: '半年付',
+  yearly: '年付',
+  lifetime: '终身',
+};
 
 // 获取计划的价格范围（支持多定价）
 const getPriceRange = (plan: SubscriptionPlan) => {
-  const currencySymbol = plan.Currency === 'CNY' ? '¥' : '$';
+  // 优先使用 pricings 数组
+  if (plan.pricings && plan.pricings.length > 0) {
+    const activePricings = plan.pricings.filter(p => p.isActive);
 
-  // 如果有多定价，计算价格范围
-  if (plan.pricings && plan.pricings.length > 1) {
-    const activePricings = plan.pricings.filter(p => p.is_active);
-    if (activePricings.length > 1) {
-      const prices = activePricings.map(p => p.price);
-      const minPrice = Math.min(...prices);
-      const maxPrice = Math.max(...prices);
-
-      if (minPrice !== maxPrice) {
-        return {
-          display: `${currencySymbol}${(minPrice / 100).toFixed(2)} - ${currencySymbol}${(maxPrice / 100).toFixed(2)}`,
-          details: activePricings.map(p => ({
-            cycle: p.billing_cycle,
-            price: `${p.currency === 'CNY' ? '¥' : '$'}${(p.price / 100).toFixed(2)}`,
-          })),
-        };
-      }
+    if (activePricings.length === 0) {
+      // 没有激活的定价，使用废弃字段向后兼容
+      const currencySymbol = plan.currency === 'CNY' ? '¥' : '$';
+      return {
+        display: `${currencySymbol}${(plan.price / 100).toFixed(2)}`,
+        details: null,
+        primaryCycle: plan.billingCycle as BillingCycle,
+      };
     }
+
+    if (activePricings.length === 1) {
+      const p = activePricings[0];
+      const currencySymbol = p.currency === 'CNY' ? '¥' : '$';
+      return {
+        display: `${currencySymbol}${(p.price / 100).toFixed(2)}`,
+        details: null,
+        primaryCycle: p.billingCycle,
+      };
+    }
+
+    // 多个激活的定价
+    const prices = activePricings.map(p => p.price);
+    const minPrice = Math.min(...prices);
+    const maxPrice = Math.max(...prices);
+    const currency = activePricings[0].currency;
+    const currencySymbol = currency === 'CNY' ? '¥' : '$';
+
+    return {
+      display: minPrice === maxPrice
+        ? `${currencySymbol}${(minPrice / 100).toFixed(2)}`
+        : `${currencySymbol}${(minPrice / 100).toFixed(2)} - ${currencySymbol}${(maxPrice / 100).toFixed(2)}`,
+      details: activePricings.map(p => ({
+        cycle: p.billingCycle,
+        label: BILLING_CYCLE_LABELS[p.billingCycle] || p.billingCycle,
+        price: `${p.currency === 'CNY' ? '¥' : '$'}${(p.price / 100).toFixed(2)}`,
+      })),
+      primaryCycle: activePricings[0].billingCycle,
+    };
   }
 
-  // 单一价格
+  // 向后兼容：使用废弃字段
+  const currencySymbol = plan.currency === 'CNY' ? '¥' : '$';
   return {
-    display: `${currencySymbol}${(plan.Price / 100).toFixed(2)}`,
+    display: `${currencySymbol}${(plan.price / 100).toFixed(2)}`,
     details: null,
+    primaryCycle: plan.billingCycle as BillingCycle,
   };
 };
 
@@ -61,10 +95,9 @@ interface PlanListTableProps {
   onManageNodeGroups?: (plan: SubscriptionPlan) => void;
 }
 
-const STATUS_CONFIG: Record<PlanStatus, { label: string; variant: 'success' | 'default' | 'danger' }> = {
+const STATUS_CONFIG: Record<PlanStatus, { label: string; variant: 'success' | 'default' }> = {
   active: { label: '激活', variant: 'success' },
   inactive: { label: '未激活', variant: 'default' },
-  archived: { label: '已归档', variant: 'danger' },
 };
 
 export const PlanListTable: React.FC<PlanListTableProps> = ({
@@ -81,21 +114,21 @@ export const PlanListTable: React.FC<PlanListTableProps> = ({
 }) => {
   const columns = useMemo<ColumnDef<SubscriptionPlan>[]>(() => [
     {
-      accessorKey: 'Name',
+      accessorKey: 'name',
       header: '计划名称',
       cell: ({ row }) => (
         <div className="space-y-1">
           <div className="text-[15px] text-slate-900 dark:text-white leading-tight">
-            {row.original.Name}
+            {row.original.name}
           </div>
           <div className="text-xs text-slate-400 dark:text-slate-500 leading-tight font-mono">
-            {row.original.Slug}
+            {row.original.slug}
           </div>
         </div>
       ),
     },
     {
-      accessorKey: 'Price',
+      accessorKey: 'price',
       header: '价格',
       size: 100,
       cell: ({ row }) => {
@@ -116,7 +149,7 @@ export const PlanListTable: React.FC<PlanListTableProps> = ({
               <div className="text-xs space-y-1">
                 <p className="font-semibold text-white mb-1.5">所有定价选项：</p>
                 {priceRange.details.map((detail, idx) => (
-                  <p key={idx} className="font-mono text-indigo-100">{detail.cycle}: {detail.price}</p>
+                  <p key={idx} className="font-mono text-indigo-100">{detail.label}: {detail.price}</p>
                 ))}
               </div>
             </TooltipContent>
@@ -129,17 +162,40 @@ export const PlanListTable: React.FC<PlanListTableProps> = ({
       },
     },
     {
-      accessorKey: 'BillingCycle',
+      accessorKey: 'billingCycle',
       header: '计费周期',
       size: 80,
-      cell: ({ row }) => <BillingCycleBadge billingCycle={row.original.BillingCycle} />,
+      cell: ({ row }) => {
+        const priceRange = getPriceRange(row.original);
+        // 如果有多定价，显示数量；否则显示主计费周期
+        if (priceRange.details && priceRange.details.length > 1) {
+          return (
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <span className="inline-flex items-center gap-1 cursor-help text-sm text-slate-600 dark:text-slate-400">
+                  {priceRange.details.length} 种周期
+                </span>
+              </TooltipTrigger>
+              <TooltipContent>
+                <div className="text-xs space-y-1">
+                  {priceRange.details.map((detail, idx) => (
+                    <p key={idx}>{detail.label}</p>
+                  ))}
+                </div>
+              </TooltipContent>
+            </Tooltip>
+          );
+        }
+        return <BillingCycleBadge billingCycle={priceRange.primaryCycle} />;
+      },
     },
     {
-      accessorKey: 'Status',
+      accessorKey: 'status',
       header: '状态',
       size: 72,
       cell: ({ row }) => {
-        const statusConfig = STATUS_CONFIG[row.original.Status] || { label: row.original.Status, variant: 'default' as const };
+        const status = row.original.status as PlanStatus | undefined;
+        const statusConfig = status ? STATUS_CONFIG[status] : { label: '未知', variant: 'default' as const };
         return (
           <AdminBadge variant={statusConfig.variant}>
             {statusConfig.label}
@@ -148,32 +204,32 @@ export const PlanListTable: React.FC<PlanListTableProps> = ({
       },
     },
     {
-      accessorKey: 'IsPublic',
+      accessorKey: 'isPublic',
       header: '公开',
       size: 64,
       cell: ({ row }) => (
-        <AdminBadge variant={row.original.IsPublic ? 'success' : 'outline'}>
-          {row.original.IsPublic ? '是' : '否'}
+        <AdminBadge variant={row.original.isPublic ? 'success' : 'outline'}>
+          {row.original.isPublic ? '是' : '否'}
         </AdminBadge>
       ),
     },
     {
-      accessorKey: 'TrialDays',
+      accessorKey: 'trialDays',
       header: '试用天数',
       size: 80,
       cell: ({ row }) => (
         <span className="font-mono tabular-nums text-slate-700 dark:text-slate-300">
-          {row.original.TrialDays ? `${row.original.TrialDays}天` : '-'}
+          {row.original.trialDays ? `${row.original.trialDays}天` : '-'}
         </span>
       ),
     },
     {
-      accessorKey: 'SortOrder',
+      accessorKey: 'sortOrder',
       header: '排序',
       size: 56,
       cell: ({ row }) => (
         <span className="font-mono tabular-nums text-slate-600 dark:text-slate-400">
-          {row.original.SortOrder || '-'}
+          {row.original.sortOrder || '-'}
         </span>
       ),
     },
@@ -205,7 +261,7 @@ export const PlanListTable: React.FC<PlanListTableProps> = ({
               <DropdownMenuSeparator />
               <DropdownMenuItem onClick={() => onToggleStatus(plan)}>
                 <Power className="mr-2 size-4" />
-                {plan.Status === 'active' ? '停用' : '激活'}
+                {plan.status === 'active' ? '停用' : '激活'}
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
@@ -225,7 +281,7 @@ export const PlanListTable: React.FC<PlanListTableProps> = ({
       onPageChange={onPageChange}
       onPageSizeChange={onPageSizeChange}
       emptyMessage="暂无订阅计划"
-      getRowId={(row) => String(row.ID)}
+      getRowId={(row) => String(row.id)}
     />
   );
 };

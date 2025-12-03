@@ -6,7 +6,7 @@
 import { useEffect, useState } from 'react';
 import { useSearchParams, useNavigate } from 'react-router';
 import { Loader2, CircleCheck, CircleAlert, Info } from 'lucide-react';
-import { verifyEmail } from '@/features/auth/api/auth-api';
+import { verifyEmail } from '@/api/auth';
 import { handleApiError } from '@/shared/lib/axios';
 import {
   getButtonClass,
@@ -38,7 +38,7 @@ export const EmailVerificationPage = () => {
       }
 
       try {
-        await verifyEmail(token);
+        await verifyEmail({ token });
         setStatus('success');
       } catch (err) {
         const errorMsg = handleApiError(err);

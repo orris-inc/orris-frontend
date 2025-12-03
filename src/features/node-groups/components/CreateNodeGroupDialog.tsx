@@ -5,17 +5,18 @@
 import { useState } from 'react';
 import {
   Dialog,
-  DialogTitle,
   DialogContent,
-  DialogActions,
-  Button,
-  TextField,
-  FormControlLabel,
-  Switch,
-  Box,
-  Alert,
-} from '@mui/material';
-import type { CreateNodeGroupRequest } from '../types/node-groups.types';
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from '@/components/common/Dialog';
+import { Button } from '@/components/common/Button';
+import { Input } from '@/components/common/Input';
+import { Textarea } from '@/components/common/Textarea';
+import { Switch, SwitchThumb } from '@/components/common/Switch';
+import { Label } from '@/components/common/Label';
+import { Alert, AlertDescription } from '@/components/common/Alert';
+import type { CreateNodeGroupRequest } from '@/api/node';
 
 interface CreateNodeGroupDialogProps {
   open: boolean;
@@ -31,17 +32,17 @@ export const CreateNodeGroupDialog = ({
   const [formData, setFormData] = useState<CreateNodeGroupRequest>({
     name: '',
     description: '',
-    is_public: false,
-    sort_order: 0,
+    isPublic: false,
+    sortOrder: 0,
   });
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState('');
 
   const handleChange = (field: keyof CreateNodeGroupRequest) => (
-    event: React.ChangeEvent<HTMLInputElement>
+    event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
   ) => {
-    const value = field === 'is_public' ? event.target.checked :
-                  field === 'sort_order' ? Number(event.target.value) :
+    const value = field === 'isPublic' ? (event.target as HTMLInputElement).checked :
+                  field === 'sortOrder' ? Number(event.target.value) :
                   event.target.value;
 
     setFormData((prev) => ({ ...prev, [field]: value }));
@@ -62,12 +63,16 @@ export const CreateNodeGroupDialog = ({
       setFormData({
         name: '',
         description: '',
-        is_public: false,
-        sort_order: 0,
+        isPublic: false,
+        sortOrder: 0,
       });
       onClose();
-    } catch (err) {
-      setError('创建失败，请重试');
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        setError(error.message || '创建失败，请重试');
+      } else {
+        setError('创建失败，请重试');
+      }
     } finally {
       setSubmitting(false);
     }
@@ -78,8 +83,8 @@ export const CreateNodeGroupDialog = ({
       setFormData({
         name: '',
         description: '',
-        is_public: false,
-        sort_order: 0,
+        isPublic: false,
+        sortOrder: 0,
       });
       setError('');
       onClose();
@@ -87,63 +92,80 @@ export const CreateNodeGroupDialog = ({
   };
 
   return (
-    <Dialog open={open} onClose={handleClose} maxWidth="sm" fullWidth>
-      <DialogTitle>新增节点组</DialogTitle>
-      <DialogContent>
-        <Box display="flex" flexDirection="column" gap={2} pt={1}>
-          {error && <Alert severity="error">{error}</Alert>}
+    <Dialog open={open} onOpenChange={(open) => !open && handleClose()}>
+      <DialogContent className="sm:max-w-[500px]">
+        <DialogHeader>
+          <DialogTitle>新增节点组</DialogTitle>
+        </DialogHeader>
 
-          <TextField
-            label="节点组名称"
-            value={formData.name}
-            onChange={handleChange('name')}
-            required
-            fullWidth
-            placeholder="例如：高级节点组"
-          />
+        <div className="flex flex-col gap-4">
+          {error && (
+            <Alert variant="destructive">
+              <AlertDescription>{error}</AlertDescription>
+            </Alert>
+          )}
 
-          <TextField
-            label="描述"
-            value={formData.description}
-            onChange={handleChange('description')}
-            multiline
-            rows={3}
-            fullWidth
-            placeholder="节点组的描述信息"
-          />
+          <div className="flex flex-col gap-2">
+            <Label htmlFor="name">
+              节点组名称 <span className="text-destructive">*</span>
+            </Label>
+            <Input
+              id="name"
+              value={formData.name}
+              onChange={handleChange('name')}
+              placeholder="例如：高级节点组"
+              error={!!error && !formData.name.trim()}
+            />
+          </div>
 
-          <FormControlLabel
-            control={
-              <Switch
-                checked={formData.is_public}
-                onChange={handleChange('is_public')}
-              />
-            }
-            label="公开"
-          />
+          <div className="flex flex-col gap-2">
+            <Label htmlFor="description">描述</Label>
+            <Textarea
+              id="description"
+              value={formData.description}
+              onChange={handleChange('description')}
+              rows={3}
+              placeholder="节点组的描述信息"
+            />
+          </div>
 
-          <TextField
-            label="排序顺序"
-            type="number"
-            value={formData.sort_order}
-            onChange={handleChange('sort_order')}
-            fullWidth
-            helperText="数字越小越靠前"
-          />
-        </Box>
+          <div className="flex items-center gap-2">
+            <Switch
+              id="is_public"
+              checked={formData.isPublic}
+              onCheckedChange={(checked) =>
+                setFormData((prev) => ({ ...prev, isPublic: checked }))
+              }
+            >
+              <SwitchThumb />
+            </Switch>
+            <Label htmlFor="is_public">公开</Label>
+          </div>
+
+          <div className="flex flex-col gap-2">
+            <Label htmlFor="sort_order">排序顺序</Label>
+            <Input
+              id="sort_order"
+              type="number"
+              value={formData.sortOrder}
+              onChange={handleChange('sortOrder')}
+            />
+            <p className="text-sm text-muted-foreground">数字越小越靠前</p>
+          </div>
+        </div>
+
+        <DialogFooter>
+          <Button variant="outline" onClick={handleClose} disabled={submitting}>
+            取消
+          </Button>
+          <Button
+            onClick={handleSubmit}
+            disabled={submitting || !formData.name.trim()}
+          >
+            {submitting ? '创建中...' : '创建'}
+          </Button>
+        </DialogFooter>
       </DialogContent>
-      <DialogActions>
-        <Button onClick={handleClose} disabled={submitting}>
-          取消
-        </Button>
-        <Button
-          onClick={handleSubmit}
-          variant="contained"
-          disabled={submitting || !formData.name.trim()}
-        >
-          {submitting ? '创建中...' : '创建'}
-        </Button>
-      </DialogActions>
     </Dialog>
   );
 };

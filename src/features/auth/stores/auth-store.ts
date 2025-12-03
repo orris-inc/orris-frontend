@@ -5,7 +5,7 @@
 
 import { create } from 'zustand';
 import { devtools } from 'zustand/middleware';
-import type { User } from '../types/auth.types';
+import type { User } from '@/api/auth';
 
 interface AuthState {
   // 状态

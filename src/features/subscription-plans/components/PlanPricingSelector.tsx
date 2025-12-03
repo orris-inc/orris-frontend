@@ -5,20 +5,21 @@
 
 import { useState } from 'react';
 import { ToggleGroup, ToggleGroupItem } from '@/components/common/ToggleGroup';
-import type { PlanPricing, BillingCycle } from '../types/subscription-plans.types';
+import type { PricingOption, BillingCycle } from '@/api/subscription/types';
 
 interface PlanPricingSelectorProps {
-  pricings: PlanPricing[];
+  pricings: PricingOption[];
   defaultBillingCycle?: BillingCycle;
-  onPricingChange?: (pricing: PlanPricing) => void;
+  onPricingChange?: (pricing: PricingOption) => void;
 }
 
 // 计费周期显示名称映射
 const billingCycleLabels: Record<BillingCycle, string> = {
+  weekly: '周付',
   monthly: '月付',
   quarterly: '季付',
   semi_annual: '半年付',
-  annual: '年付',
+  yearly: '年付',
   lifetime: '终身',
 };
 
@@ -28,7 +29,7 @@ export const PlanPricingSelector: React.FC<PlanPricingSelectorProps> = ({
   onPricingChange,
 }) => {
   // 过滤激活的定价选项
-  const activePricings = pricings.filter((p) => p.is_active);
+  const activePricings = pricings.filter((p) => p.isActive);
 
   // 如果没有激活的定价，返回空
   if (activePricings.length === 0) {
@@ -37,15 +38,15 @@ export const PlanPricingSelector: React.FC<PlanPricingSelectorProps> = ({
 
   // 默认选择第一个激活的定价，或指定的计费周期
   const defaultPricing =
-    activePricings.find((p) => p.billing_cycle === defaultBillingCycle) ||
+    activePricings.find((p) => p.billingCycle === defaultBillingCycle) ||
     activePricings[0];
 
-  const [selectedPricing, setSelectedPricing] = useState<PlanPricing>(defaultPricing);
+  const [selectedPricing, setSelectedPricing] = useState<PricingOption>(defaultPricing);
 
   const handlePricingChange = (newBillingCycle: string) => {
     if (!newBillingCycle) return;
 
-    const newPricing = activePricings.find((p) => p.billing_cycle === newBillingCycle);
+    const newPricing = activePricings.find((p) => p.billingCycle === newBillingCycle);
     if (newPricing) {
       setSelectedPricing(newPricing);
       onPricingChange?.(newPricing);
@@ -68,7 +69,7 @@ export const PlanPricingSelector: React.FC<PlanPricingSelectorProps> = ({
           {formatPrice(pricing.price, pricing.currency)}
         </div>
         <p className="text-sm text-muted-foreground mt-1">
-          {billingCycleLabels[pricing.billing_cycle]}
+          {billingCycleLabels[pricing.billingCycle] || pricing.billingCycle}
         </p>
       </div>
     );
@@ -80,17 +81,17 @@ export const PlanPricingSelector: React.FC<PlanPricingSelectorProps> = ({
       {/* 计费周期选择器 */}
       <ToggleGroup
         type="single"
-        value={selectedPricing.billing_cycle}
+        value={selectedPricing.billingCycle}
         onValueChange={handlePricingChange}
         className="flex-wrap justify-start mb-3"
       >
         {activePricings.map((pricing) => (
           <ToggleGroupItem
-            key={pricing.billing_cycle}
-            value={pricing.billing_cycle}
+            key={pricing.billingCycle}
+            value={pricing.billingCycle}
             className="text-xs"
           >
-            {billingCycleLabels[pricing.billing_cycle]}
+            {billingCycleLabels[pricing.billingCycle] || pricing.billingCycle}
           </ToggleGroupItem>
         ))}
       </ToggleGroup>
@@ -100,7 +101,7 @@ export const PlanPricingSelector: React.FC<PlanPricingSelectorProps> = ({
         {formatPrice(selectedPricing.price, selectedPricing.currency)}
       </div>
       <p className="text-sm text-muted-foreground mt-1">
-        {billingCycleLabels[selectedPricing.billing_cycle]}
+        {billingCycleLabels[selectedPricing.billingCycle] || selectedPricing.billingCycle}
       </p>
     </div>
   );

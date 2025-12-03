@@ -5,16 +5,23 @@
 import { useState } from 'react';
 import {
   Dialog,
-  DialogTitle,
   DialogContent,
-  DialogActions,
-  Button,
-  TextField,
-  Grid,
-  Box,
-  MenuItem,
-} from '@mui/material';
-import type { CreateNodeRequest } from '../types/nodes.types';
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from '@/components/common/Dialog';
+import { Button } from '@/components/common/Button';
+import { Input } from '@/components/common/Input';
+import { Textarea } from '@/components/common/Textarea';
+import { Label } from '@/components/common/Label';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/common/Select';
+import type { CreateNodeRequest } from '@/api/node';
 
 interface CreateNodeDialogProps {
   open: boolean;
@@ -29,7 +36,7 @@ const ENCRYPTION_METHODS = [
   'chacha20-ietf-poly1305',
   'aes-128-cfb',
   'aes-256-cfb',
-];
+] as const;
 
 export const CreateNodeDialog: React.FC<CreateNodeDialogProps> = ({
   open,
@@ -39,12 +46,12 @@ export const CreateNodeDialog: React.FC<CreateNodeDialogProps> = ({
   const [formData, setFormData] = useState<CreateNodeRequest>({
     name: '',
     protocol: 'shadowsocks',
-    server_address: '',
-    server_port: 8388,
-    method: 'aes-256-gcm',
+    serverAddress: '',
+    serverPort: 8388,
+    encryptionMethod: 'aes-256-gcm',
     description: '',
     region: '',
-    sort_order: 0,
+    sortOrder: 0,
     tags: [],
   });
 
@@ -54,19 +61,19 @@ export const CreateNodeDialog: React.FC<CreateNodeDialogProps> = ({
     setFormData({
       name: '',
       protocol: 'shadowsocks',
-      server_address: '',
-      server_port: 8388,
-      method: 'aes-256-gcm',
+      serverAddress: '',
+      serverPort: 8388,
+      encryptionMethod: 'aes-256-gcm',
       description: '',
       region: '',
-      sort_order: 0,
+      sortOrder: 0,
       tags: [],
     });
     setErrors({});
     onClose();
   };
 
-  const handleChange = (field: keyof CreateNodeRequest, value: any) => {
+  const handleChange = (field: keyof CreateNodeRequest, value: string | number) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
     // 清除该字段的错误
     if (errors[field]) {
@@ -85,20 +92,20 @@ export const CreateNodeDialog: React.FC<CreateNodeDialogProps> = ({
       newErrors.name = '节点名称不能为空';
     }
 
-    if (!formData.server_address.trim()) {
-      newErrors.server_address = '服务器地址不能为空';
+    if (!formData.serverAddress.trim()) {
+      newErrors.serverAddress = '服务器地址不能为空';
     }
 
-    if (!formData.server_port || formData.server_port < 1 || formData.server_port > 65535) {
-      newErrors.server_port = '端口必须在1-65535之间';
+    if (!formData.serverPort || formData.serverPort < 1 || formData.serverPort > 65535) {
+      newErrors.serverPort = '端口必须在1-65535之间';
     }
 
     if (!formData.protocol) {
       newErrors.protocol = '协议类型不能为空';
     }
 
-    if (!formData.method) {
-      newErrors.method = '加密方法不能为空';
+    if (!formData.encryptionMethod) {
+      newErrors.encryptionMethod = '加密方法不能为空';
     }
 
     setErrors(newErrors);
@@ -111,9 +118,9 @@ export const CreateNodeDialog: React.FC<CreateNodeDialogProps> = ({
       const submitData: CreateNodeRequest = {
         name: formData.name.trim(),
         protocol: formData.protocol,
-        server_address: formData.server_address.trim(),
-        server_port: formData.server_port,
-        method: formData.method,
+        serverAddress: formData.serverAddress.trim(),
+        serverPort: formData.serverPort,
+        encryptionMethod: formData.encryptionMethod,
       };
 
       if (formData.description?.trim()) {
@@ -122,8 +129,8 @@ export const CreateNodeDialog: React.FC<CreateNodeDialogProps> = ({
       if (formData.region?.trim()) {
         submitData.region = formData.region.trim();
       }
-      if (formData.sort_order !== undefined) {
-        submitData.sort_order = formData.sort_order;
+      if (formData.sortOrder !== undefined) {
+        submitData.sortOrder = formData.sortOrder;
       }
 
       onSubmit(submitData);
@@ -133,155 +140,164 @@ export const CreateNodeDialog: React.FC<CreateNodeDialogProps> = ({
 
   const isFormValid = formData.name.trim() &&
                       formData.protocol &&
-                      formData.server_address.trim() &&
-                      formData.server_port &&
-                      formData.method;
+                      formData.serverAddress.trim() &&
+                      formData.serverPort &&
+                      formData.encryptionMethod;
 
   return (
-    <Dialog open={open} onClose={handleClose} maxWidth="md" fullWidth>
-      <DialogTitle>新增节点</DialogTitle>
-      <DialogContent>
-        <Box sx={{ pt: 2 }}>
-          <Grid container spacing={2.5}>
-            {/* 节点名称 */}
-            <Grid size={{ xs: 12, md: 6 }}>
-              <TextField
-                fullWidth
-                label="节点名称"
-                value={formData.name}
-                onChange={(e) => handleChange('name', e.target.value)}
-                error={!!errors.name}
-                helperText={errors.name || '必填项'}
-                required
-                size="small"
-                autoFocus
-              />
-            </Grid>
+    <Dialog open={open} onOpenChange={(open) => !open && handleClose()}>
+      <DialogContent className="sm:max-w-[700px]">
+        <DialogHeader>
+          <DialogTitle>新增节点</DialogTitle>
+        </DialogHeader>
 
-            {/* 协议类型 */}
-            <Grid size={{ xs: 12, md: 6 }}>
-              <TextField
-                select
-                fullWidth
-                label="协议类型"
-                value={formData.protocol}
-                onChange={(e) => handleChange('protocol', e.target.value)}
-                error={!!errors.protocol}
-                helperText={errors.protocol || '必填项'}
-                required
-                size="small"
-              >
-                <MenuItem value="shadowsocks">Shadowsocks</MenuItem>
-                <MenuItem value="trojan">Trojan</MenuItem>
-              </TextField>
-            </Grid>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {/* 节点名称 */}
+          <div className="flex flex-col gap-2">
+            <Label htmlFor="name">
+              节点名称 <span className="text-destructive">*</span>
+            </Label>
+            <Input
+              id="name"
+              value={formData.name}
+              onChange={(e) => handleChange('name', e.target.value)}
+              error={!!errors.name}
+              autoFocus
+            />
+            <p className="text-xs text-muted-foreground">
+              {errors.name || '必填项'}
+            </p>
+          </div>
 
-            {/* 服务器地址 */}
-            <Grid size={{ xs: 12, md: 8 }}>
-              <TextField
-                fullWidth
-                label="服务器地址"
-                placeholder="example.com 或 IP 地址"
-                value={formData.server_address}
-                onChange={(e) => handleChange('server_address', e.target.value)}
-                error={!!errors.server_address}
-                helperText={errors.server_address || '必填项'}
-                required
-                size="small"
-              />
-            </Grid>
+          {/* 协议类型 */}
+          <div className="flex flex-col gap-2">
+            <Label htmlFor="protocol">
+              协议类型 <span className="text-destructive">*</span>
+            </Label>
+            <Select
+              value={formData.protocol}
+              onValueChange={(value) => handleChange('protocol', value)}
+            >
+              <SelectTrigger id="protocol">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="shadowsocks">Shadowsocks</SelectItem>
+                <SelectItem value="trojan">Trojan</SelectItem>
+              </SelectContent>
+            </Select>
+            <p className="text-xs text-muted-foreground">
+              {errors.protocol || '必填项'}
+            </p>
+          </div>
 
-            {/* 端口 */}
-            <Grid size={{ xs: 12, md: 4 }}>
-              <TextField
-                fullWidth
-                label="端口"
-                type="number"
-                value={formData.server_port}
-                onChange={(e) => handleChange('server_port', parseInt(e.target.value, 10))}
-                error={!!errors.server_port}
-                helperText={errors.server_port || '必填项，1-65535'}
-                required
-                size="small"
-                slotProps={{
-                  htmlInput: { min: 1, max: 65535 }
-                }}
-              />
-            </Grid>
+          {/* 服务器地址 */}
+          <div className="flex flex-col gap-2 md:col-span-2">
+            <Label htmlFor="serverAddress">
+              服务器地址 <span className="text-destructive">*</span>
+            </Label>
+            <Input
+              id="serverAddress"
+              placeholder="example.com 或 IP 地址"
+              value={formData.serverAddress}
+              onChange={(e) => handleChange('serverAddress', e.target.value)}
+              error={!!errors.serverAddress}
+            />
+            <p className="text-xs text-muted-foreground">
+              {errors.serverAddress || '必填项'}
+            </p>
+          </div>
 
-            {/* 加密方法 */}
-            <Grid size={{ xs: 12, md: 6 }}>
-              <TextField
-                select
-                fullWidth
-                label="加密方法"
-                value={formData.method}
-                onChange={(e) => handleChange('method', e.target.value)}
-                error={!!errors.method}
-                helperText={errors.method || '必填项'}
-                required
-                size="small"
-              >
+          {/* 端口 */}
+          <div className="flex flex-col gap-2">
+            <Label htmlFor="serverPort">
+              端口 <span className="text-destructive">*</span>
+            </Label>
+            <Input
+              id="serverPort"
+              type="number"
+              min={1}
+              max={65535}
+              value={formData.serverPort}
+              onChange={(e) => handleChange('serverPort', parseInt(e.target.value, 10))}
+              error={!!errors.serverPort}
+            />
+            <p className="text-xs text-muted-foreground">
+              {errors.serverPort || '必填项，1-65535'}
+            </p>
+          </div>
+
+          {/* 加密方法 */}
+          <div className="flex flex-col gap-2">
+            <Label htmlFor="encryptionMethod">
+              加密方法 <span className="text-destructive">*</span>
+            </Label>
+            <Select
+              value={formData.encryptionMethod}
+              onValueChange={(value) => handleChange('encryptionMethod', value)}
+            >
+              <SelectTrigger id="encryptionMethod">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
                 {ENCRYPTION_METHODS.map((method) => (
-                  <MenuItem key={method} value={method}>
+                  <SelectItem key={method} value={method}>
                     {method}
-                  </MenuItem>
+                  </SelectItem>
                 ))}
-              </TextField>
-            </Grid>
+              </SelectContent>
+            </Select>
+            <p className="text-xs text-muted-foreground">
+              {errors.encryptionMethod || '必填项'}
+            </p>
+          </div>
 
-            {/* 地区 */}
-            <Grid size={{ xs: 12, md: 6 }}>
-              <TextField
-                fullWidth
-                label="地区"
-                placeholder="例如：东京"
-                value={formData.region}
-                onChange={(e) => handleChange('region', e.target.value)}
-                size="small"
-                helperText="可选"
-              />
-            </Grid>
+          {/* 地区 */}
+          <div className="flex flex-col gap-2">
+            <Label htmlFor="region">地区</Label>
+            <Input
+              id="region"
+              placeholder="例如：东京"
+              value={formData.region}
+              onChange={(e) => handleChange('region', e.target.value)}
+            />
+            <p className="text-xs text-muted-foreground">可选</p>
+          </div>
 
-            {/* 排序顺序 */}
-            <Grid size={{ xs: 12, md: 6 }}>
-              <TextField
-                fullWidth
-                label="排序顺序"
-                type="number"
-                value={formData.sort_order}
-                onChange={(e) => handleChange('sort_order', parseInt(e.target.value, 10) || 0)}
-                size="small"
-                helperText="数字越小越靠前"
-              />
-            </Grid>
+          {/* 排序顺序 */}
+          <div className="flex flex-col gap-2">
+            <Label htmlFor="sortOrder">排序顺序</Label>
+            <Input
+              id="sortOrder"
+              type="number"
+              value={formData.sortOrder}
+              onChange={(e) => handleChange('sortOrder', parseInt(e.target.value, 10) || 0)}
+            />
+            <p className="text-xs text-muted-foreground">数字越小越靠前</p>
+          </div>
 
-            {/* 描述 */}
-            <Grid size={{ xs: 12 }}>
-              <TextField
-                fullWidth
-                label="描述"
-                multiline
-                rows={2}
-                value={formData.description}
-                onChange={(e) => handleChange('description', e.target.value)}
-                size="small"
-                helperText="可选"
-              />
-            </Grid>
-          </Grid>
-        </Box>
+          {/* 描述 */}
+          <div className="flex flex-col gap-2 md:col-span-2">
+            <Label htmlFor="description">描述</Label>
+            <Textarea
+              id="description"
+              rows={2}
+              value={formData.description}
+              onChange={(e) => handleChange('description', e.target.value)}
+            />
+            <p className="text-xs text-muted-foreground">可选</p>
+          </div>
+        </div>
+
+        <DialogFooter>
+          <Button variant="outline" onClick={handleClose}>
+            取消
+          </Button>
+          <Button onClick={handleSubmit} disabled={!isFormValid}>
+            创建
+          </Button>
+        </DialogFooter>
       </DialogContent>
-      <DialogActions>
-        <Button onClick={handleClose}>取消</Button>
-        <Button
-          onClick={handleSubmit}
-          variant="contained"
-          disabled={!isFormValid}
-        >
-          创建
-        </Button>
-      </DialogActions>
     </Dialog>
   );
 };

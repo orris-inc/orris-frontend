@@ -4,7 +4,7 @@
 
 import { Loader2 } from 'lucide-react';
 import { PlanCard } from './PlanCard';
-import type { SubscriptionPlan } from '../types/subscription-plans.types';
+import type { SubscriptionPlan } from '@/api/subscription/types';
 
 interface PlanCardListProps {
   plans: SubscriptionPlan[];
@@ -41,9 +41,9 @@ export const PlanCardList: React.FC<PlanCardListProps> = ({
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8">
       {plans.map((plan) => (
         <PlanCard
-          key={plan.ID}
+          key={plan.id}
           plan={plan}
-          recommended={plan.ID === recommendedPlanId}
+          recommended={plan.id === recommendedPlanId}
           onSelect={onSelectPlan}
         />
       ))}

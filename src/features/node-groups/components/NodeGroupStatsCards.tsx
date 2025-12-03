@@ -2,88 +2,85 @@
  * 节点组统计卡片组件
  */
 
-import { Grid, Card, CardContent, Typography, Box, Skeleton } from '@mui/material';
-import GroupsIcon from '@mui/icons-material/Groups';
-import PublicIcon from '@mui/icons-material/Public';
-import LockIcon from '@mui/icons-material/Lock';
-import type { NodeGroupListItem } from '../types/node-groups.types';
+import type { LucideIcon } from 'lucide-react';
+import { Users, Globe, Lock } from 'lucide-react';
+import { Card, CardContent } from '@/components/common/Card';
+import { Skeleton } from '@/components/common/Skeleton';
+import type { NodeGroup } from '@/api/node';
 
 interface NodeGroupStatsCardsProps {
-  nodeGroups: NodeGroupListItem[];
+  nodeGroups: NodeGroup[];
   loading?: boolean;
+}
+
+interface StatsCard {
+  title: string;
+  value: number;
+  icon: LucideIcon;
+  color: string;
+  bgColor: string;
 }
 
 export const NodeGroupStatsCards = ({ nodeGroups, loading = false }: NodeGroupStatsCardsProps) => {
   // 计算统计数据
   const stats = {
     total: nodeGroups.length,
-    public: nodeGroups.filter((g) => g.is_public).length,
-    private: nodeGroups.filter((g) => !g.is_public).length,
+    public: nodeGroups.filter((g) => g.isPublic).length,
+    private: nodeGroups.filter((g) => !g.isPublic).length,
   };
 
-  const cards = [
+  const cards: StatsCard[] = [
     {
       title: '总节点组数',
       value: stats.total,
-      icon: <GroupsIcon sx={{ fontSize: 40 }} />,
-      color: 'primary.main',
-      bgColor: 'primary.light',
+      icon: Users,
+      color: 'text-blue-600',
+      bgColor: 'bg-blue-100',
     },
     {
       title: '公开节点组',
       value: stats.public,
-      icon: <PublicIcon sx={{ fontSize: 40 }} />,
-      color: 'success.main',
-      bgColor: 'success.light',
+      icon: Globe,
+      color: 'text-green-600',
+      bgColor: 'bg-green-100',
     },
     {
       title: '私有节点组',
       value: stats.private,
-      icon: <LockIcon sx={{ fontSize: 40 }} />,
-      color: 'warning.main',
-      bgColor: 'warning.light',
+      icon: Lock,
+      color: 'text-orange-600',
+      bgColor: 'bg-orange-100',
     },
   ];
 
   return (
-    <Grid container spacing={3} sx={{ mb: 3 }}>
-      {cards.map((card, index) => (
-        <Grid key={index} size={{ xs: 12, sm: 6, md: 4 }}>
-          <Card elevation={0} sx={{ border: 1, borderColor: 'divider' }}>
-            <CardContent>
-              <Box display="flex" alignItems="center" justifyContent="space-between">
-                <Box>
-                  <Typography variant="body2" color="text.secondary" gutterBottom>
+    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 mb-6">
+      {cards.map((card, index) => {
+        const Icon = card.icon;
+        return (
+          <Card key={index} className="border">
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm text-muted-foreground mb-1">
                     {card.title}
-                  </Typography>
+                  </p>
                   {loading ? (
-                    <Skeleton width={60} height={40} />
+                    <Skeleton className="w-[60px] h-[40px]" />
                   ) : (
-                    <Typography variant="h4" fontWeight="bold">
+                    <h4 className="text-3xl font-bold">
                       {card.value}
-                    </Typography>
+                    </h4>
                   )}
-                </Box>
-                <Box
-                  sx={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    width: 64,
-                    height: 64,
-                    borderRadius: 2,
-                    bgcolor: card.bgColor,
-                    color: card.color,
-                    opacity: 0.8,
-                  }}
-                >
-                  {card.icon}
-                </Box>
-              </Box>
+                </div>
+                <div className={`flex items-center justify-center w-16 h-16 rounded-lg ${card.bgColor} ${card.color} opacity-80`}>
+                  <Icon className="w-10 h-10" />
+                </div>
+              </div>
             </CardContent>
           </Card>
-        </Grid>
-      ))}
-    </Grid>
+        );
+      })}
+    </div>
   );
 };

@@ -6,7 +6,8 @@ import * as Select from '@radix-ui/react-select';
 import * as Checkbox from '@radix-ui/react-checkbox';
 import * as Label from '@radix-ui/react-label';
 import { Check, ChevronDown } from 'lucide-react';
-import type { BillingCycle, PlanStatus, SubscriptionPlanFilters } from '../types/subscription-plans.types';
+import type { BillingCycle, PlanStatus } from '@/api/subscription/types';
+import type { SubscriptionPlanFilters } from '../types';
 
 interface PlanFiltersProps {
   filters: SubscriptionPlanFilters;
@@ -14,17 +15,17 @@ interface PlanFiltersProps {
 }
 
 const BILLING_CYCLES: { value: BillingCycle; label: string }[] = [
+  { value: 'weekly', label: '周付' },
   { value: 'monthly', label: '月付' },
   { value: 'quarterly', label: '季付' },
   { value: 'semi_annual', label: '半年付' },
-  { value: 'annual', label: '年付' },
+  { value: 'yearly', label: '年付' },
   { value: 'lifetime', label: '终身' },
 ];
 
 const STATUSES: { value: PlanStatus; label: string }[] = [
   { value: 'active', label: '激活' },
   { value: 'inactive', label: '未激活' },
-  { value: 'archived', label: '已归档' },
 ];
 
 export const PlanFilters: React.FC<PlanFiltersProps> = ({
@@ -73,8 +74,8 @@ export const PlanFilters: React.FC<PlanFiltersProps> = ({
       <div className="space-y-2">
         <Label.Root className="text-sm font-medium">计费周期</Label.Root>
         <Select.Root
-          value={filters.billing_cycle || 'all'}
-          onValueChange={(value) => onChange({ billing_cycle: value !== 'all' ? value as BillingCycle : undefined })}
+          value={filters.billingCycle || 'all'}
+          onValueChange={(value) => onChange({ billingCycle: value !== 'all' ? value as BillingCycle : undefined })}
         >
           <Select.Trigger className="flex h-9 w-full items-center justify-between rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-ring disabled:cursor-not-allowed disabled:opacity-50">
             <Select.Value placeholder="全部" />
@@ -120,16 +121,16 @@ export const PlanFilters: React.FC<PlanFiltersProps> = ({
       <div className="flex items-end space-y-2">
         <div className="flex items-center gap-2">
           <Checkbox.Root
-            id="is-public"
-            checked={filters.is_public ?? false}
-            onCheckedChange={(checked) => onChange({ is_public: checked ? true : undefined })}
+            id="isPublic"
+            checked={filters.isPublic ?? false}
+            onCheckedChange={(checked) => onChange({ isPublic: checked ? true : undefined })}
             className="peer size-4 shrink-0 rounded-sm border border-primary shadow focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 data-[state=checked]:bg-primary data-[state=checked]:text-primary-foreground"
           >
             <Checkbox.Indicator className="flex items-center justify-center text-current">
               <Check className="size-4" />
             </Checkbox.Indicator>
           </Checkbox.Root>
-          <Label.Root htmlFor="is-public" className="cursor-pointer text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
+          <Label.Root htmlFor="isPublic" className="cursor-pointer text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
             仅公开计划
           </Label.Root>
         </div>

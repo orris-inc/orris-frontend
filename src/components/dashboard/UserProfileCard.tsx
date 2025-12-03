@@ -6,7 +6,7 @@
 import { Settings } from 'lucide-react';
 import { cardStyles, getButtonClass } from '@/lib/ui-styles';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/common/Avatar';
-import type { User } from '@/features/auth/types/auth.types';
+import type { User } from '@/api/auth';
 import { useNavigate } from 'react-router-dom';
 
 interface UserProfileCardProps {
@@ -15,11 +15,9 @@ interface UserProfileCardProps {
 
 export const UserProfileCard = ({ user }: UserProfileCardProps) => {
   const navigate = useNavigate();
-  const displayName = user.display_name || user.name || user.email?.split('@')[0] || '用户';
+  const displayName = user.displayName || user.email?.split('@')[0] || '用户';
   const avatarText =
-    user.initials ||
-    user.display_name?.charAt(0).toUpperCase() ||
-    user.name?.charAt(0).toUpperCase() ||
+    user.displayName?.charAt(0).toUpperCase() ||
     user.email?.charAt(0).toUpperCase();
 
   return (

@@ -2,17 +2,22 @@
  * 节点统计卡片组件
  */
 
-import { Grid, Card, CardContent, Typography, Box } from '@mui/material';
-import StorageIcon from '@mui/icons-material/Storage';
-import CheckCircleIcon from '@mui/icons-material/CheckCircle';
-import CancelIcon from '@mui/icons-material/Cancel';
-import BuildIcon from '@mui/icons-material/Build';
-import ErrorIcon from '@mui/icons-material/Error';
-import type { NodeListItem } from '../types/nodes.types';
+import type { LucideIcon } from 'lucide-react';
+import { Server, CheckCircle, XCircle, Wrench, AlertCircle } from 'lucide-react';
+import { Card, CardContent } from '@/components/common/Card';
+import type { Node } from '@/api/node';
 
 interface NodeStatsCardsProps {
-  nodes: NodeListItem[];
+  nodes: Node[];
   loading?: boolean;
+}
+
+interface StatCard {
+  title: string;
+  value: number;
+  icon: LucideIcon;
+  color: string;
+  bgColor: string;
 }
 
 export const NodeStatsCards: React.FC<NodeStatsCardsProps> = ({ nodes, loading }) => {
@@ -25,85 +30,69 @@ export const NodeStatsCards: React.FC<NodeStatsCardsProps> = ({ nodes, loading }
     error: nodes.filter(n => n.status === 'error').length,
   };
 
-  const statCards = [
+  const statCards: StatCard[] = [
     {
       title: '总节点数',
       value: stats.total,
-      icon: <StorageIcon sx={{ fontSize: 40 }} />,
-      color: '#1976d2',
-      bgColor: '#e3f2fd',
+      icon: Server,
+      color: 'text-blue-600',
+      bgColor: 'bg-blue-50',
     },
     {
       title: '激活',
       value: stats.active,
-      icon: <CheckCircleIcon sx={{ fontSize: 40 }} />,
-      color: '#2e7d32',
-      bgColor: '#e8f5e9',
+      icon: CheckCircle,
+      color: 'text-green-600',
+      bgColor: 'bg-green-50',
     },
     {
       title: '未激活',
       value: stats.inactive,
-      icon: <CancelIcon sx={{ fontSize: 40 }} />,
-      color: '#757575',
-      bgColor: '#f5f5f5',
+      icon: XCircle,
+      color: 'text-gray-600',
+      bgColor: 'bg-gray-50',
     },
     {
       title: '维护中',
       value: stats.maintenance,
-      icon: <BuildIcon sx={{ fontSize: 40 }} />,
-      color: '#ed6c02',
-      bgColor: '#fff3e0',
+      icon: Wrench,
+      color: 'text-orange-600',
+      bgColor: 'bg-orange-50',
     },
     {
       title: '错误',
       value: stats.error,
-      icon: <ErrorIcon sx={{ fontSize: 40 }} />,
-      color: '#d32f2f',
-      bgColor: '#ffebee',
+      icon: AlertCircle,
+      color: 'text-red-600',
+      bgColor: 'bg-red-50',
     },
   ];
 
   return (
-    <Grid container spacing={2} sx={{ mb: 3 }}>
-      {statCards.map((stat, index) => (
-        <Grid key={index} size={{ xs: 12, sm: 6, md: 2.4 }}>
+    <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-6">
+      {statCards.map((stat, index) => {
+        const Icon = stat.icon;
+        return (
           <Card
-            sx={{
-              height: '100%',
-              transition: 'all 0.3s',
-              '&:hover': {
-                transform: 'translateY(-4px)',
-                boxShadow: 3,
-              }
-            }}
+            key={index}
+            className="transition-all duration-300 hover:-translate-y-1 hover:shadow-lg"
           >
-            <CardContent>
-              <Box display="flex" alignItems="center" justifyContent="space-between" mb={1}>
-                <Box
-                  sx={{
-                    width: 56,
-                    height: 56,
-                    borderRadius: 2,
-                    backgroundColor: stat.bgColor,
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    color: stat.color,
-                  }}
-                >
-                  {stat.icon}
-                </Box>
-              </Box>
-              <Typography variant="h4" fontWeight="bold" color={stat.color}>
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between mb-2">
+                <div className={`w-14 h-14 rounded-lg ${stat.bgColor} flex items-center justify-center ${stat.color}`}>
+                  <Icon className="w-10 h-10" />
+                </div>
+              </div>
+              <h4 className={`text-3xl font-bold ${stat.color}`}>
                 {loading ? '-' : stat.value}
-              </Typography>
-              <Typography variant="body2" color="text.secondary" mt={0.5}>
+              </h4>
+              <p className="text-sm text-muted-foreground mt-1">
                 {stat.title}
-              </Typography>
+              </p>
             </CardContent>
           </Card>
-        </Grid>
-      ))}
-    </Grid>
+        );
+      })}
+    </div>
   );
 };

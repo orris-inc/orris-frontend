@@ -1,19 +1,16 @@
 /**
  * 主应用组件
- * React 19 + MUI v7 + React Router v7 + TanStack Query
+ * React 19 + Radix UI + Tailwind + React Router v7 + TanStack Query
  */
 
 import { RouterProvider } from 'react-router';
-import { ThemeProvider } from '@mui/material/styles';
-import CssBaseline from '@mui/material/CssBaseline';
 import { QueryClientProvider } from '@tanstack/react-query';
-import { theme } from './theme';
+import { Loader2 } from 'lucide-react';
 import { router } from './router';
 import { queryClient } from '@/shared/lib/query-client';
 import { GlobalSnackbar } from '@/shared/components/GlobalSnackbar';
 import { useAuthInitializer } from '@/features/auth/hooks/useAuthInitializer';
 import { useAuthStore } from '@/features/auth/stores/auth-store';
-import { Box, CircularProgress } from '@mui/material';
 
 export const App = () => {
   // 初始化认证状态
@@ -25,29 +22,16 @@ export const App = () => {
   // 显示加载指示器，直到认证状态初始化完成
   if (isLoading) {
     return (
-      <ThemeProvider theme={theme}>
-        <CssBaseline />
-        <Box
-          sx={{
-            display: 'flex',
-            justifyContent: 'center',
-            alignItems: 'center',
-            height: '100vh',
-          }}
-        >
-          <CircularProgress />
-        </Box>
-      </ThemeProvider>
+      <div className="flex justify-center items-center h-screen">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
     );
   }
 
   return (
     <QueryClientProvider client={queryClient}>
-      <ThemeProvider theme={theme}>
-        <CssBaseline />
-        <RouterProvider router={router} />
-        <GlobalSnackbar />
-      </ThemeProvider>
+      <RouterProvider router={router} />
+      <GlobalSnackbar />
     </QueryClientProvider>
   );
 };

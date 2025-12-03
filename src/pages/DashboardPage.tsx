@@ -15,8 +15,8 @@ import {
 } from 'lucide-react';
 import { DashboardLayout } from '@/layouts/DashboardLayout';
 import { useAuthStore } from '@/features/auth/stores/auth-store';
-import { getSubscriptions } from '@/features/subscriptions/api/subscriptions-api';
-import type { Subscription } from '@/features/subscriptions/types/subscriptions.types';
+import { adminListSubscriptions } from '@/api/admin';
+import type { Subscription } from '@/api/subscription/types';
 import { SubscriptionCard } from '@/components/dashboard/SubscriptionCard';
 
 export const DashboardPage = () => {
@@ -26,7 +26,7 @@ export const DashboardPage = () => {
   useEffect(() => {
     const fetchSubscriptions = async () => {
       try {
-        const result = await getSubscriptions({ page: 1, page_size: 100 });
+        const result = await adminListSubscriptions({ page: 1, pageSize: 100 });
         if (result.items && result.items.length > 0) {
           setSubscriptions(result.items);
         }
@@ -49,7 +49,7 @@ export const DashboardPage = () => {
     );
   }
 
-  const activeSubscriptions = subscriptions.filter((sub) => sub.IsActive && !sub.IsExpired);
+  const activeSubscriptions = subscriptions.filter((sub) => sub.status === 'active');
   const hasActiveSubscription = activeSubscriptions.length > 0;
   const primarySubscription = activeSubscriptions[0];
 
@@ -61,7 +61,7 @@ export const DashboardPage = () => {
     return diff > 0 ? diff : 0;
   };
 
-  const daysRemaining = primarySubscription ? getDaysRemaining(primarySubscription.EndDate) : null;
+  const daysRemaining = primarySubscription ? getDaysRemaining(primarySubscription.endDate) : null;
 
   return (
     <DashboardLayout>
@@ -69,13 +69,13 @@ export const DashboardPage = () => {
         {/* 欢迎 */}
         <div>
           <h1 className="text-2xl font-semibold text-foreground">
-            {user.display_name || user.name || user.email?.split('@')[0] || '用户'}
+            {user.displayName || user.email?.split('@')[0] || '用户'}
           </h1>
           <p className="text-muted-foreground">欢迎回来</p>
         </div>
 
         {/* 邮箱未验证提示 */}
-        {!user.email_verified && (
+        {!user.emailVerified && (
           <div className="flex items-center gap-3 p-4 bg-amber-500/10 border border-amber-500/20 rounded-lg">
             <CircleAlert className="h-5 w-5 text-amber-500" />
             <div>

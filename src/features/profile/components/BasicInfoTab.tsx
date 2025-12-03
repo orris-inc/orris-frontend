@@ -7,7 +7,7 @@ import {
   updateProfileSchema,
   type UpdateProfileFormData,
 } from '../types/profile.types';
-import type { User } from '@/features/auth/types/auth.types';
+import type { User } from '@/api/auth';
 
 interface BasicInfoTabProps {
   user: User;
@@ -26,7 +26,7 @@ export const BasicInfoTab = ({ user }: BasicInfoTabProps) => {
   } = useForm<UpdateProfileFormData>({
     resolver: zodResolver(updateProfileSchema),
     defaultValues: {
-      name: user.name || user.display_name || '',
+      name: user.displayName || '',
       email: user.email || '',
     },
   });
@@ -87,7 +87,7 @@ export const BasicInfoTab = ({ user }: BasicInfoTabProps) => {
             {errors.email?.message || '修改邮箱后需要重新验证'}
           </p>
           <div className="flex items-center gap-2">
-            {user.email_verified ? (
+            {user.emailVerified ? (
               <span className="inline-flex items-center gap-1 rounded-full border px-2.5 py-0.5 text-xs font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 border-transparent bg-primary text-primary-foreground hover:bg-primary/80">
                 <CheckCircle2 className="size-3" />
                 已验证
@@ -100,38 +100,6 @@ export const BasicInfoTab = ({ user }: BasicInfoTabProps) => {
             )}
           </div>
         </div>
-
-        {/* 显示名称（只读，由后端生成） */}
-        {user.display_name && (
-          <div className="grid gap-2">
-            <LabelPrimitive.Root htmlFor="display_name" className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
-              显示名称
-            </LabelPrimitive.Root>
-            <input
-              id="display_name"
-              value={user.display_name}
-              disabled
-              className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-            />
-            <p className="text-sm text-muted-foreground">由系统自动生成</p>
-          </div>
-        )}
-
-        {/* 用户标识（只读） */}
-        {user.initials && (
-          <div className="grid gap-2">
-            <LabelPrimitive.Root htmlFor="initials" className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
-              姓名首字母
-            </LabelPrimitive.Root>
-            <input
-              id="initials"
-              value={user.initials}
-              disabled
-              className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-            />
-            <p className="text-sm text-muted-foreground">由系统自动生成</p>
-          </div>
-        )}
 
         {/* 账号状态 */}
         <div className="grid gap-2">
@@ -159,7 +127,7 @@ export const BasicInfoTab = ({ user }: BasicInfoTabProps) => {
         </div>
 
         {/* OAuth提供商 */}
-        {user.oauth_provider && (
+        {user.oauthProvider && (
           <div className="grid gap-2">
             <LabelPrimitive.Root className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
               登录方式
@@ -167,11 +135,11 @@ export const BasicInfoTab = ({ user }: BasicInfoTabProps) => {
             <div>
               <span className="inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 bg-background hover:bg-accent hover:text-accent-foreground">
                 {
-                  user.oauth_provider === 'google'
+                  user.oauthProvider === 'google'
                     ? 'Google'
-                    : user.oauth_provider === 'github'
+                    : user.oauthProvider === 'github'
                       ? 'GitHub'
-                      : user.oauth_provider
+                      : user.oauthProvider
                 }
               </span>
             </div>
@@ -184,18 +152,18 @@ export const BasicInfoTab = ({ user }: BasicInfoTabProps) => {
             注册时间
           </LabelPrimitive.Root>
           <p className="text-sm">
-            {new Date(user.created_at).toLocaleString('zh-CN')}
+            {user.createdAt ? new Date(user.createdAt).toLocaleString('zh-CN') : '-'}
           </p>
         </div>
 
         {/* 最后更新时间 */}
-        {user.updated_at && (
+        {user.updatedAt && (
           <div className="grid gap-2">
             <LabelPrimitive.Root className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
               最后更新
             </LabelPrimitive.Root>
             <p className="text-sm">
-              {new Date(user.updated_at).toLocaleString('zh-CN')}
+              {new Date(user.updatedAt).toLocaleString('zh-CN')}
             </p>
           </div>
         )}

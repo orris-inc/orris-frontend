@@ -20,7 +20,7 @@ export interface PaginationMeta {
   page: number;
   limit: number;
   total: number;
-  total_pages: number;
+  totalPages: number;
 }
 
 export interface PaginatedResponse<T> {
@@ -32,11 +32,14 @@ export interface PaginatedResponse<T> {
  * 列表响应类型（后端实际使用的格式）
  * 来源: swagger.json line 6835-6852
  * 路径: #/definitions/orris_internal_shared_utils.ListResponse
+ *
+ * Note: All properties use camelCase. The axios-case-converter middleware
+ * automatically converts between snake_case (API) and camelCase (frontend).
  */
 export interface ListResponse<T> {
   items: T[];
   page: number;
-  page_size: number;
+  pageSize: number;
   total: number;
-  total_pages: number;
+  totalPages: number;
 }

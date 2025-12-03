@@ -84,7 +84,7 @@ export const usePermissions = (): UsePermissionsReturn => {
 
     // 如果用户对象中有role字段，使用该字段值
     if (user.role) {
-      return user.role;
+      return user.role as UserRole;
     }
 
     // 默认返回'user'角色
@@ -95,7 +95,7 @@ export const usePermissions = (): UsePermissionsReturn => {
    * 检查用户是否拥有指定角色
    * 支持单个角色字符串或角色数组
    */
-  const hasPermission = (requiredRoles: UserRole | UserRole[]): boolean => {
+  const hasPermission = (requiredRoles: UserRole | readonly UserRole[]): boolean => {
     const userRole = getCurrentUserRole();
 
     // 如果requiredRoles是字符串，转换为数组

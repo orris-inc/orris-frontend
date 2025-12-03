@@ -16,7 +16,7 @@ import { CreatePlanDialog } from '@/features/subscription-plans/components/Creat
 import { EditPlanDialog } from '@/features/subscription-plans/components/EditPlanDialog';
 import { ManagePlanNodeGroupsDialog } from '@/features/subscription-plans/components/ManagePlanNodeGroupsDialog';
 import { useSubscriptionPlansPage } from '@/features/subscription-plans/hooks/useSubscriptionPlans';
-import type { SubscriptionPlan, CreatePlanRequest, UpdatePlanRequest } from '@/features/subscription-plans/types/subscription-plans.types';
+import type { SubscriptionPlan, CreatePlanRequest, UpdatePlanRequest } from '@/api/subscription/types';
 
 export const SubscriptionPlansManagementPage = () => {
   const {

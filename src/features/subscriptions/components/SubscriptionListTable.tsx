@@ -7,7 +7,7 @@ import { useMemo } from 'react';
 import { CheckCircle, X } from 'lucide-react';
 import { DataTable, AdminBadge, type ColumnDef } from '@/components/admin';
 import { formatDate } from '@/shared/utils/date-utils';
-import type { Subscription, SubscriptionStatus } from '../types/subscriptions.types';
+import type { Subscription, SubscriptionStatus } from '@/api/subscription/types';
 
 interface SubscriptionListTableProps {
   subscriptions: Subscription[];
@@ -22,7 +22,7 @@ interface SubscriptionListTableProps {
 // 状态配置
 const STATUS_CONFIG: Record<SubscriptionStatus, { label: string; variant: 'success' | 'default' | 'warning' | 'danger' }> = {
   active: { label: '激活', variant: 'success' },
-  inactive: { label: '未激活', variant: 'default' },
+  renewed: { label: '已续费', variant: 'success' },
   pending: { label: '待处理', variant: 'warning' },
   cancelled: { label: '已取消', variant: 'danger' },
   expired: { label: '已过期', variant: 'danger' },
@@ -39,12 +39,12 @@ export const SubscriptionListTable: React.FC<SubscriptionListTableProps> = ({
 }) => {
   const columns = useMemo<ColumnDef<Subscription>[]>(() => [
     {
-      accessorKey: 'ID',
+      accessorKey: 'id',
       header: '订阅ID',
       size: 72,
       cell: ({ row }) => (
         <span className="font-mono text-slate-600 dark:text-slate-400">
-          {row.original.ID}
+          {row.original.id}
         </span>
       ),
     },
@@ -55,10 +55,10 @@ export const SubscriptionListTable: React.FC<SubscriptionListTableProps> = ({
       cell: ({ row }) => (
         <div className="space-y-1">
           <div className="font-medium text-slate-900 dark:text-white">
-            {row.original.User?.Name || '-'}
+            User #{row.original.userId}
           </div>
           <div className="text-xs text-slate-500 dark:text-slate-400">
-            {row.original.User?.Email || `User #${row.original.UserID}`}
+            ID: {row.original.userId}
           </div>
         </div>
       ),
@@ -69,22 +69,20 @@ export const SubscriptionListTable: React.FC<SubscriptionListTableProps> = ({
       cell: ({ row }) => (
         <div className="space-y-1">
           <div className="font-medium text-slate-900 dark:text-white">
-            {row.original.Plan?.Name || '-'}
+            {row.original.plan?.name || '未知计划'}
           </div>
-          {row.original.Plan && (
-            <div className="text-xs text-slate-500 dark:text-slate-400 font-mono">
-              {(row.original.Plan.Price / 100).toFixed(2)} {row.original.Plan.Currency}
-            </div>
-          )}
+          <div className="text-xs text-slate-500 dark:text-slate-400">
+            {row.original.plan?.billingCycle || '-'}
+          </div>
         </div>
       ),
     },
     {
-      accessorKey: 'Status',
+      accessorKey: 'status',
       header: '状态',
       size: 72,
       cell: ({ row }) => {
-        const statusConfig = STATUS_CONFIG[row.original.Status] || { label: row.original.Status, variant: 'default' as const };
+        const statusConfig = STATUS_CONFIG[row.original.status] || { label: row.original.status, variant: 'default' as const };
         return (
           <AdminBadge variant={statusConfig.variant}>
             {statusConfig.label}
@@ -93,31 +91,31 @@ export const SubscriptionListTable: React.FC<SubscriptionListTableProps> = ({
       },
     },
     {
-      accessorKey: 'StartDate',
+      accessorKey: 'startDate',
       header: '开始日期',
       size: 100,
       cell: ({ row }) => (
         <span className="text-slate-700 dark:text-slate-300 text-sm">
-          {formatDate(row.original.StartDate)}
+          {formatDate(row.original.startDate)}
         </span>
       ),
     },
     {
-      accessorKey: 'EndDate',
+      accessorKey: 'endDate',
       header: '结束日期',
       size: 100,
       cell: ({ row }) => (
         <span className="text-slate-700 dark:text-slate-300 text-sm">
-          {row.original.EndDate ? formatDate(row.original.EndDate) : '-'}
+          {row.original.endDate ? formatDate(row.original.endDate) : '-'}
         </span>
       ),
     },
     {
-      accessorKey: 'AutoRenew',
+      accessorKey: 'autoRenew',
       header: '自动续费',
       size: 80,
       cell: ({ row }) => (
-        row.original.AutoRenew ? (
+        row.original.autoRenew ? (
           <CheckCircle className="size-4 text-emerald-600 dark:text-emerald-400" strokeWidth={1.5} />
         ) : (
           <X className="size-4 text-slate-400 dark:text-slate-500" strokeWidth={1.5} />
@@ -125,12 +123,12 @@ export const SubscriptionListTable: React.FC<SubscriptionListTableProps> = ({
       ),
     },
     {
-      accessorKey: 'CreatedAt',
+      accessorKey: 'createdAt',
       header: '创建时间',
       size: 100,
       cell: ({ row }) => (
         <span className="text-slate-500 dark:text-slate-400 text-sm">
-          {formatDate(row.original.CreatedAt)}
+          {formatDate(row.original.createdAt)}
         </span>
       ),
     },
@@ -147,7 +145,7 @@ export const SubscriptionListTable: React.FC<SubscriptionListTableProps> = ({
       onPageChange={onPageChange}
       onPageSizeChange={onPageSizeChange}
       emptyMessage="暂无订阅数据"
-      getRowId={(row) => String(row.ID)}
+      getRowId={(row) => String(row.id)}
     />
   );
 };

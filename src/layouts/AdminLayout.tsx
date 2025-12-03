@@ -250,9 +250,9 @@ export const AdminLayout = ({ children }: AdminLayoutProps) => {
               <DropdownMenuPrimitive.Trigger asChild>
                 <button className="flex h-8 w-8 items-center justify-center rounded-full hover:bg-accent">
                   <AvatarPrimitive.Root className="h-8 w-8">
-                    <AvatarPrimitive.Image src={user?.avatar} alt={user?.name} className="h-full w-full rounded-full object-cover" />
+                    <AvatarPrimitive.Image src={user?.avatar} alt={user?.displayName} className="h-full w-full rounded-full object-cover" />
                     <AvatarPrimitive.Fallback className="flex h-full w-full items-center justify-center rounded-full bg-muted text-sm font-medium">
-                      {user?.name?.charAt(0).toUpperCase()}
+                      {user?.displayName?.charAt(0).toUpperCase()}
                     </AvatarPrimitive.Fallback>
                   </AvatarPrimitive.Root>
                 </button>
@@ -264,7 +264,7 @@ export const AdminLayout = ({ children }: AdminLayoutProps) => {
                   sideOffset={4}
                 >
                   <DropdownMenuPrimitive.Label className="px-2 py-1.5">
-                    <p className="text-sm font-medium">{user?.name}</p>
+                    <p className="text-sm font-medium">{user?.displayName}</p>
                     <p className="text-xs text-muted-foreground">{user?.email}</p>
                   </DropdownMenuPrimitive.Label>
                   <DropdownMenuPrimitive.Separator className="my-1 h-px bg-border" />
