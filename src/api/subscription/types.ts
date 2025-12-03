@@ -257,3 +257,52 @@ export interface RefreshTokenResponse {
 export interface ListTokensParams {
   activeOnly?: boolean;
 }
+
+/**
+ * Traffic stats query params
+ * GET /subscriptions/:id/traffic-stats
+ */
+export interface GetTrafficStatsParams {
+  /** Start time in RFC3339 format (required) */
+  from: string;
+  /** End time in RFC3339 format (required) */
+  to: string;
+  /** Granularity: hour, day, or month */
+  granularity?: 'hour' | 'day' | 'month';
+  /** Page number (default: 1) */
+  page?: number;
+  /** Page size (default: 100, max: 1000) */
+  pageSize?: number;
+}
+
+/**
+ * Traffic stats record
+ */
+export interface TrafficStatsRecord {
+  nodeId: number;
+  upload: number;
+  download: number;
+  total: number;
+  period: string;
+}
+
+/**
+ * Traffic summary
+ */
+export interface TrafficSummary {
+  totalUpload: number;
+  totalDownload: number;
+  total: number;
+}
+
+/**
+ * Traffic stats response
+ * GET /subscriptions/:id/traffic-stats
+ */
+export interface TrafficStatsResponse {
+  records: TrafficStatsRecord[];
+  summary: TrafficSummary;
+  total: number;
+  page: number;
+  pageSize: number;
+}

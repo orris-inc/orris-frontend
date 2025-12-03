@@ -18,7 +18,7 @@ import {
   listTokens,
   generateToken,
   revokeToken,
-  refreshSubscriptionToken,
+  refreshToken as refreshSubscriptionToken,
 } from '@/api/subscription';
 import type {
   Subscription,

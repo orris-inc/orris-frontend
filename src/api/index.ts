@@ -64,7 +64,8 @@ export {
   generateToken,
   listTokens,
   revokeToken,
-  refreshSubscriptionToken,
+  refreshToken as refreshSubscriptionToken,
+  getTrafficStats,
 } from './subscription/client';
 
 export type {
@@ -89,6 +90,10 @@ export type {
   GenerateTokenResponse,
   RefreshTokenResponse as SubscriptionRefreshTokenResponse,
   ListTokensParams,
+  GetTrafficStatsParams,
+  TrafficStatsRecord,
+  TrafficSummary,
+  TrafficStatsResponse,
 } from './subscription/types';
 
 // Admin module exports with namespace to avoid conflicts

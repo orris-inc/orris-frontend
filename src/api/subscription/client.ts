@@ -23,6 +23,8 @@ import type {
   GenerateTokenResponse,
   RefreshTokenResponse,
   ListTokensParams,
+  GetTrafficStatsParams,
+  TrafficStatsResponse,
 } from './types';
 
 // ============================================================================
@@ -241,12 +243,31 @@ export async function revokeToken(
  * Refresh a subscription token
  * POST /subscriptions/:id/tokens/:tokenId/refresh
  */
-export async function refreshSubscriptionToken(
+export async function refreshToken(
   subscriptionId: number,
   tokenId: number
 ): Promise<RefreshTokenResponse> {
   const response = await apiClient.post<APIResponse<RefreshTokenResponse>>(
     `/subscriptions/${subscriptionId}/tokens/${tokenId}/refresh`
+  );
+  return response.data.data;
+}
+
+// ============================================================================
+// Traffic Statistics APIs
+// ============================================================================
+
+/**
+ * Get subscription traffic statistics
+ * GET /subscriptions/:id/traffic-stats
+ */
+export async function getTrafficStats(
+  subscriptionId: number,
+  params: GetTrafficStatsParams
+): Promise<TrafficStatsResponse> {
+  const response = await apiClient.get<APIResponse<TrafficStatsResponse>>(
+    `/subscriptions/${subscriptionId}/traffic-stats`,
+    { params }
   );
   return response.data.data;
 }
