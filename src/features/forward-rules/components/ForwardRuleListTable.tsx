@@ -45,6 +45,13 @@ const PROTOCOL_LABELS: Record<string, string> = {
   both: 'TCP/UDP',
 };
 
+// 规则类型标签
+const RULE_TYPE_LABELS: Record<string, string> = {
+  direct: '直连',
+  entry: '入口',
+  exit: '出口',
+};
+
 // 格式化时间
 const formatDate = (dateString: string) => {
   if (!dateString) return '-';
@@ -111,9 +118,19 @@ export const ForwardRuleListTable: React.FC<ForwardRuleListTableProps> = ({
       ),
     },
     {
+      accessorKey: 'ruleType',
+      header: '类型',
+      size: 80,
+      cell: ({ row }) => (
+        <AdminBadge variant="outline">
+          {RULE_TYPE_LABELS[row.original.ruleType] || row.original.ruleType}
+        </AdminBadge>
+      ),
+    },
+    {
       accessorKey: 'protocol',
       header: '协议',
-      size: 100,
+      size: 80,
       cell: ({ row }) => (
         <AdminBadge variant="outline">
           {PROTOCOL_LABELS[row.original.protocol] || row.original.protocol}
@@ -132,13 +149,33 @@ export const ForwardRuleListTable: React.FC<ForwardRuleListTableProps> = ({
     },
     {
       id: 'target',
-      header: '目标地址',
+      header: '目标',
       size: 180,
-      cell: ({ row }) => (
-        <span className="font-mono text-sm text-slate-700 dark:text-slate-300">
-          {row.original.targetAddress}:{row.original.targetPort}
-        </span>
-      ),
+      cell: ({ row }) => {
+        const rule = row.original;
+        // entry 类型显示出口节点ID
+        if (rule.ruleType === 'entry') {
+          return (
+            <span className="text-sm text-slate-700 dark:text-slate-300">
+              出口节点: {rule.exitAgentId}
+            </span>
+          );
+        }
+        // 使用节点ID
+        if (rule.targetNodeId) {
+          return (
+            <span className="text-sm text-slate-700 dark:text-slate-300">
+              节点: {rule.targetNodeId}
+            </span>
+          );
+        }
+        // 手动输入的地址
+        return (
+          <span className="font-mono text-sm text-slate-700 dark:text-slate-300">
+            {rule.targetAddress}:{rule.targetPort}
+          </span>
+        );
+      },
     },
     {
       accessorKey: 'status',

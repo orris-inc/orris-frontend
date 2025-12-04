@@ -33,6 +33,13 @@ const PROTOCOL_LABELS: Record<string, string> = {
   both: 'TCP/UDP',
 };
 
+// 规则类型标签映射
+const RULE_TYPE_LABELS: Record<string, string> = {
+  direct: '直连转发',
+  entry: '入口节点',
+  exit: '出口节点',
+};
+
 // 格式化时间
 const formatDate = (dateString: string) => {
   if (!dateString) return '-';
@@ -98,6 +105,16 @@ export const ForwardRuleDetailDialog: React.FC<ForwardRuleDetailDialogProps> = (
               </div>
 
               <div className="space-y-1">
+                <p className="text-sm text-muted-foreground">规则类型</p>
+                <p className="text-sm">{RULE_TYPE_LABELS[rule.ruleType] || rule.ruleType}</p>
+              </div>
+
+              <div className="space-y-1">
+                <p className="text-sm text-muted-foreground">转发节点ID</p>
+                <p className="text-sm font-mono">{rule.agentId}</p>
+              </div>
+
+              <div className="space-y-1">
                 <p className="text-sm text-muted-foreground">协议类型</p>
                 <p className="text-sm">{PROTOCOL_LABELS[rule.protocol] || rule.protocol}</p>
               </div>
@@ -111,23 +128,56 @@ export const ForwardRuleDetailDialog: React.FC<ForwardRuleDetailDialogProps> = (
 
           {/* 端口配置 */}
           <div>
-            <h3 className="text-sm font-semibold mb-3">端口配置</h3>
+            <h3 className="text-sm font-semibold mb-3">转发配置</h3>
             <Separator className="mb-4" />
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="space-y-1">
-                <p className="text-sm text-muted-foreground">监听端口</p>
-                <p className="text-sm font-mono">{rule.listenPort}</p>
-              </div>
+              {/* 监听端口 - direct 和 entry 类型 */}
+              {(rule.ruleType === 'direct' || rule.ruleType === 'entry') && (
+                <div className="space-y-1">
+                  <p className="text-sm text-muted-foreground">监听端口</p>
+                  <p className="text-sm font-mono">{rule.listenPort}</p>
+                </div>
+              )}
 
-              <div className="space-y-1">
-                <p className="text-sm text-muted-foreground">目标端口</p>
-                <p className="text-sm font-mono">{rule.targetPort}</p>
-              </div>
+              {/* WS监听端口 - exit 类型 */}
+              {rule.ruleType === 'exit' && rule.wsListenPort && (
+                <div className="space-y-1">
+                  <p className="text-sm text-muted-foreground">WS监听端口</p>
+                  <p className="text-sm font-mono">{rule.wsListenPort}</p>
+                </div>
+              )}
 
-              <div className="space-y-1 md:col-span-2">
-                <p className="text-sm text-muted-foreground">目标地址</p>
-                <p className="text-sm font-mono">{rule.targetAddress}</p>
-              </div>
+              {/* 出口节点ID - entry 类型 */}
+              {rule.ruleType === 'entry' && rule.exitAgentId && (
+                <div className="space-y-1">
+                  <p className="text-sm text-muted-foreground">出口节点ID</p>
+                  <p className="text-sm font-mono">{rule.exitAgentId}</p>
+                </div>
+              )}
+
+              {/* 目标配置 - direct 和 exit 类型 */}
+              {(rule.ruleType === 'direct' || rule.ruleType === 'exit') && (
+                <>
+                  {rule.targetNodeId ? (
+                    <div className="space-y-1 md:col-span-2">
+                      <p className="text-sm text-muted-foreground">目标节点ID</p>
+                      <p className="text-sm font-mono">{rule.targetNodeId}</p>
+                      <p className="text-xs text-muted-foreground">（动态解析节点地址）</p>
+                    </div>
+                  ) : (
+                    <>
+                      <div className="space-y-1">
+                        <p className="text-sm text-muted-foreground">目标地址</p>
+                        <p className="text-sm font-mono">{rule.targetAddress || '-'}</p>
+                      </div>
+                      <div className="space-y-1">
+                        <p className="text-sm text-muted-foreground">目标端口</p>
+                        <p className="text-sm font-mono">{rule.targetPort || '-'}</p>
+                      </div>
+                    </>
+                  )}
+                </>
+              )}
             </div>
           </div>
 

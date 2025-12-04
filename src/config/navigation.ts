@@ -16,7 +16,6 @@ import {
   Network,
   ArrowLeftRight,
   Cpu,
-  Link2,
 } from 'lucide-react';
 
 import type { NavigationItem } from '../types/navigation.types';
@@ -159,17 +158,6 @@ export const navigationConfig: readonly NavigationItem[] = [
     showInBreadcrumb: true,
     parentId: 'admin-dashboard',
     order: 17,
-  },
-  {
-    id: 'forward-chains',
-    label: '转发链',
-    path: '/admin/forward-chains',
-    icon: Link2,
-    roles: ['admin'], // 仅管理员可访问
-    showInNav: true,
-    showInBreadcrumb: true,
-    parentId: 'admin-dashboard',
-    order: 18,
   },
 ] as const;
 

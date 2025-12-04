@@ -29,7 +29,7 @@ export const CreateForwardAgentDialog: React.FC<CreateForwardAgentDialogProps> =
 }) => {
   const [formData, setFormData] = useState<CreateForwardAgentRequest>({
     name: '',
-    description: '',
+    remark: '',
   });
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -37,7 +37,7 @@ export const CreateForwardAgentDialog: React.FC<CreateForwardAgentDialogProps> =
   const handleClose = () => {
     setFormData({
       name: '',
-      description: '',
+      remark: '',
     });
     setErrors({});
     onClose();
@@ -73,15 +73,15 @@ export const CreateForwardAgentDialog: React.FC<CreateForwardAgentDialogProps> =
         name: formData.name.trim(),
       };
 
-      if (formData.description?.trim()) {
-        submitData.description = formData.description.trim();
+      if (formData.remark?.trim()) {
+        submitData.remark = formData.remark.trim();
       }
 
       setIsSubmitting(true);
       try {
         await onSubmit(submitData);
         // 提交成功后重置表单
-        setFormData({ name: '', description: '' });
+        setFormData({ name: '', remark: '' });
         setErrors({});
       } finally {
         setIsSubmitting(false);
@@ -119,12 +119,12 @@ export const CreateForwardAgentDialog: React.FC<CreateForwardAgentDialogProps> =
 
           {/* 备注 */}
           <div className="flex flex-col gap-2">
-            <Label htmlFor="description">备注</Label>
+            <Label htmlFor="remark">备注</Label>
             <Textarea
-              id="description"
+              id="remark"
               rows={3}
-              value={formData.description}
-              onChange={(e) => handleChange('description', e.target.value)}
+              value={formData.remark}
+              onChange={(e) => handleChange('remark', e.target.value)}
               placeholder="可选：添加备注说明"
             />
             <p className="text-xs text-muted-foreground">可选</p>

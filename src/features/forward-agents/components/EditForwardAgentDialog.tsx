@@ -37,7 +37,8 @@ export const EditForwardAgentDialog: React.FC<EditForwardAgentDialogProps> = ({
     if (agent) {
       setFormData({
         name: agent.name,
-        description: agent.description,
+        publicAddress: agent.publicAddress,
+        remark: agent.remark,
       });
       setErrors({});
     }
@@ -71,7 +72,8 @@ export const EditForwardAgentDialog: React.FC<EditForwardAgentDialogProps> = ({
       const updates: UpdateForwardAgentRequest = {};
 
       if (formData.name !== agent.name) updates.name = formData.name;
-      if (formData.description !== agent.description) updates.description = formData.description;
+      if (formData.publicAddress !== agent.publicAddress) updates.publicAddress = formData.publicAddress;
+      if (formData.remark !== agent.remark) updates.remark = formData.remark;
 
       // 如果有任何变化，提交更新
       if (Object.keys(updates).length > 0) {
@@ -113,21 +115,6 @@ export const EditForwardAgentDialog: React.FC<EditForwardAgentDialogProps> = ({
                   disabled
                 />
               </div>
-
-              {agent.token && (
-                <div className="flex flex-col gap-2 md:col-span-2">
-                  <Label htmlFor="token">Token前缀</Label>
-                  <Input
-                    id="token"
-                    value={agent.token}
-                    disabled
-                    className="font-mono"
-                  />
-                  <p className="text-xs text-muted-foreground">
-                    Token只在创建或重新生成时完整显示
-                  </p>
-                </div>
-              )}
             </div>
           </div>
 
@@ -150,14 +137,28 @@ export const EditForwardAgentDialog: React.FC<EditForwardAgentDialogProps> = ({
                 )}
               </div>
 
+              {/* 公网地址 */}
+              <div className="flex flex-col gap-2">
+                <Label htmlFor="publicAddress">公网地址</Label>
+                <Input
+                  id="publicAddress"
+                  value={formData.publicAddress || ''}
+                  onChange={(e) => handleChange('publicAddress', e.target.value)}
+                  placeholder="例如：192.168.1.100 或 example.com"
+                />
+                <p className="text-xs text-muted-foreground">
+                  可选，用于标识节点的公网访问地址
+                </p>
+              </div>
+
               {/* 备注 */}
               <div className="flex flex-col gap-2">
-                <Label htmlFor="description">备注</Label>
+                <Label htmlFor="remark">备注</Label>
                 <Textarea
-                  id="description"
+                  id="remark"
                   rows={3}
-                  value={formData.description || ''}
-                  onChange={(e) => handleChange('description', e.target.value)}
+                  value={formData.remark || ''}
+                  onChange={(e) => handleChange('remark', e.target.value)}
                 />
               </div>
             </div>

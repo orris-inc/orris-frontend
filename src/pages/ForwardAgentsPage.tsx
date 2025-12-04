@@ -34,6 +34,7 @@ export const ForwardAgentsPage = () => {
     forwardAgents,
     pagination,
     isLoading,
+    isFetching,
     refetch,
     createForwardAgent,
     updateForwardAgent,
@@ -145,8 +146,8 @@ export const ForwardAgentsPage = () => {
                   variant="outline"
                   size="md"
                   onClick={handleRefresh}
-                  disabled={isLoading}
-                  icon={<RefreshCw className={`size-4 ${isLoading ? 'animate-spin' : ''}`} strokeWidth={1.5} />}
+                  disabled={isFetching}
+                  icon={<RefreshCw className={`size-4 ${isFetching ? 'animate-spin' : ''}`} strokeWidth={1.5} />}
                 >
                   刷新
                 </AdminButton>
@@ -167,7 +168,7 @@ export const ForwardAgentsPage = () => {
         <AdminCard noPadding>
           <ForwardAgentListTable
             forwardAgents={forwardAgents}
-            loading={isLoading}
+            loading={isLoading || isFetching}
             page={pagination.page}
             pageSize={pagination.pageSize}
             total={pagination.total}

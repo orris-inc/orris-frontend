@@ -76,21 +76,21 @@ export const ForwardAgentListTable: React.FC<ForwardAgentListTableProps> = ({
       cell: ({ row }) => (
         <div className="space-y-1">
           <div className="font-medium text-slate-900 dark:text-white">{row.original.name}</div>
-          {row.original.description && (
+          {row.original.remark && (
             <div className="text-xs text-slate-500 dark:text-slate-400 line-clamp-1">
-              {row.original.description}
+              {row.original.remark}
             </div>
           )}
         </div>
       ),
     },
     {
-      accessorKey: 'token',
-      header: 'Token前缀',
-      size: 120,
+      accessorKey: 'publicAddress',
+      header: '公网地址',
+      size: 140,
       cell: ({ row }) => (
         <span className="font-mono text-sm text-slate-700 dark:text-slate-300">
-          {row.original.token || '-'}
+          {row.original.publicAddress || '-'}
         </span>
       ),
     },
@@ -118,16 +118,6 @@ export const ForwardAgentListTable: React.FC<ForwardAgentListTableProps> = ({
           </Tooltip>
         );
       },
-    },
-    {
-      accessorKey: 'lastSeenAt',
-      header: '最后在线',
-      size: 140,
-      cell: ({ row }) => (
-        <span className="text-slate-500 dark:text-slate-400 text-sm">
-          {formatDate(row.original.lastSeenAt)}
-        </span>
-      ),
     },
     {
       accessorKey: 'createdAt',

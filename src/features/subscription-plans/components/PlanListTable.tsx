@@ -4,7 +4,7 @@
  */
 
 import { useMemo } from 'react';
-import { Edit, Power, Network, MoreHorizontal } from 'lucide-react';
+import { Edit, Power, Network, MoreHorizontal, Users } from 'lucide-react';
 import { DataTable, AdminBadge, type ColumnDef } from '@/components/admin';
 import {
   DropdownMenu,
@@ -93,6 +93,7 @@ interface PlanListTableProps {
   onEdit: (plan: SubscriptionPlan) => void;
   onToggleStatus: (plan: SubscriptionPlan) => void;
   onManageNodeGroups?: (plan: SubscriptionPlan) => void;
+  onViewSubscriptions?: (plan: SubscriptionPlan) => void;
 }
 
 const STATUS_CONFIG: Record<PlanStatus, { label: string; variant: 'success' | 'default' }> = {
@@ -111,6 +112,7 @@ export const PlanListTable: React.FC<PlanListTableProps> = ({
   onEdit,
   onToggleStatus,
   onManageNodeGroups,
+  onViewSubscriptions,
 }) => {
   const columns = useMemo<ColumnDef<SubscriptionPlan>[]>(() => [
     {
@@ -258,6 +260,12 @@ export const PlanListTable: React.FC<PlanListTableProps> = ({
                   管理节点组
                 </DropdownMenuItem>
               )}
+              {onViewSubscriptions && (
+                <DropdownMenuItem onClick={() => onViewSubscriptions(plan)}>
+                  <Users className="mr-2 size-4" />
+                  查看订阅用户
+                </DropdownMenuItem>
+              )}
               <DropdownMenuSeparator />
               <DropdownMenuItem onClick={() => onToggleStatus(plan)}>
                 <Power className="mr-2 size-4" />
@@ -268,7 +276,7 @@ export const PlanListTable: React.FC<PlanListTableProps> = ({
         );
       },
     },
-  ], [onEdit, onToggleStatus, onManageNodeGroups]);
+  ], [onEdit, onToggleStatus, onManageNodeGroups, onViewSubscriptions]);
 
   return (
     <DataTable

@@ -15,6 +15,7 @@ import { PlanListTable } from '@/features/subscription-plans/components/PlanList
 import { CreatePlanDialog } from '@/features/subscription-plans/components/CreatePlanDialog';
 import { EditPlanDialog } from '@/features/subscription-plans/components/EditPlanDialog';
 import { ManagePlanNodeGroupsDialog } from '@/features/subscription-plans/components/ManagePlanNodeGroupsDialog';
+import { ViewPlanSubscriptionsDialog } from '@/features/subscription-plans/components/ViewPlanSubscriptionsDialog';
 import { useSubscriptionPlansPage } from '@/features/subscription-plans/hooks/useSubscriptionPlans';
 import type { SubscriptionPlan, CreatePlanRequest, UpdatePlanRequest } from '@/api/subscription/types';
 
@@ -33,6 +34,7 @@ export const SubscriptionPlansManagementPage = () => {
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [nodeGroupsDialogOpen, setNodeGroupsDialogOpen] = useState(false);
+  const [subscriptionsDialogOpen, setSubscriptionsDialogOpen] = useState(false);
   const [selectedPlan, setSelectedPlan] = useState<SubscriptionPlan | null>(null);
 
   const handleEdit = (plan: SubscriptionPlan) => {
@@ -47,6 +49,11 @@ export const SubscriptionPlansManagementPage = () => {
   const handleManageNodeGroups = (plan: SubscriptionPlan) => {
     setSelectedPlan(plan);
     setNodeGroupsDialogOpen(true);
+  };
+
+  const handleViewSubscriptions = (plan: SubscriptionPlan) => {
+    setSelectedPlan(plan);
+    setSubscriptionsDialogOpen(true);
   };
 
   const handleCreateSubmit = async (data: CreatePlanRequest) => {
@@ -97,6 +104,7 @@ export const SubscriptionPlansManagementPage = () => {
             onEdit={handleEdit}
             onToggleStatus={handleToggleStatus}
             onManageNodeGroups={handleManageNodeGroups}
+            onViewSubscriptions={handleViewSubscriptions}
           />
         </AdminCard>
       </AdminPageLayout>
@@ -125,6 +133,16 @@ export const SubscriptionPlansManagementPage = () => {
         plan={selectedPlan}
         onClose={() => {
           setNodeGroupsDialogOpen(false);
+          setSelectedPlan(null);
+        }}
+      />
+
+      {/* 查看订阅用户对话框 */}
+      <ViewPlanSubscriptionsDialog
+        open={subscriptionsDialogOpen}
+        plan={selectedPlan}
+        onClose={() => {
+          setSubscriptionsDialogOpen(false);
           setSelectedPlan(null);
         }}
       />

@@ -78,37 +78,25 @@ export const ForwardAgentDetailDialog: React.FC<ForwardAgentDetailDialogProps> =
                 </p>
               </div>
 
-              {agent.token && (
+              {agent.publicAddress && (
                 <div className="space-y-1">
-                  <p className="text-sm text-muted-foreground">Token前缀</p>
-                  <p className="text-sm font-mono">{agent.token}</p>
+                  <p className="text-sm text-muted-foreground">公网地址</p>
+                  <p className="text-sm font-mono">{agent.publicAddress}</p>
                 </div>
               )}
             </div>
           </div>
 
           {/* 备注信息 */}
-          {agent.description && (
+          {agent.remark && (
             <div>
               <h3 className="text-sm font-semibold mb-3">备注</h3>
               <Separator className="mb-4" />
               <div className="space-y-1">
-                <p className="text-sm">{agent.description}</p>
+                <p className="text-sm">{agent.remark}</p>
               </div>
             </div>
           )}
-
-          {/* 运行状态 */}
-          <div>
-            <h3 className="text-sm font-semibold mb-3">运行状态</h3>
-            <Separator className="mb-4" />
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="space-y-1">
-                <p className="text-sm text-muted-foreground">最后在线时间</p>
-                <p className="text-xs">{formatDate(agent.lastSeenAt)}</p>
-              </div>
-            </div>
-          </div>
 
           {/* 时间信息 */}
           <div>
