@@ -25,7 +25,6 @@ const STATUS_LABELS: Record<string, string> = {
   active: '激活',
   inactive: '未激活',
   maintenance: '维护中',
-  error: '错误',
 };
 
 // 协议类型标签映射
@@ -48,18 +47,6 @@ const formatDate = (dateString: string) => {
   });
 };
 
-// 格式化流量
-const formatBytes = (bytes?: number) => {
-  if (!bytes) return '-';
-  const units = ['B', 'KB', 'MB', 'GB', 'TB'];
-  let value = bytes;
-  let unitIndex = 0;
-  while (value >= 1024 && unitIndex < units.length - 1) {
-    value /= 1024;
-    unitIndex++;
-  }
-  return `${value.toFixed(2)} ${units[unitIndex]}`;
-};
 
 export const NodeDetailDialog: React.FC<NodeDetailDialogProps> = ({
   open,
@@ -78,9 +65,9 @@ export const NodeDetailDialog: React.FC<NodeDetailDialogProps> = ({
               variant={
                 node.status === 'active'
                   ? 'default'
-                  : node.status === 'error'
-                    ? 'destructive'
-                    : 'secondary'
+                  : node.status === 'maintenance'
+                    ? 'secondary'
+                    : 'outline'
               }
             >
               {STATUS_LABELS[node.status] || node.status}
@@ -165,41 +152,11 @@ export const NodeDetailDialog: React.FC<NodeDetailDialogProps> = ({
             </div>
           )}
 
-          {/* 流量信息 */}
-          {(node.trafficLimit || node.trafficUsed) && (
-            <div>
-              <h3 className="text-sm font-semibold mb-3">流量信息</h3>
-              <Separator className="mb-4" />
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {node.trafficLimit && (
-                  <div className="space-y-1">
-                    <p className="text-sm text-muted-foreground">流量限制</p>
-                    <p className="text-sm">{formatBytes(node.trafficLimit)}</p>
-                  </div>
-                )}
-
-                {node.trafficUsed !== undefined && (
-                  <div className="space-y-1">
-                    <p className="text-sm text-muted-foreground">已使用流量</p>
-                    <p className="text-sm">{formatBytes(node.trafficUsed)}</p>
-                  </div>
-                )}
-              </div>
-            </div>
-          )}
-
           {/* 其他信息 */}
           <div>
             <h3 className="text-sm font-semibold mb-3">其他信息</h3>
             <Separator className="mb-4" />
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {node.description && (
-                <div className="space-y-1 md:col-span-2">
-                  <p className="text-sm text-muted-foreground">描述</p>
-                  <p className="text-sm">{node.description}</p>
-                </div>
-              )}
-
               <div className="space-y-1">
                 <p className="text-sm text-muted-foreground">排序顺序</p>
                 <p className="text-sm">{node.sortOrder ?? 0}</p>

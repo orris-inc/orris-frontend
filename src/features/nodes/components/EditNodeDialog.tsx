@@ -12,7 +12,6 @@ import {
 } from '@/components/common/Dialog';
 import { Button } from '@/components/common/Button';
 import { Input } from '@/components/common/Input';
-import { Textarea } from '@/components/common/Textarea';
 import { Label } from '@/components/common/Label';
 import { Separator } from '@/components/common/Separator';
 import {
@@ -22,7 +21,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/common/Select';
-import type { Node, UpdateNodeRequest } from '@/api/node';
+import type { Node, UpdateNodeRequest, TransportProtocol } from '@/api/node';
 
 interface EditNodeDialogProps {
   open: boolean;
@@ -31,14 +30,17 @@ interface EditNodeDialogProps {
   onSubmit: (id: number | string, data: UpdateNodeRequest) => void;
 }
 
-// 常用加密方法
-const ENCRYPTION_METHODS = [
+// Shadowsocks 加密方法
+const SS_ENCRYPTION_METHODS = [
   'aes-128-gcm',
   'aes-256-gcm',
   'chacha20-ietf-poly1305',
   'aes-128-cfb',
   'aes-256-cfb',
 ] as const;
+
+// Trojan 传输协议
+const TRANSPORT_PROTOCOLS: TransportProtocol[] = ['tcp', 'ws', 'grpc'];
 
 export const EditNodeDialog: React.FC<EditNodeDialogProps> = ({
   open,
@@ -51,24 +53,25 @@ export const EditNodeDialog: React.FC<EditNodeDialogProps> = ({
 
   useEffect(() => {
     if (node) {
-      // 如果节点状态是error，默认设置为inactive（因为UpdateNodeRequest不支持error状态）
-      const editableStatus = node.status === 'error' ? 'inactive' : node.status as 'active' | 'inactive' | 'maintenance';
-
       setFormData({
         name: node.name,
-        description: node.description,
         serverAddress: node.serverAddress,
         serverPort: node.serverPort,
         encryptionMethod: node.encryptionMethod,
         region: node.region,
-        status: editableStatus,
+        status: node.status,
         sortOrder: node.sortOrder,
       });
       setErrors({});
     }
   }, [node]);
 
-  const handleChange = (field: keyof UpdateNodeRequest, value: string | number) => {
+  const isShadowsocks = node?.protocol === 'shadowsocks';
+  const isTrojan = node?.protocol === 'trojan';
+  const showWsFields = isTrojan && formData.transportProtocol === 'ws';
+  const showGrpcFields = isTrojan && formData.transportProtocol === 'grpc';
+
+  const handleChange = (field: keyof UpdateNodeRequest, value: string | number | boolean) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
     if (errors[field]) {
       setErrors((prev) => {
@@ -104,13 +107,31 @@ export const EditNodeDialog: React.FC<EditNodeDialogProps> = ({
       const updates: UpdateNodeRequest = {};
 
       if (formData.name !== node.name) updates.name = formData.name;
-      if (formData.description !== node.description) updates.description = formData.description;
       if (formData.serverAddress !== node.serverAddress) updates.serverAddress = formData.serverAddress;
       if (formData.serverPort !== node.serverPort) updates.serverPort = formData.serverPort;
       if (formData.encryptionMethod !== node.encryptionMethod) updates.encryptionMethod = formData.encryptionMethod;
       if (formData.region !== node.region) updates.region = formData.region;
-      if (formData.status !== node.status) updates.status = formData.status as any;
+      if (formData.status !== node.status) updates.status = formData.status;
       if (formData.sortOrder !== node.sortOrder) updates.sortOrder = formData.sortOrder;
+
+      // Trojan 相关字段
+      if (isTrojan) {
+        if (formData.transportProtocol !== undefined) {
+          updates.transportProtocol = formData.transportProtocol;
+        }
+        if (formData.sni !== undefined) {
+          updates.sni = formData.sni || undefined;
+        }
+        if (formData.host !== undefined) {
+          updates.host = formData.host || undefined;
+        }
+        if (formData.path !== undefined) {
+          updates.path = formData.path || undefined;
+        }
+        if (formData.allowInsecure !== undefined) {
+          updates.allowInsecure = formData.allowInsecure;
+        }
+      }
 
       // 如果有任何变化，提交更新
       if (Object.keys(updates).length > 0) {
@@ -201,11 +222,6 @@ export const EditNodeDialog: React.FC<EditNodeDialogProps> = ({
                     <SelectItem value="maintenance">维护中</SelectItem>
                   </SelectContent>
                 </Select>
-                {node.status === 'error' && (
-                  <p className="text-xs text-muted-foreground">
-                    原状态为错误，已自动设置为未激活
-                  </p>
-                )}
               </div>
 
               {/* 服务器地址 */}
@@ -239,25 +255,105 @@ export const EditNodeDialog: React.FC<EditNodeDialogProps> = ({
                 )}
               </div>
 
-              {/* 加密方法 */}
-              <div className="flex flex-col gap-2">
-                <Label htmlFor="encryptionMethod">加密方法</Label>
-                <Select
-                  value={formData.encryptionMethod || ''}
-                  onValueChange={(value) => handleChange('encryptionMethod', value)}
-                >
-                  <SelectTrigger id="encryptionMethod">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {ENCRYPTION_METHODS.map((method) => (
-                      <SelectItem key={method} value={method}>
-                        {method}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
+              {/* Shadowsocks 加密方法 */}
+              {isShadowsocks && (
+                <div className="flex flex-col gap-2">
+                  <Label htmlFor="encryptionMethod">加密方法</Label>
+                  <Select
+                    value={formData.encryptionMethod || ''}
+                    onValueChange={(value) => handleChange('encryptionMethod', value)}
+                  >
+                    <SelectTrigger id="encryptionMethod">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {SS_ENCRYPTION_METHODS.map((method) => (
+                        <SelectItem key={method} value={method}>
+                          {method}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              )}
+
+              {/* Trojan 传输协议 */}
+              {isTrojan && (
+                <div className="flex flex-col gap-2">
+                  <Label htmlFor="transportProtocol">传输协议</Label>
+                  <Select
+                    value={formData.transportProtocol || 'tcp'}
+                    onValueChange={(value) => handleChange('transportProtocol', value)}
+                  >
+                    <SelectTrigger id="transportProtocol">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {TRANSPORT_PROTOCOLS.map((protocol) => (
+                        <SelectItem key={protocol} value={protocol}>
+                          {protocol.toUpperCase()}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              )}
+
+              {/* Trojan SNI */}
+              {isTrojan && (
+                <div className="flex flex-col gap-2">
+                  <Label htmlFor="sni">SNI</Label>
+                  <Input
+                    id="sni"
+                    placeholder="TLS Server Name Indication"
+                    value={formData.sni || ''}
+                    onChange={(e) => handleChange('sni', e.target.value)}
+                  />
+                  <p className="text-xs text-muted-foreground">可选</p>
+                </div>
+              )}
+
+              {/* WebSocket Host */}
+              {showWsFields && (
+                <div className="flex flex-col gap-2">
+                  <Label htmlFor="host">Host</Label>
+                  <Input
+                    id="host"
+                    placeholder="WebSocket Host Header"
+                    value={formData.host || ''}
+                    onChange={(e) => handleChange('host', e.target.value)}
+                  />
+                  <p className="text-xs text-muted-foreground">可选</p>
+                </div>
+              )}
+
+              {/* WebSocket Path */}
+              {showWsFields && (
+                <div className="flex flex-col gap-2">
+                  <Label htmlFor="path">Path</Label>
+                  <Input
+                    id="path"
+                    placeholder="/path"
+                    value={formData.path || ''}
+                    onChange={(e) => handleChange('path', e.target.value)}
+                  />
+                  <p className="text-xs text-muted-foreground">可选</p>
+                </div>
+              )}
+
+              {/* gRPC Service Name */}
+              {showGrpcFields && (
+                <div className="flex flex-col gap-2">
+                  <Label htmlFor="grpcHost">Service Name</Label>
+                  <Input
+                    id="grpcHost"
+                    placeholder="gRPC Service Name"
+                    value={formData.host || ''}
+                    onChange={(e) => handleChange('host', e.target.value)}
+                  />
+                  <p className="text-xs text-muted-foreground">可选</p>
+                </div>
+              )}
 
               {/* 地区 */}
               <div className="flex flex-col gap-2">
@@ -277,17 +373,6 @@ export const EditNodeDialog: React.FC<EditNodeDialogProps> = ({
                   type="number"
                   value={formData.sortOrder ?? 0}
                   onChange={(e) => handleChange('sortOrder', parseInt(e.target.value, 10) || 0)}
-                />
-              </div>
-
-              {/* 描述 */}
-              <div className="flex flex-col gap-2 md:col-span-2">
-                <Label htmlFor="description">描述</Label>
-                <Textarea
-                  id="description"
-                  rows={2}
-                  value={formData.description || ''}
-                  onChange={(e) => handleChange('description', e.target.value)}
                 />
               </div>
             </div>

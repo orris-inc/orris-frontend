@@ -19,19 +19,16 @@ import {
 } from '@/api/node';
 import type {
   Node,
+  NodeStatus,
   ListNodesParams,
   CreateNodeRequest,
   UpdateNodeRequest,
-  NodeTokenResponse,
+  GenerateNodeTokenResponse,
 } from '@/api/node';
 
 // 前端使用的筛选条件类型
 interface NodeFilters {
-  status?: 'active' | 'inactive' | 'maintenance' | 'error';
-  region?: string;
-  tags?: string[];
-  orderBy?: string;
-  order?: 'asc' | 'desc';
+  status?: NodeStatus;
   search?: string;
 }
 
@@ -52,10 +49,6 @@ export const useNodes = (options: UseNodesOptions = {}) => {
     page,
     pageSize,
     status: filters.status,
-    region: filters.region,
-    tags: filters.tags,
-    orderBy: filters.orderBy,
-    order: filters.order,
   };
 
   // 查询节点列表
@@ -189,7 +182,7 @@ export const useNodesPage = () => {
   const [pageSize, setPageSize] = useState(20);
   const [filters, setFilters] = useState<NodeFilters>({});
   const [selectedNode, setSelectedNode] = useState<Node | null>(null);
-  const [generatedToken, setGeneratedToken] = useState<NodeTokenResponse | null>(null);
+  const [generatedToken, setGeneratedToken] = useState<GenerateNodeTokenResponse | null>(null);
 
   const nodesQuery = useNodes({ page, pageSize, filters });
 

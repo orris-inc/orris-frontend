@@ -33,11 +33,10 @@ interface NodeListTableProps {
 }
 
 // 状态配置
-const STATUS_CONFIG: Record<string, { label: string; variant: 'success' | 'default' | 'warning' | 'danger' }> = {
+const STATUS_CONFIG: Record<string, { label: string; variant: 'success' | 'default' | 'warning' }> = {
   active: { label: '激活', variant: 'success' },
   inactive: { label: '未激活', variant: 'default' },
   maintenance: { label: '维护中', variant: 'warning' },
-  error: { label: '错误', variant: 'danger' },
 };
 
 // 协议标签
@@ -88,14 +87,7 @@ export const NodeListTable: React.FC<NodeListTableProps> = ({
       accessorKey: 'name',
       header: '名称',
       cell: ({ row }) => (
-        <div className="space-y-1">
-          <div className="font-medium text-slate-900 dark:text-white">{row.original.name}</div>
-          {row.original.description && (
-            <div className="text-xs text-slate-500 dark:text-slate-400 line-clamp-1">
-              {row.original.description}
-            </div>
-          )}
-        </div>
+        <div className="font-medium text-slate-900 dark:text-white">{row.original.name}</div>
       ),
     },
     {

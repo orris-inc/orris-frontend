@@ -42,7 +42,7 @@ export const ManageGroupNodesDialog = ({
 
   // 获取可添加的节点（排除已在组中的节点）
   const availableNodes = nodes.filter(
-    (node) => !groupNodes.some((gn) => gn.id === node.id)
+    (node) => !groupNodes.some((gn: Node) => gn.id === node.id)
   );
 
   // 将节点转换为 Combobox 选项格式

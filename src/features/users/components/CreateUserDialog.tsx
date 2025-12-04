@@ -8,12 +8,12 @@ import * as LabelPrimitive from '@radix-ui/react-label';
 import { X } from 'lucide-react';
 import { getButtonClass, inputStyles, labelStyles } from '@/lib/ui-styles';
 import { cn } from '@/lib/utils';
-import type { CreateUserRequest } from '../types/users.types';
+import type { CreateUserFormData } from '../types/users.types';
 
 interface CreateUserDialogProps {
   open: boolean;
   onClose: () => void;
-  onSubmit: (data: CreateUserRequest) => void;
+  onSubmit: (data: CreateUserFormData) => void;
 }
 
 export const CreateUserDialog: React.FC<CreateUserDialogProps> = ({

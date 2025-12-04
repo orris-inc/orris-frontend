@@ -5,16 +5,6 @@
 
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router';
-import {
-  BarChart,
-  Bar,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  ResponsiveContainer,
-  Cell,
-} from 'recharts';
 import { AdminLayout } from '@/layouts/AdminLayout';
 import { useAuthStore } from '@/features/auth/stores/auth-store';
 import { listUsers } from '@/api/user';
@@ -29,26 +19,7 @@ import {
   Activity,
   Shield,
   Layers,
-  HardDrive,
-  BarChart3,
 } from 'lucide-react';
-
-// ============ 流量格式化工具 ============
-const formatBytes = (bytes: number): string => {
-  if (bytes === 0) return '0 B';
-  const k = 1024;
-  const sizes = ['B', 'KB', 'MB', 'GB', 'TB', 'PB'];
-  const i = Math.floor(Math.log(bytes) / Math.log(k));
-  return `${parseFloat((bytes / Math.pow(k, i)).toFixed(2))} ${sizes[i]}`;
-};
-
-const formatBytesShort = (bytes: number): string => {
-  if (bytes === 0) return '0';
-  const k = 1024;
-  const sizes = ['B', 'K', 'M', 'G', 'T', 'P'];
-  const i = Math.floor(Math.log(bytes) / Math.log(k));
-  return `${parseFloat((bytes / Math.pow(k, i)).toFixed(1))}${sizes[i]}`;
-};
 
 // ============ 统计卡片组件 ============
 interface StatsCardProps {
@@ -189,41 +160,7 @@ const SystemStatus = ({ label, status, value, icon }: SystemStatusProps) => {
   );
 };
 
-// ============ 自定义 Tooltip ============
-interface CustomTooltipProps {
-  active?: boolean;
-  payload?: Array<{ value: number; payload: { name: string; trafficLimit: number } }>;
-}
-
-const CustomTooltip = ({ active, payload }: CustomTooltipProps) => {
-  if (active && payload && payload.length) {
-    const data = payload[0];
-    return (
-      <div className="bg-white dark:bg-slate-800 p-3 rounded-lg shadow-lg border border-slate-200 dark:border-slate-700">
-        <p className="font-medium text-slate-900 dark:text-white mb-1">{data.payload.name}</p>
-        <p className="text-sm text-slate-600 dark:text-slate-300">
-          已使用: <span className="font-mono">{formatBytes(data.value)}</span>
-        </p>
-        {data.payload.trafficLimit > 0 && (
-          <p className="text-sm text-slate-500 dark:text-slate-400">
-            配额: <span className="font-mono">{formatBytes(data.payload.trafficLimit)}</span>
-          </p>
-        )}
-      </div>
-    );
-  }
-  return null;
-};
-
 // ============ Dashboard 数据 Hook ============
-interface NodeTrafficItem {
-  id: number;
-  name: string;
-  status: string;
-  trafficUsed: number;
-  trafficLimit: number;
-}
-
 interface UserSubscriptionItem {
   userId: number;
   userName: string;
@@ -238,7 +175,6 @@ interface DashboardStats {
   activeSubscriptions: number;
   totalNodes: number;
   activeNodes: number;
-  nodeTrafficList: NodeTrafficItem[];
   userSubscriptions: UserSubscriptionItem[];
 }
 
@@ -248,7 +184,6 @@ const useDashboardStats = () => {
     activeSubscriptions: 0,
     totalNodes: 0,
     activeNodes: 0,
-    nodeTrafficList: [],
     userSubscriptions: [],
   });
   const [loading, setLoading] = useState(true);
@@ -266,15 +201,6 @@ const useDashboardStats = () => {
         const nodes = nodesRes.items || [];
         const activeNodes = nodes.filter((node) => node.status === 'active').length;
 
-        // 节点流量列表
-        const nodeTrafficList: NodeTrafficItem[] = nodes.map((node) => ({
-          id: node.id,
-          name: node.name,
-          status: node.status,
-          trafficUsed: node.trafficUsed || 0,
-          trafficLimit: node.trafficLimit || 0,
-        }));
-
         // 用户订阅列表
         const subscriptions = subscriptionsRes.items || [];
         const userSubscriptions: UserSubscriptionItem[] = subscriptions.map((sub: Subscription) => ({
@@ -291,7 +217,6 @@ const useDashboardStats = () => {
           activeSubscriptions: subscriptionsRes.total || 0,
           totalNodes: nodesRes.total || 0,
           activeNodes,
-          nodeTrafficList,
           userSubscriptions,
         });
       } catch (error) {
@@ -396,30 +321,6 @@ export const NewAdminDashboardPage = () => {
       ? Math.round((stats.activeNodes / stats.totalNodes) * 100)
       : 0;
 
-  // 计算流量汇总
-  const totalTrafficUsed = stats.nodeTrafficList.reduce((sum, node) => sum + node.trafficUsed, 0);
-  const totalTrafficLimit = stats.nodeTrafficList.reduce((sum, node) => sum + node.trafficLimit, 0);
-
-  // 图表数据
-  const chartData = stats.nodeTrafficList.map((node) => ({
-    name: node.name.length > 8 ? node.name.slice(0, 8) + '...' : node.name,
-    fullName: node.name,
-    trafficUsed: node.trafficUsed,
-    trafficLimit: node.trafficLimit,
-    status: node.status,
-  }));
-
-  // 图表颜色
-  const getBarColor = (status: string, trafficUsed: number, trafficLimit: number) => {
-    if (status !== 'active') return '#94a3b8'; // slate-400
-    if (trafficLimit > 0) {
-      const rate = trafficUsed / trafficLimit;
-      if (rate >= 0.9) return '#f43f5e'; // rose-500
-      if (rate >= 0.7) return '#f59e0b'; // amber-500
-    }
-    return '#06b6d4'; // cyan-500
-  };
-
   const systemStatuses = [
     {
       label: '节点在线率',
@@ -469,133 +370,6 @@ export const NewAdminDashboardPage = () => {
           {statsCards.map((stat, index) => (
             <StatsCard key={index} {...stat} loading={loading} />
           ))}
-        </div>
-
-        {/* 流量统计区域 - 图表 + 表格 */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {/* 节点流量图表 */}
-          <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-800 overflow-hidden">
-            <div className="flex items-center gap-3 p-5 border-b border-slate-100 dark:border-slate-800">
-              <div className="p-2.5 bg-violet-50 dark:bg-violet-900/20 rounded-xl">
-                <BarChart3 className="size-5 text-violet-600 dark:text-violet-400" strokeWidth={1.5} />
-              </div>
-              <div>
-                <h3 className="text-base font-semibold text-slate-900 dark:text-white">
-                  节点流量分布
-                </h3>
-                <p className="text-sm text-slate-500 dark:text-slate-400">
-                  各节点流量使用图表
-                </p>
-              </div>
-            </div>
-
-            <div className="p-5">
-              {loading ? (
-                <div className="h-64 bg-slate-100 dark:bg-slate-800 rounded animate-pulse" />
-              ) : stats.nodeTrafficList.length === 0 ? (
-                <div className="h-64 flex items-center justify-center text-slate-500 dark:text-slate-400">
-                  暂无节点数据
-                </div>
-              ) : (
-                <ResponsiveContainer width="100%" height={260}>
-                  <BarChart data={chartData} margin={{ top: 10, right: 10, left: -10, bottom: 0 }}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" vertical={false} />
-                    <XAxis
-                      dataKey="name"
-                      tick={{ fontSize: 12, fill: '#64748b' }}
-                      axisLine={{ stroke: '#e2e8f0' }}
-                      tickLine={false}
-                    />
-                    <YAxis
-                      tickFormatter={(value) => formatBytesShort(value)}
-                      tick={{ fontSize: 12, fill: '#64748b' }}
-                      axisLine={false}
-                      tickLine={false}
-                    />
-                    <Tooltip content={<CustomTooltip />} />
-                    <Bar dataKey="trafficUsed" radius={[4, 4, 0, 0]}>
-                      {chartData.map((entry, index) => (
-                        <Cell
-                          key={`cell-${index}`}
-                          fill={getBarColor(entry.status, entry.trafficUsed, entry.trafficLimit)}
-                        />
-                      ))}
-                    </Bar>
-                  </BarChart>
-                </ResponsiveContainer>
-              )}
-            </div>
-          </div>
-
-          {/* 节点流量表格 */}
-          <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-800 overflow-hidden">
-            <div className="flex items-center gap-3 p-5 border-b border-slate-100 dark:border-slate-800">
-              <div className="p-2.5 bg-cyan-50 dark:bg-cyan-900/20 rounded-xl">
-                <HardDrive className="size-5 text-cyan-600 dark:text-cyan-400" strokeWidth={1.5} />
-              </div>
-              <div>
-                <h3 className="text-base font-semibold text-slate-900 dark:text-white">
-                  节点流量明细
-                </h3>
-                <p className="text-sm text-slate-500 dark:text-slate-400">
-                  总计: {formatBytes(totalTrafficUsed)} / {totalTrafficLimit > 0 ? formatBytes(totalTrafficLimit) : '无限制'}
-                </p>
-              </div>
-            </div>
-
-            <div className="overflow-x-auto max-h-72">
-              {loading ? (
-                <div className="p-5 space-y-3">
-                  {[1, 2, 3].map((i) => (
-                    <div key={i} className="h-10 bg-slate-100 dark:bg-slate-800 rounded animate-pulse" />
-                  ))}
-                </div>
-              ) : (
-                <table className="w-full">
-                  <thead className="sticky top-0 bg-slate-50 dark:bg-slate-800/80 backdrop-blur">
-                    <tr>
-                      <th className="px-5 py-3 text-left text-xs font-medium text-slate-500 dark:text-slate-400 uppercase">节点</th>
-                      <th className="px-5 py-3 text-right text-xs font-medium text-slate-500 dark:text-slate-400 uppercase">已用</th>
-                      <th className="px-5 py-3 text-right text-xs font-medium text-slate-500 dark:text-slate-400 uppercase">使用率</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
-                    {stats.nodeTrafficList.length === 0 ? (
-                      <tr>
-                        <td colSpan={3} className="px-5 py-8 text-center text-sm text-slate-500">暂无数据</td>
-                      </tr>
-                    ) : (
-                      stats.nodeTrafficList.map((node) => {
-                        const rate = node.trafficLimit > 0 ? Math.round((node.trafficUsed / node.trafficLimit) * 100) : 0;
-                        return (
-                          <tr key={node.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/50">
-                            <td className="px-5 py-3">
-                              <div className="flex items-center gap-2">
-                                <span className={`size-2 rounded-full ${node.status === 'active' ? 'bg-emerald-500' : 'bg-slate-400'}`} />
-                                <span className="text-sm font-medium text-slate-900 dark:text-white">{node.name}</span>
-                              </div>
-                            </td>
-                            <td className="px-5 py-3 text-sm text-right font-mono text-slate-700 dark:text-slate-300">
-                              {formatBytes(node.trafficUsed)}
-                            </td>
-                            <td className="px-5 py-3 text-sm text-right">
-                              {node.trafficLimit > 0 ? (
-                                <span className={`font-medium ${
-                                  rate >= 90 ? 'text-rose-600' : rate >= 70 ? 'text-amber-600' : 'text-slate-700 dark:text-slate-300'
-                                }`}>{rate}%</span>
-                              ) : (
-                                <span className="text-slate-400">-</span>
-                              )}
-                            </td>
-                          </tr>
-                        );
-                      })
-                    )}
-                  </tbody>
-                </table>
-              )}
-            </div>
-          </div>
         </div>
 
         {/* 用户订阅统计 */}

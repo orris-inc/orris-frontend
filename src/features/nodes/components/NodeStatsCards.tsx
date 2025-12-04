@@ -3,7 +3,7 @@
  */
 
 import type { LucideIcon } from 'lucide-react';
-import { Server, CheckCircle, XCircle, Wrench, AlertCircle } from 'lucide-react';
+import { Server, CheckCircle, XCircle, Wrench } from 'lucide-react';
 import { Card, CardContent } from '@/components/common/Card';
 import type { Node } from '@/api/node';
 
@@ -27,7 +27,6 @@ export const NodeStatsCards: React.FC<NodeStatsCardsProps> = ({ nodes, loading }
     active: nodes.filter(n => n.status === 'active').length,
     inactive: nodes.filter(n => n.status === 'inactive').length,
     maintenance: nodes.filter(n => n.status === 'maintenance').length,
-    error: nodes.filter(n => n.status === 'error').length,
   };
 
   const statCards: StatCard[] = [
@@ -59,17 +58,10 @@ export const NodeStatsCards: React.FC<NodeStatsCardsProps> = ({ nodes, loading }
       color: 'text-orange-600',
       bgColor: 'bg-orange-50',
     },
-    {
-      title: '错误',
-      value: stats.error,
-      icon: AlertCircle,
-      color: 'text-red-600',
-      bgColor: 'bg-red-50',
-    },
   ];
 
   return (
-    <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-6">
+    <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
       {statCards.map((stat, index) => {
         const Icon = stat.icon;
         return (

@@ -186,7 +186,7 @@ export const useNodeGroupNodes = (groupId: number | string | null) => {
   });
 
   return {
-    nodes: data ?? [],
+    nodes: data?.nodes ?? [],
     isLoading,
     error: error ? handleApiError(error) : null,
     refetch,

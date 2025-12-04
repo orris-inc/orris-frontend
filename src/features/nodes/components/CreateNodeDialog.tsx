@@ -12,7 +12,6 @@ import {
 } from '@/components/common/Dialog';
 import { Button } from '@/components/common/Button';
 import { Input } from '@/components/common/Input';
-import { Textarea } from '@/components/common/Textarea';
 import { Label } from '@/components/common/Label';
 import {
   Select,
@@ -21,7 +20,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/common/Select';
-import type { CreateNodeRequest } from '@/api/node';
+import type { CreateNodeRequest, TransportProtocol } from '@/api/node';
 
 interface CreateNodeDialogProps {
   open: boolean;
@@ -29,14 +28,17 @@ interface CreateNodeDialogProps {
   onSubmit: (data: CreateNodeRequest) => void;
 }
 
-// 常用加密方法
-const ENCRYPTION_METHODS = [
+// Shadowsocks 加密方法
+const SS_ENCRYPTION_METHODS = [
   'aes-128-gcm',
   'aes-256-gcm',
   'chacha20-ietf-poly1305',
   'aes-128-cfb',
   'aes-256-cfb',
 ] as const;
+
+// Trojan 传输协议
+const TRANSPORT_PROTOCOLS: TransportProtocol[] = ['tcp', 'ws', 'grpc'];
 
 export const CreateNodeDialog: React.FC<CreateNodeDialogProps> = ({
   open,
@@ -49,10 +51,15 @@ export const CreateNodeDialog: React.FC<CreateNodeDialogProps> = ({
     serverAddress: '',
     serverPort: 8388,
     encryptionMethod: 'aes-256-gcm',
-    description: '',
     region: '',
     sortOrder: 0,
     tags: [],
+    // Trojan 相关字段
+    transportProtocol: 'tcp',
+    host: '',
+    path: '',
+    sni: '',
+    allowInsecure: false,
   });
 
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -64,16 +71,20 @@ export const CreateNodeDialog: React.FC<CreateNodeDialogProps> = ({
       serverAddress: '',
       serverPort: 8388,
       encryptionMethod: 'aes-256-gcm',
-      description: '',
       region: '',
       sortOrder: 0,
       tags: [],
+      transportProtocol: 'tcp',
+      host: '',
+      path: '',
+      sni: '',
+      allowInsecure: false,
     });
     setErrors({});
     onClose();
   };
 
-  const handleChange = (field: keyof CreateNodeRequest, value: string | number) => {
+  const handleChange = (field: keyof CreateNodeRequest, value: string | number | boolean) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
     // 清除该字段的错误
     if (errors[field]) {
@@ -84,6 +95,11 @@ export const CreateNodeDialog: React.FC<CreateNodeDialogProps> = ({
       });
     }
   };
+
+  const isShadowsocks = formData.protocol === 'shadowsocks';
+  const isTrojan = formData.protocol === 'trojan';
+  const showWsFields = isTrojan && formData.transportProtocol === 'ws';
+  const showGrpcFields = isTrojan && formData.transportProtocol === 'grpc';
 
   const validate = () => {
     const newErrors: Record<string, string> = {};
@@ -104,7 +120,8 @@ export const CreateNodeDialog: React.FC<CreateNodeDialogProps> = ({
       newErrors.protocol = '协议类型不能为空';
     }
 
-    if (!formData.encryptionMethod) {
+    // Shadowsocks 需要加密方法
+    if (isShadowsocks && !formData.encryptionMethod) {
       newErrors.encryptionMethod = '加密方法不能为空';
     }
 
@@ -114,18 +131,42 @@ export const CreateNodeDialog: React.FC<CreateNodeDialogProps> = ({
 
   const handleSubmit = () => {
     if (validate()) {
-      // 清理undefined和空字符串
       const submitData: CreateNodeRequest = {
         name: formData.name.trim(),
         protocol: formData.protocol,
         serverAddress: formData.serverAddress.trim(),
         serverPort: formData.serverPort,
-        encryptionMethod: formData.encryptionMethod,
       };
 
-      if (formData.description?.trim()) {
-        submitData.description = formData.description.trim();
+      // Shadowsocks 特有字段
+      if (isShadowsocks && formData.encryptionMethod) {
+        submitData.encryptionMethod = formData.encryptionMethod;
       }
+
+      // Trojan 特有字段
+      if (isTrojan) {
+        submitData.transportProtocol = formData.transportProtocol;
+        if (formData.sni?.trim()) {
+          submitData.sni = formData.sni.trim();
+        }
+        if (formData.allowInsecure) {
+          submitData.allowInsecure = formData.allowInsecure;
+        }
+        // WebSocket 字段
+        if (showWsFields) {
+          if (formData.host?.trim()) {
+            submitData.host = formData.host.trim();
+          }
+          if (formData.path?.trim()) {
+            submitData.path = formData.path.trim();
+          }
+        }
+        // gRPC 字段
+        if (showGrpcFields && formData.host?.trim()) {
+          submitData.host = formData.host.trim();
+        }
+      }
+
       if (formData.region?.trim()) {
         submitData.region = formData.region.trim();
       }
@@ -142,7 +183,7 @@ export const CreateNodeDialog: React.FC<CreateNodeDialogProps> = ({
                       formData.protocol &&
                       formData.serverAddress.trim() &&
                       formData.serverPort &&
-                      formData.encryptionMethod;
+                      (isTrojan || formData.encryptionMethod);
 
   return (
     <Dialog open={open} onOpenChange={(open) => !open && handleClose()}>
@@ -227,30 +268,111 @@ export const CreateNodeDialog: React.FC<CreateNodeDialogProps> = ({
             </p>
           </div>
 
-          {/* 加密方法 */}
-          <div className="flex flex-col gap-2">
-            <Label htmlFor="encryptionMethod">
-              加密方法 <span className="text-destructive">*</span>
-            </Label>
-            <Select
-              value={formData.encryptionMethod}
-              onValueChange={(value) => handleChange('encryptionMethod', value)}
-            >
-              <SelectTrigger id="encryptionMethod">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {ENCRYPTION_METHODS.map((method) => (
-                  <SelectItem key={method} value={method}>
-                    {method}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            <p className="text-xs text-muted-foreground">
-              {errors.encryptionMethod || '必填项'}
-            </p>
-          </div>
+          {/* Shadowsocks 加密方法 */}
+          {isShadowsocks && (
+            <div className="flex flex-col gap-2">
+              <Label htmlFor="encryptionMethod">
+                加密方法 <span className="text-destructive">*</span>
+              </Label>
+              <Select
+                value={formData.encryptionMethod}
+                onValueChange={(value) => handleChange('encryptionMethod', value)}
+              >
+                <SelectTrigger id="encryptionMethod">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {SS_ENCRYPTION_METHODS.map((method) => (
+                    <SelectItem key={method} value={method}>
+                      {method}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <p className="text-xs text-muted-foreground">
+                {errors.encryptionMethod || '必填项'}
+              </p>
+            </div>
+          )}
+
+          {/* Trojan 传输协议 */}
+          {isTrojan && (
+            <div className="flex flex-col gap-2">
+              <Label htmlFor="transportProtocol">传输协议</Label>
+              <Select
+                value={formData.transportProtocol}
+                onValueChange={(value) => handleChange('transportProtocol', value)}
+              >
+                <SelectTrigger id="transportProtocol">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {TRANSPORT_PROTOCOLS.map((protocol) => (
+                    <SelectItem key={protocol} value={protocol}>
+                      {protocol.toUpperCase()}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <p className="text-xs text-muted-foreground">默认 TCP</p>
+            </div>
+          )}
+
+          {/* Trojan SNI */}
+          {isTrojan && (
+            <div className="flex flex-col gap-2">
+              <Label htmlFor="sni">SNI</Label>
+              <Input
+                id="sni"
+                placeholder="TLS Server Name Indication"
+                value={formData.sni || ''}
+                onChange={(e) => handleChange('sni', e.target.value)}
+              />
+              <p className="text-xs text-muted-foreground">可选</p>
+            </div>
+          )}
+
+          {/* WebSocket Host */}
+          {showWsFields && (
+            <div className="flex flex-col gap-2">
+              <Label htmlFor="host">Host</Label>
+              <Input
+                id="host"
+                placeholder="WebSocket Host Header"
+                value={formData.host || ''}
+                onChange={(e) => handleChange('host', e.target.value)}
+              />
+              <p className="text-xs text-muted-foreground">可选</p>
+            </div>
+          )}
+
+          {/* WebSocket Path */}
+          {showWsFields && (
+            <div className="flex flex-col gap-2">
+              <Label htmlFor="path">Path</Label>
+              <Input
+                id="path"
+                placeholder="/path"
+                value={formData.path || ''}
+                onChange={(e) => handleChange('path', e.target.value)}
+              />
+              <p className="text-xs text-muted-foreground">可选</p>
+            </div>
+          )}
+
+          {/* gRPC Service Name */}
+          {showGrpcFields && (
+            <div className="flex flex-col gap-2">
+              <Label htmlFor="host">Service Name</Label>
+              <Input
+                id="host"
+                placeholder="gRPC Service Name"
+                value={formData.host || ''}
+                onChange={(e) => handleChange('host', e.target.value)}
+              />
+              <p className="text-xs text-muted-foreground">可选</p>
+            </div>
+          )}
 
           {/* 地区 */}
           <div className="flex flex-col gap-2">
@@ -274,18 +396,6 @@ export const CreateNodeDialog: React.FC<CreateNodeDialogProps> = ({
               onChange={(e) => handleChange('sortOrder', parseInt(e.target.value, 10) || 0)}
             />
             <p className="text-xs text-muted-foreground">数字越小越靠前</p>
-          </div>
-
-          {/* 描述 */}
-          <div className="flex flex-col gap-2 md:col-span-2">
-            <Label htmlFor="description">描述</Label>
-            <Textarea
-              id="description"
-              rows={2}
-              value={formData.description}
-              onChange={(e) => handleChange('description', e.target.value)}
-            />
-            <p className="text-xs text-muted-foreground">可选</p>
           </div>
         </div>
 

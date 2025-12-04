@@ -1,23 +1,7 @@
 import { z } from 'zod';
 
-/**
- * 更新个人资料请求
- * 基于后端 API: PATCH /users/me
- */
-export interface UpdateProfileRequest {
-  name?: string;
-  email?: string;
-}
-
-/**
- * 修改密码请求
- * 基于后端 API: PUT /users/me/password
- */
-export interface ChangePasswordRequest {
-  oldPassword: string;
-  newPassword: string;
-  logoutAllDevices?: boolean;
-}
+// 类型从 @/api/profile 导出，这里只保留 Zod 验证 schema
+export type { UpdateProfileRequest, ChangePasswordRequest } from '@/api/profile';
 
 /**
  * 更新个人资料验证Schema
