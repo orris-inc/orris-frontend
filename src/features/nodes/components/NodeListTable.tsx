@@ -127,7 +127,7 @@ export const NodeListTable: React.FC<NodeListTableProps> = ({
               </span>
             </div>
             <div className="flex items-center gap-2 text-xs text-slate-500 dark:text-slate-400">
-              <span className="font-mono">{node.serverAddress}:{node.serverPort}</span>
+              <span className="font-mono">{node.serverAddress}:{node.agentPort}</span>
               {node.region && (
                 <>
                   <span className="text-slate-300 dark:text-slate-600">|</span>

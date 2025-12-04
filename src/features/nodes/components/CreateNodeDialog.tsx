@@ -49,7 +49,8 @@ export const CreateNodeDialog: React.FC<CreateNodeDialogProps> = ({
     name: '',
     protocol: 'shadowsocks',
     serverAddress: '',
-    serverPort: 8388,
+    agentPort: 8388,
+    subscriptionPort: undefined,
     encryptionMethod: 'aes-256-gcm',
     region: '',
     sortOrder: 0,
@@ -69,7 +70,8 @@ export const CreateNodeDialog: React.FC<CreateNodeDialogProps> = ({
       name: '',
       protocol: 'shadowsocks',
       serverAddress: '',
-      serverPort: 8388,
+      agentPort: 8388,
+      subscriptionPort: undefined,
       encryptionMethod: 'aes-256-gcm',
       region: '',
       sortOrder: 0,
@@ -84,7 +86,7 @@ export const CreateNodeDialog: React.FC<CreateNodeDialogProps> = ({
     onClose();
   };
 
-  const handleChange = (field: keyof CreateNodeRequest, value: string | number | boolean) => {
+  const handleChange = (field: keyof CreateNodeRequest, value: string | number | boolean | undefined) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
     // 清除该字段的错误
     if (errors[field]) {
@@ -112,8 +114,12 @@ export const CreateNodeDialog: React.FC<CreateNodeDialogProps> = ({
       newErrors.serverAddress = '服务器地址不能为空';
     }
 
-    if (!formData.serverPort || formData.serverPort < 1 || formData.serverPort > 65535) {
-      newErrors.serverPort = '端口必须在1-65535之间';
+    if (!formData.agentPort || formData.agentPort < 1 || formData.agentPort > 65535) {
+      newErrors.agentPort = '端口必须在1-65535之间';
+    }
+
+    if (formData.subscriptionPort !== undefined && (formData.subscriptionPort < 1 || formData.subscriptionPort > 65535)) {
+      newErrors.subscriptionPort = '端口必须在1-65535之间';
     }
 
     if (!formData.protocol) {
@@ -135,7 +141,8 @@ export const CreateNodeDialog: React.FC<CreateNodeDialogProps> = ({
         name: formData.name.trim(),
         protocol: formData.protocol,
         serverAddress: formData.serverAddress.trim(),
-        serverPort: formData.serverPort,
+        agentPort: formData.agentPort,
+        subscriptionPort: formData.subscriptionPort,
       };
 
       // Shadowsocks 特有字段
@@ -182,7 +189,7 @@ export const CreateNodeDialog: React.FC<CreateNodeDialogProps> = ({
   const isFormValid = formData.name.trim() &&
                       formData.protocol &&
                       formData.serverAddress.trim() &&
-                      formData.serverPort &&
+                      formData.agentPort &&
                       (isTrojan || formData.encryptionMethod);
 
   return (
@@ -249,22 +256,40 @@ export const CreateNodeDialog: React.FC<CreateNodeDialogProps> = ({
             </p>
           </div>
 
-          {/* 端口 */}
+          {/* 代理端口 */}
           <div className="flex flex-col gap-2">
-            <Label htmlFor="serverPort">
-              端口 <span className="text-destructive">*</span>
+            <Label htmlFor="agentPort">
+              代理端口 <span className="text-destructive">*</span>
             </Label>
             <Input
-              id="serverPort"
+              id="agentPort"
               type="number"
               min={1}
               max={65535}
-              value={formData.serverPort}
-              onChange={(e) => handleChange('serverPort', parseInt(e.target.value, 10))}
-              error={!!errors.serverPort}
+              value={formData.agentPort}
+              onChange={(e) => handleChange('agentPort', parseInt(e.target.value, 10))}
+              error={!!errors.agentPort}
             />
             <p className="text-xs text-muted-foreground">
-              {errors.serverPort || '必填项，1-65535'}
+              {errors.agentPort || '必填项，1-65535'}
+            </p>
+          </div>
+
+          {/* 订阅端口 */}
+          <div className="flex flex-col gap-2">
+            <Label htmlFor="subscriptionPort">订阅端口</Label>
+            <Input
+              id="subscriptionPort"
+              type="number"
+              min={1}
+              max={65535}
+              placeholder="默认使用代理端口"
+              value={formData.subscriptionPort ?? ''}
+              onChange={(e) => handleChange('subscriptionPort', e.target.value ? parseInt(e.target.value, 10) : undefined)}
+              error={!!errors.subscriptionPort}
+            />
+            <p className="text-xs text-muted-foreground">
+              {errors.subscriptionPort || '可选，用于客户端订阅'}
             </p>
           </div>
 

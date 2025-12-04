@@ -27,7 +27,10 @@ export interface Node {
   id: number;
   name: string;
   serverAddress: string;
-  serverPort: number;
+  /** Port for agent connections */
+  agentPort: number;
+  /** Port for client subscriptions (if null, uses agentPort) */
+  subscriptionPort?: number;
   protocol: NodeProtocol;
   encryptionMethod: string;
   plugin?: string;
@@ -76,7 +79,10 @@ export interface NodeSystemStatus {
 export interface CreateNodeRequest {
   name: string;
   serverAddress: string;
-  serverPort: number;
+  /** Port for agent connections (required) */
+  agentPort: number;
+  /** Port for client subscriptions (if null, uses agentPort) */
+  subscriptionPort?: number;
   protocol: NodeProtocol;
   /** Encryption method (for Shadowsocks) */
   encryptionMethod?: string;
@@ -105,7 +111,10 @@ export interface CreateNodeRequest {
 export interface UpdateNodeRequest {
   name?: string;
   serverAddress?: string;
-  serverPort?: number;
+  /** Port for agent connections */
+  agentPort?: number;
+  /** Port for client subscriptions */
+  subscriptionPort?: number;
   /** Encryption method (for Shadowsocks) */
   encryptionMethod?: string;
   plugin?: string;
@@ -173,6 +182,21 @@ export interface NodeGroup {
   version: number;
   createdAt: string;
   updatedAt: string;
+}
+
+/**
+ * Group node DTO (used in list group nodes response)
+ */
+export interface GroupNode {
+  id: number;
+  name: string;
+  serverAddress: string;
+  /** Port for agent connections */
+  agentPort: number;
+  /** Port for client subscriptions (if null, uses agentPort) */
+  subscriptionPort?: number;
+  region: string;
+  status: string;
 }
 
 /**
@@ -244,7 +268,7 @@ export interface AssociatePlanRequest {
  * GET /node-groups/:id/nodes
  */
 export interface ListGroupNodesResponse {
-  nodes: Node[];
+  nodes: GroupNode[];
 }
 
 /**

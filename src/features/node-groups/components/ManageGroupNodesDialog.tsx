@@ -16,7 +16,7 @@ import { Alert } from '@/components/common/Alert';
 import { Badge } from '@/components/common/Badge';
 import { Separator } from '@/components/common/Separator';
 import { Combobox, type ComboboxOption } from '@/components/common/Combobox';
-import type { NodeGroup, Node } from '@/api/node';
+import type { NodeGroup, GroupNode } from '@/api/node';
 import { useNodeGroups, useNodeGroupNodes } from '../hooks/useNodeGroups';
 import { useNodes } from '@/features/nodes/hooks/useNodes';
 
@@ -42,13 +42,13 @@ export const ManageGroupNodesDialog = ({
 
   // 获取可添加的节点（排除已在组中的节点）
   const availableNodes = nodes.filter(
-    (node) => !groupNodes.some((gn: Node) => gn.id === node.id)
+    (node) => !groupNodes.some((gn: GroupNode) => gn.id === node.id)
   );
 
   // 将节点转换为 Combobox 选项格式
   const comboboxOptions: ComboboxOption[] = availableNodes.map((node) => ({
     value: String(node.id),
-    label: `${node.name} (${node.serverAddress}:${node.serverPort})`,
+    label: `${node.name} (${node.serverAddress}:${node.agentPort})`,
   }));
 
   const handleRemoveNode = async (nodeId: number | string) => {
@@ -137,7 +137,7 @@ export const ManageGroupNodesDialog = ({
               </div>
             ) : groupNodes.length > 0 ? (
               <ul className="max-h-[400px] overflow-auto space-y-2">
-                {groupNodes.map((node: Node) => (
+                {groupNodes.map((node: GroupNode) => (
                   <li
                     key={node.id}
                     className="flex items-center justify-between p-3 border rounded-md hover:bg-accent/50 transition-colors"
@@ -152,7 +152,7 @@ export const ManageGroupNodesDialog = ({
                         </Badge>
                       </div>
                       <p className="text-xs text-muted-foreground">
-                        {node.serverAddress}:{node.serverPort} - {node.protocol}
+                        {node.serverAddress}:{node.agentPort}
                         {node.region && ` - ${node.region}`}
                       </p>
                     </div>

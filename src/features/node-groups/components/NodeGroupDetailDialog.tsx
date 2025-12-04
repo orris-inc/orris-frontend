@@ -12,7 +12,7 @@ import {
 import { Button } from '@/components/common/Button';
 import { Badge } from '@/components/common/Badge';
 import { Separator } from '@/components/common/Separator';
-import type { NodeGroup, Node } from '@/api/node';
+import type { NodeGroup, GroupNode } from '@/api/node';
 import { formatDateTime } from '@/shared/utils/date-utils';
 import { useNodeGroupNodes } from '../hooks/useNodeGroups';
 import { Loader2 } from 'lucide-react';
@@ -92,7 +92,7 @@ export const NodeGroupDetailDialog = ({
               </div>
             ) : groupNodes.length > 0 ? (
               <ul className="max-h-[300px] overflow-auto space-y-2">
-                {groupNodes.map((node: Node) => (
+                {groupNodes.map((node: GroupNode) => (
                   <li
                     key={node.id}
                     className="flex items-center justify-between py-2 px-3 border-b last:border-b-0"
@@ -100,7 +100,8 @@ export const NodeGroupDetailDialog = ({
                     <div className="flex flex-col">
                       <span className="text-sm font-medium">{node.name}</span>
                       <span className="text-xs text-muted-foreground">
-                        {node.serverAddress}:{node.serverPort} - {node.protocol}
+                        {node.serverAddress}:{node.agentPort}
+                        {node.region && ` - ${node.region}`}
                       </span>
                     </div>
                     <Badge variant={node.status === 'active' ? 'default' : 'secondary'}>

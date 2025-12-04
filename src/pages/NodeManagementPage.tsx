@@ -32,7 +32,7 @@ export const NodeManagementPage = () => {
   const {
     nodes,
     pagination,
-    isLoading,
+    isFetching,
     refetch,
     createNode,
     updateNode,
@@ -57,7 +57,7 @@ export const NodeManagementPage = () => {
   };
 
   const handleDelete = async (node: Node) => {
-    if (window.confirm(`确认删除节点 "${node.name}" (${node.serverAddress}:${node.serverPort}) 吗？此操作不可恢复。`)) {
+    if (window.confirm(`确认删除节点 "${node.name}" (${node.serverAddress}:${node.agentPort}) 吗？此操作不可恢复。`)) {
       await deleteNode(node.id);
     }
   };
@@ -126,8 +126,8 @@ export const NodeManagementPage = () => {
                   variant="outline"
                   size="md"
                   onClick={handleRefresh}
-                  disabled={isLoading}
-                  icon={<RefreshCw className={`size-4 ${isLoading ? 'animate-spin' : ''}`} strokeWidth={1.5} />}
+                  disabled={isFetching}
+                  icon={<RefreshCw className={`size-4 ${isFetching ? 'animate-spin' : ''}`} strokeWidth={1.5} />}
                 >
                   刷新
                 </AdminButton>
@@ -148,7 +148,7 @@ export const NodeManagementPage = () => {
         <AdminCard noPadding>
           <NodeListTable
             nodes={nodes}
-            loading={isLoading}
+            loading={isFetching}
             page={pagination.page}
             pageSize={pagination.pageSize}
             total={pagination.total}
