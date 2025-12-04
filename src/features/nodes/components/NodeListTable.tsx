@@ -51,8 +51,8 @@ interface NodeListTableProps {
 
 // 状态配置
 const STATUS_CONFIG: Record<NodeStatus, { label: string; variant: 'success' | 'default' | 'warning'; icon: React.ElementType }> = {
-  active: { label: '运行中', variant: 'success', icon: CheckCircle2 },
-  inactive: { label: '已停用', variant: 'default', icon: XCircle },
+  active: { label: '已激活', variant: 'success', icon: CheckCircle2 },
+  inactive: { label: '未激活', variant: 'default', icon: XCircle },
   maintenance: { label: '维护中', variant: 'warning', icon: Wrench },
 };
 
@@ -190,37 +190,35 @@ export const NodeListTable: React.FC<NodeListTableProps> = ({
     },
     {
       id: 'availability',
-      header: '可用性',
-      size: 80,
+      header: '在线',
+      size: 100,
       cell: ({ row }) => {
         const node = row.original;
+        if (node.isOnline) {
+          return (
+            <span className="inline-flex items-center gap-1.5 text-green-600 dark:text-green-400">
+              <span className="relative flex h-2 w-2">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
+                <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
+              </span>
+              <span className="text-xs font-medium">在线</span>
+            </span>
+          );
+        }
         return (
-          <div className="flex items-center gap-1.5">
-            {node.isAvailable ? (
-              <Tooltip>
-                <TooltipTrigger>
-                  <span className="flex items-center gap-1 text-green-600 dark:text-green-400">
-                    <span className="relative flex h-2 w-2">
-                      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
-                      <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
-                    </span>
-                    <span className="text-xs">在线</span>
-                  </span>
-                </TooltipTrigger>
-                <TooltipContent>节点可用</TooltipContent>
-              </Tooltip>
-            ) : (
-              <Tooltip>
-                <TooltipTrigger>
-                  <span className="flex items-center gap-1 text-slate-400 dark:text-slate-500">
-                    <span className="h-2 w-2 rounded-full bg-slate-300 dark:bg-slate-600"></span>
-                    <span className="text-xs">离线</span>
-                  </span>
-                </TooltipTrigger>
-                <TooltipContent>节点不可用</TooltipContent>
-              </Tooltip>
+          <Tooltip>
+            <TooltipTrigger>
+              <span className="inline-flex items-center gap-1.5 text-slate-400 dark:text-slate-500">
+                <span className="h-2 w-2 rounded-full bg-slate-300 dark:bg-slate-600"></span>
+                <span className="text-xs">离线</span>
+              </span>
+            </TooltipTrigger>
+            {node.lastSeenAt && (
+              <TooltipContent>
+                最后在线: {formatDate(node.lastSeenAt)}
+              </TooltipContent>
             )}
-          </div>
+          </Tooltip>
         );
       },
     },
@@ -285,50 +283,32 @@ export const NodeListTable: React.FC<NodeListTableProps> = ({
     {
       accessorKey: 'status',
       header: '状态',
-      size: 120,
+      size: 100,
       cell: ({ row }) => {
         const node = row.original;
         const statusConfig = STATUS_CONFIG[node.status] || { label: node.status, variant: 'default' as const, icon: AlertTriangle };
         const StatusIcon = statusConfig.icon;
 
         return (
-          <div className="flex items-center gap-2">
-            <Tooltip>
-              <TooltipTrigger>
-                <span className={`relative flex h-2 w-2 ${node.isOnline ? '' : 'opacity-50'}`}>
-                  {node.isOnline && (
-                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75" />
-                  )}
-                  <span className={`relative inline-flex rounded-full h-2 w-2 ${node.isOnline ? 'bg-green-500' : 'bg-slate-400'}`} />
-                </span>
-              </TooltipTrigger>
-              <TooltipContent>
-                {node.isOnline ? '代理在线' : '代理离线'}
-                {node.lastSeenAt && (
-                  <div className="text-xs opacity-80">最后上线: {formatDate(node.lastSeenAt)}</div>
-                )}
-              </TooltipContent>
-            </Tooltip>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <button
-                  onClick={() => node.status === 'active' ? onDeactivate(node) : onActivate(node)}
-                  className="cursor-pointer"
-                >
-                  <AdminBadge variant={statusConfig.variant}>
-                    <StatusIcon className="h-3 w-3 mr-1" />
-                    {statusConfig.label}
-                  </AdminBadge>
-                </button>
-              </TooltipTrigger>
-              <TooltipContent>
-                {node.status === 'active' ? '点击停用' : '点击激活'}
-                {node.status === 'maintenance' && node.maintenanceReason && (
-                  <div className="mt-1 text-xs opacity-80">原因: {node.maintenanceReason}</div>
-                )}
-              </TooltipContent>
-            </Tooltip>
-          </div>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <button
+                onClick={() => node.status === 'active' ? onDeactivate(node) : onActivate(node)}
+                className="cursor-pointer"
+              >
+                <AdminBadge variant={statusConfig.variant}>
+                  <StatusIcon className="h-3 w-3 mr-1" />
+                  {statusConfig.label}
+                </AdminBadge>
+              </button>
+            </TooltipTrigger>
+            <TooltipContent>
+              {node.status === 'active' ? '点击停用' : '点击激活'}
+              {node.status === 'maintenance' && node.maintenanceReason && (
+                <div className="mt-1 text-xs opacity-80">原因: {node.maintenanceReason}</div>
+              )}
+            </TooltipContent>
+          </Tooltip>
         );
       },
     },

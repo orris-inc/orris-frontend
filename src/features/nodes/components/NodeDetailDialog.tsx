@@ -24,8 +24,8 @@ interface NodeDetailDialogProps {
 
 // 状态标签映射
 const STATUS_CONFIG: Record<string, { label: string; variant: 'default' | 'secondary' | 'outline' | 'destructive' }> = {
-  active: { label: '运行中', variant: 'default' },
-  inactive: { label: '已停用', variant: 'secondary' },
+  active: { label: '已激活', variant: 'default' },
+  inactive: { label: '未激活', variant: 'secondary' },
   maintenance: { label: '维护中', variant: 'outline' },
 };
 
@@ -94,15 +94,15 @@ export const NodeDetailDialog: React.FC<NodeDetailDialogProps> = ({
               </Badge>
             </DialogTitle>
             <div className="flex items-center gap-2">
-              {node.isAvailable ? (
+              {node.isOnline ? (
                 <span className="flex items-center gap-1 text-xs text-green-600">
                   <span className="h-2 w-2 rounded-full bg-green-500"></span>
-                  在线
+                  节点在线
                 </span>
               ) : (
                 <span className="flex items-center gap-1 text-xs text-slate-400">
                   <span className="h-2 w-2 rounded-full bg-slate-300"></span>
-                  离线
+                  节点离线
                 </span>
               )}
               <Badge variant={statusConfig.variant}>
@@ -113,9 +113,9 @@ export const NodeDetailDialog: React.FC<NodeDetailDialogProps> = ({
         </DialogHeader>
 
         <div className="space-y-6">
-          {/* 代理状态 */}
+          {/* 节点状态 */}
           <div>
-            <h3 className="text-sm font-semibold mb-3">代理状态</h3>
+            <h3 className="text-sm font-semibold mb-3">节点状态</h3>
             <Separator className="mb-4" />
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
               <div className="flex items-center gap-2 p-3 bg-muted rounded-lg">
@@ -127,7 +127,7 @@ export const NodeDetailDialog: React.FC<NodeDetailDialogProps> = ({
                 <div>
                   <p className="text-xs text-muted-foreground">连接状态</p>
                   <p className={`text-sm font-medium ${node.isOnline ? 'text-green-600' : 'text-slate-500'}`}>
-                    {node.isOnline ? '在线' : '离线'}
+                    {node.isOnline ? '节点在线' : '节点离线'}
                   </p>
                 </div>
               </div>

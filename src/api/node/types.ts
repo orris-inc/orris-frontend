@@ -48,7 +48,6 @@ export interface Node {
   /** Allow insecure TLS connection */
   allowInsecure?: boolean;
   maintenanceReason?: string;
-  isAvailable: boolean;
   /** Indicates if the node agent is online (reported within 5 minutes) */
   isOnline: boolean;
   /** Last time the node agent reported status */
