@@ -61,6 +61,12 @@ export const EditNodeDialog: React.FC<EditNodeDialogProps> = ({
         region: node.region,
         status: node.status,
         sortOrder: node.sortOrder,
+        // Trojan 相关字段
+        transportProtocol: node.transportProtocol,
+        host: node.host,
+        path: node.path,
+        sni: node.sni,
+        allowInsecure: node.allowInsecure,
       });
       setErrors({});
     }
@@ -352,6 +358,26 @@ export const EditNodeDialog: React.FC<EditNodeDialogProps> = ({
                     onChange={(e) => handleChange('host', e.target.value)}
                   />
                   <p className="text-xs text-muted-foreground">可选</p>
+                </div>
+              )}
+
+              {/* Trojan Allow Insecure */}
+              {isTrojan && (
+                <div className="flex flex-col gap-2">
+                  <Label htmlFor="allowInsecure">TLS 安全</Label>
+                  <Select
+                    value={formData.allowInsecure ? 'true' : 'false'}
+                    onValueChange={(value) => handleChange('allowInsecure', value === 'true')}
+                  >
+                    <SelectTrigger id="allowInsecure">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="false">验证证书（安全）</SelectItem>
+                      <SelectItem value="true">跳过验证（不安全）</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <p className="text-xs text-muted-foreground">自签名证书可选择跳过验证</p>
                 </div>
               )}
 

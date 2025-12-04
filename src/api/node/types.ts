@@ -37,8 +37,22 @@ export interface Node {
   tags?: string[];
   customFields?: Record<string, unknown>;
   sortOrder: number;
+  /** Transport protocol for Trojan (tcp, ws, grpc) */
+  transportProtocol?: TransportProtocol;
+  /** WebSocket host header or gRPC service name */
+  host?: string;
+  /** WebSocket path */
+  path?: string;
+  /** TLS Server Name Indication */
+  sni?: string;
+  /** Allow insecure TLS connection */
+  allowInsecure?: boolean;
   maintenanceReason?: string;
   isAvailable: boolean;
+  /** Indicates if the node agent is online (reported within 5 minutes) */
+  isOnline: boolean;
+  /** Last time the node agent reported status */
+  lastSeenAt?: string;
   version: number;
   createdAt: string;
   updatedAt: string;
