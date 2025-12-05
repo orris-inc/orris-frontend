@@ -85,7 +85,7 @@ export const ChangePasswordForm = () => {
     try {
       await changePassword(data);
       reset(); // 清空表单
-    } catch (error) {
+    } catch {
       // 错误已在useProfile中处理
     }
   };
@@ -212,8 +212,8 @@ export const ChangePasswordForm = () => {
                 name: 'logoutAllDevices',
                 value: checked,
               },
-            };
-            register('logoutAllDevices').onChange(event as any);
+            } as React.ChangeEvent<HTMLInputElement>;
+            register('logoutAllDevices').onChange(event);
           }}
         >
           <CheckboxPrimitive.Indicator className="flex items-center justify-center text-current">

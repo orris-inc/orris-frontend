@@ -47,10 +47,9 @@ const DropdownMenuPortal = DropdownMenuPrimitive.Portal;
 /**
  * DropdownMenuContent 组件属性
  */
-interface DropdownMenuContentProps
-  extends ComponentPropsWithoutRef<
-    typeof DropdownMenuPrimitive.Content
-  > {}
+type DropdownMenuContentProps = ComponentPropsWithoutRef<
+  typeof DropdownMenuPrimitive.Content
+>;
 
 /**
  * DropdownMenuContent 组件
@@ -81,10 +80,9 @@ DropdownMenuContent.displayName =
 /**
  * DropdownMenuItem 组件属性
  */
-interface DropdownMenuItemProps
-  extends ComponentPropsWithoutRef<
-    typeof DropdownMenuPrimitive.Item
-  > {}
+type DropdownMenuItemProps = ComponentPropsWithoutRef<
+  typeof DropdownMenuPrimitive.Item
+>;
 
 /**
  * DropdownMenuItem 组件
@@ -109,10 +107,9 @@ DropdownMenuItem.displayName = DropdownMenuPrimitive.Item.displayName;
 /**
  * DropdownMenuLabel 组件属性
  */
-interface DropdownMenuLabelProps
-  extends ComponentPropsWithoutRef<
-    typeof DropdownMenuPrimitive.Label
-  > {}
+type DropdownMenuLabelProps = ComponentPropsWithoutRef<
+  typeof DropdownMenuPrimitive.Label
+>;
 
 /**
  * DropdownMenuLabel 组件
@@ -132,10 +129,9 @@ DropdownMenuLabel.displayName = DropdownMenuPrimitive.Label.displayName;
 /**
  * DropdownMenuSeparator 组件属性
  */
-interface DropdownMenuSeparatorProps
-  extends ComponentPropsWithoutRef<
-    typeof DropdownMenuPrimitive.Separator
-  > {}
+type DropdownMenuSeparatorProps = ComponentPropsWithoutRef<
+  typeof DropdownMenuPrimitive.Separator
+>;
 
 /**
  * DropdownMenuSeparator 组件
@@ -168,10 +164,9 @@ const DropdownMenuSub = DropdownMenuPrimitive.Sub;
 /**
  * DropdownMenuSubTrigger 组件属性
  */
-interface DropdownMenuSubTriggerProps
-  extends ComponentPropsWithoutRef<
-    typeof DropdownMenuPrimitive.SubTrigger
-  > {}
+type DropdownMenuSubTriggerProps = ComponentPropsWithoutRef<
+  typeof DropdownMenuPrimitive.SubTrigger
+>;
 
 /**
  * DropdownMenuSubTrigger 组件
@@ -198,10 +193,9 @@ DropdownMenuSubTrigger.displayName =
 /**
  * DropdownMenuSubContent 组件属性
  */
-interface DropdownMenuSubContentProps
-  extends ComponentPropsWithoutRef<
-    typeof DropdownMenuPrimitive.SubContent
-  > {}
+type DropdownMenuSubContentProps = ComponentPropsWithoutRef<
+  typeof DropdownMenuPrimitive.SubContent
+>;
 
 /**
  * DropdownMenuSubContent 组件

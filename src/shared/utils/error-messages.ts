@@ -162,24 +162,48 @@ export function translateErrorMessage(message: string): string {
  * @param error - 错误对象
  * @returns 中文错误消息
  */
-export function extractErrorMessage(error: any): string {
+export function extractErrorMessage(error: unknown): string {
   // 1. Axios错误
-  if (error?.isAxiosError || error?.response) {
-    const responseData = error.response?.data;
+  if (error && typeof error === 'object' && ('isAxiosError' in error || 'response' in error)) {
+    const axiosError = error as {
+      isAxiosError?: boolean;
+      response?: {
+        data?: {
+          error?: { message?: string } | string;
+          message?: string;
+        };
+        status?: number;
+      };
+      code?: string;
+      message?: string;
+    };
+
+    const responseData = axiosError.response?.data;
 
     // 尝试从不同的字段提取错误消息
-    const message =
-      responseData?.error?.message ||
-      responseData?.message ||
-      responseData?.error ||
-      error.message;
+    let message: string | undefined;
+    if (responseData && typeof responseData === 'object') {
+      if ('error' in responseData) {
+        message = typeof responseData.error === 'object' && responseData.error !== null && 'message' in responseData.error
+          ? String(responseData.error.message)
+          : typeof responseData.error === 'string'
+          ? responseData.error
+          : undefined;
+      }
+      if (!message && 'message' in responseData) {
+        message = String(responseData.message);
+      }
+    }
+    if (!message && axiosError.message) {
+      message = axiosError.message;
+    }
 
     if (message) {
       return translateErrorMessage(message);
     }
 
     // 根据HTTP状态码返回对应消息
-    const status = error.response?.status;
+    const status = axiosError.response?.status;
     if (status === 401) {
       return '认证失败，请重新登录';
     }
@@ -197,10 +221,10 @@ export function extractErrorMessage(error: any): string {
     }
 
     // 网络错误
-    if (error.code === 'ECONNABORTED') {
+    if (axiosError.code === 'ECONNABORTED') {
       return '请求超时，请重试';
     }
-    if (error.message === 'Network Error') {
+    if (axiosError.message === 'Network Error') {
       return '网络连接失败，请检查网络设置';
     }
   }
@@ -217,8 +241,9 @@ export function extractErrorMessage(error: any): string {
 
   // 4. 对象错误
   if (error && typeof error === 'object') {
-    const message = error.message || error.error || error.msg;
-    if (message) {
+    const errorObj = error as Record<string, unknown>;
+    const message = errorObj.message || errorObj.error || errorObj.msg;
+    if (message && typeof message === 'string') {
       return translateErrorMessage(message);
     }
   }
@@ -233,7 +258,7 @@ export function extractErrorMessage(error: any): string {
  * @param error - 错误对象
  * @returns 如果是账号未激活错误返回true，否则返回false
  */
-export function isAccountNotActiveError(error: any): boolean {
+export function isAccountNotActiveError(error: unknown): boolean {
   const message = extractRawErrorMessage(error);
   return /account.*not.*active/i.test(message);
 }
@@ -244,16 +269,34 @@ export function isAccountNotActiveError(error: any): boolean {
  * @param error - 错误对象
  * @returns 原始错误消息
  */
-export function extractRawErrorMessage(error: any): string {
-  if (error?.isAxiosError || error?.response) {
-    const responseData = error.response?.data;
-    return (
-      responseData?.error?.message ||
-      responseData?.message ||
-      responseData?.error ||
-      error.message ||
-      ''
-    );
+export function extractRawErrorMessage(error: unknown): string {
+  if (error && typeof error === 'object' && ('isAxiosError' in error || 'response' in error)) {
+    const axiosError = error as {
+      response?: {
+        data?: {
+          error?: { message?: string } | string;
+          message?: string;
+        };
+      };
+      message?: string;
+    };
+
+    const responseData = axiosError.response?.data;
+    if (responseData && typeof responseData === 'object') {
+      if ('error' in responseData) {
+        const errorField = responseData.error;
+        if (typeof errorField === 'object' && errorField !== null && 'message' in errorField) {
+          return String(errorField.message);
+        }
+        if (typeof errorField === 'string') {
+          return errorField;
+        }
+      }
+      if ('message' in responseData && responseData.message) {
+        return String(responseData.message);
+      }
+    }
+    return axiosError.message || '';
   }
 
   if (error instanceof Error) {
@@ -265,7 +308,9 @@ export function extractRawErrorMessage(error: any): string {
   }
 
   if (error && typeof error === 'object') {
-    return error.message || error.error || error.msg || '';
+    const errorObj = error as Record<string, unknown>;
+    const message = errorObj.message || errorObj.error || errorObj.msg;
+    return message ? String(message) : '';
   }
 
   return '';

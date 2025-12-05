@@ -44,7 +44,7 @@ export const EditPlanDialog: React.FC<EditPlanDialogProps> = ({
     }
   }, [plan]);
 
-  const handleChange = (field: keyof UpdatePlanRequest, value: any) => {
+  const handleChange = (field: keyof UpdatePlanRequest, value: unknown) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
   };
 

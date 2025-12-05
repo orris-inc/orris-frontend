@@ -83,7 +83,7 @@ export const useAuth = () => {
         storeLogin(response.user);
 
         // 登录成功后根据用户角色跳转
-        const redirectUrl = getRedirectUrl(response.user.role as any);
+        const redirectUrl = getRedirectUrl(response.user.role as 'admin' | 'user' | 'moderator');
         navigate(redirectUrl, { replace: true });
       } catch (err) {
         // 记录原始错误用于调试
@@ -113,7 +113,7 @@ export const useAuth = () => {
         storeLogin(user);
 
         // OAuth登录成功后根据用户角色跳转
-        const redirectUrl = getRedirectUrl(user.role as any);
+        const redirectUrl = getRedirectUrl(user.role as 'admin' | 'user' | 'moderator');
         navigate(redirectUrl, { replace: true });
       } catch (err) {
         console.error('OAuth登录错误:', err);

@@ -19,7 +19,7 @@ export const usePublicPlans = (billingCycleFilter?: BillingCycle) => {
     queryFn: getPublicPlans,
   });
 
-  const publicPlans = data ?? [];
+  const publicPlans = useMemo(() => data ?? [], [data]);
 
   // 根据计费周期筛选计划（前端筛选）
   const filteredPlans = useMemo(() => {

@@ -43,7 +43,7 @@ export const BasicInfoTab = ({ user }: BasicInfoTabProps) => {
       }
 
       await updateProfile(payload);
-    } catch (error) {
+    } catch {
       // 错误已在useProfile中处理
     }
   };

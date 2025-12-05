@@ -108,7 +108,7 @@ export const openOAuthPopup = (provider: OAuthProvider): Promise<User> => {
           cleanup();
           reject(new Error('用户取消了OAuth授权'));
         }
-      } catch (e) {
+      } catch {
         // 如果因为COOP无法访问popup.closed，说明弹窗仍在OAuth提供商页面
         // 不做任何处理，继续等待postMessage
         // 只有在超时的情况下才会终止

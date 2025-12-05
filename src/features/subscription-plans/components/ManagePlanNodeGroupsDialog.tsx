@@ -65,7 +65,7 @@ export const ManagePlanNodeGroupsDialog: React.FC<ManagePlanNodeGroupsDialogProp
           try {
             const detail = await getNodeGroup(group.id);
             // TODO: 需要后端API支持返回subscription_plan_ids字段
-            const isBound = (detail as any).subscriptionPlanIds?.includes(plan.id) || false;
+            const isBound = (detail as { subscriptionPlanIds?: number[] }).subscriptionPlanIds?.includes(plan.id) || false;
 
             setNodeGroups(prev => {
               const updated = [...prev];
@@ -89,7 +89,7 @@ export const ManagePlanNodeGroupsDialog: React.FC<ManagePlanNodeGroupsDialogProp
           }
         })
       );
-    } catch (error: any) {
+    } catch (error) {
       console.error('Failed to load node groups:', error);
     } finally {
       setLoading(false);
@@ -114,7 +114,7 @@ export const ManagePlanNodeGroupsDialog: React.FC<ManagePlanNodeGroupsDialogProp
           g.id === groupId ? { ...g, isBound: !currentlyBound } : g
         )
       );
-    } catch (error: any) {
+    } catch (error) {
       console.error('Failed to toggle binding:', error);
     } finally {
       setSubmitting(false);
@@ -151,7 +151,7 @@ export const ManagePlanNodeGroupsDialog: React.FC<ManagePlanNodeGroupsDialogProp
           return g;
         })
       );
-    } catch (error: any) {
+    } catch (error) {
       console.error('Failed to toggle all bindings:', error);
     } finally {
       setSubmitting(false);

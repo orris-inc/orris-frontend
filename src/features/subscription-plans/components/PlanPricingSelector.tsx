@@ -31,17 +31,17 @@ export const PlanPricingSelector: React.FC<PlanPricingSelectorProps> = ({
   // 过滤激活的定价选项
   const activePricings = pricings.filter((p) => p.isActive);
 
-  // 如果没有激活的定价，返回空
-  if (activePricings.length === 0) {
-    return null;
-  }
-
   // 默认选择第一个激活的定价，或指定的计费周期
   const defaultPricing =
     activePricings.find((p) => p.billingCycle === defaultBillingCycle) ||
     activePricings[0];
 
-  const [selectedPricing, setSelectedPricing] = useState<PricingOption>(defaultPricing);
+  const [selectedPricing, setSelectedPricing] = useState<PricingOption | null>(defaultPricing || null);
+
+  // 如果没有激活的定价，返回空
+  if (activePricings.length === 0 || !selectedPricing) {
+    return null;
+  }
 
   const handlePricingChange = (newBillingCycle: string) => {
     if (!newBillingCycle) return;
