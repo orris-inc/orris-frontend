@@ -8,8 +8,20 @@ import applyCaseMiddleware from 'axios-case-converter';
 import type { APIResponse } from '@/shared/types/api.types';
 import { extractErrorMessage } from '@/shared/utils/error-messages';
 
-// API 基础 URL
-const baseURL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8081';
+// 运行时配置类型声明
+declare global {
+  interface Window {
+    __APP_CONFIG__?: {
+      API_BASE_URL?: string;
+    };
+  }
+}
+
+// API 基础 URL（优先级：环境变量 > 运行时配置 > 默认值）
+const baseURL =
+  import.meta.env.VITE_API_BASE_URL ||
+  window.__APP_CONFIG__?.API_BASE_URL ||
+  '/api';
 
 // 创建 Axios 实例，应用 snake_case <-> camelCase 自动转换
 export const apiClient = applyCaseMiddleware(

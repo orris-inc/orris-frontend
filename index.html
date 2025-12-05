@@ -9,6 +9,8 @@
   </head>
   <body>
     <div id="root"></div>
+    <!-- 运行时配置（生产环境由 Caddy 动态生成） -->
+    <script src="/config.js" onerror="window.__APP_CONFIG__={API_BASE_URL:'/api'}"></script>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>
