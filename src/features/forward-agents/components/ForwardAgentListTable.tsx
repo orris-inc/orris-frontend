@@ -4,7 +4,7 @@
  */
 
 import { useMemo } from 'react';
-import { Edit, Trash2, Key, Eye, Power, PowerOff, MoreHorizontal } from 'lucide-react';
+import { Edit, Trash2, Key, Eye, Power, PowerOff, MoreHorizontal, Terminal } from 'lucide-react';
 import { DataTable, AdminBadge, type ColumnDef, type ResponsiveColumnMeta } from '@/components/admin';
 import {
   DropdownMenu,
@@ -29,6 +29,7 @@ interface ForwardAgentListTableProps {
   onEnable: (agent: ForwardAgent) => void;
   onDisable: (agent: ForwardAgent) => void;
   onRegenerateToken: (agent: ForwardAgent) => void;
+  onGetInstallScript: (agent: ForwardAgent) => void;
   onViewDetail: (agent: ForwardAgent) => void;
 }
 
@@ -57,6 +58,7 @@ export const ForwardAgentListTable: React.FC<ForwardAgentListTableProps> = ({
   onEnable,
   onDisable,
   onRegenerateToken,
+  onGetInstallScript,
   onViewDetail,
 }) => {
   const columns = useMemo<ColumnDef<ForwardAgent>[]>(() => [
@@ -162,6 +164,10 @@ export const ForwardAgentListTable: React.FC<ForwardAgentListTableProps> = ({
                 <Key className="mr-2 size-4" />
                 重新生成Token
               </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => onGetInstallScript(agent)}>
+                <Terminal className="mr-2 size-4" />
+                获取安装脚本
+              </DropdownMenuItem>
               <DropdownMenuSeparator />
               {agent.status === 'enabled' ? (
                 <DropdownMenuItem onClick={() => onDisable(agent)}>
@@ -183,7 +189,7 @@ export const ForwardAgentListTable: React.FC<ForwardAgentListTableProps> = ({
         );
       },
     },
-  ], [onEdit, onDelete, onEnable, onDisable, onRegenerateToken, onViewDetail]);
+  ], [onEdit, onDelete, onEnable, onDisable, onRegenerateToken, onGetInstallScript, onViewDetail]);
 
   return (
     <DataTable

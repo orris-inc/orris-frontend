@@ -18,7 +18,7 @@ declare global {
 }
 
 // API 基础 URL（优先级：环境变量 > 运行时配置 > 默认值）
-const baseURL =
+export const baseURL =
   import.meta.env.VITE_API_BASE_URL ||
   window.__APP_CONFIG__?.API_BASE_URL ||
   '/api';

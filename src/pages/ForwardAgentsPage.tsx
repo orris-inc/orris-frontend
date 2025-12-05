@@ -9,6 +9,7 @@ import { ForwardAgentListTable } from '@/features/forward-agents/components/Forw
 import { EditForwardAgentDialog } from '@/features/forward-agents/components/EditForwardAgentDialog';
 import { CreateForwardAgentDialog } from '@/features/forward-agents/components/CreateForwardAgentDialog';
 import { ForwardAgentDetailDialog } from '@/features/forward-agents/components/ForwardAgentDetailDialog';
+import { InstallScriptDialog } from '@/features/forward-agents/components/InstallScriptDialog';
 import { useForwardAgentsPage } from '@/features/forward-agents/hooks/useForwardAgents';
 import { AdminLayout } from '@/layouts/AdminLayout';
 import { textareaStyles } from '@/lib/ui-styles';
@@ -42,8 +43,11 @@ export const ForwardAgentsPage = () => {
     enableForwardAgent,
     disableForwardAgent,
     handleRegenerateToken,
+    handleGetInstallCommand,
     generatedToken,
     setGeneratedToken,
+    installCommandData,
+    setInstallCommandData,
     handlePageChange,
     handlePageSizeChange,
   } = useForwardAgentsPage();
@@ -51,6 +55,7 @@ export const ForwardAgentsPage = () => {
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
   const [detailDialogOpen, setDetailDialogOpen] = useState(false);
+  const [installScriptDialogOpen, setInstallScriptDialogOpen] = useState(false);
   const [selectedAgent, setSelectedAgent] = useState<ForwardAgent | null>(null);
   const [tokenDialogOpen, setTokenDialogOpen] = useState(false);
   const [hasTokenCopied, setHasTokenCopied] = useState(false);
@@ -85,6 +90,14 @@ export const ForwardAgentsPage = () => {
   const handleViewDetail = (agent: ForwardAgent) => {
     setSelectedAgent(agent);
     setDetailDialogOpen(true);
+  };
+
+  const handleInstallScript = async (agent: ForwardAgent) => {
+    setSelectedAgent(agent);
+    const command = await handleGetInstallCommand(agent.id);
+    if (command) {
+      setInstallScriptDialogOpen(true);
+    }
   };
 
   const handleRefresh = () => {
@@ -179,6 +192,7 @@ export const ForwardAgentsPage = () => {
             onEnable={handleEnable}
             onDisable={handleDisable}
             onRegenerateToken={handleTokenRegenerate}
+            onGetInstallScript={handleInstallScript}
             onViewDetail={handleViewDetail}
           />
         </AdminCard>
@@ -264,6 +278,18 @@ export const ForwardAgentsPage = () => {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* 安装脚本对话框 */}
+      <InstallScriptDialog
+        open={installScriptDialogOpen}
+        installCommandData={installCommandData}
+        agentName={selectedAgent?.name}
+        onClose={() => {
+          setInstallScriptDialogOpen(false);
+          setInstallCommandData(null);
+          setSelectedAgent(null);
+        }}
+      />
     </AdminLayout>
   );
 };

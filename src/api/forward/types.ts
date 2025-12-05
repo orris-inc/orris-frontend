@@ -166,6 +166,15 @@ export interface RegenerateTokenResponse {
   token: string;
 }
 
+/**
+ * Get agent token response
+ */
+export interface GetAgentTokenResponse {
+  id: number;
+  token: string;
+  hasToken: boolean;
+}
+
 // ========== Agent Runtime Status Types ==========
 
 /**
@@ -217,4 +226,25 @@ export interface RuleProbeResponse {
   targetLatencyMs?: number; // agent→target latency
   totalLatencyMs?: number; // total round-trip latency
   error?: string;
+}
+
+// ========== Install Script Types ==========
+
+/**
+ * Install command response
+ */
+export interface InstallCommandResponse {
+  installCommand: string;
+  uninstallCommand: string;
+  scriptUrl: string;
+  serverUrl: string;
+  token: string;
+}
+
+/**
+ * Install script params
+ */
+export interface GetInstallScriptParams {
+  token?: string; // Optional: If not provided, uses agent's stored token
+  serverUrl?: string; // Optional: Override default server URL
 }

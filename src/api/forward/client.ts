@@ -23,9 +23,12 @@ import type {
   UpdateForwardAgentStatusRequest,
   ListForwardAgentsParams,
   RegenerateTokenResponse,
+  GetAgentTokenResponse,
   AgentRuntimeStatus,
   ExitEndpoint,
   RuleProbeResponse,
+  InstallCommandResponse,
+  GetInstallScriptParams,
 } from './types';
 
 // ========== Forward Rule APIs ==========
@@ -205,9 +208,23 @@ export const disableForwardAgent = async (id: number | string): Promise<void> =>
 };
 
 /**
+ * Get forward agent token (Admin only)
+ * GET /forward-agents/:id/token
+ * @returns Current token for the agent (without regenerating)
+ */
+export const getForwardAgentToken = async (
+  id: number | string
+): Promise<GetAgentTokenResponse> => {
+  const response = await apiClient.get<APIResponse<GetAgentTokenResponse>>(
+    `/forward-agents/${id}/token`
+  );
+  return response.data.data;
+};
+
+/**
  * Regenerate forward agent token (Admin only)
  * POST /forward-agents/:id/regenerate-token
- * @returns New token for the agent
+ * @returns New token for the agent (generates a new token, invalidating the old one)
  */
 export const regenerateForwardAgentToken = async (
   id: number | string
@@ -260,6 +277,41 @@ export const getExitEndpoint = async (agentId: number | string): Promise<ExitEnd
 export const probeRule = async (id: number | string): Promise<RuleProbeResponse> => {
   const response = await apiClient.post<APIResponse<RuleProbeResponse>>(
     `/forward-rules/${id}/probe`
+  );
+  return response.data.data;
+};
+
+// ========== Install Script APIs ==========
+
+/**
+ * Get install command for forward agent (Admin only)
+ * GET /forward-agents/:id/install-script
+ *
+ * @param id Agent ID
+ * @param params.token Optional: API token. If not provided, uses agent's stored token
+ * @param params.serverUrl Optional: Override default server URL
+ * @returns Install command that can be executed on target server
+ *
+ * Usage:
+ * 1. Call getInstallCommand() to get the install command
+ * 2. Copy and execute the installCommand on target server
+ *
+ * Example response:
+ * {
+ *   installCommand: "curl -fsSL https://...install.sh | sudo bash -s -- --server https://... --token fwd_xxx",
+ *   uninstallCommand: "curl -fsSL https://...install.sh | sudo bash -s -- uninstall",
+ *   scriptUrl: "https://raw.githubusercontent.com/orris-inc/orris-client/main/scripts/install.sh",
+ *   serverUrl: "https://api.example.com",
+ *   token: "fwd_xxx"
+ * }
+ */
+export const getInstallCommand = async (
+  id: number | string,
+  params?: GetInstallScriptParams
+): Promise<InstallCommandResponse> => {
+  const response = await apiClient.get<APIResponse<InstallCommandResponse>>(
+    `/forward-agents/${id}/install-script`,
+    { params }
   );
   return response.data.data;
 };

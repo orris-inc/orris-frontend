@@ -17,10 +17,12 @@ import {
   disableForwardAgent,
   regenerateForwardAgentToken,
   getForwardAgentRuntimeStatus,
+  getInstallCommand,
   type ForwardAgent,
   type CreateForwardAgentRequest,
   type UpdateForwardAgentRequest,
   type ListForwardAgentsParams,
+  type InstallCommandResponse,
 } from '@/api/forward';
 
 // Query Keys
@@ -200,6 +202,9 @@ export const useForwardAgentsPage = () => {
   const [filters, setFilters] = useState<ForwardAgentFilters>({});
   const [selectedAgent, setSelectedAgent] = useState<ForwardAgent | null>(null);
   const [generatedToken, setGeneratedToken] = useState<{ token: string } | null>(null);
+  const [installCommandData, setInstallCommandData] = useState<InstallCommandResponse | null>(null);
+  const [isLoadingInstallCommand, setIsLoadingInstallCommand] = useState(false);
+  const { showError } = useNotificationStore();
 
   const forwardAgentsQuery = useForwardAgents({ page, pageSize, filters });
 
@@ -223,6 +228,20 @@ export const useForwardAgentsPage = () => {
     return token;
   };
 
+  const handleGetInstallCommand = async (id: number | string) => {
+    setIsLoadingInstallCommand(true);
+    try {
+      const command = await getInstallCommand(id);
+      setInstallCommandData(command);
+      return command;
+    } catch (error) {
+      showError(handleApiError(error));
+      return null;
+    } finally {
+      setIsLoadingInstallCommand(false);
+    }
+  };
+
   return {
     ...forwardAgentsQuery,
     page,
@@ -230,12 +249,16 @@ export const useForwardAgentsPage = () => {
     filters,
     selectedAgent,
     generatedToken,
+    installCommandData,
+    isLoadingInstallCommand,
     setSelectedAgent,
     setGeneratedToken,
+    setInstallCommandData,
     handlePageChange,
     handlePageSizeChange,
     handleFiltersChange,
     handleRegenerateToken,
+    handleGetInstallCommand,
   };
 };
 
