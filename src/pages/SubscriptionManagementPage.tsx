@@ -21,6 +21,7 @@ export const SubscriptionManagementPage: React.FC = () => {
     pagination,
     isLoading,
     refetch,
+    usersMap,
     handlePageChange,
     handlePageSizeChange,
   } = useSubscriptionsPage();
@@ -59,6 +60,7 @@ export const SubscriptionManagementPage: React.FC = () => {
         <AdminCard noPadding>
           <SubscriptionListTable
             subscriptions={subscriptions}
+            usersMap={usersMap}
             loading={isLoading}
             page={page}
             pageSize={pageSize}

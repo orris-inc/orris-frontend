@@ -12,6 +12,8 @@ import {
 import { Button } from '@/components/common/Button';
 import { Badge } from '@/components/common/Badge';
 import { Separator } from '@/components/common/Separator';
+import { Cpu, HardDrive, MemoryStick, Clock, Network, ArrowUpDown, Loader2 } from 'lucide-react';
+import { useForwardAgentRuntimeStatus } from '../hooks/useForwardAgents';
 import type { ForwardAgent } from '@/api/forward';
 
 interface ForwardAgentDetailDialogProps {
@@ -34,11 +36,40 @@ const formatDate = (dateString?: string) => {
   });
 };
 
+// 格式化字节
+const formatBytes = (bytes?: number) => {
+  if (!bytes) return '0 B';
+  const units = ['B', 'KB', 'MB', 'GB', 'TB'];
+  let value = bytes;
+  let unitIndex = 0;
+  while (value >= 1024 && unitIndex < units.length - 1) {
+    value /= 1024;
+    unitIndex++;
+  }
+  return `${value.toFixed(1)} ${units[unitIndex]}`;
+};
+
+// 格式化运行时间
+const formatUptime = (seconds?: number) => {
+  if (!seconds) return '-';
+  const days = Math.floor(seconds / 86400);
+  const hours = Math.floor((seconds % 86400) / 3600);
+  const minutes = Math.floor((seconds % 3600) / 60);
+  if (days > 0) return `${days}天 ${hours}小时`;
+  if (hours > 0) return `${hours}小时 ${minutes}分钟`;
+  return `${minutes}分钟`;
+};
+
 export const ForwardAgentDetailDialog: React.FC<ForwardAgentDetailDialogProps> = ({
   open,
   agent,
   onClose,
 }) => {
+  // 获取运行时状态
+  const { runtimeStatus, isLoading: isLoadingStatus } = useForwardAgentRuntimeStatus(
+    open && agent?.status === 'enabled' ? agent.id : null
+  );
+
   if (!agent) return null;
 
   return (
@@ -86,6 +117,93 @@ export const ForwardAgentDetailDialog: React.FC<ForwardAgentDetailDialogProps> =
               )}
             </div>
           </div>
+
+          {/* 运行时状态 */}
+          {agent.status === 'enabled' && (
+            <div>
+              <h3 className="text-sm font-semibold mb-3">运行状态</h3>
+              <Separator className="mb-4" />
+              {isLoadingStatus ? (
+                <div className="flex items-center justify-center py-8">
+                  <Loader2 className="size-6 animate-spin text-muted-foreground" />
+                </div>
+              ) : runtimeStatus ? (
+                <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                  {/* CPU */}
+                  <div className="flex items-center gap-3 p-3 rounded-lg bg-slate-50 dark:bg-slate-800/50">
+                    <Cpu className="size-5 text-blue-500" />
+                    <div>
+                      <p className="text-xs text-muted-foreground">CPU</p>
+                      <p className="text-sm font-medium">{runtimeStatus.cpuPercent.toFixed(1)}%</p>
+                    </div>
+                  </div>
+
+                  {/* 内存 */}
+                  <div className="flex items-center gap-3 p-3 rounded-lg bg-slate-50 dark:bg-slate-800/50">
+                    <MemoryStick className="size-5 text-green-500" />
+                    <div>
+                      <p className="text-xs text-muted-foreground">内存</p>
+                      <p className="text-sm font-medium">
+                        {runtimeStatus.memoryPercent.toFixed(1)}%
+                        <span className="text-xs text-muted-foreground ml-1">
+                          ({formatBytes(runtimeStatus.memoryUsed)})
+                        </span>
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* 磁盘 */}
+                  <div className="flex items-center gap-3 p-3 rounded-lg bg-slate-50 dark:bg-slate-800/50">
+                    <HardDrive className="size-5 text-orange-500" />
+                    <div>
+                      <p className="text-xs text-muted-foreground">磁盘</p>
+                      <p className="text-sm font-medium">
+                        {runtimeStatus.diskPercent.toFixed(1)}%
+                        <span className="text-xs text-muted-foreground ml-1">
+                          ({formatBytes(runtimeStatus.diskUsed)})
+                        </span>
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* 运行时间 */}
+                  <div className="flex items-center gap-3 p-3 rounded-lg bg-slate-50 dark:bg-slate-800/50">
+                    <Clock className="size-5 text-purple-500" />
+                    <div>
+                      <p className="text-xs text-muted-foreground">运行时间</p>
+                      <p className="text-sm font-medium">{formatUptime(runtimeStatus.uptimeSeconds)}</p>
+                    </div>
+                  </div>
+
+                  {/* 网络连接 */}
+                  <div className="flex items-center gap-3 p-3 rounded-lg bg-slate-50 dark:bg-slate-800/50">
+                    <Network className="size-5 text-cyan-500" />
+                    <div>
+                      <p className="text-xs text-muted-foreground">网络连接</p>
+                      <p className="text-sm font-medium">
+                        TCP: {runtimeStatus.tcpConnections} / UDP: {runtimeStatus.udpConnections}
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* 转发状态 */}
+                  <div className="flex items-center gap-3 p-3 rounded-lg bg-slate-50 dark:bg-slate-800/50">
+                    <ArrowUpDown className="size-5 text-pink-500" />
+                    <div>
+                      <p className="text-xs text-muted-foreground">转发</p>
+                      <p className="text-sm font-medium">
+                        规则: {runtimeStatus.activeRules} / 连接: {runtimeStatus.activeConnections}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              ) : (
+                <p className="text-sm text-muted-foreground text-center py-4">
+                  暂无运行状态数据
+                </p>
+              )}
+            </div>
+          )}
 
           {/* 备注信息 */}
           {agent.remark && (

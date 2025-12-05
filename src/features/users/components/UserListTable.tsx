@@ -5,7 +5,7 @@
 
 import { useMemo } from 'react';
 import { Edit, Trash2, CreditCard, MoreHorizontal } from 'lucide-react';
-import { DataTable, AdminBadge, type ColumnDef } from '@/components/admin';
+import { DataTable, AdminBadge, type ColumnDef, type ResponsiveColumnMeta } from '@/components/admin';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -60,6 +60,7 @@ export const UserListTable: React.FC<UserListTableProps> = ({
       accessorKey: 'id',
       header: 'ID',
       size: 56,
+      meta: { priority: 4 } as ResponsiveColumnMeta,
       cell: ({ row }) => (
         <span className="font-mono text-slate-600 dark:text-slate-400">
           {row.original.id}
@@ -69,6 +70,7 @@ export const UserListTable: React.FC<UserListTableProps> = ({
     {
       accessorKey: 'email',
       header: '邮箱',
+      meta: { priority: 1 } as ResponsiveColumnMeta,
       cell: ({ row }) => (
         <span className="text-slate-900 dark:text-white">
           {row.original.email}
@@ -79,6 +81,7 @@ export const UserListTable: React.FC<UserListTableProps> = ({
       accessorKey: 'name',
       header: '姓名',
       size: 140,
+      meta: { priority: 2 } as ResponsiveColumnMeta,
       cell: ({ row }) => (
         <div className="space-y-1">
           <div className="font-medium text-slate-900 dark:text-white">
@@ -91,6 +94,7 @@ export const UserListTable: React.FC<UserListTableProps> = ({
       accessorKey: 'role',
       header: '角色',
       size: 72,
+      meta: { priority: 2 } as ResponsiveColumnMeta,
       cell: ({ row }) => {
         const roleConfig = ROLE_CONFIG[row.original.role || 'user'] || { label: '用户', variant: 'default' as const };
         return (
@@ -104,6 +108,7 @@ export const UserListTable: React.FC<UserListTableProps> = ({
       accessorKey: 'status',
       header: '状态',
       size: 72,
+      meta: { priority: 1 } as ResponsiveColumnMeta,
       cell: ({ row }) => {
         const statusConfig = STATUS_CONFIG[row.original.status] || { label: row.original.status, variant: 'default' as const };
         return (
@@ -117,6 +122,7 @@ export const UserListTable: React.FC<UserListTableProps> = ({
       accessorKey: 'createdAt',
       header: '创建时间',
       size: 140,
+      meta: { priority: 4 } as ResponsiveColumnMeta,
       cell: ({ row }) => (
         <span className="text-slate-500 dark:text-slate-400 text-sm">
           {formatDate(row.original.createdAt)}
@@ -128,6 +134,7 @@ export const UserListTable: React.FC<UserListTableProps> = ({
       header: '操作',
       size: 56,
       enableSorting: false,
+      meta: { priority: 1 } as ResponsiveColumnMeta,
       cell: ({ row }) => (
         <DropdownMenu>
           <DropdownMenuTrigger asChild>

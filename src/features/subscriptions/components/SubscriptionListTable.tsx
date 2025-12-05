@@ -5,12 +5,14 @@
 
 import { useMemo } from 'react';
 import { CheckCircle, X } from 'lucide-react';
-import { DataTable, AdminBadge, type ColumnDef } from '@/components/admin';
+import { DataTable, AdminBadge, type ColumnDef, type ResponsiveColumnMeta } from '@/components/admin';
 import { formatDate } from '@/shared/utils/date-utils';
 import type { Subscription, SubscriptionStatus } from '@/api/subscription/types';
+import type { UserResponse } from '@/api/user/types';
 
 interface SubscriptionListTableProps {
   subscriptions: Subscription[];
+  usersMap?: Record<number, UserResponse>;
   loading?: boolean;
   page: number;
   pageSize: number;
@@ -30,6 +32,7 @@ const STATUS_CONFIG: Record<SubscriptionStatus, { label: string; variant: 'succe
 
 export const SubscriptionListTable: React.FC<SubscriptionListTableProps> = ({
   subscriptions,
+  usersMap = {},
   loading = false,
   page,
   pageSize,
@@ -42,6 +45,7 @@ export const SubscriptionListTable: React.FC<SubscriptionListTableProps> = ({
       accessorKey: 'id',
       header: '订阅ID',
       size: 72,
+      meta: { priority: 4 } as ResponsiveColumnMeta,
       cell: ({ row }) => (
         <span className="font-mono text-slate-600 dark:text-slate-400">
           {row.original.id}
@@ -52,20 +56,25 @@ export const SubscriptionListTable: React.FC<SubscriptionListTableProps> = ({
       id: 'user',
       header: '用户',
       size: 160,
-      cell: ({ row }) => (
-        <div className="space-y-1">
-          <div className="font-medium text-slate-900 dark:text-white">
-            User #{row.original.userId}
+      meta: { priority: 1 } as ResponsiveColumnMeta,
+      cell: ({ row }) => {
+        const user = usersMap[row.original.userId];
+        return (
+          <div className="space-y-1">
+            <div className="font-medium text-slate-900 dark:text-white">
+              {user?.name || user?.email || `User #${row.original.userId}`}
+            </div>
+            <div className="text-xs text-slate-500 dark:text-slate-400">
+              {user?.email || `ID: ${row.original.userId}`}
+            </div>
           </div>
-          <div className="text-xs text-slate-500 dark:text-slate-400">
-            ID: {row.original.userId}
-          </div>
-        </div>
-      ),
+        );
+      },
     },
     {
       id: 'plan',
       header: '计划',
+      meta: { priority: 1 } as ResponsiveColumnMeta,
       cell: ({ row }) => (
         <div className="space-y-1">
           <div className="font-medium text-slate-900 dark:text-white">
@@ -81,6 +90,7 @@ export const SubscriptionListTable: React.FC<SubscriptionListTableProps> = ({
       accessorKey: 'status',
       header: '状态',
       size: 72,
+      meta: { priority: 1 } as ResponsiveColumnMeta,
       cell: ({ row }) => {
         const statusConfig = STATUS_CONFIG[row.original.status] || { label: row.original.status, variant: 'default' as const };
         return (
@@ -94,6 +104,7 @@ export const SubscriptionListTable: React.FC<SubscriptionListTableProps> = ({
       accessorKey: 'startDate',
       header: '开始日期',
       size: 100,
+      meta: { priority: 2 } as ResponsiveColumnMeta,
       cell: ({ row }) => (
         <span className="text-slate-700 dark:text-slate-300 text-sm">
           {formatDate(row.original.startDate)}
@@ -104,6 +115,7 @@ export const SubscriptionListTable: React.FC<SubscriptionListTableProps> = ({
       accessorKey: 'endDate',
       header: '结束日期',
       size: 100,
+      meta: { priority: 2 } as ResponsiveColumnMeta,
       cell: ({ row }) => (
         <span className="text-slate-700 dark:text-slate-300 text-sm">
           {row.original.endDate ? formatDate(row.original.endDate) : '-'}
@@ -114,6 +126,7 @@ export const SubscriptionListTable: React.FC<SubscriptionListTableProps> = ({
       accessorKey: 'autoRenew',
       header: '自动续费',
       size: 80,
+      meta: { priority: 3 } as ResponsiveColumnMeta,
       cell: ({ row }) => (
         row.original.autoRenew ? (
           <CheckCircle className="size-4 text-emerald-600 dark:text-emerald-400" strokeWidth={1.5} />
@@ -126,13 +139,14 @@ export const SubscriptionListTable: React.FC<SubscriptionListTableProps> = ({
       accessorKey: 'createdAt',
       header: '创建时间',
       size: 100,
+      meta: { priority: 4 } as ResponsiveColumnMeta,
       cell: ({ row }) => (
         <span className="text-slate-500 dark:text-slate-400 text-sm">
           {formatDate(row.original.createdAt)}
         </span>
       ),
     },
-  ], []);
+  ], [usersMap]);
 
   return (
     <DataTable

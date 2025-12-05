@@ -9,7 +9,7 @@
  */
 
 import { useState } from 'react';
-import { Link as RouterLink, useLocation } from 'react-router-dom';
+import { Link as RouterLink } from 'react-router-dom';
 import {
   Menu,
   ChevronLeft,
@@ -23,7 +23,8 @@ import {
 import * as Dialog from '@radix-ui/react-dialog';
 import * as DropdownMenuPrimitive from '@radix-ui/react-dropdown-menu';
 import * as AvatarPrimitive from '@radix-ui/react-avatar';
-import { TooltipProvider, Tooltip, TooltipTrigger, TooltipContent } from '@/components/common/Tooltip';
+import { TooltipProvider } from '@/components/common/Tooltip';
+import { AdminSidebarNav, AdminSidebarFooter } from '@/components/navigation/AdminSidebarNav';
 
 import { useAuthStore } from '@/features/auth/stores/auth-store';
 import { useAuth } from '@/features/auth/hooks/useAuth';
@@ -38,7 +39,6 @@ interface AdminLayoutProps {
 }
 
 export const AdminLayout = ({ children }: AdminLayoutProps) => {
-  const location = useLocation();
   const { user } = useAuthStore();
   const { logout } = useAuth();
   const { filterNavigationByPermission } = usePermissions();
@@ -55,6 +55,21 @@ export const AdminLayout = ({ children }: AdminLayoutProps) => {
     await logout();
   };
 
+  // 切换到用户视图的链接组件
+  const SwitchToUserViewLink = ({ collapsed = false }: { collapsed?: boolean }) => (
+    <RouterLink
+      to="/dashboard"
+      onClick={() => setMobileDrawerOpen(false)}
+      className={cn(
+        'flex items-center rounded-lg text-muted-foreground hover:bg-accent hover:text-foreground touch-target',
+        collapsed ? 'justify-center p-2.5' : 'gap-3 px-3 py-2.5'
+      )}
+    >
+      <ArrowLeftRight className="h-5 w-5 flex-shrink-0" />
+      {!collapsed && <span className="text-sm font-medium whitespace-nowrap">切换到用户视图</span>}
+    </RouterLink>
+  );
+
   // 移动端侧边栏内容
   const MobileSidebarContent = () => (
     <div className="flex h-full flex-col bg-background">
@@ -63,41 +78,16 @@ export const AdminLayout = ({ children }: AdminLayoutProps) => {
       </div>
 
       <div className="flex-1 overflow-y-auto py-4">
-        <nav className="space-y-1 px-2">
-          {adminNavItems.map((item) => {
-            const Icon = item.icon;
-            const isActive = location.pathname === item.path;
-
-            return (
-              <RouterLink
-                key={item.id}
-                to={item.path}
-                onClick={() => setMobileDrawerOpen(false)}
-                className={cn(
-                  "flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors",
-                  isActive
-                    ? "bg-primary text-primary-foreground"
-                    : "text-muted-foreground hover:bg-accent hover:text-foreground"
-                )}
-              >
-                {Icon && <Icon className="h-5 w-5 flex-shrink-0" />}
-                {item.label}
-              </RouterLink>
-            );
-          })}
-        </nav>
+        <AdminSidebarNav
+          items={adminNavItems}
+          collapsed={false}
+          onItemClick={() => setMobileDrawerOpen(false)}
+        />
       </div>
 
-      <div className="border-t p-4">
-        <RouterLink
-          to="/dashboard"
-          onClick={() => setMobileDrawerOpen(false)}
-          className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-muted-foreground hover:bg-accent hover:text-foreground"
-        >
-          <ArrowLeftRight className="h-5 w-5" />
-          切换到用户视图
-        </RouterLink>
-      </div>
+      <AdminSidebarFooter collapsed={false}>
+        <SwitchToUserViewLink />
+      </AdminSidebarFooter>
     </div>
   );
 
@@ -109,7 +99,7 @@ export const AdminLayout = ({ children }: AdminLayoutProps) => {
           <Dialog.Portal>
             <Dialog.Overlay className="fixed inset-0 z-50 bg-black/50 md:hidden" />
             <Dialog.Content className="fixed inset-y-0 left-0 z-50 h-full w-72 bg-background shadow-xl md:hidden data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:slide-out-to-left data-[state=open]:slide-in-from-left">
-              <Dialog.Close className="absolute right-3 top-3 rounded-md p-1.5 hover:bg-accent">
+              <Dialog.Close className="absolute right-3 top-3 rounded-md p-1.5 hover:bg-accent touch-target flex items-center justify-center">
                 <X className="h-4 w-4" />
               </Dialog.Close>
               <Dialog.Title className="sr-only">导航菜单</Dialog.Title>
@@ -138,7 +128,7 @@ export const AdminLayout = ({ children }: AdminLayoutProps) => {
             </span>
             <button
               onClick={() => setCollapsed(!collapsed)}
-              className="relative flex h-8 w-8 items-center justify-center rounded-md hover:bg-accent transition-colors before:absolute before:inset-[-8px] before:content-['']"
+              className="flex items-center justify-center rounded-md hover:bg-accent transition-colors touch-target"
             >
               {collapsed ? (
                 <ChevronRight className="h-4 w-4" />
@@ -150,77 +140,13 @@ export const AdminLayout = ({ children }: AdminLayoutProps) => {
 
           {/* 导航菜单 */}
           <div className="flex-1 overflow-y-auto py-4">
-            <nav className={cn("space-y-1", collapsed ? "px-2" : "px-3")}>
-              {adminNavItems.map((item) => {
-                const Icon = item.icon;
-                const isActive = location.pathname === item.path;
-
-                const linkContent = (
-                  <RouterLink
-                    key={item.id}
-                    to={item.path}
-                    className={cn(
-                      "flex items-center rounded-lg transition-colors",
-                      collapsed ? "justify-center p-2.5" : "gap-3 px-3 py-2.5",
-                      isActive
-                        ? "bg-primary text-primary-foreground"
-                        : "text-muted-foreground hover:bg-accent hover:text-foreground"
-                    )}
-                  >
-                    {Icon && <Icon className="h-5 w-5 flex-shrink-0" />}
-                    <span className={cn(
-                      "text-sm font-medium whitespace-nowrap transition-opacity duration-200",
-                      collapsed ? "opacity-0 w-0 hidden" : "opacity-100"
-                    )}>
-                      {item.label}
-                    </span>
-                  </RouterLink>
-                );
-
-                if (collapsed) {
-                  return (
-                    <Tooltip key={item.id}>
-                      <TooltipTrigger asChild>
-                        {linkContent}
-                      </TooltipTrigger>
-                      <TooltipContent side="right" sideOffset={8}>
-                        {item.label}
-                      </TooltipContent>
-                    </Tooltip>
-                  );
-                }
-
-                return linkContent;
-              })}
-            </nav>
+            <AdminSidebarNav items={adminNavItems} collapsed={collapsed} />
           </div>
 
           {/* 侧边栏底部 */}
-          <div className={cn("border-t py-4", collapsed ? "px-2" : "px-3")}>
-            {collapsed ? (
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <RouterLink
-                    to="/dashboard"
-                    className="flex items-center justify-center rounded-lg p-2.5 text-muted-foreground hover:bg-accent hover:text-foreground"
-                  >
-                    <ArrowLeftRight className="h-5 w-5" />
-                  </RouterLink>
-                </TooltipTrigger>
-                <TooltipContent side="right" sideOffset={8}>
-                  切换到用户视图
-                </TooltipContent>
-              </Tooltip>
-            ) : (
-              <RouterLink
-                to="/dashboard"
-                className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-muted-foreground hover:bg-accent hover:text-foreground"
-              >
-                <ArrowLeftRight className="h-5 w-5 flex-shrink-0" />
-                <span className="text-sm font-medium whitespace-nowrap">切换到用户视图</span>
-              </RouterLink>
-            )}
-          </div>
+          <AdminSidebarFooter collapsed={collapsed} tooltipLabel="切换到用户视图">
+            <SwitchToUserViewLink collapsed={collapsed} />
+          </AdminSidebarFooter>
         </aside>
 
         {/* 主内容区域 */}
@@ -234,7 +160,7 @@ export const AdminLayout = ({ children }: AdminLayoutProps) => {
           <header className="sticky top-0 z-30 flex h-14 items-center gap-4 border-b bg-background px-4 sm:px-6">
             {/* 移动端菜单按钮 */}
             <button
-              className="md:hidden flex h-9 w-9 items-center justify-center rounded-md hover:bg-accent"
+              className="md:hidden flex items-center justify-center rounded-md hover:bg-accent touch-target"
               onClick={() => setMobileDrawerOpen(true)}
             >
               <Menu className="h-5 w-5" />

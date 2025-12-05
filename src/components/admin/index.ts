@@ -20,4 +20,4 @@ export {
   AdminTablePagination,
   AdminBadge,
 } from './AdminTable';
-export { DataTable, type ColumnDef, type SortingState, type RowSelectionState } from './DataTable';
+export { DataTable, type ColumnDef, type SortingState, type RowSelectionState, type ResponsiveColumnMeta } from './DataTable';

@@ -23,6 +23,7 @@ import type {
   UpdateForwardAgentStatusRequest,
   ListForwardAgentsParams,
   RegenerateTokenResponse,
+  AgentRuntimeStatus,
   ExitEndpoint,
 } from './types';
 
@@ -212,6 +213,20 @@ export const regenerateForwardAgentToken = async (
 ): Promise<RegenerateTokenResponse> => {
   const response = await apiClient.post<APIResponse<RegenerateTokenResponse>>(
     `/forward-agents/${id}/regenerate-token`
+  );
+  return response.data.data;
+};
+
+/**
+ * Get forward agent runtime status (Admin only)
+ * GET /forward-agents/:id/runtime-status
+ * @returns Agent runtime status including CPU, memory, disk, connections, etc.
+ */
+export const getForwardAgentRuntimeStatus = async (
+  id: number | string
+): Promise<AgentRuntimeStatus> => {
+  const response = await apiClient.get<APIResponse<AgentRuntimeStatus>>(
+    `/forward-agents/${id}/runtime-status`
   );
   return response.data.data;
 };

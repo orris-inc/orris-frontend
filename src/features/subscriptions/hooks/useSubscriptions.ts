@@ -4,7 +4,7 @@
  */
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { queryKeys } from '@/shared/lib/query-client';
 import { useNotificationStore } from '@/shared/stores/notification-store';
 import { handleApiError } from '@/shared/lib/axios';
@@ -20,6 +20,7 @@ import {
   revokeToken,
   refreshToken as refreshSubscriptionToken,
 } from '@/api/subscription';
+import { listUsers } from '@/api/user';
 import type {
   Subscription,
   GenerateTokenRequest,
@@ -30,6 +31,7 @@ import type {
   AdminCreateSubscriptionRequest,
   AdminChangePlanRequest,
 } from '@/api/admin/types';
+import type { UserResponse } from '@/api/user/types';
 
 interface SubscriptionFilters {
   status?: 'active' | 'cancelled' | 'renewed' | 'expired' | 'pending';
@@ -209,6 +211,30 @@ export const useSubscriptionsPage = () => {
 
   const subscriptionsQuery = useSubscriptions({ page, pageSize, filters });
 
+  // 获取订阅中涉及的用户 ID 列表
+  const userIds = useMemo(() => {
+    const ids = subscriptionsQuery.subscriptions.map((s) => s.userId);
+    return [...new Set(ids)];
+  }, [subscriptionsQuery.subscriptions]);
+
+  // 获取用户列表（当有订阅数据时）
+  const { data: usersData } = useQuery({
+    queryKey: queryKeys.users.list({ pageSize: 100 }),
+    queryFn: () => listUsers({ pageSize: 100 }),
+    enabled: userIds.length > 0,
+  });
+
+  // 构建用户 ID -> 用户信息的映射
+  const usersMap = useMemo(() => {
+    const map: Record<number, UserResponse> = {};
+    if (usersData?.items) {
+      for (const user of usersData.items) {
+        map[user.id] = user;
+      }
+    }
+    return map;
+  }, [usersData]);
+
   const handlePageChange = (newPage: number) => {
     setPage(newPage);
   };
@@ -230,6 +256,7 @@ export const useSubscriptionsPage = () => {
     filters,
     selectedSubscription,
     setSelectedSubscription,
+    usersMap,
     handlePageChange,
     handlePageSizeChange,
     handleFiltersChange,

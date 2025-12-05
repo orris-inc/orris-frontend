@@ -16,6 +16,7 @@ import {
   enableForwardAgent,
   disableForwardAgent,
   regenerateForwardAgentToken,
+  getForwardAgentRuntimeStatus,
   type ForwardAgent,
   type CreateForwardAgentRequest,
   type UpdateForwardAgentRequest,
@@ -29,6 +30,7 @@ const forwardAgentsQueryKeys = {
   list: (params: object) => [...forwardAgentsQueryKeys.lists(), params] as const,
   details: () => [...forwardAgentsQueryKeys.all, 'detail'] as const,
   detail: (id: number | string) => [...forwardAgentsQueryKeys.details(), id] as const,
+  runtimeStatus: (id: number | string) => [...forwardAgentsQueryKeys.all, 'runtimeStatus', id] as const,
 };
 
 export interface ForwardAgentFilters {
@@ -171,6 +173,24 @@ export const useForwardAgent = (id: number | string | null) => {
     forwardAgent: data ?? null,
     isLoading,
     error: error ? handleApiError(error) : null,
+  };
+};
+
+// 获取转发代理运行时状态
+export const useForwardAgentRuntimeStatus = (id: number | string | null) => {
+  const { data, isLoading, error, refetch } = useQuery({
+    queryKey: forwardAgentsQueryKeys.runtimeStatus(id!),
+    queryFn: () => getForwardAgentRuntimeStatus(id!),
+    enabled: !!id,
+    refetchInterval: 10000, // 每10秒自动刷新
+    staleTime: 5000, // 5秒内数据视为新鲜
+  });
+
+  return {
+    runtimeStatus: data ?? null,
+    isLoading,
+    error: error ? handleApiError(error) : null,
+    refetch,
   };
 };
 

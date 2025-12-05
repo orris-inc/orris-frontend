@@ -13,15 +13,13 @@ import {
   PowerOff,
   MoreHorizontal,
   Cpu,
-  HardDrive,
   MemoryStick,
-  Clock,
   CheckCircle2,
   XCircle,
   AlertTriangle,
   Wrench,
 } from 'lucide-react';
-import { DataTable, AdminBadge, type ColumnDef } from '@/components/admin';
+import { DataTable, AdminBadge, type ColumnDef, type ResponsiveColumnMeta } from '@/components/admin';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -104,6 +102,7 @@ export const NodeListTable: React.FC<NodeListTableProps> = ({
       accessorKey: 'id',
       header: 'ID',
       size: 60,
+      meta: { priority: 4 } as ResponsiveColumnMeta, // 可选列 >= 1280px
       cell: ({ row }) => (
         <span className="font-mono text-sm text-slate-500 dark:text-slate-400">
           {row.original.id}
@@ -113,6 +112,7 @@ export const NodeListTable: React.FC<NodeListTableProps> = ({
     {
       accessorKey: 'name',
       header: '节点',
+      meta: { priority: 1 } as ResponsiveColumnMeta, // 核心列，始终显示
       cell: ({ row }) => {
         const node = row.original;
         const protocolConfig = PROTOCOL_CONFIG[node.protocol] || { label: node.protocol, color: 'bg-gray-100 text-gray-700' };
@@ -143,6 +143,7 @@ export const NodeListTable: React.FC<NodeListTableProps> = ({
       id: 'config',
       header: '配置',
       size: 160,
+      meta: { priority: 3 } as ResponsiveColumnMeta, // 次要列 >= 1024px
       cell: ({ row }) => {
         const node = row.original;
         if (node.protocol === 'shadowsocks') {
@@ -192,6 +193,7 @@ export const NodeListTable: React.FC<NodeListTableProps> = ({
       id: 'availability',
       header: '在线',
       size: 100,
+      meta: { priority: 2 } as ResponsiveColumnMeta, // 重要列 >= 640px
       cell: ({ row }) => {
         const node = row.original;
         if (node.isOnline) {
@@ -225,7 +227,8 @@ export const NodeListTable: React.FC<NodeListTableProps> = ({
     {
       id: 'systemStatus',
       header: '系统状态',
-      size: 240,
+      size: 160,
+      meta: { priority: 3 } as ResponsiveColumnMeta, // 次要列 >= 1024px
       cell: ({ row }) => {
         const node = row.original;
         const status = node.systemStatus;
@@ -234,49 +237,71 @@ export const NodeListTable: React.FC<NodeListTableProps> = ({
           return <span className="text-xs text-slate-400">暂无数据</span>;
         }
 
-        const getStatusColor = (value: string) => {
+        const getHealthLevel = (value: string) => {
           const num = parseFloat(value);
-          if (num >= 80) return { bar: 'bg-red-500', text: 'text-red-600 dark:text-red-400' };
-          if (num >= 60) return { bar: 'bg-yellow-500', text: 'text-yellow-600 dark:text-yellow-400' };
-          return { bar: 'bg-green-500', text: 'text-green-600 dark:text-green-400' };
+          if (num >= 80) return 'high';
+          if (num >= 60) return 'medium';
+          return 'low';
         };
 
-        const StatusBar = ({ value, label, icon: Icon }: { value: string; label: string; icon: typeof Cpu }) => {
-          const colors = getStatusColor(value);
-          const percent = Math.min(parseFloat(value) || 0, 100);
-          return (
-            <Tooltip>
-              <TooltipTrigger>
-                <div className="flex items-center gap-1.5">
-                  <Icon className={`h-3 w-3 ${colors.text}`} />
-                  <div className="w-12 h-1.5 bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden">
-                    <div className={`h-full ${colors.bar} rounded-full`} style={{ width: `${percent}%` }} />
-                  </div>
-                  <span className={`text-xs w-8 ${colors.text}`}>{value}%</span>
-                </div>
-              </TooltipTrigger>
-              <TooltipContent>{label}</TooltipContent>
-            </Tooltip>
-          );
+        const cpuLevel = getHealthLevel(status.cpu);
+        const memLevel = getHealthLevel(status.memory);
+
+        // 整体健康度：取最差的状态
+        const overallHealth = cpuLevel === 'high' || memLevel === 'high' ? 'high'
+          : cpuLevel === 'medium' || memLevel === 'medium' ? 'medium'
+          : 'low';
+
+        const healthColors = {
+          low: 'text-green-600 dark:text-green-400',
+          medium: 'text-yellow-600 dark:text-yellow-400',
+          high: 'text-red-600 dark:text-red-400',
+        };
+
+        const healthBg = {
+          low: 'bg-green-50 dark:bg-green-900/20',
+          medium: 'bg-yellow-50 dark:bg-yellow-900/20',
+          high: 'bg-red-50 dark:bg-red-900/20',
         };
 
         return (
-          <div className="flex items-center gap-3 text-xs">
-            <StatusBar value={status.cpu} label="CPU 使用率" icon={Cpu} />
-            <StatusBar value={status.memory} label="内存使用率" icon={MemoryStick} />
-            <StatusBar value={status.disk} label="磁盘使用率" icon={HardDrive} />
-            {status.uptime > 0 && (
-              <Tooltip>
-                <TooltipTrigger>
-                  <div className="flex items-center gap-1 text-slate-500 dark:text-slate-500">
-                    <Clock className="h-3 w-3" />
+          <Tooltip>
+            <TooltipTrigger>
+              <div className={`inline-flex items-center gap-2 px-2 py-1 rounded-md ${healthBg[overallHealth]}`}>
+                <div className="flex items-center gap-1">
+                  <Cpu className={`h-3.5 w-3.5 ${healthColors[cpuLevel]}`} />
+                  <span className={`text-xs font-medium ${healthColors[cpuLevel]}`}>{status.cpu}%</span>
+                </div>
+                <div className="w-px h-3 bg-slate-300 dark:bg-slate-600" />
+                <div className="flex items-center gap-1">
+                  <MemoryStick className={`h-3.5 w-3.5 ${healthColors[memLevel]}`} />
+                  <span className={`text-xs font-medium ${healthColors[memLevel]}`}>{status.memory}%</span>
+                </div>
+              </div>
+            </TooltipTrigger>
+            <TooltipContent>
+              <div className="space-y-1.5 text-xs">
+                <div className="flex items-center justify-between gap-4">
+                  <span className="text-slate-400">CPU</span>
+                  <span className="font-mono">{status.cpu}%</span>
+                </div>
+                <div className="flex items-center justify-between gap-4">
+                  <span className="text-slate-400">内存</span>
+                  <span className="font-mono">{status.memory}%</span>
+                </div>
+                <div className="flex items-center justify-between gap-4">
+                  <span className="text-slate-400">磁盘</span>
+                  <span className="font-mono">{status.disk}%</span>
+                </div>
+                {status.uptime > 0 && (
+                  <div className="flex items-center justify-between gap-4 pt-1 border-t border-slate-700">
+                    <span className="text-slate-400">运行时间</span>
                     <span>{formatUptime(status.uptime)}</span>
                   </div>
-                </TooltipTrigger>
-                <TooltipContent>运行时间</TooltipContent>
-              </Tooltip>
-            )}
-          </div>
+                )}
+              </div>
+            </TooltipContent>
+          </Tooltip>
         );
       },
     },
@@ -284,6 +309,7 @@ export const NodeListTable: React.FC<NodeListTableProps> = ({
       accessorKey: 'status',
       header: '状态',
       size: 100,
+      meta: { priority: 1 } as ResponsiveColumnMeta, // 核心列，始终显示
       cell: ({ row }) => {
         const node = row.original;
         const statusConfig = STATUS_CONFIG[node.status] || { label: node.status, variant: 'default' as const, icon: AlertTriangle };
@@ -316,6 +342,7 @@ export const NodeListTable: React.FC<NodeListTableProps> = ({
       id: 'tags',
       header: '标签',
       size: 120,
+      meta: { priority: 3 } as ResponsiveColumnMeta, // 次要列 >= 1024px
       cell: ({ row }) => {
         const node = row.original;
         if (!node.tags || node.tags.length === 0) {
@@ -348,6 +375,7 @@ export const NodeListTable: React.FC<NodeListTableProps> = ({
       accessorKey: 'updatedAt',
       header: '更新时间',
       size: 100,
+      meta: { priority: 4 } as ResponsiveColumnMeta, // 可选列 >= 1280px
       cell: ({ row }) => (
         <span className="text-xs text-slate-500 dark:text-slate-400">
           {formatDate(row.original.updatedAt)}
@@ -358,6 +386,7 @@ export const NodeListTable: React.FC<NodeListTableProps> = ({
       id: 'actions',
       header: '',
       size: 48,
+      meta: { priority: 1 } as ResponsiveColumnMeta, // 核心列，始终显示
       enableSorting: false,
       cell: ({ row }) => {
         const node = row.original;

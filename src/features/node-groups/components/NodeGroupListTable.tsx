@@ -5,7 +5,7 @@
 
 import { useMemo } from 'react';
 import { Edit, Trash2, Eye, Network, MoreHorizontal } from 'lucide-react';
-import { DataTable, AdminBadge, type ColumnDef } from '@/components/admin';
+import { DataTable, AdminBadge, type ColumnDef, type ResponsiveColumnMeta } from '@/components/admin';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -48,6 +48,7 @@ export const NodeGroupListTable = ({
       accessorKey: 'id',
       header: 'ID',
       size: 56,
+      meta: { priority: 4 } as ResponsiveColumnMeta,
       cell: ({ row }) => (
         <span className="font-mono text-slate-600 dark:text-slate-400">
           {row.original.id}
@@ -57,6 +58,7 @@ export const NodeGroupListTable = ({
     {
       accessorKey: 'name',
       header: '名称',
+      meta: { priority: 1 } as ResponsiveColumnMeta,
       cell: ({ row }) => (
         <div className="space-y-1">
           <div className="font-medium text-slate-900 dark:text-white">
@@ -74,6 +76,7 @@ export const NodeGroupListTable = ({
       accessorKey: 'isPublic',
       header: '公开性',
       size: 72,
+      meta: { priority: 2 } as ResponsiveColumnMeta,
       cell: ({ row }) => (
         <AdminBadge variant={row.original.isPublic ? 'success' : 'default'}>
           {row.original.isPublic ? '公开' : '私有'}
@@ -84,6 +87,7 @@ export const NodeGroupListTable = ({
       accessorKey: 'nodeCount',
       header: '节点数',
       size: 72,
+      meta: { priority: 3 } as ResponsiveColumnMeta,
       cell: ({ row }) => (
         <span className="font-mono tabular-nums text-slate-700 dark:text-slate-300">
           {row.original.nodeCount || 0}
@@ -94,6 +98,7 @@ export const NodeGroupListTable = ({
       accessorKey: 'sortOrder',
       header: '排序',
       size: 56,
+      meta: { priority: 3 } as ResponsiveColumnMeta,
       cell: ({ row }) => (
         <span className="font-mono tabular-nums text-slate-600 dark:text-slate-400">
           {row.original.sortOrder ?? '-'}
@@ -104,6 +109,7 @@ export const NodeGroupListTable = ({
       accessorKey: 'createdAt',
       header: '创建时间',
       size: 140,
+      meta: { priority: 4 } as ResponsiveColumnMeta,
       cell: ({ row }) => (
         <span className="text-slate-500 dark:text-slate-400 text-sm">
           {formatDateTime(row.original.createdAt)}
@@ -115,6 +121,7 @@ export const NodeGroupListTable = ({
       header: '操作',
       size: 56,
       enableSorting: false,
+      meta: { priority: 1 } as ResponsiveColumnMeta,
       cell: ({ row }) => {
         const group = row.original;
         return (

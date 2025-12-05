@@ -28,6 +28,7 @@ export const ForwardRulesPage = () => {
     isLoading,
     isFetching,
     refetch,
+    agentsMap,
     createForwardRule,
     updateForwardRule,
     deleteForwardRule,
@@ -135,6 +136,7 @@ export const ForwardRulesPage = () => {
         <AdminCard noPadding>
           <ForwardRuleListTable
             rules={forwardRules}
+            agentsMap={agentsMap}
             loading={isLoading || isFetching}
             page={pagination.page}
             pageSize={pagination.pageSize}

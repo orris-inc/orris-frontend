@@ -5,7 +5,7 @@
 
 import { useMemo } from 'react';
 import { Edit, Power, Network, MoreHorizontal, Users } from 'lucide-react';
-import { DataTable, AdminBadge, type ColumnDef } from '@/components/admin';
+import { DataTable, AdminBadge, type ColumnDef, type ResponsiveColumnMeta } from '@/components/admin';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -118,6 +118,7 @@ export const PlanListTable: React.FC<PlanListTableProps> = ({
     {
       accessorKey: 'name',
       header: '计划名称',
+      meta: { priority: 1 } as ResponsiveColumnMeta,
       cell: ({ row }) => (
         <div className="space-y-1">
           <div className="text-[15px] text-slate-900 dark:text-white leading-tight">
@@ -133,6 +134,7 @@ export const PlanListTable: React.FC<PlanListTableProps> = ({
       accessorKey: 'price',
       header: '价格',
       size: 100,
+      meta: { priority: 2 } as ResponsiveColumnMeta,
       cell: ({ row }) => {
         const priceRange = getPriceRange(row.original);
         return priceRange.details ? (
@@ -167,6 +169,7 @@ export const PlanListTable: React.FC<PlanListTableProps> = ({
       accessorKey: 'billingCycle',
       header: '计费周期',
       size: 80,
+      meta: { priority: 2 } as ResponsiveColumnMeta,
       cell: ({ row }) => {
         const priceRange = getPriceRange(row.original);
         // 如果有多定价，显示数量；否则显示主计费周期
@@ -195,6 +198,7 @@ export const PlanListTable: React.FC<PlanListTableProps> = ({
       accessorKey: 'status',
       header: '状态',
       size: 72,
+      meta: { priority: 1 } as ResponsiveColumnMeta,
       cell: ({ row }) => {
         const status = row.original.status as PlanStatus | undefined;
         const statusConfig = status ? STATUS_CONFIG[status] : { label: '未知', variant: 'default' as const };
@@ -209,6 +213,7 @@ export const PlanListTable: React.FC<PlanListTableProps> = ({
       accessorKey: 'isPublic',
       header: '公开',
       size: 64,
+      meta: { priority: 3 } as ResponsiveColumnMeta,
       cell: ({ row }) => (
         <AdminBadge variant={row.original.isPublic ? 'success' : 'outline'}>
           {row.original.isPublic ? '是' : '否'}
@@ -219,6 +224,7 @@ export const PlanListTable: React.FC<PlanListTableProps> = ({
       accessorKey: 'trialDays',
       header: '试用天数',
       size: 80,
+      meta: { priority: 3 } as ResponsiveColumnMeta,
       cell: ({ row }) => (
         <span className="font-mono tabular-nums text-slate-700 dark:text-slate-300">
           {row.original.trialDays ? `${row.original.trialDays}天` : '-'}
@@ -229,6 +235,7 @@ export const PlanListTable: React.FC<PlanListTableProps> = ({
       accessorKey: 'sortOrder',
       header: '排序',
       size: 56,
+      meta: { priority: 3 } as ResponsiveColumnMeta,
       cell: ({ row }) => (
         <span className="font-mono tabular-nums text-slate-600 dark:text-slate-400">
           {row.original.sortOrder || '-'}
@@ -240,6 +247,7 @@ export const PlanListTable: React.FC<PlanListTableProps> = ({
       header: '操作',
       size: 56,
       enableSorting: false,
+      meta: { priority: 1 } as ResponsiveColumnMeta,
       cell: ({ row }) => {
         const plan = row.original;
         return (

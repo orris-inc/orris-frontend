@@ -4,7 +4,7 @@
  */
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { useNotificationStore } from '@/shared/stores/notification-store';
 import { handleApiError } from '@/shared/lib/axios';
 import {
@@ -16,7 +16,9 @@ import {
   enableForwardRule,
   disableForwardRule,
   resetForwardRuleTraffic,
+  listForwardAgents,
   type ForwardRule,
+  type ForwardAgent,
   type CreateForwardRuleRequest,
   type UpdateForwardRuleRequest,
   type ListForwardRulesParams,
@@ -198,6 +200,13 @@ export const useForwardRule = (id: number | string | null) => {
   };
 };
 
+// Query Keys for Forward Agents (local)
+const forwardAgentsQueryKeys = {
+  all: ['forwardAgents'] as const,
+  lists: () => [...forwardAgentsQueryKeys.all, 'list'] as const,
+  list: (params: object) => [...forwardAgentsQueryKeys.lists(), params] as const,
+};
+
 // 转发规则列表状态管理 hook（用于页面级状态）
 export const useForwardRulesPage = () => {
   const [page, setPage] = useState(1);
@@ -206,6 +215,24 @@ export const useForwardRulesPage = () => {
   const [selectedRule, setSelectedRule] = useState<ForwardRule | null>(null);
 
   const rulesQuery = useForwardRules({ page, pageSize, filters });
+
+  // 获取所有转发代理以构建 agentId -> agent 映射
+  const { data: agentsData } = useQuery({
+    queryKey: forwardAgentsQueryKeys.list({ pageSize: 100 }),
+    queryFn: () => listForwardAgents({ pageSize: 100 }),
+    enabled: rulesQuery.forwardRules.length > 0,
+  });
+
+  // 构建 agentId -> agent 映射
+  const agentsMap = useMemo(() => {
+    const map: Record<number, ForwardAgent> = {};
+    if (agentsData?.items) {
+      for (const agent of agentsData.items) {
+        map[agent.id] = agent;
+      }
+    }
+    return map;
+  }, [agentsData]);
 
   const handlePageChange = (newPage: number) => {
     setPage(newPage);
@@ -227,6 +254,7 @@ export const useForwardRulesPage = () => {
     pageSize,
     filters,
     selectedRule,
+    agentsMap,
     setSelectedRule,
     handlePageChange,
     handlePageSizeChange,
