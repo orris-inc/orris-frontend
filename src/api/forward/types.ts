@@ -201,3 +201,20 @@ export interface ExitEndpoint {
   address: string;
   wsPort: number;
 }
+
+// ========== Probe Types ==========
+
+/**
+ * Rule probe response - represents probe result for a single forward rule
+ * For direct rules: only targetLatencyMs is set
+ * For entry rules: both tunnelLatencyMs and targetLatencyMs are set
+ */
+export interface RuleProbeResponse {
+  ruleId: number;
+  ruleType: 'direct' | 'entry' | 'exit';
+  success: boolean;
+  tunnelLatencyMs?: number; // entry only: entry→exit latency
+  targetLatencyMs?: number; // agent→target latency
+  totalLatencyMs?: number; // total round-trip latency
+  error?: string;
+}

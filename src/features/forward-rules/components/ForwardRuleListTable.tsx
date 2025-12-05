@@ -4,7 +4,7 @@
  */
 
 import { useMemo } from 'react';
-import { Edit, Trash2, Eye, Power, PowerOff, MoreHorizontal, RotateCcw } from 'lucide-react';
+import { Edit, Trash2, Eye, Power, PowerOff, MoreHorizontal, RotateCcw, Activity, Loader2 } from 'lucide-react';
 import { DataTable, AdminBadge, type ColumnDef, type ResponsiveColumnMeta } from '@/components/admin';
 import {
   DropdownMenu,
@@ -31,6 +31,8 @@ interface ForwardRuleListTableProps {
   onDisable: (rule: ForwardRule) => void;
   onResetTraffic: (rule: ForwardRule) => void;
   onViewDetail: (rule: ForwardRule) => void;
+  onProbe: (rule: ForwardRule) => void;
+  probingRuleId?: number | null;
 }
 
 // 状态配置
@@ -93,6 +95,8 @@ export const ForwardRuleListTable: React.FC<ForwardRuleListTableProps> = ({
   onDisable,
   onResetTraffic,
   onViewDetail,
+  onProbe,
+  probingRuleId,
 }) => {
   const columns = useMemo<ColumnDef<ForwardRule, unknown>[]>(() => [
     {
@@ -290,53 +294,75 @@ export const ForwardRuleListTable: React.FC<ForwardRuleListTableProps> = ({
     {
       id: 'actions',
       header: '操作',
-      size: 56,
+      size: 88,
       meta: { priority: 1 } as ResponsiveColumnMeta, // 核心列，始终显示
       enableSorting: false,
       cell: ({ row }) => {
         const rule = row.original;
+        const isProbing = probingRuleId === rule.id;
+        const canProbe = rule.status === 'enabled' && !isProbing;
         return (
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <button className="inline-flex items-center justify-center size-8 rounded-lg text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-700 transition-all duration-200 group touch-target">
-                <MoreHorizontal className="size-4 group-hover:scale-110 transition-transform" strokeWidth={2} />
-              </button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              <DropdownMenuItem onClick={() => onViewDetail(rule)}>
-                <Eye className="mr-2 size-4" />
-                查看详情
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => onEdit(rule)}>
-                <Edit className="mr-2 size-4" />
-                编辑
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => onResetTraffic(rule)}>
-                <RotateCcw className="mr-2 size-4" />
-                重置流量
-              </DropdownMenuItem>
-              <DropdownMenuSeparator />
-              {rule.status === 'enabled' ? (
-                <DropdownMenuItem onClick={() => onDisable(rule)}>
-                  <PowerOff className="mr-2 size-4" />
-                  禁用
+          <div className="flex items-center gap-1">
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <button
+                  onClick={() => canProbe && onProbe(rule)}
+                  disabled={!canProbe}
+                  className="inline-flex items-center justify-center size-8 rounded-lg text-slate-500 hover:text-blue-600 dark:text-slate-400 dark:hover:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {isProbing ? (
+                    <Loader2 className="size-4 animate-spin" />
+                  ) : (
+                    <Activity className="size-4" />
+                  )}
+                </button>
+              </TooltipTrigger>
+              <TooltipContent>
+                {isProbing ? '拨测中...' : rule.status !== 'enabled' ? '仅启用状态可拨测' : '拨测'}
+              </TooltipContent>
+            </Tooltip>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <button className="inline-flex items-center justify-center size-8 rounded-lg text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-700 transition-all duration-200 group touch-target">
+                  <MoreHorizontal className="size-4 group-hover:scale-110 transition-transform" strokeWidth={2} />
+                </button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuItem onClick={() => onViewDetail(rule)}>
+                  <Eye className="mr-2 size-4" />
+                  查看详情
                 </DropdownMenuItem>
-              ) : (
-                <DropdownMenuItem onClick={() => onEnable(rule)}>
-                  <Power className="mr-2 size-4" />
-                  启用
+                <DropdownMenuItem onClick={() => onEdit(rule)}>
+                  <Edit className="mr-2 size-4" />
+                  编辑
                 </DropdownMenuItem>
-              )}
-              <DropdownMenuItem onClick={() => onDelete(rule)} className="text-red-600 dark:text-red-400">
-                <Trash2 className="mr-2 size-4" />
-                删除
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
+                <DropdownMenuItem onClick={() => onResetTraffic(rule)}>
+                  <RotateCcw className="mr-2 size-4" />
+                  重置流量
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                {rule.status === 'enabled' ? (
+                  <DropdownMenuItem onClick={() => onDisable(rule)}>
+                    <PowerOff className="mr-2 size-4" />
+                    禁用
+                  </DropdownMenuItem>
+                ) : (
+                  <DropdownMenuItem onClick={() => onEnable(rule)}>
+                    <Power className="mr-2 size-4" />
+                    启用
+                  </DropdownMenuItem>
+                )}
+                <DropdownMenuItem onClick={() => onDelete(rule)} className="text-red-600 dark:text-red-400">
+                  <Trash2 className="mr-2 size-4" />
+                  删除
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
         );
       },
     },
-  ], [agentsMap, onEdit, onDelete, onEnable, onDisable, onResetTraffic, onViewDetail]);
+  ], [agentsMap, onEdit, onDelete, onEnable, onDisable, onResetTraffic, onViewDetail, onProbe, probingRuleId]);
 
   return (
     <DataTable

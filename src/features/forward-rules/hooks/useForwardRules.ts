@@ -17,6 +17,7 @@ import {
   disableForwardRule,
   resetForwardRuleTraffic,
   listForwardAgents,
+  probeRule,
   type ForwardRule,
   type ForwardAgent,
   type CreateForwardRuleRequest,
@@ -150,6 +151,14 @@ export const useForwardRules = (options: UseForwardRulesOptions = {}) => {
     },
   });
 
+  // 拨测规则
+  const probeMutation = useMutation({
+    mutationFn: probeRule,
+    onError: (error) => {
+      showError(handleApiError(error));
+    },
+  });
+
   return {
     // 数据
     forwardRules: data?.items ?? [],
@@ -174,6 +183,7 @@ export const useForwardRules = (options: UseForwardRulesOptions = {}) => {
     enableForwardRule: (id: number | string) => enableMutation.mutateAsync(id),
     disableForwardRule: (id: number | string) => disableMutation.mutateAsync(id),
     resetTraffic: (id: number | string) => resetTrafficMutation.mutateAsync(id),
+    probeRule: (id: number | string) => probeMutation.mutateAsync(id),
 
     // Mutation 状态
     isCreating: createMutation.isPending,
@@ -182,6 +192,7 @@ export const useForwardRules = (options: UseForwardRulesOptions = {}) => {
     isEnabling: enableMutation.isPending,
     isDisabling: disableMutation.isPending,
     isResettingTraffic: resetTrafficMutation.isPending,
+    isProbing: probeMutation.isPending,
   };
 };
 

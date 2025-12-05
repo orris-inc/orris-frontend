@@ -4,7 +4,7 @@
  */
 
 import { useState } from 'react';
-import { ArrowLeftRight, Plus, RefreshCw } from 'lucide-react';
+import { ArrowLeftRight, Plus, RefreshCw, CheckCircle2, XCircle, Loader2 } from 'lucide-react';
 import { ForwardRuleListTable } from '@/features/forward-rules/components/ForwardRuleListTable';
 import { CreateForwardRuleDialog } from '@/features/forward-rules/components/CreateForwardRuleDialog';
 import { EditForwardRuleDialog } from '@/features/forward-rules/components/EditForwardRuleDialog';
@@ -14,12 +14,20 @@ import { useForwardAgents } from '@/features/forward-agents/hooks/useForwardAgen
 import { useNodes } from '@/features/nodes/hooks/useNodes';
 import { AdminLayout } from '@/layouts/AdminLayout';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/common/Tooltip';
+import { Button } from '@/components/common/Button';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from '@/components/common/Dialog';
 import {
   AdminPageLayout,
   AdminButton,
   AdminCard,
 } from '@/components/admin';
-import type { ForwardRule, CreateForwardRuleRequest, UpdateForwardRuleRequest } from '@/api/forward';
+import type { ForwardRule, CreateForwardRuleRequest, UpdateForwardRuleRequest, RuleProbeResponse } from '@/api/forward';
 
 export const ForwardRulesPage = () => {
   const {
@@ -35,6 +43,7 @@ export const ForwardRulesPage = () => {
     enableForwardRule,
     disableForwardRule,
     resetTraffic,
+    probeRule,
     handlePageChange,
     handlePageSizeChange,
   } = useForwardRulesPage();
@@ -49,6 +58,9 @@ export const ForwardRulesPage = () => {
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [detailDialogOpen, setDetailDialogOpen] = useState(false);
   const [selectedRule, setSelectedRule] = useState<ForwardRule | null>(null);
+  const [probeDialogOpen, setProbeDialogOpen] = useState(false);
+  const [probeResult, setProbeResult] = useState<RuleProbeResponse | null>(null);
+  const [probingRuleId, setProbingRuleId] = useState<number | null>(null);
 
   const handleRefresh = () => {
     refetch();
@@ -82,6 +94,20 @@ export const ForwardRulesPage = () => {
   const handleViewDetail = (rule: ForwardRule) => {
     setSelectedRule(rule);
     setDetailDialogOpen(true);
+  };
+
+  const handleProbe = async (rule: ForwardRule) => {
+    setProbingRuleId(rule.id);
+    setProbeResult(null);
+    setProbeDialogOpen(true);
+    try {
+      const result = await probeRule(rule.id);
+      setProbeResult(result);
+    } catch {
+      // 错误已在 hook 中处理
+    } finally {
+      setProbingRuleId(null);
+    }
   };
 
   const handleCreateSubmit = async (data: CreateForwardRuleRequest) => {
@@ -149,6 +175,8 @@ export const ForwardRulesPage = () => {
             onDisable={handleDisable}
             onResetTraffic={handleResetTraffic}
             onViewDetail={handleViewDetail}
+            onProbe={handleProbe}
+            probingRuleId={probingRuleId}
           />
         </AdminCard>
       </AdminPageLayout>
@@ -183,6 +211,87 @@ export const ForwardRulesPage = () => {
           setSelectedRule(null);
         }}
       />
+
+      {/* 拨测结果对话框 */}
+      <Dialog open={probeDialogOpen} onOpenChange={setProbeDialogOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>拨测结果</DialogTitle>
+          </DialogHeader>
+          <div className="py-4">
+            {probingRuleId !== null ? (
+              <div className="flex flex-col items-center justify-center py-8">
+                <Loader2 className="size-8 animate-spin text-blue-500 mb-3" />
+                <p className="text-sm text-muted-foreground">正在拨测...</p>
+              </div>
+            ) : probeResult ? (
+              <div className="space-y-4">
+                {/* 拨测状态 */}
+                <div className={`flex items-center gap-3 p-4 rounded-lg ${
+                  probeResult.success
+                    ? 'bg-green-50 dark:bg-green-900/20'
+                    : 'bg-red-50 dark:bg-red-900/20'
+                }`}>
+                  {probeResult.success ? (
+                    <CheckCircle2 className="size-6 text-green-500" />
+                  ) : (
+                    <XCircle className="size-6 text-red-500" />
+                  )}
+                  <div>
+                    <p className={`font-medium ${
+                      probeResult.success
+                        ? 'text-green-700 dark:text-green-300'
+                        : 'text-red-700 dark:text-red-300'
+                    }`}>
+                      {probeResult.success ? '拨测成功' : '拨测失败'}
+                    </p>
+                    {probeResult.error && (
+                      <p className="text-sm text-red-600 dark:text-red-400 mt-1">
+                        {probeResult.error}
+                      </p>
+                    )}
+                  </div>
+                </div>
+
+                {/* 延迟信息 */}
+                {probeResult.success && (
+                  <div className="space-y-2">
+                    {probeResult.ruleType === 'entry' && probeResult.tunnelLatencyMs !== undefined && (
+                      <div className="flex justify-between text-sm">
+                        <span className="text-muted-foreground">隧道延迟 (入口→出口)</span>
+                        <span className="font-mono">{probeResult.tunnelLatencyMs}ms</span>
+                      </div>
+                    )}
+                    {probeResult.targetLatencyMs !== undefined && (
+                      <div className="flex justify-between text-sm">
+                        <span className="text-muted-foreground">
+                          {probeResult.ruleType === 'entry' ? '目标延迟 (出口→目标)' : '目标延迟'}
+                        </span>
+                        <span className="font-mono">{probeResult.targetLatencyMs}ms</span>
+                      </div>
+                    )}
+                    {probeResult.totalLatencyMs !== undefined && (
+                      <div className="flex justify-between text-sm border-t pt-2">
+                        <span className="font-medium">总延迟</span>
+                        <span className="font-mono font-medium">{probeResult.totalLatencyMs}ms</span>
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+            ) : (
+              <p className="text-sm text-muted-foreground text-center py-4">
+                拨测失败，请重试
+              </p>
+            )}
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setProbeDialogOpen(false)}>
+              关闭
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </AdminLayout>
   );
 };
