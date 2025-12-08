@@ -3,8 +3,8 @@
  * 使用 TanStack Table 实现，支持响应式列隐藏
  */
 
-import { useMemo } from 'react';
-import { Edit, Trash2, Eye, Power, PowerOff, MoreHorizontal, RotateCcw, Activity, Loader2 } from 'lucide-react';
+import { useMemo, useState } from 'react';
+import { Edit, Trash2, Eye, Power, PowerOff, MoreHorizontal, RotateCcw, Activity, Loader2, Copy, Check } from 'lucide-react';
 import { DataTable, AdminBadge, type ColumnDef, type ResponsiveColumnMeta } from '@/components/admin';
 import {
   DropdownMenu,
@@ -15,10 +15,12 @@ import {
 } from '@/components/common/DropdownMenu';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/common/Tooltip';
 import type { ForwardRule, ForwardAgent } from '@/api/forward';
+import type { Node } from '@/api/node';
 
 interface ForwardRuleListTableProps {
   rules: ForwardRule[];
   agentsMap?: Record<number, ForwardAgent>;
+  nodes?: Node[];
   loading?: boolean;
   page: number;
   pageSize: number;
@@ -41,48 +43,52 @@ const STATUS_CONFIG: Record<string, { label: string; variant: 'success' | 'defau
   disabled: { label: '已禁用', variant: 'default' },
 };
 
-// 协议标签
-const PROTOCOL_LABELS: Record<string, string> = {
-  tcp: 'TCP',
-  udp: 'UDP',
-  both: 'TCP/UDP',
-};
+// 可复制地址组件
+const CopyableAddress: React.FC<{ address: string; className?: string }> = ({ address, className = '' }) => {
+  const [copied, setCopied] = useState(false);
 
-// 规则类型标签
-const RULE_TYPE_LABELS: Record<string, string> = {
-  direct: '直连',
-  entry: '入口',
-  exit: '出口',
-};
+  const handleCopy = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (address && address !== '-') {
+      navigator.clipboard.writeText(address);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    }
+  };
 
-// 格式化时间
-const formatDate = (dateString: string) => {
-  if (!dateString) return '-';
-  return new Date(dateString).toLocaleString('zh-CN', {
-    year: 'numeric',
-    month: '2-digit',
-    day: '2-digit',
-    hour: '2-digit',
-    minute: '2-digit',
-  });
-};
-
-// 格式化流量
-const formatBytes = (bytes?: number) => {
-  if (!bytes) return '0 B';
-  const units = ['B', 'KB', 'MB', 'GB', 'TB'];
-  let value = bytes;
-  let unitIndex = 0;
-  while (value >= 1024 && unitIndex < units.length - 1) {
-    value /= 1024;
-    unitIndex++;
+  if (!address || address === '-') {
+    return <span className="text-slate-400 dark:text-slate-500">-</span>;
   }
-  return `${value.toFixed(2)} ${units[unitIndex]}`;
+
+  return (
+    <div className={`flex items-center gap-1 min-w-0 ${className}`}>
+      <span className="font-mono text-xs truncate">{address}</span>
+      <button
+        onClick={handleCopy}
+        className="flex-shrink-0 p-0.5 rounded hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors"
+        title={copied ? '已复制' : '复制'}
+      >
+        {copied ? (
+          <Check className="size-3 text-green-500" />
+        ) : (
+          <Copy className="size-3 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300" />
+        )}
+      </button>
+    </div>
+  );
+};
+
+// 格式化流量（默认显示 GB）
+const formatBytes = (bytes?: number) => {
+  if (!bytes) return '0 GB';
+  const gb = bytes / (1024 * 1024 * 1024);
+  return `${gb.toFixed(2)} GB`;
 };
 
 export const ForwardRuleListTable: React.FC<ForwardRuleListTableProps> = ({
   rules,
   agentsMap = {},
+  nodes = [],
   loading = false,
   page,
   pageSize,
@@ -100,21 +106,10 @@ export const ForwardRuleListTable: React.FC<ForwardRuleListTableProps> = ({
 }) => {
   const columns = useMemo<ColumnDef<ForwardRule, unknown>[]>(() => [
     {
-      accessorKey: 'id',
-      header: 'ID',
-      size: 56,
-      meta: { priority: 4 } as ResponsiveColumnMeta, // 可选列 >= 1280px
-      cell: ({ row }) => (
-        <span className="font-mono text-slate-600 dark:text-slate-400">
-          {row.original.id}
-        </span>
-      ),
-    },
-    {
       accessorKey: 'name',
-      header: '名称',
-      size: 120,
-      meta: { priority: 1 } as ResponsiveColumnMeta, // 核心列，始终显示
+      header: '规则名',
+      size: 150,
+      meta: { priority: 1 } as ResponsiveColumnMeta,
       cell: ({ row }) => (
         <div className="space-y-1 min-w-0">
           <div className="font-medium text-slate-900 dark:text-white truncate">{row.original.name}</div>
@@ -127,105 +122,102 @@ export const ForwardRuleListTable: React.FC<ForwardRuleListTableProps> = ({
       ),
     },
     {
-      accessorKey: 'ruleType',
-      header: '类型',
-      size: 72,
-      meta: { priority: 1 } as ResponsiveColumnMeta, // 核心列，始终显示
-      cell: ({ row }) => (
-        <AdminBadge variant="outline">
-          {RULE_TYPE_LABELS[row.original.ruleType] || row.original.ruleType}
-        </AdminBadge>
-      ),
-    },
-    {
-      accessorKey: 'protocol',
-      header: '协议',
-      size: 80,
-      meta: { priority: 2 } as ResponsiveColumnMeta, // 重要列 >= 640px
-      cell: ({ row }) => (
-        <AdminBadge variant="outline">
-          {PROTOCOL_LABELS[row.original.protocol] || row.original.protocol}
-        </AdminBadge>
-      ),
-    },
-    {
-      accessorKey: 'listenPort',
-      header: '端口',
-      size: 72,
-      meta: { priority: 1 } as ResponsiveColumnMeta, // 核心列，始终显示
-      cell: ({ row }) => (
-        <span className="font-mono text-sm text-slate-700 dark:text-slate-300">
-          {row.original.listenPort}
-        </span>
-      ),
-    },
-    {
-      id: 'connectAddress',
-      header: '连接地址',
-      size: 180,
-      meta: { priority: 2 } as ResponsiveColumnMeta, // 重要列 >= 640px
+      id: 'entry',
+      header: '入口',
+      size: 220,
+      meta: { priority: 1 } as ResponsiveColumnMeta,
       cell: ({ row }) => {
         const rule = row.original;
         const agent = agentsMap[rule.agentId];
-        if (!agent?.publicAddress) {
-          return <span className="text-slate-400 dark:text-slate-500">-</span>;
-        }
-        const connectAddress = `${agent.publicAddress}:${rule.listenPort}`;
+        const agentName = agent?.name || `ID: ${rule.agentId}`;
+        const entryAddress = agent?.publicAddress ? `${agent.publicAddress}:${rule.listenPort}` : '-';
         return (
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <span className="font-mono text-sm text-blue-600 dark:text-blue-400 truncate block max-w-[160px] cursor-pointer hover:underline">
-                {connectAddress}
-              </span>
-            </TooltipTrigger>
-            <TooltipContent className="font-mono">{connectAddress}</TooltipContent>
-          </Tooltip>
+          <div className="space-y-0.5 min-w-0">
+            <div className="text-sm text-slate-900 dark:text-white truncate">{agentName}</div>
+            <CopyableAddress address={entryAddress} className="text-blue-600 dark:text-blue-400" />
+          </div>
         );
       },
     },
     {
-      id: 'target',
-      header: '目标',
-      size: 140,
-      meta: { priority: 3 } as ResponsiveColumnMeta, // 次要列 >= 1024px
+      id: 'exit',
+      header: '出口',
+      size: 220,
+      meta: { priority: 1 } as ResponsiveColumnMeta,
       cell: ({ row }) => {
         const rule = row.original;
-        // entry 类型显示出口节点ID
-        if (rule.ruleType === 'entry') {
+        // entry 类型显示出口节点
+        if (rule.ruleType === 'entry' && rule.exitAgentId) {
+          const exitAgent = agentsMap[rule.exitAgentId];
+          const exitName = exitAgent?.name || `ID: ${rule.exitAgentId}`;
+          // 出口节点地址:WS监听端口
+          const exitAddress = exitAgent?.publicAddress && rule.wsListenPort
+            ? `${exitAgent.publicAddress}:${rule.wsListenPort}`
+            : exitAgent?.publicAddress || '-';
           return (
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <span className="text-sm text-slate-700 dark:text-slate-300 truncate block max-w-[120px]">
-                  出口: {rule.exitAgentId}
-                </span>
-              </TooltipTrigger>
-              <TooltipContent>出口节点: {rule.exitAgentId}</TooltipContent>
-            </Tooltip>
+            <div className="space-y-0.5 min-w-0">
+              <div className="text-sm text-slate-900 dark:text-white truncate">{exitName}</div>
+              <CopyableAddress address={exitAddress} className="text-slate-500 dark:text-slate-400" />
+            </div>
           );
         }
-        // 使用节点ID
+        // direct/exit 类型显示目标节点或地址
         if (rule.targetNodeId) {
+          const targetNode = nodes.find((n) => n.id === rule.targetNodeId);
+          const nodeName = targetNode?.name || `ID: ${rule.targetNodeId}`;
+          const nodePort = targetNode?.subscriptionPort || targetNode?.agentPort;
+          // 使用 API 返回的目标节点地址（根据 ipVersion 选择）
+          const getTargetNodeAddress = () => {
+            let address: string | undefined;
+            if (rule.ipVersion === 'ipv4' && rule.targetNodePublicIpv4) {
+              address = rule.targetNodePublicIpv4;
+            } else if (rule.ipVersion === 'ipv6' && rule.targetNodePublicIpv6) {
+              address = rule.targetNodePublicIpv6;
+            } else {
+              // auto 或 fallback: 优先使用 serverAddress，其次 IPv4，最后 IPv6
+              address = rule.targetNodeServerAddress || rule.targetNodePublicIpv4 || rule.targetNodePublicIpv6;
+            }
+            if (!address) return '-';
+            return nodePort ? `${address}:${nodePort}` : address;
+          };
+          const nodeAddress = getTargetNodeAddress();
           return (
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <span className="text-sm text-slate-700 dark:text-slate-300 truncate block max-w-[120px]">
-                  节点: {rule.targetNodeId}
-                </span>
-              </TooltipTrigger>
-              <TooltipContent>目标节点: {rule.targetNodeId}</TooltipContent>
-            </Tooltip>
+            <div className="space-y-0.5 min-w-0">
+              <div className="text-sm text-slate-900 dark:text-white truncate">{nodeName}</div>
+              <CopyableAddress address={nodeAddress} className="text-slate-500 dark:text-slate-400" />
+            </div>
           );
         }
         // 手动输入的地址
-        const fullTarget = `${rule.targetAddress}:${rule.targetPort}`;
+        if (rule.targetAddress) {
+          const fullTarget = `${rule.targetAddress}:${rule.targetPort}`;
+          return (
+            <div className="space-y-0.5 min-w-0">
+              <div className="text-sm text-slate-500 dark:text-slate-400">手动配置</div>
+              <CopyableAddress address={fullTarget} className="text-slate-700 dark:text-slate-300" />
+            </div>
+          );
+        }
+        return <span className="text-slate-400 dark:text-slate-500">-</span>;
+      },
+    },
+    {
+      id: 'traffic',
+      header: '已用流量',
+      size: 100,
+      meta: { priority: 1 } as ResponsiveColumnMeta,
+      cell: ({ row }) => {
+        const totalBytes = (row.original.uploadBytes || 0) + (row.original.downloadBytes || 0);
         return (
           <Tooltip>
             <TooltipTrigger asChild>
-              <span className="font-mono text-sm text-slate-700 dark:text-slate-300 truncate block max-w-[120px]">
-                {fullTarget}
+              <span className="text-sm text-slate-600 dark:text-slate-400">
+                {formatBytes(totalBytes)}
               </span>
             </TooltipTrigger>
-            <TooltipContent className="font-mono">{fullTarget}</TooltipContent>
+            <TooltipContent>
+              上传: {formatBytes(row.original.uploadBytes)} / 下载: {formatBytes(row.original.downloadBytes)}
+            </TooltipContent>
           </Tooltip>
         );
       },
@@ -234,7 +226,7 @@ export const ForwardRuleListTable: React.FC<ForwardRuleListTableProps> = ({
       accessorKey: 'status',
       header: '状态',
       size: 88,
-      meta: { priority: 1 } as ResponsiveColumnMeta, // 核心列，始终显示
+      meta: { priority: 1 } as ResponsiveColumnMeta,
       cell: ({ row }) => {
         const rule = row.original;
         const statusConfig = STATUS_CONFIG[rule.status] || { label: rule.status, variant: 'default' as const };
@@ -244,7 +236,7 @@ export const ForwardRuleListTable: React.FC<ForwardRuleListTableProps> = ({
               <span className="inline-block">
                 <AdminBadge
                   variant={statusConfig.variant}
-                  className="whitespace-nowrap"
+                  className="whitespace-nowrap cursor-pointer"
                   onClick={() => rule.status === 'enabled' ? onDisable(rule) : onEnable(rule)}
                 >
                   {statusConfig.label}
@@ -259,43 +251,10 @@ export const ForwardRuleListTable: React.FC<ForwardRuleListTableProps> = ({
       },
     },
     {
-      id: 'upload',
-      header: '上传',
-      size: 90,
-      meta: { priority: 3 } as ResponsiveColumnMeta, // 次要列 >= 1024px
-      cell: ({ row }) => (
-        <span className="text-sm text-slate-600 dark:text-slate-400">
-          {formatBytes(row.original.uploadBytes)}
-        </span>
-      ),
-    },
-    {
-      id: 'download',
-      header: '下载',
-      size: 90,
-      meta: { priority: 3 } as ResponsiveColumnMeta, // 次要列 >= 1024px
-      cell: ({ row }) => (
-        <span className="text-sm text-slate-600 dark:text-slate-400">
-          {formatBytes(row.original.downloadBytes)}
-        </span>
-      ),
-    },
-    {
-      accessorKey: 'createdAt',
-      header: '创建时间',
-      size: 130,
-      meta: { priority: 4 } as ResponsiveColumnMeta, // 可选列 >= 1280px
-      cell: ({ row }) => (
-        <span className="text-slate-500 dark:text-slate-400 text-sm">
-          {formatDate(row.original.createdAt)}
-        </span>
-      ),
-    },
-    {
       id: 'actions',
       header: '操作',
       size: 88,
-      meta: { priority: 1 } as ResponsiveColumnMeta, // 核心列，始终显示
+      meta: { priority: 1 } as ResponsiveColumnMeta,
       enableSorting: false,
       cell: ({ row }) => {
         const rule = row.original;
@@ -362,7 +321,7 @@ export const ForwardRuleListTable: React.FC<ForwardRuleListTableProps> = ({
         );
       },
     },
-  ], [agentsMap, onEdit, onDelete, onEnable, onDisable, onResetTraffic, onViewDetail, onProbe, probingRuleId]);
+  ], [agentsMap, nodes, onDisable, onEnable, onResetTraffic, onViewDetail, onEdit, onDelete, onProbe, probingRuleId]);
 
   return (
     <DataTable

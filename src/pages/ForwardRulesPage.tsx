@@ -163,6 +163,7 @@ export const ForwardRulesPage = () => {
           <ForwardRuleListTable
             rules={forwardRules}
             agentsMap={agentsMap}
+            nodes={nodes}
             loading={isLoading || isFetching}
             page={pagination.page}
             pageSize={pagination.pageSize}
@@ -210,6 +211,8 @@ export const ForwardRulesPage = () => {
           setDetailDialogOpen(false);
           setSelectedRule(null);
         }}
+        agents={forwardAgents}
+        nodes={nodes}
       />
 
       {/* 拨测结果对话框 */}

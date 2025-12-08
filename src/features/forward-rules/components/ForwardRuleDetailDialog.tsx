@@ -12,12 +12,15 @@ import {
 import { Button } from '@/components/common/Button';
 import { Badge } from '@/components/common/Badge';
 import { Separator } from '@/components/common/Separator';
-import type { ForwardRule } from '@/api/forward';
+import type { ForwardRule, ForwardAgent } from '@/api/forward';
+import type { Node } from '@/api/node';
 
 interface ForwardRuleDetailDialogProps {
   open: boolean;
   rule: ForwardRule | null;
   onClose: () => void;
+  agents?: ForwardAgent[];
+  nodes?: Node[];
 }
 
 // 状态标签映射
@@ -78,8 +81,23 @@ export const ForwardRuleDetailDialog: React.FC<ForwardRuleDetailDialogProps> = (
   open,
   rule,
   onClose,
+  agents = [],
+  nodes = [],
 }) => {
   if (!rule) return null;
+
+  // 根据 ID 获取节点名称
+  const getAgentName = (id?: number) => {
+    if (!id) return '-';
+    const agent = agents.find((a) => a.id === id);
+    return agent?.name || `ID: ${id}`;
+  };
+
+  const getNodeName = (id?: number) => {
+    if (!id) return '-';
+    const node = nodes.find((n) => n.id === id);
+    return node?.name || `ID: ${id}`;
+  };
 
   return (
     <Dialog open={open} onOpenChange={(open) => !open && onClose()}>
@@ -117,8 +135,8 @@ export const ForwardRuleDetailDialog: React.FC<ForwardRuleDetailDialogProps> = (
               </div>
 
               <div className="space-y-1">
-                <p className="text-sm text-muted-foreground">转发节点ID</p>
-                <p className="text-sm font-mono">{rule.agentId}</p>
+                <p className="text-sm text-muted-foreground">转发节点</p>
+                <p className="text-sm">{getAgentName(rule.agentId)}</p>
               </div>
 
               <div className="space-y-1">
@@ -159,11 +177,11 @@ export const ForwardRuleDetailDialog: React.FC<ForwardRuleDetailDialogProps> = (
                 </div>
               )}
 
-              {/* 出口节点ID - entry 类型 */}
+              {/* 出口节点 - entry 类型 */}
               {rule.ruleType === 'entry' && rule.exitAgentId && (
                 <div className="space-y-1">
-                  <p className="text-sm text-muted-foreground">出口节点ID</p>
-                  <p className="text-sm font-mono">{rule.exitAgentId}</p>
+                  <p className="text-sm text-muted-foreground">出口节点</p>
+                  <p className="text-sm">{getAgentName(rule.exitAgentId)}</p>
                 </div>
               )}
 
@@ -171,11 +189,30 @@ export const ForwardRuleDetailDialog: React.FC<ForwardRuleDetailDialogProps> = (
               {(rule.ruleType === 'direct' || rule.ruleType === 'exit') && (
                 <>
                   {rule.targetNodeId ? (
-                    <div className="space-y-1 md:col-span-2">
-                      <p className="text-sm text-muted-foreground">目标节点ID</p>
-                      <p className="text-sm font-mono">{rule.targetNodeId}</p>
-                      <p className="text-xs text-muted-foreground">（动态解析节点地址）</p>
-                    </div>
+                    <>
+                      <div className="space-y-1">
+                        <p className="text-sm text-muted-foreground">目标节点</p>
+                        <p className="text-sm">{getNodeName(rule.targetNodeId)}</p>
+                      </div>
+                      {rule.targetNodeServerAddress && (
+                        <div className="space-y-1">
+                          <p className="text-sm text-muted-foreground">服务器地址</p>
+                          <p className="text-sm font-mono">{rule.targetNodeServerAddress}</p>
+                        </div>
+                      )}
+                      {rule.targetNodePublicIpv4 && (
+                        <div className="space-y-1">
+                          <p className="text-sm text-muted-foreground">公网 IPv4</p>
+                          <p className="text-sm font-mono">{rule.targetNodePublicIpv4}</p>
+                        </div>
+                      )}
+                      {rule.targetNodePublicIpv6 && (
+                        <div className="space-y-1">
+                          <p className="text-sm text-muted-foreground">公网 IPv6</p>
+                          <p className="text-sm font-mono">{rule.targetNodePublicIpv6}</p>
+                        </div>
+                      )}
+                    </>
                   ) : (
                     <>
                       <div className="space-y-1">

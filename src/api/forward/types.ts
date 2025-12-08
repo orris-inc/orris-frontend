@@ -53,6 +53,10 @@ export interface ForwardRule {
   totalBytes: number;
   createdAt: string;
   updatedAt: string;
+  // Target node info (populated when targetNodeId is set)
+  targetNodeServerAddress?: string; // node's configured server address
+  targetNodePublicIpv4?: string; // node's reported public IPv4
+  targetNodePublicIpv6?: string; // node's reported public IPv6
 }
 
 /**
