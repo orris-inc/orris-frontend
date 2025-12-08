@@ -23,6 +23,7 @@ import {
   type CreateForwardRuleRequest,
   type UpdateForwardRuleRequest,
   type ListForwardRulesParams,
+  type ProbeRuleRequest,
 } from '@/api/forward';
 
 // Query Keys for Forward Rules
@@ -153,7 +154,8 @@ export const useForwardRules = (options: UseForwardRulesOptions = {}) => {
 
   // 拨测规则
   const probeMutation = useMutation({
-    mutationFn: probeRule,
+    mutationFn: ({ id, data }: { id: number | string; data?: ProbeRuleRequest }) =>
+      probeRule(id, data),
     onError: (error) => {
       showError(handleApiError(error));
     },
@@ -183,7 +185,8 @@ export const useForwardRules = (options: UseForwardRulesOptions = {}) => {
     enableForwardRule: (id: number | string) => enableMutation.mutateAsync(id),
     disableForwardRule: (id: number | string) => disableMutation.mutateAsync(id),
     resetTraffic: (id: number | string) => resetTrafficMutation.mutateAsync(id),
-    probeRule: (id: number | string) => probeMutation.mutateAsync(id),
+    probeRule: (id: number | string, data?: ProbeRuleRequest) =>
+      probeMutation.mutateAsync({ id, data }),
 
     // Mutation 状态
     isCreating: createMutation.isPending,

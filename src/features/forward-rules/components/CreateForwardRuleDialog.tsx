@@ -25,7 +25,7 @@ import {
 } from '@/components/common/Select';
 import { Separator } from '@/components/common/Separator';
 import { RadioGroup, RadioGroupItem } from '@/components/common/RadioGroup';
-import type { CreateForwardRuleRequest, ForwardAgent, ForwardRuleType, ForwardProtocol } from '@/api/forward';
+import type { CreateForwardRuleRequest, ForwardAgent, ForwardRuleType, ForwardProtocol, IPVersion } from '@/api/forward';
 import type { Node } from '@/api/node';
 
 // 目标类型
@@ -64,6 +64,7 @@ export const CreateForwardRuleDialog: React.FC<CreateForwardRuleDialogProps> = (
     targetPort: 0,
     targetNodeId: 0,
     protocol: 'tcp' as ForwardProtocol,
+    ipVersion: 'auto' as IPVersion,
     remark: '',
   });
   const [targetType, setTargetType] = useState<TargetType>('manual');
@@ -84,6 +85,7 @@ export const CreateForwardRuleDialog: React.FC<CreateForwardRuleDialogProps> = (
         targetPort: 0,
         targetNodeId: 0,
         protocol: 'tcp',
+        ipVersion: 'auto',
         remark: '',
       });
       setTargetType('manual');
@@ -176,6 +178,7 @@ export const CreateForwardRuleDialog: React.FC<CreateForwardRuleDialogProps> = (
         ruleType: formData.ruleType,
         name: formData.name.trim(),
         protocol: formData.protocol,
+        ipVersion: formData.ipVersion,
       };
 
       // 根据规则类型添加对应字段
@@ -335,6 +338,25 @@ export const CreateForwardRuleDialog: React.FC<CreateForwardRuleDialogProps> = (
                     <SelectItem value="both">TCP/UDP</SelectItem>
                   </SelectContent>
                 </Select>
+              </div>
+
+              {/* IP 版本 */}
+              <div className="flex flex-col gap-2">
+                <Label htmlFor="ipVersion">IP 版本</Label>
+                <Select
+                  value={formData.ipVersion}
+                  onValueChange={(value) => handleChange('ipVersion', value as IPVersion)}
+                >
+                  <SelectTrigger id="ipVersion">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="auto">自动</SelectItem>
+                    <SelectItem value="ipv4">IPv4</SelectItem>
+                    <SelectItem value="ipv6">IPv6</SelectItem>
+                  </SelectContent>
+                </Select>
+                <p className="text-xs text-muted-foreground">目标地址解析时优先使用的 IP 版本</p>
               </div>
             </div>
           </div>

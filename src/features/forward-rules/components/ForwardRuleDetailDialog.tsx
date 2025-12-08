@@ -40,6 +40,13 @@ const RULE_TYPE_LABELS: Record<string, string> = {
   exit: '出口节点',
 };
 
+// IP 版本标签映射
+const IP_VERSION_LABELS: Record<string, string> = {
+  auto: '自动',
+  ipv4: 'IPv4',
+  ipv6: 'IPv6',
+};
+
 // 格式化时间
 const formatDate = (dateString: string) => {
   if (!dateString) return '-';
@@ -117,6 +124,11 @@ export const ForwardRuleDetailDialog: React.FC<ForwardRuleDetailDialogProps> = (
               <div className="space-y-1">
                 <p className="text-sm text-muted-foreground">协议类型</p>
                 <p className="text-sm">{PROTOCOL_LABELS[rule.protocol] || rule.protocol}</p>
+              </div>
+
+              <div className="space-y-1">
+                <p className="text-sm text-muted-foreground">IP 版本</p>
+                <p className="text-sm">{IP_VERSION_LABELS[rule.ipVersion] || rule.ipVersion}</p>
               </div>
 
               <div className="space-y-1">

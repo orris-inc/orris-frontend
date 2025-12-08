@@ -24,7 +24,7 @@ import {
   SelectValue,
 } from '@/components/common/Select';
 import { RadioGroup, RadioGroupItem } from '@/components/common/RadioGroup';
-import type { ForwardRule, UpdateForwardRuleRequest } from '@/api/forward';
+import type { ForwardRule, UpdateForwardRuleRequest, IPVersion } from '@/api/forward';
 import type { Node } from '@/api/node';
 
 type ForwardProtocol = 'tcp' | 'udp' | 'both';
@@ -58,6 +58,7 @@ export const EditForwardRuleDialog: React.FC<EditForwardRuleDialogProps> = ({
         targetAddress: rule.targetAddress,
         targetPort: rule.targetPort,
         targetNodeId: rule.targetNodeId,
+        ipVersion: rule.ipVersion,
         remark: rule.remark,
       });
       // 根据规则数据确定目标类型
@@ -119,6 +120,7 @@ export const EditForwardRuleDialog: React.FC<EditForwardRuleDialogProps> = ({
       if (formData.name !== rule.name) updates.name = formData.name;
       if (formData.protocol !== rule.protocol) updates.protocol = formData.protocol;
       if (formData.listenPort !== rule.listenPort) updates.listenPort = formData.listenPort;
+      if (formData.ipVersion !== rule.ipVersion) updates.ipVersion = formData.ipVersion;
       if (formData.remark !== rule.remark) updates.remark = formData.remark;
 
       // 处理目标配置（手动输入或选择节点）
@@ -216,6 +218,25 @@ export const EditForwardRuleDialog: React.FC<EditForwardRuleDialogProps> = ({
                     <SelectItem value="both">TCP/UDP</SelectItem>
                   </SelectContent>
                 </Select>
+              </div>
+
+              {/* IP 版本 */}
+              <div className="flex flex-col gap-2">
+                <Label htmlFor="ipVersion">IP 版本</Label>
+                <Select
+                  value={formData.ipVersion || 'auto'}
+                  onValueChange={(value) => handleChange('ipVersion', value as IPVersion)}
+                >
+                  <SelectTrigger id="ipVersion">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="auto">自动</SelectItem>
+                    <SelectItem value="ipv4">IPv4</SelectItem>
+                    <SelectItem value="ipv6">IPv6</SelectItem>
+                  </SelectContent>
+                </Select>
+                <p className="text-xs text-muted-foreground">目标地址解析时优先使用的 IP 版本</p>
               </div>
 
               {/* 监听端口 */}

@@ -13,7 +13,7 @@ import {
 import { Button } from '@/components/common/Button';
 import { Badge } from '@/components/common/Badge';
 import { Separator } from '@/components/common/Separator';
-import { Cpu, MemoryStick, HardDrive, Clock, ShieldCheck, ShieldAlert, Wifi, WifiOff } from 'lucide-react';
+import { Cpu, MemoryStick, HardDrive, Clock, ShieldCheck, ShieldAlert, Wifi, WifiOff, Globe } from 'lucide-react';
 import type { Node } from '@/api/node';
 
 interface NodeDetailDialogProps {
@@ -170,6 +170,18 @@ export const NodeDetailDialog: React.FC<NodeDetailDialogProps> = ({
                       <p className="text-sm font-medium">{formatUptime(node.systemStatus.uptime)}</p>
                     </div>
                   </div>
+                  {(node.systemStatus.publicIpv4 || node.systemStatus.publicIpv6) && (
+                    <div className="flex items-center gap-2 p-3 bg-muted rounded-lg">
+                      <Globe className="h-4 w-4 text-cyan-500" />
+                      <div>
+                        <p className="text-xs text-muted-foreground">公网 IP</p>
+                        <div className="text-sm font-medium font-mono">
+                          {node.systemStatus.publicIpv4 && <p>{node.systemStatus.publicIpv4}</p>}
+                          {node.systemStatus.publicIpv6 && <p className="text-xs">{node.systemStatus.publicIpv6}</p>}
+                        </div>
+                      </div>
+                    </div>
+                  )}
                 </>
               )}
             </div>
