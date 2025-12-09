@@ -10,18 +10,18 @@ import {
   Link2,
   Copy,
   Check,
-  Plus,
   Upload,
   Download,
   Calendar,
   ChevronDown,
   ChevronUp,
   Clock,
+  RefreshCw,
 } from 'lucide-react';
 import { getButtonClass, getBadgeClass } from '@/lib/ui-styles';
 import { Skeleton } from '@/components/common/Skeleton';
-import { listSubscriptions, generateToken, getTrafficStats } from '@/api/subscription';
-import type { Subscription, GenerateTokenResponse, TrafficSummary } from '@/api/subscription/types';
+import { listSubscriptions, getTrafficStats, resetSubscriptionLink } from '@/api/subscription';
+import type { Subscription, TrafficSummary } from '@/api/subscription/types';
 import { cn } from '@/lib/utils';
 
 /**
@@ -93,13 +93,6 @@ const getDaysRemaining = (endDate?: string): number | null => {
 };
 
 /**
- * 获取API基础URL
- */
-const getApiBaseUrl = (): string => {
-  return import.meta.env.VITE_API_BASE_URL || 'http://localhost:8081';
-};
-
-/**
  * 订阅链接类型
  */
 const SUBSCRIPTION_LINK_TYPES = [
@@ -153,9 +146,8 @@ export const SubscriptionCard = () => {
   const [error, setError] = useState<string | null>(null);
   const [showAll, setShowAll] = useState(false);
   const [expandedId, setExpandedId] = useState<number | null>(null);
-  const [generatedTokens, setGeneratedTokens] = useState<Record<number, GenerateTokenResponse>>({});
-  const [generatingTokens, setGeneratingTokens] = useState<Record<number, boolean>>({});
   const [trafficData, setTrafficData] = useState<Record<number, SubscriptionTraffic>>({});
+  const [resettingLinks, setResettingLinks] = useState<Record<number, boolean>>({});
 
   useEffect(() => {
     const fetchSubscriptions = async () => {
@@ -209,18 +201,20 @@ export const SubscriptionCard = () => {
     fetchSubscriptions();
   }, []);
 
-  const handleGenerateToken = async (subscriptionId: number): Promise<void> => {
-    setGeneratingTokens((prev) => ({ ...prev, [subscriptionId]: true }));
+  const handleResetLink = async (subscriptionId: number): Promise<void> => {
+    if (!confirm('确定要重置订阅链接吗？重置后旧链接将失效。')) {
+      return;
+    }
+    setResettingLinks((prev) => ({ ...prev, [subscriptionId]: true }));
     try {
-      const token = await generateToken(subscriptionId, {
-        name: 'Default token',
-        scope: 'full',
-      });
-      setGeneratedTokens((prev) => ({ ...prev, [subscriptionId]: token }));
+      const updated = await resetSubscriptionLink(subscriptionId);
+      setSubscriptions((prev) =>
+        prev.map((sub) => (sub.id === subscriptionId ? updated : sub))
+      );
     } catch (err) {
-      console.error('生成订阅令牌失败:', err);
+      console.error('重置订阅链接失败:', err);
     } finally {
-      setGeneratingTokens((prev) => ({ ...prev, [subscriptionId]: false }));
+      setResettingLinks((prev) => ({ ...prev, [subscriptionId]: false }));
     }
   };
 
@@ -413,54 +407,33 @@ export const SubscriptionCard = () => {
                       <Link2 className="size-4" />
                       <span>订阅链接</span>
                     </div>
-                    {!generatedTokens[subscription.id] && (
-                      <button
-                        onClick={() => handleGenerateToken(subscription.id)}
-                        disabled={generatingTokens[subscription.id]}
-                        className={getButtonClass('outline', 'sm', 'h-7 text-xs gap-1')}
-                      >
-                        {generatingTokens[subscription.id] ? (
-                          '生成中...'
-                        ) : (
-                          <>
-                            <Plus className="size-3" />
-                            生成链接
-                          </>
-                        )}
-                      </button>
-                    )}
+                    <button
+                      onClick={() => handleResetLink(subscription.id)}
+                      disabled={resettingLinks[subscription.id]}
+                      className={getButtonClass('outline', 'sm', 'h-7 text-xs gap-1')}
+                    >
+                      <RefreshCw className={cn('size-3', resettingLinks[subscription.id] && 'animate-spin')} />
+                      {resettingLinks[subscription.id] ? '重置中...' : '重置链接'}
+                    </button>
                   </div>
 
-                  {generatingTokens[subscription.id] && (
-                    <Skeleton className="h-16 w-full rounded-lg" />
-                  )}
-
-                  {generatedTokens[subscription.id]?.token && (
-                    <div className="space-y-2">
-                      {SUBSCRIPTION_LINK_TYPES.map((type) => {
-                        const baseUrl = getApiBaseUrl();
-                        const url = `${baseUrl}/sub/${generatedTokens[subscription.id].token}${type.path}`;
-                        return (
-                          <div
-                            key={type.name}
-                            className="flex items-center gap-2 p-2 rounded-lg bg-muted/50"
-                          >
-                            <span className="text-xs font-medium w-14">{type.name}</span>
-                            <span className="flex-1 text-xs font-mono text-muted-foreground truncate">
-                              {url}
-                            </span>
-                            <CopyButton text={url} />
-                          </div>
-                        );
-                      })}
-                    </div>
-                  )}
-
-                  {!generatedTokens[subscription.id] && !generatingTokens[subscription.id] && (
-                    <p className="text-xs text-muted-foreground py-2">
-                      点击"生成链接"创建订阅链接
-                    </p>
-                  )}
+                  <div className="space-y-2">
+                    {SUBSCRIPTION_LINK_TYPES.map((type) => {
+                      const url = `${subscription.subscribeUrl}${type.path}`;
+                      return (
+                        <div
+                          key={type.name}
+                          className="flex items-center gap-2 p-2 rounded-lg bg-muted/50"
+                        >
+                          <span className="text-xs font-medium w-14">{type.name}</span>
+                          <span className="flex-1 text-xs font-mono text-muted-foreground truncate">
+                            {url}
+                          </span>
+                          <CopyButton text={url} />
+                        </div>
+                      );
+                    })}
+                  </div>
                 </div>
               )}
             </div>

@@ -87,7 +87,7 @@ export const ForwardRuleDetailDialog: React.FC<ForwardRuleDetailDialogProps> = (
   if (!rule) return null;
 
   // 根据 ID 获取节点名称
-  const getAgentName = (id?: number) => {
+  const getAgentName = (id?: string) => {
     if (!id) return '-';
     const agent = agents.find((a) => a.id === id);
     return agent?.name || `ID: ${id}`;

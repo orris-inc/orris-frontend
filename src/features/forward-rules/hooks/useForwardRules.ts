@@ -239,7 +239,7 @@ export const useForwardRulesPage = () => {
 
   // 构建 agentId -> agent 映射
   const agentsMap = useMemo(() => {
-    const map: Record<number, ForwardAgent> = {};
+    const map: Record<string, ForwardAgent> = {};
     if (agentsData?.items) {
       for (const agent of agentsData.items) {
         map[agent.id] = agent;

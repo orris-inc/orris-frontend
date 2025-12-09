@@ -218,7 +218,7 @@ export const useSubscriptionsPage = () => {
   }, [subscriptionsQuery.subscriptions]);
 
   // 获取用户列表（当有订阅数据时）
-  const { data: usersData } = useQuery({
+  const { data: usersData, isLoading: isUsersLoading } = useQuery({
     queryKey: queryKeys.users.list({ pageSize: 100 }),
     queryFn: () => listUsers({ pageSize: 100 }),
     enabled: userIds.length > 0,
@@ -257,6 +257,7 @@ export const useSubscriptionsPage = () => {
     selectedSubscription,
     setSelectedSubscription,
     usersMap,
+    isUsersLoading,
     handlePageChange,
     handlePageSizeChange,
     handleFiltersChange,

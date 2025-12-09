@@ -19,7 +19,7 @@ import type { Node } from '@/api/node';
 
 interface ForwardRuleListTableProps {
   rules: ForwardRule[];
-  agentsMap?: Record<number, ForwardAgent>;
+  agentsMap?: Record<string, ForwardAgent>;
   nodes?: Node[];
   loading?: boolean;
   page: number;
@@ -34,7 +34,7 @@ interface ForwardRuleListTableProps {
   onResetTraffic: (rule: ForwardRule) => void;
   onViewDetail: (rule: ForwardRule) => void;
   onProbe: (rule: ForwardRule) => void;
-  probingRuleId?: number | null;
+  probingRuleId?: string | null;
 }
 
 // 状态配置

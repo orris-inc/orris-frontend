@@ -98,6 +98,17 @@ export async function changePlan(
   );
 }
 
+/**
+ * Reset subscription link (generates new UUID)
+ * PUT /subscriptions/:id/link
+ */
+export async function resetSubscriptionLink(id: number): Promise<Subscription> {
+  const response = await apiClient.put<APIResponse<Subscription>>(
+    `/subscriptions/${id}/link`
+  );
+  return response.data.data;
+}
+
 // ============================================================================
 // Subscription Plan APIs
 // ============================================================================

@@ -22,6 +22,7 @@ export const SubscriptionManagementPage: React.FC = () => {
     isLoading,
     refetch,
     usersMap,
+    isUsersLoading,
     handlePageChange,
     handlePageSizeChange,
   } = useSubscriptionsPage();
@@ -61,6 +62,7 @@ export const SubscriptionManagementPage: React.FC = () => {
           <SubscriptionListTable
             subscriptions={subscriptions}
             usersMap={usersMap}
+            usersLoading={isUsersLoading}
             loading={isLoading}
             page={page}
             pageSize={pageSize}

@@ -54,9 +54,9 @@ export const CreateForwardRuleDialog: React.FC<CreateForwardRuleDialogProps> = (
   nodes = [],
 }) => {
   const [formData, setFormData] = useState({
-    agentId: 0,
+    agentId: '',
     ruleType: 'direct' as ForwardRuleType,
-    exitAgentId: 0,
+    exitAgentId: '',
     wsListenPort: 0,
     name: '',
     listenPort: 0,
@@ -75,9 +75,9 @@ export const CreateForwardRuleDialog: React.FC<CreateForwardRuleDialogProps> = (
   useEffect(() => {
     if (open) {
       setFormData({
-        agentId: 0,
+        agentId: '',
         ruleType: 'direct',
-        exitAgentId: 0,
+        exitAgentId: '',
         wsListenPort: 0,
         name: '',
         listenPort: 0,
@@ -226,7 +226,7 @@ export const CreateForwardRuleDialog: React.FC<CreateForwardRuleDialogProps> = (
         return formData.targetNodeId > 0;
       }
     } else if (formData.ruleType === 'entry') {
-      return formData.listenPort > 0 && formData.exitAgentId > 0;
+      return formData.listenPort > 0 && formData.exitAgentId !== '';
     } else if (formData.ruleType === 'exit') {
       if (formData.wsListenPort <= 0) return false;
       if (targetType === 'manual') {
@@ -263,15 +263,15 @@ export const CreateForwardRuleDialog: React.FC<CreateForwardRuleDialogProps> = (
                   转发节点 <span className="text-destructive">*</span>
                 </Label>
                 <Select
-                  value={formData.agentId ? String(formData.agentId) : ''}
-                  onValueChange={(value) => handleChange('agentId', parseInt(value, 10))}
+                  value={formData.agentId}
+                  onValueChange={(value) => handleChange('agentId', value)}
                 >
                   <SelectTrigger id="agentId" className={errors.agentId ? 'border-destructive' : ''}>
                     <SelectValue placeholder="选择转发节点" />
                   </SelectTrigger>
                   <SelectContent>
                     {agents.filter((a) => a.status === 'enabled').map((agent) => (
-                      <SelectItem key={agent.id} value={String(agent.id)}>
+                      <SelectItem key={agent.id} value={agent.id}>
                         {agent.name}
                       </SelectItem>
                     ))}
@@ -413,15 +413,15 @@ export const CreateForwardRuleDialog: React.FC<CreateForwardRuleDialogProps> = (
                     出口节点 <span className="text-destructive">*</span>
                   </Label>
                   <Select
-                    value={formData.exitAgentId ? String(formData.exitAgentId) : ''}
-                    onValueChange={(value) => handleChange('exitAgentId', parseInt(value, 10))}
+                    value={formData.exitAgentId}
+                    onValueChange={(value) => handleChange('exitAgentId', value)}
                   >
                     <SelectTrigger id="exitAgentId" className={errors.exitAgentId ? 'border-destructive' : ''}>
                       <SelectValue placeholder="选择出口节点" />
                     </SelectTrigger>
                     <SelectContent>
                       {availableExitAgents.map((agent) => (
-                        <SelectItem key={agent.id} value={String(agent.id)}>
+                        <SelectItem key={agent.id} value={agent.id}>
                           {agent.name}
                         </SelectItem>
                       ))}
@@ -510,7 +510,7 @@ export const CreateForwardRuleDialog: React.FC<CreateForwardRuleDialogProps> = (
                       </Label>
                       <Select
                         value={formData.targetNodeId ? String(formData.targetNodeId) : ''}
-                        onValueChange={(value) => handleChange('targetNodeId', parseInt(value, 10))}
+                        onValueChange={(value) => handleChange('targetNodeId', Number(value))}
                       >
                         <SelectTrigger id="targetNodeId" className={errors.targetNodeId ? 'border-destructive' : ''}>
                           <SelectValue placeholder="选择目标节点" />

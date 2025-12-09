@@ -6,6 +6,7 @@
 import { useMemo } from 'react';
 import { CheckCircle, X } from 'lucide-react';
 import { DataTable, AdminBadge, type ColumnDef, type ResponsiveColumnMeta } from '@/components/admin';
+import { Skeleton } from '@/components/common/Skeleton';
 import { formatDate } from '@/shared/utils/date-utils';
 import type { Subscription, SubscriptionStatus } from '@/api/subscription/types';
 import type { UserResponse } from '@/api/user/types';
@@ -13,6 +14,7 @@ import type { UserResponse } from '@/api/user/types';
 interface SubscriptionListTableProps {
   subscriptions: Subscription[];
   usersMap?: Record<number, UserResponse>;
+  usersLoading?: boolean;
   loading?: boolean;
   page: number;
   pageSize: number;
@@ -33,6 +35,7 @@ const STATUS_CONFIG: Record<SubscriptionStatus, { label: string; variant: 'succe
 export const SubscriptionListTable: React.FC<SubscriptionListTableProps> = ({
   subscriptions,
   usersMap = {},
+  usersLoading = false,
   loading = false,
   page,
   pageSize,
@@ -59,6 +62,17 @@ export const SubscriptionListTable: React.FC<SubscriptionListTableProps> = ({
       meta: { priority: 1 } as ResponsiveColumnMeta,
       cell: ({ row }) => {
         const user = usersMap[row.original.userId];
+        const isUserLoading = usersLoading || (!user && Object.keys(usersMap).length === 0);
+
+        if (isUserLoading) {
+          return (
+            <div className="space-y-1.5">
+              <Skeleton className="h-4 w-24" />
+              <Skeleton className="h-3 w-32" />
+            </div>
+          );
+        }
+
         return (
           <div className="space-y-1">
             <div className="font-medium text-slate-900 dark:text-white">

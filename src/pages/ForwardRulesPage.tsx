@@ -60,7 +60,7 @@ export const ForwardRulesPage = () => {
   const [selectedRule, setSelectedRule] = useState<ForwardRule | null>(null);
   const [probeDialogOpen, setProbeDialogOpen] = useState(false);
   const [probeResult, setProbeResult] = useState<RuleProbeResponse | null>(null);
-  const [probingRuleId, setProbingRuleId] = useState<number | null>(null);
+  const [probingRuleId, setProbingRuleId] = useState<string | null>(null);
 
   const handleRefresh = () => {
     refetch();

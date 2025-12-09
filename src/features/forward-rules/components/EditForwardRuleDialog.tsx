@@ -331,7 +331,7 @@ export const EditForwardRuleDialog: React.FC<EditForwardRuleDialogProps> = ({
                       <Label htmlFor="targetNodeId">目标节点</Label>
                       <Select
                         value={formData.targetNodeId ? String(formData.targetNodeId) : ''}
-                        onValueChange={(value) => handleChange('targetNodeId', parseInt(value, 10))}
+                        onValueChange={(value) => handleChange('targetNodeId', Number(value))}
                       >
                         <SelectTrigger id="targetNodeId" className={errors.targetNodeId ? 'border-destructive' : ''}>
                           <SelectValue placeholder="选择目标节点" />
