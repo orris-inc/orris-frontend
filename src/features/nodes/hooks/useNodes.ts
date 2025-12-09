@@ -16,6 +16,7 @@ import {
   deleteNode,
   updateNodeStatus,
   generateNodeToken,
+  getNodeInstallScript,
 } from '@/api/node';
 import type {
   Node,
@@ -24,6 +25,8 @@ import type {
   CreateNodeRequest,
   UpdateNodeRequest,
   GenerateNodeTokenResponse,
+  GenerateNodeInstallScriptResponse,
+  GetNodeInstallScriptParams,
 } from '@/api/node';
 
 // 前端使用的筛选条件类型
@@ -126,6 +129,15 @@ export const useNodes = (options: UseNodesOptions = {}) => {
     },
   });
 
+  // 获取安装脚本
+  const installScriptMutation = useMutation({
+    mutationFn: ({ id, params }: { id: number | string; params?: GetNodeInstallScriptParams }) =>
+      getNodeInstallScript(typeof id === 'string' ? parseInt(id, 10) : id, params),
+    onError: (error) => {
+      showError(handleApiError(error));
+    },
+  });
+
   return {
     // 数据
     nodes: data?.items ?? [],
@@ -150,6 +162,8 @@ export const useNodes = (options: UseNodesOptions = {}) => {
     updateNodeStatus: (id: number | string, status: 'active' | 'inactive' | 'maintenance') =>
       statusMutation.mutateAsync({ id, status }),
     generateToken: (id: number | string) => tokenMutation.mutateAsync(id),
+    getInstallScript: (id: number | string, params?: GetNodeInstallScriptParams) =>
+      installScriptMutation.mutateAsync({ id, params }),
 
     // Mutation 状态
     isCreating: createMutation.isPending,
@@ -157,6 +171,7 @@ export const useNodes = (options: UseNodesOptions = {}) => {
     isDeleting: deleteMutation.isPending,
     isChangingStatus: statusMutation.isPending,
     isGeneratingToken: tokenMutation.isPending,
+    isGettingInstallScript: installScriptMutation.isPending,
   };
 };
 
@@ -183,6 +198,7 @@ export const useNodesPage = () => {
   const [filters, setFilters] = useState<NodeFilters>({});
   const [selectedNode, setSelectedNode] = useState<Node | null>(null);
   const [generatedToken, setGeneratedToken] = useState<GenerateNodeTokenResponse | null>(null);
+  const [installScriptData, setInstallScriptData] = useState<GenerateNodeInstallScriptResponse | null>(null);
 
   const nodesQuery = useNodes({ page, pageSize, filters });
 
@@ -206,6 +222,12 @@ export const useNodesPage = () => {
     return token;
   };
 
+  const handleGetInstallScript = async (id: number | string, params?: GetNodeInstallScriptParams) => {
+    const data = await nodesQuery.getInstallScript(id, params);
+    setInstallScriptData(data);
+    return data;
+  };
+
   return {
     ...nodesQuery,
     page,
@@ -213,11 +235,14 @@ export const useNodesPage = () => {
     filters,
     selectedNode,
     generatedToken,
+    installScriptData,
     setSelectedNode,
     setGeneratedToken,
+    setInstallScriptData,
     handlePageChange,
     handlePageSizeChange,
     handleFiltersChange,
     handleGenerateToken,
+    handleGetInstallScript,
   };
 };

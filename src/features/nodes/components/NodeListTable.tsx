@@ -18,6 +18,7 @@ import {
   XCircle,
   AlertTriangle,
   Wrench,
+  Terminal,
 } from 'lucide-react';
 import { DataTable, AdminBadge, type ColumnDef, type ResponsiveColumnMeta } from '@/components/admin';
 import {
@@ -44,6 +45,7 @@ interface NodeListTableProps {
   onActivate: (node: Node) => void;
   onDeactivate: (node: Node) => void;
   onGenerateToken: (node: Node) => void;
+  onGetInstallScript: (node: Node) => void;
   onViewDetail: (node: Node) => void;
 }
 
@@ -95,6 +97,7 @@ export const NodeListTable: React.FC<NodeListTableProps> = ({
   onActivate,
   onDeactivate,
   onGenerateToken,
+  onGetInstallScript,
   onViewDetail,
 }) => {
   const columns = useMemo<ColumnDef<Node>[]>(() => [
@@ -410,6 +413,10 @@ export const NodeListTable: React.FC<NodeListTableProps> = ({
                 <Key className="mr-2 size-4" />
                 生成 Token
               </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => onGetInstallScript(node)}>
+                <Terminal className="mr-2 size-4" />
+                安装脚本
+              </DropdownMenuItem>
               <DropdownMenuSeparator />
               {node.status === 'active' ? (
                 <DropdownMenuItem onClick={() => onDeactivate(node)}>
@@ -431,7 +438,7 @@ export const NodeListTable: React.FC<NodeListTableProps> = ({
         );
       },
     },
-  ], [onEdit, onDelete, onActivate, onDeactivate, onGenerateToken, onViewDetail]);
+  ], [onEdit, onDelete, onActivate, onDeactivate, onGenerateToken, onGetInstallScript, onViewDetail]);
 
   return (
     <DataTable

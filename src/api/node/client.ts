@@ -13,6 +13,8 @@ import type {
   UpdateNodeStatusRequest,
   ListNodesParams,
   GenerateNodeTokenResponse,
+  GenerateNodeInstallScriptResponse,
+  GetNodeInstallScriptParams,
   NodeGroup,
   CreateNodeGroupRequest,
   UpdateNodeGroupRequest,
@@ -113,6 +115,23 @@ export async function generateNodeToken(
 ): Promise<GenerateNodeTokenResponse> {
   const response = await apiClient.post<APIResponse<GenerateNodeTokenResponse>>(
     `/nodes/${id}/tokens`
+  );
+  return response.data.data;
+}
+
+/**
+ * Get install script command for node
+ * GET /nodes/:id/install-script
+ * @requires Admin role
+ * @returns Install script information including install/uninstall commands
+ */
+export async function getNodeInstallScript(
+  id: number,
+  params?: GetNodeInstallScriptParams
+): Promise<GenerateNodeInstallScriptResponse> {
+  const response = await apiClient.get<APIResponse<GenerateNodeInstallScriptResponse>>(
+    `/nodes/${id}/install-script`,
+    { params }
   );
   return response.data.data;
 }

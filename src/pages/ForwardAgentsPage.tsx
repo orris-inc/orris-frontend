@@ -12,17 +12,8 @@ import { ForwardAgentDetailDialog } from '@/features/forward-agents/components/F
 import { InstallScriptDialog } from '@/features/forward-agents/components/InstallScriptDialog';
 import { useForwardAgentsPage } from '@/features/forward-agents/hooks/useForwardAgents';
 import { AdminLayout } from '@/layouts/AdminLayout';
-import { textareaStyles } from '@/lib/ui-styles';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/common/Tooltip';
-import { Button } from '@/components/common/Button';
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/common/Dialog';
+import { TokenDialog } from '@/components/common/TokenDialog';
 import {
   AdminPageLayout,
   AdminButton,
@@ -58,7 +49,6 @@ export const ForwardAgentsPage = () => {
   const [installScriptDialogOpen, setInstallScriptDialogOpen] = useState(false);
   const [selectedAgent, setSelectedAgent] = useState<ForwardAgent | null>(null);
   const [tokenDialogOpen, setTokenDialogOpen] = useState(false);
-  const [hasTokenCopied, setHasTokenCopied] = useState(false);
 
   const handleEdit = (agent: ForwardAgent) => {
     setSelectedAgent(agent);
@@ -82,7 +72,6 @@ export const ForwardAgentsPage = () => {
   const handleTokenRegenerate = async (agent: ForwardAgent) => {
     const token = await handleRegenerateToken(agent.id);
     if (token) {
-      setHasTokenCopied(false);
       setTokenDialogOpen(true);
     }
   };
@@ -113,7 +102,6 @@ export const ForwardAgentsPage = () => {
       setGeneratedToken({
         token: result.token,
       });
-      setHasTokenCopied(false);
       setTokenDialogOpen(true);
     } catch {
       // 错误已在 hook 中处理
@@ -127,21 +115,6 @@ export const ForwardAgentsPage = () => {
       setSelectedAgent(null);
     } catch {
       // 错误已在 hook 中处理
-    }
-  };
-
-  const handleCopyToken = () => {
-    if (generatedToken) {
-      navigator.clipboard.writeText(generatedToken.token);
-      setHasTokenCopied(true);
-    }
-  };
-
-  const handleCloseTokenDialog = () => {
-    if (hasTokenCopied) {
-      setTokenDialogOpen(false);
-      setGeneratedToken(null);
-      setHasTokenCopied(false);
     }
   };
 
@@ -227,57 +200,15 @@ export const ForwardAgentsPage = () => {
       />
 
       {/* Token显示对话框 */}
-      <Dialog
+      <TokenDialog
         open={tokenDialogOpen}
-        onOpenChange={(open) => {
-          // 只有在已复制Token后才允许关闭
-          if (!open && hasTokenCopied) {
-            handleCloseTokenDialog();
-          }
+        token={generatedToken?.token ?? null}
+        title="转发节点Token"
+        onClose={() => {
+          setTokenDialogOpen(false);
+          setGeneratedToken(null);
         }}
-      >
-        <DialogContent className="sm:max-w-md" onPointerDownOutside={(e) => e.preventDefault()}>
-          <DialogHeader>
-            <DialogTitle>转发节点Token</DialogTitle>
-            <DialogDescription>
-              Token已生成，请妥善保存。此Token仅显示一次，丢失后需要重新生成。
-            </DialogDescription>
-          </DialogHeader>
-          <div className="space-y-3">
-            <textarea
-              value={generatedToken?.token || ''}
-              readOnly
-              rows={3}
-              className={`${textareaStyles} font-mono text-sm break-all`}
-            />
-            {hasTokenCopied ? (
-              <p className="text-sm text-green-600 dark:text-green-400 flex items-center gap-1">
-                <span>✓</span> Token已复制到剪贴板
-              </p>
-            ) : (
-              <p className="text-sm text-amber-600 dark:text-amber-400">
-                请先复制Token后再关闭此对话框
-              </p>
-            )}
-          </div>
-          <DialogFooter className="flex-col-reverse sm:flex-row gap-2">
-            <Button
-              variant="outline"
-              onClick={handleCloseTokenDialog}
-              disabled={!hasTokenCopied}
-              className="w-full sm:w-auto"
-            >
-              关闭
-            </Button>
-            <Button
-              onClick={handleCopyToken}
-              className="w-full sm:w-auto"
-            >
-              {hasTokenCopied ? '再次复制' : '复制Token'}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      />
 
       {/* 安装脚本对话框 */}
       <InstallScriptDialog

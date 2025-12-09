@@ -9,18 +9,11 @@ import { NodeListTable } from '@/features/nodes/components/NodeListTable';
 import { EditNodeDialog } from '@/features/nodes/components/EditNodeDialog';
 import { CreateNodeDialog } from '@/features/nodes/components/CreateNodeDialog';
 import { NodeDetailDialog } from '@/features/nodes/components/NodeDetailDialog';
+import { NodeInstallScriptDialog } from '@/features/nodes/components/NodeInstallScriptDialog';
 import { useNodesPage } from '@/features/nodes/hooks/useNodes';
 import { AdminLayout } from '@/layouts/AdminLayout';
-import { textareaStyles } from '@/lib/ui-styles';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/common/Tooltip';
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/common/Dialog';
+import { TokenDialog } from '@/components/common/TokenDialog';
 import {
   AdminPageLayout,
   AdminButton,
@@ -41,6 +34,9 @@ export const NodeManagementPage = () => {
     handleGenerateToken,
     generatedToken,
     setGeneratedToken,
+    handleGetInstallScript,
+    installScriptData,
+    setInstallScriptData,
     handlePageChange,
     handlePageSizeChange,
   } = useNodesPage();
@@ -50,6 +46,8 @@ export const NodeManagementPage = () => {
   const [detailDialogOpen, setDetailDialogOpen] = useState(false);
   const [selectedNode, setSelectedNode] = useState<Node | null>(null);
   const [tokenDialogOpen, setTokenDialogOpen] = useState(false);
+  const [installScriptDialogOpen, setInstallScriptDialogOpen] = useState(false);
+  const [installScriptNodeName, setInstallScriptNodeName] = useState<string>('');
 
   const handleEdit = (node: Node) => {
     setSelectedNode(node);
@@ -74,6 +72,14 @@ export const NodeManagementPage = () => {
     const token = await handleGenerateToken(node.id);
     if (token) {
       setTokenDialogOpen(true);
+    }
+  };
+
+  const handleInstallScript = async (node: Node) => {
+    setInstallScriptNodeName(node.name);
+    const data = await handleGetInstallScript(node.id);
+    if (data) {
+      setInstallScriptDialogOpen(true);
     }
   };
 
@@ -102,13 +108,6 @@ export const NodeManagementPage = () => {
       setSelectedNode(null);
     } catch {
       // 错误已在 hook 中处理
-    }
-  };
-
-  const handleCopyToken = () => {
-    if (generatedToken) {
-      navigator.clipboard.writeText(generatedToken.token);
-      alert('Token已复制到剪贴板');
     }
   };
 
@@ -159,6 +158,7 @@ export const NodeManagementPage = () => {
             onActivate={handleActivate}
             onDeactivate={handleDeactivate}
             onGenerateToken={handleTokenGenerate}
+            onGetInstallScript={handleInstallScript}
             onViewDetail={handleViewDetail}
           />
         </AdminCard>
@@ -193,47 +193,27 @@ export const NodeManagementPage = () => {
       />
 
       {/* Token显示对话框 */}
-      <Dialog
+      <TokenDialog
         open={tokenDialogOpen}
-        onOpenChange={(open) => {
-          if (!open) {
-            setTokenDialogOpen(false);
-            setGeneratedToken(null);
-          }
+        token={generatedToken?.token ?? null}
+        title="节点Token"
+        onClose={() => {
+          setTokenDialogOpen(false);
+          setGeneratedToken(null);
         }}
-      >
-        <DialogContent className="sm:max-w-md">
-          <DialogHeader>
-            <DialogTitle>节点Token</DialogTitle>
-            <DialogDescription>
-              Token已生成，请妥善保存。此Token仅显示一次。
-            </DialogDescription>
-          </DialogHeader>
-          <textarea
-            value={generatedToken?.token || ''}
-            readOnly
-            rows={4}
-            className={`${textareaStyles} mt-2 font-mono`}
-          />
-          <DialogFooter>
-            <AdminButton
-              variant="outline"
-              onClick={() => {
-                setTokenDialogOpen(false);
-                setGeneratedToken(null);
-              }}
-            >
-              关闭
-            </AdminButton>
-            <AdminButton
-              variant="primary"
-              onClick={handleCopyToken}
-            >
-              复制Token
-            </AdminButton>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      />
+
+      {/* 安装脚本对话框 */}
+      <NodeInstallScriptDialog
+        open={installScriptDialogOpen}
+        installScriptData={installScriptData}
+        nodeName={installScriptNodeName}
+        onClose={() => {
+          setInstallScriptDialogOpen(false);
+          setInstallScriptData(null);
+          setInstallScriptNodeName('');
+        }}
+      />
     </AdminLayout>
   );
 };
