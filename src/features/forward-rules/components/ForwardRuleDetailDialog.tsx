@@ -40,7 +40,7 @@ const PROTOCOL_LABELS: Record<string, string> = {
 const RULE_TYPE_LABELS: Record<string, string> = {
   direct: '直连转发',
   entry: '入口节点',
-  exit: '出口节点',
+  chain: '链式转发',
 };
 
 // IP 版本标签映射
@@ -169,14 +169,6 @@ export const ForwardRuleDetailDialog: React.FC<ForwardRuleDetailDialogProps> = (
                 </div>
               )}
 
-              {/* WS监听端口 - exit 类型 */}
-              {rule.ruleType === 'exit' && rule.wsListenPort && (
-                <div className="space-y-1">
-                  <p className="text-sm text-muted-foreground">WS监听端口</p>
-                  <p className="text-sm font-mono">{rule.wsListenPort}</p>
-                </div>
-              )}
-
               {/* 出口节点 - entry 类型 */}
               {rule.ruleType === 'entry' && rule.exitAgentId && (
                 <div className="space-y-1">
@@ -185,8 +177,58 @@ export const ForwardRuleDetailDialog: React.FC<ForwardRuleDetailDialogProps> = (
                 </div>
               )}
 
-              {/* 目标配置 - direct 和 exit 类型 */}
-              {(rule.ruleType === 'direct' || rule.ruleType === 'exit') && (
+              {/* 中间节点列表 - chain 类型 */}
+              {rule.ruleType === 'chain' && rule.chainAgentIds && rule.chainAgentIds.length > 0 && (
+                <div className="space-y-1 md:col-span-2">
+                  <p className="text-sm text-muted-foreground">中间节点</p>
+                  <div className="flex flex-wrap gap-2">
+                    {rule.chainAgentIds.map((agentId, index) => (
+                      <span key={agentId} className="text-sm bg-slate-100 dark:bg-slate-800 px-2 py-1 rounded">
+                        {index + 1}. {getAgentName(agentId)}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* chain 相关字段显示 */}
+              {rule.ruleType === 'chain' && (
+                <>
+                  {rule.chainPosition !== undefined && (
+                    <div className="space-y-1">
+                      <p className="text-sm text-muted-foreground">链位置</p>
+                      <p className="text-sm">{rule.chainPosition + 1}</p>
+                    </div>
+                  )}
+                  {rule.nextHopAgentId && (
+                    <div className="space-y-1">
+                      <p className="text-sm text-muted-foreground">下一跳节点</p>
+                      <p className="text-sm">{getAgentName(rule.nextHopAgentId)}</p>
+                    </div>
+                  )}
+                  {rule.nextHopAddress && (
+                    <div className="space-y-1">
+                      <p className="text-sm text-muted-foreground">下一跳地址</p>
+                      <p className="text-sm font-mono">{rule.nextHopAddress}</p>
+                    </div>
+                  )}
+                  {rule.nextHopWsPort && (
+                    <div className="space-y-1">
+                      <p className="text-sm text-muted-foreground">下一跳 WS 端口</p>
+                      <p className="text-sm font-mono">{rule.nextHopWsPort}</p>
+                    </div>
+                  )}
+                  {rule.isLastInChain !== undefined && (
+                    <div className="space-y-1">
+                      <p className="text-sm text-muted-foreground">是否最后节点</p>
+                      <p className="text-sm">{rule.isLastInChain ? '是' : '否'}</p>
+                    </div>
+                  )}
+                </>
+              )}
+
+              {/* 目标配置 - direct、entry 和 chain 类型 */}
+              {(rule.ruleType === 'direct' || rule.ruleType === 'entry' || rule.ruleType === 'chain') && (
                 <>
                   {rule.targetNodeId ? (
                     <>

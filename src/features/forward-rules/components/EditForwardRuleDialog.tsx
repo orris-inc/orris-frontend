@@ -92,8 +92,8 @@ export const EditForwardRuleDialog: React.FC<EditForwardRuleDialogProps> = ({
       newErrors.listenPort = '监听端口必须在1-65535之间';
     }
 
-    // 只有直连和出口类型需要目标验证
-    if (rule && (rule.ruleType === 'direct' || rule.ruleType === 'exit')) {
+    // direct、entry 和 chain 类型需要目标验证
+    if (rule && (rule.ruleType === 'direct' || rule.ruleType === 'entry' || rule.ruleType === 'chain')) {
       if (targetType === 'manual') {
         if (formData.targetAddress !== undefined && !formData.targetAddress.trim()) {
           newErrors.targetAddress = '目标地址不能为空';
@@ -123,8 +123,8 @@ export const EditForwardRuleDialog: React.FC<EditForwardRuleDialogProps> = ({
       if (formData.ipVersion !== rule.ipVersion) updates.ipVersion = formData.ipVersion;
       if (formData.remark !== rule.remark) updates.remark = formData.remark;
 
-      // 处理目标配置（手动输入或选择节点）
-      if (rule.ruleType === 'direct' || rule.ruleType === 'exit') {
+      // 处理目标配置（手动输入或选择节点）- direct、entry 和 chain 类型
+      if (rule.ruleType === 'direct' || rule.ruleType === 'entry' || rule.ruleType === 'chain') {
         if (targetType === 'manual') {
           // 手动输入地址
           if (formData.targetAddress !== rule.targetAddress) updates.targetAddress = formData.targetAddress;
@@ -256,8 +256,8 @@ export const EditForwardRuleDialog: React.FC<EditForwardRuleDialogProps> = ({
                 )}
               </div>
 
-              {/* 目标配置 - 仅 direct 和 exit 类型显示 */}
-              {rule && (rule.ruleType === 'direct' || rule.ruleType === 'exit') && (
+              {/* 目标配置 - direct、entry 和 chain 类型显示 */}
+              {rule && (rule.ruleType === 'direct' || rule.ruleType === 'entry' || rule.ruleType === 'chain') && (
                 <>
                   {/* 目标类型选择 */}
                   <div className="flex flex-col gap-2 md:col-span-2">

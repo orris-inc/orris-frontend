@@ -1,6 +1,6 @@
 /**
  * 创建转发规则对话框组件
- * 支持三种规则类型：direct（直连）、entry（入口）、exit（出口）
+ * 支持三种规则类型：direct（直连）、entry（入口）、chain（链式转发）
  * 支持目标类型：手动输入地址或选择节点（动态解析）
  */
 
@@ -25,6 +25,8 @@ import {
 } from '@/components/common/Select';
 import { Separator } from '@/components/common/Separator';
 import { RadioGroup, RadioGroupItem } from '@/components/common/RadioGroup';
+import { Checkbox } from '@/components/common/Checkbox';
+import { ScrollArea } from '@/components/common/ScrollArea';
 import type { CreateForwardRuleRequest, ForwardAgent, ForwardRuleType, ForwardProtocol, IPVersion } from '@/api/forward';
 import type { Node } from '@/api/node';
 
@@ -42,8 +44,8 @@ interface CreateForwardRuleDialogProps {
 // 规则类型描述
 const RULE_TYPE_INFO: Record<ForwardRuleType, { label: string; description: string }> = {
   direct: { label: '直连转发', description: '直接将流量转发到目标地址' },
-  entry: { label: '入口节点', description: '作为转发链的入口，连接到出口节点' },
-  exit: { label: '出口节点', description: '作为转发链的出口，接收来自入口的流量' },
+  entry: { label: '入口节点', description: '作为转发链的入口，通过出口节点转发到目标地址' },
+  chain: { label: '链式转发', description: '通过多个中间节点进行多跳链式转发' },
 };
 
 export const CreateForwardRuleDialog: React.FC<CreateForwardRuleDialogProps> = ({
@@ -57,7 +59,7 @@ export const CreateForwardRuleDialog: React.FC<CreateForwardRuleDialogProps> = (
     agentId: '',
     ruleType: 'direct' as ForwardRuleType,
     exitAgentId: '',
-    wsListenPort: 0,
+    chainAgentIds: [] as string[],
     name: '',
     listenPort: 0,
     targetAddress: '',
@@ -78,7 +80,7 @@ export const CreateForwardRuleDialog: React.FC<CreateForwardRuleDialogProps> = (
         agentId: '',
         ruleType: 'direct',
         exitAgentId: '',
-        wsListenPort: 0,
+        chainAgentIds: [],
         name: '',
         listenPort: 0,
         targetAddress: '',
@@ -97,7 +99,7 @@ export const CreateForwardRuleDialog: React.FC<CreateForwardRuleDialogProps> = (
     onClose();
   };
 
-  const handleChange = (field: string, value: string | number) => {
+  const handleChange = (field: string, value: string | number | string[]) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
     if (errors[field]) {
       setErrors((prev) => {
@@ -106,6 +108,15 @@ export const CreateForwardRuleDialog: React.FC<CreateForwardRuleDialogProps> = (
         return newErrors;
       });
     }
+  };
+
+  // 处理链节点选择
+  const handleChainAgentToggle = (agentId: string) => {
+    const currentIds = formData.chainAgentIds;
+    const newIds = currentIds.includes(agentId)
+      ? currentIds.filter((id) => id !== agentId)
+      : [...currentIds, agentId];
+    handleChange('chainAgentIds', newIds);
   };
 
   const validate = () => {
@@ -148,11 +159,27 @@ export const CreateForwardRuleDialog: React.FC<CreateForwardRuleDialogProps> = (
       if (!formData.exitAgentId) {
         newErrors.exitAgentId = '请选择出口节点';
       }
-    } else if (formData.ruleType === 'exit') {
-      if (!formData.wsListenPort || formData.wsListenPort < 1 || formData.wsListenPort > 65535) {
-        newErrors.wsListenPort = 'WS监听端口必须在1-65535之间';
+      // entry 类型也需要目标验证
+      if (targetType === 'manual') {
+        if (!formData.targetAddress.trim()) {
+          newErrors.targetAddress = '目标地址不能为空';
+        }
+        if (!formData.targetPort || formData.targetPort < 1 || formData.targetPort > 65535) {
+          newErrors.targetPort = '目标端口必须在1-65535之间';
+        }
+      } else if (targetType === 'node') {
+        if (!formData.targetNodeId) {
+          newErrors.targetNodeId = '请选择目标节点';
+        }
       }
-      // 目标验证：手动输入或选择节点
+    } else if (formData.ruleType === 'chain') {
+      if (!formData.listenPort || formData.listenPort < 1 || formData.listenPort > 65535) {
+        newErrors.listenPort = '监听端口必须在1-65535之间';
+      }
+      if (!formData.chainAgentIds || formData.chainAgentIds.length === 0) {
+        newErrors.chainAgentIds = '请至少选择一个中间节点';
+      }
+      // chain 类型也需要目标验证
       if (targetType === 'manual') {
         if (!formData.targetAddress.trim()) {
           newErrors.targetAddress = '目标地址不能为空';
@@ -194,9 +221,17 @@ export const CreateForwardRuleDialog: React.FC<CreateForwardRuleDialogProps> = (
       } else if (formData.ruleType === 'entry') {
         submitData.listenPort = formData.listenPort;
         submitData.exitAgentId = formData.exitAgentId;
-      } else if (formData.ruleType === 'exit') {
-        submitData.wsListenPort = formData.wsListenPort;
-        // 目标：手动输入或选择节点
+        // entry 类型也需要目标配置
+        if (targetType === 'manual') {
+          submitData.targetAddress = formData.targetAddress.trim();
+          submitData.targetPort = formData.targetPort;
+        } else {
+          submitData.targetNodeId = formData.targetNodeId;
+        }
+      } else if (formData.ruleType === 'chain') {
+        submitData.listenPort = formData.listenPort;
+        submitData.chainAgentIds = formData.chainAgentIds;
+        // chain 类型也需要目标配置
         if (targetType === 'manual') {
           submitData.targetAddress = formData.targetAddress.trim();
           submitData.targetPort = formData.targetPort;
@@ -226,9 +261,16 @@ export const CreateForwardRuleDialog: React.FC<CreateForwardRuleDialogProps> = (
         return !!formData.targetNodeId;
       }
     } else if (formData.ruleType === 'entry') {
-      return formData.listenPort > 0 && formData.exitAgentId !== '';
-    } else if (formData.ruleType === 'exit') {
-      if (formData.wsListenPort <= 0) return false;
+      if (formData.listenPort <= 0 || formData.exitAgentId === '') return false;
+      // entry 类型也需要验证目标
+      if (targetType === 'manual') {
+        return formData.targetAddress.trim() !== '' && formData.targetPort > 0;
+      } else {
+        return !!formData.targetNodeId;
+      }
+    } else if (formData.ruleType === 'chain') {
+      if (formData.listenPort <= 0 || formData.chainAgentIds.length === 0) return false;
+      // chain 类型也需要验证目标
       if (targetType === 'manual') {
         return formData.targetAddress.trim() !== '' && formData.targetPort > 0;
       } else {
@@ -243,6 +285,9 @@ export const CreateForwardRuleDialog: React.FC<CreateForwardRuleDialogProps> = (
 
   // 获取可选的出口节点（排除当前选中的节点）
   const availableExitAgents = agents.filter((a) => a.id !== formData.agentId && a.status === 'enabled');
+
+  // 获取可选的链节点（排除当前选中的入口节点）
+  const availableChainAgents = agents.filter((a) => a.id !== formData.agentId && a.status === 'enabled');
 
   return (
     <Dialog open={open} onOpenChange={(isOpen) => !isOpen && handleClose()}>
@@ -386,26 +431,6 @@ export const CreateForwardRuleDialog: React.FC<CreateForwardRuleDialogProps> = (
                 </div>
               )}
 
-              {/* exit 类型：WS监听端口 */}
-              {formData.ruleType === 'exit' && (
-                <div className="flex flex-col gap-2">
-                  <Label htmlFor="wsListenPort">
-                    WS监听端口 <span className="text-destructive">*</span>
-                  </Label>
-                  <Input
-                    id="wsListenPort"
-                    type="number"
-                    min={1}
-                    max={65535}
-                    value={formData.wsListenPort || ''}
-                    onChange={(e) => handleChange('wsListenPort', parseInt(e.target.value, 10) || 0)}
-                    error={!!errors.wsListenPort}
-                    placeholder="WebSocket 监听端口"
-                  />
-                  {errors.wsListenPort && <p className="text-xs text-destructive">{errors.wsListenPort}</p>}
-                </div>
-              )}
-
               {/* entry 类型：出口节点 */}
               {formData.ruleType === 'entry' && (
                 <div className="flex flex-col gap-2">
@@ -431,8 +456,51 @@ export const CreateForwardRuleDialog: React.FC<CreateForwardRuleDialogProps> = (
                 </div>
               )}
 
-              {/* direct 和 exit 类型：目标配置 */}
-              {(formData.ruleType === 'direct' || formData.ruleType === 'exit') && (
+              {/* chain 类型：中间节点列表 */}
+              {formData.ruleType === 'chain' && (
+                <div className="flex flex-col gap-2 md:col-span-2">
+                  <Label htmlFor="chainAgentIds">
+                    中间节点 <span className="text-destructive">*</span>
+                  </Label>
+                  <div className={`border rounded-md ${errors.chainAgentIds ? 'border-destructive' : 'border-input'}`}>
+                    <ScrollArea className="h-[120px] p-3">
+                      {availableChainAgents.length === 0 ? (
+                        <p className="text-sm text-muted-foreground">暂无可用节点</p>
+                      ) : (
+                        <div className="space-y-2">
+                          {availableChainAgents.map((agent) => (
+                            <div key={agent.id} className="flex items-center space-x-2">
+                              <Checkbox
+                                id={`chain-agent-${agent.id}`}
+                                checked={formData.chainAgentIds.includes(agent.id)}
+                                onCheckedChange={() => handleChainAgentToggle(agent.id)}
+                              />
+                              <Label
+                                htmlFor={`chain-agent-${agent.id}`}
+                                className="text-sm font-normal cursor-pointer flex-1"
+                              >
+                                {agent.name}
+                                {agent.publicAddress && (
+                                  <span className="text-xs text-muted-foreground ml-2">
+                                    ({agent.publicAddress})
+                                  </span>
+                                )}
+                              </Label>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </ScrollArea>
+                  </div>
+                  <p className="text-xs text-muted-foreground">
+                    已选择 {formData.chainAgentIds.length} 个节点，流量将按选择顺序依次转发
+                  </p>
+                  {errors.chainAgentIds && <p className="text-xs text-destructive">{errors.chainAgentIds}</p>}
+                </div>
+              )}
+
+              {/* direct、entry 和 chain 类型：目标配置 */}
+              {(formData.ruleType === 'direct' || formData.ruleType === 'entry' || formData.ruleType === 'chain') && (
                 <>
                   {/* 目标类型选择 */}
                   <div className="flex flex-col gap-2 md:col-span-2">

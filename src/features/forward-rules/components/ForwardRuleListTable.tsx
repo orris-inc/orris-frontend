@@ -146,28 +146,14 @@ export const ForwardRuleListTable: React.FC<ForwardRuleListTableProps> = ({
       meta: { priority: 1 } as ResponsiveColumnMeta,
       cell: ({ row }) => {
         const rule = row.original;
-        // entry 类型显示出口节点
-        if (rule.ruleType === 'entry' && rule.exitAgentId) {
-          const exitAgent = agentsMap[rule.exitAgentId];
-          const exitName = exitAgent?.name || `ID: ${rule.exitAgentId}`;
-          // 出口节点地址:WS监听端口
-          const exitAddress = exitAgent?.publicAddress && rule.wsListenPort
-            ? `${exitAgent.publicAddress}:${rule.wsListenPort}`
-            : exitAgent?.publicAddress || '-';
-          return (
-            <div className="space-y-0.5 min-w-0">
-              <div className="text-sm text-slate-900 dark:text-white truncate">{exitName}</div>
-              <CopyableAddress address={exitAddress} className="text-slate-500 dark:text-slate-400" />
-            </div>
-          );
-        }
-        // direct/exit 类型显示目标节点或地址
-        if (rule.targetNodeId) {
-          const targetNode = nodes.find((n) => n.id === rule.targetNodeId);
-          const nodeName = targetNode?.name || `ID: ${rule.targetNodeId}`;
-          const nodePort = targetNode?.subscriptionPort || targetNode?.agentPort;
-          // 使用 API 返回的目标节点地址（根据 ipVersion 选择）
-          const getTargetNodeAddress = () => {
+
+        // 获取目标地址的辅助函数
+        const getTargetDisplay = () => {
+          if (rule.targetNodeId) {
+            const targetNode = nodes.find((n) => n.id === rule.targetNodeId);
+            const nodeName = targetNode?.name || `ID: ${rule.targetNodeId}`;
+            const nodePort = targetNode?.subscriptionPort || targetNode?.agentPort;
+            // 使用 API 返回的目标节点地址（根据 ipVersion 选择）
             let address: string | undefined;
             if (rule.ipVersion === 'ipv4' && rule.targetNodePublicIpv4) {
               address = rule.targetNodePublicIpv4;
@@ -177,27 +163,70 @@ export const ForwardRuleListTable: React.FC<ForwardRuleListTableProps> = ({
               // auto 或 fallback: 优先使用 serverAddress，其次 IPv4，最后 IPv6
               address = rule.targetNodeServerAddress || rule.targetNodePublicIpv4 || rule.targetNodePublicIpv6;
             }
-            if (!address) return '-';
-            return nodePort ? `${address}:${nodePort}` : address;
-          };
-          const nodeAddress = getTargetNodeAddress();
+            const nodeAddress = address ? (nodePort ? `${address}:${nodePort}` : address) : '-';
+            return { name: nodeName, address: nodeAddress, type: 'node' as const };
+          }
+          if (rule.targetAddress) {
+            return {
+              name: '手动配置',
+              address: `${rule.targetAddress}:${rule.targetPort}`,
+              type: 'manual' as const,
+            };
+          }
+          return null;
+        };
+
+        // entry 类型：显示出口节点 -> 目标
+        if (rule.ruleType === 'entry' && rule.exitAgentId) {
+          const exitAgent = agentsMap[rule.exitAgentId];
+          const exitName = exitAgent?.name || `ID: ${rule.exitAgentId}`;
+          const target = getTargetDisplay();
+          // 显示出口节点名称和目标地址
+          const targetAddress = target?.address || '-';
           return (
             <div className="space-y-0.5 min-w-0">
-              <div className="text-sm text-slate-900 dark:text-white truncate">{nodeName}</div>
-              <CopyableAddress address={nodeAddress} className="text-slate-500 dark:text-slate-400" />
+              <div className="text-sm text-slate-900 dark:text-white truncate">{exitName}</div>
+              <CopyableAddress address={targetAddress} className="text-slate-500 dark:text-slate-400" />
             </div>
           );
         }
-        // 手动输入的地址
-        if (rule.targetAddress) {
-          const fullTarget = `${rule.targetAddress}:${rule.targetPort}`;
+
+        // chain 类型：显示链节点信息 -> 目标
+        if (rule.ruleType === 'chain' && rule.chainAgentIds && rule.chainAgentIds.length > 0) {
+          const chainCount = rule.chainAgentIds.length;
+          const chainNames = rule.chainAgentIds
+            .slice(0, 2)
+            .map((id) => {
+              const agent = agentsMap[id];
+              return agent?.name || `ID: ${id}`;
+            })
+            .join(' → ');
+          const chainLabel = chainCount > 2 ? `${chainNames} ... (+${chainCount - 2})` : chainNames;
+          const target = getTargetDisplay();
+          const targetAddress = target?.address || '-';
           return (
             <div className="space-y-0.5 min-w-0">
-              <div className="text-sm text-slate-500 dark:text-slate-400">手动配置</div>
-              <CopyableAddress address={fullTarget} className="text-slate-700 dark:text-slate-300" />
+              <div className="text-sm text-slate-900 dark:text-white truncate" title={chainLabel}>
+                {chainLabel}
+              </div>
+              <CopyableAddress address={targetAddress} className="text-slate-500 dark:text-slate-400" />
             </div>
           );
         }
+
+        // direct 类型：显示目标
+        const target = getTargetDisplay();
+        if (target) {
+          return (
+            <div className="space-y-0.5 min-w-0">
+              <div className={`text-sm truncate ${target.type === 'manual' ? 'text-slate-500 dark:text-slate-400' : 'text-slate-900 dark:text-white'}`}>
+                {target.name}
+              </div>
+              <CopyableAddress address={target.address} className="text-slate-500 dark:text-slate-400" />
+            </div>
+          );
+        }
+
         return <span className="text-slate-400 dark:text-slate-500">-</span>;
       },
     },
