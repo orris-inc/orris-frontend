@@ -27,7 +27,7 @@ interface EditNodeDialogProps {
   open: boolean;
   node: Node | null;
   onClose: () => void;
-  onSubmit: (id: number | string, data: UpdateNodeRequest) => void;
+  onSubmit: (id: string, data: UpdateNodeRequest) => void;
 }
 
 // Shadowsocks 加密方法

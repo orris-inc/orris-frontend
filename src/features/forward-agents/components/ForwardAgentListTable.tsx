@@ -4,7 +4,7 @@
  */
 
 import { useMemo } from 'react';
-import { Edit, Trash2, Key, Eye, Power, PowerOff, MoreHorizontal, Terminal } from 'lucide-react';
+import { Edit, Trash2, Key, Eye, Power, PowerOff, MoreHorizontal, Terminal, Cpu, MemoryStick } from 'lucide-react';
 import { DataTable, AdminBadge, type ColumnDef, type ResponsiveColumnMeta } from '@/components/admin';
 import {
   DropdownMenu,
@@ -32,6 +32,17 @@ interface ForwardAgentListTableProps {
   onGetInstallScript: (agent: ForwardAgent) => void;
   onViewDetail: (agent: ForwardAgent) => void;
 }
+
+// 格式化运行时间
+const formatUptime = (seconds: number): string => {
+  if (!seconds || seconds <= 0) return '-';
+  const days = Math.floor(seconds / 86400);
+  const hours = Math.floor((seconds % 86400) / 3600);
+  if (days > 0) return `${days}天${hours}时`;
+  const minutes = Math.floor((seconds % 3600) / 60);
+  if (hours > 0) return `${hours}时${minutes}分`;
+  return `${minutes}分钟`;
+};
 
 // 格式化时间
 const formatDate = (dateString?: string) => {
@@ -62,17 +73,6 @@ export const ForwardAgentListTable: React.FC<ForwardAgentListTableProps> = ({
   onViewDetail,
 }) => {
   const columns = useMemo<ColumnDef<ForwardAgent>[]>(() => [
-    {
-      accessorKey: 'id',
-      header: 'ID',
-      size: 56,
-      meta: { priority: 4 } as ResponsiveColumnMeta,
-      cell: ({ row }) => (
-        <span className="font-mono text-slate-600 dark:text-slate-400">
-          {row.original.id}
-        </span>
-      ),
-    },
     {
       accessorKey: 'name',
       header: '名称',
@@ -120,6 +120,85 @@ export const ForwardAgentListTable: React.FC<ForwardAgentListTableProps> = ({
             </TooltipTrigger>
             <TooltipContent>
               {agent.status === 'enabled' ? '点击禁用' : '点击启用'}
+            </TooltipContent>
+          </Tooltip>
+        );
+      },
+    },
+    {
+      id: 'systemStatus',
+      header: '系统状态',
+      size: 160,
+      meta: { priority: 3 } as ResponsiveColumnMeta,
+      cell: ({ row }) => {
+        const agent = row.original;
+        const status = agent.systemStatus;
+
+        if (!status) {
+          return <span className="text-xs text-slate-400">暂无数据</span>;
+        }
+
+        const getHealthLevel = (value: number) => {
+          if (value >= 80) return 'high';
+          if (value >= 60) return 'medium';
+          return 'low';
+        };
+
+        const cpuLevel = getHealthLevel(status.cpuPercent);
+        const memLevel = getHealthLevel(status.memoryPercent);
+
+        const overallHealth = cpuLevel === 'high' || memLevel === 'high' ? 'high'
+          : cpuLevel === 'medium' || memLevel === 'medium' ? 'medium'
+          : 'low';
+
+        const healthColors = {
+          low: 'text-green-600 dark:text-green-400',
+          medium: 'text-yellow-600 dark:text-yellow-400',
+          high: 'text-red-600 dark:text-red-400',
+        };
+
+        const healthBg = {
+          low: 'bg-green-50 dark:bg-green-900/20',
+          medium: 'bg-yellow-50 dark:bg-yellow-900/20',
+          high: 'bg-red-50 dark:bg-red-900/20',
+        };
+
+        return (
+          <Tooltip>
+            <TooltipTrigger>
+              <div className={`inline-flex items-center gap-2 px-2 py-1 rounded-md ${healthBg[overallHealth]}`}>
+                <div className="flex items-center gap-1">
+                  <Cpu className={`h-3.5 w-3.5 ${healthColors[cpuLevel]}`} />
+                  <span className={`text-xs font-medium ${healthColors[cpuLevel]}`}>{status.cpuPercent.toFixed(1)}%</span>
+                </div>
+                <div className="w-px h-3 bg-slate-300 dark:bg-slate-600" />
+                <div className="flex items-center gap-1">
+                  <MemoryStick className={`h-3.5 w-3.5 ${healthColors[memLevel]}`} />
+                  <span className={`text-xs font-medium ${healthColors[memLevel]}`}>{status.memoryPercent.toFixed(1)}%</span>
+                </div>
+              </div>
+            </TooltipTrigger>
+            <TooltipContent>
+              <div className="space-y-1.5 text-xs">
+                <div className="flex items-center justify-between gap-4">
+                  <span className="text-slate-400">CPU</span>
+                  <span className="font-mono">{status.cpuPercent.toFixed(1)}%</span>
+                </div>
+                <div className="flex items-center justify-between gap-4">
+                  <span className="text-slate-400">内存</span>
+                  <span className="font-mono">{status.memoryPercent.toFixed(1)}%</span>
+                </div>
+                <div className="flex items-center justify-between gap-4">
+                  <span className="text-slate-400">磁盘</span>
+                  <span className="font-mono">{status.diskPercent.toFixed(1)}%</span>
+                </div>
+                {status.uptimeSeconds > 0 && (
+                  <div className="flex items-center justify-between gap-4 pt-1 border-t border-slate-700">
+                    <span className="text-slate-400">运行时间</span>
+                    <span>{formatUptime(status.uptimeSeconds)}</span>
+                  </div>
+                )}
+              </div>
             </TooltipContent>
           </Tooltip>
         );

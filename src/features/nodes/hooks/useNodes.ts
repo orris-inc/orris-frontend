@@ -81,8 +81,8 @@ export const useNodes = (options: UseNodesOptions = {}) => {
 
   // 更新节点
   const updateMutation = useMutation({
-    mutationFn: ({ id, data }: { id: number | string; data: UpdateNodeRequest }) =>
-      updateNode(typeof id === 'string' ? parseInt(id, 10) : id, data),
+    mutationFn: ({ id, data }: { id: string; data: UpdateNodeRequest }) =>
+      updateNode(id, data),
     onSuccess: () => {
       showSuccess('节点信息更新成功');
       queryClient.invalidateQueries({ queryKey: queryKeys.nodes.lists() });
@@ -94,7 +94,7 @@ export const useNodes = (options: UseNodesOptions = {}) => {
 
   // 删除节点
   const deleteMutation = useMutation({
-    mutationFn: (id: number | string) => deleteNode(typeof id === 'string' ? parseInt(id, 10) : id),
+    mutationFn: (id: string) => deleteNode(id),
     onSuccess: () => {
       showSuccess('节点删除成功');
       queryClient.invalidateQueries({ queryKey: queryKeys.nodes.lists() });
@@ -106,8 +106,8 @@ export const useNodes = (options: UseNodesOptions = {}) => {
 
   // 更新节点状态
   const statusMutation = useMutation({
-    mutationFn: ({ id, status }: { id: number | string; status: 'active' | 'inactive' | 'maintenance' }) =>
-      updateNodeStatus(typeof id === 'string' ? parseInt(id, 10) : id, { status }),
+    mutationFn: ({ id, status }: { id: string; status: 'active' | 'inactive' | 'maintenance' }) =>
+      updateNodeStatus(id, { status }),
     onSuccess: (_, { status }) => {
       const statusText = status === 'active' ? '激活' : status === 'inactive' ? '停用' : '维护';
       showSuccess(`节点已${statusText}`);
@@ -120,7 +120,7 @@ export const useNodes = (options: UseNodesOptions = {}) => {
 
   // 生成 Token
   const tokenMutation = useMutation({
-    mutationFn: (id: number | string) => generateNodeToken(typeof id === 'string' ? parseInt(id, 10) : id),
+    mutationFn: (id: string) => generateNodeToken(id),
     onSuccess: () => {
       showSuccess('Token 生成成功');
     },
@@ -131,8 +131,8 @@ export const useNodes = (options: UseNodesOptions = {}) => {
 
   // 获取安装脚本
   const installScriptMutation = useMutation({
-    mutationFn: ({ id, params }: { id: number | string; params?: GetNodeInstallScriptParams }) =>
-      getNodeInstallScript(typeof id === 'string' ? parseInt(id, 10) : id, params),
+    mutationFn: ({ id, params }: { id: string; params?: GetNodeInstallScriptParams }) =>
+      getNodeInstallScript(id, params),
     onError: (error) => {
       showError(handleApiError(error));
     },
@@ -156,13 +156,13 @@ export const useNodes = (options: UseNodesOptions = {}) => {
     // 操作
     refetch,
     createNode: (data: CreateNodeRequest) => createMutation.mutateAsync(data),
-    updateNode: (id: number | string, data: UpdateNodeRequest) =>
+    updateNode: (id: string, data: UpdateNodeRequest) =>
       updateMutation.mutateAsync({ id, data }),
-    deleteNode: (id: number | string) => deleteMutation.mutateAsync(id),
-    updateNodeStatus: (id: number | string, status: 'active' | 'inactive' | 'maintenance') =>
+    deleteNode: (id: string) => deleteMutation.mutateAsync(id),
+    updateNodeStatus: (id: string, status: 'active' | 'inactive' | 'maintenance') =>
       statusMutation.mutateAsync({ id, status }),
-    generateToken: (id: number | string) => tokenMutation.mutateAsync(id),
-    getInstallScript: (id: number | string, params?: GetNodeInstallScriptParams) =>
+    generateToken: (id: string) => tokenMutation.mutateAsync(id),
+    getInstallScript: (id: string, params?: GetNodeInstallScriptParams) =>
       installScriptMutation.mutateAsync({ id, params }),
 
     // Mutation 状态
@@ -176,12 +176,11 @@ export const useNodes = (options: UseNodesOptions = {}) => {
 };
 
 // 获取单个节点详情
-export const useNode = (id: number | string | null) => {
-  const numericId = id !== null ? (typeof id === 'string' ? parseInt(id, 10) : id) : null;
+export const useNode = (id: string | null) => {
   const { data, isLoading, error } = useQuery({
-    queryKey: queryKeys.nodes.detail(numericId!),
-    queryFn: () => getNode(numericId!),
-    enabled: !!numericId,
+    queryKey: queryKeys.nodes.detail(id!),
+    queryFn: () => getNode(id!),
+    enabled: !!id,
   });
 
   return {
@@ -216,13 +215,13 @@ export const useNodesPage = () => {
     setPage(1);
   };
 
-  const handleGenerateToken = async (id: number | string) => {
+  const handleGenerateToken = async (id: string) => {
     const token = await nodesQuery.generateToken(id);
     setGeneratedToken(token);
     return token;
   };
 
-  const handleGetInstallScript = async (id: number | string, params?: GetNodeInstallScriptParams) => {
+  const handleGetInstallScript = async (id: string, params?: GetNodeInstallScriptParams) => {
     const data = await nodesQuery.getInstallScript(id, params);
     setInstallScriptData(data);
     return data;

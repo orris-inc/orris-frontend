@@ -47,17 +47,17 @@ export const ManageGroupNodesDialog = ({
 
   // 将节点转换为 Combobox 选项格式
   const comboboxOptions: ComboboxOption[] = availableNodes.map((node) => ({
-    value: String(node.id),
+    value: node.id,
     label: `${node.name} (${node.serverAddress}:${node.agentPort})`,
   }));
 
-  const handleRemoveNode = async (nodeId: number | string) => {
+  const handleRemoveNode = async (nodeId: string) => {
     if (!group) return;
 
     if (window.confirm('确认要从该节点组中移除此节点吗？')) {
       setProcessing(true);
       try {
-        await removeNodesFromGroup(group.id, [Number(nodeId)]);
+        await removeNodesFromGroup(group.id, [nodeId]);
       } finally {
         setProcessing(false);
       }
@@ -69,8 +69,7 @@ export const ManageGroupNodesDialog = ({
 
     setProcessing(true);
     try {
-      const nodeIds = selectedNodeIds.map((id) => Number(id));
-      await addNodesToGroup(group.id, nodeIds);
+      await addNodesToGroup(group.id, selectedNodeIds);
       setSelectedNodeIds([]);
     } finally {
       setProcessing(false);

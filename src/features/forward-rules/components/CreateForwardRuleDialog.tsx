@@ -62,7 +62,7 @@ export const CreateForwardRuleDialog: React.FC<CreateForwardRuleDialogProps> = (
     listenPort: 0,
     targetAddress: '',
     targetPort: 0,
-    targetNodeId: 0,
+    targetNodeId: '',
     protocol: 'tcp' as ForwardProtocol,
     ipVersion: 'auto' as IPVersion,
     remark: '',
@@ -83,7 +83,7 @@ export const CreateForwardRuleDialog: React.FC<CreateForwardRuleDialogProps> = (
         listenPort: 0,
         targetAddress: '',
         targetPort: 0,
-        targetNodeId: 0,
+        targetNodeId: '',
         protocol: 'tcp',
         ipVersion: 'auto',
         remark: '',
@@ -223,7 +223,7 @@ export const CreateForwardRuleDialog: React.FC<CreateForwardRuleDialogProps> = (
       if (targetType === 'manual') {
         return formData.targetAddress.trim() !== '' && formData.targetPort > 0;
       } else {
-        return formData.targetNodeId > 0;
+        return !!formData.targetNodeId;
       }
     } else if (formData.ruleType === 'entry') {
       return formData.listenPort > 0 && formData.exitAgentId !== '';
@@ -232,7 +232,7 @@ export const CreateForwardRuleDialog: React.FC<CreateForwardRuleDialogProps> = (
       if (targetType === 'manual') {
         return formData.targetAddress.trim() !== '' && formData.targetPort > 0;
       } else {
-        return formData.targetNodeId > 0;
+        return !!formData.targetNodeId;
       }
     }
     return false;
@@ -443,7 +443,7 @@ export const CreateForwardRuleDialog: React.FC<CreateForwardRuleDialogProps> = (
                         setTargetType(value as TargetType);
                         // 切换时清除相关字段
                         if (value === 'manual') {
-                          handleChange('targetNodeId', 0);
+                          handleChange('targetNodeId', '');
                         } else {
                           handleChange('targetAddress', '');
                           handleChange('targetPort', 0);
@@ -509,15 +509,15 @@ export const CreateForwardRuleDialog: React.FC<CreateForwardRuleDialogProps> = (
                         目标节点 <span className="text-destructive">*</span>
                       </Label>
                       <Select
-                        value={formData.targetNodeId ? String(formData.targetNodeId) : ''}
-                        onValueChange={(value) => handleChange('targetNodeId', Number(value))}
+                        value={formData.targetNodeId}
+                        onValueChange={(value) => handleChange('targetNodeId', value)}
                       >
                         <SelectTrigger id="targetNodeId" className={errors.targetNodeId ? 'border-destructive' : ''}>
                           <SelectValue placeholder="选择目标节点" />
                         </SelectTrigger>
                         <SelectContent>
                           {availableNodes.map((node) => (
-                            <SelectItem key={node.id} value={String(node.id)}>
+                            <SelectItem key={node.id} value={node.id}>
                               {node.name} ({node.serverAddress})
                             </SelectItem>
                           ))}

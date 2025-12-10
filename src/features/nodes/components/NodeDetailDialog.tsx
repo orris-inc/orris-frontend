@@ -193,11 +193,6 @@ export const NodeDetailDialog: React.FC<NodeDetailDialogProps> = ({
             <Separator className="mb-4" />
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-1">
-                <p className="text-sm text-muted-foreground">节点 ID</p>
-                <p className="text-sm font-mono">{node.id}</p>
-              </div>
-
-              <div className="space-y-1">
                 <p className="text-sm text-muted-foreground">版本</p>
                 <p className="text-sm">{node.version}</p>
               </div>

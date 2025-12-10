@@ -102,17 +102,6 @@ export const NodeListTable: React.FC<NodeListTableProps> = ({
 }) => {
   const columns = useMemo<ColumnDef<Node>[]>(() => [
     {
-      accessorKey: 'id',
-      header: 'ID',
-      size: 60,
-      meta: { priority: 4 } as ResponsiveColumnMeta, // 可选列 >= 1280px
-      cell: ({ row }) => (
-        <span className="font-mono text-sm text-slate-500 dark:text-slate-400">
-          {row.original.id}
-        </span>
-      ),
-    },
-    {
       accessorKey: 'name',
       header: '节点',
       meta: { priority: 1 } as ResponsiveColumnMeta, // 核心列，始终显示

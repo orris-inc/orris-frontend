@@ -268,7 +268,7 @@ export const EditForwardRuleDialog: React.FC<EditForwardRuleDialogProps> = ({
                         setTargetType(value as TargetType);
                         // 切换时清除相关字段
                         if (value === 'manual') {
-                          handleChange('targetNodeId', 0);
+                          handleChange('targetNodeId', '');
                         } else {
                           handleChange('targetAddress', '');
                           handleChange('targetPort', 0);
@@ -330,15 +330,15 @@ export const EditForwardRuleDialog: React.FC<EditForwardRuleDialogProps> = ({
                     <div className="flex flex-col gap-2 md:col-span-2">
                       <Label htmlFor="targetNodeId">目标节点</Label>
                       <Select
-                        value={formData.targetNodeId ? String(formData.targetNodeId) : ''}
-                        onValueChange={(value) => handleChange('targetNodeId', Number(value))}
+                        value={formData.targetNodeId || ''}
+                        onValueChange={(value) => handleChange('targetNodeId', value)}
                       >
                         <SelectTrigger id="targetNodeId" className={errors.targetNodeId ? 'border-destructive' : ''}>
                           <SelectValue placeholder="选择目标节点" />
                         </SelectTrigger>
                         <SelectContent>
                           {availableNodes.map((node) => (
-                            <SelectItem key={node.id} value={String(node.id)}>
+                            <SelectItem key={node.id} value={node.id}>
                               {node.name} ({node.serverAddress})
                             </SelectItem>
                           ))}

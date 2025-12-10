@@ -93,7 +93,7 @@ export const ForwardRuleDetailDialog: React.FC<ForwardRuleDetailDialogProps> = (
     return agent?.name || `ID: ${id}`;
   };
 
-  const getNodeName = (id?: number) => {
+  const getNodeName = (id?: string) => {
     if (!id) return '-';
     const node = nodes.find((n) => n.id === id);
     return node?.name || `ID: ${id}`;

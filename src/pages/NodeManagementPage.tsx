@@ -101,7 +101,7 @@ export const NodeManagementPage = () => {
     }
   };
 
-  const handleUpdateSubmit = async (id: number | string, data: UpdateNodeRequest) => {
+  const handleUpdateSubmit = async (id: string, data: UpdateNodeRequest) => {
     try {
       await updateNode(id, data);
       setEditDialogOpen(false);

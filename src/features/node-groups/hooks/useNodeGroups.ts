@@ -99,7 +99,7 @@ export const useNodeGroups = (options: UseNodeGroupsOptions = {}) => {
 
   // 批量添加节点到组
   const addNodesMutation = useMutation({
-    mutationFn: ({ groupId, nodeIds }: { groupId: number | string; nodeIds: number[] }) =>
+    mutationFn: ({ groupId, nodeIds }: { groupId: number | string; nodeIds: string[] }) =>
       batchAddNodesToGroup(typeof groupId === 'string' ? parseInt(groupId, 10) : groupId, { nodeIds }),
     onSuccess: (_, { groupId }) => {
       showSuccess('节点添加成功');
@@ -113,7 +113,7 @@ export const useNodeGroups = (options: UseNodeGroupsOptions = {}) => {
 
   // 批量从组中移除节点
   const removeNodesMutation = useMutation({
-    mutationFn: ({ groupId, nodeIds }: { groupId: number | string; nodeIds: number[] }) =>
+    mutationFn: ({ groupId, nodeIds }: { groupId: number | string; nodeIds: string[] }) =>
       batchRemoveNodesFromGroup(typeof groupId === 'string' ? parseInt(groupId, 10) : groupId, { nodeIds }),
     onSuccess: (_, { groupId }) => {
       showSuccess('节点移除成功');
@@ -146,9 +146,9 @@ export const useNodeGroups = (options: UseNodeGroupsOptions = {}) => {
     updateNodeGroup: (id: number | string, data: UpdateNodeGroupRequest) =>
       updateMutation.mutateAsync({ id, data }),
     deleteNodeGroup: (id: number | string) => deleteMutation.mutateAsync(id),
-    addNodesToGroup: (groupId: number | string, nodeIds: number[]) =>
+    addNodesToGroup: (groupId: number | string, nodeIds: string[]) =>
       addNodesMutation.mutateAsync({ groupId, nodeIds }),
-    removeNodesFromGroup: (groupId: number | string, nodeIds: number[]) =>
+    removeNodesFromGroup: (groupId: number | string, nodeIds: string[]) =>
       removeNodesMutation.mutateAsync({ groupId, nodeIds }),
 
     // Mutation 状态
