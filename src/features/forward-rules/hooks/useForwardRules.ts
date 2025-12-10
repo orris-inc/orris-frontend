@@ -231,10 +231,10 @@ export const useForwardRulesPage = () => {
   const rulesQuery = useForwardRules({ page, pageSize, filters });
 
   // 获取所有转发代理以构建 agentId -> agent 映射
-  const { data: agentsData } = useQuery({
+  // 与规则列表同时加载，避免先显示 ID 再显示名称的问题
+  const { data: agentsData, isLoading: isAgentsLoading } = useQuery({
     queryKey: forwardAgentsQueryKeys.list({ pageSize: 100 }),
     queryFn: () => listForwardAgents({ pageSize: 100 }),
-    enabled: rulesQuery.forwardRules.length > 0,
   });
 
   // 构建 agentId -> agent 映射
@@ -264,6 +264,8 @@ export const useForwardRulesPage = () => {
 
   return {
     ...rulesQuery,
+    // 合并加载状态，确保代理数据也加载完成后才显示表格
+    isLoading: rulesQuery.isLoading || isAgentsLoading,
     page,
     pageSize,
     filters,
