@@ -16,8 +16,10 @@
 
 /**
  * Forward rule type
+ * Note: 'exit' type has been removed. Entry rules now contain target information.
+ * 'chain' type is for multi-hop forwarding through multiple agents.
  */
-export type ForwardRuleType = 'direct' | 'entry' | 'exit';
+export type ForwardRuleType = 'direct' | 'entry' | 'chain';
 
 /**
  * Forward protocol type
@@ -37,17 +39,18 @@ export type IPVersion = 'auto' | 'ipv4' | 'ipv6';
 /**
  * Forward rule entity
  * ID format: "fr_xK9mP2vL3nQ" (Stripe-style prefixed ID)
+ * Note: ws_listen_port field has been removed (exit type deprecated).
  */
 export interface ForwardRule {
   id: string; // Stripe-style prefixed ID (e.g., "fr_xK9mP2vL3nQ")
   agentId: string; // Stripe-style prefixed ID (e.g., "fa_xK9mP2vL3nQ")
   ruleType: ForwardRuleType;
   exitAgentId?: string; // for entry type (Stripe-style prefixed ID)
-  wsListenPort?: number; // for exit type
+  chainAgentIds?: string[]; // for chain type (ordered list of Stripe-style agent IDs)
   name: string;
   listenPort: number;
-  targetAddress?: string; // for direct and exit types
-  targetPort?: number; // for direct and exit types
+  targetAddress?: string; // for direct, entry, and chain exit types
+  targetPort?: number; // for direct, entry, and chain exit types
   targetNodeId?: string; // Stripe-style Node ID (e.g., "node_xK9mP2vL3nQ") for dynamic address resolution
   ipVersion: IPVersion; // IP version preference for target address resolution
   protocol: ForwardProtocol;
@@ -62,6 +65,12 @@ export interface ForwardRule {
   targetNodeServerAddress?: string; // node's configured server address
   targetNodePublicIpv4?: string; // node's reported public IPv4
   targetNodePublicIpv6?: string; // node's reported public IPv6
+  // Chain-specific fields (populated for chain rules based on requesting agent's role)
+  chainPosition?: number; // agent's position in chain (0-indexed)
+  isLastInChain?: boolean; // true if agent is last in chain
+  nextHopAgentId?: string; // next agent in chain (Stripe-style ID)
+  nextHopAddress?: string; // next agent's public address
+  nextHopWsPort?: number; // next agent's WS port (from status cache)
 }
 
 /**
@@ -69,17 +78,26 @@ export interface ForwardRule {
  * Note: All IDs should use Stripe-style prefixed format:
  * - agentId: "fa_xK9mP2vL3nQ"
  * - exitAgentId: "fa_yL8nQ3wM4oR"
+ * - chainAgentIds: ["fa_aaa", "fa_bbb", "fa_ccc"]
  * - targetNodeId: "node_xK9mP2vL3nQ"
+ *
+ * Required fields by rule type:
+ * - direct: agentId, listenPort, (targetAddress+targetPort OR targetNodeId)
+ * - entry: agentId, exitAgentId, listenPort, (targetAddress+targetPort OR targetNodeId)
+ * - chain: agentId, chainAgentIds (at least 1), listenPort, (targetAddress+targetPort OR targetNodeId)
+ *
+ * Note: Exit rule type has been removed. Entry rules now include target information
+ * that is passed to the exit agent.
  */
 export interface CreateForwardRuleRequest {
   agentId: string; // Stripe-style prefixed ID (e.g., "fa_xK9mP2vL3nQ")
   ruleType: ForwardRuleType;
   exitAgentId?: string; // required for entry type (Stripe-style prefixed ID)
-  wsListenPort?: number; // required for exit type
+  chainAgentIds?: string[]; // required for chain type (ordered list of intermediate agents)
   name: string;
-  listenPort?: number; // required for direct and entry types
-  targetAddress?: string; // for direct and exit types (mutually exclusive with targetNodeId)
-  targetPort?: number; // for direct and exit types (mutually exclusive with targetNodeId)
+  listenPort?: number; // required for direct, entry, and chain types
+  targetAddress?: string; // for direct, entry, and chain types (mutually exclusive with targetNodeId)
+  targetPort?: number; // for direct, entry, and chain types (mutually exclusive with targetNodeId)
   targetNodeId?: string; // Stripe-style Node ID (e.g., "node_xK9mP2vL3nQ") for dynamic address resolution
   ipVersion?: IPVersion; // IP version preference (default: auto)
   protocol: ForwardProtocol;
@@ -159,7 +177,10 @@ export interface AgentSystemStatus {
   // Forward status
   activeRules: number;
   activeConnections: number;
-  tunnelStatus?: Record<number, string>;
+  tunnelStatus?: Record<string, string>; // Key is Stripe-style rule ID (e.g., "fr_xK9mP2vL3nQ")
+
+  // WebSocket tunnel configuration (for exit agent)
+  wsListenPort?: number; // WebSocket listen port for tunnel connections
 }
 
 /**
@@ -246,7 +267,10 @@ export interface AgentRuntimeStatus {
   // Forward status
   activeRules: number;
   activeConnections: number;
-  tunnelStatus?: Record<number, string>;
+  tunnelStatus?: Record<string, string>; // Key is Stripe-style rule ID (e.g., "fr_xK9mP2vL3nQ")
+
+  // WebSocket tunnel configuration (for exit agent)
+  wsListenPort?: number; // WebSocket listen port for tunnel connections
 }
 
 // ========== Exit Endpoint Types ==========
