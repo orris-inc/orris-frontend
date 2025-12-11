@@ -201,6 +201,7 @@ export const ForwardRulesPage = () => {
         }}
         onSubmit={handleUpdateSubmit}
         nodes={nodes}
+        agents={forwardAgents}
       />
 
       {/* 转发规则详情对话框 */}

@@ -24,7 +24,9 @@ import {
   SelectValue,
 } from '@/components/common/Select';
 import { RadioGroup, RadioGroupItem } from '@/components/common/RadioGroup';
-import type { ForwardRule, UpdateForwardRuleRequest, IPVersion } from '@/api/forward';
+import { Checkbox } from '@/components/common/Checkbox';
+import { ScrollArea } from '@/components/common/ScrollArea';
+import type { ForwardRule, UpdateForwardRuleRequest, IPVersion, ForwardAgent } from '@/api/forward';
 import type { Node } from '@/api/node';
 
 type ForwardProtocol = 'tcp' | 'udp' | 'both';
@@ -36,6 +38,7 @@ interface EditForwardRuleDialogProps {
   onClose: () => void;
   onSubmit: (id: number | string, data: UpdateForwardRuleRequest) => void;
   nodes?: Node[];
+  agents?: ForwardAgent[];
 }
 
 export const EditForwardRuleDialog: React.FC<EditForwardRuleDialogProps> = ({
@@ -44,8 +47,9 @@ export const EditForwardRuleDialog: React.FC<EditForwardRuleDialogProps> = ({
   onClose,
   onSubmit,
   nodes = [],
+  agents = [],
 }) => {
-  const [formData, setFormData] = useState<UpdateForwardRuleRequest>({});
+  const [formData, setFormData] = useState<UpdateForwardRuleRequest & { chainAgentIds?: string[] }>({});
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [targetType, setTargetType] = useState<TargetType>('manual');
 
@@ -60,6 +64,9 @@ export const EditForwardRuleDialog: React.FC<EditForwardRuleDialogProps> = ({
         targetNodeId: rule.targetNodeId,
         ipVersion: rule.ipVersion,
         remark: rule.remark,
+        agentId: rule.agentId,
+        exitAgentId: rule.exitAgentId,
+        chainAgentIds: rule.chainAgentIds || [],
       });
       // 根据规则数据确定目标类型
       setTargetType(rule.targetNodeId ? 'node' : 'manual');
@@ -70,7 +77,25 @@ export const EditForwardRuleDialog: React.FC<EditForwardRuleDialogProps> = ({
   // 获取可用的节点列表（状态为 active）
   const availableNodes = nodes.filter((n) => n.status === 'active');
 
-  const handleChange = (field: keyof UpdateForwardRuleRequest, value: string | number | ForwardProtocol) => {
+  // 获取可用的代理列表（状态为 enabled）
+  const availableAgents = agents.filter((a) => a.status === 'enabled');
+
+  // 获取可选的出口节点（排除当前入口节点）
+  const availableExitAgents = availableAgents.filter((a) => a.id !== formData.agentId);
+
+  // 获取可选的链节点（排除当前入口节点）
+  const availableChainAgents = availableAgents.filter((a) => a.id !== formData.agentId);
+
+  // 处理链节点选择
+  const handleChainAgentToggle = (agentId: string) => {
+    const currentIds = formData.chainAgentIds || [];
+    const newIds = currentIds.includes(agentId)
+      ? currentIds.filter((id) => id !== agentId)
+      : [...currentIds, agentId];
+    setFormData((prev) => ({ ...prev, chainAgentIds: newIds }));
+  };
+
+  const handleChange = (field: keyof (UpdateForwardRuleRequest & { chainAgentIds?: string[] }), value: string | number | ForwardProtocol | string[]) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
     if (errors[field]) {
       setErrors((prev) => {
@@ -122,6 +147,25 @@ export const EditForwardRuleDialog: React.FC<EditForwardRuleDialogProps> = ({
       if (formData.listenPort !== rule.listenPort) updates.listenPort = formData.listenPort;
       if (formData.ipVersion !== rule.ipVersion) updates.ipVersion = formData.ipVersion;
       if (formData.remark !== rule.remark) updates.remark = formData.remark;
+
+      // 处理代理配置
+      if (formData.agentId !== rule.agentId) updates.agentId = formData.agentId;
+
+      // entry 类型：出口代理
+      if (rule.ruleType === 'entry' && formData.exitAgentId !== rule.exitAgentId) {
+        updates.exitAgentId = formData.exitAgentId;
+      }
+
+      // chain 类型：链式代理
+      if (rule.ruleType === 'chain') {
+        const currentIds = formData.chainAgentIds || [];
+        const originalIds = rule.chainAgentIds || [];
+        const hasChainChange = currentIds.length !== originalIds.length ||
+          currentIds.some((id, index) => id !== originalIds[index]);
+        if (hasChainChange) {
+          updates.chainAgentIds = currentIds;
+        }
+      }
 
       // 处理目标配置（手动输入或选择节点）- direct、entry 和 chain 类型
       if (rule.ruleType === 'direct' || rule.ruleType === 'entry' || rule.ruleType === 'chain') {
@@ -201,6 +245,88 @@ export const EditForwardRuleDialog: React.FC<EditForwardRuleDialogProps> = ({
                   <p className="text-xs text-destructive">{errors.name}</p>
                 )}
               </div>
+
+              {/* 入口代理 */}
+              <div className="flex flex-col gap-2">
+                <Label htmlFor="agentId">入口代理</Label>
+                <Select
+                  value={formData.agentId || ''}
+                  onValueChange={(value) => handleChange('agentId', value)}
+                >
+                  <SelectTrigger id="agentId">
+                    <SelectValue placeholder="选择入口代理" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {availableAgents.map((agent) => (
+                      <SelectItem key={agent.id} value={agent.id}>
+                        {agent.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {/* entry 类型：出口代理 */}
+              {rule.ruleType === 'entry' && (
+                <div className="flex flex-col gap-2">
+                  <Label htmlFor="exitAgentId">出口代理</Label>
+                  <Select
+                    value={formData.exitAgentId || ''}
+                    onValueChange={(value) => handleChange('exitAgentId', value)}
+                  >
+                    <SelectTrigger id="exitAgentId">
+                      <SelectValue placeholder="选择出口代理" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {availableExitAgents.map((agent) => (
+                        <SelectItem key={agent.id} value={agent.id}>
+                          {agent.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              )}
+
+              {/* chain 类型：链式代理 */}
+              {rule.ruleType === 'chain' && (
+                <div className="flex flex-col gap-2 md:col-span-2">
+                  <Label>中间节点</Label>
+                  <div className="border rounded-md border-input">
+                    <ScrollArea className="h-[120px] p-3">
+                      {availableChainAgents.length === 0 ? (
+                        <p className="text-sm text-muted-foreground">暂无可用节点</p>
+                      ) : (
+                        <div className="space-y-2">
+                          {availableChainAgents.map((agent) => (
+                            <div key={agent.id} className="flex items-center space-x-2">
+                              <Checkbox
+                                id={`edit-chain-agent-${agent.id}`}
+                                checked={(formData.chainAgentIds || []).includes(agent.id)}
+                                onCheckedChange={() => handleChainAgentToggle(agent.id)}
+                              />
+                              <Label
+                                htmlFor={`edit-chain-agent-${agent.id}`}
+                                className="text-sm font-normal cursor-pointer flex-1"
+                              >
+                                {agent.name}
+                                {agent.publicAddress && (
+                                  <span className="text-xs text-muted-foreground ml-2">
+                                    ({agent.publicAddress})
+                                  </span>
+                                )}
+                              </Label>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </ScrollArea>
+                  </div>
+                  <p className="text-xs text-muted-foreground">
+                    已选择 {(formData.chainAgentIds || []).length} 个节点，流量将按选择顺序依次转发
+                  </p>
+                </div>
+              )}
 
               {/* 协议类型 */}
               <div className="flex flex-col gap-2">
