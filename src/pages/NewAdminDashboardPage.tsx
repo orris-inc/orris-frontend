@@ -16,7 +16,6 @@ import {
   ArrowUpRight,
   Server,
   Activity,
-  Shield,
   Layers,
 } from 'lucide-react';
 
@@ -315,12 +314,6 @@ export const NewAdminDashboardPage = () => {
       status: stats.activeNodes > 0 ? ('online' as const) : ('offline' as const),
       value: `${stats.activeNodes} 个`,
       icon: <Activity className="size-4" strokeWidth={1.5} />,
-    },
-    {
-      label: '系统状态',
-      status: 'online' as const,
-      value: '正常',
-      icon: <Shield className="size-4" strokeWidth={1.5} />,
     },
   ];
 

@@ -24,8 +24,7 @@ import {
   SelectValue,
 } from '@/components/common/Select';
 import { RadioGroup, RadioGroupItem } from '@/components/common/RadioGroup';
-import { Checkbox } from '@/components/common/Checkbox';
-import { ScrollArea } from '@/components/common/ScrollArea';
+import { SortableChainAgentList } from './SortableChainAgentList';
 import type { ForwardRule, UpdateForwardRuleRequest, IPVersion, ForwardAgent } from '@/api/forward';
 import type { Node } from '@/api/node';
 
@@ -87,27 +86,6 @@ export const EditForwardRuleDialog: React.FC<EditForwardRuleDialogProps> = ({
 
   // 获取可选的链节点（排除当前入口节点）
   const availableChainAgents = availableAgents.filter((a) => a.id !== formData.agentId);
-
-  // 处理链节点选择
-  const handleChainAgentToggle = (agentId: string) => {
-    const currentIds = formData.chainAgentIds || [];
-    const isRemoving = currentIds.includes(agentId);
-    const newIds = isRemoving
-      ? currentIds.filter((id) => id !== agentId)
-      : [...currentIds, agentId];
-
-    // 同步更新 chainPortConfig
-    const newPortConfig = { ...(formData.chainPortConfig || {}) };
-    if (isRemoving) {
-      delete newPortConfig[agentId];
-    }
-
-    setFormData((prev) => ({
-      ...prev,
-      chainAgentIds: newIds,
-      chainPortConfig: newPortConfig,
-    }));
-  };
 
   // 处理链节点端口配置变更
   const handleChainPortChange = (agentId: string, port: number) => {
@@ -341,39 +319,12 @@ export const EditForwardRuleDialog: React.FC<EditForwardRuleDialogProps> = ({
               {rule.ruleType === 'chain' && (
                 <div className="flex flex-col gap-2 md:col-span-2">
                   <Label>中间节点</Label>
-                  <div className="border rounded-md border-input">
-                    <ScrollArea className="h-[120px] p-3">
-                      {availableChainAgents.length === 0 ? (
-                        <p className="text-sm text-muted-foreground">暂无可用节点</p>
-                      ) : (
-                        <div className="space-y-2">
-                          {availableChainAgents.map((agent) => (
-                            <div key={agent.id} className="flex items-center space-x-2">
-                              <Checkbox
-                                id={`edit-chain-agent-${agent.id}`}
-                                checked={(formData.chainAgentIds || []).includes(agent.id)}
-                                onCheckedChange={() => handleChainAgentToggle(agent.id)}
-                              />
-                              <Label
-                                htmlFor={`edit-chain-agent-${agent.id}`}
-                                className="text-sm font-normal cursor-pointer flex-1"
-                              >
-                                {agent.name}
-                                {agent.publicAddress && (
-                                  <span className="text-xs text-muted-foreground ml-2">
-                                    ({agent.publicAddress})
-                                  </span>
-                                )}
-                              </Label>
-                            </div>
-                          ))}
-                        </div>
-                      )}
-                    </ScrollArea>
-                  </div>
-                  <p className="text-xs text-muted-foreground">
-                    已选择 {(formData.chainAgentIds || []).length} 个节点，流量将按选择顺序依次转发
-                  </p>
+                  <SortableChainAgentList
+                    agents={availableChainAgents}
+                    selectedIds={formData.chainAgentIds || []}
+                    onSelectionChange={(ids) => handleChange('chainAgentIds', ids)}
+                    idPrefix="edit-chain-agent"
+                  />
                 </div>
               )}
 
@@ -381,53 +332,29 @@ export const EditForwardRuleDialog: React.FC<EditForwardRuleDialogProps> = ({
               {rule.ruleType === 'direct_chain' && (
                 <div className="flex flex-col gap-2 md:col-span-2">
                   <Label>中间节点及端口</Label>
-                  <div className={`border rounded-md ${errors.chainPortConfig ? 'border-destructive' : 'border-input'}`}>
-                    <ScrollArea className="h-[180px] p-3">
-                      {availableChainAgents.length === 0 ? (
-                        <p className="text-sm text-muted-foreground">暂无可用节点</p>
-                      ) : (
-                        <div className="space-y-3">
-                          {availableChainAgents.map((agent) => {
-                            const isSelected = (formData.chainAgentIds || []).includes(agent.id);
-                            return (
-                              <div key={agent.id} className="flex items-center gap-3">
-                                <Checkbox
-                                  id={`edit-direct-chain-agent-${agent.id}`}
-                                  checked={isSelected}
-                                  onCheckedChange={() => handleChainAgentToggle(agent.id)}
-                                />
-                                <Label
-                                  htmlFor={`edit-direct-chain-agent-${agent.id}`}
-                                  className="text-sm font-normal cursor-pointer flex-1 min-w-0"
-                                >
-                                  <span className="truncate">{agent.name}</span>
-                                  {agent.publicAddress && (
-                                    <span className="text-xs text-muted-foreground ml-1">
-                                      ({agent.publicAddress})
-                                    </span>
-                                  )}
-                                </Label>
-                                {isSelected && (
-                                  <Input
-                                    type="number"
-                                    min={1}
-                                    max={65535}
-                                    placeholder="监听端口"
-                                    className="w-28"
-                                    value={formData.chainPortConfig?.[agent.id] || ''}
-                                    onChange={(e) => handleChainPortChange(agent.id, parseInt(e.target.value, 10) || 0)}
-                                  />
-                                )}
-                              </div>
-                            );
-                          })}
-                        </div>
-                      )}
-                    </ScrollArea>
-                  </div>
-                  <p className="text-xs text-muted-foreground">
-                    已选择 {(formData.chainAgentIds || []).length} 个节点，每个节点需配置监听端口
-                  </p>
+                  <SortableChainAgentList
+                    agents={availableChainAgents}
+                    selectedIds={formData.chainAgentIds || []}
+                    onSelectionChange={(ids) => {
+                      // 同步更新 chainPortConfig，移除不再选中的节点
+                      const newPortConfig = { ...(formData.chainPortConfig || {}) };
+                      Object.keys(newPortConfig).forEach((id) => {
+                        if (!ids.includes(id)) {
+                          delete newPortConfig[id];
+                        }
+                      });
+                      setFormData((prev) => ({
+                        ...prev,
+                        chainAgentIds: ids,
+                        chainPortConfig: newPortConfig,
+                      }));
+                    }}
+                    showPortConfig
+                    portConfig={formData.chainPortConfig || {}}
+                    onPortConfigChange={handleChainPortChange}
+                    hasError={!!errors.chainPortConfig}
+                    idPrefix="edit-direct-chain-agent"
+                  />
                   {errors.chainPortConfig && <p className="text-xs text-destructive">{errors.chainPortConfig}</p>}
                 </div>
               )}

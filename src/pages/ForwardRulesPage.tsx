@@ -347,81 +347,103 @@ export const ForwardRulesPage = () => {
                     <Separator />
                     <div className="space-y-3">
                       <p className="text-xs font-medium text-muted-foreground">延迟详情</p>
-                      {/* entry 类型：隧道延迟 */}
-                      {probeResult.ruleType === 'entry' && probeResult.tunnelLatencyMs !== undefined && (
-                        <div className="flex justify-between items-center text-sm">
-                          <span className="text-muted-foreground flex items-center gap-1.5">
-                            <ArrowRight className="size-3.5" />
-                            隧道延迟 (入口→出口)
-                          </span>
-                          <Badge variant="outline" className="font-mono">{probeResult.tunnelLatencyMs}ms</Badge>
-                        </div>
-                      )}
-                      {/* chain/direct_chain 类型：链路每跳延迟 */}
-                      {(probeResult.ruleType === 'chain' || probeResult.ruleType === 'direct_chain') &&
-                        probeResult.chainLatencies && probeResult.chainLatencies.length > 0 && (
-                        <div className="space-y-2">
-                          <p className="text-xs text-muted-foreground">链路延迟</p>
-                          {(() => {
-                            // 获取 agent 名称
-                            const getAgentName = (id: string) => {
-                              const agent = forwardAgents.find(a => a.id === id);
-                              return agent?.name ?? id.replace('fa_', '');
-                            };
-                            // 获取目标显示名称（只显示名称，IP 已在上方目标信息中显示）
-                            const getTargetDisplay = () => {
-                              if (!probingRule) return '目标';
-                              if (probingRule.targetNodeId) {
-                                const node = nodes.find(n => n.id === probingRule.targetNodeId);
-                                return node?.name ?? '目标';
-                              }
-                              if (probingRule.targetAddress) {
-                                return `${probingRule.targetAddress}:${probingRule.targetPort}`;
-                              }
-                              return '目标';
-                            };
-                            const targetDisplay = getTargetDisplay();
-                            return probeResult.chainLatencies!.map((hop: ChainHopLatency, index: number) => {
-                              const fromName = getAgentName(hop.from);
-                              const toName = hop.to === 'target' ? targetDisplay : getAgentName(hop.to);
-                              return (
-                                <div key={index} className={`flex items-center text-sm py-1.5 px-2 rounded ${
-                                  !hop.success ? 'bg-red-50 dark:bg-red-900/20' : 'bg-muted/30'
-                                }`}>
-                                  <span className="text-muted-foreground flex-1 min-w-0 flex items-center gap-1.5">
-                                    <ArrowRight className="size-3.5 flex-shrink-0" />
-                                    <span className="truncate">{fromName} → {toName}</span>
-                                    {!hop.online && <Badge variant="outline" className="text-yellow-600 text-xs flex-shrink-0">离线</Badge>}
-                                  </span>
-                                  <Badge variant={hop.success ? 'outline' : 'destructive'} className="font-mono flex-shrink-0 ml-2">
-                                    {hop.success ? `${hop.latencyMs}ms` : hop.error ?? '失败'}
-                                  </Badge>
-                                </div>
-                              );
-                            });
-                          })()}
-                        </div>
-                      )}
-                      {/* direct 类型：直接显示目标延迟 */}
-                      {probeResult.ruleType === 'direct' && probeResult.targetLatencyMs !== undefined && (
-                        <div className="flex justify-between items-center text-sm">
-                          <span className="text-muted-foreground flex items-center gap-1.5">
-                            <ArrowRight className="size-3.5" />
-                            目标延迟
-                          </span>
-                          <Badge variant="outline" className="font-mono">{probeResult.targetLatencyMs}ms</Badge>
-                        </div>
-                      )}
-                      {/* entry/chain/direct_chain 类型的目标延迟 */}
-                      {probeResult.ruleType !== 'direct' && probeResult.targetLatencyMs !== undefined && (
-                        <div className="flex justify-between items-center text-sm">
-                          <span className="text-muted-foreground flex items-center gap-1.5">
-                            <ArrowRight className="size-3.5" />
-                            {probeResult.ruleType === 'entry' ? '目标延迟 (出口→目标)' : '目标延迟'}
-                          </span>
-                          <Badge variant="outline" className="font-mono">{probeResult.targetLatencyMs}ms</Badge>
-                        </div>
-                      )}
+                      {(() => {
+                        // 获取 agent 名称
+                        const getAgentName = (id: string) => {
+                          const agent = forwardAgents.find(a => a.id === id);
+                          return agent?.name ?? id.replace('fa_', '');
+                        };
+                        // 获取目标显示名称
+                        const getTargetDisplay = () => {
+                          if (!probingRule) return '目标';
+                          if (probingRule.targetNodeId) {
+                            const node = nodes.find(n => n.id === probingRule.targetNodeId);
+                            return node?.name ?? '目标';
+                          }
+                          if (probingRule.targetAddress) {
+                            return `${probingRule.targetAddress}:${probingRule.targetPort}`;
+                          }
+                          return '目标';
+                        };
+                        // 获取入口 agent 名称
+                        const getEntryAgentName = () => {
+                          if (!probingRule?.agentId) return '入口';
+                          return getAgentName(probingRule.agentId);
+                        };
+                        // 获取出口 agent 名称（用于 entry 类型）
+                        const getExitAgentName = () => {
+                          if (!probingRule?.exitAgentId) return '出口';
+                          return getAgentName(probingRule.exitAgentId);
+                        };
+                        const targetDisplay = getTargetDisplay();
+                        const entryAgentName = getEntryAgentName();
+                        const exitAgentName = getExitAgentName();
+
+                        return (
+                          <div className="space-y-2">
+                            {/* direct 类型：入口 → 目标 */}
+                            {probeResult.ruleType === 'direct' && probeResult.targetLatencyMs !== undefined && (
+                              <div className="flex items-center text-sm py-1.5 px-2 rounded bg-muted/30">
+                                <span className="text-muted-foreground flex-1 min-w-0 flex items-center gap-1.5">
+                                  <ArrowRight className="size-3.5 flex-shrink-0" />
+                                  <span className="truncate">{entryAgentName} → {targetDisplay}</span>
+                                </span>
+                                <Badge variant="outline" className="font-mono flex-shrink-0 ml-2">
+                                  {probeResult.targetLatencyMs}ms
+                                </Badge>
+                              </div>
+                            )}
+                            {/* entry 类型：入口 → 出口 → 目标 */}
+                            {probeResult.ruleType === 'entry' && (
+                              <>
+                                {probeResult.tunnelLatencyMs !== undefined && (
+                                  <div className="flex items-center text-sm py-1.5 px-2 rounded bg-muted/30">
+                                    <span className="text-muted-foreground flex-1 min-w-0 flex items-center gap-1.5">
+                                      <ArrowRight className="size-3.5 flex-shrink-0" />
+                                      <span className="truncate">{entryAgentName} → {exitAgentName}</span>
+                                    </span>
+                                    <Badge variant="outline" className="font-mono flex-shrink-0 ml-2">
+                                      {probeResult.tunnelLatencyMs}ms
+                                    </Badge>
+                                  </div>
+                                )}
+                                {probeResult.targetLatencyMs !== undefined && (
+                                  <div className="flex items-center text-sm py-1.5 px-2 rounded bg-muted/30">
+                                    <span className="text-muted-foreground flex-1 min-w-0 flex items-center gap-1.5">
+                                      <ArrowRight className="size-3.5 flex-shrink-0" />
+                                      <span className="truncate">{exitAgentName} → {targetDisplay}</span>
+                                    </span>
+                                    <Badge variant="outline" className="font-mono flex-shrink-0 ml-2">
+                                      {probeResult.targetLatencyMs}ms
+                                    </Badge>
+                                  </div>
+                                )}
+                              </>
+                            )}
+                            {/* chain/direct_chain 类型：链路每跳延迟 */}
+                            {(probeResult.ruleType === 'chain' || probeResult.ruleType === 'direct_chain') &&
+                              probeResult.chainLatencies && probeResult.chainLatencies.length > 0 &&
+                              probeResult.chainLatencies.map((hop: ChainHopLatency, index: number) => {
+                                const fromName = getAgentName(hop.from);
+                                const toName = hop.to === 'target' ? targetDisplay : getAgentName(hop.to);
+                                return (
+                                  <div key={index} className={`flex items-center text-sm py-1.5 px-2 rounded ${
+                                    !hop.success ? 'bg-red-50 dark:bg-red-900/20' : 'bg-muted/30'
+                                  }`}>
+                                    <span className="text-muted-foreground flex-1 min-w-0 flex items-center gap-1.5">
+                                      <ArrowRight className="size-3.5 flex-shrink-0" />
+                                      <span className="truncate">{fromName} → {toName}</span>
+                                      {!hop.online && <Badge variant="outline" className="text-yellow-600 text-xs flex-shrink-0">离线</Badge>}
+                                    </span>
+                                    <Badge variant={hop.success ? 'outline' : 'destructive'} className="font-mono flex-shrink-0 ml-2">
+                                      {hop.success ? `${hop.latencyMs}ms` : hop.error ?? '失败'}
+                                    </Badge>
+                                  </div>
+                                );
+                              })}
+                          </div>
+                        );
+                      })()}
                       {/* 总延迟 */}
                       {probeResult.totalLatencyMs !== undefined && (
                         <>
