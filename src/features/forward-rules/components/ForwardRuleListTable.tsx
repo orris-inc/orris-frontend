@@ -191,8 +191,8 @@ export const ForwardRuleListTable: React.FC<ForwardRuleListTableProps> = ({
           );
         }
 
-        // chain 类型：显示链节点信息 -> 目标
-        if (rule.ruleType === 'chain' && rule.chainAgentIds && rule.chainAgentIds.length > 0) {
+        // chain 和 direct_chain 类型：显示链节点信息 -> 目标
+        if ((rule.ruleType === 'chain' || rule.ruleType === 'direct_chain') && rule.chainAgentIds && rule.chainAgentIds.length > 0) {
           const chainCount = rule.chainAgentIds.length;
           const chainNames = rule.chainAgentIds
             .slice(0, 2)

@@ -40,7 +40,8 @@ const PROTOCOL_LABELS: Record<string, string> = {
 const RULE_TYPE_LABELS: Record<string, string> = {
   direct: '直连转发',
   entry: '入口节点',
-  chain: '链式转发',
+  chain: 'WS链式转发',
+  direct_chain: '直连链式转发',
 };
 
 // IP 版本标签映射
@@ -177,23 +178,35 @@ export const ForwardRuleDetailDialog: React.FC<ForwardRuleDetailDialogProps> = (
                 </div>
               )}
 
-              {/* 中间节点列表 - chain 类型 */}
-              {rule.ruleType === 'chain' && rule.chainAgentIds && rule.chainAgentIds.length > 0 && (
+              {/* 中间节点列表 - chain 和 direct_chain 类型 */}
+              {(rule.ruleType === 'chain' || rule.ruleType === 'direct_chain') && rule.chainAgentIds && rule.chainAgentIds.length > 0 && (
                 <div className="space-y-1 md:col-span-2">
                   <p className="text-sm text-muted-foreground">中间节点</p>
                   <div className="flex flex-wrap gap-2">
-                    {rule.chainAgentIds.map((agentId, index) => (
-                      <span key={agentId} className="text-sm bg-slate-100 dark:bg-slate-800 px-2 py-1 rounded">
-                        {index + 1}. {getAgentName(agentId)}
-                      </span>
-                    ))}
+                    {rule.chainAgentIds.map((agentId, index) => {
+                      const portConfig = rule.chainPortConfig?.[agentId];
+                      return (
+                        <span key={agentId} className="text-sm bg-slate-100 dark:bg-slate-800 px-2 py-1 rounded">
+                          {index + 1}. {getAgentName(agentId)}
+                          {rule.ruleType === 'direct_chain' && portConfig && (
+                            <span className="text-muted-foreground ml-1">:{portConfig}</span>
+                          )}
+                        </span>
+                      );
+                    })}
                   </div>
                 </div>
               )}
 
-              {/* chain 相关字段显示 */}
-              {rule.ruleType === 'chain' && (
+              {/* chain 和 direct_chain 相关字段显示 */}
+              {(rule.ruleType === 'chain' || rule.ruleType === 'direct_chain') && (
                 <>
+                  {rule.role && (
+                    <div className="space-y-1">
+                      <p className="text-sm text-muted-foreground">节点角色</p>
+                      <p className="text-sm">{rule.role === 'entry' ? '入口' : rule.role === 'exit' ? '出口' : rule.role === 'relay' ? '中继' : rule.role}</p>
+                    </div>
+                  )}
                   {rule.chainPosition !== undefined && (
                     <div className="space-y-1">
                       <p className="text-sm text-muted-foreground">链位置</p>
@@ -212,10 +225,16 @@ export const ForwardRuleDetailDialog: React.FC<ForwardRuleDetailDialogProps> = (
                       <p className="text-sm font-mono">{rule.nextHopAddress}</p>
                     </div>
                   )}
-                  {rule.nextHopWsPort && (
+                  {rule.ruleType === 'chain' && rule.nextHopWsPort && (
                     <div className="space-y-1">
                       <p className="text-sm text-muted-foreground">下一跳 WS 端口</p>
                       <p className="text-sm font-mono">{rule.nextHopWsPort}</p>
+                    </div>
+                  )}
+                  {rule.ruleType === 'direct_chain' && rule.nextHopPort && (
+                    <div className="space-y-1">
+                      <p className="text-sm text-muted-foreground">下一跳端口</p>
+                      <p className="text-sm font-mono">{rule.nextHopPort}</p>
                     </div>
                   )}
                   {rule.isLastInChain !== undefined && (
@@ -227,8 +246,8 @@ export const ForwardRuleDetailDialog: React.FC<ForwardRuleDetailDialogProps> = (
                 </>
               )}
 
-              {/* 目标配置 - direct、entry 和 chain 类型 */}
-              {(rule.ruleType === 'direct' || rule.ruleType === 'entry' || rule.ruleType === 'chain') && (
+              {/* 目标配置 - direct、entry、chain 和 direct_chain 类型 */}
+              {(rule.ruleType === 'direct' || rule.ruleType === 'entry' || rule.ruleType === 'chain' || rule.ruleType === 'direct_chain') && (
                 <>
                   {rule.targetNodeId ? (
                     <>

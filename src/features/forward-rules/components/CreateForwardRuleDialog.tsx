@@ -1,6 +1,6 @@
 /**
  * 创建转发规则对话框组件
- * 支持三种规则类型：direct（直连）、entry（入口）、chain（链式转发）
+ * 支持四种规则类型：direct（直连）、entry（入口）、chain（WS链式转发）、direct_chain（直连链式转发）
  * 支持目标类型：手动输入地址或选择节点（动态解析）
  */
 
@@ -45,7 +45,8 @@ interface CreateForwardRuleDialogProps {
 const RULE_TYPE_INFO: Record<ForwardRuleType, { label: string; description: string }> = {
   direct: { label: '直连转发', description: '直接将流量转发到目标地址' },
   entry: { label: '入口节点', description: '作为转发链的入口，通过出口节点转发到目标地址' },
-  chain: { label: '链式转发', description: '通过多个中间节点进行多跳链式转发' },
+  chain: { label: 'WS链式转发', description: '通过 WebSocket 隧道进行多跳链式转发' },
+  direct_chain: { label: '直连链式转发', description: '通过直连 TCP/UDP 进行多跳链式转发' },
 };
 
 export const CreateForwardRuleDialog: React.FC<CreateForwardRuleDialogProps> = ({
@@ -60,6 +61,7 @@ export const CreateForwardRuleDialog: React.FC<CreateForwardRuleDialogProps> = (
     ruleType: 'direct' as ForwardRuleType,
     exitAgentId: '',
     chainAgentIds: [] as string[],
+    chainPortConfig: {} as Record<string, number>,
     name: '',
     listenPort: 0,
     targetAddress: '',
@@ -81,6 +83,7 @@ export const CreateForwardRuleDialog: React.FC<CreateForwardRuleDialogProps> = (
         ruleType: 'direct',
         exitAgentId: '',
         chainAgentIds: [],
+        chainPortConfig: {},
         name: '',
         listenPort: 0,
         targetAddress: '',
@@ -113,10 +116,33 @@ export const CreateForwardRuleDialog: React.FC<CreateForwardRuleDialogProps> = (
   // 处理链节点选择
   const handleChainAgentToggle = (agentId: string) => {
     const currentIds = formData.chainAgentIds;
-    const newIds = currentIds.includes(agentId)
+    const isRemoving = currentIds.includes(agentId);
+    const newIds = isRemoving
       ? currentIds.filter((id) => id !== agentId)
       : [...currentIds, agentId];
-    handleChange('chainAgentIds', newIds);
+
+    // 同步更新 chainPortConfig
+    const newPortConfig = { ...formData.chainPortConfig };
+    if (isRemoving) {
+      delete newPortConfig[agentId];
+    }
+
+    setFormData((prev) => ({
+      ...prev,
+      chainAgentIds: newIds,
+      chainPortConfig: newPortConfig,
+    }));
+  };
+
+  // 处理链节点端口配置变更
+  const handleChainPortChange = (agentId: string, port: number) => {
+    setFormData((prev) => ({
+      ...prev,
+      chainPortConfig: {
+        ...prev.chainPortConfig,
+        [agentId]: port,
+      },
+    }));
   };
 
   const validate = () => {
@@ -192,6 +218,34 @@ export const CreateForwardRuleDialog: React.FC<CreateForwardRuleDialogProps> = (
           newErrors.targetNodeId = '请选择目标节点';
         }
       }
+    } else if (formData.ruleType === 'direct_chain') {
+      if (!formData.listenPort || formData.listenPort < 1 || formData.listenPort > 65535) {
+        newErrors.listenPort = '监听端口必须在1-65535之间';
+      }
+      if (!formData.chainAgentIds || formData.chainAgentIds.length === 0) {
+        newErrors.chainAgentIds = '请至少选择一个中间节点';
+      }
+      // 验证每个链节点都配置了端口
+      for (const agentId of formData.chainAgentIds) {
+        const port = formData.chainPortConfig[agentId];
+        if (!port || port < 1 || port > 65535) {
+          newErrors.chainPortConfig = '请为每个节点配置有效的监听端口（1-65535）';
+          break;
+        }
+      }
+      // direct_chain 类型也需要目标验证
+      if (targetType === 'manual') {
+        if (!formData.targetAddress.trim()) {
+          newErrors.targetAddress = '目标地址不能为空';
+        }
+        if (!formData.targetPort || formData.targetPort < 1 || formData.targetPort > 65535) {
+          newErrors.targetPort = '目标端口必须在1-65535之间';
+        }
+      } else if (targetType === 'node') {
+        if (!formData.targetNodeId) {
+          newErrors.targetNodeId = '请选择目标节点';
+        }
+      }
     }
 
     setErrors(newErrors);
@@ -238,6 +292,17 @@ export const CreateForwardRuleDialog: React.FC<CreateForwardRuleDialogProps> = (
         } else {
           submitData.targetNodeId = formData.targetNodeId;
         }
+      } else if (formData.ruleType === 'direct_chain') {
+        submitData.listenPort = formData.listenPort;
+        submitData.chainAgentIds = formData.chainAgentIds;
+        submitData.chainPortConfig = formData.chainPortConfig;
+        // direct_chain 类型也需要目标配置
+        if (targetType === 'manual') {
+          submitData.targetAddress = formData.targetAddress.trim();
+          submitData.targetPort = formData.targetPort;
+        } else {
+          submitData.targetNodeId = formData.targetNodeId;
+        }
       }
 
       if (formData.remark?.trim()) {
@@ -271,6 +336,21 @@ export const CreateForwardRuleDialog: React.FC<CreateForwardRuleDialogProps> = (
     } else if (formData.ruleType === 'chain') {
       if (formData.listenPort <= 0 || formData.chainAgentIds.length === 0) return false;
       // chain 类型也需要验证目标
+      if (targetType === 'manual') {
+        return formData.targetAddress.trim() !== '' && formData.targetPort > 0;
+      } else {
+        return !!formData.targetNodeId;
+      }
+    } else if (formData.ruleType === 'direct_chain') {
+      if (formData.listenPort <= 0) return false;
+      if (formData.chainAgentIds.length === 0) return false;
+      // 验证每个链节点都配置了有效端口
+      const allPortsValid = formData.chainAgentIds.every((id) => {
+        const port = formData.chainPortConfig[id];
+        return port && port > 0 && port <= 65535;
+      });
+      if (!allPortsValid) return false;
+      // direct_chain 类型也需要验证目标
       if (targetType === 'manual') {
         return formData.targetAddress.trim() !== '' && formData.targetPort > 0;
       } else {
@@ -411,8 +491,8 @@ export const CreateForwardRuleDialog: React.FC<CreateForwardRuleDialogProps> = (
             <h3 className="text-sm font-medium text-muted-foreground mb-3">转发配置</h3>
             <Separator className="mb-4" />
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {/* direct 和 entry 类型：监听端口 */}
-              {(formData.ruleType === 'direct' || formData.ruleType === 'entry') && (
+              {/* direct、entry、chain 和 direct_chain 类型：监听端口 */}
+              {(formData.ruleType === 'direct' || formData.ruleType === 'entry' || formData.ruleType === 'chain' || formData.ruleType === 'direct_chain') && (
                 <div className="flex flex-col gap-2">
                   <Label htmlFor="listenPort">
                     监听端口 <span className="text-destructive">*</span>
@@ -499,8 +579,66 @@ export const CreateForwardRuleDialog: React.FC<CreateForwardRuleDialogProps> = (
                 </div>
               )}
 
-              {/* direct、entry 和 chain 类型：目标配置 */}
-              {(formData.ruleType === 'direct' || formData.ruleType === 'entry' || formData.ruleType === 'chain') && (
+              {/* direct_chain 类型：中间节点列表（带端口配置） */}
+              {formData.ruleType === 'direct_chain' && (
+                <div className="flex flex-col gap-2 md:col-span-2">
+                  <Label>
+                    中间节点及端口 <span className="text-destructive">*</span>
+                  </Label>
+                  <div className={`border rounded-md ${errors.chainAgentIds || errors.chainPortConfig ? 'border-destructive' : 'border-input'}`}>
+                    <ScrollArea className="h-[180px] p-3">
+                      {availableChainAgents.length === 0 ? (
+                        <p className="text-sm text-muted-foreground">暂无可用节点</p>
+                      ) : (
+                        <div className="space-y-3">
+                          {availableChainAgents.map((agent) => {
+                            const isSelected = formData.chainAgentIds.includes(agent.id);
+                            return (
+                              <div key={agent.id} className="flex items-center gap-3">
+                                <Checkbox
+                                  id={`direct-chain-agent-${agent.id}`}
+                                  checked={isSelected}
+                                  onCheckedChange={() => handleChainAgentToggle(agent.id)}
+                                />
+                                <Label
+                                  htmlFor={`direct-chain-agent-${agent.id}`}
+                                  className="text-sm font-normal cursor-pointer flex-1 min-w-0"
+                                >
+                                  <span className="truncate">{agent.name}</span>
+                                  {agent.publicAddress && (
+                                    <span className="text-xs text-muted-foreground ml-1">
+                                      ({agent.publicAddress})
+                                    </span>
+                                  )}
+                                </Label>
+                                {isSelected && (
+                                  <Input
+                                    type="number"
+                                    min={1}
+                                    max={65535}
+                                    placeholder="监听端口"
+                                    className="w-28"
+                                    value={formData.chainPortConfig[agent.id] || ''}
+                                    onChange={(e) => handleChainPortChange(agent.id, parseInt(e.target.value, 10) || 0)}
+                                  />
+                                )}
+                              </div>
+                            );
+                          })}
+                        </div>
+                      )}
+                    </ScrollArea>
+                  </div>
+                  <p className="text-xs text-muted-foreground">
+                    已选择 {formData.chainAgentIds.length} 个节点，每个节点需配置监听端口
+                  </p>
+                  {errors.chainAgentIds && <p className="text-xs text-destructive">{errors.chainAgentIds}</p>}
+                  {errors.chainPortConfig && <p className="text-xs text-destructive">{errors.chainPortConfig}</p>}
+                </div>
+              )}
+
+              {/* direct、entry、chain 和 direct_chain 类型：目标配置 */}
+              {(formData.ruleType === 'direct' || formData.ruleType === 'entry' || formData.ruleType === 'chain' || formData.ruleType === 'direct_chain') && (
                 <>
                   {/* 目标类型选择 */}
                   <div className="flex flex-col gap-2 md:col-span-2">

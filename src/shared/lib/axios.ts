@@ -24,6 +24,7 @@ export const baseURL =
   '/api';
 
 // 创建 Axios 实例，应用 snake_case <-> camelCase 自动转换
+// 配置 preservedKeys 保留特定字段的 key 不被转换（如 agent ID）
 export const apiClient = applyCaseMiddleware(
   axios.create({
     baseURL,
@@ -32,7 +33,15 @@ export const apiClient = applyCaseMiddleware(
     },
     timeout: 30000,
     withCredentials: true, // 允许携带 Cookie
-  })
+  }),
+  {
+    // 保留 chainPortConfig/chain_port_config 内部的 key 不被转换
+    // 这些 key 是 agent ID（如 fa_xK9mP2vL3nQ），包含下划线但不应被转换
+    preservedKeys: (key) => {
+      // 保留以 fa_、fr_、node_ 等前缀开头的 ID key
+      return /^(fa|fr|node|user)_/.test(key);
+    },
+  }
 );
 
 // 存储刷新token的promise，避免并发刷新
