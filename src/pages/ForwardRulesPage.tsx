@@ -4,7 +4,7 @@
  */
 
 import { useState } from 'react';
-import { ArrowLeftRight, Plus, RefreshCw, CheckCircle2, XCircle, Loader2, Server, Globe, ArrowRight } from 'lucide-react';
+import { ArrowLeftRight, Plus, RefreshCw, CheckCircle2, XCircle, Loader2, Server, Globe, ArrowRight, Copy, Check } from 'lucide-react';
 import { ForwardRuleListTable } from '@/features/forward-rules/components/ForwardRuleListTable';
 import { CreateForwardRuleDialog } from '@/features/forward-rules/components/CreateForwardRuleDialog';
 import { EditForwardRuleDialog } from '@/features/forward-rules/components/EditForwardRuleDialog';
@@ -64,6 +64,7 @@ export const ForwardRulesPage = () => {
   const [probeResult, setProbeResult] = useState<RuleProbeResponse | null>(null);
   const [probingRuleId, setProbingRuleId] = useState<string | null>(null);
   const [probingRule, setProbingRule] = useState<ForwardRule | null>(null);
+  const [copiedAddress, setCopiedAddress] = useState(false);
 
   const handleRefresh = () => {
     refetch();
@@ -314,6 +315,23 @@ export const ForwardRulesPage = () => {
                                 <code className="font-mono text-sm bg-background px-1.5 py-0.5 rounded">
                                   {targetInfo.ip}{targetInfo.port ? `:${targetInfo.port}` : ''}
                                 </code>
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    const address = `${targetInfo.ip}${targetInfo.port ? `:${targetInfo.port}` : ''}`;
+                                    navigator.clipboard.writeText(address);
+                                    setCopiedAddress(true);
+                                    setTimeout(() => setCopiedAddress(false), 2000);
+                                  }}
+                                  className="p-1 hover:bg-muted rounded transition-colors"
+                                  title="复制地址"
+                                >
+                                  {copiedAddress ? (
+                                    <Check className="size-3.5 text-green-500" />
+                                  ) : (
+                                    <Copy className="size-3.5 text-muted-foreground" />
+                                  )}
+                                </button>
                               </div>
                             )}
                           </div>
@@ -350,19 +368,12 @@ export const ForwardRulesPage = () => {
                               const agent = forwardAgents.find(a => a.id === id);
                               return agent?.name ?? id.replace('fa_', '');
                             };
-                            // 获取目标显示名称
+                            // 获取目标显示名称（只显示名称，IP 已在上方目标信息中显示）
                             const getTargetDisplay = () => {
                               if (!probingRule) return '目标';
                               if (probingRule.targetNodeId) {
                                 const node = nodes.find(n => n.id === probingRule.targetNodeId);
-                                if (node) {
-                                  const ip = probingRule.ipVersion === 'ipv4'
-                                    ? probingRule.targetNodePublicIpv4
-                                    : probingRule.ipVersion === 'ipv6'
-                                      ? probingRule.targetNodePublicIpv6
-                                      : (probingRule.targetNodeServerAddress ?? probingRule.targetNodePublicIpv4 ?? probingRule.targetNodePublicIpv6);
-                                  return ip ? `${node.name} (${ip})` : node.name;
-                                }
+                                return node?.name ?? '目标';
                               }
                               if (probingRule.targetAddress) {
                                 return `${probingRule.targetAddress}:${probingRule.targetPort}`;
@@ -374,15 +385,15 @@ export const ForwardRulesPage = () => {
                               const fromName = getAgentName(hop.from);
                               const toName = hop.to === 'target' ? targetDisplay : getAgentName(hop.to);
                               return (
-                                <div key={index} className={`flex justify-between items-center text-sm py-1.5 px-2 rounded ${
+                                <div key={index} className={`flex items-center text-sm py-1.5 px-2 rounded ${
                                   !hop.success ? 'bg-red-50 dark:bg-red-900/20' : 'bg-muted/30'
                                 }`}>
-                                  <span className="text-muted-foreground truncate max-w-[200px] flex items-center gap-1.5" title={`${fromName} → ${toName}`}>
+                                  <span className="text-muted-foreground flex-1 min-w-0 flex items-center gap-1.5">
                                     <ArrowRight className="size-3.5 flex-shrink-0" />
-                                    {fromName} → {toName}
-                                    {!hop.online && <Badge variant="outline" className="text-yellow-600 text-xs ml-1">离线</Badge>}
+                                    <span className="truncate">{fromName} → {toName}</span>
+                                    {!hop.online && <Badge variant="outline" className="text-yellow-600 text-xs flex-shrink-0">离线</Badge>}
                                   </span>
-                                  <Badge variant={hop.success ? 'outline' : 'destructive'} className="font-mono">
+                                  <Badge variant={hop.success ? 'outline' : 'destructive'} className="font-mono flex-shrink-0 ml-2">
                                     {hop.success ? `${hop.latencyMs}ms` : hop.error ?? '失败'}
                                   </Badge>
                                 </div>

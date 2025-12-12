@@ -12,8 +12,6 @@ import {
   Power,
   PowerOff,
   MoreHorizontal,
-  Cpu,
-  MemoryStick,
   CheckCircle2,
   XCircle,
   AlertTriangle,
@@ -30,6 +28,7 @@ import {
 } from '@/components/common/DropdownMenu';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/common/Tooltip';
 import { Badge } from '@/components/common/Badge';
+import { SystemStatusDisplay } from '@/components/common/SystemStatusDisplay';
 import type { Node, NodeStatus } from '@/api/node';
 
 interface NodeListTableProps {
@@ -62,16 +61,6 @@ const PROTOCOL_CONFIG: Record<string, { label: string; color: string }> = {
   trojan: { label: 'Trojan', color: 'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400' },
 };
 
-// 格式化运行时间
-const formatUptime = (seconds: number): string => {
-  if (!seconds || seconds <= 0) return '-';
-  const days = Math.floor(seconds / 86400);
-  const hours = Math.floor((seconds % 86400) / 3600);
-  if (days > 0) return `${days}天${hours}时`;
-  const minutes = Math.floor((seconds % 3600) / 60);
-  if (hours > 0) return `${hours}时${minutes}分`;
-  return `${minutes}分钟`;
-};
 
 // 格式化时间
 const formatDate = (dateString: string) => {
@@ -224,76 +213,15 @@ export const NodeListTable: React.FC<NodeListTableProps> = ({
       cell: ({ row }) => {
         const node = row.original;
         const status = node.systemStatus;
-
-        if (!status) {
-          return <span className="text-xs text-slate-400">暂无数据</span>;
-        }
-
-        const getHealthLevel = (value: string) => {
-          const num = parseFloat(value);
-          if (num >= 80) return 'high';
-          if (num >= 60) return 'medium';
-          return 'low';
-        };
-
-        const cpuLevel = getHealthLevel(status.cpu);
-        const memLevel = getHealthLevel(status.memory);
-
-        // 整体健康度：取最差的状态
-        const overallHealth = cpuLevel === 'high' || memLevel === 'high' ? 'high'
-          : cpuLevel === 'medium' || memLevel === 'medium' ? 'medium'
-          : 'low';
-
-        const healthColors = {
-          low: 'text-green-600 dark:text-green-400',
-          medium: 'text-yellow-600 dark:text-yellow-400',
-          high: 'text-red-600 dark:text-red-400',
-        };
-
-        const healthBg = {
-          low: 'bg-green-50 dark:bg-green-900/20',
-          medium: 'bg-yellow-50 dark:bg-yellow-900/20',
-          high: 'bg-red-50 dark:bg-red-900/20',
-        };
-
         return (
-          <Tooltip>
-            <TooltipTrigger>
-              <div className={`inline-flex items-center gap-2 px-2 py-1 rounded-md ${healthBg[overallHealth]}`}>
-                <div className="flex items-center gap-1">
-                  <Cpu className={`h-3.5 w-3.5 ${healthColors[cpuLevel]}`} />
-                  <span className={`text-xs font-medium ${healthColors[cpuLevel]}`}>{status.cpu}%</span>
-                </div>
-                <div className="w-px h-3 bg-slate-300 dark:bg-slate-600" />
-                <div className="flex items-center gap-1">
-                  <MemoryStick className={`h-3.5 w-3.5 ${healthColors[memLevel]}`} />
-                  <span className={`text-xs font-medium ${healthColors[memLevel]}`}>{status.memory}%</span>
-                </div>
-              </div>
-            </TooltipTrigger>
-            <TooltipContent>
-              <div className="space-y-1.5 text-xs">
-                <div className="flex items-center justify-between gap-4">
-                  <span className="text-slate-400">CPU</span>
-                  <span className="font-mono">{status.cpu}%</span>
-                </div>
-                <div className="flex items-center justify-between gap-4">
-                  <span className="text-slate-400">内存</span>
-                  <span className="font-mono">{status.memory}%</span>
-                </div>
-                <div className="flex items-center justify-between gap-4">
-                  <span className="text-slate-400">磁盘</span>
-                  <span className="font-mono">{status.disk}%</span>
-                </div>
-                {status.uptime > 0 && (
-                  <div className="flex items-center justify-between gap-4 pt-1 border-t border-slate-700">
-                    <span className="text-slate-400">运行时间</span>
-                    <span>{formatUptime(status.uptime)}</span>
-                  </div>
-                )}
-              </div>
-            </TooltipContent>
-          </Tooltip>
+          <SystemStatusDisplay
+            status={status ? {
+              cpu: parseFloat(status.cpu) || 0,
+              memory: parseFloat(status.memory) || 0,
+              disk: parseFloat(status.disk) || 0,
+              uptime: status.uptime,
+            } : null}
+          />
         );
       },
     },

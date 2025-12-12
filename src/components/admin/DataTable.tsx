@@ -268,7 +268,7 @@ export function DataTable<TData>({
                       key={cell.id}
                       className={cn(
                         'px-4 py-3.5 text-slate-700 dark:text-slate-200',
-                        'align-middle',
+                        'align-top',
                         'transition-colors duration-200'
                       )}
                     >

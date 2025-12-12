@@ -3,8 +3,8 @@
  * 使用 TanStack Table 实现
  */
 
-import { useMemo } from 'react';
-import { Edit, Trash2, Key, Eye, Power, PowerOff, MoreHorizontal, Terminal, Cpu, MemoryStick } from 'lucide-react';
+import { useMemo, useState } from 'react';
+import { Edit, Trash2, Key, Eye, Power, PowerOff, MoreHorizontal, Terminal, Copy, Check } from 'lucide-react';
 import { DataTable, AdminBadge, type ColumnDef, type ResponsiveColumnMeta } from '@/components/admin';
 import {
   DropdownMenu,
@@ -14,6 +14,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/common/DropdownMenu';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/common/Tooltip';
+import { SystemStatusDisplay } from '@/components/common/SystemStatusDisplay';
 import type { ForwardAgent } from '@/api/forward';
 
 interface ForwardAgentListTableProps {
@@ -33,15 +34,64 @@ interface ForwardAgentListTableProps {
   onViewDetail: (agent: ForwardAgent) => void;
 }
 
-// 格式化运行时间
-const formatUptime = (seconds: number): string => {
-  if (!seconds || seconds <= 0) return '-';
-  const days = Math.floor(seconds / 86400);
-  const hours = Math.floor((seconds % 86400) / 3600);
-  if (days > 0) return `${days}天${hours}时`;
-  const minutes = Math.floor((seconds % 3600) / 60);
-  if (hours > 0) return `${hours}时${minutes}分`;
-  return `${minutes}分钟`;
+// 可复制地址组件（支持长地址截断和 Tooltip 显示完整内容）
+const CopyableAddress: React.FC<{ address: string; className?: string; maxLength?: number }> = ({
+  address,
+  className = '',
+  maxLength = 20,
+}) => {
+  const [copied, setCopied] = useState(false);
+
+  const handleCopy = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (address && address !== '-') {
+      navigator.clipboard.writeText(address);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    }
+  };
+
+  if (!address || address === '-') {
+    return <span className={className}>-</span>;
+  }
+
+  // 判断是否需要截断显示
+  const needsTruncate = address.length > maxLength;
+  const displayAddress = needsTruncate
+    ? `${address.slice(0, 8)}...${address.slice(-6)}`
+    : address;
+
+  const content = (
+    <span className={`inline-flex items-center gap-1 group ${className}`}>
+      <span className="truncate">{displayAddress}</span>
+      <button
+        type="button"
+        onClick={handleCopy}
+        className="p-0.5 opacity-0 group-hover:opacity-100 hover:bg-slate-200 dark:hover:bg-slate-600 rounded transition-all flex-shrink-0"
+        title="复制地址"
+      >
+        {copied ? (
+          <Check className="size-3 text-green-500" />
+        ) : (
+          <Copy className="size-3 text-slate-400" />
+        )}
+      </button>
+    </span>
+  );
+
+  // 如果地址被截断，使用 Tooltip 显示完整地址
+  if (needsTruncate) {
+    return (
+      <Tooltip>
+        <TooltipTrigger asChild>{content}</TooltipTrigger>
+        <TooltipContent className="font-mono text-xs max-w-xs break-all">
+          {address}
+        </TooltipContent>
+      </Tooltip>
+    );
+  }
+
+  return content;
 };
 
 // 格式化时间
@@ -91,22 +141,38 @@ export const ForwardAgentListTable: React.FC<ForwardAgentListTableProps> = ({
     {
       accessorKey: 'publicAddress',
       header: '地址',
-      size: 160,
+      size: 180,
       meta: { priority: 2 } as ResponsiveColumnMeta,
       cell: ({ row }) => {
         const agent = row.original;
-        return (
-          <div className="space-y-0.5">
-            <div className="font-mono text-sm text-slate-700 dark:text-slate-300">
-              {agent.publicAddress || '-'}
-            </div>
-            {agent.tunnelAddress && (
-              <div className="font-mono text-xs text-slate-500 dark:text-slate-400">
-                隧道: {agent.tunnelAddress}
-              </div>
-            )}
-          </div>
+        const addressContent = (
+          <CopyableAddress
+            address={agent.publicAddress || '-'}
+            className="font-mono text-sm text-slate-700 dark:text-slate-300"
+          />
         );
+
+        if (agent.tunnelAddress) {
+          return (
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <div className="min-w-0 cursor-help">{addressContent}</div>
+              </TooltipTrigger>
+              <TooltipContent>
+                <div className="space-y-1">
+                  <div className="text-xs text-slate-400">隧道地址</div>
+                  <CopyableAddress
+                    address={agent.tunnelAddress}
+                    className="font-mono text-xs"
+                    maxLength={50}
+                  />
+                </div>
+              </TooltipContent>
+            </Tooltip>
+          );
+        }
+
+        return <div className="min-w-0">{addressContent}</div>;
       },
     },
     {
@@ -143,74 +209,15 @@ export const ForwardAgentListTable: React.FC<ForwardAgentListTableProps> = ({
       cell: ({ row }) => {
         const agent = row.original;
         const status = agent.systemStatus;
-
-        if (!status) {
-          return <span className="text-xs text-slate-400">暂无数据</span>;
-        }
-
-        const getHealthLevel = (value: number) => {
-          if (value >= 80) return 'high';
-          if (value >= 60) return 'medium';
-          return 'low';
-        };
-
-        const cpuLevel = getHealthLevel(status.cpuPercent);
-        const memLevel = getHealthLevel(status.memoryPercent);
-
-        const overallHealth = cpuLevel === 'high' || memLevel === 'high' ? 'high'
-          : cpuLevel === 'medium' || memLevel === 'medium' ? 'medium'
-          : 'low';
-
-        const healthColors = {
-          low: 'text-green-600 dark:text-green-400',
-          medium: 'text-yellow-600 dark:text-yellow-400',
-          high: 'text-red-600 dark:text-red-400',
-        };
-
-        const healthBg = {
-          low: 'bg-green-50 dark:bg-green-900/20',
-          medium: 'bg-yellow-50 dark:bg-yellow-900/20',
-          high: 'bg-red-50 dark:bg-red-900/20',
-        };
-
         return (
-          <Tooltip>
-            <TooltipTrigger>
-              <div className={`inline-flex items-center gap-2 px-2 py-1 rounded-md ${healthBg[overallHealth]}`}>
-                <div className="flex items-center gap-1">
-                  <Cpu className={`h-3.5 w-3.5 ${healthColors[cpuLevel]}`} />
-                  <span className={`text-xs font-medium ${healthColors[cpuLevel]}`}>{status.cpuPercent.toFixed(1)}%</span>
-                </div>
-                <div className="w-px h-3 bg-slate-300 dark:bg-slate-600" />
-                <div className="flex items-center gap-1">
-                  <MemoryStick className={`h-3.5 w-3.5 ${healthColors[memLevel]}`} />
-                  <span className={`text-xs font-medium ${healthColors[memLevel]}`}>{status.memoryPercent.toFixed(1)}%</span>
-                </div>
-              </div>
-            </TooltipTrigger>
-            <TooltipContent>
-              <div className="space-y-1.5 text-xs">
-                <div className="flex items-center justify-between gap-4">
-                  <span className="text-slate-400">CPU</span>
-                  <span className="font-mono">{status.cpuPercent.toFixed(1)}%</span>
-                </div>
-                <div className="flex items-center justify-between gap-4">
-                  <span className="text-slate-400">内存</span>
-                  <span className="font-mono">{status.memoryPercent.toFixed(1)}%</span>
-                </div>
-                <div className="flex items-center justify-between gap-4">
-                  <span className="text-slate-400">磁盘</span>
-                  <span className="font-mono">{status.diskPercent.toFixed(1)}%</span>
-                </div>
-                {status.uptimeSeconds > 0 && (
-                  <div className="flex items-center justify-between gap-4 pt-1 border-t border-slate-700">
-                    <span className="text-slate-400">运行时间</span>
-                    <span>{formatUptime(status.uptimeSeconds)}</span>
-                  </div>
-                )}
-              </div>
-            </TooltipContent>
-          </Tooltip>
+          <SystemStatusDisplay
+            status={status ? {
+              cpu: status.cpuPercent,
+              memory: status.memoryPercent,
+              disk: status.diskPercent,
+              uptime: status.uptimeSeconds,
+            } : null}
+          />
         );
       },
     },
