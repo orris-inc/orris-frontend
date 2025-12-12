@@ -115,6 +115,13 @@ export const ForwardAgentDetailDialog: React.FC<ForwardAgentDetailDialogProps> =
                   <p className="text-sm font-mono">{agent.publicAddress}</p>
                 </div>
               )}
+
+              {agent.tunnelAddress && (
+                <div className="space-y-1">
+                  <p className="text-sm text-muted-foreground">隧道地址</p>
+                  <p className="text-sm font-mono">{agent.tunnelAddress}</p>
+                </div>
+              )}
             </div>
           </div>
 

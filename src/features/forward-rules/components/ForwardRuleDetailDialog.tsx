@@ -288,6 +288,14 @@ export const ForwardRuleDetailDialog: React.FC<ForwardRuleDetailDialogProps> = (
                   )}
                 </>
               )}
+
+              {/* 绑定 IP */}
+              {rule.bindIp && (
+                <div className="space-y-1">
+                  <p className="text-sm text-muted-foreground">绑定 IP</p>
+                  <p className="text-sm font-mono">{rule.bindIp}</p>
+                </div>
+              )}
             </div>
           </div>
 

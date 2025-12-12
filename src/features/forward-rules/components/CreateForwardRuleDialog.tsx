@@ -67,6 +67,7 @@ export const CreateForwardRuleDialog: React.FC<CreateForwardRuleDialogProps> = (
     targetAddress: '',
     targetPort: 0,
     targetNodeId: '',
+    bindIp: '',
     protocol: 'tcp' as ForwardProtocol,
     ipVersion: 'auto' as IPVersion,
     remark: '',
@@ -89,6 +90,7 @@ export const CreateForwardRuleDialog: React.FC<CreateForwardRuleDialogProps> = (
         targetAddress: '',
         targetPort: 0,
         targetNodeId: '',
+        bindIp: '',
         protocol: 'tcp',
         ipVersion: 'auto',
         remark: '',
@@ -303,6 +305,10 @@ export const CreateForwardRuleDialog: React.FC<CreateForwardRuleDialogProps> = (
         } else {
           submitData.targetNodeId = formData.targetNodeId;
         }
+      }
+
+      if (formData.bindIp?.trim()) {
+        submitData.bindIp = formData.bindIp.trim();
       }
 
       if (formData.remark?.trim()) {
@@ -740,19 +746,32 @@ export const CreateForwardRuleDialog: React.FC<CreateForwardRuleDialogProps> = (
             </div>
           </div>
 
-          {/* 备注 */}
+          {/* 高级选项 */}
           <div>
-            <h3 className="text-sm font-medium text-muted-foreground mb-3">其他</h3>
+            <h3 className="text-sm font-medium text-muted-foreground mb-3">高级选项</h3>
             <Separator className="mb-4" />
-            <div className="flex flex-col gap-2">
-              <Label htmlFor="remark">备注</Label>
-              <Textarea
-                id="remark"
-                rows={2}
-                value={formData.remark}
-                onChange={(e) => handleChange('remark', e.target.value)}
-                placeholder="可选：添加备注说明"
-              />
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="flex flex-col gap-2">
+                <Label htmlFor="bindIp">绑定 IP</Label>
+                <Input
+                  id="bindIp"
+                  value={formData.bindIp}
+                  onChange={(e) => handleChange('bindIp', e.target.value)}
+                  placeholder="可选：出站连接绑定的本地 IP"
+                />
+                <p className="text-xs text-muted-foreground">指定出站连接使用的本地 IP 地址</p>
+              </div>
+
+              <div className="flex flex-col gap-2 md:col-span-2">
+                <Label htmlFor="remark">备注</Label>
+                <Textarea
+                  id="remark"
+                  rows={2}
+                  value={formData.remark}
+                  onChange={(e) => handleChange('remark', e.target.value)}
+                  placeholder="可选：添加备注说明"
+                />
+              </div>
             </div>
           </div>
         </div>

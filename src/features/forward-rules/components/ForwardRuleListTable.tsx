@@ -4,7 +4,7 @@
  */
 
 import { useMemo, useState } from 'react';
-import { Edit, Trash2, Eye, Power, PowerOff, MoreHorizontal, RotateCcw, Activity, Loader2, Copy, Check } from 'lucide-react';
+import { Edit, Trash2, Eye, Power, PowerOff, MoreHorizontal, RotateCcw, Activity, Loader2, Copy, Check, Server, Bot, Settings } from 'lucide-react';
 import { DataTable, AdminBadge, type ColumnDef, type ResponsiveColumnMeta } from '@/components/admin';
 import {
   DropdownMenu,
@@ -142,7 +142,7 @@ export const ForwardRuleListTable: React.FC<ForwardRuleListTableProps> = ({
     {
       id: 'exit',
       header: '出口',
-      size: 220,
+      size: 240,
       meta: { priority: 1 } as ResponsiveColumnMeta,
       cell: ({ row }) => {
         const rule = row.original;
@@ -176,6 +176,40 @@ export const ForwardRuleListTable: React.FC<ForwardRuleListTableProps> = ({
           return null;
         };
 
+        // 出口类型图标组件
+        const ExitTypeIcon: React.FC<{ type: 'agent' | 'node' | 'manual'; className?: string }> = ({ type, className = '' }) => {
+          const iconProps = { className: `size-3.5 ${className}` };
+          switch (type) {
+            case 'agent':
+              return (
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Bot {...iconProps} />
+                  </TooltipTrigger>
+                  <TooltipContent>经由转发 Agent</TooltipContent>
+                </Tooltip>
+              );
+            case 'node':
+              return (
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Server {...iconProps} />
+                  </TooltipTrigger>
+                  <TooltipContent>目标节点</TooltipContent>
+                </Tooltip>
+              );
+            case 'manual':
+              return (
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Settings {...iconProps} />
+                  </TooltipTrigger>
+                  <TooltipContent>手动配置地址</TooltipContent>
+                </Tooltip>
+              );
+          }
+        };
+
         // entry 类型：显示出口节点 -> 目标
         if (rule.ruleType === 'entry' && rule.exitAgentId) {
           const exitAgent = agentsMap[rule.exitAgentId];
@@ -185,8 +219,11 @@ export const ForwardRuleListTable: React.FC<ForwardRuleListTableProps> = ({
           const targetAddress = target?.address || '-';
           return (
             <div className="space-y-0.5 min-w-0">
-              <div className="text-sm text-slate-900 dark:text-white truncate">{exitName}</div>
-              <CopyableAddress address={targetAddress} className="text-slate-500 dark:text-slate-400" />
+              <div className="flex items-center gap-1.5 text-sm text-slate-900 dark:text-white">
+                <ExitTypeIcon type="agent" className="text-purple-500 flex-shrink-0" />
+                <span className="truncate">{exitName}</span>
+              </div>
+              <CopyableAddress address={targetAddress} className="text-slate-500 dark:text-slate-400 pl-5" />
             </div>
           );
         }
@@ -206,10 +243,11 @@ export const ForwardRuleListTable: React.FC<ForwardRuleListTableProps> = ({
           const targetAddress = target?.address || '-';
           return (
             <div className="space-y-0.5 min-w-0">
-              <div className="text-sm text-slate-900 dark:text-white truncate" title={chainLabel}>
-                {chainLabel}
+              <div className="flex items-center gap-1.5 text-sm text-slate-900 dark:text-white">
+                <ExitTypeIcon type="agent" className="text-purple-500 flex-shrink-0" />
+                <span className="truncate" title={chainLabel}>{chainLabel}</span>
               </div>
-              <CopyableAddress address={targetAddress} className="text-slate-500 dark:text-slate-400" />
+              <CopyableAddress address={targetAddress} className="text-slate-500 dark:text-slate-400 pl-5" />
             </div>
           );
         }
@@ -217,12 +255,15 @@ export const ForwardRuleListTable: React.FC<ForwardRuleListTableProps> = ({
         // direct 类型：显示目标
         const target = getTargetDisplay();
         if (target) {
+          const iconType = target.type === 'node' ? 'node' : 'manual';
+          const iconColor = target.type === 'node' ? 'text-blue-500' : 'text-slate-400';
           return (
             <div className="space-y-0.5 min-w-0">
-              <div className={`text-sm truncate ${target.type === 'manual' ? 'text-slate-500 dark:text-slate-400' : 'text-slate-900 dark:text-white'}`}>
-                {target.name}
+              <div className={`flex items-center gap-1.5 text-sm ${target.type === 'manual' ? 'text-slate-500 dark:text-slate-400' : 'text-slate-900 dark:text-white'}`}>
+                <ExitTypeIcon type={iconType} className={`${iconColor} flex-shrink-0`} />
+                <span className="truncate">{target.name}</span>
               </div>
-              <CopyableAddress address={target.address} className="text-slate-500 dark:text-slate-400" />
+              <CopyableAddress address={target.address} className="text-slate-500 dark:text-slate-400 pl-5" />
             </div>
           );
         }

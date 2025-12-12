@@ -38,6 +38,7 @@ export const EditForwardAgentDialog: React.FC<EditForwardAgentDialogProps> = ({
       setFormData({
         name: agent.name,
         publicAddress: agent.publicAddress,
+        tunnelAddress: agent.tunnelAddress,
         remark: agent.remark,
       });
       setErrors({});
@@ -73,6 +74,7 @@ export const EditForwardAgentDialog: React.FC<EditForwardAgentDialogProps> = ({
 
       if (formData.name !== agent.name) updates.name = formData.name;
       if (formData.publicAddress !== agent.publicAddress) updates.publicAddress = formData.publicAddress;
+      if (formData.tunnelAddress !== agent.tunnelAddress) updates.tunnelAddress = formData.tunnelAddress;
       if (formData.remark !== agent.remark) updates.remark = formData.remark;
 
       // 如果有任何变化，提交更新
@@ -148,6 +150,20 @@ export const EditForwardAgentDialog: React.FC<EditForwardAgentDialogProps> = ({
                 />
                 <p className="text-xs text-muted-foreground">
                   可选，用于标识节点的公网访问地址
+                </p>
+              </div>
+
+              {/* 隧道地址 */}
+              <div className="flex flex-col gap-2">
+                <Label htmlFor="tunnelAddress">隧道地址</Label>
+                <Input
+                  id="tunnelAddress"
+                  value={formData.tunnelAddress || ''}
+                  onChange={(e) => handleChange('tunnelAddress', e.target.value)}
+                  placeholder="例如：10.0.0.1 或 internal.example.com"
+                />
+                <p className="text-xs text-muted-foreground">
+                  若 Agent 可能作为 relay/exit 角色，需配置此地址（IP 或主机名，不含端口）
                 </p>
               </div>
 

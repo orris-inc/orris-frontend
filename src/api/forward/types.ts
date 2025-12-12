@@ -54,6 +54,7 @@ export interface ForwardRule {
   targetAddress?: string; // for direct, entry, chain, and direct_chain exit types
   targetPort?: number; // for direct, entry, chain, and direct_chain exit types
   targetNodeId?: string; // Stripe-style Node ID (e.g., "node_xK9mP2vL3nQ") for dynamic address resolution
+  bindIp?: string; // Bind IP address for outbound connections
   ipVersion: IPVersion; // IP version preference for target address resolution
   protocol: ForwardProtocol;
   status: ForwardStatus;
@@ -107,6 +108,7 @@ export interface CreateForwardRuleRequest {
   targetAddress?: string; // for direct, entry, chain, and direct_chain types (mutually exclusive with targetNodeId)
   targetPort?: number; // for direct, entry, chain, and direct_chain types (mutually exclusive with targetNodeId)
   targetNodeId?: string; // Stripe-style Node ID (e.g., "node_xK9mP2vL3nQ") for dynamic address resolution
+  bindIp?: string; // Bind IP address for outbound connections
   ipVersion?: IPVersion; // IP version preference (default: auto)
   protocol: ForwardProtocol;
   remark?: string;
@@ -126,6 +128,7 @@ export interface UpdateForwardRuleRequest {
   targetAddress?: string; // mutually exclusive with targetNodeId
   targetPort?: number; // mutually exclusive with targetNodeId
   targetNodeId?: string; // Stripe-style Node ID (e.g., "node_xK9mP2vL3nQ"), empty string clears, undefined means no change
+  bindIp?: string; // Bind IP address for outbound connections
   ipVersion?: IPVersion; // IP version preference
   protocol?: ForwardProtocol;
   remark?: string;
@@ -156,11 +159,13 @@ export interface ListForwardRulesParams {
 /**
  * Forward agent entity
  * ID format: "fa_xK9mP2vL3nQ" (Stripe-style prefixed ID)
+ * An agent can participate in multiple rules with different roles (entry/relay/exit) simultaneously.
  */
 export interface ForwardAgent {
   id: string; // Stripe-style prefixed ID (e.g., "fa_xK9mP2vL3nQ")
   name: string;
   publicAddress: string;
+  tunnelAddress?: string; // IP or hostname only (no port), configure if agent may serve as relay/exit in any rule
   status: ForwardStatus;
   remark: string;
   createdAt: string;
@@ -205,10 +210,12 @@ export interface ForwardAgentWithToken extends ForwardAgent {
 
 /**
  * Create forward agent request
+ * An agent can participate in multiple rules with different roles (entry/relay/exit) simultaneously.
  */
 export interface CreateForwardAgentRequest {
   name: string;
   publicAddress?: string;
+  tunnelAddress?: string; // IP or hostname only (no port), configure if agent may serve as relay/exit in any rule
   remark?: string;
 }
 
@@ -218,6 +225,7 @@ export interface CreateForwardAgentRequest {
 export interface UpdateForwardAgentRequest {
   name?: string;
   publicAddress?: string;
+  tunnelAddress?: string; // IP or hostname only (no port), configure if agent may serve as relay/exit in any rule
   remark?: string;
 }
 

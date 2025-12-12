@@ -62,6 +62,7 @@ export const EditForwardRuleDialog: React.FC<EditForwardRuleDialogProps> = ({
         targetAddress: rule.targetAddress,
         targetPort: rule.targetPort,
         targetNodeId: rule.targetNodeId,
+        bindIp: rule.bindIp,
         ipVersion: rule.ipVersion,
         remark: rule.remark,
         agentId: rule.agentId,
@@ -182,6 +183,7 @@ export const EditForwardRuleDialog: React.FC<EditForwardRuleDialogProps> = ({
       if (formData.protocol !== rule.protocol) updates.protocol = formData.protocol;
       if (formData.listenPort !== rule.listenPort) updates.listenPort = formData.listenPort;
       if (formData.ipVersion !== rule.ipVersion) updates.ipVersion = formData.ipVersion;
+      if (formData.bindIp !== rule.bindIp) updates.bindIp = formData.bindIp;
       if (formData.remark !== rule.remark) updates.remark = formData.remark;
 
       // 处理代理配置
@@ -580,6 +582,18 @@ export const EditForwardRuleDialog: React.FC<EditForwardRuleDialogProps> = ({
                   )}
                 </>
               )}
+
+              {/* 绑定 IP */}
+              <div className="flex flex-col gap-2">
+                <Label htmlFor="bindIp">绑定 IP</Label>
+                <Input
+                  id="bindIp"
+                  value={formData.bindIp || ''}
+                  onChange={(e) => handleChange('bindIp', e.target.value)}
+                  placeholder="可选：出站连接绑定的本地 IP"
+                />
+                <p className="text-xs text-muted-foreground">指定出站连接使用的本地 IP 地址</p>
+              </div>
 
               {/* 备注 */}
               <div className="flex flex-col gap-2 md:col-span-2">
