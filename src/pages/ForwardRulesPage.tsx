@@ -61,6 +61,7 @@ export const ForwardRulesPage = () => {
   const [probeDialogOpen, setProbeDialogOpen] = useState(false);
   const [probeResult, setProbeResult] = useState<RuleProbeResponse | null>(null);
   const [probingRuleId, setProbingRuleId] = useState<string | null>(null);
+  const [probingRule, setProbingRule] = useState<ForwardRule | null>(null);
 
   const handleRefresh = () => {
     refetch();
@@ -98,6 +99,7 @@ export const ForwardRulesPage = () => {
 
   const handleProbe = async (rule: ForwardRule) => {
     setProbingRuleId(rule.id);
+    setProbingRule(rule);
     setProbeResult(null);
     setProbeDialogOpen(true);
     try {
@@ -272,19 +274,48 @@ export const ForwardRulesPage = () => {
                       probeResult.chainLatencies && probeResult.chainLatencies.length > 0 && (
                       <div className="space-y-1">
                         <p className="text-xs text-muted-foreground mb-2">链路延迟</p>
-                        {probeResult.chainLatencies.map((hop: ChainHopLatency, index: number) => (
-                          <div key={index} className={`flex justify-between text-sm py-1 ${
-                            !hop.success ? 'text-red-500' : ''
-                          }`}>
-                            <span className="text-muted-foreground truncate max-w-[180px]" title={`${hop.from} → ${hop.to}`}>
-                              {hop.from.replace('fa_', '')} → {hop.to === 'target' ? '目标' : hop.to.replace('fa_', '')}
-                              {!hop.online && <span className="text-yellow-500 ml-1">(离线)</span>}
-                            </span>
-                            <span className="font-mono">
-                              {hop.success ? `${hop.latencyMs}ms` : hop.error || '失败'}
-                            </span>
-                          </div>
-                        ))}
+                        {(() => {
+                          // 获取 agent 名称
+                          const getAgentName = (id: string) => {
+                            const agent = forwardAgents.find(a => a.id === id);
+                            return agent?.name ?? id.replace('fa_', '');
+                          };
+                          // 获取目标显示名称
+                          const getTargetDisplay = () => {
+                            if (!probingRule) return '目标';
+                            if (probingRule.targetNodeId) {
+                              const node = nodes.find(n => n.id === probingRule.targetNodeId);
+                              if (node) {
+                                const ip = probingRule.ipVersion === 'ipv4'
+                                  ? probingRule.targetNodePublicIpv4
+                                  : probingRule.ipVersion === 'ipv6'
+                                    ? probingRule.targetNodePublicIpv6
+                                    : (probingRule.targetNodeServerAddress ?? probingRule.targetNodePublicIpv4 ?? probingRule.targetNodePublicIpv6);
+                                return ip ? `${node.name} (${ip})` : node.name;
+                              }
+                            }
+                            if (probingRule.targetAddress) {
+                              return `${probingRule.targetAddress}:${probingRule.targetPort}`;
+                            }
+                            return '目标';
+                          };
+                          const targetDisplay = getTargetDisplay();
+                          return probeResult.chainLatencies!.map((hop: ChainHopLatency, index: number) => {
+                            const fromName = getAgentName(hop.from);
+                            const toName = hop.to === 'target' ? targetDisplay : getAgentName(hop.to);
+                            return (
+                              <div key={index} className={`flex justify-between text-sm py-1 ${!hop.success ? 'text-red-500' : ''}`}>
+                                <span className="text-muted-foreground truncate max-w-[180px]" title={`${fromName} → ${toName}`}>
+                                  {fromName} → {toName}
+                                  {!hop.online && <span className="text-yellow-500 ml-1">(离线)</span>}
+                                </span>
+                                <span className="font-mono">
+                                  {hop.success ? `${hop.latencyMs}ms` : hop.error ?? '失败'}
+                                </span>
+                              </div>
+                            );
+                          });
+                        })()}
                       </div>
                     )}
                     {/* 目标延迟 */}
