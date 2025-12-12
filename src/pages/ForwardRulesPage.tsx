@@ -4,7 +4,7 @@
  */
 
 import { useState } from 'react';
-import { ArrowLeftRight, Plus, RefreshCw, CheckCircle2, XCircle, Loader2 } from 'lucide-react';
+import { ArrowLeftRight, Plus, RefreshCw, CheckCircle2, XCircle, Loader2, Server, Globe, ArrowRight } from 'lucide-react';
 import { ForwardRuleListTable } from '@/features/forward-rules/components/ForwardRuleListTable';
 import { CreateForwardRuleDialog } from '@/features/forward-rules/components/CreateForwardRuleDialog';
 import { EditForwardRuleDialog } from '@/features/forward-rules/components/EditForwardRuleDialog';
@@ -15,6 +15,8 @@ import { useNodes } from '@/features/nodes/hooks/useNodes';
 import { AdminLayout } from '@/layouts/AdminLayout';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/common/Tooltip';
 import { Button } from '@/components/common/Button';
+import { Badge } from '@/components/common/Badge';
+import { Separator } from '@/components/common/Separator';
 import {
   Dialog,
   DialogContent,
@@ -222,7 +224,14 @@ export const ForwardRulesPage = () => {
       <Dialog open={probeDialogOpen} onOpenChange={setProbeDialogOpen}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
-            <DialogTitle>拨测结果</DialogTitle>
+            <DialogTitle className="flex items-center gap-2">
+              拨测结果
+              {probeResult && (
+                <Badge variant={probeResult.success ? 'default' : 'destructive'} className="ml-2">
+                  {probeResult.ruleType}
+                </Badge>
+              )}
+            </DialogTitle>
           </DialogHeader>
           <div className="py-4">
             {probingRuleId !== null ? (
@@ -239,11 +248,11 @@ export const ForwardRulesPage = () => {
                     : 'bg-red-50 dark:bg-red-900/20'
                 }`}>
                   {probeResult.success ? (
-                    <CheckCircle2 className="size-6 text-green-500" />
+                    <CheckCircle2 className="size-6 text-green-500 flex-shrink-0" />
                   ) : (
-                    <XCircle className="size-6 text-red-500" />
+                    <XCircle className="size-6 text-red-500 flex-shrink-0" />
                   )}
-                  <div>
+                  <div className="min-w-0">
                     <p className={`font-medium ${
                       probeResult.success
                         ? 'text-green-700 dark:text-green-300'
@@ -252,89 +261,168 @@ export const ForwardRulesPage = () => {
                       {probeResult.success ? '拨测成功' : '拨测失败'}
                     </p>
                     {probeResult.error && (
-                      <p className="text-sm text-red-600 dark:text-red-400 mt-1">
+                      <p className="text-sm text-red-600 dark:text-red-400 mt-1 break-words">
                         {probeResult.error}
                       </p>
                     )}
                   </div>
                 </div>
 
+                {/* 目标信息 - 所有类型都显示 */}
+                {probingRule && (
+                  <>
+                    <Separator />
+                    <div className="space-y-2">
+                      <p className="text-xs font-medium text-muted-foreground flex items-center gap-1.5">
+                        <Globe className="size-3.5" />
+                        目标信息
+                      </p>
+                      {(() => {
+                        // 获取目标显示信息
+                        const getTargetInfo = () => {
+                          if (probingRule.targetNodeId) {
+                            const node = nodes.find(n => n.id === probingRule.targetNodeId);
+                            const nodeName = node?.name ?? probingRule.targetNodeId;
+                            const ip = probingRule.ipVersion === 'ipv4'
+                              ? probingRule.targetNodePublicIpv4
+                              : probingRule.ipVersion === 'ipv6'
+                                ? probingRule.targetNodePublicIpv6
+                                : (probingRule.targetNodeServerAddress ?? probingRule.targetNodePublicIpv4 ?? probingRule.targetNodePublicIpv6);
+                            return { type: 'node' as const, name: nodeName, ip, port: probingRule.targetPort };
+                          }
+                          if (probingRule.targetAddress) {
+                            return { type: 'manual' as const, name: null, ip: probingRule.targetAddress, port: probingRule.targetPort };
+                          }
+                          return null;
+                        };
+                        const targetInfo = getTargetInfo();
+                        if (!targetInfo) return null;
+                        return (
+                          <div className="bg-muted/50 rounded-lg p-3 space-y-2">
+                            {targetInfo.name && (
+                              <div className="flex items-center gap-2">
+                                <Server className="size-4 text-blue-500 flex-shrink-0" />
+                                <span className="text-sm font-medium truncate">{targetInfo.name}</span>
+                                <Badge variant="outline" className="text-xs">
+                                  {probingRule.ipVersion}
+                                </Badge>
+                              </div>
+                            )}
+                            {targetInfo.ip && (
+                              <div className="flex items-center gap-2 text-sm">
+                                <span className="text-muted-foreground">IP:</span>
+                                <code className="font-mono text-sm bg-background px-1.5 py-0.5 rounded">
+                                  {targetInfo.ip}{targetInfo.port ? `:${targetInfo.port}` : ''}
+                                </code>
+                              </div>
+                            )}
+                          </div>
+                        );
+                      })()}
+                    </div>
+                  </>
+                )}
+
                 {/* 延迟信息 */}
                 {probeResult.success && (
-                  <div className="space-y-2">
-                    {/* entry 类型：隧道延迟 */}
-                    {probeResult.ruleType === 'entry' && probeResult.tunnelLatencyMs !== undefined && (
-                      <div className="flex justify-between text-sm">
-                        <span className="text-muted-foreground">隧道延迟 (入口→出口)</span>
-                        <span className="font-mono">{probeResult.tunnelLatencyMs}ms</span>
-                      </div>
-                    )}
-                    {/* chain/direct_chain 类型：链路每跳延迟 */}
-                    {(probeResult.ruleType === 'chain' || probeResult.ruleType === 'direct_chain') &&
-                      probeResult.chainLatencies && probeResult.chainLatencies.length > 0 && (
-                      <div className="space-y-1">
-                        <p className="text-xs text-muted-foreground mb-2">链路延迟</p>
-                        {(() => {
-                          // 获取 agent 名称
-                          const getAgentName = (id: string) => {
-                            const agent = forwardAgents.find(a => a.id === id);
-                            return agent?.name ?? id.replace('fa_', '');
-                          };
-                          // 获取目标显示名称
-                          const getTargetDisplay = () => {
-                            if (!probingRule) return '目标';
-                            if (probingRule.targetNodeId) {
-                              const node = nodes.find(n => n.id === probingRule.targetNodeId);
-                              if (node) {
-                                const ip = probingRule.ipVersion === 'ipv4'
-                                  ? probingRule.targetNodePublicIpv4
-                                  : probingRule.ipVersion === 'ipv6'
-                                    ? probingRule.targetNodePublicIpv6
-                                    : (probingRule.targetNodeServerAddress ?? probingRule.targetNodePublicIpv4 ?? probingRule.targetNodePublicIpv6);
-                                return ip ? `${node.name} (${ip})` : node.name;
+                  <>
+                    <Separator />
+                    <div className="space-y-3">
+                      <p className="text-xs font-medium text-muted-foreground">延迟详情</p>
+                      {/* entry 类型：隧道延迟 */}
+                      {probeResult.ruleType === 'entry' && probeResult.tunnelLatencyMs !== undefined && (
+                        <div className="flex justify-between items-center text-sm">
+                          <span className="text-muted-foreground flex items-center gap-1.5">
+                            <ArrowRight className="size-3.5" />
+                            隧道延迟 (入口→出口)
+                          </span>
+                          <Badge variant="outline" className="font-mono">{probeResult.tunnelLatencyMs}ms</Badge>
+                        </div>
+                      )}
+                      {/* chain/direct_chain 类型：链路每跳延迟 */}
+                      {(probeResult.ruleType === 'chain' || probeResult.ruleType === 'direct_chain') &&
+                        probeResult.chainLatencies && probeResult.chainLatencies.length > 0 && (
+                        <div className="space-y-2">
+                          <p className="text-xs text-muted-foreground">链路延迟</p>
+                          {(() => {
+                            // 获取 agent 名称
+                            const getAgentName = (id: string) => {
+                              const agent = forwardAgents.find(a => a.id === id);
+                              return agent?.name ?? id.replace('fa_', '');
+                            };
+                            // 获取目标显示名称
+                            const getTargetDisplay = () => {
+                              if (!probingRule) return '目标';
+                              if (probingRule.targetNodeId) {
+                                const node = nodes.find(n => n.id === probingRule.targetNodeId);
+                                if (node) {
+                                  const ip = probingRule.ipVersion === 'ipv4'
+                                    ? probingRule.targetNodePublicIpv4
+                                    : probingRule.ipVersion === 'ipv6'
+                                      ? probingRule.targetNodePublicIpv6
+                                      : (probingRule.targetNodeServerAddress ?? probingRule.targetNodePublicIpv4 ?? probingRule.targetNodePublicIpv6);
+                                  return ip ? `${node.name} (${ip})` : node.name;
+                                }
                               }
-                            }
-                            if (probingRule.targetAddress) {
-                              return `${probingRule.targetAddress}:${probingRule.targetPort}`;
-                            }
-                            return '目标';
-                          };
-                          const targetDisplay = getTargetDisplay();
-                          return probeResult.chainLatencies!.map((hop: ChainHopLatency, index: number) => {
-                            const fromName = getAgentName(hop.from);
-                            const toName = hop.to === 'target' ? targetDisplay : getAgentName(hop.to);
-                            return (
-                              <div key={index} className={`flex justify-between text-sm py-1 ${!hop.success ? 'text-red-500' : ''}`}>
-                                <span className="text-muted-foreground truncate max-w-[180px]" title={`${fromName} → ${toName}`}>
-                                  {fromName} → {toName}
-                                  {!hop.online && <span className="text-yellow-500 ml-1">(离线)</span>}
-                                </span>
-                                <span className="font-mono">
-                                  {hop.success ? `${hop.latencyMs}ms` : hop.error ?? '失败'}
-                                </span>
-                              </div>
-                            );
-                          });
-                        })()}
-                      </div>
-                    )}
-                    {/* 目标延迟 */}
-                    {probeResult.targetLatencyMs !== undefined && (
-                      <div className="flex justify-between text-sm">
-                        <span className="text-muted-foreground">
-                          {probeResult.ruleType === 'entry' ? '目标延迟 (出口→目标)' : '目标延迟'}
-                        </span>
-                        <span className="font-mono">{probeResult.targetLatencyMs}ms</span>
-                      </div>
-                    )}
-                    {/* 总延迟 */}
-                    {probeResult.totalLatencyMs !== undefined && (
-                      <div className="flex justify-between text-sm border-t pt-2">
-                        <span className="font-medium">总延迟</span>
-                        <span className="font-mono font-medium">{probeResult.totalLatencyMs}ms</span>
-                      </div>
-                    )}
-                  </div>
+                              if (probingRule.targetAddress) {
+                                return `${probingRule.targetAddress}:${probingRule.targetPort}`;
+                              }
+                              return '目标';
+                            };
+                            const targetDisplay = getTargetDisplay();
+                            return probeResult.chainLatencies!.map((hop: ChainHopLatency, index: number) => {
+                              const fromName = getAgentName(hop.from);
+                              const toName = hop.to === 'target' ? targetDisplay : getAgentName(hop.to);
+                              return (
+                                <div key={index} className={`flex justify-between items-center text-sm py-1.5 px-2 rounded ${
+                                  !hop.success ? 'bg-red-50 dark:bg-red-900/20' : 'bg-muted/30'
+                                }`}>
+                                  <span className="text-muted-foreground truncate max-w-[200px] flex items-center gap-1.5" title={`${fromName} → ${toName}`}>
+                                    <ArrowRight className="size-3.5 flex-shrink-0" />
+                                    {fromName} → {toName}
+                                    {!hop.online && <Badge variant="outline" className="text-yellow-600 text-xs ml-1">离线</Badge>}
+                                  </span>
+                                  <Badge variant={hop.success ? 'outline' : 'destructive'} className="font-mono">
+                                    {hop.success ? `${hop.latencyMs}ms` : hop.error ?? '失败'}
+                                  </Badge>
+                                </div>
+                              );
+                            });
+                          })()}
+                        </div>
+                      )}
+                      {/* direct 类型：直接显示目标延迟 */}
+                      {probeResult.ruleType === 'direct' && probeResult.targetLatencyMs !== undefined && (
+                        <div className="flex justify-between items-center text-sm">
+                          <span className="text-muted-foreground flex items-center gap-1.5">
+                            <ArrowRight className="size-3.5" />
+                            目标延迟
+                          </span>
+                          <Badge variant="outline" className="font-mono">{probeResult.targetLatencyMs}ms</Badge>
+                        </div>
+                      )}
+                      {/* entry/chain/direct_chain 类型的目标延迟 */}
+                      {probeResult.ruleType !== 'direct' && probeResult.targetLatencyMs !== undefined && (
+                        <div className="flex justify-between items-center text-sm">
+                          <span className="text-muted-foreground flex items-center gap-1.5">
+                            <ArrowRight className="size-3.5" />
+                            {probeResult.ruleType === 'entry' ? '目标延迟 (出口→目标)' : '目标延迟'}
+                          </span>
+                          <Badge variant="outline" className="font-mono">{probeResult.targetLatencyMs}ms</Badge>
+                        </div>
+                      )}
+                      {/* 总延迟 */}
+                      {probeResult.totalLatencyMs !== undefined && (
+                        <>
+                          <Separator className="my-2" />
+                          <div className="flex justify-between items-center text-sm">
+                            <span className="font-medium">总延迟</span>
+                            <Badge className="font-mono">{probeResult.totalLatencyMs}ms</Badge>
+                          </div>
+                        </>
+                      )}
+                    </div>
+                  </>
                 )}
               </div>
             ) : (
