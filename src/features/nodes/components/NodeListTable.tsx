@@ -376,54 +376,77 @@ export const NodeListTable: React.FC<NodeListTableProps> = ({
     },
     {
       id: 'actions',
-      header: '',
-      size: 48,
+      header: '操作',
+      size: 140,
       meta: { priority: 1 } as ResponsiveColumnMeta, // 核心列，始终显示
       enableSorting: false,
       cell: ({ row }) => {
         const node = row.original;
         return (
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <button className="inline-flex items-center justify-center size-8 rounded-lg text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-700 transition-all duration-200">
-                <MoreHorizontal className="size-4" strokeWidth={2} />
-              </button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              <DropdownMenuItem onClick={() => onViewDetail(node)}>
-                <Eye className="mr-2 size-4" />
-                查看详情
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => onEdit(node)}>
-                <Edit className="mr-2 size-4" />
-                编辑
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => onGenerateToken(node)}>
-                <Key className="mr-2 size-4" />
-                生成 Token
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => onGetInstallScript(node)}>
-                <Terminal className="mr-2 size-4" />
-                安装脚本
-              </DropdownMenuItem>
-              <DropdownMenuSeparator />
-              {node.status === 'active' ? (
-                <DropdownMenuItem onClick={() => onDeactivate(node)}>
-                  <PowerOff className="mr-2 size-4" />
-                  停用节点
+          <div className="flex items-center gap-1">
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <button
+                  onClick={() => onViewDetail(node)}
+                  className="inline-flex items-center justify-center size-8 rounded-lg text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-700 transition-all duration-200"
+                >
+                  <Eye className="size-4" />
+                </button>
+              </TooltipTrigger>
+              <TooltipContent>查看详情</TooltipContent>
+            </Tooltip>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <button
+                  onClick={() => onEdit(node)}
+                  className="inline-flex items-center justify-center size-8 rounded-lg text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-700 transition-all duration-200"
+                >
+                  <Edit className="size-4" />
+                </button>
+              </TooltipTrigger>
+              <TooltipContent>编辑</TooltipContent>
+            </Tooltip>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <button
+                  onClick={() => onGetInstallScript(node)}
+                  className="inline-flex items-center justify-center size-8 rounded-lg text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-700 transition-all duration-200"
+                >
+                  <Terminal className="size-4" />
+                </button>
+              </TooltipTrigger>
+              <TooltipContent>安装脚本</TooltipContent>
+            </Tooltip>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <button className="inline-flex items-center justify-center size-8 rounded-lg text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-700 transition-all duration-200">
+                  <MoreHorizontal className="size-4" />
+                </button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuItem onClick={() => onGenerateToken(node)}>
+                  <Key className="mr-2 size-4" />
+                  生成 Token
                 </DropdownMenuItem>
-              ) : (
-                <DropdownMenuItem onClick={() => onActivate(node)}>
-                  <Power className="mr-2 size-4" />
-                  激活节点
+                <DropdownMenuSeparator />
+                {node.status === 'active' ? (
+                  <DropdownMenuItem onClick={() => onDeactivate(node)}>
+                    <PowerOff className="mr-2 size-4" />
+                    停用节点
+                  </DropdownMenuItem>
+                ) : (
+                  <DropdownMenuItem onClick={() => onActivate(node)}>
+                    <Power className="mr-2 size-4" />
+                    激活节点
+                  </DropdownMenuItem>
+                )}
+                <DropdownMenuItem onClick={() => onDelete(node)} className="text-red-600 dark:text-red-400">
+                  <Trash2 className="mr-2 size-4" />
+                  删除节点
                 </DropdownMenuItem>
-              )}
-              <DropdownMenuItem onClick={() => onDelete(node)} className="text-red-600 dark:text-red-400">
-                <Trash2 className="mr-2 size-4" />
-                删除节点
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
         );
       },
     },

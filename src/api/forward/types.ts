@@ -314,16 +314,31 @@ export interface ProbeRuleRequest {
 }
 
 /**
+ * Chain hop latency - represents latency of a single hop in the chain
+ * Used for chain and direct_chain rule types
+ */
+export interface ChainHopLatency {
+  from: string; // Stripe-style prefixed agent ID (e.g., "fa_xK9mP2vL3nQ")
+  to: string; // Stripe-style prefixed agent ID or "target"
+  latencyMs: number; // latency in milliseconds
+  success: boolean; // whether this hop probe succeeded
+  error?: string; // error message if failed
+  online: boolean; // whether the source agent is online
+}
+
+/**
  * Rule probe response - represents probe result for a single forward rule
  * For direct rules: only targetLatencyMs is set
  * For entry rules: both tunnelLatencyMs and targetLatencyMs are set
+ * For chain/direct_chain rules: chainLatencies contains per-hop latencies
  */
 export interface RuleProbeResponse {
   ruleId: string; // Stripe-style prefixed ID (e.g., "fr_xK9mP2vL3nQ")
-  ruleType: 'direct' | 'entry' | 'exit';
+  ruleType: 'direct' | 'entry' | 'chain' | 'direct_chain';
   success: boolean;
   tunnelLatencyMs?: number; // entry only: entry→exit latency
   targetLatencyMs?: number; // agent→target latency
+  chainLatencies?: ChainHopLatency[]; // chain/direct_chain: per-hop latencies
   totalLatencyMs?: number; // total round-trip latency
   error?: string;
 }

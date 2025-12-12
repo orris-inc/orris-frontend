@@ -27,7 +27,7 @@ import {
   AdminButton,
   AdminCard,
 } from '@/components/admin';
-import type { ForwardRule, CreateForwardRuleRequest, UpdateForwardRuleRequest, RuleProbeResponse } from '@/api/forward';
+import type { ForwardRule, CreateForwardRuleRequest, UpdateForwardRuleRequest, RuleProbeResponse, ChainHopLatency } from '@/api/forward';
 
 export const ForwardRulesPage = () => {
   const {
@@ -260,12 +260,34 @@ export const ForwardRulesPage = () => {
                 {/* 延迟信息 */}
                 {probeResult.success && (
                   <div className="space-y-2">
+                    {/* entry 类型：隧道延迟 */}
                     {probeResult.ruleType === 'entry' && probeResult.tunnelLatencyMs !== undefined && (
                       <div className="flex justify-between text-sm">
                         <span className="text-muted-foreground">隧道延迟 (入口→出口)</span>
                         <span className="font-mono">{probeResult.tunnelLatencyMs}ms</span>
                       </div>
                     )}
+                    {/* chain/direct_chain 类型：链路每跳延迟 */}
+                    {(probeResult.ruleType === 'chain' || probeResult.ruleType === 'direct_chain') &&
+                      probeResult.chainLatencies && probeResult.chainLatencies.length > 0 && (
+                      <div className="space-y-1">
+                        <p className="text-xs text-muted-foreground mb-2">链路延迟</p>
+                        {probeResult.chainLatencies.map((hop: ChainHopLatency, index: number) => (
+                          <div key={index} className={`flex justify-between text-sm py-1 ${
+                            !hop.success ? 'text-red-500' : ''
+                          }`}>
+                            <span className="text-muted-foreground truncate max-w-[180px]" title={`${hop.from} → ${hop.to}`}>
+                              {hop.from.replace('fa_', '')} → {hop.to === 'target' ? '目标' : hop.to.replace('fa_', '')}
+                              {!hop.online && <span className="text-yellow-500 ml-1">(离线)</span>}
+                            </span>
+                            <span className="font-mono">
+                              {hop.success ? `${hop.latencyMs}ms` : hop.error || '失败'}
+                            </span>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                    {/* 目标延迟 */}
                     {probeResult.targetLatencyMs !== undefined && (
                       <div className="flex justify-between text-sm">
                         <span className="text-muted-foreground">
@@ -274,6 +296,7 @@ export const ForwardRulesPage = () => {
                         <span className="font-mono">{probeResult.targetLatencyMs}ms</span>
                       </div>
                     )}
+                    {/* 总延迟 */}
                     {probeResult.totalLatencyMs !== undefined && (
                       <div className="flex justify-between text-sm border-t pt-2">
                         <span className="font-medium">总延迟</span>

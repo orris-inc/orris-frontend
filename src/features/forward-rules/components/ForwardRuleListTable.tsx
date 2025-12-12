@@ -323,7 +323,7 @@ export const ForwardRuleListTable: React.FC<ForwardRuleListTableProps> = ({
     {
       id: 'actions',
       header: '操作',
-      size: 88,
+      size: 140,
       meta: { priority: 1 } as ResponsiveColumnMeta,
       enableSorting: false,
       cell: ({ row }) => {
@@ -332,6 +332,28 @@ export const ForwardRuleListTable: React.FC<ForwardRuleListTableProps> = ({
         const canProbe = rule.status === 'enabled' && !isProbing;
         return (
           <div className="flex items-center gap-1">
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <button
+                  onClick={() => onViewDetail(rule)}
+                  className="inline-flex items-center justify-center size-8 rounded-lg text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-700 transition-all duration-200"
+                >
+                  <Eye className="size-4" />
+                </button>
+              </TooltipTrigger>
+              <TooltipContent>查看详情</TooltipContent>
+            </Tooltip>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <button
+                  onClick={() => onEdit(rule)}
+                  className="inline-flex items-center justify-center size-8 rounded-lg text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-700 transition-all duration-200"
+                >
+                  <Edit className="size-4" />
+                </button>
+              </TooltipTrigger>
+              <TooltipContent>编辑</TooltipContent>
+            </Tooltip>
             <Tooltip>
               <TooltipTrigger asChild>
                 <button
@@ -352,19 +374,11 @@ export const ForwardRuleListTable: React.FC<ForwardRuleListTableProps> = ({
             </Tooltip>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <button className="inline-flex items-center justify-center size-8 rounded-lg text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-700 transition-all duration-200 group touch-target">
-                  <MoreHorizontal className="size-4 group-hover:scale-110 transition-transform" strokeWidth={2} />
+                <button className="inline-flex items-center justify-center size-8 rounded-lg text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-700 transition-all duration-200">
+                  <MoreHorizontal className="size-4" />
                 </button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
-                <DropdownMenuItem onClick={() => onViewDetail(rule)}>
-                  <Eye className="mr-2 size-4" />
-                  查看详情
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => onEdit(rule)}>
-                  <Edit className="mr-2 size-4" />
-                  编辑
-                </DropdownMenuItem>
                 <DropdownMenuItem onClick={() => onResetTraffic(rule)}>
                   <RotateCcw className="mr-2 size-4" />
                   重置流量

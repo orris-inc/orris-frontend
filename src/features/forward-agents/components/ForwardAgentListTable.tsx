@@ -90,14 +90,24 @@ export const ForwardAgentListTable: React.FC<ForwardAgentListTableProps> = ({
     },
     {
       accessorKey: 'publicAddress',
-      header: '公网地址',
-      size: 140,
+      header: '地址',
+      size: 160,
       meta: { priority: 2 } as ResponsiveColumnMeta,
-      cell: ({ row }) => (
-        <span className="font-mono text-sm text-slate-700 dark:text-slate-300">
-          {row.original.publicAddress || '-'}
-        </span>
-      ),
+      cell: ({ row }) => {
+        const agent = row.original;
+        return (
+          <div className="space-y-0.5">
+            <div className="font-mono text-sm text-slate-700 dark:text-slate-300">
+              {agent.publicAddress || '-'}
+            </div>
+            {agent.tunnelAddress && (
+              <div className="font-mono text-xs text-slate-500 dark:text-slate-400">
+                隧道: {agent.tunnelAddress}
+              </div>
+            )}
+          </div>
+        );
+      },
     },
     {
       accessorKey: 'status',
@@ -218,53 +228,76 @@ export const ForwardAgentListTable: React.FC<ForwardAgentListTableProps> = ({
     {
       id: 'actions',
       header: '操作',
-      size: 56,
+      size: 140,
       enableSorting: false,
       meta: { priority: 1 } as ResponsiveColumnMeta,
       cell: ({ row }) => {
         const agent = row.original;
         return (
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <button className="inline-flex items-center justify-center size-8 rounded-lg text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-700 transition-all duration-200 group">
-                <MoreHorizontal className="size-4 group-hover:scale-110 transition-transform" strokeWidth={2} />
-              </button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              <DropdownMenuItem onClick={() => onViewDetail(agent)}>
-                <Eye className="mr-2 size-4" />
-                查看详情
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => onEdit(agent)}>
-                <Edit className="mr-2 size-4" />
-                编辑
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => onRegenerateToken(agent)}>
-                <Key className="mr-2 size-4" />
-                重新生成Token
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => onGetInstallScript(agent)}>
-                <Terminal className="mr-2 size-4" />
-                获取安装脚本
-              </DropdownMenuItem>
-              <DropdownMenuSeparator />
-              {agent.status === 'enabled' ? (
-                <DropdownMenuItem onClick={() => onDisable(agent)}>
-                  <PowerOff className="mr-2 size-4" />
-                  禁用
+          <div className="flex items-center gap-1">
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <button
+                  onClick={() => onViewDetail(agent)}
+                  className="inline-flex items-center justify-center size-8 rounded-lg text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-700 transition-all duration-200"
+                >
+                  <Eye className="size-4" />
+                </button>
+              </TooltipTrigger>
+              <TooltipContent>查看详情</TooltipContent>
+            </Tooltip>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <button
+                  onClick={() => onEdit(agent)}
+                  className="inline-flex items-center justify-center size-8 rounded-lg text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-700 transition-all duration-200"
+                >
+                  <Edit className="size-4" />
+                </button>
+              </TooltipTrigger>
+              <TooltipContent>编辑</TooltipContent>
+            </Tooltip>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <button
+                  onClick={() => onGetInstallScript(agent)}
+                  className="inline-flex items-center justify-center size-8 rounded-lg text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-700 transition-all duration-200"
+                >
+                  <Terminal className="size-4" />
+                </button>
+              </TooltipTrigger>
+              <TooltipContent>获取安装脚本</TooltipContent>
+            </Tooltip>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <button className="inline-flex items-center justify-center size-8 rounded-lg text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-700 transition-all duration-200">
+                  <MoreHorizontal className="size-4" />
+                </button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuItem onClick={() => onRegenerateToken(agent)}>
+                  <Key className="mr-2 size-4" />
+                  重新生成Token
                 </DropdownMenuItem>
-              ) : (
-                <DropdownMenuItem onClick={() => onEnable(agent)}>
-                  <Power className="mr-2 size-4" />
-                  启用
+                <DropdownMenuSeparator />
+                {agent.status === 'enabled' ? (
+                  <DropdownMenuItem onClick={() => onDisable(agent)}>
+                    <PowerOff className="mr-2 size-4" />
+                    禁用
+                  </DropdownMenuItem>
+                ) : (
+                  <DropdownMenuItem onClick={() => onEnable(agent)}>
+                    <Power className="mr-2 size-4" />
+                    启用
+                  </DropdownMenuItem>
+                )}
+                <DropdownMenuItem onClick={() => onDelete(agent)} className="text-red-600 dark:text-red-400">
+                  <Trash2 className="mr-2 size-4" />
+                  删除
                 </DropdownMenuItem>
-              )}
-              <DropdownMenuItem onClick={() => onDelete(agent)} className="text-red-600 dark:text-red-400">
-                <Trash2 className="mr-2 size-4" />
-                删除
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
         );
       },
     },
