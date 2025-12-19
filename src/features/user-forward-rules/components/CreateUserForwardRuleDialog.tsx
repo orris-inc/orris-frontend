@@ -1,5 +1,6 @@
 /**
  * 用户端创建转发规则对话框
+ * 支持四种规则类型：direct（直连）、entry（入口）、chain（WS链式转发）、direct_chain（直连链式转发）
  */
 
 import { useState, useEffect } from 'react';
@@ -27,9 +28,11 @@ import { AlertCircle, Server } from 'lucide-react';
 import type {
   CreateForwardRuleRequest,
   ForwardProtocol,
+  ForwardRuleType,
   IPVersion,
 } from '@/api/forward';
 import { useUserForwardAgents } from '../hooks/useUserForwardAgents';
+import { UserSortableChainAgentList } from './UserSortableChainAgentList';
 
 interface CreateUserForwardRuleDialogProps {
   open: boolean;
@@ -40,10 +43,11 @@ interface CreateUserForwardRuleDialogProps {
 }
 
 // 规则类型描述
-const RULE_TYPE_INFO: Record<string, { label: string; description: string }> = {
+const RULE_TYPE_INFO: Record<ForwardRuleType, { label: string; description: string }> = {
   direct: { label: '直连转发', description: '直接将流量转发到目标地址' },
-  entry: { label: '入口节点', description: '作为转发链的入口' },
-  exit: { label: '出口节点', description: '作为转发链的出口' },
+  entry: { label: '入口节点', description: '作为转发链的入口，通过出口节点转发到目标地址' },
+  chain: { label: 'WS链式转发', description: '通过 WebSocket 隧道进行多跳链式转发' },
+  direct_chain: { label: '直连链式转发', description: '通过直连 TCP/UDP 进行多跳链式转发' },
 };
 
 export const CreateUserForwardRuleDialog: React.FC<CreateUserForwardRuleDialogProps> = ({
@@ -59,8 +63,11 @@ export const CreateUserForwardRuleDialog: React.FC<CreateUserForwardRuleDialogPr
   });
 
   const [formData, setFormData] = useState({
-    ruleType: 'direct',
+    ruleType: 'direct' as ForwardRuleType,
     agentId: '',
+    exitAgentId: '',
+    chainAgentIds: [] as string[],
+    chainPortConfig: {} as Record<string, number>,
     name: '',
     listenPort: '',
     targetAddress: '',
@@ -76,10 +83,13 @@ export const CreateUserForwardRuleDialog: React.FC<CreateUserForwardRuleDialogPr
   useEffect(() => {
     if (open) {
       // 默认选择第一个允许的规则类型
-      const defaultRuleType = allowedTypes.length > 0 ? allowedTypes[0] : 'direct';
+      const defaultRuleType = (allowedTypes.length > 0 ? allowedTypes[0] : 'direct') as ForwardRuleType;
       setFormData({
         ruleType: defaultRuleType,
         agentId: '',
+        exitAgentId: '',
+        chainAgentIds: [],
+        chainPortConfig: {},
         name: '',
         listenPort: '',
         targetAddress: '',
@@ -108,12 +118,41 @@ export const CreateUserForwardRuleDialog: React.FC<CreateUserForwardRuleDialogPr
     }
   };
 
-  const handleChange = (field: string, value: string) => {
-    setFormData((prev) => ({ ...prev, [field]: value }));
+  const handleChange = (field: string, value: string | string[] | Record<string, number>) => {
+    setFormData((prev) => {
+      const newData = { ...prev, [field]: value };
+
+      // 如果修改的是入口代理，自动从链节点列表中移除该代理
+      if (field === 'agentId' && typeof value === 'string') {
+        const currentChainIds = prev.chainAgentIds || [];
+        if (currentChainIds.includes(value)) {
+          newData.chainAgentIds = currentChainIds.filter((id: string) => id !== value);
+          // 同时移除该节点的端口配置
+          if (prev.chainPortConfig[value]) {
+            const newPortConfig = { ...prev.chainPortConfig };
+            delete newPortConfig[value];
+            newData.chainPortConfig = newPortConfig;
+          }
+        }
+      }
+
+      return newData;
+    });
     // 清除所有验证错误，让用户重新提交时再次验证
     if (Object.keys(errors).length > 0) {
       setErrors({});
     }
+  };
+
+  // 处理链节点端口配置变更
+  const handleChainPortChange = (agentId: string, port: number) => {
+    setFormData((prev) => ({
+      ...prev,
+      chainPortConfig: {
+        ...prev.chainPortConfig,
+        [agentId]: port,
+      },
+    }));
   };
 
   const validate = () => {
@@ -127,6 +166,49 @@ export const CreateUserForwardRuleDialog: React.FC<CreateUserForwardRuleDialogPr
       newErrors.name = '请输入规则名称';
     }
 
+    // 监听端口是可选的，如果填写了则验证
+    if (formData.listenPort) {
+      const port = parseInt(formData.listenPort);
+      if (isNaN(port) || port < 1 || port > 65535) {
+        newErrors.listenPort = '端口号必须在 1-65535 之间';
+      }
+    }
+
+    // 根据规则类型验证不同字段
+    if (formData.ruleType === 'entry') {
+      if (!formData.exitAgentId) {
+        newErrors.exitAgentId = '请选择出口节点';
+      }
+    } else if (formData.ruleType === 'chain') {
+      if (!formData.chainAgentIds || formData.chainAgentIds.length === 0) {
+        newErrors.chainAgentIds = '请至少选择一个中间节点';
+      }
+    } else if (formData.ruleType === 'direct_chain') {
+      if (!formData.chainAgentIds || formData.chainAgentIds.length === 0) {
+        newErrors.chainAgentIds = '请至少选择一个中间节点';
+      }
+      // 验证每个链节点都配置了端口
+      if (formData.chainAgentIds && formData.chainAgentIds.length > 0) {
+        const missingPorts: string[] = [];
+        for (const agentId of formData.chainAgentIds) {
+          const port = formData.chainPortConfig[agentId];
+          if (!port || port < 1 || port > 65535) {
+            const agent = forwardAgents.find((a) => a.id === agentId);
+            const agentName = agent ? agent.name : agentId;
+            missingPorts.push(agentName);
+          }
+        }
+        if (missingPorts.length > 0) {
+          if (missingPorts.length === formData.chainAgentIds.length) {
+            newErrors.chainPortConfig = '请为每个节点配置有效的监听端口（1-65535）';
+          } else {
+            newErrors.chainPortConfig = `请为以下节点配置有效端口：${missingPorts.join('、')}`;
+          }
+        }
+      }
+    }
+
+    // 目标地址和端口验证（所有类型都需要）
     if (!formData.targetAddress.trim()) {
       newErrors.targetAddress = '请输入目标地址';
     }
@@ -137,14 +219,6 @@ export const CreateUserForwardRuleDialog: React.FC<CreateUserForwardRuleDialogPr
       const port = parseInt(formData.targetPort);
       if (isNaN(port) || port < 1 || port > 65535) {
         newErrors.targetPort = '端口号必须在 1-65535 之间';
-      }
-    }
-
-    // 监听端口是可选的，如果填写了则验证
-    if (formData.listenPort) {
-      const port = parseInt(formData.listenPort);
-      if (isNaN(port) || port < 1 || port > 65535) {
-        newErrors.listenPort = '端口号必须在 1-65535 之间';
       }
     }
 
@@ -159,7 +233,7 @@ export const CreateUserForwardRuleDialog: React.FC<CreateUserForwardRuleDialogPr
 
     const data: CreateForwardRuleRequest = {
       agentId: formData.agentId,
-      ruleType: formData.ruleType as 'direct' | 'entry' | 'chain' | 'direct_chain',
+      ruleType: formData.ruleType,
       name: formData.name.trim(),
       listenPort: formData.listenPort ? parseInt(formData.listenPort) : undefined,
       targetAddress: formData.targetAddress.trim(),
@@ -169,19 +243,53 @@ export const CreateUserForwardRuleDialog: React.FC<CreateUserForwardRuleDialogPr
       remark: formData.remark.trim() || undefined,
     };
 
+    // 根据规则类型添加对应字段
+    if (formData.ruleType === 'entry') {
+      data.exitAgentId = formData.exitAgentId;
+    } else if (formData.ruleType === 'chain') {
+      data.chainAgentIds = formData.chainAgentIds;
+    } else if (formData.ruleType === 'direct_chain') {
+      data.chainAgentIds = formData.chainAgentIds;
+      data.chainPortConfig = formData.chainPortConfig;
+    }
+
     onSubmit(data);
   };
 
   const isFormValid = () => {
-    return (
-      formData.agentId &&
-      formData.name.trim() &&
-      formData.targetAddress.trim() &&
-      formData.targetPort &&
-      parseInt(formData.targetPort) >= 1 &&
-      parseInt(formData.targetPort) <= 65535
-    );
+    // 基本验证
+    if (!formData.agentId || !formData.name.trim()) return false;
+    if (!formData.targetAddress.trim() || !formData.targetPort) return false;
+    const targetPort = parseInt(formData.targetPort);
+    if (isNaN(targetPort) || targetPort < 1 || targetPort > 65535) return false;
+
+    // 根据规则类型验证
+    if (formData.ruleType === 'entry') {
+      if (!formData.exitAgentId) return false;
+    } else if (formData.ruleType === 'chain') {
+      if (!formData.chainAgentIds || formData.chainAgentIds.length === 0) return false;
+    } else if (formData.ruleType === 'direct_chain') {
+      if (!formData.chainAgentIds || formData.chainAgentIds.length === 0) return false;
+      // 验证每个链节点都配置了有效端口
+      const allPortsValid = formData.chainAgentIds.every((id) => {
+        const port = formData.chainPortConfig[id];
+        return port && port > 0 && port <= 65535;
+      });
+      if (!allPortsValid) return false;
+    }
+
+    return true;
   };
+
+  // 获取可选的出口节点（排除当前选中的入口节点）
+  const availableExitAgents = forwardAgents.filter(
+    (a) => a.id !== formData.agentId && a.status === 'enabled'
+  );
+
+  // 获取可选的链节点（排除当前选中的入口节点）
+  const availableChainAgents = forwardAgents.filter(
+    (a) => a.id !== formData.agentId && a.status === 'enabled'
+  );
 
   return (
     <Dialog open={open} onOpenChange={handleClose}>
@@ -265,7 +373,7 @@ export const CreateUserForwardRuleDialog: React.FC<CreateUserForwardRuleDialogPr
                   <Label htmlFor="ruleType">规则类型</Label>
                   <Select
                     value={formData.ruleType}
-                    onValueChange={(value) => handleChange('ruleType', value)}
+                    onValueChange={(value) => handleChange('ruleType', value as ForwardRuleType)}
                     disabled={isCreating}
                   >
                     <SelectTrigger id="ruleType">
@@ -274,7 +382,7 @@ export const CreateUserForwardRuleDialog: React.FC<CreateUserForwardRuleDialogPr
                     <SelectContent>
                       {allowedTypes.map((type) => (
                         <SelectItem key={type} value={type}>
-                          {RULE_TYPE_INFO[type]?.label || type}
+                          {RULE_TYPE_INFO[type as ForwardRuleType]?.label || type}
                         </SelectItem>
                       ))}
                     </SelectContent>
@@ -299,6 +407,109 @@ export const CreateUserForwardRuleDialog: React.FC<CreateUserForwardRuleDialogPr
                       {RULE_TYPE_INFO[formData.ruleType]?.description}
                     </p>
                   </div>
+                </div>
+              )}
+
+              {/* entry 类型：出口节点选择 */}
+              {formData.ruleType === 'entry' && (
+                <div className="flex flex-col gap-2">
+                  <Label htmlFor="exitAgentId">
+                    出口节点 <span className="text-destructive">*</span>
+                  </Label>
+                  <Select
+                    value={formData.exitAgentId}
+                    onValueChange={(value) => handleChange('exitAgentId', value)}
+                    disabled={isCreating || isLoadingAgents}
+                  >
+                    <SelectTrigger id="exitAgentId" className={errors.exitAgentId ? 'border-destructive' : ''}>
+                      <SelectValue placeholder="选择出口节点" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {availableExitAgents.map((agent) => (
+                        <SelectItem key={agent.id} value={agent.id}>
+                          <div className="flex items-center gap-2">
+                            <Server className="h-4 w-4 text-muted-foreground" />
+                            <span>{agent.name}</span>
+                            {agent.groupName && (
+                              <span className="text-xs text-muted-foreground">({agent.groupName})</span>
+                            )}
+                          </div>
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  {errors.exitAgentId && (
+                    <p className="text-xs text-destructive flex items-center gap-1">
+                      <AlertCircle className="h-3 w-3" />
+                      {errors.exitAgentId}
+                    </p>
+                  )}
+                </div>
+              )}
+
+              {/* chain 类型：中间节点列表 */}
+              {formData.ruleType === 'chain' && (
+                <div className="flex flex-col gap-2">
+                  <Label>
+                    中间节点 <span className="text-destructive">*</span>
+                  </Label>
+                  <UserSortableChainAgentList
+                    agents={availableChainAgents}
+                    selectedIds={formData.chainAgentIds}
+                    onSelectionChange={(ids: string[]) => handleChange('chainAgentIds', ids)}
+                    hasError={!!errors.chainAgentIds}
+                    idPrefix="chain-agent"
+                  />
+                  {errors.chainAgentIds && (
+                    <p className="text-xs text-destructive flex items-center gap-1">
+                      <AlertCircle className="h-3 w-3" />
+                      {errors.chainAgentIds}
+                    </p>
+                  )}
+                </div>
+              )}
+
+              {/* direct_chain 类型：中间节点列表（带端口配置） */}
+              {formData.ruleType === 'direct_chain' && (
+                <div className="flex flex-col gap-2">
+                  <Label>
+                    中间节点及端口 <span className="text-destructive">*</span>
+                  </Label>
+                  <UserSortableChainAgentList
+                    agents={availableChainAgents}
+                    selectedIds={formData.chainAgentIds}
+                    onSelectionChange={(ids: string[]) => {
+                      // 同步更新 chainPortConfig，移除不再选中的节点
+                      const newPortConfig = { ...formData.chainPortConfig };
+                      Object.keys(newPortConfig).forEach((id) => {
+                        if (!ids.includes(id)) {
+                          delete newPortConfig[id];
+                        }
+                      });
+                      setFormData((prev) => ({
+                        ...prev,
+                        chainAgentIds: ids,
+                        chainPortConfig: newPortConfig,
+                      }));
+                    }}
+                    showPortConfig
+                    portConfig={formData.chainPortConfig}
+                    onPortConfigChange={handleChainPortChange}
+                    hasError={!!errors.chainAgentIds || !!errors.chainPortConfig}
+                    idPrefix="direct-chain-agent"
+                  />
+                  {errors.chainAgentIds && (
+                    <p className="text-xs text-destructive flex items-center gap-1">
+                      <AlertCircle className="h-3 w-3" />
+                      {errors.chainAgentIds}
+                    </p>
+                  )}
+                  {errors.chainPortConfig && (
+                    <p className="text-xs text-destructive flex items-center gap-1">
+                      <AlertCircle className="h-3 w-3" />
+                      {errors.chainPortConfig}
+                    </p>
+                  )}
                 </div>
               )}
 

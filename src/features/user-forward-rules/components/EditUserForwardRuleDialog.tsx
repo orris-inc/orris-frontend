@@ -26,6 +26,7 @@ import { Separator } from '@/components/common/Separator';
 import { AlertCircle } from 'lucide-react';
 import type {
   ForwardRule,
+  ForwardRuleType,
   UpdateForwardRuleRequest,
   ForwardProtocol,
   IPVersion,
@@ -33,7 +34,7 @@ import type {
 import { useUserForwardAgents } from '../hooks/useUserForwardAgents';
 
 // 规则类型标签映射
-const RULE_TYPE_LABELS: Record<string, string> = {
+const RULE_TYPE_LABELS: Record<ForwardRuleType, string> = {
   direct: '直连转发',
   entry: '入口节点',
   chain: 'WS链式转发',
@@ -340,7 +341,38 @@ export const EditUserForwardRuleDialog: React.FC<EditUserForwardRuleDialogProps>
                 <span className="text-muted-foreground">监听端口：</span>
                 <span className="font-mono">{rule.listenPort || '系统分配'}</span>
               </div>
+              {/* entry 类型显示出口节点 */}
+              {rule.ruleType === 'entry' && rule.exitAgentId && (
+                <div>
+                  <span className="text-muted-foreground">出口节点：</span>
+                  <span>{forwardAgents.find(a => a.id === rule.exitAgentId)?.name || rule.exitAgentId}</span>
+                </div>
+              )}
             </div>
+            {/* chain/direct_chain 类型显示中间节点 */}
+            {(rule.ruleType === 'chain' || rule.ruleType === 'direct_chain') && rule.chainAgentIds && rule.chainAgentIds.length > 0 && (
+              <div className="mt-2 pt-2 border-t border-border/50">
+                <span className="text-muted-foreground text-sm">中间节点：</span>
+                <div className="flex flex-wrap gap-1 mt-1">
+                  {rule.chainAgentIds.map((agentId, index) => {
+                    const agent = forwardAgents.find(a => a.id === agentId);
+                    const port = rule.chainPortConfig?.[agentId];
+                    return (
+                      <span
+                        key={agentId}
+                        className="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-background text-xs"
+                      >
+                        <span className="text-muted-foreground">{index + 1}.</span>
+                        <span>{agent?.name || agentId}</span>
+                        {rule.ruleType === 'direct_chain' && port && (
+                          <span className="text-muted-foreground font-mono">:{port}</span>
+                        )}
+                      </span>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
           </div>
         </div>
 
