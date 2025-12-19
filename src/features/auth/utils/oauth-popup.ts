@@ -68,7 +68,6 @@ export const openOAuthPopup = (provider: OAuthProvider): Promise<UserDisplayInfo
       // 安全检查：验证消息来源
       const apiOrigin = new URL(API_BASE_URL).origin;
       if (event.origin !== apiOrigin && event.origin !== window.location.origin) {
-        console.warn('Rejected OAuth message from untrusted origin:', event.origin);
         return;
       }
 
@@ -76,7 +75,6 @@ export const openOAuthPopup = (provider: OAuthProvider): Promise<UserDisplayInfo
 
       // 验证消息格式
       if (!message || typeof message !== 'object' || !message.type) {
-        console.warn('Invalid OAuth message format:', message);
         return;
       }
 

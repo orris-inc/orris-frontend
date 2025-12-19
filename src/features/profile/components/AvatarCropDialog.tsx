@@ -98,8 +98,8 @@ export const AvatarCropDialog = ({
       const croppedBlob = await createCroppedImage(imageSrc, croppedAreaPixels);
       await onConfirm(croppedBlob);
       onClose();
-    } catch (error) {
-      console.error('裁剪失败:', error);
+    } catch {
+      // Crop operation failed
     } finally {
       setIsUploading(false);
     }

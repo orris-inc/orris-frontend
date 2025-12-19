@@ -53,4 +53,5 @@ Badge.displayName = 'Badge';
 // Exports
 // ============================================================================
 
+// eslint-disable-next-line react-refresh/only-export-components
 export { Badge, badgeVariants };

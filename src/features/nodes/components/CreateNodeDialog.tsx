@@ -191,8 +191,8 @@ export const CreateNodeDialog: React.FC<CreateNodeDialogProps> = ({
             if (Object.keys(pluginOptsObj).length > 0) {
               submitData.pluginOpts = pluginOptsObj;
             }
-          } catch (error) {
-            console.error('解析插件选项失败:', error);
+          } catch {
+            // Plugin options parsing failed, skip
           }
         }
       }

@@ -93,8 +93,8 @@ export const DashboardPage = () => {
             setTotalTrafficLimit(totalLimit);
           }
         }
-      } catch (err) {
-        console.error('获取订阅信息失败:', err);
+      } catch {
+        // Failed to fetch subscription data
       }
     };
 

@@ -195,8 +195,8 @@ const useDashboardStats = () => {
           totalNodes: nodesRes.total || 0,
           activeNodes,
         });
-      } catch (error) {
-        console.error('获取统计数据失败:', error);
+      } catch {
+        // Failed to fetch statistics
       } finally {
         setLoading(false);
       }

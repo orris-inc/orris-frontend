@@ -73,7 +73,8 @@ export const useProfile = () => {
    * 上传头像
    */
   const uploadAvatar = useCallback(
-    async (file: File) => {
+    async (_file: File) => {
+      void _file; // Will be used when avatar upload is implemented
       if (!user) {
         showError('用户信息不存在');
         return;
@@ -81,8 +82,7 @@ export const useProfile = () => {
 
       setIsLoading(true);
       try {
-        console.warn('头像上传功能暂未实现', file.name);
-        // TODO: 实现头像上传
+        // TODO: Avatar upload not implemented yet
         // const { avatar_url } = await uploadAvatarApi(file);
         // setUser({ ...user, avatar: avatar_url });
         showSuccess('头像已更新');

@@ -85,8 +85,6 @@ export const useAuth = () => {
         const redirectUrl = getRedirectUrl(response.user.role as 'admin' | 'user' | 'moderator');
         navigate(redirectUrl, { replace: true });
       } catch (err) {
-        // 记录原始错误用于调试
-        console.error('登录错误:', err);
         const errorMsg = extractErrorMessage(err);
         setError(errorMsg);
         // 重新抛出原始错误，以便调用者可以进行特殊处理（如判断是否是账号未激活）
@@ -115,7 +113,6 @@ export const useAuth = () => {
         const redirectUrl = getRedirectUrl(user.role as 'admin' | 'user' | 'moderator');
         navigate(redirectUrl, { replace: true });
       } catch (err) {
-        console.error('OAuth登录错误:', err);
         const errorMsg = extractErrorMessage(err);
         setError(errorMsg || 'OAuth登录失败，请重试');
         throw err;
@@ -142,7 +139,6 @@ export const useAuth = () => {
           state: { email: data.email },
         });
       } catch (err) {
-        console.error('注册错误:', err);
         const errorMsg = extractErrorMessage(err);
         setError(errorMsg);
         throw err;
@@ -162,8 +158,8 @@ export const useAuth = () => {
 
     try {
       await authApi.logout();
-    } catch (err) {
-      console.error('Logout error:', err);
+    } catch {
+      // Logout error ignored, proceed with local state cleanup
     } finally {
       storeLogout();
       setIsLoading(false);

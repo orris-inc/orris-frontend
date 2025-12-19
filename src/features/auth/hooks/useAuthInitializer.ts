@@ -22,28 +22,22 @@ export const useAuthInitializer = () => {
   useEffect(() => {
     // 使用全局变量检查，防止 StrictMode 重新挂载导致重复初始化
     if (globalHasInitialized) {
-      console.log('[useAuthInitializer] 全局已初始化,跳过');
       return;
     }
 
     // 使用 ref 检查（防止同一组件实例多次执行）
     if (hasInitialized.current) {
-      console.log('[useAuthInitializer] 当前实例已初始化,跳过');
       return;
     }
 
-    console.log('[useAuthInitializer] 开始初始化认证状态');
     globalHasInitialized = true;
     hasInitialized.current = true;
 
     const initializeAuth = async () => {
       try {
-        console.log('[useAuthInitializer] 调用 getCurrentUser');
         const user = await authApi.getCurrentUser();
-        console.log('[useAuthInitializer] 获取用户成功:', user.email);
         useAuthStore.getState().login(user);
-      } catch (error) {
-        console.log('[useAuthInitializer] 获取用户失败:', error);
+      } catch {
         useAuthStore.getState().clearAuth();
       } finally {
         useAuthStore.getState().setLoading(false);

@@ -101,7 +101,6 @@ export const ResetPasswordPage = () => {
         state: { message: '密码重置成功，请使用新密码登录' },
       });
     } catch (err) {
-      console.error('重置密码错误:', err);
       const errorMsg = extractErrorMessage(err);
       setError(errorMsg);
       showError(errorMsg);

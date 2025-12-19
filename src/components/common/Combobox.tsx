@@ -4,7 +4,7 @@
  */
 
 import type { ReactNode } from 'react';
-import { forwardRef, useState, useCallback } from 'react';
+import { forwardRef, useState, useCallback, useMemo } from 'react';
 import { Check, ChevronsUpDown, X } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -60,11 +60,10 @@ const Combobox = forwardRef<HTMLDivElement, ComboboxProps>(
     );
 
     // 获取选中的值（数组格式）
-    const selectedValues = Array.isArray(value)
-      ? value
-      : value
-        ? [value]
-        : [];
+    const selectedValues = useMemo(
+      () => (Array.isArray(value) ? value : value ? [value] : []),
+      [value]
+    );
 
     // 处理选项选择
     const handleSelect = useCallback(

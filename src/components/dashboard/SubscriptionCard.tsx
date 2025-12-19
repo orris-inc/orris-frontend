@@ -114,8 +114,8 @@ const CopyButton = ({ text }: { text: string }) => {
       await navigator.clipboard.writeText(text);
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
-    } catch (err) {
-      console.error('复制失败:', err);
+    } catch {
+      // Copy failed silently
     }
   };
 
@@ -190,8 +190,7 @@ export const SubscriptionCard = () => {
         } else {
           setSubscriptions([]);
         }
-      } catch (err) {
-        console.error('获取订阅信息失败:', err);
+      } catch {
         setError('加载订阅信息失败');
       } finally {
         setLoading(false);
@@ -211,8 +210,8 @@ export const SubscriptionCard = () => {
       setSubscriptions((prev) =>
         prev.map((sub) => (sub.id === subscriptionId ? updated : sub))
       );
-    } catch (err) {
-      console.error('重置订阅链接失败:', err);
+    } catch {
+      // Reset link failed
     } finally {
       setResettingLinks((prev) => ({ ...prev, [subscriptionId]: false }));
     }

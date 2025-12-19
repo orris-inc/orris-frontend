@@ -47,9 +47,8 @@ export const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
       await onConfirm();
       // 操作成功后关闭对话框
       onOpenChange(false);
-    } catch (error) {
-      // 错误处理由外部组件处理（通过 toast 等）
-      console.error('Confirm action failed:', error);
+    } catch {
+      // Error handled by external component (via toast)
     } finally {
       setIsProcessing(false);
     }

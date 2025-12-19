@@ -152,7 +152,6 @@ export function translateErrorMessage(message: string): string {
   }
 
   // 5. 未匹配到，返回通用错误消息
-  console.warn('未翻译的错误消息:', message);
   return '操作失败，请稍后重试';
 }
 
@@ -249,7 +248,6 @@ export function extractErrorMessage(error: unknown): string {
   }
 
   // 5. 未知错误
-  console.error('未知错误格式:', error);
   return '操作失败，请稍后重试';
 }
 

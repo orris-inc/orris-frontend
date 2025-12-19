@@ -57,7 +57,6 @@ export const ForgotPasswordPage = () => {
       setSuccess(true);
       showSuccess('重置邮件已发送,请查收邮箱');
     } catch (err) {
-      console.error('忘记密码错误:', err);
       const errorMsg = extractErrorMessage(err);
       setError(errorMsg);
       showError(errorMsg);

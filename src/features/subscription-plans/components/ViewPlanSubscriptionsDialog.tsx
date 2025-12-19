@@ -72,8 +72,8 @@ export const ViewPlanSubscriptionsDialog: React.FC<ViewPlanSubscriptionsDialogPr
 
         setSubscriptions(planSubscriptions);
         setUsersMap(userMap);
-      } catch (error) {
-        console.error('Failed to load data:', error);
+      } catch {
+        // Failed to load subscription data
       } finally {
         setLoading(false);
       }
