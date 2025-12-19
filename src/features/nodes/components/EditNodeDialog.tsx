@@ -1,0 +1,629 @@
+/**
+ * 编辑节点对话框组件
+ */
+
+import { useState, useEffect } from 'react';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from '@/components/common/Dialog';
+import { Button } from '@/components/common/Button';
+import { Input } from '@/components/common/Input';
+import { Label } from '@/components/common/Label';
+import { Separator } from '@/components/common/Separator';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/common/Select';
+import type { Node, UpdateNodeRequest, TransportProtocol } from '@/api/node';
+import { useResourceGroups } from '@/features/resource-groups/hooks/useResourceGroups';
+
+interface EditNodeDialogProps {
+  open: boolean;
+  node: Node | null;
+  onClose: () => void;
+  onSubmit: (id: string, data: UpdateNodeRequest) => void;
+}
+
+// Shadowsocks 加密方法
+const SS_ENCRYPTION_METHODS = [
+  'aes-128-gcm',
+  'aes-256-gcm',
+  'chacha20-ietf-poly1305',
+  'aes-128-cfb',
+  'aes-256-cfb',
+] as const;
+
+// Trojan 传输协议
+const TRANSPORT_PROTOCOLS: TransportProtocol[] = ['tcp', 'ws', 'grpc'];
+
+// 辅助函数：将 pluginOpts 对象转换为字符串
+const pluginOptsToString = (opts?: Record<string, string>): string => {
+  if (!opts || Object.keys(opts).length === 0) return '';
+  return Object.entries(opts)
+    .map(([key, value]) => `${key}=${value}`)
+    .join(';');
+};
+
+// 辅助函数：将字符串解析为 pluginOpts 对象
+const stringToPluginOpts = (str: string): Record<string, string> | undefined => {
+  const trimmed = str.trim();
+  if (!trimmed) return undefined;
+
+  const opts: Record<string, string> = {};
+  const pairs = trimmed.split(';');
+
+  for (const pair of pairs) {
+    const trimmedPair = pair.trim();
+    if (!trimmedPair) continue;
+
+    const [key, ...valueParts] = trimmedPair.split('=');
+    const trimmedKey = key?.trim();
+    const value = valueParts.join('=').trim(); // 支持值中包含 '='
+
+    if (trimmedKey && value) {
+      opts[trimmedKey] = value;
+    }
+  }
+
+  return Object.keys(opts).length > 0 ? opts : undefined;
+};
+
+// 辅助函数：深度比较两个 pluginOpts 对象
+const arePluginOptsEqual = (
+  opts1?: Record<string, string>,
+  opts2?: Record<string, string>
+): boolean => {
+  // 两者都为空
+  if ((!opts1 || Object.keys(opts1).length === 0) &&
+      (!opts2 || Object.keys(opts2).length === 0)) {
+    return true;
+  }
+
+  // 一个为空，一个不为空
+  if (!opts1 || !opts2) return false;
+
+  const keys1 = Object.keys(opts1);
+  const keys2 = Object.keys(opts2);
+
+  if (keys1.length !== keys2.length) return false;
+
+  return keys1.every(key => opts1[key] === opts2[key]);
+};
+
+
+export const EditNodeDialog: React.FC<EditNodeDialogProps> = ({
+  open,
+  node,
+  onClose,
+  onSubmit,
+}) => {
+  const [formData, setFormData] = useState<UpdateNodeRequest>({});
+  const [errors, setErrors] = useState<Record<string, string>>({});
+  const [pluginOptsStr, setPluginOptsStr] = useState<string>('');
+
+  // 获取资源组列表
+  const { resourceGroups, isLoading: isLoadingGroups } = useResourceGroups({
+    pageSize: 100,
+    filters: { status: 'active' },
+    enabled: open,
+  });
+
+  useEffect(() => {
+    if (node) {
+      setFormData({
+        name: node.name,
+        serverAddress: node.serverAddress,
+        agentPort: node.agentPort,
+        subscriptionPort: node.subscriptionPort,
+        encryptionMethod: node.encryptionMethod,
+        region: node.region,
+        status: node.status,
+        sortOrder: node.sortOrder,
+        // Shadowsocks 插件相关字段
+        plugin: node.plugin,
+        pluginOpts: node.pluginOpts,
+        // Trojan 相关字段
+        transportProtocol: node.transportProtocol,
+        host: node.host,
+        path: node.path,
+        sni: node.sni,
+        allowInsecure: node.allowInsecure,
+      });
+      setPluginOptsStr(pluginOptsToString(node.pluginOpts));
+      setErrors({});
+    }
+  }, [node]);
+
+  const isShadowsocks = node?.protocol === 'shadowsocks';
+  const isTrojan = node?.protocol === 'trojan';
+  const showWsFields = isTrojan && formData.transportProtocol === 'ws';
+  const showGrpcFields = isTrojan && formData.transportProtocol === 'grpc';
+
+  const handleChange = (field: keyof UpdateNodeRequest, value: string | number | boolean | undefined) => {
+    setFormData((prev) => ({ ...prev, [field]: value }));
+    if (errors[field]) {
+      setErrors((prev) => {
+        const newErrors = { ...prev };
+        delete newErrors[field];
+        return newErrors;
+      });
+    }
+  };
+
+  const handlePluginOptsChange = (value: string) => {
+    setPluginOptsStr(value);
+    const parsedOpts = stringToPluginOpts(value);
+    setFormData((prev) => ({ ...prev, pluginOpts: parsedOpts }));
+    if (errors.pluginOpts) {
+      setErrors((prev) => {
+        const newErrors = { ...prev };
+        delete newErrors.pluginOpts;
+        return newErrors;
+      });
+    }
+  };
+
+  const handleSubmit = () => {
+    if (!node) return;
+
+    // 构建需要提交的更新对象
+    const updates: UpdateNodeRequest = {};
+    const newErrors: Record<string, string> = {};
+
+    // 辅助函数：规范化字符串进行比较（trim后比较，将空字符串和undefined视为相同）
+    const hasStringChanged = (newValue: string | undefined, oldValue: string | undefined): boolean => {
+      const normalizedNew = (newValue || '').trim();
+      const normalizedOld = (oldValue || '').trim();
+      return normalizedNew !== normalizedOld;
+    };
+
+    // 只处理有变化的字段
+    if (formData.name !== undefined && hasStringChanged(formData.name, node.name)) {
+      const trimmedName = formData.name.trim();
+      if (!trimmedName) {
+        newErrors.name = '节点名称不能为空';
+      } else {
+        updates.name = trimmedName;
+      }
+    }
+
+    if (formData.serverAddress !== undefined && hasStringChanged(formData.serverAddress, node.serverAddress)) {
+      // 后端支持服务器地址为空，允许空字符串
+      const trimmedAddress = formData.serverAddress.trim();
+      updates.serverAddress = trimmedAddress;
+    }
+
+    if (formData.agentPort !== node.agentPort && formData.agentPort !== undefined) {
+      if (formData.agentPort < 1 || formData.agentPort > 65535) {
+        newErrors.agentPort = '端口必须在1-65535之间';
+      } else {
+        updates.agentPort = formData.agentPort;
+      }
+    }
+
+    if (formData.subscriptionPort !== node.subscriptionPort && formData.subscriptionPort !== undefined) {
+      if (formData.subscriptionPort < 1 || formData.subscriptionPort > 65535) {
+        newErrors.subscriptionPort = '端口必须在1-65535之间';
+      } else {
+        updates.subscriptionPort = formData.subscriptionPort;
+      }
+    }
+
+    if (formData.encryptionMethod !== node.encryptionMethod && formData.encryptionMethod !== undefined) {
+      updates.encryptionMethod = formData.encryptionMethod;
+    }
+
+    // Shadowsocks 插件字段
+    if (isShadowsocks) {
+      if (formData.plugin !== undefined && hasStringChanged(formData.plugin, node.plugin)) {
+        updates.plugin = formData.plugin.trim() || undefined;
+      }
+      if (!arePluginOptsEqual(formData.pluginOpts, node.pluginOpts)) {
+        updates.pluginOpts = formData.pluginOpts;
+      }
+    }
+
+    if (formData.region !== undefined && hasStringChanged(formData.region, node.region)) {
+      updates.region = formData.region.trim() || undefined;
+    }
+
+    if (formData.status !== node.status && formData.status !== undefined) {
+      updates.status = formData.status;
+    }
+
+    if (formData.sortOrder !== node.sortOrder && formData.sortOrder !== undefined) {
+      updates.sortOrder = formData.sortOrder;
+    }
+
+    // Trojan 相关字段
+    if (isTrojan) {
+      if (formData.transportProtocol !== node.transportProtocol && formData.transportProtocol !== undefined) {
+        updates.transportProtocol = formData.transportProtocol;
+      }
+      if (formData.sni !== undefined && hasStringChanged(formData.sni, node.sni)) {
+        updates.sni = formData.sni?.trim() || undefined;
+      }
+      if (formData.host !== undefined && hasStringChanged(formData.host, node.host)) {
+        updates.host = formData.host?.trim() || undefined;
+      }
+      if (formData.path !== undefined && hasStringChanged(formData.path, node.path)) {
+        updates.path = formData.path?.trim() || undefined;
+      }
+      if (formData.allowInsecure !== node.allowInsecure && formData.allowInsecure !== undefined) {
+        updates.allowInsecure = formData.allowInsecure;
+      }
+    }
+
+    // 资源组关联
+    if (formData.groupSid !== undefined) {
+      updates.groupSid = formData.groupSid;
+    }
+
+    // 如果有验证错误，显示并阻止提交
+    if (Object.keys(newErrors).length > 0) {
+      setErrors(newErrors);
+      return;
+    }
+
+    // 清除错误并提交
+    setErrors({});
+    if (Object.keys(updates).length > 0) {
+      onSubmit(node.id, updates);
+    }
+  };
+
+  // 检查是否有变化
+  const hasChanges = node && Object.keys(formData).some(
+    (key) => formData[key as keyof UpdateNodeRequest] !== node[key as keyof Node]
+  );
+
+  if (!node) return null;
+
+  return (
+    <Dialog open={open} onOpenChange={(open) => !open && onClose()}>
+      <DialogContent className="sm:max-w-[700px] max-h-[90vh] overflow-y-auto">
+        <DialogHeader>
+          <DialogTitle>编辑节点</DialogTitle>
+        </DialogHeader>
+
+        <div className="space-y-6">
+          {/* 节点基本信息（只读） */}
+          <div>
+            <h3 className="text-sm font-medium text-muted-foreground mb-3">基本信息</h3>
+            <Separator className="mb-4" />
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="flex flex-col gap-2">
+                <Label htmlFor="node_id">节点ID</Label>
+                <Input id="node_id" value={node.id} disabled />
+              </div>
+
+              <div className="flex flex-col gap-2">
+                <Label htmlFor="createdAt">创建时间</Label>
+                <Input
+                  id="createdAt"
+                  value={new Date(node.createdAt).toLocaleString('zh-CN')}
+                  disabled
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* 可编辑字段 */}
+          <div>
+            <h3 className="text-sm font-medium text-muted-foreground mb-3">可编辑信息</h3>
+            <Separator className="mb-4" />
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {/* 节点名称 */}
+              <div className="flex flex-col gap-2">
+                <Label htmlFor="name">节点名称</Label>
+                <Input
+                  id="name"
+                  value={formData.name || ''}
+                  onChange={(e) => handleChange('name', e.target.value)}
+                  error={!!errors.name}
+                />
+                {errors.name && (
+                  <p className="text-xs text-destructive">{errors.name}</p>
+                )}
+              </div>
+
+              {/* 协议类型（只读） */}
+              <div className="flex flex-col gap-2">
+                <Label htmlFor="protocol">协议类型</Label>
+                <Input
+                  id="protocol"
+                  value={node.protocol === 'shadowsocks' ? 'Shadowsocks' : 'Trojan'}
+                  disabled
+                />
+                <p className="text-xs text-muted-foreground">协议创建后不可修改</p>
+              </div>
+
+              {/* 状态 */}
+              <div className="flex flex-col gap-2">
+                <Label htmlFor="status">状态</Label>
+                <Select
+                  value={formData.status || 'inactive'}
+                  onValueChange={(value) => handleChange('status', value)}
+                >
+                  <SelectTrigger id="status">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="active">激活</SelectItem>
+                    <SelectItem value="inactive">未激活</SelectItem>
+                    <SelectItem value="maintenance">维护中</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {/* 服务器地址 */}
+              <div className="flex flex-col gap-2 md:col-span-2">
+                <Label htmlFor="serverAddress">服务器地址</Label>
+                <Input
+                  id="serverAddress"
+                  value={formData.serverAddress || ''}
+                  onChange={(e) => handleChange('serverAddress', e.target.value)}
+                  error={!!errors.serverAddress}
+                />
+                {errors.serverAddress && (
+                  <p className="text-xs text-destructive">{errors.serverAddress}</p>
+                )}
+              </div>
+
+              {/* 代理端口 */}
+              <div className="flex flex-col gap-2">
+                <Label htmlFor="agentPort">代理端口</Label>
+                <Input
+                  id="agentPort"
+                  type="number"
+                  min={1}
+                  max={65535}
+                  value={formData.agentPort || ''}
+                  onChange={(e) => handleChange('agentPort', parseInt(e.target.value, 10))}
+                  error={!!errors.agentPort}
+                />
+                {errors.agentPort && (
+                  <p className="text-xs text-destructive">{errors.agentPort}</p>
+                )}
+              </div>
+
+              {/* 订阅端口 */}
+              <div className="flex flex-col gap-2">
+                <Label htmlFor="subscriptionPort">订阅端口</Label>
+                <Input
+                  id="subscriptionPort"
+                  type="number"
+                  min={1}
+                  max={65535}
+                  placeholder="默认使用代理端口"
+                  value={formData.subscriptionPort ?? ''}
+                  onChange={(e) => handleChange('subscriptionPort', e.target.value ? parseInt(e.target.value, 10) : undefined)}
+                  error={!!errors.subscriptionPort}
+                />
+                {errors.subscriptionPort && (
+                  <p className="text-xs text-destructive">{errors.subscriptionPort}</p>
+                )}
+              </div>
+
+              {/* Shadowsocks 加密方法 */}
+              {isShadowsocks && (
+                <div className="flex flex-col gap-2">
+                  <Label htmlFor="encryptionMethod">加密方法</Label>
+                  <Select
+                    value={formData.encryptionMethod || ''}
+                    onValueChange={(value) => handleChange('encryptionMethod', value)}
+                  >
+                    <SelectTrigger id="encryptionMethod">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {SS_ENCRYPTION_METHODS.map((method) => (
+                        <SelectItem key={method} value={method}>
+                          {method}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              )}
+
+              {/* Shadowsocks 插件 */}
+              {isShadowsocks && (
+                <div className="flex flex-col gap-2">
+                  <Label htmlFor="plugin">插件</Label>
+                  <Input
+                    id="plugin"
+                    placeholder="例如：obfs-local, v2ray-plugin"
+                    value={formData.plugin || ''}
+                    onChange={(e) => handleChange('plugin', e.target.value)}
+                  />
+                  <p className="text-xs text-muted-foreground">Shadowsocks 混淆插件</p>
+                </div>
+              )}
+
+              {/* Shadowsocks 插件选项 */}
+              {isShadowsocks && (
+                <div className="flex flex-col gap-2 md:col-span-2">
+                  <Label htmlFor="pluginOpts">插件选项</Label>
+                  <Input
+                    id="pluginOpts"
+                    placeholder="例如：obfs=http;obfs-host=www.bing.com"
+                    value={pluginOptsStr}
+                    onChange={(e) => handlePluginOptsChange(e.target.value)}
+                    error={!!errors.pluginOpts}
+                  />
+                  {errors.pluginOpts && (
+                    <p className="text-xs text-destructive">{errors.pluginOpts}</p>
+                  )}
+                  <p className="text-xs text-muted-foreground">
+                    插件配置参数，格式：key1=value1;key2=value2
+                  </p>
+                </div>
+              )}
+
+              {/* Trojan 传输协议 */}
+              {isTrojan && (
+                <div className="flex flex-col gap-2">
+                  <Label htmlFor="transportProtocol">传输协议</Label>
+                  <Select
+                    value={formData.transportProtocol || 'tcp'}
+                    onValueChange={(value) => handleChange('transportProtocol', value)}
+                  >
+                    <SelectTrigger id="transportProtocol">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {TRANSPORT_PROTOCOLS.map((protocol) => (
+                        <SelectItem key={protocol} value={protocol}>
+                          {protocol.toUpperCase()}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              )}
+
+              {/* Trojan SNI */}
+              {isTrojan && (
+                <div className="flex flex-col gap-2">
+                  <Label htmlFor="sni">SNI</Label>
+                  <Input
+                    id="sni"
+                    placeholder="TLS Server Name Indication"
+                    value={formData.sni || ''}
+                    onChange={(e) => handleChange('sni', e.target.value)}
+                  />
+                  <p className="text-xs text-muted-foreground">可选</p>
+                </div>
+              )}
+
+              {/* WebSocket Host */}
+              {showWsFields && (
+                <div className="flex flex-col gap-2">
+                  <Label htmlFor="host">Host</Label>
+                  <Input
+                    id="host"
+                    placeholder="WebSocket Host Header"
+                    value={formData.host || ''}
+                    onChange={(e) => handleChange('host', e.target.value)}
+                  />
+                  <p className="text-xs text-muted-foreground">可选</p>
+                </div>
+              )}
+
+              {/* WebSocket Path */}
+              {showWsFields && (
+                <div className="flex flex-col gap-2">
+                  <Label htmlFor="path">Path</Label>
+                  <Input
+                    id="path"
+                    placeholder="/path"
+                    value={formData.path || ''}
+                    onChange={(e) => handleChange('path', e.target.value)}
+                  />
+                  <p className="text-xs text-muted-foreground">可选</p>
+                </div>
+              )}
+
+              {/* gRPC Service Name */}
+              {showGrpcFields && (
+                <div className="flex flex-col gap-2">
+                  <Label htmlFor="grpcHost">Service Name</Label>
+                  <Input
+                    id="grpcHost"
+                    placeholder="gRPC Service Name"
+                    value={formData.host || ''}
+                    onChange={(e) => handleChange('host', e.target.value)}
+                  />
+                  <p className="text-xs text-muted-foreground">可选</p>
+                </div>
+              )}
+
+              {/* Trojan Allow Insecure */}
+              {isTrojan && (
+                <div className="flex flex-col gap-2">
+                  <Label htmlFor="allowInsecure">TLS 安全</Label>
+                  <Select
+                    value={formData.allowInsecure ? 'true' : 'false'}
+                    onValueChange={(value) => handleChange('allowInsecure', value === 'true')}
+                  >
+                    <SelectTrigger id="allowInsecure">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="false">验证证书（安全）</SelectItem>
+                      <SelectItem value="true">跳过验证（不安全）</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <p className="text-xs text-muted-foreground">自签名证书可选择跳过验证</p>
+                </div>
+              )}
+
+              {/* 地区 */}
+              <div className="flex flex-col gap-2">
+                <Label htmlFor="region">地区</Label>
+                <Input
+                  id="region"
+                  value={formData.region || ''}
+                  onChange={(e) => handleChange('region', e.target.value)}
+                />
+              </div>
+
+              {/* 排序顺序 */}
+              <div className="flex flex-col gap-2">
+                <Label htmlFor="sortOrder">排序顺序</Label>
+                <Input
+                  id="sortOrder"
+                  type="number"
+                  value={formData.sortOrder ?? 0}
+                  onChange={(e) => handleChange('sortOrder', parseInt(e.target.value, 10) || 0)}
+                />
+              </div>
+
+              {/* 资源组 */}
+              <div className="flex flex-col gap-2">
+                <Label htmlFor="groupSid">资源组</Label>
+                <Select
+                  value={formData.groupSid ?? '__none__'}
+                  onValueChange={(value) => handleChange('groupSid', value === '__none__' ? '' : value)}
+                  disabled={isLoadingGroups}
+                >
+                  <SelectTrigger id="groupSid">
+                    <SelectValue placeholder={isLoadingGroups ? '加载中...' : '选择资源组'} />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="__none__">不关联资源组</SelectItem>
+                    {resourceGroups.map((group) => (
+                      <SelectItem key={group.sid} value={group.sid}>
+                        {group.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <p className="text-xs text-muted-foreground">
+                  可选，将节点关联到资源组
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <DialogFooter>
+          <Button variant="outline" onClick={onClose}>
+            取消
+          </Button>
+          <Button onClick={handleSubmit} disabled={!hasChanges}>
+            保存
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+};
