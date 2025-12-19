@@ -1,5 +1,5 @@
 /**
- * 删除资源组确认对话框
+ * Delete Resource Group Confirmation Dialog
  */
 
 import { useState } from 'react';
@@ -19,7 +19,7 @@ interface DeleteResourceGroupDialogProps {
   open: boolean;
   resourceGroup: ResourceGroup | null;
   onClose: () => void;
-  onConfirm: (id: number) => Promise<void>;
+  onConfirm: (id: string) => Promise<void>;
 }
 
 export const DeleteResourceGroupDialog: React.FC<DeleteResourceGroupDialogProps> = ({
@@ -35,7 +35,7 @@ export const DeleteResourceGroupDialog: React.FC<DeleteResourceGroupDialogProps>
 
     setLoading(true);
     try {
-      await onConfirm(resourceGroup.id);
+      await onConfirm(resourceGroup.sid);
       onClose();
     } finally {
       setLoading(false);

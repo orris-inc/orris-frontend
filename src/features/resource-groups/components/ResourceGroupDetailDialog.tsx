@@ -1,5 +1,5 @@
 /**
- * 资源组详情对话框
+ * Resource Group Detail Dialog
  */
 
 import { useState } from 'react';
@@ -34,7 +34,7 @@ import { AddMembersDialog } from './AddMembersDialog';
 import type { ResourceGroup } from '@/api/resource/types';
 import type { SubscriptionPlan } from '@/api/subscription/types';
 
-// 格式化时间
+// Format date
 const formatDate = (dateString: string) => {
   if (!dateString) return '-';
   const date = new Date(dateString);
@@ -47,7 +47,7 @@ const formatDate = (dateString: string) => {
   });
 };
 
-// 详情项组件
+// Detail item component
 const DetailItem: React.FC<{
   icon: React.ReactNode;
   label: string;
@@ -97,26 +97,26 @@ export const ResourceGroupDetailDialog: React.FC<ResourceGroupDetailDialogProps>
   plansMap,
   onClose,
 }) => {
-  // 成员选择状态
+  // Member selection state
   const [selectedNodeIds, setSelectedNodeIds] = useState<Set<string>>(new Set());
   const [selectedAgentIds, setSelectedAgentIds] = useState<Set<string>>(new Set());
   const [addNodesDialogOpen, setAddNodesDialogOpen] = useState(false);
   const [addAgentsDialogOpen, setAddAgentsDialogOpen] = useState(false);
 
-  // 获取成员列表
+  // Get member lists
   const { nodes, isLoading: isLoadingNodes, pagination: nodesPagination, refetch: refetchNodes } = useGroupNodes({
-    groupId: resourceGroup?.id ?? null,
+    groupId: resourceGroup?.sid ?? null,
     pageSize: 50,
     enabled: open && !!resourceGroup,
   });
 
   const { forwardAgents, isLoading: isLoadingAgents, pagination: agentsPagination, refetch: refetchAgents } = useGroupForwardAgents({
-    groupId: resourceGroup?.id ?? null,
+    groupId: resourceGroup?.sid ?? null,
     pageSize: 50,
     enabled: open && !!resourceGroup,
   });
 
-  // 成员管理操作
+  // Member management actions
   const {
     addNodes,
     removeNodes,
@@ -126,9 +126,9 @@ export const ResourceGroupDetailDialog: React.FC<ResourceGroupDetailDialogProps>
     isRemovingNodes,
     isAddingAgents,
     isRemovingAgents,
-  } = useGroupMemberManagement(resourceGroup?.id ?? null);
+  } = useGroupMemberManagement(resourceGroup?.sid ?? null);
 
-  // 节点选择操作
+  // Node selection actions
   const handleToggleNode = (id: string) => {
     setSelectedNodeIds((prev) => {
       const next = new Set(prev);
@@ -162,7 +162,7 @@ export const ResourceGroupDetailDialog: React.FC<ResourceGroupDetailDialogProps>
     refetchNodes();
   };
 
-  // 转发代理选择操作
+  // Forward agent selection actions
   const handleToggleAgent = (id: string) => {
     setSelectedAgentIds((prev) => {
       const next = new Set(prev);
@@ -196,7 +196,7 @@ export const ResourceGroupDetailDialog: React.FC<ResourceGroupDetailDialogProps>
     refetchAgents();
   };
 
-  // 关闭时清理选择状态
+  // Clean up selection state on close
   const handleClose = () => {
     setSelectedNodeIds(new Set());
     setSelectedAgentIds(new Set());
@@ -237,7 +237,7 @@ export const ResourceGroupDetailDialog: React.FC<ResourceGroupDetailDialogProps>
             </TabsList>
 
             <TabsContent value="info" className="space-y-4 py-2">
-              {/* 标识信息 */}
+              {/* Identification info */}
               <div>
                 <h4 className="text-sm font-medium text-slate-900 dark:text-white mb-2">标识信息</h4>
                 <DetailItem
@@ -255,7 +255,7 @@ export const ResourceGroupDetailDialog: React.FC<ResourceGroupDetailDialogProps>
 
               <Separator />
 
-              {/* 关联计划 */}
+              {/* Associated plan */}
               <div>
                 <h4 className="text-sm font-medium text-slate-900 dark:text-white mb-2">关联计划</h4>
                 {plan ? (
@@ -293,7 +293,7 @@ export const ResourceGroupDetailDialog: React.FC<ResourceGroupDetailDialogProps>
 
               <Separator />
 
-              {/* 时间信息 */}
+              {/* Time info */}
               <div>
                 <h4 className="text-sm font-medium text-slate-900 dark:text-white mb-2">时间信息</h4>
                 <DetailItem
@@ -308,7 +308,7 @@ export const ResourceGroupDetailDialog: React.FC<ResourceGroupDetailDialogProps>
                 />
               </div>
 
-              {/* 资源统计 */}
+              {/* Resource statistics */}
               <Separator />
               <div>
                 <h4 className="text-sm font-medium text-slate-900 dark:text-white mb-3">资源统计</h4>
@@ -332,7 +332,7 @@ export const ResourceGroupDetailDialog: React.FC<ResourceGroupDetailDialogProps>
             </TabsContent>
 
             <TabsContent value="nodes" className="mt-4 space-y-3">
-              {/* 操作栏 */}
+              {/* Action bar */}
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   {nodes.length > 0 && (
@@ -374,7 +374,7 @@ export const ResourceGroupDetailDialog: React.FC<ResourceGroupDetailDialogProps>
                 </div>
               </div>
 
-              {/* 节点列表 */}
+              {/* Nodes list */}
               {isLoadingNodes ? (
                 <div className="flex items-center justify-center py-8">
                   <Loader2 className="size-6 animate-spin text-muted-foreground" />
@@ -428,7 +428,7 @@ export const ResourceGroupDetailDialog: React.FC<ResourceGroupDetailDialogProps>
             </TabsContent>
 
             <TabsContent value="agents" className="mt-4 space-y-3">
-              {/* 操作栏 */}
+              {/* Action bar */}
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   {forwardAgents.length > 0 && (
@@ -470,7 +470,7 @@ export const ResourceGroupDetailDialog: React.FC<ResourceGroupDetailDialogProps>
                 </div>
               </div>
 
-              {/* 转发代理列表 */}
+              {/* Forward agents list */}
               {isLoadingAgents ? (
                 <div className="flex items-center justify-center py-8">
                   <Loader2 className="size-6 animate-spin text-muted-foreground" />
@@ -526,7 +526,7 @@ export const ResourceGroupDetailDialog: React.FC<ResourceGroupDetailDialogProps>
         </DialogContent>
       </Dialog>
 
-      {/* 添加节点对话框 */}
+      {/* Add nodes dialog */}
       <AddMembersDialog
         open={addNodesDialogOpen}
         type="nodes"
@@ -537,7 +537,7 @@ export const ResourceGroupDetailDialog: React.FC<ResourceGroupDetailDialogProps>
         isSubmitting={isAddingNodes}
       />
 
-      {/* 添加转发代理对话框 */}
+      {/* Add forward agents dialog */}
       <AddMembersDialog
         open={addAgentsDialogOpen}
         type="agents"

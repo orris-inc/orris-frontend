@@ -1,5 +1,5 @@
 /**
- * 编辑资源组对话框
+ * Edit Resource Group Dialog
  */
 
 import { useState, useEffect } from 'react';
@@ -23,7 +23,7 @@ interface EditResourceGroupDialogProps {
   resourceGroup: ResourceGroup | null;
   plansMap: Record<string, SubscriptionPlan>;
   onClose: () => void;
-  onSubmit: (id: number, data: UpdateResourceGroupRequest) => Promise<void>;
+  onSubmit: (id: string, data: UpdateResourceGroupRequest) => Promise<void>;
 }
 
 interface FormData {
@@ -44,7 +44,7 @@ export const EditResourceGroupDialog: React.FC<EditResourceGroupDialogProps> = (
   });
   const [loading, setLoading] = useState(false);
 
-  // 初始化表单数据
+  // Initialize form data
   useEffect(() => {
     if (open && resourceGroup) {
       setFormData({
@@ -69,7 +69,7 @@ export const EditResourceGroupDialog: React.FC<EditResourceGroupDialogProps> = (
         name: formData.name,
         description: formData.description || undefined,
       };
-      await onSubmit(resourceGroup.id, submitData);
+      await onSubmit(resourceGroup.sid, submitData);
       onClose();
     } finally {
       setLoading(false);
@@ -96,7 +96,7 @@ export const EditResourceGroupDialog: React.FC<EditResourceGroupDialogProps> = (
         </DialogHeader>
 
         <div className="space-y-4 py-4">
-          {/* 只读信息 */}
+          {/* Read-only info */}
           <div className="rounded-lg bg-slate-50 dark:bg-slate-800/50 p-3 space-y-2">
             <div className="flex justify-between text-sm">
               <span className="text-muted-foreground">ID</span>

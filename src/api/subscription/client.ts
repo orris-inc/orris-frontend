@@ -388,8 +388,10 @@ export async function adminCreateSubscription(
  * Get subscription by ID (Admin)
  * GET /admin/subscriptions/:id
  * @requires Authentication, Admin
+ * @param id - Subscription's Stripe-style ID (sub_xxx)
+ * Updated: 2025-12-19 - Changed id type to string only (SID format)
  */
-export async function adminGetSubscription(id: number | string): Promise<Subscription> {
+export async function adminGetSubscription(id: string): Promise<Subscription> {
   const response = await apiClient.get<APIResponse<Subscription>>(
     `/admin/subscriptions/${id}`
   );
@@ -415,9 +417,11 @@ export async function adminListSubscriptions(
  * Update subscription status (Admin)
  * PATCH /admin/subscriptions/:id/status
  * @requires Authentication, Admin
+ * @param id - Subscription's Stripe-style ID (sub_xxx)
+ * Updated: 2025-12-19 - Changed id type to string only (SID format)
  */
 export async function adminUpdateSubscriptionStatus(
-  id: number | string,
+  id: string,
   data: AdminUpdateSubscriptionStatusRequest
 ): Promise<void> {
   await apiClient.patch(`/admin/subscriptions/${id}/status`, data);
@@ -427,9 +431,11 @@ export async function adminUpdateSubscriptionStatus(
  * Change subscription plan (Admin)
  * PATCH /admin/subscriptions/:id/plan
  * @requires Authentication, Admin
+ * @param id - Subscription's Stripe-style ID (sub_xxx)
+ * Updated: 2025-12-19 - Changed id type to string only (SID format)
  */
 export async function adminChangeSubscriptionPlan(
-  id: number | string,
+  id: string,
   data: AdminChangePlanRequest
 ): Promise<void> {
   await apiClient.patch(`/admin/subscriptions/${id}/plan`, data);

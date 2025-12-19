@@ -1,6 +1,6 @@
 /**
- * 资源组管理页面（管理端）
- * 使用统一的精致商务风格组件
+ * Resource Group Management Page (Admin)
+ * Using unified elegant business style components
  */
 
 import { useState, useMemo } from 'react';
@@ -41,7 +41,7 @@ export const ResourceGroupManagementPage = () => {
     handlePageSizeChange,
   } = useResourceGroupsPage();
 
-  // 获取所有计划用于关联显示和创建表单
+  // Fetch all plans for association display and create form
   const { data: plansData } = useQuery({
     queryKey: queryKeys.subscriptionPlans.list({ pageSize: 100 }),
     queryFn: () => listPlans({ pageSize: 100 }),
@@ -49,7 +49,7 @@ export const ResourceGroupManagementPage = () => {
 
   const plans = useMemo(() => plansData?.items ?? [], [plansData?.items]);
 
-  // 构建计划 ID -> 计划信息的映射
+  // Build plan ID -> plan info mapping
   const plansMap = useMemo(() => {
     const map: Record<string, SubscriptionPlan> = {};
     for (const plan of plans) {
@@ -58,7 +58,7 @@ export const ResourceGroupManagementPage = () => {
     return map;
   }, [plans]);
 
-  // 对话框状态
+  // Dialog states
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [detailDialogOpen, setDetailDialogOpen] = useState(false);
@@ -89,13 +89,13 @@ export const ResourceGroupManagementPage = () => {
     setCreateDialogOpen(false);
   };
 
-  const handleUpdateSubmit = async (id: number, data: UpdateResourceGroupRequest) => {
+  const handleUpdateSubmit = async (id: string, data: UpdateResourceGroupRequest) => {
     await updateResourceGroup(id, data);
     setEditDialogOpen(false);
     setSelectedResourceGroup(null);
   };
 
-  const handleDeleteConfirm = async (id: number) => {
+  const handleDeleteConfirm = async (id: string) => {
     await deleteResourceGroup(id);
     setDeleteDialogOpen(false);
     setSelectedResourceGroup(null);
@@ -117,7 +117,7 @@ export const ResourceGroupManagementPage = () => {
           </AdminButton>
         }
       >
-        {/* 资源组列表表格 */}
+        {/* Resource group list table */}
         <AdminCard noPadding>
           <ResourceGroupListTable
             resourceGroups={resourceGroups}
@@ -136,7 +136,7 @@ export const ResourceGroupManagementPage = () => {
         </AdminCard>
       </AdminPageLayout>
 
-      {/* 创建资源组对话框 */}
+      {/* Create resource group dialog */}
       <CreateResourceGroupDialog
         open={createDialogOpen}
         plans={plans}
@@ -144,7 +144,7 @@ export const ResourceGroupManagementPage = () => {
         onSubmit={handleCreateSubmit}
       />
 
-      {/* 编辑资源组对话框 */}
+      {/* Edit resource group dialog */}
       <EditResourceGroupDialog
         open={editDialogOpen}
         resourceGroup={selectedResourceGroup}
@@ -156,7 +156,7 @@ export const ResourceGroupManagementPage = () => {
         onSubmit={handleUpdateSubmit}
       />
 
-      {/* 资源组详情对话框 */}
+      {/* Resource group detail dialog */}
       <ResourceGroupDetailDialog
         open={detailDialogOpen}
         resourceGroup={selectedResourceGroup}
@@ -167,7 +167,7 @@ export const ResourceGroupManagementPage = () => {
         }}
       />
 
-      {/* 删除确认对话框 */}
+      {/* Delete confirmation dialog */}
       <DeleteResourceGroupDialog
         open={deleteDialogOpen}
         resourceGroup={selectedResourceGroup}

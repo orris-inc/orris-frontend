@@ -1,6 +1,6 @@
 /**
  * useResourceGroups Hook
- * 基于 TanStack Query 实现
+ * Built with TanStack Query
  */
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
@@ -50,7 +50,7 @@ export const useResourceGroups = (options: UseResourceGroupsOptions = {}) => {
   const queryClient = useQueryClient();
   const { showSuccess, showError } = useNotificationStore();
 
-  // 构建查询参数
+  // Build query params
   const params: ListResourceGroupsParams = {
     page,
     pageSize,
@@ -58,7 +58,7 @@ export const useResourceGroups = (options: UseResourceGroupsOptions = {}) => {
     planId: filters.planId,
   };
 
-  // 查询资源组列表
+  // Query resource groups list
   const {
     data,
     isLoading,
@@ -71,7 +71,7 @@ export const useResourceGroups = (options: UseResourceGroupsOptions = {}) => {
     enabled,
   });
 
-  // 创建资源组
+  // Create resource group
   const createMutation = useMutation({
     mutationFn: createResourceGroup,
     onSuccess: () => {
@@ -83,9 +83,9 @@ export const useResourceGroups = (options: UseResourceGroupsOptions = {}) => {
     },
   });
 
-  // 更新资源组
+  // Update resource group
   const updateMutation = useMutation({
-    mutationFn: ({ id, data }: { id: number; data: UpdateResourceGroupRequest }) =>
+    mutationFn: ({ id, data }: { id: string; data: UpdateResourceGroupRequest }) =>
       updateResourceGroup(id, data),
     onSuccess: () => {
       showSuccess('资源组更新成功');
@@ -96,9 +96,9 @@ export const useResourceGroups = (options: UseResourceGroupsOptions = {}) => {
     },
   });
 
-  // 删除资源组
+  // Delete resource group
   const deleteMutation = useMutation({
-    mutationFn: (id: number) => deleteResourceGroup(id),
+    mutationFn: (id: string) => deleteResourceGroup(id),
     onSuccess: () => {
       showSuccess('资源组删除成功');
       queryClient.invalidateQueries({ queryKey: queryKeys.resourceGroups.lists() });
@@ -108,9 +108,9 @@ export const useResourceGroups = (options: UseResourceGroupsOptions = {}) => {
     },
   });
 
-  // 激活资源组
+  // Activate resource group
   const activateMutation = useMutation({
-    mutationFn: (id: number) => activateResourceGroup(id),
+    mutationFn: (id: string) => activateResourceGroup(id),
     onSuccess: () => {
       showSuccess('资源组已激活');
       queryClient.invalidateQueries({ queryKey: queryKeys.resourceGroups.lists() });
@@ -120,9 +120,9 @@ export const useResourceGroups = (options: UseResourceGroupsOptions = {}) => {
     },
   });
 
-  // 停用资源组
+  // Deactivate resource group
   const deactivateMutation = useMutation({
-    mutationFn: (id: number) => deactivateResourceGroup(id),
+    mutationFn: (id: string) => deactivateResourceGroup(id),
     onSuccess: () => {
       showSuccess('资源组已停用');
       queryClient.invalidateQueries({ queryKey: queryKeys.resourceGroups.lists() });
@@ -133,7 +133,7 @@ export const useResourceGroups = (options: UseResourceGroupsOptions = {}) => {
   });
 
   return {
-    // 数据
+    // Data
     resourceGroups: data?.items ?? [],
     pagination: {
       page: data?.page ?? page,
@@ -142,26 +142,26 @@ export const useResourceGroups = (options: UseResourceGroupsOptions = {}) => {
       totalPages: data?.totalPages ?? 0,
     },
 
-    // 状态
+    // State
     isLoading,
     isFetching,
     error: error ? handleApiError(error) : null,
 
-    // 操作
+    // Actions
     refetch,
     createResourceGroup: (data: CreateResourceGroupRequest) =>
       createMutation.mutateAsync(data),
-    updateResourceGroup: (id: number, data: UpdateResourceGroupRequest) =>
+    updateResourceGroup: (id: string, data: UpdateResourceGroupRequest) =>
       updateMutation.mutateAsync({ id, data }),
-    deleteResourceGroup: (id: number) => deleteMutation.mutateAsync(id),
-    activateResourceGroup: (id: number) => activateMutation.mutateAsync(id),
-    deactivateResourceGroup: (id: number) => deactivateMutation.mutateAsync(id),
+    deleteResourceGroup: (id: string) => deleteMutation.mutateAsync(id),
+    activateResourceGroup: (id: string) => activateMutation.mutateAsync(id),
+    deactivateResourceGroup: (id: string) => deactivateMutation.mutateAsync(id),
     toggleResourceGroupStatus: (resourceGroup: ResourceGroup) =>
       resourceGroup.status === 'active'
-        ? deactivateMutation.mutateAsync(resourceGroup.id)
-        : activateMutation.mutateAsync(resourceGroup.id),
+        ? deactivateMutation.mutateAsync(resourceGroup.sid)
+        : activateMutation.mutateAsync(resourceGroup.sid),
 
-    // Mutation 状态
+    // Mutation state
     isCreating: createMutation.isPending,
     isUpdating: updateMutation.isPending,
     isDeleting: deleteMutation.isPending,
@@ -170,8 +170,8 @@ export const useResourceGroups = (options: UseResourceGroupsOptions = {}) => {
   };
 };
 
-// 获取单个资源组详情
-export const useResourceGroup = (id: number | null) => {
+// Get single resource group details
+export const useResourceGroup = (id: string | null) => {
   const { data, isLoading, error } = useQuery({
     queryKey: queryKeys.resourceGroups.detail(id!),
     queryFn: () => getResourceGroup(id!),
@@ -185,7 +185,7 @@ export const useResourceGroup = (id: number | null) => {
   };
 };
 
-// 资源组列表状态管理 hook（用于页面级状态）
+// Resource groups list state management hook (for page-level state)
 export const useResourceGroupsPage = () => {
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(20);
@@ -221,9 +221,9 @@ export const useResourceGroupsPage = () => {
   };
 };
 
-// 获取资源组成员（节点）
+// Get resource group members (nodes)
 interface UseGroupNodesOptions {
-  groupId: number | string | null;
+  groupId: string | null;
   page?: number;
   pageSize?: number;
   enabled?: boolean;
@@ -255,9 +255,9 @@ export const useGroupNodes = (options: UseGroupNodesOptions) => {
   };
 };
 
-// 获取资源组成员（转发代理）
+// Get resource group members (forward agents)
 interface UseGroupForwardAgentsOptions {
-  groupId: number | string | null;
+  groupId: string | null;
   page?: number;
   pageSize?: number;
   enabled?: boolean;
@@ -289,12 +289,12 @@ export const useGroupForwardAgents = (options: UseGroupForwardAgentsOptions) => 
   };
 };
 
-// 资源组成员管理 hook
-export const useGroupMemberManagement = (groupId: number | string | null) => {
+// Resource group member management hook
+export const useGroupMemberManagement = (groupId: string | null) => {
   const queryClient = useQueryClient();
   const { showSuccess, showError } = useNotificationStore();
 
-  // 添加节点到资源组
+  // Add nodes to resource group
   const addNodesMutation = useMutation({
     mutationFn: (nodeIds: string[]) => addNodesToGroup(groupId!, { nodeIds }),
     onSuccess: (result: BatchOperationResult) => {
@@ -313,7 +313,7 @@ export const useGroupMemberManagement = (groupId: number | string | null) => {
     },
   });
 
-  // 从资源组移除节点
+  // Remove nodes from resource group
   const removeNodesMutation = useMutation({
     mutationFn: (nodeIds: string[]) => removeNodesFromGroup(groupId!, { nodeIds }),
     onSuccess: (result: BatchOperationResult) => {
@@ -332,7 +332,7 @@ export const useGroupMemberManagement = (groupId: number | string | null) => {
     },
   });
 
-  // 添加转发代理到资源组
+  // Add forward agents to resource group
   const addAgentsMutation = useMutation({
     mutationFn: (agentIds: string[]) => addForwardAgentsToGroup(groupId!, { agentIds }),
     onSuccess: (result: BatchOperationResult) => {
@@ -351,7 +351,7 @@ export const useGroupMemberManagement = (groupId: number | string | null) => {
     },
   });
 
-  // 从资源组移除转发代理
+  // Remove forward agents from resource group
   const removeAgentsMutation = useMutation({
     mutationFn: (agentIds: string[]) => removeForwardAgentsFromGroup(groupId!, { agentIds }),
     onSuccess: (result: BatchOperationResult) => {
@@ -371,13 +371,13 @@ export const useGroupMemberManagement = (groupId: number | string | null) => {
   });
 
   return {
-    // 操作
+    // Actions
     addNodes: (nodeIds: string[]) => addNodesMutation.mutateAsync(nodeIds),
     removeNodes: (nodeIds: string[]) => removeNodesMutation.mutateAsync(nodeIds),
     addAgents: (agentIds: string[]) => addAgentsMutation.mutateAsync(agentIds),
     removeAgents: (agentIds: string[]) => removeAgentsMutation.mutateAsync(agentIds),
 
-    // 状态
+    // State
     isAddingNodes: addNodesMutation.isPending,
     isRemovingNodes: removeNodesMutation.isPending,
     isAddingAgents: addAgentsMutation.isPending,

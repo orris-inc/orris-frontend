@@ -438,9 +438,11 @@ export interface AdminUpdateSubscriptionStatusRequest {
 /**
  * Admin change plan request
  * PATCH /admin/subscriptions/:id/plan
+ * Updated: 2025-12-19 - Changed newPlanId to string (Stripe-style ID: plan_xxx)
  */
 export interface AdminChangePlanRequest {
-  newPlanId: number;
+  /** New plan's Stripe-style ID: plan_xxx */
+  newPlanId: string;
   changeType: 'upgrade' | 'downgrade';
   effectiveDate: 'immediate' | 'period_end';
 }
