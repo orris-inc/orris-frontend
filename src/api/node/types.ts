@@ -261,7 +261,8 @@ export interface UserNode {
  */
 export interface CreateUserNodeRequest {
   name: string;
-  serverAddress: string;
+  /** Server address (optional, can be auto-detected from agent's public IP) */
+  serverAddress?: string;
   /** Port for agent connections (required) */
   agentPort: number;
   /** Port for client subscriptions (if null, uses agentPort) */

@@ -121,9 +121,6 @@ export const CreateUserNodeDialog: React.FC<CreateUserNodeDialogProps> = ({
     if (!formData.name.trim()) {
       newErrors.name = '请输入节点名称';
     }
-    if (!formData.serverAddress.trim()) {
-      newErrors.serverAddress = '请输入服务器地址';
-    }
     if (!formData.agentPort || isNaN(Number(formData.agentPort)) || Number(formData.agentPort) <= 0) {
       newErrors.agentPort = '请输入有效的端口号';
     }
@@ -142,7 +139,7 @@ export const CreateUserNodeDialog: React.FC<CreateUserNodeDialogProps> = ({
     try {
       const request: CreateUserNodeRequest = {
         name: formData.name.trim(),
-        serverAddress: formData.serverAddress.trim(),
+        serverAddress: formData.serverAddress.trim() || undefined,
         agentPort: Number(formData.agentPort),
         subscriptionPort: formData.subscriptionPort ? Number(formData.subscriptionPort) : undefined,
         protocol: formData.protocol,
@@ -232,17 +229,15 @@ export const CreateUserNodeDialog: React.FC<CreateUserNodeDialogProps> = ({
 
               <div className="grid grid-cols-2 gap-4">
                 <div className="flex flex-col gap-2">
-                  <Label htmlFor="serverAddress">
-                    服务器地址 <span className="text-destructive">*</span>
-                  </Label>
+                  <Label htmlFor="serverAddress">服务器地址</Label>
                   <Input
                     id="serverAddress"
                     value={formData.serverAddress}
                     onChange={(e) => handleChange('serverAddress', e.target.value)}
-                    placeholder="IP 或域名"
+                    placeholder="留空则自动检测"
                     disabled={loading}
                   />
-                  {errors.serverAddress && <p className="text-xs text-destructive">{errors.serverAddress}</p>}
+                  <p className="text-xs text-muted-foreground">可选，留空将从 Agent 公网 IP 自动检测</p>
                 </div>
 
                 <div className="flex flex-col gap-2">
@@ -442,7 +437,7 @@ export const CreateUserNodeDialog: React.FC<CreateUserNodeDialogProps> = ({
           <Button variant="outline" onClick={handleClose} disabled={loading}>
             取消
           </Button>
-          <Button onClick={handleSubmit} disabled={loading || !formData.name || !formData.serverAddress || !formData.agentPort}>
+          <Button onClick={handleSubmit} disabled={loading || !formData.name || !formData.agentPort}>
             {loading ? '创建中...' : '创建'}
           </Button>
         </DialogFooter>

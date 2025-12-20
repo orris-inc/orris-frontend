@@ -74,9 +74,6 @@ export const EditUserNodeDialog: React.FC<EditUserNodeDialogProps> = ({
     if (!formData.name.trim()) {
       newErrors.name = '请输入节点名称';
     }
-    if (!formData.serverAddress.trim()) {
-      newErrors.serverAddress = '请输入服务器地址';
-    }
     if (!formData.agentPort || isNaN(Number(formData.agentPort)) || Number(formData.agentPort) <= 0) {
       newErrors.agentPort = '请输入有效的端口号';
     }
@@ -99,8 +96,9 @@ export const EditUserNodeDialog: React.FC<EditUserNodeDialogProps> = ({
       if (formData.name.trim() !== node.name) {
         updates.name = formData.name.trim();
       }
-      if (formData.serverAddress.trim() !== node.serverAddress) {
-        updates.serverAddress = formData.serverAddress.trim();
+      const newServerAddress = formData.serverAddress.trim() || undefined;
+      if (newServerAddress !== node.serverAddress) {
+        updates.serverAddress = newServerAddress;
       }
       if (Number(formData.agentPort) !== node.agentPort) {
         updates.agentPort = Number(formData.agentPort);
@@ -194,16 +192,15 @@ export const EditUserNodeDialog: React.FC<EditUserNodeDialogProps> = ({
               </div>
 
               <div className="flex flex-col gap-2">
-                <Label htmlFor="serverAddress">
-                  服务器地址 <span className="text-destructive">*</span>
-                </Label>
+                <Label htmlFor="serverAddress">服务器地址</Label>
                 <Input
                   id="serverAddress"
                   value={formData.serverAddress}
                   onChange={(e) => handleChange('serverAddress', e.target.value)}
+                  placeholder="留空则自动检测"
                   disabled={loading}
                 />
-                {errors.serverAddress && <p className="text-xs text-destructive">{errors.serverAddress}</p>}
+                <p className="text-xs text-muted-foreground">可选，留空将从 Agent 公网 IP 自动检测</p>
               </div>
 
               <div className="grid grid-cols-2 gap-4">
