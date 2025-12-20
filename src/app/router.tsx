@@ -31,6 +31,7 @@ import { ResourceGroupManagementPage } from '@/pages/ResourceGroupManagementPage
 import { ProfileSettingsPage } from '@/pages/ProfileSettingsPage';
 import { UserForwardRulesPage } from '@/pages/UserForwardRulesPage';
 import { UserForwardAgentsPage } from '@/pages/UserForwardAgentsPage';
+import { UserNodesPage } from '@/pages/UserNodesPage';
 import { NewAdminDashboardPage } from '@/pages/NewAdminDashboardPage';
 import { ProtectedRoute } from '@/shared/components/ProtectedRoute';
 import { AdminRoute } from '@/shared/components/AdminRoute';
@@ -86,6 +87,16 @@ export const router = createBrowserRouter([
     element: (
       <ProtectedRoute>
         <UserForwardAgentsPage />
+      </ProtectedRoute>
+    ),
+  },
+
+  // 用户端节点管理
+  {
+    path: '/dashboard/nodes',
+    element: (
+      <ProtectedRoute>
+        <UserNodesPage />
       </ProtectedRoute>
     ),
   },

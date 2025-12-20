@@ -40,6 +40,7 @@ interface PlanLimits {
   forwardRuleLimit?: number;
   forwardTrafficLimit?: number;
   forwardRuleTypes?: ForwardRuleTypeOption[];
+  nodeLimit?: number;
 }
 
 // 辅助函数：将 PlanLimits 转换为 API 格式
@@ -52,6 +53,7 @@ function planLimitsToApiFormat(limits: PlanLimits): Record<string, unknown> {
   if (limits.forwardRuleLimit !== undefined) result['forward_rule_limit'] = limits.forwardRuleLimit;
   if (limits.forwardTrafficLimit !== undefined) result['forward_traffic_limit'] = limits.forwardTrafficLimit;
   if (limits.forwardRuleTypes !== undefined) result['forward_rule_types'] = limits.forwardRuleTypes;
+  if (limits.nodeLimit !== undefined) result['node_limit'] = limits.nodeLimit;
   return result;
 }
 
@@ -66,6 +68,7 @@ function parsePlanLimits(apiLimits: Record<string, unknown> | undefined): PlanLi
     forwardRuleLimit: apiLimits.forwardRuleLimit as number | undefined,
     forwardTrafficLimit: apiLimits.forwardTrafficLimit as number | undefined,
     forwardRuleTypes: apiLimits.forwardRuleTypes as ForwardRuleTypeOption[] | undefined,
+    nodeLimit: apiLimits.nodeLimit as number | undefined,
   };
 }
 
@@ -419,6 +422,19 @@ export const EditPlanDialog: React.FC<EditPlanDialogProps> = ({
                     placeholder="0 表示无限制"
                     value={formData.planLimits.connectionLimit || ''}
                     onChange={(e) => handleLimitChange('connectionLimit', e.target.value === '' ? undefined : Number(e.target.value))}
+                    disabled={loading}
+                  />
+                </div>
+
+                <div className="flex flex-col gap-2">
+                  <Label htmlFor="nodeLimit">用户可创建节点数上限</Label>
+                  <Input
+                    id="nodeLimit"
+                    type="number"
+                    min="0"
+                    placeholder="0 表示无限制"
+                    value={formData.planLimits.nodeLimit || ''}
+                    onChange={(e) => handleLimitChange('nodeLimit', e.target.value === '' ? undefined : Number(e.target.value))}
                     disabled={loading}
                   />
                 </div>

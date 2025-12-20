@@ -72,6 +72,17 @@ export const navigationConfig: readonly NavigationItem[] = [
     order: 3,
   },
   {
+    id: 'user-nodes',
+    label: '我的节点',
+    path: '/dashboard/nodes',
+    icon: Server,
+    roles: ['user', 'admin'],
+    showInNav: true,
+    showInBreadcrumb: true,
+    parentId: 'dashboard',
+    order: 4,
+  },
+  {
     id: 'pricing',
     label: '定价方案',
     path: '/pricing',
@@ -79,7 +90,7 @@ export const navigationConfig: readonly NavigationItem[] = [
     roles: ['user', 'admin'],
     showInNav: true,
     showInBreadcrumb: true,
-    order: 4,
+    order: 5,
   },
   {
     id: 'profile',
@@ -90,7 +101,7 @@ export const navigationConfig: readonly NavigationItem[] = [
     showInNav: false, // 不在主导航显示(通过用户菜单访问)
     showInBreadcrumb: true,
     parentId: 'dashboard',
-    order: 5,
+    order: 6,
   },
 
   // ==================== 管理端路由 ====================

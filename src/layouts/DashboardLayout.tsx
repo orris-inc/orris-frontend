@@ -8,6 +8,7 @@ import { useNavigate } from 'react-router';
 import { Menu, User as UserIcon, Settings, LogOut, Shield } from 'lucide-react';
 import * as DropdownMenuPrimitive from '@radix-ui/react-dropdown-menu';
 import * as AvatarPrimitive from '@radix-ui/react-avatar';
+import { TooltipProvider } from '@/components/common/Tooltip';
 
 import { useAuthStore } from '@/features/auth/stores/auth-store';
 import { useAuth } from '@/features/auth/hooks/useAuth';
@@ -51,6 +52,7 @@ export const DashboardLayout = ({ children }: DashboardLayoutProps) => {
   };
 
   return (
+    <TooltipProvider delayDuration={0}>
     <div className="flex min-h-screen flex-col bg-background">
       {/* 顶部导航栏 */}
       <header className="sticky top-0 z-40 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
@@ -185,5 +187,6 @@ export const DashboardLayout = ({ children }: DashboardLayoutProps) => {
         onClose={() => setProfileDialogOpen(false)}
       />
     </div>
+    </TooltipProvider>
   );
 };
