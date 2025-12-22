@@ -63,6 +63,8 @@ export const openOAuthPopup = (provider: OAuthProvider): Promise<UserDisplayInfo
 
     // Listen to postMessage event
     const handleMessage = (event: MessageEvent<OAuthCallbackMessage>) => {
+      console.log('[OAuth] Message received:', event.origin, event.data);
+
       // Security check: verify message origin
       // baseURL may be a relative path (e.g., '/api'), so we need to handle this case
       let apiOrigin: string;
@@ -74,7 +76,10 @@ export const openOAuthPopup = (provider: OAuthProvider): Promise<UserDisplayInfo
         apiOrigin = window.location.origin;
       }
 
+      console.log('[OAuth] Origin check:', { eventOrigin: event.origin, apiOrigin, windowOrigin: window.location.origin });
+
       if (event.origin !== apiOrigin && event.origin !== window.location.origin) {
+        console.log('[OAuth] Origin mismatch, ignoring');
         return;
       }
 
@@ -82,11 +87,15 @@ export const openOAuthPopup = (provider: OAuthProvider): Promise<UserDisplayInfo
 
       // Validate message format
       if (!message || typeof message !== 'object' || !message.type) {
+        console.log('[OAuth] Invalid message format');
         return;
       }
 
+      console.log('[OAuth] Processing message type:', message.type);
+
       // Handle OAuth success
       if (message.type === 'oauth_success') {
+        console.log('[OAuth] Success! User:', message.user);
         if (isSettled) return;
         isSettled = true;
         cleanup();
@@ -94,8 +103,10 @@ export const openOAuthPopup = (provider: OAuthProvider): Promise<UserDisplayInfo
 
         // Token is already stored in HttpOnly Cookie, only return user info
         if (message.user) {
+          console.log('[OAuth] Resolving with user');
           resolve(message.user);
         } else {
+          console.log('[OAuth] No user in message');
           reject(new Error('OAuth login succeeded but no user info returned'));
         }
       }
