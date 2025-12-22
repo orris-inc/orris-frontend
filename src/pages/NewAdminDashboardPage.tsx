@@ -1,6 +1,6 @@
 /**
  * Admin Dashboard - Refined Business Style
- * Uses real API data
+ * Uses real API data with traffic analytics
  */
 
 import { useEffect, useState } from 'react';
@@ -12,12 +12,29 @@ import { listUsers } from '@/api/user';
 import { adminListSubscriptions } from '@/api/subscription';
 import { listNodes } from '@/api/node';
 import {
+  useAdminTrafficStats,
+  useNodeTrafficStats,
+  getDateRangeFromPreset,
+  detectGranularity,
+  type DateRangePreset,
+} from '@/features/admin-traffic';
+import {
+  DateRangeSelector,
+  TrafficTrendChart,
+  TrafficRankingList,
+  NodeTrafficStats,
+} from '@/components/admin';
+import {
   Users,
   CreditCard,
   ArrowUpRight,
+  ArrowUp,
+  ArrowDown,
   Server,
   Activity,
 } from 'lucide-react';
+import { formatTrafficBytes } from '@/api/admin';
+import { Separator } from '@/components/common/Separator';
 
 // ============ Stats Card Component ============
 interface StatsCardProps {
@@ -38,23 +55,22 @@ const StatsCard = ({
   loading,
 }: StatsCardProps) => {
   return (
-    <div className="group relative bg-white dark:bg-slate-900 rounded-xl sm:rounded-2xl p-2 sm:p-4 md:p-6 border border-slate-100 dark:border-slate-800 hover:border-slate-200 dark:hover:border-slate-700 transition-all duration-300 hover:shadow-lg hover:shadow-slate-200/50 dark:hover:shadow-slate-900/50">
-      <div className="flex items-center justify-center sm:items-start sm:justify-between mb-2 sm:mb-5">
-        <div className={`${iconBg} p-2 sm:p-3 md:p-3.5 rounded-lg sm:rounded-xl shadow-sm`}>
+    <div className="group relative bg-white dark:bg-slate-900 rounded-lg p-3 sm:p-4 border border-slate-100 dark:border-slate-800 hover:border-slate-200 dark:hover:border-slate-700 transition-all duration-200 hover:shadow-md">
+      <div className="flex items-center gap-3">
+        <div className={`${iconBg} p-2 rounded-lg shrink-0`}>
           <div className={iconColor}>{icon}</div>
         </div>
-      </div>
-
-      <div className="space-y-0.5 sm:space-y-1 text-center sm:text-left">
-        <div className="text-lg sm:text-2xl md:text-3xl font-bold tracking-tight text-slate-900 dark:text-white">
-          {loading ? (
-            <div className="h-6 sm:h-9 w-10 sm:w-20 bg-slate-200 dark:bg-slate-700 rounded animate-pulse mx-auto sm:mx-0" />
-          ) : (
-            value
-          )}
-        </div>
-        <div className="text-xs sm:text-sm font-medium text-slate-500 dark:text-slate-400 truncate">
-          {title}
+        <div className="min-w-0">
+          <div className="text-lg sm:text-xl font-semibold text-slate-900 dark:text-white">
+            {loading ? (
+              <div className="h-5 w-12 bg-slate-200 dark:bg-slate-700 rounded animate-pulse" />
+            ) : (
+              value
+            )}
+          </div>
+          <div className="text-xs text-slate-500 dark:text-slate-400 truncate">
+            {title}
+          </div>
         </div>
       </div>
     </div>
@@ -216,6 +232,34 @@ export const NewAdminDashboardPage = () => {
   const navigate = useNavigate();
   const { stats, loading } = useDashboardStats();
 
+  // Traffic analytics state
+  const [dateRangePreset, setDateRangePreset] = useState<DateRangePreset>('last7days');
+  const [nodeTrafficPage, setNodeTrafficPage] = useState(1);
+
+  // Get date range from preset
+  const dateRange = getDateRangeFromPreset(dateRangePreset);
+  const granularity = detectGranularity(dateRange);
+
+  // Fetch traffic statistics
+  const {
+    overview: trafficOverview,
+    trend: trafficTrend,
+    userRanking,
+    subscriptionRanking,
+    isLoading: isTrafficLoading,
+  } = useAdminTrafficStats({ dateRange });
+
+  // Fetch node traffic statistics with pagination
+  const {
+    items: nodeTrafficItems,
+    pagination: nodeTrafficPagination,
+    isLoading: isNodeTrafficLoading,
+  } = useNodeTrafficStats({
+    dateRange,
+    page: nodeTrafficPage,
+    pageSize: 10,
+  });
+
   if (!user) {
     return (
       <AdminLayout>
@@ -228,34 +272,71 @@ export const NewAdminDashboardPage = () => {
     );
   }
 
+  // Combined stats cards - basic stats + traffic stats in one row
   const statsCards = [
     {
       title: '总用户数',
       value: stats.totalUsers.toLocaleString(),
-      icon: <Users className="size-4 sm:size-5 md:size-6" strokeWidth={1.5} />,
+      icon: <Users className="size-4" strokeWidth={1.5} />,
       iconBg: 'bg-blue-50 dark:bg-blue-900/20',
       iconColor: 'text-blue-600 dark:text-blue-400',
+      loading: loading,
     },
     {
       title: '订阅总数',
       value: stats.activeSubscriptions.toLocaleString(),
-      icon: <CreditCard className="size-4 sm:size-5 md:size-6" strokeWidth={1.5} />,
+      icon: <CreditCard className="size-4" strokeWidth={1.5} />,
       iconBg: 'bg-emerald-50 dark:bg-emerald-900/20',
       iconColor: 'text-emerald-600 dark:text-emerald-400',
+      loading: loading,
     },
     {
       title: '节点总数',
       value: stats.totalNodes.toLocaleString(),
-      icon: <Server className="size-4 sm:size-5 md:size-6" strokeWidth={1.5} />,
+      icon: <Server className="size-4" strokeWidth={1.5} />,
       iconBg: 'bg-violet-50 dark:bg-violet-900/20',
       iconColor: 'text-violet-600 dark:text-violet-400',
+      loading: loading,
     },
     {
       title: '在线节点',
       value: stats.activeNodes.toLocaleString(),
-      icon: <Activity className="size-4 sm:size-5 md:size-6" strokeWidth={1.5} />,
-      iconBg: 'bg-orange-50 dark:bg-orange-900/20',
-      iconColor: 'text-orange-600 dark:text-orange-400',
+      icon: <Activity className="size-4" strokeWidth={1.5} />,
+      iconBg: 'bg-amber-50 dark:bg-amber-900/20',
+      iconColor: 'text-amber-600 dark:text-amber-400',
+      loading: loading,
+    },
+    {
+      title: '总上传',
+      value: trafficOverview ? formatTrafficBytes(trafficOverview.totalUpload) : '-',
+      icon: <ArrowUp className="size-4" strokeWidth={1.5} />,
+      iconBg: 'bg-sky-50 dark:bg-sky-900/20',
+      iconColor: 'text-sky-600 dark:text-sky-400',
+      loading: isTrafficLoading,
+    },
+    {
+      title: '总下载',
+      value: trafficOverview ? formatTrafficBytes(trafficOverview.totalDownload) : '-',
+      icon: <ArrowDown className="size-4" strokeWidth={1.5} />,
+      iconBg: 'bg-teal-50 dark:bg-teal-900/20',
+      iconColor: 'text-teal-600 dark:text-teal-400',
+      loading: isTrafficLoading,
+    },
+    {
+      title: '总流量',
+      value: trafficOverview ? formatTrafficBytes(trafficOverview.totalTraffic) : '-',
+      icon: <Activity className="size-4" strokeWidth={1.5} />,
+      iconBg: 'bg-indigo-50 dark:bg-indigo-900/20',
+      iconColor: 'text-indigo-600 dark:text-indigo-400',
+      loading: isTrafficLoading,
+    },
+    {
+      title: '活跃用户',
+      value: trafficOverview ? trafficOverview.activeUsers.toLocaleString() : '-',
+      icon: <Users className="size-4" strokeWidth={1.5} />,
+      iconBg: 'bg-rose-50 dark:bg-rose-900/20',
+      iconColor: 'text-rose-600 dark:text-rose-400',
+      loading: isTrafficLoading,
     },
   ];
 
@@ -313,70 +394,102 @@ export const NewAdminDashboardPage = () => {
 
   return (
     <AdminLayout>
-      <div className="space-y-8 py-8">
-        {/* 页面标题 */}
-        <div className="flex items-center justify-between">
-          <div>
-            <div className="flex items-center gap-3 mb-2">
-              <h1 className="text-2xl font-semibold text-slate-900 dark:text-white tracking-tight">
-                控制台总览
-              </h1>
-            </div>
-            <p className="text-sm text-slate-500 dark:text-slate-400">
-              欢迎回来，
-              {user.displayName || user.email?.split('@')[0]}
-            </p>
+      <div className="py-8">
+        {/* Page title */}
+        <div className="mb-8">
+          <h1 className="text-2xl font-semibold text-slate-900 dark:text-white tracking-tight whitespace-nowrap">
+            控制台总览
+          </h1>
+          <p className="text-sm text-slate-500 dark:text-slate-400">
+            欢迎回来，{user.displayName || user.email?.split('@')[0]}
+          </p>
+        </div>
+
+        {/* All statistics cards in one row */}
+        <section>
+          <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-3">
+            {statsCards.map((stat, index) => (
+              <StatsCard key={index} {...stat} />
+            ))}
           </div>
-        </div>
+        </section>
 
-        {/* 核心数据指标 */}
-        <div className="grid grid-cols-4 gap-2 sm:gap-4 md:gap-5">
-          {statsCards.map((stat, index) => (
-            <StatsCard key={index} {...stat} loading={loading} />
-          ))}
-        </div>
+        <Separator className="my-8" />
 
-        {/* 主要内容区 */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* 左侧：快速操作 */}
-          <div className="lg:col-span-2 space-y-6">
-            <div>
+        {/* Traffic analytics section */}
+        <section className="space-y-6">
+          {/* Traffic trend chart with date selector */}
+          <TrafficTrendChart
+            data={trafficTrend?.points ?? []}
+            granularity={granularity}
+            loading={isTrafficLoading}
+            headerAction={
+              <DateRangeSelector
+                value={dateRangePreset}
+                onChange={setDateRangePreset}
+              />
+            }
+          />
+
+          {/* Traffic ranking and node stats - 1:1 layout */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <TrafficRankingList
+              userRanking={userRanking}
+              subscriptionRanking={subscriptionRanking}
+              loading={isTrafficLoading}
+            />
+            <NodeTrafficStats
+              items={nodeTrafficItems}
+              pagination={nodeTrafficPagination}
+              loading={isNodeTrafficLoading}
+              onPageChange={setNodeTrafficPage}
+            />
+          </div>
+        </section>
+
+        <Separator className="my-8" />
+
+        {/* Quick actions and system status */}
+        <section>
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            {/* 左侧：快速操作 */}
+            <div className="lg:col-span-2">
               <h2 className="text-lg font-semibold text-slate-900 dark:text-white mb-4">
                 快速访问
               </h2>
-              <div className="grid grid-cols-4 gap-2 sm:gap-3 md:gap-4">
+              <div className="grid grid-cols-3 sm:grid-cols-3 gap-3 sm:gap-4">
                 {quickActions.map((action, index) => (
                   <QuickActionCard key={index} {...action} />
                 ))}
               </div>
             </div>
-          </div>
 
-          {/* 右侧：系统状态 */}
-          <div>
-            <h2 className="text-lg font-semibold text-slate-900 dark:text-white mb-4">
-              系统状态
-            </h2>
-            <div className="bg-white dark:bg-slate-900 rounded-xl p-5 border border-slate-100 dark:border-slate-800">
-              {loading ? (
-                <div className="space-y-4">
-                  {[1, 2, 3].map((i) => (
-                    <div
-                      key={i}
-                      className="h-10 bg-slate-100 dark:bg-slate-800 rounded animate-pulse"
-                    />
-                  ))}
-                </div>
-              ) : (
-                <div>
-                  {systemStatuses.map((status, index) => (
-                    <SystemStatus key={index} {...status} />
-                  ))}
-                </div>
-              )}
+            {/* 右侧：系统状态 */}
+            <div>
+              <h2 className="text-lg font-semibold text-slate-900 dark:text-white mb-4">
+                系统状态
+              </h2>
+              <div className="bg-white dark:bg-slate-900 rounded-xl p-5 border border-slate-100 dark:border-slate-800 hover:border-slate-200 dark:hover:border-slate-700 hover:shadow-lg hover:shadow-slate-200/50 dark:hover:shadow-slate-900/50 transition-all duration-300">
+                {loading ? (
+                  <div className="space-y-4">
+                    {[1, 2].map((i) => (
+                      <div
+                        key={i}
+                        className="h-10 bg-slate-100 dark:bg-slate-800 rounded animate-pulse"
+                      />
+                    ))}
+                  </div>
+                ) : (
+                  <div>
+                    {systemStatuses.map((status, index) => (
+                      <SystemStatus key={index} {...status} />
+                    ))}
+                  </div>
+                )}
+              </div>
             </div>
           </div>
-        </div>
+        </section>
       </div>
     </AdminLayout>
   );
