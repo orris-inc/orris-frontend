@@ -18,6 +18,8 @@ import {
   Wrench,
   Terminal,
   Copy,
+  User,
+  Shield,
 } from 'lucide-react';
 import { DataTable, AdminBadge, type ColumnDef, type ResponsiveColumnMeta } from '@/components/admin';
 import {
@@ -410,6 +412,41 @@ export const NodeListTable: React.FC<NodeListTableProps> = ({
                 </TooltipContent>
               </Tooltip>
             )}
+          </div>
+        );
+      },
+    },
+    {
+      id: 'owner',
+      header: '创建者',
+      size: 120,
+      meta: { priority: 3 } as ResponsiveColumnMeta,
+      cell: ({ row }) => {
+        const node = row.original;
+        if (node.owner) {
+          return (
+            <Tooltip>
+              <TooltipTrigger>
+                <div className="flex items-center gap-1.5">
+                  <User className="size-3.5 text-slate-400" />
+                  <span className="text-xs text-slate-600 dark:text-slate-400 truncate max-w-[80px]">
+                    {node.owner.name || node.owner.email}
+                  </span>
+                </div>
+              </TooltipTrigger>
+              <TooltipContent>
+                <div className="space-y-1">
+                  {node.owner.name && <div>{node.owner.name}</div>}
+                  <div className="text-xs text-slate-400">{node.owner.email}</div>
+                </div>
+              </TooltipContent>
+            </Tooltip>
+          );
+        }
+        return (
+          <div className="flex items-center gap-1.5">
+            <Shield className="size-3.5 text-blue-500" />
+            <span className="text-xs text-blue-600 dark:text-blue-400">管理员</span>
           </div>
         );
       },

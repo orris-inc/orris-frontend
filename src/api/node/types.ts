@@ -11,6 +11,7 @@
  * - Node: "node_xK9mP2vL3nQ" (prefix: node_)
  *
  * Recent changes:
+ * - 2025-12-22: Added owner field to Node for user-created nodes (NodeOwner type)
  * - 2025-12-22: Added includeUserNodes param to ListNodesParams for admin node filtering
  * - 2025-12-20: Added user node management types (UserNode, CreateUserNodeRequest, UpdateUserNodeRequest, etc.)
  * - 2025-12-18: Made serverAddress optional in CreateNodeRequest (can be auto-detected from agent)
@@ -33,9 +34,22 @@ export type NodeProtocol = 'shadowsocks' | 'trojan';
 export type TransportProtocol = 'tcp' | 'ws' | 'grpc';
 
 /**
+ * Node owner information (for user-created nodes)
+ * Added: 2025-12-22
+ */
+export interface NodeOwner {
+  /** User's Stripe-style ID (e.g., "user_xK9mP2vL3nQ") */
+  id: string;
+  /** User's email address */
+  email: string;
+  /** User's display name */
+  name: string;
+}
+
+/**
  * Node entity
  * ID format: "node_xK9mP2vL3nQ" (Stripe-style prefixed ID)
- * Updated: 2025-12-19 - Changed groupId to groupIds array for multiple resource groups
+ * Updated: 2025-12-22 - Added owner field for user-created nodes
  */
 export interface Node {
   id: string; // Stripe-style prefixed ID (e.g., "node_xK9mP2vL3nQ")
@@ -75,6 +89,8 @@ export interface Node {
   createdAt: string;
   updatedAt: string;
   systemStatus?: NodeSystemStatus;
+  /** Owner information for user-created nodes (null for admin-created nodes) */
+  owner?: NodeOwner;
 }
 
 /**
