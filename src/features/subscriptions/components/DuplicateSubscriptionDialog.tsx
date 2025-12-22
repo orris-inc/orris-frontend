@@ -12,6 +12,7 @@ import { Check } from 'lucide-react';
 import { SimpleSelect } from '@/lib/SimpleSelect';
 import { useSubscriptionPlans } from '@/features/subscription-plans/hooks/useSubscriptionPlans';
 import { getButtonClass, labelStyles, alertStyles, alertDescriptionStyles } from '@/lib/ui-styles';
+import { TruncatedId } from '@/components/admin';
 import type { BillingCycle, PricingOption, Subscription, SubscriptionPlan, AdminCreateSubscriptionRequest } from '@/api/subscription/types';
 import type { UserResponse } from '@/api/user/types';
 
@@ -177,8 +178,8 @@ export const DuplicateSubscriptionDialog: React.FC<DuplicateSubscriptionDialogPr
                 <Copy className="size-5" />
                 复制订阅
               </Dialog.Title>
-              <p className="text-sm text-muted-foreground mt-1">
-                基于订阅 #{subscription.id} 创建新订阅
+              <p className="text-sm text-muted-foreground mt-1 flex items-center gap-1">
+                基于订阅 <TruncatedId id={subscription.id} /> 创建新订阅
               </p>
             </div>
             <Dialog.Close className="rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none">

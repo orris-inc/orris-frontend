@@ -13,6 +13,7 @@ import {
 import { Button } from '@/components/common/Button';
 import { Badge } from '@/components/common/Badge';
 import { Separator } from '@/components/common/Separator';
+import { TruncatedId } from '@/components/admin';
 import { Cpu, MemoryStick, HardDrive, Clock, ShieldCheck, ShieldAlert, Wifi, WifiOff, Globe } from 'lucide-react';
 import type { Node } from '@/api/node';
 
@@ -192,6 +193,11 @@ export const NodeDetailDialog: React.FC<NodeDetailDialogProps> = ({
             <h3 className="text-sm font-semibold mb-3">基本信息</h3>
             <Separator className="mb-4" />
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="space-y-1">
+                <p className="text-sm text-muted-foreground">节点ID</p>
+                <TruncatedId id={node.id} fullWidth />
+              </div>
+
               <div className="space-y-1">
                 <p className="text-sm text-muted-foreground">版本</p>
                 <p className="text-sm">{node.version}</p>

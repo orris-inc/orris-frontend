@@ -15,6 +15,7 @@ import { Button } from '@/components/common/Button';
 import { Label } from '@/components/common/Label';
 import { Textarea } from '@/components/common/Textarea';
 import { Checkbox } from '@/components/common/Checkbox';
+import { TruncatedId } from '@/components/admin';
 import type { Subscription } from '@/api/subscription/types';
 
 interface CancelSubscriptionDialogProps {
@@ -59,8 +60,8 @@ export const CancelSubscriptionDialog: React.FC<CancelSubscriptionDialogProps> =
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle>取消订阅</DialogTitle>
-          <DialogDescription>
-            确定要取消订阅 #{subscription?.id} 吗？请填写取消原因。
+          <DialogDescription className="flex items-center gap-1 flex-wrap">
+            确定要取消订阅 {subscription?.id && <TruncatedId id={subscription.id} />} 吗？请填写取消原因。
           </DialogDescription>
         </DialogHeader>
 

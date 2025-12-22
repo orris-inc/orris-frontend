@@ -5,7 +5,7 @@
 
 import { useMemo } from 'react';
 import { CheckCircle, X, MoreHorizontal, Play, XCircle, RefreshCw, Eye, Copy } from 'lucide-react';
-import { DataTable, AdminBadge, type ColumnDef, type ResponsiveColumnMeta } from '@/components/admin';
+import { DataTable, AdminBadge, TruncatedId, type ColumnDef, type ResponsiveColumnMeta } from '@/components/admin';
 import { Skeleton } from '@/components/common/Skeleton';
 import { Button } from '@/components/common/Button';
 import {
@@ -65,13 +65,9 @@ export const SubscriptionListTable: React.FC<SubscriptionListTableProps> = ({
     {
       accessorKey: 'id',
       header: '订阅ID',
-      size: 72,
+      size: 120,
       meta: { priority: 4 } as ResponsiveColumnMeta,
-      cell: ({ row }) => (
-        <span className="font-mono text-slate-600 dark:text-slate-400">
-          {row.original.id}
-        </span>
-      ),
+      cell: ({ row }) => <TruncatedId id={row.original.id} />,
     },
     {
       id: 'user',

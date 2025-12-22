@@ -5,7 +5,7 @@
 
 import { useMemo, useState, useCallback } from 'react';
 import { Edit, Trash2, Eye, Power, PowerOff, MoreHorizontal, RotateCcw, Activity, Loader2, Copy, Check, Server, Bot, Settings, ArrowRight, Files } from 'lucide-react';
-import { DataTable, AdminBadge, type ColumnDef, type ResponsiveColumnMeta } from '@/components/admin';
+import { DataTable, AdminBadge, TruncatedId, type ColumnDef, type ResponsiveColumnMeta } from '@/components/admin';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -284,6 +284,13 @@ export const ForwardRuleListTable: React.FC<ForwardRuleListTableProps> = ({
   ), [onCopy, onResetTraffic, onEnable, onDisable, onDelete]);
 
   const columns = useMemo<ColumnDef<ForwardRule, unknown>[]>(() => [
+    {
+      accessorKey: 'id',
+      header: 'ID',
+      size: 120,
+      meta: { priority: 4 } as ResponsiveColumnMeta,
+      cell: ({ row }) => <TruncatedId id={row.original.id} />,
+    },
     {
       accessorKey: 'name',
       header: '规则名',

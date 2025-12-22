@@ -242,11 +242,6 @@ export const ResourceGroupDetailDialog: React.FC<ResourceGroupDetailDialogProps>
                 <h4 className="text-sm font-medium text-slate-900 dark:text-white mb-2">标识信息</h4>
                 <DetailItem
                   icon={<Hash className="size-4" />}
-                  label="内部 ID"
-                  value={<code className="text-xs font-mono">{resourceGroup.id}</code>}
-                />
-                <DetailItem
-                  icon={<Hash className="size-4" />}
                   label="SID"
                   value={<code className="text-xs font-mono">{resourceGroup.sid}</code>}
                   copyable={resourceGroup.sid}

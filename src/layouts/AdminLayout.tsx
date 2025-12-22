@@ -8,7 +8,7 @@
  * - 响应式设计：移动端自动收起侧边栏
  */
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Link as RouterLink } from 'react-router-dom';
 import {
   Menu,
@@ -44,8 +44,15 @@ export const AdminLayout = ({ children }: AdminLayoutProps) => {
   const { filterNavigationByPermission } = usePermissions();
 
   const [mobileDrawerOpen, setMobileDrawerOpen] = useState(false);
-  const [collapsed, setCollapsed] = useState(false);
+  const [collapsed, setCollapsed] = useState(() => {
+    const saved = localStorage.getItem('admin-sidebar-collapsed');
+    return saved === 'true';
+  });
   const [profileDialogOpen, setProfileDialogOpen] = useState(false);
+
+  useEffect(() => {
+    localStorage.setItem('admin-sidebar-collapsed', String(collapsed));
+  }, [collapsed]);
 
   const navItems = getNavItems();
   const adminOnlyNavItems = navItems.filter(item => item.path.startsWith('/admin'));
@@ -120,12 +127,11 @@ export const AdminLayout = ({ children }: AdminLayoutProps) => {
             "flex h-14 items-center border-b",
             collapsed ? "justify-center px-2" : "justify-between px-4"
           )}>
-            <span className={cn(
-              "text-sm font-semibold text-foreground whitespace-nowrap transition-opacity duration-200",
-              collapsed ? "opacity-0 w-0" : "opacity-100"
-            )}>
-              管理控制台
-            </span>
+            {!collapsed && (
+              <span className="text-sm font-semibold text-foreground whitespace-nowrap">
+                管理控制台
+              </span>
+            )}
             <button
               onClick={() => setCollapsed(!collapsed)}
               className="flex items-center justify-center rounded-md hover:bg-accent transition-colors touch-target"

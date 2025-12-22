@@ -17,6 +17,7 @@ import { Button } from '@/components/common/Button';
 import { Input } from '@/components/common/Input';
 import { Textarea } from '@/components/common/Textarea';
 import { Label } from '@/components/common/Label';
+import { TruncatedId } from '@/components/admin';
 import {
   Select,
   SelectContent,
@@ -243,6 +244,13 @@ export const EditPlanDialog: React.FC<EditPlanDialogProps> = ({
             <h3 className="text-sm font-semibold">基本信息（只读）</h3>
             <Separator />
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+              <div className="flex flex-col gap-2">
+                <Label>计划ID</Label>
+                <div className="flex h-10 items-center px-3 rounded-md border bg-muted">
+                  <TruncatedId id={plan.id} fullWidth />
+                </div>
+              </div>
+
               <div className="flex flex-col gap-2">
                 <Label>计划名称</Label>
                 <Input value={plan.name} disabled />

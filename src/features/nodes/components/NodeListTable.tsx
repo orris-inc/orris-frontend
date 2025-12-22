@@ -21,7 +21,7 @@ import {
   User,
   Shield,
 } from 'lucide-react';
-import { DataTable, AdminBadge, type ColumnDef, type ResponsiveColumnMeta } from '@/components/admin';
+import { DataTable, AdminBadge, TruncatedId, type ColumnDef, type ResponsiveColumnMeta } from '@/components/admin';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -162,6 +162,13 @@ export const NodeListTable: React.FC<NodeListTableProps> = ({
   ), [onCopy, onGenerateToken, onActivate, onDeactivate, onDelete]);
 
   const columns = useMemo<ColumnDef<Node>[]>(() => [
+    {
+      accessorKey: 'id',
+      header: 'ID',
+      size: 120,
+      meta: { priority: 4 } as ResponsiveColumnMeta,
+      cell: ({ row }) => <TruncatedId id={row.original.id} />,
+    },
     {
       accessorKey: 'name',
       header: '节点',

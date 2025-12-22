@@ -5,7 +5,7 @@
 
 import { useMemo, useCallback } from 'react';
 import { Edit, Trash2, CreditCard, MoreHorizontal, KeyRound } from 'lucide-react';
-import { DataTable, AdminBadge, type ColumnDef, type ResponsiveColumnMeta } from '@/components/admin';
+import { DataTable, AdminBadge, TruncatedId, type ColumnDef, type ResponsiveColumnMeta } from '@/components/admin';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -118,13 +118,9 @@ export const UserListTable: React.FC<UserListTableProps> = ({
     {
       accessorKey: 'id',
       header: 'ID',
-      size: 56,
+      size: 120,
       meta: { priority: 4 } as ResponsiveColumnMeta,
-      cell: ({ row }) => (
-        <span className="font-mono text-slate-600 dark:text-slate-400">
-          {row.original.id}
-        </span>
-      ),
+      cell: ({ row }) => <TruncatedId id={row.original.id} />,
     },
     {
       accessorKey: 'email',

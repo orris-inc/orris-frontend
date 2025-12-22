@@ -12,6 +12,7 @@ import {
 import { Button } from '@/components/common/Button';
 import { Badge } from '@/components/common/Badge';
 import { Separator } from '@/components/common/Separator';
+import { TruncatedId } from '@/components/admin';
 import type { ForwardRule, ForwardAgent } from '@/api/forward';
 import type { Node } from '@/api/node';
 
@@ -122,7 +123,7 @@ export const ForwardRuleDetailDialog: React.FC<ForwardRuleDetailDialogProps> = (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-1">
                 <p className="text-sm text-muted-foreground">规则ID</p>
-                <p className="text-sm">{rule.id}</p>
+                <TruncatedId id={rule.id} fullWidth />
               </div>
 
               <div className="space-y-1">

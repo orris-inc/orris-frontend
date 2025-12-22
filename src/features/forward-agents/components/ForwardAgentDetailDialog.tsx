@@ -12,6 +12,7 @@ import {
 import { Button } from '@/components/common/Button';
 import { Badge } from '@/components/common/Badge';
 import { Separator } from '@/components/common/Separator';
+import { TruncatedId } from '@/components/admin';
 import { Cpu, HardDrive, MemoryStick, Clock, Network, ArrowUpDown, Loader2 } from 'lucide-react';
 import { useForwardAgentRuntimeStatus } from '../hooks/useForwardAgents';
 import type { ForwardAgent } from '@/api/forward';
@@ -94,7 +95,7 @@ export const ForwardAgentDetailDialog: React.FC<ForwardAgentDetailDialogProps> =
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-1">
                 <p className="text-sm text-muted-foreground">节点ID</p>
-                <p className="text-sm font-mono">{agent.id}</p>
+                <TruncatedId id={agent.id} fullWidth />
               </div>
 
               <div className="space-y-1">

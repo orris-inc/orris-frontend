@@ -5,7 +5,7 @@
 
 import { useMemo, useCallback } from 'react';
 import { Edit, Power, MoreHorizontal, Users, Copy, Server } from 'lucide-react';
-import { DataTable, AdminBadge, type ColumnDef, type ResponsiveColumnMeta } from '@/components/admin';
+import { DataTable, AdminBadge, TruncatedId, type ColumnDef, type ResponsiveColumnMeta } from '@/components/admin';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -193,6 +193,13 @@ export const PlanListTable: React.FC<PlanListTableProps> = ({
   ), [onEdit, onDuplicate, onToggleStatus, onViewSubscriptions, onManageNodes]);
 
   const columns = useMemo<ColumnDef<SubscriptionPlan>[]>(() => [
+    {
+      accessorKey: 'id',
+      header: 'ID',
+      size: 120,
+      meta: { priority: 4 } as ResponsiveColumnMeta,
+      cell: ({ row }) => <TruncatedId id={row.original.id} />,
+    },
     {
       accessorKey: 'name',
       header: '计划名称',

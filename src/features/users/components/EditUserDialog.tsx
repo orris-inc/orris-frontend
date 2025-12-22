@@ -10,6 +10,7 @@ import { X } from 'lucide-react';
 import { SimpleSelect } from '@/lib/SimpleSelect';
 import { getButtonClass, inputStyles, labelStyles } from '@/lib/ui-styles';
 import { cn } from '@/lib/utils';
+import { TruncatedId } from '@/components/admin';
 import type { UserResponse, UpdateUserRequest } from '@/api/user';
 import type { UserStatus, UserRole } from '../types/users.types';
 
@@ -130,7 +131,9 @@ export const EditUserDialog: React.FC<EditUserDialogProps> = ({
               <div className="grid gap-4">
                 <div className="grid gap-2">
                   <LabelPrimitive.Root className={labelStyles}>用户ID</LabelPrimitive.Root>
-                  <input value={user.id} disabled className={cn(inputStyles, "bg-muted")} />
+                  <div className={cn(inputStyles, "bg-muted flex items-center")}>
+                    <TruncatedId id={user.id} fullWidth />
+                  </div>
                 </div>
                 <div className="grid gap-2">
                   <LabelPrimitive.Root className={labelStyles}>创建时间</LabelPrimitive.Root>

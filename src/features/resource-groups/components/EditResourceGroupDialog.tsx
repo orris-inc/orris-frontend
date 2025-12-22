@@ -99,10 +99,6 @@ export const EditResourceGroupDialog: React.FC<EditResourceGroupDialogProps> = (
           {/* Read-only info */}
           <div className="rounded-lg bg-slate-50 dark:bg-slate-800/50 p-3 space-y-2">
             <div className="flex justify-between text-sm">
-              <span className="text-muted-foreground">ID</span>
-              <span className="font-mono">{resourceGroup?.id}</span>
-            </div>
-            <div className="flex justify-between text-sm">
               <span className="text-muted-foreground">SID</span>
               <span className="font-mono text-xs">{resourceGroup?.sid}</span>
             </div>

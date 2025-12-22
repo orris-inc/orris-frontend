@@ -114,17 +114,6 @@ export const ResourceGroupListTable: React.FC<ResourceGroupListTableProps> = ({
 
   const columns = useMemo<ColumnDef<ResourceGroup>[]>(() => [
     {
-      accessorKey: 'id',
-      header: 'ID',
-      size: 64,
-      meta: { priority: 4 } as ResponsiveColumnMeta,
-      cell: ({ row }) => (
-        <span className="font-mono text-sm text-slate-600 dark:text-slate-400">
-          {row.original.id}
-        </span>
-      ),
-    },
-    {
       accessorKey: 'sid',
       header: 'SID',
       size: 120,
@@ -236,7 +225,7 @@ export const ResourceGroupListTable: React.FC<ResourceGroupListTableProps> = ({
       onPageChange={onPageChange}
       onPageSizeChange={onPageSizeChange}
       emptyMessage="暂无资源组"
-      getRowId={(row) => String(row.id)}
+      getRowId={(row) => row.sid}
       enableContextMenu={true}
       contextMenuContent={renderContextMenuActions}
     />

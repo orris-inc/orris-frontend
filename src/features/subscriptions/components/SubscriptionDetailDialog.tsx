@@ -22,7 +22,7 @@ import {
 } from '@/components/common/Dialog';
 import { Button } from '@/components/common/Button';
 import { Separator } from '@/components/common/Separator';
-import { AdminBadge } from '@/components/admin';
+import { AdminBadge, TruncatedId } from '@/components/admin';
 import { formatDate } from '@/shared/utils/date-utils';
 import { useNotificationStore } from '@/shared/stores/notification-store';
 import type { Subscription, SubscriptionStatus, PlanType } from '@/api/subscription/types';
@@ -123,8 +123,8 @@ export const SubscriptionDetailDialog: React.FC<SubscriptionDetailDialogProps> =
             订阅详情
             <AdminBadge variant={statusConfig.variant}>{statusConfig.label}</AdminBadge>
           </DialogTitle>
-          <DialogDescription>
-            订阅 ID: {subscription.id}
+          <DialogDescription className="flex items-center gap-1">
+            订阅 ID: <TruncatedId id={subscription.id} fullWidth />
           </DialogDescription>
         </DialogHeader>
 
@@ -280,8 +280,7 @@ export const SubscriptionDetailDialog: React.FC<SubscriptionDetailDialogProps> =
             <DetailItem
               icon={<LinkIcon className="size-4" />}
               label="UUID"
-              value={<code className="text-xs font-mono">{subscription.uuid}</code>}
-              copyable={subscription.uuid}
+              value={<TruncatedId id={subscription.uuid} fullWidth />}
             />
           </div>
         </div>

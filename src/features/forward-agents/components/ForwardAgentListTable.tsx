@@ -5,7 +5,7 @@
 
 import { useMemo, useState, useCallback } from 'react';
 import { Edit, Trash2, Key, Eye, Power, PowerOff, MoreHorizontal, Terminal, Copy, Check } from 'lucide-react';
-import { DataTable, AdminBadge, type ColumnDef, type ResponsiveColumnMeta } from '@/components/admin';
+import { DataTable, AdminBadge, TruncatedId, type ColumnDef, type ResponsiveColumnMeta } from '@/components/admin';
 import { Badge } from '@/components/common/Badge';
 import {
   DropdownMenu,
@@ -193,6 +193,13 @@ export const ForwardAgentListTable: React.FC<ForwardAgentListTableProps> = ({
   ), [onCopy, onRegenerateToken, onEnable, onDisable, onDelete]);
 
   const columns = useMemo<ColumnDef<ForwardAgent>[]>(() => [
+    {
+      accessorKey: 'id',
+      header: 'ID',
+      size: 120,
+      meta: { priority: 4 } as ResponsiveColumnMeta,
+      cell: ({ row }) => <TruncatedId id={row.original.id} />,
+    },
     {
       accessorKey: 'name',
       header: '名称',
