@@ -4,6 +4,7 @@
  */
 
 import type { UserDisplayInfo } from '@/api/auth';
+import { baseURL } from '@/shared/lib/axios';
 import { translateErrorMessage } from '@/shared/utils/error-messages';
 
 /** OAuth provider type */
@@ -15,8 +16,6 @@ export interface OAuthCallbackMessage {
   user?: UserDisplayInfo;
   error?: string;
 }
-
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8081';
 
 /**
  * OAuth弹窗配置
@@ -46,7 +45,7 @@ export const openOAuthPopup = (provider: OAuthProvider): Promise<UserDisplayInfo
 
     // 打开OAuth授权页面
     const popup = window.open(
-      `${API_BASE_URL}/auth/oauth/${provider}`,
+      `${baseURL}/auth/oauth/${provider}`,
       `OAuth-${provider}`,
       features
     );
@@ -66,7 +65,7 @@ export const openOAuthPopup = (provider: OAuthProvider): Promise<UserDisplayInfo
     // 监听postMessage事件
     const handleMessage = (event: MessageEvent<OAuthCallbackMessage>) => {
       // 安全检查：验证消息来源
-      const apiOrigin = new URL(API_BASE_URL).origin;
+      const apiOrigin = new URL(baseURL).origin;
       if (event.origin !== apiOrigin && event.origin !== window.location.origin) {
         return;
       }
