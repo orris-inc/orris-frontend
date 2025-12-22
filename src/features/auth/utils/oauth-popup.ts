@@ -1,21 +1,14 @@
 /**
  * OAuth2 Popup Login Logic
- * Implemented using window.open + postMessage
+ * Uses popup window + polling to detect login completion
  */
 
 import type { UserDisplayInfo } from '@/api/auth';
+import { getCurrentUser } from '@/api/auth';
 import { baseURL } from '@/shared/lib/axios';
-import { translateErrorMessage } from '@/shared/utils/error-messages';
 
 /** OAuth provider type */
 export type OAuthProvider = 'google' | 'github';
-
-/** OAuth callback message from popup */
-export interface OAuthCallbackMessage {
-  type: 'oauth_success' | 'oauth_error';
-  user?: UserDisplayInfo;
-  error?: string;
-}
 
 /**
  * OAuth popup configuration
@@ -28,13 +21,13 @@ const POPUP_CONFIG = {
 
 /**
  * Open OAuth login popup
+ * Uses polling to detect when OAuth completes (more reliable than postMessage)
  *
  * @param provider - OAuth provider ('google' | 'github')
- * @returns Promise<UserDisplayInfo> - Returns user info on successful auth, Token is stored in HttpOnly Cookie
+ * @returns Promise<UserDisplayInfo> - Returns user info on successful auth
  */
 export const openOAuthPopup = (provider: OAuthProvider): Promise<UserDisplayInfo> => {
   return new Promise((resolve, reject) => {
-    // Use flag to prevent duplicate resolve/reject
     let isSettled = false;
 
     // Calculate popup centered position
@@ -57,83 +50,51 @@ export const openOAuthPopup = (provider: OAuthProvider): Promise<UserDisplayInfo
 
     // Cleanup function
     const cleanup = () => {
-      window.removeEventListener('message', handleMessage);
+      clearInterval(pollInterval);
       clearTimeout(timeoutId);
     };
 
-    // Listen to postMessage event
-    const handleMessage = (event: MessageEvent<OAuthCallbackMessage>) => {
-      console.log('[OAuth] Message received:', event.origin, event.data);
-
-      // Security check: verify message origin
-      // baseURL may be a relative path (e.g., '/api'), so we need to handle this case
-      let apiOrigin: string;
+    // Poll to check if popup is closed and user is logged in
+    const pollInterval = setInterval(async () => {
       try {
-        // If baseURL is absolute URL, extract its origin
-        apiOrigin = new URL(baseURL).origin;
-      } catch {
-        // If baseURL is relative path, use current window origin
-        apiOrigin = window.location.origin;
-      }
+        // Check if popup is closed
+        if (popup.closed) {
+          if (isSettled) return;
 
-      console.log('[OAuth] Origin check:', { eventOrigin: event.origin, apiOrigin, windowOrigin: window.location.origin });
+          // Popup closed, check if user is now logged in
+          try {
+            const user = await getCurrentUser();
+            if (user) {
+              isSettled = true;
+              cleanup();
+              resolve(user);
+              return;
+            }
+          } catch {
+            // Not logged in yet, user probably cancelled
+          }
 
-      if (event.origin !== apiOrigin && event.origin !== window.location.origin) {
-        console.log('[OAuth] Origin mismatch, ignoring');
-        return;
-      }
-
-      const message = event.data;
-
-      // Validate message format
-      if (!message || typeof message !== 'object' || !message.type) {
-        console.log('[OAuth] Invalid message format');
-        return;
-      }
-
-      console.log('[OAuth] Processing message type:', message.type);
-
-      // Handle OAuth success
-      if (message.type === 'oauth_success') {
-        console.log('[OAuth] Success! User:', message.user);
-        if (isSettled) return;
-        isSettled = true;
-        cleanup();
-        popup.close();
-
-        // Token is already stored in HttpOnly Cookie, only return user info
-        if (message.user) {
-          console.log('[OAuth] Resolving with user');
-          resolve(message.user);
-        } else {
-          console.log('[OAuth] No user in message');
-          reject(new Error('OAuth login succeeded but no user info returned'));
+          // Popup closed but not logged in = user cancelled
+          isSettled = true;
+          cleanup();
+          reject(new Error('User cancelled OAuth authorization'));
         }
+      } catch {
+        // COOP may block access to popup.closed, ignore and continue polling
       }
-
-      // Handle OAuth error
-      if (message.type === 'oauth_error') {
-        if (isSettled) return;
-        isSettled = true;
-        cleanup();
-        popup.close();
-        const errorMsg = translateErrorMessage(message.error || 'oauth authentication failed');
-        reject(new Error(errorMsg));
-      }
-    };
-
-    // Add message listener
-    window.addEventListener('message', handleMessage);
+    }, 500);
 
     // Timeout handling (2 minutes)
     const timeoutId = setTimeout(() => {
-      if (popup && !popup.closed) {
-        if (isSettled) return;
-        isSettled = true;
-        cleanup();
+      if (isSettled) return;
+      isSettled = true;
+      cleanup();
+      try {
         popup.close();
-        reject(new Error('OAuth authentication timeout'));
+      } catch {
+        // Ignore close errors
       }
+      reject(new Error('OAuth authentication timeout'));
     }, 120000);
   });
 };
