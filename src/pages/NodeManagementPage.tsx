@@ -4,7 +4,8 @@
  */
 
 import { useState, useMemo } from 'react';
-import { Server, Plus, RefreshCw } from 'lucide-react';
+import { Server, Plus, RefreshCw, Users } from 'lucide-react';
+import { Switch, SwitchThumb } from '@/components/common/Switch';
 import { NodeListTable } from '@/features/nodes/components/NodeListTable';
 import { EditNodeDialog } from '@/features/nodes/components/EditNodeDialog';
 import { CreateNodeDialog } from '@/features/nodes/components/CreateNodeDialog';
@@ -43,6 +44,8 @@ export const NodeManagementPage = () => {
     setInstallScriptData,
     handlePageChange,
     handlePageSizeChange,
+    includeUserNodes,
+    handleIncludeUserNodesChange,
   } = useNodesPage();
 
   // 获取资源组列表用于显示名称
@@ -157,31 +160,45 @@ export const NodeManagementPage = () => {
         description="管理系统中的所有代理节点"
         icon={Server}
         action={
-          <div className="flex gap-2">
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <AdminButton
-                  variant="outline"
-                  size="md"
-                  onClick={handleRefresh}
-                  disabled={isFetching}
-                  icon={<RefreshCw className={`size-4 ${isFetching ? 'animate-spin' : ''}`} strokeWidth={1.5} />}
-                >
-                  刷新
-                </AdminButton>
-              </TooltipTrigger>
-              <TooltipContent>刷新节点列表</TooltipContent>
-            </Tooltip>
-            <AdminButton
-              variant="primary"
-              icon={<Plus className="size-4" strokeWidth={1.5} />}
-              onClick={() => {
-                setCopyNodeData(undefined);
-                setCreateDialogOpen(true);
-              }}
-            >
-              新增节点
-            </AdminButton>
+          <div className="flex items-center gap-4">
+            {/* 显示用户节点开关 */}
+            <label className="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-400 cursor-pointer">
+              <Users className="size-4" strokeWidth={1.5} />
+              <span>显示用户节点</span>
+              <Switch
+                checked={includeUserNodes}
+                onCheckedChange={handleIncludeUserNodesChange}
+              >
+                <SwitchThumb />
+              </Switch>
+            </label>
+
+            <div className="flex gap-2">
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <AdminButton
+                    variant="outline"
+                    size="md"
+                    onClick={handleRefresh}
+                    disabled={isFetching}
+                    icon={<RefreshCw className={`size-4 ${isFetching ? 'animate-spin' : ''}`} strokeWidth={1.5} />}
+                  >
+                    刷新
+                  </AdminButton>
+                </TooltipTrigger>
+                <TooltipContent>刷新节点列表</TooltipContent>
+              </Tooltip>
+              <AdminButton
+                variant="primary"
+                icon={<Plus className="size-4" strokeWidth={1.5} />}
+                onClick={() => {
+                  setCopyNodeData(undefined);
+                  setCreateDialogOpen(true);
+                }}
+              >
+                新增节点
+              </AdminButton>
+            </div>
           </div>
         }
       >

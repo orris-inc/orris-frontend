@@ -198,11 +198,12 @@ export const useNodesPage = () => {
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(20);
   const [filters, setFilters] = useState<NodeFilters>({});
+  const [includeUserNodes, setIncludeUserNodes] = useState(false);
   const [selectedNode, setSelectedNode] = useState<Node | null>(null);
   const [generatedToken, setGeneratedToken] = useState<GenerateNodeTokenResponse | null>(null);
   const [installScriptData, setInstallScriptData] = useState<GenerateNodeInstallScriptResponse | null>(null);
 
-  const nodesQuery = useNodes({ page, pageSize, filters });
+  const nodesQuery = useNodes({ page, pageSize, filters, includeUserNodes });
 
   const handlePageChange = (newPage: number) => {
     setPage(newPage);
@@ -230,11 +231,17 @@ export const useNodesPage = () => {
     return data;
   };
 
+  const handleIncludeUserNodesChange = (include: boolean) => {
+    setIncludeUserNodes(include);
+    setPage(1);
+  };
+
   return {
     ...nodesQuery,
     page,
     pageSize,
     filters,
+    includeUserNodes,
     selectedNode,
     generatedToken,
     installScriptData,
@@ -244,6 +251,7 @@ export const useNodesPage = () => {
     handlePageChange,
     handlePageSizeChange,
     handleFiltersChange,
+    handleIncludeUserNodesChange,
     handleGenerateToken,
     handleGetInstallScript,
   };
