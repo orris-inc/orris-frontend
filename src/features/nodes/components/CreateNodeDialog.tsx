@@ -235,7 +235,6 @@ export const CreateNodeDialog: React.FC<CreateNodeDialogProps> = ({
 
   const isFormValid = formData.name.trim() &&
                       formData.protocol &&
-                      formData.serverAddress?.trim() &&
                       formData.agentPort &&
                       (isTrojan || formData.encryptionMethod);
 
@@ -288,9 +287,7 @@ export const CreateNodeDialog: React.FC<CreateNodeDialogProps> = ({
 
           {/* 服务器地址 */}
           <div className="flex flex-col gap-2 md:col-span-2">
-            <Label htmlFor="serverAddress">
-              服务器地址 <span className="text-destructive">*</span>
-            </Label>
+            <Label htmlFor="serverAddress">服务器地址</Label>
             <Input
               id="serverAddress"
               placeholder="example.com 或 IP 地址"
@@ -299,7 +296,7 @@ export const CreateNodeDialog: React.FC<CreateNodeDialogProps> = ({
               error={!!errors.serverAddress}
             />
             <p className="text-xs text-muted-foreground">
-              {errors.serverAddress || '必填项'}
+              {errors.serverAddress || '可选，留空时由 Agent 自动检测'}
             </p>
           </div>
 
