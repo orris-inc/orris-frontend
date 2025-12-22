@@ -111,7 +111,9 @@ export const useAuth = () => {
 
         // Redirect based on user role after successful OAuth login
         const redirectUrl = getRedirectUrl(user.role as 'admin' | 'user' | 'moderator');
-        navigate(redirectUrl, { replace: true });
+        // Use window.location for reliable redirect after OAuth popup
+        // React Router navigate may not work reliably in popup callback context
+        window.location.href = redirectUrl;
       } catch (err) {
         const errorMsg = extractErrorMessage(err);
         setError(errorMsg || 'OAuth login failed, please retry');
@@ -120,7 +122,7 @@ export const useAuth = () => {
         setIsLoading(false);
       }
     },
-    [storeLogin, navigate, getRedirectUrl]
+    [storeLogin, getRedirectUrl]
   );
 
   /**
