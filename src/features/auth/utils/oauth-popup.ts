@@ -12,7 +12,7 @@ export type OAuthProvider = 'google' | 'github';
 
 /** OAuth callback message from popup */
 export interface OAuthCallbackMessage {
-  type: 'oauth-success' | 'oauth-error';
+  type: 'oauth_success' | 'oauth_error';
   user?: UserDisplayInfo;
   error?: string;
 }
@@ -58,14 +58,22 @@ export const openOAuthPopup = (provider: OAuthProvider): Promise<UserDisplayInfo
     // Cleanup function
     const cleanup = () => {
       window.removeEventListener('message', handleMessage);
-      clearInterval(checkClosed);
       clearTimeout(timeoutId);
     };
 
     // Listen to postMessage event
     const handleMessage = (event: MessageEvent<OAuthCallbackMessage>) => {
       // Security check: verify message origin
-      const apiOrigin = new URL(baseURL).origin;
+      // baseURL may be a relative path (e.g., '/api'), so we need to handle this case
+      let apiOrigin: string;
+      try {
+        // If baseURL is absolute URL, extract its origin
+        apiOrigin = new URL(baseURL).origin;
+      } catch {
+        // If baseURL is relative path, use current window origin
+        apiOrigin = window.location.origin;
+      }
+
       if (event.origin !== apiOrigin && event.origin !== window.location.origin) {
         return;
       }
@@ -78,7 +86,7 @@ export const openOAuthPopup = (provider: OAuthProvider): Promise<UserDisplayInfo
       }
 
       // Handle OAuth success
-      if (message.type === 'oauth-success') {
+      if (message.type === 'oauth_success') {
         if (isSettled) return;
         isSettled = true;
         cleanup();
@@ -93,7 +101,7 @@ export const openOAuthPopup = (provider: OAuthProvider): Promise<UserDisplayInfo
       }
 
       // Handle OAuth error
-      if (message.type === 'oauth-error') {
+      if (message.type === 'oauth_error') {
         if (isSettled) return;
         isSettled = true;
         cleanup();
@@ -102,25 +110,6 @@ export const openOAuthPopup = (provider: OAuthProvider): Promise<UserDisplayInfo
         reject(new Error(errorMsg));
       }
     };
-
-    // Listen for popup close
-    // Note: When popup redirects to OAuth provider (Google/GitHub), COOP policy will block access to popup.closed
-    // This will produce console warnings but doesn't affect functionality, as we mainly rely on postMessage communication
-    const checkClosed = setInterval(() => {
-      try {
-        // COOP policy may block access to popup.closed, need try-catch protection
-        if (!popup || popup.closed) {
-          if (isSettled) return;
-          isSettled = true;
-          cleanup();
-          reject(new Error('User cancelled OAuth authorization'));
-        }
-      } catch {
-        // If unable to access popup.closed due to COOP, popup is still on OAuth provider page
-        // Do nothing, continue waiting for postMessage
-        // Only terminate on timeout
-      }
-    }, 1000); // Use 1 second interval to reduce COOP warning frequency
 
     // Add message listener
     window.addEventListener('message', handleMessage);
