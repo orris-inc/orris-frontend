@@ -1,5 +1,5 @@
 /**
- * 创建节点对话框组件
+ * Create node dialog component
  */
 
 import { useState, useEffect } from 'react';
@@ -26,11 +26,11 @@ interface CreateNodeDialogProps {
   open: boolean;
   onClose: () => void;
   onSubmit: (data: CreateNodeRequest) => void;
-  /** 初始数据，用于复制节点时预填充表单 */
+  /** Initial data for prefilling form when copying a node */
   initialData?: Partial<CreateNodeRequest>;
 }
 
-// Shadowsocks 加密方法
+// Shadowsocks encryption methods
 const SS_ENCRYPTION_METHODS = [
   'aes-128-gcm',
   'aes-256-gcm',
@@ -39,10 +39,10 @@ const SS_ENCRYPTION_METHODS = [
   'aes-256-cfb',
 ] as const;
 
-// Trojan 传输协议
+// Trojan transport protocols
 const TRANSPORT_PROTOCOLS: TransportProtocol[] = ['tcp', 'ws', 'grpc'];
 
-// 默认表单数据
+// Default form data
 const getDefaultFormData = (): CreateNodeRequest => ({
   name: '',
   protocol: 'shadowsocks',
@@ -53,10 +53,10 @@ const getDefaultFormData = (): CreateNodeRequest => ({
   region: '',
   sortOrder: 0,
   tags: [],
-  // Shadowsocks 插件字段
+  // Shadowsocks plugin fields
   plugin: undefined,
   pluginOpts: undefined,
-  // Trojan 相关字段
+  // Trojan related fields
   transportProtocol: 'tcp',
   host: '',
   path: '',
@@ -74,14 +74,14 @@ export const CreateNodeDialog: React.FC<CreateNodeDialogProps> = ({
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [pluginOptsString, setPluginOptsString] = useState<string>('');
 
-  // 当 initialData 变化时更新表单数据
+  // Update form data when initialData changes
   useEffect(() => {
     if (open && initialData) {
       setFormData({
         ...getDefaultFormData(),
         ...initialData,
       });
-      // 如果有插件选项，将其转换为字符串
+      // Convert plugin options to string if present
       if (initialData.pluginOpts) {
         const optsStr = Object.entries(initialData.pluginOpts)
           .map(([key, value]) => `${key}=${value}`)
@@ -91,7 +91,7 @@ export const CreateNodeDialog: React.FC<CreateNodeDialogProps> = ({
         setPluginOptsString('');
       }
     } else if (open && !initialData) {
-      // 打开对话框但没有初始数据时，重置为默认值
+      // Reset to default values when dialog opens without initial data
       setFormData(getDefaultFormData());
       setPluginOptsString('');
     }
@@ -106,7 +106,7 @@ export const CreateNodeDialog: React.FC<CreateNodeDialogProps> = ({
 
   const handleChange = (field: keyof CreateNodeRequest, value: string | number | boolean | undefined) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
-    // 清除该字段的错误
+    // Clear error for this field
     if (errors[field]) {
       setErrors((prev) => {
         const newErrors = { ...prev };
@@ -128,9 +128,9 @@ export const CreateNodeDialog: React.FC<CreateNodeDialogProps> = ({
       newErrors.name = '节点名称不能为空';
     }
 
-    // 后端支持服务器地址为空，移除非空验证
+    // Backend supports empty server address, removed non-empty validation
     // if (!formData.serverAddress.trim()) {
-    //   newErrors.serverAddress = '服务器地址不能为空';
+    //   newErrors.serverAddress = 'Server address cannot be empty';
     // }
 
     if (!formData.agentPort || formData.agentPort < 1 || formData.agentPort > 65535) {
@@ -145,7 +145,7 @@ export const CreateNodeDialog: React.FC<CreateNodeDialogProps> = ({
       newErrors.protocol = '协议类型不能为空';
     }
 
-    // Shadowsocks 需要加密方法
+    // Shadowsocks requires encryption method
     if (isShadowsocks && !formData.encryptionMethod) {
       newErrors.encryptionMethod = '加密方法不能为空';
     }
@@ -164,19 +164,19 @@ export const CreateNodeDialog: React.FC<CreateNodeDialogProps> = ({
         subscriptionPort: formData.subscriptionPort,
       };
 
-      // Shadowsocks 特有字段
+      // Shadowsocks specific fields
       if (isShadowsocks && formData.encryptionMethod) {
         submitData.encryptionMethod = formData.encryptionMethod;
       }
 
-      // Shadowsocks 插件配置
+      // Shadowsocks plugin configuration
       if (isShadowsocks) {
         const trimmedPlugin = formData.plugin?.trim();
         if (trimmedPlugin) {
           submitData.plugin = trimmedPlugin;
         }
 
-        // 解析插件选项字符串为对象
+        // Parse plugin options string to object
         const trimmedPluginOpts = pluginOptsString.trim();
         if (trimmedPluginOpts) {
           try {
@@ -197,7 +197,7 @@ export const CreateNodeDialog: React.FC<CreateNodeDialogProps> = ({
         }
       }
 
-      // Trojan 特有字段
+      // Trojan specific fields
       if (isTrojan) {
         submitData.transportProtocol = formData.transportProtocol;
         if (formData.sni?.trim()) {
@@ -206,7 +206,7 @@ export const CreateNodeDialog: React.FC<CreateNodeDialogProps> = ({
         if (formData.allowInsecure) {
           submitData.allowInsecure = formData.allowInsecure;
         }
-        // WebSocket 字段
+        // WebSocket fields
         if (showWsFields) {
           if (formData.host?.trim()) {
             submitData.host = formData.host.trim();
@@ -215,7 +215,7 @@ export const CreateNodeDialog: React.FC<CreateNodeDialogProps> = ({
             submitData.path = formData.path.trim();
           }
         }
-        // gRPC 字段
+        // gRPC fields
         if (showGrpcFields && formData.host?.trim()) {
           submitData.host = formData.host.trim();
         }

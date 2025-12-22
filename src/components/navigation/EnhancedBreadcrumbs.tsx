@@ -38,7 +38,7 @@ const HIDDEN_PATHS = [
  *
  * @example
  * ```tsx
- * // 在布局组件中使用
+ * // Use in layout component
  * <Container>
  *   <EnhancedBreadcrumbs />
  *   {children}
@@ -49,53 +49,53 @@ export const EnhancedBreadcrumbs = () => {
   const location = useLocation();
   const { userRole } = usePermissions();
 
-  // 管理员始终显示完整路径(移动端也不简化)
+  // Admin always shows full path (no simplification on mobile)
   const shouldShowFullPath = userRole === 'admin';
 
   /**
    * 生成面包屑数据
    */
   const breadcrumbs = useMemo((): BreadcrumbItem[] => {
-    // 检查是否在隐藏列表中
+    // Check if in hidden paths list
     if (HIDDEN_PATHS.includes(location.pathname)) {
       return [];
     }
 
-    // 分割路径段
+    // Split path segments
     const pathSegments = location.pathname
       .split('/')
       .filter((segment) => segment !== '');
 
-    // 如果在根路径,不显示面包屑
+    // Don't show breadcrumbs at root path
     if (pathSegments.length === 0) {
       return [];
     }
 
     const items: BreadcrumbItem[] = [];
 
-    // 判断是否在管理端
+    // Check if in admin path
     const isAdminPath = location.pathname.startsWith('/admin');
     const homePath = isAdminPath ? '/admin' : '/dashboard';
 
-    // 添加首页
+    // Add home page
     items.push({
       label: '首页',
       path: homePath,
       isActive: location.pathname === homePath,
     });
 
-    // 如果当前就是首页,直接返回
+    // If currently at home page, return directly
     if (location.pathname === homePath) {
       return items;
     }
 
-    // 逐级构建面包屑
+    // Build breadcrumbs level by level
     let currentPath = '';
     pathSegments.forEach((segment, index) => {
       currentPath += `/${segment}`;
       const isLast = index === pathSegments.length - 1;
 
-      // 从配置中查找标签
+      // Find label from config
       const navItem = getNavigationItemBySegment(segment);
 
       if (navItem && navItem.showInBreadcrumb !== false) {
@@ -105,7 +105,7 @@ export const EnhancedBreadcrumbs = () => {
           isActive: isLast,
         });
       } else if (isLast) {
-        // 如果是最后一项但没有配置,使用格式化的段名
+        // If last item has no config, use formatted segment name
         items.push({
           label: formatSegmentLabel(segment),
           path: currentPath,
@@ -117,7 +117,7 @@ export const EnhancedBreadcrumbs = () => {
     return items;
   }, [location.pathname]);
 
-  // 如果没有面包屑,不渲染
+  // Don't render if no breadcrumbs
   if (breadcrumbs.length === 0) {
     return null;
   }
@@ -128,7 +128,7 @@ export const EnhancedBreadcrumbs = () => {
         {breadcrumbs.map((item, index) => {
           const isHome = index === 0;
           const isLast = index === breadcrumbs.length - 1;
-          // 管理端始终显示所有项,用户端移动端只显示首页和当前页
+          // Admin shows all items, user mobile only shows home and current page
           const shouldShowOnMobile = shouldShowFullPath || isHome || isLast;
 
           if (!shouldShowOnMobile) return null;

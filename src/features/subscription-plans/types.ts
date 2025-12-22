@@ -1,8 +1,8 @@
 /**
- * 订阅计划模块本地类型定义
+ * Subscription plan module local type definitions
  */
 
-// 从 API 重新导出类型
+// Re-export types from API
 export type {
   BillingCycle,
   PlanStatus,
@@ -10,7 +10,7 @@ export type {
 } from '@/api/subscription/types';
 
 /**
- * 订阅计划筛选条件
+ * Subscription plan filter criteria
  */
 export interface SubscriptionPlanFilters {
   status?: 'active' | 'inactive';

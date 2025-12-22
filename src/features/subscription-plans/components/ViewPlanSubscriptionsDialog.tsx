@@ -1,6 +1,6 @@
 /**
- * 查看订阅计划的订阅用户对话框
- * 使用 Radix UI 组件，精致商务风格
+ * View Subscription Plan's Subscribers Dialog
+ * Using Radix UI components with refined business style
  */
 
 import { useState, useEffect, useMemo } from 'react';
@@ -27,7 +27,7 @@ interface ViewPlanSubscriptionsDialogProps {
   plan: SubscriptionPlan | null;
 }
 
-// 状态配置
+// Status configuration
 const STATUS_CONFIG: Record<SubscriptionStatus, { label: string; variant: 'success' | 'default' | 'warning' | 'danger' }> = {
   active: { label: '激活', variant: 'success' },
   renewed: { label: '已续费', variant: 'success' },
@@ -42,19 +42,19 @@ export const ViewPlanSubscriptionsDialog: React.FC<ViewPlanSubscriptionsDialogPr
   plan,
 }) => {
   const [subscriptions, setSubscriptions] = useState<Subscription[]>([]);
-  // 注意：UserResponse.id 现在是 string (Stripe-style)
+  // Note: UserResponse.id is now string (Stripe-style)
   const [usersMap, setUsersMap] = useState<Map<string, UserResponse>>(new Map());
   const [loading, setLoading] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
 
-  // 当对话框打开时加载数据
+  // Load data when dialog opens
   useEffect(() => {
     if (!open || !plan) return;
 
     const loadData = async () => {
       setLoading(true);
       try {
-        // 并行加载订阅和用户数据
+        // Load subscription and user data in parallel
         const [subscriptionsResponse, usersResponse] = await Promise.all([
           adminListSubscriptions({ page: 1, pageSize: 1000 }),
           listUsers({ page: 1, pageSize: 1000 }),
@@ -65,7 +65,7 @@ export const ViewPlanSubscriptionsDialog: React.FC<ViewPlanSubscriptionsDialogPr
           (sub) => sub.plan?.id === plan.id
         );
 
-        // 构建用户映射（使用 string key，因为 UserResponse.id 是 string）
+        // Build user mapping (using string key because UserResponse.id is string)
         const users = usersResponse.items || [];
         const userMap = new Map<string, UserResponse>();
         users.forEach((user) => userMap.set(user.id, user));
@@ -73,7 +73,7 @@ export const ViewPlanSubscriptionsDialog: React.FC<ViewPlanSubscriptionsDialogPr
         setSubscriptions(planSubscriptions);
         setUsersMap(userMap);
       } catch {
-        // Failed to load subscription data
+        // Error: failed to load subscription data
       } finally {
         setLoading(false);
       }
@@ -83,13 +83,13 @@ export const ViewPlanSubscriptionsDialog: React.FC<ViewPlanSubscriptionsDialogPr
     setSearchQuery('');
   }, [open, plan]);
 
-  // 过滤订阅（支持按用户名、邮箱搜索）
+  // Filter subscriptions (supports search by username, email)
   const filteredSubscriptions = useMemo(() => {
     if (!searchQuery.trim()) return subscriptions;
 
     const query = searchQuery.toLowerCase();
     return subscriptions.filter((sub) => {
-      // userId 是 number，转为 string 查找
+      // userId is number, convert to string for lookup
       const user = usersMap.get(String(sub.userId));
       return (
         String(sub.id).includes(query) ||
@@ -101,13 +101,13 @@ export const ViewPlanSubscriptionsDialog: React.FC<ViewPlanSubscriptionsDialogPr
     });
   }, [subscriptions, searchQuery, usersMap]);
 
-  // 统计信息
+  // Statistics
   const activeCount = subscriptions.filter((s) => s.status === 'active').length;
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
       <DialogContent className="max-w-2xl p-0 gap-0 overflow-hidden">
-        {/* 头部 */}
+        {/* Header */}
         <div className="px-6 py-5 bg-gradient-to-b from-slate-50 to-white dark:from-slate-800/50 dark:to-slate-900">
           <div className="flex items-center gap-3">
             <div className="flex items-center justify-center size-10 rounded-xl bg-gradient-to-br from-indigo-500 to-indigo-600 text-white shadow-lg shadow-indigo-500/30">
@@ -126,9 +126,9 @@ export const ViewPlanSubscriptionsDialog: React.FC<ViewPlanSubscriptionsDialogPr
 
         <Separator />
 
-        {/* 工具栏 */}
+        {/* Toolbar */}
         <div className="px-6 py-4 flex items-center justify-between gap-4 bg-white dark:bg-slate-900">
-          {/* 统计徽章 */}
+          {/* Statistics badges */}
           <div className="flex items-center gap-2">
             <AdminBadge variant="info" size="md">
               <Users className="mr-1.5 size-3.5" strokeWidth={2} />
@@ -140,7 +140,7 @@ export const ViewPlanSubscriptionsDialog: React.FC<ViewPlanSubscriptionsDialogPr
             </AdminBadge>
           </div>
 
-          {/* 搜索框 */}
+          {/* Search box */}
           <div className="relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-slate-400" strokeWidth={2} />
             <input
@@ -162,7 +162,7 @@ export const ViewPlanSubscriptionsDialog: React.FC<ViewPlanSubscriptionsDialogPr
 
         <Separator />
 
-        {/* 列表区域 */}
+        {/* List area */}
         <ScrollArea className="h-[380px]">
           {loading ? (
             <div className="flex flex-col items-center justify-center h-full py-16">
@@ -198,7 +198,7 @@ export const ViewPlanSubscriptionsDialog: React.FC<ViewPlanSubscriptionsDialogPr
                   label: subscription.status,
                   variant: 'default' as const,
                 };
-                // userId 是 number，转为 string 查找
+                // userId is number, convert to string for lookup
                 const user = usersMap.get(String(subscription.userId));
                 const displayName = user?.name || user?.displayName || `用户 #${subscription.userId}`;
                 const initials = user?.initials || `U${subscription.userId}`;
@@ -216,14 +216,14 @@ export const ViewPlanSubscriptionsDialog: React.FC<ViewPlanSubscriptionsDialogPr
                     )}
                   >
                     <div className="flex items-center gap-4">
-                      {/* 用户头像 */}
+                      {/* User avatar */}
                       <div className="flex items-center justify-center size-11 rounded-full bg-gradient-to-br from-indigo-100 to-indigo-50 dark:from-indigo-900/40 dark:to-indigo-800/30 shrink-0">
                         <span className="text-sm font-semibold text-indigo-600 dark:text-indigo-400">
                           {initials}
                         </span>
                       </div>
 
-                      {/* 主要信息 */}
+                      {/* Main info */}
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2.5">
                           <span className="font-semibold text-slate-900 dark:text-white truncate">
@@ -247,7 +247,7 @@ export const ViewPlanSubscriptionsDialog: React.FC<ViewPlanSubscriptionsDialogPr
                         </div>
                       </div>
 
-                      {/* 续费状态 */}
+                      {/* Renewal status */}
                       <div className="shrink-0">
                         {subscription.autoRenew ? (
                           <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-emerald-50 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400">
@@ -271,7 +271,7 @@ export const ViewPlanSubscriptionsDialog: React.FC<ViewPlanSubscriptionsDialogPr
 
         <Separator />
 
-        {/* 底部 */}
+        {/* Footer */}
         <div className="px-6 py-4 flex items-center justify-between bg-gradient-to-b from-white to-slate-50/50 dark:from-slate-900 dark:to-slate-800/30">
           <div className="text-xs text-slate-400">
             {searchQuery && filteredSubscriptions.length !== subscriptions.length && (

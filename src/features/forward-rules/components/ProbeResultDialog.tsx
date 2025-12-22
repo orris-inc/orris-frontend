@@ -1,6 +1,6 @@
 /**
- * 拨测结果对话框组件
- * 显示转发规则的拨测结果详情，包括延迟信息和目标信息
+ * Probe Result Dialog Component
+ * Displays probe result details for forward rules, including latency and target information
  */
 
 import { useState } from 'react';
@@ -48,13 +48,13 @@ export const ProbeResultDialog: React.FC<ProbeResultDialogProps> = ({
 }) => {
   const [copiedAddress, setCopiedAddress] = useState(false);
 
-  // 获取 agent 名称
+  // Get agent name
   const getAgentName = (id: string) => {
     const agent = agents.find((a) => a.id === id);
     return agent?.name ?? id.replace('fa_', '');
   };
 
-  // 获取目标显示信息
+  // Get target display information
   const getTargetInfo = () => {
     if (!rule) return null;
 
@@ -77,7 +77,7 @@ export const ProbeResultDialog: React.FC<ProbeResultDialogProps> = ({
     return null;
   };
 
-  // 获取目标显示名称
+  // Get target display name
   const getTargetDisplay = () => {
     if (!rule) return '目标';
     if (rule.targetNodeId) {
@@ -90,13 +90,13 @@ export const ProbeResultDialog: React.FC<ProbeResultDialogProps> = ({
     return '目标';
   };
 
-  // 获取入口 agent 名称
+  // Get entry agent name
   const getEntryAgentName = () => {
     if (!rule?.agentId) return '入口';
     return getAgentName(rule.agentId);
   };
 
-  // 获取出口 agent 名称（用于 entry 类型）
+  // Get exit agent name (for entry type)
   const getExitAgentName = () => {
     if (!rule?.exitAgentId) return '出口';
     return getAgentName(rule.exitAgentId);
@@ -129,7 +129,7 @@ export const ProbeResultDialog: React.FC<ProbeResultDialogProps> = ({
             </div>
           ) : probeResult ? (
             <div className="space-y-4">
-              {/* 拨测状态 */}
+              {/* Probe Status */}
               <div
                 className={`flex items-center gap-3 p-4 rounded-lg ${
                   probeResult.success
@@ -160,7 +160,7 @@ export const ProbeResultDialog: React.FC<ProbeResultDialogProps> = ({
                 </div>
               </div>
 
-              {/* 目标信息 - 所有类型都显示 */}
+              {/* Target Information - Display for all types */}
               {rule && (
                 <>
                   <Separator />
@@ -212,14 +212,14 @@ export const ProbeResultDialog: React.FC<ProbeResultDialogProps> = ({
                 </>
               )}
 
-              {/* 延迟信息 */}
+              {/* Latency Information */}
               {probeResult.success && (
                 <>
                   <Separator />
                   <div className="space-y-3">
                     <p className="text-xs font-medium text-muted-foreground">延迟详情</p>
                     <div className="space-y-2">
-                      {/* direct 类型：入口 → 目标 */}
+                      {/* direct type: entry → target */}
                       {probeResult.ruleType === 'direct' &&
                         probeResult.targetLatencyMs !== undefined && (
                           <div className="flex items-center text-sm py-1.5 px-2 rounded bg-muted/30">
@@ -235,7 +235,7 @@ export const ProbeResultDialog: React.FC<ProbeResultDialogProps> = ({
                           </div>
                         )}
 
-                      {/* entry 类型：入口 → 出口 → 目标 */}
+                      {/* entry type: entry → exit → target */}
                       {probeResult.ruleType === 'entry' && (
                         <>
                           {probeResult.tunnelLatencyMs !== undefined && (
@@ -267,7 +267,7 @@ export const ProbeResultDialog: React.FC<ProbeResultDialogProps> = ({
                         </>
                       )}
 
-                      {/* chain/direct_chain 类型：链路每跳延迟 */}
+                      {/* chain/direct_chain types: latency for each hop in the chain */}
                       {(probeResult.ruleType === 'chain' || probeResult.ruleType === 'direct_chain') &&
                         probeResult.chainLatencies &&
                         probeResult.chainLatencies.length > 0 &&
@@ -303,7 +303,7 @@ export const ProbeResultDialog: React.FC<ProbeResultDialogProps> = ({
                         })}
                     </div>
 
-                    {/* 总延迟 */}
+                    {/* Total Latency */}
                     {probeResult.totalLatencyMs !== undefined && (
                       <>
                         <Separator className="my-2" />

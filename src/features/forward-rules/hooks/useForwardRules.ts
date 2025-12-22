@@ -1,6 +1,6 @@
 /**
  * useForwardRules Hook
- * 基于 TanStack Query 实现
+ * Implemented using TanStack Query
  */
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
@@ -55,7 +55,7 @@ export const useForwardRules = (options: UseForwardRulesOptions = {}) => {
   const queryClient = useQueryClient();
   const { showSuccess, showError } = useNotificationStore();
 
-  // 构建查询参数
+  // Build query parameters
   const params: ListForwardRulesParams = {
     page,
     pageSize,
@@ -66,7 +66,7 @@ export const useForwardRules = (options: UseForwardRulesOptions = {}) => {
     order: filters.order,
   };
 
-  // 查询转发规则列表
+  // Query forward rules list
   const {
     data,
     isLoading,
@@ -79,7 +79,7 @@ export const useForwardRules = (options: UseForwardRulesOptions = {}) => {
     enabled,
   });
 
-  // 创建转发规则
+  // Create forward rule
   const createMutation = useMutation({
     mutationFn: createForwardRule,
     onSuccess: () => {
@@ -91,7 +91,7 @@ export const useForwardRules = (options: UseForwardRulesOptions = {}) => {
     },
   });
 
-  // 更新转发规则
+  // Update forward rule
   const updateMutation = useMutation({
     mutationFn: ({ id, data }: { id: number | string; data: UpdateForwardRuleRequest }) =>
       updateForwardRule(id, data),
@@ -104,7 +104,7 @@ export const useForwardRules = (options: UseForwardRulesOptions = {}) => {
     },
   });
 
-  // 删除转发规则
+  // Delete forward rule
   const deleteMutation = useMutation({
     mutationFn: deleteForwardRule,
     onSuccess: () => {
@@ -116,7 +116,7 @@ export const useForwardRules = (options: UseForwardRulesOptions = {}) => {
     },
   });
 
-  // 启用转发规则
+  // Enable forward rule
   const enableMutation = useMutation({
     mutationFn: enableForwardRule,
     onSuccess: () => {
@@ -128,7 +128,7 @@ export const useForwardRules = (options: UseForwardRulesOptions = {}) => {
     },
   });
 
-  // 禁用转发规则
+  // Disable forward rule
   const disableMutation = useMutation({
     mutationFn: disableForwardRule,
     onSuccess: () => {
@@ -140,7 +140,7 @@ export const useForwardRules = (options: UseForwardRulesOptions = {}) => {
     },
   });
 
-  // 重置流量
+  // Reset traffic
   const resetTrafficMutation = useMutation({
     mutationFn: resetForwardRuleTraffic,
     onSuccess: () => {
@@ -152,7 +152,7 @@ export const useForwardRules = (options: UseForwardRulesOptions = {}) => {
     },
   });
 
-  // 拨测规则
+  // Probe rule
   const probeMutation = useMutation({
     mutationFn: ({ id, data }: { id: number | string; data?: ProbeRuleRequest }) =>
       probeRule(id, data),
@@ -162,7 +162,7 @@ export const useForwardRules = (options: UseForwardRulesOptions = {}) => {
   });
 
   return {
-    // 数据
+    // Data
     forwardRules: data?.items ?? [],
     pagination: {
       page: data?.page ?? page,
@@ -171,12 +171,12 @@ export const useForwardRules = (options: UseForwardRulesOptions = {}) => {
       totalPages: data?.totalPages ?? 0,
     },
 
-    // 状态
+    // Status
     isLoading,
     isFetching,
     error: error ? handleApiError(error) : null,
 
-    // 操作
+    // Operations
     refetch,
     createForwardRule: (data: CreateForwardRuleRequest) => createMutation.mutateAsync(data),
     updateForwardRule: (id: number | string, data: UpdateForwardRuleRequest) =>
@@ -188,7 +188,7 @@ export const useForwardRules = (options: UseForwardRulesOptions = {}) => {
     probeRule: (id: number | string, data?: ProbeRuleRequest) =>
       probeMutation.mutateAsync({ id, data }),
 
-    // Mutation 状态
+    // Mutation status
     isCreating: createMutation.isPending,
     isUpdating: updateMutation.isPending,
     isDeleting: deleteMutation.isPending,
@@ -199,7 +199,7 @@ export const useForwardRules = (options: UseForwardRulesOptions = {}) => {
   };
 };
 
-// 获取单个转发规则详情
+// Get single forward rule details
 export const useForwardRule = (id: number | string | null) => {
   const { data, isLoading, error } = useQuery({
     queryKey: forwardRulesQueryKeys.detail(id!),
@@ -221,7 +221,7 @@ const forwardAgentsQueryKeys = {
   list: (params: object) => [...forwardAgentsQueryKeys.lists(), params] as const,
 };
 
-// 转发规则列表状态管理 hook（用于页面级状态）
+// Forward rules list state management hook (for page-level state)
 export const useForwardRulesPage = () => {
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(20);
@@ -230,14 +230,14 @@ export const useForwardRulesPage = () => {
 
   const rulesQuery = useForwardRules({ page, pageSize, filters });
 
-  // 获取所有转发代理以构建 agentId -> agent 映射
-  // 与规则列表同时加载，避免先显示 ID 再显示名称的问题
+  // Get all forward agents to build agentId -> agent mapping
+  // Load simultaneously with rules list to avoid showing ID first then name
   const { data: agentsData, isLoading: isAgentsLoading } = useQuery({
     queryKey: forwardAgentsQueryKeys.list({ pageSize: 100 }),
     queryFn: () => listForwardAgents({ pageSize: 100 }),
   });
 
-  // 构建 agentId -> agent 映射
+  // Build agentId -> agent mapping
   const agentsMap = useMemo(() => {
     const map: Record<string, ForwardAgent> = {};
     if (agentsData?.items) {
@@ -264,7 +264,7 @@ export const useForwardRulesPage = () => {
 
   return {
     ...rulesQuery,
-    // 合并加载状态，确保代理数据也加载完成后才显示表格
+    // Merge loading states, ensure agent data is also loaded before showing table
     isLoading: rulesQuery.isLoading || isAgentsLoading,
     page,
     pageSize,

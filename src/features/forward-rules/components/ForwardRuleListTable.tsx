@@ -1,6 +1,6 @@
 /**
- * 转发规则列表表格组件（管理端）
- * 使用 TanStack Table 实现，支持响应式列隐藏
+ * Forward Rule List Table Component (Admin)
+ * Implemented using TanStack Table with responsive column hiding support
  */
 
 import { useMemo, useState, useCallback } from 'react';
@@ -43,13 +43,13 @@ interface ForwardRuleListTableProps {
   probingRuleId?: string | null;
 }
 
-// 状态配置
+// Status configuration
 const STATUS_CONFIG: Record<string, { label: string; variant: 'success' | 'default' }> = {
   enabled: { label: '已启用', variant: 'success' },
   disabled: { label: '已禁用', variant: 'default' },
 };
 
-// 可复制地址组件
+// Copyable address component
 const CopyableAddress: React.FC<{ address: string; className?: string }> = ({ address, className = '' }) => {
   const [copied, setCopied] = useState(false);
 
@@ -84,14 +84,14 @@ const CopyableAddress: React.FC<{ address: string; className?: string }> = ({ ad
   );
 };
 
-// 格式化流量（默认显示 GB）
+// Format bytes (default display in GB)
 const formatBytes = (bytes?: number) => {
   if (!bytes) return '0 GB';
   const gb = bytes / (1024 * 1024 * 1024);
   return `${gb.toFixed(2)} GB`;
 };
 
-// 链节点显示组件
+// Chain nodes display component
 const ChainNodesDisplay: React.FC<{
   chainAgentIds: string[];
   agentsMap: Record<string, ForwardAgent>;
@@ -99,19 +99,19 @@ const ChainNodesDisplay: React.FC<{
 }> = ({ chainAgentIds, agentsMap, targetDisplay }) => {
   const chainCount = chainAgentIds.length;
 
-  // 获取 agent 名称
+  // Get agent name
   const getAgentName = (id: string) => {
     const agent = agentsMap[id];
     return agent?.name || `ID: ${id}`;
   };
 
-  // 前两个节点名称
+  // First two node names
   const firstTwoNames = chainAgentIds
     .slice(0, 2)
     .map(getAgentName)
     .join(' → ');
 
-  // 如果节点数量 <= 2，直接显示，不需要 Popover
+  // If node count <= 2, display directly without Popover
   if (chainCount <= 2) {
     return (
       <div className="space-y-0.5 min-w-0">
@@ -129,7 +129,7 @@ const ChainNodesDisplay: React.FC<{
     );
   }
 
-  // 节点数量 > 2，显示 Popover
+  // Node count > 2, show Popover
   return (
     <div className="space-y-0.5 min-w-0">
       <div className="flex items-center gap-1.5 text-sm text-slate-900 dark:text-white">
@@ -223,7 +223,7 @@ export const ForwardRuleListTable: React.FC<ForwardRuleListTableProps> = ({
   onCopy,
   probingRuleId,
 }) => {
-  // 转发规则右键菜单内容
+  // Forward rule context menu content
   const renderContextMenuActions = useCallback((rule: ForwardRule) => (
     <>
       <ContextMenuItem onClick={() => onCopy(rule)}>
@@ -253,7 +253,7 @@ export const ForwardRuleListTable: React.FC<ForwardRuleListTableProps> = ({
     </>
   ), [onCopy, onResetTraffic, onEnable, onDisable, onDelete]);
 
-  // 转发规则下拉菜单内容
+  // Forward rule dropdown menu content
   const renderDropdownMenuActions = useCallback((rule: ForwardRule) => (
     <>
       <DropdownMenuItem onClick={() => onCopy(rule)}>
@@ -341,20 +341,20 @@ export const ForwardRuleListTable: React.FC<ForwardRuleListTableProps> = ({
       cell: ({ row }) => {
         const rule = row.original;
 
-        // 获取目标地址的辅助函数
+        // Helper function to get target address
         const getTargetDisplay = () => {
           if (rule.targetNodeId) {
             const targetNode = nodes.find((n) => n.id === rule.targetNodeId);
             const nodeName = targetNode?.name || `ID: ${rule.targetNodeId}`;
             const nodePort = targetNode?.subscriptionPort || targetNode?.agentPort;
-            // 使用 API 返回的目标节点地址（根据 ipVersion 选择）
+            // Use API returned target node address (selected based on ipVersion)
             let address: string | undefined;
             if (rule.ipVersion === 'ipv4' && rule.targetNodePublicIpv4) {
               address = rule.targetNodePublicIpv4;
             } else if (rule.ipVersion === 'ipv6' && rule.targetNodePublicIpv6) {
               address = rule.targetNodePublicIpv6;
             } else {
-              // auto 或 fallback: 优先使用 serverAddress，其次 IPv4，最后 IPv6
+              // auto or fallback: prefer serverAddress, then IPv4, then IPv6
               address = rule.targetNodeServerAddress || rule.targetNodePublicIpv4 || rule.targetNodePublicIpv6;
             }
             const nodeAddress = address ? (nodePort ? `${address}:${nodePort}` : address) : '-';
@@ -370,7 +370,7 @@ export const ForwardRuleListTable: React.FC<ForwardRuleListTableProps> = ({
           return null;
         };
 
-        // 出口类型图标组件
+        // Exit type icon component
         const ExitTypeIcon: React.FC<{ type: 'agent' | 'node' | 'manual'; className?: string }> = ({ type, className = '' }) => {
           const iconProps = { className: `size-3.5 ${className}` };
           switch (type) {
@@ -404,12 +404,12 @@ export const ForwardRuleListTable: React.FC<ForwardRuleListTableProps> = ({
           }
         };
 
-        // entry 类型：显示出口节点 -> 目标
+        // entry type: show exit agent -> target
         if (rule.ruleType === 'entry' && rule.exitAgentId) {
           const exitAgent = agentsMap[rule.exitAgentId];
           const exitName = exitAgent?.name || `ID: ${rule.exitAgentId}`;
           const target = getTargetDisplay();
-          // 显示出口节点名称和目标地址
+          // Show exit agent name and target address
           const targetAddress = target?.address || '-';
           return (
             <div className="space-y-0.5 min-w-0">
@@ -422,7 +422,7 @@ export const ForwardRuleListTable: React.FC<ForwardRuleListTableProps> = ({
           );
         }
 
-        // chain 和 direct_chain 类型：显示链节点信息 -> 目标
+        // chain and direct_chain types: show chain nodes info -> target
         if ((rule.ruleType === 'chain' || rule.ruleType === 'direct_chain') && rule.chainAgentIds && rule.chainAgentIds.length > 0) {
           const target = getTargetDisplay();
           return (
@@ -434,7 +434,7 @@ export const ForwardRuleListTable: React.FC<ForwardRuleListTableProps> = ({
           );
         }
 
-        // direct 类型：显示目标
+        // direct type: show target
         const target = getTargetDisplay();
         if (target) {
           const iconType = target.type === 'node' ? 'node' : 'manual';

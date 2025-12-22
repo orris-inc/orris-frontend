@@ -62,7 +62,7 @@ export const AdminLayout = ({ children }: AdminLayoutProps) => {
     await logout();
   };
 
-  // 切换到用户视图的链接组件
+  // Switch to user view link component
   const SwitchToUserViewLink = ({ collapsed = false }: { collapsed?: boolean }) => (
     <RouterLink
       to="/dashboard"
@@ -77,7 +77,7 @@ export const AdminLayout = ({ children }: AdminLayoutProps) => {
     </RouterLink>
   );
 
-  // 移动端侧边栏内容
+  // Mobile sidebar content
   const MobileSidebarContent = () => (
     <div className="flex h-full flex-col bg-background">
       <div className="flex h-14 items-center justify-between border-b px-4">

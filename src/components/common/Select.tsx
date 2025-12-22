@@ -1,6 +1,6 @@
 /**
- * Select 组件 - 薄封装
- * 基于 Radix UI Select 的薄封装，包含默认样式
+ * Select Component - Wrapper
+ * Based on Radix UI Select with default styling
  */
 
 import type { ComponentPropsWithoutRef, ElementRef } from 'react';
@@ -16,7 +16,7 @@ import { cn } from '@/lib/utils';
 const Select = SelectPrimitive.Root;
 
 // ============================================================================
-// SelectTrigger - 触发器（自动包含 Value 和 Icon）
+// SelectTrigger - Trigger (includes Value and Icon automatically)
 // ============================================================================
 
 const SelectTrigger = forwardRef<
@@ -68,7 +68,7 @@ SelectIcon.displayName = SelectPrimitive.Icon.displayName;
 const SelectPortal = SelectPrimitive.Portal;
 
 // ============================================================================
-// SelectContent - 内容容器（自动包含 Portal 和 Viewport）
+// SelectContent - Content container (includes Portal and Viewport automatically)
 // ============================================================================
 
 const SelectContent = forwardRef<
@@ -118,7 +118,7 @@ const SelectViewport = forwardRef<
 SelectViewport.displayName = SelectPrimitive.Viewport.displayName;
 
 // ============================================================================
-// SelectItem - 选项（自动包含 ItemIndicator）
+// SelectItem - Option (includes ItemIndicator automatically)
 // ============================================================================
 
 const SelectItem = forwardRef<

@@ -1,6 +1,6 @@
 /**
  * useForwardAgents Hook
- * 基于 TanStack Query 实现
+ * Implemented using TanStack Query
  */
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
@@ -178,14 +178,14 @@ export const useForwardAgent = (id: number | string | null) => {
   };
 };
 
-// 获取转发代理运行时状态
+// Get forward agent runtime status
 export const useForwardAgentRuntimeStatus = (id: number | string | null) => {
   const { data, isLoading, error, refetch } = useQuery({
     queryKey: forwardAgentsQueryKeys.runtimeStatus(id!),
     queryFn: () => getForwardAgentRuntimeStatus(id!),
     enabled: !!id,
-    refetchInterval: 10000, // 每10秒自动刷新
-    staleTime: 5000, // 5秒内数据视为新鲜
+    refetchInterval: 10000, // Auto-refresh every 10 seconds
+    staleTime: 5000, // Data considered fresh for 5 seconds
   });
 
   return {

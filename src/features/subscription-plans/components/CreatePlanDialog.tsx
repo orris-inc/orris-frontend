@@ -1,6 +1,6 @@
 /**
- * 创建订阅计划对话框
- * 使用封装的通用组件实现
+ * Create Subscription Plan Dialog
+ * Implemented using wrapped common components
  */
 
 import { useState, useEffect } from 'react';
@@ -29,7 +29,7 @@ import { Separator } from '@/components/common/Separator';
 import { Alert, AlertDescription } from '@/components/common/Alert';
 import type { CreatePlanRequest, PricingOptionInput, PlanType, SubscriptionPlan } from '@/api/subscription/types';
 
-// 本地定义的类型（原 SDK 已移除）
+// Locally defined types (removed from original SDK)
 type ForwardRuleTypeOption = 'direct' | 'entry' | 'chain' | 'direct_chain';
 
 interface PlanLimits {
@@ -43,7 +43,7 @@ interface PlanLimits {
   nodeLimit?: number;
 }
 
-// 辅助函数：将 PlanLimits 转换为 API 格式
+// Helper function: convert PlanLimits to API format
 function planLimitsToApiFormat(limits: PlanLimits): Record<string, unknown> {
   const result: Record<string, unknown> = {};
   if (limits.trafficLimit !== undefined) result['traffic_limit'] = limits.trafficLimit;
@@ -57,7 +57,7 @@ function planLimitsToApiFormat(limits: PlanLimits): Record<string, unknown> {
   return result;
 }
 
-// 辅助函数：解析 API 格式的限制（axios-case-converter 会将响应转换为 camelCase）
+// Helper function: parse API format limits (axios-case-converter converts response to camelCase)
 function parsePlanLimits(apiLimits: Record<string, unknown> | undefined): PlanLimits {
   if (!apiLimits) return {};
   return {
@@ -74,7 +74,7 @@ function parsePlanLimits(apiLimits: Record<string, unknown> | undefined): PlanLi
 
 interface CreatePlanDialogProps {
   open: boolean;
-  /** 用于复制计划时预填充数据 */
+  /** Used to pre-fill data when duplicating a plan */
   initialPlan?: SubscriptionPlan | null;
   onClose: () => void;
   onSubmit: (data: CreatePlanRequest) => Promise<void>;
@@ -89,7 +89,7 @@ const BILLING_CYCLES: { value: string; label: string }[] = [
   { value: 'lifetime', label: '终身' },
 ];
 
-// 转发规则类型选项
+// Forward rule type options
 const FORWARD_RULE_TYPES: { value: ForwardRuleTypeOption; label: string }[] = [
   { value: 'direct', label: '直连' },
   { value: 'entry', label: '入口' },
@@ -97,20 +97,20 @@ const FORWARD_RULE_TYPES: { value: ForwardRuleTypeOption; label: string }[] = [
   { value: 'direct_chain', label: '直连链' },
 ];
 
-// 计划类型选项
+// Plan type options
 const PLAN_TYPES: { value: PlanType; label: string }[] = [
   { value: 'node', label: '节点订阅' },
   { value: 'forward', label: '端口转发' },
 ];
 
-// 扩展 CreatePlanRequest 以支持计划限制
+// Extend CreatePlanRequest to support plan limits
 interface CreatePlanFormData extends Omit<CreatePlanRequest, 'limits' | 'pricings'> {
   pricings: PricingOptionInput[];
-  // 计划限制
+  // Plan limits
   planLimits: PlanLimits;
 }
 
-// 默认定价选项
+// Default pricing option
 const getDefaultPricing = (): PricingOptionInput => ({
   billingCycle: 'monthly',
   price: 0,
@@ -118,7 +118,7 @@ const getDefaultPricing = (): PricingOptionInput => ({
   isActive: true,
 });
 
-// 默认表单数据
+// Default form data
 const getDefaultFormData = (): CreatePlanFormData => ({
   name: '',
   slug: '',
@@ -143,10 +143,10 @@ export const CreatePlanDialog: React.FC<CreatePlanDialogProps> = ({
   const [formData, setFormData] = useState<CreatePlanFormData>(getDefaultFormData());
   const [loading, setLoading] = useState(false);
 
-  // 是否为复制模式
+  // Check if in duplicate mode
   const isDuplicateMode = !!initialPlan;
 
-  // 初始化表单数据（复制模式时预填充）
+  // Initialize form data (pre-fill in duplicate mode)
   useEffect(() => {
     if (open && initialPlan) {
       const planLimits = parsePlanLimits(initialPlan.limits);
@@ -173,7 +173,7 @@ export const CreatePlanDialog: React.FC<CreatePlanDialogProps> = ({
         planLimits,
       });
     } else if (open && !initialPlan) {
-      // 创建模式：重置为默认值
+      // Create mode: reset to default values
       setFormData(getDefaultFormData());
     }
   }, [open, initialPlan]);
@@ -182,7 +182,7 @@ export const CreatePlanDialog: React.FC<CreatePlanDialogProps> = ({
     setFormData((prev) => ({ ...prev, [field]: value }));
   };
 
-  // 处理计划限制变更
+  // Handle plan limit changes
   const handleLimitChange = (field: keyof PlanLimits, value: unknown) => {
     setFormData((prev) => ({
       ...prev,
@@ -190,7 +190,7 @@ export const CreatePlanDialog: React.FC<CreatePlanDialogProps> = ({
     }));
   };
 
-  // 处理转发规则类型多选
+  // Handle forward rule type multi-select
   const handleForwardTypeToggle = (type: ForwardRuleTypeOption) => {
     setFormData((prev) => {
       const currentTypes = prev.planLimits.forwardRuleTypes || [];
@@ -204,7 +204,7 @@ export const CreatePlanDialog: React.FC<CreatePlanDialogProps> = ({
     });
   };
 
-  // 多定价相关操作
+  // Multi-pricing related operations
   const handleAddPricing = () => {
     const newPricing: PricingOptionInput = {
       billingCycle: 'monthly',
@@ -233,14 +233,14 @@ export const CreatePlanDialog: React.FC<CreatePlanDialogProps> = ({
   };
 
   const handleSubmit = async () => {
-    // 验证至少有一个定价
+    // Validate at least one pricing option
     if (formData.pricings.length === 0) {
       return;
     }
 
     setLoading(true);
     try {
-      // 构建计划限制
+      // Build plan limits
       const limits = Object.keys(formData.planLimits).length > 0
         ? planLimitsToApiFormat(formData.planLimits)
         : undefined;
@@ -261,7 +261,7 @@ export const CreatePlanDialog: React.FC<CreatePlanDialogProps> = ({
       };
       await onSubmit(submitData);
       onClose();
-      // 重置表单
+      // Reset form
       setFormData(getDefaultFormData());
     } finally {
       setLoading(false);
@@ -276,8 +276,8 @@ export const CreatePlanDialog: React.FC<CreatePlanDialogProps> = ({
 
   return (
     <Dialog open={open} onOpenChange={handleClose}>
-      <DialogContent className="sm:max-w-3xl max-h-[90vh] overflow-y-auto">
-        <DialogHeader>
+      <DialogContent className="sm:max-w-3xl flex flex-col max-h-[90vh]">
+        <DialogHeader className="flex-shrink-0">
           <DialogTitle className="flex items-center gap-2">
             {isDuplicateMode && <Copy className="size-5" />}
             {isDuplicateMode ? '复制订阅计划' : '创建订阅计划'}
@@ -289,8 +289,9 @@ export const CreatePlanDialog: React.FC<CreatePlanDialogProps> = ({
           </DialogDescription>
         </DialogHeader>
 
+        <div className="flex-1 min-h-0 overflow-y-auto -mx-6 px-6">
         <div className="space-y-6 py-4">
-          {/* 基本信息 */}
+          {/* Basic Information */}
           <div className="space-y-4">
             <h3 className="text-sm font-semibold">基本信息</h3>
             <Separator />
@@ -342,7 +343,7 @@ export const CreatePlanDialog: React.FC<CreatePlanDialogProps> = ({
                 </Select>
               </div>
 
-              {/* 定价选项 */}
+              {/* Pricing Options */}
               <div className="space-y-4 sm:col-span-2">
                 <div className="flex items-center justify-between">
                   <Label>
@@ -449,7 +450,7 @@ export const CreatePlanDialog: React.FC<CreatePlanDialogProps> = ({
             </div>
           </div>
 
-          {/* 节点订阅限制配置 - 仅节点类型计划显示 */}
+          {/* Node subscription limit configuration - only shown for node type plans */}
           {formData.planType === 'node' && (
             <div className="space-y-4">
               <h3 className="text-sm font-semibold">节点限制配置</h3>
@@ -524,7 +525,7 @@ export const CreatePlanDialog: React.FC<CreatePlanDialogProps> = ({
             </div>
           )}
 
-          {/* 转发限制配置 - 仅端口转发类型计划显示 */}
+          {/* Forward limit configuration - only shown for port forwarding type plans */}
           {formData.planType === 'forward' && (
             <div className="space-y-4">
               <h3 className="text-sm font-semibold">转发限制配置</h3>
@@ -580,7 +581,7 @@ export const CreatePlanDialog: React.FC<CreatePlanDialogProps> = ({
             </div>
           )}
 
-          {/* 通用配置 */}
+          {/* General Configuration */}
           <div className="space-y-4">
             <h3 className="text-sm font-semibold">通用配置</h3>
             <Separator />
@@ -623,8 +624,9 @@ export const CreatePlanDialog: React.FC<CreatePlanDialogProps> = ({
             </div>
           </div>
         </div>
+        </div>
 
-        <DialogFooter>
+        <DialogFooter className="flex-shrink-0">
           <Button variant="outline" onClick={handleClose} disabled={loading}>
             取消
           </Button>

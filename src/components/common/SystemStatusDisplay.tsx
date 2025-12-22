@@ -1,18 +1,18 @@
 /**
- * 系统状态显示组件
- * 使用环形进度显示 CPU、内存使用率，hover 显示详细信息
+ * System Status Display Component
+ * Uses circular progress to show CPU and memory usage, with detailed info on hover
  */
 
 import { Cpu, MemoryStick, HardDrive, Clock } from 'lucide-react';
 import { Tooltip, TooltipTrigger, TooltipContent } from '@/components/common/Tooltip';
 import { Progress, ProgressIndicator } from '@/components/common/Progress';
 
-// 系统状态数据接口
+// System status data interface
 export interface SystemStatusData {
   cpu: number;
   memory: number;
   disk: number;
-  uptime?: number; // 秒
+  uptime?: number; // seconds
 }
 
 interface SystemStatusDisplayProps {
@@ -20,7 +20,7 @@ interface SystemStatusDisplayProps {
   emptyText?: string;
 }
 
-// 格式化运行时间
+// Format uptime
 const formatUptime = (seconds: number): string => {
   if (!seconds || seconds <= 0) return '-';
   const days = Math.floor(seconds / 86400);
@@ -31,21 +31,21 @@ const formatUptime = (seconds: number): string => {
   return `${minutes}分钟`;
 };
 
-// 获取颜色（根据使用率）
+// Get color based on usage
 const getStrokeColor = (value: number): string => {
   if (value >= 80) return '#ef4444'; // red-500
   if (value >= 60) return '#eab308'; // yellow-500
   return '#22c55e'; // green-500
 };
 
-// 获取进度条颜色类名
+// Get progress bar color class
 const getProgressColor = (value: number): string => {
   if (value >= 80) return 'bg-red-500';
   if (value >= 60) return 'bg-yellow-500';
   return 'bg-green-500';
 };
 
-// 环形进度组件
+// Circular progress component
 const CircleProgress: React.FC<{
   value: number;
   size?: number;
@@ -60,7 +60,7 @@ const CircleProgress: React.FC<{
   return (
     <div className="relative" style={{ width: size, height: size }}>
       <svg width={size} height={size} className="-rotate-90">
-        {/* 背景圆环 */}
+        {/* Background ring */}
         <circle
           cx={size / 2}
           cy={size / 2}
@@ -70,7 +70,7 @@ const CircleProgress: React.FC<{
           strokeWidth={strokeWidth}
           className="text-slate-200 dark:text-slate-700"
         />
-        {/* 进度圆环 */}
+        {/* Progress ring */}
         <circle
           cx={size / 2}
           cy={size / 2}
@@ -84,7 +84,7 @@ const CircleProgress: React.FC<{
           className="transition-all duration-300"
         />
       </svg>
-      {/* 中心图标 */}
+      {/* Center icon */}
       <div className="absolute inset-0 flex items-center justify-center">
         {icon}
       </div>
@@ -92,7 +92,7 @@ const CircleProgress: React.FC<{
   );
 };
 
-// 进度条子组件（用于详情 Tooltip）
+// Progress bar sub-component (for detail Tooltip)
 const StatusProgressBar: React.FC<{
   label: string;
   value: number;
@@ -116,8 +116,8 @@ const StatusProgressBar: React.FC<{
 );
 
 /**
- * 系统状态显示组件
- * 使用两个环形进度显示 CPU 和内存，hover 时显示详细信息
+ * System Status Display Component
+ * Uses two circular progress indicators for CPU and memory, shows details on hover
  */
 export const SystemStatusDisplay: React.FC<SystemStatusDisplayProps> = ({
   status,

@@ -14,7 +14,7 @@ interface BasicInfoTabProps {
 }
 
 /**
- * 基本信息Tab
+ * Basic information tab
  */
 export const BasicInfoTab = ({ user }: BasicInfoTabProps) => {
   const { updateProfile, isLoading } = useProfile();
@@ -33,7 +33,7 @@ export const BasicInfoTab = ({ user }: BasicInfoTabProps) => {
 
   const onSubmit = async (data: UpdateProfileFormData) => {
     try {
-      // 只发送有值的字段
+      // Only send fields with values
       const payload: UpdateProfileFormData = {};
       if (data.name && data.name.trim()) {
         payload.name = data.name.trim();
@@ -44,15 +44,15 @@ export const BasicInfoTab = ({ user }: BasicInfoTabProps) => {
 
       await updateProfile(payload);
     } catch {
-      // 错误已在useProfile中处理
+      // Error already handled in useProfile
     }
   };
 
   return (
     <div className="py-2">
-      {/* 基本信息表单 */}
+      {/* Basic information form */}
       <form onSubmit={handleSubmit(onSubmit)} className="grid gap-6">
-        {/* 用户名 */}
+        {/* Username */}
         <div className="grid gap-2">
           <LabelPrimitive.Root htmlFor="name" className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
             用户名
@@ -68,7 +68,7 @@ export const BasicInfoTab = ({ user }: BasicInfoTabProps) => {
           </p>
         </div>
 
-        {/* 邮箱 */}
+        {/* Email */}
         <div className="grid gap-2">
           <LabelPrimitive.Root htmlFor="email" className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
             邮箱
@@ -88,7 +88,7 @@ export const BasicInfoTab = ({ user }: BasicInfoTabProps) => {
           </p>
         </div>
 
-        {/* 账号状态 */}
+        {/* Account status */}
         <div className="grid gap-2">
           <LabelPrimitive.Root className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
             账号状态
@@ -113,7 +113,7 @@ export const BasicInfoTab = ({ user }: BasicInfoTabProps) => {
           </div>
         </div>
 
-        {/* 邮箱修改提醒 */}
+        {/* Email change reminder */}
         {isDirty && (
           <div className="relative w-full rounded-lg border p-4 [&>svg~*]:pl-7 [&>svg+div]:translate-y-[-3px] [&>svg]:absolute [&>svg]:left-4 [&>svg]:top-4 [&>svg]:text-foreground">
             <Mail className="size-4" />
@@ -123,7 +123,7 @@ export const BasicInfoTab = ({ user }: BasicInfoTabProps) => {
           </div>
         )}
 
-        {/* 保存按钮 */}
+        {/* Save button */}
         <button
           type="submit"
           disabled={!isDirty || isLoading}

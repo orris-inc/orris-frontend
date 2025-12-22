@@ -1,6 +1,6 @@
 /**
- * 登录页面
- * 支持邮箱密码登录和OAuth2登录（Google、GitHub）
+ * Login Page
+ * Supports email/password login and OAuth2 login (Google, GitHub)
  */
 
 import { useForm } from 'react-hook-form';
@@ -31,7 +31,7 @@ import {
 } from '@/lib/ui-styles';
 import { cn } from '@/lib/utils';
 
-// Zod 登录表单验证
+// Zod login form validation
 const loginSchema = z.object({
   email: z.string().email('请输入有效的邮箱地址'),
   password: z.string().min(8, '密码至少需要8个字符'),

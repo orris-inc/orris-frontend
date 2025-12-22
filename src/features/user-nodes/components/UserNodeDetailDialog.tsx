@@ -61,14 +61,15 @@ export const UserNodeDetailDialog: React.FC<UserNodeDetailDialogProps> = ({
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-lg max-h-[90vh] overflow-y-auto">
-        <DialogHeader>
+      <DialogContent className="sm:max-w-lg flex flex-col max-h-[90vh]">
+        <DialogHeader className="flex-shrink-0">
           <DialogTitle className="flex items-center gap-2">
             <Server className="h-5 w-5" />
             节点详情
           </DialogTitle>
         </DialogHeader>
 
+        <div className="flex-1 min-h-0 overflow-y-auto -mx-6 px-6">
         <div className="space-y-6 py-4">
           {/* Basic info */}
           <div className="space-y-4">
@@ -203,6 +204,7 @@ export const UserNodeDetailDialog: React.FC<UserNodeDetailDialogProps> = ({
               </div>
             </div>
           </div>
+        </div>
         </div>
       </DialogContent>
     </Dialog>

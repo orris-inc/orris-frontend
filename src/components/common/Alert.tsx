@@ -1,6 +1,6 @@
 /**
- * Alert 组件 - 警告提示组件
- * 支持多种变体：default, destructive, warning, success, info
+ * Alert Component - Alert notification component
+ * Supports multiple variants: default, destructive, warning, success, info
  */
 
 import type { HTMLAttributes } from 'react';

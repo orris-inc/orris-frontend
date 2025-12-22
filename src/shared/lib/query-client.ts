@@ -1,5 +1,5 @@
 /**
- * TanStack Query 配置
+ * TanStack Query configuration
  */
 
 import { QueryClient } from '@tanstack/react-query';
@@ -7,18 +7,18 @@ import { QueryClient } from '@tanstack/react-query';
 export const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
-      staleTime: 1000 * 60 * 5, // 5分钟内数据视为新鲜
-      gcTime: 1000 * 60 * 30, // 30分钟后垃圾回收
-      retry: 1, // 失败后重试1次
-      refetchOnWindowFocus: false, // 窗口聚焦时不自动刷新
+      staleTime: 1000 * 60 * 5, // Data is considered fresh within 5 minutes
+      gcTime: 1000 * 60 * 30, // Garbage collection after 30 minutes
+      retry: 1, // Retry once after failure
+      refetchOnWindowFocus: false, // Do not automatically refresh on window focus
     },
     mutations: {
-      retry: 0, // mutations 不自动重试
+      retry: 0, // Mutations do not automatically retry
     },
   },
 });
 
-// Query Keys 工厂函数
+// Query Keys factory functions
 export const queryKeys = {
   // Users
   users: {

@@ -23,7 +23,7 @@ interface ForwardAgentDetailDialogProps {
   onClose: () => void;
 }
 
-// 格式化时间
+// Format date
 const formatDate = (dateString?: string) => {
   if (!dateString) return '-';
   const date = new Date(dateString);
@@ -37,7 +37,7 @@ const formatDate = (dateString?: string) => {
   });
 };
 
-// 格式化字节
+// Format bytes
 const formatBytes = (bytes?: number) => {
   if (!bytes) return '0 B';
   const units = ['B', 'KB', 'MB', 'GB', 'TB'];
@@ -50,7 +50,7 @@ const formatBytes = (bytes?: number) => {
   return `${value.toFixed(1)} ${units[unitIndex]}`;
 };
 
-// 格式化运行时间
+// Format uptime
 const formatUptime = (seconds?: number) => {
   if (!seconds) return '-';
   const days = Math.floor(seconds / 86400);
@@ -66,7 +66,7 @@ export const ForwardAgentDetailDialog: React.FC<ForwardAgentDetailDialogProps> =
   agent,
   onClose,
 }) => {
-  // 获取运行时状态
+  // Get runtime status
   const { runtimeStatus, isLoading: isLoadingStatus } = useForwardAgentRuntimeStatus(
     open && agent?.status === 'enabled' ? agent.id : null
   );
@@ -75,8 +75,8 @@ export const ForwardAgentDetailDialog: React.FC<ForwardAgentDetailDialogProps> =
 
   return (
     <Dialog open={open} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="sm:max-w-[700px] max-h-[90vh] overflow-y-auto">
-        <DialogHeader>
+      <DialogContent className="sm:max-w-[700px] flex flex-col max-h-[90vh]">
+        <DialogHeader className="flex-shrink-0">
           <div className="flex items-center justify-between">
             <DialogTitle>转发节点详情</DialogTitle>
             <Badge
@@ -87,6 +87,7 @@ export const ForwardAgentDetailDialog: React.FC<ForwardAgentDetailDialogProps> =
           </div>
         </DialogHeader>
 
+        <div className="flex-1 min-h-0 overflow-y-auto -mx-6 px-6">
         <div className="space-y-6">
           {/* 基本信息 */}
           <div>
@@ -254,8 +255,9 @@ export const ForwardAgentDetailDialog: React.FC<ForwardAgentDetailDialogProps> =
             </div>
           </div>
         </div>
+        </div>
 
-        <DialogFooter>
+        <DialogFooter className="flex-shrink-0">
           <Button variant="outline" onClick={onClose}>
             关闭
           </Button>

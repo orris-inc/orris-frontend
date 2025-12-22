@@ -1,7 +1,7 @@
 /**
  * useUserForwardRules Hook
- * 用户端转发规则数据管理
- * 基于 TanStack Query 实现
+ * User-side forward rule data management
+ * Built with TanStack Query
  */
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
@@ -24,7 +24,7 @@ import {
 } from '@/api/forward';
 import type { UserForwardUsage } from '@/api/forward';
 
-// 导出类型供外部使用
+// Export types for external use
 export type { UserForwardUsage };
 
 // Query Keys for User Forward Rules
@@ -50,14 +50,14 @@ interface UseUserForwardRulesOptions {
 }
 
 /**
- * 用户转发规则列表查询和操作
+ * User forward rule list query and operations
  */
 export const useUserForwardRules = (options: UseUserForwardRulesOptions = {}) => {
   const { page = 1, pageSize = 20, filters = {}, enabled = true } = options;
   const queryClient = useQueryClient();
   const { showSuccess, showError } = useNotificationStore();
 
-  // 构建查询参数
+  // Build query params
   const params: ListForwardRulesParams = {
     page,
     pageSize,
@@ -66,7 +66,7 @@ export const useUserForwardRules = (options: UseUserForwardRulesOptions = {}) =>
     status: filters.status,
   };
 
-  // 查询转发规则列表
+  // Query forward rule list
   const {
     data,
     isLoading,
@@ -79,7 +79,7 @@ export const useUserForwardRules = (options: UseUserForwardRulesOptions = {}) =>
     enabled,
   });
 
-  // 创建转发规则
+  // Create forward rule
   const createMutation = useMutation({
     mutationFn: createUserForwardRule,
     onSuccess: () => {
@@ -92,7 +92,7 @@ export const useUserForwardRules = (options: UseUserForwardRulesOptions = {}) =>
     },
   });
 
-  // 更新转发规则
+  // Update forward rule
   const updateMutation = useMutation({
     mutationFn: ({ id, data }: { id: string; data: UpdateForwardRuleRequest }) =>
       updateUserForwardRule(id, data),
@@ -105,7 +105,7 @@ export const useUserForwardRules = (options: UseUserForwardRulesOptions = {}) =>
     },
   });
 
-  // 删除转发规则
+  // Delete forward rule
   const deleteMutation = useMutation({
     mutationFn: deleteUserForwardRule,
     onSuccess: () => {
@@ -118,7 +118,7 @@ export const useUserForwardRules = (options: UseUserForwardRulesOptions = {}) =>
     },
   });
 
-  // 启用转发规则
+  // Enable forward rule
   const enableMutation = useMutation({
     mutationFn: enableUserForwardRule,
     onSuccess: () => {
@@ -130,7 +130,7 @@ export const useUserForwardRules = (options: UseUserForwardRulesOptions = {}) =>
     },
   });
 
-  // 禁用转发规则
+  // Disable forward rule
   const disableMutation = useMutation({
     mutationFn: disableUserForwardRule,
     onSuccess: () => {
@@ -143,7 +143,7 @@ export const useUserForwardRules = (options: UseUserForwardRulesOptions = {}) =>
   });
 
   return {
-    // 数据
+    // Data
     forwardRules: data?.items ?? [],
     pagination: {
       page: data?.page ?? page,
@@ -152,12 +152,12 @@ export const useUserForwardRules = (options: UseUserForwardRulesOptions = {}) =>
       totalPages: data?.totalPages ?? 0,
     },
 
-    // 状态
+    // State
     isLoading,
     isFetching,
     error: error ? handleApiError(error) : null,
 
-    // 操作
+    // Actions
     refetch,
     createForwardRule: (data: CreateForwardRuleRequest) => createMutation.mutateAsync(data),
     updateForwardRule: (id: string, data: UpdateForwardRuleRequest) =>
@@ -166,7 +166,7 @@ export const useUserForwardRules = (options: UseUserForwardRulesOptions = {}) =>
     enableForwardRule: (id: string) => enableMutation.mutateAsync(id),
     disableForwardRule: (id: string) => disableMutation.mutateAsync(id),
 
-    // Mutation 状态
+    // Mutation state
     isCreating: createMutation.isPending,
     isUpdating: updateMutation.isPending,
     isDeleting: deleteMutation.isPending,
@@ -176,7 +176,7 @@ export const useUserForwardRules = (options: UseUserForwardRulesOptions = {}) =>
 };
 
 /**
- * 获取单个转发规则详情
+ * Get single forward rule details
  */
 export const useUserForwardRule = (id: string | null) => {
   const { data, isLoading, error } = useQuery({
@@ -193,7 +193,7 @@ export const useUserForwardRule = (id: string | null) => {
 };
 
 /**
- * 获取用户转发规则配额和使用情况
+ * Get user forward rule quota and usage
  */
 export const useUserForwardUsage = () => {
   const { data, isLoading, error, refetch } = useQuery({
@@ -210,7 +210,7 @@ export const useUserForwardUsage = () => {
 };
 
 /**
- * 用户转发规则页面状态管理 hook
+ * User forward rules page state management hook
  */
 export const useUserForwardRulesPage = () => {
   const [page, setPage] = useState(1);

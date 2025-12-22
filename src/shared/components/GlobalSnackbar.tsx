@@ -1,6 +1,6 @@
 /**
- * 全局Snackbar通知组件
- * 使用 sonner 库的 toast 和 Toaster 组件
+ * Global Snackbar notification component
+ * Uses toast and Toaster components from the sonner library
  */
 
 import { useEffect } from 'react';
@@ -28,7 +28,7 @@ export const GlobalSnackbar = () => {
         default:
           toast(message);
       }
-      // 立即重置store状态，因为sonner自己管理显示
+      // Immediately reset store state, as sonner manages display itself
       hideNotification();
     }
   }, [open, message, severity, hideNotification]);

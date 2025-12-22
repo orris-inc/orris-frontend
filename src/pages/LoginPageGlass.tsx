@@ -1,7 +1,7 @@
 /**
- * 登录页面 - 流动光影（Fluid Luminance）
- * 设计风格：玻璃态拟态 + 流动渐变 + 霓虹发光
- * 配色：紫罗兰-蓝色-青色渐变 + 深色背景
+ * Login Page - Fluid Luminance
+ * Design style: Glassmorphism + Fluid gradient + Neon glow
+ * Colors: Violet-blue-cyan gradient + Dark background
  */
 
 import { useForm } from 'react-hook-form';
@@ -15,7 +15,7 @@ import { useAuthStore } from '@/features/auth/stores/auth-store';
 import { useNotificationStore } from '@/shared/stores/notification-store';
 import { isAccountNotActiveError } from '@/shared/utils/error-messages';
 
-// Zod 登录表单验证
+// Zod login form validation
 const loginSchema = z.object({
   email: z.string().email('请输入有效的邮箱地址'),
   password: z.string().min(8, '密码至少需要8个字符'),
@@ -34,11 +34,11 @@ export const LoginPageGlass = () => {
   const [showResendVerification, setShowResendVerification] = useState(false);
   const [userEmail, setUserEmail] = useState<string>('');
 
-  // 从 location.state 获取提示消息
+  // Get message from location.state
   const state = location.state as { message?: string } | null;
   const successMessage = state?.message;
 
-  // 已登录则根据用户角色跳转
+  // Redirect based on user role if already logged in
   useEffect(() => {
     if (isAuthenticated && user) {
       const redirectPath = user.role === 'admin' ? '/admin' : '/dashboard';
@@ -97,31 +97,31 @@ export const LoginPageGlass = () => {
 
   return (
     <div className="relative min-h-screen overflow-hidden bg-slate-950">
-      {/* 动态渐变背景 */}
+      {/* Dynamic Gradient Background */}
       <div className="fixed inset-0 bg-gradient-to-br from-violet-950 via-slate-900 to-cyan-950">
-        {/* 流动渐变动画层 */}
+        {/* Flowing Gradient Animation Layer */}
         <div className="absolute inset-0 opacity-50">
           <div className="absolute inset-0 animate-gradient-flow bg-gradient-to-r from-violet-600/30 via-blue-600/30 to-cyan-600/30 blur-3xl" />
           <div className="absolute inset-0 animate-gradient-flow-reverse bg-gradient-to-l from-purple-600/20 via-indigo-600/20 to-blue-600/20 blur-3xl"
                style={{ animationDelay: '2s' }} />
         </div>
 
-        {/* 网格背景 */}
+        {/* Grid Background */}
         <div className="absolute inset-0 bg-[linear-gradient(rgba(139,92,246,0.05)_1px,transparent_1px),linear-gradient(90deg,rgba(139,92,246,0.05)_1px,transparent_1px)] bg-[size:64px_64px] [mask-image:radial-gradient(ellipse_80%_50%_at_50%_50%,black,transparent)]" />
 
-        {/* 浮动光点 */}
+        {/* Floating Light Particles */}
         <div className="absolute top-1/4 left-1/4 w-2 h-2 bg-violet-400 rounded-full blur-sm animate-float-slow" />
         <div className="absolute top-1/3 right-1/3 w-3 h-3 bg-cyan-400 rounded-full blur-sm animate-float-medium" style={{ animationDelay: '1s' }} />
         <div className="absolute bottom-1/4 left-1/3 w-2 h-2 bg-blue-400 rounded-full blur-sm animate-float-fast" style={{ animationDelay: '2s' }} />
         <div className="absolute top-2/3 right-1/4 w-2 h-2 bg-purple-400 rounded-full blur-sm animate-float-slow" style={{ animationDelay: '3s' }} />
       </div>
 
-      {/* 主内容区 */}
+      {/* Main Content Area */}
       <div className="relative z-10 flex min-h-screen items-center justify-center p-6">
         <div className="w-full max-w-md">
-          {/* 玻璃态卡片 */}
+          {/* Glass Card */}
           <div className="glass-card group animate-fade-in-up">
-            {/* Logo 和标题 */}
+            {/* Logo and Title */}
             <div className="text-center mb-8">
               <h1 className="text-5xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-violet-400 via-blue-400 to-cyan-400 mb-3 animate-gradient-text">
                 Orris
@@ -134,7 +134,7 @@ export const LoginPageGlass = () => {
               </p>
             </div>
 
-            {/* 成功消息 */}
+            {/* Success Message */}
             {successMessage && (
               <div className="mb-6 p-4 rounded-xl bg-emerald-500/10 border border-emerald-500/30 backdrop-blur-sm flex items-start gap-3 animate-slide-down">
                 <CheckCircle2 className="w-5 h-5 text-emerald-400 flex-shrink-0 mt-0.5" />
@@ -142,7 +142,7 @@ export const LoginPageGlass = () => {
               </div>
             )}
 
-            {/* 错误消息 */}
+            {/* Error Message */}
             {error && (
               <div className="mb-6 p-4 rounded-xl bg-red-500/10 border border-red-500/30 backdrop-blur-sm animate-shake">
                 <div className="flex items-start gap-3">
@@ -162,9 +162,9 @@ export const LoginPageGlass = () => {
               </div>
             )}
 
-            {/* 登录表单 */}
+            {/* Login Form */}
             <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
-              {/* 邮箱输入 */}
+              {/* Email Input */}
               <div className="space-y-2">
                 <label htmlFor="email" className="block text-sm font-medium text-slate-300">
                   邮箱地址
@@ -185,7 +185,7 @@ export const LoginPageGlass = () => {
                 )}
               </div>
 
-              {/* 密码输入 */}
+              {/* Password Input */}
               <div className="space-y-2">
                 <label htmlFor="password" className="block text-sm font-medium text-slate-300">
                   密码
@@ -214,7 +214,7 @@ export const LoginPageGlass = () => {
                 )}
               </div>
 
-              {/* 记住我 & 忘记密码 */}
+              {/* Remember Me & Forgot Password */}
               <div className="flex items-center justify-between text-sm">
                 <label className="flex items-center gap-2 cursor-pointer group/checkbox">
                   <input
@@ -235,7 +235,7 @@ export const LoginPageGlass = () => {
                 </RouterLink>
               </div>
 
-              {/* 登录按钮 */}
+              {/* Login Button */}
               <button
                 type="submit"
                 disabled={isLoading}
@@ -252,7 +252,7 @@ export const LoginPageGlass = () => {
               </button>
             </form>
 
-            {/* 分隔线 */}
+            {/* Separator */}
             <div className="relative my-8">
               <div className="absolute inset-0 flex items-center">
                 <div className="w-full h-px bg-gradient-to-r from-transparent via-white/20 to-transparent" />
@@ -264,7 +264,7 @@ export const LoginPageGlass = () => {
               </div>
             </div>
 
-            {/* OAuth 登录按钮 */}
+            {/* OAuth Login Buttons */}
             <div className="grid grid-cols-2 gap-3">
               <button
                 type="button"
@@ -287,7 +287,7 @@ export const LoginPageGlass = () => {
               </button>
             </div>
 
-            {/* 注册链接 */}
+            {/* Register Link */}
             <div className="mt-8 text-center text-sm">
               <span className="text-slate-400">还没有账号？</span>{' '}
               <RouterLink
@@ -299,7 +299,7 @@ export const LoginPageGlass = () => {
             </div>
           </div>
 
-          {/* 底部装饰 */}
+          {/* Bottom Decoration */}
           <div className="mt-6 text-center">
             <p className="text-slate-600 text-xs">
               使用现代浏览器以获得最佳体验
@@ -308,7 +308,7 @@ export const LoginPageGlass = () => {
         </div>
       </div>
 
-      {/* 内联样式 - Tailwind 动画扩展 */}
+      {/* Inline Styles - Tailwind Animation Extensions */}
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
 
@@ -316,7 +316,7 @@ export const LoginPageGlass = () => {
           font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
         }
 
-        /* 玻璃态卡片 */
+        /* Glass Card */
         .glass-card {
           background: rgba(15, 23, 42, 0.6);
           backdrop-filter: blur(24px);
@@ -349,7 +349,7 @@ export const LoginPageGlass = () => {
           pointer-events: none;
         }
 
-        /* 输入框聚焦发光 */
+        /* Input Focus Glow */
         .input-glow:focus {
           box-shadow:
             0 0 0 1px rgba(139, 92, 246, 0.5),
@@ -357,7 +357,7 @@ export const LoginPageGlass = () => {
             0 0 40px rgba(139, 92, 246, 0.1);
         }
 
-        /* 按钮发光 */
+        /* Button Glow */
         .btn-glow:hover:not(:disabled) {
           box-shadow:
             0 0 40px rgba(139, 92, 246, 0.4),
@@ -368,12 +368,12 @@ export const LoginPageGlass = () => {
           transform: scale(0.98);
         }
 
-        /* OAuth 按钮悬停 */
+        /* OAuth Button Hover */
         .oauth-btn:hover {
           box-shadow: 0 4px 12px rgba(139, 92, 246, 0.15);
         }
 
-        /* 渐变流动动画 */
+        /* Gradient Flow Animation */
         @keyframes gradient-flow {
           0%, 100% {
             transform: translate(0, 0) scale(1);
@@ -406,7 +406,7 @@ export const LoginPageGlass = () => {
           animation: gradient-flow-reverse 12s ease-in-out infinite;
         }
 
-        /* 渐变文字动画 */
+        /* Gradient Text Animation */
         @keyframes gradient-text {
           0%, 100% {
             background-position: 0% 50%;
@@ -421,7 +421,7 @@ export const LoginPageGlass = () => {
           animation: gradient-text 3s ease-in-out infinite;
         }
 
-        /* 浮动动画 */
+        /* Float Animation */
         @keyframes float-slow {
           0%, 100% {
             transform: translate(0, 0);
@@ -467,7 +467,7 @@ export const LoginPageGlass = () => {
           animation: float-fast 4s ease-in-out infinite;
         }
 
-        /* 淡入上移动画 */
+        /* Fade In Up Animation */
         @keyframes fade-in-up {
           from {
             opacity: 0;
@@ -483,7 +483,7 @@ export const LoginPageGlass = () => {
           animation: fade-in-up 0.8s ease-out;
         }
 
-        /* 下滑动画 */
+        /* Slide Down Animation */
         @keyframes slide-down {
           from {
             opacity: 0;
@@ -499,7 +499,7 @@ export const LoginPageGlass = () => {
           animation: slide-down 0.3s ease-out;
         }
 
-        /* 抖动动画 */
+        /* Shake Animation */
         @keyframes shake {
           0%, 100% { transform: translateX(0); }
           25% { transform: translateX(-4px); }
@@ -510,7 +510,7 @@ export const LoginPageGlass = () => {
           animation: shake 0.3s ease-in-out;
         }
 
-        /* 响应式 */
+        /* Responsive */
         @media (max-width: 640px) {
           .glass-card {
             padding: 1.75rem;

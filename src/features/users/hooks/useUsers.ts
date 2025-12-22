@@ -1,6 +1,6 @@
 /**
  * useUsers Hook
- * 基于 TanStack Query 实现
+ * Built with TanStack Query
  */
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
@@ -37,7 +37,7 @@ export const useUsers = (options: UseUsersOptions = {}) => {
   const queryClient = useQueryClient();
   const { showSuccess, showError } = useNotificationStore();
 
-  // 构建查询参数
+  // Build query params
   const params: ListUsersParams = {
     page,
     pageSize,
@@ -45,7 +45,7 @@ export const useUsers = (options: UseUsersOptions = {}) => {
     role: filters.role as ListUsersParams['role'],
   };
 
-  // 查询用户列表
+  // Query user list
   const {
     data,
     isLoading,
@@ -58,7 +58,7 @@ export const useUsers = (options: UseUsersOptions = {}) => {
     enabled,
   });
 
-  // 创建用户
+  // Create user
   const createMutation = useMutation({
     mutationFn: createUser,
     onSuccess: () => {
@@ -70,7 +70,7 @@ export const useUsers = (options: UseUsersOptions = {}) => {
     },
   });
 
-  // 更新用户
+  // Update user
   const updateMutation = useMutation({
     mutationFn: ({ id, data }: { id: string; data: UpdateUserRequest }) =>
       updateUser(id, data),
@@ -83,7 +83,7 @@ export const useUsers = (options: UseUsersOptions = {}) => {
     },
   });
 
-  // 删除用户
+  // Delete user
   const deleteMutation = useMutation({
     mutationFn: deleteUser,
     onSuccess: () => {
@@ -95,7 +95,7 @@ export const useUsers = (options: UseUsersOptions = {}) => {
     },
   });
 
-  // 重置用户密码
+  // Reset user password
   const resetPasswordMutation = useMutation({
     mutationFn: ({ id, data }: { id: string; data: AdminResetPasswordRequest }) =>
       adminResetPassword(id, data),
@@ -108,7 +108,7 @@ export const useUsers = (options: UseUsersOptions = {}) => {
   });
 
   return {
-    // 数据
+    // Data
     users: data?.items ?? [],
     pagination: {
       page: data?.page ?? page,
@@ -117,12 +117,12 @@ export const useUsers = (options: UseUsersOptions = {}) => {
       totalPages: data?.totalPages ?? 0,
     },
 
-    // 状态
+    // State
     isLoading,
     isFetching,
     error: error ? handleApiError(error) : null,
 
-    // 操作
+    // Actions
     refetch,
     createUser: (data: CreateUserRequest) => createMutation.mutateAsync(data),
     updateUser: (id: string, data: UpdateUserRequest) =>
@@ -131,7 +131,7 @@ export const useUsers = (options: UseUsersOptions = {}) => {
     resetPassword: (id: string, data: AdminResetPasswordRequest) =>
       resetPasswordMutation.mutateAsync({ id, data }),
 
-    // Mutation 状态
+    // Mutation state
     isCreating: createMutation.isPending,
     isUpdating: updateMutation.isPending,
     isDeleting: deleteMutation.isPending,
@@ -139,7 +139,7 @@ export const useUsers = (options: UseUsersOptions = {}) => {
   };
 };
 
-// 获取单个用户详情
+// Get single user details
 export const useUser = (id: string | null) => {
   const { data, isLoading, error } = useQuery({
     queryKey: queryKeys.users.detail(id!),
@@ -154,7 +154,7 @@ export const useUser = (id: string | null) => {
   };
 };
 
-// 用户列表状态管理 hook（用于页面级状态）
+// User list state management hook (for page-level state)
 export const useUsersPage = () => {
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(20);

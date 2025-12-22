@@ -15,7 +15,7 @@ export const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
   const { isAuthenticated, isLoading } = useAuthStore();
   const location = useLocation();
 
-  // 加载中
+  // Loading
   if (isLoading) {
     return (
       <div className="flex min-h-screen items-center justify-center">
@@ -24,8 +24,8 @@ export const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
     );
   }
 
-  // 未认证，跳转到登录页并保存当前路径
-  // 登录成功后会自动返回到这个路径
+  // Not authenticated, redirect to login page and save current path
+  // Will automatically return to this path after successful login
   if (!isAuthenticated) {
     return (
       <Navigate
@@ -36,6 +36,6 @@ export const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
     );
   }
 
-  // 已认证，显示内容
+  // Authenticated, show content
   return <>{children}</>;
 };

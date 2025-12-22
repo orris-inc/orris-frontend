@@ -1,7 +1,7 @@
 /**
- * 创建转发规则对话框组件
- * 支持四种规则类型：direct（直连）、entry（入口）、chain（WS链式转发）、direct_chain（直连链式转发）
- * 支持目标类型：手动输入地址或选择节点（动态解析）
+ * Create Forward Rule Dialog Component
+ * Supports four rule types: direct, entry, chain (WS chain forwarding), direct_chain (direct chain forwarding)
+ * Supports target types: manual address input or node selection (dynamic resolution)
  */
 
 import { useState, useEffect } from 'react';
@@ -29,7 +29,7 @@ import { SortableChainAgentList } from './SortableChainAgentList';
 import type { CreateForwardRuleRequest, ForwardAgent, ForwardRuleType, ForwardProtocol, IPVersion } from '@/api/forward';
 import type { Node } from '@/api/node';
 
-// 目标类型
+// Target type
 type TargetType = 'manual' | 'node';
 
 interface CreateForwardRuleDialogProps {
@@ -38,11 +38,11 @@ interface CreateForwardRuleDialogProps {
   onSubmit: (data: CreateForwardRuleRequest) => void;
   agents: ForwardAgent[];
   nodes?: Node[];
-  /** 初始数据，用于复制规则时预填充表单 */
+  /** Initial data for pre-populating the form when copying a rule */
   initialData?: Partial<CreateForwardRuleRequest> & { targetType?: 'manual' | 'node' };
 }
 
-// 规则类型描述
+// Rule type descriptions
 const RULE_TYPE_INFO: Record<ForwardRuleType, { label: string; description: string }> = {
   direct: { label: '直连转发', description: '直接将流量转发到目标地址' },
   entry: { label: '入口节点', description: '作为转发链的入口，通过出口节点转发到目标地址' },
@@ -79,11 +79,11 @@ export const CreateForwardRuleDialog: React.FC<CreateForwardRuleDialogProps> = (
 
   const [errors, setErrors] = useState<Record<string, string>>({});
 
-  // 当对话框打开时重置表单或使用初始数据
+  // Reset form or use initial data when dialog opens
   useEffect(() => {
     if (open) {
       if (initialData) {
-        // 复制模式：使用初始数据预填充表单
+        // Copy mode: pre-populate form with initial data
         setFormData({
           agentId: initialData.agentId || '',
           ruleType: initialData.ruleType || 'direct',
@@ -101,10 +101,10 @@ export const CreateForwardRuleDialog: React.FC<CreateForwardRuleDialogProps> = (
           ipVersion: initialData.ipVersion || 'auto',
           remark: initialData.remark || '',
         });
-        // 根据初始数据设置目标类型
+        // Set target type based on initial data
         setTargetType(initialData.targetType || (initialData.targetNodeId ? 'node' : 'manual'));
       } else {
-        // 新建模式：重置为默认值
+        // Create mode: reset to default values
         setFormData({
           agentId: '',
           ruleType: 'direct',
@@ -136,12 +136,12 @@ export const CreateForwardRuleDialog: React.FC<CreateForwardRuleDialogProps> = (
     setFormData((prev) => {
       const newData = { ...prev, [field]: value };
 
-      // 如果修改的是入口代理，自动从链节点列表中移除该代理
+      // If modifying entry agent, automatically remove it from chain node list
       if (field === 'agentId' && typeof value === 'string') {
         const currentChainIds = prev.chainAgentIds || [];
         if (currentChainIds.includes(value)) {
           newData.chainAgentIds = currentChainIds.filter((id: string) => id !== value);
-          // 同时移除该节点的端口配置
+          // Also remove port configuration for this node
           if (prev.chainPortConfig[value]) {
             const newPortConfig = { ...prev.chainPortConfig };
             delete newPortConfig[value];
@@ -153,13 +153,13 @@ export const CreateForwardRuleDialog: React.FC<CreateForwardRuleDialogProps> = (
       return newData;
     });
 
-    // 清除所有验证错误，让用户重新提交时再次验证
+    // Clear all validation errors, re-validate on next submit
     if (Object.keys(errors).length > 0) {
       setErrors({});
     }
   };
 
-  // 处理链节点端口配置变更
+  // Handle chain node port configuration change
   const handleChainPortChange = (agentId: string, port: number) => {
     setFormData((prev) => ({
       ...prev,
@@ -185,12 +185,12 @@ export const CreateForwardRuleDialog: React.FC<CreateForwardRuleDialogProps> = (
       newErrors.protocol = '协议类型不能为空';
     }
 
-    // 根据规则类型验证不同字段
+    // Validate different fields based on rule type
     if (formData.ruleType === 'direct') {
       if (!formData.listenPort || formData.listenPort < 1 || formData.listenPort > 65535) {
         newErrors.listenPort = '监听端口必须在1-65535之间';
       }
-      // 目标验证：手动输入或选择节点
+      // Target validation: manual input or node selection
       if (targetType === 'manual') {
         if (!formData.targetAddress.trim()) {
           newErrors.targetAddress = '目标地址不能为空';
@@ -210,7 +210,7 @@ export const CreateForwardRuleDialog: React.FC<CreateForwardRuleDialogProps> = (
       if (!formData.exitAgentId) {
         newErrors.exitAgentId = '请选择出口节点';
       }
-      // entry 类型也需要目标验证
+      // entry type also needs target validation
       if (targetType === 'manual') {
         if (!formData.targetAddress.trim()) {
           newErrors.targetAddress = '目标地址不能为空';
@@ -230,7 +230,7 @@ export const CreateForwardRuleDialog: React.FC<CreateForwardRuleDialogProps> = (
       if (!formData.chainAgentIds || formData.chainAgentIds.length === 0) {
         newErrors.chainAgentIds = '请至少选择一个中间节点';
       }
-      // chain 类型也需要目标验证
+      // chain type also needs target validation
       if (targetType === 'manual') {
         if (!formData.targetAddress.trim()) {
           newErrors.targetAddress = '目标地址不能为空';
@@ -250,7 +250,7 @@ export const CreateForwardRuleDialog: React.FC<CreateForwardRuleDialogProps> = (
       if (!formData.chainAgentIds || formData.chainAgentIds.length === 0) {
         newErrors.chainAgentIds = '请至少选择一个中间节点';
       }
-      // 验证每个链节点都配置了端口
+      // Validate that each chain node has a port configured
       const missingPorts: string[] = [];
       for (const agentId of formData.chainAgentIds) {
         const port = formData.chainPortConfig[agentId];
@@ -267,7 +267,7 @@ export const CreateForwardRuleDialog: React.FC<CreateForwardRuleDialogProps> = (
           newErrors.chainPortConfig = `请为以下节点配置有效端口：${missingPorts.join('、')}`;
         }
       }
-      // direct_chain 类型也需要目标验证
+      // direct_chain type also needs target validation
       if (targetType === 'manual') {
         if (!formData.targetAddress.trim()) {
           newErrors.targetAddress = '目标地址不能为空';
@@ -296,10 +296,10 @@ export const CreateForwardRuleDialog: React.FC<CreateForwardRuleDialogProps> = (
         ipVersion: formData.ipVersion,
       };
 
-      // 根据规则类型添加对应字段
+      // Add corresponding fields based on rule type
       if (formData.ruleType === 'direct') {
         submitData.listenPort = formData.listenPort;
-        // 目标：手动输入或选择节点
+        // Target: manual input or node selection
         if (targetType === 'manual') {
           submitData.targetAddress = formData.targetAddress.trim();
           submitData.targetPort = formData.targetPort;
@@ -309,7 +309,7 @@ export const CreateForwardRuleDialog: React.FC<CreateForwardRuleDialogProps> = (
       } else if (formData.ruleType === 'entry') {
         submitData.listenPort = formData.listenPort;
         submitData.exitAgentId = formData.exitAgentId;
-        // entry 类型也需要目标配置
+        // entry type also needs target configuration
         if (targetType === 'manual') {
           submitData.targetAddress = formData.targetAddress.trim();
           submitData.targetPort = formData.targetPort;
@@ -319,7 +319,7 @@ export const CreateForwardRuleDialog: React.FC<CreateForwardRuleDialogProps> = (
       } else if (formData.ruleType === 'chain') {
         submitData.listenPort = formData.listenPort;
         submitData.chainAgentIds = formData.chainAgentIds;
-        // chain 类型也需要目标配置
+        // chain type also needs target configuration
         if (targetType === 'manual') {
           submitData.targetAddress = formData.targetAddress.trim();
           submitData.targetPort = formData.targetPort;
@@ -330,7 +330,7 @@ export const CreateForwardRuleDialog: React.FC<CreateForwardRuleDialogProps> = (
         submitData.listenPort = formData.listenPort;
         submitData.chainAgentIds = formData.chainAgentIds;
         submitData.chainPortConfig = formData.chainPortConfig;
-        // direct_chain 类型也需要目标配置
+        // direct_chain type also needs target configuration
         if (targetType === 'manual') {
           submitData.targetAddress = formData.targetAddress.trim();
           submitData.targetPort = formData.targetPort;
@@ -356,7 +356,7 @@ export const CreateForwardRuleDialog: React.FC<CreateForwardRuleDialogProps> = (
     }
   };
 
-  // 检查表单是否有效
+  // Check if form is valid
   const isFormValid = () => {
     if (!formData.agentId || !formData.name.trim() || !formData.protocol) return false;
 
@@ -369,7 +369,7 @@ export const CreateForwardRuleDialog: React.FC<CreateForwardRuleDialogProps> = (
       }
     } else if (formData.ruleType === 'entry') {
       if (formData.listenPort <= 0 || formData.exitAgentId === '') return false;
-      // entry 类型也需要验证目标
+      // entry type also requires target validation
       if (targetType === 'manual') {
         return formData.targetAddress.trim() !== '' && formData.targetPort > 0;
       } else {
@@ -377,7 +377,7 @@ export const CreateForwardRuleDialog: React.FC<CreateForwardRuleDialogProps> = (
       }
     } else if (formData.ruleType === 'chain') {
       if (formData.listenPort <= 0 || formData.chainAgentIds.length === 0) return false;
-      // chain 类型也需要验证目标
+      // chain type also needs to validate target
       if (targetType === 'manual') {
         return formData.targetAddress.trim() !== '' && formData.targetPort > 0;
       } else {
@@ -386,13 +386,13 @@ export const CreateForwardRuleDialog: React.FC<CreateForwardRuleDialogProps> = (
     } else if (formData.ruleType === 'direct_chain') {
       if (formData.listenPort <= 0) return false;
       if (formData.chainAgentIds.length === 0) return false;
-      // 验证每个链节点都配置了有效端口
+      // Validate that each chain node has a valid port configured
       const allPortsValid = formData.chainAgentIds.every((id) => {
         const port = formData.chainPortConfig[id];
         return port && port > 0 && port <= 65535;
       });
       if (!allPortsValid) return false;
-      // direct_chain 类型也需要验证目标
+      // direct_chain type also needs to validate target
       if (targetType === 'manual') {
         return formData.targetAddress.trim() !== '' && formData.targetPort > 0;
       } else {
@@ -402,29 +402,30 @@ export const CreateForwardRuleDialog: React.FC<CreateForwardRuleDialogProps> = (
     return false;
   };
 
-  // 获取可用的节点列表（状态为 active）
+  // Get available node list (status is active)
   const availableNodes = nodes.filter((n) => n.status === 'active');
 
-  // 获取可选的出口节点（排除当前选中的节点）
+  // Get available exit agents (exclude currently selected node)
   const availableExitAgents = agents.filter((a) => a.id !== formData.agentId && a.status === 'enabled');
 
-  // 获取可选的链节点（排除当前选中的入口节点）
+  // Get available chain agents (exclude currently selected entry node)
   const availableChainAgents = agents.filter((a) => a.id !== formData.agentId && a.status === 'enabled');
 
   return (
     <Dialog open={open} onOpenChange={(isOpen) => !isOpen && handleClose()}>
-      <DialogContent className="sm:max-w-[650px] max-h-[90vh] overflow-y-auto">
-        <DialogHeader>
+      <DialogContent className="sm:max-w-[650px] flex flex-col max-h-[90vh]">
+        <DialogHeader className="flex-shrink-0">
           <DialogTitle>{initialData ? '复制转发规则' : '新增转发规则'}</DialogTitle>
         </DialogHeader>
 
+        <div className="flex-1 min-h-0 overflow-y-auto -mx-6 px-6">
         <div className="space-y-6">
-          {/* 基本信息 */}
+          {/* Basic Information */}
           <div>
             <h3 className="text-sm font-medium text-muted-foreground mb-3">基本信息</h3>
             <Separator className="mb-4" />
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {/* 转发节点 */}
+              {/* Forward Agent */}
               <div className="flex flex-col gap-2">
                 <Label htmlFor="agentId">
                   转发节点 <span className="text-destructive">*</span>
@@ -447,7 +448,7 @@ export const CreateForwardRuleDialog: React.FC<CreateForwardRuleDialogProps> = (
                 {errors.agentId && <p className="text-xs text-destructive">{errors.agentId}</p>}
               </div>
 
-              {/* 规则类型 */}
+              {/* Rule Type */}
               <div className="flex flex-col gap-2">
                 <Label htmlFor="ruleType">
                   规则类型 <span className="text-destructive">*</span>
@@ -472,7 +473,7 @@ export const CreateForwardRuleDialog: React.FC<CreateForwardRuleDialogProps> = (
                 </p>
               </div>
 
-              {/* 规则名称 */}
+              {/* Rule Name */}
               <div className="flex flex-col gap-2 md:col-span-2">
                 <Label htmlFor="name">
                   规则名称 <span className="text-destructive">*</span>
@@ -487,7 +488,7 @@ export const CreateForwardRuleDialog: React.FC<CreateForwardRuleDialogProps> = (
                 {errors.name && <p className="text-xs text-destructive">{errors.name}</p>}
               </div>
 
-              {/* 协议类型 */}
+              {/* Protocol Type */}
               <div className="flex flex-col gap-2">
                 <Label htmlFor="protocol">
                   协议类型 <span className="text-destructive">*</span>
@@ -507,7 +508,7 @@ export const CreateForwardRuleDialog: React.FC<CreateForwardRuleDialogProps> = (
                 </Select>
               </div>
 
-              {/* IP 版本 */}
+              {/* IP Version */}
               <div className="flex flex-col gap-2">
                 <Label htmlFor="ipVersion">IP 版本</Label>
                 <Select
@@ -528,12 +529,12 @@ export const CreateForwardRuleDialog: React.FC<CreateForwardRuleDialogProps> = (
             </div>
           </div>
 
-          {/* 转发配置 - 根据规则类型显示不同字段 */}
+          {/* Forwarding Configuration - Show different fields based on rule type */}
           <div>
             <h3 className="text-sm font-medium text-muted-foreground mb-3">转发配置</h3>
             <Separator className="mb-4" />
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {/* direct、entry、chain 和 direct_chain 类型：监听端口 */}
+              {/* direct, entry, chain and direct_chain types: Listen Port */}
               {(formData.ruleType === 'direct' || formData.ruleType === 'entry' || formData.ruleType === 'chain' || formData.ruleType === 'direct_chain') && (
                 <div className="flex flex-col gap-2">
                   <Label htmlFor="listenPort">
@@ -553,7 +554,7 @@ export const CreateForwardRuleDialog: React.FC<CreateForwardRuleDialogProps> = (
                 </div>
               )}
 
-              {/* entry 类型：出口节点 */}
+              {/* entry type: Exit Agent */}
               {formData.ruleType === 'entry' && (
                 <div className="flex flex-col gap-2">
                   <Label htmlFor="exitAgentId">
@@ -578,7 +579,7 @@ export const CreateForwardRuleDialog: React.FC<CreateForwardRuleDialogProps> = (
                 </div>
               )}
 
-              {/* chain 类型：中间节点列表 */}
+              {/* chain type: Intermediate Nodes List */}
               {formData.ruleType === 'chain' && (
                 <div className="flex flex-col gap-2 md:col-span-2">
                   <Label>
@@ -595,7 +596,7 @@ export const CreateForwardRuleDialog: React.FC<CreateForwardRuleDialogProps> = (
                 </div>
               )}
 
-              {/* direct_chain 类型：中间节点列表（带端口配置） */}
+              {/* direct_chain type: Intermediate Nodes List (with port configuration) */}
               {formData.ruleType === 'direct_chain' && (
                 <div className="flex flex-col gap-2 md:col-span-2">
                   <Label>
@@ -605,7 +606,7 @@ export const CreateForwardRuleDialog: React.FC<CreateForwardRuleDialogProps> = (
                     agents={availableChainAgents}
                     selectedIds={formData.chainAgentIds}
                     onSelectionChange={(ids) => {
-                      // 同步更新 chainPortConfig，移除不再选中的节点
+                      // Synchronously update chainPortConfig, remove deselected nodes
                       const newPortConfig = { ...formData.chainPortConfig };
                       Object.keys(newPortConfig).forEach((id) => {
                         if (!ids.includes(id)) {
@@ -629,17 +630,17 @@ export const CreateForwardRuleDialog: React.FC<CreateForwardRuleDialogProps> = (
                 </div>
               )}
 
-              {/* direct、entry、chain 和 direct_chain 类型：目标配置 */}
+              {/* direct, entry, chain and direct_chain types: Target Configuration */}
               {(formData.ruleType === 'direct' || formData.ruleType === 'entry' || formData.ruleType === 'chain' || formData.ruleType === 'direct_chain') && (
                 <>
-                  {/* 目标类型选择 */}
+                  {/* Target Type Selection */}
                   <div className="flex flex-col gap-2 md:col-span-2">
                     <Label>目标类型 <span className="text-destructive">*</span></Label>
                     <RadioGroup
                       value={targetType}
                       onValueChange={(value) => {
                         setTargetType(value as TargetType);
-                        // 切换时清除相关字段
+                        // Clear related fields when switching
                         if (value === 'manual') {
                           handleChange('targetNodeId', '');
                         } else {
@@ -664,7 +665,7 @@ export const CreateForwardRuleDialog: React.FC<CreateForwardRuleDialogProps> = (
                     </RadioGroup>
                   </div>
 
-                  {/* 手动输入目标地址 */}
+                  {/* Manual Target Address Input */}
                   {targetType === 'manual' && (
                     <>
                       <div className="flex flex-col gap-2">
@@ -700,7 +701,7 @@ export const CreateForwardRuleDialog: React.FC<CreateForwardRuleDialogProps> = (
                     </>
                   )}
 
-                  {/* 选择目标节点 */}
+                  {/* Select Target Node */}
                   {targetType === 'node' && (
                     <div className="flex flex-col gap-2 md:col-span-2">
                       <Label htmlFor="targetNodeId">
@@ -732,7 +733,7 @@ export const CreateForwardRuleDialog: React.FC<CreateForwardRuleDialogProps> = (
             </div>
           </div>
 
-          {/* 高级选项 */}
+          {/* Advanced Options */}
           <div>
             <h3 className="text-sm font-medium text-muted-foreground mb-3">高级选项</h3>
             <Separator className="mb-4" />
@@ -782,8 +783,9 @@ export const CreateForwardRuleDialog: React.FC<CreateForwardRuleDialogProps> = (
             </div>
           </div>
         </div>
+        </div>
 
-        <DialogFooter className="mt-6 gap-3">
+        <DialogFooter className="flex-shrink-0 mt-6 gap-3">
           <Button variant="outline" onClick={handleClose}>
             取消
           </Button>

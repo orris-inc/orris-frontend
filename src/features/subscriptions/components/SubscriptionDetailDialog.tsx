@@ -35,7 +35,7 @@ interface SubscriptionDetailDialogProps {
   onClose: () => void;
 }
 
-// 状态配置
+// Status configuration
 const STATUS_CONFIG: Record<SubscriptionStatus, { label: string; variant: 'success' | 'default' | 'warning' | 'danger' }> = {
   active: { label: '激活', variant: 'success' },
   renewed: { label: '已续费', variant: 'success' },
@@ -44,13 +44,13 @@ const STATUS_CONFIG: Record<SubscriptionStatus, { label: string; variant: 'succe
   expired: { label: '已过期', variant: 'danger' },
 };
 
-// 计划类型配置
+// Plan type configuration
 const PLAN_TYPE_CONFIG: Record<PlanType, { label: string; variant: 'info' | 'warning' }> = {
   node: { label: '节点订阅', variant: 'info' },
   forward: { label: '端口转发', variant: 'warning' },
 };
 
-// 详情项组件
+// Detail item component
 const DetailItem: React.FC<{
   icon: React.ReactNode;
   label: string;
@@ -117,8 +117,8 @@ export const SubscriptionDetailDialog: React.FC<SubscriptionDetailDialogProps> =
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-lg max-h-[90vh] overflow-y-auto">
-        <DialogHeader>
+      <DialogContent className="sm:max-w-lg flex flex-col max-h-[90vh]">
+        <DialogHeader className="flex-shrink-0">
           <DialogTitle className="flex items-center gap-2">
             订阅详情
             <AdminBadge variant={statusConfig.variant}>{statusConfig.label}</AdminBadge>
@@ -128,7 +128,8 @@ export const SubscriptionDetailDialog: React.FC<SubscriptionDetailDialogProps> =
           </DialogDescription>
         </DialogHeader>
 
-        <div className="space-y-4 py-2">
+        <div className="flex-1 min-h-0 overflow-y-auto -mx-6 px-6">
+          <div className="space-y-4 py-2">
           {/* 订阅链接 */}
           {subscription.subscribeUrl && (
             <div className="rounded-lg border border-slate-200 dark:border-slate-700 p-3 bg-slate-50 dark:bg-slate-800/50">
@@ -282,6 +283,7 @@ export const SubscriptionDetailDialog: React.FC<SubscriptionDetailDialogProps> =
               label="UUID"
               value={<TruncatedId id={subscription.uuid} fullWidth />}
             />
+          </div>
           </div>
         </div>
       </DialogContent>

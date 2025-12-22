@@ -1,6 +1,6 @@
 /**
- * Zustand 5 认证状态管理
- * 使用 HttpOnly Cookie 进行认证，不在本地存储任何认证信息
+ * Zustand 5 Authentication State Management
+ * Uses HttpOnly Cookie for authentication, does not store any auth info locally
  */
 
 import { create } from 'zustand';
@@ -8,12 +8,12 @@ import { devtools } from 'zustand/middleware';
 import type { UserDisplayInfo } from '@/api/auth';
 
 interface AuthState {
-  // 状态
+  // State
   user: UserDisplayInfo | null;
   isAuthenticated: boolean;
   isLoading: boolean;
 
-  // 方法
+  // Methods
   login: (user: UserDisplayInfo) => void;
   logout: () => void;
   setUser: (user: UserDisplayInfo) => void;
@@ -24,12 +24,12 @@ interface AuthState {
 export const useAuthStore = create<AuthState>()(
   devtools(
     (set) => ({
-      // 初始状态
+      // Initial state
       user: null,
       isAuthenticated: false,
-      isLoading: true, // 初始为 true，等待检查登录状态
+      isLoading: true, // Initially true, waiting to check login status
 
-      // 登录
+      // Login
       login: (user: UserDisplayInfo) => {
         set({
           user,
@@ -37,25 +37,25 @@ export const useAuthStore = create<AuthState>()(
         });
       },
 
-      // 登出
+      // Logout
       logout: () => {
         set({
           user: null,
           isAuthenticated: false,
         });
 
-        // 跳转到登录页
+        // Redirect to login page
         if (typeof window !== 'undefined') {
           window.location.href = '/login';
         }
       },
 
-      // 设置用户信息
+      // Set user info
       setUser: (user: UserDisplayInfo) => {
         set({ user });
       },
 
-      // 清除认证信息
+      // Clear auth info
       clearAuth: () => {
         set({
           user: null,
@@ -63,7 +63,7 @@ export const useAuthStore = create<AuthState>()(
         });
       },
 
-      // 设置加载状态
+      // Set loading state
       setLoading: (isLoading: boolean) => {
         set({ isLoading });
       },

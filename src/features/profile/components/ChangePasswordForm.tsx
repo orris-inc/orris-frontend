@@ -13,7 +13,7 @@ import {
 } from '../types/profile.types';
 
 /**
- * 计算密码强度
+ * Calculate password strength
  */
 const calculatePasswordStrength = (password: string): number => {
   let strength = 0;
@@ -27,7 +27,7 @@ const calculatePasswordStrength = (password: string): number => {
 };
 
 /**
- * 获取密码强度颜色类名
+ * Get password strength color class name
  */
 const getStrengthColor = (strength: number): string => {
   if (strength < 25) return 'bg-red-500';
@@ -37,7 +37,7 @@ const getStrengthColor = (strength: number): string => {
 };
 
 /**
- * 获取密码强度文本
+ * Get password strength text
  */
 const getStrengthText = (strength: number): string => {
   if (strength < 25) return '弱';
@@ -47,7 +47,7 @@ const getStrengthText = (strength: number): string => {
 };
 
 /**
- * 修改密码表单
+ * Change password form
  */
 export const ChangePasswordForm = () => {
   const [showOldPassword, setShowOldPassword] = useState(false);
@@ -72,7 +72,7 @@ export const ChangePasswordForm = () => {
 
   const newPassword = watch('newPassword');
 
-  // 监听新密码变化，更新强度指示器
+  // Watch for new password changes and update strength indicator
   useEffect(() => {
     if (newPassword) {
       setNewPasswordStrength(calculatePasswordStrength(newPassword));
@@ -84,9 +84,9 @@ export const ChangePasswordForm = () => {
   const onSubmit = async (data: ChangePasswordFormData) => {
     try {
       await changePassword(data);
-      reset(); // 清空表单
+      reset(); // Clear form
     } catch {
-      // 错误已在useProfile中处理
+      // Error already handled in useProfile
     }
   };
 
@@ -95,7 +95,7 @@ export const ChangePasswordForm = () => {
       onSubmit={handleSubmit(onSubmit)}
       className="grid gap-6 py-2"
     >
-      {/* 当前密码 */}
+      {/* Current password */}
       <div className="grid gap-2">
         <LabelPrimitive.Root htmlFor="oldPassword" className={labelStyles}>
           当前密码
@@ -125,7 +125,7 @@ export const ChangePasswordForm = () => {
         )}
       </div>
 
-      {/* 新密码 */}
+      {/* New password */}
       <div className="grid gap-2">
         <LabelPrimitive.Root htmlFor="newPassword" className={labelStyles}>
           新密码
@@ -154,7 +154,7 @@ export const ChangePasswordForm = () => {
           <p className="text-sm text-destructive">{errors.newPassword.message}</p>
         )}
 
-        {/* 密码强度指示器 */}
+        {/* Password strength indicator */}
         {newPassword && (
           <div className="space-y-1">
             <div className="relative h-2 w-full overflow-hidden rounded-full bg-secondary">
@@ -170,7 +170,7 @@ export const ChangePasswordForm = () => {
         )}
       </div>
 
-      {/* 确认新密码 */}
+      {/* Confirm new password */}
       <div className="grid gap-2">
         <LabelPrimitive.Root htmlFor="confirmPassword" className={labelStyles}>
           确认新密码
@@ -200,7 +200,7 @@ export const ChangePasswordForm = () => {
         )}
       </div>
 
-      {/* 登出所有设备选项 */}
+      {/* Logout all devices option */}
       <div className="flex items-start space-x-3 space-y-0 rounded-md border p-4">
         <CheckboxPrimitive.Root
           id="logoutAllDevices"
@@ -234,7 +234,7 @@ export const ChangePasswordForm = () => {
         </div>
       </div>
 
-      {/* 安全提示 */}
+      {/* Security notice */}
       <div className={getAlertClass('destructive')}>
         <AlertTriangle className="h-4 w-4" />
         <div>
@@ -245,7 +245,7 @@ export const ChangePasswordForm = () => {
         </div>
       </div>
 
-      {/* 提交按钮 */}
+      {/* Submit button */}
       <button
         type="submit"
         disabled={isLoading}

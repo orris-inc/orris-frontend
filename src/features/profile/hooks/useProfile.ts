@@ -10,7 +10,7 @@ import {
 } from '@/api/profile';
 
 /**
- * 个人资料管理Hook
+ * Profile management hook
  */
 export const useProfile = () => {
   const { user, setUser } = useAuthStore();
@@ -18,7 +18,7 @@ export const useProfile = () => {
   const [isLoading, setIsLoading] = useState(false);
 
   /**
-   * 更新个人资料
+   * Update profile
    */
   const updateProfile = useCallback(
     async (data: UpdateProfileRequest) => {
@@ -31,7 +31,7 @@ export const useProfile = () => {
       try {
         await apiUpdateProfile(data);
 
-        // 更新Auth Store中的用户信息（只更新修改的字段）
+        // Update user info in Auth Store (only update modified fields)
         setUser({
           ...user,
           ...data,
@@ -50,7 +50,7 @@ export const useProfile = () => {
   );
 
   /**
-   * 修改密码
+   * Change password
    */
   const changePassword = useCallback(
     async (data: ChangePasswordRequest) => {
@@ -70,7 +70,7 @@ export const useProfile = () => {
   );
 
   /**
-   * 上传头像
+   * Upload avatar
    */
   const uploadAvatar = useCallback(
     async (_file: File) => {

@@ -48,10 +48,10 @@ export const ForwardRulesPage = () => {
     handlePageSizeChange,
   } = useForwardRulesPage();
 
-  // 获取转发节点列表（用于创建规则时选择）
+  // Get forward agent list (for rule creation selection)
   const { forwardAgents } = useForwardAgents();
 
-  // 获取节点列表（用于选择目标节点）
+  // Get node list (for target node selection)
   const { nodes } = useNodes({ pageSize: 100 });
 
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
@@ -125,7 +125,7 @@ export const ForwardRulesPage = () => {
       const result = await probeRule(rule.id);
       setProbeResult(result);
     } catch {
-      // 错误已在 hook 中处理
+      // Error already handled in hook
     } finally {
       setProbingRuleId(null);
     }

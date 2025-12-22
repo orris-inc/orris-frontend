@@ -1,6 +1,6 @@
 /**
- * Dialog 薄封装组件
- * 基于 Radix UI Dialog 提供简化的 API 和统一的样式
+ * Dialog Wrapper Component
+ * Based on Radix UI Dialog with simplified API and unified styling
  */
 
 import * as DialogPrimitive from '@radix-ui/react-dialog';
@@ -8,16 +8,16 @@ import { X } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import type { ComponentPropsWithoutRef } from 'react';
 
-// Root 组件 - Dialog 容器
+// Root - Dialog container
 export const Dialog = DialogPrimitive.Root;
 
-// Trigger 组件 - 触发 Dialog 打开的按钮或元素
+// Trigger - Button or element that opens the Dialog
 export const DialogTrigger = DialogPrimitive.Trigger;
 
-// Portal 组件 - 将 Dialog 内容挂载到 DOM 树外
+// Portal - Mounts Dialog content outside the DOM tree
 export const DialogPortal = DialogPrimitive.Portal;
 
-// Overlay 组件 - 遮罩层
+// Overlay - Backdrop layer
 export const DialogOverlay = ({
   className,
   ...props
@@ -32,7 +32,7 @@ export const DialogOverlay = ({
 );
 DialogOverlay.displayName = DialogPrimitive.Overlay.displayName;
 
-// Content 组件 - Dialog 主体容器（自动包含 Portal、Overlay 和关闭按钮）
+// Content - Dialog main container (includes Portal, Overlay and close button automatically)
 export const DialogContent = ({
   className,
   children,
@@ -57,7 +57,7 @@ export const DialogContent = ({
 );
 DialogContent.displayName = DialogPrimitive.Content.displayName;
 
-// Title 组件 - Dialog 标题
+// Title - Dialog title
 export const DialogTitle = ({
   className,
   ...props
@@ -72,7 +72,7 @@ export const DialogTitle = ({
 );
 DialogTitle.displayName = DialogPrimitive.Title.displayName;
 
-// Description 组件 - Dialog 描述文本
+// Description - Dialog description text
 export const DialogDescription = ({
   className,
   ...props
@@ -84,7 +84,7 @@ export const DialogDescription = ({
 );
 DialogDescription.displayName = DialogPrimitive.Description.displayName;
 
-// Header 组件 - Dialog 头部容器（用于包装标题和描述）
+// Header - Dialog header container (wraps title and description)
 export const DialogHeader = ({
   className,
   ...props
@@ -99,7 +99,7 @@ export const DialogHeader = ({
 );
 DialogHeader.displayName = 'DialogHeader';
 
-// Footer 组件 - Dialog 底部容器（用于包装按钮等操作）
+// Footer - Dialog footer container (wraps buttons and actions)
 export const DialogFooter = ({
   className,
   ...props
@@ -114,5 +114,5 @@ export const DialogFooter = ({
 );
 DialogFooter.displayName = 'DialogFooter';
 
-// Close 组件 - 关闭 Dialog 的按钮或元素
+// Close - Button or element that closes the Dialog
 export const DialogClose = DialogPrimitive.Close;

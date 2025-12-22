@@ -1,7 +1,7 @@
 /**
- * AlertDialog 薄封装组件
- * 基于 Radix UI AlertDialog 提供简化的 API 和统一的样式
- * 用于需要用户确认的操作（如删除、重置等）
+ * AlertDialog Wrapper Component
+ * Based on Radix UI AlertDialog with simplified API and unified styling
+ * Used for actions that require user confirmation (e.g., delete, reset)
  */
 
 import * as AlertDialogPrimitive from '@radix-ui/react-alert-dialog';
@@ -9,16 +9,16 @@ import { cn } from '@/lib/utils';
 import type { ComponentPropsWithoutRef } from 'react';
 import { buttonVariants } from './Button';
 
-// Root 组件 - AlertDialog 容器
+// Root - AlertDialog container
 export const AlertDialog = AlertDialogPrimitive.Root;
 
-// Trigger 组件 - 触发 AlertDialog 打开的按钮或元素
+// Trigger - Button or element that opens the AlertDialog
 export const AlertDialogTrigger = AlertDialogPrimitive.Trigger;
 
-// Portal 组件 - 将 AlertDialog 内容挂载到 DOM 树外
+// Portal - Mounts AlertDialog content outside the DOM tree
 export const AlertDialogPortal = AlertDialogPrimitive.Portal;
 
-// Overlay 组件 - 遮罩层
+// Overlay - Backdrop layer
 export const AlertDialogOverlay = ({
   className,
   ...props
@@ -33,7 +33,7 @@ export const AlertDialogOverlay = ({
 );
 AlertDialogOverlay.displayName = AlertDialogPrimitive.Overlay.displayName;
 
-// Content 组件 - AlertDialog 主体容器（自动包含 Portal 和 Overlay）
+// Content - AlertDialog main container (includes Portal and Overlay automatically)
 export const AlertDialogContent = ({
   className,
   children,
@@ -54,7 +54,7 @@ export const AlertDialogContent = ({
 );
 AlertDialogContent.displayName = AlertDialogPrimitive.Content.displayName;
 
-// Title 组件 - AlertDialog 标题
+// Title - AlertDialog title
 export const AlertDialogTitle = ({
   className,
   ...props
@@ -66,7 +66,7 @@ export const AlertDialogTitle = ({
 );
 AlertDialogTitle.displayName = AlertDialogPrimitive.Title.displayName;
 
-// Description 组件 - AlertDialog 描述文本
+// Description - AlertDialog description text
 export const AlertDialogDescription = ({
   className,
   ...props
@@ -78,7 +78,7 @@ export const AlertDialogDescription = ({
 );
 AlertDialogDescription.displayName = AlertDialogPrimitive.Description.displayName;
 
-// Header 组件 - AlertDialog 头部容器（用于包装标题和描述）
+// Header - AlertDialog header container (wraps title and description)
 export const AlertDialogHeader = ({
   className,
   ...props
@@ -93,7 +93,7 @@ export const AlertDialogHeader = ({
 );
 AlertDialogHeader.displayName = 'AlertDialogHeader';
 
-// Footer 组件 - AlertDialog 底部容器（用于包装按钮）
+// Footer - AlertDialog footer container (wraps buttons)
 export const AlertDialogFooter = ({
   className,
   ...props
@@ -108,7 +108,7 @@ export const AlertDialogFooter = ({
 );
 AlertDialogFooter.displayName = 'AlertDialogFooter';
 
-// Action 组件 - 确认按钮
+// Action - Confirm button
 export const AlertDialogAction = ({
   className,
   ...props
@@ -120,7 +120,7 @@ export const AlertDialogAction = ({
 );
 AlertDialogAction.displayName = AlertDialogPrimitive.Action.displayName;
 
-// Cancel 组件 - 取消按钮
+// Cancel - Cancel button
 export const AlertDialogCancel = ({
   className,
   ...props

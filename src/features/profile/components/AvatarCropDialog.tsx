@@ -14,7 +14,7 @@ interface AvatarCropDialogProps {
 }
 
 /**
- * 创建裁剪后的图片
+ * Create cropped image
  */
 const createCroppedImage = async (
   imageSrc: string,
@@ -25,14 +25,14 @@ const createCroppedImage = async (
   const ctx = canvas.getContext('2d');
 
   if (!ctx) {
-    throw new Error('无法创建canvas上下文');
+    throw new Error('Unable to create canvas context');
   }
 
-  // 设置canvas尺寸
+  // Set canvas dimensions
   canvas.width = pixelCrop.width;
   canvas.height = pixelCrop.height;
 
-  // 绘制裁剪后的图片
+  // Draw cropped image
   ctx.drawImage(
     image,
     pixelCrop.x,
@@ -45,20 +45,20 @@ const createCroppedImage = async (
     pixelCrop.height
   );
 
-  // 转换为Blob
+  // Convert to Blob
   return new Promise((resolve, reject) => {
     canvas.toBlob((blob) => {
       if (blob) {
         resolve(blob);
       } else {
-        reject(new Error('Canvas转换失败'));
+        reject(new Error('Canvas conversion failed'));
       }
     }, 'image/jpeg');
   });
 };
 
 /**
- * 加载图片
+ * Load image
  */
 const loadImage = (src: string): Promise<HTMLImageElement> => {
   return new Promise((resolve, reject) => {
@@ -70,7 +70,7 @@ const loadImage = (src: string): Promise<HTMLImageElement> => {
 };
 
 /**
- * 头像裁剪对话框
+ * Avatar crop dialog
  */
 export const AvatarCropDialog = ({
   open,

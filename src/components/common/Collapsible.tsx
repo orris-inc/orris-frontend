@@ -1,6 +1,6 @@
 /**
- * Collapsible 组件 - 可折叠区域组件
- * 基于 @radix-ui/react-collapsible
+ * Collapsible Component - Collapsible region component
+ * Based on @radix-ui/react-collapsible
  */
 
 import type { ComponentPropsWithoutRef, ElementRef } from 'react';

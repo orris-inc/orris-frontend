@@ -1,6 +1,6 @@
 /**
- * 邮箱验证待处理页面
- * 用户注册成功后显示，提示用户查收验证邮件
+ * Email Verification Pending Page
+ * Displayed after successful registration, prompting user to check verification email
  */
 
 import { useState } from 'react';
@@ -26,12 +26,12 @@ import {
 } from '@/lib/ui-styles';
 import { cn } from '@/lib/utils';
 
-// 临时实现 - 等待后端自动生成的API支持此功能
+// Temporary implementation - waiting for backend auto-generated API support
 const resendVerificationEmail = async (email: string): Promise<void> => {
   await apiClient.post<APIResponse<null>>('/auth/resend-verification', { email });
 };
 
-// 表单验证
+// Form validation
 const resendSchema = z.object({
   email: z.string().email('请输入有效的邮箱地址'),
 });
@@ -44,7 +44,7 @@ export const VerificationPendingPage = () => {
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // 从路由 state 获取邮箱地址（如果有）
+  // Get email address from route state (if available)
   const emailFromState = (location.state as { email?: string })?.email || '';
 
   const {

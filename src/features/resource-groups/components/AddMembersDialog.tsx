@@ -46,14 +46,14 @@ export const AddMembersDialog: React.FC<AddMembersDialogProps> = ({
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
 
-  // 获取节点列表
+  // Get node list
   const { nodes, isLoading: isLoadingNodes } = useNodes({
     page: 1,
     pageSize: 200,
     enabled: open && type === 'nodes',
   });
 
-  // 获取转发代理列表
+  // Get forward agent list
   const { forwardAgents, isLoading: isLoadingAgents } = useForwardAgents({
     page: 1,
     pageSize: 200,
@@ -62,7 +62,7 @@ export const AddMembersDialog: React.FC<AddMembersDialogProps> = ({
 
   const isLoading = type === 'nodes' ? isLoadingNodes : isLoadingAgents;
 
-  // 过滤出未加入当前资源组的成员
+  // Filter out members not yet in current resource group
   const availableItems = useMemo(() => {
     const items = type === 'nodes' ? nodes : forwardAgents;
     const existingSet = new Set(existingMemberIds);
@@ -113,7 +113,7 @@ export const AddMembersDialog: React.FC<AddMembersDialogProps> = ({
   const memberLabel = type === 'nodes' ? '节点' : '转发代理';
   const emptyText = type === 'nodes' ? '暂无可添加的节点' : '暂无可添加的转发代理';
 
-  // 统计信息
+  // Statistics
   const totalItems = type === 'nodes' ? nodes.length : forwardAgents.length;
   const existingCount = existingMemberIds.length;
 

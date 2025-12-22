@@ -1,6 +1,6 @@
 /**
- * 订阅列表表格组件（管理端）
- * 使用 TanStack Table 实现
+ * Subscription List Table Component (Admin)
+ * Implemented using TanStack Table
  */
 
 import { useMemo } from 'react';
@@ -36,7 +36,7 @@ interface SubscriptionListTableProps {
   onRenew?: (subscription: Subscription) => void;
 }
 
-// 状态配置
+// Status configuration
 const STATUS_CONFIG: Record<SubscriptionStatus, { label: string; variant: 'success' | 'default' | 'warning' | 'danger' }> = {
   active: { label: '激活', variant: 'success' },
   renewed: { label: '已续费', variant: 'success' },
@@ -75,8 +75,8 @@ export const SubscriptionListTable: React.FC<SubscriptionListTableProps> = ({
       size: 160,
       meta: { priority: 1 } as ResponsiveColumnMeta,
       cell: ({ row }) => {
-        // userId 是 number，但 usersMap 的 key 是 string (user.id)
-        // 将 userId 转换为 string 进行查找
+        // userId is number, but usersMap key is string (user.id)
+        // Convert userId to string for lookup
         const user = usersMap[String(row.original.userId)];
         const isUserLoading = usersLoading || (!user && Object.keys(usersMap).length === 0);
 
@@ -195,11 +195,11 @@ export const SubscriptionListTable: React.FC<SubscriptionListTableProps> = ({
         const subscription = row.original;
         const status = subscription.status;
 
-        // 激活：非 active 和非 renewed 状态可以激活
+        // Activate: can activate if not in active or renewed status
         const canActivate = status !== 'active' && status !== 'renewed';
-        // 取消：active 或 renewed 状态可以取消
+        // Cancel: can cancel if in active or renewed status
         const canCancel = status === 'active' || status === 'renewed';
-        // 续费：expired 状态可以续费
+        // Renew: can renew if in expired status
         const canRenew = status === 'expired';
 
         return (

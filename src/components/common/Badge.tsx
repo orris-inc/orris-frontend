@@ -1,6 +1,6 @@
 /**
- * Badge 组件 - 标签徽章组件
- * 替代 MUI Chip，支持多种变体
+ * Badge Component - Label badge component
+ * Replaces MUI Chip, supports multiple variants
  */
 
 import type { HTMLAttributes } from 'react';

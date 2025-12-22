@@ -1,6 +1,6 @@
 /**
- * OAuth2 弹窗登录逻辑
- * 使用 window.open + postMessage 实现
+ * OAuth2 Popup Login Logic
+ * Implemented using window.open + postMessage
  */
 
 import type { UserDisplayInfo } from '@/api/auth';
@@ -18,7 +18,7 @@ export interface OAuthCallbackMessage {
 }
 
 /**
- * OAuth弹窗配置
+ * OAuth popup configuration
  */
 const POPUP_CONFIG = {
   width: 600,
@@ -27,23 +27,23 @@ const POPUP_CONFIG = {
 };
 
 /**
- * 打开OAuth登录弹窗
+ * Open OAuth login popup
  *
- * @param provider - OAuth提供商 ('google' | 'github')
- * @returns Promise<UserDisplayInfo> - 认证成功返回用户信息，Token 存储在 HttpOnly Cookie 中
+ * @param provider - OAuth provider ('google' | 'github')
+ * @returns Promise<UserDisplayInfo> - Returns user info on successful auth, Token is stored in HttpOnly Cookie
  */
 export const openOAuthPopup = (provider: OAuthProvider): Promise<UserDisplayInfo> => {
   return new Promise((resolve, reject) => {
-    // 使用标志位防止重复resolve/reject
+    // Use flag to prevent duplicate resolve/reject
     let isSettled = false;
 
-    // 计算弹窗居中位置
+    // Calculate popup centered position
     const left = Math.floor((window.screen.width - POPUP_CONFIG.width) / 2);
     const top = Math.floor((window.screen.height - POPUP_CONFIG.height) / 2);
 
     const features = `${POPUP_CONFIG.features},width=${POPUP_CONFIG.width},height=${POPUP_CONFIG.height},left=${left},top=${top}`;
 
-    // 打开OAuth授权页面
+    // Open OAuth authorization page
     const popup = window.open(
       `${baseURL}/auth/oauth/${provider}`,
       `OAuth-${provider}`,
@@ -51,20 +51,20 @@ export const openOAuthPopup = (provider: OAuthProvider): Promise<UserDisplayInfo
     );
 
     if (!popup) {
-      reject(new Error('弹窗被浏览器阻止，请允许弹窗权限'));
+      reject(new Error('Popup blocked by browser, please allow popup permissions'));
       return;
     }
 
-    // 清理函数
+    // Cleanup function
     const cleanup = () => {
       window.removeEventListener('message', handleMessage);
       clearInterval(checkClosed);
       clearTimeout(timeoutId);
     };
 
-    // 监听postMessage事件
+    // Listen to postMessage event
     const handleMessage = (event: MessageEvent<OAuthCallbackMessage>) => {
-      // 安全检查：验证消息来源
+      // Security check: verify message origin
       const apiOrigin = new URL(baseURL).origin;
       if (event.origin !== apiOrigin && event.origin !== window.location.origin) {
         return;
@@ -72,27 +72,27 @@ export const openOAuthPopup = (provider: OAuthProvider): Promise<UserDisplayInfo
 
       const message = event.data;
 
-      // 验证消息格式
+      // Validate message format
       if (!message || typeof message !== 'object' || !message.type) {
         return;
       }
 
-      // 处理OAuth成功
+      // Handle OAuth success
       if (message.type === 'oauth-success') {
         if (isSettled) return;
         isSettled = true;
         cleanup();
         popup.close();
 
-        // Token 已存储在 HttpOnly Cookie 中，只返回用户信息
+        // Token is already stored in HttpOnly Cookie, only return user info
         if (message.user) {
           resolve(message.user);
         } else {
-          reject(new Error('OAuth 登录成功但未返回用户信息'));
+          reject(new Error('OAuth login succeeded but no user info returned'));
         }
       }
 
-      // 处理OAuth失败
+      // Handle OAuth error
       if (message.type === 'oauth-error') {
         if (isSettled) return;
         isSettled = true;
@@ -103,43 +103,43 @@ export const openOAuthPopup = (provider: OAuthProvider): Promise<UserDisplayInfo
       }
     };
 
-    // 监听弹窗关闭
-    // 注意：当弹窗跳转到OAuth提供商（Google/GitHub）时，COOP策略会阻止访问popup.closed
-    // 这会在控制台产生警告，但不影响功能，因为我们主要依赖postMessage通信
+    // Listen for popup close
+    // Note: When popup redirects to OAuth provider (Google/GitHub), COOP policy will block access to popup.closed
+    // This will produce console warnings but doesn't affect functionality, as we mainly rely on postMessage communication
     const checkClosed = setInterval(() => {
       try {
-        // COOP策略可能会阻止访问popup.closed，需要try-catch保护
+        // COOP policy may block access to popup.closed, need try-catch protection
         if (!popup || popup.closed) {
           if (isSettled) return;
           isSettled = true;
           cleanup();
-          reject(new Error('用户取消了OAuth授权'));
+          reject(new Error('User cancelled OAuth authorization'));
         }
       } catch {
-        // 如果因为COOP无法访问popup.closed，说明弹窗仍在OAuth提供商页面
-        // 不做任何处理，继续等待postMessage
-        // 只有在超时的情况下才会终止
+        // If unable to access popup.closed due to COOP, popup is still on OAuth provider page
+        // Do nothing, continue waiting for postMessage
+        // Only terminate on timeout
       }
-    }, 1000); // 使用1秒间隔，减少COOP警告频率
+    }, 1000); // Use 1 second interval to reduce COOP warning frequency
 
-    // 添加消息监听
+    // Add message listener
     window.addEventListener('message', handleMessage);
 
-    // 超时处理 (2分钟)
+    // Timeout handling (2 minutes)
     const timeoutId = setTimeout(() => {
       if (popup && !popup.closed) {
         if (isSettled) return;
         isSettled = true;
         cleanup();
         popup.close();
-        reject(new Error('OAuth认证超时'));
+        reject(new Error('OAuth authentication timeout'));
       }
     }, 120000);
   });
 };
 
 /**
- * 检测弹窗是否被阻止
+ * Detect if popup is blocked
  */
 export const isPopupBlocked = (): boolean => {
   try {

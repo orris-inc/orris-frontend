@@ -1,6 +1,6 @@
 /**
- * Zustand 通知状态管理
- * 全局Snackbar通知系统
+ * Zustand notification state management
+ * Global Snackbar notification system
  */
 
 import { create } from 'zustand';
@@ -9,13 +9,13 @@ import { devtools } from 'zustand/middleware';
 type NotificationSeverity = 'success' | 'error' | 'warning' | 'info';
 
 interface NotificationState {
-  // 状态
+  // State
   message: string;
   severity: NotificationSeverity;
   open: boolean;
-  autoHideDuration: number; // 自动关闭时间（毫秒）
+  autoHideDuration: number; // Auto-close time (milliseconds)
 
-  // 方法
+  // Methods
   showSuccess: (message: string, duration?: number) => void;
   showError: (message: string, duration?: number) => void;
   showWarning: (message: string, duration?: number) => void;
@@ -23,18 +23,18 @@ interface NotificationState {
   hideNotification: () => void;
 }
 
-const DEFAULT_AUTO_HIDE_DURATION = 6000; // 默认6秒
+const DEFAULT_AUTO_HIDE_DURATION = 6000; // Default 6 seconds
 
 export const useNotificationStore = create<NotificationState>()(
   devtools(
     (set) => ({
-      // 初始状态
+      // Initial state
       message: '',
       severity: 'info',
       open: false,
       autoHideDuration: DEFAULT_AUTO_HIDE_DURATION,
 
-      // 显示成功通知
+      // Show success notification
       showSuccess: (message: string, duration = DEFAULT_AUTO_HIDE_DURATION) => {
         set({
           message,
@@ -44,7 +44,7 @@ export const useNotificationStore = create<NotificationState>()(
         });
       },
 
-      // 显示错误通知
+      // Show error notification
       showError: (message: string, duration = DEFAULT_AUTO_HIDE_DURATION) => {
         set({
           message,
@@ -54,7 +54,7 @@ export const useNotificationStore = create<NotificationState>()(
         });
       },
 
-      // 显示警告通知
+      // Show warning notification
       showWarning: (message: string, duration = DEFAULT_AUTO_HIDE_DURATION) => {
         set({
           message,
@@ -64,7 +64,7 @@ export const useNotificationStore = create<NotificationState>()(
         });
       },
 
-      // 显示信息通知
+      // Show info notification
       showInfo: (message: string, duration = DEFAULT_AUTO_HIDE_DURATION) => {
         set({
           message,
@@ -74,7 +74,7 @@ export const useNotificationStore = create<NotificationState>()(
         });
       },
 
-      // 隐藏通知
+      // Hide notification
       hideNotification: () => {
         set({ open: false });
       },

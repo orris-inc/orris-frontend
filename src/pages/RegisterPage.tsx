@@ -1,6 +1,6 @@
 /**
- * 注册页面
- * 支持邮箱注册和OAuth2快速注册
+ * Register Page
+ * Supports email registration and OAuth2 quick registration
  */
 
 import { useForm } from 'react-hook-form';
@@ -29,7 +29,7 @@ import {
 } from '@/lib/ui-styles';
 import { cn } from '@/lib/utils';
 
-// Zod 4 注册表单验证
+// Zod 4 registration form validation
 const registerSchema = z
   .object({
     name: z.string().min(2, '姓名至少需要2个字符').max(100, '姓名最多100个字符'),
@@ -47,7 +47,7 @@ const registerSchema = z
 
 type RegisterFormData = z.infer<typeof registerSchema>;
 
-// 密码强度计算
+// Calculate password strength
 const calculatePasswordStrength = (password: string): number => {
   let strength = 0;
   if (password.length >= 8) strength += 25;
@@ -67,7 +67,7 @@ export const RegisterPage = () => {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [passwordStrength, setPasswordStrength] = useState(0);
 
-  // 已登录则跳转到Dashboard
+  // Redirect to Dashboard if already logged in
   useEffect(() => {
     if (isAuthenticated) {
       navigate('/dashboard', { replace: true });
@@ -85,7 +85,7 @@ export const RegisterPage = () => {
 
   const password = watch('password', '');
 
-  // 监听密码变化，计算强度
+  // Watch password changes and calculate strength
   const handlePasswordChange = (value: string) => {
     setPasswordStrength(calculatePasswordStrength(value));
   };
@@ -99,7 +99,7 @@ export const RegisterPage = () => {
       });
       showSuccess('注册成功！请查收验证邮件');
     } catch (err) {
-      // 错误信息已在error state中，通过Alert显示
+      // Error message is in error state, displayed via Alert
       const errorMessage = err instanceof Error ? err.message : '注册失败，请重试';
       showError(errorMessage);
     }

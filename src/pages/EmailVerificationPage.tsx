@@ -1,6 +1,6 @@
 /**
- * 邮箱验证页面
- * 处理用户点击验证邮件链接后的验证逻辑
+ * Email Verification Page
+ * Handles verification logic after user clicks the verification email link
  */
 
 import { useEffect, useState } from 'react';
@@ -44,7 +44,7 @@ export const EmailVerificationPage = () => {
         const errorMsg = handleApiError(err);
         setErrorMessage(errorMsg);
 
-        // 判断是否已验证
+        // Check if already verified
         if (errorMsg.includes('已验证') || errorMsg.includes('already verified')) {
           setStatus('already_verified');
         } else {
@@ -57,8 +57,8 @@ export const EmailVerificationPage = () => {
   }, [token]);
 
   const handleResendEmail = async () => {
-    // 由于我们没有存储用户邮箱，这里需要用户手动输入
-    // 或者跳转到 verification-pending 页面让用户输入
+    // Since we don't store user email here, redirect to verification-pending page
+    // where the user can input their email
     navigate('/verification-pending');
   };
 

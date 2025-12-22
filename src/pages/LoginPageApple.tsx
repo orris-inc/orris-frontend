@@ -1,7 +1,7 @@
 /**
- * 登录页面 - Apple 简约风格
- * 设计理念：极致简约、优雅精致、专注内容
- * 配色：白色背景 + 黑色文字 + 系统蓝
+ * Login Page - Apple Minimalist Style
+ * Design philosophy: Ultimate simplicity, elegant refinement, content-focused
+ * Colors: White background + Black text + System blue
  */
 
 import { useForm } from 'react-hook-form';
@@ -15,7 +15,7 @@ import { useAuthStore } from '@/features/auth/stores/auth-store';
 import { useNotificationStore } from '@/shared/stores/notification-store';
 import { isAccountNotActiveError } from '@/shared/utils/error-messages';
 
-// Zod 登录表单验证
+// Zod login form validation
 const loginSchema = z.object({
   email: z.string().email('请输入有效的邮箱地址'),
   password: z.string().min(8, '密码至少需要8个字符'),
@@ -34,11 +34,11 @@ export const LoginPageApple = () => {
   const [showResendVerification, setShowResendVerification] = useState(false);
   const [userEmail, setUserEmail] = useState<string>('');
 
-  // 从 location.state 获取提示消息
+  // Get message from location.state
   const state = location.state as { message?: string } | null;
   const successMessage = state?.message;
 
-  // 已登录则根据用户角色跳转
+  // Redirect based on user role if already logged in
   useEffect(() => {
     if (isAuthenticated && user) {
       const redirectPath = user.role === 'admin' ? '/admin' : '/dashboard';
@@ -97,10 +97,10 @@ export const LoginPageApple = () => {
 
   return (
     <div className="apple-login">
-      {/* 背景 */}
+      {/* Background */}
       <div className="min-h-screen bg-[#f5f5f7] flex items-center justify-center p-6">
         <div className="w-full max-w-[440px]">
-          {/* Logo 区域 */}
+          {/* Logo Area */}
           <div className="text-center mb-10 fade-in-down">
             <h1 className="text-[32px] font-semibold text-[#1d1d1f] mb-2 tracking-tight">
               登录 Orris
@@ -110,9 +110,9 @@ export const LoginPageApple = () => {
             </p>
           </div>
 
-          {/* 登录卡片 */}
+          {/* Login Card */}
           <div className="bg-white rounded-xl shadow-sm border border-[#d2d2d7] overflow-hidden fade-in-up">
-            {/* 成功消息 */}
+            {/* Success Message */}
             {successMessage && (
               <div className="px-6 pt-6">
                 <div className="flex items-start gap-3 p-4 bg-[#d1f4e0] rounded-lg">
@@ -122,7 +122,7 @@ export const LoginPageApple = () => {
               </div>
             )}
 
-            {/* 错误消息 */}
+            {/* Error Message */}
             {error && (
               <div className="px-6 pt-6">
                 <div className="flex items-start gap-3 p-4 bg-[#fff0f0] rounded-lg animate-shake">
@@ -142,10 +142,10 @@ export const LoginPageApple = () => {
               </div>
             )}
 
-            {/* 登录表单 */}
+            {/* Login Form */}
             <form onSubmit={handleSubmit(onSubmit)} className="p-6">
               <div className="space-y-4">
-                {/* 邮箱输入 */}
+                {/* Email Input */}
                 <div>
                   <input
                     id="email"
@@ -160,7 +160,7 @@ export const LoginPageApple = () => {
                   )}
                 </div>
 
-                {/* 密码输入 */}
+                {/* Password Input */}
                 <div>
                   <div className="relative">
                     <input
@@ -186,7 +186,7 @@ export const LoginPageApple = () => {
                 </div>
               </div>
 
-              {/* 记住我 */}
+              {/* Remember Me */}
               <label className="flex items-center gap-2 mt-5 cursor-pointer group">
                 <input
                   type="checkbox"
@@ -199,7 +199,7 @@ export const LoginPageApple = () => {
                 </span>
               </label>
 
-              {/* 登录按钮 */}
+              {/* Login Button */}
               <button
                 type="submit"
                 disabled={isLoading}
@@ -215,7 +215,7 @@ export const LoginPageApple = () => {
                 )}
               </button>
 
-              {/* 忘记密码 */}
+              {/* Forgot Password */}
               <div className="text-center mt-4">
                 <RouterLink
                   to="/forgot-password"
@@ -226,12 +226,12 @@ export const LoginPageApple = () => {
               </div>
             </form>
 
-            {/* 分隔线 */}
+            {/* Separator */}
             <div className="relative px-6">
               <div className="h-px bg-[#d2d2d7]" />
             </div>
 
-            {/* OAuth 登录 */}
+            {/* OAuth Login */}
             <div className="p-6 space-y-3">
               <button
                 type="button"
@@ -262,7 +262,7 @@ export const LoginPageApple = () => {
             </div>
           </div>
 
-          {/* 注册链接 */}
+          {/* Register Link */}
           <div className="text-center mt-5 fade-in-up" style={{ animationDelay: '0.2s' }}>
             <span className="text-[14px] text-[#86868b]">还没有 Orris ID？</span>{' '}
             <RouterLink
@@ -273,7 +273,7 @@ export const LoginPageApple = () => {
             </RouterLink>
           </div>
 
-          {/* 底部信息 */}
+          {/* Footer Information */}
           <div className="text-center mt-8">
             <p className="text-[12px] text-[#86868b]">
               此网站受 reCAPTCHA 保护，并适用
@@ -287,7 +287,7 @@ export const LoginPageApple = () => {
         </div>
       </div>
 
-      {/* 内联样式 - Apple 风格 */}
+      {/* Inline Styles - Apple Style */}
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
 
@@ -297,7 +297,7 @@ export const LoginPageApple = () => {
           -moz-osx-font-smoothing: grayscale;
         }
 
-        /* Apple 输入框 */
+        /* Apple Input */
         .apple-input {
           width: 100%;
           height: 52px;
@@ -329,7 +329,7 @@ export const LoginPageApple = () => {
           box-shadow: 0 0 0 4px rgba(221, 45, 68, 0.1);
         }
 
-        /* Apple 按钮 */
+        /* Apple Button */
         .apple-button {
           height: 52px;
           padding: 0 24px;
@@ -356,7 +356,7 @@ export const LoginPageApple = () => {
           cursor: not-allowed;
         }
 
-        /* Apple OAuth 按钮 */
+        /* Apple OAuth Button */
         .apple-oauth-button {
           width: 100%;
           height: 52px;
@@ -388,7 +388,7 @@ export const LoginPageApple = () => {
           cursor: not-allowed;
         }
 
-        /* 动画 */
+        /* Animations */
         @keyframes fade-in-down {
           from {
             opacity: 0;
@@ -429,7 +429,7 @@ export const LoginPageApple = () => {
           animation: shake 0.3s ease-in-out;
         }
 
-        /* 自定义复选框 */
+        /* Custom Checkbox */
         input[type="checkbox"] {
           appearance: none;
           -webkit-appearance: none;
@@ -442,7 +442,7 @@ export const LoginPageApple = () => {
           background-repeat: no-repeat;
         }
 
-        /* 响应式 */
+        /* Responsive */
         @media (max-width: 640px) {
           .apple-login h1 {
             font-size: 28px;

@@ -15,7 +15,7 @@ const MAX_FILE_SIZE = 2 * 1024 * 1024; // 2MB
 const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/webp'];
 
 /**
- * 头像上传组件
+ * Avatar upload component
  */
 export const AvatarUpload = ({ avatar, name }: AvatarUploadProps) => {
   const [cropDialogOpen, setCropDialogOpen] = useState(false);
@@ -25,28 +25,28 @@ export const AvatarUpload = ({ avatar, name }: AvatarUploadProps) => {
   const { showError } = useNotificationStore();
 
   /**
-   * 文件选择处理
+   * File selection handler
    */
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file) return;
 
-    // 清空input值，允许重复选择同一文件
+    // Clear input value to allow selecting the same file again
     event.target.value = '';
 
-    // 文件大小验证
+    // File size validation
     if (file.size > MAX_FILE_SIZE) {
       showError('图片大小不能超过2MB');
       return;
     }
 
-    // 文件类型验证
+    // File type validation
     if (!ALLOWED_TYPES.includes(file.type)) {
       showError('只支持JPG、PNG和WebP格式');
       return;
     }
 
-    // 读取文件并显示裁剪对话框
+    // Read file and show crop dialog
     const reader = new FileReader();
     reader.onload = (e) => {
       setImageSrc(e.target?.result as string);
@@ -56,10 +56,10 @@ export const AvatarUpload = ({ avatar, name }: AvatarUploadProps) => {
   };
 
   /**
-   * 确认上传裁剪后的图片
+   * Confirm upload of cropped image
    */
   const handleCropConfirm = async (croppedBlob: Blob) => {
-    // 将Blob转换为File
+    // Convert Blob to File
     const file = new File([croppedBlob], 'avatar.jpg', {
       type: 'image/jpeg',
     });
@@ -68,7 +68,7 @@ export const AvatarUpload = ({ avatar, name }: AvatarUploadProps) => {
   };
 
   /**
-   * 获取头像显示内容
+   * Get avatar fallback content
    */
   const getAvatarFallback = () => {
     if (name) {
@@ -114,7 +114,7 @@ export const AvatarUpload = ({ avatar, name }: AvatarUploadProps) => {
         支持JPG、PNG、WebP格式，最大2MB
       </p>
 
-      {/* 后端API开发中提示 */}
+      {/* Backend API in development notice */}
       <div className={getAlertClass('default')}>
         <Info className="size-4" />
         <div className={alertDescriptionStyles}>
@@ -122,7 +122,7 @@ export const AvatarUpload = ({ avatar, name }: AvatarUploadProps) => {
         </div>
       </div>
 
-      {/* 裁剪对话框 */}
+      {/* Crop dialog */}
       <AvatarCropDialog
         open={cropDialogOpen}
         imageSrc={imageSrc}

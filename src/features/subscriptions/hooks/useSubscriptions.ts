@@ -1,6 +1,6 @@
 /**
  * useSubscriptions Hook
- * 基于 TanStack Query 实现
+ * Implemented using TanStack Query
  */
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
@@ -50,8 +50,8 @@ export const useSubscriptions = (options: UseSubscriptionsOptions = {}) => {
   const queryClient = useQueryClient();
   const { showSuccess, showError } = useNotificationStore();
 
-  // 构建查询参数
-  // TODO: AdminListSubscriptionsParams.userId 类型需要同步更新为 string
+  // Build query parameters
+  // TODO: AdminListSubscriptionsParams.userId type needs to be updated to string
   const params: AdminListSubscriptionsParams = {
     page,
     pageSize,
@@ -59,7 +59,7 @@ export const useSubscriptions = (options: UseSubscriptionsOptions = {}) => {
     userId: filters.userId as unknown as number,
   };
 
-  // 查询订阅列表
+  // Query subscription list
   const {
     data,
     isLoading,
@@ -72,7 +72,7 @@ export const useSubscriptions = (options: UseSubscriptionsOptions = {}) => {
     enabled,
   });
 
-  // 创建订阅
+  // Create subscription
   const createMutation = useMutation({
     mutationFn: adminCreateSubscription,
     onSuccess: () => {
@@ -84,7 +84,7 @@ export const useSubscriptions = (options: UseSubscriptionsOptions = {}) => {
     },
   });
 
-  // 更换订阅计划
+  // Change subscription plan
   const changePlanMutation = useMutation({
     mutationFn: ({ id, data }: { id: string; data: AdminChangePlanRequest }) =>
       adminChangeSubscriptionPlan(id, data),
@@ -98,7 +98,7 @@ export const useSubscriptions = (options: UseSubscriptionsOptions = {}) => {
   });
 
   return {
-    // 数据
+    // Data
     subscriptions: data?.items ?? [],
     pagination: {
       page: data?.page ?? page,
@@ -107,24 +107,24 @@ export const useSubscriptions = (options: UseSubscriptionsOptions = {}) => {
       totalPages: data?.totalPages ?? 0,
     },
 
-    // 状态
+    // State
     isLoading,
     isFetching,
     error: error ? handleApiError(error) : null,
 
-    // 操作
+    // Actions
     refetch,
     createSubscription: (data: AdminCreateSubscriptionRequest) => createMutation.mutateAsync(data),
     changePlan: (id: string, data: AdminChangePlanRequest) =>
       changePlanMutation.mutateAsync({ id, data }),
 
-    // Mutation 状态
+    // Mutation state
     isCreating: createMutation.isPending,
     isChangingPlan: changePlanMutation.isPending,
   };
 };
 
-// 获取单个订阅详情
+// Get single subscription details
 export const useSubscription = (id: string | null) => {
   const { data, isLoading, error } = useQuery({
     queryKey: queryKeys.subscriptions.detail(id!),
@@ -139,7 +139,7 @@ export const useSubscription = (id: string | null) => {
   };
 };
 
-// 订阅令牌管理 Hook
+// Subscription token management Hook
 export const useSubscriptionTokens = (subscriptionId: string | null, params?: ListTokensParams) => {
   const queryClient = useQueryClient();
   const { showSuccess, showError } = useNotificationStore();
@@ -150,7 +150,7 @@ export const useSubscriptionTokens = (subscriptionId: string | null, params?: Li
     enabled: !!subscriptionId,
   });
 
-  // 生成令牌
+  // Generate token
   const generateMutation = useMutation({
     mutationFn: (data: GenerateTokenRequest) =>
       generateToken(subscriptionId!, data),
@@ -163,7 +163,7 @@ export const useSubscriptionTokens = (subscriptionId: string | null, params?: Li
     },
   });
 
-  // 撤销令牌
+  // Revoke token
   const revokeMutation = useMutation({
     mutationFn: (tokenId: string) =>
       revokeToken(subscriptionId!, tokenId),
@@ -176,7 +176,7 @@ export const useSubscriptionTokens = (subscriptionId: string | null, params?: Li
     },
   });
 
-  // 刷新令牌
+  // Refresh token
   const refreshMutation = useMutation({
     mutationFn: (tokenId: string) =>
       refreshSubscriptionToken(subscriptionId!, tokenId),
@@ -203,7 +203,7 @@ export const useSubscriptionTokens = (subscriptionId: string | null, params?: Li
   };
 };
 
-// 订阅列表状态管理 hook（用于页面级状态）
+// Subscription list state management hook (for page-level state)
 export const useSubscriptionsPage = () => {
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(20);
@@ -212,20 +212,20 @@ export const useSubscriptionsPage = () => {
 
   const subscriptionsQuery = useSubscriptions({ page, pageSize, filters });
 
-  // 获取订阅中涉及的用户 ID 列表
+  // Get list of user IDs involved in subscriptions
   const userIds = useMemo(() => {
     const ids = subscriptionsQuery.subscriptions.map((s) => s.userId);
     return [...new Set(ids)];
   }, [subscriptionsQuery.subscriptions]);
 
-  // 获取用户列表（当有订阅数据时）
+  // Get user list (when subscription data exists)
   const { data: usersData, isLoading: isUsersLoading } = useQuery({
     queryKey: queryKeys.users.list({ pageSize: 100 }),
     queryFn: () => listUsers({ pageSize: 100 }),
     enabled: userIds.length > 0,
   });
 
-  // 构建用户 ID -> 用户信息的映射
+  // Build user ID -> user info mapping
   const usersMap = useMemo(() => {
     const map: Record<string, UserResponse> = {};
     if (usersData?.items) {

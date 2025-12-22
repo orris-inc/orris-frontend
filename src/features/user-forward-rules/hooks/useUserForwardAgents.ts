@@ -1,7 +1,7 @@
 /**
  * useUserForwardAgents Hook
- * 用户端转发代理数据查询
- * 基于 TanStack Query 实现
+ * User-side forward agent data query
+ * Built with TanStack Query
  */
 
 import { useQuery } from '@tanstack/react-query';
@@ -13,7 +13,7 @@ import {
   type ForwardStatus,
 } from '@/api/forward';
 
-// 导出类型供外部使用
+// Export types for external use
 export type { UserForwardAgent, ListUserForwardAgentsParams };
 
 // Query Keys for User Forward Agents
@@ -36,13 +36,13 @@ interface UseUserForwardAgentsOptions {
 }
 
 /**
- * 用户可访问的转发代理列表查询
- * 通过订阅计划和资源组关联获取可用代理
+ * User-accessible forward agent list query
+ * Get available agents through subscription plan and resource group association
  */
 export const useUserForwardAgents = (options: UseUserForwardAgentsOptions = {}) => {
   const { page = 1, pageSize = 20, filters = {}, enabled = true } = options;
 
-  // 构建查询参数
+  // Build query params
   const params: ListUserForwardAgentsParams = {
     page,
     pageSize,
@@ -50,7 +50,7 @@ export const useUserForwardAgents = (options: UseUserForwardAgentsOptions = {}) 
     status: filters.status,
   };
 
-  // 查询转发代理列表
+  // Query forward agent list
   const {
     data,
     isLoading,
@@ -64,7 +64,7 @@ export const useUserForwardAgents = (options: UseUserForwardAgentsOptions = {}) 
   });
 
   return {
-    // 数据
+    // Data
     forwardAgents: data?.items ?? [],
     pagination: {
       page: data?.page ?? page,
@@ -73,12 +73,12 @@ export const useUserForwardAgents = (options: UseUserForwardAgentsOptions = {}) 
       totalPages: data?.totalPages ?? 0,
     },
 
-    // 状态
+    // State
     isLoading,
     isFetching,
     error: error ? handleApiError(error) : null,
 
-    // 操作
+    // Actions
     refetch,
   };
 };

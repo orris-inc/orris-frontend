@@ -1,6 +1,6 @@
 /**
- * 用户端可排序的链式节点选择组件
- * 支持选择节点、调整顺序，以及可选的端口配置（direct_chain 类型）
+ * User-side sortable chain agent selection component
+ * Supports selecting agents, adjusting order, and optional port configuration (direct_chain type)
  */
 
 import { ChevronUp, ChevronDown, GripVertical } from 'lucide-react';
@@ -13,21 +13,21 @@ import { Badge } from '@/components/common/Badge';
 import type { UserForwardAgent } from '@/api/forward';
 
 interface UserSortableChainAgentListProps {
-  /** 可选的代理列表 */
+  /** Available agent list */
   agents: UserForwardAgent[];
-  /** 已选中的代理 ID 列表（有序） */
+  /** Selected agent ID list (ordered) */
   selectedIds: string[];
-  /** 选中状态变更回调 */
+  /** Selection change callback */
   onSelectionChange: (ids: string[]) => void;
-  /** 是否显示端口配置（direct_chain 类型） */
+  /** Whether to show port config (direct_chain type) */
   showPortConfig?: boolean;
-  /** 端口配置（agentId -> port） */
+  /** Port config (agentId -> port) */
   portConfig?: Record<string, number>;
-  /** 端口配置变更回调 */
+  /** Port config change callback */
   onPortConfigChange?: (agentId: string, port: number) => void;
-  /** 是否有错误 */
+  /** Whether there is an error */
   hasError?: boolean;
-  /** 组件 ID 前缀 */
+  /** Component ID prefix */
   idPrefix?: string;
 }
 
@@ -41,7 +41,7 @@ export const UserSortableChainAgentList: React.FC<UserSortableChainAgentListProp
   hasError = false,
   idPrefix = 'chain-agent',
 }) => {
-  // 切换选中状态
+  // Toggle selection state
   const handleToggle = (agentId: string) => {
     const isRemoving = selectedIds.includes(agentId);
     if (isRemoving) {
@@ -51,7 +51,7 @@ export const UserSortableChainAgentList: React.FC<UserSortableChainAgentListProp
     }
   };
 
-  // 上移节点
+  // Move node up
   const handleMoveUp = (index: number) => {
     if (index <= 0) return;
     const newIds = [...selectedIds];
@@ -59,7 +59,7 @@ export const UserSortableChainAgentList: React.FC<UserSortableChainAgentListProp
     onSelectionChange(newIds);
   };
 
-  // 下移节点
+  // Move node down
   const handleMoveDown = (index: number) => {
     if (index >= selectedIds.length - 1) return;
     const newIds = [...selectedIds];
@@ -67,15 +67,15 @@ export const UserSortableChainAgentList: React.FC<UserSortableChainAgentListProp
     onSelectionChange(newIds);
   };
 
-  // 获取代理信息
+  // Get agent info
   const getAgent = (id: string) => agents.find((a) => a.id === id);
 
-  // 获取已选中的代理列表（按顺序）
+  // Get selected agent list (ordered)
   const selectedAgents = selectedIds.map((id) => getAgent(id)).filter(Boolean) as UserForwardAgent[];
 
   return (
     <div className="space-y-3">
-      {/* 可选节点列表 */}
+      {/* Available node list */}
       <div className={`border rounded-md ${hasError ? 'border-destructive' : 'border-input'}`}>
         <ScrollArea className="h-[120px] p-3">
           {agents.length === 0 ? (
@@ -116,7 +116,7 @@ export const UserSortableChainAgentList: React.FC<UserSortableChainAgentListProp
         </ScrollArea>
       </div>
 
-      {/* 已选节点排序区域 */}
+      {/* Selected node sorting area */}
       {selectedAgents.length > 0 && (
         <div className="border rounded-md border-input">
           <div className="px-3 py-2 bg-muted/50 border-b border-input">
@@ -146,7 +146,7 @@ export const UserSortableChainAgentList: React.FC<UserSortableChainAgentListProp
                     onChange={(e) => {
                       const value = e.target.value.trim();
                       const port = value ? parseInt(value, 10) : 0;
-                      // 只有当端口有效时才更新（允许暂时为0以便用户清空后重新输入）
+                      // Only update when port is valid (allow 0 temporarily for user to clear and re-enter)
                       onPortConfigChange(agent.id, isNaN(port) ? 0 : port);
                     }}
                   />

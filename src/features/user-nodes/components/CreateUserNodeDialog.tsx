@@ -198,14 +198,15 @@ export const CreateUserNodeDialog: React.FC<CreateUserNodeDialogProps> = ({
 
   return (
     <Dialog open={open} onOpenChange={handleClose}>
-      <DialogContent className="sm:max-w-lg max-h-[90vh] overflow-y-auto">
-        <DialogHeader>
+      <DialogContent className="sm:max-w-lg flex flex-col max-h-[90vh]">
+        <DialogHeader className="flex-shrink-0">
           <DialogTitle>创建节点</DialogTitle>
           <DialogDescription>
             填写以下信息创建新节点。创建成功后将显示节点 Token，请妥善保管。
           </DialogDescription>
         </DialogHeader>
 
+        <div className="flex-1 min-h-0 overflow-y-auto -mx-6 px-6">
         <div className="space-y-6 py-4">
           {/* Basic info */}
           <div className="space-y-4">
@@ -432,8 +433,9 @@ export const CreateUserNodeDialog: React.FC<CreateUserNodeDialogProps> = ({
             </div>
           )}
         </div>
+        </div>
 
-        <DialogFooter>
+        <DialogFooter className="flex-shrink-0">
           <Button variant="outline" onClick={handleClose} disabled={loading}>
             取消
           </Button>

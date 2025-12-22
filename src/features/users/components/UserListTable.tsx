@@ -34,7 +34,7 @@ interface UserListTableProps {
   onResetPassword: (user: UserResponse) => void;
 }
 
-// 状态配置
+// Status configuration
 const STATUS_CONFIG: Record<string, { label: string; variant: 'success' | 'default' | 'warning' | 'danger' }> = {
   active: { label: '激活', variant: 'success' },
   inactive: { label: '未激活', variant: 'default' },
@@ -43,7 +43,7 @@ const STATUS_CONFIG: Record<string, { label: string; variant: 'success' | 'defau
   deleted: { label: '已删除', variant: 'danger' },
 };
 
-// 角色配置
+// Role configuration
 const ROLE_CONFIG: Record<string, { label: string; variant: 'info' | 'default' }> = {
   user: { label: '用户', variant: 'default' },
   admin: { label: '管理员', variant: 'info' },
@@ -62,7 +62,7 @@ export const UserListTable: React.FC<UserListTableProps> = ({
   onAssignSubscription,
   onResetPassword,
 }) => {
-  // 用户右键菜单内容
+  // User context menu content
   const renderContextMenuActions = useCallback((user: UserResponse) => (
     <>
       <ContextMenuItem onClick={() => onAssignSubscription(user)}>
@@ -88,7 +88,7 @@ export const UserListTable: React.FC<UserListTableProps> = ({
     </>
   ), [onAssignSubscription, onEdit, onResetPassword, onDelete]);
 
-  // 用户下拉菜单内容
+  // User dropdown menu content
   const renderDropdownMenuActions = useCallback((user: UserResponse) => (
     <>
       <DropdownMenuItem onClick={() => onAssignSubscription(user)}>

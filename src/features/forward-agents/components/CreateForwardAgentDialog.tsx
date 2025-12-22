@@ -1,5 +1,5 @@
 /**
- * 创建转发节点对话框组件
+ * Create Forward Agent Dialog Component
  */
 
 import { useState, useEffect } from 'react';
@@ -20,11 +20,11 @@ interface CreateForwardAgentDialogProps {
   open: boolean;
   onClose: () => void;
   onSubmit: (data: CreateForwardAgentRequest) => Promise<void>;
-  /** 初始数据，用于复制节点时预填充表单 */
+  /** Initial data for pre-populating the form when copying a node */
   initialData?: Partial<CreateForwardAgentRequest>;
 }
 
-// 默认表单数据
+// Default form data
 const getDefaultFormData = (): CreateForwardAgentRequest => ({
   name: '',
   remark: '',
@@ -40,7 +40,7 @@ export const CreateForwardAgentDialog: React.FC<CreateForwardAgentDialogProps> =
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // 当 initialData 变化时更新表单数据
+  // Update form data when initialData changes
   useEffect(() => {
     if (open && initialData) {
       setFormData({
@@ -60,7 +60,7 @@ export const CreateForwardAgentDialog: React.FC<CreateForwardAgentDialogProps> =
 
   const handleChange = (field: keyof CreateForwardAgentRequest, value: string) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
-    // 清除该字段的错误
+    // Clear error for this field
     if (errors[field]) {
       setErrors((prev) => {
         const newErrors = { ...prev };
@@ -83,7 +83,7 @@ export const CreateForwardAgentDialog: React.FC<CreateForwardAgentDialogProps> =
 
   const handleSubmit = async () => {
     if (validate()) {
-      // 清理undefined和空字符串
+      // Clean up undefined and empty strings
       const submitData: CreateForwardAgentRequest = {
         name: formData.name.trim(),
       };
@@ -95,7 +95,7 @@ export const CreateForwardAgentDialog: React.FC<CreateForwardAgentDialogProps> =
       setIsSubmitting(true);
       try {
         await onSubmit(submitData);
-        // 提交成功后重置表单
+        // Reset form after successful submission
         setFormData({ name: '', remark: '' });
         setErrors({});
       } finally {
@@ -114,7 +114,7 @@ export const CreateForwardAgentDialog: React.FC<CreateForwardAgentDialogProps> =
         </DialogHeader>
 
         <div className="grid grid-cols-1 gap-4">
-          {/* 节点名称 */}
+          {/* Node Name */}
           <div className="flex flex-col gap-2">
             <Label htmlFor="name">
               节点名称 <span className="text-destructive">*</span>
@@ -132,7 +132,7 @@ export const CreateForwardAgentDialog: React.FC<CreateForwardAgentDialogProps> =
             </p>
           </div>
 
-          {/* 备注 */}
+          {/* Remark */}
           <div className="flex flex-col gap-2">
             <Label htmlFor="remark">备注</Label>
             <Textarea

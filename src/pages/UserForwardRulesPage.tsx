@@ -1,5 +1,5 @@
 /**
- * 用户端转发规则管理页面
+ * User Forward Rules Management Page
  */
 
 import { useState } from 'react';
@@ -43,7 +43,7 @@ export const UserForwardRulesPage = () => {
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
 
-  // 检查是否达到规则数量上限（ruleLimit=0 表示无限制）
+  // Check if rule limit is reached (ruleLimit=0 means unlimited)
   const isAtLimit = usage ? !canCreateMoreRules(usage) : false;
 
   const handleCreateClick = () => {
@@ -59,7 +59,7 @@ export const UserForwardRulesPage = () => {
     try {
       await deleteForwardRule(rule.id);
     } catch {
-      // 错误已在 hook 中处理
+      // Error already handled in hook
     }
   };
 
@@ -71,7 +71,7 @@ export const UserForwardRulesPage = () => {
         await enableForwardRule(rule.id);
       }
     } catch {
-      // 错误已在 hook 中处理
+      // Error already handled in hook
     }
   };
 
@@ -80,7 +80,7 @@ export const UserForwardRulesPage = () => {
       await createForwardRule(data);
       setCreateDialogOpen(false);
     } catch {
-      // 错误已在 hook 中处理
+      // Error already handled in hook
     }
   };
 
@@ -90,7 +90,7 @@ export const UserForwardRulesPage = () => {
       setEditDialogOpen(false);
       setSelectedRule(null);
     } catch {
-      // 错误已在 hook 中处理
+      // Error already handled in hook
     }
   };
 

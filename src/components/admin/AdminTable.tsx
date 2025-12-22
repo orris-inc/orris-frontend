@@ -1,7 +1,7 @@
 /**
- * 管理端统一表格组件
- * 精致商务风格 - 细腻的交互与视觉层次
- * 优化：更细腻的视觉细节、流畅的动画、精致的色彩
+ * Admin Unified Table Component
+ * Elegant business style - refined interactions and visual hierarchy
+ * Optimizations: finer visual details, smooth animations, refined colors
  */
 
 import { ReactNode } from 'react';
@@ -15,7 +15,7 @@ import {
   SelectValue,
 } from '@/components/common/Select';
 
-// ============ 基础表格组件 ============
+// ============ Base Table Components ============
 
 interface AdminTableProps {
   children: ReactNode;
@@ -121,14 +121,14 @@ export const AdminTableCell = ({ children, className, align = 'left' }: AdminTab
   );
 };
 
-// ============ 表格状态组件 ============
+// ============ Table State Components ============
 
 interface TableEmptyProps {
   message?: string;
   colSpan?: number;
 }
 
-export const AdminTableEmpty = ({ message = '暂无数据', colSpan = 1 }: TableEmptyProps) => {
+export const AdminTableEmpty = ({ message = 'No data', colSpan = 1 }: TableEmptyProps) => {
   return (
     <tr>
       <td colSpan={colSpan} className="py-20 text-center">
@@ -161,14 +161,14 @@ export const AdminTableLoading = ({ colSpan = 1 }: TableLoadingProps) => {
             <Loader2 className="size-9 animate-spin text-indigo-500" strokeWidth={2.5} />
             <div className="absolute inset-0 rounded-full bg-indigo-500/20 blur-xl animate-pulse" />
           </div>
-          <p className="text-slate-500 dark:text-slate-400 text-sm">加载中...</p>
+          <p className="text-slate-500 dark:text-slate-400 text-sm">Loading...</p>
         </div>
       </td>
     </tr>
   );
 };
 
-// ============ 分页组件 ============
+// ============ Pagination Component ============
 
 interface AdminTablePaginationProps {
   page: number;
@@ -201,9 +201,9 @@ export const AdminTablePagination = ({
       'border-t border-slate-200/60 dark:border-slate-700/60',
       'bg-gradient-to-b from-slate-50/30 to-white dark:from-slate-800/20 dark:to-slate-900/20'
     )}>
-      {/* 左侧：每页条数选择 */}
+      {/* Left: Page size selector */}
       <div className="flex items-center gap-2.5 text-sm text-slate-600 dark:text-slate-400">
-        <span>每页</span>
+        <span>Show</span>
         {onPageSizeChange ? (
           <Select
             value={pageSize.toString()}
@@ -223,15 +223,15 @@ export const AdminTablePagination = ({
         ) : (
           <span className="text-slate-900 dark:text-white">{pageSize}</span>
         )}
-        <span>条</span>
+        <span>per page</span>
       </div>
 
-      {/* 右侧：分页控制 */}
+      {/* Right: Pagination controls */}
       <div className="flex items-center gap-5">
         <span className="text-sm text-slate-600 dark:text-slate-400">
           <span className="text-slate-900 dark:text-white">{startIndex}-{endIndex}</span>
           <span className="mx-1.5 text-slate-400">/</span>
-          <span>共 {total} 条</span>
+          <span>{total} total</span>
         </span>
 
         <div className="flex items-center gap-1.5">
@@ -250,7 +250,7 @@ export const AdminTablePagination = ({
             <ChevronLeft className="size-4.5" strokeWidth={2} />
           </button>
 
-          {/* 页码显示 */}
+          {/* Page number display */}
           <div className="flex items-center gap-1 px-0.5">
             {generatePageNumbers(page, totalPages).map((pageNum, idx) => (
               pageNum === '...' ? (
@@ -294,7 +294,7 @@ export const AdminTablePagination = ({
   );
 };
 
-// 生成页码数组
+// Generate page number array
 function generatePageNumbers(current: number, total: number): (number | '...')[] {
   if (total <= 7) {
     return Array.from({ length: total }, (_, i) => i + 1);
@@ -313,7 +313,7 @@ function generatePageNumbers(current: number, total: number): (number | '...')[]
   return pages;
 }
 
-// ============ 精致 Badge 组件 ============
+// ============ Elegant Badge Component ============
 
 interface AdminBadgeProps {
   children: ReactNode;

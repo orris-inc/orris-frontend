@@ -21,7 +21,7 @@ interface EditUserDialogProps {
   onSubmit: (id: string, data: UpdateUserRequest) => void;
 }
 
-// 状态选项
+// Status options
 const STATUS_OPTIONS: { value: UserStatus; label: string }[] = [
   { value: 'active', label: '激活' },
   { value: 'inactive', label: '未激活' },
@@ -29,7 +29,7 @@ const STATUS_OPTIONS: { value: UserStatus; label: string }[] = [
   { value: 'suspended', label: '暂停' },
 ];
 
-// 角色选项
+// Role options
 const ROLE_OPTIONS: { value: UserRole; label: string }[] = [
   { value: 'user', label: '普通用户' },
   { value: 'admin', label: '管理员' },
@@ -60,12 +60,12 @@ export const EditUserDialog: React.FC<EditUserDialogProps> = ({
   const validate = () => {
     const newErrors: { email?: string; name?: string } = {};
 
-    // 邮箱验证（如果填写了）
+    // Email validation (if provided)
     if (email.trim() && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
       newErrors.email = '邮箱格式不正确';
     }
 
-    // 姓名验证（如果填写了）
+    // Name validation (if provided)
     if (name.trim() && (name.trim().length < 2 || name.trim().length > 100)) {
       newErrors.name = '姓名长度必须在2-100个字符之间';
     }
@@ -76,14 +76,14 @@ export const EditUserDialog: React.FC<EditUserDialogProps> = ({
 
   const handleSubmit = () => {
     if (user && validate()) {
-      // 只提交有变化的字段
+      // Only submit changed fields
       const updates: UpdateUserRequest = {};
       if (email !== user.email) updates.email = email;
       if (name !== user.name) updates.name = name;
       if (status !== user.status) updates.status = status as UpdateUserRequest['status'];
       if (role !== user.role) updates.role = role as UpdateUserRequest['role'];
 
-      // 如果有任何变化，提交更新
+      // If any changes, submit update
       if (Object.keys(updates).length > 0) {
         onSubmit(user.id, updates);
       }
@@ -96,7 +96,7 @@ export const EditUserDialog: React.FC<EditUserDialogProps> = ({
     }
   };
 
-  // 检查是否有变化
+  // Check for changes
   const hasChanges = user && (
     email !== user.email ||
     name !== user.name ||

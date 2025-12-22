@@ -1,37 +1,37 @@
 /**
- * 权限控制Hook
- * 用于管理用户角色和权限验证
+ * Permission Control Hook
+ * Used to manage user roles and permission verification
  */
 
 import { useAuthStore } from '../stores/auth-store';
 import type { UserRole, NavigationItem } from '../../../types/navigation.types';
 
 /**
- * usePermissions Hook 返回类型
+ * usePermissions Hook return type
  */
 export interface UsePermissionsReturn {
   /**
-   * 检查用户是否拥有指定角色
-   * @param requiredRoles 需要的角色数组，如 ['admin'] 或 ['user', 'admin']
-   * @returns 用户拥有任一指定角色则返回true
+   * Check if user has the specified role
+   * @param requiredRoles Required role array, e.g. ['admin'] or ['user', 'admin']
+   * @returns Returns true if user has any of the specified roles
    *
-   * 使用示例：
+   * Usage example:
    * const { hasPermission } = usePermissions();
    * if (hasPermission(['admin'])) {
-   *   // 仅admin可见
+   *   // Only visible to admin
    * }
    * if (hasPermission(['admin', 'moderator'])) {
-   *   // admin或moderator可见
+   *   // Visible to admin or moderator
    * }
    */
   hasPermission: (requiredRoles: UserRole | UserRole[]) => boolean;
 
   /**
-   * 根据用户权限过滤导航项
-   * @param navigationItems 所有导航项
-   * @returns 用户有权访问的导航项数组
+   * Filter navigation items based on user permissions
+   * @param navigationItems All navigation items
+   * @returns Array of navigation items the user has access to
    *
-   * 使用示例：
+   * Usage example:
    * const { filterNavigationByPermission } = usePermissions();
    * const visibleNavItems = filterNavigationByPermission([
    *   { id: '1', label: 'Dashboard', path: '/dashboard', roles: ['user'] },
@@ -41,19 +41,19 @@ export interface UsePermissionsReturn {
   filterNavigationByPermission: <T extends NavigationItem>(items: T[]) => T[];
 
   /**
-   * 当前用户角色
-   * 默认为 'user'（未登录或无角色信息时）
+   * Current user role
+   * Defaults to 'user' (when not logged in or no role info)
    */
   userRole: UserRole;
 }
 
 /**
- * 权限控制Hook
- * 提供用户角色检查和权限过滤功能
+ * Permission Control Hook
+ * Provides user role checking and permission filtering functionality
  *
- * @returns 包含权限检查方法和用户角色的对象
+ * @returns Object containing permission check methods and user role
  *
- * 使用示例：
+ * Usage example:
  * ```tsx
  * import { usePermissions } from '@/features/auth/hooks/usePermissions';
  *
@@ -61,71 +61,71 @@ export interface UsePermissionsReturn {
  *   const { hasPermission, userRole } = usePermissions();
  *
  *   if (!hasPermission('admin')) {
- *     return <div>您没有权限访问此页面</div>;
+ *     return <div>You don't have permission to access this page</div>;
  *   }
  *
- *   return <div>欢迎管理员 {userRole}</div>;
+ *   return <div>Welcome admin {userRole}</div>;
  * };
  * ```
  */
 export const usePermissions = (): UsePermissionsReturn => {
-  // 获取认证store中的用户信息
+  // Get user info from auth store
   const user = useAuthStore((state) => state.user);
 
   /**
-   * 获取用户的当前角色
-   * 如果用户未登录或无role字段，默认返回'user'
+   * Get current user role
+   * Returns 'user' by default if user is not logged in or has no role field
    */
   const getCurrentUserRole = (): UserRole => {
-    // 如果用户未登录，返回默认角色'user'
+    // If user is not logged in, return default role 'user'
     if (!user) {
       return 'user';
     }
 
-    // 如果用户对象中有role字段，使用该字段值
+    // If user object has role field, use that value
     if (user.role) {
       return user.role as UserRole;
     }
 
-    // 默认返回'user'角色
+    // Default return 'user' role
     return 'user';
   };
 
   /**
-   * 检查用户是否拥有指定角色
-   * 支持单个角色字符串或角色数组
+   * Check if user has the specified role
+   * Supports single role string or role array
    */
   const hasPermission = (requiredRoles: UserRole | readonly UserRole[]): boolean => {
     const userRole = getCurrentUserRole();
 
-    // 如果requiredRoles是字符串，转换为数组
+    // If requiredRoles is a string, convert to array
     const rolesArray = Array.isArray(requiredRoles)
       ? requiredRoles
       : [requiredRoles];
 
-    // 检查用户角色是否在允许的角色列表中
+    // Check if user role is in the allowed role list
     return rolesArray.includes(userRole);
   };
 
   /**
-   * 根据用户权限过滤导航项
-   * 只返回用户有权访问的导航项
+   * Filter navigation items based on user permissions
+   * Only return navigation items the user has access to
    */
   const filterNavigationByPermission = <T extends NavigationItem>(
     items: T[]
   ): T[] => {
     return items.filter((item) => {
-      // 如果导航项没有设置roles，则所有用户都可以访问
+      // If navigation item has no roles set, all users can access
       if (!item.roles || item.roles.length === 0) {
         return true;
       }
 
-      // 检查用户是否拥有访问此导航项所需的角色
+      // Check if user has the role required to access this navigation item
       return hasPermission(item.roles);
     });
   };
 
-  // 获取当前用户角色
+  // Get current user role
   const userRole = getCurrentUserRole();
 
   return {

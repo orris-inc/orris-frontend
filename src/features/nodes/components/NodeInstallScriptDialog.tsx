@@ -88,8 +88,8 @@ export const NodeInstallScriptDialog: React.FC<NodeInstallScriptDialogProps> = (
 
   return (
     <Dialog open={open} onOpenChange={(open) => !open && handleClose()}>
-      <DialogContent className="sm:max-w-[650px] max-h-[90vh] overflow-y-auto">
-        <DialogHeader>
+      <DialogContent className="sm:max-w-[650px] flex flex-col max-h-[90vh]">
+        <DialogHeader className="flex-shrink-0">
           <DialogTitle className="flex items-center gap-2">
             <Terminal className="size-5" />
             安装命令
@@ -99,6 +99,7 @@ export const NodeInstallScriptDialog: React.FC<NodeInstallScriptDialogProps> = (
           </DialogDescription>
         </DialogHeader>
 
+        <div className="flex-1 min-h-0 overflow-y-auto -mx-6 px-6">
         <div className="space-y-4">
           {/* 安装命令（主要） */}
           {installScriptData.installCommand && (
@@ -281,8 +282,9 @@ export const NodeInstallScriptDialog: React.FC<NodeInstallScriptDialogProps> = (
             </div>
           </details>
         </div>
+        </div>
 
-        <DialogFooter>
+        <DialogFooter className="flex-shrink-0">
           <Button variant="outline" onClick={handleClose}>
             关闭
           </Button>

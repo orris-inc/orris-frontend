@@ -1,6 +1,6 @@
 /**
- * ConfirmDialog 便捷确认对话框组件
- * 提供更简洁的 API 来处理常见的确认场景（如删除、重置等）
+ * ConfirmDialog Convenience Component
+ * Provides a simpler API for common confirmation scenarios (e.g., delete, reset)
  */
 
 import { useState } from 'react';
@@ -45,7 +45,7 @@ export const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
     try {
       setIsProcessing(true);
       await onConfirm();
-      // 操作成功后关闭对话框
+      // Close dialog after successful operation
       onOpenChange(false);
     } catch {
       // Error handled by external component (via toast)

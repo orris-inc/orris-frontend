@@ -1,6 +1,6 @@
 /**
- * 编辑转发规则对话框组件
- * 支持 targetNodeId（动态节点地址解析）
+ * Edit Forward Rule Dialog Component
+ * Supports targetNodeId (dynamic node address resolution)
  */
 
 import { useState, useEffect } from 'react';
@@ -31,7 +31,7 @@ import type { Node } from '@/api/node';
 type ForwardProtocol = 'tcp' | 'udp' | 'both';
 type TargetType = 'manual' | 'node';
 
-// 规则类型标签映射
+// Rule type label mapping
 const RULE_TYPE_LABELS: Record<string, string> = {
   direct: '直连转发',
   entry: '入口节点',
@@ -62,10 +62,10 @@ export const EditForwardRuleDialog: React.FC<EditForwardRuleDialogProps> = ({
 
   useEffect(() => {
     if (rule) {
-      // 过滤掉链节点中包含的入口节点
+      // Filter out entry agent from chain nodes
       const chainAgentIds = (rule.chainAgentIds || []).filter((id) => id !== rule.agentId);
       const chainPortConfig = { ...(rule.chainPortConfig || {}) };
-      // 同时移除入口节点的端口配置
+      // Also remove port configuration for entry agent
       if (chainPortConfig[rule.agentId]) {
         delete chainPortConfig[rule.agentId];
       }
@@ -86,25 +86,25 @@ export const EditForwardRuleDialog: React.FC<EditForwardRuleDialogProps> = ({
         chainPortConfig,
         trafficMultiplier: rule.trafficMultiplier,
       });
-      // 根据规则数据确定目标类型
+      // Determine target type based on rule data
       setTargetType(rule.targetNodeId ? 'node' : 'manual');
       setErrors({});
     }
   }, [rule]);
 
-  // 获取可用的节点列表（状态为 active）
+  // Get available node list (status is active)
   const availableNodes = nodes.filter((n) => n.status === 'active');
 
-  // 获取可用的代理列表（状态为 enabled）
+  // Get available agent list (status is enabled)
   const availableAgents = agents.filter((a) => a.status === 'enabled');
 
-  // 获取可选的出口节点（排除当前入口节点）
+  // Get available exit agents (exclude current entry agent)
   const availableExitAgents = availableAgents.filter((a) => a.id !== formData.agentId);
 
-  // 获取可选的链节点（排除当前入口节点）
+  // Get available chain agents (exclude current entry agent)
   const availableChainAgents = availableAgents.filter((a) => a.id !== formData.agentId);
 
-  // 处理链节点端口配置变更
+  // Handle chain node port configuration change
   const handleChainPortChange = (agentId: string, port: number) => {
     setFormData((prev) => ({
       ...prev,
@@ -119,12 +119,12 @@ export const EditForwardRuleDialog: React.FC<EditForwardRuleDialogProps> = ({
     setFormData((prev) => {
       const newData = { ...prev, [field]: value };
 
-      // 如果修改的是入口代理，自动从链节点列表中移除该代理
+      // If modifying entry agent, automatically remove it from chain node list
       if (field === 'agentId' && typeof value === 'string') {
         const currentChainIds = prev.chainAgentIds || [];
         if (currentChainIds.includes(value)) {
           newData.chainAgentIds = currentChainIds.filter((id) => id !== value);
-          // 同时移除该节点的端口配置
+          // Also remove port configuration for this node
           if (prev.chainPortConfig?.[value]) {
             const newPortConfig = { ...prev.chainPortConfig };
             delete newPortConfig[value];
@@ -136,7 +136,7 @@ export const EditForwardRuleDialog: React.FC<EditForwardRuleDialogProps> = ({
       return newData;
     });
 
-    // 清除所有验证错误，让用户重新提交时再次验证
+    // Clear all validation errors, re-validate on next submit
     if (Object.keys(errors).length > 0) {
       setErrors({});
     }
@@ -153,7 +153,7 @@ export const EditForwardRuleDialog: React.FC<EditForwardRuleDialogProps> = ({
       newErrors.listenPort = '监听端口必须在1-65535之间';
     }
 
-    // direct、entry、chain 和 direct_chain 类型需要目标验证
+    // direct, entry, chain and direct_chain types need target validation
     if (rule && (rule.ruleType === 'direct' || rule.ruleType === 'entry' || rule.ruleType === 'chain' || rule.ruleType === 'direct_chain')) {
       if (targetType === 'manual') {
         if (formData.targetAddress !== undefined && !formData.targetAddress.trim()) {
@@ -169,7 +169,7 @@ export const EditForwardRuleDialog: React.FC<EditForwardRuleDialogProps> = ({
       }
     }
 
-    // direct_chain 类型需要验证端口配置
+    // direct_chain type needs to validate port configuration
     if (rule && rule.ruleType === 'direct_chain') {
       const chainIds = formData.chainAgentIds || [];
       const missingPorts: string[] = [];
@@ -198,7 +198,7 @@ export const EditForwardRuleDialog: React.FC<EditForwardRuleDialogProps> = ({
 
   const handleSubmit = () => {
     if (rule && validate()) {
-      // 只提交有变化的字段
+      // Only submit changed fields
       const updates: UpdateForwardRuleRequest = {};
 
       if (formData.name !== rule.name) updates.name = formData.name;
@@ -208,15 +208,15 @@ export const EditForwardRuleDialog: React.FC<EditForwardRuleDialogProps> = ({
       if (formData.bindIp !== rule.bindIp) updates.bindIp = formData.bindIp;
       if (formData.remark !== rule.remark) updates.remark = formData.remark;
 
-      // 处理代理配置
+      // Handle agent configuration
       if (formData.agentId !== rule.agentId) updates.agentId = formData.agentId;
 
-      // entry 类型：出口代理
+      // entry type: exit agent
       if (rule.ruleType === 'entry' && formData.exitAgentId !== rule.exitAgentId) {
         updates.exitAgentId = formData.exitAgentId;
       }
 
-      // chain 和 direct_chain 类型：链式代理
+      // chain and direct_chain types: chain agents
       if (rule.ruleType === 'chain' || rule.ruleType === 'direct_chain') {
         const currentIds = formData.chainAgentIds || [];
         const originalIds = rule.chainAgentIds || [];
@@ -226,7 +226,7 @@ export const EditForwardRuleDialog: React.FC<EditForwardRuleDialogProps> = ({
           updates.chainAgentIds = currentIds;
         }
 
-        // direct_chain 类型：端口配置
+        // direct_chain type: port configuration
         if (rule.ruleType === 'direct_chain') {
           const currentPortConfig = formData.chainPortConfig || {};
           const originalPortConfig = rule.chainPortConfig || {};
@@ -238,36 +238,36 @@ export const EditForwardRuleDialog: React.FC<EditForwardRuleDialogProps> = ({
         }
       }
 
-      // 处理目标配置（手动输入或选择节点）- direct、entry、chain 和 direct_chain 类型
+      // Handle target configuration (manual input or node selection) - direct, entry, chain and direct_chain types
       if (rule.ruleType === 'direct' || rule.ruleType === 'entry' || rule.ruleType === 'chain' || rule.ruleType === 'direct_chain') {
         if (targetType === 'manual') {
-          // 手动输入地址
+          // Manual address input
           if (formData.targetAddress !== rule.targetAddress) updates.targetAddress = formData.targetAddress;
           if (formData.targetPort !== rule.targetPort) updates.targetPort = formData.targetPort;
-          // 如果从节点切换到手动，清除 targetNodeId
+          // If switching from node to manual, clear targetNodeId
           if (rule.targetNodeId) updates.targetNodeId = undefined;
         } else {
-          // 选择节点
+          // Node selection
           if (formData.targetNodeId !== rule.targetNodeId) updates.targetNodeId = formData.targetNodeId;
-          // 如果从手动切换到节点，清除地址和端口
+          // If switching from manual to node, clear address and port
           if (rule.targetAddress) updates.targetAddress = undefined;
           if (rule.targetPort) updates.targetPort = undefined;
         }
       }
 
-      // 处理流量倍率
+      // Handle traffic multiplier
       if (formData.trafficMultiplier !== rule.trafficMultiplier) {
         updates.trafficMultiplier = formData.trafficMultiplier;
       }
 
-      // 如果有任何变化，提交更新
+      // Submit update if there are any changes
       if (Object.keys(updates).length > 0) {
         onSubmit(rule.id, updates);
       }
     }
   };
 
-  // 检查是否有变化
+  // Check if there are any changes
   const hasChanges = rule && Object.keys(formData).some(
     (key) => formData[key as keyof UpdateForwardRuleRequest] !== rule[key as keyof ForwardRule]
   );
@@ -276,13 +276,14 @@ export const EditForwardRuleDialog: React.FC<EditForwardRuleDialogProps> = ({
 
   return (
     <Dialog open={open} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="sm:max-w-[700px] max-h-[90vh] overflow-y-auto">
-        <DialogHeader>
+      <DialogContent className="sm:max-w-[700px] flex flex-col max-h-[90vh]">
+        <DialogHeader className="flex-shrink-0">
           <DialogTitle>编辑转发规则</DialogTitle>
         </DialogHeader>
 
+        <div className="flex-1 min-h-0 overflow-y-auto -mx-6 px-6">
         <div className="space-y-6">
-          {/* 基本信息（只读） */}
+          {/* Basic Information (Read-only) */}
           <div>
             <h3 className="text-sm font-medium text-muted-foreground mb-3">基本信息</h3>
             <Separator className="mb-4" />
@@ -312,12 +313,12 @@ export const EditForwardRuleDialog: React.FC<EditForwardRuleDialogProps> = ({
             </div>
           </div>
 
-          {/* 可编辑字段 */}
+          {/* Editable Fields */}
           <div>
             <h3 className="text-sm font-medium text-muted-foreground mb-3">可编辑信息</h3>
             <Separator className="mb-4" />
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {/* 规则名称 */}
+              {/* Rule Name */}
               <div className="flex flex-col gap-2 md:col-span-2">
                 <Label htmlFor="name">规则名称</Label>
                 <Input
@@ -331,7 +332,7 @@ export const EditForwardRuleDialog: React.FC<EditForwardRuleDialogProps> = ({
                 )}
               </div>
 
-              {/* 入口代理 */}
+              {/* Entry Agent */}
               <div className="flex flex-col gap-2">
                 <Label htmlFor="agentId">入口代理</Label>
                 <Select
@@ -351,7 +352,7 @@ export const EditForwardRuleDialog: React.FC<EditForwardRuleDialogProps> = ({
                 </Select>
               </div>
 
-              {/* entry 类型：出口代理 */}
+              {/* entry type: Exit Agent */}
               {rule.ruleType === 'entry' && (
                 <div className="flex flex-col gap-2">
                   <Label htmlFor="exitAgentId">出口代理</Label>
@@ -373,7 +374,7 @@ export const EditForwardRuleDialog: React.FC<EditForwardRuleDialogProps> = ({
                 </div>
               )}
 
-              {/* chain 类型：链式代理 */}
+              {/* chain type: Chain Agents */}
               {rule.ruleType === 'chain' && (
                 <div className="flex flex-col gap-2 md:col-span-2">
                   <Label>中间节点</Label>
@@ -386,7 +387,7 @@ export const EditForwardRuleDialog: React.FC<EditForwardRuleDialogProps> = ({
                 </div>
               )}
 
-              {/* direct_chain 类型：链式代理（带端口配置） */}
+              {/* direct_chain type: Chain Agents (with port configuration) */}
               {rule.ruleType === 'direct_chain' && (
                 <div className="flex flex-col gap-2 md:col-span-2">
                   <Label>中间节点及端口</Label>
@@ -394,7 +395,7 @@ export const EditForwardRuleDialog: React.FC<EditForwardRuleDialogProps> = ({
                     agents={availableChainAgents}
                     selectedIds={formData.chainAgentIds || []}
                     onSelectionChange={(ids) => {
-                      // 同步更新 chainPortConfig，移除不再选中的节点
+                      // Synchronously update chainPortConfig, remove deselected nodes
                       const newPortConfig = { ...(formData.chainPortConfig || {}) };
                       Object.keys(newPortConfig).forEach((id) => {
                         if (!ids.includes(id)) {
@@ -417,7 +418,7 @@ export const EditForwardRuleDialog: React.FC<EditForwardRuleDialogProps> = ({
                 </div>
               )}
 
-              {/* 协议类型 */}
+              {/* Protocol Type */}
               <div className="flex flex-col gap-2">
                 <Label htmlFor="protocol">协议类型</Label>
                 <Select
@@ -435,7 +436,7 @@ export const EditForwardRuleDialog: React.FC<EditForwardRuleDialogProps> = ({
                 </Select>
               </div>
 
-              {/* IP 版本 */}
+              {/* IP Version */}
               <div className="flex flex-col gap-2">
                 <Label htmlFor="ipVersion">IP 版本</Label>
                 <Select
@@ -454,7 +455,7 @@ export const EditForwardRuleDialog: React.FC<EditForwardRuleDialogProps> = ({
                 <p className="text-xs text-muted-foreground">目标地址解析时优先使用的 IP 版本</p>
               </div>
 
-              {/* 监听端口 */}
+              {/* Listen Port */}
               <div className="flex flex-col gap-2">
                 <Label htmlFor="listenPort">监听端口</Label>
                 <Input
@@ -471,17 +472,17 @@ export const EditForwardRuleDialog: React.FC<EditForwardRuleDialogProps> = ({
                 )}
               </div>
 
-              {/* 目标配置 - direct、entry、chain 和 direct_chain 类型显示 */}
+              {/* Target Configuration - Display for direct, entry, chain and direct_chain types */}
               {rule && (rule.ruleType === 'direct' || rule.ruleType === 'entry' || rule.ruleType === 'chain' || rule.ruleType === 'direct_chain') && (
                 <>
-                  {/* 目标类型选择 */}
+                  {/* Target Type Selection */}
                   <div className="flex flex-col gap-2 md:col-span-2">
                     <Label>目标类型</Label>
                     <RadioGroup
                       value={targetType}
                       onValueChange={(value) => {
                         setTargetType(value as TargetType);
-                        // 切换时清除相关字段
+                        // Clear related fields when switching
                         if (value === 'manual') {
                           handleChange('targetNodeId', '');
                         } else {
@@ -506,7 +507,7 @@ export const EditForwardRuleDialog: React.FC<EditForwardRuleDialogProps> = ({
                     </RadioGroup>
                   </div>
 
-                  {/* 手动输入目标地址 */}
+                  {/* Manual Target Address Input */}
                   {targetType === 'manual' && (
                     <>
                       <div className="flex flex-col gap-2">
@@ -540,7 +541,7 @@ export const EditForwardRuleDialog: React.FC<EditForwardRuleDialogProps> = ({
                     </>
                   )}
 
-                  {/* 选择目标节点 */}
+                  {/* Select Target Node */}
                   {targetType === 'node' && (
                     <div className="flex flex-col gap-2 md:col-span-2">
                       <Label htmlFor="targetNodeId">目标节点</Label>
@@ -568,7 +569,7 @@ export const EditForwardRuleDialog: React.FC<EditForwardRuleDialogProps> = ({
                 </>
               )}
 
-              {/* 绑定 IP */}
+              {/* Bind IP */}
               <div className="flex flex-col gap-2">
                 <Label htmlFor="bindIp">绑定 IP</Label>
                 <Input
@@ -580,7 +581,7 @@ export const EditForwardRuleDialog: React.FC<EditForwardRuleDialogProps> = ({
                 <p className="text-xs text-muted-foreground">指定出站连接使用的本地 IP 地址</p>
               </div>
 
-              {/* 流量倍率 */}
+              {/* Traffic Multiplier */}
               <div className="flex flex-col gap-2">
                 <Label htmlFor="trafficMultiplier">流量倍率（可选）</Label>
                 <Input
@@ -601,7 +602,7 @@ export const EditForwardRuleDialog: React.FC<EditForwardRuleDialogProps> = ({
                 </p>
               </div>
 
-              {/* 备注 */}
+              {/* Remark */}
               <div className="flex flex-col gap-1.5 md:col-span-2">
                 <Label htmlFor="remark">备注</Label>
                 <Textarea
@@ -615,8 +616,9 @@ export const EditForwardRuleDialog: React.FC<EditForwardRuleDialogProps> = ({
             </div>
           </div>
         </div>
+        </div>
 
-        <DialogFooter className="mt-6 gap-3">
+        <DialogFooter className="flex-shrink-0 mt-6 gap-3">
           <Button variant="outline" onClick={onClose}>
             取消
           </Button>

@@ -1,6 +1,6 @@
 /**
- * 重置密码页面
- * 通过邮件中的token重置密码
+ * Reset Password Page
+ * Reset password using token from email
  */
 
 import { useForm } from 'react-hook-form';
@@ -27,7 +27,7 @@ import {
 } from '@/lib/ui-styles';
 import { cn } from '@/lib/utils';
 
-// Zod验证
+// Zod validation
 const resetPasswordSchema = z
   .object({
     password: z.string().min(8, '密码至少需要8个字符'),
@@ -59,7 +59,7 @@ export const ResetPasswordPage = () => {
     resolver: zodResolver(resetPasswordSchema),
   });
 
-  // 检查token
+  // Check token
   if (!token) {
     return (
       <div className="min-h-screen flex items-center justify-center p-4 bg-background">
@@ -96,7 +96,7 @@ export const ResetPasswordPage = () => {
       });
 
       showSuccess('密码重置成功！');
-      // 成功，跳转到登录页
+      // Success, redirect to login page
       navigate('/login', {
         state: { message: '密码重置成功，请使用新密码登录' },
       });

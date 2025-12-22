@@ -1,6 +1,6 @@
 /**
- * Dashboard 布局组件
- * 包含顶部导航栏、Tabs导航和主内容区域
+ * Dashboard Layout Component
+ * Contains top navigation bar, Tabs navigation, and main content area
  */
 
 import { useState } from 'react';
@@ -32,14 +32,14 @@ export const DashboardLayout = ({ children }: DashboardLayoutProps) => {
   const [profileDialogOpen, setProfileDialogOpen] = useState(false);
   const [mobileDrawerOpen, setMobileDrawerOpen] = useState(false);
 
-  // 根据权限过滤导航项
-  // 先获取标记为显示在导航栏的项,再根据权限过滤
+  // Filter navigation items by permission
+  // First get items marked for display in navigation bar, then filter by permission
   const navItems = getNavItems();
-  // 只显示用户端路由 (非 /admin/* 路径)
+  // Only show user routes (non /admin/* paths)
   const userOnlyNavItems = navItems.filter(item => !item.path.startsWith('/admin'));
   const visibleNavigationItems = filterNavigationByPermission(userOnlyNavItems);
 
-  // DashboardLayout 用于用户端页面，始终显示导航栏
+  // DashboardLayout is for user pages, always show navigation bar
   const shouldShowNavigation = true;
   const shouldShowBreadcrumbs = false;
 
@@ -54,21 +54,21 @@ export const DashboardLayout = ({ children }: DashboardLayoutProps) => {
   return (
     <TooltipProvider delayDuration={0}>
     <div className="flex min-h-screen flex-col bg-background">
-      {/* 顶部导航栏 */}
+      {/* Top navigation bar */}
       <header className="sticky top-0 z-40 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
         <div className="container mx-auto max-w-6xl flex h-16 items-center px-4 sm:px-8">
-          {/* 移动端菜单按钮 - 仅用户端显示 */}
+          {/* Mobile menu button - only show for user side */}
           {shouldShowNavigation && (
             <button
               className="mr-2 inline-flex items-center justify-center rounded-md hover:bg-accent hover:text-accent-foreground h-9 w-9 transition-colors md:hidden"
               onClick={() => setMobileDrawerOpen(true)}
             >
               <Menu className="h-5 w-5" />
-              <span className="sr-only">打开菜单</span>
+              <span className="sr-only">Open menu</span>
             </button>
           )}
 
-          {/* Logo/品牌 */}
+          {/* Logo/Brand */}
           <div className="mr-4 hidden md:flex">
             <span className="text-lg font-bold tracking-tight">Orris</span>
           </div>
@@ -76,15 +76,15 @@ export const DashboardLayout = ({ children }: DashboardLayoutProps) => {
             <span className="text-lg font-bold tracking-tight">Orris</span>
           </div>
 
-          {/* 桌面端导航链接 - 仅用户端显示 */}
+          {/* Desktop navigation links - only show for user side */}
           {shouldShowNavigation && (
             <DesktopNav navigationItems={visibleNavigationItems} />
           )}
 
-          {/* 占位符 - 将用户菜单推到右侧 */}
+          {/* Placeholder - push user menu to the right */}
           <div className="flex-1 md:flex-none" />
 
-          {/* 用户信息和菜单 */}
+          {/* User info and menu */}
           <div className="flex items-center gap-4">
             <div className="hidden sm:block text-right">
               <p className="text-sm font-medium leading-none">{user?.displayName}</p>
@@ -131,7 +131,7 @@ export const DashboardLayout = ({ children }: DashboardLayoutProps) => {
                     <span>账户设置</span>
                   </DropdownMenuPrimitive.Item>
 
-                  {/* 管理端入口（仅管理员显示） */}
+                  {/* Admin entry (admin only) */}
                   {userRole === 'admin' && (
                     <>
                       <DropdownMenuPrimitive.Separator className="mx-1 my-1 h-px bg-muted" />
@@ -160,7 +160,7 @@ export const DashboardLayout = ({ children }: DashboardLayoutProps) => {
         </div>
       </header>
 
-      {/* 移动端抽屉菜单 - 仅用户端显示 */}
+      {/* Mobile drawer menu - only show for user side */}
       {shouldShowNavigation && (
         <MobileDrawer
           open={mobileDrawerOpen}
@@ -170,18 +170,18 @@ export const DashboardLayout = ({ children }: DashboardLayoutProps) => {
         />
       )}
 
-      {/* 主内容区域 */}
+      {/* Main content area */}
       <main className="flex-1 py-6">
         <div className="container mx-auto px-4 sm:px-8 max-w-6xl">
-          {/* 增强型面包屑导航 - 仅管理端显示 (DashboardLayout中通常不显示，除非配置开启) */}
+          {/* Enhanced breadcrumb navigation - only show for admin side (not in DashboardLayout unless configured) */}
           {shouldShowBreadcrumbs && <EnhancedBreadcrumbs />}
 
-          {/* 页面内容 */}
+          {/* Page content */}
           {children}
         </div>
       </main>
 
-      {/* 个人资料对话框 */}
+      {/* Profile dialog */}
       <ProfileDialog
         open={profileDialogOpen}
         onClose={() => setProfileDialogOpen(false)}

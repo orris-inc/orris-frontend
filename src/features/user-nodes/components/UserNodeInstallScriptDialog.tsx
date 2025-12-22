@@ -88,8 +88,8 @@ export const UserNodeInstallScriptDialog: React.FC<UserNodeInstallScriptDialogPr
 
   return (
     <Dialog open={open} onOpenChange={(open) => !open && handleClose()}>
-      <DialogContent className="sm:max-w-[650px] max-h-[90vh] overflow-y-auto">
-        <DialogHeader>
+      <DialogContent className="sm:max-w-[650px] flex flex-col max-h-[90vh]">
+        <DialogHeader className="flex-shrink-0">
           <DialogTitle className="flex items-center gap-2">
             <Terminal className="size-5" />
             安装命令
@@ -99,6 +99,7 @@ export const UserNodeInstallScriptDialog: React.FC<UserNodeInstallScriptDialogPr
           </DialogDescription>
         </DialogHeader>
 
+        <div className="flex-1 min-h-0 overflow-y-auto -mx-6 px-6">
         {isLoading ? (
           <div className="py-8 text-center text-muted-foreground">
             加载中...
@@ -291,8 +292,9 @@ export const UserNodeInstallScriptDialog: React.FC<UserNodeInstallScriptDialogPr
             </details>
           </div>
         )}
+        </div>
 
-        <DialogFooter>
+        <DialogFooter className="flex-shrink-0">
           <Button variant="outline" onClick={handleClose}>
             关闭
           </Button>

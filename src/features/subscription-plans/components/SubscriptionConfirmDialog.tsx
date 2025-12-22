@@ -37,15 +37,15 @@ export const SubscriptionConfirmDialog: React.FC<SubscriptionConfirmDialogProps>
   plan,
   onClose,
 }) => {
-  // 状态：用户选择的定价
+  // State: user selected pricing
   const [selectedPricing, setSelectedPricing] = useState<PricingOption | null>(null);
 
   if (!plan) return null;
 
-  // pricings 可能为空（兼容旧数据）
+  // pricings may be empty (backward compatibility)
   const hasPricings = plan.pricings && plan.pricings.length > 0;
 
-  // 获取当前价格和货币（优先使用用户选择的定价，否则使用第一个定价）
+  // Get current price and currency (prefer user selected pricing, otherwise use first pricing)
   const defaultPricing = hasPricings ? plan.pricings[0] : null;
   const currentPrice = selectedPricing?.price || defaultPricing?.price || 0;
   const currentCurrency = selectedPricing?.currency || defaultPricing?.currency || 'CNY';
@@ -86,7 +86,7 @@ export const SubscriptionConfirmDialog: React.FC<SubscriptionConfirmDialogProps>
             <h3 className="text-sm font-semibold mb-3">价格详情</h3>
 
             {hasPricings && plan.pricings.length > 1 ? (
-              // 使用多定价选择器
+              // Use multi-pricing selector
               <div className="mt-2">
                 <PlanPricingSelector
                   pricings={plan.pricings}
@@ -95,7 +95,7 @@ export const SubscriptionConfirmDialog: React.FC<SubscriptionConfirmDialogProps>
                 />
               </div>
             ) : (
-              // 单一价格：直接显示
+              // Single price: display directly
               <div>
                 <div className="flex justify-between items-baseline mt-2">
                   <span className="text-base">订阅费用</span>
@@ -158,7 +158,7 @@ export const SubscriptionConfirmDialog: React.FC<SubscriptionConfirmDialogProps>
           <Button
             size="lg"
             onClick={() => {
-              // 暂时只关闭对话框，未来这里会跳转到支付页面
+              // Temporarily just close dialog, will redirect to payment page in future
               alert('支付功能即将上线！');
               onClose();
             }}

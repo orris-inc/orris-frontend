@@ -18,7 +18,7 @@ interface ResetPasswordDialogProps {
   onSubmit: (id: string, password: string) => void;
 }
 
-// 密码验证规则（与后端保持一致）
+// Password validation rules (consistent with backend)
 const PASSWORD_MIN_LENGTH = 8;
 const PASSWORD_MAX_LENGTH = 72;
 

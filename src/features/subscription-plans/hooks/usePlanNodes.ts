@@ -1,6 +1,6 @@
 /**
  * usePlanNodes Hook
- * 管理订阅计划关联的节点
+ * Manage nodes associated with subscription plans
  */
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
@@ -19,7 +19,7 @@ export const usePlanNodes = (options: UsePlanNodesOptions) => {
   const queryClient = useQueryClient();
   const { showSuccess, showError } = useNotificationStore();
 
-  // 查询计划关联的节点
+  // Query nodes associated with the plan
   const {
     data,
     isLoading,
@@ -32,9 +32,9 @@ export const usePlanNodes = (options: UsePlanNodesOptions) => {
     enabled: enabled && planId !== null,
   });
 
-  // 绑定节点
-  // 注：Node.id 是 string 类型，但 API 的 BindNodesRequest.nodeIds 定义为 number[]
-  // 这里使用类型断言来适配 SDK 类型定义的不一致
+  // Bind nodes
+  // Note: Node.id is string type, but API's BindNodesRequest.nodeIds is defined as number[]
+  // Use type assertion here to adapt to SDK type definition inconsistency
   const bindMutation = useMutation({
     mutationFn: (nodeIds: string[]) =>
       bindNodes(planId!, { nodeIds: nodeIds as unknown as number[] }),
@@ -49,7 +49,7 @@ export const usePlanNodes = (options: UsePlanNodesOptions) => {
     },
   });
 
-  // 解绑节点
+  // Unbind nodes
   const unbindMutation = useMutation({
     mutationFn: (nodeIds: string[]) =>
       unbindNodes(planId!, { nodeIds: nodeIds as unknown as number[] }),
@@ -65,21 +65,21 @@ export const usePlanNodes = (options: UsePlanNodesOptions) => {
   });
 
   return {
-    // 数据
+    // Data
     nodes: data?.nodes ?? [],
     total: data?.total ?? 0,
 
-    // 状态
+    // State
     isLoading,
     isFetching,
     error: error ? handleApiError(error) : null,
 
-    // 操作
+    // Operations
     refetch,
     bindNodes: (nodeIds: string[]) => bindMutation.mutateAsync(nodeIds),
     unbindNodes: (nodeIds: string[]) => unbindMutation.mutateAsync(nodeIds),
 
-    // Mutation 状态
+    // Mutation state
     isBinding: bindMutation.isPending,
     isUnbinding: unbindMutation.isPending,
   };

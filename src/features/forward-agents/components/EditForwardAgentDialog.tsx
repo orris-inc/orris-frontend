@@ -41,7 +41,7 @@ export const EditForwardAgentDialog: React.FC<EditForwardAgentDialogProps> = ({
   const [formData, setFormData] = useState<UpdateForwardAgentRequest>({});
   const [errors, setErrors] = useState<Record<string, string>>({});
 
-  // 获取资源组列表
+  // Get resource group list
   const { resourceGroups, isLoading: isLoadingGroups } = useResourceGroups({
     pageSize: 100,
     filters: { status: 'active' },
@@ -84,7 +84,7 @@ export const EditForwardAgentDialog: React.FC<EditForwardAgentDialogProps> = ({
 
   const handleSubmit = () => {
     if (agent && validate()) {
-      // 只提交有变化的字段
+      // Only submit changed fields
       const updates: UpdateForwardAgentRequest = {};
 
       if (formData.name !== agent.name) updates.name = formData.name;
@@ -92,19 +92,19 @@ export const EditForwardAgentDialog: React.FC<EditForwardAgentDialogProps> = ({
       if (formData.tunnelAddress !== agent.tunnelAddress) updates.tunnelAddress = formData.tunnelAddress;
       if (formData.remark !== agent.remark) updates.remark = formData.remark;
 
-      // 资源组关联
+      // Resource group association
       if (formData.groupSid !== undefined) {
         updates.groupSid = formData.groupSid;
       }
 
-      // 如果有任何变化，提交更新
+      // If any changes, submit update
       if (Object.keys(updates).length > 0) {
         onSubmit(agent.id, updates);
       }
     }
   };
 
-  // 检查是否有变化
+  // Check for changes
   const hasChanges = agent && Object.keys(formData).some(
     (key) => formData[key as keyof UpdateForwardAgentRequest] !== agent[key as keyof ForwardAgent]
   );
@@ -113,11 +113,12 @@ export const EditForwardAgentDialog: React.FC<EditForwardAgentDialogProps> = ({
 
   return (
     <Dialog open={open} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
-        <DialogHeader>
+      <DialogContent className="sm:max-w-[600px] flex flex-col max-h-[90vh]">
+        <DialogHeader className="flex-shrink-0">
           <DialogTitle>编辑转发节点</DialogTitle>
         </DialogHeader>
 
+        <div className="flex-1 min-h-0 overflow-y-auto -mx-6 px-6">
         <div className="space-y-6">
           {/* 节点基本信息（只读） */}
           <div>
@@ -225,8 +226,9 @@ export const EditForwardAgentDialog: React.FC<EditForwardAgentDialogProps> = ({
             </div>
           </div>
         </div>
+        </div>
 
-        <DialogFooter>
+        <DialogFooter className="flex-shrink-0">
           <Button variant="outline" onClick={onClose}>
             取消
           </Button>

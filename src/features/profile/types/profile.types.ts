@@ -1,10 +1,10 @@
 import { z } from 'zod';
 
-// 类型从 @/api/profile 导出，这里只保留 Zod 验证 schema
+// Types exported from @/api/profile, only Zod validation schemas are kept here
 export type { UpdateProfileRequest, ChangePasswordRequest } from '@/api/profile';
 
 /**
- * 更新个人资料验证Schema
+ * Update profile validation schema
  */
 export const updateProfileSchema = z.object({
   name: z
@@ -19,7 +19,7 @@ export const updateProfileSchema = z.object({
 });
 
 /**
- * 修改密码验证Schema
+ * Change password validation schema
  */
 export const changePasswordSchema = z
   .object({

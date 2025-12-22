@@ -1,5 +1,5 @@
 /**
- * Dashboard 主页面 - 简约风格
+ * Dashboard Main Page - Minimalist Style
  */
 
 import { useEffect, useState } from 'react';
@@ -21,7 +21,7 @@ import type { Subscription, TrafficSummary } from '@/api/subscription/types';
 import { SubscriptionCard } from '@/components/dashboard/SubscriptionCard';
 
 /**
- * 格式化字节数为可读的流量单位
+ * Format bytes to readable traffic units
  */
 const formatTraffic = (bytes: number): { value: string; unit: string } => {
   if (bytes === 0) return { value: '0', unit: 'B' };
@@ -33,7 +33,7 @@ const formatTraffic = (bytes: number): { value: string; unit: string } => {
 };
 
 /**
- * 获取本月的起止时间
+ * Get current month date range
  */
 const getMonthRange = (): { from: string; to: string } => {
   const now = new Date();
@@ -64,13 +64,13 @@ export const DashboardPage = () => {
           if (activeSubscriptions.length > 0) {
             const { from, to } = getMonthRange();
 
-            // 获取所有活跃订阅的流量并汇总
+            // Fetch and aggregate traffic for all active subscriptions
             const trafficPromises = activeSubscriptions.map((sub) =>
               getTrafficStats(sub.id, { from, to }).catch(() => null)
             );
             const trafficResults = await Promise.all(trafficPromises);
 
-            // 汇总所有订阅的流量
+            // Aggregate traffic from all subscriptions
             let totalUpload = 0;
             let totalDownload = 0;
             let total = 0;
@@ -82,7 +82,7 @@ export const DashboardPage = () => {
                 totalDownload += trafficData.summary.totalDownload;
                 total += trafficData.summary.total;
               }
-              // 累加每个订阅的流量限制
+              // Accumulate traffic limit from each subscription
               const limits = activeSubscriptions[index].plan?.limits as { trafficLimit?: number } | undefined;
               if (limits?.trafficLimit) {
                 totalLimit += limits.trafficLimit;
@@ -129,7 +129,7 @@ export const DashboardPage = () => {
   return (
     <DashboardLayout>
       <div className="space-y-6">
-        {/* 欢迎 */}
+        {/* Welcome */}
         <div>
           <h1 className="text-2xl font-semibold text-foreground">
             {user.displayName || user.email?.split('@')[0] || '用户'}
@@ -137,9 +137,9 @@ export const DashboardPage = () => {
           <p className="text-muted-foreground">欢迎回来</p>
         </div>
 
-        {/* 统计卡片 */}
+        {/* Stats Cards */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-          {/* 订阅状态 */}
+          {/* Subscription Status */}
           <div className="p-5 rounded-xl bg-card border">
             <div className="flex items-center gap-3 mb-3">
               <div className="p-2 rounded-lg bg-emerald-500/10">
@@ -155,7 +155,7 @@ export const DashboardPage = () => {
             </p>
           </div>
 
-          {/* 剩余天数 */}
+          {/* Remaining Days */}
           <div className="p-5 rounded-xl bg-card border">
             <div className="flex items-center gap-3 mb-3">
               <div className="p-2 rounded-lg bg-amber-500/10">
@@ -169,7 +169,7 @@ export const DashboardPage = () => {
             <p className="text-sm text-muted-foreground mt-1">天</p>
           </div>
 
-          {/* 上传流量 */}
+          {/* Upload Traffic */}
           <div className="p-5 rounded-xl bg-card border">
             <div className="flex items-center gap-3 mb-3">
               <div className="p-2 rounded-lg bg-blue-500/10">
@@ -185,7 +185,7 @@ export const DashboardPage = () => {
             </p>
           </div>
 
-          {/* 下载流量 */}
+          {/* Download Traffic */}
           <div className="p-5 rounded-xl bg-card border">
             <div className="flex items-center gap-3 mb-3">
               <div className="p-2 rounded-lg bg-pink-500/10">
@@ -202,7 +202,7 @@ export const DashboardPage = () => {
           </div>
         </div>
 
-        {/* 流量进度 */}
+        {/* Traffic Progress */}
         <div className="p-5 rounded-xl bg-card border">
           <div className="flex justify-between items-center mb-3">
             <span className="text-sm text-muted-foreground">总流量使用</span>
@@ -225,7 +225,7 @@ export const DashboardPage = () => {
           </div>
         </div>
 
-        {/* 快捷操作 */}
+        {/* Quick Actions */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <a
             href="/pricing"
@@ -256,7 +256,7 @@ export const DashboardPage = () => {
           </a>
         </div>
 
-        {/* 订阅详情 */}
+        {/* Subscription Details */}
         <SubscriptionCard />
       </div>
     </DashboardLayout>

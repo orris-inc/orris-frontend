@@ -21,7 +21,7 @@ interface StatCard {
 }
 
 export const NodeStatsCards: React.FC<NodeStatsCardsProps> = ({ nodes, loading }) => {
-  // 计算统计数据
+  // Calculate statistics
   const stats = {
     total: nodes.length,
     active: nodes.filter(n => n.status === 'active').length,

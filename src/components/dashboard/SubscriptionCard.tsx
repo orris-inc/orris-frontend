@@ -1,6 +1,6 @@
 /**
- * 用户订阅卡片
- * 显示用户当前订阅信息，与 DashboardPage 风格统一
+ * User Subscription Card
+ * Displays user's current subscription info, unified style with DashboardPage
  */
 
 import { useEffect, useState } from 'react';
@@ -25,7 +25,7 @@ import type { Subscription, TrafficSummary } from '@/api/subscription/types';
 import { cn } from '@/lib/utils';
 
 /**
- * 格式化字节数为可读的流量单位
+ * Format bytes to readable traffic units
  */
 const formatTraffic = (bytes: number): { value: string; unit: string } => {
   if (bytes === 0) return { value: '0', unit: 'B' };
@@ -37,7 +37,7 @@ const formatTraffic = (bytes: number): { value: string; unit: string } => {
 };
 
 /**
- * 获取本月的起止时间
+ * Get current month's start and end time
  */
 const getMonthRange = (): { from: string; to: string } => {
   const now = new Date();
@@ -50,7 +50,7 @@ const getMonthRange = (): { from: string; to: string } => {
 };
 
 /**
- * 获取订阅状态的显示配置
+ * Get subscription status display configuration
  */
 const getStatusConfig = (status: string) => {
   switch (status) {
@@ -70,7 +70,7 @@ const getStatusConfig = (status: string) => {
 };
 
 /**
- * 格式化日期显示
+ * Format date for display
  */
 const formatDate = (dateString?: string): string => {
   if (!dateString) return '-';
@@ -82,7 +82,7 @@ const formatDate = (dateString?: string): string => {
 };
 
 /**
- * 计算剩余天数
+ * Calculate remaining days
  */
 const getDaysRemaining = (endDate?: string): number | null => {
   if (!endDate) return null;
@@ -93,7 +93,7 @@ const getDaysRemaining = (endDate?: string): number | null => {
 };
 
 /**
- * 订阅链接类型
+ * Subscription link types
  */
 const SUBSCRIPTION_LINK_TYPES = [
   { name: 'Base64', path: '' },
@@ -104,7 +104,7 @@ const SUBSCRIPTION_LINK_TYPES = [
 ];
 
 /**
- * 复制按钮组件
+ * Copy button component
  */
 const CopyButton = ({ text }: { text: string }) => {
   const [copied, setCopied] = useState(false);
@@ -134,7 +134,7 @@ const CopyButton = ({ text }: { text: string }) => {
   );
 };
 
-/** 订阅流量数据 */
+/** Subscription traffic data */
 interface SubscriptionTraffic {
   summary: TrafficSummary;
   limit: number;
@@ -217,7 +217,7 @@ export const SubscriptionCard = () => {
     }
   };
 
-  // 加载状态
+  // Loading state
   if (loading) {
     return (
       <div className="p-5 rounded-xl bg-card border">
@@ -234,7 +234,7 @@ export const SubscriptionCard = () => {
     );
   }
 
-  // 错误状态
+  // Error state
   if (error) {
     return (
       <div className="p-5 rounded-xl bg-card border">
@@ -249,7 +249,7 @@ export const SubscriptionCard = () => {
     );
   }
 
-  // 无订阅状态
+  // No subscription state
   if (subscriptions.length === 0) {
     return (
       <div className="p-5 rounded-xl bg-card border">
@@ -275,7 +275,7 @@ export const SubscriptionCard = () => {
 
   return (
     <div className="p-5 rounded-xl bg-card border">
-      {/* 标题栏 - 与统计卡片风格一致 */}
+      {/* Title bar - consistent style with stats cards */}
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-3">
           <div className="p-2 rounded-lg bg-primary/10">
@@ -291,7 +291,7 @@ export const SubscriptionCard = () => {
         </div>
       </div>
 
-      {/* 订阅列表 */}
+      {/* Subscription list */}
       <div className="space-y-3">
         {displaySubscriptions.map((subscription) => {
           const statusConfig = getStatusConfig(subscription.status);
@@ -309,18 +309,18 @@ export const SubscriptionCard = () => {
                 isActive ? 'bg-emerald-500/5 border-emerald-500/20' : 'bg-muted/30 border-border/50'
               )}
             >
-              {/* 订阅主要信息 */}
+              {/* Subscription main info */}
               <div className="p-4">
-                {/* 第一行：套餐名称 + 状态 */}
+                {/* Row 1: Plan name + status */}
                 <div className="flex items-center justify-between mb-3">
                   <h4 className="font-semibold">{subscription.plan?.name || '未知计划'}</h4>
                   <span className={getBadgeClass(statusConfig.variant)}>{statusConfig.label}</span>
                 </div>
 
-                {/* 第二行：流量使用（仅活跃订阅） */}
+                {/* Row 2: Traffic usage (active subscriptions only) */}
                 {isActive && traffic && (
                   <div className="mb-3">
-                    {/* 进度条 */}
+                    {/* Progress bar */}
                     <div className="flex items-center gap-3 mb-2">
                       <div className="flex-1 h-2 rounded-full bg-muted overflow-hidden">
                         <div
@@ -340,7 +340,7 @@ export const SubscriptionCard = () => {
                       </span>
                     </div>
 
-                    {/* 流量数值 */}
+                    {/* Traffic values */}
                     <div className="flex items-center justify-between text-xs text-muted-foreground">
                       <div className="flex items-center gap-3">
                         <span className="flex items-center gap-1">
@@ -364,7 +364,7 @@ export const SubscriptionCard = () => {
                   </div>
                 )}
 
-                {/* 第三行：时间信息 + 展开按钮 */}
+                {/* Row 3: Time info + expand button */}
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-1 text-xs text-muted-foreground">
                     {isActive ? (
@@ -398,7 +398,7 @@ export const SubscriptionCard = () => {
                 </div>
               </div>
 
-              {/* 展开的订阅链接 */}
+              {/* Expanded subscription links */}
               {isExpanded && isActive && (
                 <div className="px-4 pb-4 pt-2 border-t border-border/50">
                   <div className="flex items-center justify-between mb-3">
@@ -440,7 +440,7 @@ export const SubscriptionCard = () => {
         })}
       </div>
 
-      {/* 显示更多 */}
+      {/* Show more */}
       {inactiveSubscriptions.length > 0 && (
         <div className="mt-3 text-center">
           <button

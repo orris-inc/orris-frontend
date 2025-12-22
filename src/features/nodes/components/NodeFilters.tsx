@@ -9,7 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Button } from '@/components/common/Button';
 import type { NodeStatus } from '@/api/node';
 
-// 前端筛选器类型
+// Frontend filter type
 interface NodeFiltersType {
   status?: NodeStatus;
   search?: string;

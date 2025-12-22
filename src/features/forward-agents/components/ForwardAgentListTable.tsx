@@ -1,6 +1,6 @@
 /**
- * 转发节点列表表格组件（管理端）
- * 使用 TanStack Table 实现
+ * Forward Agent List Table Component (Admin)
+ * Implemented using TanStack Table
  */
 
 import { useMemo, useState, useCallback } from 'react';
@@ -42,7 +42,7 @@ interface ForwardAgentListTableProps {
   onCopy: (agent: ForwardAgent) => void;
 }
 
-// 可复制地址组件（支持长地址截断和 Tooltip 显示完整内容）
+// Copyable address component (supports long address truncation and Tooltip for full content)
 const CopyableAddress: React.FC<{ address: string; className?: string; maxLength?: number }> = ({
   address,
   className = '',
@@ -63,7 +63,7 @@ const CopyableAddress: React.FC<{ address: string; className?: string; maxLength
     return <span className={className}>-</span>;
   }
 
-  // 判断是否需要截断显示
+  // Check if truncation is needed
   const needsTruncate = address.length > maxLength;
   const displayAddress = needsTruncate
     ? `${address.slice(0, 8)}...${address.slice(-6)}`
@@ -87,7 +87,7 @@ const CopyableAddress: React.FC<{ address: string; className?: string; maxLength
     </span>
   );
 
-  // 如果地址被截断，使用 Tooltip 显示完整地址
+  // If address is truncated, use Tooltip to show full address
   if (needsTruncate) {
     return (
       <Tooltip>
@@ -102,7 +102,7 @@ const CopyableAddress: React.FC<{ address: string; className?: string; maxLength
   return content;
 };
 
-// 格式化时间
+// Format date
 const formatDate = (dateString?: string) => {
   if (!dateString) return '-';
   return new Date(dateString).toLocaleString('zh-CN', {
@@ -132,7 +132,7 @@ export const ForwardAgentListTable: React.FC<ForwardAgentListTableProps> = ({
   onViewDetail,
   onCopy,
 }) => {
-  // 转发代理右键菜单内容
+  // Forward agent context menu content
   const renderContextMenuActions = useCallback((agent: ForwardAgent) => (
     <>
       <ContextMenuItem onClick={() => onCopy(agent)}>
@@ -162,7 +162,7 @@ export const ForwardAgentListTable: React.FC<ForwardAgentListTableProps> = ({
     </>
   ), [onCopy, onRegenerateToken, onEnable, onDisable, onDelete]);
 
-  // 转发代理下拉菜单内容
+  // Forward agent dropdown menu content
   const renderDropdownMenuActions = useCallback((agent: ForwardAgent) => (
     <>
       <DropdownMenuItem onClick={() => onCopy(agent)}>

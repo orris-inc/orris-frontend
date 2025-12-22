@@ -1,6 +1,6 @@
 /**
- * 编辑订阅计划对话框
- * 使用封装的通用组件实现
+ * Edit Subscription Plan Dialog
+ * Implemented using wrapped common components
  */
 
 import { useState, useEffect } from 'react';
@@ -30,7 +30,7 @@ import { Separator } from '@/components/common/Separator';
 import { Alert, AlertDescription } from '@/components/common/Alert';
 import type { SubscriptionPlan, UpdatePlanRequest, PricingOptionInput } from '@/api/subscription/types';
 
-// 本地定义的类型（原 SDK 已移除）
+// Locally defined types (removed from original SDK)
 type ForwardRuleTypeOption = 'direct' | 'entry' | 'chain' | 'direct_chain';
 
 interface PlanLimits {
@@ -44,7 +44,7 @@ interface PlanLimits {
   nodeLimit?: number;
 }
 
-// 辅助函数：将 PlanLimits 转换为 API 格式
+// Helper function: convert PlanLimits to API format
 function planLimitsToApiFormat(limits: PlanLimits): Record<string, unknown> {
   const result: Record<string, unknown> = {};
   if (limits.trafficLimit !== undefined) result['traffic_limit'] = limits.trafficLimit;
@@ -58,7 +58,7 @@ function planLimitsToApiFormat(limits: PlanLimits): Record<string, unknown> {
   return result;
 }
 
-// 辅助函数：解析 API 格式的限制（axios-case-converter 会将响应转换为 camelCase）
+// Helper function: parse API format limits (axios-case-converter converts response to camelCase)
 function parsePlanLimits(apiLimits: Record<string, unknown> | undefined): PlanLimits {
   if (!apiLimits) return {};
   return {
@@ -89,7 +89,7 @@ const BILLING_CYCLES: { value: string; label: string }[] = [
   { value: 'lifetime', label: '终身' },
 ];
 
-// 转发规则类型选项
+// Forward rule type options
 const FORWARD_RULE_TYPES: { value: ForwardRuleTypeOption; label: string }[] = [
   { value: 'direct', label: '直连' },
   { value: 'entry', label: '入口' },
@@ -97,10 +97,10 @@ const FORWARD_RULE_TYPES: { value: ForwardRuleTypeOption; label: string }[] = [
   { value: 'direct_chain', label: '直连链' },
 ];
 
-// 扩展 UpdatePlanRequest 以支持多定价管理和计划限制
+// Extend UpdatePlanRequest to support multi-pricing management and plan limits
 interface UpdatePlanFormData extends Omit<UpdatePlanRequest, 'limits'> {
   pricings: PricingOptionInput[];
-  // 计划限制
+  // Plan limits
   planLimits: PlanLimits;
 }
 
@@ -113,10 +113,10 @@ export const EditPlanDialog: React.FC<EditPlanDialogProps> = ({
   const [formData, setFormData] = useState<UpdatePlanFormData>({ pricings: [], planLimits: {} });
   const [loading, setLoading] = useState(false);
 
-  // 当plan变化时，更新表单数据
+  // Update form data when plan changes
   useEffect(() => {
     if (plan) {
-      // 解析计划限制
+      // Parse plan limits
       const planLimits = parsePlanLimits(plan.limits);
 
       setFormData({
@@ -141,7 +141,7 @@ export const EditPlanDialog: React.FC<EditPlanDialogProps> = ({
     setFormData((prev) => ({ ...prev, [field]: value }));
   };
 
-  // 处理计划限制变更
+  // Handle plan limit changes
   const handleLimitChange = (field: keyof PlanLimits, value: unknown) => {
     setFormData((prev) => ({
       ...prev,
@@ -149,7 +149,7 @@ export const EditPlanDialog: React.FC<EditPlanDialogProps> = ({
     }));
   };
 
-  // 处理转发规则类型多选
+  // Handle forward rule type multi-select
   const handleForwardTypeToggle = (type: ForwardRuleTypeOption) => {
     setFormData((prev) => {
       const currentTypes = prev.planLimits.forwardRuleTypes || [];
@@ -163,7 +163,7 @@ export const EditPlanDialog: React.FC<EditPlanDialogProps> = ({
     });
   };
 
-  // 多定价相关操作
+  // Multi-pricing related operations
   const handleAddPricing = () => {
     const newPricing: PricingOptionInput = {
       billingCycle: 'monthly',
@@ -193,14 +193,14 @@ export const EditPlanDialog: React.FC<EditPlanDialogProps> = ({
 
   const handleSubmit = async () => {
     if (!plan) return;
-    // 验证至少有一个定价
+    // Validate at least one pricing option
     if (formData.pricings.length === 0) {
       return;
     }
 
     setLoading(true);
     try {
-      // 构建计划限制
+      // Build plan limits
       const limits = Object.keys(formData.planLimits).length > 0
         ? planLimitsToApiFormat(formData.planLimits)
         : undefined;
@@ -232,14 +232,15 @@ export const EditPlanDialog: React.FC<EditPlanDialogProps> = ({
 
   return (
     <Dialog open={open} onOpenChange={handleClose}>
-      <DialogContent className="sm:max-w-3xl max-h-[90vh] overflow-y-auto">
-        <DialogHeader>
+      <DialogContent className="sm:max-w-3xl flex flex-col max-h-[90vh]">
+        <DialogHeader className="flex-shrink-0">
           <DialogTitle>编辑订阅计划: {plan.name}</DialogTitle>
           <DialogDescription>修改订阅计划的配置信息</DialogDescription>
         </DialogHeader>
 
+        <div className="flex-1 min-h-0 overflow-y-auto -mx-6 px-6">
         <div className="space-y-6 py-4">
-          {/* 基本信息（只读） */}
+          {/* Basic Information (Read-only) */}
           <div className="space-y-4">
             <h3 className="text-sm font-semibold">基本信息（只读）</h3>
             <Separator />
@@ -263,12 +264,12 @@ export const EditPlanDialog: React.FC<EditPlanDialogProps> = ({
             </div>
           </div>
 
-          {/* 可编辑字段 */}
+          {/* Editable Fields */}
           <div className="space-y-4">
             <h3 className="text-sm font-semibold">可编辑信息</h3>
             <Separator />
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-              {/* 定价选项 */}
+              {/* Pricing Options */}
               <div className="space-y-4 sm:col-span-2">
                 <div className="flex items-center justify-between">
                   <Label>
@@ -375,7 +376,7 @@ export const EditPlanDialog: React.FC<EditPlanDialogProps> = ({
             </div>
           </div>
 
-          {/* 节点订阅限制配置 - 仅节点类型计划显示 */}
+          {/* Node subscription limit configuration - only shown for node type plans */}
           {plan.planType === 'node' && (
             <div className="space-y-4">
               <h3 className="text-sm font-semibold">节点限制配置</h3>
@@ -450,7 +451,7 @@ export const EditPlanDialog: React.FC<EditPlanDialogProps> = ({
             </div>
           )}
 
-          {/* 转发限制配置 - 仅端口转发类型计划显示 */}
+          {/* Forward limit configuration - only shown for port forwarding type plans */}
           {plan.planType === 'forward' && (
             <div className="space-y-4">
               <h3 className="text-sm font-semibold">转发限制配置</h3>
@@ -506,7 +507,7 @@ export const EditPlanDialog: React.FC<EditPlanDialogProps> = ({
             </div>
           )}
 
-          {/* 通用配置 */}
+          {/* General Configuration */}
           <div className="space-y-4">
             <h3 className="text-sm font-semibold">通用配置</h3>
             <Separator />
@@ -537,8 +538,9 @@ export const EditPlanDialog: React.FC<EditPlanDialogProps> = ({
             </div>
           </div>
         </div>
+        </div>
 
-        <DialogFooter>
+        <DialogFooter className="flex-shrink-0">
           <Button variant="outline" onClick={handleClose} disabled={loading}>
             取消
           </Button>

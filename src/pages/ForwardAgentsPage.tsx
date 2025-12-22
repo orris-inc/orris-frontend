@@ -1,6 +1,6 @@
 /**
- * 转发节点管理页面（管理端）
- * 使用统一的精致商务风格组件
+ * Forward Agents Management Page (Admin)
+ * Uses unified refined business style components
  */
 
 import { useState, useMemo } from 'react';
@@ -47,7 +47,7 @@ export const ForwardAgentsPage = () => {
     handlePageSizeChange,
   } = useForwardAgentsPage();
 
-  // 获取资源组列表用于显示名称
+  // Fetch resource groups for displaying names
   const { resourceGroups } = useResourceGroups({ pageSize: 100 });
   const resourceGroupsMap = useMemo(() => {
     const map: Record<string, typeof resourceGroups[0]> = {};
@@ -120,15 +120,15 @@ export const ForwardAgentsPage = () => {
   const handleCreateSubmit = async (data: CreateForwardAgentRequest) => {
     try {
       const result = await createForwardAgent(data);
-      // 先关闭创建对话框
+      // Close create dialog first
       setCreateDialogOpen(false);
-      // 显示Token对话框
+      // Show Token dialog
       setGeneratedToken({
         token: result.token,
       });
       setTokenDialogOpen(true);
     } catch {
-      // 错误已在 hook 中处理
+      // Error already handled in hook
     }
   };
 
@@ -138,7 +138,7 @@ export const ForwardAgentsPage = () => {
       setEditDialogOpen(false);
       setSelectedAgent(null);
     } catch {
-      // 错误已在 hook 中处理
+      // Error already handled in hook
     }
   };
 
@@ -177,7 +177,7 @@ export const ForwardAgentsPage = () => {
           </div>
         }
       >
-        {/* 转发节点列表表格 */}
+        {/* Forward Agent List Table */}
         <AdminCard noPadding>
           <ForwardAgentListTable
             forwardAgents={forwardAgents}
@@ -200,7 +200,7 @@ export const ForwardAgentsPage = () => {
         </AdminCard>
       </AdminPageLayout>
 
-      {/* 新增转发节点对话框 */}
+      {/* Create Forward Agent Dialog */}
       <CreateForwardAgentDialog
         open={createDialogOpen}
         onClose={() => {
@@ -211,7 +211,7 @@ export const ForwardAgentsPage = () => {
         initialData={copyAgentData}
       />
 
-      {/* 编辑转发节点对话框 */}
+      {/* Edit Forward Agent Dialog */}
       <EditForwardAgentDialog
         open={editDialogOpen}
         agent={selectedAgent}
@@ -222,7 +222,7 @@ export const ForwardAgentsPage = () => {
         onSubmit={handleUpdateSubmit}
       />
 
-      {/* 转发节点详情对话框 */}
+      {/* Forward Agent Detail Dialog */}
       <ForwardAgentDetailDialog
         open={detailDialogOpen}
         agent={selectedAgent}
@@ -232,7 +232,7 @@ export const ForwardAgentsPage = () => {
         }}
       />
 
-      {/* Token显示对话框 */}
+      {/* Token Display Dialog */}
       <TokenDialog
         open={tokenDialogOpen}
         token={generatedToken?.token ?? null}
@@ -243,7 +243,7 @@ export const ForwardAgentsPage = () => {
         }}
       />
 
-      {/* 安装脚本对话框 */}
+      {/* Install Script Dialog */}
       <InstallScriptDialog
         open={installScriptDialogOpen}
         installCommandData={installCommandData}

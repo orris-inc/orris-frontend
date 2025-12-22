@@ -1,8 +1,8 @@
 /**
- * 管理端数据表格组件
- * 基于 TanStack Table v8 实现
- * 保持与 AdminTable 一致的精致商务风格
- * 支持响应式列隐藏
+ * Admin Data Table Component
+ * Built on TanStack Table v8
+ * Maintains consistent elegant business style with AdminTable
+ * Supports responsive column hiding
  */
 
 import { useState, useMemo } from 'react';
@@ -27,20 +27,20 @@ import {
   ContextMenuTrigger,
 } from '@/components/common/ContextMenu';
 
-// ============ 类型定义 ============
+// ============ Type Definitions ============
 
 /**
- * 列的响应式配置
- * hideBelow: 在指定断点以下隐藏该列（保留向后兼容）
- * priority: 列优先级（1=必须显示，2=重要，3=次要，4=可选）
- * minWidth: 列最小宽度（像素）
+ * Responsive column configuration
+ * hideBelow: Hide column below specified breakpoint (backward compatible)
+ * priority: Column priority (1=must show, 2=important, 3=secondary, 4=optional)
+ * minWidth: Column minimum width (pixels)
  */
 export interface ResponsiveColumnMeta {
-  /** 在此断点以下隐藏 (xs < sm < md < lg < xl < 2xl) - 保留向后兼容 */
+  /** Hide below this breakpoint (xs < sm < md < lg < xl < 2xl) - backward compatible */
   hideBelow?: BreakpointKey | 'xs';
-  /** 列优先级：1=必须显示，2=重要(>=640px)，3=次要(>=1024px)，4=可选(>=1280px) */
+  /** Column priority: 1=must show, 2=important(>=640px), 3=secondary(>=1024px), 4=optional(>=1280px) */
   priority?: 1 | 2 | 3 | 4;
-  /** 列最小宽度（像素） */
+  /** Column minimum width (pixels) */
   minWidth?: number;
 }
 
@@ -48,47 +48,47 @@ interface DataTableProps<TData> {
   columns: ColumnDef<TData, unknown>[];
   data: TData[];
   loading?: boolean;
-  // 服务端分页
+  // Server-side pagination
   page?: number;
   pageSize?: number;
   total?: number;
   onPageChange?: (page: number) => void;
   onPageSizeChange?: (pageSize: number) => void;
-  // 排序
+  // Sorting
   sorting?: SortingState;
   onSortingChange?: OnChangeFn<SortingState>;
-  // 行选择
+  // Row selection
   rowSelection?: RowSelectionState;
   onRowSelectionChange?: OnChangeFn<RowSelectionState>;
   getRowId?: (row: TData) => string;
-  // 行点击
+  // Row click
   onRowClick?: (row: TData) => void;
-  // 空状态
+  // Empty state
   emptyMessage?: string;
-  // 右键菜单
+  // Context menu
   contextMenuContent?: (row: TData) => React.ReactNode;
   enableContextMenu?: boolean;
 }
 
-// ============ 断点优先级 ============
+// ============ Breakpoint Priority ============
 const BREAKPOINT_ORDER: (BreakpointKey | 'xs')[] = ['xs', 'sm', 'md', 'lg', 'xl', '2xl'];
 
 /**
- * 优先级对应的最小断点映射
- * priority 1: 始终显示
+ * Priority to minimum breakpoint mapping
+ * priority 1: Always show
  * priority 2: >= sm (640px)
  * priority 3: >= lg (1024px)
  * priority 4: >= xl (1280px)
  */
 const PRIORITY_TO_BREAKPOINT: Record<number, BreakpointKey | 'xs'> = {
-  1: 'xs',  // 始终显示
+  1: 'xs',  // Always show
   2: 'sm',  // >= 640px
   3: 'lg',  // >= 1024px
   4: 'xl',  // >= 1280px
 };
 
 /**
- * 判断当前断点是否应该显示列（兼容 hideBelow 和 priority）
+ * Determine if column should be shown at current breakpoint (compatible with hideBelow and priority)
  */
 const shouldShowColumn = (
   meta: ResponsiveColumnMeta | undefined,
@@ -96,14 +96,14 @@ const shouldShowColumn = (
 ): boolean => {
   if (!meta) return true;
 
-  // 如果设置了 priority，使用优先级逻辑
+  // If priority is set, use priority logic
   if (meta.priority !== undefined) {
     const requiredBreakpoint = PRIORITY_TO_BREAKPOINT[meta.priority] || 'sm';
     const requiredIndex = BREAKPOINT_ORDER.indexOf(requiredBreakpoint);
     const currentIndex = BREAKPOINT_ORDER.indexOf(currentBreakpoint);
     const showByPriority = currentIndex >= requiredIndex;
 
-    // 如果同时设置了 hideBelow，取更严格的条件
+    // If hideBelow is also set, use stricter condition
     if (meta.hideBelow) {
       const hideIndex = BREAKPOINT_ORDER.indexOf(meta.hideBelow);
       const showByHideBelow = currentIndex >= hideIndex;
@@ -113,21 +113,21 @@ const shouldShowColumn = (
     return showByPriority;
   }
 
-  // 兼容旧的 hideBelow 配置
+  // Backward compatible with old hideBelow config
   if (meta.hideBelow) {
     const hideIndex = BREAKPOINT_ORDER.indexOf(meta.hideBelow);
     const currentIndex = BREAKPOINT_ORDER.indexOf(currentBreakpoint);
     return currentIndex >= hideIndex;
   }
 
-  // 没有设置任何配置，默认为 priority 2（重要列）
+  // No config set, default to priority 2 (important columns)
   const defaultBreakpoint = PRIORITY_TO_BREAKPOINT[2];
   const requiredIndex = BREAKPOINT_ORDER.indexOf(defaultBreakpoint);
   const currentIndex = BREAKPOINT_ORDER.indexOf(currentBreakpoint);
   return currentIndex >= requiredIndex;
 };
 
-// ============ DataTable 组件 ============
+// ============ DataTable Component ============
 
 export function DataTable<TData>({
   columns,
@@ -144,19 +144,19 @@ export function DataTable<TData>({
   onRowSelectionChange,
   getRowId,
   onRowClick,
-  emptyMessage = '暂无数据',
+  emptyMessage = 'No data',
   contextMenuContent,
   enableContextMenu = false,
 }: DataTableProps<TData>) {
-  // 响应式断点
+  // Responsive breakpoint
   const { current: currentBreakpoint } = useBreakpoint();
 
-  // 内部排序状态（如果外部未提供）
+  // Internal sorting state (if not provided externally)
   const [internalSorting, setInternalSorting] = useState<SortingState>([]);
   const sorting = externalSorting ?? internalSorting;
   const setSorting = onSortingChange ?? setInternalSorting;
 
-  // 根据当前断点过滤可见列
+  // Filter visible columns based on current breakpoint
   const visibleColumns = useMemo(() => {
     return columns.filter((col) => {
       const meta = col.meta as ResponsiveColumnMeta | undefined;
@@ -240,7 +240,7 @@ export function DataTable<TData>({
                       <Loader2 className="size-9 animate-spin text-indigo-500" strokeWidth={2.5} />
                       <div className="absolute inset-0 rounded-full bg-indigo-500/20 blur-xl animate-pulse" />
                     </div>
-                    <p className="text-slate-500 dark:text-slate-400 text-sm">加载中...</p>
+                    <p className="text-slate-500 dark:text-slate-400 text-sm">Loading...</p>
                   </div>
                 </td>
               </tr>
@@ -290,7 +290,7 @@ export function DataTable<TData>({
                   </tr>
                 );
 
-                // 如果启用了右键菜单，用 ContextMenu 包裹
+                // Wrap with ContextMenu if enabled
                 if (enableContextMenu && contextMenuContent) {
                   return (
                     <ContextMenu key={row.id}>
@@ -313,7 +313,7 @@ export function DataTable<TData>({
         </table>
       </div>
 
-      {/* 分页 */}
+      {/* Pagination */}
       {page !== undefined && pageSize !== undefined && total !== undefined && onPageChange && (
         <AdminTablePagination
           page={page}
@@ -328,5 +328,5 @@ export function DataTable<TData>({
   );
 }
 
-// ============ 导出类型供外部使用 ============
+// ============ Export types for external use ============
 export type { ColumnDef, SortingState, RowSelectionState };

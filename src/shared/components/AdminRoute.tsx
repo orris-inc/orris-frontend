@@ -130,8 +130,8 @@ export const AdminRoute = ({
   const { hasPermission } = usePermissions();
   const location = useLocation();
 
-  // 加载中状态
-  // 等待认证状态初始化完成
+  // Loading state
+  // Wait for auth state initialization to complete
   if (isLoading) {
     return (
       <div className="flex min-h-screen items-center justify-center">
@@ -140,8 +140,8 @@ export const AdminRoute = ({
     );
   }
 
-  // 未认证检查
-  // 跳转到登录页并保存当前路径，登录成功后可以返回
+  // Not authenticated check
+  // Redirect to login page and save current path for return after login
   if (!isAuthenticated) {
     return (
       <Navigate
@@ -152,18 +152,18 @@ export const AdminRoute = ({
     );
   }
 
-  // 权限检查
-  // 检查用户是否拥有admin角色
+  // Permission check
+  // Check if user has admin role
   if (!hasPermission('admin')) {
-    // 根据配置选择显示无权限提示或重定向
+    // Show unauthorized message or redirect based on config
     if (showUnauthorizedMessage) {
       return <UnauthorizedMessage />;
     }
 
-    // 重定向到指定路径
+    // Redirect to specified path
     return <Navigate to={unauthorizedRedirect} replace />;
   }
 
-  // 已认证且为admin角色，渲染受保护的内容
+  // Authenticated with admin role, render protected content
   return <>{children}</>;
 };

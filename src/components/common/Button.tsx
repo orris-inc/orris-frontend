@@ -1,6 +1,6 @@
 /**
- * Button 组件
- * 基于 Radix UI Slot 提供多种变体和尺寸
+ * Button Component
+ * Based on Radix UI Slot, provides multiple variants and sizes
  */
 
 import * as React from 'react';

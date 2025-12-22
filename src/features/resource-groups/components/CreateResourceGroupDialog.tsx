@@ -53,7 +53,7 @@ export const CreateResourceGroupDialog: React.FC<CreateResourceGroupDialogProps>
   const [formData, setFormData] = useState<FormData>(getDefaultFormData());
   const [loading, setLoading] = useState(false);
 
-  // 重置表单
+  // Reset form
   useEffect(() => {
     if (open) {
       setFormData(getDefaultFormData());

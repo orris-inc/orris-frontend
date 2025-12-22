@@ -43,19 +43,19 @@ export const SubscriptionManagementPage: React.FC = () => {
   const [cancelDialogOpen, setCancelDialogOpen] = useState(false);
   const [selectedSubscription, setSelectedSubscription] = useState<Subscription | null>(null);
 
-  // 查看订阅详情
+  // View subscription details
   const handleViewDetail = (subscription: Subscription) => {
     setSelectedSubscription(subscription);
     setDetailDialogOpen(true);
   };
 
-  // 复制订阅
+  // Duplicate subscription
   const handleDuplicate = (subscription: Subscription) => {
     setSelectedSubscription(subscription);
     setDuplicateDialogOpen(true);
   };
 
-  // 确认复制订阅
+  // Confirm duplicate subscription
   const handleDuplicateSubmit = async (data: Parameters<typeof adminCreateSubscription>[0]) => {
     try {
       await adminCreateSubscription(data);
@@ -68,12 +68,12 @@ export const SubscriptionManagementPage: React.FC = () => {
     }
   };
 
-  // 刷新列表
+  // Refresh list
   const handleRefresh = () => {
     refetch();
   };
 
-  // 激活订阅
+  // Activate subscription
   const handleActivate = async (subscription: Subscription) => {
     try {
       await adminUpdateSubscriptionStatus(subscription.id, { status: 'active' });
@@ -84,13 +84,13 @@ export const SubscriptionManagementPage: React.FC = () => {
     }
   };
 
-  // 打开取消对话框
+  // Open cancel dialog
   const handleCancelClick = (subscription: Subscription) => {
     setSelectedSubscription(subscription);
     setCancelDialogOpen(true);
   };
 
-  // 确认取消订阅
+  // Confirm cancel subscription
   const handleCancelConfirm = async (reason: string, immediate: boolean) => {
     if (!selectedSubscription) return;
     try {
@@ -108,7 +108,7 @@ export const SubscriptionManagementPage: React.FC = () => {
     }
   };
 
-  // 续费订阅
+  // Renew subscription
   const handleRenew = async (subscription: Subscription) => {
     try {
       await adminUpdateSubscriptionStatus(subscription.id, { status: 'renewed' });

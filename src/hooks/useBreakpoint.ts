@@ -1,12 +1,12 @@
 /**
- * 响应式断点 Hook
- * 提供当前屏幕尺寸断点判断，与 Tailwind CSS 断点保持一致
+ * Responsive Breakpoint Hook
+ * Provides current screen size breakpoint detection, consistent with Tailwind CSS breakpoints
  */
 
 import { useState, useEffect, useCallback } from 'react';
 
 /**
- * Tailwind CSS 默认断点（与 v4 一致）
+ * Tailwind CSS default breakpoints (consistent with v4)
  */
 export const BREAKPOINTS = {
   sm: 640,
@@ -19,30 +19,30 @@ export const BREAKPOINTS = {
 export type BreakpointKey = keyof typeof BREAKPOINTS;
 
 interface BreakpointState {
-  /** 当前断点名称 */
+  /** Current breakpoint name */
   current: BreakpointKey | 'xs';
-  /** 是否大于等于 sm (640px) */
+  /** Is greater than or equal to sm (640px) */
   isSm: boolean;
-  /** 是否大于等于 md (768px) */
+  /** Is greater than or equal to md (768px) */
   isMd: boolean;
-  /** 是否大于等于 lg (1024px) */
+  /** Is greater than or equal to lg (1024px) */
   isLg: boolean;
-  /** 是否大于等于 xl (1280px) */
+  /** Is greater than or equal to xl (1280px) */
   isXl: boolean;
-  /** 是否大于等于 2xl (1536px) */
+  /** Is greater than or equal to 2xl (1536px) */
   is2xl: boolean;
-  /** 是否为移动端 (< 768px) */
+  /** Is mobile (< 768px) */
   isMobile: boolean;
-  /** 是否为平板端 (>= 768px && < 1024px) */
+  /** Is tablet (>= 768px && < 1024px) */
   isTablet: boolean;
-  /** 是否为桌面端 (>= 1024px) */
+  /** Is desktop (>= 1024px) */
   isDesktop: boolean;
-  /** 当前视口宽度 */
+  /** Current viewport width */
   width: number;
 }
 
 /**
- * 获取当前断点
+ * Get current breakpoint
  */
 const getCurrentBreakpoint = (width: number): BreakpointKey | 'xs' => {
   if (width >= BREAKPOINTS['2xl']) return '2xl';
@@ -54,7 +54,7 @@ const getCurrentBreakpoint = (width: number): BreakpointKey | 'xs' => {
 };
 
 /**
- * 响应式断点 Hook
+ * Responsive Breakpoint Hook
  *
  * @example
  * ```tsx
@@ -63,14 +63,14 @@ const getCurrentBreakpoint = (width: number): BreakpointKey | 'xs' => {
  * return (
  *   <div>
  *     {isMobile ? <MobileView /> : <DesktopView />}
- *     <p>当前断点: {current}</p>
+ *     <p>Current breakpoint: {current}</p>
  *   </div>
  * );
  * ```
  */
 export function useBreakpoint(): BreakpointState {
   const [state, setState] = useState<BreakpointState>(() => {
-    // SSR 兼容：默认使用桌面端尺寸
+    // SSR compatible: default to desktop size
     const width = typeof window !== 'undefined' ? window.innerWidth : 1024;
     return {
       current: getCurrentBreakpoint(width),
@@ -103,10 +103,10 @@ export function useBreakpoint(): BreakpointState {
   }, []);
 
   useEffect(() => {
-    // 初始化时更新一次
+    // Update once on initialization
     updateState();
 
-    // 使用 ResizeObserver 监听（更高效）
+    // Use ResizeObserver for listening (more efficient)
     const handleResize = () => {
       requestAnimationFrame(updateState);
     };
@@ -119,7 +119,7 @@ export function useBreakpoint(): BreakpointState {
 }
 
 /**
- * 媒体查询 Hook
+ * Media Query Hook
  *
  * @example
  * ```tsx

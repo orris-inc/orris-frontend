@@ -1,8 +1,8 @@
 /**
- * 导航配置中心
+ * Navigation Configuration Center
  *
- * 这个文件是整个应用导航系统的单一数据源。
- * 包含导航栏、面包屑、路由标签等所有导航相关配置。
+ * This file is the single source of truth for the entire application's navigation system.
+ * Contains all navigation-related configurations including navbar, breadcrumb, route tabs, etc.
  */
 
 import {
@@ -21,24 +21,24 @@ import {
 import type { NavigationItem } from '../types/navigation.types';
 
 /**
- * 主导航配置
+ * Main Navigation Configuration
  *
- * 路由架构:
- * - 用户端路由: /dashboard (用户首页), /pricing (定价方案), /dashboard/profile (个人资料)
- * - 管理端路由: /admin (管理控制台), /admin/plans (订阅计划管理), /admin/users (用户管理)
+ * Route Architecture:
+ * - User Routes: /dashboard (user home), /pricing (pricing plans), /dashboard/profile (profile)
+ * - Admin Routes: /admin (admin console), /admin/plans (subscription plan management), /admin/users (user management)
  *
- * 权限说明:
- * - user: 普通用户可访问
- * - admin: 仅管理员可访问
- * - moderator: 版主/审核员可访问
+ * Permission Levels:
+ * - user: Regular users can access
+ * - admin: Admin only access
+ * - moderator: Moderator/reviewer access
  *
- * 显示控制:
- * - showInNav: 是否在导航栏显示
- * - showInBreadcrumb: 是否在面包屑显示
- * - parentId: 父级页面ID(用于构建面包屑层级)
+ * Display Control:
+ * - showInNav: Whether to show in navigation bar
+ * - showInBreadcrumb: Whether to show in breadcrumb
+ * - parentId: Parent page ID (used for building breadcrumb hierarchy)
  */
 export const navigationConfig: readonly NavigationItem[] = [
-  // ==================== 用户端路由 ====================
+  // ==================== User Routes ====================
   {
     id: 'dashboard',
     label: '首页',
@@ -46,7 +46,7 @@ export const navigationConfig: readonly NavigationItem[] = [
     icon: LayoutDashboard,
     roles: ['user', 'admin'],
     showInNav: true,
-    showInBreadcrumb: false, // 不在面包屑中显示，由"首页"代替
+    showInBreadcrumb: false, // Not shown in breadcrumb, replaced by "Home"
     order: 1,
   },
   {
@@ -98,21 +98,21 @@ export const navigationConfig: readonly NavigationItem[] = [
     path: '/dashboard/profile',
     icon: User,
     roles: ['user', 'admin'],
-    showInNav: false, // 不在主导航显示(通过用户菜单访问)
+    showInNav: false, // Not shown in main nav (accessed via user menu)
     showInBreadcrumb: true,
     parentId: 'dashboard',
     order: 6,
   },
 
-  // ==================== 管理端路由 ====================
+  // ==================== Admin Routes ====================
   {
     id: 'admin-dashboard',
     label: '管理控制台',
     path: '/admin',
     icon: LayoutDashboard,
-    roles: ['admin'], // 仅管理员可访问
+    roles: ['admin'], // Admin only
     showInNav: true,
-    showInBreadcrumb: false, // 不在面包屑中显示，由"首页"代替
+    showInBreadcrumb: false, // Not shown in breadcrumb, replaced by "Home"
     order: 10,
   },
   {
@@ -120,7 +120,7 @@ export const navigationConfig: readonly NavigationItem[] = [
     label: '订阅计划管理',
     path: '/admin/plans',
     icon: CreditCard,
-    roles: ['admin'], // 仅管理员可访问
+    roles: ['admin'], // Admin only
     showInNav: true,
     showInBreadcrumb: true,
     parentId: 'admin-dashboard',
@@ -131,7 +131,7 @@ export const navigationConfig: readonly NavigationItem[] = [
     label: '订阅管理',
     path: '/admin/subscriptions',
     icon: BadgeCheck,
-    roles: ['admin'], // 仅管理员可访问
+    roles: ['admin'], // Admin only
     showInNav: true,
     showInBreadcrumb: true,
     parentId: 'admin-dashboard',
@@ -142,7 +142,7 @@ export const navigationConfig: readonly NavigationItem[] = [
     label: '用户管理',
     path: '/admin/users',
     icon: Users,
-    roles: ['admin'], // 仅管理员可访问
+    roles: ['admin'], // Admin only
     showInNav: true,
     showInBreadcrumb: true,
     parentId: 'admin-dashboard',
@@ -153,7 +153,7 @@ export const navigationConfig: readonly NavigationItem[] = [
     label: '节点管理',
     path: '/admin/nodes',
     icon: Server,
-    roles: ['admin'], // 仅管理员可访问
+    roles: ['admin'], // Admin only
     showInNav: true,
     showInBreadcrumb: true,
     parentId: 'admin-dashboard',
@@ -164,7 +164,7 @@ export const navigationConfig: readonly NavigationItem[] = [
     label: '转发规则',
     path: '/admin/forward-rules',
     icon: ArrowLeftRight,
-    roles: ['admin'], // 仅管理员可访问
+    roles: ['admin'], // Admin only
     showInNav: true,
     showInBreadcrumb: true,
     parentId: 'admin-dashboard',
@@ -175,7 +175,7 @@ export const navigationConfig: readonly NavigationItem[] = [
     label: '转发节点',
     path: '/admin/forward-agents',
     icon: Cpu,
-    roles: ['admin'], // 仅管理员可访问
+    roles: ['admin'], // Admin only
     showInNav: true,
     showInBreadcrumb: true,
     parentId: 'admin-dashboard',
@@ -186,7 +186,7 @@ export const navigationConfig: readonly NavigationItem[] = [
     label: '资源组管理',
     path: '/admin/resource-groups',
     icon: Boxes,
-    roles: ['admin'], // 仅管理员可访问
+    roles: ['admin'], // Admin only
     showInNav: true,
     showInBreadcrumb: true,
     parentId: 'admin-dashboard',
@@ -195,25 +195,25 @@ export const navigationConfig: readonly NavigationItem[] = [
 ] as const;
 
 /**
- * 根据路径获取导航项
+ * Get navigation item by path
  */
 export const getNavigationItemByPath = (path: string): NavigationItem | undefined => {
   return navigationConfig.find((item) => item.path === path);
 };
 
 /**
- * 根据ID获取导航项
+ * Get navigation item by ID
  */
 export const getNavigationItemById = (id: string): NavigationItem | undefined => {
   return navigationConfig.find((item) => item.id === id);
 };
 
 /**
- * 根据路径段查找导航项
- * 用于面包屑自动生成
+ * Get navigation item by path segment
+ * Used for automatic breadcrumb generation
  *
- * @param segment - URL 路径段(例如: 'dashboard', 'plans')
- * @returns 导航项或 undefined
+ * @param segment - URL path segment (e.g., 'dashboard', 'plans')
+ * @returns Navigation item or undefined
  */
 export const getNavigationItemBySegment = (segment: string): NavigationItem | undefined => {
   return navigationConfig.find((item) => {
@@ -223,7 +223,7 @@ export const getNavigationItemBySegment = (segment: string): NavigationItem | un
 };
 
 /**
- * 获取显示在导航栏中的项
+ * Get items to display in navigation bar
  */
 export const getNavItems = (): NavigationItem[] => {
   return navigationConfig
@@ -232,24 +232,24 @@ export const getNavItems = (): NavigationItem[] => {
 };
 
 /**
- * 获取显示在面包屑中的项
+ * Get items to display in breadcrumb
  */
 export const getBreadcrumbItems = (): NavigationItem[] => {
   return navigationConfig.filter((item) => item.showInBreadcrumb !== false);
 };
 
 /**
- * 根据导航项ID构建面包屑路径
- * 自动追溯父级关系
+ * Build breadcrumb path by navigation item ID
+ * Automatically traces parent relationships
  *
- * @param itemId - 导航项ID
- * @returns 面包屑路径数组(从根到当前)
+ * @param itemId - Navigation item ID
+ * @returns Breadcrumb path array (from root to current)
  */
 export const buildBreadcrumbPath = (itemId: string): NavigationItem[] => {
   const result: NavigationItem[] = [];
   let currentId: string | undefined = itemId;
 
-  // 防止无限循环
+  // Prevent infinite loop
   const visited = new Set<string>();
 
   while (currentId && !visited.has(currentId)) {
@@ -257,7 +257,7 @@ export const buildBreadcrumbPath = (itemId: string): NavigationItem[] => {
     const item = getNavigationItemById(currentId);
 
     if (item) {
-      result.unshift(item); // 添加到数组开头
+      result.unshift(item); // Add to beginning of array
       currentId = item.parentId;
     } else {
       break;

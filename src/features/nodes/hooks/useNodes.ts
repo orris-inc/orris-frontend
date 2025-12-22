@@ -1,6 +1,6 @@
 /**
  * useNodes Hook
- * 基于 TanStack Query 实现
+ * Based on TanStack Query implementation
  */
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
@@ -29,7 +29,7 @@ import type {
   GetNodeInstallScriptParams,
 } from '@/api/node';
 
-// 前端使用的筛选条件类型
+// Filter types used by frontend
 interface NodeFilters {
   status?: NodeStatus;
   search?: string;
@@ -49,7 +49,7 @@ export const useNodes = (options: UseNodesOptions = {}) => {
   const queryClient = useQueryClient();
   const { showSuccess, showError } = useNotificationStore();
 
-  // 构建查询参数
+  // Build query parameters
   const params: ListNodesParams = {
     page,
     pageSize,
@@ -57,7 +57,7 @@ export const useNodes = (options: UseNodesOptions = {}) => {
     includeUserNodes,
   };
 
-  // 查询节点列表
+  // Query node list
   const {
     data,
     isLoading,
@@ -70,7 +70,7 @@ export const useNodes = (options: UseNodesOptions = {}) => {
     enabled,
   });
 
-  // 创建节点
+  // Create node
   const createMutation = useMutation({
     mutationFn: createNode,
     onSuccess: () => {
@@ -82,7 +82,7 @@ export const useNodes = (options: UseNodesOptions = {}) => {
     },
   });
 
-  // 更新节点
+  // Update node
   const updateMutation = useMutation({
     mutationFn: ({ id, data }: { id: string; data: UpdateNodeRequest }) =>
       updateNode(id, data),
@@ -95,7 +95,7 @@ export const useNodes = (options: UseNodesOptions = {}) => {
     },
   });
 
-  // 删除节点
+  // Delete node
   const deleteMutation = useMutation({
     mutationFn: (id: string) => deleteNode(id),
     onSuccess: () => {
@@ -107,7 +107,7 @@ export const useNodes = (options: UseNodesOptions = {}) => {
     },
   });
 
-  // 更新节点状态
+  // Update node status
   const statusMutation = useMutation({
     mutationFn: ({ id, status }: { id: string; status: 'active' | 'inactive' | 'maintenance' }) =>
       updateNodeStatus(id, { status }),
@@ -121,7 +121,7 @@ export const useNodes = (options: UseNodesOptions = {}) => {
     },
   });
 
-  // 生成 Token
+  // Generate Token
   const tokenMutation = useMutation({
     mutationFn: (id: string) => generateNodeToken(id),
     onSuccess: () => {
@@ -132,7 +132,7 @@ export const useNodes = (options: UseNodesOptions = {}) => {
     },
   });
 
-  // 获取安装脚本
+  // Get installation script
   const installScriptMutation = useMutation({
     mutationFn: ({ id, params }: { id: string; params?: GetNodeInstallScriptParams }) =>
       getNodeInstallScript(id, params),
@@ -142,7 +142,7 @@ export const useNodes = (options: UseNodesOptions = {}) => {
   });
 
   return {
-    // 数据
+    // Data
     nodes: data?.items ?? [],
     pagination: {
       page: data?.page ?? page,
@@ -151,12 +151,12 @@ export const useNodes = (options: UseNodesOptions = {}) => {
       totalPages: data?.totalPages ?? 0,
     },
 
-    // 状态
+    // Status
     isLoading,
     isFetching,
     error: error ? handleApiError(error) : null,
 
-    // 操作
+    // Operations
     refetch,
     createNode: (data: CreateNodeRequest) => createMutation.mutateAsync(data),
     updateNode: (id: string, data: UpdateNodeRequest) =>
@@ -168,7 +168,7 @@ export const useNodes = (options: UseNodesOptions = {}) => {
     getInstallScript: (id: string, params?: GetNodeInstallScriptParams) =>
       installScriptMutation.mutateAsync({ id, params }),
 
-    // Mutation 状态
+    // Mutation status
     isCreating: createMutation.isPending,
     isUpdating: updateMutation.isPending,
     isDeleting: deleteMutation.isPending,
@@ -178,7 +178,7 @@ export const useNodes = (options: UseNodesOptions = {}) => {
   };
 };
 
-// 获取单个节点详情
+// Get single node details
 export const useNode = (id: string | null) => {
   const { data, isLoading, error } = useQuery({
     queryKey: queryKeys.nodes.detail(id!),
@@ -193,7 +193,7 @@ export const useNode = (id: string | null) => {
   };
 };
 
-// 节点列表状态管理 hook（用于页面级状态）
+// Node list state management hook (for page-level state)
 export const useNodesPage = () => {
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(20);

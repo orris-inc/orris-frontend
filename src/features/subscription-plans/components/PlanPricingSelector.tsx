@@ -13,7 +13,7 @@ interface PlanPricingSelectorProps {
   onPricingChange?: (pricing: PricingOption) => void;
 }
 
-// 计费周期显示名称映射
+// Billing cycle display name mapping
 const billingCycleLabels: Record<BillingCycle, string> = {
   weekly: '周付',
   monthly: '月付',
@@ -28,17 +28,17 @@ export const PlanPricingSelector: React.FC<PlanPricingSelectorProps> = ({
   defaultBillingCycle,
   onPricingChange,
 }) => {
-  // 过滤激活的定价选项
+  // Filter active pricing options
   const activePricings = pricings.filter((p) => p.isActive);
 
-  // 默认选择第一个激活的定价，或指定的计费周期
+  // Default to first active pricing or specified billing cycle
   const defaultPricing =
     activePricings.find((p) => p.billingCycle === defaultBillingCycle) ||
     activePricings[0];
 
   const [selectedPricing, setSelectedPricing] = useState<PricingOption | null>(defaultPricing || null);
 
-  // 如果没有激活的定价，返回空
+  // Return null if no active pricing
   if (activePricings.length === 0 || !selectedPricing) {
     return null;
   }
@@ -53,14 +53,14 @@ export const PlanPricingSelector: React.FC<PlanPricingSelectorProps> = ({
     }
   };
 
-  // 格式化价格
+  // Format price
   const formatPrice = (price: number, currency: string) => {
     const symbol = currency === 'CNY' ? '¥' : '$';
     const amount = (price / 100).toFixed(2);
     return `${symbol}${amount}`;
   };
 
-  // 如果只有一个定价选项，直接显示价格
+  // If only one pricing option, display price directly
   if (activePricings.length === 1) {
     const pricing = activePricings[0];
     return (
@@ -75,7 +75,7 @@ export const PlanPricingSelector: React.FC<PlanPricingSelectorProps> = ({
     );
   }
 
-  // 多个定价选项，显示选择器
+  // Multiple pricing options, show selector
   return (
     <div>
       {/* 计费周期选择器 */}

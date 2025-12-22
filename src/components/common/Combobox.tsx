@@ -1,6 +1,6 @@
 /**
- * Combobox 组件 - 可搜索下拉组件
- * 替代 MUI Autocomplete，支持单选和多选
+ * Combobox Component - Searchable dropdown component
+ * Replaces MUI Autocomplete, supports single and multiple selection
  */
 
 import type { ReactNode } from 'react';
@@ -54,18 +54,18 @@ const Combobox = forwardRef<HTMLDivElement, ComboboxProps>(
     const [open, setOpen] = useState(false);
     const [search, setSearch] = useState('');
 
-    // 过滤选项
+    // Filter options
     const filteredOptions = options.filter((option) =>
       option.label.toLowerCase().includes(search.toLowerCase()),
     );
 
-    // 获取选中的值（数组格式）
+    // Get selected values (as array)
     const selectedValues = useMemo(
       () => (Array.isArray(value) ? value : value ? [value] : []),
       [value]
     );
 
-    // 处理选项选择
+    // Handle option selection
     const handleSelect = useCallback(
       (optionValue: string) => {
         if (multiple) {
@@ -82,7 +82,7 @@ const Combobox = forwardRef<HTMLDivElement, ComboboxProps>(
       [multiple, selectedValues, onChange],
     );
 
-    // 移除单个选中值
+    // Remove a single selected value
     const handleRemove = useCallback(
       (optionValue: string, e: React.MouseEvent) => {
         e.stopPropagation();
@@ -95,7 +95,7 @@ const Combobox = forwardRef<HTMLDivElement, ComboboxProps>(
       [multiple, selectedValues, onChange],
     );
 
-    // 获取显示文本
+    // Get display text
     const getDisplayText = () => {
       if (selectedValues.length === 0) return placeholder;
       if (multiple) {
@@ -106,7 +106,7 @@ const Combobox = forwardRef<HTMLDivElement, ComboboxProps>(
 
     return (
       <div ref={ref} className={cn('relative w-full', className)}>
-        {/* 触发器 */}
+        {/* Trigger */}
         <button
           type="button"
           onClick={() => !disabled && setOpen(!open)}
@@ -119,7 +119,7 @@ const Combobox = forwardRef<HTMLDivElement, ComboboxProps>(
           <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
         </button>
 
-        {/* 选中的多选标签 */}
+        {/* Selected multi-select tags */}
         {multiple && selectedValues.length > 0 && (
           <div className="mt-2 flex flex-wrap gap-1">
             {selectedValues.map((val) => {
@@ -144,10 +144,10 @@ const Combobox = forwardRef<HTMLDivElement, ComboboxProps>(
           </div>
         )}
 
-        {/* 下拉内容 */}
+        {/* Dropdown content */}
         {open && (
           <div className="absolute z-50 mt-1 w-full rounded-md border bg-popover p-1 text-popover-foreground shadow-md">
-            {/* 搜索框 */}
+            {/* Search input */}
             <div className="mb-1 px-2">
               <input
                 type="text"
@@ -158,7 +158,7 @@ const Combobox = forwardRef<HTMLDivElement, ComboboxProps>(
               />
             </div>
 
-            {/* 选项列表 */}
+            {/* Options list */}
             <div className="max-h-[300px] overflow-y-auto">
               {filteredOptions.length === 0 ? (
                 <div className="py-6 text-center text-sm text-muted-foreground">
@@ -192,7 +192,7 @@ const Combobox = forwardRef<HTMLDivElement, ComboboxProps>(
           </div>
         )}
 
-        {/* 点击外部关闭 */}
+        {/* Click outside to close */}
         {open && (
           <div
             className="fixed inset-0 z-40"

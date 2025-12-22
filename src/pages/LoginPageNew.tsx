@@ -1,7 +1,7 @@
 /**
- * 登录页面 - 新装饰主义设计
- * 设计风格：Art Deco × 现代精致
- * 配色：深墨绿 + 金琥珀 + 象牙白
+ * Login Page - Neo Art Deco Design
+ * Design style: Art Deco × Modern refinement
+ * Colors: Deep ink green + Golden amber + Ivory white
  */
 
 import { useForm } from 'react-hook-form';
@@ -16,7 +16,7 @@ import { useNotificationStore } from '@/shared/stores/notification-store';
 import { isAccountNotActiveError } from '@/shared/utils/error-messages';
 import { cn } from '@/lib/utils';
 
-// Zod 登录表单验证
+// Zod login form validation
 const loginSchema = z.object({
   email: z.string().email('请输入有效的邮箱地址'),
   password: z.string().min(8, '密码至少需要8个字符'),
@@ -25,7 +25,7 @@ const loginSchema = z.object({
 
 type LoginFormData = z.infer<typeof loginSchema>;
 
-// Art Deco 装饰图案组件
+// Art Deco decorative pattern component
 const DecoPattern1 = () => (
   <svg className="absolute top-8 left-8 w-32 h-32 opacity-20 deco-pattern" viewBox="0 0 100 100">
     <path
@@ -63,9 +63,9 @@ const DecoPattern3 = () => (
 
 const DecoLines = () => (
   <div className="absolute inset-0 overflow-hidden pointer-events-none">
-    {/* 顶部装饰线 */}
+    {/* Top decorative line */}
     <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-amber-500/30 to-transparent" />
-    {/* 底部装饰线 */}
+    {/* Bottom decorative line */}
     <div className="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-amber-500/30 to-transparent" />
   </div>
 );
@@ -81,11 +81,11 @@ export const LoginPageNew = () => {
   const [userEmail, setUserEmail] = useState<string>('');
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
 
-  // 从 location.state 获取提示消息
+  // Get message from location.state
   const state = location.state as { message?: string } | null;
   const successMessage = state?.message;
 
-  // 已登录则根据用户角色跳转
+  // Redirect based on user role if already logged in
   useEffect(() => {
     if (isAuthenticated && user) {
       const redirectPath = user.role === 'admin' ? '/admin' : '/dashboard';
@@ -93,7 +93,7 @@ export const LoginPageNew = () => {
     }
   }, [isAuthenticated, user, navigate]);
 
-  // 视差效果
+  // Parallax effect
   useEffect(() => {
     const handleMouseMove = (e: MouseEvent) => {
       const x = (e.clientX / window.innerWidth - 0.5) * 20;

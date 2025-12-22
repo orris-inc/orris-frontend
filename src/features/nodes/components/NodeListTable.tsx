@@ -1,6 +1,6 @@
 /**
- * 节点列表表格组件（管理端）
- * 基于 Node API 类型定义设计
+ * Node list table component (admin)
+ * Designed based on Node API type definitions
  */
 
 import { useMemo, useCallback } from 'react';
@@ -58,21 +58,21 @@ interface NodeListTableProps {
   onCopy: (node: Node) => void;
 }
 
-// 状态配置
+// Status configuration
 const STATUS_CONFIG: Record<NodeStatus, { label: string; variant: 'success' | 'default' | 'warning'; icon: React.ElementType }> = {
   active: { label: '已激活', variant: 'success', icon: CheckCircle2 },
   inactive: { label: '未激活', variant: 'default', icon: XCircle },
   maintenance: { label: '维护中', variant: 'warning', icon: Wrench },
 };
 
-// 协议配置
+// Protocol configuration
 const PROTOCOL_CONFIG: Record<string, { label: string; color: string }> = {
   shadowsocks: { label: 'SS', color: 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400' },
   trojan: { label: 'Trojan', color: 'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400' },
 };
 
 
-// 格式化时间
+// Format date
 const formatDate = (dateString: string) => {
   if (!dateString) return '-';
   return new Date(dateString).toLocaleString('zh-CN', {
@@ -101,7 +101,7 @@ export const NodeListTable: React.FC<NodeListTableProps> = ({
   onViewDetail,
   onCopy,
 }) => {
-  // 节点右键菜单内容
+  // Node context menu content
   const renderContextMenuActions = useCallback((node: Node) => (
     <>
       <ContextMenuItem onClick={() => onCopy(node)}>
@@ -131,7 +131,7 @@ export const NodeListTable: React.FC<NodeListTableProps> = ({
     </>
   ), [onCopy, onGenerateToken, onActivate, onDeactivate, onDelete]);
 
-  // 节点下拉菜单内容
+  // Node dropdown menu content
   const renderDropdownMenuActions = useCallback((node: Node) => (
     <>
       <DropdownMenuItem onClick={() => onCopy(node)}>
@@ -166,13 +166,13 @@ export const NodeListTable: React.FC<NodeListTableProps> = ({
       accessorKey: 'id',
       header: 'ID',
       size: 120,
-      meta: { priority: 4 } as ResponsiveColumnMeta,
+      meta: { priority: 4 } as ResponsiveColumnMeta, // Optional column >= 1280px
       cell: ({ row }) => <TruncatedId id={row.original.id} />,
     },
     {
       accessorKey: 'name',
       header: '节点',
-      meta: { priority: 1 } as ResponsiveColumnMeta, // 核心列，始终显示
+      meta: { priority: 1 } as ResponsiveColumnMeta, // Core column, always visible
       cell: ({ row }) => {
         const node = row.original;
         const protocolConfig = PROTOCOL_CONFIG[node.protocol] || { label: node.protocol, color: 'bg-gray-100 text-gray-700' };
@@ -203,7 +203,7 @@ export const NodeListTable: React.FC<NodeListTableProps> = ({
       id: 'config',
       header: '配置',
       size: 160,
-      meta: { priority: 3 } as ResponsiveColumnMeta, // 次要列 >= 1024px
+      meta: { priority: 3 } as ResponsiveColumnMeta, // Secondary column >= 1024px
       cell: ({ row }) => {
         const node = row.original;
         if (node.protocol === 'shadowsocks') {
@@ -220,7 +220,7 @@ export const NodeListTable: React.FC<NodeListTableProps> = ({
             </div>
           );
         }
-        // Trojan 显示传输协议和 TLS 配置
+        // Trojan displays transport protocol and TLS configuration
         const transport = node.transportProtocol?.toUpperCase() || 'TCP';
         return (
           <Tooltip>
@@ -253,7 +253,7 @@ export const NodeListTable: React.FC<NodeListTableProps> = ({
       id: 'availability',
       header: '在线',
       size: 100,
-      meta: { priority: 2 } as ResponsiveColumnMeta, // 重要列 >= 640px
+      meta: { priority: 2 } as ResponsiveColumnMeta, // Important column >= 640px
       cell: ({ row }) => {
         const node = row.original;
         if (node.isOnline) {
@@ -288,7 +288,7 @@ export const NodeListTable: React.FC<NodeListTableProps> = ({
       id: 'systemStatus',
       header: '系统状态',
       size: 160,
-      meta: { priority: 3 } as ResponsiveColumnMeta, // 次要列 >= 1024px
+      meta: { priority: 3 } as ResponsiveColumnMeta, // Secondary column >= 1024px
       cell: ({ row }) => {
         const node = row.original;
         const status = node.systemStatus;
@@ -308,7 +308,7 @@ export const NodeListTable: React.FC<NodeListTableProps> = ({
       accessorKey: 'status',
       header: '状态',
       size: 100,
-      meta: { priority: 1 } as ResponsiveColumnMeta, // 核心列，始终显示
+      meta: { priority: 1 } as ResponsiveColumnMeta, // Core column, always visible
       cell: ({ row }) => {
         const node = row.original;
         const statusConfig = STATUS_CONFIG[node.status] || { label: node.status, variant: 'default' as const, icon: AlertTriangle };
@@ -341,7 +341,7 @@ export const NodeListTable: React.FC<NodeListTableProps> = ({
       id: 'tags',
       header: '标签',
       size: 120,
-      meta: { priority: 3 } as ResponsiveColumnMeta, // 次要列 >= 1024px
+      meta: { priority: 3 } as ResponsiveColumnMeta, // Secondary column >= 1024px
       cell: ({ row }) => {
         const node = row.original;
         if (!node.tags || node.tags.length === 0) {
@@ -462,7 +462,7 @@ export const NodeListTable: React.FC<NodeListTableProps> = ({
       accessorKey: 'updatedAt',
       header: '更新时间',
       size: 100,
-      meta: { priority: 4 } as ResponsiveColumnMeta, // 可选列 >= 1280px
+      meta: { priority: 4 } as ResponsiveColumnMeta, // Optional column >= 1280px
       cell: ({ row }) => (
         <span className="text-xs text-slate-500 dark:text-slate-400">
           {formatDate(row.original.updatedAt)}
@@ -473,7 +473,7 @@ export const NodeListTable: React.FC<NodeListTableProps> = ({
       id: 'actions',
       header: '操作',
       size: 140,
-      meta: { priority: 1 } as ResponsiveColumnMeta, // 核心列，始终显示
+      meta: { priority: 1 } as ResponsiveColumnMeta, // Core column, always visible
       enableSorting: false,
       cell: ({ row }) => {
         const node = row.original;

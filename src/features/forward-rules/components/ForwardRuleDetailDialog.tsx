@@ -1,5 +1,5 @@
 /**
- * 转发规则详情查看对话框
+ * Forward Rule Detail View Dialog
  */
 
 import {
@@ -24,20 +24,20 @@ interface ForwardRuleDetailDialogProps {
   nodes?: Node[];
 }
 
-// 状态标签映射
+// Status label mapping
 const STATUS_LABELS: Record<string, string> = {
   enabled: '已启用',
   disabled: '已禁用',
 };
 
-// 协议类型标签映射
+// Protocol type label mapping
 const PROTOCOL_LABELS: Record<string, string> = {
   tcp: 'TCP',
   udp: 'UDP',
   both: 'TCP/UDP',
 };
 
-// 规则类型标签映射
+// Rule type label mapping
 const RULE_TYPE_LABELS: Record<string, string> = {
   direct: '直连转发',
   entry: '入口节点',
@@ -45,14 +45,14 @@ const RULE_TYPE_LABELS: Record<string, string> = {
   direct_chain: '直连链式转发',
 };
 
-// IP 版本标签映射
+// IP version label mapping
 const IP_VERSION_LABELS: Record<string, string> = {
   auto: '自动',
   ipv4: 'IPv4',
   ipv6: 'IPv6',
 };
 
-// 格式化时间
+// Format date
 const formatDate = (dateString: string) => {
   if (!dateString) return '-';
   const date = new Date(dateString);
@@ -66,7 +66,7 @@ const formatDate = (dateString: string) => {
   });
 };
 
-// 格式化流量
+// Format bytes
 const formatBytes = (bytes?: number) => {
   if (!bytes) return '0 B';
   const units = ['B', 'KB', 'MB', 'GB', 'TB'];
@@ -88,7 +88,7 @@ export const ForwardRuleDetailDialog: React.FC<ForwardRuleDetailDialogProps> = (
 }) => {
   if (!rule) return null;
 
-  // 根据 ID 获取节点名称
+  // Get agent name by ID
   const getAgentName = (id?: string) => {
     if (!id) return '-';
     const agent = agents.find((a) => a.id === id);
@@ -103,8 +103,8 @@ export const ForwardRuleDetailDialog: React.FC<ForwardRuleDetailDialogProps> = (
 
   return (
     <Dialog open={open} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="sm:max-w-[700px] max-h-[90vh] overflow-y-auto">
-        <DialogHeader>
+      <DialogContent className="sm:max-w-[700px] flex flex-col max-h-[90vh]">
+        <DialogHeader className="flex-shrink-0">
           <div className="flex items-center justify-between">
             <DialogTitle>转发规则详情</DialogTitle>
             <Badge
@@ -115,8 +115,9 @@ export const ForwardRuleDetailDialog: React.FC<ForwardRuleDetailDialogProps> = (
           </div>
         </DialogHeader>
 
+        <div className="flex-1 min-h-0 overflow-y-auto -mx-6 px-6">
         <div className="space-y-6">
-          {/* 基本信息 */}
+          {/* Basic Information */}
           <div>
             <h3 className="text-sm font-semibold mb-3">基本信息</h3>
             <Separator className="mb-4" />
@@ -158,12 +159,12 @@ export const ForwardRuleDetailDialog: React.FC<ForwardRuleDetailDialogProps> = (
             </div>
           </div>
 
-          {/* 端口配置 */}
+          {/* Port Configuration */}
           <div>
             <h3 className="text-sm font-semibold mb-3">转发配置</h3>
             <Separator className="mb-4" />
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {/* 监听端口 - direct 和 entry 类型 */}
+              {/* Listen Port - direct and entry types */}
               {(rule.ruleType === 'direct' || rule.ruleType === 'entry') && (
                 <div className="space-y-1">
                   <p className="text-sm text-muted-foreground">监听端口</p>
@@ -171,7 +172,7 @@ export const ForwardRuleDetailDialog: React.FC<ForwardRuleDetailDialogProps> = (
                 </div>
               )}
 
-              {/* 出口节点 - entry 类型 */}
+              {/* Exit Agent - entry type */}
               {rule.ruleType === 'entry' && rule.exitAgentId && (
                 <div className="space-y-1">
                   <p className="text-sm text-muted-foreground">出口节点</p>
@@ -179,7 +180,7 @@ export const ForwardRuleDetailDialog: React.FC<ForwardRuleDetailDialogProps> = (
                 </div>
               )}
 
-              {/* 中间节点列表 - chain 和 direct_chain 类型 */}
+              {/* Intermediate Nodes List - chain and direct_chain types */}
               {(rule.ruleType === 'chain' || rule.ruleType === 'direct_chain') && rule.chainAgentIds && rule.chainAgentIds.length > 0 && (
                 <div className="space-y-1 md:col-span-2">
                   <p className="text-sm text-muted-foreground">中间节点</p>
@@ -199,7 +200,7 @@ export const ForwardRuleDetailDialog: React.FC<ForwardRuleDetailDialogProps> = (
                 </div>
               )}
 
-              {/* chain 和 direct_chain 相关字段显示 */}
+              {/* chain and direct_chain related fields display */}
               {(rule.ruleType === 'chain' || rule.ruleType === 'direct_chain') && (
                 <>
                   {rule.role && (
@@ -247,7 +248,7 @@ export const ForwardRuleDetailDialog: React.FC<ForwardRuleDetailDialogProps> = (
                 </>
               )}
 
-              {/* 目标配置 - direct、entry、chain 和 direct_chain 类型 */}
+              {/* Target Configuration - direct, entry, chain and direct_chain types */}
               {(rule.ruleType === 'direct' || rule.ruleType === 'entry' || rule.ruleType === 'chain' || rule.ruleType === 'direct_chain') && (
                 <>
                   {rule.targetNodeId ? (
@@ -290,7 +291,7 @@ export const ForwardRuleDetailDialog: React.FC<ForwardRuleDetailDialogProps> = (
                 </>
               )}
 
-              {/* 绑定 IP */}
+              {/* Bind IP */}
               {rule.bindIp && (
                 <div className="space-y-1">
                   <p className="text-sm text-muted-foreground">绑定 IP</p>
@@ -300,7 +301,7 @@ export const ForwardRuleDetailDialog: React.FC<ForwardRuleDetailDialogProps> = (
             </div>
           </div>
 
-          {/* 流量统计 */}
+          {/* Traffic Statistics */}
           <div>
             <h3 className="text-sm font-semibold mb-3">流量统计</h3>
             <Separator className="mb-4" />
@@ -352,7 +353,7 @@ export const ForwardRuleDetailDialog: React.FC<ForwardRuleDetailDialogProps> = (
             </div>
           </div>
 
-          {/* 其他信息 */}
+          {/* Other Information */}
           {rule.remark && (
             <div>
               <h3 className="text-sm font-semibold mb-3">其他信息</h3>
@@ -364,7 +365,7 @@ export const ForwardRuleDetailDialog: React.FC<ForwardRuleDetailDialogProps> = (
             </div>
           )}
 
-          {/* 时间信息 */}
+          {/* Time Information */}
           <div>
             <h3 className="text-sm font-semibold mb-3">时间信息</h3>
             <Separator className="mb-4" />
@@ -383,8 +384,9 @@ export const ForwardRuleDetailDialog: React.FC<ForwardRuleDetailDialogProps> = (
             </div>
           </div>
         </div>
+        </div>
 
-        <DialogFooter>
+        <DialogFooter className="flex-shrink-0">
           <Button variant="outline" onClick={onClose}>
             关闭
           </Button>

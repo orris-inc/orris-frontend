@@ -70,7 +70,7 @@ export const SubscriptionPlansManagementPage = () => {
       await createPlan(data);
       setCreateDialogOpen(false);
     } catch {
-      // 错误已在 hook 中处理
+      // Error already handled in hook
     }
   };
 
@@ -80,7 +80,7 @@ export const SubscriptionPlansManagementPage = () => {
       setEditDialogOpen(false);
       setSelectedPlan(null);
     } catch {
-      // 错误已在 hook 中处理
+      // Error already handled in hook
     }
   };
 

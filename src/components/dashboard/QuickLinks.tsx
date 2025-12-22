@@ -13,9 +13,9 @@ interface QuickLink {
   icon: React.ReactNode;
   title: string;
   description: string;
-  path?: string; // 可选，如果没有则表示待实现
+  path?: string; // Optional, empty means not yet implemented
   adminOnly?: boolean;
-  implemented: boolean; // 是否已实现
+  implemented: boolean; // Whether implemented
 }
 
 export const QuickLinks = () => {
@@ -35,7 +35,7 @@ export const QuickLinks = () => {
       icon: <CreditCard className="size-5" />,
       title: '订阅管理',
       description: '查看和管理您的订阅计划',
-      implemented: false, // 待实现
+      implemented: false, // To be implemented
     },
     {
       icon: <Database className="size-5" />,
@@ -54,7 +54,7 @@ export const QuickLinks = () => {
     },
   ];
 
-  // 根据用户权限过滤链接
+  // Filter links based on user permissions
   const visibleLinks = links.filter((link) => !link.adminOnly || isAdmin);
 
   const handleLinkClick = (link: QuickLink) => {

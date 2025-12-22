@@ -13,13 +13,13 @@ import { useAuthInitializer } from '@/features/auth/hooks/useAuthInitializer';
 import { useAuthStore } from '@/features/auth/stores/auth-store';
 
 export const App = () => {
-  // 初始化认证状态
+  // Initialize auth state
   useAuthInitializer();
 
-  // 获取加载状态
+  // Get loading state
   const { isLoading } = useAuthStore();
 
-  // 显示加载指示器，直到认证状态初始化完成
+  // Show loading indicator until auth state initialization completes
   if (isLoading) {
     return (
       <div className="flex justify-center items-center h-screen">

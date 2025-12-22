@@ -212,8 +212,8 @@ export const ResourceGroupDetailDialog: React.FC<ResourceGroupDetailDialogProps>
   return (
     <>
       <Dialog open={open} onOpenChange={handleClose}>
-        <DialogContent className="sm:max-w-2xl max-h-[90vh] overflow-y-auto">
-          <DialogHeader>
+        <DialogContent className="sm:max-w-2xl flex flex-col max-h-[90vh]">
+          <DialogHeader className="flex-shrink-0">
             <DialogTitle className="flex items-center gap-2">
               {resourceGroup.name}
               <AdminBadge variant={resourceGroup.status === 'active' ? 'success' : 'default'}>
@@ -225,6 +225,7 @@ export const ResourceGroupDetailDialog: React.FC<ResourceGroupDetailDialogProps>
             </DialogDescription>
           </DialogHeader>
 
+          <div className="flex-1 min-h-0 overflow-y-auto -mx-6 px-6">
           <Tabs defaultValue="info" className="w-full">
             <TabsList className="grid w-full grid-cols-3">
               <TabsTrigger value="info">基本信息</TabsTrigger>
@@ -518,6 +519,7 @@ export const ResourceGroupDetailDialog: React.FC<ResourceGroupDetailDialogProps>
               )}
             </TabsContent>
           </Tabs>
+          </div>
         </DialogContent>
       </Dialog>
 

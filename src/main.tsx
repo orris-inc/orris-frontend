@@ -1,5 +1,5 @@
 /**
- * 应用入口文件
+ * Application Entry Point
  * React 19.0
  */
 
@@ -8,14 +8,14 @@ import { createRoot } from 'react-dom/client';
 import { App } from './app/App';
 import './index.css';
 
-// 获取根元素
+// Get root element
 const rootElement = document.getElementById('root');
 
 if (!rootElement) {
   throw new Error('Root element not found');
 }
 
-// React 19 渲染
+// React 19 rendering
 createRoot(rootElement).render(
   <StrictMode>
     <App />

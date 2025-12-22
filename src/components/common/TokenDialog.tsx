@@ -32,7 +32,7 @@ export const TokenDialog: React.FC<TokenDialogProps> = ({
 }) => {
   const [hasCopied, setHasCopied] = useState(false);
 
-  // 重置复制状态
+  // Reset copy state
   useEffect(() => {
     if (open) {
       setHasCopied(false);

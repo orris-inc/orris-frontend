@@ -54,7 +54,7 @@ export const ResourceGroupListTable: React.FC<ResourceGroupListTableProps> = ({
   onDelete,
   onToggleStatus,
 }) => {
-  // 资源组右键菜单内容
+  // Resource group context menu content
   const renderContextMenuActions = useCallback((resourceGroup: ResourceGroup) => (
     <>
       {onViewDetail && (
@@ -83,7 +83,7 @@ export const ResourceGroupListTable: React.FC<ResourceGroupListTableProps> = ({
     </>
   ), [onViewDetail, onEdit, onDelete, onToggleStatus]);
 
-  // 资源组下拉菜单内容
+  // Resource group dropdown menu content
   const renderDropdownMenuActions = useCallback((resourceGroup: ResourceGroup) => (
     <>
       {onViewDetail && (

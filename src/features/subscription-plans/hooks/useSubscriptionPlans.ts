@@ -1,6 +1,6 @@
 /**
  * useSubscriptionPlans Hook
- * 基于 TanStack Query 实现
+ * Implemented using TanStack Query
  */
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
@@ -36,7 +36,7 @@ export const useSubscriptionPlans = (options: UseSubscriptionPlansOptions = {}) 
   const queryClient = useQueryClient();
   const { showSuccess, showError } = useNotificationStore();
 
-  // 构建查询参数
+  // Build query parameters
   const params: ListPlansParams = {
     page,
     pageSize,
@@ -44,7 +44,7 @@ export const useSubscriptionPlans = (options: UseSubscriptionPlansOptions = {}) 
     isPublic: filters.isPublic,
   };
 
-  // 查询订阅计划列表
+  // Query subscription plan list
   const {
     data,
     isLoading,
@@ -57,7 +57,7 @@ export const useSubscriptionPlans = (options: UseSubscriptionPlansOptions = {}) 
     enabled,
   });
 
-  // 创建订阅计划
+  // Create subscription plan
   const createMutation = useMutation({
     mutationFn: createPlan,
     onSuccess: () => {
@@ -69,7 +69,7 @@ export const useSubscriptionPlans = (options: UseSubscriptionPlansOptions = {}) 
     },
   });
 
-  // 更新订阅计划
+  // Update subscription plan
   const updateMutation = useMutation({
     mutationFn: ({ id, data }: { id: string; data: UpdatePlanRequest }) =>
       updatePlan(id, data),
@@ -82,7 +82,7 @@ export const useSubscriptionPlans = (options: UseSubscriptionPlansOptions = {}) 
     },
   });
 
-  // 更新订阅计划状态
+  // Update subscription plan status
   const statusMutation = useMutation({
     mutationFn: ({ id, status }: { id: string; status: 'active' | 'inactive' }) =>
       updatePlanStatus(id, { status }),
@@ -97,7 +97,7 @@ export const useSubscriptionPlans = (options: UseSubscriptionPlansOptions = {}) 
   });
 
   return {
-    // 数据
+    // Data
     plans: data?.items ?? [],
     pagination: {
       page: data?.page ?? page,
@@ -106,12 +106,12 @@ export const useSubscriptionPlans = (options: UseSubscriptionPlansOptions = {}) 
       totalPages: data?.totalPages ?? 0,
     },
 
-    // 状态
+    // State
     isLoading,
     isFetching,
     error: error ? handleApiError(error) : null,
 
-    // 操作
+    // Operations
     refetch,
     createPlan: (data: CreatePlanRequest) => createMutation.mutateAsync(data),
     updatePlan: (id: string, data: UpdatePlanRequest) =>
@@ -124,14 +124,14 @@ export const useSubscriptionPlans = (options: UseSubscriptionPlansOptions = {}) 
         status: plan.status === 'active' ? 'inactive' : 'active',
       }),
 
-    // Mutation 状态
+    // Mutation state
     isCreating: createMutation.isPending,
     isUpdating: updateMutation.isPending,
     isChangingStatus: statusMutation.isPending,
   };
 };
 
-// 获取单个订阅计划详情
+// Get single subscription plan details
 export const useSubscriptionPlan = (id: string | null) => {
   const { data, isLoading, error } = useQuery({
     queryKey: queryKeys.subscriptionPlans.detail(id!),
@@ -146,7 +146,7 @@ export const useSubscriptionPlan = (id: string | null) => {
   };
 };
 
-// 获取公开的订阅计划列表
+// Get public subscription plan list
 export const usePublicPlans = () => {
   const { data, isLoading, error } = useQuery({
     queryKey: queryKeys.subscriptionPlans.public(),
@@ -160,7 +160,7 @@ export const usePublicPlans = () => {
   };
 };
 
-// 订阅计划列表状态管理 hook（用于页面级状态）
+// Subscription plan list state management hook (for page-level state)
 export const useSubscriptionPlansPage = () => {
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(20);

@@ -1,6 +1,6 @@
 /**
- * 忘记密码页面
- * 发送密码重置邮件
+ * Forgot Password Page
+ * Sends password reset email
  */
 
 import { useForm } from 'react-hook-form';
@@ -27,7 +27,7 @@ import {
 } from '@/lib/ui-styles';
 import { cn } from '@/lib/utils';
 
-// Zod验证
+// Zod validation
 const forgotPasswordSchema = z.object({
   email: z.string().email('请输入有效的邮箱地址'),
 });
@@ -110,7 +110,7 @@ export const ForgotPasswordPage = () => {
             <p className={cardDescriptionStyles}>输入您的邮箱地址,我们将发送密码重置链接</p>
           </div>
           <div className={cn(cardContentStyles, "grid gap-6")}>
-            {/* 错误提示 */}
+            {/* Error Message */}
             {error && (
               <div className={getAlertClass('destructive')}>
                 <CircleAlert className="h-4 w-4" />
@@ -118,7 +118,7 @@ export const ForgotPasswordPage = () => {
               </div>
             )}
 
-            {/* 表单 */}
+            {/* Form */}
             <form onSubmit={handleSubmit(onSubmit)} className="grid gap-4">
               <div className="grid gap-2">
                 <LabelPrimitive.Root htmlFor="email" className={labelStyles}>邮箱</LabelPrimitive.Root>
@@ -142,7 +142,7 @@ export const ForgotPasswordPage = () => {
               </button>
             </form>
 
-            {/* 返回登录 */}
+            {/* Back to Login */}
             <div className="text-center">
               <RouterLink
                 to="/login"

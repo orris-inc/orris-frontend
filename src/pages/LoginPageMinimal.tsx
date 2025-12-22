@@ -1,6 +1,6 @@
 /**
- * 登录页面 - 极简风格「呼吸空间」
- * 设计理念：75%留白 + 精致排版 + 温暖中性色调
+ * Login Page - Minimalist Style "Breathing Space"
+ * Design philosophy: 75% whitespace + Refined typography + Warm neutral tones
  */
 
 import { useForm } from 'react-hook-form';
@@ -14,7 +14,7 @@ import { useAuthStore } from '@/features/auth/stores/auth-store';
 import { useNotificationStore } from '@/shared/stores/notification-store';
 import { isAccountNotActiveError } from '@/shared/utils/error-messages';
 
-// Zod 登录表单验证
+// Zod login form validation
 const loginSchema = z.object({
   email: z.string().email('请输入有效的邮箱地址'),
   password: z.string().min(8, '密码至少需要8个字符'),
@@ -33,11 +33,11 @@ export const LoginPageMinimal = () => {
   const [showResendVerification, setShowResendVerification] = useState(false);
   const [userEmail, setUserEmail] = useState<string>('');
 
-  // 从 location.state 获取提示消息
+  // Get message from location.state
   const state = location.state as { message?: string } | null;
   const successMessage = state?.message;
 
-  // 已登录则根据用户角色跳转
+  // Redirect based on user role if already logged in
   useEffect(() => {
     if (isAuthenticated && user) {
       const redirectPath = user.role === 'admin' ? '/admin' : '/dashboard';
@@ -96,15 +96,15 @@ export const LoginPageMinimal = () => {
 
   return (
     <div className="minimal-login">
-      {/* 背景纹理 */}
+      {/* Background Texture */}
       <div className="fixed inset-0 bg-[#F7F5F2]">
         <div className="absolute inset-0 opacity-[0.02] bg-noise" />
       </div>
 
-      {/* 主内容区 */}
+      {/* Main Content Area */}
       <div className="relative min-h-screen flex items-center justify-center px-6 py-12">
         <div className="w-full max-w-[360px]">
-          {/* 呼吸线 */}
+          {/* Breathing Line */}
           <div className="flex justify-center mb-12">
             <div className="breathing-line" />
           </div>
@@ -116,7 +116,7 @@ export const LoginPageMinimal = () => {
             </h1>
           </div>
 
-          {/* 标题 */}
+          {/* Title */}
           <div className="text-center mb-16 fade-in" style={{ animationDelay: '0.3s' }}>
             <h2 className="text-[32px] font-light text-[#2B2926] mb-2 font-serif">
               欢迎回来
@@ -126,7 +126,7 @@ export const LoginPageMinimal = () => {
             </p>
           </div>
 
-          {/* 成功消息 */}
+          {/* Success Message */}
           {successMessage && (
             <div className="mb-8 fade-in" style={{ animationDelay: '0.5s' }}>
               <p className="text-[13px] text-[#6B8E6F] text-center">
@@ -135,7 +135,7 @@ export const LoginPageMinimal = () => {
             </div>
           )}
 
-          {/* 错误提示 */}
+          {/* Error Message */}
           {error && (
             <div className="mb-8 fade-in error-shake">
               <div className="flex items-start gap-2">
@@ -157,9 +157,9 @@ export const LoginPageMinimal = () => {
             </div>
           )}
 
-          {/* 登录表单 */}
+          {/* Login Form */}
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-12">
-            {/* 邮箱输入 */}
+            {/* Email Input */}
             <div className="floating-input-group fade-in" style={{ animationDelay: '0.7s' }}>
               <input
                 id="email"
@@ -180,7 +180,7 @@ export const LoginPageMinimal = () => {
               )}
             </div>
 
-            {/* 密码输入 */}
+            {/* Password Input */}
             <div className="floating-input-group fade-in" style={{ animationDelay: '0.9s' }}>
               <input
                 id="password"
@@ -210,7 +210,7 @@ export const LoginPageMinimal = () => {
               )}
             </div>
 
-            {/* 记住我 & 忘记密码 */}
+            {/* Remember Me & Forgot Password */}
             <div className="flex items-center justify-between text-[13px] fade-in" style={{ animationDelay: '1.1s' }}>
               <label className="flex items-center gap-2 cursor-pointer group">
                 <input
@@ -231,7 +231,7 @@ export const LoginPageMinimal = () => {
               </RouterLink>
             </div>
 
-            {/* 登录按钮 */}
+            {/* Login Button */}
             <button
               type="submit"
               disabled={isLoading}
@@ -249,7 +249,7 @@ export const LoginPageMinimal = () => {
             </button>
           </form>
 
-          {/* 分隔线 */}
+          {/* Separator */}
           <div className="relative my-12 fade-in" style={{ animationDelay: '1.5s' }}>
             <div className="absolute inset-0 flex items-center">
               <div className="w-full h-px bg-[#2B2926]/10" />
@@ -261,7 +261,7 @@ export const LoginPageMinimal = () => {
             </div>
           </div>
 
-          {/* OAuth 登录 */}
+          {/* OAuth Login */}
           <div className="space-y-4 text-center fade-in" style={{ animationDelay: '1.7s' }}>
             <button
               type="button"
@@ -282,7 +282,7 @@ export const LoginPageMinimal = () => {
             </button>
           </div>
 
-          {/* 注册链接 */}
+          {/* Register Link */}
           <div className="mt-16 text-center text-[13px] text-[#7A7672] fade-in" style={{ animationDelay: '1.9s' }}>
             还没有账号？{' '}
             <RouterLink
@@ -295,12 +295,12 @@ export const LoginPageMinimal = () => {
         </div>
       </div>
 
-      {/* 版本号 */}
+      {/* Version */}
       <div className="fixed bottom-6 right-6 text-[10px] text-[#7A7672]/30 font-mono tracking-wider">
         v1.2.0
       </div>
 
-      {/* 内联样式 */}
+      {/* Inline Styles */}
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Crimson+Pro:wght@300;400;600&family=Manrope:wght@300;400;500;600&display=swap');
 
@@ -313,12 +313,12 @@ export const LoginPageMinimal = () => {
           font-family: 'Crimson Pro', serif;
         }
 
-        /* 噪点纹理 */
+        /* Noise Texture */}
         .bg-noise {
           background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 400 400' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='1.5' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
         }
 
-        /* 呼吸线动画 */
+        /* Breathing Line Animation */}
         .breathing-line {
           width: 40px;
           height: 1px;
@@ -338,7 +338,7 @@ export const LoginPageMinimal = () => {
           }
         }
 
-        /* 浮动输入框 */
+        /* Floating Input */}
         .floating-input-group {
           position: relative;
           margin-bottom: 0;
@@ -392,7 +392,7 @@ export const LoginPageMinimal = () => {
           width: 100%;
         }
 
-        /* 下划线悬停效果 */
+        /* Underline Hover Effect */}
         .underline-hover {
           position: relative;
         }
@@ -412,12 +412,12 @@ export const LoginPageMinimal = () => {
           width: 100%;
         }
 
-        /* 按钮阴影 */
+        /* Button Shadow */}
         .shadow-minimal {
           box-shadow: 0 4px 12px rgba(107, 142, 111, 0.15);
         }
 
-        /* 淡入动画 */
+        /* Fade In Animation */}
         @keyframes fadeInUp {
           from {
             opacity: 0;
@@ -434,7 +434,7 @@ export const LoginPageMinimal = () => {
           opacity: 0;
         }
 
-        /* 错误抖动动画 */
+        /* Error Shake Animation */}
         @keyframes shake {
           0%, 100% { transform: translateX(0); }
           25% { transform: translateX(-2px); }
@@ -445,7 +445,7 @@ export const LoginPageMinimal = () => {
           animation: shake 0.3s ease-in-out;
         }
 
-        /* 响应式 */
+        /* Responsive */}
         @media (max-width: 768px) {
           .minimal-login h1 {
             font-size: 48px;
@@ -460,7 +460,7 @@ export const LoginPageMinimal = () => {
           }
         }
 
-        /* 自定义复选框样式 */
+        /* Custom Checkbox Style */}
         input[type="checkbox"] {
           appearance: none;
           -webkit-appearance: none;

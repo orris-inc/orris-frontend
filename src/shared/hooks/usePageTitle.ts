@@ -1,19 +1,19 @@
 /**
  * usePageTitle Hook
- * 用于动态设置页面标题
+ * Used for dynamically setting page title
  */
 
 import { useEffect } from 'react';
 
 /**
- * 设置页面标题
- * @param title 页面标题（不包含应用名称）
- * @param appName 应用名称，默认为 "Orris"
+ * Set page title
+ * @param title Page title (without application name)
+ * @param appName Application name, defaults to "Orris"
  *
  * @example
  * ```tsx
- * usePageTitle('用户管理'); // 页面标题: Orris - 用户管理
- * usePageTitle('Dashboard', 'MyApp'); // 页面标题: MyApp - Dashboard
+ * usePageTitle('User Management'); // Page title: Orris - User Management
+ * usePageTitle('Dashboard', 'MyApp'); // Page title: MyApp - Dashboard
  * ```
  */
 export const usePageTitle = (title: string, appName = 'Orris') => {
@@ -21,7 +21,7 @@ export const usePageTitle = (title: string, appName = 'Orris') => {
     const fullTitle = title ? `${appName} - ${title}` : appName;
     document.title = fullTitle;
 
-    // 清理函数：组件卸载时恢复默认标题
+    // Cleanup function: restore default title when component unmounts
     return () => {
       document.title = appName;
     };

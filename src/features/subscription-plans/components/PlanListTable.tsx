@@ -1,6 +1,6 @@
 /**
- * 订阅计划列表表格组件（管理端）
- * 使用 TanStack Table 实现
+ * Subscription Plan List Table Component (Admin)
+ * Implemented using TanStack Table
  */
 
 import { useMemo, useCallback } from 'react';
@@ -21,13 +21,13 @@ import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/common/Too
 import { BillingCycleBadge } from './BillingCycleBadge';
 import type { SubscriptionPlan, PlanStatus, BillingCycle, PlanType } from '@/api/subscription/types';
 
-// 计划类型显示名称
+// Plan type display names
 const PLAN_TYPE_LABELS: Record<PlanType, string> = {
   node: '节点订阅',
   forward: '端口转发',
 };
 
-// 计费周期显示名称
+// Billing cycle display names
 const BILLING_CYCLE_LABELS: Record<BillingCycle, string> = {
   weekly: '周付',
   monthly: '月付',
@@ -37,13 +37,13 @@ const BILLING_CYCLE_LABELS: Record<BillingCycle, string> = {
   lifetime: '终身',
 };
 
-// 获取计划的价格范围（支持多定价）
+// Get plan price range (supports multiple pricing)
 const getPriceRange = (plan: SubscriptionPlan): {
   display: string;
   details: Array<{ cycle: BillingCycle; label: string; price: string }> | null;
   primaryCycle: BillingCycle;
 } => {
-  // 防止 pricings 为 null 或 undefined（兼容旧数据）
+  // Prevent pricings from being null or undefined (compatible with legacy data)
   if (!plan.pricings || plan.pricings.length === 0) {
     return {
       display: '-',
@@ -72,7 +72,7 @@ const getPriceRange = (plan: SubscriptionPlan): {
     };
   }
 
-  // 多个激活的定价
+  // Multiple active pricing options
   const prices = activePricings.map(p => p.price);
   const minPrice = Math.min(...prices);
   const maxPrice = Math.max(...prices);
@@ -126,7 +126,7 @@ export const PlanListTable: React.FC<PlanListTableProps> = ({
   onViewSubscriptions,
   onManageNodes,
 }) => {
-  // 订阅计划右键菜单内容
+  // Subscription plan context menu content
   const renderContextMenuActions = useCallback((plan: SubscriptionPlan) => (
     <>
       <ContextMenuItem onClick={() => onEdit(plan)}>
@@ -159,7 +159,7 @@ export const PlanListTable: React.FC<PlanListTableProps> = ({
     </>
   ), [onEdit, onDuplicate, onToggleStatus, onViewSubscriptions, onManageNodes]);
 
-  // 订阅计划下拉菜单内容
+  // Subscription plan dropdown menu content
   const renderDropdownMenuActions = useCallback((plan: SubscriptionPlan) => (
     <>
       <DropdownMenuItem onClick={() => onEdit(plan)}>
@@ -271,7 +271,7 @@ export const PlanListTable: React.FC<PlanListTableProps> = ({
       meta: { priority: 2 } as ResponsiveColumnMeta,
       cell: ({ row }) => {
         const priceRange = getPriceRange(row.original);
-        // 如果有多定价，显示数量；否则显示主计费周期
+        // If there are multiple pricing options, show the count; otherwise show the primary billing cycle
         if (priceRange.details && priceRange.details.length > 1) {
           return (
             <Tooltip>

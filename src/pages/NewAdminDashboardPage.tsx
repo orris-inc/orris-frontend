@@ -1,6 +1,6 @@
 /**
- * 管理端控制台 - 精致商务风格
- * 使用真实 API 数据
+ * Admin Dashboard - Refined Business Style
+ * Uses real API data
  */
 
 import { useEffect, useState } from 'react';
@@ -19,7 +19,7 @@ import {
   Activity,
 } from 'lucide-react';
 
-// ============ 统计卡片组件 ============
+// ============ Stats Card Component ============
 interface StatsCardProps {
   title: string;
   value: string;
@@ -61,7 +61,7 @@ const StatsCard = ({
   );
 };
 
-// ============ 快速操作卡片 ============
+// ============ Quick Action Card ============
 interface QuickActionCardProps {
   title: string;
   description: string;
@@ -84,7 +84,7 @@ const QuickActionCard = ({
       onClick={onClick}
       className="group w-full text-left p-2 sm:p-4 md:p-5 rounded-lg sm:rounded-xl bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 hover:border-slate-200 dark:hover:border-slate-700 hover:shadow-lg hover:shadow-slate-200/50 dark:hover:shadow-slate-900/50 transition-all duration-300 touch-target"
     >
-      {/* 手机端：垂直布局 */}
+      {/* Mobile: Vertical layout */}
       <div className="flex flex-col items-center text-center sm:flex-row sm:items-center sm:text-left gap-2 sm:gap-4">
         <div
           className={`${iconBg} p-2 sm:p-3 rounded-lg sm:rounded-xl shadow-sm group-hover:scale-105 transition-transform`}
@@ -107,7 +107,7 @@ const QuickActionCard = ({
   );
 };
 
-// ============ 系统状态 ============
+// ============ System Status ============
 interface SystemStatusProps {
   label: string;
   status: 'online' | 'warning' | 'offline';
@@ -159,7 +159,7 @@ const SystemStatus = ({ label, status, value, icon }: SystemStatusProps) => {
   );
 };
 
-// ============ Dashboard 数据 Hook ============
+// ============ Dashboard Data Hook ============
 interface DashboardStats {
   totalUsers: number;
   activeSubscriptions: number;
@@ -208,7 +208,7 @@ const useDashboardStats = () => {
   return { stats, loading };
 };
 
-// ============ 主页面组件 ============
+// ============ Main Page Component ============
 export const NewAdminDashboardPage = () => {
   usePageTitle('控制台');
 

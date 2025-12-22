@@ -1,6 +1,6 @@
 /**
- * 计划节点管理对话框
- * 用于绑定/解绑计划关联的节点
+ * Plan Node Management Dialog
+ * Used to bind/unbind nodes associated with a plan
  */
 
 import { useState, useEffect, useMemo } from 'react';
@@ -35,7 +35,7 @@ interface PlanNodesDialogProps {
   plan: SubscriptionPlan | null;
 }
 
-// 节点状态配置
+// Node status configuration
 const NODE_STATUS_CONFIG: Record<string, { label: string; variant: 'success' | 'default' | 'warning' }> = {
   active: { label: '在线', variant: 'success' },
   inactive: { label: '离线', variant: 'default' },
@@ -51,7 +51,7 @@ export const PlanNodesDialog: React.FC<PlanNodesDialogProps> = ({
   const [showAddPanel, setShowAddPanel] = useState(false);
   const [selectedNodeIds, setSelectedNodeIds] = useState<Set<string>>(new Set());
 
-  // 获取计划绑定的节点
+  // Get nodes bound to the plan
   const {
     nodes: boundNodes,
     isLoading: isBoundNodesLoading,
@@ -61,13 +61,13 @@ export const PlanNodesDialog: React.FC<PlanNodesDialogProps> = ({
     isUnbinding,
   } = usePlanNodes({ planId: plan?.id ?? null, enabled: open && plan !== null });
 
-  // 获取所有节点
+  // Get all nodes
   const { nodes: allNodes, isLoading: isAllNodesLoading } = useNodes({
     pageSize: 1000,
     enabled: open && showAddPanel,
   });
 
-  // 重置状态
+  // Reset state
   useEffect(() => {
     if (!open) {
       setSearchQuery('');
@@ -76,17 +76,17 @@ export const PlanNodesDialog: React.FC<PlanNodesDialogProps> = ({
     }
   }, [open]);
 
-  // 已绑定节点的 ID 集合（转换为 string 以匹配 Node.id 类型）
+  // Set of bound node IDs (converted to string to match Node.id type)
   const boundNodeIds = useMemo(() => {
     return new Set(boundNodes.map((n) => String(n.id)));
   }, [boundNodes]);
 
-  // 可添加的节点（排除已绑定的）
+  // Available nodes to add (excluding already bound ones)
   const availableNodes = useMemo(() => {
     return allNodes.filter((n) => !boundNodeIds.has(n.id));
   }, [allNodes, boundNodeIds]);
 
-  // 过滤已绑定的节点
+  // Filter bound nodes
   const filteredBoundNodes = useMemo(() => {
     if (!searchQuery.trim()) return boundNodes;
     const query = searchQuery.toLowerCase();
@@ -97,7 +97,7 @@ export const PlanNodesDialog: React.FC<PlanNodesDialogProps> = ({
     );
   }, [boundNodes, searchQuery]);
 
-  // 过滤可添加的节点
+  // Filter available nodes
   const filteredAvailableNodes = useMemo(() => {
     if (!searchQuery.trim()) return availableNodes;
     const query = searchQuery.toLowerCase();
@@ -108,7 +108,7 @@ export const PlanNodesDialog: React.FC<PlanNodesDialogProps> = ({
     );
   }, [availableNodes, searchQuery]);
 
-  // 切换节点选择
+  // Toggle node selection
   const toggleNodeSelection = (nodeId: string) => {
     setSelectedNodeIds((prev) => {
       const next = new Set(prev);
@@ -121,7 +121,7 @@ export const PlanNodesDialog: React.FC<PlanNodesDialogProps> = ({
     });
   };
 
-  // 全选/取消全选
+  // Select all / deselect all
   const toggleSelectAll = () => {
     if (selectedNodeIds.size === filteredAvailableNodes.length) {
       setSelectedNodeIds(new Set());
@@ -130,7 +130,7 @@ export const PlanNodesDialog: React.FC<PlanNodesDialogProps> = ({
     }
   };
 
-  // 绑定选中的节点
+  // Bind selected nodes
   const handleBindNodes = async () => {
     if (selectedNodeIds.size === 0) return;
     try {
@@ -138,16 +138,16 @@ export const PlanNodesDialog: React.FC<PlanNodesDialogProps> = ({
       setSelectedNodeIds(new Set());
       setShowAddPanel(false);
     } catch {
-      // 错误已在 hook 中处理
+      // Error already handled in hook
     }
   };
 
-  // 解绑单个节点
+  // Unbind a single node
   const handleUnbindNode = async (nodeId: number | string) => {
     try {
       await unbindNodes([String(nodeId)]);
     } catch {
-      // 错误已在 hook 中处理
+      // Error already handled in hook
     }
   };
 
@@ -156,7 +156,7 @@ export const PlanNodesDialog: React.FC<PlanNodesDialogProps> = ({
   return (
     <Dialog open={open} onOpenChange={onClose}>
       <DialogContent className="max-w-2xl p-0 gap-0 overflow-hidden">
-        {/* 头部 */}
+        {/* Header */}
         <div className="px-6 py-5 bg-gradient-to-b from-slate-50 to-white dark:from-slate-800/50 dark:to-slate-900">
           <div className="flex items-center gap-3">
             <div className="flex items-center justify-center size-10 rounded-xl bg-gradient-to-br from-emerald-500 to-emerald-600 text-white shadow-lg shadow-emerald-500/30">
@@ -179,9 +179,9 @@ export const PlanNodesDialog: React.FC<PlanNodesDialogProps> = ({
 
         <Separator />
 
-        {/* 工具栏 */}
+        {/* Toolbar */}
         <div className="px-6 py-4 flex items-center justify-between gap-4 bg-white dark:bg-slate-900">
-          {/* 统计徽章 */}
+          {/* Statistics badge */}
           <div className="flex items-center gap-2">
             <AdminBadge variant="info" size="md">
               <Server className="mr-1.5 size-3.5" strokeWidth={2} />
@@ -189,9 +189,9 @@ export const PlanNodesDialog: React.FC<PlanNodesDialogProps> = ({
             </AdminBadge>
           </div>
 
-          {/* 操作按钮 */}
+          {/* Action buttons */}
           <div className="flex items-center gap-2">
-            {/* 搜索框 */}
+            {/* Search box */}
             <div className="relative">
               <Search
                 className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-slate-400"
@@ -228,7 +228,7 @@ export const PlanNodesDialog: React.FC<PlanNodesDialogProps> = ({
 
         <Separator />
 
-        {/* 内容区域 */}
+        {/* Content area */}
         <ScrollArea className="h-[380px]">
           {isLoading ? (
             <div className="flex flex-col items-center justify-center h-full py-16">
@@ -244,9 +244,9 @@ export const PlanNodesDialog: React.FC<PlanNodesDialogProps> = ({
               </p>
             </div>
           ) : showAddPanel ? (
-            /* 添加节点面板 */
+            /* Add node panel */
             <div className="p-4">
-              {/* 提示信息 */}
+              {/* Info message */}
               <div className="mb-4 p-3 rounded-lg bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-800">
                 <div className="flex items-start gap-2">
                   <AlertCircle className="size-4 text-emerald-600 dark:text-emerald-400 mt-0.5 shrink-0" />
@@ -256,7 +256,7 @@ export const PlanNodesDialog: React.FC<PlanNodesDialogProps> = ({
                 </div>
               </div>
 
-              {/* 全选操作 */}
+              {/* Select all operation */}
               {filteredAvailableNodes.length > 0 && (
                 <div className="mb-3 flex items-center justify-between">
                   <button
@@ -281,7 +281,7 @@ export const PlanNodesDialog: React.FC<PlanNodesDialogProps> = ({
                 </div>
               )}
 
-              {/* 可用节点列表 */}
+              {/* Available nodes list */}
               {filteredAvailableNodes.length === 0 ? (
                 <div className="flex flex-col items-center justify-center py-12">
                   <div className="size-12 rounded-xl bg-slate-100 dark:bg-slate-800 flex items-center justify-center">
@@ -310,7 +310,7 @@ export const PlanNodesDialog: React.FC<PlanNodesDialogProps> = ({
               )}
             </div>
           ) : filteredBoundNodes.length === 0 ? (
-            /* 空状态 */
+            /* Empty state */
             <div className="flex flex-col items-center justify-center h-full py-16">
               <div className="relative">
                 <div className="size-16 rounded-2xl bg-gradient-to-br from-slate-100 to-slate-50 dark:from-slate-800 dark:to-slate-900 flex items-center justify-center shadow-inner">
@@ -332,7 +332,7 @@ export const PlanNodesDialog: React.FC<PlanNodesDialogProps> = ({
               </p>
             </div>
           ) : (
-            /* 已绑定节点列表 */
+            /* Bound nodes list */
             <div className="p-4 space-y-2">
               {filteredBoundNodes.map((node) => (
                 <BoundNodeItem
@@ -348,7 +348,7 @@ export const PlanNodesDialog: React.FC<PlanNodesDialogProps> = ({
 
         <Separator />
 
-        {/* 底部 */}
+        {/* Footer */}
         <div className="px-6 py-4 flex items-center justify-between bg-gradient-to-b from-white to-slate-50/50 dark:from-slate-900 dark:to-slate-800/30">
           <div className="text-xs text-slate-400">
             {searchQuery &&
@@ -412,7 +412,7 @@ export const PlanNodesDialog: React.FC<PlanNodesDialogProps> = ({
   );
 };
 
-// 可选择的节点项
+// Selectable node item
 interface NodeSelectItemProps {
   node: Node;
   selected: boolean;
@@ -462,7 +462,7 @@ const NodeSelectItem: React.FC<NodeSelectItemProps> = ({
   );
 };
 
-// 已绑定的节点项
+// Bound node item
 interface BoundNodeItemProps {
   node: PlanNode;
   onUnbind: () => void;
@@ -490,7 +490,7 @@ const BoundNodeItem: React.FC<BoundNodeItemProps> = ({
       )}
     >
       <div className="flex items-center gap-4">
-        {/* 图标 */}
+        {/* Icon */}
         <div className="flex items-center justify-center size-10 rounded-lg bg-gradient-to-br from-emerald-100 to-emerald-50 dark:from-emerald-900/40 dark:to-emerald-800/30 shrink-0">
           <Server
             className="size-5 text-emerald-600 dark:text-emerald-400"
@@ -498,7 +498,7 @@ const BoundNodeItem: React.FC<BoundNodeItemProps> = ({
           />
         </div>
 
-        {/* 主要信息 */}
+        {/* Main info */}
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2.5">
             <span className="font-semibold text-slate-900 dark:text-white truncate">
@@ -514,7 +514,7 @@ const BoundNodeItem: React.FC<BoundNodeItemProps> = ({
           </div>
         </div>
 
-        {/* 解绑按钮 */}
+        {/* Unbind button */}
         <button
           onClick={onUnbind}
           disabled={isUnbinding}

@@ -48,7 +48,7 @@ export const NodeManagementPage = () => {
     handleIncludeUserNodesChange,
   } = useNodesPage();
 
-  // 获取资源组列表用于显示名称
+  // Get resource group list for displaying names
   const { resourceGroups } = useResourceGroups({ pageSize: 100 });
   const resourceGroupsMap = useMemo(() => {
     const map: Record<string, typeof resourceGroups[0]> = {};
@@ -107,7 +107,7 @@ export const NodeManagementPage = () => {
   };
 
   const handleCopy = (node: Node) => {
-    // 构建复制数据，排除 id 等唯一字段，名称添加后缀
+    // Build copy data, exclude unique fields like id, add suffix to name
     const copyData: Partial<CreateNodeRequest> = {
       name: `${node.name} - 副本`,
       protocol: node.protocol,
@@ -139,7 +139,7 @@ export const NodeManagementPage = () => {
       await createNode(data);
       setCreateDialogOpen(false);
     } catch {
-      // 错误已在 hook 中处理
+      // Error already handled in hook
     }
   };
 
@@ -149,7 +149,7 @@ export const NodeManagementPage = () => {
       setEditDialogOpen(false);
       setSelectedNode(null);
     } catch {
-      // 错误已在 hook 中处理
+      // Error already handled in hook
     }
   };
 

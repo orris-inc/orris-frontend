@@ -1,5 +1,5 @@
 /**
- * 编辑节点对话框组件
+ * Edit node dialog component
  */
 
 import { useState, useEffect } from 'react';
@@ -31,7 +31,7 @@ interface EditNodeDialogProps {
   onSubmit: (id: string, data: UpdateNodeRequest) => void;
 }
 
-// Shadowsocks 加密方法
+// Shadowsocks encryption methods
 const SS_ENCRYPTION_METHODS = [
   'aes-128-gcm',
   'aes-256-gcm',
@@ -40,10 +40,10 @@ const SS_ENCRYPTION_METHODS = [
   'aes-256-cfb',
 ] as const;
 
-// Trojan 传输协议
+// Trojan transport protocols
 const TRANSPORT_PROTOCOLS: TransportProtocol[] = ['tcp', 'ws', 'grpc'];
 
-// 辅助函数：将 pluginOpts 对象转换为字符串
+// Helper function: convert pluginOpts object to string
 const pluginOptsToString = (opts?: Record<string, string>): string => {
   if (!opts || Object.keys(opts).length === 0) return '';
   return Object.entries(opts)
@@ -51,7 +51,7 @@ const pluginOptsToString = (opts?: Record<string, string>): string => {
     .join(';');
 };
 
-// 辅助函数：将字符串解析为 pluginOpts 对象
+// Helper function: parse string to pluginOpts object
 const stringToPluginOpts = (str: string): Record<string, string> | undefined => {
   const trimmed = str.trim();
   if (!trimmed) return undefined;
@@ -65,7 +65,7 @@ const stringToPluginOpts = (str: string): Record<string, string> | undefined => 
 
     const [key, ...valueParts] = trimmedPair.split('=');
     const trimmedKey = key?.trim();
-    const value = valueParts.join('=').trim(); // 支持值中包含 '='
+    const value = valueParts.join('=').trim(); // Support '=' in values
 
     if (trimmedKey && value) {
       opts[trimmedKey] = value;
@@ -75,18 +75,18 @@ const stringToPluginOpts = (str: string): Record<string, string> | undefined => 
   return Object.keys(opts).length > 0 ? opts : undefined;
 };
 
-// 辅助函数：深度比较两个 pluginOpts 对象
+// Helper function: deep comparison of two pluginOpts objects
 const arePluginOptsEqual = (
   opts1?: Record<string, string>,
   opts2?: Record<string, string>
 ): boolean => {
-  // 两者都为空
+  // Both are empty
   if ((!opts1 || Object.keys(opts1).length === 0) &&
       (!opts2 || Object.keys(opts2).length === 0)) {
     return true;
   }
 
-  // 一个为空，一个不为空
+  // One is empty, one is not
   if (!opts1 || !opts2) return false;
 
   const keys1 = Object.keys(opts1);
@@ -108,7 +108,7 @@ export const EditNodeDialog: React.FC<EditNodeDialogProps> = ({
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [pluginOptsStr, setPluginOptsStr] = useState<string>('');
 
-  // 获取资源组列表
+  // Fetch resource groups list
   const { resourceGroups, isLoading: isLoadingGroups } = useResourceGroups({
     pageSize: 100,
     filters: { status: 'active' },
@@ -126,10 +126,10 @@ export const EditNodeDialog: React.FC<EditNodeDialogProps> = ({
         region: node.region,
         status: node.status,
         sortOrder: node.sortOrder,
-        // Shadowsocks 插件相关字段
+        // Shadowsocks plugin related fields
         plugin: node.plugin,
         pluginOpts: node.pluginOpts,
-        // Trojan 相关字段
+        // Trojan related fields
         transportProtocol: node.transportProtocol,
         host: node.host,
         path: node.path,
@@ -173,18 +173,18 @@ export const EditNodeDialog: React.FC<EditNodeDialogProps> = ({
   const handleSubmit = () => {
     if (!node) return;
 
-    // 构建需要提交的更新对象
+    // Build update object to submit
     const updates: UpdateNodeRequest = {};
     const newErrors: Record<string, string> = {};
 
-    // 辅助函数：规范化字符串进行比较（trim后比较，将空字符串和undefined视为相同）
+    // Helper function: normalize strings for comparison (compare after trim, treat empty string and undefined as same)
     const hasStringChanged = (newValue: string | undefined, oldValue: string | undefined): boolean => {
       const normalizedNew = (newValue || '').trim();
       const normalizedOld = (oldValue || '').trim();
       return normalizedNew !== normalizedOld;
     };
 
-    // 只处理有变化的字段
+    // Only process changed fields
     if (formData.name !== undefined && hasStringChanged(formData.name, node.name)) {
       const trimmedName = formData.name.trim();
       if (!trimmedName) {
@@ -195,7 +195,7 @@ export const EditNodeDialog: React.FC<EditNodeDialogProps> = ({
     }
 
     if (formData.serverAddress !== undefined && hasStringChanged(formData.serverAddress, node.serverAddress)) {
-      // 后端支持服务器地址为空，允许空字符串
+      // Backend supports empty server address, allow empty string
       const trimmedAddress = formData.serverAddress.trim();
       updates.serverAddress = trimmedAddress;
     }
@@ -220,7 +220,7 @@ export const EditNodeDialog: React.FC<EditNodeDialogProps> = ({
       updates.encryptionMethod = formData.encryptionMethod;
     }
 
-    // Shadowsocks 插件字段
+    // Shadowsocks plugin fields
     if (isShadowsocks) {
       if (formData.plugin !== undefined && hasStringChanged(formData.plugin, node.plugin)) {
         updates.plugin = formData.plugin.trim() || undefined;
@@ -242,7 +242,7 @@ export const EditNodeDialog: React.FC<EditNodeDialogProps> = ({
       updates.sortOrder = formData.sortOrder;
     }
 
-    // Trojan 相关字段
+    // Trojan related fields
     if (isTrojan) {
       if (formData.transportProtocol !== node.transportProtocol && formData.transportProtocol !== undefined) {
         updates.transportProtocol = formData.transportProtocol;
@@ -261,25 +261,25 @@ export const EditNodeDialog: React.FC<EditNodeDialogProps> = ({
       }
     }
 
-    // 资源组关联
+    // Resource group association
     if (formData.groupSid !== undefined) {
       updates.groupSid = formData.groupSid;
     }
 
-    // 如果有验证错误，显示并阻止提交
+    // If there are validation errors, display and prevent submission
     if (Object.keys(newErrors).length > 0) {
       setErrors(newErrors);
       return;
     }
 
-    // 清除错误并提交
+    // Clear errors and submit
     setErrors({});
     if (Object.keys(updates).length > 0) {
       onSubmit(node.id, updates);
     }
   };
 
-  // 检查是否有变化
+  // Check if there are changes
   const hasChanges = node && Object.keys(formData).some(
     (key) => formData[key as keyof UpdateNodeRequest] !== node[key as keyof Node]
   );
@@ -288,11 +288,12 @@ export const EditNodeDialog: React.FC<EditNodeDialogProps> = ({
 
   return (
     <Dialog open={open} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="sm:max-w-[700px] max-h-[90vh] overflow-y-auto">
-        <DialogHeader>
+      <DialogContent className="sm:max-w-[700px] flex flex-col max-h-[90vh]">
+        <DialogHeader className="flex-shrink-0">
           <DialogTitle>编辑节点</DialogTitle>
         </DialogHeader>
 
+        <div className="flex-1 min-h-0 overflow-y-auto -mx-6 px-6">
         <div className="space-y-6">
           {/* 节点基本信息（只读） */}
           <div>
@@ -614,8 +615,9 @@ export const EditNodeDialog: React.FC<EditNodeDialogProps> = ({
             </div>
           </div>
         </div>
+        </div>
 
-        <DialogFooter>
+        <DialogFooter className="flex-shrink-0">
           <Button variant="outline" onClick={onClose}>
             取消
           </Button>

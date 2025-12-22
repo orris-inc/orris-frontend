@@ -65,7 +65,7 @@ export const UserManagementPage = () => {
       await createUser(data);
       setCreateDialogOpen(false);
     } catch {
-      // 错误已在 hook 中处理
+      // Error already handled in hook
     }
   };
 
@@ -75,7 +75,7 @@ export const UserManagementPage = () => {
       setEditDialogOpen(false);
       setSelectedUser(null);
     } catch {
-      // 错误已在 hook 中处理
+      // Error already handled in hook
     }
   };
 
@@ -95,7 +95,7 @@ export const UserManagementPage = () => {
       setResetPasswordDialogOpen(false);
       setSelectedUser(null);
     } catch {
-      // 错误已在 hook 中处理
+      // Error already handled in hook
     }
   };
 

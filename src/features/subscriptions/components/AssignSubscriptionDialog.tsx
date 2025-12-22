@@ -1,6 +1,6 @@
 /**
- * 分配订阅对话框组件（管理端）
- * 支持多定价选择
+ * Assign Subscription Dialog Component (Admin)
+ * Supports multiple pricing selection
  */
 
 import { useState, useEffect, useMemo } from 'react';
@@ -21,7 +21,7 @@ interface AssignSubscriptionDialogProps {
   onSubmit: (data: AdminCreateSubscriptionRequest) => Promise<void>;
 }
 
-// 计费周期选项（用于无多定价的情况）
+// Billing cycle options (for cases without multiple pricing)
 const BILLING_CYCLE_OPTIONS: { value: BillingCycle; label: string }[] = [
   { value: 'weekly', label: '周付' },
   { value: 'monthly', label: '月付' },
@@ -31,7 +31,7 @@ const BILLING_CYCLE_OPTIONS: { value: BillingCycle; label: string }[] = [
   { value: 'lifetime', label: '终身' },
 ];
 
-// 计费周期显示名称映射
+// Billing cycle display name mapping
 const BILLING_CYCLE_LABELS: Record<BillingCycle, string> = {
   weekly: '周付',
   monthly: '月付',
@@ -41,13 +41,13 @@ const BILLING_CYCLE_LABELS: Record<BillingCycle, string> = {
   lifetime: '终身',
 };
 
-// 获取计划可用的定价选项
+// Get available pricing options for the plan
 const getAvailablePricings = (plan: SubscriptionPlan): PricingOption[] => {
   if (!plan.pricings) return [];
   return plan.pricings.filter(p => p.isActive);
 };
 
-// 格式化价格显示
+// Format price display
 const formatPrice = (price: number, currency: string): string => {
   const symbol = currency === 'CNY' ? '¥' : '$';
   return `${symbol}${(price / 100).toFixed(2)}`;
@@ -68,23 +68,23 @@ export const AssignSubscriptionDialog: React.FC<AssignSubscriptionDialogProps> =
     autoRenew: true,
   });
 
-  // 获取选中的计划
+  // Get selected plan
   const selectedPlan = useMemo(() => {
     return plans.find(p => p.id === formData.planId) || null;
   }, [plans, formData.planId]);
 
-  // 获取选中计划的可用定价选项
+  // Get available pricing options for selected plan
   const availablePricings = useMemo(() => {
     if (!selectedPlan) return [];
     return getAvailablePricings(selectedPlan);
   }, [selectedPlan]);
 
-  // 获取选中的定价
+  // Get selected pricing
   const selectedPricing = useMemo(() => {
     return availablePricings.find(p => p.billingCycle === formData.billingCycle) || availablePricings[0] || null;
   }, [availablePricings, formData.billingCycle]);
 
-  // 重置表单（仅在数据加载完成后执行，避免 plans 空数组引用变化导致无限循环）
+  // Reset form (only execute after data loading completes, avoid infinite loop from plans empty array reference change)
   useEffect(() => {
     if (open && user && !plansLoading) {
       const defaultPlan = plans.find(p => p.status === 'active');
@@ -99,10 +99,10 @@ export const AssignSubscriptionDialog: React.FC<AssignSubscriptionDialogProps> =
     }
   }, [open, user, plans, plansLoading]);
 
-  // 当选择计划变化时，自动设置默认的计费周期
+  // Automatically set default billing cycle when selected plan changes
   useEffect(() => {
     if (selectedPlan && availablePricings.length > 0) {
-      // 使用函数式更新来避免依赖 formData.billingCycle
+      // Use functional update to avoid dependency on formData.billingCycle
       setFormData(prev => {
         const currentCycleAvailable = availablePricings.some(p => p.billingCycle === prev.billingCycle);
         if (!currentCycleAvailable) {
@@ -133,7 +133,7 @@ export const AssignSubscriptionDialog: React.FC<AssignSubscriptionDialogProps> =
     }
   };
 
-  // 准备计划选项（显示价格范围）
+  // Prepare plan options (show price range)
   const planOptions = useMemo(() => {
     return plans
       .filter(plan => plan.status === 'active')
@@ -160,7 +160,7 @@ export const AssignSubscriptionDialog: React.FC<AssignSubscriptionDialogProps> =
       });
   }, [plans]);
 
-  // 准备计费周期选项（基于选中计划的可用定价）
+  // Prepare billing cycle options (based on selected plan's available pricing)
   const billingCycleOptions = useMemo(() => {
     if (availablePricings.length > 0) {
       return availablePricings.map(p => ({
@@ -199,7 +199,7 @@ export const AssignSubscriptionDialog: React.FC<AssignSubscriptionDialogProps> =
             </div>
           ) : (
             <div className="grid gap-6 py-4">
-              {/* 订阅计划选择 */}
+              {/* Subscription plan selection */}
               <div className="grid gap-2">
                 <LabelPrimitive.Root className={labelStyles}>订阅计划</LabelPrimitive.Root>
                 <SimpleSelect
@@ -210,7 +210,7 @@ export const AssignSubscriptionDialog: React.FC<AssignSubscriptionDialogProps> =
                 />
               </div>
 
-              {/* 计费周期选择 */}
+              {/* Billing cycle selection */}
               <div className="grid gap-2">
                 <LabelPrimitive.Root className={labelStyles}>
                   计费周期
@@ -228,7 +228,7 @@ export const AssignSubscriptionDialog: React.FC<AssignSubscriptionDialogProps> =
                 />
               </div>
 
-              {/* 自动续费 */}
+              {/* Auto-renewal */}
               <div className="flex items-center space-x-2">
                 <Checkbox.Root
                   id="auto_renew"
@@ -248,7 +248,7 @@ export const AssignSubscriptionDialog: React.FC<AssignSubscriptionDialogProps> =
                 </LabelPrimitive.Root>
               </div>
 
-              {/* 计划详情 */}
+              {/* Plan details */}
               {selectedPlan && (
                 <div className="rounded-md bg-muted p-4 text-sm">
                   <h4 className="font-medium mb-2">计划详情</h4>

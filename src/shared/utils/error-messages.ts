@@ -1,30 +1,30 @@
 /**
- * 错误消息映射和转换工具
- * 将后端英文错误消息转换为用户友好的中文消息
+ * Error message mapping and conversion tool
+ * Converts backend English error messages to user-friendly Chinese messages
  */
 
 /**
- * 后端错误消息到中文的映射表
+ * Backend error message to Chinese mapping table
  */
 export const errorMessages: Record<string, string> = {
-  // 账号相关
+  // Account related
   'account is not active': '您的账号尚未激活，请查收验证邮件',
   'account not active': '您的账号尚未激活，请查收验证邮件',
   'account is locked': '账号已被锁定，请联系客服',
   'account is disabled': '账号已被禁用，请联系客服',
 
-  // 登录相关
+  // Login related
   'invalid email or password': '邮箱或密码错误',
   'invalid credentials': '邮箱或密码错误',
   'incorrect password': '密码错误',
   'email not found': '该邮箱未注册',
   'user not found': '用户不存在',
 
-  // 注册相关
+  // Registration related
   'email already exists': '该邮箱已被注册',
   'user already exists': '该用户已存在',
 
-  // Token相关
+  // Token related
   'invalid token': '验证链接无效或已过期',
   'token expired': '验证链接已过期，请重新申请',
   'token is invalid': '验证链接无效',
@@ -32,28 +32,28 @@ export const errorMessages: Record<string, string> = {
   'expired token': '验证链接已过期',
   'invalid or expired token': '验证链接无效或已过期',
 
-  // 邮箱验证
+  // Email verification
   'email already verified': '该邮箱已经验证过了',
   'email not verified': '邮箱尚未验证',
   'verification failed': '验证失败，请重试',
 
-  // 密码重置
+  // Password reset
   'password reset failed': '密码重置失败，请重试',
   'invalid reset token': '重置链接无效或已过期',
   'reset token expired': '重置链接已过期，请重新申请',
 
-  // OAuth相关
+  // OAuth related
   'oauth authentication failed': 'OAuth登录失败，请重试',
   'oauth provider error': 'OAuth服务商错误，请稍后重试',
   'invalid oauth code': 'OAuth验证码无效',
 
-  // 权限相关
+  // Permission related
   'unauthorized': '未授权，请先登录',
   'forbidden': '没有权限访问此资源',
   'access denied': '访问被拒绝',
   'insufficient permissions': '权限不足',
 
-  // 网络和服务器错误
+  // Network and server errors
   'network error': '网络连接失败，请检查网络设置',
   'timeout': '请求超时，请重试',
   'request timeout': '请求超时，请重试',
@@ -62,27 +62,27 @@ export const errorMessages: Record<string, string> = {
   'service unavailable': '服务暂不可用，请稍后重试',
   'bad gateway': '网关错误，请稍后重试',
 
-  // 请求相关
+  // Request related
   'bad request': '请求参数错误',
   'invalid request': '无效的请求',
   'validation error': '数据验证失败',
   'invalid input': '输入数据无效',
   'missing required fields': '缺少必填字段',
 
-  // 资源相关
+  // Resource related
   'not found': '请求的资源不存在',
   'resource not found': '资源不存在',
   'page not found': '页面不存在',
 
-  // 通用错误
+  // General errors
   'unknown error': '操作失败，请稍后重试',
   'something went wrong': '出现了一些问题，请稍后重试',
   'operation failed': '操作失败，请重试',
 };
 
 /**
- * 错误消息模糊匹配模式
- * 用于匹配包含变量的错误消息（如 "user with email xxx already exists"）
+ * Error message fuzzy matching patterns
+ * Used to match error messages containing variables (e.g., "user with email xxx already exists")
  */
 const errorPatterns: Array<{ pattern: RegExp; message: string }> = [
   {
@@ -116,53 +116,53 @@ const errorPatterns: Array<{ pattern: RegExp; message: string }> = [
 ];
 
 /**
- * 将后端错误消息转换为中文
- * @param message - 原始错误消息（通常是英文）
- * @returns 转换后的中文错误消息
+ * Convert backend error message to Chinese
+ * @param message - Original error message (usually English)
+ * @returns Converted Chinese error message
  */
 export function translateErrorMessage(message: string): string {
   if (!message) {
     return '操作失败，请稍后重试';
   }
 
-  // 1. 精确匹配
+  // 1. Exact match
   const lowercaseMessage = message.toLowerCase();
   const exactMatch = errorMessages[lowercaseMessage];
   if (exactMatch) {
     return exactMatch;
   }
 
-  // 2. 部分匹配（包含关键字）
+  // 2. Partial match (contains keyword)
   for (const [key, value] of Object.entries(errorMessages)) {
     if (lowercaseMessage.includes(key.toLowerCase())) {
       return value;
     }
   }
 
-  // 3. 正则模式匹配
+  // 3. Regular expression pattern match
   for (const { pattern, message: patternMessage } of errorPatterns) {
     if (pattern.test(message)) {
       return patternMessage;
     }
   }
 
-  // 4. 如果消息已经是中文，直接返回
+  // 4. If message is already in Chinese, return directly
   if (/[\u4e00-\u9fa5]/.test(message)) {
     return message;
   }
 
-  // 5. 未匹配到，返回通用错误消息
+  // 5. No match found, return general error message
   return '操作失败，请稍后重试';
 }
 
 /**
- * 从错误对象中提取并转换错误消息
- * 支持多种错误对象格式
- * @param error - 错误对象
- * @returns 中文错误消息
+ * Extract and convert error message from error object
+ * Supports multiple error object formats
+ * @param error - Error object
+ * @returns Chinese error message
  */
 export function extractErrorMessage(error: unknown): string {
-  // 1. Axios错误
+  // 1. Axios error
   if (error && typeof error === 'object' && ('isAxiosError' in error || 'response' in error)) {
     const axiosError = error as {
       isAxiosError?: boolean;
@@ -179,7 +179,7 @@ export function extractErrorMessage(error: unknown): string {
 
     const responseData = axiosError.response?.data;
 
-    // 尝试从不同的字段提取错误消息
+    // Try to extract error message from different fields
     let message: string | undefined;
     if (responseData && typeof responseData === 'object') {
       if ('error' in responseData) {
@@ -201,7 +201,7 @@ export function extractErrorMessage(error: unknown): string {
       return translateErrorMessage(message);
     }
 
-    // 根据HTTP状态码返回对应消息
+    // Return corresponding message based on HTTP status code
     const status = axiosError.response?.status;
     if (status === 401) {
       return '认证失败，请重新登录';
@@ -219,7 +219,7 @@ export function extractErrorMessage(error: unknown): string {
       return '服务暂不可用，请稍后重试';
     }
 
-    // 网络错误
+    // Network error
     if (axiosError.code === 'ECONNABORTED') {
       return '请求超时，请重试';
     }
@@ -228,17 +228,17 @@ export function extractErrorMessage(error: unknown): string {
     }
   }
 
-  // 2. 标准Error对象
+  // 2. Standard Error object
   if (error instanceof Error) {
     return translateErrorMessage(error.message);
   }
 
-  // 3. 字符串错误
+  // 3. String error
   if (typeof error === 'string') {
     return translateErrorMessage(error);
   }
 
-  // 4. 对象错误
+  // 4. Object error
   if (error && typeof error === 'object') {
     const errorObj = error as Record<string, unknown>;
     const message = errorObj.message || errorObj.error || errorObj.msg;
@@ -247,14 +247,14 @@ export function extractErrorMessage(error: unknown): string {
     }
   }
 
-  // 5. 未知错误
+  // 5. Unknown error
   return '操作失败，请稍后重试';
 }
 
 /**
- * 特殊错误处理：账号未激活
- * @param error - 错误对象
- * @returns 如果是账号未激活错误返回true，否则返回false
+ * Special error handling: account not activated
+ * @param error - Error object
+ * @returns Returns true if it's an account not activated error, otherwise false
  */
 export function isAccountNotActiveError(error: unknown): boolean {
   const message = extractRawErrorMessage(error);
@@ -262,10 +262,10 @@ export function isAccountNotActiveError(error: unknown): boolean {
 }
 
 /**
- * 提取原始错误消息（不翻译）
- * 用于日志记录和特殊错误判断
- * @param error - 错误对象
- * @returns 原始错误消息
+ * Extract raw error message (without translation)
+ * Used for logging and special error determination
+ * @param error - Error object
+ * @returns Raw error message
  */
 export function extractRawErrorMessage(error: unknown): string {
   if (error && typeof error === 'object' && ('isAxiosError' in error || 'response' in error)) {

@@ -33,7 +33,7 @@ import type {
 } from '@/api/forward';
 import { useUserForwardAgents } from '../hooks/useUserForwardAgents';
 
-// 规则类型标签映射
+// Rule type label mapping
 const RULE_TYPE_LABELS: Record<ForwardRuleType, string> = {
   direct: '直连转发',
   entry: '入口节点',
@@ -61,7 +61,7 @@ export const EditUserForwardRuleDialog: React.FC<EditUserForwardRuleDialogProps>
     enabled: open && !!rule,
   });
 
-  // 获取当前规则使用的代理名称
+  // Get current rule's agent name
   const currentAgent = rule ? forwardAgents.find(a => a.id === rule.agentId) : null;
 
   const [formData, setFormData] = useState({
@@ -75,7 +75,7 @@ export const EditUserForwardRuleDialog: React.FC<EditUserForwardRuleDialogProps>
 
   const [errors, setErrors] = useState<Record<string, string>>({});
 
-  // 当对话框打开或规则变化时填充表单
+  // Populate form when dialog opens or rule changes
   useEffect(() => {
     if (open && rule) {
       setFormData({
@@ -98,7 +98,7 @@ export const EditUserForwardRuleDialog: React.FC<EditUserForwardRuleDialogProps>
 
   const handleChange = (field: string, value: string) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
-    // 清除所有验证错误，让用户重新提交时再次验证
+    // Clear all validation errors, re-validate on next submit
     if (Object.keys(errors).length > 0) {
       setErrors({});
     }
@@ -128,7 +128,7 @@ export const EditUserForwardRuleDialog: React.FC<EditUserForwardRuleDialogProps>
     return Object.keys(newErrors).length === 0;
   };
 
-  // 检查是否有变化
+  // Check for changes
   const hasChanges = useMemo(() => {
     if (!rule) return false;
     return (
@@ -146,7 +146,7 @@ export const EditUserForwardRuleDialog: React.FC<EditUserForwardRuleDialogProps>
       return;
     }
 
-    // 只提交有变化的字段
+    // Only submit changed fields
     const updates: UpdateForwardRuleRequest = {};
 
     if (formData.name.trim() !== rule.name) {
@@ -168,7 +168,7 @@ export const EditUserForwardRuleDialog: React.FC<EditUserForwardRuleDialogProps>
       updates.remark = formData.remark.trim() || undefined;
     }
 
-    // 如果有任何变化，提交更新
+    // If any changes, submit update
     if (Object.keys(updates).length > 0) {
       onSubmit(rule.id, updates);
     }
@@ -190,11 +190,12 @@ export const EditUserForwardRuleDialog: React.FC<EditUserForwardRuleDialogProps>
 
   return (
     <Dialog open={open} onOpenChange={handleClose}>
-      <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
-        <DialogHeader>
+      <DialogContent className="sm:max-w-[600px] flex flex-col max-h-[90vh]">
+        <DialogHeader className="flex-shrink-0">
           <DialogTitle>编辑转发规则</DialogTitle>
         </DialogHeader>
 
+        <div className="flex-1 min-h-0 overflow-y-auto -mx-6 px-6">
         <div className="space-y-6 py-4">
           {/* 基本信息 */}
           <div>
@@ -375,8 +376,9 @@ export const EditUserForwardRuleDialog: React.FC<EditUserForwardRuleDialogProps>
             )}
           </div>
         </div>
+        </div>
 
-        <DialogFooter className="gap-3">
+        <DialogFooter className="flex-shrink-0 gap-3">
           <Button variant="outline" onClick={handleClose} disabled={isUpdating}>
             取消
           </Button>

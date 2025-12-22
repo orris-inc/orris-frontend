@@ -66,7 +66,7 @@ export const PlanPricingsEditor: React.FC<PlanPricingsEditorProps> = ({
     onChange(updated);
   };
 
-  // 检查是否有重复的计费周期
+  // Check for duplicate billing cycles
   const getDuplicateCycles = (): string[] => {
     const cycles = pricings.map((p) => p.billingCycle);
     return cycles.filter((cycle, index) => cycles.indexOf(cycle) !== index);

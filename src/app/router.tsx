@@ -1,10 +1,10 @@
 /**
- * React Router 7 路由配置
+ * React Router 7 Route Configuration
  *
- * 路由架构：
- * - 用户端路由：/dashboard/* （普通用户访问）
- * - 管理端路由：/admin/* （管理员访问）
- * - 公共路由：/login, /register 等（无需认证）
+ * Route Architecture:
+ * - User Routes: /dashboard/* (regular user access)
+ * - Admin Routes: /admin/* (administrator access)
+ * - Public Routes: /login, /register, etc. (no authentication required)
  */
 
 import { createBrowserRouter, Navigate } from 'react-router';
@@ -37,21 +37,21 @@ import { ProtectedRoute } from '@/shared/components/ProtectedRoute';
 import { AdminRoute } from '@/shared/components/AdminRoute';
 
 export const router = createBrowserRouter([
-  // 根路径重定向到登录选择器（临时用于预览不同设计）
+  // Root path redirects to login selector (temporarily for previewing different designs)
   {
     path: '/',
     element: <Navigate to="/login-selector" replace />,
   },
 
-  // 登录页面选择器
+  // Login page selector
   {
     path: '/login-selector',
     element: <LoginSelector />,
   },
 
-  // ==================== 用户端路由 ====================
+  // ==================== User Routes ====================
 
-  // Dashboard 主页（用户端）
+  // Dashboard home (user side)
   {
     path: '/dashboard',
     element: (
@@ -61,7 +61,7 @@ export const router = createBrowserRouter([
     ),
   },
 
-  // 个人资料设置（用户端）
+  // Profile settings (user side)
   {
     path: '/dashboard/profile',
     element: (
@@ -71,7 +71,7 @@ export const router = createBrowserRouter([
     ),
   },
 
-  // 用户端转发规则管理
+  // User forward rules management
   {
     path: '/dashboard/forward-rules',
     element: (
@@ -81,7 +81,7 @@ export const router = createBrowserRouter([
     ),
   },
 
-  // 用户端转发节点列表
+  // User forward agents list
   {
     path: '/dashboard/forward-agents',
     element: (
@@ -91,7 +91,7 @@ export const router = createBrowserRouter([
     ),
   },
 
-  // 用户端节点管理
+  // User nodes management
   {
     path: '/dashboard/nodes',
     element: (
@@ -101,15 +101,15 @@ export const router = createBrowserRouter([
     ),
   },
 
-  // 定价页面（公开访问）
+  // Pricing page (public access)
   {
     path: '/pricing',
     element: <PricingPage />,
   },
 
-  // ==================== 管理端路由 ====================
+  // ==================== Admin Routes ====================
 
-  // 管理端首页
+  // Admin dashboard
   {
     path: '/admin',
     element: (
@@ -119,7 +119,7 @@ export const router = createBrowserRouter([
     ),
   },
 
-  // 订阅计划管理（管理端）
+  // Subscription plans management (admin)
   {
     path: '/admin/plans',
     element: (
@@ -129,7 +129,7 @@ export const router = createBrowserRouter([
     ),
   },
 
-  // 订阅管理（管理端）
+  // Subscriptions management (admin)
   {
     path: '/admin/subscriptions',
     element: (
@@ -139,7 +139,7 @@ export const router = createBrowserRouter([
     ),
   },
 
-  // 用户管理（管理端）
+  // Users management (admin)
   {
     path: '/admin/users',
     element: (
@@ -149,7 +149,7 @@ export const router = createBrowserRouter([
     ),
   },
 
-  // 节点管理（管理端）
+  // Nodes management (admin)
   {
     path: '/admin/nodes',
     element: (
@@ -159,7 +159,7 @@ export const router = createBrowserRouter([
     ),
   },
 
-  // 转发规则管理（管理端）
+  // Forward rules management (admin)
   {
     path: '/admin/forward-rules',
     element: (
@@ -169,7 +169,7 @@ export const router = createBrowserRouter([
     ),
   },
 
-  // 转发节点管理（管理端）
+  // Forward agents management (admin)
   {
     path: '/admin/forward-agents',
     element: (
@@ -179,7 +179,7 @@ export const router = createBrowserRouter([
     ),
   },
 
-  // 资源组管理（管理端）
+  // Resource groups management (admin)
   {
     path: '/admin/resource-groups',
     element: (
@@ -189,63 +189,63 @@ export const router = createBrowserRouter([
     ),
   },
 
-  // ==================== 公共路由 ====================
+  // ==================== Public Routes ====================
 
-  // 登录（旧版）
+  // Login (legacy)
   {
     path: '/login',
     element: <LoginPage />,
   },
 
-  // 登录（新设计 - Art Deco）
+  // Login (new design - Art Deco)
   {
     path: '/login-new',
     element: <LoginPageNew />,
   },
 
-  // 登录（极简风格）
+  // Login (minimal style)
   {
     path: '/login-minimal',
     element: <LoginPageMinimal />,
   },
 
-  // 登录（流动光影 - Tailwind）
+  // Login (glass morphism - Tailwind)
   {
     path: '/login-glass',
     element: <LoginPageGlass />,
   },
 
-  // 登录（Apple 简约风格）
+  // Login (Apple minimal style)
   {
     path: '/login-apple',
     element: <LoginPageApple />,
   },
 
-  // 注册
+  // Register
   {
     path: '/register',
     element: <RegisterPage />,
   },
 
-  // 忘记密码
+  // Forgot password
   {
     path: '/forgot-password',
     element: <ForgotPasswordPage />,
   },
 
-  // 重置密码
+  // Reset password
   {
     path: '/reset-password',
     element: <ResetPasswordPage />,
   },
 
-  // 邮箱验证
+  // Email verification
   {
     path: '/verify-email',
     element: <EmailVerificationPage />,
   },
 
-  // 邮箱验证待处理
+  // Email verification pending
   {
     path: '/verification-pending',
     element: <VerificationPendingPage />,

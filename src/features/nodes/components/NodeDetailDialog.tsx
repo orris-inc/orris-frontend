@@ -23,27 +23,27 @@ interface NodeDetailDialogProps {
   onClose: () => void;
 }
 
-// 状态标签映射
+// Status label mapping
 const STATUS_CONFIG: Record<string, { label: string; variant: 'default' | 'secondary' | 'outline' | 'destructive' }> = {
   active: { label: '已激活', variant: 'default' },
   inactive: { label: '未激活', variant: 'secondary' },
   maintenance: { label: '维护中', variant: 'outline' },
 };
 
-// 协议类型标签映射
+// Protocol type label mapping
 const PROTOCOL_LABELS: Record<string, string> = {
   shadowsocks: 'Shadowsocks',
   trojan: 'Trojan',
 };
 
-// 传输协议标签
+// Transport protocol labels
 const TRANSPORT_LABELS: Record<string, string> = {
   tcp: 'TCP',
   ws: 'WebSocket',
   grpc: 'gRPC',
 };
 
-// 格式化时间
+// Format date
 const formatDate = (dateString: string) => {
   if (!dateString) return '-';
   const date = new Date(dateString);
@@ -57,7 +57,7 @@ const formatDate = (dateString: string) => {
   });
 };
 
-// 格式化运行时间
+// Format uptime
 const formatUptime = (seconds: number): string => {
   if (!seconds || seconds <= 0) return '-';
   const days = Math.floor(seconds / 86400);
@@ -85,8 +85,8 @@ export const NodeDetailDialog: React.FC<NodeDetailDialogProps> = ({
 
   return (
     <Dialog open={open} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="sm:max-w-[700px] max-h-[90vh] overflow-y-auto">
-        <DialogHeader>
+      <DialogContent className="sm:max-w-[700px] flex flex-col max-h-[90vh]">
+        <DialogHeader className="flex-shrink-0">
           <div className="flex items-center justify-between">
             <DialogTitle className="flex items-center gap-3">
               {node.name}
@@ -94,7 +94,7 @@ export const NodeDetailDialog: React.FC<NodeDetailDialogProps> = ({
                 {PROTOCOL_LABELS[node.protocol] || node.protocol}
               </Badge>
             </DialogTitle>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 mr-6">
               {node.isOnline ? (
                 <span className="flex items-center gap-1 text-xs text-green-600">
                   <span className="h-2 w-2 rounded-full bg-green-500"></span>
@@ -113,6 +113,7 @@ export const NodeDetailDialog: React.FC<NodeDetailDialogProps> = ({
           </div>
         </DialogHeader>
 
+        <div className="flex-1 min-h-0 overflow-y-auto -mx-6 px-6">
         <div className="space-y-6">
           {/* 节点状态 */}
           <div>
@@ -374,8 +375,9 @@ export const NodeDetailDialog: React.FC<NodeDetailDialogProps> = ({
             </div>
           </div>
         </div>
+        </div>
 
-        <DialogFooter>
+        <DialogFooter className="flex-shrink-0">
           <Button variant="outline" onClick={onClose}>
             关闭
           </Button>

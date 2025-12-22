@@ -1,5 +1,5 @@
 /**
- * 认证相关 Hooks
+ * Authentication related Hooks
  */
 
 import { useState, useCallback } from 'react';
@@ -11,27 +11,27 @@ import type { LoginRequest, RegisterRequest } from '@/api/auth';
 import { openOAuthPopup, type OAuthProvider } from '../utils/oauth-popup';
 
 /**
- * 验证重定向URL是否安全（仅允许相对路径）
+ * Validate if redirect URL is safe (only allow relative paths)
  */
 const isSafeRedirectUrl = (url: string): boolean => {
-  // 只允许相对路径，防止开放重定向漏洞
-  // 检查是否以 / 开头，但不是 // 或包含协议
+  // Only allow relative paths to prevent open redirect vulnerabilities
+  // Check if it starts with /, but not // or contains a protocol
   if (!url.startsWith('/') || url.startsWith('//')) {
     return false;
   }
-  
-  // 防止 javascript:, data:, vbscript: 等协议
+
+  // Prevent javascript:, data:, vbscript:, etc. protocols
   const lowerUrl = url.toLowerCase();
   const dangerousProtocols = ['javascript:', 'data:', 'vbscript:', 'file:'];
   if (dangerousProtocols.some(protocol => lowerUrl.includes(protocol))) {
     return false;
   }
-  
+
   return true;
 };
 
 /**
- * 使用认证功能的Hook
+ * Hook for using authentication features
  */
 export const useAuth = () => {
   const navigate = useNavigate();
@@ -42,34 +42,34 @@ export const useAuth = () => {
   const [error, setError] = useState<string | null>(null);
 
   /**
-   * 获取登录后的重定向地址
-   * 优先级：1. URL参数 2. location.state 3. 根据用户角色重定向
+   * Get redirect URL after login
+   * Priority: 1. URL parameter 2. location.state 3. Redirect based on user role
    */
   const getRedirectUrl = useCallback((userRole?: 'admin' | 'user' | 'moderator'): string => {
-    // 从URL参数读取
+    // Read from URL parameter
     const searchParams = new URLSearchParams(location.search);
     const redirectParam = searchParams.get('redirect');
     if (redirectParam && isSafeRedirectUrl(redirectParam)) {
       return redirectParam;
     }
 
-    // 从location.state读取
+    // Read from location.state
     const state = location.state as { from?: string } | null;
     if (state?.from && isSafeRedirectUrl(state.from)) {
       return state.from;
     }
 
-    // 根据用户角色重定向到不同页面
+    // Redirect to different pages based on user role
     if (userRole === 'admin') {
       return '/admin';
     }
 
-    // 默认跳转到用户端 dashboard
+    // Default redirect to user dashboard
     return '/dashboard';
   }, [location]);
 
   /**
-   * 登录
+   * Login
    */
   const login = useCallback(
     async (data: LoginRequest) => {
@@ -77,17 +77,17 @@ export const useAuth = () => {
       setError(null);
 
       try {
-        // 登录接口返回用户信息，Token 存储在 HttpOnly Cookie 中
+        // Login API returns user info, Token is stored in HttpOnly Cookie
         const response = await authApi.login(data);
         storeLogin(response.user);
 
-        // 登录成功后根据用户角色跳转
+        // Redirect based on user role after successful login
         const redirectUrl = getRedirectUrl(response.user.role as 'admin' | 'user' | 'moderator');
         navigate(redirectUrl, { replace: true });
       } catch (err) {
         const errorMsg = extractErrorMessage(err);
         setError(errorMsg);
-        // 重新抛出原始错误，以便调用者可以进行特殊处理（如判断是否是账号未激活）
+        // Re-throw the original error so the caller can handle it specially (e.g., check if account is not activated)
         throw err;
       } finally {
         setIsLoading(false);
@@ -97,7 +97,7 @@ export const useAuth = () => {
   );
 
   /**
-   * OAuth登录
+   * OAuth Login
    */
   const loginWithOAuth = useCallback(
     async (provider: OAuthProvider) => {
@@ -105,16 +105,16 @@ export const useAuth = () => {
       setError(null);
 
       try {
-        // OAuth 返回用户信息，Token 存储在 HttpOnly Cookie 中
+        // OAuth returns user info, Token is stored in HttpOnly Cookie
         const user = await openOAuthPopup(provider);
         storeLogin(user);
 
-        // OAuth登录成功后根据用户角色跳转
+        // Redirect based on user role after successful OAuth login
         const redirectUrl = getRedirectUrl(user.role as 'admin' | 'user' | 'moderator');
         navigate(redirectUrl, { replace: true });
       } catch (err) {
         const errorMsg = extractErrorMessage(err);
-        setError(errorMsg || 'OAuth登录失败，请重试');
+        setError(errorMsg || 'OAuth login failed, please retry');
         throw err;
       } finally {
         setIsLoading(false);
@@ -124,7 +124,7 @@ export const useAuth = () => {
   );
 
   /**
-   * 注册
+   * Register
    */
   const register = useCallback(
     async (data: RegisterRequest) => {
@@ -134,7 +134,7 @@ export const useAuth = () => {
       try {
         await authApi.register(data);
 
-        // 注册成功，跳转到验证待处理页面
+        // After successful registration, redirect to verification pending page
         navigate('/verification-pending', {
           state: { email: data.email },
         });
@@ -150,7 +150,7 @@ export const useAuth = () => {
   );
 
   /**
-   * 登出
+   * Logout
    */
   const logout = useCallback(async () => {
     setIsLoading(true);
