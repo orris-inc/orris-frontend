@@ -183,7 +183,7 @@ const useDashboardStats = () => {
         const [usersRes, subscriptionsRes, nodesRes] = await Promise.all([
           listUsers({ page: 1, pageSize: 1 }),
           adminListSubscriptions({ page: 1, pageSize: 1 }),
-          listNodes({ page: 1, pageSize: 100 }),
+          listNodes({ page: 1, pageSize: 100, includeUserNodes: true }),
         ]);
 
         const nodes = nodesRes.items || [];

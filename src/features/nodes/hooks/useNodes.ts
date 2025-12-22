@@ -40,10 +40,12 @@ interface UseNodesOptions {
   pageSize?: number;
   filters?: NodeFilters;
   enabled?: boolean;
+  /** Include user-created nodes in the list (default: false - only admin-created nodes) */
+  includeUserNodes?: boolean;
 }
 
 export const useNodes = (options: UseNodesOptions = {}) => {
-  const { page = 1, pageSize = 20, filters = {}, enabled = true } = options;
+  const { page = 1, pageSize = 20, filters = {}, enabled = true, includeUserNodes } = options;
   const queryClient = useQueryClient();
   const { showSuccess, showError } = useNotificationStore();
 
@@ -52,6 +54,7 @@ export const useNodes = (options: UseNodesOptions = {}) => {
     page,
     pageSize,
     status: filters.status,
+    includeUserNodes,
   };
 
   // 查询节点列表
