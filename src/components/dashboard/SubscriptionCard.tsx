@@ -3,7 +3,7 @@
  * Displays user's current subscription info, unified style with DashboardPage
  */
 
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import {
   XCircle,
   CreditCard,
@@ -17,12 +17,18 @@ import {
   ChevronUp,
   Clock,
   RefreshCw,
+  Loader2,
 } from 'lucide-react';
 import { getButtonClass, getBadgeClass } from '@/lib/ui-styles';
-import { Skeleton } from '@/components/common/Skeleton';
-import { listSubscriptions, getTrafficStats, resetSubscriptionLink } from '@/api/subscription';
-import type { Subscription, TrafficSummary } from '@/api/subscription/types';
+import { getSubscription, resetSubscriptionLink } from '@/api/subscription';
+import type { DashboardSubscription } from '@/api/user/types';
 import { cn } from '@/lib/utils';
+
+interface SubscriptionCardProps {
+  subscriptions: DashboardSubscription[];
+  isLoading?: boolean;
+  error?: string | null;
+}
 
 /**
  * Format bytes to readable traffic units
@@ -34,19 +40,6 @@ const formatTraffic = (bytes: number): { value: string; unit: string } => {
   const i = Math.floor(Math.log(bytes) / Math.log(k));
   const value = (bytes / Math.pow(k, i)).toFixed(1);
   return { value, unit: units[i] };
-};
-
-/**
- * Get current month's start and end time
- */
-const getMonthRange = (): { from: string; to: string } => {
-  const now = new Date();
-  const firstDay = new Date(now.getFullYear(), now.getMonth(), 1);
-  const lastDay = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59);
-  return {
-    from: firstDay.toISOString(),
-    to: lastDay.toISOString(),
-  };
 };
 
 /**
@@ -134,71 +127,36 @@ const CopyButton = ({ text }: { text: string }) => {
   );
 };
 
-/** Subscription traffic data */
-interface SubscriptionTraffic {
-  summary: TrafficSummary;
-  limit: number;
-}
-
-export const SubscriptionCard = () => {
-  const [subscriptions, setSubscriptions] = useState<Subscription[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+export const SubscriptionCard = ({ subscriptions, isLoading, error }: SubscriptionCardProps) => {
   const [showAll, setShowAll] = useState(false);
   const [expandedId, setExpandedId] = useState<string | null>(null);
-  const [trafficData, setTrafficData] = useState<Record<string, SubscriptionTraffic>>({});
+  const [subscribeUrls, setSubscribeUrls] = useState<Record<string, string>>({});
+  const [loadingUrls, setLoadingUrls] = useState<Record<string, boolean>>({});
   const [resettingLinks, setResettingLinks] = useState<Record<string, boolean>>({});
 
-  useEffect(() => {
-    const fetchSubscriptions = async () => {
-      try {
-        setLoading(true);
-        setError(null);
+  // Load subscription URL when expanding
+  const handleExpand = async (subscriptionId: string) => {
+    if (expandedId === subscriptionId) {
+      setExpandedId(null);
+      return;
+    }
 
-        const result = await listSubscriptions({ page: 1, pageSize: 100 });
+    setExpandedId(subscriptionId);
 
-        if (result.items && result.items.length > 0) {
-          setSubscriptions(result.items);
+    // Already loaded
+    if (subscribeUrls[subscriptionId]) return;
 
-          const { from, to } = getMonthRange();
-          const activeSubscriptions = result.items.filter((sub: Subscription) => sub.status === 'active');
-
-          const trafficPromises = activeSubscriptions.map(async (sub) => {
-            try {
-              const traffic = await getTrafficStats(sub.id, { from, to });
-              const limits = sub.plan?.limits as { trafficLimit?: number } | undefined;
-              return {
-                id: sub.id,
-                data: {
-                  summary: traffic.summary,
-                  limit: limits?.trafficLimit || 0,
-                },
-              };
-            } catch {
-              return { id: sub.id, data: null };
-            }
-          });
-
-          const results = await Promise.all(trafficPromises);
-          const trafficMap: Record<string, SubscriptionTraffic> = {};
-          results.forEach((r) => {
-            if (r.data) {
-              trafficMap[r.id] = r.data;
-            }
-          });
-          setTrafficData(trafficMap);
-        } else {
-          setSubscriptions([]);
-        }
-      } catch {
-        setError('加载订阅信息失败');
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchSubscriptions();
-  }, []);
+    // Fetch subscription details to get subscribeUrl
+    setLoadingUrls((prev) => ({ ...prev, [subscriptionId]: true }));
+    try {
+      const subscription = await getSubscription(subscriptionId);
+      setSubscribeUrls((prev) => ({ ...prev, [subscriptionId]: subscription.subscribeUrl }));
+    } catch {
+      // Failed to load subscription URL
+    } finally {
+      setLoadingUrls((prev) => ({ ...prev, [subscriptionId]: false }));
+    }
+  };
 
   const handleResetLink = async (subscriptionId: string): Promise<void> => {
     if (!confirm('确定要重置订阅链接吗？重置后旧链接将失效。')) {
@@ -207,9 +165,7 @@ export const SubscriptionCard = () => {
     setResettingLinks((prev) => ({ ...prev, [subscriptionId]: true }));
     try {
       const updated = await resetSubscriptionLink(subscriptionId);
-      setSubscriptions((prev) =>
-        prev.map((sub) => (sub.id === subscriptionId ? updated : sub))
-      );
+      setSubscribeUrls((prev) => ({ ...prev, [subscriptionId]: updated.subscribeUrl }));
     } catch {
       // Reset link failed
     } finally {
@@ -218,7 +174,7 @@ export const SubscriptionCard = () => {
   };
 
   // Loading state
-  if (loading) {
+  if (isLoading) {
     return (
       <div className="p-5 rounded-xl bg-card border">
         <div className="flex items-center gap-3 mb-4">
@@ -228,7 +184,7 @@ export const SubscriptionCard = () => {
           <span className="text-sm text-muted-foreground">我的订阅</span>
         </div>
         <div className="space-y-3">
-          <Skeleton className="h-24 w-full rounded-xl" />
+          <div className="h-24 w-full rounded-xl bg-muted animate-pulse" />
         </div>
       </div>
     );
@@ -269,8 +225,8 @@ export const SubscriptionCard = () => {
     );
   }
 
-  const activeSubscriptions = subscriptions.filter((sub) => sub.status === 'active');
-  const inactiveSubscriptions = subscriptions.filter((sub) => sub.status !== 'active');
+  const activeSubscriptions = subscriptions.filter((sub) => sub.isActive);
+  const inactiveSubscriptions = subscriptions.filter((sub) => !sub.isActive);
   const displaySubscriptions = showAll ? subscriptions : activeSubscriptions;
 
   return (
@@ -295,11 +251,15 @@ export const SubscriptionCard = () => {
       <div className="space-y-3">
         {displaySubscriptions.map((subscription) => {
           const statusConfig = getStatusConfig(subscription.status);
-          const isActive = subscription.status === 'active';
+          const isActive = subscription.isActive;
           const isExpanded = expandedId === subscription.id;
-          const traffic = trafficData[subscription.id];
-          const daysRemaining = getDaysRemaining(subscription.endDate);
-          const usagePercent = traffic?.limit > 0 ? (traffic.summary.total / traffic.limit) * 100 : 0;
+          const usage = subscription.usage;
+          const limits = subscription.plan?.limits as { trafficLimit?: number } | undefined;
+          const trafficLimit = limits?.trafficLimit ?? 0;
+          const daysRemaining = getDaysRemaining(subscription.currentPeriodEnd);
+          const usagePercent = trafficLimit > 0 ? (usage.total / trafficLimit) * 100 : 0;
+          const subscribeUrl = subscribeUrls[subscription.id];
+          const isLoadingUrl = loadingUrls[subscription.id];
 
           return (
             <div
@@ -318,7 +278,7 @@ export const SubscriptionCard = () => {
                 </div>
 
                 {/* Row 2: Traffic usage (active subscriptions only) */}
-                {isActive && traffic && (
+                {isActive && (
                   <div className="mb-3">
                     {/* Progress bar */}
                     <div className="flex items-center gap-3 mb-2">
@@ -345,18 +305,18 @@ export const SubscriptionCard = () => {
                       <div className="flex items-center gap-3">
                         <span className="flex items-center gap-1">
                           <Upload className="size-3" />
-                          {formatTraffic(traffic.summary.totalUpload).value} {formatTraffic(traffic.summary.totalUpload).unit}
+                          {formatTraffic(usage.upload).value} {formatTraffic(usage.upload).unit}
                         </span>
                         <span className="flex items-center gap-1">
                           <Download className="size-3" />
-                          {formatTraffic(traffic.summary.totalDownload).value} {formatTraffic(traffic.summary.totalDownload).unit}
+                          {formatTraffic(usage.download).value} {formatTraffic(usage.download).unit}
                         </span>
                       </div>
                       <span className="font-mono">
-                        {formatTraffic(traffic.summary.total).value} {formatTraffic(traffic.summary.total).unit}
-                        {traffic.limit > 0 && (
+                        {formatTraffic(usage.total).value} {formatTraffic(usage.total).unit}
+                        {trafficLimit > 0 && (
                           <span className="text-muted-foreground/60">
-                            {' / '}{formatTraffic(traffic.limit).value} {formatTraffic(traffic.limit).unit}
+                            {' / '}{formatTraffic(trafficLimit).value} {formatTraffic(trafficLimit).unit}
                           </span>
                         )}
                       </span>
@@ -373,19 +333,19 @@ export const SubscriptionCard = () => {
                         <span>剩余 {daysRemaining ?? '-'} 天</span>
                         <span className="mx-1">·</span>
                         <Calendar className="size-3" />
-                        <span>{formatDate(subscription.endDate)} 到期</span>
+                        <span>{formatDate(subscription.currentPeriodEnd)} 到期</span>
                       </>
                     ) : (
                       <>
                         <Calendar className="size-3" />
-                        <span>到期日期：{formatDate(subscription.endDate)}</span>
+                        <span>到期日期：{formatDate(subscription.currentPeriodEnd)}</span>
                       </>
                     )}
                   </div>
 
                   {isActive && (
                     <button
-                      onClick={() => setExpandedId(isExpanded ? null : subscription.id)}
+                      onClick={() => handleExpand(subscription.id)}
                       className="flex items-center gap-1 text-xs text-primary hover:underline"
                     >
                       {isExpanded ? (
@@ -408,7 +368,7 @@ export const SubscriptionCard = () => {
                     </div>
                     <button
                       onClick={() => handleResetLink(subscription.id)}
-                      disabled={resettingLinks[subscription.id]}
+                      disabled={resettingLinks[subscription.id] || isLoadingUrl}
                       className={getButtonClass('outline', 'sm', 'h-7 text-xs gap-1')}
                     >
                       <RefreshCw className={cn('size-3', resettingLinks[subscription.id] && 'animate-spin')} />
@@ -416,23 +376,34 @@ export const SubscriptionCard = () => {
                     </button>
                   </div>
 
-                  <div className="space-y-2">
-                    {SUBSCRIPTION_LINK_TYPES.map((type) => {
-                      const url = `${subscription.subscribeUrl}${type.path}`;
-                      return (
-                        <div
-                          key={type.name}
-                          className="flex items-center gap-2 p-2 rounded-lg bg-muted/50"
-                        >
-                          <span className="text-xs font-medium w-14">{type.name}</span>
-                          <span className="flex-1 text-xs font-mono text-muted-foreground truncate">
-                            {url}
-                          </span>
-                          <CopyButton text={url} />
-                        </div>
-                      );
-                    })}
-                  </div>
+                  {isLoadingUrl ? (
+                    <div className="flex items-center justify-center py-4 text-muted-foreground">
+                      <Loader2 className="size-4 animate-spin mr-2" />
+                      <span className="text-sm">加载中...</span>
+                    </div>
+                  ) : subscribeUrl ? (
+                    <div className="space-y-2">
+                      {SUBSCRIPTION_LINK_TYPES.map((type) => {
+                        const url = `${subscribeUrl}${type.path}`;
+                        return (
+                          <div
+                            key={type.name}
+                            className="flex items-center gap-2 p-2 rounded-lg bg-muted/50"
+                          >
+                            <span className="text-xs font-medium w-14">{type.name}</span>
+                            <span className="flex-1 text-xs font-mono text-muted-foreground truncate">
+                              {url}
+                            </span>
+                            <CopyButton text={url} />
+                          </div>
+                        );
+                      })}
+                    </div>
+                  ) : (
+                    <p className="text-sm text-muted-foreground text-center py-4">
+                      无法加载订阅链接
+                    </p>
+                  )}
                 </div>
               )}
             </div>

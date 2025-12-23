@@ -13,6 +13,7 @@ import type {
   UpdateUserRequest,
   ListUsersParams,
   AdminResetPasswordRequest,
+  DashboardResponse,
 } from './types';
 
 /**
@@ -84,4 +85,15 @@ export const adminResetPassword = async (
   data: AdminResetPasswordRequest
 ): Promise<void> => {
   await apiClient.patch(`/users/${id}/password`, data);
+};
+
+/**
+ * Get current user's dashboard with subscription and usage info
+ * GET /users/me/dashboard
+ * @requires Authentication
+ * Added: 2025-12-23
+ */
+export const getDashboard = async (): Promise<DashboardResponse> => {
+  const response = await apiClient.get<APIResponse<DashboardResponse>>('/users/me/dashboard');
+  return response.data.data;
 };

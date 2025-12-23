@@ -90,3 +90,39 @@ export interface ChangePasswordRequest {
   newPassword: string;
   logoutAllDevices?: boolean;
 }
+
+// Added 2025-12-23
+/** Aggregated traffic usage summary */
+export interface UsageSummary {
+  upload: number;
+  download: number;
+  total: number;
+}
+
+// Added 2025-12-23
+/** Simplified plan info for dashboard */
+export interface DashboardPlan {
+  id: string;
+  name: string;
+  planType: string;
+  limits?: Record<string, unknown>;
+}
+
+// Added 2025-12-23
+/** Subscription info with usage for dashboard */
+export interface DashboardSubscription {
+  id: string;
+  plan?: DashboardPlan;
+  status: string;
+  currentPeriodStart: string;
+  currentPeriodEnd: string;
+  isActive: boolean;
+  usage: UsageSummary;
+}
+
+// Added 2025-12-23
+/** User dashboard response with subscriptions and total usage */
+export interface DashboardResponse {
+  subscriptions: DashboardSubscription[];
+  totalUsage: UsageSummary;
+}

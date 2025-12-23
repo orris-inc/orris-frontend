@@ -16,8 +16,8 @@ import {
 import { DashboardLayout } from '@/layouts/DashboardLayout';
 import { useAuthStore } from '@/features/auth/stores/auth-store';
 import { usePageTitle } from '@/shared/hooks';
-import { listSubscriptions, getTrafficStats } from '@/api/subscription';
-import type { Subscription, TrafficSummary } from '@/api/subscription/types';
+import { getDashboard } from '@/api/user';
+import type { DashboardResponse } from '@/api/user/types';
 import { SubscriptionCard } from '@/components/dashboard/SubscriptionCard';
 
 /**
@@ -32,71 +32,21 @@ const formatTraffic = (bytes: number): { value: string; unit: string } => {
   return { value, unit: units[i] };
 };
 
-/**
- * Get current month date range
- */
-const getMonthRange = (): { from: string; to: string } => {
-  const now = new Date();
-  const firstDay = new Date(now.getFullYear(), now.getMonth(), 1);
-  const lastDay = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59);
-  return {
-    from: firstDay.toISOString(),
-    to: lastDay.toISOString(),
-  };
-};
-
 export const DashboardPage = () => {
   usePageTitle('仪表盘');
 
   const { user } = useAuthStore();
-  const [subscriptions, setSubscriptions] = useState<Subscription[]>([]);
-  const [totalTrafficSummary, setTotalTrafficSummary] = useState<TrafficSummary | null>(null);
-  const [totalTrafficLimit, setTotalTrafficLimit] = useState<number>(0);
+  const [dashboardData, setDashboardData] = useState<DashboardResponse | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     const fetchData = async () => {
       setIsLoading(true);
       try {
-        const result = await listSubscriptions({ page: 1, pageSize: 100 });
-        if (result.items && result.items.length > 0) {
-          setSubscriptions(result.items);
-
-          const activeSubscriptions = result.items.filter((sub: Subscription) => sub.status === 'active');
-          if (activeSubscriptions.length > 0) {
-            const { from, to } = getMonthRange();
-
-            // Fetch and aggregate traffic for all active subscriptions
-            const trafficPromises = activeSubscriptions.map((sub) =>
-              getTrafficStats(sub.id, { from, to }).catch(() => null)
-            );
-            const trafficResults = await Promise.all(trafficPromises);
-
-            // Aggregate traffic from all subscriptions
-            let totalUpload = 0;
-            let totalDownload = 0;
-            let total = 0;
-            let totalLimit = 0;
-
-            trafficResults.forEach((trafficData, index) => {
-              if (trafficData?.summary) {
-                totalUpload += trafficData.summary.totalUpload;
-                totalDownload += trafficData.summary.totalDownload;
-                total += trafficData.summary.total;
-              }
-              // Accumulate traffic limit from each subscription
-              const limits = activeSubscriptions[index].plan?.limits as { trafficLimit?: number } | undefined;
-              if (limits?.trafficLimit) {
-                totalLimit += limits.trafficLimit;
-              }
-            });
-
-            setTotalTrafficSummary({ totalUpload, totalDownload, total });
-            setTotalTrafficLimit(totalLimit);
-          }
-        }
+        const data = await getDashboard();
+        setDashboardData(data);
       } catch {
-        // Failed to fetch subscription data
+        // Failed to fetch dashboard data
       } finally {
         setIsLoading(false);
       }
@@ -116,9 +66,17 @@ export const DashboardPage = () => {
     );
   }
 
-  const activeSubscriptions = subscriptions.filter((sub) => sub.status === 'active');
+  const subscriptions = dashboardData?.subscriptions ?? [];
+  const activeSubscriptions = subscriptions.filter((sub) => sub.isActive);
   const hasActiveSubscription = activeSubscriptions.length > 0;
   const primarySubscription = activeSubscriptions[0];
+  const totalUsage = dashboardData?.totalUsage;
+
+  // Calculate total traffic limit from all active subscriptions
+  const totalTrafficLimit = activeSubscriptions.reduce((sum, sub) => {
+    const limits = sub.plan?.limits as { trafficLimit?: number } | undefined;
+    return sum + (limits?.trafficLimit ?? 0);
+  }, 0);
 
   const getDaysRemaining = (endDate?: string) => {
     if (!endDate) return null;
@@ -128,7 +86,7 @@ export const DashboardPage = () => {
     return diff > 0 ? diff : 0;
   };
 
-  const daysRemaining = primarySubscription ? getDaysRemaining(primarySubscription.endDate) : null;
+  const daysRemaining = primarySubscription ? getDaysRemaining(primarySubscription.currentPeriodEnd) : null;
 
   return (
     <DashboardLayout>
@@ -190,12 +148,12 @@ export const DashboardPage = () => {
             <div className="text-2xl font-semibold font-mono">
               {isLoading ? (
                 <span className="inline-block w-14 h-7 bg-muted animate-pulse rounded" />
-              ) : totalTrafficSummary ? formatTraffic(totalTrafficSummary.totalUpload).value : '-'}
+              ) : totalUsage ? formatTraffic(totalUsage.upload).value : '-'}
             </div>
             <p className="text-sm text-muted-foreground mt-1">
               {isLoading ? (
                 <span className="inline-block w-10 h-4 bg-muted animate-pulse rounded" />
-              ) : totalTrafficSummary ? `${formatTraffic(totalTrafficSummary.totalUpload).unit} 本月` : '本月'}
+              ) : totalUsage ? `${formatTraffic(totalUsage.upload).unit} 本月` : '本月'}
             </p>
           </div>
 
@@ -210,12 +168,12 @@ export const DashboardPage = () => {
             <div className="text-2xl font-semibold font-mono">
               {isLoading ? (
                 <span className="inline-block w-14 h-7 bg-muted animate-pulse rounded" />
-              ) : totalTrafficSummary ? formatTraffic(totalTrafficSummary.totalDownload).value : '-'}
+              ) : totalUsage ? formatTraffic(totalUsage.download).value : '-'}
             </div>
             <p className="text-sm text-muted-foreground mt-1">
               {isLoading ? (
                 <span className="inline-block w-10 h-4 bg-muted animate-pulse rounded" />
-              ) : totalTrafficSummary ? `${formatTraffic(totalTrafficSummary.totalDownload).unit} 本月` : '本月'}
+              ) : totalUsage ? `${formatTraffic(totalUsage.download).unit} 本月` : '本月'}
             </p>
           </div>
         </div>
@@ -225,8 +183,8 @@ export const DashboardPage = () => {
           <div className="flex justify-between items-center mb-3">
             <span className="text-sm text-muted-foreground">总流量使用</span>
             <span className="text-sm font-mono">
-              {totalTrafficSummary ? formatTraffic(totalTrafficSummary.total).value : '-'}{' '}
-              {totalTrafficSummary ? formatTraffic(totalTrafficSummary.total).unit : ''} /{' '}
+              {totalUsage ? formatTraffic(totalUsage.total).value : '-'}{' '}
+              {totalUsage ? formatTraffic(totalUsage.total).unit : ''} /{' '}
               {totalTrafficLimit > 0 ? formatTraffic(totalTrafficLimit).value : '-'}{' '}
               {totalTrafficLimit > 0 ? formatTraffic(totalTrafficLimit).unit : ''}
             </span>
@@ -235,8 +193,8 @@ export const DashboardPage = () => {
             <div
               className="h-full rounded-full bg-primary"
               style={{
-                width: totalTrafficLimit > 0 && totalTrafficSummary
-                  ? `${Math.min((totalTrafficSummary.total / totalTrafficLimit) * 100, 100)}%`
+                width: totalTrafficLimit > 0 && totalUsage
+                  ? `${Math.min((totalUsage.total / totalTrafficLimit) * 100, 100)}%`
                   : '0%',
               }}
             />
@@ -275,7 +233,10 @@ export const DashboardPage = () => {
         </div>
 
         {/* Subscription Details */}
-        <SubscriptionCard />
+        <SubscriptionCard
+          subscriptions={subscriptions}
+          isLoading={isLoading}
+        />
       </div>
     </DashboardLayout>
   );
