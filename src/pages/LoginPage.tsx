@@ -15,7 +15,6 @@ import * as Separator from '@radix-ui/react-separator';
 import { useAuth } from '@/features/auth/hooks/useAuth';
 import { useAuthStore } from '@/features/auth/stores/auth-store';
 import { useNotificationStore } from '@/shared/stores/notification-store';
-import { isAccountNotActiveError } from '@/shared/utils/error-messages';
 import {
   getButtonClass,
   inputStyles,
@@ -44,10 +43,9 @@ export const LoginPage = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { user, isAuthenticated } = useAuthStore();
-  const { login, loginWithOAuth, isLoading, error } = useAuth();
-  const { showSuccess, showError } = useNotificationStore();
+  const { login, loginWithOAuth, isLoading, error, authError } = useAuth();
+  const { showSuccess } = useNotificationStore();
   const [showPassword, setShowPassword] = useState(false);
-  const [showResendVerification, setShowResendVerification] = useState(false);
   const [userEmail, setUserEmail] = useState<string>('');
 
   const state = location.state as { message?: string } | null;
@@ -78,20 +76,19 @@ export const LoginPage = () => {
   const rememberMe = watch('rememberMe');
 
   const onSubmit = async (data: LoginFormData) => {
-    setShowResendVerification(false);
     setUserEmail(data.email);
 
     try {
       await login(data);
       showSuccess('登录成功！');
-    } catch (err) {
-      if (isAccountNotActiveError(err)) {
-        setShowResendVerification(true);
-      }
-      const errorMessage = err instanceof Error ? err.message : '登录失败，请重试';
-      showError(errorMessage);
+    } catch {
+      // Error already handled by useAuth, just show notification
+      // authError is now available for field-level error display
     }
   };
+
+  // Check if account is not active based on authError
+  const showResendVerification = authError?.type === 'account_not_active';
 
   const handleResendVerification = () => {
     navigate('/verification-pending', {
@@ -103,9 +100,8 @@ export const LoginPage = () => {
     try {
       await loginWithOAuth(provider);
       showSuccess('登录成功！');
-    } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'OAuth登录失败';
-      showError(errorMessage);
+    } catch {
+      // Error already handled by useAuth
     }
   };
 
@@ -165,12 +161,14 @@ export const LoginPage = () => {
                     type="email"
                     autoComplete="email"
                     autoFocus
-                    aria-invalid={!!errors.email}
+                    aria-invalid={!!errors.email || !!authError?.fieldErrors?.email}
                     className={inputStyles}
                     {...register('email')}
                   />
-                  {errors.email && (
-                    <p className="text-sm text-destructive">{errors.email.message}</p>
+                  {(errors.email || authError?.fieldErrors?.email) && (
+                    <p className="text-sm text-destructive">
+                      {errors.email?.message || authError?.fieldErrors?.email}
+                    </p>
                   )}
                 </div>
 
@@ -181,7 +179,7 @@ export const LoginPage = () => {
                       id="password"
                       type={showPassword ? 'text' : 'password'}
                       autoComplete="current-password"
-                      aria-invalid={!!errors.password}
+                      aria-invalid={!!errors.password || !!authError?.fieldErrors?.password}
                       className={cn(inputStyles, 'pr-10')}
                       {...register('password')}
                     />
@@ -195,8 +193,10 @@ export const LoginPage = () => {
                       {showPassword ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
                     </button>
                   </div>
-                  {errors.password && (
-                    <p className="text-sm text-destructive">{errors.password.message}</p>
+                  {(errors.password || authError?.fieldErrors?.password) && (
+                    <p className="text-sm text-destructive">
+                      {errors.password?.message || authError?.fieldErrors?.password}
+                    </p>
                   )}
                 </div>
 

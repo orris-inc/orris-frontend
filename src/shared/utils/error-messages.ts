@@ -262,6 +262,135 @@ export function isAccountNotActiveError(error: unknown): boolean {
 }
 
 /**
+ * Auth error type enumeration
+ */
+export type AuthErrorType =
+  | 'account_not_active'
+  | 'invalid_credentials'
+  | 'email_exists'
+  | 'email_not_found'
+  | 'invalid_token'
+  | 'validation_error'
+  | 'unknown';
+
+/**
+ * Field-level error structure
+ */
+export interface FieldErrors {
+  email?: string;
+  password?: string;
+  name?: string;
+  [key: string]: string | undefined;
+}
+
+/**
+ * Structured auth error
+ */
+export interface AuthError {
+  type: AuthErrorType;
+  message: string;
+  fieldErrors?: FieldErrors;
+  status?: number;
+}
+
+/**
+ * Extract structured error from API response
+ * @param error - Error object (typically AxiosError)
+ * @returns Structured auth error
+ */
+export function extractAuthError(error: unknown): AuthError {
+  const defaultError: AuthError = {
+    type: 'unknown',
+    message: '操作失败，请稍后重试',
+  };
+
+  if (!error || typeof error !== 'object') {
+    return defaultError;
+  }
+
+  // Check if it's an Axios error
+  if (!('isAxiosError' in error || 'response' in error)) {
+    if (error instanceof Error) {
+      return { type: 'unknown', message: translateErrorMessage(error.message) };
+    }
+    return defaultError;
+  }
+
+  const axiosError = error as {
+    response?: {
+      data?: {
+        error?: { message?: string; type?: string; details?: Record<string, string> } | string;
+        message?: string;
+      };
+      status?: number;
+    };
+    message?: string;
+  };
+
+  const status = axiosError.response?.status;
+  const responseData = axiosError.response?.data;
+
+  let rawMessage = '';
+  let errorType: AuthErrorType = 'unknown';
+  let fieldErrors: FieldErrors | undefined;
+
+  // Extract error message and details
+  if (responseData && typeof responseData === 'object') {
+    if ('error' in responseData) {
+      const errorField = responseData.error;
+      if (typeof errorField === 'object' && errorField !== null) {
+        rawMessage = errorField.message || '';
+        // Extract field-level errors from details
+        if (errorField.details && typeof errorField.details === 'object') {
+          fieldErrors = {};
+          for (const [key, value] of Object.entries(errorField.details)) {
+            if (typeof value === 'string') {
+              fieldErrors[key] = translateErrorMessage(value);
+            }
+          }
+        }
+      } else if (typeof errorField === 'string') {
+        rawMessage = errorField;
+      }
+    }
+    if (!rawMessage && 'message' in responseData) {
+      rawMessage = String(responseData.message);
+    }
+  }
+
+  // Determine error type based on message and status
+  const lowerMessage = rawMessage.toLowerCase();
+
+  if (/account.*not.*active|account is not active/.test(lowerMessage)) {
+    errorType = 'account_not_active';
+  } else if (/invalid.*credentials|invalid email or password|incorrect password/.test(lowerMessage)) {
+    errorType = 'invalid_credentials';
+  } else if (/email.*already.*exists|user.*already.*exists/.test(lowerMessage)) {
+    errorType = 'email_exists';
+  } else if (/email.*not.*found|user.*not.*found/.test(lowerMessage)) {
+    errorType = 'email_not_found';
+  } else if (/token.*invalid|token.*expired|invalid.*token/.test(lowerMessage)) {
+    errorType = 'invalid_token';
+  } else if (status === 400 || /validation|invalid.*input/.test(lowerMessage)) {
+    errorType = 'validation_error';
+  }
+
+  return {
+    type: errorType,
+    message: translateErrorMessage(rawMessage) || defaultError.message,
+    fieldErrors: fieldErrors && Object.keys(fieldErrors).length > 0 ? fieldErrors : undefined,
+    status,
+  };
+}
+
+/**
+ * Check if error is a specific auth error type
+ */
+export function isAuthErrorType(error: unknown, type: AuthErrorType): boolean {
+  return extractAuthError(error).type === type;
+}
+
+/**
  * Extract raw error message (without translation)
  * Used for logging and special error determination
  * @param error - Error object

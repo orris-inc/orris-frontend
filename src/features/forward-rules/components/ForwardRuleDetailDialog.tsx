@@ -105,7 +105,7 @@ export const ForwardRuleDetailDialog: React.FC<ForwardRuleDetailDialogProps> = (
     <Dialog open={open} onOpenChange={(open) => !open && onClose()}>
       <DialogContent className="sm:max-w-[700px] flex flex-col max-h-[90vh]">
         <DialogHeader className="flex-shrink-0">
-          <div className="flex items-center justify-between">
+          <div className="flex items-center justify-between pr-8">
             <DialogTitle>转发规则详情</DialogTitle>
             <Badge
               variant={rule.status === 'enabled' ? 'default' : 'secondary'}
@@ -155,6 +155,11 @@ export const ForwardRuleDetailDialog: React.FC<ForwardRuleDetailDialogProps> = (
               <div className="space-y-1">
                 <p className="text-sm text-muted-foreground">状态</p>
                 <p className="text-sm">{STATUS_LABELS[rule.status] || rule.status}</p>
+              </div>
+
+              <div className="space-y-1">
+                <p className="text-sm text-muted-foreground">排序顺序</p>
+                <p className="text-sm">{rule.sortOrder ?? 0}</p>
               </div>
             </div>
           </div>

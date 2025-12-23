@@ -61,8 +61,8 @@ const calculatePasswordStrength = (password: string): number => {
 export const RegisterPage = () => {
   const navigate = useNavigate();
   const { isAuthenticated } = useAuthStore();
-  const { register: registerUser, loginWithOAuth, isLoading, error } = useAuth();
-  const { showSuccess, showError } = useNotificationStore();
+  const { register: registerUser, loginWithOAuth, isLoading, error, authError } = useAuth();
+  const { showSuccess } = useNotificationStore();
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [passwordStrength, setPasswordStrength] = useState(0);
@@ -98,10 +98,9 @@ export const RegisterPage = () => {
         password: data.password,
       });
       showSuccess('注册成功！请查收验证邮件');
-    } catch (err) {
-      // Error message is in error state, displayed via Alert
-      const errorMessage = err instanceof Error ? err.message : '注册失败，请重试';
-      showError(errorMessage);
+    } catch {
+      // Error already handled by useAuth
+      // authError is now available for field-level error display
     }
   };
 
@@ -109,9 +108,8 @@ export const RegisterPage = () => {
     try {
       await loginWithOAuth(provider);
       showSuccess('注册成功！');
-    } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'OAuth注册失败';
-      showError(errorMessage);
+    } catch {
+      // Error already handled by useAuth
     }
   };
 
@@ -154,12 +152,14 @@ export const RegisterPage = () => {
                   id="name"
                   autoComplete="name"
                   autoFocus
-                  aria-invalid={!!errors.name}
+                  aria-invalid={!!errors.name || !!authError?.fieldErrors?.name}
                   className={inputStyles}
                   {...register('name')}
                 />
-                {errors.name && (
-                  <p className="text-sm text-destructive">{errors.name.message}</p>
+                {(errors.name || authError?.fieldErrors?.name) && (
+                  <p className="text-sm text-destructive">
+                    {errors.name?.message || authError?.fieldErrors?.name}
+                  </p>
                 )}
               </div>
 
@@ -169,12 +169,14 @@ export const RegisterPage = () => {
                   id="email"
                   type="email"
                   autoComplete="email"
-                  aria-invalid={!!errors.email}
+                  aria-invalid={!!errors.email || !!authError?.fieldErrors?.email}
                   className={inputStyles}
                   {...register('email')}
                 />
-                {errors.email && (
-                  <p className="text-sm text-destructive">{errors.email.message}</p>
+                {(errors.email || authError?.fieldErrors?.email) && (
+                  <p className="text-sm text-destructive">
+                    {errors.email?.message || authError?.fieldErrors?.email}
+                  </p>
                 )}
               </div>
 
@@ -185,7 +187,7 @@ export const RegisterPage = () => {
                     id="password"
                     type={showPassword ? 'text' : 'password'}
                     autoComplete="new-password"
-                    aria-invalid={!!errors.password}
+                    aria-invalid={!!errors.password || !!authError?.fieldErrors?.password}
                     className={cn(inputStyles, "pr-10")}
                     {...register('password', {
                       onChange: (e) => handlePasswordChange(e.target.value),
@@ -205,13 +207,15 @@ export const RegisterPage = () => {
                     )}
                   </button>
                 </div>
-                {!errors.password && !password && (
+                {!errors.password && !authError?.fieldErrors?.password && !password && (
                   <p className="text-xs text-muted-foreground">
                     密码至少需要 8 个字符，且包含至少一个大写字母
                   </p>
                 )}
-                {errors.password && (
-                  <p className="text-sm text-destructive">{errors.password.message}</p>
+                {(errors.password || authError?.fieldErrors?.password) && (
+                  <p className="text-sm text-destructive">
+                    {errors.password?.message || authError?.fieldErrors?.password}
+                  </p>
                 )}
                 {password && (
                   <div className="grid gap-1">

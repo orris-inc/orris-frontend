@@ -6,7 +6,11 @@ import { useState, useCallback } from 'react';
 import { useNavigate, useLocation } from 'react-router';
 import { useAuthStore } from '../stores/auth-store';
 import * as authApi from '@/api/auth';
-import { extractErrorMessage } from '@/shared/utils/error-messages';
+import {
+  extractAuthError,
+  type AuthError,
+  type AuthErrorType,
+} from '@/shared/utils/error-messages';
 import type { LoginRequest, RegisterRequest } from '@/api/auth';
 import { openOAuthPopup, type OAuthProvider } from '../utils/oauth-popup';
 
@@ -40,6 +44,15 @@ export const useAuth = () => {
 
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [authError, setAuthError] = useState<AuthError | null>(null);
+
+  /**
+   * Clear all errors
+   */
+  const clearErrors = useCallback(() => {
+    setError(null);
+    setAuthError(null);
+  }, []);
 
   /**
    * Get redirect URL after login
@@ -74,7 +87,7 @@ export const useAuth = () => {
   const login = useCallback(
     async (data: LoginRequest) => {
       setIsLoading(true);
-      setError(null);
+      clearErrors();
 
       try {
         // Login API returns user info, Token is stored in HttpOnly Cookie
@@ -85,15 +98,16 @@ export const useAuth = () => {
         const redirectUrl = getRedirectUrl(response.user.role as 'admin' | 'user' | 'moderator');
         navigate(redirectUrl, { replace: true });
       } catch (err) {
-        const errorMsg = extractErrorMessage(err);
-        setError(errorMsg);
-        // Re-throw the original error so the caller can handle it specially (e.g., check if account is not activated)
+        const structured = extractAuthError(err);
+        setError(structured.message);
+        setAuthError(structured);
+        // Re-throw the original error so the caller can handle it specially
         throw err;
       } finally {
         setIsLoading(false);
       }
     },
-    [storeLogin, navigate, getRedirectUrl]
+    [storeLogin, navigate, getRedirectUrl, clearErrors]
   );
 
   /**
@@ -102,7 +116,7 @@ export const useAuth = () => {
   const loginWithOAuth = useCallback(
     async (provider: OAuthProvider) => {
       setIsLoading(true);
-      setError(null);
+      clearErrors();
 
       try {
         // OAuth returns user info, Token is stored in HttpOnly Cookie
@@ -115,14 +129,15 @@ export const useAuth = () => {
         // React Router navigate may not work reliably in popup callback context
         window.location.href = redirectUrl;
       } catch (err) {
-        const errorMsg = extractErrorMessage(err);
-        setError(errorMsg || 'OAuth login failed, please retry');
+        const structured = extractAuthError(err);
+        setError(structured.message || 'OAuth登录失败，请重试');
+        setAuthError(structured);
         throw err;
       } finally {
         setIsLoading(false);
       }
     },
-    [storeLogin, getRedirectUrl]
+    [storeLogin, getRedirectUrl, clearErrors]
   );
 
   /**
@@ -131,7 +146,7 @@ export const useAuth = () => {
   const register = useCallback(
     async (data: RegisterRequest) => {
       setIsLoading(true);
-      setError(null);
+      clearErrors();
 
       try {
         await authApi.register(data);
@@ -141,14 +156,15 @@ export const useAuth = () => {
           state: { email: data.email },
         });
       } catch (err) {
-        const errorMsg = extractErrorMessage(err);
-        setError(errorMsg);
+        const structured = extractAuthError(err);
+        setError(structured.message);
+        setAuthError(structured);
         throw err;
       } finally {
         setIsLoading(false);
       }
     },
-    [navigate]
+    [navigate, clearErrors]
   );
 
   /**
@@ -173,9 +189,14 @@ export const useAuth = () => {
     isAuthenticated,
     isLoading,
     error,
+    authError,
+    clearErrors,
     login,
     loginWithOAuth,
     register,
     logout,
   };
 };
+
+// Re-export types for convenience
+export type { AuthError, AuthErrorType };

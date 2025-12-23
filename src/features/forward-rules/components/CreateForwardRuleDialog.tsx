@@ -402,14 +402,22 @@ export const CreateForwardRuleDialog: React.FC<CreateForwardRuleDialogProps> = (
     return false;
   };
 
-  // Get available node list (status is active)
-  const availableNodes = nodes.filter((n) => n.status === 'active');
+  // Get available node list (status is active, but always include currently selected node for copy mode)
+  const availableNodes = nodes.filter((n) => n.status === 'active' || n.id === formData.targetNodeId);
+
+  // Get available agents (status is enabled, but always include currently selected agents for copy mode)
+  const availableAgentsForSelect = agents.filter((a) =>
+    a.status === 'enabled' ||
+    a.id === formData.agentId ||
+    a.id === formData.exitAgentId ||
+    formData.chainAgentIds.includes(a.id)
+  );
 
   // Get available exit agents (exclude currently selected node)
-  const availableExitAgents = agents.filter((a) => a.id !== formData.agentId && a.status === 'enabled');
+  const availableExitAgents = availableAgentsForSelect.filter((a) => a.id !== formData.agentId);
 
   // Get available chain agents (exclude currently selected entry node)
-  const availableChainAgents = agents.filter((a) => a.id !== formData.agentId && a.status === 'enabled');
+  const availableChainAgents = availableAgentsForSelect.filter((a) => a.id !== formData.agentId);
 
   return (
     <Dialog open={open} onOpenChange={(isOpen) => !isOpen && handleClose()}>

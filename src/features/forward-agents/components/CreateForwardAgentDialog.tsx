@@ -27,6 +27,8 @@ interface CreateForwardAgentDialogProps {
 // Default form data
 const getDefaultFormData = (): CreateForwardAgentRequest => ({
   name: '',
+  publicAddress: '',
+  tunnelAddress: '',
   remark: '',
 });
 
@@ -88,6 +90,14 @@ export const CreateForwardAgentDialog: React.FC<CreateForwardAgentDialogProps> =
         name: formData.name.trim(),
       };
 
+      if (formData.publicAddress?.trim()) {
+        submitData.publicAddress = formData.publicAddress.trim();
+      }
+
+      if (formData.tunnelAddress?.trim()) {
+        submitData.tunnelAddress = formData.tunnelAddress.trim();
+      }
+
       if (formData.remark?.trim()) {
         submitData.remark = formData.remark.trim();
       }
@@ -96,7 +106,7 @@ export const CreateForwardAgentDialog: React.FC<CreateForwardAgentDialogProps> =
       try {
         await onSubmit(submitData);
         // Reset form after successful submission
-        setFormData({ name: '', remark: '' });
+        setFormData({ name: '', publicAddress: '', tunnelAddress: '', remark: '' });
         setErrors({});
       } finally {
         setIsSubmitting(false);
@@ -129,6 +139,34 @@ export const CreateForwardAgentDialog: React.FC<CreateForwardAgentDialogProps> =
             />
             <p className="text-xs text-muted-foreground">
               {errors.name || '必填项'}
+            </p>
+          </div>
+
+          {/* Public Address */}
+          <div className="flex flex-col gap-2">
+            <Label htmlFor="publicAddress">公网地址</Label>
+            <Input
+              id="publicAddress"
+              value={formData.publicAddress}
+              onChange={(e) => handleChange('publicAddress', e.target.value)}
+              placeholder="例如：example.com 或 1.2.3.4"
+            />
+            <p className="text-xs text-muted-foreground">
+              可选，留空时由 Agent 自动检测
+            </p>
+          </div>
+
+          {/* Tunnel Address */}
+          <div className="flex flex-col gap-2">
+            <Label htmlFor="tunnelAddress">隧道地址</Label>
+            <Input
+              id="tunnelAddress"
+              value={formData.tunnelAddress}
+              onChange={(e) => handleChange('tunnelAddress', e.target.value)}
+              placeholder="例如：10.0.0.1 或 internal.example.com"
+            />
+            <p className="text-xs text-muted-foreground">
+              可选，用于中继/出口节点的内网连接
             </p>
           </div>
 

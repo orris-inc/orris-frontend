@@ -56,7 +56,7 @@ export const EditForwardRuleDialog: React.FC<EditForwardRuleDialogProps> = ({
   nodes = [],
   agents = [],
 }) => {
-  const [formData, setFormData] = useState<UpdateForwardRuleRequest & { chainAgentIds?: string[]; chainPortConfig?: Record<string, number>; trafficMultiplier?: number }>({});
+  const [formData, setFormData] = useState<UpdateForwardRuleRequest & { chainAgentIds?: string[]; chainPortConfig?: Record<string, number>; trafficMultiplier?: number; sortOrder?: number }>({});
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [targetType, setTargetType] = useState<TargetType>('manual');
 
@@ -85,6 +85,7 @@ export const EditForwardRuleDialog: React.FC<EditForwardRuleDialogProps> = ({
         chainAgentIds,
         chainPortConfig,
         trafficMultiplier: rule.trafficMultiplier,
+        sortOrder: rule.sortOrder,
       });
       // Determine target type based on rule data
       setTargetType(rule.targetNodeId ? 'node' : 'manual');
@@ -92,11 +93,16 @@ export const EditForwardRuleDialog: React.FC<EditForwardRuleDialogProps> = ({
     }
   }, [rule]);
 
-  // Get available node list (status is active)
-  const availableNodes = nodes.filter((n) => n.status === 'active');
+  // Get available node list (status is active, but always include currently selected node)
+  const availableNodes = nodes.filter((n) => n.status === 'active' || n.id === formData.targetNodeId);
 
-  // Get available agent list (status is enabled)
-  const availableAgents = agents.filter((a) => a.status === 'enabled');
+  // Get available agent list (status is enabled, but always include currently selected agents)
+  const availableAgents = agents.filter((a) =>
+    a.status === 'enabled' ||
+    a.id === formData.agentId ||
+    a.id === formData.exitAgentId ||
+    (formData.chainAgentIds || []).includes(a.id)
+  );
 
   // Get available exit agents (exclude current entry agent)
   const availableExitAgents = availableAgents.filter((a) => a.id !== formData.agentId);
@@ -258,6 +264,11 @@ export const EditForwardRuleDialog: React.FC<EditForwardRuleDialogProps> = ({
       // Handle traffic multiplier
       if (formData.trafficMultiplier !== rule.trafficMultiplier) {
         updates.trafficMultiplier = formData.trafficMultiplier;
+      }
+
+      // Handle sort order
+      if (formData.sortOrder !== rule.sortOrder && formData.sortOrder !== undefined) {
+        updates.sortOrder = formData.sortOrder;
       }
 
       // Submit update if there are any changes
@@ -600,6 +611,18 @@ export const EditForwardRuleDialog: React.FC<EditForwardRuleDialogProps> = ({
                 <p className="text-xs text-muted-foreground">
                   修改此值会影响后续流量统计
                 </p>
+              </div>
+
+              {/* Sort Order */}
+              <div className="flex flex-col gap-2">
+                <Label htmlFor="sortOrder">排序顺序</Label>
+                <Input
+                  id="sortOrder"
+                  type="number"
+                  value={formData.sortOrder ?? 0}
+                  onChange={(e) => handleChange('sortOrder', parseInt(e.target.value, 10) || 0)}
+                />
+                <p className="text-xs text-muted-foreground">数字越小越靠前</p>
               </div>
 
               {/* Remark */}
