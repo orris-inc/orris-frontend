@@ -111,7 +111,7 @@ export const TrafficTrendChart = ({ data, granularity, loading, headerAction }: 
           <ResponsiveContainer width="100%" height="100%">
             <AreaChart
               data={chartData}
-              margin={{ top: 10, right: 30, left: 0, bottom: 0 }}
+              margin={{ top: 10, right: 30, left: 10, bottom: 0 }}
             >
               <defs>
                 {/* Upload gradient - Blue */}
@@ -138,6 +138,7 @@ export const TrafficTrendChart = ({ data, granularity, loading, headerAction }: 
                 tickFormatter={(value: number) => formatTrafficBytes(value)}
                 className="text-xs text-slate-600 dark:text-slate-400"
                 tick={{ fill: 'currentColor' }}
+                width={70}
               />
               <Tooltip content={<CustomTooltip />} />
               <Area

@@ -104,7 +104,7 @@ const NodeItem = ({ item }: { item: NodeTrafficStatsItem }) => {
       {/* Traffic Stats */}
       <div className="flex items-center gap-4 text-xs">
         {/* Upload */}
-        <div className="flex items-center gap-1.5">
+        <div className="flex items-center gap-1.5 whitespace-nowrap">
           <ArrowUp className="size-3.5 text-blue-600 dark:text-blue-400" strokeWidth={2} />
           <span className="font-medium text-slate-700 dark:text-slate-300">
             {formatTrafficBytes(item.upload)}
@@ -112,7 +112,7 @@ const NodeItem = ({ item }: { item: NodeTrafficStatsItem }) => {
         </div>
 
         {/* Download */}
-        <div className="flex items-center gap-1.5">
+        <div className="flex items-center gap-1.5 whitespace-nowrap">
           <ArrowDown className="size-3.5 text-emerald-600 dark:text-emerald-400" strokeWidth={2} />
           <span className="font-medium text-slate-700 dark:text-slate-300">
             {formatTrafficBytes(item.download)}
@@ -120,7 +120,7 @@ const NodeItem = ({ item }: { item: NodeTrafficStatsItem }) => {
         </div>
 
         {/* Total */}
-        <div className="flex items-center gap-1.5">
+        <div className="flex items-center gap-1.5 whitespace-nowrap">
           <Activity className="size-3.5 text-violet-600 dark:text-violet-400" strokeWidth={2} />
           <span className="font-bold text-slate-900 dark:text-white">
             {formatTrafficBytes(item.total)}

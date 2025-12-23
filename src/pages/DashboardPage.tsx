@@ -52,9 +52,11 @@ export const DashboardPage = () => {
   const [subscriptions, setSubscriptions] = useState<Subscription[]>([]);
   const [totalTrafficSummary, setTotalTrafficSummary] = useState<TrafficSummary | null>(null);
   const [totalTrafficLimit, setTotalTrafficLimit] = useState<number>(0);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     const fetchData = async () => {
+      setIsLoading(true);
       try {
         const result = await listSubscriptions({ page: 1, pageSize: 100 });
         if (result.items && result.items.length > 0) {
@@ -95,6 +97,8 @@ export const DashboardPage = () => {
         }
       } catch {
         // Failed to fetch subscription data
+      } finally {
+        setIsLoading(false);
       }
     };
 
@@ -148,10 +152,14 @@ export const DashboardPage = () => {
               <span className="text-sm text-muted-foreground">订阅状态</span>
             </div>
             <div className="text-2xl font-semibold">
-              {hasActiveSubscription ? '已激活' : '未激活'}
+              {isLoading ? (
+                <span className="inline-block w-16 h-7 bg-muted animate-pulse rounded" />
+              ) : hasActiveSubscription ? '已激活' : '未激活'}
             </div>
             <p className="text-sm text-muted-foreground mt-1">
-              {hasActiveSubscription ? `${activeSubscriptions.length} 个活跃` : '暂无订阅'}
+              {isLoading ? (
+                <span className="inline-block w-12 h-4 bg-muted animate-pulse rounded" />
+              ) : hasActiveSubscription ? `${activeSubscriptions.length} 个活跃` : '暂无订阅'}
             </p>
           </div>
 
@@ -164,7 +172,9 @@ export const DashboardPage = () => {
               <span className="text-sm text-muted-foreground">剩余天数</span>
             </div>
             <div className="text-2xl font-semibold font-mono">
-              {daysRemaining !== null ? daysRemaining : '-'}
+              {isLoading ? (
+                <span className="inline-block w-10 h-7 bg-muted animate-pulse rounded" />
+              ) : daysRemaining !== null ? daysRemaining : '-'}
             </div>
             <p className="text-sm text-muted-foreground mt-1">天</p>
           </div>
@@ -178,10 +188,14 @@ export const DashboardPage = () => {
               <span className="text-sm text-muted-foreground">上传</span>
             </div>
             <div className="text-2xl font-semibold font-mono">
-              {totalTrafficSummary ? formatTraffic(totalTrafficSummary.totalUpload).value : '-'}
+              {isLoading ? (
+                <span className="inline-block w-14 h-7 bg-muted animate-pulse rounded" />
+              ) : totalTrafficSummary ? formatTraffic(totalTrafficSummary.totalUpload).value : '-'}
             </div>
             <p className="text-sm text-muted-foreground mt-1">
-              {totalTrafficSummary ? formatTraffic(totalTrafficSummary.totalUpload).unit : ''} 本月
+              {isLoading ? (
+                <span className="inline-block w-10 h-4 bg-muted animate-pulse rounded" />
+              ) : totalTrafficSummary ? `${formatTraffic(totalTrafficSummary.totalUpload).unit} 本月` : '本月'}
             </p>
           </div>
 
@@ -194,10 +208,14 @@ export const DashboardPage = () => {
               <span className="text-sm text-muted-foreground">下载</span>
             </div>
             <div className="text-2xl font-semibold font-mono">
-              {totalTrafficSummary ? formatTraffic(totalTrafficSummary.totalDownload).value : '-'}
+              {isLoading ? (
+                <span className="inline-block w-14 h-7 bg-muted animate-pulse rounded" />
+              ) : totalTrafficSummary ? formatTraffic(totalTrafficSummary.totalDownload).value : '-'}
             </div>
             <p className="text-sm text-muted-foreground mt-1">
-              {totalTrafficSummary ? formatTraffic(totalTrafficSummary.totalDownload).unit : ''} 本月
+              {isLoading ? (
+                <span className="inline-block w-10 h-4 bg-muted animate-pulse rounded" />
+              ) : totalTrafficSummary ? `${formatTraffic(totalTrafficSummary.totalDownload).unit} 本月` : '本月'}
             </p>
           </div>
         </div>

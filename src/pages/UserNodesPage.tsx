@@ -3,7 +3,8 @@
  */
 
 import { useState } from 'react';
-import { Plus } from 'lucide-react';
+import { Plus, AlertCircle, Zap } from 'lucide-react';
+import { Link } from 'react-router';
 import { DashboardLayout } from '@/layouts/DashboardLayout';
 import { Button } from '@/components/common/Button';
 import { TokenDialog } from '@/components/common/TokenDialog';
@@ -13,6 +14,7 @@ import {
   useUserNodeUsage,
   useUserNodeInstallScript,
 } from '@/features/user-nodes/hooks/useUserNodes';
+import { useUserForwardUsage } from '@/features/user-forward-rules/hooks/useUserForwardRules';
 import { UserNodeList } from '@/features/user-nodes/components/UserNodeList';
 import { UserNodeUsageCard } from '@/features/user-nodes/components/UserNodeUsageCard';
 import { CreateUserNodeDialog } from '@/features/user-nodes/components/CreateUserNodeDialog';
@@ -50,6 +52,12 @@ export const UserNodesPage = () => {
     nodeLimit,
     isLoading: isUsageLoading,
   } = useUserNodeUsage();
+
+  // Fetch forward usage to check subscription status
+  const { usage: forwardUsage, isLoading: isForwardUsageLoading } = useUserForwardUsage();
+
+  // Check if user has no forward subscription (no allowed types means no permission)
+  const hasNoSubscription = forwardUsage && forwardUsage.allowedTypes.length === 0;
 
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
@@ -131,41 +139,65 @@ export const UserNodesPage = () => {
           <p className="text-muted-foreground">管理您的代理节点</p>
         </div>
 
-        {/* Usage card */}
-        <UserNodeUsageCard
-          nodeCount={nodeCount}
-          nodeLimit={nodeLimit}
-          isLoading={isLoading || isUsageLoading}
-        />
-
-        {/* Action bar */}
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <p className="text-sm text-muted-foreground">
-              共 {pagination.total} 个节点
+        {/* No subscription prompt */}
+        {hasNoSubscription && (
+          <div className="flex flex-col items-center justify-center py-16 px-4">
+            <div className="p-4 rounded-full bg-amber-500/10 mb-6">
+              <AlertCircle className="h-10 w-10 text-amber-500" />
+            </div>
+            <h2 className="text-xl font-semibold mb-2">暂无可用的转发服务</h2>
+            <p className="text-muted-foreground text-center max-w-md mb-6">
+              您当前没有包含端口转发功能的订阅计划。购买订阅后即可使用端口转发服务。
             </p>
+            <Button asChild>
+              <Link to="/pricing" className="gap-2">
+                <Zap className="h-4 w-4" />
+                查看订阅计划
+              </Link>
+            </Button>
           </div>
-          <Button
-            onClick={handleCreateClick}
-            className="gap-2"
-          >
-            <Plus className="h-4 w-4" />
-            新增节点
-          </Button>
-        </div>
+        )}
 
-        {/* Node list */}
-        <UserNodeList
-          nodes={nodes}
-          isLoading={isLoading}
-          onEdit={handleEditClick}
-          onDelete={handleDeleteClick}
-          onRegenerateToken={handleRegenerateToken}
-          onViewDetail={handleViewDetail}
-          onInstallScript={handleInstallScript}
-          onDeleting={isDeleting}
-          onRegeneratingToken={isRegeneratingToken}
-        />
+        {/* Show normal content when subscription exists */}
+        {!hasNoSubscription && (
+          <>
+            {/* Usage card */}
+            <UserNodeUsageCard
+              nodeCount={nodeCount}
+              nodeLimit={nodeLimit}
+              isLoading={isLoading || isUsageLoading || isForwardUsageLoading}
+            />
+
+            {/* Action bar */}
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <p className="text-sm text-muted-foreground">
+                  共 {pagination.total} 个节点
+                </p>
+              </div>
+              <Button
+                onClick={handleCreateClick}
+                className="gap-2"
+              >
+                <Plus className="h-4 w-4" />
+                新增节点
+              </Button>
+            </div>
+
+            {/* Node list */}
+            <UserNodeList
+              nodes={nodes}
+              isLoading={isLoading}
+              onEdit={handleEditClick}
+              onDelete={handleDeleteClick}
+              onRegenerateToken={handleRegenerateToken}
+              onViewDetail={handleViewDetail}
+              onInstallScript={handleInstallScript}
+              onDeleting={isDeleting}
+              onRegeneratingToken={isRegeneratingToken}
+            />
+          </>
+        )}
       </div>
 
       {/* Create node dialog */}

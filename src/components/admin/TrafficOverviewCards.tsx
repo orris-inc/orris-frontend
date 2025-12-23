@@ -67,7 +67,7 @@ export const TrafficOverviewCards = ({
               <div className={card.iconColor}>{card.icon}</div>
             </div>
             <div className="min-w-0">
-              <div className="text-lg sm:text-xl font-semibold text-slate-900 dark:text-white">
+              <div className="text-lg sm:text-xl font-semibold text-slate-900 dark:text-white whitespace-nowrap">
                 {loading ? (
                   <div className="h-5 w-12 bg-slate-200 dark:bg-slate-700 rounded animate-pulse" />
                 ) : (

@@ -29,6 +29,7 @@ import { ForwardRulesPage } from '@/pages/ForwardRulesPage';
 import { ForwardAgentsPage } from '@/pages/ForwardAgentsPage';
 import { ResourceGroupManagementPage } from '@/pages/ResourceGroupManagementPage';
 import { ProfileSettingsPage } from '@/pages/ProfileSettingsPage';
+import { NotificationsPage } from '@/pages/NotificationsPage';
 import { UserForwardRulesPage } from '@/pages/UserForwardRulesPage';
 import { UserForwardAgentsPage } from '@/pages/UserForwardAgentsPage';
 import { UserNodesPage } from '@/pages/UserNodesPage';
@@ -67,6 +68,16 @@ export const router = createBrowserRouter([
     element: (
       <ProtectedRoute>
         <ProfileSettingsPage />
+      </ProtectedRoute>
+    ),
+  },
+
+  // Notifications settings (user side)
+  {
+    path: '/dashboard/notifications',
+    element: (
+      <ProtectedRoute>
+        <NotificationsPage />
       </ProtectedRoute>
     ),
   },

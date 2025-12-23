@@ -1,6 +1,7 @@
 /**
- * 用户端编辑转发规则对话框
- * 参考管理员端实现，只提交变化的字段
+ * User-side edit forward rule dialog
+ * Based on admin implementation, only submits changed fields
+ * Supports target types: manual address input or node selection (dynamic resolution)
  */
 
 import { useState, useEffect, useMemo } from 'react';
@@ -23,7 +24,8 @@ import {
   SelectValue,
 } from '@/components/common/Select';
 import { Separator } from '@/components/common/Separator';
-import { AlertCircle } from 'lucide-react';
+import { RadioGroup, RadioGroupItem } from '@/components/common/RadioGroup';
+import { AlertCircle, HardDrive } from 'lucide-react';
 import type {
   ForwardRule,
   ForwardRuleType,
@@ -32,6 +34,10 @@ import type {
   IPVersion,
 } from '@/api/forward';
 import { useUserForwardAgents } from '../hooks/useUserForwardAgents';
+import { useUserNodes } from '@/features/user-nodes/hooks/useUserNodes';
+
+// Target type for forward rule
+type TargetType = 'manual' | 'node';
 
 // Rule type label mapping
 const RULE_TYPE_LABELS: Record<ForwardRuleType, string> = {
@@ -61,6 +67,12 @@ export const EditUserForwardRuleDialog: React.FC<EditUserForwardRuleDialogProps>
     enabled: open && !!rule,
   });
 
+  // Fetch user's nodes for target node selection
+  const { nodes: userNodes, isLoading: isLoadingNodes } = useUserNodes({
+    pageSize: 100,
+    enabled: open && !!rule,
+  });
+
   // Get current rule's agent name
   const currentAgent = rule ? forwardAgents.find(a => a.id === rule.agentId) : null;
 
@@ -68,24 +80,35 @@ export const EditUserForwardRuleDialog: React.FC<EditUserForwardRuleDialogProps>
     name: '',
     targetAddress: '',
     targetPort: '',
+    targetNodeId: '',
     protocol: 'tcp' as ForwardProtocol,
     ipVersion: 'auto' as IPVersion,
     remark: '',
   });
+
+  // Target type: manual address input or node selection
+  const [targetType, setTargetType] = useState<TargetType>('manual');
+  // Original target type from rule (for detecting changes)
+  const [originalTargetType, setOriginalTargetType] = useState<TargetType>('manual');
 
   const [errors, setErrors] = useState<Record<string, string>>({});
 
   // Populate form when dialog opens or rule changes
   useEffect(() => {
     if (open && rule) {
+      // Determine target type based on whether targetNodeId is set
+      const ruleTargetType: TargetType = rule.targetNodeId ? 'node' : 'manual';
       setFormData({
         name: rule.name,
         targetAddress: rule.targetAddress || '',
         targetPort: rule.targetPort?.toString() || '',
+        targetNodeId: rule.targetNodeId || '',
         protocol: rule.protocol,
         ipVersion: rule.ipVersion,
         remark: rule.remark || '',
       });
+      setTargetType(ruleTargetType);
+      setOriginalTargetType(ruleTargetType);
       setErrors({});
     }
   }, [open, rule]);
@@ -111,16 +134,22 @@ export const EditUserForwardRuleDialog: React.FC<EditUserForwardRuleDialogProps>
       newErrors.name = '请输入规则名称';
     }
 
-    if (!formData.targetAddress.trim()) {
-      newErrors.targetAddress = '请输入目标地址';
-    }
-
-    if (!formData.targetPort) {
-      newErrors.targetPort = '请输入目标端口';
-    } else {
-      const port = parseInt(formData.targetPort);
-      if (isNaN(port) || port < 1 || port > 65535) {
-        newErrors.targetPort = '端口号必须在 1-65535 之间';
+    // Target validation based on target type
+    if (targetType === 'manual') {
+      if (!formData.targetAddress.trim()) {
+        newErrors.targetAddress = '请输入目标地址';
+      }
+      if (!formData.targetPort) {
+        newErrors.targetPort = '请输入目标端口';
+      } else {
+        const port = parseInt(formData.targetPort);
+        if (isNaN(port) || port < 1 || port > 65535) {
+          newErrors.targetPort = '端口号必须在 1-65535 之间';
+        }
+      }
+    } else if (targetType === 'node') {
+      if (!formData.targetNodeId) {
+        newErrors.targetNodeId = '请选择目标节点';
       }
     }
 
@@ -131,15 +160,29 @@ export const EditUserForwardRuleDialog: React.FC<EditUserForwardRuleDialogProps>
   // Check for changes
   const hasChanges = useMemo(() => {
     if (!rule) return false;
-    return (
+
+    // Check if target type changed
+    const targetTypeChanged = targetType !== originalTargetType;
+
+    // Check basic field changes
+    const basicChanges =
       formData.name !== rule.name ||
-      formData.targetAddress !== (rule.targetAddress || '') ||
-      formData.targetPort !== (rule.targetPort?.toString() || '') ||
       formData.protocol !== rule.protocol ||
       formData.ipVersion !== rule.ipVersion ||
-      formData.remark !== (rule.remark || '')
-    );
-  }, [formData, rule]);
+      formData.remark !== (rule.remark || '');
+
+    // Check target changes based on target type
+    let targetChanges = false;
+    if (targetType === 'manual') {
+      targetChanges =
+        formData.targetAddress !== (rule.targetAddress || '') ||
+        formData.targetPort !== (rule.targetPort?.toString() || '');
+    } else if (targetType === 'node') {
+      targetChanges = formData.targetNodeId !== (rule.targetNodeId || '');
+    }
+
+    return basicChanges || targetTypeChanged || targetChanges;
+  }, [formData, rule, targetType, originalTargetType]);
 
   const handleSubmit = () => {
     if (!validate() || !rule) {
@@ -152,12 +195,6 @@ export const EditUserForwardRuleDialog: React.FC<EditUserForwardRuleDialogProps>
     if (formData.name.trim() !== rule.name) {
       updates.name = formData.name.trim();
     }
-    if (formData.targetAddress.trim() !== (rule.targetAddress || '')) {
-      updates.targetAddress = formData.targetAddress.trim();
-    }
-    if (formData.targetPort !== (rule.targetPort?.toString() || '')) {
-      updates.targetPort = parseInt(formData.targetPort);
-    }
     if (formData.protocol !== rule.protocol) {
       updates.protocol = formData.protocol;
     }
@@ -168,6 +205,26 @@ export const EditUserForwardRuleDialog: React.FC<EditUserForwardRuleDialogProps>
       updates.remark = formData.remark.trim() || undefined;
     }
 
+    // Handle target changes based on target type
+    if (targetType === 'manual') {
+      // Switching to manual mode or updating manual values
+      if (targetType !== originalTargetType) {
+        // Clear targetNodeId when switching to manual
+        updates.targetNodeId = '';
+      }
+      if (formData.targetAddress.trim() !== (rule.targetAddress || '')) {
+        updates.targetAddress = formData.targetAddress.trim();
+      }
+      if (formData.targetPort !== (rule.targetPort?.toString() || '')) {
+        updates.targetPort = parseInt(formData.targetPort);
+      }
+    } else if (targetType === 'node') {
+      // Switching to node mode or updating node selection
+      if (formData.targetNodeId !== (rule.targetNodeId || '')) {
+        updates.targetNodeId = formData.targetNodeId;
+      }
+    }
+
     // If any changes, submit update
     if (Object.keys(updates).length > 0) {
       onSubmit(rule.id, updates);
@@ -175,14 +232,26 @@ export const EditUserForwardRuleDialog: React.FC<EditUserForwardRuleDialogProps>
   };
 
   const isFormValid = () => {
-    return (
-      formData.name.trim() &&
-      formData.targetAddress.trim() &&
-      formData.targetPort &&
-      parseInt(formData.targetPort) >= 1 &&
-      parseInt(formData.targetPort) <= 65535
-    );
+    if (!formData.name.trim()) return false;
+
+    if (targetType === 'manual') {
+      return (
+        formData.targetAddress.trim() &&
+        formData.targetPort &&
+        parseInt(formData.targetPort) >= 1 &&
+        parseInt(formData.targetPort) <= 65535
+      );
+    } else if (targetType === 'node') {
+      return !!formData.targetNodeId;
+    }
+
+    return false;
   };
+
+  // Get available nodes (status is active, but always include currently selected node)
+  const availableNodes = userNodes.filter(
+    (n) => n.status === 'active' || n.id === formData.targetNodeId
+  );
 
   if (!rule) {
     return null;
@@ -281,48 +350,129 @@ export const EditUserForwardRuleDialog: React.FC<EditUserForwardRuleDialogProps>
                 </Select>
               </div>
 
-              {/* 目标地址 */}
-              <div className="flex flex-col gap-2">
-                <Label htmlFor="targetAddress">
-                  目标地址 <span className="text-destructive">*</span>
-                </Label>
-                <Input
-                  id="targetAddress"
-                  value={formData.targetAddress}
-                  onChange={(e) => handleChange('targetAddress', e.target.value)}
-                  placeholder="例如: example.com 或 192.168.1.1"
-                  error={!!errors.targetAddress}
+              {/* Target type selection */}
+              <div className="flex flex-col gap-2 md:col-span-2">
+                <Label>目标类型 <span className="text-destructive">*</span></Label>
+                <RadioGroup
+                  value={targetType}
+                  onValueChange={(value) => {
+                    setTargetType(value as TargetType);
+                    // Clear related fields when switching
+                    if (value === 'manual') {
+                      handleChange('targetNodeId', '');
+                    } else {
+                      handleChange('targetAddress', '');
+                      handleChange('targetPort', '');
+                    }
+                  }}
+                  className="flex gap-4"
                   disabled={isUpdating}
-                />
-                {errors.targetAddress && (
-                  <p className="text-xs text-destructive flex items-center gap-1">
-                    <AlertCircle className="h-3 w-3" />
-                    {errors.targetAddress}
-                  </p>
-                )}
+                >
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="manual" id="edit-target-manual" />
+                    <Label htmlFor="edit-target-manual" className="font-normal cursor-pointer">
+                      手动输入地址
+                    </Label>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="node" id="edit-target-node" />
+                    <Label htmlFor="edit-target-node" className="font-normal cursor-pointer">
+                      选择节点（动态解析）
+                    </Label>
+                  </div>
+                </RadioGroup>
               </div>
 
-              {/* 目标端口 */}
-              <div className="flex flex-col gap-2">
-                <Label htmlFor="targetPort">
-                  目标端口 <span className="text-destructive">*</span>
-                </Label>
-                <Input
-                  id="targetPort"
-                  type="number"
-                  value={formData.targetPort}
-                  onChange={(e) => handleChange('targetPort', e.target.value)}
-                  placeholder="1-65535"
-                  error={!!errors.targetPort}
-                  disabled={isUpdating}
-                />
-                {errors.targetPort && (
-                  <p className="text-xs text-destructive flex items-center gap-1">
-                    <AlertCircle className="h-3 w-3" />
-                    {errors.targetPort}
+              {/* Manual target address input */}
+              {targetType === 'manual' && (
+                <>
+                  <div className="flex flex-col gap-2">
+                    <Label htmlFor="targetAddress">
+                      目标地址 <span className="text-destructive">*</span>
+                    </Label>
+                    <Input
+                      id="targetAddress"
+                      value={formData.targetAddress}
+                      onChange={(e) => handleChange('targetAddress', e.target.value)}
+                      placeholder="例如: example.com 或 192.168.1.1"
+                      error={!!errors.targetAddress}
+                      disabled={isUpdating}
+                    />
+                    {errors.targetAddress && (
+                      <p className="text-xs text-destructive flex items-center gap-1">
+                        <AlertCircle className="h-3 w-3" />
+                        {errors.targetAddress}
+                      </p>
+                    )}
+                  </div>
+
+                  <div className="flex flex-col gap-2">
+                    <Label htmlFor="targetPort">
+                      目标端口 <span className="text-destructive">*</span>
+                    </Label>
+                    <Input
+                      id="targetPort"
+                      type="number"
+                      value={formData.targetPort}
+                      onChange={(e) => handleChange('targetPort', e.target.value)}
+                      placeholder="1-65535"
+                      error={!!errors.targetPort}
+                      disabled={isUpdating}
+                    />
+                    {errors.targetPort && (
+                      <p className="text-xs text-destructive flex items-center gap-1">
+                        <AlertCircle className="h-3 w-3" />
+                        {errors.targetPort}
+                      </p>
+                    )}
+                  </div>
+                </>
+              )}
+
+              {/* Select target node */}
+              {targetType === 'node' && (
+                <div className="flex flex-col gap-2 md:col-span-2">
+                  <Label htmlFor="targetNodeId">
+                    目标节点 <span className="text-destructive">*</span>
+                  </Label>
+                  <Select
+                    value={formData.targetNodeId}
+                    onValueChange={(value) => handleChange('targetNodeId', value)}
+                    disabled={isUpdating || isLoadingNodes}
+                  >
+                    <SelectTrigger id="targetNodeId" className={errors.targetNodeId ? 'border-destructive' : ''}>
+                      <SelectValue placeholder={isLoadingNodes ? '加载中...' : '选择目标节点'} />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {availableNodes.map((node) => (
+                        <SelectItem key={node.id} value={node.id}>
+                          <div className="flex items-center gap-2">
+                            <HardDrive className="h-4 w-4 text-muted-foreground" />
+                            <span>{node.name}</span>
+                            <span className="text-xs text-muted-foreground font-mono">
+                              ({node.serverAddress})
+                            </span>
+                          </div>
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <p className="text-xs text-muted-foreground">
+                    选择节点后，目标地址将动态解析为节点的服务器地址
                   </p>
-                )}
-              </div>
+                  {errors.targetNodeId && (
+                    <p className="text-xs text-destructive flex items-center gap-1">
+                      <AlertCircle className="h-3 w-3" />
+                      {errors.targetNodeId}
+                    </p>
+                  )}
+                  {!isLoadingNodes && availableNodes.length === 0 && (
+                    <p className="text-xs text-amber-600 dark:text-amber-400">
+                      暂无可用节点，请先在「我的节点」页面创建节点
+                    </p>
+                  )}
+                </div>
+              )}
             </div>
           </div>
 

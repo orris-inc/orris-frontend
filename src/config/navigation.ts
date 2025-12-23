@@ -16,6 +16,7 @@ import {
   ArrowLeftRight,
   Cpu,
   Boxes,
+  Bell,
 } from 'lucide-react';
 
 import type { NavigationItem } from '../types/navigation.types';
@@ -83,6 +84,17 @@ export const navigationConfig: readonly NavigationItem[] = [
     order: 4,
   },
   {
+    id: 'notifications',
+    label: '通知设置',
+    path: '/dashboard/notifications',
+    icon: Bell,
+    roles: ['user', 'admin'],
+    showInNav: true,
+    showInBreadcrumb: true,
+    parentId: 'dashboard',
+    order: 5,
+  },
+  {
     id: 'pricing',
     label: '定价方案',
     path: '/pricing',
@@ -90,7 +102,7 @@ export const navigationConfig: readonly NavigationItem[] = [
     roles: ['user', 'admin'],
     showInNav: true,
     showInBreadcrumb: true,
-    order: 5,
+    order: 6,
   },
   {
     id: 'profile',
@@ -101,7 +113,7 @@ export const navigationConfig: readonly NavigationItem[] = [
     showInNav: false, // Not shown in main nav (accessed via user menu)
     showInBreadcrumb: true,
     parentId: 'dashboard',
-    order: 6,
+    order: 7,
   },
 
   // ==================== Admin Routes ====================

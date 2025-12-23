@@ -1,6 +1,7 @@
 /**
  * User-side create forward rule dialog
  * Supports four rule types: direct, entry, chain (WS chained forwarding), direct_chain (direct chained forwarding)
+ * Supports target types: manual address input or node selection (dynamic resolution)
  */
 
 import { useState, useEffect } from 'react';
@@ -24,7 +25,8 @@ import {
 } from '@/components/common/Select';
 import { Separator } from '@/components/common/Separator';
 import { Badge } from '@/components/common/Badge';
-import { AlertCircle, Server } from 'lucide-react';
+import { RadioGroup, RadioGroupItem } from '@/components/common/RadioGroup';
+import { AlertCircle, Server, HardDrive } from 'lucide-react';
 import type {
   CreateForwardRuleRequest,
   ForwardProtocol,
@@ -32,7 +34,11 @@ import type {
   IPVersion,
 } from '@/api/forward';
 import { useUserForwardAgents } from '../hooks/useUserForwardAgents';
+import { useUserNodes } from '@/features/user-nodes/hooks/useUserNodes';
 import { UserSortableChainAgentList } from './UserSortableChainAgentList';
+
+// Target type for forward rule
+type TargetType = 'manual' | 'node';
 
 interface CreateUserForwardRuleDialogProps {
   open: boolean;
@@ -62,6 +68,12 @@ export const CreateUserForwardRuleDialog: React.FC<CreateUserForwardRuleDialogPr
     enabled: open,
   });
 
+  // Fetch user's nodes for target node selection
+  const { nodes: userNodes, isLoading: isLoadingNodes } = useUserNodes({
+    pageSize: 100,
+    enabled: open,
+  });
+
   const [formData, setFormData] = useState({
     ruleType: 'direct' as ForwardRuleType,
     agentId: '',
@@ -72,11 +84,15 @@ export const CreateUserForwardRuleDialog: React.FC<CreateUserForwardRuleDialogPr
     listenPort: '',
     targetAddress: '',
     targetPort: '',
+    targetNodeId: '',
     sortOrder: '',
     protocol: 'tcp' as ForwardProtocol,
     ipVersion: 'auto' as IPVersion,
     remark: '',
   });
+
+  // Target type: manual address input or node selection
+  const [targetType, setTargetType] = useState<TargetType>('manual');
 
   const [errors, setErrors] = useState<Record<string, string>>({});
 
@@ -95,11 +111,13 @@ export const CreateUserForwardRuleDialog: React.FC<CreateUserForwardRuleDialogPr
         listenPort: '',
         targetAddress: '',
         targetPort: '',
+        targetNodeId: '',
         sortOrder: '',
         protocol: 'tcp',
         ipVersion: 'auto',
         remark: '',
       });
+      setTargetType('manual');
       setErrors({});
     }
   }, [open, allowedTypes]);
@@ -210,17 +228,22 @@ export const CreateUserForwardRuleDialog: React.FC<CreateUserForwardRuleDialogPr
       }
     }
 
-    // Target address and port validation (required for all types)
-    if (!formData.targetAddress.trim()) {
-      newErrors.targetAddress = '请输入目标地址';
-    }
-
-    if (!formData.targetPort) {
-      newErrors.targetPort = '请输入目标端口';
-    } else {
-      const port = parseInt(formData.targetPort);
-      if (isNaN(port) || port < 1 || port > 65535) {
-        newErrors.targetPort = '端口号必须在 1-65535 之间';
+    // Target validation based on target type
+    if (targetType === 'manual') {
+      if (!formData.targetAddress.trim()) {
+        newErrors.targetAddress = '请输入目标地址';
+      }
+      if (!formData.targetPort) {
+        newErrors.targetPort = '请输入目标端口';
+      } else {
+        const port = parseInt(formData.targetPort);
+        if (isNaN(port) || port < 1 || port > 65535) {
+          newErrors.targetPort = '端口号必须在 1-65535 之间';
+        }
+      }
+    } else if (targetType === 'node') {
+      if (!formData.targetNodeId) {
+        newErrors.targetNodeId = '请选择目标节点';
       }
     }
 
@@ -238,13 +261,19 @@ export const CreateUserForwardRuleDialog: React.FC<CreateUserForwardRuleDialogPr
       ruleType: formData.ruleType,
       name: formData.name.trim(),
       listenPort: formData.listenPort ? parseInt(formData.listenPort) : undefined,
-      targetAddress: formData.targetAddress.trim(),
-      targetPort: parseInt(formData.targetPort),
       sortOrder: formData.sortOrder ? parseInt(formData.sortOrder) : undefined,
       protocol: formData.protocol,
       ipVersion: formData.ipVersion,
       remark: formData.remark.trim() || undefined,
     };
+
+    // Add target fields based on target type
+    if (targetType === 'manual') {
+      data.targetAddress = formData.targetAddress.trim();
+      data.targetPort = parseInt(formData.targetPort);
+    } else if (targetType === 'node') {
+      data.targetNodeId = formData.targetNodeId;
+    }
 
     // Add corresponding fields based on rule type
     if (formData.ruleType === 'entry') {
@@ -262,9 +291,15 @@ export const CreateUserForwardRuleDialog: React.FC<CreateUserForwardRuleDialogPr
   const isFormValid = () => {
     // Basic validation
     if (!formData.agentId || !formData.name.trim()) return false;
-    if (!formData.targetAddress.trim() || !formData.targetPort) return false;
-    const targetPort = parseInt(formData.targetPort);
-    if (isNaN(targetPort) || targetPort < 1 || targetPort > 65535) return false;
+
+    // Target validation based on target type
+    if (targetType === 'manual') {
+      if (!formData.targetAddress.trim() || !formData.targetPort) return false;
+      const targetPort = parseInt(formData.targetPort);
+      if (isNaN(targetPort) || targetPort < 1 || targetPort > 65535) return false;
+    } else if (targetType === 'node') {
+      if (!formData.targetNodeId) return false;
+    }
 
     // Validate based on rule type
     if (formData.ruleType === 'entry') {
@@ -283,6 +318,9 @@ export const CreateUserForwardRuleDialog: React.FC<CreateUserForwardRuleDialogPr
 
     return true;
   };
+
+  // Get available nodes (status is active)
+  const availableNodes = userNodes.filter((n) => n.status === 'active');
 
   // Get available exit agents (excluding currently selected entry agent)
   const availableExitAgents = forwardAgents.filter(
@@ -579,48 +617,129 @@ export const CreateUserForwardRuleDialog: React.FC<CreateUserForwardRuleDialogPr
                 </Select>
               </div>
 
-              {/* Target address */}
-              <div className="flex flex-col gap-2">
-                <Label htmlFor="targetAddress">
-                  目标地址 <span className="text-destructive">*</span>
-                </Label>
-                <Input
-                  id="targetAddress"
-                  value={formData.targetAddress}
-                  onChange={(e) => handleChange('targetAddress', e.target.value)}
-                  placeholder="例如: example.com 或 192.168.1.1"
-                  error={!!errors.targetAddress}
+              {/* Target type selection */}
+              <div className="flex flex-col gap-2 md:col-span-2">
+                <Label>目标类型 <span className="text-destructive">*</span></Label>
+                <RadioGroup
+                  value={targetType}
+                  onValueChange={(value) => {
+                    setTargetType(value as TargetType);
+                    // Clear related fields when switching
+                    if (value === 'manual') {
+                      handleChange('targetNodeId', '');
+                    } else {
+                      handleChange('targetAddress', '');
+                      handleChange('targetPort', '');
+                    }
+                  }}
+                  className="flex gap-4"
                   disabled={isCreating}
-                />
-                {errors.targetAddress && (
-                  <p className="text-xs text-destructive flex items-center gap-1">
-                    <AlertCircle className="h-3 w-3" />
-                    {errors.targetAddress}
-                  </p>
-                )}
+                >
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="manual" id="target-manual" />
+                    <Label htmlFor="target-manual" className="font-normal cursor-pointer">
+                      手动输入地址
+                    </Label>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="node" id="target-node" />
+                    <Label htmlFor="target-node" className="font-normal cursor-pointer">
+                      选择节点（动态解析）
+                    </Label>
+                  </div>
+                </RadioGroup>
               </div>
 
-              {/* Target port */}
-              <div className="flex flex-col gap-2">
-                <Label htmlFor="targetPort">
-                  目标端口 <span className="text-destructive">*</span>
-                </Label>
-                <Input
-                  id="targetPort"
-                  type="number"
-                  value={formData.targetPort}
-                  onChange={(e) => handleChange('targetPort', e.target.value)}
-                  placeholder="1-65535"
-                  error={!!errors.targetPort}
-                  disabled={isCreating}
-                />
-                {errors.targetPort && (
-                  <p className="text-xs text-destructive flex items-center gap-1">
-                    <AlertCircle className="h-3 w-3" />
-                    {errors.targetPort}
+              {/* Manual target address input */}
+              {targetType === 'manual' && (
+                <>
+                  <div className="flex flex-col gap-2">
+                    <Label htmlFor="targetAddress">
+                      目标地址 <span className="text-destructive">*</span>
+                    </Label>
+                    <Input
+                      id="targetAddress"
+                      value={formData.targetAddress}
+                      onChange={(e) => handleChange('targetAddress', e.target.value)}
+                      placeholder="例如: example.com 或 192.168.1.1"
+                      error={!!errors.targetAddress}
+                      disabled={isCreating}
+                    />
+                    {errors.targetAddress && (
+                      <p className="text-xs text-destructive flex items-center gap-1">
+                        <AlertCircle className="h-3 w-3" />
+                        {errors.targetAddress}
+                      </p>
+                    )}
+                  </div>
+
+                  <div className="flex flex-col gap-2">
+                    <Label htmlFor="targetPort">
+                      目标端口 <span className="text-destructive">*</span>
+                    </Label>
+                    <Input
+                      id="targetPort"
+                      type="number"
+                      value={formData.targetPort}
+                      onChange={(e) => handleChange('targetPort', e.target.value)}
+                      placeholder="1-65535"
+                      error={!!errors.targetPort}
+                      disabled={isCreating}
+                    />
+                    {errors.targetPort && (
+                      <p className="text-xs text-destructive flex items-center gap-1">
+                        <AlertCircle className="h-3 w-3" />
+                        {errors.targetPort}
+                      </p>
+                    )}
+                  </div>
+                </>
+              )}
+
+              {/* Select target node */}
+              {targetType === 'node' && (
+                <div className="flex flex-col gap-2 md:col-span-2">
+                  <Label htmlFor="targetNodeId">
+                    目标节点 <span className="text-destructive">*</span>
+                  </Label>
+                  <Select
+                    value={formData.targetNodeId}
+                    onValueChange={(value) => handleChange('targetNodeId', value)}
+                    disabled={isCreating || isLoadingNodes}
+                  >
+                    <SelectTrigger id="targetNodeId" className={errors.targetNodeId ? 'border-destructive' : ''}>
+                      <SelectValue placeholder={isLoadingNodes ? '加载中...' : '选择目标节点'} />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {availableNodes.map((node) => (
+                        <SelectItem key={node.id} value={node.id}>
+                          <div className="flex items-center gap-2">
+                            <HardDrive className="h-4 w-4 text-muted-foreground" />
+                            <span>{node.name}</span>
+                            <span className="text-xs text-muted-foreground font-mono">
+                              ({node.serverAddress})
+                            </span>
+                          </div>
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <p className="text-xs text-muted-foreground">
+                    选择节点后，目标地址将动态解析为节点的服务器地址
                   </p>
-                )}
-              </div>
+                  {errors.targetNodeId && (
+                    <p className="text-xs text-destructive flex items-center gap-1">
+                      <AlertCircle className="h-3 w-3" />
+                      {errors.targetNodeId}
+                    </p>
+                  )}
+                  {!isLoadingNodes && availableNodes.length === 0 && (
+                    <p className="text-xs text-amber-600 dark:text-amber-400">
+                      暂无可用节点，请先在「我的节点」页面创建节点
+                    </p>
+                  )}
+                </div>
+              )}
 
               {/* IP version */}
               <div className="flex flex-col gap-2">

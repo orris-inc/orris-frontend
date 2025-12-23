@@ -173,13 +173,13 @@ export const NodeDetailDialog: React.FC<NodeDetailDialogProps> = ({
                     </div>
                   </div>
                   {(node.systemStatus.publicIpv4 || node.systemStatus.publicIpv6) && (
-                    <div className="flex items-center gap-2 p-3 bg-muted rounded-lg">
-                      <Globe className="h-4 w-4 text-cyan-500" />
-                      <div>
+                    <div className="flex items-center gap-2 p-3 bg-muted rounded-lg md:col-span-2">
+                      <Globe className="h-4 w-4 text-cyan-500 flex-shrink-0" />
+                      <div className="min-w-0">
                         <p className="text-xs text-muted-foreground">公网 IP</p>
                         <div className="text-sm font-medium font-mono">
                           {node.systemStatus.publicIpv4 && <p>{node.systemStatus.publicIpv4}</p>}
-                          {node.systemStatus.publicIpv6 && <p className="text-xs">{node.systemStatus.publicIpv6}</p>}
+                          {node.systemStatus.publicIpv6 && <p className="text-xs text-muted-foreground truncate" title={node.systemStatus.publicIpv6}>{node.systemStatus.publicIpv6}</p>}
                         </div>
                       </div>
                     </div>

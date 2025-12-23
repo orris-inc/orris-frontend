@@ -5,7 +5,7 @@
 
 import { useState } from 'react';
 import { useNavigate } from 'react-router';
-import { Menu, User as UserIcon, Settings, LogOut, Shield } from 'lucide-react';
+import { Menu, User as UserIcon, Bell, LogOut, Shield } from 'lucide-react';
 import * as DropdownMenuPrimitive from '@radix-ui/react-dropdown-menu';
 import * as AvatarPrimitive from '@radix-ui/react-avatar';
 import { TooltipProvider } from '@/components/common/Tooltip';
@@ -125,10 +125,10 @@ export const DashboardLayout = ({ children }: DashboardLayoutProps) => {
                   </DropdownMenuPrimitive.Item>
                   <DropdownMenuPrimitive.Item
                     className="relative flex cursor-default select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none transition-colors focus:bg-accent focus:text-accent-foreground data-[disabled]:pointer-events-none data-[disabled]:opacity-50"
-                    disabled
+                    onSelect={() => navigate('/dashboard/notifications')}
                   >
-                    <Settings className="mr-2 h-4 w-4" />
-                    <span>账户设置</span>
+                    <Bell className="mr-2 h-4 w-4" />
+                    <span>通知设置</span>
                   </DropdownMenuPrimitive.Item>
 
                   {/* Admin entry (admin only) */}
