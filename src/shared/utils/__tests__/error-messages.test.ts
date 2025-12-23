@@ -45,9 +45,9 @@ describe('错误消息转换工具', () => {
       expect(translateErrorMessage('这是一个中文错误消息')).toBe('这是一个中文错误消息');
     });
 
-    it('应该为未知错误返回通用消息', () => {
+    it('应该为未知错误返回原始消息', () => {
       expect(translateErrorMessage('some random error that does not match')).toBe(
-        '操作失败，请稍后重试'
+        'some random error that does not match'
       );
     });
 

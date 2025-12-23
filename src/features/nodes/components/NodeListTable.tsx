@@ -176,21 +176,16 @@ export const NodeListTable: React.FC<NodeListTableProps> = ({
     {
       accessorKey: 'name',
       header: '节点',
+      size: 160,
       meta: { priority: 1 } as ResponsiveColumnMeta, // Core column, always visible
       cell: ({ row }) => {
         const node = row.original;
-        const protocolConfig = PROTOCOL_CONFIG[node.protocol] || { label: node.protocol, color: 'bg-gray-100 text-gray-700' };
         return (
           <div className="flex flex-col gap-1">
-            <div className="flex items-center gap-2">
-              <span className="font-medium text-slate-900 dark:text-white">
-                {node.name}
-              </span>
-              <span className={`px-1.5 py-0.5 text-xs font-medium rounded ${protocolConfig.color}`}>
-                {protocolConfig.label}
-              </span>
-            </div>
-            <div className="flex items-center gap-2 text-xs text-slate-500 dark:text-slate-400">
+            <span className="font-medium text-slate-900 dark:text-white whitespace-nowrap">
+              {node.name}
+            </span>
+            <div className="flex items-center gap-2 text-xs text-slate-500 dark:text-slate-400 whitespace-nowrap">
               <span className="font-mono">{node.serverAddress}:{node.agentPort}</span>
               {node.region && (
                 <>
@@ -210,14 +205,21 @@ export const NodeListTable: React.FC<NodeListTableProps> = ({
       meta: { priority: 3 } as ResponsiveColumnMeta, // Secondary column >= 1024px
       cell: ({ row }) => {
         const node = row.original;
+        const protocolConfig = PROTOCOL_CONFIG[node.protocol] || { label: node.protocol, color: 'bg-gray-100 text-gray-700' };
+
         if (node.protocol === 'shadowsocks') {
           return (
-            <div className="text-xs">
-              <span className="font-mono text-slate-600 dark:text-slate-400">
-                {node.encryptionMethod || '-'}
-              </span>
+            <div className="flex flex-col gap-1">
+              <div className="flex items-center gap-2">
+                <span className={`px-1.5 py-0.5 text-xs font-medium rounded ${protocolConfig.color}`}>
+                  {protocolConfig.label}
+                </span>
+                <span className="text-xs font-mono text-slate-600 dark:text-slate-400">
+                  {node.encryptionMethod || '-'}
+                </span>
+              </div>
               {node.plugin && (
-                <div className="text-slate-400 dark:text-slate-500 mt-0.5">
+                <div className="text-xs text-slate-400 dark:text-slate-500">
                   + {node.plugin}
                 </div>
               )}
@@ -229,12 +231,17 @@ export const NodeListTable: React.FC<NodeListTableProps> = ({
         return (
           <Tooltip>
             <TooltipTrigger>
-              <div className="text-xs">
-                <span className="font-mono text-slate-600 dark:text-slate-400">
-                  {transport} + TLS
-                </span>
+              <div className="flex flex-col gap-1">
+                <div className="flex items-center gap-2">
+                  <span className={`px-1.5 py-0.5 text-xs font-medium rounded ${protocolConfig.color}`}>
+                    {protocolConfig.label}
+                  </span>
+                  <span className="text-xs font-mono text-slate-600 dark:text-slate-400">
+                    {transport} + TLS
+                  </span>
+                </div>
                 {node.sni && (
-                  <div className="text-slate-400 dark:text-slate-500 mt-0.5 truncate max-w-[120px]">
+                  <div className="text-xs text-slate-400 dark:text-slate-500 truncate max-w-[120px]">
                     SNI: {node.sni}
                   </div>
                 )}

@@ -146,13 +146,9 @@ export function translateErrorMessage(message: string): string {
     }
   }
 
-  // 4. If message is already in Chinese, return directly
-  if (/[\u4e00-\u9fa5]/.test(message)) {
-    return message;
-  }
-
-  // 5. No match found, return general error message
-  return '操作失败，请稍后重试';
+  // 4. No match found, return original message directly
+  // This ensures specific backend error messages are shown to users
+  return message;
 }
 
 /**
