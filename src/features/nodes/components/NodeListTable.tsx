@@ -104,6 +104,10 @@ export const NodeListTable: React.FC<NodeListTableProps> = ({
   // Node context menu content
   const renderContextMenuActions = useCallback((node: Node) => (
     <>
+      <ContextMenuItem onClick={() => onEdit(node)}>
+        <Edit className="mr-2 size-4" />
+        编辑
+      </ContextMenuItem>
       <ContextMenuItem onClick={() => onCopy(node)}>
         <Copy className="mr-2 size-4" />
         复制节点
@@ -129,7 +133,7 @@ export const NodeListTable: React.FC<NodeListTableProps> = ({
         删除节点
       </ContextMenuItem>
     </>
-  ), [onCopy, onGenerateToken, onActivate, onDeactivate, onDelete]);
+  ), [onEdit, onCopy, onGenerateToken, onActivate, onDeactivate, onDelete]);
 
   // Node dropdown menu content
   const renderDropdownMenuActions = useCallback((node: Node) => (

@@ -71,6 +71,7 @@ export const CreateForwardRuleDialog: React.FC<CreateForwardRuleDialogProps> = (
     targetNodeId: '',
     bindIp: '',
     trafficMultiplier: undefined as number | undefined,
+    sortOrder: undefined as number | undefined,
     protocol: 'tcp' as ForwardProtocol,
     ipVersion: 'auto' as IPVersion,
     remark: '',
@@ -97,6 +98,7 @@ export const CreateForwardRuleDialog: React.FC<CreateForwardRuleDialogProps> = (
           targetNodeId: initialData.targetNodeId || '',
           bindIp: initialData.bindIp || '',
           trafficMultiplier: initialData.trafficMultiplier,
+          sortOrder: initialData.sortOrder,
           protocol: initialData.protocol || 'tcp',
           ipVersion: initialData.ipVersion || 'auto',
           remark: initialData.remark || '',
@@ -118,6 +120,7 @@ export const CreateForwardRuleDialog: React.FC<CreateForwardRuleDialogProps> = (
           targetNodeId: '',
           bindIp: '',
           trafficMultiplier: undefined,
+          sortOrder: undefined,
           protocol: 'tcp',
           ipVersion: 'auto',
           remark: '',
@@ -347,6 +350,10 @@ export const CreateForwardRuleDialog: React.FC<CreateForwardRuleDialogProps> = (
         submitData.trafficMultiplier = formData.trafficMultiplier;
       }
 
+      if (formData.sortOrder !== undefined && formData.sortOrder !== null && formData.sortOrder >= 0) {
+        submitData.sortOrder = formData.sortOrder;
+      }
+
       if (formData.remark?.trim()) {
         submitData.remark = formData.remark.trim();
       }
@@ -446,7 +453,7 @@ export const CreateForwardRuleDialog: React.FC<CreateForwardRuleDialogProps> = (
                     <SelectValue placeholder="选择转发节点" />
                   </SelectTrigger>
                   <SelectContent>
-                    {agents.filter((a) => a.status === 'enabled').map((agent) => (
+                    {availableAgentsForSelect.map((agent) => (
                       <SelectItem key={agent.id} value={agent.id}>
                         {agent.name}
                       </SelectItem>
@@ -774,6 +781,24 @@ export const CreateForwardRuleDialog: React.FC<CreateForwardRuleDialogProps> = (
                 />
                 <p className="text-xs text-muted-foreground">
                   自定义流量倍率会影响流量统计，留空则根据节点数量自动计算
+                </p>
+              </div>
+
+              <div className="flex flex-col gap-2">
+                <Label htmlFor="sortOrder">排序顺序（可选）</Label>
+                <Input
+                  id="sortOrder"
+                  type="number"
+                  min={0}
+                  value={formData.sortOrder ?? ''}
+                  onChange={(e) => {
+                    const value = e.target.value === '' ? undefined : parseInt(e.target.value, 10);
+                    handleChange('sortOrder', value);
+                  }}
+                  placeholder="留空则默认为 0"
+                />
+                <p className="text-xs text-muted-foreground">
+                  值越小排序越靠前，默认为 0
                 </p>
               </div>
 

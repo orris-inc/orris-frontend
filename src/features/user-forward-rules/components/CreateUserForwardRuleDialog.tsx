@@ -72,6 +72,7 @@ export const CreateUserForwardRuleDialog: React.FC<CreateUserForwardRuleDialogPr
     listenPort: '',
     targetAddress: '',
     targetPort: '',
+    sortOrder: '',
     protocol: 'tcp' as ForwardProtocol,
     ipVersion: 'auto' as IPVersion,
     remark: '',
@@ -94,6 +95,7 @@ export const CreateUserForwardRuleDialog: React.FC<CreateUserForwardRuleDialogPr
         listenPort: '',
         targetAddress: '',
         targetPort: '',
+        sortOrder: '',
         protocol: 'tcp',
         ipVersion: 'auto',
         remark: '',
@@ -238,6 +240,7 @@ export const CreateUserForwardRuleDialog: React.FC<CreateUserForwardRuleDialogPr
       listenPort: formData.listenPort ? parseInt(formData.listenPort) : undefined,
       targetAddress: formData.targetAddress.trim(),
       targetPort: parseInt(formData.targetPort),
+      sortOrder: formData.sortOrder ? parseInt(formData.sortOrder) : undefined,
       protocol: formData.protocol,
       ipVersion: formData.ipVersion,
       remark: formData.remark.trim() || undefined,
@@ -620,7 +623,7 @@ export const CreateUserForwardRuleDialog: React.FC<CreateUserForwardRuleDialogPr
               </div>
 
               {/* IP version */}
-              <div className="flex flex-col gap-2 md:col-span-2">
+              <div className="flex flex-col gap-2">
                 <Label htmlFor="ipVersion">IP 版本</Label>
                 <Select
                   value={formData.ipVersion}
@@ -636,6 +639,23 @@ export const CreateUserForwardRuleDialog: React.FC<CreateUserForwardRuleDialogPr
                     <SelectItem value="ipv6">IPv6</SelectItem>
                   </SelectContent>
                 </Select>
+              </div>
+
+              {/* Sort order */}
+              <div className="flex flex-col gap-2">
+                <Label htmlFor="sortOrder">排序顺序</Label>
+                <Input
+                  id="sortOrder"
+                  type="number"
+                  min={0}
+                  value={formData.sortOrder}
+                  onChange={(e) => handleChange('sortOrder', e.target.value)}
+                  placeholder="留空则默认为 0"
+                  disabled={isCreating}
+                />
+                <p className="text-xs text-muted-foreground">
+                  值越小排序越靠前
+                </p>
               </div>
             </div>
           </div>

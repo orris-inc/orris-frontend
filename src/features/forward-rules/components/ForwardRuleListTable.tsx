@@ -226,6 +226,10 @@ export const ForwardRuleListTable: React.FC<ForwardRuleListTableProps> = ({
   // Forward rule context menu content
   const renderContextMenuActions = useCallback((rule: ForwardRule) => (
     <>
+      <ContextMenuItem onClick={() => onEdit(rule)}>
+        <Edit className="mr-2 size-4" />
+        编辑
+      </ContextMenuItem>
       <ContextMenuItem onClick={() => onCopy(rule)}>
         <Files className="mr-2 size-4" />
         复制规则
@@ -251,7 +255,7 @@ export const ForwardRuleListTable: React.FC<ForwardRuleListTableProps> = ({
         删除
       </ContextMenuItem>
     </>
-  ), [onCopy, onResetTraffic, onEnable, onDisable, onDelete]);
+  ), [onEdit, onCopy, onResetTraffic, onEnable, onDisable, onDelete]);
 
   // Forward rule dropdown menu content
   const renderDropdownMenuActions = useCallback((rule: ForwardRule) => (

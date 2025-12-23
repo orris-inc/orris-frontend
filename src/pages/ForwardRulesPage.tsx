@@ -132,12 +132,28 @@ export const ForwardRulesPage = () => {
   };
 
   const handleCopy = (rule: ForwardRule) => {
+    // Filter out entry agent from chainAgentIds (entry agent should not be in chain list)
+    const filteredChainAgentIds = rule.chainAgentIds
+      ? rule.chainAgentIds.filter((id) => id !== rule.agentId)
+      : undefined;
+
+    // Also filter chainPortConfig to match filtered chainAgentIds
+    let filteredChainPortConfig: Record<string, number> | undefined;
+    if (rule.chainPortConfig && filteredChainAgentIds) {
+      filteredChainPortConfig = {};
+      for (const id of filteredChainAgentIds) {
+        if (rule.chainPortConfig[id] !== undefined) {
+          filteredChainPortConfig[id] = rule.chainPortConfig[id];
+        }
+      }
+    }
+
     const copyData: Partial<CreateForwardRuleRequest> & { targetType?: 'manual' | 'node' } = {
       agentId: rule.agentId,
       ruleType: rule.ruleType as ForwardRuleType,
       exitAgentId: rule.exitAgentId,
-      chainAgentIds: rule.chainAgentIds ? [...rule.chainAgentIds] : undefined,
-      chainPortConfig: rule.chainPortConfig ? { ...rule.chainPortConfig } : undefined,
+      chainAgentIds: filteredChainAgentIds,
+      chainPortConfig: filteredChainPortConfig,
       name: `${rule.name} - 副本`,
       listenPort: rule.listenPort,
       targetAddress: rule.targetAddress,
@@ -145,6 +161,7 @@ export const ForwardRulesPage = () => {
       targetNodeId: rule.targetNodeId,
       bindIp: rule.bindIp,
       trafficMultiplier: rule.trafficMultiplier,
+      sortOrder: rule.sortOrder,
       protocol: rule.protocol as ForwardProtocol,
       ipVersion: rule.ipVersion as IPVersion,
       remark: rule.remark,

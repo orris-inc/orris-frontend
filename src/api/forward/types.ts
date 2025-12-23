@@ -121,6 +121,7 @@ export interface CreateForwardRuleRequest {
   ipVersion?: IPVersion; // IP version preference (default: auto)
   protocol: ForwardProtocol;
   trafficMultiplier?: number; // custom traffic multiplier (0 to 1000000, omit for auto-calculated)
+  sortOrder?: number; // custom sort order (non-negative, lower values appear first, default: 0)
   remark?: string;
 }
 
