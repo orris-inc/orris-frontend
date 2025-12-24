@@ -52,7 +52,7 @@ interface CreateUserForwardRuleDialogProps {
 const RULE_TYPE_INFO: Record<ForwardRuleType, { label: string; description: string }> = {
   direct: { label: '直连转发', description: '直接将流量转发到目标地址' },
   entry: { label: '入口节点', description: '作为转发链的入口，通过出口节点转发到目标地址' },
-  chain: { label: 'WS链式转发', description: '通过 WebSocket 隧道进行多跳链式转发' },
+  chain: { label: '隧道链式转发', description: '通过隧道（WS/TLS）进行多跳链式转发' },
   direct_chain: { label: '直连链式转发', description: '通过直连 TCP/UDP 进行多跳链式转发' },
 };
 

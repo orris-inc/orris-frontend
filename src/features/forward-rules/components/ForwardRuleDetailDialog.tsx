@@ -41,7 +41,7 @@ const PROTOCOL_LABELS: Record<string, string> = {
 const RULE_TYPE_LABELS: Record<string, string> = {
   direct: '直连转发',
   entry: '入口节点',
-  chain: 'WS链式转发',
+  chain: '隧道链式转发',
   direct_chain: '直连链式转发',
 };
 
