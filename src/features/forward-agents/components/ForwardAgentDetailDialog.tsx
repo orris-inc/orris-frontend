@@ -13,7 +13,7 @@ import { Button } from '@/components/common/Button';
 import { Badge } from '@/components/common/Badge';
 import { Separator } from '@/components/common/Separator';
 import { TruncatedId } from '@/components/admin';
-import { Cpu, HardDrive, MemoryStick, Clock, Network, ArrowUpDown, Loader2 } from 'lucide-react';
+import { Cpu, HardDrive, MemoryStick, Clock, Network, ArrowUpDown, Loader2, Radio } from 'lucide-react';
 import { useForwardAgentRuntimeStatus } from '../hooks/useForwardAgents';
 import type { ForwardAgent } from '@/api/forward';
 
@@ -205,6 +205,21 @@ export const ForwardAgentDetailDialog: React.FC<ForwardAgentDetailDialogProps> =
                       </p>
                     </div>
                   </div>
+
+                  {/* 隧道端口 */}
+                  {(runtimeStatus.wsListenPort || runtimeStatus.tlsListenPort) && (
+                    <div className="flex items-center gap-3 p-3 rounded-lg bg-slate-50 dark:bg-slate-800/50">
+                      <Radio className="size-5 text-indigo-500" />
+                      <div>
+                        <p className="text-xs text-muted-foreground">隧道端口</p>
+                        <p className="text-sm font-medium">
+                          {runtimeStatus.wsListenPort && `WS: ${runtimeStatus.wsListenPort}`}
+                          {runtimeStatus.wsListenPort && runtimeStatus.tlsListenPort && ' / '}
+                          {runtimeStatus.tlsListenPort && `TLS: ${runtimeStatus.tlsListenPort}`}
+                        </p>
+                      </div>
+                    </div>
+                  )}
                 </div>
               ) : (
                 <p className="text-sm text-muted-foreground text-center py-4">

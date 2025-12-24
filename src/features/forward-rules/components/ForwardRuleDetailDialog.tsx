@@ -52,6 +52,12 @@ const IP_VERSION_LABELS: Record<string, string> = {
   ipv6: 'IPv6',
 };
 
+// Tunnel type label mapping
+const TUNNEL_TYPE_LABELS: Record<string, string> = {
+  ws: 'WebSocket',
+  tls: 'TLS',
+};
+
 // Format date
 const formatDate = (dateString: string) => {
   if (!dateString) return '-';
@@ -136,6 +142,14 @@ export const ForwardRuleDetailDialog: React.FC<ForwardRuleDetailDialogProps> = (
                 <p className="text-sm text-muted-foreground">规则类型</p>
                 <p className="text-sm">{RULE_TYPE_LABELS[rule.ruleType] || rule.ruleType}</p>
               </div>
+
+              {/* Tunnel Type - entry and chain types */}
+              {(rule.ruleType === 'entry' || rule.ruleType === 'chain') && rule.tunnelType && (
+                <div className="space-y-1">
+                  <p className="text-sm text-muted-foreground">隧道类型</p>
+                  <p className="text-sm">{TUNNEL_TYPE_LABELS[rule.tunnelType] || rule.tunnelType}</p>
+                </div>
+              )}
 
               <div className="space-y-1">
                 <p className="text-sm text-muted-foreground">转发节点</p>
@@ -236,6 +250,12 @@ export const ForwardRuleDetailDialog: React.FC<ForwardRuleDetailDialogProps> = (
                     <div className="space-y-1">
                       <p className="text-sm text-muted-foreground">下一跳 WS 端口</p>
                       <p className="text-sm font-mono">{rule.nextHopWsPort}</p>
+                    </div>
+                  )}
+                  {rule.ruleType === 'chain' && rule.nextHopTlsPort && (
+                    <div className="space-y-1">
+                      <p className="text-sm text-muted-foreground">下一跳 TLS 端口</p>
+                      <p className="text-sm font-mono">{rule.nextHopTlsPort}</p>
                     </div>
                   )}
                   {rule.ruleType === 'direct_chain' && rule.nextHopPort && (

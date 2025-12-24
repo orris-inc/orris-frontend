@@ -26,7 +26,7 @@ import {
 import { Separator } from '@/components/common/Separator';
 import { RadioGroup, RadioGroupItem } from '@/components/common/RadioGroup';
 import { SortableChainAgentList } from './SortableChainAgentList';
-import type { CreateForwardRuleRequest, ForwardAgent, ForwardRuleType, ForwardProtocol, IPVersion } from '@/api/forward';
+import type { CreateForwardRuleRequest, ForwardAgent, ForwardRuleType, ForwardProtocol, IPVersion, TunnelType } from '@/api/forward';
 import type { Node } from '@/api/node';
 
 // Target type
@@ -64,6 +64,7 @@ export const CreateForwardRuleDialog: React.FC<CreateForwardRuleDialogProps> = (
     exitAgentId: '',
     chainAgentIds: [] as string[],
     chainPortConfig: {} as Record<string, number>,
+    tunnelType: 'ws' as TunnelType,
     name: '',
     listenPort: 0,
     targetAddress: '',
@@ -91,6 +92,7 @@ export const CreateForwardRuleDialog: React.FC<CreateForwardRuleDialogProps> = (
           exitAgentId: initialData.exitAgentId || '',
           chainAgentIds: initialData.chainAgentIds || [],
           chainPortConfig: initialData.chainPortConfig || {},
+          tunnelType: initialData.tunnelType || 'ws',
           name: initialData.name || '',
           listenPort: initialData.listenPort || 0,
           targetAddress: initialData.targetAddress || '',
@@ -113,6 +115,7 @@ export const CreateForwardRuleDialog: React.FC<CreateForwardRuleDialogProps> = (
           exitAgentId: '',
           chainAgentIds: [],
           chainPortConfig: {},
+          tunnelType: 'ws',
           name: '',
           listenPort: 0,
           targetAddress: '',
@@ -312,6 +315,7 @@ export const CreateForwardRuleDialog: React.FC<CreateForwardRuleDialogProps> = (
       } else if (formData.ruleType === 'entry') {
         submitData.listenPort = formData.listenPort;
         submitData.exitAgentId = formData.exitAgentId;
+        submitData.tunnelType = formData.tunnelType;
         // entry type also needs target configuration
         if (targetType === 'manual') {
           submitData.targetAddress = formData.targetAddress.trim();
@@ -322,6 +326,7 @@ export const CreateForwardRuleDialog: React.FC<CreateForwardRuleDialogProps> = (
       } else if (formData.ruleType === 'chain') {
         submitData.listenPort = formData.listenPort;
         submitData.chainAgentIds = formData.chainAgentIds;
+        submitData.tunnelType = formData.tunnelType;
         // chain type also needs target configuration
         if (targetType === 'manual') {
           submitData.targetAddress = formData.targetAddress.trim();
@@ -591,6 +596,28 @@ export const CreateForwardRuleDialog: React.FC<CreateForwardRuleDialogProps> = (
                     </SelectContent>
                   </Select>
                   {errors.exitAgentId && <p className="text-xs text-destructive">{errors.exitAgentId}</p>}
+                </div>
+              )}
+
+              {/* Tunnel Type - entry and chain types */}
+              {(formData.ruleType === 'entry' || formData.ruleType === 'chain') && (
+                <div className="flex flex-col gap-2">
+                  <Label htmlFor="tunnelType">隧道类型</Label>
+                  <Select
+                    value={formData.tunnelType}
+                    onValueChange={(value) => handleChange('tunnelType', value as TunnelType)}
+                  >
+                    <SelectTrigger id="tunnelType">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="ws">WebSocket</SelectItem>
+                      <SelectItem value="tls">TLS</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <p className="text-xs text-muted-foreground">
+                    {formData.tunnelType === 'ws' ? '通过 WebSocket 建立隧道连接' : '通过 TLS 建立隧道连接'}
+                  </p>
                 </div>
               )}
 

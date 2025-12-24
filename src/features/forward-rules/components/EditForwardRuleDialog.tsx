@@ -25,7 +25,7 @@ import {
 } from '@/components/common/Select';
 import { RadioGroup, RadioGroupItem } from '@/components/common/RadioGroup';
 import { SortableChainAgentList } from './SortableChainAgentList';
-import type { ForwardRule, UpdateForwardRuleRequest, IPVersion, ForwardAgent } from '@/api/forward';
+import type { ForwardRule, UpdateForwardRuleRequest, IPVersion, ForwardAgent, TunnelType } from '@/api/forward';
 import type { Node } from '@/api/node';
 
 type ForwardProtocol = 'tcp' | 'udp' | 'both';
@@ -56,7 +56,7 @@ export const EditForwardRuleDialog: React.FC<EditForwardRuleDialogProps> = ({
   nodes = [],
   agents = [],
 }) => {
-  const [formData, setFormData] = useState<UpdateForwardRuleRequest & { chainAgentIds?: string[]; chainPortConfig?: Record<string, number>; trafficMultiplier?: number; sortOrder?: number }>({});
+  const [formData, setFormData] = useState<UpdateForwardRuleRequest & { chainAgentIds?: string[]; chainPortConfig?: Record<string, number>; trafficMultiplier?: number; sortOrder?: number; tunnelType?: TunnelType }>({});
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [targetType, setTargetType] = useState<TargetType>('manual');
 
@@ -86,6 +86,7 @@ export const EditForwardRuleDialog: React.FC<EditForwardRuleDialogProps> = ({
         chainPortConfig,
         trafficMultiplier: rule.trafficMultiplier,
         sortOrder: rule.sortOrder,
+        tunnelType: rule.tunnelType,
       });
       // Determine target type based on rule data
       setTargetType(rule.targetNodeId ? 'node' : 'manual');
@@ -220,6 +221,11 @@ export const EditForwardRuleDialog: React.FC<EditForwardRuleDialogProps> = ({
       // entry type: exit agent
       if (rule.ruleType === 'entry' && formData.exitAgentId !== rule.exitAgentId) {
         updates.exitAgentId = formData.exitAgentId;
+      }
+
+      // entry and chain types: tunnel type
+      if ((rule.ruleType === 'entry' || rule.ruleType === 'chain') && formData.tunnelType !== rule.tunnelType) {
+        updates.tunnelType = formData.tunnelType;
       }
 
       // chain and direct_chain types: chain agents
@@ -382,6 +388,28 @@ export const EditForwardRuleDialog: React.FC<EditForwardRuleDialogProps> = ({
                       ))}
                     </SelectContent>
                   </Select>
+                </div>
+              )}
+
+              {/* Tunnel Type - entry and chain types */}
+              {(rule.ruleType === 'entry' || rule.ruleType === 'chain') && (
+                <div className="flex flex-col gap-2">
+                  <Label htmlFor="tunnelType">隧道类型</Label>
+                  <Select
+                    value={formData.tunnelType || 'ws'}
+                    onValueChange={(value) => handleChange('tunnelType', value as TunnelType)}
+                  >
+                    <SelectTrigger id="tunnelType">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="ws">WebSocket</SelectItem>
+                      <SelectItem value="tls">TLS</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <p className="text-xs text-muted-foreground">
+                    {formData.tunnelType === 'tls' ? '通过 TLS 建立隧道连接' : '通过 WebSocket 建立隧道连接'}
+                  </p>
                 </div>
               )}
 
