@@ -16,6 +16,7 @@ import { ProfileDialog } from '@/features/profile/components/ProfileDialog';
 import { MobileDrawer } from '@/components/navigation/MobileDrawer';
 import { DesktopNav } from '@/components/navigation/DesktopNav';
 import { EnhancedBreadcrumbs } from '@/components/navigation/EnhancedBreadcrumbs';
+import { ThemeToggle } from '@/components/common/ThemeToggle';
 import { getNavItems } from '@/config/navigation';
 import { usePermissions } from '@/features/auth/hooks/usePermissions';
 
@@ -84,8 +85,10 @@ export const DashboardLayout = ({ children }: DashboardLayoutProps) => {
           {/* Placeholder - push user menu to the right */}
           <div className="flex-1 md:flex-none" />
 
-          {/* User info and menu */}
-          <div className="flex items-center gap-4">
+          {/* Theme toggle and user menu */}
+          <div className="flex items-center gap-2">
+            <ThemeToggle />
+
             <div className="hidden sm:block text-right">
               <p className="text-sm font-medium leading-none">{user?.displayName}</p>
               <p className="text-xs text-muted-foreground">{user?.email}</p>

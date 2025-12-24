@@ -376,8 +376,8 @@ export const EditPlanDialog: React.FC<EditPlanDialogProps> = ({
             </div>
           </div>
 
-          {/* Node subscription limit configuration - only shown for node type plans */}
-          {plan.planType === 'node' && (
+          {/* Node subscription limit configuration - shown for node and hybrid type plans */}
+          {(plan.planType === 'node' || plan.planType === 'hybrid') && (
             <div className="space-y-4">
               <h3 className="text-sm font-semibold">节点限制配置</h3>
               <Separator />
@@ -451,8 +451,8 @@ export const EditPlanDialog: React.FC<EditPlanDialogProps> = ({
             </div>
           )}
 
-          {/* Forward limit configuration - only shown for port forwarding type plans */}
-          {plan.planType === 'forward' && (
+          {/* Forward limit configuration - shown for forward and hybrid type plans */}
+          {(plan.planType === 'forward' || plan.planType === 'hybrid') && (
             <div className="space-y-4">
               <h3 className="text-sm font-semibold">转发限制配置</h3>
               <Separator />

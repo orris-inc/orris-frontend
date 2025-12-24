@@ -76,7 +76,7 @@ export const ForwardAgentDetailDialog: React.FC<ForwardAgentDetailDialogProps> =
   return (
     <Dialog open={open} onOpenChange={(open) => !open && onClose()}>
       <DialogContent className="sm:max-w-[700px] flex flex-col max-h-[90vh]">
-        <DialogHeader className="flex-shrink-0">
+        <DialogHeader className="flex-shrink-0 pr-8">
           <div className="flex items-center justify-between">
             <DialogTitle>转发节点详情</DialogTitle>
             <Badge

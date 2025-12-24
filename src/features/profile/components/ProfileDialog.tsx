@@ -24,7 +24,7 @@ export const ProfileDialog = ({ open, onClose }: ProfileDialogProps) => {
     <Dialog.Root open={open} onOpenChange={(isOpen) => !isOpen && onClose()}>
       <Dialog.Portal>
         <Dialog.Overlay className="fixed inset-0 z-50 bg-black/80 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0" />
-        <Dialog.Content className="fixed left-[50%] top-[50%] z-50 max-w-3xl h-[600px] translate-x-[-50%] translate-y-[-50%] flex flex-col gap-0 border bg-background p-0 shadow-lg duration-200 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[state=closed]:slide-out-to-left-1/2 data-[state=closed]:slide-out-to-top-[48%] data-[state=open]:slide-in-from-left-1/2 data-[state=open]:slide-in-from-top-[48%] sm:rounded-lg w-full">
+        <Dialog.Content className="fixed left-[50%] top-[50%] z-50 w-[calc(100%-2rem)] max-w-3xl h-[600px] max-h-[calc(100vh-2rem)] translate-x-[-50%] translate-y-[-50%] flex flex-col gap-0 border bg-background p-0 shadow-lg duration-200 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[state=closed]:slide-out-to-left-1/2 data-[state=closed]:slide-out-to-top-[48%] data-[state=open]:slide-in-from-left-1/2 data-[state=open]:slide-in-from-top-[48%] sm:rounded-lg overflow-hidden">
           <div className="px-6 py-4 border-b flex items-center justify-between">
             <Dialog.Title className="text-lg font-semibold leading-none tracking-tight">
               个人资料
@@ -35,7 +35,7 @@ export const ProfileDialog = ({ open, onClose }: ProfileDialogProps) => {
             </Dialog.Close>
           </div>
 
-          <Tabs.Root defaultValue="basic" className="flex-1 flex flex-col">
+          <Tabs.Root defaultValue="basic" className="flex-1 min-h-0 flex flex-col min-w-0">
             <div className="px-6 pt-4">
               <Tabs.List className="inline-flex h-10 items-center justify-center rounded-md bg-muted p-1 text-muted-foreground w-full grid grid-cols-2">
                 <Tabs.Trigger
@@ -53,7 +53,7 @@ export const ProfileDialog = ({ open, onClose }: ProfileDialogProps) => {
               </Tabs.List>
             </div>
 
-            <div className="flex-1 overflow-y-auto px-6 py-4">
+            <div className="flex-1 min-h-0 overflow-y-auto overflow-x-hidden px-6 py-4">
               <Tabs.Content
                 value="basic"
                 className="mt-0 h-full ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"

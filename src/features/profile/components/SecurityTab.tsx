@@ -15,7 +15,7 @@ export const SecurityTab = () => {
           </p>
         </div>
 
-        <div className="rounded-lg border bg-card text-card-foreground shadow-sm">
+        <div className="rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm">
           <div className="p-6">
             <ChangePasswordForm />
           </div>
@@ -33,7 +33,7 @@ export const SecurityTab = () => {
           </p>
         </div>
 
-        <div className="rounded-lg border bg-card text-card-foreground shadow-sm">
+        <div className="rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm">
           <div className="p-6">
             <p className="text-sm text-muted-foreground">
               OAuth绑定管理功能即将推出
@@ -53,7 +53,7 @@ export const SecurityTab = () => {
           </p>
         </div>
 
-        <div className="rounded-lg border border-destructive/50 bg-card text-card-foreground shadow-sm">
+        <div className="rounded-lg border border-destructive/50 bg-white dark:bg-slate-900 shadow-sm">
           <div className="p-6">
             <p className="text-sm text-muted-foreground">
               账号注销功能即将推出

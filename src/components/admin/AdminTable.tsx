@@ -24,7 +24,7 @@ interface AdminTableProps {
 
 export const AdminTable = ({ children, className }: AdminTableProps) => {
   return (
-    <div className="overflow-x-auto">
+    <div className="overflow-x-auto bg-white dark:bg-slate-900 rounded-xl">
       <table className={cn('w-full text-sm border-separate border-spacing-0', className)}>
         {children}
       </table>

@@ -25,6 +25,7 @@ import type { SubscriptionPlan, PlanStatus, BillingCycle, PlanType } from '@/api
 const PLAN_TYPE_LABELS: Record<PlanType, string> = {
   node: '节点订阅',
   forward: '端口转发',
+  hybrid: '混合订阅',
 };
 
 // Billing cycle display names
@@ -145,7 +146,7 @@ export const PlanListTable: React.FC<PlanListTableProps> = ({
           查看订阅用户
         </ContextMenuItem>
       )}
-      {onManageNodes && plan.planType === 'node' && (
+      {onManageNodes && (plan.planType === 'node' || plan.planType === 'hybrid') && (
         <ContextMenuItem onClick={() => onManageNodes(plan)}>
           <Server className="mr-2 size-4" />
           管理节点
@@ -178,7 +179,7 @@ export const PlanListTable: React.FC<PlanListTableProps> = ({
           查看订阅用户
         </DropdownMenuItem>
       )}
-      {onManageNodes && plan.planType === 'node' && (
+      {onManageNodes && (plan.planType === 'node' || plan.planType === 'hybrid') && (
         <DropdownMenuItem onClick={() => onManageNodes(plan)}>
           <Server className="mr-2 size-4" />
           管理节点

@@ -6,6 +6,15 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="description" content="Orris - 现代化认证系统" />
     <title>Orris</title>
+    <script>
+      // Prevent flash of wrong theme on page load
+      (function() {
+        var theme = localStorage.getItem('orris-theme');
+        if (theme === 'dark' || (!theme && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+          document.documentElement.classList.add('dark');
+        }
+      })();
+    </script>
   </head>
   <body>
     <div id="root"></div>

@@ -1,10 +1,9 @@
 import { useState, useEffect } from 'react';
-import { useForm } from 'react-hook-form';
+import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Eye, EyeOff, Smartphone, Loader2, AlertTriangle } from 'lucide-react';
 import * as LabelPrimitive from '@radix-ui/react-label';
-import * as CheckboxPrimitive from '@radix-ui/react-checkbox';
-import { Check } from 'lucide-react';
+import { Checkbox } from '@/components/common/Checkbox';
 import { useProfile } from '../hooks/useProfile';
 import { inputStyles, labelStyles, getAlertClass } from '@/lib/ui-styles';
 import {
@@ -63,6 +62,7 @@ export const ChangePasswordForm = () => {
     formState: { errors },
     watch,
     reset,
+    control,
   } = useForm<ChangePasswordFormData>({
     resolver: zodResolver(changePasswordSchema),
     defaultValues: {
@@ -202,24 +202,17 @@ export const ChangePasswordForm = () => {
 
       {/* Logout all devices option */}
       <div className="flex items-start space-x-3 space-y-0 rounded-md border p-4">
-        <CheckboxPrimitive.Root
-          id="logoutAllDevices"
-          className="peer h-4 w-4 shrink-0 rounded-sm border border-primary ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 data-[state=checked]:bg-primary data-[state=checked]:text-primary-foreground"
-          {...register('logoutAllDevices')}
-          onCheckedChange={(checked) => {
-            const event = {
-              target: {
-                name: 'logoutAllDevices',
-                value: checked,
-              },
-            } as React.ChangeEvent<HTMLInputElement>;
-            register('logoutAllDevices').onChange(event);
-          }}
-        >
-          <CheckboxPrimitive.Indicator className="flex items-center justify-center text-current">
-            <Check className="h-4 w-4" />
-          </CheckboxPrimitive.Indicator>
-        </CheckboxPrimitive.Root>
+        <Controller
+          name="logoutAllDevices"
+          control={control}
+          render={({ field }) => (
+            <Checkbox
+              id="logoutAllDevices"
+              checked={field.value}
+              onCheckedChange={field.onChange}
+            />
+          )}
+        />
         <div className="grid gap-1.5 leading-none">
           <label
             htmlFor="logoutAllDevices"

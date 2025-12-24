@@ -1,5 +1,8 @@
 @import "tailwindcss";
 
+/* Configure dark mode to use class selector instead of media query */
+@custom-variant dark (&:where(.dark, .dark *));
+
 @theme {
   /* ========== 响应式流式排版 ========== */
   /* 字体大小 - 自动适配屏幕 */
@@ -207,6 +210,19 @@
 
   * {
     border-color: hsl(var(--border));
+  }
+
+  /* Hide native input inside Radix Checkbox */
+  button[role="checkbox"] > input {
+    position: absolute !important;
+    width: 1px !important;
+    height: 1px !important;
+    padding: 0 !important;
+    margin: -1px !important;
+    overflow: hidden !important;
+    clip: rect(0, 0, 0, 0) !important;
+    white-space: nowrap !important;
+    border: 0 !important;
   }
 
   body {

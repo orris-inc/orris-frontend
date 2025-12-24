@@ -8,6 +8,7 @@
  * automatically converts between snake_case (API) and camelCase (frontend).
  *
  * Recent changes:
+ * - 2025-12-24: Added 'hybrid' to PlanType for mixed subscriptions
  * - 2025-12-23: TrafficStatsRecord: Changed nodeId to resourceType + resourceId (SID format)
  * - 2025-12-19: Changed all IDs to Stripe-style string format (sub_xxx, plan_xxx, stoken_xxx)
  * - 2025-12-19: Changed Subscription.id to string, added userId as string
@@ -64,7 +65,7 @@ export interface SubscriptionPlan {
   description: string;
   trialDays: number;
   status: PlanStatus;
-  /** Plan type: node or forward */
+  /** Plan type: node, forward, or hybrid */
   planType: PlanType;
   limits?: Record<string, unknown>;
   apiRateLimit: number;
@@ -87,8 +88,9 @@ export type PlanStatus = 'active' | 'inactive';
 
 /**
  * Plan type - determines the subscription service type
+ * Updated: 2025-12-24 - Added 'hybrid' type for mixed subscriptions (official nodes + user forward rules)
  */
-export type PlanType = 'node' | 'forward';
+export type PlanType = 'node' | 'forward' | 'hybrid';
 
 /**
  * Pricing option for a plan
@@ -202,7 +204,7 @@ export interface CreatePlanRequest {
   name: string;
   slug: string;
   description?: string;
-  /** Plan type: node or forward (required) */
+  /** Plan type: node, forward, or hybrid (required) */
   planType: PlanType;
   trialDays?: number;
   limits?: Record<string, unknown>;
@@ -253,7 +255,7 @@ export interface ListPlansParams {
   pageSize?: number;
   status?: PlanStatus;
   isPublic?: boolean;
-  /** Filter by plan type: node or forward */
+  /** Filter by plan type: node, forward, or hybrid */
   planType?: PlanType;
 }
 

@@ -101,6 +101,7 @@ const FORWARD_RULE_TYPES: { value: ForwardRuleTypeOption; label: string }[] = [
 const PLAN_TYPES: { value: PlanType; label: string }[] = [
   { value: 'node', label: '节点订阅' },
   { value: 'forward', label: '端口转发' },
+  { value: 'hybrid', label: '混合订阅' },
 ];
 
 // Extend CreatePlanRequest to support plan limits
@@ -450,8 +451,8 @@ export const CreatePlanDialog: React.FC<CreatePlanDialogProps> = ({
             </div>
           </div>
 
-          {/* Node subscription limit configuration - only shown for node type plans */}
-          {formData.planType === 'node' && (
+          {/* Node subscription limit configuration - shown for node and hybrid type plans */}
+          {(formData.planType === 'node' || formData.planType === 'hybrid') && (
             <div className="space-y-4">
               <h3 className="text-sm font-semibold">节点限制配置</h3>
               <Separator />
@@ -525,8 +526,8 @@ export const CreatePlanDialog: React.FC<CreatePlanDialogProps> = ({
             </div>
           )}
 
-          {/* Forward limit configuration - only shown for port forwarding type plans */}
-          {formData.planType === 'forward' && (
+          {/* Forward limit configuration - shown for forward and hybrid type plans */}
+          {(formData.planType === 'forward' || formData.planType === 'hybrid') && (
             <div className="space-y-4">
               <h3 className="text-sm font-semibold">转发限制配置</h3>
               <Separator />

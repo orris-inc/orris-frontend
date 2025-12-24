@@ -5,6 +5,7 @@
 
 import { RouterProvider } from 'react-router';
 import { QueryClientProvider } from '@tanstack/react-query';
+import { ThemeProvider } from 'next-themes';
 import { Loader2 } from 'lucide-react';
 import { router } from './router';
 import { queryClient } from '@/shared/lib/query-client';
@@ -29,9 +30,17 @@ export const App = () => {
   }
 
   return (
-    <QueryClientProvider client={queryClient}>
-      <RouterProvider router={router} />
-      <GlobalSnackbar />
-    </QueryClientProvider>
+    <ThemeProvider
+      attribute="class"
+      defaultTheme="system"
+      enableSystem
+      storageKey="orris-theme"
+      disableTransitionOnChange
+    >
+      <QueryClientProvider client={queryClient}>
+        <RouterProvider router={router} />
+        <GlobalSnackbar />
+      </QueryClientProvider>
+    </ThemeProvider>
   );
 };

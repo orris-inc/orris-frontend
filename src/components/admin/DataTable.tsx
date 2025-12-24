@@ -184,7 +184,7 @@ export function DataTable<TData>({
 
   return (
     <>
-      <div className="overflow-x-auto">
+      <div className="overflow-x-auto bg-white dark:bg-slate-900 rounded-xl">
         <table className="w-full table-fixed text-sm border-separate border-spacing-0">
           <thead className={cn(
             'bg-gradient-to-b from-slate-50 to-slate-50/80 dark:from-slate-800/50 dark:to-slate-800/30',

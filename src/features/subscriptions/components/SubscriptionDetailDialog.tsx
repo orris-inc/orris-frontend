@@ -48,6 +48,7 @@ const STATUS_CONFIG: Record<SubscriptionStatus, { label: string; variant: 'succe
 const PLAN_TYPE_CONFIG: Record<PlanType, { label: string; variant: 'info' | 'warning' }> = {
   node: { label: '节点订阅', variant: 'info' },
   forward: { label: '端口转发', variant: 'warning' },
+  hybrid: { label: '混合订阅', variant: 'info' },
 };
 
 // Detail item component

@@ -31,6 +31,7 @@ import { useAuth } from '@/features/auth/hooks/useAuth';
 import { usePermissions } from '@/features/auth/hooks/usePermissions';
 import { ProfileDialog } from '@/features/profile/components/ProfileDialog';
 import { EnhancedBreadcrumbs } from '@/components/navigation/EnhancedBreadcrumbs';
+import { ThemeToggle } from '@/components/common/ThemeToggle';
 import { getNavItems } from '@/config/navigation';
 import { cn } from '@/lib/utils';
 
@@ -177,7 +178,10 @@ export const AdminLayout = ({ children }: AdminLayoutProps) => {
               <EnhancedBreadcrumbs />
             </div>
 
-            {/* 用户菜单 */}
+            {/* 主题切换和用户菜单 */}
+            <div className="flex items-center gap-2">
+              <ThemeToggle />
+
             <DropdownMenuPrimitive.Root>
               <DropdownMenuPrimitive.Trigger asChild>
                 <button className="flex h-8 w-8 items-center justify-center rounded-full hover:bg-accent">
@@ -224,6 +228,7 @@ export const AdminLayout = ({ children }: AdminLayoutProps) => {
                 </DropdownMenuPrimitive.Content>
               </DropdownMenuPrimitive.Portal>
             </DropdownMenuPrimitive.Root>
+            </div>
           </header>
 
           {/* 页面内容 */}
