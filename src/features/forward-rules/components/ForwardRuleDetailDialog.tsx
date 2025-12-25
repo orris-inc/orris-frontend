@@ -151,6 +151,14 @@ export const ForwardRuleDetailDialog: React.FC<ForwardRuleDetailDialogProps> = (
                 </div>
               )}
 
+              {/* Tunnel Hops - chain type only */}
+              {rule.ruleType === 'chain' && rule.tunnelHops !== undefined && (
+                <div className="space-y-1">
+                  <p className="text-sm text-muted-foreground">隧道跳数</p>
+                  <p className="text-sm">{rule.tunnelHops === 0 ? '全程直连' : `前 ${rule.tunnelHops} 跳`}</p>
+                </div>
+              )}
+
               <div className="space-y-1">
                 <p className="text-sm text-muted-foreground">转发节点</p>
                 <p className="text-sm">{getAgentName(rule.agentId)}</p>
@@ -227,6 +235,30 @@ export const ForwardRuleDetailDialog: React.FC<ForwardRuleDetailDialogProps> = (
                       <p className="text-sm text-muted-foreground">节点角色</p>
                       <p className="text-sm">{rule.role === 'entry' ? '入口' : rule.role === 'exit' ? '出口' : rule.role === 'relay' ? '中继' : rule.role}</p>
                     </div>
+                  )}
+                  {rule.hopMode && (
+                    <div className="space-y-1">
+                      <p className="text-sm text-muted-foreground">跳跃模式</p>
+                      <p className="text-sm">
+                        {rule.hopMode === 'tunnel' ? '隧道' : rule.hopMode === 'direct' ? '直连' : rule.hopMode === 'boundary' ? '边界' : rule.hopMode}
+                      </p>
+                    </div>
+                  )}
+                  {rule.hopMode === 'boundary' && (
+                    <>
+                      {rule.inboundMode && (
+                        <div className="space-y-1">
+                          <p className="text-sm text-muted-foreground">入站模式</p>
+                          <p className="text-sm">{rule.inboundMode === 'tunnel' ? '隧道' : '直连'}</p>
+                        </div>
+                      )}
+                      {rule.outboundMode && (
+                        <div className="space-y-1">
+                          <p className="text-sm text-muted-foreground">出站模式</p>
+                          <p className="text-sm">{rule.outboundMode === 'tunnel' ? '隧道' : '直连'}</p>
+                        </div>
+                      )}
+                    </>
                   )}
                   {rule.chainPosition !== undefined && (
                     <div className="space-y-1">

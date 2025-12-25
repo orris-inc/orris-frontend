@@ -413,16 +413,39 @@ export const EditForwardRuleDialog: React.FC<EditForwardRuleDialogProps> = ({
                 </div>
               )}
 
+              {/* Tunnel Hops - chain type only (read-only, can only be set at creation) */}
+              {rule.ruleType === 'chain' && rule.tunnelHops !== undefined && (
+                <div className="flex flex-col gap-2">
+                  <Label htmlFor="tunnelHops">隧道跳数</Label>
+                  <Input
+                    id="tunnelHops"
+                    value={rule.tunnelHops === 0 ? '全程直连' : `前 ${rule.tunnelHops} 跳`}
+                    disabled
+                  />
+                  <p className="text-xs text-muted-foreground">
+                    隧道跳数仅在创建规则时可设置
+                  </p>
+                </div>
+              )}
+
               {/* chain type: Chain Agents */}
               {rule.ruleType === 'chain' && (
                 <div className="flex flex-col gap-2 md:col-span-2">
-                  <Label>中间节点</Label>
+                  <Label>中间节点{rule.tunnelHops !== undefined && rule.tunnelHops >= 0 && rule.tunnelHops < (rule.chainAgentIds?.length || 0) && '及端口'}</Label>
                   <SortableChainAgentList
                     agents={availableChainAgents}
                     selectedIds={formData.chainAgentIds || []}
                     onSelectionChange={(ids) => handleChange('chainAgentIds', ids)}
+                    showPortConfig={rule.tunnelHops !== undefined && rule.tunnelHops >= 0 && rule.tunnelHops < (rule.chainAgentIds?.length || 0)}
+                    portConfigStartIndex={rule.tunnelHops ?? 0}
+                    portConfig={rule.chainPortConfig || {}}
                     idPrefix="edit-chain-agent"
                   />
+                  {rule.tunnelHops !== undefined && rule.tunnelHops >= 0 && rule.tunnelHops < (rule.chainAgentIds?.length || 0) && (
+                    <p className="text-xs text-muted-foreground">
+                      混合链模式：前 {rule.tunnelHops} 跳使用隧道，后续节点使用直连
+                    </p>
+                  )}
                 </div>
               )}
 

@@ -21,6 +21,8 @@ interface SortableChainAgentListProps {
   onSelectionChange: (ids: string[]) => void;
   /** Whether to show port configuration (direct_chain type) */
   showPortConfig?: boolean;
+  /** Index from which to show port configuration (0-based, for hybrid chain) */
+  portConfigStartIndex?: number;
   /** Port configuration (agentId -> port) */
   portConfig?: Record<string, number>;
   /** Port configuration change callback */
@@ -36,6 +38,7 @@ export const SortableChainAgentList: React.FC<SortableChainAgentListProps> = ({
   selectedIds,
   onSelectionChange,
   showPortConfig = false,
+  portConfigStartIndex = 0,
   portConfig = {},
   onPortConfigChange,
   hasError = false,
@@ -135,7 +138,7 @@ export const SortableChainAgentList: React.FC<SortableChainAgentListProps> = ({
                   {index + 1}
                 </Badge>
                 <span className="text-sm flex-1 min-w-0 truncate">{agent.name}</span>
-                {showPortConfig && onPortConfigChange && (
+                {showPortConfig && onPortConfigChange && index >= portConfigStartIndex && (
                   <Input
                     type="number"
                     min={1}

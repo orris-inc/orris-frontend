@@ -65,6 +65,7 @@ export const CreateForwardRuleDialog: React.FC<CreateForwardRuleDialogProps> = (
     chainAgentIds: [] as string[],
     chainPortConfig: {} as Record<string, number>,
     tunnelType: 'ws' as TunnelType,
+    tunnelHops: undefined as number | undefined,
     name: '',
     listenPort: 0,
     targetAddress: '',
@@ -93,6 +94,7 @@ export const CreateForwardRuleDialog: React.FC<CreateForwardRuleDialogProps> = (
           chainAgentIds: initialData.chainAgentIds || [],
           chainPortConfig: initialData.chainPortConfig || {},
           tunnelType: initialData.tunnelType || 'ws',
+          tunnelHops: initialData.tunnelHops,
           name: initialData.name || '',
           listenPort: initialData.listenPort || 0,
           targetAddress: initialData.targetAddress || '',
@@ -116,6 +118,7 @@ export const CreateForwardRuleDialog: React.FC<CreateForwardRuleDialogProps> = (
           chainAgentIds: [],
           chainPortConfig: {},
           tunnelType: 'ws',
+          tunnelHops: undefined,
           name: '',
           listenPort: 0,
           targetAddress: '',
@@ -236,6 +239,23 @@ export const CreateForwardRuleDialog: React.FC<CreateForwardRuleDialogProps> = (
       if (!formData.chainAgentIds || formData.chainAgentIds.length === 0) {
         newErrors.chainAgentIds = '请至少选择一个中间节点';
       }
+      // Validate port config for hybrid chain (when tunnelHops is set)
+      if (formData.tunnelHops !== undefined && formData.tunnelHops >= 0 && formData.tunnelHops < formData.chainAgentIds.length) {
+        const missingPorts: string[] = [];
+        // Only validate ports for nodes after tunnelHops
+        for (let i = formData.tunnelHops; i < formData.chainAgentIds.length; i++) {
+          const agentId = formData.chainAgentIds[i];
+          const port = formData.chainPortConfig[agentId];
+          if (!port || port < 1 || port > 65535) {
+            const agent = agents.find((a) => a.id === agentId);
+            const agentName = agent ? agent.name : agentId;
+            missingPorts.push(agentName);
+          }
+        }
+        if (missingPorts.length > 0) {
+          newErrors.chainPortConfig = `请为以下节点配置有效端口：${missingPorts.join('、')}`;
+        }
+      }
       // chain type also needs target validation
       if (targetType === 'manual') {
         if (!formData.targetAddress.trim()) {
@@ -327,6 +347,14 @@ export const CreateForwardRuleDialog: React.FC<CreateForwardRuleDialogProps> = (
         submitData.listenPort = formData.listenPort;
         submitData.chainAgentIds = formData.chainAgentIds;
         submitData.tunnelType = formData.tunnelType;
+        // Add tunnelHops and chainPortConfig if specified (hybrid chain)
+        if (formData.tunnelHops !== undefined && formData.tunnelHops !== null && formData.tunnelHops >= 0) {
+          submitData.tunnelHops = formData.tunnelHops;
+          // Include port config for nodes after tunnelHops
+          if (formData.tunnelHops < formData.chainAgentIds.length && Object.keys(formData.chainPortConfig).length > 0) {
+            submitData.chainPortConfig = formData.chainPortConfig;
+          }
+        }
         // chain type also needs target configuration
         if (targetType === 'manual') {
           submitData.targetAddress = formData.targetAddress.trim();
@@ -389,6 +417,15 @@ export const CreateForwardRuleDialog: React.FC<CreateForwardRuleDialogProps> = (
       }
     } else if (formData.ruleType === 'chain') {
       if (formData.listenPort <= 0 || formData.chainAgentIds.length === 0) return false;
+      // Validate port config for hybrid chain (when tunnelHops is set)
+      if (formData.tunnelHops !== undefined && formData.tunnelHops >= 0 && formData.tunnelHops < formData.chainAgentIds.length) {
+        // Check that all nodes after tunnelHops have valid port config
+        for (let i = formData.tunnelHops; i < formData.chainAgentIds.length; i++) {
+          const agentId = formData.chainAgentIds[i];
+          const port = formData.chainPortConfig[agentId];
+          if (!port || port <= 0 || port > 65535) return false;
+        }
+      }
       // chain type also needs to validate target
       if (targetType === 'manual') {
         return formData.targetAddress.trim() !== '' && formData.targetPort > 0;
@@ -621,6 +658,27 @@ export const CreateForwardRuleDialog: React.FC<CreateForwardRuleDialogProps> = (
                 </div>
               )}
 
+              {/* Tunnel Hops - chain type only */}
+              {formData.ruleType === 'chain' && (
+                <div className="flex flex-col gap-2">
+                  <Label htmlFor="tunnelHops">隧道跳数（可选）</Label>
+                  <Input
+                    id="tunnelHops"
+                    type="number"
+                    min={0}
+                    value={formData.tunnelHops ?? ''}
+                    onChange={(e) => {
+                      const value = e.target.value === '' ? undefined : parseInt(e.target.value, 10);
+                      handleChange('tunnelHops', value);
+                    }}
+                    placeholder="留空表示全程隧道"
+                  />
+                  <p className="text-xs text-muted-foreground">
+                    指定前 N 跳使用隧道，留空表示全程使用隧道传输
+                  </p>
+                </div>
+              )}
+
               {/* chain type: Intermediate Nodes List */}
               {formData.ruleType === 'chain' && (
                 <div className="flex flex-col gap-2 md:col-span-2">
@@ -630,11 +688,33 @@ export const CreateForwardRuleDialog: React.FC<CreateForwardRuleDialogProps> = (
                   <SortableChainAgentList
                     agents={availableChainAgents}
                     selectedIds={formData.chainAgentIds}
-                    onSelectionChange={(ids) => handleChange('chainAgentIds', ids)}
-                    hasError={!!errors.chainAgentIds}
+                    onSelectionChange={(ids) => {
+                      // Synchronously update chainPortConfig when tunnelHops is set
+                      if (formData.tunnelHops !== undefined && formData.tunnelHops >= 0) {
+                        const newPortConfig = { ...formData.chainPortConfig };
+                        Object.keys(newPortConfig).forEach((id) => {
+                          if (!ids.includes(id)) {
+                            delete newPortConfig[id];
+                          }
+                        });
+                        setFormData((prev) => ({
+                          ...prev,
+                          chainAgentIds: ids,
+                          chainPortConfig: newPortConfig,
+                        }));
+                      } else {
+                        handleChange('chainAgentIds', ids);
+                      }
+                    }}
+                    showPortConfig={formData.tunnelHops !== undefined && formData.tunnelHops >= 0 && formData.tunnelHops < formData.chainAgentIds.length}
+                    portConfigStartIndex={formData.tunnelHops ?? 0}
+                    portConfig={formData.chainPortConfig}
+                    onPortConfigChange={handleChainPortChange}
+                    hasError={!!errors.chainAgentIds || !!errors.chainPortConfig}
                     idPrefix="chain-agent"
                   />
                   {errors.chainAgentIds && <p className="text-xs text-destructive">{errors.chainAgentIds}</p>}
+                  {errors.chainPortConfig && <p className="text-xs text-destructive">{errors.chainPortConfig}</p>}
                 </div>
               )}
 
