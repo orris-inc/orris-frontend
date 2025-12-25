@@ -13,9 +13,9 @@ import { Button } from '@/components/common/Button';
 import { Badge } from '@/components/common/Badge';
 import { Separator } from '@/components/common/Separator';
 import { TruncatedId } from '@/components/admin';
-import { Loader2, CheckCircle2, CircleDashed, AlertCircle, Play, Square, AlertTriangle, RotateCw, ListChecks } from 'lucide-react';
-import { useRuleSyncStatus } from '../hooks/useForwardRules';
-import type { ForwardRule, ForwardAgent, RuleSyncStatus, RuleRunStatus } from '@/api/forward';
+import { Loader2, CheckCircle2, CircleDashed, AlertCircle, Play, Square, AlertTriangle, RotateCw, ListChecks, HelpCircle } from 'lucide-react';
+import { useRuleOverallStatus } from '../hooks/useForwardRules';
+import type { ForwardRule, ForwardAgent, RuleSyncStatus, RuleRunStatus, AgentRuleSyncStatus } from '@/api/forward';
 import type { Node } from '@/api/node';
 
 interface ForwardRuleDetailDialogProps {
@@ -107,11 +107,12 @@ const SYNC_STATUS_CONFIG: Record<RuleSyncStatus, { label: string; icon: React.El
 };
 
 // Run status display config
-const RUN_STATUS_CONFIG: Record<RuleRunStatus, { label: string; icon: React.ElementType; className: string }> = {
+const RUN_STATUS_CONFIG: Record<RuleRunStatus | 'unknown', { label: string; icon: React.ElementType; className: string }> = {
   running: { label: '运行中', icon: Play, className: 'text-green-500' },
   stopped: { label: '已停止', icon: Square, className: 'text-gray-500' },
   error: { label: '错误', icon: AlertTriangle, className: 'text-red-500' },
   starting: { label: '启动中', icon: RotateCw, className: 'text-blue-500' },
+  unknown: { label: '未知', icon: HelpCircle, className: 'text-gray-400' },
 };
 
 export const ForwardRuleDetailDialog: React.FC<ForwardRuleDetailDialogProps> = ({
@@ -121,10 +122,9 @@ export const ForwardRuleDetailDialog: React.FC<ForwardRuleDetailDialogProps> = (
   agents = [],
   nodes = [],
 }) => {
-  // Get rule sync status
-  const { ruleSyncStatus, allRulesStatus, isLoading: isLoadingSyncStatus } = useRuleSyncStatus(
-    open && rule?.status === 'enabled' ? rule.agentId : null,
-    rule?.id ?? null
+  // Get rule overall status
+  const { ruleOverallStatus, isLoading: isLoadingStatus } = useRuleOverallStatus(
+    open && rule?.status === 'enabled' ? rule.id : null
   );
 
   if (!rule) return null;
@@ -451,70 +451,97 @@ export const ForwardRuleDetailDialog: React.FC<ForwardRuleDetailDialogProps> = (
               <div className="flex items-center gap-2 mb-3">
                 <ListChecks className="size-4" />
                 <h3 className="text-sm font-semibold">规则同步状态</h3>
-                {allRulesStatus && (
+                {ruleOverallStatus && (
                   <span className="text-xs text-muted-foreground">
-                    (更新于 {formatTimestamp(allRulesStatus.updatedAt)})
+                    (更新于 {formatTimestamp(ruleOverallStatus.updatedAt)})
                   </span>
                 )}
               </div>
               <Separator className="mb-4" />
-              {isLoadingSyncStatus ? (
+              {isLoadingStatus ? (
                 <div className="flex items-center justify-center py-4">
                   <Loader2 className="size-5 animate-spin text-muted-foreground" />
                 </div>
-              ) : ruleSyncStatus ? (
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="space-y-1">
-                    <p className="text-sm text-muted-foreground">同步状态</p>
-                    <div className="flex items-center gap-2">
-                      {(() => {
-                        const config = SYNC_STATUS_CONFIG[ruleSyncStatus.syncStatus];
-                        const Icon = config.icon;
-                        return (
-                          <span className={`flex items-center gap-1 text-sm ${config.className}`}>
-                            <Icon className="size-4" />
-                            {config.label}
-                          </span>
-                        );
-                      })()}
+              ) : ruleOverallStatus ? (
+                <div className="space-y-4">
+                  {/* Overall Status */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="space-y-1">
+                      <p className="text-sm text-muted-foreground">整体同步状态</p>
+                      <div className="flex items-center gap-2">
+                        {(() => {
+                          const config = SYNC_STATUS_CONFIG[ruleOverallStatus.overallSyncStatus];
+                          const Icon = config.icon;
+                          return (
+                            <span className={`flex items-center gap-1 text-sm ${config.className}`}>
+                              <Icon className="size-4" />
+                              {config.label}
+                            </span>
+                          );
+                        })()}
+                      </div>
+                    </div>
+
+                    <div className="space-y-1">
+                      <p className="text-sm text-muted-foreground">整体运行状态</p>
+                      <div className="flex items-center gap-2">
+                        {(() => {
+                          const config = RUN_STATUS_CONFIG[ruleOverallStatus.overallRunStatus];
+                          const Icon = config.icon;
+                          return (
+                            <span className={`flex items-center gap-1 text-sm ${config.className}`}>
+                              <Icon className="size-4" />
+                              {config.label}
+                            </span>
+                          );
+                        })()}
+                      </div>
+                    </div>
+
+                    <div className="space-y-1">
+                      <p className="text-sm text-muted-foreground">节点状态</p>
+                      <p className="text-sm">{ruleOverallStatus.healthyAgents}/{ruleOverallStatus.totalAgents} 正常</p>
                     </div>
                   </div>
 
-                  <div className="space-y-1">
-                    <p className="text-sm text-muted-foreground">运行状态</p>
-                    <div className="flex items-center gap-2">
-                      {(() => {
-                        const config = RUN_STATUS_CONFIG[ruleSyncStatus.runStatus];
-                        const Icon = config.icon;
-                        return (
-                          <span className={`flex items-center gap-1 text-sm ${config.className}`}>
-                            <Icon className="size-4" />
-                            {config.label}
-                          </span>
-                        );
-                      })()}
-                    </div>
-                  </div>
-
-                  <div className="space-y-1">
-                    <p className="text-sm text-muted-foreground">监听端口</p>
-                    <p className="text-sm font-mono">{ruleSyncStatus.listenPort}</p>
-                  </div>
-
-                  <div className="space-y-1">
-                    <p className="text-sm text-muted-foreground">当前连接数</p>
-                    <p className="text-sm">{ruleSyncStatus.connections}</p>
-                  </div>
-
-                  <div className="space-y-1">
-                    <p className="text-sm text-muted-foreground">最后同步时间</p>
-                    <p className="text-sm">{formatTimestamp(ruleSyncStatus.syncedAt)}</p>
-                  </div>
-
-                  {ruleSyncStatus.errorMessage && (
-                    <div className="space-y-1 md:col-span-2">
-                      <p className="text-sm text-muted-foreground">错误信息</p>
-                      <p className="text-sm text-red-500">{ruleSyncStatus.errorMessage}</p>
+                  {/* Agent Details */}
+                  {ruleOverallStatus.agentStatuses.length > 0 && (
+                    <div className="space-y-2">
+                      <p className="text-sm text-muted-foreground">节点详情</p>
+                      <div className="space-y-2">
+                        {ruleOverallStatus.agentStatuses.map((agentStatus: AgentRuleSyncStatus) => {
+                          const syncConfig = SYNC_STATUS_CONFIG[agentStatus.syncStatus];
+                          const runConfig = RUN_STATUS_CONFIG[agentStatus.runStatus];
+                          const SyncIcon = syncConfig.icon;
+                          const RunIcon = runConfig.icon;
+                          return (
+                            <div key={agentStatus.agentId} className="flex items-center justify-between p-2 bg-slate-50 dark:bg-slate-800 rounded">
+                              <div className="flex items-center gap-2">
+                                <span className="text-sm font-medium">{agentStatus.agentName}</span>
+                                {agentStatus.position === 0 && (
+                                  <Badge variant="outline" className="text-xs">入口</Badge>
+                                )}
+                              </div>
+                              <div className="flex items-center gap-3 text-xs">
+                                <span className={`flex items-center gap-1 ${syncConfig.className}`}>
+                                  <SyncIcon className="size-3" />
+                                  {syncConfig.label}
+                                </span>
+                                <span className={`flex items-center gap-1 ${runConfig.className}`}>
+                                  <RunIcon className="size-3" />
+                                  {runConfig.label}
+                                </span>
+                                <span className="text-muted-foreground">
+                                  端口: {agentStatus.listenPort}
+                                </span>
+                                <span className="text-muted-foreground">
+                                  连接: {agentStatus.connections}
+                                </span>
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
                     </div>
                   )}
                 </div>

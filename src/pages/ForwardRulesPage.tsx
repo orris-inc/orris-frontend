@@ -12,7 +12,7 @@ import { ForwardRuleDetailDialog } from '@/features/forward-rules/components/For
 import { ForwardRuleFilters } from '@/features/forward-rules/components/ForwardRuleFilters';
 import { ProbeResultDialog } from '@/features/forward-rules/components/ProbeResultDialog';
 import { ConfirmDialog } from '@/components/common/ConfirmDialog';
-import { useForwardRulesPage, useRulesSyncStatusBatch } from '@/features/forward-rules/hooks/useForwardRules';
+import { useForwardRulesPage, useRulesOverallStatusBatch } from '@/features/forward-rules/hooks/useForwardRules';
 import { useForwardAgents } from '@/features/forward-agents/hooks/useForwardAgents';
 import { useNodes } from '@/features/nodes/hooks/useNodes';
 import { AdminLayout } from '@/layouts/AdminLayout';
@@ -54,11 +54,11 @@ export const ForwardRulesPage = () => {
   // Get node list (for target node selection)
   const { nodes } = useNodes({ pageSize: 100 });
 
-  // Collect all agent IDs from rules and query their rule sync status
-  const agentIds = useMemo(() => {
-    return forwardRules.map((rule) => rule.agentId);
+  // Collect all enabled rule IDs and query their overall status
+  const enabledRuleIds = useMemo(() => {
+    return forwardRules.filter((rule) => rule.status === 'enabled').map((rule) => rule.id);
   }, [forwardRules]);
-  const { ruleSyncStatusMap } = useRulesSyncStatusBatch(agentIds);
+  const { ruleOverallStatusMap } = useRulesOverallStatusBatch(enabledRuleIds);
 
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
@@ -240,7 +240,7 @@ export const ForwardRulesPage = () => {
             rules={forwardRules}
             agentsMap={agentsMap}
             nodes={nodes}
-            ruleSyncStatusMap={ruleSyncStatusMap}
+            ruleOverallStatusMap={ruleOverallStatusMap}
             loading={isLoading || isFetching}
             page={pagination.page}
             pageSize={pagination.pageSize}

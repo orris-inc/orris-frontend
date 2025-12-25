@@ -30,7 +30,7 @@ import type {
   RegenerateTokenResponse,
   GetAgentTokenResponse,
   AgentRuntimeStatus,
-  RuleSyncStatusResponse,
+  RuleOverallStatusResponse,
   ExitEndpoint,
   ProbeRuleRequest,
   RuleProbeResponse,
@@ -292,25 +292,6 @@ export const getForwardAgentRuntimeStatus = async (
   return response.data.data;
 };
 
-/**
- * Get forward agent rule sync status (Admin only)
- * GET /forward-agents/:id/rule-status
- * @returns Rule sync status including sync state, run state, and connections for each rule
- *
- * This endpoint returns the sync and runtime status of all rules assigned to the agent,
- * as reported by the agent via POST /forward-agent-api/rule-sync-status.
- *
- * Added: 2025-12-25
- */
-export const getForwardAgentRuleSyncStatus = async (
-  id: number | string
-): Promise<RuleSyncStatusResponse> => {
-  const response = await apiClient.get<APIResponse<RuleSyncStatusResponse>>(
-    `/forward-agents/${id}/rule-status`
-  );
-  return response.data.data;
-};
-
 // ========== Forward Agent API (Client APIs) ==========
 
 /**
@@ -321,6 +302,37 @@ export const getForwardAgentRuleSyncStatus = async (
 export const getExitEndpoint = async (agentId: number | string): Promise<ExitEndpoint> => {
   const response = await apiClient.get<APIResponse<ExitEndpoint>>(
     `/forward-agent-api/exit-endpoint/${agentId}`
+  );
+  return response.data.data;
+};
+
+// ========== Forward Rule Status APIs ==========
+
+/**
+ * Get forward rule overall status (Admin only)
+ * GET /forward-rules/:id/status
+ * @returns Aggregated status for a forward rule across all agents
+ *
+ * For multi-hop rules (entry, chain, direct_chain), this aggregates status from all agents:
+ * - Overall sync status: failed > pending > synced (worst takes priority)
+ * - Overall run status: error > stopped > starting > unknown > running (worst takes priority)
+ *
+ * @example
+ * ```typescript
+ * const status = await getRuleOverallStatus('fr_xK9mP2vL3nQ');
+ * console.log(status.overallSyncStatus); // 'synced' | 'pending' | 'failed'
+ * console.log(status.overallRunStatus);  // 'running' | 'stopped' | 'error' | 'starting' | 'unknown'
+ * console.log(status.healthyAgents);     // Number of healthy agents
+ * console.log(status.agentStatuses);     // Detailed per-agent status
+ * ```
+ *
+ * Added: 2025-12-25
+ */
+export const getRuleOverallStatus = async (
+  id: number | string
+): Promise<RuleOverallStatusResponse> => {
+  const response = await apiClient.get<APIResponse<RuleOverallStatusResponse>>(
+    `/forward-rules/${id}/status`
   );
   return response.data.data;
 };

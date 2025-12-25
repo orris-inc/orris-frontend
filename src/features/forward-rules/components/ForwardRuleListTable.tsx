@@ -19,14 +19,14 @@ import {
 } from '@/components/common/ContextMenu';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/common/Tooltip';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/common/Popover';
-import type { ForwardRule, ForwardAgent, RuleSyncStatusItem, RuleSyncStatus, RuleRunStatus } from '@/api/forward';
+import type { ForwardRule, ForwardAgent, RuleOverallStatusResponse, RuleSyncStatus, RuleRunStatus } from '@/api/forward';
 import type { Node } from '@/api/node';
 
 interface ForwardRuleListTableProps {
   rules: ForwardRule[];
   agentsMap?: Record<string, ForwardAgent>;
   nodes?: Node[];
-  ruleSyncStatusMap?: Record<string, RuleSyncStatusItem>;
+  ruleOverallStatusMap?: Record<string, RuleOverallStatusResponse>;
   loading?: boolean;
   page: number;
   pageSize: number;
@@ -58,11 +58,12 @@ const SYNC_STATUS_CONFIG: Record<RuleSyncStatus, { label: string; icon: React.El
 };
 
 // Run status display config
-const RUN_STATUS_CONFIG: Record<RuleRunStatus, { label: string; icon: React.ElementType; className: string }> = {
+const RUN_STATUS_CONFIG: Record<RuleRunStatus | 'unknown', { label: string; icon: React.ElementType; className: string }> = {
   running: { label: '运行中', icon: Play, className: 'text-green-500' },
   stopped: { label: '已停止', icon: Square, className: 'text-gray-500' },
   error: { label: '错误', icon: AlertTriangle, className: 'text-red-500' },
   starting: { label: '启动中', icon: RotateCw, className: 'text-blue-500' },
+  unknown: { label: '未知', icon: CircleDashed, className: 'text-gray-400' },
 };
 
 // Copyable address component
@@ -223,7 +224,7 @@ export const ForwardRuleListTable: React.FC<ForwardRuleListTableProps> = ({
   rules,
   agentsMap = {},
   nodes = [],
-  ruleSyncStatusMap = {},
+  ruleOverallStatusMap = {},
   loading = false,
   page,
   pageSize,
@@ -509,7 +510,7 @@ export const ForwardRuleListTable: React.FC<ForwardRuleListTableProps> = ({
       meta: { priority: 2 } as ResponsiveColumnMeta,
       cell: ({ row }) => {
         const rule = row.original;
-        const syncStatus = ruleSyncStatusMap[rule.id];
+        const overallStatus = ruleOverallStatusMap[rule.id];
 
         // Rule not enabled, show disabled state
         if (rule.status !== 'enabled') {
@@ -519,14 +520,14 @@ export const ForwardRuleListTable: React.FC<ForwardRuleListTableProps> = ({
         }
 
         // No sync status data
-        if (!syncStatus) {
+        if (!overallStatus) {
           return (
             <span className="text-xs text-slate-400 dark:text-slate-500">未知</span>
           );
         }
 
-        const syncConfig = SYNC_STATUS_CONFIG[syncStatus.syncStatus];
-        const runConfig = RUN_STATUS_CONFIG[syncStatus.runStatus];
+        const syncConfig = SYNC_STATUS_CONFIG[overallStatus.overallSyncStatus];
+        const runConfig = RUN_STATUS_CONFIG[overallStatus.overallRunStatus];
         const SyncIcon = syncConfig.icon;
         const RunIcon = runConfig.icon;
 
@@ -540,17 +541,18 @@ export const ForwardRuleListTable: React.FC<ForwardRuleListTableProps> = ({
                 <span className={`flex items-center ${runConfig.className}`}>
                   <RunIcon className="size-3.5" />
                 </span>
+                {overallStatus.totalAgents > 1 && (
+                  <span className="text-xs text-slate-500 dark:text-slate-400">
+                    {overallStatus.healthyAgents}/{overallStatus.totalAgents}
+                  </span>
+                )}
               </div>
             </TooltipTrigger>
             <TooltipContent>
               <div className="space-y-1 text-xs">
                 <div>同步: {syncConfig.label}</div>
                 <div>运行: {runConfig.label}</div>
-                <div>端口: {syncStatus.listenPort}</div>
-                <div>连接数: {syncStatus.connections}</div>
-                {syncStatus.errorMessage && (
-                  <div className="text-red-400">错误: {syncStatus.errorMessage}</div>
-                )}
+                <div>节点: {overallStatus.healthyAgents}/{overallStatus.totalAgents} 正常</div>
               </div>
             </TooltipContent>
           </Tooltip>
@@ -651,7 +653,7 @@ export const ForwardRuleListTable: React.FC<ForwardRuleListTableProps> = ({
         );
       },
     },
-  ], [agentsMap, nodes, ruleSyncStatusMap, onDisable, onEnable, onViewDetail, onEdit, onProbe, probingRuleId, renderDropdownMenuActions]);
+  ], [agentsMap, nodes, ruleOverallStatusMap, onDisable, onEnable, onViewDetail, onEdit, onProbe, probingRuleId, renderDropdownMenuActions]);
 
   return (
     <DataTable

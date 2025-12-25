@@ -619,14 +619,54 @@ export interface RuleSyncStatusItem {
 }
 
 /**
- * Rule sync status response - admin query response for agent's rule sync status
- * GET /forward-agents/:id/rule-status
+ * Agent rule sync status - represents the sync status of a single agent for a specific rule
+ * Used in rule overall status response to show per-agent status
+ * Added: 2025-12-25
  */
-export interface RuleSyncStatusResponse {
+export interface AgentRuleSyncStatus {
   /** Stripe-style agent ID (e.g., "fa_xK9mP2vL3nQ") */
   agentId: string;
-  /** List of rule sync statuses */
-  rules: RuleSyncStatusItem[];
+  /** Agent name */
+  agentName: string;
+  /** Position in forwarding chain (0=entry) */
+  position: number;
+  /** Sync status: synced, pending, failed */
+  syncStatus: RuleSyncStatus;
+  /** Runtime status: running, stopped, error, starting, unknown */
+  runStatus: RuleRunStatus | 'unknown';
+  /** Actual listening port */
+  listenPort: number;
+  /** Current number of connections */
+  connections: number;
+  /** Error message if any */
+  errorMessage: string;
+  /** Last sync timestamp (Unix seconds) */
+  syncedAt: number;
+}
+
+/**
+ * Rule overall status response - aggregated status for a forward rule across all agents
+ * GET /forward-rules/:id/status
+ *
+ * For multi-hop rules (entry, chain, direct_chain), this aggregates status from all agents:
+ * - Overall sync status: failed > pending > synced (worst takes priority)
+ * - Overall run status: error > stopped > starting > unknown > running (worst takes priority)
+ *
+ * Added: 2025-12-25
+ */
+export interface RuleOverallStatusResponse {
+  /** Stripe-style rule ID (e.g., "fr_xK9mP2vL3nQ") */
+  ruleId: string;
+  /** Aggregated sync status: synced, pending, failed */
+  overallSyncStatus: RuleSyncStatus;
+  /** Aggregated run status: running, stopped, error, starting, unknown */
+  overallRunStatus: RuleRunStatus | 'unknown';
+  /** Total number of agents involved in this rule */
+  totalAgents: number;
+  /** Number of healthy agents (synced + running) */
+  healthyAgents: number;
+  /** Detailed status for each agent in the chain */
+  agentStatuses: AgentRuleSyncStatus[];
   /** Last update timestamp (Unix seconds) */
   updatedAt: number;
 }
