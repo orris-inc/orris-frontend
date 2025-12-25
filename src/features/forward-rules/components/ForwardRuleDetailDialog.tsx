@@ -13,7 +13,9 @@ import { Button } from '@/components/common/Button';
 import { Badge } from '@/components/common/Badge';
 import { Separator } from '@/components/common/Separator';
 import { TruncatedId } from '@/components/admin';
-import type { ForwardRule, ForwardAgent } from '@/api/forward';
+import { Loader2, CheckCircle2, CircleDashed, AlertCircle, Play, Square, AlertTriangle, RotateCw, ListChecks } from 'lucide-react';
+import { useRuleSyncStatus } from '../hooks/useForwardRules';
+import type { ForwardRule, ForwardAgent, RuleSyncStatus, RuleRunStatus } from '@/api/forward';
 import type { Node } from '@/api/node';
 
 interface ForwardRuleDetailDialogProps {
@@ -85,6 +87,33 @@ const formatBytes = (bytes?: number) => {
   return `${value.toFixed(2)} ${units[unitIndex]}`;
 };
 
+// Format Unix timestamp
+const formatTimestamp = (timestamp?: number) => {
+  if (!timestamp) return '-';
+  const date = new Date(timestamp * 1000);
+  return date.toLocaleString('zh-CN', {
+    month: '2-digit',
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit',
+  });
+};
+
+// Sync status display config
+const SYNC_STATUS_CONFIG: Record<RuleSyncStatus, { label: string; icon: React.ElementType; className: string }> = {
+  synced: { label: '已同步', icon: CheckCircle2, className: 'text-green-500' },
+  pending: { label: '同步中', icon: CircleDashed, className: 'text-yellow-500' },
+  failed: { label: '同步失败', icon: AlertCircle, className: 'text-red-500' },
+};
+
+// Run status display config
+const RUN_STATUS_CONFIG: Record<RuleRunStatus, { label: string; icon: React.ElementType; className: string }> = {
+  running: { label: '运行中', icon: Play, className: 'text-green-500' },
+  stopped: { label: '已停止', icon: Square, className: 'text-gray-500' },
+  error: { label: '错误', icon: AlertTriangle, className: 'text-red-500' },
+  starting: { label: '启动中', icon: RotateCw, className: 'text-blue-500' },
+};
+
 export const ForwardRuleDetailDialog: React.FC<ForwardRuleDetailDialogProps> = ({
   open,
   rule,
@@ -92,6 +121,12 @@ export const ForwardRuleDetailDialog: React.FC<ForwardRuleDetailDialogProps> = (
   agents = [],
   nodes = [],
 }) => {
+  // Get rule sync status
+  const { ruleSyncStatus, allRulesStatus, isLoading: isLoadingSyncStatus } = useRuleSyncStatus(
+    open && rule?.status === 'enabled' ? rule.agentId : null,
+    rule?.id ?? null
+  );
+
   if (!rule) return null;
 
   // Get agent name by ID
@@ -409,6 +444,87 @@ export const ForwardRuleDetailDialog: React.FC<ForwardRuleDetailDialogProps> = (
               )}
             </div>
           </div>
+
+          {/* Rule Sync Status */}
+          {rule.status === 'enabled' && (
+            <div>
+              <div className="flex items-center gap-2 mb-3">
+                <ListChecks className="size-4" />
+                <h3 className="text-sm font-semibold">规则同步状态</h3>
+                {allRulesStatus && (
+                  <span className="text-xs text-muted-foreground">
+                    (更新于 {formatTimestamp(allRulesStatus.updatedAt)})
+                  </span>
+                )}
+              </div>
+              <Separator className="mb-4" />
+              {isLoadingSyncStatus ? (
+                <div className="flex items-center justify-center py-4">
+                  <Loader2 className="size-5 animate-spin text-muted-foreground" />
+                </div>
+              ) : ruleSyncStatus ? (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="space-y-1">
+                    <p className="text-sm text-muted-foreground">同步状态</p>
+                    <div className="flex items-center gap-2">
+                      {(() => {
+                        const config = SYNC_STATUS_CONFIG[ruleSyncStatus.syncStatus];
+                        const Icon = config.icon;
+                        return (
+                          <span className={`flex items-center gap-1 text-sm ${config.className}`}>
+                            <Icon className="size-4" />
+                            {config.label}
+                          </span>
+                        );
+                      })()}
+                    </div>
+                  </div>
+
+                  <div className="space-y-1">
+                    <p className="text-sm text-muted-foreground">运行状态</p>
+                    <div className="flex items-center gap-2">
+                      {(() => {
+                        const config = RUN_STATUS_CONFIG[ruleSyncStatus.runStatus];
+                        const Icon = config.icon;
+                        return (
+                          <span className={`flex items-center gap-1 text-sm ${config.className}`}>
+                            <Icon className="size-4" />
+                            {config.label}
+                          </span>
+                        );
+                      })()}
+                    </div>
+                  </div>
+
+                  <div className="space-y-1">
+                    <p className="text-sm text-muted-foreground">监听端口</p>
+                    <p className="text-sm font-mono">{ruleSyncStatus.listenPort}</p>
+                  </div>
+
+                  <div className="space-y-1">
+                    <p className="text-sm text-muted-foreground">当前连接数</p>
+                    <p className="text-sm">{ruleSyncStatus.connections}</p>
+                  </div>
+
+                  <div className="space-y-1">
+                    <p className="text-sm text-muted-foreground">最后同步时间</p>
+                    <p className="text-sm">{formatTimestamp(ruleSyncStatus.syncedAt)}</p>
+                  </div>
+
+                  {ruleSyncStatus.errorMessage && (
+                    <div className="space-y-1 md:col-span-2">
+                      <p className="text-sm text-muted-foreground">错误信息</p>
+                      <p className="text-sm text-red-500">{ruleSyncStatus.errorMessage}</p>
+                    </div>
+                  )}
+                </div>
+              ) : (
+                <p className="text-sm text-muted-foreground text-center py-4">
+                  暂无同步状态数据
+                </p>
+              )}
+            </div>
+          )}
 
           {/* Other Information */}
           {rule.remark && (

@@ -17,6 +17,7 @@ import {
   disableForwardAgent,
   regenerateForwardAgentToken,
   getForwardAgentRuntimeStatus,
+  getForwardAgentRuleSyncStatus,
   getInstallCommand,
   type ForwardAgent,
   type CreateForwardAgentRequest,
@@ -33,6 +34,7 @@ const forwardAgentsQueryKeys = {
   details: () => [...forwardAgentsQueryKeys.all, 'detail'] as const,
   detail: (id: number | string) => [...forwardAgentsQueryKeys.details(), id] as const,
   runtimeStatus: (id: number | string) => [...forwardAgentsQueryKeys.all, 'runtimeStatus', id] as const,
+  ruleSyncStatus: (id: number | string) => [...forwardAgentsQueryKeys.all, 'ruleSyncStatus', id] as const,
 };
 
 export interface ForwardAgentFilters {
@@ -190,6 +192,24 @@ export const useForwardAgentRuntimeStatus = (id: number | string | null) => {
 
   return {
     runtimeStatus: data ?? null,
+    isLoading,
+    error: error ? handleApiError(error) : null,
+    refetch,
+  };
+};
+
+// Get forward agent rule sync status
+export const useForwardAgentRuleSyncStatus = (id: number | string | null) => {
+  const { data, isLoading, error, refetch } = useQuery({
+    queryKey: forwardAgentsQueryKeys.ruleSyncStatus(id!),
+    queryFn: () => getForwardAgentRuleSyncStatus(id!),
+    enabled: !!id,
+    refetchInterval: 10000, // Auto-refresh every 10 seconds
+    staleTime: 5000, // Data considered fresh for 5 seconds
+  });
+
+  return {
+    ruleSyncStatus: data ?? null,
     isLoading,
     error: error ? handleApiError(error) : null,
     refetch,

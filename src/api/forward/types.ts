@@ -583,3 +583,50 @@ export interface ListUserForwardAgentsParams {
   name?: string;
   status?: ForwardStatus;
 }
+
+// ========== Rule Sync Status Types ==========
+// Added: 2025-12-25
+
+/**
+ * Rule sync status - synchronization state reported by agent
+ */
+export type RuleSyncStatus = 'synced' | 'pending' | 'failed';
+
+/**
+ * Rule run status - runtime state reported by agent
+ */
+export type RuleRunStatus = 'running' | 'stopped' | 'error' | 'starting';
+
+/**
+ * Rule sync status item - represents sync and runtime status of a single forward rule
+ * Reported by forward agent via POST /forward-agent-api/rule-sync-status
+ */
+export interface RuleSyncStatusItem {
+  /** Stripe-style rule ID (e.g., "fr_xK9mP2vL3nQ") */
+  ruleId: string;
+  /** Sync status: synced, pending, failed */
+  syncStatus: RuleSyncStatus;
+  /** Runtime status: running, stopped, error, starting */
+  runStatus: RuleRunStatus;
+  /** Actual listening port */
+  listenPort: number;
+  /** Current number of connections */
+  connections: number;
+  /** Error message if any */
+  errorMessage: string;
+  /** Last sync timestamp (Unix seconds) */
+  syncedAt: number;
+}
+
+/**
+ * Rule sync status response - admin query response for agent's rule sync status
+ * GET /forward-agents/:id/rule-status
+ */
+export interface RuleSyncStatusResponse {
+  /** Stripe-style agent ID (e.g., "fa_xK9mP2vL3nQ") */
+  agentId: string;
+  /** List of rule sync statuses */
+  rules: RuleSyncStatusItem[];
+  /** Last update timestamp (Unix seconds) */
+  updatedAt: number;
+}

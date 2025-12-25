@@ -30,6 +30,7 @@ import type {
   RegenerateTokenResponse,
   GetAgentTokenResponse,
   AgentRuntimeStatus,
+  RuleSyncStatusResponse,
   ExitEndpoint,
   ProbeRuleRequest,
   RuleProbeResponse,
@@ -287,6 +288,25 @@ export const getForwardAgentRuntimeStatus = async (
 ): Promise<AgentRuntimeStatus> => {
   const response = await apiClient.get<APIResponse<AgentRuntimeStatus>>(
     `/forward-agents/${id}/status`
+  );
+  return response.data.data;
+};
+
+/**
+ * Get forward agent rule sync status (Admin only)
+ * GET /forward-agents/:id/rule-status
+ * @returns Rule sync status including sync state, run state, and connections for each rule
+ *
+ * This endpoint returns the sync and runtime status of all rules assigned to the agent,
+ * as reported by the agent via POST /forward-agent-api/rule-sync-status.
+ *
+ * Added: 2025-12-25
+ */
+export const getForwardAgentRuleSyncStatus = async (
+  id: number | string
+): Promise<RuleSyncStatusResponse> => {
+  const response = await apiClient.get<APIResponse<RuleSyncStatusResponse>>(
+    `/forward-agents/${id}/rule-status`
   );
   return response.data.data;
 };

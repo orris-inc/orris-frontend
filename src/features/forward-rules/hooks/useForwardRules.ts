@@ -18,12 +18,14 @@ import {
   resetForwardRuleTraffic,
   listForwardAgents,
   probeRule,
+  getForwardAgentRuleSyncStatus,
   type ForwardRule,
   type ForwardAgent,
   type CreateForwardRuleRequest,
   type UpdateForwardRuleRequest,
   type ListForwardRulesParams,
   type ProbeRuleRequest,
+  type RuleSyncStatusItem,
 } from '@/api/forward';
 
 // Query Keys for Forward Rules
@@ -219,6 +221,7 @@ const forwardAgentsQueryKeys = {
   all: ['forwardAgents'] as const,
   lists: () => [...forwardAgentsQueryKeys.all, 'list'] as const,
   list: (params: object) => [...forwardAgentsQueryKeys.lists(), params] as const,
+  ruleSyncStatus: (id: string) => [...forwardAgentsQueryKeys.all, 'ruleSyncStatus', id] as const,
 };
 
 // Forward rules list state management hook (for page-level state)
@@ -275,5 +278,70 @@ export const useForwardRulesPage = () => {
     handlePageChange,
     handlePageSizeChange,
     handleFiltersChange,
+  };
+};
+
+// Get rule sync status for a single rule (by agent ID)
+export const useRuleSyncStatus = (agentId: string | null, ruleId: string | null) => {
+  const { data, isLoading, error, refetch } = useQuery({
+    queryKey: forwardAgentsQueryKeys.ruleSyncStatus(agentId!),
+    queryFn: () => getForwardAgentRuleSyncStatus(agentId!),
+    enabled: !!agentId,
+    refetchInterval: 10000, // Auto-refresh every 10 seconds
+    staleTime: 5000,
+  });
+
+  // Find the specific rule's sync status
+  const ruleSyncStatus = useMemo(() => {
+    if (!data?.rules || !ruleId) return null;
+    return data.rules.find((r) => r.ruleId === ruleId) ?? null;
+  }, [data, ruleId]);
+
+  return {
+    ruleSyncStatus,
+    allRulesStatus: data,
+    isLoading,
+    error: error ? handleApiError(error) : null,
+    refetch,
+  };
+};
+
+// Get rules sync status for multiple agents (batch query for list)
+export const useRulesSyncStatusBatch = (agentIds: string[]) => {
+  // Deduplicate agent IDs
+  const uniqueAgentIds = useMemo(() => [...new Set(agentIds)], [agentIds]);
+
+  // Use useQueries to batch query all agents' rule sync status
+  const queries = useQuery({
+    queryKey: ['rulesSyncStatusBatch', uniqueAgentIds],
+    queryFn: async () => {
+      if (uniqueAgentIds.length === 0) return {};
+
+      const results = await Promise.allSettled(
+        uniqueAgentIds.map((agentId) => getForwardAgentRuleSyncStatus(agentId))
+      );
+
+      // Build ruleId -> status mapping
+      const statusMap: Record<string, RuleSyncStatusItem> = {};
+      results.forEach((result) => {
+        if (result.status === 'fulfilled' && result.value?.rules) {
+          for (const rule of result.value.rules) {
+            statusMap[rule.ruleId] = rule;
+          }
+        }
+      });
+
+      return statusMap;
+    },
+    enabled: uniqueAgentIds.length > 0,
+    refetchInterval: 10000,
+    staleTime: 5000,
+  });
+
+  return {
+    ruleSyncStatusMap: queries.data ?? {},
+    isLoading: queries.isLoading,
+    error: queries.error ? handleApiError(queries.error) : null,
+    refetch: queries.refetch,
   };
 };

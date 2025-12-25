@@ -4,7 +4,7 @@
  */
 
 import { useMemo, useState, useCallback } from 'react';
-import { Edit, Trash2, Eye, Power, PowerOff, MoreHorizontal, RotateCcw, Activity, Loader2, Copy, Check, Server, Bot, Settings, ArrowRight, Files } from 'lucide-react';
+import { Edit, Trash2, Eye, Power, PowerOff, MoreHorizontal, RotateCcw, Activity, Loader2, Copy, Check, Server, Bot, Settings, ArrowRight, Files, CheckCircle2, CircleDashed, AlertCircle, Play, Square, AlertTriangle, RotateCw } from 'lucide-react';
 import { DataTable, AdminBadge, TruncatedId, type ColumnDef, type ResponsiveColumnMeta } from '@/components/admin';
 import {
   DropdownMenu,
@@ -19,13 +19,14 @@ import {
 } from '@/components/common/ContextMenu';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/common/Tooltip';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/common/Popover';
-import type { ForwardRule, ForwardAgent } from '@/api/forward';
+import type { ForwardRule, ForwardAgent, RuleSyncStatusItem, RuleSyncStatus, RuleRunStatus } from '@/api/forward';
 import type { Node } from '@/api/node';
 
 interface ForwardRuleListTableProps {
   rules: ForwardRule[];
   agentsMap?: Record<string, ForwardAgent>;
   nodes?: Node[];
+  ruleSyncStatusMap?: Record<string, RuleSyncStatusItem>;
   loading?: boolean;
   page: number;
   pageSize: number;
@@ -47,6 +48,21 @@ interface ForwardRuleListTableProps {
 const STATUS_CONFIG: Record<string, { label: string; variant: 'success' | 'default' }> = {
   enabled: { label: '已启用', variant: 'success' },
   disabled: { label: '已禁用', variant: 'default' },
+};
+
+// Sync status display config
+const SYNC_STATUS_CONFIG: Record<RuleSyncStatus, { label: string; icon: React.ElementType; className: string }> = {
+  synced: { label: '已同步', icon: CheckCircle2, className: 'text-green-500' },
+  pending: { label: '同步中', icon: CircleDashed, className: 'text-yellow-500' },
+  failed: { label: '同步失败', icon: AlertCircle, className: 'text-red-500' },
+};
+
+// Run status display config
+const RUN_STATUS_CONFIG: Record<RuleRunStatus, { label: string; icon: React.ElementType; className: string }> = {
+  running: { label: '运行中', icon: Play, className: 'text-green-500' },
+  stopped: { label: '已停止', icon: Square, className: 'text-gray-500' },
+  error: { label: '错误', icon: AlertTriangle, className: 'text-red-500' },
+  starting: { label: '启动中', icon: RotateCw, className: 'text-blue-500' },
 };
 
 // Copyable address component
@@ -207,6 +223,7 @@ export const ForwardRuleListTable: React.FC<ForwardRuleListTableProps> = ({
   rules,
   agentsMap = {},
   nodes = [],
+  ruleSyncStatusMap = {},
   loading = false,
   page,
   pageSize,
@@ -486,6 +503,61 @@ export const ForwardRuleListTable: React.FC<ForwardRuleListTableProps> = ({
       },
     },
     {
+      id: 'syncStatus',
+      header: '同步状态',
+      size: 100,
+      meta: { priority: 2 } as ResponsiveColumnMeta,
+      cell: ({ row }) => {
+        const rule = row.original;
+        const syncStatus = ruleSyncStatusMap[rule.id];
+
+        // Rule not enabled, show disabled state
+        if (rule.status !== 'enabled') {
+          return (
+            <span className="text-xs text-slate-400 dark:text-slate-500">-</span>
+          );
+        }
+
+        // No sync status data
+        if (!syncStatus) {
+          return (
+            <span className="text-xs text-slate-400 dark:text-slate-500">未知</span>
+          );
+        }
+
+        const syncConfig = SYNC_STATUS_CONFIG[syncStatus.syncStatus];
+        const runConfig = RUN_STATUS_CONFIG[syncStatus.runStatus];
+        const SyncIcon = syncConfig.icon;
+        const RunIcon = runConfig.icon;
+
+        return (
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <div className="flex items-center gap-1.5">
+                <span className={`flex items-center ${syncConfig.className}`}>
+                  <SyncIcon className="size-3.5" />
+                </span>
+                <span className={`flex items-center ${runConfig.className}`}>
+                  <RunIcon className="size-3.5" />
+                </span>
+              </div>
+            </TooltipTrigger>
+            <TooltipContent>
+              <div className="space-y-1 text-xs">
+                <div>同步: {syncConfig.label}</div>
+                <div>运行: {runConfig.label}</div>
+                <div>端口: {syncStatus.listenPort}</div>
+                <div>连接数: {syncStatus.connections}</div>
+                {syncStatus.errorMessage && (
+                  <div className="text-red-400">错误: {syncStatus.errorMessage}</div>
+                )}
+              </div>
+            </TooltipContent>
+          </Tooltip>
+        );
+      },
+    },
+    {
       accessorKey: 'status',
       header: '状态',
       size: 88,
@@ -579,7 +651,7 @@ export const ForwardRuleListTable: React.FC<ForwardRuleListTableProps> = ({
         );
       },
     },
-  ], [agentsMap, nodes, onDisable, onEnable, onViewDetail, onEdit, onProbe, probingRuleId, renderDropdownMenuActions]);
+  ], [agentsMap, nodes, ruleSyncStatusMap, onDisable, onEnable, onViewDetail, onEdit, onProbe, probingRuleId, renderDropdownMenuActions]);
 
   return (
     <DataTable

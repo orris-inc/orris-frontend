@@ -3,7 +3,7 @@
  * 使用统一的精致商务风格组件
  */
 
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { ArrowLeftRight, Plus, RefreshCw } from 'lucide-react';
 import { ForwardRuleListTable } from '@/features/forward-rules/components/ForwardRuleListTable';
 import { CreateForwardRuleDialog } from '@/features/forward-rules/components/CreateForwardRuleDialog';
@@ -12,7 +12,7 @@ import { ForwardRuleDetailDialog } from '@/features/forward-rules/components/For
 import { ForwardRuleFilters } from '@/features/forward-rules/components/ForwardRuleFilters';
 import { ProbeResultDialog } from '@/features/forward-rules/components/ProbeResultDialog';
 import { ConfirmDialog } from '@/components/common/ConfirmDialog';
-import { useForwardRulesPage } from '@/features/forward-rules/hooks/useForwardRules';
+import { useForwardRulesPage, useRulesSyncStatusBatch } from '@/features/forward-rules/hooks/useForwardRules';
 import { useForwardAgents } from '@/features/forward-agents/hooks/useForwardAgents';
 import { useNodes } from '@/features/nodes/hooks/useNodes';
 import { AdminLayout } from '@/layouts/AdminLayout';
@@ -53,6 +53,12 @@ export const ForwardRulesPage = () => {
 
   // Get node list (for target node selection)
   const { nodes } = useNodes({ pageSize: 100 });
+
+  // Collect all agent IDs from rules and query their rule sync status
+  const agentIds = useMemo(() => {
+    return forwardRules.map((rule) => rule.agentId);
+  }, [forwardRules]);
+  const { ruleSyncStatusMap } = useRulesSyncStatusBatch(agentIds);
 
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
@@ -234,6 +240,7 @@ export const ForwardRulesPage = () => {
             rules={forwardRules}
             agentsMap={agentsMap}
             nodes={nodes}
+            ruleSyncStatusMap={ruleSyncStatusMap}
             loading={isLoading || isFetching}
             page={pagination.page}
             pageSize={pagination.pageSize}
