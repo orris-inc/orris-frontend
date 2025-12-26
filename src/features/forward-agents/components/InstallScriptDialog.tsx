@@ -5,6 +5,7 @@
 
 import { useState } from 'react';
 import { Copy, Check, Terminal, Download } from 'lucide-react';
+import { safeWindowOpen } from '@/shared/utils/url-utils';
 import {
   Dialog,
   DialogContent,
@@ -197,7 +198,7 @@ export const InstallScriptDialog: React.FC<InstallScriptDialogProps> = ({
                   <Button
                     variant="ghost"
                     size="sm"
-                    onClick={() => window.open(installCommandData.scriptUrl, '_blank')}
+                    onClick={() => safeWindowOpen(installCommandData.scriptUrl)}
                     className="h-7 px-2"
                   >
                     <Download className="size-3.5 mr-1" />

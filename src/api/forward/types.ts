@@ -5,7 +5,7 @@
  * Last updated: 2025-12-26
  *
  * Recent changes:
- * - 2025-12-26: No type changes (internal DTO methods only)
+ * - 2025-12-26: Added tunnelHops to UpdateForwardRuleRequest for hybrid chain support
  *
  * Note: All properties use camelCase. The axios-case-converter middleware
  * automatically converts between snake_case (API) and camelCase (frontend).
@@ -160,6 +160,7 @@ export interface UpdateForwardRuleRequest {
   exitAgentId?: string; // Stripe-style prefixed ID - update exit agent (for entry type rules only)
   chainAgentIds?: string[]; // Stripe-style prefixed IDs - update chain agents (for chain and direct_chain type rules)
   chainPortConfig?: Record<string, number>; // update chain port config (for direct_chain type rules)
+  tunnelHops?: number; // number of hops using tunnel for hybrid chain (undefined=no change, 0=all direct) (Added: 2025-12-26)
   tunnelType?: TunnelType; // tunnel type: ws or tls (Added: 2025-12-24)
   listenPort?: number;
   targetAddress?: string; // mutually exclusive with targetNodeId

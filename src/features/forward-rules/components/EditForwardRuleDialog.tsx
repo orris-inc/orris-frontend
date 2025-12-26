@@ -56,7 +56,7 @@ export const EditForwardRuleDialog: React.FC<EditForwardRuleDialogProps> = ({
   nodes = [],
   agents = [],
 }) => {
-  const [formData, setFormData] = useState<UpdateForwardRuleRequest & { chainAgentIds?: string[]; chainPortConfig?: Record<string, number>; trafficMultiplier?: number; sortOrder?: number; tunnelType?: TunnelType }>({});
+  const [formData, setFormData] = useState<UpdateForwardRuleRequest & { chainAgentIds?: string[]; chainPortConfig?: Record<string, number>; trafficMultiplier?: number; sortOrder?: number; tunnelType?: TunnelType; tunnelHops?: number }>({});
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [targetType, setTargetType] = useState<TargetType>('manual');
 
@@ -87,6 +87,7 @@ export const EditForwardRuleDialog: React.FC<EditForwardRuleDialogProps> = ({
         trafficMultiplier: rule.trafficMultiplier,
         sortOrder: rule.sortOrder,
         tunnelType: rule.tunnelType,
+        tunnelHops: rule.tunnelHops,
       });
       // Determine target type based on rule data
       setTargetType(rule.targetNodeId ? 'node' : 'manual');
@@ -176,7 +177,7 @@ export const EditForwardRuleDialog: React.FC<EditForwardRuleDialogProps> = ({
       }
     }
 
-    // direct_chain type needs to validate port configuration
+    // direct_chain type needs to validate port configuration for all nodes
     if (rule && rule.ruleType === 'direct_chain') {
       const chainIds = formData.chainAgentIds || [];
       const missingPorts: string[] = [];
@@ -195,6 +196,33 @@ export const EditForwardRuleDialog: React.FC<EditForwardRuleDialogProps> = ({
           newErrors.chainPortConfig = '请为每个节点配置有效的监听端口（1-65535）';
         } else {
           newErrors.chainPortConfig = `请为以下节点配置有效端口：${missingPorts.join('、')}`;
+        }
+      }
+    }
+
+    // chain type with tunnelHops needs to validate port configuration for nodes after tunnelHops
+    if (rule && rule.ruleType === 'chain' && formData.tunnelHops !== undefined && formData.tunnelHops >= 0) {
+      const chainIds = formData.chainAgentIds || [];
+      if (formData.tunnelHops < chainIds.length) {
+        const missingPorts: string[] = [];
+
+        for (let i = formData.tunnelHops; i < chainIds.length; i++) {
+          const agentId = chainIds[i];
+          const port = formData.chainPortConfig?.[agentId];
+          if (!port || port < 1 || port > 65535) {
+            const agent = agents.find((a) => a.id === agentId);
+            const agentName = agent ? agent.name : agentId;
+            missingPorts.push(agentName);
+          }
+        }
+
+        if (missingPorts.length > 0) {
+          const totalNodes = chainIds.length - formData.tunnelHops;
+          if (missingPorts.length === totalNodes) {
+            newErrors.chainPortConfig = '请为直连节点配置有效的监听端口（1-65535）';
+          } else {
+            newErrors.chainPortConfig = `请为以下节点配置有效端口：${missingPorts.join('、')}`;
+          }
         }
       }
     }
@@ -228,6 +256,11 @@ export const EditForwardRuleDialog: React.FC<EditForwardRuleDialogProps> = ({
         updates.tunnelType = formData.tunnelType;
       }
 
+      // chain type: tunnel hops
+      if (rule.ruleType === 'chain' && formData.tunnelHops !== rule.tunnelHops) {
+        updates.tunnelHops = formData.tunnelHops;
+      }
+
       // chain and direct_chain types: chain agents
       if (rule.ruleType === 'chain' || rule.ruleType === 'direct_chain') {
         const currentIds = formData.chainAgentIds || [];
@@ -238,8 +271,8 @@ export const EditForwardRuleDialog: React.FC<EditForwardRuleDialogProps> = ({
           updates.chainAgentIds = currentIds;
         }
 
-        // direct_chain type: port configuration
-        if (rule.ruleType === 'direct_chain') {
+        // direct_chain type or chain type with tunnelHops: port configuration
+        if (rule.ruleType === 'direct_chain' || (rule.ruleType === 'chain' && formData.tunnelHops !== undefined && formData.tunnelHops >= 0)) {
           const currentPortConfig = formData.chainPortConfig || {};
           const originalPortConfig = rule.chainPortConfig || {};
           const hasPortConfigChange = Object.keys(currentPortConfig).length !== Object.keys(originalPortConfig).length ||
@@ -413,17 +446,23 @@ export const EditForwardRuleDialog: React.FC<EditForwardRuleDialogProps> = ({
                 </div>
               )}
 
-              {/* Tunnel Hops - chain type only (read-only, can only be set at creation) */}
-              {rule.ruleType === 'chain' && rule.tunnelHops !== undefined && (
+              {/* Tunnel Hops - chain type only */}
+              {rule.ruleType === 'chain' && (
                 <div className="flex flex-col gap-2">
-                  <Label htmlFor="tunnelHops">隧道跳数</Label>
+                  <Label htmlFor="tunnelHops">隧道跳数（可选）</Label>
                   <Input
                     id="tunnelHops"
-                    value={rule.tunnelHops === 0 ? '全程直连' : `前 ${rule.tunnelHops} 跳`}
-                    disabled
+                    type="number"
+                    min={0}
+                    value={formData.tunnelHops ?? ''}
+                    onChange={(e) => {
+                      const value = e.target.value === '' ? undefined : parseInt(e.target.value, 10);
+                      handleChange('tunnelHops', value);
+                    }}
+                    placeholder="留空表示全程隧道"
                   />
                   <p className="text-xs text-muted-foreground">
-                    隧道跳数仅在创建规则时可设置
+                    设置后，前 N 跳使用隧道，后续节点使用直连
                   </p>
                 </div>
               )}
@@ -431,21 +470,41 @@ export const EditForwardRuleDialog: React.FC<EditForwardRuleDialogProps> = ({
               {/* chain type: Chain Agents */}
               {rule.ruleType === 'chain' && (
                 <div className="flex flex-col gap-2 md:col-span-2">
-                  <Label>中间节点{rule.tunnelHops !== undefined && rule.tunnelHops >= 0 && rule.tunnelHops < (rule.chainAgentIds?.length || 0) && '及端口'}</Label>
+                  <Label>中间节点{formData.tunnelHops !== undefined && formData.tunnelHops >= 0 && formData.tunnelHops < (formData.chainAgentIds?.length || 0) && '及端口'}</Label>
                   <SortableChainAgentList
                     agents={availableChainAgents}
                     selectedIds={formData.chainAgentIds || []}
-                    onSelectionChange={(ids) => handleChange('chainAgentIds', ids)}
-                    showPortConfig={rule.tunnelHops !== undefined && rule.tunnelHops >= 0 && rule.tunnelHops < (rule.chainAgentIds?.length || 0)}
-                    portConfigStartIndex={rule.tunnelHops ?? 0}
-                    portConfig={rule.chainPortConfig || {}}
+                    onSelectionChange={(ids) => {
+                      // Synchronously update chainPortConfig when tunnelHops is set
+                      if (formData.tunnelHops !== undefined && formData.tunnelHops >= 0) {
+                        const newPortConfig = { ...(formData.chainPortConfig || {}) };
+                        Object.keys(newPortConfig).forEach((id) => {
+                          if (!ids.includes(id)) {
+                            delete newPortConfig[id];
+                          }
+                        });
+                        setFormData((prev) => ({
+                          ...prev,
+                          chainAgentIds: ids,
+                          chainPortConfig: newPortConfig,
+                        }));
+                      } else {
+                        handleChange('chainAgentIds', ids);
+                      }
+                    }}
+                    showPortConfig={formData.tunnelHops !== undefined && formData.tunnelHops >= 0 && formData.tunnelHops < (formData.chainAgentIds?.length || 0)}
+                    portConfigStartIndex={formData.tunnelHops ?? 0}
+                    portConfig={formData.chainPortConfig || {}}
+                    onPortConfigChange={handleChainPortChange}
+                    hasError={!!errors.chainPortConfig}
                     idPrefix="edit-chain-agent"
                   />
-                  {rule.tunnelHops !== undefined && rule.tunnelHops >= 0 && rule.tunnelHops < (rule.chainAgentIds?.length || 0) && (
+                  {formData.tunnelHops !== undefined && formData.tunnelHops >= 0 && formData.tunnelHops < (formData.chainAgentIds?.length || 0) && (
                     <p className="text-xs text-muted-foreground">
-                      混合链模式：前 {rule.tunnelHops} 跳使用隧道，后续节点使用直连
+                      混合链模式：前 {formData.tunnelHops} 跳使用隧道，后续节点使用直连
                     </p>
                   )}
+                  {errors.chainPortConfig && <p className="text-xs text-destructive">{errors.chainPortConfig}</p>}
                 </div>
               )}
 
