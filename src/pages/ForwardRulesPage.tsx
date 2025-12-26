@@ -3,7 +3,7 @@
  * 使用统一的精致商务风格组件
  */
 
-import { useState, useMemo } from 'react';
+import { useState } from 'react';
 import { ArrowLeftRight, Plus, RefreshCw } from 'lucide-react';
 import { ForwardRuleListTable } from '@/features/forward-rules/components/ForwardRuleListTable';
 import { CreateForwardRuleDialog } from '@/features/forward-rules/components/CreateForwardRuleDialog';
@@ -12,7 +12,7 @@ import { ForwardRuleDetailDialog } from '@/features/forward-rules/components/For
 import { ForwardRuleFilters } from '@/features/forward-rules/components/ForwardRuleFilters';
 import { ProbeResultDialog } from '@/features/forward-rules/components/ProbeResultDialog';
 import { ConfirmDialog } from '@/components/common/ConfirmDialog';
-import { useForwardRulesPage, useRulesOverallStatusBatch } from '@/features/forward-rules/hooks/useForwardRules';
+import { useForwardRulesPage, useRuleStatusPolling } from '@/features/forward-rules/hooks/useForwardRules';
 import { useForwardAgents } from '@/features/forward-agents/hooks/useForwardAgents';
 import { useNodes } from '@/features/nodes/hooks/useNodes';
 import { AdminLayout } from '@/layouts/AdminLayout';
@@ -54,11 +54,8 @@ export const ForwardRulesPage = () => {
   // Get node list (for target node selection)
   const { nodes } = useNodes({ pageSize: 100 });
 
-  // Collect all enabled rule IDs and query their overall status
-  const enabledRuleIds = useMemo(() => {
-    return forwardRules.filter((rule) => rule.status === 'enabled').map((rule) => rule.id);
-  }, [forwardRules]);
-  const { ruleOverallStatusMap } = useRulesOverallStatusBatch(enabledRuleIds);
+  // Short-term polling after enable/disable operations
+  const { polledStatusMap, pollingRuleIds, startPolling } = useRuleStatusPolling();
 
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
@@ -98,6 +95,8 @@ export const ForwardRulesPage = () => {
 
   const handleEnable = async (rule: ForwardRule) => {
     await enableForwardRule(rule.id);
+    // Start polling to track sync status after enable
+    startPolling(rule.id);
   };
 
   const handleDisable = async (rule: ForwardRule) => {
@@ -240,7 +239,8 @@ export const ForwardRulesPage = () => {
             rules={forwardRules}
             agentsMap={agentsMap}
             nodes={nodes}
-            ruleOverallStatusMap={ruleOverallStatusMap}
+            polledStatusMap={polledStatusMap}
+            pollingRuleIds={pollingRuleIds}
             loading={isLoading || isFetching}
             page={pagination.page}
             pageSize={pagination.pageSize}

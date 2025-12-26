@@ -26,7 +26,8 @@ interface ForwardRuleListTableProps {
   rules: ForwardRule[];
   agentsMap?: Record<string, ForwardAgent>;
   nodes?: Node[];
-  ruleOverallStatusMap?: Record<string, RuleOverallStatusResponse>;
+  polledStatusMap?: Record<string, RuleOverallStatusResponse>;
+  pollingRuleIds?: string[];
   loading?: boolean;
   page: number;
   pageSize: number;
@@ -224,7 +225,8 @@ export const ForwardRuleListTable: React.FC<ForwardRuleListTableProps> = ({
   rules,
   agentsMap = {},
   nodes = [],
-  ruleOverallStatusMap = {},
+  polledStatusMap = {},
+  pollingRuleIds = [],
   loading = false,
   page,
   pageSize,
@@ -510,7 +512,8 @@ export const ForwardRuleListTable: React.FC<ForwardRuleListTableProps> = ({
       meta: { priority: 2 } as ResponsiveColumnMeta,
       cell: ({ row }) => {
         const rule = row.original;
-        const overallStatus = ruleOverallStatusMap[rule.id];
+        const isPolling = pollingRuleIds.includes(rule.id);
+        const polledStatus = polledStatusMap[rule.id];
 
         // Rule not enabled, show disabled state
         if (rule.status !== 'enabled') {
@@ -519,15 +522,42 @@ export const ForwardRuleListTable: React.FC<ForwardRuleListTableProps> = ({
           );
         }
 
-        // No sync status data
-        if (!overallStatus) {
+        // Determine status source: polled status (if polling) > inline status from list API
+        let syncStatus: RuleSyncStatus | undefined;
+        let runStatus: RuleRunStatus | 'unknown' | undefined;
+        let totalAgents: number | undefined;
+        let healthyAgents: number | undefined;
+
+        if (polledStatus) {
+          // Use polled status when available (during/after polling)
+          syncStatus = polledStatus.overallSyncStatus;
+          runStatus = polledStatus.overallRunStatus;
+          totalAgents = polledStatus.totalAgents;
+          healthyAgents = polledStatus.healthyAgents;
+        } else if (rule.syncStatus) {
+          // Use inline status from list API
+          syncStatus = rule.syncStatus;
+          runStatus = rule.runStatus;
+          totalAgents = rule.totalAgents;
+          healthyAgents = rule.healthyAgents;
+        }
+
+        // Show loading spinner while polling and no status yet
+        if (isPolling && !polledStatus && !rule.syncStatus) {
           return (
-            <span className="text-xs text-slate-400 dark:text-slate-500">未知</span>
+            <Loader2 className="size-3.5 animate-spin text-slate-400" />
           );
         }
 
-        const syncConfig = SYNC_STATUS_CONFIG[overallStatus.overallSyncStatus];
-        const runConfig = RUN_STATUS_CONFIG[overallStatus.overallRunStatus];
+        // No status data available
+        if (!syncStatus) {
+          return (
+            <span className="text-xs text-slate-400 dark:text-slate-500">-</span>
+          );
+        }
+
+        const syncConfig = SYNC_STATUS_CONFIG[syncStatus];
+        const runConfig = RUN_STATUS_CONFIG[runStatus || 'unknown'];
         const SyncIcon = syncConfig.icon;
         const RunIcon = runConfig.icon;
 
@@ -535,24 +565,31 @@ export const ForwardRuleListTable: React.FC<ForwardRuleListTableProps> = ({
           <Tooltip>
             <TooltipTrigger asChild>
               <div className="flex items-center gap-1.5">
+                {/* Show polling indicator */}
+                {isPolling && (
+                  <Loader2 className="size-3 animate-spin text-blue-400" />
+                )}
                 <span className={`flex items-center ${syncConfig.className}`}>
                   <SyncIcon className="size-3.5" />
                 </span>
                 <span className={`flex items-center ${runConfig.className}`}>
                   <RunIcon className="size-3.5" />
                 </span>
-                {overallStatus.totalAgents > 1 && (
+                {(totalAgents ?? 0) > 1 && (
                   <span className="text-xs text-slate-500 dark:text-slate-400">
-                    {overallStatus.healthyAgents}/{overallStatus.totalAgents}
+                    {healthyAgents ?? 0}/{totalAgents ?? 0}
                   </span>
                 )}
               </div>
             </TooltipTrigger>
             <TooltipContent>
               <div className="space-y-1 text-xs">
+                {isPolling && <div className="text-blue-400">正在同步...</div>}
                 <div>同步: {syncConfig.label}</div>
                 <div>运行: {runConfig.label}</div>
-                <div>节点: {overallStatus.healthyAgents}/{overallStatus.totalAgents} 正常</div>
+                {(totalAgents ?? 0) > 0 && (
+                  <div>节点: {healthyAgents ?? 0}/{totalAgents ?? 0} 正常</div>
+                )}
               </div>
             </TooltipContent>
           </Tooltip>
@@ -653,7 +690,7 @@ export const ForwardRuleListTable: React.FC<ForwardRuleListTableProps> = ({
         );
       },
     },
-  ], [agentsMap, nodes, ruleOverallStatusMap, onDisable, onEnable, onViewDetail, onEdit, onProbe, probingRuleId, renderDropdownMenuActions]);
+  ], [agentsMap, nodes, polledStatusMap, pollingRuleIds, onDisable, onEnable, onViewDetail, onEdit, onProbe, probingRuleId, renderDropdownMenuActions]);
 
   return (
     <DataTable

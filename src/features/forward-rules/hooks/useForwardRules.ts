@@ -4,7 +4,7 @@
  */
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useCallback, useRef, useEffect } from 'react';
 import { useNotificationStore } from '@/shared/stores/notification-store';
 import { handleApiError } from '@/shared/lib/axios';
 import {
@@ -340,5 +340,125 @@ export const useRulesOverallStatusBatch = (ruleIds: string[]) => {
     isLoading: queries.isLoading,
     error: queries.error ? handleApiError(queries.error) : null,
     refetch: queries.refetch,
+  };
+};
+
+// Polling configuration
+const POLLING_INTERVAL = 3000; // 3 seconds
+const POLLING_TIMEOUT = 30000; // 30 seconds
+
+interface PollingRule {
+  ruleId: string;
+  startTime: number;
+}
+
+/**
+ * Hook for short-term polling after enable/disable operations
+ *
+ * Usage:
+ * - Normal list browsing: use inline status from ForwardRule (no extra requests)
+ * - After enable/disable: poll that rule's status for 30 seconds (every 3 seconds)
+ * - After 30 seconds or status stabilizes: stop polling
+ */
+export const useRuleStatusPolling = () => {
+  const [pollingRules, setPollingRules] = useState<Map<string, PollingRule>>(new Map());
+  const [polledStatusMap, setPolledStatusMap] = useState<Record<string, RuleOverallStatusResponse>>({});
+  const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  // Start polling for a specific rule
+  const startPolling = useCallback((ruleId: string) => {
+    setPollingRules(prev => {
+      const next = new Map(prev);
+      next.set(ruleId, { ruleId, startTime: Date.now() });
+      return next;
+    });
+  }, []);
+
+  // Stop polling for a specific rule
+  const stopPolling = useCallback((ruleId: string) => {
+    setPollingRules(prev => {
+      const next = new Map(prev);
+      next.delete(ruleId);
+      return next;
+    });
+    // Also clear the polled status for this rule
+    setPolledStatusMap(prev => {
+      const next = { ...prev };
+      delete next[ruleId];
+      return next;
+    });
+  }, []);
+
+  // Check if status is stable (synced + running)
+  const isStatusStable = useCallback((status: RuleOverallStatusResponse): boolean => {
+    return status.overallSyncStatus === 'synced' && status.overallRunStatus === 'running';
+  }, []);
+
+  // Polling logic
+  useEffect(() => {
+    if (pollingRules.size === 0) {
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current);
+        intervalRef.current = null;
+      }
+      return;
+    }
+
+    const poll = async () => {
+      const now = Date.now();
+      const rulesToStop: string[] = [];
+
+      for (const [ruleId, rule] of pollingRules) {
+        // Check timeout
+        if (now - rule.startTime > POLLING_TIMEOUT) {
+          rulesToStop.push(ruleId);
+          continue;
+        }
+
+        try {
+          const status = await getRuleOverallStatus(ruleId);
+          setPolledStatusMap(prev => ({ ...prev, [ruleId]: status }));
+
+          // Check if status is stable
+          if (isStatusStable(status)) {
+            rulesToStop.push(ruleId);
+          }
+        } catch {
+          // Ignore errors, continue polling
+        }
+      }
+
+      // Stop polling for stable/timeout rules
+      if (rulesToStop.length > 0) {
+        setPollingRules(prev => {
+          const next = new Map(prev);
+          for (const ruleId of rulesToStop) {
+            next.delete(ruleId);
+          }
+          return next;
+        });
+      }
+    };
+
+    // Initial poll
+    poll();
+
+    // Set up interval
+    intervalRef.current = setInterval(poll, POLLING_INTERVAL);
+
+    return () => {
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current);
+        intervalRef.current = null;
+      }
+    };
+  }, [pollingRules, isStatusStable]);
+
+  return {
+    polledStatusMap,
+    pollingRuleIds: Array.from(pollingRules.keys()),
+    startPolling,
+    stopPolling,
+    isPolling: (ruleId: string) => pollingRules.has(ruleId),
   };
 };
