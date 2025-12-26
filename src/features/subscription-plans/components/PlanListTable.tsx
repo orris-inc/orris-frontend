@@ -4,7 +4,7 @@
  */
 
 import { useMemo, useCallback } from 'react';
-import { Edit, Power, MoreHorizontal, Users, Copy, Server } from 'lucide-react';
+import { Edit, Power, MoreHorizontal, Users, Copy, Server, Trash2 } from 'lucide-react';
 import { DataTable, AdminBadge, TruncatedId, type ColumnDef, type ResponsiveColumnMeta } from '@/components/admin';
 import {
   DropdownMenu,
@@ -106,6 +106,7 @@ interface PlanListTableProps {
   onToggleStatus: (plan: SubscriptionPlan) => void;
   onViewSubscriptions?: (plan: SubscriptionPlan) => void;
   onManageNodes?: (plan: SubscriptionPlan) => void;
+  onDelete?: (plan: SubscriptionPlan) => void;
 }
 
 const STATUS_CONFIG: Record<PlanStatus, { label: string; variant: 'success' | 'default' }> = {
@@ -126,6 +127,7 @@ export const PlanListTable: React.FC<PlanListTableProps> = ({
   onToggleStatus,
   onViewSubscriptions,
   onManageNodes,
+  onDelete,
 }) => {
   // Subscription plan context menu content
   const renderContextMenuActions = useCallback((plan: SubscriptionPlan) => (
@@ -157,8 +159,14 @@ export const PlanListTable: React.FC<PlanListTableProps> = ({
         <Power className="mr-2 size-4" />
         {plan.status === 'active' ? '停用' : '激活'}
       </ContextMenuItem>
+      {onDelete && (
+        <ContextMenuItem onClick={() => onDelete(plan)} className="text-red-600 dark:text-red-400">
+          <Trash2 className="mr-2 size-4" />
+          删除
+        </ContextMenuItem>
+      )}
     </>
-  ), [onEdit, onDuplicate, onToggleStatus, onViewSubscriptions, onManageNodes]);
+  ), [onEdit, onDuplicate, onToggleStatus, onViewSubscriptions, onManageNodes, onDelete]);
 
   // Subscription plan dropdown menu content
   const renderDropdownMenuActions = useCallback((plan: SubscriptionPlan) => (
@@ -190,8 +198,14 @@ export const PlanListTable: React.FC<PlanListTableProps> = ({
         <Power className="mr-2 size-4" />
         {plan.status === 'active' ? '停用' : '激活'}
       </DropdownMenuItem>
+      {onDelete && (
+        <DropdownMenuItem onClick={() => onDelete(plan)} className="text-red-600 dark:text-red-400">
+          <Trash2 className="mr-2 size-4" />
+          删除
+        </DropdownMenuItem>
+      )}
     </>
-  ), [onEdit, onDuplicate, onToggleStatus, onViewSubscriptions, onManageNodes]);
+  ), [onEdit, onDuplicate, onToggleStatus, onViewSubscriptions, onManageNodes, onDelete]);
 
   const columns = useMemo<ColumnDef<SubscriptionPlan>[]>(() => [
     {

@@ -11,7 +11,8 @@ import { SubscriptionListTable } from '../features/subscriptions/components/Subs
 import { SubscriptionDetailDialog } from '../features/subscriptions/components/SubscriptionDetailDialog';
 import { DuplicateSubscriptionDialog } from '../features/subscriptions/components/DuplicateSubscriptionDialog';
 import { CancelSubscriptionDialog } from '../features/subscriptions/components/CancelSubscriptionDialog';
-import { adminCreateSubscription, adminUpdateSubscriptionStatus } from '@/api/subscription';
+import { ConfirmDialog } from '@/components/common/ConfirmDialog';
+import { adminCreateSubscription, adminUpdateSubscriptionStatus, deleteSubscription } from '@/api/subscription';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/common/Tooltip';
 import {
   AdminPageLayout,
@@ -41,7 +42,9 @@ export const SubscriptionManagementPage: React.FC = () => {
   const [detailDialogOpen, setDetailDialogOpen] = useState(false);
   const [duplicateDialogOpen, setDuplicateDialogOpen] = useState(false);
   const [cancelDialogOpen, setCancelDialogOpen] = useState(false);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [selectedSubscription, setSelectedSubscription] = useState<Subscription | null>(null);
+  const [subscriptionToDelete, setSubscriptionToDelete] = useState<Subscription | null>(null);
 
   // View subscription details
   const handleViewDetail = (subscription: Subscription) => {
@@ -119,6 +122,26 @@ export const SubscriptionManagementPage: React.FC = () => {
     }
   };
 
+  // Open delete dialog
+  const handleDeleteClick = (subscription: Subscription) => {
+    setSubscriptionToDelete(subscription);
+    setDeleteDialogOpen(true);
+  };
+
+  // Confirm delete subscription
+  const handleDeleteConfirm = async () => {
+    if (!subscriptionToDelete) return;
+    try {
+      await deleteSubscription(subscriptionToDelete.id);
+      showSuccess('订阅已删除');
+      setDeleteDialogOpen(false);
+      setSubscriptionToDelete(null);
+      refetch();
+    } catch {
+      showError('删除订阅失败');
+    }
+  };
+
   const { page, pageSize, total } = pagination;
 
   return (
@@ -161,6 +184,7 @@ export const SubscriptionManagementPage: React.FC = () => {
             onActivate={handleActivate}
             onCancel={handleCancelClick}
             onRenew={handleRenew}
+            onDelete={handleDeleteClick}
           />
         </AdminCard>
       </AdminPageLayout>
@@ -197,6 +221,18 @@ export const SubscriptionManagementPage: React.FC = () => {
           setSelectedSubscription(null);
         }}
         onConfirm={handleCancelConfirm}
+      />
+
+      {/* 删除订阅确认对话框 */}
+      <ConfirmDialog
+        open={deleteDialogOpen}
+        onOpenChange={setDeleteDialogOpen}
+        title="确认删除"
+        description={subscriptionToDelete ? `确认删除订阅 "${subscriptionToDelete.id}" 吗？此操作不可恢复。` : ''}
+        confirmText="删除"
+        cancelText="取消"
+        variant="destructive"
+        onConfirm={handleDeleteConfirm}
       />
     </AdminLayout>
   );

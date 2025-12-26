@@ -4,7 +4,7 @@
  */
 
 import { useMemo } from 'react';
-import { CheckCircle, X, MoreHorizontal, Play, XCircle, RefreshCw, Eye, Copy } from 'lucide-react';
+import { CheckCircle, X, MoreHorizontal, Play, XCircle, RefreshCw, Eye, Copy, Trash2 } from 'lucide-react';
 import { DataTable, AdminBadge, TruncatedId, type ColumnDef, type ResponsiveColumnMeta } from '@/components/admin';
 import { Skeleton } from '@/components/common/Skeleton';
 import { Button } from '@/components/common/Button';
@@ -34,6 +34,7 @@ interface SubscriptionListTableProps {
   onActivate?: (subscription: Subscription) => void;
   onCancel?: (subscription: Subscription) => void;
   onRenew?: (subscription: Subscription) => void;
+  onDelete?: (subscription: Subscription) => void;
 }
 
 // Status configuration
@@ -60,6 +61,7 @@ export const SubscriptionListTable: React.FC<SubscriptionListTableProps> = ({
   onActivate,
   onCancel,
   onRenew,
+  onDelete,
 }) => {
   const columns = useMemo<ColumnDef<Subscription>[]>(() => [
     {
@@ -201,6 +203,8 @@ export const SubscriptionListTable: React.FC<SubscriptionListTableProps> = ({
         const canCancel = status === 'active' || status === 'renewed';
         // Renew: can renew if in expired status
         const canRenew = status === 'expired';
+        // Delete: can delete if cancelled or expired
+        const canDelete = status === 'cancelled' || status === 'expired';
 
         return (
           <div className="flex items-center gap-1">
@@ -252,13 +256,25 @@ export const SubscriptionListTable: React.FC<SubscriptionListTableProps> = ({
                     取消订阅
                   </DropdownMenuItem>
                 )}
+                {canDelete && onDelete && (
+                  <>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem
+                      onClick={() => onDelete(subscription)}
+                      className="text-destructive focus:text-destructive"
+                    >
+                      <Trash2 className="mr-2 size-4" />
+                      删除订阅
+                    </DropdownMenuItem>
+                  </>
+                )}
               </DropdownMenuContent>
             </DropdownMenu>
           </div>
         );
       },
     },
-  ], [usersMap, usersLoading, onViewDetail, onDuplicate, onActivate, onCancel, onRenew]);
+  ], [usersMap, usersLoading, onViewDetail, onDuplicate, onActivate, onCancel, onRenew, onDelete]);
 
   return (
     <DataTable

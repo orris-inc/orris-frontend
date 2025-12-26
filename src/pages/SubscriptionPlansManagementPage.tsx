@@ -11,13 +11,16 @@ import {
   AdminButton,
   AdminCard,
 } from '@/components/admin';
+import { ConfirmDialog } from '@/components/common/ConfirmDialog';
 import { usePageTitle } from '@/shared/hooks';
+import { useNotificationStore } from '@/shared/stores/notification-store';
 import { PlanListTable } from '@/features/subscription-plans/components/PlanListTable';
 import { CreatePlanDialog } from '@/features/subscription-plans/components/CreatePlanDialog';
 import { EditPlanDialog } from '@/features/subscription-plans/components/EditPlanDialog';
 import { ViewPlanSubscriptionsDialog } from '@/features/subscription-plans/components/ViewPlanSubscriptionsDialog';
 import { PlanNodesDialog } from '@/features/subscription-plans/components/PlanNodesDialog';
 import { useSubscriptionPlansPage } from '@/features/subscription-plans/hooks/useSubscriptionPlans';
+import { deletePlan } from '@/api/subscription';
 import type { SubscriptionPlan, CreatePlanRequest, UpdatePlanRequest } from '@/api/subscription/types';
 
 export const SubscriptionPlansManagementPage = () => {
@@ -32,14 +35,19 @@ export const SubscriptionPlansManagementPage = () => {
     togglePlanStatus,
     handlePageChange,
     handlePageSizeChange,
+    refetch,
   } = useSubscriptionPlansPage();
+
+  const { showSuccess, showError } = useNotificationStore();
 
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [subscriptionsDialogOpen, setSubscriptionsDialogOpen] = useState(false);
   const [nodesDialogOpen, setNodesDialogOpen] = useState(false);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [selectedPlan, setSelectedPlan] = useState<SubscriptionPlan | null>(null);
   const [duplicatePlan, setDuplicatePlan] = useState<SubscriptionPlan | null>(null);
+  const [planToDelete, setPlanToDelete] = useState<SubscriptionPlan | null>(null);
 
   const handleEdit = (plan: SubscriptionPlan) => {
     setSelectedPlan(plan);
@@ -84,6 +92,26 @@ export const SubscriptionPlansManagementPage = () => {
     }
   };
 
+  // Open delete dialog
+  const handleDeleteClick = (plan: SubscriptionPlan) => {
+    setPlanToDelete(plan);
+    setDeleteDialogOpen(true);
+  };
+
+  // Confirm delete plan
+  const handleDeleteConfirm = async () => {
+    if (!planToDelete) return;
+    try {
+      await deletePlan(planToDelete.id);
+      showSuccess('计划已删除');
+      setDeleteDialogOpen(false);
+      setPlanToDelete(null);
+      refetch();
+    } catch {
+      showError('删除计划失败，可能存在活跃订阅');
+    }
+  };
+
   return (
     <AdminLayout>
       <AdminPageLayout
@@ -115,6 +143,7 @@ export const SubscriptionPlansManagementPage = () => {
             onToggleStatus={handleToggleStatus}
             onViewSubscriptions={handleViewSubscriptions}
             onManageNodes={handleManageNodes}
+            onDelete={handleDeleteClick}
           />
         </AdminCard>
       </AdminPageLayout>
@@ -159,6 +188,18 @@ export const SubscriptionPlansManagementPage = () => {
           setNodesDialogOpen(false);
           setSelectedPlan(null);
         }}
+      />
+
+      {/* 删除计划确认对话框 */}
+      <ConfirmDialog
+        open={deleteDialogOpen}
+        onOpenChange={setDeleteDialogOpen}
+        title="确认删除"
+        description={planToDelete ? `确认删除计划 "${planToDelete.name}" 吗？此操作不可恢复。注意：只有无活跃订阅的计划才能删除。` : ''}
+        confirmText="删除"
+        cancelText="取消"
+        variant="destructive"
+        onConfirm={handleDeleteConfirm}
       />
     </AdminLayout>
   );

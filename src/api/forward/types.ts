@@ -4,6 +4,9 @@
  * Source: orris backend
  * Last updated: 2025-12-26
  *
+ * Recent changes:
+ * - 2025-12-26: No type changes (internal DTO methods only)
+ *
  * Note: All properties use camelCase. The axios-case-converter middleware
  * automatically converts between snake_case (API) and camelCase (frontend).
  *
