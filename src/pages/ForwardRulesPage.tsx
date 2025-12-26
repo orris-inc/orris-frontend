@@ -4,7 +4,8 @@
  */
 
 import { useState } from 'react';
-import { ArrowLeftRight, Plus, RefreshCw } from 'lucide-react';
+import { ArrowLeftRight, Plus, RefreshCw, Users } from 'lucide-react';
+import { Switch, SwitchThumb } from '@/components/common/Switch';
 import { ForwardRuleListTable } from '@/features/forward-rules/components/ForwardRuleListTable';
 import { CreateForwardRuleDialog } from '@/features/forward-rules/components/CreateForwardRuleDialog';
 import { EditForwardRuleDialog } from '@/features/forward-rules/components/EditForwardRuleDialog';
@@ -46,6 +47,8 @@ export const ForwardRulesPage = () => {
     probeRule,
     handlePageChange,
     handlePageSizeChange,
+    includeUserRules,
+    handleIncludeUserRulesChange,
   } = useForwardRulesPage();
 
   // Get forward agent list (for rule creation selection)
@@ -195,36 +198,50 @@ export const ForwardRulesPage = () => {
         description="管理系统中的所有端口转发规则"
         icon={ArrowLeftRight}
         action={
-          <div className="flex gap-2">
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <AdminButton
-                  variant="outline"
-                  size="md"
-                  onClick={handleRefresh}
-                  disabled={isFetching}
-                  icon={
-                    <RefreshCw
-                      className={`size-4 ${isFetching ? 'animate-spin' : ''}`}
-                      strokeWidth={1.5}
-                    />
-                  }
-                >
-                  刷新
-                </AdminButton>
-              </TooltipTrigger>
-              <TooltipContent>刷新转发规则列表</TooltipContent>
-            </Tooltip>
-            <AdminButton
-              variant="primary"
-              icon={<Plus className="size-4" strokeWidth={1.5} />}
-              onClick={() => {
-                setCopyRuleData(undefined);
-                setCreateDialogOpen(true);
-              }}
-            >
-              新增规则
-            </AdminButton>
+          <div className="flex items-center gap-4">
+            {/* Toggle to show user rules */}
+            <label className="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-400 cursor-pointer">
+              <Users className="size-4" strokeWidth={1.5} />
+              <span>显示用户规则</span>
+              <Switch
+                checked={includeUserRules}
+                onCheckedChange={handleIncludeUserRulesChange}
+              >
+                <SwitchThumb />
+              </Switch>
+            </label>
+
+            <div className="flex gap-2">
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <AdminButton
+                    variant="outline"
+                    size="md"
+                    onClick={handleRefresh}
+                    disabled={isFetching}
+                    icon={
+                      <RefreshCw
+                        className={`size-4 ${isFetching ? 'animate-spin' : ''}`}
+                        strokeWidth={1.5}
+                      />
+                    }
+                  >
+                    刷新
+                  </AdminButton>
+                </TooltipTrigger>
+                <TooltipContent>刷新转发规则列表</TooltipContent>
+              </Tooltip>
+              <AdminButton
+                variant="primary"
+                icon={<Plus className="size-4" strokeWidth={1.5} />}
+                onClick={() => {
+                  setCopyRuleData(undefined);
+                  setCreateDialogOpen(true);
+                }}
+              >
+                新增规则
+              </AdminButton>
+            </div>
           </div>
         }
       >

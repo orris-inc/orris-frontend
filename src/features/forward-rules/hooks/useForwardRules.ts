@@ -50,10 +50,12 @@ interface UseForwardRulesOptions {
   pageSize?: number;
   filters?: ForwardRuleFilters;
   enabled?: boolean;
+  /** Include user-created rules in the list (default: false - only admin-created rules) */
+  includeUserRules?: boolean;
 }
 
 export const useForwardRules = (options: UseForwardRulesOptions = {}) => {
-  const { page = 1, pageSize = 20, filters = {}, enabled = true } = options;
+  const { page = 1, pageSize = 20, filters = {}, enabled = true, includeUserRules } = options;
   const queryClient = useQueryClient();
   const { showSuccess, showError } = useNotificationStore();
 
@@ -66,6 +68,7 @@ export const useForwardRules = (options: UseForwardRulesOptions = {}) => {
     status: filters.status,
     orderBy: filters.orderBy,
     order: filters.order,
+    includeUserRules,
   };
 
   // Query forward rules list
@@ -235,9 +238,10 @@ export const useForwardRulesPage = () => {
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(20);
   const [filters, setFilters] = useState<ForwardRuleFilters>({});
+  const [includeUserRules, setIncludeUserRules] = useState(false);
   const [selectedRule, setSelectedRule] = useState<ForwardRule | null>(null);
 
-  const rulesQuery = useForwardRules({ page, pageSize, filters });
+  const rulesQuery = useForwardRules({ page, pageSize, filters, includeUserRules });
 
   // Get all forward agents to build agentId -> agent mapping
   // Load simultaneously with rules list to avoid showing ID first then name
@@ -271,6 +275,11 @@ export const useForwardRulesPage = () => {
     setPage(1);
   };
 
+  const handleIncludeUserRulesChange = (include: boolean) => {
+    setIncludeUserRules(include);
+    setPage(1);
+  };
+
   return {
     ...rulesQuery,
     // Merge loading states, ensure agent data is also loaded before showing table
@@ -278,12 +287,14 @@ export const useForwardRulesPage = () => {
     page,
     pageSize,
     filters,
+    includeUserRules,
     selectedRule,
     agentsMap,
     setSelectedRule,
     handlePageChange,
     handlePageSizeChange,
     handleFiltersChange,
+    handleIncludeUserRulesChange,
   };
 };
 

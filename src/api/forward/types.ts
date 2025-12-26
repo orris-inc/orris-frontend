@@ -183,6 +183,7 @@ export interface UpdateForwardRuleStatusRequest {
 
 /**
  * List forward rules params
+ * Updated: 2025-12-26 - Added includeUserRules parameter
  */
 export interface ListForwardRulesParams {
   page?: number;
@@ -192,6 +193,8 @@ export interface ListForwardRulesParams {
   status?: ForwardStatus;
   orderBy?: string;
   order?: 'asc' | 'desc';
+  /** Include rules created by users (default: false, excludes user rules) */
+  includeUserRules?: boolean;
 }
 
 // ========== Forward Rule Reorder Types ==========
