@@ -467,3 +467,15 @@ export async function adminChangeSubscriptionPlan(
 ): Promise<void> {
   await apiClient.patch(`/admin/subscriptions/${id}/plan`, data);
 }
+
+/**
+ * Delete subscription (Admin)
+ * DELETE /admin/subscriptions/:id
+ * @requires Authentication, Admin
+ * @param id - Subscription's Stripe-style ID (sub_xxx)
+ * @note Only cancelled or expired subscriptions can be deleted
+ * Added: 2025-12-26
+ */
+export async function adminDeleteSubscription(id: string): Promise<void> {
+  await apiClient.delete(`/admin/subscriptions/${id}`);
+}

@@ -12,7 +12,7 @@ import { SubscriptionDetailDialog } from '../features/subscriptions/components/S
 import { DuplicateSubscriptionDialog } from '../features/subscriptions/components/DuplicateSubscriptionDialog';
 import { CancelSubscriptionDialog } from '../features/subscriptions/components/CancelSubscriptionDialog';
 import { ConfirmDialog } from '@/components/common/ConfirmDialog';
-import { adminCreateSubscription, adminUpdateSubscriptionStatus, deleteSubscription } from '@/api/subscription';
+import { adminCreateSubscription, adminUpdateSubscriptionStatus, adminDeleteSubscription } from '@/api/subscription';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/common/Tooltip';
 import {
   AdminPageLayout,
@@ -132,7 +132,7 @@ export const SubscriptionManagementPage: React.FC = () => {
   const handleDeleteConfirm = async () => {
     if (!subscriptionToDelete) return;
     try {
-      await deleteSubscription(subscriptionToDelete.id);
+      await adminDeleteSubscription(subscriptionToDelete.id);
       showSuccess('订阅已删除');
       setDeleteDialogOpen(false);
       setSubscriptionToDelete(null);
