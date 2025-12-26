@@ -14,7 +14,7 @@
  * - 2025-12-19: Changed Subscription.id to string, added userId as string
  * - 2025-12-19: Changed SubscriptionPlan.id to string
  * - 2025-12-19: Changed SubscriptionToken.id to string, added subscriptionId as string
- * - 2025-12-18: Added Plan-Node entitlement management types (BindNodesRequest, UnbindNodesRequest, PlanNode, GetPlanNodesResult)
+ * - 2025-12-26: Removed deprecated Plan-Node entitlement types (use ResourceGroup instead)
  * - 2025-12-18: Removed price, currency, billingCycle from SubscriptionPlan (now use pricings array only)
  * - 2025-12-18: Added PlanType type and planType field to SubscriptionPlan
  */
@@ -360,50 +360,6 @@ export interface TrafficStatsResponse {
   total: number;
   page: number;
   pageSize: number;
-}
-
-// ============================================================================
-// Plan-Node Entitlement Management Types
-// Added: 2025-12-18
-// ============================================================================
-
-/**
- * A node associated with a plan
- * Used in GetPlanNodesResult
- */
-export interface PlanNode {
-  id: number;
-  name: string;
-  serverAddress: string;
-  protocol: string;
-  status: string;
-}
-
-/**
- * Result of getting plan nodes
- * GET /plans/:id/nodes
- */
-export interface GetPlanNodesResult {
-  nodes: PlanNode[];
-  total: number;
-}
-
-/**
- * Bind nodes to plan request
- * POST /plans/:id/nodes
- */
-export interface BindNodesRequest {
-  /** Array of node IDs to bind to the plan */
-  nodeIds: number[];
-}
-
-/**
- * Unbind nodes from plan request
- * DELETE /plans/:id/nodes
- */
-export interface UnbindNodesRequest {
-  /** Array of node IDs to unbind from the plan */
-  nodeIds: number[];
 }
 
 // ============================================================================

@@ -5,9 +5,9 @@
  * Last updated: 2025-12-26
  *
  * Recent changes:
+ * - 2025-12-26: Removed deprecated Plan-Node entitlement APIs (use ResourceGroup instead)
  * - 2025-12-26: Added deletePlan and deleteSubscription APIs
  * - 2025-12-19: Changed all ID parameters from number to string (Stripe-style IDs)
- * - 2025-12-18: Added Plan-Node entitlement management APIs (getPlanNodes, bindNodes, unbindNodes)
  * - 2025-12-18: Changed plan routes from /subscription-plans to /plans
  */
 
@@ -32,9 +32,6 @@ import type {
   ListTokensParams,
   GetTrafficStatsParams,
   TrafficStatsResponse,
-  GetPlanNodesResult,
-  BindNodesRequest,
-  UnbindNodesRequest,
   AdminCreateSubscriptionRequest,
   AdminCreateSubscriptionResponse,
   AdminUpdateSubscriptionStatusRequest,
@@ -250,58 +247,6 @@ export async function getPlanPricings(id: string): Promise<SubscriptionPlan> {
     `/plans/${id}/pricings`
   );
   return response.data.data;
-}
-
-// ============================================================================
-// Plan-Node Entitlement Management APIs
-// Added: 2025-12-18
-// ============================================================================
-
-/**
- * Get all nodes associated with a plan (admin)
- * GET /plans/:id/nodes
- * @requires Authentication, Admin
- * @param planId - Plan's Stripe-style ID (plan_xxx)
- */
-export async function getPlanNodes(planId: string): Promise<GetPlanNodesResult> {
-  const response = await apiClient.get<APIResponse<GetPlanNodesResult>>(
-    `/plans/${planId}/nodes`
-  );
-  return response.data.data;
-}
-
-/**
- * Bind nodes to a plan (admin)
- * POST /plans/:id/nodes
- * @requires Authentication, Admin
- * @description Only works for node-type plans. Binds the specified nodes to the plan.
- * @param planId - Plan's Stripe-style ID (plan_xxx)
- */
-export async function bindNodes(
-  planId: string,
-  data: BindNodesRequest
-): Promise<void> {
-  await apiClient.post<APIResponse<null>>(
-    `/plans/${planId}/nodes`,
-    data
-  );
-}
-
-/**
- * Unbind nodes from a plan (admin)
- * DELETE /plans/:id/nodes
- * @requires Authentication, Admin
- * @description Removes the association between the specified nodes and the plan.
- * @param planId - Plan's Stripe-style ID (plan_xxx)
- */
-export async function unbindNodes(
-  planId: string,
-  data: UnbindNodesRequest
-): Promise<void> {
-  await apiClient.delete<APIResponse<null>>(
-    `/plans/${planId}/nodes`,
-    { data }
-  );
 }
 
 // ============================================================================

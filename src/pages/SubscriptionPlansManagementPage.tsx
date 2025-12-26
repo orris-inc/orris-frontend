@@ -18,7 +18,6 @@ import { PlanListTable } from '@/features/subscription-plans/components/PlanList
 import { CreatePlanDialog } from '@/features/subscription-plans/components/CreatePlanDialog';
 import { EditPlanDialog } from '@/features/subscription-plans/components/EditPlanDialog';
 import { ViewPlanSubscriptionsDialog } from '@/features/subscription-plans/components/ViewPlanSubscriptionsDialog';
-import { PlanNodesDialog } from '@/features/subscription-plans/components/PlanNodesDialog';
 import { useSubscriptionPlansPage } from '@/features/subscription-plans/hooks/useSubscriptionPlans';
 import { deletePlan } from '@/api/subscription';
 import type { SubscriptionPlan, CreatePlanRequest, UpdatePlanRequest } from '@/api/subscription/types';
@@ -43,7 +42,6 @@ export const SubscriptionPlansManagementPage = () => {
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [subscriptionsDialogOpen, setSubscriptionsDialogOpen] = useState(false);
-  const [nodesDialogOpen, setNodesDialogOpen] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [selectedPlan, setSelectedPlan] = useState<SubscriptionPlan | null>(null);
   const [duplicatePlan, setDuplicatePlan] = useState<SubscriptionPlan | null>(null);
@@ -66,11 +64,6 @@ export const SubscriptionPlansManagementPage = () => {
   const handleViewSubscriptions = (plan: SubscriptionPlan) => {
     setSelectedPlan(plan);
     setSubscriptionsDialogOpen(true);
-  };
-
-  const handleManageNodes = (plan: SubscriptionPlan) => {
-    setSelectedPlan(plan);
-    setNodesDialogOpen(true);
   };
 
   const handleCreateSubmit = async (data: CreatePlanRequest) => {
@@ -142,7 +135,6 @@ export const SubscriptionPlansManagementPage = () => {
             onDuplicate={handleDuplicate}
             onToggleStatus={handleToggleStatus}
             onViewSubscriptions={handleViewSubscriptions}
-            onManageNodes={handleManageNodes}
             onDelete={handleDeleteClick}
           />
         </AdminCard>
@@ -176,16 +168,6 @@ export const SubscriptionPlansManagementPage = () => {
         plan={selectedPlan}
         onClose={() => {
           setSubscriptionsDialogOpen(false);
-          setSelectedPlan(null);
-        }}
-      />
-
-      {/* 节点管理对话框 */}
-      <PlanNodesDialog
-        open={nodesDialogOpen}
-        plan={selectedPlan}
-        onClose={() => {
-          setNodesDialogOpen(false);
           setSelectedPlan(null);
         }}
       />

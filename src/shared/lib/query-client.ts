@@ -56,7 +56,6 @@ export const queryKeys = {
     public: () => [...queryKeys.subscriptionPlans.all, 'public'] as const,
     details: () => [...queryKeys.subscriptionPlans.all, 'detail'] as const,
     detail: (id: number | string) => [...queryKeys.subscriptionPlans.details(), id] as const,
-    nodes: (id: number | string) => [...queryKeys.subscriptionPlans.detail(id), 'nodes'] as const,
   },
 
   // Subscriptions

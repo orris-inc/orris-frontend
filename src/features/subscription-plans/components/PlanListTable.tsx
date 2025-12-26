@@ -4,7 +4,7 @@
  */
 
 import { useMemo, useCallback } from 'react';
-import { Edit, Power, MoreHorizontal, Users, Copy, Server, Trash2 } from 'lucide-react';
+import { Edit, Power, MoreHorizontal, Users, Copy, Trash2 } from 'lucide-react';
 import { DataTable, AdminBadge, TruncatedId, type ColumnDef, type ResponsiveColumnMeta } from '@/components/admin';
 import {
   DropdownMenu,
@@ -105,7 +105,6 @@ interface PlanListTableProps {
   onDuplicate?: (plan: SubscriptionPlan) => void;
   onToggleStatus: (plan: SubscriptionPlan) => void;
   onViewSubscriptions?: (plan: SubscriptionPlan) => void;
-  onManageNodes?: (plan: SubscriptionPlan) => void;
   onDelete?: (plan: SubscriptionPlan) => void;
 }
 
@@ -126,7 +125,6 @@ export const PlanListTable: React.FC<PlanListTableProps> = ({
   onDuplicate,
   onToggleStatus,
   onViewSubscriptions,
-  onManageNodes,
   onDelete,
 }) => {
   // Subscription plan context menu content
@@ -148,12 +146,6 @@ export const PlanListTable: React.FC<PlanListTableProps> = ({
           查看订阅用户
         </ContextMenuItem>
       )}
-      {onManageNodes && (plan.planType === 'node' || plan.planType === 'hybrid') && (
-        <ContextMenuItem onClick={() => onManageNodes(plan)}>
-          <Server className="mr-2 size-4" />
-          管理节点
-        </ContextMenuItem>
-      )}
       <ContextMenuSeparator />
       <ContextMenuItem onClick={() => onToggleStatus(plan)}>
         <Power className="mr-2 size-4" />
@@ -166,7 +158,7 @@ export const PlanListTable: React.FC<PlanListTableProps> = ({
         </ContextMenuItem>
       )}
     </>
-  ), [onEdit, onDuplicate, onToggleStatus, onViewSubscriptions, onManageNodes, onDelete]);
+  ), [onEdit, onDuplicate, onToggleStatus, onViewSubscriptions, onDelete]);
 
   // Subscription plan dropdown menu content
   const renderDropdownMenuActions = useCallback((plan: SubscriptionPlan) => (
@@ -187,12 +179,6 @@ export const PlanListTable: React.FC<PlanListTableProps> = ({
           查看订阅用户
         </DropdownMenuItem>
       )}
-      {onManageNodes && (plan.planType === 'node' || plan.planType === 'hybrid') && (
-        <DropdownMenuItem onClick={() => onManageNodes(plan)}>
-          <Server className="mr-2 size-4" />
-          管理节点
-        </DropdownMenuItem>
-      )}
       <DropdownMenuSeparator />
       <DropdownMenuItem onClick={() => onToggleStatus(plan)}>
         <Power className="mr-2 size-4" />
@@ -205,7 +191,7 @@ export const PlanListTable: React.FC<PlanListTableProps> = ({
         </DropdownMenuItem>
       )}
     </>
-  ), [onEdit, onDuplicate, onToggleStatus, onViewSubscriptions, onManageNodes, onDelete]);
+  ), [onEdit, onDuplicate, onToggleStatus, onViewSubscriptions, onDelete]);
 
   const columns = useMemo<ColumnDef<SubscriptionPlan>[]>(() => [
     {
