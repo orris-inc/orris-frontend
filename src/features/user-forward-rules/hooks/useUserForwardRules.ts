@@ -5,7 +5,7 @@
  */
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { useNotificationStore } from '@/shared/stores/notification-store';
 import { handleApiError } from '@/shared/lib/axios';
 import {
@@ -17,10 +17,12 @@ import {
   enableUserForwardRule,
   disableUserForwardRule,
   getUserForwardUsage,
+  listUserForwardAgents,
   type ForwardRule,
   type CreateForwardRuleRequest,
   type UpdateForwardRuleRequest,
   type ListForwardRulesParams,
+  type UserForwardAgent,
 } from '@/api/forward';
 import type { UserForwardUsage } from '@/api/forward';
 
@@ -34,6 +36,7 @@ const userForwardRulesQueryKeys = {
   list: (params: object) => [...userForwardRulesQueryKeys.lists(), params] as const,
   usage: () => [...userForwardRulesQueryKeys.all, 'usage'] as const,
   detail: (id: string) => [...userForwardRulesQueryKeys.all, 'detail', id] as const,
+  agents: () => [...userForwardRulesQueryKeys.all, 'agents'] as const,
 };
 
 export interface UserForwardRuleFilters {
@@ -221,6 +224,21 @@ export const useUserForwardRulesPage = () => {
   const rulesQuery = useUserForwardRules({ page, pageSize, filters });
   const usageQuery = useUserForwardUsage();
 
+  // Query all available agents to build agentsMap for rule display
+  const agentsQuery = useQuery({
+    queryKey: userForwardRulesQueryKeys.agents(),
+    queryFn: () => listUserForwardAgents({ page: 1, pageSize: 1000 }),
+  });
+
+  // Build agentsMap from agents list
+  const agentsMap = useMemo<Record<string, UserForwardAgent>>(() => {
+    const agents = agentsQuery.data?.items ?? [];
+    return agents.reduce((acc, agent) => {
+      acc[agent.id] = agent;
+      return acc;
+    }, {} as Record<string, UserForwardAgent>);
+  }, [agentsQuery.data?.items]);
+
   const handlePageChange = (newPage: number) => {
     setPage(newPage);
   };
@@ -239,6 +257,8 @@ export const useUserForwardRulesPage = () => {
     ...rulesQuery,
     usage: usageQuery.usage,
     isUsageLoading: usageQuery.isLoading,
+    agentsMap,
+    isAgentsLoading: agentsQuery.isLoading,
     page,
     pageSize,
     filters,

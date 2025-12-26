@@ -27,6 +27,7 @@ export const UserForwardRulesPage = () => {
     isLoading,
     usage,
     isUsageLoading,
+    agentsMap,
     selectedRule,
     setSelectedRule,
     createForwardRule,
@@ -39,6 +40,8 @@ export const UserForwardRulesPage = () => {
     isDeleting,
     isEnabling,
     isDisabling,
+    handlePageChange,
+    handlePageSizeChange,
   } = useUserForwardRulesPage();
 
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
@@ -165,7 +168,13 @@ export const UserForwardRulesPage = () => {
             {/* Rule list */}
             <UserForwardRuleList
               rules={forwardRules}
+              agentsMap={agentsMap}
               isLoading={isLoading}
+              page={pagination.page}
+              pageSize={pagination.pageSize}
+              total={pagination.total}
+              onPageChange={handlePageChange}
+              onPageSizeChange={handlePageSizeChange}
               onEdit={handleEditClick}
               onDelete={handleDeleteClick}
               onToggleStatus={handleToggleStatus}

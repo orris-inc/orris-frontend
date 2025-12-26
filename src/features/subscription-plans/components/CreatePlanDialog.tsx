@@ -37,9 +37,8 @@ interface PlanLimits {
   deviceLimit?: number;
   speedLimit?: number;
   connectionLimit?: number;
-  forwardRuleLimit?: number;
-  forwardTrafficLimit?: number;
-  forwardRuleTypes?: ForwardRuleTypeOption[];
+  ruleLimit?: number;
+  ruleTypes?: ForwardRuleTypeOption[];
   nodeLimit?: number;
 }
 
@@ -50,9 +49,8 @@ function planLimitsToApiFormat(limits: PlanLimits): Record<string, unknown> {
   if (limits.deviceLimit !== undefined) result['device_limit'] = limits.deviceLimit;
   if (limits.speedLimit !== undefined) result['speed_limit'] = limits.speedLimit;
   if (limits.connectionLimit !== undefined) result['connection_limit'] = limits.connectionLimit;
-  if (limits.forwardRuleLimit !== undefined) result['forward_rule_limit'] = limits.forwardRuleLimit;
-  if (limits.forwardTrafficLimit !== undefined) result['forward_traffic_limit'] = limits.forwardTrafficLimit;
-  if (limits.forwardRuleTypes !== undefined) result['forward_rule_types'] = limits.forwardRuleTypes;
+  if (limits.ruleLimit !== undefined) result['rule_limit'] = limits.ruleLimit;
+  if (limits.ruleTypes !== undefined) result['rule_types'] = limits.ruleTypes;
   if (limits.nodeLimit !== undefined) result['node_limit'] = limits.nodeLimit;
   return result;
 }
@@ -65,9 +63,8 @@ function parsePlanLimits(apiLimits: Record<string, unknown> | undefined): PlanLi
     deviceLimit: apiLimits.deviceLimit as number | undefined,
     speedLimit: apiLimits.speedLimit as number | undefined,
     connectionLimit: apiLimits.connectionLimit as number | undefined,
-    forwardRuleLimit: apiLimits.forwardRuleLimit as number | undefined,
-    forwardTrafficLimit: apiLimits.forwardTrafficLimit as number | undefined,
-    forwardRuleTypes: apiLimits.forwardRuleTypes as ForwardRuleTypeOption[] | undefined,
+    ruleLimit: apiLimits.ruleLimit as number | undefined,
+    ruleTypes: apiLimits.ruleTypes as ForwardRuleTypeOption[] | undefined,
     nodeLimit: apiLimits.nodeLimit as number | undefined,
   };
 }
@@ -191,16 +188,16 @@ export const CreatePlanDialog: React.FC<CreatePlanDialogProps> = ({
     }));
   };
 
-  // Handle forward rule type multi-select
-  const handleForwardTypeToggle = (type: ForwardRuleTypeOption) => {
+  // Handle rule type multi-select
+  const handleRuleTypeToggle = (type: ForwardRuleTypeOption) => {
     setFormData((prev) => {
-      const currentTypes = prev.planLimits.forwardRuleTypes || [];
+      const currentTypes = prev.planLimits.ruleTypes || [];
       const newTypes = currentTypes.includes(type)
         ? currentTypes.filter((t) => t !== type)
         : [...currentTypes, type];
       return {
         ...prev,
-        planLimits: { ...prev.planLimits, forwardRuleTypes: newTypes },
+        planLimits: { ...prev.planLimits, ruleTypes: newTypes },
       };
     });
   };
@@ -438,16 +435,6 @@ export const CreatePlanDialog: React.FC<CreatePlanDialogProps> = ({
                 )}
               </div>
 
-              <div className="flex flex-col gap-2 sm:col-span-2">
-                <Label htmlFor="description">描述</Label>
-                <Textarea
-                  id="description"
-                  rows={3}
-                  value={formData.description}
-                  onChange={(e) => handleChange('description', e.target.value)}
-                  disabled={loading}
-                />
-              </div>
             </div>
           </div>
 
@@ -533,44 +520,44 @@ export const CreatePlanDialog: React.FC<CreatePlanDialogProps> = ({
               <Separator />
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                 <div className="flex flex-col gap-2">
-                  <Label htmlFor="forwardRuleLimit">转发规则数量上限</Label>
+                  <Label htmlFor="ruleLimit">规则数量上限</Label>
                   <Input
-                    id="forwardRuleLimit"
+                    id="ruleLimit"
                     type="number"
                     min="0"
                     placeholder="0 表示无限制"
-                    value={formData.planLimits.forwardRuleLimit || ''}
-                    onChange={(e) => handleLimitChange('forwardRuleLimit', e.target.value === '' ? undefined : Number(e.target.value))}
+                    value={formData.planLimits.ruleLimit || ''}
+                    onChange={(e) => handleLimitChange('ruleLimit', e.target.value === '' ? undefined : Number(e.target.value))}
                     disabled={loading}
                   />
                 </div>
 
                 <div className="flex flex-col gap-2">
-                  <Label htmlFor="forwardTrafficLimit">转发流量上限 (GB)</Label>
+                  <Label htmlFor="trafficLimit">流量上限 (GB)</Label>
                   <Input
-                    id="forwardTrafficLimit"
+                    id="trafficLimit"
                     type="number"
                     min="0"
                     step="0.1"
                     placeholder="0 表示无限制"
-                    value={formData.planLimits.forwardTrafficLimit ? formData.planLimits.forwardTrafficLimit / (1024 * 1024 * 1024) : ''}
-                    onChange={(e) => handleLimitChange('forwardTrafficLimit', e.target.value === '' ? undefined : Math.round(Number(e.target.value) * 1024 * 1024 * 1024))}
+                    value={formData.planLimits.trafficLimit ? formData.planLimits.trafficLimit / (1024 * 1024 * 1024) : ''}
+                    onChange={(e) => handleLimitChange('trafficLimit', e.target.value === '' ? undefined : Math.round(Number(e.target.value) * 1024 * 1024 * 1024))}
                     disabled={loading}
                   />
                 </div>
 
                 <div className="flex flex-col gap-2 sm:col-span-2">
-                  <Label>允许的转发类型</Label>
+                  <Label>允许的规则类型</Label>
                   <div className="flex flex-wrap gap-3 pt-1">
                     {FORWARD_RULE_TYPES.map((type) => (
                       <div key={type.value} className="flex items-center gap-2">
                         <Checkbox
-                          id={`forward-type-${type.value}`}
-                          checked={formData.planLimits.forwardRuleTypes?.includes(type.value) || false}
-                          onCheckedChange={() => handleForwardTypeToggle(type.value)}
+                          id={`rule-type-${type.value}`}
+                          checked={formData.planLimits.ruleTypes?.includes(type.value) || false}
+                          onCheckedChange={() => handleRuleTypeToggle(type.value)}
                           disabled={loading}
                         />
-                        <Label htmlFor={`forward-type-${type.value}`} className="cursor-pointer">
+                        <Label htmlFor={`rule-type-${type.value}`} className="cursor-pointer">
                           {type.label}
                         </Label>
                       </div>
@@ -581,6 +568,22 @@ export const CreatePlanDialog: React.FC<CreatePlanDialogProps> = ({
               </div>
             </div>
           )}
+
+          {/* Description */}
+          <div className="space-y-4">
+            <h3 className="text-sm font-semibold">描述</h3>
+            <Separator />
+            <div className="flex flex-col gap-2">
+              <Textarea
+                id="description"
+                rows={3}
+                placeholder="订阅计划的描述信息"
+                value={formData.description}
+                onChange={(e) => handleChange('description', e.target.value)}
+                disabled={loading}
+              />
+            </div>
+          </div>
 
           {/* General Configuration */}
           <div className="space-y-4">
