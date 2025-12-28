@@ -306,10 +306,10 @@ export const NodeListTable: React.FC<NodeListTableProps> = ({
         return (
           <SystemStatusDisplay
             status={status ? {
-              cpu: parseFloat(status.cpu) || 0,
-              memory: parseFloat(status.memory) || 0,
-              disk: parseFloat(status.disk) || 0,
-              uptime: status.uptime,
+              cpu: status.cpuPercent,
+              memory: status.memoryPercent,
+              disk: status.diskPercent,
+              uptime: status.uptimeSeconds,
             } : null}
           />
         );
