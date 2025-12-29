@@ -58,6 +58,14 @@ export const NodeManagementPage = () => {
     return map;
   }, [resourceGroups]);
 
+  // Prepare nodes list for route outbound selection
+  const nodesForOutbound = useMemo(() => {
+    return nodes.map((node) => ({
+      id: node.id,
+      name: node.name,
+    }));
+  }, [nodes]);
+
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
   const [detailDialogOpen, setDetailDialogOpen] = useState(false);
@@ -234,6 +242,7 @@ export const NodeManagementPage = () => {
         }}
         onSubmit={handleCreateSubmit}
         initialData={copyNodeData}
+        nodes={nodesForOutbound}
       />
 
       {/* 编辑节点对话框 */}
@@ -245,6 +254,7 @@ export const NodeManagementPage = () => {
           setSelectedNode(null);
         }}
         onSubmit={handleUpdateSubmit}
+        nodes={nodesForOutbound}
       />
 
       {/* 节点详情对话框 */}
@@ -255,6 +265,7 @@ export const NodeManagementPage = () => {
           setDetailDialogOpen(false);
           setSelectedNode(null);
         }}
+        nodes={nodesForOutbound}
       />
 
       {/* Token显示对话框 */}

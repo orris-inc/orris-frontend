@@ -11,6 +11,9 @@
  * - Node: "node_xK9mP2vL3nQ" (prefix: node_)
  *
  * Recent changes:
+ * - 2025-12-29: OutboundType now supports node SID references (e.g., "node_xxx") for traffic routing to specific nodes
+ * - 2025-12-29: Added RouteConfig and RouteRule types for traffic splitting configuration (sing-box compatible)
+ * - 2025-12-29: Added route field to Node, CreateNodeRequest, UpdateNodeRequest for admin route management
  * - 2025-12-29: Added sortBy and sortOrder params to ListNodesParams for admin node sorting
  * - 2025-12-28: Enhanced NodeSystemStatus with procfs metrics (CPU%, memory details, load avg, network stats, etc.)
  * - 2025-12-22: Added owner field to Node for user-created nodes (NodeOwner type)
@@ -33,6 +36,77 @@ export type NodeProtocol = 'shadowsocks' | 'trojan';
  * Transport protocol for Trojan
  */
 export type TransportProtocol = 'tcp' | 'ws' | 'grpc';
+
+/**
+ * Outbound action type for routing rules
+ * Supports preset types and node SID references for traffic splitting
+ * - Preset types: "direct", "block", "proxy"
+ * - Node reference: "node_xxx" (routes traffic through the specified node)
+ * Added: 2025-12-29
+ * Updated: 2025-12-29 - Added support for node SID references
+ */
+export type OutboundType = 'direct' | 'block' | 'proxy' | `node_${string}`;
+
+/**
+ * Route configuration for traffic splitting (sing-box compatible)
+ * Added: 2025-12-29
+ */
+export interface RouteConfig {
+  /** Ordered list of routing rules */
+  rules?: RouteRule[];
+  /** Default outbound when no rules match (direct/block/proxy or node_xxx) */
+  final: OutboundType;
+}
+
+/**
+ * Single routing rule, compatible with sing-box route rule
+ * Added: 2025-12-29
+ */
+export interface RouteRule {
+  // Domain matching
+  /** Exact domain match */
+  domain?: string[];
+  /** Domain suffix match (e.g., ".cn", ".google.com") */
+  domainSuffix?: string[];
+  /** Domain keyword match */
+  domainKeyword?: string[];
+  /** Domain regex match */
+  domainRegex?: string[];
+
+  // IP matching
+  /** Destination IP CIDR match */
+  ipCidr?: string[];
+  /** Source IP CIDR match */
+  sourceIpCidr?: string[];
+  /** Match private/LAN IP addresses */
+  ipIsPrivate?: boolean;
+
+  // GeoIP/GeoSite matching
+  /** GeoIP country codes (e.g., "cn", "us") */
+  geoip?: string[];
+  /** GeoSite categories (e.g., "cn", "google", "telegram") */
+  geosite?: string[];
+
+  // Port matching
+  /** Destination port match */
+  port?: number[];
+  /** Source port match */
+  sourcePort?: number[];
+
+  // Protocol/Network matching
+  /** Sniffed protocol match (e.g., "http", "tls", "quic") */
+  protocol?: string[];
+  /** Network type match (e.g., "tcp", "udp") */
+  network?: string[];
+
+  // Rule set reference
+  /** Rule set references */
+  ruleSet?: string[];
+
+  // Action
+  /** Action: direct/block/proxy or node SID (node_xxx) for routing to specific node */
+  outbound: OutboundType;
+}
 
 /**
  * Node owner information (for user-created nodes)
@@ -92,6 +166,8 @@ export interface Node {
   systemStatus?: NodeSystemStatus;
   /** Owner information for user-created nodes (null for admin-created nodes) */
   owner?: NodeOwner;
+  /** Routing configuration for traffic splitting (sing-box compatible) */
+  route?: RouteConfig;
 }
 
 /**
@@ -176,12 +252,14 @@ export interface CreateNodeRequest {
   sni?: string;
   /** Allow insecure TLS connection (for self-signed certs) */
   allowInsecure?: boolean;
+  /** Routing configuration for traffic splitting (sing-box compatible) */
+  route?: RouteConfig;
 }
 
 /**
  * Update node request
  * PUT /nodes/:id
- * Updated: 2025-12-19 - Added groupSid field for resource group association
+ * Updated: 2025-12-29 - Added route field for traffic splitting configuration
  */
 export interface UpdateNodeRequest {
   name?: string;
@@ -211,6 +289,8 @@ export interface UpdateNodeRequest {
   sni?: string;
   /** Allow insecure TLS connection */
   allowInsecure?: boolean;
+  /** Routing configuration for traffic splitting (sing-box compatible, null to clear) */
+  route?: RouteConfig | null;
 }
 
 /**

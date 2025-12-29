@@ -17,11 +17,15 @@ import { Progress, ProgressIndicator } from '@/components/common/Progress';
 import { TruncatedId } from '@/components/admin';
 import { Cpu, MemoryStick, HardDrive, Clock, ShieldCheck, ShieldAlert, Globe, Activity, Network } from 'lucide-react';
 import type { Node } from '@/api/node';
+import { RouteConfigDisplay } from './RouteConfigDisplay';
+import type { OutboundNodeOption } from './RouteRuleEditor';
 
 interface NodeDetailDialogProps {
   open: boolean;
   node: Node | null;
   onClose: () => void;
+  /** Available nodes for displaying node names in route config */
+  nodes?: OutboundNodeOption[];
 }
 
 // Status label mapping
@@ -102,6 +106,7 @@ export const NodeDetailDialog: React.FC<NodeDetailDialogProps> = ({
   open,
   node,
   onClose,
+  nodes = [],
 }) => {
   if (!node) return null;
 
@@ -457,6 +462,15 @@ export const NodeDetailDialog: React.FC<NodeDetailDialogProps> = ({
                   </div>
                 )}
               </div>
+            </div>
+          )}
+
+          {/* 路由配置 */}
+          {node.route && (
+            <div>
+              <h3 className="text-sm font-semibold mb-3">路由配置</h3>
+              <Separator className="mb-4" />
+              <RouteConfigDisplay config={node.route} nodes={nodes} />
             </div>
           )}
 

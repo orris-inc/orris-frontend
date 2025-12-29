@@ -21,14 +21,18 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/common/Select';
-import type { Node, UpdateNodeRequest, TransportProtocol } from '@/api/node';
+import type { Node, UpdateNodeRequest, TransportProtocol, RouteConfig } from '@/api/node';
 import { useResourceGroups } from '@/features/resource-groups/hooks/useResourceGroups';
+import { RouteConfigEditor } from './RouteConfigEditor';
+import type { OutboundNodeOption } from './RouteRuleEditor';
 
 interface EditNodeDialogProps {
   open: boolean;
   node: Node | null;
   onClose: () => void;
   onSubmit: (id: string, data: UpdateNodeRequest) => void;
+  /** Available nodes for route outbound selection */
+  nodes?: OutboundNodeOption[];
 }
 
 // Shadowsocks encryption methods
@@ -105,6 +109,7 @@ export const EditNodeDialog: React.FC<EditNodeDialogProps> = ({
   node,
   onClose,
   onSubmit,
+  nodes = [],
 }) => {
   const [formData, setFormData] = useState<UpdateNodeRequest>({});
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -137,6 +142,8 @@ export const EditNodeDialog: React.FC<EditNodeDialogProps> = ({
         path: node.path,
         sni: node.sni,
         allowInsecure: node.allowInsecure,
+        // Route configuration
+        route: node.route,
       });
       setPluginOptsStr(pluginOptsToString(node.pluginOpts));
       setErrors({});
@@ -170,6 +177,10 @@ export const EditNodeDialog: React.FC<EditNodeDialogProps> = ({
         return newErrors;
       });
     }
+  };
+
+  const handleRouteChange = (route: RouteConfig | undefined) => {
+    setFormData((prev) => ({ ...prev, route }));
   };
 
   const handleSubmit = () => {
@@ -266,6 +277,13 @@ export const EditNodeDialog: React.FC<EditNodeDialogProps> = ({
     // Resource group association
     if (formData.groupSid !== undefined) {
       updates.groupSid = formData.groupSid;
+    }
+
+    // Route configuration - compare JSON to detect changes
+    const routeChanged = JSON.stringify(formData.route) !== JSON.stringify(node.route);
+    if (routeChanged) {
+      // Use null to clear route, undefined means no change
+      updates.route = formData.route === undefined ? null : formData.route;
     }
 
     // If there are validation errors, display and prevent submission
@@ -615,6 +633,19 @@ export const EditNodeDialog: React.FC<EditNodeDialogProps> = ({
                 </p>
               </div>
             </div>
+          </div>
+
+          {/* 路由配置 */}
+          <div>
+            <h3 className="text-sm font-medium text-muted-foreground mb-3">路由配置</h3>
+            <Separator className="mb-4" />
+            <RouteConfigEditor
+              value={formData.route ?? undefined}
+              onChange={handleRouteChange}
+              idPrefix="edit-node-route"
+              nodes={nodes}
+              currentNodeId={node?.id}
+            />
           </div>
         </div>
         </div>

@@ -20,7 +20,10 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/common/Select';
-import type { CreateNodeRequest, TransportProtocol } from '@/api/node';
+import { Separator } from '@/components/common/Separator';
+import { RouteConfigEditor } from './RouteConfigEditor';
+import type { OutboundNodeOption } from './RouteRuleEditor';
+import type { CreateNodeRequest, TransportProtocol, RouteConfig } from '@/api/node';
 
 interface CreateNodeDialogProps {
   open: boolean;
@@ -28,6 +31,8 @@ interface CreateNodeDialogProps {
   onSubmit: (data: CreateNodeRequest) => void;
   /** Initial data for prefilling form when copying a node */
   initialData?: Partial<CreateNodeRequest>;
+  /** Available nodes for route outbound selection */
+  nodes?: OutboundNodeOption[];
 }
 
 // Shadowsocks encryption methods
@@ -64,6 +69,8 @@ const getDefaultFormData = (): CreateNodeRequest => ({
   path: '',
   sni: '',
   allowInsecure: false,
+  // Route configuration
+  route: undefined,
 });
 
 export const CreateNodeDialog: React.FC<CreateNodeDialogProps> = ({
@@ -71,6 +78,7 @@ export const CreateNodeDialog: React.FC<CreateNodeDialogProps> = ({
   onClose,
   onSubmit,
   initialData,
+  nodes = [],
 }) => {
   const [formData, setFormData] = useState<CreateNodeRequest>(getDefaultFormData());
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -116,6 +124,10 @@ export const CreateNodeDialog: React.FC<CreateNodeDialogProps> = ({
         return newErrors;
       });
     }
+  };
+
+  const handleRouteChange = (route: RouteConfig | undefined) => {
+    setFormData((prev) => ({ ...prev, route }));
   };
 
   const isShadowsocks = formData.protocol === 'shadowsocks';
@@ -228,6 +240,11 @@ export const CreateNodeDialog: React.FC<CreateNodeDialogProps> = ({
       }
       if (formData.sortOrder !== undefined) {
         submitData.sortOrder = formData.sortOrder;
+      }
+
+      // Route configuration
+      if (formData.route) {
+        submitData.route = formData.route;
       }
 
       onSubmit(submitData);
@@ -499,6 +516,17 @@ export const CreateNodeDialog: React.FC<CreateNodeDialogProps> = ({
               onChange={(e) => handleChange('sortOrder', parseInt(e.target.value, 10) || 0)}
             />
             <p className="text-xs text-muted-foreground">数字越小越靠前</p>
+          </div>
+
+          {/* 路由配置 */}
+          <div className="md:col-span-2">
+            <Separator className="my-4" />
+            <RouteConfigEditor
+              value={formData.route}
+              onChange={handleRouteChange}
+              idPrefix="create-node-route"
+              nodes={nodes}
+            />
           </div>
         </div>
 
