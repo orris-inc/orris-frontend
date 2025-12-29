@@ -42,10 +42,14 @@ interface UseNodesOptions {
   enabled?: boolean;
   /** Include user-created nodes in the list (default: false - only admin-created nodes) */
   includeUserNodes?: boolean;
+  /** Field to sort by (default: "sort_order") */
+  sortBy?: string;
+  /** Sort order: "asc" or "desc" (default: "asc") */
+  sortOrder?: 'asc' | 'desc';
 }
 
 export const useNodes = (options: UseNodesOptions = {}) => {
-  const { page = 1, pageSize = 20, filters = {}, enabled = true, includeUserNodes } = options;
+  const { page = 1, pageSize = 20, filters = {}, enabled = true, includeUserNodes, sortBy, sortOrder } = options;
   const queryClient = useQueryClient();
   const { showSuccess, showError } = useNotificationStore();
 
@@ -55,6 +59,8 @@ export const useNodes = (options: UseNodesOptions = {}) => {
     pageSize,
     status: filters.status,
     includeUserNodes,
+    sortBy,
+    sortOrder,
   };
 
   // Query node list
@@ -199,11 +205,13 @@ export const useNodesPage = () => {
   const [pageSize, setPageSize] = useState(20);
   const [filters, setFilters] = useState<NodeFilters>({});
   const [includeUserNodes, setIncludeUserNodes] = useState(false);
+  const [sortBy, setSortBy] = useState<string | undefined>(undefined);
+  const [sortOrder, setSortOrder] = useState<'asc' | 'desc' | undefined>(undefined);
   const [selectedNode, setSelectedNode] = useState<Node | null>(null);
   const [generatedToken, setGeneratedToken] = useState<GenerateNodeTokenResponse | null>(null);
   const [installScriptData, setInstallScriptData] = useState<GenerateNodeInstallScriptResponse | null>(null);
 
-  const nodesQuery = useNodes({ page, pageSize, filters, includeUserNodes });
+  const nodesQuery = useNodes({ page, pageSize, filters, includeUserNodes, sortBy, sortOrder });
 
   const handlePageChange = (newPage: number) => {
     setPage(newPage);
@@ -236,12 +244,20 @@ export const useNodesPage = () => {
     setPage(1);
   };
 
+  const handleSortChange = (newSortBy: string | undefined, newSortOrder: 'asc' | 'desc' | undefined) => {
+    setSortBy(newSortBy);
+    setSortOrder(newSortOrder);
+    setPage(1);
+  };
+
   return {
     ...nodesQuery,
     page,
     pageSize,
     filters,
     includeUserNodes,
+    sortBy,
+    sortOrder,
     selectedNode,
     generatedToken,
     installScriptData,
@@ -252,6 +268,7 @@ export const useNodesPage = () => {
     handlePageSizeChange,
     handleFiltersChange,
     handleIncludeUserNodesChange,
+    handleSortChange,
     handleGenerateToken,
     handleGetInstallScript,
   };

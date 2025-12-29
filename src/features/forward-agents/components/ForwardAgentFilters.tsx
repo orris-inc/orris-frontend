@@ -1,32 +1,27 @@
 /**
- * 转发规则筛选器组件
- * 支持：协议、状态、规则名称搜索、排序
+ * Forward agent filters component
+ * Supports: status, name search, sorting
  */
 
 import { FilterX } from 'lucide-react';
 import { Input } from '@/components/common/Input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/common/Select';
 import { Button } from '@/components/common/Button';
-import type { ForwardProtocol, ForwardStatus } from '@/api/forward';
+import type { ForwardStatus } from '@/api/forward';
 
-export interface ForwardRuleFilters {
-  protocol?: ForwardProtocol;
+export interface ForwardAgentFilters {
   status?: ForwardStatus;
   name?: string;
   orderBy?: string;
   order?: 'asc' | 'desc';
 }
 
-interface ForwardRuleFiltersProps {
-  filters: ForwardRuleFilters;
-  onChange: (filters: Partial<ForwardRuleFilters>) => void;
+interface ForwardAgentFiltersProps {
+  filters: ForwardAgentFilters;
+  onChange: (filters: Partial<ForwardAgentFilters>) => void;
 }
 
-export const ForwardRuleFilters: React.FC<ForwardRuleFiltersProps> = ({ filters, onChange }) => {
-  const handleProtocolChange = (value: string): void => {
-    onChange({ protocol: value === '_all_' ? undefined : (value as ForwardProtocol) });
-  };
-
+export const ForwardAgentFiltersComponent: React.FC<ForwardAgentFiltersProps> = ({ filters, onChange }) => {
   const handleStatusChange = (value: string): void => {
     onChange({ status: value === '_all_' ? undefined : (value as ForwardStatus) });
   };
@@ -55,7 +50,6 @@ export const ForwardRuleFilters: React.FC<ForwardRuleFiltersProps> = ({ filters,
 
   const handleReset = (): void => {
     onChange({
-      protocol: undefined,
       status: undefined,
       name: undefined,
       orderBy: undefined,
@@ -65,20 +59,6 @@ export const ForwardRuleFilters: React.FC<ForwardRuleFiltersProps> = ({ filters,
 
   return (
     <div className="flex items-center gap-4">
-      <div className="w-36">
-        <Select value={filters.protocol || '_all_'} onValueChange={handleProtocolChange}>
-          <SelectTrigger>
-            <SelectValue placeholder="协议" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="_all_">全部</SelectItem>
-            <SelectItem value="tcp">TCP</SelectItem>
-            <SelectItem value="udp">UDP</SelectItem>
-            <SelectItem value="both">TCP/UDP</SelectItem>
-          </SelectContent>
-        </Select>
-      </div>
-
       <div className="w-36">
         <Select value={filters.status || '_all_'} onValueChange={handleStatusChange}>
           <SelectTrigger>
@@ -94,7 +74,7 @@ export const ForwardRuleFilters: React.FC<ForwardRuleFiltersProps> = ({ filters,
 
       <div className="flex-1 max-w-xs">
         <Input
-          placeholder="搜索规则名称"
+          placeholder="搜索节点名称"
           value={filters.name || ''}
           onChange={(e) => handleSearchChange(e.target.value)}
         />
@@ -110,7 +90,6 @@ export const ForwardRuleFilters: React.FC<ForwardRuleFiltersProps> = ({ filters,
             <SelectItem value="created_at_desc">创建时间 ↓</SelectItem>
             <SelectItem value="created_at_asc">创建时间 ↑</SelectItem>
             <SelectItem value="updated_at_desc">更新时间 ↓</SelectItem>
-            <SelectItem value="sort_order_asc">自定义排序</SelectItem>
           </SelectContent>
         </Select>
       </div>

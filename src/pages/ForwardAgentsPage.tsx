@@ -6,6 +6,7 @@
 import { useState, useMemo } from 'react';
 import { Cpu, Plus, RefreshCw } from 'lucide-react';
 import { ForwardAgentListTable } from '@/features/forward-agents/components/ForwardAgentListTable';
+import { ForwardAgentFiltersComponent } from '@/features/forward-agents/components/ForwardAgentFilters';
 import { EditForwardAgentDialog } from '@/features/forward-agents/components/EditForwardAgentDialog';
 import { CreateForwardAgentDialog } from '@/features/forward-agents/components/CreateForwardAgentDialog';
 import { ForwardAgentDetailDialog } from '@/features/forward-agents/components/ForwardAgentDetailDialog';
@@ -45,6 +46,8 @@ export const ForwardAgentsPage = () => {
     setInstallCommandData,
     handlePageChange,
     handlePageSizeChange,
+    filters,
+    handleFiltersChange,
   } = useForwardAgentsPage();
 
   // Fetch resource groups for displaying names
@@ -177,6 +180,14 @@ export const ForwardAgentsPage = () => {
           </div>
         }
       >
+        {/* Filters */}
+        <AdminCard>
+          <ForwardAgentFiltersComponent
+            filters={filters}
+            onChange={handleFiltersChange}
+          />
+        </AdminCard>
+
         {/* Forward Agent List Table */}
         <AdminCard noPadding>
           <ForwardAgentListTable

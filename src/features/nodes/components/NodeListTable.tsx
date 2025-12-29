@@ -60,7 +60,7 @@ interface NodeListTableProps {
 
 // Status configuration
 const STATUS_CONFIG: Record<NodeStatus, { label: string; variant: 'success' | 'default' | 'warning'; icon: React.ElementType }> = {
-  active: { label: '已激活', variant: 'success', icon: CheckCircle2 },
+  active: { label: '激活', variant: 'success', icon: CheckCircle2 },
   inactive: { label: '未激活', variant: 'default', icon: XCircle },
   maintenance: { label: '维护中', variant: 'warning', icon: Wrench },
 };
@@ -470,13 +470,13 @@ export const NodeListTable: React.FC<NodeListTableProps> = ({
       },
     },
     {
-      accessorKey: 'updatedAt',
-      header: '更新时间',
+      accessorKey: 'createdAt',
+      header: '创建时间',
       size: 100,
       meta: { priority: 4 } as ResponsiveColumnMeta, // Optional column >= 1280px
       cell: ({ row }) => (
         <span className="text-xs text-slate-500 dark:text-slate-400">
-          {formatDate(row.original.updatedAt)}
+          {formatDate(row.original.createdAt)}
         </span>
       ),
     },

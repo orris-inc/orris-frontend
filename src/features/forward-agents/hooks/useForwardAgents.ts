@@ -37,6 +37,9 @@ const forwardAgentsQueryKeys = {
 
 export interface ForwardAgentFilters {
   status?: 'enabled' | 'disabled';
+  name?: string;
+  orderBy?: string;
+  order?: 'asc' | 'desc';
 }
 
 interface UseForwardAgentsOptions {
@@ -54,7 +57,10 @@ export const useForwardAgents = (options: UseForwardAgentsOptions = {}) => {
   const params: ListForwardAgentsParams = {
     page,
     pageSize,
+    name: filters.name,
     status: filters.status,
+    orderBy: filters.orderBy,
+    order: filters.order,
   };
 
   const {
