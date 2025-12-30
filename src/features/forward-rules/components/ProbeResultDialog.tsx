@@ -8,7 +8,6 @@ import {
   CheckCircle2,
   XCircle,
   Loader2,
-  Server,
   Globe,
   ArrowRight,
   Copy,
@@ -23,7 +22,6 @@ import {
 } from '@/components/common/Dialog';
 import { Button } from '@/components/common/Button';
 import { Badge } from '@/components/common/Badge';
-import { Separator } from '@/components/common/Separator';
 import type { ForwardRule, ForwardAgent, RuleProbeResponse, ChainHopLatency } from '@/api/forward';
 import type { Node } from '@/api/node';
 
@@ -109,51 +107,56 @@ export const ProbeResultDialog: React.FC<ProbeResultDialogProps> = ({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-md">
-        <DialogHeader>
-          <DialogTitle className="flex items-center gap-2">
+      <DialogContent className="sm:max-w-md max-h-[85vh] flex flex-col">
+        <DialogHeader className="flex-shrink-0">
+          <DialogTitle className="flex items-center gap-2 text-base">
             拨测结果
             {probeResult && (
-              <Badge variant={probeResult.success ? 'default' : 'destructive'} className="ml-2">
+              <Badge variant={probeResult.success ? 'default' : 'destructive'} className="text-xs">
                 {probeResult.ruleType}
               </Badge>
             )}
           </DialogTitle>
         </DialogHeader>
 
-        <div className="py-4">
+        <div className="flex-1 min-h-0 overflow-y-auto py-3">
           {isProbing ? (
-            <div className="flex flex-col items-center justify-center py-8">
-              <Loader2 className="size-8 animate-spin text-blue-500 mb-3" />
+            <div className="flex flex-col items-center justify-center py-6">
+              <Loader2 className="size-6 animate-spin text-blue-500 mb-2" />
               <p className="text-sm text-muted-foreground">正在拨测...</p>
             </div>
           ) : probeResult ? (
-            <div className="space-y-4">
+            <div className="space-y-3">
               {/* Probe Status */}
               <div
-                className={`flex items-center gap-3 p-4 rounded-lg ${
+                className={`flex items-center gap-2.5 p-3 rounded-lg ${
                   probeResult.success
                     ? 'bg-green-50 dark:bg-green-900/20'
                     : 'bg-red-50 dark:bg-red-900/20'
                 }`}
               >
                 {probeResult.success ? (
-                  <CheckCircle2 className="size-6 text-green-500 flex-shrink-0" />
+                  <CheckCircle2 className="size-5 text-green-500 flex-shrink-0" />
                 ) : (
-                  <XCircle className="size-6 text-red-500 flex-shrink-0" />
+                  <XCircle className="size-5 text-red-500 flex-shrink-0" />
                 )}
-                <div className="min-w-0">
-                  <p
-                    className={`font-medium ${
-                      probeResult.success
-                        ? 'text-green-700 dark:text-green-300'
-                        : 'text-red-700 dark:text-red-300'
-                    }`}
-                  >
-                    {probeResult.success ? '拨测成功' : '拨测失败'}
-                  </p>
+                <div className="min-w-0 flex-1">
+                  <div className="flex items-center justify-between gap-2">
+                    <p
+                      className={`text-sm font-medium ${
+                        probeResult.success
+                          ? 'text-green-700 dark:text-green-300'
+                          : 'text-red-700 dark:text-red-300'
+                      }`}
+                    >
+                      {probeResult.success ? '拨测成功' : '拨测失败'}
+                    </p>
+                    {probeResult.success && probeResult.totalLatencyMs !== undefined && (
+                      <Badge className="font-mono text-xs">{probeResult.totalLatencyMs}ms</Badge>
+                    )}
+                  </div>
                   {probeResult.error && (
-                    <p className="text-sm text-red-600 dark:text-red-400 mt-1 break-words">
+                    <p className="text-xs text-red-600 dark:text-red-400 mt-1 break-words">
                       {probeResult.error}
                     </p>
                   )}
@@ -161,160 +164,137 @@ export const ProbeResultDialog: React.FC<ProbeResultDialogProps> = ({
               </div>
 
               {/* Target Information - Display for all types */}
-              {rule && (
-                <>
-                  <Separator />
-                  <div className="space-y-2">
-                    <p className="text-xs font-medium text-muted-foreground flex items-center gap-1.5">
-                      <Globe className="size-3.5" />
-                      目标信息
-                    </p>
-                    {targetInfo && (
-                      <div className="bg-muted/50 rounded-lg p-3 space-y-2">
-                        {targetInfo.name && (
-                          <div className="flex items-center gap-2">
-                            <Server className="size-4 text-blue-500 flex-shrink-0" />
-                            <span className="text-sm font-medium truncate">{targetInfo.name}</span>
-                            <Badge variant="outline" className="text-xs">
-                              {rule.ipVersion}
-                            </Badge>
-                          </div>
+              {rule && targetInfo && (
+                <div className="bg-muted/50 rounded-lg p-2.5">
+                  <div className="flex items-center justify-between gap-2">
+                    <div className="flex items-center gap-2 min-w-0 flex-1">
+                      <Globe className="size-3.5 text-muted-foreground flex-shrink-0" />
+                      {targetInfo.name ? (
+                        <span className="text-xs font-medium truncate">{targetInfo.name}</span>
+                      ) : (
+                        <span className="text-xs text-muted-foreground">目标</span>
+                      )}
+                      <Badge variant="outline" className="text-[10px] px-1 py-0">
+                        {rule.ipVersion}
+                      </Badge>
+                    </div>
+                    {targetInfo.ip && (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const address = `${targetInfo.ip}${targetInfo.port ? `:${targetInfo.port}` : ''}`;
+                          navigator.clipboard.writeText(address);
+                          setCopiedAddress(true);
+                          setTimeout(() => setCopiedAddress(false), 2000);
+                        }}
+                        className="p-1 hover:bg-muted rounded transition-colors flex-shrink-0"
+                        title="复制地址"
+                      >
+                        {copiedAddress ? (
+                          <Check className="size-3 text-green-500" />
+                        ) : (
+                          <Copy className="size-3 text-muted-foreground" />
                         )}
-                        {targetInfo.ip && (
-                          <div className="flex items-center gap-2 text-sm">
-                            <span className="text-muted-foreground">IP:</span>
-                            <code className="font-mono text-sm bg-background px-1.5 py-0.5 rounded">
-                              {targetInfo.ip}
-                              {targetInfo.port ? `:${targetInfo.port}` : ''}
-                            </code>
-                            <button
-                              type="button"
-                              onClick={() => {
-                                const address = `${targetInfo.ip}${targetInfo.port ? `:${targetInfo.port}` : ''}`;
-                                navigator.clipboard.writeText(address);
-                                setCopiedAddress(true);
-                                setTimeout(() => setCopiedAddress(false), 2000);
-                              }}
-                              className="p-1 hover:bg-muted rounded transition-colors"
-                              title="复制地址"
-                            >
-                              {copiedAddress ? (
-                                <Check className="size-3.5 text-green-500" />
-                              ) : (
-                                <Copy className="size-3.5 text-muted-foreground" />
-                              )}
-                            </button>
-                          </div>
-                        )}
-                      </div>
+                      </button>
                     )}
                   </div>
-                </>
+                  {targetInfo.ip && (
+                    <code className="font-mono text-xs text-muted-foreground mt-1 block truncate">
+                      {targetInfo.ip}{targetInfo.port ? `:${targetInfo.port}` : ''}
+                    </code>
+                  )}
+                </div>
               )}
 
               {/* Latency Information */}
               {probeResult.success && (
-                <>
-                  <Separator />
-                  <div className="space-y-3">
-                    <p className="text-xs font-medium text-muted-foreground">延迟详情</p>
-                    <div className="space-y-2">
-                      {/* direct type: entry → target */}
-                      {probeResult.ruleType === 'direct' &&
-                        probeResult.targetLatencyMs !== undefined && (
-                          <div className="flex items-center text-sm py-1.5 px-2 rounded bg-muted/30">
-                            <span className="text-muted-foreground flex-1 min-w-0 flex items-center gap-1.5">
-                              <ArrowRight className="size-3.5 flex-shrink-0" />
+                <div className="space-y-1.5">
+                  <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-wide">延迟详情</p>
+                  <div className="space-y-1">
+                    {/* direct type: entry → target */}
+                    {probeResult.ruleType === 'direct' &&
+                      probeResult.targetLatencyMs !== undefined && (
+                        <div className="flex items-center text-xs py-1 px-2 rounded bg-muted/30">
+                          <span className="text-muted-foreground flex-1 min-w-0 flex items-center gap-1">
+                            <ArrowRight className="size-3 flex-shrink-0" />
+                            <span className="truncate">
+                              {entryAgentName} → {targetDisplay}
+                            </span>
+                          </span>
+                          <Badge variant="outline" className="font-mono text-[10px] px-1.5 py-0 flex-shrink-0">
+                            {probeResult.targetLatencyMs}ms
+                          </Badge>
+                        </div>
+                      )}
+
+                    {/* entry type: entry → exit → target */}
+                    {probeResult.ruleType === 'entry' && (
+                      <>
+                        {probeResult.tunnelLatencyMs !== undefined && (
+                          <div className="flex items-center text-xs py-1 px-2 rounded bg-muted/30">
+                            <span className="text-muted-foreground flex-1 min-w-0 flex items-center gap-1">
+                              <ArrowRight className="size-3 flex-shrink-0" />
                               <span className="truncate">
-                                {entryAgentName} → {targetDisplay}
+                                {entryAgentName} → {exitAgentName}
                               </span>
                             </span>
-                            <Badge variant="outline" className="font-mono flex-shrink-0 ml-2">
+                            <Badge variant="outline" className="font-mono text-[10px] px-1.5 py-0 flex-shrink-0">
+                              {probeResult.tunnelLatencyMs}ms
+                            </Badge>
+                          </div>
+                        )}
+                        {probeResult.targetLatencyMs !== undefined && (
+                          <div className="flex items-center text-xs py-1 px-2 rounded bg-muted/30">
+                            <span className="text-muted-foreground flex-1 min-w-0 flex items-center gap-1">
+                              <ArrowRight className="size-3 flex-shrink-0" />
+                              <span className="truncate">
+                                {exitAgentName} → {targetDisplay}
+                              </span>
+                            </span>
+                            <Badge variant="outline" className="font-mono text-[10px] px-1.5 py-0 flex-shrink-0">
                               {probeResult.targetLatencyMs}ms
                             </Badge>
                           </div>
                         )}
-
-                      {/* entry type: entry → exit → target */}
-                      {probeResult.ruleType === 'entry' && (
-                        <>
-                          {probeResult.tunnelLatencyMs !== undefined && (
-                            <div className="flex items-center text-sm py-1.5 px-2 rounded bg-muted/30">
-                              <span className="text-muted-foreground flex-1 min-w-0 flex items-center gap-1.5">
-                                <ArrowRight className="size-3.5 flex-shrink-0" />
-                                <span className="truncate">
-                                  {entryAgentName} → {exitAgentName}
-                                </span>
-                              </span>
-                              <Badge variant="outline" className="font-mono flex-shrink-0 ml-2">
-                                {probeResult.tunnelLatencyMs}ms
-                              </Badge>
-                            </div>
-                          )}
-                          {probeResult.targetLatencyMs !== undefined && (
-                            <div className="flex items-center text-sm py-1.5 px-2 rounded bg-muted/30">
-                              <span className="text-muted-foreground flex-1 min-w-0 flex items-center gap-1.5">
-                                <ArrowRight className="size-3.5 flex-shrink-0" />
-                                <span className="truncate">
-                                  {exitAgentName} → {targetDisplay}
-                                </span>
-                              </span>
-                              <Badge variant="outline" className="font-mono flex-shrink-0 ml-2">
-                                {probeResult.targetLatencyMs}ms
-                              </Badge>
-                            </div>
-                          )}
-                        </>
-                      )}
-
-                      {/* chain/direct_chain types: latency for each hop in the chain */}
-                      {(probeResult.ruleType === 'chain' || probeResult.ruleType === 'direct_chain') &&
-                        probeResult.chainLatencies &&
-                        probeResult.chainLatencies.length > 0 &&
-                        probeResult.chainLatencies.map((hop: ChainHopLatency, index: number) => {
-                          const fromName = getAgentName(hop.from);
-                          const toName = hop.to === 'target' ? targetDisplay : getAgentName(hop.to);
-                          return (
-                            <div
-                              key={index}
-                              className={`flex items-center text-sm py-1.5 px-2 rounded ${
-                                !hop.success ? 'bg-red-50 dark:bg-red-900/20' : 'bg-muted/30'
-                              }`}
-                            >
-                              <span className="text-muted-foreground flex-1 min-w-0 flex items-center gap-1.5">
-                                <ArrowRight className="size-3.5 flex-shrink-0" />
-                                <span className="truncate">
-                                  {fromName} → {toName}
-                                </span>
-                                {!hop.online && (
-                                  <Badge variant="outline" className="text-yellow-600 text-xs flex-shrink-0">
-                                    离线
-                                  </Badge>
-                                )}
-                              </span>
-                              <Badge
-                                variant={hop.success ? 'outline' : 'destructive'}
-                                className="font-mono flex-shrink-0 ml-2"
-                              >
-                                {hop.success ? `${hop.latencyMs}ms` : hop.error ?? '失败'}
-                              </Badge>
-                            </div>
-                          );
-                        })}
-                    </div>
-
-                    {/* Total Latency */}
-                    {probeResult.totalLatencyMs !== undefined && (
-                      <>
-                        <Separator className="my-2" />
-                        <div className="flex justify-between items-center text-sm">
-                          <span className="font-medium">总延迟</span>
-                          <Badge className="font-mono">{probeResult.totalLatencyMs}ms</Badge>
-                        </div>
                       </>
                     )}
+
+                    {/* chain/direct_chain types: latency for each hop in the chain */}
+                    {(probeResult.ruleType === 'chain' || probeResult.ruleType === 'direct_chain') &&
+                      probeResult.chainLatencies &&
+                      probeResult.chainLatencies.length > 0 &&
+                      probeResult.chainLatencies.map((hop: ChainHopLatency, index: number) => {
+                        const fromName = getAgentName(hop.from);
+                        const toName = hop.to === 'target' ? targetDisplay : getAgentName(hop.to);
+                        return (
+                          <div
+                            key={index}
+                            className={`flex items-center text-xs py-1 px-2 rounded ${
+                              !hop.success ? 'bg-red-50 dark:bg-red-900/20' : 'bg-muted/30'
+                            }`}
+                          >
+                            <span className="text-muted-foreground flex-1 min-w-0 flex items-center gap-1">
+                              <ArrowRight className="size-3 flex-shrink-0" />
+                              <span className="truncate">
+                                {fromName} → {toName}
+                              </span>
+                              {!hop.online && (
+                                <Badge variant="outline" className="text-yellow-600 text-[10px] px-1 py-0 flex-shrink-0">
+                                  离线
+                                </Badge>
+                              )}
+                            </span>
+                            <Badge
+                              variant={hop.success ? 'outline' : 'destructive'}
+                              className="font-mono text-[10px] px-1.5 py-0 flex-shrink-0"
+                            >
+                              {hop.success ? `${hop.latencyMs}ms` : hop.error ?? '失败'}
+                            </Badge>
+                          </div>
+                        );
+                      })}
                   </div>
-                </>
+                </div>
               )}
             </div>
           ) : (
@@ -322,8 +302,8 @@ export const ProbeResultDialog: React.FC<ProbeResultDialogProps> = ({
           )}
         </div>
 
-        <DialogFooter>
-          <Button variant="outline" onClick={() => onOpenChange(false)}>
+        <DialogFooter className="flex-shrink-0 pt-2">
+          <Button variant="outline" size="sm" onClick={() => onOpenChange(false)} className="w-full sm:w-auto">
             关闭
           </Button>
         </DialogFooter>

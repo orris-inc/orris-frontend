@@ -1,11 +1,14 @@
 /**
  * Forward Rule List Table Component (Admin)
  * Implemented using TanStack Table with responsive column hiding support
+ * Switches to mobile card list on small screens
  */
 
 import { useMemo, useState, useCallback } from 'react';
 import { Edit, Trash2, Eye, Power, PowerOff, MoreHorizontal, RotateCcw, Activity, Loader2, Copy, Check, Server, Bot, Settings, ArrowRight, Files, CheckCircle2, CircleDashed, AlertCircle, Play, Square, AlertTriangle, RotateCw } from 'lucide-react';
 import { DataTable, AdminBadge, TruncatedId, type ColumnDef, type ResponsiveColumnMeta } from '@/components/admin';
+import { useBreakpoint } from '@/hooks/useBreakpoint';
+import { ForwardRuleMobileList } from './ForwardRuleMobileList';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -243,6 +246,8 @@ export const ForwardRuleListTable: React.FC<ForwardRuleListTableProps> = ({
   onCopy,
   probingRuleId,
 }) => {
+  // Detect mobile screen
+  const { isMobile } = useBreakpoint();
   // Forward rule context menu content
   const renderContextMenuActions = useCallback((rule: ForwardRule) => (
     <>
@@ -691,6 +696,29 @@ export const ForwardRuleListTable: React.FC<ForwardRuleListTableProps> = ({
       },
     },
   ], [agentsMap, nodes, polledStatusMap, pollingRuleIds, onDisable, onEnable, onViewDetail, onEdit, onProbe, probingRuleId, renderDropdownMenuActions]);
+
+  // Render mobile card list on small screens
+  if (isMobile) {
+    return (
+      <ForwardRuleMobileList
+        rules={rules}
+        agentsMap={agentsMap}
+        nodes={nodes}
+        polledStatusMap={polledStatusMap}
+        pollingRuleIds={pollingRuleIds}
+        loading={loading}
+        onEdit={onEdit}
+        onDelete={onDelete}
+        onEnable={onEnable}
+        onDisable={onDisable}
+        onResetTraffic={onResetTraffic}
+        onViewDetail={onViewDetail}
+        onProbe={onProbe}
+        onCopy={onCopy}
+        probingRuleId={probingRuleId}
+      />
+    );
+  }
 
   return (
     <DataTable

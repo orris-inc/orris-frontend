@@ -15,7 +15,6 @@ import { Button } from '@/components/common/Button';
 import { Input } from '@/components/common/Input';
 import { Textarea } from '@/components/common/Textarea';
 import { Label } from '@/components/common/Label';
-import { Separator } from '@/components/common/Separator';
 import {
   Select,
   SelectContent,
@@ -24,6 +23,12 @@ import {
   SelectValue,
 } from '@/components/common/Select';
 import { RadioGroup, RadioGroupItem } from '@/components/common/RadioGroup';
+import {
+  Accordion,
+  AccordionItem,
+  AccordionTrigger,
+  AccordionContent,
+} from '@/components/common/Accordion';
 import { SortableChainAgentList } from './SortableChainAgentList';
 import type { ForwardRule, UpdateForwardRuleRequest, IPVersion, ForwardAgent, TunnelType } from '@/api/forward';
 import type { Node } from '@/api/node';
@@ -332,12 +337,14 @@ export const EditForwardRuleDialog: React.FC<EditForwardRuleDialogProps> = ({
         </DialogHeader>
 
         <div className="flex-1 min-h-0 overflow-y-auto -mx-6 px-6">
-        <div className="space-y-6">
+        <Accordion type="multiple" defaultValue={['editable']} className="space-y-2">
           {/* Basic Information (Read-only) */}
-          <div>
-            <h3 className="text-sm font-medium text-muted-foreground mb-3">基本信息</h3>
-            <Separator className="mb-4" />
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <AccordionItem value="basic" className="border rounded-lg px-4">
+            <AccordionTrigger className="hover:no-underline py-3">
+              <span className="text-sm font-medium">基本信息（只读）</span>
+            </AccordionTrigger>
+            <AccordionContent>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pb-4">
               <div className="flex flex-col gap-2">
                 <Label htmlFor="rule_id">规则ID</Label>
                 <Input id="rule_id" value={rule.id} disabled />
@@ -352,7 +359,7 @@ export const EditForwardRuleDialog: React.FC<EditForwardRuleDialogProps> = ({
                 />
               </div>
 
-              <div className="flex flex-col gap-2 md:col-span-2">
+              <div className="flex flex-col gap-2 sm:col-span-2">
                 <Label htmlFor="created_at">创建时间</Label>
                 <Input
                   id="created_at"
@@ -361,15 +368,18 @@ export const EditForwardRuleDialog: React.FC<EditForwardRuleDialogProps> = ({
                 />
               </div>
             </div>
-          </div>
+            </AccordionContent>
+          </AccordionItem>
 
           {/* Editable Fields */}
-          <div>
-            <h3 className="text-sm font-medium text-muted-foreground mb-3">可编辑信息</h3>
-            <Separator className="mb-4" />
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <AccordionItem value="editable" className="border rounded-lg px-4">
+            <AccordionTrigger className="hover:no-underline py-3">
+              <span className="text-sm font-medium">可编辑信息</span>
+            </AccordionTrigger>
+            <AccordionContent>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pb-4">
               {/* Rule Name */}
-              <div className="flex flex-col gap-2 md:col-span-2">
+              <div className="flex flex-col gap-2 sm:col-span-2">
                 <Label htmlFor="name">规则名称</Label>
                 <Input
                   id="name"
@@ -469,7 +479,7 @@ export const EditForwardRuleDialog: React.FC<EditForwardRuleDialogProps> = ({
 
               {/* chain type: Chain Agents */}
               {rule.ruleType === 'chain' && (
-                <div className="flex flex-col gap-2 md:col-span-2">
+                <div className="flex flex-col gap-2 sm:col-span-2">
                   <Label>中间节点{formData.tunnelHops !== undefined && formData.tunnelHops >= 0 && formData.tunnelHops < (formData.chainAgentIds?.length || 0) && '及端口'}</Label>
                   <SortableChainAgentList
                     agents={availableChainAgents}
@@ -510,7 +520,7 @@ export const EditForwardRuleDialog: React.FC<EditForwardRuleDialogProps> = ({
 
               {/* direct_chain type: Chain Agents (with port configuration) */}
               {rule.ruleType === 'direct_chain' && (
-                <div className="flex flex-col gap-2 md:col-span-2">
+                <div className="flex flex-col gap-2 sm:col-span-2">
                   <Label>中间节点及端口</Label>
                   <SortableChainAgentList
                     agents={availableChainAgents}
@@ -597,7 +607,7 @@ export const EditForwardRuleDialog: React.FC<EditForwardRuleDialogProps> = ({
               {rule && (rule.ruleType === 'direct' || rule.ruleType === 'entry' || rule.ruleType === 'chain' || rule.ruleType === 'direct_chain') && (
                 <>
                   {/* Target Type Selection */}
-                  <div className="flex flex-col gap-2 md:col-span-2">
+                  <div className="flex flex-col gap-2 sm:col-span-2">
                     <Label>目标类型</Label>
                     <RadioGroup
                       value={targetType}
@@ -664,7 +674,7 @@ export const EditForwardRuleDialog: React.FC<EditForwardRuleDialogProps> = ({
 
                   {/* Select Target Node */}
                   {targetType === 'node' && (
-                    <div className="flex flex-col gap-2 md:col-span-2">
+                    <div className="flex flex-col gap-2 sm:col-span-2">
                       <Label htmlFor="targetNodeId">目标节点</Label>
                       <Select
                         value={formData.targetNodeId || ''}
@@ -736,19 +746,20 @@ export const EditForwardRuleDialog: React.FC<EditForwardRuleDialogProps> = ({
               </div>
 
               {/* Remark */}
-              <div className="flex flex-col gap-1.5 md:col-span-2">
+              <div className="flex flex-col gap-1.5 sm:col-span-2">
                 <Label htmlFor="remark">备注</Label>
                 <Textarea
                   id="remark"
-                  rows={4}
+                  rows={3}
                   value={formData.remark || ''}
                   onChange={(e) => handleChange('remark', e.target.value)}
                   className="resize-none"
                 />
               </div>
             </div>
-          </div>
-        </div>
+            </AccordionContent>
+          </AccordionItem>
+        </Accordion>
         </div>
 
         <DialogFooter className="flex-shrink-0 mt-6 gap-3">

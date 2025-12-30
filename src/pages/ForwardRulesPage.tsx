@@ -24,6 +24,7 @@ import {
   AdminCard,
 } from '@/components/admin';
 import { usePageTitle } from '@/shared/hooks';
+import { useBreakpoint } from '@/hooks/useBreakpoint';
 import type { ForwardRule, CreateForwardRuleRequest, UpdateForwardRuleRequest, RuleProbeResponse, ForwardRuleType, ForwardProtocol, IPVersion } from '@/api/forward';
 
 export const ForwardRulesPage = () => {
@@ -59,6 +60,9 @@ export const ForwardRulesPage = () => {
 
   // Short-term polling after enable/disable operations
   const { polledStatusMap, pollingRuleIds, startPolling } = useRuleStatusPolling();
+
+  // Responsive breakpoint
+  const { isMobile } = useBreakpoint();
 
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
@@ -197,61 +201,71 @@ export const ForwardRulesPage = () => {
         title="转发规则管理"
         description="管理系统中的所有端口转发规则"
         icon={ArrowLeftRight}
-        action={
-          <div className="flex items-center gap-4">
-            {/* Toggle to show user rules */}
-            <label className="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-400 cursor-pointer">
-              <Users className="size-4" strokeWidth={1.5} />
-              <span>显示用户规则</span>
-              <Switch
-                checked={includeUserRules}
-                onCheckedChange={handleIncludeUserRulesChange}
-              >
-                <SwitchThumb />
-              </Switch>
-            </label>
+      >
+        {/* Toolbar - Compact on mobile */}
+        <div className="space-y-2 sm:space-y-3 mb-3 sm:mb-4">
+          {/* Row 1: Actions */}
+          <div className="flex items-center justify-between gap-2">
+            {/* Left: User rules toggle */}
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <label className="flex items-center gap-1 cursor-pointer text-xs sm:text-sm text-slate-600 dark:text-slate-400">
+                  <Users className="size-3.5 sm:size-4 text-slate-500" strokeWidth={1.5} />
+                  <span className="hidden sm:inline">用户规则</span>
+                  <Switch
+                    checked={includeUserRules}
+                    onCheckedChange={handleIncludeUserRulesChange}
+                  >
+                    <SwitchThumb />
+                  </Switch>
+                </label>
+              </TooltipTrigger>
+              <TooltipContent>显示用户规则</TooltipContent>
+            </Tooltip>
 
-            <div className="flex gap-2">
+            {/* Right: Refresh + Add */}
+            <div className="flex items-center gap-1.5 sm:gap-2">
               <Tooltip>
                 <TooltipTrigger asChild>
                   <AdminButton
                     variant="outline"
-                    size="md"
+                    size="sm"
                     onClick={handleRefresh}
                     disabled={isFetching}
                     icon={
                       <RefreshCw
-                        className={`size-4 ${isFetching ? 'animate-spin' : ''}`}
+                        className={`size-3.5 sm:size-4 ${isFetching ? 'animate-spin' : ''}`}
                         strokeWidth={1.5}
                       />
                     }
                   >
-                    刷新
+                    <span className="sr-only">刷新</span>
                   </AdminButton>
                 </TooltipTrigger>
-                <TooltipContent>刷新转发规则列表</TooltipContent>
+                <TooltipContent>刷新</TooltipContent>
               </Tooltip>
+
               <AdminButton
                 variant="primary"
-                icon={<Plus className="size-4" strokeWidth={1.5} />}
+                size="sm"
+                icon={<Plus className="size-3.5 sm:size-4" strokeWidth={1.5} />}
                 onClick={() => {
                   setCopyRuleData(undefined);
                   setCreateDialogOpen(true);
                 }}
               >
-                新增规则
+                <span className="hidden sm:inline">新增规则</span>
+                <span className="sm:hidden text-xs">新增</span>
               </AdminButton>
             </div>
           </div>
-        }
-      >
-        {/* 筛选器 */}
-        <div className="mb-4">
+
+          {/* Row 2: Filters */}
           <ForwardRuleFilters filters={filters} onChange={handleFiltersChange} />
         </div>
 
-        {/* 转发规则列表表格 */}
-        <AdminCard noPadding>
+        {/* 转发规则列表 - 移动端不使用 AdminCard 包装 */}
+        {isMobile ? (
           <ForwardRuleListTable
             rules={forwardRules}
             agentsMap={agentsMap}
@@ -274,7 +288,32 @@ export const ForwardRulesPage = () => {
             onCopy={handleCopy}
             probingRuleId={probingRuleId}
           />
-        </AdminCard>
+        ) : (
+          <AdminCard noPadding>
+            <ForwardRuleListTable
+              rules={forwardRules}
+              agentsMap={agentsMap}
+              nodes={nodes}
+              polledStatusMap={polledStatusMap}
+              pollingRuleIds={pollingRuleIds}
+              loading={isLoading || isFetching}
+              page={pagination.page}
+              pageSize={pagination.pageSize}
+              total={pagination.total}
+              onPageChange={handlePageChange}
+              onPageSizeChange={handlePageSizeChange}
+              onEdit={handleEdit}
+              onDelete={handleDelete}
+              onEnable={handleEnable}
+              onDisable={handleDisable}
+              onResetTraffic={handleResetTraffic}
+              onViewDetail={handleViewDetail}
+              onProbe={handleProbe}
+              onCopy={handleCopy}
+              probingRuleId={probingRuleId}
+            />
+          </AdminCard>
+        )}
       </AdminPageLayout>
 
       {/* 新增转发规则对话框 */}

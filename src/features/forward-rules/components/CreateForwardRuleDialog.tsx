@@ -23,8 +23,13 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/common/Select';
-import { Separator } from '@/components/common/Separator';
 import { RadioGroup, RadioGroupItem } from '@/components/common/RadioGroup';
+import {
+  Accordion,
+  AccordionItem,
+  AccordionTrigger,
+  AccordionContent,
+} from '@/components/common/Accordion';
 import { SortableChainAgentList } from './SortableChainAgentList';
 import type { CreateForwardRuleRequest, ForwardAgent, ForwardRuleType, ForwardProtocol, IPVersion, TunnelType } from '@/api/forward';
 import type { Node } from '@/api/node';
@@ -476,12 +481,14 @@ export const CreateForwardRuleDialog: React.FC<CreateForwardRuleDialogProps> = (
         </DialogHeader>
 
         <div className="flex-1 min-h-0 overflow-y-auto -mx-6 px-6">
-        <div className="space-y-6">
+        <Accordion type="multiple" defaultValue={['basic', 'forward']} className="space-y-2">
           {/* Basic Information */}
-          <div>
-            <h3 className="text-sm font-medium text-muted-foreground mb-3">基本信息</h3>
-            <Separator className="mb-4" />
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <AccordionItem value="basic" className="border rounded-lg px-4">
+            <AccordionTrigger className="hover:no-underline py-3">
+              <span className="text-sm font-medium">基本信息</span>
+            </AccordionTrigger>
+            <AccordionContent>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pb-4">
               {/* Forward Agent */}
               <div className="flex flex-col gap-2">
                 <Label htmlFor="agentId">
@@ -531,7 +538,7 @@ export const CreateForwardRuleDialog: React.FC<CreateForwardRuleDialogProps> = (
               </div>
 
               {/* Rule Name */}
-              <div className="flex flex-col gap-2 md:col-span-2">
+              <div className="flex flex-col gap-2 sm:col-span-2">
                 <Label htmlFor="name">
                   规则名称 <span className="text-destructive">*</span>
                 </Label>
@@ -584,13 +591,16 @@ export const CreateForwardRuleDialog: React.FC<CreateForwardRuleDialogProps> = (
                 <p className="text-xs text-muted-foreground">目标地址解析时优先使用的 IP 版本</p>
               </div>
             </div>
-          </div>
+            </AccordionContent>
+          </AccordionItem>
 
           {/* Forwarding Configuration - Show different fields based on rule type */}
-          <div>
-            <h3 className="text-sm font-medium text-muted-foreground mb-3">转发配置</h3>
-            <Separator className="mb-4" />
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <AccordionItem value="forward" className="border rounded-lg px-4">
+            <AccordionTrigger className="hover:no-underline py-3">
+              <span className="text-sm font-medium">转发配置</span>
+            </AccordionTrigger>
+            <AccordionContent>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pb-4">
               {/* direct, entry, chain and direct_chain types: Listen Port */}
               {(formData.ruleType === 'direct' || formData.ruleType === 'entry' || formData.ruleType === 'chain' || formData.ruleType === 'direct_chain') && (
                 <div className="flex flex-col gap-2">
@@ -681,7 +691,7 @@ export const CreateForwardRuleDialog: React.FC<CreateForwardRuleDialogProps> = (
 
               {/* chain type: Intermediate Nodes List */}
               {formData.ruleType === 'chain' && (
-                <div className="flex flex-col gap-2 md:col-span-2">
+                <div className="flex flex-col gap-2 sm:col-span-2">
                   <Label>
                     中间节点 <span className="text-destructive">*</span>
                   </Label>
@@ -720,7 +730,7 @@ export const CreateForwardRuleDialog: React.FC<CreateForwardRuleDialogProps> = (
 
               {/* direct_chain type: Intermediate Nodes List (with port configuration) */}
               {formData.ruleType === 'direct_chain' && (
-                <div className="flex flex-col gap-2 md:col-span-2">
+                <div className="flex flex-col gap-2 sm:col-span-2">
                   <Label>
                     中间节点及端口 <span className="text-destructive">*</span>
                   </Label>
@@ -756,7 +766,7 @@ export const CreateForwardRuleDialog: React.FC<CreateForwardRuleDialogProps> = (
               {(formData.ruleType === 'direct' || formData.ruleType === 'entry' || formData.ruleType === 'chain' || formData.ruleType === 'direct_chain') && (
                 <>
                   {/* Target Type Selection */}
-                  <div className="flex flex-col gap-2 md:col-span-2">
+                  <div className="flex flex-col gap-2 sm:col-span-2">
                     <Label>目标类型 <span className="text-destructive">*</span></Label>
                     <RadioGroup
                       value={targetType}
@@ -825,7 +835,7 @@ export const CreateForwardRuleDialog: React.FC<CreateForwardRuleDialogProps> = (
 
                   {/* Select Target Node */}
                   {targetType === 'node' && (
-                    <div className="flex flex-col gap-2 md:col-span-2">
+                    <div className="flex flex-col gap-2 sm:col-span-2">
                       <Label htmlFor="targetNodeId">
                         目标节点 <span className="text-destructive">*</span>
                       </Label>
@@ -853,13 +863,16 @@ export const CreateForwardRuleDialog: React.FC<CreateForwardRuleDialogProps> = (
                 </>
               )}
             </div>
-          </div>
+            </AccordionContent>
+          </AccordionItem>
 
           {/* Advanced Options */}
-          <div>
-            <h3 className="text-sm font-medium text-muted-foreground mb-3">高级选项</h3>
-            <Separator className="mb-4" />
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <AccordionItem value="advanced" className="border rounded-lg px-4">
+            <AccordionTrigger className="hover:no-underline py-3">
+              <span className="text-sm font-medium">高级选项</span>
+            </AccordionTrigger>
+            <AccordionContent>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pb-4">
               <div className="flex flex-col gap-2">
                 <Label htmlFor="bindIp">绑定 IP</Label>
                 <Input
@@ -909,11 +922,11 @@ export const CreateForwardRuleDialog: React.FC<CreateForwardRuleDialogProps> = (
                 </p>
               </div>
 
-              <div className="flex flex-col gap-1.5 md:col-span-2">
+              <div className="flex flex-col gap-1.5 sm:col-span-2">
                 <Label htmlFor="remark">备注</Label>
                 <Textarea
                   id="remark"
-                  rows={4}
+                  rows={3}
                   value={formData.remark}
                   onChange={(e) => handleChange('remark', e.target.value)}
                   placeholder="可选：添加备注说明"
@@ -921,8 +934,9 @@ export const CreateForwardRuleDialog: React.FC<CreateForwardRuleDialogProps> = (
                 />
               </div>
             </div>
-          </div>
-        </div>
+            </AccordionContent>
+          </AccordionItem>
+        </Accordion>
         </div>
 
         <DialogFooter className="flex-shrink-0 mt-6 gap-3">
