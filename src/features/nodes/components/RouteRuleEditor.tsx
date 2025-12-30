@@ -3,8 +3,6 @@
  * Edit a single routing rule with all matching conditions
  */
 
-import { useState } from 'react';
-import { ChevronDown, ChevronRight } from 'lucide-react';
 import { Label } from '@/components/common/Label';
 import { Textarea } from '@/components/common/Textarea';
 import { Checkbox } from '@/components/common/Checkbox';
@@ -16,10 +14,12 @@ import {
   SelectValue,
 } from '@/components/common/Select';
 import {
-  Collapsible,
-  CollapsibleContent,
-  CollapsibleTrigger,
-} from '@/components/common/Collapsible';
+  Accordion,
+  AccordionItem,
+  AccordionTrigger,
+  AccordionContent,
+} from '@/components/common/Accordion';
+import { Badge } from '@/components/common/Badge';
 import type { RouteRule, OutboundType } from '@/api/node';
 
 /** Simple node info for outbound selection */
@@ -89,39 +89,38 @@ const formatPortDisplay = (arr?: number[]): string => {
   return (arr || []).join(', ');
 };
 
-interface CollapsibleSectionProps {
-  title: string;
-  hasContent: boolean;
-  children: React.ReactNode;
-}
+/** Section identifier for accordion */
+type SectionId = 'domain' | 'ip' | 'geo' | 'port-protocol' | 'rule-set';
 
-const CollapsibleSection: React.FC<CollapsibleSectionProps> = ({
-  title,
-  hasContent,
-  children,
-}) => {
-  const [open, setOpen] = useState(hasContent);
-
-  return (
-    <Collapsible open={open} onOpenChange={setOpen}>
-      <CollapsibleTrigger className="flex items-center gap-2 text-sm font-medium text-muted-foreground hover:text-foreground py-1 px-0">
-        {open ? (
-          <ChevronDown className="h-4 w-4" />
-        ) : (
-          <ChevronRight className="h-4 w-4" />
-        )}
-        {title}
-        {hasContent && !open && (
-          <span className="text-xs bg-primary/10 text-primary px-1.5 py-0.5 rounded">
-            已配置
-          </span>
-        )}
-      </CollapsibleTrigger>
-      <CollapsibleContent className="px-0">
-        <div className="space-y-3 pt-2">{children}</div>
-      </CollapsibleContent>
-    </Collapsible>
-  );
+/** Get default expanded sections based on existing content */
+const getDefaultExpandedSections = (rule: RouteRule): SectionId[] => {
+  const sections: SectionId[] = [];
+  if (
+    rule.domain?.length ||
+    rule.domainSuffix?.length ||
+    rule.domainKeyword?.length ||
+    rule.domainRegex?.length
+  ) {
+    sections.push('domain');
+  }
+  if (rule.ipCidr?.length || rule.sourceIpCidr?.length || rule.ipIsPrivate) {
+    sections.push('ip');
+  }
+  if (rule.geoip?.length || rule.geosite?.length) {
+    sections.push('geo');
+  }
+  if (
+    rule.port?.length ||
+    rule.sourcePort?.length ||
+    rule.protocol?.length ||
+    rule.network?.length
+  ) {
+    sections.push('port-protocol');
+  }
+  if (rule.ruleSet?.length) {
+    sections.push('rule-set');
+  }
+  return sections;
 };
 
 export const RouteRuleEditor: React.FC<RouteRuleEditorProps> = ({
@@ -134,7 +133,8 @@ export const RouteRuleEditor: React.FC<RouteRuleEditorProps> = ({
 }) => {
   // Filter out current node from available options
   const availableNodes = nodes.filter((n) => n.id !== currentNodeId);
-  // Check if section has content
+
+  // Check if section has content for badge display
   const hasDomainContent = Boolean(
     rule.domain?.length ||
       rule.domainSuffix?.length ||
@@ -217,235 +217,332 @@ export const RouteRuleEditor: React.FC<RouteRuleEditorProps> = ({
         </p>
       </div>
 
-      {/* Domain matching */}
-      <CollapsibleSection title="域名匹配" hasContent={hasDomainContent}>
-        <div className="space-y-2">
-          <Label htmlFor={`${idPrefix}-domain`}>精确域名</Label>
-          <Textarea
-            id={`${idPrefix}-domain`}
-            value={formatArrayDisplay(rule.domain)}
-            onChange={(e) => handleArrayFieldChange('domain', e.target.value)}
-            placeholder="example.com&#10;www.example.com"
-            rows={2}
-            disabled={disabled}
-          />
-          <p className="text-xs text-muted-foreground">
-            每行一个或逗号分隔，精确匹配整个域名
-          </p>
-        </div>
-
-        <div className="space-y-2">
-          <Label htmlFor={`${idPrefix}-domainSuffix`}>域名后缀</Label>
-          <Textarea
-            id={`${idPrefix}-domainSuffix`}
-            value={formatArrayDisplay(rule.domainSuffix)}
-            onChange={(e) =>
-              handleArrayFieldChange('domainSuffix', e.target.value)
-            }
-            placeholder=".cn&#10;.google.com"
-            rows={2}
-            disabled={disabled}
-          />
-          <p className="text-xs text-muted-foreground">
-            匹配以指定后缀结尾的域名
-          </p>
-        </div>
-
-        <div className="space-y-2">
-          <Label htmlFor={`${idPrefix}-domainKeyword`}>域名关键字</Label>
-          <Textarea
-            id={`${idPrefix}-domainKeyword`}
-            value={formatArrayDisplay(rule.domainKeyword)}
-            onChange={(e) =>
-              handleArrayFieldChange('domainKeyword', e.target.value)
-            }
-            placeholder="google&#10;facebook"
-            rows={2}
-            disabled={disabled}
-          />
-          <p className="text-xs text-muted-foreground">
-            匹配包含指定关键字的域名
-          </p>
-        </div>
-
-        <div className="space-y-2">
-          <Label htmlFor={`${idPrefix}-domainRegex`}>域名正则</Label>
-          <Textarea
-            id={`${idPrefix}-domainRegex`}
-            value={formatArrayDisplay(rule.domainRegex)}
-            onChange={(e) =>
-              handleArrayFieldChange('domainRegex', e.target.value)
-            }
-            placeholder="^ad\\..*$&#10;.*\\.ads\\..*"
-            rows={2}
-            disabled={disabled}
-          />
-          <p className="text-xs text-muted-foreground">使用正则表达式匹配域名</p>
-        </div>
-      </CollapsibleSection>
-
-      {/* IP matching */}
-      <CollapsibleSection title="IP 匹配" hasContent={hasIpContent}>
-        <div className="space-y-2">
-          <Label htmlFor={`${idPrefix}-ipCidr`}>目标 IP CIDR</Label>
-          <Textarea
-            id={`${idPrefix}-ipCidr`}
-            value={formatArrayDisplay(rule.ipCidr)}
-            onChange={(e) => handleArrayFieldChange('ipCidr', e.target.value)}
-            placeholder="192.168.0.0/16&#10;10.0.0.0/8"
-            rows={2}
-            disabled={disabled}
-          />
-          <p className="text-xs text-muted-foreground">
-            匹配目标 IP 地址范围（CIDR 格式）
-          </p>
-        </div>
-
-        <div className="space-y-2">
-          <Label htmlFor={`${idPrefix}-sourceIpCidr`}>源 IP CIDR</Label>
-          <Textarea
-            id={`${idPrefix}-sourceIpCidr`}
-            value={formatArrayDisplay(rule.sourceIpCidr)}
-            onChange={(e) =>
-              handleArrayFieldChange('sourceIpCidr', e.target.value)
-            }
-            placeholder="192.168.1.0/24"
-            rows={2}
-            disabled={disabled}
-          />
-          <p className="text-xs text-muted-foreground">
-            匹配源 IP 地址范围（CIDR 格式）
-          </p>
-        </div>
-
-        <div className="flex items-center space-x-2">
-          <Checkbox
-            id={`${idPrefix}-ipIsPrivate`}
-            checked={rule.ipIsPrivate || false}
-            onCheckedChange={(checked) =>
-              onChange({
-                ...rule,
-                ipIsPrivate: checked ? true : undefined,
-              })
-            }
-            disabled={disabled}
-          />
-          <Label htmlFor={`${idPrefix}-ipIsPrivate`}>匹配私有/内网 IP</Label>
-        </div>
-      </CollapsibleSection>
-
-      {/* GeoIP/GeoSite */}
-      <CollapsibleSection title="GeoIP / GeoSite" hasContent={hasGeoContent}>
-        <div className="space-y-2">
-          <Label htmlFor={`${idPrefix}-geoip`}>GeoIP</Label>
-          <Textarea
-            id={`${idPrefix}-geoip`}
-            value={formatArrayDisplay(rule.geoip)}
-            onChange={(e) => handleArrayFieldChange('geoip', e.target.value)}
-            placeholder="cn&#10;us&#10;private"
-            rows={2}
-            disabled={disabled}
-          />
-          <p className="text-xs text-muted-foreground">
-            匹配 IP 所属国家/地区代码（如 cn, us）
-          </p>
-        </div>
-
-        <div className="space-y-2">
-          <Label htmlFor={`${idPrefix}-geosite`}>GeoSite</Label>
-          <Textarea
-            id={`${idPrefix}-geosite`}
-            value={formatArrayDisplay(rule.geosite)}
-            onChange={(e) => handleArrayFieldChange('geosite', e.target.value)}
-            placeholder="cn&#10;google&#10;telegram"
-            rows={2}
-            disabled={disabled}
-          />
-          <p className="text-xs text-muted-foreground">
-            匹配预定义的域名分类（如 cn, google, telegram）
-          </p>
-        </div>
-      </CollapsibleSection>
-
-      {/* Port/Protocol */}
-      <CollapsibleSection
-        title="端口 / 协议"
-        hasContent={hasPortProtocolContent}
+      {/* Matching conditions accordion */}
+      <Accordion
+        type="multiple"
+        defaultValue={getDefaultExpandedSections(rule)}
+        className="w-full"
       >
-        <div className="grid grid-cols-2 gap-4">
-          <div className="space-y-2">
-            <Label htmlFor={`${idPrefix}-port`}>目标端口</Label>
-            <Textarea
-              id={`${idPrefix}-port`}
-              value={formatPortDisplay(rule.port)}
-              onChange={(e) => handlePortFieldChange('port', e.target.value)}
-              placeholder="80, 443, 8080"
-              rows={1}
-              disabled={disabled}
-            />
-          </div>
+        {/* Domain matching */}
+        <AccordionItem value="domain" className="border rounded-md px-3 mb-2">
+          <AccordionTrigger className="py-3 hover:no-underline">
+            <div className="flex items-center gap-2">
+              <span className="text-sm font-medium">域名匹配</span>
+              {hasDomainContent && (
+                <Badge variant="secondary" className="text-xs">
+                  已配置
+                </Badge>
+              )}
+            </div>
+          </AccordionTrigger>
+          <AccordionContent>
+            <div className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor={`${idPrefix}-domain`}>精确域名</Label>
+                <Textarea
+                  id={`${idPrefix}-domain`}
+                  value={formatArrayDisplay(rule.domain)}
+                  onChange={(e) =>
+                    handleArrayFieldChange('domain', e.target.value)
+                  }
+                  placeholder="example.com&#10;www.example.com"
+                  rows={2}
+                  disabled={disabled}
+                />
+                <p className="text-xs text-muted-foreground">
+                  每行一个或逗号分隔，精确匹配整个域名
+                </p>
+              </div>
 
-          <div className="space-y-2">
-            <Label htmlFor={`${idPrefix}-sourcePort`}>源端口</Label>
-            <Textarea
-              id={`${idPrefix}-sourcePort`}
-              value={formatPortDisplay(rule.sourcePort)}
-              onChange={(e) =>
-                handlePortFieldChange('sourcePort', e.target.value)
-              }
-              placeholder="1024, 2048"
-              rows={1}
-              disabled={disabled}
-            />
-          </div>
-        </div>
+              <div className="space-y-2">
+                <Label htmlFor={`${idPrefix}-domainSuffix`}>域名后缀</Label>
+                <Textarea
+                  id={`${idPrefix}-domainSuffix`}
+                  value={formatArrayDisplay(rule.domainSuffix)}
+                  onChange={(e) =>
+                    handleArrayFieldChange('domainSuffix', e.target.value)
+                  }
+                  placeholder=".cn&#10;.google.com"
+                  rows={2}
+                  disabled={disabled}
+                />
+                <p className="text-xs text-muted-foreground">
+                  匹配以指定后缀结尾的域名
+                </p>
+              </div>
 
-        <div className="space-y-2">
-          <Label htmlFor={`${idPrefix}-protocol`}>协议</Label>
-          <Textarea
-            id={`${idPrefix}-protocol`}
-            value={formatArrayDisplay(rule.protocol)}
-            onChange={(e) => handleArrayFieldChange('protocol', e.target.value)}
-            placeholder="http&#10;tls&#10;quic"
-            rows={2}
-            disabled={disabled}
-          />
-          <p className="text-xs text-muted-foreground">
-            匹配嗅探到的协议（如 http, tls, quic）
-          </p>
-        </div>
+              <div className="space-y-2">
+                <Label htmlFor={`${idPrefix}-domainKeyword`}>域名关键字</Label>
+                <Textarea
+                  id={`${idPrefix}-domainKeyword`}
+                  value={formatArrayDisplay(rule.domainKeyword)}
+                  onChange={(e) =>
+                    handleArrayFieldChange('domainKeyword', e.target.value)
+                  }
+                  placeholder="google&#10;facebook"
+                  rows={2}
+                  disabled={disabled}
+                />
+                <p className="text-xs text-muted-foreground">
+                  匹配包含指定关键字的域名
+                </p>
+              </div>
 
-        <div className="space-y-2">
-          <Label htmlFor={`${idPrefix}-network`}>网络类型</Label>
-          <Textarea
-            id={`${idPrefix}-network`}
-            value={formatArrayDisplay(rule.network)}
-            onChange={(e) => handleArrayFieldChange('network', e.target.value)}
-            placeholder="tcp&#10;udp"
-            rows={1}
-            disabled={disabled}
-          />
-          <p className="text-xs text-muted-foreground">匹配网络类型（tcp, udp）</p>
-        </div>
-      </CollapsibleSection>
+              <div className="space-y-2">
+                <Label htmlFor={`${idPrefix}-domainRegex`}>域名正则</Label>
+                <Textarea
+                  id={`${idPrefix}-domainRegex`}
+                  value={formatArrayDisplay(rule.domainRegex)}
+                  onChange={(e) =>
+                    handleArrayFieldChange('domainRegex', e.target.value)
+                  }
+                  placeholder="^ad\\..*$&#10;.*\\.ads\\..*"
+                  rows={2}
+                  disabled={disabled}
+                />
+                <p className="text-xs text-muted-foreground">
+                  使用正则表达式匹配域名
+                </p>
+              </div>
+            </div>
+          </AccordionContent>
+        </AccordionItem>
 
-      {/* Rule set */}
-      <CollapsibleSection title="规则集" hasContent={hasRuleSetContent}>
-        <div className="space-y-2">
-          <Label htmlFor={`${idPrefix}-ruleSet`}>规则集引用</Label>
-          <Textarea
-            id={`${idPrefix}-ruleSet`}
-            value={formatArrayDisplay(rule.ruleSet)}
-            onChange={(e) => handleArrayFieldChange('ruleSet', e.target.value)}
-            placeholder="geoip-cn&#10;geosite-cn"
-            rows={2}
-            disabled={disabled}
-          />
-          <p className="text-xs text-muted-foreground">
-            引用预定义的规则集名称
-          </p>
-        </div>
-      </CollapsibleSection>
+        {/* IP matching */}
+        <AccordionItem value="ip" className="border rounded-md px-3 mb-2">
+          <AccordionTrigger className="py-3 hover:no-underline">
+            <div className="flex items-center gap-2">
+              <span className="text-sm font-medium">IP 匹配</span>
+              {hasIpContent && (
+                <Badge variant="secondary" className="text-xs">
+                  已配置
+                </Badge>
+              )}
+            </div>
+          </AccordionTrigger>
+          <AccordionContent>
+            <div className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor={`${idPrefix}-ipCidr`}>目标 IP CIDR</Label>
+                <Textarea
+                  id={`${idPrefix}-ipCidr`}
+                  value={formatArrayDisplay(rule.ipCidr)}
+                  onChange={(e) =>
+                    handleArrayFieldChange('ipCidr', e.target.value)
+                  }
+                  placeholder="192.168.0.0/16&#10;10.0.0.0/8"
+                  rows={2}
+                  disabled={disabled}
+                />
+                <p className="text-xs text-muted-foreground">
+                  匹配目标 IP 地址范围（CIDR 格式）
+                </p>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor={`${idPrefix}-sourceIpCidr`}>源 IP CIDR</Label>
+                <Textarea
+                  id={`${idPrefix}-sourceIpCidr`}
+                  value={formatArrayDisplay(rule.sourceIpCidr)}
+                  onChange={(e) =>
+                    handleArrayFieldChange('sourceIpCidr', e.target.value)
+                  }
+                  placeholder="192.168.1.0/24"
+                  rows={2}
+                  disabled={disabled}
+                />
+                <p className="text-xs text-muted-foreground">
+                  匹配源 IP 地址范围（CIDR 格式）
+                </p>
+              </div>
+
+              <div className="flex items-center space-x-2">
+                <Checkbox
+                  id={`${idPrefix}-ipIsPrivate`}
+                  checked={rule.ipIsPrivate || false}
+                  onCheckedChange={(checked) =>
+                    onChange({
+                      ...rule,
+                      ipIsPrivate: checked ? true : undefined,
+                    })
+                  }
+                  disabled={disabled}
+                />
+                <Label htmlFor={`${idPrefix}-ipIsPrivate`}>
+                  匹配私有/内网 IP
+                </Label>
+              </div>
+            </div>
+          </AccordionContent>
+        </AccordionItem>
+
+        {/* GeoIP/GeoSite */}
+        <AccordionItem value="geo" className="border rounded-md px-3 mb-2">
+          <AccordionTrigger className="py-3 hover:no-underline">
+            <div className="flex items-center gap-2">
+              <span className="text-sm font-medium">GeoIP / GeoSite</span>
+              {hasGeoContent && (
+                <Badge variant="secondary" className="text-xs">
+                  已配置
+                </Badge>
+              )}
+            </div>
+          </AccordionTrigger>
+          <AccordionContent>
+            <div className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor={`${idPrefix}-geoip`}>GeoIP</Label>
+                <Textarea
+                  id={`${idPrefix}-geoip`}
+                  value={formatArrayDisplay(rule.geoip)}
+                  onChange={(e) =>
+                    handleArrayFieldChange('geoip', e.target.value)
+                  }
+                  placeholder="cn&#10;us&#10;private"
+                  rows={2}
+                  disabled={disabled}
+                />
+                <p className="text-xs text-muted-foreground">
+                  匹配 IP 所属国家/地区代码（如 cn, us）
+                </p>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor={`${idPrefix}-geosite`}>GeoSite</Label>
+                <Textarea
+                  id={`${idPrefix}-geosite`}
+                  value={formatArrayDisplay(rule.geosite)}
+                  onChange={(e) =>
+                    handleArrayFieldChange('geosite', e.target.value)
+                  }
+                  placeholder="cn&#10;google&#10;telegram"
+                  rows={2}
+                  disabled={disabled}
+                />
+                <p className="text-xs text-muted-foreground">
+                  匹配预定义的域名分类（如 cn, google, telegram）
+                </p>
+              </div>
+            </div>
+          </AccordionContent>
+        </AccordionItem>
+
+        {/* Port/Protocol */}
+        <AccordionItem
+          value="port-protocol"
+          className="border rounded-md px-3 mb-2"
+        >
+          <AccordionTrigger className="py-3 hover:no-underline">
+            <div className="flex items-center gap-2">
+              <span className="text-sm font-medium">端口 / 协议</span>
+              {hasPortProtocolContent && (
+                <Badge variant="secondary" className="text-xs">
+                  已配置
+                </Badge>
+              )}
+            </div>
+          </AccordionTrigger>
+          <AccordionContent>
+            <div className="space-y-4">
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor={`${idPrefix}-port`}>目标端口</Label>
+                  <Textarea
+                    id={`${idPrefix}-port`}
+                    value={formatPortDisplay(rule.port)}
+                    onChange={(e) =>
+                      handlePortFieldChange('port', e.target.value)
+                    }
+                    placeholder="80, 443, 8080"
+                    rows={1}
+                    disabled={disabled}
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor={`${idPrefix}-sourcePort`}>源端口</Label>
+                  <Textarea
+                    id={`${idPrefix}-sourcePort`}
+                    value={formatPortDisplay(rule.sourcePort)}
+                    onChange={(e) =>
+                      handlePortFieldChange('sourcePort', e.target.value)
+                    }
+                    placeholder="1024, 2048"
+                    rows={1}
+                    disabled={disabled}
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor={`${idPrefix}-protocol`}>协议</Label>
+                <Textarea
+                  id={`${idPrefix}-protocol`}
+                  value={formatArrayDisplay(rule.protocol)}
+                  onChange={(e) =>
+                    handleArrayFieldChange('protocol', e.target.value)
+                  }
+                  placeholder="http&#10;tls&#10;quic"
+                  rows={2}
+                  disabled={disabled}
+                />
+                <p className="text-xs text-muted-foreground">
+                  匹配嗅探到的协议（如 http, tls, quic）
+                </p>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor={`${idPrefix}-network`}>网络类型</Label>
+                <Textarea
+                  id={`${idPrefix}-network`}
+                  value={formatArrayDisplay(rule.network)}
+                  onChange={(e) =>
+                    handleArrayFieldChange('network', e.target.value)
+                  }
+                  placeholder="tcp&#10;udp"
+                  rows={1}
+                  disabled={disabled}
+                />
+                <p className="text-xs text-muted-foreground">
+                  匹配网络类型（tcp, udp）
+                </p>
+              </div>
+            </div>
+          </AccordionContent>
+        </AccordionItem>
+
+        {/* Rule set */}
+        <AccordionItem value="rule-set" className="border rounded-md px-3">
+          <AccordionTrigger className="py-3 hover:no-underline">
+            <div className="flex items-center gap-2">
+              <span className="text-sm font-medium">规则集</span>
+              {hasRuleSetContent && (
+                <Badge variant="secondary" className="text-xs">
+                  已配置
+                </Badge>
+              )}
+            </div>
+          </AccordionTrigger>
+          <AccordionContent>
+            <div className="space-y-2">
+              <Label htmlFor={`${idPrefix}-ruleSet`}>规则集引用</Label>
+              <Textarea
+                id={`${idPrefix}-ruleSet`}
+                value={formatArrayDisplay(rule.ruleSet)}
+                onChange={(e) =>
+                  handleArrayFieldChange('ruleSet', e.target.value)
+                }
+                placeholder="geoip-cn&#10;geosite-cn"
+                rows={2}
+                disabled={disabled}
+              />
+              <p className="text-xs text-muted-foreground">
+                引用预定义的规则集名称
+              </p>
+            </div>
+          </AccordionContent>
+        </AccordionItem>
+      </Accordion>
     </div>
   );
 };

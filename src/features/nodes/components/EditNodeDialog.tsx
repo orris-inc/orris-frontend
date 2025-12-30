@@ -13,7 +13,6 @@ import {
 import { Button } from '@/components/common/Button';
 import { Input } from '@/components/common/Input';
 import { Label } from '@/components/common/Label';
-import { Separator } from '@/components/common/Separator';
 import {
   Select,
   SelectContent,
@@ -21,6 +20,13 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/common/Select';
+import {
+  Accordion,
+  AccordionItem,
+  AccordionTrigger,
+  AccordionContent,
+} from '@/components/common/Accordion';
+import { Badge } from '@/components/common/Badge';
 import type { Node, UpdateNodeRequest, TransportProtocol, RouteConfig } from '@/api/node';
 import { useResourceGroups } from '@/features/resource-groups/hooks/useResourceGroups';
 import { RouteConfigEditor } from './RouteConfigEditor';
@@ -144,6 +150,8 @@ export const EditNodeDialog: React.FC<EditNodeDialogProps> = ({
         allowInsecure: node.allowInsecure,
         // Route configuration
         route: node.route,
+        // Resource group (use first group if exists)
+        groupSid: node.groupIds?.[0] ?? '',
       });
       setPluginOptsStr(pluginOptsToString(node.pluginOpts));
       setErrors({});
@@ -304,6 +312,11 @@ export const EditNodeDialog: React.FC<EditNodeDialogProps> = ({
     (key) => formData[key as keyof UpdateNodeRequest] !== node[key as keyof Node]
   );
 
+  // Check if protocol settings are configured
+  const hasProtocolSettings = isShadowsocks
+    ? Boolean(formData.plugin || pluginOptsStr)
+    : Boolean(formData.sni || formData.host || formData.path || formData.allowInsecure);
+
   if (!node) return null;
 
   return (
@@ -314,340 +327,393 @@ export const EditNodeDialog: React.FC<EditNodeDialogProps> = ({
         </DialogHeader>
 
         <div className="flex-1 min-h-0 overflow-y-auto -mx-6 px-6">
-        <div className="space-y-6">
-          {/* 节点基本信息（只读） */}
-          <div>
-            <h3 className="text-sm font-medium text-muted-foreground mb-3">基本信息</h3>
-            <Separator className="mb-4" />
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="flex flex-col gap-2">
-                <Label htmlFor="node_id">节点ID</Label>
-                <Input id="node_id" value={node.id} disabled />
-              </div>
-
-              <div className="flex flex-col gap-2">
-                <Label htmlFor="createdAt">创建时间</Label>
-                <Input
-                  id="createdAt"
-                  value={new Date(node.createdAt).toLocaleString('zh-CN')}
-                  disabled
-                />
-              </div>
-            </div>
-          </div>
-
-          {/* 可编辑字段 */}
-          <div>
-            <h3 className="text-sm font-medium text-muted-foreground mb-3">可编辑信息</h3>
-            <Separator className="mb-4" />
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {/* 节点名称 */}
-              <div className="flex flex-col gap-2">
-                <Label htmlFor="name">节点名称</Label>
-                <Input
-                  id="name"
-                  value={formData.name || ''}
-                  onChange={(e) => handleChange('name', e.target.value)}
-                  error={!!errors.name}
-                />
-                {errors.name && (
-                  <p className="text-xs text-destructive">{errors.name}</p>
-                )}
-              </div>
-
-              {/* 协议类型（只读） */}
-              <div className="flex flex-col gap-2">
-                <Label htmlFor="protocol">协议类型</Label>
-                <Input
-                  id="protocol"
-                  value={node.protocol === 'shadowsocks' ? 'Shadowsocks' : 'Trojan'}
-                  disabled
-                />
-                <p className="text-xs text-muted-foreground">协议创建后不可修改</p>
-              </div>
-
-              {/* 状态 */}
-              <div className="flex flex-col gap-2">
-                <Label htmlFor="status">状态</Label>
-                <Select
-                  value={formData.status || 'inactive'}
-                  onValueChange={(value) => handleChange('status', value)}
-                >
-                  <SelectTrigger id="status">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="active">激活</SelectItem>
-                    <SelectItem value="inactive">未激活</SelectItem>
-                    <SelectItem value="maintenance">维护中</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-
-              {/* 服务器地址 */}
-              <div className="flex flex-col gap-2 md:col-span-2">
-                <Label htmlFor="serverAddress">服务器地址</Label>
-                <Input
-                  id="serverAddress"
-                  value={formData.serverAddress || ''}
-                  onChange={(e) => handleChange('serverAddress', e.target.value)}
-                  error={!!errors.serverAddress}
-                />
-                {errors.serverAddress && (
-                  <p className="text-xs text-destructive">{errors.serverAddress}</p>
-                )}
-              </div>
-
-              {/* 代理端口 */}
-              <div className="flex flex-col gap-2">
-                <Label htmlFor="agentPort">代理端口</Label>
-                <Input
-                  id="agentPort"
-                  type="number"
-                  min={1}
-                  max={65535}
-                  value={formData.agentPort || ''}
-                  onChange={(e) => handleChange('agentPort', parseInt(e.target.value, 10))}
-                  error={!!errors.agentPort}
-                />
-                {errors.agentPort && (
-                  <p className="text-xs text-destructive">{errors.agentPort}</p>
-                )}
-              </div>
-
-              {/* 订阅端口 */}
-              <div className="flex flex-col gap-2">
-                <Label htmlFor="subscriptionPort">订阅端口</Label>
-                <Input
-                  id="subscriptionPort"
-                  type="number"
-                  min={1}
-                  max={65535}
-                  placeholder="默认使用代理端口"
-                  value={formData.subscriptionPort ?? ''}
-                  onChange={(e) => handleChange('subscriptionPort', e.target.value ? parseInt(e.target.value, 10) : undefined)}
-                  error={!!errors.subscriptionPort}
-                />
-                {errors.subscriptionPort && (
-                  <p className="text-xs text-destructive">{errors.subscriptionPort}</p>
-                )}
-              </div>
-
-              {/* Shadowsocks 加密方法 */}
-              {isShadowsocks && (
-                <div className="flex flex-col gap-2">
-                  <Label htmlFor="encryptionMethod">加密方法</Label>
-                  <Select
-                    value={formData.encryptionMethod || ''}
-                    onValueChange={(value) => handleChange('encryptionMethod', value)}
-                  >
-                    <SelectTrigger id="encryptionMethod">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {SS_ENCRYPTION_METHODS.map((method) => (
-                        <SelectItem key={method} value={method}>
-                          {method}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+          <Accordion
+            type="multiple"
+            defaultValue={['basic', 'network']}
+            className="w-full"
+          >
+            {/* 基本信息 */}
+            <AccordionItem value="basic" className="border rounded-md px-3 mb-2">
+              <AccordionTrigger className="py-3 hover:no-underline">
+                <div className="flex items-center gap-2">
+                  <span className="text-sm font-medium">基本信息</span>
                 </div>
-              )}
+              </AccordionTrigger>
+              <AccordionContent>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {/* 节点ID（只读） */}
+                  <div className="flex flex-col gap-2">
+                    <Label htmlFor="node_id">节点ID</Label>
+                    <Input id="node_id" value={node.id} disabled />
+                  </div>
 
-              {/* Shadowsocks 插件 */}
-              {isShadowsocks && (
-                <div className="flex flex-col gap-2">
-                  <Label htmlFor="plugin">插件</Label>
-                  <Input
-                    id="plugin"
-                    placeholder="例如：obfs-local, v2ray-plugin"
-                    value={formData.plugin || ''}
-                    onChange={(e) => handleChange('plugin', e.target.value)}
-                  />
-                  <p className="text-xs text-muted-foreground">Shadowsocks 混淆插件</p>
-                </div>
-              )}
+                  {/* 创建时间（只读） */}
+                  <div className="flex flex-col gap-2">
+                    <Label htmlFor="createdAt">创建时间</Label>
+                    <Input
+                      id="createdAt"
+                      value={new Date(node.createdAt).toLocaleString('zh-CN')}
+                      disabled
+                    />
+                  </div>
 
-              {/* Shadowsocks 插件选项 */}
-              {isShadowsocks && (
-                <div className="flex flex-col gap-2 md:col-span-2">
-                  <Label htmlFor="pluginOpts">插件选项</Label>
-                  <Input
-                    id="pluginOpts"
-                    placeholder="例如：obfs=http;obfs-host=www.bing.com"
-                    value={pluginOptsStr}
-                    onChange={(e) => handlePluginOptsChange(e.target.value)}
-                    error={!!errors.pluginOpts}
-                  />
-                  {errors.pluginOpts && (
-                    <p className="text-xs text-destructive">{errors.pluginOpts}</p>
+                  {/* 节点名称 */}
+                  <div className="flex flex-col gap-2">
+                    <Label htmlFor="name">节点名称</Label>
+                    <Input
+                      id="name"
+                      value={formData.name || ''}
+                      onChange={(e) => handleChange('name', e.target.value)}
+                      error={!!errors.name}
+                    />
+                    {errors.name && (
+                      <p className="text-xs text-destructive">{errors.name}</p>
+                    )}
+                  </div>
+
+                  {/* 协议类型（只读） */}
+                  <div className="flex flex-col gap-2">
+                    <Label htmlFor="protocol">协议类型</Label>
+                    <Input
+                      id="protocol"
+                      value={node.protocol === 'shadowsocks' ? 'Shadowsocks' : 'Trojan'}
+                      disabled
+                    />
+                    <p className="text-xs text-muted-foreground">协议创建后不可修改</p>
+                  </div>
+
+                  {/* 状态 */}
+                  <div className="flex flex-col gap-2">
+                    <Label htmlFor="status">状态</Label>
+                    <Select
+                      value={formData.status || 'inactive'}
+                      onValueChange={(value) => handleChange('status', value)}
+                    >
+                      <SelectTrigger id="status">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="active">激活</SelectItem>
+                        <SelectItem value="inactive">未激活</SelectItem>
+                        <SelectItem value="maintenance">维护中</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  {/* Shadowsocks 加密方法 */}
+                  {isShadowsocks && (
+                    <div className="flex flex-col gap-2">
+                      <Label htmlFor="encryptionMethod">加密方法</Label>
+                      <Select
+                        value={formData.encryptionMethod || ''}
+                        onValueChange={(value) => handleChange('encryptionMethod', value)}
+                      >
+                        <SelectTrigger id="encryptionMethod">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {SS_ENCRYPTION_METHODS.map((method) => (
+                            <SelectItem key={method} value={method}>
+                              {method}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
                   )}
-                  <p className="text-xs text-muted-foreground">
-                    插件配置参数，格式：key1=value1;key2=value2
-                  </p>
-                </div>
-              )}
 
-              {/* Trojan 传输协议 */}
-              {isTrojan && (
-                <div className="flex flex-col gap-2">
-                  <Label htmlFor="transportProtocol">传输协议</Label>
-                  <Select
-                    value={formData.transportProtocol || 'tcp'}
-                    onValueChange={(value) => handleChange('transportProtocol', value)}
-                  >
-                    <SelectTrigger id="transportProtocol">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {TRANSPORT_PROTOCOLS.map((protocol) => (
-                        <SelectItem key={protocol} value={protocol}>
-                          {protocol.toUpperCase()}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                  {/* Trojan 传输协议 */}
+                  {isTrojan && (
+                    <div className="flex flex-col gap-2">
+                      <Label htmlFor="transportProtocol">传输协议</Label>
+                      <Select
+                        value={formData.transportProtocol || 'tcp'}
+                        onValueChange={(value) => handleChange('transportProtocol', value)}
+                      >
+                        <SelectTrigger id="transportProtocol">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {TRANSPORT_PROTOCOLS.map((protocol) => (
+                            <SelectItem key={protocol} value={protocol}>
+                              {protocol.toUpperCase()}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  )}
                 </div>
-              )}
+              </AccordionContent>
+            </AccordionItem>
 
-              {/* Trojan SNI */}
-              {isTrojan && (
-                <div className="flex flex-col gap-2">
-                  <Label htmlFor="sni">SNI</Label>
-                  <Input
-                    id="sni"
-                    placeholder="TLS Server Name Indication"
-                    value={formData.sni || ''}
-                    onChange={(e) => handleChange('sni', e.target.value)}
-                  />
-                  <p className="text-xs text-muted-foreground">可选</p>
+            {/* 网络配置 */}
+            <AccordionItem value="network" className="border rounded-md px-3 mb-2">
+              <AccordionTrigger className="py-3 hover:no-underline">
+                <div className="flex items-center gap-2">
+                  <span className="text-sm font-medium">网络配置</span>
                 </div>
-              )}
+              </AccordionTrigger>
+              <AccordionContent>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {/* 服务器地址 */}
+                  <div className="flex flex-col gap-2 md:col-span-2">
+                    <Label htmlFor="serverAddress">服务器地址</Label>
+                    <Input
+                      id="serverAddress"
+                      value={formData.serverAddress || ''}
+                      onChange={(e) => handleChange('serverAddress', e.target.value)}
+                      error={!!errors.serverAddress}
+                    />
+                    {errors.serverAddress && (
+                      <p className="text-xs text-destructive">{errors.serverAddress}</p>
+                    )}
+                  </div>
 
-              {/* WebSocket Host */}
-              {showWsFields && (
-                <div className="flex flex-col gap-2">
-                  <Label htmlFor="host">Host</Label>
-                  <Input
-                    id="host"
-                    placeholder="WebSocket Host Header"
-                    value={formData.host || ''}
-                    onChange={(e) => handleChange('host', e.target.value)}
-                  />
-                  <p className="text-xs text-muted-foreground">可选</p>
+                  {/* 代理端口 */}
+                  <div className="flex flex-col gap-2">
+                    <Label htmlFor="agentPort">代理端口</Label>
+                    <Input
+                      id="agentPort"
+                      type="number"
+                      min={1}
+                      max={65535}
+                      value={formData.agentPort || ''}
+                      onChange={(e) => handleChange('agentPort', parseInt(e.target.value, 10))}
+                      error={!!errors.agentPort}
+                    />
+                    {errors.agentPort && (
+                      <p className="text-xs text-destructive">{errors.agentPort}</p>
+                    )}
+                  </div>
+
+                  {/* 订阅端口 */}
+                  <div className="flex flex-col gap-2">
+                    <Label htmlFor="subscriptionPort">订阅端口</Label>
+                    <Input
+                      id="subscriptionPort"
+                      type="number"
+                      min={1}
+                      max={65535}
+                      placeholder="默认使用代理端口"
+                      value={formData.subscriptionPort ?? ''}
+                      onChange={(e) => handleChange('subscriptionPort', e.target.value ? parseInt(e.target.value, 10) : undefined)}
+                      error={!!errors.subscriptionPort}
+                    />
+                    {errors.subscriptionPort && (
+                      <p className="text-xs text-destructive">{errors.subscriptionPort}</p>
+                    )}
+                  </div>
                 </div>
-              )}
+              </AccordionContent>
+            </AccordionItem>
 
-              {/* WebSocket Path */}
-              {showWsFields && (
-                <div className="flex flex-col gap-2">
-                  <Label htmlFor="path">Path</Label>
-                  <Input
-                    id="path"
-                    placeholder="/path"
-                    value={formData.path || ''}
-                    onChange={(e) => handleChange('path', e.target.value)}
-                  />
-                  <p className="text-xs text-muted-foreground">可选</p>
+            {/* 协议配置 */}
+            <AccordionItem value="protocol" className="border rounded-md px-3 mb-2">
+              <AccordionTrigger className="py-3 hover:no-underline">
+                <div className="flex items-center gap-2">
+                  <span className="text-sm font-medium">
+                    {isShadowsocks ? 'Shadowsocks 配置' : 'Trojan 配置'}
+                  </span>
+                  {hasProtocolSettings && (
+                    <Badge variant="secondary" className="text-xs">已配置</Badge>
+                  )}
                 </div>
-              )}
+              </AccordionTrigger>
+              <AccordionContent>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {/* Shadowsocks 插件 */}
+                  {isShadowsocks && (
+                    <>
+                      <div className="flex flex-col gap-2">
+                        <Label htmlFor="plugin">插件</Label>
+                        <Input
+                          id="plugin"
+                          placeholder="例如：obfs-local, v2ray-plugin"
+                          value={formData.plugin || ''}
+                          onChange={(e) => handleChange('plugin', e.target.value)}
+                        />
+                        <p className="text-xs text-muted-foreground">
+                          可选，Shadowsocks 混淆插件
+                        </p>
+                      </div>
 
-              {/* gRPC Service Name */}
-              {showGrpcFields && (
-                <div className="flex flex-col gap-2">
-                  <Label htmlFor="grpcHost">Service Name</Label>
-                  <Input
-                    id="grpcHost"
-                    placeholder="gRPC Service Name"
-                    value={formData.host || ''}
-                    onChange={(e) => handleChange('host', e.target.value)}
-                  />
-                  <p className="text-xs text-muted-foreground">可选</p>
+                      <div className="flex flex-col gap-2 md:col-span-2">
+                        <Label htmlFor="pluginOpts">插件选项</Label>
+                        <Input
+                          id="pluginOpts"
+                          placeholder="例如：obfs=http;obfs-host=www.bing.com"
+                          value={pluginOptsStr}
+                          onChange={(e) => handlePluginOptsChange(e.target.value)}
+                          error={!!errors.pluginOpts}
+                        />
+                        {errors.pluginOpts && (
+                          <p className="text-xs text-destructive">{errors.pluginOpts}</p>
+                        )}
+                        <p className="text-xs text-muted-foreground">
+                          可选，格式：key1=value1;key2=value2
+                        </p>
+                      </div>
+                    </>
+                  )}
+
+                  {/* Trojan 配置 */}
+                  {isTrojan && (
+                    <>
+                      <div className="flex flex-col gap-2">
+                        <Label htmlFor="sni">SNI</Label>
+                        <Input
+                          id="sni"
+                          placeholder="TLS Server Name Indication"
+                          value={formData.sni || ''}
+                          onChange={(e) => handleChange('sni', e.target.value)}
+                        />
+                        <p className="text-xs text-muted-foreground">可选</p>
+                      </div>
+
+                      <div className="flex flex-col gap-2">
+                        <Label htmlFor="allowInsecure">TLS 安全</Label>
+                        <Select
+                          value={formData.allowInsecure ? 'true' : 'false'}
+                          onValueChange={(value) => handleChange('allowInsecure', value === 'true')}
+                        >
+                          <SelectTrigger id="allowInsecure">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="false">验证证书（安全）</SelectItem>
+                            <SelectItem value="true">跳过验证（不安全）</SelectItem>
+                          </SelectContent>
+                        </Select>
+                        <p className="text-xs text-muted-foreground">自签名证书可跳过验证</p>
+                      </div>
+
+                      {/* WebSocket 配置 */}
+                      {showWsFields && (
+                        <>
+                          <div className="flex flex-col gap-2">
+                            <Label htmlFor="host">Host</Label>
+                            <Input
+                              id="host"
+                              placeholder="WebSocket Host Header"
+                              value={formData.host || ''}
+                              onChange={(e) => handleChange('host', e.target.value)}
+                            />
+                            <p className="text-xs text-muted-foreground">可选</p>
+                          </div>
+
+                          <div className="flex flex-col gap-2">
+                            <Label htmlFor="path">Path</Label>
+                            <Input
+                              id="path"
+                              placeholder="/path"
+                              value={formData.path || ''}
+                              onChange={(e) => handleChange('path', e.target.value)}
+                            />
+                            <p className="text-xs text-muted-foreground">可选</p>
+                          </div>
+                        </>
+                      )}
+
+                      {/* gRPC 配置 */}
+                      {showGrpcFields && (
+                        <div className="flex flex-col gap-2">
+                          <Label htmlFor="grpcHost">Service Name</Label>
+                          <Input
+                            id="grpcHost"
+                            placeholder="gRPC Service Name"
+                            value={formData.host || ''}
+                            onChange={(e) => handleChange('host', e.target.value)}
+                          />
+                          <p className="text-xs text-muted-foreground">可选</p>
+                        </div>
+                      )}
+                    </>
+                  )}
                 </div>
-              )}
+              </AccordionContent>
+            </AccordionItem>
 
-              {/* Trojan Allow Insecure */}
-              {isTrojan && (
-                <div className="flex flex-col gap-2">
-                  <Label htmlFor="allowInsecure">TLS 安全</Label>
-                  <Select
-                    value={formData.allowInsecure ? 'true' : 'false'}
-                    onValueChange={(value) => handleChange('allowInsecure', value === 'true')}
-                  >
-                    <SelectTrigger id="allowInsecure">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="false">验证证书（安全）</SelectItem>
-                      <SelectItem value="true">跳过验证（不安全）</SelectItem>
-                    </SelectContent>
-                  </Select>
-                  <p className="text-xs text-muted-foreground">自签名证书可选择跳过验证</p>
+            {/* 其他设置 */}
+            <AccordionItem value="other" className="border rounded-md px-3 mb-2">
+              <AccordionTrigger className="py-3 hover:no-underline">
+                <div className="flex items-center gap-2">
+                  <span className="text-sm font-medium">其他设置</span>
                 </div>
-              )}
+              </AccordionTrigger>
+              <AccordionContent>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {/* 地区 */}
+                  <div className="flex flex-col gap-2">
+                    <Label htmlFor="region">地区</Label>
+                    <Input
+                      id="region"
+                      value={formData.region || ''}
+                      onChange={(e) => handleChange('region', e.target.value)}
+                    />
+                  </div>
 
-              {/* 地区 */}
-              <div className="flex flex-col gap-2">
-                <Label htmlFor="region">地区</Label>
-                <Input
-                  id="region"
-                  value={formData.region || ''}
-                  onChange={(e) => handleChange('region', e.target.value)}
+                  {/* 排序顺序 */}
+                  <div className="flex flex-col gap-2">
+                    <Label htmlFor="sortOrder">排序顺序</Label>
+                    <Input
+                      id="sortOrder"
+                      type="number"
+                      value={formData.sortOrder ?? 0}
+                      onChange={(e) => handleChange('sortOrder', parseInt(e.target.value, 10) || 0)}
+                    />
+                    <p className="text-xs text-muted-foreground">数字越小越靠前</p>
+                  </div>
+
+                  {/* 资源组 */}
+                  <div className="flex flex-col gap-2">
+                    <Label htmlFor="groupSid">资源组</Label>
+                    <Select
+                      value={formData.groupSid ?? '__none__'}
+                      onValueChange={(value) => handleChange('groupSid', value === '__none__' ? '' : value)}
+                      disabled={isLoadingGroups}
+                    >
+                      <SelectTrigger id="groupSid">
+                        <SelectValue placeholder={isLoadingGroups ? '加载中...' : '选择资源组'} />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="__none__">不关联资源组</SelectItem>
+                        {resourceGroups.map((group) => (
+                          <SelectItem key={group.sid} value={group.sid}>
+                            {group.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <p className="text-xs text-muted-foreground">
+                      可选，将节点关联到资源组
+                    </p>
+                  </div>
+                </div>
+              </AccordionContent>
+            </AccordionItem>
+
+            {/* 路由配置 */}
+            <AccordionItem value="route" className="border rounded-md px-3 mb-2">
+              <AccordionTrigger className="py-3 hover:no-underline">
+                <div className="flex items-center gap-2">
+                  <span className="text-sm font-medium">路由配置</span>
+                  {formData.route && (
+                    <Badge variant="secondary" className="text-xs">已配置</Badge>
+                  )}
+                </div>
+              </AccordionTrigger>
+              <AccordionContent>
+                <RouteConfigEditor
+                  value={formData.route ?? undefined}
+                  onChange={handleRouteChange}
+                  idPrefix="edit-node-route"
+                  nodes={nodes}
+                  currentNodeId={node?.id}
                 />
-              </div>
-
-              {/* 排序顺序 */}
-              <div className="flex flex-col gap-2">
-                <Label htmlFor="sortOrder">排序顺序</Label>
-                <Input
-                  id="sortOrder"
-                  type="number"
-                  value={formData.sortOrder ?? 0}
-                  onChange={(e) => handleChange('sortOrder', parseInt(e.target.value, 10) || 0)}
-                />
-              </div>
-
-              {/* 资源组 */}
-              <div className="flex flex-col gap-2">
-                <Label htmlFor="groupSid">资源组</Label>
-                <Select
-                  value={formData.groupSid ?? '__none__'}
-                  onValueChange={(value) => handleChange('groupSid', value === '__none__' ? '' : value)}
-                  disabled={isLoadingGroups}
-                >
-                  <SelectTrigger id="groupSid">
-                    <SelectValue placeholder={isLoadingGroups ? '加载中...' : '选择资源组'} />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="__none__">不关联资源组</SelectItem>
-                    {resourceGroups.map((group) => (
-                      <SelectItem key={group.sid} value={group.sid}>
-                        {group.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                <p className="text-xs text-muted-foreground">
-                  可选，将节点关联到资源组
-                </p>
-              </div>
-            </div>
-          </div>
-
-          {/* 路由配置 */}
-          <div>
-            <h3 className="text-sm font-medium text-muted-foreground mb-3">路由配置</h3>
-            <Separator className="mb-4" />
-            <RouteConfigEditor
-              value={formData.route ?? undefined}
-              onChange={handleRouteChange}
-              idPrefix="edit-node-route"
-              nodes={nodes}
-              currentNodeId={node?.id}
-            />
-          </div>
-        </div>
+              </AccordionContent>
+            </AccordionItem>
+          </Accordion>
         </div>
 
         <DialogFooter className="flex-shrink-0">
