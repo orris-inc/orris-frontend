@@ -1,11 +1,14 @@
 /**
  * Subscription Plan List Table Component (Admin)
  * Implemented using TanStack Table
+ * Switches to mobile card list on small screens
  */
 
 import { useMemo, useCallback } from 'react';
 import { Edit, Power, MoreHorizontal, Users, Copy, Trash2 } from 'lucide-react';
 import { DataTable, AdminBadge, TruncatedId, type ColumnDef, type ResponsiveColumnMeta } from '@/components/admin';
+import { useBreakpoint } from '@/hooks/useBreakpoint';
+import { PlanMobileList } from './PlanMobileList';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -127,6 +130,9 @@ export const PlanListTable: React.FC<PlanListTableProps> = ({
   onViewSubscriptions,
   onDelete,
 }) => {
+  // Detect mobile screen
+  const { isMobile } = useBreakpoint();
+
   // Subscription plan context menu content
   const renderContextMenuActions = useCallback((plan: SubscriptionPlan) => (
     <>
@@ -365,6 +371,21 @@ export const PlanListTable: React.FC<PlanListTableProps> = ({
       },
     },
   ], [renderDropdownMenuActions]);
+
+  // Render mobile card list on small screens
+  if (isMobile) {
+    return (
+      <PlanMobileList
+        plans={plans}
+        loading={loading}
+        onEdit={onEdit}
+        onDuplicate={onDuplicate}
+        onToggleStatus={onToggleStatus}
+        onViewSubscriptions={onViewSubscriptions}
+        onDelete={onDelete}
+      />
+    );
+  }
 
   return (
     <DataTable

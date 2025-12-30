@@ -1,11 +1,14 @@
 /**
  * 资源组列表表格组件（管理端）
  * 使用 TanStack Table 实现
+ * Switches to mobile card list on small screens
  */
 
 import { useMemo, useCallback } from 'react';
 import { Edit, Power, MoreHorizontal, Trash2, Eye } from 'lucide-react';
 import { DataTable, AdminBadge, type ColumnDef, type ResponsiveColumnMeta } from '@/components/admin';
+import { useBreakpoint } from '@/hooks/useBreakpoint';
+import { ResourceGroupMobileList } from './ResourceGroupMobileList';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -54,6 +57,9 @@ export const ResourceGroupListTable: React.FC<ResourceGroupListTableProps> = ({
   onDelete,
   onToggleStatus,
 }) => {
+  // Detect mobile screen
+  const { isMobile } = useBreakpoint();
+
   // Resource group context menu content
   const renderContextMenuActions = useCallback((resourceGroup: ResourceGroup) => (
     <>
@@ -213,6 +219,21 @@ export const ResourceGroupListTable: React.FC<ResourceGroupListTableProps> = ({
       },
     },
   ], [plansMap, renderDropdownMenuActions]);
+
+  // Render mobile card list on small screens
+  if (isMobile) {
+    return (
+      <ResourceGroupMobileList
+        resourceGroups={resourceGroups}
+        plansMap={plansMap}
+        loading={loading}
+        onViewDetail={onViewDetail}
+        onEdit={onEdit}
+        onDelete={onDelete}
+        onToggleStatus={onToggleStatus}
+      />
+    );
+  }
 
   return (
     <DataTable

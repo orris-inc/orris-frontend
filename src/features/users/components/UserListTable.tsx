@@ -1,11 +1,14 @@
 /**
  * 用户列表表格组件（管理端）
  * 使用 TanStack Table 实现
+ * Switches to mobile card list on small screens
  */
 
 import { useMemo, useCallback } from 'react';
 import { Edit, Trash2, CreditCard, MoreHorizontal, KeyRound } from 'lucide-react';
 import { DataTable, AdminBadge, TruncatedId, type ColumnDef, type ResponsiveColumnMeta } from '@/components/admin';
+import { useBreakpoint } from '@/hooks/useBreakpoint';
+import { UserMobileList } from './UserMobileList';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -62,6 +65,9 @@ export const UserListTable: React.FC<UserListTableProps> = ({
   onAssignSubscription,
   onResetPassword,
 }) => {
+  // Detect mobile screen
+  const { isMobile } = useBreakpoint();
+
   // User context menu content
   const renderContextMenuActions = useCallback((user: UserResponse) => (
     <>
@@ -204,6 +210,20 @@ export const UserListTable: React.FC<UserListTableProps> = ({
       ),
     },
   ], [renderDropdownMenuActions]);
+
+  // Render mobile card list on small screens
+  if (isMobile) {
+    return (
+      <UserMobileList
+        users={users}
+        loading={loading}
+        onEdit={onEdit}
+        onDelete={onDelete}
+        onAssignSubscription={onAssignSubscription}
+        onResetPassword={onResetPassword}
+      />
+    );
+  }
 
   return (
     <DataTable

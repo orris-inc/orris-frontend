@@ -20,12 +20,16 @@ import {
   AdminCard,
 } from '@/components/admin';
 import { usePageTitle } from '@/shared/hooks';
+import { useBreakpoint } from '@/hooks/useBreakpoint';
 import { useNotificationStore } from '@/shared/stores/notification-store';
 import type { Subscription } from '@/api/subscription/types';
 
 
 export const SubscriptionManagementPage: React.FC = () => {
   usePageTitle('订阅管理');
+
+  // Responsive breakpoint
+  const { isMobile } = useBreakpoint();
 
   const {
     subscriptions,
@@ -150,25 +154,32 @@ export const SubscriptionManagementPage: React.FC = () => {
         title="订阅管理"
         description="查看和管理所有用户的订阅"
         icon={Receipt}
-        action={
+      >
+        {/* Toolbar - Compact on mobile */}
+        <div className="flex items-center justify-end mb-3 sm:mb-4">
           <Tooltip>
             <TooltipTrigger asChild>
               <AdminButton
                 variant="outline"
-                size="md"
+                size="sm"
                 onClick={handleRefresh}
                 disabled={isLoading}
-                icon={<RefreshCw className={`size-4 ${isLoading ? 'animate-spin' : ''}`} strokeWidth={1.5} />}
+                icon={
+                  <RefreshCw
+                    className={`size-3.5 sm:size-4 ${isLoading ? 'animate-spin' : ''}`}
+                    strokeWidth={1.5}
+                  />
+                }
               >
-                刷新
+                <span className="sr-only">刷新</span>
               </AdminButton>
             </TooltipTrigger>
-            <TooltipContent>刷新订阅列表</TooltipContent>
+            <TooltipContent>刷新</TooltipContent>
           </Tooltip>
-        }
-      >
-        {/* 表格卡片 */}
-        <AdminCard noPadding>
+        </div>
+
+        {/* Subscription list - No AdminCard wrapper on mobile */}
+        {isMobile ? (
           <SubscriptionListTable
             subscriptions={subscriptions}
             usersMap={usersMap}
@@ -186,7 +197,27 @@ export const SubscriptionManagementPage: React.FC = () => {
             onRenew={handleRenew}
             onDelete={handleDeleteClick}
           />
-        </AdminCard>
+        ) : (
+          <AdminCard noPadding>
+            <SubscriptionListTable
+              subscriptions={subscriptions}
+              usersMap={usersMap}
+              usersLoading={isUsersLoading}
+              loading={isLoading}
+              page={page}
+              pageSize={pageSize}
+              total={total}
+              onPageChange={handlePageChange}
+              onPageSizeChange={handlePageSizeChange}
+              onViewDetail={handleViewDetail}
+              onDuplicate={handleDuplicate}
+              onActivate={handleActivate}
+              onCancel={handleCancelClick}
+              onRenew={handleRenew}
+              onDelete={handleDeleteClick}
+            />
+          </AdminCard>
+        )}
       </AdminPageLayout>
 
       {/* 订阅详情对话框 */}

@@ -282,8 +282,9 @@ export const EditNodeDialog: React.FC<EditNodeDialogProps> = ({
       }
     }
 
-    // Resource group association
-    if (formData.groupSid !== undefined) {
+    // Resource group association - only send if changed
+    const originalGroupSid = node.groupIds?.[0] ?? '';
+    if (formData.groupSid !== undefined && formData.groupSid !== originalGroupSid) {
       updates.groupSid = formData.groupSid;
     }
 

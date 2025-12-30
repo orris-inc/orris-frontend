@@ -22,10 +22,14 @@ import {
   AdminCard,
 } from '@/components/admin';
 import { usePageTitle } from '@/shared/hooks';
+import { useBreakpoint } from '@/hooks/useBreakpoint';
 import type { ForwardAgent, UpdateForwardAgentRequest, CreateForwardAgentRequest } from '@/api/forward';
 
 export const ForwardAgentsPage = () => {
   usePageTitle('转发节点管理');
+
+  // Responsive breakpoint
+  const { isMobile } = useBreakpoint();
 
   const {
     forwardAgents,
@@ -151,45 +155,54 @@ export const ForwardAgentsPage = () => {
         title="转发节点管理"
         description="管理系统中的所有转发节点"
         icon={Cpu}
-        action={
-          <div className="flex gap-2">
+      >
+        {/* Toolbar - Compact on mobile */}
+        <div className="space-y-2 sm:space-y-3 mb-3 sm:mb-4">
+          {/* Row 1: Actions */}
+          <div className="flex items-center justify-end gap-1.5 sm:gap-2">
             <Tooltip>
               <TooltipTrigger asChild>
                 <AdminButton
                   variant="outline"
-                  size="md"
+                  size="sm"
                   onClick={handleRefresh}
                   disabled={isFetching}
-                  icon={<RefreshCw className={`size-4 ${isFetching ? 'animate-spin' : ''}`} strokeWidth={1.5} />}
+                  icon={
+                    <RefreshCw
+                      className={`size-3.5 sm:size-4 ${isFetching ? 'animate-spin' : ''}`}
+                      strokeWidth={1.5}
+                    />
+                  }
                 >
-                  刷新
+                  <span className="sr-only">刷新</span>
                 </AdminButton>
               </TooltipTrigger>
-              <TooltipContent>刷新转发节点列表</TooltipContent>
+              <TooltipContent>刷新</TooltipContent>
             </Tooltip>
+
             <AdminButton
               variant="primary"
-              icon={<Plus className="size-4" strokeWidth={1.5} />}
+              size="sm"
+              icon={<Plus className="size-3.5 sm:size-4" strokeWidth={1.5} />}
               onClick={() => {
                 setCopyAgentData(undefined);
                 setCreateDialogOpen(true);
               }}
             >
-              新增转发节点
+              <span className="hidden sm:inline">新增转发节点</span>
+              <span className="sm:hidden text-xs">新增</span>
             </AdminButton>
           </div>
-        }
-      >
-        {/* Filters */}
-        <AdminCard>
+
+          {/* Row 2: Filters */}
           <ForwardAgentFiltersComponent
             filters={filters}
             onChange={handleFiltersChange}
           />
-        </AdminCard>
+        </div>
 
-        {/* Forward Agent List Table */}
-        <AdminCard noPadding>
+        {/* Forward Agent List - No AdminCard wrapper on mobile */}
+        {isMobile ? (
           <ForwardAgentListTable
             forwardAgents={forwardAgents}
             loading={isLoading || isFetching}
@@ -208,7 +221,28 @@ export const ForwardAgentsPage = () => {
             onViewDetail={handleViewDetail}
             onCopy={handleCopy}
           />
-        </AdminCard>
+        ) : (
+          <AdminCard noPadding>
+            <ForwardAgentListTable
+              forwardAgents={forwardAgents}
+              loading={isLoading || isFetching}
+              page={pagination.page}
+              pageSize={pagination.pageSize}
+              total={pagination.total}
+              resourceGroupsMap={resourceGroupsMap}
+              onPageChange={handlePageChange}
+              onPageSizeChange={handlePageSizeChange}
+              onEdit={handleEdit}
+              onDelete={handleDelete}
+              onEnable={handleEnable}
+              onDisable={handleDisable}
+              onRegenerateToken={handleTokenRegenerate}
+              onGetInstallScript={handleInstallScript}
+              onViewDetail={handleViewDetail}
+              onCopy={handleCopy}
+            />
+          </AdminCard>
+        )}
       </AdminPageLayout>
 
       {/* Create Forward Agent Dialog */}

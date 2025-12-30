@@ -1,11 +1,14 @@
 /**
  * Forward Agent List Table Component (Admin)
  * Implemented using TanStack Table
+ * Switches to mobile card list on small screens
  */
 
 import { useMemo, useState, useCallback } from 'react';
 import { Edit, Trash2, Key, Eye, Power, PowerOff, MoreHorizontal, Terminal, Copy, Check } from 'lucide-react';
 import { DataTable, AdminBadge, TruncatedId, type ColumnDef, type ResponsiveColumnMeta } from '@/components/admin';
+import { useBreakpoint } from '@/hooks/useBreakpoint';
+import { ForwardAgentMobileList } from './ForwardAgentMobileList';
 import { Badge } from '@/components/common/Badge';
 import {
   DropdownMenu,
@@ -132,6 +135,9 @@ export const ForwardAgentListTable: React.FC<ForwardAgentListTableProps> = ({
   onViewDetail,
   onCopy,
 }) => {
+  // Detect mobile screen
+  const { isMobile } = useBreakpoint();
+
   // Forward agent context menu content
   const renderContextMenuActions = useCallback((agent: ForwardAgent) => (
     <>
@@ -395,6 +401,25 @@ export const ForwardAgentListTable: React.FC<ForwardAgentListTableProps> = ({
       },
     },
   ], [onEdit, onDisable, onEnable, onGetInstallScript, onViewDetail, renderDropdownMenuActions, resourceGroupsMap]);
+
+  // Render mobile card list on small screens
+  if (isMobile) {
+    return (
+      <ForwardAgentMobileList
+        forwardAgents={forwardAgents}
+        loading={loading}
+        resourceGroupsMap={resourceGroupsMap}
+        onEdit={onEdit}
+        onDelete={onDelete}
+        onEnable={onEnable}
+        onDisable={onDisable}
+        onRegenerateToken={onRegenerateToken}
+        onGetInstallScript={onGetInstallScript}
+        onViewDetail={onViewDetail}
+        onCopy={onCopy}
+      />
+    );
+  }
 
   return (
     <DataTable

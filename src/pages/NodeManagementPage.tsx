@@ -22,10 +22,14 @@ import {
   AdminCard,
 } from '@/components/admin';
 import { usePageTitle } from '@/shared/hooks';
+import { useBreakpoint } from '@/hooks/useBreakpoint';
 import type { Node, UpdateNodeRequest, CreateNodeRequest } from '@/api/node';
 
 export const NodeManagementPage = () => {
   usePageTitle('节点管理');
+
+  // Responsive breakpoint
+  const { isMobile } = useBreakpoint();
 
   const {
     nodes,
@@ -167,51 +171,65 @@ export const NodeManagementPage = () => {
         title="节点管理"
         description="管理系统中的所有代理节点"
         icon={Server}
-        action={
-          <div className="flex items-center gap-4">
-            {/* 显示用户节点开关 */}
-            <label className="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-400 cursor-pointer">
-              <Users className="size-4" strokeWidth={1.5} />
-              <span>显示用户节点</span>
-              <Switch
-                checked={includeUserNodes}
-                onCheckedChange={handleIncludeUserNodesChange}
-              >
-                <SwitchThumb />
-              </Switch>
-            </label>
-
-            <div className="flex gap-2">
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <AdminButton
-                    variant="outline"
-                    size="md"
-                    onClick={handleRefresh}
-                    disabled={isFetching}
-                    icon={<RefreshCw className={`size-4 ${isFetching ? 'animate-spin' : ''}`} strokeWidth={1.5} />}
-                  >
-                    刷新
-                  </AdminButton>
-                </TooltipTrigger>
-                <TooltipContent>刷新节点列表</TooltipContent>
-              </Tooltip>
-              <AdminButton
-                variant="primary"
-                icon={<Plus className="size-4" strokeWidth={1.5} />}
-                onClick={() => {
-                  setCopyNodeData(undefined);
-                  setCreateDialogOpen(true);
-                }}
-              >
-                新增节点
-              </AdminButton>
-            </div>
-          </div>
-        }
       >
-        {/* 节点列表表格 */}
-        <AdminCard noPadding>
+        {/* Toolbar - Compact on mobile */}
+        <div className="flex items-center justify-between gap-2 mb-3 sm:mb-4">
+          {/* Left: User nodes toggle */}
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <label className="flex items-center gap-1 cursor-pointer text-xs sm:text-sm text-slate-600 dark:text-slate-400">
+                <Users className="size-3.5 sm:size-4 text-slate-500" strokeWidth={1.5} />
+                <span className="hidden sm:inline">用户节点</span>
+                <Switch
+                  checked={includeUserNodes}
+                  onCheckedChange={handleIncludeUserNodesChange}
+                >
+                  <SwitchThumb />
+                </Switch>
+              </label>
+            </TooltipTrigger>
+            <TooltipContent>显示用户节点</TooltipContent>
+          </Tooltip>
+
+          {/* Right: Refresh + Add */}
+          <div className="flex items-center gap-1.5 sm:gap-2">
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <AdminButton
+                  variant="outline"
+                  size="sm"
+                  onClick={handleRefresh}
+                  disabled={isFetching}
+                  icon={
+                    <RefreshCw
+                      className={`size-3.5 sm:size-4 ${isFetching ? 'animate-spin' : ''}`}
+                      strokeWidth={1.5}
+                    />
+                  }
+                >
+                  <span className="sr-only">刷新</span>
+                </AdminButton>
+              </TooltipTrigger>
+              <TooltipContent>刷新</TooltipContent>
+            </Tooltip>
+
+            <AdminButton
+              variant="primary"
+              size="sm"
+              icon={<Plus className="size-3.5 sm:size-4" strokeWidth={1.5} />}
+              onClick={() => {
+                setCopyNodeData(undefined);
+                setCreateDialogOpen(true);
+              }}
+            >
+              <span className="hidden sm:inline">新增节点</span>
+              <span className="sm:hidden text-xs">新增</span>
+            </AdminButton>
+          </div>
+        </div>
+
+        {/* Node list - No AdminCard wrapper on mobile */}
+        {isMobile ? (
           <NodeListTable
             nodes={nodes}
             loading={isFetching}
@@ -230,7 +248,28 @@ export const NodeManagementPage = () => {
             onViewDetail={handleViewDetail}
             onCopy={handleCopy}
           />
-        </AdminCard>
+        ) : (
+          <AdminCard noPadding>
+            <NodeListTable
+              nodes={nodes}
+              loading={isFetching}
+              page={pagination.page}
+              pageSize={pagination.pageSize}
+              total={pagination.total}
+              resourceGroupsMap={resourceGroupsMap}
+              onPageChange={handlePageChange}
+              onPageSizeChange={handlePageSizeChange}
+              onEdit={handleEdit}
+              onDelete={handleDelete}
+              onActivate={handleActivate}
+              onDeactivate={handleDeactivate}
+              onGenerateToken={handleTokenGenerate}
+              onGetInstallScript={handleInstallScript}
+              onViewDetail={handleViewDetail}
+              onCopy={handleCopy}
+            />
+          </AdminCard>
+        )}
       </AdminPageLayout>
 
       {/* 新增节点对话框 */}

@@ -20,11 +20,15 @@ import {
   AdminCard,
 } from '@/components/admin';
 import { usePageTitle } from '@/shared/hooks';
+import { useBreakpoint } from '@/hooks/useBreakpoint';
 import type { UserResponse, UpdateUserRequest, CreateUserRequest } from '@/api/user';
 import type { AdminCreateSubscriptionRequest } from '@/api/subscription/types';
 
 export const UserManagementPage = () => {
   usePageTitle('用户管理');
+
+  // Responsive breakpoint
+  const { isMobile } = useBreakpoint();
 
   const {
     users,
@@ -120,18 +124,22 @@ export const UserManagementPage = () => {
         title="用户管理"
         description="管理系统中的所有用户账户"
         icon={Users}
-        action={
+      >
+        {/* Toolbar - Compact on mobile */}
+        <div className="flex items-center justify-end mb-3 sm:mb-4">
           <AdminButton
             variant="primary"
-            icon={<Plus className="size-4" strokeWidth={1.5} />}
+            size="sm"
+            icon={<Plus className="size-3.5 sm:size-4" strokeWidth={1.5} />}
             onClick={() => setCreateDialogOpen(true)}
           >
-            新增用户
+            <span className="hidden sm:inline">新增用户</span>
+            <span className="sm:hidden text-xs">新增</span>
           </AdminButton>
-        }
-      >
-        {/* 用户列表表格 */}
-        <AdminCard noPadding>
+        </div>
+
+        {/* User list - No AdminCard wrapper on mobile */}
+        {isMobile ? (
           <UserListTable
             users={users}
             loading={isLoading}
@@ -145,7 +153,23 @@ export const UserManagementPage = () => {
             onAssignSubscription={handleAssignSubscription}
             onResetPassword={handleResetPassword}
           />
-        </AdminCard>
+        ) : (
+          <AdminCard noPadding>
+            <UserListTable
+              users={users}
+              loading={isLoading}
+              page={page}
+              pageSize={pageSize}
+              total={pagination.total}
+              onPageChange={handlePageChange}
+              onPageSizeChange={handlePageSizeChange}
+              onEdit={handleEdit}
+              onDelete={handleDelete}
+              onAssignSubscription={handleAssignSubscription}
+              onResetPassword={handleResetPassword}
+            />
+          </AdminCard>
+        )}
       </AdminPageLayout>
 
       {/* 对话框 */}

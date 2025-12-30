@@ -1,6 +1,7 @@
 /**
  * Node list table component (admin)
  * Designed based on Node API type definitions
+ * Switches to mobile card list on small screens
  */
 
 import { useMemo, useCallback } from 'react';
@@ -22,6 +23,8 @@ import {
   Shield,
 } from 'lucide-react';
 import { DataTable, AdminBadge, TruncatedId, type ColumnDef, type ResponsiveColumnMeta } from '@/components/admin';
+import { useBreakpoint } from '@/hooks/useBreakpoint';
+import { NodeMobileList } from './NodeMobileList';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -101,6 +104,9 @@ export const NodeListTable: React.FC<NodeListTableProps> = ({
   onViewDetail,
   onCopy,
 }) => {
+  // Detect mobile screen
+  const { isMobile } = useBreakpoint();
+
   // Node context menu content
   const renderContextMenuActions = useCallback((node: Node) => (
     <>
@@ -538,6 +544,25 @@ export const NodeListTable: React.FC<NodeListTableProps> = ({
       },
     },
   ], [onEdit, onActivate, onDeactivate, onGetInstallScript, onViewDetail, renderDropdownMenuActions, resourceGroupsMap]);
+
+  // Render mobile card list on small screens
+  if (isMobile) {
+    return (
+      <NodeMobileList
+        nodes={nodes}
+        loading={loading}
+        resourceGroupsMap={resourceGroupsMap}
+        onEdit={onEdit}
+        onDelete={onDelete}
+        onActivate={onActivate}
+        onDeactivate={onDeactivate}
+        onGenerateToken={onGenerateToken}
+        onGetInstallScript={onGetInstallScript}
+        onViewDetail={onViewDetail}
+        onCopy={onCopy}
+      />
+    );
+  }
 
   return (
     <DataTable

@@ -13,6 +13,7 @@ import {
   AdminCard,
 } from '@/components/admin';
 import { usePageTitle } from '@/shared/hooks';
+import { useBreakpoint } from '@/hooks/useBreakpoint';
 import { queryKeys } from '@/shared/lib/query-client';
 import { listPlans } from '@/api/subscription';
 import {
@@ -28,6 +29,9 @@ import type { SubscriptionPlan } from '@/api/subscription/types';
 
 export const ResourceGroupManagementPage = () => {
   usePageTitle('资源组管理');
+
+  // Responsive breakpoint
+  const { isMobile } = useBreakpoint();
 
   const {
     resourceGroups,
@@ -107,18 +111,22 @@ export const ResourceGroupManagementPage = () => {
         title="资源组管理"
         description="管理订阅计划关联的资源组"
         icon={Boxes}
-        action={
+      >
+        {/* Toolbar - Compact on mobile */}
+        <div className="flex items-center justify-end mb-3 sm:mb-4">
           <AdminButton
             variant="primary"
-            icon={<Plus className="size-4" strokeWidth={1.5} />}
+            size="sm"
+            icon={<Plus className="size-3.5 sm:size-4" strokeWidth={1.5} />}
             onClick={() => setCreateDialogOpen(true)}
           >
-            创建资源组
+            <span className="hidden sm:inline">创建资源组</span>
+            <span className="sm:hidden text-xs">创建</span>
           </AdminButton>
-        }
-      >
-        {/* Resource group list table */}
-        <AdminCard noPadding>
+        </div>
+
+        {/* Resource group list - No AdminCard wrapper on mobile */}
+        {isMobile ? (
           <ResourceGroupListTable
             resourceGroups={resourceGroups}
             plansMap={plansMap}
@@ -133,7 +141,24 @@ export const ResourceGroupManagementPage = () => {
             onDelete={handleDeleteClick}
             onToggleStatus={handleToggleStatus}
           />
-        </AdminCard>
+        ) : (
+          <AdminCard noPadding>
+            <ResourceGroupListTable
+              resourceGroups={resourceGroups}
+              plansMap={plansMap}
+              loading={isLoading}
+              page={pagination.page}
+              pageSize={pagination.pageSize}
+              total={pagination.total}
+              onPageChange={handlePageChange}
+              onPageSizeChange={handlePageSizeChange}
+              onViewDetail={handleViewDetail}
+              onEdit={handleEdit}
+              onDelete={handleDeleteClick}
+              onToggleStatus={handleToggleStatus}
+            />
+          </AdminCard>
+        )}
       </AdminPageLayout>
 
       {/* Create resource group dialog */}

@@ -1,11 +1,14 @@
 /**
  * Subscription List Table Component (Admin)
  * Implemented using TanStack Table
+ * Switches to mobile card list on small screens
  */
 
 import { useMemo } from 'react';
 import { CheckCircle, X, MoreHorizontal, Play, XCircle, RefreshCw, Eye, Copy, Trash2 } from 'lucide-react';
 import { DataTable, AdminBadge, TruncatedId, type ColumnDef, type ResponsiveColumnMeta } from '@/components/admin';
+import { useBreakpoint } from '@/hooks/useBreakpoint';
+import { SubscriptionMobileList } from './SubscriptionMobileList';
 import { Skeleton } from '@/components/common/Skeleton';
 import { Button } from '@/components/common/Button';
 import {
@@ -63,6 +66,9 @@ export const SubscriptionListTable: React.FC<SubscriptionListTableProps> = ({
   onRenew,
   onDelete,
 }) => {
+  // Detect mobile screen
+  const { isMobile } = useBreakpoint();
+
   const columns = useMemo<ColumnDef<Subscription>[]>(() => [
     {
       accessorKey: 'id',
@@ -275,6 +281,24 @@ export const SubscriptionListTable: React.FC<SubscriptionListTableProps> = ({
       },
     },
   ], [usersMap, usersLoading, onViewDetail, onDuplicate, onActivate, onCancel, onRenew, onDelete]);
+
+  // Render mobile card list on small screens
+  if (isMobile) {
+    return (
+      <SubscriptionMobileList
+        subscriptions={subscriptions}
+        usersMap={usersMap}
+        usersLoading={usersLoading}
+        loading={loading}
+        onViewDetail={onViewDetail}
+        onDuplicate={onDuplicate}
+        onActivate={onActivate}
+        onCancel={onCancel}
+        onRenew={onRenew}
+        onDelete={onDelete}
+      />
+    );
+  }
 
   return (
     <DataTable

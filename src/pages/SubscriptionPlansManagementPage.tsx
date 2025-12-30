@@ -13,6 +13,7 @@ import {
 } from '@/components/admin';
 import { ConfirmDialog } from '@/components/common/ConfirmDialog';
 import { usePageTitle } from '@/shared/hooks';
+import { useBreakpoint } from '@/hooks/useBreakpoint';
 import { useNotificationStore } from '@/shared/stores/notification-store';
 import { PlanListTable } from '@/features/subscription-plans/components/PlanListTable';
 import { CreatePlanDialog } from '@/features/subscription-plans/components/CreatePlanDialog';
@@ -24,6 +25,9 @@ import type { SubscriptionPlan, CreatePlanRequest, UpdatePlanRequest } from '@/a
 
 export const SubscriptionPlansManagementPage = () => {
   usePageTitle('订阅计划管理');
+
+  // Responsive breakpoint
+  const { isMobile } = useBreakpoint();
 
   const {
     plans,
@@ -111,18 +115,22 @@ export const SubscriptionPlansManagementPage = () => {
         title="订阅计划管理"
         description="管理所有订阅计划和定价方案"
         icon={CreditCard}
-        action={
+      >
+        {/* Toolbar - Compact on mobile */}
+        <div className="flex items-center justify-end mb-3 sm:mb-4">
           <AdminButton
             variant="primary"
-            icon={<Plus className="size-4" strokeWidth={1.5} />}
+            size="sm"
+            icon={<Plus className="size-3.5 sm:size-4" strokeWidth={1.5} />}
             onClick={() => setCreateDialogOpen(true)}
           >
-            创建计划
+            <span className="hidden sm:inline">创建计划</span>
+            <span className="sm:hidden text-xs">创建</span>
           </AdminButton>
-        }
-      >
-        {/* 计划列表表格 */}
-        <AdminCard noPadding>
+        </div>
+
+        {/* Plan list - No AdminCard wrapper on mobile */}
+        {isMobile ? (
           <PlanListTable
             plans={plans}
             loading={isLoading}
@@ -137,7 +145,24 @@ export const SubscriptionPlansManagementPage = () => {
             onViewSubscriptions={handleViewSubscriptions}
             onDelete={handleDeleteClick}
           />
-        </AdminCard>
+        ) : (
+          <AdminCard noPadding>
+            <PlanListTable
+              plans={plans}
+              loading={isLoading}
+              page={pagination.page}
+              pageSize={pagination.pageSize}
+              total={pagination.total}
+              onPageChange={handlePageChange}
+              onPageSizeChange={handlePageSizeChange}
+              onEdit={handleEdit}
+              onDuplicate={handleDuplicate}
+              onToggleStatus={handleToggleStatus}
+              onViewSubscriptions={handleViewSubscriptions}
+              onDelete={handleDeleteClick}
+            />
+          </AdminCard>
+        )}
       </AdminPageLayout>
 
       {/* 创建计划对话框 */}
