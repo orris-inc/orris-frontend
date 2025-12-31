@@ -13,7 +13,7 @@ import { Button } from '@/components/common/Button';
 import { Badge } from '@/components/common/Badge';
 import { Separator } from '@/components/common/Separator';
 import { TruncatedId } from '@/components/admin';
-import { Cpu, HardDrive, MemoryStick, Clock, Network, ArrowUpDown, Loader2, Radio } from 'lucide-react';
+import { Cpu, HardDrive, MemoryStick, Clock, Network, ArrowUpDown, Loader2, Radio, Info } from 'lucide-react';
 import { useForwardAgentRuntimeStatus } from '../hooks/useForwardAgents';
 import type { ForwardAgent } from '@/api/forward';
 
@@ -216,6 +216,24 @@ export const ForwardAgentDetailDialog: React.FC<ForwardAgentDetailDialogProps> =
                           {runtimeStatus.wsListenPort && `WS: ${runtimeStatus.wsListenPort}`}
                           {runtimeStatus.wsListenPort && runtimeStatus.tlsListenPort && ' / '}
                           {runtimeStatus.tlsListenPort && `TLS: ${runtimeStatus.tlsListenPort}`}
+                        </p>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Agent 版本 */}
+                  {runtimeStatus.agentVersion && (
+                    <div className="flex items-center gap-3 p-3 rounded-lg bg-slate-50 dark:bg-slate-800/50">
+                      <Info className="size-5 text-slate-500" />
+                      <div>
+                        <p className="text-xs text-muted-foreground">Agent 版本</p>
+                        <p className="text-sm font-medium">
+                          v{runtimeStatus.agentVersion}
+                          {runtimeStatus.platform && runtimeStatus.arch && (
+                            <span className="text-xs text-muted-foreground ml-1">
+                              ({runtimeStatus.platform}/{runtimeStatus.arch})
+                            </span>
+                          )}
                         </p>
                       </div>
                     </div>

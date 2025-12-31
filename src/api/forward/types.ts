@@ -262,6 +262,7 @@ export interface ForwardAgent {
 /**
  * Agent system status (embedded in ForwardAgent response)
  * Contains real-time metrics reported by the agent
+ * Updated: 2025-12-30 - Added agentVersion, platform, arch fields
  */
 export interface AgentSystemStatus {
   // System resources
@@ -286,6 +287,11 @@ export interface AgentSystemStatus {
   // Tunnel configuration (for exit agent)
   wsListenPort?: number; // WebSocket listen port for tunnel connections
   tlsListenPort?: number; // TLS listen port for tunnel connections (Added: 2025-12-24)
+
+  // Agent info (Added: 2025-12-30)
+  agentVersion?: string; // Agent software version (e.g., "1.2.3")
+  platform?: string; // OS platform (linux, darwin, windows)
+  arch?: string; // CPU architecture (amd64, arm64, arm, 386)
 }
 
 /**
@@ -359,6 +365,7 @@ export interface GetAgentTokenResponse {
 
 /**
  * Agent runtime status (reported by forward agent)
+ * Updated: 2025-12-30 - Added agentVersion, platform, arch fields
  */
 export interface AgentRuntimeStatus {
   // System resources
@@ -383,6 +390,11 @@ export interface AgentRuntimeStatus {
   // Tunnel configuration (for exit agent)
   wsListenPort?: number; // WebSocket listen port for tunnel connections
   tlsListenPort?: number; // TLS listen port for tunnel connections (Added: 2025-12-24)
+
+  // Agent info (Added: 2025-12-30)
+  agentVersion?: string; // Agent software version (e.g., "1.2.3")
+  platform?: string; // OS platform (linux, darwin, windows)
+  arch?: string; // CPU architecture (amd64, arm64, arm, 386)
 }
 
 // ========== Exit Endpoint Types ==========

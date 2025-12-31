@@ -172,7 +172,7 @@ export interface Node {
 
 /**
  * Node system status (real-time metrics from monitoring via procfs)
- * Updated: 2025-12-28 - Enhanced with detailed procfs metrics
+ * Updated: 2025-12-30 - Added platform, arch fields
  */
 export interface NodeSystemStatus {
   /** CPU usage percentage (0-100) */
@@ -215,8 +215,12 @@ export interface NodeSystemStatus {
   publicIpv4?: string;
   /** Public IPv6 address reported by agent */
   publicIpv6?: string;
-  /** Agent software version */
+  /** Agent software version (e.g., "1.2.3") */
   agentVersion?: string;
+  /** OS platform (linux, darwin, windows) (Added: 2025-12-30) */
+  platform?: string;
+  /** CPU architecture (amd64, arm64, arm, 386) (Added: 2025-12-30) */
+  arch?: string;
   /** Last update timestamp (Unix seconds) */
   updatedAt: number;
 }

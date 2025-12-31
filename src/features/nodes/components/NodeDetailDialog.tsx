@@ -192,6 +192,11 @@ export const NodeDetailDialog: React.FC<NodeDetailDialogProps> = ({
                     <span className="text-slate-300 dark:text-slate-600">|</span>
                     <span className="text-sm text-muted-foreground font-mono">
                       v{node.systemStatus.agentVersion}
+                      {node.systemStatus.platform && node.systemStatus.arch && (
+                        <span className="text-xs ml-1">
+                          ({node.systemStatus.platform}/{node.systemStatus.arch})
+                        </span>
+                      )}
                     </span>
                   </>
                 )}
