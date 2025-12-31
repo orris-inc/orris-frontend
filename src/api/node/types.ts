@@ -11,6 +11,7 @@
  * - Node: "node_xK9mP2vL3nQ" (prefix: node_)
  *
  * Recent changes:
+ * - 2025-12-31: Added hasUpdate to Node for update availability tracking in table columns
  * - 2025-12-31: Added NodeVersionInfo and TriggerNodeUpdateResponse for node version management
  * - 2025-12-29: OutboundType now supports node SID references (e.g., "node_xxx") for traffic routing to specific nodes
  * - 2025-12-29: Added RouteConfig and RouteRule types for traffic splitting configuration (sing-box compatible)
@@ -125,7 +126,7 @@ export interface NodeOwner {
 /**
  * Node entity
  * ID format: "node_xK9mP2vL3nQ" (Stripe-style prefixed ID)
- * Updated: 2025-12-31 - Added agentVersion field for easy display in table columns
+ * Updated: 2025-12-31 - Added agentVersion, platform, arch, hasUpdate fields for version management display
  */
 export interface Node {
   id: string; // Stripe-style prefixed ID (e.g., "node_xK9mP2vL3nQ")
@@ -161,6 +162,12 @@ export interface Node {
   lastSeenAt?: string;
   /** Agent software version, extracted from systemStatus for easy table display (Added: 2025-12-31) */
   agentVersion?: string;
+  /** OS platform (linux, darwin, windows), extracted from systemStatus for easy table display (Added: 2025-12-31) */
+  platform?: string;
+  /** CPU architecture (amd64, arm64, arm, 386), extracted from systemStatus for easy table display (Added: 2025-12-31) */
+  arch?: string;
+  /** True if a newer agent version is available (Added: 2025-12-31) */
+  hasUpdate: boolean;
   /** Resource group SIDs this node belongs to (e.g., ["rg_xK9mP2vL3nQ", "rg_yL0nQ3wM4oR"]) */
   groupIds?: string[];
   version: number;

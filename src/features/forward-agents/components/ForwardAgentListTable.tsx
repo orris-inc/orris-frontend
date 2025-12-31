@@ -5,7 +5,7 @@
  */
 
 import { useMemo, useState, useCallback } from 'react';
-import { Edit, Trash2, Key, Eye, Power, PowerOff, MoreHorizontal, Terminal, Copy, Check, Download, Loader2, Package } from 'lucide-react';
+import { Edit, Trash2, Key, Eye, Power, PowerOff, MoreHorizontal, Terminal, Copy, Check, Download, Loader2, Package, ArrowUpCircle } from 'lucide-react';
 import { DataTable, AdminBadge, TruncatedId, type ColumnDef, type ResponsiveColumnMeta } from '@/components/admin';
 import { useBreakpoint } from '@/hooks/useBreakpoint';
 import { ForwardAgentMobileList } from './ForwardAgentMobileList';
@@ -382,8 +382,12 @@ export const ForwardAgentListTable: React.FC<ForwardAgentListTableProps> = ({
           <Tooltip>
             <TooltipTrigger asChild>
               <div className="flex items-center gap-1.5 cursor-default">
-                <Package className="size-3.5 text-slate-400" />
-                <span className="text-xs font-mono text-slate-600 dark:text-slate-300">
+                {agent.hasUpdate ? (
+                  <ArrowUpCircle className="size-3.5 text-amber-500" />
+                ) : (
+                  <Package className="size-3.5 text-slate-400" />
+                )}
+                <span className={`text-xs font-mono ${agent.hasUpdate ? 'text-amber-600 dark:text-amber-400' : 'text-slate-600 dark:text-slate-300'}`}>
                   v{version}
                 </span>
               </div>
@@ -393,6 +397,9 @@ export const ForwardAgentListTable: React.FC<ForwardAgentListTableProps> = ({
                 <div className="text-xs">版本: v{version}</div>
                 {platform && arch && (
                   <div className="text-xs text-slate-400">{platform}/{arch}</div>
+                )}
+                {agent.hasUpdate && (
+                  <div className="text-xs text-amber-500">有新版本可用</div>
                 )}
               </div>
             </TooltipContent>

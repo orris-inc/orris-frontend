@@ -17,6 +17,7 @@ import {
   Check,
   Download,
   Loader2,
+  ArrowUpCircle,
 } from 'lucide-react';
 import {
   Accordion,
@@ -356,14 +357,22 @@ export const ForwardAgentMobileList: React.FC<ForwardAgentMobileListProps> = ({
                 {(agent.agentVersion || agent.systemStatus?.agentVersion) && (
                   <div className="flex items-center gap-2">
                     <span className="text-[10px] text-slate-400 dark:text-slate-500 uppercase tracking-wide w-8 flex-shrink-0">版本</span>
-                    <span className="text-xs font-mono text-slate-600 dark:text-slate-300">
-                      v{agent.agentVersion || agent.systemStatus?.agentVersion}
-                      {agent.systemStatus?.platform && agent.systemStatus?.arch && (
-                        <span className="text-slate-400 ml-1">
-                          ({agent.systemStatus.platform}/{agent.systemStatus.arch})
-                        </span>
+                    <div className="flex items-center gap-1.5">
+                      {agent.hasUpdate && (
+                        <ArrowUpCircle className="size-3.5 text-amber-500" />
                       )}
-                    </span>
+                      <span className={`text-xs font-mono ${agent.hasUpdate ? 'text-amber-600 dark:text-amber-400' : 'text-slate-600 dark:text-slate-300'}`}>
+                        v{agent.agentVersion || agent.systemStatus?.agentVersion}
+                        {agent.systemStatus?.platform && agent.systemStatus?.arch && (
+                          <span className="text-slate-400 ml-1">
+                            ({agent.systemStatus.platform}/{agent.systemStatus.arch})
+                          </span>
+                        )}
+                      </span>
+                      {agent.hasUpdate && (
+                        <span className="text-[10px] text-amber-500">可更新</span>
+                      )}
+                    </div>
                   </div>
                 )}
 

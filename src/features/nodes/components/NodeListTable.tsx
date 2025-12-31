@@ -22,6 +22,7 @@ import {
   User,
   Shield,
   Package,
+  ArrowUpCircle,
 } from 'lucide-react';
 import { DataTable, AdminBadge, TruncatedId, type ColumnDef, type ResponsiveColumnMeta } from '@/components/admin';
 import { useBreakpoint } from '@/hooks/useBreakpoint';
@@ -395,10 +396,10 @@ export const NodeListTable: React.FC<NodeListTableProps> = ({
       meta: { priority: 3 } as ResponsiveColumnMeta,
       cell: ({ row }) => {
         const node = row.original;
-        // Use agentVersion field directly (extracted from systemStatus by backend)
+        // Use fields directly (extracted from systemStatus by backend)
         const version = node.agentVersion || node.systemStatus?.agentVersion;
-        const platform = node.systemStatus?.platform;
-        const arch = node.systemStatus?.arch;
+        const platform = node.platform || node.systemStatus?.platform;
+        const arch = node.arch || node.systemStatus?.arch;
 
         if (!version) {
           return <span className="text-xs text-slate-400">-</span>;
@@ -408,8 +409,12 @@ export const NodeListTable: React.FC<NodeListTableProps> = ({
           <Tooltip>
             <TooltipTrigger asChild>
               <div className="flex items-center gap-1.5 cursor-default">
-                <Package className="size-3.5 text-slate-400" />
-                <span className="text-xs font-mono text-slate-600 dark:text-slate-300">
+                {node.hasUpdate ? (
+                  <ArrowUpCircle className="size-3.5 text-amber-500" />
+                ) : (
+                  <Package className="size-3.5 text-slate-400" />
+                )}
+                <span className={`text-xs font-mono ${node.hasUpdate ? 'text-amber-600 dark:text-amber-400' : 'text-slate-600 dark:text-slate-300'}`}>
                   v{version}
                 </span>
               </div>
@@ -419,6 +424,9 @@ export const NodeListTable: React.FC<NodeListTableProps> = ({
                 <div className="text-xs">版本: v{version}</div>
                 {platform && arch && (
                   <div className="text-xs text-slate-400">{platform}/{arch}</div>
+                )}
+                {node.hasUpdate && (
+                  <div className="text-xs text-amber-500">有新版本可用</div>
                 )}
               </div>
             </TooltipContent>

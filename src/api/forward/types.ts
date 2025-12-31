@@ -5,6 +5,7 @@
  * Last updated: 2025-12-31
  *
  * Recent changes:
+ * - 2025-12-31: Added hasUpdate to ForwardAgent for update availability tracking
  * - 2025-12-31: Added AgentVersionInfo, TriggerUpdateResponse for agent version management
  * - 2025-12-26: Added tunnelHops to UpdateForwardRuleRequest for hybrid chain support
  *
@@ -244,7 +245,7 @@ export interface ReorderForwardRulesRequest {
  * Forward agent entity
  * ID format: "fa_xK9mP2vL3nQ" (Stripe-style prefixed ID)
  * An agent can participate in multiple rules with different roles (entry/relay/exit) simultaneously.
- * Updated: 2025-12-31 - Added agentVersion field for easy display in table columns
+ * Updated: 2025-12-31 - Added agentVersion, hasUpdate fields for version management display
  */
 export interface ForwardAgent {
   id: string; // Stripe-style prefixed ID (e.g., "fa_xK9mP2vL3nQ")
@@ -255,8 +256,10 @@ export interface ForwardAgent {
   remark: string;
   /** Resource group SID this agent belongs to (e.g., "rg_xK9mP2vL3nQ") */
   groupId?: string;
-  /** Agent software version, extracted from systemStatus for easy table display (Added: 2025-12-31) */
-  agentVersion?: string;
+  /** Agent software version (e.g., "1.2.3"), extracted from systemStatus for easy table display (Added: 2025-12-31) */
+  agentVersion: string;
+  /** True if a newer version is available (Added: 2025-12-31) */
+  hasUpdate: boolean;
   createdAt: string;
   updatedAt: string;
   systemStatus?: AgentSystemStatus; // Real-time system metrics (optional, from cache)
