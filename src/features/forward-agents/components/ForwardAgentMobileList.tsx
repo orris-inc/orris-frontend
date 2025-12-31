@@ -15,6 +15,8 @@ import {
   Copy,
   Eye,
   Check,
+  Download,
+  Loader2,
 } from 'lucide-react';
 import {
   Accordion,
@@ -49,6 +51,8 @@ interface ForwardAgentMobileListProps {
   onGetInstallScript: (agent: ForwardAgent) => void;
   onViewDetail: (agent: ForwardAgent) => void;
   onCopy: (agent: ForwardAgent) => void;
+  onCheckUpdate: (agent: ForwardAgent) => void;
+  checkingAgentId?: string | number | null;
 }
 
 // Format date
@@ -137,6 +141,8 @@ export const ForwardAgentMobileList: React.FC<ForwardAgentMobileListProps> = ({
   onGetInstallScript,
   onViewDetail,
   onCopy,
+  onCheckUpdate,
+  checkingAgentId,
 }) => {
   // Render dropdown menu
   const renderDropdownMenu = (agent: ForwardAgent) => {
@@ -171,6 +177,19 @@ export const ForwardAgentMobileList: React.FC<ForwardAgentMobileListProps> = ({
             <Key className="mr-2 size-4" />
             重新生成Token
           </DropdownMenuItem>
+          {agent.status === 'enabled' && (
+            <DropdownMenuItem
+              onClick={() => onCheckUpdate(agent)}
+              disabled={checkingAgentId === agent.id}
+            >
+              {checkingAgentId === agent.id ? (
+                <Loader2 className="mr-2 size-4 animate-spin" />
+              ) : (
+                <Download className="mr-2 size-4" />
+              )}
+              {checkingAgentId === agent.id ? '检查中...' : '检查更新'}
+            </DropdownMenuItem>
+          )}
           <DropdownMenuSeparator />
           {agent.status === 'enabled' ? (
             <DropdownMenuItem onClick={() => onDisable(agent)}>

@@ -3,7 +3,7 @@
  * Uses unified refined business style components
  */
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useCallback } from 'react';
 import { Cpu, Plus, RefreshCw } from 'lucide-react';
 import { ForwardAgentListTable } from '@/features/forward-agents/components/ForwardAgentListTable';
 import { ForwardAgentFiltersComponent } from '@/features/forward-agents/components/ForwardAgentFilters';
@@ -11,7 +11,11 @@ import { EditForwardAgentDialog } from '@/features/forward-agents/components/Edi
 import { CreateForwardAgentDialog } from '@/features/forward-agents/components/CreateForwardAgentDialog';
 import { ForwardAgentDetailDialog } from '@/features/forward-agents/components/ForwardAgentDetailDialog';
 import { InstallScriptDialog } from '@/features/forward-agents/components/InstallScriptDialog';
-import { useForwardAgentsPage } from '@/features/forward-agents/hooks/useForwardAgents';
+import { useForwardAgentsPage, useTriggerAgentUpdate } from '@/features/forward-agents/hooks/useForwardAgents';
+import { getAgentVersion } from '@/api/forward';
+import { ConfirmDialog } from '@/components/common/ConfirmDialog';
+import { useNotificationStore } from '@/shared/stores/notification-store';
+import type { AgentVersionInfo } from '@/api/forward';
 import { useResourceGroups } from '@/features/resource-groups/hooks/useResourceGroups';
 import { AdminLayout } from '@/layouts/AdminLayout';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/common/Tooltip';
@@ -72,6 +76,15 @@ export const ForwardAgentsPage = () => {
   const [tokenDialogOpen, setTokenDialogOpen] = useState(false);
   const [copyAgentData, setCopyAgentData] = useState<Partial<CreateForwardAgentRequest> | undefined>(undefined);
 
+  // Version update state
+  const [updateConfirmOpen, setUpdateConfirmOpen] = useState(false);
+  const [versionInfo, setVersionInfo] = useState<AgentVersionInfo | null>(null);
+  const [updateAgent, setUpdateAgent] = useState<ForwardAgent | null>(null);
+  const [checkingAgentId, setCheckingAgentId] = useState<string | number | null>(null);
+
+  const { showError, showInfo } = useNotificationStore();
+  const triggerUpdateMutation = useTriggerAgentUpdate();
+
   const handleEdit = (agent: ForwardAgent) => {
     setSelectedAgent(agent);
     setEditDialogOpen(true);
@@ -123,6 +136,41 @@ export const ForwardAgentsPage = () => {
   const handleRefresh = () => {
     refetch();
   };
+
+  const handleCheckUpdate = useCallback(async (agent: ForwardAgent) => {
+    setCheckingAgentId(agent.id);
+    try {
+      // Minimum 500ms delay for smooth UX
+      const [info] = await Promise.all([
+        getAgentVersion(agent.id),
+        new Promise(resolve => setTimeout(resolve, 500)),
+      ]);
+      setVersionInfo(info);
+      setUpdateAgent(agent);
+
+      if (info.hasUpdate) {
+        setUpdateConfirmOpen(true);
+      } else {
+        showInfo(`${agent.name} 已是最新版本 (v${info.currentVersion})`);
+      }
+    } catch {
+      showError('获取版本信息失败');
+    } finally {
+      setCheckingAgentId(null);
+    }
+  }, [showInfo, showError]);
+
+  const handleConfirmUpdate = useCallback(async () => {
+    if (!updateAgent) return;
+    try {
+      await triggerUpdateMutation.mutateAsync(updateAgent.id);
+      setUpdateConfirmOpen(false);
+      setUpdateAgent(null);
+      setVersionInfo(null);
+    } catch {
+      // Error handled by mutation
+    }
+  }, [updateAgent, triggerUpdateMutation]);
 
   const handleCreateSubmit = async (data: CreateForwardAgentRequest) => {
     try {
@@ -220,6 +268,8 @@ export const ForwardAgentsPage = () => {
             onGetInstallScript={handleInstallScript}
             onViewDetail={handleViewDetail}
             onCopy={handleCopy}
+            onCheckUpdate={handleCheckUpdate}
+            checkingAgentId={checkingAgentId}
           />
         ) : (
           <AdminCard noPadding>
@@ -240,6 +290,8 @@ export const ForwardAgentsPage = () => {
               onGetInstallScript={handleInstallScript}
               onViewDetail={handleViewDetail}
               onCopy={handleCopy}
+              onCheckUpdate={handleCheckUpdate}
+              checkingAgentId={checkingAgentId}
             />
           </AdminCard>
         )}
@@ -298,6 +350,27 @@ export const ForwardAgentsPage = () => {
           setInstallCommandData(null);
           setSelectedAgent(null);
         }}
+      />
+
+      {/* Version Update Confirm Dialog */}
+      <ConfirmDialog
+        open={updateConfirmOpen}
+        onOpenChange={(open) => {
+          if (!open) {
+            setUpdateConfirmOpen(false);
+            setUpdateAgent(null);
+            setVersionInfo(null);
+          }
+        }}
+        title="确认更新"
+        description={
+          versionInfo && updateAgent
+            ? `确定要将 "${updateAgent.name}" 从 v${versionInfo.currentVersion} 更新到 v${versionInfo.latestVersion} 吗？更新过程中 Agent 会短暂离线。`
+            : '确定要更新 Agent 吗？'
+        }
+        confirmText="确认更新"
+        onConfirm={handleConfirmUpdate}
+        loading={triggerUpdateMutation.isPending}
       />
     </AdminLayout>
   );

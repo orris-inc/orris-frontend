@@ -18,6 +18,8 @@ import {
   regenerateForwardAgentToken,
   getForwardAgentRuntimeStatus,
   getInstallCommand,
+  getAgentVersion,
+  triggerAgentUpdate,
   type ForwardAgent,
   type CreateForwardAgentRequest,
   type UpdateForwardAgentRequest,
@@ -33,6 +35,7 @@ const forwardAgentsQueryKeys = {
   details: () => [...forwardAgentsQueryKeys.all, 'detail'] as const,
   detail: (id: number | string) => [...forwardAgentsQueryKeys.details(), id] as const,
   runtimeStatus: (id: number | string) => [...forwardAgentsQueryKeys.all, 'runtimeStatus', id] as const,
+  version: (id: number | string) => [...forwardAgentsQueryKeys.all, 'version', id] as const,
 };
 
 export interface ForwardAgentFilters {
@@ -268,3 +271,35 @@ export const useForwardAgentsPage = () => {
   };
 };
 
+// Get agent version information
+export const useAgentVersion = (id: number | string | null, enabled: boolean = true) => {
+  const { data, isLoading, isFetching, error, refetch } = useQuery({
+    queryKey: forwardAgentsQueryKeys.version(id!),
+    queryFn: () => getAgentVersion(id!),
+    enabled: !!id && enabled,
+    staleTime: 30000, // Data considered fresh for 30 seconds
+  });
+
+  return {
+    versionInfo: data ?? null,
+    isLoading,
+    isFetching,
+    error: error ? handleApiError(error) : null,
+    refetch,
+  };
+};
+
+// Trigger agent update mutation
+export const useTriggerAgentUpdate = () => {
+  const { showSuccess, showError } = useNotificationStore();
+
+  return useMutation({
+    mutationFn: triggerAgentUpdate,
+    onSuccess: (data) => {
+      showSuccess(`更新命令已发送，目标版本: ${data.targetVersion}`);
+    },
+    onError: (error) => {
+      showError(handleApiError(error));
+    },
+  });
+};

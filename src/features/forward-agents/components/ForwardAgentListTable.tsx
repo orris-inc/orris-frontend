@@ -5,7 +5,7 @@
  */
 
 import { useMemo, useState, useCallback } from 'react';
-import { Edit, Trash2, Key, Eye, Power, PowerOff, MoreHorizontal, Terminal, Copy, Check } from 'lucide-react';
+import { Edit, Trash2, Key, Eye, Power, PowerOff, MoreHorizontal, Terminal, Copy, Check, Download, Loader2 } from 'lucide-react';
 import { DataTable, AdminBadge, TruncatedId, type ColumnDef, type ResponsiveColumnMeta } from '@/components/admin';
 import { useBreakpoint } from '@/hooks/useBreakpoint';
 import { ForwardAgentMobileList } from './ForwardAgentMobileList';
@@ -43,6 +43,8 @@ interface ForwardAgentListTableProps {
   onGetInstallScript: (agent: ForwardAgent) => void;
   onViewDetail: (agent: ForwardAgent) => void;
   onCopy: (agent: ForwardAgent) => void;
+  onCheckUpdate: (agent: ForwardAgent) => void;
+  checkingAgentId?: string | number | null;
 }
 
 // Copyable address component (supports long address truncation and Tooltip for full content)
@@ -134,6 +136,8 @@ export const ForwardAgentListTable: React.FC<ForwardAgentListTableProps> = ({
   onGetInstallScript,
   onViewDetail,
   onCopy,
+  onCheckUpdate,
+  checkingAgentId,
 }) => {
   // Detect mobile screen
   const { isMobile } = useBreakpoint();
@@ -149,6 +153,19 @@ export const ForwardAgentListTable: React.FC<ForwardAgentListTableProps> = ({
         <Key className="mr-2 size-4" />
         重新生成Token
       </ContextMenuItem>
+      {agent.status === 'enabled' && (
+        <ContextMenuItem
+          onClick={() => onCheckUpdate(agent)}
+          disabled={checkingAgentId === agent.id}
+        >
+          {checkingAgentId === agent.id ? (
+            <Loader2 className="mr-2 size-4 animate-spin" />
+          ) : (
+            <Download className="mr-2 size-4" />
+          )}
+          {checkingAgentId === agent.id ? '检查中...' : '检查更新'}
+        </ContextMenuItem>
+      )}
       <ContextMenuSeparator />
       {agent.status === 'enabled' ? (
         <ContextMenuItem onClick={() => onDisable(agent)}>
@@ -166,7 +183,7 @@ export const ForwardAgentListTable: React.FC<ForwardAgentListTableProps> = ({
         删除
       </ContextMenuItem>
     </>
-  ), [onCopy, onRegenerateToken, onEnable, onDisable, onDelete]);
+  ), [onCopy, onRegenerateToken, onCheckUpdate, checkingAgentId, onEnable, onDisable, onDelete]);
 
   // Forward agent dropdown menu content
   const renderDropdownMenuActions = useCallback((agent: ForwardAgent) => (
@@ -179,6 +196,19 @@ export const ForwardAgentListTable: React.FC<ForwardAgentListTableProps> = ({
         <Key className="mr-2 size-4" />
         重新生成Token
       </DropdownMenuItem>
+      {agent.status === 'enabled' && (
+        <DropdownMenuItem
+          onClick={() => onCheckUpdate(agent)}
+          disabled={checkingAgentId === agent.id}
+        >
+          {checkingAgentId === agent.id ? (
+            <Loader2 className="mr-2 size-4 animate-spin" />
+          ) : (
+            <Download className="mr-2 size-4" />
+          )}
+          {checkingAgentId === agent.id ? '检查中...' : '检查更新'}
+        </DropdownMenuItem>
+      )}
       <DropdownMenuSeparator />
       {agent.status === 'enabled' ? (
         <DropdownMenuItem onClick={() => onDisable(agent)}>
@@ -196,7 +226,7 @@ export const ForwardAgentListTable: React.FC<ForwardAgentListTableProps> = ({
         删除
       </DropdownMenuItem>
     </>
-  ), [onCopy, onRegenerateToken, onEnable, onDisable, onDelete]);
+  ), [onCopy, onRegenerateToken, onCheckUpdate, checkingAgentId, onEnable, onDisable, onDelete]);
 
   const columns = useMemo<ColumnDef<ForwardAgent>[]>(() => [
     {
@@ -417,6 +447,8 @@ export const ForwardAgentListTable: React.FC<ForwardAgentListTableProps> = ({
         onGetInstallScript={onGetInstallScript}
         onViewDetail={onViewDetail}
         onCopy={onCopy}
+        onCheckUpdate={onCheckUpdate}
+        checkingAgentId={checkingAgentId}
       />
     );
   }
