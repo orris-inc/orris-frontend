@@ -13,10 +13,12 @@ import { Button } from '@/components/common/Button';
 import { Badge } from '@/components/common/Badge';
 import { Separator } from '@/components/common/Separator';
 import { TruncatedId } from '@/components/admin';
-import { Cpu, HardDrive, MemoryStick, Clock, Network, ArrowUpDown, Loader2, Radio, Info, Download, RefreshCw, CheckCircle } from 'lucide-react';
-import { useForwardAgentRuntimeStatus, useAgentVersion, useTriggerAgentUpdate } from '../hooks/useForwardAgents';
-import { ConfirmDialog } from '@/components/common/ConfirmDialog';
-import { useState } from 'react';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/common/Tooltip';
+import { Cpu, HardDrive, MemoryStick, Clock, Network, ArrowUpDown, Loader2, Radio, Info, Package, RefreshCw, ArrowUpCircle } from 'lucide-react';
+import { useForwardAgentRuntimeStatus } from '../hooks/useForwardAgents';
+import { getAgentVersion, triggerAgentUpdate } from '@/api/forward';
+import type { AgentVersionInfo } from '@/api/forward';
+import { useState, useEffect } from 'react';
 import type { ForwardAgent } from '@/api/forward';
 
 interface ForwardAgentDetailDialogProps {
@@ -63,49 +65,46 @@ const formatUptime = (seconds?: number) => {
   return `${minutes}分钟`;
 };
 
-// Minimum delay helper for smooth loading states
-const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
-
 export const ForwardAgentDetailDialog: React.FC<ForwardAgentDetailDialogProps> = ({
   open,
   agent,
   onClose,
 }) => {
-  const [showUpdateConfirm, setShowUpdateConfirm] = useState(false);
-  const [isCheckingVersion, setIsCheckingVersion] = useState(false);
+  const [versionInfo, setVersionInfo] = useState<AgentVersionInfo | null>(null);
+  const [versionLoading, setVersionLoading] = useState(false);
+  const [updateLoading, setUpdateLoading] = useState(false);
+  const [updateMessage, setUpdateMessage] = useState<string | null>(null);
 
   // Get runtime status
   const { runtimeStatus, isLoading: isLoadingStatus } = useForwardAgentRuntimeStatus(
     open && agent?.status === 'enabled' ? agent.id : null
   );
 
-  // Get version information
-  const { versionInfo, isLoading: isLoadingVersion, refetch: refetchVersion } = useAgentVersion(
-    open && agent?.status === 'enabled' ? agent.id : null
-  );
+  // Fetch version info when dialog opens and agent is enabled
+  useEffect(() => {
+    if (open && agent?.status === 'enabled' && agent?.id) {
+      setVersionInfo(null);
+      setUpdateMessage(null);
+      setVersionLoading(true);
+      getAgentVersion(agent.id)
+        .then(setVersionInfo)
+        .catch(() => setVersionInfo(null))
+        .finally(() => setVersionLoading(false));
+    }
+  }, [open, agent?.id, agent?.status]);
 
-  // Trigger update mutation
-  const updateMutation = useTriggerAgentUpdate();
-
-  // Check version with minimum loading time for smooth UX
-  const handleCheckVersion = async () => {
-    setIsCheckingVersion(true);
-    await Promise.all([
-      refetchVersion(),
-      delay(500), // Minimum 500ms for visible feedback
-    ]);
-    setIsCheckingVersion(false);
-  };
-
+  // Handle trigger update
   const handleTriggerUpdate = async () => {
-    if (!agent) return;
+    if (!agent?.id) return;
+    setUpdateLoading(true);
+    setUpdateMessage(null);
     try {
-      await updateMutation.mutateAsync(agent.id);
-      setShowUpdateConfirm(false);
-      // Refetch version after triggering update
-      setTimeout(() => refetchVersion(), 2000);
+      const response = await triggerAgentUpdate(agent.id);
+      setUpdateMessage(response.message);
     } catch {
-      // Error handled by mutation
+      setUpdateMessage('更新触发失败');
+    } finally {
+      setUpdateLoading(false);
     }
   };
 
@@ -282,101 +281,79 @@ export const ForwardAgentDetailDialog: React.FC<ForwardAgentDetailDialogProps> =
                   暂无运行状态数据
                 </p>
               )}
-            </div>
-          )}
 
-          {/* 版本管理 */}
-          {agent.status === 'enabled' && (
-            <div>
-              <h3 className="text-sm font-semibold mb-3">版本管理</h3>
-              <Separator className="mb-4" />
-              {isLoadingVersion ? (
-                <div className="flex items-center justify-center py-4">
-                  <Loader2 className="size-5 animate-spin text-muted-foreground" />
-                </div>
-              ) : versionInfo ? (
-                <div className="space-y-4">
-                  <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                    {/* 当前版本 */}
-                    <div className="flex items-center gap-3 p-3 rounded-lg bg-slate-50 dark:bg-slate-800/50">
-                      <Info className="size-5 text-blue-500" />
-                      <div>
-                        <p className="text-xs text-muted-foreground">当前版本</p>
-                        <p className="text-sm font-medium">v{versionInfo.currentVersion}</p>
-                      </div>
-                    </div>
-
-                    {/* 最新版本 */}
-                    <div className="flex items-center gap-3 p-3 rounded-lg bg-slate-50 dark:bg-slate-800/50">
-                      <Download className="size-5 text-green-500" />
-                      <div>
-                        <p className="text-xs text-muted-foreground">最新版本</p>
-                        <p className="text-sm font-medium">v{versionInfo.latestVersion}</p>
-                      </div>
-                    </div>
-
-                    {/* 平台/架构 */}
-                    <div className="flex items-center gap-3 p-3 rounded-lg bg-slate-50 dark:bg-slate-800/50">
-                      <Info className="size-5 text-slate-500" />
-                      <div>
-                        <p className="text-xs text-muted-foreground">平台</p>
-                        <p className="text-sm font-medium">{versionInfo.platform}/{versionInfo.arch}</p>
-                      </div>
-                    </div>
+              {/* Version Management - Compact style like NodeDetailDialog */}
+              <div className="p-3 bg-muted rounded-lg mt-4">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <Package className="h-4 w-4 text-blue-500" />
+                    <span className="text-sm font-medium">版本管理</span>
                   </div>
-
-                  {/* 更新状态和操作 */}
-                  <div className="flex items-center justify-between p-3 rounded-lg bg-slate-50 dark:bg-slate-800/50">
-                    <div className="flex items-center gap-2">
-                      {versionInfo.hasUpdate ? (
-                        <>
-                          <Download className="size-4 text-amber-500" />
-                          <span className="text-sm text-amber-600 dark:text-amber-400">
-                            有新版本可用
-                          </span>
-                        </>
-                      ) : (
-                        <>
-                          <CheckCircle className="size-4 text-green-500" />
-                          <span className="text-sm text-green-600 dark:text-green-400">
-                            已是最新版本
-                          </span>
-                        </>
-                      )}
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={handleCheckVersion}
-                        disabled={isCheckingVersion}
-                      >
-                        <RefreshCw className={`size-4 mr-1 ${isCheckingVersion ? 'animate-spin' : ''}`} />
-                        检查更新
-                      </Button>
+                  {versionLoading ? (
+                    <Loader2 className="h-4 w-4 animate-spin text-slate-400" />
+                  ) : versionInfo ? (
+                    <div className="flex items-center gap-3">
+                      <div className="text-sm">
+                        <span className="text-muted-foreground">当前: </span>
+                        <span className="font-mono">v{versionInfo.currentVersion}</span>
+                      </div>
+                      <div className="text-sm">
+                        <span className="text-muted-foreground">最新: </span>
+                        <span className="font-mono">v{versionInfo.latestVersion}</span>
+                      </div>
                       {versionInfo.hasUpdate && (
-                        <Button
-                          variant="default"
-                          size="sm"
-                          onClick={() => setShowUpdateConfirm(true)}
-                          disabled={updateMutation.isPending}
-                        >
-                          {updateMutation.isPending ? (
-                            <Loader2 className="size-4 mr-1 animate-spin" />
-                          ) : (
-                            <Download className="size-4 mr-1" />
-                          )}
-                          立即更新
-                        </Button>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={handleTriggerUpdate}
+                              disabled={updateLoading}
+                              className="h-7 gap-1.5"
+                            >
+                              {updateLoading ? (
+                                <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                              ) : (
+                                <ArrowUpCircle className="h-3.5 w-3.5" />
+                              )}
+                              更新
+                            </Button>
+                          </TooltipTrigger>
+                          <TooltipContent>
+                            更新到 v{versionInfo.latestVersion}
+                          </TooltipContent>
+                        </Tooltip>
+                      )}
+                      {!versionInfo.hasUpdate && (
+                        <Badge variant="outline" className="text-green-600 border-green-200 dark:border-green-800">
+                          已是最新
+                        </Badge>
                       )}
                     </div>
-                  </div>
+                  ) : (
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <button
+                          onClick={() => {
+                            setVersionLoading(true);
+                            getAgentVersion(agent.id)
+                              .then(setVersionInfo)
+                              .catch(() => setVersionInfo(null))
+                              .finally(() => setVersionLoading(false));
+                          }}
+                          className="p-1.5 rounded-md hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors"
+                        >
+                          <RefreshCw className="h-4 w-4 text-slate-400" />
+                        </button>
+                      </TooltipTrigger>
+                      <TooltipContent>刷新版本信息</TooltipContent>
+                    </Tooltip>
+                  )}
                 </div>
-              ) : (
-                <p className="text-sm text-muted-foreground text-center py-4">
-                  无法获取版本信息
-                </p>
-              )}
+                {updateMessage && (
+                  <p className="text-xs text-muted-foreground mt-2">{updateMessage}</p>
+                )}
+              </div>
             </div>
           )}
 
@@ -429,21 +406,6 @@ export const ForwardAgentDetailDialog: React.FC<ForwardAgentDetailDialogProps> =
           </Button>
         </DialogFooter>
       </DialogContent>
-
-      {/* 更新确认对话框 */}
-      <ConfirmDialog
-        open={showUpdateConfirm}
-        onOpenChange={setShowUpdateConfirm}
-        title="确认更新"
-        description={
-          versionInfo
-            ? `确定要将 Agent 从 v${versionInfo.currentVersion} 更新到 v${versionInfo.latestVersion} 吗？更新过程中 Agent 会短暂离线。`
-            : '确定要更新 Agent 吗？'
-        }
-        confirmText="确认更新"
-        onConfirm={handleTriggerUpdate}
-        loading={updateMutation.isPending}
-      />
     </Dialog>
   );
 };

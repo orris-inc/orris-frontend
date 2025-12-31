@@ -21,6 +21,7 @@ import {
   Copy,
   User,
   Shield,
+  Package,
 } from 'lucide-react';
 import { DataTable, AdminBadge, TruncatedId, type ColumnDef, type ResponsiveColumnMeta } from '@/components/admin';
 import { useBreakpoint } from '@/hooks/useBreakpoint';
@@ -384,6 +385,44 @@ export const NodeListTable: React.FC<NodeListTableProps> = ({
               </Tooltip>
             )}
           </div>
+        );
+      },
+    },
+    {
+      id: 'version',
+      header: '版本',
+      size: 100,
+      meta: { priority: 3 } as ResponsiveColumnMeta,
+      cell: ({ row }) => {
+        const node = row.original;
+        // Use agentVersion field directly (extracted from systemStatus by backend)
+        const version = node.agentVersion || node.systemStatus?.agentVersion;
+        const platform = node.systemStatus?.platform;
+        const arch = node.systemStatus?.arch;
+
+        if (!version) {
+          return <span className="text-xs text-slate-400">-</span>;
+        }
+
+        return (
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <div className="flex items-center gap-1.5 cursor-default">
+                <Package className="size-3.5 text-slate-400" />
+                <span className="text-xs font-mono text-slate-600 dark:text-slate-300">
+                  v{version}
+                </span>
+              </div>
+            </TooltipTrigger>
+            <TooltipContent>
+              <div className="space-y-1">
+                <div className="text-xs">版本: v{version}</div>
+                {platform && arch && (
+                  <div className="text-xs text-slate-400">{platform}/{arch}</div>
+                )}
+              </div>
+            </TooltipContent>
+          </Tooltip>
         );
       },
     },

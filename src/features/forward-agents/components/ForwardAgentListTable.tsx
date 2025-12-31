@@ -5,7 +5,7 @@
  */
 
 import { useMemo, useState, useCallback } from 'react';
-import { Edit, Trash2, Key, Eye, Power, PowerOff, MoreHorizontal, Terminal, Copy, Check, Download, Loader2 } from 'lucide-react';
+import { Edit, Trash2, Key, Eye, Power, PowerOff, MoreHorizontal, Terminal, Copy, Check, Download, Loader2, Package } from 'lucide-react';
 import { DataTable, AdminBadge, TruncatedId, type ColumnDef, type ResponsiveColumnMeta } from '@/components/admin';
 import { useBreakpoint } from '@/hooks/useBreakpoint';
 import { ForwardAgentMobileList } from './ForwardAgentMobileList';
@@ -356,6 +356,44 @@ export const ForwardAgentListTable: React.FC<ForwardAgentListTableProps> = ({
               <div className="space-y-1">
                 <div>{group?.name || '未知资源组'}</div>
                 <div className="text-xs text-slate-400 font-mono">{agent.groupId}</div>
+              </div>
+            </TooltipContent>
+          </Tooltip>
+        );
+      },
+    },
+    {
+      id: 'version',
+      header: '版本',
+      size: 100,
+      meta: { priority: 3 } as ResponsiveColumnMeta,
+      cell: ({ row }) => {
+        const agent = row.original;
+        // Use agentVersion field directly (extracted from systemStatus by backend)
+        const version = agent.agentVersion || agent.systemStatus?.agentVersion;
+        const platform = agent.systemStatus?.platform;
+        const arch = agent.systemStatus?.arch;
+
+        if (!version) {
+          return <span className="text-xs text-slate-400">-</span>;
+        }
+
+        return (
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <div className="flex items-center gap-1.5 cursor-default">
+                <Package className="size-3.5 text-slate-400" />
+                <span className="text-xs font-mono text-slate-600 dark:text-slate-300">
+                  v{version}
+                </span>
+              </div>
+            </TooltipTrigger>
+            <TooltipContent>
+              <div className="space-y-1">
+                <div className="text-xs">版本: v{version}</div>
+                {platform && arch && (
+                  <div className="text-xs text-slate-400">{platform}/{arch}</div>
+                )}
               </div>
             </TooltipContent>
           </Tooltip>

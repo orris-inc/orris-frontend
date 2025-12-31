@@ -352,6 +352,21 @@ export const ForwardAgentMobileList: React.FC<ForwardAgentMobileListProps> = ({
                   </div>
                 )}
 
+                {/* Version */}
+                {(agent.agentVersion || agent.systemStatus?.agentVersion) && (
+                  <div className="flex items-center gap-2">
+                    <span className="text-[10px] text-slate-400 dark:text-slate-500 uppercase tracking-wide w-8 flex-shrink-0">版本</span>
+                    <span className="text-xs font-mono text-slate-600 dark:text-slate-300">
+                      v{agent.agentVersion || agent.systemStatus?.agentVersion}
+                      {agent.systemStatus?.platform && agent.systemStatus?.arch && (
+                        <span className="text-slate-400 ml-1">
+                          ({agent.systemStatus.platform}/{agent.systemStatus.arch})
+                        </span>
+                      )}
+                    </span>
+                  </div>
+                )}
+
                 {/* Remark */}
                 {agent.remark && (
                   <div className="flex items-start gap-2">

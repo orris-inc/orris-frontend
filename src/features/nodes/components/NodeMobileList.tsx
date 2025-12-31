@@ -335,6 +335,21 @@ export const NodeMobileList: React.FC<NodeMobileListProps> = ({
                   </div>
                 )}
 
+                {/* Version */}
+                {(node.agentVersion || node.systemStatus?.agentVersion) && (
+                  <div className="flex items-center gap-2">
+                    <span className="text-[10px] text-slate-400 dark:text-slate-500 uppercase tracking-wide w-8 flex-shrink-0">版本</span>
+                    <span className="text-xs font-mono text-slate-600 dark:text-slate-300">
+                      v{node.agentVersion || node.systemStatus?.agentVersion}
+                      {node.systemStatus?.platform && node.systemStatus?.arch && (
+                        <span className="text-slate-400 ml-1">
+                          ({node.systemStatus.platform}/{node.systemStatus.arch})
+                        </span>
+                      )}
+                    </span>
+                  </div>
+                )}
+
                 {/* Tags */}
                 {node.tags && node.tags.length > 0 && (
                   <div className="flex items-start gap-2">

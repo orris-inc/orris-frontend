@@ -3,6 +3,7 @@
  * 基于 Node API 类型定义
  */
 
+import { useState, useEffect } from 'react';
 import {
   Dialog,
   DialogContent,
@@ -15,8 +16,10 @@ import { Badge } from '@/components/common/Badge';
 import { Separator } from '@/components/common/Separator';
 import { Progress, ProgressIndicator } from '@/components/common/Progress';
 import { TruncatedId } from '@/components/admin';
-import { Cpu, MemoryStick, HardDrive, Clock, ShieldCheck, ShieldAlert, Globe, Activity, Network } from 'lucide-react';
-import type { Node } from '@/api/node';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/common/Tooltip';
+import { Cpu, MemoryStick, HardDrive, Clock, ShieldCheck, ShieldAlert, Globe, Activity, Network, Package, RefreshCw, ArrowUpCircle, Loader2 } from 'lucide-react';
+import type { Node, NodeVersionInfo } from '@/api/node';
+import { getNodeVersion, triggerNodeUpdate } from '@/api/node';
 import { RouteConfigDisplay } from './RouteConfigDisplay';
 import type { OutboundNodeOption } from './RouteRuleEditor';
 
@@ -108,6 +111,39 @@ export const NodeDetailDialog: React.FC<NodeDetailDialogProps> = ({
   onClose,
   nodes = [],
 }) => {
+  const [versionInfo, setVersionInfo] = useState<NodeVersionInfo | null>(null);
+  const [versionLoading, setVersionLoading] = useState(false);
+  const [updateLoading, setUpdateLoading] = useState(false);
+  const [updateMessage, setUpdateMessage] = useState<string | null>(null);
+
+  // Fetch version info when dialog opens and node is online
+  useEffect(() => {
+    if (open && node?.isOnline && node?.id) {
+      setVersionInfo(null);
+      setUpdateMessage(null);
+      setVersionLoading(true);
+      getNodeVersion(node.id)
+        .then(setVersionInfo)
+        .catch(() => setVersionInfo(null))
+        .finally(() => setVersionLoading(false));
+    }
+  }, [open, node?.id, node?.isOnline]);
+
+  // Handle trigger update
+  const handleTriggerUpdate = async () => {
+    if (!node?.id) return;
+    setUpdateLoading(true);
+    setUpdateMessage(null);
+    try {
+      const response = await triggerNodeUpdate(node.id);
+      setUpdateMessage(response.message);
+    } catch {
+      setUpdateMessage('更新触发失败');
+    } finally {
+      setUpdateLoading(false);
+    }
+  };
+
   if (!node) return null;
 
   const statusConfig = STATUS_CONFIG[node.status] || { label: node.status, variant: 'outline' as const };
@@ -201,6 +237,81 @@ export const NodeDetailDialog: React.FC<NodeDetailDialogProps> = ({
                   </>
                 )}
               </div>
+
+              {/* Version Management */}
+              {node.isOnline && (
+                <div className="p-3 bg-muted rounded-lg">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <Package className="h-4 w-4 text-blue-500" />
+                      <span className="text-sm font-medium">版本管理</span>
+                    </div>
+                    {versionLoading ? (
+                      <Loader2 className="h-4 w-4 animate-spin text-slate-400" />
+                    ) : versionInfo ? (
+                      <div className="flex items-center gap-3">
+                        <div className="text-sm">
+                          <span className="text-muted-foreground">当前: </span>
+                          <span className="font-mono">v{versionInfo.currentVersion}</span>
+                        </div>
+                        <div className="text-sm">
+                          <span className="text-muted-foreground">最新: </span>
+                          <span className="font-mono">v{versionInfo.latestVersion}</span>
+                        </div>
+                        {versionInfo.hasUpdate && (
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={handleTriggerUpdate}
+                                disabled={updateLoading}
+                                className="h-7 gap-1.5"
+                              >
+                                {updateLoading ? (
+                                  <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                                ) : (
+                                  <ArrowUpCircle className="h-3.5 w-3.5" />
+                                )}
+                                更新
+                              </Button>
+                            </TooltipTrigger>
+                            <TooltipContent>
+                              更新到 v{versionInfo.latestVersion}
+                            </TooltipContent>
+                          </Tooltip>
+                        )}
+                        {!versionInfo.hasUpdate && (
+                          <Badge variant="outline" className="text-green-600 border-green-200 dark:border-green-800">
+                            已是最新
+                          </Badge>
+                        )}
+                      </div>
+                    ) : (
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <button
+                            onClick={() => {
+                              setVersionLoading(true);
+                              getNodeVersion(node.id)
+                                .then(setVersionInfo)
+                                .catch(() => setVersionInfo(null))
+                                .finally(() => setVersionLoading(false));
+                            }}
+                            className="p-1.5 rounded-md hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors"
+                          >
+                            <RefreshCw className="h-4 w-4 text-slate-400" />
+                          </button>
+                        </TooltipTrigger>
+                        <TooltipContent>刷新版本信息</TooltipContent>
+                      </Tooltip>
+                    )}
+                  </div>
+                  {updateMessage && (
+                    <p className="text-xs text-muted-foreground mt-2">{updateMessage}</p>
+                  )}
+                </div>
+              )}
 
               {node.systemStatus && (
                 <>
