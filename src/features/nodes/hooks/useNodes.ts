@@ -17,6 +17,7 @@ import {
   updateNodeStatus,
   generateNodeToken,
   getNodeInstallScript,
+  batchTriggerNodeUpdate,
 } from '@/api/node';
 import type {
   Node,
@@ -27,6 +28,8 @@ import type {
   GenerateNodeTokenResponse,
   GenerateNodeInstallScriptResponse,
   GetNodeInstallScriptParams,
+  BatchUpdateRequest,
+  BatchUpdateResponse,
 } from '@/api/node';
 
 // Filter types used by frontend
@@ -147,6 +150,20 @@ export const useNodes = (options: UseNodesOptions = {}) => {
     },
   });
 
+  // Batch update nodes
+  const batchUpdateMutation = useMutation({
+    mutationFn: (data: BatchUpdateRequest) => batchTriggerNodeUpdate(data),
+    onSuccess: (result) => {
+      if (result.succeeded.length > 0) {
+        showSuccess(`已触发 ${result.succeeded.length} 个节点更新`);
+      }
+      queryClient.invalidateQueries({ queryKey: queryKeys.nodes.lists() });
+    },
+    onError: (error) => {
+      showError(handleApiError(error));
+    },
+  });
+
   return {
     // Data
     nodes: data?.items ?? [],
@@ -173,6 +190,7 @@ export const useNodes = (options: UseNodesOptions = {}) => {
     generateToken: (id: string) => tokenMutation.mutateAsync(id),
     getInstallScript: (id: string, params?: GetNodeInstallScriptParams) =>
       installScriptMutation.mutateAsync({ id, params }),
+    batchUpdateNodes: (data: BatchUpdateRequest) => batchUpdateMutation.mutateAsync(data),
 
     // Mutation status
     isCreating: createMutation.isPending,
@@ -181,6 +199,7 @@ export const useNodes = (options: UseNodesOptions = {}) => {
     isChangingStatus: statusMutation.isPending,
     isGeneratingToken: tokenMutation.isPending,
     isGettingInstallScript: installScriptMutation.isPending,
+    isBatchUpdating: batchUpdateMutation.isPending,
   };
 };
 
@@ -210,6 +229,7 @@ export const useNodesPage = () => {
   const [selectedNode, setSelectedNode] = useState<Node | null>(null);
   const [generatedToken, setGeneratedToken] = useState<GenerateNodeTokenResponse | null>(null);
   const [installScriptData, setInstallScriptData] = useState<GenerateNodeInstallScriptResponse | null>(null);
+  const [batchUpdateResult, setBatchUpdateResult] = useState<BatchUpdateResponse | null>(null);
 
   const nodesQuery = useNodes({ page, pageSize, filters, includeUserNodes, sortBy, sortOrder });
 
@@ -250,6 +270,12 @@ export const useNodesPage = () => {
     setPage(1);
   };
 
+  const handleBatchUpdate = async (data: BatchUpdateRequest) => {
+    const result = await nodesQuery.batchUpdateNodes(data);
+    setBatchUpdateResult(result);
+    return result;
+  };
+
   return {
     ...nodesQuery,
     page,
@@ -261,9 +287,11 @@ export const useNodesPage = () => {
     selectedNode,
     generatedToken,
     installScriptData,
+    batchUpdateResult,
     setSelectedNode,
     setGeneratedToken,
     setInstallScriptData,
+    setBatchUpdateResult,
     handlePageChange,
     handlePageSizeChange,
     handleFiltersChange,
@@ -271,5 +299,6 @@ export const useNodesPage = () => {
     handleSortChange,
     handleGenerateToken,
     handleGetInstallScript,
+    handleBatchUpdate,
   };
 };

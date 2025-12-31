@@ -36,6 +36,8 @@ import type {
   GetUserNodeInstallScriptParams,
   NodeVersionInfo,
   TriggerNodeUpdateResponse,
+  BatchUpdateRequest,
+  BatchUpdateResponse,
 } from './types';
 
 // ============================================================================
@@ -180,6 +182,24 @@ export async function getNodeVersion(id: string): Promise<NodeVersionInfo> {
 export async function triggerNodeUpdate(id: string): Promise<TriggerNodeUpdateResponse> {
   const response = await apiClient.post<APIResponse<TriggerNodeUpdateResponse>>(
     `/nodes/${id}/update`
+  );
+  return response.data.data;
+}
+
+/**
+ * Batch trigger node agent updates
+ * POST /nodes/batch-update
+ * @param data - Specify nodeIds for specific nodes, or set updateAll to true
+ * @requires Admin role
+ * @returns Batch update result with succeeded, failed, and skipped nodes
+ * Added: 2025-12-31
+ */
+export async function batchTriggerNodeUpdate(
+  data: BatchUpdateRequest
+): Promise<BatchUpdateResponse> {
+  const response = await apiClient.post<APIResponse<BatchUpdateResponse>>(
+    '/nodes/batch-update',
+    data
   );
   return response.data.data;
 }

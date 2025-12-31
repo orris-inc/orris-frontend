@@ -577,3 +577,68 @@ export interface TriggerNodeUpdateResponse {
   /** Status message */
   message: string;
 }
+
+/**
+ * Batch update request
+ * POST /nodes/batch-update
+ * Added: 2025-12-31
+ */
+export interface BatchUpdateRequest {
+  /** Specific node IDs to update (Stripe-style IDs) */
+  nodeIds?: string[];
+  /** Update all nodes with available updates (mutually exclusive with nodeIds) */
+  updateAll?: boolean;
+}
+
+/**
+ * Batch update response
+ * POST /nodes/batch-update
+ * Added: 2025-12-31
+ */
+export interface BatchUpdateResponse {
+  /** Total number of nodes processed */
+  total: number;
+  /** Successfully triggered updates */
+  succeeded: BatchUpdateSuccess[];
+  /** Failed update attempts */
+  failed: BatchUpdateFailed[];
+  /** Skipped nodes (already up to date, offline, etc.) */
+  skipped: BatchUpdateSkipped[];
+  /** True if results were truncated due to limit (max 1000 nodes per request) */
+  truncated?: boolean;
+}
+
+/**
+ * Batch update success item
+ * Added: 2025-12-31
+ */
+export interface BatchUpdateSuccess {
+  /** Stripe-style node ID */
+  nodeId: string;
+  /** Unique command ID for tracking */
+  commandId: string;
+  /** Target version for the update */
+  targetVersion: string;
+}
+
+/**
+ * Batch update failed item
+ * Added: 2025-12-31
+ */
+export interface BatchUpdateFailed {
+  /** Stripe-style node ID */
+  nodeId: string;
+  /** Reason for failure */
+  reason: string;
+}
+
+/**
+ * Batch update skipped item
+ * Added: 2025-12-31
+ */
+export interface BatchUpdateSkipped {
+  /** Stripe-style node ID */
+  nodeId: string;
+  /** Reason for skipping */
+  reason: string;
+}

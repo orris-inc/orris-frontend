@@ -32,6 +32,8 @@ import type {
   AgentRuntimeStatus,
   AgentVersionInfo,
   TriggerUpdateResponse,
+  AgentBatchUpdateRequest,
+  AgentBatchUpdateResponse,
   RuleOverallStatusResponse,
   ExitEndpoint,
   ProbeRuleRequest,
@@ -354,6 +356,48 @@ export const triggerAgentUpdate = async (
 ): Promise<TriggerUpdateResponse> => {
   const response = await apiClient.post<APIResponse<TriggerUpdateResponse>>(
     `/forward-agents/${id}/update`
+  );
+  return response.data.data;
+};
+
+/**
+ * Batch trigger forward agent updates (Admin only)
+ * POST /forward-agents/batch-update
+ * @returns Batch update response with succeeded, failed, and skipped agents
+ *
+ * Sends update commands to multiple agents at once.
+ * Must specify exactly one of agentIds or updateAll.
+ *
+ * Each agent is processed independently:
+ * - Succeeded: Update command sent successfully
+ * - Failed: Error occurred (agent not found, no download available, etc.)
+ * - Skipped: Agent offline, platform unknown, or already up to date
+ *
+ * @example
+ * ```typescript
+ * // Update specific agents
+ * const result = await batchTriggerAgentUpdate({
+ *   agentIds: ['fa_xK9mP2vL3nQ', 'fa_yL8nQ3wM4oR']
+ * });
+ * console.log(`Succeeded: ${result.succeeded.length}`);
+ * console.log(`Failed: ${result.failed.length}`);
+ * console.log(`Skipped: ${result.skipped.length}`);
+ *
+ * // Update all agents with available updates
+ * const result = await batchTriggerAgentUpdate({ updateAll: true });
+ * if (result.truncated) {
+ *   console.log('Results truncated, max 1000 agents per request');
+ * }
+ * ```
+ *
+ * Added: 2025-12-31
+ */
+export const batchTriggerAgentUpdate = async (
+  data: AgentBatchUpdateRequest
+): Promise<AgentBatchUpdateResponse> => {
+  const response = await apiClient.post<APIResponse<AgentBatchUpdateResponse>>(
+    '/forward-agents/batch-update',
+    data
   );
   return response.data.data;
 };

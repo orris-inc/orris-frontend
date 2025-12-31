@@ -4,13 +4,14 @@
  */
 
 import { useState, useMemo } from 'react';
-import { Server, Plus, RefreshCw, Users } from 'lucide-react';
+import { Server, Plus, RefreshCw, Users, ArrowUpCircle } from 'lucide-react';
 import { Switch, SwitchThumb } from '@/components/common/Switch';
 import { NodeListTable } from '@/features/nodes/components/NodeListTable';
 import { EditNodeDialog } from '@/features/nodes/components/EditNodeDialog';
 import { CreateNodeDialog } from '@/features/nodes/components/CreateNodeDialog';
 import { NodeDetailDialog } from '@/features/nodes/components/NodeDetailDialog';
 import { NodeInstallScriptDialog } from '@/features/nodes/components/NodeInstallScriptDialog';
+import { BatchUpdateDialog } from '@/features/nodes/components/BatchUpdateDialog';
 import { useNodesPage } from '@/features/nodes/hooks/useNodes';
 import { useResourceGroups } from '@/features/resource-groups/hooks/useResourceGroups';
 import { AdminLayout } from '@/layouts/AdminLayout';
@@ -35,6 +36,7 @@ export const NodeManagementPage = () => {
     nodes,
     pagination,
     isFetching,
+    isBatchUpdating,
     refetch,
     createNode,
     updateNode,
@@ -46,6 +48,9 @@ export const NodeManagementPage = () => {
     handleGetInstallScript,
     installScriptData,
     setInstallScriptData,
+    handleBatchUpdate,
+    batchUpdateResult,
+    setBatchUpdateResult,
     handlePageChange,
     handlePageSizeChange,
     includeUserNodes,
@@ -78,6 +83,8 @@ export const NodeManagementPage = () => {
   const [installScriptDialogOpen, setInstallScriptDialogOpen] = useState(false);
   const [installScriptNodeName, setInstallScriptNodeName] = useState<string>('');
   const [copyNodeData, setCopyNodeData] = useState<Partial<CreateNodeRequest> | undefined>(undefined);
+  const [refreshKey, setRefreshKey] = useState(0);
+  const [batchUpdateDialogOpen, setBatchUpdateDialogOpen] = useState(false);
 
   const handleEdit = (node: Node) => {
     setSelectedNode(node);
@@ -143,6 +150,7 @@ export const NodeManagementPage = () => {
   };
 
   const handleRefresh = () => {
+    setRefreshKey((k) => k + 1);
     refetch();
   };
 
@@ -191,18 +199,37 @@ export const NodeManagementPage = () => {
             <TooltipContent>显示用户节点</TooltipContent>
           </Tooltip>
 
-          {/* Right: Refresh + Add */}
+          {/* Right: Batch Update + Refresh + Add */}
           <div className="flex items-center gap-1.5 sm:gap-2">
+            {/* Batch update button - only show when there are updates */}
+            {nodes.some((n) => n.hasUpdate && n.isOnline) && (
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <AdminButton
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setBatchUpdateDialogOpen(true)}
+                    icon={<ArrowUpCircle className="size-3.5 sm:size-4 text-amber-500" strokeWidth={1.5} />}
+                  >
+                    <span className="hidden sm:inline">批量更新</span>
+                  </AdminButton>
+                </TooltipTrigger>
+                <TooltipContent>
+                  批量更新 {nodes.filter((n) => n.hasUpdate && n.isOnline).length} 个节点
+                </TooltipContent>
+              </Tooltip>
+            )}
+
             <Tooltip>
               <TooltipTrigger asChild>
                 <AdminButton
                   variant="outline"
                   size="sm"
                   onClick={handleRefresh}
-                  disabled={isFetching}
                   icon={
                     <RefreshCw
-                      className={`size-3.5 sm:size-4 ${isFetching ? 'animate-spin' : ''}`}
+                      key={refreshKey}
+                      className="size-3.5 sm:size-4 animate-spin-once"
                       strokeWidth={1.5}
                     />
                   }
@@ -328,6 +355,19 @@ export const NodeManagementPage = () => {
           setInstallScriptData(null);
           setInstallScriptNodeName('');
         }}
+      />
+
+      {/* 批量更新对话框 */}
+      <BatchUpdateDialog
+        open={batchUpdateDialogOpen}
+        onClose={() => {
+          setBatchUpdateDialogOpen(false);
+          setBatchUpdateResult(null);
+        }}
+        nodes={nodes}
+        onBatchUpdate={(updateAll) => handleBatchUpdate({ updateAll })}
+        isUpdating={isBatchUpdating}
+        result={batchUpdateResult}
       />
     </AdminLayout>
   );

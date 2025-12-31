@@ -77,8 +77,10 @@ export const ForwardRulesPage = () => {
   const [resetTrafficConfirmOpen, setResetTrafficConfirmOpen] = useState(false);
   const [ruleToResetTraffic, setRuleToResetTrafficRule] = useState<ForwardRule | null>(null);
   const [copyRuleData, setCopyRuleData] = useState<(Partial<CreateForwardRuleRequest> & { targetType?: 'manual' | 'node' }) | undefined>(undefined);
+  const [refreshKey, setRefreshKey] = useState(0);
 
   const handleRefresh = () => {
+    setRefreshKey((k) => k + 1);
     refetch();
   };
 
@@ -231,10 +233,10 @@ export const ForwardRulesPage = () => {
                     variant="outline"
                     size="sm"
                     onClick={handleRefresh}
-                    disabled={isFetching}
                     icon={
                       <RefreshCw
-                        className={`size-3.5 sm:size-4 ${isFetching ? 'animate-spin' : ''}`}
+                        key={refreshKey}
+                        className="size-3.5 sm:size-4 animate-spin-once"
                         strokeWidth={1.5}
                       />
                     }

@@ -419,6 +419,84 @@ export interface TriggerUpdateResponse {
   message: string;
 }
 
+// ========== Agent Batch Update Types ==========
+// Added: 2025-12-31
+
+/**
+ * Request for batch triggering agent updates
+ * POST /forward-agents/batch-update
+ *
+ * Must specify exactly one of agentIds or updateAll:
+ * - agentIds: Update specific agents by their Stripe-style IDs
+ * - updateAll: Update all agents that have available updates
+ *
+ * @example
+ * ```typescript
+ * // Update specific agents
+ * await batchTriggerAgentUpdate({
+ *   agentIds: ['fa_xK9mP2vL3nQ', 'fa_yL8nQ3wM4oR']
+ * });
+ *
+ * // Update all agents with available updates
+ * await batchTriggerAgentUpdate({ updateAll: true });
+ * ```
+ */
+export interface AgentBatchUpdateRequest {
+  /** Optional: specific agent IDs to update (Stripe-style, e.g., "fa_xK9mP2vL3nQ") */
+  agentIds?: string[];
+  /** Optional: update all agents with available updates */
+  updateAll?: boolean;
+}
+
+/**
+ * Response for batch agent update operation
+ * Returns detailed results for each agent processed
+ */
+export interface AgentBatchUpdateResponse {
+  /** Total number of agents processed */
+  total: number;
+  /** Successfully triggered updates */
+  succeeded: AgentBatchUpdateSuccess[];
+  /** Failed update attempts */
+  failed: AgentBatchUpdateFailed[];
+  /** Skipped agents (offline, already up-to-date, etc.) */
+  skipped: AgentBatchUpdateSkipped[];
+  /** True if results were truncated due to limit (max 1000 agents) */
+  truncated?: boolean;
+}
+
+/**
+ * Represents a successfully triggered agent update
+ */
+export interface AgentBatchUpdateSuccess {
+  /** Stripe-style agent ID (e.g., "fa_xK9mP2vL3nQ") */
+  agentId: string;
+  /** Unique command ID for tracking the update */
+  commandId: string;
+  /** Target version to update to */
+  targetVersion: string;
+}
+
+/**
+ * Represents a failed agent update attempt
+ */
+export interface AgentBatchUpdateFailed {
+  /** Stripe-style agent ID (e.g., "fa_xK9mP2vL3nQ") */
+  agentId: string;
+  /** Reason for failure (e.g., "agent not found", "no download available for platform/arch") */
+  reason: string;
+}
+
+/**
+ * Represents a skipped agent in batch update
+ */
+export interface AgentBatchUpdateSkipped {
+  /** Stripe-style agent ID (e.g., "fa_xK9mP2vL3nQ") */
+  agentId: string;
+  /** Reason for skipping (e.g., "agent is offline", "already up to date") */
+  reason: string;
+}
+
 /**
  * Agent runtime status (reported by forward agent)
  * Updated: 2025-12-30 - Added agentVersion, platform, arch fields

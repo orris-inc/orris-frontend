@@ -49,6 +49,7 @@ export const SubscriptionManagementPage: React.FC = () => {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [selectedSubscription, setSelectedSubscription] = useState<Subscription | null>(null);
   const [subscriptionToDelete, setSubscriptionToDelete] = useState<Subscription | null>(null);
+  const [refreshKey, setRefreshKey] = useState(0);
 
   // View subscription details
   const handleViewDetail = (subscription: Subscription) => {
@@ -77,6 +78,7 @@ export const SubscriptionManagementPage: React.FC = () => {
 
   // Refresh list
   const handleRefresh = () => {
+    setRefreshKey((k) => k + 1);
     refetch();
   };
 
@@ -163,10 +165,10 @@ export const SubscriptionManagementPage: React.FC = () => {
                 variant="outline"
                 size="sm"
                 onClick={handleRefresh}
-                disabled={isLoading}
                 icon={
                   <RefreshCw
-                    className={`size-3.5 sm:size-4 ${isLoading ? 'animate-spin' : ''}`}
+                    key={refreshKey}
+                    className="size-3.5 sm:size-4 animate-spin-once"
                     strokeWidth={1.5}
                   />
                 }

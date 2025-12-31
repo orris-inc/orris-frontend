@@ -20,11 +20,14 @@ import {
   getInstallCommand,
   getAgentVersion,
   triggerAgentUpdate,
+  batchTriggerAgentUpdate,
   type ForwardAgent,
   type CreateForwardAgentRequest,
   type UpdateForwardAgentRequest,
   type ListForwardAgentsParams,
   type InstallCommandResponse,
+  type AgentBatchUpdateRequest,
+  type AgentBatchUpdateResponse,
 } from '@/api/forward';
 
 // Query Keys
@@ -145,6 +148,20 @@ export const useForwardAgents = (options: UseForwardAgentsOptions = {}) => {
     },
   });
 
+  // Batch update agents
+  const batchUpdateMutation = useMutation({
+    mutationFn: (data: AgentBatchUpdateRequest) => batchTriggerAgentUpdate(data),
+    onSuccess: (result) => {
+      if (result.succeeded.length > 0) {
+        showSuccess(`已触发 ${result.succeeded.length} 个转发节点更新`);
+      }
+      queryClient.invalidateQueries({ queryKey: forwardAgentsQueryKeys.lists() });
+    },
+    onError: (error) => {
+      showError(handleApiError(error));
+    },
+  });
+
   return {
     forwardAgents: data?.items ?? [],
     pagination: {
@@ -164,12 +181,14 @@ export const useForwardAgents = (options: UseForwardAgentsOptions = {}) => {
     enableForwardAgent: (id: number | string) => enableMutation.mutateAsync(id),
     disableForwardAgent: (id: number | string) => disableMutation.mutateAsync(id),
     regenerateToken: (id: number | string) => regenerateTokenMutation.mutateAsync(id),
+    batchUpdateAgents: (data: AgentBatchUpdateRequest) => batchUpdateMutation.mutateAsync(data),
     isCreating: createMutation.isPending,
     isUpdating: updateMutation.isPending,
     isDeleting: deleteMutation.isPending,
     isEnabling: enableMutation.isPending,
     isDisabling: disableMutation.isPending,
     isRegeneratingToken: regenerateTokenMutation.isPending,
+    isBatchUpdating: batchUpdateMutation.isPending,
   };
 };
 
@@ -213,6 +232,7 @@ export const useForwardAgentsPage = () => {
   const [generatedToken, setGeneratedToken] = useState<{ token: string } | null>(null);
   const [installCommandData, setInstallCommandData] = useState<InstallCommandResponse | null>(null);
   const [isLoadingInstallCommand, setIsLoadingInstallCommand] = useState(false);
+  const [batchUpdateResult, setBatchUpdateResult] = useState<AgentBatchUpdateResponse | null>(null);
   const { showError } = useNotificationStore();
 
   const forwardAgentsQuery = useForwardAgents({ page, pageSize, filters });
@@ -251,6 +271,12 @@ export const useForwardAgentsPage = () => {
     }
   };
 
+  const handleBatchUpdate = async (data: AgentBatchUpdateRequest) => {
+    const result = await forwardAgentsQuery.batchUpdateAgents(data);
+    setBatchUpdateResult(result);
+    return result;
+  };
+
   return {
     ...forwardAgentsQuery,
     page,
@@ -260,14 +286,17 @@ export const useForwardAgentsPage = () => {
     generatedToken,
     installCommandData,
     isLoadingInstallCommand,
+    batchUpdateResult,
     setSelectedAgent,
     setGeneratedToken,
     setInstallCommandData,
+    setBatchUpdateResult,
     handlePageChange,
     handlePageSizeChange,
     handleFiltersChange,
     handleRegenerateToken,
     handleGetInstallCommand,
+    handleBatchUpdate,
   };
 };
 

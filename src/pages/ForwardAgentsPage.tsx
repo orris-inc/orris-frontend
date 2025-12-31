@@ -4,13 +4,14 @@
  */
 
 import { useState, useMemo, useCallback } from 'react';
-import { Cpu, Plus, RefreshCw } from 'lucide-react';
+import { Cpu, Plus, RefreshCw, ArrowUpCircle } from 'lucide-react';
 import { ForwardAgentListTable } from '@/features/forward-agents/components/ForwardAgentListTable';
 import { ForwardAgentFiltersComponent } from '@/features/forward-agents/components/ForwardAgentFilters';
 import { EditForwardAgentDialog } from '@/features/forward-agents/components/EditForwardAgentDialog';
 import { CreateForwardAgentDialog } from '@/features/forward-agents/components/CreateForwardAgentDialog';
 import { ForwardAgentDetailDialog } from '@/features/forward-agents/components/ForwardAgentDetailDialog';
 import { InstallScriptDialog } from '@/features/forward-agents/components/InstallScriptDialog';
+import { AgentBatchUpdateDialog } from '@/features/forward-agents/components/AgentBatchUpdateDialog';
 import { useForwardAgentsPage, useTriggerAgentUpdate } from '@/features/forward-agents/hooks/useForwardAgents';
 import { getAgentVersion } from '@/api/forward';
 import { ConfirmDialog } from '@/components/common/ConfirmDialog';
@@ -40,6 +41,7 @@ export const ForwardAgentsPage = () => {
     pagination,
     isLoading,
     isFetching,
+    isBatchUpdating,
     refetch,
     createForwardAgent,
     updateForwardAgent,
@@ -48,10 +50,13 @@ export const ForwardAgentsPage = () => {
     disableForwardAgent,
     handleRegenerateToken,
     handleGetInstallCommand,
+    handleBatchUpdate,
     generatedToken,
     setGeneratedToken,
     installCommandData,
     setInstallCommandData,
+    batchUpdateResult,
+    setBatchUpdateResult,
     handlePageChange,
     handlePageSizeChange,
     filters,
@@ -75,12 +80,14 @@ export const ForwardAgentsPage = () => {
   const [selectedAgent, setSelectedAgent] = useState<ForwardAgent | null>(null);
   const [tokenDialogOpen, setTokenDialogOpen] = useState(false);
   const [copyAgentData, setCopyAgentData] = useState<Partial<CreateForwardAgentRequest> | undefined>(undefined);
+  const [batchUpdateDialogOpen, setBatchUpdateDialogOpen] = useState(false);
 
   // Version update state
   const [updateConfirmOpen, setUpdateConfirmOpen] = useState(false);
   const [versionInfo, setVersionInfo] = useState<AgentVersionInfo | null>(null);
   const [updateAgent, setUpdateAgent] = useState<ForwardAgent | null>(null);
   const [checkingAgentId, setCheckingAgentId] = useState<string | number | null>(null);
+  const [refreshKey, setRefreshKey] = useState(0);
 
   const { showError, showInfo } = useNotificationStore();
   const triggerUpdateMutation = useTriggerAgentUpdate();
@@ -134,6 +141,7 @@ export const ForwardAgentsPage = () => {
   };
 
   const handleRefresh = () => {
+    setRefreshKey((k) => k + 1);
     refetch();
   };
 
@@ -208,16 +216,35 @@ export const ForwardAgentsPage = () => {
         <div className="space-y-2 sm:space-y-3 mb-3 sm:mb-4">
           {/* Row 1: Actions */}
           <div className="flex items-center justify-end gap-1.5 sm:gap-2">
+            {/* Batch update button - only show when there are updates */}
+            {forwardAgents.some((a) => a.hasUpdate && a.status === 'enabled' && a.systemStatus) && (
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <AdminButton
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setBatchUpdateDialogOpen(true)}
+                    icon={<ArrowUpCircle className="size-3.5 sm:size-4 text-amber-500" strokeWidth={1.5} />}
+                  >
+                    <span className="hidden sm:inline">批量更新</span>
+                  </AdminButton>
+                </TooltipTrigger>
+                <TooltipContent>
+                  批量更新 {forwardAgents.filter((a) => a.hasUpdate && a.status === 'enabled' && a.systemStatus).length} 个转发节点
+                </TooltipContent>
+              </Tooltip>
+            )}
+
             <Tooltip>
               <TooltipTrigger asChild>
                 <AdminButton
                   variant="outline"
                   size="sm"
                   onClick={handleRefresh}
-                  disabled={isFetching}
                   icon={
                     <RefreshCw
-                      className={`size-3.5 sm:size-4 ${isFetching ? 'animate-spin' : ''}`}
+                      key={refreshKey}
+                      className="size-3.5 sm:size-4 animate-spin-once"
                       strokeWidth={1.5}
                     />
                   }
@@ -371,6 +398,19 @@ export const ForwardAgentsPage = () => {
         confirmText="确认更新"
         onConfirm={handleConfirmUpdate}
         loading={triggerUpdateMutation.isPending}
+      />
+
+      {/* Batch Update Dialog */}
+      <AgentBatchUpdateDialog
+        open={batchUpdateDialogOpen}
+        onClose={() => {
+          setBatchUpdateDialogOpen(false);
+          setBatchUpdateResult(null);
+        }}
+        agents={forwardAgents}
+        onBatchUpdate={(updateAll) => handleBatchUpdate({ updateAll })}
+        isUpdating={isBatchUpdating}
+        result={batchUpdateResult}
       />
     </AdminLayout>
   );
