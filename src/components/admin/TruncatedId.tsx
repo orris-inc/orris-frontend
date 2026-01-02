@@ -64,21 +64,24 @@ export const TruncatedId: React.FC<TruncatedIdProps> = ({
   const content = (
     <span
       className={cn(
-        'inline-flex items-center gap-1.5 font-mono text-xs text-slate-600 dark:text-slate-400',
+        'relative inline-block font-mono text-xs text-muted-foreground',
         'group/id cursor-pointer',
         className
       )}
       onClick={handleCopy}
     >
-      <span className="group-hover/id:text-slate-900 dark:group-hover/id:text-white transition-colors">
+      <span className="group-hover/id:text-foreground transition-colors">
         {displayId}
       </span>
       {showCopy && (
-        <span className="opacity-0 group-hover/id:opacity-100 transition-opacity shrink-0">
+        <span className={cn(
+          'absolute -right-4 top-1/2 -translate-y-1/2 transition-opacity duration-150',
+          copied ? 'opacity-100' : 'opacity-0 group-hover/id:opacity-100'
+        )}>
           {copied ? (
             <Check className="size-3 text-emerald-500" />
           ) : (
-            <Copy className="size-3 text-slate-400" />
+            <Copy className="size-3 text-muted-foreground/60" />
           )}
         </span>
       )}

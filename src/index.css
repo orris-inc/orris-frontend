@@ -42,6 +42,33 @@
   --color-card: hsl(var(--card));
   --color-card-foreground: hsl(var(--card-foreground));
 
+  /* 状态语义色 */
+  --color-success: hsl(var(--success));
+  --color-success-foreground: hsl(var(--success-foreground));
+  --color-success-muted: hsl(var(--success-muted));
+  --color-warning: hsl(var(--warning));
+  --color-warning-foreground: hsl(var(--warning-foreground));
+  --color-warning-muted: hsl(var(--warning-muted));
+  --color-info: hsl(var(--info));
+  --color-info-foreground: hsl(var(--info-foreground));
+  --color-info-muted: hsl(var(--info-muted));
+
+  /* 图表专用色 */
+  --color-chart-upload: hsl(var(--chart-upload));
+  --color-chart-download: hsl(var(--chart-download));
+
+  /* 状态指示器色 */
+  --color-status-online: hsl(var(--status-online));
+  --color-status-offline: hsl(var(--status-offline));
+  --color-status-warning: hsl(var(--status-warning));
+
+  /* 排名徽章色 */
+  --color-rank-gold: hsl(var(--rank-gold));
+  --color-rank-gold-muted: hsl(var(--rank-gold-muted));
+  --color-rank-silver: hsl(var(--rank-silver));
+  --color-rank-bronze: hsl(var(--rank-bronze));
+  --color-rank-bronze-muted: hsl(var(--rank-bronze-muted));
+
   /* 圆角 - 使用更大的圆角 */
   --radius-lg: 1rem;
   --radius-md: 0.75rem;
@@ -152,6 +179,21 @@
     --destructive: 0 72% 51%;
     --destructive-foreground: 0 0% 100%;
 
+    /* 成功色 - 翠绿色 */
+    --success: 160 84% 39%;
+    --success-foreground: 0 0% 100%;
+    --success-muted: 152 76% 96%;
+
+    /* 警告色 - 琥珀色 */
+    --warning: 38 92% 50%;
+    --warning-foreground: 0 0% 100%;
+    --warning-muted: 48 96% 95%;
+
+    /* 信息色 - 蓝色 */
+    --info: 217 91% 60%;
+    --info-foreground: 0 0% 100%;
+    --info-muted: 214 95% 96%;
+
     /* 边框和输入框 */
     --border: 220 20% 90%;
     --input: 220 20% 88%;
@@ -160,12 +202,28 @@
     /* 圆角 - 使用更大的圆角 */
     --radius: 0.75rem;
 
-    /* 图表色 */
+    /* 图表色 - 语义化 */
     --chart-1: 239 84% 67%;
     --chart-2: 38 92% 50%;
     --chart-3: 173 58% 45%;
     --chart-4: 280 65% 60%;
     --chart-5: 340 75% 55%;
+
+    /* 流量图表专用色 */
+    --chart-upload: 217 91% 60%;
+    --chart-download: 160 84% 39%;
+
+    /* 状态指示器色 */
+    --status-online: 160 84% 39%;
+    --status-offline: 0 72% 51%;
+    --status-warning: 38 92% 50%;
+
+    /* 排名徽章色 */
+    --rank-gold: 45 93% 47%;
+    --rank-gold-muted: 48 96% 95%;
+    --rank-silver: 220 9% 46%;
+    --rank-bronze: 25 95% 53%;
+    --rank-bronze-muted: 33 100% 96%;
   }
 
   .dark {
@@ -201,6 +259,21 @@
     --destructive: 0 72% 55%;
     --destructive-foreground: 220 20% 95%;
 
+    /* 成功色 - 深色模式下更亮 */
+    --success: 160 84% 45%;
+    --success-foreground: 230 20% 9%;
+    --success-muted: 160 50% 15%;
+
+    /* 警告色 */
+    --warning: 38 92% 55%;
+    --warning-foreground: 230 20% 9%;
+    --warning-muted: 38 50% 15%;
+
+    /* 信息色 */
+    --info: 217 91% 65%;
+    --info-foreground: 230 20% 9%;
+    --info-muted: 217 50% 15%;
+
     /* 边框和输入框 */
     --border: 230 18% 22%;
     --input: 230 18% 20%;
@@ -212,6 +285,22 @@
     --chart-3: 173 58% 50%;
     --chart-4: 280 65% 65%;
     --chart-5: 340 75% 60%;
+
+    /* 流量图表专用色 */
+    --chart-upload: 217 91% 65%;
+    --chart-download: 160 84% 45%;
+
+    /* 状态指示器色 */
+    --status-online: 160 84% 45%;
+    --status-offline: 0 72% 55%;
+    --status-warning: 38 92% 55%;
+
+    /* 排名徽章色 */
+    --rank-gold: 45 93% 55%;
+    --rank-gold-muted: 45 50% 15%;
+    --rank-silver: 220 9% 55%;
+    --rank-bronze: 25 95% 60%;
+    --rank-bronze-muted: 25 50% 15%;
   }
 
   * {

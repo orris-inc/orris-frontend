@@ -73,6 +73,56 @@ const STATUS_CONFIG: Record<string, { label: string; variant: 'success' | 'defau
   disabled: { label: '已禁用', variant: 'default' },
 };
 
+// Rule type configuration with icons and colors
+const RULE_TYPE_CONFIG: Record<string, { label: string; shortLabel: string; color: string; bgColor: string }> = {
+  direct: {
+    label: '直连',
+    shortLabel: '直',
+    color: 'text-blue-600 dark:text-blue-400',
+    bgColor: 'bg-blue-50 dark:bg-blue-900/20',
+  },
+  entry: {
+    label: '入口',
+    shortLabel: '入',
+    color: 'text-green-600 dark:text-green-400',
+    bgColor: 'bg-green-50 dark:bg-green-900/20',
+  },
+  chain: {
+    label: '链式',
+    shortLabel: '链',
+    color: 'text-purple-600 dark:text-purple-400',
+    bgColor: 'bg-purple-50 dark:bg-purple-900/20',
+  },
+  direct_chain: {
+    label: '直连链',
+    shortLabel: '直链',
+    color: 'text-amber-600 dark:text-amber-400',
+    bgColor: 'bg-amber-50 dark:bg-amber-900/20',
+  },
+};
+
+// Protocol configuration
+const PROTOCOL_CONFIG: Record<string, { label: string; color: string }> = {
+  tcp: { label: 'TCP', color: 'text-sky-600 dark:text-sky-400' },
+  udp: { label: 'UDP', color: 'text-orange-600 dark:text-orange-400' },
+  both: { label: 'TCP/UDP', color: 'text-violet-600 dark:text-violet-400' },
+};
+
+// Tunnel type configuration
+const TUNNEL_TYPE_CONFIG: Record<string, { label: string; color: string; bgColor: string }> = {
+  ws: {
+    label: 'WS',
+    color: 'text-cyan-600 dark:text-cyan-400',
+    bgColor: 'bg-cyan-50 dark:bg-cyan-900/20',
+  },
+  tls: {
+    label: 'TLS',
+    color: 'text-emerald-600 dark:text-emerald-400',
+    bgColor: 'bg-emerald-50 dark:bg-emerald-900/20',
+  },
+};
+
+
 // Sync status display config
 const SYNC_STATUS_CONFIG: Record<RuleSyncStatus, { label: string; icon: React.ElementType; className: string }> = {
   synced: { label: '已同步', icon: CheckCircle2, className: 'text-green-500' },
@@ -131,12 +181,13 @@ const formatBytes = (bytes?: number) => {
   return `${gb.toFixed(2)} GB`;
 };
 
-// Chain nodes display component for mobile - Compact version
+// Chain nodes display component for mobile - Improved flow visualization
 const ChainNodesDisplayMobile: React.FC<{
   chainAgentIds: string[];
   agentsMap: Record<string, ForwardAgent>;
   targetDisplay: { name: string; address: string } | null;
-}> = ({ chainAgentIds, agentsMap, targetDisplay }) => {
+  tunnelHops?: number;
+}> = ({ chainAgentIds, agentsMap, targetDisplay, tunnelHops }) => {
   const chainCount = chainAgentIds.length;
 
   const getAgentName = (id: string) => {
@@ -144,57 +195,84 @@ const ChainNodesDisplayMobile: React.FC<{
     return agent?.name || `ID: ${id}`;
   };
 
-  const firstTwoNames = chainAgentIds
-    .slice(0, 2)
-    .map(getAgentName)
-    .join(' → ');
+  const firstAgentName = getAgentName(chainAgentIds[0]);
 
   return (
-    <div className="space-y-0.5">
-      <div className="flex items-center gap-1 text-xs text-slate-700 dark:text-slate-200">
-        <Bot className="size-3 text-purple-500 flex-shrink-0" />
-        <span className="truncate">{firstTwoNames}{chainCount > 2 ? ' ...' : ''}</span>
-        {chainCount > 2 && (
-          <Popover>
-            <PopoverTrigger asChild>
-              <button className="flex-shrink-0 px-1 py-0 text-[10px] font-medium rounded bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300">
-                +{chainCount - 2}
-              </button>
-            </PopoverTrigger>
-            <PopoverContent className="w-64" align="start">
-              <div className="space-y-2">
-                <div className="flex items-center justify-between">
-                  <h4 className="text-xs font-semibold">链路节点</h4>
-                  <span className="text-[10px] text-muted-foreground">{chainCount} 个</span>
-                </div>
-                <div className="space-y-1">
-                  {chainAgentIds.map((id, index) => {
-                    const agentName = getAgentName(id);
-                    return (
-                      <div key={id} className="flex items-center gap-1.5 text-xs">
-                        <span className="w-4 h-4 rounded-full bg-purple-100 dark:bg-purple-900/30 flex items-center justify-center text-[10px] font-medium text-purple-700 dark:text-purple-300 flex-shrink-0">
-                          {index + 1}
+    <div className="space-y-1">
+      {/* Chain flow header */}
+      <div className="flex items-center gap-1 flex-wrap">
+        {/* Chain indicator */}
+        <div className="flex items-center gap-0.5 px-1 py-0.5 rounded bg-purple-50 dark:bg-purple-900/20 border border-purple-200 dark:border-purple-800">
+          <Bot className="size-2.5 text-purple-500" />
+          <span className="text-[9px] font-semibold text-purple-600 dark:text-purple-400">{chainCount}</span>
+        </div>
+        <ArrowRight className="size-2.5 text-purple-400" />
+        <span className="text-[11px] font-medium text-foreground truncate max-w-[50px]">{firstAgentName}</span>
+
+        {/* More nodes */}
+        {chainCount > 1 && (
+          <>
+            <ArrowRight className="size-2.5 text-purple-400" />
+            <Popover>
+              <PopoverTrigger asChild>
+                <button className="flex items-center gap-0.5 px-1 py-0.5 text-[9px] font-medium rounded-full bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300 cursor-pointer">
+                  +{chainCount - 1}
+                </button>
+              </PopoverTrigger>
+              <PopoverContent className="w-60" align="start">
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between">
+                    <h4 className="text-xs font-semibold text-foreground">链路拓扑</h4>
+                    <div className="flex items-center gap-1">
+                      {tunnelHops && tunnelHops > 0 && (
+                        <span className="text-[9px] px-1 py-0.5 rounded bg-cyan-50 dark:bg-cyan-900/20 text-cyan-600 dark:text-cyan-400 font-medium">
+                          {tunnelHops}跳
                         </span>
-                        <span className="truncate">{agentName}</span>
-                        {index < chainAgentIds.length - 1 && (
-                          <ArrowRight className="size-3 text-muted-foreground flex-shrink-0" />
-                        )}
-                      </div>
-                    );
-                  })}
-                  {targetDisplay && (
-                    <div className="flex items-center gap-1.5 text-xs pt-1 border-t">
-                      <Server className="size-3 text-blue-500 flex-shrink-0" />
-                      <span className="truncate">{targetDisplay.name}</span>
+                      )}
+                      <span className="text-[9px] px-1 py-0.5 rounded bg-muted text-muted-foreground font-medium">
+                        {chainCount}节点
+                      </span>
                     </div>
-                  )}
+                  </div>
+                  {/* Flow visualization */}
+                  <div className="relative">
+                    <div className="absolute left-2 top-3 bottom-3 w-px bg-gradient-to-b from-purple-300 to-blue-400 dark:from-purple-700 dark:to-blue-500" />
+                    <div className="space-y-1">
+                      {chainAgentIds.map((id, index) => {
+                        const agentName = getAgentName(id);
+                        return (
+                          <div key={id} className="flex items-center gap-1.5 relative">
+                            <div className="w-4 h-4 rounded-full bg-purple-100 dark:bg-purple-900/30 border border-purple-300 dark:border-purple-700 flex items-center justify-center text-[9px] font-bold text-purple-600 dark:text-purple-400 z-10">
+                              {index + 1}
+                            </div>
+                            <span className="text-[11px] font-medium text-foreground truncate">{agentName}</span>
+                          </div>
+                        );
+                      })}
+                      {targetDisplay && (
+                        <div className="flex items-center gap-1.5 relative">
+                          <div className="w-4 h-4 rounded-full bg-blue-100 dark:bg-blue-900/30 border border-blue-300 dark:border-blue-700 flex items-center justify-center z-10">
+                            <Server className="size-2.5 text-blue-500" />
+                          </div>
+                          <div className="flex items-center gap-1">
+                            <span className="text-[9px] px-0.5 rounded bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 font-medium">目标</span>
+                            <span className="text-[11px] font-medium text-foreground truncate">{targetDisplay.name}</span>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  </div>
                 </div>
-              </div>
-            </PopoverContent>
-          </Popover>
+              </PopoverContent>
+            </Popover>
+          </>
         )}
       </div>
-      <CopyableAddress address={targetDisplay?.address || '-'} className="text-slate-500 dark:text-slate-400" />
+      {/* Target address */}
+      <div className="flex items-center gap-1">
+        <Server className="size-2.5 text-blue-500 flex-shrink-0" />
+        <CopyableAddress address={targetDisplay?.address || '-'} className="text-muted-foreground" />
+      </div>
     </div>
   );
 };
@@ -442,7 +520,14 @@ export const ForwardRuleMobileList: React.FC<ForwardRuleMobileListProps> = ({
         const entryAddress = getEntryAddress(rule);
         const exitDisplay = getExitDisplay(rule);
         const statusConfig = STATUS_CONFIG[rule.status] || { label: rule.status, variant: 'default' as const };
+        const ruleTypeConfig = RULE_TYPE_CONFIG[rule.ruleType] || RULE_TYPE_CONFIG.direct;
+        const protocolConfig = PROTOCOL_CONFIG[rule.protocol] || PROTOCOL_CONFIG.tcp;
+        const tunnelTypeConfig = rule.tunnelType ? TUNNEL_TYPE_CONFIG[rule.tunnelType] : null;
+        const isChainType = rule.ruleType === 'chain' || rule.ruleType === 'direct_chain' || rule.ruleType === 'entry';
         const totalBytes = (rule.uploadBytes || 0) + (rule.downloadBytes || 0);
+        const uploadBytes = rule.uploadBytes || 0;
+        const downloadBytes = rule.downloadBytes || 0;
+        const uploadRatio = totalBytes > 0 ? (uploadBytes / totalBytes) * 100 : 50;
 
         return (
           <AccordionItem
@@ -451,12 +536,31 @@ export const ForwardRuleMobileList: React.FC<ForwardRuleMobileListProps> = ({
             className="border rounded-lg bg-white dark:bg-slate-800 overflow-hidden"
           >
             {/* Card Header - Always visible */}
-            <div className="px-3 py-2">
+            <div className="px-3 py-2.5">
               <div className="flex items-start justify-between gap-2">
                 <div className="flex-1 min-w-0">
-                  {/* Rule name and status */}
-                  <div className="flex items-center gap-1.5 mb-0.5">
-                    <span className="font-medium text-sm text-slate-900 dark:text-white truncate">
+                  {/* Rule name with type badge, tunnel type, and status */}
+                  <div className="flex items-center gap-1.5 mb-1">
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <span className={`inline-flex items-center justify-center px-1 py-0.5 text-[9px] font-semibold rounded ${ruleTypeConfig.bgColor} ${ruleTypeConfig.color}`}>
+                          {ruleTypeConfig.shortLabel}
+                        </span>
+                      </TooltipTrigger>
+                      <TooltipContent>{ruleTypeConfig.label}模式</TooltipContent>
+                    </Tooltip>
+                    {/* Show tunnel type for chain/entry types */}
+                    {isChainType && tunnelTypeConfig && (
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <span className={`inline-flex items-center justify-center px-1 py-0.5 text-[8px] font-semibold rounded ${tunnelTypeConfig.bgColor} ${tunnelTypeConfig.color}`}>
+                            {tunnelTypeConfig.label}
+                          </span>
+                        </TooltipTrigger>
+                        <TooltipContent>{tunnelTypeConfig.label} 隧道</TooltipContent>
+                      </Tooltip>
+                    )}
+                    <span className="font-medium text-sm text-foreground truncate">
                       {rule.name}
                     </span>
                     <AdminBadge variant={statusConfig.variant} className="text-[10px] px-1.5 py-0 flex-shrink-0">
@@ -465,11 +569,13 @@ export const ForwardRuleMobileList: React.FC<ForwardRuleMobileListProps> = ({
                     {renderStatus(rule)}
                   </div>
 
-                  {/* Entry info */}
-                  <div className="flex items-center gap-1 text-xs text-slate-500 dark:text-slate-400">
+                  {/* Entry info with protocol */}
+                  <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                    <span className={`font-mono text-[10px] ${protocolConfig.color}`}>{protocolConfig.label}</span>
+                    <span className="text-border">·</span>
                     <Bot className="size-3 text-green-500 flex-shrink-0" />
-                    <span className="truncate max-w-[80px]">{agentName}</span>
-                    <span className="text-slate-300">·</span>
+                    <span className="truncate max-w-[70px]">{agentName}</span>
+                    <span className="text-border">·</span>
                     <CopyableAddress address={entryAddress} className="text-blue-600 dark:text-blue-400" />
                   </div>
                 </div>
@@ -539,45 +645,102 @@ export const ForwardRuleMobileList: React.FC<ForwardRuleMobileListProps> = ({
             {/* Accordion Content - Expanded details */}
             <AccordionContent>
               <div className="px-3 pb-2 space-y-2 border-t border-slate-100 dark:border-slate-700 pt-2">
-                {/* Exit info - Compact */}
+                {/* Exit info - Improved flow visualization */}
                 <div className="flex items-start gap-2">
-                  <span className="text-[10px] text-slate-400 dark:text-slate-500 uppercase tracking-wide w-6 pt-0.5 flex-shrink-0">出口</span>
+                  <span className="text-[10px] text-muted-foreground uppercase tracking-wide w-6 pt-0.5 flex-shrink-0">出口</span>
                   <div className="flex-1 min-w-0">
                     {exitDisplay?.type === 'chain' && exitDisplay.chainAgentIds ? (
                       <ChainNodesDisplayMobile
                         chainAgentIds={exitDisplay.chainAgentIds}
                         agentsMap={agentsMap}
                         targetDisplay={exitDisplay.targetDisplay}
+                        tunnelHops={rule.tunnelHops}
                       />
                     ) : exitDisplay ? (
-                      <div className="space-y-0.5">
-                        <div className="flex items-center gap-1 text-xs text-slate-700 dark:text-slate-200">
-                          {exitDisplay.type === 'agent' && <Bot className="size-3 text-purple-500 flex-shrink-0" />}
-                          {exitDisplay.type === 'node' && <Server className="size-3 text-blue-500 flex-shrink-0" />}
-                          {exitDisplay.type === 'manual' && <Settings className="size-3 text-slate-400 flex-shrink-0" />}
-                          <span className="truncate">{exitDisplay.name}</span>
+                      <div className="space-y-1">
+                        {/* Exit type indicator with flow */}
+                        <div className="flex items-center gap-1 flex-wrap">
+                          {exitDisplay.type === 'agent' && (
+                            <>
+                              <div className="flex items-center gap-0.5 px-1 py-0.5 rounded bg-purple-50 dark:bg-purple-900/20 border border-purple-200 dark:border-purple-800">
+                                <Bot className="size-2.5 text-purple-500" />
+                                <span className="text-[9px] font-semibold text-purple-600 dark:text-purple-400">出口</span>
+                              </div>
+                              <ArrowRight className="size-2.5 text-purple-400" />
+                            </>
+                          )}
+                          {exitDisplay.type === 'node' && (
+                            <div className="flex items-center gap-0.5 px-1 py-0.5 rounded bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800">
+                              <Server className="size-2.5 text-blue-500" />
+                              <span className="text-[9px] font-semibold text-blue-600 dark:text-blue-400">节点</span>
+                            </div>
+                          )}
+                          {exitDisplay.type === 'manual' && (
+                            <div className="flex items-center gap-0.5 px-1 py-0.5 rounded bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700">
+                              <Settings className="size-2.5 text-slate-500" />
+                              <span className="text-[9px] font-semibold text-slate-500">手动</span>
+                            </div>
+                          )}
+                          <span className="text-[11px] font-medium text-foreground truncate">{exitDisplay.name}</span>
                         </div>
-                        <CopyableAddress address={exitDisplay.address} className="text-slate-500 dark:text-slate-400" />
+                        {/* Target address */}
+                        <div className="flex items-center gap-1">
+                          {exitDisplay.type === 'agent' ? (
+                            <Server className="size-2.5 text-blue-500 flex-shrink-0" />
+                          ) : exitDisplay.type === 'node' ? (
+                            <Server className="size-2.5 text-blue-500 flex-shrink-0" />
+                          ) : (
+                            <Settings className="size-2.5 text-slate-400 flex-shrink-0" />
+                          )}
+                          <CopyableAddress address={exitDisplay.address} className="text-muted-foreground" />
+                        </div>
                       </div>
                     ) : (
-                      <span className="text-xs text-slate-400">-</span>
+                      <span className="text-xs text-muted-foreground">-</span>
                     )}
                   </div>
                 </div>
 
-                {/* Traffic - Inline */}
+                {/* Traffic with mini bar */}
                 <div className="flex items-center gap-2">
-                  <span className="text-[10px] text-slate-400 dark:text-slate-500 uppercase tracking-wide w-6 flex-shrink-0">流量</span>
+                  <span className="text-[10px] text-muted-foreground uppercase tracking-wide w-6 flex-shrink-0">流量</span>
                   <Tooltip>
                     <TooltipTrigger asChild>
-                      <span className="text-xs text-slate-600 dark:text-slate-300">
-                        {formatBytes(totalBytes)}
-                      </span>
+                      <div className="flex items-center gap-2 flex-1">
+                        <span className="text-xs font-medium text-foreground tabular-nums">
+                          {formatBytes(totalBytes)}
+                        </span>
+                        {rule.effectiveTrafficMultiplier && rule.effectiveTrafficMultiplier !== 1 && (
+                          <span className="text-[9px] px-1 py-0.5 rounded bg-muted text-muted-foreground">
+                            ×{rule.effectiveTrafficMultiplier.toFixed(1)}
+                          </span>
+                        )}
+                        {/* Mini traffic bar */}
+                        <div className="flex-1 max-w-16 h-1 bg-muted rounded-full overflow-hidden flex">
+                          <div
+                            className="h-full bg-green-500"
+                            style={{ width: `${uploadRatio}%` }}
+                          />
+                          <div
+                            className="h-full bg-blue-500"
+                            style={{ width: `${100 - uploadRatio}%` }}
+                          />
+                        </div>
+                      </div>
                     </TooltipTrigger>
                     <TooltipContent>
-                      <div className="text-xs space-y-0.5">
-                        <div>↑ {formatBytes(rule.uploadBytes)} / ↓ {formatBytes(rule.downloadBytes)}</div>
-                        <div>倍率: {rule.effectiveTrafficMultiplier?.toFixed(2) || '1.00'}x</div>
+                      <div className="text-xs space-y-1">
+                        <div className="flex items-center gap-1.5">
+                          <span className="w-2 h-2 rounded-full bg-green-500" />
+                          <span>上传: {formatBytes(uploadBytes)}</span>
+                        </div>
+                        <div className="flex items-center gap-1.5">
+                          <span className="w-2 h-2 rounded-full bg-blue-500" />
+                          <span>下载: {formatBytes(downloadBytes)}</span>
+                        </div>
+                        <div className="pt-1 border-t border-border">
+                          倍率: {rule.effectiveTrafficMultiplier?.toFixed(2) || '1.00'}x
+                        </div>
                       </div>
                     </TooltipContent>
                   </Tooltip>

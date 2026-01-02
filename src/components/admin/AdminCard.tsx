@@ -1,6 +1,6 @@
 /**
- * 管理端卡片组件
- * 精致商务风格 - 统一的卡片样式
+ * Admin Card Component
+ * Modern glassmorphism style with refined shadows
  */
 
 import { ReactNode } from 'react';
@@ -10,21 +10,42 @@ interface AdminCardProps {
   children: ReactNode;
   className?: string;
   noPadding?: boolean;
+  variant?: 'default' | 'glass' | 'elevated';
 }
 
 /**
- * 管理端标准卡片
- * 统一圆角、边框、阴影和hover效果
+ * Admin standard card
+ * Unified rounded corners, borders, shadows and hover effects
  */
-export const AdminCard = ({ children, className, noPadding }: AdminCardProps) => {
+export const AdminCard = ({ children, className, noPadding, variant = 'default' }: AdminCardProps) => {
+  const variants = {
+    default: cn(
+      'bg-card',
+      'border border-border',
+      'shadow-sm hover:shadow-md'
+    ),
+    glass: cn(
+      'bg-card/95',
+      'backdrop-blur-xl',
+      'border border-border',
+      'shadow-sm hover:shadow-lg'
+    ),
+    elevated: cn(
+      'bg-card',
+      'border border-border',
+      'shadow-lg shadow-muted/50',
+      'hover:shadow-xl hover:shadow-muted/60',
+      'hover:-translate-y-0.5'
+    ),
+  };
+
   return (
     <div
       className={cn(
-        'bg-white dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-800',
-        'hover:border-slate-200 dark:hover:border-slate-700',
-        'hover:shadow-lg hover:shadow-slate-200/50 dark:hover:shadow-slate-900/50',
-        'transition-all duration-300',
-        !noPadding && 'p-6',
+        'rounded-xl sm:rounded-2xl',
+        'transition-all duration-200 ease-out',
+        variants[variant],
+        !noPadding && 'p-4 sm:p-6',
         className
       )}
     >
@@ -44,18 +65,18 @@ interface AdminCardHeaderProps {
  */
 export const AdminCardHeader = ({ title, description, action }: AdminCardHeaderProps) => {
   return (
-    <div className="flex items-start justify-between mb-6">
+    <div className="flex items-start justify-between mb-4 sm:mb-6 gap-3">
       <div>
-        <h3 className="text-lg font-semibold text-slate-900 dark:text-white">
+        <h3 className="text-base sm:text-lg font-semibold text-foreground">
           {title}
         </h3>
         {description && (
-          <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">
+          <p className="text-xs sm:text-sm text-muted-foreground mt-1">
             {description}
           </p>
         )}
       </div>
-      {action && <div>{action}</div>}
+      {action && <div className="shrink-0">{action}</div>}
     </div>
   );
 };

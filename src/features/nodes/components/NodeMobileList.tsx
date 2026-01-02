@@ -19,6 +19,7 @@ import {
   User,
   Shield,
   ArrowUpCircle,
+  Globe,
 } from 'lucide-react';
 import {
   Accordion,
@@ -55,17 +56,17 @@ interface NodeMobileListProps {
   onCopy: (node: Node) => void;
 }
 
-// Status configuration
+// Status configuration with semantic colors
 const STATUS_CONFIG: Record<NodeStatus, { label: string; variant: 'success' | 'default' | 'warning'; icon: React.ElementType }> = {
   active: { label: '激活', variant: 'success', icon: CheckCircle2 },
   inactive: { label: '未激活', variant: 'default', icon: XCircle },
   maintenance: { label: '维护中', variant: 'warning', icon: Wrench },
 };
 
-// Protocol configuration
+// Protocol configuration with semantic styling
 const PROTOCOL_CONFIG: Record<string, { label: string; color: string }> = {
-  shadowsocks: { label: 'SS', color: 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400' },
-  trojan: { label: 'Trojan', color: 'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400' },
+  shadowsocks: { label: 'SS', color: 'bg-info-muted text-info' },
+  trojan: { label: 'Trojan', color: 'bg-primary/10 text-primary' },
 };
 
 // Format date
@@ -77,6 +78,36 @@ const formatDate = (dateString: string) => {
     hour: '2-digit',
     minute: '2-digit',
   });
+};
+
+// Format bytes rate to human readable (per second)
+const formatBytesRate = (bytesPerSec: number): string => {
+  if (!bytesPerSec || bytesPerSec <= 0) return '0';
+  const units = ['B', 'KB', 'MB', 'GB'];
+  const i = Math.floor(Math.log(bytesPerSec) / Math.log(1024));
+  const value = bytesPerSec / Math.pow(1024, i);
+  return `${value < 10 ? value.toFixed(1) : Math.round(value)}${units[i]}`;
+};
+
+// Format bytes to human readable (total)
+const formatBytes = (bytes: number): string => {
+  if (!bytes || bytes <= 0) return '0 B';
+  const units = ['B', 'KB', 'MB', 'GB', 'TB'];
+  const i = Math.floor(Math.log(bytes) / Math.log(1024));
+  const value = bytes / Math.pow(1024, i);
+  return `${value < 10 ? value.toFixed(2) : value.toFixed(1)} ${units[i]}`;
+};
+
+// Format relative time from unix timestamp
+const formatRelativeTime = (unixSeconds: number): string => {
+  if (!unixSeconds) return '-';
+  const now = Math.floor(Date.now() / 1000);
+  const diff = now - unixSeconds;
+  if (diff < 0) return '刚刚';
+  if (diff < 60) return `${diff}秒前`;
+  if (diff < 3600) return `${Math.floor(diff / 60)}分钟前`;
+  if (diff < 86400) return `${Math.floor(diff / 3600)}小时前`;
+  return `${Math.floor(diff / 86400)}天前`;
 };
 
 // Loading skeleton for mobile cards
@@ -95,14 +126,14 @@ const MobileCardSkeleton: React.FC = () => (
   </div>
 );
 
-// Online status indicator
+// Online status indicator with semantic colors
 const OnlineIndicator: React.FC<{ isOnline: boolean; lastSeenAt?: string }> = ({ isOnline, lastSeenAt }) => {
   if (isOnline) {
     return (
-      <span className="inline-flex items-center gap-1 text-green-600 dark:text-green-400">
+      <span className="inline-flex items-center gap-1 text-success">
         <span className="relative flex h-1.5 w-1.5">
-          <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
-          <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-green-500"></span>
+          <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-success opacity-75"></span>
+          <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-success"></span>
         </span>
         <span className="text-[10px] font-medium">在线</span>
       </span>
@@ -111,8 +142,8 @@ const OnlineIndicator: React.FC<{ isOnline: boolean; lastSeenAt?: string }> = ({
   return (
     <Tooltip>
       <TooltipTrigger asChild>
-        <span className="inline-flex items-center gap-1 text-slate-400 dark:text-slate-500">
-          <span className="h-1.5 w-1.5 rounded-full bg-slate-300 dark:bg-slate-600"></span>
+        <span className="inline-flex items-center gap-1 text-muted-foreground">
+          <span className="h-1.5 w-1.5 rounded-full bg-muted-foreground/30"></span>
           <span className="text-[10px]">离线</span>
         </span>
       </TooltipTrigger>
@@ -144,10 +175,10 @@ export const NodeMobileList: React.FC<NodeMobileListProps> = ({
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <button
-            className="p-1.5 rounded-md hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
+            className="p-1.5 rounded-md hover:bg-accent/50 transition-colors cursor-pointer"
             onClick={(e) => e.stopPropagation()}
           >
-            <MoreHorizontal className="size-4 text-slate-500" />
+            <MoreHorizontal className="size-4 text-muted-foreground" strokeWidth={1.5} />
           </button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end">
@@ -215,7 +246,7 @@ export const NodeMobileList: React.FC<NodeMobileListProps> = ({
           <AccordionItem
             key={node.id}
             value={node.id}
-            className="border rounded-lg bg-white dark:bg-slate-800 overflow-hidden"
+            className="border border-border rounded-lg bg-card overflow-hidden"
           >
             {/* Card Header - Always visible */}
             <div className="px-3 py-2">
@@ -223,7 +254,7 @@ export const NodeMobileList: React.FC<NodeMobileListProps> = ({
                 <div className="flex-1 min-w-0">
                   {/* Node name and status */}
                   <div className="flex items-center gap-1.5 mb-0.5">
-                    <span className="font-medium text-sm text-slate-900 dark:text-white truncate">
+                    <span className="font-medium text-sm text-foreground truncate">
                       {node.name}
                     </span>
                     <AdminBadge variant={statusConfig.variant} className="text-[10px] px-1.5 py-0 flex-shrink-0">
@@ -234,11 +265,40 @@ export const NodeMobileList: React.FC<NodeMobileListProps> = ({
                   </div>
 
                   {/* Address and region info */}
-                  <div className="flex items-center gap-1 text-xs text-slate-500 dark:text-slate-400">
-                    <span className="font-mono truncate">{node.serverAddress}:{node.agentPort}</span>
+                  <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <span className="font-mono truncate cursor-default">
+                          {node.serverAddress}:{node.agentPort}
+                          {node.subscriptionPort && node.subscriptionPort !== node.agentPort && (
+                            <span className="text-primary">/{node.subscriptionPort}</span>
+                          )}
+                        </span>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <div className="space-y-1 text-xs">
+                          <div>代理端口: {node.agentPort}</div>
+                          {node.subscriptionPort && node.subscriptionPort !== node.agentPort && (
+                            <div>订阅端口: {node.subscriptionPort}</div>
+                          )}
+                          {node.systemStatus?.publicIpv4 && (
+                            <div className="flex items-center gap-1">
+                              <Globe className="size-3" />
+                              <span>IPv4: {node.systemStatus.publicIpv4}</span>
+                            </div>
+                          )}
+                          {node.systemStatus?.publicIpv6 && (
+                            <div className="flex items-center gap-1">
+                              <Globe className="size-3" />
+                              <span>IPv6: {node.systemStatus.publicIpv6}</span>
+                            </div>
+                          )}
+                        </div>
+                      </TooltipContent>
+                    </Tooltip>
                     {node.region && (
                       <>
-                        <span className="text-slate-300 dark:text-slate-600">·</span>
+                        <span className="text-border">·</span>
                         <span className="truncate">{node.region}</span>
                       </>
                     )}
@@ -251,9 +311,9 @@ export const NodeMobileList: React.FC<NodeMobileListProps> = ({
                     <TooltipTrigger asChild>
                       <button
                         onClick={() => onEdit(node)}
-                        className="p-1.5 rounded hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
+                        className="p-1.5 rounded hover:bg-accent/50 transition-colors cursor-pointer"
                       >
-                        <Edit className="size-3.5 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300" />
+                        <Edit className="size-3.5 text-muted-foreground hover:text-foreground" strokeWidth={1.5} />
                       </button>
                     </TooltipTrigger>
                     <TooltipContent>编辑</TooltipContent>
@@ -262,9 +322,9 @@ export const NodeMobileList: React.FC<NodeMobileListProps> = ({
                     <TooltipTrigger asChild>
                       <button
                         onClick={() => onGetInstallScript(node)}
-                        className="p-1.5 rounded hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
+                        className="p-1.5 rounded hover:bg-accent/50 transition-colors cursor-pointer"
                       >
-                        <Terminal className="size-3.5 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300" />
+                        <Terminal className="size-3.5 text-muted-foreground hover:text-foreground" strokeWidth={1.5} />
                       </button>
                     </TooltipTrigger>
                     <TooltipContent>安装脚本</TooltipContent>
@@ -273,16 +333,16 @@ export const NodeMobileList: React.FC<NodeMobileListProps> = ({
                     <TooltipTrigger asChild>
                       <button
                         onClick={() => node.status === 'active' ? onDeactivate(node) : onActivate(node)}
-                        className={`p-1.5 rounded transition-colors ${
+                        className={`p-1.5 rounded transition-colors cursor-pointer ${
                           node.status === 'active'
-                            ? 'hover:bg-red-50 dark:hover:bg-red-900/20'
-                            : 'hover:bg-green-50 dark:hover:bg-green-900/20'
+                            ? 'hover:bg-destructive/10'
+                            : 'hover:bg-success-muted'
                         }`}
                       >
                         {node.status === 'active' ? (
-                          <PowerOff className="size-3.5 text-slate-400 hover:text-red-500" />
+                          <PowerOff className="size-3.5 text-muted-foreground hover:text-destructive" strokeWidth={1.5} />
                         ) : (
-                          <Power className="size-3.5 text-slate-400 hover:text-green-500" />
+                          <Power className="size-3.5 text-muted-foreground hover:text-success" strokeWidth={1.5} />
                         )}
                       </button>
                     </TooltipTrigger>
@@ -294,66 +354,97 @@ export const NodeMobileList: React.FC<NodeMobileListProps> = ({
             </div>
 
             {/* Accordion Trigger */}
-            <AccordionTrigger className="px-3 py-1.5 border-t border-slate-100 dark:border-slate-700 hover:no-underline hover:bg-slate-50 dark:hover:bg-slate-700/50">
-              <span className="text-xs text-slate-400 dark:text-slate-500">详情</span>
+            <AccordionTrigger className="px-3 py-1.5 border-t border-border hover:no-underline hover:bg-accent/30 transition-colors cursor-pointer">
+              <span className="text-xs text-muted-foreground">详情</span>
             </AccordionTrigger>
 
             {/* Accordion Content - Expanded details */}
             <AccordionContent>
-              <div className="px-3 pb-2 space-y-2 border-t border-slate-100 dark:border-slate-700 pt-2">
+              <div className="px-3 pb-2 space-y-2 border-t border-border pt-2">
                 {/* Protocol config */}
                 <div className="flex items-center gap-2">
-                  <span className="text-[10px] text-slate-400 dark:text-slate-500 uppercase tracking-wide w-8 flex-shrink-0">协议</span>
+                  <span className="text-[10px] text-muted-foreground uppercase tracking-wide w-8 flex-shrink-0">协议</span>
                   <div className="flex items-center gap-2">
                     <span className={`px-1.5 py-0.5 text-[10px] font-medium rounded ${protocolConfig.color}`}>
                       {protocolConfig.label}
                     </span>
                     {node.protocol === 'shadowsocks' && node.encryptionMethod && (
-                      <span className="text-xs font-mono text-slate-600 dark:text-slate-400">
+                      <span className="text-xs font-mono text-muted-foreground">
                         {node.encryptionMethod}
                       </span>
                     )}
                     {node.protocol === 'trojan' && (
-                      <span className="text-xs font-mono text-slate-600 dark:text-slate-400">
+                      <span className="text-xs font-mono text-muted-foreground">
                         {node.transportProtocol?.toUpperCase() || 'TCP'} + TLS
                       </span>
                     )}
                   </div>
                 </div>
 
-                {/* System status */}
+                {/* Monitor (System + Network) */}
                 {node.systemStatus && (
                   <div className="flex items-start gap-2">
-                    <span className="text-[10px] text-slate-400 dark:text-slate-500 uppercase tracking-wide w-8 pt-0.5 flex-shrink-0">系统</span>
-                    <SystemStatusDisplay
-                      status={{
-                        cpu: node.systemStatus.cpuPercent,
-                        memory: node.systemStatus.memoryPercent,
-                        disk: node.systemStatus.diskPercent,
-                        uptime: node.systemStatus.uptimeSeconds,
-                      }}
-                    />
+                    <span className="text-[10px] text-muted-foreground uppercase tracking-wide w-8 pt-0.5 flex-shrink-0">监控</span>
+                    <div className="flex flex-col gap-1.5 flex-1">
+                      {/* System bars + Network rates in one row */}
+                      <div className="flex items-center gap-3">
+                        <SystemStatusDisplay
+                          status={{
+                            cpu: node.systemStatus.cpuPercent,
+                            memory: node.systemStatus.memoryPercent,
+                            disk: node.systemStatus.diskPercent,
+                            uptime: node.systemStatus.uptimeSeconds,
+                            memoryUsed: node.systemStatus.memoryUsed,
+                            memoryTotal: node.systemStatus.memoryTotal,
+                            memoryAvail: node.systemStatus.memoryAvail,
+                            diskUsed: node.systemStatus.diskUsed,
+                            diskTotal: node.systemStatus.diskTotal,
+                            loadAvg1: node.systemStatus.loadAvg1,
+                            loadAvg5: node.systemStatus.loadAvg5,
+                            loadAvg15: node.systemStatus.loadAvg15,
+                          }}
+                        />
+                        {/* Network rates - always show */}
+                        <div className="w-px h-4 bg-border" />
+                        <div className="flex items-center gap-1.5 text-[10px] font-mono">
+                          <span className="text-success">↓{formatBytesRate(node.systemStatus.networkRxRate)}</span>
+                          <span className="text-info">↑{formatBytesRate(node.systemStatus.networkTxRate)}</span>
+                        </div>
+                        {node.systemStatus.updatedAt && (
+                          <span className="text-[10px] text-muted-foreground/60 ml-auto">{formatRelativeTime(node.systemStatus.updatedAt)}</span>
+                        )}
+                      </div>
+                      {/* Extended info row - always show */}
+                      <div className="flex items-center gap-2 text-[10px] text-muted-foreground">
+                        <span className="font-mono">
+                          累计: ↓{formatBytes(node.systemStatus.networkRxBytes)} ↑{formatBytes(node.systemStatus.networkTxBytes)}
+                        </span>
+                        <span>
+                          {(node.systemStatus.tcpConnections || 0) + (node.systemStatus.udpConnections || 0)} 连接
+                        </span>
+                      </div>
+                    </div>
                   </div>
                 )}
 
                 {/* Version */}
                 {(node.agentVersion || node.systemStatus?.agentVersion) && (
                   <div className="flex items-center gap-2">
-                    <span className="text-[10px] text-slate-400 dark:text-slate-500 uppercase tracking-wide w-8 flex-shrink-0">版本</span>
+                    <span className="text-[10px] text-muted-foreground uppercase tracking-wide w-8 flex-shrink-0">版本</span>
                     <div className="flex items-center gap-1.5">
                       {node.hasUpdate && (
-                        <ArrowUpCircle className="size-3.5 text-amber-500" />
+                        <ArrowUpCircle className="size-3.5 text-warning" strokeWidth={1.5} />
                       )}
-                      <span className={`text-xs font-mono ${node.hasUpdate ? 'text-amber-600 dark:text-amber-400' : 'text-slate-600 dark:text-slate-300'}`}>
+                      <span className={`text-xs font-mono ${node.hasUpdate ? 'text-warning' : 'text-foreground'}`}>
                         v{node.agentVersion || node.systemStatus?.agentVersion}
                         {(node.platform || node.systemStatus?.platform) && (node.arch || node.systemStatus?.arch) && (
-                          <span className="text-slate-400 ml-1">
+                          <span className="text-muted-foreground ml-1">
                             ({node.platform || node.systemStatus?.platform}/{node.arch || node.systemStatus?.arch})
                           </span>
                         )}
                       </span>
                       {node.hasUpdate && (
-                        <span className="text-[10px] text-amber-500">可更新</span>
+                        <span className="text-[10px] text-warning font-medium">可更新</span>
                       )}
                     </div>
                   </div>
@@ -362,7 +453,7 @@ export const NodeMobileList: React.FC<NodeMobileListProps> = ({
                 {/* Tags */}
                 {node.tags && node.tags.length > 0 && (
                   <div className="flex items-start gap-2">
-                    <span className="text-[10px] text-slate-400 dark:text-slate-500 uppercase tracking-wide w-8 pt-0.5 flex-shrink-0">标签</span>
+                    <span className="text-[10px] text-muted-foreground uppercase tracking-wide w-8 pt-0.5 flex-shrink-0">标签</span>
                     <div className="flex flex-wrap gap-1">
                       {node.tags.map((tag: string, index: number) => (
                         <Badge key={index} variant="secondary" className="text-[10px] px-1.5 py-0">
@@ -376,7 +467,7 @@ export const NodeMobileList: React.FC<NodeMobileListProps> = ({
                 {/* Resource groups */}
                 {node.groupIds && node.groupIds.length > 0 && (
                   <div className="flex items-start gap-2">
-                    <span className="text-[10px] text-slate-400 dark:text-slate-500 uppercase tracking-wide w-8 pt-0.5 flex-shrink-0">资源</span>
+                    <span className="text-[10px] text-muted-foreground uppercase tracking-wide w-8 pt-0.5 flex-shrink-0">资源</span>
                     <div className="flex flex-wrap gap-1">
                       {node.groupIds.map((gid) => {
                         const group = resourceGroupsMap[gid];
@@ -392,20 +483,20 @@ export const NodeMobileList: React.FC<NodeMobileListProps> = ({
 
                 {/* Owner */}
                 <div className="flex items-center gap-2">
-                  <span className="text-[10px] text-slate-400 dark:text-slate-500 uppercase tracking-wide w-8 flex-shrink-0">创建</span>
+                  <span className="text-[10px] text-muted-foreground uppercase tracking-wide w-8 flex-shrink-0">创建</span>
                   {node.owner ? (
-                    <div className="flex items-center gap-1 text-xs text-slate-600 dark:text-slate-400">
-                      <User className="size-3 text-slate-400" />
+                    <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                      <User className="size-3 text-muted-foreground/60" strokeWidth={1.5} />
                       <span className="truncate">{node.owner.name || node.owner.email}</span>
                     </div>
                   ) : (
                     <div className="flex items-center gap-1 text-xs">
-                      <Shield className="size-3 text-blue-500" />
-                      <span className="text-blue-600 dark:text-blue-400">管理员</span>
+                      <Shield className="size-3 text-info" strokeWidth={1.5} />
+                      <span className="text-info font-medium">管理员</span>
                     </div>
                   )}
-                  <span className="text-slate-300 dark:text-slate-600">·</span>
-                  <span className="text-xs text-slate-500">{formatDate(node.createdAt)}</span>
+                  <span className="text-border">·</span>
+                  <span className="text-xs text-muted-foreground">{formatDate(node.createdAt)}</span>
                 </div>
               </div>
             </AccordionContent>

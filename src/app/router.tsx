@@ -8,6 +8,7 @@
  */
 
 import { createBrowserRouter, Navigate } from 'react-router';
+import { LandingPage } from '@/pages/LandingPage';
 import { LoginPage } from '@/pages/LoginPage';
 import { LoginPageNew } from '@/pages/LoginPageNew';
 import { LoginPageMinimal } from '@/pages/LoginPageMinimal';
@@ -38,10 +39,10 @@ import { ProtectedRoute } from '@/shared/components/ProtectedRoute';
 import { AdminRoute } from '@/shared/components/AdminRoute';
 
 export const router = createBrowserRouter([
-  // Root path redirects to login selector (temporarily for previewing different designs)
+  // Root path - Landing page
   {
     path: '/',
-    element: <Navigate to="/login-selector" replace />,
+    element: <LandingPage />,
   },
 
   // Login page selector

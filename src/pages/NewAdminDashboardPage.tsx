@@ -55,20 +55,20 @@ const StatsCard = ({
   loading,
 }: StatsCardProps) => {
   return (
-    <div className="group relative bg-white dark:bg-slate-900 rounded-lg p-3 sm:p-4 border border-slate-100 dark:border-slate-800 hover:border-slate-200 dark:hover:border-slate-700 transition-all duration-200 hover:shadow-md">
-      <div className="flex items-center gap-3">
-        <div className={`${iconBg} p-2 rounded-lg shrink-0`}>
+    <div className="group relative overflow-hidden bg-card backdrop-blur-xl rounded-xl p-3 sm:p-3.5 border border-border shadow-sm hover:shadow-md transition-all duration-200 ease-out">
+      <div className="relative z-10 flex items-center gap-2 sm:gap-2.5">
+        <div className={`${iconBg} p-1.5 sm:p-2 rounded-lg shrink-0 ring-1 ring-border/50`}>
           <div className={iconColor}>{icon}</div>
         </div>
-        <div className="min-w-0">
-          <div className="text-lg sm:text-xl font-semibold text-slate-900 dark:text-white whitespace-nowrap">
+        <div className="min-w-0 flex-1">
+          <div className="text-sm sm:text-base lg:text-lg font-bold text-foreground tracking-tight tabular-nums truncate">
             {loading ? (
-              <div className="h-5 w-12 bg-slate-200 dark:bg-slate-700 rounded animate-pulse" />
+              <div className="h-4 sm:h-5 w-10 sm:w-12 bg-muted rounded animate-pulse" />
             ) : (
               value
             )}
           </div>
-          <div className="text-xs text-slate-500 dark:text-slate-400 truncate">
+          <div className="text-[10px] sm:text-xs font-medium text-muted-foreground truncate">
             {title}
           </div>
         </div>
@@ -98,26 +98,31 @@ const QuickActionCard = ({
   return (
     <button
       onClick={onClick}
-      className="group w-full text-left p-2 sm:p-4 md:p-5 rounded-lg sm:rounded-xl bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 hover:border-slate-200 dark:hover:border-slate-700 hover:shadow-lg hover:shadow-slate-200/50 dark:hover:shadow-slate-900/50 transition-all duration-300 touch-target"
+      className="group w-full text-left p-4 sm:p-5 rounded-xl sm:rounded-2xl overflow-hidden relative bg-card backdrop-blur-xl border border-border shadow-sm hover:shadow-xl active:shadow-md hover:border-primary/30 transition-all duration-200 ease-out hover:-translate-y-1 active:translate-y-0 min-h-[72px] sm:min-h-0 cursor-pointer"
     >
-      {/* Mobile: Vertical layout */}
-      <div className="flex flex-col items-center text-center sm:flex-row sm:items-center sm:text-left gap-2 sm:gap-4">
+      {/* Hover gradient overlay */}
+      <div className="absolute inset-0 opacity-0 group-hover:opacity-100 bg-gradient-to-br from-primary/5 via-transparent to-transparent transition-opacity duration-200 pointer-events-none" />
+
+      {/* Mobile: Horizontal compact layout, Desktop: Full layout */}
+      <div className="relative z-10 flex items-center gap-3 sm:gap-4">
         <div
-          className={`${iconBg} p-2 sm:p-3 rounded-lg sm:rounded-xl shadow-sm group-hover:scale-105 transition-transform`}
+          className={`${iconBg} p-2.5 sm:p-3 rounded-xl shadow-sm ring-1 ring-border/50 group-hover:ring-2 group-hover:ring-primary/20 group-hover:scale-105 transition-all duration-200 shrink-0`}
         >
           <div className={iconColor}>{icon}</div>
         </div>
 
         <div className="flex-1 min-w-0">
-          <h3 className="text-xs sm:text-base font-semibold text-slate-900 dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors truncate">
+          <h3 className="text-sm sm:text-base font-semibold text-foreground group-hover:text-primary transition-colors duration-200 truncate">
             {title}
           </h3>
-          <p className="hidden sm:block text-sm text-slate-500 dark:text-slate-400">
+          <p className="hidden sm:block text-sm text-muted-foreground mt-0.5 line-clamp-1">
             {description}
           </p>
         </div>
 
-        <ArrowUpRight className="hidden sm:block size-5 text-slate-300 dark:text-slate-600 group-hover:text-blue-500 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-all" />
+        <div className="flex items-center justify-center size-7 sm:size-8 rounded-full bg-muted group-hover:bg-primary/10 transition-colors duration-200 shrink-0">
+          <ArrowUpRight className="size-3.5 sm:size-4 text-muted-foreground group-hover:text-primary group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-all duration-200" />
+        </div>
       </div>
     </button>
   );
@@ -134,18 +139,30 @@ interface SystemStatusProps {
 const SystemStatus = ({ label, status, value, icon }: SystemStatusProps) => {
   const statusConfig = {
     online: {
-      dot: 'bg-emerald-500',
-      text: 'text-emerald-600 dark:text-emerald-400',
+      dot: 'bg-status-online',
+      ring: 'ring-status-online/30',
+      text: 'text-success',
+      bg: 'bg-success-muted',
+      iconBg: 'bg-success-muted',
+      iconColor: 'text-success',
       pulse: true,
     },
     warning: {
-      dot: 'bg-amber-500',
-      text: 'text-amber-600 dark:text-amber-400',
+      dot: 'bg-status-warning',
+      ring: 'ring-status-warning/30',
+      text: 'text-warning',
+      bg: 'bg-warning-muted',
+      iconBg: 'bg-warning-muted',
+      iconColor: 'text-warning',
       pulse: true,
     },
     offline: {
-      dot: 'bg-rose-500',
-      text: 'text-rose-600 dark:text-rose-400',
+      dot: 'bg-status-offline',
+      ring: 'ring-status-offline/30',
+      text: 'text-destructive',
+      bg: 'bg-destructive/10',
+      iconBg: 'bg-destructive/10',
+      iconColor: 'text-destructive',
       pulse: false,
     },
   };
@@ -153,20 +170,24 @@ const SystemStatus = ({ label, status, value, icon }: SystemStatusProps) => {
   const config = statusConfig[status];
 
   return (
-    <div className="flex items-center justify-between py-3 border-b border-slate-100 dark:border-slate-800 last:border-0">
+    <div className="flex items-center justify-between py-4 border-b border-border last:border-0 group transition-colors duration-200 hover:bg-accent/50 -mx-2 px-2 rounded-lg">
       <div className="flex items-center gap-3">
-        <div className="text-slate-400 dark:text-slate-500">{icon}</div>
-        <span className="text-sm font-medium text-slate-700 dark:text-slate-300">
+        <div className={`p-2 rounded-lg ${config.iconBg} transition-colors duration-200`}>
+          <div className={config.iconColor}>{icon}</div>
+        </div>
+        <span className="text-sm font-medium text-foreground">
           {label}
         </span>
       </div>
-      <div className="flex items-center gap-2">
-        <span className={`text-sm font-semibold ${config.text}`}>{value}</span>
-        <div className="relative">
-          <div className={`size-2 rounded-full ${config.dot}`} />
+      <div className="flex items-center gap-3">
+        <span className={`text-sm font-semibold px-2.5 py-1 rounded-lg ${config.text} ${config.bg} ring-1 ring-inset ring-current/10`}>
+          {value}
+        </span>
+        <div className="relative flex items-center justify-center">
+          <div className={`size-2.5 rounded-full ${config.dot} ring-2 ${config.ring}`} />
           {config.pulse && (
             <div
-              className={`absolute inset-0 rounded-full ${config.dot} animate-ping opacity-50`}
+              className={`absolute inset-0 rounded-full ${config.dot} animate-ping opacity-30`}
             />
           )}
         </div>
@@ -263,8 +284,8 @@ export const NewAdminDashboardPage = () => {
   if (!user) {
     return (
       <AdminLayout>
-        <div className="p-4 rounded-lg border border-rose-200 dark:border-rose-900 bg-rose-50 dark:bg-rose-950/30">
-          <p className="text-sm text-rose-900 dark:text-rose-200">
+        <div className="p-4 rounded-lg border border-destructive/30 bg-destructive/10">
+          <p className="text-sm text-destructive">
             无法加载用户信息
           </p>
         </div>
@@ -278,64 +299,64 @@ export const NewAdminDashboardPage = () => {
       title: '总用户数',
       value: stats.totalUsers.toLocaleString(),
       icon: <Users className="size-4" strokeWidth={1.5} />,
-      iconBg: 'bg-blue-50 dark:bg-blue-900/20',
-      iconColor: 'text-blue-600 dark:text-blue-400',
+      iconBg: 'bg-info-muted',
+      iconColor: 'text-info',
       loading: loading,
     },
     {
       title: '订阅总数',
       value: stats.activeSubscriptions.toLocaleString(),
       icon: <CreditCard className="size-4" strokeWidth={1.5} />,
-      iconBg: 'bg-emerald-50 dark:bg-emerald-900/20',
-      iconColor: 'text-emerald-600 dark:text-emerald-400',
+      iconBg: 'bg-success-muted',
+      iconColor: 'text-success',
       loading: loading,
     },
     {
       title: '节点总数',
       value: stats.totalNodes.toLocaleString(),
       icon: <Server className="size-4" strokeWidth={1.5} />,
-      iconBg: 'bg-violet-50 dark:bg-violet-900/20',
-      iconColor: 'text-violet-600 dark:text-violet-400',
+      iconBg: 'bg-primary/10',
+      iconColor: 'text-primary',
       loading: loading,
     },
     {
       title: '在线节点',
       value: stats.activeNodes.toLocaleString(),
       icon: <Activity className="size-4" strokeWidth={1.5} />,
-      iconBg: 'bg-amber-50 dark:bg-amber-900/20',
-      iconColor: 'text-amber-600 dark:text-amber-400',
+      iconBg: 'bg-warning-muted',
+      iconColor: 'text-warning',
       loading: loading,
     },
     {
       title: '总上传',
       value: trafficOverview ? formatTrafficBytes(trafficOverview.totalUpload) : '-',
       icon: <ArrowUp className="size-4" strokeWidth={1.5} />,
-      iconBg: 'bg-sky-50 dark:bg-sky-900/20',
-      iconColor: 'text-sky-600 dark:text-sky-400',
+      iconBg: 'bg-chart-upload/10',
+      iconColor: 'text-chart-upload',
       loading: isTrafficLoading,
     },
     {
       title: '总下载',
       value: trafficOverview ? formatTrafficBytes(trafficOverview.totalDownload) : '-',
       icon: <ArrowDown className="size-4" strokeWidth={1.5} />,
-      iconBg: 'bg-teal-50 dark:bg-teal-900/20',
-      iconColor: 'text-teal-600 dark:text-teal-400',
+      iconBg: 'bg-chart-download/10',
+      iconColor: 'text-chart-download',
       loading: isTrafficLoading,
     },
     {
       title: '总流量',
       value: trafficOverview ? formatTrafficBytes(trafficOverview.totalTraffic) : '-',
       icon: <Activity className="size-4" strokeWidth={1.5} />,
-      iconBg: 'bg-indigo-50 dark:bg-indigo-900/20',
-      iconColor: 'text-indigo-600 dark:text-indigo-400',
+      iconBg: 'bg-accent/10',
+      iconColor: 'text-accent',
       loading: isTrafficLoading,
     },
     {
       title: '活跃用户',
       value: trafficOverview ? trafficOverview.activeUsers.toLocaleString() : '-',
       icon: <Users className="size-4" strokeWidth={1.5} />,
-      iconBg: 'bg-rose-50 dark:bg-rose-900/20',
-      iconColor: 'text-rose-600 dark:text-rose-400',
+      iconBg: 'bg-destructive/10',
+      iconColor: 'text-destructive',
       loading: isTrafficLoading,
     },
   ];
@@ -345,24 +366,24 @@ export const NewAdminDashboardPage = () => {
       title: '用户',
       description: '管理所有用户账户和权限',
       icon: <Users className="size-4 sm:size-5" strokeWidth={1.5} />,
-      iconBg: 'bg-blue-50 dark:bg-blue-900/20',
-      iconColor: 'text-blue-600 dark:text-blue-400',
+      iconBg: 'bg-info-muted',
+      iconColor: 'text-info',
       onClick: () => navigate('/admin/users'),
     },
     {
       title: '订阅',
       description: '查看和管理用户订阅',
       icon: <CreditCard className="size-4 sm:size-5" strokeWidth={1.5} />,
-      iconBg: 'bg-emerald-50 dark:bg-emerald-900/20',
-      iconColor: 'text-emerald-600 dark:text-emerald-400',
+      iconBg: 'bg-success-muted',
+      iconColor: 'text-success',
       onClick: () => navigate('/admin/subscriptions'),
     },
     {
       title: '节点',
       description: '监控和配置服务器节点',
       icon: <Server className="size-4 sm:size-5" strokeWidth={1.5} />,
-      iconBg: 'bg-violet-50 dark:bg-violet-900/20',
-      iconColor: 'text-violet-600 dark:text-violet-400',
+      iconBg: 'bg-primary/10',
+      iconColor: 'text-primary',
       onClick: () => navigate('/admin/nodes'),
     },
   ];
@@ -394,27 +415,33 @@ export const NewAdminDashboardPage = () => {
 
   return (
     <AdminLayout>
-      <div className="py-8">
-        {/* Page title */}
-        <div className="mb-8">
-          <h1 className="text-2xl font-semibold text-slate-900 dark:text-white tracking-tight whitespace-nowrap">
+      <div className="py-6 sm:py-8">
+        {/* Page header */}
+        <header className="mb-8">
+          <div className="flex items-center gap-3 mb-1">
+            <div className="size-2 rounded-full bg-status-online animate-pulse" />
+            <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
+              实时数据
+            </span>
+          </div>
+          <h1 className="text-2xl sm:text-3xl font-bold text-foreground tracking-tight">
             控制台总览
           </h1>
-          <p className="text-sm text-slate-500 dark:text-slate-400">
+          <p className="text-sm text-muted-foreground mt-1">
             欢迎回来，{user.displayName || user.email?.split('@')[0]}
           </p>
-        </div>
+        </header>
 
-        {/* All statistics cards in one row */}
+        {/* All statistics cards - responsive grid layout */}
         <section>
-          <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-3">
+          <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-3 sm:gap-4">
             {statsCards.map((stat, index) => (
               <StatsCard key={index} {...stat} />
             ))}
           </div>
         </section>
 
-        <Separator className="my-8" />
+        <Separator className="my-6 sm:my-8" />
 
         {/* Traffic analytics section */}
         <section className="space-y-6">
@@ -447,36 +474,52 @@ export const NewAdminDashboardPage = () => {
           </div>
         </section>
 
-        <Separator className="my-8" />
+        <Separator className="my-6 sm:my-8" />
 
         {/* Quick actions and system status */}
         <section>
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            {/* 左侧：快速操作 */}
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
+            {/* Left: Quick actions */}
             <div className="lg:col-span-2">
-              <h2 className="text-lg font-semibold text-slate-900 dark:text-white mb-4">
-                快速访问
-              </h2>
-              <div className="grid grid-cols-3 sm:grid-cols-3 gap-3 sm:gap-4">
+              <div className="flex items-center gap-2 mb-3 sm:mb-4">
+                <h2 className="text-base sm:text-lg font-semibold text-foreground">
+                  快速访问
+                </h2>
+                <span className="hidden sm:inline text-xs font-medium text-muted-foreground">
+                  常用功能入口
+                </span>
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
                 {quickActions.map((action, index) => (
                   <QuickActionCard key={index} {...action} />
                 ))}
               </div>
             </div>
 
-            {/* 右侧：系统状态 */}
+            {/* Right: System status */}
             <div>
-              <h2 className="text-lg font-semibold text-slate-900 dark:text-white mb-4">
-                系统状态
-              </h2>
-              <div className="bg-white dark:bg-slate-900 rounded-xl p-5 border border-slate-100 dark:border-slate-800 hover:border-slate-200 dark:hover:border-slate-700 hover:shadow-lg hover:shadow-slate-200/50 dark:hover:shadow-slate-900/50 transition-all duration-300">
+              <div className="flex items-center gap-2 mb-3 sm:mb-4">
+                <h2 className="text-base sm:text-lg font-semibold text-foreground">
+                  系统状态
+                </h2>
+                <span className="hidden sm:inline text-xs font-medium text-muted-foreground">
+                  健康监控
+                </span>
+              </div>
+              <div className="overflow-hidden bg-card backdrop-blur-xl rounded-xl sm:rounded-2xl p-4 sm:p-5 border border-border shadow-sm transition-shadow duration-200 hover:shadow-md">
                 {loading ? (
                   <div className="space-y-4">
                     {[1, 2].map((i) => (
                       <div
                         key={i}
-                        className="h-10 bg-slate-100 dark:bg-slate-800 rounded animate-pulse"
-                      />
+                        className="flex items-center gap-3 py-4"
+                      >
+                        <div className="size-10 bg-muted rounded-lg animate-pulse" />
+                        <div className="flex-1 space-y-2">
+                          <div className="h-4 w-20 bg-muted rounded animate-pulse" />
+                        </div>
+                        <div className="h-6 w-16 bg-muted rounded-lg animate-pulse" />
+                      </div>
                     ))}
                   </div>
                 ) : (

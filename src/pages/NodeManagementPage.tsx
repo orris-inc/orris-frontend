@@ -1,11 +1,21 @@
 /**
- * 节点管理页面（管理端）
- * 使用统一的精致商务风格组件
+ * Node Management Page (Admin)
+ * Uses unified refined business style components
  */
 
 import { useState, useMemo } from 'react';
-import { Server, Plus, RefreshCw, Users, ArrowUpCircle } from 'lucide-react';
+import {
+  Server,
+  Plus,
+  RefreshCw,
+  Users,
+  ArrowUpCircle,
+  Activity,
+  CheckCircle2,
+  XCircle,
+} from 'lucide-react';
 import { Switch, SwitchThumb } from '@/components/common/Switch';
+import { Separator } from '@/components/common/Separator';
 import { NodeListTable } from '@/features/nodes/components/NodeListTable';
 import { EditNodeDialog } from '@/features/nodes/components/EditNodeDialog';
 import { CreateNodeDialog } from '@/features/nodes/components/CreateNodeDialog';
@@ -18,9 +28,10 @@ import { AdminLayout } from '@/layouts/AdminLayout';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/common/Tooltip';
 import { TokenDialog } from '@/components/common/TokenDialog';
 import {
-  AdminPageLayout,
   AdminButton,
   AdminCard,
+  PageStatsCard,
+  type PageStatsCardProps,
 } from '@/components/admin';
 import { usePageTitle } from '@/shared/hooks';
 import { useBreakpoint } from '@/hooks/useBreakpoint';
@@ -29,7 +40,6 @@ import type { Node, UpdateNodeRequest, CreateNodeRequest } from '@/api/node';
 export const NodeManagementPage = () => {
   usePageTitle('节点管理');
 
-  // Responsive breakpoint
   const { isMobile } = useBreakpoint();
 
   const {
@@ -57,7 +67,6 @@ export const NodeManagementPage = () => {
     handleIncludeUserNodesChange,
   } = useNodesPage();
 
-  // Get resource group list for displaying names
   const { resourceGroups } = useResourceGroups({ pageSize: 100 });
   const resourceGroupsMap = useMemo(() => {
     const map: Record<string, typeof resourceGroups[0]> = {};
@@ -67,13 +76,21 @@ export const NodeManagementPage = () => {
     return map;
   }, [resourceGroups]);
 
-  // Prepare nodes list for route outbound selection
   const nodesForOutbound = useMemo(() => {
     return nodes.map((node) => ({
       id: node.id,
       name: node.name,
     }));
   }, [nodes]);
+
+  const nodeStats = useMemo(() => {
+    const total = pagination.total;
+    const online = nodes.filter((n) => n.isOnline).length;
+    const active = nodes.filter((n) => n.status === 'active').length;
+    const inactive = nodes.filter((n) => n.status === 'inactive').length;
+    const updatable = nodes.filter((n) => n.hasUpdate && n.isOnline).length;
+    return { total, online, active, inactive, updatable };
+  }, [nodes, pagination.total]);
 
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
@@ -126,7 +143,6 @@ export const NodeManagementPage = () => {
   };
 
   const handleCopy = (node: Node) => {
-    // Build copy data, exclude unique fields like id, add suffix to name
     const copyData: Partial<CreateNodeRequest> = {
       name: `${node.name} - 副本`,
       protocol: node.protocol,
@@ -173,35 +189,106 @@ export const NodeManagementPage = () => {
     }
   };
 
+  const statsCards: PageStatsCardProps[] = [
+    {
+      title: '节点总数',
+      value: nodeStats.total,
+      icon: <Server className="size-4" strokeWidth={1.5} />,
+      iconBg: 'bg-primary/10',
+      iconColor: 'text-primary',
+    },
+    {
+      title: '在线节点',
+      value: nodeStats.online,
+      icon: <Activity className="size-4" strokeWidth={1.5} />,
+      iconBg: 'bg-success-muted',
+      iconColor: 'text-success',
+      showPulse: nodeStats.online > 0,
+    },
+    {
+      title: '激活节点',
+      value: nodeStats.active,
+      icon: <CheckCircle2 className="size-4" strokeWidth={1.5} />,
+      iconBg: 'bg-info-muted',
+      iconColor: 'text-info',
+    },
+    {
+      title: '未激活节点',
+      value: nodeStats.inactive,
+      icon: <XCircle className="size-4" strokeWidth={1.5} />,
+      iconBg: 'bg-muted',
+      iconColor: 'text-muted-foreground',
+    },
+    ...(nodeStats.updatable > 0
+      ? [
+          {
+            title: '可更新',
+            value: nodeStats.updatable,
+            icon: <ArrowUpCircle className="size-4" strokeWidth={1.5} />,
+            iconBg: 'bg-warning-muted',
+            iconColor: 'text-warning',
+          },
+        ]
+      : []),
+  ];
+
   return (
     <AdminLayout>
-      <AdminPageLayout
-        title="节点管理"
-        description="管理系统中的所有代理节点"
-        icon={Server}
-      >
-        {/* Toolbar - Compact on mobile */}
-        <div className="flex items-center justify-between gap-2 mb-3 sm:mb-4">
-          {/* Left: User nodes toggle */}
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <label className="flex items-center gap-1 cursor-pointer text-xs sm:text-sm text-slate-600 dark:text-slate-400">
-                <Users className="size-3.5 sm:size-4 text-slate-500" strokeWidth={1.5} />
-                <span className="hidden sm:inline">用户节点</span>
-                <Switch
-                  checked={includeUserNodes}
-                  onCheckedChange={handleIncludeUserNodesChange}
-                >
-                  <SwitchThumb />
-                </Switch>
-              </label>
-            </TooltipTrigger>
-            <TooltipContent>显示用户节点</TooltipContent>
-          </Tooltip>
+      <div className="py-6 sm:py-8">
+        {/* Page Header */}
+        <header className="mb-6 sm:mb-8">
+          <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4 mb-5 sm:mb-6">
+            <div>
+              <div className="flex items-center gap-2 mb-1.5">
+                <div className="size-2 rounded-full bg-success animate-pulse" />
+                <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                  实时数据
+                </span>
+              </div>
+              <h1 className="text-2xl sm:text-3xl font-bold text-foreground tracking-tight">
+                节点管理
+              </h1>
+              <p className="text-sm text-muted-foreground mt-1">
+                管理和监控所有代理节点
+              </p>
+            </div>
+          </div>
 
-          {/* Right: Batch Update + Refresh + Add */}
-          <div className="flex items-center gap-1.5 sm:gap-2">
-            {/* Batch update button - only show when there are updates */}
+          {/* Stats Grid */}
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-2 sm:gap-2.5">
+            {statsCards.map((stat, index) => (
+              <PageStatsCard key={index} {...stat} loading={isFetching} />
+            ))}
+          </div>
+        </header>
+
+        <Separator className="mb-5 sm:mb-6" />
+
+        {/* Toolbar */}
+        <div className="flex items-center justify-between gap-3 mb-4 sm:mb-5">
+          {/* Filters */}
+          <div className="flex items-center gap-3">
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <label className="flex items-center gap-2 cursor-pointer group">
+                  <Users className="size-4 text-muted-foreground group-hover:text-foreground transition-colors" strokeWidth={1.5} />
+                  <span className="hidden sm:inline text-sm font-medium text-muted-foreground group-hover:text-foreground transition-colors">
+                    包含用户节点
+                  </span>
+                  <Switch
+                    checked={includeUserNodes}
+                    onCheckedChange={handleIncludeUserNodesChange}
+                  >
+                    <SwitchThumb />
+                  </Switch>
+                </label>
+              </TooltipTrigger>
+              <TooltipContent>显示用户创建的节点</TooltipContent>
+            </Tooltip>
+          </div>
+
+          {/* Actions */}
+          <div className="flex items-center gap-2">
             {nodes.some((n) => n.hasUpdate && n.isOnline) && (
               <Tooltip>
                 <TooltipTrigger asChild>
@@ -209,13 +296,14 @@ export const NodeManagementPage = () => {
                     variant="outline"
                     size="sm"
                     onClick={() => setBatchUpdateDialogOpen(true)}
-                    icon={<ArrowUpCircle className="size-3.5 sm:size-4 text-amber-500" strokeWidth={1.5} />}
+                    icon={<ArrowUpCircle className="size-4 text-warning" strokeWidth={1.5} />}
+                    className="border-warning/30 hover:border-warning/50 hover:bg-warning-muted"
                   >
-                    <span className="hidden sm:inline">批量更新</span>
+                    <span className="hidden sm:inline text-warning">批量更新</span>
                   </AdminButton>
                 </TooltipTrigger>
                 <TooltipContent>
-                  批量更新 {nodes.filter((n) => n.hasUpdate && n.isOnline).length} 个节点
+                  更新 {nodes.filter((n) => n.hasUpdate && n.isOnline).length} 个节点
                 </TooltipContent>
               </Tooltip>
             )}
@@ -223,13 +311,13 @@ export const NodeManagementPage = () => {
             <Tooltip>
               <TooltipTrigger asChild>
                 <AdminButton
-                  variant="outline"
+                  variant="ghost"
                   size="sm"
                   onClick={handleRefresh}
                   icon={
                     <RefreshCw
                       key={refreshKey}
-                      className="size-3.5 sm:size-4 animate-spin-once"
+                      className="size-4 animate-spin-once"
                       strokeWidth={1.5}
                     />
                   }
@@ -237,25 +325,25 @@ export const NodeManagementPage = () => {
                   <span className="sr-only">刷新</span>
                 </AdminButton>
               </TooltipTrigger>
-              <TooltipContent>刷新</TooltipContent>
+              <TooltipContent>刷新列表</TooltipContent>
             </Tooltip>
 
             <AdminButton
               variant="primary"
               size="sm"
-              icon={<Plus className="size-3.5 sm:size-4" strokeWidth={1.5} />}
+              icon={<Plus className="size-4" strokeWidth={2} />}
               onClick={() => {
                 setCopyNodeData(undefined);
                 setCreateDialogOpen(true);
               }}
             >
               <span className="hidden sm:inline">新增节点</span>
-              <span className="sm:hidden text-xs">新增</span>
+              <span className="sm:hidden">新增</span>
             </AdminButton>
           </div>
         </div>
 
-        {/* Node list - No AdminCard wrapper on mobile */}
+        {/* Node List */}
         {isMobile ? (
           <NodeListTable
             nodes={nodes}
@@ -297,9 +385,9 @@ export const NodeManagementPage = () => {
             />
           </AdminCard>
         )}
-      </AdminPageLayout>
+      </div>
 
-      {/* 新增节点对话框 */}
+      {/* Create Node Dialog */}
       <CreateNodeDialog
         open={createDialogOpen}
         onClose={() => {
@@ -311,7 +399,7 @@ export const NodeManagementPage = () => {
         nodes={nodesForOutbound}
       />
 
-      {/* 编辑节点对话框 */}
+      {/* Edit Node Dialog */}
       <EditNodeDialog
         open={editDialogOpen}
         node={selectedNode}
@@ -323,7 +411,7 @@ export const NodeManagementPage = () => {
         nodes={nodesForOutbound}
       />
 
-      {/* 节点详情对话框 */}
+      {/* Node Detail Dialog */}
       <NodeDetailDialog
         open={detailDialogOpen}
         node={selectedNode}
@@ -334,7 +422,7 @@ export const NodeManagementPage = () => {
         nodes={nodesForOutbound}
       />
 
-      {/* Token显示对话框 */}
+      {/* Token Dialog */}
       <TokenDialog
         open={tokenDialogOpen}
         token={generatedToken?.token ?? null}
@@ -345,7 +433,7 @@ export const NodeManagementPage = () => {
         }}
       />
 
-      {/* 安装脚本对话框 */}
+      {/* Install Script Dialog */}
       <NodeInstallScriptDialog
         open={installScriptDialogOpen}
         installScriptData={installScriptData}
@@ -357,7 +445,7 @@ export const NodeManagementPage = () => {
         }}
       />
 
-      {/* 批量更新对话框 */}
+      {/* Batch Update Dialog */}
       <BatchUpdateDialog
         open={batchUpdateDialogOpen}
         onClose={() => {

@@ -1,9 +1,9 @@
 /**
  * System Status Display Component
- * Uses circular progress to show CPU and memory usage, with detailed info on hover
+ * Compact mini bars for CPU, memory, and disk usage
  */
 
-import { Cpu, MemoryStick, HardDrive, Clock } from 'lucide-react';
+import { Cpu, MemoryStick, HardDrive, Clock, Activity } from 'lucide-react';
 import { Tooltip, TooltipTrigger, TooltipContent } from '@/components/common/Tooltip';
 import { Progress, ProgressIndicator } from '@/components/common/Progress';
 
@@ -13,6 +13,15 @@ export interface SystemStatusData {
   memory: number;
   disk: number;
   uptime?: number; // seconds
+  // Extended fields
+  memoryUsed?: number; // bytes
+  memoryTotal?: number; // bytes
+  memoryAvail?: number; // bytes
+  diskUsed?: number; // bytes
+  diskTotal?: number; // bytes
+  loadAvg1?: number;
+  loadAvg5?: number;
+  loadAvg15?: number;
 }
 
 interface SystemStatusDisplayProps {
@@ -25,74 +34,44 @@ const formatUptime = (seconds: number): string => {
   if (!seconds || seconds <= 0) return '-';
   const days = Math.floor(seconds / 86400);
   const hours = Math.floor((seconds % 86400) / 3600);
-  if (days > 0) return `${days}天${hours}时`;
+  if (days > 0) return `${days}d ${hours}h`;
   const minutes = Math.floor((seconds % 3600) / 60);
-  if (hours > 0) return `${hours}时${minutes}分`;
-  return `${minutes}分钟`;
+  if (hours > 0) return `${hours}h ${minutes}m`;
+  return `${minutes}m`;
+};
+
+// Format bytes to human readable
+const formatBytes = (bytes: number): string => {
+  if (!bytes || bytes <= 0) return '0 B';
+  const units = ['B', 'KB', 'MB', 'GB', 'TB'];
+  const i = Math.floor(Math.log(bytes) / Math.log(1024));
+  return `${(bytes / Math.pow(1024, i)).toFixed(1)} ${units[i]}`;
 };
 
 // Get color based on usage
-const getStrokeColor = (value: number): string => {
-  if (value >= 80) return '#ef4444'; // red-500
-  if (value >= 60) return '#eab308'; // yellow-500
-  return '#22c55e'; // green-500
-};
-
-// Get progress bar color class
-const getProgressColor = (value: number): string => {
+const getBarColor = (value: number): string => {
   if (value >= 80) return 'bg-red-500';
-  if (value >= 60) return 'bg-yellow-500';
-  return 'bg-green-500';
+  if (value >= 60) return 'bg-amber-500';
+  return 'bg-emerald-500';
 };
 
-// Circular progress component
-const CircleProgress: React.FC<{
+// Mini bar component for compact display
+const MiniBar: React.FC<{
   value: number;
-  size?: number;
-  strokeWidth?: number;
-  icon: React.ReactNode;
-}> = ({ value, size = 24, strokeWidth = 2, icon }) => {
-  const radius = (size - strokeWidth) / 2;
-  const circumference = radius * 2 * Math.PI;
-  const offset = circumference - (Math.min(value, 100) / 100) * circumference;
-  const color = getStrokeColor(value);
-
-  return (
-    <div className="relative" style={{ width: size, height: size }}>
-      <svg width={size} height={size} className="-rotate-90">
-        {/* Background ring */}
-        <circle
-          cx={size / 2}
-          cy={size / 2}
-          r={radius}
-          fill="none"
-          stroke="currentColor"
-          strokeWidth={strokeWidth}
-          className="text-slate-200 dark:text-slate-700"
-        />
-        {/* Progress ring */}
-        <circle
-          cx={size / 2}
-          cy={size / 2}
-          r={radius}
-          fill="none"
-          stroke={color}
-          strokeWidth={strokeWidth}
-          strokeDasharray={circumference}
-          strokeDashoffset={offset}
-          strokeLinecap="round"
-          className="transition-all duration-300"
-        />
-      </svg>
-      {/* Center icon */}
-      <div className="absolute inset-0 flex items-center justify-center">
-        {icon}
-      </div>
+  label: string;
+}> = ({ value, label }) => (
+  <div className="flex flex-col gap-0.5">
+    <span className="text-[9px] text-muted-foreground/70 leading-none">{label}</span>
+    <div className="w-8 h-1 rounded-full bg-muted/50 overflow-hidden">
+      <div
+        className={`h-full rounded-full transition-all duration-300 ${getBarColor(value)}`}
+        style={{ width: `${Math.min(value, 100)}%` }}
+      />
     </div>
-  );
-};
+  </div>
+);
 
-// Progress bar sub-component (for detail Tooltip)
+// Progress bar for tooltip detail
 const StatusProgressBar: React.FC<{
   label: string;
   value: number;
@@ -100,15 +79,15 @@ const StatusProgressBar: React.FC<{
 }> = ({ label, value, icon }) => (
   <div className="space-y-1">
     <div className="flex items-center justify-between text-xs">
-      <span className="flex items-center gap-1.5 text-slate-500 dark:text-slate-400">
+      <span className="flex items-center gap-1.5 text-muted-foreground">
         {icon}
         {label}
       </span>
-      <span className="font-mono font-medium">{value.toFixed(1)}%</span>
+      <span className="font-mono font-medium text-foreground">{value.toFixed(1)}%</span>
     </div>
     <Progress className="h-1.5">
       <ProgressIndicator
-        className={getProgressColor(value)}
+        className={getBarColor(value)}
         style={{ transform: `translateX(-${100 - Math.min(value, 100)}%)` }}
       />
     </Progress>
@@ -117,54 +96,75 @@ const StatusProgressBar: React.FC<{
 
 /**
  * System Status Display Component
- * Uses two circular progress indicators for CPU and memory, shows details on hover
+ * Compact horizontal mini bars for CPU, memory, disk
  */
 export const SystemStatusDisplay: React.FC<SystemStatusDisplayProps> = ({
   status,
-  emptyText = '暂无数据',
+  emptyText = '-',
 }) => {
   if (!status) {
-    return <span className="text-xs text-slate-400">{emptyText}</span>;
+    return <span className="text-xs text-muted-foreground/50">{emptyText}</span>;
   }
 
   return (
     <Tooltip>
       <TooltipTrigger>
-        <div className="inline-flex items-center gap-1.5 cursor-default">
-          <CircleProgress
-            value={status.cpu}
-            icon={<Cpu className="size-2.5 text-slate-500 dark:text-slate-400" />}
-          />
-          <CircleProgress
-            value={status.memory}
-            icon={<MemoryStick className="size-2.5 text-slate-500 dark:text-slate-400" />}
-          />
+        <div className="inline-flex items-center gap-2 cursor-default">
+          <MiniBar value={status.cpu} label="C" />
+          <MiniBar value={status.memory} label="M" />
+          <MiniBar value={status.disk} label="D" />
         </div>
       </TooltipTrigger>
-      <TooltipContent className="w-48 p-3">
-        <div className="space-y-3">
+      <TooltipContent className="w-56 p-3">
+        <div className="space-y-2.5">
           <StatusProgressBar
             label="CPU"
             value={status.cpu}
             icon={<Cpu className="size-3" />}
           />
-          <StatusProgressBar
-            label="内存"
-            value={status.memory}
-            icon={<MemoryStick className="size-3" />}
-          />
-          <StatusProgressBar
-            label="磁盘"
-            value={status.disk}
-            icon={<HardDrive className="size-3" />}
-          />
+          <div className="space-y-1">
+            <StatusProgressBar
+              label="内存"
+              value={status.memory}
+              icon={<MemoryStick className="size-3" />}
+            />
+            {status.memoryUsed !== undefined && status.memoryTotal !== undefined && (
+              <div className="text-[10px] text-muted-foreground pl-4">
+                {formatBytes(status.memoryUsed)} / {formatBytes(status.memoryTotal)}
+              </div>
+            )}
+          </div>
+          <div className="space-y-1">
+            <StatusProgressBar
+              label="磁盘"
+              value={status.disk}
+              icon={<HardDrive className="size-3" />}
+            />
+            {status.diskUsed !== undefined && status.diskTotal !== undefined && (
+              <div className="text-[10px] text-muted-foreground pl-4">
+                {formatBytes(status.diskUsed)} / {formatBytes(status.diskTotal)}
+              </div>
+            )}
+          </div>
+          {/* Load average */}
+          {status.loadAvg1 !== undefined && (
+            <div className="flex items-center justify-between text-xs pt-2 border-t border-border">
+              <span className="flex items-center gap-1.5 text-muted-foreground">
+                <Activity className="size-3" />
+                负载
+              </span>
+              <span className="font-mono text-[11px] text-foreground">
+                {status.loadAvg1.toFixed(2)} / {status.loadAvg5?.toFixed(2) || '-'} / {status.loadAvg15?.toFixed(2) || '-'}
+              </span>
+            </div>
+          )}
           {status.uptime && status.uptime > 0 && (
-            <div className="flex items-center justify-between text-xs pt-2 border-t border-slate-200 dark:border-slate-700">
-              <span className="flex items-center gap-1.5 text-slate-500 dark:text-slate-400">
+            <div className="flex items-center justify-between text-xs pt-2 border-t border-border">
+              <span className="flex items-center gap-1.5 text-muted-foreground">
                 <Clock className="size-3" />
                 运行时间
               </span>
-              <span className="font-medium">{formatUptime(status.uptime)}</span>
+              <span className="font-medium text-foreground">{formatUptime(status.uptime)}</span>
             </div>
           )}
         </div>

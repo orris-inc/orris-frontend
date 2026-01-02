@@ -4,7 +4,30 @@
  */
 
 import { useState, useMemo, useCallback } from 'react';
-import { Cpu, Plus, RefreshCw, ArrowUpCircle } from 'lucide-react';
+import {
+  Cpu,
+  Plus,
+  RefreshCw,
+  ArrowUpCircle,
+  CheckCircle2,
+  XCircle,
+  Activity,
+} from 'lucide-react';
+import { Separator } from '@/components/common/Separator';
+import { AdminLayout } from '@/layouts/AdminLayout';
+import {
+  AdminButton,
+  AdminCard,
+  PageStatsCard,
+  type PageStatsCardProps,
+} from '@/components/admin';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/common/Tooltip';
+import { TokenDialog } from '@/components/common/TokenDialog';
+import { ConfirmDialog } from '@/components/common/ConfirmDialog';
+import { usePageTitle } from '@/shared/hooks';
+import { useBreakpoint } from '@/hooks/useBreakpoint';
+import { useNotificationStore } from '@/shared/stores/notification-store';
+import { useResourceGroups } from '@/features/resource-groups/hooks/useResourceGroups';
 import { ForwardAgentListTable } from '@/features/forward-agents/components/ForwardAgentListTable';
 import { ForwardAgentFiltersComponent } from '@/features/forward-agents/components/ForwardAgentFilters';
 import { EditForwardAgentDialog } from '@/features/forward-agents/components/EditForwardAgentDialog';
@@ -14,26 +37,11 @@ import { InstallScriptDialog } from '@/features/forward-agents/components/Instal
 import { AgentBatchUpdateDialog } from '@/features/forward-agents/components/AgentBatchUpdateDialog';
 import { useForwardAgentsPage, useTriggerAgentUpdate } from '@/features/forward-agents/hooks/useForwardAgents';
 import { getAgentVersion } from '@/api/forward';
-import { ConfirmDialog } from '@/components/common/ConfirmDialog';
-import { useNotificationStore } from '@/shared/stores/notification-store';
-import type { AgentVersionInfo } from '@/api/forward';
-import { useResourceGroups } from '@/features/resource-groups/hooks/useResourceGroups';
-import { AdminLayout } from '@/layouts/AdminLayout';
-import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/common/Tooltip';
-import { TokenDialog } from '@/components/common/TokenDialog';
-import {
-  AdminPageLayout,
-  AdminButton,
-  AdminCard,
-} from '@/components/admin';
-import { usePageTitle } from '@/shared/hooks';
-import { useBreakpoint } from '@/hooks/useBreakpoint';
-import type { ForwardAgent, UpdateForwardAgentRequest, CreateForwardAgentRequest } from '@/api/forward';
+import type { AgentVersionInfo, ForwardAgent, UpdateForwardAgentRequest, CreateForwardAgentRequest } from '@/api/forward';
 
 export const ForwardAgentsPage = () => {
   usePageTitle('转发节点管理');
 
-  // Responsive breakpoint
   const { isMobile } = useBreakpoint();
 
   const {
@@ -63,7 +71,6 @@ export const ForwardAgentsPage = () => {
     handleFiltersChange,
   } = useForwardAgentsPage();
 
-  // Fetch resource groups for displaying names
   const { resourceGroups } = useResourceGroups({ pageSize: 100 });
   const resourceGroupsMap = useMemo(() => {
     const map: Record<string, typeof resourceGroups[0]> = {};
@@ -73,6 +80,9 @@ export const ForwardAgentsPage = () => {
     return map;
   }, [resourceGroups]);
 
+  const { showError, showInfo } = useNotificationStore();
+  const triggerUpdateMutation = useTriggerAgentUpdate();
+
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
   const [detailDialogOpen, setDetailDialogOpen] = useState(false);
@@ -81,16 +91,69 @@ export const ForwardAgentsPage = () => {
   const [tokenDialogOpen, setTokenDialogOpen] = useState(false);
   const [copyAgentData, setCopyAgentData] = useState<Partial<CreateForwardAgentRequest> | undefined>(undefined);
   const [batchUpdateDialogOpen, setBatchUpdateDialogOpen] = useState(false);
-
-  // Version update state
   const [updateConfirmOpen, setUpdateConfirmOpen] = useState(false);
   const [versionInfo, setVersionInfo] = useState<AgentVersionInfo | null>(null);
   const [updateAgent, setUpdateAgent] = useState<ForwardAgent | null>(null);
   const [checkingAgentId, setCheckingAgentId] = useState<string | number | null>(null);
   const [refreshKey, setRefreshKey] = useState(0);
 
-  const { showError, showInfo } = useNotificationStore();
-  const triggerUpdateMutation = useTriggerAgentUpdate();
+  // Calculate agent statistics
+  const agentStats = useMemo(() => {
+    const total = pagination.total;
+    const enabled = forwardAgents.filter((a) => a.status === 'enabled').length;
+    const disabled = forwardAgents.filter((a) => a.status === 'disabled').length;
+    const online = forwardAgents.filter((a) => a.systemStatus).length;
+    const updatable = forwardAgents.filter((a) => a.hasUpdate && a.status === 'enabled' && a.systemStatus).length;
+    return { total, enabled, disabled, online, updatable };
+  }, [forwardAgents, pagination.total]);
+
+  const statsCards: PageStatsCardProps[] = [
+    {
+      title: '节点总数',
+      value: agentStats.total,
+      icon: <Cpu className="size-4" strokeWidth={1.5} />,
+      iconBg: 'bg-primary/10',
+      iconColor: 'text-primary',
+    },
+    {
+      title: '已启用',
+      value: agentStats.enabled,
+      icon: <CheckCircle2 className="size-4" strokeWidth={1.5} />,
+      iconBg: 'bg-success-muted',
+      iconColor: 'text-success',
+      showPulse: agentStats.enabled > 0,
+    },
+    {
+      title: '已禁用',
+      value: agentStats.disabled,
+      icon: <XCircle className="size-4" strokeWidth={1.5} />,
+      iconBg: 'bg-muted',
+      iconColor: 'text-muted-foreground',
+    },
+    {
+      title: '在线节点',
+      value: agentStats.online,
+      icon: <Activity className="size-4" strokeWidth={1.5} />,
+      iconBg: 'bg-info-muted',
+      iconColor: 'text-info',
+    },
+    ...(agentStats.updatable > 0
+      ? [
+          {
+            title: '可更新',
+            value: agentStats.updatable,
+            icon: <ArrowUpCircle className="size-4" strokeWidth={1.5} />,
+            iconBg: 'bg-warning-muted',
+            iconColor: 'text-warning',
+          },
+        ]
+      : []),
+  ];
+
+  const handleRefresh = () => {
+    setRefreshKey((k) => k + 1);
+    refetch();
+  };
 
   const handleEdit = (agent: ForwardAgent) => {
     setSelectedAgent(agent);
@@ -140,15 +203,9 @@ export const ForwardAgentsPage = () => {
     setCreateDialogOpen(true);
   };
 
-  const handleRefresh = () => {
-    setRefreshKey((k) => k + 1);
-    refetch();
-  };
-
   const handleCheckUpdate = useCallback(async (agent: ForwardAgent) => {
     setCheckingAgentId(agent.id);
     try {
-      // Minimum 500ms delay for smooth UX
       const [info] = await Promise.all([
         getAgentVersion(agent.id),
         new Promise(resolve => setTimeout(resolve, 500)),
@@ -183,12 +240,8 @@ export const ForwardAgentsPage = () => {
   const handleCreateSubmit = async (data: CreateForwardAgentRequest) => {
     try {
       const result = await createForwardAgent(data);
-      // Close create dialog first
       setCreateDialogOpen(false);
-      // Show Token dialog
-      setGeneratedToken({
-        token: result.token,
-      });
+      setGeneratedToken({ token: result.token });
       setTokenDialogOpen(true);
     } catch {
       // Error already handled in hook
@@ -207,30 +260,63 @@ export const ForwardAgentsPage = () => {
 
   return (
     <AdminLayout>
-      <AdminPageLayout
-        title="转发节点管理"
-        description="管理系统中的所有转发节点"
-        icon={Cpu}
-      >
-        {/* Toolbar - Compact on mobile */}
-        <div className="space-y-2 sm:space-y-3 mb-3 sm:mb-4">
-          {/* Row 1: Actions */}
-          <div className="flex items-center justify-end gap-1.5 sm:gap-2">
-            {/* Batch update button - only show when there are updates */}
-            {forwardAgents.some((a) => a.hasUpdate && a.status === 'enabled' && a.systemStatus) && (
+      <div className="py-6 sm:py-8">
+        {/* Page Header */}
+        <header className="mb-6 sm:mb-8">
+          <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4 mb-5 sm:mb-6">
+            <div>
+              <div className="flex items-center gap-2 mb-1.5">
+                <div className="size-2 rounded-full bg-success animate-pulse" />
+                <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                  实时数据
+                </span>
+              </div>
+              <h1 className="text-2xl sm:text-3xl font-bold text-foreground tracking-tight">
+                转发节点管理
+              </h1>
+              <p className="text-sm text-muted-foreground mt-1">
+                管理系统中的所有转发节点
+              </p>
+            </div>
+          </div>
+
+          {/* Stats Grid */}
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-2 sm:gap-2.5">
+            {statsCards.map((stat, index) => (
+              <PageStatsCard key={index} {...stat} loading={isFetching} />
+            ))}
+          </div>
+        </header>
+
+        <Separator className="mb-5 sm:mb-6" />
+
+        {/* Toolbar */}
+        <div className="flex items-center justify-between gap-3 mb-4 sm:mb-5">
+          {/* Filters */}
+          <div className="flex-1 min-w-0">
+            <ForwardAgentFiltersComponent
+              filters={filters}
+              onChange={handleFiltersChange}
+            />
+          </div>
+
+          {/* Actions */}
+          <div className="flex items-center gap-2 shrink-0">
+            {agentStats.updatable > 0 && (
               <Tooltip>
                 <TooltipTrigger asChild>
                   <AdminButton
                     variant="outline"
                     size="sm"
                     onClick={() => setBatchUpdateDialogOpen(true)}
-                    icon={<ArrowUpCircle className="size-3.5 sm:size-4 text-amber-500" strokeWidth={1.5} />}
+                    icon={<ArrowUpCircle className="size-4 text-warning" strokeWidth={1.5} />}
+                    className="border-warning/30 hover:border-warning/50 hover:bg-warning-muted"
                   >
-                    <span className="hidden sm:inline">批量更新</span>
+                    <span className="hidden sm:inline text-warning">批量更新</span>
                   </AdminButton>
                 </TooltipTrigger>
                 <TooltipContent>
-                  批量更新 {forwardAgents.filter((a) => a.hasUpdate && a.status === 'enabled' && a.systemStatus).length} 个转发节点
+                  更新 {agentStats.updatable} 个转发节点
                 </TooltipContent>
               </Tooltip>
             )}
@@ -238,13 +324,13 @@ export const ForwardAgentsPage = () => {
             <Tooltip>
               <TooltipTrigger asChild>
                 <AdminButton
-                  variant="outline"
+                  variant="ghost"
                   size="sm"
                   onClick={handleRefresh}
                   icon={
                     <RefreshCw
                       key={refreshKey}
-                      className="size-3.5 sm:size-4 animate-spin-once"
+                      className="size-4 animate-spin-once"
                       strokeWidth={1.5}
                     />
                   }
@@ -252,31 +338,25 @@ export const ForwardAgentsPage = () => {
                   <span className="sr-only">刷新</span>
                 </AdminButton>
               </TooltipTrigger>
-              <TooltipContent>刷新</TooltipContent>
+              <TooltipContent>刷新列表</TooltipContent>
             </Tooltip>
 
             <AdminButton
               variant="primary"
               size="sm"
-              icon={<Plus className="size-3.5 sm:size-4" strokeWidth={1.5} />}
+              icon={<Plus className="size-4" strokeWidth={2} />}
               onClick={() => {
                 setCopyAgentData(undefined);
                 setCreateDialogOpen(true);
               }}
             >
-              <span className="hidden sm:inline">新增转发节点</span>
-              <span className="sm:hidden text-xs">新增</span>
+              <span className="hidden sm:inline">新增节点</span>
+              <span className="sm:hidden">新增</span>
             </AdminButton>
           </div>
-
-          {/* Row 2: Filters */}
-          <ForwardAgentFiltersComponent
-            filters={filters}
-            onChange={handleFiltersChange}
-          />
         </div>
 
-        {/* Forward Agent List - No AdminCard wrapper on mobile */}
+        {/* Forward Agent List */}
         {isMobile ? (
           <ForwardAgentListTable
             forwardAgents={forwardAgents}
@@ -322,7 +402,7 @@ export const ForwardAgentsPage = () => {
             />
           </AdminCard>
         )}
-      </AdminPageLayout>
+      </div>
 
       {/* Create Forward Agent Dialog */}
       <CreateForwardAgentDialog

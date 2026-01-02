@@ -23,8 +23,9 @@ import {
   Shield,
   Package,
   ArrowUpCircle,
+  Globe,
 } from 'lucide-react';
-import { DataTable, AdminBadge, TruncatedId, type ColumnDef, type ResponsiveColumnMeta } from '@/components/admin';
+import { DataTable, TruncatedId, type ColumnDef, type ResponsiveColumnMeta } from '@/components/admin';
 import { useBreakpoint } from '@/hooks/useBreakpoint';
 import { NodeMobileList } from './NodeMobileList';
 import {
@@ -36,7 +37,6 @@ import {
 } from '@/components/common/DropdownMenu';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/common/Tooltip';
 import { Badge } from '@/components/common/Badge';
-import { SystemStatusDisplay } from '@/components/common/SystemStatusDisplay';
 import {
   ContextMenuItem,
   ContextMenuSeparator,
@@ -63,17 +63,17 @@ interface NodeListTableProps {
   onCopy: (node: Node) => void;
 }
 
-// Status configuration
-const STATUS_CONFIG: Record<NodeStatus, { label: string; variant: 'success' | 'default' | 'warning'; icon: React.ElementType }> = {
-  active: { label: '激活', variant: 'success', icon: CheckCircle2 },
-  inactive: { label: '未激活', variant: 'default', icon: XCircle },
-  maintenance: { label: '维护中', variant: 'warning', icon: Wrench },
+// Status configuration with semantic colors
+const STATUS_CONFIG: Record<NodeStatus, { label: string; colorClass: string; icon: React.ElementType }> = {
+  active: { label: '激活', colorClass: 'text-success hover:text-success', icon: CheckCircle2 },
+  inactive: { label: '未激活', colorClass: 'text-muted-foreground/50 hover:text-muted-foreground', icon: XCircle },
+  maintenance: { label: '维护中', colorClass: 'text-warning hover:text-warning', icon: Wrench },
 };
 
-// Protocol configuration
+// Protocol configuration with semantic styling
 const PROTOCOL_CONFIG: Record<string, { label: string; color: string }> = {
-  shadowsocks: { label: 'SS', color: 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400' },
-  trojan: { label: 'Trojan', color: 'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400' },
+  shadowsocks: { label: 'SS', color: 'bg-info-muted text-info border border-info/20' },
+  trojan: { label: 'Trojan', color: 'bg-primary/10 text-primary border border-primary/20' },
 };
 
 
@@ -86,6 +86,36 @@ const formatDate = (dateString: string) => {
     hour: '2-digit',
     minute: '2-digit',
   });
+};
+
+// Format bytes rate to human readable (per second)
+const formatBytesRate = (bytesPerSec: number): string => {
+  if (!bytesPerSec || bytesPerSec <= 0) return '0';
+  const units = ['B', 'KB', 'MB', 'GB'];
+  const i = Math.floor(Math.log(bytesPerSec) / Math.log(1024));
+  const value = bytesPerSec / Math.pow(1024, i);
+  return `${value < 10 ? value.toFixed(1) : Math.round(value)}${units[i]}`;
+};
+
+// Format bytes to human readable (total)
+const formatBytes = (bytes: number): string => {
+  if (!bytes || bytes <= 0) return '0 B';
+  const units = ['B', 'KB', 'MB', 'GB', 'TB'];
+  const i = Math.floor(Math.log(bytes) / Math.log(1024));
+  const value = bytes / Math.pow(1024, i);
+  return `${value < 10 ? value.toFixed(2) : value.toFixed(1)} ${units[i]}`;
+};
+
+// Format relative time from unix timestamp
+const formatRelativeTime = (unixSeconds: number): string => {
+  if (!unixSeconds) return '-';
+  const now = Math.floor(Date.now() / 1000);
+  const diff = now - unixSeconds;
+  if (diff < 0) return '刚刚';
+  if (diff < 60) return `${diff}秒前`;
+  if (diff < 3600) return `${Math.floor(diff / 60)}分钟前`;
+  if (diff < 86400) return `${Math.floor(diff / 3600)}小时前`;
+  return `${Math.floor(diff / 86400)}天前`;
 };
 
 export const NodeListTable: React.FC<NodeListTableProps> = ({
@@ -177,29 +207,58 @@ export const NodeListTable: React.FC<NodeListTableProps> = ({
     {
       accessorKey: 'id',
       header: 'ID',
-      size: 120,
+      size: 100,
       meta: { priority: 4 } as ResponsiveColumnMeta, // Optional column >= 1280px
-      cell: ({ row }) => <TruncatedId id={row.original.id} />,
+      cell: ({ row }) => (
+        <div className="pr-4">
+          <TruncatedId id={row.original.id} startChars={6} endChars={4} />
+        </div>
+      ),
     },
     {
       accessorKey: 'name',
       header: '节点',
-      size: 160,
+      size: 200,
       meta: { priority: 1 } as ResponsiveColumnMeta, // Core column, always visible
       cell: ({ row }) => {
         const node = row.original;
+        const hasSubscriptionPort = node.subscriptionPort && node.subscriptionPort !== node.agentPort;
         return (
-          <div className="flex flex-col gap-1">
-            <span className="font-medium text-slate-900 dark:text-white whitespace-nowrap">
+          <div className="flex flex-col gap-0.5">
+            <span className="font-semibold text-foreground whitespace-nowrap">
               {node.name}
             </span>
-            <div className="flex items-center gap-2 text-xs text-slate-500 dark:text-slate-400 whitespace-nowrap">
-              <span className="font-mono">{node.serverAddress}:{node.agentPort}</span>
+            <div className="flex items-center gap-1.5 text-xs text-muted-foreground whitespace-nowrap">
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <code className="font-mono text-[11px] bg-muted/50 px-1 py-0.5 rounded cursor-default">
+                    {node.serverAddress}:{node.agentPort}
+                    {hasSubscriptionPort && <span className="text-primary">/{node.subscriptionPort}</span>}
+                  </code>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <div className="space-y-1 text-xs">
+                    <div>代理端口: {node.agentPort}</div>
+                    {hasSubscriptionPort && (
+                      <div>订阅端口: {node.subscriptionPort}</div>
+                    )}
+                    {node.systemStatus?.publicIpv4 && (
+                      <div className="flex items-center gap-1">
+                        <Globe className="size-3" />
+                        <span>IPv4: {node.systemStatus.publicIpv4}</span>
+                      </div>
+                    )}
+                    {node.systemStatus?.publicIpv6 && (
+                      <div className="flex items-center gap-1">
+                        <Globe className="size-3" />
+                        <span>IPv6: {node.systemStatus.publicIpv6}</span>
+                      </div>
+                    )}
+                  </div>
+                </TooltipContent>
+              </Tooltip>
               {node.region && (
-                <>
-                  <span className="text-slate-300 dark:text-slate-600">|</span>
-                  <span>{node.region}</span>
-                </>
+                <span className="text-muted-foreground/60">• {node.region}</span>
               )}
             </div>
           </div>
@@ -209,27 +268,27 @@ export const NodeListTable: React.FC<NodeListTableProps> = ({
     {
       id: 'config',
       header: '配置',
-      size: 160,
+      size: 140,
       meta: { priority: 3 } as ResponsiveColumnMeta, // Secondary column >= 1024px
       cell: ({ row }) => {
         const node = row.original;
-        const protocolConfig = PROTOCOL_CONFIG[node.protocol] || { label: node.protocol, color: 'bg-gray-100 text-gray-700' };
+        const protocolConfig = PROTOCOL_CONFIG[node.protocol] || { label: node.protocol, color: 'bg-muted text-muted-foreground' };
 
         if (node.protocol === 'shadowsocks') {
           return (
             <div className="flex flex-col gap-1">
-              <div className="flex items-center gap-2">
-                <span className={`px-1.5 py-0.5 text-xs font-medium rounded ${protocolConfig.color}`}>
+              <div className="flex items-center gap-1.5">
+                <span className={`px-1.5 py-0.5 text-[10px] font-semibold rounded ${protocolConfig.color}`}>
                   {protocolConfig.label}
                 </span>
-                <span className="text-xs font-mono text-slate-600 dark:text-slate-400">
+                <code className="text-[11px] font-mono text-muted-foreground bg-muted/30 px-1 py-0.5 rounded">
                   {node.encryptionMethod || '-'}
-                </span>
+                </code>
               </div>
               {node.plugin && (
-                <div className="text-xs text-slate-400 dark:text-slate-500">
+                <span className="text-[11px] text-muted-foreground/70">
                   + {node.plugin}
-                </div>
+                </span>
               )}
             </div>
           );
@@ -240,28 +299,28 @@ export const NodeListTable: React.FC<NodeListTableProps> = ({
           <Tooltip>
             <TooltipTrigger>
               <div className="flex flex-col gap-1">
-                <div className="flex items-center gap-2">
-                  <span className={`px-1.5 py-0.5 text-xs font-medium rounded ${protocolConfig.color}`}>
+                <div className="flex items-center gap-1.5">
+                  <span className={`px-1.5 py-0.5 text-[10px] font-semibold rounded ${protocolConfig.color}`}>
                     {protocolConfig.label}
                   </span>
-                  <span className="text-xs font-mono text-slate-600 dark:text-slate-400">
+                  <code className="text-[11px] font-mono text-muted-foreground bg-muted/30 px-1 py-0.5 rounded">
                     {transport} + TLS
-                  </span>
+                  </code>
                 </div>
                 {node.sni && (
-                  <div className="text-xs text-slate-400 dark:text-slate-500 truncate max-w-[120px]">
+                  <span className="text-[11px] text-muted-foreground/70 truncate max-w-[120px]">
                     SNI: {node.sni}
-                  </div>
+                  </span>
                 )}
               </div>
             </TooltipTrigger>
             <TooltipContent className="max-w-xs">
-              <div className="space-y-1">
+              <div className="space-y-1 text-xs">
                 <div>传输协议: {transport}</div>
                 {node.sni && <div>SNI: {node.sni}</div>}
                 {node.host && <div>Host: {node.host}</div>}
                 {node.path && <div>Path: {node.path}</div>}
-                {node.allowInsecure && <div className="text-yellow-500">允许不安全连接</div>}
+                {node.allowInsecure && <div className="text-amber-500">允许不安全连接</div>}
               </div>
             </TooltipContent>
           </Tooltip>
@@ -271,66 +330,175 @@ export const NodeListTable: React.FC<NodeListTableProps> = ({
     {
       id: 'availability',
       header: '在线',
-      size: 100,
+      size: 50,
       meta: { priority: 2 } as ResponsiveColumnMeta, // Important column >= 640px
       cell: ({ row }) => {
         const node = row.original;
         if (node.isOnline) {
           return (
-            <span className="inline-flex items-center gap-1.5 text-green-600 dark:text-green-400">
-              <span className="relative flex h-2 w-2">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
-                <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
-              </span>
-              <span className="text-xs font-medium">在线</span>
-            </span>
+            <Tooltip>
+              <TooltipTrigger>
+                <span className="relative flex size-2.5">
+                  <span className="animate-ping absolute inline-flex size-full rounded-full bg-success opacity-75"></span>
+                  <span className="relative inline-flex rounded-full size-2.5 bg-success"></span>
+                </span>
+              </TooltipTrigger>
+              <TooltipContent>在线</TooltipContent>
+            </Tooltip>
           );
         }
         return (
           <Tooltip>
             <TooltipTrigger>
-              <span className="inline-flex items-center gap-1.5 text-slate-400 dark:text-slate-500">
-                <span className="h-2 w-2 rounded-full bg-slate-300 dark:bg-slate-600"></span>
-                <span className="text-xs">离线</span>
-              </span>
+              <span className="size-2.5 rounded-full bg-muted-foreground/30 block"></span>
             </TooltipTrigger>
-            {node.lastSeenAt && (
-              <TooltipContent>
-                最后在线: {formatDate(node.lastSeenAt)}
-              </TooltipContent>
-            )}
+            <TooltipContent>
+              离线{node.lastSeenAt && ` · 最后在线: ${formatDate(node.lastSeenAt)}`}
+            </TooltipContent>
           </Tooltip>
         );
       },
     },
     {
-      id: 'systemStatus',
-      header: '系统状态',
+      id: 'monitor',
+      header: '监控',
       size: 160,
       meta: { priority: 3 } as ResponsiveColumnMeta, // Secondary column >= 1024px
       cell: ({ row }) => {
         const node = row.original;
         const status = node.systemStatus;
+
+        if (!status) {
+          return <span className="text-xs text-muted-foreground/50">-</span>;
+        }
+
+        const totalConnections = (status.tcpConnections || 0) + (status.udpConnections || 0);
+
         return (
-          <SystemStatusDisplay
-            status={status ? {
-              cpu: status.cpuPercent,
-              memory: status.memoryPercent,
-              disk: status.diskPercent,
-              uptime: status.uptimeSeconds,
-            } : null}
-          />
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <div className="inline-flex items-center gap-2.5 cursor-default">
+                {/* System mini bars */}
+                <div className="flex items-center gap-1.5">
+                  <div className="flex flex-col gap-0.5">
+                    <span className="text-[9px] text-muted-foreground/70 leading-none">C</span>
+                    <div className="w-6 h-1 rounded-full bg-muted/50 overflow-hidden">
+                      <div
+                        className={`h-full rounded-full transition-all duration-300 ${status.cpuPercent >= 80 ? 'bg-red-500' : status.cpuPercent >= 60 ? 'bg-amber-500' : 'bg-emerald-500'}`}
+                        style={{ width: `${Math.min(status.cpuPercent, 100)}%` }}
+                      />
+                    </div>
+                  </div>
+                  <div className="flex flex-col gap-0.5">
+                    <span className="text-[9px] text-muted-foreground/70 leading-none">M</span>
+                    <div className="w-6 h-1 rounded-full bg-muted/50 overflow-hidden">
+                      <div
+                        className={`h-full rounded-full transition-all duration-300 ${status.memoryPercent >= 80 ? 'bg-red-500' : status.memoryPercent >= 60 ? 'bg-amber-500' : 'bg-emerald-500'}`}
+                        style={{ width: `${Math.min(status.memoryPercent, 100)}%` }}
+                      />
+                    </div>
+                  </div>
+                  <div className="flex flex-col gap-0.5">
+                    <span className="text-[9px] text-muted-foreground/70 leading-none">D</span>
+                    <div className="w-6 h-1 rounded-full bg-muted/50 overflow-hidden">
+                      <div
+                        className={`h-full rounded-full transition-all duration-300 ${status.diskPercent >= 80 ? 'bg-red-500' : status.diskPercent >= 60 ? 'bg-amber-500' : 'bg-emerald-500'}`}
+                        style={{ width: `${Math.min(status.diskPercent, 100)}%` }}
+                      />
+                    </div>
+                  </div>
+                </div>
+                {/* Network rates - always show */}
+                <div className="w-px h-4 bg-border" />
+                <div className="flex flex-col gap-0 min-w-[52px]">
+                  <span className="text-[10px] font-mono text-success leading-tight">
+                    ↓{formatBytesRate(status.networkRxRate)}
+                  </span>
+                  <span className="text-[10px] font-mono text-info leading-tight">
+                    ↑{formatBytesRate(status.networkTxRate)}
+                  </span>
+                </div>
+              </div>
+            </TooltipTrigger>
+            <TooltipContent className="w-64">
+              <div className="space-y-2.5 text-xs">
+                {/* Header with update time */}
+                <div className="flex items-center justify-between">
+                  <span className="font-medium">系统监控</span>
+                  {status.updatedAt && (
+                    <span className="text-[10px] text-muted-foreground">{formatRelativeTime(status.updatedAt)}</span>
+                  )}
+                </div>
+                {/* System stats */}
+                <div className="space-y-1.5">
+                  <div className="flex items-center justify-between">
+                    <span className="text-muted-foreground">CPU</span>
+                    <span className="font-mono">{status.cpuPercent.toFixed(1)}%</span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-muted-foreground">内存</span>
+                    <span className="font-mono">
+                      {status.memoryPercent.toFixed(1)}%
+                      {status.memoryUsed !== undefined && status.memoryTotal !== undefined && (
+                        <span className="text-muted-foreground ml-1">({formatBytes(status.memoryUsed)}/{formatBytes(status.memoryTotal)})</span>
+                      )}
+                    </span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-muted-foreground">磁盘</span>
+                    <span className="font-mono">
+                      {status.diskPercent.toFixed(1)}%
+                      {status.diskUsed !== undefined && status.diskTotal !== undefined && (
+                        <span className="text-muted-foreground ml-1">({formatBytes(status.diskUsed)}/{formatBytes(status.diskTotal)})</span>
+                      )}
+                    </span>
+                  </div>
+                  {status.loadAvg1 !== undefined && (
+                    <div className="flex items-center justify-between">
+                      <span className="text-muted-foreground">负载</span>
+                      <span className="font-mono">{status.loadAvg1.toFixed(2)} / {status.loadAvg5?.toFixed(2)} / {status.loadAvg15?.toFixed(2)}</span>
+                    </div>
+                  )}
+                  {status.uptimeSeconds > 0 && (
+                    <div className="flex items-center justify-between">
+                      <span className="text-muted-foreground">运行</span>
+                      <span className="font-mono">{Math.floor(status.uptimeSeconds / 86400)}d {Math.floor((status.uptimeSeconds % 86400) / 3600)}h</span>
+                    </div>
+                  )}
+                </div>
+                {/* Network stats - always show */}
+                <div className="space-y-1.5 pt-2 border-t border-border">
+                  <div className="flex items-center justify-between">
+                    <span className="text-muted-foreground">下载</span>
+                    <span className="font-mono text-success">{formatBytesRate(status.networkRxRate)}/s</span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-muted-foreground">上传</span>
+                    <span className="font-mono text-info">{formatBytesRate(status.networkTxRate)}/s</span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-muted-foreground">累计</span>
+                    <span className="font-mono text-[11px]">↓{formatBytes(status.networkRxBytes)} ↑{formatBytes(status.networkTxBytes)}</span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-muted-foreground">连接</span>
+                    <span className="font-mono">{totalConnections} (TCP:{status.tcpConnections || 0} UDP:{status.udpConnections || 0})</span>
+                  </div>
+                </div>
+              </div>
+            </TooltipContent>
+          </Tooltip>
         );
       },
     },
     {
       accessorKey: 'status',
       header: '状态',
-      size: 100,
+      size: 50,
       meta: { priority: 1 } as ResponsiveColumnMeta, // Core column, always visible
       cell: ({ row }) => {
         const node = row.original;
-        const statusConfig = STATUS_CONFIG[node.status] || { label: node.status, variant: 'default' as const, icon: AlertTriangle };
+        const statusConfig = STATUS_CONFIG[node.status] || { label: node.status, colorClass: 'text-muted-foreground', icon: AlertTriangle };
         const StatusIcon = statusConfig.icon;
 
         return (
@@ -338,16 +506,13 @@ export const NodeListTable: React.FC<NodeListTableProps> = ({
             <TooltipTrigger asChild>
               <button
                 onClick={() => node.status === 'active' ? onDeactivate(node) : onActivate(node)}
-                className="cursor-pointer"
+                className={`cursor-pointer active:scale-90 transition-all duration-150 ${statusConfig.colorClass}`}
               >
-                <AdminBadge variant={statusConfig.variant}>
-                  <StatusIcon className="h-3 w-3 mr-1" />
-                  {statusConfig.label}
-                </AdminBadge>
+                <StatusIcon className="size-4" strokeWidth={1.5} />
               </button>
             </TooltipTrigger>
             <TooltipContent>
-              {node.status === 'active' ? '点击停用' : '点击激活'}
+              {statusConfig.label} · {node.status === 'active' ? '点击停用' : '点击激活'}
               {node.status === 'maintenance' && node.maintenanceReason && (
                 <div className="mt-1 text-xs opacity-80">原因: {node.maintenanceReason}</div>
               )}
@@ -359,24 +524,24 @@ export const NodeListTable: React.FC<NodeListTableProps> = ({
     {
       id: 'tags',
       header: '标签',
-      size: 120,
+      size: 100,
       meta: { priority: 3 } as ResponsiveColumnMeta, // Secondary column >= 1024px
       cell: ({ row }) => {
         const node = row.original;
         if (!node.tags || node.tags.length === 0) {
-          return <span className="text-xs text-slate-400">-</span>;
+          return <span className="text-xs text-muted-foreground/50">-</span>;
         }
         return (
           <div className="flex flex-wrap gap-1">
             {node.tags.slice(0, 2).map((tag: string, index: number) => (
-              <Badge key={index} variant="secondary" className="text-xs px-1.5 py-0">
+              <Badge key={index} variant="secondary" className="text-[10px] px-1.5 py-0 font-medium">
                 {tag}
               </Badge>
             ))}
             {node.tags.length > 2 && (
               <Tooltip>
                 <TooltipTrigger>
-                  <Badge variant="outline" className="text-xs px-1.5 py-0">
+                  <Badge variant="outline" className="text-[10px] px-1.5 py-0">
                     +{node.tags.length - 2}
                   </Badge>
                 </TooltipTrigger>
@@ -392,7 +557,7 @@ export const NodeListTable: React.FC<NodeListTableProps> = ({
     {
       id: 'version',
       header: '版本',
-      size: 100,
+      size: 90,
       meta: { priority: 3 } as ResponsiveColumnMeta,
       cell: ({ row }) => {
         const node = row.original;
@@ -402,31 +567,31 @@ export const NodeListTable: React.FC<NodeListTableProps> = ({
         const arch = node.arch || node.systemStatus?.arch;
 
         if (!version) {
-          return <span className="text-xs text-slate-400">-</span>;
+          return <span className="text-xs text-muted-foreground/50">-</span>;
         }
 
         return (
           <Tooltip>
             <TooltipTrigger asChild>
-              <div className="flex items-center gap-1.5 cursor-default">
+              <div className={`inline-flex items-center gap-1.5 px-2 py-1 rounded-md cursor-default transition-colors ${node.hasUpdate ? 'bg-warning-muted border border-warning/20' : 'bg-muted/30 border border-transparent'}`}>
                 {node.hasUpdate ? (
-                  <ArrowUpCircle className="size-3.5 text-amber-500" />
+                  <ArrowUpCircle className="size-3.5 text-warning" strokeWidth={1.5} />
                 ) : (
-                  <Package className="size-3.5 text-slate-400" />
+                  <Package className="size-3.5 text-muted-foreground/60" strokeWidth={1.5} />
                 )}
-                <span className={`text-xs font-mono ${node.hasUpdate ? 'text-amber-600 dark:text-amber-400' : 'text-slate-600 dark:text-slate-300'}`}>
+                <code className={`text-[11px] font-mono ${node.hasUpdate ? 'text-warning' : 'text-muted-foreground'}`}>
                   v{version}
-                </span>
+                </code>
               </div>
             </TooltipTrigger>
             <TooltipContent>
-              <div className="space-y-1">
-                <div className="text-xs">版本: v{version}</div>
+              <div className="space-y-1 text-xs">
+                <div>版本: v{version}</div>
                 {platform && arch && (
-                  <div className="text-xs text-slate-400">{platform}/{arch}</div>
+                  <div className="text-muted-foreground">{platform}/{arch}</div>
                 )}
                 {node.hasUpdate && (
-                  <div className="text-xs text-amber-500">有新版本可用</div>
+                  <div className="text-warning font-medium">有新版本可用</div>
                 )}
               </div>
             </TooltipContent>
@@ -437,13 +602,13 @@ export const NodeListTable: React.FC<NodeListTableProps> = ({
     {
       id: 'resourceGroup',
       header: '资源组',
-      size: 140,
+      size: 100,
       meta: { priority: 3 } as ResponsiveColumnMeta,
       cell: ({ row }) => {
         const node = row.original;
         const groupIds = node.groupIds || [];
         if (groupIds.length === 0) {
-          return <span className="text-xs text-slate-400">-</span>;
+          return <span className="text-xs text-muted-foreground/50">-</span>;
         }
         const firstGroup = resourceGroupsMap[groupIds[0]];
         const remainingCount = groupIds.length - 1;
@@ -451,26 +616,26 @@ export const NodeListTable: React.FC<NodeListTableProps> = ({
           <div className="flex items-center gap-1">
             <Tooltip>
               <TooltipTrigger>
-                <Badge variant="outline" className="text-xs truncate max-w-[80px]">
+                <Badge variant="outline" className="text-[10px] truncate max-w-[80px]">
                   {firstGroup?.name || groupIds[0]}
                 </Badge>
               </TooltipTrigger>
               <TooltipContent>
-                <div className="space-y-1">
+                <div className="space-y-1 text-xs">
                   <div>{firstGroup?.name || '未知资源组'}</div>
-                  <div className="text-xs text-slate-400 font-mono">{groupIds[0]}</div>
+                  <code className="text-muted-foreground font-mono">{groupIds[0]}</code>
                 </div>
               </TooltipContent>
             </Tooltip>
             {remainingCount > 0 && (
               <Tooltip>
                 <TooltipTrigger>
-                  <Badge variant="secondary" className="text-xs px-1.5">
+                  <Badge variant="secondary" className="text-[10px] px-1.5">
                     +{remainingCount}
                   </Badge>
                 </TooltipTrigger>
                 <TooltipContent>
-                  <div className="space-y-1">
+                  <div className="space-y-1 text-xs">
                     {groupIds.slice(1).map((gid) => {
                       const g = resourceGroupsMap[gid];
                       return (
@@ -490,7 +655,7 @@ export const NodeListTable: React.FC<NodeListTableProps> = ({
     {
       id: 'owner',
       header: '创建者',
-      size: 120,
+      size: 100,
       meta: { priority: 3 } as ResponsiveColumnMeta,
       cell: ({ row }) => {
         const node = row.original;
@@ -499,25 +664,25 @@ export const NodeListTable: React.FC<NodeListTableProps> = ({
             <Tooltip>
               <TooltipTrigger>
                 <div className="flex items-center gap-1.5">
-                  <User className="size-3.5 text-slate-400" />
-                  <span className="text-xs text-slate-600 dark:text-slate-400 truncate max-w-[80px]">
+                  <User className="size-3.5 text-muted-foreground/60" strokeWidth={1.5} />
+                  <span className="text-xs text-muted-foreground truncate max-w-[80px]">
                     {node.owner.name || node.owner.email}
                   </span>
                 </div>
               </TooltipTrigger>
               <TooltipContent>
-                <div className="space-y-1">
+                <div className="space-y-1 text-xs">
                   {node.owner.name && <div>{node.owner.name}</div>}
-                  <div className="text-xs text-slate-400">{node.owner.email}</div>
+                  <div className="text-muted-foreground">{node.owner.email}</div>
                 </div>
               </TooltipContent>
             </Tooltip>
           );
         }
         return (
-          <div className="flex items-center gap-1.5">
-            <Shield className="size-3.5 text-blue-500" />
-            <span className="text-xs text-blue-600 dark:text-blue-400">管理员</span>
+          <div className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-info-muted border border-info/20">
+            <Shield className="size-3 text-info" strokeWidth={1.5} />
+            <span className="text-[10px] font-medium text-info">管理员</span>
           </div>
         );
       },
@@ -525,10 +690,10 @@ export const NodeListTable: React.FC<NodeListTableProps> = ({
     {
       accessorKey: 'createdAt',
       header: '创建时间',
-      size: 100,
+      size: 90,
       meta: { priority: 4 } as ResponsiveColumnMeta, // Optional column >= 1280px
       cell: ({ row }) => (
-        <span className="text-xs text-slate-500 dark:text-slate-400">
+        <span className="text-xs text-muted-foreground">
           {formatDate(row.original.createdAt)}
         </span>
       ),
@@ -536,50 +701,42 @@ export const NodeListTable: React.FC<NodeListTableProps> = ({
     {
       id: 'actions',
       header: '操作',
-      size: 140,
+      size: 130,
       meta: { priority: 1 } as ResponsiveColumnMeta, // Core column, always visible
       enableSorting: false,
       cell: ({ row }) => {
         const node = row.original;
+        const actionButtonClass = 'inline-flex items-center justify-center size-8 rounded-lg text-muted-foreground hover:text-foreground hover:bg-accent/50 active:scale-95 transition-all duration-150 cursor-pointer';
         return (
-          <div className="flex items-center gap-1">
+          <div className="flex items-center gap-0.5">
             <Tooltip>
               <TooltipTrigger asChild>
-                <button
-                  onClick={() => onViewDetail(node)}
-                  className="inline-flex items-center justify-center size-8 rounded-lg text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-700 transition-all duration-200"
-                >
-                  <Eye className="size-4" />
+                <button onClick={() => onViewDetail(node)} className={actionButtonClass}>
+                  <Eye className="size-4" strokeWidth={1.5} />
                 </button>
               </TooltipTrigger>
               <TooltipContent>查看详情</TooltipContent>
             </Tooltip>
             <Tooltip>
               <TooltipTrigger asChild>
-                <button
-                  onClick={() => onEdit(node)}
-                  className="inline-flex items-center justify-center size-8 rounded-lg text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-700 transition-all duration-200"
-                >
-                  <Edit className="size-4" />
+                <button onClick={() => onEdit(node)} className={actionButtonClass}>
+                  <Edit className="size-4" strokeWidth={1.5} />
                 </button>
               </TooltipTrigger>
               <TooltipContent>编辑</TooltipContent>
             </Tooltip>
             <Tooltip>
               <TooltipTrigger asChild>
-                <button
-                  onClick={() => onGetInstallScript(node)}
-                  className="inline-flex items-center justify-center size-8 rounded-lg text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-700 transition-all duration-200"
-                >
-                  <Terminal className="size-4" />
+                <button onClick={() => onGetInstallScript(node)} className={actionButtonClass}>
+                  <Terminal className="size-4" strokeWidth={1.5} />
                 </button>
               </TooltipTrigger>
               <TooltipContent>安装脚本</TooltipContent>
             </Tooltip>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <button className="inline-flex items-center justify-center size-8 rounded-lg text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-700 transition-all duration-200">
-                  <MoreHorizontal className="size-4" />
+                <button className={actionButtonClass}>
+                  <MoreHorizontal className="size-4" strokeWidth={1.5} />
                 </button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">

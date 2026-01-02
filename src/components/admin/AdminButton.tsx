@@ -1,7 +1,7 @@
 /**
- * 管理端按钮组件
- * 精致商务风格 - 统一的按钮样式
- * 基于 Radix UI Slot 实现，支持 asChild 模式
+ * Admin Button Component
+ * Modern style with refined shadows and smooth interactions
+ * Based on Radix UI Slot, supports asChild mode
  */
 
 import { forwardRef, ReactNode, ButtonHTMLAttributes } from 'react';
@@ -19,8 +19,8 @@ interface AdminButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
 }
 
 /**
- * 管理端标准按钮
- * 统一的视觉风格和交互效果
+ * Admin standard button
+ * Unified visual style and interaction effects
  */
 export const AdminButton = forwardRef<HTMLButtonElement, AdminButtonProps>(
   (
@@ -37,19 +37,48 @@ export const AdminButton = forwardRef<HTMLButtonElement, AdminButtonProps>(
     },
     ref
   ) => {
-    const baseStyles =
-      'inline-flex items-center justify-center gap-2 font-medium transition-all duration-150 ease-out active:scale-[0.97] disabled:opacity-50 disabled:cursor-not-allowed';
+    const baseStyles = cn(
+      'inline-flex items-center justify-center gap-2 font-medium',
+      'transition-all duration-200 ease-out',
+      'active:scale-[0.97]',
+      'disabled:opacity-50 disabled:cursor-not-allowed disabled:active:scale-100'
+    );
 
     const variants = {
-      primary:
-        'bg-slate-900 dark:bg-white text-white dark:text-slate-900 hover:bg-slate-800 dark:hover:bg-slate-100 shadow-lg shadow-slate-900/10 dark:shadow-white/10',
-      secondary:
-        'bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-white hover:bg-slate-200 dark:hover:bg-slate-700',
-      outline:
-        'border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800',
-      ghost: 'text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800',
-      danger:
-        'bg-rose-500 dark:bg-rose-600 text-white hover:bg-rose-600 dark:hover:bg-rose-700 shadow-lg shadow-rose-500/20',
+      primary: cn(
+        'bg-primary',
+        'text-primary-foreground',
+        'shadow-md shadow-primary/20',
+        'hover:bg-primary/90',
+        'hover:shadow-lg hover:shadow-primary/30',
+        'ring-1 ring-primary/10'
+      ),
+      secondary: cn(
+        'bg-secondary',
+        'text-secondary-foreground',
+        'hover:bg-secondary/80',
+        'ring-1 ring-border'
+      ),
+      outline: cn(
+        'bg-background/50',
+        'backdrop-blur-sm',
+        'border border-border',
+        'text-foreground',
+        'hover:bg-accent',
+        'hover:border-border/80'
+      ),
+      ghost: cn(
+        'text-foreground',
+        'hover:bg-accent'
+      ),
+      danger: cn(
+        'bg-destructive',
+        'text-destructive-foreground',
+        'shadow-md shadow-destructive/30',
+        'hover:bg-destructive/90',
+        'hover:shadow-lg hover:shadow-destructive/40',
+        'ring-1 ring-destructive/20'
+      ),
     };
 
     const sizes = {

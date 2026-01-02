@@ -6,6 +6,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
 import { queryKeys } from '@/shared/lib/query-client';
+import { useNodeEvents } from './useNodeEvents';
 import { useNotificationStore } from '@/shared/stores/notification-store';
 import { handleApiError } from '@/shared/lib/axios';
 import {
@@ -232,6 +233,9 @@ export const useNodesPage = () => {
   const [batchUpdateResult, setBatchUpdateResult] = useState<BatchUpdateResponse | null>(null);
 
   const nodesQuery = useNodes({ page, pageSize, filters, includeUserNodes, sortBy, sortOrder });
+
+  // Subscribe to real-time node events via SSE
+  useNodeEvents({ enabled: true });
 
   const handlePageChange = (newPage: number) => {
     setPage(newPage);

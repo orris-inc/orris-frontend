@@ -183,15 +183,12 @@ export function DataTable<TData>({
   const colCount = visibleColumns.length;
 
   return (
-    <>
-      <div className="overflow-x-auto bg-white dark:bg-slate-900 rounded-xl">
+    <div className="relative">
+      <div className="overflow-x-auto bg-card rounded-xl">
         <table className="w-full table-fixed text-sm border-separate border-spacing-0">
-          <thead className={cn(
-            'bg-gradient-to-b from-slate-50 to-slate-50/80 dark:from-slate-800/50 dark:to-slate-800/30',
-            'border-b-2 border-slate-200/60 dark:border-slate-700/60'
-          )}>
+          <thead className="sticky top-0 z-10">
             {table.getHeaderGroups().map((headerGroup) => (
-              <tr key={headerGroup.id}>
+              <tr key={headerGroup.id} className="bg-muted/50">
                 {headerGroup.headers.map((header) => {
                   const canSort = header.column.getCanSort();
                   const sorted = header.column.getIsSorted();
@@ -202,10 +199,11 @@ export function DataTable<TData>({
                       style={{ width: header.column.columnDef.size }}
                       className={cn(
                         'px-4 py-3.5 font-medium',
-                        'text-sm text-slate-600 dark:text-slate-300',
+                        'text-sm text-muted-foreground',
                         'whitespace-nowrap text-left',
-                        'first:rounded-tl-lg last:rounded-tr-lg',
-                        canSort && 'cursor-pointer select-none hover:bg-slate-100/50 dark:hover:bg-slate-700/30 transition-colors'
+                        'border-b-2 border-border/60',
+                        'first:rounded-tl-xl last:rounded-tr-xl',
+                        canSort && 'cursor-pointer select-none hover:text-foreground hover:bg-muted/80 transition-colors duration-200'
                       )}
                       onClick={canSort ? header.column.getToggleSortingHandler() : undefined}
                     >
@@ -214,13 +212,16 @@ export function DataTable<TData>({
                           ? null
                           : flexRender(header.column.columnDef.header, header.getContext())}
                         {canSort && (
-                          <span className="text-slate-400">
+                          <span className={cn(
+                            'transition-colors duration-200',
+                            sorted ? 'text-primary' : 'text-muted-foreground/40'
+                          )}>
                             {sorted === 'asc' ? (
                               <ChevronUp className="size-4" />
                             ) : sorted === 'desc' ? (
                               <ChevronDown className="size-4" />
                             ) : (
-                              <ChevronsUpDown className="size-3.5 opacity-50" />
+                              <ChevronsUpDown className="size-3.5 opacity-60" />
                             )}
                           </span>
                         )}
@@ -231,16 +232,16 @@ export function DataTable<TData>({
               </tr>
             ))}
           </thead>
-          <tbody className="divide-y divide-slate-100/60 dark:divide-slate-800/60">
+          <tbody className="divide-y divide-border/60">
             {loading && data.length === 0 ? (
               <tr>
                 <td colSpan={colCount} className="py-20 text-center">
                   <div className="flex flex-col items-center gap-4">
                     <div className="relative">
-                      <Loader2 className="size-9 animate-spin text-indigo-500" strokeWidth={2.5} />
-                      <div className="absolute inset-0 rounded-full bg-indigo-500/20 blur-xl animate-pulse" />
+                      <Loader2 className="size-9 animate-spin text-primary" strokeWidth={2.5} />
+                      <div className="absolute inset-0 rounded-full bg-primary/20 blur-xl animate-pulse" />
                     </div>
-                    <p className="text-slate-500 dark:text-slate-400 text-sm">Loading...</p>
+                    <p className="text-muted-foreground text-sm">加载中...</p>
                   </div>
                 </td>
               </tr>
@@ -248,15 +249,12 @@ export function DataTable<TData>({
               <tr>
                 <td colSpan={colCount} className="py-20 text-center">
                   <div className="flex flex-col items-center gap-3">
-                    <div className="relative">
-                      <div className="size-14 rounded-2xl bg-gradient-to-br from-slate-100 to-slate-50 dark:from-slate-800 dark:to-slate-900 flex items-center justify-center shadow-inner">
-                        <svg className="size-7 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4" />
-                        </svg>
-                      </div>
-                      <div className="absolute inset-0 rounded-2xl bg-gradient-to-br from-slate-200/20 to-transparent dark:from-slate-700/20 blur-xl -z-10" />
+                    <div className="size-14 rounded-2xl bg-muted flex items-center justify-center shadow-inner">
+                      <svg className="size-7 text-muted-foreground" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4" />
+                      </svg>
                     </div>
-                    <p className="text-slate-500 dark:text-slate-400 text-sm">{emptyMessage}</p>
+                    <p className="text-muted-foreground text-sm">{emptyMessage}</p>
                   </div>
                 </td>
               </tr>
@@ -268,19 +266,17 @@ export function DataTable<TData>({
                     onClick={() => onRowClick?.(row.original)}
                     className={cn(
                       'group transition-all duration-200',
-                      'hover:bg-gradient-to-r hover:from-slate-50/80 hover:to-transparent',
-                      'dark:hover:from-slate-800/40 dark:hover:to-transparent',
-                      'hover:shadow-[0_1px_3px_-1px_rgba(0,0,0,0.05)]',
+                      'hover:bg-accent/50',
                       onRowClick && 'cursor-pointer',
-                      row.getIsSelected() && 'bg-gradient-to-r from-indigo-50/60 to-transparent dark:from-indigo-900/20 dark:to-transparent'
+                      row.getIsSelected() && 'bg-primary/5'
                     )}
                   >
                     {row.getVisibleCells().map((cell) => (
                       <td
                         key={cell.id}
                         className={cn(
-                          'px-4 py-3.5 text-slate-700 dark:text-slate-200',
-                          'align-top',
+                          'px-4 py-3.5 text-foreground',
+                          'align-middle',
                           'transition-colors duration-200'
                         )}
                       >
@@ -324,7 +320,7 @@ export function DataTable<TData>({
           loading={loading}
         />
       )}
-    </>
+    </div>
   );
 }
 

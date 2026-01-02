@@ -1,10 +1,11 @@
 /**
- * 管理端统计卡片组件
- * 精致商务风格 - 数据展示卡片
+ * Admin Stats Card Component
+ * Modern glassmorphism style with gradient accents
  */
 
 import { ReactNode } from 'react';
 import { TrendingUp, TrendingDown, Activity } from 'lucide-react';
+import { cn } from '@/lib/utils';
 
 interface AdminStatsCardProps {
   title: string;
@@ -18,8 +19,8 @@ interface AdminStatsCardProps {
 }
 
 /**
- * 统计数据卡片
- * 用于展示关键指标
+ * Stats data card
+ * For displaying key metrics with enhanced visuals
  */
 export const AdminStatsCard = ({
   title,
@@ -32,42 +33,74 @@ export const AdminStatsCard = ({
   accentColor,
 }: AdminStatsCardProps) => {
   const changeStyles = {
-    increase: 'text-emerald-600 bg-emerald-50 dark:bg-emerald-900/20 dark:text-emerald-400',
-    decrease: 'text-rose-600 bg-rose-50 dark:bg-rose-900/20 dark:text-rose-400',
-    neutral: 'text-slate-600 bg-slate-50 dark:bg-slate-900/20 dark:text-slate-400',
+    increase: 'text-success bg-success-muted ring-1 ring-success/20',
+    decrease: 'text-destructive bg-destructive/10 ring-1 ring-destructive/20',
+    neutral: 'text-muted-foreground bg-muted/80 ring-1 ring-muted-foreground/20',
   };
 
   const ChangeIcon = changeType === 'increase' ? TrendingUp : changeType === 'decrease' ? TrendingDown : Activity;
 
   return (
-    <div className="group relative bg-white dark:bg-slate-900 rounded-2xl p-6 border border-slate-100 dark:border-slate-800 hover:border-slate-200 dark:hover:border-slate-700 transition-all duration-300 hover:shadow-lg hover:shadow-slate-200/50 dark:hover:shadow-slate-900/50">
-      {/* 顶部装饰线 */}
-      <div className={`absolute top-0 left-6 right-6 h-0.5 ${accentColor} rounded-full opacity-0 group-hover:opacity-100 transition-opacity`} />
+    <div className={cn(
+      'group relative overflow-hidden',
+      'bg-card/80',
+      'backdrop-blur-sm',
+      'rounded-2xl p-6',
+      'border border-border/60',
+      'shadow-sm hover:shadow-lg',
+      'transition-all duration-300 ease-out',
+      'hover:-translate-y-0.5'
+    )}>
+      {/* Top accent line with gradient */}
+      <div className={cn(
+        'absolute top-0 left-0 right-0 h-1',
+        accentColor,
+        'opacity-0 group-hover:opacity-100',
+        'transition-opacity duration-300'
+      )} />
 
-      <div className="flex items-start justify-between mb-5">
-        {/* 图标容器 */}
-        <div className={`${iconBg} p-3.5 rounded-xl shadow-sm`}>
-          <div className={iconColor}>
-            {icon}
+      {/* Subtle background gradient on hover */}
+      <div className={cn(
+        'absolute inset-0 opacity-0 group-hover:opacity-100',
+        'bg-gradient-to-br from-muted/50 to-transparent',
+        'transition-opacity duration-300',
+        'pointer-events-none'
+      )} />
+
+      <div className="relative z-10">
+        <div className="flex items-start justify-between mb-5">
+          {/* Icon container with glow effect */}
+          <div className={cn(
+            iconBg,
+            'p-3.5 rounded-xl',
+            'shadow-sm group-hover:shadow-md',
+            'transition-shadow duration-300'
+          )}>
+            <div className={iconColor}>
+              {icon}
+            </div>
           </div>
+
+          {/* Change indicator */}
+          {change && (
+            <div className={cn(
+              'flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold',
+              changeStyles[changeType]
+            )}>
+              <ChangeIcon className="size-3.5" />
+              <span>{change}</span>
+            </div>
+          )}
         </div>
 
-        {/* 变化指标 */}
-        {change && (
-          <div className={`flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold ${changeStyles[changeType]}`}>
-            <ChangeIcon className="size-3.5" />
-            <span>{change}</span>
+        {/* Value and title */}
+        <div className="space-y-1">
+          <div className="text-3xl font-bold tracking-tight text-foreground">
+            {value}
           </div>
-        )}
-      </div>
-
-      {/* 数值和标题 */}
-      <div className="space-y-1">
-        <div className="text-3xl font-bold tracking-tight text-slate-900 dark:text-white">
-          {value}
-        </div>
-        <div className="text-sm font-medium text-slate-500 dark:text-slate-400">
-          {title}
+          <div className="text-sm font-medium text-muted-foreground">
+            {title}
+          </div>
         </div>
       </div>
     </div>

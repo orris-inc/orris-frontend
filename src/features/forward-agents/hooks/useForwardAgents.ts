@@ -7,6 +7,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
 import { useNotificationStore } from '@/shared/stores/notification-store';
 import { handleApiError } from '@/shared/lib/axios';
+import { useForwardAgentEvents } from './useForwardAgentEvents';
 import {
   listForwardAgents,
   getForwardAgent,
@@ -236,6 +237,9 @@ export const useForwardAgentsPage = () => {
   const { showError } = useNotificationStore();
 
   const forwardAgentsQuery = useForwardAgents({ page, pageSize, filters });
+
+  // Subscribe to real-time forward agent events via SSE
+  useForwardAgentEvents({ enabled: true });
 
   const handlePageChange = (newPage: number) => {
     setPage(newPage);

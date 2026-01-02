@@ -107,8 +107,8 @@ export const AdminLayout = ({ children }: AdminLayoutProps) => {
           <Dialog.Portal>
             <Dialog.Overlay className="fixed inset-0 z-50 bg-black/50 md:hidden" />
             <Dialog.Content className="fixed inset-y-0 left-0 z-50 h-full w-72 bg-background shadow-xl md:hidden data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:slide-out-to-left data-[state=open]:slide-in-from-left">
-              <Dialog.Close className="absolute right-3 top-3 rounded-md p-1.5 hover:bg-accent touch-target flex items-center justify-center">
-                <X className="h-4 w-4" />
+              <Dialog.Close className="absolute right-2 top-2 rounded-lg p-2 hover:bg-accent touch-target flex items-center justify-center min-w-[44px] min-h-[44px]">
+                <X className="h-5 w-5" />
               </Dialog.Close>
               <Dialog.Title className="sr-only">导航菜单</Dialog.Title>
               <MobileSidebarContent />
@@ -167,10 +167,10 @@ export const AdminLayout = ({ children }: AdminLayoutProps) => {
           <header className="sticky top-0 z-30 flex h-14 items-center gap-4 border-b bg-background px-4 sm:px-6">
             {/* 移动端菜单按钮 */}
             <button
-              className="md:hidden flex items-center justify-center rounded-md hover:bg-accent touch-target"
+              className="md:hidden flex items-center justify-center rounded-lg hover:bg-accent touch-target p-2.5 min-w-[44px] min-h-[44px]"
               onClick={() => setMobileDrawerOpen(true)}
             >
-              <Menu className="h-5 w-5" />
+              <Menu className="h-6 w-6" />
             </button>
 
             {/* 面包屑 */}
@@ -184,8 +184,8 @@ export const AdminLayout = ({ children }: AdminLayoutProps) => {
 
             <DropdownMenuPrimitive.Root>
               <DropdownMenuPrimitive.Trigger asChild>
-                <button className="flex h-8 w-8 items-center justify-center rounded-full hover:bg-accent">
-                  <AvatarPrimitive.Root className="h-8 w-8">
+                <button className="flex h-11 w-11 items-center justify-center rounded-full hover:bg-accent touch-target">
+                  <AvatarPrimitive.Root className="h-10 w-10">
                     <AvatarPrimitive.Fallback className="flex h-full w-full items-center justify-center rounded-full bg-muted text-sm font-medium">
                       {user?.initials || user?.displayName?.charAt(0).toUpperCase()}
                     </AvatarPrimitive.Fallback>

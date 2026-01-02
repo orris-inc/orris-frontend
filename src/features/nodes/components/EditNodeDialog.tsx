@@ -117,7 +117,7 @@ export const EditNodeDialog: React.FC<EditNodeDialogProps> = ({
   onSubmit,
   nodes = [],
 }) => {
-  const [formData, setFormData] = useState<UpdateNodeRequest>({});
+  const [formData, setFormData] = useState<UpdateNodeRequest & { tagsInput: string }>({ tagsInput: '' });
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [pluginOptsStr, setPluginOptsStr] = useState<string>('');
 
@@ -139,6 +139,8 @@ export const EditNodeDialog: React.FC<EditNodeDialogProps> = ({
         region: node.region,
         status: node.status,
         sortOrder: node.sortOrder,
+        tags: node.tags,
+        tagsInput: node.tags?.join(', ') ?? '',
         // Shadowsocks plugin related fields
         plugin: node.plugin,
         pluginOpts: node.pluginOpts,
@@ -163,7 +165,7 @@ export const EditNodeDialog: React.FC<EditNodeDialogProps> = ({
   const showWsFields = isTrojan && formData.transportProtocol === 'ws';
   const showGrpcFields = isTrojan && formData.transportProtocol === 'grpc';
 
-  const handleChange = (field: keyof UpdateNodeRequest, value: string | number | boolean | undefined) => {
+  const handleChange = (field: keyof UpdateNodeRequest | 'tagsInput', value: string | number | boolean | undefined) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
     if (errors[field]) {
       setErrors((prev) => {
@@ -286,6 +288,16 @@ export const EditNodeDialog: React.FC<EditNodeDialogProps> = ({
     const originalGroupSid = node.groupIds?.[0] ?? '';
     if (formData.groupSid !== undefined && formData.groupSid !== originalGroupSid) {
       updates.groupSid = formData.groupSid;
+    }
+
+    // Tags - parse tagsInput and compare with original
+    const newTags = formData.tagsInput
+      ? formData.tagsInput.split(',').map((t) => t.trim()).filter((t) => t.length > 0)
+      : [];
+    const originalTags = node.tags ?? [];
+    const tagsChanged = JSON.stringify(newTags.sort()) !== JSON.stringify([...originalTags].sort());
+    if (tagsChanged) {
+      updates.tags = newTags.length > 0 ? newTags : undefined;
     }
 
     // Route configuration - compare JSON to detect changes
@@ -664,6 +676,20 @@ export const EditNodeDialog: React.FC<EditNodeDialogProps> = ({
                       onChange={(e) => handleChange('sortOrder', parseInt(e.target.value, 10) || 0)}
                     />
                     <p className="text-xs text-muted-foreground">数字越小越靠前</p>
+                  </div>
+
+                  {/* 标签 */}
+                  <div className="flex flex-col gap-2 md:col-span-2">
+                    <Label htmlFor="tagsInput">标签</Label>
+                    <Input
+                      id="tagsInput"
+                      placeholder="例如：高速, 香港, 优选"
+                      value={formData.tagsInput ?? ''}
+                      onChange={(e) => handleChange('tagsInput', e.target.value)}
+                    />
+                    <p className="text-xs text-muted-foreground">
+                      可选，多个标签用逗号分隔
+                    </p>
                   </div>
 
                   {/* 资源组 */}

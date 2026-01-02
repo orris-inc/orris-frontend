@@ -1,11 +1,21 @@
 /**
- * 转发规则管理页面（管理端）
- * 使用统一的精致商务风格组件
+ * Forward Rules Management Page (Admin)
+ * Uses unified refined business style components
  */
 
-import { useState } from 'react';
-import { ArrowLeftRight, Plus, RefreshCw, Users } from 'lucide-react';
+import { useState, useMemo } from 'react';
+import {
+  ArrowLeftRight,
+  Plus,
+  RefreshCw,
+  Users,
+  CheckCircle2,
+  XCircle,
+  RotateCw,
+  Activity,
+} from 'lucide-react';
 import { Switch, SwitchThumb } from '@/components/common/Switch';
+import { Separator } from '@/components/common/Separator';
 import { ForwardRuleListTable } from '@/features/forward-rules/components/ForwardRuleListTable';
 import { CreateForwardRuleDialog } from '@/features/forward-rules/components/CreateForwardRuleDialog';
 import { EditForwardRuleDialog } from '@/features/forward-rules/components/EditForwardRuleDialog';
@@ -19,9 +29,10 @@ import { useNodes } from '@/features/nodes/hooks/useNodes';
 import { AdminLayout } from '@/layouts/AdminLayout';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/common/Tooltip';
 import {
-  AdminPageLayout,
   AdminButton,
   AdminCard,
+  PageStatsCard,
+  type PageStatsCardProps,
 } from '@/components/admin';
 import { usePageTitle } from '@/shared/hooks';
 import { useBreakpoint } from '@/hooks/useBreakpoint';
@@ -52,17 +63,66 @@ export const ForwardRulesPage = () => {
     handleIncludeUserRulesChange,
   } = useForwardRulesPage();
 
-  // Get forward agent list (for rule creation selection)
   const { forwardAgents } = useForwardAgents();
-
-  // Get node list (for target node selection)
   const { nodes } = useNodes({ pageSize: 100 });
-
-  // Short-term polling after enable/disable operations
   const { polledStatusMap, pollingRuleIds, startPolling } = useRuleStatusPolling();
-
-  // Responsive breakpoint
   const { isMobile } = useBreakpoint();
+
+  const ruleStats = useMemo(() => {
+    const total = pagination.total;
+    const enabled = forwardRules.filter((r) => r.status === 'enabled').length;
+    const disabled = forwardRules.filter((r) => r.status === 'disabled').length;
+    const syncing = forwardRules.filter((r) => r.syncStatus === 'pending').length;
+    const running = forwardRules.filter((r) => r.runStatus === 'running').length;
+    return { total, enabled, disabled, syncing, running };
+  }, [forwardRules, pagination.total]);
+
+  const statsCards: PageStatsCardProps[] = [
+    {
+      title: '规则总数',
+      value: ruleStats.total,
+      icon: <ArrowLeftRight className="size-4" strokeWidth={1.5} />,
+      iconBg: 'bg-primary/10',
+      iconColor: 'text-primary',
+    },
+    {
+      title: '已启用',
+      value: ruleStats.enabled,
+      icon: <CheckCircle2 className="size-4" strokeWidth={1.5} />,
+      iconBg: 'bg-success-muted',
+      iconColor: 'text-success',
+      showPulse: ruleStats.enabled > 0,
+    },
+    {
+      title: '已禁用',
+      value: ruleStats.disabled,
+      icon: <XCircle className="size-4" strokeWidth={1.5} />,
+      iconBg: 'bg-muted',
+      iconColor: 'text-muted-foreground',
+    },
+    ...(ruleStats.syncing > 0
+      ? [
+          {
+            title: '同步中',
+            value: ruleStats.syncing,
+            icon: <RotateCw className="size-4" strokeWidth={1.5} />,
+            iconBg: 'bg-warning-muted',
+            iconColor: 'text-warning',
+          },
+        ]
+      : []),
+    ...(ruleStats.running > 0
+      ? [
+          {
+            title: '运行中',
+            value: ruleStats.running,
+            icon: <Activity className="size-4" strokeWidth={1.5} />,
+            iconBg: 'bg-info-muted',
+            iconColor: 'text-info',
+          },
+        ]
+      : []),
+  ];
 
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
@@ -104,7 +164,6 @@ export const ForwardRulesPage = () => {
 
   const handleEnable = async (rule: ForwardRule) => {
     await enableForwardRule(rule.id);
-    // Start polling to track sync status after enable
     startPolling(rule.id);
   };
 
@@ -146,12 +205,10 @@ export const ForwardRulesPage = () => {
   };
 
   const handleCopy = (rule: ForwardRule) => {
-    // Filter out entry agent from chainAgentIds (entry agent should not be in chain list)
     const filteredChainAgentIds = rule.chainAgentIds
       ? rule.chainAgentIds.filter((id) => id !== rule.agentId)
       : undefined;
 
-    // Also filter chainPortConfig to match filtered chainAgentIds
     let filteredChainPortConfig: Record<string, number> | undefined;
     if (rule.chainPortConfig && filteredChainAgentIds) {
       filteredChainPortConfig = {};
@@ -199,21 +256,47 @@ export const ForwardRulesPage = () => {
 
   return (
     <AdminLayout>
-      <AdminPageLayout
-        title="转发规则管理"
-        description="管理系统中的所有端口转发规则"
-        icon={ArrowLeftRight}
-      >
-        {/* Toolbar - Compact on mobile */}
-        <div className="space-y-2 sm:space-y-3 mb-3 sm:mb-4">
-          {/* Row 1: Actions */}
-          <div className="flex items-center justify-between gap-2">
-            {/* Left: User rules toggle */}
+      <div className="py-6 sm:py-8">
+        {/* Page Header */}
+        <header className="mb-6 sm:mb-8">
+          <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4 mb-5 sm:mb-6">
+            <div>
+              <div className="flex items-center gap-2 mb-1.5">
+                <div className="size-2 rounded-full bg-success animate-pulse" />
+                <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                  实时数据
+                </span>
+              </div>
+              <h1 className="text-2xl sm:text-3xl font-bold text-foreground tracking-tight">
+                转发规则管理
+              </h1>
+              <p className="text-sm text-muted-foreground mt-1">
+                管理系统中的所有端口转发规则
+              </p>
+            </div>
+          </div>
+
+          {/* Stats Grid */}
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-2 sm:gap-2.5">
+            {statsCards.map((stat, index) => (
+              <PageStatsCard key={index} {...stat} loading={isFetching} />
+            ))}
+          </div>
+        </header>
+
+        <Separator className="mb-5 sm:mb-6" />
+
+        {/* Toolbar */}
+        <div className="flex items-center justify-between gap-3 mb-4 sm:mb-5">
+          {/* Filters */}
+          <div className="flex items-center gap-3">
             <Tooltip>
               <TooltipTrigger asChild>
-                <label className="flex items-center gap-1 cursor-pointer text-xs sm:text-sm text-slate-600 dark:text-slate-400">
-                  <Users className="size-3.5 sm:size-4 text-slate-500" strokeWidth={1.5} />
-                  <span className="hidden sm:inline">用户规则</span>
+                <label className="flex items-center gap-2 cursor-pointer group">
+                  <Users className="size-4 text-muted-foreground group-hover:text-foreground transition-colors" strokeWidth={1.5} />
+                  <span className="hidden sm:inline text-sm font-medium text-muted-foreground group-hover:text-foreground transition-colors">
+                    包含用户规则
+                  </span>
                   <Switch
                     checked={includeUserRules}
                     onCheckedChange={handleIncludeUserRulesChange}
@@ -222,51 +305,53 @@ export const ForwardRulesPage = () => {
                   </Switch>
                 </label>
               </TooltipTrigger>
-              <TooltipContent>显示用户规则</TooltipContent>
+              <TooltipContent>显示用户创建的规则</TooltipContent>
             </Tooltip>
-
-            {/* Right: Refresh + Add */}
-            <div className="flex items-center gap-1.5 sm:gap-2">
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <AdminButton
-                    variant="outline"
-                    size="sm"
-                    onClick={handleRefresh}
-                    icon={
-                      <RefreshCw
-                        key={refreshKey}
-                        className="size-3.5 sm:size-4 animate-spin-once"
-                        strokeWidth={1.5}
-                      />
-                    }
-                  >
-                    <span className="sr-only">刷新</span>
-                  </AdminButton>
-                </TooltipTrigger>
-                <TooltipContent>刷新</TooltipContent>
-              </Tooltip>
-
-              <AdminButton
-                variant="primary"
-                size="sm"
-                icon={<Plus className="size-3.5 sm:size-4" strokeWidth={1.5} />}
-                onClick={() => {
-                  setCopyRuleData(undefined);
-                  setCreateDialogOpen(true);
-                }}
-              >
-                <span className="hidden sm:inline">新增规则</span>
-                <span className="sm:hidden text-xs">新增</span>
-              </AdminButton>
-            </div>
           </div>
 
-          {/* Row 2: Filters */}
+          {/* Actions */}
+          <div className="flex items-center gap-2">
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <AdminButton
+                  variant="ghost"
+                  size="sm"
+                  onClick={handleRefresh}
+                  icon={
+                    <RefreshCw
+                      key={refreshKey}
+                      className="size-4 animate-spin-once"
+                      strokeWidth={1.5}
+                    />
+                  }
+                >
+                  <span className="sr-only">刷新</span>
+                </AdminButton>
+              </TooltipTrigger>
+              <TooltipContent>刷新列表</TooltipContent>
+            </Tooltip>
+
+            <AdminButton
+              variant="primary"
+              size="sm"
+              icon={<Plus className="size-4" strokeWidth={2} />}
+              onClick={() => {
+                setCopyRuleData(undefined);
+                setCreateDialogOpen(true);
+              }}
+            >
+              <span className="hidden sm:inline">新增规则</span>
+              <span className="sm:hidden">新增</span>
+            </AdminButton>
+          </div>
+        </div>
+
+        {/* Filters Row */}
+        <div className="mb-4 sm:mb-5">
           <ForwardRuleFilters filters={filters} onChange={handleFiltersChange} />
         </div>
 
-        {/* 转发规则列表 - 移动端不使用 AdminCard 包装 */}
+        {/* Forward Rules List */}
         {isMobile ? (
           <ForwardRuleListTable
             rules={forwardRules}
@@ -316,9 +401,9 @@ export const ForwardRulesPage = () => {
             />
           </AdminCard>
         )}
-      </AdminPageLayout>
+      </div>
 
-      {/* 新增转发规则对话框 */}
+      {/* Create Forward Rule Dialog */}
       <CreateForwardRuleDialog
         open={createDialogOpen}
         onClose={() => {
@@ -331,7 +416,7 @@ export const ForwardRulesPage = () => {
         initialData={copyRuleData}
       />
 
-      {/* 编辑转发规则对话框 */}
+      {/* Edit Forward Rule Dialog */}
       <EditForwardRuleDialog
         open={editDialogOpen}
         rule={selectedRule}
@@ -344,7 +429,7 @@ export const ForwardRulesPage = () => {
         agents={forwardAgents}
       />
 
-      {/* 转发规则详情对话框 */}
+      {/* Forward Rule Detail Dialog */}
       <ForwardRuleDetailDialog
         open={detailDialogOpen}
         rule={selectedRule}
@@ -356,7 +441,7 @@ export const ForwardRulesPage = () => {
         nodes={nodes}
       />
 
-      {/* 拨测结果对话框 */}
+      {/* Probe Result Dialog */}
       <ProbeResultDialog
         open={probeDialogOpen}
         onOpenChange={setProbeDialogOpen}
@@ -367,7 +452,7 @@ export const ForwardRulesPage = () => {
         nodes={nodes}
       />
 
-      {/* 删除确认对话框 */}
+      {/* Delete Confirm Dialog */}
       <ConfirmDialog
         open={deleteConfirmOpen}
         onOpenChange={setDeleteConfirmOpen}
@@ -379,7 +464,7 @@ export const ForwardRulesPage = () => {
         onConfirm={handleDeleteConfirm}
       />
 
-      {/* 重置流量确认对话框 */}
+      {/* Reset Traffic Confirm Dialog */}
       <ConfirmDialog
         open={resetTrafficConfirmOpen}
         onOpenChange={setResetTrafficConfirmOpen}

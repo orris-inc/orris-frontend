@@ -33,8 +33,8 @@ export const AdminPageLayout = ({
       <div className="flex items-center justify-between gap-2 sm:gap-4">
         <div className="flex items-center gap-2 sm:gap-3 min-w-0">
           {Icon && (
-            <div className="p-1.5 sm:p-2.5 bg-slate-100 dark:bg-slate-800 rounded-lg shrink-0">
-              <Icon className="size-4 sm:size-5 text-slate-600 dark:text-slate-400" strokeWidth={1.5} />
+            <div className="p-2 sm:p-2.5 bg-slate-100 dark:bg-slate-800 rounded-lg shrink-0 touch-target flex items-center justify-center">
+              <Icon className="size-5 text-slate-600 dark:text-slate-400" strokeWidth={1.5} />
             </div>
           )}
           <div className="min-w-0">
@@ -42,7 +42,7 @@ export const AdminPageLayout = ({
               {title}
             </h1>
             {description && (
-              <p className="text-[11px] sm:text-sm text-slate-500 dark:text-slate-400 line-clamp-1 sm:line-clamp-2">
+              <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 line-clamp-1 sm:line-clamp-2">
                 {description}
               </p>
             )}

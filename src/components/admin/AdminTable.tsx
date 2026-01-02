@@ -24,7 +24,7 @@ interface AdminTableProps {
 
 export const AdminTable = ({ children, className }: AdminTableProps) => {
   return (
-    <div className="overflow-x-auto bg-white dark:bg-slate-900 rounded-xl">
+    <div className="overflow-x-auto bg-card rounded-xl">
       <table className={cn('w-full text-sm border-separate border-spacing-0', className)}>
         {children}
       </table>
@@ -35,8 +35,8 @@ export const AdminTable = ({ children, className }: AdminTableProps) => {
 export const AdminTableHeader = ({ children, className }: AdminTableProps) => {
   return (
     <thead className={cn(
-      'bg-gradient-to-b from-slate-50 to-slate-50/80 dark:from-slate-800/50 dark:to-slate-800/30',
-      'border-b-2 border-slate-200/60 dark:border-slate-700/60',
+      'bg-muted/50',
+      'border-b-2 border-border/60',
       className
     )}>
       {children}
@@ -46,7 +46,7 @@ export const AdminTableHeader = ({ children, className }: AdminTableProps) => {
 
 export const AdminTableBody = ({ children, className }: AdminTableProps) => {
   return (
-    <tbody className={cn('divide-y divide-slate-100/60 dark:divide-slate-800/60', className)}>
+    <tbody className={cn('divide-y divide-border/60', className)}>
       {children}
     </tbody>
   );
@@ -65,11 +65,9 @@ export const AdminTableRow = ({ children, className, onClick, selected }: AdminT
       onClick={onClick}
       className={cn(
         'group transition-all duration-200',
-        'hover:bg-gradient-to-r hover:from-slate-50/80 hover:to-transparent',
-        'dark:hover:from-slate-800/40 dark:hover:to-transparent',
-        'hover:shadow-[0_1px_3px_-1px_rgba(0,0,0,0.05)]',
+        'hover:bg-accent/50',
         onClick && 'cursor-pointer',
-        selected && 'bg-gradient-to-r from-indigo-50/60 to-transparent dark:from-indigo-900/20 dark:to-transparent',
+        selected && 'bg-primary/5',
         className
       )}
     >
@@ -91,7 +89,7 @@ export const AdminTableHead = ({ children, className, align = 'left', width }: A
       style={{ width }}
       className={cn(
         'px-4 py-3.5 font-medium',
-        'text-sm text-slate-600 dark:text-slate-300',
+        'text-sm text-muted-foreground',
         'whitespace-nowrap',
         'first:rounded-tl-lg last:rounded-tr-lg',
         align === 'center' && 'text-center',
@@ -108,7 +106,7 @@ export const AdminTableCell = ({ children, className, align = 'left' }: AdminTab
   return (
     <td
       className={cn(
-        'px-4 py-3.5 text-slate-700 dark:text-slate-200',
+        'px-4 py-3.5 text-foreground',
         'align-middle',
         'transition-colors duration-200',
         align === 'center' && 'text-center',
@@ -134,14 +132,13 @@ export const AdminTableEmpty = ({ message = 'No data', colSpan = 1 }: TableEmpty
       <td colSpan={colSpan} className="py-20 text-center">
         <div className="flex flex-col items-center gap-3">
           <div className="relative">
-            <div className="size-14 rounded-2xl bg-gradient-to-br from-slate-100 to-slate-50 dark:from-slate-800 dark:to-slate-900 flex items-center justify-center shadow-inner">
-              <svg className="size-7 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <div className="size-14 rounded-2xl bg-muted flex items-center justify-center shadow-inner">
+              <svg className="size-7 text-muted-foreground" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4" />
               </svg>
             </div>
-            <div className="absolute inset-0 rounded-2xl bg-gradient-to-br from-slate-200/20 to-transparent dark:from-slate-700/20 blur-xl -z-10" />
           </div>
-          <p className="text-slate-500 dark:text-slate-400 text-sm">{message}</p>
+          <p className="text-muted-foreground text-sm">{message}</p>
         </div>
       </td>
     </tr>
@@ -158,10 +155,10 @@ export const AdminTableLoading = ({ colSpan = 1 }: TableLoadingProps) => {
       <td colSpan={colSpan} className="py-20 text-center">
         <div className="flex flex-col items-center gap-4">
           <div className="relative">
-            <Loader2 className="size-9 animate-spin text-indigo-500" strokeWidth={2.5} />
-            <div className="absolute inset-0 rounded-full bg-indigo-500/20 blur-xl animate-pulse" />
+            <Loader2 className="size-9 animate-spin text-primary" strokeWidth={2.5} />
+            <div className="absolute inset-0 rounded-full bg-primary/20 blur-xl animate-pulse" />
           </div>
-          <p className="text-slate-500 dark:text-slate-400 text-sm">Loading...</p>
+          <p className="text-muted-foreground text-sm">Loading...</p>
         </div>
       </td>
     </tr>
@@ -198,11 +195,11 @@ export const AdminTablePagination = ({
   return (
     <div className={cn(
       'flex items-center justify-between px-5 py-4',
-      'border-t border-slate-200/60 dark:border-slate-700/60',
-      'bg-gradient-to-b from-slate-50/30 to-white dark:from-slate-800/20 dark:to-slate-900/20'
+      'border-t border-border/60',
+      'bg-muted/30'
     )}>
       {/* Left: Page size selector */}
-      <div className="flex items-center gap-2.5 text-sm text-slate-600 dark:text-slate-400">
+      <div className="flex items-center gap-2.5 text-sm text-muted-foreground">
         <span>Show</span>
         {onPageSizeChange ? (
           <Select
@@ -221,16 +218,16 @@ export const AdminTablePagination = ({
             </SelectContent>
           </Select>
         ) : (
-          <span className="text-slate-900 dark:text-white">{pageSize}</span>
+          <span className="text-foreground">{pageSize}</span>
         )}
         <span>per page</span>
       </div>
 
       {/* Right: Pagination controls */}
       <div className="flex items-center gap-5">
-        <span className="text-sm text-slate-600 dark:text-slate-400">
-          <span className="text-slate-900 dark:text-white">{startIndex}-{endIndex}</span>
-          <span className="mx-1.5 text-slate-400">/</span>
+        <span className="text-sm text-muted-foreground">
+          <span className="text-foreground">{startIndex}-{endIndex}</span>
+          <span className="mx-1.5 text-muted-foreground/60">/</span>
           <span>{total} total</span>
         </span>
 
@@ -239,33 +236,33 @@ export const AdminTablePagination = ({
             onClick={() => onPageChange(page - 1)}
             disabled={page === 1 || loading}
             className={cn(
-              'flex items-center justify-center size-9 rounded-lg',
-              'text-slate-600 dark:text-slate-400',
-              'hover:bg-slate-100 dark:hover:bg-slate-700',
+              'flex items-center justify-center size-11 sm:size-9 rounded-lg touch-target',
+              'text-muted-foreground',
+              'hover:bg-accent',
               'hover:shadow-sm active:scale-95',
               'disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:shadow-none',
               'transition-all duration-200'
             )}
           >
-            <ChevronLeft className="size-4.5" strokeWidth={2} />
+            <ChevronLeft className="size-5 sm:size-4.5" strokeWidth={2} />
           </button>
 
           {/* Page number display */}
           <div className="flex items-center gap-1 px-0.5">
             {generatePageNumbers(page, totalPages).map((pageNum, idx) => (
               pageNum === '...' ? (
-                <span key={`ellipsis-${idx}`} className="px-1.5 text-slate-400">...</span>
+                <span key={`ellipsis-${idx}`} className="px-1.5 text-muted-foreground">...</span>
               ) : (
                 <button
                   key={pageNum}
                   onClick={() => onPageChange(pageNum as number)}
                   disabled={loading}
                   className={cn(
-                    'flex items-center justify-center min-w-[36px] h-9 px-2.5 rounded-lg text-sm',
+                    'flex items-center justify-center min-w-[44px] sm:min-w-[36px] h-11 sm:h-9 px-3 sm:px-2.5 rounded-lg text-sm touch-target',
                     'transition-all duration-200',
                     pageNum === page
-                      ? 'bg-gradient-to-br from-indigo-600 to-indigo-500 text-white shadow-md shadow-indigo-500/30 scale-105'
-                      : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700 hover:shadow-sm active:scale-95'
+                      ? 'bg-primary text-primary-foreground shadow-md shadow-primary/30 scale-105'
+                      : 'text-muted-foreground hover:bg-accent hover:shadow-sm active:scale-95'
                   )}
                 >
                   {pageNum}
@@ -278,15 +275,15 @@ export const AdminTablePagination = ({
             onClick={() => onPageChange(page + 1)}
             disabled={page >= totalPages || loading}
             className={cn(
-              'flex items-center justify-center size-9 rounded-lg',
-              'text-slate-600 dark:text-slate-400',
-              'hover:bg-slate-100 dark:hover:bg-slate-700',
+              'flex items-center justify-center size-11 sm:size-9 rounded-lg touch-target',
+              'text-muted-foreground',
+              'hover:bg-accent',
               'hover:shadow-sm active:scale-95',
               'disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:shadow-none',
               'transition-all duration-200'
             )}
           >
-            <ChevronRight className="size-4.5" strokeWidth={2} />
+            <ChevronRight className="size-5 sm:size-4.5" strokeWidth={2} />
           </button>
         </div>
       </div>
@@ -324,12 +321,12 @@ interface AdminBadgeProps {
 }
 
 const badgeVariants = {
-  default: 'bg-slate-100 text-slate-700 border border-slate-200/60 dark:bg-slate-700/60 dark:text-slate-300 dark:border-slate-600/60',
-  success: 'bg-gradient-to-br from-emerald-50 to-emerald-100/60 text-emerald-700 border border-emerald-200/60 dark:from-emerald-900/40 dark:to-emerald-900/20 dark:text-emerald-400 dark:border-emerald-800/60',
-  warning: 'bg-gradient-to-br from-amber-50 to-amber-100/60 text-amber-700 border border-amber-200/60 dark:from-amber-900/40 dark:to-amber-900/20 dark:text-amber-400 dark:border-amber-800/60',
-  danger: 'bg-gradient-to-br from-red-50 to-red-100/60 text-red-700 border border-red-200/60 dark:from-red-900/40 dark:to-red-900/20 dark:text-red-400 dark:border-red-800/60',
-  info: 'bg-gradient-to-br from-blue-50 to-blue-100/60 text-blue-700 border border-blue-200/60 dark:from-blue-900/40 dark:to-blue-900/20 dark:text-blue-400 dark:border-blue-800/60',
-  outline: 'border border-slate-300/60 dark:border-slate-600/60 text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/40',
+  default: 'bg-muted text-muted-foreground border border-border/60',
+  success: 'bg-emerald-50 dark:bg-emerald-900/40 text-emerald-700 dark:text-emerald-400 border border-emerald-200/60 dark:border-emerald-800/60',
+  warning: 'bg-amber-50 dark:bg-amber-900/40 text-amber-700 dark:text-amber-400 border border-amber-200/60 dark:border-amber-800/60',
+  danger: 'bg-red-50 dark:bg-red-900/40 text-red-700 dark:text-red-400 border border-red-200/60 dark:border-red-800/60',
+  info: 'bg-blue-50 dark:bg-blue-900/40 text-blue-700 dark:text-blue-400 border border-blue-200/60 dark:border-blue-800/60',
+  outline: 'border border-border/60 text-muted-foreground hover:bg-accent',
 };
 
 export const AdminBadge = ({

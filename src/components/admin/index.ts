@@ -7,6 +7,7 @@ export { AdminPageLayout } from './AdminPageLayout';
 export { AdminCard, AdminCardHeader, AdminCardContent } from './AdminCard';
 export { AdminButton } from './AdminButton';
 export { AdminStatsCard } from './AdminStatsCard';
+export { PageStatsCard, type PageStatsCardProps } from './PageStatsCard';
 export { AdminFilterCard, FilterRow } from './AdminFilterCard';
 export {
   AdminTable,
