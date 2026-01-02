@@ -11,6 +11,7 @@
  * - Node: "node_xK9mP2vL3nQ" (prefix: node_)
  *
  * Recent changes:
+ * - 2026-01-02: Added extended system metrics (CPU details, Swap, Disk I/O, PSI, Network stats, Sockets, Processes, VM stats) to NodeSystemStatus
  * - 2026-01-02: Added SSE types (NodeEventType, NodeEvent, NodeEventsParams) for real-time node events
  * - 2025-12-31: Added hasUpdate to Node for update availability tracking in table columns
  * - 2025-12-31: Added NodeVersionInfo and TriggerNodeUpdateResponse for node version management
@@ -183,7 +184,7 @@ export interface Node {
 
 /**
  * Node system status (real-time metrics from monitoring via procfs)
- * Updated: 2025-12-30 - Added platform, arch fields
+ * Updated: 2026-01-02 - Added extended system metrics (CPU details, Swap, Disk I/O, PSI, Network stats, Sockets, Processes, VM stats)
  */
 export interface NodeSystemStatus {
   /** CPU usage percentage (0-100) */
@@ -228,12 +229,124 @@ export interface NodeSystemStatus {
   publicIpv6?: string;
   /** Agent software version (e.g., "1.2.3") */
   agentVersion?: string;
-  /** OS platform (linux, darwin, windows) (Added: 2025-12-30) */
+  /** OS platform (linux, darwin, windows) */
   platform?: string;
-  /** CPU architecture (amd64, arm64, arm, 386) (Added: 2025-12-30) */
+  /** CPU architecture (amd64, arm64, arm, 386) */
   arch?: string;
   /** Last update timestamp (Unix seconds) */
   updatedAt: number;
+
+  // ============ Extended System Metrics (Added: 2026-01-02) ============
+
+  // CPU details
+  /** Number of CPU cores */
+  cpuCores?: number;
+  /** CPU model name */
+  cpuModelName?: string;
+  /** CPU frequency in MHz */
+  cpuMhz?: number;
+
+  // Swap memory
+  /** Total swap memory in bytes */
+  swapTotal?: number;
+  /** Used swap memory in bytes */
+  swapUsed?: number;
+  /** Swap usage percentage (0-100) */
+  swapPercent?: number;
+
+  // Disk I/O
+  /** Total disk read bytes */
+  diskReadBytes?: number;
+  /** Total disk write bytes */
+  diskWriteBytes?: number;
+  /** Disk read rate in bytes per second */
+  diskReadRate?: number;
+  /** Disk write rate in bytes per second */
+  diskWriteRate?: number;
+  /** Disk I/O operations per second */
+  diskIops?: number;
+
+  // Pressure Stall Information (PSI) - Linux only
+  /** CPU pressure (some) percentage */
+  psiCpuSome?: number;
+  /** CPU pressure (full) percentage */
+  psiCpuFull?: number;
+  /** Memory pressure (some) percentage */
+  psiMemorySome?: number;
+  /** Memory pressure (full) percentage */
+  psiMemoryFull?: number;
+  /** I/O pressure (some) percentage */
+  psiIoSome?: number;
+  /** I/O pressure (full) percentage */
+  psiIoFull?: number;
+
+  // Network extended statistics
+  /** Total received packets */
+  networkRxPackets?: number;
+  /** Total transmitted packets */
+  networkTxPackets?: number;
+  /** Network receive errors */
+  networkRxErrors?: number;
+  /** Network transmit errors */
+  networkTxErrors?: number;
+  /** Network receive dropped packets */
+  networkRxDropped?: number;
+  /** Network transmit dropped packets */
+  networkTxDropped?: number;
+
+  // Socket statistics
+  /** Total sockets in use */
+  socketsUsed?: number;
+  /** TCP sockets in use */
+  socketsTcpInUse?: number;
+  /** UDP sockets in use */
+  socketsUdpInUse?: number;
+  /** Orphaned TCP sockets */
+  socketsTcpOrphan?: number;
+  /** TCP sockets in TIME_WAIT state */
+  socketsTcpTw?: number;
+
+  // Process statistics
+  /** Total number of processes */
+  processesTotal?: number;
+  /** Number of running processes */
+  processesRunning?: number;
+  /** Number of blocked processes */
+  processesBlocked?: number;
+
+  // File descriptors
+  /** Allocated file descriptors */
+  fileNrAllocated?: number;
+  /** Maximum file descriptors */
+  fileNrMax?: number;
+
+  // Context switches and interrupts
+  /** Total context switches */
+  contextSwitches?: number;
+  /** Total interrupts */
+  interrupts?: number;
+
+  // Kernel info
+  /** Kernel version string */
+  kernelVersion?: string;
+  /** System hostname */
+  hostname?: string;
+
+  // Virtual memory statistics
+  /** Pages paged in */
+  vmPageIn?: number;
+  /** Pages paged out */
+  vmPageOut?: number;
+  /** Swap pages in */
+  vmSwapIn?: number;
+  /** Swap pages out */
+  vmSwapOut?: number;
+  /** OOM killer invocations */
+  vmOomKill?: number;
+
+  // Entropy pool
+  /** Available entropy bits */
+  entropyAvailable?: number;
 }
 
 /**

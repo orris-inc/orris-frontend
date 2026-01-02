@@ -28,3 +28,4 @@ export { NodeTrafficStats } from './NodeTrafficStats';
 export { TrafficOverviewCards } from './TrafficOverviewCards';
 export { TrafficTrendChart } from './TrafficTrendChart';
 export { TrafficRankingList } from './TrafficRankingList';
+export { ExtendedMetricsPanel, hasExtendedMetrics, type ExtendedMetricsData } from './ExtendedMetricsPanel';

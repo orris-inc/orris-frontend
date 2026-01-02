@@ -5,6 +5,7 @@
  * Last updated: 2026-01-02
  *
  * Recent changes:
+ * - 2026-01-02: Added extended system metrics (CPU details, Swap, Disk I/O, PSI, Network stats, Sockets, Processes, VM stats) to AgentSystemStatus and AgentRuntimeStatus
  * - 2026-01-02: Added SSE types (ForwardAgentEventType, ForwardAgentEvent, ForwardAgentEventsParams)
  * - 2026-01-02: Added memoryAvail, loadAvg, networkRxBytes/TxBytes, networkRxRate/TxRate, publicIpv4/publicIpv6 to AgentSystemStatus and AgentRuntimeStatus
  * - 2025-12-31: Added hasUpdate to ForwardAgent for update availability tracking
@@ -269,7 +270,7 @@ export interface ForwardAgent {
 /**
  * Agent system status (embedded in ForwardAgent response)
  * Contains real-time metrics reported by the agent
- * Updated: 2026-01-02 - Added memoryAvail, loadAvg, network stats, public IPs
+ * Updated: 2026-01-02 - Added extended system metrics (CPU details, Swap, Disk I/O, PSI, Network stats, Sockets, Processes, VM stats)
  */
 export interface AgentSystemStatus {
   // System resources
@@ -277,14 +278,14 @@ export interface AgentSystemStatus {
   memoryPercent: number;
   memoryUsed: number;
   memoryTotal: number;
-  /** Available memory in bytes (Added: 2026-01-02) */
+  /** Available memory in bytes */
   memoryAvail: number;
   diskPercent: number;
   diskUsed: number;
   diskTotal: number;
   uptimeSeconds: number;
 
-  // System load average (Added: 2026-01-02)
+  // System load average
   /** 1-minute load average */
   loadAvg1: number;
   /** 5-minute load average */
@@ -292,7 +293,7 @@ export interface AgentSystemStatus {
   /** 15-minute load average */
   loadAvg15: number;
 
-  // Network statistics (Added: 2026-01-02)
+  // Network statistics
   /** Total received bytes across all interfaces */
   networkRxBytes: number;
   /** Total transmitted bytes across all interfaces */
@@ -306,7 +307,7 @@ export interface AgentSystemStatus {
   tcpConnections: number;
   udpConnections: number;
 
-  // Public IP addresses (Added: 2026-01-02)
+  // Public IP addresses
   /** Public IPv4 address reported by agent */
   publicIpv4?: string;
   /** Public IPv6 address reported by agent */
@@ -319,12 +320,124 @@ export interface AgentSystemStatus {
 
   // Tunnel configuration (for exit agent)
   wsListenPort?: number; // WebSocket listen port for tunnel connections
-  tlsListenPort?: number; // TLS listen port for tunnel connections (Added: 2025-12-24)
+  tlsListenPort?: number; // TLS listen port for tunnel connections
 
-  // Agent info (Added: 2025-12-30)
+  // Agent info
   agentVersion?: string; // Agent software version (e.g., "1.2.3")
   platform?: string; // OS platform (linux, darwin, windows)
   arch?: string; // CPU architecture (amd64, arm64, arm, 386)
+
+  // ============ Extended System Metrics (Added: 2026-01-02) ============
+
+  // CPU details
+  /** Number of CPU cores */
+  cpuCores?: number;
+  /** CPU model name */
+  cpuModelName?: string;
+  /** CPU frequency in MHz */
+  cpuMhz?: number;
+
+  // Swap memory
+  /** Total swap memory in bytes */
+  swapTotal?: number;
+  /** Used swap memory in bytes */
+  swapUsed?: number;
+  /** Swap usage percentage (0-100) */
+  swapPercent?: number;
+
+  // Disk I/O
+  /** Total disk read bytes */
+  diskReadBytes?: number;
+  /** Total disk write bytes */
+  diskWriteBytes?: number;
+  /** Disk read rate in bytes per second */
+  diskReadRate?: number;
+  /** Disk write rate in bytes per second */
+  diskWriteRate?: number;
+  /** Disk I/O operations per second */
+  diskIops?: number;
+
+  // Pressure Stall Information (PSI) - Linux only
+  /** CPU pressure (some) percentage */
+  psiCpuSome?: number;
+  /** CPU pressure (full) percentage */
+  psiCpuFull?: number;
+  /** Memory pressure (some) percentage */
+  psiMemorySome?: number;
+  /** Memory pressure (full) percentage */
+  psiMemoryFull?: number;
+  /** I/O pressure (some) percentage */
+  psiIoSome?: number;
+  /** I/O pressure (full) percentage */
+  psiIoFull?: number;
+
+  // Network extended statistics
+  /** Total received packets */
+  networkRxPackets?: number;
+  /** Total transmitted packets */
+  networkTxPackets?: number;
+  /** Network receive errors */
+  networkRxErrors?: number;
+  /** Network transmit errors */
+  networkTxErrors?: number;
+  /** Network receive dropped packets */
+  networkRxDropped?: number;
+  /** Network transmit dropped packets */
+  networkTxDropped?: number;
+
+  // Socket statistics
+  /** Total sockets in use */
+  socketsUsed?: number;
+  /** TCP sockets in use */
+  socketsTcpInUse?: number;
+  /** UDP sockets in use */
+  socketsUdpInUse?: number;
+  /** Orphaned TCP sockets */
+  socketsTcpOrphan?: number;
+  /** TCP sockets in TIME_WAIT state */
+  socketsTcpTw?: number;
+
+  // Process statistics
+  /** Total number of processes */
+  processesTotal?: number;
+  /** Number of running processes */
+  processesRunning?: number;
+  /** Number of blocked processes */
+  processesBlocked?: number;
+
+  // File descriptors
+  /** Allocated file descriptors */
+  fileNrAllocated?: number;
+  /** Maximum file descriptors */
+  fileNrMax?: number;
+
+  // Context switches and interrupts
+  /** Total context switches */
+  contextSwitches?: number;
+  /** Total interrupts */
+  interrupts?: number;
+
+  // Kernel info
+  /** Kernel version string */
+  kernelVersion?: string;
+  /** System hostname */
+  hostname?: string;
+
+  // Virtual memory statistics
+  /** Pages paged in */
+  vmPageIn?: number;
+  /** Pages paged out */
+  vmPageOut?: number;
+  /** Swap pages in */
+  vmSwapIn?: number;
+  /** Swap pages out */
+  vmSwapOut?: number;
+  /** OOM killer invocations */
+  vmOomKill?: number;
+
+  // Entropy pool
+  /** Available entropy bits */
+  entropyAvailable?: number;
 }
 
 /**
@@ -526,7 +639,7 @@ export interface AgentBatchUpdateSkipped {
 
 /**
  * Agent runtime status (reported by forward agent)
- * Updated: 2026-01-02 - Added memoryAvail, loadAvg, network stats, public IPs
+ * Updated: 2026-01-02 - Added extended system metrics (CPU details, Swap, Disk I/O, PSI, Network stats, Sockets, Processes, VM stats)
  */
 export interface AgentRuntimeStatus {
   // System resources
@@ -534,14 +647,14 @@ export interface AgentRuntimeStatus {
   memoryPercent: number;
   memoryUsed: number;
   memoryTotal: number;
-  /** Available memory in bytes (Added: 2026-01-02) */
+  /** Available memory in bytes */
   memoryAvail: number;
   diskPercent: number;
   diskUsed: number;
   diskTotal: number;
   uptimeSeconds: number;
 
-  // System load average (Added: 2026-01-02)
+  // System load average
   /** 1-minute load average */
   loadAvg1: number;
   /** 5-minute load average */
@@ -549,7 +662,7 @@ export interface AgentRuntimeStatus {
   /** 15-minute load average */
   loadAvg15: number;
 
-  // Network statistics (Added: 2026-01-02)
+  // Network statistics
   /** Total received bytes across all interfaces */
   networkRxBytes: number;
   /** Total transmitted bytes across all interfaces */
@@ -563,7 +676,7 @@ export interface AgentRuntimeStatus {
   tcpConnections: number;
   udpConnections: number;
 
-  // Public IP addresses (Added: 2026-01-02)
+  // Public IP addresses
   /** Public IPv4 address reported by agent */
   publicIpv4?: string;
   /** Public IPv6 address reported by agent */
@@ -576,12 +689,124 @@ export interface AgentRuntimeStatus {
 
   // Tunnel configuration (for exit agent)
   wsListenPort?: number; // WebSocket listen port for tunnel connections
-  tlsListenPort?: number; // TLS listen port for tunnel connections (Added: 2025-12-24)
+  tlsListenPort?: number; // TLS listen port for tunnel connections
 
-  // Agent info (Added: 2025-12-30)
+  // Agent info
   agentVersion?: string; // Agent software version (e.g., "1.2.3")
   platform?: string; // OS platform (linux, darwin, windows)
   arch?: string; // CPU architecture (amd64, arm64, arm, 386)
+
+  // ============ Extended System Metrics (Added: 2026-01-02) ============
+
+  // CPU details
+  /** Number of CPU cores */
+  cpuCores?: number;
+  /** CPU model name */
+  cpuModelName?: string;
+  /** CPU frequency in MHz */
+  cpuMhz?: number;
+
+  // Swap memory
+  /** Total swap memory in bytes */
+  swapTotal?: number;
+  /** Used swap memory in bytes */
+  swapUsed?: number;
+  /** Swap usage percentage (0-100) */
+  swapPercent?: number;
+
+  // Disk I/O
+  /** Total disk read bytes */
+  diskReadBytes?: number;
+  /** Total disk write bytes */
+  diskWriteBytes?: number;
+  /** Disk read rate in bytes per second */
+  diskReadRate?: number;
+  /** Disk write rate in bytes per second */
+  diskWriteRate?: number;
+  /** Disk I/O operations per second */
+  diskIops?: number;
+
+  // Pressure Stall Information (PSI) - Linux only
+  /** CPU pressure (some) percentage */
+  psiCpuSome?: number;
+  /** CPU pressure (full) percentage */
+  psiCpuFull?: number;
+  /** Memory pressure (some) percentage */
+  psiMemorySome?: number;
+  /** Memory pressure (full) percentage */
+  psiMemoryFull?: number;
+  /** I/O pressure (some) percentage */
+  psiIoSome?: number;
+  /** I/O pressure (full) percentage */
+  psiIoFull?: number;
+
+  // Network extended statistics
+  /** Total received packets */
+  networkRxPackets?: number;
+  /** Total transmitted packets */
+  networkTxPackets?: number;
+  /** Network receive errors */
+  networkRxErrors?: number;
+  /** Network transmit errors */
+  networkTxErrors?: number;
+  /** Network receive dropped packets */
+  networkRxDropped?: number;
+  /** Network transmit dropped packets */
+  networkTxDropped?: number;
+
+  // Socket statistics
+  /** Total sockets in use */
+  socketsUsed?: number;
+  /** TCP sockets in use */
+  socketsTcpInUse?: number;
+  /** UDP sockets in use */
+  socketsUdpInUse?: number;
+  /** Orphaned TCP sockets */
+  socketsTcpOrphan?: number;
+  /** TCP sockets in TIME_WAIT state */
+  socketsTcpTw?: number;
+
+  // Process statistics
+  /** Total number of processes */
+  processesTotal?: number;
+  /** Number of running processes */
+  processesRunning?: number;
+  /** Number of blocked processes */
+  processesBlocked?: number;
+
+  // File descriptors
+  /** Allocated file descriptors */
+  fileNrAllocated?: number;
+  /** Maximum file descriptors */
+  fileNrMax?: number;
+
+  // Context switches and interrupts
+  /** Total context switches */
+  contextSwitches?: number;
+  /** Total interrupts */
+  interrupts?: number;
+
+  // Kernel info
+  /** Kernel version string */
+  kernelVersion?: string;
+  /** System hostname */
+  hostname?: string;
+
+  // Virtual memory statistics
+  /** Pages paged in */
+  vmPageIn?: number;
+  /** Pages paged out */
+  vmPageOut?: number;
+  /** Swap pages in */
+  vmSwapIn?: number;
+  /** Swap pages out */
+  vmSwapOut?: number;
+  /** OOM killer invocations */
+  vmOomKill?: number;
+
+  // Entropy pool
+  /** Available entropy bits */
+  entropyAvailable?: number;
 }
 
 // ========== Exit Endpoint Types ==========

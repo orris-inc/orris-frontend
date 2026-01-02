@@ -15,7 +15,7 @@ import { Button } from '@/components/common/Button';
 import { Badge } from '@/components/common/Badge';
 import { Separator } from '@/components/common/Separator';
 import { Progress, ProgressIndicator } from '@/components/common/Progress';
-import { TruncatedId } from '@/components/admin';
+import { TruncatedId, ExtendedMetricsPanel, hasExtendedMetrics } from '@/components/admin';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/common/Tooltip';
 import { Cpu, MemoryStick, HardDrive, Clock, ShieldCheck, ShieldAlert, Globe, Activity, Network, Package, RefreshCw, ArrowUpCircle, Loader2 } from 'lucide-react';
 import type { Node, NodeVersionInfo } from '@/api/node';
@@ -418,6 +418,14 @@ export const NodeDetailDialog: React.FC<NodeDetailDialogProps> = ({
                           </div>
                         </div>
                       )}
+                    </div>
+                  )}
+
+                  {/* Extended Metrics */}
+                  {hasExtendedMetrics(node.systemStatus) && (
+                    <div className="mt-3">
+                      <p className="text-xs font-medium text-muted-foreground mb-2">扩展指标</p>
+                      <ExtendedMetricsPanel data={node.systemStatus} />
                     </div>
                   )}
                 </>

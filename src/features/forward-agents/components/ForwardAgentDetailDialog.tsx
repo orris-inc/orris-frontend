@@ -12,7 +12,7 @@ import {
 import { Button } from '@/components/common/Button';
 import { Badge } from '@/components/common/Badge';
 import { Separator } from '@/components/common/Separator';
-import { TruncatedId } from '@/components/admin';
+import { TruncatedId, ExtendedMetricsPanel, hasExtendedMetrics } from '@/components/admin';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/common/Tooltip';
 import { Cpu, HardDrive, MemoryStick, Clock, Network, ArrowUpDown, Loader2, Radio, Info, Package, RefreshCw, ArrowUpCircle } from 'lucide-react';
 import { useForwardAgentRuntimeStatus } from '../hooks/useForwardAgents';
@@ -280,6 +280,14 @@ export const ForwardAgentDetailDialog: React.FC<ForwardAgentDetailDialogProps> =
                 <p className="text-sm text-muted-foreground text-center py-4">
                   暂无运行状态数据
                 </p>
+              )}
+
+              {/* Extended Metrics */}
+              {runtimeStatus && hasExtendedMetrics(runtimeStatus) && (
+                <div className="mt-4">
+                  <p className="text-xs font-medium text-muted-foreground mb-2">扩展指标</p>
+                  <ExtendedMetricsPanel data={runtimeStatus} />
+                </div>
               )}
 
               {/* Version Management - Compact style like NodeDetailDialog */}
