@@ -11,6 +11,7 @@
  * - Node: "node_xK9mP2vL3nQ" (prefix: node_)
  *
  * Recent changes:
+ * - 2026-01-02: Added batch status SSE event types (NodeBatchStatusEvent, NodeStatusData) for aggregated status push
  * - 2026-01-02: Added extended system metrics (CPU details, Swap, Disk I/O, PSI, Network stats, Sockets, Processes, VM stats) to NodeSystemStatus
  * - 2026-01-02: Added SSE types (NodeEventType, NodeEvent, NodeEventsParams) for real-time node events
  * - 2025-12-31: Added hasUpdate to Node for update availability tracking in table columns
@@ -766,12 +767,14 @@ export interface BatchUpdateSkipped {
  * Node SSE event type
  * GET /nodes/events
  * Added: 2026-01-02
+ * Updated: 2026-01-02 - Added 'nodes:status' for batch status events
  */
 export type NodeEventType =
   | 'node:online'
   | 'node:offline'
   | 'node:status'
-  | 'node:updated';
+  | 'node:updated'
+  | 'nodes:status';
 
 /**
  * Node SSE event data
@@ -803,3 +806,28 @@ export interface NodeEventsParams {
 }
 
 // Note: NodeEventsOptions is exported from client.ts as it contains callback types
+
+/**
+ * Status data for a single node in batch status events
+ * Added: 2026-01-02
+ */
+export interface NodeStatusData {
+  /** Node name */
+  name?: string;
+  /** Node system status */
+  status: NodeSystemStatus | null;
+}
+
+/**
+ * Batch status event for aggregated node status push
+ * SSE event type: 'nodes:status'
+ * Added: 2026-01-02
+ */
+export interface NodeBatchStatusEvent {
+  /** Event type (always 'nodes:status') */
+  type: 'nodes:status';
+  /** Event timestamp (Unix seconds) */
+  timestamp: number;
+  /** Map of node SID to status data */
+  agents: Record<string, NodeStatusData>;
+}

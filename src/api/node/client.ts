@@ -458,7 +458,7 @@ export function subscribeNodeEvents(
   };
 
   // Handle specific event types
-  const eventTypes = ['node:online', 'node:offline', 'node:status', 'node:updated'];
+  const eventTypes = ['node:online', 'node:offline', 'node:status', 'node:updated', 'nodes:status'];
   eventTypes.forEach((eventType) => {
     eventSource.addEventListener(eventType, (e: MessageEvent) => {
       errorCount = 0; // Reset error count on successful message

@@ -779,7 +779,7 @@ export function subscribeForwardAgentEvents(
   };
 
   // Handle specific event types
-  const eventTypes = ['agent:online', 'agent:offline', 'agent:status', 'agent:updated'];
+  const eventTypes = ['agent:online', 'agent:offline', 'agent:status', 'agent:updated', 'agents:status'];
   eventTypes.forEach((eventType) => {
     eventSource.addEventListener(eventType, (e: MessageEvent) => {
       errorCount = 0; // Reset error count on successful message

@@ -7,7 +7,7 @@ import { useEffect, useRef, useCallback } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { queryKeys } from '@/shared/lib/query-client';
 import { subscribeForwardAgentEvents } from '@/api/forward';
-import type { ForwardAgentEvent, ForwardAgent, AgentSystemStatus } from '@/api/forward';
+import type { ForwardAgentEvent, ForwardAgent, AgentSystemStatus, ForwardAgentBatchStatusEvent } from '@/api/forward';
 import type { ListResponse } from '@/shared/types/api.types';
 
 interface UseForwardAgentEventsOptions {
@@ -92,6 +92,21 @@ export function useForwardAgentEvents(options: UseForwardAgentEventsOptions = {}
           // Agent was updated (e.g., agent update completed), invalidate to refresh
           queryClient.invalidateQueries({ queryKey: queryKeys.forwardAgents.lists() });
           break;
+
+        case 'agents:status': {
+          // Batch status event - update multiple agents at once
+          const batchEvent = event as unknown as ForwardAgentBatchStatusEvent;
+          Object.entries(batchEvent.agents).forEach(([agentId, statusData]) => {
+            if (statusData.status) {
+              updateAgentInCache(agentId, (agent) => ({
+                ...agent,
+                lastSeenAt: new Date(batchEvent.timestamp * 1000).toISOString(),
+                systemStatus: statusData.status as AgentSystemStatus,
+              }));
+            }
+          });
+          break;
+        }
       }
     },
     [updateAgentInCache, queryClient]

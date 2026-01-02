@@ -5,6 +5,7 @@
  * Last updated: 2026-01-02
  *
  * Recent changes:
+ * - 2026-01-02: Added batch status SSE event types (ForwardAgentBatchStatusEvent, ForwardAgentStatusData) for aggregated status push
  * - 2026-01-02: Added extended system metrics (CPU details, Swap, Disk I/O, PSI, Network stats, Sockets, Processes, VM stats) to AgentSystemStatus and AgentRuntimeStatus
  * - 2026-01-02: Added SSE types (ForwardAgentEventType, ForwardAgentEvent, ForwardAgentEventsParams)
  * - 2026-01-02: Added memoryAvail, loadAvg, networkRxBytes/TxBytes, networkRxRate/TxRate, publicIpv4/publicIpv6 to AgentSystemStatus and AgentRuntimeStatus
@@ -1117,12 +1118,14 @@ export interface RuleOverallStatusResponse {
  * Forward agent SSE event type
  * GET /forward-agents/events
  * Added: 2026-01-02
+ * Updated: 2026-01-02 - Added 'agents:status' for batch status events
  */
 export type ForwardAgentEventType =
   | 'agent:online'
   | 'agent:offline'
   | 'agent:status'
-  | 'agent:updated';
+  | 'agent:updated'
+  | 'agents:status';
 
 /**
  * Forward agent SSE event data
@@ -1153,3 +1156,28 @@ export interface ForwardAgentEventsParams {
 }
 
 // Note: ForwardAgentEventsOptions is exported from client.ts as it contains callback types
+
+/**
+ * Status data for a single agent in batch status events
+ * Added: 2026-01-02
+ */
+export interface ForwardAgentStatusData {
+  /** Agent name */
+  name?: string;
+  /** Agent system status */
+  status: AgentSystemStatus | null;
+}
+
+/**
+ * Batch status event for aggregated forward agent status push
+ * SSE event type: 'agents:status'
+ * Added: 2026-01-02
+ */
+export interface ForwardAgentBatchStatusEvent {
+  /** Event type (always 'agents:status') */
+  type: 'agents:status';
+  /** Event timestamp (Unix seconds) */
+  timestamp: number;
+  /** Map of agent SID to status data */
+  agents: Record<string, ForwardAgentStatusData>;
+}
