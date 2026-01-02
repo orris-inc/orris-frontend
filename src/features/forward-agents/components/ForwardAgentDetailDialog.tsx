@@ -180,7 +180,7 @@ export const ForwardAgentDetailDialog: React.FC<ForwardAgentDetailDialogProps> =
                     <Cpu className="size-5 text-blue-500" />
                     <div>
                       <p className="text-xs text-muted-foreground">CPU</p>
-                      <p className="text-sm font-medium">{runtimeStatus.cpuPercent.toFixed(1)}%</p>
+                      <p className="text-sm font-medium">{(runtimeStatus.cpuPercent ?? 0).toFixed(1)}%</p>
                     </div>
                   </div>
 
@@ -190,10 +190,12 @@ export const ForwardAgentDetailDialog: React.FC<ForwardAgentDetailDialogProps> =
                     <div>
                       <p className="text-xs text-muted-foreground">内存</p>
                       <p className="text-sm font-medium">
-                        {runtimeStatus.memoryPercent.toFixed(1)}%
-                        <span className="text-xs text-muted-foreground ml-1">
-                          ({formatBytes(runtimeStatus.memoryUsed)})
-                        </span>
+                        {(runtimeStatus.memoryPercent ?? 0).toFixed(1)}%
+                        {runtimeStatus.memoryUsed !== undefined && (
+                          <span className="text-xs text-muted-foreground ml-1">
+                            ({formatBytes(runtimeStatus.memoryUsed)})
+                          </span>
+                        )}
                       </p>
                     </div>
                   </div>
@@ -204,10 +206,12 @@ export const ForwardAgentDetailDialog: React.FC<ForwardAgentDetailDialogProps> =
                     <div>
                       <p className="text-xs text-muted-foreground">磁盘</p>
                       <p className="text-sm font-medium">
-                        {runtimeStatus.diskPercent.toFixed(1)}%
-                        <span className="text-xs text-muted-foreground ml-1">
-                          ({formatBytes(runtimeStatus.diskUsed)})
-                        </span>
+                        {(runtimeStatus.diskPercent ?? 0).toFixed(1)}%
+                        {runtimeStatus.diskUsed !== undefined && (
+                          <span className="text-xs text-muted-foreground ml-1">
+                            ({formatBytes(runtimeStatus.diskUsed)})
+                          </span>
+                        )}
                       </p>
                     </div>
                   </div>

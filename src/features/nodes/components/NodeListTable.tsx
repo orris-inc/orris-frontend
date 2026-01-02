@@ -373,6 +373,9 @@ export const NodeListTable: React.FC<NodeListTableProps> = ({
         }
 
         const totalConnections = (status.tcpConnections || 0) + (status.udpConnections || 0);
+        const cpuPercent = status.cpuPercent ?? 0;
+        const memoryPercent = status.memoryPercent ?? 0;
+        const diskPercent = status.diskPercent ?? 0;
 
         return (
           <Tooltip>
@@ -384,8 +387,8 @@ export const NodeListTable: React.FC<NodeListTableProps> = ({
                     <span className="text-[9px] text-muted-foreground/70 leading-none">C</span>
                     <div className="w-6 h-1 rounded-full bg-muted/50 overflow-hidden">
                       <div
-                        className={`h-full rounded-full transition-all duration-300 ${status.cpuPercent >= 80 ? 'bg-red-500' : status.cpuPercent >= 60 ? 'bg-amber-500' : 'bg-emerald-500'}`}
-                        style={{ width: `${Math.min(status.cpuPercent, 100)}%` }}
+                        className={`h-full rounded-full transition-all duration-300 ${cpuPercent >= 80 ? 'bg-red-500' : cpuPercent >= 60 ? 'bg-amber-500' : 'bg-emerald-500'}`}
+                        style={{ width: `${Math.min(cpuPercent, 100)}%` }}
                       />
                     </div>
                   </div>
@@ -393,8 +396,8 @@ export const NodeListTable: React.FC<NodeListTableProps> = ({
                     <span className="text-[9px] text-muted-foreground/70 leading-none">M</span>
                     <div className="w-6 h-1 rounded-full bg-muted/50 overflow-hidden">
                       <div
-                        className={`h-full rounded-full transition-all duration-300 ${status.memoryPercent >= 80 ? 'bg-red-500' : status.memoryPercent >= 60 ? 'bg-amber-500' : 'bg-emerald-500'}`}
-                        style={{ width: `${Math.min(status.memoryPercent, 100)}%` }}
+                        className={`h-full rounded-full transition-all duration-300 ${memoryPercent >= 80 ? 'bg-red-500' : memoryPercent >= 60 ? 'bg-amber-500' : 'bg-emerald-500'}`}
+                        style={{ width: `${Math.min(memoryPercent, 100)}%` }}
                       />
                     </div>
                   </div>
@@ -402,8 +405,8 @@ export const NodeListTable: React.FC<NodeListTableProps> = ({
                     <span className="text-[9px] text-muted-foreground/70 leading-none">D</span>
                     <div className="w-6 h-1 rounded-full bg-muted/50 overflow-hidden">
                       <div
-                        className={`h-full rounded-full transition-all duration-300 ${status.diskPercent >= 80 ? 'bg-red-500' : status.diskPercent >= 60 ? 'bg-amber-500' : 'bg-emerald-500'}`}
-                        style={{ width: `${Math.min(status.diskPercent, 100)}%` }}
+                        className={`h-full rounded-full transition-all duration-300 ${diskPercent >= 80 ? 'bg-red-500' : diskPercent >= 60 ? 'bg-amber-500' : 'bg-emerald-500'}`}
+                        style={{ width: `${Math.min(diskPercent, 100)}%` }}
                       />
                     </div>
                   </div>
@@ -433,12 +436,12 @@ export const NodeListTable: React.FC<NodeListTableProps> = ({
                 <div className="space-y-1.5">
                   <div className="flex items-center justify-between">
                     <span className="text-muted-foreground">CPU</span>
-                    <span className="font-mono">{status.cpuPercent.toFixed(1)}%</span>
+                    <span className="font-mono">{cpuPercent.toFixed(1)}%</span>
                   </div>
                   <div className="flex items-center justify-between">
                     <span className="text-muted-foreground">内存</span>
                     <span className="font-mono">
-                      {status.memoryPercent.toFixed(1)}%
+                      {memoryPercent.toFixed(1)}%
                       {status.memoryUsed !== undefined && status.memoryTotal !== undefined && (
                         <span className="text-muted-foreground ml-1">({formatBytes(status.memoryUsed)}/{formatBytes(status.memoryTotal)})</span>
                       )}
@@ -447,7 +450,7 @@ export const NodeListTable: React.FC<NodeListTableProps> = ({
                   <div className="flex items-center justify-between">
                     <span className="text-muted-foreground">磁盘</span>
                     <span className="font-mono">
-                      {status.diskPercent.toFixed(1)}%
+                      {diskPercent.toFixed(1)}%
                       {status.diskUsed !== undefined && status.diskTotal !== undefined && (
                         <span className="text-muted-foreground ml-1">({formatBytes(status.diskUsed)}/{formatBytes(status.diskTotal)})</span>
                       )}

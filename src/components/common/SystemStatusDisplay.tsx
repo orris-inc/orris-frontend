@@ -9,9 +9,9 @@ import { Progress, ProgressIndicator } from '@/components/common/Progress';
 
 // System status data interface
 export interface SystemStatusData {
-  cpu: number;
-  memory: number;
-  disk: number;
+  cpu?: number;
+  memory?: number;
+  disk?: number;
   uptime?: number; // seconds
   // Extended fields
   memoryUsed?: number; // bytes
@@ -106,26 +106,30 @@ export const SystemStatusDisplay: React.FC<SystemStatusDisplayProps> = ({
     return <span className="text-xs text-muted-foreground/50">{emptyText}</span>;
   }
 
+  const cpu = status.cpu ?? 0;
+  const memory = status.memory ?? 0;
+  const disk = status.disk ?? 0;
+
   return (
     <Tooltip>
       <TooltipTrigger>
         <div className="inline-flex items-center gap-2 cursor-default">
-          <MiniBar value={status.cpu} label="C" />
-          <MiniBar value={status.memory} label="M" />
-          <MiniBar value={status.disk} label="D" />
+          <MiniBar value={cpu} label="C" />
+          <MiniBar value={memory} label="M" />
+          <MiniBar value={disk} label="D" />
         </div>
       </TooltipTrigger>
       <TooltipContent className="w-56 p-3">
         <div className="space-y-2.5">
           <StatusProgressBar
             label="CPU"
-            value={status.cpu}
+            value={cpu}
             icon={<Cpu className="size-3" />}
           />
           <div className="space-y-1">
             <StatusProgressBar
               label="内存"
-              value={status.memory}
+              value={memory}
               icon={<MemoryStick className="size-3" />}
             />
             {status.memoryUsed !== undefined && status.memoryTotal !== undefined && (
@@ -137,7 +141,7 @@ export const SystemStatusDisplay: React.FC<SystemStatusDisplayProps> = ({
           <div className="space-y-1">
             <StatusProgressBar
               label="磁盘"
-              value={status.disk}
+              value={disk}
               icon={<HardDrive className="size-3" />}
             />
             {status.diskUsed !== undefined && status.diskTotal !== undefined && (
