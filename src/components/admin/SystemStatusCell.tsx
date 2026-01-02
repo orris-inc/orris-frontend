@@ -2,16 +2,56 @@
  * System Status Cell Component
  * Memoized component to prevent unnecessary re-renders during SSE updates
  * Uses Context-based hover state to keep Tooltip open when data updates
+ * Shared by Node and Forward Agent pages
  */
 
 import { memo, useCallback } from 'react';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/common/Tooltip';
 import { useSystemStatusHover } from './SystemStatusHoverContext';
-import type { AgentSystemStatus } from '@/api/forward';
+
+/**
+ * Common system status data interface
+ * Compatible with both AgentSystemStatus and NodeSystemStatus
+ */
+export interface SystemStatusData {
+  // System resources
+  cpuPercent?: number;
+  memoryPercent?: number;
+  memoryUsed?: number;
+  memoryTotal?: number;
+  diskPercent?: number;
+  diskUsed?: number;
+  diskTotal?: number;
+  uptimeSeconds?: number;
+
+  // System load average
+  loadAvg1?: number;
+  loadAvg5?: number;
+  loadAvg15?: number;
+
+  // Network statistics
+  networkRxBytes?: number;
+  networkTxBytes?: number;
+  networkRxRate?: number;
+  networkTxRate?: number;
+
+  // Network connections
+  tcpConnections?: number;
+  udpConnections?: number;
+
+  // Optional: update timestamp (Node has this field)
+  updatedAt?: number;
+
+  // Optional: forward agent specific fields
+  activeRules?: number;
+  activeConnections?: number;
+}
 
 interface SystemStatusCellProps {
-  agentId: string;
-  status: AgentSystemStatus | undefined;
+  /** Unique identifier for the item (node ID or agent ID) */
+  itemId: string;
+  /** System status data */
+  status: SystemStatusData | undefined;
 }
 
 // Format bytes rate to bits per second (Mbps)
@@ -37,6 +77,18 @@ const formatBytes = (bytes?: number): string => {
   return `${value < 10 ? value.toFixed(2) : value.toFixed(1)} ${units[i]}`;
 };
 
+// Format relative time from unix timestamp
+const formatRelativeTime = (unixSeconds: number): string => {
+  if (!unixSeconds) return '-';
+  const now = Math.floor(Date.now() / 1000);
+  const diff = now - unixSeconds;
+  if (diff < 0) return '刚刚';
+  if (diff < 60) return `${diff}秒前`;
+  if (diff < 3600) return `${Math.floor(diff / 60)}分钟前`;
+  if (diff < 86400) return `${Math.floor(diff / 3600)}小时前`;
+  return `${Math.floor(diff / 86400)}天前`;
+};
+
 // Mini progress bar component
 const MiniBar = memo(({ label, percent }: { label: string; percent: number }) => (
   <div className="flex flex-col gap-0.5">
@@ -54,7 +106,7 @@ const MiniBar = memo(({ label, percent }: { label: string; percent: number }) =>
 MiniBar.displayName = 'MiniBar';
 
 // Tooltip content component - separated to avoid re-render issues
-const StatusTooltipContent = memo(({ status }: { status: AgentSystemStatus }) => {
+const StatusTooltipContent = memo(({ status }: { status: SystemStatusData }) => {
   const cpuPercent = status.cpuPercent ?? 0;
   const memoryPercent = status.memoryPercent ?? 0;
   const diskPercent = status.diskPercent ?? 0;
@@ -62,9 +114,12 @@ const StatusTooltipContent = memo(({ status }: { status: AgentSystemStatus }) =>
 
   return (
     <div className="space-y-2.5 text-xs">
-      {/* Header */}
+      {/* Header with optional update time */}
       <div className="flex items-center justify-between">
         <span className="font-medium">系统监控</span>
+        {status.updatedAt && (
+          <span className="text-[10px] text-muted-foreground">{formatRelativeTime(status.updatedAt)}</span>
+        )}
       </div>
       {/* System stats */}
       <div className="space-y-1.5">
@@ -134,7 +189,7 @@ const StatusTooltipContent = memo(({ status }: { status: AgentSystemStatus }) =>
           </span>
         </div>
       </div>
-      {/* Forward stats */}
+      {/* Forward agent specific: active rules and connections */}
       {(status.activeRules !== undefined || status.activeConnections !== undefined) && (
         <div className="space-y-1.5 pt-2 border-t border-border">
           <div className="flex items-center justify-between">
@@ -157,16 +212,16 @@ StatusTooltipContent.displayName = 'StatusTooltipContent';
  * Uses Context-based hover state lifted to table level
  * This prevents state loss when cell re-renders due to SSE updates
  */
-export const SystemStatusCell = memo(({ agentId, status }: SystemStatusCellProps) => {
+export const SystemStatusCell = memo(({ itemId, status }: SystemStatusCellProps) => {
   // Hover state is managed at table level via Context
-  const { hoveredAgentId, setHoveredAgentId } = useSystemStatusHover();
-  const isOpen = hoveredAgentId === agentId;
+  const { hoveredId, setHoveredId } = useSystemStatusHover();
+  const isOpen = hoveredId === itemId;
 
   const handleOpenChange = useCallback(
     (open: boolean) => {
-      setHoveredAgentId(open ? agentId : null);
+      setHoveredId(open ? itemId : null);
     },
-    [agentId, setHoveredAgentId]
+    [itemId, setHoveredId]
   );
 
   if (!status) {

@@ -29,3 +29,5 @@ export { TrafficOverviewCards } from './TrafficOverviewCards';
 export { TrafficTrendChart } from './TrafficTrendChart';
 export { TrafficRankingList } from './TrafficRankingList';
 export { ExtendedMetricsPanel, hasExtendedMetrics, type ExtendedMetricsData } from './ExtendedMetricsPanel';
+export { SystemStatusHoverProvider, useSystemStatusHover, useIsItemHovered } from './SystemStatusHoverContext';
+export { SystemStatusCell, type SystemStatusData } from './SystemStatusCell';

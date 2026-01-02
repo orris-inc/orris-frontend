@@ -25,7 +25,7 @@ import {
   ArrowUpCircle,
   Globe,
 } from 'lucide-react';
-import { DataTable, TruncatedId, type ColumnDef, type ResponsiveColumnMeta } from '@/components/admin';
+import { DataTable, TruncatedId, SystemStatusCell, SystemStatusHoverProvider, type ColumnDef, type ResponsiveColumnMeta } from '@/components/admin';
 import { useBreakpoint } from '@/hooks/useBreakpoint';
 import { NodeMobileList } from './NodeMobileList';
 import {
@@ -86,36 +86,6 @@ const formatDate = (dateString: string) => {
     hour: '2-digit',
     minute: '2-digit',
   });
-};
-
-// Format bytes rate to human readable (per second)
-const formatBytesRate = (bytesPerSec: number): string => {
-  if (!bytesPerSec || bytesPerSec <= 0) return '0';
-  const units = ['B', 'KB', 'MB', 'GB'];
-  const i = Math.floor(Math.log(bytesPerSec) / Math.log(1024));
-  const value = bytesPerSec / Math.pow(1024, i);
-  return `${value < 10 ? value.toFixed(1) : Math.round(value)}${units[i]}`;
-};
-
-// Format bytes to human readable (total)
-const formatBytes = (bytes: number): string => {
-  if (!bytes || bytes <= 0) return '0 B';
-  const units = ['B', 'KB', 'MB', 'GB', 'TB'];
-  const i = Math.floor(Math.log(bytes) / Math.log(1024));
-  const value = bytes / Math.pow(1024, i);
-  return `${value < 10 ? value.toFixed(2) : value.toFixed(1)} ${units[i]}`;
-};
-
-// Format relative time from unix timestamp
-const formatRelativeTime = (unixSeconds: number): string => {
-  if (!unixSeconds) return '-';
-  const now = Math.floor(Date.now() / 1000);
-  const diff = now - unixSeconds;
-  if (diff < 0) return '刚刚';
-  if (diff < 60) return `${diff}秒前`;
-  if (diff < 3600) return `${Math.floor(diff / 60)}分钟前`;
-  if (diff < 86400) return `${Math.floor(diff / 3600)}小时前`;
-  return `${Math.floor(diff / 86400)}天前`;
 };
 
 export const NodeListTable: React.FC<NodeListTableProps> = ({
@@ -366,132 +336,7 @@ export const NodeListTable: React.FC<NodeListTableProps> = ({
       meta: { priority: 3 } as ResponsiveColumnMeta, // Secondary column >= 1024px
       cell: ({ row }) => {
         const node = row.original;
-        const status = node.systemStatus;
-
-        if (!status) {
-          return <span className="text-xs text-muted-foreground/50">-</span>;
-        }
-
-        const totalConnections = (status.tcpConnections || 0) + (status.udpConnections || 0);
-        const cpuPercent = status.cpuPercent ?? 0;
-        const memoryPercent = status.memoryPercent ?? 0;
-        const diskPercent = status.diskPercent ?? 0;
-
-        return (
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <div className="inline-flex items-center gap-2.5 cursor-default">
-                {/* System mini bars */}
-                <div className="flex items-center gap-1.5">
-                  <div className="flex flex-col gap-0.5">
-                    <span className="text-[9px] text-muted-foreground/70 leading-none">C</span>
-                    <div className="w-6 h-1 rounded-full bg-muted/50 overflow-hidden">
-                      <div
-                        className={`h-full rounded-full transition-all duration-300 ${cpuPercent >= 80 ? 'bg-red-500' : cpuPercent >= 60 ? 'bg-amber-500' : 'bg-emerald-500'}`}
-                        style={{ width: `${Math.min(cpuPercent, 100)}%` }}
-                      />
-                    </div>
-                  </div>
-                  <div className="flex flex-col gap-0.5">
-                    <span className="text-[9px] text-muted-foreground/70 leading-none">M</span>
-                    <div className="w-6 h-1 rounded-full bg-muted/50 overflow-hidden">
-                      <div
-                        className={`h-full rounded-full transition-all duration-300 ${memoryPercent >= 80 ? 'bg-red-500' : memoryPercent >= 60 ? 'bg-amber-500' : 'bg-emerald-500'}`}
-                        style={{ width: `${Math.min(memoryPercent, 100)}%` }}
-                      />
-                    </div>
-                  </div>
-                  <div className="flex flex-col gap-0.5">
-                    <span className="text-[9px] text-muted-foreground/70 leading-none">D</span>
-                    <div className="w-6 h-1 rounded-full bg-muted/50 overflow-hidden">
-                      <div
-                        className={`h-full rounded-full transition-all duration-300 ${diskPercent >= 80 ? 'bg-red-500' : diskPercent >= 60 ? 'bg-amber-500' : 'bg-emerald-500'}`}
-                        style={{ width: `${Math.min(diskPercent, 100)}%` }}
-                      />
-                    </div>
-                  </div>
-                </div>
-                {/* Network rates - always show */}
-                <div className="w-px h-4 bg-border" />
-                <div className="flex flex-col gap-0 min-w-[52px]">
-                  <span className="text-[10px] font-mono text-success leading-tight">
-                    ↓{formatBytesRate(status.networkRxRate)}
-                  </span>
-                  <span className="text-[10px] font-mono text-info leading-tight">
-                    ↑{formatBytesRate(status.networkTxRate)}
-                  </span>
-                </div>
-              </div>
-            </TooltipTrigger>
-            <TooltipContent className="w-64">
-              <div className="space-y-2.5 text-xs">
-                {/* Header with update time */}
-                <div className="flex items-center justify-between">
-                  <span className="font-medium">系统监控</span>
-                  {status.updatedAt && (
-                    <span className="text-[10px] text-muted-foreground">{formatRelativeTime(status.updatedAt)}</span>
-                  )}
-                </div>
-                {/* System stats */}
-                <div className="space-y-1.5">
-                  <div className="flex items-center justify-between">
-                    <span className="text-muted-foreground">CPU</span>
-                    <span className="font-mono">{cpuPercent.toFixed(1)}%</span>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-muted-foreground">内存</span>
-                    <span className="font-mono">
-                      {memoryPercent.toFixed(1)}%
-                      {status.memoryUsed !== undefined && status.memoryTotal !== undefined && (
-                        <span className="text-muted-foreground ml-1">({formatBytes(status.memoryUsed)}/{formatBytes(status.memoryTotal)})</span>
-                      )}
-                    </span>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-muted-foreground">磁盘</span>
-                    <span className="font-mono">
-                      {diskPercent.toFixed(1)}%
-                      {status.diskUsed !== undefined && status.diskTotal !== undefined && (
-                        <span className="text-muted-foreground ml-1">({formatBytes(status.diskUsed)}/{formatBytes(status.diskTotal)})</span>
-                      )}
-                    </span>
-                  </div>
-                  {status.loadAvg1 !== undefined && (
-                    <div className="flex items-center justify-between">
-                      <span className="text-muted-foreground">负载</span>
-                      <span className="font-mono">{status.loadAvg1.toFixed(2)} / {status.loadAvg5?.toFixed(2)} / {status.loadAvg15?.toFixed(2)}</span>
-                    </div>
-                  )}
-                  {status.uptimeSeconds > 0 && (
-                    <div className="flex items-center justify-between">
-                      <span className="text-muted-foreground">运行</span>
-                      <span className="font-mono">{Math.floor(status.uptimeSeconds / 86400)}d {Math.floor((status.uptimeSeconds % 86400) / 3600)}h</span>
-                    </div>
-                  )}
-                </div>
-                {/* Network stats - always show */}
-                <div className="space-y-1.5 pt-2 border-t border-border">
-                  <div className="flex items-center justify-between">
-                    <span className="text-muted-foreground">下载</span>
-                    <span className="font-mono text-success">{formatBytesRate(status.networkRxRate)}/s</span>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-muted-foreground">上传</span>
-                    <span className="font-mono text-info">{formatBytesRate(status.networkTxRate)}/s</span>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-muted-foreground">累计</span>
-                    <span className="font-mono text-[11px]">↓{formatBytes(status.networkRxBytes)} ↑{formatBytes(status.networkTxBytes)}</span>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-muted-foreground">连接</span>
-                    <span className="font-mono">{totalConnections} (TCP:{status.tcpConnections || 0} UDP:{status.udpConnections || 0})</span>
-                  </div>
-                </div>
-              </div>
-            </TooltipContent>
-          </Tooltip>
-        );
+        return <SystemStatusCell itemId={node.id} status={node.systemStatus} />;
       },
     },
     {
@@ -772,19 +617,21 @@ export const NodeListTable: React.FC<NodeListTableProps> = ({
   }
 
   return (
-    <DataTable
-      columns={columns}
-      data={nodes}
-      loading={loading}
-      page={page}
-      pageSize={pageSize}
-      total={total}
-      onPageChange={onPageChange}
-      onPageSizeChange={onPageSizeChange}
-      emptyMessage="暂无节点数据"
-      getRowId={(row) => String(row.id)}
-      enableContextMenu={true}
-      contextMenuContent={renderContextMenuActions}
-    />
+    <SystemStatusHoverProvider>
+      <DataTable
+        columns={columns}
+        data={nodes}
+        loading={loading}
+        page={page}
+        pageSize={pageSize}
+        total={total}
+        onPageChange={onPageChange}
+        onPageSizeChange={onPageSizeChange}
+        emptyMessage="暂无节点数据"
+        getRowId={(row) => String(row.id)}
+        enableContextMenu={true}
+        contextMenuContent={renderContextMenuActions}
+      />
+    </SystemStatusHoverProvider>
   );
 };

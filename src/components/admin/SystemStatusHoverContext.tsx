@@ -2,15 +2,16 @@
  * System Status Hover Context
  * Manages hover state at table level to prevent state loss during SSE updates
  * The hover state is lifted up so cell re-renders don't reset it
+ * Shared by Node and Forward Agent pages
  */
 
 import { createContext, useContext, useState, useCallback, useMemo, type ReactNode } from 'react';
 
 interface SystemStatusHoverContextValue {
-  /** Currently hovered agent ID */
-  hoveredAgentId: string | null;
-  /** Set the hovered agent ID */
-  setHoveredAgentId: (id: string | null) => void;
+  /** Currently hovered item ID */
+  hoveredId: string | null;
+  /** Set the hovered item ID */
+  setHoveredId: (id: string | null) => void;
 }
 
 const SystemStatusHoverContext = createContext<SystemStatusHoverContextValue | null>(null);
@@ -19,22 +20,15 @@ const SystemStatusHoverContext = createContext<SystemStatusHoverContextValue | n
  * Provider component - wrap around the table
  */
 export function SystemStatusHoverProvider({ children }: { children: ReactNode }) {
-  const [hoveredAgentId, setHoveredAgentIdState] = useState<string | null>(null);
+  const [hoveredId, setHoveredIdState] = useState<string | null>(null);
 
-  const setHoveredAgentId = useCallback((id: string | null) => {
-    setHoveredAgentIdState(id);
+  const setHoveredId = useCallback((id: string | null) => {
+    setHoveredIdState(id);
   }, []);
 
-  const value = useMemo(
-    () => ({ hoveredAgentId, setHoveredAgentId }),
-    [hoveredAgentId, setHoveredAgentId]
-  );
+  const value = useMemo(() => ({ hoveredId, setHoveredId }), [hoveredId, setHoveredId]);
 
-  return (
-    <SystemStatusHoverContext.Provider value={value}>
-      {children}
-    </SystemStatusHoverContext.Provider>
-  );
+  return <SystemStatusHoverContext.Provider value={value}>{children}</SystemStatusHoverContext.Provider>;
 }
 
 /**
@@ -49,9 +43,9 @@ export function useSystemStatusHover() {
 }
 
 /**
- * Hook to check if a specific agent is hovered
+ * Hook to check if a specific item is hovered
  */
-export function useIsAgentHovered(agentId: string): boolean {
-  const { hoveredAgentId } = useSystemStatusHover();
-  return hoveredAgentId === agentId;
+export function useIsItemHovered(itemId: string): boolean {
+  const { hoveredId } = useSystemStatusHover();
+  return hoveredId === itemId;
 }

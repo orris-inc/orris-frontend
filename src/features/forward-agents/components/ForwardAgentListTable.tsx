@@ -6,11 +6,9 @@
 
 import { useMemo, useState, useCallback } from 'react';
 import { Edit, Trash2, Key, Eye, Power, PowerOff, MoreHorizontal, Terminal, Copy, Check, Download, Loader2, Package, ArrowUpCircle } from 'lucide-react';
-import { DataTable, AdminBadge, TruncatedId, type ColumnDef, type ResponsiveColumnMeta } from '@/components/admin';
+import { DataTable, AdminBadge, TruncatedId, SystemStatusCell, SystemStatusHoverProvider, type ColumnDef, type ResponsiveColumnMeta } from '@/components/admin';
 import { useBreakpoint } from '@/hooks/useBreakpoint';
 import { ForwardAgentMobileList } from './ForwardAgentMobileList';
-import { SystemStatusCell } from './SystemStatusCell';
-import { SystemStatusHoverProvider } from './SystemStatusHoverContext';
 import { Badge } from '@/components/common/Badge';
 import {
   DropdownMenu,
@@ -321,7 +319,7 @@ export const ForwardAgentListTable: React.FC<ForwardAgentListTableProps> = ({
       size: 160,
       meta: { priority: 3 } as ResponsiveColumnMeta,
       cell: ({ row }) => (
-        <SystemStatusCell agentId={row.original.id} status={row.original.systemStatus} />
+        <SystemStatusCell itemId={row.original.id} status={row.original.systemStatus} />
       ),
     },
     {
