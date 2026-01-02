@@ -7,6 +7,7 @@ import { useEffect, useRef, useCallback } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { queryKeys } from '@/shared/lib/query-client';
 import { subscribeForwardAgentEvents } from '@/api/forward';
+import { convertSnakeToCamel } from '@/shared/utils/case-converter';
 import type { ForwardAgentEvent, ForwardAgent, AgentSystemStatus, ForwardAgentBatchStatusEvent } from '@/api/forward';
 import type { ListResponse } from '@/shared/types/api.types';
 
@@ -80,10 +81,11 @@ export function useForwardAgentEvents(options: UseForwardAgentEventsOptions = {}
 
         case 'agent:status':
           if (event.data) {
+            const convertedStatus = convertSnakeToCamel<AgentSystemStatus>(event.data);
             updateAgentInCache(event.agentId, (agent) => ({
               ...agent,
               lastSeenAt: new Date(event.timestamp * 1000).toISOString(),
-              systemStatus: event.data as AgentSystemStatus,
+              systemStatus: convertedStatus,
             }));
           }
           break;
@@ -98,10 +100,11 @@ export function useForwardAgentEvents(options: UseForwardAgentEventsOptions = {}
           const batchEvent = event as unknown as ForwardAgentBatchStatusEvent;
           Object.entries(batchEvent.agents).forEach(([agentId, statusData]) => {
             if (statusData.status) {
+              const convertedStatus = convertSnakeToCamel<AgentSystemStatus>(statusData.status);
               updateAgentInCache(agentId, (agent) => ({
                 ...agent,
                 lastSeenAt: new Date(batchEvent.timestamp * 1000).toISOString(),
-                systemStatus: statusData.status as AgentSystemStatus,
+                systemStatus: convertedStatus,
               }));
             }
           });

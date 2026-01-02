@@ -7,6 +7,7 @@ import { useEffect, useRef, useCallback } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { queryKeys } from '@/shared/lib/query-client';
 import { subscribeNodeEvents } from '@/api/node';
+import { convertSnakeToCamel } from '@/shared/utils/case-converter';
 import type { NodeEvent, Node, NodeSystemStatus, NodeBatchStatusEvent } from '@/api/node';
 import type { ListResponse } from '@/shared/types/api.types';
 
@@ -80,11 +81,12 @@ export function useNodeEvents(options: UseNodeEventsOptions = {}) {
 
         case 'node:status':
           if (event.data) {
+            const convertedStatus = convertSnakeToCamel<NodeSystemStatus>(event.data);
             updateNodeInCache(event.agentId, (node) => ({
               ...node,
               isOnline: true,
               lastSeenAt: new Date(event.timestamp * 1000).toISOString(),
-              systemStatus: event.data as NodeSystemStatus,
+              systemStatus: convertedStatus,
             }));
           }
           break;
@@ -99,11 +101,12 @@ export function useNodeEvents(options: UseNodeEventsOptions = {}) {
           const batchEvent = event as unknown as NodeBatchStatusEvent;
           Object.entries(batchEvent.agents).forEach(([nodeId, statusData]) => {
             if (statusData.status) {
+              const convertedStatus = convertSnakeToCamel<NodeSystemStatus>(statusData.status);
               updateNodeInCache(nodeId, (node) => ({
                 ...node,
                 isOnline: true,
                 lastSeenAt: new Date(batchEvent.timestamp * 1000).toISOString(),
-                systemStatus: statusData.status as NodeSystemStatus,
+                systemStatus: convertedStatus,
               }));
             }
           });
