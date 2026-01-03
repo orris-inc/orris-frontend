@@ -1,19 +1,16 @@
+/**
+ * Telegram Binding Card - Compact Design
+ * Displays Telegram binding status with notification preferences
+ */
+
 import { useState } from 'react';
-import * as Separator from '@radix-ui/react-separator';
-import { MessageCircle, Unlink, AlertCircle } from 'lucide-react';
+import { Send, Unlink, CheckCircle2 } from 'lucide-react';
 import { Button } from '@/components/common/Button';
 import { Skeleton } from '@/components/common/Skeleton';
 import { ConfirmDialog } from '@/components/common/ConfirmDialog';
-import {
-  cardStyles,
-  cardHeaderStyles,
-  cardTitleStyles,
-  cardDescriptionStyles,
-  cardContentStyles,
-} from '@/lib/ui-styles';
+import { cn } from '@/lib/utils';
 import { useTelegramBinding } from '../hooks/useTelegramBinding';
 import { VerifyCodeSection } from './VerifyCodeSection';
-import { BindingInfoSection } from './BindingInfoSection';
 import { NotificationPreferencesForm } from './NotificationPreferencesForm';
 
 /**
@@ -42,45 +39,30 @@ export const TelegramBindingCard = () => {
   // Loading state
   if (isLoading) {
     return (
-      <div className={cardStyles}>
-        <div className={cardHeaderStyles}>
-          <Skeleton className="h-6 w-48" />
-          <Skeleton className="h-4 w-72 mt-2" />
-        </div>
-        <div className={cardContentStyles}>
-          <div className="space-y-4">
-            <Skeleton className="h-24 w-full" />
-            <Skeleton className="h-12 w-full" />
+      <div className="rounded-xl border bg-card p-5">
+        <div className="flex items-center gap-3 mb-4">
+          <Skeleton className="size-10 rounded-lg" />
+          <div className="space-y-1.5">
+            <Skeleton className="h-5 w-28" />
+            <Skeleton className="h-4 w-40" />
           </div>
         </div>
+        <Skeleton className="h-24 w-full rounded-lg" />
       </div>
     );
   }
 
-  // Feature not configured on backend
+  // Feature not configured
   if (isNotConfigured) {
     return (
-      <div className={cardStyles}>
-        <div className={`${cardHeaderStyles} bg-muted/50`}>
-          <div className="flex items-center gap-2">
-            <MessageCircle className="size-5 text-muted-foreground" />
-            <h3 className={cardTitleStyles}>Telegram 绑定</h3>
+      <div className="rounded-xl border bg-card p-5">
+        <div className="flex items-center gap-3 text-muted-foreground">
+          <div className="p-2 rounded-lg bg-muted">
+            <Send className="size-5" />
           </div>
-          <p className={cardDescriptionStyles}>
-            绑定 Telegram 账号后，您可以接收订阅到期提醒和流量告警通知
-          </p>
-        </div>
-        <div className={`${cardContentStyles} pt-6`}>
-          <div className="flex flex-col items-center justify-center py-8 text-center">
-            <div className="p-3 rounded-full bg-muted mb-4">
-              <AlertCircle className="size-6 text-muted-foreground" />
-            </div>
-            <p className="text-muted-foreground">
-              Telegram 通知功能暂未启用
-            </p>
-            <p className="text-sm text-muted-foreground mt-1">
-              请联系管理员开启此功能
-            </p>
+          <div>
+            <h3 className="font-medium text-foreground">Telegram 绑定</h3>
+            <p className="text-sm">功能暂未启用，请联系管理员</p>
           </div>
         </div>
       </div>
@@ -89,54 +71,56 @@ export const TelegramBindingCard = () => {
 
   return (
     <>
-      <div className={cardStyles}>
+      <div className="rounded-xl border bg-card p-5 space-y-5">
         {/* Header */}
-        <div className={`${cardHeaderStyles} bg-muted/50`}>
-          <div className="flex items-center gap-2">
-            <MessageCircle className="size-5 text-blue-500" />
-            <h3 className={cardTitleStyles}>Telegram 绑定</h3>
-          </div>
-          <p className={cardDescriptionStyles}>
-            绑定 Telegram 账号后，您可以接收订阅到期提醒和流量告警通知
-          </p>
-        </div>
-
-        <div className={`${cardContentStyles} pt-6`}>
-          {isBound && binding ? (
-            <div className="space-y-6">
-              {/* Binding info */}
-              <BindingInfoSection binding={binding} />
-
-              <Separator.Root className="h-[1px] bg-border" />
-
-              {/* Notification preferences */}
-              <div>
-                <h4 className="text-lg font-medium mb-4">通知偏好设置</h4>
-                <NotificationPreferencesForm
-                  binding={binding}
-                  onSubmit={updatePreferences}
-                  isSubmitting={isUpdating}
-                />
-              </div>
-
-              <Separator.Root className="h-[1px] bg-border" />
-
-              {/* Unbind button */}
-              <div className="flex justify-end">
-                <Button
-                  variant="outline"
-                  onClick={() => setShowUnbindDialog(true)}
-                  className="text-destructive hover:text-destructive"
-                >
-                  <Unlink className="mr-2 size-4" />
-                  解除绑定
-                </Button>
-              </div>
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className={cn(
+              'p-2 rounded-lg',
+              isBound ? 'bg-[#26A5E4]/10' : 'bg-muted'
+            )}>
+              <Send className={cn(
+                'size-5',
+                isBound ? 'text-[#26A5E4]' : 'text-muted-foreground'
+              )} />
             </div>
-          ) : (
-            verifyCode && <VerifyCodeSection verifyCode={verifyCode} />
+            <div>
+              <div className="flex items-center gap-2">
+                <h3 className="font-medium">Telegram 绑定</h3>
+                {isBound && (
+                  <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-xs bg-success/10 text-success">
+                    <CheckCircle2 className="size-3" />
+                    已绑定
+                  </span>
+                )}
+              </div>
+              {isBound && binding?.telegramUsername && (
+                <p className="text-sm text-muted-foreground">@{binding.telegramUsername}</p>
+              )}
+            </div>
+          </div>
+          {isBound && (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setShowUnbindDialog(true)}
+              className="text-muted-foreground hover:text-destructive h-8"
+            >
+              <Unlink className="size-4" />
+            </Button>
           )}
         </div>
+
+        {/* Content */}
+        {isBound && binding ? (
+          <NotificationPreferencesForm
+            binding={binding}
+            onSubmit={updatePreferences}
+            isSubmitting={isUpdating}
+          />
+        ) : (
+          verifyCode && <VerifyCodeSection verifyCode={verifyCode} />
+        )}
       </div>
 
       {/* Unbind confirmation dialog */}
@@ -144,7 +128,7 @@ export const TelegramBindingCard = () => {
         open={showUnbindDialog}
         onOpenChange={setShowUnbindDialog}
         title="解除 Telegram 绑定"
-        description="解除绑定后，您将不再通过 Telegram 接收任何通知。确定要继续吗？"
+        description="解除绑定后，您将不再通过 Telegram 接收任何通知。"
         confirmText="解除绑定"
         variant="destructive"
         onConfirm={handleUnbind}

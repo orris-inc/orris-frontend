@@ -1,14 +1,19 @@
-import { Copy, CheckCircle2, MessageCircle } from 'lucide-react';
+/**
+ * Verify Code Section - Compact Style
+ * Displays verification code and binding instructions
+ */
+
+import { Copy, CheckCircle2, ExternalLink } from 'lucide-react';
 import { useState } from 'react';
 import { Button } from '@/components/common/Button';
-import { getAlertClass, alertDescriptionStyles } from '@/lib/ui-styles';
+import { cn } from '@/lib/utils';
 
 interface VerifyCodeSectionProps {
   verifyCode: string;
 }
 
 /**
- * Component displaying verification code and binding instructions
+ * Compact verification code display
  */
 export const VerifyCodeSection = ({ verifyCode }: VerifyCodeSectionProps) => {
   const [copied, setCopied] = useState(false);
@@ -19,7 +24,6 @@ export const VerifyCodeSection = ({ verifyCode }: VerifyCodeSectionProps) => {
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
     } catch {
-      // Fallback for older browsers
       const textArea = document.createElement('textarea');
       textArea.value = verifyCode;
       document.body.appendChild(textArea);
@@ -32,43 +36,41 @@ export const VerifyCodeSection = ({ verifyCode }: VerifyCodeSectionProps) => {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-3">
       {/* Instructions */}
-      <div className={getAlertClass('default')}>
-        <MessageCircle className="size-4" />
-        <div className={alertDescriptionStyles}>
-          <ol className="list-decimal list-inside space-y-2">
-            <li>打开 Telegram 搜索并关注 <strong>@OrrisBot</strong></li>
-            <li>发送命令 <code className="bg-muted px-1.5 py-0.5 rounded text-sm">/bind</code></li>
-            <li>按提示输入下方验证码完成绑定</li>
-          </ol>
+      <p className="text-sm text-muted-foreground">
+        打开{' '}
+        <a
+          href="https://t.me/OrrisBot"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="text-[#26A5E4] hover:underline inline-flex items-center gap-0.5"
+        >
+          @OrrisBot
+          <ExternalLink className="size-3" />
+        </a>
+        {' '}发送 <code className="px-1 py-0.5 rounded bg-muted text-xs">/bind</code> 后输入验证码
+      </p>
+
+      {/* Verify code */}
+      <div className="flex items-center gap-2">
+        <div className="flex-1 px-3 py-2 bg-muted rounded-lg font-mono text-lg tracking-widest text-center select-all">
+          {verifyCode}
         </div>
+        <Button
+          variant="outline"
+          size="icon"
+          onClick={handleCopy}
+          className={cn(
+            'shrink-0 h-10 w-10',
+            copied && 'border-success text-success'
+          )}
+        >
+          {copied ? <CheckCircle2 className="size-4" /> : <Copy className="size-4" />}
+        </Button>
       </div>
 
-      {/* Verify code display */}
-      <div className="space-y-2">
-        <label className="text-sm font-medium">您的验证码</label>
-        <div className="flex items-center gap-3">
-          <div className="flex-1 px-4 py-3 bg-muted rounded-lg font-mono text-lg tracking-widest text-center select-all">
-            {verifyCode}
-          </div>
-          <Button
-            variant="outline"
-            size="icon"
-            onClick={handleCopy}
-            title={copied ? '已复制' : '复制验证码'}
-          >
-            {copied ? (
-              <CheckCircle2 className="size-4 text-green-500" />
-            ) : (
-              <Copy className="size-4" />
-            )}
-          </Button>
-        </div>
-        <p className="text-sm text-muted-foreground">
-          验证码有效期为 10 分钟，过期后刷新页面获取新验证码
-        </p>
-      </div>
+      <p className="text-xs text-muted-foreground">验证码 10 分钟内有效</p>
     </div>
   );
 };

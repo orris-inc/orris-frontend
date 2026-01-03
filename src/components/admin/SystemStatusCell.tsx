@@ -8,6 +8,7 @@
 import { memo, useCallback } from 'react';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/common/Tooltip';
 import { useSystemStatusHover } from './SystemStatusHoverContext';
+import { formatBitRate, formatBytes, formatRelativeTime } from '@/shared/utils/format-utils';
 
 /**
  * Common system status data interface
@@ -54,40 +55,6 @@ interface SystemStatusCellProps {
   status: SystemStatusData | undefined;
 }
 
-// Format bytes rate to bits per second (Mbps)
-// compact: true for table cell (no space), false for tooltip (with space)
-const formatBitRate = (bytesPerSec?: number, compact = false): string => {
-  if (!bytesPerSec || bytesPerSec <= 0) return compact ? '0' : '0 bps';
-  // Convert bytes to bits (1 byte = 8 bits)
-  const bitsPerSec = bytesPerSec * 8;
-  const units = ['bps', 'Kbps', 'Mbps', 'Gbps'];
-  // Use 1000 for network units (not 1024)
-  const i = Math.floor(Math.log(bitsPerSec) / Math.log(1000));
-  const value = bitsPerSec / Math.pow(1000, i);
-  const formatted = value < 10 ? value.toFixed(1) : Math.round(value).toString();
-  return compact ? `${formatted}${units[i]}` : `${formatted} ${units[i]}`;
-};
-
-// Format bytes to human readable (total)
-const formatBytes = (bytes?: number): string => {
-  if (!bytes || bytes <= 0) return '0 B';
-  const units = ['B', 'KB', 'MB', 'GB', 'TB'];
-  const i = Math.floor(Math.log(bytes) / Math.log(1024));
-  const value = bytes / Math.pow(1024, i);
-  return `${value < 10 ? value.toFixed(2) : value.toFixed(1)} ${units[i]}`;
-};
-
-// Format relative time from unix timestamp
-const formatRelativeTime = (unixSeconds: number): string => {
-  if (!unixSeconds) return '-';
-  const now = Math.floor(Date.now() / 1000);
-  const diff = now - unixSeconds;
-  if (diff < 0) return '刚刚';
-  if (diff < 60) return `${diff}秒前`;
-  if (diff < 3600) return `${Math.floor(diff / 60)}分钟前`;
-  if (diff < 86400) return `${Math.floor(diff / 3600)}小时前`;
-  return `${Math.floor(diff / 86400)}天前`;
-};
 
 // Mini progress bar component
 const MiniBar = memo(({ label, percent }: { label: string; percent: number }) => (

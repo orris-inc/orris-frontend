@@ -5,9 +5,7 @@
 
 import { useState } from 'react';
 import { useNavigate } from 'react-router';
-import { Menu, User as UserIcon, Bell, LogOut, Shield } from 'lucide-react';
-import * as DropdownMenuPrimitive from '@radix-ui/react-dropdown-menu';
-import * as AvatarPrimitive from '@radix-ui/react-avatar';
+import { Menu } from 'lucide-react';
 import { TooltipProvider } from '@/components/common/Tooltip';
 
 import { useAuthStore } from '@/features/auth/stores/auth-store';
@@ -15,6 +13,7 @@ import { useAuth } from '@/features/auth/hooks/useAuth';
 import { ProfileDialog } from '@/features/profile/components/ProfileDialog';
 import { MobileDrawer } from '@/components/navigation/MobileDrawer';
 import { DesktopNav } from '@/components/navigation/DesktopNav';
+import { UserMenu } from '@/components/navigation/UserMenu';
 import { EnhancedBreadcrumbs } from '@/components/navigation/EnhancedBreadcrumbs';
 import { ThemeToggle } from '@/components/common/ThemeToggle';
 import { getNavItems } from '@/config/navigation';
@@ -86,7 +85,7 @@ export const DashboardLayout = ({ children }: DashboardLayoutProps) => {
           <div className="flex-1 md:flex-none" />
 
           {/* Theme toggle and user menu */}
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-3">
             <ThemeToggle />
 
             <div className="hidden sm:block text-right">
@@ -94,71 +93,14 @@ export const DashboardLayout = ({ children }: DashboardLayoutProps) => {
               <p className="text-xs text-muted-foreground">{user?.email}</p>
             </div>
 
-            <DropdownMenuPrimitive.Root>
-              <DropdownMenuPrimitive.Trigger asChild>
-                <button className="relative inline-flex h-8 w-8 items-center justify-center rounded-full hover:bg-accent hover:text-accent-foreground transition-colors">
-                  <AvatarPrimitive.Root className="h-8 w-8">
-                    <AvatarPrimitive.Fallback className="flex h-full w-full items-center justify-center rounded-full bg-muted text-sm font-medium">
-                      {user?.initials || user?.displayName?.charAt(0).toUpperCase()}
-                    </AvatarPrimitive.Fallback>
-                  </AvatarPrimitive.Root>
-                </button>
-              </DropdownMenuPrimitive.Trigger>
-              <DropdownMenuPrimitive.Portal>
-                <DropdownMenuPrimitive.Content
-                  className="z-50 min-w-[14rem] overflow-hidden rounded-md border bg-popover p-1 text-popover-foreground shadow-md data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2"
-                  align="end"
-                  sideOffset={4}
-                >
-                  <DropdownMenuPrimitive.Label className="px-2 py-1.5 text-sm font-normal">
-                    <div className="flex flex-col space-y-1">
-                      <p className="text-sm font-medium leading-none">{user?.displayName}</p>
-                      <p className="text-xs leading-none text-muted-foreground">
-                        {user?.email}
-                      </p>
-                    </div>
-                  </DropdownMenuPrimitive.Label>
-                  <DropdownMenuPrimitive.Separator className="mx-1 my-1 h-px bg-muted" />
-                  <DropdownMenuPrimitive.Item
-                    className="relative flex cursor-default select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none transition-colors focus:bg-accent focus:text-accent-foreground data-[disabled]:pointer-events-none data-[disabled]:opacity-50"
-                    onSelect={() => setProfileDialogOpen(true)}
-                  >
-                    <UserIcon className="mr-2 h-4 w-4" />
-                    <span>个人资料</span>
-                  </DropdownMenuPrimitive.Item>
-                  <DropdownMenuPrimitive.Item
-                    className="relative flex cursor-default select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none transition-colors focus:bg-accent focus:text-accent-foreground data-[disabled]:pointer-events-none data-[disabled]:opacity-50"
-                    onSelect={() => navigate('/dashboard/notifications')}
-                  >
-                    <Bell className="mr-2 h-4 w-4" />
-                    <span>通知设置</span>
-                  </DropdownMenuPrimitive.Item>
-
-                  {/* Admin entry (admin only) */}
-                  {userRole === 'admin' && (
-                    <>
-                      <DropdownMenuPrimitive.Separator className="mx-1 my-1 h-px bg-muted" />
-                      <DropdownMenuPrimitive.Item
-                        className="relative flex cursor-default select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none transition-colors focus:bg-accent focus:text-accent-foreground data-[disabled]:pointer-events-none data-[disabled]:opacity-50"
-                        onSelect={handleGoToAdmin}
-                      >
-                        <Shield className="mr-2 h-4 w-4 text-primary" />
-                        <span className="text-primary">切换到管理端</span>
-                      </DropdownMenuPrimitive.Item>
-                    </>
-                  )}
-
-                  <DropdownMenuPrimitive.Separator className="mx-1 my-1 h-px bg-muted" />
-                  <DropdownMenuPrimitive.Item
-                    className="relative flex cursor-default select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none transition-colors focus:bg-accent focus:text-accent-foreground data-[disabled]:pointer-events-none data-[disabled]:opacity-50 text-red-600 focus:text-red-600"
-                    onSelect={handleLogout}
-                  >
-                    <LogOut className="mr-2 h-4 w-4" />
-                    <span>退出登录</span>
-                  </DropdownMenuPrimitive.Item>
-                </DropdownMenuPrimitive.Content>
-              </DropdownMenuPrimitive.Portal>
-            </DropdownMenuPrimitive.Root>
+            <UserMenu
+              user={user}
+              showAdminSwitch={userRole === 'admin'}
+              onProfileClick={() => setProfileDialogOpen(true)}
+              onNotificationsClick={() => navigate('/dashboard/notifications')}
+              onAdminClick={handleGoToAdmin}
+              onLogout={handleLogout}
+            />
           </div>
         </div>
       </header>

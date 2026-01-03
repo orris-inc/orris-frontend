@@ -3,7 +3,7 @@
  * SSE subscription for real-time node events
  */
 
-import { useEffect, useRef, useCallback } from 'react';
+import { useEffect, useRef, useCallback, useState } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { queryKeys } from '@/shared/lib/query-client';
 import { subscribeNodeEvents } from '@/api/node';
@@ -16,6 +16,15 @@ interface UseNodeEventsOptions {
   nodeIds?: string[];
   /** Enable/disable the subscription */
   enabled?: boolean;
+}
+
+interface UseNodeDetailEventsOptions {
+  /** Node ID to subscribe to */
+  nodeId: string | null;
+  /** Enable/disable the subscription */
+  enabled?: boolean;
+  /** Callback when status is updated */
+  onStatusUpdate?: (status: NodeSystemStatus) => void;
 }
 
 /**
@@ -150,4 +159,122 @@ export function useNodeEvents(options: UseNodeEventsOptions = {}) {
       }
     };
   }, [enabled, nodeIds, handleEvent, handleError]);
+}
+
+/**
+ * Hook for detail dialog to subscribe to a single node's real-time events
+ * Returns the latest status and handles SSE subscription lifecycle
+ */
+export function useNodeDetailEvents(options: UseNodeDetailEventsOptions) {
+  const { nodeId, enabled = true, onStatusUpdate } = options;
+  const cleanupRef = useRef<(() => void) | null>(null);
+  const [status, setStatus] = useState<NodeSystemStatus | null>(null);
+  const [isOnline, setIsOnline] = useState(false);
+  const [isConnected, setIsConnected] = useState(false);
+
+  // Handle incoming SSE events for this specific node
+  const handleEvent = useCallback(
+    (event: NodeEvent) => {
+      // Only process events for our node
+      if (event.type !== 'nodes:status' && event.agentId !== nodeId) {
+        return;
+      }
+
+      switch (event.type) {
+        case 'node:online':
+          setIsOnline(true);
+          break;
+
+        case 'node:offline':
+          setIsOnline(false);
+          setStatus(null);
+          break;
+
+        case 'node:status':
+          if (event.data) {
+            const convertedStatus = convertSnakeToCamel<NodeSystemStatus>(event.data);
+            setStatus(convertedStatus);
+            setIsOnline(true);
+            if (onStatusUpdate) {
+              onStatusUpdate(convertedStatus);
+            }
+          }
+          break;
+
+        case 'nodes:status': {
+          // Batch status event - check if our node is included
+          const batchEvent = event as unknown as NodeBatchStatusEvent;
+          const nodeData = batchEvent.agents[nodeId!];
+          if (nodeData?.status) {
+            const convertedStatus = convertSnakeToCamel<NodeSystemStatus>(nodeData.status);
+            setStatus(convertedStatus);
+            setIsOnline(true);
+            if (onStatusUpdate) {
+              onStatusUpdate(convertedStatus);
+            }
+          }
+          break;
+        }
+      }
+    },
+    [nodeId, onStatusUpdate]
+  );
+
+  // Handle SSE errors
+  const handleError = useCallback((error: Event) => {
+    console.error('Node detail SSE connection error:', error);
+  }, []);
+
+  // Handle connection open
+  const handleOpen = useCallback(() => {
+    setIsConnected(true);
+  }, []);
+
+  // Handle connection close
+  const handleClose = useCallback(() => {
+    setIsConnected(false);
+  }, []);
+
+  // Manage SSE subscription lifecycle
+  useEffect(() => {
+    if (!enabled || !nodeId) {
+      // Clean up if disabled or no node ID
+      if (cleanupRef.current) {
+        cleanupRef.current();
+        cleanupRef.current = null;
+      }
+      setStatus(null);
+      setIsOnline(false);
+      setIsConnected(false);
+      return;
+    }
+
+    // Subscribe to SSE events for this specific node
+    cleanupRef.current = subscribeNodeEvents(
+      { nodeIds: nodeId },
+      {
+        onOpen: handleOpen,
+        onEvent: handleEvent,
+        onError: handleError,
+        onClose: handleClose,
+      }
+    );
+
+    // Cleanup on unmount or when deps change
+    return () => {
+      if (cleanupRef.current) {
+        cleanupRef.current();
+        cleanupRef.current = null;
+      }
+    };
+  }, [enabled, nodeId, handleEvent, handleError, handleOpen, handleClose]);
+
+  return {
+    /** Current system status from SSE */
+    status,
+    /** Whether the node is online */
+    isOnline,
+    /** Whether SSE connection is established */
+    isConnected,
+  };
 }

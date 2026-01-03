@@ -1,14 +1,21 @@
 /**
- * AdminSidebarNav 管理端侧边栏导航组件
+ * Admin Sidebar Navigation Component
  *
- * 提供统一的侧边栏导航渲染逻辑，支持：
- * - 折叠/展开状态
- * - Tooltip 提示（折叠时）
- * - 移动端和桌面端复用
+ * Professional sidebar navigation with smooth collapse animation.
+ * Features:
+ * - Smooth width transition on collapse
+ * - Tooltip hints when collapsed
+ * - Active state with left border indicator
+ * - Touch-friendly targets (min 44px)
+ * - Respects reduced-motion preferences
  */
 
 import { Link as RouterLink, useLocation } from 'react-router-dom';
-import { Tooltip, TooltipTrigger, TooltipContent } from '@/components/common/Tooltip';
+import {
+  Tooltip,
+  TooltipTrigger,
+  TooltipContent,
+} from '@/components/common/Tooltip';
 import { cn } from '@/lib/utils';
 
 import type { NavigationItem } from '@/types/navigation.types';
@@ -27,7 +34,11 @@ export const AdminSidebarNav = ({
   const location = useLocation();
 
   return (
-    <nav className={cn('space-y-1', collapsed ? 'px-2' : 'px-3')}>
+    <nav
+      className={cn('space-y-1', collapsed ? 'px-2' : 'px-3')}
+      role="navigation"
+      aria-label="Admin navigation"
+    >
       {items.map((item) => {
         const Icon = item.icon;
         const isActive = location.pathname === item.path;
@@ -37,19 +48,51 @@ export const AdminSidebarNav = ({
             key={item.id}
             to={item.path}
             onClick={onItemClick}
+            aria-current={isActive ? 'page' : undefined}
             className={cn(
-              'flex items-center rounded-lg transition-colors touch-target',
+              // Base styles
+              'group relative flex items-center rounded-lg',
+              // Touch target
+              'min-h-[44px]',
+              // Transition
+              'transition-all duration-200 ease-out',
+              'motion-reduce:transition-none',
+              // Layout based on collapsed state
               collapsed ? 'justify-center p-2.5' : 'gap-3 px-3 py-2.5',
+              // Active state with left border indicator
               isActive
-                ? 'bg-primary text-primary-foreground'
+                ? 'bg-primary text-primary-foreground shadow-sm'
                 : 'text-muted-foreground hover:bg-accent hover:text-foreground'
             )}
           >
-            {Icon && <Icon className="h-5 w-5 flex-shrink-0" />}
+            {/* Left border indicator for active state */}
             <span
               className={cn(
-                'text-sm font-medium whitespace-nowrap transition-opacity duration-200',
-                collapsed ? 'opacity-0 w-0 hidden' : 'opacity-100'
+                'absolute left-0 top-1/2 -translate-y-1/2 w-1 rounded-r-full',
+                'transition-all duration-200 ease-out',
+                'motion-reduce:transition-none',
+                isActive ? 'h-6 bg-primary-foreground' : 'h-0 bg-transparent',
+                collapsed && 'hidden'
+              )}
+              aria-hidden="true"
+            />
+            {Icon && (
+              <Icon
+                className={cn(
+                  'h-5 w-5 flex-shrink-0',
+                  'transition-transform duration-200 ease-out',
+                  'motion-reduce:transition-none',
+                  !collapsed && 'group-hover:scale-105'
+                )}
+                aria-hidden="true"
+              />
+            )}
+            <span
+              className={cn(
+                'text-sm font-medium whitespace-nowrap overflow-hidden',
+                'transition-all duration-200 ease-out',
+                'motion-reduce:transition-none',
+                collapsed ? 'w-0 opacity-0' : 'w-auto opacity-100'
               )}
             >
               {item.label}
@@ -61,7 +104,11 @@ export const AdminSidebarNav = ({
           return (
             <Tooltip key={item.id}>
               <TooltipTrigger asChild>{linkContent}</TooltipTrigger>
-              <TooltipContent side="right" sideOffset={8}>
+              <TooltipContent
+                side="right"
+                sideOffset={12}
+                className="font-medium"
+              >
                 {item.label}
               </TooltipContent>
             </Tooltip>

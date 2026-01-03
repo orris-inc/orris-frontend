@@ -9,22 +9,18 @@
  */
 
 import { useState, useEffect } from 'react';
-import { Link as RouterLink } from 'react-router-dom';
+import { Link as RouterLink, useNavigate } from 'react-router-dom';
 import {
   Menu,
   ChevronLeft,
   ChevronRight,
-  User as UserIcon,
-  Settings,
-  LogOut,
   ArrowLeftRight,
   X,
 } from 'lucide-react';
 import * as Dialog from '@radix-ui/react-dialog';
-import * as DropdownMenuPrimitive from '@radix-ui/react-dropdown-menu';
-import * as AvatarPrimitive from '@radix-ui/react-avatar';
 import { TooltipProvider } from '@/components/common/Tooltip';
 import { AdminSidebarNav, AdminSidebarFooter } from '@/components/navigation/AdminSidebarNav';
+import { UserMenu } from '@/components/navigation/UserMenu';
 
 import { useAuthStore } from '@/features/auth/stores/auth-store';
 import { useAuth } from '@/features/auth/hooks/useAuth';
@@ -40,6 +36,7 @@ interface AdminLayoutProps {
 }
 
 export const AdminLayout = ({ children }: AdminLayoutProps) => {
+  const navigate = useNavigate();
   const { user } = useAuthStore();
   const { logout } = useAuth();
   const { filterNavigationByPermission } = usePermissions();
@@ -178,56 +175,17 @@ export const AdminLayout = ({ children }: AdminLayoutProps) => {
               <EnhancedBreadcrumbs />
             </div>
 
-            {/* 主题切换和用户菜单 */}
-            <div className="flex items-center gap-2">
+            {/* Theme toggle and user menu */}
+            <div className="flex items-center gap-3">
               <ThemeToggle />
 
-            <DropdownMenuPrimitive.Root>
-              <DropdownMenuPrimitive.Trigger asChild>
-                <button className="flex h-11 w-11 items-center justify-center rounded-full hover:bg-accent touch-target">
-                  <AvatarPrimitive.Root className="h-10 w-10">
-                    <AvatarPrimitive.Fallback className="flex h-full w-full items-center justify-center rounded-full bg-muted text-sm font-medium">
-                      {user?.initials || user?.displayName?.charAt(0).toUpperCase()}
-                    </AvatarPrimitive.Fallback>
-                  </AvatarPrimitive.Root>
-                </button>
-              </DropdownMenuPrimitive.Trigger>
-              <DropdownMenuPrimitive.Portal>
-                <DropdownMenuPrimitive.Content
-                  className="z-50 min-w-[12rem] rounded-md border bg-popover p-1 shadow-md"
-                  align="end"
-                  sideOffset={4}
-                >
-                  <DropdownMenuPrimitive.Label className="px-2 py-1.5">
-                    <p className="text-sm font-medium">{user?.displayName}</p>
-                    <p className="text-xs text-muted-foreground">{user?.email}</p>
-                  </DropdownMenuPrimitive.Label>
-                  <DropdownMenuPrimitive.Separator className="my-1 h-px bg-border" />
-                  <DropdownMenuPrimitive.Item
-                    className="flex items-center gap-2 rounded-sm px-2 py-1.5 text-sm cursor-pointer hover:bg-accent"
-                    onSelect={() => setProfileDialogOpen(true)}
-                  >
-                    <UserIcon className="h-4 w-4" />
-                    个人资料
-                  </DropdownMenuPrimitive.Item>
-                  <DropdownMenuPrimitive.Item
-                    className="flex items-center gap-2 rounded-sm px-2 py-1.5 text-sm cursor-pointer hover:bg-accent opacity-50"
-                    disabled
-                  >
-                    <Settings className="h-4 w-4" />
-                    账户设置
-                  </DropdownMenuPrimitive.Item>
-                  <DropdownMenuPrimitive.Separator className="my-1 h-px bg-border" />
-                  <DropdownMenuPrimitive.Item
-                    className="flex items-center gap-2 rounded-sm px-2 py-1.5 text-sm cursor-pointer text-destructive hover:bg-destructive/10"
-                    onSelect={handleLogout}
-                  >
-                    <LogOut className="h-4 w-4" />
-                    退出登录
-                  </DropdownMenuPrimitive.Item>
-                </DropdownMenuPrimitive.Content>
-              </DropdownMenuPrimitive.Portal>
-            </DropdownMenuPrimitive.Root>
+              <UserMenu
+                user={user}
+                showUserSwitch
+                onProfileClick={() => setProfileDialogOpen(true)}
+                onUserClick={() => navigate('/dashboard')}
+                onLogout={handleLogout}
+              />
             </div>
           </header>
 

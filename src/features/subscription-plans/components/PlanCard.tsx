@@ -1,11 +1,13 @@
 /**
- * 订阅计划卡片组件（用户端）
+ * Subscription Plan Card Component (User-facing)
+ * Following StatCard and QuickActionsCard patterns
  */
 
-import { Separator } from '@/components/common/Separator';
-import { getButtonClass, getBadgeClass, cardStyles, cardContentStyles } from '@/lib/ui-styles';
-import { PlanPricingSelector } from './PlanPricingSelector';
-import type { SubscriptionPlan } from '@/api/subscription/types';
+import { Check } from "lucide-react";
+import { cn } from "@/lib/utils";
+import { getButtonClass, getBadgeClass } from "@/lib/ui-styles";
+import { PlanPricingSelector } from "./PlanPricingSelector";
+import type { SubscriptionPlan } from "@/api/subscription/types";
 
 interface PlanCardProps {
   plan: SubscriptionPlan;
@@ -18,30 +20,50 @@ export const PlanCard: React.FC<PlanCardProps> = ({
   recommended = false,
   onSelect,
 }) => {
+  // Build features list from plan data
+  const features: string[] = [];
+  if (plan.maxUsers > 0) {
+    features.push(`最多 ${plan.maxUsers} 个用户`);
+  }
+  if (plan.maxProjects > 0) {
+    features.push(`${plan.maxProjects} 个项目`);
+  }
+  if (plan.nodeLimit && plan.nodeLimit > 0) {
+    features.push(`${plan.nodeLimit} 个节点`);
+  }
+  if (plan.apiRateLimit > 0) {
+    features.push(`${plan.apiRateLimit} 次/分钟 API`);
+  }
+
   return (
     <div
-      className={`${cardStyles} relative h-full flex flex-col overflow-hidden rounded-2xl transition-all duration-200 hover:-translate-y-1 hover:shadow-lg ${
-        recommended
-          ? 'border-2 border-primary bg-gradient-to-br from-blue-50 to-blue-50/50 dark:from-blue-950/30 dark:to-blue-950/10'
-          : 'border bg-card'
-      }`}
+      className={cn(
+        "relative flex flex-col h-full p-5 rounded-xl bg-card border",
+        "transition-all hover:shadow-md",
+        recommended && "border-primary ring-1 ring-primary/20",
+      )}
     >
-      {/* 推荐标签 */}
+      {/* Recommended badge */}
       {recommended && (
         <div className="absolute -top-3 left-1/2 -translate-x-1/2 z-10">
-          <span className={getBadgeClass('default', 'px-4 py-1 rounded-full font-semibold shadow-sm')}>
+          <span
+            className={getBadgeClass(
+              "default",
+              "px-3 py-1 rounded-full font-medium shadow-sm",
+            )}
+          >
             推荐
           </span>
         </div>
       )}
 
-      <div className={`${cardContentStyles} flex-1 flex flex-col p-6 ${recommended ? 'pt-8' : ''}`}>
-        {/* 计划名称 */}
-        <h2 className="text-2xl font-bold mb-3">
+      <div className={cn("flex flex-col flex-1", recommended && "pt-2")}>
+        {/* Plan name */}
+        <h3 className="text-xl font-semibold text-foreground mb-2">
           {plan.name}
-        </h2>
+        </h3>
 
-        {/* 价格展示 - 使用定价选择器 */}
+        {/* Pricing selector */}
         <div className="mb-4">
           {plan.pricings && plan.pricings.length > 0 ? (
             <PlanPricingSelector
@@ -53,38 +75,46 @@ export const PlanCard: React.FC<PlanCardProps> = ({
           )}
         </div>
 
-        {/* 描述 */}
+        {/* Description */}
         {plan.description && (
           <p className="text-sm text-muted-foreground mb-4">
             {plan.description}
           </p>
         )}
 
-        <Separator className="my-4" />
+        {/* Divider */}
+        <div className="border-t border-border my-3" />
 
-        {/* 限制信息 - 只有当值大于 0 时才显示 */}
-        {(plan.maxUsers > 0 || plan.maxProjects > 0) && (
-          <div className="mb-3">
-            <p className="text-xs text-muted-foreground">
-              {plan.maxUsers > 0 && `最多 ${plan.maxUsers} 个用户`}
-              {plan.maxUsers > 0 && plan.maxProjects > 0 && ' · '}
-              {plan.maxProjects > 0 && `${plan.maxProjects} 个项目`}
-            </p>
-          </div>
+        {/* Features list */}
+        {features.length > 0 && (
+          <ul className="space-y-2 mb-4 flex-1">
+            {features.map((feature, index) => (
+              <li key={index} className="flex items-center gap-2 text-sm">
+                <div className="p-1 rounded-md bg-success/10 ring-1 ring-success/20">
+                  <Check className="size-3 text-success" />
+                </div>
+                <span className="text-muted-foreground">{feature}</span>
+              </li>
+            ))}
+          </ul>
         )}
 
-        {/* 试用天数 */}
+        {/* Trial badge */}
         {plan.trialDays > 0 && (
           <div className="mb-4">
-            <span className={getBadgeClass('secondary', 'font-semibold')}>
+            <span className={getBadgeClass("secondary", "text-xs font-medium")}>
               免费试用 {plan.trialDays} 天
             </span>
           </div>
         )}
 
-        {/* 选择按钮 */}
+        {/* Select button */}
         <button
-          className={getButtonClass(recommended ? 'default' : 'outline', 'lg', 'w-full rounded-xl mt-auto')}
+          className={getButtonClass(
+            recommended ? "default" : "outline",
+            "default",
+            "w-full mt-auto",
+          )}
           onClick={() => onSelect?.(plan)}
         >
           选择计划

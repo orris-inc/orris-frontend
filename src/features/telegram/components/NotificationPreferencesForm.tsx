@@ -1,18 +1,22 @@
+/**
+ * Notification Preferences Form - Compact Layout
+ * Inline form for editing notification preferences
+ */
+
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { Loader2 } from 'lucide-react';
 import { Switch, SwitchThumb } from '@/components/common/Switch';
 import { Input } from '@/components/common/Input';
-import { Label } from '@/components/common/Label';
 import { Button } from '@/components/common/Button';
 import type { TelegramBinding, UpdatePreferencesRequest } from '@/api/telegram';
 
 const preferencesSchema = z.object({
   notifyExpiring: z.boolean(),
   notifyTraffic: z.boolean(),
-  expiringDays: z.number().min(1, '最小为 1 天').max(30, '最大为 30 天'),
-  trafficThreshold: z.number().min(1, '最小为 1%').max(100, '最大为 100%'),
+  expiringDays: z.number().min(1).max(30),
+  trafficThreshold: z.number().min(1).max(100),
 });
 
 type PreferencesFormData = z.infer<typeof preferencesSchema>;
@@ -24,7 +28,7 @@ interface NotificationPreferencesFormProps {
 }
 
 /**
- * Form for editing notification preferences
+ * Compact form for editing notification preferences
  */
 export const NotificationPreferencesForm = ({
   binding,
@@ -49,107 +53,85 @@ export const NotificationPreferencesForm = ({
   const notifyExpiring = watch('notifyExpiring');
   const notifyTraffic = watch('notifyTraffic');
 
-  const handleFormSubmit = async (data: PreferencesFormData) => {
-    await onSubmit(data);
-  };
-
   return (
-    <form onSubmit={handleSubmit(handleFormSubmit)} className="space-y-6">
+    <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
       {/* Expiring notification */}
-      <div className="space-y-4">
-        <div className="flex items-center justify-between">
-          <div className="space-y-0.5">
-            <Label>订阅到期提醒</Label>
-            <p className="text-sm text-muted-foreground">
-              在订阅即将到期时通过 Telegram 发送提醒
-            </p>
+      <div className="flex items-center justify-between gap-4 py-2">
+        <div className="flex-1 min-w-0">
+          <div className="text-sm font-medium">订阅到期提醒</div>
+          <div className="flex items-center gap-2 text-sm text-muted-foreground">
+            <span>提前</span>
+            <Controller
+              name="expiringDays"
+              control={control}
+              render={({ field }) => (
+                <Input
+                  type="number"
+                  min={1}
+                  max={30}
+                  disabled={!notifyExpiring}
+                  className="w-14 h-7 text-center text-xs px-1"
+                  {...field}
+                  onChange={(e) => field.onChange(parseInt(e.target.value, 10) || 1)}
+                />
+              )}
+            />
+            <span>天通知</span>
           </div>
-          <Controller
-            name="notifyExpiring"
-            control={control}
-            render={({ field }) => (
-              <Switch checked={field.value} onCheckedChange={field.onChange}>
-                <SwitchThumb />
-              </Switch>
-            )}
-          />
         </div>
-
-        {notifyExpiring && (
-          <div className="ml-4 pl-4 border-l-2 border-muted">
-            <Label htmlFor="expiringDays">提前提醒天数</Label>
-            <div className="flex items-center gap-2 mt-2">
-              <Controller
-                name="expiringDays"
-                control={control}
-                render={({ field }) => (
-                  <Input
-                    id="expiringDays"
-                    type="number"
-                    min={1}
-                    max={30}
-                    className="w-20"
-                    {...field}
-                    onChange={(e) => field.onChange(parseInt(e.target.value, 10))}
-                  />
-                )}
-              />
-              <span className="text-sm text-muted-foreground">天</span>
-            </div>
-          </div>
-        )}
+        <Controller
+          name="notifyExpiring"
+          control={control}
+          render={({ field }) => (
+            <Switch checked={field.value} onCheckedChange={field.onChange}>
+              <SwitchThumb />
+            </Switch>
+          )}
+        />
       </div>
 
       {/* Traffic notification */}
-      <div className="space-y-4">
-        <div className="flex items-center justify-between">
-          <div className="space-y-0.5">
-            <Label>流量告警通知</Label>
-            <p className="text-sm text-muted-foreground">
-              当流量使用超过阈值时发送告警
-            </p>
+      <div className="flex items-center justify-between gap-4 py-2 border-t">
+        <div className="flex-1 min-w-0">
+          <div className="text-sm font-medium">流量告警通知</div>
+          <div className="flex items-center gap-2 text-sm text-muted-foreground">
+            <span>超过</span>
+            <Controller
+              name="trafficThreshold"
+              control={control}
+              render={({ field }) => (
+                <Input
+                  type="number"
+                  min={1}
+                  max={100}
+                  disabled={!notifyTraffic}
+                  className="w-14 h-7 text-center text-xs px-1"
+                  {...field}
+                  onChange={(e) => field.onChange(parseInt(e.target.value, 10) || 1)}
+                />
+              )}
+            />
+            <span>% 时告警</span>
           </div>
-          <Controller
-            name="notifyTraffic"
-            control={control}
-            render={({ field }) => (
-              <Switch checked={field.value} onCheckedChange={field.onChange}>
-                <SwitchThumb />
-              </Switch>
-            )}
-          />
         </div>
-
-        {notifyTraffic && (
-          <div className="ml-4 pl-4 border-l-2 border-muted">
-            <Label htmlFor="trafficThreshold">流量告警阈值</Label>
-            <div className="flex items-center gap-2 mt-2">
-              <Controller
-                name="trafficThreshold"
-                control={control}
-                render={({ field }) => (
-                  <Input
-                    id="trafficThreshold"
-                    type="number"
-                    min={1}
-                    max={100}
-                    className="w-20"
-                    {...field}
-                    onChange={(e) => field.onChange(parseInt(e.target.value, 10))}
-                  />
-                )}
-              />
-              <span className="text-sm text-muted-foreground">%</span>
-            </div>
-          </div>
-        )}
+        <Controller
+          name="notifyTraffic"
+          control={control}
+          render={({ field }) => (
+            <Switch checked={field.value} onCheckedChange={field.onChange}>
+              <SwitchThumb />
+            </Switch>
+          )}
+        />
       </div>
 
       {/* Save button */}
-      <Button type="submit" disabled={!isDirty || isSubmitting} className="w-full">
-        {isSubmitting && <Loader2 className="mr-2 size-4 animate-spin" />}
-        保存设置
-      </Button>
+      {isDirty && (
+        <Button type="submit" size="sm" disabled={isSubmitting} className="w-full">
+          {isSubmitting && <Loader2 className="mr-2 size-4 animate-spin" />}
+          保存
+        </Button>
+      )}
     </form>
   );
 };

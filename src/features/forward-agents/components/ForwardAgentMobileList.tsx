@@ -39,6 +39,7 @@ import { Skeleton } from '@/components/common/Skeleton';
 import { SystemStatusDisplay } from '@/components/common/SystemStatusDisplay';
 import type { ForwardAgent } from '@/api/forward';
 import type { ResourceGroup } from '@/api/resource/types';
+import { formatBitRate, formatBytes } from '@/shared/utils/format-utils';
 
 interface ForwardAgentMobileListProps {
   forwardAgents: ForwardAgent[];
@@ -317,18 +318,46 @@ export const ForwardAgentMobileList: React.FC<ForwardAgentMobileListProps> = ({
             {/* Accordion Content - Expanded details */}
             <AccordionContent>
               <div className="px-3 pb-2 space-y-2 border-t border-slate-100 dark:border-slate-700 pt-2">
-                {/* System status */}
+                {/* Monitor (System + Network) */}
                 {agent.systemStatus && (
                   <div className="flex items-start gap-2">
-                    <span className="text-[10px] text-slate-400 dark:text-slate-500 uppercase tracking-wide w-8 pt-0.5 flex-shrink-0">系统</span>
-                    <SystemStatusDisplay
-                      status={{
-                        cpu: agent.systemStatus.cpuPercent,
-                        memory: agent.systemStatus.memoryPercent,
-                        disk: agent.systemStatus.diskPercent,
-                        uptime: agent.systemStatus.uptimeSeconds,
-                      }}
-                    />
+                    <span className="text-[10px] text-slate-400 dark:text-slate-500 uppercase tracking-wide w-8 pt-0.5 flex-shrink-0">监控</span>
+                    <div className="flex flex-col gap-1.5 flex-1">
+                      {/* System bars + Network rates in one row */}
+                      <div className="flex items-center gap-3">
+                        <SystemStatusDisplay
+                          status={{
+                            cpu: agent.systemStatus.cpuPercent,
+                            memory: agent.systemStatus.memoryPercent,
+                            disk: agent.systemStatus.diskPercent,
+                            uptime: agent.systemStatus.uptimeSeconds,
+                            memoryUsed: agent.systemStatus.memoryUsed,
+                            memoryTotal: agent.systemStatus.memoryTotal,
+                            memoryAvail: agent.systemStatus.memoryAvail,
+                            diskUsed: agent.systemStatus.diskUsed,
+                            diskTotal: agent.systemStatus.diskTotal,
+                            loadAvg1: agent.systemStatus.loadAvg1,
+                            loadAvg5: agent.systemStatus.loadAvg5,
+                            loadAvg15: agent.systemStatus.loadAvg15,
+                          }}
+                        />
+                        {/* Network rates */}
+                        <div className="w-px h-4 bg-slate-200 dark:bg-slate-600" />
+                        <div className="flex items-center gap-1.5 text-[10px] font-mono">
+                          <span className="text-green-600 dark:text-green-400">↓{formatBitRate(agent.systemStatus.networkRxRate, true)}</span>
+                          <span className="text-blue-600 dark:text-blue-400">↑{formatBitRate(agent.systemStatus.networkTxRate, true)}</span>
+                        </div>
+                      </div>
+                      {/* Extended info row */}
+                      <div className="flex items-center gap-2 text-[10px] text-slate-500 dark:text-slate-400">
+                        <span className="font-mono">
+                          累计: ↓{formatBytes(agent.systemStatus.networkRxBytes)} ↑{formatBytes(agent.systemStatus.networkTxBytes)}
+                        </span>
+                        <span>
+                          {(agent.systemStatus.tcpConnections || 0) + (agent.systemStatus.udpConnections || 0)} 连接
+                        </span>
+                      </div>
+                    </div>
                   </div>
                 )}
 

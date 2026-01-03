@@ -1,111 +1,62 @@
 /**
- * 快捷操作卡片
+ * Quick Actions Card Component
+ * Horizontal layout for quick action buttons in Bento Grid
  */
-import {
-  User,
-  Lock,
-  Settings,
-  Bell,
-  ChevronRight,
-} from 'lucide-react';
-import { cardStyles, cardHeaderStyles, cardTitleStyles, cardContentStyles } from '@/lib/ui-styles';
 
-export const QuickActionsCard = () => {
-  const actions = [
-    {
-      icon: User,
-      title: '编辑个人资料',
-      description: '更新您的姓名和头像',
-      disabled: true,
-    },
-    {
-      icon: Lock,
-      title: '修改密码',
-      description: '更改您的登录密码',
-      disabled: true,
-    },
-    {
-      icon: Bell,
-      title: '通知设置',
-      description: '管理通知偏好',
-      disabled: true,
-    },
-    {
-      icon: Settings,
-      title: '账户设置',
-      description: '高级账户选项',
-      disabled: true,
-    },
-  ];
+import { Zap, CreditCard, ArrowRight } from 'lucide-react';
+import { cn } from '@/lib/utils';
 
+interface QuickActionsCardProps {
+  className?: string;
+}
+
+/**
+ * Quick actions with horizontal layout
+ */
+export const QuickActionsCard = ({ className }: QuickActionsCardProps) => {
   return (
-    <div className={cardStyles}>
-      <div className={cardHeaderStyles}>
-        <h3 className={cardTitleStyles}>快捷操作</h3>
-      </div>
-      <div className={cardContentStyles}>
-        <div className="space-y-2">
-          {actions.map((action, index) => {
-            const Icon = action.icon;
-            return (
-              <div
-                key={index}
-                className={`flex items-center justify-between p-3 rounded-lg transition-colors ${
-                  action.disabled
-                    ? 'cursor-not-allowed bg-gray-100 dark:bg-gray-800'
-                    : 'hover:bg-gray-100 dark:hover:bg-gray-800'
-                }`}
-              >
-                <div className="flex items-center">
-                  <div
-                    className={`p-2 rounded-full ${
-                      action.disabled
-                        ? 'bg-gray-200 dark:bg-gray-700'
-                        : 'bg-primary/10'
-                    }`}
-                  >
-                    <Icon
-                      className={`h-5 w-5 ${
-                        action.disabled
-                          ? 'text-gray-400 dark:text-gray-500'
-                          : 'text-primary'
-                      }`}
-                    />
-                  </div>
-                  <div className="ml-4">
-                    <p
-                      className={`font-medium text-sm ${
-                        action.disabled ? 'text-gray-500' : ''
-                      }`}
-                    >
-                      {action.title}
-                    </p>
-                    <p
-                      className={`text-xs ${
-                        action.disabled
-                          ? 'text-gray-400'
-                          : 'text-muted-foreground'
-                      }`}
-                    >
-                      {action.description}
-                    </p>
-                  </div>
-                </div>
-                <ChevronRight
-                  className={`h-5 w-5 ${
-                    action.disabled
-                      ? 'text-gray-400'
-                      : 'text-gray-500'
-                  }`}
-                />
-              </div>
-            );
-          })}
+    <div className={cn(
+      'col-span-4 md:col-span-6 lg:col-span-12',
+      'grid grid-cols-1 sm:grid-cols-2 gap-3',
+      className
+    )}>
+      {/* Upgrade subscription */}
+      <a
+        href="/pricing"
+        className={cn(
+          'flex items-center gap-4 p-4 rounded-xl bg-card border',
+          'hover:border-primary/50 hover:shadow-md',
+          'transition-all group cursor-pointer'
+        )}
+      >
+        <div className="p-2.5 rounded-xl bg-primary/10 ring-1 ring-primary/20">
+          <Zap className="size-5 text-primary" />
         </div>
-        <p className="mt-4 text-center text-xs italic text-muted-foreground">
-          更多功能即将推出
-        </p>
-      </div>
+        <div className="flex-1 min-w-0">
+          <div className="font-medium text-foreground">升级订阅</div>
+          <div className="text-sm text-muted-foreground truncate">获取更多流量</div>
+        </div>
+        <ArrowRight className="size-4 text-muted-foreground group-hover:text-primary transition-colors shrink-0" />
+      </a>
+
+      {/* View plans */}
+      <a
+        href="/pricing"
+        className={cn(
+          'flex items-center gap-4 p-4 rounded-xl bg-card border',
+          'hover:border-primary/50 hover:shadow-md',
+          'transition-all group cursor-pointer'
+        )}
+      >
+        <div className="p-2.5 rounded-xl bg-success/10 ring-1 ring-success/20">
+          <CreditCard className="size-5 text-success" />
+        </div>
+        <div className="flex-1 min-w-0">
+          <div className="font-medium text-foreground">查看套餐</div>
+          <div className="text-sm text-muted-foreground truncate">对比所有方案</div>
+        </div>
+        <ArrowRight className="size-4 text-muted-foreground group-hover:text-primary transition-colors shrink-0" />
+      </a>
     </div>
   );
 };

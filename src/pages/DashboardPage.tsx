@@ -1,24 +1,19 @@
 /**
- * Dashboard Main Page - Minimalist Style
+ * Dashboard Main Page - Bento Grid Style
+ * Apple-inspired asymmetric grid layout with traffic data focus
  */
 
 import { useEffect, useState } from 'react';
-import {
-  CircleAlert,
-  TrendingUp,
-  Calendar,
-  Zap,
-  Download,
-  Upload,
-  Shield,
-  ArrowRight,
-} from 'lucide-react';
+import { CircleAlert, Calendar, Download, Upload, Shield } from 'lucide-react';
 import { DashboardLayout } from '@/layouts/DashboardLayout';
 import { useAuthStore } from '@/features/auth/stores/auth-store';
 import { usePageTitle } from '@/shared/hooks';
 import { getDashboard } from '@/api/user';
 import type { DashboardResponse } from '@/api/user/types';
 import { SubscriptionCard } from '@/components/dashboard/SubscriptionCard';
+import { TrafficHeroCard } from '@/components/dashboard/TrafficHeroCard';
+import { StatCard } from '@/components/dashboard/StatCard';
+import { QuickActionsCard } from '@/components/dashboard/QuickActionsCard';
 
 /**
  * Format bytes to readable traffic units
@@ -59,7 +54,7 @@ export const DashboardPage = () => {
     return (
       <DashboardLayout>
         <div className="flex items-center gap-3 p-4 bg-destructive/10 border border-destructive/20 rounded-lg text-destructive">
-          <CircleAlert className="h-5 w-5" />
+          <CircleAlert className="size-5" />
           <span>无法加载用户信息</span>
         </div>
       </DashboardLayout>
@@ -88,6 +83,10 @@ export const DashboardPage = () => {
 
   const daysRemaining = primarySubscription ? getDaysRemaining(primarySubscription.currentPeriodEnd) : null;
 
+  // Format traffic for stat cards
+  const uploadFormatted = totalUsage ? formatTraffic(totalUsage.upload) : { value: '-', unit: '' };
+  const downloadFormatted = totalUsage ? formatTraffic(totalUsage.download) : { value: '-', unit: '' };
+
   return (
     <DashboardLayout>
       <div className="space-y-6">
@@ -99,144 +98,72 @@ export const DashboardPage = () => {
           <p className="text-muted-foreground">欢迎回来</p>
         </div>
 
-        {/* Stats Cards */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-          {/* Subscription Status */}
-          <div className="p-5 rounded-xl bg-card border">
-            <div className="flex items-center gap-3 mb-3">
-              <div className="p-2 rounded-lg bg-emerald-500/10">
-                <Shield className="h-5 w-5 text-emerald-500" />
-              </div>
-              <span className="text-sm text-muted-foreground">订阅状态</span>
-            </div>
-            <div className="text-2xl font-semibold">
-              {isLoading ? (
-                <span className="inline-block w-16 h-7 bg-muted animate-pulse rounded" />
-              ) : hasActiveSubscription ? '已激活' : '未激活'}
-            </div>
-            <p className="text-sm text-muted-foreground mt-1">
-              {isLoading ? (
-                <span className="inline-block w-12 h-4 bg-muted animate-pulse rounded" />
-              ) : hasActiveSubscription ? `${activeSubscriptions.length} 个活跃` : '暂无订阅'}
-            </p>
-          </div>
+        {/* Bento Grid */}
+        <div className="grid grid-cols-4 md:grid-cols-6 lg:grid-cols-12 gap-4 lg:gap-5">
+          {/* Traffic Hero Card - Left large card spanning 2 rows */}
+          <TrafficHeroCard
+            upload={totalUsage?.upload ?? 0}
+            download={totalUsage?.download ?? 0}
+            total={totalUsage?.total ?? 0}
+            limit={totalTrafficLimit}
+            isLoading={isLoading}
+          />
 
-          {/* Remaining Days */}
-          <div className="p-5 rounded-xl bg-card border">
-            <div className="flex items-center gap-3 mb-3">
-              <div className="p-2 rounded-lg bg-amber-500/10">
-                <Calendar className="h-5 w-5 text-amber-500" />
-              </div>
-              <span className="text-sm text-muted-foreground">剩余天数</span>
-            </div>
-            <div className="text-2xl font-semibold font-mono">
-              {isLoading ? (
-                <span className="inline-block w-10 h-7 bg-muted animate-pulse rounded" />
-              ) : daysRemaining !== null ? daysRemaining : '-'}
-            </div>
-            <p className="text-sm text-muted-foreground mt-1">天</p>
-          </div>
+          {/* Subscription Status - Top right */}
+          <StatCard
+            icon={<Shield className="size-5" />}
+            iconBgClass="bg-success/10 ring-success/20"
+            iconColorClass="text-success"
+            title="订阅状态"
+            value={isLoading ? '...' : (hasActiveSubscription ? '已激活' : '未激活')}
+            subtitle={isLoading ? undefined : (hasActiveSubscription ? `${activeSubscriptions.length} 个活跃` : '暂无订阅')}
+            isLoading={isLoading}
+          />
+
+          {/* Days Remaining */}
+          <StatCard
+            icon={<Calendar className="size-5" />}
+            iconBgClass="bg-warning/10 ring-warning/20"
+            iconColorClass="text-warning"
+            title="剩余天数"
+            value={isLoading ? '...' : (daysRemaining !== null ? daysRemaining : '-')}
+            subtitle="天"
+            isLoading={isLoading}
+          />
 
           {/* Upload Traffic */}
-          <div className="p-5 rounded-xl bg-card border">
-            <div className="flex items-center gap-3 mb-3">
-              <div className="p-2 rounded-lg bg-blue-500/10">
-                <Upload className="h-5 w-5 text-blue-500" />
-              </div>
-              <span className="text-sm text-muted-foreground">上传</span>
-            </div>
-            <div className="text-2xl font-semibold font-mono">
-              {isLoading ? (
-                <span className="inline-block w-14 h-7 bg-muted animate-pulse rounded" />
-              ) : totalUsage ? formatTraffic(totalUsage.upload).value : '-'}
-            </div>
-            <p className="text-sm text-muted-foreground mt-1">
-              {isLoading ? (
-                <span className="inline-block w-10 h-4 bg-muted animate-pulse rounded" />
-              ) : totalUsage ? `${formatTraffic(totalUsage.upload).unit} 本月` : '本月'}
-            </p>
-          </div>
+          <StatCard
+            icon={<Upload className="size-5" />}
+            iconBgClass="bg-chart-upload/10 ring-chart-upload/20"
+            iconColorClass="text-chart-upload"
+            title="上传"
+            value={isLoading ? '...' : `${uploadFormatted.value} ${uploadFormatted.unit}`}
+            subtitle="本月累计"
+            isLoading={isLoading}
+          />
 
           {/* Download Traffic */}
-          <div className="p-5 rounded-xl bg-card border">
-            <div className="flex items-center gap-3 mb-3">
-              <div className="p-2 rounded-lg bg-pink-500/10">
-                <Download className="h-5 w-5 text-pink-500" />
-              </div>
-              <span className="text-sm text-muted-foreground">下载</span>
-            </div>
-            <div className="text-2xl font-semibold font-mono">
-              {isLoading ? (
-                <span className="inline-block w-14 h-7 bg-muted animate-pulse rounded" />
-              ) : totalUsage ? formatTraffic(totalUsage.download).value : '-'}
-            </div>
-            <p className="text-sm text-muted-foreground mt-1">
-              {isLoading ? (
-                <span className="inline-block w-10 h-4 bg-muted animate-pulse rounded" />
-              ) : totalUsage ? `${formatTraffic(totalUsage.download).unit} 本月` : '本月'}
-            </p>
-          </div>
-        </div>
+          <StatCard
+            icon={<Download className="size-5" />}
+            iconBgClass="bg-chart-download/10 ring-chart-download/20"
+            iconColorClass="text-chart-download"
+            title="下载"
+            value={isLoading ? '...' : `${downloadFormatted.value} ${downloadFormatted.unit}`}
+            subtitle="本月累计"
+            isLoading={isLoading}
+          />
 
-        {/* Traffic Progress */}
-        <div className="p-5 rounded-xl bg-card border">
-          <div className="flex justify-between items-center mb-3">
-            <span className="text-sm text-muted-foreground">总流量使用</span>
-            <span className="text-sm font-mono">
-              {totalUsage ? formatTraffic(totalUsage.total).value : '-'}{' '}
-              {totalUsage ? formatTraffic(totalUsage.total).unit : ''} /{' '}
-              {totalTrafficLimit > 0 ? formatTraffic(totalTrafficLimit).value : '-'}{' '}
-              {totalTrafficLimit > 0 ? formatTraffic(totalTrafficLimit).unit : ''}
-            </span>
-          </div>
-          <div className="h-2 rounded-full bg-muted overflow-hidden">
-            <div
-              className="h-full rounded-full bg-primary"
-              style={{
-                width: totalTrafficLimit > 0 && totalUsage
-                  ? `${Math.min((totalUsage.total / totalTrafficLimit) * 100, 100)}%`
-                  : '0%',
-              }}
+          {/* Quick Actions */}
+          <QuickActionsCard />
+
+          {/* Subscription Details - Full width */}
+          <div className="col-span-4 md:col-span-6 lg:col-span-12">
+            <SubscriptionCard
+              subscriptions={subscriptions}
+              isLoading={isLoading}
             />
           </div>
         </div>
-
-        {/* Quick Actions */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-          <a
-            href="/pricing"
-            className="flex items-center gap-4 p-4 rounded-xl bg-card border hover:border-primary/50 transition-colors group"
-          >
-            <div className="p-2 rounded-lg bg-primary/10">
-              <Zap className="h-5 w-5 text-primary" />
-            </div>
-            <div className="flex-1">
-              <div className="font-medium">升级订阅</div>
-              <div className="text-sm text-muted-foreground">获取更多流量</div>
-            </div>
-            <ArrowRight className="h-4 w-4 text-muted-foreground group-hover:text-primary transition-colors" />
-          </a>
-
-          <a
-            href="/pricing"
-            className="flex items-center gap-4 p-4 rounded-xl bg-card border hover:border-primary/50 transition-colors group"
-          >
-            <div className="p-2 rounded-lg bg-emerald-500/10">
-              <TrendingUp className="h-5 w-5 text-emerald-500" />
-            </div>
-            <div className="flex-1">
-              <div className="font-medium">查看套餐</div>
-              <div className="text-sm text-muted-foreground">对比所有方案</div>
-            </div>
-            <ArrowRight className="h-4 w-4 text-muted-foreground group-hover:text-primary transition-colors" />
-          </a>
-        </div>
-
-        {/* Subscription Details */}
-        <SubscriptionCard
-          subscriptions={subscriptions}
-          isLoading={isLoading}
-        />
       </div>
     </DashboardLayout>
   );

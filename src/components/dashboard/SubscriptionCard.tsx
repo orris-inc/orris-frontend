@@ -176,10 +176,10 @@ export const SubscriptionCard = ({ subscriptions, isLoading, error }: Subscripti
   // Loading state
   if (isLoading) {
     return (
-      <div className="p-5 rounded-xl bg-card border">
+      <div className="p-6 rounded-2xl bg-card border transition-shadow hover:shadow-md">
         <div className="flex items-center gap-3 mb-4">
-          <div className="p-2 rounded-lg bg-primary/10">
-            <CreditCard className="h-5 w-5 text-primary" />
+          <div className="p-2.5 rounded-xl bg-primary/10 ring-1 ring-primary/20">
+            <CreditCard className="size-5 text-primary" />
           </div>
           <span className="text-sm text-muted-foreground">我的订阅</span>
         </div>
@@ -193,10 +193,10 @@ export const SubscriptionCard = ({ subscriptions, isLoading, error }: Subscripti
   // Error state
   if (error) {
     return (
-      <div className="p-5 rounded-xl bg-card border">
+      <div className="p-6 rounded-2xl bg-card border transition-shadow hover:shadow-md">
         <div className="flex items-center gap-3 mb-4">
-          <div className="p-2 rounded-lg bg-destructive/10">
-            <XCircle className="h-5 w-5 text-destructive" />
+          <div className="p-2.5 rounded-xl bg-destructive/10 ring-1 ring-destructive/20">
+            <XCircle className="size-5 text-destructive" />
           </div>
           <span className="text-sm text-muted-foreground">我的订阅</span>
         </div>
@@ -208,10 +208,10 @@ export const SubscriptionCard = ({ subscriptions, isLoading, error }: Subscripti
   // No subscription state
   if (subscriptions.length === 0) {
     return (
-      <div className="p-5 rounded-xl bg-card border">
+      <div className="p-6 rounded-2xl bg-card border transition-shadow hover:shadow-md">
         <div className="flex items-center gap-3 mb-4">
-          <div className="p-2 rounded-lg bg-muted">
-            <CreditCard className="h-5 w-5 text-muted-foreground" />
+          <div className="p-2.5 rounded-xl bg-muted ring-1 ring-border">
+            <CreditCard className="size-5 text-muted-foreground" />
           </div>
           <span className="text-sm text-muted-foreground">我的订阅</span>
         </div>
@@ -230,12 +230,12 @@ export const SubscriptionCard = ({ subscriptions, isLoading, error }: Subscripti
   const displaySubscriptions = showAll ? subscriptions : activeSubscriptions;
 
   return (
-    <div className="p-5 rounded-xl bg-card border">
-      {/* Title bar - consistent style with stats cards */}
+    <div className="p-6 rounded-2xl bg-card border transition-shadow hover:shadow-md">
+      {/* Title bar - consistent style with hero cards */}
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-3">
-          <div className="p-2 rounded-lg bg-primary/10">
-            <CreditCard className="h-5 w-5 text-primary" />
+          <div className="p-2.5 rounded-xl bg-primary/10 ring-1 ring-primary/20">
+            <CreditCard className="size-5 text-primary" />
           </div>
           <span className="text-sm text-muted-foreground">我的订阅</span>
         </div>

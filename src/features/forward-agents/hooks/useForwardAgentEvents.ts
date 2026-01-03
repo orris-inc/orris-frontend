@@ -3,7 +3,7 @@
  * SSE subscription for real-time forward agent events
  */
 
-import { useEffect, useRef, useCallback } from 'react';
+import { useEffect, useRef, useCallback, useState } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { queryKeys } from '@/shared/lib/query-client';
 import { subscribeForwardAgentEvents } from '@/api/forward';
@@ -16,6 +16,15 @@ interface UseForwardAgentEventsOptions {
   agentIds?: string[];
   /** Enable/disable the subscription */
   enabled?: boolean;
+}
+
+interface UseForwardAgentDetailEventsOptions {
+  /** Agent ID to subscribe to */
+  agentId: string | null;
+  /** Enable/disable the subscription */
+  enabled?: boolean;
+  /** Callback when status is updated */
+  onStatusUpdate?: (status: AgentSystemStatus) => void;
 }
 
 /**
@@ -148,4 +157,122 @@ export function useForwardAgentEvents(options: UseForwardAgentEventsOptions = {}
       }
     };
   }, [enabled, agentIds, handleEvent, handleError]);
+}
+
+/**
+ * Hook for detail dialog to subscribe to a single agent's real-time events
+ * Returns the latest status and handles SSE subscription lifecycle
+ */
+export function useForwardAgentDetailEvents(options: UseForwardAgentDetailEventsOptions) {
+  const { agentId, enabled = true, onStatusUpdate } = options;
+  const cleanupRef = useRef<(() => void) | null>(null);
+  const [status, setStatus] = useState<AgentSystemStatus | null>(null);
+  const [isOnline, setIsOnline] = useState(false);
+  const [isConnected, setIsConnected] = useState(false);
+
+  // Handle incoming SSE events for this specific agent
+  const handleEvent = useCallback(
+    (event: ForwardAgentEvent) => {
+      // Only process events for our agent
+      if (event.type !== 'agents:status' && event.agentId !== agentId) {
+        return;
+      }
+
+      switch (event.type) {
+        case 'agent:online':
+          setIsOnline(true);
+          break;
+
+        case 'agent:offline':
+          setIsOnline(false);
+          setStatus(null);
+          break;
+
+        case 'agent:status':
+          if (event.data) {
+            const convertedStatus = convertSnakeToCamel<AgentSystemStatus>(event.data);
+            setStatus(convertedStatus);
+            setIsOnline(true);
+            if (onStatusUpdate) {
+              onStatusUpdate(convertedStatus);
+            }
+          }
+          break;
+
+        case 'agents:status': {
+          // Batch status event - check if our agent is included
+          const batchEvent = event as unknown as ForwardAgentBatchStatusEvent;
+          const agentData = batchEvent.agents[agentId!];
+          if (agentData?.status) {
+            const convertedStatus = convertSnakeToCamel<AgentSystemStatus>(agentData.status);
+            setStatus(convertedStatus);
+            setIsOnline(true);
+            if (onStatusUpdate) {
+              onStatusUpdate(convertedStatus);
+            }
+          }
+          break;
+        }
+      }
+    },
+    [agentId, onStatusUpdate]
+  );
+
+  // Handle SSE errors
+  const handleError = useCallback((error: Event) => {
+    console.error('Forward agent detail SSE connection error:', error);
+  }, []);
+
+  // Handle connection open
+  const handleOpen = useCallback(() => {
+    setIsConnected(true);
+  }, []);
+
+  // Handle connection close
+  const handleClose = useCallback(() => {
+    setIsConnected(false);
+  }, []);
+
+  // Manage SSE subscription lifecycle
+  useEffect(() => {
+    if (!enabled || !agentId) {
+      // Clean up if disabled or no agent ID
+      if (cleanupRef.current) {
+        cleanupRef.current();
+        cleanupRef.current = null;
+      }
+      setStatus(null);
+      setIsOnline(false);
+      setIsConnected(false);
+      return;
+    }
+
+    // Subscribe to SSE events for this specific agent
+    cleanupRef.current = subscribeForwardAgentEvents(
+      { agentIds: agentId },
+      {
+        onOpen: handleOpen,
+        onEvent: handleEvent,
+        onError: handleError,
+        onClose: handleClose,
+      }
+    );
+
+    // Cleanup on unmount or when deps change
+    return () => {
+      if (cleanupRef.current) {
+        cleanupRef.current();
+        cleanupRef.current = null;
+      }
+    };
+  }, [enabled, agentId, handleEvent, handleError, handleOpen, handleClose]);
+
+  return {
+    /** Current system status from SSE */
+    status,
+    /** Whether the agent is online */
+    isOnline,
+    /** Whether SSE connection is established */
+    isConnected,
+  };
 }

@@ -17,11 +17,13 @@ import { Separator } from '@/components/common/Separator';
 import { Progress, ProgressIndicator } from '@/components/common/Progress';
 import { TruncatedId, ExtendedMetricsPanel, hasExtendedMetrics } from '@/components/admin';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/common/Tooltip';
-import { Cpu, MemoryStick, HardDrive, Clock, ShieldCheck, ShieldAlert, Globe, Activity, Network, Package, RefreshCw, ArrowUpCircle, Loader2 } from 'lucide-react';
+import { Cpu, MemoryStick, HardDrive, ShieldCheck, ShieldAlert, Globe, Activity, Network, Package, RefreshCw, ArrowUpCircle, Loader2, Wifi, WifiOff } from 'lucide-react';
 import type { Node, NodeVersionInfo } from '@/api/node';
 import { getNodeVersion, triggerNodeUpdate } from '@/api/node';
 import { RouteConfigDisplay } from './RouteConfigDisplay';
 import type { OutboundNodeOption } from './RouteRuleEditor';
+import { formatBitRate, formatBytes, formatUptime } from '@/shared/utils/format-utils';
+import { useNodeDetailEvents } from '../hooks/useNodeEvents';
 
 interface NodeDetailDialogProps {
   open: boolean;
@@ -65,38 +67,6 @@ const formatDate = (dateString: string) => {
   });
 };
 
-// Format uptime
-const formatUptime = (seconds: number): string => {
-  if (!seconds || seconds <= 0) return '-';
-  const days = Math.floor(seconds / 86400);
-  const hours = Math.floor((seconds % 86400) / 3600);
-  const minutes = Math.floor((seconds % 3600) / 60);
-
-  const parts = [];
-  if (days > 0) parts.push(`${days}天`);
-  if (hours > 0) parts.push(`${hours}小时`);
-  if (minutes > 0 && days === 0) parts.push(`${minutes}分钟`);
-
-  return parts.join(' ') || '刚刚启动';
-};
-
-// Format bytes to human readable
-const formatBytes = (bytes: number): string => {
-  if (bytes === 0) return '0 B';
-  const k = 1024;
-  const sizes = ['B', 'KB', 'MB', 'GB', 'TB'];
-  const i = Math.floor(Math.log(bytes) / Math.log(k));
-  return `${parseFloat((bytes / Math.pow(k, i)).toFixed(1))} ${sizes[i]}`;
-};
-
-// Format network rate
-const formatRate = (bytesPerSec: number): string => {
-  if (bytesPerSec === 0) return '0 B/s';
-  const k = 1024;
-  const sizes = ['B/s', 'KB/s', 'MB/s', 'GB/s'];
-  const i = Math.floor(Math.log(bytesPerSec) / Math.log(k));
-  return `${parseFloat((bytesPerSec / Math.pow(k, i)).toFixed(1))} ${sizes[i]}`;
-};
 
 // Get progress color based on value
 const getProgressColor = (value: number): string => {
@@ -116,9 +86,18 @@ export const NodeDetailDialog: React.FC<NodeDetailDialogProps> = ({
   const [updateLoading, setUpdateLoading] = useState(false);
   const [updateMessage, setUpdateMessage] = useState<string | null>(null);
 
+  // Subscribe to real-time status via SSE
+  const { status: runtimeStatus, isOnline, isConnected } = useNodeDetailEvents({
+    nodeId: open && node?.status === 'active' ? node.id : null,
+    enabled: open && node?.status === 'active',
+  });
+
+  // Use SSE status if available, fallback to node's static systemStatus
+  const systemStatus = runtimeStatus ?? node?.systemStatus;
+
   // Fetch version info when dialog opens and node is online
   useEffect(() => {
-    if (open && node?.isOnline && node?.id) {
+    if (open && (isOnline || node?.isOnline) && node?.id) {
       setVersionInfo(null);
       setUpdateMessage(null);
       setVersionLoading(true);
@@ -127,7 +106,7 @@ export const NodeDetailDialog: React.FC<NodeDetailDialogProps> = ({
         .catch(() => setVersionInfo(null))
         .finally(() => setVersionLoading(false));
     }
-  }, [open, node?.id, node?.isOnline]);
+  }, [open, node?.id, node?.isOnline, isOnline]);
 
   // Handle trigger update
   const handleTriggerUpdate = async () => {
@@ -162,10 +141,15 @@ export const NodeDetailDialog: React.FC<NodeDetailDialogProps> = ({
               </Badge>
             </DialogTitle>
             <div className="flex items-center gap-2 mr-6">
-              {node.isOnline ? (
+              {isOnline ? (
                 <span className="flex items-center gap-1 text-xs text-green-600">
                   <span className="h-2 w-2 rounded-full bg-green-500"></span>
                   节点在线
+                </span>
+              ) : node.status === 'active' ? (
+                <span className="flex items-center gap-1 text-xs text-slate-400">
+                  <span className="h-2 w-2 rounded-full bg-slate-300"></span>
+                  {isConnected ? '等待状态' : '连接中...'}
                 </span>
               ) : (
                 <span className="flex items-center gap-1 text-xs text-slate-400">
@@ -189,8 +173,25 @@ export const NodeDetailDialog: React.FC<NodeDetailDialogProps> = ({
             <div className="space-y-4">
               {/* Status Bar */}
               <div className="flex flex-wrap items-center gap-3 p-3 bg-muted rounded-lg">
+                {/* SSE Connection Status */}
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                      {isConnected ? (
+                        <Wifi className="h-3 w-3 text-green-500" />
+                      ) : (
+                        <WifiOff className="h-3 w-3 text-slate-400" />
+                      )}
+                    </div>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    {isConnected ? '实时连接已建立' : '正在连接...'}
+                  </TooltipContent>
+                </Tooltip>
+                <span className="text-slate-300 dark:text-slate-600">|</span>
+                {/* Online Status */}
                 <div className="flex items-center gap-2">
-                  {node.isOnline ? (
+                  {isOnline ? (
                     <>
                       <span className="relative flex h-2.5 w-2.5">
                         <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
@@ -205,32 +206,23 @@ export const NodeDetailDialog: React.FC<NodeDetailDialogProps> = ({
                     </>
                   )}
                 </div>
-                {node.lastSeenAt && (
-                  <>
-                    <span className="text-slate-300 dark:text-slate-600">|</span>
-                    <div className="flex items-center gap-1.5 text-sm text-muted-foreground">
-                      <Clock className="h-3.5 w-3.5" />
-                      <span>最后上线: {formatDate(node.lastSeenAt)}</span>
-                    </div>
-                  </>
-                )}
-                {node.systemStatus?.uptimeSeconds !== undefined && node.systemStatus.uptimeSeconds > 0 && (
+                {systemStatus?.uptimeSeconds !== undefined && systemStatus.uptimeSeconds > 0 && (
                   <>
                     <span className="text-slate-300 dark:text-slate-600">|</span>
                     <div className="flex items-center gap-1.5 text-sm text-muted-foreground">
                       <Activity className="h-3.5 w-3.5" />
-                      <span>运行: {formatUptime(node.systemStatus.uptimeSeconds)}</span>
+                      <span>运行: {formatUptime(systemStatus.uptimeSeconds)}</span>
                     </div>
                   </>
                 )}
-                {node.systemStatus?.agentVersion && (
+                {systemStatus?.agentVersion && (
                   <>
                     <span className="text-slate-300 dark:text-slate-600">|</span>
                     <span className="text-sm text-muted-foreground font-mono">
-                      v{node.systemStatus.agentVersion}
-                      {node.systemStatus.platform && node.systemStatus.arch && (
+                      v{systemStatus.agentVersion}
+                      {systemStatus.platform && systemStatus.arch && (
                         <span className="text-xs ml-1">
-                          ({node.systemStatus.platform}/{node.systemStatus.arch})
+                          ({systemStatus.platform}/{systemStatus.arch})
                         </span>
                       )}
                     </span>
@@ -239,7 +231,7 @@ export const NodeDetailDialog: React.FC<NodeDetailDialogProps> = ({
               </div>
 
               {/* Version Management */}
-              {node.isOnline && (
+              {(isOnline || node.isOnline) && (
                 <div className="p-3 bg-muted rounded-lg">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
@@ -313,10 +305,15 @@ export const NodeDetailDialog: React.FC<NodeDetailDialogProps> = ({
                 </div>
               )}
 
-              {node.systemStatus && (
+              {!isConnected && node.status === 'active' ? (
+                <div className="flex items-center justify-center py-8">
+                  <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+                  <span className="ml-2 text-sm text-muted-foreground">正在建立实时连接...</span>
+                </div>
+              ) : systemStatus && (
                 <>
                   {/* Resource Usage */}
-                  <div className="grid grid-cols-3 gap-3">
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                     {/* CPU */}
                     <div className="p-3 bg-muted rounded-lg">
                       <div className="flex items-center justify-between mb-2">
@@ -324,17 +321,17 @@ export const NodeDetailDialog: React.FC<NodeDetailDialogProps> = ({
                           <Cpu className="h-4 w-4 text-blue-500" />
                           <span className="text-xs font-medium">CPU</span>
                         </div>
-                        <span className="text-sm font-semibold">{(node.systemStatus.cpuPercent ?? 0).toFixed(1)}%</span>
+                        <span className="text-sm font-semibold">{(systemStatus.cpuPercent ?? 0).toFixed(1)}%</span>
                       </div>
-                      <Progress value={node.systemStatus.cpuPercent ?? 0} className="h-2">
+                      <Progress value={systemStatus.cpuPercent ?? 0} className="h-2">
                         <ProgressIndicator
-                          className={getProgressColor(node.systemStatus.cpuPercent ?? 0)}
-                          style={{ transform: `translateX(-${100 - (node.systemStatus.cpuPercent ?? 0)}%)` }}
+                          className={getProgressColor(systemStatus.cpuPercent ?? 0)}
+                          style={{ transform: `translateX(-${100 - (systemStatus.cpuPercent ?? 0)}%)` }}
                         />
                       </Progress>
-                      {node.systemStatus.loadAvg1 !== undefined && (
+                      {systemStatus.loadAvg1 !== undefined && (
                         <p className="text-xs text-muted-foreground mt-1.5">
-                          负载: {node.systemStatus.loadAvg1.toFixed(2)}
+                          负载: {systemStatus.loadAvg1.toFixed(2)}
                         </p>
                       )}
                     </div>
@@ -345,17 +342,17 @@ export const NodeDetailDialog: React.FC<NodeDetailDialogProps> = ({
                           <MemoryStick className="h-4 w-4 text-green-500" />
                           <span className="text-xs font-medium">内存</span>
                         </div>
-                        <span className="text-sm font-semibold">{(node.systemStatus.memoryPercent ?? 0).toFixed(1)}%</span>
+                        <span className="text-sm font-semibold">{(systemStatus.memoryPercent ?? 0).toFixed(1)}%</span>
                       </div>
-                      <Progress value={node.systemStatus.memoryPercent ?? 0} className="h-2">
+                      <Progress value={systemStatus.memoryPercent ?? 0} className="h-2">
                         <ProgressIndicator
-                          className={getProgressColor(node.systemStatus.memoryPercent ?? 0)}
-                          style={{ transform: `translateX(-${100 - (node.systemStatus.memoryPercent ?? 0)}%)` }}
+                          className={getProgressColor(systemStatus.memoryPercent ?? 0)}
+                          style={{ transform: `translateX(-${100 - (systemStatus.memoryPercent ?? 0)}%)` }}
                         />
                       </Progress>
-                      {(node.systemStatus.memoryUsed !== undefined && node.systemStatus.memoryTotal !== undefined) && (
+                      {(systemStatus.memoryUsed !== undefined && systemStatus.memoryTotal !== undefined) && (
                         <p className="text-xs text-muted-foreground mt-1.5">
-                          {formatBytes(node.systemStatus.memoryUsed)} / {formatBytes(node.systemStatus.memoryTotal)}
+                          {formatBytes(systemStatus.memoryUsed)} / {formatBytes(systemStatus.memoryTotal)}
                         </p>
                       )}
                     </div>
@@ -366,53 +363,53 @@ export const NodeDetailDialog: React.FC<NodeDetailDialogProps> = ({
                           <HardDrive className="h-4 w-4 text-orange-500" />
                           <span className="text-xs font-medium">磁盘</span>
                         </div>
-                        <span className="text-sm font-semibold">{(node.systemStatus.diskPercent ?? 0).toFixed(1)}%</span>
+                        <span className="text-sm font-semibold">{(systemStatus.diskPercent ?? 0).toFixed(1)}%</span>
                       </div>
-                      <Progress value={node.systemStatus.diskPercent ?? 0} className="h-2">
+                      <Progress value={systemStatus.diskPercent ?? 0} className="h-2">
                         <ProgressIndicator
-                          className={getProgressColor(node.systemStatus.diskPercent ?? 0)}
-                          style={{ transform: `translateX(-${100 - (node.systemStatus.diskPercent ?? 0)}%)` }}
+                          className={getProgressColor(systemStatus.diskPercent ?? 0)}
+                          style={{ transform: `translateX(-${100 - (systemStatus.diskPercent ?? 0)}%)` }}
                         />
                       </Progress>
-                      {(node.systemStatus.diskUsed !== undefined && node.systemStatus.diskTotal !== undefined) && (
+                      {(systemStatus.diskUsed !== undefined && systemStatus.diskTotal !== undefined) && (
                         <p className="text-xs text-muted-foreground mt-1.5">
-                          {formatBytes(node.systemStatus.diskUsed)} / {formatBytes(node.systemStatus.diskTotal)}
+                          {formatBytes(systemStatus.diskUsed)} / {formatBytes(systemStatus.diskTotal)}
                         </p>
                       )}
                     </div>
                   </div>
 
                   {/* Network & IP Info */}
-                  {(node.systemStatus.networkRxRate !== undefined || node.systemStatus.publicIpv4 || node.systemStatus.publicIpv6) && (
-                    <div className="grid grid-cols-2 gap-3">
+                  {(systemStatus.networkRxRate !== undefined || systemStatus.publicIpv4 || systemStatus.publicIpv6) && (
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                       {/* Network */}
-                      {(node.systemStatus.networkRxRate !== undefined || node.systemStatus.tcpConnections !== undefined) && (
+                      {(systemStatus.networkRxRate !== undefined || systemStatus.tcpConnections !== undefined) && (
                         <div className="p-3 bg-muted rounded-lg">
                           <div className="flex items-center gap-1.5 mb-2">
                             <Network className="h-4 w-4 text-indigo-500" />
                             <span className="text-xs font-medium">网络流量</span>
                           </div>
                           <div className="flex items-center gap-4 text-sm">
-                            <span className="text-green-600">↓ {formatRate(node.systemStatus.networkRxRate ?? 0)}</span>
-                            <span className="text-blue-600">↑ {formatRate(node.systemStatus.networkTxRate ?? 0)}</span>
+                            <span className="text-green-600">↓ {formatBitRate(systemStatus.networkRxRate ?? 0)}</span>
+                            <span className="text-blue-600">↑ {formatBitRate(systemStatus.networkTxRate ?? 0)}</span>
                           </div>
                           <p className="text-xs text-muted-foreground mt-1.5">
-                            TCP {node.systemStatus.tcpConnections ?? 0} · UDP {node.systemStatus.udpConnections ?? 0}
+                            TCP {systemStatus.tcpConnections ?? 0} · UDP {systemStatus.udpConnections ?? 0}
                           </p>
                         </div>
                       )}
                       {/* Public IP */}
-                      {(node.systemStatus.publicIpv4 || node.systemStatus.publicIpv6) && (
+                      {(systemStatus.publicIpv4 || systemStatus.publicIpv6) && (
                         <div className="p-3 bg-muted rounded-lg">
                           <div className="flex items-center gap-1.5 mb-2">
                             <Globe className="h-4 w-4 text-cyan-500" />
                             <span className="text-xs font-medium">公网 IP</span>
                           </div>
                           <div className="space-y-0.5 font-mono text-sm">
-                            {node.systemStatus.publicIpv4 && <p>{node.systemStatus.publicIpv4}</p>}
-                            {node.systemStatus.publicIpv6 && (
-                              <p className="text-xs text-muted-foreground truncate" title={node.systemStatus.publicIpv6}>
-                                {node.systemStatus.publicIpv6}
+                            {systemStatus.publicIpv4 && <p>{systemStatus.publicIpv4}</p>}
+                            {systemStatus.publicIpv6 && (
+                              <p className="text-xs text-muted-foreground truncate" title={systemStatus.publicIpv6}>
+                                {systemStatus.publicIpv6}
                               </p>
                             )}
                           </div>
@@ -422,10 +419,10 @@ export const NodeDetailDialog: React.FC<NodeDetailDialogProps> = ({
                   )}
 
                   {/* Extended Metrics */}
-                  {hasExtendedMetrics(node.systemStatus) && (
+                  {hasExtendedMetrics(systemStatus) && (
                     <div className="mt-3">
                       <p className="text-xs font-medium text-muted-foreground mb-2">扩展指标</p>
-                      <ExtendedMetricsPanel data={node.systemStatus} />
+                      <ExtendedMetricsPanel data={systemStatus} />
                     </div>
                   )}
                 </>
