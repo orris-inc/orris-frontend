@@ -5,7 +5,7 @@
  */
 
 import { useMemo, useState, useCallback } from 'react';
-import { Edit, Trash2, Key, Eye, Power, PowerOff, MoreHorizontal, Terminal, Copy, Check, Download, Loader2, Package, ArrowUpCircle } from 'lucide-react';
+import { Edit, Trash2, Key, Eye, Power, PowerOff, MoreHorizontal, Terminal, Copy, Check, Download, Loader2, Package, ArrowUpCircle, Radio } from 'lucide-react';
 import { DataTable, AdminBadge, TruncatedId, SystemStatusCell, SystemStatusHoverProvider, type ColumnDef, type ResponsiveColumnMeta } from '@/components/admin';
 import { useBreakpoint } from '@/hooks/useBreakpoint';
 import { ForwardAgentMobileList } from './ForwardAgentMobileList';
@@ -43,6 +43,7 @@ interface ForwardAgentListTableProps {
   onViewDetail: (agent: ForwardAgent) => void;
   onCopy: (agent: ForwardAgent) => void;
   onCheckUpdate: (agent: ForwardAgent) => void;
+  onBroadcastURL?: (agent: ForwardAgent) => void;
   checkingAgentId?: string | number | null;
 }
 
@@ -136,6 +137,7 @@ export const ForwardAgentListTable: React.FC<ForwardAgentListTableProps> = ({
   onViewDetail,
   onCopy,
   onCheckUpdate,
+  onBroadcastURL,
   checkingAgentId,
 }) => {
   // Detect mobile screen
@@ -165,6 +167,12 @@ export const ForwardAgentListTable: React.FC<ForwardAgentListTableProps> = ({
           {checkingAgentId === agent.id ? '检查中...' : '检查更新'}
         </ContextMenuItem>
       )}
+      {onBroadcastURL && (
+        <ContextMenuItem onClick={() => onBroadcastURL(agent)}>
+          <Radio className="mr-2 size-4" />
+          下发地址
+        </ContextMenuItem>
+      )}
       <ContextMenuSeparator />
       {agent.status === 'enabled' ? (
         <ContextMenuItem onClick={() => onDisable(agent)}>
@@ -182,7 +190,7 @@ export const ForwardAgentListTable: React.FC<ForwardAgentListTableProps> = ({
         删除
       </ContextMenuItem>
     </>
-  ), [onCopy, onRegenerateToken, onCheckUpdate, checkingAgentId, onEnable, onDisable, onDelete]);
+  ), [onCopy, onRegenerateToken, onCheckUpdate, onBroadcastURL, checkingAgentId, onEnable, onDisable, onDelete]);
 
   // Forward agent dropdown menu content
   const renderDropdownMenuActions = useCallback((agent: ForwardAgent) => (
@@ -208,6 +216,12 @@ export const ForwardAgentListTable: React.FC<ForwardAgentListTableProps> = ({
           {checkingAgentId === agent.id ? '检查中...' : '检查更新'}
         </DropdownMenuItem>
       )}
+      {onBroadcastURL && (
+        <DropdownMenuItem onClick={() => onBroadcastURL(agent)}>
+          <Radio className="mr-2 size-4" />
+          下发地址
+        </DropdownMenuItem>
+      )}
       <DropdownMenuSeparator />
       {agent.status === 'enabled' ? (
         <DropdownMenuItem onClick={() => onDisable(agent)}>
@@ -225,7 +239,7 @@ export const ForwardAgentListTable: React.FC<ForwardAgentListTableProps> = ({
         删除
       </DropdownMenuItem>
     </>
-  ), [onCopy, onRegenerateToken, onCheckUpdate, checkingAgentId, onEnable, onDisable, onDelete]);
+  ), [onCopy, onRegenerateToken, onCheckUpdate, onBroadcastURL, checkingAgentId, onEnable, onDisable, onDelete]);
 
   const columns = useMemo<ColumnDef<ForwardAgent>[]>(() => [
     {
@@ -414,45 +428,47 @@ export const ForwardAgentListTable: React.FC<ForwardAgentListTableProps> = ({
       meta: { priority: 1 } as ResponsiveColumnMeta,
       cell: ({ row }) => {
         const agent = row.original;
+        const actionButtonClass = 'inline-flex items-center justify-center size-8 rounded-lg text-muted-foreground hover:text-foreground hover:bg-accent/50 active:scale-95 transition-all duration-150 cursor-pointer';
         return (
-          <div className="flex items-center gap-1">
+          <div className="flex items-center gap-0.5">
             <Tooltip>
               <TooltipTrigger asChild>
-                <button
-                  onClick={() => onViewDetail(agent)}
-                  className="inline-flex items-center justify-center size-8 rounded-lg text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-700 transition-all duration-200"
-                >
-                  <Eye className="size-4" />
+                <button onClick={() => onViewDetail(agent)} className={actionButtonClass}>
+                  <Eye className="size-4" strokeWidth={1.5} />
                 </button>
               </TooltipTrigger>
               <TooltipContent>查看详情</TooltipContent>
             </Tooltip>
             <Tooltip>
               <TooltipTrigger asChild>
-                <button
-                  onClick={() => onEdit(agent)}
-                  className="inline-flex items-center justify-center size-8 rounded-lg text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-700 transition-all duration-200"
-                >
-                  <Edit className="size-4" />
+                <button onClick={() => onEdit(agent)} className={actionButtonClass}>
+                  <Edit className="size-4" strokeWidth={1.5} />
                 </button>
               </TooltipTrigger>
               <TooltipContent>编辑</TooltipContent>
             </Tooltip>
             <Tooltip>
               <TooltipTrigger asChild>
-                <button
-                  onClick={() => onGetInstallScript(agent)}
-                  className="inline-flex items-center justify-center size-8 rounded-lg text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-700 transition-all duration-200"
-                >
-                  <Terminal className="size-4" />
+                <button onClick={() => onGetInstallScript(agent)} className={actionButtonClass}>
+                  <Terminal className="size-4" strokeWidth={1.5} />
                 </button>
               </TooltipTrigger>
               <TooltipContent>获取安装脚本</TooltipContent>
             </Tooltip>
+            {agent.systemStatus && onBroadcastURL && (
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <button onClick={() => onBroadcastURL(agent)} className={`${actionButtonClass} text-blue-500 hover:text-blue-600 hover:bg-blue-500/10`}>
+                    <Radio className="size-4" strokeWidth={1.5} />
+                  </button>
+                </TooltipTrigger>
+                <TooltipContent>下发地址</TooltipContent>
+              </Tooltip>
+            )}
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <button className="inline-flex items-center justify-center size-8 rounded-lg text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-700 transition-all duration-200">
-                  <MoreHorizontal className="size-4" />
+                <button className={actionButtonClass}>
+                  <MoreHorizontal className="size-4" strokeWidth={1.5} />
                 </button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
@@ -463,7 +479,7 @@ export const ForwardAgentListTable: React.FC<ForwardAgentListTableProps> = ({
         );
       },
     },
-  ], [onEdit, onDisable, onEnable, onGetInstallScript, onViewDetail, renderDropdownMenuActions, resourceGroupsMap]);
+  ], [onEdit, onDisable, onEnable, onGetInstallScript, onViewDetail, onBroadcastURL, renderDropdownMenuActions, resourceGroupsMap]);
 
   // Render mobile card list on small screens
   if (isMobile) {
@@ -481,6 +497,7 @@ export const ForwardAgentListTable: React.FC<ForwardAgentListTableProps> = ({
         onViewDetail={onViewDetail}
         onCopy={onCopy}
         onCheckUpdate={onCheckUpdate}
+        onBroadcastURL={onBroadcastURL}
         checkingAgentId={checkingAgentId}
       />
     );

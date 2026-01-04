@@ -1,6 +1,8 @@
 /**
- * Broadcast API URL change to all connected forward agents
- * Allows admin to notify agents of API URL migration
+ * Broadcast API URL change to forward agents
+ * Supports two modes:
+ * 1. Broadcast mode: notify all connected agents
+ * 2. Single agent mode: notify a specific agent
  */
 
 import { useState } from 'react';
@@ -21,8 +23,19 @@ import {
   Loader2,
   CheckCircle2,
   AlertTriangle,
+  Cpu,
 } from 'lucide-react';
-import type { BroadcastAPIURLChangedResponse } from '@/api/forward';
+import type {
+  BroadcastAPIURLChangedResponse,
+  NotifyAgentAPIURLChangedResponse,
+} from '@/api/forward';
+
+// Single agent target info
+interface TargetAgent {
+  id: string;
+  name: string;
+  isOnline: boolean;
+}
 
 interface BroadcastURLDialogProps {
   open: boolean;
@@ -30,6 +43,10 @@ interface BroadcastURLDialogProps {
   onBroadcast: (newUrl: string, reason?: string) => Promise<BroadcastAPIURLChangedResponse>;
   isBroadcasting: boolean;
   onlineCount: number;
+  // Single agent mode props
+  targetAgent?: TargetAgent | null;
+  onNotifySingle?: (agentId: string, newUrl: string, reason?: string) => Promise<NotifyAgentAPIURLChangedResponse>;
+  isNotifying?: boolean;
 }
 
 export const BroadcastURLDialog: React.FC<BroadcastURLDialogProps> = ({
@@ -38,13 +55,21 @@ export const BroadcastURLDialog: React.FC<BroadcastURLDialogProps> = ({
   onBroadcast,
   isBroadcasting,
   onlineCount,
+  targetAgent,
+  onNotifySingle,
+  isNotifying,
 }) => {
   const [newUrl, setNewUrl] = useState('');
   const [reason, setReason] = useState('');
-  const [result, setResult] = useState<BroadcastAPIURLChangedResponse | null>(null);
+  const [broadcastResult, setBroadcastResult] = useState<BroadcastAPIURLChangedResponse | null>(null);
+  const [singleResult, setSingleResult] = useState<NotifyAgentAPIURLChangedResponse | null>(null);
   const [error, setError] = useState<string | null>(null);
 
-  const handleBroadcast = async () => {
+  // Determine mode: single agent or broadcast
+  const isSingleMode = !!targetAgent;
+  const isLoading = isSingleMode ? isNotifying : isBroadcasting;
+
+  const handleSubmit = async () => {
     if (!newUrl.trim()) {
       setError('请输入新的API地址');
       return;
@@ -60,8 +85,13 @@ export const BroadcastURLDialog: React.FC<BroadcastURLDialogProps> = ({
 
     setError(null);
     try {
-      const res = await onBroadcast(newUrl.trim(), reason.trim() || undefined);
-      setResult(res);
+      if (isSingleMode && targetAgent && onNotifySingle) {
+        const res = await onNotifySingle(targetAgent.id, newUrl.trim(), reason.trim() || undefined);
+        setSingleResult(res);
+      } else {
+        const res = await onBroadcast(newUrl.trim(), reason.trim() || undefined);
+        setBroadcastResult(res);
+      }
     } catch {
       // Error handled by parent
     }
@@ -70,40 +100,72 @@ export const BroadcastURLDialog: React.FC<BroadcastURLDialogProps> = ({
   const handleClose = () => {
     setNewUrl('');
     setReason('');
-    setResult(null);
+    setBroadcastResult(null);
+    setSingleResult(null);
     setError(null);
     onClose();
   };
 
-  const showResult = result !== null;
+  const showResult = isSingleMode ? singleResult !== null : broadcastResult !== null;
+
+  // Determine if target is available (single mode: agent online, broadcast mode: has online agents)
+  const isTargetAvailable = isSingleMode ? targetAgent?.isOnline : onlineCount > 0;
 
   return (
     <Dialog open={open} onOpenChange={(open) => !open && handleClose()}>
       <DialogContent className="sm:max-w-[480px]">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
-            <Radio className="size-5 text-blue-500" />
-            下发API地址
+            {isSingleMode ? (
+              <Cpu className="size-5 text-blue-500" />
+            ) : (
+              <Radio className="size-5 text-blue-500" />
+            )}
+            {isSingleMode ? '下发API地址' : '广播API地址'}
           </DialogTitle>
           <DialogDescription>
-            {showResult ? '下发任务已完成' : '向所有在线转发节点下发新的API地址'}
+            {showResult
+              ? '下发任务已完成'
+              : isSingleMode
+                ? `向转发节点 "${targetAgent?.name}" 下发新的API地址`
+                : '向所有在线转发节点下发新的API地址'}
           </DialogDescription>
         </DialogHeader>
 
         {!showResult ? (
           <div className="space-y-4">
+            {/* Target info */}
             <div className="p-3 bg-muted rounded-lg">
               <div className="flex items-center justify-between">
-                <span className="text-sm text-muted-foreground">当前在线节点数</span>
-                <span className="text-sm font-medium">{onlineCount}</span>
+                <span className="text-sm text-muted-foreground">
+                  {isSingleMode ? '目标节点' : '当前在线节点数'}
+                </span>
+                {isSingleMode ? (
+                  <div className="flex items-center gap-2">
+                    <span className="text-sm font-medium">{targetAgent?.name}</span>
+                    {targetAgent?.isOnline ? (
+                      <span className="flex items-center gap-1 text-xs text-green-600">
+                        <span className="size-2 rounded-full bg-green-500" />
+                        在线
+                      </span>
+                    ) : (
+                      <span className="flex items-center gap-1 text-xs text-muted-foreground">
+                        <span className="size-2 rounded-full bg-muted-foreground/30" />
+                        离线
+                      </span>
+                    )}
+                  </div>
+                ) : (
+                  <span className="text-sm font-medium">{onlineCount}</span>
+                )}
               </div>
             </div>
 
-            {onlineCount === 0 ? (
+            {!isTargetAvailable ? (
               <div className="flex items-center gap-2 p-3 bg-yellow-50 dark:bg-yellow-900/20 rounded-lg">
                 <AlertTriangle className="size-4 text-yellow-500" />
                 <span className="text-sm text-yellow-700 dark:text-yellow-300">
-                  当前没有在线的转发节点
+                  {isSingleMode ? '节点当前不在线' : '当前没有在线的转发节点'}
                 </span>
               </div>
             ) : (
@@ -142,35 +204,61 @@ export const BroadcastURLDialog: React.FC<BroadcastURLDialogProps> = ({
               </div>
             )}
           </div>
-        ) : (
+        ) : isSingleMode && singleResult ? (
+          // Single agent result
+          <div className="space-y-4">
+            {singleResult.notified ? (
+              <div className="p-4 bg-green-50 dark:bg-green-900/20 rounded-lg text-center">
+                <CheckCircle2 className="size-8 text-green-500 mx-auto mb-3" />
+                <p className="text-lg font-semibold text-green-700 dark:text-green-300">
+                  通知成功
+                </p>
+                <p className="text-sm text-green-600 dark:text-green-400 mt-1">
+                  转发节点 "{targetAgent?.name}" 已收到API地址更新通知
+                </p>
+              </div>
+            ) : (
+              <div className="p-4 bg-yellow-50 dark:bg-yellow-900/20 rounded-lg text-center">
+                <AlertTriangle className="size-8 text-yellow-500 mx-auto mb-3" />
+                <p className="text-lg font-semibold text-yellow-700 dark:text-yellow-300">
+                  通知失败
+                </p>
+                <p className="text-sm text-yellow-600 dark:text-yellow-400 mt-1">
+                  节点当前不在线，无法接收通知
+                </p>
+              </div>
+            )}
+          </div>
+        ) : broadcastResult ? (
+          // Broadcast result
           <div className="space-y-4">
             <div className="grid grid-cols-2 gap-3">
               <div className="p-4 bg-green-50 dark:bg-green-900/20 rounded-lg text-center">
                 <CheckCircle2 className="size-6 text-green-500 mx-auto mb-2" />
                 <p className="text-2xl font-semibold text-green-700 dark:text-green-300">
-                  {result.agentsNotified}
+                  {broadcastResult.agentsNotified}
                 </p>
                 <p className="text-sm text-green-600 dark:text-green-400">已通知</p>
               </div>
               <div className="p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg text-center">
                 <Radio className="size-6 text-blue-500 mx-auto mb-2" />
                 <p className="text-2xl font-semibold text-blue-700 dark:text-blue-300">
-                  {result.agentsOnline}
+                  {broadcastResult.agentsOnline}
                 </p>
                 <p className="text-sm text-blue-600 dark:text-blue-400">在线节点</p>
               </div>
             </div>
 
-            {result.agentsNotified > 0 && (
+            {broadcastResult.agentsNotified > 0 && (
               <div className="flex items-center gap-2 p-3 bg-green-50 dark:bg-green-900/20 rounded-lg">
                 <CheckCircle2 className="size-4 text-green-500 flex-shrink-0" />
                 <span className="text-sm text-green-700 dark:text-green-300">
-                  已成功通知 {result.agentsNotified} 个转发节点更新API地址
+                  已成功通知 {broadcastResult.agentsNotified} 个转发节点更新API地址
                 </span>
               </div>
             )}
 
-            {result.agentsNotified === 0 && result.agentsOnline === 0 && (
+            {broadcastResult.agentsNotified === 0 && broadcastResult.agentsOnline === 0 && (
               <div className="flex items-center gap-2 p-3 bg-yellow-50 dark:bg-yellow-900/20 rounded-lg">
                 <AlertTriangle className="size-4 text-yellow-500 flex-shrink-0" />
                 <span className="text-sm text-yellow-700 dark:text-yellow-300">
@@ -179,7 +267,7 @@ export const BroadcastURLDialog: React.FC<BroadcastURLDialogProps> = ({
               </div>
             )}
           </div>
-        )}
+        ) : null}
 
         <DialogFooter>
           {!showResult ? (
@@ -188,13 +276,18 @@ export const BroadcastURLDialog: React.FC<BroadcastURLDialogProps> = ({
                 取消
               </Button>
               <Button
-                onClick={handleBroadcast}
-                disabled={onlineCount === 0 || isBroadcasting}
+                onClick={handleSubmit}
+                disabled={!isTargetAvailable || isLoading}
               >
-                {isBroadcasting ? (
+                {isLoading ? (
                   <>
                     <Loader2 className="size-4 mr-2 animate-spin" />
                     下发中...
+                  </>
+                ) : isSingleMode ? (
+                  <>
+                    <Cpu className="size-4 mr-2" />
+                    下发到节点
                   </>
                 ) : (
                   <>

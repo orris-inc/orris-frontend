@@ -23,6 +23,7 @@ import {
   triggerAgentUpdate,
   batchTriggerAgentUpdate,
   broadcastAPIURLChange,
+  notifyAgentAPIURLChange,
   type ForwardAgent,
   type CreateForwardAgentRequest,
   type UpdateForwardAgentRequest,
@@ -32,6 +33,8 @@ import {
   type AgentBatchUpdateResponse,
   type BroadcastAPIURLChangedRequest,
   type BroadcastAPIURLChangedResponse,
+  type NotifyAgentAPIURLChangedRequest,
+  type NotifyAgentAPIURLChangedResponse,
 } from '@/api/forward';
 
 // Query Keys
@@ -349,6 +352,24 @@ export const useBroadcastAPIURL = () => {
     onSuccess: (result: BroadcastAPIURLChangedResponse) => {
       if (result.agentsNotified > 0) {
         showSuccess(`已通知 ${result.agentsNotified} 个转发节点更新API地址`);
+      }
+    },
+    onError: (error) => {
+      showError(handleApiError(error));
+    },
+  });
+};
+
+// Notify single agent of API URL change
+export const useNotifyAgentAPIURL = () => {
+  const { showSuccess, showError } = useNotificationStore();
+
+  return useMutation({
+    mutationFn: ({ agentId, data }: { agentId: string; data: NotifyAgentAPIURLChangedRequest }) =>
+      notifyAgentAPIURLChange(agentId, data),
+    onSuccess: (result: NotifyAgentAPIURLChangedResponse) => {
+      if (result.notified) {
+        showSuccess('已通知转发节点更新API地址');
       }
     },
     onError: (error) => {

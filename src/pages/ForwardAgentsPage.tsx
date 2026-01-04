@@ -37,7 +37,7 @@ import { ForwardAgentDetailDialog } from '@/features/forward-agents/components/F
 import { InstallScriptDialog } from '@/features/forward-agents/components/InstallScriptDialog';
 import { AgentBatchUpdateDialog } from '@/features/forward-agents/components/AgentBatchUpdateDialog';
 import { BroadcastURLDialog } from '@/features/forward-agents/components/BroadcastURLDialog';
-import { useForwardAgentsPage, useTriggerAgentUpdate, useBroadcastAPIURL } from '@/features/forward-agents/hooks/useForwardAgents';
+import { useForwardAgentsPage, useTriggerAgentUpdate, useBroadcastAPIURL, useNotifyAgentAPIURL } from '@/features/forward-agents/hooks/useForwardAgents';
 import { getAgentVersion } from '@/api/forward';
 import type { AgentVersionInfo, ForwardAgent, UpdateForwardAgentRequest, CreateForwardAgentRequest } from '@/api/forward';
 
@@ -85,6 +85,7 @@ export const ForwardAgentsPage = () => {
   const { showError, showInfo } = useNotificationStore();
   const triggerUpdateMutation = useTriggerAgentUpdate();
   const broadcastURLMutation = useBroadcastAPIURL();
+  const notifyAgentURLMutation = useNotifyAgentAPIURL();
 
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
@@ -95,6 +96,7 @@ export const ForwardAgentsPage = () => {
   const [copyAgentData, setCopyAgentData] = useState<Partial<CreateForwardAgentRequest> | undefined>(undefined);
   const [batchUpdateDialogOpen, setBatchUpdateDialogOpen] = useState(false);
   const [broadcastURLDialogOpen, setBroadcastURLDialogOpen] = useState(false);
+  const [broadcastTargetAgent, setBroadcastTargetAgent] = useState<ForwardAgent | null>(null);
   const [updateConfirmOpen, setUpdateConfirmOpen] = useState(false);
   const [versionInfo, setVersionInfo] = useState<AgentVersionInfo | null>(null);
   const [updateAgent, setUpdateAgent] = useState<ForwardAgent | null>(null);
@@ -244,6 +246,14 @@ export const ForwardAgentsPage = () => {
   const handleBroadcastURL = useCallback(async (newUrl: string, reason?: string) => {
     return await broadcastURLMutation.mutateAsync({ newUrl, reason });
   }, [broadcastURLMutation]);
+
+  const handleNotifyAgentURL = useCallback(async (agentId: string, newUrl: string, reason?: string) => {
+    return await notifyAgentURLMutation.mutateAsync({ agentId, data: { newUrl, reason } });
+  }, [notifyAgentURLMutation]);
+
+  const handleBroadcastToAgent = useCallback((agent: ForwardAgent) => {
+    setBroadcastTargetAgent(agent);
+  }, []);
 
   const handleCreateSubmit = async (data: CreateForwardAgentRequest) => {
     try {
@@ -403,6 +413,7 @@ export const ForwardAgentsPage = () => {
             onViewDetail={handleViewDetail}
             onCopy={handleCopy}
             onCheckUpdate={handleCheckUpdate}
+            onBroadcastURL={handleBroadcastToAgent}
             checkingAgentId={checkingAgentId}
           />
         ) : (
@@ -425,6 +436,7 @@ export const ForwardAgentsPage = () => {
               onViewDetail={handleViewDetail}
               onCopy={handleCopy}
               onCheckUpdate={handleCheckUpdate}
+              onBroadcastURL={handleBroadcastToAgent}
               checkingAgentId={checkingAgentId}
             />
           </AdminCard>
@@ -522,11 +534,21 @@ export const ForwardAgentsPage = () => {
 
       {/* Broadcast URL Dialog */}
       <BroadcastURLDialog
-        open={broadcastURLDialogOpen}
-        onClose={() => setBroadcastURLDialogOpen(false)}
+        open={broadcastURLDialogOpen || broadcastTargetAgent !== null}
+        onClose={() => {
+          setBroadcastURLDialogOpen(false);
+          setBroadcastTargetAgent(null);
+        }}
         onBroadcast={handleBroadcastURL}
         isBroadcasting={broadcastURLMutation.isPending}
         onlineCount={agentStats.online}
+        targetAgent={broadcastTargetAgent ? {
+          id: String(broadcastTargetAgent.id),
+          name: broadcastTargetAgent.name,
+          isOnline: !!broadcastTargetAgent.systemStatus,
+        } : null}
+        onNotifySingle={handleNotifyAgentURL}
+        isNotifying={notifyAgentURLMutation.isPending}
       />
     </AdminLayout>
   );

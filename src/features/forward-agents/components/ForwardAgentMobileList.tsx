@@ -18,6 +18,7 @@ import {
   Download,
   Loader2,
   ArrowUpCircle,
+  Radio,
 } from 'lucide-react';
 import {
   Accordion,
@@ -54,6 +55,7 @@ interface ForwardAgentMobileListProps {
   onViewDetail: (agent: ForwardAgent) => void;
   onCopy: (agent: ForwardAgent) => void;
   onCheckUpdate: (agent: ForwardAgent) => void;
+  onBroadcastURL?: (agent: ForwardAgent) => void;
   checkingAgentId?: string | number | null;
 }
 
@@ -144,6 +146,7 @@ export const ForwardAgentMobileList: React.FC<ForwardAgentMobileListProps> = ({
   onViewDetail,
   onCopy,
   onCheckUpdate,
+  onBroadcastURL,
   checkingAgentId,
 }) => {
   // Render dropdown menu
@@ -190,6 +193,12 @@ export const ForwardAgentMobileList: React.FC<ForwardAgentMobileListProps> = ({
                 <Download className="mr-2 size-4" />
               )}
               {checkingAgentId === agent.id ? '检查中...' : '检查更新'}
+            </DropdownMenuItem>
+          )}
+          {onBroadcastURL && (
+            <DropdownMenuItem onClick={() => onBroadcastURL(agent)}>
+              <Radio className="mr-2 size-4" />
+              下发地址
             </DropdownMenuItem>
           )}
           <DropdownMenuSeparator />
