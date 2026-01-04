@@ -97,7 +97,7 @@ const refreshAccessToken = async (): Promise<void> => {
       // Avoid redirect loops on public pages like login, register, etc.
       if (typeof window !== 'undefined') {
         const publicPaths = [
-          '/login', '/login-new', '/login-minimal', '/login-glass',
+          '/', '/login', '/login-new', '/login-minimal', '/login-glass',
           '/login-apple', '/login-selector', '/register',
           '/forgot-password', '/reset-password', '/verify-email',
           '/verification-pending', '/pricing'

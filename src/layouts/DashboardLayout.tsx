@@ -4,8 +4,8 @@
  */
 
 import { useState } from 'react';
-import { useNavigate } from 'react-router';
-import { Menu } from 'lucide-react';
+import { useNavigate, Link } from 'react-router';
+import { Menu, Globe } from 'lucide-react';
 import { TooltipProvider } from '@/components/common/Tooltip';
 
 import { useAuthStore } from '@/features/auth/stores/auth-store';
@@ -68,13 +68,19 @@ export const DashboardLayout = ({ children }: DashboardLayoutProps) => {
             </button>
           )}
 
-          {/* Logo/Brand */}
-          <div className="mr-4 hidden md:flex">
-            <span className="text-lg font-bold tracking-tight">Orris</span>
-          </div>
-          <div className="flex md:hidden flex-1">
-            <span className="text-lg font-bold tracking-tight">Orris</span>
-          </div>
+          {/* Logo/Brand - consistent with LandingPage */}
+          <Link to="/" className="mr-4 hidden md:flex items-center gap-2">
+            <div className="size-8 rounded-lg bg-primary flex items-center justify-center">
+              <Globe className="size-5 text-primary-foreground" />
+            </div>
+            <span className="text-lg font-semibold">Orris</span>
+          </Link>
+          <Link to="/" className="flex md:hidden flex-1 items-center gap-2">
+            <div className="size-8 rounded-lg bg-primary flex items-center justify-center">
+              <Globe className="size-5 text-primary-foreground" />
+            </div>
+            <span className="text-lg font-semibold">Orris</span>
+          </Link>
 
           {/* Desktop navigation links - only show for user side */}
           {shouldShowNavigation && (

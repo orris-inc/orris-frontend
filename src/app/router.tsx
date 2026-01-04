@@ -263,9 +263,9 @@ export const router = createBrowserRouter([
     element: <VerificationPendingPage />,
   },
 
-  // 404
+  // 404 - redirect to landing page
   {
     path: '*',
-    element: <Navigate to="/login" replace />,
+    element: <Navigate to="/" replace />,
   },
 ]);
