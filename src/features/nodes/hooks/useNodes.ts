@@ -19,6 +19,8 @@ import {
   generateNodeToken,
   getNodeInstallScript,
   batchTriggerNodeUpdate,
+  broadcastNodeAPIURLChange,
+  notifyNodeAPIURLChange,
 } from '@/api/node';
 import type {
   Node,
@@ -31,6 +33,10 @@ import type {
   GetNodeInstallScriptParams,
   BatchUpdateRequest,
   BatchUpdateResponse,
+  BroadcastNodeAPIURLChangedRequest,
+  BroadcastNodeAPIURLChangedResponse,
+  NotifyNodeAPIURLChangedRequest,
+  NotifyNodeAPIURLChangedResponse,
 } from '@/api/node';
 
 // Filter types used by frontend
@@ -305,4 +311,41 @@ export const useNodesPage = () => {
     handleGetInstallScript,
     handleBatchUpdate,
   };
+};
+
+// Broadcast API URL change to all connected nodes
+export const useBroadcastNodeAPIURL = () => {
+  const { showSuccess, showError } = useNotificationStore();
+
+  return useMutation({
+    mutationFn: (data: BroadcastNodeAPIURLChangedRequest) => broadcastNodeAPIURLChange(data),
+    onSuccess: (result: BroadcastNodeAPIURLChangedResponse) => {
+      if (result.nodesNotified > 0) {
+        showSuccess(`已通知 ${result.nodesNotified} 个节点更新API地址`);
+      }
+    },
+    onError: (error) => {
+      showError(handleApiError(error));
+    },
+  });
+};
+
+// Notify a single node of API URL change
+export const useNotifyNodeAPIURL = () => {
+  const { showSuccess, showError } = useNotificationStore();
+
+  return useMutation({
+    mutationFn: ({ nodeId, data }: { nodeId: string; data: NotifyNodeAPIURLChangedRequest }) =>
+      notifyNodeAPIURLChange(nodeId, data),
+    onSuccess: (result: NotifyNodeAPIURLChangedResponse) => {
+      if (result.notified) {
+        showSuccess('已通知节点更新API地址');
+      } else {
+        showError('节点未在线，无法通知');
+      }
+    },
+    onError: (error) => {
+      showError(handleApiError(error));
+    },
+  });
 };

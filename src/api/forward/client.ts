@@ -12,6 +12,8 @@
  * - Forward Rule: "fr_xK9mP2vL3nQ" (prefix: fr_)
  *
  * Recent changes:
+ * - 2026-01-04: Added notifyAgentAPIURLChange for single agent URL change notification
+ * - 2026-01-04: Added broadcastAPIURLChange for notifying agents of API URL migration
  * - 2026-01-02: Added subscribeForwardAgentEvents for SSE real-time agent event subscription
  */
 
@@ -48,6 +50,10 @@ import type {
   ListUserForwardAgentsParams,
   ForwardAgentEvent,
   ForwardAgentEventsParams,
+  BroadcastAPIURLChangedRequest,
+  BroadcastAPIURLChangedResponse,
+  NotifyAgentAPIURLChangedRequest,
+  NotifyAgentAPIURLChangedResponse,
 } from './types';
 
 // ========== Forward Rule APIs ==========
@@ -402,6 +408,83 @@ export const batchTriggerAgentUpdate = async (
 ): Promise<AgentBatchUpdateResponse> => {
   const response = await apiClient.post<APIResponse<AgentBatchUpdateResponse>>(
     '/forward-agents/batch-update',
+    data
+  );
+  return response.data.data;
+};
+
+/**
+ * Broadcast API URL change to connected forward agents (Admin only)
+ * POST /forward-agents/broadcast-url-change
+ * @returns Response with count of notified forward agents
+ *
+ * Use this endpoint when migrating to a new API server.
+ * Connected forward agents will receive a command to update their local
+ * configuration and reconnect to the new URL.
+ *
+ * Prerequisites:
+ * - Forward agents must be connected via WebSocket to receive the notification
+ * - Admin authentication required
+ *
+ * Note: For nodes, use POST /nodes/broadcast-url-change (node SDK) instead.
+ *
+ * @example
+ * ```typescript
+ * const result = await broadcastAPIURLChange({
+ *   newUrl: 'https://new-api.example.com',
+ *   reason: 'Server migration to new data center'
+ * });
+ * console.log(`Notified ${result.agentsNotified} of ${result.agentsOnline} forward agents`);
+ * ```
+ *
+ * Added: 2026-01-04
+ * Updated: 2026-01-04 - Simplified to forward agents only (nodes use separate endpoint)
+ */
+export const broadcastAPIURLChange = async (
+  data: BroadcastAPIURLChangedRequest
+): Promise<BroadcastAPIURLChangedResponse> => {
+  const response = await apiClient.post<APIResponse<BroadcastAPIURLChangedResponse>>(
+    '/forward-agents/broadcast-url-change',
+    data
+  );
+  return response.data.data;
+};
+
+/**
+ * Notify a single forward agent of API URL change (Admin only)
+ * POST /forward-agents/:id/url-change
+ * @param agentId - The agent's Stripe-style ID (e.g., "fa_xK9mP2vL3nQ")
+ * @param data - The URL change notification data
+ * @returns Response indicating whether the agent was notified
+ *
+ * Use this endpoint to notify a specific forward agent when migrating to a new API server.
+ * The agent will receive a command to update its local configuration and reconnect.
+ *
+ * Prerequisites:
+ * - The agent must be connected via WebSocket to receive the notification
+ * - Admin authentication required
+ *
+ * @example
+ * ```typescript
+ * const result = await notifyAgentAPIURLChange('fa_xK9mP2vL3nQ', {
+ *   newUrl: 'https://new-api.example.com',
+ *   reason: 'Server migration'
+ * });
+ * if (result.notified) {
+ *   console.log(`Agent ${result.agentId} was successfully notified`);
+ * } else {
+ *   console.log(`Agent ${result.agentId} is not connected`);
+ * }
+ * ```
+ *
+ * Added: 2026-01-04
+ */
+export const notifyAgentAPIURLChange = async (
+  agentId: string,
+  data: NotifyAgentAPIURLChangedRequest
+): Promise<NotifyAgentAPIURLChangedResponse> => {
+  const response = await apiClient.post<APIResponse<NotifyAgentAPIURLChangedResponse>>(
+    `/forward-agents/${agentId}/url-change`,
     data
   );
   return response.data.data;

@@ -24,6 +24,7 @@ import {
   Package,
   ArrowUpCircle,
   Globe,
+  Radio,
 } from 'lucide-react';
 import { DataTable, TruncatedId, SystemStatusCell, SystemStatusHoverProvider, type ColumnDef, type ResponsiveColumnMeta } from '@/components/admin';
 import { useBreakpoint } from '@/hooks/useBreakpoint';
@@ -61,6 +62,7 @@ interface NodeListTableProps {
   onGetInstallScript: (node: Node) => void;
   onViewDetail: (node: Node) => void;
   onCopy: (node: Node) => void;
+  onNotifyURL?: (node: Node) => void;
 }
 
 // Status configuration with semantic colors
@@ -105,6 +107,7 @@ export const NodeListTable: React.FC<NodeListTableProps> = ({
   onGetInstallScript,
   onViewDetail,
   onCopy,
+  onNotifyURL,
 }) => {
   // Detect mobile screen
   const { isMobile } = useBreakpoint();
@@ -124,6 +127,12 @@ export const NodeListTable: React.FC<NodeListTableProps> = ({
         <Key className="mr-2 size-4" />
         生成 Token
       </ContextMenuItem>
+      {node.isOnline && onNotifyURL && (
+        <ContextMenuItem onClick={() => onNotifyURL(node)}>
+          <Radio className="mr-2 size-4" />
+          下发地址
+        </ContextMenuItem>
+      )}
       <ContextMenuSeparator />
       {node.status === 'active' ? (
         <ContextMenuItem onClick={() => onDeactivate(node)}>
@@ -141,7 +150,7 @@ export const NodeListTable: React.FC<NodeListTableProps> = ({
         删除节点
       </ContextMenuItem>
     </>
-  ), [onEdit, onCopy, onGenerateToken, onActivate, onDeactivate, onDelete]);
+  ), [onEdit, onCopy, onGenerateToken, onActivate, onDeactivate, onDelete, onNotifyURL]);
 
   // Node dropdown menu content
   const renderDropdownMenuActions = useCallback((node: Node) => (
@@ -154,6 +163,12 @@ export const NodeListTable: React.FC<NodeListTableProps> = ({
         <Key className="mr-2 size-4" />
         生成 Token
       </DropdownMenuItem>
+      {node.isOnline && onNotifyURL && (
+        <DropdownMenuItem onClick={() => onNotifyURL(node)}>
+          <Radio className="mr-2 size-4" />
+          下发地址
+        </DropdownMenuItem>
+      )}
       <DropdownMenuSeparator />
       {node.status === 'active' ? (
         <DropdownMenuItem onClick={() => onDeactivate(node)}>
@@ -171,7 +186,7 @@ export const NodeListTable: React.FC<NodeListTableProps> = ({
         删除节点
       </DropdownMenuItem>
     </>
-  ), [onCopy, onGenerateToken, onActivate, onDeactivate, onDelete]);
+  ), [onCopy, onGenerateToken, onActivate, onDeactivate, onDelete, onNotifyURL]);
 
   const columns = useMemo<ColumnDef<Node>[]>(() => [
     {
@@ -549,7 +564,7 @@ export const NodeListTable: React.FC<NodeListTableProps> = ({
     {
       id: 'actions',
       header: '操作',
-      size: 130,
+      size: 160,
       meta: { priority: 1 } as ResponsiveColumnMeta, // Core column, always visible
       enableSorting: false,
       cell: ({ row }) => {
@@ -581,6 +596,16 @@ export const NodeListTable: React.FC<NodeListTableProps> = ({
               </TooltipTrigger>
               <TooltipContent>安装脚本</TooltipContent>
             </Tooltip>
+            {node.isOnline && onNotifyURL && (
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <button onClick={() => onNotifyURL(node)} className={`${actionButtonClass} text-blue-500 hover:text-blue-600 hover:bg-blue-500/10`}>
+                    <Radio className="size-4" strokeWidth={1.5} />
+                  </button>
+                </TooltipTrigger>
+                <TooltipContent>下发地址</TooltipContent>
+              </Tooltip>
+            )}
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <button className={actionButtonClass}>
@@ -595,7 +620,7 @@ export const NodeListTable: React.FC<NodeListTableProps> = ({
         );
       },
     },
-  ], [onEdit, onActivate, onDeactivate, onGetInstallScript, onViewDetail, renderDropdownMenuActions, resourceGroupsMap]);
+  ], [onEdit, onActivate, onDeactivate, onGetInstallScript, onViewDetail, onNotifyURL, renderDropdownMenuActions, resourceGroupsMap]);
 
   // Render mobile card list on small screens
   if (isMobile) {

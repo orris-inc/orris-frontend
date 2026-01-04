@@ -7,6 +7,7 @@
  * Note: Node IDs are now Stripe-style prefixed IDs (e.g., "node_xK9mP2vL3nQ")
  *
  * Recent changes:
+ * - 2026-01-04: Added notifyNodeAPIURLChange for single node URL change notification
  * - 2026-01-02: Added subscribeNodeEvents for SSE real-time node event subscription
  * - 2025-12-31: Added getNodeVersion and triggerNodeUpdate for node version management
  * - 2025-12-29: listNodes now supports sortBy and sortOrder params for admin node sorting
@@ -41,6 +42,10 @@ import type {
   BatchUpdateResponse,
   NodeEvent,
   NodeEventsParams,
+  BroadcastNodeAPIURLChangedRequest,
+  BroadcastNodeAPIURLChangedResponse,
+  NotifyNodeAPIURLChangedRequest,
+  NotifyNodeAPIURLChangedResponse,
 } from './types';
 
 // ============================================================================
@@ -504,4 +509,85 @@ export function subscribeNodeEvents(
       }
     }
   };
+}
+
+// ============================================================================
+// Node Hub Management APIs (Admin)
+// Added: 2026-01-04
+// ============================================================================
+
+/**
+ * Broadcast API URL change to connected nodes (Admin only)
+ * POST /nodes/broadcast-url-change
+ * @returns Response with count of notified nodes
+ *
+ * Use this endpoint when migrating to a new API server.
+ * Connected nodes will receive a command to update their local
+ * configuration and reconnect to the new URL.
+ *
+ * Prerequisites:
+ * - Nodes must be connected via WebSocket to receive the notification
+ * - Admin authentication required
+ *
+ * Note: For forward agents, use POST /forward-agents/broadcast-url-change instead.
+ *
+ * @example
+ * ```typescript
+ * const result = await broadcastNodeAPIURLChange({
+ *   newUrl: 'https://new-api.example.com',
+ *   reason: 'Server migration to new data center'
+ * });
+ * console.log(`Notified ${result.nodesNotified} of ${result.nodesOnline} nodes`);
+ * ```
+ *
+ * Added: 2026-01-04
+ */
+export async function broadcastNodeAPIURLChange(
+  data: BroadcastNodeAPIURLChangedRequest
+): Promise<BroadcastNodeAPIURLChangedResponse> {
+  const response = await apiClient.post<APIResponse<BroadcastNodeAPIURLChangedResponse>>(
+    '/nodes/broadcast-url-change',
+    data
+  );
+  return response.data.data;
+}
+
+/**
+ * Notify a single node of API URL change (Admin only)
+ * POST /nodes/:id/url-change
+ * @param nodeId - The node's Stripe-style ID (e.g., "node_xK9mP2vL3nQ")
+ * @param data - The URL change notification data
+ * @returns Response indicating whether the node was notified
+ *
+ * Use this endpoint to notify a specific node when migrating to a new API server.
+ * The node will receive a command to update its local configuration and reconnect.
+ *
+ * Prerequisites:
+ * - The node must be connected via WebSocket to receive the notification
+ * - Admin authentication required
+ *
+ * @example
+ * ```typescript
+ * const result = await notifyNodeAPIURLChange('node_xK9mP2vL3nQ', {
+ *   newUrl: 'https://new-api.example.com',
+ *   reason: 'Server migration'
+ * });
+ * if (result.notified) {
+ *   console.log(`Node ${result.nodeId} was successfully notified`);
+ * } else {
+ *   console.log(`Node ${result.nodeId} is not connected`);
+ * }
+ * ```
+ *
+ * Added: 2026-01-04
+ */
+export async function notifyNodeAPIURLChange(
+  nodeId: string,
+  data: NotifyNodeAPIURLChangedRequest
+): Promise<NotifyNodeAPIURLChangedResponse> {
+  const response = await apiClient.post<APIResponse<NotifyNodeAPIURLChangedResponse>>(
+    `/nodes/${nodeId}/url-change`,
+    data
+  );
+  return response.data.data;
 }

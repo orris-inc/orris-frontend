@@ -3,14 +3,14 @@
  * Supports node selection, order adjustment, and optional port configuration (direct_chain type)
  */
 
-import { ChevronUp, ChevronDown, GripVertical } from 'lucide-react';
-import { Checkbox } from '@/components/common/Checkbox';
-import { Label } from '@/components/common/Label';
-import { Input } from '@/components/common/Input';
-import { Button } from '@/components/common/Button';
-import { ScrollArea } from '@/components/common/ScrollArea';
-import { Badge } from '@/components/common/Badge';
-import type { ForwardAgent } from '@/api/forward';
+import { ChevronUp, ChevronDown, GripVertical } from "lucide-react";
+import { Checkbox } from "@/components/common/Checkbox";
+import { Label } from "@/components/common/Label";
+import { Input } from "@/components/common/Input";
+import { Button } from "@/components/common/Button";
+import { ScrollArea } from "@/components/common/ScrollArea";
+import { Badge } from "@/components/common/Badge";
+import type { ForwardAgent } from "@/api/forward";
 
 interface SortableChainAgentListProps {
   /** Available agent list */
@@ -42,7 +42,7 @@ export const SortableChainAgentList: React.FC<SortableChainAgentListProps> = ({
   portConfig = {},
   onPortConfigChange,
   hasError = false,
-  idPrefix = 'chain-agent',
+  idPrefix = "chain-agent",
 }) => {
   // Toggle selection state
   const handleToggle = (agentId: string) => {
@@ -74,12 +74,16 @@ export const SortableChainAgentList: React.FC<SortableChainAgentListProps> = ({
   const getAgent = (id: string) => agents.find((a) => a.id === id);
 
   // Get selected agent list (in order)
-  const selectedAgents = selectedIds.map((id) => getAgent(id)).filter(Boolean) as ForwardAgent[];
+  const selectedAgents = selectedIds
+    .map((id) => getAgent(id))
+    .filter(Boolean) as ForwardAgent[];
 
   return (
     <div className="space-y-3">
       {/* Available Nodes List */}
-      <div className={`border rounded-md ${hasError ? 'border-destructive' : 'border-input'}`}>
+      <div
+        className={`border rounded-md ${hasError ? "border-destructive" : "border-input"}`}
+      >
         <ScrollArea className="h-[120px] p-3">
           {agents.length === 0 ? (
             <p className="text-sm text-muted-foreground">暂无可用节点</p>
@@ -97,13 +101,21 @@ export const SortableChainAgentList: React.FC<SortableChainAgentListProps> = ({
                     />
                     <Label
                       htmlFor={`${idPrefix}-${agent.id}`}
-                      className="text-sm font-normal cursor-pointer flex-1"
+                      className="text-sm font-normal cursor-pointer flex-1 flex items-center gap-2"
                     >
-                      {agent.name}
+                      <span>{agent.name}</span>
                       {agent.publicAddress && (
-                        <span className="text-xs text-muted-foreground ml-2">
+                        <span className="text-xs text-muted-foreground">
                           ({agent.publicAddress})
                         </span>
+                      )}
+                      {agent.allowedPortRange && (
+                        <Badge
+                          variant="outline"
+                          className="text-[10px] px-1.5 py-0 border-amber-300 text-amber-600 dark:border-amber-700 dark:text-amber-400"
+                        >
+                          {agent.allowedPortRange}
+                        </Badge>
                       )}
                     </Label>
                     {isSelected && (
@@ -134,26 +146,41 @@ export const SortableChainAgentList: React.FC<SortableChainAgentListProps> = ({
                 className="flex items-center gap-2 p-2 rounded bg-muted/30 hover:bg-muted/50 transition-colors"
               >
                 <GripVertical className="size-4 text-muted-foreground flex-shrink-0" />
-                <Badge variant="secondary" className="text-xs w-6 justify-center flex-shrink-0">
+                <Badge
+                  variant="secondary"
+                  className="text-xs w-6 justify-center flex-shrink-0"
+                >
                   {index + 1}
                 </Badge>
-                <span className="text-sm flex-1 min-w-0 truncate">{agent.name}</span>
-                {showPortConfig && onPortConfigChange && index >= portConfigStartIndex && (
-                  <Input
-                    type="number"
-                    min={1}
-                    max={65535}
-                    placeholder="端口"
-                    className="w-24 h-8 text-sm"
-                    value={portConfig[agent.id] || ''}
-                    onChange={(e) => {
-                      const value = e.target.value.trim();
-                      const port = value ? parseInt(value, 10) : 0;
-                      // Only update when port is valid (allow 0 temporarily for user to clear and re-enter)
-                      onPortConfigChange(agent.id, isNaN(port) ? 0 : port);
-                    }}
-                  />
-                )}
+                <span className="text-sm flex-1 min-w-0 flex items-center gap-1.5">
+                  <span className="truncate">{agent.name}</span>
+                  {agent.allowedPortRange && (
+                    <Badge
+                      variant="outline"
+                      className="text-[10px] px-1.5 py-0 border-amber-300 text-amber-600 dark:border-amber-700 dark:text-amber-400 shrink-0"
+                    >
+                      {agent.allowedPortRange}
+                    </Badge>
+                  )}
+                </span>
+                {showPortConfig &&
+                  onPortConfigChange &&
+                  index >= portConfigStartIndex && (
+                    <Input
+                      type="number"
+                      min={1}
+                      max={65535}
+                      placeholder="端口"
+                      className="w-24 h-8 text-sm"
+                      value={portConfig[agent.id] || ""}
+                      onChange={(e) => {
+                        const value = e.target.value.trim();
+                        const port = value ? parseInt(value, 10) : 0;
+                        // Only update when port is valid (allow 0 temporarily for user to clear and re-enter)
+                        onPortConfigChange(agent.id, isNaN(port) ? 0 : port);
+                      }}
+                    />
+                  )}
                 <div className="flex gap-1 flex-shrink-0">
                   <Button
                     type="button"
@@ -184,7 +211,7 @@ export const SortableChainAgentList: React.FC<SortableChainAgentListProps> = ({
 
       <p className="text-xs text-muted-foreground">
         已选择 {selectedIds.length} 个节点
-        {selectedIds.length > 0 && '，使用上下箭头调整转发顺序'}
+        {selectedIds.length > 0 && "，使用上下箭头调整转发顺序"}
       </p>
     </div>
   );

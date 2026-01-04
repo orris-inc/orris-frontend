@@ -2,19 +2,19 @@
  * Create Forward Agent Dialog Component
  */
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect } from "react";
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
   DialogFooter,
-} from '@/components/common/Dialog';
-import { Button } from '@/components/common/Button';
-import { Input } from '@/components/common/Input';
-import { Textarea } from '@/components/common/Textarea';
-import { Label } from '@/components/common/Label';
-import type { CreateForwardAgentRequest } from '@/api/forward';
+} from "@/components/common/Dialog";
+import { Button } from "@/components/common/Button";
+import { Input } from "@/components/common/Input";
+import { Textarea } from "@/components/common/Textarea";
+import { Label } from "@/components/common/Label";
+import type { CreateForwardAgentRequest } from "@/api/forward";
 
 interface CreateForwardAgentDialogProps {
   open: boolean;
@@ -26,19 +26,18 @@ interface CreateForwardAgentDialogProps {
 
 // Default form data
 const getDefaultFormData = (): CreateForwardAgentRequest => ({
-  name: '',
-  publicAddress: '',
-  tunnelAddress: '',
-  remark: '',
+  name: "",
+  publicAddress: "",
+  tunnelAddress: "",
+  remark: "",
+  allowedPortRange: "",
 });
 
-export const CreateForwardAgentDialog: React.FC<CreateForwardAgentDialogProps> = ({
-  open,
-  onClose,
-  onSubmit,
-  initialData,
-}) => {
-  const [formData, setFormData] = useState<CreateForwardAgentRequest>(getDefaultFormData());
+export const CreateForwardAgentDialog: React.FC<
+  CreateForwardAgentDialogProps
+> = ({ open, onClose, onSubmit, initialData }) => {
+  const [formData, setFormData] =
+    useState<CreateForwardAgentRequest>(getDefaultFormData());
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -60,7 +59,10 @@ export const CreateForwardAgentDialog: React.FC<CreateForwardAgentDialogProps> =
     onClose();
   };
 
-  const handleChange = (field: keyof CreateForwardAgentRequest, value: string) => {
+  const handleChange = (
+    field: keyof CreateForwardAgentRequest,
+    value: string,
+  ) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
     // Clear error for this field
     if (errors[field]) {
@@ -76,7 +78,7 @@ export const CreateForwardAgentDialog: React.FC<CreateForwardAgentDialogProps> =
     const newErrors: Record<string, string> = {};
 
     if (!formData.name.trim()) {
-      newErrors.name = '节点名称不能为空';
+      newErrors.name = "节点名称不能为空";
     }
 
     setErrors(newErrors);
@@ -102,11 +104,21 @@ export const CreateForwardAgentDialog: React.FC<CreateForwardAgentDialogProps> =
         submitData.remark = formData.remark.trim();
       }
 
+      if (formData.allowedPortRange?.trim()) {
+        submitData.allowedPortRange = formData.allowedPortRange.trim();
+      }
+
       setIsSubmitting(true);
       try {
         await onSubmit(submitData);
         // Reset form after successful submission
-        setFormData({ name: '', publicAddress: '', tunnelAddress: '', remark: '' });
+        setFormData({
+          name: "",
+          publicAddress: "",
+          tunnelAddress: "",
+          remark: "",
+          allowedPortRange: "",
+        });
         setErrors({});
       } finally {
         setIsSubmitting(false);
@@ -120,7 +132,9 @@ export const CreateForwardAgentDialog: React.FC<CreateForwardAgentDialogProps> =
     <Dialog open={open} onOpenChange={(open) => !open && handleClose()}>
       <DialogContent className="sm:max-w-[500px]">
         <DialogHeader>
-          <DialogTitle>{initialData ? '复制转发节点' : '新增转发节点'}</DialogTitle>
+          <DialogTitle>
+            {initialData ? "复制转发节点" : "新增转发节点"}
+          </DialogTitle>
         </DialogHeader>
 
         <div className="grid grid-cols-1 gap-4">
@@ -132,13 +146,13 @@ export const CreateForwardAgentDialog: React.FC<CreateForwardAgentDialogProps> =
             <Input
               id="name"
               value={formData.name}
-              onChange={(e) => handleChange('name', e.target.value)}
+              onChange={(e) => handleChange("name", e.target.value)}
               error={!!errors.name}
               autoFocus
               placeholder="例如：主转发节点"
             />
             <p className="text-xs text-muted-foreground">
-              {errors.name || '必填项'}
+              {errors.name || "必填项"}
             </p>
           </div>
 
@@ -148,7 +162,7 @@ export const CreateForwardAgentDialog: React.FC<CreateForwardAgentDialogProps> =
             <Input
               id="publicAddress"
               value={formData.publicAddress}
-              onChange={(e) => handleChange('publicAddress', e.target.value)}
+              onChange={(e) => handleChange("publicAddress", e.target.value)}
               placeholder="例如：example.com 或 1.2.3.4"
             />
             <p className="text-xs text-muted-foreground">
@@ -162,11 +176,25 @@ export const CreateForwardAgentDialog: React.FC<CreateForwardAgentDialogProps> =
             <Input
               id="tunnelAddress"
               value={formData.tunnelAddress}
-              onChange={(e) => handleChange('tunnelAddress', e.target.value)}
+              onChange={(e) => handleChange("tunnelAddress", e.target.value)}
               placeholder="例如：10.0.0.1 或 internal.example.com"
             />
             <p className="text-xs text-muted-foreground">
               可选，用于中继/出口节点的内网连接
+            </p>
+          </div>
+
+          {/* Allowed Port Range */}
+          <div className="flex flex-col gap-2">
+            <Label htmlFor="allowedPortRange">端口限制</Label>
+            <Input
+              id="allowedPortRange"
+              value={formData.allowedPortRange}
+              onChange={(e) => handleChange("allowedPortRange", e.target.value)}
+              placeholder="例如：80,443,8000-9000"
+            />
+            <p className="text-xs text-muted-foreground">
+              可选，留空表示允许所有端口
             </p>
           </div>
 
@@ -177,7 +205,7 @@ export const CreateForwardAgentDialog: React.FC<CreateForwardAgentDialogProps> =
               id="remark"
               rows={3}
               value={formData.remark}
-              onChange={(e) => handleChange('remark', e.target.value)}
+              onChange={(e) => handleChange("remark", e.target.value)}
               placeholder="可选：添加备注说明"
             />
             <p className="text-xs text-muted-foreground">可选</p>
@@ -185,11 +213,18 @@ export const CreateForwardAgentDialog: React.FC<CreateForwardAgentDialogProps> =
         </div>
 
         <DialogFooter>
-          <Button variant="outline" onClick={handleClose} disabled={isSubmitting}>
+          <Button
+            variant="outline"
+            onClick={handleClose}
+            disabled={isSubmitting}
+          >
             取消
           </Button>
-          <Button onClick={handleSubmit} disabled={!isFormValid || isSubmitting}>
-            {isSubmitting ? '创建中...' : '创建'}
+          <Button
+            onClick={handleSubmit}
+            disabled={!isFormValid || isSubmitting}
+          >
+            {isSubmitting ? "创建中..." : "创建"}
           </Button>
         </DialogFooter>
       </DialogContent>

@@ -17,6 +17,7 @@ import {
   Cpu,
   Boxes,
   Bell,
+  Activity,
 } from 'lucide-react';
 
 import type { NavigationItem } from '../types/navigation.types';
@@ -126,6 +127,17 @@ export const navigationConfig: readonly NavigationItem[] = [
     showInNav: true,
     showInBreadcrumb: false, // Not shown in breadcrumb, replaced by "Home"
     order: 10,
+  },
+  {
+    id: 'monitor',
+    label: '实时监控',
+    path: '/admin/monitor',
+    icon: Activity,
+    roles: ['admin'], // Admin only
+    showInNav: true,
+    showInBreadcrumb: true,
+    parentId: 'admin-dashboard',
+    order: 10.5,
   },
   {
     id: 'plans',

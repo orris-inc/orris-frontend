@@ -13,6 +13,7 @@ import {
   Activity,
   CheckCircle2,
   XCircle,
+  Radio,
 } from 'lucide-react';
 import { Switch, SwitchThumb } from '@/components/common/Switch';
 import { Separator } from '@/components/common/Separator';
@@ -22,7 +23,8 @@ import { CreateNodeDialog } from '@/features/nodes/components/CreateNodeDialog';
 import { NodeDetailDialog } from '@/features/nodes/components/NodeDetailDialog';
 import { NodeInstallScriptDialog } from '@/features/nodes/components/NodeInstallScriptDialog';
 import { BatchUpdateDialog } from '@/features/nodes/components/BatchUpdateDialog';
-import { useNodesPage } from '@/features/nodes/hooks/useNodes';
+import { BroadcastNodeURLDialog } from '@/features/nodes/components/BroadcastNodeURLDialog';
+import { useNodesPage, useBroadcastNodeAPIURL, useNotifyNodeAPIURL } from '@/features/nodes/hooks/useNodes';
 import { useResourceGroups } from '@/features/resource-groups/hooks/useResourceGroups';
 import { AdminLayout } from '@/layouts/AdminLayout';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/common/Tooltip';
@@ -67,6 +69,9 @@ export const NodeManagementPage = () => {
     handleIncludeUserNodesChange,
   } = useNodesPage();
 
+  const broadcastURLMutation = useBroadcastNodeAPIURL();
+  const notifyURLMutation = useNotifyNodeAPIURL();
+
   const { resourceGroups } = useResourceGroups({ pageSize: 100 });
   const resourceGroupsMap = useMemo(() => {
     const map: Record<string, typeof resourceGroups[0]> = {};
@@ -102,6 +107,8 @@ export const NodeManagementPage = () => {
   const [copyNodeData, setCopyNodeData] = useState<Partial<CreateNodeRequest> | undefined>(undefined);
   const [refreshKey, setRefreshKey] = useState(0);
   const [batchUpdateDialogOpen, setBatchUpdateDialogOpen] = useState(false);
+  const [broadcastURLDialogOpen, setBroadcastURLDialogOpen] = useState(false);
+  const [notifyURLNode, setNotifyURLNode] = useState<Node | null>(null);
 
   const handleEdit = (node: Node) => {
     setSelectedNode(node);
@@ -140,6 +147,10 @@ export const NodeManagementPage = () => {
   const handleViewDetail = (node: Node) => {
     setSelectedNode(node);
     setDetailDialogOpen(true);
+  };
+
+  const handleNotifyURL = (node: Node) => {
+    setNotifyURLNode(node);
   };
 
   const handleCopy = (node: Node) => {
@@ -289,6 +300,25 @@ export const NodeManagementPage = () => {
 
           {/* Actions */}
           <div className="flex items-center gap-2">
+            {nodeStats.online > 0 && (
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <AdminButton
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setBroadcastURLDialogOpen(true)}
+                    icon={<Radio className="size-4 text-blue-500" strokeWidth={1.5} />}
+                    className="border-blue-500/30 hover:border-blue-500/50 hover:bg-blue-500/10"
+                  >
+                    <span className="hidden sm:inline text-blue-500">下发地址</span>
+                  </AdminButton>
+                </TooltipTrigger>
+                <TooltipContent>
+                  向 {nodeStats.online} 个在线节点下发新API地址
+                </TooltipContent>
+              </Tooltip>
+            )}
+
             {nodes.some((n) => n.hasUpdate && n.isOnline) && (
               <Tooltip>
                 <TooltipTrigger asChild>
@@ -362,6 +392,7 @@ export const NodeManagementPage = () => {
             onGetInstallScript={handleInstallScript}
             onViewDetail={handleViewDetail}
             onCopy={handleCopy}
+            onNotifyURL={handleNotifyURL}
           />
         ) : (
           <AdminCard noPadding>
@@ -382,6 +413,7 @@ export const NodeManagementPage = () => {
               onGetInstallScript={handleInstallScript}
               onViewDetail={handleViewDetail}
               onCopy={handleCopy}
+              onNotifyURL={handleNotifyURL}
             />
           </AdminCard>
         )}
@@ -456,6 +488,27 @@ export const NodeManagementPage = () => {
         onBatchUpdate={(updateAll) => handleBatchUpdate({ updateAll })}
         isUpdating={isBatchUpdating}
         result={batchUpdateResult}
+      />
+
+      {/* Broadcast URL Dialog */}
+      <BroadcastNodeURLDialog
+        open={broadcastURLDialogOpen || notifyURLNode !== null}
+        onClose={() => {
+          setBroadcastURLDialogOpen(false);
+          setNotifyURLNode(null);
+        }}
+        onBroadcast={(newUrl, reason) => broadcastURLMutation.mutateAsync({ newUrl, reason })}
+        isBroadcasting={broadcastURLMutation.isPending}
+        onlineCount={nodeStats.online}
+        targetNode={notifyURLNode ? {
+          id: notifyURLNode.id,
+          name: notifyURLNode.name,
+          isOnline: notifyURLNode.isOnline,
+        } : null}
+        onNotifySingle={(nodeId, newUrl, reason) =>
+          notifyURLMutation.mutateAsync({ nodeId, data: { newUrl, reason } })
+        }
+        isNotifying={notifyURLMutation.isPending}
       />
     </AdminLayout>
   );

@@ -12,6 +12,7 @@ import {
   CheckCircle2,
   XCircle,
   Activity,
+  Radio,
 } from 'lucide-react';
 import { Separator } from '@/components/common/Separator';
 import { AdminLayout } from '@/layouts/AdminLayout';
@@ -35,7 +36,8 @@ import { CreateForwardAgentDialog } from '@/features/forward-agents/components/C
 import { ForwardAgentDetailDialog } from '@/features/forward-agents/components/ForwardAgentDetailDialog';
 import { InstallScriptDialog } from '@/features/forward-agents/components/InstallScriptDialog';
 import { AgentBatchUpdateDialog } from '@/features/forward-agents/components/AgentBatchUpdateDialog';
-import { useForwardAgentsPage, useTriggerAgentUpdate } from '@/features/forward-agents/hooks/useForwardAgents';
+import { BroadcastURLDialog } from '@/features/forward-agents/components/BroadcastURLDialog';
+import { useForwardAgentsPage, useTriggerAgentUpdate, useBroadcastAPIURL } from '@/features/forward-agents/hooks/useForwardAgents';
 import { getAgentVersion } from '@/api/forward';
 import type { AgentVersionInfo, ForwardAgent, UpdateForwardAgentRequest, CreateForwardAgentRequest } from '@/api/forward';
 
@@ -82,6 +84,7 @@ export const ForwardAgentsPage = () => {
 
   const { showError, showInfo } = useNotificationStore();
   const triggerUpdateMutation = useTriggerAgentUpdate();
+  const broadcastURLMutation = useBroadcastAPIURL();
 
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
@@ -91,6 +94,7 @@ export const ForwardAgentsPage = () => {
   const [tokenDialogOpen, setTokenDialogOpen] = useState(false);
   const [copyAgentData, setCopyAgentData] = useState<Partial<CreateForwardAgentRequest> | undefined>(undefined);
   const [batchUpdateDialogOpen, setBatchUpdateDialogOpen] = useState(false);
+  const [broadcastURLDialogOpen, setBroadcastURLDialogOpen] = useState(false);
   const [updateConfirmOpen, setUpdateConfirmOpen] = useState(false);
   const [versionInfo, setVersionInfo] = useState<AgentVersionInfo | null>(null);
   const [updateAgent, setUpdateAgent] = useState<ForwardAgent | null>(null);
@@ -237,6 +241,10 @@ export const ForwardAgentsPage = () => {
     }
   }, [updateAgent, triggerUpdateMutation]);
 
+  const handleBroadcastURL = useCallback(async (newUrl: string, reason?: string) => {
+    return await broadcastURLMutation.mutateAsync({ newUrl, reason });
+  }, [broadcastURLMutation]);
+
   const handleCreateSubmit = async (data: CreateForwardAgentRequest) => {
     try {
       const result = await createForwardAgent(data);
@@ -302,6 +310,25 @@ export const ForwardAgentsPage = () => {
 
           {/* Actions */}
           <div className="flex items-center gap-2 shrink-0">
+            {agentStats.online > 0 && (
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <AdminButton
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setBroadcastURLDialogOpen(true)}
+                    icon={<Radio className="size-4 text-blue-500" strokeWidth={1.5} />}
+                    className="border-blue-500/30 hover:border-blue-500/50 hover:bg-blue-500/10"
+                  >
+                    <span className="hidden sm:inline text-blue-500">下发地址</span>
+                  </AdminButton>
+                </TooltipTrigger>
+                <TooltipContent>
+                  向 {agentStats.online} 个在线节点下发新API地址
+                </TooltipContent>
+              </Tooltip>
+            )}
+
             {agentStats.updatable > 0 && (
               <Tooltip>
                 <TooltipTrigger asChild>
@@ -491,6 +518,15 @@ export const ForwardAgentsPage = () => {
         onBatchUpdate={(updateAll) => handleBatchUpdate({ updateAll })}
         isUpdating={isBatchUpdating}
         result={batchUpdateResult}
+      />
+
+      {/* Broadcast URL Dialog */}
+      <BroadcastURLDialog
+        open={broadcastURLDialogOpen}
+        onClose={() => setBroadcastURLDialogOpen(false)}
+        onBroadcast={handleBroadcastURL}
+        isBroadcasting={broadcastURLMutation.isPending}
+        onlineCount={agentStats.online}
       />
     </AdminLayout>
   );

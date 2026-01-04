@@ -22,6 +22,7 @@ import {
   getAgentVersion,
   triggerAgentUpdate,
   batchTriggerAgentUpdate,
+  broadcastAPIURLChange,
   type ForwardAgent,
   type CreateForwardAgentRequest,
   type UpdateForwardAgentRequest,
@@ -29,6 +30,8 @@ import {
   type InstallCommandResponse,
   type AgentBatchUpdateRequest,
   type AgentBatchUpdateResponse,
+  type BroadcastAPIURLChangedRequest,
+  type BroadcastAPIURLChangedResponse,
 } from '@/api/forward';
 
 // Query Keys
@@ -330,6 +333,23 @@ export const useTriggerAgentUpdate = () => {
     mutationFn: triggerAgentUpdate,
     onSuccess: (data) => {
       showSuccess(`更新命令已发送，目标版本: ${data.targetVersion}`);
+    },
+    onError: (error) => {
+      showError(handleApiError(error));
+    },
+  });
+};
+
+// Broadcast API URL change to all connected agents
+export const useBroadcastAPIURL = () => {
+  const { showSuccess, showError } = useNotificationStore();
+
+  return useMutation({
+    mutationFn: (data: BroadcastAPIURLChangedRequest) => broadcastAPIURLChange(data),
+    onSuccess: (result: BroadcastAPIURLChangedResponse) => {
+      if (result.agentsNotified > 0) {
+        showSuccess(`已通知 ${result.agentsNotified} 个转发节点更新API地址`);
+      }
     },
     onError: (error) => {
       showError(handleApiError(error));

@@ -831,3 +831,92 @@ export interface NodeBatchStatusEvent {
   /** Map of node SID to status data */
   agents: Record<string, NodeStatusData>;
 }
+
+// ============================================================================
+// Broadcast API URL Change Types
+// Added: 2026-01-04
+// ============================================================================
+
+/**
+ * Request for broadcasting API URL change to connected nodes
+ * POST /nodes/broadcast-url-change
+ * @requires Admin role
+ *
+ * Use this endpoint when migrating to a new API server.
+ * Connected nodes will receive a notification to update their
+ * local configuration and reconnect to the new URL.
+ *
+ * Note: For forward agents, use POST /forward-agents/broadcast-url-change instead.
+ *
+ * @example
+ * ```typescript
+ * const result = await broadcastNodeAPIURLChange({
+ *   newUrl: 'https://new-api.example.com',
+ *   reason: 'Server migration to new data center'
+ * });
+ * console.log(`Notified ${result.nodesNotified} of ${result.nodesOnline} nodes`);
+ * ```
+ *
+ * Added: 2026-01-04
+ */
+export interface BroadcastNodeAPIURLChangedRequest {
+  /** The new API URL that nodes should connect to */
+  newUrl: string;
+  /** Optional reason for the URL change (for logging/display) */
+  reason?: string;
+}
+
+/**
+ * Response for API URL change broadcast to nodes
+ * Returns the count of nodes that were notified
+ *
+ * Added: 2026-01-04
+ */
+export interface BroadcastNodeAPIURLChangedResponse {
+  /** Number of nodes that received the notification */
+  nodesNotified: number;
+  /** Total number of nodes currently online */
+  nodesOnline: number;
+}
+
+/**
+ * Request for notifying a single node of API URL change
+ * POST /nodes/:id/url-change
+ * @requires Admin role
+ *
+ * Use this endpoint to notify a specific node when migrating to a new API server.
+ * The node will receive a notification to update its local configuration and reconnect.
+ *
+ * @example
+ * ```typescript
+ * const result = await notifyNodeAPIURLChange('node_xK9mP2vL3nQ', {
+ *   newUrl: 'https://new-api.example.com',
+ *   reason: 'Server migration'
+ * });
+ * if (result.notified) {
+ *   console.log(`Node ${result.nodeId} was notified`);
+ * } else {
+ *   console.log(`Node ${result.nodeId} is not connected`);
+ * }
+ * ```
+ *
+ * Added: 2026-01-04
+ */
+export interface NotifyNodeAPIURLChangedRequest {
+  /** The new API URL that the node should connect to */
+  newUrl: string;
+  /** Optional reason for the URL change (for logging/display) */
+  reason?: string;
+}
+
+/**
+ * Response for single node API URL change notification
+ *
+ * Added: 2026-01-04
+ */
+export interface NotifyNodeAPIURLChangedResponse {
+  /** The node's Stripe-style ID (e.g., "node_xK9mP2vL3nQ") */
+  nodeId: string;
+  /** Whether the notification was successfully sent (false if node is not connected) */
+  notified: boolean;
+}
