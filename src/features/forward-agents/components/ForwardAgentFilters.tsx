@@ -58,10 +58,11 @@ export const ForwardAgentFiltersComponent: React.FC<ForwardAgentFiltersProps> = 
   };
 
   return (
-    <div className="flex items-center gap-4">
-      <div className="w-36">
+    <div className="flex items-center gap-2 sm:gap-4">
+      {/* Status filter - responsive width */}
+      <div className="w-[72px] sm:w-28">
         <Select value={filters.status || '_all_'} onValueChange={handleStatusChange}>
-          <SelectTrigger>
+          <SelectTrigger className="text-xs sm:text-sm">
             <SelectValue placeholder="状态" />
           </SelectTrigger>
           <SelectContent>
@@ -72,7 +73,8 @@ export const ForwardAgentFiltersComponent: React.FC<ForwardAgentFiltersProps> = 
         </Select>
       </div>
 
-      <div className="flex-1 max-w-xs">
+      {/* Search input - hidden on mobile */}
+      <div className="hidden sm:block flex-1 max-w-xs">
         <Input
           placeholder="搜索节点名称"
           value={filters.name || ''}
@@ -80,9 +82,10 @@ export const ForwardAgentFiltersComponent: React.FC<ForwardAgentFiltersProps> = 
         />
       </div>
 
-      <div className="w-40">
+      {/* Sort filter - responsive width */}
+      <div className="w-[88px] sm:w-32">
         <Select value={getSortValue()} onValueChange={handleSortChange}>
-          <SelectTrigger>
+          <SelectTrigger className="text-xs sm:text-sm">
             <SelectValue placeholder="排序" />
           </SelectTrigger>
           <SelectContent>
@@ -94,9 +97,10 @@ export const ForwardAgentFiltersComponent: React.FC<ForwardAgentFiltersProps> = 
         </Select>
       </div>
 
-      <Button variant="outline" onClick={handleReset}>
-        <FilterX className="mr-2 h-4 w-4" />
-        重置
+      {/* Reset button - icon only on mobile */}
+      <Button variant="outline" size="sm" onClick={handleReset} className="shrink-0">
+        <FilterX className="h-4 w-4 sm:mr-2" />
+        <span className="hidden sm:inline">重置</span>
       </Button>
     </div>
   );
