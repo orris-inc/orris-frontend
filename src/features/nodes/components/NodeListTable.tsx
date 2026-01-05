@@ -120,10 +120,19 @@ export const NodeListTable: React.FC<NodeListTableProps> = ({
   // Node context menu content
   const renderContextMenuActions = useCallback((node: Node) => (
     <>
+      <ContextMenuItem onClick={() => onViewDetail(node)}>
+        <Eye className="mr-2 size-4" />
+        查看详情
+      </ContextMenuItem>
       <ContextMenuItem onClick={() => onEdit(node)}>
         <Edit className="mr-2 size-4" />
         编辑
       </ContextMenuItem>
+      <ContextMenuItem onClick={() => onGetInstallScript(node)}>
+        <Terminal className="mr-2 size-4" />
+        安装脚本
+      </ContextMenuItem>
+      <ContextMenuSeparator />
       <ContextMenuItem onClick={() => onCopy(node)}>
         <Copy className="mr-2 size-4" />
         复制节点
@@ -155,7 +164,7 @@ export const NodeListTable: React.FC<NodeListTableProps> = ({
         删除节点
       </ContextMenuItem>
     </>
-  ), [onEdit, onCopy, onGenerateToken, onActivate, onDeactivate, onDelete, onNotifyURL]);
+  ), [onViewDetail, onEdit, onGetInstallScript, onCopy, onGenerateToken, onActivate, onDeactivate, onDelete, onNotifyURL]);
 
   // Node dropdown menu content
   const renderDropdownMenuActions = useCallback((node: Node) => (
@@ -665,6 +674,8 @@ export const NodeListTable: React.FC<NodeListTableProps> = ({
           getRowId={(row) => String(row.id)}
           enableDragSort={true}
           onDragEnd={onDragEnd}
+          enableContextMenu={true}
+          contextMenuContent={renderContextMenuActions}
         />
       </SystemStatusHoverProvider>
     );

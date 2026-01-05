@@ -14,7 +14,32 @@ import { Button } from "@/components/common/Button";
 import { Input } from "@/components/common/Input";
 import { Textarea } from "@/components/common/Textarea";
 import { Label } from "@/components/common/Label";
-import type { CreateForwardAgentRequest } from "@/api/forward";
+import { cn } from "@/lib/utils";
+import type { CreateForwardAgentRequest, BlockedProtocol } from "@/api/forward";
+
+// Protocol groups for better organization
+const PROTOCOL_GROUPS: {
+  label: string;
+  protocols: { value: BlockedProtocol; label: string }[];
+}[] = [
+  {
+    label: "代理协议",
+    protocols: [
+      { value: "http_connect", label: "HTTP CONNECT" },
+      { value: "socks4", label: "SOCKS4" },
+      { value: "socks5", label: "SOCKS5" },
+    ],
+  },
+  {
+    label: "应用协议",
+    protocols: [
+      { value: "http", label: "HTTP" },
+      { value: "tls", label: "TLS" },
+      { value: "ssh", label: "SSH" },
+      { value: "ftp", label: "FTP" },
+    ],
+  },
+];
 
 interface CreateForwardAgentDialogProps {
   open: boolean;
@@ -32,6 +57,7 @@ const getDefaultFormData = (): CreateForwardAgentRequest => ({
   remark: "",
   allowedPortRange: "",
   sortOrder: undefined,
+  blockedProtocols: [],
 });
 
 export const CreateForwardAgentDialog: React.FC<
@@ -86,6 +112,14 @@ export const CreateForwardAgentDialog: React.FC<
     }
   };
 
+  const handleProtocolToggle = (protocol: BlockedProtocol, checked: boolean) => {
+    const current = formData.blockedProtocols || [];
+    const updated = checked
+      ? [...current, protocol]
+      : current.filter((p) => p !== protocol);
+    setFormData((prev) => ({ ...prev, blockedProtocols: updated }));
+  };
+
   const validate = () => {
     const newErrors: Record<string, string> = {};
 
@@ -122,6 +156,10 @@ export const CreateForwardAgentDialog: React.FC<
 
       if (formData.sortOrder !== undefined) {
         submitData.sortOrder = formData.sortOrder;
+      }
+
+      if (formData.blockedProtocols && formData.blockedProtocols.length > 0) {
+        submitData.blockedProtocols = formData.blockedProtocols;
       }
 
       setIsSubmitting(true);
@@ -221,6 +259,47 @@ export const CreateForwardAgentDialog: React.FC<
             />
             <p className="text-xs text-muted-foreground">
               可选，数值越小排序越靠前
+            </p>
+          </div>
+
+          {/* Blocked Protocols */}
+          <div className="flex flex-col gap-3">
+            <Label>阻止协议</Label>
+            <div className="space-y-3">
+              {PROTOCOL_GROUPS.map((group) => (
+                <div key={group.label}>
+                  <p className="text-xs text-muted-foreground mb-2">
+                    {group.label}
+                  </p>
+                  <div className="flex flex-wrap gap-2">
+                    {group.protocols.map((protocol) => {
+                      const isSelected =
+                        formData.blockedProtocols?.includes(protocol.value) ||
+                        false;
+                      return (
+                        <button
+                          key={protocol.value}
+                          type="button"
+                          onClick={() =>
+                            handleProtocolToggle(protocol.value, !isSelected)
+                          }
+                          className={cn(
+                            "px-3 py-1.5 text-sm rounded-md border transition-colors cursor-pointer",
+                            isSelected
+                              ? "bg-destructive/10 border-destructive/50 text-destructive"
+                              : "bg-muted/50 border-border text-muted-foreground hover:bg-muted hover:text-foreground"
+                          )}
+                        >
+                          {protocol.label}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              ))}
+            </div>
+            <p className="text-xs text-muted-foreground">
+              可选，点击选择需要阻止的协议类型
             </p>
           </div>
 

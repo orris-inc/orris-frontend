@@ -5,6 +5,8 @@
  * Last updated: 2026-01-05
  *
  * Recent changes:
+ * - 2026-01-05: Added blockedProtocols field to ForwardRule, CreateForwardRuleRequest, UpdateForwardRuleRequest
+ * - 2026-01-05: Added BlockedProtocol type for protocol filtering
  * - 2026-01-05: Added sortOrder to CreateForwardAgentRequest and UpdateForwardAgentRequest
  * - 2026-01-05: Added sortOrder field to ForwardAgent for custom ordering
  * - 2026-01-05: Changed ListForwardAgentsParams to use sortBy/sortOrder (from orderBy/order)
@@ -57,6 +59,21 @@ export type IPVersion = 'auto' | 'ipv4' | 'ipv6';
  * Added: 2025-12-24
  */
 export type TunnelType = 'ws' | 'tls';
+
+/**
+ * Blocked protocol type for traffic filtering
+ * These protocols can be blocked at the forward agent level
+ * Added: 2026-01-05
+ * Updated: 2026-01-05 - Moved from Rule level to Agent level
+ */
+export type BlockedProtocol =
+  | 'http_connect' // HTTP CONNECT proxy protocol
+  | 'socks4' // SOCKS4 proxy protocol
+  | 'socks5' // SOCKS5 proxy protocol
+  | 'http' // HTTP application protocol
+  | 'tls' // TLS application protocol
+  | 'ssh' // SSH application protocol
+  | 'ftp'; // FTP application protocol
 
 /**
  * Forward rule entity
@@ -278,6 +295,8 @@ export interface ForwardAgent {
   allowedPortRange?: string;
   /** Custom sort order for UI display (lower values appear first) (Added: 2026-01-05) */
   sortOrder: number;
+  /** Blocked protocols for this agent (Added: 2026-01-05) */
+  blockedProtocols?: BlockedProtocol[];
   createdAt: string;
   updatedAt: string;
   systemStatus?: AgentSystemStatus; // Real-time system metrics (optional, from cache)
@@ -478,6 +497,8 @@ export interface CreateForwardAgentRequest {
   allowedPortRange?: string;
   /** Custom sort order for UI display (lower values appear first, default: 0) (Added: 2026-01-05) */
   sortOrder?: number;
+  /** Blocked protocols for this agent (Added: 2026-01-05) */
+  blockedProtocols?: BlockedProtocol[];
 }
 
 /**
@@ -497,6 +518,8 @@ export interface UpdateForwardAgentRequest {
   allowedPortRange?: string;
   /** Custom sort order for UI display (lower values appear first) (Added: 2026-01-05) */
   sortOrder?: number;
+  /** Blocked protocols for this agent (Added: 2026-01-05) */
+  blockedProtocols?: BlockedProtocol[];
 }
 
 /**

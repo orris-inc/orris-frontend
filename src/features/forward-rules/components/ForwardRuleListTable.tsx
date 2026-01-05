@@ -354,38 +354,58 @@ export const ForwardRuleListTable: React.FC<ForwardRuleListTableProps> = ({
   // Detect mobile screen
   const { isMobile } = useBreakpoint();
   // Forward rule context menu content
-  const renderContextMenuActions = useCallback((rule: ForwardRule) => (
-    <>
-      <ContextMenuItem onClick={() => onEdit(rule)}>
-        <Edit className="mr-2 size-4" />
-        编辑
-      </ContextMenuItem>
-      <ContextMenuItem onClick={() => onCopy(rule)}>
-        <Files className="mr-2 size-4" />
-        复制规则
-      </ContextMenuItem>
-      <ContextMenuItem onClick={() => onResetTraffic(rule)}>
-        <RotateCcw className="mr-2 size-4" />
-        重置流量
-      </ContextMenuItem>
-      <ContextMenuSeparator />
-      {rule.status === 'enabled' ? (
-        <ContextMenuItem onClick={() => onDisable(rule)}>
-          <PowerOff className="mr-2 size-4" />
-          禁用
+  const renderContextMenuActions = useCallback((rule: ForwardRule) => {
+    const isProbing = probingRuleId === rule.id;
+    const canProbe = rule.status === 'enabled' && !isProbing;
+    return (
+      <>
+        <ContextMenuItem onClick={() => onViewDetail(rule)}>
+          <Eye className="mr-2 size-4" />
+          查看详情
         </ContextMenuItem>
-      ) : (
-        <ContextMenuItem onClick={() => onEnable(rule)}>
-          <Power className="mr-2 size-4" />
-          启用
+        <ContextMenuItem onClick={() => onEdit(rule)}>
+          <Edit className="mr-2 size-4" />
+          编辑
         </ContextMenuItem>
-      )}
-      <ContextMenuItem onClick={() => onDelete(rule)} className="text-red-600 dark:text-red-400">
-        <Trash2 className="mr-2 size-4" />
-        删除
-      </ContextMenuItem>
-    </>
-  ), [onEdit, onCopy, onResetTraffic, onEnable, onDisable, onDelete]);
+        <ContextMenuItem
+          onClick={() => canProbe && onProbe(rule)}
+          disabled={!canProbe}
+        >
+          {isProbing ? (
+            <Loader2 className="mr-2 size-4 animate-spin" />
+          ) : (
+            <Activity className="mr-2 size-4" />
+          )}
+          {isProbing ? '拨测中...' : '拨测'}
+        </ContextMenuItem>
+        <ContextMenuSeparator />
+        <ContextMenuItem onClick={() => onCopy(rule)}>
+          <Files className="mr-2 size-4" />
+          复制规则
+        </ContextMenuItem>
+        <ContextMenuItem onClick={() => onResetTraffic(rule)}>
+          <RotateCcw className="mr-2 size-4" />
+          重置流量
+        </ContextMenuItem>
+        <ContextMenuSeparator />
+        {rule.status === 'enabled' ? (
+          <ContextMenuItem onClick={() => onDisable(rule)}>
+            <PowerOff className="mr-2 size-4" />
+            禁用
+          </ContextMenuItem>
+        ) : (
+          <ContextMenuItem onClick={() => onEnable(rule)}>
+            <Power className="mr-2 size-4" />
+            启用
+          </ContextMenuItem>
+        )}
+        <ContextMenuItem onClick={() => onDelete(rule)} className="text-red-600 dark:text-red-400">
+          <Trash2 className="mr-2 size-4" />
+          删除
+        </ContextMenuItem>
+      </>
+    );
+  }, [onViewDetail, onEdit, onProbe, probingRuleId, onCopy, onResetTraffic, onEnable, onDisable, onDelete]);
 
   // Forward rule dropdown menu content
   const renderDropdownMenuActions = useCallback((rule: ForwardRule) => (
@@ -907,6 +927,8 @@ export const ForwardRuleListTable: React.FC<ForwardRuleListTableProps> = ({
         getRowId={(row) => String(row.id)}
         enableDragSort={true}
         onDragEnd={onDragEnd}
+        enableContextMenu={true}
+        contextMenuContent={renderContextMenuActions}
       />
     );
   }

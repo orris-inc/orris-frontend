@@ -151,6 +151,19 @@ export const ForwardAgentListTable: React.FC<ForwardAgentListTableProps> = ({
   // Forward agent context menu content
   const renderContextMenuActions = useCallback((agent: ForwardAgent) => (
     <>
+      <ContextMenuItem onClick={() => onViewDetail(agent)}>
+        <Eye className="mr-2 size-4" />
+        查看详情
+      </ContextMenuItem>
+      <ContextMenuItem onClick={() => onEdit(agent)}>
+        <Edit className="mr-2 size-4" />
+        编辑
+      </ContextMenuItem>
+      <ContextMenuItem onClick={() => onGetInstallScript(agent)}>
+        <Terminal className="mr-2 size-4" />
+        获取安装脚本
+      </ContextMenuItem>
+      <ContextMenuSeparator />
       <ContextMenuItem onClick={() => onCopy(agent)}>
         <Copy className="mr-2 size-4" />
         复制节点
@@ -195,7 +208,7 @@ export const ForwardAgentListTable: React.FC<ForwardAgentListTableProps> = ({
         删除
       </ContextMenuItem>
     </>
-  ), [onCopy, onRegenerateToken, onCheckUpdate, onBroadcastURL, checkingAgentId, onEnable, onDisable, onDelete]);
+  ), [onViewDetail, onEdit, onGetInstallScript, onCopy, onRegenerateToken, onCheckUpdate, onBroadcastURL, checkingAgentId, onEnable, onDisable, onDelete]);
 
   // Forward agent dropdown menu content
   const renderDropdownMenuActions = useCallback((agent: ForwardAgent) => (
@@ -527,6 +540,8 @@ export const ForwardAgentListTable: React.FC<ForwardAgentListTableProps> = ({
           getRowId={(row) => String(row.id)}
           enableDragSort={true}
           onDragEnd={onDragEnd}
+          enableContextMenu={true}
+          contextMenuContent={renderContextMenuActions}
         />
       </SystemStatusHoverProvider>
     );

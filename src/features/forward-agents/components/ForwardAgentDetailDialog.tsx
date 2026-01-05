@@ -43,7 +43,7 @@ import { useForwardAgentDetailEvents } from "../hooks/useForwardAgentEvents";
 import { getAgentVersion, triggerAgentUpdate } from "@/api/forward";
 import type { AgentVersionInfo } from "@/api/forward";
 import { useState, useEffect } from "react";
-import type { ForwardAgent } from "@/api/forward";
+import type { ForwardAgent, BlockedProtocol } from "@/api/forward";
 import {
   formatBitRate,
   formatBytes,
@@ -76,6 +76,31 @@ const getProgressColor = (value: number): string => {
   if (value >= 70) return "bg-yellow-500";
   return "bg-green-500";
 };
+
+// Protocol groups for display
+const PROTOCOL_GROUPS: {
+  label: string;
+  protocols: { value: BlockedProtocol; label: string }[];
+}[] = [
+  {
+    label: "代理协议",
+    protocols: [
+      { value: "http_connect", label: "HTTP CONNECT" },
+      { value: "socks4", label: "SOCKS4" },
+      { value: "socks5", label: "SOCKS5" },
+    ],
+  },
+  {
+    label: "应用协议",
+    protocols: [
+      { value: "http", label: "HTTP" },
+      { value: "tls", label: "TLS" },
+      { value: "ssh", label: "SSH" },
+      { value: "ftp", label: "FTP" },
+    ],
+  },
+];
+
 
 export const ForwardAgentDetailDialog: React.FC<
   ForwardAgentDetailDialogProps
@@ -584,6 +609,38 @@ export const ForwardAgentDetailDialog: React.FC<
                   <p className="text-sm font-mono bg-muted px-2 py-1 rounded inline-block">
                     {agent.allowedPortRange || "无限制"}
                   </p>
+                </div>
+
+                <div className="space-y-2 md:col-span-2">
+                  <p className="text-sm text-muted-foreground">阻止协议</p>
+                  {agent.blockedProtocols && agent.blockedProtocols.length > 0 ? (
+                    <div className="space-y-2">
+                      {PROTOCOL_GROUPS.map((group) => {
+                        const blockedInGroup = group.protocols.filter((p) =>
+                          agent.blockedProtocols?.includes(p.value)
+                        );
+                        if (blockedInGroup.length === 0) return null;
+                        return (
+                          <div key={group.label} className="flex flex-wrap items-center gap-1.5">
+                            <span className="text-xs text-muted-foreground mr-1">
+                              {group.label}:
+                            </span>
+                            {blockedInGroup.map((protocol) => (
+                              <Badge
+                                key={protocol.value}
+                                variant="destructive"
+                                className="text-xs font-normal"
+                              >
+                                {protocol.label}
+                              </Badge>
+                            ))}
+                          </div>
+                        );
+                      })}
+                    </div>
+                  ) : (
+                    <p className="text-sm text-muted-foreground">无</p>
+                  )}
                 </div>
 
                 {agent.remark && (

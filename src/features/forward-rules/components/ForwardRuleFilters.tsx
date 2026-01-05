@@ -30,8 +30,9 @@ export const ForwardRuleFilters: React.FC<ForwardRuleFiltersProps> = ({ filters,
   const { isMobile } = useBreakpoint();
   const [isOpen, setIsOpen] = useState(false);
 
-  // Check if any filter is active
-  const hasActiveFilters = !!(filters.protocol || filters.status || filters.name || filters.orderBy);
+  // Check if any filter is active (sort_order is default, not considered as active filter)
+  const isDefaultSort = filters.orderBy === 'sort_order' && filters.order === 'asc';
+  const hasActiveFilters = !!(filters.protocol || filters.status || filters.name || (filters.orderBy && !isDefaultSort));
 
   const handleProtocolChange = (value: string): void => {
     onChange({ protocol: value === '_all_' ? undefined : (value as ForwardProtocol) });
@@ -46,20 +47,16 @@ export const ForwardRuleFilters: React.FC<ForwardRuleFiltersProps> = ({ filters,
   };
 
   const handleSortChange = (value: string): void => {
-    if (value === '_default_') {
-      onChange({ orderBy: undefined, order: undefined });
-    } else {
-      // Extract order from the end (last part after final underscore)
-      const lastUnderscoreIndex = value.lastIndexOf('_');
-      const orderBy = value.substring(0, lastUnderscoreIndex);
-      const order = value.substring(lastUnderscoreIndex + 1) as 'asc' | 'desc';
-      onChange({ orderBy, order });
-    }
+    // Extract order from the end (last part after final underscore)
+    const lastUnderscoreIndex = value.lastIndexOf('_');
+    const orderBy = value.substring(0, lastUnderscoreIndex);
+    const order = value.substring(lastUnderscoreIndex + 1) as 'asc' | 'desc';
+    onChange({ orderBy, order });
   };
 
   // Get current sort value for select
   const getSortValue = (): string => {
-    if (!filters.orderBy) return '_default_';
+    if (!filters.orderBy) return 'sort_order_asc';
     return `${filters.orderBy}_${filters.order || 'desc'}`;
   };
 
@@ -68,8 +65,8 @@ export const ForwardRuleFilters: React.FC<ForwardRuleFiltersProps> = ({ filters,
       protocol: undefined,
       status: undefined,
       name: undefined,
-      orderBy: undefined,
-      order: undefined,
+      orderBy: 'sort_order',
+      order: 'asc',
     });
   };
 
@@ -111,11 +108,10 @@ export const ForwardRuleFilters: React.FC<ForwardRuleFiltersProps> = ({ filters,
           <SelectValue placeholder="排序" />
         </SelectTrigger>
         <SelectContent>
-          <SelectItem value="_default_">默认排序</SelectItem>
+          <SelectItem value="sort_order_asc">默认排序</SelectItem>
           <SelectItem value="created_at_desc">创建时间 ↓</SelectItem>
           <SelectItem value="created_at_asc">创建时间 ↑</SelectItem>
           <SelectItem value="updated_at_desc">更新时间 ↓</SelectItem>
-          <SelectItem value="sort_order_asc">自定义排序</SelectItem>
         </SelectContent>
       </Select>
 

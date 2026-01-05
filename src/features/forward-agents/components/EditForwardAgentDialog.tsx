@@ -22,8 +22,37 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/common/Select";
-import type { ForwardAgent, UpdateForwardAgentRequest } from "@/api/forward";
+import { cn } from "@/lib/utils";
+import type {
+  ForwardAgent,
+  UpdateForwardAgentRequest,
+  BlockedProtocol,
+} from "@/api/forward";
 import { useResourceGroups } from "@/features/resource-groups/hooks/useResourceGroups";
+
+// Protocol groups for better organization
+const PROTOCOL_GROUPS: {
+  label: string;
+  protocols: { value: BlockedProtocol; label: string }[];
+}[] = [
+  {
+    label: "代理协议",
+    protocols: [
+      { value: "http_connect", label: "HTTP CONNECT" },
+      { value: "socks4", label: "SOCKS4" },
+      { value: "socks5", label: "SOCKS5" },
+    ],
+  },
+  {
+    label: "应用协议",
+    protocols: [
+      { value: "http", label: "HTTP" },
+      { value: "tls", label: "TLS" },
+      { value: "ssh", label: "SSH" },
+      { value: "ftp", label: "FTP" },
+    ],
+  },
+];
 
 interface EditForwardAgentDialogProps {
   open: boolean;
@@ -57,6 +86,7 @@ export const EditForwardAgentDialog: React.FC<EditForwardAgentDialogProps> = ({
         remark: agent.remark,
         allowedPortRange: agent.allowedPortRange,
         sortOrder: agent.sortOrder,
+        blockedProtocols: agent.blockedProtocols || [],
       });
       setErrors({});
     }
@@ -87,6 +117,14 @@ export const EditForwardAgentDialog: React.FC<EditForwardAgentDialogProps> = ({
     }
   };
 
+  const handleProtocolToggle = (protocol: BlockedProtocol, checked: boolean) => {
+    const current = formData.blockedProtocols || [];
+    const updated = checked
+      ? [...current, protocol]
+      : current.filter((p) => p !== protocol);
+    setFormData((prev) => ({ ...prev, blockedProtocols: updated }));
+  };
+
   const validate = () => {
     const newErrors: Record<string, string> = {};
 
@@ -113,6 +151,17 @@ export const EditForwardAgentDialog: React.FC<EditForwardAgentDialogProps> = ({
         updates.allowedPortRange = formData.allowedPortRange;
       if (formData.sortOrder !== agent.sortOrder)
         updates.sortOrder = formData.sortOrder;
+
+      // Compare blocked protocols arrays
+      const currentProtocols = agent.blockedProtocols || [];
+      const newProtocols = formData.blockedProtocols || [];
+      const protocolsChanged =
+        currentProtocols.length !== newProtocols.length ||
+        currentProtocols.some((p) => !newProtocols.includes(p)) ||
+        newProtocols.some((p) => !currentProtocols.includes(p));
+      if (protocolsChanged) {
+        updates.blockedProtocols = newProtocols;
+      }
 
       // Resource group association
       if (formData.groupSid !== undefined) {
@@ -252,6 +301,51 @@ export const EditForwardAgentDialog: React.FC<EditForwardAgentDialogProps> = ({
                   />
                   <p className="text-xs text-muted-foreground">
                     数值越小排序越靠前
+                  </p>
+                </div>
+
+                {/* 阻止协议 */}
+                <div className="flex flex-col gap-3">
+                  <Label>阻止协议</Label>
+                  <div className="space-y-3">
+                    {PROTOCOL_GROUPS.map((group) => (
+                      <div key={group.label}>
+                        <p className="text-xs text-muted-foreground mb-2">
+                          {group.label}
+                        </p>
+                        <div className="flex flex-wrap gap-2">
+                          {group.protocols.map((protocol) => {
+                            const isSelected =
+                              formData.blockedProtocols?.includes(
+                                protocol.value
+                              ) || false;
+                            return (
+                              <button
+                                key={protocol.value}
+                                type="button"
+                                onClick={() =>
+                                  handleProtocolToggle(
+                                    protocol.value,
+                                    !isSelected
+                                  )
+                                }
+                                className={cn(
+                                  "px-3 py-1.5 text-sm rounded-md border transition-colors cursor-pointer",
+                                  isSelected
+                                    ? "bg-destructive/10 border-destructive/50 text-destructive"
+                                    : "bg-muted/50 border-border text-muted-foreground hover:bg-muted hover:text-foreground"
+                                )}
+                              >
+                                {protocol.label}
+                              </button>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                  <p className="text-xs text-muted-foreground">
+                    点击选择需要阻止的协议类型
                   </p>
                 </div>
 

@@ -37,6 +37,12 @@ import { cn } from '@/lib/utils';
 import { AdminTablePagination } from './AdminTable';
 import { useBreakpoint, type BreakpointKey } from '@/hooks/useBreakpoint';
 import type { ResponsiveColumnMeta } from './DataTable';
+import {
+  ContextMenu,
+  ContextMenuContent,
+  ContextMenuPortal,
+  ContextMenuTrigger,
+} from '@/components/common/ContextMenu';
 
 // ============ Breakpoint Priority ============
 const BREAKPOINT_ORDER: (BreakpointKey | 'xs')[] = ['xs', 'sm', 'md', 'lg', 'xl', '2xl'];
@@ -85,6 +91,8 @@ const shouldShowColumn = (
 
 interface SortableRowProps<TData> {
   row: Row<TData>;
+  contextMenuContent?: (data: TData) => React.ReactNode;
+  enableContextMenu?: boolean;
 }
 
 /**
@@ -93,6 +101,8 @@ interface SortableRowProps<TData> {
  */
 const SortableRowInner = memo(function SortableRowInner<TData>({
   row,
+  contextMenuContent,
+  enableContextMenu = false,
 }: SortableRowProps<TData>) {
   const {
     attributes,
@@ -111,7 +121,7 @@ const SortableRowInner = memo(function SortableRowInner<TData>({
       }
     : undefined;
 
-  return (
+  const rowContent = (
     <tr
       ref={setNodeRef}
       style={style}
@@ -138,16 +148,40 @@ const SortableRowInner = memo(function SortableRowInner<TData>({
       ))}
     </tr>
   );
+
+  // Wrap with ContextMenu if enabled
+  if (enableContextMenu && contextMenuContent) {
+    return (
+      <ContextMenu>
+        <ContextMenuTrigger asChild>
+          {rowContent}
+        </ContextMenuTrigger>
+        <ContextMenuPortal>
+          <ContextMenuContent>
+            {contextMenuContent(row.original)}
+          </ContextMenuContent>
+        </ContextMenuPortal>
+      </ContextMenu>
+    );
+  }
+
+  return rowContent;
 }) as <TData>(props: SortableRowProps<TData>) => React.ReactElement;
 
 // ============ Static Row (non-draggable mode) ============
 
 interface StaticRowProps<TData> {
   row: Row<TData>;
+  contextMenuContent?: (data: TData) => React.ReactNode;
+  enableContextMenu?: boolean;
 }
 
-const StaticRow = memo(function StaticRow<TData>({ row }: StaticRowProps<TData>) {
-  return (
+const StaticRow = memo(function StaticRow<TData>({
+  row,
+  contextMenuContent,
+  enableContextMenu = false,
+}: StaticRowProps<TData>) {
+  const rowContent = (
     <tr className="hover:bg-accent/50">
       {row.getVisibleCells().map((cell) => (
         <td key={cell.id} className="px-4 py-3.5 text-foreground align-middle">
@@ -156,6 +190,24 @@ const StaticRow = memo(function StaticRow<TData>({ row }: StaticRowProps<TData>)
       ))}
     </tr>
   );
+
+  // Wrap with ContextMenu if enabled
+  if (enableContextMenu && contextMenuContent) {
+    return (
+      <ContextMenu>
+        <ContextMenuTrigger asChild>
+          {rowContent}
+        </ContextMenuTrigger>
+        <ContextMenuPortal>
+          <ContextMenuContent>
+            {contextMenuContent(row.original)}
+          </ContextMenuContent>
+        </ContextMenuPortal>
+      </ContextMenu>
+    );
+  }
+
+  return rowContent;
 }) as <TData>(props: StaticRowProps<TData>) => React.ReactElement;
 
 // ============ DraggableDataTable Component ============
@@ -175,6 +227,9 @@ interface DraggableDataTableProps<TData> {
   emptyMessage?: string;
   enableDragSort?: boolean;
   onDragEnd?: (activeId: string, overId: string, oldIndex: number, newIndex: number) => void;
+  // Context menu
+  contextMenuContent?: (row: TData) => React.ReactNode;
+  enableContextMenu?: boolean;
 }
 
 export function DraggableDataTable<TData>({
@@ -192,6 +247,8 @@ export function DraggableDataTable<TData>({
   emptyMessage = 'No data',
   enableDragSort = false,
   onDragEnd,
+  contextMenuContent,
+  enableContextMenu = false,
 }: DraggableDataTableProps<TData>) {
   const { current: currentBreakpoint } = useBreakpoint();
   const [activeId, setActiveId] = useState<string | null>(null);
@@ -331,11 +388,23 @@ export function DraggableDataTable<TData>({
             ) : enableDragSort ? (
               <SortableContext items={rowIds} strategy={() => null}>
                 {rows.map((row) => (
-                  <SortableRowInner key={row.id} row={row} />
+                  <SortableRowInner
+                    key={row.id}
+                    row={row}
+                    contextMenuContent={contextMenuContent}
+                    enableContextMenu={enableContextMenu}
+                  />
                 ))}
               </SortableContext>
             ) : (
-              rows.map((row) => <StaticRow key={row.id} row={row} />)
+              rows.map((row) => (
+                <StaticRow
+                  key={row.id}
+                  row={row}
+                  contextMenuContent={contextMenuContent}
+                  enableContextMenu={enableContextMenu}
+                />
+              ))
             )}
           </tbody>
         </table>

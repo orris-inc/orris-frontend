@@ -279,7 +279,10 @@ const ruleStatusQueryKeys = {
 export const useForwardRulesPage = () => {
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(20);
-  const [filters, setFilters] = useState<ForwardRuleFilters>({});
+  const [filters, setFilters] = useState<ForwardRuleFilters>({
+    orderBy: 'sort_order',
+    order: 'asc',
+  });
   const [includeUserRules, setIncludeUserRules] = useState(false);
   const [selectedRule, setSelectedRule] = useState<ForwardRule | null>(null);
 
