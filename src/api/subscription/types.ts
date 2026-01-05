@@ -8,13 +8,14 @@
  * automatically converts between snake_case (API) and camelCase (frontend).
  *
  * Recent changes:
+ * - 2025-01-05: Added Subscription Link types (SubscriptionNodeMode, SubscriptionLinkFormat, SubscriptionLinkParams)
  * - 2025-12-24: Added 'hybrid' to PlanType for mixed subscriptions
  * - 2025-12-23: TrafficStatsRecord: Changed nodeId to resourceType + resourceId (SID format)
  * - 2025-12-19: Changed all IDs to Stripe-style string format (sub_xxx, plan_xxx, stoken_xxx)
  * - 2025-12-19: Changed Subscription.id to string, added userId as string
  * - 2025-12-19: Changed SubscriptionPlan.id to string
  * - 2025-12-19: Changed SubscriptionToken.id to string, added subscriptionId as string
- * - 2025-12-26: Removed deprecated Plan-Node entitlement types (use ResourceGroup instead)
+ * - 2025-12-18: Added Plan-Node entitlement management types (BindNodesRequest, UnbindNodesRequest, PlanNode, GetPlanNodesResult)
  * - 2025-12-18: Removed price, currency, billingCycle from SubscriptionPlan (now use pricings array only)
  * - 2025-12-18: Added PlanType type and planType field to SubscriptionPlan
  */
@@ -363,6 +364,50 @@ export interface TrafficStatsResponse {
 }
 
 // ============================================================================
+// Plan-Node Entitlement Management Types
+// Added: 2025-12-18
+// ============================================================================
+
+/**
+ * A node associated with a plan
+ * Used in GetPlanNodesResult
+ */
+export interface PlanNode {
+  id: number;
+  name: string;
+  serverAddress: string;
+  protocol: string;
+  status: string;
+}
+
+/**
+ * Result of getting plan nodes
+ * GET /plans/:id/nodes
+ */
+export interface GetPlanNodesResult {
+  nodes: PlanNode[];
+  total: number;
+}
+
+/**
+ * Bind nodes to plan request
+ * POST /plans/:id/nodes
+ */
+export interface BindNodesRequest {
+  /** Array of node IDs to bind to the plan */
+  nodeIds: number[];
+}
+
+/**
+ * Unbind nodes from plan request
+ * DELETE /plans/:id/nodes
+ */
+export interface UnbindNodesRequest {
+  /** Array of node IDs to unbind from the plan */
+  nodeIds: number[];
+}
+
+// ============================================================================
 // Admin Subscription Management Types
 // Migrated from admin SDK: 2025-12-19
 // ============================================================================
@@ -428,4 +473,36 @@ export interface AdminListSubscriptionsParams {
   pageSize?: number;
   userId?: number;
   status?: SubscriptionStatus;
+}
+
+// ============================================================================
+// Subscription Link Types (Public API for proxy clients)
+// Added: 2025-01-05
+// ============================================================================
+
+/**
+ * Node mode for subscription link filtering
+ * Controls which nodes are included in subscription output
+ */
+export type SubscriptionNodeMode = 'all' | 'forward' | 'origin';
+
+/**
+ * Subscription link format
+ * Determines the output format for proxy clients
+ */
+export type SubscriptionLinkFormat = 'base64' | 'clash' | 'v2ray' | 'sip008' | 'surge';
+
+/**
+ * Subscription link query parameters
+ * GET /s/:token or GET /s/:token/:format
+ * Added: 2025-01-05
+ */
+export interface SubscriptionLinkParams {
+  /**
+   * Node filtering mode
+   * - 'all': Return all nodes (origin + forwarded) - default
+   * - 'forward': Return only forwarded nodes
+   * - 'origin': Return only origin nodes
+   */
+  mode?: SubscriptionNodeMode;
 }

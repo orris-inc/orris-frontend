@@ -8,8 +8,6 @@ import {
   XCircle,
   CreditCard,
   Link2,
-  Copy,
-  Check,
   Upload,
   Download,
   Calendar,
@@ -21,6 +19,7 @@ import {
 } from 'lucide-react';
 import { getButtonClass, getBadgeClass } from '@/lib/ui-styles';
 import { getSubscription, resetSubscriptionLink } from '@/api/subscription';
+import { SubscriptionLinkSelector } from '@/components/subscription';
 import type { DashboardSubscription } from '@/api/user/types';
 import { cn } from '@/lib/utils';
 
@@ -83,48 +82,6 @@ const getDaysRemaining = (endDate?: string): number | null => {
   const now = new Date();
   const diff = Math.ceil((end.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
   return diff > 0 ? diff : 0;
-};
-
-/**
- * Subscription link types
- */
-const SUBSCRIPTION_LINK_TYPES = [
-  { name: 'Base64', path: '' },
-  { name: 'Clash', path: '/clash' },
-  { name: 'V2Ray', path: '/v2ray' },
-  { name: 'SIP008', path: '/sip008' },
-  { name: 'Surge', path: '/surge' },
-];
-
-/**
- * Copy button component
- */
-const CopyButton = ({ text }: { text: string }) => {
-  const [copied, setCopied] = useState(false);
-
-  const handleCopy = async () => {
-    try {
-      await navigator.clipboard.writeText(text);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
-    } catch {
-      // Copy failed silently
-    }
-  };
-
-  return (
-    <button
-      onClick={handleCopy}
-      className="p-1.5 rounded-lg hover:bg-muted transition-colors"
-      title={copied ? '已复制' : '复制'}
-    >
-      {copied ? (
-        <Check className="size-4 text-emerald-500" />
-      ) : (
-        <Copy className="size-4 text-muted-foreground" />
-      )}
-    </button>
-  );
 };
 
 export const SubscriptionCard = ({ subscriptions, isLoading, error }: SubscriptionCardProps) => {
@@ -382,23 +339,7 @@ export const SubscriptionCard = ({ subscriptions, isLoading, error }: Subscripti
                       <span className="text-sm">加载中...</span>
                     </div>
                   ) : subscribeUrl ? (
-                    <div className="space-y-2">
-                      {SUBSCRIPTION_LINK_TYPES.map((type) => {
-                        const url = `${subscribeUrl}${type.path}`;
-                        return (
-                          <div
-                            key={type.name}
-                            className="flex items-center gap-2 p-2 rounded-lg bg-muted/50"
-                          >
-                            <span className="text-xs font-medium w-14">{type.name}</span>
-                            <span className="flex-1 text-xs font-mono text-muted-foreground truncate">
-                              {url}
-                            </span>
-                            <CopyButton text={url} />
-                          </div>
-                        );
-                      })}
-                    </div>
+                    <SubscriptionLinkSelector subscribeUrl={subscribeUrl} />
                   ) : (
                     <p className="text-sm text-muted-foreground text-center py-4">
                       无法加载订阅链接

@@ -2,7 +2,6 @@
  * 订阅详情对话框组件
  */
 
-import { useState } from 'react';
 import {
   Calendar,
   CheckCircle,
@@ -19,10 +18,12 @@ import {
   DialogHeader,
   DialogTitle,
   DialogDescription,
+  DialogFooter,
 } from '@/components/common/Dialog';
 import { Button } from '@/components/common/Button';
 import { Separator } from '@/components/common/Separator';
 import { AdminBadge, TruncatedId } from '@/components/admin';
+import { SubscriptionLinkSelector } from '@/components/subscription';
 import { formatDate } from '@/shared/utils/date-utils';
 import { useNotificationStore } from '@/shared/stores/notification-store';
 import type { Subscription, SubscriptionStatus, PlanType } from '@/api/subscription/types';
@@ -69,10 +70,10 @@ const DetailItem: React.FC<{
 
   return (
     <div className="flex items-start gap-3 py-2">
-      <div className="mt-0.5 text-slate-400 dark:text-slate-500">{icon}</div>
+      <div className="mt-0.5 text-muted-foreground">{icon}</div>
       <div className="flex-1 min-w-0">
-        <div className="text-xs text-slate-500 dark:text-slate-400 mb-0.5">{label}</div>
-        <div className="text-sm text-slate-900 dark:text-white break-all">{value}</div>
+        <div className="text-xs text-muted-foreground mb-0.5">{label}</div>
+        <div className="text-sm text-foreground break-all">{value}</div>
       </div>
       {copyable && (
         <Button
@@ -94,27 +95,12 @@ export const SubscriptionDetailDialog: React.FC<SubscriptionDetailDialogProps> =
   user,
   onClose,
 }) => {
-  const { showSuccess } = useNotificationStore();
-  const [copying, setCopying] = useState(false);
-
   if (!subscription) return null;
 
   const statusConfig = STATUS_CONFIG[subscription.status] || { label: subscription.status, variant: 'default' as const };
   const planTypeConfig = subscription.plan?.planType
     ? PLAN_TYPE_CONFIG[subscription.plan.planType]
     : { label: '节点订阅', variant: 'info' as const };
-
-  const handleCopyUrl = async () => {
-    if (subscription.subscribeUrl) {
-      setCopying(true);
-      try {
-        await navigator.clipboard.writeText(subscription.subscribeUrl);
-        showSuccess('订阅链接已复制');
-      } finally {
-        setCopying(false);
-      }
-    }
-  };
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
@@ -133,23 +119,11 @@ export const SubscriptionDetailDialog: React.FC<SubscriptionDetailDialogProps> =
           <div className="space-y-4 py-2">
           {/* 订阅链接 */}
           {subscription.subscribeUrl && (
-            <div className="rounded-lg border border-slate-200 dark:border-slate-700 p-3 bg-slate-50 dark:bg-slate-800/50">
-              <div className="flex items-center justify-between mb-2">
-                <span className="text-xs font-medium text-slate-500 dark:text-slate-400">订阅链接</span>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={handleCopyUrl}
-                  disabled={copying}
-                  className="h-7 text-xs"
-                >
-                  <Copy className="size-3 mr-1" />
-                  {copying ? '复制中...' : '复制'}
-                </Button>
+            <div className="rounded-lg border border-border p-3 bg-muted/50">
+              <div className="mb-2">
+                <span className="text-xs font-medium text-muted-foreground">订阅链接</span>
               </div>
-              <code className="text-xs text-slate-700 dark:text-slate-300 break-all block">
-                {subscription.subscribeUrl}
-              </code>
+              <SubscriptionLinkSelector subscribeUrl={subscription.subscribeUrl} compact />
             </div>
           )}
 
@@ -157,14 +131,14 @@ export const SubscriptionDetailDialog: React.FC<SubscriptionDetailDialogProps> =
 
           {/* 用户信息 */}
           <div>
-            <h4 className="text-sm font-medium text-slate-900 dark:text-white mb-2">用户信息</h4>
+            <h4 className="text-sm font-medium text-foreground mb-2">用户信息</h4>
             <DetailItem
               icon={<User className="size-4" />}
               label="用户"
               value={user ? (
                 <div>
                   <div>{user.name || '未设置名称'}</div>
-                  <div className="text-xs text-slate-500">{user.email}</div>
+                  <div className="text-xs text-muted-foreground">{user.email}</div>
                 </div>
               ) : `用户 ID: ${subscription.userId}`}
             />
@@ -174,7 +148,7 @@ export const SubscriptionDetailDialog: React.FC<SubscriptionDetailDialogProps> =
 
           {/* 计划信息 */}
           <div>
-            <h4 className="text-sm font-medium text-slate-900 dark:text-white mb-2">计划信息</h4>
+            <h4 className="text-sm font-medium text-foreground mb-2">计划信息</h4>
             {subscription.plan ? (
               <>
                 <DetailItem
@@ -198,7 +172,7 @@ export const SubscriptionDetailDialog: React.FC<SubscriptionDetailDialogProps> =
                         {subscription.plan.pricings.map((pricing) => (
                           <div key={pricing.billingCycle} className="text-sm">
                             {pricing.billingCycle}: {pricing.price} {pricing.currency}
-                            {!pricing.isActive && <span className="text-xs text-slate-400 ml-1">(未启用)</span>}
+                            {!pricing.isActive && <span className="text-xs text-muted-foreground ml-1">(未启用)</span>}
                           </div>
                         ))}
                       </div>
@@ -207,7 +181,7 @@ export const SubscriptionDetailDialog: React.FC<SubscriptionDetailDialogProps> =
                 />
               </>
             ) : (
-              <div className="text-sm text-slate-500">未关联计划</div>
+              <div className="text-sm text-muted-foreground">未关联计划</div>
             )}
           </div>
 
@@ -215,7 +189,7 @@ export const SubscriptionDetailDialog: React.FC<SubscriptionDetailDialogProps> =
 
           {/* 日期信息 */}
           <div>
-            <h4 className="text-sm font-medium text-slate-900 dark:text-white mb-2">日期信息</h4>
+            <h4 className="text-sm font-medium text-foreground mb-2">日期信息</h4>
             <DetailItem
               icon={<Calendar className="size-4" />}
               label="开始日期"
@@ -242,9 +216,9 @@ export const SubscriptionDetailDialog: React.FC<SubscriptionDetailDialogProps> =
 
           {/* 状态信息 */}
           <div>
-            <h4 className="text-sm font-medium text-slate-900 dark:text-white mb-2">状态信息</h4>
+            <h4 className="text-sm font-medium text-foreground mb-2">状态信息</h4>
             <DetailItem
-              icon={subscription.autoRenew ? <CheckCircle className="size-4 text-emerald-500" /> : <XCircle className="size-4 text-slate-400" />}
+              icon={subscription.autoRenew ? <CheckCircle className="size-4 text-emerald-500" /> : <XCircle className="size-4 text-muted-foreground" />}
               label="自动续费"
               value={subscription.autoRenew ? '已开启' : '未开启'}
             />
@@ -278,7 +252,7 @@ export const SubscriptionDetailDialog: React.FC<SubscriptionDetailDialogProps> =
 
           {/* UUID 信息 */}
           <div>
-            <h4 className="text-sm font-medium text-slate-900 dark:text-white mb-2">标识信息</h4>
+            <h4 className="text-sm font-medium text-foreground mb-2">标识信息</h4>
             <DetailItem
               icon={<LinkIcon className="size-4" />}
               label="UUID"
@@ -287,6 +261,12 @@ export const SubscriptionDetailDialog: React.FC<SubscriptionDetailDialogProps> =
           </div>
           </div>
         </div>
+
+        <DialogFooter className="flex-shrink-0">
+          <Button variant="outline" onClick={onClose}>
+            关闭
+          </Button>
+        </DialogFooter>
       </DialogContent>
     </Dialog>
   );

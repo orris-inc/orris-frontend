@@ -5,9 +5,10 @@
  * Last updated: 2025-12-26
  *
  * Recent changes:
- * - 2025-12-26: Removed deprecated Plan-Node entitlement APIs (use ResourceGroup instead)
+ * - 2025-01-05: Added Subscription Link helpers (buildSubscriptionLinkUrl, buildSubscriptionLink)
  * - 2025-12-26: Added deletePlan and deleteSubscription APIs
  * - 2025-12-19: Changed all ID parameters from number to string (Stripe-style IDs)
+ * - 2025-12-18: Added Plan-Node entitlement management APIs (getPlanNodes, bindNodes, unbindNodes)
  * - 2025-12-18: Changed plan routes from /subscription-plans to /plans
  */
 
@@ -32,11 +33,16 @@ import type {
   ListTokensParams,
   GetTrafficStatsParams,
   TrafficStatsResponse,
+  GetPlanNodesResult,
+  BindNodesRequest,
+  UnbindNodesRequest,
   AdminCreateSubscriptionRequest,
   AdminCreateSubscriptionResponse,
   AdminUpdateSubscriptionStatusRequest,
   AdminChangePlanRequest,
   AdminListSubscriptionsParams,
+  SubscriptionLinkFormat,
+  SubscriptionLinkParams,
 } from './types';
 
 // ============================================================================
@@ -250,6 +256,58 @@ export async function getPlanPricings(id: string): Promise<SubscriptionPlan> {
 }
 
 // ============================================================================
+// Plan-Node Entitlement Management APIs
+// Added: 2025-12-18
+// ============================================================================
+
+/**
+ * Get all nodes associated with a plan (admin)
+ * GET /plans/:id/nodes
+ * @requires Authentication, Admin
+ * @param planId - Plan's Stripe-style ID (plan_xxx)
+ */
+export async function getPlanNodes(planId: string): Promise<GetPlanNodesResult> {
+  const response = await apiClient.get<APIResponse<GetPlanNodesResult>>(
+    `/plans/${planId}/nodes`
+  );
+  return response.data.data;
+}
+
+/**
+ * Bind nodes to a plan (admin)
+ * POST /plans/:id/nodes
+ * @requires Authentication, Admin
+ * @description Only works for node-type plans. Binds the specified nodes to the plan.
+ * @param planId - Plan's Stripe-style ID (plan_xxx)
+ */
+export async function bindNodes(
+  planId: string,
+  data: BindNodesRequest
+): Promise<void> {
+  await apiClient.post<APIResponse<null>>(
+    `/plans/${planId}/nodes`,
+    data
+  );
+}
+
+/**
+ * Unbind nodes from a plan (admin)
+ * DELETE /plans/:id/nodes
+ * @requires Authentication, Admin
+ * @description Removes the association between the specified nodes and the plan.
+ * @param planId - Plan's Stripe-style ID (plan_xxx)
+ */
+export async function unbindNodes(
+  planId: string,
+  data: UnbindNodesRequest
+): Promise<void> {
+  await apiClient.delete<APIResponse<null>>(
+    `/plans/${planId}/nodes`,
+    { data }
+  );
+}
+
+// ============================================================================
 // Subscription Token APIs
 // ============================================================================
 
@@ -423,4 +481,89 @@ export async function adminChangeSubscriptionPlan(
  */
 export async function adminDeleteSubscription(id: string): Promise<void> {
   await apiClient.delete(`/admin/subscriptions/${id}`);
+}
+
+// ============================================================================
+// Subscription Link Helpers (Public API for proxy clients)
+// Added: 2025-01-05
+// ============================================================================
+
+/**
+ * Build subscription link URL for proxy clients
+ *
+ * @param baseUrl - API base URL (e.g., "https://api.example.com")
+ * @param token - Subscription token (UUID)
+ * @param format - Output format (optional, auto-detected from User-Agent if not specified)
+ * @param params - Query parameters
+ * @returns Full subscription link URL
+ *
+ * @example
+ * // Auto-detect format
+ * buildSubscriptionLinkUrl("https://api.example.com", "abc-123")
+ * // => "https://api.example.com/s/abc-123"
+ *
+ * @example
+ * // Specific format with mode filter
+ * buildSubscriptionLinkUrl("https://api.example.com", "abc-123", "clash", { mode: "forward" })
+ * // => "https://api.example.com/s/abc-123/clash?mode=forward"
+ */
+export function buildSubscriptionLinkUrl(
+  baseUrl: string,
+  token: string,
+  format?: SubscriptionLinkFormat,
+  params?: SubscriptionLinkParams
+): string {
+  // Remove trailing slash from base URL
+  const base = baseUrl.replace(/\/$/, '');
+
+  // Build path
+  let path = `/s/${token}`;
+  if (format) {
+    path += `/${format}`;
+  }
+
+  // Build query string
+  const queryParams = new URLSearchParams();
+  if (params?.mode && params.mode !== 'all') {
+    queryParams.set('mode', params.mode);
+  }
+
+  const queryString = queryParams.toString();
+  return queryString ? `${base}${path}?${queryString}` : `${base}${path}`;
+}
+
+/**
+ * Build subscription link from Subscription entity
+ * Uses the subscribeUrl from the subscription and appends format/params
+ *
+ * @param subscription - Subscription entity with subscribeUrl
+ * @param format - Output format (optional)
+ * @param params - Query parameters
+ * @returns Full subscription link URL
+ *
+ * @example
+ * const sub = { subscribeUrl: "https://api.example.com/s/abc-123", ... };
+ * buildSubscriptionLink(sub, "clash", { mode: "forward" })
+ * // => "https://api.example.com/s/abc-123/clash?mode=forward"
+ */
+export function buildSubscriptionLink(
+  subscription: Pick<Subscription, 'subscribeUrl'>,
+  format?: SubscriptionLinkFormat,
+  params?: SubscriptionLinkParams
+): string {
+  let url = subscription.subscribeUrl;
+
+  // Append format if specified
+  if (format) {
+    url = url.replace(/\/$/, '') + `/${format}`;
+  }
+
+  // Build query string
+  const queryParams = new URLSearchParams();
+  if (params?.mode && params.mode !== 'all') {
+    queryParams.set('mode', params.mode);
+  }
+
+  const queryString = queryParams.toString();
+  return queryString ? `${url}?${queryString}` : url;
 }
