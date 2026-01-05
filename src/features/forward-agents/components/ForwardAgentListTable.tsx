@@ -6,7 +6,7 @@
 
 import { useMemo, useState, useCallback } from 'react';
 import { Edit, Trash2, Key, Eye, Power, PowerOff, MoreHorizontal, Terminal, Copy, Check, Download, Loader2, Package, ArrowUpCircle, Radio } from 'lucide-react';
-import { DataTable, AdminBadge, TruncatedId, SystemStatusCell, SystemStatusHoverProvider, type ColumnDef, type ResponsiveColumnMeta } from '@/components/admin';
+import { DataTable, DraggableDataTable, AdminBadge, TruncatedId, SystemStatusCell, SystemStatusHoverProvider, type ColumnDef, type ResponsiveColumnMeta } from '@/components/admin';
 import { useBreakpoint } from '@/hooks/useBreakpoint';
 import { ForwardAgentMobileList } from './ForwardAgentMobileList';
 import { Badge } from '@/components/common/Badge';
@@ -45,6 +45,9 @@ interface ForwardAgentListTableProps {
   onCheckUpdate: (agent: ForwardAgent) => void;
   onBroadcastURL?: (agent: ForwardAgent) => void;
   checkingAgentId?: string | number | null;
+  // Drag and drop sorting
+  enableDragSort?: boolean;
+  onDragEnd?: (activeId: string, overId: string, oldIndex: number, newIndex: number) => void;
 }
 
 // Copyable address component (supports long address truncation and Tooltip for full content)
@@ -139,6 +142,8 @@ export const ForwardAgentListTable: React.FC<ForwardAgentListTableProps> = ({
   onCheckUpdate,
   onBroadcastURL,
   checkingAgentId,
+  enableDragSort = false,
+  onDragEnd,
 }) => {
   // Detect mobile screen
   const { isMobile } = useBreakpoint();
@@ -499,7 +504,31 @@ export const ForwardAgentListTable: React.FC<ForwardAgentListTableProps> = ({
         onCheckUpdate={onCheckUpdate}
         onBroadcastURL={onBroadcastURL}
         checkingAgentId={checkingAgentId}
+        enableDragSort={enableDragSort}
+        onDragEnd={onDragEnd}
       />
+    );
+  }
+
+  // Use DraggableDataTable when drag sort is enabled
+  if (enableDragSort && onDragEnd) {
+    return (
+      <SystemStatusHoverProvider>
+        <DraggableDataTable
+          columns={columns}
+          data={forwardAgents}
+          loading={loading}
+          page={page}
+          pageSize={pageSize}
+          total={total}
+          onPageChange={onPageChange}
+          onPageSizeChange={onPageSizeChange}
+          emptyMessage="暂无转发节点数据"
+          getRowId={(row) => String(row.id)}
+          enableDragSort={true}
+          onDragEnd={onDragEnd}
+        />
+      </SystemStatusHoverProvider>
     );
   }
 

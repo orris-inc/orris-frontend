@@ -4,7 +4,7 @@
  */
 
 import { memo } from 'react';
-import { Server, Cpu, Activity, Wifi, WifiOff, ArrowDown, ArrowUp } from 'lucide-react';
+import { Server, Cpu, Activity, ArrowDown, ArrowUp } from 'lucide-react';
 import { formatBitRate } from '@/shared/utils/format-utils';
 import type { MonitorOverview } from '../hooks/useMonitorData';
 
@@ -46,10 +46,9 @@ OverviewCard.displayName = 'OverviewCard';
 
 interface MonitorOverviewCardsProps {
   overview: MonitorOverview;
-  isConnected: boolean;
 }
 
-export const MonitorOverviewCards = memo(({ overview, isConnected }: MonitorOverviewCardsProps) => {
+export const MonitorOverviewCards = memo(({ overview }: MonitorOverviewCardsProps) => {
   const cards: OverviewCardProps[] = [
     {
       title: 'Node Agent',
@@ -62,7 +61,7 @@ export const MonitorOverviewCards = memo(({ overview, isConnected }: MonitorOver
       iconColor: 'text-info',
     },
     {
-      title: '转发 Agent',
+      title: 'Forward Agent',
       value: `${overview.onlineAgents}/${overview.totalAgents}`,
       subtitle: overview.totalAgents > 0
         ? `${Math.round((overview.onlineAgents / overview.totalAgents) * 100)}%`
@@ -88,35 +87,23 @@ export const MonitorOverviewCards = memo(({ overview, isConnected }: MonitorOver
       iconColor: overview.avgMemory >= 80 ? 'text-destructive' : overview.avgMemory >= 60 ? 'text-warning' : 'text-success',
     },
     {
-      title: '下载',
+      title: '总下载',
       value: formatBitRate(overview.totalNetworkRxRate),
-      subtitle: '总下载',
       icon: <ArrowDown className="size-3.5" strokeWidth={1.5} />,
       iconBg: 'bg-success/10',
       iconColor: 'text-success',
     },
     {
-      title: '上传',
+      title: '总上传',
       value: formatBitRate(overview.totalNetworkTxRate),
-      subtitle: '总上传',
       icon: <ArrowUp className="size-3.5" strokeWidth={1.5} />,
       iconBg: 'bg-primary/10',
       iconColor: 'text-primary',
     },
-    {
-      title: 'SSE',
-      value: isConnected ? '已连接' : '断开',
-      subtitle: isConnected ? '实时' : '等待',
-      icon: isConnected
-        ? <Wifi className="size-3.5" strokeWidth={1.5} />
-        : <WifiOff className="size-3.5" strokeWidth={1.5} />,
-      iconBg: isConnected ? 'bg-success/10' : 'bg-muted',
-      iconColor: isConnected ? 'text-success' : 'text-muted-foreground',
-    },
   ];
 
   return (
-    <div className="grid grid-cols-2 sm:grid-cols-4 xl:grid-cols-7 gap-2 sm:gap-3">
+    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2 sm:gap-3">
       {cards.map((card, index) => (
         <OverviewCard key={index} {...card} />
       ))}

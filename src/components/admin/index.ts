@@ -22,6 +22,8 @@ export {
   AdminBadge,
 } from './AdminTable';
 export { DataTable, type ColumnDef, type SortingState, type RowSelectionState, type ResponsiveColumnMeta } from './DataTable';
+export { DraggableDataTable } from './DraggableDataTable';
+export { DraggableMobileList } from './DraggableMobileList';
 export { TruncatedId } from './TruncatedId';
 export { DateRangeSelector } from './DateRangeSelector';
 export { NodeTrafficStats } from './NodeTrafficStats';

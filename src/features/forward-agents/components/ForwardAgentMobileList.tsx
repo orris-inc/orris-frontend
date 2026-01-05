@@ -1,9 +1,10 @@
 /**
  * Forward Agent Mobile List Component
  * Mobile-friendly card list with Accordion for expanded details
+ * Supports drag-and-drop reordering with long-press activation
  */
 
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import {
   Edit,
   Trash2,
@@ -20,6 +21,7 @@ import {
   ArrowUpCircle,
   Radio,
 } from 'lucide-react';
+import { DraggableMobileList } from '@/components/admin/DraggableMobileList';
 import {
   Accordion,
   AccordionItem,
@@ -57,6 +59,9 @@ interface ForwardAgentMobileListProps {
   onCheckUpdate: (agent: ForwardAgent) => void;
   onBroadcastURL?: (agent: ForwardAgent) => void;
   checkingAgentId?: string | number | null;
+  // Drag and drop sorting
+  enableDragSort?: boolean;
+  onDragEnd?: (activeId: string, overId: string, oldIndex: number, newIndex: number) => void;
 }
 
 // Format date
@@ -148,7 +153,11 @@ export const ForwardAgentMobileList: React.FC<ForwardAgentMobileListProps> = ({
   onCheckUpdate,
   onBroadcastURL,
   checkingAgentId,
+  enableDragSort = false,
+  onDragEnd,
 }) => {
+  // Get agent ID for drag-and-drop
+  const getAgentId = useCallback((agent: ForwardAgent) => String(agent.id), []);
   // Render dropdown menu
   const renderDropdownMenu = (agent: ForwardAgent) => {
     return (
@@ -234,204 +243,228 @@ export const ForwardAgentMobileList: React.FC<ForwardAgentMobileListProps> = ({
     );
   }
 
-  return (
-    <Accordion type="multiple" className="space-y-1.5">
-      {forwardAgents.map((agent) => {
-        const group = agent.groupId ? resourceGroupsMap[agent.groupId] : null;
+  // Render a single agent card
+  const renderAgentCard = (agent: ForwardAgent) => {
+    const group = agent.groupId ? resourceGroupsMap[agent.groupId] : null;
 
-        return (
-          <AccordionItem
-            key={agent.id}
-            value={agent.id}
-            className="border rounded-lg bg-white dark:bg-slate-800 overflow-hidden"
-          >
-            {/* Card Header - Always visible */}
-            <div className="px-3 py-2">
-              <div className="flex items-start justify-between gap-2">
-                <div className="flex-1 min-w-0">
-                  {/* Agent name and status */}
-                  <div className="flex items-center gap-1.5 mb-0.5">
-                    <span className="font-medium text-sm text-slate-900 dark:text-white truncate">
-                      {agent.name}
-                    </span>
-                    <AdminBadge
-                      variant={agent.status === 'enabled' ? 'success' : 'default'}
-                      className="text-[10px] px-1.5 py-0 flex-shrink-0"
-                    >
-                      {agent.status === 'enabled' ? '启用' : '禁用'}
-                    </AdminBadge>
-                  </div>
+    return (
+      <AccordionItem
+        key={agent.id}
+        value={String(agent.id)}
+        className="border rounded-lg bg-white dark:bg-slate-800 overflow-hidden"
+      >
+        {/* Card Header - Always visible */}
+        <div className="px-3 py-2">
+          <div className="flex items-start justify-between gap-2">
+            <div className="flex-1 min-w-0">
+              {/* Agent name and status */}
+              <div className="flex items-center gap-1.5 mb-0.5">
+                <span className="font-medium text-sm text-slate-900 dark:text-white truncate">
+                  {agent.name}
+                </span>
+                <AdminBadge
+                  variant={agent.status === 'enabled' ? 'success' : 'default'}
+                  className="text-[10px] px-1.5 py-0 flex-shrink-0"
+                >
+                  {agent.status === 'enabled' ? '启用' : '禁用'}
+                </AdminBadge>
+              </div>
 
-                  {/* Address info */}
-                  <div className="flex items-center gap-1 text-xs text-slate-500 dark:text-slate-400">
-                    <CopyableAddressMobile
-                      address={agent.publicAddress || '-'}
-                      className="text-slate-600 dark:text-slate-300"
-                    />
-                  </div>
-                </div>
-
-                {/* Quick Actions */}
-                <div className="flex items-center gap-0.5 flex-shrink-0">
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <button
-                        onClick={() => onEdit(agent)}
-                        className="p-1.5 rounded hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
-                      >
-                        <Edit className="size-3.5 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300" />
-                      </button>
-                    </TooltipTrigger>
-                    <TooltipContent>编辑</TooltipContent>
-                  </Tooltip>
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <button
-                        onClick={() => onGetInstallScript(agent)}
-                        className="p-1.5 rounded hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
-                      >
-                        <Terminal className="size-3.5 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300" />
-                      </button>
-                    </TooltipTrigger>
-                    <TooltipContent>安装脚本</TooltipContent>
-                  </Tooltip>
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <button
-                        onClick={() => agent.status === 'enabled' ? onDisable(agent) : onEnable(agent)}
-                        className={`p-1.5 rounded transition-colors ${
-                          agent.status === 'enabled'
-                            ? 'hover:bg-red-50 dark:hover:bg-red-900/20'
-                            : 'hover:bg-green-50 dark:hover:bg-green-900/20'
-                        }`}
-                      >
-                        {agent.status === 'enabled' ? (
-                          <PowerOff className="size-3.5 text-slate-400 hover:text-red-500" />
-                        ) : (
-                          <Power className="size-3.5 text-slate-400 hover:text-green-500" />
-                        )}
-                      </button>
-                    </TooltipTrigger>
-                    <TooltipContent>{agent.status === 'enabled' ? '禁用' : '启用'}</TooltipContent>
-                  </Tooltip>
-                  {renderDropdownMenu(agent)}
-                </div>
+              {/* Address info */}
+              <div className="flex items-center gap-1 text-xs text-slate-500 dark:text-slate-400">
+                <CopyableAddressMobile
+                  address={agent.publicAddress || '-'}
+                  className="text-slate-600 dark:text-slate-300"
+                />
               </div>
             </div>
 
-            {/* Accordion Trigger */}
-            <AccordionTrigger className="px-3 py-1.5 border-t border-slate-100 dark:border-slate-700 hover:no-underline hover:bg-slate-50 dark:hover:bg-slate-700/50">
-              <span className="text-xs text-slate-400 dark:text-slate-500">详情</span>
-            </AccordionTrigger>
+            {/* Quick Actions */}
+            <div className="flex items-center gap-0.5 flex-shrink-0">
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <button
+                    onClick={() => onEdit(agent)}
+                    className="p-1.5 rounded hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
+                  >
+                    <Edit className="size-3.5 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300" />
+                  </button>
+                </TooltipTrigger>
+                <TooltipContent>编辑</TooltipContent>
+              </Tooltip>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <button
+                    onClick={() => onGetInstallScript(agent)}
+                    className="p-1.5 rounded hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
+                  >
+                    <Terminal className="size-3.5 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300" />
+                  </button>
+                </TooltipTrigger>
+                <TooltipContent>安装脚本</TooltipContent>
+              </Tooltip>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <button
+                    onClick={() => agent.status === 'enabled' ? onDisable(agent) : onEnable(agent)}
+                    className={`p-1.5 rounded transition-colors ${
+                      agent.status === 'enabled'
+                        ? 'hover:bg-red-50 dark:hover:bg-red-900/20'
+                        : 'hover:bg-green-50 dark:hover:bg-green-900/20'
+                    }`}
+                  >
+                    {agent.status === 'enabled' ? (
+                      <PowerOff className="size-3.5 text-slate-400 hover:text-red-500" />
+                    ) : (
+                      <Power className="size-3.5 text-slate-400 hover:text-green-500" />
+                    )}
+                  </button>
+                </TooltipTrigger>
+                <TooltipContent>{agent.status === 'enabled' ? '禁用' : '启用'}</TooltipContent>
+              </Tooltip>
+              {renderDropdownMenu(agent)}
+            </div>
+          </div>
+        </div>
 
-            {/* Accordion Content - Expanded details */}
-            <AccordionContent>
-              <div className="px-3 pb-2 space-y-2 border-t border-slate-100 dark:border-slate-700 pt-2">
-                {/* Monitor (System + Network) */}
-                {agent.systemStatus && (
-                  <div className="flex items-start gap-2">
-                    <span className="text-[10px] text-slate-400 dark:text-slate-500 uppercase tracking-wide w-8 pt-0.5 flex-shrink-0">监控</span>
-                    <div className="flex flex-col gap-1.5 flex-1">
-                      {/* System bars + Network rates in one row */}
-                      <div className="flex items-center gap-3">
-                        <SystemStatusDisplay
-                          status={{
-                            cpu: agent.systemStatus.cpuPercent,
-                            memory: agent.systemStatus.memoryPercent,
-                            disk: agent.systemStatus.diskPercent,
-                            uptime: agent.systemStatus.uptimeSeconds,
-                            memoryUsed: agent.systemStatus.memoryUsed,
-                            memoryTotal: agent.systemStatus.memoryTotal,
-                            memoryAvail: agent.systemStatus.memoryAvail,
-                            diskUsed: agent.systemStatus.diskUsed,
-                            diskTotal: agent.systemStatus.diskTotal,
-                            loadAvg1: agent.systemStatus.loadAvg1,
-                            loadAvg5: agent.systemStatus.loadAvg5,
-                            loadAvg15: agent.systemStatus.loadAvg15,
-                          }}
-                        />
-                        {/* Network rates */}
-                        <div className="w-px h-4 bg-slate-200 dark:bg-slate-600" />
-                        <div className="flex items-center gap-1.5 text-[10px] font-mono">
-                          <span className="text-green-600 dark:text-green-400">↓{formatBitRate(agent.systemStatus.networkRxRate, true)}</span>
-                          <span className="text-blue-600 dark:text-blue-400">↑{formatBitRate(agent.systemStatus.networkTxRate, true)}</span>
-                        </div>
-                      </div>
-                      {/* Extended info row */}
-                      <div className="flex items-center gap-2 text-[10px] text-slate-500 dark:text-slate-400">
-                        <span className="font-mono">
-                          累计: ↓{formatBytes(agent.systemStatus.networkRxBytes)} ↑{formatBytes(agent.systemStatus.networkTxBytes)}
-                        </span>
-                        <span>
-                          {(agent.systemStatus.tcpConnections || 0) + (agent.systemStatus.udpConnections || 0)} 连接
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-                )}
+        {/* Accordion Trigger */}
+        <AccordionTrigger className="px-3 py-1.5 border-t border-slate-100 dark:border-slate-700 hover:no-underline hover:bg-slate-50 dark:hover:bg-slate-700/50">
+          <span className="text-xs text-slate-400 dark:text-slate-500">详情</span>
+        </AccordionTrigger>
 
-                {/* Tunnel address */}
-                {agent.tunnelAddress && (
-                  <div className="flex items-center gap-2">
-                    <span className="text-[10px] text-slate-400 dark:text-slate-500 uppercase tracking-wide w-8 flex-shrink-0">隧道</span>
-                    <CopyableAddressMobile
-                      address={agent.tunnelAddress}
-                      className="text-slate-600 dark:text-slate-300"
+        {/* Accordion Content - Expanded details */}
+        <AccordionContent>
+          <div className="px-3 pb-2 space-y-2 border-t border-slate-100 dark:border-slate-700 pt-2">
+            {/* Monitor (System + Network) */}
+            {agent.systemStatus && (
+              <div className="flex items-start gap-2">
+                <span className="text-[10px] text-slate-400 dark:text-slate-500 uppercase tracking-wide w-8 pt-0.5 flex-shrink-0">监控</span>
+                <div className="flex flex-col gap-1.5 flex-1">
+                  {/* System bars + Network rates in one row */}
+                  <div className="flex items-center gap-3">
+                    <SystemStatusDisplay
+                      status={{
+                        cpu: agent.systemStatus.cpuPercent,
+                        memory: agent.systemStatus.memoryPercent,
+                        disk: agent.systemStatus.diskPercent,
+                        uptime: agent.systemStatus.uptimeSeconds,
+                        memoryUsed: agent.systemStatus.memoryUsed,
+                        memoryTotal: agent.systemStatus.memoryTotal,
+                        memoryAvail: agent.systemStatus.memoryAvail,
+                        diskUsed: agent.systemStatus.diskUsed,
+                        diskTotal: agent.systemStatus.diskTotal,
+                        loadAvg1: agent.systemStatus.loadAvg1,
+                        loadAvg5: agent.systemStatus.loadAvg5,
+                        loadAvg15: agent.systemStatus.loadAvg15,
+                      }}
                     />
-                  </div>
-                )}
-
-                {/* Resource group */}
-                {agent.groupId && (
-                  <div className="flex items-center gap-2">
-                    <span className="text-[10px] text-slate-400 dark:text-slate-500 uppercase tracking-wide w-8 flex-shrink-0">资源</span>
-                    <Badge variant="outline" className="text-[10px] px-1.5 py-0">
-                      {group?.name || agent.groupId}
-                    </Badge>
-                  </div>
-                )}
-
-                {/* Version */}
-                {(agent.agentVersion || agent.systemStatus?.agentVersion) && (
-                  <div className="flex items-center gap-2">
-                    <span className="text-[10px] text-slate-400 dark:text-slate-500 uppercase tracking-wide w-8 flex-shrink-0">版本</span>
-                    <div className="flex items-center gap-1.5">
-                      {agent.hasUpdate && (
-                        <ArrowUpCircle className="size-3.5 text-amber-500" />
-                      )}
-                      <span className={`text-xs font-mono ${agent.hasUpdate ? 'text-amber-600 dark:text-amber-400' : 'text-slate-600 dark:text-slate-300'}`}>
-                        v{agent.agentVersion || agent.systemStatus?.agentVersion}
-                        {agent.systemStatus?.platform && agent.systemStatus?.arch && (
-                          <span className="text-slate-400 ml-1">
-                            ({agent.systemStatus.platform}/{agent.systemStatus.arch})
-                          </span>
-                        )}
-                      </span>
-                      {agent.hasUpdate && (
-                        <span className="text-[10px] text-amber-500">可更新</span>
-                      )}
+                    {/* Network rates */}
+                    <div className="w-px h-4 bg-slate-200 dark:bg-slate-600" />
+                    <div className="flex items-center gap-1.5 text-[10px] font-mono">
+                      <span className="text-green-600 dark:text-green-400">↓{formatBitRate(agent.systemStatus.networkRxRate, true)}</span>
+                      <span className="text-blue-600 dark:text-blue-400">↑{formatBitRate(agent.systemStatus.networkTxRate, true)}</span>
                     </div>
                   </div>
-                )}
-
-                {/* Remark */}
-                {agent.remark && (
-                  <div className="flex items-start gap-2">
-                    <span className="text-[10px] text-slate-400 dark:text-slate-500 uppercase tracking-wide w-8 pt-0.5 flex-shrink-0">备注</span>
-                    <span className="text-xs text-slate-600 dark:text-slate-300 flex-1">{agent.remark}</span>
+                  {/* Extended info row */}
+                  <div className="flex items-center gap-2 text-[10px] text-slate-500 dark:text-slate-400">
+                    <span className="font-mono">
+                      累计: ↓{formatBytes(agent.systemStatus.networkRxBytes)} ↑{formatBytes(agent.systemStatus.networkTxBytes)}
+                    </span>
+                    <span>
+                      {(agent.systemStatus.tcpConnections || 0) + (agent.systemStatus.udpConnections || 0)} 连接
+                    </span>
                   </div>
-                )}
-
-                {/* Created at */}
-                <div className="flex items-center gap-2">
-                  <span className="text-[10px] text-slate-400 dark:text-slate-500 uppercase tracking-wide w-8 flex-shrink-0">创建</span>
-                  <span className="text-xs text-slate-500">{formatDate(agent.createdAt)}</span>
                 </div>
               </div>
-            </AccordionContent>
-          </AccordionItem>
-        );
-      })}
+            )}
+
+            {/* Tunnel address */}
+            {agent.tunnelAddress && (
+              <div className="flex items-center gap-2">
+                <span className="text-[10px] text-slate-400 dark:text-slate-500 uppercase tracking-wide w-8 flex-shrink-0">隧道</span>
+                <CopyableAddressMobile
+                  address={agent.tunnelAddress}
+                  className="text-slate-600 dark:text-slate-300"
+                />
+              </div>
+            )}
+
+            {/* Resource group */}
+            {agent.groupId && (
+              <div className="flex items-center gap-2">
+                <span className="text-[10px] text-slate-400 dark:text-slate-500 uppercase tracking-wide w-8 flex-shrink-0">资源</span>
+                <Badge variant="outline" className="text-[10px] px-1.5 py-0">
+                  {group?.name || agent.groupId}
+                </Badge>
+              </div>
+            )}
+
+            {/* Version */}
+            {(agent.agentVersion || agent.systemStatus?.agentVersion) && (
+              <div className="flex items-center gap-2">
+                <span className="text-[10px] text-slate-400 dark:text-slate-500 uppercase tracking-wide w-8 flex-shrink-0">版本</span>
+                <div className="flex items-center gap-1.5">
+                  {agent.hasUpdate && (
+                    <ArrowUpCircle className="size-3.5 text-amber-500" />
+                  )}
+                  <span className={`text-xs font-mono ${agent.hasUpdate ? 'text-amber-600 dark:text-amber-400' : 'text-slate-600 dark:text-slate-300'}`}>
+                    v{agent.agentVersion || agent.systemStatus?.agentVersion}
+                    {agent.systemStatus?.platform && agent.systemStatus?.arch && (
+                      <span className="text-slate-400 ml-1">
+                        ({agent.systemStatus.platform}/{agent.systemStatus.arch})
+                      </span>
+                    )}
+                  </span>
+                  {agent.hasUpdate && (
+                    <span className="text-[10px] text-amber-500">可更新</span>
+                  )}
+                </div>
+              </div>
+            )}
+
+            {/* Remark */}
+            {agent.remark && (
+              <div className="flex items-start gap-2">
+                <span className="text-[10px] text-slate-400 dark:text-slate-500 uppercase tracking-wide w-8 pt-0.5 flex-shrink-0">备注</span>
+                <span className="text-xs text-slate-600 dark:text-slate-300 flex-1">{agent.remark}</span>
+              </div>
+            )}
+
+            {/* Created at */}
+            <div className="flex items-center gap-2">
+              <span className="text-[10px] text-slate-400 dark:text-slate-500 uppercase tracking-wide w-8 flex-shrink-0">创建</span>
+              <span className="text-xs text-slate-500">{formatDate(agent.createdAt)}</span>
+            </div>
+          </div>
+        </AccordionContent>
+      </AccordionItem>
+    );
+  };
+
+  // Drag mode: use DraggableMobileList wrapper
+  // Each card gets its own Accordion to avoid Radix structure constraints
+  if (enableDragSort && onDragEnd) {
+    return (
+      <DraggableMobileList
+        items={forwardAgents}
+        getItemId={getAgentId}
+        renderItem={(agent) => (
+          <Accordion type="single" collapsible className="mb-1.5">
+            {renderAgentCard(agent)}
+          </Accordion>
+        )}
+        onDragEnd={onDragEnd}
+        enabled={true}
+        longPressDelay={250}
+        className="space-y-0"
+      />
+    );
+  }
+
+  // Normal mode: standard Accordion
+  return (
+    <Accordion type="multiple" className="space-y-1.5">
+      {forwardAgents.map((agent) => renderAgentCard(agent))}
     </Accordion>
   );
 };

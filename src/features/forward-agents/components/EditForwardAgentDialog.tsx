@@ -56,6 +56,7 @@ export const EditForwardAgentDialog: React.FC<EditForwardAgentDialogProps> = ({
         tunnelAddress: agent.tunnelAddress,
         remark: agent.remark,
         allowedPortRange: agent.allowedPortRange,
+        sortOrder: agent.sortOrder,
       });
       setErrors({});
     }
@@ -63,7 +64,7 @@ export const EditForwardAgentDialog: React.FC<EditForwardAgentDialogProps> = ({
 
   const handleChange = (
     field: keyof UpdateForwardAgentRequest,
-    value: string,
+    value: string | number | undefined,
   ) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
     if (errors[field]) {
@@ -72,6 +73,17 @@ export const EditForwardAgentDialog: React.FC<EditForwardAgentDialogProps> = ({
         delete newErrors[field];
         return newErrors;
       });
+    }
+  };
+
+  const handleSortOrderChange = (value: string) => {
+    if (value === "") {
+      handleChange("sortOrder", undefined);
+    } else {
+      const num = parseInt(value, 10);
+      if (!isNaN(num) && num >= 0) {
+        handleChange("sortOrder", num);
+      }
     }
   };
 
@@ -99,6 +111,8 @@ export const EditForwardAgentDialog: React.FC<EditForwardAgentDialogProps> = ({
       if (formData.remark !== agent.remark) updates.remark = formData.remark;
       if (formData.allowedPortRange !== agent.allowedPortRange)
         updates.allowedPortRange = formData.allowedPortRange;
+      if (formData.sortOrder !== agent.sortOrder)
+        updates.sortOrder = formData.sortOrder;
 
       // Resource group association
       if (formData.groupSid !== undefined) {
@@ -222,6 +236,22 @@ export const EditForwardAgentDialog: React.FC<EditForwardAgentDialogProps> = ({
                   />
                   <p className="text-xs text-muted-foreground">
                     可选，留空表示允许所有端口
+                  </p>
+                </div>
+
+                {/* 排序顺序 */}
+                <div className="flex flex-col gap-2">
+                  <Label htmlFor="sortOrder">排序顺序</Label>
+                  <Input
+                    id="sortOrder"
+                    type="number"
+                    min={0}
+                    value={formData.sortOrder ?? ""}
+                    onChange={(e) => handleSortOrderChange(e.target.value)}
+                    placeholder="例如：100"
+                  />
+                  <p className="text-xs text-muted-foreground">
+                    数值越小排序越靠前
                   </p>
                 </div>
 

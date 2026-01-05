@@ -16,6 +16,7 @@ import {
   enableForwardRule,
   disableForwardRule,
   resetForwardRuleTraffic,
+  reorderForwardRules,
   listForwardAgents,
   probeRule,
   getRuleOverallStatus,
@@ -26,6 +27,7 @@ import {
   type ListForwardRulesParams,
   type ProbeRuleRequest,
   type RuleOverallStatusResponse,
+  type ReorderForwardRulesRequest,
 } from '@/api/forward';
 
 // Query Keys for Forward Rules
@@ -166,6 +168,43 @@ export const useForwardRules = (options: UseForwardRulesOptions = {}) => {
     },
   });
 
+  // Reorder forward rules with optimistic update
+  const reorderMutation = useMutation({
+    mutationFn: (data: ReorderForwardRulesRequest) => reorderForwardRules(data),
+    onMutate: async (data) => {
+      await queryClient.cancelQueries({ queryKey: forwardRulesQueryKeys.lists() });
+
+      const previousData = queryClient.getQueryData(forwardRulesQueryKeys.list(params));
+
+      queryClient.setQueryData(
+        forwardRulesQueryKeys.list(params),
+        (old: { items: ForwardRule[]; page: number; pageSize: number; total: number; totalPages: number } | undefined) => {
+          if (!old) return old;
+          const updatedItems = old.items.map((rule) => {
+            const update = data.ruleOrders.find((u) => u.ruleId === rule.id);
+            if (update) {
+              return { ...rule, sortOrder: update.sortOrder };
+            }
+            return rule;
+          });
+          updatedItems.sort((a, b) => a.sortOrder - b.sortOrder);
+          return { ...old, items: updatedItems };
+        }
+      );
+
+      return { previousData };
+    },
+    onError: (error, _variables, context) => {
+      if (context?.previousData) {
+        queryClient.setQueryData(forwardRulesQueryKeys.list(params), context.previousData);
+      }
+      showError(handleApiError(error));
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: forwardRulesQueryKeys.lists() });
+    },
+  });
+
   return {
     // Data
     forwardRules: data?.items ?? [],
@@ -192,6 +231,8 @@ export const useForwardRules = (options: UseForwardRulesOptions = {}) => {
     resetTraffic: (id: number | string) => resetTrafficMutation.mutateAsync(id),
     probeRule: (id: number | string, data?: ProbeRuleRequest) =>
       probeMutation.mutateAsync({ id, data }),
+    reorderRules: (data: ReorderForwardRulesRequest) =>
+      reorderMutation.mutateAsync(data),
 
     // Mutation status
     isCreating: createMutation.isPending,
@@ -201,6 +242,7 @@ export const useForwardRules = (options: UseForwardRulesOptions = {}) => {
     isDisabling: disableMutation.isPending,
     isResettingTraffic: resetTrafficMutation.isPending,
     isProbing: probeMutation.isPending,
+    isReordering: reorderMutation.isPending,
   };
 };
 
@@ -280,6 +322,10 @@ export const useForwardRulesPage = () => {
     setPage(1);
   };
 
+  const handleReorder = async (ruleOrders: { ruleId: string; sortOrder: number }[]) => {
+    await rulesQuery.reorderRules({ ruleOrders });
+  };
+
   return {
     ...rulesQuery,
     // Merge loading states, ensure agent data is also loaded before showing table
@@ -295,6 +341,7 @@ export const useForwardRulesPage = () => {
     handlePageSizeChange,
     handleFiltersChange,
     handleIncludeUserRulesChange,
+    handleReorder,
   };
 };
 

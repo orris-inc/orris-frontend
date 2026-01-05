@@ -6,7 +6,7 @@
 
 import { useMemo, useState, useCallback } from 'react';
 import { Edit, Trash2, Eye, Power, PowerOff, MoreHorizontal, RotateCcw, Activity, Loader2, Copy, Check, Server, Bot, Settings, ArrowRight, Files, CheckCircle2, CircleDashed, AlertCircle, Play, Square, AlertTriangle, RotateCw } from 'lucide-react';
-import { DataTable, AdminBadge, TruncatedId, type ColumnDef, type ResponsiveColumnMeta } from '@/components/admin';
+import { DataTable, DraggableDataTable, AdminBadge, TruncatedId, type ColumnDef, type ResponsiveColumnMeta } from '@/components/admin';
 import { useBreakpoint } from '@/hooks/useBreakpoint';
 import { ForwardRuleMobileList } from './ForwardRuleMobileList';
 import {
@@ -46,6 +46,9 @@ interface ForwardRuleListTableProps {
   onProbe: (rule: ForwardRule) => void;
   onCopy: (rule: ForwardRule) => void;
   probingRuleId?: string | null;
+  // Drag and drop sorting
+  enableDragSort?: boolean;
+  onDragEnd?: (activeId: string, overId: string, oldIndex: number, newIndex: number) => void;
 }
 
 // Status configuration
@@ -345,6 +348,8 @@ export const ForwardRuleListTable: React.FC<ForwardRuleListTableProps> = ({
   onProbe,
   onCopy,
   probingRuleId,
+  enableDragSort = false,
+  onDragEnd,
 }) => {
   // Detect mobile screen
   const { isMobile } = useBreakpoint();
@@ -880,6 +885,28 @@ export const ForwardRuleListTable: React.FC<ForwardRuleListTableProps> = ({
         onProbe={onProbe}
         onCopy={onCopy}
         probingRuleId={probingRuleId}
+        enableDragSort={enableDragSort}
+        onDragEnd={onDragEnd}
+      />
+    );
+  }
+
+  // Use DraggableDataTable when drag sort is enabled
+  if (enableDragSort && onDragEnd) {
+    return (
+      <DraggableDataTable
+        columns={columns}
+        data={rules}
+        loading={loading}
+        page={page}
+        pageSize={pageSize}
+        total={total}
+        onPageChange={onPageChange}
+        onPageSizeChange={onPageSizeChange}
+        emptyMessage="暂无转发规则数据"
+        getRowId={(row) => String(row.id)}
+        enableDragSort={true}
+        onDragEnd={onDragEnd}
       />
     );
   }

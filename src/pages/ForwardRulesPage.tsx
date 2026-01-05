@@ -13,6 +13,7 @@ import {
   XCircle,
   RotateCw,
   Activity,
+  GripVertical,
 } from 'lucide-react';
 import { Switch, SwitchThumb } from '@/components/common/Switch';
 import { Separator } from '@/components/common/Separator';
@@ -61,6 +62,8 @@ export const ForwardRulesPage = () => {
     handlePageSizeChange,
     includeUserRules,
     handleIncludeUserRulesChange,
+    handleReorder,
+    isReordering,
   } = useForwardRulesPage();
 
   const { forwardAgents } = useForwardAgents();
@@ -138,10 +141,32 @@ export const ForwardRulesPage = () => {
   const [ruleToResetTraffic, setRuleToResetTrafficRule] = useState<ForwardRule | null>(null);
   const [copyRuleData, setCopyRuleData] = useState<(Partial<CreateForwardRuleRequest> & { targetType?: 'manual' | 'node' }) | undefined>(undefined);
   const [refreshKey, setRefreshKey] = useState(0);
+  const [dragSortEnabled, setDragSortEnabled] = useState(false);
 
   const handleRefresh = () => {
     setRefreshKey((k) => k + 1);
     refetch();
+  };
+
+  const handleDragEnd = async (_activeId: string, _overId: string, oldIndex: number, newIndex: number) => {
+    if (oldIndex === newIndex) return;
+
+    // Reorder rules and calculate new sortOrder values
+    const ruleOrders: { ruleId: string; sortOrder: number }[] = [];
+    const reorderedRules = [...forwardRules];
+    const [movedRule] = reorderedRules.splice(oldIndex, 1);
+    reorderedRules.splice(newIndex, 0, movedRule);
+
+    reorderedRules.forEach((rule, index) => {
+      const newSortOrder = index + 1;
+      if (rule.sortOrder !== newSortOrder) {
+        ruleOrders.push({ ruleId: rule.id, sortOrder: newSortOrder });
+      }
+    });
+
+    if (ruleOrders.length > 0) {
+      await handleReorder(ruleOrders);
+    }
   };
 
   const handleEdit = (rule: ForwardRule) => {
@@ -261,12 +286,6 @@ export const ForwardRulesPage = () => {
         <header className="mb-6 sm:mb-8">
           <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4 mb-5 sm:mb-6">
             <div>
-              <div className="flex items-center gap-2 mb-1.5">
-                <div className="size-2 rounded-full bg-success animate-pulse" />
-                <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
-                  实时数据
-                </span>
-              </div>
               <h1 className="text-2xl sm:text-3xl font-bold text-foreground tracking-tight">
                 转发规则管理
               </h1>
@@ -307,6 +326,29 @@ export const ForwardRulesPage = () => {
               </TooltipTrigger>
               <TooltipContent>显示用户创建的规则</TooltipContent>
             </Tooltip>
+
+            {!isMobile && (
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <label className="flex items-center gap-2 cursor-pointer group">
+                    <GripVertical className={`size-4 transition-colors ${dragSortEnabled ? 'text-primary' : 'text-muted-foreground group-hover:text-foreground'}`} strokeWidth={1.5} />
+                    <span className={`hidden sm:inline text-sm font-medium transition-colors ${dragSortEnabled ? 'text-primary' : 'text-muted-foreground group-hover:text-foreground'}`}>
+                      拖拽排序
+                    </span>
+                    <Switch
+                      checked={dragSortEnabled}
+                      onCheckedChange={setDragSortEnabled}
+                      disabled={isReordering}
+                    >
+                      <SwitchThumb />
+                    </Switch>
+                  </label>
+                </TooltipTrigger>
+                <TooltipContent>
+                  {dragSortEnabled ? '关闭拖拽排序' : '开启拖拽排序'}
+                </TooltipContent>
+              </Tooltip>
+            )}
           </div>
 
           {/* Actions */}
@@ -359,7 +401,7 @@ export const ForwardRulesPage = () => {
             nodes={nodes}
             polledStatusMap={polledStatusMap}
             pollingRuleIds={pollingRuleIds}
-            loading={isLoading || isFetching}
+            loading={isLoading || isFetching || isReordering}
             page={pagination.page}
             pageSize={pagination.pageSize}
             total={pagination.total}
@@ -374,6 +416,8 @@ export const ForwardRulesPage = () => {
             onProbe={handleProbe}
             onCopy={handleCopy}
             probingRuleId={probingRuleId}
+            enableDragSort={true}
+            onDragEnd={handleDragEnd}
           />
         ) : (
           <AdminCard noPadding>
@@ -383,7 +427,7 @@ export const ForwardRulesPage = () => {
               nodes={nodes}
               polledStatusMap={polledStatusMap}
               pollingRuleIds={pollingRuleIds}
-              loading={isLoading || isFetching}
+              loading={isLoading || isFetching || isReordering}
               page={pagination.page}
               pageSize={pagination.pageSize}
               total={pagination.total}
@@ -398,6 +442,8 @@ export const ForwardRulesPage = () => {
               onProbe={handleProbe}
               onCopy={handleCopy}
               probingRuleId={probingRuleId}
+              enableDragSort={dragSortEnabled}
+              onDragEnd={handleDragEnd}
             />
           </AdminCard>
         )}

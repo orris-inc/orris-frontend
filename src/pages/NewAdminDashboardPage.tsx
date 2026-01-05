@@ -55,15 +55,16 @@ const StatsCard = ({
   loading,
 }: StatsCardProps) => {
   return (
-    <div className="group relative overflow-hidden bg-card backdrop-blur-xl rounded-xl p-3 sm:p-3.5 border border-border shadow-sm hover:shadow-md transition-all duration-200 ease-out">
-      <div className="relative z-10 flex items-center gap-2 sm:gap-2.5">
-        <div className={`${iconBg} p-1.5 sm:p-2 rounded-lg shrink-0 ring-1 ring-border/50`}>
+    <div className="group relative overflow-hidden bg-card backdrop-blur-xl rounded-xl p-2.5 sm:p-3.5 border border-border shadow-sm hover:shadow-md transition-all duration-200 ease-out">
+      {/* Mobile: vertical stack, Desktop: horizontal */}
+      <div className="relative z-10 flex flex-col sm:flex-row sm:items-center gap-1.5 sm:gap-2.5">
+        <div className={`${iconBg} p-1.5 sm:p-2 rounded-lg shrink-0 ring-1 ring-border/50 w-fit`}>
           <div className={iconColor}>{icon}</div>
         </div>
         <div className="min-w-0 flex-1">
-          <div className="text-sm sm:text-base lg:text-lg font-bold text-foreground tracking-tight tabular-nums truncate">
+          <div className="text-base sm:text-base lg:text-lg font-bold text-foreground tracking-tight tabular-nums truncate">
             {loading ? (
-              <div className="h-4 sm:h-5 w-10 sm:w-12 bg-muted rounded animate-pulse" />
+              <div className="h-5 w-12 bg-muted rounded animate-pulse" />
             ) : (
               value
             )}
@@ -418,12 +419,6 @@ export const NewAdminDashboardPage = () => {
       <div className="py-6 sm:py-8">
         {/* Page header */}
         <header className="mb-8">
-          <div className="flex items-center gap-3 mb-1">
-            <div className="size-2 rounded-full bg-status-online animate-pulse" />
-            <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
-              实时数据
-            </span>
-          </div>
           <h1 className="text-2xl sm:text-3xl font-bold text-foreground tracking-tight">
             控制台总览
           </h1>

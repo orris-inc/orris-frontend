@@ -220,12 +220,6 @@ export const SubscriptionManagementPage: React.FC = () => {
         <header className="mb-6 sm:mb-8">
           <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4 mb-5 sm:mb-6">
             <div>
-              <div className="flex items-center gap-2 mb-1.5">
-                <div className="size-2 rounded-full bg-success animate-pulse" />
-                <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
-                  实时数据
-                </span>
-              </div>
               <h1 className="text-2xl sm:text-3xl font-bold text-foreground tracking-tight">
                 订阅管理
               </h1>

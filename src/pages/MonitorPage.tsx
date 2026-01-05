@@ -70,7 +70,7 @@ export const MonitorPage = () => {
 
         {/* Overview cards - compact grid */}
         <section>
-          <MonitorOverviewCards overview={overview} isConnected={isConnected} />
+          <MonitorOverviewCards overview={overview} />
         </section>
 
         <Separator className="my-4 sm:my-5" />

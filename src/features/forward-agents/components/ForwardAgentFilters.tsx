@@ -12,8 +12,8 @@ import type { ForwardStatus } from '@/api/forward';
 export interface ForwardAgentFilters {
   status?: ForwardStatus;
   name?: string;
-  orderBy?: string;
-  order?: 'asc' | 'desc';
+  sortBy?: string;
+  sortOrder?: 'asc' | 'desc';
 }
 
 interface ForwardAgentFiltersProps {
@@ -32,28 +32,28 @@ export const ForwardAgentFiltersComponent: React.FC<ForwardAgentFiltersProps> = 
 
   const handleSortChange = (value: string): void => {
     if (value === '_default_') {
-      onChange({ orderBy: undefined, order: undefined });
+      onChange({ sortBy: undefined, sortOrder: undefined });
     } else {
       // Extract order from the end (last part after final underscore)
       const lastUnderscoreIndex = value.lastIndexOf('_');
-      const orderBy = value.substring(0, lastUnderscoreIndex);
-      const order = value.substring(lastUnderscoreIndex + 1) as 'asc' | 'desc';
-      onChange({ orderBy, order });
+      const sortBy = value.substring(0, lastUnderscoreIndex);
+      const sortOrder = value.substring(lastUnderscoreIndex + 1) as 'asc' | 'desc';
+      onChange({ sortBy, sortOrder });
     }
   };
 
   // Get current sort value for select
   const getSortValue = (): string => {
-    if (!filters.orderBy) return '_default_';
-    return `${filters.orderBy}_${filters.order || 'desc'}`;
+    if (!filters.sortBy) return '_default_';
+    return `${filters.sortBy}_${filters.sortOrder || 'desc'}`;
   };
 
   const handleReset = (): void => {
     onChange({
       status: undefined,
       name: undefined,
-      orderBy: undefined,
-      order: undefined,
+      sortBy: undefined,
+      sortOrder: undefined,
     });
   };
 

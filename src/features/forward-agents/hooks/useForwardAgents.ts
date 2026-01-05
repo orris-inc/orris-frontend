@@ -51,8 +51,8 @@ const forwardAgentsQueryKeys = {
 export interface ForwardAgentFilters {
   status?: 'enabled' | 'disabled';
   name?: string;
-  orderBy?: string;
-  order?: 'asc' | 'desc';
+  sortBy?: string;
+  sortOrder?: 'asc' | 'desc';
 }
 
 interface UseForwardAgentsOptions {
@@ -72,8 +72,8 @@ export const useForwardAgents = (options: UseForwardAgentsOptions = {}) => {
     pageSize,
     name: filters.name,
     status: filters.status,
-    orderBy: filters.orderBy,
-    order: filters.order,
+    sortBy: filters.sortBy,
+    sortOrder: filters.sortOrder,
   };
 
   const {
@@ -169,6 +169,54 @@ export const useForwardAgents = (options: UseForwardAgentsOptions = {}) => {
     },
   });
 
+  // Reorder agents (update sortOrder for multiple agents) with optimistic update
+  const reorderMutation = useMutation({
+    mutationFn: async (updates: { id: string | number; sortOrder: number }[]) => {
+      // Update all agents in parallel
+      await Promise.all(
+        updates.map(({ id, sortOrder }) => updateForwardAgent(id, { sortOrder }))
+      );
+    },
+    onMutate: async (updates) => {
+      // Cancel any outgoing refetches
+      await queryClient.cancelQueries({ queryKey: forwardAgentsQueryKeys.lists() });
+
+      // Snapshot previous value
+      const previousData = queryClient.getQueryData(forwardAgentsQueryKeys.list(params));
+
+      // Optimistically update the cache
+      queryClient.setQueryData(
+        forwardAgentsQueryKeys.list(params),
+        (old: { items: ForwardAgent[]; page: number; pageSize: number; total: number; totalPages: number } | undefined) => {
+          if (!old) return old;
+          const updatedItems = old.items.map((agent) => {
+            const update = updates.find((u) => String(u.id) === String(agent.id));
+            if (update) {
+              return { ...agent, sortOrder: update.sortOrder };
+            }
+            return agent;
+          });
+          // Sort by new sortOrder
+          updatedItems.sort((a, b) => a.sortOrder - b.sortOrder);
+          return { ...old, items: updatedItems };
+        }
+      );
+
+      return { previousData };
+    },
+    onError: (error, _variables, context) => {
+      // Rollback on error
+      if (context?.previousData) {
+        queryClient.setQueryData(forwardAgentsQueryKeys.list(params), context.previousData);
+      }
+      showError(handleApiError(error));
+    },
+    onSettled: () => {
+      // Refetch after error or success
+      queryClient.invalidateQueries({ queryKey: forwardAgentsQueryKeys.lists() });
+    },
+  });
+
   return {
     forwardAgents: data?.items ?? [],
     pagination: {
@@ -189,6 +237,8 @@ export const useForwardAgents = (options: UseForwardAgentsOptions = {}) => {
     disableForwardAgent: (id: number | string) => disableMutation.mutateAsync(id),
     regenerateToken: (id: number | string) => regenerateTokenMutation.mutateAsync(id),
     batchUpdateAgents: (data: AgentBatchUpdateRequest) => batchUpdateMutation.mutateAsync(data),
+    reorderAgents: (updates: { id: string | number; sortOrder: number }[]) =>
+      reorderMutation.mutateAsync(updates),
     isCreating: createMutation.isPending,
     isUpdating: updateMutation.isPending,
     isDeleting: deleteMutation.isPending,
@@ -196,6 +246,7 @@ export const useForwardAgents = (options: UseForwardAgentsOptions = {}) => {
     isDisabling: disableMutation.isPending,
     isRegeneratingToken: regenerateTokenMutation.isPending,
     isBatchUpdating: batchUpdateMutation.isPending,
+    isReordering: reorderMutation.isPending,
   };
 };
 
@@ -287,6 +338,10 @@ export const useForwardAgentsPage = () => {
     return result;
   };
 
+  const handleReorder = async (updates: { id: string | number; sortOrder: number }[]) => {
+    await forwardAgentsQuery.reorderAgents(updates);
+  };
+
   return {
     ...forwardAgentsQuery,
     page,
@@ -307,6 +362,7 @@ export const useForwardAgentsPage = () => {
     handleRegenerateToken,
     handleGetInstallCommand,
     handleBatchUpdate,
+    handleReorder,
   };
 };
 

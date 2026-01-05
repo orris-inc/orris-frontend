@@ -26,7 +26,7 @@ import {
   Globe,
   Radio,
 } from 'lucide-react';
-import { DataTable, TruncatedId, SystemStatusCell, SystemStatusHoverProvider, type ColumnDef, type ResponsiveColumnMeta } from '@/components/admin';
+import { DataTable, DraggableDataTable, TruncatedId, SystemStatusCell, SystemStatusHoverProvider, type ColumnDef, type ResponsiveColumnMeta } from '@/components/admin';
 import { useBreakpoint } from '@/hooks/useBreakpoint';
 import { NodeMobileList } from './NodeMobileList';
 import {
@@ -63,6 +63,9 @@ interface NodeListTableProps {
   onViewDetail: (node: Node) => void;
   onCopy: (node: Node) => void;
   onNotifyURL?: (node: Node) => void;
+  // Drag and drop sorting
+  enableDragSort?: boolean;
+  onDragEnd?: (activeId: string, overId: string, oldIndex: number, newIndex: number) => void;
 }
 
 // Status configuration with semantic colors
@@ -108,6 +111,8 @@ export const NodeListTable: React.FC<NodeListTableProps> = ({
   onViewDetail,
   onCopy,
   onNotifyURL,
+  enableDragSort = false,
+  onDragEnd,
 }) => {
   // Detect mobile screen
   const { isMobile } = useBreakpoint();
@@ -637,7 +642,31 @@ export const NodeListTable: React.FC<NodeListTableProps> = ({
         onGetInstallScript={onGetInstallScript}
         onViewDetail={onViewDetail}
         onCopy={onCopy}
+        enableDragSort={enableDragSort}
+        onDragEnd={onDragEnd}
       />
+    );
+  }
+
+  // Use DraggableDataTable when drag sort is enabled
+  if (enableDragSort && onDragEnd) {
+    return (
+      <SystemStatusHoverProvider>
+        <DraggableDataTable
+          columns={columns}
+          data={nodes}
+          loading={loading}
+          page={page}
+          pageSize={pageSize}
+          total={total}
+          onPageChange={onPageChange}
+          onPageSizeChange={onPageSizeChange}
+          emptyMessage="暂无节点数据"
+          getRowId={(row) => String(row.id)}
+          enableDragSort={true}
+          onDragEnd={onDragEnd}
+        />
+      </SystemStatusHoverProvider>
     );
   }
 

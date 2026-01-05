@@ -171,6 +171,54 @@ export const useNodes = (options: UseNodesOptions = {}) => {
     },
   });
 
+  // Reorder nodes (update sortOrder for multiple nodes) with optimistic update
+  const reorderMutation = useMutation({
+    mutationFn: async (updates: { id: string; sortOrder: number }[]) => {
+      // Update all nodes in parallel
+      await Promise.all(
+        updates.map(({ id, sortOrder }) => updateNode(id, { sortOrder }))
+      );
+    },
+    onMutate: async (updates) => {
+      // Cancel any outgoing refetches
+      await queryClient.cancelQueries({ queryKey: queryKeys.nodes.lists() });
+
+      // Snapshot previous value
+      const previousData = queryClient.getQueryData(queryKeys.nodes.list(params));
+
+      // Optimistically update the cache
+      queryClient.setQueryData(
+        queryKeys.nodes.list(params),
+        (old: { items: Node[]; page: number; pageSize: number; total: number; totalPages: number } | undefined) => {
+          if (!old) return old;
+          const updatedItems = old.items.map((node) => {
+            const update = updates.find((u) => u.id === node.id);
+            if (update) {
+              return { ...node, sortOrder: update.sortOrder };
+            }
+            return node;
+          });
+          // Sort by new sortOrder
+          updatedItems.sort((a, b) => a.sortOrder - b.sortOrder);
+          return { ...old, items: updatedItems };
+        }
+      );
+
+      return { previousData };
+    },
+    onError: (error, _variables, context) => {
+      // Rollback on error
+      if (context?.previousData) {
+        queryClient.setQueryData(queryKeys.nodes.list(params), context.previousData);
+      }
+      showError(handleApiError(error));
+    },
+    onSettled: () => {
+      // Refetch after error or success
+      queryClient.invalidateQueries({ queryKey: queryKeys.nodes.lists() });
+    },
+  });
+
   return {
     // Data
     nodes: data?.items ?? [],
@@ -198,6 +246,8 @@ export const useNodes = (options: UseNodesOptions = {}) => {
     getInstallScript: (id: string, params?: GetNodeInstallScriptParams) =>
       installScriptMutation.mutateAsync({ id, params }),
     batchUpdateNodes: (data: BatchUpdateRequest) => batchUpdateMutation.mutateAsync(data),
+    reorderNodes: (updates: { id: string; sortOrder: number }[]) =>
+      reorderMutation.mutateAsync(updates),
 
     // Mutation status
     isCreating: createMutation.isPending,
@@ -207,6 +257,7 @@ export const useNodes = (options: UseNodesOptions = {}) => {
     isGeneratingToken: tokenMutation.isPending,
     isGettingInstallScript: installScriptMutation.isPending,
     isBatchUpdating: batchUpdateMutation.isPending,
+    isReordering: reorderMutation.isPending,
   };
 };
 
@@ -286,6 +337,10 @@ export const useNodesPage = () => {
     return result;
   };
 
+  const handleReorder = async (updates: { id: string; sortOrder: number }[]) => {
+    await nodesQuery.reorderNodes(updates);
+  };
+
   return {
     ...nodesQuery,
     page,
@@ -310,6 +365,7 @@ export const useNodesPage = () => {
     handleGenerateToken,
     handleGetInstallScript,
     handleBatchUpdate,
+    handleReorder,
   };
 };
 

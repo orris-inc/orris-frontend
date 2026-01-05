@@ -1,8 +1,10 @@
 /**
  * Node Mobile List Component
  * Mobile-friendly card list with Accordion for expanded details
+ * Supports drag-and-drop reordering with long-press activation
  */
 
+import { useCallback } from 'react';
 import {
   Edit,
   Trash2,
@@ -21,6 +23,7 @@ import {
   ArrowUpCircle,
   Globe,
 } from 'lucide-react';
+import { DraggableMobileList } from '@/components/admin/DraggableMobileList';
 import {
   Accordion,
   AccordionItem,
@@ -54,6 +57,9 @@ interface NodeMobileListProps {
   onGetInstallScript: (node: Node) => void;
   onViewDetail: (node: Node) => void;
   onCopy: (node: Node) => void;
+  // Drag and drop sorting
+  enableDragSort?: boolean;
+  onDragEnd?: (activeId: string, overId: string, oldIndex: number, newIndex: number) => void;
 }
 
 // Status configuration with semantic colors
@@ -168,7 +174,12 @@ export const NodeMobileList: React.FC<NodeMobileListProps> = ({
   onGetInstallScript,
   onViewDetail,
   onCopy,
+  enableDragSort = false,
+  onDragEnd,
 }) => {
+  // Get node ID for drag-and-drop
+  const getNodeId = useCallback((node: Node) => node.id, []);
+
   // Render dropdown menu
   const renderDropdownMenu = (node: Node) => {
     return (
@@ -235,34 +246,33 @@ export const NodeMobileList: React.FC<NodeMobileListProps> = ({
     );
   }
 
-  return (
-    <Accordion type="multiple" className="space-y-1.5">
-      {nodes.map((node) => {
-        const statusConfig = STATUS_CONFIG[node.status] || { label: node.status, variant: 'default' as const, icon: XCircle };
-        const StatusIcon = statusConfig.icon;
-        const protocolConfig = PROTOCOL_CONFIG[node.protocol] || { label: node.protocol, color: 'bg-gray-100 text-gray-700' };
+  // Render a single node card
+  const renderNodeCard = (node: Node) => {
+    const statusConfig = STATUS_CONFIG[node.status] || { label: node.status, variant: 'default' as const, icon: XCircle };
+    const StatusIcon = statusConfig.icon;
+    const protocolConfig = PROTOCOL_CONFIG[node.protocol] || { label: node.protocol, color: 'bg-gray-100 text-gray-700' };
 
-        return (
-          <AccordionItem
-            key={node.id}
-            value={node.id}
-            className="border border-border rounded-lg bg-card overflow-hidden"
-          >
-            {/* Card Header - Always visible */}
-            <div className="px-3 py-2">
-              <div className="flex items-start justify-between gap-2">
-                <div className="flex-1 min-w-0">
-                  {/* Node name and status */}
-                  <div className="flex items-center gap-1.5 mb-0.5">
-                    <span className="font-medium text-sm text-foreground truncate">
-                      {node.name}
-                    </span>
-                    <AdminBadge variant={statusConfig.variant} className="text-[10px] px-1.5 py-0 flex-shrink-0">
-                      <StatusIcon className="size-2.5 mr-0.5" />
-                      {statusConfig.label}
-                    </AdminBadge>
-                    <OnlineIndicator isOnline={node.isOnline} lastSeenAt={node.lastSeenAt} />
-                  </div>
+    return (
+      <AccordionItem
+        key={node.id}
+        value={node.id}
+        className="border border-border rounded-lg bg-card overflow-hidden"
+      >
+        {/* Card Header - Always visible */}
+        <div className="px-3 py-2">
+          <div className="flex items-start justify-between gap-2">
+            <div className="flex-1 min-w-0">
+              {/* Node name and status */}
+              <div className="flex items-center gap-1.5 mb-0.5">
+                <span className="font-medium text-sm text-foreground truncate">
+                  {node.name}
+                </span>
+                <AdminBadge variant={statusConfig.variant} className="text-[10px] px-1.5 py-0 flex-shrink-0">
+                  <StatusIcon className="size-2.5 mr-0.5" />
+                  {statusConfig.label}
+                </AdminBadge>
+                <OnlineIndicator isOnline={node.isOnline} lastSeenAt={node.lastSeenAt} />
+              </div>
 
                   {/* Address and region info */}
                   <div className="flex items-center gap-1 text-xs text-muted-foreground">
@@ -502,7 +512,32 @@ export const NodeMobileList: React.FC<NodeMobileListProps> = ({
             </AccordionContent>
           </AccordionItem>
         );
-      })}
+  };
+
+  // Drag mode: use DraggableMobileList wrapper
+  // Each card gets its own Accordion to avoid Radix structure constraints
+  if (enableDragSort && onDragEnd) {
+    return (
+      <DraggableMobileList
+        items={nodes}
+        getItemId={getNodeId}
+        renderItem={(node) => (
+          <Accordion type="single" collapsible className="mb-1.5">
+            {renderNodeCard(node)}
+          </Accordion>
+        )}
+        onDragEnd={onDragEnd}
+        enabled={true}
+        longPressDelay={250}
+        className="space-y-0"
+      />
+    );
+  }
+
+  // Normal mode: standard Accordion
+  return (
+    <Accordion type="multiple" className="space-y-1.5">
+      {nodes.map((node) => renderNodeCard(node))}
     </Accordion>
   );
 };

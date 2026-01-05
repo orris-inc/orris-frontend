@@ -14,6 +14,7 @@ import {
   CheckCircle2,
   XCircle,
   Radio,
+  GripVertical,
 } from 'lucide-react';
 import { Switch, SwitchThumb } from '@/components/common/Switch';
 import { Separator } from '@/components/common/Separator';
@@ -49,6 +50,7 @@ export const NodeManagementPage = () => {
     pagination,
     isFetching,
     isBatchUpdating,
+    isReordering,
     refetch,
     createNode,
     updateNode,
@@ -67,6 +69,7 @@ export const NodeManagementPage = () => {
     handlePageSizeChange,
     includeUserNodes,
     handleIncludeUserNodesChange,
+    handleReorder,
   } = useNodesPage();
 
   const broadcastURLMutation = useBroadcastNodeAPIURL();
@@ -109,6 +112,7 @@ export const NodeManagementPage = () => {
   const [batchUpdateDialogOpen, setBatchUpdateDialogOpen] = useState(false);
   const [broadcastURLDialogOpen, setBroadcastURLDialogOpen] = useState(false);
   const [notifyURLNode, setNotifyURLNode] = useState<Node | null>(null);
+  const [dragSortEnabled, setDragSortEnabled] = useState(false);
 
   const handleEdit = (node: Node) => {
     setSelectedNode(node);
@@ -200,6 +204,30 @@ export const NodeManagementPage = () => {
     }
   };
 
+  const handleDragEnd = async (_activeId: string, _overId: string, oldIndex: number, newIndex: number) => {
+    if (oldIndex === newIndex) return;
+
+    // Calculate new sortOrder values for affected nodes
+    const updates: { id: string; sortOrder: number }[] = [];
+
+    // Create a copy of nodes array and reorder
+    const reorderedNodes = [...nodes];
+    const [movedNode] = reorderedNodes.splice(oldIndex, 1);
+    reorderedNodes.splice(newIndex, 0, movedNode);
+
+    // Update sortOrder for all affected nodes (use index as sortOrder)
+    reorderedNodes.forEach((node, index) => {
+      const newSortOrder = index + 1;
+      if (node.sortOrder !== newSortOrder) {
+        updates.push({ id: node.id, sortOrder: newSortOrder });
+      }
+    });
+
+    if (updates.length > 0) {
+      await handleReorder(updates);
+    }
+  };
+
   const statsCards: PageStatsCardProps[] = [
     {
       title: '节点总数',
@@ -250,12 +278,6 @@ export const NodeManagementPage = () => {
         <header className="mb-6 sm:mb-8">
           <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4 mb-5 sm:mb-6">
             <div>
-              <div className="flex items-center gap-2 mb-1.5">
-                <div className="size-2 rounded-full bg-success animate-pulse" />
-                <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
-                  实时数据
-                </span>
-              </div>
               <h1 className="text-2xl sm:text-3xl font-bold text-foreground tracking-tight">
                 节点管理
               </h1>
@@ -296,6 +318,30 @@ export const NodeManagementPage = () => {
               </TooltipTrigger>
               <TooltipContent>显示用户创建的节点</TooltipContent>
             </Tooltip>
+
+            {/* Desktop only: drag sort toggle */}
+            {!isMobile && (
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <label className="flex items-center gap-2 cursor-pointer group">
+                    <GripVertical className={`size-4 transition-colors ${dragSortEnabled ? 'text-primary' : 'text-muted-foreground group-hover:text-foreground'}`} strokeWidth={1.5} />
+                    <span className="hidden sm:inline text-sm font-medium transition-colors text-muted-foreground group-hover:text-foreground">
+                      拖拽排序
+                    </span>
+                    <Switch
+                      checked={dragSortEnabled}
+                      onCheckedChange={setDragSortEnabled}
+                      disabled={isReordering}
+                    >
+                      <SwitchThumb />
+                    </Switch>
+                  </label>
+                </TooltipTrigger>
+                <TooltipContent>
+                  {dragSortEnabled ? '关闭拖拽排序' : '开启拖拽排序，拖动行调整顺序'}
+                </TooltipContent>
+              </Tooltip>
+            )}
           </div>
 
           {/* Actions */}
@@ -377,7 +423,7 @@ export const NodeManagementPage = () => {
         {isMobile ? (
           <NodeListTable
             nodes={nodes}
-            loading={isFetching}
+            loading={isFetching || isReordering}
             page={pagination.page}
             pageSize={pagination.pageSize}
             total={pagination.total}
@@ -393,12 +439,14 @@ export const NodeManagementPage = () => {
             onViewDetail={handleViewDetail}
             onCopy={handleCopy}
             onNotifyURL={handleNotifyURL}
+            enableDragSort={true}
+            onDragEnd={handleDragEnd}
           />
         ) : (
           <AdminCard noPadding>
             <NodeListTable
               nodes={nodes}
-              loading={isFetching}
+              loading={isFetching || isReordering}
               page={pagination.page}
               pageSize={pagination.pageSize}
               total={pagination.total}
@@ -414,6 +462,8 @@ export const NodeManagementPage = () => {
               onViewDetail={handleViewDetail}
               onCopy={handleCopy}
               onNotifyURL={handleNotifyURL}
+              enableDragSort={dragSortEnabled}
+              onDragEnd={handleDragEnd}
             />
           </AdminCard>
         )}

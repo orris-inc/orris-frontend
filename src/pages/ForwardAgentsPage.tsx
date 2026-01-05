@@ -13,7 +13,9 @@ import {
   XCircle,
   Activity,
   Radio,
+  GripVertical,
 } from 'lucide-react';
+import { Switch, SwitchThumb } from '@/components/common/Switch';
 import { Separator } from '@/components/common/Separator';
 import { AdminLayout } from '@/layouts/AdminLayout';
 import {
@@ -52,6 +54,7 @@ export const ForwardAgentsPage = () => {
     isLoading,
     isFetching,
     isBatchUpdating,
+    isReordering,
     refetch,
     createForwardAgent,
     updateForwardAgent,
@@ -61,6 +64,7 @@ export const ForwardAgentsPage = () => {
     handleRegenerateToken,
     handleGetInstallCommand,
     handleBatchUpdate,
+    handleReorder,
     generatedToken,
     setGeneratedToken,
     installCommandData,
@@ -102,6 +106,7 @@ export const ForwardAgentsPage = () => {
   const [updateAgent, setUpdateAgent] = useState<ForwardAgent | null>(null);
   const [checkingAgentId, setCheckingAgentId] = useState<string | number | null>(null);
   const [refreshKey, setRefreshKey] = useState(0);
+  const [dragSortEnabled, setDragSortEnabled] = useState(false);
 
   // Calculate agent statistics
   const agentStats = useMemo(() => {
@@ -255,6 +260,30 @@ export const ForwardAgentsPage = () => {
     setBroadcastTargetAgent(agent);
   }, []);
 
+  const handleDragEnd = async (_activeId: string, _overId: string, oldIndex: number, newIndex: number) => {
+    if (oldIndex === newIndex) return;
+
+    // Calculate new sortOrder values for affected agents
+    const updates: { id: string | number; sortOrder: number }[] = [];
+
+    // Create a copy of agents array and reorder
+    const reorderedAgents = [...forwardAgents];
+    const [movedAgent] = reorderedAgents.splice(oldIndex, 1);
+    reorderedAgents.splice(newIndex, 0, movedAgent);
+
+    // Update sortOrder for all affected agents (use index as sortOrder)
+    reorderedAgents.forEach((agent, index) => {
+      const newSortOrder = index + 1;
+      if (agent.sortOrder !== newSortOrder) {
+        updates.push({ id: agent.id, sortOrder: newSortOrder });
+      }
+    });
+
+    if (updates.length > 0) {
+      await handleReorder(updates);
+    }
+  };
+
   const handleCreateSubmit = async (data: CreateForwardAgentRequest) => {
     try {
       const result = await createForwardAgent(data);
@@ -283,12 +312,6 @@ export const ForwardAgentsPage = () => {
         <header className="mb-6 sm:mb-8">
           <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4 mb-5 sm:mb-6">
             <div>
-              <div className="flex items-center gap-2 mb-1.5">
-                <div className="size-2 rounded-full bg-success animate-pulse" />
-                <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
-                  实时数据
-                </span>
-              </div>
               <h1 className="text-2xl sm:text-3xl font-bold text-foreground tracking-tight">
                 转发节点管理
               </h1>
@@ -311,11 +334,35 @@ export const ForwardAgentsPage = () => {
         {/* Toolbar */}
         <div className="flex items-center justify-between gap-3 mb-4 sm:mb-5">
           {/* Filters */}
-          <div className="flex-1 min-w-0">
+          <div className="flex items-center gap-3 flex-1 min-w-0">
             <ForwardAgentFiltersComponent
               filters={filters}
               onChange={handleFiltersChange}
             />
+
+            {/* Desktop only: drag sort toggle */}
+            {!isMobile && (
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <label className="flex items-center gap-2 cursor-pointer group shrink-0">
+                    <GripVertical className={`size-4 transition-colors ${dragSortEnabled ? 'text-primary' : 'text-muted-foreground group-hover:text-foreground'}`} strokeWidth={1.5} />
+                    <span className="hidden sm:inline text-sm font-medium transition-colors text-muted-foreground group-hover:text-foreground">
+                      拖拽排序
+                    </span>
+                    <Switch
+                      checked={dragSortEnabled}
+                      onCheckedChange={setDragSortEnabled}
+                      disabled={isReordering}
+                    >
+                      <SwitchThumb />
+                    </Switch>
+                  </label>
+                </TooltipTrigger>
+                <TooltipContent>
+                  {dragSortEnabled ? '关闭拖拽排序' : '开启拖拽排序，拖动行调整顺序'}
+                </TooltipContent>
+              </Tooltip>
+            )}
           </div>
 
           {/* Actions */}
@@ -397,7 +444,7 @@ export const ForwardAgentsPage = () => {
         {isMobile ? (
           <ForwardAgentListTable
             forwardAgents={forwardAgents}
-            loading={isLoading || isFetching}
+            loading={isLoading || isFetching || isReordering}
             page={pagination.page}
             pageSize={pagination.pageSize}
             total={pagination.total}
@@ -415,12 +462,14 @@ export const ForwardAgentsPage = () => {
             onCheckUpdate={handleCheckUpdate}
             onBroadcastURL={handleBroadcastToAgent}
             checkingAgentId={checkingAgentId}
+            enableDragSort={true}
+            onDragEnd={handleDragEnd}
           />
         ) : (
           <AdminCard noPadding>
             <ForwardAgentListTable
               forwardAgents={forwardAgents}
-              loading={isLoading || isFetching}
+              loading={isLoading || isFetching || isReordering}
               page={pagination.page}
               pageSize={pagination.pageSize}
               total={pagination.total}
@@ -438,6 +487,8 @@ export const ForwardAgentsPage = () => {
               onCheckUpdate={handleCheckUpdate}
               onBroadcastURL={handleBroadcastToAgent}
               checkingAgentId={checkingAgentId}
+              enableDragSort={dragSortEnabled}
+              onDragEnd={handleDragEnd}
             />
           </AdminCard>
         )}

@@ -1,9 +1,11 @@
 /**
  * Forward Rule Mobile List Component
  * Mobile-friendly card list with Accordion for expanded details
+ * Supports drag-and-drop reordering with long-press activation
  */
 
 import { useState, useCallback } from 'react';
+import { DraggableMobileList } from '@/components/admin/DraggableMobileList';
 import {
   Edit,
   Trash2,
@@ -65,6 +67,9 @@ interface ForwardRuleMobileListProps {
   onProbe: (rule: ForwardRule) => void;
   onCopy: (rule: ForwardRule) => void;
   probingRuleId?: string | null;
+  // Drag and drop sorting
+  enableDragSort?: boolean;
+  onDragEnd?: (activeId: string, overId: string, oldIndex: number, newIndex: number) => void;
 }
 
 // Status configuration
@@ -309,7 +314,11 @@ export const ForwardRuleMobileList: React.FC<ForwardRuleMobileListProps> = ({
   onProbe,
   onCopy,
   probingRuleId,
+  enableDragSort = false,
+  onDragEnd,
 }) => {
+  // Get rule ID for drag-and-drop
+  const getRuleId = useCallback((rule: ForwardRule) => rule.id, []);
   // Get entry address for a rule
   const getEntryAddress = useCallback((rule: ForwardRule) => {
     const agent = agentsMap[rule.agentId];
@@ -512,25 +521,24 @@ export const ForwardRuleMobileList: React.FC<ForwardRuleMobileListProps> = ({
     );
   }
 
-  return (
-    <Accordion type="multiple" className="space-y-1.5">
-      {rules.map((rule) => {
-        const agent = agentsMap[rule.agentId];
-        const agentName = agent?.name || `ID: ${rule.agentId}`;
-        const entryAddress = getEntryAddress(rule);
-        const exitDisplay = getExitDisplay(rule);
-        const statusConfig = STATUS_CONFIG[rule.status] || { label: rule.status, variant: 'default' as const };
-        const ruleTypeConfig = RULE_TYPE_CONFIG[rule.ruleType] || RULE_TYPE_CONFIG.direct;
-        const protocolConfig = PROTOCOL_CONFIG[rule.protocol] || PROTOCOL_CONFIG.tcp;
-        const tunnelTypeConfig = rule.tunnelType ? TUNNEL_TYPE_CONFIG[rule.tunnelType] : null;
-        const isChainType = rule.ruleType === 'chain' || rule.ruleType === 'direct_chain' || rule.ruleType === 'entry';
-        const totalBytes = (rule.uploadBytes || 0) + (rule.downloadBytes || 0);
-        const uploadBytes = rule.uploadBytes || 0;
-        const downloadBytes = rule.downloadBytes || 0;
-        const uploadRatio = totalBytes > 0 ? (uploadBytes / totalBytes) * 100 : 50;
+  // Render a single rule card
+  const renderRuleCard = (rule: ForwardRule) => {
+    const agent = agentsMap[rule.agentId];
+    const agentName = agent?.name || `ID: ${rule.agentId}`;
+    const entryAddress = getEntryAddress(rule);
+    const exitDisplay = getExitDisplay(rule);
+    const statusConfig = STATUS_CONFIG[rule.status] || { label: rule.status, variant: 'default' as const };
+    const ruleTypeConfig = RULE_TYPE_CONFIG[rule.ruleType] || RULE_TYPE_CONFIG.direct;
+    const protocolConfig = PROTOCOL_CONFIG[rule.protocol] || PROTOCOL_CONFIG.tcp;
+    const tunnelTypeConfig = rule.tunnelType ? TUNNEL_TYPE_CONFIG[rule.tunnelType] : null;
+    const isChainType = rule.ruleType === 'chain' || rule.ruleType === 'direct_chain' || rule.ruleType === 'entry';
+    const totalBytes = (rule.uploadBytes || 0) + (rule.downloadBytes || 0);
+    const uploadBytes = rule.uploadBytes || 0;
+    const downloadBytes = rule.downloadBytes || 0;
+    const uploadRatio = totalBytes > 0 ? (uploadBytes / totalBytes) * 100 : 50;
 
-        return (
-          <AccordionItem
+    return (
+      <AccordionItem
             key={rule.id}
             value={rule.id}
             className="border rounded-lg bg-white dark:bg-slate-800 overflow-hidden"
@@ -757,7 +765,31 @@ export const ForwardRuleMobileList: React.FC<ForwardRuleMobileListProps> = ({
             </AccordionContent>
           </AccordionItem>
         );
-      })}
+  };
+
+  // Drag mode: use DraggableMobileList wrapper
+  if (enableDragSort && onDragEnd) {
+    return (
+      <DraggableMobileList
+        items={rules}
+        getItemId={getRuleId}
+        renderItem={(rule) => (
+          <Accordion type="single" collapsible className="mb-1.5">
+            {renderRuleCard(rule)}
+          </Accordion>
+        )}
+        onDragEnd={onDragEnd}
+        enabled={true}
+        longPressDelay={250}
+        className="space-y-0"
+      />
+    );
+  }
+
+  // Normal mode: standard Accordion
+  return (
+    <Accordion type="multiple" className="space-y-1.5">
+      {rules.map((rule) => renderRuleCard(rule))}
     </Accordion>
   );
 };
