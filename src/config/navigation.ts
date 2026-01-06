@@ -18,6 +18,7 @@ import {
   Boxes,
   Bell,
   Activity,
+  Settings,
 } from 'lucide-react';
 
 import type { NavigationItem } from '../types/navigation.types';
@@ -215,6 +216,17 @@ export const navigationConfig: readonly NavigationItem[] = [
     showInBreadcrumb: true,
     parentId: 'admin-dashboard',
     order: 18,
+  },
+  {
+    id: 'admin-settings',
+    label: '系统设置',
+    path: '/admin/settings',
+    icon: Settings,
+    roles: ['admin'], // Admin only
+    showInNav: true,
+    showInBreadcrumb: true,
+    parentId: 'admin-dashboard',
+    order: 99, // Always at the bottom
   },
 ] as const;
 

@@ -1,6 +1,6 @@
 /**
- * Verify Code Section - Compact Style
- * Displays verification code and binding instructions
+ * Admin Verify Code Section
+ * Displays verification code and binding instructions for admin
  * Uses Radix UI Tooltip for copy feedback
  */
 
@@ -14,22 +14,22 @@ import {
 } from "@/components/common/Tooltip";
 import { cn } from "@/lib/utils";
 
-interface VerifyCodeSectionProps {
+interface AdminVerifyCodeSectionProps {
   verifyCode: string;
   botLink?: string;
 }
 
 /**
- * Compact verification code display
+ * Verification code display for admin binding
  */
-export const VerifyCodeSection = ({
+export const AdminVerifyCodeSection = ({
   verifyCode,
   botLink,
-}: VerifyCodeSectionProps) => {
+}: AdminVerifyCodeSectionProps) => {
   const [copied, setCopied] = useState(false);
 
   // Copy command with verify code together
-  const copyText = `/bind ${verifyCode}`;
+  const copyText = `/adminbind ${verifyCode}`;
 
   const handleCopy = useCallback(async () => {
     try {
@@ -90,7 +90,7 @@ export const VerifyCodeSection = ({
               )}
             >
               <span className="font-mono text-base text-muted-foreground">
-                /bind
+                /adminbind
               </span>
               <span className="font-mono text-lg tracking-[0.2em] font-medium text-foreground">
                 {verifyCode}

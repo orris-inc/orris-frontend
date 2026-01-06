@@ -35,6 +35,7 @@ import { UserForwardRulesPage } from '@/pages/UserForwardRulesPage';
 import { UserForwardAgentsPage } from '@/pages/UserForwardAgentsPage';
 import { UserNodesPage } from '@/pages/UserNodesPage';
 import { NewAdminDashboardPage } from '@/pages/NewAdminDashboardPage';
+import { AdminSettingsPage } from '@/pages/AdminSettingsPage';
 import { MonitorPage } from '@/pages/MonitorPage';
 import { ProtectedRoute } from '@/shared/components/ProtectedRoute';
 import { AdminRoute } from '@/shared/components/AdminRoute';
@@ -208,6 +209,16 @@ export const router = createBrowserRouter([
     element: (
       <AdminRoute>
         <ResourceGroupManagementPage />
+      </AdminRoute>
+    ),
+  },
+
+  // System settings (admin)
+  {
+    path: '/admin/settings',
+    element: (
+      <AdminRoute>
+        <AdminSettingsPage />
       </AdminRoute>
     ),
   },

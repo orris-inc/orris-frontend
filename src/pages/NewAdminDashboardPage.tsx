@@ -528,6 +528,7 @@ export const NewAdminDashboardPage = () => {
             </div>
           </div>
         </section>
+
       </div>
     </AdminLayout>
   );
