@@ -1,15 +1,16 @@
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { AxiosError } from 'axios';
-import { useNotificationStore } from '@/shared/stores/notification-store';
-import { extractErrorMessage } from '@/shared/utils/error-messages';
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { AxiosError } from "axios";
+import { useNotificationStore } from "@/shared/stores/notification-store";
+import { extractErrorMessage } from "@/shared/utils/error-messages";
 import {
-  getBindingStatus,
-  unbindTelegram,
-  updatePreferences,
-  type BindingStatusResponse,
-} from '@/api/telegram';
+  getAdminTelegramBindingStatus,
+  unbindAdminTelegram,
+  updateAdminTelegramPreferences,
+  type AdminBindingStatusResponse,
+  type UpdateAdminPreferencesRequest,
+} from "@/api/admin";
 
-const TELEGRAM_BINDING_KEY = ['telegram', 'binding'];
+const ADMIN_TELEGRAM_BINDING_KEY = ["admin", "telegram", "binding"];
 
 /**
  * Check if error is a 404 (feature not configured on backend)
@@ -22,9 +23,9 @@ const isNotFoundError = (error: unknown): boolean => {
 };
 
 /**
- * Hook for managing Telegram binding state and operations
+ * Hook for managing admin Telegram binding state and operations
  */
-export const useTelegramBinding = () => {
+export const useAdminTelegramBinding = () => {
   const queryClient = useQueryClient();
   const { showSuccess, showError } = useNotificationStore();
 
@@ -34,9 +35,9 @@ export const useTelegramBinding = () => {
     isLoading,
     error,
     refetch,
-  } = useQuery<BindingStatusResponse>({
-    queryKey: TELEGRAM_BINDING_KEY,
-    queryFn: getBindingStatus,
+  } = useQuery<AdminBindingStatusResponse>({
+    queryKey: ADMIN_TELEGRAM_BINDING_KEY,
+    queryFn: getAdminTelegramBindingStatus,
     retry: (failureCount, error) => {
       // Don't retry on 404 (feature not configured)
       if (isNotFoundError(error)) return false;
@@ -49,10 +50,10 @@ export const useTelegramBinding = () => {
 
   // Mutation: Unbind
   const unbindMutation = useMutation({
-    mutationFn: unbindTelegram,
+    mutationFn: unbindAdminTelegram,
     onSuccess: () => {
-      showSuccess('已解除 Telegram 绑定');
-      queryClient.invalidateQueries({ queryKey: TELEGRAM_BINDING_KEY });
+      showSuccess("已解除 Telegram 绑定");
+      queryClient.invalidateQueries({ queryKey: ADMIN_TELEGRAM_BINDING_KEY });
     },
     onError: (error) => {
       showError(extractErrorMessage(error));
@@ -61,10 +62,11 @@ export const useTelegramBinding = () => {
 
   // Mutation: Update preferences
   const updatePreferencesMutation = useMutation({
-    mutationFn: updatePreferences,
+    mutationFn: (data: UpdateAdminPreferencesRequest) =>
+      updateAdminTelegramPreferences(data),
     onSuccess: () => {
-      showSuccess('通知偏好已更新');
-      queryClient.invalidateQueries({ queryKey: TELEGRAM_BINDING_KEY });
+      showSuccess("通知偏好已更新");
+      queryClient.invalidateQueries({ queryKey: ADMIN_TELEGRAM_BINDING_KEY });
     },
     onError: (error) => {
       showError(extractErrorMessage(error));
@@ -79,6 +81,7 @@ export const useTelegramBinding = () => {
     binding: bindingStatus?.binding,
     verifyCode: bindingStatus?.verifyCode,
     botLink: bindingStatus?.botLink,
+    expiresAt: bindingStatus?.expiresAt,
     refetch,
     unbind: unbindMutation.mutateAsync,
     updatePreferences: updatePreferencesMutation.mutateAsync,
