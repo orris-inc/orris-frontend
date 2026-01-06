@@ -22,6 +22,8 @@ import {
   Shield,
   ArrowUpCircle,
   Globe,
+  Bell,
+  BellOff,
 } from 'lucide-react';
 import { DraggableMobileList } from '@/components/admin/DraggableMobileList';
 import {
@@ -57,6 +59,7 @@ interface NodeMobileListProps {
   onGetInstallScript: (node: Node) => void;
   onViewDetail: (node: Node) => void;
   onCopy: (node: Node) => void;
+  onToggleMute?: (node: Node) => void;
   // Drag and drop sorting
   enableDragSort?: boolean;
   onDragEnd?: (activeId: string, overId: string, oldIndex: number, newIndex: number) => void;
@@ -174,6 +177,7 @@ export const NodeMobileList: React.FC<NodeMobileListProps> = ({
   onGetInstallScript,
   onViewDetail,
   onCopy,
+  onToggleMute,
   enableDragSort = false,
   onDragEnd,
 }) => {
@@ -317,6 +321,21 @@ export const NodeMobileList: React.FC<NodeMobileListProps> = ({
 
                 {/* Quick Actions */}
                 <div className="flex items-center gap-0.5 flex-shrink-0">
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <button
+                        onClick={() => onToggleMute?.(node)}
+                        className="p-1.5 rounded hover:bg-accent/50 transition-colors cursor-pointer"
+                      >
+                        {node.muteNotification ? (
+                          <BellOff className="size-3.5 text-muted-foreground" strokeWidth={1.5} />
+                        ) : (
+                          <Bell className="size-3.5 text-muted-foreground/30" strokeWidth={1.5} />
+                        )}
+                      </button>
+                    </TooltipTrigger>
+                    <TooltipContent>{node.muteNotification ? '点击取消静音' : '点击静音通知'}</TooltipContent>
+                  </Tooltip>
                   <Tooltip>
                     <TooltipTrigger asChild>
                       <button

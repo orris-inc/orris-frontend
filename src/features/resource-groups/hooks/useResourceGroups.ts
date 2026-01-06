@@ -108,26 +108,60 @@ export const useResourceGroups = (options: UseResourceGroupsOptions = {}) => {
     },
   });
 
-  // Activate resource group
+  // Activate resource group with optimistic update
   const activateMutation = useMutation({
     mutationFn: (id: string) => activateResourceGroup(id),
+    onMutate: async (id) => {
+      await queryClient.cancelQueries({ queryKey: queryKeys.resourceGroups.lists() });
+      const previousData = queryClient.getQueryData(queryKeys.resourceGroups.list(params));
+      queryClient.setQueryData(
+        queryKeys.resourceGroups.list(params),
+        (old: { items: ResourceGroup[]; page: number; pageSize: number; total: number; totalPages: number } | undefined) => {
+          if (!old) return old;
+          const updatedItems = old.items.map((group) =>
+            group.sid === id ? { ...group, status: 'active' as const } : group
+          );
+          return { ...old, items: updatedItems };
+        }
+      );
+      return { previousData };
+    },
     onSuccess: () => {
       showSuccess('资源组已激活');
-      queryClient.invalidateQueries({ queryKey: queryKeys.resourceGroups.lists() });
     },
-    onError: (error) => {
+    onError: (error, _id, context) => {
+      if (context?.previousData) {
+        queryClient.setQueryData(queryKeys.resourceGroups.list(params), context.previousData);
+      }
       showError(handleApiError(error));
     },
   });
 
-  // Deactivate resource group
+  // Deactivate resource group with optimistic update
   const deactivateMutation = useMutation({
     mutationFn: (id: string) => deactivateResourceGroup(id),
+    onMutate: async (id) => {
+      await queryClient.cancelQueries({ queryKey: queryKeys.resourceGroups.lists() });
+      const previousData = queryClient.getQueryData(queryKeys.resourceGroups.list(params));
+      queryClient.setQueryData(
+        queryKeys.resourceGroups.list(params),
+        (old: { items: ResourceGroup[]; page: number; pageSize: number; total: number; totalPages: number } | undefined) => {
+          if (!old) return old;
+          const updatedItems = old.items.map((group) =>
+            group.sid === id ? { ...group, status: 'inactive' as const } : group
+          );
+          return { ...old, items: updatedItems };
+        }
+      );
+      return { previousData };
+    },
     onSuccess: () => {
       showSuccess('资源组已停用');
-      queryClient.invalidateQueries({ queryKey: queryKeys.resourceGroups.lists() });
     },
-    onError: (error) => {
+    onError: (error, _id, context) => {
+      if (context?.previousData) {
+        queryClient.setQueryData(queryKeys.resourceGroups.list(params), context.previousData);
+      }
       showError(handleApiError(error));
     },
   });

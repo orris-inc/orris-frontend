@@ -20,6 +20,8 @@ import {
   Loader2,
   ArrowUpCircle,
   Radio,
+  Bell,
+  BellOff,
 } from 'lucide-react';
 import { DraggableMobileList } from '@/components/admin/DraggableMobileList';
 import {
@@ -58,6 +60,7 @@ interface ForwardAgentMobileListProps {
   onCopy: (agent: ForwardAgent) => void;
   onCheckUpdate: (agent: ForwardAgent) => void;
   onBroadcastURL?: (agent: ForwardAgent) => void;
+  onToggleMute?: (agent: ForwardAgent) => void;
   checkingAgentId?: string | number | null;
   // Drag and drop sorting
   enableDragSort?: boolean;
@@ -152,6 +155,7 @@ export const ForwardAgentMobileList: React.FC<ForwardAgentMobileListProps> = ({
   onCopy,
   onCheckUpdate,
   onBroadcastURL,
+  onToggleMute,
   checkingAgentId,
   enableDragSort = false,
   onDragEnd,
@@ -268,6 +272,30 @@ export const ForwardAgentMobileList: React.FC<ForwardAgentMobileListProps> = ({
                 >
                   {agent.status === 'enabled' ? '启用' : '禁用'}
                 </AdminBadge>
+                {/* Online status */}
+                {agent.isOnline ? (
+                  <span className="inline-flex items-center gap-1 text-green-600">
+                    <span className="relative flex h-1.5 w-1.5">
+                      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
+                      <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-green-500"></span>
+                    </span>
+                    <span className="text-[10px] font-medium">在线</span>
+                  </span>
+                ) : (
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <span className="inline-flex items-center gap-1 text-slate-400">
+                        <span className="h-1.5 w-1.5 rounded-full bg-slate-300 dark:bg-slate-600"></span>
+                        <span className="text-[10px]">离线</span>
+                      </span>
+                    </TooltipTrigger>
+                    {agent.lastSeenAt && (
+                      <TooltipContent>
+                        最后在线: {formatDate(agent.lastSeenAt)}
+                      </TooltipContent>
+                    )}
+                  </Tooltip>
+                )}
               </div>
 
               {/* Address info */}
@@ -281,6 +309,21 @@ export const ForwardAgentMobileList: React.FC<ForwardAgentMobileListProps> = ({
 
             {/* Quick Actions */}
             <div className="flex items-center gap-0.5 flex-shrink-0">
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <button
+                    onClick={() => onToggleMute?.(agent)}
+                    className="p-1.5 rounded hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
+                  >
+                    {agent.muteNotification ? (
+                      <BellOff className="size-3.5 text-slate-400" />
+                    ) : (
+                      <Bell className="size-3.5 text-slate-300 dark:text-slate-600" />
+                    )}
+                  </button>
+                </TooltipTrigger>
+                <TooltipContent>{agent.muteNotification ? '点击取消静音' : '点击静音通知'}</TooltipContent>
+              </Tooltip>
               <Tooltip>
                 <TooltipTrigger asChild>
                   <button

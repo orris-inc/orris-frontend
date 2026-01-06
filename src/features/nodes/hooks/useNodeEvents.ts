@@ -1,12 +1,14 @@
 /**
  * useNodeEvents Hook
- * SSE subscription for real-time node events
+ * SSE subscription for real-time node events with auto-reconnect
+ * Updated: 2026-01-06 - Added auto-reconnect with exponential backoff
  */
 
 import { useEffect, useRef, useCallback, useState } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { queryKeys } from '@/shared/lib/query-client';
 import { subscribeNodeEvents } from '@/api/node';
+import { createAutoReconnectSSE, type SSEController, type SSEConnectionState } from '@/shared/lib/sse';
 import { convertSnakeToCamel } from '@/shared/utils/case-converter';
 import type { NodeEvent, Node, NodeSystemStatus, NodeBatchStatusEvent } from '@/api/node';
 import type { ListResponse } from '@/shared/types/api.types';
@@ -18,6 +20,13 @@ interface UseNodeEventsOptions {
   enabled?: boolean;
 }
 
+interface UseNodeEventsReturn {
+  /** Current SSE connection state */
+  connectionState: SSEConnectionState;
+  /** Manually trigger reconnection */
+  reconnect: () => void;
+}
+
 interface UseNodeDetailEventsOptions {
   /** Node ID to subscribe to */
   nodeId: string | null;
@@ -27,24 +36,42 @@ interface UseNodeDetailEventsOptions {
   onStatusUpdate?: (status: NodeSystemStatus) => void;
 }
 
+interface UseNodeDetailEventsReturn {
+  /** Current system status from SSE */
+  status: NodeSystemStatus | null;
+  /** Whether the node is online */
+  isOnline: boolean;
+  /** Whether SSE connection is established */
+  isConnected: boolean;
+  /** Current SSE connection state */
+  connectionState: SSEConnectionState;
+  /** Manually trigger reconnection */
+  reconnect: () => void;
+}
+
 /**
  * Hook to subscribe to real-time node events via SSE
  * Automatically updates TanStack Query cache when events are received
+ * Features auto-reconnect with exponential backoff
  */
-export function useNodeEvents(options: UseNodeEventsOptions = {}) {
+export function useNodeEvents(options: UseNodeEventsOptions = {}): UseNodeEventsReturn {
   const { nodeIds, enabled = true } = options;
   const queryClient = useQueryClient();
-  const cleanupRef = useRef<(() => void) | null>(null);
+  const controllerRef = useRef<SSEController | null>(null);
+  const [connectionState, setConnectionState] = useState<SSEConnectionState>('disconnected');
 
-  // Update node in all list caches
+  // Use refs for callbacks to maintain stable references
+  const queryClientRef = useRef(queryClient);
+  queryClientRef.current = queryClient;
+
+  // Update node in all list caches - stable reference
   const updateNodeInCache = useCallback(
     (nodeId: string, updater: (node: Node) => Node) => {
-      // Get all node list queries from cache
-      const queries = queryClient.getQueriesData<ListResponse<Node>>({
+      const qc = queryClientRef.current;
+      const queries = qc.getQueriesData<ListResponse<Node>>({
         queryKey: queryKeys.nodes.lists(),
       });
 
-      // Update each query cache
       queries.forEach(([queryKey, data]) => {
         if (!data?.items) return;
 
@@ -52,25 +79,26 @@ export function useNodeEvents(options: UseNodeEventsOptions = {}) {
           node.id === nodeId ? updater(node) : node
         );
 
-        // Only update if something changed
         const hasChange = data.items.some(
           (node: Node, i: number) => node.id === nodeId && node !== updatedItems[i]
         );
 
         if (hasChange) {
-          queryClient.setQueryData<ListResponse<Node>>(queryKey, {
+          qc.setQueryData<ListResponse<Node>>(queryKey, {
             ...data,
             items: updatedItems,
           });
         }
       });
     },
-    [queryClient]
+    []
   );
 
-  // Handle incoming SSE events
+  // Handle incoming SSE events - stable reference
   const handleEvent = useCallback(
     (event: NodeEvent) => {
+      const qc = queryClientRef.current;
+
       switch (event.type) {
         case 'node:online':
           updateNodeInCache(event.agentId, (node) => ({
@@ -101,12 +129,10 @@ export function useNodeEvents(options: UseNodeEventsOptions = {}) {
           break;
 
         case 'node:updated':
-          // Node was updated (e.g., agent update completed), invalidate to refresh
-          queryClient.invalidateQueries({ queryKey: queryKeys.nodes.lists() });
+          qc.invalidateQueries({ queryKey: queryKeys.nodes.lists() });
           break;
 
         case 'nodes:status': {
-          // Batch status event - update multiple nodes at once
           const batchEvent = event as unknown as NodeBatchStatusEvent;
           Object.entries(batchEvent.agents).forEach(([nodeId, statusData]) => {
             if (statusData.status) {
@@ -123,59 +149,75 @@ export function useNodeEvents(options: UseNodeEventsOptions = {}) {
         }
       }
     },
-    [updateNodeInCache, queryClient]
+    [updateNodeInCache]
   );
 
-  // Handle SSE errors
-  const handleError = useCallback((error: Event) => {
-    console.error('Node SSE connection error:', error);
+  // Manual reconnect function
+  const reconnect = useCallback(() => {
+    controllerRef.current?.reconnect();
   }, []);
+
+  // Memoize nodeIds string for stable dependency
+  const nodeIdsKey = nodeIds?.join(',') ?? '';
 
   // Manage SSE subscription lifecycle
   useEffect(() => {
     if (!enabled) {
-      // Clean up if disabled
-      if (cleanupRef.current) {
-        cleanupRef.current();
-        cleanupRef.current = null;
+      if (controllerRef.current) {
+        controllerRef.current.close();
+        controllerRef.current = null;
       }
+      setConnectionState('disconnected');
       return;
     }
 
-    // Build params
-    const params = nodeIds?.length ? { nodeIds: nodeIds.join(',') } : undefined;
+    const params = nodeIdsKey ? { nodeIds: nodeIdsKey } : undefined;
 
-    // Subscribe to SSE events with new options-based API
-    cleanupRef.current = subscribeNodeEvents(params, {
-      onEvent: handleEvent,
-      onError: handleError,
-    });
+    // Use auto-reconnect wrapper
+    controllerRef.current = createAutoReconnectSSE(
+      subscribeNodeEvents,
+      params,
+      {
+        onStateChange: setConnectionState,
+        onEvent: handleEvent,
+        onError: (error) => {
+          console.error('Node SSE connection error:', error);
+        },
+      }
+    );
 
-    // Cleanup on unmount or when deps change
     return () => {
-      if (cleanupRef.current) {
-        cleanupRef.current();
-        cleanupRef.current = null;
+      if (controllerRef.current) {
+        controllerRef.current.close();
+        controllerRef.current = null;
       }
     };
-  }, [enabled, nodeIds, handleEvent, handleError]);
+  }, [enabled, nodeIdsKey, handleEvent]);
+
+  return {
+    connectionState,
+    reconnect,
+  };
 }
 
 /**
  * Hook for detail dialog to subscribe to a single node's real-time events
  * Returns the latest status and handles SSE subscription lifecycle
  */
-export function useNodeDetailEvents(options: UseNodeDetailEventsOptions) {
+export function useNodeDetailEvents(options: UseNodeDetailEventsOptions): UseNodeDetailEventsReturn {
   const { nodeId, enabled = true, onStatusUpdate } = options;
-  const cleanupRef = useRef<(() => void) | null>(null);
+  const controllerRef = useRef<SSEController | null>(null);
   const [status, setStatus] = useState<NodeSystemStatus | null>(null);
   const [isOnline, setIsOnline] = useState(false);
-  const [isConnected, setIsConnected] = useState(false);
+  const [connectionState, setConnectionState] = useState<SSEConnectionState>('disconnected');
+
+  // Use ref for callback to maintain stable reference
+  const onStatusUpdateRef = useRef(onStatusUpdate);
+  onStatusUpdateRef.current = onStatusUpdate;
 
   // Handle incoming SSE events for this specific node
   const handleEvent = useCallback(
     (event: NodeEvent) => {
-      // Only process events for our node
       if (event.type !== 'nodes:status' && event.agentId !== nodeId) {
         return;
       }
@@ -195,86 +237,70 @@ export function useNodeDetailEvents(options: UseNodeDetailEventsOptions) {
             const convertedStatus = convertSnakeToCamel<NodeSystemStatus>(event.data);
             setStatus(convertedStatus);
             setIsOnline(true);
-            if (onStatusUpdate) {
-              onStatusUpdate(convertedStatus);
-            }
+            onStatusUpdateRef.current?.(convertedStatus);
           }
           break;
 
         case 'nodes:status': {
-          // Batch status event - check if our node is included
           const batchEvent = event as unknown as NodeBatchStatusEvent;
           const nodeData = batchEvent.agents[nodeId!];
           if (nodeData?.status) {
             const convertedStatus = convertSnakeToCamel<NodeSystemStatus>(nodeData.status);
             setStatus(convertedStatus);
             setIsOnline(true);
-            if (onStatusUpdate) {
-              onStatusUpdate(convertedStatus);
-            }
+            onStatusUpdateRef.current?.(convertedStatus);
           }
           break;
         }
       }
     },
-    [nodeId, onStatusUpdate]
+    [nodeId]
   );
 
-  // Handle SSE errors
-  const handleError = useCallback((error: Event) => {
-    console.error('Node detail SSE connection error:', error);
-  }, []);
-
-  // Handle connection open
-  const handleOpen = useCallback(() => {
-    setIsConnected(true);
-  }, []);
-
-  // Handle connection close
-  const handleClose = useCallback(() => {
-    setIsConnected(false);
+  // Manual reconnect function
+  const reconnect = useCallback(() => {
+    controllerRef.current?.reconnect();
   }, []);
 
   // Manage SSE subscription lifecycle
   useEffect(() => {
     if (!enabled || !nodeId) {
-      // Clean up if disabled or no node ID
-      if (cleanupRef.current) {
-        cleanupRef.current();
-        cleanupRef.current = null;
+      if (controllerRef.current) {
+        controllerRef.current.close();
+        controllerRef.current = null;
       }
       setStatus(null);
       setIsOnline(false);
-      setIsConnected(false);
+      setConnectionState('disconnected');
       return;
     }
 
-    // Subscribe to SSE events for this specific node
-    cleanupRef.current = subscribeNodeEvents(
+    // Use auto-reconnect wrapper
+    controllerRef.current = createAutoReconnectSSE(
+      subscribeNodeEvents,
       { nodeIds: nodeId },
       {
-        onOpen: handleOpen,
+        onStateChange: setConnectionState,
         onEvent: handleEvent,
-        onError: handleError,
-        onClose: handleClose,
+        onError: (error) => {
+          console.error('Node detail SSE connection error:', error);
+        },
       }
     );
 
-    // Cleanup on unmount or when deps change
     return () => {
-      if (cleanupRef.current) {
-        cleanupRef.current();
-        cleanupRef.current = null;
+      if (controllerRef.current) {
+        controllerRef.current.close();
+        controllerRef.current = null;
       }
     };
-  }, [enabled, nodeId, handleEvent, handleError, handleOpen, handleClose]);
+  }, [enabled, nodeId, handleEvent]);
 
   return {
-    /** Current system status from SSE */
     status,
-    /** Whether the node is online */
     isOnline,
-    /** Whether SSE connection is established */
-    isConnected,
+    isConnected: connectionState === 'connected',
+    connectionState,
+    reconnect,
   };
 }

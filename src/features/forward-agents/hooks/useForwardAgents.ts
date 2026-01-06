@@ -122,24 +122,60 @@ export const useForwardAgents = (options: UseForwardAgentsOptions = {}) => {
     },
   });
 
+  // Enable agent with optimistic update
   const enableMutation = useMutation({
     mutationFn: enableForwardAgent,
+    onMutate: async (id) => {
+      await queryClient.cancelQueries({ queryKey: forwardAgentsQueryKeys.lists() });
+      const previousData = queryClient.getQueryData(forwardAgentsQueryKeys.list(params));
+      queryClient.setQueryData(
+        forwardAgentsQueryKeys.list(params),
+        (old: { items: ForwardAgent[]; page: number; pageSize: number; total: number; totalPages: number } | undefined) => {
+          if (!old) return old;
+          const updatedItems = old.items.map((agent) =>
+            String(agent.id) === String(id) ? { ...agent, status: 'enabled' as const } : agent
+          );
+          return { ...old, items: updatedItems };
+        }
+      );
+      return { previousData };
+    },
     onSuccess: () => {
       showSuccess('转发节点已启用');
-      queryClient.invalidateQueries({ queryKey: forwardAgentsQueryKeys.lists() });
     },
-    onError: (error) => {
+    onError: (error, _id, context) => {
+      if (context?.previousData) {
+        queryClient.setQueryData(forwardAgentsQueryKeys.list(params), context.previousData);
+      }
       showError(handleApiError(error));
     },
   });
 
+  // Disable agent with optimistic update
   const disableMutation = useMutation({
     mutationFn: disableForwardAgent,
+    onMutate: async (id) => {
+      await queryClient.cancelQueries({ queryKey: forwardAgentsQueryKeys.lists() });
+      const previousData = queryClient.getQueryData(forwardAgentsQueryKeys.list(params));
+      queryClient.setQueryData(
+        forwardAgentsQueryKeys.list(params),
+        (old: { items: ForwardAgent[]; page: number; pageSize: number; total: number; totalPages: number } | undefined) => {
+          if (!old) return old;
+          const updatedItems = old.items.map((agent) =>
+            String(agent.id) === String(id) ? { ...agent, status: 'disabled' as const } : agent
+          );
+          return { ...old, items: updatedItems };
+        }
+      );
+      return { previousData };
+    },
     onSuccess: () => {
       showSuccess('转发节点已禁用');
-      queryClient.invalidateQueries({ queryKey: forwardAgentsQueryKeys.lists() });
     },
-    onError: (error) => {
+    onError: (error, _id, context) => {
+      if (context?.previousData) {
+        queryClient.setQueryData(forwardAgentsQueryKeys.list(params), context.previousData);
+      }
       showError(handleApiError(error));
     },
   });
@@ -167,6 +203,44 @@ export const useForwardAgents = (options: UseForwardAgentsOptions = {}) => {
     onError: (error) => {
       showError(handleApiError(error));
     },
+  });
+
+  // Toggle mute notification with optimistic update
+  const toggleMuteMutation = useMutation({
+    mutationFn: ({ id, muteNotification }: { id: number | string; muteNotification: boolean }) =>
+      updateForwardAgent(id, { muteNotification }),
+    onMutate: async ({ id, muteNotification }) => {
+      // Cancel any outgoing refetches
+      await queryClient.cancelQueries({ queryKey: forwardAgentsQueryKeys.lists() });
+
+      // Snapshot previous value
+      const previousData = queryClient.getQueryData(forwardAgentsQueryKeys.list(params));
+
+      // Optimistically update the cache
+      queryClient.setQueryData(
+        forwardAgentsQueryKeys.list(params),
+        (old: { items: ForwardAgent[]; page: number; pageSize: number; total: number; totalPages: number } | undefined) => {
+          if (!old) return old;
+          const updatedItems = old.items.map((agent) => {
+            if (String(agent.id) === String(id)) {
+              return { ...agent, muteNotification };
+            }
+            return agent;
+          });
+          return { ...old, items: updatedItems };
+        }
+      );
+
+      return { previousData };
+    },
+    onError: (error, _variables, context) => {
+      // Rollback on error
+      if (context?.previousData) {
+        queryClient.setQueryData(forwardAgentsQueryKeys.list(params), context.previousData);
+      }
+      showError(handleApiError(error));
+    },
+    // No need to refetch on success since we already updated optimistically
   });
 
   // Reorder agents (update sortOrder for multiple agents) with optimistic update
@@ -239,6 +313,8 @@ export const useForwardAgents = (options: UseForwardAgentsOptions = {}) => {
     batchUpdateAgents: (data: AgentBatchUpdateRequest) => batchUpdateMutation.mutateAsync(data),
     reorderAgents: (updates: { id: string | number; sortOrder: number }[]) =>
       reorderMutation.mutateAsync(updates),
+    toggleMuteNotification: (id: number | string, muteNotification: boolean) =>
+      toggleMuteMutation.mutate({ id, muteNotification }),
     isCreating: createMutation.isPending,
     isUpdating: updateMutation.isPending,
     isDeleting: deleteMutation.isPending,

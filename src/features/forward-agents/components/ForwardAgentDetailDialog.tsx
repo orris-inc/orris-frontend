@@ -611,6 +611,13 @@ export const ForwardAgentDetailDialog: React.FC<
                   </p>
                 </div>
 
+                <div className="space-y-1">
+                  <p className="text-sm text-muted-foreground">通知状态</p>
+                  <Badge variant={agent.muteNotification ? "secondary" : "outline"}>
+                    {agent.muteNotification ? "已静音" : "正常通知"}
+                  </Badge>
+                </div>
+
                 <div className="space-y-2 md:col-span-2">
                   <p className="text-sm text-muted-foreground">阻止协议</p>
                   {agent.blockedProtocols && agent.blockedProtocols.length > 0 ? (
@@ -666,6 +673,13 @@ export const ForwardAgentDetailDialog: React.FC<
                   <div className="space-y-1">
                     <p className="text-sm text-muted-foreground">更新时间</p>
                     <p className="text-xs">{formatDate(agent.updatedAt)}</p>
+                  </div>
+                )}
+
+                {agent.lastSeenAt && (
+                  <div className="space-y-1">
+                    <p className="text-sm text-muted-foreground">最后在线</p>
+                    <p className="text-xs">{formatDate(agent.lastSeenAt)}</p>
                   </div>
                 )}
               </div>

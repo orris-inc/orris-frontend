@@ -27,6 +27,7 @@ import {
   AccordionContent,
 } from '@/components/common/Accordion';
 import { Badge } from '@/components/common/Badge';
+import { Switch, SwitchThumb } from '@/components/common/Switch';
 import type { Node, UpdateNodeRequest, TransportProtocol, RouteConfig } from '@/api/node';
 import { useResourceGroups } from '@/features/resource-groups/hooks/useResourceGroups';
 import { RouteConfigEditor } from './RouteConfigEditor';
@@ -154,6 +155,8 @@ export const EditNodeDialog: React.FC<EditNodeDialogProps> = ({
         route: node.route,
         // Resource group (use first group if exists)
         groupSid: node.groupIds?.[0] ?? '',
+        // Notification setting
+        muteNotification: node.muteNotification,
       });
       setPluginOptsStr(pluginOptsToString(node.pluginOpts));
       setErrors({});
@@ -305,6 +308,11 @@ export const EditNodeDialog: React.FC<EditNodeDialogProps> = ({
     if (routeChanged) {
       // Use null to clear route, undefined means no change
       updates.route = formData.route === undefined ? null : formData.route;
+    }
+
+    // Mute notification setting
+    if (formData.muteNotification !== node.muteNotification) {
+      updates.muteNotification = formData.muteNotification;
     }
 
     // If there are validation errors, display and prevent submission
@@ -714,6 +722,26 @@ export const EditNodeDialog: React.FC<EditNodeDialogProps> = ({
                     </Select>
                     <p className="text-xs text-muted-foreground">
                       可选，将节点关联到资源组
+                    </p>
+                  </div>
+
+                  {/* 静音通知 */}
+                  <div className="flex flex-col gap-2">
+                    <Label htmlFor="muteNotification">静音通知</Label>
+                    <div className="flex items-center gap-3">
+                      <Switch
+                        id="muteNotification"
+                        checked={formData.muteNotification ?? false}
+                        onCheckedChange={(checked) => handleChange('muteNotification', checked)}
+                      >
+                        <SwitchThumb />
+                      </Switch>
+                      <span className="text-sm text-muted-foreground">
+                        {formData.muteNotification ? '已静音' : '未静音'}
+                      </span>
+                    </div>
+                    <p className="text-xs text-muted-foreground">
+                      开启后将不会发送此节点的上线/下线通知
                     </p>
                   </div>
                 </div>

@@ -22,6 +22,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/common/Select";
+import { Switch, SwitchThumb } from "@/components/common/Switch";
 import { cn } from "@/lib/utils";
 import type {
   ForwardAgent,
@@ -87,6 +88,7 @@ export const EditForwardAgentDialog: React.FC<EditForwardAgentDialogProps> = ({
         allowedPortRange: agent.allowedPortRange,
         sortOrder: agent.sortOrder,
         blockedProtocols: agent.blockedProtocols || [],
+        muteNotification: agent.muteNotification,
       });
       setErrors({});
     }
@@ -94,7 +96,7 @@ export const EditForwardAgentDialog: React.FC<EditForwardAgentDialogProps> = ({
 
   const handleChange = (
     field: keyof UpdateForwardAgentRequest,
-    value: string | number | undefined,
+    value: string | number | boolean | undefined,
   ) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
     if (errors[field]) {
@@ -166,6 +168,11 @@ export const EditForwardAgentDialog: React.FC<EditForwardAgentDialogProps> = ({
       // Resource group association
       if (formData.groupSid !== undefined) {
         updates.groupSid = formData.groupSid;
+      }
+
+      // Mute notification setting
+      if (formData.muteNotification !== agent.muteNotification) {
+        updates.muteNotification = formData.muteNotification;
       }
 
       // If any changes, submit update
@@ -391,6 +398,28 @@ export const EditForwardAgentDialog: React.FC<EditForwardAgentDialogProps> = ({
                   </Select>
                   <p className="text-xs text-muted-foreground">
                     可选，将转发节点关联到资源组
+                  </p>
+                </div>
+
+                {/* 静音通知 */}
+                <div className="flex flex-col gap-2">
+                  <Label htmlFor="muteNotification">静音通知</Label>
+                  <div className="flex items-center gap-3">
+                    <Switch
+                      id="muteNotification"
+                      checked={formData.muteNotification ?? false}
+                      onCheckedChange={(checked) =>
+                        handleChange("muteNotification", checked)
+                      }
+                    >
+                      <SwitchThumb />
+                    </Switch>
+                    <span className="text-sm text-muted-foreground">
+                      {formData.muteNotification ? "已静音" : "未静音"}
+                    </span>
+                  </div>
+                  <p className="text-xs text-muted-foreground">
+                    开启后将不会发送此节点的上线/下线通知
                   </p>
                 </div>
               </div>

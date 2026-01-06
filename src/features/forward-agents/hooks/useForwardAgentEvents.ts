@@ -1,12 +1,14 @@
 /**
  * useForwardAgentEvents Hook
- * SSE subscription for real-time forward agent events
+ * SSE subscription for real-time forward agent events with auto-reconnect
+ * Updated: 2026-01-06 - Added auto-reconnect with exponential backoff
  */
 
 import { useEffect, useRef, useCallback, useState } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { queryKeys } from '@/shared/lib/query-client';
 import { subscribeForwardAgentEvents } from '@/api/forward';
+import { createAutoReconnectSSE, type SSEController, type SSEConnectionState } from '@/shared/lib/sse';
 import { convertSnakeToCamel } from '@/shared/utils/case-converter';
 import type { ForwardAgentEvent, ForwardAgent, AgentSystemStatus, ForwardAgentBatchStatusEvent } from '@/api/forward';
 import type { ListResponse } from '@/shared/types/api.types';
@@ -18,6 +20,13 @@ interface UseForwardAgentEventsOptions {
   enabled?: boolean;
 }
 
+interface UseForwardAgentEventsReturn {
+  /** Current SSE connection state */
+  connectionState: SSEConnectionState;
+  /** Manually trigger reconnection */
+  reconnect: () => void;
+}
+
 interface UseForwardAgentDetailEventsOptions {
   /** Agent ID to subscribe to */
   agentId: string | null;
@@ -27,24 +36,42 @@ interface UseForwardAgentDetailEventsOptions {
   onStatusUpdate?: (status: AgentSystemStatus) => void;
 }
 
+interface UseForwardAgentDetailEventsReturn {
+  /** Current system status from SSE */
+  status: AgentSystemStatus | null;
+  /** Whether the agent is online */
+  isOnline: boolean;
+  /** Whether SSE connection is established */
+  isConnected: boolean;
+  /** Current SSE connection state */
+  connectionState: SSEConnectionState;
+  /** Manually trigger reconnection */
+  reconnect: () => void;
+}
+
 /**
  * Hook to subscribe to real-time forward agent events via SSE
  * Automatically updates TanStack Query cache when events are received
+ * Features auto-reconnect with exponential backoff
  */
-export function useForwardAgentEvents(options: UseForwardAgentEventsOptions = {}) {
+export function useForwardAgentEvents(options: UseForwardAgentEventsOptions = {}): UseForwardAgentEventsReturn {
   const { agentIds, enabled = true } = options;
   const queryClient = useQueryClient();
-  const cleanupRef = useRef<(() => void) | null>(null);
+  const controllerRef = useRef<SSEController | null>(null);
+  const [connectionState, setConnectionState] = useState<SSEConnectionState>('disconnected');
 
-  // Update agent in all list caches
+  // Use refs for callbacks to maintain stable references
+  const queryClientRef = useRef(queryClient);
+  queryClientRef.current = queryClient;
+
+  // Update agent in all list caches - stable reference
   const updateAgentInCache = useCallback(
     (agentId: string, updater: (agent: ForwardAgent) => ForwardAgent) => {
-      // Get all forward agent list queries from cache
-      const queries = queryClient.getQueriesData<ListResponse<ForwardAgent>>({
+      const qc = queryClientRef.current;
+      const queries = qc.getQueriesData<ListResponse<ForwardAgent>>({
         queryKey: queryKeys.forwardAgents.lists(),
       });
 
-      // Update each query cache
       queries.forEach(([queryKey, data]) => {
         if (!data?.items) return;
 
@@ -52,25 +79,26 @@ export function useForwardAgentEvents(options: UseForwardAgentEventsOptions = {}
           agent.id === agentId ? updater(agent) : agent
         );
 
-        // Only update if something changed
         const hasChange = data.items.some(
           (agent: ForwardAgent, i: number) => agent.id === agentId && agent !== updatedItems[i]
         );
 
         if (hasChange) {
-          queryClient.setQueryData<ListResponse<ForwardAgent>>(queryKey, {
+          qc.setQueryData<ListResponse<ForwardAgent>>(queryKey, {
             ...data,
             items: updatedItems,
           });
         }
       });
     },
-    [queryClient]
+    []
   );
 
-  // Handle incoming SSE events
+  // Handle incoming SSE events - stable reference
   const handleEvent = useCallback(
     (event: ForwardAgentEvent) => {
+      const qc = queryClientRef.current;
+
       switch (event.type) {
         case 'agent:online':
           updateAgentInCache(event.agentId, (agent) => ({
@@ -100,12 +128,10 @@ export function useForwardAgentEvents(options: UseForwardAgentEventsOptions = {}
           break;
 
         case 'agent:updated':
-          // Agent was updated (e.g., agent update completed), invalidate to refresh
-          queryClient.invalidateQueries({ queryKey: queryKeys.forwardAgents.lists() });
+          qc.invalidateQueries({ queryKey: queryKeys.forwardAgents.lists() });
           break;
 
         case 'agents:status': {
-          // Batch status event - update multiple agents at once
           const batchEvent = event as unknown as ForwardAgentBatchStatusEvent;
           Object.entries(batchEvent.agents).forEach(([agentId, statusData]) => {
             if (statusData.status) {
@@ -121,59 +147,75 @@ export function useForwardAgentEvents(options: UseForwardAgentEventsOptions = {}
         }
       }
     },
-    [updateAgentInCache, queryClient]
+    [updateAgentInCache]
   );
 
-  // Handle SSE errors
-  const handleError = useCallback((error: Event) => {
-    console.error('Forward agent SSE connection error:', error);
+  // Manual reconnect function
+  const reconnect = useCallback(() => {
+    controllerRef.current?.reconnect();
   }, []);
+
+  // Memoize agentIds string for stable dependency
+  const agentIdsKey = agentIds?.join(',') ?? '';
 
   // Manage SSE subscription lifecycle
   useEffect(() => {
     if (!enabled) {
-      // Clean up if disabled
-      if (cleanupRef.current) {
-        cleanupRef.current();
-        cleanupRef.current = null;
+      if (controllerRef.current) {
+        controllerRef.current.close();
+        controllerRef.current = null;
       }
+      setConnectionState('disconnected');
       return;
     }
 
-    // Build params
-    const params = agentIds?.length ? { agentIds: agentIds.join(',') } : undefined;
+    const params = agentIdsKey ? { agentIds: agentIdsKey } : undefined;
 
-    // Subscribe to SSE events with new options-based API
-    cleanupRef.current = subscribeForwardAgentEvents(params, {
-      onEvent: handleEvent,
-      onError: handleError,
-    });
+    // Use auto-reconnect wrapper
+    controllerRef.current = createAutoReconnectSSE(
+      subscribeForwardAgentEvents,
+      params,
+      {
+        onStateChange: setConnectionState,
+        onEvent: handleEvent,
+        onError: (error) => {
+          console.error('Forward agent SSE connection error:', error);
+        },
+      }
+    );
 
-    // Cleanup on unmount or when deps change
     return () => {
-      if (cleanupRef.current) {
-        cleanupRef.current();
-        cleanupRef.current = null;
+      if (controllerRef.current) {
+        controllerRef.current.close();
+        controllerRef.current = null;
       }
     };
-  }, [enabled, agentIds, handleEvent, handleError]);
+  }, [enabled, agentIdsKey, handleEvent]);
+
+  return {
+    connectionState,
+    reconnect,
+  };
 }
 
 /**
  * Hook for detail dialog to subscribe to a single agent's real-time events
  * Returns the latest status and handles SSE subscription lifecycle
  */
-export function useForwardAgentDetailEvents(options: UseForwardAgentDetailEventsOptions) {
+export function useForwardAgentDetailEvents(options: UseForwardAgentDetailEventsOptions): UseForwardAgentDetailEventsReturn {
   const { agentId, enabled = true, onStatusUpdate } = options;
-  const cleanupRef = useRef<(() => void) | null>(null);
+  const controllerRef = useRef<SSEController | null>(null);
   const [status, setStatus] = useState<AgentSystemStatus | null>(null);
   const [isOnline, setIsOnline] = useState(false);
-  const [isConnected, setIsConnected] = useState(false);
+  const [connectionState, setConnectionState] = useState<SSEConnectionState>('disconnected');
+
+  // Use ref for callback to maintain stable reference
+  const onStatusUpdateRef = useRef(onStatusUpdate);
+  onStatusUpdateRef.current = onStatusUpdate;
 
   // Handle incoming SSE events for this specific agent
   const handleEvent = useCallback(
     (event: ForwardAgentEvent) => {
-      // Only process events for our agent
       if (event.type !== 'agents:status' && event.agentId !== agentId) {
         return;
       }
@@ -193,86 +235,70 @@ export function useForwardAgentDetailEvents(options: UseForwardAgentDetailEvents
             const convertedStatus = convertSnakeToCamel<AgentSystemStatus>(event.data);
             setStatus(convertedStatus);
             setIsOnline(true);
-            if (onStatusUpdate) {
-              onStatusUpdate(convertedStatus);
-            }
+            onStatusUpdateRef.current?.(convertedStatus);
           }
           break;
 
         case 'agents:status': {
-          // Batch status event - check if our agent is included
           const batchEvent = event as unknown as ForwardAgentBatchStatusEvent;
           const agentData = batchEvent.agents[agentId!];
           if (agentData?.status) {
             const convertedStatus = convertSnakeToCamel<AgentSystemStatus>(agentData.status);
             setStatus(convertedStatus);
             setIsOnline(true);
-            if (onStatusUpdate) {
-              onStatusUpdate(convertedStatus);
-            }
+            onStatusUpdateRef.current?.(convertedStatus);
           }
           break;
         }
       }
     },
-    [agentId, onStatusUpdate]
+    [agentId]
   );
 
-  // Handle SSE errors
-  const handleError = useCallback((error: Event) => {
-    console.error('Forward agent detail SSE connection error:', error);
-  }, []);
-
-  // Handle connection open
-  const handleOpen = useCallback(() => {
-    setIsConnected(true);
-  }, []);
-
-  // Handle connection close
-  const handleClose = useCallback(() => {
-    setIsConnected(false);
+  // Manual reconnect function
+  const reconnect = useCallback(() => {
+    controllerRef.current?.reconnect();
   }, []);
 
   // Manage SSE subscription lifecycle
   useEffect(() => {
     if (!enabled || !agentId) {
-      // Clean up if disabled or no agent ID
-      if (cleanupRef.current) {
-        cleanupRef.current();
-        cleanupRef.current = null;
+      if (controllerRef.current) {
+        controllerRef.current.close();
+        controllerRef.current = null;
       }
       setStatus(null);
       setIsOnline(false);
-      setIsConnected(false);
+      setConnectionState('disconnected');
       return;
     }
 
-    // Subscribe to SSE events for this specific agent
-    cleanupRef.current = subscribeForwardAgentEvents(
+    // Use auto-reconnect wrapper
+    controllerRef.current = createAutoReconnectSSE(
+      subscribeForwardAgentEvents,
       { agentIds: agentId },
       {
-        onOpen: handleOpen,
+        onStateChange: setConnectionState,
         onEvent: handleEvent,
-        onError: handleError,
-        onClose: handleClose,
+        onError: (error) => {
+          console.error('Forward agent detail SSE connection error:', error);
+        },
       }
     );
 
-    // Cleanup on unmount or when deps change
     return () => {
-      if (cleanupRef.current) {
-        cleanupRef.current();
-        cleanupRef.current = null;
+      if (controllerRef.current) {
+        controllerRef.current.close();
+        controllerRef.current = null;
       }
     };
-  }, [enabled, agentId, handleEvent, handleError, handleOpen, handleClose]);
+  }, [enabled, agentId, handleEvent]);
 
   return {
-    /** Current system status from SSE */
     status,
-    /** Whether the agent is online */
     isOnline,
-    /** Whether SSE connection is established */
-    isConnected,
+    isConnected: connectionState === 'connected',
+    connectionState,
+    reconnect,
   };
 }

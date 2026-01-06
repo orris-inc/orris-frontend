@@ -25,6 +25,8 @@ import {
   ArrowUpCircle,
   Globe,
   Radio,
+  Bell,
+  BellOff,
 } from 'lucide-react';
 import { DataTable, DraggableDataTable, TruncatedId, SystemStatusCell, SystemStatusHoverProvider, type ColumnDef, type ResponsiveColumnMeta } from '@/components/admin';
 import { useBreakpoint } from '@/hooks/useBreakpoint';
@@ -63,6 +65,7 @@ interface NodeListTableProps {
   onViewDetail: (node: Node) => void;
   onCopy: (node: Node) => void;
   onNotifyURL?: (node: Node) => void;
+  onToggleMute?: (node: Node) => void;
   // Drag and drop sorting
   enableDragSort?: boolean;
   onDragEnd?: (activeId: string, overId: string, oldIndex: number, newIndex: number) => void;
@@ -111,6 +114,7 @@ export const NodeListTable: React.FC<NodeListTableProps> = ({
   onViewDetail,
   onCopy,
   onNotifyURL,
+  onToggleMute,
   enableDragSort = false,
   onDragEnd,
 }) => {
@@ -329,32 +333,54 @@ export const NodeListTable: React.FC<NodeListTableProps> = ({
     {
       id: 'availability',
       header: '在线',
-      size: 50,
+      size: 70,
       meta: { priority: 2 } as ResponsiveColumnMeta, // Important column >= 640px
       cell: ({ row }) => {
         const node = row.original;
-        if (node.isOnline) {
-          return (
-            <Tooltip>
-              <TooltipTrigger>
-                <span className="relative flex size-2.5">
-                  <span className="animate-ping absolute inline-flex size-full rounded-full bg-success opacity-75"></span>
-                  <span className="relative inline-flex rounded-full size-2.5 bg-success"></span>
-                </span>
-              </TooltipTrigger>
-              <TooltipContent>在线</TooltipContent>
-            </Tooltip>
-          );
-        }
+        const muteButtonClass = 'p-0.5 rounded hover:bg-accent/50 transition-colors cursor-pointer';
         return (
-          <Tooltip>
-            <TooltipTrigger>
-              <span className="size-2.5 rounded-full bg-muted-foreground/30 block"></span>
-            </TooltipTrigger>
-            <TooltipContent>
-              离线{node.lastSeenAt && ` · 最后在线: ${formatDate(node.lastSeenAt)}`}
-            </TooltipContent>
-          </Tooltip>
+          <div className="flex items-center gap-1.5">
+            {node.isOnline ? (
+              <Tooltip>
+                <TooltipTrigger>
+                  <span className="relative flex size-2.5">
+                    <span className="animate-ping absolute inline-flex size-full rounded-full bg-success opacity-75"></span>
+                    <span className="relative inline-flex rounded-full size-2.5 bg-success"></span>
+                  </span>
+                </TooltipTrigger>
+                <TooltipContent>在线</TooltipContent>
+              </Tooltip>
+            ) : (
+              <Tooltip>
+                <TooltipTrigger>
+                  <span className="size-2.5 rounded-full bg-muted-foreground/30 block"></span>
+                </TooltipTrigger>
+                <TooltipContent>
+                  离线{node.lastSeenAt && ` · 最后在线: ${formatDate(node.lastSeenAt)}`}
+                </TooltipContent>
+              </Tooltip>
+            )}
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <button
+                  className={muteButtonClass}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onToggleMute?.(node);
+                  }}
+                >
+                  {node.muteNotification ? (
+                    <BellOff className="size-3.5 text-muted-foreground" />
+                  ) : (
+                    <Bell className="size-3.5 text-muted-foreground/30" />
+                  )}
+                </button>
+              </TooltipTrigger>
+              <TooltipContent>
+                {node.muteNotification ? '点击取消静音' : '点击静音通知'}
+              </TooltipContent>
+            </Tooltip>
+          </div>
         );
       },
     },
@@ -634,7 +660,7 @@ export const NodeListTable: React.FC<NodeListTableProps> = ({
         );
       },
     },
-  ], [onEdit, onActivate, onDeactivate, onGetInstallScript, onViewDetail, onNotifyURL, renderDropdownMenuActions, resourceGroupsMap]);
+  ], [onEdit, onActivate, onDeactivate, onGetInstallScript, onViewDetail, onNotifyURL, onToggleMute, renderDropdownMenuActions, resourceGroupsMap]);
 
   // Render mobile card list on small screens
   if (isMobile) {
@@ -651,6 +677,7 @@ export const NodeListTable: React.FC<NodeListTableProps> = ({
         onGetInstallScript={onGetInstallScript}
         onViewDetail={onViewDetail}
         onCopy={onCopy}
+        onToggleMute={onToggleMute}
         enableDragSort={enableDragSort}
         onDragEnd={onDragEnd}
       />

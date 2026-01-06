@@ -123,16 +123,33 @@ export const useNodes = (options: UseNodesOptions = {}) => {
     },
   });
 
-  // Update node status
+  // Update node status with optimistic update
   const statusMutation = useMutation({
     mutationFn: ({ id, status }: { id: string; status: 'active' | 'inactive' | 'maintenance' }) =>
       updateNodeStatus(id, { status }),
+    onMutate: async ({ id, status }) => {
+      await queryClient.cancelQueries({ queryKey: queryKeys.nodes.lists() });
+      const previousData = queryClient.getQueryData(queryKeys.nodes.list(params));
+      queryClient.setQueryData(
+        queryKeys.nodes.list(params),
+        (old: { items: Node[]; page: number; pageSize: number; total: number; totalPages: number } | undefined) => {
+          if (!old) return old;
+          const updatedItems = old.items.map((node) =>
+            node.id === id ? { ...node, status } : node
+          );
+          return { ...old, items: updatedItems };
+        }
+      );
+      return { previousData };
+    },
     onSuccess: (_, { status }) => {
       const statusText = status === 'active' ? '激活' : status === 'inactive' ? '停用' : '维护';
       showSuccess(`节点已${statusText}`);
-      queryClient.invalidateQueries({ queryKey: queryKeys.nodes.lists() });
     },
-    onError: (error) => {
+    onError: (error, _variables, context) => {
+      if (context?.previousData) {
+        queryClient.setQueryData(queryKeys.nodes.list(params), context.previousData);
+      }
       showError(handleApiError(error));
     },
   });
@@ -169,6 +186,44 @@ export const useNodes = (options: UseNodesOptions = {}) => {
     onError: (error) => {
       showError(handleApiError(error));
     },
+  });
+
+  // Toggle mute notification with optimistic update
+  const toggleMuteMutation = useMutation({
+    mutationFn: ({ id, muteNotification }: { id: string; muteNotification: boolean }) =>
+      updateNode(id, { muteNotification }),
+    onMutate: async ({ id, muteNotification }) => {
+      // Cancel any outgoing refetches
+      await queryClient.cancelQueries({ queryKey: queryKeys.nodes.lists() });
+
+      // Snapshot previous value
+      const previousData = queryClient.getQueryData(queryKeys.nodes.list(params));
+
+      // Optimistically update the cache
+      queryClient.setQueryData(
+        queryKeys.nodes.list(params),
+        (old: { items: Node[]; page: number; pageSize: number; total: number; totalPages: number } | undefined) => {
+          if (!old) return old;
+          const updatedItems = old.items.map((node) => {
+            if (node.id === id) {
+              return { ...node, muteNotification };
+            }
+            return node;
+          });
+          return { ...old, items: updatedItems };
+        }
+      );
+
+      return { previousData };
+    },
+    onError: (error, _variables, context) => {
+      // Rollback on error
+      if (context?.previousData) {
+        queryClient.setQueryData(queryKeys.nodes.list(params), context.previousData);
+      }
+      showError(handleApiError(error));
+    },
+    // No need to refetch on success since we already updated optimistically
   });
 
   // Reorder nodes (update sortOrder for multiple nodes) with optimistic update
@@ -248,6 +303,8 @@ export const useNodes = (options: UseNodesOptions = {}) => {
     batchUpdateNodes: (data: BatchUpdateRequest) => batchUpdateMutation.mutateAsync(data),
     reorderNodes: (updates: { id: string; sortOrder: number }[]) =>
       reorderMutation.mutateAsync(updates),
+    toggleMuteNotification: (id: string, muteNotification: boolean) =>
+      toggleMuteMutation.mutate({ id, muteNotification }),
 
     // Mutation status
     isCreating: createMutation.isPending,

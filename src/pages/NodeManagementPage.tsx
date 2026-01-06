@@ -56,6 +56,7 @@ export const NodeManagementPage = () => {
     updateNode,
     deleteNode,
     updateNodeStatus,
+    toggleMuteNotification,
     handleGenerateToken,
     generatedToken,
     setGeneratedToken,
@@ -202,6 +203,10 @@ export const NodeManagementPage = () => {
     } catch {
       // Error already handled in hook
     }
+  };
+
+  const handleToggleMute = (node: Node) => {
+    toggleMuteNotification(node.id, !node.muteNotification);
   };
 
   const handleDragEnd = async (_activeId: string, _overId: string, oldIndex: number, newIndex: number) => {
@@ -439,6 +444,7 @@ export const NodeManagementPage = () => {
             onViewDetail={handleViewDetail}
             onCopy={handleCopy}
             onNotifyURL={handleNotifyURL}
+            onToggleMute={handleToggleMute}
             enableDragSort={true}
             onDragEnd={handleDragEnd}
           />
@@ -462,6 +468,7 @@ export const NodeManagementPage = () => {
               onViewDetail={handleViewDetail}
               onCopy={handleCopy}
               onNotifyURL={handleNotifyURL}
+              onToggleMute={handleToggleMute}
               enableDragSort={dragSortEnabled}
               onDragEnd={handleDragEnd}
             />

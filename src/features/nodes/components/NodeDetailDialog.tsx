@@ -450,6 +450,13 @@ export const NodeDetailDialog: React.FC<NodeDetailDialogProps> = ({
                 <p className="text-sm">{node.sortOrder ?? 0}</p>
               </div>
 
+              <div className="space-y-1">
+                <p className="text-sm text-muted-foreground">通知状态</p>
+                <Badge variant={node.muteNotification ? "secondary" : "outline"}>
+                  {node.muteNotification ? "已静音" : "正常通知"}
+                </Badge>
+              </div>
+
               {node.region && (
                 <div className="space-y-1">
                   <p className="text-sm text-muted-foreground">地区</p>
@@ -622,6 +629,13 @@ export const NodeDetailDialog: React.FC<NodeDetailDialogProps> = ({
                 <p className="text-sm text-muted-foreground">更新时间</p>
                 <p className="text-xs">{formatDate(node.updatedAt)}</p>
               </div>
+
+              {node.lastSeenAt && (
+                <div className="space-y-1">
+                  <p className="text-sm text-muted-foreground">最后在线</p>
+                  <p className="text-xs">{formatDate(node.lastSeenAt)}</p>
+                </div>
+              )}
             </div>
           </div>
         </div>

@@ -82,16 +82,34 @@ export const useSubscriptionPlans = (options: UseSubscriptionPlansOptions = {}) 
     },
   });
 
-  // Update subscription plan status
+  // Update subscription plan status with optimistic update
   const statusMutation = useMutation({
     mutationFn: ({ id, status }: { id: string; status: 'active' | 'inactive' }) =>
       updatePlanStatus(id, { status }),
+    onMutate: async ({ id, status }) => {
+      await queryClient.cancelQueries({ queryKey: queryKeys.subscriptionPlans.lists() });
+      const previousData = queryClient.getQueryData(queryKeys.subscriptionPlans.list(params));
+      queryClient.setQueryData(
+        queryKeys.subscriptionPlans.list(params),
+        (old: { items: SubscriptionPlan[]; page: number; pageSize: number; total: number; totalPages: number } | undefined) => {
+          if (!old) return old;
+          const updatedItems = old.items.map((plan) =>
+            plan.id === id ? { ...plan, status } : plan
+          );
+          return { ...old, items: updatedItems };
+        }
+      );
+      return { previousData };
+    },
     onSuccess: (_, { status }) => {
       showSuccess(`订阅计划已${status === 'active' ? '激活' : '停用'}`);
-      queryClient.invalidateQueries({ queryKey: queryKeys.subscriptionPlans.lists() });
+      // Still invalidate public plans as they may have different caching
       queryClient.invalidateQueries({ queryKey: queryKeys.subscriptionPlans.public() });
     },
-    onError: (error) => {
+    onError: (error, _variables, context) => {
+      if (context?.previousData) {
+        queryClient.setQueryData(queryKeys.subscriptionPlans.list(params), context.previousData);
+      }
       showError(handleApiError(error));
     },
   });

@@ -61,6 +61,7 @@ export const ForwardAgentsPage = () => {
     deleteForwardAgent,
     enableForwardAgent,
     disableForwardAgent,
+    toggleMuteNotification,
     handleRegenerateToken,
     handleGetInstallCommand,
     handleBatchUpdate,
@@ -305,6 +306,10 @@ export const ForwardAgentsPage = () => {
     }
   };
 
+  const handleToggleMute = (agent: ForwardAgent) => {
+    toggleMuteNotification(agent.id, !agent.muteNotification);
+  };
+
   return (
     <AdminLayout>
       <div className="py-6 sm:py-8">
@@ -461,6 +466,7 @@ export const ForwardAgentsPage = () => {
             onCopy={handleCopy}
             onCheckUpdate={handleCheckUpdate}
             onBroadcastURL={handleBroadcastToAgent}
+            onToggleMute={handleToggleMute}
             checkingAgentId={checkingAgentId}
             enableDragSort={true}
             onDragEnd={handleDragEnd}
@@ -486,6 +492,7 @@ export const ForwardAgentsPage = () => {
               onCopy={handleCopy}
               onCheckUpdate={handleCheckUpdate}
               onBroadcastURL={handleBroadcastToAgent}
+              onToggleMute={handleToggleMute}
               checkingAgentId={checkingAgentId}
               enableDragSort={dragSortEnabled}
               onDragEnd={handleDragEnd}

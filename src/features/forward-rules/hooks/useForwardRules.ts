@@ -123,26 +123,60 @@ export const useForwardRules = (options: UseForwardRulesOptions = {}) => {
     },
   });
 
-  // Enable forward rule
+  // Enable forward rule with optimistic update
   const enableMutation = useMutation({
     mutationFn: enableForwardRule,
+    onMutate: async (id) => {
+      await queryClient.cancelQueries({ queryKey: forwardRulesQueryKeys.lists() });
+      const previousData = queryClient.getQueryData(forwardRulesQueryKeys.list(params));
+      queryClient.setQueryData(
+        forwardRulesQueryKeys.list(params),
+        (old: { items: ForwardRule[]; page: number; pageSize: number; total: number; totalPages: number } | undefined) => {
+          if (!old) return old;
+          const updatedItems = old.items.map((rule) =>
+            String(rule.id) === String(id) ? { ...rule, status: 'enabled' as const } : rule
+          );
+          return { ...old, items: updatedItems };
+        }
+      );
+      return { previousData };
+    },
     onSuccess: () => {
       showSuccess('转发规则已启用');
-      queryClient.invalidateQueries({ queryKey: forwardRulesQueryKeys.lists() });
     },
-    onError: (error) => {
+    onError: (error, _id, context) => {
+      if (context?.previousData) {
+        queryClient.setQueryData(forwardRulesQueryKeys.list(params), context.previousData);
+      }
       showError(handleApiError(error));
     },
   });
 
-  // Disable forward rule
+  // Disable forward rule with optimistic update
   const disableMutation = useMutation({
     mutationFn: disableForwardRule,
+    onMutate: async (id) => {
+      await queryClient.cancelQueries({ queryKey: forwardRulesQueryKeys.lists() });
+      const previousData = queryClient.getQueryData(forwardRulesQueryKeys.list(params));
+      queryClient.setQueryData(
+        forwardRulesQueryKeys.list(params),
+        (old: { items: ForwardRule[]; page: number; pageSize: number; total: number; totalPages: number } | undefined) => {
+          if (!old) return old;
+          const updatedItems = old.items.map((rule) =>
+            String(rule.id) === String(id) ? { ...rule, status: 'disabled' as const } : rule
+          );
+          return { ...old, items: updatedItems };
+        }
+      );
+      return { previousData };
+    },
     onSuccess: () => {
       showSuccess('转发规则已禁用');
-      queryClient.invalidateQueries({ queryKey: forwardRulesQueryKeys.lists() });
     },
-    onError: (error) => {
+    onError: (error, _id, context) => {
+      if (context?.previousData) {
+        queryClient.setQueryData(forwardRulesQueryKeys.list(params), context.previousData);
+      }
       showError(handleApiError(error));
     },
   });
