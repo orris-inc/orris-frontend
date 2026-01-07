@@ -24,38 +24,38 @@ export const QuickActionsCard = ({ className }: QuickActionsCardProps) => {
       <a
         href="/pricing"
         className={cn(
-          'flex items-center gap-4 p-4 rounded-xl bg-card border',
-          'hover:border-primary/50 hover:shadow-md',
+          'flex items-center gap-3 p-3 rounded-lg bg-card border',
+          'hover:border-primary/50 hover:shadow-sm',
           'transition-all group cursor-pointer'
         )}
       >
-        <div className="p-2.5 rounded-xl bg-primary/10 ring-1 ring-primary/20">
-          <Zap className="size-5 text-primary" />
+        <div className="p-2 rounded-lg bg-primary/10 ring-1 ring-primary/20">
+          <Zap className="size-4 text-primary" />
         </div>
         <div className="flex-1 min-w-0">
-          <div className="font-medium text-foreground">升级订阅</div>
-          <div className="text-sm text-muted-foreground truncate">获取更多流量</div>
+          <div className="text-sm font-medium text-foreground">升级订阅</div>
+          <div className="text-xs text-muted-foreground truncate">获取更多流量</div>
         </div>
-        <ArrowRight className="size-4 text-muted-foreground group-hover:text-primary transition-colors shrink-0" />
+        <ArrowRight className="size-3.5 text-muted-foreground group-hover:text-primary transition-colors shrink-0" />
       </a>
 
       {/* View plans */}
       <a
         href="/pricing"
         className={cn(
-          'flex items-center gap-4 p-4 rounded-xl bg-card border',
-          'hover:border-primary/50 hover:shadow-md',
+          'flex items-center gap-3 p-3 rounded-lg bg-card border',
+          'hover:border-primary/50 hover:shadow-sm',
           'transition-all group cursor-pointer'
         )}
       >
-        <div className="p-2.5 rounded-xl bg-success/10 ring-1 ring-success/20">
-          <CreditCard className="size-5 text-success" />
+        <div className="p-2 rounded-lg bg-success/10 ring-1 ring-success/20">
+          <CreditCard className="size-4 text-success" />
         </div>
         <div className="flex-1 min-w-0">
-          <div className="font-medium text-foreground">查看套餐</div>
-          <div className="text-sm text-muted-foreground truncate">对比所有方案</div>
+          <div className="text-sm font-medium text-foreground">查看套餐</div>
+          <div className="text-xs text-muted-foreground truncate">对比所有方案</div>
         </div>
-        <ArrowRight className="size-4 text-muted-foreground group-hover:text-primary transition-colors shrink-0" />
+        <ArrowRight className="size-3.5 text-muted-foreground group-hover:text-primary transition-colors shrink-0" />
       </a>
     </div>
   );

@@ -98,7 +98,7 @@ export const AdminLayout = ({ children }: AdminLayoutProps) => {
 
   return (
     <TooltipProvider delayDuration={0}>
-      <div className="min-h-screen bg-background">
+      <div className="min-h-screen min-h-dvh bg-background overflow-x-hidden">
         {/* 移动端侧边栏 */}
         <Dialog.Root open={mobileDrawerOpen} onOpenChange={setMobileDrawerOpen}>
           <Dialog.Portal>
@@ -190,8 +190,10 @@ export const AdminLayout = ({ children }: AdminLayoutProps) => {
           </header>
 
           {/* 页面内容 */}
-          <main className="flex-1 p-4 sm:p-6">
-            {children}
+          <main className="flex-1 p-4 sm:p-6 overflow-x-hidden">
+            <div className="min-w-0 max-w-full">
+              {children}
+            </div>
           </main>
         </div>
 

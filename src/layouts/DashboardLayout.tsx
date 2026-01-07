@@ -53,10 +53,10 @@ export const DashboardLayout = ({ children }: DashboardLayoutProps) => {
 
   return (
     <TooltipProvider delayDuration={0}>
-    <div className="flex min-h-screen flex-col bg-background">
+    <div className="flex min-h-screen min-h-dvh flex-col bg-background overflow-x-hidden">
       {/* Top navigation bar */}
       <header className="sticky top-0 z-40 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-        <div className="container mx-auto max-w-6xl flex h-16 items-center px-4 sm:px-8">
+        <div className="mx-auto max-w-6xl flex h-14 items-center px-4 sm:px-6">
           {/* Mobile menu button - only show for user side */}
           {shouldShowNavigation && (
             <button
@@ -122,13 +122,15 @@ export const DashboardLayout = ({ children }: DashboardLayoutProps) => {
       )}
 
       {/* Main content area */}
-      <main className="flex-1 py-6">
-        <div className="container mx-auto px-4 sm:px-8 max-w-6xl">
+      <main className="flex-1 py-4 sm:py-6 overflow-x-hidden">
+        <div className="mx-auto px-4 sm:px-6 max-w-6xl w-full">
           {/* Enhanced breadcrumb navigation - only show for admin side (not in DashboardLayout unless configured) */}
           {shouldShowBreadcrumbs && <EnhancedBreadcrumbs />}
 
           {/* Page content */}
-          {children}
+          <div className="min-w-0">
+            {children}
+          </div>
         </div>
       </main>
 

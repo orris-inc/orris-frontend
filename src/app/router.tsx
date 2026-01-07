@@ -31,9 +31,8 @@ import { ForwardAgentsPage } from '@/pages/ForwardAgentsPage';
 import { ResourceGroupManagementPage } from '@/pages/ResourceGroupManagementPage';
 import { ProfileSettingsPage } from '@/pages/ProfileSettingsPage';
 import { NotificationsPage } from '@/pages/NotificationsPage';
-import { UserForwardRulesPage } from '@/pages/UserForwardRulesPage';
-import { UserForwardAgentsPage } from '@/pages/UserForwardAgentsPage';
 import { UserNodesPage } from '@/pages/UserNodesPage';
+import { UserSubscriptionDetailPage } from '@/pages/UserSubscriptionDetailPage';
 import { NewAdminDashboardPage } from '@/pages/NewAdminDashboardPage';
 import { AdminSettingsPage } from '@/pages/AdminSettingsPage';
 import { MonitorPage } from '@/pages/MonitorPage';
@@ -85,24 +84,26 @@ export const router = createBrowserRouter([
     ),
   },
 
-  // User forward rules management
+  // User subscription detail page
   {
-    path: '/dashboard/forward-rules',
+    path: '/dashboard/subscriptions/:id',
     element: (
       <ProtectedRoute>
-        <UserForwardRulesPage />
+        <UserSubscriptionDetailPage />
       </ProtectedRoute>
     ),
   },
 
-  // User forward agents list
+  // Redirect: forward-rules -> dashboard (deprecated route)
+  {
+    path: '/dashboard/forward-rules',
+    element: <Navigate to="/dashboard" replace />,
+  },
+
+  // Redirect: forward-agents -> dashboard (deprecated route)
   {
     path: '/dashboard/forward-agents',
-    element: (
-      <ProtectedRoute>
-        <UserForwardAgentsPage />
-      </ProtectedRoute>
-    ),
+    element: <Navigate to="/dashboard" replace />,
   },
 
   // User nodes management

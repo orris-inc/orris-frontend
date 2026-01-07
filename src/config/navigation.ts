@@ -19,6 +19,7 @@ import {
   Bell,
   Activity,
   Settings,
+  FileText,
 } from 'lucide-react';
 
 import type { NavigationItem } from '../types/navigation.types';
@@ -53,26 +54,15 @@ export const navigationConfig: readonly NavigationItem[] = [
     order: 1,
   },
   {
-    id: 'user-forward-rules',
-    label: '端口转发',
-    path: '/dashboard/forward-rules',
-    icon: ArrowLeftRight,
+    id: 'user-subscription-detail',
+    label: '订阅详情',
+    path: '/dashboard/subscriptions/:id',
+    icon: FileText,
     roles: ['user', 'admin'],
-    showInNav: true,
+    showInNav: false, // Dynamic route, not shown in nav
     showInBreadcrumb: true,
     parentId: 'dashboard',
     order: 2,
-  },
-  {
-    id: 'user-forward-agents',
-    label: '转发节点',
-    path: '/dashboard/forward-agents',
-    icon: Cpu,
-    roles: ['user', 'admin'],
-    showInNav: true,
-    showInBreadcrumb: true,
-    parentId: 'dashboard',
-    order: 3,
   },
   {
     id: 'user-nodes',
@@ -83,7 +73,7 @@ export const navigationConfig: readonly NavigationItem[] = [
     showInNav: true,
     showInBreadcrumb: true,
     parentId: 'dashboard',
-    order: 4,
+    order: 3,
   },
   {
     id: 'notifications',
@@ -94,7 +84,7 @@ export const navigationConfig: readonly NavigationItem[] = [
     showInNav: true,
     showInBreadcrumb: true,
     parentId: 'dashboard',
-    order: 5,
+    order: 4,
   },
   {
     id: 'pricing',
@@ -104,7 +94,7 @@ export const navigationConfig: readonly NavigationItem[] = [
     roles: ['user', 'admin'],
     showInNav: true,
     showInBreadcrumb: true,
-    order: 6,
+    order: 5,
   },
   {
     id: 'profile',
@@ -115,7 +105,7 @@ export const navigationConfig: readonly NavigationItem[] = [
     showInNav: false, // Not shown in main nav (accessed via user menu)
     showInBreadcrumb: true,
     parentId: 'dashboard',
-    order: 7,
+    order: 6,
   },
 
   // ==================== Admin Routes ====================

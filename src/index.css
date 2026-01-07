@@ -320,17 +320,33 @@
     border: 0 !important;
   }
 
+  /* Prevent horizontal overflow on all devices */
+  html,
+  body {
+    overflow-x: hidden;
+    max-width: 100vw;
+  }
+
+  html {
+    scroll-behavior: smooth;
+  }
+
   body {
     background-color: hsl(var(--background));
     color: hsl(var(--foreground));
     font-feature-settings: "rlig" 1, "calt" 1;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+    min-height: 100vh;
+    min-height: 100dvh; /* Dynamic viewport height for mobile */
   }
 
-  /* 平滑滚动 */
-  html {
-    scroll-behavior: smooth;
+  /* Root app container */
+  #root {
+    min-height: 100vh;
+    min-height: 100dvh;
+    display: flex;
+    flex-direction: column;
   }
 
   /* 选中文本的颜色 */
@@ -463,5 +479,46 @@
   .touch-target {
     min-height: 44px;
     min-width: 44px;
+  }
+
+  /* Prevent content overflow */
+  .overflow-wrap {
+    overflow-wrap: break-word;
+    word-wrap: break-word;
+    word-break: break-word;
+  }
+
+  /* Scrollable container with hidden scrollbar */
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+
+  /* Horizontal scroll container for mobile */
+  .scroll-x-auto {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  /* Table container with scroll */
+  .table-container {
+    width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  /* Prevent flex children from overflowing */
+  .flex-overflow-fix > * {
+    min-width: 0;
+    min-height: 0;
+  }
+
+  /* Card that doesn't overflow its container */
+  .card-contained {
+    max-width: 100%;
+    overflow: hidden;
   }
 }
