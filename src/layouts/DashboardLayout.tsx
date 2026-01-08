@@ -7,6 +7,7 @@ import { useState } from 'react';
 import { useNavigate, Link } from 'react-router';
 import { Menu, Globe } from 'lucide-react';
 import { TooltipProvider } from '@/components/common/Tooltip';
+import { useSwipeToOpen } from '@/hooks';
 
 import { useAuthStore } from '@/features/auth/stores/auth-store';
 import { useAuth } from '@/features/auth/hooks/useAuth';
@@ -31,6 +32,12 @@ export const DashboardLayout = ({ children }: DashboardLayoutProps) => {
 
   const [profileDialogOpen, setProfileDialogOpen] = useState(false);
   const [mobileDrawerOpen, setMobileDrawerOpen] = useState(false);
+
+  // Enable swipe from left edge to open mobile drawer
+  useSwipeToOpen({
+    onOpen: () => setMobileDrawerOpen(true),
+    isOpen: mobileDrawerOpen,
+  });
 
   // Filter navigation items by permission
   // First get items marked for display in navigation bar, then filter by permission

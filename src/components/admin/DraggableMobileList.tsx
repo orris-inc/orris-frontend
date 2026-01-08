@@ -67,7 +67,7 @@ const SortableItemInner = memo(function SortableItemInner({
       ref={setNodeRef}
       style={style}
       className={cn(
-        'touch-none select-none',
+        'select-none',
         // Dim other items when dragging
         isDraggingAny && !isBeingDragged && 'opacity-50 scale-[0.98]',
         // Transition for smooth dim effect

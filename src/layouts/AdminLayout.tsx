@@ -21,6 +21,7 @@ import * as Dialog from '@radix-ui/react-dialog';
 import { TooltipProvider } from '@/components/common/Tooltip';
 import { AdminSidebarNav, AdminSidebarFooter } from '@/components/navigation/AdminSidebarNav';
 import { UserMenu } from '@/components/navigation/UserMenu';
+import { useSwipeToOpen } from '@/hooks';
 
 import { useAuthStore } from '@/features/auth/stores/auth-store';
 import { useAuth } from '@/features/auth/hooks/useAuth';
@@ -47,6 +48,12 @@ export const AdminLayout = ({ children }: AdminLayoutProps) => {
     return saved === 'true';
   });
   const [profileDialogOpen, setProfileDialogOpen] = useState(false);
+
+  // Enable swipe from left edge to open mobile drawer
+  useSwipeToOpen({
+    onOpen: () => setMobileDrawerOpen(true),
+    isOpen: mobileDrawerOpen,
+  });
 
   useEffect(() => {
     localStorage.setItem('admin-sidebar-collapsed', String(collapsed));
