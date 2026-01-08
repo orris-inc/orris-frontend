@@ -1,29 +1,45 @@
 /**
  * Mobile Drawer Navigation Component
  *
- * Slide-out navigation drawer for mobile devices.
+ * Modern slide-out navigation drawer for mobile devices.
  * Features:
+ * - User profile section with avatar
  * - Smooth slide animation with backdrop blur
- * - Clear visual hierarchy with brand header
+ * - Clear visual hierarchy with grouped navigation
  * - Touch-friendly targets (min 44px)
- * - Active state with left border indicator
+ * - Active state with pill indicator
+ * - Quick actions footer (theme, logout)
  * - Respects reduced-motion preferences
+ * - Safe area insets support for notched devices
  */
 
 import { useMemo } from 'react';
 import { Link as RouterLink, useLocation } from 'react-router-dom';
 import * as Dialog from '@radix-ui/react-dialog';
 import * as Separator from '@radix-ui/react-separator';
-import { X } from 'lucide-react';
+import { X, LogOut, Shield, ChevronRight } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { Avatar, AvatarImage, AvatarFallback } from '@/components/common/Avatar';
+import { ThemeToggle } from '@/components/common/ThemeToggle';
 
 import type { NavigationItem } from '../../types/navigation.types';
+
+interface MobileDrawerUser {
+  displayName?: string;
+  email?: string;
+  initials?: string;
+  avatarUrl?: string;
+}
 
 interface MobileDrawerProps {
   open: boolean;
   onClose: () => void;
   navigationItems: NavigationItem[];
   brandName?: string;
+  user?: MobileDrawerUser | null;
+  showAdminSwitch?: boolean;
+  onAdminClick?: () => void;
+  onLogout?: () => void;
 }
 
 export const MobileDrawer = ({
@@ -31,8 +47,13 @@ export const MobileDrawer = ({
   onClose,
   navigationItems,
   brandName = 'Orris',
+  user,
+  showAdminSwitch = false,
+  onAdminClick,
+  onLogout,
 }: MobileDrawerProps) => {
   const location = useLocation();
+  const initials = user?.initials || user?.displayName?.charAt(0).toUpperCase() || '?';
 
   const renderNavigationItems = useMemo(() => {
     return navigationItems.map((item) => {
@@ -40,7 +61,7 @@ export const MobileDrawer = ({
         return (
           <Separator.Root
             key={item.id}
-            className="my-3 shrink-0 bg-border h-px w-full"
+            className="my-2 shrink-0 bg-border/60 h-px w-full"
           />
         );
       }
@@ -56,40 +77,52 @@ export const MobileDrawer = ({
           aria-current={isActive ? 'page' : undefined}
           className={cn(
             // Base styles
-            'group relative flex items-center gap-3 rounded-lg px-3 py-3',
+            'group relative flex items-center gap-3 rounded-xl px-3 py-3',
             // Touch target
-            'min-h-[44px]',
+            'min-h-[48px]',
             // Transition
             'transition-all duration-200 ease-out',
             'motion-reduce:transition-none',
             // States
             isActive
               ? 'bg-primary text-primary-foreground shadow-sm'
-              : 'text-muted-foreground active:bg-accent active:text-foreground',
+              : 'text-muted-foreground active:bg-accent/80 active:text-foreground',
             // Disabled state
             item.disabled && 'pointer-events-none opacity-50'
           )}
         >
-          {/* Left border indicator for active state */}
-          <span
-            className={cn(
-              'absolute left-0 top-1/2 -translate-y-1/2 w-1 rounded-r-full',
-              'transition-all duration-200 ease-out',
-              'motion-reduce:transition-none',
-              isActive ? 'h-6 bg-primary-foreground' : 'h-0 bg-transparent'
-            )}
-            aria-hidden="true"
-          />
           {Icon && (
-            <Icon
+            <span
               className={cn(
-                'h-5 w-5 flex-shrink-0',
-                isActive ? 'text-primary-foreground' : 'text-muted-foreground'
+                'flex h-9 w-9 items-center justify-center rounded-lg',
+                'transition-colors duration-200 ease-out',
+                'motion-reduce:transition-none',
+                isActive
+                  ? 'bg-primary-foreground/20'
+                  : 'bg-muted/50 group-active:bg-accent'
               )}
+            >
+              <Icon
+                className={cn(
+                  'h-5 w-5 flex-shrink-0',
+                  isActive ? 'text-primary-foreground' : 'text-muted-foreground group-active:text-foreground'
+                )}
+                aria-hidden="true"
+              />
+            </span>
+          )}
+          <span className={cn(
+            'text-sm font-medium',
+            isActive ? 'text-primary-foreground' : 'text-foreground'
+          )}>
+            {item.label}
+          </span>
+          {isActive && (
+            <ChevronRight
+              className="ml-auto h-4 w-4 text-primary-foreground/60"
               aria-hidden="true"
             />
           )}
-          <span className="text-sm font-medium">{item.label}</span>
         </RouterLink>
       );
     });
@@ -98,34 +131,41 @@ export const MobileDrawer = ({
   return (
     <Dialog.Root open={open} onOpenChange={(isOpen) => !isOpen && onClose()}>
       <Dialog.Portal>
+        {/* Backdrop */}
         <Dialog.Overlay
           className={cn(
-            'fixed inset-0 z-50 bg-black/60 backdrop-blur-sm',
+            'fixed inset-0 z-50 bg-black/50 backdrop-blur-sm',
             'data-[state=open]:animate-in data-[state=closed]:animate-out',
             'data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0',
+            'data-[state=closed]:duration-200 data-[state=open]:duration-300',
             'motion-reduce:animate-none'
           )}
         />
+
+        {/* Drawer Content */}
         <Dialog.Content
           className={cn(
-            'fixed inset-y-0 left-0 z-50 flex h-full w-[280px] flex-col',
-            'border-r bg-background shadow-xl',
+            'fixed inset-y-0 left-0 z-50 flex h-full w-[300px] max-w-[85vw] flex-col',
+            'bg-background shadow-2xl',
             'data-[state=open]:animate-in data-[state=closed]:animate-out',
             'data-[state=closed]:duration-200 data-[state=open]:duration-300',
             'data-[state=closed]:slide-out-to-left data-[state=open]:slide-in-from-left',
-            'motion-reduce:animate-none'
+            'motion-reduce:animate-none',
+            // Safe area support
+            'pb-safe'
           )}
         >
-          {/* Header */}
-          <div className="flex h-16 items-center justify-between border-b px-4">
+          {/* Header with close button */}
+          <div className="flex h-14 items-center justify-between border-b px-4">
             <Dialog.Title className="text-lg font-bold text-foreground">
               {brandName}
             </Dialog.Title>
             <Dialog.Close
               className={cn(
-                'flex h-10 w-10 items-center justify-center rounded-lg',
+                'flex h-10 w-10 items-center justify-center rounded-xl',
                 'text-muted-foreground transition-colors duration-200',
                 'hover:bg-accent hover:text-foreground',
+                'active:bg-accent/80',
                 'focus:outline-none focus-visible:ring-2 focus-visible:ring-ring',
                 'motion-reduce:transition-none'
               )}
@@ -135,10 +175,37 @@ export const MobileDrawer = ({
             </Dialog.Close>
           </div>
 
+          {/* User Profile Section */}
+          {user && (
+            <div className="border-b px-4 py-4">
+              <div className="flex items-center gap-3">
+                <Avatar className="h-12 w-12">
+                  {user.avatarUrl && (
+                    <AvatarImage
+                      src={user.avatarUrl}
+                      alt={user.displayName || 'User avatar'}
+                    />
+                  )}
+                  <AvatarFallback className="h-full w-full bg-primary text-primary-foreground text-base font-semibold">
+                    {initials}
+                  </AvatarFallback>
+                </Avatar>
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-semibold text-foreground truncate">
+                    {user.displayName || 'User'}
+                  </p>
+                  <p className="text-xs text-muted-foreground truncate">
+                    {user.email}
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
+
           {/* Navigation */}
-          <div className="flex-1 overflow-y-auto py-4">
+          <div className="flex-1 overflow-y-auto py-3 px-3">
             <nav
-              className="space-y-1 px-3"
+              className="space-y-1"
               role="navigation"
               aria-label="Mobile navigation"
             >
@@ -146,11 +213,67 @@ export const MobileDrawer = ({
             </nav>
           </div>
 
-          {/* Footer hint */}
-          <div className="border-t px-4 py-3">
-            <p className="text-xs text-muted-foreground text-center">
-              Swipe or tap outside to close
-            </p>
+          {/* Footer Actions */}
+          <div className="border-t px-3 py-3 space-y-1">
+            {/* Admin Switch */}
+            {showAdminSwitch && onAdminClick && (
+              <button
+                onClick={() => {
+                  onAdminClick();
+                  onClose();
+                }}
+                className={cn(
+                  'group flex w-full items-center gap-3 rounded-xl px-3 py-3',
+                  'min-h-[48px]',
+                  'text-primary',
+                  'transition-colors duration-200 ease-out',
+                  'active:bg-primary/10',
+                  'motion-reduce:transition-none'
+                )}
+              >
+                <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary/10">
+                  <Shield className="h-5 w-5 text-primary" aria-hidden="true" />
+                </span>
+                <span className="text-sm font-medium">切换到管理端</span>
+                <ChevronRight className="ml-auto h-4 w-4 text-primary/60" aria-hidden="true" />
+              </button>
+            )}
+
+            {/* Theme Toggle Row */}
+            <div className={cn(
+              'flex items-center justify-between rounded-xl px-3 py-2',
+              'min-h-[48px]'
+            )}>
+              <div className="flex items-center gap-3">
+                <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-muted/50">
+                  <ThemeToggle />
+                </span>
+                <span className="text-sm font-medium text-foreground">主题</span>
+              </div>
+            </div>
+
+            {/* Logout */}
+            {onLogout && (
+              <button
+                onClick={() => {
+                  onLogout();
+                  onClose();
+                }}
+                className={cn(
+                  'group flex w-full items-center gap-3 rounded-xl px-3 py-3',
+                  'min-h-[48px]',
+                  'text-destructive',
+                  'transition-colors duration-200 ease-out',
+                  'active:bg-destructive/10',
+                  'motion-reduce:transition-none'
+                )}
+              >
+                <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-destructive/10">
+                  <LogOut className="h-5 w-5 text-destructive" aria-hidden="true" />
+                </span>
+                <span className="text-sm font-medium">退出登录</span>
+              </button>
+            )}
           </div>
         </Dialog.Content>
       </Dialog.Portal>

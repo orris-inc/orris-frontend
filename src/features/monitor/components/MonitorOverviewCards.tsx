@@ -5,7 +5,7 @@
 
 import { memo } from 'react';
 import { Server, Cpu, Activity, ArrowDown, ArrowUp } from 'lucide-react';
-import { formatBitRate } from '@/shared/utils/format-utils';
+import { formatBitRate, formatBytes } from '@/shared/utils/format-utils';
 import type { MonitorOverview } from '../hooks/useMonitorData';
 
 interface OverviewCardProps {
@@ -87,15 +87,17 @@ export const MonitorOverviewCards = memo(({ overview }: MonitorOverviewCardsProp
       iconColor: overview.avgMemory >= 80 ? 'text-destructive' : overview.avgMemory >= 60 ? 'text-warning' : 'text-success',
     },
     {
-      title: '总下载',
+      title: '下载',
       value: formatBitRate(overview.totalNetworkRxRate),
+      subtitle: `已用 ${formatBytes(overview.totalNetworkRxBytes)}`,
       icon: <ArrowDown className="size-3.5" strokeWidth={1.5} />,
       iconBg: 'bg-success/10',
       iconColor: 'text-success',
     },
     {
-      title: '总上传',
+      title: '上传',
       value: formatBitRate(overview.totalNetworkTxRate),
+      subtitle: `已用 ${formatBytes(overview.totalNetworkTxBytes)}`,
       icon: <ArrowUp className="size-3.5" strokeWidth={1.5} />,
       iconBg: 'bg-primary/10',
       iconColor: 'text-primary',

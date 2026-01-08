@@ -21,6 +21,9 @@ import { Separator } from '@/components/common/Separator';
 import { NodeListTable } from '@/features/nodes/components/NodeListTable';
 import { EditNodeDialog } from '@/features/nodes/components/EditNodeDialog';
 import { CreateNodeDialog } from '@/features/nodes/components/CreateNodeDialog';
+import { CreateNodeSheet } from '@/features/nodes/components/CreateNodeSheet';
+import { EditNodeSheet } from '@/features/nodes/components/EditNodeSheet';
+import { DeleteNodeSheet } from '@/features/nodes/components/DeleteNodeSheet';
 import { NodeDetailDialog } from '@/features/nodes/components/NodeDetailDialog';
 import { NodeInstallScriptDialog } from '@/features/nodes/components/NodeInstallScriptDialog';
 import { BatchUpdateDialog } from '@/features/nodes/components/BatchUpdateDialog';
@@ -114,6 +117,8 @@ export const NodeManagementPage = () => {
   const [broadcastURLDialogOpen, setBroadcastURLDialogOpen] = useState(false);
   const [notifyURLNode, setNotifyURLNode] = useState<Node | null>(null);
   const [dragSortEnabled, setDragSortEnabled] = useState(false);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [nodeToDelete, setNodeToDelete] = useState<Node | null>(null);
 
   const handleEdit = (node: Node) => {
     setSelectedNode(node);
@@ -121,9 +126,18 @@ export const NodeManagementPage = () => {
   };
 
   const handleDelete = async (node: Node) => {
-    if (window.confirm(`确认删除节点 "${node.name}" (${node.serverAddress}:${node.agentPort}) 吗？此操作不可恢复。`)) {
-      await deleteNode(node.id);
+    if (isMobile) {
+      setNodeToDelete(node);
+      setDeleteDialogOpen(true);
+    } else {
+      if (window.confirm(`确认删除节点 "${node.name}" (${node.serverAddress}:${node.agentPort}) 吗？此操作不可恢复。`)) {
+        await deleteNode(node.id);
+      }
     }
+  };
+
+  const handleDeleteConfirm = async (node: Node) => {
+    await deleteNode(node.id);
   };
 
   const handleActivate = async (node: Node) => {
@@ -476,29 +490,55 @@ export const NodeManagementPage = () => {
         )}
       </div>
 
-      {/* Create Node Dialog */}
-      <CreateNodeDialog
-        open={createDialogOpen}
-        onClose={() => {
-          setCreateDialogOpen(false);
-          setCopyNodeData(undefined);
-        }}
-        onSubmit={handleCreateSubmit}
-        initialData={copyNodeData}
-        nodes={nodesForOutbound}
-      />
+      {/* Create Node Dialog/Sheet */}
+      {isMobile ? (
+        <CreateNodeSheet
+          open={createDialogOpen}
+          onClose={() => {
+            setCreateDialogOpen(false);
+            setCopyNodeData(undefined);
+          }}
+          onSubmit={handleCreateSubmit}
+          initialData={copyNodeData}
+          nodes={nodesForOutbound}
+        />
+      ) : (
+        <CreateNodeDialog
+          open={createDialogOpen}
+          onClose={() => {
+            setCreateDialogOpen(false);
+            setCopyNodeData(undefined);
+          }}
+          onSubmit={handleCreateSubmit}
+          initialData={copyNodeData}
+          nodes={nodesForOutbound}
+        />
+      )}
 
-      {/* Edit Node Dialog */}
-      <EditNodeDialog
-        open={editDialogOpen}
-        node={selectedNode}
-        onClose={() => {
-          setEditDialogOpen(false);
-          setSelectedNode(null);
-        }}
-        onSubmit={handleUpdateSubmit}
-        nodes={nodesForOutbound}
-      />
+      {/* Edit Node Dialog/Sheet */}
+      {isMobile ? (
+        <EditNodeSheet
+          open={editDialogOpen}
+          node={selectedNode}
+          onClose={() => {
+            setEditDialogOpen(false);
+            setSelectedNode(null);
+          }}
+          onSubmit={handleUpdateSubmit}
+          nodes={nodesForOutbound}
+        />
+      ) : (
+        <EditNodeDialog
+          open={editDialogOpen}
+          node={selectedNode}
+          onClose={() => {
+            setEditDialogOpen(false);
+            setSelectedNode(null);
+          }}
+          onSubmit={handleUpdateSubmit}
+          nodes={nodesForOutbound}
+        />
+      )}
 
       {/* Node Detail Dialog */}
       <NodeDetailDialog
@@ -566,6 +606,17 @@ export const NodeManagementPage = () => {
           notifyURLMutation.mutateAsync({ nodeId, data: { newUrl, reason } })
         }
         isNotifying={notifyURLMutation.isPending}
+      />
+
+      {/* Delete Node Confirmation Sheet (Mobile only) */}
+      <DeleteNodeSheet
+        open={deleteDialogOpen}
+        node={nodeToDelete}
+        onClose={() => {
+          setDeleteDialogOpen(false);
+          setNodeToDelete(null);
+        }}
+        onConfirm={handleDeleteConfirm}
       />
     </AdminLayout>
   );

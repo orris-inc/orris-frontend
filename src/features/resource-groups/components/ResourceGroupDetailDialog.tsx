@@ -14,6 +14,8 @@ import {
   CreditCard,
   Clock,
   Copy,
+  ArrowRightLeft,
+  Info,
 } from 'lucide-react';
 import {
   Dialog,
@@ -29,7 +31,7 @@ import { Separator } from '@/components/common/Separator';
 import { AdminBadge } from '@/components/admin';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/common/Tabs';
 import { useNotificationStore } from '@/shared/stores/notification-store';
-import { useGroupNodes, useGroupForwardAgents, useGroupMemberManagement } from '../hooks/useResourceGroups';
+import { useGroupNodes, useGroupForwardAgents, useGroupForwardRules, useGroupMemberManagement } from '../hooks/useResourceGroups';
 import { AddMembersDialog } from './AddMembersDialog';
 import type { ResourceGroup } from '@/api/resource/types';
 import type { SubscriptionPlan } from '@/api/subscription/types';
@@ -100,8 +102,10 @@ export const ResourceGroupDetailDialog: React.FC<ResourceGroupDetailDialogProps>
   // Member selection state
   const [selectedNodeIds, setSelectedNodeIds] = useState<Set<string>>(new Set());
   const [selectedAgentIds, setSelectedAgentIds] = useState<Set<string>>(new Set());
+  const [selectedRuleIds, setSelectedRuleIds] = useState<Set<string>>(new Set());
   const [addNodesDialogOpen, setAddNodesDialogOpen] = useState(false);
   const [addAgentsDialogOpen, setAddAgentsDialogOpen] = useState(false);
+  const [addRulesDialogOpen, setAddRulesDialogOpen] = useState(false);
 
   // Get member lists
   const { nodes, isLoading: isLoadingNodes, pagination: nodesPagination, refetch: refetchNodes } = useGroupNodes({
@@ -116,16 +120,26 @@ export const ResourceGroupDetailDialog: React.FC<ResourceGroupDetailDialogProps>
     enabled: open && !!resourceGroup,
   });
 
+  const { forwardRules, isLoading: isLoadingRules, pagination: rulesPagination, refetch: refetchRules } = useGroupForwardRules({
+    groupId: resourceGroup?.sid ?? null,
+    pageSize: 50,
+    enabled: open && !!resourceGroup,
+  });
+
   // Member management actions
   const {
     addNodes,
     removeNodes,
     addAgents,
     removeAgents,
+    addRules,
+    removeRules,
     isAddingNodes,
     isRemovingNodes,
     isAddingAgents,
     isRemovingAgents,
+    isAddingRules,
+    isRemovingRules,
   } = useGroupMemberManagement(resourceGroup?.sid ?? null);
 
   // Node selection actions
@@ -196,10 +210,45 @@ export const ResourceGroupDetailDialog: React.FC<ResourceGroupDetailDialogProps>
     refetchAgents();
   };
 
+  // Forward rule selection actions
+  const handleToggleRule = (id: string) => {
+    setSelectedRuleIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) {
+        next.delete(id);
+      } else {
+        next.add(id);
+      }
+      return next;
+    });
+  };
+
+  const handleToggleAllRules = () => {
+    if (selectedRuleIds.size === forwardRules.length) {
+      setSelectedRuleIds(new Set());
+    } else {
+      setSelectedRuleIds(new Set(forwardRules.map((r) => r.id)));
+    }
+  };
+
+  const handleRemoveSelectedRules = async () => {
+    if (selectedRuleIds.size === 0) return;
+    await removeRules(Array.from(selectedRuleIds));
+    setSelectedRuleIds(new Set());
+    refetchRules();
+  };
+
+  const handleAddRules = async (ruleIds: string[]) => {
+    await addRules(ruleIds);
+    setAddRulesDialogOpen(false);
+    refetchRules();
+  };
+
   // Clean up selection state on close
   const handleClose = () => {
     setSelectedNodeIds(new Set());
     setSelectedAgentIds(new Set());
+    setSelectedRuleIds(new Set());
     onClose();
   };
 
@@ -208,6 +257,18 @@ export const ResourceGroupDetailDialog: React.FC<ResourceGroupDetailDialogProps>
   }
 
   const plan = plansMap[resourceGroup.planId];
+  const planType = plan?.planType;
+
+  // Business logic (2026-01-08):
+  // - forward plan: can only bind forward agents
+  // - node/hybrid plan: can bind nodes and forward rules
+  const canBindNodes = planType !== 'forward';
+  const canBindAgents = planType === 'forward';
+  const canBindRules = planType !== 'forward';
+
+  // Calculate tab count for grid layout (static mapping for Tailwind CSS)
+  const tabCount = 1 + (canBindNodes ? 1 : 0) + (canBindAgents ? 1 : 0) + (canBindRules ? 1 : 0);
+  const gridColsClass = tabCount === 2 ? 'grid-cols-2' : tabCount === 3 ? 'grid-cols-3' : 'grid-cols-4';
 
   return (
     <>
@@ -227,14 +288,23 @@ export const ResourceGroupDetailDialog: React.FC<ResourceGroupDetailDialogProps>
 
           <div className="flex-1 min-h-0 overflow-y-auto -mx-6 px-6">
           <Tabs defaultValue="info" className="w-full">
-            <TabsList className="grid w-full grid-cols-3">
+            <TabsList className={`grid w-full ${gridColsClass}`}>
               <TabsTrigger value="info">基本信息</TabsTrigger>
-              <TabsTrigger value="nodes">
-                节点 ({nodesPagination.total})
-              </TabsTrigger>
-              <TabsTrigger value="agents">
-                转发代理 ({agentsPagination.total})
-              </TabsTrigger>
+              {canBindNodes && (
+                <TabsTrigger value="nodes">
+                  节点 ({nodesPagination.total})
+                </TabsTrigger>
+              )}
+              {canBindAgents && (
+                <TabsTrigger value="agents">
+                  转发代理 ({agentsPagination.total})
+                </TabsTrigger>
+              )}
+              {canBindRules && (
+                <TabsTrigger value="rules">
+                  转发规则 ({rulesPagination.total})
+                </TabsTrigger>
+              )}
             </TabsList>
 
             <TabsContent value="info" className="space-y-4 py-2">
@@ -270,6 +340,19 @@ export const ResourceGroupDetailDialog: React.FC<ResourceGroupDetailDialogProps>
                     label="计划 ID"
                     value={resourceGroup.planId}
                   />
+                )}
+                {/* Resource binding rules hint */}
+                {planType && (
+                  <div className="flex items-start gap-2 mt-2 p-2 rounded-md bg-blue-50 dark:bg-blue-950/30 text-blue-700 dark:text-blue-300">
+                    <Info className="size-4 mt-0.5 flex-shrink-0" />
+                    <p className="text-xs">
+                      {planType === 'forward'
+                        ? '转发计划仅支持绑定转发代理'
+                        : planType === 'hybrid'
+                          ? '混合计划支持绑定节点和转发规则'
+                          : '节点计划支持绑定节点和转发规则'}
+                    </p>
+                  </div>
                 )}
               </div>
 
@@ -308,242 +391,376 @@ export const ResourceGroupDetailDialog: React.FC<ResourceGroupDetailDialogProps>
               <Separator />
               <div>
                 <h4 className="text-sm font-medium text-slate-900 dark:text-white mb-3">资源统计</h4>
-                <div className="grid grid-cols-2 gap-3">
-                  <div className="flex items-center gap-2 p-3 bg-muted rounded-lg">
-                    <Server className="size-4 text-blue-500" />
-                    <div>
-                      <p className="text-xs text-muted-foreground">关联节点</p>
-                      <p className="text-sm font-medium">{nodesPagination.total} 个</p>
+                <div className={`grid gap-3 ${canBindNodes && canBindRules ? 'grid-cols-2' : 'grid-cols-1'}`}>
+                  {canBindNodes && (
+                    <div className="flex items-center gap-2 p-3 bg-muted rounded-lg">
+                      <Server className="size-4 text-blue-500" />
+                      <div>
+                        <p className="text-xs text-muted-foreground">关联节点</p>
+                        <p className="text-sm font-medium">{nodesPagination.total} 个</p>
+                      </div>
                     </div>
-                  </div>
-                  <div className="flex items-center gap-2 p-3 bg-muted rounded-lg">
-                    <Cpu className="size-4 text-green-500" />
-                    <div>
-                      <p className="text-xs text-muted-foreground">转发代理</p>
-                      <p className="text-sm font-medium">{agentsPagination.total} 个</p>
+                  )}
+                  {canBindAgents && (
+                    <div className="flex items-center gap-2 p-3 bg-muted rounded-lg">
+                      <Cpu className="size-4 text-green-500" />
+                      <div>
+                        <p className="text-xs text-muted-foreground">转发代理</p>
+                        <p className="text-sm font-medium">{agentsPagination.total} 个</p>
+                      </div>
                     </div>
-                  </div>
+                  )}
+                  {canBindRules && (
+                    <div className="flex items-center gap-2 p-3 bg-muted rounded-lg">
+                      <ArrowRightLeft className="size-4 text-orange-500" />
+                      <div>
+                        <p className="text-xs text-muted-foreground">转发规则</p>
+                        <p className="text-sm font-medium">{rulesPagination.total} 个</p>
+                      </div>
+                    </div>
+                  )}
                 </div>
               </div>
             </TabsContent>
 
-            <TabsContent value="nodes" className="mt-4 space-y-3">
-              {/* Action bar */}
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  {nodes.length > 0 && (
-                    <>
-                      <Checkbox
-                        checked={selectedNodeIds.size === nodes.length && nodes.length > 0}
-                        onCheckedChange={handleToggleAllNodes}
-                      />
-                      <span className="text-sm text-muted-foreground">
-                        {selectedNodeIds.size > 0 ? `已选择 ${selectedNodeIds.size} 项` : '全选'}
-                      </span>
-                    </>
-                  )}
-                </div>
-                <div className="flex items-center gap-2">
-                  {selectedNodeIds.size > 0 && (
+            {canBindNodes && (
+              <TabsContent value="nodes" className="mt-4 space-y-3">
+                {/* Action bar */}
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    {nodes.length > 0 && (
+                      <>
+                        <Checkbox
+                          checked={selectedNodeIds.size === nodes.length && nodes.length > 0}
+                          onCheckedChange={handleToggleAllNodes}
+                        />
+                        <span className="text-sm text-muted-foreground">
+                          {selectedNodeIds.size > 0 ? `已选择 ${selectedNodeIds.size} 项` : '全选'}
+                        </span>
+                      </>
+                    )}
+                  </div>
+                  <div className="flex items-center gap-2">
+                    {selectedNodeIds.size > 0 && (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={handleRemoveSelectedNodes}
+                        disabled={isRemovingNodes}
+                      >
+                        {isRemovingNodes ? (
+                          <Loader2 className="size-4 animate-spin mr-1" />
+                        ) : (
+                          <Trash2 className="size-4 mr-1" />
+                        )}
+                        移除 ({selectedNodeIds.size})
+                      </Button>
+                    )}
                     <Button
                       variant="outline"
                       size="sm"
-                      onClick={handleRemoveSelectedNodes}
-                      disabled={isRemovingNodes}
+                      onClick={() => setAddNodesDialogOpen(true)}
                     >
-                      {isRemovingNodes ? (
-                        <Loader2 className="size-4 animate-spin mr-1" />
-                      ) : (
-                        <Trash2 className="size-4 mr-1" />
-                      )}
-                      移除 ({selectedNodeIds.size})
+                      <Plus className="size-4 mr-1" />
+                      添加节点
                     </Button>
-                  )}
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => setAddNodesDialogOpen(true)}
-                  >
-                    <Plus className="size-4 mr-1" />
-                    添加节点
-                  </Button>
+                  </div>
                 </div>
-              </div>
 
-              {/* Nodes list */}
-              {isLoadingNodes ? (
-                <div className="flex items-center justify-center py-8">
-                  <Loader2 className="size-6 animate-spin text-muted-foreground" />
-                </div>
-              ) : nodes.length === 0 ? (
-                <div className="flex flex-col items-center justify-center py-8 text-muted-foreground">
-                  <Server className="size-8 mb-2" />
-                  <p className="text-sm">暂无关联节点</p>
-                  <Button
-                    variant="link"
-                    size="sm"
-                    className="mt-2"
-                    onClick={() => setAddNodesDialogOpen(true)}
-                  >
-                    <Plus className="size-4 mr-1" />
-                    添加节点
-                  </Button>
-                </div>
-              ) : (
-                <div className="space-y-2 max-h-[300px] overflow-y-auto">
-                  {nodes.map((node) => (
-                    <label
-                      key={node.id}
-                      className={`flex items-center gap-3 p-3 rounded-lg cursor-pointer transition-colors ${
-                        selectedNodeIds.has(node.id)
-                          ? 'bg-primary/10'
-                          : 'bg-slate-50 dark:bg-slate-800/50 hover:bg-slate-100 dark:hover:bg-slate-800'
-                      }`}
+                {/* Nodes list */}
+                {isLoadingNodes ? (
+                  <div className="flex items-center justify-center py-8">
+                    <Loader2 className="size-6 animate-spin text-muted-foreground" />
+                  </div>
+                ) : nodes.length === 0 ? (
+                  <div className="flex flex-col items-center justify-center py-8 text-muted-foreground">
+                    <Server className="size-8 mb-2" />
+                    <p className="text-sm">暂无关联节点</p>
+                    <Button
+                      variant="link"
+                      size="sm"
+                      className="mt-2"
+                      onClick={() => setAddNodesDialogOpen(true)}
                     >
-                      <Checkbox
-                        checked={selectedNodeIds.has(node.id)}
-                        onCheckedChange={() => handleToggleNode(node.id)}
-                      />
-                      <Server className="size-4 text-muted-foreground flex-shrink-0" />
-                      <div className="flex-1 min-w-0">
-                        <p className="font-medium text-sm truncate">{node.name}</p>
-                        <p className="text-xs text-muted-foreground font-mono truncate">{node.id}</p>
-                      </div>
-                      <Badge variant={node.status === 'active' ? 'default' : 'secondary'}>
-                        {node.status === 'active' ? '激活' : '未激活'}
-                      </Badge>
-                    </label>
-                  ))}
-                  {nodesPagination.total > nodes.length && (
-                    <p className="text-xs text-muted-foreground text-center pt-2">
-                      显示前 {nodes.length} 个，共 {nodesPagination.total} 个节点
-                    </p>
-                  )}
-                </div>
-              )}
-            </TabsContent>
+                      <Plus className="size-4 mr-1" />
+                      添加节点
+                    </Button>
+                  </div>
+                ) : (
+                  <div className="space-y-2 max-h-[300px] overflow-y-auto">
+                    {nodes.map((node) => (
+                      <label
+                        key={node.id}
+                        className={`flex items-center gap-3 p-3 rounded-lg cursor-pointer transition-colors ${
+                          selectedNodeIds.has(node.id)
+                            ? 'bg-primary/10'
+                            : 'bg-slate-50 dark:bg-slate-800/50 hover:bg-slate-100 dark:hover:bg-slate-800'
+                        }`}
+                      >
+                        <Checkbox
+                          checked={selectedNodeIds.has(node.id)}
+                          onCheckedChange={() => handleToggleNode(node.id)}
+                        />
+                        <Server className="size-4 text-muted-foreground flex-shrink-0" />
+                        <div className="flex-1 min-w-0">
+                          <p className="font-medium text-sm truncate">{node.name}</p>
+                          <p className="text-xs text-muted-foreground font-mono truncate">{node.id}</p>
+                        </div>
+                        <Badge variant={node.status === 'active' ? 'default' : 'secondary'}>
+                          {node.status === 'active' ? '激活' : '未激活'}
+                        </Badge>
+                      </label>
+                    ))}
+                    {nodesPagination.total > nodes.length && (
+                      <p className="text-xs text-muted-foreground text-center pt-2">
+                        显示前 {nodes.length} 个，共 {nodesPagination.total} 个节点
+                      </p>
+                    )}
+                  </div>
+                )}
+              </TabsContent>
+            )}
 
-            <TabsContent value="agents" className="mt-4 space-y-3">
-              {/* Action bar */}
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  {forwardAgents.length > 0 && (
-                    <>
-                      <Checkbox
-                        checked={selectedAgentIds.size === forwardAgents.length && forwardAgents.length > 0}
-                        onCheckedChange={handleToggleAllAgents}
-                      />
-                      <span className="text-sm text-muted-foreground">
-                        {selectedAgentIds.size > 0 ? `已选择 ${selectedAgentIds.size} 项` : '全选'}
-                      </span>
-                    </>
-                  )}
-                </div>
-                <div className="flex items-center gap-2">
-                  {selectedAgentIds.size > 0 && (
+            {canBindAgents && (
+              <TabsContent value="agents" className="mt-4 space-y-3">
+                {/* Action bar */}
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    {forwardAgents.length > 0 && (
+                      <>
+                        <Checkbox
+                          checked={selectedAgentIds.size === forwardAgents.length && forwardAgents.length > 0}
+                          onCheckedChange={handleToggleAllAgents}
+                        />
+                        <span className="text-sm text-muted-foreground">
+                          {selectedAgentIds.size > 0 ? `已选择 ${selectedAgentIds.size} 项` : '全选'}
+                        </span>
+                      </>
+                    )}
+                  </div>
+                  <div className="flex items-center gap-2">
+                    {selectedAgentIds.size > 0 && (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={handleRemoveSelectedAgents}
+                        disabled={isRemovingAgents}
+                      >
+                        {isRemovingAgents ? (
+                          <Loader2 className="size-4 animate-spin mr-1" />
+                        ) : (
+                          <Trash2 className="size-4 mr-1" />
+                        )}
+                        移除 ({selectedAgentIds.size})
+                      </Button>
+                    )}
                     <Button
                       variant="outline"
                       size="sm"
-                      onClick={handleRemoveSelectedAgents}
-                      disabled={isRemovingAgents}
+                      onClick={() => setAddAgentsDialogOpen(true)}
                     >
-                      {isRemovingAgents ? (
-                        <Loader2 className="size-4 animate-spin mr-1" />
-                      ) : (
-                        <Trash2 className="size-4 mr-1" />
-                      )}
-                      移除 ({selectedAgentIds.size})
+                      <Plus className="size-4 mr-1" />
+                      添加转发代理
                     </Button>
-                  )}
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => setAddAgentsDialogOpen(true)}
-                  >
-                    <Plus className="size-4 mr-1" />
-                    添加转发代理
-                  </Button>
+                  </div>
                 </div>
-              </div>
 
-              {/* Forward agents list */}
-              {isLoadingAgents ? (
-                <div className="flex items-center justify-center py-8">
-                  <Loader2 className="size-6 animate-spin text-muted-foreground" />
-                </div>
-              ) : forwardAgents.length === 0 ? (
-                <div className="flex flex-col items-center justify-center py-8 text-muted-foreground">
-                  <Cpu className="size-8 mb-2" />
-                  <p className="text-sm">暂无关联转发代理</p>
-                  <Button
-                    variant="link"
-                    size="sm"
-                    className="mt-2"
-                    onClick={() => setAddAgentsDialogOpen(true)}
-                  >
-                    <Plus className="size-4 mr-1" />
-                    添加转发代理
-                  </Button>
-                </div>
-              ) : (
-                <div className="space-y-2 max-h-[300px] overflow-y-auto">
-                  {forwardAgents.map((agent) => (
-                    <label
-                      key={agent.id}
-                      className={`flex items-center gap-3 p-3 rounded-lg cursor-pointer transition-colors ${
-                        selectedAgentIds.has(agent.id)
-                          ? 'bg-primary/10'
-                          : 'bg-slate-50 dark:bg-slate-800/50 hover:bg-slate-100 dark:hover:bg-slate-800'
-                      }`}
+                {/* Forward agents list */}
+                {isLoadingAgents ? (
+                  <div className="flex items-center justify-center py-8">
+                    <Loader2 className="size-6 animate-spin text-muted-foreground" />
+                  </div>
+                ) : forwardAgents.length === 0 ? (
+                  <div className="flex flex-col items-center justify-center py-8 text-muted-foreground">
+                    <Cpu className="size-8 mb-2" />
+                    <p className="text-sm">暂无关联转发代理</p>
+                    <Button
+                      variant="link"
+                      size="sm"
+                      className="mt-2"
+                      onClick={() => setAddAgentsDialogOpen(true)}
                     >
-                      <Checkbox
-                        checked={selectedAgentIds.has(agent.id)}
-                        onCheckedChange={() => handleToggleAgent(agent.id)}
-                      />
-                      <Cpu className="size-4 text-muted-foreground flex-shrink-0" />
-                      <div className="flex-1 min-w-0">
-                        <p className="font-medium text-sm truncate">{agent.name}</p>
-                        <p className="text-xs text-muted-foreground font-mono truncate">{agent.id}</p>
-                      </div>
-                      <Badge variant={agent.status === 'enabled' ? 'default' : 'secondary'}>
-                        {agent.status === 'enabled' ? '启用' : '禁用'}
-                      </Badge>
-                    </label>
-                  ))}
-                  {agentsPagination.total > forwardAgents.length && (
-                    <p className="text-xs text-muted-foreground text-center pt-2">
-                      显示前 {forwardAgents.length} 个，共 {agentsPagination.total} 个转发代理
-                    </p>
-                  )}
+                      <Plus className="size-4 mr-1" />
+                      添加转发代理
+                    </Button>
+                  </div>
+                ) : (
+                  <div className="space-y-2 max-h-[300px] overflow-y-auto">
+                    {forwardAgents.map((agent) => (
+                      <label
+                        key={agent.id}
+                        className={`flex items-center gap-3 p-3 rounded-lg cursor-pointer transition-colors ${
+                          selectedAgentIds.has(agent.id)
+                            ? 'bg-primary/10'
+                            : 'bg-slate-50 dark:bg-slate-800/50 hover:bg-slate-100 dark:hover:bg-slate-800'
+                        }`}
+                      >
+                        <Checkbox
+                          checked={selectedAgentIds.has(agent.id)}
+                          onCheckedChange={() => handleToggleAgent(agent.id)}
+                        />
+                        <Cpu className="size-4 text-muted-foreground flex-shrink-0" />
+                        <div className="flex-1 min-w-0">
+                          <p className="font-medium text-sm truncate">{agent.name}</p>
+                          <p className="text-xs text-muted-foreground font-mono truncate">{agent.id}</p>
+                        </div>
+                        <Badge variant={agent.status === 'enabled' ? 'default' : 'secondary'}>
+                          {agent.status === 'enabled' ? '启用' : '禁用'}
+                        </Badge>
+                      </label>
+                    ))}
+                    {agentsPagination.total > forwardAgents.length && (
+                      <p className="text-xs text-muted-foreground text-center pt-2">
+                        显示前 {forwardAgents.length} 个，共 {agentsPagination.total} 个转发代理
+                      </p>
+                    )}
+                  </div>
+                )}
+              </TabsContent>
+            )}
+
+            {canBindRules && (
+              <TabsContent value="rules" className="mt-4 space-y-3">
+                {/* Action bar */}
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    {forwardRules.length > 0 && (
+                      <>
+                        <Checkbox
+                          checked={selectedRuleIds.size === forwardRules.length && forwardRules.length > 0}
+                          onCheckedChange={handleToggleAllRules}
+                        />
+                        <span className="text-sm text-muted-foreground">
+                          {selectedRuleIds.size > 0 ? `已选择 ${selectedRuleIds.size} 项` : '全选'}
+                        </span>
+                      </>
+                    )}
+                  </div>
+                  <div className="flex items-center gap-2">
+                    {selectedRuleIds.size > 0 && (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={handleRemoveSelectedRules}
+                        disabled={isRemovingRules}
+                      >
+                        {isRemovingRules ? (
+                          <Loader2 className="size-4 animate-spin mr-1" />
+                        ) : (
+                          <Trash2 className="size-4 mr-1" />
+                        )}
+                        移除 ({selectedRuleIds.size})
+                      </Button>
+                    )}
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setAddRulesDialogOpen(true)}
+                    >
+                      <Plus className="size-4 mr-1" />
+                      添加转发规则
+                    </Button>
+                  </div>
                 </div>
-              )}
-            </TabsContent>
+
+                {/* Forward rules list */}
+                {isLoadingRules ? (
+                  <div className="flex items-center justify-center py-8">
+                    <Loader2 className="size-6 animate-spin text-muted-foreground" />
+                  </div>
+                ) : forwardRules.length === 0 ? (
+                  <div className="flex flex-col items-center justify-center py-8 text-muted-foreground">
+                    <ArrowRightLeft className="size-8 mb-2" />
+                    <p className="text-sm">暂无关联转发规则</p>
+                    <Button
+                      variant="link"
+                      size="sm"
+                      className="mt-2"
+                      onClick={() => setAddRulesDialogOpen(true)}
+                    >
+                      <Plus className="size-4 mr-1" />
+                      添加转发规则
+                    </Button>
+                  </div>
+                ) : (
+                  <div className="space-y-2 max-h-[300px] overflow-y-auto">
+                    {forwardRules.map((rule) => (
+                      <label
+                        key={rule.id}
+                        className={`flex items-center gap-3 p-3 rounded-lg cursor-pointer transition-colors ${
+                          selectedRuleIds.has(rule.id)
+                            ? 'bg-primary/10'
+                            : 'bg-slate-50 dark:bg-slate-800/50 hover:bg-slate-100 dark:hover:bg-slate-800'
+                        }`}
+                      >
+                        <Checkbox
+                          checked={selectedRuleIds.has(rule.id)}
+                          onCheckedChange={() => handleToggleRule(rule.id)}
+                        />
+                        <ArrowRightLeft className="size-4 text-muted-foreground flex-shrink-0" />
+                        <div className="flex-1 min-w-0">
+                          <p className="font-medium text-sm truncate">{rule.name}</p>
+                          <p className="text-xs text-muted-foreground font-mono truncate">
+                            {rule.protocol.toUpperCase()}:{rule.listenPort} · {rule.id}
+                          </p>
+                        </div>
+                        <Badge variant={rule.status === 'enabled' ? 'default' : 'secondary'}>
+                          {rule.status === 'enabled' ? '启用' : '停用'}
+                        </Badge>
+                      </label>
+                    ))}
+                    {rulesPagination.total > forwardRules.length && (
+                      <p className="text-xs text-muted-foreground text-center pt-2">
+                        显示前 {forwardRules.length} 个，共 {rulesPagination.total} 个转发规则
+                      </p>
+                    )}
+                  </div>
+                )}
+              </TabsContent>
+            )}
           </Tabs>
           </div>
         </DialogContent>
       </Dialog>
 
       {/* Add nodes dialog */}
-      <AddMembersDialog
-        open={addNodesDialogOpen}
-        type="nodes"
-        groupName={resourceGroup.name}
-        existingMemberIds={nodes.map((n) => n.id)}
-        onClose={() => setAddNodesDialogOpen(false)}
-        onSubmit={handleAddNodes}
-        isSubmitting={isAddingNodes}
-      />
+      {canBindNodes && (
+        <AddMembersDialog
+          open={addNodesDialogOpen}
+          type="nodes"
+          groupName={resourceGroup.name}
+          existingMemberIds={nodes.map((n) => n.id)}
+          onClose={() => setAddNodesDialogOpen(false)}
+          onSubmit={handleAddNodes}
+          isSubmitting={isAddingNodes}
+        />
+      )}
 
       {/* Add forward agents dialog */}
-      <AddMembersDialog
-        open={addAgentsDialogOpen}
-        type="agents"
-        groupName={resourceGroup.name}
-        existingMemberIds={forwardAgents.map((a) => a.id)}
-        onClose={() => setAddAgentsDialogOpen(false)}
-        onSubmit={handleAddAgents}
-        isSubmitting={isAddingAgents}
-      />
+      {canBindAgents && (
+        <AddMembersDialog
+          open={addAgentsDialogOpen}
+          type="agents"
+          groupName={resourceGroup.name}
+          existingMemberIds={forwardAgents.map((a) => a.id)}
+          onClose={() => setAddAgentsDialogOpen(false)}
+          onSubmit={handleAddAgents}
+          isSubmitting={isAddingAgents}
+        />
+      )}
+
+      {/* Add forward rules dialog */}
+      {canBindRules && (
+        <AddMembersDialog
+          open={addRulesDialogOpen}
+          type="rules"
+          groupName={resourceGroup.name}
+          existingMemberIds={forwardRules.map((r) => r.id)}
+          onClose={() => setAddRulesDialogOpen(false)}
+          onSubmit={handleAddRules}
+          isSubmitting={isAddingRules}
+        />
+      )}
     </>
   );
 };

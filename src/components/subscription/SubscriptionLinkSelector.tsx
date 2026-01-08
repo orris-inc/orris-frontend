@@ -219,7 +219,7 @@ const LinkRow: React.FC<{
     >
       {url}
     </span>
-    <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-150">
+    <div className="md:opacity-0 md:group-hover:opacity-100 transition-opacity duration-150">
       <CopyButton text={url} />
     </div>
   </div>

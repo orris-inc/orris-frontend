@@ -54,6 +54,10 @@ export const ResetPasswordDialog: React.FC<ResetPasswordDialogProps> = ({
       newErrors.password = `密码长度至少 ${PASSWORD_MIN_LENGTH} 个字符`;
     } else if (password.length > PASSWORD_MAX_LENGTH) {
       newErrors.password = `密码长度不能超过 ${PASSWORD_MAX_LENGTH} 个字符`;
+    } else if (!/[a-zA-Z]/.test(password)) {
+      newErrors.password = '密码必须包含至少一个字母';
+    } else if (!/\d/.test(password)) {
+      newErrors.password = '密码必须包含至少一个数字';
     }
 
     if (!confirmPassword) {
@@ -129,7 +133,7 @@ export const ResetPasswordDialog: React.FC<ResetPasswordDialogProps> = ({
                 <span className="text-sm text-destructive">{errors.password}</span>
               ) : (
                 <span className="text-sm text-muted-foreground">
-                  长度 {PASSWORD_MIN_LENGTH}-{PASSWORD_MAX_LENGTH} 个字符
+                  {PASSWORD_MIN_LENGTH}-{PASSWORD_MAX_LENGTH} 个字符，必须包含字母和数字
                 </span>
               )}
             </div>

@@ -32,6 +32,9 @@ import {
   EditResourceGroupDialog,
   ResourceGroupDetailDialog,
   DeleteResourceGroupDialog,
+  CreateResourceGroupSheet,
+  EditResourceGroupSheet,
+  DeleteResourceGroupSheet,
 } from '@/features/resource-groups/components';
 import { useResourceGroupsPage } from '@/features/resource-groups/hooks/useResourceGroups';
 import type { ResourceGroup, CreateResourceGroupRequest, UpdateResourceGroupRequest } from '@/api/resource/types';
@@ -258,25 +261,47 @@ export const ResourceGroupManagementPage = () => {
         )}
       </div>
 
-      {/* Create Resource Group Dialog */}
-      <CreateResourceGroupDialog
-        open={createDialogOpen}
-        plans={plans}
-        onClose={() => setCreateDialogOpen(false)}
-        onSubmit={handleCreateSubmit}
-      />
+      {/* Create Resource Group Dialog/Sheet */}
+      {isMobile ? (
+        <CreateResourceGroupSheet
+          open={createDialogOpen}
+          plans={plans}
+          onClose={() => setCreateDialogOpen(false)}
+          onSubmit={handleCreateSubmit}
+        />
+      ) : (
+        <CreateResourceGroupDialog
+          open={createDialogOpen}
+          plans={plans}
+          onClose={() => setCreateDialogOpen(false)}
+          onSubmit={handleCreateSubmit}
+        />
+      )}
 
-      {/* Edit Resource Group Dialog */}
-      <EditResourceGroupDialog
-        open={editDialogOpen}
-        resourceGroup={selectedResourceGroup}
-        plansMap={plansMap}
-        onClose={() => {
-          setEditDialogOpen(false);
-          setSelectedResourceGroup(null);
-        }}
-        onSubmit={handleUpdateSubmit}
-      />
+      {/* Edit Resource Group Dialog/Sheet */}
+      {isMobile ? (
+        <EditResourceGroupSheet
+          open={editDialogOpen}
+          resourceGroup={selectedResourceGroup}
+          plansMap={plansMap}
+          onClose={() => {
+            setEditDialogOpen(false);
+            setSelectedResourceGroup(null);
+          }}
+          onSubmit={handleUpdateSubmit}
+        />
+      ) : (
+        <EditResourceGroupDialog
+          open={editDialogOpen}
+          resourceGroup={selectedResourceGroup}
+          plansMap={plansMap}
+          onClose={() => {
+            setEditDialogOpen(false);
+            setSelectedResourceGroup(null);
+          }}
+          onSubmit={handleUpdateSubmit}
+        />
+      )}
 
       {/* Resource Group Detail Dialog */}
       <ResourceGroupDetailDialog
@@ -289,16 +314,28 @@ export const ResourceGroupManagementPage = () => {
         }}
       />
 
-      {/* Delete Confirmation Dialog */}
-      <DeleteResourceGroupDialog
-        open={deleteDialogOpen}
-        resourceGroup={selectedResourceGroup}
-        onClose={() => {
-          setDeleteDialogOpen(false);
-          setSelectedResourceGroup(null);
-        }}
-        onConfirm={handleDeleteConfirm}
-      />
+      {/* Delete Confirmation Dialog/Sheet */}
+      {isMobile ? (
+        <DeleteResourceGroupSheet
+          open={deleteDialogOpen}
+          resourceGroup={selectedResourceGroup}
+          onClose={() => {
+            setDeleteDialogOpen(false);
+            setSelectedResourceGroup(null);
+          }}
+          onConfirm={handleDeleteConfirm}
+        />
+      ) : (
+        <DeleteResourceGroupDialog
+          open={deleteDialogOpen}
+          resourceGroup={selectedResourceGroup}
+          onClose={() => {
+            setDeleteDialogOpen(false);
+            setSelectedResourceGroup(null);
+          }}
+          onConfirm={handleDeleteConfirm}
+        />
+      )}
     </AdminLayout>
   );
 };

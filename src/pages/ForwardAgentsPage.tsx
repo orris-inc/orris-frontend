@@ -35,6 +35,9 @@ import { ForwardAgentListTable } from '@/features/forward-agents/components/Forw
 import { ForwardAgentFiltersComponent } from '@/features/forward-agents/components/ForwardAgentFilters';
 import { EditForwardAgentDialog } from '@/features/forward-agents/components/EditForwardAgentDialog';
 import { CreateForwardAgentDialog } from '@/features/forward-agents/components/CreateForwardAgentDialog';
+import { CreateForwardAgentSheet } from '@/features/forward-agents/components/CreateForwardAgentSheet';
+import { EditForwardAgentSheet } from '@/features/forward-agents/components/EditForwardAgentSheet';
+import { DeleteForwardAgentSheet } from '@/features/forward-agents/components/DeleteForwardAgentSheet';
 import { ForwardAgentDetailDialog } from '@/features/forward-agents/components/ForwardAgentDetailDialog';
 import { InstallScriptDialog } from '@/features/forward-agents/components/InstallScriptDialog';
 import { AgentBatchUpdateDialog } from '@/features/forward-agents/components/AgentBatchUpdateDialog';
@@ -108,6 +111,8 @@ export const ForwardAgentsPage = () => {
   const [checkingAgentId, setCheckingAgentId] = useState<string | number | null>(null);
   const [refreshKey, setRefreshKey] = useState(0);
   const [dragSortEnabled, setDragSortEnabled] = useState(false);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [agentToDelete, setAgentToDelete] = useState<ForwardAgent | null>(null);
 
   // Calculate agent statistics
   const agentStats = useMemo(() => {
@@ -173,9 +178,18 @@ export const ForwardAgentsPage = () => {
   };
 
   const handleDelete = async (agent: ForwardAgent) => {
-    if (window.confirm(`确认删除转发节点 "${agent.name}" 吗？此操作不可恢复。`)) {
-      await deleteForwardAgent(agent.id);
+    if (isMobile) {
+      setAgentToDelete(agent);
+      setDeleteDialogOpen(true);
+    } else {
+      if (window.confirm(`确认删除转发节点 "${agent.name}" 吗？此操作不可恢复。`)) {
+        await deleteForwardAgent(agent.id);
+      }
     }
+  };
+
+  const handleDeleteConfirm = async (agent: ForwardAgent) => {
+    await deleteForwardAgent(agent.id);
   };
 
   const handleEnable = async (agent: ForwardAgent) => {
@@ -501,27 +515,51 @@ export const ForwardAgentsPage = () => {
         )}
       </div>
 
-      {/* Create Forward Agent Dialog */}
-      <CreateForwardAgentDialog
-        open={createDialogOpen}
-        onClose={() => {
-          setCreateDialogOpen(false);
-          setCopyAgentData(undefined);
-        }}
-        onSubmit={handleCreateSubmit}
-        initialData={copyAgentData}
-      />
+      {/* Create Forward Agent Dialog/Sheet */}
+      {isMobile ? (
+        <CreateForwardAgentSheet
+          open={createDialogOpen}
+          onClose={() => {
+            setCreateDialogOpen(false);
+            setCopyAgentData(undefined);
+          }}
+          onSubmit={handleCreateSubmit}
+          initialData={copyAgentData}
+        />
+      ) : (
+        <CreateForwardAgentDialog
+          open={createDialogOpen}
+          onClose={() => {
+            setCreateDialogOpen(false);
+            setCopyAgentData(undefined);
+          }}
+          onSubmit={handleCreateSubmit}
+          initialData={copyAgentData}
+        />
+      )}
 
-      {/* Edit Forward Agent Dialog */}
-      <EditForwardAgentDialog
-        open={editDialogOpen}
-        agent={selectedAgent}
-        onClose={() => {
-          setEditDialogOpen(false);
-          setSelectedAgent(null);
-        }}
-        onSubmit={handleUpdateSubmit}
-      />
+      {/* Edit Forward Agent Dialog/Sheet */}
+      {isMobile ? (
+        <EditForwardAgentSheet
+          open={editDialogOpen}
+          agent={selectedAgent}
+          onClose={() => {
+            setEditDialogOpen(false);
+            setSelectedAgent(null);
+          }}
+          onSubmit={handleUpdateSubmit}
+        />
+      ) : (
+        <EditForwardAgentDialog
+          open={editDialogOpen}
+          agent={selectedAgent}
+          onClose={() => {
+            setEditDialogOpen(false);
+            setSelectedAgent(null);
+          }}
+          onSubmit={handleUpdateSubmit}
+        />
+      )}
 
       {/* Forward Agent Detail Dialog */}
       <ForwardAgentDetailDialog
@@ -607,6 +645,17 @@ export const ForwardAgentsPage = () => {
         } : null}
         onNotifySingle={handleNotifyAgentURL}
         isNotifying={notifyAgentURLMutation.isPending}
+      />
+
+      {/* Delete Forward Agent Confirmation Sheet (Mobile only) */}
+      <DeleteForwardAgentSheet
+        open={deleteDialogOpen}
+        agent={agentToDelete}
+        onClose={() => {
+          setDeleteDialogOpen(false);
+          setAgentToDelete(null);
+        }}
+        onConfirm={handleDeleteConfirm}
       />
     </AdminLayout>
   );

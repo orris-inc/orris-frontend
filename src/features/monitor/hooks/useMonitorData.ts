@@ -112,6 +112,8 @@ export interface MonitorOverview {
   avgDisk: number;
   totalNetworkRxRate: number;
   totalNetworkTxRate: number;
+  totalNetworkRxBytes: number;
+  totalNetworkTxBytes: number;
 }
 
 interface UseMonitorDataOptions {
@@ -442,6 +444,8 @@ export function useMonitorData(options: UseMonitorDataOptions = {}) {
     const avgDisk = allOnlineStatuses.reduce((sum, s) => sum + (s?.diskPercent ?? 0), 0) / totalCount;
     const totalNetworkRxRate = allOnlineStatuses.reduce((sum, s) => sum + (s?.networkRxRate ?? 0), 0);
     const totalNetworkTxRate = allOnlineStatuses.reduce((sum, s) => sum + (s?.networkTxRate ?? 0), 0);
+    const totalNetworkRxBytes = allOnlineStatuses.reduce((sum, s) => sum + (s?.networkRxBytes ?? 0), 0);
+    const totalNetworkTxBytes = allOnlineStatuses.reduce((sum, s) => sum + (s?.networkTxBytes ?? 0), 0);
 
     return {
       totalNodes: allNodeStatuses.length,
@@ -453,6 +457,8 @@ export function useMonitorData(options: UseMonitorDataOptions = {}) {
       avgDisk,
       totalNetworkRxRate,
       totalNetworkTxRate,
+      totalNetworkRxBytes,
+      totalNetworkTxBytes,
     };
   }, [nodeStatuses, agentStatuses]);
 

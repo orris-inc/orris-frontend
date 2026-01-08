@@ -4,7 +4,7 @@
  */
 
 import { useState, useMemo } from 'react';
-import { Search, Server, Cpu, Loader2, Check, Users } from 'lucide-react';
+import { Search, Server, Cpu, Loader2, Check, Users, ArrowRightLeft } from 'lucide-react';
 import {
   Dialog,
   DialogContent,
@@ -21,8 +21,9 @@ import { Separator } from '@/components/common/Separator';
 import { ScrollArea } from '@/components/common/ScrollArea';
 import { useNodes } from '@/features/nodes/hooks/useNodes';
 import { useForwardAgents } from '@/features/forward-agents/hooks/useForwardAgents';
+import { useForwardRules } from '@/features/forward-rules/hooks/useForwardRules';
 
-type MemberType = 'nodes' | 'agents';
+type MemberType = 'nodes' | 'agents' | 'rules';
 
 interface AddMembersDialogProps {
   open: boolean;
@@ -60,11 +61,19 @@ export const AddMembersDialog: React.FC<AddMembersDialogProps> = ({
     enabled: open && type === 'agents',
   });
 
-  const isLoading = type === 'nodes' ? isLoadingNodes : isLoadingAgents;
+  // Get forward rule list
+  const { forwardRules, isLoading: isLoadingRules } = useForwardRules({
+    page: 1,
+    pageSize: 200,
+    filters: { orderBy: 'sort_order', order: 'asc' },
+    enabled: open && type === 'rules',
+  });
+
+  const isLoading = type === 'nodes' ? isLoadingNodes : type === 'agents' ? isLoadingAgents : isLoadingRules;
 
   // Filter out members not yet in current resource group
   const availableItems = useMemo(() => {
-    const items = type === 'nodes' ? nodes : forwardAgents;
+    const items = type === 'nodes' ? nodes : type === 'agents' ? forwardAgents : forwardRules;
     const existingSet = new Set(existingMemberIds);
 
     return items
@@ -73,7 +82,7 @@ export const AddMembersDialog: React.FC<AddMembersDialogProps> = ({
         item.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
         item.id.toLowerCase().includes(searchQuery.toLowerCase())
       );
-  }, [type, nodes, forwardAgents, existingMemberIds, searchQuery]);
+  }, [type, nodes, forwardAgents, forwardRules, existingMemberIds, searchQuery]);
 
   const handleToggle = (id: string) => {
     setSelectedIds((prev) => {
@@ -108,13 +117,13 @@ export const AddMembersDialog: React.FC<AddMembersDialogProps> = ({
     onClose();
   };
 
-  const Icon = type === 'nodes' ? Server : Cpu;
-  const title = type === 'nodes' ? '添加节点' : '添加转发代理';
-  const memberLabel = type === 'nodes' ? '节点' : '转发代理';
-  const emptyText = type === 'nodes' ? '暂无可添加的节点' : '暂无可添加的转发代理';
+  const Icon = type === 'nodes' ? Server : type === 'agents' ? Cpu : ArrowRightLeft;
+  const title = type === 'nodes' ? '添加节点' : type === 'agents' ? '添加转发代理' : '添加转发规则';
+  const memberLabel = type === 'nodes' ? '节点' : type === 'agents' ? '转发代理' : '转发规则';
+  const emptyText = type === 'nodes' ? '暂无可添加的节点' : type === 'agents' ? '暂无可添加的转发代理' : '暂无可添加的转发规则';
 
   // Statistics
-  const totalItems = type === 'nodes' ? nodes.length : forwardAgents.length;
+  const totalItems = type === 'nodes' ? nodes.length : type === 'agents' ? forwardAgents.length : forwardRules.length;
   const existingCount = existingMemberIds.length;
 
   return (
@@ -190,7 +199,7 @@ export const AddMembersDialog: React.FC<AddMembersDialogProps> = ({
           )}
 
           {/* 列表 */}
-          <div className="flex-1 min-h-[200px] max-h-[350px] border rounded-lg overflow-hidden">
+          <div className="flex-1 min-h-[200px] border rounded-lg overflow-hidden">
             {isLoading ? (
               <div className="flex items-center justify-center py-12">
                 <Loader2 className="size-6 animate-spin text-muted-foreground" />
@@ -204,7 +213,7 @@ export const AddMembersDialog: React.FC<AddMembersDialogProps> = ({
                 )}
               </div>
             ) : (
-              <ScrollArea className="h-full">
+              <ScrollArea className="h-[350px]">
                 <div className="divide-y">
                   {availableItems.map((item) => {
                     const isSelected = selectedIds.has(item.id);
@@ -232,7 +241,7 @@ export const AddMembersDialog: React.FC<AddMembersDialogProps> = ({
                           </p>
                         </div>
                         <Badge variant={isActive ? 'default' : 'secondary'} className="flex-shrink-0">
-                          {isActive ? (type === 'nodes' ? '激活' : '启用') : (type === 'nodes' ? '未激活' : '禁用')}
+                          {isActive ? (type === 'nodes' ? '激活' : '启用') : (type === 'nodes' ? '未激活' : '停用')}
                         </Badge>
                       </label>
                     );

@@ -3,7 +3,7 @@
  * Supports targetNodeId (dynamic node address resolution)
  */
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import {
   Dialog,
   DialogContent,
@@ -30,7 +30,9 @@ import {
   AccordionContent,
 } from "@/components/common/Accordion";
 import { Badge } from "@/components/common/Badge";
-import { Info } from "lucide-react";
+import { Checkbox } from "@/components/common/Checkbox";
+import { ScrollArea } from "@/components/common/ScrollArea";
+import { Info, FolderTree } from "lucide-react";
 import { SortableChainAgentList } from "./SortableChainAgentList";
 import type {
   ForwardRule,
@@ -40,6 +42,8 @@ import type {
   TunnelType,
 } from "@/api/forward";
 import type { Node } from "@/api/node";
+import type { ResourceGroup } from "@/api/resource/types";
+import type { SubscriptionPlan } from "@/api/subscription/types";
 
 type ForwardProtocol = "tcp" | "udp" | "both";
 type TargetType = "manual" | "node";
@@ -93,6 +97,10 @@ interface EditForwardRuleDialogProps {
   onSubmit: (id: number | string, data: UpdateForwardRuleRequest) => void;
   nodes?: Node[];
   agents?: ForwardAgent[];
+  /** Resource groups for binding (only node/hybrid plan groups can bind rules) */
+  resourceGroups?: ResourceGroup[];
+  /** Subscription plans map for filtering resource groups by plan type */
+  plansMap?: Record<string, SubscriptionPlan>;
 }
 
 export const EditForwardRuleDialog: React.FC<EditForwardRuleDialogProps> = ({
@@ -102,6 +110,8 @@ export const EditForwardRuleDialog: React.FC<EditForwardRuleDialogProps> = ({
   onSubmit,
   nodes = [],
   agents = [],
+  resourceGroups = [],
+  plansMap = {},
 }) => {
   const [formData, setFormData] = useState<
     UpdateForwardRuleRequest & {
@@ -111,6 +121,7 @@ export const EditForwardRuleDialog: React.FC<EditForwardRuleDialogProps> = ({
       sortOrder?: number;
       tunnelType?: TunnelType;
       tunnelHops?: number;
+      groupSids?: string[];
     }
   >({});
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -146,6 +157,7 @@ export const EditForwardRuleDialog: React.FC<EditForwardRuleDialogProps> = ({
         sortOrder: rule.sortOrder,
         tunnelType: rule.tunnelType,
         tunnelHops: rule.tunnelHops,
+        groupSids: rule.groupSids || [],
       });
       // Determine target type based on rule data
       setTargetType(rule.targetNodeId ? "node" : "manual");
@@ -176,6 +188,29 @@ export const EditForwardRuleDialog: React.FC<EditForwardRuleDialogProps> = ({
   const availableChainAgents = availableAgents.filter(
     (a) => a.id !== formData.agentId,
   );
+
+  // Get available resource groups (only node/hybrid plan groups can bind forward rules)
+  const availableResourceGroups = useMemo(() => {
+    return resourceGroups.filter((group) => {
+      const plan = plansMap[group.planId];
+      // Only active groups with node or hybrid plan type can bind forward rules
+      return group.status === "active" && plan && (plan.planType === "node" || plan.planType === "hybrid");
+    });
+  }, [resourceGroups, plansMap]);
+
+  // Handle resource group selection toggle
+  const handleGroupToggle = (groupSid: string) => {
+    setFormData((prev) => {
+      const currentGroups = prev.groupSids || [];
+      const isSelected = currentGroups.includes(groupSid);
+      return {
+        ...prev,
+        groupSids: isSelected
+          ? currentGroups.filter((sid) => sid !== groupSid)
+          : [...currentGroups, groupSid],
+      };
+    });
+  };
 
   // Handle chain node port configuration change
   const handleChainPortChange = (agentId: string, port: number) => {
@@ -441,6 +476,17 @@ export const EditForwardRuleDialog: React.FC<EditForwardRuleDialogProps> = ({
         formData.sortOrder !== undefined
       ) {
         updates.sortOrder = formData.sortOrder;
+      }
+
+      // Handle resource groups - compare arrays
+      const currentGroups = formData.groupSids || [];
+      const originalGroups = rule.groupSids || [];
+      const hasGroupsChange =
+        currentGroups.length !== originalGroups.length ||
+        currentGroups.some((sid) => !originalGroups.includes(sid)) ||
+        originalGroups.some((sid) => !currentGroups.includes(sid));
+      if (hasGroupsChange) {
+        updates.groupSids = currentGroups;
       }
 
       // Submit update if there are any changes
@@ -1051,6 +1097,62 @@ export const EditForwardRuleDialog: React.FC<EditForwardRuleDialogProps> = ({
                       className="resize-none"
                     />
                   </div>
+
+                  {/* Resource Groups Selection */}
+                  {availableResourceGroups.length > 0 && (
+                    <div className="flex flex-col gap-2 sm:col-span-2">
+                      <Label className="flex items-center gap-1.5">
+                        <FolderTree className="size-4" />
+                        绑定资源组
+                      </Label>
+                      <p className="text-xs text-muted-foreground">
+                        选择要绑定的资源组，规则将自动添加到订阅内容中
+                      </p>
+                      <div className="border rounded-lg overflow-hidden">
+                        <ScrollArea className="h-[120px]">
+                          <div className="divide-y">
+                            {availableResourceGroups.map((group) => {
+                              const plan = plansMap[group.planId];
+                              const isSelected = formData.groupSids?.includes(group.sid) ?? false;
+                              return (
+                                <label
+                                  key={group.sid}
+                                  className={`flex items-center gap-3 px-3 py-2 cursor-pointer transition-colors ${
+                                    isSelected
+                                      ? "bg-primary/10"
+                                      : "hover:bg-muted/50"
+                                  }`}
+                                >
+                                  <Checkbox
+                                    checked={isSelected}
+                                    onCheckedChange={() => handleGroupToggle(group.sid)}
+                                  />
+                                  <div className="flex-1 min-w-0">
+                                    <p className="text-sm font-medium truncate">{group.name}</p>
+                                    {plan && (
+                                      <p className="text-xs text-muted-foreground truncate">
+                                        {plan.name}
+                                      </p>
+                                    )}
+                                  </div>
+                                  {plan && (
+                                    <Badge variant="outline" className="text-[10px] flex-shrink-0">
+                                      {plan.planType === "node" ? "节点" : "混合"}
+                                    </Badge>
+                                  )}
+                                </label>
+                              );
+                            })}
+                          </div>
+                        </ScrollArea>
+                      </div>
+                      {formData.groupSids && formData.groupSids.length > 0 && (
+                        <p className="text-xs text-muted-foreground">
+                          已选择 {formData.groupSids.length} 个资源组
+                        </p>
+                      )}
+                    </div>
+                  )}
                 </div>
               </AccordionContent>
             </AccordionItem>

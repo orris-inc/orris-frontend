@@ -13,37 +13,32 @@ export type { UserResponse as User } from '@/api/user';
 export type { UserResponse as UserListItem } from '@/api/user';
 
 /**
- * Frontend create user form request (includes password field)
- * Note: Backend CreateUserRequest doesn't include password, but frontend form needs it
- */
-export interface CreateUserFormData {
-  email: string;
-  name: string;
-  password: string;
-}
-
-/**
- * User status enum
- * Updated 2025-12-19: Removed 'deleted' status
+ * User account status
+ * Matches UpdateUserRequest.status in @/api/user
  */
 export type UserStatus =
-  | 'active'      // Active
-  | 'inactive'    // Inactive
-  | 'pending'     // Pending
-  | 'suspended';  // Suspended
+  | 'active'      // Account is active and usable
+  | 'inactive'    // Account is inactive
+  | 'pending'     // Account is pending verification
+  | 'suspended';  // Account is suspended by admin
 
 /**
- * User role enum
+ * User role
+ * Matches UpdateUserRequest.role in @/api/user
  */
 export type UserRole =
   | 'user'        // Regular user
-  | 'admin';      // Administrator
+  | 'admin';      // Administrator with full access
 
 /**
  * User filter conditions (frontend use)
+ * Used for filtering user list in the UI
  */
 export interface UserFilters {
-  status?: UserStatus;          // Status filter
-  role?: UserRole;              // Role filter
-  search?: string;              // Frontend local search (by email/name)
+  /** Filter by account status */
+  status?: UserStatus;
+  /** Filter by user role */
+  role?: UserRole;
+  /** Frontend local search (by email/name) */
+  search?: string;
 }

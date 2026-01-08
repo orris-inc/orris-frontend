@@ -20,13 +20,17 @@ export const updateProfileSchema = z.object({
 
 /**
  * Change password validation schema
+ * Password requirements: 8-72 characters, must contain at least one letter and one number
  */
 export const changePasswordSchema = z
   .object({
     oldPassword: z.string().min(1, '请输入当前密码'),
     newPassword: z
       .string()
-      .min(8, '新密码至少需要8个字符'),
+      .min(8, '新密码至少需要8个字符')
+      .max(72, '新密码不能超过72个字符')
+      .regex(/[a-zA-Z]/, '密码必须包含至少一个字母')
+      .regex(/\d/, '密码必须包含至少一个数字'),
     confirmPassword: z.string().min(1, '请确认新密码'),
     logoutAllDevices: z.boolean().optional(),
   })

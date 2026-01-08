@@ -29,8 +29,13 @@ import { useNotificationStore } from '@/shared/stores/notification-store';
 import { UserListTable } from '@/features/users/components/UserListTable';
 import { EditUserDialog } from '@/features/users/components/EditUserDialog';
 import { CreateUserDialog } from '@/features/users/components/CreateUserDialog';
+import { CreateUserSheet } from '@/features/users/components/CreateUserSheet';
+import { EditUserSheet } from '@/features/users/components/EditUserSheet';
 import { ResetPasswordDialog } from '@/features/users/components/ResetPasswordDialog';
+import { ResetPasswordSheet } from '@/features/users/components/ResetPasswordSheet';
+import { DeleteUserSheet } from '@/features/users/components/DeleteUserSheet';
 import { AssignSubscriptionDialog } from '@/features/subscriptions/components/AssignSubscriptionDialog';
+import { AssignSubscriptionSheet } from '@/features/subscriptions/components/AssignSubscriptionSheet';
 import { useUsersPage } from '@/features/users/hooks/useUsers';
 import { adminCreateSubscription } from '@/api/subscription';
 import type { UserResponse, UpdateUserRequest, CreateUserRequest } from '@/api/user';
@@ -64,6 +69,7 @@ export const UserManagementPage = () => {
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
   const [assignSubscriptionDialogOpen, setAssignSubscriptionDialogOpen] = useState(false);
   const [resetPasswordDialogOpen, setResetPasswordDialogOpen] = useState(false);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [selectedUser, setSelectedUser] = useState<UserResponse | null>(null);
   const [refreshKey, setRefreshKey] = useState(0);
 
@@ -138,10 +144,19 @@ export const UserManagementPage = () => {
     setEditDialogOpen(true);
   };
 
-  const handleDelete = async (user: UserResponse) => {
-    if (window.confirm(`确认删除用户 "${user.name}" (${user.email}) 吗？此操作不可恢复。`)) {
-      await deleteUser(user.id);
+  const handleDelete = (user: UserResponse) => {
+    if (isMobile) {
+      setSelectedUser(user);
+      setDeleteDialogOpen(true);
+    } else {
+      if (window.confirm(`确认删除用户 "${user.name}" (${user.email}) 吗？此操作不可恢复。`)) {
+        deleteUser(user.id);
+      }
     }
+  };
+
+  const handleDeleteConfirm = async (user: UserResponse) => {
+    await deleteUser(user.id);
   };
 
   const handleCreateSubmit = async (data: CreateUserRequest) => {
@@ -291,45 +306,101 @@ export const UserManagementPage = () => {
         )}
       </div>
 
-      {/* Create User Dialog */}
-      <CreateUserDialog
-        open={createDialogOpen}
-        onClose={() => setCreateDialogOpen(false)}
-        onSubmit={handleCreateSubmit}
-      />
+      {/* Create User Dialog/Sheet */}
+      {isMobile ? (
+        <CreateUserSheet
+          open={createDialogOpen}
+          onClose={() => setCreateDialogOpen(false)}
+          onSubmit={handleCreateSubmit}
+        />
+      ) : (
+        <CreateUserDialog
+          open={createDialogOpen}
+          onClose={() => setCreateDialogOpen(false)}
+          onSubmit={handleCreateSubmit}
+        />
+      )}
 
-      {/* Edit User Dialog */}
-      <EditUserDialog
-        open={editDialogOpen}
+      {/* Edit User Dialog/Sheet */}
+      {isMobile ? (
+        <EditUserSheet
+          open={editDialogOpen}
+          user={selectedUser}
+          onClose={() => {
+            setEditDialogOpen(false);
+            setSelectedUser(null);
+          }}
+          onSubmit={handleUpdateSubmit}
+        />
+      ) : (
+        <EditUserDialog
+          open={editDialogOpen}
+          user={selectedUser}
+          onClose={() => {
+            setEditDialogOpen(false);
+            setSelectedUser(null);
+          }}
+          onSubmit={handleUpdateSubmit}
+        />
+      )}
+
+      {/* Assign Subscription Dialog/Sheet */}
+      {isMobile ? (
+        <AssignSubscriptionSheet
+          open={assignSubscriptionDialogOpen}
+          user={selectedUser}
+          onClose={() => {
+            setAssignSubscriptionDialogOpen(false);
+            setSelectedUser(null);
+          }}
+          onSubmit={handleAssignSubscriptionSubmit}
+        />
+      ) : (
+        <AssignSubscriptionDialog
+          open={assignSubscriptionDialogOpen}
+          user={selectedUser}
+          onClose={() => {
+            setAssignSubscriptionDialogOpen(false);
+            setSelectedUser(null);
+          }}
+          onSubmit={handleAssignSubscriptionSubmit}
+        />
+      )}
+
+      {/* Reset Password Dialog/Sheet */}
+      {isMobile ? (
+        <ResetPasswordSheet
+          open={resetPasswordDialogOpen}
+          user={selectedUser}
+          isLoading={isResettingPassword}
+          onClose={() => {
+            setResetPasswordDialogOpen(false);
+            setSelectedUser(null);
+          }}
+          onSubmit={handleResetPasswordSubmit}
+        />
+      ) : (
+        <ResetPasswordDialog
+          open={resetPasswordDialogOpen}
+          user={selectedUser}
+          isLoading={isResettingPassword}
+          onClose={() => {
+            setResetPasswordDialogOpen(false);
+            setSelectedUser(null);
+          }}
+          onSubmit={handleResetPasswordSubmit}
+        />
+      )}
+
+      {/* Delete User Confirmation Sheet (Mobile only) */}
+      <DeleteUserSheet
+        open={deleteDialogOpen}
         user={selectedUser}
         onClose={() => {
-          setEditDialogOpen(false);
+          setDeleteDialogOpen(false);
           setSelectedUser(null);
         }}
-        onSubmit={handleUpdateSubmit}
-      />
-
-      {/* Assign Subscription Dialog */}
-      <AssignSubscriptionDialog
-        open={assignSubscriptionDialogOpen}
-        user={selectedUser}
-        onClose={() => {
-          setAssignSubscriptionDialogOpen(false);
-          setSelectedUser(null);
-        }}
-        onSubmit={handleAssignSubscriptionSubmit}
-      />
-
-      {/* Reset Password Dialog */}
-      <ResetPasswordDialog
-        open={resetPasswordDialogOpen}
-        user={selectedUser}
-        isLoading={isResettingPassword}
-        onClose={() => {
-          setResetPasswordDialogOpen(false);
-          setSelectedUser(null);
-        }}
-        onSubmit={handleResetPasswordSubmit}
+        onConfirm={handleDeleteConfirm}
       />
     </AdminLayout>
   );

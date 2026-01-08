@@ -1,0 +1,230 @@
+/**
+ * Create Resource Group Sheet Component
+ * Mobile-optimized bottom sheet for creating new resource groups
+ * Features: Large touch targets, plan selection, description textarea
+ */
+
+import { useState, useCallback, useEffect } from 'react';
+import { FolderPlus, Layers, FileText } from 'lucide-react';
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+  SheetDescription,
+  SheetBody,
+  SheetFooter,
+} from '@/components/common/Sheet';
+import { Button } from '@/components/common/Button';
+import { MobileFormInput, MobileSelect, type MobileSelectOption } from '@/components/common/mobile-form';
+import type { CreateResourceGroupRequest } from '@/api/resource/types';
+import type { SubscriptionPlan } from '@/api/subscription/types';
+
+interface CreateResourceGroupSheetProps {
+  open: boolean;
+  plans: SubscriptionPlan[];
+  onClose: () => void;
+  onSubmit: (data: CreateResourceGroupRequest) => Promise<void>;
+}
+
+interface FormErrors {
+  name?: string;
+  planId?: string;
+}
+
+export const CreateResourceGroupSheet: React.FC<CreateResourceGroupSheetProps> = ({
+  open,
+  plans,
+  onClose,
+  onSubmit,
+}) => {
+  const [name, setName] = useState('');
+  const [planId, setPlanId] = useState('');
+  const [description, setDescription] = useState('');
+  const [errors, setErrors] = useState<FormErrors>({});
+  const [touched, setTouched] = useState<Record<string, boolean>>({});
+  const [loading, setLoading] = useState(false);
+
+  // Build plan options for MobileSelect
+  const planOptions: MobileSelectOption[] = plans.map((plan) => ({
+    value: plan.id.toString(),
+    label: `${plan.name} (${plan.slug})`,
+  }));
+
+  // Validation functions
+  const validateName = useCallback((value: string): string | undefined => {
+    if (!value.trim()) return '请输入资源组名称';
+    if (value.trim().length > 100) return '名称不能超过 100 个字符';
+    return undefined;
+  }, []);
+
+  const validatePlanId = useCallback((value: string): string | undefined => {
+    if (!value) return '请选择关联计划';
+    return undefined;
+  }, []);
+
+  // Handle blur for inline validation
+  const handleBlur = useCallback((field: keyof FormErrors) => {
+    setTouched((prev) => ({ ...prev, [field]: true }));
+    const validators = { name: validateName, planId: validatePlanId };
+    const values = { name, planId };
+    setErrors((prev) => ({ ...prev, [field]: validators[field](values[field]) }));
+  }, [name, planId, validateName, validatePlanId]);
+
+  // Validate all fields
+  const validateAll = useCallback((): boolean => {
+    const newErrors: FormErrors = {
+      name: validateName(name),
+      planId: validatePlanId(planId),
+    };
+    setErrors(newErrors);
+    setTouched({ name: true, planId: true });
+    return !newErrors.name && !newErrors.planId;
+  }, [name, planId, validateName, validatePlanId]);
+
+  // Reset form
+  const resetForm = useCallback(() => {
+    setName('');
+    setPlanId('');
+    setDescription('');
+    setErrors({});
+    setTouched({});
+  }, []);
+
+  // Reset form when dialog opens
+  useEffect(() => {
+    if (open) {
+      resetForm();
+    }
+  }, [open, resetForm]);
+
+  const handleClose = useCallback(() => {
+    if (!loading) {
+      resetForm();
+      onClose();
+    }
+  }, [loading, resetForm, onClose]);
+
+  const handleSubmit = useCallback(async () => {
+    if (!validateAll()) return;
+
+    setLoading(true);
+    try {
+      await onSubmit({
+        name: name.trim(),
+        planId,
+        description: description.trim() || undefined,
+      });
+      resetForm();
+      onClose();
+    } finally {
+      setLoading(false);
+    }
+  }, [validateAll, name, planId, description, onSubmit, resetForm, onClose]);
+
+  // Form validity check
+  const isFormValid = name.trim() && planId;
+
+  return (
+    <Sheet open={open} onOpenChange={handleClose}>
+      <SheetContent>
+        <SheetHeader>
+          <SheetTitle className="flex items-center gap-2">
+            <div className="size-10 rounded-full bg-primary/10 flex items-center justify-center">
+              <FolderPlus className="size-5 text-primary" />
+            </div>
+            <span>创建资源组</span>
+          </SheetTitle>
+          <SheetDescription>
+            填写以下信息创建新的资源组
+          </SheetDescription>
+        </SheetHeader>
+
+        <SheetBody className="space-y-6 py-4">
+          {/* Name Field */}
+          <div className="space-y-1.5">
+            <label htmlFor="mobile-rg-name" className="text-sm font-medium px-1">
+              资源组名称 <span className="text-destructive">*</span>
+            </label>
+            <MobileFormInput
+              id="mobile-rg-name"
+              value={name}
+              onChange={(v) => {
+                setName(v);
+                if (touched.name) setErrors((prev) => ({ ...prev, name: validateName(v) }));
+              }}
+              onBlur={() => handleBlur('name')}
+              placeholder="输入资源组名称"
+              icon={<Layers className="size-5" />}
+              error={touched.name ? errors.name : undefined}
+              disabled={loading}
+              autoFocus
+            />
+          </div>
+
+          {/* Plan Selection Field */}
+          <div className="space-y-1.5">
+            <label className="text-sm font-medium px-1">
+              关联计划 <span className="text-destructive">*</span>
+            </label>
+            <MobileSelect
+              value={planId}
+              onChange={(v) => {
+                setPlanId(v);
+                if (touched.planId) setErrors((prev) => ({ ...prev, planId: validatePlanId(v) }));
+              }}
+              options={planOptions}
+              placeholder="选择关联的订阅计划"
+              disabled={loading}
+            />
+            {touched.planId && errors.planId && (
+              <p className="text-sm text-destructive px-1">{errors.planId}</p>
+            )}
+          </div>
+
+          {/* Description Field */}
+          <div className="space-y-1.5">
+            <label htmlFor="mobile-rg-description" className="text-sm font-medium px-1">
+              描述
+            </label>
+            <div className="relative">
+              <div className="absolute left-4 top-4 text-muted-foreground">
+                <FileText className="size-5" />
+              </div>
+              <textarea
+                id="mobile-rg-description"
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+                placeholder="输入资源组描述（可选）"
+                rows={3}
+                disabled={loading}
+                className="w-full min-h-[100px] py-3 pl-12 pr-4 text-base rounded-xl border bg-background placeholder:text-muted-foreground/60 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary disabled:opacity-50 disabled:cursor-not-allowed resize-none"
+              />
+            </div>
+          </div>
+        </SheetBody>
+
+        <SheetFooter>
+          {/* Primary action - full width on mobile */}
+          <Button
+            onClick={handleSubmit}
+            disabled={loading || !isFormValid}
+            className="w-full min-h-[52px] text-base"
+          >
+            {loading ? '创建中...' : '创建资源组'}
+          </Button>
+
+          {/* Secondary action */}
+          <Button
+            variant="ghost"
+            onClick={handleClose}
+            disabled={loading}
+            className="w-full min-h-[44px]"
+          >
+            取消
+          </Button>
+        </SheetFooter>
+      </SheetContent>
+    </Sheet>
+  );
+};

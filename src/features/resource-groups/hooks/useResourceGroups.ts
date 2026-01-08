@@ -18,10 +18,13 @@ import {
   deactivateResourceGroup,
   listGroupNodes,
   listGroupForwardAgents,
+  listGroupForwardRules,
   addNodesToGroup,
   removeNodesFromGroup,
   addForwardAgentsToGroup,
   removeForwardAgentsFromGroup,
+  addForwardRulesToGroup,
+  removeForwardRulesFromGroup,
 } from '@/api/resource';
 import type {
   ResourceGroup,
@@ -323,6 +326,40 @@ export const useGroupForwardAgents = (options: UseGroupForwardAgentsOptions) => 
   };
 };
 
+// Get resource group members (forward rules)
+interface UseGroupForwardRulesOptions {
+  groupId: string | null;
+  page?: number;
+  pageSize?: number;
+  enabled?: boolean;
+}
+
+export const useGroupForwardRules = (options: UseGroupForwardRulesOptions) => {
+  const { groupId, page = 1, pageSize = 20, enabled = true } = options;
+
+  const params = { page, pageSize, orderBy: 'sort_order', order: 'ASC' as const };
+
+  const { data, isLoading, isFetching, error, refetch } = useQuery({
+    queryKey: ['resourceGroups', 'forwardRules', groupId, params],
+    queryFn: () => listGroupForwardRules(groupId!, params),
+    enabled: enabled && !!groupId,
+  });
+
+  return {
+    forwardRules: data?.items ?? [],
+    pagination: {
+      page: data?.page ?? page,
+      pageSize: data?.pageSize ?? pageSize,
+      total: data?.total ?? 0,
+      totalPages: data?.totalPages ?? 0,
+    },
+    isLoading,
+    isFetching,
+    error: error ? handleApiError(error) : null,
+    refetch,
+  };
+};
+
 // Resource group member management hook
 export const useGroupMemberManagement = (groupId: string | null) => {
   const queryClient = useQueryClient();
@@ -404,17 +441,59 @@ export const useGroupMemberManagement = (groupId: string | null) => {
     },
   });
 
+  // Add forward rules to resource group
+  const addRulesMutation = useMutation({
+    mutationFn: (ruleIds: string[]) => addForwardRulesToGroup(groupId!, { ruleIds }),
+    onSuccess: (result: BatchOperationResult) => {
+      const successCount = result.succeeded.length;
+      const failCount = result.failed?.length ?? 0;
+      if (failCount === 0) {
+        showSuccess(`成功添加 ${successCount} 个转发规则`);
+      } else {
+        showSuccess(`添加完成：${successCount} 成功，${failCount} 失败`);
+      }
+      queryClient.invalidateQueries({ queryKey: ['resourceGroups', 'forwardRules', groupId] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.forwardRules.lists() });
+    },
+    onError: (error) => {
+      showError(handleApiError(error));
+    },
+  });
+
+  // Remove forward rules from resource group
+  const removeRulesMutation = useMutation({
+    mutationFn: (ruleIds: string[]) => removeForwardRulesFromGroup(groupId!, { ruleIds }),
+    onSuccess: (result: BatchOperationResult) => {
+      const successCount = result.succeeded.length;
+      const failCount = result.failed?.length ?? 0;
+      if (failCount === 0) {
+        showSuccess(`成功移除 ${successCount} 个转发规则`);
+      } else {
+        showSuccess(`移除完成：${successCount} 成功，${failCount} 失败`);
+      }
+      queryClient.invalidateQueries({ queryKey: ['resourceGroups', 'forwardRules', groupId] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.forwardRules.lists() });
+    },
+    onError: (error) => {
+      showError(handleApiError(error));
+    },
+  });
+
   return {
     // Actions
     addNodes: (nodeIds: string[]) => addNodesMutation.mutateAsync(nodeIds),
     removeNodes: (nodeIds: string[]) => removeNodesMutation.mutateAsync(nodeIds),
     addAgents: (agentIds: string[]) => addAgentsMutation.mutateAsync(agentIds),
     removeAgents: (agentIds: string[]) => removeAgentsMutation.mutateAsync(agentIds),
+    addRules: (ruleIds: string[]) => addRulesMutation.mutateAsync(ruleIds),
+    removeRules: (ruleIds: string[]) => removeRulesMutation.mutateAsync(ruleIds),
 
     // State
     isAddingNodes: addNodesMutation.isPending,
     isRemovingNodes: removeNodesMutation.isPending,
     isAddingAgents: addAgentsMutation.isPending,
     isRemovingAgents: removeAgentsMutation.isPending,
+    isAddingRules: addRulesMutation.isPending,
+    isRemovingRules: removeRulesMutation.isPending,
   };
 };

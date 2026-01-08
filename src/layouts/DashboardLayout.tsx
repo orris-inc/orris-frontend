@@ -118,6 +118,10 @@ export const DashboardLayout = ({ children }: DashboardLayoutProps) => {
           onClose={() => setMobileDrawerOpen(false)}
           navigationItems={visibleNavigationItems}
           brandName="Orris"
+          user={user}
+          showAdminSwitch={userRole === 'admin'}
+          onAdminClick={handleGoToAdmin}
+          onLogout={handleLogout}
         />
       )}
 

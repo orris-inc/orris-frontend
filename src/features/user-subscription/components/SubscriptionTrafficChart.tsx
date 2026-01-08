@@ -28,7 +28,7 @@ interface SubscriptionTrafficChartProps {
   subscription: Subscription;
 }
 
-type TimeRange = "7d" | "30d";
+type TimeRange = "today" | "yesterday" | "7d" | "30d";
 
 /**
  * Format bytes to human readable string
@@ -62,21 +62,48 @@ const formatDateKey = (date: Date): string => {
 };
 
 /**
- * Parse period string and format to local date key
+ * Format date to local hour key (HH:00)
  */
-const formatPeriodKey = (period: string): string => {
+const formatHourKey = (date: Date): string => {
+  return `${date.getHours().toString().padStart(2, "0")}:00`;
+};
+
+/**
+ * Parse period string and format to local date/hour key
+ */
+const formatPeriodKey = (period: string, granularity: "hour" | "day"): string => {
   const date = new Date(period);
-  return formatDateKey(date);
+  return granularity === "hour" ? formatHourKey(date) : formatDateKey(date);
 };
 
 /**
  * Get date range based on time range selection
  */
-const getDateRange = (range: TimeRange): { from: Date; to: Date } => {
-  const to = new Date();
+const getDateRange = (range: TimeRange): { from: Date; to: Date; granularity: "hour" | "day" } => {
+  const now = new Date();
+
+  if (range === "today") {
+    const from = new Date(now);
+    from.setHours(0, 0, 0, 0);
+    const to = new Date(now);
+    to.setHours(23, 59, 59, 999);
+    return { from, to, granularity: "hour" };
+  }
+
+  if (range === "yesterday") {
+    const from = new Date(now);
+    from.setDate(from.getDate() - 1);
+    from.setHours(0, 0, 0, 0);
+    const to = new Date(now);
+    to.setDate(to.getDate() - 1);
+    to.setHours(23, 59, 59, 999);
+    return { from, to, granularity: "hour" };
+  }
+
+  const to = new Date(now);
   to.setHours(23, 59, 59, 999);
 
-  const from = new Date();
+  const from = new Date(now);
   from.setHours(0, 0, 0, 0);
 
   if (range === "7d") {
@@ -85,7 +112,7 @@ const getDateRange = (range: TimeRange): { from: Date; to: Date } => {
     from.setDate(from.getDate() - 29); // Include today, so -29 for 30 days total
   }
 
-  return { from, to };
+  return { from, to, granularity: "day" };
 };
 
 interface ChartDataPoint {
@@ -95,37 +122,52 @@ interface ChartDataPoint {
 }
 
 /**
- * Generate all dates in the range (local time)
+ * Generate all dates/hours in the range (local time)
  */
-const generateDateRange = (from: Date, to: Date): string[] => {
-  const dates: string[] = [];
-  const current = new Date(from);
-  current.setHours(0, 0, 0, 0);
+const generateDateRange = (from: Date, to: Date, granularity: "hour" | "day"): string[] => {
+  const periods: string[] = [];
 
-  const endDate = new Date(to);
-  endDate.setHours(0, 0, 0, 0);
+  if (granularity === "hour") {
+    const current = new Date(from);
+    current.setMinutes(0, 0, 0);
 
-  while (current <= endDate) {
-    dates.push(formatDateKey(current));
-    current.setDate(current.getDate() + 1);
+    const endDate = new Date(to);
+    endDate.setMinutes(0, 0, 0);
+
+    while (current <= endDate) {
+      periods.push(formatHourKey(current));
+      current.setHours(current.getHours() + 1);
+    }
+  } else {
+    const current = new Date(from);
+    current.setHours(0, 0, 0, 0);
+
+    const endDate = new Date(to);
+    endDate.setHours(0, 0, 0, 0);
+
+    while (current <= endDate) {
+      periods.push(formatDateKey(current));
+      current.setDate(current.getDate() + 1);
+    }
   }
 
-  return dates;
+  return periods;
 };
 
 /**
- * Aggregate traffic records by period and fill missing dates
+ * Aggregate traffic records by period and fill missing dates/hours
  */
 const aggregateByPeriod = (
   records: TrafficStatsRecord[],
   from: Date,
   to: Date,
+  granularity: "hour" | "day",
 ): ChartDataPoint[] => {
-  // First aggregate the actual data by date key
+  // First aggregate the actual data by period key
   const grouped = records.reduce<
     Record<string, { upload: number; download: number }>
   >((acc, record) => {
-    const periodKey = formatPeriodKey(record.period);
+    const periodKey = formatPeriodKey(record.period, granularity);
     if (!acc[periodKey]) {
       acc[periodKey] = { upload: 0, download: 0 };
     }
@@ -134,11 +176,11 @@ const aggregateByPeriod = (
     return acc;
   }, {});
 
-  // Generate all dates in the range
-  const allDates = generateDateRange(from, to);
+  // Generate all periods in the range
+  const allPeriods = generateDateRange(from, to, granularity);
 
-  // Fill missing dates with zero values
-  return allDates.map((period) => ({
+  // Fill missing periods with zero values
+  return allPeriods.map((period) => ({
     period,
     upload: grouped[period]?.upload ?? 0,
     download: grouped[period]?.download ?? 0,
@@ -294,32 +336,33 @@ const TimeRangeSelector = ({
 }: {
   value: TimeRange;
   onChange: (range: TimeRange) => void;
-}) => (
-  <div className="flex items-center gap-1 p-1 rounded-lg bg-muted">
-    <button
-      onClick={() => onChange("7d")}
-      className={cn(
-        "px-3 py-1.5 text-xs font-medium rounded-md transition-colors",
-        value === "7d"
-          ? "bg-background text-foreground shadow-sm"
-          : "text-muted-foreground hover:text-foreground",
-      )}
-    >
-      7 天
-    </button>
-    <button
-      onClick={() => onChange("30d")}
-      className={cn(
-        "px-3 py-1.5 text-xs font-medium rounded-md transition-colors",
-        value === "30d"
-          ? "bg-background text-foreground shadow-sm"
-          : "text-muted-foreground hover:text-foreground",
-      )}
-    >
-      30 天
-    </button>
-  </div>
-);
+}) => {
+  const options: { value: TimeRange; label: string }[] = [
+    { value: "today", label: "今天" },
+    { value: "yesterday", label: "昨天" },
+    { value: "7d", label: "7 天" },
+    { value: "30d", label: "30 天" },
+  ];
+
+  return (
+    <div className="flex items-center gap-1 p-1 rounded-lg bg-muted">
+      {options.map((option) => (
+        <button
+          key={option.value}
+          onClick={() => onChange(option.value)}
+          className={cn(
+            "px-2.5 py-1.5 text-xs font-medium rounded-md transition-colors",
+            value === option.value
+              ? "bg-background text-foreground shadow-sm"
+              : "text-muted-foreground hover:text-foreground",
+          )}
+        >
+          {option.label}
+        </button>
+      ))}
+    </div>
+  );
+};
 
 /**
  * Loading skeleton
@@ -359,6 +402,7 @@ export const SubscriptionTrafficChart: React.FC<
     () => ({
       from: dateRange.from.toISOString(),
       to: dateRange.to.toISOString(),
+      granularity: dateRange.granularity,
     }),
     [dateRange],
   );
@@ -370,12 +414,13 @@ export const SubscriptionTrafficChart: React.FC<
       subscription.id,
       apiParams.from,
       apiParams.to,
+      apiParams.granularity,
     ],
     queryFn: () =>
       getTrafficStats(subscription.id, {
         from: apiParams.from,
         to: apiParams.to,
-        granularity: "day",
+        granularity: apiParams.granularity,
         pageSize: 1000, // Get more records to cover all traffic
       }),
     enabled: !!subscription.id,
@@ -388,8 +433,9 @@ export const SubscriptionTrafficChart: React.FC<
       trafficStats.records,
       dateRange.from,
       dateRange.to,
+      dateRange.granularity,
     );
-  }, [trafficStats?.records, dateRange.from, dateRange.to]);
+  }, [trafficStats?.records, dateRange.from, dateRange.to, dateRange.granularity]);
 
   // Use API summary for accurate totals (chart aggregation may miss paginated data)
   const { totalUpload, totalDownload } = useMemo(() => {

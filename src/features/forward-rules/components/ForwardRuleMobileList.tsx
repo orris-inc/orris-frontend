@@ -19,7 +19,6 @@ import {
   Check,
   Server,
   Bot,
-  Settings,
   ArrowRight,
   Files,
   CheckCircle2,
@@ -50,10 +49,12 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/common/Pop
 import { Skeleton } from '@/components/common/Skeleton';
 import type { ForwardRule, ForwardAgent, RuleOverallStatusResponse, RuleSyncStatus, RuleRunStatus } from '@/api/forward';
 import type { Node } from '@/api/node';
+import type { ResourceGroup } from '@/api/resource';
 
 interface ForwardRuleMobileListProps {
   rules: ForwardRule[];
   agentsMap?: Record<string, ForwardAgent>;
+  resourceGroupsMap?: Record<string, ResourceGroup>;
   nodes?: Node[];
   polledStatusMap?: Record<string, RuleOverallStatusResponse>;
   pollingRuleIds?: string[];
@@ -166,7 +167,7 @@ const CopyableAddress: React.FC<{ address: string; className?: string }> = ({ ad
       <span className="font-mono text-xs truncate">{address}</span>
       <button
         onClick={handleCopy}
-        className="flex-shrink-0 p-0.5 rounded hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors"
+        className="flex-shrink-0 p-0.5 rounded hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors touch-manipulation"
         title={copied ? '已复制' : '复制'}
       >
         {copied ? (
@@ -186,98 +187,211 @@ const formatBytes = (bytes?: number) => {
   return `${gb.toFixed(2)} GB`;
 };
 
-// Chain nodes display component for mobile - Improved flow visualization
-const ChainNodesDisplayMobile: React.FC<{
-  chainAgentIds: string[];
-  agentsMap: Record<string, ForwardAgent>;
-  targetDisplay: { name: string; address: string } | null;
-  tunnelHops?: number;
-}> = ({ chainAgentIds, agentsMap, targetDisplay, tunnelHops }) => {
-  const chainCount = chainAgentIds.length;
+// Mobile flow node type configuration - consistent with desktop
+const MOBILE_NODE_CONFIG = {
+  entry: {
+    icon: Bot,
+    color: 'text-green-500',
+    bgColor: 'bg-green-50 dark:bg-green-900/30',
+    borderColor: 'border-green-300 dark:border-green-700',
+    label: '入口',
+  },
+  relay: {
+    icon: Bot,
+    color: 'text-purple-500',
+    bgColor: 'bg-purple-50 dark:bg-purple-900/30',
+    borderColor: 'border-purple-300 dark:border-purple-700',
+    label: '中转',
+  },
+  exit: {
+    icon: Bot,
+    color: 'text-orange-500',
+    bgColor: 'bg-orange-50 dark:bg-orange-900/30',
+    borderColor: 'border-orange-300 dark:border-orange-700',
+    label: '出口',
+  },
+  target: {
+    icon: Server,
+    color: 'text-blue-500',
+    bgColor: 'bg-blue-50 dark:bg-blue-900/30',
+    borderColor: 'border-blue-300 dark:border-blue-700',
+    label: '目标',
+  },
+};
 
-  const getAgentName = (id: string) => {
-    const agent = agentsMap[id];
-    return agent?.name || `ID: ${id}`;
+// Mobile flow node component - simplified for better touch scrolling
+const MobileFlowNode: React.FC<{
+  type: 'entry' | 'relay' | 'exit' | 'target';
+  name: string;
+  address?: string;
+}> = ({ type, name, address }) => {
+  const config = MOBILE_NODE_CONFIG[type];
+  const IconComponent = config.icon;
+
+  // Simple static display for mobile - avoids touch scroll issues
+  return (
+    <div
+      className={`flex items-center gap-0.5 px-1 py-0.5 rounded ${config.bgColor} border ${config.borderColor} touch-manipulation`}
+      title={address ? `${config.label}: ${name}\n${address}` : `${config.label}: ${name}`}
+    >
+      <IconComponent className={`size-2.5 flex-shrink-0 ${config.color}`} />
+      <span className="text-[10px] font-medium text-foreground truncate max-w-[45px]">{name}</span>
+    </div>
+  );
+};
+
+// Mobile flow arrow component
+const MobileFlowArrow: React.FC<{ color?: 'purple' | 'blue' }> = ({ color = 'blue' }) => (
+  <ArrowRight className={`size-2.5 flex-shrink-0 ${color === 'purple' ? 'text-purple-400' : 'text-blue-400'}`} />
+);
+
+// Mobile flow path display - unified with desktop style
+const FlowPathDisplayMobile: React.FC<{
+  rule: ForwardRule;
+  agentsMap: Record<string, ForwardAgent>;
+  nodes: Node[];
+}> = ({ rule, agentsMap, nodes }) => {
+  // Get entry agent info
+  const entryAgent = agentsMap[rule.agentId];
+  const entryName = entryAgent?.name || `ID: ${rule.agentId.slice(0, 8)}`;
+  const entryAddress = entryAgent?.publicAddress ? `${entryAgent.publicAddress}:${rule.listenPort}` : undefined;
+
+  // Get target display info
+  const getTargetDisplay = () => {
+    if (rule.targetNodeId) {
+      const targetNode = nodes.find((n) => n.id === rule.targetNodeId);
+      const nodeName = targetNode?.name || `ID: ${rule.targetNodeId.slice(0, 8)}`;
+      const nodePort = targetNode?.subscriptionPort || targetNode?.agentPort;
+      let address: string | undefined;
+      if (rule.ipVersion === 'ipv4' && rule.targetNodePublicIpv4) {
+        address = rule.targetNodePublicIpv4;
+      } else if (rule.ipVersion === 'ipv6' && rule.targetNodePublicIpv6) {
+        address = rule.targetNodePublicIpv6;
+      } else {
+        address = rule.targetNodeServerAddress || rule.targetNodePublicIpv4 || rule.targetNodePublicIpv6;
+      }
+      const nodeAddress = address ? (nodePort ? `${address}:${nodePort}` : address) : undefined;
+      return { name: nodeName, address: nodeAddress };
+    }
+    if (rule.targetAddress) {
+      return { name: '手动', address: `${rule.targetAddress}:${rule.targetPort}` };
+    }
+    return null;
   };
 
-  const firstAgentName = getAgentName(chainAgentIds[0]);
+  const target = getTargetDisplay();
+
+  // Build relay chain
+  type RelayInfo = { id: string; name: string; address?: string };
+  const relayAgents: RelayInfo[] = [];
+
+  // For entry type, exit agent is the relay
+  if (rule.ruleType === 'entry' && rule.exitAgentId) {
+    const exitAgent = agentsMap[rule.exitAgentId];
+    relayAgents.push({
+      id: rule.exitAgentId,
+      name: exitAgent?.name || `ID: ${rule.exitAgentId.slice(0, 8)}`,
+      address: exitAgent?.publicAddress,
+    });
+  }
+
+  // For chain types, add chain agents
+  if ((rule.ruleType === 'chain' || rule.ruleType === 'direct_chain') && rule.chainAgentIds?.length) {
+    rule.chainAgentIds
+      .filter((id) => id !== rule.agentId)
+      .forEach((id) => {
+        const agent = agentsMap[id];
+        relayAgents.push({
+          id,
+          name: agent?.name || `ID: ${id.slice(0, 8)}`,
+          address: agent?.publicAddress,
+        });
+      });
+  }
+
+  const showRelays = relayAgents.length > 0;
+  const firstRelay = relayAgents[0];
+  const remainingRelays = relayAgents.slice(1);
 
   return (
-    <div className="space-y-1">
-      {/* Chain flow header */}
-      <div className="flex items-center gap-1 flex-wrap">
-        {/* Chain indicator */}
-        <div className="flex items-center gap-0.5 px-1 py-0.5 rounded bg-purple-50 dark:bg-purple-900/20 border border-purple-200 dark:border-purple-800">
-          <Bot className="size-2.5 text-purple-500" />
-          <span className="text-[9px] font-semibold text-purple-600 dark:text-purple-400">{chainCount}</span>
-        </div>
-        <ArrowRight className="size-2.5 text-purple-400" />
-        <span className="text-[11px] font-medium text-foreground truncate max-w-[50px]">{firstAgentName}</span>
+    <div className="flex items-center gap-0.5 flex-wrap py-0.5">
+      {/* Entry node */}
+      <MobileFlowNode type="entry" name={entryName} address={entryAddress} />
 
-        {/* More nodes */}
-        {chainCount > 1 && (
-          <>
-            <ArrowRight className="size-2.5 text-purple-400" />
-            <Popover>
-              <PopoverTrigger asChild>
-                <button className="flex items-center gap-0.5 px-1 py-0.5 text-[9px] font-medium rounded-full bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300 cursor-pointer">
-                  +{chainCount - 1}
-                </button>
-              </PopoverTrigger>
-              <PopoverContent className="w-60" align="start">
-                <div className="space-y-2">
-                  <div className="flex items-center justify-between">
-                    <h4 className="text-xs font-semibold text-foreground">链路拓扑</h4>
-                    <div className="flex items-center gap-1">
-                      {tunnelHops && tunnelHops > 0 && (
-                        <span className="text-[9px] px-1 py-0.5 rounded bg-cyan-50 dark:bg-cyan-900/20 text-cyan-600 dark:text-cyan-400 font-medium">
-                          {tunnelHops}跳
-                        </span>
-                      )}
+      <MobileFlowArrow color={showRelays ? 'purple' : 'blue'} />
+
+      {/* Relay nodes */}
+      {showRelays && (
+        <>
+          <MobileFlowNode
+            type={rule.ruleType === 'entry' ? 'exit' : 'relay'}
+            name={firstRelay.name}
+            address={firstRelay.address}
+          />
+          {remainingRelays.length > 0 && (
+            <>
+              <MobileFlowArrow color="purple" />
+              <Popover>
+                <PopoverTrigger asChild>
+                  <button className="flex items-center gap-0.5 px-1 py-0.5 text-[9px] font-medium rounded-full bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300 border border-purple-300 dark:border-purple-700 cursor-pointer touch-manipulation">
+                    +{remainingRelays.length}
+                  </button>
+                </PopoverTrigger>
+                <PopoverContent className="w-56" align="start">
+                  <div className="space-y-2">
+                    <div className="flex items-center justify-between">
+                      <h4 className="text-xs font-semibold">链路拓扑</h4>
                       <span className="text-[9px] px-1 py-0.5 rounded bg-muted text-muted-foreground font-medium">
-                        {chainCount}节点
+                        {relayAgents.length + 2}节点
                       </span>
                     </div>
-                  </div>
-                  {/* Flow visualization */}
-                  <div className="relative">
-                    <div className="absolute left-2 top-3 bottom-3 w-px bg-gradient-to-b from-purple-300 to-blue-400 dark:from-purple-700 dark:to-blue-500" />
-                    <div className="space-y-1">
-                      {chainAgentIds.map((id, index) => {
-                        const agentName = getAgentName(id);
-                        return (
-                          <div key={id} className="flex items-center gap-1.5 relative">
+                    <div className="relative">
+                      <div className="absolute left-2 top-3 bottom-3 w-px bg-gradient-to-b from-green-400 via-purple-400 to-blue-400" />
+                      <div className="space-y-1.5">
+                        {/* Entry */}
+                        <div className="flex items-center gap-1.5 relative">
+                          <div className="w-4 h-4 rounded-full bg-green-100 dark:bg-green-900/30 border border-green-300 dark:border-green-700 flex items-center justify-center z-10">
+                            <Bot className="size-2.5 text-green-500" />
+                          </div>
+                          <span className="text-[11px] font-medium truncate">{entryName}</span>
+                          <span className="text-[9px] px-1 py-0.5 rounded bg-green-50 dark:bg-green-900/20 text-green-600 dark:text-green-400 font-medium">入口</span>
+                        </div>
+                        {/* Relays */}
+                        {relayAgents.map((relay, index) => (
+                          <div key={relay.id} className="flex items-center gap-1.5 relative">
                             <div className="w-4 h-4 rounded-full bg-purple-100 dark:bg-purple-900/30 border border-purple-300 dark:border-purple-700 flex items-center justify-center text-[9px] font-bold text-purple-600 dark:text-purple-400 z-10">
                               {index + 1}
                             </div>
-                            <span className="text-[11px] font-medium text-foreground truncate">{agentName}</span>
+                            <span className="text-[11px] font-medium truncate">{relay.name}</span>
                           </div>
-                        );
-                      })}
-                      {targetDisplay && (
-                        <div className="flex items-center gap-1.5 relative">
-                          <div className="w-4 h-4 rounded-full bg-blue-100 dark:bg-blue-900/30 border border-blue-300 dark:border-blue-700 flex items-center justify-center z-10">
-                            <Server className="size-2.5 text-blue-500" />
+                        ))}
+                        {/* Target */}
+                        {target && (
+                          <div className="flex items-center gap-1.5 relative">
+                            <div className="w-4 h-4 rounded-full bg-blue-100 dark:bg-blue-900/30 border border-blue-300 dark:border-blue-700 flex items-center justify-center z-10">
+                              <Server className="size-2.5 text-blue-500" />
+                            </div>
+                            <span className="text-[11px] font-medium truncate">{target.name}</span>
+                            <span className="text-[9px] px-1 py-0.5 rounded bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 font-medium">目标</span>
                           </div>
-                          <div className="flex items-center gap-1">
-                            <span className="text-[9px] px-0.5 rounded bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 font-medium">目标</span>
-                            <span className="text-[11px] font-medium text-foreground truncate">{targetDisplay.name}</span>
-                          </div>
-                        </div>
-                      )}
+                        )}
+                      </div>
                     </div>
                   </div>
-                </div>
-              </PopoverContent>
-            </Popover>
-          </>
-        )}
-      </div>
-      {/* Target address */}
-      <div className="flex items-center gap-1">
-        <Server className="size-2.5 text-blue-500 flex-shrink-0" />
-        <CopyableAddress address={targetDisplay?.address || '-'} className="text-muted-foreground" />
-      </div>
+                </PopoverContent>
+              </Popover>
+            </>
+          )}
+          <MobileFlowArrow color="blue" />
+        </>
+      )}
+
+      {/* Target node */}
+      {target ? (
+        <MobileFlowNode type="target" name={target.name} address={target.address} />
+      ) : (
+        <span className="text-[10px] text-muted-foreground">-</span>
+      )}
     </div>
   );
 };
@@ -301,6 +415,7 @@ const MobileCardSkeleton: React.FC = () => (
 export const ForwardRuleMobileList: React.FC<ForwardRuleMobileListProps> = ({
   rules,
   agentsMap = {},
+  resourceGroupsMap = {},
   nodes = [],
   polledStatusMap = {},
   pollingRuleIds = [],
@@ -324,75 +439,6 @@ export const ForwardRuleMobileList: React.FC<ForwardRuleMobileListProps> = ({
     const agent = agentsMap[rule.agentId];
     return agent?.publicAddress ? `${agent.publicAddress}:${rule.listenPort}` : '-';
   }, [agentsMap]);
-
-  // Get exit display info
-  const getExitDisplay = useCallback((rule: ForwardRule) => {
-    const getTargetDisplay = () => {
-      if (rule.targetNodeId) {
-        const targetNode = nodes.find((n) => n.id === rule.targetNodeId);
-        const nodeName = targetNode?.name || `ID: ${rule.targetNodeId}`;
-        const nodePort = targetNode?.subscriptionPort || targetNode?.agentPort;
-        let address: string | undefined;
-        if (rule.ipVersion === 'ipv4' && rule.targetNodePublicIpv4) {
-          address = rule.targetNodePublicIpv4;
-        } else if (rule.ipVersion === 'ipv6' && rule.targetNodePublicIpv6) {
-          address = rule.targetNodePublicIpv6;
-        } else {
-          address = rule.targetNodeServerAddress || rule.targetNodePublicIpv4 || rule.targetNodePublicIpv6;
-        }
-        const nodeAddress = address ? (nodePort ? `${address}:${nodePort}` : address) : '-';
-        return { name: nodeName, address: nodeAddress, type: 'node' as const };
-      }
-      if (rule.targetAddress) {
-        return {
-          name: '手动配置',
-          address: `${rule.targetAddress}:${rule.targetPort}`,
-          type: 'manual' as const,
-        };
-      }
-      return null;
-    };
-
-    // entry type
-    if (rule.ruleType === 'entry' && rule.exitAgentId) {
-      const exitAgent = agentsMap[rule.exitAgentId];
-      const exitName = exitAgent?.name || `ID: ${rule.exitAgentId}`;
-      const target = getTargetDisplay();
-      return {
-        type: 'agent' as const,
-        name: exitName,
-        address: target?.address || '-',
-        chainAgentIds: null,
-        targetDisplay: target,
-      };
-    }
-
-    // chain types
-    if ((rule.ruleType === 'chain' || rule.ruleType === 'direct_chain') && rule.chainAgentIds && rule.chainAgentIds.length > 0) {
-      const target = getTargetDisplay();
-      return {
-        type: 'chain' as const,
-        name: null,
-        address: target?.address || '-',
-        chainAgentIds: rule.chainAgentIds,
-        targetDisplay: target,
-      };
-    }
-
-    // direct type
-    const target = getTargetDisplay();
-    if (target) {
-      return {
-        type: target.type,
-        name: target.name,
-        address: target.address,
-        chainAgentIds: null,
-        targetDisplay: target,
-      };
-    }
-
-    return null;
-  }, [agentsMap, nodes]);
 
   // Render sync and run status
   const renderStatus = useCallback((rule: ForwardRule) => {
@@ -425,23 +471,16 @@ export const ForwardRuleMobileList: React.FC<ForwardRuleMobileListProps> = ({
     const SyncIcon = syncConfig.icon;
     const RunIcon = runConfig.icon;
 
+    // Simplified for mobile - use title for hover info
     return (
-      <Tooltip>
-        <TooltipTrigger asChild>
-          <div className="flex items-center gap-1">
-            {isPolling && <Loader2 className="size-3 animate-spin text-blue-400" />}
-            <SyncIcon className={`size-3.5 ${syncConfig.className}`} />
-            <RunIcon className={`size-3.5 ${runConfig.className}`} />
-          </div>
-        </TooltipTrigger>
-        <TooltipContent>
-          <div className="space-y-1 text-xs">
-            {isPolling && <div className="text-blue-400">正在同步...</div>}
-            <div>同步: {syncConfig.label}</div>
-            <div>运行: {runConfig.label}</div>
-          </div>
-        </TooltipContent>
-      </Tooltip>
+      <div
+        className="flex items-center gap-1"
+        title={`${isPolling ? '正在同步... / ' : ''}同步: ${syncConfig.label} / 运行: ${runConfig.label}`}
+      >
+        {isPolling && <Loader2 className="size-3 animate-spin text-blue-400" />}
+        <SyncIcon className={`size-3.5 ${syncConfig.className}`} />
+        <RunIcon className={`size-3.5 ${runConfig.className}`} />
+      </div>
     );
   }, [polledStatusMap, pollingRuleIds]);
 
@@ -454,7 +493,7 @@ export const ForwardRuleMobileList: React.FC<ForwardRuleMobileListProps> = ({
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <button
-            className="p-1.5 rounded-md hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
+            className="p-1.5 rounded-md hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors touch-manipulation"
             onClick={(e) => e.stopPropagation()}
           >
             <MoreHorizontal className="size-4 text-slate-500" />
@@ -526,7 +565,6 @@ export const ForwardRuleMobileList: React.FC<ForwardRuleMobileListProps> = ({
     const agent = agentsMap[rule.agentId];
     const agentName = agent?.name || `ID: ${rule.agentId}`;
     const entryAddress = getEntryAddress(rule);
-    const exitDisplay = getExitDisplay(rule);
     const statusConfig = STATUS_CONFIG[rule.status] || { label: rule.status, variant: 'default' as const };
     const ruleTypeConfig = RULE_TYPE_CONFIG[rule.ruleType] || RULE_TYPE_CONFIG.direct;
     const protocolConfig = PROTOCOL_CONFIG[rule.protocol] || PROTOCOL_CONFIG.tcp;
@@ -588,58 +626,46 @@ export const ForwardRuleMobileList: React.FC<ForwardRuleMobileListProps> = ({
                   </div>
                 </div>
 
-                {/* Quick Actions */}
+                {/* Quick Actions - touch-manipulation for better mobile scrolling */}
                 <div className="flex items-center gap-0.5 flex-shrink-0">
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <button
-                        onClick={() => onEdit(rule)}
-                        className="p-1.5 rounded hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
-                      >
-                        <Edit className="size-3.5 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300" />
-                      </button>
-                    </TooltipTrigger>
-                    <TooltipContent>编辑</TooltipContent>
-                  </Tooltip>
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <button
-                        onClick={() => rule.status === 'enabled' && onProbe(rule)}
-                        disabled={rule.status !== 'enabled' || probingRuleId === rule.id}
-                        className={`p-1.5 rounded transition-colors ${
-                          rule.status === 'enabled' && probingRuleId !== rule.id
-                            ? 'hover:bg-blue-50 dark:hover:bg-blue-900/20'
-                            : 'opacity-50 cursor-not-allowed'
-                        }`}
-                      >
-                        {probingRuleId === rule.id ? (
-                          <Loader2 className="size-3.5 text-blue-500 animate-spin" />
-                        ) : (
-                          <Activity className="size-3.5 text-slate-400 hover:text-blue-500" />
-                        )}
-                      </button>
-                    </TooltipTrigger>
-                    <TooltipContent>{probingRuleId === rule.id ? '拨测中...' : '拨测'}</TooltipContent>
-                  </Tooltip>
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <button
-                        onClick={() => rule.status === 'enabled' ? onDisable(rule) : onEnable(rule)}
-                        className={`p-1.5 rounded transition-colors ${
-                          rule.status === 'enabled'
-                            ? 'hover:bg-red-50 dark:hover:bg-red-900/20'
-                            : 'hover:bg-green-50 dark:hover:bg-green-900/20'
-                        }`}
-                      >
-                        {rule.status === 'enabled' ? (
-                          <PowerOff className="size-3.5 text-slate-400 hover:text-red-500" />
-                        ) : (
-                          <Power className="size-3.5 text-slate-400 hover:text-green-500" />
-                        )}
-                      </button>
-                    </TooltipTrigger>
-                    <TooltipContent>{rule.status === 'enabled' ? '禁用' : '启用'}</TooltipContent>
-                  </Tooltip>
+                  <button
+                    onClick={() => onEdit(rule)}
+                    className="p-1.5 rounded hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors touch-manipulation"
+                    title="编辑"
+                  >
+                    <Edit className="size-3.5 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300" />
+                  </button>
+                  <button
+                    onClick={() => rule.status === 'enabled' && onProbe(rule)}
+                    disabled={rule.status !== 'enabled' || probingRuleId === rule.id}
+                    className={`p-1.5 rounded transition-colors touch-manipulation ${
+                      rule.status === 'enabled' && probingRuleId !== rule.id
+                        ? 'hover:bg-blue-50 dark:hover:bg-blue-900/20'
+                        : 'opacity-50 cursor-not-allowed'
+                    }`}
+                    title={probingRuleId === rule.id ? '拨测中...' : '拨测'}
+                  >
+                    {probingRuleId === rule.id ? (
+                      <Loader2 className="size-3.5 text-blue-500 animate-spin" />
+                    ) : (
+                      <Activity className="size-3.5 text-slate-400 hover:text-blue-500" />
+                    )}
+                  </button>
+                  <button
+                    onClick={() => rule.status === 'enabled' ? onDisable(rule) : onEnable(rule)}
+                    className={`p-1.5 rounded transition-colors touch-manipulation ${
+                      rule.status === 'enabled'
+                        ? 'hover:bg-red-50 dark:hover:bg-red-900/20'
+                        : 'hover:bg-green-50 dark:hover:bg-green-900/20'
+                    }`}
+                    title={rule.status === 'enabled' ? '禁用' : '启用'}
+                  >
+                    {rule.status === 'enabled' ? (
+                      <PowerOff className="size-3.5 text-slate-400 hover:text-red-500" />
+                    ) : (
+                      <Power className="size-3.5 text-slate-400 hover:text-green-500" />
+                    )}
+                  </button>
                   {renderDropdownMenu(rule)}
                 </div>
               </div>
@@ -653,106 +679,65 @@ export const ForwardRuleMobileList: React.FC<ForwardRuleMobileListProps> = ({
             {/* Accordion Content - Expanded details */}
             <AccordionContent>
               <div className="px-3 pb-2 space-y-2 border-t border-slate-100 dark:border-slate-700 pt-2">
-                {/* Exit info - Improved flow visualization */}
+                {/* Flow path visualization - unified style */}
                 <div className="flex items-start gap-2">
-                  <span className="text-[10px] text-muted-foreground uppercase tracking-wide w-6 pt-0.5 flex-shrink-0">出口</span>
+                  <span className="text-[10px] text-muted-foreground uppercase tracking-wide w-6 pt-1 flex-shrink-0">链路</span>
                   <div className="flex-1 min-w-0">
-                    {exitDisplay?.type === 'chain' && exitDisplay.chainAgentIds ? (
-                      <ChainNodesDisplayMobile
-                        chainAgentIds={exitDisplay.chainAgentIds}
-                        agentsMap={agentsMap}
-                        targetDisplay={exitDisplay.targetDisplay}
-                        tunnelHops={rule.tunnelHops}
-                      />
-                    ) : exitDisplay ? (
-                      <div className="space-y-1">
-                        {/* Exit type indicator with flow */}
-                        <div className="flex items-center gap-1 flex-wrap">
-                          {exitDisplay.type === 'agent' && (
-                            <>
-                              <div className="flex items-center gap-0.5 px-1 py-0.5 rounded bg-purple-50 dark:bg-purple-900/20 border border-purple-200 dark:border-purple-800">
-                                <Bot className="size-2.5 text-purple-500" />
-                                <span className="text-[9px] font-semibold text-purple-600 dark:text-purple-400">出口</span>
-                              </div>
-                              <ArrowRight className="size-2.5 text-purple-400" />
-                            </>
-                          )}
-                          {exitDisplay.type === 'node' && (
-                            <div className="flex items-center gap-0.5 px-1 py-0.5 rounded bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800">
-                              <Server className="size-2.5 text-blue-500" />
-                              <span className="text-[9px] font-semibold text-blue-600 dark:text-blue-400">节点</span>
-                            </div>
-                          )}
-                          {exitDisplay.type === 'manual' && (
-                            <div className="flex items-center gap-0.5 px-1 py-0.5 rounded bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700">
-                              <Settings className="size-2.5 text-slate-500" />
-                              <span className="text-[9px] font-semibold text-slate-500">手动</span>
-                            </div>
-                          )}
-                          <span className="text-[11px] font-medium text-foreground truncate">{exitDisplay.name}</span>
-                        </div>
-                        {/* Target address */}
-                        <div className="flex items-center gap-1">
-                          {exitDisplay.type === 'agent' ? (
-                            <Server className="size-2.5 text-blue-500 flex-shrink-0" />
-                          ) : exitDisplay.type === 'node' ? (
-                            <Server className="size-2.5 text-blue-500 flex-shrink-0" />
-                          ) : (
-                            <Settings className="size-2.5 text-slate-400 flex-shrink-0" />
-                          )}
-                          <CopyableAddress address={exitDisplay.address} className="text-muted-foreground" />
-                        </div>
-                      </div>
-                    ) : (
-                      <span className="text-xs text-muted-foreground">-</span>
-                    )}
+                    <FlowPathDisplayMobile rule={rule} agentsMap={agentsMap} nodes={nodes} />
                   </div>
                 </div>
 
-                {/* Traffic with mini bar */}
+                {/* Traffic with mini bar - simplified for mobile */}
                 <div className="flex items-center gap-2">
                   <span className="text-[10px] text-muted-foreground uppercase tracking-wide w-6 flex-shrink-0">流量</span>
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <div className="flex items-center gap-2 flex-1">
-                        <span className="text-xs font-medium text-foreground tabular-nums">
-                          {formatBytes(totalBytes)}
-                        </span>
-                        {rule.effectiveTrafficMultiplier && rule.effectiveTrafficMultiplier !== 1 && (
-                          <span className="text-[9px] px-1 py-0.5 rounded bg-muted text-muted-foreground">
-                            ×{rule.effectiveTrafficMultiplier.toFixed(1)}
-                          </span>
-                        )}
-                        {/* Mini traffic bar */}
-                        <div className="flex-1 max-w-16 h-1 bg-muted rounded-full overflow-hidden flex">
-                          <div
-                            className="h-full bg-green-500"
-                            style={{ width: `${uploadRatio}%` }}
-                          />
-                          <div
-                            className="h-full bg-blue-500"
-                            style={{ width: `${100 - uploadRatio}%` }}
-                          />
-                        </div>
-                      </div>
-                    </TooltipTrigger>
-                    <TooltipContent>
-                      <div className="text-xs space-y-1">
-                        <div className="flex items-center gap-1.5">
-                          <span className="w-2 h-2 rounded-full bg-green-500" />
-                          <span>上传: {formatBytes(uploadBytes)}</span>
-                        </div>
-                        <div className="flex items-center gap-1.5">
-                          <span className="w-2 h-2 rounded-full bg-blue-500" />
-                          <span>下载: {formatBytes(downloadBytes)}</span>
-                        </div>
-                        <div className="pt-1 border-t border-border">
-                          倍率: {rule.effectiveTrafficMultiplier?.toFixed(2) || '1.00'}x
-                        </div>
-                      </div>
-                    </TooltipContent>
-                  </Tooltip>
+                  <div
+                    className="flex items-center gap-2 flex-1"
+                    title={`上传: ${formatBytes(uploadBytes)} / 下载: ${formatBytes(downloadBytes)} / 倍率: ${rule.effectiveTrafficMultiplier?.toFixed(2) || '1.00'}x`}
+                  >
+                    <span className="text-xs font-medium text-foreground tabular-nums">
+                      {formatBytes(totalBytes)}
+                    </span>
+                    {rule.effectiveTrafficMultiplier && rule.effectiveTrafficMultiplier !== 1 && (
+                      <span className="text-[9px] px-1 py-0.5 rounded bg-muted text-muted-foreground">
+                        ×{rule.effectiveTrafficMultiplier.toFixed(1)}
+                      </span>
+                    )}
+                    {/* Mini traffic bar */}
+                    <div className="flex-1 max-w-16 h-1 bg-muted rounded-full overflow-hidden flex">
+                      <div
+                        className="h-full bg-green-500"
+                        style={{ width: `${uploadRatio}%` }}
+                      />
+                      <div
+                        className="h-full bg-blue-500"
+                        style={{ width: `${100 - uploadRatio}%` }}
+                      />
+                    </div>
+                  </div>
                 </div>
+
+                {/* Resource Groups */}
+                {rule.groupSids && rule.groupSids.length > 0 && (() => {
+                  const groups = rule.groupSids
+                    .map((sid) => resourceGroupsMap[sid])
+                    .filter((g): g is ResourceGroup => !!g);
+                  if (groups.length === 0) return null;
+                  return (
+                    <div className="flex items-start gap-2">
+                      <span className="text-[10px] text-muted-foreground uppercase tracking-wide w-6 pt-0.5 flex-shrink-0">分组</span>
+                      <div className="flex-1 flex flex-wrap gap-1">
+                        {groups.map((g) => (
+                          <span
+                            key={g.sid}
+                            className="text-[10px] px-1.5 py-0.5 rounded bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300"
+                          >
+                            {g.name}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  );
+                })()}
 
                 {/* Remark - Inline */}
                 {rule.remark && (

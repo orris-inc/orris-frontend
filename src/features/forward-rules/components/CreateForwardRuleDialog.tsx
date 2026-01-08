@@ -4,7 +4,7 @@
  * Supports target types: manual address input or node selection (dynamic resolution)
  */
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import {
   Dialog,
   DialogContent,
@@ -31,7 +31,9 @@ import {
   AccordionContent,
 } from "@/components/common/Accordion";
 import { Badge } from "@/components/common/Badge";
-import { Info } from "lucide-react";
+import { Checkbox } from "@/components/common/Checkbox";
+import { ScrollArea } from "@/components/common/ScrollArea";
+import { Info, FolderTree } from "lucide-react";
 import { SortableChainAgentList } from "./SortableChainAgentList";
 import type {
   CreateForwardRuleRequest,
@@ -42,6 +44,8 @@ import type {
   TunnelType,
 } from "@/api/forward";
 import type { Node } from "@/api/node";
+import type { ResourceGroup } from "@/api/resource/types";
+import type { SubscriptionPlan } from "@/api/subscription/types";
 
 // Target type
 type TargetType = "manual" | "node";
@@ -56,6 +60,10 @@ interface CreateForwardRuleDialogProps {
   initialData?: Partial<CreateForwardRuleRequest> & {
     targetType?: "manual" | "node";
   };
+  /** Resource groups for binding (only node/hybrid plan groups can bind rules) */
+  resourceGroups?: ResourceGroup[];
+  /** Subscription plans map for filtering resource groups by plan type */
+  plansMap?: Record<string, SubscriptionPlan>;
 }
 
 /**
@@ -114,7 +122,7 @@ const RULE_TYPE_INFO: Record<
 
 export const CreateForwardRuleDialog: React.FC<
   CreateForwardRuleDialogProps
-> = ({ open, onClose, onSubmit, agents, nodes = [], initialData }) => {
+> = ({ open, onClose, onSubmit, agents, nodes = [], initialData, resourceGroups = [], plansMap = {} }) => {
   const [formData, setFormData] = useState({
     agentId: "",
     ruleType: "direct" as ForwardRuleType,
@@ -134,6 +142,7 @@ export const CreateForwardRuleDialog: React.FC<
     protocol: "tcp" as ForwardProtocol,
     ipVersion: "auto" as IPVersion,
     remark: "",
+    groupSids: [] as string[],
   });
   const [targetType, setTargetType] = useState<TargetType>("manual");
 
@@ -163,6 +172,7 @@ export const CreateForwardRuleDialog: React.FC<
           protocol: initialData.protocol || "tcp",
           ipVersion: initialData.ipVersion || "auto",
           remark: initialData.remark || "",
+          groupSids: initialData.groupSids || [],
         });
         // Set target type based on initial data
         setTargetType(
@@ -190,6 +200,7 @@ export const CreateForwardRuleDialog: React.FC<
           protocol: "tcp",
           ipVersion: "auto",
           remark: "",
+          groupSids: [],
         });
         setTargetType("manual");
       }
@@ -536,6 +547,10 @@ export const CreateForwardRuleDialog: React.FC<
         submitData.remark = formData.remark.trim();
       }
 
+      if (formData.groupSids && formData.groupSids.length > 0) {
+        submitData.groupSids = formData.groupSids;
+      }
+
       onSubmit(submitData);
       handleClose();
     }
@@ -627,6 +642,29 @@ export const CreateForwardRuleDialog: React.FC<
   const availableChainAgents = availableAgentsForSelect.filter(
     (a) => a.id !== formData.agentId,
   );
+
+  // Get available resource groups (only node/hybrid plan groups can bind forward rules)
+  const availableResourceGroups = useMemo(() => {
+    return resourceGroups.filter((group) => {
+      const plan = plansMap[group.planId];
+      // Only active groups with node or hybrid plan type can bind forward rules
+      return group.status === "active" && plan && (plan.planType === "node" || plan.planType === "hybrid");
+    });
+  }, [resourceGroups, plansMap]);
+
+  // Handle resource group selection toggle
+  const handleGroupToggle = (groupSid: string) => {
+    setFormData((prev) => {
+      const currentGroups = prev.groupSids || [];
+      const isSelected = currentGroups.includes(groupSid);
+      return {
+        ...prev,
+        groupSids: isSelected
+          ? currentGroups.filter((sid) => sid !== groupSid)
+          : [...currentGroups, groupSid],
+      };
+    });
+  };
 
   return (
     <Dialog open={open} onOpenChange={(isOpen) => !isOpen && handleClose()}>
@@ -1265,6 +1303,62 @@ export const CreateForwardRuleDialog: React.FC<
                       className="resize-none"
                     />
                   </div>
+
+                  {/* Resource Groups Selection */}
+                  {availableResourceGroups.length > 0 && (
+                    <div className="flex flex-col gap-2 sm:col-span-2">
+                      <Label className="flex items-center gap-1.5">
+                        <FolderTree className="size-4" />
+                        绑定资源组（可选）
+                      </Label>
+                      <p className="text-xs text-muted-foreground">
+                        选择要绑定的资源组，规则将自动添加到订阅内容中
+                      </p>
+                      <div className="border rounded-lg overflow-hidden">
+                        <ScrollArea className="h-[120px]">
+                          <div className="divide-y">
+                            {availableResourceGroups.map((group) => {
+                              const plan = plansMap[group.planId];
+                              const isSelected = formData.groupSids?.includes(group.sid) ?? false;
+                              return (
+                                <label
+                                  key={group.sid}
+                                  className={`flex items-center gap-3 px-3 py-2 cursor-pointer transition-colors ${
+                                    isSelected
+                                      ? "bg-primary/10"
+                                      : "hover:bg-muted/50"
+                                  }`}
+                                >
+                                  <Checkbox
+                                    checked={isSelected}
+                                    onCheckedChange={() => handleGroupToggle(group.sid)}
+                                  />
+                                  <div className="flex-1 min-w-0">
+                                    <p className="text-sm font-medium truncate">{group.name}</p>
+                                    {plan && (
+                                      <p className="text-xs text-muted-foreground truncate">
+                                        {plan.name}
+                                      </p>
+                                    )}
+                                  </div>
+                                  {plan && (
+                                    <Badge variant="outline" className="text-[10px] flex-shrink-0">
+                                      {plan.planType === "node" ? "节点" : "混合"}
+                                    </Badge>
+                                  )}
+                                </label>
+                              );
+                            })}
+                          </div>
+                        </ScrollArea>
+                      </div>
+                      {formData.groupSids && formData.groupSids.length > 0 && (
+                        <p className="text-xs text-muted-foreground">
+                          已选择 {formData.groupSids.length} 个资源组
+                        </p>
+                      )}
+                    </div>
+                  )}
                 </div>
               </AccordionContent>
             </AccordionItem>

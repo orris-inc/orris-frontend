@@ -66,23 +66,57 @@ export const AdminLayout = ({ children }: AdminLayoutProps) => {
       to="/dashboard"
       onClick={() => setMobileDrawerOpen(false)}
       className={cn(
-        'flex items-center rounded-lg text-muted-foreground hover:bg-accent hover:text-foreground touch-target',
-        collapsed ? 'justify-center p-2.5' : 'gap-3 px-3 py-2.5'
+        'group flex items-center rounded-xl text-primary',
+        'transition-colors duration-200 ease-out',
+        'active:bg-primary/10',
+        'motion-reduce:transition-none',
+        collapsed ? 'justify-center p-2.5 min-h-[44px]' : 'gap-3 px-3 py-3 min-h-[48px]'
       )}
     >
-      <ArrowLeftRight className="h-5 w-5 flex-shrink-0" />
-      {!collapsed && <span className="text-sm font-medium whitespace-nowrap">切换到用户视图</span>}
+      {collapsed ? (
+        <ArrowLeftRight className="h-5 w-5 flex-shrink-0" />
+      ) : (
+        <>
+          <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary/10">
+            <ArrowLeftRight className="h-5 w-5 text-primary" aria-hidden="true" />
+          </span>
+          <span className="text-sm font-medium whitespace-nowrap">切换到用户视图</span>
+        </>
+      )}
     </RouterLink>
   );
 
-  // Mobile sidebar content
+  // Mobile sidebar content - modern design with user profile
   const MobileSidebarContent = () => (
-    <div className="flex h-full flex-col bg-background">
+    <div className="flex h-full flex-col bg-background pb-safe">
+      {/* Header */}
       <div className="flex h-14 items-center justify-between border-b px-4">
-        <span className="text-base font-semibold text-foreground">管理控制台</span>
+        <span className="text-lg font-bold text-foreground">管理控制台</span>
       </div>
 
-      <div className="flex-1 overflow-y-auto py-4">
+      {/* User Profile Section */}
+      {user && (
+        <div className="border-b px-4 py-4">
+          <div className="flex items-center gap-3">
+            <div className="flex h-12 w-12 items-center justify-center rounded-full bg-primary">
+              <span className="text-base font-semibold text-primary-foreground">
+                {user.displayName?.charAt(0).toUpperCase() || '?'}
+              </span>
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-semibold text-foreground truncate">
+                {user.displayName || 'Admin'}
+              </p>
+              <p className="text-xs text-muted-foreground truncate">
+                {user.email}
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Navigation */}
+      <div className="flex-1 overflow-y-auto py-3 px-3">
         <AdminSidebarNav
           items={adminNavItems}
           collapsed={false}
@@ -90,9 +124,10 @@ export const AdminLayout = ({ children }: AdminLayoutProps) => {
         />
       </div>
 
-      <AdminSidebarFooter collapsed={false}>
+      {/* Footer Actions */}
+      <div className="border-t px-3 py-3 space-y-1">
         <SwitchToUserViewLink />
-      </AdminSidebarFooter>
+      </div>
     </div>
   );
 
@@ -102,10 +137,36 @@ export const AdminLayout = ({ children }: AdminLayoutProps) => {
         {/* 移动端侧边栏 */}
         <Dialog.Root open={mobileDrawerOpen} onOpenChange={setMobileDrawerOpen}>
           <Dialog.Portal>
-            <Dialog.Overlay className="fixed inset-0 z-50 bg-black/50 md:hidden" />
-            <Dialog.Content className="fixed inset-y-0 left-0 z-50 h-full w-72 bg-background shadow-xl md:hidden data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:slide-out-to-left data-[state=open]:slide-in-from-left">
-              <Dialog.Close className="absolute right-2 top-2 rounded-lg p-2 hover:bg-accent touch-target flex items-center justify-center min-w-[44px] min-h-[44px]">
-                <X className="h-5 w-5" />
+            <Dialog.Overlay
+              className={cn(
+                'fixed inset-0 z-50 bg-black/50 backdrop-blur-sm md:hidden',
+                'data-[state=open]:animate-in data-[state=closed]:animate-out',
+                'data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0',
+                'data-[state=closed]:duration-200 data-[state=open]:duration-300',
+                'motion-reduce:animate-none'
+              )}
+            />
+            <Dialog.Content
+              className={cn(
+                'fixed inset-y-0 left-0 z-50 h-full w-[300px] max-w-[85vw] bg-background shadow-2xl md:hidden',
+                'data-[state=open]:animate-in data-[state=closed]:animate-out',
+                'data-[state=closed]:duration-200 data-[state=open]:duration-300',
+                'data-[state=closed]:slide-out-to-left data-[state=open]:slide-in-from-left',
+                'motion-reduce:animate-none'
+              )}
+            >
+              <Dialog.Close
+                className={cn(
+                  'absolute right-3 top-3 flex h-10 w-10 items-center justify-center rounded-xl',
+                  'text-muted-foreground transition-colors duration-200',
+                  'hover:bg-accent hover:text-foreground',
+                  'active:bg-accent/80',
+                  'focus:outline-none focus-visible:ring-2 focus-visible:ring-ring',
+                  'motion-reduce:transition-none'
+                )}
+              >
+                <X className="h-5 w-5" aria-hidden="true" />
+                <span className="sr-only">Close menu</span>
               </Dialog.Close>
               <Dialog.Title className="sr-only">导航菜单</Dialog.Title>
               <MobileSidebarContent />

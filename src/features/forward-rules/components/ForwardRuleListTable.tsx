@@ -4,8 +4,8 @@
  * Switches to mobile card list on small screens
  */
 
-import { useMemo, useState, useCallback } from 'react';
-import { Edit, Trash2, Eye, Power, PowerOff, MoreHorizontal, RotateCcw, Activity, Loader2, Copy, Check, Server, Bot, Settings, ArrowRight, Files, CheckCircle2, CircleDashed, AlertCircle, Play, Square, AlertTriangle, RotateCw } from 'lucide-react';
+import { useMemo, useCallback, useState } from 'react';
+import { Edit, Trash2, Eye, Power, PowerOff, MoreHorizontal, RotateCcw, Activity, Loader2, Server, Bot, ArrowRight, Files, CheckCircle2, CircleDashed, AlertCircle, Play, Square, AlertTriangle, RotateCw, Copy, Check } from 'lucide-react';
 import { DataTable, DraggableDataTable, AdminBadge, TruncatedId, type ColumnDef, type ResponsiveColumnMeta } from '@/components/admin';
 import { useBreakpoint } from '@/hooks/useBreakpoint';
 import { ForwardRuleMobileList } from './ForwardRuleMobileList';
@@ -24,10 +24,12 @@ import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/common/Too
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/common/Popover';
 import type { ForwardRule, ForwardAgent, RuleOverallStatusResponse, RuleSyncStatus, RuleRunStatus } from '@/api/forward';
 import type { Node } from '@/api/node';
+import type { ResourceGroup } from '@/api/resource';
 
 interface ForwardRuleListTableProps {
   rules: ForwardRule[];
   agentsMap?: Record<string, ForwardAgent>;
+  resourceGroupsMap?: Record<string, ResourceGroup>;
   nodes?: Node[];
   polledStatusMap?: Record<string, RuleOverallStatusResponse>;
   pollingRuleIds?: string[];
@@ -122,41 +124,6 @@ const RUN_STATUS_CONFIG: Record<RuleRunStatus | 'unknown', { label: string; icon
   unknown: { label: '未知', icon: CircleDashed, className: 'text-gray-400' },
 };
 
-// Copyable address component
-const CopyableAddress: React.FC<{ address: string; className?: string }> = ({ address, className = '' }) => {
-  const [copied, setCopied] = useState(false);
-
-  const handleCopy = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    if (address && address !== '-') {
-      navigator.clipboard.writeText(address);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
-    }
-  };
-
-  if (!address || address === '-') {
-    return <span className="text-slate-400 dark:text-slate-500">-</span>;
-  }
-
-  return (
-    <div className={`flex items-center gap-1 min-w-0 ${className}`}>
-      <span className="font-mono text-xs truncate">{address}</span>
-      <button
-        onClick={handleCopy}
-        className="flex-shrink-0 p-0.5 rounded hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors"
-        title={copied ? '已复制' : '复制'}
-      >
-        {copied ? (
-          <Check className="size-3 text-green-500" />
-        ) : (
-          <Copy className="size-3 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300" />
-        )}
-      </button>
-    </div>
-  );
-};
-
 // Format bytes (default display in GB)
 const formatBytes = (bytes?: number) => {
   if (!bytes) return '0 GB';
@@ -164,165 +131,344 @@ const formatBytes = (bytes?: number) => {
   return `${gb.toFixed(2)} GB`;
 };
 
-// Exit type configuration for visual consistency
-const EXIT_TYPE_CONFIG = {
-  agent: {
-    label: '中转',
-    icon: Bot,
-    color: 'text-purple-500',
-    bgColor: 'bg-purple-50 dark:bg-purple-900/20',
-    borderColor: 'border-purple-200 dark:border-purple-800',
-  },
-  node: {
-    label: '节点',
-    icon: Server,
-    color: 'text-blue-500',
-    bgColor: 'bg-blue-50 dark:bg-blue-900/20',
-    borderColor: 'border-blue-200 dark:border-blue-800',
-  },
-  manual: {
-    label: '手动',
-    icon: Settings,
-    color: 'text-slate-500',
-    bgColor: 'bg-slate-50 dark:bg-slate-800/50',
-    borderColor: 'border-slate-200 dark:border-slate-700',
-  },
+// Flow arrow component for chain visualization
+const FlowArrow: React.FC<{ className?: string; color?: 'purple' | 'blue' | 'green' }> = ({ className = '', color = 'purple' }) => {
+  const colorClasses = {
+    purple: 'from-purple-300 to-purple-400 dark:from-purple-600 dark:to-purple-400',
+    blue: 'from-blue-300 to-blue-400 dark:from-blue-600 dark:to-blue-400',
+    green: 'from-green-300 to-green-400 dark:from-green-600 dark:to-green-400',
+  };
+  const arrowColor = {
+    purple: 'text-purple-400 dark:text-purple-400',
+    blue: 'text-blue-400 dark:text-blue-400',
+    green: 'text-green-400 dark:text-green-400',
+  };
+  return (
+    <div className={`flex items-center justify-center flex-shrink-0 ${className}`}>
+      <div className={`w-4 h-px bg-gradient-to-r ${colorClasses[color]}`} />
+      <ArrowRight className={`size-3 -ml-1 ${arrowColor[color]}`} />
+    </div>
+  );
 };
 
-// Flow arrow component for chain visualization
-const FlowArrow: React.FC<{ className?: string }> = ({ className = '' }) => (
-  <div className={`flex items-center justify-center ${className}`}>
-    <div className="w-3 h-px bg-gradient-to-r from-purple-300 to-purple-500 dark:from-purple-700 dark:to-purple-400" />
-    <ArrowRight className="size-2.5 -ml-0.5 text-purple-500 dark:text-purple-400" />
-  </div>
-);
+// Flow node component for path visualization
+interface FlowNodeProps {
+  type: 'entry' | 'relay' | 'exit' | 'target';
+  name: string;
+  address?: string;
+  tunnelAddress?: string;
+  isFirst?: boolean;
+}
 
-// Chain nodes display component with improved flow visualization
-const ChainNodesDisplay: React.FC<{
-  chainAgentIds: string[];
-  agentsMap: Record<string, ForwardAgent>;
-  targetDisplay: { name: string; address: string } | null;
-  tunnelHops?: number;
-}> = ({ chainAgentIds, agentsMap, targetDisplay, tunnelHops }) => {
-  const chainCount = chainAgentIds.length;
+// Copyable address row component
+const CopyableAddressRow: React.FC<{ label: string; address: string }> = ({ label, address }) => {
+  const [copied, setCopied] = useState(false);
 
-  const getAgentName = (id: string) => {
-    const agent = agentsMap[id];
-    return agent?.name || `ID: ${id}`;
+  const handleCopy = () => {
+    navigator.clipboard.writeText(address);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
   };
 
-  // Get first agent for display
-  const firstAgentName = getAgentName(chainAgentIds[0]);
+  return (
+    <div className="flex items-center gap-1.5">
+      <span className="text-[10px] text-muted-foreground w-8 flex-shrink-0">{label}</span>
+      <span className="font-mono text-xs text-muted-foreground">{address}</span>
+      <button
+        onClick={handleCopy}
+        className="flex-shrink-0 p-0.5 rounded hover:bg-muted transition-colors"
+        title={copied ? '已复制' : '复制地址'}
+      >
+        {copied ? (
+          <Check className="size-3 text-green-500" />
+        ) : (
+          <Copy className="size-3 text-muted-foreground hover:text-foreground" />
+        )}
+      </button>
+    </div>
+  );
+};
+
+const FlowNode: React.FC<FlowNodeProps> = ({ type, name, address, tunnelAddress }) => {
+  const config = {
+    entry: {
+      icon: Bot,
+      color: 'text-green-500',
+      bgColor: 'bg-green-50 dark:bg-green-900/30',
+      borderColor: 'border-green-300 dark:border-green-700',
+      label: '入口',
+    },
+    relay: {
+      icon: Bot,
+      color: 'text-purple-500',
+      bgColor: 'bg-purple-50 dark:bg-purple-900/30',
+      borderColor: 'border-purple-300 dark:border-purple-700',
+      label: '中转',
+    },
+    exit: {
+      icon: Bot,
+      color: 'text-orange-500',
+      bgColor: 'bg-orange-50 dark:bg-orange-900/30',
+      borderColor: 'border-orange-300 dark:border-orange-700',
+      label: '出口',
+    },
+    target: {
+      icon: Server,
+      color: 'text-blue-500',
+      bgColor: 'bg-blue-50 dark:bg-blue-900/30',
+      borderColor: 'border-blue-300 dark:border-blue-700',
+      label: '目标',
+    },
+  };
+
+  const nodeConfig = config[type];
+  const IconComponent = nodeConfig.icon;
+  const hasAddress = (address && address !== '-') || tunnelAddress;
+
+  // If has address, use Popover for copy functionality
+  if (hasAddress) {
+    return (
+      <Popover>
+        <PopoverTrigger asChild>
+          <button className={`flex items-center gap-1 px-1.5 py-0.5 rounded-md ${nodeConfig.bgColor} border ${nodeConfig.borderColor} cursor-pointer hover:opacity-80 transition-opacity min-w-0`}>
+            <IconComponent className={`size-3 flex-shrink-0 ${nodeConfig.color}`} />
+            <span className="text-xs font-medium text-foreground truncate max-w-[80px]">{name}</span>
+          </button>
+        </PopoverTrigger>
+        <PopoverContent className="w-auto p-2" align="start">
+          <div className="space-y-1.5">
+            <div className="flex items-center gap-1.5">
+              <span className={`text-[10px] px-1 py-0.5 rounded ${nodeConfig.bgColor} ${nodeConfig.color} font-medium`}>
+                {nodeConfig.label}
+              </span>
+              <span className="text-sm font-medium">{name}</span>
+            </div>
+            {address && address !== '-' && (
+              <CopyableAddressRow label="公网" address={address} />
+            )}
+            {tunnelAddress && (
+              <CopyableAddressRow label="隧道" address={tunnelAddress} />
+            )}
+          </div>
+        </PopoverContent>
+      </Popover>
+    );
+  }
+
+  // No address, use simple Tooltip
+  return (
+    <Tooltip>
+      <TooltipTrigger asChild>
+        <div className={`flex items-center gap-1 px-1.5 py-0.5 rounded-md ${nodeConfig.bgColor} border ${nodeConfig.borderColor} cursor-default min-w-0`}>
+          <IconComponent className={`size-3 flex-shrink-0 ${nodeConfig.color}`} />
+          <span className="text-xs font-medium text-foreground truncate max-w-[80px]">{name}</span>
+        </div>
+      </TooltipTrigger>
+      <TooltipContent side="bottom">
+        <div className="flex items-center gap-1.5">
+          <span className={`text-[10px] px-1 py-0.5 rounded ${nodeConfig.bgColor} ${nodeConfig.color} font-medium`}>
+            {nodeConfig.label}
+          </span>
+          <span className="text-sm font-medium">{name}</span>
+        </div>
+      </TooltipContent>
+    </Tooltip>
+  );
+};
+
+// Collapsed relay nodes indicator
+interface RelayAgentInfo {
+  id: string;
+  name: string;
+  address?: string;
+  tunnelAddress?: string;
+}
+
+interface CollapsedRelaysProps {
+  count: number;
+  agents: RelayAgentInfo[];
+}
+
+// Address row in relay item
+const RelayAddressRow: React.FC<{ label: string; address: string }> = ({ label, address }) => {
+  const [copied, setCopied] = useState(false);
+
+  const handleCopy = () => {
+    navigator.clipboard.writeText(address);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
 
   return (
-    <div className="space-y-1 min-w-0">
-      {/* Chain flow header */}
-      <div className="flex items-center gap-1">
-        {/* Chain indicator with count */}
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <div className="flex items-center gap-0.5 px-1.5 py-0.5 rounded bg-purple-50 dark:bg-purple-900/20 border border-purple-200 dark:border-purple-800">
-              <Bot className="size-3 text-purple-500" />
-              <span className="text-[10px] font-semibold text-purple-600 dark:text-purple-400">{chainCount}</span>
-            </div>
-          </TooltipTrigger>
-          <TooltipContent>{chainCount} 个中转节点</TooltipContent>
-        </Tooltip>
+    <div className="flex items-center gap-1 mt-0.5 pl-4">
+      <span className="text-[10px] text-muted-foreground w-6 flex-shrink-0">{label}</span>
+      <span className="font-mono text-[11px] text-muted-foreground truncate">{address}</span>
+      <button
+        onClick={handleCopy}
+        className="flex-shrink-0 p-0.5 rounded hover:bg-muted transition-colors"
+        title={copied ? '已复制' : '复制地址'}
+      >
+        {copied ? (
+          <Check className="size-3 text-green-500" />
+        ) : (
+          <Copy className="size-3 text-muted-foreground hover:text-foreground" />
+        )}
+      </button>
+    </div>
+  );
+};
 
-        {/* First node name with flow */}
-        <FlowArrow />
-        <span className="text-xs font-medium text-foreground truncate max-w-[60px]">{firstAgentName}</span>
-
-        {/* More nodes indicator */}
-        {chainCount > 1 && (
-          <>
-            <FlowArrow />
-            <Popover>
-              <PopoverTrigger asChild>
-                <button className="flex items-center gap-0.5 px-1.5 py-0.5 text-[10px] font-medium rounded-full bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300 hover:bg-purple-200 dark:hover:bg-purple-900/50 transition-colors cursor-pointer">
-                  +{chainCount - 1}
-                  <ArrowRight className="size-2.5" />
-                </button>
-              </PopoverTrigger>
-              <PopoverContent className="w-72" align="start">
-                <div className="space-y-3">
-                  {/* Header */}
-                  <div className="flex items-center justify-between">
-                    <h4 className="text-sm font-semibold text-foreground">链路拓扑</h4>
-                    <div className="flex items-center gap-1.5">
-                      {tunnelHops && tunnelHops > 0 && (
-                        <span className="text-[10px] px-1.5 py-0.5 rounded bg-cyan-50 dark:bg-cyan-900/20 text-cyan-600 dark:text-cyan-400 font-medium">
-                          {tunnelHops} 跳隧道
-                        </span>
-                      )}
-                      <span className="text-[10px] px-1.5 py-0.5 rounded bg-muted text-muted-foreground font-medium">
-                        {chainCount} 节点
-                      </span>
-                    </div>
-                  </div>
-
-                  {/* Flow visualization */}
-                  <div className="relative">
-                    {/* Vertical flow line */}
-                    <div className="absolute left-3 top-4 bottom-4 w-px bg-gradient-to-b from-purple-300 via-purple-400 to-blue-400 dark:from-purple-700 dark:via-purple-500 dark:to-blue-500" />
-
-                    <div className="space-y-1.5">
-                      {chainAgentIds.map((id, index) => {
-                        const agent = agentsMap[id];
-                        const agentName = agent?.name || `ID: ${id}`;
-                        return (
-                          <div key={id} className="flex items-center gap-2 relative">
-                            {/* Step indicator */}
-                            <div className="flex-shrink-0 w-6 h-6 rounded-full bg-purple-100 dark:bg-purple-900/30 border-2 border-purple-300 dark:border-purple-700 flex items-center justify-center text-[10px] font-bold text-purple-600 dark:text-purple-400 z-10">
-                              {index + 1}
-                            </div>
-                            {/* Node info */}
-                            <div className="flex-1 min-w-0 py-1">
-                              <div className="flex items-center gap-1.5">
-                                <Bot className="size-3 text-purple-500 flex-shrink-0" />
-                                <span className="text-xs font-medium text-foreground truncate">{agentName}</span>
-                              </div>
-                              {agent?.publicAddress && (
-                                <span className="text-[10px] text-muted-foreground font-mono truncate block pl-4">
-                                  {agent.publicAddress}
-                                </span>
-                              )}
-                            </div>
-                          </div>
-                        );
-                      })}
-
-                      {/* Target node */}
-                      {targetDisplay && (
-                        <div className="flex items-center gap-2 relative">
-                          <div className="flex-shrink-0 w-6 h-6 rounded-full bg-blue-100 dark:bg-blue-900/30 border-2 border-blue-300 dark:border-blue-700 flex items-center justify-center z-10">
-                            <Server className="size-3 text-blue-500" />
-                          </div>
-                          <div className="flex-1 min-w-0 py-1">
-                            <div className="flex items-center gap-1.5">
-                              <span className="text-[10px] px-1 py-0.5 rounded bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 font-medium">目标</span>
-                              <span className="text-xs font-medium text-foreground truncate">{targetDisplay.name}</span>
-                            </div>
-                            <span className="text-[10px] text-muted-foreground font-mono truncate block">
-                              {targetDisplay.address}
-                            </span>
-                          </div>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                </div>
-              </PopoverContent>
-            </Popover>
-          </>
+// Single relay item with copy functionality
+const RelayItem: React.FC<{ agent: RelayAgentInfo; index: number }> = ({ agent, index }) => {
+  return (
+    <div className="flex items-start gap-2 text-sm py-1.5">
+      <span className="flex-shrink-0 w-5 h-5 rounded-full bg-purple-100 dark:bg-purple-900/30 text-[10px] font-bold text-purple-600 dark:text-purple-400 flex items-center justify-center mt-0.5">
+        {index + 1}
+      </span>
+      <div className="flex-1 min-w-0">
+        <div className="flex items-center gap-1.5">
+          <Bot className="size-3 text-purple-500 flex-shrink-0" />
+          <span className="truncate font-medium text-foreground">{agent.name}</span>
+        </div>
+        {agent.address && (
+          <RelayAddressRow label="公网" address={agent.address} />
+        )}
+        {agent.tunnelAddress && (
+          <RelayAddressRow label="隧道" address={agent.tunnelAddress} />
         )}
       </div>
+    </div>
+  );
+};
 
-      {/* Target address */}
-      <div className="flex items-center gap-1 pl-1">
-        <Server className="size-2.5 text-blue-500 flex-shrink-0" />
-        <CopyableAddress address={targetDisplay?.address || '-'} className="text-muted-foreground" />
-      </div>
+const CollapsedRelays: React.FC<CollapsedRelaysProps> = ({ count, agents }) => {
+  return (
+    <Popover>
+      <PopoverTrigger asChild>
+        <button className="flex items-center gap-0.5 px-1.5 py-0.5 text-[10px] font-semibold rounded-md bg-purple-100 dark:bg-purple-900/40 text-purple-600 dark:text-purple-300 border border-purple-200 dark:border-purple-700 hover:bg-purple-200 dark:hover:bg-purple-800/50 transition-colors cursor-pointer">
+          +{count}
+        </button>
+      </PopoverTrigger>
+      <PopoverContent className="w-72 p-3" align="start">
+        <div className="space-y-2">
+          <h4 className="text-xs font-semibold text-muted-foreground">中转节点</h4>
+          <div className="divide-y divide-border">
+            {agents.map((agent, idx) => (
+              <RelayItem key={agent.id} agent={agent} index={idx} />
+            ))}
+          </div>
+        </div>
+      </PopoverContent>
+    </Popover>
+  );
+};
+
+// Full path display component - shows entry -> relays -> target in horizontal flow
+interface FlowPathDisplayProps {
+  rule: ForwardRule;
+  agentsMap: Record<string, ForwardAgent>;
+  nodes: Node[];
+}
+
+const FlowPathDisplay: React.FC<FlowPathDisplayProps> = ({ rule, agentsMap, nodes }) => {
+  // Get entry agent info
+  const entryAgent = agentsMap[rule.agentId];
+  const entryName = entryAgent?.name || `ID: ${rule.agentId.slice(0, 8)}`;
+  const entryAddress = entryAgent?.publicAddress ? `${entryAgent.publicAddress}:${rule.listenPort}` : undefined;
+  const entryTunnelAddress = entryAgent?.tunnelAddress;
+
+  // Get target display info
+  const getTargetDisplay = () => {
+    if (rule.targetNodeId) {
+      const targetNode = nodes.find((n) => n.id === rule.targetNodeId);
+      const nodeName = targetNode?.name || `ID: ${rule.targetNodeId.slice(0, 8)}`;
+      const nodePort = targetNode?.subscriptionPort || targetNode?.agentPort;
+      let address: string | undefined;
+      if (rule.ipVersion === 'ipv4' && rule.targetNodePublicIpv4) {
+        address = rule.targetNodePublicIpv4;
+      } else if (rule.ipVersion === 'ipv6' && rule.targetNodePublicIpv6) {
+        address = rule.targetNodePublicIpv6;
+      } else {
+        address = rule.targetNodeServerAddress || rule.targetNodePublicIpv4 || rule.targetNodePublicIpv6;
+      }
+      const nodeAddress = address ? (nodePort ? `${address}:${nodePort}` : address) : undefined;
+      return { name: nodeName, address: nodeAddress };
+    }
+    if (rule.targetAddress) {
+      return { name: '手动配置', address: `${rule.targetAddress}:${rule.targetPort}` };
+    }
+    return null;
+  };
+
+  const target = getTargetDisplay();
+
+  // Build relay chain
+  const relayAgents: RelayAgentInfo[] = [];
+
+  // For entry type, exit agent is the relay
+  if (rule.ruleType === 'entry' && rule.exitAgentId) {
+    const exitAgent = agentsMap[rule.exitAgentId];
+    relayAgents.push({
+      id: rule.exitAgentId,
+      name: exitAgent?.name || `ID: ${rule.exitAgentId.slice(0, 8)}`,
+      address: exitAgent?.publicAddress,
+      tunnelAddress: exitAgent?.tunnelAddress,
+    });
+  }
+
+  // For chain types, add chain agents (excluding entry agent to avoid duplication)
+  if ((rule.ruleType === 'chain' || rule.ruleType === 'direct_chain') && rule.chainAgentIds?.length) {
+    rule.chainAgentIds
+      .filter((id) => id !== rule.agentId) // Filter out entry agent
+      .forEach((id) => {
+        const agent = agentsMap[id];
+        relayAgents.push({
+          id,
+          name: agent?.name || `ID: ${id.slice(0, 8)}`,
+          address: agent?.publicAddress,
+          tunnelAddress: agent?.tunnelAddress,
+        });
+      });
+  }
+
+  // Determine what to show for relay section
+  const showRelays = relayAgents.length > 0;
+  const firstRelay = relayAgents[0];
+  const remainingRelays = relayAgents.slice(1);
+
+  return (
+    <div className="flex items-center gap-1 min-w-0 py-1">
+      {/* Entry node */}
+      <FlowNode type="entry" name={entryName} address={entryAddress} tunnelAddress={entryTunnelAddress} isFirst />
+
+      {/* Arrow to relay or target */}
+      <FlowArrow color={showRelays ? 'purple' : 'blue'} />
+
+      {/* Relay nodes */}
+      {showRelays && (
+        <>
+          <FlowNode
+            type={rule.ruleType === 'entry' ? 'exit' : 'relay'}
+            name={firstRelay.name}
+            address={firstRelay.address}
+            tunnelAddress={firstRelay.tunnelAddress}
+          />
+          {remainingRelays.length > 0 && (
+            <>
+              <FlowArrow color="purple" />
+              <CollapsedRelays count={remainingRelays.length} agents={remainingRelays} />
+            </>
+          )}
+          <FlowArrow color="blue" />
+        </>
+      )}
+
+      {/* Target node */}
+      {target ? (
+        <FlowNode type="target" name={target.name} address={target.address} />
+      ) : (
+        <span className="text-xs text-muted-foreground">-</span>
+      )}
     </div>
   );
 };
@@ -330,6 +476,7 @@ const ChainNodesDisplay: React.FC<{
 export const ForwardRuleListTable: React.FC<ForwardRuleListTableProps> = ({
   rules,
   agentsMap = {},
+  resourceGroupsMap = {},
   nodes = [],
   polledStatusMap = {},
   pollingRuleIds = [],
@@ -494,145 +641,55 @@ export const ForwardRuleListTable: React.FC<ForwardRuleListTableProps> = ({
       },
     },
     {
-      id: 'entry',
-      header: '入口',
-      size: 220,
+      id: 'path',
+      header: '链路',
+      size: 400,
       meta: { priority: 1 } as ResponsiveColumnMeta,
-      cell: ({ row }) => {
-        const rule = row.original;
-        const agent = agentsMap[rule.agentId];
-        const agentName = agent?.name || `ID: ${rule.agentId}`;
-        const entryAddress = agent?.publicAddress ? `${agent.publicAddress}:${rule.listenPort}` : '-';
-        return (
-          <div className="space-y-0.5 min-w-0">
-            <div className="flex items-center gap-1.5 text-sm text-slate-900 dark:text-white">
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Bot className="size-3.5 text-green-500 flex-shrink-0" />
-                </TooltipTrigger>
-                <TooltipContent>入口 Agent</TooltipContent>
-              </Tooltip>
-              <span className="truncate">{agentName}</span>
-            </div>
-            <CopyableAddress address={entryAddress} className="text-blue-600 dark:text-blue-400 pl-5" />
-          </div>
-        );
-      },
+      cell: ({ row }) => (
+        <FlowPathDisplay rule={row.original} agentsMap={agentsMap} nodes={nodes} />
+      ),
     },
     {
-      id: 'exit',
-      header: '出口',
-      size: 240,
-      meta: { priority: 1 } as ResponsiveColumnMeta,
+      id: 'resourceGroups',
+      header: '资源组',
+      size: 140,
+      meta: { priority: 3 } as ResponsiveColumnMeta,
       cell: ({ row }) => {
         const rule = row.original;
-
-        // Helper function to get target address
-        const getTargetDisplay = () => {
-          if (rule.targetNodeId) {
-            const targetNode = nodes.find((n) => n.id === rule.targetNodeId);
-            const nodeName = targetNode?.name || `ID: ${rule.targetNodeId}`;
-            const nodePort = targetNode?.subscriptionPort || targetNode?.agentPort;
-            // Use API returned target node address (selected based on ipVersion)
-            let address: string | undefined;
-            if (rule.ipVersion === 'ipv4' && rule.targetNodePublicIpv4) {
-              address = rule.targetNodePublicIpv4;
-            } else if (rule.ipVersion === 'ipv6' && rule.targetNodePublicIpv6) {
-              address = rule.targetNodePublicIpv6;
-            } else {
-              // auto or fallback: prefer serverAddress, then IPv4, then IPv6
-              address = rule.targetNodeServerAddress || rule.targetNodePublicIpv4 || rule.targetNodePublicIpv6;
-            }
-            const nodeAddress = address ? (nodePort ? `${address}:${nodePort}` : address) : '-';
-            return { name: nodeName, address: nodeAddress, type: 'node' as const };
-          }
-          if (rule.targetAddress) {
-            return {
-              name: '手动配置',
-              address: `${rule.targetAddress}:${rule.targetPort}`,
-              type: 'manual' as const,
-            };
-          }
-          return null;
-        };
-
-        // entry type: show exit agent -> target with improved design
-        if (rule.ruleType === 'entry' && rule.exitAgentId) {
-          const exitAgent = agentsMap[rule.exitAgentId];
-          const exitName = exitAgent?.name || `ID: ${rule.exitAgentId}`;
-          const target = getTargetDisplay();
-          const targetAddress = target?.address || '-';
-          const config = EXIT_TYPE_CONFIG.agent;
-
+        const groupSids = rule.groupSids;
+        if (!groupSids || groupSids.length === 0) {
+          return <span className="text-xs text-muted-foreground">-</span>;
+        }
+        const groups = groupSids
+          .map((sid) => resourceGroupsMap[sid])
+          .filter((g): g is ResourceGroup => !!g);
+        if (groups.length === 0) {
+          return <span className="text-xs text-muted-foreground">-</span>;
+        }
+        if (groups.length === 1) {
           return (
-            <div className="space-y-1 min-w-0">
-              {/* Exit agent with type indicator */}
-              <div className="flex items-center gap-1">
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <div className={`flex items-center gap-0.5 px-1.5 py-0.5 rounded ${config.bgColor} border ${config.borderColor}`}>
-                      <Bot className={`size-3 ${config.color}`} />
-                      <span className="text-[10px] font-semibold text-purple-600 dark:text-purple-400">出口</span>
-                    </div>
-                  </TooltipTrigger>
-                  <TooltipContent>出口 Agent</TooltipContent>
-                </Tooltip>
-                <FlowArrow />
-                <span className="text-xs font-medium text-foreground truncate">{exitName}</span>
-              </div>
-              {/* Target address */}
-              <div className="flex items-center gap-1 pl-1">
-                <Server className="size-2.5 text-blue-500 flex-shrink-0" />
-                <CopyableAddress address={targetAddress} className="text-muted-foreground" />
-              </div>
-            </div>
+            <span className="text-xs font-medium text-foreground truncate max-w-[120px] inline-block">
+              {groups[0].name}
+            </span>
           );
         }
-
-        // chain and direct_chain types: show chain nodes info -> target
-        if ((rule.ruleType === 'chain' || rule.ruleType === 'direct_chain') && rule.chainAgentIds && rule.chainAgentIds.length > 0) {
-          const target = getTargetDisplay();
-          return (
-            <ChainNodesDisplay
-              chainAgentIds={rule.chainAgentIds}
-              agentsMap={agentsMap}
-              targetDisplay={target}
-              tunnelHops={rule.tunnelHops}
-            />
-          );
-        }
-
-        // direct type: show target with improved design
-        const target = getTargetDisplay();
-        if (target) {
-          const config = target.type === 'node' ? EXIT_TYPE_CONFIG.node : EXIT_TYPE_CONFIG.manual;
-          const IconComponent = config.icon;
-
-          return (
-            <div className="space-y-1 min-w-0">
-              {/* Target with type indicator */}
-              <div className="flex items-center gap-1">
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <div className={`flex items-center gap-0.5 px-1.5 py-0.5 rounded ${config.bgColor} border ${config.borderColor}`}>
-                      <IconComponent className={`size-3 ${config.color}`} />
-                      <span className={`text-[10px] font-semibold ${config.color}`}>{config.label}</span>
-                    </div>
-                  </TooltipTrigger>
-                  <TooltipContent>{target.type === 'node' ? '目标节点' : '手动配置'}</TooltipContent>
-                </Tooltip>
-                <span className="text-xs font-medium text-foreground truncate">{target.name}</span>
+        return (
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <span className="text-xs font-medium text-foreground cursor-default">
+                {groups[0].name}
+                <span className="ml-1 text-muted-foreground">+{groups.length - 1}</span>
+              </span>
+            </TooltipTrigger>
+            <TooltipContent>
+              <div className="space-y-1">
+                {groups.map((g) => (
+                  <div key={g.sid} className="text-xs">{g.name}</div>
+                ))}
               </div>
-              {/* Target address */}
-              <div className="flex items-center gap-1 pl-1">
-                <IconComponent className={`size-2.5 ${config.color} flex-shrink-0`} />
-                <CopyableAddress address={target.address} className="text-muted-foreground" />
-              </div>
-            </div>
-          );
-        }
-
-        return <span className="text-slate-400 dark:text-slate-500">-</span>;
+            </TooltipContent>
+          </Tooltip>
+        );
       },
     },
     {
@@ -884,7 +941,7 @@ export const ForwardRuleListTable: React.FC<ForwardRuleListTableProps> = ({
         );
       },
     },
-  ], [agentsMap, nodes, polledStatusMap, pollingRuleIds, onDisable, onEnable, onViewDetail, onEdit, onProbe, probingRuleId, renderDropdownMenuActions]);
+  ], [agentsMap, resourceGroupsMap, nodes, polledStatusMap, pollingRuleIds, onDisable, onEnable, onViewDetail, onEdit, onProbe, probingRuleId, renderDropdownMenuActions]);
 
   // Render mobile card list on small screens
   if (isMobile) {
@@ -892,6 +949,7 @@ export const ForwardRuleListTable: React.FC<ForwardRuleListTableProps> = ({
       <ForwardRuleMobileList
         rules={rules}
         agentsMap={agentsMap}
+        resourceGroupsMap={resourceGroupsMap}
         nodes={nodes}
         polledStatusMap={polledStatusMap}
         pollingRuleIds={pollingRuleIds}

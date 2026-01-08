@@ -19,14 +19,18 @@ import { Switch, SwitchThumb } from '@/components/common/Switch';
 import { Separator } from '@/components/common/Separator';
 import { ForwardRuleListTable } from '@/features/forward-rules/components/ForwardRuleListTable';
 import { CreateForwardRuleDialog } from '@/features/forward-rules/components/CreateForwardRuleDialog';
+import { CreateForwardRuleSheet } from '@/features/forward-rules/components/CreateForwardRuleSheet';
 import { EditForwardRuleDialog } from '@/features/forward-rules/components/EditForwardRuleDialog';
+import { EditForwardRuleSheet } from '@/features/forward-rules/components/EditForwardRuleSheet';
+import { DeleteForwardRuleSheet } from '@/features/forward-rules/components/DeleteForwardRuleSheet';
 import { ForwardRuleDetailDialog } from '@/features/forward-rules/components/ForwardRuleDetailDialog';
 import { ForwardRuleFilters } from '@/features/forward-rules/components/ForwardRuleFilters';
 import { ProbeResultDialog } from '@/features/forward-rules/components/ProbeResultDialog';
 import { ConfirmDialog } from '@/components/common/ConfirmDialog';
 import { useForwardRulesPage, useRuleStatusPolling } from '@/features/forward-rules/hooks/useForwardRules';
-import { useForwardAgents } from '@/features/forward-agents/hooks/useForwardAgents';
 import { useNodes } from '@/features/nodes/hooks/useNodes';
+import { useResourceGroups } from '@/features/resource-groups/hooks/useResourceGroups';
+import { useSubscriptionPlans } from '@/features/subscription-plans/hooks/useSubscriptionPlans';
 import { AdminLayout } from '@/layouts/AdminLayout';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/common/Tooltip';
 import {
@@ -38,6 +42,7 @@ import {
 import { usePageTitle } from '@/shared/hooks';
 import { useBreakpoint } from '@/hooks/useBreakpoint';
 import type { ForwardRule, CreateForwardRuleRequest, UpdateForwardRuleRequest, RuleProbeResponse, ForwardRuleType, ForwardProtocol, IPVersion } from '@/api/forward';
+import type { SubscriptionPlan } from '@/api/subscription/types';
 
 export const ForwardRulesPage = () => {
   usePageTitle('转发规则管理');
@@ -66,10 +71,30 @@ export const ForwardRulesPage = () => {
     isReordering,
   } = useForwardRulesPage();
 
-  const { forwardAgents } = useForwardAgents();
   const { nodes } = useNodes({ pageSize: 100 });
+  // Convert agentsMap to array for dialog components
+  const forwardAgents = useMemo(() => Object.values(agentsMap), [agentsMap]);
   const { polledStatusMap, pollingRuleIds, startPolling } = useRuleStatusPolling();
   const { isMobile } = useBreakpoint();
+
+  // Get resource groups and plans for rule binding
+  const { resourceGroups } = useResourceGroups({ pageSize: 100 });
+  const { plans } = useSubscriptionPlans({ pageSize: 100 });
+  const plansMap = useMemo(() => {
+    const map: Record<string, SubscriptionPlan> = {};
+    plans.forEach((plan) => {
+      map[plan.id] = plan;
+    });
+    return map;
+  }, [plans]);
+
+  const resourceGroupsMap = useMemo(() => {
+    const map: Record<string, typeof resourceGroups[0]> = {};
+    resourceGroups.forEach((group) => {
+      map[group.sid] = group;
+    });
+    return map;
+  }, [resourceGroups]);
 
   const ruleStats = useMemo(() => {
     const total = pagination.total;
@@ -398,6 +423,7 @@ export const ForwardRulesPage = () => {
           <ForwardRuleListTable
             rules={forwardRules}
             agentsMap={agentsMap}
+            resourceGroupsMap={resourceGroupsMap}
             nodes={nodes}
             polledStatusMap={polledStatusMap}
             pollingRuleIds={pollingRuleIds}
@@ -424,6 +450,7 @@ export const ForwardRulesPage = () => {
             <ForwardRuleListTable
               rules={forwardRules}
               agentsMap={agentsMap}
+              resourceGroupsMap={resourceGroupsMap}
               nodes={nodes}
               polledStatusMap={polledStatusMap}
               pollingRuleIds={pollingRuleIds}
@@ -449,31 +476,67 @@ export const ForwardRulesPage = () => {
         )}
       </div>
 
-      {/* Create Forward Rule Dialog */}
-      <CreateForwardRuleDialog
-        open={createDialogOpen}
-        onClose={() => {
-          setCreateDialogOpen(false);
-          setCopyRuleData(undefined);
-        }}
-        onSubmit={handleCreateSubmit}
-        agents={forwardAgents}
-        nodes={nodes}
-        initialData={copyRuleData}
-      />
+      {/* Create Forward Rule Dialog/Sheet */}
+      {isMobile ? (
+        <CreateForwardRuleSheet
+          open={createDialogOpen}
+          onClose={() => {
+            setCreateDialogOpen(false);
+            setCopyRuleData(undefined);
+          }}
+          onSubmit={handleCreateSubmit}
+          agents={forwardAgents}
+          nodes={nodes}
+          initialData={copyRuleData}
+          resourceGroups={resourceGroups}
+          plansMap={plansMap}
+        />
+      ) : (
+        <CreateForwardRuleDialog
+          open={createDialogOpen}
+          onClose={() => {
+            setCreateDialogOpen(false);
+            setCopyRuleData(undefined);
+          }}
+          onSubmit={handleCreateSubmit}
+          agents={forwardAgents}
+          nodes={nodes}
+          initialData={copyRuleData}
+          resourceGroups={resourceGroups}
+          plansMap={plansMap}
+        />
+      )}
 
-      {/* Edit Forward Rule Dialog */}
-      <EditForwardRuleDialog
-        open={editDialogOpen}
-        rule={selectedRule}
-        onClose={() => {
-          setEditDialogOpen(false);
-          setSelectedRule(null);
-        }}
-        onSubmit={handleUpdateSubmit}
-        nodes={nodes}
-        agents={forwardAgents}
-      />
+      {/* Edit Forward Rule Dialog/Sheet */}
+      {isMobile ? (
+        <EditForwardRuleSheet
+          open={editDialogOpen}
+          rule={selectedRule}
+          onClose={() => {
+            setEditDialogOpen(false);
+            setSelectedRule(null);
+          }}
+          onSubmit={handleUpdateSubmit}
+          nodes={nodes}
+          agents={forwardAgents}
+          resourceGroups={resourceGroups}
+          plansMap={plansMap}
+        />
+      ) : (
+        <EditForwardRuleDialog
+          open={editDialogOpen}
+          rule={selectedRule}
+          onClose={() => {
+            setEditDialogOpen(false);
+            setSelectedRule(null);
+          }}
+          onSubmit={handleUpdateSubmit}
+          nodes={nodes}
+          agents={forwardAgents}
+          resourceGroups={resourceGroups}
+          plansMap={plansMap}
+        />
+      )}
 
       {/* Forward Rule Detail Dialog */}
       <ForwardRuleDetailDialog
@@ -485,6 +548,7 @@ export const ForwardRulesPage = () => {
         }}
         agents={forwardAgents}
         nodes={nodes}
+        resourceGroups={resourceGroups}
       />
 
       {/* Probe Result Dialog */}
@@ -498,17 +562,30 @@ export const ForwardRulesPage = () => {
         nodes={nodes}
       />
 
-      {/* Delete Confirm Dialog */}
-      <ConfirmDialog
-        open={deleteConfirmOpen}
-        onOpenChange={setDeleteConfirmOpen}
-        title="确认删除"
-        description={ruleToDelete ? `确认删除转发规则 "${ruleToDelete.name}" 吗？此操作不可恢复。` : ''}
-        confirmText="删除"
-        cancelText="取消"
-        variant="destructive"
-        onConfirm={handleDeleteConfirm}
-      />
+      {/* Delete Confirm Dialog/Sheet */}
+      {isMobile ? (
+        <DeleteForwardRuleSheet
+          open={deleteConfirmOpen}
+          rule={ruleToDelete}
+          onClose={() => {
+            setDeleteConfirmOpen(false);
+            setRuleToDelete(null);
+          }}
+          onConfirm={handleDeleteConfirm}
+          agentsMap={agentsMap}
+        />
+      ) : (
+        <ConfirmDialog
+          open={deleteConfirmOpen}
+          onOpenChange={setDeleteConfirmOpen}
+          title="确认删除"
+          description={ruleToDelete ? `确认删除转发规则 "${ruleToDelete.name}" 吗？此操作不可恢复。` : ''}
+          confirmText="删除"
+          cancelText="取消"
+          variant="destructive"
+          onConfirm={handleDeleteConfirm}
+        />
+      )}
 
       {/* Reset Traffic Confirm Dialog */}
       <ConfirmDialog
