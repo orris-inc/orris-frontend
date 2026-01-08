@@ -21,7 +21,7 @@ import * as Dialog from '@radix-ui/react-dialog';
 import { TooltipProvider } from '@/components/common/Tooltip';
 import { AdminSidebarNav, AdminSidebarFooter } from '@/components/navigation/AdminSidebarNav';
 import { UserMenu } from '@/components/navigation/UserMenu';
-import { useSwipeToOpen } from '@/hooks';
+import { useSwipeDrawer } from '@/hooks';
 
 import { useAuthStore } from '@/features/auth/stores/auth-store';
 import { useAuth } from '@/features/auth/hooks/useAuth';
@@ -49,11 +49,30 @@ export const AdminLayout = ({ children }: AdminLayoutProps) => {
   });
   const [profileDialogOpen, setProfileDialogOpen] = useState(false);
 
-  // Enable swipe from left edge to open mobile drawer
-  useSwipeToOpen({
-    onOpen: () => setMobileDrawerOpen(true),
+  // Enable swipe from left edge to open mobile drawer with follow-finger gesture
+  const { progress: dragProgress, isDragging } = useSwipeDrawer({
     isOpen: mobileDrawerOpen,
+    onOpenChange: setMobileDrawerOpen,
   });
+
+  // Calculate styles based on drag state
+  const shouldShowDragState = isDragging && dragProgress !== undefined;
+
+  // Overlay opacity follows drag progress
+  const overlayStyle = shouldShowDragState
+    ? { opacity: dragProgress * 0.5, transition: 'none' }
+    : undefined;
+
+  // Drawer position follows drag progress
+  const drawerStyle = shouldShowDragState
+    ? {
+        transform: `translateX(${(dragProgress - 1) * 100}%)`,
+        transition: 'none',
+      }
+    : undefined;
+
+  // Determine if we should render the drawer
+  const shouldRenderDrawer = mobileDrawerOpen || (isDragging && dragProgress !== undefined && dragProgress > 0);
 
   useEffect(() => {
     localStorage.setItem('admin-sidebar-collapsed', String(collapsed));
@@ -142,25 +161,29 @@ export const AdminLayout = ({ children }: AdminLayoutProps) => {
     <TooltipProvider delayDuration={0}>
       <div className="min-h-screen min-h-dvh bg-background overflow-x-hidden">
         {/* 移动端侧边栏 */}
-        <Dialog.Root open={mobileDrawerOpen} onOpenChange={setMobileDrawerOpen}>
+        <Dialog.Root open={shouldRenderDrawer} onOpenChange={setMobileDrawerOpen}>
           <Dialog.Portal>
             <Dialog.Overlay
               className={cn(
-                'fixed inset-0 z-50 bg-black/50 backdrop-blur-sm md:hidden',
-                'data-[state=open]:animate-in data-[state=closed]:animate-out',
-                'data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0',
-                'data-[state=closed]:duration-200 data-[state=open]:duration-300',
+                'fixed inset-0 z-50 bg-black backdrop-blur-sm md:hidden',
+                // Only use animations when not dragging
+                !shouldShowDragState && 'data-[state=open]:animate-in data-[state=closed]:animate-out',
+                !shouldShowDragState && 'data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0',
+                !shouldShowDragState && 'data-[state=closed]:duration-200 data-[state=open]:duration-300',
                 'motion-reduce:animate-none'
               )}
+              style={overlayStyle}
             />
             <Dialog.Content
               className={cn(
                 'fixed inset-y-0 left-0 z-50 h-full w-[300px] max-w-[85vw] bg-background shadow-2xl md:hidden',
-                'data-[state=open]:animate-in data-[state=closed]:animate-out',
-                'data-[state=closed]:duration-200 data-[state=open]:duration-300',
-                'data-[state=closed]:slide-out-to-left data-[state=open]:slide-in-from-left',
+                // Only use animations when not dragging
+                !shouldShowDragState && 'data-[state=open]:animate-in data-[state=closed]:animate-out',
+                !shouldShowDragState && 'data-[state=closed]:duration-200 data-[state=open]:duration-300',
+                !shouldShowDragState && 'data-[state=closed]:slide-out-to-left data-[state=open]:slide-in-from-left',
                 'motion-reduce:animate-none'
               )}
+              style={drawerStyle}
             >
               <Dialog.Close
                 className={cn(

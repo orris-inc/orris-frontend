@@ -6,3 +6,4 @@ export { useBreakpoint, useMediaQuery, BREAKPOINTS } from './useBreakpoint';
 export type { BreakpointKey } from './useBreakpoint';
 
 export { useSwipeToOpen } from './useSwipeToOpen';
+export { useSwipeDrawer } from './useSwipeDrawer';

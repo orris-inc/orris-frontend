@@ -5,6 +5,7 @@
  * Features:
  * - User profile section with avatar
  * - Smooth slide animation with backdrop blur
+ * - Follow-finger swipe gesture support
  * - Clear visual hierarchy with grouped navigation
  * - Touch-friendly targets (min 44px)
  * - Active state with pill indicator
@@ -40,6 +41,10 @@ interface MobileDrawerProps {
   showAdminSwitch?: boolean;
   onAdminClick?: () => void;
   onLogout?: () => void;
+  /** Drag progress from swipe gesture (0-1) */
+  dragProgress?: number;
+  /** Whether user is actively dragging */
+  isDragging?: boolean;
 }
 
 export const MobileDrawer = ({
@@ -51,9 +56,28 @@ export const MobileDrawer = ({
   showAdminSwitch = false,
   onAdminClick,
   onLogout,
+  dragProgress,
+  isDragging = false,
 }: MobileDrawerProps) => {
   const location = useLocation();
   const initials = user?.initials || user?.displayName?.charAt(0).toUpperCase() || '?';
+
+  // Calculate styles based on drag state
+  // When dragging, use transform to position drawer; when not, let CSS animations handle it
+  const shouldShowDragState = isDragging && dragProgress !== undefined;
+
+  // Overlay opacity follows drag progress
+  const overlayStyle = shouldShowDragState
+    ? { opacity: dragProgress * 0.5, transition: 'none' }
+    : undefined;
+
+  // Drawer position follows drag progress
+  const drawerStyle = shouldShowDragState
+    ? {
+        transform: `translateX(${(dragProgress - 1) * 100}%)`,
+        transition: 'none',
+      }
+    : undefined;
 
   const renderNavigationItems = useMemo(() => {
     return navigationItems.map((item) => {
@@ -128,18 +152,24 @@ export const MobileDrawer = ({
     });
   }, [navigationItems, location.pathname, onClose]);
 
+  // Determine if we should render the drawer
+  // Show when: open is true, OR when dragging with progress > 0
+  const shouldRender = open || (isDragging && dragProgress !== undefined && dragProgress > 0);
+
   return (
-    <Dialog.Root open={open} onOpenChange={(isOpen) => !isOpen && onClose()}>
+    <Dialog.Root open={shouldRender} onOpenChange={(isOpen) => !isOpen && onClose()}>
       <Dialog.Portal>
         {/* Backdrop */}
         <Dialog.Overlay
           className={cn(
-            'fixed inset-0 z-50 bg-black/50 backdrop-blur-sm',
-            'data-[state=open]:animate-in data-[state=closed]:animate-out',
-            'data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0',
-            'data-[state=closed]:duration-200 data-[state=open]:duration-300',
+            'fixed inset-0 z-50 bg-black backdrop-blur-sm',
+            // Only use animations when not dragging
+            !shouldShowDragState && 'data-[state=open]:animate-in data-[state=closed]:animate-out',
+            !shouldShowDragState && 'data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0',
+            !shouldShowDragState && 'data-[state=closed]:duration-200 data-[state=open]:duration-300',
             'motion-reduce:animate-none'
           )}
+          style={overlayStyle}
         />
 
         {/* Drawer Content */}
@@ -147,13 +177,15 @@ export const MobileDrawer = ({
           className={cn(
             'fixed inset-y-0 left-0 z-50 flex h-full w-[300px] max-w-[85vw] flex-col',
             'bg-background shadow-2xl',
-            'data-[state=open]:animate-in data-[state=closed]:animate-out',
-            'data-[state=closed]:duration-200 data-[state=open]:duration-300',
-            'data-[state=closed]:slide-out-to-left data-[state=open]:slide-in-from-left',
+            // Only use animations when not dragging
+            !shouldShowDragState && 'data-[state=open]:animate-in data-[state=closed]:animate-out',
+            !shouldShowDragState && 'data-[state=closed]:duration-200 data-[state=open]:duration-300',
+            !shouldShowDragState && 'data-[state=closed]:slide-out-to-left data-[state=open]:slide-in-from-left',
             'motion-reduce:animate-none',
             // Safe area support
             'pb-safe'
           )}
+          style={drawerStyle}
         >
           {/* Header with close button */}
           <div className="flex h-14 items-center justify-between border-b px-4">
