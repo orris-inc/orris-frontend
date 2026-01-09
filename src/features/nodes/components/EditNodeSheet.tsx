@@ -11,6 +11,12 @@ import {
   Settings,
   Route,
   ChevronDown,
+  Zap,
+  Lock,
+  Radio,
+  Layers,
+  Gauge,
+  Workflow,
 } from 'lucide-react';
 import {
   Sheet,
@@ -30,7 +36,17 @@ import { useResourceGroups } from '@/features/resource-groups/hooks/useResourceG
 import { RouteConfigEditor } from './RouteConfigEditor';
 import { cn } from '@/lib/utils';
 import type { OutboundNodeOption } from './RouteRuleEditor';
-import type { Node, UpdateNodeRequest, TransportProtocol, RouteConfig } from '@/api/node';
+import type {
+  Node,
+  UpdateNodeRequest,
+  TransportProtocol,
+  RouteConfig,
+  NodeProtocol,
+  VLESSSecurity,
+  VMessSecurity,
+  CongestionControl,
+  TUICUDPRelayMode,
+} from '@/api/node';
 
 interface EditNodeSheetProps {
   open: boolean;
@@ -66,6 +82,60 @@ const TLS_SECURITY_OPTIONS: MobileSelectOption[] = [
   { value: 'false', label: '验证证书（安全）' },
   { value: 'true', label: '跳过验证（不安全）' },
 ];
+
+// VLESS transport protocols
+const VLESS_TRANSPORT_PROTOCOLS: TransportProtocol[] = ['tcp', 'ws', 'grpc', 'h2'];
+
+// VLESS security types
+const VLESS_SECURITY_OPTIONS: { value: VLESSSecurity; label: string }[] = [
+  { value: 'tls', label: 'TLS' },
+  { value: 'reality', label: 'Reality' },
+  { value: 'none', label: '无' },
+];
+
+// VMess transport protocols
+const VMESS_TRANSPORT_PROTOCOLS: TransportProtocol[] = ['tcp', 'ws', 'grpc', 'http', 'quic'];
+
+// VMess security types
+const VMESS_SECURITY_OPTIONS: { value: VMessSecurity; label: string }[] = [
+  { value: 'auto', label: 'Auto (推荐)' },
+  { value: 'aes-128-gcm', label: 'AES-128-GCM' },
+  { value: 'chacha20-poly1305', label: 'ChaCha20-Poly1305' },
+  { value: 'none', label: '无' },
+  { value: 'zero', label: 'Zero' },
+];
+
+// Congestion control algorithms
+const CONGESTION_CONTROL_OPTIONS: { value: CongestionControl; label: string }[] = [
+  { value: 'bbr', label: 'BBR (推荐)' },
+  { value: 'cubic', label: 'Cubic' },
+  { value: 'new_reno', label: 'New Reno' },
+];
+
+// TUIC UDP relay modes
+const TUIC_UDP_RELAY_MODES: { value: TUICUDPRelayMode; label: string }[] = [
+  { value: 'native', label: 'Native' },
+  { value: 'quic', label: 'QUIC' },
+];
+
+// TLS fingerprint options
+const TLS_FINGERPRINT_OPTIONS: MobileSelectOption[] = [
+  { value: 'chrome', label: 'Chrome' },
+  { value: 'firefox', label: 'Firefox' },
+  { value: 'safari', label: 'Safari' },
+  { value: 'edge', label: 'Edge' },
+  { value: 'random', label: '随机' },
+];
+
+// Protocol configuration for display
+const PROTOCOL_CONFIG: Record<NodeProtocol, { name: string; icon: React.ElementType }> = {
+  shadowsocks: { name: 'Shadowsocks', icon: Zap },
+  trojan: { name: 'Trojan', icon: Lock },
+  vless: { name: 'VLESS', icon: Radio },
+  vmess: { name: 'VMess', icon: Layers },
+  hysteria2: { name: 'Hysteria2', icon: Gauge },
+  tuic: { name: 'TUIC', icon: Workflow },
+};
 
 // Helper function: convert pluginOpts object to string
 const pluginOptsToString = (opts?: Record<string, string>): string => {
@@ -234,6 +304,45 @@ export const EditNodeSheet: React.FC<EditNodeSheetProps> = ({
         route: node.route,
         groupSid: node.groupIds?.[0] ?? '',
         muteNotification: node.muteNotification,
+        // VLESS fields
+        vlessTransportType: node.vlessTransportType,
+        vlessFlow: node.vlessFlow,
+        vlessSecurity: node.vlessSecurity,
+        vlessSni: node.vlessSni,
+        vlessFingerprint: node.vlessFingerprint,
+        vlessAllowInsecure: node.vlessAllowInsecure,
+        vlessHost: node.vlessHost,
+        vlessPath: node.vlessPath,
+        vlessServiceName: node.vlessServiceName,
+        vlessRealityPublicKey: node.vlessRealityPublicKey,
+        vlessRealityShortId: node.vlessRealityShortId,
+        vlessRealitySpiderX: node.vlessRealitySpiderX,
+        // VMess fields
+        vmessAlterId: node.vmessAlterId,
+        vmessSecurity: node.vmessSecurity,
+        vmessTransportType: node.vmessTransportType,
+        vmessHost: node.vmessHost,
+        vmessPath: node.vmessPath,
+        vmessServiceName: node.vmessServiceName,
+        vmessTls: node.vmessTls,
+        vmessSni: node.vmessSni,
+        vmessAllowInsecure: node.vmessAllowInsecure,
+        // Hysteria2 fields
+        hysteria2CongestionControl: node.hysteria2CongestionControl,
+        hysteria2Obfs: node.hysteria2Obfs,
+        hysteria2ObfsPassword: node.hysteria2ObfsPassword,
+        hysteria2UpMbps: node.hysteria2UpMbps,
+        hysteria2DownMbps: node.hysteria2DownMbps,
+        hysteria2Sni: node.hysteria2Sni,
+        hysteria2AllowInsecure: node.hysteria2AllowInsecure,
+        hysteria2Fingerprint: node.hysteria2Fingerprint,
+        // TUIC fields
+        tuicCongestionControl: node.tuicCongestionControl,
+        tuicUdpRelayMode: node.tuicUdpRelayMode,
+        tuicAlpn: node.tuicAlpn,
+        tuicSni: node.tuicSni,
+        tuicAllowInsecure: node.tuicAllowInsecure,
+        tuicDisableSni: node.tuicDisableSni,
       });
       setPluginOptsStr(pluginOptsToString(node.pluginOpts));
       setErrors({});
@@ -249,8 +358,23 @@ export const EditNodeSheet: React.FC<EditNodeSheetProps> = ({
 
   const isShadowsocks = node?.protocol === 'shadowsocks';
   const isTrojan = node?.protocol === 'trojan';
+  const isVless = node?.protocol === 'vless';
+  const isVmess = node?.protocol === 'vmess';
+  const isHysteria2 = node?.protocol === 'hysteria2';
+  const isTuic = node?.protocol === 'tuic';
+
+  // Trojan transport fields
   const showWsFields = isTrojan && formData.transportProtocol === 'ws';
   const showGrpcFields = isTrojan && formData.transportProtocol === 'grpc';
+
+  // VLESS transport fields
+  const showVlessWsFields = isVless && (formData.vlessTransportType === 'ws' || formData.vlessTransportType === 'h2');
+  const showVlessGrpcFields = isVless && formData.vlessTransportType === 'grpc';
+  const showVlessRealityFields = isVless && formData.vlessSecurity === 'reality';
+
+  // VMess transport fields
+  const showVmessWsFields = isVmess && (formData.vmessTransportType === 'ws' || formData.vmessTransportType === 'http');
+  const showVmessGrpcFields = isVmess && formData.vmessTransportType === 'grpc';
 
   const handleChange = (field: keyof UpdateNodeRequest | 'tagsInput', value: string | number | boolean | undefined) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
@@ -413,9 +537,28 @@ export const EditNodeSheet: React.FC<EditNodeSheetProps> = ({
     (key) => formData[key as keyof UpdateNodeRequest] !== node[key as keyof Node]
   );
 
-  const hasProtocolSettings = isShadowsocks
-    ? Boolean(formData.plugin || pluginOptsStr)
-    : Boolean(formData.sni || formData.host || formData.path || formData.allowInsecure);
+  const getHasProtocolSettings = () => {
+    if (isShadowsocks) {
+      return Boolean(formData.plugin || pluginOptsStr);
+    }
+    if (isTrojan) {
+      return Boolean(formData.sni || formData.host || formData.path || formData.allowInsecure);
+    }
+    if (isVless) {
+      return Boolean(formData.vlessSni || formData.vlessHost || formData.vlessPath || formData.vlessFlow);
+    }
+    if (isVmess) {
+      return Boolean(formData.vmessSni || formData.vmessHost || formData.vmessPath);
+    }
+    if (isHysteria2) {
+      return Boolean(formData.hysteria2Sni || formData.hysteria2Obfs || formData.hysteria2UpMbps);
+    }
+    if (isTuic) {
+      return Boolean(formData.tuicSni || formData.tuicAlpn);
+    }
+    return false;
+  };
+  const hasProtocolSettings = getHasProtocolSettings();
 
   if (!node) return null;
 
@@ -460,7 +603,7 @@ export const EditNodeSheet: React.FC<EditNodeSheetProps> = ({
               <div className="space-y-1.5">
                 <FormFieldLabel label="协议类型" hint="创建后不可修改" />
                 <MobileFormInput
-                  value={node.protocol === 'shadowsocks' ? 'Shadowsocks' : 'Trojan'}
+                  value={PROTOCOL_CONFIG[node.protocol]?.name || node.protocol}
                   disabled
                   className="bg-muted"
                 />
@@ -500,6 +643,86 @@ export const EditNodeSheet: React.FC<EditNodeSheetProps> = ({
                       label: protocol.toUpperCase(),
                     }))}
                   />
+                </div>
+              )}
+
+              {isVless && (
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="space-y-1.5">
+                    <FormFieldLabel label="传输协议" />
+                    <MobileSelect
+                      value={formData.vlessTransportType || 'tcp'}
+                      onChange={(value) => handleChange('vlessTransportType', value as TransportProtocol)}
+                      options={VLESS_TRANSPORT_PROTOCOLS.map((p) => ({
+                        value: p,
+                        label: p.toUpperCase(),
+                      }))}
+                    />
+                  </div>
+                  <div className="space-y-1.5">
+                    <FormFieldLabel label="安全类型" />
+                    <MobileSelect
+                      value={formData.vlessSecurity || 'tls'}
+                      onChange={(value) => handleChange('vlessSecurity', value as VLESSSecurity)}
+                      options={VLESS_SECURITY_OPTIONS}
+                    />
+                  </div>
+                </div>
+              )}
+
+              {isVmess && (
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="space-y-1.5">
+                    <FormFieldLabel label="传输协议" />
+                    <MobileSelect
+                      value={formData.vmessTransportType || 'tcp'}
+                      onChange={(value) => handleChange('vmessTransportType', value as TransportProtocol)}
+                      options={VMESS_TRANSPORT_PROTOCOLS.map((p) => ({
+                        value: p,
+                        label: p.toUpperCase(),
+                      }))}
+                    />
+                  </div>
+                  <div className="space-y-1.5">
+                    <FormFieldLabel label="加密方式" />
+                    <MobileSelect
+                      value={formData.vmessSecurity || 'auto'}
+                      onChange={(value) => handleChange('vmessSecurity', value as VMessSecurity)}
+                      options={VMESS_SECURITY_OPTIONS}
+                    />
+                  </div>
+                </div>
+              )}
+
+              {isHysteria2 && (
+                <div className="space-y-1.5">
+                  <FormFieldLabel label="拥塞控制" />
+                  <MobileSelect
+                    value={formData.hysteria2CongestionControl || 'bbr'}
+                    onChange={(value) => handleChange('hysteria2CongestionControl', value as CongestionControl)}
+                    options={CONGESTION_CONTROL_OPTIONS}
+                  />
+                </div>
+              )}
+
+              {isTuic && (
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="space-y-1.5">
+                    <FormFieldLabel label="拥塞控制" />
+                    <MobileSelect
+                      value={formData.tuicCongestionControl || 'bbr'}
+                      onChange={(value) => handleChange('tuicCongestionControl', value as CongestionControl)}
+                      options={CONGESTION_CONTROL_OPTIONS}
+                    />
+                  </div>
+                  <div className="space-y-1.5">
+                    <FormFieldLabel label="UDP 中继" />
+                    <MobileSelect
+                      value={formData.tuicUdpRelayMode || 'native'}
+                      onChange={(value) => handleChange('tuicUdpRelayMode', value as TUICUDPRelayMode)}
+                      options={TUIC_UDP_RELAY_MODES}
+                    />
+                  </div>
                 </div>
               )}
             </div>
@@ -556,8 +779,8 @@ export const EditNodeSheet: React.FC<EditNodeSheetProps> = ({
 
           {/* Protocol Settings Section */}
           <MobileSection
-            title={isShadowsocks ? 'Shadowsocks 配置' : 'Trojan 配置'}
-            icon={Shield}
+            title={`${PROTOCOL_CONFIG[node.protocol]?.name || node.protocol} 配置`}
+            icon={PROTOCOL_CONFIG[node.protocol]?.icon || Shield}
             badge={hasProtocolSettings ? '已配置' : null}
             isOpen={openSections.has('protocol')}
             onToggle={() => toggleSection('protocol')}
@@ -643,6 +866,332 @@ export const EditNodeSheet: React.FC<EditNodeSheetProps> = ({
                       />
                     </div>
                   )}
+                </>
+              )}
+
+              {/* VLESS Protocol Settings */}
+              {isVless && (
+                <>
+                  <div className="grid grid-cols-2 gap-3">
+                    <div className="space-y-1.5">
+                      <FormFieldLabel label="SNI" hint="TLS 服务器名称" />
+                      <MobileFormInput
+                        placeholder="example.com"
+                        value={formData.vlessSni || ''}
+                        onChange={(value) => handleChange('vlessSni', value)}
+                        className="font-mono"
+                      />
+                    </div>
+                    <div className="space-y-1.5">
+                      <FormFieldLabel label="TLS 验证" />
+                      <MobileSelect
+                        value={formData.vlessAllowInsecure ? 'true' : 'false'}
+                        onChange={(value) => handleChange('vlessAllowInsecure', value === 'true')}
+                        options={TLS_SECURITY_OPTIONS}
+                      />
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-3">
+                    <div className="space-y-1.5">
+                      <FormFieldLabel label="Flow" hint="流控" />
+                      <MobileFormInput
+                        placeholder="xtls-rprx-vision"
+                        value={formData.vlessFlow || ''}
+                        onChange={(value) => handleChange('vlessFlow', value)}
+                        className="font-mono"
+                      />
+                    </div>
+                    <div className="space-y-1.5">
+                      <FormFieldLabel label="指纹" />
+                      <MobileSelect
+                        value={formData.vlessFingerprint || '__none__'}
+                        onChange={(value) => handleChange('vlessFingerprint', value === '__none__' ? '' : value)}
+                        options={[{ value: '__none__', label: '无' }, ...TLS_FINGERPRINT_OPTIONS]}
+                      />
+                    </div>
+                  </div>
+
+                  {showVlessWsFields && (
+                    <div className="grid grid-cols-2 gap-3">
+                      <div className="space-y-1.5">
+                        <FormFieldLabel label="Host" hint="WS/H2 Host" />
+                        <MobileFormInput
+                          placeholder="example.com"
+                          value={formData.vlessHost || ''}
+                          onChange={(value) => handleChange('vlessHost', value)}
+                          className="font-mono"
+                        />
+                      </div>
+                      <div className="space-y-1.5">
+                        <FormFieldLabel label="Path" hint="WS/H2 路径" />
+                        <MobileFormInput
+                          placeholder="/ws"
+                          value={formData.vlessPath || ''}
+                          onChange={(value) => handleChange('vlessPath', value)}
+                          className="font-mono"
+                        />
+                      </div>
+                    </div>
+                  )}
+
+                  {showVlessGrpcFields && (
+                    <div className="space-y-1.5">
+                      <FormFieldLabel label="Service Name" hint="gRPC 服务名称" />
+                      <MobileFormInput
+                        placeholder="grpc-service"
+                        value={formData.vlessServiceName || ''}
+                        onChange={(value) => handleChange('vlessServiceName', value)}
+                        className="font-mono"
+                      />
+                    </div>
+                  )}
+
+                  {showVlessRealityFields && (
+                    <>
+                      <div className="grid grid-cols-2 gap-3">
+                        <div className="space-y-1.5">
+                          <FormFieldLabel label="Public Key" hint="Reality 公钥" />
+                          <MobileFormInput
+                            placeholder="公钥"
+                            value={formData.vlessRealityPublicKey || ''}
+                            onChange={(value) => handleChange('vlessRealityPublicKey', value)}
+                            className="font-mono text-xs"
+                          />
+                        </div>
+                        <div className="space-y-1.5">
+                          <FormFieldLabel label="Short ID" />
+                          <MobileFormInput
+                            placeholder="短 ID"
+                            value={formData.vlessRealityShortId || ''}
+                            onChange={(value) => handleChange('vlessRealityShortId', value)}
+                            className="font-mono"
+                          />
+                        </div>
+                      </div>
+                      <div className="space-y-1.5">
+                        <FormFieldLabel label="Spider X" hint="可选" />
+                        <MobileFormInput
+                          placeholder="/"
+                          value={formData.vlessRealitySpiderX || ''}
+                          onChange={(value) => handleChange('vlessRealitySpiderX', value)}
+                          className="font-mono"
+                        />
+                      </div>
+                    </>
+                  )}
+                </>
+              )}
+
+              {/* VMess Protocol Settings */}
+              {isVmess && (
+                <>
+                  <div className="grid grid-cols-2 gap-3">
+                    <div className="space-y-1.5">
+                      <FormFieldLabel label="Alter ID" hint="通常为 0" />
+                      <MobileFormInput
+                        type="number"
+                        inputMode="numeric"
+                        value={String(formData.vmessAlterId ?? 0)}
+                        onChange={(value) => handleChange('vmessAlterId', parseInt(value, 10) || 0)}
+                        className="font-mono"
+                      />
+                    </div>
+                    <div className="space-y-1.5">
+                      <FormFieldLabel label="TLS" />
+                      <MobileSelect
+                        value={formData.vmessTls ? 'true' : 'false'}
+                        onChange={(value) => handleChange('vmessTls', value === 'true')}
+                        options={[
+                          { value: 'true', label: '启用 TLS' },
+                          { value: 'false', label: '不启用' },
+                        ]}
+                      />
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-3">
+                    <div className="space-y-1.5">
+                      <FormFieldLabel label="SNI" hint="TLS 服务器名称" />
+                      <MobileFormInput
+                        placeholder="example.com"
+                        value={formData.vmessSni || ''}
+                        onChange={(value) => handleChange('vmessSni', value)}
+                        className="font-mono"
+                      />
+                    </div>
+                    <div className="space-y-1.5">
+                      <FormFieldLabel label="TLS 验证" />
+                      <MobileSelect
+                        value={formData.vmessAllowInsecure ? 'true' : 'false'}
+                        onChange={(value) => handleChange('vmessAllowInsecure', value === 'true')}
+                        options={TLS_SECURITY_OPTIONS}
+                      />
+                    </div>
+                  </div>
+
+                  {showVmessWsFields && (
+                    <div className="grid grid-cols-2 gap-3">
+                      <div className="space-y-1.5">
+                        <FormFieldLabel label="Host" hint="WS/HTTP Host" />
+                        <MobileFormInput
+                          placeholder="example.com"
+                          value={formData.vmessHost || ''}
+                          onChange={(value) => handleChange('vmessHost', value)}
+                          className="font-mono"
+                        />
+                      </div>
+                      <div className="space-y-1.5">
+                        <FormFieldLabel label="Path" hint="WS/HTTP 路径" />
+                        <MobileFormInput
+                          placeholder="/ws"
+                          value={formData.vmessPath || ''}
+                          onChange={(value) => handleChange('vmessPath', value)}
+                          className="font-mono"
+                        />
+                      </div>
+                    </div>
+                  )}
+
+                  {showVmessGrpcFields && (
+                    <div className="space-y-1.5">
+                      <FormFieldLabel label="Service Name" hint="gRPC 服务名称" />
+                      <MobileFormInput
+                        placeholder="grpc-service"
+                        value={formData.vmessServiceName || ''}
+                        onChange={(value) => handleChange('vmessServiceName', value)}
+                        className="font-mono"
+                      />
+                    </div>
+                  )}
+                </>
+              )}
+
+              {/* Hysteria2 Protocol Settings */}
+              {isHysteria2 && (
+                <>
+                  <div className="grid grid-cols-2 gap-3">
+                    <div className="space-y-1.5">
+                      <FormFieldLabel label="SNI" hint="TLS 服务器名称" />
+                      <MobileFormInput
+                        placeholder="example.com"
+                        value={formData.hysteria2Sni || ''}
+                        onChange={(value) => handleChange('hysteria2Sni', value)}
+                        className="font-mono"
+                      />
+                    </div>
+                    <div className="space-y-1.5">
+                      <FormFieldLabel label="TLS 验证" />
+                      <MobileSelect
+                        value={formData.hysteria2AllowInsecure ? 'true' : 'false'}
+                        onChange={(value) => handleChange('hysteria2AllowInsecure', value === 'true')}
+                        options={TLS_SECURITY_OPTIONS}
+                      />
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-3">
+                    <div className="space-y-1.5">
+                      <FormFieldLabel label="Obfs 类型" hint="混淆" />
+                      <MobileFormInput
+                        placeholder="salamander"
+                        value={formData.hysteria2Obfs || ''}
+                        onChange={(value) => handleChange('hysteria2Obfs', value)}
+                        className="font-mono"
+                      />
+                    </div>
+                    <div className="space-y-1.5">
+                      <FormFieldLabel label="Obfs 密码" />
+                      <MobileFormInput
+                        placeholder="密码"
+                        value={formData.hysteria2ObfsPassword || ''}
+                        onChange={(value) => handleChange('hysteria2ObfsPassword', value)}
+                        className="font-mono"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-3">
+                    <div className="space-y-1.5">
+                      <FormFieldLabel label="上行 (Mbps)" />
+                      <MobileFormInput
+                        type="number"
+                        inputMode="numeric"
+                        placeholder="100"
+                        value={formData.hysteria2UpMbps !== undefined ? String(formData.hysteria2UpMbps) : ''}
+                        onChange={(value) => handleChange('hysteria2UpMbps', value ? parseInt(value, 10) : undefined)}
+                        className="font-mono"
+                      />
+                    </div>
+                    <div className="space-y-1.5">
+                      <FormFieldLabel label="下行 (Mbps)" />
+                      <MobileFormInput
+                        type="number"
+                        inputMode="numeric"
+                        placeholder="100"
+                        value={formData.hysteria2DownMbps !== undefined ? String(formData.hysteria2DownMbps) : ''}
+                        onChange={(value) => handleChange('hysteria2DownMbps', value ? parseInt(value, 10) : undefined)}
+                        className="font-mono"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="space-y-1.5">
+                    <FormFieldLabel label="指纹" />
+                    <MobileSelect
+                      value={formData.hysteria2Fingerprint || '__none__'}
+                      onChange={(value) => handleChange('hysteria2Fingerprint', value === '__none__' ? '' : value)}
+                      options={[{ value: '__none__', label: '无' }, ...TLS_FINGERPRINT_OPTIONS]}
+                    />
+                  </div>
+                </>
+              )}
+
+              {/* TUIC Protocol Settings */}
+              {isTuic && (
+                <>
+                  <div className="grid grid-cols-2 gap-3">
+                    <div className="space-y-1.5">
+                      <FormFieldLabel label="SNI" hint="TLS 服务器名称" />
+                      <MobileFormInput
+                        placeholder="example.com"
+                        value={formData.tuicSni || ''}
+                        onChange={(value) => handleChange('tuicSni', value)}
+                        className="font-mono"
+                      />
+                    </div>
+                    <div className="space-y-1.5">
+                      <FormFieldLabel label="TLS 验证" />
+                      <MobileSelect
+                        value={formData.tuicAllowInsecure ? 'true' : 'false'}
+                        onChange={(value) => handleChange('tuicAllowInsecure', value === 'true')}
+                        options={TLS_SECURITY_OPTIONS}
+                      />
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-3">
+                    <div className="space-y-1.5">
+                      <FormFieldLabel label="ALPN" hint="应用层协议" />
+                      <MobileFormInput
+                        placeholder="h3"
+                        value={formData.tuicAlpn || ''}
+                        onChange={(value) => handleChange('tuicAlpn', value)}
+                        className="font-mono"
+                      />
+                    </div>
+                    <div className="space-y-1.5">
+                      <FormFieldLabel label="禁用 SNI" />
+                      <MobileSelect
+                        value={formData.tuicDisableSni ? 'true' : 'false'}
+                        onChange={(value) => handleChange('tuicDisableSni', value === 'true')}
+                        options={[
+                          { value: 'false', label: '不禁用' },
+                          { value: 'true', label: '禁用' },
+                        ]}
+                      />
+                    </div>
+                  </div>
                 </>
               )}
             </div>

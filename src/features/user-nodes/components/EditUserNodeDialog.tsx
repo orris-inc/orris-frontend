@@ -16,7 +16,19 @@ import { Input } from '@/components/common/Input';
 import { Label } from '@/components/common/Label';
 import { Badge } from '@/components/common/Badge';
 import { Separator } from '@/components/common/Separator';
-import type { UserNode, UpdateUserNodeRequest } from '@/api/node';
+import type { UserNode, UpdateUserNodeRequest, NodeProtocol } from '@/api/node';
+
+/**
+ * Protocol display names
+ */
+const PROTOCOL_NAMES: Record<NodeProtocol, string> = {
+  shadowsocks: 'Shadowsocks',
+  trojan: 'Trojan',
+  vless: 'VLESS',
+  vmess: 'VMess',
+  hysteria2: 'Hysteria2',
+  tuic: 'TUIC',
+};
 
 interface EditUserNodeDialogProps {
   open: boolean;
@@ -145,7 +157,7 @@ export const EditUserNodeDialog: React.FC<EditUserNodeDialogProps> = ({
               <div>
                 <span className="text-muted-foreground">协议：</span>
                 <Badge variant="outline" className="ml-2">
-                  {node.protocol === 'shadowsocks' ? 'Shadowsocks' : 'Trojan'}
+                  {PROTOCOL_NAMES[node.protocol] || node.protocol}
                 </Badge>
               </div>
               <div>

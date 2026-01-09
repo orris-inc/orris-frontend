@@ -4,7 +4,7 @@
  * Switches to mobile card list on small screens
  */
 
-import { useMemo } from 'react';
+import { useMemo, useCallback } from 'react';
 import { CheckCircle, X, MoreHorizontal, Play, XCircle, RefreshCw, Eye, Copy, Trash2 } from 'lucide-react';
 import { DataTable, AdminBadge, TruncatedId, type ColumnDef, type ResponsiveColumnMeta } from '@/components/admin';
 import { useBreakpoint } from '@/hooks/useBreakpoint';
@@ -18,6 +18,10 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/common/DropdownMenu';
+import {
+  ContextMenuItem,
+  ContextMenuSeparator,
+} from '@/components/common/ContextMenu';
 import { formatDate } from '@/shared/utils/date-utils';
 import type { Subscription, SubscriptionStatus } from '@/api/subscription/types';
 import type { UserResponse } from '@/api/user/types';
@@ -282,6 +286,66 @@ export const SubscriptionListTable: React.FC<SubscriptionListTableProps> = ({
     },
   ], [usersMap, usersLoading, onViewDetail, onDuplicate, onActivate, onCancel, onRenew, onDelete]);
 
+  // Context menu content renderer
+  const renderContextMenuContent = useCallback((subscription: Subscription) => {
+    const status = subscription.status;
+    const canActivate = status !== 'active' && status !== 'renewed';
+    const canCancel = status === 'active' || status === 'renewed';
+    const canRenew = status === 'expired';
+    const canDelete = status === 'cancelled' || status === 'expired';
+
+    return (
+      <>
+        {onViewDetail && (
+          <ContextMenuItem onClick={() => onViewDetail(subscription)}>
+            <Eye className="mr-2 size-4" />
+            查看详情
+          </ContextMenuItem>
+        )}
+        {onDuplicate && (
+          <ContextMenuItem onClick={() => onDuplicate(subscription)}>
+            <Copy className="mr-2 size-4" />
+            复制订阅
+          </ContextMenuItem>
+        )}
+        {(onViewDetail || onDuplicate) && (canActivate || canRenew || canCancel) && <ContextMenuSeparator />}
+        {canActivate && onActivate && (
+          <ContextMenuItem onClick={() => onActivate(subscription)}>
+            <Play className="mr-2 size-4" />
+            激活
+          </ContextMenuItem>
+        )}
+        {canRenew && onRenew && (
+          <ContextMenuItem onClick={() => onRenew(subscription)}>
+            <RefreshCw className="mr-2 size-4" />
+            续费订阅
+          </ContextMenuItem>
+        )}
+        {canCancel && onCancel && (
+          <ContextMenuItem
+            onClick={() => onCancel(subscription)}
+            className="text-destructive focus:text-destructive"
+          >
+            <XCircle className="mr-2 size-4" />
+            取消订阅
+          </ContextMenuItem>
+        )}
+        {canDelete && onDelete && (
+          <>
+            <ContextMenuSeparator />
+            <ContextMenuItem
+              onClick={() => onDelete(subscription)}
+              className="text-destructive focus:text-destructive"
+            >
+              <Trash2 className="mr-2 size-4" />
+              删除订阅
+            </ContextMenuItem>
+          </>
+        )}
+      </>
+    );
+  }, [onViewDetail, onDuplicate, onActivate, onCancel, onRenew, onDelete]);
+
   // Render mobile card list on small screens
   if (isMobile) {
     return (
@@ -312,6 +376,8 @@ export const SubscriptionListTable: React.FC<SubscriptionListTableProps> = ({
       onPageSizeChange={onPageSizeChange}
       emptyMessage="暂无订阅数据"
       getRowId={(row) => String(row.id)}
+      enableContextMenu
+      contextMenuContent={renderContextMenuContent}
     />
   );
 };

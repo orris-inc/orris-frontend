@@ -28,7 +28,17 @@ import {
 } from '@/components/common/Accordion';
 import { Badge } from '@/components/common/Badge';
 import { Switch, SwitchThumb } from '@/components/common/Switch';
-import type { Node, UpdateNodeRequest, TransportProtocol, RouteConfig } from '@/api/node';
+import type {
+  Node,
+  UpdateNodeRequest,
+  TransportProtocol,
+  RouteConfig,
+  NodeProtocol,
+  VLESSSecurity,
+  VMessSecurity,
+  CongestionControl,
+  TUICUDPRelayMode,
+} from '@/api/node';
 import { useResourceGroups } from '@/features/resource-groups/hooks/useResourceGroups';
 import { RouteConfigEditor } from './RouteConfigEditor';
 import type { OutboundNodeOption } from './RouteRuleEditor';
@@ -55,6 +65,37 @@ const SS_ENCRYPTION_METHODS = [
 
 // Trojan transport protocols
 const TRANSPORT_PROTOCOLS: TransportProtocol[] = ['tcp', 'ws', 'grpc'];
+
+// VLESS transport protocols
+const VLESS_TRANSPORT_PROTOCOLS: TransportProtocol[] = ['tcp', 'ws', 'grpc', 'h2'];
+
+// VLESS security types
+const VLESS_SECURITY_OPTIONS: VLESSSecurity[] = ['none', 'tls', 'reality'];
+
+// VMess security types
+const VMESS_SECURITY_OPTIONS: VMessSecurity[] = ['auto', 'aes-128-gcm', 'chacha20-poly1305', 'none', 'zero'];
+
+// VMess transport protocols
+const VMESS_TRANSPORT_PROTOCOLS: TransportProtocol[] = ['tcp', 'ws', 'grpc', 'http', 'quic'];
+
+// Congestion control algorithms
+const CONGESTION_CONTROL_OPTIONS: CongestionControl[] = ['cubic', 'bbr', 'new_reno'];
+
+// TUIC UDP relay modes
+const TUIC_UDP_RELAY_MODES: TUICUDPRelayMode[] = ['native', 'quic'];
+
+// TLS fingerprint options
+const TLS_FINGERPRINT_OPTIONS = ['chrome', 'firefox', 'safari', 'edge', 'random'] as const;
+
+// Protocol display names
+const PROTOCOL_NAMES: Record<NodeProtocol, string> = {
+  shadowsocks: 'Shadowsocks',
+  trojan: 'Trojan',
+  vless: 'VLESS',
+  vmess: 'VMess',
+  hysteria2: 'Hysteria2',
+  tuic: 'TUIC',
+};
 
 // Helper function: convert pluginOpts object to string
 const pluginOptsToString = (opts?: Record<string, string>): string => {
@@ -157,6 +198,45 @@ export const EditNodeDialog: React.FC<EditNodeDialogProps> = ({
         groupSid: node.groupIds?.[0] ?? '',
         // Notification setting
         muteNotification: node.muteNotification,
+        // VLESS fields
+        vlessTransportType: node.vlessTransportType,
+        vlessFlow: node.vlessFlow,
+        vlessSecurity: node.vlessSecurity,
+        vlessSni: node.vlessSni,
+        vlessFingerprint: node.vlessFingerprint,
+        vlessAllowInsecure: node.vlessAllowInsecure,
+        vlessHost: node.vlessHost,
+        vlessPath: node.vlessPath,
+        vlessServiceName: node.vlessServiceName,
+        vlessRealityPublicKey: node.vlessRealityPublicKey,
+        vlessRealityShortId: node.vlessRealityShortId,
+        vlessRealitySpiderX: node.vlessRealitySpiderX,
+        // VMess fields
+        vmessAlterId: node.vmessAlterId,
+        vmessSecurity: node.vmessSecurity,
+        vmessTransportType: node.vmessTransportType,
+        vmessHost: node.vmessHost,
+        vmessPath: node.vmessPath,
+        vmessServiceName: node.vmessServiceName,
+        vmessTls: node.vmessTls,
+        vmessSni: node.vmessSni,
+        vmessAllowInsecure: node.vmessAllowInsecure,
+        // Hysteria2 fields
+        hysteria2CongestionControl: node.hysteria2CongestionControl,
+        hysteria2Obfs: node.hysteria2Obfs,
+        hysteria2ObfsPassword: node.hysteria2ObfsPassword,
+        hysteria2UpMbps: node.hysteria2UpMbps,
+        hysteria2DownMbps: node.hysteria2DownMbps,
+        hysteria2Sni: node.hysteria2Sni,
+        hysteria2AllowInsecure: node.hysteria2AllowInsecure,
+        hysteria2Fingerprint: node.hysteria2Fingerprint,
+        // TUIC fields
+        tuicCongestionControl: node.tuicCongestionControl,
+        tuicUdpRelayMode: node.tuicUdpRelayMode,
+        tuicAlpn: node.tuicAlpn,
+        tuicSni: node.tuicSni,
+        tuicAllowInsecure: node.tuicAllowInsecure,
+        tuicDisableSni: node.tuicDisableSni,
       });
       setPluginOptsStr(pluginOptsToString(node.pluginOpts));
       setErrors({});
@@ -165,8 +245,23 @@ export const EditNodeDialog: React.FC<EditNodeDialogProps> = ({
 
   const isShadowsocks = node?.protocol === 'shadowsocks';
   const isTrojan = node?.protocol === 'trojan';
+  const isVless = node?.protocol === 'vless';
+  const isVmess = node?.protocol === 'vmess';
+  const isHysteria2 = node?.protocol === 'hysteria2';
+  const isTuic = node?.protocol === 'tuic';
+
+  // Trojan transport fields
   const showWsFields = isTrojan && formData.transportProtocol === 'ws';
   const showGrpcFields = isTrojan && formData.transportProtocol === 'grpc';
+
+  // VLESS transport fields
+  const showVlessWsFields = isVless && (formData.vlessTransportType === 'ws' || formData.vlessTransportType === 'h2');
+  const showVlessGrpcFields = isVless && formData.vlessTransportType === 'grpc';
+  const showVlessRealityFields = isVless && formData.vlessSecurity === 'reality';
+
+  // VMess transport fields
+  const showVmessWsFields = isVmess && (formData.vmessTransportType === 'ws' || formData.vmessTransportType === 'http');
+  const showVmessGrpcFields = isVmess && formData.vmessTransportType === 'grpc';
 
   const handleChange = (field: keyof UpdateNodeRequest | 'tagsInput', value: string | number | boolean | undefined) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
@@ -287,6 +382,127 @@ export const EditNodeDialog: React.FC<EditNodeDialogProps> = ({
       }
     }
 
+    // VLESS related fields
+    if (isVless) {
+      if (formData.vlessTransportType !== node.vlessTransportType) {
+        updates.vlessTransportType = formData.vlessTransportType;
+      }
+      if (formData.vlessSecurity !== node.vlessSecurity) {
+        updates.vlessSecurity = formData.vlessSecurity;
+      }
+      if (hasStringChanged(formData.vlessFlow, node.vlessFlow)) {
+        updates.vlessFlow = formData.vlessFlow?.trim() || undefined;
+      }
+      if (hasStringChanged(formData.vlessSni, node.vlessSni)) {
+        updates.vlessSni = formData.vlessSni?.trim() || undefined;
+      }
+      if (hasStringChanged(formData.vlessFingerprint, node.vlessFingerprint)) {
+        updates.vlessFingerprint = formData.vlessFingerprint?.trim() || undefined;
+      }
+      if (formData.vlessAllowInsecure !== node.vlessAllowInsecure) {
+        updates.vlessAllowInsecure = formData.vlessAllowInsecure;
+      }
+      if (hasStringChanged(formData.vlessHost, node.vlessHost)) {
+        updates.vlessHost = formData.vlessHost?.trim() || undefined;
+      }
+      if (hasStringChanged(formData.vlessPath, node.vlessPath)) {
+        updates.vlessPath = formData.vlessPath?.trim() || undefined;
+      }
+      if (hasStringChanged(formData.vlessServiceName, node.vlessServiceName)) {
+        updates.vlessServiceName = formData.vlessServiceName?.trim() || undefined;
+      }
+      if (hasStringChanged(formData.vlessRealityPublicKey, node.vlessRealityPublicKey)) {
+        updates.vlessRealityPublicKey = formData.vlessRealityPublicKey?.trim() || undefined;
+      }
+      if (hasStringChanged(formData.vlessRealityShortId, node.vlessRealityShortId)) {
+        updates.vlessRealityShortId = formData.vlessRealityShortId?.trim() || undefined;
+      }
+      if (hasStringChanged(formData.vlessRealitySpiderX, node.vlessRealitySpiderX)) {
+        updates.vlessRealitySpiderX = formData.vlessRealitySpiderX?.trim() || undefined;
+      }
+    }
+
+    // VMess related fields
+    if (isVmess) {
+      if (formData.vmessTransportType !== node.vmessTransportType) {
+        updates.vmessTransportType = formData.vmessTransportType;
+      }
+      if (formData.vmessSecurity !== node.vmessSecurity) {
+        updates.vmessSecurity = formData.vmessSecurity;
+      }
+      if (formData.vmessAlterId !== node.vmessAlterId) {
+        updates.vmessAlterId = formData.vmessAlterId;
+      }
+      if (formData.vmessTls !== node.vmessTls) {
+        updates.vmessTls = formData.vmessTls;
+      }
+      if (hasStringChanged(formData.vmessSni, node.vmessSni)) {
+        updates.vmessSni = formData.vmessSni?.trim() || undefined;
+      }
+      if (formData.vmessAllowInsecure !== node.vmessAllowInsecure) {
+        updates.vmessAllowInsecure = formData.vmessAllowInsecure;
+      }
+      if (hasStringChanged(formData.vmessHost, node.vmessHost)) {
+        updates.vmessHost = formData.vmessHost?.trim() || undefined;
+      }
+      if (hasStringChanged(formData.vmessPath, node.vmessPath)) {
+        updates.vmessPath = formData.vmessPath?.trim() || undefined;
+      }
+      if (hasStringChanged(formData.vmessServiceName, node.vmessServiceName)) {
+        updates.vmessServiceName = formData.vmessServiceName?.trim() || undefined;
+      }
+    }
+
+    // Hysteria2 related fields
+    if (isHysteria2) {
+      if (formData.hysteria2CongestionControl !== node.hysteria2CongestionControl) {
+        updates.hysteria2CongestionControl = formData.hysteria2CongestionControl;
+      }
+      if (hasStringChanged(formData.hysteria2Obfs, node.hysteria2Obfs)) {
+        updates.hysteria2Obfs = formData.hysteria2Obfs?.trim() || undefined;
+      }
+      if (hasStringChanged(formData.hysteria2ObfsPassword, node.hysteria2ObfsPassword)) {
+        updates.hysteria2ObfsPassword = formData.hysteria2ObfsPassword?.trim() || undefined;
+      }
+      if (formData.hysteria2UpMbps !== node.hysteria2UpMbps) {
+        updates.hysteria2UpMbps = formData.hysteria2UpMbps;
+      }
+      if (formData.hysteria2DownMbps !== node.hysteria2DownMbps) {
+        updates.hysteria2DownMbps = formData.hysteria2DownMbps;
+      }
+      if (hasStringChanged(formData.hysteria2Sni, node.hysteria2Sni)) {
+        updates.hysteria2Sni = formData.hysteria2Sni?.trim() || undefined;
+      }
+      if (formData.hysteria2AllowInsecure !== node.hysteria2AllowInsecure) {
+        updates.hysteria2AllowInsecure = formData.hysteria2AllowInsecure;
+      }
+      if (hasStringChanged(formData.hysteria2Fingerprint, node.hysteria2Fingerprint)) {
+        updates.hysteria2Fingerprint = formData.hysteria2Fingerprint?.trim() || undefined;
+      }
+    }
+
+    // TUIC related fields
+    if (isTuic) {
+      if (formData.tuicCongestionControl !== node.tuicCongestionControl) {
+        updates.tuicCongestionControl = formData.tuicCongestionControl;
+      }
+      if (formData.tuicUdpRelayMode !== node.tuicUdpRelayMode) {
+        updates.tuicUdpRelayMode = formData.tuicUdpRelayMode;
+      }
+      if (hasStringChanged(formData.tuicAlpn, node.tuicAlpn)) {
+        updates.tuicAlpn = formData.tuicAlpn?.trim() || undefined;
+      }
+      if (hasStringChanged(formData.tuicSni, node.tuicSni)) {
+        updates.tuicSni = formData.tuicSni?.trim() || undefined;
+      }
+      if (formData.tuicAllowInsecure !== node.tuicAllowInsecure) {
+        updates.tuicAllowInsecure = formData.tuicAllowInsecure;
+      }
+      if (formData.tuicDisableSni !== node.tuicDisableSni) {
+        updates.tuicDisableSni = formData.tuicDisableSni;
+      }
+    }
+
     // Resource group association - only send if changed
     const originalGroupSid = node.groupIds?.[0] ?? '';
     if (formData.groupSid !== undefined && formData.groupSid !== originalGroupSid) {
@@ -334,9 +550,28 @@ export const EditNodeDialog: React.FC<EditNodeDialogProps> = ({
   );
 
   // Check if protocol settings are configured
-  const hasProtocolSettings = isShadowsocks
-    ? Boolean(formData.plugin || pluginOptsStr)
-    : Boolean(formData.sni || formData.host || formData.path || formData.allowInsecure);
+  const getHasProtocolSettings = () => {
+    if (isShadowsocks) {
+      return Boolean(formData.plugin || pluginOptsStr);
+    }
+    if (isTrojan) {
+      return Boolean(formData.sni || formData.host || formData.path || formData.allowInsecure);
+    }
+    if (isVless) {
+      return Boolean(formData.vlessSni || formData.vlessHost || formData.vlessPath || formData.vlessFlow);
+    }
+    if (isVmess) {
+      return Boolean(formData.vmessSni || formData.vmessHost || formData.vmessPath);
+    }
+    if (isHysteria2) {
+      return Boolean(formData.hysteria2Sni || formData.hysteria2Obfs || formData.hysteria2UpMbps);
+    }
+    if (isTuic) {
+      return Boolean(formData.tuicSni || formData.tuicAlpn);
+    }
+    return false;
+  };
+  const hasProtocolSettings = getHasProtocolSettings();
 
   if (!node) return null;
 
@@ -397,7 +632,7 @@ export const EditNodeDialog: React.FC<EditNodeDialogProps> = ({
                     <Label htmlFor="protocol">协议类型</Label>
                     <Input
                       id="protocol"
-                      value={node.protocol === 'shadowsocks' ? 'Shadowsocks' : 'Trojan'}
+                      value={PROTOCOL_NAMES[node.protocol]}
                       disabled
                     />
                     <p className="text-xs text-muted-foreground">协议创建后不可修改</p>
@@ -463,6 +698,157 @@ export const EditNodeDialog: React.FC<EditNodeDialogProps> = ({
                         </SelectContent>
                       </Select>
                     </div>
+                  )}
+
+                  {/* VLESS 基本配置 */}
+                  {isVless && (
+                    <>
+                      <div className="flex flex-col gap-2">
+                        <Label htmlFor="vlessTransportType">传输协议</Label>
+                        <Select
+                          value={formData.vlessTransportType || 'tcp'}
+                          onValueChange={(value) => handleChange('vlessTransportType', value as TransportProtocol)}
+                        >
+                          <SelectTrigger id="vlessTransportType">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {VLESS_TRANSPORT_PROTOCOLS.map((protocol) => (
+                              <SelectItem key={protocol} value={protocol}>
+                                {protocol.toUpperCase()}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+
+                      <div className="flex flex-col gap-2">
+                        <Label htmlFor="vlessSecurity">安全类型</Label>
+                        <Select
+                          value={formData.vlessSecurity || 'tls'}
+                          onValueChange={(value) => handleChange('vlessSecurity', value as VLESSSecurity)}
+                        >
+                          <SelectTrigger id="vlessSecurity">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {VLESS_SECURITY_OPTIONS.map((security) => (
+                              <SelectItem key={security} value={security}>
+                                {security.toUpperCase()}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    </>
+                  )}
+
+                  {/* VMess 基本配置 */}
+                  {isVmess && (
+                    <>
+                      <div className="flex flex-col gap-2">
+                        <Label htmlFor="vmessTransportType">传输协议</Label>
+                        <Select
+                          value={formData.vmessTransportType || 'tcp'}
+                          onValueChange={(value) => handleChange('vmessTransportType', value as TransportProtocol)}
+                        >
+                          <SelectTrigger id="vmessTransportType">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {VMESS_TRANSPORT_PROTOCOLS.map((protocol) => (
+                              <SelectItem key={protocol} value={protocol}>
+                                {protocol.toUpperCase()}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+
+                      <div className="flex flex-col gap-2">
+                        <Label htmlFor="vmessSecurity">加密方式</Label>
+                        <Select
+                          value={formData.vmessSecurity || 'auto'}
+                          onValueChange={(value) => handleChange('vmessSecurity', value as VMessSecurity)}
+                        >
+                          <SelectTrigger id="vmessSecurity">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {VMESS_SECURITY_OPTIONS.map((security) => (
+                              <SelectItem key={security} value={security}>
+                                {security}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    </>
+                  )}
+
+                  {/* Hysteria2 基本配置 */}
+                  {isHysteria2 && (
+                    <div className="flex flex-col gap-2">
+                      <Label htmlFor="hysteria2CongestionControl">拥塞控制</Label>
+                      <Select
+                        value={formData.hysteria2CongestionControl || 'bbr'}
+                        onValueChange={(value) => handleChange('hysteria2CongestionControl', value as CongestionControl)}
+                      >
+                        <SelectTrigger id="hysteria2CongestionControl">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {CONGESTION_CONTROL_OPTIONS.map((cc) => (
+                            <SelectItem key={cc} value={cc}>
+                              {cc.toUpperCase().replace('_', ' ')}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  )}
+
+                  {/* TUIC 基本配置 */}
+                  {isTuic && (
+                    <>
+                      <div className="flex flex-col gap-2">
+                        <Label htmlFor="tuicCongestionControl">拥塞控制</Label>
+                        <Select
+                          value={formData.tuicCongestionControl || 'bbr'}
+                          onValueChange={(value) => handleChange('tuicCongestionControl', value as CongestionControl)}
+                        >
+                          <SelectTrigger id="tuicCongestionControl">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {CONGESTION_CONTROL_OPTIONS.map((cc) => (
+                              <SelectItem key={cc} value={cc}>
+                                {cc.toUpperCase().replace('_', ' ')}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+
+                      <div className="flex flex-col gap-2">
+                        <Label htmlFor="tuicUdpRelayMode">UDP 中继模式</Label>
+                        <Select
+                          value={formData.tuicUdpRelayMode || 'native'}
+                          onValueChange={(value) => handleChange('tuicUdpRelayMode', value as TUICUDPRelayMode)}
+                        >
+                          <SelectTrigger id="tuicUdpRelayMode">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {TUIC_UDP_RELAY_MODES.map((mode) => (
+                              <SelectItem key={mode} value={mode}>
+                                {mode.toUpperCase()}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    </>
                   )}
                 </div>
               </AccordionContent>
@@ -534,7 +920,7 @@ export const EditNodeDialog: React.FC<EditNodeDialogProps> = ({
               <AccordionTrigger className="py-3 hover:no-underline">
                 <div className="flex items-center gap-2">
                   <span className="text-sm font-medium">
-                    {isShadowsocks ? 'Shadowsocks 配置' : 'Trojan 配置'}
+                    {PROTOCOL_NAMES[node.protocol]} 配置
                   </span>
                   {hasProtocolSettings && (
                     <Badge variant="secondary" className="text-xs">已配置</Badge>
@@ -649,6 +1035,384 @@ export const EditNodeDialog: React.FC<EditNodeDialogProps> = ({
                           <p className="text-xs text-muted-foreground">可选</p>
                         </div>
                       )}
+                    </>
+                  )}
+
+                  {/* VLESS 配置 */}
+                  {isVless && (
+                    <>
+                      <div className="flex flex-col gap-2">
+                        <Label htmlFor="vlessSni">SNI</Label>
+                        <Input
+                          id="vlessSni"
+                          placeholder="TLS Server Name Indication"
+                          value={formData.vlessSni || ''}
+                          onChange={(e) => handleChange('vlessSni', e.target.value)}
+                        />
+                        <p className="text-xs text-muted-foreground">可选</p>
+                      </div>
+
+                      <div className="flex flex-col gap-2">
+                        <Label htmlFor="vlessAllowInsecure">TLS 安全</Label>
+                        <Select
+                          value={formData.vlessAllowInsecure ? 'true' : 'false'}
+                          onValueChange={(value) => handleChange('vlessAllowInsecure', value === 'true')}
+                        >
+                          <SelectTrigger id="vlessAllowInsecure">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="false">验证证书（安全）</SelectItem>
+                            <SelectItem value="true">跳过验证（不安全）</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+
+                      <div className="flex flex-col gap-2">
+                        <Label htmlFor="vlessFlow">Flow</Label>
+                        <Input
+                          id="vlessFlow"
+                          placeholder="如 xtls-rprx-vision"
+                          value={formData.vlessFlow || ''}
+                          onChange={(e) => handleChange('vlessFlow', e.target.value)}
+                        />
+                        <p className="text-xs text-muted-foreground">可选</p>
+                      </div>
+
+                      <div className="flex flex-col gap-2">
+                        <Label htmlFor="vlessFingerprint">Fingerprint</Label>
+                        <Select
+                          value={formData.vlessFingerprint || ''}
+                          onValueChange={(value) => handleChange('vlessFingerprint', value)}
+                        >
+                          <SelectTrigger id="vlessFingerprint">
+                            <SelectValue placeholder="选择指纹" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {TLS_FINGERPRINT_OPTIONS.map((fp) => (
+                              <SelectItem key={fp} value={fp}>
+                                {fp}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+
+                      {showVlessWsFields && (
+                        <>
+                          <div className="flex flex-col gap-2">
+                            <Label htmlFor="vlessHost">Host</Label>
+                            <Input
+                              id="vlessHost"
+                              placeholder="WS/H2 Host Header"
+                              value={formData.vlessHost || ''}
+                              onChange={(e) => handleChange('vlessHost', e.target.value)}
+                            />
+                          </div>
+
+                          <div className="flex flex-col gap-2">
+                            <Label htmlFor="vlessPath">Path</Label>
+                            <Input
+                              id="vlessPath"
+                              placeholder="/path"
+                              value={formData.vlessPath || ''}
+                              onChange={(e) => handleChange('vlessPath', e.target.value)}
+                            />
+                          </div>
+                        </>
+                      )}
+
+                      {showVlessGrpcFields && (
+                        <div className="flex flex-col gap-2">
+                          <Label htmlFor="vlessServiceName">Service Name</Label>
+                          <Input
+                            id="vlessServiceName"
+                            placeholder="gRPC Service Name"
+                            value={formData.vlessServiceName || ''}
+                            onChange={(e) => handleChange('vlessServiceName', e.target.value)}
+                          />
+                        </div>
+                      )}
+
+                      {showVlessRealityFields && (
+                        <>
+                          <div className="flex flex-col gap-2">
+                            <Label htmlFor="vlessRealityPublicKey">Reality Public Key</Label>
+                            <Input
+                              id="vlessRealityPublicKey"
+                              placeholder="服务端公钥"
+                              value={formData.vlessRealityPublicKey || ''}
+                              onChange={(e) => handleChange('vlessRealityPublicKey', e.target.value)}
+                            />
+                          </div>
+
+                          <div className="flex flex-col gap-2">
+                            <Label htmlFor="vlessRealityShortId">Reality Short ID</Label>
+                            <Input
+                              id="vlessRealityShortId"
+                              placeholder="短 ID"
+                              value={formData.vlessRealityShortId || ''}
+                              onChange={(e) => handleChange('vlessRealityShortId', e.target.value)}
+                            />
+                          </div>
+
+                          <div className="flex flex-col gap-2 md:col-span-2">
+                            <Label htmlFor="vlessRealitySpiderX">Reality Spider X</Label>
+                            <Input
+                              id="vlessRealitySpiderX"
+                              placeholder="/"
+                              value={formData.vlessRealitySpiderX || ''}
+                              onChange={(e) => handleChange('vlessRealitySpiderX', e.target.value)}
+                            />
+                          </div>
+                        </>
+                      )}
+                    </>
+                  )}
+
+                  {/* VMess 配置 */}
+                  {isVmess && (
+                    <>
+                      <div className="flex flex-col gap-2">
+                        <Label htmlFor="vmessAlterId">Alter ID</Label>
+                        <Input
+                          id="vmessAlterId"
+                          type="number"
+                          min={0}
+                          value={formData.vmessAlterId ?? 0}
+                          onChange={(e) => handleChange('vmessAlterId', parseInt(e.target.value, 10) || 0)}
+                        />
+                        <p className="text-xs text-muted-foreground">通常为 0</p>
+                      </div>
+
+                      <div className="flex flex-col gap-2">
+                        <Label htmlFor="vmessTls">TLS</Label>
+                        <Select
+                          value={formData.vmessTls ? 'true' : 'false'}
+                          onValueChange={(value) => handleChange('vmessTls', value === 'true')}
+                        >
+                          <SelectTrigger id="vmessTls">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="true">启用 TLS</SelectItem>
+                            <SelectItem value="false">不启用 TLS</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+
+                      <div className="flex flex-col gap-2">
+                        <Label htmlFor="vmessSni">SNI</Label>
+                        <Input
+                          id="vmessSni"
+                          placeholder="TLS Server Name Indication"
+                          value={formData.vmessSni || ''}
+                          onChange={(e) => handleChange('vmessSni', e.target.value)}
+                        />
+                      </div>
+
+                      <div className="flex flex-col gap-2">
+                        <Label htmlFor="vmessAllowInsecure">TLS 安全</Label>
+                        <Select
+                          value={formData.vmessAllowInsecure ? 'true' : 'false'}
+                          onValueChange={(value) => handleChange('vmessAllowInsecure', value === 'true')}
+                        >
+                          <SelectTrigger id="vmessAllowInsecure">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="false">验证证书（安全）</SelectItem>
+                            <SelectItem value="true">跳过验证（不安全）</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+
+                      {showVmessWsFields && (
+                        <>
+                          <div className="flex flex-col gap-2">
+                            <Label htmlFor="vmessHost">Host</Label>
+                            <Input
+                              id="vmessHost"
+                              placeholder="WS/HTTP Host Header"
+                              value={formData.vmessHost || ''}
+                              onChange={(e) => handleChange('vmessHost', e.target.value)}
+                            />
+                          </div>
+
+                          <div className="flex flex-col gap-2">
+                            <Label htmlFor="vmessPath">Path</Label>
+                            <Input
+                              id="vmessPath"
+                              placeholder="/path"
+                              value={formData.vmessPath || ''}
+                              onChange={(e) => handleChange('vmessPath', e.target.value)}
+                            />
+                          </div>
+                        </>
+                      )}
+
+                      {showVmessGrpcFields && (
+                        <div className="flex flex-col gap-2">
+                          <Label htmlFor="vmessServiceName">Service Name</Label>
+                          <Input
+                            id="vmessServiceName"
+                            placeholder="gRPC Service Name"
+                            value={formData.vmessServiceName || ''}
+                            onChange={(e) => handleChange('vmessServiceName', e.target.value)}
+                          />
+                        </div>
+                      )}
+                    </>
+                  )}
+
+                  {/* Hysteria2 配置 */}
+                  {isHysteria2 && (
+                    <>
+                      <div className="flex flex-col gap-2">
+                        <Label htmlFor="hysteria2Sni">SNI</Label>
+                        <Input
+                          id="hysteria2Sni"
+                          placeholder="TLS Server Name Indication"
+                          value={formData.hysteria2Sni || ''}
+                          onChange={(e) => handleChange('hysteria2Sni', e.target.value)}
+                        />
+                      </div>
+
+                      <div className="flex flex-col gap-2">
+                        <Label htmlFor="hysteria2AllowInsecure">TLS 安全</Label>
+                        <Select
+                          value={formData.hysteria2AllowInsecure ? 'true' : 'false'}
+                          onValueChange={(value) => handleChange('hysteria2AllowInsecure', value === 'true')}
+                        >
+                          <SelectTrigger id="hysteria2AllowInsecure">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="false">验证证书（安全）</SelectItem>
+                            <SelectItem value="true">跳过验证（不安全）</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+
+                      <div className="flex flex-col gap-2">
+                        <Label htmlFor="hysteria2Obfs">Obfs 类型</Label>
+                        <Input
+                          id="hysteria2Obfs"
+                          placeholder="如 salamander"
+                          value={formData.hysteria2Obfs || ''}
+                          onChange={(e) => handleChange('hysteria2Obfs', e.target.value)}
+                        />
+                      </div>
+
+                      <div className="flex flex-col gap-2">
+                        <Label htmlFor="hysteria2ObfsPassword">Obfs 密码</Label>
+                        <Input
+                          id="hysteria2ObfsPassword"
+                          placeholder="混淆密码"
+                          value={formData.hysteria2ObfsPassword || ''}
+                          onChange={(e) => handleChange('hysteria2ObfsPassword', e.target.value)}
+                        />
+                      </div>
+
+                      <div className="flex flex-col gap-2">
+                        <Label htmlFor="hysteria2UpMbps">上行带宽 (Mbps)</Label>
+                        <Input
+                          id="hysteria2UpMbps"
+                          type="number"
+                          min={0}
+                          placeholder="100"
+                          value={formData.hysteria2UpMbps ?? ''}
+                          onChange={(e) => handleChange('hysteria2UpMbps', e.target.value ? parseInt(e.target.value, 10) : undefined)}
+                        />
+                      </div>
+
+                      <div className="flex flex-col gap-2">
+                        <Label htmlFor="hysteria2DownMbps">下行带宽 (Mbps)</Label>
+                        <Input
+                          id="hysteria2DownMbps"
+                          type="number"
+                          min={0}
+                          placeholder="100"
+                          value={formData.hysteria2DownMbps ?? ''}
+                          onChange={(e) => handleChange('hysteria2DownMbps', e.target.value ? parseInt(e.target.value, 10) : undefined)}
+                        />
+                      </div>
+
+                      <div className="flex flex-col gap-2 md:col-span-2">
+                        <Label htmlFor="hysteria2Fingerprint">Fingerprint</Label>
+                        <Select
+                          value={formData.hysteria2Fingerprint || ''}
+                          onValueChange={(value) => handleChange('hysteria2Fingerprint', value)}
+                        >
+                          <SelectTrigger id="hysteria2Fingerprint">
+                            <SelectValue placeholder="选择指纹" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {TLS_FINGERPRINT_OPTIONS.map((fp) => (
+                              <SelectItem key={fp} value={fp}>
+                                {fp}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    </>
+                  )}
+
+                  {/* TUIC 配置 */}
+                  {isTuic && (
+                    <>
+                      <div className="flex flex-col gap-2">
+                        <Label htmlFor="tuicSni">SNI</Label>
+                        <Input
+                          id="tuicSni"
+                          placeholder="TLS Server Name Indication"
+                          value={formData.tuicSni || ''}
+                          onChange={(e) => handleChange('tuicSni', e.target.value)}
+                        />
+                      </div>
+
+                      <div className="flex flex-col gap-2">
+                        <Label htmlFor="tuicAllowInsecure">TLS 安全</Label>
+                        <Select
+                          value={formData.tuicAllowInsecure ? 'true' : 'false'}
+                          onValueChange={(value) => handleChange('tuicAllowInsecure', value === 'true')}
+                        >
+                          <SelectTrigger id="tuicAllowInsecure">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="false">验证证书（安全）</SelectItem>
+                            <SelectItem value="true">跳过验证（不安全）</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+
+                      <div className="flex flex-col gap-2">
+                        <Label htmlFor="tuicAlpn">ALPN</Label>
+                        <Input
+                          id="tuicAlpn"
+                          placeholder="如 h3"
+                          value={formData.tuicAlpn || ''}
+                          onChange={(e) => handleChange('tuicAlpn', e.target.value)}
+                        />
+                      </div>
+
+                      <div className="flex flex-col gap-2">
+                        <Label htmlFor="tuicDisableSni">禁用 SNI</Label>
+                        <Select
+                          value={formData.tuicDisableSni ? 'true' : 'false'}
+                          onValueChange={(value) => handleChange('tuicDisableSni', value === 'true')}
+                        >
+                          <SelectTrigger id="tuicDisableSni">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="false">不禁用</SelectItem>
+                            <SelectItem value="true">禁用 SNI</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
                     </>
                   )}
                 </div>

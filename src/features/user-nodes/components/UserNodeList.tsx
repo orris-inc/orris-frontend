@@ -40,6 +40,22 @@ interface UserNodeListProps {
 const PROTOCOL_COLORS: Record<string, 'default' | 'secondary' | 'outline'> = {
   shadowsocks: 'default',
   trojan: 'secondary',
+  vless: 'outline',
+  vmess: 'default',
+  hysteria2: 'secondary',
+  tuic: 'outline',
+};
+
+/**
+ * Protocol display names
+ */
+const PROTOCOL_NAMES: Record<string, { short: string; full: string }> = {
+  shadowsocks: { short: 'SS', full: 'Shadowsocks' },
+  trojan: { short: 'Trojan', full: 'Trojan' },
+  vless: { short: 'VLESS', full: 'VLESS' },
+  vmess: { short: 'VMess', full: 'VMess' },
+  hysteria2: { short: 'Hy2', full: 'Hysteria2' },
+  tuic: { short: 'TUIC', full: 'TUIC' },
 };
 
 /**
@@ -142,7 +158,7 @@ export const UserNodeList: React.FC<UserNodeListProps> = ({
                   <div className={`w-2 h-2 rounded-full shrink-0 ${node.isOnline ? 'bg-green-500' : 'bg-muted-foreground/30'}`} />
                   <span className="font-medium text-sm truncate">{node.name}</span>
                   <Badge variant={PROTOCOL_COLORS[node.protocol]} className="text-[10px] px-1.5 h-5 shrink-0">
-                    {node.protocol === 'shadowsocks' ? 'SS' : 'Trojan'}
+                    {PROTOCOL_NAMES[node.protocol]?.short || node.protocol}
                   </Badge>
                 </div>
                 <Badge variant={STATUS_VARIANTS[node.status]} className="text-[10px] px-1.5 h-5 shrink-0">
@@ -260,7 +276,7 @@ export const UserNodeList: React.FC<UserNodeListProps> = ({
                   </td>
                   <td className="px-4 py-3">
                     <Badge variant={PROTOCOL_COLORS[node.protocol]} className="text-xs">
-                      {node.protocol === 'shadowsocks' ? 'Shadowsocks' : 'Trojan'}
+                      {PROTOCOL_NAMES[node.protocol]?.full || node.protocol}
                     </Badge>
                   </td>
                   <td className="px-4 py-3">

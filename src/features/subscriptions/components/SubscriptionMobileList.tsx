@@ -30,6 +30,13 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/common/DropdownMenu';
+import {
+  ContextMenu,
+  ContextMenuContent,
+  ContextMenuItem,
+  ContextMenuSeparator,
+  ContextMenuTrigger,
+} from '@/components/common/ContextMenu';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/common/Tooltip';
 import { Skeleton } from '@/components/common/Skeleton';
 import { formatDate } from '@/shared/utils/date-utils';
@@ -86,6 +93,66 @@ export const SubscriptionMobileList: React.FC<SubscriptionMobileListProps> = ({
   onRenew,
   onDelete,
 }) => {
+  // Render context menu content
+  const renderContextMenuContent = (subscription: Subscription) => {
+    const status = subscription.status;
+    const canActivate = status !== 'active' && status !== 'renewed';
+    const canCancel = status === 'active' || status === 'renewed';
+    const canRenew = status === 'expired';
+    const canDelete = status === 'cancelled' || status === 'expired';
+
+    return (
+      <>
+        {onViewDetail && (
+          <ContextMenuItem onClick={() => onViewDetail(subscription)}>
+            <Eye className="mr-2 size-4" />
+            查看详情
+          </ContextMenuItem>
+        )}
+        {onDuplicate && (
+          <ContextMenuItem onClick={() => onDuplicate(subscription)}>
+            <Copy className="mr-2 size-4" />
+            复制订阅
+          </ContextMenuItem>
+        )}
+        {(onViewDetail || onDuplicate) && (canActivate || canRenew || canCancel) && <ContextMenuSeparator />}
+        {canActivate && onActivate && (
+          <ContextMenuItem onClick={() => onActivate(subscription)}>
+            <Play className="mr-2 size-4" />
+            激活
+          </ContextMenuItem>
+        )}
+        {canRenew && onRenew && (
+          <ContextMenuItem onClick={() => onRenew(subscription)}>
+            <RefreshCw className="mr-2 size-4" />
+            续费订阅
+          </ContextMenuItem>
+        )}
+        {canCancel && onCancel && (
+          <ContextMenuItem
+            onClick={() => onCancel(subscription)}
+            className="text-destructive focus:text-destructive"
+          >
+            <XCircle className="mr-2 size-4" />
+            取消订阅
+          </ContextMenuItem>
+        )}
+        {canDelete && onDelete && (
+          <>
+            <ContextMenuSeparator />
+            <ContextMenuItem
+              onClick={() => onDelete(subscription)}
+              className="text-destructive focus:text-destructive"
+            >
+              <Trash2 className="mr-2 size-4" />
+              删除订阅
+            </ContextMenuItem>
+          </>
+        )}
+      </>
+    );
+  };
+
   // Render dropdown menu
   const renderDropdownMenu = (subscription: Subscription) => {
     const status = subscription.status;
@@ -179,11 +246,12 @@ export const SubscriptionMobileList: React.FC<SubscriptionMobileListProps> = ({
         const canActivate = status !== 'active' && status !== 'renewed';
 
         return (
-          <AccordionItem
-            key={subscription.id}
-            value={subscription.id}
-            className="border rounded-lg bg-white dark:bg-slate-800 overflow-hidden"
-          >
+          <ContextMenu key={subscription.id}>
+            <ContextMenuTrigger asChild>
+              <AccordionItem
+                value={subscription.id}
+                className="border rounded-lg bg-white dark:bg-slate-800 overflow-hidden"
+              >
             {/* Card Header - Always visible */}
             <div className="px-3 py-2">
               <div className="flex items-start justify-between gap-2">
@@ -310,7 +378,12 @@ export const SubscriptionMobileList: React.FC<SubscriptionMobileListProps> = ({
                 </div>
               </div>
             </AccordionContent>
-          </AccordionItem>
+              </AccordionItem>
+            </ContextMenuTrigger>
+            <ContextMenuContent>
+              {renderContextMenuContent(subscription)}
+            </ContextMenuContent>
+          </ContextMenu>
         );
       })}
     </Accordion>
