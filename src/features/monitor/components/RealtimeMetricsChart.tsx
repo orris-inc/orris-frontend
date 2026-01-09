@@ -402,28 +402,24 @@ export const RealtimeMetricsChart = memo(({
   }, [mode]);
 
   return (
-    <div className="bg-card rounded-2xl border border-border shadow-sm overflow-hidden">
-      {/* Header */}
-      <div className="p-4 sm:p-5">
-        {/* Top row: Title + Metric tabs */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-4">
-          {/* Title section */}
-          <div className="flex items-center gap-3">
-            <div className="p-2.5 rounded-xl bg-gradient-to-br from-primary/20 to-primary/5 border border-primary/10">
-              <BarChart3 className="size-5 text-primary" />
-            </div>
-            <div>
-              <h3 className="text-base font-semibold text-foreground">实时监控</h3>
-              <p className="text-xs text-muted-foreground">
-                {selectedEntityIds.length > 0
-                  ? `正在监控 ${selectedEntityIds.length} 个实体`
-                  : '选择实体开始监控'}
-              </p>
-            </div>
+    <div className="bg-card rounded-lg border border-border overflow-hidden">
+      {/* Compact Header */}
+      <div className="p-3">
+        {/* Single row: Title + Metric tabs + Entity selector */}
+        <div className="flex items-center justify-between gap-3 mb-2">
+          {/* Left: Compact title */}
+          <div className="flex items-center gap-2">
+            <BarChart3 className="size-4 text-primary" />
+            <span className="text-sm font-medium text-foreground">性能监控</span>
+            {selectedEntityIds.length > 0 && (
+              <Badge variant="secondary" className="text-[10px] h-5">
+                {selectedEntityIds.length} 实体
+              </Badge>
+            )}
           </div>
 
-          {/* Metric tabs - Pill style with clear active state */}
-          <div className="flex items-center p-1 rounded-xl bg-muted/60 border border-border/50">
+          {/* Right: Metric tabs - compact pills */}
+          <div className="flex items-center p-0.5 rounded-md bg-muted/60 border border-border/50">
             {(Object.keys(METRIC_CONFIG) as ChartMode[]).map((key) => {
               const config = METRIC_CONFIG[key];
               const Icon = config.icon;
@@ -433,39 +429,36 @@ export const RealtimeMetricsChart = memo(({
                   key={key}
                   onClick={() => setMode(key)}
                   className={cn(
-                    'relative flex items-center gap-1.5 px-3 sm:px-4 py-2 rounded-lg text-xs font-medium transition-all duration-200 cursor-pointer',
+                    'flex items-center gap-1 px-2 py-1 rounded text-[11px] font-medium transition-all cursor-pointer',
                     isActive
                       ? 'bg-background text-primary shadow-sm'
                       : 'text-muted-foreground hover:text-foreground'
                   )}
                 >
-                  <Icon className={cn('size-3.5', isActive && 'text-primary')} />
-                  <span>{config.label}</span>
-                  {isActive && (
-                    <span className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-4 h-0.5 rounded-full bg-primary" />
-                  )}
+                  <Icon className="size-3" />
+                  <span className="hidden sm:inline">{config.label}</span>
                 </button>
               );
             })}
           </div>
         </div>
 
-        {/* Entity selector row */}
-        <div className="flex items-center gap-2 overflow-x-auto scrollbar-none">
+        {/* Entity selector row - more compact */}
+        <div className="flex items-center gap-1.5 overflow-x-auto scrollbar-none">
           <Popover open={selectorOpen} onOpenChange={setSelectorOpen}>
             <PopoverTrigger asChild>
               <Button
                 variant="outline"
                 size="sm"
                 className={cn(
-                  'h-9 gap-2 border-dashed transition-all shrink-0',
+                  'h-7 gap-1.5 border-dashed transition-all shrink-0 text-xs',
                   selectedEntityIds.length === 0
                     ? 'border-primary/50 bg-primary/5 hover:bg-primary/10 hover:border-primary text-primary'
                     : 'hover:border-primary hover:bg-primary/5'
                 )}
               >
-                <Plus className="size-4" />
-                <span className="text-sm">添加实体</span>
+                <Plus className="size-3.5" />
+                <span>添加</span>
               </Button>
             </PopoverTrigger>
             <PopoverContent className="w-[300px] p-0" align="start">
@@ -563,21 +556,21 @@ export const RealtimeMetricsChart = memo(({
             </PopoverContent>
           </Popover>
 
-          {/* Selected entity chips */}
+          {/* Selected entity chips - compact */}
           {selectedEntities.map((entity) => (
             <div
               key={entity.id}
-              className="group flex items-center gap-2 h-9 pl-2.5 pr-1.5 rounded-lg bg-muted/50 border border-border/50 hover:border-border transition-colors"
+              className="group flex items-center gap-1.5 h-7 pl-2 pr-1 rounded-md bg-muted/50 border border-border/50 hover:border-border transition-colors"
             >
               <div
-                className="size-2.5 rounded-full ring-2 ring-background"
+                className="size-2 rounded-full"
                 style={{ backgroundColor: entity.colors.stroke }}
               />
-              <span className="text-sm font-medium text-foreground max-w-[100px] truncate">
-                {entity.name || entity.id.slice(0, 8)}
+              <span className="text-xs font-medium text-foreground max-w-[80px] truncate">
+                {entity.name || entity.id.slice(0, 6)}
               </span>
               {entity.currentValue && (
-                <span className="text-xs text-muted-foreground tabular-nums px-1.5 py-0.5 rounded bg-muted/80">
+                <span className="text-[10px] text-muted-foreground tabular-nums">
                   {mode === 'network'
                     ? formatBitRate(entity.currentValue.networkRxRate)
                     : `${(entity.currentValue[mode as 'cpu' | 'memory' | 'disk'] ?? 0).toFixed(0)}%`}
@@ -585,74 +578,50 @@ export const RealtimeMetricsChart = memo(({
               )}
               <button
                 onClick={() => removeEntity(entity.id)}
-                className="p-1 rounded-md hover:bg-destructive/10 text-muted-foreground hover:text-destructive transition-colors cursor-pointer"
+                className="p-0.5 rounded hover:bg-destructive/10 text-muted-foreground hover:text-destructive transition-colors cursor-pointer"
               >
-                <X className="size-3.5" />
+                <X className="size-3" />
               </button>
             </div>
           ))}
         </div>
       </div>
 
-      {/* Separator */}
-      <div className="h-px bg-gradient-to-r from-transparent via-border to-transparent" />
-
-      {/* Chart area */}
-      <div className="p-4 sm:p-5 h-[320px]">
+      {/* Chart area - reduced height */}
+      <div className="px-3 pb-3 h-[260px]">
         {selectedEntityIds.length === 0 ? (
-          /* Empty state - Modern with animated wave */
-          <div className="h-full flex flex-col items-center justify-center relative overflow-hidden">
-            {/* Animated wave background */}
-            <div className="absolute bottom-0 left-0 right-0 opacity-50">
-              <AnimatedWave />
-            </div>
-
-            {/* Content */}
-            <div className="relative z-10 text-center max-w-[280px]">
-              <div className="size-20 mx-auto mb-5 rounded-2xl bg-gradient-to-br from-muted/80 to-muted/40 border border-border/50 flex items-center justify-center">
-                <div className="relative">
-                  <BarChart3 className="size-8 text-muted-foreground/40" />
-                  <div className="absolute -top-1 -right-1 size-3 rounded-full bg-primary/20 animate-ping" />
-                </div>
-              </div>
-              <h4 className="text-base font-semibold text-foreground mb-2">开始实时监控</h4>
-              <p className="text-sm text-muted-foreground leading-relaxed mb-4">
-                点击「添加实体」按钮选择 Agent，实时查看系统资源使用情况
-              </p>
-              <div className="flex items-center justify-center gap-4 text-xs text-muted-foreground/70">
-                <span className="flex items-center gap-1.5">
-                  <Activity className="size-3.5" />
-                  CPU
+          /* Empty state - Compact */
+          <div className="h-full flex items-center justify-center">
+            <div className="text-center">
+              <BarChart3 className="size-10 text-muted-foreground/20 mx-auto mb-2" />
+              <p className="text-sm text-muted-foreground mb-1">点击「添加」选择实体</p>
+              <div className="flex items-center justify-center gap-3 text-[10px] text-muted-foreground/60">
+                <span className="flex items-center gap-1">
+                  <Activity className="size-3" />CPU
                 </span>
-                <span className="flex items-center gap-1.5">
-                  <Cpu className="size-3.5" />
-                  内存
+                <span className="flex items-center gap-1">
+                  <Cpu className="size-3" />内存
                 </span>
-                <span className="flex items-center gap-1.5">
-                  <HardDrive className="size-3.5" />
-                  磁盘
+                <span className="flex items-center gap-1">
+                  <HardDrive className="size-3" />磁盘
                 </span>
-                <span className="flex items-center gap-1.5">
-                  <Wifi className="size-3.5" />
-                  网络
+                <span className="flex items-center gap-1">
+                  <Wifi className="size-3" />网络
                 </span>
               </div>
             </div>
           </div>
         ) : chartData.length === 0 ? (
-          /* Loading state */
+          /* Loading state - Compact */
           <div className="h-full flex items-center justify-center">
             <div className="text-center">
-              <div className="size-16 mx-auto mb-4 rounded-2xl bg-muted/50 flex items-center justify-center">
-                <div className="flex gap-1 items-end">
-                  <div className="w-2 h-4 bg-primary/40 rounded-full animate-pulse" />
-                  <div className="w-2 h-7 bg-primary/60 rounded-full animate-pulse delay-75" />
-                  <div className="w-2 h-5 bg-primary/50 rounded-full animate-pulse delay-150" />
-                  <div className="w-2 h-8 bg-primary/70 rounded-full animate-pulse delay-200" />
-                </div>
+              <div className="flex gap-1 items-end justify-center mb-2">
+                <div className="w-1.5 h-3 bg-primary/40 rounded-full animate-pulse" />
+                <div className="w-1.5 h-5 bg-primary/60 rounded-full animate-pulse delay-75" />
+                <div className="w-1.5 h-4 bg-primary/50 rounded-full animate-pulse delay-150" />
+                <div className="w-1.5 h-6 bg-primary/70 rounded-full animate-pulse delay-200" />
               </div>
-              <h4 className="text-sm font-medium text-foreground mb-1">等待数据</h4>
-              <p className="text-xs text-muted-foreground">SSE 连接后将显示实时数据流</p>
+              <p className="text-xs text-muted-foreground">等待数据...</p>
             </div>
           </div>
         ) : (

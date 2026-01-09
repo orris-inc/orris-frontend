@@ -17,6 +17,7 @@ import { Server, Cpu, ChevronUp, ChevronDown, ChevronsUpDown, ArrowDown, ArrowUp
 import { Badge } from '@/components/common/Badge';
 import { cn } from '@/lib/utils';
 import { formatBitRate } from '@/shared/utils/format-utils';
+import { getResourceBgClass, getResourceMutedTextClass } from '../utils';
 import type { EntityStatus } from '../hooks/useMonitorData';
 import type { NodeSystemStatus } from '@/api/node';
 import type { AgentSystemStatus } from '@/api/forward';
@@ -29,32 +30,21 @@ interface EntityTableViewProps {
 const columnHelper = createColumnHelper<EntityStatus>();
 
 // Resource progress cell component
-const ResourceProgress = memo(({ value, showValue = true }: { value: number; showValue?: boolean }) => {
-  const getColorClass = (v: number) => {
-    if (v >= 80) return 'bg-destructive';
-    if (v >= 60) return 'bg-warning';
-    return 'bg-success';
-  };
-
-  return (
-    <div className="flex items-center gap-2 min-w-[80px]">
-      <div className="h-1.5 flex-1 bg-muted rounded-full overflow-hidden">
-        <div
-          className={cn('h-full rounded-full transition-all', getColorClass(value))}
-          style={{ width: `${Math.min(value, 100)}%` }}
-        />
-      </div>
-      {showValue && (
-        <span className={cn(
-          'text-[11px] font-medium tabular-nums w-9 text-right',
-          value >= 80 ? 'text-destructive' : value >= 60 ? 'text-warning' : 'text-muted-foreground'
-        )}>
-          {value.toFixed(0)}%
-        </span>
-      )}
+const ResourceProgress = memo(({ value, showValue = true }: { value: number; showValue?: boolean }) => (
+  <div className="flex items-center gap-2 min-w-[80px]">
+    <div className="h-1.5 flex-1 bg-muted rounded-full overflow-hidden">
+      <div
+        className={cn('h-full rounded-full transition-all', getResourceBgClass(value))}
+        style={{ width: `${Math.min(value, 100)}%` }}
+      />
     </div>
-  );
-});
+    {showValue && (
+      <span className={cn('text-[11px] font-medium tabular-nums w-9 text-right', getResourceMutedTextClass(value))}>
+        {value.toFixed(0)}%
+      </span>
+    )}
+  </div>
+));
 ResourceProgress.displayName = 'ResourceProgress';
 
 // Network rate cell component

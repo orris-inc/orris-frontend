@@ -5,6 +5,7 @@
 
 export { AdminPageLayout } from './AdminPageLayout';
 export { AdminCard, AdminCardHeader, AdminCardContent } from './AdminCard';
+export { PageHeader } from './PageHeader';
 export { AdminButton } from './AdminButton';
 export { AdminStatsCard } from './AdminStatsCard';
 export { PageStatsCard, type PageStatsCardProps } from './PageStatsCard';

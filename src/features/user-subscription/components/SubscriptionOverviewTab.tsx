@@ -298,13 +298,59 @@ export const SubscriptionOverviewTab: React.FC<
   };
 
   return (
-    <div className="space-y-4">
-      {/* Bento Grid Layout - Top Section */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+    <div className="space-y-3 sm:space-y-4">
+      {/* Mobile: 3-column grid stats row */}
+      <div className="grid grid-cols-3 gap-2 sm:hidden">
+        {/* Days Remaining - compact */}
+        <div
+          className={cn(
+            "p-2 rounded-xl",
+            "bg-gradient-to-br border",
+            statusConfig.bgColor,
+            statusConfig.ringColor,
+            "ring-1"
+          )}
+        >
+          <span className={cn(getBadgeClass(statusConfig.variant), "text-[10px] px-1.5 py-0 mb-1 inline-block")}>{statusConfig.label}</span>
+          <div className="flex items-baseline gap-0.5">
+            <span className={cn("text-xl font-bold tabular-nums", statusConfig.color)}>
+              {daysRemaining !== null ? daysRemaining : "-"}
+            </span>
+            <span className="text-[10px] text-muted-foreground">天</span>
+          </div>
+        </div>
+
+        {/* Traffic - compact */}
+        <div className="p-2 rounded-xl bg-card border">
+          <div className="flex items-center gap-1 mb-0.5">
+            <TrendingUp className="size-3 text-chart-download" />
+            <span className="text-[10px] text-muted-foreground">流量</span>
+          </div>
+          <div className="flex items-baseline gap-0.5">
+            <span className="text-lg font-bold tabular-nums">{trafficPercentage.toFixed(0)}</span>
+            <span className="text-[10px] text-muted-foreground">%</span>
+          </div>
+          <p className="text-[10px] text-muted-foreground truncate">
+            {formatTraffic(trafficUsage.total).value}{formatTraffic(trafficUsage.total).unit}
+          </p>
+        </div>
+
+        {/* Period - compact */}
+        <div className="p-2 rounded-xl bg-card border">
+          <div className="flex items-center gap-1 mb-0.5">
+            <Clock className="size-3 text-primary" />
+            <span className="text-[10px] text-muted-foreground">到期</span>
+          </div>
+          <p className="text-xs font-medium tabular-nums leading-tight">{formatDate(subscription.currentPeriodEnd)}</p>
+        </div>
+      </div>
+
+      {/* Desktop: Bento Grid Layout */}
+      <div className="hidden sm:grid grid-cols-1 lg:grid-cols-3 gap-3 sm:gap-4">
         {/* Hero Card - Days Remaining (Featured) */}
         <div
           className={cn(
-            "lg:col-span-1 relative overflow-hidden rounded-xl p-4",
+            "lg:col-span-1 relative overflow-hidden rounded-xl p-3 sm:p-4",
             "bg-gradient-to-br border",
             statusConfig.bgColor,
             statusConfig.ringColor,
@@ -313,7 +359,7 @@ export const SubscriptionOverviewTab: React.FC<
         >
           <div className="relative flex flex-col h-full">
             {/* Status Badge */}
-            <div className="flex items-center justify-between mb-3">
+            <div className="flex items-center justify-between mb-2 sm:mb-3">
               <span
                 className={cn(
                   getBadgeClass(statusConfig.variant),
@@ -339,7 +385,7 @@ export const SubscriptionOverviewTab: React.FC<
               <div className="flex items-baseline gap-1.5">
                 <span
                   className={cn(
-                    "text-4xl font-bold tabular-nums tracking-tight",
+                    "text-3xl sm:text-4xl font-bold tabular-nums tracking-tight",
                     statusConfig.color
                   )}
                 >
@@ -354,8 +400,8 @@ export const SubscriptionOverviewTab: React.FC<
 
             {/* Period Progress */}
             {totalDays !== null && totalDays > 0 && (
-              <div className="mt-3 pt-3 border-t border-current/10">
-                <div className="flex justify-between text-xs text-muted-foreground mb-1.5">
+              <div className="mt-2 sm:mt-3 pt-2 sm:pt-3 border-t border-current/10">
+                <div className="flex justify-between text-xs text-muted-foreground mb-1">
                   <span>周期进度</span>
                   <span className="tabular-nums">
                     {periodProgress.toFixed(0)}%
@@ -378,38 +424,38 @@ export const SubscriptionOverviewTab: React.FC<
         </div>
 
         {/* Plan Info Card */}
-        <div className="lg:col-span-1 p-4 rounded-xl bg-card border">
-          <div className="flex items-center gap-2.5 mb-3">
-            <div className="p-2 rounded-lg bg-primary/10 ring-1 ring-primary/20">
-              <Zap className="size-4 text-primary" />
+        <div className="lg:col-span-1 p-3 sm:p-4 rounded-xl bg-card border">
+          <div className="flex items-center gap-2 sm:gap-2.5 mb-2 sm:mb-3">
+            <div className="p-1.5 sm:p-2 rounded-lg bg-primary/10 ring-1 ring-primary/20">
+              <Zap className="size-3.5 sm:size-4 text-primary" />
             </div>
             <div>
-              <h3 className="text-sm font-semibold">
+              <h3 className="text-xs sm:text-sm font-semibold">
                 {subscription.plan?.name || "订阅计划"}
               </h3>
-              <p className="text-xs text-muted-foreground">当前订阅</p>
+              <p className="text-[10px] sm:text-xs text-muted-foreground">当前订阅</p>
             </div>
           </div>
 
           <div className="space-y-0">
             {/* Start Date */}
-            <div className="flex items-center justify-between py-1.5 border-b border-border/50">
-              <span className="text-xs text-muted-foreground">开始日期</span>
-              <span className="text-xs font-medium tabular-nums">
+            <div className="flex items-center justify-between py-1 sm:py-1.5 border-b border-border/50">
+              <span className="text-[10px] sm:text-xs text-muted-foreground">开始日期</span>
+              <span className="text-[10px] sm:text-xs font-medium tabular-nums">
                 {formatDate(subscription.currentPeriodStart)}
               </span>
             </div>
             {/* End Date */}
-            <div className="flex items-center justify-between py-1.5 border-b border-border/50">
-              <span className="text-xs text-muted-foreground">到期日期</span>
-              <span className="text-xs font-medium tabular-nums">
+            <div className="flex items-center justify-between py-1 sm:py-1.5 border-b border-border/50">
+              <span className="text-[10px] sm:text-xs text-muted-foreground">到期日期</span>
+              <span className="text-[10px] sm:text-xs font-medium tabular-nums">
                 {formatDate(subscription.currentPeriodEnd)}
               </span>
             </div>
             {/* Total Days */}
-            <div className="flex items-center justify-between py-1.5">
-              <span className="text-xs text-muted-foreground">周期天数</span>
-              <span className="text-xs font-medium tabular-nums">
+            <div className="flex items-center justify-between py-1 sm:py-1.5">
+              <span className="text-[10px] sm:text-xs text-muted-foreground">周期天数</span>
+              <span className="text-[10px] sm:text-xs font-medium tabular-nums">
                 {totalDays !== null ? `${totalDays} 天` : "-"}
               </span>
             </div>
@@ -417,14 +463,14 @@ export const SubscriptionOverviewTab: React.FC<
         </div>
 
         {/* Traffic Overview Card */}
-        <div className="lg:col-span-1 p-4 rounded-xl bg-card border">
-          <div className="flex items-center gap-2.5 mb-2">
-            <div className="p-2 rounded-lg bg-chart-download/10 ring-1 ring-chart-download/20">
-              <TrendingUp className="size-4 text-chart-download" />
+        <div className="lg:col-span-1 p-3 sm:p-4 rounded-xl bg-card border">
+          <div className="flex items-center gap-2 sm:gap-2.5 mb-2">
+            <div className="p-1.5 sm:p-2 rounded-lg bg-chart-download/10 ring-1 ring-chart-download/20">
+              <TrendingUp className="size-3.5 sm:size-4 text-chart-download" />
             </div>
             <div>
-              <h3 className="text-sm font-semibold">流量概览</h3>
-              <p className="text-xs text-muted-foreground">本周期使用情况</p>
+              <h3 className="text-xs sm:text-sm font-semibold">流量概览</h3>
+              <p className="text-[10px] sm:text-xs text-muted-foreground">本周期使用情况</p>
             </div>
           </div>
 
@@ -432,21 +478,21 @@ export const SubscriptionOverviewTab: React.FC<
           <div className="flex items-center justify-center py-1">
             <CircularProgress
               percentage={Math.min(trafficPercentage, 100)}
-              size={80}
-              strokeWidth={6}
+              size={70}
+              strokeWidth={5}
             >
               <div className="text-center">
-                <span className="text-lg font-bold tabular-nums">
+                <span className="text-base sm:text-lg font-bold tabular-nums">
                   {trafficPercentage.toFixed(0)}
                 </span>
-                <span className="text-xs text-muted-foreground">%</span>
+                <span className="text-[10px] sm:text-xs text-muted-foreground">%</span>
               </div>
             </CircularProgress>
           </div>
 
           {/* Traffic Summary */}
           <div className="mt-2 pt-2 border-t border-border/50">
-            <div className="flex items-center justify-between text-xs">
+            <div className="flex items-center justify-between text-[10px] sm:text-xs">
               <span className="text-muted-foreground">已使用</span>
               <span className="font-medium tabular-nums">
                 {formatTraffic(trafficUsage.total).value}{" "}
@@ -456,7 +502,7 @@ export const SubscriptionOverviewTab: React.FC<
               </span>
             </div>
             {trafficLimit > 0 && (
-              <div className="flex items-center justify-between text-xs mt-0.5">
+              <div className="flex items-center justify-between text-[10px] sm:text-xs mt-0.5">
                 <span className="text-muted-foreground">总配额</span>
                 <span className="font-medium tabular-nums">
                   {formatTraffic(trafficLimit).value}{" "}
@@ -471,62 +517,56 @@ export const SubscriptionOverviewTab: React.FC<
       </div>
 
       {/* Traffic Details Card */}
-      <div className="p-4 rounded-xl bg-card border">
-        <div className="flex items-center gap-2.5 mb-3">
-          <div className="p-1.5 rounded-md bg-primary/10 ring-1 ring-primary/20">
-            <Gauge className="size-3.5 text-primary" />
+      <div className="p-3 sm:p-4 rounded-xl bg-card border">
+        <div className="flex items-center gap-2 sm:gap-2.5 mb-2 sm:mb-3">
+          <div className="p-1 sm:p-1.5 rounded-md bg-primary/10 ring-1 ring-primary/20">
+            <Gauge className="size-3 sm:size-3.5 text-primary" />
           </div>
-          <h3 className="text-sm font-semibold">流量详情</h3>
+          <h3 className="text-xs sm:text-sm font-semibold">流量详情</h3>
         </div>
 
-        {/* Traffic Stats Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-3">
+        {/* Traffic Stats Grid - 3 columns on all screens */}
+        <div className="grid grid-cols-3 gap-1.5 sm:gap-3 mb-2 sm:mb-3">
           {/* Upload */}
-          <div className="flex items-center gap-3 p-3 rounded-lg bg-chart-upload/5 ring-1 ring-chart-upload/10 transition-all duration-200 hover:ring-chart-upload/20 cursor-default">
-            <div className="p-2 rounded-lg bg-chart-upload/10">
-              <Upload className="size-4 text-chart-upload" />
+          <div className="p-2 sm:p-3 rounded-lg bg-chart-upload/5 ring-1 ring-chart-upload/10">
+            <div className="flex items-center gap-1 mb-1">
+              <Upload className="size-3 sm:size-4 text-chart-upload" />
+              <span className="text-[10px] sm:text-xs text-muted-foreground">上传</span>
             </div>
-            <div className="min-w-0 flex-1">
-              <p className="text-xs text-muted-foreground">上传</p>
-              <p className="text-base font-semibold tabular-nums">
-                {formatTraffic(trafficUsage.upload).value}
-                <span className="text-xs font-normal text-muted-foreground ml-0.5">
-                  {formatTraffic(trafficUsage.upload).unit}
-                </span>
-              </p>
-            </div>
+            <p className="text-sm sm:text-base font-semibold tabular-nums">
+              {formatTraffic(trafficUsage.upload).value}
+              <span className="text-[10px] sm:text-xs font-normal text-muted-foreground ml-0.5">
+                {formatTraffic(trafficUsage.upload).unit}
+              </span>
+            </p>
           </div>
 
           {/* Download */}
-          <div className="flex items-center gap-3 p-3 rounded-lg bg-chart-download/5 ring-1 ring-chart-download/10 transition-all duration-200 hover:ring-chart-download/20 cursor-default">
-            <div className="p-2 rounded-lg bg-chart-download/10">
-              <Download className="size-4 text-chart-download" />
+          <div className="p-2 sm:p-3 rounded-lg bg-chart-download/5 ring-1 ring-chart-download/10">
+            <div className="flex items-center gap-1 mb-1">
+              <Download className="size-3 sm:size-4 text-chart-download" />
+              <span className="text-[10px] sm:text-xs text-muted-foreground">下载</span>
             </div>
-            <div className="min-w-0 flex-1">
-              <p className="text-xs text-muted-foreground">下载</p>
-              <p className="text-base font-semibold tabular-nums">
-                {formatTraffic(trafficUsage.download).value}
-                <span className="text-xs font-normal text-muted-foreground ml-0.5">
-                  {formatTraffic(trafficUsage.download).unit}
-                </span>
-              </p>
-            </div>
+            <p className="text-sm sm:text-base font-semibold tabular-nums">
+              {formatTraffic(trafficUsage.download).value}
+              <span className="text-[10px] sm:text-xs font-normal text-muted-foreground ml-0.5">
+                {formatTraffic(trafficUsage.download).unit}
+              </span>
+            </p>
           </div>
 
           {/* Total */}
-          <div className="flex items-center gap-3 p-3 rounded-lg bg-primary/5 ring-1 ring-primary/10 transition-all duration-200 hover:ring-primary/20 cursor-default">
-            <div className="p-2 rounded-lg bg-primary/10">
-              <Zap className="size-4 text-primary" />
+          <div className="p-2 sm:p-3 rounded-lg bg-primary/5 ring-1 ring-primary/10">
+            <div className="flex items-center gap-1 mb-1">
+              <Zap className="size-3 sm:size-4 text-primary" />
+              <span className="text-[10px] sm:text-xs text-muted-foreground">总计</span>
             </div>
-            <div className="min-w-0 flex-1">
-              <p className="text-xs text-muted-foreground">总计</p>
-              <p className="text-base font-semibold tabular-nums">
-                {formatTraffic(trafficUsage.total).value}
-                <span className="text-xs font-normal text-muted-foreground ml-0.5">
-                  {formatTraffic(trafficUsage.total).unit}
-                </span>
-              </p>
-            </div>
+            <p className="text-sm sm:text-base font-semibold tabular-nums">
+              {formatTraffic(trafficUsage.total).value}
+              <span className="text-[10px] sm:text-xs font-normal text-muted-foreground ml-0.5">
+                {formatTraffic(trafficUsage.total).unit}
+              </span>
+            </p>
           </div>
         </div>
 
@@ -546,15 +586,15 @@ export const SubscriptionOverviewTab: React.FC<
 
       {/* Subscription Link */}
       {subscription.isActive && subscription.subscribeUrl && (
-        <div className="p-4 rounded-xl bg-card border transition-all duration-200 hover:shadow-sm">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-3">
-            <div className="flex items-center gap-2.5">
-              <div className="p-2 rounded-lg bg-primary/10 ring-1 ring-primary/20">
-                <Link2 className="size-4 text-primary" />
+        <div className="p-3 sm:p-4 rounded-xl bg-card border transition-all duration-200 hover:shadow-sm">
+          <div className="flex items-center justify-between gap-2 mb-2 sm:mb-3">
+            <div className="flex items-center gap-2 sm:gap-2.5">
+              <div className="p-1.5 sm:p-2 rounded-lg bg-primary/10 ring-1 ring-primary/20">
+                <Link2 className="size-3.5 sm:size-4 text-primary" />
               </div>
               <div>
-                <h3 className="text-sm font-semibold">订阅链接</h3>
-                <p className="text-xs text-muted-foreground">
+                <h3 className="text-xs sm:text-sm font-semibold">订阅链接</h3>
+                <p className="text-[10px] sm:text-xs text-muted-foreground hidden sm:block">
                   选择格式并复制到客户端
                 </p>
               </div>
@@ -563,19 +603,20 @@ export const SubscriptionOverviewTab: React.FC<
               onClick={handleResetLink}
               disabled={isResettingLink}
               className={cn(
-                getButtonClass("outline", "sm", "h-8 text-xs gap-1.5"),
+                getButtonClass("outline", "sm", "h-7 sm:h-8 text-[10px] sm:text-xs gap-1 sm:gap-1.5 px-2 sm:px-3"),
                 "transition-all duration-200 hover:bg-destructive/10 hover:text-destructive hover:border-destructive/20"
               )}
             >
               {isResettingLink ? (
                 <>
                   <Loader2 className="size-3 animate-spin" />
-                  重置中...
+                  <span className="hidden sm:inline">重置中...</span>
                 </>
               ) : (
                 <>
                   <RefreshCw className="size-3" />
-                  重置链接
+                  <span className="hidden sm:inline">重置链接</span>
+                  <span className="sm:hidden">重置</span>
                 </>
               )}
             </button>

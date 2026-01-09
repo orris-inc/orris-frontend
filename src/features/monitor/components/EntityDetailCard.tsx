@@ -8,6 +8,7 @@ import { memo } from 'react';
 import { Server, Cpu, HardDrive, Activity, ArrowDown, ArrowUp, Clock, Wifi, Globe, Network } from 'lucide-react';
 import { Badge } from '@/components/common/Badge';
 import { formatBitRate, formatBytes, formatRelativeTime } from '@/shared/utils/format-utils';
+import { getResourceBgClass, getResourceTextClass } from '../utils';
 import type { EntityStatus } from '../hooks/useMonitorData';
 import type { NodeSystemStatus } from '@/api/node';
 import type { AgentSystemStatus } from '@/api/forward';
@@ -24,35 +25,22 @@ const InlineProgress = memo(({
 }: {
   value: number;
   label: string;
-}) => {
-  const getColorClass = (v: number) => {
-    if (v >= 80) return 'bg-destructive';
-    if (v >= 60) return 'bg-warning';
-    return 'bg-success';
-  };
-  const getTextColorClass = (v: number) => {
-    if (v >= 80) return 'text-destructive';
-    if (v >= 60) return 'text-warning';
-    return 'text-success';
-  };
-
-  return (
-    <div className="flex flex-col gap-0.5">
-      <div className="flex items-center justify-between">
-        <span className="text-[10px] text-muted-foreground">{label}</span>
-        <span className={`text-[10px] font-semibold tabular-nums ${getTextColorClass(value)}`}>
-          {value.toFixed(0)}%
-        </span>
-      </div>
-      <div className="h-1 bg-muted rounded-full overflow-hidden">
-        <div
-          className={`h-full rounded-full transition-all duration-300 ${getColorClass(value)}`}
-          style={{ width: `${Math.min(value, 100)}%` }}
-        />
-      </div>
+}) => (
+  <div className="flex flex-col gap-0.5">
+    <div className="flex items-center justify-between">
+      <span className="text-[10px] text-muted-foreground">{label}</span>
+      <span className={`text-[10px] font-semibold tabular-nums ${getResourceTextClass(value)}`}>
+        {value.toFixed(0)}%
+      </span>
     </div>
-  );
-});
+    <div className="h-1 bg-muted rounded-full overflow-hidden">
+      <div
+        className={`h-full rounded-full transition-all duration-300 ${getResourceBgClass(value)}`}
+        style={{ width: `${Math.min(value, 100)}%` }}
+      />
+    </div>
+  </div>
+));
 InlineProgress.displayName = 'InlineProgress';
 
 // Compact stat item
@@ -143,13 +131,6 @@ export const EntityDetailCard = memo(({ entity, compact = false }: EntityDetailC
   const memoryPercent = status?.memoryPercent ?? 0;
   const diskPercent = status?.diskPercent ?? 0;
 
-  // Get color class based on value
-  const getColorClass = (value: number) => {
-    if (value >= 80) return 'bg-destructive';
-    if (value >= 60) return 'bg-warning';
-    return 'bg-success';
-  };
-
   // Format uptime
   const formatUptime = (seconds?: number): string => {
     if (!seconds) return '-';
@@ -209,7 +190,7 @@ export const EntityDetailCard = memo(({ entity, compact = false }: EntityDetailC
                   <span className="text-xs text-muted-foreground">CPU</span>
                   <div className="w-16 h-1.5 bg-muted rounded-full overflow-hidden">
                     <div
-                      className={`h-full rounded-full transition-all ${getColorClass(cpuPercent)}`}
+                      className={`h-full rounded-full transition-all ${getResourceBgClass(cpuPercent)}`}
                       style={{ width: `${cpuPercent}%` }}
                     />
                   </div>
@@ -219,7 +200,7 @@ export const EntityDetailCard = memo(({ entity, compact = false }: EntityDetailC
                   <span className="text-xs text-muted-foreground">MEM</span>
                   <div className="w-16 h-1.5 bg-muted rounded-full overflow-hidden">
                     <div
-                      className={`h-full rounded-full transition-all ${getColorClass(memoryPercent)}`}
+                      className={`h-full rounded-full transition-all ${getResourceBgClass(memoryPercent)}`}
                       style={{ width: `${memoryPercent}%` }}
                     />
                   </div>
@@ -254,8 +235,8 @@ export const EntityDetailCard = memo(({ entity, compact = false }: EntityDetailC
           {/* Mobile: Resource meters below */}
           {isOnline && status && (
             <div className="md:hidden mt-2.5 pt-2.5 border-t border-border/50 space-y-1.5">
-              <MiniProgressBar value={cpuPercent} label="CPU" colorClass={getColorClass(cpuPercent)} />
-              <MiniProgressBar value={memoryPercent} label="MEM" colorClass={getColorClass(memoryPercent)} />
+              <MiniProgressBar value={cpuPercent} label="CPU" colorClass={getResourceBgClass(cpuPercent)} />
+              <MiniProgressBar value={memoryPercent} label="MEM" colorClass={getResourceBgClass(memoryPercent)} />
               <div className="flex items-center justify-between text-[10px] text-muted-foreground pt-1">
                 <div className="flex items-center gap-1">
                   <ArrowDown className="size-2.5 text-success" />

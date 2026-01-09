@@ -4,7 +4,7 @@
  */
 
 import { useState, useEffect } from 'react';
-import { Server, Loader2, AlertCircle, MapPin } from 'lucide-react';
+import { Server, Loader2, AlertCircle } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { getBadgeClass } from '@/lib/ui-styles';
 import { listUserForwardAgents } from '@/api/forward';
@@ -79,51 +79,51 @@ export const SubscriptionNodeList: React.FC<SubscriptionNodeListProps> = ({
   }
 
   return (
-    <div className="space-y-3">
-      <div className="flex items-center justify-between mb-4">
-        <p className="text-sm text-muted-foreground">共 {agents.length} 个可用节点</p>
+    <div className="space-y-2 sm:space-y-3">
+      <div className="flex items-center justify-between">
+        <p className="text-xs sm:text-sm text-muted-foreground">共 {agents.length} 个可用节点</p>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+      {/* Mobile: compact list, Desktop: grid */}
+      <div className="space-y-2 sm:grid sm:grid-cols-2 lg:grid-cols-3 sm:gap-3 sm:space-y-0">
         {agents.map((agent) => (
           <div
             key={agent.id}
             className={cn(
-              'p-4 rounded-xl border transition-all',
+              'p-2.5 sm:p-3 rounded-xl border transition-all',
               agent.status === 'enabled'
                 ? 'bg-card hover:shadow-md'
                 : 'bg-muted/30 opacity-60'
             )}
           >
-            {/* Header */}
-            <div className="flex items-center justify-between mb-3">
-              <div className="flex items-center gap-2">
-                <Server className="size-4 text-muted-foreground" />
-                <h4 className="font-medium truncate">{agent.name}</h4>
+            {/* Header - compact inline on mobile */}
+            <div className="flex items-center justify-between gap-2 mb-1.5 sm:mb-2">
+              <div className="flex items-center gap-1.5 sm:gap-2 min-w-0">
+                <Server className="size-3.5 sm:size-4 text-muted-foreground shrink-0" />
+                <h4 className="text-sm sm:text-base font-medium truncate">{agent.name}</h4>
               </div>
               <span
-                className={getBadgeClass(
-                  agent.status === 'enabled' ? 'success' : 'secondary'
+                className={cn(
+                  getBadgeClass(agent.status === 'enabled' ? 'success' : 'secondary'),
+                  'text-[10px] sm:text-xs px-1.5 sm:px-2 shrink-0'
                 )}
               >
                 {agent.status === 'enabled' ? '可用' : '不可用'}
               </span>
             </div>
 
-            {/* Address */}
-            {agent.publicAddress && (
-              <div className="flex items-center gap-2 text-sm text-muted-foreground mb-2">
-                <MapPin className="size-3.5 shrink-0" />
-                <span className="truncate font-mono text-xs">{agent.publicAddress}</span>
-              </div>
-            )}
-
-            {/* Group */}
-            {agent.groupName && (
-              <div className="text-xs text-muted-foreground">
-                分组: {agent.groupName}
-              </div>
-            )}
+            {/* Address + Group - inline on mobile */}
+            <div className="flex items-center gap-2 text-xs text-muted-foreground">
+              {agent.publicAddress && (
+                <span className="truncate font-mono">{agent.publicAddress}</span>
+              )}
+              {agent.publicAddress && agent.groupName && (
+                <span className="text-border">|</span>
+              )}
+              {agent.groupName && (
+                <span className="truncate">{agent.groupName}</span>
+              )}
+            </div>
           </div>
         ))}
       </div>

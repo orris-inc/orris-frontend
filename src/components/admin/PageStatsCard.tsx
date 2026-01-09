@@ -1,7 +1,7 @@
 /**
  * Page Stats Card Component
- * Compact statistics display for management pages
- * Reusable across NodeManagementPage, ForwardRulesPage, etc.
+ * High-density statistics display for management pages
+ * Optimized for maximum data visibility with minimal padding
  */
 
 import { ReactNode } from 'react';
@@ -32,37 +32,36 @@ export const PageStatsCard = ({
     <div
       className={cn(
         'group relative overflow-hidden',
-        'bg-card backdrop-blur-xl rounded-xl',
-        'p-2.5 sm:p-3',
+        'bg-card rounded-lg',
+        'px-2.5 py-2 sm:px-3 sm:py-2',
         'border border-border',
-        'shadow-sm hover:shadow-md',
-        'transition-all duration-200 ease-out',
+        'hover:bg-accent/30',
+        'transition-colors duration-150',
         className
       )}
     >
-      <div className="relative z-10 flex items-center gap-2 sm:gap-2.5">
+      <div className="relative z-10 flex items-center gap-2">
         <div
           className={cn(
             iconBg,
-            'p-1.5 sm:p-2 rounded-lg shrink-0',
-            'ring-1 ring-border/50',
+            'p-1.5 rounded-md shrink-0',
             'relative'
           )}
         >
-          <div className={iconColor}>{icon}</div>
+          <div className={cn(iconColor, '[&>svg]:size-3.5')}>{icon}</div>
           {showPulse && (
-            <div className="absolute -top-0.5 -right-0.5 size-2 rounded-full bg-success animate-pulse ring-1 ring-card" />
+            <div className="absolute -top-0.5 -right-0.5 size-1.5 rounded-full bg-success animate-pulse ring-1 ring-card" />
           )}
         </div>
         <div className="min-w-0 flex-1">
-          <div className="text-sm sm:text-base lg:text-lg font-bold text-foreground tracking-tight tabular-nums truncate">
+          <div className="text-sm sm:text-base font-semibold text-foreground tracking-tight tabular-nums truncate leading-tight">
             {loading ? (
-              <div className="h-4 sm:h-5 w-8 sm:w-10 bg-muted rounded animate-pulse" />
+              <div className="h-4 w-8 bg-muted rounded animate-pulse" />
             ) : (
               value
             )}
           </div>
-          <div className="text-[10px] sm:text-xs font-medium text-muted-foreground truncate">
+          <div className="text-[10px] font-medium text-muted-foreground truncate leading-tight">
             {title}
           </div>
         </div>

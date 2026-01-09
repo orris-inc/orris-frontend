@@ -89,69 +89,60 @@ export const SubscriptionEntryCard = ({ subscription, className }: SubscriptionE
     <div
       onClick={handleClick}
       className={cn(
-        'p-4 rounded-xl border cursor-pointer',
-        'transition-all group',
+        'p-3 sm:p-4 rounded-xl cursor-pointer touch-target',
+        'transition-all duration-[var(--duration-normal)] ease-[var(--spring-smooth)] group',
+        // Mobile: glass effect, Desktop: solid background
+        'glass-elevated md:bg-card md:border md:shadow-none md:backdrop-blur-none',
         isActive
-          ? 'bg-emerald-500/5 border-emerald-500/20 hover:border-emerald-500/40 hover:shadow-sm'
-          : 'bg-muted/30 border-border/50 hover:border-border hover:shadow-sm',
+          ? 'md:bg-emerald-500/5 md:border-emerald-500/20 hover:md:border-emerald-500/40 hover:shadow-sm'
+          : 'md:bg-muted/30 md:border-border/50 hover:md:border-border hover:shadow-sm',
+        // Press feedback for mobile
+        'active:scale-[0.98] active:opacity-90',
         className
       )}
     >
-      {/* Row 1: Plan name + status badge */}
-      <div className="flex items-center justify-between mb-2">
-        <h3 className="font-semibold text-sm">{subscription.plan?.name || '未知计划'}</h3>
-        <span className={cn(getBadgeClass(statusConfig.variant), 'text-xs')}>{statusConfig.label}</span>
-      </div>
-
-      {/* Row 2: Traffic usage progress bar (only for active subscriptions) */}
-      {isActive && trafficLimit > 0 && (
-        <div className="mb-2">
-          <div className="flex items-center gap-2 mb-1">
-            <div className="flex-1 h-1.5 rounded-full bg-muted overflow-hidden">
-              <div
-                className={cn(
-                  'h-full rounded-full transition-all',
-                  usagePercent > 90
-                    ? 'bg-destructive'
-                    : usagePercent > 70
-                      ? 'bg-amber-500'
-                      : 'bg-emerald-500'
-                )}
-                style={{ width: `${Math.min(usagePercent, 100)}%` }}
-              />
-            </div>
-            <span className="text-xs tabular-nums text-muted-foreground w-10 text-right">
-              {usagePercent.toFixed(0)}%
-            </span>
-          </div>
-          <div className="flex items-center justify-between text-xs text-muted-foreground">
-            <span>{formatTraffic(subscription.usage.total)}</span>
-            <span>/ {formatTraffic(trafficLimit)}</span>
-          </div>
-        </div>
-      )}
-
-      {/* Row 3: Expiry info + arrow indicator */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2 text-xs text-muted-foreground">
-          {isActive && daysRemaining !== null ? (
-            <>
-              <span className="flex items-center gap-1">
-                <Clock className="size-3" />
-                {daysRemaining}天
-              </span>
-              <span className="flex items-center gap-1">
-                <Calendar className="size-3" />
-                {formatDate(subscription.currentPeriodEnd)}
-              </span>
-            </>
-          ) : (
-            <span className="flex items-center gap-1">
-              <Calendar className="size-3" />
-              {formatDate(subscription.currentPeriodEnd)}
+      {/* Row 1: Plan name + status badge + days remaining (compact on mobile) */}
+      <div className="flex items-center justify-between gap-2 mb-1.5 sm:mb-2">
+        <div className="flex items-center gap-2 min-w-0">
+          <h3 className="font-semibold text-sm truncate">{subscription.plan?.name || '未知计划'}</h3>
+          {isActive && daysRemaining !== null && (
+            <span className="text-xs text-muted-foreground whitespace-nowrap flex items-center gap-0.5">
+              <Clock className="size-3" />
+              {daysRemaining}天
             </span>
           )}
         </div>
+        <span className={cn(getBadgeClass(statusConfig.variant), 'text-xs shrink-0')}>{statusConfig.label}</span>
+      </div>
+
+      {/* Row 2: Traffic usage - compact inline layout on mobile */}
+      {isActive && trafficLimit > 0 && (
+        <div className="flex items-center gap-2 mb-1.5 sm:mb-2">
+          <div className="flex-1 h-1.5 rounded-full bg-muted overflow-hidden">
+            <div
+              className={cn(
+                'h-full rounded-full transition-all',
+                usagePercent > 90
+                  ? 'bg-destructive'
+                  : usagePercent > 70
+                    ? 'bg-amber-500'
+                    : 'bg-emerald-500'
+              )}
+              style={{ width: `${Math.min(usagePercent, 100)}%` }}
+            />
+          </div>
+          <span className="text-xs tabular-nums text-muted-foreground whitespace-nowrap">
+            {formatTraffic(subscription.usage.total)} / {formatTraffic(trafficLimit)}
+          </span>
+        </div>
+      )}
+
+      {/* Row 3: Expiry date + arrow - compact layout */}
+      <div className="flex items-center justify-between">
+        <span className="flex items-center gap-1 text-xs text-muted-foreground">
+          <Calendar className="size-3" />
+          {formatDate(subscription.currentPeriodEnd)}
+        </span>
         <ArrowRight className="size-3.5 text-muted-foreground group-hover:text-primary transition-colors" />
       </div>
     </div>

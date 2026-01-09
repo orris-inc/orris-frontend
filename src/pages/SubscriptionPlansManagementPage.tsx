@@ -1,6 +1,6 @@
 /**
  * Subscription Plans Management Page (Admin)
- * Uses unified refined business style components
+ * High-density data management interface
  */
 
 import { useState, useMemo } from 'react';
@@ -13,14 +13,8 @@ import {
   Globe,
   Lock,
 } from 'lucide-react';
-import { Separator } from '@/components/common/Separator';
 import { AdminLayout } from '@/layouts/AdminLayout';
-import {
-  AdminButton,
-  AdminCard,
-  PageStatsCard,
-  type PageStatsCardProps,
-} from '@/components/admin';
+import { AdminButton, AdminCard } from '@/components/admin';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/common/Tooltip';
 import { ConfirmDialog } from '@/components/common/ConfirmDialog';
 import { usePageTitle } from '@/shared/hooks';
@@ -76,45 +70,6 @@ export const SubscriptionPlansManagementPage = () => {
     const privatePlans = plans.filter((p) => !p.isPublic).length;
     return { total, active, inactive, publicPlans, privatePlans };
   }, [plans, pagination.total]);
-
-  const statsCards: PageStatsCardProps[] = [
-    {
-      title: '计划总数',
-      value: planStats.total,
-      icon: <CreditCard className="size-4" strokeWidth={1.5} />,
-      iconBg: 'bg-primary/10',
-      iconColor: 'text-primary',
-    },
-    {
-      title: '已激活',
-      value: planStats.active,
-      icon: <CheckCircle2 className="size-4" strokeWidth={1.5} />,
-      iconBg: 'bg-success-muted',
-      iconColor: 'text-success',
-      showPulse: planStats.active > 0,
-    },
-    {
-      title: '已停用',
-      value: planStats.inactive,
-      icon: <XCircle className="size-4" strokeWidth={1.5} />,
-      iconBg: 'bg-muted',
-      iconColor: 'text-muted-foreground',
-    },
-    {
-      title: '公开计划',
-      value: planStats.publicPlans,
-      icon: <Globe className="size-4" strokeWidth={1.5} />,
-      iconBg: 'bg-info-muted',
-      iconColor: 'text-info',
-    },
-    {
-      title: '私有计划',
-      value: planStats.privatePlans,
-      icon: <Lock className="size-4" strokeWidth={1.5} />,
-      iconBg: 'bg-warning-muted',
-      iconColor: 'text-warning',
-    },
-  ];
 
   const handleRefresh = () => {
     setRefreshKey((k) => k + 1);
@@ -181,65 +136,84 @@ export const SubscriptionPlansManagementPage = () => {
 
   return (
     <AdminLayout>
-      <div className="py-6 sm:py-8">
-        {/* Page Header */}
-        <header className="mb-6 sm:mb-8">
-          <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4 mb-5 sm:mb-6">
-            <div>
-              <h1 className="text-2xl sm:text-3xl font-bold text-foreground tracking-tight">
-                订阅计划管理
-              </h1>
-              <p className="text-sm text-muted-foreground mt-1">
-                管理所有订阅计划和定价方案
-              </p>
+      <div className="py-3 space-y-3">
+        {/* High-Density Status Bar - All metrics inline */}
+        <header className="bg-card rounded-lg border border-border px-3 py-2">
+          <div className="flex items-center justify-between gap-4 flex-wrap">
+            {/* Left: Title + Stats */}
+            <div className="flex items-center gap-4">
+              <h1 className="text-sm font-semibold text-foreground">订阅计划管理</h1>
+              <div className="h-4 w-px bg-border hidden sm:block" />
+              <div className="flex items-center gap-3 text-xs">
+                <span className="flex items-center gap-1 text-muted-foreground">
+                  <CreditCard className="size-3" />
+                  <span className="font-medium text-foreground">{planStats.total}</span>
+                  <span className="hidden sm:inline">计划</span>
+                </span>
+                <span className="flex items-center gap-1">
+                  <CheckCircle2 className="size-3 text-success" />
+                  <span className="font-medium text-success">{planStats.active}</span>
+                </span>
+                <span className="flex items-center gap-1">
+                  <XCircle className="size-3 text-muted-foreground" />
+                  <span className="font-medium text-muted-foreground">{planStats.inactive}</span>
+                </span>
+              </div>
+            </div>
+
+            {/* Center: Visibility stats */}
+            <div className="hidden md:flex items-center gap-3 text-xs">
+              <span className="flex items-center gap-1.5">
+                <Globe className="size-3 text-info" />
+                <span className="text-muted-foreground">公开</span>
+                <span className="font-semibold tabular-nums text-foreground">{planStats.publicPlans}</span>
+              </span>
+              <span className="flex items-center gap-1.5">
+                <Lock className="size-3 text-warning" />
+                <span className="text-muted-foreground">私有</span>
+                <span className="font-semibold tabular-nums text-foreground">{planStats.privatePlans}</span>
+              </span>
+            </div>
+
+            {/* Right: Actions */}
+            <div className="flex items-center gap-1.5">
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <AdminButton
+                    variant="ghost"
+                    size="sm"
+                    onClick={handleRefresh}
+                    className="h-7 w-7 p-0"
+                    icon={
+                      <RefreshCw
+                        key={refreshKey}
+                        className="size-3.5 animate-spin-once"
+                        strokeWidth={1.5}
+                      />
+                    }
+                  >
+                    <span className="sr-only">刷新</span>
+                  </AdminButton>
+                </TooltipTrigger>
+                <TooltipContent>刷新列表</TooltipContent>
+              </Tooltip>
+
+              <AdminButton
+                variant="primary"
+                size="sm"
+                className="h-7 px-2.5 text-xs"
+                icon={<Plus className="size-3.5" strokeWidth={2} />}
+                onClick={() => {
+                  setDuplicatePlan(null);
+                  setCreateDialogOpen(true);
+                }}
+              >
+                <span className="hidden sm:inline">创建计划</span>
+                <span className="sm:hidden">创建</span>
+              </AdminButton>
             </div>
           </div>
-
-          {/* Stats Grid */}
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-2 sm:gap-2.5">
-            {statsCards.map((stat, index) => (
-              <PageStatsCard key={index} {...stat} loading={isFetching} />
-            ))}
-          </div>
         </header>
-
-        <Separator className="mb-5 sm:mb-6" />
-
-        {/* Toolbar */}
-        <div className="flex items-center justify-end gap-2 mb-4 sm:mb-5">
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <AdminButton
-                variant="ghost"
-                size="sm"
-                onClick={handleRefresh}
-                icon={
-                  <RefreshCw
-                    key={refreshKey}
-                    className="size-4 animate-spin-once"
-                    strokeWidth={1.5}
-                  />
-                }
-              >
-                <span className="sr-only">刷新</span>
-              </AdminButton>
-            </TooltipTrigger>
-            <TooltipContent>刷新列表</TooltipContent>
-          </Tooltip>
-
-          <AdminButton
-            variant="primary"
-            size="sm"
-            icon={<Plus className="size-4" strokeWidth={2} />}
-            onClick={() => {
-              setDuplicatePlan(null);
-              setCreateDialogOpen(true);
-            }}
-          >
-            <span className="hidden sm:inline">创建计划</span>
-            <span className="sm:hidden">创建</span>
-          </AdminButton>
-        </div>
 
         {/* Plan List */}
         {isMobile ? (

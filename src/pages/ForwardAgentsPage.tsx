@@ -1,6 +1,6 @@
 /**
  * Forward Agents Management Page (Admin)
- * Uses unified refined business style components
+ * High-density data management interface
  */
 
 import { useState, useMemo, useCallback } from 'react';
@@ -10,21 +10,18 @@ import {
   RefreshCw,
   ArrowUpCircle,
   CheckCircle2,
-  XCircle,
   Activity,
   Radio,
   GripVertical,
+  Search,
+  FilterX,
 } from 'lucide-react';
 import { Switch, SwitchThumb } from '@/components/common/Switch';
-import { Separator } from '@/components/common/Separator';
 import { AdminLayout } from '@/layouts/AdminLayout';
-import {
-  AdminButton,
-  AdminCard,
-  PageStatsCard,
-  type PageStatsCardProps,
-} from '@/components/admin';
+import { AdminButton, AdminCard } from '@/components/admin';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/common/Tooltip';
+import { Input } from '@/components/common/Input';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/common/Select';
 import { TokenDialog } from '@/components/common/TokenDialog';
 import { ConfirmDialog } from '@/components/common/ConfirmDialog';
 import { usePageTitle } from '@/shared/hooks';
@@ -32,7 +29,6 @@ import { useBreakpoint } from '@/hooks/useBreakpoint';
 import { useNotificationStore } from '@/shared/stores/notification-store';
 import { useResourceGroups } from '@/features/resource-groups/hooks/useResourceGroups';
 import { ForwardAgentListTable } from '@/features/forward-agents/components/ForwardAgentListTable';
-import { ForwardAgentFiltersComponent } from '@/features/forward-agents/components/ForwardAgentFilters';
 import { EditForwardAgentDialog } from '@/features/forward-agents/components/EditForwardAgentDialog';
 import { CreateForwardAgentDialog } from '@/features/forward-agents/components/CreateForwardAgentDialog';
 import { CreateForwardAgentSheet } from '@/features/forward-agents/components/CreateForwardAgentSheet';
@@ -44,7 +40,7 @@ import { AgentBatchUpdateDialog } from '@/features/forward-agents/components/Age
 import { BroadcastURLDialog } from '@/features/forward-agents/components/BroadcastURLDialog';
 import { useForwardAgentsPage, useTriggerAgentUpdate, useBroadcastAPIURL, useNotifyAgentAPIURL } from '@/features/forward-agents/hooks/useForwardAgents';
 import { getAgentVersion } from '@/api/forward';
-import type { AgentVersionInfo, ForwardAgent, UpdateForwardAgentRequest, CreateForwardAgentRequest } from '@/api/forward';
+import type { AgentVersionInfo, ForwardAgent, UpdateForwardAgentRequest, CreateForwardAgentRequest, ForwardStatus } from '@/api/forward';
 
 export const ForwardAgentsPage = () => {
   usePageTitle('转发节点管理');
@@ -115,7 +111,7 @@ export const ForwardAgentsPage = () => {
   const [agentToDelete, setAgentToDelete] = useState<ForwardAgent | null>(null);
 
   // Calculate agent statistics
-  const agentStats = useMemo(() => {
+  const stats = useMemo(() => {
     const total = pagination.total;
     const enabled = forwardAgents.filter((a) => a.status === 'enabled').length;
     const disabled = forwardAgents.filter((a) => a.status === 'disabled').length;
@@ -123,49 +119,6 @@ export const ForwardAgentsPage = () => {
     const updatable = forwardAgents.filter((a) => a.hasUpdate && a.status === 'enabled' && a.systemStatus).length;
     return { total, enabled, disabled, online, updatable };
   }, [forwardAgents, pagination.total]);
-
-  const statsCards: PageStatsCardProps[] = [
-    {
-      title: '节点总数',
-      value: agentStats.total,
-      icon: <Cpu className="size-4" strokeWidth={1.5} />,
-      iconBg: 'bg-primary/10',
-      iconColor: 'text-primary',
-    },
-    {
-      title: '已启用',
-      value: agentStats.enabled,
-      icon: <CheckCircle2 className="size-4" strokeWidth={1.5} />,
-      iconBg: 'bg-success-muted',
-      iconColor: 'text-success',
-      showPulse: agentStats.enabled > 0,
-    },
-    {
-      title: '已禁用',
-      value: agentStats.disabled,
-      icon: <XCircle className="size-4" strokeWidth={1.5} />,
-      iconBg: 'bg-muted',
-      iconColor: 'text-muted-foreground',
-    },
-    {
-      title: '在线节点',
-      value: agentStats.online,
-      icon: <Activity className="size-4" strokeWidth={1.5} />,
-      iconBg: 'bg-info-muted',
-      iconColor: 'text-info',
-    },
-    ...(agentStats.updatable > 0
-      ? [
-          {
-            title: '可更新',
-            value: agentStats.updatable,
-            icon: <ArrowUpCircle className="size-4" strokeWidth={1.5} />,
-            iconBg: 'bg-warning-muted',
-            iconColor: 'text-warning',
-          },
-        ]
-      : []),
-  ];
 
   const handleRefresh = () => {
     setRefreshKey((k) => k + 1);
@@ -324,140 +277,222 @@ export const ForwardAgentsPage = () => {
     toggleMuteNotification(agent.id, !agent.muteNotification);
   };
 
+  // Helper functions for filters
+  const handleStatusChange = (value: string): void => {
+    handleFiltersChange({ status: value === '_all_' ? undefined : (value as ForwardStatus) });
+  };
+
+  const handleSearchChange = (value: string): void => {
+    handleFiltersChange({ name: value || undefined });
+  };
+
+  const handleSortChange = (value: string): void => {
+    if (value === '_default_') {
+      handleFiltersChange({ sortBy: undefined, sortOrder: undefined });
+    } else {
+      const lastUnderscoreIndex = value.lastIndexOf('_');
+      const sortBy = value.substring(0, lastUnderscoreIndex);
+      const sortOrder = value.substring(lastUnderscoreIndex + 1) as 'asc' | 'desc';
+      handleFiltersChange({ sortBy, sortOrder });
+    }
+  };
+
+  const getSortValue = (): string => {
+    if (!filters.sortBy) return '_default_';
+    return `${filters.sortBy}_${filters.sortOrder || 'desc'}`;
+  };
+
+  const handleResetFilters = (): void => {
+    handleFiltersChange({
+      status: undefined,
+      name: undefined,
+      sortBy: undefined,
+      sortOrder: undefined,
+    });
+  };
+
+  const hasActiveFilters = filters.status !== undefined || filters.name !== undefined || filters.sortBy !== undefined;
+
   return (
     <AdminLayout>
-      <div className="py-6 sm:py-8">
-        {/* Page Header */}
-        <header className="mb-6 sm:mb-8">
-          <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4 mb-5 sm:mb-6">
-            <div>
-              <h1 className="text-2xl sm:text-3xl font-bold text-foreground tracking-tight">
-                转发节点管理
-              </h1>
-              <p className="text-sm text-muted-foreground mt-1">
-                管理系统中的所有转发节点
-              </p>
+      <div className="py-3 space-y-3">
+        {/* High-Density Status Bar with Integrated Filters */}
+        <header className="bg-card rounded-lg border border-border px-3 py-2">
+          <div className="flex items-center justify-between gap-3 flex-wrap">
+            {/* Left: Title + Primary Stats */}
+            <div className="flex items-center gap-3">
+              <h1 className="text-sm font-semibold text-foreground">转发节点管理</h1>
+              <div className="h-4 w-px bg-border hidden sm:block" />
+              <div className="flex items-center gap-2.5 text-xs">
+                <span className="flex items-center gap-1 text-muted-foreground">
+                  <Cpu className="size-3" />
+                  <span className="font-medium text-foreground">{stats.total}</span>
+                </span>
+                <span className="flex items-center gap-1">
+                  <CheckCircle2 className="size-3 text-success" />
+                  <span className="font-medium text-success">{stats.enabled}</span>
+                </span>
+                <span className="flex items-center gap-1">
+                  <Activity className="size-3 text-info" />
+                  <span className="font-medium text-info">{stats.online}</span>
+                </span>
+                {stats.updatable > 0 && (
+                  <span className="flex items-center gap-1">
+                    <ArrowUpCircle className="size-3 text-warning" />
+                    <span className="font-medium text-warning">{stats.updatable}</span>
+                  </span>
+                )}
+              </div>
             </div>
-          </div>
 
-          {/* Stats Grid */}
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-2 sm:gap-2.5">
-            {statsCards.map((stat, index) => (
-              <PageStatsCard key={index} {...stat} loading={isFetching} />
-            ))}
-          </div>
-        </header>
+            {/* Center: Filters (hidden on mobile) */}
+            <div className="hidden md:flex items-center gap-2 flex-1 justify-center max-w-md">
+              {/* Status filter */}
+              <Select value={filters.status || '_all_'} onValueChange={handleStatusChange}>
+                <SelectTrigger className="h-7 w-20 text-xs">
+                  <SelectValue placeholder="状态" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="_all_">全部</SelectItem>
+                  <SelectItem value="enabled">启用</SelectItem>
+                  <SelectItem value="disabled">禁用</SelectItem>
+                </SelectContent>
+              </Select>
 
-        <Separator className="mb-5 sm:mb-6" />
+              {/* Search input */}
+              <div className="relative flex-1 max-w-[180px]">
+                <Search className="absolute left-2 top-1/2 -translate-y-1/2 size-3 text-muted-foreground" />
+                <Input
+                  placeholder="搜索节点"
+                  value={filters.name || ''}
+                  onChange={(e) => handleSearchChange(e.target.value)}
+                  className="h-7 pl-7 text-xs"
+                />
+              </div>
 
-        {/* Toolbar */}
-        <div className="flex items-center justify-between gap-3 mb-4 sm:mb-5">
-          {/* Filters */}
-          <div className="flex items-center gap-3 flex-1 min-w-0">
-            <ForwardAgentFiltersComponent
-              filters={filters}
-              onChange={handleFiltersChange}
-            />
+              {/* Sort filter */}
+              <Select value={getSortValue()} onValueChange={handleSortChange}>
+                <SelectTrigger className="h-7 w-24 text-xs">
+                  <SelectValue placeholder="排序" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="_default_">默认</SelectItem>
+                  <SelectItem value="created_at_desc">创建 ↓</SelectItem>
+                  <SelectItem value="created_at_asc">创建 ↑</SelectItem>
+                  <SelectItem value="updated_at_desc">更新 ↓</SelectItem>
+                </SelectContent>
+              </Select>
 
-            {/* Desktop only: drag sort toggle */}
-            {!isMobile && (
+              {/* Reset button */}
+              {hasActiveFilters && (
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <button
+                      onClick={handleResetFilters}
+                      className="h-7 w-7 flex items-center justify-center rounded-md text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
+                    >
+                      <FilterX className="size-3.5" />
+                    </button>
+                  </TooltipTrigger>
+                  <TooltipContent>重置筛选</TooltipContent>
+                </Tooltip>
+              )}
+
+              {/* Drag sort toggle */}
+              <div className="h-4 w-px bg-border" />
               <Tooltip>
                 <TooltipTrigger asChild>
-                  <label className="flex items-center gap-2 cursor-pointer group shrink-0">
-                    <GripVertical className={`size-4 transition-colors ${dragSortEnabled ? 'text-primary' : 'text-muted-foreground group-hover:text-foreground'}`} strokeWidth={1.5} />
-                    <span className="hidden sm:inline text-sm font-medium transition-colors text-muted-foreground group-hover:text-foreground">
-                      拖拽排序
-                    </span>
+                  <label className="flex items-center gap-1 cursor-pointer group">
+                    <GripVertical className={`size-3 transition-colors ${dragSortEnabled ? 'text-primary' : 'text-muted-foreground group-hover:text-foreground'}`} strokeWidth={1.5} />
                     <Switch
                       checked={dragSortEnabled}
                       onCheckedChange={setDragSortEnabled}
                       disabled={isReordering}
+                      className="scale-75"
                     >
                       <SwitchThumb />
                     </Switch>
                   </label>
                 </TooltipTrigger>
                 <TooltipContent>
-                  {dragSortEnabled ? '关闭拖拽排序' : '开启拖拽排序，拖动行调整顺序'}
+                  {dragSortEnabled ? '关闭拖拽排序' : '开启拖拽排序'}
                 </TooltipContent>
               </Tooltip>
-            )}
-          </div>
+            </div>
 
-          {/* Actions */}
-          <div className="flex items-center gap-2 shrink-0">
-            {agentStats.online > 0 && (
+            {/* Right: Actions */}
+            <div className="flex items-center gap-1.5">
+              {stats.online > 0 && (
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <AdminButton
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setBroadcastURLDialogOpen(true)}
+                      className="h-7 px-2 text-xs border-blue-500/30 hover:border-blue-500/50 hover:bg-blue-500/10"
+                      icon={<Radio className="size-3.5 text-blue-500" strokeWidth={1.5} />}
+                    >
+                      <span className="hidden xl:inline text-blue-500">下发</span>
+                    </AdminButton>
+                  </TooltipTrigger>
+                  <TooltipContent>向 {stats.online} 个在线节点下发新API地址</TooltipContent>
+                </Tooltip>
+              )}
+
+              {stats.updatable > 0 && (
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <AdminButton
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setBatchUpdateDialogOpen(true)}
+                      className="h-7 px-2 text-xs border-warning/30 hover:border-warning/50 hover:bg-warning-muted"
+                      icon={<ArrowUpCircle className="size-3.5 text-warning" strokeWidth={1.5} />}
+                    >
+                      <span className="hidden xl:inline text-warning">更新</span>
+                    </AdminButton>
+                  </TooltipTrigger>
+                  <TooltipContent>更新 {stats.updatable} 个转发节点</TooltipContent>
+                </Tooltip>
+              )}
+
               <Tooltip>
                 <TooltipTrigger asChild>
                   <AdminButton
-                    variant="outline"
+                    variant="ghost"
                     size="sm"
-                    onClick={() => setBroadcastURLDialogOpen(true)}
-                    icon={<Radio className="size-4 text-blue-500" strokeWidth={1.5} />}
-                    className="border-blue-500/30 hover:border-blue-500/50 hover:bg-blue-500/10"
+                    onClick={handleRefresh}
+                    className="h-7 w-7 p-0"
+                    icon={
+                      <RefreshCw
+                        key={refreshKey}
+                        className="size-3.5 animate-spin-once"
+                        strokeWidth={1.5}
+                      />
+                    }
                   >
-                    <span className="hidden sm:inline text-blue-500">下发地址</span>
+                    <span className="sr-only">刷新</span>
                   </AdminButton>
                 </TooltipTrigger>
-                <TooltipContent>
-                  向 {agentStats.online} 个在线节点下发新API地址
-                </TooltipContent>
+                <TooltipContent>刷新列表</TooltipContent>
               </Tooltip>
-            )}
 
-            {agentStats.updatable > 0 && (
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <AdminButton
-                    variant="outline"
-                    size="sm"
-                    onClick={() => setBatchUpdateDialogOpen(true)}
-                    icon={<ArrowUpCircle className="size-4 text-warning" strokeWidth={1.5} />}
-                    className="border-warning/30 hover:border-warning/50 hover:bg-warning-muted"
-                  >
-                    <span className="hidden sm:inline text-warning">批量更新</span>
-                  </AdminButton>
-                </TooltipTrigger>
-                <TooltipContent>
-                  更新 {agentStats.updatable} 个转发节点
-                </TooltipContent>
-              </Tooltip>
-            )}
-
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <AdminButton
-                  variant="ghost"
-                  size="sm"
-                  onClick={handleRefresh}
-                  icon={
-                    <RefreshCw
-                      key={refreshKey}
-                      className="size-4 animate-spin-once"
-                      strokeWidth={1.5}
-                    />
-                  }
-                >
-                  <span className="sr-only">刷新</span>
-                </AdminButton>
-              </TooltipTrigger>
-              <TooltipContent>刷新列表</TooltipContent>
-            </Tooltip>
-
-            <AdminButton
-              variant="primary"
-              size="sm"
-              icon={<Plus className="size-4" strokeWidth={2} />}
-              onClick={() => {
-                setCopyAgentData(undefined);
-                setCreateDialogOpen(true);
-              }}
-            >
-              <span className="hidden sm:inline">新增节点</span>
-              <span className="sm:hidden">新增</span>
-            </AdminButton>
+              <AdminButton
+                variant="primary"
+                size="sm"
+                className="h-7 px-2.5 text-xs"
+                icon={<Plus className="size-3.5" strokeWidth={2} />}
+                onClick={() => {
+                  setCopyAgentData(undefined);
+                  setCreateDialogOpen(true);
+                }}
+              >
+                <span className="hidden sm:inline">新增</span>
+                <span className="sm:hidden">新增</span>
+              </AdminButton>
+            </div>
           </div>
-        </div>
+        </header>
 
         {/* Forward Agent List */}
         {isMobile ? (
@@ -637,7 +672,7 @@ export const ForwardAgentsPage = () => {
         }}
         onBroadcast={handleBroadcastURL}
         isBroadcasting={broadcastURLMutation.isPending}
-        onlineCount={agentStats.online}
+        onlineCount={stats.online}
         targetAgent={broadcastTargetAgent ? {
           id: String(broadcastTargetAgent.id),
           name: broadcastTargetAgent.name,

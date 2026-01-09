@@ -1,6 +1,6 @@
 /**
  * Resource Group Management Page (Admin)
- * Uses unified refined business style components
+ * High-density data management interface
  */
 
 import { useState, useMemo } from 'react';
@@ -11,17 +11,13 @@ import {
   CheckCircle2,
   XCircle,
   Link2,
+  Clock,
 } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
-import { Separator } from '@/components/common/Separator';
 import { AdminLayout } from '@/layouts/AdminLayout';
-import {
-  AdminButton,
-  AdminCard,
-  PageStatsCard,
-  type PageStatsCardProps,
-} from '@/components/admin';
+import { AdminButton, AdminCard } from '@/components/admin';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/common/Tooltip';
+import { Tabs, TabsList, TabsTrigger } from '@/components/common/Tabs';
 import { usePageTitle } from '@/shared/hooks';
 import { useBreakpoint } from '@/hooks/useBreakpoint';
 import { queryKeys } from '@/shared/lib/query-client';
@@ -37,8 +33,10 @@ import {
   DeleteResourceGroupSheet,
 } from '@/features/resource-groups/components';
 import { useResourceGroupsPage } from '@/features/resource-groups/hooks/useResourceGroups';
-import type { ResourceGroup, CreateResourceGroupRequest, UpdateResourceGroupRequest } from '@/api/resource/types';
+import type { ResourceGroup, CreateResourceGroupRequest, UpdateResourceGroupRequest, ResourceGroupStatus } from '@/api/resource/types';
 import type { SubscriptionPlan } from '@/api/subscription/types';
+
+type StatusFilter = 'all' | ResourceGroupStatus;
 
 export const ResourceGroupManagementPage = () => {
   usePageTitle('资源组管理');
@@ -77,45 +75,47 @@ export const ResourceGroupManagementPage = () => {
   }, [plans]);
 
   // Calculate resource group statistics
-  const groupStats = useMemo(() => {
+  const stats = useMemo(() => {
     const total = pagination.total;
     const active = resourceGroups.filter((g) => g.status === 'active').length;
     const inactive = resourceGroups.filter((g) => g.status === 'inactive').length;
     const withPlans = resourceGroups.filter((g) => g.planId).length;
-    return { total, active, inactive, withPlans };
+
+    // Find the most recently updated resource group
+    const lastUpdated = resourceGroups.length > 0
+      ? resourceGroups.reduce((latest, group) => {
+          const groupDate = new Date(group.updatedAt);
+          return groupDate > latest ? groupDate : latest;
+        }, new Date(resourceGroups[0].updatedAt))
+      : null;
+
+    return { total, active, inactive, withPlans, lastUpdated };
   }, [resourceGroups, pagination.total]);
 
-  const statsCards: PageStatsCardProps[] = [
-    {
-      title: '资源组总数',
-      value: groupStats.total,
-      icon: <Boxes className="size-4" strokeWidth={1.5} />,
-      iconBg: 'bg-primary/10',
-      iconColor: 'text-primary',
-    },
-    {
-      title: '已激活',
-      value: groupStats.active,
-      icon: <CheckCircle2 className="size-4" strokeWidth={1.5} />,
-      iconBg: 'bg-success-muted',
-      iconColor: 'text-success',
-      showPulse: groupStats.active > 0,
-    },
-    {
-      title: '已停用',
-      value: groupStats.inactive,
-      icon: <XCircle className="size-4" strokeWidth={1.5} />,
-      iconBg: 'bg-muted',
-      iconColor: 'text-muted-foreground',
-    },
-    {
-      title: '已关联计划',
-      value: groupStats.withPlans,
-      icon: <Link2 className="size-4" strokeWidth={1.5} />,
-      iconBg: 'bg-info-muted',
-      iconColor: 'text-info',
-    },
-  ];
+  // Format relative time
+  const formatRelativeTime = (date: Date | null): string => {
+    if (!date) return '-';
+    const now = new Date();
+    const diffMs = now.getTime() - date.getTime();
+    const diffMins = Math.floor(diffMs / 60000);
+    const diffHours = Math.floor(diffMs / 3600000);
+    const diffDays = Math.floor(diffMs / 86400000);
+
+    if (diffMins < 1) return '刚刚';
+    if (diffMins < 60) return `${diffMins}分钟前`;
+    if (diffHours < 24) return `${diffHours}小时前`;
+    if (diffDays < 7) return `${diffDays}天前`;
+    return date.toLocaleDateString('zh-CN');
+  };
+
+  // Status filter
+  const [statusFilter, setStatusFilter] = useState<StatusFilter>('all');
+
+  // Filter resource groups based on status
+  const filteredResourceGroups = useMemo(() => {
+    if (statusFilter === 'all') return resourceGroups;
+    return resourceGroups.filter((g) => g.status === statusFilter);
+  }, [resourceGroups, statusFilter]);
 
   // Dialog states
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
@@ -168,67 +168,115 @@ export const ResourceGroupManagementPage = () => {
 
   return (
     <AdminLayout>
-      <div className="py-6 sm:py-8">
-        {/* Page Header */}
-        <header className="mb-6 sm:mb-8">
-          <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4 mb-5 sm:mb-6">
-            <div>
-              <h1 className="text-2xl sm:text-3xl font-bold text-foreground tracking-tight">
-                资源组管理
-              </h1>
-              <p className="text-sm text-muted-foreground mt-1">
-                管理订阅计划关联的资源组
-              </p>
+      <div className="py-3 space-y-3">
+        {/* High-Density Status Bar with Integrated Filters */}
+        <header className="bg-card rounded-lg border border-border px-3 py-2">
+          <div className="flex items-center justify-between gap-3 flex-wrap">
+            {/* Left: Title + Stats */}
+            <div className="flex items-center gap-3">
+              <h1 className="text-sm font-semibold text-foreground">资源组管理</h1>
+              <div className="h-4 w-px bg-border hidden sm:block" />
+              <div className="flex items-center gap-2.5 text-xs">
+                <span className="flex items-center gap-1 text-muted-foreground">
+                  <Boxes className="size-3" />
+                  <span className="font-medium text-foreground">{stats.total}</span>
+                </span>
+                <span className="flex items-center gap-1">
+                  <CheckCircle2 className="size-3 text-success" />
+                  <span className="font-medium text-success">{stats.active}</span>
+                </span>
+                {stats.inactive > 0 && (
+                  <span className="flex items-center gap-1">
+                    <XCircle className="size-3 text-muted-foreground" />
+                    <span className="font-medium text-muted-foreground">{stats.inactive}</span>
+                  </span>
+                )}
+                <span className="flex items-center gap-1">
+                  <Link2 className="size-3 text-info" />
+                  <span className="font-medium text-info">{stats.withPlans}</span>
+                </span>
+              </div>
+            </div>
+
+            {/* Center: Filter Tabs + Last Updated */}
+            <div className="hidden md:flex items-center gap-3 flex-1 justify-center">
+              {/* Status filter tabs */}
+              <Tabs value={statusFilter} onValueChange={(v) => setStatusFilter(v as StatusFilter)}>
+                <TabsList className="h-7">
+                  <TabsTrigger value="all" className="text-[10px] px-2 h-6">
+                    全部
+                  </TabsTrigger>
+                  <TabsTrigger value="active" className="text-[10px] px-2 h-6 gap-1">
+                    <CheckCircle2 className="size-2.5" />
+                    {stats.active}
+                  </TabsTrigger>
+                  <TabsTrigger value="inactive" className="text-[10px] px-2 h-6 gap-1">
+                    <XCircle className="size-2.5" />
+                    {stats.inactive}
+                  </TabsTrigger>
+                </TabsList>
+              </Tabs>
+
+              {/* Last updated */}
+              {stats.lastUpdated && (
+                <>
+                  <div className="h-4 w-px bg-border" />
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <span className="flex items-center gap-1.5 text-xs text-muted-foreground cursor-default">
+                        <Clock className="size-3" />
+                        <span className="tabular-nums">{formatRelativeTime(stats.lastUpdated)}</span>
+                      </span>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      最近更新: {stats.lastUpdated.toLocaleString('zh-CN')}
+                    </TooltipContent>
+                  </Tooltip>
+                </>
+              )}
+            </div>
+
+            {/* Right: Actions */}
+            <div className="flex items-center gap-1.5">
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <AdminButton
+                    variant="ghost"
+                    size="sm"
+                    onClick={handleRefresh}
+                    className="h-7 w-7 p-0"
+                    icon={
+                      <RefreshCw
+                        key={refreshKey}
+                        className="size-3.5 animate-spin-once"
+                        strokeWidth={1.5}
+                      />
+                    }
+                  >
+                    <span className="sr-only">刷新</span>
+                  </AdminButton>
+                </TooltipTrigger>
+                <TooltipContent>刷新列表</TooltipContent>
+              </Tooltip>
+
+              <AdminButton
+                variant="primary"
+                size="sm"
+                className="h-7 px-2.5 text-xs"
+                icon={<Plus className="size-3.5" strokeWidth={2} />}
+                onClick={() => setCreateDialogOpen(true)}
+              >
+                <span className="hidden sm:inline">创建</span>
+                <span className="sm:hidden">创建</span>
+              </AdminButton>
             </div>
           </div>
-
-          {/* Stats Grid */}
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-2.5">
-            {statsCards.map((stat, index) => (
-              <PageStatsCard key={index} {...stat} loading={isFetching} />
-            ))}
-          </div>
         </header>
-
-        <Separator className="mb-5 sm:mb-6" />
-
-        {/* Toolbar */}
-        <div className="flex items-center justify-end gap-2 mb-4 sm:mb-5">
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <AdminButton
-                variant="ghost"
-                size="sm"
-                onClick={handleRefresh}
-                icon={
-                  <RefreshCw
-                    key={refreshKey}
-                    className="size-4 animate-spin-once"
-                    strokeWidth={1.5}
-                  />
-                }
-              >
-                <span className="sr-only">刷新</span>
-              </AdminButton>
-            </TooltipTrigger>
-            <TooltipContent>刷新列表</TooltipContent>
-          </Tooltip>
-
-          <AdminButton
-            variant="primary"
-            size="sm"
-            icon={<Plus className="size-4" strokeWidth={2} />}
-            onClick={() => setCreateDialogOpen(true)}
-          >
-            <span className="hidden sm:inline">创建资源组</span>
-            <span className="sm:hidden">创建</span>
-          </AdminButton>
-        </div>
 
         {/* Resource Group List */}
         {isMobile ? (
           <ResourceGroupListTable
-            resourceGroups={resourceGroups}
+            resourceGroups={filteredResourceGroups}
             plansMap={plansMap}
             loading={isLoading || isFetching}
             page={pagination.page}
@@ -244,7 +292,7 @@ export const ResourceGroupManagementPage = () => {
         ) : (
           <AdminCard noPadding>
             <ResourceGroupListTable
-              resourceGroups={resourceGroups}
+              resourceGroups={filteredResourceGroups}
               plansMap={plansMap}
               loading={isLoading || isFetching}
               page={pagination.page}

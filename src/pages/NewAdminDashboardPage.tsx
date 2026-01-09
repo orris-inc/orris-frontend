@@ -55,21 +55,20 @@ const StatsCard = ({
   loading,
 }: StatsCardProps) => {
   return (
-    <div className="group relative overflow-hidden bg-card backdrop-blur-xl rounded-xl p-2.5 sm:p-3.5 border border-border shadow-sm hover:shadow-md transition-all duration-200 ease-out">
-      {/* Mobile: vertical stack, Desktop: horizontal */}
-      <div className="relative z-10 flex flex-col sm:flex-row sm:items-center gap-1.5 sm:gap-2.5">
-        <div className={`${iconBg} p-1.5 sm:p-2 rounded-lg shrink-0 ring-1 ring-border/50 w-fit`}>
+    <div className="group relative overflow-hidden bg-card rounded-lg px-2.5 py-2 sm:px-3 sm:py-2 border border-border hover:bg-accent/30 transition-colors duration-150">
+      <div className="relative z-10 flex items-center gap-2">
+        <div className={`${iconBg} p-1.5 rounded-md shrink-0`}>
           <div className={iconColor}>{icon}</div>
         </div>
         <div className="min-w-0 flex-1">
-          <div className="text-base sm:text-base lg:text-lg font-bold text-foreground tracking-tight tabular-nums truncate">
+          <div className="text-sm sm:text-base font-semibold text-foreground tracking-tight tabular-nums truncate leading-tight">
             {loading ? (
-              <div className="h-5 w-12 bg-muted rounded animate-pulse" />
+              <div className="h-4 w-10 bg-muted rounded animate-pulse" />
             ) : (
               value
             )}
           </div>
-          <div className="text-[10px] sm:text-xs font-medium text-muted-foreground truncate">
+          <div className="text-[10px] font-medium text-muted-foreground truncate leading-tight">
             {title}
           </div>
         </div>
@@ -90,7 +89,6 @@ interface QuickActionCardProps {
 
 const QuickActionCard = ({
   title,
-  description,
   icon,
   iconBg,
   iconColor,
@@ -99,31 +97,22 @@ const QuickActionCard = ({
   return (
     <button
       onClick={onClick}
-      className="group w-full text-left p-4 sm:p-5 rounded-xl sm:rounded-2xl overflow-hidden relative bg-card backdrop-blur-xl border border-border shadow-sm hover:shadow-xl active:shadow-md hover:border-primary/30 transition-all duration-200 ease-out hover:-translate-y-1 active:translate-y-0 min-h-[72px] sm:min-h-0 cursor-pointer"
+      className="group w-full text-left px-3 py-2.5 rounded-lg overflow-hidden relative bg-card border border-border hover:bg-accent/30 hover:border-primary/30 transition-colors duration-150 cursor-pointer"
     >
-      {/* Hover gradient overlay */}
-      <div className="absolute inset-0 opacity-0 group-hover:opacity-100 bg-gradient-to-br from-primary/5 via-transparent to-transparent transition-opacity duration-200 pointer-events-none" />
-
-      {/* Mobile: Horizontal compact layout, Desktop: Full layout */}
-      <div className="relative z-10 flex items-center gap-3 sm:gap-4">
+      <div className="relative z-10 flex items-center gap-2.5">
         <div
-          className={`${iconBg} p-2.5 sm:p-3 rounded-xl shadow-sm ring-1 ring-border/50 group-hover:ring-2 group-hover:ring-primary/20 group-hover:scale-105 transition-all duration-200 shrink-0`}
+          className={`${iconBg} p-2 rounded-lg group-hover:scale-105 transition-transform duration-150 shrink-0`}
         >
           <div className={iconColor}>{icon}</div>
         </div>
 
         <div className="flex-1 min-w-0">
-          <h3 className="text-sm sm:text-base font-semibold text-foreground group-hover:text-primary transition-colors duration-200 truncate">
+          <h3 className="text-sm font-medium text-foreground group-hover:text-primary transition-colors duration-150 truncate">
             {title}
           </h3>
-          <p className="hidden sm:block text-sm text-muted-foreground mt-0.5 line-clamp-1">
-            {description}
-          </p>
         </div>
 
-        <div className="flex items-center justify-center size-7 sm:size-8 rounded-full bg-muted group-hover:bg-primary/10 transition-colors duration-200 shrink-0">
-          <ArrowUpRight className="size-3.5 sm:size-4 text-muted-foreground group-hover:text-primary group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-all duration-200" />
-        </div>
+        <ArrowUpRight className="size-4 text-muted-foreground group-hover:text-primary transition-colors duration-150 shrink-0" />
       </div>
     </button>
   );
@@ -141,28 +130,22 @@ const SystemStatus = ({ label, status, value, icon }: SystemStatusProps) => {
   const statusConfig = {
     online: {
       dot: 'bg-status-online',
-      ring: 'ring-status-online/30',
       text: 'text-success',
       bg: 'bg-success-muted',
-      iconBg: 'bg-success-muted',
       iconColor: 'text-success',
       pulse: true,
     },
     warning: {
       dot: 'bg-status-warning',
-      ring: 'ring-status-warning/30',
       text: 'text-warning',
       bg: 'bg-warning-muted',
-      iconBg: 'bg-warning-muted',
       iconColor: 'text-warning',
       pulse: true,
     },
     offline: {
       dot: 'bg-status-offline',
-      ring: 'ring-status-offline/30',
       text: 'text-destructive',
       bg: 'bg-destructive/10',
-      iconBg: 'bg-destructive/10',
       iconColor: 'text-destructive',
       pulse: false,
     },
@@ -171,21 +154,21 @@ const SystemStatus = ({ label, status, value, icon }: SystemStatusProps) => {
   const config = statusConfig[status];
 
   return (
-    <div className="flex items-center justify-between py-4 border-b border-border last:border-0 group transition-colors duration-200 hover:bg-accent/50 -mx-2 px-2 rounded-lg">
-      <div className="flex items-center gap-3">
-        <div className={`p-2 rounded-lg ${config.iconBg} transition-colors duration-200`}>
+    <div className="flex items-center justify-between py-2.5 border-b border-border last:border-0 group hover:bg-accent/30 -mx-2 px-2 rounded transition-colors duration-150">
+      <div className="flex items-center gap-2">
+        <div className={`p-1.5 rounded-md ${config.bg}`}>
           <div className={config.iconColor}>{icon}</div>
         </div>
         <span className="text-sm font-medium text-foreground">
           {label}
         </span>
       </div>
-      <div className="flex items-center gap-3">
-        <span className={`text-sm font-semibold px-2.5 py-1 rounded-lg ${config.text} ${config.bg} ring-1 ring-inset ring-current/10`}>
+      <div className="flex items-center gap-2">
+        <span className={`text-xs font-semibold px-2 py-0.5 rounded ${config.text} ${config.bg}`}>
           {value}
         </span>
         <div className="relative flex items-center justify-center">
-          <div className={`size-2.5 rounded-full ${config.dot} ring-2 ${config.ring}`} />
+          <div className={`size-2 rounded-full ${config.dot}`} />
           {config.pulse && (
             <div
               className={`absolute inset-0 rounded-full ${config.dot} animate-ping opacity-30`}
@@ -416,45 +399,43 @@ export const NewAdminDashboardPage = () => {
 
   return (
     <AdminLayout>
-      <div className="py-6 sm:py-8">
-        {/* Page header */}
-        <header className="mb-8">
-          <h1 className="text-2xl sm:text-3xl font-bold text-foreground tracking-tight">
-            控制台总览
-          </h1>
-          <p className="text-sm text-muted-foreground mt-1">
-            欢迎回来，{user.displayName || user.email?.split('@')[0]}
-          </p>
+      <div className="py-4 sm:py-5">
+        {/* Compact page header */}
+        <header className="flex items-center justify-between mb-4">
+          <div>
+            <h1 className="text-xl sm:text-2xl font-bold text-foreground tracking-tight">
+              控制台
+            </h1>
+            <p className="text-xs text-muted-foreground">
+              欢迎回来，{user.displayName || user.email?.split('@')[0]}
+            </p>
+          </div>
+          <DateRangeSelector
+            value={dateRangePreset}
+            onChange={setDateRangePreset}
+          />
         </header>
 
         {/* All statistics cards - responsive grid layout */}
-        <section>
-          <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-3 sm:gap-4">
+        <section className="mb-4">
+          <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-2">
             {statsCards.map((stat, index) => (
               <StatsCard key={index} {...stat} />
             ))}
           </div>
         </section>
 
-        <Separator className="my-6 sm:my-8" />
-
         {/* Traffic analytics section */}
-        <section className="space-y-6">
-          {/* Traffic trend chart with date selector */}
+        <section className="space-y-4">
+          {/* Traffic trend chart */}
           <TrafficTrendChart
             data={trafficTrend?.points ?? []}
             granularity={granularity}
             loading={isTrafficLoading}
-            headerAction={
-              <DateRangeSelector
-                value={dateRangePreset}
-                onChange={setDateRangePreset}
-              />
-            }
           />
 
           {/* Traffic ranking and node stats - 1:1 layout */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
             <TrafficRankingList
               userRanking={userRanking}
               subscriptionRanking={subscriptionRanking}
@@ -469,22 +450,17 @@ export const NewAdminDashboardPage = () => {
           </div>
         </section>
 
-        <Separator className="my-6 sm:my-8" />
+        <Separator className="my-4" />
 
-        {/* Quick actions and system status */}
+        {/* Quick actions and system status - compact layout */}
         <section>
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
+          <div className="grid grid-cols-1 lg:grid-cols-4 gap-4">
             {/* Left: Quick actions */}
-            <div className="lg:col-span-2">
-              <div className="flex items-center gap-2 mb-3 sm:mb-4">
-                <h2 className="text-base sm:text-lg font-semibold text-foreground">
-                  快速访问
-                </h2>
-                <span className="hidden sm:inline text-xs font-medium text-muted-foreground">
-                  常用功能入口
-                </span>
-              </div>
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
+            <div className="lg:col-span-3">
+              <h2 className="text-sm font-semibold text-foreground mb-2">
+                快速访问
+              </h2>
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
                 {quickActions.map((action, index) => (
                   <QuickActionCard key={index} {...action} />
                 ))}
@@ -493,27 +469,22 @@ export const NewAdminDashboardPage = () => {
 
             {/* Right: System status */}
             <div>
-              <div className="flex items-center gap-2 mb-3 sm:mb-4">
-                <h2 className="text-base sm:text-lg font-semibold text-foreground">
-                  系统状态
-                </h2>
-                <span className="hidden sm:inline text-xs font-medium text-muted-foreground">
-                  健康监控
-                </span>
-              </div>
-              <div className="overflow-hidden bg-card backdrop-blur-xl rounded-xl sm:rounded-2xl p-4 sm:p-5 border border-border shadow-sm transition-shadow duration-200 hover:shadow-md">
+              <h2 className="text-sm font-semibold text-foreground mb-2">
+                系统状态
+              </h2>
+              <div className="bg-card rounded-lg p-3 border border-border">
                 {loading ? (
-                  <div className="space-y-4">
+                  <div className="space-y-2">
                     {[1, 2].map((i) => (
                       <div
                         key={i}
-                        className="flex items-center gap-3 py-4"
+                        className="flex items-center gap-2 py-2"
                       >
-                        <div className="size-10 bg-muted rounded-lg animate-pulse" />
-                        <div className="flex-1 space-y-2">
-                          <div className="h-4 w-20 bg-muted rounded animate-pulse" />
+                        <div className="size-7 bg-muted rounded-md animate-pulse" />
+                        <div className="flex-1">
+                          <div className="h-3 w-16 bg-muted rounded animate-pulse" />
                         </div>
-                        <div className="h-6 w-16 bg-muted rounded-lg animate-pulse" />
+                        <div className="h-5 w-12 bg-muted rounded animate-pulse" />
                       </div>
                     ))}
                   </div>

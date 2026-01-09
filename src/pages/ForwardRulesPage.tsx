@@ -1,6 +1,6 @@
 /**
  * Forward Rules Management Page (Admin)
- * Uses unified refined business style components
+ * High-density data management interface
  */
 
 import { useState, useMemo } from 'react';
@@ -10,13 +10,13 @@ import {
   RefreshCw,
   Users,
   CheckCircle2,
-  XCircle,
   RotateCw,
   Activity,
   GripVertical,
+  Search,
+  FilterX,
 } from 'lucide-react';
 import { Switch, SwitchThumb } from '@/components/common/Switch';
-import { Separator } from '@/components/common/Separator';
 import { ForwardRuleListTable } from '@/features/forward-rules/components/ForwardRuleListTable';
 import { CreateForwardRuleDialog } from '@/features/forward-rules/components/CreateForwardRuleDialog';
 import { CreateForwardRuleSheet } from '@/features/forward-rules/components/CreateForwardRuleSheet';
@@ -24,8 +24,9 @@ import { EditForwardRuleDialog } from '@/features/forward-rules/components/EditF
 import { EditForwardRuleSheet } from '@/features/forward-rules/components/EditForwardRuleSheet';
 import { DeleteForwardRuleSheet } from '@/features/forward-rules/components/DeleteForwardRuleSheet';
 import { ForwardRuleDetailDialog } from '@/features/forward-rules/components/ForwardRuleDetailDialog';
-import { ForwardRuleFilters } from '@/features/forward-rules/components/ForwardRuleFilters';
 import { ProbeResultDialog } from '@/features/forward-rules/components/ProbeResultDialog';
+import { Input } from '@/components/common/Input';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/common/Select';
 import { ConfirmDialog } from '@/components/common/ConfirmDialog';
 import { useForwardRulesPage, useRuleStatusPolling } from '@/features/forward-rules/hooks/useForwardRules';
 import { useNodes } from '@/features/nodes/hooks/useNodes';
@@ -33,15 +34,10 @@ import { useResourceGroups } from '@/features/resource-groups/hooks/useResourceG
 import { useSubscriptionPlans } from '@/features/subscription-plans/hooks/useSubscriptionPlans';
 import { AdminLayout } from '@/layouts/AdminLayout';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/common/Tooltip';
-import {
-  AdminButton,
-  AdminCard,
-  PageStatsCard,
-  type PageStatsCardProps,
-} from '@/components/admin';
+import { AdminButton, AdminCard } from '@/components/admin';
 import { usePageTitle } from '@/shared/hooks';
 import { useBreakpoint } from '@/hooks/useBreakpoint';
-import type { ForwardRule, CreateForwardRuleRequest, UpdateForwardRuleRequest, RuleProbeResponse, ForwardRuleType, ForwardProtocol, IPVersion } from '@/api/forward';
+import type { ForwardRule, CreateForwardRuleRequest, UpdateForwardRuleRequest, RuleProbeResponse, ForwardRuleType, ForwardProtocol, ForwardStatus, IPVersion } from '@/api/forward';
 import type { SubscriptionPlan } from '@/api/subscription/types';
 
 export const ForwardRulesPage = () => {
@@ -96,7 +92,7 @@ export const ForwardRulesPage = () => {
     return map;
   }, [resourceGroups]);
 
-  const ruleStats = useMemo(() => {
+  const stats = useMemo(() => {
     const total = pagination.total;
     const enabled = forwardRules.filter((r) => r.status === 'enabled').length;
     const disabled = forwardRules.filter((r) => r.status === 'disabled').length;
@@ -104,53 +100,6 @@ export const ForwardRulesPage = () => {
     const running = forwardRules.filter((r) => r.runStatus === 'running').length;
     return { total, enabled, disabled, syncing, running };
   }, [forwardRules, pagination.total]);
-
-  const statsCards: PageStatsCardProps[] = [
-    {
-      title: '规则总数',
-      value: ruleStats.total,
-      icon: <ArrowLeftRight className="size-4" strokeWidth={1.5} />,
-      iconBg: 'bg-primary/10',
-      iconColor: 'text-primary',
-    },
-    {
-      title: '已启用',
-      value: ruleStats.enabled,
-      icon: <CheckCircle2 className="size-4" strokeWidth={1.5} />,
-      iconBg: 'bg-success-muted',
-      iconColor: 'text-success',
-      showPulse: ruleStats.enabled > 0,
-    },
-    {
-      title: '已禁用',
-      value: ruleStats.disabled,
-      icon: <XCircle className="size-4" strokeWidth={1.5} />,
-      iconBg: 'bg-muted',
-      iconColor: 'text-muted-foreground',
-    },
-    ...(ruleStats.syncing > 0
-      ? [
-          {
-            title: '同步中',
-            value: ruleStats.syncing,
-            icon: <RotateCw className="size-4" strokeWidth={1.5} />,
-            iconBg: 'bg-warning-muted',
-            iconColor: 'text-warning',
-          },
-        ]
-      : []),
-    ...(ruleStats.running > 0
-      ? [
-          {
-            title: '运行中',
-            value: ruleStats.running,
-            icon: <Activity className="size-4" strokeWidth={1.5} />,
-            iconBg: 'bg-info-muted',
-            iconColor: 'text-info',
-          },
-        ]
-      : []),
-  ];
 
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
@@ -304,66 +253,179 @@ export const ForwardRulesPage = () => {
     setSelectedRule(null);
   };
 
+  // Helper functions for filters
+  const handleProtocolChange = (value: string): void => {
+    handleFiltersChange({ protocol: value === '_all_' ? undefined : (value as ForwardProtocol) });
+  };
+
+  const handleStatusChange = (value: string): void => {
+    handleFiltersChange({ status: value === '_all_' ? undefined : (value as ForwardStatus) });
+  };
+
+  const handleSearchChange = (value: string): void => {
+    handleFiltersChange({ name: value || undefined });
+  };
+
+  const handleSortChange = (value: string): void => {
+    const lastUnderscoreIndex = value.lastIndexOf('_');
+    const orderBy = value.substring(0, lastUnderscoreIndex);
+    const order = value.substring(lastUnderscoreIndex + 1) as 'asc' | 'desc';
+    handleFiltersChange({ orderBy, order });
+  };
+
+  const getSortValue = (): string => {
+    if (!filters.orderBy) return 'sort_order_asc';
+    return `${filters.orderBy}_${filters.order || 'desc'}`;
+  };
+
+  const handleResetFilters = (): void => {
+    handleFiltersChange({
+      protocol: undefined,
+      status: undefined,
+      name: undefined,
+      orderBy: 'sort_order',
+      order: 'asc',
+    });
+  };
+
+  const isDefaultSort = filters.orderBy === 'sort_order' && filters.order === 'asc';
+  const hasActiveFilters = !!(filters.protocol || filters.status || filters.name || (filters.orderBy && !isDefaultSort));
+
   return (
     <AdminLayout>
-      <div className="py-6 sm:py-8">
-        {/* Page Header */}
-        <header className="mb-6 sm:mb-8">
-          <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4 mb-5 sm:mb-6">
-            <div>
-              <h1 className="text-2xl sm:text-3xl font-bold text-foreground tracking-tight">
-                转发规则管理
-              </h1>
-              <p className="text-sm text-muted-foreground mt-1">
-                管理系统中的所有端口转发规则
-              </p>
-            </div>
-          </div>
-
-          {/* Stats Grid */}
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-2 sm:gap-2.5">
-            {statsCards.map((stat, index) => (
-              <PageStatsCard key={index} {...stat} loading={isFetching} />
-            ))}
-          </div>
-        </header>
-
-        <Separator className="mb-5 sm:mb-6" />
-
-        {/* Toolbar */}
-        <div className="flex items-center justify-between gap-3 mb-4 sm:mb-5">
-          {/* Filters */}
-          <div className="flex items-center gap-3">
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <label className="flex items-center gap-2 cursor-pointer group">
-                  <Users className="size-4 text-muted-foreground group-hover:text-foreground transition-colors" strokeWidth={1.5} />
-                  <span className="hidden sm:inline text-sm font-medium text-muted-foreground group-hover:text-foreground transition-colors">
-                    包含用户规则
+      <div className="py-3 space-y-3">
+        {/* High-Density Status Bar with Integrated Filters */}
+        <header className="bg-card rounded-lg border border-border px-3 py-2">
+          <div className="flex items-center justify-between gap-3 flex-wrap">
+            {/* Left: Title + Primary Stats */}
+            <div className="flex items-center gap-3">
+              <h1 className="text-sm font-semibold text-foreground">转发规则管理</h1>
+              <div className="h-4 w-px bg-border hidden sm:block" />
+              <div className="flex items-center gap-2.5 text-xs">
+                <span className="flex items-center gap-1 text-muted-foreground">
+                  <ArrowLeftRight className="size-3" />
+                  <span className="font-medium text-foreground">{stats.total}</span>
+                </span>
+                <span className="flex items-center gap-1">
+                  <CheckCircle2 className="size-3 text-success" />
+                  <span className="font-medium text-success">{stats.enabled}</span>
+                </span>
+                {stats.disabled > 0 && (
+                  <span className="flex items-center gap-1 text-muted-foreground">
+                    <span className="font-medium">{stats.disabled}</span>
                   </span>
-                  <Switch
-                    checked={includeUserRules}
-                    onCheckedChange={handleIncludeUserRulesChange}
-                  >
-                    <SwitchThumb />
-                  </Switch>
-                </label>
-              </TooltipTrigger>
-              <TooltipContent>显示用户创建的规则</TooltipContent>
-            </Tooltip>
+                )}
+                {stats.running > 0 && (
+                  <span className="flex items-center gap-1">
+                    <Activity className="size-3 text-info" />
+                    <span className="font-medium text-info">{stats.running}</span>
+                  </span>
+                )}
+                {stats.syncing > 0 && (
+                  <span className="flex items-center gap-1">
+                    <RotateCw className="size-3 text-warning animate-spin" />
+                    <span className="font-medium text-warning">{stats.syncing}</span>
+                  </span>
+                )}
+              </div>
+            </div>
 
-            {!isMobile && (
+            {/* Center: Filters (hidden on mobile) */}
+            <div className="hidden md:flex items-center gap-2 flex-1 justify-center max-w-lg">
+              {/* Protocol filter */}
+              <Select value={filters.protocol || '_all_'} onValueChange={handleProtocolChange}>
+                <SelectTrigger className="h-7 w-20 text-xs">
+                  <SelectValue placeholder="协议" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="_all_">全部</SelectItem>
+                  <SelectItem value="tcp">TCP</SelectItem>
+                  <SelectItem value="udp">UDP</SelectItem>
+                  <SelectItem value="both">Both</SelectItem>
+                </SelectContent>
+              </Select>
+
+              {/* Status filter */}
+              <Select value={filters.status || '_all_'} onValueChange={handleStatusChange}>
+                <SelectTrigger className="h-7 w-20 text-xs">
+                  <SelectValue placeholder="状态" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="_all_">全部</SelectItem>
+                  <SelectItem value="enabled">启用</SelectItem>
+                  <SelectItem value="disabled">禁用</SelectItem>
+                </SelectContent>
+              </Select>
+
+              {/* Search input */}
+              <div className="relative flex-1 max-w-[160px]">
+                <Search className="absolute left-2 top-1/2 -translate-y-1/2 size-3 text-muted-foreground" />
+                <Input
+                  placeholder="搜索规则"
+                  value={filters.name || ''}
+                  onChange={(e) => handleSearchChange(e.target.value)}
+                  className="h-7 pl-7 text-xs"
+                />
+              </div>
+
+              {/* Sort filter */}
+              <Select value={getSortValue()} onValueChange={handleSortChange}>
+                <SelectTrigger className="h-7 w-24 text-xs">
+                  <SelectValue placeholder="排序" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="sort_order_asc">默认</SelectItem>
+                  <SelectItem value="created_at_desc">创建 ↓</SelectItem>
+                  <SelectItem value="created_at_asc">创建 ↑</SelectItem>
+                  <SelectItem value="updated_at_desc">更新 ↓</SelectItem>
+                </SelectContent>
+              </Select>
+
+              {/* Reset button */}
+              {hasActiveFilters && (
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <button
+                      onClick={handleResetFilters}
+                      className="h-7 w-7 flex items-center justify-center rounded-md text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
+                    >
+                      <FilterX className="size-3.5" />
+                    </button>
+                  </TooltipTrigger>
+                  <TooltipContent>重置筛选</TooltipContent>
+                </Tooltip>
+              )}
+
+              {/* Divider */}
+              <div className="h-4 w-px bg-border" />
+
+              {/* Include user rules toggle */}
               <Tooltip>
                 <TooltipTrigger asChild>
-                  <label className="flex items-center gap-2 cursor-pointer group">
-                    <GripVertical className={`size-4 transition-colors ${dragSortEnabled ? 'text-primary' : 'text-muted-foreground group-hover:text-foreground'}`} strokeWidth={1.5} />
-                    <span className={`hidden sm:inline text-sm font-medium transition-colors ${dragSortEnabled ? 'text-primary' : 'text-muted-foreground group-hover:text-foreground'}`}>
-                      拖拽排序
-                    </span>
+                  <label className="flex items-center gap-1 cursor-pointer group">
+                    <Users className="size-3 text-muted-foreground group-hover:text-foreground transition-colors" strokeWidth={1.5} />
+                    <Switch
+                      checked={includeUserRules}
+                      onCheckedChange={handleIncludeUserRulesChange}
+                      className="scale-75"
+                    >
+                      <SwitchThumb />
+                    </Switch>
+                  </label>
+                </TooltipTrigger>
+                <TooltipContent>显示用户创建的规则</TooltipContent>
+              </Tooltip>
+
+              {/* Drag sort toggle */}
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <label className="flex items-center gap-1 cursor-pointer group">
+                    <GripVertical className={`size-3 transition-colors ${dragSortEnabled ? 'text-primary' : 'text-muted-foreground group-hover:text-foreground'}`} strokeWidth={1.5} />
                     <Switch
                       checked={dragSortEnabled}
                       onCheckedChange={setDragSortEnabled}
                       disabled={isReordering}
+                      className="scale-75"
                     >
                       <SwitchThumb />
                     </Switch>
@@ -373,50 +435,47 @@ export const ForwardRulesPage = () => {
                   {dragSortEnabled ? '关闭拖拽排序' : '开启拖拽排序'}
                 </TooltipContent>
               </Tooltip>
-            )}
+            </div>
+
+            {/* Right: Actions */}
+            <div className="flex items-center gap-1.5">
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <AdminButton
+                    variant="ghost"
+                    size="sm"
+                    onClick={handleRefresh}
+                    className="h-7 w-7 p-0"
+                    icon={
+                      <RefreshCw
+                        key={refreshKey}
+                        className="size-3.5 animate-spin-once"
+                        strokeWidth={1.5}
+                      />
+                    }
+                  >
+                    <span className="sr-only">刷新</span>
+                  </AdminButton>
+                </TooltipTrigger>
+                <TooltipContent>刷新列表</TooltipContent>
+              </Tooltip>
+
+              <AdminButton
+                variant="primary"
+                size="sm"
+                className="h-7 px-2.5 text-xs"
+                icon={<Plus className="size-3.5" strokeWidth={2} />}
+                onClick={() => {
+                  setCopyRuleData(undefined);
+                  setCreateDialogOpen(true);
+                }}
+              >
+                <span className="hidden sm:inline">新增</span>
+                <span className="sm:hidden">新增</span>
+              </AdminButton>
+            </div>
           </div>
-
-          {/* Actions */}
-          <div className="flex items-center gap-2">
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <AdminButton
-                  variant="ghost"
-                  size="sm"
-                  onClick={handleRefresh}
-                  icon={
-                    <RefreshCw
-                      key={refreshKey}
-                      className="size-4 animate-spin-once"
-                      strokeWidth={1.5}
-                    />
-                  }
-                >
-                  <span className="sr-only">刷新</span>
-                </AdminButton>
-              </TooltipTrigger>
-              <TooltipContent>刷新列表</TooltipContent>
-            </Tooltip>
-
-            <AdminButton
-              variant="primary"
-              size="sm"
-              icon={<Plus className="size-4" strokeWidth={2} />}
-              onClick={() => {
-                setCopyRuleData(undefined);
-                setCreateDialogOpen(true);
-              }}
-            >
-              <span className="hidden sm:inline">新增规则</span>
-              <span className="sm:hidden">新增</span>
-            </AdminButton>
-          </div>
-        </div>
-
-        {/* Filters Row */}
-        <div className="mb-4 sm:mb-5">
-          <ForwardRuleFilters filters={filters} onChange={handleFiltersChange} />
-        </div>
+        </header>
 
         {/* Forward Rules List */}
         {isMobile ? (

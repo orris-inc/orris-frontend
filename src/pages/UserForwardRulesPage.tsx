@@ -1,5 +1,6 @@
 /**
  * User Forward Rules Management Page
+ * Responsive design with iOS 26 Liquid Glass style for mobile
  */
 
 import { useState } from 'react';
@@ -8,10 +9,12 @@ import { Link } from 'react-router';
 import { DashboardLayout } from '@/layouts/DashboardLayout';
 import { Button } from '@/components/common/Button';
 import { usePageTitle } from '@/shared/hooks';
+import { useBreakpoint } from '@/hooks';
 import {
   useUserForwardRulesPage,
   UserForwardUsageCard,
   UserForwardRuleList,
+  UserForwardRuleMobileList,
   CreateUserForwardRuleDialog,
   EditUserForwardRuleDialog,
 } from '@/features/user-forward-rules';
@@ -20,6 +23,7 @@ import { canCreateMoreRules } from '@/api/forward';
 
 export const UserForwardRulesPage = () => {
   usePageTitle('端口转发');
+  const { isMobile } = useBreakpoint();
 
   const {
     forwardRules,
@@ -103,24 +107,24 @@ export const UserForwardRulesPage = () => {
 
   return (
     <DashboardLayout>
-      <div className="space-y-6">
+      <div className="space-y-4 sm:space-y-6 px-safe pb-safe">
         {/* Page header */}
-        <div>
-          <h1 className="text-2xl font-semibold text-foreground">端口转发</h1>
-          <p className="text-muted-foreground">管理您的端口转发规则</p>
+        <div className="space-y-1">
+          <h1 className="text-xl sm:text-2xl font-semibold text-foreground">端口转发</h1>
+          <p className="text-sm sm:text-base text-muted-foreground hidden sm:block">管理您的端口转发规则</p>
         </div>
 
         {/* No subscription prompt */}
         {hasNoSubscription && (
-          <div className="flex flex-col items-center justify-center py-16 px-4">
-            <div className="p-4 rounded-full bg-amber-500/10 mb-6">
-              <AlertCircle className="h-10 w-10 text-amber-500" />
+          <div className="glass rounded-2xl flex flex-col items-center justify-center py-12 sm:py-16 px-4">
+            <div className="p-4 rounded-full bg-amber-500/10 mb-4 sm:mb-6">
+              <AlertCircle className="h-8 w-8 sm:h-10 sm:w-10 text-amber-500" />
             </div>
-            <h2 className="text-xl font-semibold mb-2">暂无可用的转发服务</h2>
-            <p className="text-muted-foreground text-center max-w-md mb-6">
+            <h2 className="text-lg sm:text-xl font-semibold mb-2 text-center">暂无可用的转发服务</h2>
+            <p className="text-sm sm:text-base text-muted-foreground text-center max-w-md mb-4 sm:mb-6">
               您当前没有包含端口转发功能的订阅计划。购买订阅后即可使用端口转发服务。
             </p>
-            <Button asChild>
+            <Button asChild className="min-h-[44px] px-6">
               <Link to="/pricing" className="gap-2">
                 <Zap className="h-4 w-4" />
                 查看订阅计划
@@ -137,11 +141,11 @@ export const UserForwardRulesPage = () => {
 
             {/* Rule limit reached warning */}
             {isAtLimit && (
-              <div className="flex items-center gap-3 p-4 bg-amber-500/10 border border-amber-500/20 rounded-lg">
-                <AlertCircle className="h-5 w-5 text-amber-500 shrink-0" />
-                <div>
-                  <p className="font-medium text-amber-600 dark:text-amber-400">已达到规则数量上限</p>
-                  <p className="text-sm text-muted-foreground">
+              <div className="glass rounded-2xl flex items-start sm:items-center gap-3 p-3 sm:p-4 bg-amber-500/10 border border-amber-500/20">
+                <AlertCircle className="h-5 w-5 text-amber-500 shrink-0 mt-0.5 sm:mt-0" />
+                <div className="flex-1 min-w-0">
+                  <p className="font-medium text-amber-600 dark:text-amber-400 text-sm sm:text-base">已达到规则数量上限</p>
+                  <p className="text-xs sm:text-sm text-muted-foreground">
                     您已创建了 {usage?.ruleCount} 条规则，达到了订阅计划的上限。如需创建更多规则，请升级您的订阅计划。
                   </p>
                 </div>
@@ -149,39 +153,57 @@ export const UserForwardRulesPage = () => {
             )}
 
             {/* Action bar */}
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <p className="text-sm text-muted-foreground">
-                  共 {pagination.total} 条规则
-                </p>
-              </div>
+            <div className="flex items-center justify-between gap-4">
+              <p className="text-xs sm:text-sm text-muted-foreground">
+                共 <span className="font-medium text-foreground">{pagination.total}</span> 条规则
+              </p>
               <Button
                 onClick={handleCreateClick}
                 disabled={isAtLimit || isUsageLoading}
-                className="gap-2"
+                className="gap-2 min-h-[44px] touch-manipulation"
               >
                 <Plus className="h-4 w-4" />
-                新增规则
+                <span className="hidden sm:inline">新增规则</span>
+                <span className="sm:hidden">新增</span>
               </Button>
             </div>
 
-            {/* Rule list */}
-            <UserForwardRuleList
-              rules={forwardRules}
-              agentsMap={agentsMap}
-              isLoading={isLoading}
-              page={pagination.page}
-              pageSize={pagination.pageSize}
-              total={pagination.total}
-              onPageChange={handlePageChange}
-              onPageSizeChange={handlePageSizeChange}
-              onEdit={handleEditClick}
-              onDelete={handleDeleteClick}
-              onToggleStatus={handleToggleStatus}
-              onEnabling={isEnabling}
-              onDisabling={isDisabling}
-              onDeleting={isDeleting}
-            />
+            {/* Rule list - Responsive view */}
+            {isMobile ? (
+              <UserForwardRuleMobileList
+                rules={forwardRules}
+                agentsMap={agentsMap}
+                isLoading={isLoading}
+                page={pagination.page}
+                pageSize={pagination.pageSize}
+                total={pagination.total}
+                onPageChange={handlePageChange}
+                onPageSizeChange={handlePageSizeChange}
+                onEdit={handleEditClick}
+                onDelete={handleDeleteClick}
+                onToggleStatus={handleToggleStatus}
+                onEnabling={isEnabling}
+                onDisabling={isDisabling}
+                onDeleting={isDeleting}
+              />
+            ) : (
+              <UserForwardRuleList
+                rules={forwardRules}
+                agentsMap={agentsMap}
+                isLoading={isLoading}
+                page={pagination.page}
+                pageSize={pagination.pageSize}
+                total={pagination.total}
+                onPageChange={handlePageChange}
+                onPageSizeChange={handlePageSizeChange}
+                onEdit={handleEditClick}
+                onDelete={handleDeleteClick}
+                onToggleStatus={handleToggleStatus}
+                onEnabling={isEnabling}
+                onDisabling={isDisabling}
+                onDeleting={isDeleting}
+              />
+            )}
           </>
         )}
       </div>

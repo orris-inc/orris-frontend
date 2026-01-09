@@ -1,7 +1,13 @@
 /**
- * Sheet Component
- * Mobile-friendly bottom drawer based on Radix UI Dialog
- * Optimized for touch interactions with safe area support
+ * Sheet Component - iOS 26 Liquid Glass Edition
+ *
+ * Mobile-friendly bottom drawer based on Radix UI Dialog.
+ * Features:
+ * - iOS 26 Liquid Glass material design
+ * - Spring-based animations
+ * - Optimized for touch interactions
+ * - Safe area support for notched devices
+ * - Respects prefers-reduced-motion
  */
 
 import * as DialogPrimitive from '@radix-ui/react-dialog';
@@ -21,16 +27,18 @@ export const SheetPortal = DialogPrimitive.Portal;
 // Close - Button or element that closes the Sheet
 export const SheetClose = DialogPrimitive.Close;
 
-// Overlay - Backdrop layer
+// Overlay - Backdrop layer with iOS 26 blur
 export const SheetOverlay = ({
   className,
   ...props
 }: ComponentPropsWithoutRef<typeof DialogPrimitive.Overlay>) => (
   <DialogPrimitive.Overlay
     className={cn(
-      'fixed inset-0 z-50 bg-black/60 backdrop-blur-sm',
+      'fixed inset-0 z-50',
+      'bg-black/30 backdrop-blur-xl',
       'data-[state=open]:animate-in data-[state=closed]:animate-out',
       'data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0',
+      'motion-reduce:animate-none',
       className
     )}
     {...props}
@@ -54,30 +62,32 @@ export const SheetContent = ({
     <SheetOverlay />
     <DialogPrimitive.Content
       className={cn(
-        // Base styles
-        'fixed z-50 bg-background shadow-xl',
+        // Base styles - iOS 26 Liquid Glass
+        'fixed z-50 glass-elevated',
+        'border-b-0 border-x-0',
         // Position - bottom sheet
         'inset-x-0 bottom-0',
         // Size - full width, max height with safe area
         'w-full max-h-[90vh]',
-        // Shape
-        'rounded-t-2xl',
+        // Shape - iOS 26 larger corner radius
+        'rounded-t-3xl',
         // Layout
         'flex flex-col',
         // Safe area padding for iOS
         'pb-[env(safe-area-inset-bottom)]',
-        // Animation - slide up from bottom
-        'duration-300 ease-out',
+        // Animation - iOS 26 spring timing
+        'duration-[var(--duration-normal)] ease-[var(--spring-bounce)]',
         'data-[state=open]:animate-in data-[state=closed]:animate-out',
         'data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0',
         'data-[state=closed]:slide-out-to-bottom data-[state=open]:slide-in-from-bottom',
+        'motion-reduce:animate-none',
         className
       )}
       {...props}
     >
-      {/* Drag handle indicator */}
+      {/* Drag handle indicator - iOS 26 style */}
       <div className="flex justify-center pt-3 pb-2">
-        <div className="w-10 h-1 rounded-full bg-muted-foreground/30" />
+        <div className="w-9 h-1.5 rounded-full bg-foreground/20" />
       </div>
       {children}
       {showClose && (
@@ -86,10 +96,10 @@ export const SheetContent = ({
             'absolute right-4 top-4',
             'min-h-[44px] min-w-[44px]', // Touch target
             'flex items-center justify-center',
-            'rounded-full bg-muted/80 hover:bg-muted',
-            'text-muted-foreground hover:text-foreground',
-            'transition-colors',
-            'focus:outline-none focus-visible:ring-2 focus-visible:ring-ring'
+            'rounded-full glass-interactive',
+            'text-muted-foreground',
+            'focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/50',
+            'motion-reduce:transition-none'
           )}
         >
           <X className="size-5" />
@@ -168,8 +178,8 @@ export const SheetFooter = ({
   <div
     className={cn(
       'flex flex-col gap-3 px-6 pt-4 pb-2',
-      'border-t bg-background',
-      // Sticky footer
+      'border-t border-border/50',
+      // Sticky footer with glass effect
       'sticky bottom-0',
       className
     )}

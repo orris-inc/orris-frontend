@@ -6,5 +6,6 @@ export * from './hooks/useUserForwardRules';
 export * from './hooks/useUserForwardAgents';
 export * from './components/UserForwardUsageCard';
 export * from './components/UserForwardRuleList';
+export * from './components/UserForwardRuleMobileList';
 export * from './components/CreateUserForwardRuleDialog';
 export * from './components/EditUserForwardRuleDialog';

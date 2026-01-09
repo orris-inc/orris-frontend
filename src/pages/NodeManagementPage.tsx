@@ -1,6 +1,6 @@
 /**
  * Node Management Page (Admin)
- * Uses unified refined business style components
+ * High-density data management interface
  */
 
 import { useState, useMemo } from 'react';
@@ -17,7 +17,6 @@ import {
   GripVertical,
 } from 'lucide-react';
 import { Switch, SwitchThumb } from '@/components/common/Switch';
-import { Separator } from '@/components/common/Separator';
 import { NodeListTable } from '@/features/nodes/components/NodeListTable';
 import { EditNodeDialog } from '@/features/nodes/components/EditNodeDialog';
 import { CreateNodeDialog } from '@/features/nodes/components/CreateNodeDialog';
@@ -33,12 +32,7 @@ import { useResourceGroups } from '@/features/resource-groups/hooks/useResourceG
 import { AdminLayout } from '@/layouts/AdminLayout';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/common/Tooltip';
 import { TokenDialog } from '@/components/common/TokenDialog';
-import {
-  AdminButton,
-  AdminCard,
-  PageStatsCard,
-  type PageStatsCardProps,
-} from '@/components/admin';
+import { AdminButton, AdminCard } from '@/components/admin';
 import { usePageTitle } from '@/shared/hooks';
 import { useBreakpoint } from '@/hooks/useBreakpoint';
 import type { Node, UpdateNodeRequest, CreateNodeRequest } from '@/api/node';
@@ -95,7 +89,7 @@ export const NodeManagementPage = () => {
     }));
   }, [nodes]);
 
-  const nodeStats = useMemo(() => {
+  const stats = useMemo(() => {
     const total = pagination.total;
     const online = nodes.filter((n) => n.isOnline).length;
     const active = nodes.filter((n) => n.status === 'active').length;
@@ -247,196 +241,167 @@ export const NodeManagementPage = () => {
     }
   };
 
-  const statsCards: PageStatsCardProps[] = [
-    {
-      title: '节点总数',
-      value: nodeStats.total,
-      icon: <Server className="size-4" strokeWidth={1.5} />,
-      iconBg: 'bg-primary/10',
-      iconColor: 'text-primary',
-    },
-    {
-      title: '在线节点',
-      value: nodeStats.online,
-      icon: <Activity className="size-4" strokeWidth={1.5} />,
-      iconBg: 'bg-success-muted',
-      iconColor: 'text-success',
-      showPulse: nodeStats.online > 0,
-    },
-    {
-      title: '激活节点',
-      value: nodeStats.active,
-      icon: <CheckCircle2 className="size-4" strokeWidth={1.5} />,
-      iconBg: 'bg-info-muted',
-      iconColor: 'text-info',
-    },
-    {
-      title: '未激活节点',
-      value: nodeStats.inactive,
-      icon: <XCircle className="size-4" strokeWidth={1.5} />,
-      iconBg: 'bg-muted',
-      iconColor: 'text-muted-foreground',
-    },
-    ...(nodeStats.updatable > 0
-      ? [
-          {
-            title: '可更新',
-            value: nodeStats.updatable,
-            icon: <ArrowUpCircle className="size-4" strokeWidth={1.5} />,
-            iconBg: 'bg-warning-muted',
-            iconColor: 'text-warning',
-          },
-        ]
-      : []),
-  ];
-
   return (
     <AdminLayout>
-      <div className="py-6 sm:py-8">
-        {/* Page Header */}
-        <header className="mb-6 sm:mb-8">
-          <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4 mb-5 sm:mb-6">
-            <div>
-              <h1 className="text-2xl sm:text-3xl font-bold text-foreground tracking-tight">
-                节点管理
-              </h1>
-              <p className="text-sm text-muted-foreground mt-1">
-                管理和监控所有代理节点
-              </p>
+      <div className="py-3 space-y-3">
+        {/* High-Density Status Bar - All metrics inline */}
+        <header className="bg-card rounded-lg border border-border px-3 py-2">
+          <div className="flex items-center justify-between gap-4 flex-wrap">
+            {/* Left: Title + Primary Stats */}
+            <div className="flex items-center gap-4">
+              <h1 className="text-sm font-semibold text-foreground">节点管理</h1>
+              <div className="h-4 w-px bg-border hidden sm:block" />
+              <div className="flex items-center gap-3 text-xs">
+                <span className="flex items-center gap-1 text-muted-foreground">
+                  <Server className="size-3" />
+                  <span className="font-medium text-foreground">{stats.total}</span>
+                  <span className="hidden sm:inline">节点</span>
+                </span>
+                <span className="flex items-center gap-1">
+                  <Activity className="size-3 text-success" />
+                  <span className="font-medium text-success">{stats.online}</span>
+                  <span className="hidden lg:inline text-muted-foreground">在线</span>
+                </span>
+                <span className="flex items-center gap-1">
+                  <CheckCircle2 className="size-3 text-info" />
+                  <span className="font-medium text-info">{stats.active}</span>
+                </span>
+              </div>
             </div>
-          </div>
 
-          {/* Stats Grid */}
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-2 sm:gap-2.5">
-            {statsCards.map((stat, index) => (
-              <PageStatsCard key={index} {...stat} loading={isFetching} />
-            ))}
-          </div>
-        </header>
-
-        <Separator className="mb-5 sm:mb-6" />
-
-        {/* Toolbar */}
-        <div className="flex items-center justify-between gap-3 mb-4 sm:mb-5">
-          {/* Filters */}
-          <div className="flex items-center gap-3">
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <label className="flex items-center gap-2 cursor-pointer group">
-                  <Users className="size-4 text-muted-foreground group-hover:text-foreground transition-colors" strokeWidth={1.5} />
-                  <span className="hidden sm:inline text-sm font-medium text-muted-foreground group-hover:text-foreground transition-colors">
-                    包含用户节点
-                  </span>
-                  <Switch
-                    checked={includeUserNodes}
-                    onCheckedChange={handleIncludeUserNodesChange}
-                  >
-                    <SwitchThumb />
-                  </Switch>
-                </label>
-              </TooltipTrigger>
-              <TooltipContent>显示用户创建的节点</TooltipContent>
-            </Tooltip>
-
-            {/* Desktop only: drag sort toggle */}
-            {!isMobile && (
+            {/* Center: Secondary Stats + Filters */}
+            <div className="hidden md:flex items-center gap-3 text-xs">
+              {stats.inactive > 0 && (
+                <span className="flex items-center gap-1.5">
+                  <XCircle className="size-3 text-muted-foreground" />
+                  <span className="text-muted-foreground">未激活</span>
+                  <span className="font-semibold tabular-nums text-foreground">{stats.inactive}</span>
+                </span>
+              )}
+              {stats.updatable > 0 && (
+                <span className="flex items-center gap-1.5">
+                  <ArrowUpCircle className="size-3 text-warning" />
+                  <span className="text-muted-foreground">可更新</span>
+                  <span className="font-semibold tabular-nums text-warning">{stats.updatable}</span>
+                </span>
+              )}
+              <div className="h-3 w-px bg-border" />
               <Tooltip>
                 <TooltipTrigger asChild>
-                  <label className="flex items-center gap-2 cursor-pointer group">
-                    <GripVertical className={`size-4 transition-colors ${dragSortEnabled ? 'text-primary' : 'text-muted-foreground group-hover:text-foreground'}`} strokeWidth={1.5} />
-                    <span className="hidden sm:inline text-sm font-medium transition-colors text-muted-foreground group-hover:text-foreground">
-                      拖拽排序
+                  <label className="flex items-center gap-1.5 cursor-pointer group">
+                    <Users className="size-3 text-muted-foreground group-hover:text-foreground transition-colors" strokeWidth={1.5} />
+                    <span className="hidden lg:inline text-muted-foreground group-hover:text-foreground transition-colors">
+                      用户节点
                     </span>
                     <Switch
-                      checked={dragSortEnabled}
-                      onCheckedChange={setDragSortEnabled}
-                      disabled={isReordering}
+                      checked={includeUserNodes}
+                      onCheckedChange={handleIncludeUserNodesChange}
+                      className="scale-75"
                     >
                       <SwitchThumb />
                     </Switch>
                   </label>
                 </TooltipTrigger>
-                <TooltipContent>
-                  {dragSortEnabled ? '关闭拖拽排序' : '开启拖拽排序，拖动行调整顺序'}
-                </TooltipContent>
+                <TooltipContent>显示用户创建的节点</TooltipContent>
               </Tooltip>
-            )}
-          </div>
+              {!isMobile && (
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <label className="flex items-center gap-1.5 cursor-pointer group">
+                      <GripVertical className={`size-3 transition-colors ${dragSortEnabled ? 'text-primary' : 'text-muted-foreground group-hover:text-foreground'}`} strokeWidth={1.5} />
+                      <span className="hidden lg:inline text-muted-foreground group-hover:text-foreground transition-colors">
+                        排序
+                      </span>
+                      <Switch
+                        checked={dragSortEnabled}
+                        onCheckedChange={setDragSortEnabled}
+                        disabled={isReordering}
+                        className="scale-75"
+                      >
+                        <SwitchThumb />
+                      </Switch>
+                    </label>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    {dragSortEnabled ? '关闭拖拽排序' : '开启拖拽排序'}
+                  </TooltipContent>
+                </Tooltip>
+              )}
+            </div>
 
-          {/* Actions */}
-          <div className="flex items-center gap-2">
-            {nodeStats.online > 0 && (
+            {/* Right: Actions */}
+            <div className="flex items-center gap-1.5">
+              {stats.online > 0 && (
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <AdminButton
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setBroadcastURLDialogOpen(true)}
+                      className="h-7 px-2 text-xs border-blue-500/30 hover:border-blue-500/50 hover:bg-blue-500/10"
+                      icon={<Radio className="size-3.5 text-blue-500" strokeWidth={1.5} />}
+                    >
+                      <span className="hidden lg:inline text-blue-500">下发</span>
+                    </AdminButton>
+                  </TooltipTrigger>
+                  <TooltipContent>向 {stats.online} 个在线节点下发新API地址</TooltipContent>
+                </Tooltip>
+              )}
+
+              {stats.updatable > 0 && (
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <AdminButton
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setBatchUpdateDialogOpen(true)}
+                      className="h-7 px-2 text-xs border-warning/30 hover:border-warning/50 hover:bg-warning-muted"
+                      icon={<ArrowUpCircle className="size-3.5 text-warning" strokeWidth={1.5} />}
+                    >
+                      <span className="hidden lg:inline text-warning">更新</span>
+                    </AdminButton>
+                  </TooltipTrigger>
+                  <TooltipContent>更新 {stats.updatable} 个节点</TooltipContent>
+                </Tooltip>
+              )}
+
               <Tooltip>
                 <TooltipTrigger asChild>
                   <AdminButton
-                    variant="outline"
+                    variant="ghost"
                     size="sm"
-                    onClick={() => setBroadcastURLDialogOpen(true)}
-                    icon={<Radio className="size-4 text-blue-500" strokeWidth={1.5} />}
-                    className="border-blue-500/30 hover:border-blue-500/50 hover:bg-blue-500/10"
+                    onClick={handleRefresh}
+                    className="h-7 w-7 p-0"
+                    icon={
+                      <RefreshCw
+                        key={refreshKey}
+                        className="size-3.5 animate-spin-once"
+                        strokeWidth={1.5}
+                      />
+                    }
                   >
-                    <span className="hidden sm:inline text-blue-500">下发地址</span>
+                    <span className="sr-only">刷新</span>
                   </AdminButton>
                 </TooltipTrigger>
-                <TooltipContent>
-                  向 {nodeStats.online} 个在线节点下发新API地址
-                </TooltipContent>
+                <TooltipContent>刷新列表</TooltipContent>
               </Tooltip>
-            )}
 
-            {nodes.some((n) => n.hasUpdate && n.isOnline) && (
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <AdminButton
-                    variant="outline"
-                    size="sm"
-                    onClick={() => setBatchUpdateDialogOpen(true)}
-                    icon={<ArrowUpCircle className="size-4 text-warning" strokeWidth={1.5} />}
-                    className="border-warning/30 hover:border-warning/50 hover:bg-warning-muted"
-                  >
-                    <span className="hidden sm:inline text-warning">批量更新</span>
-                  </AdminButton>
-                </TooltipTrigger>
-                <TooltipContent>
-                  更新 {nodes.filter((n) => n.hasUpdate && n.isOnline).length} 个节点
-                </TooltipContent>
-              </Tooltip>
-            )}
-
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <AdminButton
-                  variant="ghost"
-                  size="sm"
-                  onClick={handleRefresh}
-                  icon={
-                    <RefreshCw
-                      key={refreshKey}
-                      className="size-4 animate-spin-once"
-                      strokeWidth={1.5}
-                    />
-                  }
-                >
-                  <span className="sr-only">刷新</span>
-                </AdminButton>
-              </TooltipTrigger>
-              <TooltipContent>刷新列表</TooltipContent>
-            </Tooltip>
-
-            <AdminButton
-              variant="primary"
-              size="sm"
-              icon={<Plus className="size-4" strokeWidth={2} />}
-              onClick={() => {
-                setCopyNodeData(undefined);
-                setCreateDialogOpen(true);
-              }}
-            >
-              <span className="hidden sm:inline">新增节点</span>
-              <span className="sm:hidden">新增</span>
-            </AdminButton>
+              <AdminButton
+                variant="primary"
+                size="sm"
+                className="h-7 px-2.5 text-xs"
+                icon={<Plus className="size-3.5" strokeWidth={2} />}
+                onClick={() => {
+                  setCopyNodeData(undefined);
+                  setCreateDialogOpen(true);
+                }}
+              >
+                <span className="hidden sm:inline">新增节点</span>
+                <span className="sm:hidden">新增</span>
+              </AdminButton>
+            </div>
           </div>
-        </div>
+        </header>
 
         {/* Node List */}
         {isMobile ? (
@@ -596,7 +561,7 @@ export const NodeManagementPage = () => {
         }}
         onBroadcast={(newUrl, reason) => broadcastURLMutation.mutateAsync({ newUrl, reason })}
         isBroadcasting={broadcastURLMutation.isPending}
-        onlineCount={nodeStats.online}
+        onlineCount={stats.online}
         targetNode={notifyURLNode ? {
           id: notifyURLNode.id,
           name: notifyURLNode.name,

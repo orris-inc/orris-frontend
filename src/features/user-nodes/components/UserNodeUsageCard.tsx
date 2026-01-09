@@ -27,12 +27,12 @@ export const UserNodeUsageCard: React.FC<UserNodeUsageCardProps> = ({
 
   if (isLoading) {
     return (
-      <div className="rounded-lg border bg-card p-4">
+      <div className="glass rounded-xl sm:rounded-lg p-4 mx-1 sm:mx-0">
         <div className="flex items-center gap-3">
-          <div className="h-10 w-10 rounded-full bg-muted animate-pulse" />
+          <div className="h-10 w-10 sm:h-10 sm:w-10 rounded-full bg-muted/50 animate-pulse" />
           <div className="flex-1 space-y-2">
-            <div className="h-4 w-24 bg-muted rounded animate-pulse" />
-            <div className="h-3 w-32 bg-muted rounded animate-pulse" />
+            <div className="h-4 w-24 bg-muted/50 rounded animate-pulse" />
+            <div className="h-3 w-32 bg-muted/50 rounded animate-pulse" />
           </div>
         </div>
       </div>
@@ -40,41 +40,34 @@ export const UserNodeUsageCard: React.FC<UserNodeUsageCardProps> = ({
   }
 
   return (
-    <div className="rounded-lg border bg-card p-4">
-      <div className="flex items-start gap-3">
+    <div className="glass rounded-xl sm:rounded-lg p-3 sm:p-4 mx-1 sm:mx-0 transition-all duration-[var(--duration-normal)] ease-[var(--spring-smooth)]">
+      <div className="flex items-center gap-2.5 sm:gap-3">
+        {/* Status icon - compact on mobile */}
         <div className={`
-          flex h-10 w-10 items-center justify-center rounded-full
+          flex h-9 w-9 sm:h-10 sm:w-10 items-center justify-center rounded-full shrink-0
+          transition-colors duration-[var(--duration-fast)]
           ${isAtLimit ? 'bg-destructive/10 text-destructive' : isNearLimit ? 'bg-yellow-500/10 text-yellow-600' : 'bg-primary/10 text-primary'}
         `}>
-          <Server className="h-5 w-5" />
+          <Server className="h-4 w-4 sm:h-5 sm:w-5" />
         </div>
         <div className="flex-1 min-w-0">
-          <div className="flex items-center justify-between">
-            <h3 className="text-sm font-medium">节点配额</h3>
-            <span className={`text-sm font-semibold ${isAtLimit ? 'text-destructive' : isNearLimit ? 'text-yellow-600' : ''}`}>
-              {nodeCount} / {isUnlimited ? '无限制' : nodeLimit}
+          {/* Header row - inline on mobile */}
+          <div className="flex items-center justify-between gap-2">
+            <span className="text-xs sm:text-sm font-medium text-muted-foreground">节点配额</span>
+            <span className={`text-sm font-semibold font-mono ${isAtLimit ? 'text-destructive' : isNearLimit ? 'text-yellow-600' : ''}`}>
+              {nodeCount} / {isUnlimited ? '∞' : nodeLimit}
             </span>
           </div>
 
+          {/* Progress bar - compact */}
           {!isUnlimited && (
-            <div className="mt-2">
+            <div className="mt-1.5">
               <Progress
                 value={usagePercentage}
-                className={`h-2 ${isAtLimit ? '[&>div]:bg-destructive' : isNearLimit ? '[&>div]:bg-yellow-500' : ''}`}
+                className={`h-1.5 sm:h-2 ${isAtLimit ? '[&>div]:bg-destructive' : isNearLimit ? '[&>div]:bg-yellow-500' : ''}`}
               />
             </div>
           )}
-
-          <p className="text-xs text-muted-foreground mt-2">
-            {isUnlimited
-              ? '您的套餐节点数量无限制'
-              : isAtLimit
-                ? '已达到节点数量上限'
-                : isNearLimit
-                  ? `还可创建 ${nodeLimit - nodeCount} 个节点`
-                  : `已创建 ${nodeCount} 个节点`
-            }
-          </p>
         </div>
       </div>
     </div>

@@ -76,6 +76,49 @@
   --radius-xs: 0.375rem;
   --radius-full: 9999px;
 
+  /* ========== iOS 26 Liquid Glass System ========== */
+  /* Blur values */
+  --glass-blur-sm: 10px;
+  --glass-blur-md: 16px;
+  --glass-blur-lg: 24px;
+  --glass-blur-xl: 32px;
+
+  /* Glass backgrounds - light mode */
+  --glass-bg-light: rgba(255, 255, 255, 0.72);
+  --glass-bg-light-elevated: rgba(255, 255, 255, 0.85);
+  --glass-bg-light-intense: rgba(255, 255, 255, 0.92);
+
+  /* Glass borders - light mode */
+  --glass-border-light: rgba(255, 255, 255, 0.5);
+  --glass-border-light-subtle: rgba(0, 0, 0, 0.06);
+
+  /* Glass shadows - light mode */
+  --glass-shadow-light: 0 2px 20px rgba(0, 0, 0, 0.08), 0 0 1px rgba(0, 0, 0, 0.1);
+  --glass-shadow-light-elevated: 0 8px 32px rgba(0, 0, 0, 0.12), 0 0 1px rgba(0, 0, 0, 0.12);
+
+  /* Glass inset highlights - simulates light refraction */
+  --glass-highlight-top: inset 0 0.5px 0 0 rgba(255, 255, 255, 0.8);
+  --glass-highlight-full: inset 0 0.5px 0 0 rgba(255, 255, 255, 0.8), inset 0 -0.5px 0 0 rgba(255, 255, 255, 0.3);
+
+  /* Spring animation timing for iOS 26 */
+  --spring-bounce: cubic-bezier(0.34, 1.56, 0.64, 1);
+  --spring-smooth: cubic-bezier(0.4, 0, 0.2, 1);
+  --spring-gentle: cubic-bezier(0.25, 0.46, 0.45, 0.94);
+
+  /* Animation durations */
+  --duration-fast: 0.2s;
+  --duration-normal: 0.35s;
+  --duration-slow: 0.5s;
+
+  /* Glass colors for dark mode (will be overridden in .dark) */
+  --glass-bg: var(--glass-bg-light);
+  --glass-bg-elevated: var(--glass-bg-light-elevated);
+  --glass-bg-intense: var(--glass-bg-light-intense);
+  --glass-border: var(--glass-border-light);
+  --glass-border-subtle: var(--glass-border-light-subtle);
+  --glass-shadow: var(--glass-shadow-light);
+  --glass-shadow-elevated: var(--glass-shadow-light-elevated);
+
   /* 动画 */
   --animate-accordion-down: accordion-down 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   --animate-accordion-up: accordion-up 0.3s cubic-bezier(0.4, 0, 0.2, 1);
@@ -301,6 +344,15 @@
     --rank-silver: 220 9% 55%;
     --rank-bronze: 25 95% 60%;
     --rank-bronze-muted: 25 50% 15%;
+
+    /* iOS 26 Liquid Glass - Dark Mode */
+    --glass-bg: rgba(30, 30, 35, 0.72);
+    --glass-bg-elevated: rgba(40, 40, 48, 0.85);
+    --glass-bg-intense: rgba(50, 50, 58, 0.92);
+    --glass-border: rgba(255, 255, 255, 0.12);
+    --glass-border-subtle: rgba(255, 255, 255, 0.06);
+    --glass-shadow: 0 2px 20px rgba(0, 0, 0, 0.3), 0 0 1px rgba(0, 0, 0, 0.4);
+    --glass-shadow-elevated: 0 8px 32px rgba(0, 0, 0, 0.4), 0 0 1px rgba(0, 0, 0, 0.5);
   }
 
   * {
@@ -520,5 +572,112 @@
   .card-contained {
     max-width: 100%;
     overflow: hidden;
+  }
+
+  /* ========== iOS 26 Liquid Glass Effects ========== */
+  /* Base glass effect */
+  .glass {
+    background: var(--glass-bg);
+    backdrop-filter: blur(var(--glass-blur-md));
+    -webkit-backdrop-filter: blur(var(--glass-blur-md));
+    border: 1px solid var(--glass-border);
+    box-shadow: var(--glass-shadow), var(--glass-highlight-top);
+  }
+
+  .glass-elevated {
+    background: var(--glass-bg-elevated);
+    backdrop-filter: blur(var(--glass-blur-lg));
+    -webkit-backdrop-filter: blur(var(--glass-blur-lg));
+    border: 1px solid var(--glass-border);
+    box-shadow: var(--glass-shadow-elevated), var(--glass-highlight-full);
+  }
+
+  .glass-intense {
+    background: var(--glass-bg-intense);
+    backdrop-filter: blur(var(--glass-blur-xl));
+    -webkit-backdrop-filter: blur(var(--glass-blur-xl));
+    border: 1px solid var(--glass-border);
+    box-shadow: var(--glass-shadow-elevated), var(--glass-highlight-full);
+  }
+
+  /* Interactive glass - for buttons/controls */
+  .glass-interactive {
+    background: var(--glass-bg);
+    backdrop-filter: blur(var(--glass-blur-md));
+    -webkit-backdrop-filter: blur(var(--glass-blur-md));
+    border: 1px solid var(--glass-border);
+    box-shadow: var(--glass-shadow), var(--glass-highlight-top);
+    transition: transform var(--duration-fast) var(--spring-bounce),
+                box-shadow var(--duration-fast) var(--spring-smooth);
+  }
+
+  .glass-interactive:active {
+    transform: scale(0.96);
+    box-shadow: var(--glass-shadow);
+  }
+
+  /* iOS 26 Tab Bar glass - capsule shaped */
+  .glass-tabbar {
+    background: var(--glass-bg-elevated);
+    backdrop-filter: blur(var(--glass-blur-xl));
+    -webkit-backdrop-filter: blur(var(--glass-blur-xl));
+    border: 1px solid var(--glass-border);
+    box-shadow: var(--glass-shadow-elevated), var(--glass-highlight-full);
+    border-radius: 9999px;
+  }
+
+  /* Spring animations for iOS 26 */
+  .animate-spring-in {
+    animation: spring-in var(--duration-normal) var(--spring-bounce) forwards;
+  }
+
+  .animate-spring-out {
+    animation: spring-out var(--duration-fast) var(--spring-smooth) forwards;
+  }
+
+  .animate-morph {
+    transition: all var(--duration-normal) var(--spring-bounce);
+  }
+
+  /* Reduced motion support */
+  @media (prefers-reduced-motion: reduce) {
+    .glass-interactive {
+      transition: none;
+    }
+    .glass-interactive:active {
+      transform: none;
+    }
+    .animate-spring-in,
+    .animate-spring-out,
+    .animate-morph {
+      animation: none;
+      transition: opacity var(--duration-fast) ease;
+    }
+  }
+}
+
+/* iOS 26 Spring Keyframes */
+@keyframes spring-in {
+  0% {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+  50% {
+    transform: scale(1.02);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes spring-out {
+  0% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(0.95);
   }
 }

@@ -1,22 +1,26 @@
 /**
- * Monitor Page
+ * Monitor Page - High Density Design
  * Real-time monitoring dashboard for nodes and forward agents
- * Uses SSE for live data updates
+ * Optimized for maximum information density
+ * Responsive: Mobile-first with dedicated mobile view
  */
 
 import { useState, useMemo } from 'react';
 import { AdminLayout } from '@/layouts/AdminLayout';
 import { usePageTitle } from '@/shared/hooks';
+import { useBreakpoint } from '@/hooks';
 import { useMonitorData } from '@/features/monitor/hooks';
 import {
-  MonitorOverviewCards,
   RealtimeMetricsChart,
   EventLogPanel,
   EntityDetailCard,
   EntityTableView,
+  MonitorMobileView,
+  EntityFullDetailPanel,
 } from '@/features/monitor/components';
-import { Separator } from '@/components/common/Separator';
-import { Activity, Server, Cpu, LayoutGrid, LayoutList, Table2 } from 'lucide-react';
+import type { EntityStatus } from '@/features/monitor/hooks';
+import { formatBitRate, formatBytes } from '@/shared/utils/format-utils';
+import { Activity, Server, Cpu, LayoutGrid, LayoutList, Table2, ArrowDown, ArrowUp } from 'lucide-react';
 import { Badge } from '@/components/common/Badge';
 import { Tabs, TabsList, TabsTrigger } from '@/components/common/Tabs';
 import { Button } from '@/components/common/Button';
@@ -26,6 +30,7 @@ type ViewMode = 'grid' | 'compact' | 'table';
 
 export const MonitorPage = () => {
   usePageTitle('实时监控');
+  const { isMobile } = useBreakpoint();
 
   const {
     overview,
@@ -36,8 +41,14 @@ export const MonitorPage = () => {
   } = useMonitorData({ enabled: true });
 
   const [entityFilter, setEntityFilter] = useState<EntityFilter>('all');
-  const [viewMode, setViewMode] = useState<ViewMode>('grid');
+  const [viewMode, setViewMode] = useState<ViewMode>('table');
   const [selectedChartEntityIds, setSelectedChartEntityIds] = useState<string[]>([]);
+  const [selectedEntity, setSelectedEntity] = useState<EntityStatus | null>(null);
+
+  // Handle entity row click
+  const handleEntityClick = (entity: EntityStatus) => {
+    setSelectedEntity(prev => prev?.id === entity.id ? null : entity);
+  };
 
   // Filter entities based on selected filter
   const filteredEntities = useMemo(() => {
@@ -45,40 +56,98 @@ export const MonitorPage = () => {
     return allEntities.filter(e => e.type === entityFilter);
   }, [allEntities, entityFilter]);
 
-  // Count by type
+  // Count by type and status
   const nodeCount = allEntities.filter(e => e.type === 'node').length;
   const agentCount = allEntities.filter(e => e.type === 'agent').length;
+  const onlineCount = allEntities.filter(e => e.isOnline).length;
 
+  // Helper for status color
+  const getStatusColor = (value: number) => {
+    if (value >= 80) return 'text-destructive';
+    if (value >= 60) return 'text-warning';
+    return 'text-success';
+  };
+
+  // Mobile view
+  if (isMobile) {
+    return (
+      <AdminLayout>
+        <div className="px-3 py-3">
+          <MonitorMobileView
+            overview={overview}
+            entities={allEntities}
+            eventLog={eventLog}
+            isConnected={isConnected}
+          />
+        </div>
+      </AdminLayout>
+    );
+  }
+
+  // Desktop view
   return (
     <AdminLayout>
-      <div className="py-4 sm:py-6">
-        {/* Page header - compact style */}
-        <header className="mb-4 sm:mb-5">
-          <div className="flex items-center gap-2 mb-0.5">
-            <div className={`size-1.5 rounded-full ${isConnected ? 'bg-success animate-pulse' : 'bg-muted-foreground'}`} />
-            <span className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider">
-              {isConnected ? '实时数据' : '等待连接'}
-            </span>
+      <div className="py-3 space-y-3">
+        {/* High-Density Status Bar - All metrics inline */}
+        <header className="bg-card rounded-lg border border-border px-3 py-2">
+          <div className="flex items-center justify-between gap-4 flex-wrap">
+            {/* Left: Title + Connection + Entity counts */}
+            <div className="flex items-center gap-4">
+              <div className="flex items-center gap-2">
+                <div className={`size-2 rounded-full ${isConnected ? 'bg-success animate-pulse' : 'bg-muted-foreground'}`} />
+                <h1 className="text-sm font-semibold text-foreground">实时监控</h1>
+              </div>
+              <div className="h-4 w-px bg-border" />
+              <div className="flex items-center gap-3 text-xs">
+                <span className="flex items-center gap-1 text-muted-foreground">
+                  <Server className="size-3 text-info" />
+                  <span className="font-medium text-foreground">{overview.onlineNodes}</span>/{overview.totalNodes}
+                </span>
+                <span className="flex items-center gap-1 text-muted-foreground">
+                  <Cpu className="size-3 text-violet-500" />
+                  <span className="font-medium text-foreground">{overview.onlineAgents}</span>/{overview.totalAgents}
+                </span>
+              </div>
+            </div>
+
+            {/* Center: Resource metrics */}
+            <div className="flex items-center gap-4 text-xs">
+              <div className="flex items-center gap-1.5">
+                <Activity className="size-3 text-muted-foreground" />
+                <span className="text-muted-foreground">CPU</span>
+                <span className={`font-semibold tabular-nums ${getStatusColor(overview.avgCpu)}`}>
+                  {overview.avgCpu.toFixed(0)}%
+                </span>
+              </div>
+              <div className="flex items-center gap-1.5">
+                <Cpu className="size-3 text-muted-foreground" />
+                <span className="text-muted-foreground">内存</span>
+                <span className={`font-semibold tabular-nums ${getStatusColor(overview.avgMemory)}`}>
+                  {overview.avgMemory.toFixed(0)}%
+                </span>
+              </div>
+            </div>
+
+            {/* Right: Network metrics */}
+            <div className="flex items-center gap-4 text-xs">
+              <div className="flex items-center gap-1.5">
+                <ArrowDown className="size-3 text-success" />
+                <span className="font-semibold tabular-nums text-success">{formatBitRate(overview.totalNetworkRxRate)}</span>
+                <span className="text-muted-foreground/60 hidden lg:inline">({formatBytes(overview.totalNetworkRxBytes)})</span>
+              </div>
+              <div className="flex items-center gap-1.5">
+                <ArrowUp className="size-3 text-primary" />
+                <span className="font-semibold tabular-nums text-primary">{formatBitRate(overview.totalNetworkTxRate)}</span>
+                <span className="text-muted-foreground/60 hidden lg:inline">({formatBytes(overview.totalNetworkTxBytes)})</span>
+              </div>
+            </div>
           </div>
-          <h1 className="text-xl sm:text-2xl font-bold text-foreground tracking-tight">
-            实时监控
-          </h1>
-          <p className="text-xs text-muted-foreground mt-0.5">
-            监控节点和转发代理的实时状态
-          </p>
         </header>
 
-        {/* Overview cards - compact grid */}
-        <section>
-          <MonitorOverviewCards overview={overview} />
-        </section>
-
-        <Separator className="my-4 sm:my-5" />
-
-        {/* Charts and logs - 4:1 layout */}
-        <section className="grid grid-cols-1 xl:grid-cols-12 gap-3 sm:gap-4">
-          {/* Left: Real-time chart - takes more space */}
-          <div className="xl:col-span-8">
+        {/* Charts and logs - Compact 3:1 layout */}
+        <section className="grid grid-cols-1 xl:grid-cols-12 gap-3">
+          {/* Left: Real-time chart */}
+          <div className="xl:col-span-9">
             <RealtimeMetricsChart
               entities={allEntities}
               selectedEntityIds={selectedChartEntityIds}
@@ -87,35 +156,50 @@ export const MonitorPage = () => {
             />
           </div>
 
-          {/* Right: Event log - match chart height */}
-          <div className="xl:col-span-4">
+          {/* Right: Event log */}
+          <div className="xl:col-span-3">
             <EventLogPanel events={eventLog} />
           </div>
         </section>
 
-        <Separator className="my-4 sm:my-5" />
-
-        {/* Entity detail cards */}
+        {/* Entity section - Compact header + table view default */}
         <section>
-          {/* Section header with filters - responsive */}
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4 mb-4">
-            <div className="flex items-center justify-between sm:justify-start gap-3">
-              <div className="flex items-center gap-2 sm:gap-3">
-                <h2 className="text-base sm:text-lg font-semibold text-foreground">实体详情</h2>
-                <Badge variant="secondary" className="text-[10px] sm:text-xs">
-                  {filteredEntities.length} / {allEntities.length}
-                </Badge>
-              </div>
+          {/* Compact section header */}
+          <div className="flex items-center justify-between gap-2 mb-2">
+            <div className="flex items-center gap-2">
+              <h2 className="text-sm font-medium text-foreground">实体详情</h2>
+              <Badge variant="secondary" className="text-[10px] h-5">
+                {onlineCount}/{allEntities.length} 在线
+              </Badge>
+            </div>
 
-              {/* Mobile: View mode toggle */}
-              <div className="flex sm:hidden items-center border border-border rounded-lg p-0.5">
+            <div className="flex items-center gap-2">
+              {/* Entity type filter */}
+              <Tabs value={entityFilter} onValueChange={(v) => setEntityFilter(v as EntityFilter)}>
+                <TabsList className="h-7">
+                  <TabsTrigger value="all" className="text-[10px] px-2 h-6">
+                    全部
+                  </TabsTrigger>
+                  <TabsTrigger value="node" className="text-[10px] px-2 h-6 gap-1">
+                    <Server className="size-2.5" />
+                    {nodeCount}
+                  </TabsTrigger>
+                  <TabsTrigger value="agent" className="text-[10px] px-2 h-6 gap-1">
+                    <Cpu className="size-2.5" />
+                    {agentCount}
+                  </TabsTrigger>
+                </TabsList>
+              </Tabs>
+
+              {/* View mode toggle */}
+              <div className="flex items-center border border-border rounded-md p-0.5">
                 <Button
-                  variant={viewMode === 'grid' ? 'secondary' : 'ghost'}
+                  variant={viewMode === 'table' ? 'secondary' : 'ghost'}
                   size="sm"
                   className="h-6 px-1.5"
-                  onClick={() => setViewMode('grid')}
+                  onClick={() => setViewMode('table')}
                 >
-                  <LayoutGrid className="size-3.5" />
+                  <Table2 className="size-3.5" />
                 </Button>
                 <Button
                   variant={viewMode === 'compact' ? 'secondary' : 'ghost'}
@@ -126,95 +210,66 @@ export const MonitorPage = () => {
                   <LayoutList className="size-3.5" />
                 </Button>
                 <Button
-                  variant={viewMode === 'table' ? 'secondary' : 'ghost'}
-                  size="sm"
-                  className="h-6 px-1.5"
-                  onClick={() => setViewMode('table')}
-                >
-                  <Table2 className="size-3.5" />
-                </Button>
-              </div>
-            </div>
-
-            <div className="flex items-center gap-2 sm:gap-3">
-              {/* Entity type filter - responsive */}
-              <Tabs value={entityFilter} onValueChange={(v) => setEntityFilter(v as EntityFilter)} className="flex-1 sm:flex-none">
-                <TabsList className="h-7 sm:h-8 w-full sm:w-auto">
-                  <TabsTrigger value="all" className="text-[10px] sm:text-xs px-2 sm:px-3 h-6 sm:h-7 flex-1 sm:flex-none">
-                    全部
-                  </TabsTrigger>
-                  <TabsTrigger value="node" className="text-[10px] sm:text-xs px-2 sm:px-3 h-6 sm:h-7 gap-1 sm:gap-1.5 flex-1 sm:flex-none">
-                    <Server className="size-2.5 sm:size-3" />
-                    <span className="hidden xs:inline">节点</span> ({nodeCount})
-                  </TabsTrigger>
-                  <TabsTrigger value="agent" className="text-[10px] sm:text-xs px-2 sm:px-3 h-6 sm:h-7 gap-1 sm:gap-1.5 flex-1 sm:flex-none">
-                    <Cpu className="size-2.5 sm:size-3" />
-                    <span className="hidden xs:inline">代理</span> ({agentCount})
-                  </TabsTrigger>
-                </TabsList>
-              </Tabs>
-
-              {/* Desktop: View mode toggle */}
-              <div className="hidden sm:flex items-center border border-border rounded-lg p-0.5">
-                <Button
                   variant={viewMode === 'grid' ? 'secondary' : 'ghost'}
                   size="sm"
-                  className="h-7 px-2"
+                  className="h-6 px-1.5"
                   onClick={() => setViewMode('grid')}
                 >
-                  <LayoutGrid className="size-4" />
-                </Button>
-                <Button
-                  variant={viewMode === 'compact' ? 'secondary' : 'ghost'}
-                  size="sm"
-                  className="h-7 px-2"
-                  onClick={() => setViewMode('compact')}
-                >
-                  <LayoutList className="size-4" />
-                </Button>
-                <Button
-                  variant={viewMode === 'table' ? 'secondary' : 'ghost'}
-                  size="sm"
-                  className="h-7 px-2"
-                  onClick={() => setViewMode('table')}
-                >
-                  <Table2 className="size-4" />
+                  <LayoutGrid className="size-3.5" />
                 </Button>
               </div>
             </div>
           </div>
 
-          {/* Entity display - responsive with view modes */}
-          {filteredEntities.length > 0 ? (
-            viewMode === 'table' ? (
-              <EntityTableView entities={filteredEntities} />
-            ) : (
-              <div className={
-                viewMode === 'grid'
-                  ? 'grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-4'
-                  : 'grid grid-cols-1 lg:grid-cols-2 gap-3'
-              }>
-                {filteredEntities.map(entity => (
-                  <EntityDetailCard key={entity.id} entity={entity} compact={viewMode === 'compact'} />
-                ))}
-              </div>
-            )
-          ) : (
-            <div className="flex flex-col items-center justify-center py-12 sm:py-16 bg-card rounded-xl sm:rounded-2xl border border-border">
-              <div className="size-12 sm:size-16 rounded-full bg-muted flex items-center justify-center mb-4">
-                <Activity className="size-5 sm:size-7 text-muted-foreground/50" />
-              </div>
-              <h3 className="text-sm sm:text-base font-medium text-foreground mb-1">
-                {entityFilter === 'all' ? '暂无实体数据' : `暂无${entityFilter === 'node' ? '节点' : '代理'}数据`}
-              </h3>
-              <p className="text-xs sm:text-sm text-muted-foreground text-center px-4">
-                {entityFilter === 'all'
-                  ? '等待 SSE 连接接收节点和代理状态...'
-                  : `尝试切换筛选条件查看其他实体`
-                }
-              </p>
+          {/* Entity display with optional detail panel */}
+          <div className="grid grid-cols-1 xl:grid-cols-12 gap-3">
+            {/* Entity list */}
+            <div className={selectedEntity ? 'xl:col-span-8' : 'xl:col-span-12'}>
+              {filteredEntities.length > 0 ? (
+                viewMode === 'table' ? (
+                  <EntityTableView
+                    entities={filteredEntities}
+                    onRowClick={handleEntityClick}
+                  />
+                ) : (
+                  <div className={
+                    viewMode === 'grid'
+                      ? 'grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-3'
+                      : 'grid grid-cols-1 lg:grid-cols-2 gap-2'
+                  }>
+                    {filteredEntities.map(entity => (
+                      <div
+                        key={entity.id}
+                        onClick={() => handleEntityClick(entity)}
+                        className={entity.id === selectedEntity?.id ? 'ring-2 ring-primary rounded-xl' : ''}
+                      >
+                        <EntityDetailCard entity={entity} compact={viewMode === 'compact'} />
+                      </div>
+                    ))}
+                  </div>
+                )
+              ) : (
+                <div className="flex items-center justify-center py-8 bg-card rounded-lg border border-border">
+                  <div className="text-center">
+                    <Activity className="size-8 text-muted-foreground/30 mx-auto mb-2" />
+                    <p className="text-sm text-muted-foreground">
+                      {entityFilter === 'all' ? '等待数据...' : '暂无数据'}
+                    </p>
+                  </div>
+                </div>
+              )}
             </div>
-          )}
+
+            {/* Detail panel (shown when entity selected) */}
+            {selectedEntity && (
+              <div className="xl:col-span-4">
+                <EntityFullDetailPanel
+                  entity={allEntities.find(e => e.id === selectedEntity.id) || selectedEntity}
+                  onClose={() => setSelectedEntity(null)}
+                />
+              </div>
+            )}
+          </div>
         </section>
       </div>
     </AdminLayout>

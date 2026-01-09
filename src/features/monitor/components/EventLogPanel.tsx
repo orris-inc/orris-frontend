@@ -57,32 +57,29 @@ const formatEventTime = (timestamp: number): string => {
   return new Date(timestamp * 1000).toLocaleDateString('zh-CN');
 };
 
-// Event item component - compact
+// Event item component - ultra compact
 const EventItem = memo(({ event }: { event: MonitorEvent }) => (
-  <div className="flex items-start gap-2.5 py-2.5 px-3 hover:bg-accent/50 transition-colors border-b border-border/50 last:border-0">
+  <div className="flex items-center gap-2 py-1.5 px-2 hover:bg-accent/50 transition-colors">
     {/* Icon */}
-    <div className="mt-0.5 shrink-0">
+    <div className="shrink-0">
       {getEventIcon(event.eventType)}
     </div>
 
     {/* Content */}
     <div className="flex-1 min-w-0">
-      <div className="flex items-center gap-1.5 flex-wrap">
-        <span className="text-xs text-foreground">{event.message}</span>
+      <div className="flex items-center gap-1">
+        <span className="text-[11px] text-foreground truncate">{event.message}</span>
         <Badge
           variant={getEventBadgeVariant(event.eventType)}
-          className="text-[9px] px-1 py-0 h-3.5"
+          className="text-[8px] px-0.5 py-0 h-3 shrink-0"
         >
-          {event.type === 'node' ? 'Node' : 'Agent'}
+          {event.type === 'node' ? 'N' : 'A'}
         </Badge>
       </div>
-      <p className="text-[10px] text-muted-foreground truncate">
-        {event.agentId}
-      </p>
     </div>
 
     {/* Time */}
-    <div className="text-[10px] text-muted-foreground shrink-0 tabular-nums">
+    <div className="text-[9px] text-muted-foreground shrink-0 tabular-nums">
       {formatEventTime(event.timestamp)}
     </div>
   </div>
@@ -125,24 +122,21 @@ export const EventLogPanel = memo(({ events }: EventLogPanelProps) => {
   const activeFilterCount = filters.has('all') ? 0 : filters.size;
 
   return (
-    <div className="bg-card rounded-2xl border border-border shadow-sm h-full min-h-[400px] max-h-[520px] flex flex-col">
-      {/* Header */}
-      <div className="flex items-center justify-between p-3 sm:p-4 border-b border-border shrink-0">
-        <div>
-          <h3 className="text-sm font-semibold text-foreground">事件日志</h3>
-          <p className="text-[10px] text-muted-foreground">
-            实时事件流 ({filteredEvents.length} 条)
-          </p>
+    <div className="bg-card rounded-lg border border-border h-full min-h-[320px] max-h-[380px] flex flex-col">
+      {/* Compact Header */}
+      <div className="flex items-center justify-between px-2.5 py-2 border-b border-border shrink-0">
+        <div className="flex items-center gap-2">
+          <span className="text-xs font-medium text-foreground">事件</span>
+          <Badge variant="secondary" className="text-[9px] h-4 px-1">
+            {filteredEvents.length}
+          </Badge>
         </div>
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="outline" size="sm" className="h-8 gap-1.5">
-              <Filter className="size-3.5" />
-              筛选
+            <Button variant="ghost" size="sm" className="h-6 w-6 p-0">
+              <Filter className="size-3" />
               {activeFilterCount > 0 && (
-                <Badge variant="secondary" className="size-4 p-0 text-[10px] flex items-center justify-center">
-                  {activeFilterCount}
-                </Badge>
+                <span className="absolute -top-0.5 -right-0.5 size-2 rounded-full bg-primary" />
               )}
             </Button>
           </DropdownMenuTrigger>
@@ -189,19 +183,14 @@ export const EventLogPanel = memo(({ events }: EventLogPanelProps) => {
       {/* Event list */}
       <ScrollArea className="flex-1">
         {filteredEvents.length === 0 ? (
-          <div className="flex items-center justify-center h-40">
+          <div className="flex items-center justify-center h-24">
             <div className="text-center">
-              <div className="size-10 mx-auto mb-3 rounded-full bg-muted flex items-center justify-center">
-                <RefreshCw className="size-4 text-muted-foreground/50" />
-              </div>
-              <p className="text-sm text-muted-foreground">暂无事件</p>
-              <p className="text-xs text-muted-foreground/70 mt-1">
-                事件将实时显示在这里
-              </p>
+              <RefreshCw className="size-5 text-muted-foreground/30 mx-auto mb-1" />
+              <p className="text-xs text-muted-foreground">暂无事件</p>
             </div>
           </div>
         ) : (
-          <div className="divide-y divide-border">
+          <div className="divide-y divide-border/30">
             {filteredEvents.map((event) => (
               <EventItem key={event.id} event={event} />
             ))}

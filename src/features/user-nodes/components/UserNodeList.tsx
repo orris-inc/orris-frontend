@@ -100,9 +100,9 @@ export const UserNodeList: React.FC<UserNodeListProps> = ({
 
   if (isLoading) {
     return (
-      <div className="space-y-3">
+      <div className="space-y-3 px-1 sm:px-0">
         {[1, 2, 3].map((i) => (
-          <div key={i} className="p-4 rounded-lg bg-card border">
+          <div key={i} className="p-4 rounded-xl sm:rounded-lg glass">
             <div className="flex items-center justify-between">
               <div className="space-y-2 flex-1">
                 <Skeleton className="h-5 w-40" />
@@ -118,7 +118,7 @@ export const UserNodeList: React.FC<UserNodeListProps> = ({
 
   if (nodes.length === 0) {
     return (
-      <div className="p-12 text-center rounded-lg bg-card border">
+      <div className="p-8 sm:p-12 text-center rounded-xl sm:rounded-lg glass mx-1 sm:mx-0">
         <p className="text-muted-foreground">暂无节点</p>
         <p className="text-sm text-muted-foreground mt-1">点击上方「新增节点」按钮创建您的第一个节点</p>
       </div>
@@ -127,79 +127,89 @@ export const UserNodeList: React.FC<UserNodeListProps> = ({
 
   return (
     <>
-      {/* Mobile and small screens: card layout */}
-      <div className="space-y-3 md:hidden">
+      {/* Mobile and small screens: card layout with glass effect */}
+      <div className="space-y-2 md:hidden px-1">
         {nodes.map((node) => (
-          <div key={node.id} className="p-4 rounded-lg bg-card border">
-            <div className="space-y-3">
-              {/* Title and status */}
-              <div className="flex items-start justify-between gap-2">
-                <div className="flex-1 min-w-0">
-                  <div className="font-medium truncate">{node.name}</div>
-                  <div className="text-xs text-muted-foreground truncate mt-0.5 font-mono">
-                    {node.serverAddress}:{node.agentPort}
-                  </div>
-                </div>
-                <div className="flex items-center gap-1.5 shrink-0">
-                  {node.isOnline ? (
-                    <Wifi className="h-4 w-4 text-green-500" />
-                  ) : (
-                    <WifiOff className="h-4 w-4 text-muted-foreground" />
-                  )}
-                  <Badge variant={STATUS_VARIANTS[node.status]} className="text-xs">
-                    {STATUS_LABELS[node.status] || node.status}
-                  </Badge>
-                </div>
-              </div>
-
-              {/* Node info */}
-              <div className="grid grid-cols-2 gap-2 text-sm">
-                <div>
-                  <span className="text-muted-foreground text-xs">协议：</span>
-                  <Badge variant={PROTOCOL_COLORS[node.protocol]} className="text-xs ml-1">
+          <div
+            key={node.id}
+            className="p-3 rounded-xl glass-elevated transition-transform duration-[var(--duration-fast)] ease-[var(--spring-bounce)] active:scale-[0.98]"
+          >
+            <div className="space-y-2">
+              {/* Title row - compact with inline status */}
+              <div className="flex items-center justify-between gap-2">
+                <div className="flex items-center gap-2 min-w-0 flex-1">
+                  {/* Online indicator dot */}
+                  <div className={`w-2 h-2 rounded-full shrink-0 ${node.isOnline ? 'bg-green-500' : 'bg-muted-foreground/30'}`} />
+                  <span className="font-medium text-sm truncate">{node.name}</span>
+                  <Badge variant={PROTOCOL_COLORS[node.protocol]} className="text-[10px] px-1.5 h-5 shrink-0">
                     {node.protocol === 'shadowsocks' ? 'SS' : 'Trojan'}
                   </Badge>
                 </div>
-                <div>
-                  <span className="text-muted-foreground text-xs">在线状态：</span>
-                  <span className={node.isOnline ? 'text-green-600' : 'text-muted-foreground'}>
-                    {node.isOnline ? '在线' : '离线'}
-                  </span>
-                </div>
+                <Badge variant={STATUS_VARIANTS[node.status]} className="text-[10px] px-1.5 h-5 shrink-0">
+                  {STATUS_LABELS[node.status] || node.status}
+                </Badge>
+              </div>
+
+              {/* Address row - compact */}
+              <div className="flex items-center gap-2 text-xs text-muted-foreground font-mono">
+                <span className="truncate">{node.serverAddress}:{node.agentPort}</span>
                 {node.subscriptionPort && node.subscriptionPort !== node.agentPort && (
-                  <div className="col-span-2">
-                    <span className="text-muted-foreground text-xs">订阅端口：</span>
-                    <span className="font-mono text-xs ml-1">{node.subscriptionPort}</span>
-                  </div>
+                  <>
+                    <span className="text-border">|</span>
+                    <span className="whitespace-nowrap">订阅: {node.subscriptionPort}</span>
+                  </>
                 )}
               </div>
 
-              {/* Action buttons */}
-              <div className="flex gap-2 pt-2 border-t">
+              {/* Action buttons - compact row */}
+              <div className="flex gap-1.5 pt-2 border-t border-[var(--glass-border-subtle)]">
                 <Button
                   variant="outline"
                   size="sm"
                   onClick={() => onViewDetail(node)}
-                  className="flex-1"
+                  className="flex-1 h-9 touch-target glass-interactive text-xs"
                 >
+                  <Eye className="h-3.5 w-3.5 mr-1" />
                   详情
                 </Button>
                 <Button
                   variant="outline"
                   size="sm"
                   onClick={() => onEdit(node)}
-                  className="flex-1"
+                  className="flex-1 h-9 touch-target glass-interactive text-xs"
                 >
+                  <Edit className="h-3.5 w-3.5 mr-1" />
                   编辑
                 </Button>
-                <Button
-                  variant="destructive"
-                  size="sm"
-                  onClick={() => handleDeleteClick(node)}
-                  className="shrink-0"
-                >
-                  删除
-                </Button>
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="h-9 w-9 touch-target glass-interactive p-0"
+                    >
+                      <MoreVertical className="h-4 w-4" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end" className="glass-elevated">
+                    <DropdownMenuItem onClick={() => onInstallScript(node)} className="touch-target">
+                      <Terminal className="mr-2 h-4 w-4" />
+                      安装脚本
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => handleTokenClick(node)} className="touch-target">
+                      <Key className="mr-2 h-4 w-4" />
+                      重新生成 Token
+                    </DropdownMenuItem>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem
+                      className="text-destructive focus:text-destructive touch-target"
+                      onClick={() => handleDeleteClick(node)}
+                    >
+                      <Trash2 className="mr-2 h-4 w-4" />
+                      删除节点
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
               </div>
             </div>
           </div>

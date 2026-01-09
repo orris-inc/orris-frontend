@@ -132,24 +132,24 @@ export const UserNodesPage = () => {
 
   return (
     <DashboardLayout>
-      <div className="space-y-6">
-        {/* Page header */}
-        <div>
-          <h1 className="text-2xl font-semibold text-foreground">我的节点</h1>
-          <p className="text-muted-foreground">管理您的代理节点</p>
+      <div className="space-y-4 sm:space-y-6 pb-safe">
+        {/* Page header - responsive text sizing */}
+        <div className="px-1 sm:px-0">
+          <h1 className="text-xl sm:text-2xl font-semibold text-foreground">我的节点</h1>
+          <p className="text-sm sm:text-base text-muted-foreground">管理您的代理节点</p>
         </div>
 
-        {/* No subscription prompt */}
+        {/* No subscription prompt - glass effect on mobile */}
         {hasNoSubscription && (
-          <div className="flex flex-col items-center justify-center py-16 px-4">
-            <div className="p-4 rounded-full bg-amber-500/10 mb-6">
-              <AlertCircle className="h-10 w-10 text-amber-500" />
+          <div className="flex flex-col items-center justify-center py-12 sm:py-16 px-4 glass-elevated rounded-2xl mx-1 sm:mx-0">
+            <div className="p-4 rounded-full bg-amber-500/10 mb-4 sm:mb-6">
+              <AlertCircle className="h-8 w-8 sm:h-10 sm:w-10 text-amber-500" />
             </div>
-            <h2 className="text-xl font-semibold mb-2">暂无可用的转发服务</h2>
-            <p className="text-muted-foreground text-center max-w-md mb-6">
+            <h2 className="text-lg sm:text-xl font-semibold mb-2 text-center">暂无可用的转发服务</h2>
+            <p className="text-sm sm:text-base text-muted-foreground text-center max-w-md mb-4 sm:mb-6">
               您当前没有包含端口转发功能的订阅计划。购买订阅后即可使用端口转发服务。
             </p>
-            <Button asChild>
+            <Button asChild className="touch-target glass-interactive">
               <Link to="/pricing" className="gap-2">
                 <Zap className="h-4 w-4" />
                 查看订阅计划
@@ -168,8 +168,8 @@ export const UserNodesPage = () => {
               isLoading={isLoading || isUsageLoading || isForwardUsageLoading}
             />
 
-            {/* Action bar */}
-            <div className="flex items-center justify-between">
+            {/* Action bar - stack on mobile */}
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 px-1 sm:px-0">
               <div className="flex items-center gap-2">
                 <p className="text-sm text-muted-foreground">
                   共 {pagination.total} 个节点
@@ -177,7 +177,7 @@ export const UserNodesPage = () => {
               </div>
               <Button
                 onClick={handleCreateClick}
-                className="gap-2"
+                className="gap-2 touch-target w-full sm:w-auto glass-interactive"
               >
                 <Plus className="h-4 w-4" />
                 新增节点

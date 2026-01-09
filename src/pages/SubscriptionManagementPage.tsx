@@ -1,6 +1,6 @@
 /**
  * Subscription Management Page (Admin)
- * Uses unified refined business style components
+ * High-density data management interface
  */
 
 import { useState, useMemo } from 'react';
@@ -13,14 +13,8 @@ import {
   AlertCircle,
   RotateCw,
 } from 'lucide-react';
-import { Separator } from '@/components/common/Separator';
 import { AdminLayout } from '@/layouts/AdminLayout';
-import {
-  AdminButton,
-  AdminCard,
-  PageStatsCard,
-  type PageStatsCardProps,
-} from '@/components/admin';
+import { AdminButton, AdminCard } from '@/components/admin';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/common/Tooltip';
 import { ConfirmDialog } from '@/components/common/ConfirmDialog';
 import { usePageTitle } from '@/shared/hooks';
@@ -66,7 +60,7 @@ export const SubscriptionManagementPage: React.FC = () => {
   const [refreshKey, setRefreshKey] = useState(0);
 
   // Calculate subscription statistics
-  const subscriptionStats = useMemo(() => {
+  const stats = useMemo(() => {
     const total = pagination.total;
     const active = subscriptions.filter((s) => s.status === 'active').length;
     const cancelled = subscriptions.filter((s) => s.status === 'cancelled').length;
@@ -75,60 +69,6 @@ export const SubscriptionManagementPage: React.FC = () => {
     const renewed = subscriptions.filter((s) => s.status === 'renewed').length;
     return { total, active, cancelled, expired, pending, renewed };
   }, [subscriptions, pagination.total]);
-
-  const statsCards: PageStatsCardProps[] = [
-    {
-      title: '订阅总数',
-      value: subscriptionStats.total,
-      icon: <Receipt className="size-4" strokeWidth={1.5} />,
-      iconBg: 'bg-primary/10',
-      iconColor: 'text-primary',
-    },
-    {
-      title: '活跃订阅',
-      value: subscriptionStats.active,
-      icon: <CheckCircle2 className="size-4" strokeWidth={1.5} />,
-      iconBg: 'bg-success-muted',
-      iconColor: 'text-success',
-      showPulse: subscriptionStats.active > 0,
-    },
-    {
-      title: '已取消',
-      value: subscriptionStats.cancelled,
-      icon: <XCircle className="size-4" strokeWidth={1.5} />,
-      iconBg: 'bg-destructive/10',
-      iconColor: 'text-destructive',
-    },
-    {
-      title: '已过期',
-      value: subscriptionStats.expired,
-      icon: <AlertCircle className="size-4" strokeWidth={1.5} />,
-      iconBg: 'bg-muted',
-      iconColor: 'text-muted-foreground',
-    },
-    ...(subscriptionStats.pending > 0
-      ? [
-          {
-            title: '待处理',
-            value: subscriptionStats.pending,
-            icon: <Clock className="size-4" strokeWidth={1.5} />,
-            iconBg: 'bg-warning-muted',
-            iconColor: 'text-warning',
-          },
-        ]
-      : []),
-    ...(subscriptionStats.renewed > 0
-      ? [
-          {
-            title: '已续费',
-            value: subscriptionStats.renewed,
-            icon: <RotateCw className="size-4" strokeWidth={1.5} />,
-            iconBg: 'bg-info-muted',
-            iconColor: 'text-info',
-          },
-        ]
-      : []),
-  ];
 
   const handleRefresh = () => {
     setRefreshKey((k) => k + 1);
@@ -219,52 +159,80 @@ export const SubscriptionManagementPage: React.FC = () => {
 
   return (
     <AdminLayout>
-      <div className="py-6 sm:py-8">
-        {/* Page Header */}
-        <header className="mb-6 sm:mb-8">
-          <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4 mb-5 sm:mb-6">
-            <div>
-              <h1 className="text-2xl sm:text-3xl font-bold text-foreground tracking-tight">
-                订阅管理
-              </h1>
-              <p className="text-sm text-muted-foreground mt-1">
-                查看和管理所有用户的订阅
-              </p>
+      <div className="py-3 space-y-3">
+        {/* High-Density Status Bar - All metrics inline */}
+        <header className="bg-card rounded-lg border border-border px-3 py-2">
+          <div className="flex items-center justify-between gap-4 flex-wrap">
+            {/* Left: Title + Primary Stats */}
+            <div className="flex items-center gap-4">
+              <h1 className="text-sm font-semibold text-foreground">订阅管理</h1>
+              <div className="h-4 w-px bg-border hidden sm:block" />
+              <div className="flex items-center gap-3 text-xs">
+                <span className="flex items-center gap-1 text-muted-foreground">
+                  <Receipt className="size-3" />
+                  <span className="font-medium text-foreground">{stats.total}</span>
+                  <span className="hidden sm:inline">订阅</span>
+                </span>
+                <span className="flex items-center gap-1">
+                  <CheckCircle2 className="size-3 text-success" />
+                  <span className="font-medium text-success">{stats.active}</span>
+                </span>
+              </div>
+            </div>
+
+            {/* Center: Secondary Stats */}
+            <div className="hidden md:flex items-center gap-3 text-xs">
+              <span className="flex items-center gap-1.5">
+                <XCircle className="size-3 text-destructive" />
+                <span className="text-muted-foreground">取消</span>
+                <span className="font-semibold tabular-nums text-foreground">{stats.cancelled}</span>
+              </span>
+              <span className="flex items-center gap-1.5">
+                <AlertCircle className="size-3 text-muted-foreground" />
+                <span className="text-muted-foreground">过期</span>
+                <span className="font-semibold tabular-nums text-foreground">{stats.expired}</span>
+              </span>
+              {stats.pending > 0 && (
+                <span className="flex items-center gap-1.5">
+                  <Clock className="size-3 text-warning" />
+                  <span className="text-muted-foreground">待处理</span>
+                  <span className="font-semibold tabular-nums text-warning">{stats.pending}</span>
+                </span>
+              )}
+              {stats.renewed > 0 && (
+                <span className="flex items-center gap-1.5">
+                  <RotateCw className="size-3 text-info" />
+                  <span className="text-muted-foreground">续费</span>
+                  <span className="font-semibold tabular-nums text-info">{stats.renewed}</span>
+                </span>
+              )}
+            </div>
+
+            {/* Right: Actions */}
+            <div className="flex items-center gap-1.5">
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <AdminButton
+                    variant="ghost"
+                    size="sm"
+                    onClick={handleRefresh}
+                    className="h-7 w-7 p-0"
+                    icon={
+                      <RefreshCw
+                        key={refreshKey}
+                        className="size-3.5 animate-spin-once"
+                        strokeWidth={1.5}
+                      />
+                    }
+                  >
+                    <span className="sr-only">刷新</span>
+                  </AdminButton>
+                </TooltipTrigger>
+                <TooltipContent>刷新列表</TooltipContent>
+              </Tooltip>
             </div>
           </div>
-
-          {/* Stats Grid */}
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-2 sm:gap-2.5">
-            {statsCards.map((stat, index) => (
-              <PageStatsCard key={index} {...stat} loading={isFetching} />
-            ))}
-          </div>
         </header>
-
-        <Separator className="mb-5 sm:mb-6" />
-
-        {/* Toolbar */}
-        <div className="flex items-center justify-end gap-2 mb-4 sm:mb-5">
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <AdminButton
-                variant="ghost"
-                size="sm"
-                onClick={handleRefresh}
-                icon={
-                  <RefreshCw
-                    key={refreshKey}
-                    className="size-4 animate-spin-once"
-                    strokeWidth={1.5}
-                  />
-                }
-              >
-                <span className="sr-only">刷新</span>
-              </AdminButton>
-            </TooltipTrigger>
-            <TooltipContent>刷新列表</TooltipContent>
-          </Tooltip>
-        </div>
 
         {/* Subscription List */}
         {isMobile ? (

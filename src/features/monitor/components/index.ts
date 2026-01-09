@@ -5,3 +5,6 @@ export { EntityStatusList } from './EntityStatusList';
 export { CircularProgress } from './CircularProgress';
 export { EntityDetailCard } from './EntityDetailCard';
 export { EntityTableView } from './EntityTableView';
+export { MonitorMobileView } from './MonitorMobileView';
+export { EntityFullDetailPanel } from './EntityFullDetailPanel';
+export { MobileEntityDetailSheet } from './MobileEntityDetailSheet';

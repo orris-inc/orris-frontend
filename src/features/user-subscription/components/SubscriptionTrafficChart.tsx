@@ -293,34 +293,18 @@ const ChartLegend = ({
   totalUpload: number;
   totalDownload: number;
 }) => (
-  <div className="flex flex-wrap items-center justify-center gap-3 sm:gap-6 mt-4 sm:mt-5 pt-4 sm:pt-5 border-t border-border">
-    <div className="flex items-center gap-2 sm:gap-3 px-3 sm:px-4 py-2 rounded-lg sm:rounded-xl bg-chart-upload/10 ring-1 ring-chart-upload/20">
-      <div className="flex items-center gap-1.5 sm:gap-2">
-        <div className="size-2.5 sm:size-3 rounded-full bg-chart-upload ring-2 ring-chart-upload/20" />
-        <ArrowUp
-          className="size-3.5 sm:size-4 text-chart-upload"
-          strokeWidth={2}
-        />
-      </div>
-      <span className="text-xs sm:text-sm font-medium text-muted-foreground">
-        上传
-      </span>
-      <span className="text-xs sm:text-sm font-bold text-chart-upload tabular-nums">
+  <div className="flex items-center justify-center gap-2 sm:gap-4 mt-3 sm:mt-4 pt-3 sm:pt-4 border-t border-border">
+    <div className="flex items-center gap-1.5 sm:gap-2 px-2 sm:px-3 py-1.5 rounded-lg bg-chart-upload/10 ring-1 ring-chart-upload/20">
+      <div className="size-2 sm:size-2.5 rounded-full bg-chart-upload" />
+      <span className="text-[10px] sm:text-xs text-muted-foreground">上传</span>
+      <span className="text-[10px] sm:text-xs font-bold text-chart-upload tabular-nums">
         {formatTrafficBytes(totalUpload)}
       </span>
     </div>
-    <div className="flex items-center gap-2 sm:gap-3 px-3 sm:px-4 py-2 rounded-lg sm:rounded-xl bg-chart-download/10 ring-1 ring-chart-download/20">
-      <div className="flex items-center gap-1.5 sm:gap-2">
-        <div className="size-2.5 sm:size-3 rounded-full bg-chart-download ring-2 ring-chart-download/20" />
-        <ArrowDown
-          className="size-3.5 sm:size-4 text-chart-download"
-          strokeWidth={2}
-        />
-      </div>
-      <span className="text-xs sm:text-sm font-medium text-muted-foreground">
-        下载
-      </span>
-      <span className="text-xs sm:text-sm font-bold text-chart-download tabular-nums">
+    <div className="flex items-center gap-1.5 sm:gap-2 px-2 sm:px-3 py-1.5 rounded-lg bg-chart-download/10 ring-1 ring-chart-download/20">
+      <div className="size-2 sm:size-2.5 rounded-full bg-chart-download" />
+      <span className="text-[10px] sm:text-xs text-muted-foreground">下载</span>
+      <span className="text-[10px] sm:text-xs font-bold text-chart-download tabular-nums">
         {formatTrafficBytes(totalDownload)}
       </span>
     </div>
@@ -345,13 +329,13 @@ const TimeRangeSelector = ({
   ];
 
   return (
-    <div className="flex items-center gap-1 p-1 rounded-lg bg-muted">
+    <div className="flex items-center gap-0.5 sm:gap-1 p-0.5 sm:p-1 rounded-lg bg-muted">
       {options.map((option) => (
         <button
           key={option.value}
           onClick={() => onChange(option.value)}
           className={cn(
-            "px-2.5 py-1.5 text-xs font-medium rounded-md transition-colors",
+            "px-2 sm:px-2.5 py-1 sm:py-1.5 text-[10px] sm:text-xs font-medium rounded-md transition-colors",
             value === option.value
               ? "bg-background text-foreground shadow-sm"
               : "text-muted-foreground hover:text-foreground",
@@ -460,21 +444,21 @@ export const SubscriptionTrafficChart: React.FC<
   }
 
   return (
-    <div className="p-4 rounded-xl bg-card border">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4 mb-4 sm:mb-6">
-        <div className="flex items-center gap-3 shrink-0">
-          <div className="p-2 sm:p-2.5 rounded-xl bg-primary/10 ring-1 ring-primary/20">
+    <div className="p-3 sm:p-4 rounded-xl bg-card border">
+      {/* Header - compact on mobile */}
+      <div className="flex items-center justify-between gap-2 mb-3 sm:mb-4">
+        <div className="flex items-center gap-2 sm:gap-3 shrink-0">
+          <div className="p-1.5 sm:p-2 rounded-lg sm:rounded-xl bg-primary/10 ring-1 ring-primary/20">
             <Calendar
-              className="size-4 sm:size-5 text-primary"
+              className="size-3.5 sm:size-4 text-primary"
               strokeWidth={1.5}
             />
           </div>
           <div>
-            <h3 className="text-base sm:text-lg font-semibold text-foreground whitespace-nowrap">
+            <h3 className="text-xs sm:text-sm font-semibold text-foreground">
               流量趋势
             </h3>
-            <p className="text-[11px] sm:text-xs text-muted-foreground">
+            <p className="text-[10px] sm:text-xs text-muted-foreground hidden sm:block">
               上传与下载流量统计
             </p>
           </div>
@@ -488,7 +472,7 @@ export const SubscriptionTrafficChart: React.FC<
       ) : (
         <>
           {/* Chart */}
-          <div className="w-full h-[200px] sm:h-[280px]">
+          <div className="w-full h-[160px] sm:h-[240px]">
             <ResponsiveContainer width="100%" height="100%">
               <AreaChart
                 data={chartData}
