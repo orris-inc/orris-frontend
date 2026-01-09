@@ -34,7 +34,7 @@ export const DashboardLayout = ({ children }: DashboardLayoutProps) => {
   const [mobileDrawerOpen, setMobileDrawerOpen] = useState(false);
 
   // Enable swipe from left edge to open mobile drawer with follow-finger gesture
-  const { progress: dragProgress, isDragging } = useSwipeDrawer({
+  const { isDragging, overlayStyle, drawerStyle } = useSwipeDrawer({
     isOpen: mobileDrawerOpen,
     onOpenChange: setMobileDrawerOpen,
   });
@@ -129,8 +129,9 @@ export const DashboardLayout = ({ children }: DashboardLayoutProps) => {
           showAdminSwitch={userRole === 'admin'}
           onAdminClick={handleGoToAdmin}
           onLogout={handleLogout}
-          dragProgress={dragProgress}
           isDragging={isDragging}
+          overlayStyle={overlayStyle}
+          drawerStyle={drawerStyle}
         />
       )}
 

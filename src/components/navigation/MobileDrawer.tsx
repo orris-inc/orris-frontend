@@ -1,15 +1,13 @@
 /**
  * Mobile Drawer Navigation Component - iOS 26 Liquid Glass Edition
  *
- * Modern slide-out navigation drawer for mobile devices.
+ * A floating, modern slide-out navigation drawer for mobile devices.
  * Features:
- * - iOS 26 Liquid Glass material design
- * - User profile section with avatar
- * - Smooth slide animation with spring physics
- * - Follow-finger swipe gesture support
+ * - iOS 26 Liquid Glass floating design with rounded corners
+ * - Smooth spring animations with follow-finger gestures
  * - Clear visual hierarchy with grouped navigation
  * - Touch-friendly targets (min 44px)
- * - Active state with glass pill indicator
+ * - Active state with subtle highlight
  * - Quick actions footer (theme, logout)
  * - Respects reduced-motion preferences
  * - Safe area insets support for notched devices
@@ -18,7 +16,6 @@
 import { useMemo } from 'react';
 import { Link as RouterLink, useLocation } from 'react-router-dom';
 import * as Dialog from '@radix-ui/react-dialog';
-import * as Separator from '@radix-ui/react-separator';
 import { X, LogOut, Shield, ChevronRight } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/common/Avatar';
@@ -42,57 +39,46 @@ interface MobileDrawerProps {
   showAdminSwitch?: boolean;
   onAdminClick?: () => void;
   onLogout?: () => void;
-  /** Drag progress from swipe gesture (0-1) */
-  dragProgress?: number;
   /** Whether user is actively dragging */
   isDragging?: boolean;
+  /** Computed overlay styles from swipe gesture */
+  overlayStyle?: React.CSSProperties;
+  /** Computed drawer styles from swipe gesture */
+  drawerStyle?: React.CSSProperties;
 }
 
 export const MobileDrawer = ({
   open,
   onClose,
   navigationItems,
-  brandName = 'Orris',
   user,
   showAdminSwitch = false,
   onAdminClick,
   onLogout,
-  dragProgress,
   isDragging = false,
+  overlayStyle,
+  drawerStyle,
 }: MobileDrawerProps) => {
   const location = useLocation();
   const initials = user?.initials || user?.displayName?.charAt(0).toUpperCase() || '?';
 
-  // Calculate styles based on drag state
-  // When dragging, use transform to position drawer; when not, let CSS animations handle it
-  const shouldShowDragState = isDragging && dragProgress !== undefined;
-
-  // Overlay opacity follows drag progress
-  const overlayStyle = shouldShowDragState
-    ? { opacity: dragProgress * 0.5, transition: 'none' }
-    : undefined;
-
-  // Drawer position follows drag progress
-  const drawerStyle = shouldShowDragState
-    ? {
-        transform: `translateX(${(dragProgress - 1) * 100}%)`,
-        transition: 'none',
-      }
-    : undefined;
+  // Whether we should use drag styles (disabling CSS animations)
+  const shouldShowDragState = isDragging && (overlayStyle !== undefined || drawerStyle !== undefined);
 
   const renderNavigationItems = useMemo(() => {
-    return navigationItems.map((item) => {
+    return navigationItems.map((item, index) => {
       if (item.divider) {
         return (
-          <Separator.Root
-            key={item.id}
-            className="my-2 shrink-0 bg-border/60 h-px w-full"
-          />
+          <div key={item.id} className="px-2 py-3">
+            <div className="h-px bg-border/40" />
+          </div>
         );
       }
 
       const Icon = item.icon;
       const isActive = location.pathname === item.path;
+      const isFirst = index === 0 || navigationItems[index - 1]?.divider;
+      const isLast = index === navigationItems.length - 1 || navigationItems[index + 1]?.divider;
 
       return (
         <RouterLink
@@ -102,16 +88,23 @@ export const MobileDrawer = ({
           aria-current={isActive ? 'page' : undefined}
           className={cn(
             // Base styles
-            'group relative flex items-center gap-3 rounded-2xl px-3 py-3',
+            'group relative flex items-center gap-3 px-4 py-3',
             // Touch target
-            'min-h-[48px]',
+            'min-h-[52px]',
+            // Border radius for grouped items
+            isFirst && isLast && 'rounded-2xl',
+            isFirst && !isLast && 'rounded-t-2xl',
+            !isFirst && isLast && 'rounded-b-2xl',
             // Transition - iOS 26 spring timing
-            'transition-all duration-[var(--duration-normal)] ease-[var(--spring-bounce)]',
+            'transition-all duration-[var(--duration-fast)] ease-[var(--spring-smooth)]',
             'motion-reduce:transition-none',
-            // States - iOS 26 glass active style
+            // Background and states
             isActive
-              ? 'glass-interactive bg-primary/15 text-primary'
-              : 'text-muted-foreground active:bg-foreground/5 active:scale-[0.98]',
+              ? 'bg-primary/10'
+              : 'bg-card/60 active:bg-muted/80',
+            // Border between items
+            !isLast && !isFirst && 'border-b border-border/30',
+            isFirst && !isLast && 'border-b border-border/30',
             // Disabled state
             item.disabled && 'pointer-events-none opacity-50'
           )}
@@ -119,34 +112,32 @@ export const MobileDrawer = ({
           {Icon && (
             <span
               className={cn(
-                'flex h-9 w-9 items-center justify-center rounded-xl',
-                'transition-all duration-[var(--duration-fast)] ease-[var(--spring-smooth)]',
+                'flex h-10 w-10 items-center justify-center rounded-xl',
+                'transition-colors duration-[var(--duration-fast)]',
                 'motion-reduce:transition-none',
                 isActive
-                  ? 'bg-primary/20'
-                  : 'bg-muted/50 group-active:bg-foreground/10'
+                  ? 'bg-primary text-primary-foreground'
+                  : 'bg-muted/60 text-muted-foreground group-active:bg-muted'
               )}
             >
               <Icon
-                className={cn(
-                  'h-5 w-5 flex-shrink-0 transition-colors duration-200',
-                  isActive ? 'text-primary' : 'text-muted-foreground group-active:text-foreground'
-                )}
+                className="h-5 w-5 flex-shrink-0"
                 aria-hidden="true"
               />
             </span>
           )}
-          <span className={cn(
-            'text-sm font-medium',
-            isActive ? 'text-primary' : 'text-foreground'
-          )}>
-            {item.label}
-          </span>
+          <div className="flex-1 min-w-0">
+            <span className={cn(
+              'text-[15px] font-medium',
+              isActive ? 'text-primary' : 'text-foreground'
+            )}>
+              {item.label}
+            </span>
+          </div>
           {isActive && (
-            <ChevronRight
-              className="ml-auto h-4 w-4 text-primary/60"
-              aria-hidden="true"
-            />
+            <div className="flex items-center">
+              <div className="h-2 w-2 rounded-full bg-primary" />
+            </div>
           )}
         </RouterLink>
       );
@@ -154,17 +145,37 @@ export const MobileDrawer = ({
   }, [navigationItems, location.pathname, onClose]);
 
   // Determine if we should render the drawer
-  // Show when: open is true, OR when dragging with progress > 0
-  const shouldRender = open || (isDragging && dragProgress !== undefined && dragProgress > 0);
+  const shouldRender = open || (isDragging && (overlayStyle !== undefined || drawerStyle !== undefined));
+
+  // Merge custom drawer styles with floating offset
+  const computedDrawerStyle = useMemo(() => {
+    if (!drawerStyle) return undefined;
+    // Extract translateX from the drawerStyle transform
+    const transformMatch = drawerStyle.transform?.toString().match(/translateX\(([^)]+)\)/);
+    if (transformMatch) {
+      const translateValue = transformMatch[1];
+      // Parse the percentage and adjust for the margin offset
+      if (translateValue.includes('%')) {
+        const percent = parseFloat(translateValue);
+        // When fully closed, we want translateX(-100% - 12px) to hide behind left edge
+        // When fully open, we want translateX(0) + margin-left: 12px
+        return {
+          ...drawerStyle,
+          transform: `translateX(calc(${percent}% - ${12 + percent * 0.12}px))`,
+        };
+      }
+    }
+    return drawerStyle;
+  }, [drawerStyle]);
 
   return (
     <Dialog.Root open={shouldRender} onOpenChange={(isOpen) => !isOpen && onClose()}>
       <Dialog.Portal>
-        {/* Backdrop with iOS 26 blur */}
+        {/* Backdrop with blur */}
         <Dialog.Overlay
           className={cn(
             'fixed inset-0 z-50',
-            'bg-black/30 backdrop-blur-xl',
+            'bg-black/20 backdrop-blur-sm',
             // Only use animations when not dragging
             !shouldShowDragState && 'data-[state=open]:animate-in data-[state=closed]:animate-out',
             !shouldShowDragState && 'data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0',
@@ -174,13 +185,21 @@ export const MobileDrawer = ({
           style={overlayStyle}
         />
 
-        {/* Drawer Content - iOS 26 Liquid Glass */}
+        {/* Floating Drawer Container */}
         <Dialog.Content
           className={cn(
-            'fixed inset-y-0 left-0 z-50 flex h-full w-[300px] max-w-[85vw] flex-col',
-            // iOS 26 Liquid Glass material
-            'glass-elevated',
-            'border-l-0 border-y-0 rounded-r-3xl',
+            // Floating positioning with margins
+            'fixed z-50',
+            'top-3 bottom-3 left-3',
+            'w-[min(300px,calc(85vw-24px))]',
+            // Flex layout
+            'flex flex-col',
+            // iOS 26 Liquid Glass floating design
+            'rounded-[28px]',
+            'bg-background/95 dark:bg-card/95',
+            'backdrop-blur-xl',
+            'border border-border/50',
+            'shadow-2xl shadow-black/20 dark:shadow-black/40',
             // Only use animations when not dragging
             !shouldShowDragState && 'data-[state=open]:animate-in data-[state=closed]:animate-out',
             !shouldShowDragState && 'data-[state=closed]:duration-300 data-[state=open]:duration-400',
@@ -189,126 +208,140 @@ export const MobileDrawer = ({
             // Safe area support
             'pb-safe'
           )}
-          style={drawerStyle}
+          style={computedDrawerStyle}
         >
-          {/* Header with close button - iOS 26 style */}
-          <div className="flex h-14 items-center justify-between border-b border-border/50 px-4">
-            <Dialog.Title className="text-lg font-bold text-foreground">
-              {brandName}
-            </Dialog.Title>
+          {/* Header with user profile */}
+          <div className="flex-shrink-0 p-4 pb-2">
+            {/* Close button - floating top right */}
             <Dialog.Close
               className={cn(
-                'flex h-10 w-10 items-center justify-center rounded-full',
-                'glass-interactive',
-                'text-muted-foreground',
+                'absolute top-3 right-3',
+                'flex h-8 w-8 items-center justify-center rounded-full',
+                'bg-muted/60 hover:bg-muted',
+                'text-muted-foreground hover:text-foreground',
+                'transition-colors duration-150',
                 'focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/50',
                 'motion-reduce:transition-none'
               )}
             >
-              <X className="h-5 w-5" aria-hidden="true" />
+              <X className="h-4 w-4" aria-hidden="true" />
               <span className="sr-only">Close menu</span>
             </Dialog.Close>
-          </div>
 
-          {/* User Profile Section - iOS 26 style */}
-          {user && (
-            <div className="border-b border-border/50 px-4 py-4">
-              <div className="flex items-center gap-3">
-                <Avatar className="h-12 w-12 ring-2 ring-primary/20">
+            {/* User Profile Card */}
+            {user && (
+              <div className="flex items-center gap-3 pr-10">
+                <Avatar className="h-14 w-14 ring-2 ring-primary/20 ring-offset-2 ring-offset-background">
                   {user.avatarUrl && (
                     <AvatarImage
                       src={user.avatarUrl}
                       alt={user.displayName || 'User avatar'}
                     />
                   )}
-                  <AvatarFallback className="h-full w-full bg-primary/15 text-primary text-base font-semibold">
+                  <AvatarFallback className="h-full w-full bg-primary/10 text-primary text-lg font-semibold">
                     {initials}
                   </AvatarFallback>
                 </Avatar>
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm font-semibold text-foreground truncate">
+                  <Dialog.Title className="text-base font-semibold text-foreground truncate">
                     {user.displayName || 'User'}
-                  </p>
-                  <p className="text-xs text-muted-foreground truncate">
+                  </Dialog.Title>
+                  <p className="text-sm text-muted-foreground truncate">
                     {user.email}
                   </p>
                 </div>
               </div>
-            </div>
-          )}
+            )}
 
-          {/* Navigation */}
-          <div className="flex-1 overflow-y-auto py-3 px-3">
+            {/* Fallback title when no user */}
+            {!user && (
+              <Dialog.Title className="text-lg font-bold text-foreground pr-10">
+                Menu
+              </Dialog.Title>
+            )}
+          </div>
+
+          {/* Navigation List */}
+          <div className="flex-1 overflow-y-auto px-3 py-2">
             <nav
               className="space-y-1"
               role="navigation"
               aria-label="Mobile navigation"
             >
-              {renderNavigationItems}
+              {/* Grouped navigation items */}
+              <div className="rounded-2xl overflow-hidden shadow-sm shadow-black/5">
+                {renderNavigationItems}
+              </div>
             </nav>
           </div>
 
-          {/* Footer Actions - iOS 26 style */}
-          <div className="border-t border-border/50 px-3 py-3 space-y-1">
-            {/* Admin Switch */}
-            {showAdminSwitch && onAdminClick && (
-              <button
-                onClick={() => {
-                  onAdminClick();
-                  onClose();
-                }}
-                className={cn(
-                  'group flex w-full items-center gap-3 rounded-2xl px-3 py-3',
-                  'min-h-[48px]',
-                  'text-primary',
-                  'transition-all duration-[var(--duration-fast)] ease-[var(--spring-bounce)]',
-                  'active:bg-primary/10 active:scale-[0.98]',
-                  'motion-reduce:transition-none'
-                )}
-              >
-                <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-primary/15">
-                  <Shield className="h-5 w-5 text-primary" aria-hidden="true" />
-                </span>
-                <span className="text-sm font-medium">切换到管理端</span>
-                <ChevronRight className="ml-auto h-4 w-4 text-primary/60" aria-hidden="true" />
-              </button>
-            )}
+          {/* Footer Actions */}
+          <div className="flex-shrink-0 p-3 pt-0 space-y-2">
+            {/* Action buttons group */}
+            <div className="rounded-2xl overflow-hidden shadow-sm shadow-black/5">
+              {/* Admin Switch */}
+              {showAdminSwitch && onAdminClick && (
+                <button
+                  onClick={() => {
+                    onAdminClick();
+                    onClose();
+                  }}
+                  className={cn(
+                    'group flex w-full items-center gap-3 px-4 py-3',
+                    'min-h-[52px]',
+                    'bg-card/60',
+                    'text-primary',
+                    'transition-colors duration-150',
+                    'active:bg-primary/10',
+                    'motion-reduce:transition-none',
+                    onLogout && 'border-b border-border/30'
+                  )}
+                >
+                  <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10">
+                    <Shield className="h-5 w-5 text-primary" aria-hidden="true" />
+                  </span>
+                  <span className="flex-1 text-left text-[15px] font-medium">切换到管理端</span>
+                  <ChevronRight className="h-5 w-5 text-primary/50" aria-hidden="true" />
+                </button>
+              )}
 
-            {/* Theme Toggle Row */}
-            <div className={cn(
-              'flex items-center justify-between rounded-2xl px-3 py-2',
-              'min-h-[48px]'
-            )}>
-              <div className="flex items-center gap-3">
-                <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-muted/50">
-                  <ThemeToggle />
-                </span>
-                <span className="text-sm font-medium text-foreground">主题</span>
-              </div>
+              {/* Logout */}
+              {onLogout && (
+                <button
+                  onClick={() => {
+                    onLogout();
+                    onClose();
+                  }}
+                  className={cn(
+                    'group flex w-full items-center gap-3 px-4 py-3',
+                    'min-h-[52px]',
+                    'bg-card/60',
+                    'text-destructive',
+                    'transition-colors duration-150',
+                    'active:bg-destructive/10',
+                    'motion-reduce:transition-none'
+                  )}
+                >
+                  <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-destructive/10">
+                    <LogOut className="h-5 w-5 text-destructive" aria-hidden="true" />
+                  </span>
+                  <span className="flex-1 text-left text-[15px] font-medium">退出登录</span>
+                </button>
+              )}
             </div>
 
-            {/* Logout */}
-            {onLogout && (
-              <button
-                onClick={() => {
-                  onLogout();
-                  onClose();
-                }}
-                className={cn(
-                  'group flex w-full items-center gap-3 rounded-2xl px-3 py-3',
-                  'min-h-[48px]',
-                  'text-destructive',
-                  'transition-all duration-[var(--duration-fast)] ease-[var(--spring-bounce)]',
-                  'active:bg-destructive/10 active:scale-[0.98]',
-                  'motion-reduce:transition-none'
-                )}
-              >
-                <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-destructive/10">
-                  <LogOut className="h-5 w-5 text-destructive" aria-hidden="true" />
-                </span>
-                <span className="text-sm font-medium">退出登录</span>
-              </button>
-            )}
+            {/* Theme toggle - separate floating button */}
+            <div className="flex justify-center pt-1">
+              <div className={cn(
+                'inline-flex items-center gap-2 px-4 py-2',
+                'rounded-full',
+                'bg-muted/40',
+                'text-sm text-muted-foreground'
+              )}>
+                <span>主题</span>
+                <ThemeToggle />
+              </div>
+            </div>
           </div>
         </Dialog.Content>
       </Dialog.Portal>

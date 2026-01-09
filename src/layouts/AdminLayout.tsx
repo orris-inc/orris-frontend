@@ -50,28 +50,13 @@ export const AdminLayout = ({ children }: AdminLayoutProps) => {
   const [profileDialogOpen, setProfileDialogOpen] = useState(false);
 
   // Enable swipe from left edge to open mobile drawer with follow-finger gesture
-  const { progress: dragProgress, isDragging } = useSwipeDrawer({
+  const { progress: dragProgress, isDragging, overlayStyle, drawerStyle } = useSwipeDrawer({
     isOpen: mobileDrawerOpen,
     onOpenChange: setMobileDrawerOpen,
   });
 
-  // Calculate styles based on drag state
-  const shouldShowDragState = isDragging && dragProgress !== undefined;
-
-  // Overlay opacity follows drag progress
-  const overlayStyle = shouldShowDragState
-    ? { opacity: dragProgress * 0.5, transition: 'none' }
-    : undefined;
-
-  // Drawer position follows drag progress
-  const drawerStyle = shouldShowDragState
-    ? {
-        transform: `translateX(${(dragProgress - 1) * 100}%)`,
-        transition: 'none',
-      }
-    : undefined;
-
   // Determine if we should render the drawer
+  const shouldShowDragState = isDragging && dragProgress !== undefined;
   const shouldRenderDrawer = mobileDrawerOpen || (isDragging && dragProgress !== undefined && dragProgress > 0);
 
   useEffect(() => {
@@ -176,7 +161,7 @@ export const AdminLayout = ({ children }: AdminLayoutProps) => {
             />
             <Dialog.Content
               className={cn(
-                'fixed inset-y-0 left-0 z-50 h-full w-[300px] max-w-[85vw] bg-background shadow-2xl md:hidden',
+                'fixed inset-y-0 left-0 z-50 h-full w-[min(300px,85vw)] bg-background shadow-2xl md:hidden',
                 // Only use animations when not dragging
                 !shouldShowDragState && 'data-[state=open]:animate-in data-[state=closed]:animate-out',
                 !shouldShowDragState && 'data-[state=closed]:duration-200 data-[state=open]:duration-300',

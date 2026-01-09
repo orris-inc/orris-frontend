@@ -6,11 +6,12 @@
  * - Real-time position tracking during swipe
  * - Velocity-based open/close detection
  * - Backdrop opacity follows drag progress
- * - Respects reduced-motion preference
+ * - Respects reduced-motion preference (animation only, gesture preserved)
  * - Supports both open and close gestures
+ * - rAF throttling for optimal performance
  */
 
-import { useEffect, useCallback, useRef, useState } from 'react';
+import React, { useEffect, useCallback, useRef, useState } from 'react';
 
 interface UseSwipeDrawerOptions {
   /** Whether the drawer is currently open */
@@ -34,6 +35,30 @@ interface SwipeState {
   progress: number;
   /** Whether user is actively dragging */
   isDragging: boolean;
+  /** Computed overlay styles for the backdrop */
+  overlayStyle: React.CSSProperties | undefined;
+  /** Computed drawer styles for the panel */
+  drawerStyle: React.CSSProperties | undefined;
+}
+
+/**
+ * Calculate drawer styles based on drag state
+ * Supports floating drawer design with margin offset
+ */
+export function calculateDrawerStyles(
+  progress: number | undefined,
+  isDragging: boolean
+): { overlayStyle?: React.CSSProperties; drawerStyle?: React.CSSProperties } {
+  if (!isDragging || progress === undefined) return {};
+
+  // For floating drawer: translate from -100% (hidden) to 0% (visible)
+  // The drawer component will handle the margin offset
+  const translatePercent = (progress - 1) * 100;
+
+  return {
+    overlayStyle: { opacity: progress * 0.3, transition: 'none' },
+    drawerStyle: { transform: `translateX(${translatePercent}%)`, transition: 'none' },
+  };
 }
 
 export function useSwipeDrawer({
@@ -48,6 +73,8 @@ export function useSwipeDrawer({
   const [swipeState, setSwipeState] = useState<SwipeState>({
     progress: isOpen ? 1 : 0,
     isDragging: false,
+    overlayStyle: undefined,
+    drawerStyle: undefined,
   });
 
   // Refs for tracking touch state
@@ -60,6 +87,8 @@ export function useSwipeDrawer({
   const isVerticalScroll = useRef(false);
   const startedFromEdge = useRef(false);
   const startedFromDrawer = useRef(false);
+  const lastProgress = useRef<number>(0);
+  const rafId = useRef<number | null>(null);
 
   // Sync progress with isOpen state when not dragging
   useEffect(() => {
@@ -67,6 +96,8 @@ export function useSwipeDrawer({
       setSwipeState((prev) => ({
         ...prev,
         progress: isOpen ? 1 : 0,
+        overlayStyle: undefined,
+        drawerStyle: undefined,
       }));
     }
   }, [isOpen, swipeState.isDragging]);
@@ -85,11 +116,22 @@ export function useSwipeDrawer({
 
       if (!isFromEdge && !isFromDrawer) return;
 
+      // When drawer is open, don't track touches on interactive elements
+      // This allows normal click/tap behavior on links, buttons, etc.
+      if (isFromDrawer && e.target instanceof Element) {
+        const interactiveSelector = 'a, button, input, select, textarea, [role="button"], [tabindex]';
+        if (e.target.closest(interactiveSelector)) {
+          return;
+        }
+      }
+
+      const now = performance.now();
       touchStartX.current = x;
       touchStartY.current = y;
-      touchStartTime.current = Date.now();
+      touchStartTime.current = now;
       lastTouchX.current = x;
-      lastTouchTime.current = Date.now();
+      lastTouchTime.current = now;
+      lastProgress.current = isOpen ? 1 : 0;
       isTracking.current = true;
       isVerticalScroll.current = false;
       startedFromEdge.current = isFromEdge;
@@ -145,11 +187,30 @@ export function useSwipeDrawer({
           progress = Math.max(0, Math.min(1, 1 + deltaX / drawerWidth));
         }
 
-        setSwipeState({ progress, isDragging: true });
+        // Only update if progress changed significantly (rAF throttling)
+        const progressDelta = Math.abs(progress - lastProgress.current);
+        if (progressDelta >= 0.01) {
+          // Cancel any pending rAF
+          if (rafId.current !== null) {
+            cancelAnimationFrame(rafId.current);
+          }
+
+          rafId.current = requestAnimationFrame(() => {
+            const styles = calculateDrawerStyles(progress, true);
+            setSwipeState({
+              progress,
+              isDragging: true,
+              overlayStyle: styles.overlayStyle,
+              drawerStyle: styles.drawerStyle,
+            });
+            lastProgress.current = progress;
+            rafId.current = null;
+          });
+        }
 
         // Update velocity tracking
         lastTouchX.current = x;
-        lastTouchTime.current = Date.now();
+        lastTouchTime.current = performance.now();
       }
     },
     [swipeState.isDragging, drawerWidth]
@@ -158,11 +219,19 @@ export function useSwipeDrawer({
   const handleTouchEnd = useCallback(() => {
     if (!isTracking.current && !swipeState.isDragging) return;
 
+    // Cancel any pending rAF
+    if (rafId.current !== null) {
+      cancelAnimationFrame(rafId.current);
+      rafId.current = null;
+    }
+
     if (swipeState.isDragging) {
       // Calculate velocity (px/ms)
-      const timeDelta = Date.now() - lastTouchTime.current;
-      const velocity = timeDelta > 0
-        ? (lastTouchX.current - touchStartX.current) / (Date.now() - touchStartTime.current)
+      const now = performance.now();
+      const timeDelta = now - lastTouchTime.current;
+      const totalTime = now - touchStartTime.current;
+      const velocity = timeDelta > 0 && totalTime > 0
+        ? (lastTouchX.current - touchStartX.current) / totalTime
         : 0;
 
       // Determine final state based on velocity and position
@@ -183,19 +252,24 @@ export function useSwipeDrawer({
     isTracking.current = false;
     startedFromEdge.current = false;
     startedFromDrawer.current = false;
-    setSwipeState((prev) => ({ ...prev, isDragging: false }));
+    setSwipeState((prev) => ({
+      ...prev,
+      isDragging: false,
+      overlayStyle: undefined,
+      drawerStyle: undefined,
+    }));
   }, [swipeState.isDragging, swipeState.progress, velocityThreshold, positionThreshold, onOpenChange]);
 
   useEffect(() => {
     if (!enabled) return;
 
-    // Check for reduced motion preference
-    const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    if (prefersReducedMotion) return;
-
     // Only add listeners on touch devices
     const isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
     if (!isTouchDevice) return;
+
+    // Note: We don't disable gestures for reduced motion preference
+    // Consumers can check window.matchMedia('(prefers-reduced-motion: reduce)')
+    // to skip visual transitions while keeping gesture functionality
 
     document.addEventListener('touchstart', handleTouchStart, { passive: true });
     document.addEventListener('touchmove', handleTouchMove, { passive: true });
@@ -207,6 +281,12 @@ export function useSwipeDrawer({
       document.removeEventListener('touchmove', handleTouchMove);
       document.removeEventListener('touchend', handleTouchEnd);
       document.removeEventListener('touchcancel', handleTouchEnd);
+
+      // Cancel any pending rAF on cleanup
+      if (rafId.current !== null) {
+        cancelAnimationFrame(rafId.current);
+        rafId.current = null;
+      }
     };
   }, [enabled, handleTouchStart, handleTouchMove, handleTouchEnd]);
 
