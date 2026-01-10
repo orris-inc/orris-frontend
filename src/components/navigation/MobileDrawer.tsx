@@ -11,9 +11,10 @@
  * - Quick actions footer (theme, logout)
  * - Respects reduced-motion preferences
  * - Safe area insets support for notched devices
+ * - 120Hz ProMotion optimized with direct DOM manipulation
  */
 
-import { useMemo } from 'react';
+import { useMemo, useEffect, type RefObject } from 'react';
 import { Link as RouterLink, useLocation } from 'react-router-dom';
 import * as Dialog from '@radix-ui/react-dialog';
 import { X, LogOut, Shield, ArrowLeftRight, ChevronRight } from 'lucide-react';
@@ -50,6 +51,10 @@ interface MobileDrawerProps {
   overlayStyle?: React.CSSProperties;
   /** Computed drawer styles from swipe gesture */
   drawerStyle?: React.CSSProperties;
+  /** Ref for overlay element - enables direct DOM manipulation for 120Hz */
+  overlayRef?: RefObject<HTMLElement | null>;
+  /** Ref for drawer element - enables direct DOM manipulation for 120Hz */
+  drawerRef?: RefObject<HTMLElement | null>;
 }
 
 export const MobileDrawer = ({
@@ -65,6 +70,8 @@ export const MobileDrawer = ({
   isDragging = false,
   overlayStyle,
   drawerStyle,
+  overlayRef,
+  drawerRef,
 }: MobileDrawerProps) => {
   const location = useLocation();
   const initials = user?.initials || user?.displayName?.charAt(0).toUpperCase() || '?';
@@ -154,6 +161,39 @@ export const MobileDrawer = ({
   // Determine if we should render the drawer
   const shouldRender = open || (isDragging && (overlayStyle !== undefined || drawerStyle !== undefined));
 
+  // Bind refs to DOM elements for direct 120Hz manipulation
+  // Uses data attributes to find elements after Radix renders them
+  useEffect(() => {
+    if (!shouldRender) return;
+
+    // Wait for next frame to ensure Radix has rendered
+    const rafId = requestAnimationFrame(() => {
+      if (overlayRef) {
+        const overlay = document.querySelector('[data-drawer-overlay]') as HTMLElement | null;
+        if (overlay) {
+          (overlayRef as React.MutableRefObject<HTMLElement | null>).current = overlay;
+        }
+      }
+      if (drawerRef) {
+        const drawer = document.querySelector('[data-drawer-content]') as HTMLElement | null;
+        if (drawer) {
+          (drawerRef as React.MutableRefObject<HTMLElement | null>).current = drawer;
+        }
+      }
+    });
+
+    return () => {
+      cancelAnimationFrame(rafId);
+      // Clear refs on unmount
+      if (overlayRef) {
+        (overlayRef as React.MutableRefObject<HTMLElement | null>).current = null;
+      }
+      if (drawerRef) {
+        (drawerRef as React.MutableRefObject<HTMLElement | null>).current = null;
+      }
+    };
+  }, [shouldRender, overlayRef, drawerRef]);
+
   // Merge custom drawer styles with floating offset
   const computedDrawerStyle = useMemo(() => {
     if (!drawerStyle) return undefined;
@@ -178,11 +218,14 @@ export const MobileDrawer = ({
   return (
     <Dialog.Root open={shouldRender} onOpenChange={(isOpen) => !isOpen && onClose()}>
       <Dialog.Portal>
-        {/* Backdrop with blur */}
+        {/* Backdrop with blur - data-drawer-overlay for 120Hz ref binding */}
         <Dialog.Overlay
+          data-drawer-overlay
           className={cn(
             'fixed inset-0 z-50',
             'bg-black/20 backdrop-blur-sm',
+            // GPU acceleration hint during drag
+            isDragging && 'will-change-[opacity]',
             // Only use animations when not dragging
             !shouldShowDragState && 'data-[state=open]:animate-in data-[state=closed]:animate-out',
             !shouldShowDragState && 'data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0',
@@ -192,8 +235,9 @@ export const MobileDrawer = ({
           style={overlayStyle}
         />
 
-        {/* Floating Drawer Container */}
+        {/* Floating Drawer Container - data-drawer-content for 120Hz ref binding */}
         <Dialog.Content
+          data-drawer-content
           className={cn(
             // Floating positioning with margins
             'fixed z-50',
@@ -207,6 +251,10 @@ export const MobileDrawer = ({
             'backdrop-blur-xl',
             'border border-border/50',
             'shadow-2xl shadow-black/20 dark:shadow-black/40',
+            // GPU acceleration hints during drag for 120Hz
+            isDragging && 'will-change-transform',
+            // Optimize paint containment for better performance
+            'contain-layout contain-style',
             // Only use animations when not dragging
             !shouldShowDragState && 'data-[state=open]:animate-in data-[state=closed]:animate-out',
             !shouldShowDragState && 'data-[state=closed]:duration-300 data-[state=open]:duration-400',

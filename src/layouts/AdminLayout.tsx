@@ -50,7 +50,8 @@ export const AdminLayout = ({ children }: AdminLayoutProps) => {
   const [profileDialogOpen, setProfileDialogOpen] = useState(false);
 
   // Enable swipe from left edge to open mobile drawer with follow-finger gesture
-  const { isDragging, overlayStyle, drawerStyle } = useSwipeDrawer({
+  // overlayRef/drawerRef enable direct DOM manipulation for 120Hz performance
+  const { isDragging, overlayStyle, drawerStyle, overlayRef, drawerRef } = useSwipeDrawer({
     isOpen: mobileDrawerOpen,
     onOpenChange: setMobileDrawerOpen,
   });
@@ -114,6 +115,8 @@ export const AdminLayout = ({ children }: AdminLayoutProps) => {
           isDragging={isDragging}
           overlayStyle={overlayStyle}
           drawerStyle={drawerStyle}
+          overlayRef={overlayRef}
+          drawerRef={drawerRef}
         />
 
         {/* 桌面端侧边栏 */}
