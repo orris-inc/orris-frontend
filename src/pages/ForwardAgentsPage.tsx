@@ -44,7 +44,7 @@ import { getAgentVersion } from '@/api/forward';
 import type { AgentVersionInfo, ForwardAgent, UpdateForwardAgentRequest, CreateForwardAgentRequest, ForwardStatus } from '@/api/forward';
 
 export const ForwardAgentsPage = () => {
-  usePageTitle('转发节点管理');
+  usePageTitle('转发Agent管理');
 
   const { isMobile } = useBreakpoint();
 
@@ -136,7 +136,7 @@ export const ForwardAgentsPage = () => {
       setAgentToDelete(agent);
       setDeleteDialogOpen(true);
     } else {
-      if (window.confirm(`确认删除转发节点 "${agent.name}" 吗？此操作不可恢复。`)) {
+      if (window.confirm(`确认删除转发Agent "${agent.name}" 吗？此操作不可恢复。`)) {
         await deleteForwardAgent(agent.id);
       }
     }
@@ -323,7 +323,7 @@ export const ForwardAgentsPage = () => {
           <div className="flex items-center justify-between gap-3 flex-wrap">
             {/* Left: Title + Primary Stats */}
             <div className="flex items-center gap-3">
-              <h1 className="text-sm font-semibold text-foreground">转发节点管理</h1>
+              <h1 className="text-sm font-semibold text-foreground">转发Agent管理</h1>
               <div className="h-4 w-px bg-border hidden sm:block" />
               <div className="flex items-center gap-2.5 text-xs">
                 <span className="flex items-center gap-1 text-muted-foreground">
@@ -454,7 +454,7 @@ export const ForwardAgentsPage = () => {
                       <span className="hidden xl:inline text-warning">更新</span>
                     </AdminButton>
                   </TooltipTrigger>
-                  <TooltipContent>更新 {stats.updatable} 个转发节点</TooltipContent>
+                  <TooltipContent>更新 {stats.updatable} 个转发Agent</TooltipContent>
                 </Tooltip>
               )}
 
@@ -502,7 +502,7 @@ export const ForwardAgentsPage = () => {
           <MobileForwardAgentManagement
             forwardAgents={forwardAgents}
             loading={isLoading}
-            refreshing={isFetching || isReordering}
+            refreshing={isFetching}
             page={pagination.page}
             pageSize={pagination.pageSize}
             total={pagination.total}
@@ -521,6 +521,8 @@ export const ForwardAgentsPage = () => {
             onCheckUpdate={handleCheckUpdate}
             onPageChange={handlePageChange}
             checkingAgentId={checkingAgentId}
+            onDragEnd={handleDragEnd}
+            isReordering={isReordering}
           />
         ) : (
           <AdminCard noPadding>
@@ -612,7 +614,7 @@ export const ForwardAgentsPage = () => {
       <TokenDialog
         open={tokenDialogOpen}
         token={generatedToken?.token ?? null}
-        title="转发节点Token"
+        title="转发AgentToken"
         onClose={() => {
           setTokenDialogOpen(false);
           setGeneratedToken(null);

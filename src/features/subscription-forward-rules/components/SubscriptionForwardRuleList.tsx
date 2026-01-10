@@ -10,8 +10,6 @@ import {
   Power,
   PowerOff,
   MoreHorizontal,
-  Copy,
-  Check,
   Bot,
   Server,
   Settings,
@@ -30,6 +28,8 @@ import { ContextMenuItem, ContextMenuSeparator } from '@/components/common/Conte
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/common/Tooltip';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/common/Popover';
 import { ConfirmDialog } from '@/components/common/ConfirmDialog';
+import { CopyableAddress } from '@/components/common/CopyableAddress';
+import { formatBytesGB } from '@/shared/utils/format-utils';
 import type { ForwardRule, UserForwardAgent } from '@/api/forward';
 
 interface SubscriptionForwardRuleListProps {
@@ -48,51 +48,6 @@ interface SubscriptionForwardRuleListProps {
   onDisabling?: boolean;
   onDeleting?: boolean;
 }
-
-// Format bytes (default display in GB)
-const formatBytes = (bytes?: number) => {
-  if (!bytes) return '0 GB';
-  const gb = bytes / (1024 * 1024 * 1024);
-  return `${gb.toFixed(2)} GB`;
-};
-
-// Copyable address component
-const CopyableAddress: React.FC<{ address: string; className?: string }> = ({
-  address,
-  className = '',
-}) => {
-  const [copied, setCopied] = useState(false);
-
-  const handleCopy = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    if (address && address !== '-') {
-      navigator.clipboard.writeText(address);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
-    }
-  };
-
-  if (!address || address === '-') {
-    return <span className="text-muted-foreground">-</span>;
-  }
-
-  return (
-    <div className={`flex items-center gap-1 min-w-0 ${className}`}>
-      <span className="font-mono text-xs truncate">{address}</span>
-      <button
-        onClick={handleCopy}
-        className="flex-shrink-0 p-0.5 rounded hover:bg-muted transition-colors"
-        title={copied ? '已复制' : '复制'}
-      >
-        {copied ? (
-          <Check className="size-3 text-green-500" />
-        ) : (
-          <Copy className="size-3 text-muted-foreground hover:text-foreground" />
-        )}
-      </button>
-    </div>
-  );
-};
 
 // Chain nodes display component
 const ChainNodesDisplay: React.FC<{
@@ -451,12 +406,12 @@ export const SubscriptionForwardRuleList: React.FC<SubscriptionForwardRuleListPr
           return (
             <Tooltip>
               <TooltipTrigger asChild>
-                <span className="text-sm text-muted-foreground">{formatBytes(totalBytes)}</span>
+                <span className="text-sm text-muted-foreground">{formatBytesGB(totalBytes)}</span>
               </TooltipTrigger>
               <TooltipContent>
                 <div className="space-y-1">
-                  <div>上传: {formatBytes(row.original.uploadBytes)}</div>
-                  <div>下载: {formatBytes(row.original.downloadBytes)}</div>
+                  <div>上传: {formatBytesGB(row.original.uploadBytes)}</div>
+                  <div>下载: {formatBytesGB(row.original.downloadBytes)}</div>
                 </div>
               </TooltipContent>
             </Tooltip>

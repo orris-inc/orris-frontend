@@ -34,6 +34,8 @@ import {
  * hideBelow: Hide column below specified breakpoint (backward compatible)
  * priority: Column priority (1=must show, 2=important, 3=secondary, 4=optional)
  * minWidth: Column minimum width (pixels)
+ * align: Text alignment (left, center, right)
+ * numeric: Whether this column contains numeric data (auto right-align)
  */
 export interface ResponsiveColumnMeta {
   /** Hide below this breakpoint (xs < sm < md < lg < xl < 2xl) - backward compatible */
@@ -42,6 +44,10 @@ export interface ResponsiveColumnMeta {
   priority?: 1 | 2 | 3 | 4;
   /** Column minimum width (pixels) */
   minWidth?: number;
+  /** Text alignment */
+  align?: 'left' | 'center' | 'right';
+  /** Whether this column contains numeric data (auto right-align and use tabular-nums) */
+  numeric?: boolean;
 }
 
 interface DataTableProps<TData> {
@@ -68,6 +74,8 @@ interface DataTableProps<TData> {
   // Context menu
   contextMenuContent?: (row: TData) => React.ReactNode;
   enableContextMenu?: boolean;
+  // Accessibility
+  ariaLabel?: string;
 }
 
 // ============ Breakpoint Priority ============
@@ -147,6 +155,7 @@ export function DataTable<TData>({
   emptyMessage = 'No data',
   contextMenuContent,
   enableContextMenu = false,
+  ariaLabel,
 }: DataTableProps<TData>) {
   // Responsive breakpoint
   const { current: currentBreakpoint } = useBreakpoint();
@@ -185,7 +194,13 @@ export function DataTable<TData>({
   return (
     <div className="relative">
       <div className="overflow-x-auto bg-card rounded-xl">
-        <table className="w-full table-fixed text-sm border-separate border-spacing-0">
+        <table
+          className="w-full table-fixed text-sm border-separate border-spacing-0"
+          role="grid"
+          aria-label={ariaLabel}
+          aria-busy={loading}
+          aria-rowcount={data.length}
+        >
           <thead className="sticky top-0 z-10">
             {table.getHeaderGroups().map((headerGroup) => (
               <tr key={headerGroup.id} className="bg-muted/50">
@@ -196,6 +211,9 @@ export function DataTable<TData>({
                   return (
                     <th
                       key={header.id}
+                      role="columnheader"
+                      aria-sort={sorted ? (sorted === 'asc' ? 'ascending' : 'descending') : undefined}
+                      tabIndex={canSort ? 0 : undefined}
                       style={{ width: header.column.columnDef.size }}
                       className={cn(
                         'px-4 py-3.5 font-medium',
@@ -203,9 +221,15 @@ export function DataTable<TData>({
                         'whitespace-nowrap text-left',
                         'border-b-2 border-border/60',
                         'first:rounded-tl-xl last:rounded-tr-xl',
-                        canSort && 'cursor-pointer select-none hover:text-foreground hover:bg-muted/80 transition-colors duration-200'
+                        canSort && 'cursor-pointer select-none hover:text-foreground hover:bg-muted/80 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-primary/50 focus:ring-inset'
                       )}
                       onClick={canSort ? header.column.getToggleSortingHandler() : undefined}
+                      onKeyDown={canSort ? (e) => {
+                        if (e.key === 'Enter' || e.key === ' ') {
+                          e.preventDefault();
+                          header.column.getToggleSortingHandler()?.(e);
+                        }
+                      } : undefined}
                     >
                       <div className="flex items-center gap-1.5">
                         {header.isPlaceholder
@@ -271,18 +295,27 @@ export function DataTable<TData>({
                       row.getIsSelected() && 'bg-primary/5'
                     )}
                   >
-                    {row.getVisibleCells().map((cell) => (
-                      <td
-                        key={cell.id}
-                        className={cn(
-                          'px-4 py-3.5 text-foreground',
-                          'align-middle',
-                          'transition-colors duration-200'
-                        )}
-                      >
-                        {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                      </td>
-                    ))}
+                    {row.getVisibleCells().map((cell) => {
+                      const meta = cell.column.columnDef.meta as ResponsiveColumnMeta | undefined;
+                      return (
+                        <td
+                          key={cell.id}
+                          role="gridcell"
+                          className={cn(
+                            'px-4 py-3.5 text-foreground',
+                            'align-middle',
+                            'transition-colors duration-200',
+                            // Numeric columns: right-align with tabular numbers
+                            meta?.numeric && 'text-right tabular-nums',
+                            // Explicit alignment
+                            meta?.align === 'right' && 'text-right',
+                            meta?.align === 'center' && 'text-center'
+                          )}
+                        >
+                          {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                        </td>
+                      );
+                    })}
                   </tr>
                 );
 
@@ -325,4 +358,4 @@ export function DataTable<TData>({
 }
 
 // ============ Export types for external use ============
-export type { ColumnDef, SortingState, RowSelectionState };
+export type { ColumnDef, SortingState, RowSelectionState, OnChangeFn };

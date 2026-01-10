@@ -3,7 +3,7 @@
  * High-density data management interface
  */
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useCallback } from 'react';
 import {
   ArrowLeftRight,
   Plus,
@@ -15,7 +15,9 @@ import {
   GripVertical,
   Search,
   FilterX,
+  FileJson,
 } from 'lucide-react';
+import type { RowSelectionState } from '@tanstack/react-table';
 import { Switch, SwitchThumb } from '@/components/common/Switch';
 import { ForwardRuleListTable } from '@/features/forward-rules/components/ForwardRuleListTable';
 import { MobileForwardRuleManagement } from '@/features/forward-rules/components/MobileForwardRuleManagement';
@@ -30,6 +32,14 @@ import { Input } from '@/components/common/Input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/common/Select';
 import { ConfirmDialog } from '@/components/common/ConfirmDialog';
 import { useForwardRulesPage, useRuleStatusPolling } from '@/features/forward-rules/hooks/useForwardRules';
+import { useBatchForwardRules } from '@/features/forward-rules/hooks/useBatchForwardRules';
+import {
+  BatchActionBar,
+  BatchCreateDialog,
+  BatchDeleteDialog,
+  BatchToggleStatusDialog,
+  BatchUpdateDialog,
+} from '@/features/forward-rules/components/batch';
 import { useNodes } from '@/features/nodes/hooks/useNodes';
 import { useResourceGroups } from '@/features/resource-groups/hooks/useResourceGroups';
 import { useSubscriptionPlans } from '@/features/subscription-plans/hooks/useSubscriptionPlans';
@@ -74,6 +84,25 @@ export const ForwardRulesPage = () => {
   const { polledStatusMap, pollingRuleIds, startPolling } = useRuleStatusPolling();
   const { isMobile } = useBreakpoint();
 
+  // Batch operations
+  const {
+    selectedIds,
+    selectedIdsArray,
+    selectedCount,
+    toggleSelectAll,
+    clearSelection,
+    batchCreate,
+    batchDelete,
+    batchEnable,
+    batchDisable,
+    batchUpdate,
+    isCreating: isBatchCreating,
+    isDeleting: isBatchDeleting,
+    isEnabling: isBatchEnabling,
+    isDisabling: isBatchDisabling,
+    isUpdating: isBatchUpdating,
+  } = useBatchForwardRules({ isAdmin: true });
+
   // Get resource groups and plans for rule binding
   const { resourceGroups } = useResourceGroups({ pageSize: 100 });
   const { plans } = useSubscriptionPlans({ pageSize: 100 });
@@ -102,6 +131,34 @@ export const ForwardRulesPage = () => {
     return { total, enabled, disabled, syncing, running };
   }, [forwardRules, pagination.total]);
 
+  // Convert Set<string> to Record<string, boolean> for table row selection
+  const rowSelection: RowSelectionState = useMemo(() => {
+    const selection: RowSelectionState = {};
+    selectedIds.forEach(id => {
+      selection[id] = true;
+    });
+    return selection;
+  }, [selectedIds]);
+
+  // Handle row selection change from table
+  const handleRowSelectionChange = useCallback((updaterOrValue: RowSelectionState | ((old: RowSelectionState) => RowSelectionState)) => {
+    const newSelection = typeof updaterOrValue === 'function'
+      ? updaterOrValue(rowSelection)
+      : updaterOrValue;
+
+    const newIds = Object.keys(newSelection).filter(id => newSelection[id]);
+    clearSelection();
+    if (newIds.length > 0) {
+      toggleSelectAll(newIds);
+    }
+  }, [rowSelection, clearSelection, toggleSelectAll]);
+
+  // Wrap handlePageChange to clear selection when page changes
+  const handlePageChangeWithClear = useCallback((page: number) => {
+    clearSelection();
+    handlePageChange(page);
+  }, [clearSelection, handlePageChange]);
+
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [detailDialogOpen, setDetailDialogOpen] = useState(false);
@@ -117,6 +174,13 @@ export const ForwardRulesPage = () => {
   const [copyRuleData, setCopyRuleData] = useState<(Partial<CreateForwardRuleRequest> & { targetType?: 'manual' | 'node' }) | undefined>(undefined);
   const [refreshKey, setRefreshKey] = useState(0);
   const [dragSortEnabled, setDragSortEnabled] = useState(false);
+
+  // Batch dialog states
+  const [batchCreateOpen, setBatchCreateOpen] = useState(false);
+  const [batchDeleteOpen, setBatchDeleteOpen] = useState(false);
+  const [batchEnableOpen, setBatchEnableOpen] = useState(false);
+  const [batchDisableOpen, setBatchDisableOpen] = useState(false);
+  const [batchUpdateOpen, setBatchUpdateOpen] = useState(false);
 
   const handleRefresh = () => {
     setRefreshKey((k) => k + 1);
@@ -317,7 +381,7 @@ export const ForwardRulesPage = () => {
             nodes={nodes}
             polledStatusMap={polledStatusMap}
             pollingRuleIds={pollingRuleIds}
-            loading={isLoading || isFetching || isReordering}
+            loading={isLoading || isFetching}
             refreshing={isFetching}
             page={pagination.page}
             pageSize={pagination.pageSize}
@@ -335,6 +399,8 @@ export const ForwardRulesPage = () => {
             onProbe={handleProbe}
             probingRuleId={probingRuleId}
             onPageChange={handlePageChange}
+            onDragEnd={handleDragEnd}
+            isReordering={isReordering}
           />
         </div>
 
@@ -561,6 +627,21 @@ export const ForwardRulesPage = () => {
                 <TooltipContent>刷新列表</TooltipContent>
               </Tooltip>
 
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <AdminButton
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setBatchCreateOpen(true)}
+                    className="h-7 w-7 p-0"
+                    icon={<FileJson className="size-3.5" strokeWidth={1.5} />}
+                  >
+                    <span className="sr-only">批量创建</span>
+                  </AdminButton>
+                </TooltipTrigger>
+                <TooltipContent>批量创建 (JSON)</TooltipContent>
+              </Tooltip>
+
               <AdminButton
                 variant="primary"
                 size="sm"
@@ -578,6 +659,21 @@ export const ForwardRulesPage = () => {
           </div>
         </header>
 
+        {/* Batch Action Bar */}
+        {selectedCount > 0 && (
+          <BatchActionBar
+            selectedCount={selectedCount}
+            onBatchDelete={() => setBatchDeleteOpen(true)}
+            onBatchEnable={() => setBatchEnableOpen(true)}
+            onBatchDisable={() => setBatchDisableOpen(true)}
+            onBatchUpdate={() => setBatchUpdateOpen(true)}
+            onClearSelection={clearSelection}
+            isDeleting={isBatchDeleting}
+            isTogglingStatus={isBatchEnabling || isBatchDisabling}
+            isUpdating={isBatchUpdating}
+          />
+        )}
+
         {/* Forward Rules List Table */}
         <AdminCard noPadding>
           <ForwardRuleListTable
@@ -591,7 +687,7 @@ export const ForwardRulesPage = () => {
             page={pagination.page}
             pageSize={pagination.pageSize}
             total={pagination.total}
-            onPageChange={handlePageChange}
+            onPageChange={handlePageChangeWithClear}
             onPageSizeChange={handlePageSizeChange}
             onEdit={handleEdit}
             onDelete={handleDelete}
@@ -604,6 +700,9 @@ export const ForwardRulesPage = () => {
             probingRuleId={probingRuleId}
             enableDragSort={dragSortEnabled}
             onDragEnd={handleDragEnd}
+            rowSelection={rowSelection}
+            onRowSelectionChange={handleRowSelectionChange}
+            enableSelection={true}
           />
         </AdminCard>
       </div>
@@ -688,6 +787,53 @@ export const ForwardRulesPage = () => {
         confirmText="重置"
         cancelText="取消"
         onConfirm={handleResetTrafficConfirm}
+      />
+
+      {/* Batch Create Dialog */}
+      <BatchCreateDialog
+        open={batchCreateOpen}
+        onOpenChange={setBatchCreateOpen}
+        onConfirm={batchCreate}
+        isCreating={isBatchCreating}
+      />
+
+      {/* Batch Delete Dialog */}
+      <BatchDeleteDialog
+        open={batchDeleteOpen}
+        onOpenChange={setBatchDeleteOpen}
+        selectedCount={selectedCount}
+        onConfirm={batchDelete}
+        isDeleting={isBatchDeleting}
+      />
+
+      {/* Batch Enable Dialog */}
+      <BatchToggleStatusDialog
+        open={batchEnableOpen}
+        onOpenChange={setBatchEnableOpen}
+        selectedCount={selectedCount}
+        targetStatus="enabled"
+        onConfirm={batchEnable}
+        isProcessing={isBatchEnabling}
+      />
+
+      {/* Batch Disable Dialog */}
+      <BatchToggleStatusDialog
+        open={batchDisableOpen}
+        onOpenChange={setBatchDisableOpen}
+        selectedCount={selectedCount}
+        targetStatus="disabled"
+        onConfirm={batchDisable}
+        isProcessing={isBatchDisabling}
+      />
+
+      {/* Batch Update Dialog */}
+      <BatchUpdateDialog
+        open={batchUpdateOpen}
+        onOpenChange={setBatchUpdateOpen}
+        selectedIds={selectedIdsArray}
+        onConfirm={batchUpdate}
+        isUpdating={isBatchUpdating}
+        agents={forwardAgents}
       />
     </AdminLayout>
   );

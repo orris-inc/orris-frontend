@@ -38,6 +38,7 @@ import { MobileActionButton } from '@/components/mobile';
 import { cn } from '@/lib/utils';
 import { formatDate } from '@/shared/utils/date-utils';
 import { formatBitRate, formatBytes } from '@/shared/utils/format-utils';
+import { ENABLED_STATUS_CONFIG_SHORT } from '@/shared/constants/status-config';
 import type { ForwardAgent } from '@/api/forward';
 
 // ============================================================================
@@ -58,18 +59,6 @@ export interface MobileForwardAgentCardProps {
 }
 
 // ============================================================================
-// Constants
-// ============================================================================
-
-const STATUS_CONFIG: Record<
-  string,
-  { label: string; variant: 'success' | 'default' }
-> = {
-  enabled: { label: '启用', variant: 'success' },
-  disabled: { label: '禁用', variant: 'default' },
-};
-
-// ============================================================================
 // Main Component
 // ============================================================================
 
@@ -87,7 +76,7 @@ export const MobileForwardAgentCard = ({
 }: MobileForwardAgentCardProps) => {
   const [isExpanded, setIsExpanded] = useState(false);
 
-  const statusConfig = STATUS_CONFIG[agent.status] || {
+  const statusConfig = ENABLED_STATUS_CONFIG_SHORT[agent.status] || {
     label: agent.status,
     variant: 'default' as const,
   };

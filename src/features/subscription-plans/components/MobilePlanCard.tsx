@@ -31,6 +31,7 @@ import {
 } from '@/components/common/Collapsible';
 import { MobileActionButton } from '@/components/mobile';
 import { cn } from '@/lib/utils';
+import { ACTIVE_STATUS_CONFIG, PLAN_TYPE_CONFIG } from '@/shared/constants/status-config';
 import type { SubscriptionPlan, PlanStatus, BillingCycle, PlanType } from '@/api/subscription/types';
 
 // ============================================================================
@@ -59,16 +60,6 @@ const BILLING_CYCLE_LABELS: Record<BillingCycle, string> = {
   lifetime: '终身',
 };
 
-const PLAN_TYPE_CONFIG: Record<PlanType, { label: string; variant: 'info' | 'warning' | 'default' }> = {
-  node: { label: '节点', variant: 'info' },
-  forward: { label: '转发', variant: 'warning' },
-  hybrid: { label: '混合', variant: 'default' },
-};
-
-const STATUS_CONFIG: Record<PlanStatus, { label: string; variant: 'success' | 'default' }> = {
-  active: { label: '激活', variant: 'success' },
-  inactive: { label: '未激活', variant: 'default' },
-};
 
 // ============================================================================
 // Helpers
@@ -119,7 +110,7 @@ export const MobilePlanCard = ({
   const [isExpanded, setIsExpanded] = useState(false);
 
   const status = plan.status as PlanStatus | undefined;
-  const statusConfig = status ? STATUS_CONFIG[status] : { label: '未知', variant: 'default' as const };
+  const statusConfig = status ? ACTIVE_STATUS_CONFIG[status] : { label: '未知', variant: 'default' as const };
   const planType = plan.planType as PlanType | undefined;
   const typeConfig = planType ? PLAN_TYPE_CONFIG[planType] : { label: '节点', variant: 'info' as const };
   const pricingDetails = getPricingDetails(plan);

@@ -46,6 +46,67 @@ export function formatBytes(bytes: number | undefined): string {
 }
 
 /**
+ * Format bytes to compact string (for table cells)
+ * Uses 1024 as base, no space between value and unit
+ *
+ * @param bytes - Number of bytes (can be undefined)
+ * @returns Formatted string like "1.5GB"
+ *
+ * @example
+ * formatBytesCompact(1073741824) // "1GB"
+ */
+export function formatBytesCompact(bytes: number | undefined): string {
+  if (!bytes || bytes <= 0) return '0';
+  const units = ['B', 'KB', 'MB', 'GB', 'TB'];
+  const i = Math.floor(Math.log(bytes) / Math.log(1024));
+  const value = bytes / Math.pow(1024, i);
+  return `${value < 10 ? value.toFixed(1) : Math.round(value)}${units[i]}`;
+}
+
+/**
+ * Format bytes with explicit GB display
+ * Always shows in GB with 2 decimal places
+ *
+ * @param bytes - Number of bytes (can be undefined)
+ * @returns Formatted string like "1.50 GB"
+ *
+ * @example
+ * formatBytesGB(1610612736) // "1.50 GB"
+ */
+export function formatBytesGB(bytes: number | undefined): string {
+  if (!bytes || bytes <= 0) return '0 GB';
+  const gb = bytes / (1024 * 1024 * 1024);
+  return `${gb.toFixed(2)} GB`;
+}
+
+/**
+ * Format traffic with used/total display
+ *
+ * @param used - Used bytes
+ * @param total - Total bytes (0 or undefined means unlimited)
+ * @returns Formatted string like "1.5 GB / 10 GB" or "1.5 GB / 无限制"
+ */
+export function formatTrafficUsage(used: number | undefined, total: number | undefined): string {
+  const usedStr = formatBytes(used);
+  if (!total || total <= 0) {
+    return `${usedStr} / 无限制`;
+  }
+  return `${usedStr} / ${formatBytes(total)}`;
+}
+
+/**
+ * Calculate traffic usage percentage
+ *
+ * @param used - Used bytes
+ * @param total - Total bytes
+ * @returns Percentage (0-100), or 0 if total is 0/undefined
+ */
+export function getTrafficPercentage(used: number | undefined, total: number | undefined): number {
+  if (!used || !total || total <= 0) return 0;
+  return Math.min(100, Math.round((used / total) * 100));
+}
+
+/**
  * Format uptime seconds to human readable string
  *
  * @param seconds - Uptime in seconds (can be undefined)

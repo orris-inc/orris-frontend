@@ -27,7 +27,8 @@ import {
 } from '@/components/common/DropdownMenu';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/common/Tooltip';
 import { Skeleton } from '@/components/common/Skeleton';
-import type { ResourceGroup, ResourceGroupStatus } from '@/api/resource/types';
+import { ACTIVE_STATUS_CONFIG } from '@/shared/constants/status-config';
+import type { ResourceGroup } from '@/api/resource/types';
 import type { SubscriptionPlan } from '@/api/subscription/types';
 
 interface ResourceGroupMobileListProps {
@@ -40,11 +41,6 @@ interface ResourceGroupMobileListProps {
   onToggleStatus: (resourceGroup: ResourceGroup) => void;
 }
 
-// Status configuration
-const STATUS_CONFIG: Record<ResourceGroupStatus, { label: string; variant: 'success' | 'default' }> = {
-  active: { label: '激活', variant: 'success' },
-  inactive: { label: '未激活', variant: 'default' },
-};
 
 // Format date
 const formatDate = (dateString: string) => {
@@ -137,7 +133,7 @@ export const ResourceGroupMobileList: React.FC<ResourceGroupMobileListProps> = (
     <Accordion type="multiple" className="space-y-1.5">
       {resourceGroups.map((resourceGroup) => {
         const status = resourceGroup.status;
-        const statusConfig = STATUS_CONFIG[status] || { label: '未知', variant: 'default' as const };
+        const statusConfig = ACTIVE_STATUS_CONFIG[status] || { label: '未知', variant: 'default' as const };
         const plan = plansMap[resourceGroup.planId];
 
         return (

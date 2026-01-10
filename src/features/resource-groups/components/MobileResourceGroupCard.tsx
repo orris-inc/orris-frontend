@@ -33,7 +33,8 @@ import { Badge } from '@/components/common/Badge';
 import { MobileActionButton } from '@/components/mobile';
 import { cn } from '@/lib/utils';
 import { formatDate } from '@/shared/utils/date-utils';
-import type { ResourceGroup, ResourceGroupStatus } from '@/api/resource/types';
+import { ACTIVE_STATUS_CONFIG } from '@/shared/constants/status-config';
+import type { ResourceGroup } from '@/api/resource/types';
 import type { SubscriptionPlan } from '@/api/subscription/types';
 
 // ============================================================================
@@ -51,18 +52,6 @@ export interface MobileResourceGroupCardProps {
 }
 
 // ============================================================================
-// Constants
-// ============================================================================
-
-const STATUS_CONFIG: Record<
-  ResourceGroupStatus,
-  { label: string; variant: 'success' | 'default' }
-> = {
-  active: { label: '启用', variant: 'success' },
-  inactive: { label: '禁用', variant: 'default' },
-};
-
-// ============================================================================
 // Main Component
 // ============================================================================
 
@@ -77,7 +66,7 @@ export const MobileResourceGroupCard = ({
 }: MobileResourceGroupCardProps) => {
   const [isExpanded, setIsExpanded] = useState(false);
 
-  const statusConfig = STATUS_CONFIG[resourceGroup.status] || {
+  const statusConfig = ACTIVE_STATUS_CONFIG[resourceGroup.status] || {
     label: resourceGroup.status,
     variant: 'default' as const,
   };

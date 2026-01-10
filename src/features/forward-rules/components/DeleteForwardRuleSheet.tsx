@@ -144,7 +144,7 @@ export const DeleteForwardRuleSheet: React.FC<DeleteForwardRuleSheetProps> = ({
                 <div className="flex items-center gap-2 pt-1">
                   <Server className="size-3.5 text-muted-foreground" />
                   <span className="text-xs text-muted-foreground">
-                    转发节点: {agent.name}
+                    转发Agent: {agent.name}
                   </span>
                 </div>
               )}

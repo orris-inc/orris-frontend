@@ -157,8 +157,8 @@ export const BroadcastURLDialog: React.FC<BroadcastURLDialogProps> = ({
             {showResult
               ? '下发任务已完成'
               : isSingleMode
-                ? `向转发节点 "${targetAgent?.name}" 下发新的API地址`
-                : '向所有在线转发节点下发新的API地址'}
+                ? `向转发Agent "${targetAgent?.name}" 下发新的API地址`
+                : '向所有在线转发Agent下发新的API地址'}
           </DialogDescription>
         </DialogHeader>
 
@@ -196,7 +196,7 @@ export const BroadcastURLDialog: React.FC<BroadcastURLDialogProps> = ({
               <div className="flex items-center gap-2 p-3 bg-yellow-50 dark:bg-yellow-900/20 rounded-lg">
                 <AlertTriangle className="size-4 text-yellow-500" />
                 <span className="text-sm text-yellow-700 dark:text-yellow-300">
-                  {isSingleMode ? '节点当前不在线' : '当前没有在线的转发节点'}
+                  {isSingleMode ? '节点当前不在线' : '当前没有在线的转发Agent'}
                 </span>
               </div>
             ) : (
@@ -229,7 +229,7 @@ export const BroadcastURLDialog: React.FC<BroadcastURLDialogProps> = ({
                 <div className="flex items-center gap-2 p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
                   <AlertTriangle className="size-4 text-blue-500 flex-shrink-0" />
                   <span className="text-xs text-blue-700 dark:text-blue-300">
-                    转发节点收到通知后会自动更新配置并重连到新地址
+                    转发Agent收到通知后会自动更新配置并重连到新地址
                   </span>
                 </div>
               </div>
@@ -345,7 +345,7 @@ export const BroadcastURLDialog: React.FC<BroadcastURLDialogProps> = ({
                   通知成功
                 </p>
                 <p className="text-sm text-green-600 dark:text-green-400 mt-1">
-                  转发节点 "{targetAgent?.name}" 已收到API地址更新通知
+                  转发Agent "{targetAgent?.name}" 已收到API地址更新通知
                 </p>
               </div>
             ) : (
@@ -384,7 +384,7 @@ export const BroadcastURLDialog: React.FC<BroadcastURLDialogProps> = ({
               <div className="flex items-center gap-2 p-3 bg-green-50 dark:bg-green-900/20 rounded-lg">
                 <CheckCircle2 className="size-4 text-green-500 flex-shrink-0" />
                 <span className="text-sm text-green-700 dark:text-green-300">
-                  已成功通知 {broadcastResult.agentsNotified} 个转发节点更新API地址
+                  已成功通知 {broadcastResult.agentsNotified} 个转发Agent更新API地址
                 </span>
               </div>
             )}
@@ -393,7 +393,7 @@ export const BroadcastURLDialog: React.FC<BroadcastURLDialogProps> = ({
               <div className="flex items-center gap-2 p-3 bg-yellow-50 dark:bg-yellow-900/20 rounded-lg">
                 <AlertTriangle className="size-4 text-yellow-500 flex-shrink-0" />
                 <span className="text-sm text-yellow-700 dark:text-yellow-300">
-                  没有在线的转发节点接收通知
+                  没有在线的转发Agent接收通知
                 </span>
               </div>
             )}

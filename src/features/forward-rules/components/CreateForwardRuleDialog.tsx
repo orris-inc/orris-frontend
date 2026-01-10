@@ -259,7 +259,7 @@ export const CreateForwardRuleDialog: React.FC<
     const newErrors: Record<string, string> = {};
 
     if (!formData.agentId) {
-      newErrors.agentId = "请选择转发节点";
+      newErrors.agentId = "请选择转发Agent";
     }
 
     if (!formData.name.trim()) {
@@ -691,7 +691,7 @@ export const CreateForwardRuleDialog: React.FC<
                   {/* Forward Agent */}
                   <div className="flex flex-col gap-2">
                     <Label htmlFor="agentId">
-                      转发节点 <span className="text-destructive">*</span>
+                      转发Agent <span className="text-destructive">*</span>
                     </Label>
                     <Select
                       value={formData.agentId}
@@ -701,7 +701,7 @@ export const CreateForwardRuleDialog: React.FC<
                         id="agentId"
                         className={errors.agentId ? "border-destructive" : ""}
                       >
-                        <SelectValue placeholder="选择转发节点" />
+                        <SelectValue placeholder="选择转发Agent" />
                       </SelectTrigger>
                       <SelectContent>
                         {availableAgentsForSelect.map((agent) => (

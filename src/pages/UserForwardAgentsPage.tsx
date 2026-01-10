@@ -1,6 +1,6 @@
 /**
- * 用户端转发节点列表页面
- * 展示用户通过订阅计划可访问的转发节点
+ * 用户端转发Agent列表页面
+ * 展示用户通过订阅计划可访问的转发Agent
  */
 
 import { useState } from 'react';
@@ -13,7 +13,7 @@ import { useUserForwardAgents } from '@/features/user-forward-rules';
 import type { UserForwardAgent } from '@/api/forward';
 
 export const UserForwardAgentsPage = () => {
-  usePageTitle('转发节点');
+  usePageTitle('转发Agent');
 
   const [searchName, setSearchName] = useState('');
   const [page, setPage] = useState(1);
@@ -35,8 +35,8 @@ export const UserForwardAgentsPage = () => {
       <div className="space-y-6">
         {/* 页面标题 */}
         <div>
-          <h1 className="text-2xl font-semibold text-foreground">转发节点</h1>
-          <p className="text-muted-foreground">查看您可使用的转发节点</p>
+          <h1 className="text-2xl font-semibold text-foreground">转发Agent</h1>
+          <p className="text-muted-foreground">查看您可使用的转发Agent</p>
         </div>
 
         {/* 搜索栏 */}
@@ -60,7 +60,7 @@ export const UserForwardAgentsPage = () => {
         ) : forwardAgents.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-12 text-muted-foreground">
             <Server className="h-12 w-12 mb-4 opacity-50" />
-            <p>暂无可用的转发节点</p>
+            <p>暂无可用的转发Agent</p>
             <p className="text-sm mt-1">请联系管理员或升级您的订阅计划</p>
           </div>
         ) : (

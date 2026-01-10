@@ -28,6 +28,7 @@ import {
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/common/Tooltip';
 import { Skeleton } from '@/components/common/Skeleton';
 import { BillingCycleBadge } from './BillingCycleBadge';
+import { ACTIVE_STATUS_CONFIG } from '@/shared/constants/status-config';
 import type { SubscriptionPlan, PlanStatus, BillingCycle, PlanType } from '@/api/subscription/types';
 
 interface PlanMobileListProps {
@@ -57,11 +58,6 @@ const BILLING_CYCLE_LABELS: Record<BillingCycle, string> = {
   lifetime: '终身',
 };
 
-// Status configuration
-const STATUS_CONFIG: Record<PlanStatus, { label: string; variant: 'success' | 'default' }> = {
-  active: { label: '激活', variant: 'success' },
-  inactive: { label: '未激活', variant: 'default' },
-};
 
 // Get plan price range (supports multiple pricing)
 const getPriceRange = (plan: SubscriptionPlan): {
@@ -202,7 +198,7 @@ export const PlanMobileList: React.FC<PlanMobileListProps> = ({
     <Accordion type="multiple" className="space-y-1.5">
       {plans.map((plan) => {
         const status = plan.status as PlanStatus | undefined;
-        const statusConfig = status ? STATUS_CONFIG[status] : { label: '未知', variant: 'default' as const };
+        const statusConfig = status ? ACTIVE_STATUS_CONFIG[status] : { label: '未知', variant: 'default' as const };
         const planType = plan.planType as PlanType | undefined;
         const priceRange = getPriceRange(plan);
 

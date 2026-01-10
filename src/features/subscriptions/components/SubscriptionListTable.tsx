@@ -23,7 +23,8 @@ import {
   ContextMenuSeparator,
 } from '@/components/common/ContextMenu';
 import { formatDate } from '@/shared/utils/date-utils';
-import type { Subscription, SubscriptionStatus } from '@/api/subscription/types';
+import { SUBSCRIPTION_STATUS_CONFIG } from '@/shared/constants/status-config';
+import type { Subscription } from '@/api/subscription/types';
 import type { UserResponse } from '@/api/user/types';
 
 interface SubscriptionListTableProps {
@@ -44,14 +45,6 @@ interface SubscriptionListTableProps {
   onDelete?: (subscription: Subscription) => void;
 }
 
-// Status configuration
-const STATUS_CONFIG: Record<SubscriptionStatus, { label: string; variant: 'success' | 'default' | 'warning' | 'danger' }> = {
-  active: { label: '激活', variant: 'success' },
-  renewed: { label: '已续费', variant: 'success' },
-  pending: { label: '待处理', variant: 'warning' },
-  cancelled: { label: '已取消', variant: 'danger' },
-  expired: { label: '已过期', variant: 'danger' },
-};
 
 export const SubscriptionListTable: React.FC<SubscriptionListTableProps> = ({
   subscriptions,
@@ -144,7 +137,7 @@ export const SubscriptionListTable: React.FC<SubscriptionListTableProps> = ({
       size: 72,
       meta: { priority: 1 } as ResponsiveColumnMeta,
       cell: ({ row }) => {
-        const statusConfig = STATUS_CONFIG[row.original.status] || { label: row.original.status, variant: 'default' as const };
+        const statusConfig = SUBSCRIPTION_STATUS_CONFIG[row.original.status] || { label: row.original.status, variant: 'default' as const };
         return (
           <AdminBadge variant={statusConfig.variant}>
             {statusConfig.label}

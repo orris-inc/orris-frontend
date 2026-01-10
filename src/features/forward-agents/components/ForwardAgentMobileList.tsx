@@ -4,7 +4,7 @@
  * Supports drag-and-drop reordering with long-press activation
  */
 
-import { useState, useCallback } from 'react';
+import { useCallback } from 'react';
 import {
   Edit,
   Trash2,
@@ -15,7 +15,6 @@ import {
   Terminal,
   Copy,
   Eye,
-  Check,
   Download,
   Loader2,
   ArrowUpCircle,
@@ -42,6 +41,7 @@ import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/common/Too
 import { Badge } from '@/components/common/Badge';
 import { Skeleton } from '@/components/common/Skeleton';
 import { SystemStatusDisplay } from '@/components/common/SystemStatusDisplay';
+import { CopyableAddress } from '@/components/common/CopyableAddress';
 import type { ForwardAgent } from '@/api/forward';
 import type { ResourceGroup } from '@/api/resource/types';
 import { formatBitRate, formatBytes } from '@/shared/utils/format-utils';
@@ -93,53 +93,6 @@ const MobileCardSkeleton: React.FC = () => (
     ))}
   </div>
 );
-
-// Copyable address component for mobile
-const CopyableAddressMobile: React.FC<{ address: string; className?: string }> = ({ address, className = '' }) => {
-  const [copied, setCopied] = useState(false);
-
-  const handleCopy = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    if (address && address !== '-') {
-      navigator.clipboard.writeText(address);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
-    }
-  };
-
-  if (!address || address === '-') {
-    return <span className="text-slate-400 dark:text-slate-500">-</span>;
-  }
-
-  // Truncate long addresses for mobile
-  const displayAddress = address.length > 24
-    ? `${address.slice(0, 12)}...${address.slice(-8)}`
-    : address;
-
-  return (
-    <div className={`flex items-center gap-1 min-w-0 ${className}`}>
-      <Tooltip>
-        <TooltipTrigger asChild>
-          <span className="font-mono text-xs truncate">{displayAddress}</span>
-        </TooltipTrigger>
-        <TooltipContent className="font-mono text-xs max-w-xs break-all">
-          {address}
-        </TooltipContent>
-      </Tooltip>
-      <button
-        onClick={handleCopy}
-        className="flex-shrink-0 p-0.5 rounded hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors"
-        title={copied ? '已复制' : '复制'}
-      >
-        {copied ? (
-          <Check className="size-3 text-green-500" />
-        ) : (
-          <Copy className="size-3 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300" />
-        )}
-      </button>
-    </div>
-  );
-};
 
 export const ForwardAgentMobileList: React.FC<ForwardAgentMobileListProps> = ({
   forwardAgents,
@@ -242,7 +195,7 @@ export const ForwardAgentMobileList: React.FC<ForwardAgentMobileListProps> = ({
   if (forwardAgents.length === 0) {
     return (
       <div className="text-center py-12 text-slate-500 dark:text-slate-400">
-        暂无转发节点数据
+        暂无转发Agent数据
       </div>
     );
   }
@@ -300,9 +253,12 @@ export const ForwardAgentMobileList: React.FC<ForwardAgentMobileListProps> = ({
 
               {/* Address info */}
               <div className="flex items-center gap-1 text-xs text-slate-500 dark:text-slate-400">
-                <CopyableAddressMobile
+                <CopyableAddress
                   address={agent.publicAddress || '-'}
                   className="text-slate-600 dark:text-slate-300"
+                  maxLength={24}
+                  startChars={12}
+                  endChars={8}
                 />
               </div>
             </div>
@@ -425,9 +381,12 @@ export const ForwardAgentMobileList: React.FC<ForwardAgentMobileListProps> = ({
             {agent.tunnelAddress && (
               <div className="flex items-center gap-2">
                 <span className="text-[10px] text-slate-400 dark:text-slate-500 uppercase tracking-wide w-8 flex-shrink-0">隧道</span>
-                <CopyableAddressMobile
+                <CopyableAddress
                   address={agent.tunnelAddress}
                   className="text-slate-600 dark:text-slate-300"
+                  maxLength={24}
+                  startChars={12}
+                  endChars={8}
                 />
               </div>
             )}

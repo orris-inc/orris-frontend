@@ -22,6 +22,7 @@ import {
 } from '@/components/common/ContextMenu';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/common/Tooltip';
 import { BillingCycleBadge } from './BillingCycleBadge';
+import { ACTIVE_STATUS_CONFIG } from '@/shared/constants/status-config';
 import type { SubscriptionPlan, PlanStatus, BillingCycle, PlanType } from '@/api/subscription/types';
 
 // Plan type display names
@@ -111,10 +112,6 @@ interface PlanListTableProps {
   onDelete?: (plan: SubscriptionPlan) => void;
 }
 
-const STATUS_CONFIG: Record<PlanStatus, { label: string; variant: 'success' | 'default' }> = {
-  active: { label: '激活', variant: 'success' },
-  inactive: { label: '未激活', variant: 'default' },
-};
 
 export const PlanListTable: React.FC<PlanListTableProps> = ({
   plans,
@@ -307,7 +304,7 @@ export const PlanListTable: React.FC<PlanListTableProps> = ({
       meta: { priority: 1 } as ResponsiveColumnMeta,
       cell: ({ row }) => {
         const status = row.original.status as PlanStatus | undefined;
-        const statusConfig = status ? STATUS_CONFIG[status] : { label: '未知', variant: 'default' as const };
+        const statusConfig = status ? ACTIVE_STATUS_CONFIG[status] : { label: '未知', variant: 'default' as const };
         return (
           <AdminBadge variant={statusConfig.variant}>
             {statusConfig.label}

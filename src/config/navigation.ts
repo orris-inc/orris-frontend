@@ -165,7 +165,7 @@ export const navigationConfig: readonly NavigationItem[] = [
   },
   {
     id: 'nodes',
-    label: '节点管理',
+    label: '节点Agent管理',
     path: '/admin/nodes',
     icon: Server,
     roles: ['admin'], // Admin only
@@ -187,7 +187,7 @@ export const navigationConfig: readonly NavigationItem[] = [
   },
   {
     id: 'forward-agents',
-    label: '转发节点',
+    label: '转发Agent',
     path: '/admin/forward-agents',
     icon: Cpu,
     roles: ['admin'], // Admin only

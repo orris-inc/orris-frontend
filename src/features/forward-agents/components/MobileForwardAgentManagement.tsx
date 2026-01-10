@@ -24,11 +24,12 @@ import {
   X,
   ChevronLeft,
   ChevronRight,
-  ChevronDown,
   Filter,
+  GripVertical,
 } from 'lucide-react';
 import { MobileStatsScroller } from '@/components/mobile/admin';
 import { AdminBadge } from '@/components/admin';
+import { DraggableMobileList } from '@/components/admin/DraggableMobileList';
 import { Skeleton } from '@/components/common/Skeleton';
 import {
   DropdownMenu,
@@ -63,6 +64,9 @@ export interface MobileForwardAgentManagementProps {
   onCheckUpdate?: (agent: ForwardAgent) => void;
   onPageChange: (page: number) => void;
   checkingAgentId?: string | number | null;
+  // Drag sort props
+  onDragEnd?: (activeId: string, overId: string, oldIndex: number, newIndex: number) => void;
+  isReordering?: boolean;
 }
 
 type StatusFilter = 'all' | 'enabled' | 'disabled' | 'online' | 'offline';
@@ -118,7 +122,7 @@ const EmptyState = ({ hasFilter, onClearFilter }: EmptyStateProps) => (
       <Cpu className="size-8 text-muted-foreground" />
     </div>
     <p className="text-base font-medium text-foreground mb-1">
-      {hasFilter ? '未找到匹配节点' : '暂无转发节点'}
+      {hasFilter ? '未找到匹配节点' : '暂无转发Agent'}
     </p>
     <p className="text-sm text-muted-foreground text-center mb-4">
       {hasFilter ? '尝试调整搜索条件或清除筛选' : '点击右上角按钮创建第一个节点'}
@@ -220,9 +224,15 @@ export const MobileForwardAgentManagement = ({
   onCheckUpdate,
   onPageChange,
   checkingAgentId,
+  onDragEnd,
+  isReordering = false,
 }: MobileForwardAgentManagementProps) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<StatusFilter>('all');
+  const [dragSortEnabled, setDragSortEnabled] = useState(false);
+
+  // Get agent ID for drag-and-drop
+  const getAgentId = useCallback((agent: ForwardAgent) => String(agent.id), []);
 
   // Calculate stats from forwardAgents
   const stats = useMemo(() => {
@@ -266,10 +276,6 @@ export const MobileForwardAgentManagement = ({
   }, []);
 
   const hasFilter = searchQuery !== '' || statusFilter !== 'all';
-
-  // Get current filter label
-  const currentFilterLabel =
-    STATUS_FILTERS.find((f) => f.value === statusFilter)?.label || '全部状态';
 
   // Stats configuration for MobileStatsScroller
   const statsConfig = [
@@ -320,17 +326,18 @@ export const MobileForwardAgentManagement = ({
       {/* Stats Grid */}
       <MobileStatsScroller stats={statsConfig} className="px-0" />
 
-      {/* Action Bar - Search + Actions */}
-      <div className="flex items-center gap-2">
+      {/* Action Bar - Search + Filter + Sort + Refresh + Add */}
+      <div className="flex items-center gap-1.5">
         {/* Search Bar */}
         <div
           className={cn(
             'flex-1 flex items-center gap-2',
-            'h-11 min-h-[44px] px-3',
+            'h-10 min-h-[44px] px-2.5',
             'bg-foreground/5 rounded-xl',
             'border border-border/50',
             'focus-within:border-primary/50 focus-within:ring-1 focus-within:ring-primary/30',
-            'transition-colors'
+            'transition-colors',
+            dragSortEnabled && 'opacity-50 pointer-events-none'
           )}
         >
           <Search className="size-4 text-muted-foreground shrink-0" />
@@ -338,66 +345,97 @@ export const MobileForwardAgentManagement = ({
             type="text"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="搜索节点..."
+            placeholder={dragSortEnabled ? '排序中...' : '搜索...'}
+            disabled={dragSortEnabled}
             className={cn(
               'flex-1 min-w-0',
               'bg-transparent',
               'text-sm text-foreground placeholder:text-muted-foreground',
-              'focus:outline-none'
+              'focus:outline-none',
+              'disabled:cursor-not-allowed'
             )}
           />
-          {searchQuery && (
+          {searchQuery && !dragSortEnabled && (
             <button
               onClick={() => setSearchQuery('')}
-              className="size-8 min-h-[44px] rounded-full flex items-center justify-center hover:bg-foreground/10"
+              className="size-7 rounded-full flex items-center justify-center hover:bg-foreground/10"
             >
-              <X className="size-4 text-muted-foreground" />
+              <X className="size-3.5 text-muted-foreground" />
             </button>
           )}
         </div>
 
-        {/* Status Filter Dropdown */}
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <button
-              className={cn(
-                'h-10 px-3 rounded-xl shrink-0',
-                'flex items-center gap-1.5',
-                'bg-foreground/5 hover:bg-foreground/10',
-                'border border-border/50',
-                'text-sm font-medium',
-                'transition-colors',
-                'focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/50',
-                statusFilter !== 'all' ? 'text-primary' : 'text-muted-foreground'
-              )}
-            >
-              <Filter className="size-4" />
-              <span className="hidden xs:inline">{currentFilterLabel}</span>
-              <ChevronDown className="size-4" />
-            </button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" className="min-w-[140px]">
-            {STATUS_FILTERS.map((filter) => (
-              <DropdownMenuItem
-                key={filter.value}
-                onClick={() => setStatusFilter(filter.value)}
+        {/* Status Filter Dropdown - hidden in drag sort mode */}
+        {!dragSortEnabled && (
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <button
                 className={cn(
-                  'cursor-pointer',
-                  statusFilter === filter.value && 'bg-primary/10 text-primary'
+                  'size-10 min-h-[44px] min-w-[44px] rounded-xl shrink-0',
+                  'flex items-center justify-center relative',
+                  'bg-foreground/5 hover:bg-foreground/10',
+                  'border border-border/50',
+                  'transition-colors',
+                  'focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/50',
+                  statusFilter !== 'all' ? 'text-primary border-primary/50' : 'text-muted-foreground'
                 )}
               >
-                {filter.label}
-              </DropdownMenuItem>
-            ))}
-          </DropdownMenuContent>
-        </DropdownMenu>
+                <Filter className="size-4" />
+                {statusFilter !== 'all' && (
+                  <span className="absolute -top-1 -right-1 size-2 rounded-full bg-primary" />
+                )}
+              </button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="min-w-[140px]">
+              {STATUS_FILTERS.map((filter) => (
+                <DropdownMenuItem
+                  key={filter.value}
+                  onClick={() => setStatusFilter(filter.value)}
+                  className={cn(
+                    'cursor-pointer',
+                    statusFilter === filter.value && 'bg-primary/10 text-primary'
+                  )}
+                >
+                  {filter.label}
+                </DropdownMenuItem>
+              ))}
+            </DropdownMenuContent>
+          </DropdownMenu>
+        )}
+
+        {/* Drag Sort Toggle Button */}
+        {onDragEnd && (
+          <button
+            onClick={() => {
+              const newState = !dragSortEnabled;
+              setDragSortEnabled(newState);
+              // Clear filters when entering drag sort mode
+              if (newState && hasFilter) {
+                clearFilters();
+              }
+            }}
+            disabled={isReordering}
+            className={cn(
+              'size-10 min-h-[44px] min-w-[44px] rounded-xl shrink-0',
+              'flex items-center justify-center',
+              'border border-border/50',
+              'transition-colors',
+              'focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/50',
+              dragSortEnabled
+                ? 'bg-primary/10 border-primary/50 text-primary'
+                : 'bg-foreground/5 hover:bg-foreground/10 text-muted-foreground'
+            )}
+          >
+            <GripVertical className="size-4" />
+          </button>
+        )}
 
         {/* Refresh Button */}
         <button
           onClick={onRefresh}
-          disabled={refreshing}
+          disabled={refreshing || isReordering}
           className={cn(
-            'size-11 min-h-[44px] min-w-[44px] rounded-xl shrink-0',
+            'size-10 min-h-[44px] min-w-[44px] rounded-xl shrink-0',
             'flex items-center justify-center',
             'bg-foreground/5 hover:bg-foreground/10',
             'border border-border/50',
@@ -406,7 +444,7 @@ export const MobileForwardAgentManagement = ({
           )}
         >
           <RefreshCw
-            className={cn('size-4 text-muted-foreground', refreshing && 'animate-spin')}
+            className={cn('size-4 text-muted-foreground', (refreshing || isReordering) && 'animate-spin')}
           />
         </button>
 
@@ -414,7 +452,7 @@ export const MobileForwardAgentManagement = ({
         <button
           onClick={onCreate}
           className={cn(
-            'size-11 min-h-[44px] min-w-[44px] rounded-xl shrink-0',
+            'size-10 min-h-[44px] min-w-[44px] rounded-xl shrink-0',
             'flex items-center justify-center',
             'bg-primary text-primary-foreground',
             'motion-safe:active:scale-[0.97]',
@@ -425,8 +463,23 @@ export const MobileForwardAgentManagement = ({
         </button>
       </div>
 
+      {/* Drag Sort Mode Hint */}
+      {dragSortEnabled && (
+        <div className="flex items-center justify-between px-1">
+          <AdminBadge variant="info" className="text-xs">
+            长按卡片拖拽排序
+          </AdminBadge>
+          <button
+            onClick={() => setDragSortEnabled(false)}
+            className="text-xs text-primary hover:underline"
+          >
+            退出排序
+          </button>
+        </div>
+      )}
+
       {/* Active Filter Badge */}
-      {hasFilter && (
+      {hasFilter && !dragSortEnabled && (
         <div className="flex items-center justify-between">
           <AdminBadge variant="info" className="text-xs">
             显示 {filteredAgents.length} 条结果
@@ -441,11 +494,36 @@ export const MobileForwardAgentManagement = ({
       )}
 
       {/* Agent List */}
-      {loading ? (
+      {loading || isReordering ? (
         <LoadingSkeleton />
-      ) : filteredAgents.length === 0 ? (
-        <EmptyState hasFilter={hasFilter} onClearFilter={clearFilters} />
+      ) : (dragSortEnabled ? forwardAgents : filteredAgents).length === 0 ? (
+        <EmptyState hasFilter={hasFilter && !dragSortEnabled} onClearFilter={clearFilters} />
+      ) : dragSortEnabled && onDragEnd ? (
+        // Drag sort mode: use DraggableMobileList with original agents order
+        <DraggableMobileList
+          items={forwardAgents}
+          getItemId={getAgentId}
+          renderItem={(agent) => (
+            <MobileForwardAgentCard
+              agent={agent}
+              onEdit={onEdit}
+              onDelete={onDelete}
+              onEnable={onEnable}
+              onDisable={onDisable}
+              onGetInstallScript={onGetInstallScript}
+              onCopy={onCopy}
+              onRegenerateToken={onRegenerateToken}
+              onCheckUpdate={onCheckUpdate}
+              checkingAgentId={checkingAgentId}
+            />
+          )}
+          onDragEnd={onDragEnd}
+          enabled={true}
+          longPressDelay={250}
+          className="space-y-2.5"
+        />
       ) : (
+        // Normal mode: filtered list without drag
         <div className="space-y-2.5">
           {filteredAgents.map((agent) => (
             <MobileForwardAgentCard

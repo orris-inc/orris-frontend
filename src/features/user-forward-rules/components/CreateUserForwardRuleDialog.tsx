@@ -179,7 +179,7 @@ export const CreateUserForwardRuleDialog: React.FC<CreateUserForwardRuleDialogPr
     const newErrors: Record<string, string> = {};
 
     if (!formData.agentId) {
-      newErrors.agentId = '请选择转发节点';
+      newErrors.agentId = '请选择转发Agent';
     }
 
     if (!formData.name.trim()) {
@@ -370,7 +370,7 @@ export const CreateUserForwardRuleDialog: React.FC<CreateUserForwardRuleDialogPr
               {/* Forward agent selection */}
               <div className="flex flex-col gap-2">
                 <Label htmlFor="agentId">
-                  转发节点 <span className="text-destructive">*</span>
+                  转发Agent <span className="text-destructive">*</span>
                 </Label>
                 <Select
                   value={formData.agentId}
@@ -378,7 +378,7 @@ export const CreateUserForwardRuleDialog: React.FC<CreateUserForwardRuleDialogPr
                   disabled={isCreating || isLoadingAgents}
                 >
                   <SelectTrigger id="agentId" className={errors.agentId ? 'border-destructive' : ''}>
-                    <SelectValue placeholder={isLoadingAgents ? '加载中...' : '选择转发节点'} />
+                    <SelectValue placeholder={isLoadingAgents ? '加载中...' : '选择转发Agent'} />
                   </SelectTrigger>
                   <SelectContent>
                     {forwardAgents
@@ -404,7 +404,7 @@ export const CreateUserForwardRuleDialog: React.FC<CreateUserForwardRuleDialogPr
                 )}
                 {!isLoadingAgents && forwardAgents.filter(a => a.status === 'enabled').length === 0 && (
                   <p className="text-xs text-amber-600 dark:text-amber-400">
-                    暂无可用的转发节点，请联系管理员
+                    暂无可用的转发Agent，请联系管理员
                   </p>
                 )}
               </div>

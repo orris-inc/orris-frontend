@@ -1,5 +1,5 @@
 /**
- * 转发节点详情查看对话框
+ * 转发Agent详情查看对话框
  */
 
 import {
@@ -158,7 +158,7 @@ export const ForwardAgentDetailDialog: React.FC<
             <DialogTitle className="flex items-center gap-3">
               {agent.name}
               <Badge variant="outline" className="font-normal">
-                转发节点
+                转发Agent
               </Badge>
             </DialogTitle>
             <div className="flex items-center gap-2 mr-6">

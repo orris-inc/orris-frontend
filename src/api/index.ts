@@ -65,7 +65,47 @@ export * from './node';
 export * from './forward';
 export * from './notification';
 export * from './payment';
-export * from './resource';
+
+// Resource module (exclude BatchOperationResult to avoid conflict with forward module)
+export {
+  createResourceGroup,
+  getResourceGroup,
+  listResourceGroups,
+  updateResourceGroup,
+  deleteResourceGroup,
+  activateResourceGroup,
+  deactivateResourceGroup,
+  addNodesToGroup,
+  removeNodesFromGroup,
+  listGroupNodes,
+  addForwardAgentsToGroup,
+  removeForwardAgentsFromGroup,
+  listGroupForwardAgents,
+  addForwardRulesToGroup,
+  removeForwardRulesFromGroup,
+  listGroupForwardRules,
+} from './resource/client';
+
+export type {
+  ResourceGroup,
+  ResourceGroupStatus,
+  CreateResourceGroupRequest,
+  UpdateResourceGroupRequest,
+  ListResourceGroupsParams,
+  AddNodesToGroupRequest,
+  RemoveNodesFromGroupRequest,
+  AddForwardAgentsToGroupRequest,
+  RemoveForwardAgentsToGroupRequest,
+  AddForwardRulesToGroupRequest,
+  RemoveForwardRulesFromGroupRequest,
+  NodeSummaryResponse,
+  ForwardAgentSummaryResponse,
+  ForwardRuleSummaryResponse,
+  // Rename to avoid conflict with forward module
+  BatchOperationResult as ResourceBatchOperationResult,
+  BatchOperationError as ResourceBatchOperationError,
+  ListGroupMembersParams,
+} from './resource/types';
 
 // Admin module (traffic statistics)
 export * from './admin';

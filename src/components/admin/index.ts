@@ -22,8 +22,9 @@ export {
   AdminTablePagination,
   AdminBadge,
 } from './AdminTable';
-export { DataTable, type ColumnDef, type SortingState, type RowSelectionState, type ResponsiveColumnMeta } from './DataTable';
+export { DataTable, type ColumnDef, type SortingState, type RowSelectionState, type OnChangeFn, type ResponsiveColumnMeta } from './DataTable';
 export { DraggableDataTable } from './DraggableDataTable';
+export { TableActionMenu, ActionButton, type ActionItem, type TableActionMenuProps, type ActionButtonProps } from './TableActionMenu';
 export { DraggableMobileList } from './DraggableMobileList';
 export { TruncatedId } from './TruncatedId';
 export { DateRangeSelector } from './DateRangeSelector';

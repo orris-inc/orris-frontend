@@ -39,7 +39,7 @@ import { useBreakpoint } from '@/hooks/useBreakpoint';
 import type { Node, UpdateNodeRequest, CreateNodeRequest } from '@/api/node';
 
 export const NodeManagementPage = () => {
-  usePageTitle('节点管理');
+  usePageTitle('节点Agent管理');
 
   const { isMobile } = useBreakpoint();
 
@@ -245,7 +245,7 @@ export const NodeManagementPage = () => {
           <MobileNodeManagement
             nodes={nodes}
             resourceGroupsMap={resourceGroupsMap}
-            loading={isFetching || isReordering}
+            loading={isFetching}
             refreshing={isFetching}
             page={pagination.page}
             pageSize={pagination.pageSize}
@@ -260,6 +260,8 @@ export const NodeManagementPage = () => {
             onActivate={handleActivate}
             onDeactivate={handleDeactivate}
             onPageChange={handlePageChange}
+            onDragEnd={handleDragEnd}
+            isReordering={isReordering}
           />
         </div>
       ) : (
@@ -269,7 +271,7 @@ export const NodeManagementPage = () => {
             <div className="flex items-center justify-between gap-4 flex-wrap">
               {/* Left: Title + Primary Stats */}
               <div className="flex items-center gap-4">
-                <h1 className="text-sm font-semibold text-foreground">节点管理</h1>
+                <h1 className="text-sm font-semibold text-foreground">节点Agent管理</h1>
                 <div className="h-4 w-px bg-border hidden sm:block" />
                 <div className="flex items-center gap-3 text-xs">
                   <span className="flex items-center gap-1 text-muted-foreground">

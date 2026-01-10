@@ -234,7 +234,7 @@ export const MobileAdminDashboard = ({
     {
       icon: <Server className="size-5 text-primary" strokeWidth={1.5} />,
       iconBg: 'bg-primary/10',
-      title: '节点管理',
+      title: '节点Agent管理',
       subtitle: '监控和配置服务器节点',
       path: '/admin/nodes',
     },
@@ -258,7 +258,7 @@ export const MobileAdminDashboard = ({
     {
       icon: <Cpu className="size-5" strokeWidth={1.5} />,
       iconBg: 'bg-muted/60',
-      title: '转发节点',
+      title: '转发Agent',
       path: '/admin/forward-agents',
     },
     {

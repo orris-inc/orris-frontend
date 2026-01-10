@@ -26,7 +26,8 @@ import { AdminBadge, TruncatedId } from '@/components/admin';
 import { SubscriptionLinkSelector } from '@/components/subscription';
 import { formatDate } from '@/shared/utils/date-utils';
 import { useNotificationStore } from '@/shared/stores/notification-store';
-import type { Subscription, SubscriptionStatus, PlanType } from '@/api/subscription/types';
+import { SUBSCRIPTION_STATUS_CONFIG, PLAN_TYPE_CONFIG } from '@/shared/constants/status-config';
+import type { Subscription } from '@/api/subscription/types';
 import type { UserResponse } from '@/api/user/types';
 
 interface SubscriptionDetailDialogProps {
@@ -36,21 +37,6 @@ interface SubscriptionDetailDialogProps {
   onClose: () => void;
 }
 
-// Status configuration
-const STATUS_CONFIG: Record<SubscriptionStatus, { label: string; variant: 'success' | 'default' | 'warning' | 'danger' }> = {
-  active: { label: '激活', variant: 'success' },
-  renewed: { label: '已续费', variant: 'success' },
-  pending: { label: '待处理', variant: 'warning' },
-  cancelled: { label: '已取消', variant: 'danger' },
-  expired: { label: '已过期', variant: 'danger' },
-};
-
-// Plan type configuration
-const PLAN_TYPE_CONFIG: Record<PlanType, { label: string; variant: 'info' | 'warning' }> = {
-  node: { label: '节点订阅', variant: 'info' },
-  forward: { label: '端口转发', variant: 'warning' },
-  hybrid: { label: '混合订阅', variant: 'info' },
-};
 
 // Detail item component
 const DetailItem: React.FC<{
@@ -97,7 +83,7 @@ export const SubscriptionDetailDialog: React.FC<SubscriptionDetailDialogProps> =
 }) => {
   if (!subscription) return null;
 
-  const statusConfig = STATUS_CONFIG[subscription.status] || { label: subscription.status, variant: 'default' as const };
+  const statusConfig = SUBSCRIPTION_STATUS_CONFIG[subscription.status] || { label: subscription.status, variant: 'default' as const };
   const planTypeConfig = subscription.plan?.planType
     ? PLAN_TYPE_CONFIG[subscription.plan.planType]
     : { label: '节点订阅', variant: 'info' as const };

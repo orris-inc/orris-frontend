@@ -4,9 +4,13 @@
  */
 
 import { useMemo, useCallback, useState } from 'react';
-import { Edit, Trash2, Power, PowerOff, MoreHorizontal, Copy, Check, Bot, Server, Settings, ArrowRight } from 'lucide-react';
-import { DataTable, type ColumnDef, type ResponsiveColumnMeta } from '@/components/admin';
+import { Edit, Trash2, Power, PowerOff, MoreHorizontal, Bot, Server, Settings, ArrowRight } from 'lucide-react';
+import { CopyableAddress } from '@/components/common/CopyableAddress';
+import { formatBytes } from '@/shared/utils/format-utils';
+import { DataTable, type ColumnDef, type ResponsiveColumnMeta, type RowSelectionState } from '@/components/admin';
+import type { OnChangeFn } from '@tanstack/react-table';
 import { Badge } from '@/components/common/Badge';
+import { Checkbox } from '@/components/common/Checkbox';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -38,49 +42,11 @@ interface UserForwardRuleListProps {
   onEnabling?: boolean;
   onDisabling?: boolean;
   onDeleting?: boolean;
+  // Row selection
+  rowSelection?: RowSelectionState;
+  onRowSelectionChange?: OnChangeFn<RowSelectionState>;
+  enableSelection?: boolean;
 }
-
-// Format bytes (default display in GB)
-const formatBytes = (bytes?: number) => {
-  if (!bytes) return '0 GB';
-  const gb = bytes / (1024 * 1024 * 1024);
-  return `${gb.toFixed(2)} GB`;
-};
-
-// Copyable address component
-const CopyableAddress: React.FC<{ address: string; className?: string }> = ({ address, className = '' }) => {
-  const [copied, setCopied] = useState(false);
-
-  const handleCopy = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    if (address && address !== '-') {
-      navigator.clipboard.writeText(address);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
-    }
-  };
-
-  if (!address || address === '-') {
-    return <span className="text-muted-foreground">-</span>;
-  }
-
-  return (
-    <div className={`flex items-center gap-1 min-w-0 ${className}`}>
-      <span className="font-mono text-xs truncate">{address}</span>
-      <button
-        onClick={handleCopy}
-        className="flex-shrink-0 p-0.5 rounded hover:bg-muted transition-colors"
-        title={copied ? '已复制' : '复制'}
-      >
-        {copied ? (
-          <Check className="size-3 text-green-500" />
-        ) : (
-          <Copy className="size-3 text-muted-foreground hover:text-foreground" />
-        )}
-      </button>
-    </div>
-  );
-};
 
 // Chain nodes display component
 const ChainNodesDisplay: React.FC<{
@@ -204,6 +170,9 @@ export const UserForwardRuleList: React.FC<UserForwardRuleListProps> = ({
   onEdit,
   onDelete,
   onToggleStatus,
+  rowSelection,
+  onRowSelectionChange,
+  enableSelection = true,
 }) => {
   const [deleteConfirm, setDeleteConfirm] = useState<{
     open: boolean;
@@ -269,227 +238,262 @@ export const UserForwardRuleList: React.FC<UserForwardRuleListProps> = ({
     </>
   ), [onToggleStatus, handleDeleteClick]);
 
-  const columns = useMemo<ColumnDef<ForwardRule, unknown>[]>(() => [
-    {
-      accessorKey: 'name',
-      header: '规则名',
-      size: 150,
-      meta: { priority: 1 } as ResponsiveColumnMeta,
-      cell: ({ row }) => (
-        <div className="space-y-1 min-w-0">
-          <div className="font-medium truncate">{row.original.name}</div>
-          {row.original.remark && (
-            <div className="text-xs text-muted-foreground line-clamp-1">
-              {row.original.remark}
-            </div>
-          )}
-        </div>
-      ),
-    },
-    {
-      id: 'entry',
-      header: '入口',
-      size: 220,
-      meta: { priority: 1 } as ResponsiveColumnMeta,
-      cell: ({ row }) => {
-        const rule = row.original;
-        const agent = agentsMap[rule.agentId];
-        const agentName = agent?.name || `ID: ${rule.agentId.slice(0, 8)}...`;
-        const entryAddress = agent?.publicAddress ? `${agent.publicAddress}:${rule.listenPort}` : '-';
-        return (
-          <div className="space-y-0.5 min-w-0">
-            <div className="flex items-center gap-1.5 text-sm">
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Bot className="size-3.5 text-green-500 flex-shrink-0" />
-                </TooltipTrigger>
-                <TooltipContent>入口 Agent</TooltipContent>
-              </Tooltip>
-              <span className="truncate">{agentName}</span>
-            </div>
-            <CopyableAddress address={entryAddress} className="text-blue-600 dark:text-blue-400 pl-5" />
+  const columns = useMemo<ColumnDef<ForwardRule, unknown>[]>(() => {
+    const cols: ColumnDef<ForwardRule, unknown>[] = [];
+
+    // Add selection column if enabled - fixed width to prevent layout issues
+    if (enableSelection) {
+      cols.push({
+        id: 'select',
+        size: 40,
+        minSize: 40,
+        maxSize: 40,
+        meta: { priority: 1 } as ResponsiveColumnMeta,
+        header: ({ table }) => (
+          <Checkbox
+            checked={table.getIsAllPageRowsSelected()}
+            onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
+            aria-label="Select all"
+          />
+        ),
+        cell: ({ row }) => (
+          <Checkbox
+            checked={row.getIsSelected()}
+            onCheckedChange={(value) => row.toggleSelected(!!value)}
+            onClick={(e) => e.stopPropagation()}
+            aria-label="Select row"
+          />
+        ),
+        enableSorting: false,
+        enableHiding: false,
+      });
+    }
+
+    // Add other columns
+    cols.push(
+      {
+        accessorKey: 'name',
+        header: '规则名',
+        size: 150,
+        meta: { priority: 1 } as ResponsiveColumnMeta,
+        cell: ({ row }) => (
+          <div className="space-y-1 min-w-0">
+            <div className="font-medium truncate">{row.original.name}</div>
+            {row.original.remark && (
+              <div className="text-xs text-muted-foreground line-clamp-1">
+                {row.original.remark}
+              </div>
+            )}
           </div>
-        );
+        ),
       },
-    },
-    {
-      id: 'exit',
-      header: '出口',
-      size: 240,
-      meta: { priority: 1 } as ResponsiveColumnMeta,
-      cell: ({ row }) => {
-        const rule = row.original;
-
-        // Helper function to get target address
-        const getTargetDisplay = () => {
-          if (rule.targetAddress) {
-            return {
-              name: '目标地址',
-              address: `${rule.targetAddress}:${rule.targetPort}`,
-              type: 'manual' as const,
-            };
-          }
-          return null;
-        };
-
-        // Exit type icon component
-        const ExitTypeIcon: React.FC<{ type: 'agent' | 'manual'; className?: string }> = ({ type, className = '' }) => {
-          const iconProps = { className: `size-3.5 ${className}` };
-          switch (type) {
-            case 'agent':
-              return (
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <Bot {...iconProps} />
-                  </TooltipTrigger>
-                  <TooltipContent>经由转发 Agent</TooltipContent>
-                </Tooltip>
-              );
-            case 'manual':
-              return (
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <Settings {...iconProps} />
-                  </TooltipTrigger>
-                  <TooltipContent>目标地址</TooltipContent>
-                </Tooltip>
-              );
-          }
-        };
-
-        // entry type: show exit agent -> target
-        if (rule.ruleType === 'entry' && rule.exitAgentId) {
-          const exitAgent = agentsMap[rule.exitAgentId];
-          const exitName = exitAgent?.name || `ID: ${rule.exitAgentId.slice(0, 8)}...`;
-          const target = getTargetDisplay();
-          const targetAddress = target?.address || '-';
+      {
+        id: 'entry',
+        header: '入口',
+        size: 220,
+        meta: { priority: 1 } as ResponsiveColumnMeta,
+        cell: ({ row }) => {
+          const rule = row.original;
+          const agent = agentsMap[rule.agentId];
+          const agentName = agent?.name || `ID: ${rule.agentId.slice(0, 8)}...`;
+          const entryAddress = agent?.publicAddress ? `${agent.publicAddress}:${rule.listenPort}` : '-';
           return (
             <div className="space-y-0.5 min-w-0">
               <div className="flex items-center gap-1.5 text-sm">
-                <ExitTypeIcon type="agent" className="text-purple-500 flex-shrink-0" />
-                <span className="truncate">{exitName}</span>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Bot className="size-3.5 text-green-500 flex-shrink-0" />
+                  </TooltipTrigger>
+                  <TooltipContent>入口 Agent</TooltipContent>
+                </Tooltip>
+                <span className="truncate">{agentName}</span>
               </div>
-              <CopyableAddress address={targetAddress} className="text-muted-foreground pl-5" />
+              <CopyableAddress address={entryAddress} className="text-blue-600 dark:text-blue-400 pl-5" />
             </div>
           );
-        }
+        },
+      },
+      {
+        id: 'exit',
+        header: '出口',
+        size: 240,
+        meta: { priority: 1 } as ResponsiveColumnMeta,
+        cell: ({ row }) => {
+          const rule = row.original;
 
-        // chain and direct_chain types: show chain nodes info -> target
-        if ((rule.ruleType === 'chain' || rule.ruleType === 'direct_chain') && rule.chainAgentIds && rule.chainAgentIds.length > 0) {
+          // Helper function to get target address
+          const getTargetDisplay = () => {
+            if (rule.targetAddress) {
+              return {
+                name: '目标地址',
+                address: `${rule.targetAddress}:${rule.targetPort}`,
+                type: 'manual' as const,
+              };
+            }
+            return null;
+          };
+
+          // Exit type icon component
+          const ExitTypeIcon: React.FC<{ type: 'agent' | 'manual'; className?: string }> = ({ type, className = '' }) => {
+            const iconProps = { className: `size-3.5 ${className}` };
+            switch (type) {
+              case 'agent':
+                return (
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Bot {...iconProps} />
+                    </TooltipTrigger>
+                    <TooltipContent>经由转发 Agent</TooltipContent>
+                  </Tooltip>
+                );
+              case 'manual':
+                return (
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Settings {...iconProps} />
+                    </TooltipTrigger>
+                    <TooltipContent>目标地址</TooltipContent>
+                  </Tooltip>
+                );
+            }
+          };
+
+          // entry type: show exit agent -> target
+          if (rule.ruleType === 'entry' && rule.exitAgentId) {
+            const exitAgent = agentsMap[rule.exitAgentId];
+            const exitName = exitAgent?.name || `ID: ${rule.exitAgentId.slice(0, 8)}...`;
+            const target = getTargetDisplay();
+            const targetAddress = target?.address || '-';
+            return (
+              <div className="space-y-0.5 min-w-0">
+                <div className="flex items-center gap-1.5 text-sm">
+                  <ExitTypeIcon type="agent" className="text-purple-500 flex-shrink-0" />
+                  <span className="truncate">{exitName}</span>
+                </div>
+                <CopyableAddress address={targetAddress} className="text-muted-foreground pl-5" />
+              </div>
+            );
+          }
+
+          // chain and direct_chain types: show chain nodes info -> target
+          if ((rule.ruleType === 'chain' || rule.ruleType === 'direct_chain') && rule.chainAgentIds && rule.chainAgentIds.length > 0) {
+            const target = getTargetDisplay();
+            return (
+              <ChainNodesDisplay
+                chainAgentIds={rule.chainAgentIds}
+                agentsMap={agentsMap}
+                targetDisplay={target}
+              />
+            );
+          }
+
+          // direct type: show target
           const target = getTargetDisplay();
-          return (
-            <ChainNodesDisplay
-              chainAgentIds={rule.chainAgentIds}
-              agentsMap={agentsMap}
-              targetDisplay={target}
-            />
-          );
-        }
-
-        // direct type: show target
-        const target = getTargetDisplay();
-        if (target) {
-          return (
-            <div className="space-y-0.5 min-w-0">
-              <div className="flex items-center gap-1.5 text-sm text-muted-foreground">
-                <ExitTypeIcon type="manual" className="text-muted-foreground flex-shrink-0" />
-                <span className="truncate">{target.name}</span>
+          if (target) {
+            return (
+              <div className="space-y-0.5 min-w-0">
+                <div className="flex items-center gap-1.5 text-sm text-muted-foreground">
+                  <ExitTypeIcon type="manual" className="text-muted-foreground flex-shrink-0" />
+                  <span className="truncate">{target.name}</span>
+                </div>
+                <CopyableAddress address={target.address} className="text-muted-foreground pl-5" />
               </div>
-              <CopyableAddress address={target.address} className="text-muted-foreground pl-5" />
-            </div>
-          );
-        }
+            );
+          }
 
-        return <span className="text-muted-foreground">-</span>;
+          return <span className="text-muted-foreground">-</span>;
+        },
       },
-    },
-    {
-      id: 'traffic',
-      header: '已用流量',
-      size: 100,
-      meta: { priority: 1 } as ResponsiveColumnMeta,
-      cell: ({ row }) => {
-        const totalBytes = (row.original.uploadBytes || 0) + (row.original.downloadBytes || 0);
-        return (
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <span className="text-sm text-muted-foreground">
-                {formatBytes(totalBytes)}
-              </span>
-            </TooltipTrigger>
-            <TooltipContent>
-              <div className="space-y-1">
-                <div>上传: {formatBytes(row.original.uploadBytes)}</div>
-                <div>下载: {formatBytes(row.original.downloadBytes)}</div>
-              </div>
-            </TooltipContent>
-          </Tooltip>
-        );
-      },
-    },
-    {
-      accessorKey: 'status',
-      header: '状态',
-      size: 88,
-      meta: { priority: 1 } as ResponsiveColumnMeta,
-      cell: ({ row }) => {
-        const rule = row.original;
-        return (
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <span className="inline-block">
-                <Badge
-                  variant={rule.status === 'enabled' ? 'default' : 'secondary'}
-                  className="text-xs cursor-pointer"
-                  onClick={() => onToggleStatus(rule)}
-                >
-                  {rule.status === 'enabled' ? '已启用' : '已禁用'}
-                </Badge>
-              </span>
-            </TooltipTrigger>
-            <TooltipContent>
-              {rule.status === 'enabled' ? '点击禁用' : '点击启用'}
-            </TooltipContent>
-          </Tooltip>
-        );
-      },
-    },
-    {
-      id: 'actions',
-      header: '操作',
-      size: 100,
-      meta: { priority: 1 } as ResponsiveColumnMeta,
-      enableSorting: false,
-      cell: ({ row }) => {
-        const rule = row.original;
-        return (
-          <div className="flex items-center gap-1">
+      {
+        id: 'traffic',
+        header: '已用流量',
+        size: 100,
+        meta: { priority: 1 } as ResponsiveColumnMeta,
+        cell: ({ row }) => {
+          const totalBytes = (row.original.uploadBytes || 0) + (row.original.downloadBytes || 0);
+          return (
             <Tooltip>
               <TooltipTrigger asChild>
-                <button
-                  onClick={() => onEdit(rule)}
-                  className="inline-flex items-center justify-center size-8 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted transition-all duration-200"
-                >
-                  <Edit className="size-4" />
-                </button>
+                <span className="text-sm text-muted-foreground">
+                  {formatBytes(totalBytes)}
+                </span>
               </TooltipTrigger>
-              <TooltipContent>编辑</TooltipContent>
+              <TooltipContent>
+                <div className="space-y-1">
+                  <div>上传: {formatBytes(row.original.uploadBytes)}</div>
+                  <div>下载: {formatBytes(row.original.downloadBytes)}</div>
+                </div>
+              </TooltipContent>
             </Tooltip>
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <button className="inline-flex items-center justify-center size-8 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted transition-all duration-200">
-                  <MoreHorizontal className="size-4" />
-                </button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end">
-                {renderDropdownMenuActions(rule)}
-              </DropdownMenuContent>
-            </DropdownMenu>
-          </div>
-        );
+          );
+        },
       },
-    },
-  ], [agentsMap, onEdit, onToggleStatus, renderDropdownMenuActions]);
+      {
+        accessorKey: 'status',
+        header: '状态',
+        size: 88,
+        meta: { priority: 1 } as ResponsiveColumnMeta,
+        cell: ({ row }) => {
+          const rule = row.original;
+          return (
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <span className="inline-block">
+                  <Badge
+                    variant={rule.status === 'enabled' ? 'default' : 'secondary'}
+                    className="text-xs cursor-pointer"
+                    onClick={() => onToggleStatus(rule)}
+                  >
+                    {rule.status === 'enabled' ? '已启用' : '已禁用'}
+                  </Badge>
+                </span>
+              </TooltipTrigger>
+              <TooltipContent>
+                {rule.status === 'enabled' ? '点击禁用' : '点击启用'}
+              </TooltipContent>
+            </Tooltip>
+          );
+        },
+      },
+      {
+        id: 'actions',
+        header: '操作',
+        size: 100,
+        meta: { priority: 1 } as ResponsiveColumnMeta,
+        enableSorting: false,
+        cell: ({ row }) => {
+          const rule = row.original;
+          return (
+            <div className="flex items-center gap-1">
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <button
+                    onClick={() => onEdit(rule)}
+                    className="inline-flex items-center justify-center size-8 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted transition-all duration-200"
+                  >
+                    <Edit className="size-4" />
+                  </button>
+                </TooltipTrigger>
+                <TooltipContent>编辑</TooltipContent>
+              </Tooltip>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <button className="inline-flex items-center justify-center size-8 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted transition-all duration-200">
+                    <MoreHorizontal className="size-4" />
+                  </button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  {renderDropdownMenuActions(rule)}
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </div>
+          );
+        },
+      }
+    );
+
+    return cols;
+  }, [enableSelection, agentsMap, onEdit, onToggleStatus, renderDropdownMenuActions]);
 
   return (
     <>
@@ -506,6 +510,8 @@ export const UserForwardRuleList: React.FC<UserForwardRuleListProps> = ({
         getRowId={(row) => String(row.id)}
         enableContextMenu={true}
         contextMenuContent={renderContextMenuActions}
+        rowSelection={rowSelection}
+        onRowSelectionChange={onRowSelectionChange}
       />
 
       {/* Delete confirm dialog */}

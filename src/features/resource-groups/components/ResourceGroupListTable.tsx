@@ -20,7 +20,8 @@ import {
   ContextMenuItem,
   ContextMenuSeparator,
 } from '@/components/common/ContextMenu';
-import type { ResourceGroup, ResourceGroupStatus } from '@/api/resource/types';
+import { ACTIVE_STATUS_CONFIG } from '@/shared/constants/status-config';
+import type { ResourceGroup } from '@/api/resource/types';
 import type { SubscriptionPlan } from '@/api/subscription/types';
 
 interface ResourceGroupListTableProps {
@@ -38,10 +39,6 @@ interface ResourceGroupListTableProps {
   onToggleStatus: (resourceGroup: ResourceGroup) => void;
 }
 
-const STATUS_CONFIG: Record<ResourceGroupStatus, { label: string; variant: 'success' | 'default' }> = {
-  active: { label: '激活', variant: 'success' },
-  inactive: { label: '未激活', variant: 'default' },
-};
 
 export const ResourceGroupListTable: React.FC<ResourceGroupListTableProps> = ({
   resourceGroups,
@@ -177,7 +174,7 @@ export const ResourceGroupListTable: React.FC<ResourceGroupListTableProps> = ({
       meta: { priority: 1 } as ResponsiveColumnMeta,
       cell: ({ row }) => {
         const status = row.original.status;
-        const statusConfig = STATUS_CONFIG[status] || { label: '未知', variant: 'default' as const };
+        const statusConfig = ACTIVE_STATUS_CONFIG[status] || { label: '未知', variant: 'default' as const };
         return (
           <AdminBadge variant={statusConfig.variant}>
             {statusConfig.label}

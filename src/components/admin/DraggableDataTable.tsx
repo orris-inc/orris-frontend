@@ -17,6 +17,8 @@ import {
   flexRender,
   type ColumnDef,
   type SortingState,
+  type RowSelectionState,
+  type OnChangeFn,
   type Row,
 } from '@tanstack/react-table';
 import {
@@ -223,6 +225,9 @@ interface DraggableDataTableProps<TData> {
   onPageSizeChange?: (pageSize: number) => void;
   sorting?: SortingState;
   onSortingChange?: (sorting: SortingState) => void;
+  // Row selection
+  rowSelection?: RowSelectionState;
+  onRowSelectionChange?: OnChangeFn<RowSelectionState>;
   getRowId: (row: TData) => string;
   emptyMessage?: string;
   enableDragSort?: boolean;
@@ -243,6 +248,8 @@ export function DraggableDataTable<TData>({
   onPageSizeChange,
   sorting: externalSorting,
   onSortingChange,
+  rowSelection,
+  onRowSelectionChange,
   getRowId,
   emptyMessage = 'No data',
   enableDragSort = false,
@@ -267,11 +274,15 @@ export function DraggableDataTable<TData>({
   const table = useReactTable({
     data,
     columns: visibleColumns,
-    state: { sorting },
+    state: {
+      sorting,
+      rowSelection: rowSelection ?? {},
+    },
     onSortingChange: (updater) => {
       const newSorting = typeof updater === 'function' ? updater(sorting) : updater;
       setSorting(newSorting);
     },
+    onRowSelectionChange: onRowSelectionChange,
     getCoreRowModel: getCoreRowModel(),
     getSortedRowModel: getSortedRowModel(),
     getRowId,

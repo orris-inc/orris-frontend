@@ -1,5 +1,5 @@
 /**
- * 编辑转发节点对话框组件
+ * 编辑转发Agent对话框组件
  */
 
 import { useState, useEffect } from "react";
@@ -197,7 +197,7 @@ export const EditForwardAgentDialog: React.FC<EditForwardAgentDialogProps> = ({
     <Dialog open={open} onOpenChange={(open) => !open && onClose()}>
       <DialogContent className="sm:max-w-[600px] flex flex-col max-h-[90vh]">
         <DialogHeader className="flex-shrink-0">
-          <DialogTitle>编辑转发节点</DialogTitle>
+          <DialogTitle>编辑转发Agent</DialogTitle>
         </DialogHeader>
 
         <div className="flex-1 min-h-0 overflow-y-auto -mx-6 px-6">
@@ -397,7 +397,7 @@ export const EditForwardAgentDialog: React.FC<EditForwardAgentDialogProps> = ({
                     </SelectContent>
                   </Select>
                   <p className="text-xs text-muted-foreground">
-                    可选，将转发节点关联到资源组
+                    可选，将转发Agent关联到资源组
                   </p>
                 </div>
 

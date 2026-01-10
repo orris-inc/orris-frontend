@@ -161,7 +161,7 @@ export const CreateForwardAgentSheet: React.FC<CreateForwardAgentSheetProps> = (
             <span>{initialData ? '复制节点' : '新增节点'}</span>
           </SheetTitle>
           <SheetDescription>
-            创建新的转发节点，用于管理端口转发规则
+            创建新的转发Agent，用于管理端口转发规则
           </SheetDescription>
         </SheetHeader>
 
@@ -172,7 +172,7 @@ export const CreateForwardAgentSheet: React.FC<CreateForwardAgentSheetProps> = (
               节点名称 <span className="text-destructive">*</span>
             </label>
             <MobileFormInput
-              placeholder="例如：主转发节点"
+              placeholder="例如：主转发Agent"
               value={formData.name}
               onChange={(value) => handleChange('name', value)}
               error={errors.name}

@@ -486,7 +486,7 @@ export const EditSubscriptionForwardRuleDialog: React.FC<EditSubscriptionForward
               <p className="text-xs text-muted-foreground mb-2">不可修改的信息</p>
               <div className="grid grid-cols-2 gap-2 text-sm">
                 <div>
-                  <span className="text-muted-foreground">转发节点：</span>
+                  <span className="text-muted-foreground">转发Agent：</span>
                   <span>{currentAgent?.name || rule.agentId}</span>
                 </div>
                 <div>

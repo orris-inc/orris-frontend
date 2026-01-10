@@ -4,9 +4,10 @@
  * Switches to mobile card list on small screens
  */
 
-import { useMemo, useCallback, useState } from 'react';
-import { Edit, Trash2, Eye, Power, PowerOff, MoreHorizontal, RotateCcw, Activity, Loader2, Server, Bot, ArrowRight, Files, CheckCircle2, CircleDashed, AlertCircle, Play, Square, AlertTriangle, RotateCw, Copy, Check } from 'lucide-react';
-import { DataTable, DraggableDataTable, AdminBadge, TruncatedId, type ColumnDef, type ResponsiveColumnMeta } from '@/components/admin';
+import { useMemo, useCallback } from 'react';
+import { Edit, Trash2, Eye, Power, PowerOff, MoreHorizontal, RotateCcw, Activity, Loader2, Server, Bot, ArrowRight, Files, CheckCircle2, CircleDashed, AlertCircle, Play, Square, AlertTriangle, RotateCw } from 'lucide-react';
+import { DataTable, DraggableDataTable, AdminBadge, TruncatedId, type ColumnDef, type ResponsiveColumnMeta, type RowSelectionState, type OnChangeFn } from '@/components/admin';
+import { Checkbox } from '@/components/common/Checkbox';
 import { useBreakpoint } from '@/hooks/useBreakpoint';
 import { ForwardRuleMobileList } from './ForwardRuleMobileList';
 import {
@@ -22,6 +23,9 @@ import {
 } from '@/components/common/ContextMenu';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/common/Tooltip';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/common/Popover';
+import { CopyableAddressRow } from '@/components/common/CopyableAddress';
+import { formatBytesGB } from '@/shared/utils/format-utils';
+import { ENABLED_STATUS_CONFIG } from '@/shared/constants/status-config';
 import type { ForwardRule, ForwardAgent, RuleOverallStatusResponse, RuleSyncStatus, RuleRunStatus } from '@/api/forward';
 import type { Node } from '@/api/node';
 import type { ResourceGroup } from '@/api/resource';
@@ -51,13 +55,11 @@ interface ForwardRuleListTableProps {
   // Drag and drop sorting
   enableDragSort?: boolean;
   onDragEnd?: (activeId: string, overId: string, oldIndex: number, newIndex: number) => void;
+  // Row selection
+  rowSelection?: RowSelectionState;
+  onRowSelectionChange?: OnChangeFn<RowSelectionState>;
+  enableSelection?: boolean;
 }
-
-// Status configuration
-const STATUS_CONFIG: Record<string, { label: string; variant: 'success' | 'default' }> = {
-  enabled: { label: '已启用', variant: 'success' },
-  disabled: { label: '已禁用', variant: 'default' },
-};
 
 // Rule type configuration with icons and colors
 const RULE_TYPE_CONFIG: Record<string, { label: string; shortLabel: string; color: string; bgColor: string }> = {
@@ -124,13 +126,6 @@ const RUN_STATUS_CONFIG: Record<RuleRunStatus | 'unknown', { label: string; icon
   unknown: { label: '未知', icon: CircleDashed, className: 'text-gray-400' },
 };
 
-// Format bytes (default display in GB)
-const formatBytes = (bytes?: number) => {
-  if (!bytes) return '0 GB';
-  const gb = bytes / (1024 * 1024 * 1024);
-  return `${gb.toFixed(2)} GB`;
-};
-
 // Flow arrow component for chain visualization
 const FlowArrow: React.FC<{ className?: string; color?: 'purple' | 'blue' | 'green' }> = ({ className = '', color = 'purple' }) => {
   const colorClasses = {
@@ -159,35 +154,6 @@ interface FlowNodeProps {
   tunnelAddress?: string;
   isFirst?: boolean;
 }
-
-// Copyable address row component
-const CopyableAddressRow: React.FC<{ label: string; address: string }> = ({ label, address }) => {
-  const [copied, setCopied] = useState(false);
-
-  const handleCopy = () => {
-    navigator.clipboard.writeText(address);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
-  };
-
-  return (
-    <div className="flex items-center gap-1.5">
-      <span className="text-[10px] text-muted-foreground w-8 flex-shrink-0">{label}</span>
-      <span className="font-mono text-xs text-muted-foreground">{address}</span>
-      <button
-        onClick={handleCopy}
-        className="flex-shrink-0 p-0.5 rounded hover:bg-muted transition-colors"
-        title={copied ? '已复制' : '复制地址'}
-      >
-        {copied ? (
-          <Check className="size-3 text-green-500" />
-        ) : (
-          <Copy className="size-3 text-muted-foreground hover:text-foreground" />
-        )}
-      </button>
-    </div>
-  );
-};
 
 const FlowNode: React.FC<FlowNodeProps> = ({ type, name, address, tunnelAddress }) => {
   const config = {
@@ -289,35 +255,6 @@ interface CollapsedRelaysProps {
   agents: RelayAgentInfo[];
 }
 
-// Address row in relay item
-const RelayAddressRow: React.FC<{ label: string; address: string }> = ({ label, address }) => {
-  const [copied, setCopied] = useState(false);
-
-  const handleCopy = () => {
-    navigator.clipboard.writeText(address);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
-  };
-
-  return (
-    <div className="flex items-center gap-1 mt-0.5 pl-4">
-      <span className="text-[10px] text-muted-foreground w-6 flex-shrink-0">{label}</span>
-      <span className="font-mono text-[11px] text-muted-foreground truncate">{address}</span>
-      <button
-        onClick={handleCopy}
-        className="flex-shrink-0 p-0.5 rounded hover:bg-muted transition-colors"
-        title={copied ? '已复制' : '复制地址'}
-      >
-        {copied ? (
-          <Check className="size-3 text-green-500" />
-        ) : (
-          <Copy className="size-3 text-muted-foreground hover:text-foreground" />
-        )}
-      </button>
-    </div>
-  );
-};
-
 // Single relay item with copy functionality
 const RelayItem: React.FC<{ agent: RelayAgentInfo; index: number }> = ({ agent, index }) => {
   return (
@@ -331,10 +268,14 @@ const RelayItem: React.FC<{ agent: RelayAgentInfo; index: number }> = ({ agent, 
           <span className="truncate font-medium text-foreground">{agent.name}</span>
         </div>
         {agent.address && (
-          <RelayAddressRow label="公网" address={agent.address} />
+          <div className="mt-0.5 pl-4">
+            <CopyableAddressRow label="公网" address={agent.address} showTooltip={false} />
+          </div>
         )}
         {agent.tunnelAddress && (
-          <RelayAddressRow label="隧道" address={agent.tunnelAddress} />
+          <div className="mt-0.5 pl-4">
+            <CopyableAddressRow label="隧道" address={agent.tunnelAddress} showTooltip={false} />
+          </div>
         )}
       </div>
     </div>
@@ -497,6 +438,9 @@ export const ForwardRuleListTable: React.FC<ForwardRuleListTableProps> = ({
   probingRuleId,
   enableDragSort = false,
   onDragEnd,
+  rowSelection,
+  onRowSelectionChange,
+  enableSelection = true,
 }) => {
   // Detect mobile screen
   const { isMobile } = useBreakpoint();
@@ -584,7 +528,35 @@ export const ForwardRuleListTable: React.FC<ForwardRuleListTableProps> = ({
     </>
   ), [onCopy, onResetTraffic, onEnable, onDisable, onDelete]);
 
+  // Selection column definition - fixed width to prevent layout issues
+  const selectColumn: ColumnDef<ForwardRule, unknown> = useMemo(() => ({
+    id: 'select',
+    size: 40,
+    minSize: 40,
+    maxSize: 40,
+    meta: { priority: 1 } as ResponsiveColumnMeta,
+    header: ({ table }) => (
+      <Checkbox
+        checked={table.getIsAllPageRowsSelected()}
+        onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
+        aria-label="Select all"
+      />
+    ),
+    cell: ({ row }) => (
+      <Checkbox
+        checked={row.getIsSelected()}
+        onCheckedChange={(value) => row.toggleSelected(!!value)}
+        onClick={(e) => e.stopPropagation()}
+        aria-label="Select row"
+      />
+    ),
+    enableSorting: false,
+    enableHiding: false,
+  }), []);
+
   const columns = useMemo<ColumnDef<ForwardRule, unknown>[]>(() => [
+    // Conditionally add select column at the beginning
+    ...(enableSelection && rowSelection !== undefined && onRowSelectionChange ? [selectColumn] : []),
     {
       accessorKey: 'id',
       header: 'ID',
@@ -696,7 +668,7 @@ export const ForwardRuleListTable: React.FC<ForwardRuleListTableProps> = ({
       id: 'traffic',
       header: '流量',
       size: 130,
-      meta: { priority: 1 } as ResponsiveColumnMeta,
+      meta: { priority: 1, numeric: true } as ResponsiveColumnMeta,
       cell: ({ row }) => {
         const rule = row.original;
         const uploadBytes = rule.uploadBytes || 0;
@@ -714,7 +686,7 @@ export const ForwardRuleListTable: React.FC<ForwardRuleListTableProps> = ({
               <div className="space-y-1.5 min-w-0 cursor-default">
                 <div className="flex items-center gap-1.5">
                   <span className="text-sm font-medium text-foreground tabular-nums">
-                    {formatBytes(totalBytes)}
+                    {formatBytesGB(totalBytes)}
                   </span>
                   {multiplier && multiplier !== 1 && (
                     <span className={`text-[10px] px-1 py-0.5 rounded font-medium ${isAuto ? 'bg-muted text-muted-foreground' : 'bg-amber-50 dark:bg-amber-900/20 text-amber-600 dark:text-amber-400'}`}>
@@ -741,11 +713,11 @@ export const ForwardRuleListTable: React.FC<ForwardRuleListTableProps> = ({
               <div className="space-y-1.5 text-xs">
                 <div className="flex items-center gap-2">
                   <span className="inline-block w-2 h-2 rounded-full bg-green-500" />
-                  <span>上传: {formatBytes(uploadBytes)}</span>
+                  <span>上传: {formatBytesGB(uploadBytes)}</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <span className="inline-block w-2 h-2 rounded-full bg-blue-500" />
-                  <span>下载: {formatBytes(downloadBytes)}</span>
+                  <span>下载: {formatBytesGB(downloadBytes)}</span>
                 </div>
                 <div className="pt-1 border-t border-border">
                   流量倍率: {multiplier?.toFixed(2) || '1.00'}x ({isAuto ? '自动' : '自定义'})
@@ -854,7 +826,7 @@ export const ForwardRuleListTable: React.FC<ForwardRuleListTableProps> = ({
       meta: { priority: 1 } as ResponsiveColumnMeta,
       cell: ({ row }) => {
         const rule = row.original;
-        const statusConfig = STATUS_CONFIG[rule.status] || { label: rule.status, variant: 'default' as const };
+        const statusConfig = ENABLED_STATUS_CONFIG[rule.status] || { label: rule.status, variant: 'default' as const };
         return (
           <Tooltip>
             <TooltipTrigger asChild>
@@ -941,7 +913,7 @@ export const ForwardRuleListTable: React.FC<ForwardRuleListTableProps> = ({
         );
       },
     },
-  ], [agentsMap, resourceGroupsMap, nodes, polledStatusMap, pollingRuleIds, onDisable, onEnable, onViewDetail, onEdit, onProbe, probingRuleId, renderDropdownMenuActions]);
+  ], [agentsMap, resourceGroupsMap, nodes, polledStatusMap, pollingRuleIds, onDisable, onEnable, onViewDetail, onEdit, onProbe, probingRuleId, renderDropdownMenuActions, enableSelection, rowSelection, onRowSelectionChange, selectColumn]);
 
   // Render mobile card list on small screens
   if (isMobile) {
@@ -987,6 +959,8 @@ export const ForwardRuleListTable: React.FC<ForwardRuleListTableProps> = ({
         onDragEnd={onDragEnd}
         enableContextMenu={true}
         contextMenuContent={renderContextMenuActions}
+        rowSelection={rowSelection}
+        onRowSelectionChange={onRowSelectionChange}
       />
     );
   }
@@ -1005,6 +979,8 @@ export const ForwardRuleListTable: React.FC<ForwardRuleListTableProps> = ({
       getRowId={(row) => String(row.id)}
       enableContextMenu={true}
       contextMenuContent={renderContextMenuActions}
+      rowSelection={rowSelection}
+      onRowSelectionChange={onRowSelectionChange}
     />
   );
 };

@@ -34,6 +34,7 @@ import {
 import { AdminBadge } from '@/components/admin';
 import { MobileActionButton } from '@/components/mobile';
 import { cn } from '@/lib/utils';
+import { ENABLED_STATUS_CONFIG_SHORT } from '@/shared/constants/status-config';
 import type { ForwardRule, ForwardAgent, RuleOverallStatusResponse } from '@/api/forward';
 import type { Node } from '@/api/node';
 
@@ -59,11 +60,6 @@ export interface MobileForwardRuleCardProps {
 // ============================================================================
 // Constants
 // ============================================================================
-
-const STATUS_CONFIG: Record<string, { label: string; variant: 'success' | 'default' }> = {
-  enabled: { label: '启用', variant: 'success' },
-  disabled: { label: '禁用', variant: 'default' },
-};
 
 const RULE_TYPE_CONFIG: Record<string, { label: string; shortLabel: string; variant: 'info' | 'success' | 'warning' | 'default' }> = {
   direct: { label: '直连', shortLabel: '直', variant: 'info' },
@@ -174,7 +170,7 @@ export const MobileForwardRuleCard = ({
 }: MobileForwardRuleCardProps) => {
   const [isExpanded, setIsExpanded] = useState(false);
 
-  const statusConfig = STATUS_CONFIG[rule.status] || { label: rule.status, variant: 'default' as const };
+  const statusConfig = ENABLED_STATUS_CONFIG_SHORT[rule.status] || { label: rule.status, variant: 'default' as const };
   const ruleTypeConfig = RULE_TYPE_CONFIG[rule.ruleType] || { label: rule.ruleType, shortLabel: '?', variant: 'default' as const };
   const protocolConfig = PROTOCOL_CONFIG[rule.protocol] || { label: rule.protocol, variant: 'default' as const };
 

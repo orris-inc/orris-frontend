@@ -4,8 +4,8 @@
  * Switches to mobile card list on small screens
  */
 
-import { useMemo, useState, useCallback } from 'react';
-import { Edit, Trash2, Key, Eye, Power, PowerOff, MoreHorizontal, Terminal, Copy, Check, Download, Loader2, Package, ArrowUpCircle, Radio, Bell, BellOff } from 'lucide-react';
+import { useMemo, useCallback } from 'react';
+import { Edit, Trash2, Key, Eye, Power, PowerOff, MoreHorizontal, Terminal, Copy, Download, Loader2, Package, ArrowUpCircle, Radio, Bell, BellOff } from 'lucide-react';
 import { DataTable, DraggableDataTable, AdminBadge, TruncatedId, SystemStatusCell, SystemStatusHoverProvider, type ColumnDef, type ResponsiveColumnMeta } from '@/components/admin';
 import { useBreakpoint } from '@/hooks/useBreakpoint';
 import { ForwardAgentMobileList } from './ForwardAgentMobileList';
@@ -22,6 +22,7 @@ import {
   ContextMenuSeparator,
 } from '@/components/common/ContextMenu';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/common/Tooltip';
+import { CopyableAddress } from '@/components/common/CopyableAddress';
 import type { ForwardAgent } from '@/api/forward';
 import type { ResourceGroup } from '@/api/resource/types';
 
@@ -50,66 +51,6 @@ interface ForwardAgentListTableProps {
   enableDragSort?: boolean;
   onDragEnd?: (activeId: string, overId: string, oldIndex: number, newIndex: number) => void;
 }
-
-// Copyable address component (supports long address truncation and Tooltip for full content)
-const CopyableAddress: React.FC<{ address: string; className?: string; maxLength?: number }> = ({
-  address,
-  className = '',
-  maxLength = 20,
-}) => {
-  const [copied, setCopied] = useState(false);
-
-  const handleCopy = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    if (address && address !== '-') {
-      navigator.clipboard.writeText(address);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
-    }
-  };
-
-  if (!address || address === '-') {
-    return <span className={className}>-</span>;
-  }
-
-  // Check if truncation is needed
-  const needsTruncate = address.length > maxLength;
-  const displayAddress = needsTruncate
-    ? `${address.slice(0, 8)}...${address.slice(-6)}`
-    : address;
-
-  const content = (
-    <span className={`inline-flex items-center gap-1 group ${className}`}>
-      <span className="truncate">{displayAddress}</span>
-      <button
-        type="button"
-        onClick={handleCopy}
-        className="p-0.5 opacity-0 group-hover:opacity-100 hover:bg-slate-200 dark:hover:bg-slate-600 rounded transition-all flex-shrink-0"
-        title="复制地址"
-      >
-        {copied ? (
-          <Check className="size-3 text-green-500" />
-        ) : (
-          <Copy className="size-3 text-slate-400" />
-        )}
-      </button>
-    </span>
-  );
-
-  // If address is truncated, use Tooltip to show full address
-  if (needsTruncate) {
-    return (
-      <Tooltip>
-        <TooltipTrigger asChild>{content}</TooltipTrigger>
-        <TooltipContent className="font-mono text-xs max-w-xs break-all">
-          {address}
-        </TooltipContent>
-      </Tooltip>
-    );
-  }
-
-  return content;
-};
 
 // Format date
 const formatDate = (dateString?: string) => {
@@ -593,7 +534,7 @@ export const ForwardAgentListTable: React.FC<ForwardAgentListTableProps> = ({
           total={total}
           onPageChange={onPageChange}
           onPageSizeChange={onPageSizeChange}
-          emptyMessage="暂无转发节点数据"
+          emptyMessage="暂无转发Agent数据"
           getRowId={(row) => String(row.id)}
           enableDragSort={true}
           onDragEnd={onDragEnd}
@@ -615,7 +556,7 @@ export const ForwardAgentListTable: React.FC<ForwardAgentListTableProps> = ({
         total={total}
         onPageChange={onPageChange}
         onPageSizeChange={onPageSizeChange}
-        emptyMessage="暂无转发节点数据"
+        emptyMessage="暂无转发Agent数据"
         getRowId={(row) => String(row.id)}
         enableContextMenu={true}
         contextMenuContent={renderContextMenuActions}

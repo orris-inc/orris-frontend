@@ -72,7 +72,7 @@ export const SubscriptionNodeList: React.FC<SubscriptionNodeListProps> = ({
         </div>
         <h3 className="text-lg font-medium mb-2">暂无可用节点</h3>
         <p className="text-muted-foreground text-center max-w-md">
-          当前订阅计划没有可用的转发节点。如需使用转发服务，请联系管理员。
+          当前订阅计划没有可用的转发Agent。如需使用转发服务，请联系管理员。
         </p>
       </div>
     );

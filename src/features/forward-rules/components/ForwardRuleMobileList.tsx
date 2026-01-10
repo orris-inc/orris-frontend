@@ -4,7 +4,7 @@
  * Supports drag-and-drop reordering with long-press activation
  */
 
-import { useState, useCallback } from 'react';
+import { useCallback } from 'react';
 import { DraggableMobileList } from '@/components/admin/DraggableMobileList';
 import {
   Edit,
@@ -15,8 +15,6 @@ import {
   RotateCcw,
   Activity,
   Loader2,
-  Copy,
-  Check,
   Server,
   Bot,
   ArrowRight,
@@ -47,6 +45,9 @@ import {
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/common/Tooltip';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/common/Popover';
 import { Skeleton } from '@/components/common/Skeleton';
+import { CopyableAddress } from '@/components/common/CopyableAddress';
+import { formatBytesGB } from '@/shared/utils/format-utils';
+import { ENABLED_STATUS_CONFIG } from '@/shared/constants/status-config';
 import type { ForwardRule, ForwardAgent, RuleOverallStatusResponse, RuleSyncStatus, RuleRunStatus } from '@/api/forward';
 import type { Node } from '@/api/node';
 import type { ResourceGroup } from '@/api/resource';
@@ -72,12 +73,6 @@ interface ForwardRuleMobileListProps {
   enableDragSort?: boolean;
   onDragEnd?: (activeId: string, overId: string, oldIndex: number, newIndex: number) => void;
 }
-
-// Status configuration
-const STATUS_CONFIG: Record<string, { label: string; variant: 'success' | 'default' }> = {
-  enabled: { label: '已启用', variant: 'success' },
-  disabled: { label: '已禁用', variant: 'default' },
-};
 
 // Rule type configuration with icons and colors
 const RULE_TYPE_CONFIG: Record<string, { label: string; shortLabel: string; color: string; bgColor: string }> = {
@@ -143,48 +138,6 @@ const RUN_STATUS_CONFIG: Record<RuleRunStatus | 'unknown', { label: string; icon
   error: { label: '错误', icon: AlertTriangle, className: 'text-red-500' },
   starting: { label: '启动中', icon: RotateCw, className: 'text-blue-500' },
   unknown: { label: '未知', icon: CircleDashed, className: 'text-gray-400' },
-};
-
-// Copyable address component
-const CopyableAddress: React.FC<{ address: string; className?: string }> = ({ address, className = '' }) => {
-  const [copied, setCopied] = useState(false);
-
-  const handleCopy = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    if (address && address !== '-') {
-      navigator.clipboard.writeText(address);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
-    }
-  };
-
-  if (!address || address === '-') {
-    return <span className="text-slate-400 dark:text-slate-500">-</span>;
-  }
-
-  return (
-    <div className={`flex items-center gap-1 min-w-0 ${className}`}>
-      <span className="font-mono text-xs truncate">{address}</span>
-      <button
-        onClick={handleCopy}
-        className="flex-shrink-0 p-0.5 rounded hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors touch-manipulation"
-        title={copied ? '已复制' : '复制'}
-      >
-        {copied ? (
-          <Check className="size-3 text-green-500" />
-        ) : (
-          <Copy className="size-3 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300" />
-        )}
-      </button>
-    </div>
-  );
-};
-
-// Format bytes (default display in GB)
-const formatBytes = (bytes?: number) => {
-  if (!bytes) return '0 GB';
-  const gb = bytes / (1024 * 1024 * 1024);
-  return `${gb.toFixed(2)} GB`;
 };
 
 // Mobile flow node type configuration - consistent with desktop
@@ -565,7 +518,7 @@ export const ForwardRuleMobileList: React.FC<ForwardRuleMobileListProps> = ({
     const agent = agentsMap[rule.agentId];
     const agentName = agent?.name || `ID: ${rule.agentId}`;
     const entryAddress = getEntryAddress(rule);
-    const statusConfig = STATUS_CONFIG[rule.status] || { label: rule.status, variant: 'default' as const };
+    const statusConfig = ENABLED_STATUS_CONFIG[rule.status] || { label: rule.status, variant: 'default' as const };
     const ruleTypeConfig = RULE_TYPE_CONFIG[rule.ruleType] || RULE_TYPE_CONFIG.direct;
     const protocolConfig = PROTOCOL_CONFIG[rule.protocol] || PROTOCOL_CONFIG.tcp;
     const tunnelTypeConfig = rule.tunnelType ? TUNNEL_TYPE_CONFIG[rule.tunnelType] : null;
@@ -692,10 +645,10 @@ export const ForwardRuleMobileList: React.FC<ForwardRuleMobileListProps> = ({
                   <span className="text-[10px] text-muted-foreground uppercase tracking-wide w-6 flex-shrink-0">流量</span>
                   <div
                     className="flex items-center gap-2 flex-1"
-                    title={`上传: ${formatBytes(uploadBytes)} / 下载: ${formatBytes(downloadBytes)} / 倍率: ${rule.effectiveTrafficMultiplier?.toFixed(2) || '1.00'}x`}
+                    title={`上传: ${formatBytesGB(uploadBytes)} / 下载: ${formatBytesGB(downloadBytes)} / 倍率: ${rule.effectiveTrafficMultiplier?.toFixed(2) || '1.00'}x`}
                   >
                     <span className="text-xs font-medium text-foreground tabular-nums">
-                      {formatBytes(totalBytes)}
+                      {formatBytesGB(totalBytes)}
                     </span>
                     {rule.effectiveTrafficMultiplier && rule.effectiveTrafficMultiplier !== 1 && (
                       <span className="text-[9px] px-1 py-0.5 rounded bg-muted text-muted-foreground">

@@ -21,6 +21,7 @@ import {
   ContextMenuSeparator,
 } from '@/components/common/ContextMenu';
 import { formatDate } from '@/shared/utils/date-utils';
+import { ACTIVE_STATUS_CONFIG, ROLE_CONFIG } from '@/shared/constants/status-config';
 import type { UserResponse } from '@/api/user';
 
 interface UserListTableProps {
@@ -37,20 +38,6 @@ interface UserListTableProps {
   onResetPassword: (user: UserResponse) => void;
 }
 
-// Status configuration
-const STATUS_CONFIG: Record<string, { label: string; variant: 'success' | 'default' | 'warning' | 'danger' }> = {
-  active: { label: '激活', variant: 'success' },
-  inactive: { label: '未激活', variant: 'default' },
-  pending: { label: '待处理', variant: 'warning' },
-  suspended: { label: '暂停', variant: 'danger' },
-  deleted: { label: '已删除', variant: 'danger' },
-};
-
-// Role configuration
-const ROLE_CONFIG: Record<string, { label: string; variant: 'info' | 'default' }> = {
-  user: { label: '用户', variant: 'default' },
-  admin: { label: '管理员', variant: 'info' },
-};
 
 export const UserListTable: React.FC<UserListTableProps> = ({
   users,
@@ -171,7 +158,7 @@ export const UserListTable: React.FC<UserListTableProps> = ({
       size: 72,
       meta: { priority: 1 } as ResponsiveColumnMeta,
       cell: ({ row }) => {
-        const statusConfig = STATUS_CONFIG[row.original.status] || { label: row.original.status, variant: 'default' as const };
+        const statusConfig = ACTIVE_STATUS_CONFIG[row.original.status] || { label: row.original.status, variant: 'default' as const };
         return (
           <AdminBadge variant={statusConfig.variant}>
             {statusConfig.label}

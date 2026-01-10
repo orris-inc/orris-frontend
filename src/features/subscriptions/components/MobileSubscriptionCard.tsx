@@ -31,7 +31,8 @@ import { AdminBadge } from '@/components/admin';
 import { MobileActionButton } from '@/components/mobile';
 import { cn } from '@/lib/utils';
 import { formatDate } from '@/shared/utils/date-utils';
-import type { Subscription, SubscriptionStatus } from '@/api/subscription/types';
+import { SUBSCRIPTION_STATUS_CONFIG } from '@/shared/constants/status-config';
+import type { Subscription } from '@/api/subscription/types';
 import type { UserResponse } from '@/api/user';
 
 // ============================================================================
@@ -47,21 +48,6 @@ export interface MobileSubscriptionCardProps {
   onRenew: (subscription: Subscription) => void;
   onDelete: (subscription: Subscription) => void;
 }
-
-// ============================================================================
-// Constants
-// ============================================================================
-
-const STATUS_CONFIG: Record<
-  SubscriptionStatus,
-  { label: string; variant: 'success' | 'default' | 'warning' | 'danger' | 'info' }
-> = {
-  active: { label: '激活', variant: 'success' },
-  cancelled: { label: '已取消', variant: 'danger' },
-  expired: { label: '已过期', variant: 'default' },
-  pending: { label: '待处理', variant: 'warning' },
-  renewed: { label: '已续费', variant: 'info' },
-};
 
 // ============================================================================
 // Helper Functions
@@ -103,7 +89,7 @@ export const MobileSubscriptionCard = ({
 }: MobileSubscriptionCardProps) => {
   const [isExpanded, setIsExpanded] = useState(false);
 
-  const statusConfig = STATUS_CONFIG[subscription.status] || {
+  const statusConfig = SUBSCRIPTION_STATUS_CONFIG[subscription.status] || {
     label: subscription.status,
     variant: 'default' as const,
   };

@@ -3,7 +3,7 @@
  * Responsive design with iOS 26 Liquid Glass style for mobile
  */
 
-import { useState } from 'react';
+import { useState, useMemo, useCallback, useEffect } from 'react';
 import { Plus, AlertCircle, Zap } from 'lucide-react';
 import { Link } from 'react-router';
 import { DashboardLayout } from '@/layouts/DashboardLayout';
@@ -18,8 +18,17 @@ import {
   CreateUserForwardRuleDialog,
   EditUserForwardRuleDialog,
 } from '@/features/user-forward-rules';
+import { useBatchForwardRules } from '@/features/forward-rules/hooks/useBatchForwardRules';
+import {
+  BatchActionBar,
+  BatchDeleteDialog,
+  BatchToggleStatusDialog,
+  BatchUpdateDialog,
+  MobileBatchActionSheet,
+} from '@/features/forward-rules/components/batch';
 import type { ForwardRule, CreateForwardRuleRequest, UpdateForwardRuleRequest } from '@/api/forward';
 import { canCreateMoreRules } from '@/api/forward';
+import type { RowSelectionState } from '@tanstack/react-table';
 
 export const UserForwardRulesPage = () => {
   usePageTitle('端口转发');
@@ -51,11 +60,82 @@ export const UserForwardRulesPage = () => {
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
 
+  // Batch operation states
+  const [batchDeleteOpen, setBatchDeleteOpen] = useState(false);
+  const [batchEnableOpen, setBatchEnableOpen] = useState(false);
+  const [batchDisableOpen, setBatchDisableOpen] = useState(false);
+  const [batchUpdateOpen, setBatchUpdateOpen] = useState(false);
+  const [mobileActionSheetOpen, setMobileActionSheetOpen] = useState(false);
+
+  // Batch operations hook
+  const {
+    selectedIds,
+    selectedIdsArray,
+    selectedCount,
+    isSelectMode,
+    toggleSelect,
+    toggleSelectAll,
+    clearSelection,
+    enterSelectMode,
+    exitSelectMode,
+    batchDelete,
+    batchEnable,
+    batchDisable,
+    batchUpdate,
+    isDeleting: isBatchDeleting,
+    isEnabling: isBatchEnabling,
+    isDisabling: isBatchDisabling,
+    isUpdating: isBatchUpdating,
+  } = useBatchForwardRules({ isAdmin: false });
+
+  // Convert Set<string> to Record<string, boolean> for DataTable
+  const rowSelection: RowSelectionState = useMemo(() => {
+    const selection: RowSelectionState = {};
+    selectedIds.forEach((id) => {
+      selection[id] = true;
+    });
+    return selection;
+  }, [selectedIds]);
+
+  // Convert agentsMap to array for dialog components
+  const forwardAgents = useMemo(() => Object.values(agentsMap), [agentsMap]);
+
+  // Handle row selection change from DataTable
+  const handleRowSelectionChange = useCallback(
+    (updaterOrValue: RowSelectionState | ((old: RowSelectionState) => RowSelectionState)) => {
+      const newSelection =
+        typeof updaterOrValue === 'function' ? updaterOrValue(rowSelection) : updaterOrValue;
+
+      const newIds = Object.keys(newSelection).filter((id) => newSelection[id]);
+      clearSelection();
+      if (newIds.length > 0) {
+        toggleSelectAll(newIds);
+      }
+    },
+    [rowSelection, clearSelection, toggleSelectAll]
+  );
+
+  // Open mobile action sheet when items are selected in select mode
+  useEffect(() => {
+    if (isMobile && selectedCount > 0) {
+      setMobileActionSheetOpen(true);
+    }
+  }, [isMobile, selectedCount]);
+
   // Check if user has no subscription (no allowed types)
   const hasNoSubscription = usage && usage.allowedTypes.length === 0;
 
   // Check if rule limit is reached (ruleLimit=0 means unlimited)
   const isAtLimit = usage ? !canCreateMoreRules(usage) : false;
+
+  // Wrap page change to clear selection
+  const handlePageChangeWithClear = useCallback(
+    (page: number) => {
+      clearSelection();
+      handlePageChange(page);
+    },
+    [clearSelection, handlePageChange]
+  );
 
   const handleCreateClick = () => {
     setCreateDialogOpen(true);
@@ -157,6 +237,7 @@ export const UserForwardRulesPage = () => {
               <p className="text-xs sm:text-sm text-muted-foreground">
                 共 <span className="font-medium text-foreground">{pagination.total}</span> 条规则
               </p>
+
               <Button
                 onClick={handleCreateClick}
                 disabled={isAtLimit || isUsageLoading}
@@ -168,6 +249,21 @@ export const UserForwardRulesPage = () => {
               </Button>
             </div>
 
+            {/* Batch action bar - show above table when items selected (desktop only) */}
+            {selectedCount > 0 && !isMobile && (
+              <BatchActionBar
+                selectedCount={selectedCount}
+                onBatchDelete={() => setBatchDeleteOpen(true)}
+                onBatchEnable={() => setBatchEnableOpen(true)}
+                onBatchDisable={() => setBatchDisableOpen(true)}
+                onBatchUpdate={() => setBatchUpdateOpen(true)}
+                onClearSelection={clearSelection}
+                isDeleting={isBatchDeleting}
+                isTogglingStatus={isBatchEnabling || isBatchDisabling}
+                isUpdating={isBatchUpdating}
+              />
+            )}
+
             {/* Rule list - Responsive view */}
             {isMobile ? (
               <UserForwardRuleMobileList
@@ -177,7 +273,7 @@ export const UserForwardRulesPage = () => {
                 page={pagination.page}
                 pageSize={pagination.pageSize}
                 total={pagination.total}
-                onPageChange={handlePageChange}
+                onPageChange={handlePageChangeWithClear}
                 onPageSizeChange={handlePageSizeChange}
                 onEdit={handleEditClick}
                 onDelete={handleDeleteClick}
@@ -185,6 +281,11 @@ export const UserForwardRulesPage = () => {
                 onEnabling={isEnabling}
                 onDisabling={isDisabling}
                 onDeleting={isDeleting}
+                isSelectMode={isSelectMode}
+                selectedIds={selectedIds}
+                onToggleSelect={toggleSelect}
+                onEnterSelectMode={enterSelectMode}
+                onExitSelectMode={exitSelectMode}
               />
             ) : (
               <UserForwardRuleList
@@ -194,7 +295,7 @@ export const UserForwardRulesPage = () => {
                 page={pagination.page}
                 pageSize={pagination.pageSize}
                 total={pagination.total}
-                onPageChange={handlePageChange}
+                onPageChange={handlePageChangeWithClear}
                 onPageSizeChange={handlePageSizeChange}
                 onEdit={handleEditClick}
                 onDelete={handleDeleteClick}
@@ -202,6 +303,9 @@ export const UserForwardRulesPage = () => {
                 onEnabling={isEnabling}
                 onDisabling={isDisabling}
                 onDeleting={isDeleting}
+                rowSelection={rowSelection}
+                onRowSelectionChange={handleRowSelectionChange}
+                enableSelection={true}
               />
             )}
           </>
@@ -227,6 +331,86 @@ export const UserForwardRulesPage = () => {
         onSubmit={handleEditSubmit}
         rule={selectedRule}
         isUpdating={isUpdating}
+      />
+
+      {/* Mobile batch action sheet */}
+      {isMobile && selectedCount > 0 && (
+        <MobileBatchActionSheet
+          open={mobileActionSheetOpen}
+          onOpenChange={setMobileActionSheetOpen}
+          selectedCount={selectedCount}
+          onBatchDelete={() => {
+            setMobileActionSheetOpen(false);
+            setBatchDeleteOpen(true);
+          }}
+          onBatchEnable={() => {
+            setMobileActionSheetOpen(false);
+            setBatchEnableOpen(true);
+          }}
+          onBatchDisable={() => {
+            setMobileActionSheetOpen(false);
+            setBatchDisableOpen(true);
+          }}
+          onBatchUpdate={() => {
+            setMobileActionSheetOpen(false);
+            setBatchUpdateOpen(true);
+          }}
+          onClearSelection={() => {
+            exitSelectMode();
+            setMobileActionSheetOpen(false);
+          }}
+          isDeleting={isBatchDeleting}
+          isTogglingStatus={isBatchEnabling || isBatchDisabling}
+          isUpdating={isBatchUpdating}
+        />
+      )}
+
+      {/* Batch delete dialog */}
+      <BatchDeleteDialog
+        open={batchDeleteOpen}
+        onOpenChange={setBatchDeleteOpen}
+        selectedCount={selectedCount}
+        onConfirm={async () => {
+          const result = await batchDelete();
+          return result;
+        }}
+        isDeleting={isBatchDeleting}
+      />
+
+      {/* Batch enable dialog */}
+      <BatchToggleStatusDialog
+        open={batchEnableOpen}
+        onOpenChange={setBatchEnableOpen}
+        selectedCount={selectedCount}
+        targetStatus="enabled"
+        onConfirm={async () => {
+          const result = await batchEnable();
+          return result;
+        }}
+        isProcessing={isBatchEnabling}
+      />
+
+      {/* Batch disable dialog */}
+      <BatchToggleStatusDialog
+        open={batchDisableOpen}
+        onOpenChange={setBatchDisableOpen}
+        selectedCount={selectedCount}
+        targetStatus="disabled"
+        onConfirm={async () => {
+          const result = await batchDisable();
+          return result;
+        }}
+        isProcessing={isBatchDisabling}
+      />
+
+      {/* Batch update dialog */}
+      <BatchUpdateDialog
+        open={batchUpdateOpen}
+        onOpenChange={setBatchUpdateOpen}
+        selectedIds={selectedIdsArray}
+        onConfirm={batchUpdate}
+        isUpdating={isBatchUpdating}
+        agents={forwardAgents}
       />
     </DashboardLayout>
   );

@@ -1,18 +1,16 @@
 /**
  * User Forward Rule Mobile List Component
  * Mobile-friendly card list with iOS 26 Liquid Glass style
- * Features: expandable cards, touch-optimized interactions, glass effects
+ * Features: expandable cards, touch-optimized interactions, glass effects, selection mode
  */
 
-import { useState, useCallback } from 'react';
+import { useCallback, useRef, useState } from 'react';
 import {
   Edit,
   Trash2,
   Power,
   PowerOff,
   MoreHorizontal,
-  Copy,
-  Check,
   Bot,
   Server,
   Settings,
@@ -26,6 +24,7 @@ import {
   AccordionContent,
 } from '@/components/common/Accordion';
 import { Badge } from '@/components/common/Badge';
+import { Checkbox } from '@/components/common/Checkbox';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -37,6 +36,9 @@ import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/common/Too
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/common/Popover';
 import { Skeleton } from '@/components/common/Skeleton';
 import { ConfirmDialog } from '@/components/common/ConfirmDialog';
+import { cn } from '@/lib/utils';
+import { CopyableAddress } from '@/components/common/CopyableAddress';
+import { formatBytesGB } from '@/shared/utils/format-utils';
 import type { ForwardRule, UserForwardAgent } from '@/api/forward';
 
 interface UserForwardRuleMobileListProps {
@@ -54,7 +56,16 @@ interface UserForwardRuleMobileListProps {
   onEnabling?: boolean;
   onDisabling?: boolean;
   onDeleting?: boolean;
+  // Selection mode props
+  isSelectMode?: boolean;
+  selectedIds?: Set<string>;
+  onToggleSelect?: (id: string) => void;
+  onEnterSelectMode?: () => void;
+  onExitSelectMode?: () => void;
 }
+
+// Long press duration in milliseconds
+const LONG_PRESS_DURATION = 500;
 
 // Status configuration
 const STATUS_CONFIG: Record<string, { label: string; variant: 'default' | 'secondary' }> = {
@@ -88,48 +99,6 @@ const RULE_TYPE_CONFIG: Record<string, { label: string; shortLabel: string; colo
     color: 'text-amber-600 dark:text-amber-400',
     bgColor: 'bg-amber-50 dark:bg-amber-900/20',
   },
-};
-
-// Format bytes (default display in GB)
-const formatBytes = (bytes?: number): string => {
-  if (!bytes) return '0 GB';
-  const gb = bytes / (1024 * 1024 * 1024);
-  return `${gb.toFixed(2)} GB`;
-};
-
-// Copyable address component
-const CopyableAddress: React.FC<{ address: string; className?: string }> = ({ address, className = '' }) => {
-  const [copied, setCopied] = useState(false);
-
-  const handleCopy = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    if (address && address !== '-') {
-      navigator.clipboard.writeText(address);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
-    }
-  };
-
-  if (!address || address === '-') {
-    return <span className="text-muted-foreground">-</span>;
-  }
-
-  return (
-    <div className={`flex items-center gap-1 min-w-0 ${className}`}>
-      <span className="font-mono text-xs truncate">{address}</span>
-      <button
-        onClick={handleCopy}
-        className="flex-shrink-0 p-1 rounded-md hover:bg-muted transition-colors touch-manipulation min-h-[28px] min-w-[28px] flex items-center justify-center"
-        title={copied ? '已复制' : '复制'}
-      >
-        {copied ? (
-          <Check className="size-3.5 text-success" />
-        ) : (
-          <Copy className="size-3.5 text-muted-foreground" />
-        )}
-      </button>
-    </div>
-  );
 };
 
 // Mobile flow node component
@@ -315,11 +284,68 @@ export const UserForwardRuleMobileList: React.FC<UserForwardRuleMobileListProps>
   onEdit,
   onDelete,
   onToggleStatus,
+  // Selection mode props
+  isSelectMode = false,
+  selectedIds,
+  onToggleSelect,
+  onEnterSelectMode,
+  // onExitSelectMode is passed through for parent component to handle exit action
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  onExitSelectMode: _onExitSelectMode,
 }) => {
   const [deleteConfirm, setDeleteConfirm] = useState<{
     open: boolean;
     rule: ForwardRule | null;
   }>({ open: false, rule: null });
+
+  // Long press timer ref
+  const longPressTimerRef = useRef<NodeJS.Timeout | null>(null);
+  const longPressTriggeredRef = useRef(false);
+
+  // Handle long press to enter selection mode
+  const handleLongPress = useCallback((ruleId: string) => {
+    if (!isSelectMode) {
+      onEnterSelectMode?.();
+      // Delay selection to ensure selection mode is activated
+      setTimeout(() => onToggleSelect?.(ruleId), 0);
+    }
+  }, [isSelectMode, onEnterSelectMode, onToggleSelect]);
+
+  // Touch/pointer event handlers for long press
+  const handleTouchStart = useCallback((ruleId: string) => {
+    longPressTriggeredRef.current = false;
+    longPressTimerRef.current = setTimeout(() => {
+      longPressTriggeredRef.current = true;
+      handleLongPress(ruleId);
+    }, LONG_PRESS_DURATION);
+  }, [handleLongPress]);
+
+  const handleTouchEnd = useCallback(() => {
+    if (longPressTimerRef.current) {
+      clearTimeout(longPressTimerRef.current);
+      longPressTimerRef.current = null;
+    }
+  }, []);
+
+  const handleTouchMove = useCallback(() => {
+    // Cancel long press if user moves finger
+    if (longPressTimerRef.current) {
+      clearTimeout(longPressTimerRef.current);
+      longPressTimerRef.current = null;
+    }
+  }, []);
+
+  // Handle card click in selection mode
+  const handleCardClick = useCallback((ruleId: string, e: React.MouseEvent) => {
+    if (isSelectMode) {
+      e.preventDefault();
+      e.stopPropagation();
+      // Don't toggle if long press was just triggered
+      if (!longPressTriggeredRef.current) {
+        onToggleSelect?.(ruleId);
+      }
+    }
+  }, [isSelectMode, onToggleSelect]);
 
   const handleDeleteClick = useCallback((rule: ForwardRule) => {
     setDeleteConfirm({ open: true, rule });
@@ -401,6 +427,7 @@ export const UserForwardRuleMobileList: React.FC<UserForwardRuleMobileListProps>
     const statusConfig = STATUS_CONFIG[rule.status] || { label: rule.status, variant: 'secondary' as const };
     const ruleTypeConfig = RULE_TYPE_CONFIG[rule.ruleType] || RULE_TYPE_CONFIG.direct;
     const totalBytes = (rule.uploadBytes || 0) + (rule.downloadBytes || 0);
+    const isSelected = selectedIds?.has(rule.id) ?? false;
 
     // Get target display
     const getTargetDisplay = () => {
@@ -419,11 +446,35 @@ export const UserForwardRuleMobileList: React.FC<UserForwardRuleMobileListProps>
       <AccordionItem
         key={rule.id}
         value={rule.id}
-        className="glass rounded-2xl overflow-hidden border-0 mb-2"
+        className={cn(
+          'glass rounded-2xl overflow-hidden border-0 mb-2 transition-all duration-200',
+          isSelectMode && isSelected && 'ring-2 ring-primary ring-offset-2 ring-offset-background'
+        )}
       >
         {/* Card Header - Always visible */}
-        <div className="p-3">
+        <div
+          className="p-3"
+          onTouchStart={() => handleTouchStart(rule.id)}
+          onTouchEnd={handleTouchEnd}
+          onTouchMove={handleTouchMove}
+          onMouseDown={() => handleTouchStart(rule.id)}
+          onMouseUp={handleTouchEnd}
+          onMouseLeave={handleTouchEnd}
+          onClick={(e) => handleCardClick(rule.id, e)}
+        >
           <div className="flex items-start justify-between gap-2">
+            {/* Selection Checkbox */}
+            {isSelectMode && (
+              <div className="flex items-center justify-center pr-2 min-w-[44px] min-h-[44px]">
+                <Checkbox
+                  checked={isSelected}
+                  onCheckedChange={() => onToggleSelect?.(rule.id)}
+                  className="rounded-full size-5 border-2"
+                  onClick={(e) => e.stopPropagation()}
+                />
+              </div>
+            )}
+
             <div className="flex-1 min-w-0 space-y-1.5">
               {/* Rule name with type badge and status - single line */}
               <div className="flex items-center gap-1.5">
@@ -438,13 +489,15 @@ export const UserForwardRuleMobileList: React.FC<UserForwardRuleMobileListProps>
                 <span className="font-medium text-sm text-foreground truncate flex-1">
                   {rule.name}
                 </span>
-                <Badge
-                  variant={statusConfig.variant}
-                  className="text-[10px] px-1.5 py-0 h-5 flex-shrink-0 cursor-pointer"
-                  onClick={() => onToggleStatus(rule)}
-                >
-                  {statusConfig.label}
-                </Badge>
+                {!isSelectMode && (
+                  <Badge
+                    variant={statusConfig.variant}
+                    className="text-[10px] px-1.5 py-0 h-5 flex-shrink-0 cursor-pointer"
+                    onClick={() => onToggleStatus(rule)}
+                  >
+                    {statusConfig.label}
+                  </Badge>
+                )}
               </div>
 
               {/* Entry agent + address - compact inline */}
@@ -452,113 +505,124 @@ export const UserForwardRuleMobileList: React.FC<UserForwardRuleMobileListProps>
                 <Bot className="size-3.5 text-green-500 flex-shrink-0" />
                 <span className="truncate max-w-[80px]">{agentName}</span>
                 <span className="text-border">|</span>
-                <CopyableAddress address={entryAddress} className="text-primary" />
-              </div>
-            </div>
-
-            {/* Quick Actions - compact */}
-            <div className="flex items-center gap-0.5 flex-shrink-0">
-              <button
-                onClick={() => onEdit(rule)}
-                className="glass-interactive rounded-full p-2 min-h-[40px] min-w-[40px] flex items-center justify-center touch-manipulation"
-                title="编辑"
-              >
-                <Edit className="size-4 text-muted-foreground" />
-              </button>
-              {renderDropdownMenu(rule)}
-            </div>
-          </div>
-        </div>
-
-        {/* Accordion Trigger - more compact */}
-        <AccordionTrigger className="px-3 py-1.5 border-t border-border/50 hover:no-underline hover:bg-muted/30 transition-colors">
-          <span className="text-xs text-muted-foreground">详情</span>
-        </AccordionTrigger>
-
-        {/* Accordion Content - Expanded details */}
-        <AccordionContent>
-          <div className="px-3 pb-3 space-y-2.5 border-t border-border/50 pt-2.5">
-            {/* Exit/Target info */}
-            <div className="space-y-1">
-              <span className="text-[10px] text-muted-foreground uppercase tracking-wide font-medium">出口链路</span>
-              <div className="flex-1 min-w-0">
-                {/* entry type: show exit agent -> target */}
-                {rule.ruleType === 'entry' && rule.exitAgentId && (() => {
-                  const exitAgent = agentsMap[rule.exitAgentId];
-                  const exitName = exitAgent?.name || `ID: ${rule.exitAgentId.slice(0, 8)}...`;
-                  return (
-                    <div className="flex items-center gap-1 flex-wrap">
-                      <MobileFlowNode type="exit" name={exitName} address={exitAgent?.publicAddress} />
-                      {target && (
-                        <>
-                          <ArrowRight className="size-3 text-blue-400 flex-shrink-0" />
-                          <MobileFlowNode type="target" name={target.name} address={target.address} />
-                        </>
-                      )}
-                    </div>
-                  );
-                })()}
-
-                {/* chain types: show chain nodes */}
-                {(rule.ruleType === 'chain' || rule.ruleType === 'direct_chain') && rule.chainAgentIds && rule.chainAgentIds.length > 0 && (
-                  <ChainNodesDisplayMobile
-                    chainAgentIds={rule.chainAgentIds}
-                    agentsMap={agentsMap}
-                    targetDisplay={target}
-                  />
+                {!isSelectMode && (
+                  <CopyableAddress address={entryAddress} className="text-primary" />
                 )}
-
-                {/* direct type: show target only */}
-                {rule.ruleType === 'direct' && target && (
-                  <div className="flex items-center gap-1">
-                    <Settings className="size-3.5 text-muted-foreground flex-shrink-0" />
-                    <span className="text-xs text-muted-foreground">{target.name}:</span>
-                    <CopyableAddress address={target.address} />
-                  </div>
-                )}
-
-                {/* No exit info */}
-                {!rule.exitAgentId && !rule.chainAgentIds?.length && !target && (
-                  <span className="text-xs text-muted-foreground">-</span>
+                {isSelectMode && (
+                  <span className="font-mono text-xs truncate text-primary">{entryAddress}</span>
                 )}
               </div>
             </div>
 
-            {/* Traffic usage - compact inline */}
-            <div className="flex items-center justify-between py-1.5 px-2 rounded-lg bg-muted/30">
-              <span className="text-[10px] text-muted-foreground uppercase tracking-wide font-medium">已用流量</span>
-              <div className="flex items-center gap-2">
-                <span className="text-sm font-semibold font-mono text-foreground">
-                  {formatBytes(totalBytes)}
-                </span>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <div className="flex items-center gap-1 text-[10px] text-muted-foreground">
-                      <span className="w-1.5 h-1.5 rounded-full bg-chart-upload" />
-                      <span>{formatBytes(rule.uploadBytes)}</span>
-                      <span>/</span>
-                      <span className="w-1.5 h-1.5 rounded-full bg-chart-download" />
-                      <span>{formatBytes(rule.downloadBytes)}</span>
-                    </div>
-                  </TooltipTrigger>
-                  <TooltipContent>
-                    <div className="space-y-0.5 text-xs">
-                      <div>上传: {formatBytes(rule.uploadBytes)}</div>
-                      <div>下载: {formatBytes(rule.downloadBytes)}</div>
-                    </div>
-                  </TooltipContent>
-                </Tooltip>
-              </div>
-            </div>
-
-            {/* Remark - compact */}
-            {rule.remark && (
-              <div className="text-xs text-muted-foreground">
-                <span className="font-medium">备注:</span> {rule.remark}
+            {/* Quick Actions - compact (hidden in selection mode) */}
+            {!isSelectMode && (
+              <div className="flex items-center gap-0.5 flex-shrink-0">
+                <button
+                  onClick={() => onEdit(rule)}
+                  className="glass-interactive rounded-full p-2 min-h-[40px] min-w-[40px] flex items-center justify-center touch-manipulation"
+                  title="编辑"
+                >
+                  <Edit className="size-4 text-muted-foreground" />
+                </button>
+                {renderDropdownMenu(rule)}
               </div>
             )}
           </div>
-        </AccordionContent>
+        </div>
+
+        {/* Accordion Trigger - more compact (hidden in selection mode) */}
+        {!isSelectMode && (
+          <AccordionTrigger className="px-3 py-1.5 border-t border-border/50 hover:no-underline hover:bg-muted/30 transition-colors">
+            <span className="text-xs text-muted-foreground">详情</span>
+          </AccordionTrigger>
+        )}
+
+        {/* Accordion Content - Expanded details (hidden in selection mode) */}
+        {!isSelectMode && (
+          <AccordionContent>
+            <div className="px-3 pb-3 space-y-2.5 border-t border-border/50 pt-2.5">
+              {/* Exit/Target info */}
+              <div className="space-y-1">
+                <span className="text-[10px] text-muted-foreground uppercase tracking-wide font-medium">出口链路</span>
+                <div className="flex-1 min-w-0">
+                  {/* entry type: show exit agent -> target */}
+                  {rule.ruleType === 'entry' && rule.exitAgentId && (() => {
+                    const exitAgent = agentsMap[rule.exitAgentId];
+                    const exitName = exitAgent?.name || `ID: ${rule.exitAgentId.slice(0, 8)}...`;
+                    return (
+                      <div className="flex items-center gap-1 flex-wrap">
+                        <MobileFlowNode type="exit" name={exitName} address={exitAgent?.publicAddress} />
+                        {target && (
+                          <>
+                            <ArrowRight className="size-3 text-blue-400 flex-shrink-0" />
+                            <MobileFlowNode type="target" name={target.name} address={target.address} />
+                          </>
+                        )}
+                      </div>
+                    );
+                  })()}
+
+                  {/* chain types: show chain nodes */}
+                  {(rule.ruleType === 'chain' || rule.ruleType === 'direct_chain') && rule.chainAgentIds && rule.chainAgentIds.length > 0 && (
+                    <ChainNodesDisplayMobile
+                      chainAgentIds={rule.chainAgentIds}
+                      agentsMap={agentsMap}
+                      targetDisplay={target}
+                    />
+                  )}
+
+                  {/* direct type: show target only */}
+                  {rule.ruleType === 'direct' && target && (
+                    <div className="flex items-center gap-1">
+                      <Settings className="size-3.5 text-muted-foreground flex-shrink-0" />
+                      <span className="text-xs text-muted-foreground">{target.name}:</span>
+                      <CopyableAddress address={target.address} />
+                    </div>
+                  )}
+
+                  {/* No exit info */}
+                  {!rule.exitAgentId && !rule.chainAgentIds?.length && !target && (
+                    <span className="text-xs text-muted-foreground">-</span>
+                  )}
+                </div>
+              </div>
+
+              {/* Traffic usage - compact inline */}
+              <div className="flex items-center justify-between py-1.5 px-2 rounded-lg bg-muted/30">
+                <span className="text-[10px] text-muted-foreground uppercase tracking-wide font-medium">已用流量</span>
+                <div className="flex items-center gap-2">
+                  <span className="text-sm font-semibold font-mono text-foreground">
+                    {formatBytesGB(totalBytes)}
+                  </span>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <div className="flex items-center gap-1 text-[10px] text-muted-foreground">
+                        <span className="w-1.5 h-1.5 rounded-full bg-chart-upload" />
+                        <span>{formatBytesGB(rule.uploadBytes)}</span>
+                        <span>/</span>
+                        <span className="w-1.5 h-1.5 rounded-full bg-chart-download" />
+                        <span>{formatBytesGB(rule.downloadBytes)}</span>
+                      </div>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <div className="space-y-0.5 text-xs">
+                        <div>上传: {formatBytesGB(rule.uploadBytes)}</div>
+                        <div>下载: {formatBytesGB(rule.downloadBytes)}</div>
+                      </div>
+                    </TooltipContent>
+                  </Tooltip>
+                </div>
+              </div>
+
+              {/* Remark - compact */}
+              {rule.remark && (
+                <div className="text-xs text-muted-foreground">
+                  <span className="font-medium">备注:</span> {rule.remark}
+                </div>
+              )}
+            </div>
+          </AccordionContent>
+        )}
       </AccordionItem>
     );
   };

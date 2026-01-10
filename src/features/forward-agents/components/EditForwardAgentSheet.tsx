@@ -229,7 +229,7 @@ export const EditForwardAgentSheet: React.FC<EditForwardAgentSheetProps> = ({
             <span>编辑节点</span>
           </SheetTitle>
           <SheetDescription>
-            修改转发节点 {agent.name} 的配置
+            修改转发Agent {agent.name} 的配置
           </SheetDescription>
         </SheetHeader>
 

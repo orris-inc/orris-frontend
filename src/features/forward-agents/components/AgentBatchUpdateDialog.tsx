@@ -75,10 +75,10 @@ export const AgentBatchUpdateDialog: React.FC<AgentBatchUpdateDialogProps> = ({
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <ArrowUpCircle className="size-5 text-blue-500" />
-            批量更新转发节点
+            批量更新转发Agent
           </DialogTitle>
           <DialogDescription>
-            {showResult ? '更新任务已提交' : '更新所有有可用更新的在线转发节点'}
+            {showResult ? '更新任务已提交' : '更新所有有可用更新的在线转发Agent'}
           </DialogDescription>
         </DialogHeader>
 
@@ -87,7 +87,7 @@ export const AgentBatchUpdateDialog: React.FC<AgentBatchUpdateDialogProps> = ({
           <div className="space-y-4">
             <div className="p-4 bg-muted rounded-lg">
               <div className="flex items-center justify-between">
-                <span className="text-sm text-muted-foreground">可更新转发节点数</span>
+                <span className="text-sm text-muted-foreground">可更新转发Agent数</span>
                 <Badge variant={updateCount > 0 ? 'default' : 'secondary'}>
                   {updateCount}
                 </Badge>
@@ -98,14 +98,14 @@ export const AgentBatchUpdateDialog: React.FC<AgentBatchUpdateDialogProps> = ({
               <div className="flex items-center gap-2 p-3 bg-green-50 dark:bg-green-900/20 rounded-lg">
                 <CheckCircle2 className="size-4 text-green-500" />
                 <span className="text-sm text-green-700 dark:text-green-300">
-                  所有在线转发节点均为最新版本
+                  所有在线转发Agent均为最新版本
                 </span>
               </div>
             ) : (
               <>
                 <Separator />
                 <div className="space-y-2">
-                  <p className="text-sm font-medium">将更新以下转发节点：</p>
+                  <p className="text-sm font-medium">将更新以下转发Agent：</p>
                   <div className="max-h-[200px] overflow-y-auto space-y-1">
                     {agentsWithUpdates.map((agent) => (
                       <div
@@ -154,7 +154,7 @@ export const AgentBatchUpdateDialog: React.FC<AgentBatchUpdateDialogProps> = ({
               <div className="flex items-center gap-2 p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
                 <Info className="size-4 text-blue-500 flex-shrink-0" />
                 <span className="text-sm text-blue-700 dark:text-blue-300">
-                  结果已截断，单次最多处理 1000 个转发节点
+                  结果已截断，单次最多处理 1000 个转发Agent
                 </span>
               </div>
             )}
@@ -240,7 +240,7 @@ export const AgentBatchUpdateDialog: React.FC<AgentBatchUpdateDialogProps> = ({
                 ) : (
                   <>
                     <ArrowUpCircle className="size-4 mr-2" />
-                    更新 {updateCount} 个转发节点
+                    更新 {updateCount} 个转发Agent
                   </>
                 )}
               </Button>

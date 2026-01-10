@@ -181,7 +181,7 @@ export const CreateForwardAgentDialog: React.FC<
       <DialogContent className="sm:max-w-[500px]">
         <DialogHeader>
           <DialogTitle>
-            {initialData ? "复制转发节点" : "新增转发节点"}
+            {initialData ? "复制转发Agent" : "新增转发Agent"}
           </DialogTitle>
         </DialogHeader>
 
@@ -197,7 +197,7 @@ export const CreateForwardAgentDialog: React.FC<
               onChange={(e) => handleChange("name", e.target.value)}
               error={!!errors.name}
               autoFocus
-              placeholder="例如：主转发节点"
+              placeholder="例如：主转发Agent"
             />
             <p className="text-xs text-muted-foreground">
               {errors.name || "必填项"}

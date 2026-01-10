@@ -68,7 +68,7 @@ export const DeleteForwardAgentSheet: React.FC<DeleteForwardAgentSheetProps> = (
             <div className="flex items-start gap-3">
               <AlertTriangle className="size-5 text-destructive flex-shrink-0 mt-0.5" />
               <div className="space-y-1">
-                <p className="font-medium text-destructive">确认删除以下转发节点？</p>
+                <p className="font-medium text-destructive">确认删除以下转发Agent？</p>
                 <p className="text-sm text-muted-foreground">
                   删除后，该节点的所有配置和关联的转发规则将无法继续使用。
                 </p>

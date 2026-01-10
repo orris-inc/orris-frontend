@@ -16,9 +16,10 @@ import { Separator } from '@/components/common/Separator';
 import { AdminBadge } from '@/components/admin';
 import { cn } from '@/lib/utils';
 import { formatDate } from '@/shared/utils/date-utils';
+import { SUBSCRIPTION_STATUS_CONFIG } from '@/shared/constants/status-config';
 import { adminListSubscriptions } from '@/api/subscription';
 import { listUsers } from '@/api/user';
-import type { SubscriptionPlan, Subscription, SubscriptionStatus } from '@/api/subscription/types';
+import type { SubscriptionPlan, Subscription } from '@/api/subscription/types';
 import type { UserResponse } from '@/api/user/types';
 
 interface ViewPlanSubscriptionsDialogProps {
@@ -27,14 +28,6 @@ interface ViewPlanSubscriptionsDialogProps {
   plan: SubscriptionPlan | null;
 }
 
-// Status configuration
-const STATUS_CONFIG: Record<SubscriptionStatus, { label: string; variant: 'success' | 'default' | 'warning' | 'danger' }> = {
-  active: { label: '激活', variant: 'success' },
-  renewed: { label: '已续费', variant: 'success' },
-  pending: { label: '待处理', variant: 'warning' },
-  cancelled: { label: '已取消', variant: 'danger' },
-  expired: { label: '已过期', variant: 'danger' },
-};
 
 export const ViewPlanSubscriptionsDialog: React.FC<ViewPlanSubscriptionsDialogProps> = ({
   open,
@@ -194,7 +187,7 @@ export const ViewPlanSubscriptionsDialog: React.FC<ViewPlanSubscriptionsDialogPr
           ) : (
             <div className="p-4 space-y-2">
               {filteredSubscriptions.map((subscription) => {
-                const statusConfig = STATUS_CONFIG[subscription.status] || {
+                const statusConfig = SUBSCRIPTION_STATUS_CONFIG[subscription.status] || {
                   label: subscription.status,
                   variant: 'default' as const,
                 };

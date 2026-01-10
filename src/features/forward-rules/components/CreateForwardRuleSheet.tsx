@@ -371,7 +371,7 @@ export const CreateForwardRuleSheet: React.FC<CreateForwardRuleSheetProps> = ({
   const validate = () => {
     const newErrors: Record<string, string> = {};
 
-    if (!formData.agentId) newErrors.agentId = '请选择转发节点';
+    if (!formData.agentId) newErrors.agentId = '请选择转发Agent';
     if (!formData.name.trim()) newErrors.name = '规则名称不能为空';
     if (!formData.protocol) newErrors.protocol = '协议类型不能为空';
 
@@ -510,12 +510,12 @@ export const CreateForwardRuleSheet: React.FC<CreateForwardRuleSheetProps> = ({
           >
             <div className="space-y-2.5">
               <div className="space-y-1">
-                <Field label="转发节点" required />
+                <Field label="转发Agent" required />
                 <MobileSelect
                   value={formData.agentId}
                   onChange={(value) => handleChange('agentId', value)}
                   options={agentOptions}
-                  placeholder="选择转发节点"
+                  placeholder="选择转发Agent"
                 />
                 {errors.agentId && (
                   <p className="text-xs text-destructive px-1">{errors.agentId}</p>

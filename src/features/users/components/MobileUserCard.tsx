@@ -29,6 +29,7 @@ import { AdminBadge } from '@/components/admin';
 import { MobileActionButton } from '@/components/mobile';
 import { cn } from '@/lib/utils';
 import { formatDate } from '@/shared/utils/date-utils';
+import { ACTIVE_STATUS_CONFIG, ROLE_CONFIG } from '@/shared/constants/status-config';
 import type { UserResponse } from '@/api/user';
 
 // ============================================================================
@@ -44,26 +45,6 @@ interface MobileUserCardProps {
 }
 
 // ============================================================================
-// Constants
-// ============================================================================
-
-const STATUS_CONFIG: Record<
-  string,
-  { label: string; variant: 'success' | 'default' | 'warning' | 'danger' }
-> = {
-  active: { label: '激活', variant: 'success' },
-  inactive: { label: '未激活', variant: 'default' },
-  pending: { label: '待验证', variant: 'warning' },
-  suspended: { label: '封禁', variant: 'danger' },
-  deleted: { label: '已删除', variant: 'danger' },
-};
-
-const ROLE_CONFIG: Record<string, { label: string; variant: 'info' | 'default' }> = {
-  user: { label: '用户', variant: 'default' },
-  admin: { label: '管理员', variant: 'info' },
-};
-
-// ============================================================================
 // Main Component
 // ============================================================================
 
@@ -76,7 +57,7 @@ export const MobileUserCard = ({
 }: MobileUserCardProps) => {
   const [isExpanded, setIsExpanded] = useState(false);
 
-  const statusConfig = STATUS_CONFIG[user.status] || { label: user.status, variant: 'default' as const };
+  const statusConfig = ACTIVE_STATUS_CONFIG[user.status] || { label: user.status, variant: 'default' as const };
   const roleConfig = ROLE_CONFIG[user.role || 'user'] || { label: '用户', variant: 'default' as const };
 
   return (

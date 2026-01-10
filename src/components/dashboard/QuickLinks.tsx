@@ -39,7 +39,7 @@ export const QuickLinks = () => {
     },
     {
       icon: <Database className="size-5" />,
-      title: '节点管理',
+      title: '节点Agent管理',
       description: '管理您的节点配置',
       path: '/admin/nodes',
       adminOnly: true,

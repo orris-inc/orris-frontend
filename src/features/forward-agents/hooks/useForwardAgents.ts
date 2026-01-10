@@ -91,7 +91,7 @@ export const useForwardAgents = (options: UseForwardAgentsOptions = {}) => {
   const createMutation = useMutation({
     mutationFn: createForwardAgent,
     onSuccess: () => {
-      showSuccess('转发节点创建成功');
+      showSuccess('转发Agent创建成功');
       queryClient.invalidateQueries({ queryKey: forwardAgentsQueryKeys.lists() });
     },
     onError: (error) => {
@@ -103,7 +103,7 @@ export const useForwardAgents = (options: UseForwardAgentsOptions = {}) => {
     mutationFn: ({ id, data }: { id: number | string; data: UpdateForwardAgentRequest }) =>
       updateForwardAgent(id, data),
     onSuccess: () => {
-      showSuccess('转发节点信息更新成功');
+      showSuccess('转发Agent信息更新成功');
       queryClient.invalidateQueries({ queryKey: forwardAgentsQueryKeys.lists() });
     },
     onError: (error) => {
@@ -114,7 +114,7 @@ export const useForwardAgents = (options: UseForwardAgentsOptions = {}) => {
   const deleteMutation = useMutation({
     mutationFn: deleteForwardAgent,
     onSuccess: () => {
-      showSuccess('转发节点删除成功');
+      showSuccess('转发Agent删除成功');
       queryClient.invalidateQueries({ queryKey: forwardAgentsQueryKeys.lists() });
     },
     onError: (error) => {
@@ -141,7 +141,7 @@ export const useForwardAgents = (options: UseForwardAgentsOptions = {}) => {
       return { previousData };
     },
     onSuccess: () => {
-      showSuccess('转发节点已启用');
+      showSuccess('转发Agent已启用');
     },
     onError: (error, _id, context) => {
       if (context?.previousData) {
@@ -170,7 +170,7 @@ export const useForwardAgents = (options: UseForwardAgentsOptions = {}) => {
       return { previousData };
     },
     onSuccess: () => {
-      showSuccess('转发节点已禁用');
+      showSuccess('转发Agent已禁用');
     },
     onError: (error, _id, context) => {
       if (context?.previousData) {
@@ -196,7 +196,7 @@ export const useForwardAgents = (options: UseForwardAgentsOptions = {}) => {
     mutationFn: (data: AgentBatchUpdateRequest) => batchTriggerAgentUpdate(data),
     onSuccess: (result) => {
       if (result.succeeded.length > 0) {
-        showSuccess(`已触发 ${result.succeeded.length} 个转发节点更新`);
+        showSuccess(`已触发 ${result.succeeded.length} 个转发Agent更新`);
       }
       queryClient.invalidateQueries({ queryKey: forwardAgentsQueryKeys.lists() });
     },
@@ -483,7 +483,7 @@ export const useBroadcastAPIURL = () => {
     mutationFn: (data: BroadcastAPIURLChangedRequest) => broadcastAPIURLChange(data),
     onSuccess: (result: BroadcastAPIURLChangedResponse) => {
       if (result.agentsNotified > 0) {
-        showSuccess(`已通知 ${result.agentsNotified} 个转发节点更新API地址`);
+        showSuccess(`已通知 ${result.agentsNotified} 个转发Agent更新API地址`);
       }
     },
     onError: (error) => {
@@ -501,7 +501,7 @@ export const useNotifyAgentAPIURL = () => {
       notifyAgentAPIURLChange(agentId, data),
     onSuccess: (result: NotifyAgentAPIURLChangedResponse) => {
       if (result.notified) {
-        showSuccess('已通知转发节点更新API地址');
+        showSuccess('已通知转发Agent更新API地址');
       }
     },
     onError: (error) => {

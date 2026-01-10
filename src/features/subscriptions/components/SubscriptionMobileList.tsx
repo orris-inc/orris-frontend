@@ -40,7 +40,8 @@ import {
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/common/Tooltip';
 import { Skeleton } from '@/components/common/Skeleton';
 import { formatDate } from '@/shared/utils/date-utils';
-import type { Subscription, SubscriptionStatus } from '@/api/subscription/types';
+import { SUBSCRIPTION_STATUS_CONFIG } from '@/shared/constants/status-config';
+import type { Subscription } from '@/api/subscription/types';
 import type { UserResponse } from '@/api/user/types';
 
 interface SubscriptionMobileListProps {
@@ -56,14 +57,6 @@ interface SubscriptionMobileListProps {
   onDelete?: (subscription: Subscription) => void;
 }
 
-// Status configuration
-const STATUS_CONFIG: Record<SubscriptionStatus, { label: string; variant: 'success' | 'default' | 'warning' | 'danger' }> = {
-  active: { label: '激活', variant: 'success' },
-  renewed: { label: '已续费', variant: 'success' },
-  pending: { label: '待处理', variant: 'warning' },
-  cancelled: { label: '已取消', variant: 'danger' },
-  expired: { label: '已过期', variant: 'danger' },
-};
 
 // Loading skeleton for mobile cards
 const MobileCardSkeleton: React.FC = () => (
@@ -238,7 +231,7 @@ export const SubscriptionMobileList: React.FC<SubscriptionMobileListProps> = ({
   return (
     <Accordion type="multiple" className="space-y-1.5">
       {subscriptions.map((subscription) => {
-        const statusConfig = STATUS_CONFIG[subscription.status] || { label: subscription.status, variant: 'default' as const };
+        const statusConfig = SUBSCRIPTION_STATUS_CONFIG[subscription.status] || { label: subscription.status, variant: 'default' as const };
         const user = usersMap[String(subscription.userId)];
         const isUserLoading = usersLoading || (!user && Object.keys(usersMap).length === 0);
         const plan = subscription.plan;
