@@ -257,8 +257,8 @@ export function useSwipeDrawer({
 
         // Schedule update on next animation frame for 120Hz sync
         rafId.current = requestAnimationFrame(() => {
-          // Prefer direct DOM manipulation for maximum performance on high-refresh displays
-          // This bypasses React reconciliation entirely
+          // Direct DOM manipulation for maximum performance on high-refresh displays
+          // This bypasses React reconciliation entirely for smoother 120Hz animation
           if (overlayRef.current || drawerRef.current) {
             applySwipeProgressToDOM(
               overlayRef.current,
@@ -266,16 +266,23 @@ export function useSwipeDrawer({
               progress,
               true
             );
+            // Only update React state for progress tracking, skip style updates
+            // This minimizes re-renders during gesture
+            setSwipeState((prev) => ({
+              ...prev,
+              progress,
+              isDragging: true,
+            }));
+          } else {
+            // Fallback: update React state with styles if refs not available
+            const styles = calculateDrawerStyles(progress, true);
+            setSwipeState({
+              progress,
+              isDragging: true,
+              overlayStyle: styles.overlayStyle,
+              drawerStyle: styles.drawerStyle,
+            });
           }
-
-          // Always update React state for consumers that don't use refs
-          const styles = calculateDrawerStyles(progress, true);
-          setSwipeState({
-            progress,
-            isDragging: true,
-            overlayStyle: styles.overlayStyle,
-            drawerStyle: styles.drawerStyle,
-          });
 
           lastProgress.current = progress;
           rafId.current = null;

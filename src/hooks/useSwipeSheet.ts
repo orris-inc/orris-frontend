@@ -172,7 +172,10 @@ export function useSwipeSheet({
       const y = touch.clientY;
 
       // Check if touch is within the sheet element
-      const sheetEl = externalSheetRef?.current;
+      // Use internal ref first, then external ref, then fallback to data attribute
+      const sheetEl = sheetRef.current
+        || externalSheetRef?.current
+        || document.querySelector('[data-sheet-content]') as HTMLElement | null;
       if (!sheetEl) return;
 
       const rect = sheetEl.getBoundingClientRect();
@@ -250,8 +253,8 @@ export function useSwipeSheet({
 
         // Schedule update on next animation frame for 120Hz sync
         rafId.current = requestAnimationFrame(() => {
-          // Prefer direct DOM manipulation for maximum performance on high-refresh displays
-          // This bypasses React reconciliation entirely
+          // Direct DOM manipulation for maximum performance on high-refresh displays
+          // This bypasses React reconciliation entirely for smoother 120Hz animation
           if (overlayRef.current || sheetRef.current) {
             applySwipeProgressToDOM(
               overlayRef.current,
@@ -259,16 +262,23 @@ export function useSwipeSheet({
               progress,
               true
             );
+            // Only update React state for progress tracking, skip style updates
+            // This minimizes re-renders during gesture
+            setSwipeState((prev) => ({
+              ...prev,
+              progress,
+              isDragging: true,
+            }));
+          } else {
+            // Fallback: update React state with styles if refs not available
+            const styles = calculateSheetStyles(progress, true);
+            setSwipeState({
+              progress,
+              isDragging: true,
+              overlayStyle: styles.overlayStyle,
+              sheetStyle: styles.sheetStyle,
+            });
           }
-
-          // Always update React state for consumers that don't use refs
-          const styles = calculateSheetStyles(progress, true);
-          setSwipeState({
-            progress,
-            isDragging: true,
-            overlayStyle: styles.overlayStyle,
-            sheetStyle: styles.sheetStyle,
-          });
 
           lastProgress.current = progress;
           rafId.current = null;

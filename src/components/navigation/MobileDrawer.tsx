@@ -255,15 +255,21 @@ export const MobileDrawer = ({
             isDragging && 'will-change-transform',
             // Optimize paint containment for better performance
             'contain-layout contain-style',
-            // Only use animations when not dragging
+            // Only use animations when not dragging - iOS native spring timing via CSS
             !shouldShowDragState && 'data-[state=open]:animate-in data-[state=closed]:animate-out',
-            !shouldShowDragState && 'data-[state=closed]:duration-300 data-[state=open]:duration-400',
             !shouldShowDragState && 'data-[state=closed]:slide-out-to-left data-[state=open]:slide-in-from-left',
             'motion-reduce:animate-none',
             // Safe area support
             'pb-safe'
           )}
-          style={computedDrawerStyle}
+          style={{
+            ...computedDrawerStyle,
+            // iOS native spring animation timing (overrides tailwind duration)
+            ...(!shouldShowDragState && {
+              animationTimingFunction: 'var(--spring-ios-interactive)',
+              animationDuration: 'var(--spring-ios-interactive-duration)',
+            }),
+          }}
         >
           {/* Header with user profile */}
           <div className="flex-shrink-0 p-4 pb-2">

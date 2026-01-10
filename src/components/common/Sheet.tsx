@@ -152,15 +152,21 @@ export const SheetContent = ({
           isDragging && 'will-change-transform',
           // Optimize paint containment for better performance
           'contain-layout contain-style',
-          // Animation - iOS 26 spring timing (only when not dragging)
-          !shouldShowDragState && 'duration-[var(--duration-normal)] ease-[var(--spring-bounce)]',
+          // Animation - iOS native spring timing (only when not dragging)
           !shouldShowDragState && 'data-[state=open]:animate-in data-[state=closed]:animate-out',
           !shouldShowDragState && 'data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0',
           !shouldShowDragState && 'data-[state=closed]:slide-out-to-bottom data-[state=open]:slide-in-from-bottom',
           'motion-reduce:animate-none',
           className
         )}
-        style={sheetStyle ?? style}
+        style={{
+          ...(sheetStyle ?? style),
+          // iOS native spring animation timing
+          ...(!shouldShowDragState && {
+            animationTimingFunction: 'var(--spring-ios-interactive)',
+            animationDuration: 'var(--spring-ios-interactive-duration)',
+          }),
+        }}
         {...props}
       >
         {/* Drag handle indicator - iOS 26 style */}
