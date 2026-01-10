@@ -9,9 +9,11 @@
  * - Optimized for touch interactions
  * - Safe area support for notched devices
  * - Respects prefers-reduced-motion
+ * - 120Hz ProMotion optimized with direct DOM manipulation
  */
 
 import * as DialogPrimitive from '@radix-ui/react-dialog';
+import { useEffect, type RefObject } from 'react';
 import { X } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import type { ComponentPropsWithoutRef } from 'react';
@@ -68,6 +70,10 @@ interface SheetContentProps extends ComponentPropsWithoutRef<typeof DialogPrimit
   sheetStyle?: React.CSSProperties;
   /** Ref to the content element for gesture detection */
   contentRef?: React.RefObject<HTMLDivElement | null>;
+  /** Ref for overlay element - enables direct DOM manipulation for 120Hz */
+  overlayRef?: RefObject<HTMLElement | null>;
+  /** Ref for sheet element - enables direct DOM manipulation for 120Hz */
+  sheetRef?: RefObject<HTMLElement | null>;
 }
 
 export const SheetContent = ({
@@ -78,16 +84,55 @@ export const SheetContent = ({
   overlayStyle,
   sheetStyle,
   contentRef,
+  overlayRef,
+  sheetRef,
   style,
   ...props
 }: SheetContentProps) => {
   // Whether we should use drag styles (disabling CSS animations)
   const shouldShowDragState = isDragging && (overlayStyle !== undefined || sheetStyle !== undefined);
 
+  // Bind refs to DOM elements for direct 120Hz manipulation
+  // Uses data attributes to find elements after Radix renders them
+  useEffect(() => {
+    // Wait for next frame to ensure Radix has rendered
+    const rafId = requestAnimationFrame(() => {
+      if (overlayRef) {
+        const overlay = document.querySelector('[data-sheet-overlay]') as HTMLElement | null;
+        if (overlay) {
+          (overlayRef as React.MutableRefObject<HTMLElement | null>).current = overlay;
+        }
+      }
+      if (sheetRef) {
+        const sheet = document.querySelector('[data-sheet-content]') as HTMLElement | null;
+        if (sheet) {
+          (sheetRef as React.MutableRefObject<HTMLElement | null>).current = sheet;
+        }
+      }
+    });
+
+    return () => {
+      cancelAnimationFrame(rafId);
+      // Clear refs on unmount
+      if (overlayRef) {
+        (overlayRef as React.MutableRefObject<HTMLElement | null>).current = null;
+      }
+      if (sheetRef) {
+        (sheetRef as React.MutableRefObject<HTMLElement | null>).current = null;
+      }
+    };
+  }, [overlayRef, sheetRef]);
+
   return (
     <SheetPortal>
-      <SheetOverlay isDragging={shouldShowDragState} style={overlayStyle} />
+      <SheetOverlay
+        data-sheet-overlay
+        isDragging={shouldShowDragState}
+        style={overlayStyle}
+        className={isDragging ? 'will-change-[opacity]' : undefined}
+      />
       <DialogPrimitive.Content
+        data-sheet-content
         ref={contentRef}
         className={cn(
           // Base styles - iOS 26 Liquid Glass
@@ -103,6 +148,10 @@ export const SheetContent = ({
           'flex flex-col',
           // Safe area padding for iOS
           'pb-[env(safe-area-inset-bottom)]',
+          // GPU acceleration hints during drag for 120Hz
+          isDragging && 'will-change-transform',
+          // Optimize paint containment for better performance
+          'contain-layout contain-style',
           // Animation - iOS 26 spring timing (only when not dragging)
           !shouldShowDragState && 'duration-[var(--duration-normal)] ease-[var(--spring-bounce)]',
           !shouldShowDragState && 'data-[state=open]:animate-in data-[state=closed]:animate-out',

@@ -11,7 +11,7 @@
  * - Safe area support
  */
 
-import { memo, useState, useRef } from 'react';
+import { memo, useState } from 'react';
 import {
   Server,
   Cpu,
@@ -305,13 +305,11 @@ export const MobileEntityDetailSheet = memo(({
   open,
   onOpenChange,
 }: MobileEntityDetailSheetProps) => {
-  const sheetRef = useRef<HTMLDivElement>(null);
-
   // Enable swipe down to close gesture
-  const { isDragging, overlayStyle, sheetStyle } = useSwipeSheet({
+  // overlayRef/sheetRef enable direct DOM manipulation for 120Hz performance
+  const { isDragging, overlayStyle, sheetStyle, overlayRef, sheetRef } = useSwipeSheet({
     isOpen: open,
     onOpenChange,
-    sheetRef,
   });
 
   if (!entity) return null;
@@ -322,12 +320,14 @@ export const MobileEntityDetailSheet = memo(({
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent
-        contentRef={sheetRef}
         className="max-h-[92vh]"
         showClose={false}
         isDragging={isDragging}
         overlayStyle={overlayStyle}
         sheetStyle={sheetStyle}
+        // Direct DOM refs for 120Hz ProMotion performance optimization
+        overlayRef={overlayRef}
+        sheetRef={sheetRef}
       >
         <SheetHeader className="px-4 pb-3">
           <div className="flex items-center justify-between">

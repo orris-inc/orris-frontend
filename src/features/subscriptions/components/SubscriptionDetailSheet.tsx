@@ -3,7 +3,6 @@
  * Mobile-optimized bottom sheet for viewing subscription details
  */
 
-import { useRef } from 'react';
 import {
   Calendar,
   CheckCircle,
@@ -105,13 +104,11 @@ export const SubscriptionDetailSheet: React.FC<SubscriptionDetailSheetProps> = (
   user,
   onClose,
 }) => {
-  const sheetRef = useRef<HTMLDivElement>(null);
-
   // Enable swipe down to close gesture
-  const { isDragging, overlayStyle, sheetStyle } = useSwipeSheet({
+  // overlayRef/sheetRef enable direct DOM manipulation for 120Hz performance
+  const { isDragging, overlayStyle, sheetStyle, overlayRef, sheetRef } = useSwipeSheet({
     isOpen: open,
     onOpenChange: (isOpen) => !isOpen && onClose(),
-    sheetRef,
   });
 
   if (!subscription) return null;
@@ -124,12 +121,14 @@ export const SubscriptionDetailSheet: React.FC<SubscriptionDetailSheetProps> = (
   return (
     <Sheet open={open} onOpenChange={onClose}>
       <SheetContent
-        contentRef={sheetRef}
         className="max-h-[95vh]"
         showClose={false}
         isDragging={isDragging}
         overlayStyle={overlayStyle}
         sheetStyle={sheetStyle}
+        // Direct DOM refs for 120Hz ProMotion performance optimization
+        overlayRef={overlayRef}
+        sheetRef={sheetRef}
       >
         <SheetHeader className="pb-2">
           <div className="flex items-center justify-between">
