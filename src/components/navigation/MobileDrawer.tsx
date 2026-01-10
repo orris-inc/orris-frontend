@@ -2,21 +2,25 @@
  * Mobile Drawer Navigation Component - iOS 26 Liquid Glass Edition
  *
  * A floating, modern slide-out navigation drawer for mobile devices.
+ * Powered by Vaul for native iOS-like gesture handling.
+ *
  * Features:
  * - iOS 26 Liquid Glass floating design with rounded corners
- * - Smooth spring animations with follow-finger gestures
+ * - Native iOS-like swipe gestures (powered by Vaul)
+ * - Physics-based spring animations
  * - Clear visual hierarchy with grouped navigation
  * - Touch-friendly targets (min 44px)
  * - Active state with subtle highlight
  * - Quick actions footer (theme, logout)
  * - Respects reduced-motion preferences
  * - Safe area insets support for notched devices
- * - 120Hz ProMotion optimized with direct DOM manipulation
+ *
+ * @see https://github.com/emilkowalski/vaul
  */
 
-import { useMemo, useEffect, type RefObject } from 'react';
+import { useMemo } from 'react';
 import { Link as RouterLink, useLocation } from 'react-router-dom';
-import * as Dialog from '@radix-ui/react-dialog';
+import { Drawer } from 'vaul';
 import { X, LogOut, Shield, ArrowLeftRight, ChevronRight } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/common/Avatar';
@@ -45,16 +49,12 @@ interface MobileDrawerProps {
   title?: string;
   onAdminClick?: () => void;
   onLogout?: () => void;
-  /** Whether user is actively dragging */
+  // Legacy props for backward compatibility (ignored with Vaul)
   isDragging?: boolean;
-  /** Computed overlay styles from swipe gesture */
   overlayStyle?: React.CSSProperties;
-  /** Computed drawer styles from swipe gesture */
   drawerStyle?: React.CSSProperties;
-  /** Ref for overlay element - enables direct DOM manipulation for 120Hz */
-  overlayRef?: RefObject<HTMLElement | null>;
-  /** Ref for drawer element - enables direct DOM manipulation for 120Hz */
-  drawerRef?: RefObject<HTMLElement | null>;
+  overlayRef?: React.RefObject<HTMLElement | null>;
+  drawerRef?: React.RefObject<HTMLElement | null>;
 }
 
 export const MobileDrawer = ({
@@ -67,17 +67,15 @@ export const MobileDrawer = ({
   title,
   onAdminClick,
   onLogout,
-  isDragging = false,
-  overlayStyle,
-  drawerStyle,
-  overlayRef,
-  drawerRef,
+  // Ignore legacy props - Vaul handles gestures natively
+  isDragging: _isDragging,
+  overlayStyle: _overlayStyle,
+  drawerStyle: _drawerStyle,
+  overlayRef: _overlayRef,
+  drawerRef: _drawerRef,
 }: MobileDrawerProps) => {
   const location = useLocation();
   const initials = user?.initials || user?.displayName?.charAt(0).toUpperCase() || '?';
-
-  // Whether we should use drag styles (disabling CSS animations)
-  const shouldShowDragState = isDragging && (overlayStyle !== undefined || drawerStyle !== undefined);
 
   const renderNavigationItems = useMemo(() => {
     return navigationItems.map((item, index) => {
@@ -158,86 +156,23 @@ export const MobileDrawer = ({
     });
   }, [navigationItems, location.pathname, onClose]);
 
-  // Determine if we should render the drawer
-  const shouldRender = open || (isDragging && (overlayStyle !== undefined || drawerStyle !== undefined));
-
-  // Bind refs to DOM elements for direct 120Hz manipulation
-  // Uses data attributes to find elements after Radix renders them
-  useEffect(() => {
-    if (!shouldRender) return;
-
-    // Wait for next frame to ensure Radix has rendered
-    const rafId = requestAnimationFrame(() => {
-      if (overlayRef) {
-        const overlay = document.querySelector('[data-drawer-overlay]') as HTMLElement | null;
-        if (overlay) {
-          (overlayRef as React.MutableRefObject<HTMLElement | null>).current = overlay;
-        }
-      }
-      if (drawerRef) {
-        const drawer = document.querySelector('[data-drawer-content]') as HTMLElement | null;
-        if (drawer) {
-          (drawerRef as React.MutableRefObject<HTMLElement | null>).current = drawer;
-        }
-      }
-    });
-
-    return () => {
-      cancelAnimationFrame(rafId);
-      // Clear refs on unmount
-      if (overlayRef) {
-        (overlayRef as React.MutableRefObject<HTMLElement | null>).current = null;
-      }
-      if (drawerRef) {
-        (drawerRef as React.MutableRefObject<HTMLElement | null>).current = null;
-      }
-    };
-  }, [shouldRender, overlayRef, drawerRef]);
-
-  // Merge custom drawer styles with floating offset
-  const computedDrawerStyle = useMemo(() => {
-    if (!drawerStyle) return undefined;
-    // Extract translateX from the drawerStyle transform
-    const transformMatch = drawerStyle.transform?.toString().match(/translateX\(([^)]+)\)/);
-    if (transformMatch) {
-      const translateValue = transformMatch[1];
-      // Parse the percentage and adjust for the margin offset
-      if (translateValue.includes('%')) {
-        const percent = parseFloat(translateValue);
-        // When fully closed, we want translateX(-100% - 12px) to hide behind left edge
-        // When fully open, we want translateX(0) + margin-left: 12px
-        return {
-          ...drawerStyle,
-          transform: `translateX(calc(${percent}% - ${12 + percent * 0.12}px))`,
-        };
-      }
-    }
-    return drawerStyle;
-  }, [drawerStyle]);
-
   return (
-    <Dialog.Root open={shouldRender} onOpenChange={(isOpen) => !isOpen && onClose()}>
-      <Dialog.Portal>
-        {/* Backdrop with blur - data-drawer-overlay for 120Hz ref binding */}
-        <Dialog.Overlay
-          data-drawer-overlay
+    <Drawer.Root
+      open={open}
+      onOpenChange={(isOpen) => !isOpen && onClose()}
+      direction="left"
+    >
+      <Drawer.Portal>
+        {/* Backdrop with blur */}
+        <Drawer.Overlay
           className={cn(
             'fixed inset-0 z-50',
-            'bg-black/20 backdrop-blur-sm',
-            // GPU acceleration hint during drag
-            isDragging && 'will-change-[opacity]',
-            // Only use animations when not dragging
-            !shouldShowDragState && 'data-[state=open]:animate-in data-[state=closed]:animate-out',
-            !shouldShowDragState && 'data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0',
-            !shouldShowDragState && 'data-[state=closed]:duration-200 data-[state=open]:duration-300',
-            'motion-reduce:animate-none'
+            'bg-black/20 backdrop-blur-sm'
           )}
-          style={overlayStyle}
         />
 
-        {/* Floating Drawer Container - data-drawer-content for 120Hz ref binding */}
-        <Dialog.Content
-          data-drawer-content
+        {/* Floating Drawer Container */}
+        <Drawer.Content
           className={cn(
             // Floating positioning with margins
             'fixed z-50',
@@ -251,30 +186,16 @@ export const MobileDrawer = ({
             'backdrop-blur-xl',
             'border border-border/50',
             'shadow-2xl shadow-black/20 dark:shadow-black/40',
-            // GPU acceleration hints during drag for 120Hz
-            isDragging && 'will-change-transform',
-            // Optimize paint containment for better performance
-            'contain-layout contain-style',
-            // Only use animations when not dragging - iOS native spring timing via CSS
-            !shouldShowDragState && 'data-[state=open]:animate-in data-[state=closed]:animate-out',
-            !shouldShowDragState && 'data-[state=closed]:slide-out-to-left data-[state=open]:slide-in-from-left',
-            'motion-reduce:animate-none',
+            // Focus outline
+            'outline-none',
             // Safe area support
             'pb-safe'
           )}
-          style={{
-            ...computedDrawerStyle,
-            // iOS native spring animation timing (overrides tailwind duration)
-            ...(!shouldShowDragState && {
-              animationTimingFunction: 'var(--spring-ios-interactive)',
-              animationDuration: 'var(--spring-ios-interactive-duration)',
-            }),
-          }}
         >
           {/* Header with user profile */}
           <div className="flex-shrink-0 p-4 pb-2">
             {/* Close button - floating top right */}
-            <Dialog.Close
+            <Drawer.Close
               className={cn(
                 'absolute top-3 right-3',
                 'flex h-8 w-8 items-center justify-center rounded-full',
@@ -287,7 +208,7 @@ export const MobileDrawer = ({
             >
               <X className="h-4 w-4" aria-hidden="true" />
               <span className="sr-only">Close menu</span>
-            </Dialog.Close>
+            </Drawer.Close>
 
             {/* User Profile Card */}
             {user && (
@@ -304,9 +225,9 @@ export const MobileDrawer = ({
                   </AvatarFallback>
                 </Avatar>
                 <div className="flex-1 min-w-0">
-                  <Dialog.Title className="text-base font-semibold text-foreground truncate">
+                  <Drawer.Title className="text-base font-semibold text-foreground truncate">
                     {user.displayName || 'User'}
-                  </Dialog.Title>
+                  </Drawer.Title>
                   <p className="text-sm text-muted-foreground truncate">
                     {user.email}
                   </p>
@@ -316,9 +237,9 @@ export const MobileDrawer = ({
 
             {/* Fallback title when no user */}
             {!user && (
-              <Dialog.Title className="text-lg font-bold text-foreground pr-10">
+              <Drawer.Title className="text-lg font-bold text-foreground pr-10">
                 {title || 'Menu'}
-              </Dialog.Title>
+              </Drawer.Title>
             )}
           </div>
 
@@ -410,8 +331,8 @@ export const MobileDrawer = ({
               </div>
             </div>
           </div>
-        </Dialog.Content>
-      </Dialog.Portal>
-    </Dialog.Root>
+        </Drawer.Content>
+      </Drawer.Portal>
+    </Drawer.Root>
   );
 };

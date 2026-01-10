@@ -24,7 +24,6 @@ import {
   SheetDescription,
   SheetBody,
 } from '@/components/common/Sheet';
-import { useSwipeSheet } from '@/hooks';
 import { Separator } from '@/components/common/Separator';
 import { TruncatedId } from '@/components/admin';
 import { SubscriptionLinkSelector } from '@/components/subscription';
@@ -104,13 +103,6 @@ export const SubscriptionDetailSheet: React.FC<SubscriptionDetailSheetProps> = (
   user,
   onClose,
 }) => {
-  // Enable swipe down to close gesture
-  // overlayRef/sheetRef enable direct DOM manipulation for 120Hz performance
-  const { isDragging, overlayStyle, sheetStyle, overlayRef, sheetRef } = useSwipeSheet({
-    isOpen: open,
-    onOpenChange: (isOpen) => !isOpen && onClose(),
-  });
-
   if (!subscription) return null;
 
   const statusConfig = STATUS_CONFIG[subscription.status] || { label: subscription.status, color: 'bg-gray-100 text-gray-600' };
@@ -120,16 +112,7 @@ export const SubscriptionDetailSheet: React.FC<SubscriptionDetailSheetProps> = (
 
   return (
     <Sheet open={open} onOpenChange={onClose}>
-      <SheetContent
-        className="max-h-[95vh]"
-        showClose={false}
-        isDragging={isDragging}
-        overlayStyle={overlayStyle}
-        sheetStyle={sheetStyle}
-        // Direct DOM refs for 120Hz ProMotion performance optimization
-        overlayRef={overlayRef}
-        sheetRef={sheetRef}
-      >
+      <SheetContent className="max-h-[95vh]" showClose={false}>
         <SheetHeader className="pb-2">
           <div className="flex items-center justify-between">
             <SheetTitle className="flex items-center gap-2">

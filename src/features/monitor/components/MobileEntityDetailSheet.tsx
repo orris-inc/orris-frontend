@@ -38,7 +38,6 @@ import {
   SheetTitle,
   SheetBody,
 } from '@/components/common/Sheet';
-import { useSwipeSheet } from '@/hooks';
 import { Badge } from '@/components/common/Badge';
 import { cn } from '@/lib/utils';
 import { formatBitRate, formatBytes, formatRelativeTime } from '@/shared/utils/format-utils';
@@ -305,13 +304,6 @@ export const MobileEntityDetailSheet = memo(({
   open,
   onOpenChange,
 }: MobileEntityDetailSheetProps) => {
-  // Enable swipe down to close gesture
-  // overlayRef/sheetRef enable direct DOM manipulation for 120Hz performance
-  const { isDragging, overlayStyle, sheetStyle, overlayRef, sheetRef } = useSwipeSheet({
-    isOpen: open,
-    onOpenChange,
-  });
-
   if (!entity) return null;
 
   const status = entity.status as (NodeSystemStatus | AgentSystemStatus) | null;
@@ -319,16 +311,7 @@ export const MobileEntityDetailSheet = memo(({
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent
-        className="max-h-[92vh]"
-        showClose={false}
-        isDragging={isDragging}
-        overlayStyle={overlayStyle}
-        sheetStyle={sheetStyle}
-        // Direct DOM refs for 120Hz ProMotion performance optimization
-        overlayRef={overlayRef}
-        sheetRef={sheetRef}
-      >
+      <SheetContent className="max-h-[92vh]" showClose={false}>
         <SheetHeader className="px-4 pb-3">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">

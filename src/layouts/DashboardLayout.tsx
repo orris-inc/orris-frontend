@@ -7,7 +7,6 @@ import { useState } from 'react';
 import { useNavigate, Link } from 'react-router';
 import { Menu, Globe } from 'lucide-react';
 import { TooltipProvider } from '@/components/common/Tooltip';
-import { useSwipeDrawer } from '@/hooks';
 
 import { useAuthStore } from '@/features/auth/stores/auth-store';
 import { useAuth } from '@/features/auth/hooks/useAuth';
@@ -32,13 +31,6 @@ export const DashboardLayout = ({ children }: DashboardLayoutProps) => {
 
   const [profileDialogOpen, setProfileDialogOpen] = useState(false);
   const [mobileDrawerOpen, setMobileDrawerOpen] = useState(false);
-
-  // Enable swipe from left edge to open mobile drawer with follow-finger gesture
-  // overlayRef/drawerRef enable direct DOM manipulation for 120Hz performance
-  const { isDragging, overlayStyle, drawerStyle, overlayRef, drawerRef } = useSwipeDrawer({
-    isOpen: mobileDrawerOpen,
-    onOpenChange: setMobileDrawerOpen,
-  });
 
   // Filter navigation items by permission
   // First get items marked for display in navigation bar, then filter by permission
@@ -130,11 +122,6 @@ export const DashboardLayout = ({ children }: DashboardLayoutProps) => {
           showAdminSwitch={userRole === 'admin'}
           onAdminClick={handleGoToAdmin}
           onLogout={handleLogout}
-          isDragging={isDragging}
-          overlayStyle={overlayStyle}
-          drawerStyle={drawerStyle}
-          overlayRef={overlayRef}
-          drawerRef={drawerRef}
         />
       )}
 

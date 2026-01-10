@@ -20,7 +20,7 @@ import { TooltipProvider } from '@/components/common/Tooltip';
 import { AdminSidebarNav, AdminSidebarFooter } from '@/components/navigation/AdminSidebarNav';
 import { MobileDrawer } from '@/components/navigation/MobileDrawer';
 import { UserMenu } from '@/components/navigation/UserMenu';
-import { useSwipeDrawer, useBreakpoint } from '@/hooks';
+import { useBreakpoint } from '@/hooks';
 
 import { useAuthStore } from '@/features/auth/stores/auth-store';
 import { useAuth } from '@/features/auth/hooks/useAuth';
@@ -48,13 +48,6 @@ export const AdminLayout = ({ children }: AdminLayoutProps) => {
     return saved === 'true';
   });
   const [profileDialogOpen, setProfileDialogOpen] = useState(false);
-
-  // Enable swipe from left edge to open mobile drawer with follow-finger gesture
-  // overlayRef/drawerRef enable direct DOM manipulation for 120Hz performance
-  const { isDragging, overlayStyle, drawerStyle, overlayRef, drawerRef } = useSwipeDrawer({
-    isOpen: mobileDrawerOpen,
-    onOpenChange: setMobileDrawerOpen,
-  });
 
   useEffect(() => {
     localStorage.setItem('admin-sidebar-collapsed', String(collapsed));
@@ -112,11 +105,6 @@ export const AdminLayout = ({ children }: AdminLayoutProps) => {
           isAdminView
           onAdminClick={() => navigate('/dashboard')}
           onLogout={handleLogout}
-          isDragging={isDragging}
-          overlayStyle={overlayStyle}
-          drawerStyle={drawerStyle}
-          overlayRef={overlayRef}
-          drawerRef={drawerRef}
         />
 
         {/* 桌面端侧边栏 */}
