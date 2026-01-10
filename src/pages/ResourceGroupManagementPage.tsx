@@ -152,7 +152,7 @@ export const ResourceGroupManagementPage = () => {
 
   const handleCreateSubmit = async (data: CreateResourceGroupRequest) => {
     await createResourceGroup(data);
-    setCreateDialogOpen(false);
+    // Sheet internally calls onOpenChange(false) after successful submit
   };
 
   const handleUpdateSubmit = async (id: string, data: UpdateResourceGroupRequest) => {
@@ -161,7 +161,15 @@ export const ResourceGroupManagementPage = () => {
     setSelectedResourceGroup(null);
   };
 
-  const handleDeleteConfirm = async (id: string) => {
+  // For mobile Sheet - receives entity directly
+  const handleDeleteConfirm = async (resourceGroup: ResourceGroup) => {
+    await deleteResourceGroup(resourceGroup.sid);
+    setDeleteDialogOpen(false);
+    setSelectedResourceGroup(null);
+  };
+
+  // For desktop Dialog - receives id string
+  const handleDeleteConfirmById = async (id: string) => {
     await deleteResourceGroup(id);
     setDeleteDialogOpen(false);
     setSelectedResourceGroup(null);
@@ -192,31 +200,31 @@ export const ResourceGroupManagementPage = () => {
         {/* Create Resource Group Sheet */}
         <CreateResourceGroupSheet
           open={createDialogOpen}
-          plans={plans}
-          onClose={() => setCreateDialogOpen(false)}
+          onOpenChange={setCreateDialogOpen}
           onSubmit={handleCreateSubmit}
+          plans={plans}
         />
 
         {/* Edit Resource Group Sheet */}
         <EditResourceGroupSheet
           open={editDialogOpen}
-          resourceGroup={selectedResourceGroup}
-          plansMap={plansMap}
-          onClose={() => {
-            setEditDialogOpen(false);
-            setSelectedResourceGroup(null);
+          onOpenChange={(open) => {
+            setEditDialogOpen(open);
+            if (!open) setSelectedResourceGroup(null);
           }}
+          entity={selectedResourceGroup}
+          plansMap={plansMap}
           onSubmit={handleUpdateSubmit}
         />
 
         {/* Delete Resource Group Sheet */}
         <DeleteResourceGroupSheet
           open={deleteDialogOpen}
-          resourceGroup={selectedResourceGroup}
-          onClose={() => {
-            setDeleteDialogOpen(false);
-            setSelectedResourceGroup(null);
+          onOpenChange={(open) => {
+            setDeleteDialogOpen(open);
+            if (!open) setSelectedResourceGroup(null);
           }}
+          entity={selectedResourceGroup}
           onConfirm={handleDeleteConfirm}
         />
       </AdminLayout>
@@ -389,7 +397,7 @@ export const ResourceGroupManagementPage = () => {
           setDeleteDialogOpen(false);
           setSelectedResourceGroup(null);
         }}
-        onConfirm={handleDeleteConfirm}
+        onConfirm={handleDeleteConfirmById}
       />
     </AdminLayout>
   );

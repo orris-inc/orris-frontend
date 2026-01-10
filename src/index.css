@@ -832,3 +832,261 @@
 [data-sheet-content][style*="transition: none"] {
   transition: none !important;
 }
+
+/* ============================================
+ * View Transitions API - 2025-2026 Best Practice
+ * ============================================
+ * Native browser page transition animations.
+ * @see https://developer.chrome.com/docs/web-platform/view-transitions
+ */
+
+/* Enable View Transitions on the root */
+@supports (view-transition-name: none) {
+  :root {
+    view-transition-name: none;
+  }
+
+  /* Main content area participates in transitions */
+  main,
+  [data-view-transition="content"] {
+    view-transition-name: main-content;
+  }
+
+  /* Hero elements can have their own transition */
+  [data-view-transition="hero"] {
+    view-transition-name: hero;
+  }
+
+  /* Card elements for shared element transitions */
+  [data-view-transition="card"] {
+    view-transition-name: var(--view-transition-name, card);
+  }
+}
+
+/* Default cross-fade transition with iOS spring timing */
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation-duration: var(--spring-ios-default-duration);
+  animation-timing-function: var(--spring-ios-default);
+}
+
+::view-transition-old(root) {
+  animation-name: vt-fade-out;
+}
+
+::view-transition-new(root) {
+  animation-name: vt-fade-in;
+}
+
+/* Main content transition - slide + fade */
+::view-transition-old(main-content),
+::view-transition-new(main-content) {
+  animation-duration: var(--spring-ios-default-duration);
+  animation-timing-function: var(--spring-ios-default);
+  /* Prevent layout shift during transition */
+  height: 100%;
+  overflow: clip;
+}
+
+::view-transition-old(main-content) {
+  animation-name: vt-slide-out-left;
+}
+
+::view-transition-new(main-content) {
+  animation-name: vt-slide-in-right;
+}
+
+/* Forward navigation - slide left */
+.vt-forward::view-transition-old(main-content) {
+  animation-name: vt-slide-out-left;
+}
+
+.vt-forward::view-transition-new(main-content) {
+  animation-name: vt-slide-in-right;
+}
+
+/* Backward navigation - slide right */
+.vt-backward::view-transition-old(main-content) {
+  animation-name: vt-slide-out-right;
+}
+
+.vt-backward::view-transition-new(main-content) {
+  animation-name: vt-slide-in-left;
+}
+
+/* Hero element transitions - scale + fade */
+::view-transition-old(hero),
+::view-transition-new(hero) {
+  animation-duration: var(--spring-ios-bouncy-duration);
+  animation-timing-function: var(--spring-ios-bouncy);
+}
+
+::view-transition-old(hero) {
+  animation-name: vt-scale-out;
+}
+
+::view-transition-new(hero) {
+  animation-name: vt-scale-in;
+}
+
+/* Shared element card transitions */
+::view-transition-old(card),
+::view-transition-new(card) {
+  animation-duration: var(--spring-ios-snappy-duration);
+  animation-timing-function: var(--spring-ios-snappy);
+  /* Keep aspect ratio during morph */
+  object-fit: cover;
+}
+
+/* View Transition Keyframes */
+@keyframes vt-fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes vt-fade-out {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
+}
+
+@keyframes vt-slide-in-right {
+  from {
+    opacity: 0;
+    transform: translateX(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes vt-slide-out-left {
+  from {
+    opacity: 1;
+    transform: translateX(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateX(-30px);
+  }
+}
+
+@keyframes vt-slide-in-left {
+  from {
+    opacity: 0;
+    transform: translateX(-30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes vt-slide-out-right {
+  from {
+    opacity: 1;
+    transform: translateX(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateX(30px);
+  }
+}
+
+@keyframes vt-scale-in {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes vt-scale-out {
+  from {
+    opacity: 1;
+    transform: scale(1);
+  }
+  to {
+    opacity: 0;
+    transform: scale(1.05);
+  }
+}
+
+/* Mobile-specific: vertical slide transitions */
+@media (max-width: 768px) {
+  /* Up transition for modals/sheets */
+  .vt-slide-up::view-transition-old(main-content) {
+    animation-name: vt-slide-out-down;
+  }
+
+  .vt-slide-up::view-transition-new(main-content) {
+    animation-name: vt-slide-in-up;
+  }
+
+  @keyframes vt-slide-in-up {
+    from {
+      opacity: 0;
+      transform: translateY(20px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  @keyframes vt-slide-out-down {
+    from {
+      opacity: 1;
+      transform: translateY(0);
+    }
+    to {
+      opacity: 0;
+      transform: translateY(20px);
+    }
+  }
+}
+
+/* Reduced motion: simple fade only */
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-old(root),
+  ::view-transition-new(root),
+  ::view-transition-old(main-content),
+  ::view-transition-new(main-content),
+  ::view-transition-old(hero),
+  ::view-transition-new(hero) {
+    animation-duration: 0.15s;
+    animation-timing-function: ease;
+  }
+
+  ::view-transition-old(root),
+  ::view-transition-old(main-content),
+  ::view-transition-old(hero) {
+    animation-name: vt-fade-out;
+  }
+
+  ::view-transition-new(root),
+  ::view-transition-new(main-content),
+  ::view-transition-new(hero) {
+    animation-name: vt-fade-in;
+  }
+}
+
+/* High refresh rate optimization for view transitions */
+@media (update: fast) {
+  ::view-transition-old(main-content),
+  ::view-transition-new(main-content) {
+    animation-timing-function: var(--spring-ios-snappy);
+    animation-duration: var(--spring-ios-snappy-duration);
+  }
+}

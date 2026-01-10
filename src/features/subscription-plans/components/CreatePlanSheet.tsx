@@ -25,7 +25,8 @@ import {
   SheetDescription,
   SheetBody,
   SheetFooter,
-} from '@/components/common/Sheet';
+  type CreateSheetProps,
+} from '@/components/common/sheet';
 import { Button } from '@/components/common/Button';
 import { Checkbox } from '@/components/common/Checkbox';
 import { Label } from '@/components/common/Label';
@@ -84,11 +85,9 @@ function parsePlanLimits(apiLimits: Record<string, unknown> | undefined): PlanLi
   };
 }
 
-interface CreatePlanSheetProps {
-  open: boolean;
+interface CreatePlanSheetProps extends CreateSheetProps<CreatePlanRequest> {
+  /** Initial plan for duplicate mode */
   initialPlan?: SubscriptionPlan | null;
-  onClose: () => void;
-  onSubmit: (data: CreatePlanRequest) => Promise<void>;
 }
 
 const BILLING_CYCLES: { value: string; label: string }[] = [
@@ -149,9 +148,9 @@ const compactInputStyles = cn(
 
 export const CreatePlanSheet: React.FC<CreatePlanSheetProps> = ({
   open,
-  initialPlan,
-  onClose,
+  onOpenChange,
   onSubmit,
+  initialPlan,
 }) => {
   const [formData, setFormData] = useState<CreatePlanFormData>(getDefaultFormData());
   const [loading, setLoading] = useState(false);
@@ -275,25 +274,28 @@ export const CreatePlanSheet: React.FC<CreatePlanSheetProps> = ({
       };
       await onSubmit(submitData);
       setFormData(getDefaultFormData());
-      onClose();
+      onOpenChange(false);
     } finally {
       setLoading(false);
     }
-  }, [formData, validate, onSubmit, onClose]);
+  }, [formData, validate, onSubmit, onOpenChange]);
 
-  const handleClose = useCallback(() => {
-    if (!loading) {
-      setFormData(getDefaultFormData());
-      setErrors({});
-      onClose();
-    }
-  }, [loading, onClose]);
+  const handleClose = useCallback(
+    (o: boolean) => {
+      if (!loading) {
+        setFormData(getDefaultFormData());
+        setErrors({});
+        onOpenChange(o);
+      }
+    },
+    [loading, onOpenChange]
+  );
 
   const isFormValid = formData.name.trim() && formData.slug.trim() && formData.pricings.length > 0;
 
   return (
-    <Sheet open={open} onOpenChange={handleClose}>
-      <SheetContent className="max-h-[95vh]">
+    <Sheet open={open} onOpenChange={handleClose} repositionInputs>
+      <SheetContent>
         <SheetHeader className="pb-2">
           <SheetTitle className="flex items-center gap-2">
             <div
@@ -737,7 +739,7 @@ export const CreatePlanSheet: React.FC<CreatePlanSheetProps> = ({
               '创建计划'
             )}
           </Button>
-          <Button variant="ghost" onClick={handleClose} disabled={loading} className="w-full h-10">
+          <Button variant="ghost" onClick={() => handleClose(false)} disabled={loading} className="w-full h-10">
             取消
           </Button>
         </SheetFooter>

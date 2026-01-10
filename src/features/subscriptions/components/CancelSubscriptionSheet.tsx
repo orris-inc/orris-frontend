@@ -13,7 +13,8 @@ import {
   SheetDescription,
   SheetBody,
   SheetFooter,
-} from '@/components/common/Sheet';
+  type BaseSheetProps,
+} from '@/components/common/sheet';
 import { Button } from '@/components/common/Button';
 import { Checkbox } from '@/components/common/Checkbox';
 import { Label } from '@/components/common/Label';
@@ -21,17 +22,15 @@ import { TruncatedId } from '@/components/admin';
 import { cn } from '@/lib/utils';
 import type { Subscription } from '@/api/subscription/types';
 
-interface CancelSubscriptionSheetProps {
-  open: boolean;
+interface CancelSubscriptionSheetProps extends BaseSheetProps {
   subscription: Subscription | null;
-  onClose: () => void;
   onConfirm: (reason: string, immediate: boolean) => Promise<void>;
 }
 
 export const CancelSubscriptionSheet: React.FC<CancelSubscriptionSheetProps> = ({
   open,
+  onOpenChange,
   subscription,
-  onClose,
   onConfirm,
 }) => {
   const [reason, setReason] = useState('');
@@ -45,16 +44,17 @@ export const CancelSubscriptionSheet: React.FC<CancelSubscriptionSheetProps> = (
       await onConfirm(reason, immediate);
       setReason('');
       setImmediate(false);
+      onOpenChange(false);
     } finally {
       setLoading(false);
     }
   };
 
-  const handleClose = () => {
-    if (!loading) {
+  const handleClose = (open: boolean) => {
+    if (!loading && !open) {
       setReason('');
       setImmediate(false);
-      onClose();
+      onOpenChange(false);
     }
   };
 
@@ -130,7 +130,7 @@ export const CancelSubscriptionSheet: React.FC<CancelSubscriptionSheetProps> = (
             variant="destructive"
             onClick={handleSubmit}
             disabled={loading || !reason.trim()}
-            className="w-full h-11"
+            className="w-full min-h-[48px]"
           >
             {loading ? (
               <>
@@ -141,7 +141,7 @@ export const CancelSubscriptionSheet: React.FC<CancelSubscriptionSheetProps> = (
               '确认取消'
             )}
           </Button>
-          <Button variant="ghost" onClick={handleClose} disabled={loading} className="w-full h-10">
+          <Button variant="ghost" onClick={() => handleClose(false)} disabled={loading} className="w-full min-h-[44px]">
             返回
           </Button>
         </SheetFooter>

@@ -145,10 +145,9 @@ export const SubscriptionManagementPage: React.FC = () => {
     setDeleteDialogOpen(true);
   };
 
-  const handleDeleteConfirm = async () => {
-    if (!subscriptionToDelete) return;
+  const handleDeleteConfirm = async (subscription: Subscription) => {
     try {
-      await adminDeleteSubscription(subscriptionToDelete.id);
+      await adminDeleteSubscription(subscription.id);
       showSuccess('订阅已删除');
       setDeleteDialogOpen(false);
       setSubscriptionToDelete(null);
@@ -156,6 +155,12 @@ export const SubscriptionManagementPage: React.FC = () => {
     } catch {
       showError('删除订阅失败');
     }
+  };
+
+  // Wrapper for desktop ConfirmDialog which doesn't pass entity
+  const handleDesktopDeleteConfirm = async () => {
+    if (!subscriptionToDelete) return;
+    await handleDeleteConfirm(subscriptionToDelete);
   };
 
   // Mobile view - uses MobileSubscriptionManagement with its own header/stats
@@ -184,46 +189,54 @@ export const SubscriptionManagementPage: React.FC = () => {
         {/* Subscription Detail Sheet */}
         <SubscriptionDetailSheet
           open={detailDialogOpen}
-          subscription={selectedSubscription}
-          user={selectedSubscription ? usersMap[selectedSubscription.userId] : undefined}
-          onClose={() => {
-            setDetailDialogOpen(false);
-            setSelectedSubscription(null);
+          onOpenChange={(open) => {
+            if (!open) {
+              setDetailDialogOpen(false);
+              setSelectedSubscription(null);
+            }
           }}
+          entity={selectedSubscription}
+          user={selectedSubscription ? usersMap[selectedSubscription.userId] : undefined}
         />
 
         {/* Duplicate Subscription Sheet */}
         <DuplicateSubscriptionSheet
           open={duplicateDialogOpen}
+          onOpenChange={(open) => {
+            if (!open) {
+              setDuplicateDialogOpen(false);
+              setSelectedSubscription(null);
+            }
+          }}
           subscription={selectedSubscription}
           user={selectedSubscription ? usersMap[selectedSubscription.userId] : undefined}
-          onClose={() => {
-            setDuplicateDialogOpen(false);
-            setSelectedSubscription(null);
-          }}
           onSubmit={handleDuplicateSubmit}
         />
 
         {/* Cancel Subscription Sheet */}
         <CancelSubscriptionSheet
           open={cancelDialogOpen}
-          subscription={selectedSubscription}
-          onClose={() => {
-            setCancelDialogOpen(false);
-            setSelectedSubscription(null);
+          onOpenChange={(open) => {
+            if (!open) {
+              setCancelDialogOpen(false);
+              setSelectedSubscription(null);
+            }
           }}
+          subscription={selectedSubscription}
           onConfirm={handleCancelConfirm}
         />
 
         {/* Delete Subscription Sheet */}
         <DeleteSubscriptionSheet
           open={deleteDialogOpen}
-          subscription={subscriptionToDelete}
-          user={subscriptionToDelete ? usersMap[subscriptionToDelete.userId] : undefined}
-          onClose={() => {
-            setDeleteDialogOpen(false);
-            setSubscriptionToDelete(null);
+          onOpenChange={(open) => {
+            if (!open) {
+              setDeleteDialogOpen(false);
+              setSubscriptionToDelete(null);
+            }
           }}
+          entity={subscriptionToDelete}
+          user={subscriptionToDelete ? usersMap[subscriptionToDelete.userId] : undefined}
           onConfirm={handleDeleteConfirm}
         />
       </AdminLayout>
@@ -377,7 +390,7 @@ export const SubscriptionManagementPage: React.FC = () => {
         confirmText="删除"
         cancelText="取消"
         variant="destructive"
-        onConfirm={handleDeleteConfirm}
+        onConfirm={handleDesktopDeleteConfirm}
       />
     </AdminLayout>
   );

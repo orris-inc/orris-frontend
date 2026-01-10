@@ -21,7 +21,8 @@ import {
   SheetDescription,
   SheetBody,
   SheetFooter,
-} from '@/components/common/Sheet';
+  type BaseSheetProps,
+} from '@/components/common/sheet';
 import { Button } from '@/components/common/Button';
 import { cn } from '@/lib/utils';
 import { formatDate } from '@/shared/utils/date-utils';
@@ -30,9 +31,7 @@ import { listUsers } from '@/api/user';
 import type { SubscriptionPlan, Subscription, SubscriptionStatus } from '@/api/subscription/types';
 import type { UserResponse } from '@/api/user/types';
 
-interface ViewPlanSubscriptionsSheetProps {
-  open: boolean;
-  onClose: () => void;
+interface ViewPlanSubscriptionsSheetProps extends BaseSheetProps {
   plan: SubscriptionPlan | null;
 }
 
@@ -47,7 +46,7 @@ const STATUS_CONFIG: Record<SubscriptionStatus, { label: string; color: string }
 
 export const ViewPlanSubscriptionsSheet: React.FC<ViewPlanSubscriptionsSheetProps> = ({
   open,
-  onClose,
+  onOpenChange,
   plan,
 }) => {
   const [subscriptions, setSubscriptions] = useState<Subscription[]>([]);
@@ -112,7 +111,7 @@ export const ViewPlanSubscriptionsSheet: React.FC<ViewPlanSubscriptionsSheetProp
   if (!plan) return null;
 
   return (
-    <Sheet open={open} onOpenChange={onClose}>
+    <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent className="max-h-[95vh]">
         <SheetHeader className="pb-2">
           <SheetTitle className="flex items-center gap-2">
@@ -256,7 +255,7 @@ export const ViewPlanSubscriptionsSheet: React.FC<ViewPlanSubscriptionsSheetProp
         </SheetBody>
 
         <SheetFooter className="pt-3 pb-1">
-          <Button variant="ghost" onClick={onClose} className="w-full h-10">
+          <Button variant="ghost" onClick={() => onOpenChange(false)} className="w-full h-10">
             关闭
           </Button>
         </SheetFooter>

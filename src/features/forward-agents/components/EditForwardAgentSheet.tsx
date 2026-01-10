@@ -13,7 +13,8 @@ import {
   SheetDescription,
   SheetBody,
   SheetFooter,
-} from '@/components/common/Sheet';
+  type EditSheetProps,
+} from '@/components/common/sheet';
 import { Button } from '@/components/common/Button';
 import { Badge } from '@/components/common/Badge';
 import { Separator } from '@/components/common/Separator';
@@ -47,12 +48,7 @@ const PROTOCOL_GROUPS: {
   },
 ];
 
-interface EditForwardAgentSheetProps {
-  open: boolean;
-  agent: ForwardAgent | null;
-  onClose: () => void;
-  onSubmit: (id: number | string, data: UpdateForwardAgentRequest) => void;
-}
+interface EditForwardAgentSheetProps extends EditSheetProps<ForwardAgent, UpdateForwardAgentRequest> {}
 
 // Collapsible Section
 interface MobileSectionProps {
@@ -100,8 +96,8 @@ const MobileSection: React.FC<MobileSectionProps> = ({
 
 export const EditForwardAgentSheet: React.FC<EditForwardAgentSheetProps> = ({
   open,
-  agent,
-  onClose,
+  onOpenChange,
+  entity: agent,
   onSubmit,
 }) => {
   const [formData, setFormData] = useState<UpdateForwardAgentRequest>({});
@@ -134,7 +130,7 @@ export const EditForwardAgentSheet: React.FC<EditForwardAgentSheetProps> = ({
 
   const handleClose = () => {
     if (!loading) {
-      onClose();
+      onOpenChange(false);
     }
   };
 
@@ -212,7 +208,7 @@ export const EditForwardAgentSheet: React.FC<EditForwardAgentSheetProps> = ({
       }
 
       if (Object.keys(updates).length > 0) {
-        onSubmit(agent.id, updates);
+        await onSubmit(String(agent.id), updates);
       }
       handleClose();
     } finally {
@@ -223,7 +219,7 @@ export const EditForwardAgentSheet: React.FC<EditForwardAgentSheetProps> = ({
   if (!agent) return null;
 
   return (
-    <Sheet open={open} onOpenChange={handleClose}>
+    <Sheet open={open} onOpenChange={(o) => !loading && onOpenChange(o)} repositionInputs>
       <SheetContent>
         <SheetHeader>
           <SheetTitle className="flex items-center gap-2">

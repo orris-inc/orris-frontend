@@ -20,16 +20,14 @@ import {
   SheetDescription,
   SheetBody,
   SheetFooter,
-} from '@/components/common/Sheet';
+  ConfirmActionSheet,
+  type DeleteSheetProps,
+} from '@/components/common/sheet';
 import { Button } from '@/components/common/Button';
 import { Badge } from '@/components/common/Badge';
 import type { ForwardRule, ForwardAgent } from '@/api/forward';
 
-interface DeleteForwardRuleSheetProps {
-  open: boolean;
-  rule: ForwardRule | null;
-  onClose: () => void;
-  onConfirm: () => Promise<void>;
+interface DeleteForwardRuleSheetProps extends DeleteSheetProps<ForwardRule> {
   agentsMap?: Record<string, ForwardAgent>;
 }
 
@@ -43,26 +41,24 @@ const RULE_TYPE_LABELS: Record<string, string> = {
 
 export const DeleteForwardRuleSheet: React.FC<DeleteForwardRuleSheetProps> = ({
   open,
-  rule,
-  onClose,
+  onOpenChange,
+  entity: rule,
   onConfirm,
   agentsMap = {},
 }) => {
   const [loading, setLoading] = useState(false);
+  const [confirmOpen, setConfirmOpen] = useState(false);
 
   const handleConfirm = async () => {
+    if (!rule) return;
+
     setLoading(true);
     try {
-      await onConfirm();
-      onClose();
+      await onConfirm(rule);
+      setConfirmOpen(false);
+      onOpenChange(false);
     } finally {
       setLoading(false);
-    }
-  };
-
-  const handleClose = () => {
-    if (!loading) {
-      onClose();
     }
   };
 
@@ -71,7 +67,8 @@ export const DeleteForwardRuleSheet: React.FC<DeleteForwardRuleSheetProps> = ({
   const agent = agentsMap[rule.agentId];
 
   return (
-    <Sheet open={open} onOpenChange={handleClose}>
+    <>
+      <Sheet open={open} onOpenChange={(o) => !loading && onOpenChange(o)}>
       <SheetContent>
         <SheetHeader>
           <SheetTitle className="flex items-center gap-2">
@@ -165,7 +162,7 @@ export const DeleteForwardRuleSheet: React.FC<DeleteForwardRuleSheetProps> = ({
         <SheetFooter>
           <Button
             variant="destructive"
-            onClick={handleConfirm}
+            onClick={() => setConfirmOpen(true)}
             disabled={loading}
             className="w-full min-h-[52px] text-base"
           >
@@ -180,7 +177,7 @@ export const DeleteForwardRuleSheet: React.FC<DeleteForwardRuleSheetProps> = ({
           </Button>
           <Button
             variant="ghost"
-            onClick={handleClose}
+            onClick={() => onOpenChange(false)}
             disabled={loading}
             className="w-full min-h-[44px]"
           >
@@ -189,6 +186,17 @@ export const DeleteForwardRuleSheet: React.FC<DeleteForwardRuleSheetProps> = ({
         </SheetFooter>
       </SheetContent>
     </Sheet>
+
+      <ConfirmActionSheet
+        open={confirmOpen}
+        onOpenChange={setConfirmOpen}
+        variant="destructive"
+        title="确认删除？"
+        description="删除后无法恢复"
+        confirmText="确认删除"
+        onConfirm={handleConfirm}
+      />
+    </>
   );
 };
 

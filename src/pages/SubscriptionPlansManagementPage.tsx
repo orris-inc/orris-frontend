@@ -164,40 +164,40 @@ export const SubscriptionPlansManagementPage = () => {
         {/* Mobile Sheets */}
         <CreatePlanSheet
           open={createDialogOpen}
-          initialPlan={duplicatePlan}
-          onClose={() => {
-            setCreateDialogOpen(false);
-            setDuplicatePlan(null);
+          onOpenChange={(open) => {
+            setCreateDialogOpen(open);
+            if (!open) setDuplicatePlan(null);
           }}
           onSubmit={handleCreateSubmit}
+          initialPlan={duplicatePlan}
         />
 
         <EditPlanSheet
           open={editDialogOpen}
-          plan={selectedPlan}
-          onClose={() => {
-            setEditDialogOpen(false);
-            setSelectedPlan(null);
+          onOpenChange={(open) => {
+            setEditDialogOpen(open);
+            if (!open) setSelectedPlan(null);
           }}
+          entity={selectedPlan}
           onSubmit={handleUpdateSubmit}
         />
 
         <ViewPlanSubscriptionsSheet
           open={subscriptionsDialogOpen}
-          plan={selectedPlan}
-          onClose={() => {
-            setSubscriptionsDialogOpen(false);
-            setSelectedPlan(null);
+          onOpenChange={(open) => {
+            setSubscriptionsDialogOpen(open);
+            if (!open) setSelectedPlan(null);
           }}
+          plan={selectedPlan}
         />
 
         <DeletePlanSheet
           open={deleteDialogOpen}
-          plan={planToDelete}
-          onClose={() => {
-            setDeleteDialogOpen(false);
-            setPlanToDelete(null);
+          onOpenChange={(open) => {
+            setDeleteDialogOpen(open);
+            if (!open) setPlanToDelete(null);
           }}
+          entity={planToDelete}
           onConfirm={handleDeleteConfirm}
         />
       </AdminLayout>

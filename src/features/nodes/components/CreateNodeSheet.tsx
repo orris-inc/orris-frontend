@@ -31,7 +31,8 @@ import {
   SheetTitle,
   SheetBody,
   SheetFooter,
-} from '@/components/common/Sheet';
+  type CreateSheetProps,
+} from '@/components/common/sheet';
 import { Button } from '@/components/common/Button';
 import { Badge } from '@/components/common/Badge';
 import { Separator } from '@/components/common/Separator';
@@ -51,10 +52,7 @@ import type {
   TUICUDPRelayMode,
 } from '@/api/node';
 
-interface CreateNodeSheetProps {
-  open: boolean;
-  onClose: () => void;
-  onSubmit: (data: CreateNodeRequest) => void;
+interface CreateNodeSheetProps extends CreateSheetProps<CreateNodeRequest> {
   initialData?: Partial<CreateNodeRequest>;
   nodes?: OutboundNodeOption[];
 }
@@ -522,7 +520,7 @@ const PortPresets: React.FC<PortPresetsProps> = ({ currentPort, onSelect }) => (
 
 export const CreateNodeSheet: React.FC<CreateNodeSheetProps> = ({
   open,
-  onClose,
+  onOpenChange,
   onSubmit,
   initialData,
   nodes = [],
@@ -603,7 +601,7 @@ export const CreateNodeSheet: React.FC<CreateNodeSheetProps> = ({
       setErrors({});
       setPluginOptsString('');
       setOpenSections(new Set(['basic']));
-      onClose();
+      onOpenChange(false);
     }
   };
 
@@ -919,7 +917,7 @@ export const CreateNodeSheet: React.FC<CreateNodeSheetProps> = ({
   const hasOtherSettings = Boolean(formData.region || formData.tagsInput || formData.sortOrder);
 
   return (
-    <Sheet open={open} onOpenChange={handleClose}>
+    <Sheet open={open} onOpenChange={(o) => !loading && onOpenChange(o)} repositionInputs>
       <SheetContent>
         <SheetHeader>
           <SheetTitle className="flex items-center gap-3">

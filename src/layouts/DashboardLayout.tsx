@@ -4,7 +4,8 @@
  */
 
 import { useState } from 'react';
-import { useNavigate, Link } from 'react-router';
+import { useNavigate } from 'react-router';
+import { ViewTransitionLink } from '@/components/common/ViewTransitionLink';
 import { Menu, Globe } from 'lucide-react';
 import { TooltipProvider } from '@/components/common/Tooltip';
 
@@ -69,18 +70,18 @@ export const DashboardLayout = ({ children }: DashboardLayoutProps) => {
           )}
 
           {/* Logo/Brand - consistent with LandingPage */}
-          <Link to="/" className="mr-4 hidden md:flex items-center gap-2">
+          <ViewTransitionLink to="/" className="mr-4 hidden md:flex items-center gap-2">
             <div className="size-8 rounded-lg bg-primary flex items-center justify-center">
               <Globe className="size-5 text-primary-foreground" />
             </div>
             <span className="text-lg font-semibold">Orris</span>
-          </Link>
-          <Link to="/" className="flex md:hidden flex-1 items-center gap-2">
+          </ViewTransitionLink>
+          <ViewTransitionLink to="/" className="flex md:hidden flex-1 items-center gap-2">
             <div className="size-8 rounded-lg bg-primary flex items-center justify-center">
               <Globe className="size-5 text-primary-foreground" />
             </div>
             <span className="text-lg font-semibold">Orris</span>
-          </Link>
+          </ViewTransitionLink>
 
           {/* Desktop navigation links - only show for user side */}
           {shouldShowNavigation && (
@@ -126,7 +127,7 @@ export const DashboardLayout = ({ children }: DashboardLayoutProps) => {
       )}
 
       {/* Main content area */}
-      <main className="flex-1 py-4 sm:py-6 overflow-x-hidden">
+      <main className="flex-1 py-4 sm:py-6 overflow-x-hidden" data-view-transition="content">
         <div className="mx-auto px-4 sm:px-6 max-w-6xl w-full">
           {/* Enhanced breadcrumb navigation - only show for admin side (not in DashboardLayout unless configured) */}
           {shouldShowBreadcrumbs && <EnhancedBreadcrumbs />}

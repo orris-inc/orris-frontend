@@ -13,7 +13,8 @@ import {
   SheetDescription,
   SheetBody,
   SheetFooter,
-} from '@/components/common/Sheet';
+  type BaseSheetProps,
+} from '@/components/common/sheet';
 import { Button } from '@/components/common/Button';
 import { Checkbox } from '@/components/common/Checkbox';
 import { Label } from '@/components/common/Label';
@@ -23,11 +24,9 @@ import { useSubscriptionPlans } from '@/features/subscription-plans/hooks/useSub
 import type { BillingCycle, PricingOption, Subscription, SubscriptionPlan, AdminCreateSubscriptionRequest } from '@/api/subscription/types';
 import type { UserResponse } from '@/api/user/types';
 
-interface DuplicateSubscriptionSheetProps {
-  open: boolean;
+interface DuplicateSubscriptionSheetProps extends BaseSheetProps {
   subscription: Subscription | null;
   user?: UserResponse;
-  onClose: () => void;
   onSubmit: (data: AdminCreateSubscriptionRequest) => Promise<void>;
 }
 
@@ -54,9 +53,9 @@ const formatPrice = (price: number, currency: string): string => {
 
 export const DuplicateSubscriptionSheet: React.FC<DuplicateSubscriptionSheetProps> = ({
   open,
+  onOpenChange,
   subscription,
   user,
-  onClose,
   onSubmit,
 }) => {
   const { plans, isLoading: plansLoading } = useSubscriptionPlans({ enabled: open });
@@ -116,15 +115,9 @@ export const DuplicateSubscriptionSheet: React.FC<DuplicateSubscriptionSheetProp
     setSubmitting(true);
     try {
       await onSubmit(formData);
-      onClose();
+      onOpenChange(false);
     } finally {
       setSubmitting(false);
-    }
-  };
-
-  const handleClose = () => {
-    if (!submitting) {
-      onClose();
     }
   };
 
@@ -172,7 +165,7 @@ export const DuplicateSubscriptionSheet: React.FC<DuplicateSubscriptionSheetProp
   if (!subscription) return null;
 
   return (
-    <Sheet open={open} onOpenChange={handleClose}>
+    <Sheet open={open} onOpenChange={(o) => !submitting && onOpenChange(o)} repositionInputs>
       <SheetContent className="max-h-[95vh]">
         <SheetHeader className="pb-2">
           <SheetTitle className="flex items-center gap-2">
@@ -295,7 +288,7 @@ export const DuplicateSubscriptionSheet: React.FC<DuplicateSubscriptionSheetProp
           <Button
             onClick={handleSubmit}
             disabled={!formData.planId || submitting}
-            className="w-full h-11"
+            className="w-full min-h-[48px]"
           >
             {submitting ? (
               <>
@@ -306,7 +299,7 @@ export const DuplicateSubscriptionSheet: React.FC<DuplicateSubscriptionSheetProp
               '创建订阅'
             )}
           </Button>
-          <Button variant="ghost" onClick={handleClose} disabled={submitting} className="w-full h-10">
+          <Button variant="ghost" onClick={() => onOpenChange(false)} disabled={submitting} className="w-full min-h-[44px]">
             取消
           </Button>
         </SheetFooter>

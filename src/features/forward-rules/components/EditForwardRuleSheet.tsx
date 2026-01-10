@@ -19,7 +19,8 @@ import {
   SheetTitle,
   SheetBody,
   SheetFooter,
-} from '@/components/common/Sheet';
+  type EditSheetProps,
+} from '@/components/common/sheet';
 import { Button } from '@/components/common/Button';
 import { Badge } from '@/components/common/Badge';
 import { Separator } from '@/components/common/Separator';
@@ -41,11 +42,7 @@ import type { SubscriptionPlan } from '@/api/subscription/types';
 type ForwardProtocol = 'tcp' | 'udp' | 'both';
 type TargetType = 'manual' | 'node';
 
-interface EditForwardRuleSheetProps {
-  open: boolean;
-  rule: ForwardRule | null;
-  onClose: () => void;
-  onSubmit: (id: number | string, data: UpdateForwardRuleRequest) => void;
+interface EditForwardRuleSheetProps extends EditSheetProps<ForwardRule, UpdateForwardRuleRequest> {
   nodes?: Node[];
   agents?: ForwardAgent[];
   resourceGroups?: ResourceGroup[];
@@ -148,8 +145,8 @@ const Field: React.FC<{ label: string; hint?: string }> = ({ label, hint }) => (
 
 export const EditForwardRuleSheet: React.FC<EditForwardRuleSheetProps> = ({
   open,
-  rule,
-  onClose,
+  onOpenChange,
+  entity: rule,
   onSubmit,
   nodes = [],
   agents = [],
@@ -207,7 +204,7 @@ export const EditForwardRuleSheet: React.FC<EditForwardRuleSheetProps> = ({
 
   const handleClose = () => {
     if (!loading) {
-      onClose();
+      onOpenChange(false);
     }
   };
 
@@ -452,7 +449,7 @@ export const EditForwardRuleSheet: React.FC<EditForwardRuleSheetProps> = ({
       if (hasGroupsChange) updates.groupSids = currentGroups;
 
       if (Object.keys(updates).length > 0) {
-        onSubmit(rule.id, updates);
+        await onSubmit(rule.id, updates);
       }
       handleClose();
     } finally {
@@ -467,7 +464,7 @@ export const EditForwardRuleSheet: React.FC<EditForwardRuleSheetProps> = ({
   const needsTunnelConfig = rule.ruleType === 'entry' || rule.ruleType === 'chain';
 
   return (
-    <Sheet open={open} onOpenChange={handleClose}>
+    <Sheet open={open} onOpenChange={(o) => !loading && onOpenChange(o)} repositionInputs>
       <SheetContent>
         <SheetHeader>
           <SheetTitle className="flex items-center gap-2">

@@ -19,12 +19,13 @@
  */
 
 import { useMemo } from 'react';
-import { Link as RouterLink, useLocation } from 'react-router-dom';
+import { useLocation } from 'react-router-dom';
 import { Drawer } from 'vaul';
 import { X, LogOut, Shield, ArrowLeftRight, ChevronRight } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/common/Avatar';
 import { ThemeToggle } from '@/components/common/ThemeToggle';
+import { ViewTransitionLink } from '@/components/common/ViewTransitionLink';
 
 import type { NavigationItem } from '../../types/navigation.types';
 
@@ -49,12 +50,6 @@ interface MobileDrawerProps {
   title?: string;
   onAdminClick?: () => void;
   onLogout?: () => void;
-  // Legacy props for backward compatibility (ignored with Vaul)
-  isDragging?: boolean;
-  overlayStyle?: React.CSSProperties;
-  drawerStyle?: React.CSSProperties;
-  overlayRef?: React.RefObject<HTMLElement | null>;
-  drawerRef?: React.RefObject<HTMLElement | null>;
 }
 
 export const MobileDrawer = ({
@@ -67,18 +62,12 @@ export const MobileDrawer = ({
   title,
   onAdminClick,
   onLogout,
-  // Ignore legacy props - Vaul handles gestures natively
-  isDragging: _isDragging,
-  overlayStyle: _overlayStyle,
-  drawerStyle: _drawerStyle,
-  overlayRef: _overlayRef,
-  drawerRef: _drawerRef,
 }: MobileDrawerProps) => {
   const location = useLocation();
   const initials = user?.initials || user?.displayName?.charAt(0).toUpperCase() || '?';
 
   const renderNavigationItems = useMemo(() => {
-    return navigationItems.map((item, index) => {
+    return navigationItems.map((item) => {
       if (item.divider) {
         return (
           <div key={item.id} className="px-2 py-3">
@@ -89,34 +78,27 @@ export const MobileDrawer = ({
 
       const Icon = item.icon;
       const isActive = location.pathname === item.path;
-      const isFirst = index === 0 || navigationItems[index - 1]?.divider;
-      const isLast = index === navigationItems.length - 1 || navigationItems[index + 1]?.divider;
 
       return (
-        <RouterLink
+        <ViewTransitionLink
           key={item.id}
           to={item.path}
-          onClick={onClose}
+          onBeforeNavigate={onClose}
           aria-current={isActive ? 'page' : undefined}
           className={cn(
             // Base styles
-            'group relative flex items-center gap-3 px-4 py-3',
+            'group relative flex items-center gap-3 px-3 py-3',
             // Touch target
             'min-h-[52px]',
-            // Border radius for grouped items
-            isFirst && isLast && 'rounded-2xl',
-            isFirst && !isLast && 'rounded-t-2xl',
-            !isFirst && isLast && 'rounded-b-2xl',
+            // Border radius
+            'rounded-xl',
             // Transition - iOS 26 spring timing
             'transition-all duration-[var(--duration-fast)] ease-[var(--spring-smooth)]',
             'motion-reduce:transition-none',
             // Background and states
             isActive
               ? 'bg-primary/10'
-              : 'bg-card/60 active:bg-muted/80',
-            // Border between items
-            !isLast && !isFirst && 'border-b border-border/30',
-            isFirst && !isLast && 'border-b border-border/30',
+              : 'active:bg-muted/60',
             // Disabled state
             item.disabled && 'pointer-events-none opacity-50'
           )}
@@ -151,7 +133,7 @@ export const MobileDrawer = ({
               <div className="h-2 w-2 rounded-full bg-primary" />
             </div>
           )}
-        </RouterLink>
+        </ViewTransitionLink>
       );
     });
   }, [navigationItems, location.pathname, onClose]);
@@ -180,6 +162,8 @@ export const MobileDrawer = ({
             'w-[min(300px,calc(85vw-24px))]',
             // Flex layout
             'flex flex-col',
+            // IMPORTANT: Vaul best practice - prevent content overflow
+            'overflow-hidden',
             // iOS 26 Liquid Glass floating design
             'rounded-[28px]',
             'bg-background/95 dark:bg-card/95',
@@ -213,14 +197,14 @@ export const MobileDrawer = ({
             {/* User Profile Card */}
             {user && (
               <div className="flex items-center gap-3 pr-10">
-                <Avatar className="h-14 w-14 ring-2 ring-primary/20 ring-offset-2 ring-offset-background">
+                <Avatar className="h-12 w-12">
                   {user.avatarUrl && (
                     <AvatarImage
                       src={user.avatarUrl}
                       alt={user.displayName || 'User avatar'}
                     />
                   )}
-                  <AvatarFallback className="h-full w-full bg-primary/10 text-primary text-lg font-semibold">
+                  <AvatarFallback className="h-full w-full bg-primary/10 text-primary text-base font-semibold">
                     {initials}
                   </AvatarFallback>
                 </Avatar>
@@ -243,83 +227,78 @@ export const MobileDrawer = ({
             )}
           </div>
 
-          {/* Navigation List */}
-          <div className="flex-1 overflow-y-auto scrollbar-hide px-3 py-2">
+          {/* Navigation List - data-vaul-no-drag prevents drag-to-close while scrolling */}
+          <div
+            data-vaul-no-drag
+            className="flex-1 min-h-0 overflow-y-auto overscroll-contain scrollbar-hide px-4 py-2"
+          >
             <nav
-              className="space-y-1"
               role="navigation"
               aria-label="Mobile navigation"
             >
-              {/* Grouped navigation items */}
-              <div className="rounded-2xl overflow-hidden shadow-sm shadow-black/5">
-                {renderNavigationItems}
-              </div>
+              {renderNavigationItems}
             </nav>
           </div>
 
           {/* Footer Actions */}
-          <div className="flex-shrink-0 p-3 pt-0 space-y-2">
-            {/* Action buttons group */}
-            <div className="rounded-2xl overflow-hidden shadow-sm shadow-black/5">
-              {/* Admin/User Switch */}
-              {showAdminSwitch && onAdminClick && (
-                <button
-                  onClick={() => {
-                    onAdminClick();
-                    onClose();
-                  }}
-                  className={cn(
-                    'group flex w-full items-center gap-3 px-4 py-3',
-                    'min-h-[52px]',
-                    'bg-card/60',
-                    'text-primary',
-                    'transition-colors duration-150',
-                    'active:bg-primary/10',
-                    'motion-reduce:transition-none',
-                    onLogout && 'border-b border-border/30'
+          <div className="flex-shrink-0 px-4 pb-3 space-y-1">
+            {/* Admin/User Switch */}
+            {showAdminSwitch && onAdminClick && (
+              <button
+                onClick={() => {
+                  onAdminClick();
+                  onClose();
+                }}
+                className={cn(
+                  'group flex w-full items-center gap-3 px-3 py-3',
+                  'min-h-[52px]',
+                  'rounded-xl',
+                  'text-primary',
+                  'transition-colors duration-150',
+                  'active:bg-primary/10',
+                  'motion-reduce:transition-none'
+                )}
+              >
+                <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10">
+                  {isAdminView ? (
+                    <ArrowLeftRight className="h-5 w-5 text-primary" aria-hidden="true" />
+                  ) : (
+                    <Shield className="h-5 w-5 text-primary" aria-hidden="true" />
                   )}
-                >
-                  <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10">
-                    {isAdminView ? (
-                      <ArrowLeftRight className="h-5 w-5 text-primary" aria-hidden="true" />
-                    ) : (
-                      <Shield className="h-5 w-5 text-primary" aria-hidden="true" />
-                    )}
-                  </span>
-                  <span className="flex-1 text-left text-sm font-medium">
-                    {isAdminView ? '切换到用户视图' : '切换到管理端'}
-                  </span>
-                  <ChevronRight className="h-5 w-5 text-primary/50" aria-hidden="true" />
-                </button>
-              )}
+                </span>
+                <span className="flex-1 text-left text-sm font-medium">
+                  {isAdminView ? '切换到用户视图' : '切换到管理端'}
+                </span>
+                <ChevronRight className="h-5 w-5 text-primary/50" aria-hidden="true" />
+              </button>
+            )}
 
-              {/* Logout */}
-              {onLogout && (
-                <button
-                  onClick={() => {
-                    onLogout();
-                    onClose();
-                  }}
-                  className={cn(
-                    'group flex w-full items-center gap-3 px-4 py-3',
-                    'min-h-[52px]',
-                    'bg-card/60',
-                    'text-destructive',
-                    'transition-colors duration-150',
-                    'active:bg-destructive/10',
-                    'motion-reduce:transition-none'
-                  )}
-                >
-                  <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-destructive/10">
-                    <LogOut className="h-5 w-5 text-destructive" aria-hidden="true" />
-                  </span>
-                  <span className="flex-1 text-left text-sm font-medium">退出登录</span>
-                </button>
-              )}
-            </div>
+            {/* Logout */}
+            {onLogout && (
+              <button
+                onClick={() => {
+                  onLogout();
+                  onClose();
+                }}
+                className={cn(
+                  'group flex w-full items-center gap-3 px-3 py-3',
+                  'min-h-[52px]',
+                  'rounded-xl',
+                  'text-destructive',
+                  'transition-colors duration-150',
+                  'active:bg-destructive/10',
+                  'motion-reduce:transition-none'
+                )}
+              >
+                <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-destructive/10">
+                  <LogOut className="h-5 w-5 text-destructive" aria-hidden="true" />
+                </span>
+                <span className="flex-1 text-left text-sm font-medium">退出登录</span>
+              </button>
+            )}
 
-            {/* Theme toggle - separate floating button */}
-            <div className="flex justify-center pt-1">
+            {/* Theme toggle */}
+            <div className="flex justify-center pt-2">
               <div className={cn(
                 'inline-flex items-center gap-2 px-4 py-2',
                 'rounded-full',

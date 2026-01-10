@@ -9,7 +9,8 @@
  */
 
 import { useState, useEffect } from 'react';
-import { Link as RouterLink, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
+import { ViewTransitionLink } from '@/components/common/ViewTransitionLink';
 import {
   Menu,
   ChevronLeft,
@@ -63,9 +64,9 @@ export const AdminLayout = ({ children }: AdminLayoutProps) => {
 
   // Switch to user view link component
   const SwitchToUserViewLink = ({ collapsed = false }: { collapsed?: boolean }) => (
-    <RouterLink
+    <ViewTransitionLink
       to="/dashboard"
-      onClick={() => setMobileDrawerOpen(false)}
+      onBeforeNavigate={() => setMobileDrawerOpen(false)}
       className={cn(
         'group flex items-center rounded-xl text-primary',
         'transition-colors duration-200 ease-out',
@@ -84,7 +85,7 @@ export const AdminLayout = ({ children }: AdminLayoutProps) => {
           <span className="text-sm font-medium whitespace-nowrap">切换到用户视图</span>
         </>
       )}
-    </RouterLink>
+    </ViewTransitionLink>
   );
 
   return (
@@ -194,10 +195,13 @@ export const AdminLayout = ({ children }: AdminLayoutProps) => {
           </header>
 
           {/* 页面内容 - Mobile optimized padding */}
-          <main className={cn(
-            "flex-1 overflow-x-hidden",
-            isMobile ? "p-3" : "p-4 sm:p-6"
-          )}>
+          <main
+            className={cn(
+              "flex-1 overflow-x-hidden",
+              isMobile ? "p-3" : "p-4 sm:p-6"
+            )}
+            data-view-transition="content"
+          >
             <div className="min-w-0 max-w-full">
               {children}
             </div>

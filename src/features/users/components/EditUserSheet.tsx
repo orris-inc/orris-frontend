@@ -13,7 +13,8 @@ import {
   SheetDescription,
   SheetBody,
   SheetFooter,
-} from '@/components/common/Sheet';
+  type EditSheetProps,
+} from '@/components/common/sheet';
 import { Button } from '@/components/common/Button';
 import { Separator } from '@/components/common/Separator';
 import { TruncatedId } from '@/components/admin';
@@ -21,19 +22,14 @@ import { MobileFormInput, MobileSelect, type MobileSelectOption } from '@/compon
 import type { UserResponse, UpdateUserRequest } from '@/api/user';
 import type { UserStatus, UserRole } from '../types/users.types';
 
-interface EditUserSheetProps {
-  open: boolean;
-  user: UserResponse | null;
-  onClose: () => void;
-  onSubmit: (id: string, data: UpdateUserRequest) => void;
-}
+interface EditUserSheetProps extends EditSheetProps<UserResponse, UpdateUserRequest> {}
 
-// Status options
+// Status options using CSS variables
 const STATUS_OPTIONS: MobileSelectOption[] = [
-  { value: 'active', label: '激活', color: 'bg-emerald-500' },
-  { value: 'inactive', label: '未激活', color: 'bg-gray-400' },
-  { value: 'pending', label: '待处理', color: 'bg-yellow-500' },
-  { value: 'suspended', label: '暂停', color: 'bg-red-500' },
+  { value: 'active', label: '激活', color: 'bg-success' },
+  { value: 'inactive', label: '未激活', color: 'bg-muted-foreground' },
+  { value: 'pending', label: '待处理', color: 'bg-warning' },
+  { value: 'suspended', label: '暂停', color: 'bg-destructive' },
 ];
 
 // Role options
@@ -44,8 +40,8 @@ const ROLE_OPTIONS: MobileSelectOption[] = [
 
 export const EditUserSheet: React.FC<EditUserSheetProps> = ({
   open,
-  user,
-  onClose,
+  onOpenChange,
+  entity: user,
   onSubmit,
 }) => {
   const [email, setEmail] = useState('');
@@ -126,12 +122,12 @@ export const EditUserSheet: React.FC<EditUserSheetProps> = ({
   const currentStatus = STATUS_OPTIONS.find((s) => s.value === status);
 
   return (
-    <Sheet open={open} onOpenChange={onClose}>
+    <Sheet open={open} onOpenChange={onOpenChange} repositionInputs>
       <SheetContent>
         <SheetHeader>
           <SheetTitle className="flex items-center gap-2">
-            <div className="size-10 rounded-full bg-blue-500/10 flex items-center justify-center">
-              <UserPen className="size-5 text-blue-500" />
+            <div className="size-10 rounded-full bg-info/10 flex items-center justify-center">
+              <UserPen className="size-5 text-info" />
             </div>
             <span>编辑用户</span>
           </SheetTitle>
@@ -140,7 +136,7 @@ export const EditUserSheet: React.FC<EditUserSheetProps> = ({
           </SheetDescription>
         </SheetHeader>
 
-        <SheetBody className="space-y-6 py-4">
+        <SheetBody className="space-y-5 py-3">
           {/* Read-only Info */}
           <div className="space-y-3">
             <h4 className="text-sm font-medium text-muted-foreground px-1">基本信息</h4>
@@ -232,13 +228,13 @@ export const EditUserSheet: React.FC<EditUserSheetProps> = ({
           <Button
             onClick={handleSubmit}
             disabled={!hasChanges}
-            className="w-full min-h-[52px] text-base"
+            className="w-full min-h-[48px]"
           >
             保存修改
           </Button>
           <Button
             variant="ghost"
-            onClick={onClose}
+            onClick={() => onOpenChange(false)}
             className="w-full min-h-[44px]"
           >
             取消

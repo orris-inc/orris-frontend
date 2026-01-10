@@ -13,7 +13,8 @@ import {
   SheetDescription,
   SheetBody,
   SheetFooter,
-} from '@/components/common/Sheet';
+  type BaseSheetProps,
+} from '@/components/common/sheet';
 import { Button } from '@/components/common/Button';
 import { MobileSelect, type MobileSelectOption } from '@/components/common/mobile-form';
 import { Checkbox } from '@/components/common/Checkbox';
@@ -24,10 +25,8 @@ import { cn } from '@/lib/utils';
 import type { BillingCycle, PricingOption, SubscriptionPlan, AdminCreateSubscriptionRequest } from '@/api/subscription/types';
 import type { UserListItem } from '@/features/users/types/users.types';
 
-interface AssignSubscriptionSheetProps {
-  open: boolean;
+interface AssignSubscriptionSheetProps extends BaseSheetProps {
   user: UserListItem | null;
-  onClose: () => void;
   onSubmit: (data: AdminCreateSubscriptionRequest) => Promise<void>;
 }
 
@@ -55,8 +54,8 @@ const formatPrice = (price: number, currency: string): string => {
 
 export const AssignSubscriptionSheet: React.FC<AssignSubscriptionSheetProps> = ({
   open,
+  onOpenChange,
   user,
-  onClose,
   onSubmit,
 }) => {
   const { plans, isLoading: plansLoading } = useSubscriptionPlans({ enabled: open });
@@ -118,15 +117,9 @@ export const AssignSubscriptionSheet: React.FC<AssignSubscriptionSheetProps> = (
     setSubmitting(true);
     try {
       await onSubmit(formData);
-      onClose();
+      onOpenChange(false);
     } finally {
       setSubmitting(false);
-    }
-  };
-
-  const handleClose = () => {
-    if (!submitting) {
-      onClose();
     }
   };
 
@@ -171,12 +164,12 @@ export const AssignSubscriptionSheet: React.FC<AssignSubscriptionSheetProps> = (
   if (!user) return null;
 
   return (
-    <Sheet open={open} onOpenChange={handleClose}>
+    <Sheet open={open} onOpenChange={(o) => !submitting && onOpenChange(o)} repositionInputs>
       <SheetContent>
         <SheetHeader>
           <SheetTitle className="flex items-center gap-2">
-            <div className="size-10 rounded-full bg-blue-500/10 flex items-center justify-center">
-              <CreditCard className="size-5 text-blue-500" />
+            <div className="size-10 rounded-full bg-info/10 flex items-center justify-center">
+              <CreditCard className="size-5 text-info" />
             </div>
             <span>分配订阅</span>
           </SheetTitle>
@@ -185,7 +178,7 @@ export const AssignSubscriptionSheet: React.FC<AssignSubscriptionSheetProps> = (
           </SheetDescription>
         </SheetHeader>
 
-        <SheetBody className="space-y-6 py-4">
+        <SheetBody className="space-y-5 py-3">
           {plansLoading ? (
             <div className="flex flex-col items-center justify-center py-12 gap-3">
               <Loader2 className="size-8 animate-spin text-muted-foreground" />
@@ -306,7 +299,7 @@ export const AssignSubscriptionSheet: React.FC<AssignSubscriptionSheetProps> = (
           </Button>
           <Button
             variant="ghost"
-            onClick={handleClose}
+            onClick={() => onOpenChange(false)}
             disabled={submitting}
             className="w-full min-h-[44px]"
           >

@@ -4,7 +4,7 @@
  */
 
 import { useState } from 'react';
-import { Trash2, AlertTriangle, Loader2, User, CreditCard, Calendar } from 'lucide-react';
+import { Trash2, AlertTriangle, User, CreditCard, Calendar } from 'lucide-react';
 import {
   Sheet,
   SheetContent,
@@ -13,7 +13,9 @@ import {
   SheetDescription,
   SheetBody,
   SheetFooter,
-} from '@/components/common/Sheet';
+  ConfirmActionSheet,
+  type DeleteSheetProps,
+} from '@/components/common/sheet';
 import { Button } from '@/components/common/Button';
 import { TruncatedId } from '@/components/admin';
 import { formatDate } from '@/shared/utils/date-utils';
@@ -21,12 +23,8 @@ import { cn } from '@/lib/utils';
 import type { Subscription, SubscriptionStatus } from '@/api/subscription/types';
 import type { UserResponse } from '@/api/user/types';
 
-interface DeleteSubscriptionSheetProps {
-  open: boolean;
-  subscription: Subscription | null;
+interface DeleteSubscriptionSheetProps extends DeleteSheetProps<Subscription> {
   user?: UserResponse;
-  onClose: () => void;
-  onConfirm: () => Promise<void>;
 }
 
 // Status configuration
@@ -40,26 +38,23 @@ const STATUS_CONFIG: Record<SubscriptionStatus, { label: string; color: string }
 
 export const DeleteSubscriptionSheet: React.FC<DeleteSubscriptionSheetProps> = ({
   open,
-  subscription,
+  onOpenChange,
+  entity: subscription,
   user,
-  onClose,
   onConfirm,
 }) => {
   const [loading, setLoading] = useState(false);
+  const [confirmOpen, setConfirmOpen] = useState(false);
 
   const handleConfirm = async () => {
+    if (!subscription) return;
     setLoading(true);
     try {
-      await onConfirm();
-      onClose();
+      await onConfirm(subscription);
+      setConfirmOpen(false);
+      onOpenChange(false);
     } finally {
       setLoading(false);
-    }
-  };
-
-  const handleClose = () => {
-    if (!loading) {
-      onClose();
     }
   };
 
@@ -68,7 +63,8 @@ export const DeleteSubscriptionSheet: React.FC<DeleteSubscriptionSheetProps> = (
   const statusConfig = STATUS_CONFIG[subscription.status] || { label: subscription.status, color: 'bg-gray-100 text-gray-600' };
 
   return (
-    <Sheet open={open} onOpenChange={handleClose}>
+    <>
+    <Sheet open={open} onOpenChange={(o) => !loading && onOpenChange(o)}>
       <SheetContent className="max-h-[95vh]">
         <SheetHeader className="pb-2">
           <SheetTitle className="flex items-center gap-2">
@@ -137,24 +133,28 @@ export const DeleteSubscriptionSheet: React.FC<DeleteSubscriptionSheetProps> = (
         <SheetFooter className="pt-3 pb-1">
           <Button
             variant="destructive"
-            onClick={handleConfirm}
+            onClick={() => setConfirmOpen(true)}
             disabled={loading}
-            className="w-full h-11"
+            className="w-full min-h-[48px]"
           >
-            {loading ? (
-              <>
-                <Loader2 className="mr-2 size-4 animate-spin" />
-                删除中...
-              </>
-            ) : (
-              '确认删除'
-            )}
+            确认删除
           </Button>
-          <Button variant="ghost" onClick={handleClose} disabled={loading} className="w-full h-10">
+          <Button variant="ghost" onClick={() => onOpenChange(false)} disabled={loading} className="w-full min-h-[44px]">
             取消
           </Button>
         </SheetFooter>
       </SheetContent>
     </Sheet>
+
+    <ConfirmActionSheet
+      open={confirmOpen}
+      onOpenChange={setConfirmOpen}
+      variant="destructive"
+      title="确认删除？"
+      description="删除后将无法恢复"
+      confirmText="确认删除"
+      onConfirm={handleConfirm}
+    />
+    </>
   );
 };

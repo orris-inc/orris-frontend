@@ -556,9 +556,9 @@ export const ForwardAgentsPage = () => {
       {isMobile ? (
         <CreateForwardAgentSheet
           open={createDialogOpen}
-          onClose={() => {
-            setCreateDialogOpen(false);
-            setCopyAgentData(undefined);
+          onOpenChange={(open) => {
+            setCreateDialogOpen(open);
+            if (!open) setCopyAgentData(undefined);
           }}
           onSubmit={handleCreateSubmit}
           initialData={copyAgentData}
@@ -579,11 +579,11 @@ export const ForwardAgentsPage = () => {
       {isMobile ? (
         <EditForwardAgentSheet
           open={editDialogOpen}
-          agent={selectedAgent}
-          onClose={() => {
-            setEditDialogOpen(false);
-            setSelectedAgent(null);
+          onOpenChange={(open) => {
+            setEditDialogOpen(open);
+            if (!open) setSelectedAgent(null);
           }}
+          entity={selectedAgent}
           onSubmit={handleUpdateSubmit}
         />
       ) : (
@@ -687,11 +687,11 @@ export const ForwardAgentsPage = () => {
       {/* Delete Forward Agent Confirmation Sheet (Mobile only) */}
       <DeleteForwardAgentSheet
         open={deleteDialogOpen}
-        agent={agentToDelete}
-        onClose={() => {
-          setDeleteDialogOpen(false);
-          setAgentToDelete(null);
+        onOpenChange={(open) => {
+          setDeleteDialogOpen(open);
+          if (!open) setAgentToDelete(null);
         }}
+        entity={agentToDelete}
         onConfirm={handleDeleteConfirm}
       />
     </AdminLayout>

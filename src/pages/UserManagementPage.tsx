@@ -181,47 +181,55 @@ export const UserManagementPage = () => {
         {/* Mobile Dialogs/Sheets */}
         <CreateUserSheet
           open={createDialogOpen}
-          onClose={() => setCreateDialogOpen(false)}
+          onOpenChange={setCreateDialogOpen}
           onSubmit={handleCreateSubmit}
         />
 
         <EditUserSheet
           open={editDialogOpen}
-          user={selectedUser}
-          onClose={() => {
-            setEditDialogOpen(false);
-            setSelectedUser(null);
+          onOpenChange={(open) => {
+            if (!open) {
+              setEditDialogOpen(false);
+              setSelectedUser(null);
+            }
           }}
+          entity={selectedUser}
           onSubmit={handleUpdateSubmit}
         />
 
         <AssignSubscriptionSheet
           open={assignSubscriptionDialogOpen}
-          user={selectedUser}
-          onClose={() => {
-            setAssignSubscriptionDialogOpen(false);
-            setSelectedUser(null);
+          onOpenChange={(open) => {
+            if (!open) {
+              setAssignSubscriptionDialogOpen(false);
+              setSelectedUser(null);
+            }
           }}
+          user={selectedUser}
           onSubmit={handleAssignSubscriptionSubmit}
         />
 
         <ResetPasswordSheet
           open={resetPasswordDialogOpen}
+          onOpenChange={(open) => {
+            if (!open) {
+              setResetPasswordDialogOpen(false);
+              setSelectedUser(null);
+            }
+          }}
           user={selectedUser}
           isLoading={isResettingPassword}
-          onClose={() => {
-            setResetPasswordDialogOpen(false);
-            setSelectedUser(null);
-          }}
           onSubmit={handleResetPasswordSubmit}
         />
 
         <DeleteUserSheet
           open={deleteDialogOpen}
-          user={selectedUser}
-          onClose={() => {
-            setDeleteDialogOpen(false);
-            setSelectedUser(null);
+          entity={selectedUser}
+          onOpenChange={(open) => {
+            if (!open) {
+              setDeleteDialogOpen(false);
+              setSelectedUser(null);
+            }
           }}
           onConfirm={handleDeleteConfirm}
         />

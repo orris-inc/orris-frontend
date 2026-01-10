@@ -14,17 +14,16 @@ import {
   SheetDescription,
   SheetBody,
   SheetFooter,
-} from '@/components/common/Sheet';
+  type CreateSheetProps,
+} from '@/components/common/sheet';
 import { Button } from '@/components/common/Button';
 import { MobileFormInput, MobileSelect, type MobileSelectOption } from '@/components/common/mobile-form';
 import type { CreateResourceGroupRequest } from '@/api/resource/types';
 import type { SubscriptionPlan } from '@/api/subscription/types';
 
-interface CreateResourceGroupSheetProps {
-  open: boolean;
+interface CreateResourceGroupSheetProps extends CreateSheetProps<CreateResourceGroupRequest> {
+  /** Available subscription plans for selection */
   plans: SubscriptionPlan[];
-  onClose: () => void;
-  onSubmit: (data: CreateResourceGroupRequest) => Promise<void>;
 }
 
 interface FormErrors {
@@ -34,9 +33,9 @@ interface FormErrors {
 
 export const CreateResourceGroupSheet: React.FC<CreateResourceGroupSheetProps> = ({
   open,
-  plans,
-  onClose,
+  onOpenChange,
   onSubmit,
+  plans,
 }) => {
   const [name, setName] = useState('');
   const [planId, setPlanId] = useState('');
@@ -98,12 +97,12 @@ export const CreateResourceGroupSheet: React.FC<CreateResourceGroupSheetProps> =
     }
   }, [open, resetForm]);
 
-  const handleClose = useCallback(() => {
-    if (!loading) {
+  const handleOpenChange = useCallback((open: boolean) => {
+    if (!loading && !open) {
       resetForm();
-      onClose();
+      onOpenChange(false);
     }
-  }, [loading, resetForm, onClose]);
+  }, [loading, resetForm, onOpenChange]);
 
   const handleSubmit = useCallback(async () => {
     if (!validateAll()) return;
@@ -116,17 +115,17 @@ export const CreateResourceGroupSheet: React.FC<CreateResourceGroupSheetProps> =
         description: description.trim() || undefined,
       });
       resetForm();
-      onClose();
+      onOpenChange(false);
     } finally {
       setLoading(false);
     }
-  }, [validateAll, name, planId, description, onSubmit, resetForm, onClose]);
+  }, [validateAll, name, planId, description, onSubmit, resetForm, onOpenChange]);
 
   // Form validity check
   const isFormValid = name.trim() && planId;
 
   return (
-    <Sheet open={open} onOpenChange={handleClose}>
+    <Sheet open={open} onOpenChange={(o) => !loading && handleOpenChange(o)} repositionInputs>
       <SheetContent>
         <SheetHeader>
           <SheetTitle className="flex items-center gap-2">
@@ -158,7 +157,6 @@ export const CreateResourceGroupSheet: React.FC<CreateResourceGroupSheetProps> =
               icon={<Layers className="size-5" />}
               error={touched.name ? errors.name : undefined}
               disabled={loading}
-              autoFocus
             />
           </div>
 
@@ -209,7 +207,7 @@ export const CreateResourceGroupSheet: React.FC<CreateResourceGroupSheetProps> =
           <Button
             onClick={handleSubmit}
             disabled={loading || !isFormValid}
-            className="w-full min-h-[52px] text-base"
+            className="w-full min-h-[48px] text-base"
           >
             {loading ? '创建中...' : '创建资源组'}
           </Button>
@@ -217,7 +215,7 @@ export const CreateResourceGroupSheet: React.FC<CreateResourceGroupSheetProps> =
           {/* Secondary action */}
           <Button
             variant="ghost"
-            onClick={handleClose}
+            onClick={() => handleOpenChange(false)}
             disabled={loading}
             className="w-full min-h-[44px]"
           >

@@ -13,25 +13,23 @@ import {
   SheetDescription,
   SheetBody,
   SheetFooter,
-} from '@/components/common/Sheet';
+  ConfirmActionSheet,
+  type DeleteSheetProps,
+} from '@/components/common/sheet';
 import { Button } from '@/components/common/Button';
 import { Badge } from '@/components/common/Badge';
 import type { ForwardAgent } from '@/api/forward';
 
-interface DeleteForwardAgentSheetProps {
-  open: boolean;
-  agent: ForwardAgent | null;
-  onClose: () => void;
-  onConfirm: (agent: ForwardAgent) => Promise<void>;
-}
+interface DeleteForwardAgentSheetProps extends DeleteSheetProps<ForwardAgent> {}
 
 export const DeleteForwardAgentSheet: React.FC<DeleteForwardAgentSheetProps> = ({
   open,
-  agent,
-  onClose,
+  onOpenChange,
+  entity: agent,
   onConfirm,
 }) => {
   const [loading, setLoading] = useState(false);
+  const [confirmOpen, setConfirmOpen] = useState(false);
 
   const handleConfirm = async () => {
     if (!agent) return;
@@ -39,22 +37,18 @@ export const DeleteForwardAgentSheet: React.FC<DeleteForwardAgentSheetProps> = (
     setLoading(true);
     try {
       await onConfirm(agent);
-      onClose();
+      setConfirmOpen(false);
+      onOpenChange(false);
     } finally {
       setLoading(false);
-    }
-  };
-
-  const handleClose = () => {
-    if (!loading) {
-      onClose();
     }
   };
 
   if (!agent) return null;
 
   return (
-    <Sheet open={open} onOpenChange={handleClose}>
+    <>
+      <Sheet open={open} onOpenChange={(o) => !loading && onOpenChange(o)}>
       <SheetContent>
         <SheetHeader>
           <SheetTitle className="flex items-center gap-2">
@@ -136,7 +130,7 @@ export const DeleteForwardAgentSheet: React.FC<DeleteForwardAgentSheetProps> = (
         <SheetFooter>
           <Button
             variant="destructive"
-            onClick={handleConfirm}
+            onClick={() => setConfirmOpen(true)}
             disabled={loading}
             className="w-full min-h-[52px] text-base"
           >
@@ -151,7 +145,7 @@ export const DeleteForwardAgentSheet: React.FC<DeleteForwardAgentSheetProps> = (
           </Button>
           <Button
             variant="ghost"
-            onClick={handleClose}
+            onClick={() => onOpenChange(false)}
             disabled={loading}
             className="w-full min-h-[44px]"
           >
@@ -160,5 +154,16 @@ export const DeleteForwardAgentSheet: React.FC<DeleteForwardAgentSheetProps> = (
         </SheetFooter>
       </SheetContent>
     </Sheet>
+
+    <ConfirmActionSheet
+      open={confirmOpen}
+      onOpenChange={setConfirmOpen}
+      variant="destructive"
+      title="确认删除？"
+      description="删除后无法恢复"
+      confirmText="确认删除"
+      onConfirm={handleConfirm}
+    />
+  </>
   );
 };

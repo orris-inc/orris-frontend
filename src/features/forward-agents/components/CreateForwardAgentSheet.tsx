@@ -13,7 +13,8 @@ import {
   SheetDescription,
   SheetBody,
   SheetFooter,
-} from '@/components/common/Sheet';
+  type CreateSheetProps,
+} from '@/components/common/sheet';
 import { Button } from '@/components/common/Button';
 import { MobileFormInput } from '@/components/common/mobile-form';
 import { cn } from '@/lib/utils';
@@ -43,10 +44,7 @@ const PROTOCOL_GROUPS: {
   },
 ];
 
-interface CreateForwardAgentSheetProps {
-  open: boolean;
-  onClose: () => void;
-  onSubmit: (data: CreateForwardAgentRequest) => Promise<void>;
+interface CreateForwardAgentSheetProps extends CreateSheetProps<CreateForwardAgentRequest> {
   initialData?: Partial<CreateForwardAgentRequest>;
 }
 
@@ -62,7 +60,7 @@ const getDefaultFormData = (): CreateForwardAgentRequest => ({
 
 export const CreateForwardAgentSheet: React.FC<CreateForwardAgentSheetProps> = ({
   open,
-  onClose,
+  onOpenChange,
   onSubmit,
   initialData,
 }) => {
@@ -82,7 +80,7 @@ export const CreateForwardAgentSheet: React.FC<CreateForwardAgentSheetProps> = (
     if (!loading) {
       setFormData(getDefaultFormData());
       setErrors({});
-      onClose();
+      onOpenChange(false);
     }
   };
 
@@ -153,7 +151,7 @@ export const CreateForwardAgentSheet: React.FC<CreateForwardAgentSheetProps> = (
   const isFormValid = formData.name.trim();
 
   return (
-    <Sheet open={open} onOpenChange={handleClose}>
+    <Sheet open={open} onOpenChange={(o) => !loading && onOpenChange(o)} repositionInputs>
       <SheetContent>
         <SheetHeader>
           <SheetTitle className="flex items-center gap-2">

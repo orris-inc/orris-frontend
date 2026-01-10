@@ -23,7 +23,8 @@ import {
   SheetTitle,
   SheetDescription,
   SheetBody,
-} from '@/components/common/Sheet';
+  type DetailSheetProps,
+} from '@/components/common/sheet';
 import { Separator } from '@/components/common/Separator';
 import { TruncatedId } from '@/components/admin';
 import { SubscriptionLinkSelector } from '@/components/subscription';
@@ -33,11 +34,9 @@ import { cn } from '@/lib/utils';
 import type { Subscription, SubscriptionStatus, PlanType } from '@/api/subscription/types';
 import type { UserResponse } from '@/api/user/types';
 
-interface SubscriptionDetailSheetProps {
-  open: boolean;
-  subscription: Subscription | null;
+interface SubscriptionDetailSheetProps extends DetailSheetProps<Subscription> {
+  /** Optional user info for display */
   user?: UserResponse;
-  onClose: () => void;
 }
 
 // Status configuration
@@ -99,9 +98,9 @@ const DetailItem: React.FC<{
 
 export const SubscriptionDetailSheet: React.FC<SubscriptionDetailSheetProps> = ({
   open,
-  subscription,
+  onOpenChange,
+  entity: subscription,
   user,
-  onClose,
 }) => {
   if (!subscription) return null;
 
@@ -111,8 +110,8 @@ export const SubscriptionDetailSheet: React.FC<SubscriptionDetailSheetProps> = (
     : { label: '节点订阅', color: 'bg-blue-100 text-blue-700' };
 
   return (
-    <Sheet open={open} onOpenChange={onClose}>
-      <SheetContent className="max-h-[95vh]" showClose={false}>
+    <Sheet open={open} onOpenChange={onOpenChange}>
+      <SheetContent showClose={false}>
         <SheetHeader className="pb-2">
           <div className="flex items-center justify-between">
             <SheetTitle className="flex items-center gap-2">
@@ -126,7 +125,7 @@ export const SubscriptionDetailSheet: React.FC<SubscriptionDetailSheetProps> = (
             </SheetTitle>
             {/* iOS-style close button */}
             <button
-              onClick={onClose}
+              onClick={() => onOpenChange(false)}
               className={cn(
                 'size-8 flex items-center justify-center rounded-full',
                 'bg-muted/80 active:bg-muted',

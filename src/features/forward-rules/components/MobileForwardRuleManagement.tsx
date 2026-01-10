@@ -30,12 +30,6 @@ import {
 import { MobileStatsScroller } from '@/components/mobile/admin';
 import { AdminBadge } from '@/components/admin';
 import { Skeleton } from '@/components/common/Skeleton';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from '@/components/common/DropdownMenu';
 import { cn } from '@/lib/utils';
 import { MobileForwardRuleCard } from './MobileForwardRuleCard';
 import type { ForwardRule, ForwardAgent, ForwardStatus, ForwardProtocol, RuleOverallStatusResponse } from '@/api/forward';
@@ -239,6 +233,7 @@ export const MobileForwardRuleManagement = ({
   const [statusFilter, setStatusFilter] = useState<StatusFilter>('all');
   const [protocolFilter, setProtocolFilter] = useState<ProtocolFilter>('all');
   const [ruleTypeFilter, setRuleTypeFilter] = useState<RuleTypeFilter>('all');
+  const [filterPanelOpen, setFilterPanelOpen] = useState(false);
 
   // Calculate stats from rules
   const stats = useMemo(() => {
@@ -292,10 +287,14 @@ export const MobileForwardRuleManagement = ({
 
   const hasFilter = searchQuery !== '' || statusFilter !== 'all' || protocolFilter !== 'all' || ruleTypeFilter !== 'all';
 
-  // Get current filter labels for dropdown buttons
-  const currentStatusLabel = STATUS_FILTERS.find((f) => f.value === statusFilter)?.label || '全部状态';
-  const currentProtocolLabel = PROTOCOL_FILTERS.find((f) => f.value === protocolFilter)?.label || '全部协议';
-  const currentTypeLabel = RULE_TYPE_FILTERS.find((f) => f.value === ruleTypeFilter)?.label || '全部类型';
+  // Count active filters (excluding search)
+  const activeFilterCount = useMemo(() => {
+    let count = 0;
+    if (statusFilter !== 'all') count++;
+    if (protocolFilter !== 'all') count++;
+    if (ruleTypeFilter !== 'all') count++;
+    return count;
+  }, [statusFilter, protocolFilter, ruleTypeFilter]);
 
   // Stats configuration for MobileStatsScroller
   const statsConfig = [
@@ -346,7 +345,7 @@ export const MobileForwardRuleManagement = ({
       {/* Stats Grid */}
       <MobileStatsScroller stats={statsConfig} className="px-0" />
 
-      {/* Action Bar - Search + Filters + Actions */}
+      {/* Action Bar - Search + Filter + Refresh + Add */}
       <div className="flex items-center gap-2">
         {/* Search Bar */}
         <div
@@ -382,113 +381,28 @@ export const MobileForwardRuleManagement = ({
           )}
         </div>
 
-        {/* Status Filter Dropdown */}
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <button
-              className={cn(
-                'h-10 px-3 rounded-xl shrink-0',
-                'flex items-center gap-1.5',
-                'bg-foreground/5 hover:bg-foreground/10',
-                'border border-border/50',
-                'text-sm font-medium',
-                'transition-colors',
-                'focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/50',
-                statusFilter !== 'all' ? 'text-primary' : 'text-muted-foreground'
-              )}
-            >
-              <Filter className="size-4" />
-              <span className="hidden xs:inline">{currentStatusLabel}</span>
-              <ChevronDown className="size-4" />
-            </button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" className="min-w-[120px]">
-            {STATUS_FILTERS.map((filter) => (
-              <DropdownMenuItem
-                key={filter.value}
-                onClick={() => setStatusFilter(filter.value)}
-                className={cn(
-                  'cursor-pointer',
-                  statusFilter === filter.value && 'bg-primary/10 text-primary'
-                )}
-              >
-                {filter.label}
-              </DropdownMenuItem>
-            ))}
-          </DropdownMenuContent>
-        </DropdownMenu>
-
-        {/* Protocol Filter Dropdown */}
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <button
-              className={cn(
-                'h-10 px-3 rounded-xl shrink-0',
-                'flex items-center gap-1.5',
-                'bg-foreground/5 hover:bg-foreground/10',
-                'border border-border/50',
-                'text-sm font-medium',
-                'transition-colors',
-                'focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/50',
-                protocolFilter !== 'all' ? 'text-primary' : 'text-muted-foreground'
-              )}
-            >
-              <span className="hidden xs:inline">{currentProtocolLabel}</span>
-              <span className="xs:hidden">协议</span>
-              <ChevronDown className="size-4" />
-            </button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" className="min-w-[120px]">
-            {PROTOCOL_FILTERS.map((filter) => (
-              <DropdownMenuItem
-                key={filter.value}
-                onClick={() => setProtocolFilter(filter.value)}
-                className={cn(
-                  'cursor-pointer',
-                  protocolFilter === filter.value && 'bg-primary/10 text-primary'
-                )}
-              >
-                {filter.label}
-              </DropdownMenuItem>
-            ))}
-          </DropdownMenuContent>
-        </DropdownMenu>
-
-        {/* Rule Type Filter Dropdown */}
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <button
-              className={cn(
-                'h-10 px-3 rounded-xl shrink-0',
-                'flex items-center gap-1.5',
-                'bg-foreground/5 hover:bg-foreground/10',
-                'border border-border/50',
-                'text-sm font-medium',
-                'transition-colors',
-                'focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/50',
-                ruleTypeFilter !== 'all' ? 'text-primary' : 'text-muted-foreground'
-              )}
-            >
-              <span className="hidden xs:inline">{currentTypeLabel}</span>
-              <span className="xs:hidden">类型</span>
-              <ChevronDown className="size-4" />
-            </button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" className="min-w-[120px]">
-            {RULE_TYPE_FILTERS.map((filter) => (
-              <DropdownMenuItem
-                key={filter.value}
-                onClick={() => setRuleTypeFilter(filter.value)}
-                className={cn(
-                  'cursor-pointer',
-                  ruleTypeFilter === filter.value && 'bg-primary/10 text-primary'
-                )}
-              >
-                {filter.label}
-              </DropdownMenuItem>
-            ))}
-          </DropdownMenuContent>
-        </DropdownMenu>
+        {/* Combined Filter Button */}
+        <button
+          onClick={() => setFilterPanelOpen(!filterPanelOpen)}
+          className={cn(
+            'h-11 min-h-[44px] px-3 rounded-xl shrink-0',
+            'flex items-center gap-1.5',
+            'bg-foreground/5 hover:bg-foreground/10',
+            'border border-border/50',
+            'text-sm font-medium',
+            'transition-colors',
+            'focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/50',
+            hasFilter ? 'text-primary border-primary/50' : 'text-muted-foreground'
+          )}
+        >
+          <Filter className="size-4" />
+          {activeFilterCount > 0 && (
+            <span className="size-5 rounded-full bg-primary text-primary-foreground text-xs flex items-center justify-center">
+              {activeFilterCount}
+            </span>
+          )}
+          <ChevronDown className={cn('size-4 transition-transform', filterPanelOpen && 'rotate-180')} />
+        </button>
 
         {/* Refresh Button */}
         <button
@@ -522,6 +436,84 @@ export const MobileForwardRuleManagement = ({
           <Plus className="size-5" />
         </button>
       </div>
+
+      {/* Filter Panel (Collapsible) */}
+      {filterPanelOpen && (
+        <div className="bg-foreground/5 rounded-xl border border-border/50 p-3 space-y-3">
+          {/* Status Filter */}
+          <div className="space-y-1.5">
+            <label className="text-xs font-medium text-muted-foreground">状态</label>
+            <div className="flex flex-wrap gap-2">
+              {STATUS_FILTERS.map((filter) => (
+                <button
+                  key={filter.value}
+                  onClick={() => setStatusFilter(filter.value)}
+                  className={cn(
+                    'px-3 py-1.5 rounded-lg text-xs font-medium transition-colors',
+                    statusFilter === filter.value
+                      ? 'bg-primary text-primary-foreground'
+                      : 'bg-foreground/5 text-muted-foreground hover:bg-foreground/10'
+                  )}
+                >
+                  {filter.label}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Protocol Filter */}
+          <div className="space-y-1.5">
+            <label className="text-xs font-medium text-muted-foreground">协议</label>
+            <div className="flex flex-wrap gap-2">
+              {PROTOCOL_FILTERS.map((filter) => (
+                <button
+                  key={filter.value}
+                  onClick={() => setProtocolFilter(filter.value)}
+                  className={cn(
+                    'px-3 py-1.5 rounded-lg text-xs font-medium transition-colors',
+                    protocolFilter === filter.value
+                      ? 'bg-primary text-primary-foreground'
+                      : 'bg-foreground/5 text-muted-foreground hover:bg-foreground/10'
+                  )}
+                >
+                  {filter.label}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Rule Type Filter */}
+          <div className="space-y-1.5">
+            <label className="text-xs font-medium text-muted-foreground">类型</label>
+            <div className="flex flex-wrap gap-2">
+              {RULE_TYPE_FILTERS.map((filter) => (
+                <button
+                  key={filter.value}
+                  onClick={() => setRuleTypeFilter(filter.value)}
+                  className={cn(
+                    'px-3 py-1.5 rounded-lg text-xs font-medium transition-colors',
+                    ruleTypeFilter === filter.value
+                      ? 'bg-primary text-primary-foreground'
+                      : 'bg-foreground/5 text-muted-foreground hover:bg-foreground/10'
+                  )}
+                >
+                  {filter.label}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Clear Filters Button */}
+          {hasFilter && (
+            <button
+              onClick={clearFilters}
+              className="w-full py-2 text-xs font-medium text-primary hover:underline"
+            >
+              清除所有筛选
+            </button>
+          )}
+        </div>
+      )}
 
       {/* Active Filter Badge */}
       {hasFilter && (

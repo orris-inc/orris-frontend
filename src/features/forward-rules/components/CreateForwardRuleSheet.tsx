@@ -21,7 +21,8 @@ import {
   SheetTitle,
   SheetBody,
   SheetFooter,
-} from '@/components/common/Sheet';
+  type CreateSheetProps,
+} from '@/components/common/sheet';
 import { Button } from '@/components/common/Button';
 import { Badge } from '@/components/common/Badge';
 import { Separator } from '@/components/common/Separator';
@@ -43,10 +44,7 @@ import type { SubscriptionPlan } from '@/api/subscription/types';
 
 type TargetType = 'manual' | 'node';
 
-interface CreateForwardRuleSheetProps {
-  open: boolean;
-  onClose: () => void;
-  onSubmit: (data: CreateForwardRuleRequest) => void;
+interface CreateForwardRuleSheetProps extends CreateSheetProps<CreateForwardRuleRequest> {
   agents: ForwardAgent[];
   nodes?: Node[];
   initialData?: Partial<CreateForwardRuleRequest> & { targetType?: 'manual' | 'node' };
@@ -164,7 +162,7 @@ const Field: React.FC<{ label: string; required?: boolean; hint?: string }> = ({
 
 export const CreateForwardRuleSheet: React.FC<CreateForwardRuleSheetProps> = ({
   open,
-  onClose,
+  onOpenChange,
   onSubmit,
   agents,
   nodes = [],
@@ -253,9 +251,9 @@ export const CreateForwardRuleSheet: React.FC<CreateForwardRuleSheetProps> = ({
     }
   }, [open, initialData]);
 
-  const handleClose = () => {
+  const handleClose = (isOpen: boolean) => {
     if (!loading) {
-      onClose();
+      onOpenChange(isOpen);
     }
   };
 
@@ -473,8 +471,8 @@ export const CreateForwardRuleSheet: React.FC<CreateForwardRuleSheetProps> = ({
       if (formData.remark?.trim()) submitData.remark = formData.remark.trim();
       if (formData.groupSids.length > 0) submitData.groupSids = formData.groupSids;
 
-      onSubmit(submitData);
-      handleClose();
+      await onSubmit(submitData);
+      onOpenChange(false);
     } finally {
       setLoading(false);
     }
@@ -492,7 +490,7 @@ export const CreateForwardRuleSheet: React.FC<CreateForwardRuleSheetProps> = ({
   const needsTunnelConfig = formData.ruleType === 'entry' || formData.ruleType === 'chain';
 
   return (
-    <Sheet open={open} onOpenChange={handleClose}>
+    <Sheet open={open} onOpenChange={handleClose} repositionInputs>
       <SheetContent>
         <SheetHeader>
           <SheetTitle className="flex items-center gap-2">
@@ -831,7 +829,7 @@ export const CreateForwardRuleSheet: React.FC<CreateForwardRuleSheetProps> = ({
             {loading ? <Loader2 className="size-4 animate-spin" /> : <Check className="size-4" />}
             {loading ? '创建中...' : (initialData ? '创建副本' : '创建')}
           </Button>
-          <Button variant="ghost" onClick={handleClose} disabled={loading} className="w-full h-10">
+          <Button variant="ghost" onClick={() => onOpenChange(false)} disabled={loading} className="w-full h-10">
             取消
           </Button>
         </SheetFooter>

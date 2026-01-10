@@ -21,7 +21,8 @@ import {
   SheetDescription,
   SheetBody,
   SheetFooter,
-} from '@/components/common/Sheet';
+  type EditSheetProps,
+} from '@/components/common/sheet';
 import { Button } from '@/components/common/Button';
 import { Checkbox } from '@/components/common/Checkbox';
 import { Label } from '@/components/common/Label';
@@ -81,12 +82,7 @@ function parsePlanLimits(apiLimits: Record<string, unknown> | undefined): PlanLi
   };
 }
 
-interface EditPlanSheetProps {
-  open: boolean;
-  plan: SubscriptionPlan | null;
-  onClose: () => void;
-  onSubmit: (id: string, data: UpdatePlanRequest) => Promise<void>;
-}
+interface EditPlanSheetProps extends EditSheetProps<SubscriptionPlan, UpdatePlanRequest> {}
 
 const BILLING_CYCLES: { value: string; label: string }[] = [
   { value: 'weekly', label: '周付' },
@@ -124,8 +120,8 @@ const compactInputStyles = cn(
 
 export const EditPlanSheet: React.FC<EditPlanSheetProps> = ({
   open,
-  plan,
-  onClose,
+  onOpenChange,
+  entity: plan,
   onSubmit,
 }) => {
   const [formData, setFormData] = useState<UpdatePlanFormData>({ pricings: [], planLimits: {} });
@@ -226,25 +222,28 @@ export const EditPlanSheet: React.FC<EditPlanSheetProps> = ({
         pricings: formData.pricings,
       };
       await onSubmit(plan.id, submitData);
-      onClose();
+      onOpenChange(false);
     } finally {
       setLoading(false);
     }
-  }, [plan, formData, onSubmit, onClose]);
+  }, [plan, formData, onSubmit, onOpenChange]);
 
-  const handleClose = useCallback(() => {
-    if (!loading) {
-      onClose();
-    }
-  }, [loading, onClose]);
+  const handleOpenChange = useCallback(
+    (open: boolean) => {
+      if (!loading) {
+        onOpenChange(open);
+      }
+    },
+    [loading, onOpenChange]
+  );
 
   if (!plan) return null;
 
   const isFormValid = formData.pricings.length > 0;
 
   return (
-    <Sheet open={open} onOpenChange={handleClose}>
-      <SheetContent className="max-h-[95vh]">
+    <Sheet open={open} onOpenChange={handleOpenChange} repositionInputs>
+      <SheetContent>
         <SheetHeader className="pb-2">
           <SheetTitle className="flex items-center gap-2">
             <div className="size-8 rounded-full bg-blue-500/10 flex items-center justify-center">
@@ -621,7 +620,7 @@ export const EditPlanSheet: React.FC<EditPlanSheetProps> = ({
               '保存修改'
             )}
           </Button>
-          <Button variant="ghost" onClick={handleClose} disabled={loading} className="w-full h-10">
+          <Button variant="ghost" onClick={() => handleOpenChange(false)} disabled={loading} className="w-full h-10">
             取消
           </Button>
         </SheetFooter>

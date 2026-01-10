@@ -13,7 +13,8 @@ import {
   SheetDescription,
   SheetBody,
   SheetFooter,
-} from '@/components/common/Sheet';
+  type BaseSheetProps,
+} from '@/components/common/sheet';
 import { Button } from '@/components/common/Button';
 import {
   MobilePasswordInput,
@@ -22,11 +23,9 @@ import {
 } from '@/components/common/mobile-form';
 import type { UserResponse } from '@/api/user';
 
-interface ResetPasswordSheetProps {
-  open: boolean;
+interface ResetPasswordSheetProps extends BaseSheetProps {
   user: UserResponse | null;
   isLoading?: boolean;
-  onClose: () => void;
   onSubmit: (id: string, password: string) => void;
 }
 
@@ -36,9 +35,9 @@ const PASSWORD_MAX_LENGTH = 72;
 
 export const ResetPasswordSheet: React.FC<ResetPasswordSheetProps> = ({
   open,
+  onOpenChange,
   user,
   isLoading = false,
-  onClose,
   onSubmit,
 }) => {
   const [password, setPassword] = useState('');
@@ -101,11 +100,11 @@ export const ResetPasswordSheet: React.FC<ResetPasswordSheetProps> = ({
     }
   }, [user, validate, password, onSubmit]);
 
-  const handleClose = useCallback(() => {
+  const handleOpenChange = useCallback((open: boolean) => {
     if (!isLoading) {
-      onClose();
+      onOpenChange(open);
     }
-  }, [isLoading, onClose]);
+  }, [isLoading, onOpenChange]);
 
   // Form validity
   const isFormValid = password && confirmPassword && !validatePassword(password) && password === confirmPassword;
@@ -113,12 +112,12 @@ export const ResetPasswordSheet: React.FC<ResetPasswordSheetProps> = ({
   if (!user) return null;
 
   return (
-    <Sheet open={open} onOpenChange={handleClose}>
+    <Sheet open={open} onOpenChange={handleOpenChange} repositionInputs>
       <SheetContent>
         <SheetHeader>
           <SheetTitle className="flex items-center gap-2">
-            <div className="size-10 rounded-full bg-amber-500/10 flex items-center justify-center">
-              <KeyRound className="size-5 text-amber-500" />
+            <div className="size-10 rounded-full bg-warning/10 flex items-center justify-center">
+              <KeyRound className="size-5 text-warning" />
             </div>
             <span>重置密码</span>
           </SheetTitle>
@@ -127,7 +126,7 @@ export const ResetPasswordSheet: React.FC<ResetPasswordSheetProps> = ({
           </SheetDescription>
         </SheetHeader>
 
-        <SheetBody className="space-y-6 py-4">
+        <SheetBody className="space-y-5 py-3">
           {/* New Password */}
           <div className="space-y-1.5">
             <label htmlFor="reset-password" className="text-sm font-medium px-1">
@@ -185,7 +184,7 @@ export const ResetPasswordSheet: React.FC<ResetPasswordSheetProps> = ({
 
             {/* Match indicator */}
             {confirmPassword && !errors.confirmPassword && password === confirmPassword && (
-              <div className="flex items-center gap-1.5 text-emerald-600 text-sm px-1">
+              <div className="flex items-center gap-1.5 text-success text-sm px-1">
                 <Check className="size-4" />
                 <span>密码匹配</span>
               </div>
@@ -197,13 +196,13 @@ export const ResetPasswordSheet: React.FC<ResetPasswordSheetProps> = ({
           <Button
             onClick={handleSubmit}
             disabled={isLoading || !isFormValid}
-            className="w-full min-h-[52px] text-base"
+            className="w-full min-h-[48px]"
           >
             {isLoading ? '重置中...' : '确认重置'}
           </Button>
           <Button
             variant="ghost"
-            onClick={handleClose}
+            onClick={() => onOpenChange(false)}
             disabled={isLoading}
             className="w-full min-h-[44px]"
           >

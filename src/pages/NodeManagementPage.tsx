@@ -205,13 +205,8 @@ export const NodeManagementPage = () => {
   };
 
   const handleUpdateSubmit = async (id: string, data: UpdateNodeRequest) => {
-    try {
-      await updateNode(id, data);
-      setEditDialogOpen(false);
-      setSelectedNode(null);
-    } catch {
-      // Error already handled in hook
-    }
+    await updateNode(id, data);
+    // State cleanup is handled by onOpenChange callback
   };
 
   const handleToggleMute = (node: Node) => {
@@ -457,9 +452,11 @@ export const NodeManagementPage = () => {
       {isMobile ? (
         <CreateNodeSheet
           open={createDialogOpen}
-          onClose={() => {
-            setCreateDialogOpen(false);
-            setCopyNodeData(undefined);
+          onOpenChange={(open) => {
+            if (!open) {
+              setCreateDialogOpen(false);
+              setCopyNodeData(undefined);
+            }
           }}
           onSubmit={handleCreateSubmit}
           initialData={copyNodeData}
@@ -482,11 +479,13 @@ export const NodeManagementPage = () => {
       {isMobile ? (
         <EditNodeSheet
           open={editDialogOpen}
-          node={selectedNode}
-          onClose={() => {
-            setEditDialogOpen(false);
-            setSelectedNode(null);
+          onOpenChange={(open) => {
+            if (!open) {
+              setEditDialogOpen(false);
+              setSelectedNode(null);
+            }
           }}
+          entity={selectedNode}
           onSubmit={handleUpdateSubmit}
           nodes={nodesForOutbound}
         />
@@ -574,11 +573,13 @@ export const NodeManagementPage = () => {
       {/* Delete Node Confirmation Sheet (Mobile only) */}
       <DeleteNodeSheet
         open={deleteDialogOpen}
-        node={nodeToDelete}
-        onClose={() => {
-          setDeleteDialogOpen(false);
-          setNodeToDelete(null);
+        onOpenChange={(open) => {
+          if (!open) {
+            setDeleteDialogOpen(false);
+            setNodeToDelete(null);
+          }
         }}
+        entity={nodeToDelete}
         onConfirm={handleDeleteConfirm}
       />
     </AdminLayout>

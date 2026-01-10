@@ -154,7 +154,14 @@ export const ForwardRulesPage = () => {
     setDeleteConfirmOpen(true);
   };
 
-  const handleDeleteConfirm = async () => {
+  // For mobile Sheet (receives entity from callback)
+  const handleDeleteConfirmSheet = async (rule: ForwardRule) => {
+    await deleteForwardRule(rule.id);
+    setRuleToDelete(null);
+  };
+
+  // For desktop Dialog (uses ruleToDelete state)
+  const handleDeleteConfirmDialog = async () => {
     if (ruleToDelete) {
       await deleteForwardRule(ruleToDelete.id);
       setDeleteConfirmOpen(false);
@@ -248,8 +255,15 @@ export const ForwardRulesPage = () => {
     setCopyRuleData(undefined);
   };
 
-  const handleUpdateSubmit = async (id: number | string, data: UpdateForwardRuleRequest) => {
+  const handleUpdateSubmit = async (id: string, data: UpdateForwardRuleRequest) => {
     await updateForwardRule(id, data);
+    setEditDialogOpen(false);
+    setSelectedRule(null);
+  };
+
+  // Wrapper for EditForwardRuleDialog (desktop) which uses legacy interface
+  const handleUpdateSubmitLegacy = (id: number | string, data: UpdateForwardRuleRequest) => {
+    updateForwardRule(id, data);
     setEditDialogOpen(false);
     setSelectedRule(null);
   };
@@ -326,9 +340,9 @@ export const ForwardRulesPage = () => {
         {/* Create Forward Rule Sheet */}
         <CreateForwardRuleSheet
           open={createDialogOpen}
-          onClose={() => {
-            setCreateDialogOpen(false);
-            setCopyRuleData(undefined);
+          onOpenChange={(open) => {
+            setCreateDialogOpen(open);
+            if (!open) setCopyRuleData(undefined);
           }}
           onSubmit={handleCreateSubmit}
           agents={forwardAgents}
@@ -341,11 +355,11 @@ export const ForwardRulesPage = () => {
         {/* Edit Forward Rule Sheet */}
         <EditForwardRuleSheet
           open={editDialogOpen}
-          rule={selectedRule}
-          onClose={() => {
-            setEditDialogOpen(false);
-            setSelectedRule(null);
+          onOpenChange={(open) => {
+            setEditDialogOpen(open);
+            if (!open) setSelectedRule(null);
           }}
+          entity={selectedRule}
           onSubmit={handleUpdateSubmit}
           nodes={nodes}
           agents={forwardAgents}
@@ -356,12 +370,9 @@ export const ForwardRulesPage = () => {
         {/* Delete Forward Rule Sheet */}
         <DeleteForwardRuleSheet
           open={deleteConfirmOpen}
-          rule={ruleToDelete}
-          onClose={() => {
-            setDeleteConfirmOpen(false);
-            setRuleToDelete(null);
-          }}
-          onConfirm={handleDeleteConfirm}
+          onOpenChange={setDeleteConfirmOpen}
+          entity={ruleToDelete}
+          onConfirm={handleDeleteConfirmSheet}
           agentsMap={agentsMap}
         />
 
@@ -619,7 +630,7 @@ export const ForwardRulesPage = () => {
           setEditDialogOpen(false);
           setSelectedRule(null);
         }}
-        onSubmit={handleUpdateSubmit}
+        onSubmit={handleUpdateSubmitLegacy}
         nodes={nodes}
         agents={forwardAgents}
         resourceGroups={resourceGroups}
@@ -659,7 +670,7 @@ export const ForwardRulesPage = () => {
         confirmText="删除"
         cancelText="取消"
         variant="destructive"
-        onConfirm={handleDeleteConfirm}
+        onConfirm={handleDeleteConfirmDialog}
       />
 
       {/* Reset Traffic Confirm Dialog */}

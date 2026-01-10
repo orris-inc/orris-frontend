@@ -10,7 +10,7 @@
  * - Touch-friendly interactions
  */
 
-import { useNavigate } from 'react-router';
+import { useViewTransitionHandler } from '@/hooks/useViewTransition';
 import {
   Users,
   CreditCard,
@@ -161,7 +161,7 @@ export const MobileAdminDashboard = ({
   loading = false,
   trafficLoading = false,
 }: MobileAdminDashboardProps) => {
-  const navigate = useNavigate();
+  const navigateWithTransition = useViewTransitionHandler();
 
   // Stats cards data
   const statsCards = [
@@ -324,7 +324,7 @@ export const MobileAdminDashboard = ({
               iconBg={action.iconBg}
               title={action.title}
               subtitle={action.subtitle}
-              onClick={() => navigate(action.path)}
+              onClick={() => navigateWithTransition(action.path)}
               isFirst={index === 0}
               isLast={index === quickActions.length - 1}
             />
@@ -342,7 +342,7 @@ export const MobileAdminDashboard = ({
               iconBg={item.iconBg}
               title={item.title}
               showChevron
-              onClick={() => navigate(item.path)}
+              onClick={() => navigateWithTransition(item.path)}
               first={index === 0}
               last={index === moreManagementItems.length - 1}
             />

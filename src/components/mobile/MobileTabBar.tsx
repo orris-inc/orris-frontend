@@ -14,9 +14,10 @@
  */
 
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { useLocation } from 'react-router-dom';
 import type { LucideIcon } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { ViewTransitionLink } from '@/components/common/ViewTransitionLink';
 
 interface TabItem {
   id: string;
@@ -77,13 +78,6 @@ export const MobileTabBar = ({
     return () => window.removeEventListener('scroll', onScroll);
   }, [shrinkOnScroll, handleScroll]);
 
-  // Haptic feedback on tab change
-  const triggerHaptic = useCallback(() => {
-    if ('vibrate' in navigator) {
-      navigator.vibrate(10);
-    }
-  }, []);
-
   return (
     <nav
       className={cn(
@@ -114,10 +108,9 @@ export const MobileTabBar = ({
         const isActive = location.pathname === item.path;
 
         return (
-          <Link
+          <ViewTransitionLink
             key={item.id}
             to={item.path}
-            onClick={triggerHaptic}
             role="tab"
             aria-selected={isActive}
             aria-label={item.label}
@@ -178,7 +171,7 @@ export const MobileTabBar = ({
                 {item.badge > 99 ? '99+' : item.badge}
               </span>
             )}
-          </Link>
+          </ViewTransitionLink>
         );
       })}
     </nav>

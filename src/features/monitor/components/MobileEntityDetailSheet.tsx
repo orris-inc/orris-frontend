@@ -37,7 +37,8 @@ import {
   SheetHeader,
   SheetTitle,
   SheetBody,
-} from '@/components/common/Sheet';
+  type DetailSheetProps,
+} from '@/components/common/sheet';
 import { Badge } from '@/components/common/Badge';
 import { cn } from '@/lib/utils';
 import { formatBitRate, formatBytes, formatRelativeTime } from '@/shared/utils/format-utils';
@@ -46,11 +47,7 @@ import type { EntityStatus } from '../hooks/useMonitorData';
 import type { NodeSystemStatus } from '@/api/node';
 import type { AgentSystemStatus } from '@/api/forward';
 
-interface MobileEntityDetailSheetProps {
-  entity: EntityStatus | null;
-  open: boolean;
-  onOpenChange: (open: boolean) => void;
-}
+interface MobileEntityDetailSheetProps extends DetailSheetProps<EntityStatus> {}
 
 // Circular progress ring component
 const ProgressRing = memo(({
@@ -367,7 +364,7 @@ export const MobileEntityDetailSheet = memo(({
           </div>
         </SheetHeader>
 
-        <SheetBody className="px-4 space-y-4 pb-6">
+        <SheetBody className="px-4 space-y-4">
           {isOnline && status ? (
             <>
               {/* Resource Rings */}

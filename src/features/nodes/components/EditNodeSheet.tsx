@@ -26,7 +26,8 @@ import {
   SheetDescription,
   SheetBody,
   SheetFooter,
-} from '@/components/common/Sheet';
+  type EditSheetProps,
+} from '@/components/common/sheet';
 import { Button } from '@/components/common/Button';
 import { Badge } from '@/components/common/Badge';
 import { Separator } from '@/components/common/Separator';
@@ -48,11 +49,7 @@ import type {
   TUICUDPRelayMode,
 } from '@/api/node';
 
-interface EditNodeSheetProps {
-  open: boolean;
-  node: Node | null;
-  onClose: () => void;
-  onSubmit: (id: string, data: UpdateNodeRequest) => void;
+interface EditNodeSheetProps extends EditSheetProps<Node, UpdateNodeRequest> {
   nodes?: OutboundNodeOption[];
 }
 
@@ -264,8 +261,8 @@ const FormFieldLabel: React.FC<FormFieldLabelProps> = ({
 
 export const EditNodeSheet: React.FC<EditNodeSheetProps> = ({
   open,
-  node,
-  onClose,
+  onOpenChange,
+  entity: node,
   onSubmit,
   nodes = [],
 }) => {
@@ -350,9 +347,9 @@ export const EditNodeSheet: React.FC<EditNodeSheetProps> = ({
     }
   }, [node]);
 
-  const handleClose = () => {
+  const handleClose = (o: boolean) => {
     if (!loading) {
-      onClose();
+      onOpenChange(o);
     }
   };
 
@@ -525,8 +522,8 @@ export const EditNodeSheet: React.FC<EditNodeSheetProps> = ({
     if (Object.keys(updates).length > 0) {
       setLoading(true);
       try {
-        onSubmit(node.id, updates);
-        onClose();
+        await onSubmit(node.id, updates);
+        onOpenChange(false);
       } finally {
         setLoading(false);
       }
@@ -563,7 +560,7 @@ export const EditNodeSheet: React.FC<EditNodeSheetProps> = ({
   if (!node) return null;
 
   return (
-    <Sheet open={open} onOpenChange={handleClose}>
+    <Sheet open={open} onOpenChange={handleClose} repositionInputs>
       <SheetContent>
         <SheetHeader>
           <SheetTitle className="flex items-center gap-2">
@@ -1296,7 +1293,7 @@ export const EditNodeSheet: React.FC<EditNodeSheetProps> = ({
           </Button>
           <Button
             variant="ghost"
-            onClick={handleClose}
+            onClick={() => handleClose(false)}
             disabled={loading}
             className="w-full min-h-[44px]"
           >

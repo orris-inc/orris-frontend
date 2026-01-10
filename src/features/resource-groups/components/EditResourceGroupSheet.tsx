@@ -13,7 +13,8 @@ import {
   SheetDescription,
   SheetBody,
   SheetFooter,
-} from '@/components/common/Sheet';
+  type EditSheetProps,
+} from '@/components/common/sheet';
 import { Button } from '@/components/common/Button';
 import { Separator } from '@/components/common/Separator';
 import { TruncatedId } from '@/components/admin';
@@ -21,12 +22,8 @@ import { MobileFormInput } from '@/components/common/mobile-form';
 import type { ResourceGroup, UpdateResourceGroupRequest } from '@/api/resource/types';
 import type { SubscriptionPlan } from '@/api/subscription/types';
 
-interface EditResourceGroupSheetProps {
-  open: boolean;
-  resourceGroup: ResourceGroup | null;
+interface EditResourceGroupSheetProps extends EditSheetProps<ResourceGroup, UpdateResourceGroupRequest> {
   plansMap: Record<string, SubscriptionPlan>;
-  onClose: () => void;
-  onSubmit: (id: string, data: UpdateResourceGroupRequest) => Promise<void>;
 }
 
 interface FormErrors {
@@ -35,9 +32,9 @@ interface FormErrors {
 
 export const EditResourceGroupSheet: React.FC<EditResourceGroupSheetProps> = ({
   open,
-  resourceGroup,
+  onOpenChange,
+  entity: resourceGroup,
   plansMap,
-  onClose,
   onSubmit,
 }) => {
   const [name, setName] = useState('');
@@ -78,11 +75,11 @@ export const EditResourceGroupSheet: React.FC<EditResourceGroupSheetProps> = ({
     return !newErrors.name;
   }, [name, validateName]);
 
-  const handleClose = useCallback(() => {
+  const handleOpenChange = useCallback((o: boolean) => {
     if (!loading) {
-      onClose();
+      onOpenChange(o);
     }
-  }, [loading, onClose]);
+  }, [loading, onOpenChange]);
 
   const handleSubmit = useCallback(async () => {
     if (!resourceGroup || !validate()) return;
@@ -94,11 +91,11 @@ export const EditResourceGroupSheet: React.FC<EditResourceGroupSheetProps> = ({
         description: description.trim() || undefined,
       };
       await onSubmit(resourceGroup.sid, submitData);
-      onClose();
+      onOpenChange(false);
     } finally {
       setLoading(false);
     }
-  }, [resourceGroup, name, description, validate, onSubmit, onClose]);
+  }, [resourceGroup, name, description, validate, onSubmit, onOpenChange]);
 
   // Check for changes
   const hasChanges = resourceGroup && (
@@ -111,7 +108,7 @@ export const EditResourceGroupSheet: React.FC<EditResourceGroupSheetProps> = ({
   const plan = plansMap[resourceGroup.planId];
 
   return (
-    <Sheet open={open} onOpenChange={handleClose}>
+    <Sheet open={open} onOpenChange={handleOpenChange} repositionInputs>
       <SheetContent>
         <SheetHeader>
           <SheetTitle className="flex items-center gap-2">
@@ -202,13 +199,13 @@ export const EditResourceGroupSheet: React.FC<EditResourceGroupSheetProps> = ({
           <Button
             onClick={handleSubmit}
             disabled={loading || !hasChanges}
-            className="w-full min-h-[52px] text-base"
+            className="w-full min-h-[48px] text-base"
           >
             {loading ? '保存中...' : '保存修改'}
           </Button>
           <Button
             variant="ghost"
-            onClick={handleClose}
+            onClick={() => onOpenChange(false)}
             disabled={loading}
             className="w-full min-h-[44px]"
           >
