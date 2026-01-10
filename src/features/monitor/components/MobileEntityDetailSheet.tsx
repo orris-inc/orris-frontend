@@ -11,7 +11,7 @@
  * - Safe area support
  */
 
-import { memo, useState } from 'react';
+import { memo, useState, useRef } from 'react';
 import {
   Server,
   Cpu,
@@ -38,8 +38,8 @@ import {
   SheetTitle,
   SheetBody,
 } from '@/components/common/Sheet';
+import { useSwipeSheet } from '@/hooks';
 import { Badge } from '@/components/common/Badge';
-import { Button } from '@/components/common/Button';
 import { cn } from '@/lib/utils';
 import { formatBitRate, formatBytes, formatRelativeTime } from '@/shared/utils/format-utils';
 import { getResourceBgClass, getResourceTextClass } from '../utils';
@@ -305,6 +305,15 @@ export const MobileEntityDetailSheet = memo(({
   open,
   onOpenChange,
 }: MobileEntityDetailSheetProps) => {
+  const sheetRef = useRef<HTMLDivElement>(null);
+
+  // Enable swipe down to close gesture
+  const { isDragging, overlayStyle, sheetStyle } = useSwipeSheet({
+    isOpen: open,
+    onOpenChange,
+    sheetRef,
+  });
+
   if (!entity) return null;
 
   const status = entity.status as (NodeSystemStatus | AgentSystemStatus) | null;
@@ -312,7 +321,14 @@ export const MobileEntityDetailSheet = memo(({
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent className="max-h-[92vh]" showClose={false}>
+      <SheetContent
+        contentRef={sheetRef}
+        className="max-h-[92vh]"
+        showClose={false}
+        isDragging={isDragging}
+        overlayStyle={overlayStyle}
+        sheetStyle={sheetStyle}
+      >
         <SheetHeader className="px-4 pb-3">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
@@ -351,14 +367,19 @@ export const MobileEntityDetailSheet = memo(({
                   </>
                 )}
               </Badge>
-              <Button
-                variant="ghost"
-                size="sm"
-                className="size-9 p-0 rounded-full"
+              {/* iOS-style close button */}
+              <button
                 onClick={() => onOpenChange(false)}
+                className={cn(
+                  'size-8 flex items-center justify-center rounded-full',
+                  'bg-muted/80 active:bg-muted',
+                  'text-muted-foreground active:text-foreground',
+                  'transition-colors duration-150',
+                  'touch-manipulation'
+                )}
               >
                 <X className="size-4" />
-              </Button>
+              </button>
             </div>
           </div>
         </SheetHeader>
@@ -533,7 +554,7 @@ export const MobileEntityDetailSheet = memo(({
 
               {/* Disk I/O Section */}
               <CollapsibleSection
-                icon={<HardDrive className="size-4 text-orange-500" />}
+                icon={<HardDrive className="size-4 text-warning" />}
                 title="磁盘 I/O"
               >
                 <div className="space-y-2 text-sm">
@@ -564,7 +585,7 @@ export const MobileEntityDetailSheet = memo(({
 
               {/* Socket & Process Section */}
               <CollapsibleSection
-                icon={<Layers className="size-4 text-cyan-500" />}
+                icon={<Layers className="size-4 text-info" />}
                 title="Socket 与进程"
               >
                 <div className="space-y-2 text-sm">
@@ -668,7 +689,7 @@ export const MobileEntityDetailSheet = memo(({
 
               {/* VM Stats Section */}
               <CollapsibleSection
-                icon={<MemoryStick className="size-4 text-pink-500" />}
+                icon={<MemoryStick className="size-4 text-primary" />}
                 title="虚拟内存"
               >
                 <div className="space-y-2 text-sm">

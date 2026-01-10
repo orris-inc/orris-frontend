@@ -16,7 +16,7 @@
 import { useMemo } from 'react';
 import { Link as RouterLink, useLocation } from 'react-router-dom';
 import * as Dialog from '@radix-ui/react-dialog';
-import { X, LogOut, Shield, ChevronRight } from 'lucide-react';
+import { X, LogOut, Shield, ArrowLeftRight, ChevronRight } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/common/Avatar';
 import { ThemeToggle } from '@/components/common/ThemeToggle';
@@ -36,7 +36,12 @@ interface MobileDrawerProps {
   navigationItems: NavigationItem[];
   brandName?: string;
   user?: MobileDrawerUser | null;
+  /** Show switch button (admin/user toggle) */
   showAdminSwitch?: boolean;
+  /** Whether currently in admin view - changes switch button text/icon */
+  isAdminView?: boolean;
+  /** Title shown in header when no user */
+  title?: string;
   onAdminClick?: () => void;
   onLogout?: () => void;
   /** Whether user is actively dragging */
@@ -53,6 +58,8 @@ export const MobileDrawer = ({
   navigationItems,
   user,
   showAdminSwitch = false,
+  isAdminView = false,
+  title,
   onAdminClick,
   onLogout,
   isDragging = false,
@@ -128,7 +135,7 @@ export const MobileDrawer = ({
           )}
           <div className="flex-1 min-w-0">
             <span className={cn(
-              'text-[15px] font-medium',
+              'text-sm font-medium',
               isActive ? 'text-primary' : 'text-foreground'
             )}>
               {item.label}
@@ -256,13 +263,13 @@ export const MobileDrawer = ({
             {/* Fallback title when no user */}
             {!user && (
               <Dialog.Title className="text-lg font-bold text-foreground pr-10">
-                Menu
+                {title || 'Menu'}
               </Dialog.Title>
             )}
           </div>
 
           {/* Navigation List */}
-          <div className="flex-1 overflow-y-auto px-3 py-2">
+          <div className="flex-1 overflow-y-auto scrollbar-hide px-3 py-2">
             <nav
               className="space-y-1"
               role="navigation"
@@ -279,7 +286,7 @@ export const MobileDrawer = ({
           <div className="flex-shrink-0 p-3 pt-0 space-y-2">
             {/* Action buttons group */}
             <div className="rounded-2xl overflow-hidden shadow-sm shadow-black/5">
-              {/* Admin Switch */}
+              {/* Admin/User Switch */}
               {showAdminSwitch && onAdminClick && (
                 <button
                   onClick={() => {
@@ -298,9 +305,15 @@ export const MobileDrawer = ({
                   )}
                 >
                   <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10">
-                    <Shield className="h-5 w-5 text-primary" aria-hidden="true" />
+                    {isAdminView ? (
+                      <ArrowLeftRight className="h-5 w-5 text-primary" aria-hidden="true" />
+                    ) : (
+                      <Shield className="h-5 w-5 text-primary" aria-hidden="true" />
+                    )}
                   </span>
-                  <span className="flex-1 text-left text-[15px] font-medium">切换到管理端</span>
+                  <span className="flex-1 text-left text-sm font-medium">
+                    {isAdminView ? '切换到用户视图' : '切换到管理端'}
+                  </span>
                   <ChevronRight className="h-5 w-5 text-primary/50" aria-hidden="true" />
                 </button>
               )}
@@ -325,7 +338,7 @@ export const MobileDrawer = ({
                   <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-destructive/10">
                     <LogOut className="h-5 w-5 text-destructive" aria-hidden="true" />
                   </span>
-                  <span className="flex-1 text-left text-[15px] font-medium">退出登录</span>
+                  <span className="flex-1 text-left text-sm font-medium">退出登录</span>
                 </button>
               )}
             </div>

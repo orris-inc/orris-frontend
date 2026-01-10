@@ -21,6 +21,7 @@ import { usePageTitle } from '@/shared/hooks';
 import { useBreakpoint } from '@/hooks/useBreakpoint';
 import { useNotificationStore } from '@/shared/stores/notification-store';
 import { PlanListTable } from '@/features/subscription-plans/components/PlanListTable';
+import { MobilePlanManagement } from '@/features/subscription-plans/components/MobilePlanManagement';
 import { CreatePlanDialog } from '@/features/subscription-plans/components/CreatePlanDialog';
 import { EditPlanDialog } from '@/features/subscription-plans/components/EditPlanDialog';
 import { ViewPlanSubscriptionsDialog } from '@/features/subscription-plans/components/ViewPlanSubscriptionsDialog';
@@ -134,6 +135,76 @@ export const SubscriptionPlansManagementPage = () => {
     }
   };
 
+  // Mobile layout
+  if (isMobile) {
+    return (
+      <AdminLayout>
+        <div className="py-3 px-3">
+          <MobilePlanManagement
+            plans={plans}
+            loading={isLoading}
+            refreshing={isFetching}
+            page={pagination.page}
+            pageSize={pagination.pageSize}
+            total={pagination.total}
+            onRefresh={handleRefresh}
+            onCreate={() => {
+              setDuplicatePlan(null);
+              setCreateDialogOpen(true);
+            }}
+            onEdit={handleEdit}
+            onDuplicate={handleDuplicate}
+            onToggleStatus={handleToggleStatus}
+            onViewSubscriptions={handleViewSubscriptions}
+            onDelete={handleDeleteClick}
+            onPageChange={handlePageChange}
+          />
+        </div>
+
+        {/* Mobile Sheets */}
+        <CreatePlanSheet
+          open={createDialogOpen}
+          initialPlan={duplicatePlan}
+          onClose={() => {
+            setCreateDialogOpen(false);
+            setDuplicatePlan(null);
+          }}
+          onSubmit={handleCreateSubmit}
+        />
+
+        <EditPlanSheet
+          open={editDialogOpen}
+          plan={selectedPlan}
+          onClose={() => {
+            setEditDialogOpen(false);
+            setSelectedPlan(null);
+          }}
+          onSubmit={handleUpdateSubmit}
+        />
+
+        <ViewPlanSubscriptionsSheet
+          open={subscriptionsDialogOpen}
+          plan={selectedPlan}
+          onClose={() => {
+            setSubscriptionsDialogOpen(false);
+            setSelectedPlan(null);
+          }}
+        />
+
+        <DeletePlanSheet
+          open={deleteDialogOpen}
+          plan={planToDelete}
+          onClose={() => {
+            setDeleteDialogOpen(false);
+            setPlanToDelete(null);
+          }}
+          onConfirm={handleDeleteConfirm}
+        />
+      </AdminLayout>
+    );
+  }
+
+  // Desktop layout
   return (
     <AdminLayout>
       <div className="py-3 space-y-3">
@@ -208,15 +279,14 @@ export const SubscriptionPlansManagementPage = () => {
                   setCreateDialogOpen(true);
                 }}
               >
-                <span className="hidden sm:inline">创建计划</span>
-                <span className="sm:hidden">创建</span>
+                创建计划
               </AdminButton>
             </div>
           </div>
         </header>
 
         {/* Plan List */}
-        {isMobile ? (
+        <AdminCard noPadding>
           <PlanListTable
             plans={plans}
             loading={isLoading || isFetching}
@@ -231,116 +301,49 @@ export const SubscriptionPlansManagementPage = () => {
             onViewSubscriptions={handleViewSubscriptions}
             onDelete={handleDeleteClick}
           />
-        ) : (
-          <AdminCard noPadding>
-            <PlanListTable
-              plans={plans}
-              loading={isLoading || isFetching}
-              page={pagination.page}
-              pageSize={pagination.pageSize}
-              total={pagination.total}
-              onPageChange={handlePageChange}
-              onPageSizeChange={handlePageSizeChange}
-              onEdit={handleEdit}
-              onDuplicate={handleDuplicate}
-              onToggleStatus={handleToggleStatus}
-              onViewSubscriptions={handleViewSubscriptions}
-              onDelete={handleDeleteClick}
-            />
-          </AdminCard>
-        )}
+        </AdminCard>
       </div>
 
-      {/* Create Plan Dialog/Sheet */}
-      {isMobile ? (
-        <CreatePlanSheet
-          open={createDialogOpen}
-          initialPlan={duplicatePlan}
-          onClose={() => {
-            setCreateDialogOpen(false);
-            setDuplicatePlan(null);
-          }}
-          onSubmit={handleCreateSubmit}
-        />
-      ) : (
-        <CreatePlanDialog
-          open={createDialogOpen}
-          initialPlan={duplicatePlan}
-          onClose={() => {
-            setCreateDialogOpen(false);
-            setDuplicatePlan(null);
-          }}
-          onSubmit={handleCreateSubmit}
-        />
-      )}
+      {/* Desktop Dialogs */}
+      <CreatePlanDialog
+        open={createDialogOpen}
+        initialPlan={duplicatePlan}
+        onClose={() => {
+          setCreateDialogOpen(false);
+          setDuplicatePlan(null);
+        }}
+        onSubmit={handleCreateSubmit}
+      />
 
-      {/* Edit Plan Dialog/Sheet */}
-      {isMobile ? (
-        <EditPlanSheet
-          open={editDialogOpen}
-          plan={selectedPlan}
-          onClose={() => {
-            setEditDialogOpen(false);
-            setSelectedPlan(null);
-          }}
-          onSubmit={handleUpdateSubmit}
-        />
-      ) : (
-        <EditPlanDialog
-          open={editDialogOpen}
-          plan={selectedPlan}
-          onClose={() => {
-            setEditDialogOpen(false);
-            setSelectedPlan(null);
-          }}
-          onSubmit={handleUpdateSubmit}
-        />
-      )}
+      <EditPlanDialog
+        open={editDialogOpen}
+        plan={selectedPlan}
+        onClose={() => {
+          setEditDialogOpen(false);
+          setSelectedPlan(null);
+        }}
+        onSubmit={handleUpdateSubmit}
+      />
 
-      {/* View Plan Subscriptions Dialog/Sheet */}
-      {isMobile ? (
-        <ViewPlanSubscriptionsSheet
-          open={subscriptionsDialogOpen}
-          plan={selectedPlan}
-          onClose={() => {
-            setSubscriptionsDialogOpen(false);
-            setSelectedPlan(null);
-          }}
-        />
-      ) : (
-        <ViewPlanSubscriptionsDialog
-          open={subscriptionsDialogOpen}
-          plan={selectedPlan}
-          onClose={() => {
-            setSubscriptionsDialogOpen(false);
-            setSelectedPlan(null);
-          }}
-        />
-      )}
+      <ViewPlanSubscriptionsDialog
+        open={subscriptionsDialogOpen}
+        plan={selectedPlan}
+        onClose={() => {
+          setSubscriptionsDialogOpen(false);
+          setSelectedPlan(null);
+        }}
+      />
 
-      {/* Delete Plan Confirm Dialog/Sheet */}
-      {isMobile ? (
-        <DeletePlanSheet
-          open={deleteDialogOpen}
-          plan={planToDelete}
-          onClose={() => {
-            setDeleteDialogOpen(false);
-            setPlanToDelete(null);
-          }}
-          onConfirm={handleDeleteConfirm}
-        />
-      ) : (
-        <ConfirmDialog
-          open={deleteDialogOpen}
-          onOpenChange={setDeleteDialogOpen}
-          title="确认删除"
-          description={planToDelete ? `确认删除计划 "${planToDelete.name}" 吗？此操作不可恢复。注意：只有无活跃订阅的计划才能删除。` : ''}
-          confirmText="删除"
-          cancelText="取消"
-          variant="destructive"
-          onConfirm={handleDeleteConfirm}
-        />
-      )}
+      <ConfirmDialog
+        open={deleteDialogOpen}
+        onOpenChange={setDeleteDialogOpen}
+        title="确认删除"
+        description={planToDelete ? `确认删除计划 "${planToDelete.name}" 吗？此操作不可恢复。注意：只有无活跃订阅的计划才能删除。` : ''}
+        confirmText="删除"
+        cancelText="取消"
+        variant="destructive"
+        onConfirm={handleDeleteConfirm}
+      />
     </AdminLayout>
   );
 };

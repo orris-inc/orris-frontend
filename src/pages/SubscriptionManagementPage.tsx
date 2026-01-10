@@ -1,6 +1,6 @@
 /**
  * Subscription Management Page (Admin)
- * High-density data management interface
+ * High-density data management interface with responsive mobile support
  */
 
 import { useState, useMemo } from 'react';
@@ -29,6 +29,7 @@ import { DuplicateSubscriptionSheet } from '@/features/subscriptions/components/
 import { CancelSubscriptionDialog } from '@/features/subscriptions/components/CancelSubscriptionDialog';
 import { CancelSubscriptionSheet } from '@/features/subscriptions/components/CancelSubscriptionSheet';
 import { DeleteSubscriptionSheet } from '@/features/subscriptions/components/DeleteSubscriptionSheet';
+import { MobileSubscriptionManagement } from '@/features/subscriptions/components/MobileSubscriptionManagement';
 import { adminCreateSubscription, adminUpdateSubscriptionStatus, adminDeleteSubscription } from '@/api/subscription';
 import type { Subscription } from '@/api/subscription/types';
 
@@ -157,6 +158,79 @@ export const SubscriptionManagementPage: React.FC = () => {
     }
   };
 
+  // Mobile view - uses MobileSubscriptionManagement with its own header/stats
+  if (isMobile) {
+    return (
+      <AdminLayout>
+        <div className="py-3">
+          <MobileSubscriptionManagement
+            subscriptions={subscriptions}
+            usersMap={usersMap}
+            loading={isLoading || isFetching}
+            refreshing={isFetching}
+            page={pagination.page}
+            pageSize={pagination.pageSize}
+            total={pagination.total}
+            onRefresh={handleRefresh}
+            onViewDetail={handleViewDetail}
+            onActivate={handleActivate}
+            onCancel={handleCancelClick}
+            onRenew={handleRenew}
+            onDelete={handleDeleteClick}
+            onPageChange={handlePageChange}
+          />
+        </div>
+
+        {/* Subscription Detail Sheet */}
+        <SubscriptionDetailSheet
+          open={detailDialogOpen}
+          subscription={selectedSubscription}
+          user={selectedSubscription ? usersMap[selectedSubscription.userId] : undefined}
+          onClose={() => {
+            setDetailDialogOpen(false);
+            setSelectedSubscription(null);
+          }}
+        />
+
+        {/* Duplicate Subscription Sheet */}
+        <DuplicateSubscriptionSheet
+          open={duplicateDialogOpen}
+          subscription={selectedSubscription}
+          user={selectedSubscription ? usersMap[selectedSubscription.userId] : undefined}
+          onClose={() => {
+            setDuplicateDialogOpen(false);
+            setSelectedSubscription(null);
+          }}
+          onSubmit={handleDuplicateSubmit}
+        />
+
+        {/* Cancel Subscription Sheet */}
+        <CancelSubscriptionSheet
+          open={cancelDialogOpen}
+          subscription={selectedSubscription}
+          onClose={() => {
+            setCancelDialogOpen(false);
+            setSelectedSubscription(null);
+          }}
+          onConfirm={handleCancelConfirm}
+        />
+
+        {/* Delete Subscription Sheet */}
+        <DeleteSubscriptionSheet
+          open={deleteDialogOpen}
+          subscription={subscriptionToDelete}
+          user={subscriptionToDelete ? usersMap[subscriptionToDelete.userId] : undefined}
+          onClose={() => {
+            setDeleteDialogOpen(false);
+            setSubscriptionToDelete(null);
+          }}
+          onConfirm={handleDeleteConfirm}
+        />
+      </AdminLayout>
+    );
+  }
+
+  // Desktop view - original layout with header and table
   return (
     <AdminLayout>
       <div className="py-3 space-y-3">
@@ -234,8 +308,8 @@ export const SubscriptionManagementPage: React.FC = () => {
           </div>
         </header>
 
-        {/* Subscription List */}
-        {isMobile ? (
+        {/* Subscription List Table */}
+        <AdminCard noPadding>
           <SubscriptionListTable
             subscriptions={subscriptions}
             usersMap={usersMap}
@@ -253,124 +327,58 @@ export const SubscriptionManagementPage: React.FC = () => {
             onRenew={handleRenew}
             onDelete={handleDeleteClick}
           />
-        ) : (
-          <AdminCard noPadding>
-            <SubscriptionListTable
-              subscriptions={subscriptions}
-              usersMap={usersMap}
-              usersLoading={isUsersLoading}
-              loading={isLoading || isFetching}
-              page={pagination.page}
-              pageSize={pagination.pageSize}
-              total={pagination.total}
-              onPageChange={handlePageChange}
-              onPageSizeChange={handlePageSizeChange}
-              onViewDetail={handleViewDetail}
-              onDuplicate={handleDuplicate}
-              onActivate={handleActivate}
-              onCancel={handleCancelClick}
-              onRenew={handleRenew}
-              onDelete={handleDeleteClick}
-            />
-          </AdminCard>
-        )}
+        </AdminCard>
       </div>
 
-      {/* Subscription Detail Dialog/Sheet */}
-      {isMobile ? (
-        <SubscriptionDetailSheet
-          open={detailDialogOpen}
-          subscription={selectedSubscription}
-          user={selectedSubscription ? usersMap[selectedSubscription.userId] : undefined}
-          onClose={() => {
-            setDetailDialogOpen(false);
-            setSelectedSubscription(null);
-          }}
-        />
-      ) : (
-        <SubscriptionDetailDialog
-          open={detailDialogOpen}
-          subscription={selectedSubscription}
-          user={selectedSubscription ? usersMap[selectedSubscription.userId] : undefined}
-          onClose={() => {
-            setDetailDialogOpen(false);
-            setSelectedSubscription(null);
-          }}
-        />
-      )}
+      {/* Subscription Detail Dialog */}
+      <SubscriptionDetailDialog
+        open={detailDialogOpen}
+        subscription={selectedSubscription}
+        user={selectedSubscription ? usersMap[selectedSubscription.userId] : undefined}
+        onClose={() => {
+          setDetailDialogOpen(false);
+          setSelectedSubscription(null);
+        }}
+      />
 
-      {/* Duplicate Subscription Dialog/Sheet */}
-      {isMobile ? (
-        <DuplicateSubscriptionSheet
-          open={duplicateDialogOpen}
-          subscription={selectedSubscription}
-          user={selectedSubscription ? usersMap[selectedSubscription.userId] : undefined}
-          onClose={() => {
-            setDuplicateDialogOpen(false);
-            setSelectedSubscription(null);
-          }}
-          onSubmit={handleDuplicateSubmit}
-        />
-      ) : (
-        <DuplicateSubscriptionDialog
-          open={duplicateDialogOpen}
-          subscription={selectedSubscription}
-          user={selectedSubscription ? usersMap[selectedSubscription.userId] : undefined}
-          onClose={() => {
-            setDuplicateDialogOpen(false);
-            setSelectedSubscription(null);
-          }}
-          onSubmit={handleDuplicateSubmit}
-        />
-      )}
+      {/* Duplicate Subscription Dialog */}
+      <DuplicateSubscriptionDialog
+        open={duplicateDialogOpen}
+        subscription={selectedSubscription}
+        user={selectedSubscription ? usersMap[selectedSubscription.userId] : undefined}
+        onClose={() => {
+          setDuplicateDialogOpen(false);
+          setSelectedSubscription(null);
+        }}
+        onSubmit={handleDuplicateSubmit}
+      />
 
-      {/* Cancel Subscription Dialog/Sheet */}
-      {isMobile ? (
-        <CancelSubscriptionSheet
-          open={cancelDialogOpen}
-          subscription={selectedSubscription}
-          onClose={() => {
-            setCancelDialogOpen(false);
-            setSelectedSubscription(null);
-          }}
-          onConfirm={handleCancelConfirm}
-        />
-      ) : (
-        <CancelSubscriptionDialog
-          open={cancelDialogOpen}
-          subscription={selectedSubscription}
-          onClose={() => {
-            setCancelDialogOpen(false);
-            setSelectedSubscription(null);
-          }}
-          onConfirm={handleCancelConfirm}
-        />
-      )}
+      {/* Cancel Subscription Dialog */}
+      <CancelSubscriptionDialog
+        open={cancelDialogOpen}
+        subscription={selectedSubscription}
+        onClose={() => {
+          setCancelDialogOpen(false);
+          setSelectedSubscription(null);
+        }}
+        onConfirm={handleCancelConfirm}
+      />
 
-      {/* Delete Subscription Confirm Dialog/Sheet */}
-      {isMobile ? (
-        <DeleteSubscriptionSheet
-          open={deleteDialogOpen}
-          subscription={subscriptionToDelete}
-          user={subscriptionToDelete ? usersMap[subscriptionToDelete.userId] : undefined}
-          onClose={() => {
-            setDeleteDialogOpen(false);
-            setSubscriptionToDelete(null);
-          }}
-          onConfirm={handleDeleteConfirm}
-        />
-      ) : (
-        <ConfirmDialog
-          open={deleteDialogOpen}
-          onOpenChange={setDeleteDialogOpen}
-          title="确认删除"
-          description={subscriptionToDelete ? `确认删除订阅 "${subscriptionToDelete.id}" 吗？此操作不可恢复。` : ''}
-          confirmText="删除"
-          cancelText="取消"
-          variant="destructive"
-          onConfirm={handleDeleteConfirm}
-        />
-      )}
+      {/* Delete Subscription Confirm Dialog */}
+      <ConfirmDialog
+        open={deleteDialogOpen}
+        onOpenChange={setDeleteDialogOpen}
+        title="确认删除"
+        description={
+          subscriptionToDelete
+            ? `确认删除订阅 "${subscriptionToDelete.id}" 吗？此操作不可恢复。`
+            : ''
+        }
+        confirmText="删除"
+        cancelText="取消"
+        variant="destructive"
+        onConfirm={handleDeleteConfirm}
+      />
     </AdminLayout>
   );
 };

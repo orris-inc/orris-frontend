@@ -21,6 +21,7 @@ import { usePageTitle } from '@/shared/hooks';
 import { useBreakpoint } from '@/hooks/useBreakpoint';
 import { useNotificationStore } from '@/shared/stores/notification-store';
 import { UserListTable } from '@/features/users/components/UserListTable';
+import { MobileUserManagement } from '@/features/users/components/MobileUserManagement';
 import { EditUserDialog } from '@/features/users/components/EditUserDialog';
 import { CreateUserDialog } from '@/features/users/components/CreateUserDialog';
 import { CreateUserSheet } from '@/features/users/components/CreateUserSheet';
@@ -157,6 +158,78 @@ export const UserManagementPage = () => {
     }
   };
 
+  // Mobile layout - uses AdminLayout but with mobile-optimized content
+  if (isMobile) {
+    return (
+      <AdminLayout>
+        <MobileUserManagement
+          users={users}
+          loading={isLoading}
+          refreshing={isFetching}
+          page={page}
+          pageSize={pageSize}
+          total={pagination.total}
+          onRefresh={handleRefresh}
+          onCreate={() => setCreateDialogOpen(true)}
+          onEdit={handleEdit}
+          onDelete={handleDelete}
+          onAssignSubscription={handleAssignSubscription}
+          onResetPassword={handleResetPassword}
+          onPageChange={handlePageChange}
+        />
+
+        {/* Mobile Dialogs/Sheets */}
+        <CreateUserSheet
+          open={createDialogOpen}
+          onClose={() => setCreateDialogOpen(false)}
+          onSubmit={handleCreateSubmit}
+        />
+
+        <EditUserSheet
+          open={editDialogOpen}
+          user={selectedUser}
+          onClose={() => {
+            setEditDialogOpen(false);
+            setSelectedUser(null);
+          }}
+          onSubmit={handleUpdateSubmit}
+        />
+
+        <AssignSubscriptionSheet
+          open={assignSubscriptionDialogOpen}
+          user={selectedUser}
+          onClose={() => {
+            setAssignSubscriptionDialogOpen(false);
+            setSelectedUser(null);
+          }}
+          onSubmit={handleAssignSubscriptionSubmit}
+        />
+
+        <ResetPasswordSheet
+          open={resetPasswordDialogOpen}
+          user={selectedUser}
+          isLoading={isResettingPassword}
+          onClose={() => {
+            setResetPasswordDialogOpen(false);
+            setSelectedUser(null);
+          }}
+          onSubmit={handleResetPasswordSubmit}
+        />
+
+        <DeleteUserSheet
+          open={deleteDialogOpen}
+          user={selectedUser}
+          onClose={() => {
+            setDeleteDialogOpen(false);
+            setSelectedUser(null);
+          }}
+          onConfirm={handleDeleteConfirm}
+        />
+      </AdminLayout>
+    );
+  }
+
+  // Desktop layout
   return (
     <AdminLayout>
       <div className="py-3 space-y-3">
@@ -245,8 +318,8 @@ export const UserManagementPage = () => {
           </div>
         </header>
 
-        {/* User List */}
-        {isMobile ? (
+        {/* User List - Desktop Table */}
+        <AdminCard noPadding>
           <UserListTable
             users={users}
             loading={isLoading || isFetching}
@@ -260,120 +333,45 @@ export const UserManagementPage = () => {
             onAssignSubscription={handleAssignSubscription}
             onResetPassword={handleResetPassword}
           />
-        ) : (
-          <AdminCard noPadding>
-            <UserListTable
-              users={users}
-              loading={isLoading || isFetching}
-              page={page}
-              pageSize={pageSize}
-              total={pagination.total}
-              onPageChange={handlePageChange}
-              onPageSizeChange={handlePageSizeChange}
-              onEdit={handleEdit}
-              onDelete={handleDelete}
-              onAssignSubscription={handleAssignSubscription}
-              onResetPassword={handleResetPassword}
-            />
-          </AdminCard>
-        )}
+        </AdminCard>
       </div>
 
-      {/* Create User Dialog/Sheet */}
-      {isMobile ? (
-        <CreateUserSheet
-          open={createDialogOpen}
-          onClose={() => setCreateDialogOpen(false)}
-          onSubmit={handleCreateSubmit}
-        />
-      ) : (
-        <CreateUserDialog
-          open={createDialogOpen}
-          onClose={() => setCreateDialogOpen(false)}
-          onSubmit={handleCreateSubmit}
-        />
-      )}
+      {/* Desktop Dialogs */}
+      <CreateUserDialog
+        open={createDialogOpen}
+        onClose={() => setCreateDialogOpen(false)}
+        onSubmit={handleCreateSubmit}
+      />
 
-      {/* Edit User Dialog/Sheet */}
-      {isMobile ? (
-        <EditUserSheet
-          open={editDialogOpen}
-          user={selectedUser}
-          onClose={() => {
-            setEditDialogOpen(false);
-            setSelectedUser(null);
-          }}
-          onSubmit={handleUpdateSubmit}
-        />
-      ) : (
-        <EditUserDialog
-          open={editDialogOpen}
-          user={selectedUser}
-          onClose={() => {
-            setEditDialogOpen(false);
-            setSelectedUser(null);
-          }}
-          onSubmit={handleUpdateSubmit}
-        />
-      )}
-
-      {/* Assign Subscription Dialog/Sheet */}
-      {isMobile ? (
-        <AssignSubscriptionSheet
-          open={assignSubscriptionDialogOpen}
-          user={selectedUser}
-          onClose={() => {
-            setAssignSubscriptionDialogOpen(false);
-            setSelectedUser(null);
-          }}
-          onSubmit={handleAssignSubscriptionSubmit}
-        />
-      ) : (
-        <AssignSubscriptionDialog
-          open={assignSubscriptionDialogOpen}
-          user={selectedUser}
-          onClose={() => {
-            setAssignSubscriptionDialogOpen(false);
-            setSelectedUser(null);
-          }}
-          onSubmit={handleAssignSubscriptionSubmit}
-        />
-      )}
-
-      {/* Reset Password Dialog/Sheet */}
-      {isMobile ? (
-        <ResetPasswordSheet
-          open={resetPasswordDialogOpen}
-          user={selectedUser}
-          isLoading={isResettingPassword}
-          onClose={() => {
-            setResetPasswordDialogOpen(false);
-            setSelectedUser(null);
-          }}
-          onSubmit={handleResetPasswordSubmit}
-        />
-      ) : (
-        <ResetPasswordDialog
-          open={resetPasswordDialogOpen}
-          user={selectedUser}
-          isLoading={isResettingPassword}
-          onClose={() => {
-            setResetPasswordDialogOpen(false);
-            setSelectedUser(null);
-          }}
-          onSubmit={handleResetPasswordSubmit}
-        />
-      )}
-
-      {/* Delete User Confirmation Sheet (Mobile only) */}
-      <DeleteUserSheet
-        open={deleteDialogOpen}
+      <EditUserDialog
+        open={editDialogOpen}
         user={selectedUser}
         onClose={() => {
-          setDeleteDialogOpen(false);
+          setEditDialogOpen(false);
           setSelectedUser(null);
         }}
-        onConfirm={handleDeleteConfirm}
+        onSubmit={handleUpdateSubmit}
+      />
+
+      <AssignSubscriptionDialog
+        open={assignSubscriptionDialogOpen}
+        user={selectedUser}
+        onClose={() => {
+          setAssignSubscriptionDialogOpen(false);
+          setSelectedUser(null);
+        }}
+        onSubmit={handleAssignSubscriptionSubmit}
+      />
+
+      <ResetPasswordDialog
+        open={resetPasswordDialogOpen}
+        user={selectedUser}
+        isLoading={isResettingPassword}
+        onClose={() => {
+          setResetPasswordDialogOpen(false);
+          setSelectedUser(null);
+        }}
+        onSubmit={handleResetPasswordSubmit}
       />
     </AdminLayout>
   );

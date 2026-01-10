@@ -29,6 +29,7 @@ import { useBreakpoint } from '@/hooks/useBreakpoint';
 import { useNotificationStore } from '@/shared/stores/notification-store';
 import { useResourceGroups } from '@/features/resource-groups/hooks/useResourceGroups';
 import { ForwardAgentListTable } from '@/features/forward-agents/components/ForwardAgentListTable';
+import { MobileForwardAgentManagement } from '@/features/forward-agents/components/MobileForwardAgentManagement';
 import { EditForwardAgentDialog } from '@/features/forward-agents/components/EditForwardAgentDialog';
 import { CreateForwardAgentDialog } from '@/features/forward-agents/components/CreateForwardAgentDialog';
 import { CreateForwardAgentSheet } from '@/features/forward-agents/components/CreateForwardAgentSheet';
@@ -316,7 +317,8 @@ export const ForwardAgentsPage = () => {
   return (
     <AdminLayout>
       <div className="py-3 space-y-3">
-        {/* High-Density Status Bar with Integrated Filters */}
+        {/* High-Density Status Bar with Integrated Filters - Desktop only */}
+        {!isMobile && (
         <header className="bg-card rounded-lg border border-border px-3 py-2">
           <div className="flex items-center justify-between gap-3 flex-wrap">
             {/* Left: Title + Primary Stats */}
@@ -493,32 +495,32 @@ export const ForwardAgentsPage = () => {
             </div>
           </div>
         </header>
+        )}
 
         {/* Forward Agent List */}
         {isMobile ? (
-          <ForwardAgentListTable
+          <MobileForwardAgentManagement
             forwardAgents={forwardAgents}
-            loading={isLoading || isFetching || isReordering}
+            loading={isLoading}
+            refreshing={isFetching || isReordering}
             page={pagination.page}
             pageSize={pagination.pageSize}
             total={pagination.total}
-            resourceGroupsMap={resourceGroupsMap}
-            onPageChange={handlePageChange}
-            onPageSizeChange={handlePageSizeChange}
+            onRefresh={handleRefresh}
+            onCreate={() => {
+              setCopyAgentData(undefined);
+              setCreateDialogOpen(true);
+            }}
             onEdit={handleEdit}
             onDelete={handleDelete}
             onEnable={handleEnable}
             onDisable={handleDisable}
-            onRegenerateToken={handleTokenRegenerate}
             onGetInstallScript={handleInstallScript}
-            onViewDetail={handleViewDetail}
             onCopy={handleCopy}
+            onRegenerateToken={handleTokenRegenerate}
             onCheckUpdate={handleCheckUpdate}
-            onBroadcastURL={handleBroadcastToAgent}
-            onToggleMute={handleToggleMute}
+            onPageChange={handlePageChange}
             checkingAgentId={checkingAgentId}
-            enableDragSort={true}
-            onDragEnd={handleDragEnd}
           />
         ) : (
           <AdminCard noPadding>

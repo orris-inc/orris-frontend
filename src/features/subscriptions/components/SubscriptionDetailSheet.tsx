@@ -3,6 +3,7 @@
  * Mobile-optimized bottom sheet for viewing subscription details
  */
 
+import { useRef } from 'react';
 import {
   Calendar,
   CheckCircle,
@@ -14,6 +15,7 @@ import {
   XCircle,
   Receipt,
   RefreshCw,
+  X,
 } from 'lucide-react';
 import {
   Sheet,
@@ -22,9 +24,8 @@ import {
   SheetTitle,
   SheetDescription,
   SheetBody,
-  SheetFooter,
 } from '@/components/common/Sheet';
-import { Button } from '@/components/common/Button';
+import { useSwipeSheet } from '@/hooks';
 import { Separator } from '@/components/common/Separator';
 import { TruncatedId } from '@/components/admin';
 import { SubscriptionLinkSelector } from '@/components/subscription';
@@ -81,14 +82,18 @@ const DetailItem: React.FC<{
         <div className="text-sm break-all">{value}</div>
       </div>
       {copyable && (
-        <Button
-          variant="ghost"
-          size="sm"
-          className="h-6 w-6 p-0 shrink-0"
+        <button
           onClick={handleCopy}
+          className={cn(
+            'size-7 flex items-center justify-center rounded-full shrink-0',
+            'bg-muted/60 active:bg-muted',
+            'text-muted-foreground active:text-foreground',
+            'transition-colors duration-150',
+            'touch-manipulation'
+          )}
         >
           <Copy className="size-3" />
-        </Button>
+        </button>
       )}
     </div>
   );
@@ -100,6 +105,15 @@ export const SubscriptionDetailSheet: React.FC<SubscriptionDetailSheetProps> = (
   user,
   onClose,
 }) => {
+  const sheetRef = useRef<HTMLDivElement>(null);
+
+  // Enable swipe down to close gesture
+  const { isDragging, overlayStyle, sheetStyle } = useSwipeSheet({
+    isOpen: open,
+    onOpenChange: (isOpen) => !isOpen && onClose(),
+    sheetRef,
+  });
+
   if (!subscription) return null;
 
   const statusConfig = STATUS_CONFIG[subscription.status] || { label: subscription.status, color: 'bg-gray-100 text-gray-600' };
@@ -109,17 +123,39 @@ export const SubscriptionDetailSheet: React.FC<SubscriptionDetailSheetProps> = (
 
   return (
     <Sheet open={open} onOpenChange={onClose}>
-      <SheetContent className="max-h-[95vh]">
+      <SheetContent
+        contentRef={sheetRef}
+        className="max-h-[95vh]"
+        showClose={false}
+        isDragging={isDragging}
+        overlayStyle={overlayStyle}
+        sheetStyle={sheetStyle}
+      >
         <SheetHeader className="pb-2">
-          <SheetTitle className="flex items-center gap-2">
-            <div className="size-8 rounded-full bg-primary/10 flex items-center justify-center">
-              <Receipt className="size-4 text-primary" />
-            </div>
-            <span>订阅详情</span>
-            <span className={cn('px-1.5 py-0.5 rounded text-xs font-medium', statusConfig.color)}>
-              {statusConfig.label}
-            </span>
-          </SheetTitle>
+          <div className="flex items-center justify-between">
+            <SheetTitle className="flex items-center gap-2">
+              <div className="size-8 rounded-full bg-primary/10 flex items-center justify-center">
+                <Receipt className="size-4 text-primary" />
+              </div>
+              <span>订阅详情</span>
+              <span className={cn('px-1.5 py-0.5 rounded text-xs font-medium', statusConfig.color)}>
+                {statusConfig.label}
+              </span>
+            </SheetTitle>
+            {/* iOS-style close button */}
+            <button
+              onClick={onClose}
+              className={cn(
+                'size-8 flex items-center justify-center rounded-full',
+                'bg-muted/80 active:bg-muted',
+                'text-muted-foreground active:text-foreground',
+                'transition-colors duration-150',
+                'touch-manipulation'
+              )}
+            >
+              <X className="size-4" />
+            </button>
+          </div>
           <SheetDescription className="text-xs flex items-center gap-1">
             ID: <TruncatedId id={subscription.id} />
           </SheetDescription>
@@ -282,12 +318,6 @@ export const SubscriptionDetailSheet: React.FC<SubscriptionDetailSheetProps> = (
             </div>
           </div>
         </SheetBody>
-
-        <SheetFooter className="pt-3 pb-1">
-          <Button variant="ghost" onClick={onClose} className="w-full h-10">
-            关闭
-          </Button>
-        </SheetFooter>
       </SheetContent>
     </Sheet>
   );

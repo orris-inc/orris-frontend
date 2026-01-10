@@ -8,6 +8,7 @@ import { useNavigate } from 'react-router';
 import { AdminLayout } from '@/layouts/AdminLayout';
 import { useAuthStore } from '@/features/auth/stores/auth-store';
 import { usePageTitle } from '@/shared/hooks';
+import { useBreakpoint } from '@/hooks';
 import { listUsers } from '@/api/user';
 import { adminListSubscriptions } from '@/api/subscription';
 import { listNodes } from '@/api/node';
@@ -24,6 +25,7 @@ import {
   TrafficRankingList,
   NodeTrafficStats,
 } from '@/components/admin';
+import { MobileAdminDashboard } from '@/components/mobile/admin';
 import {
   Users,
   CreditCard,
@@ -235,6 +237,7 @@ export const NewAdminDashboardPage = () => {
 
   const { user } = useAuthStore();
   const navigate = useNavigate();
+  const { isMobile } = useBreakpoint();
   const { stats, loading } = useDashboardStats();
 
   // Traffic analytics state
@@ -277,6 +280,25 @@ export const NewAdminDashboardPage = () => {
     );
   }
 
+  // Mobile view - optimized for touch interactions
+  if (isMobile) {
+    return (
+      <AdminLayout>
+        <MobileAdminDashboard
+          userName={user.displayName || user.email?.split('@')[0]}
+          stats={stats}
+          trafficOverview={trafficOverview ?? undefined}
+          trafficTrend={trafficTrend ?? undefined}
+          dateRangePreset={dateRangePreset}
+          onDateRangeChange={setDateRangePreset}
+          granularity={granularity}
+          loading={loading}
+          trafficLoading={isTrafficLoading}
+        />
+      </AdminLayout>
+    );
+  }
+
   // Combined stats cards - basic stats + traffic stats in one row
   const statsCards = [
     {
@@ -285,7 +307,7 @@ export const NewAdminDashboardPage = () => {
       icon: <Users className="size-4" strokeWidth={1.5} />,
       iconBg: 'bg-info-muted',
       iconColor: 'text-info',
-      loading: loading,
+      loading,
     },
     {
       title: '订阅总数',
@@ -293,7 +315,7 @@ export const NewAdminDashboardPage = () => {
       icon: <CreditCard className="size-4" strokeWidth={1.5} />,
       iconBg: 'bg-success-muted',
       iconColor: 'text-success',
-      loading: loading,
+      loading,
     },
     {
       title: '节点总数',
@@ -301,7 +323,7 @@ export const NewAdminDashboardPage = () => {
       icon: <Server className="size-4" strokeWidth={1.5} />,
       iconBg: 'bg-primary/10',
       iconColor: 'text-primary',
-      loading: loading,
+      loading,
     },
     {
       title: '在线节点',
@@ -309,7 +331,7 @@ export const NewAdminDashboardPage = () => {
       icon: <Activity className="size-4" strokeWidth={1.5} />,
       iconBg: 'bg-warning-muted',
       iconColor: 'text-warning',
-      loading: loading,
+      loading,
     },
     {
       title: '总上传',
@@ -419,8 +441,8 @@ export const NewAdminDashboardPage = () => {
         {/* All statistics cards - responsive grid layout */}
         <section className="mb-4">
           <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-2">
-            {statsCards.map((stat, index) => (
-              <StatsCard key={index} {...stat} />
+            {statsCards.map((stat) => (
+              <StatsCard key={stat.title} {...stat} />
             ))}
           </div>
         </section>
@@ -461,8 +483,8 @@ export const NewAdminDashboardPage = () => {
                 快速访问
               </h2>
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
-                {quickActions.map((action, index) => (
-                  <QuickActionCard key={index} {...action} />
+                {quickActions.map((action) => (
+                  <QuickActionCard key={action.title} {...action} />
                 ))}
               </div>
             </div>
@@ -490,8 +512,8 @@ export const NewAdminDashboardPage = () => {
                   </div>
                 ) : (
                   <div>
-                    {systemStatuses.map((status, index) => (
-                      <SystemStatus key={index} {...status} />
+                    {systemStatuses.map((status) => (
+                      <SystemStatus key={status.label} {...status} />
                     ))}
                   </div>
                 )}

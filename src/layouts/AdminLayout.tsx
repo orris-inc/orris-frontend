@@ -15,13 +15,12 @@ import {
   ChevronLeft,
   ChevronRight,
   ArrowLeftRight,
-  X,
 } from 'lucide-react';
-import * as Dialog from '@radix-ui/react-dialog';
 import { TooltipProvider } from '@/components/common/Tooltip';
 import { AdminSidebarNav, AdminSidebarFooter } from '@/components/navigation/AdminSidebarNav';
+import { MobileDrawer } from '@/components/navigation/MobileDrawer';
 import { UserMenu } from '@/components/navigation/UserMenu';
-import { useSwipeDrawer } from '@/hooks';
+import { useSwipeDrawer, useBreakpoint } from '@/hooks';
 
 import { useAuthStore } from '@/features/auth/stores/auth-store';
 import { useAuth } from '@/features/auth/hooks/useAuth';
@@ -41,6 +40,7 @@ export const AdminLayout = ({ children }: AdminLayoutProps) => {
   const { user } = useAuthStore();
   const { logout } = useAuth();
   const { filterNavigationByPermission } = usePermissions();
+  const { isMobile } = useBreakpoint();
 
   const [mobileDrawerOpen, setMobileDrawerOpen] = useState(false);
   const [collapsed, setCollapsed] = useState(() => {
@@ -50,14 +50,10 @@ export const AdminLayout = ({ children }: AdminLayoutProps) => {
   const [profileDialogOpen, setProfileDialogOpen] = useState(false);
 
   // Enable swipe from left edge to open mobile drawer with follow-finger gesture
-  const { progress: dragProgress, isDragging, overlayStyle, drawerStyle } = useSwipeDrawer({
+  const { isDragging, overlayStyle, drawerStyle } = useSwipeDrawer({
     isOpen: mobileDrawerOpen,
     onOpenChange: setMobileDrawerOpen,
   });
-
-  // Determine if we should render the drawer
-  const shouldShowDragState = isDragging && dragProgress !== undefined;
-  const shouldRenderDrawer = mobileDrawerOpen || (isDragging && dragProgress !== undefined && dragProgress > 0);
 
   useEffect(() => {
     localStorage.setItem('admin-sidebar-collapsed', String(collapsed));
@@ -97,97 +93,28 @@ export const AdminLayout = ({ children }: AdminLayoutProps) => {
     </RouterLink>
   );
 
-  // Mobile sidebar content - modern design with user profile
-  const MobileSidebarContent = () => (
-    <div className="flex h-full flex-col bg-background pb-safe">
-      {/* Header */}
-      <div className="flex h-14 items-center justify-between border-b px-4">
-        <span className="text-lg font-bold text-foreground">管理控制台</span>
-      </div>
-
-      {/* User Profile Section */}
-      {user && (
-        <div className="border-b px-4 py-4">
-          <div className="flex items-center gap-3">
-            <div className="flex h-12 w-12 items-center justify-center rounded-full bg-primary">
-              <span className="text-base font-semibold text-primary-foreground">
-                {user.displayName?.charAt(0).toUpperCase() || '?'}
-              </span>
-            </div>
-            <div className="flex-1 min-w-0">
-              <p className="text-sm font-semibold text-foreground truncate">
-                {user.displayName || 'Admin'}
-              </p>
-              <p className="text-xs text-muted-foreground truncate">
-                {user.email}
-              </p>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Navigation */}
-      <div className="flex-1 overflow-y-auto py-3 px-3">
-        <AdminSidebarNav
-          items={adminNavItems}
-          collapsed={false}
-          onItemClick={() => setMobileDrawerOpen(false)}
-        />
-      </div>
-
-      {/* Footer Actions */}
-      <div className="border-t px-3 py-3 space-y-1">
-        <SwitchToUserViewLink />
-      </div>
-    </div>
-  );
-
   return (
     <TooltipProvider delayDuration={0}>
       <div className="min-h-screen min-h-dvh bg-background overflow-x-hidden">
-        {/* 移动端侧边栏 */}
-        <Dialog.Root open={shouldRenderDrawer} onOpenChange={setMobileDrawerOpen}>
-          <Dialog.Portal>
-            <Dialog.Overlay
-              className={cn(
-                'fixed inset-0 z-50 bg-black backdrop-blur-sm md:hidden',
-                // Only use animations when not dragging
-                !shouldShowDragState && 'data-[state=open]:animate-in data-[state=closed]:animate-out',
-                !shouldShowDragState && 'data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0',
-                !shouldShowDragState && 'data-[state=closed]:duration-200 data-[state=open]:duration-300',
-                'motion-reduce:animate-none'
-              )}
-              style={overlayStyle}
-            />
-            <Dialog.Content
-              className={cn(
-                'fixed inset-y-0 left-0 z-50 h-full w-[min(300px,85vw)] bg-background shadow-2xl md:hidden',
-                // Only use animations when not dragging
-                !shouldShowDragState && 'data-[state=open]:animate-in data-[state=closed]:animate-out',
-                !shouldShowDragState && 'data-[state=closed]:duration-200 data-[state=open]:duration-300',
-                !shouldShowDragState && 'data-[state=closed]:slide-out-to-left data-[state=open]:slide-in-from-left',
-                'motion-reduce:animate-none'
-              )}
-              style={drawerStyle}
-            >
-              <Dialog.Close
-                className={cn(
-                  'absolute right-3 top-3 flex h-10 w-10 items-center justify-center rounded-xl',
-                  'text-muted-foreground transition-colors duration-200',
-                  'hover:bg-accent hover:text-foreground',
-                  'active:bg-accent/80',
-                  'focus:outline-none focus-visible:ring-2 focus-visible:ring-ring',
-                  'motion-reduce:transition-none'
-                )}
-              >
-                <X className="h-5 w-5" aria-hidden="true" />
-                <span className="sr-only">Close menu</span>
-              </Dialog.Close>
-              <Dialog.Title className="sr-only">导航菜单</Dialog.Title>
-              <MobileSidebarContent />
-            </Dialog.Content>
-          </Dialog.Portal>
-        </Dialog.Root>
+        {/* 移动端侧边栏 - iOS 26 Liquid Glass Design */}
+        <MobileDrawer
+          open={mobileDrawerOpen}
+          onClose={() => setMobileDrawerOpen(false)}
+          navigationItems={adminNavItems}
+          title="管理控制台"
+          user={user ? {
+            displayName: user.displayName,
+            email: user.email,
+            initials: user.displayName?.charAt(0).toUpperCase(),
+          } : null}
+          showAdminSwitch
+          isAdminView
+          onAdminClick={() => navigate('/dashboard')}
+          onLogout={handleLogout}
+          isDragging={isDragging}
+          overlayStyle={overlayStyle}
+          drawerStyle={drawerStyle}
+        />
 
         {/* 桌面端侧边栏 */}
         <aside
@@ -236,8 +163,11 @@ export const AdminLayout = ({ children }: AdminLayoutProps) => {
             collapsed ? "md:pl-16" : "md:pl-56"
           )}
         >
-          {/* 顶部导航栏 */}
-          <header className="sticky top-0 z-30 flex h-14 items-center gap-4 border-b bg-background px-4 sm:px-6">
+          {/* 顶部导航栏 - Mobile optimized */}
+          <header className={cn(
+            "sticky top-0 z-30 flex items-center gap-4 border-b bg-background",
+            isMobile ? "h-12 px-4" : "h-14 px-4 sm:px-6"
+          )}>
             {/* 移动端菜单按钮 */}
             <button
               className="md:hidden flex items-center justify-center rounded-lg hover:bg-accent touch-target p-2.5 min-w-[44px] min-h-[44px]"
@@ -246,14 +176,21 @@ export const AdminLayout = ({ children }: AdminLayoutProps) => {
               <Menu className="h-6 w-6" />
             </button>
 
-            {/* 面包屑 */}
+            {/* Breadcrumbs or simple title for mobile */}
             <div className="flex-1 min-w-0">
-              <EnhancedBreadcrumbs />
+              {isMobile ? (
+                <h1 className="text-base font-semibold text-foreground truncate">
+                  管理控制台
+                </h1>
+              ) : (
+                <EnhancedBreadcrumbs />
+              )}
             </div>
 
             {/* Theme toggle and user menu */}
-            <div className="flex items-center gap-3">
-              <ThemeToggle />
+            <div className="flex items-center gap-2 md:gap-3">
+              {/* Hide theme toggle on mobile - available in drawer */}
+              {!isMobile && <ThemeToggle />}
 
               <UserMenu
                 user={user}
@@ -265,8 +202,11 @@ export const AdminLayout = ({ children }: AdminLayoutProps) => {
             </div>
           </header>
 
-          {/* 页面内容 */}
-          <main className="flex-1 p-4 sm:p-6 overflow-x-hidden">
+          {/* 页面内容 - Mobile optimized padding */}
+          <main className={cn(
+            "flex-1 overflow-x-hidden",
+            isMobile ? "p-3" : "p-4 sm:p-6"
+          )}>
             <div className="min-w-0 max-w-full">
               {children}
             </div>

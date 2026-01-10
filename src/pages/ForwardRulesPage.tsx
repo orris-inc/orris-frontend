@@ -18,6 +18,7 @@ import {
 } from 'lucide-react';
 import { Switch, SwitchThumb } from '@/components/common/Switch';
 import { ForwardRuleListTable } from '@/features/forward-rules/components/ForwardRuleListTable';
+import { MobileForwardRuleManagement } from '@/features/forward-rules/components/MobileForwardRuleManagement';
 import { CreateForwardRuleDialog } from '@/features/forward-rules/components/CreateForwardRuleDialog';
 import { CreateForwardRuleSheet } from '@/features/forward-rules/components/CreateForwardRuleSheet';
 import { EditForwardRuleDialog } from '@/features/forward-rules/components/EditForwardRuleDialog';
@@ -291,6 +292,94 @@ export const ForwardRulesPage = () => {
   const isDefaultSort = filters.orderBy === 'sort_order' && filters.order === 'asc';
   const hasActiveFilters = !!(filters.protocol || filters.status || filters.name || (filters.orderBy && !isDefaultSort));
 
+  // Mobile view - uses MobileForwardRuleManagement with its own header/stats
+  if (isMobile) {
+    return (
+      <AdminLayout>
+        <div className="py-3">
+          <MobileForwardRuleManagement
+            rules={forwardRules}
+            agentsMap={agentsMap}
+            nodes={nodes}
+            polledStatusMap={polledStatusMap}
+            pollingRuleIds={pollingRuleIds}
+            loading={isLoading || isFetching || isReordering}
+            refreshing={isFetching}
+            page={pagination.page}
+            pageSize={pagination.pageSize}
+            total={pagination.total}
+            onRefresh={handleRefresh}
+            onCreate={() => {
+              setCopyRuleData(undefined);
+              setCreateDialogOpen(true);
+            }}
+            onEdit={handleEdit}
+            onEnable={handleEnable}
+            onDisable={handleDisable}
+            onDelete={handleDelete}
+            onProbe={handleProbe}
+            probingRuleId={probingRuleId}
+            onPageChange={handlePageChange}
+          />
+        </div>
+
+        {/* Create Forward Rule Sheet */}
+        <CreateForwardRuleSheet
+          open={createDialogOpen}
+          onClose={() => {
+            setCreateDialogOpen(false);
+            setCopyRuleData(undefined);
+          }}
+          onSubmit={handleCreateSubmit}
+          agents={forwardAgents}
+          nodes={nodes}
+          initialData={copyRuleData}
+          resourceGroups={resourceGroups}
+          plansMap={plansMap}
+        />
+
+        {/* Edit Forward Rule Sheet */}
+        <EditForwardRuleSheet
+          open={editDialogOpen}
+          rule={selectedRule}
+          onClose={() => {
+            setEditDialogOpen(false);
+            setSelectedRule(null);
+          }}
+          onSubmit={handleUpdateSubmit}
+          nodes={nodes}
+          agents={forwardAgents}
+          resourceGroups={resourceGroups}
+          plansMap={plansMap}
+        />
+
+        {/* Delete Forward Rule Sheet */}
+        <DeleteForwardRuleSheet
+          open={deleteConfirmOpen}
+          rule={ruleToDelete}
+          onClose={() => {
+            setDeleteConfirmOpen(false);
+            setRuleToDelete(null);
+          }}
+          onConfirm={handleDeleteConfirm}
+          agentsMap={agentsMap}
+        />
+
+        {/* Probe Result Dialog */}
+        <ProbeResultDialog
+          open={probeDialogOpen}
+          onOpenChange={setProbeDialogOpen}
+          rule={probingRule}
+          probeResult={probeResult}
+          isProbing={probingRuleId !== null}
+          agents={forwardAgents}
+          nodes={nodes}
+        />
+      </AdminLayout>
+    );
+  }
+
+  // Desktop view - original layout with header and table
   return (
     <AdminLayout>
       <div className="py-3 space-y-3">
@@ -477,8 +566,8 @@ export const ForwardRulesPage = () => {
           </div>
         </header>
 
-        {/* Forward Rules List */}
-        {isMobile ? (
+        {/* Forward Rules List Table */}
+        <AdminCard noPadding>
           <ForwardRuleListTable
             rules={forwardRules}
             agentsMap={agentsMap}
@@ -501,101 +590,41 @@ export const ForwardRulesPage = () => {
             onProbe={handleProbe}
             onCopy={handleCopy}
             probingRuleId={probingRuleId}
-            enableDragSort={true}
+            enableDragSort={dragSortEnabled}
             onDragEnd={handleDragEnd}
           />
-        ) : (
-          <AdminCard noPadding>
-            <ForwardRuleListTable
-              rules={forwardRules}
-              agentsMap={agentsMap}
-              resourceGroupsMap={resourceGroupsMap}
-              nodes={nodes}
-              polledStatusMap={polledStatusMap}
-              pollingRuleIds={pollingRuleIds}
-              loading={isLoading || isFetching || isReordering}
-              page={pagination.page}
-              pageSize={pagination.pageSize}
-              total={pagination.total}
-              onPageChange={handlePageChange}
-              onPageSizeChange={handlePageSizeChange}
-              onEdit={handleEdit}
-              onDelete={handleDelete}
-              onEnable={handleEnable}
-              onDisable={handleDisable}
-              onResetTraffic={handleResetTraffic}
-              onViewDetail={handleViewDetail}
-              onProbe={handleProbe}
-              onCopy={handleCopy}
-              probingRuleId={probingRuleId}
-              enableDragSort={dragSortEnabled}
-              onDragEnd={handleDragEnd}
-            />
-          </AdminCard>
-        )}
+        </AdminCard>
       </div>
 
-      {/* Create Forward Rule Dialog/Sheet */}
-      {isMobile ? (
-        <CreateForwardRuleSheet
-          open={createDialogOpen}
-          onClose={() => {
-            setCreateDialogOpen(false);
-            setCopyRuleData(undefined);
-          }}
-          onSubmit={handleCreateSubmit}
-          agents={forwardAgents}
-          nodes={nodes}
-          initialData={copyRuleData}
-          resourceGroups={resourceGroups}
-          plansMap={plansMap}
-        />
-      ) : (
-        <CreateForwardRuleDialog
-          open={createDialogOpen}
-          onClose={() => {
-            setCreateDialogOpen(false);
-            setCopyRuleData(undefined);
-          }}
-          onSubmit={handleCreateSubmit}
-          agents={forwardAgents}
-          nodes={nodes}
-          initialData={copyRuleData}
-          resourceGroups={resourceGroups}
-          plansMap={plansMap}
-        />
-      )}
+      {/* Create Forward Rule Dialog */}
+      <CreateForwardRuleDialog
+        open={createDialogOpen}
+        onClose={() => {
+          setCreateDialogOpen(false);
+          setCopyRuleData(undefined);
+        }}
+        onSubmit={handleCreateSubmit}
+        agents={forwardAgents}
+        nodes={nodes}
+        initialData={copyRuleData}
+        resourceGroups={resourceGroups}
+        plansMap={plansMap}
+      />
 
-      {/* Edit Forward Rule Dialog/Sheet */}
-      {isMobile ? (
-        <EditForwardRuleSheet
-          open={editDialogOpen}
-          rule={selectedRule}
-          onClose={() => {
-            setEditDialogOpen(false);
-            setSelectedRule(null);
-          }}
-          onSubmit={handleUpdateSubmit}
-          nodes={nodes}
-          agents={forwardAgents}
-          resourceGroups={resourceGroups}
-          plansMap={plansMap}
-        />
-      ) : (
-        <EditForwardRuleDialog
-          open={editDialogOpen}
-          rule={selectedRule}
-          onClose={() => {
-            setEditDialogOpen(false);
-            setSelectedRule(null);
-          }}
-          onSubmit={handleUpdateSubmit}
-          nodes={nodes}
-          agents={forwardAgents}
-          resourceGroups={resourceGroups}
-          plansMap={plansMap}
-        />
-      )}
+      {/* Edit Forward Rule Dialog */}
+      <EditForwardRuleDialog
+        open={editDialogOpen}
+        rule={selectedRule}
+        onClose={() => {
+          setEditDialogOpen(false);
+          setSelectedRule(null);
+        }}
+        onSubmit={handleUpdateSubmit}
+        nodes={nodes}
+        agents={forwardAgents}
+        resourceGroups={resourceGroups}
+        plansMap={plansMap}
+      />
 
       {/* Forward Rule Detail Dialog */}
       <ForwardRuleDetailDialog
@@ -621,30 +650,17 @@ export const ForwardRulesPage = () => {
         nodes={nodes}
       />
 
-      {/* Delete Confirm Dialog/Sheet */}
-      {isMobile ? (
-        <DeleteForwardRuleSheet
-          open={deleteConfirmOpen}
-          rule={ruleToDelete}
-          onClose={() => {
-            setDeleteConfirmOpen(false);
-            setRuleToDelete(null);
-          }}
-          onConfirm={handleDeleteConfirm}
-          agentsMap={agentsMap}
-        />
-      ) : (
-        <ConfirmDialog
-          open={deleteConfirmOpen}
-          onOpenChange={setDeleteConfirmOpen}
-          title="确认删除"
-          description={ruleToDelete ? `确认删除转发规则 "${ruleToDelete.name}" 吗？此操作不可恢复。` : ''}
-          confirmText="删除"
-          cancelText="取消"
-          variant="destructive"
-          onConfirm={handleDeleteConfirm}
-        />
-      )}
+      {/* Delete Confirm Dialog */}
+      <ConfirmDialog
+        open={deleteConfirmOpen}
+        onOpenChange={setDeleteConfirmOpen}
+        title="确认删除"
+        description={ruleToDelete ? `确认删除转发规则 "${ruleToDelete.name}" 吗？此操作不可恢复。` : ''}
+        confirmText="删除"
+        cancelText="取消"
+        variant="destructive"
+        onConfirm={handleDeleteConfirm}
+      />
 
       {/* Reset Traffic Confirm Dialog */}
       <ConfirmDialog

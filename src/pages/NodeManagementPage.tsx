@@ -27,6 +27,7 @@ import { NodeDetailDialog } from '@/features/nodes/components/NodeDetailDialog';
 import { NodeInstallScriptDialog } from '@/features/nodes/components/NodeInstallScriptDialog';
 import { BatchUpdateDialog } from '@/features/nodes/components/BatchUpdateDialog';
 import { BroadcastNodeURLDialog } from '@/features/nodes/components/BroadcastNodeURLDialog';
+import { MobileNodeManagement } from '@/features/nodes/components/MobileNodeManagement';
 import { useNodesPage, useBroadcastNodeAPIURL, useNotifyNodeAPIURL } from '@/features/nodes/hooks/useNodes';
 import { useResourceGroups } from '@/features/resource-groups/hooks/useResourceGroups';
 import { AdminLayout } from '@/layouts/AdminLayout';
@@ -243,68 +244,91 @@ export const NodeManagementPage = () => {
 
   return (
     <AdminLayout>
-      <div className="py-3 space-y-3">
-        {/* High-Density Status Bar - All metrics inline */}
-        <header className="bg-card rounded-lg border border-border px-3 py-2">
-          <div className="flex items-center justify-between gap-4 flex-wrap">
-            {/* Left: Title + Primary Stats */}
-            <div className="flex items-center gap-4">
-              <h1 className="text-sm font-semibold text-foreground">节点管理</h1>
-              <div className="h-4 w-px bg-border hidden sm:block" />
-              <div className="flex items-center gap-3 text-xs">
-                <span className="flex items-center gap-1 text-muted-foreground">
-                  <Server className="size-3" />
-                  <span className="font-medium text-foreground">{stats.total}</span>
-                  <span className="hidden sm:inline">节点</span>
-                </span>
-                <span className="flex items-center gap-1">
-                  <Activity className="size-3 text-success" />
-                  <span className="font-medium text-success">{stats.online}</span>
-                  <span className="hidden lg:inline text-muted-foreground">在线</span>
-                </span>
-                <span className="flex items-center gap-1">
-                  <CheckCircle2 className="size-3 text-info" />
-                  <span className="font-medium text-info">{stats.active}</span>
-                </span>
+      {/* Mobile View */}
+      {isMobile ? (
+        <div className="py-3">
+          <MobileNodeManagement
+            nodes={nodes}
+            resourceGroupsMap={resourceGroupsMap}
+            loading={isFetching || isReordering}
+            refreshing={isFetching}
+            page={pagination.page}
+            pageSize={pagination.pageSize}
+            total={pagination.total}
+            onRefresh={handleRefresh}
+            onCreate={() => {
+              setCopyNodeData(undefined);
+              setCreateDialogOpen(true);
+            }}
+            onEdit={handleEdit}
+            onDelete={handleDelete}
+            onActivate={handleActivate}
+            onDeactivate={handleDeactivate}
+            onPageChange={handlePageChange}
+          />
+        </div>
+      ) : (
+        <div className="py-3 space-y-3">
+          {/* High-Density Status Bar - All metrics inline */}
+          <header className="bg-card rounded-lg border border-border px-3 py-2">
+            <div className="flex items-center justify-between gap-4 flex-wrap">
+              {/* Left: Title + Primary Stats */}
+              <div className="flex items-center gap-4">
+                <h1 className="text-sm font-semibold text-foreground">节点管理</h1>
+                <div className="h-4 w-px bg-border hidden sm:block" />
+                <div className="flex items-center gap-3 text-xs">
+                  <span className="flex items-center gap-1 text-muted-foreground">
+                    <Server className="size-3" />
+                    <span className="font-medium text-foreground">{stats.total}</span>
+                    <span className="hidden sm:inline">节点</span>
+                  </span>
+                  <span className="flex items-center gap-1">
+                    <Activity className="size-3 text-success" />
+                    <span className="font-medium text-success">{stats.online}</span>
+                    <span className="hidden lg:inline text-muted-foreground">在线</span>
+                  </span>
+                  <span className="flex items-center gap-1">
+                    <CheckCircle2 className="size-3 text-info" />
+                    <span className="font-medium text-info">{stats.active}</span>
+                  </span>
+                </div>
               </div>
-            </div>
 
-            {/* Center: Secondary Stats + Filters */}
-            <div className="hidden md:flex items-center gap-3 text-xs">
-              {stats.inactive > 0 && (
-                <span className="flex items-center gap-1.5">
-                  <XCircle className="size-3 text-muted-foreground" />
-                  <span className="text-muted-foreground">未激活</span>
-                  <span className="font-semibold tabular-nums text-foreground">{stats.inactive}</span>
-                </span>
-              )}
-              {stats.updatable > 0 && (
-                <span className="flex items-center gap-1.5">
-                  <ArrowUpCircle className="size-3 text-warning" />
-                  <span className="text-muted-foreground">可更新</span>
-                  <span className="font-semibold tabular-nums text-warning">{stats.updatable}</span>
-                </span>
-              )}
-              <div className="h-3 w-px bg-border" />
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <label className="flex items-center gap-1.5 cursor-pointer group">
-                    <Users className="size-3 text-muted-foreground group-hover:text-foreground transition-colors" strokeWidth={1.5} />
-                    <span className="hidden lg:inline text-muted-foreground group-hover:text-foreground transition-colors">
-                      用户节点
-                    </span>
-                    <Switch
-                      checked={includeUserNodes}
-                      onCheckedChange={handleIncludeUserNodesChange}
-                      className="scale-75"
-                    >
-                      <SwitchThumb />
-                    </Switch>
-                  </label>
-                </TooltipTrigger>
-                <TooltipContent>显示用户创建的节点</TooltipContent>
-              </Tooltip>
-              {!isMobile && (
+              {/* Center: Secondary Stats + Filters */}
+              <div className="hidden md:flex items-center gap-3 text-xs">
+                {stats.inactive > 0 && (
+                  <span className="flex items-center gap-1.5">
+                    <XCircle className="size-3 text-muted-foreground" />
+                    <span className="text-muted-foreground">未激活</span>
+                    <span className="font-semibold tabular-nums text-foreground">{stats.inactive}</span>
+                  </span>
+                )}
+                {stats.updatable > 0 && (
+                  <span className="flex items-center gap-1.5">
+                    <ArrowUpCircle className="size-3 text-warning" />
+                    <span className="text-muted-foreground">可更新</span>
+                    <span className="font-semibold tabular-nums text-warning">{stats.updatable}</span>
+                  </span>
+                )}
+                <div className="h-3 w-px bg-border" />
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <label className="flex items-center gap-1.5 cursor-pointer group">
+                      <Users className="size-3 text-muted-foreground group-hover:text-foreground transition-colors" strokeWidth={1.5} />
+                      <span className="hidden lg:inline text-muted-foreground group-hover:text-foreground transition-colors">
+                        用户节点
+                      </span>
+                      <Switch
+                        checked={includeUserNodes}
+                        onCheckedChange={handleIncludeUserNodesChange}
+                        className="scale-75"
+                      >
+                        <SwitchThumb />
+                      </Switch>
+                    </label>
+                  </TooltipTrigger>
+                  <TooltipContent>显示用户创建的节点</TooltipContent>
+                </Tooltip>
                 <Tooltip>
                   <TooltipTrigger asChild>
                     <label className="flex items-center gap-1.5 cursor-pointer group">
@@ -326,108 +350,82 @@ export const NodeManagementPage = () => {
                     {dragSortEnabled ? '关闭拖拽排序' : '开启拖拽排序'}
                   </TooltipContent>
                 </Tooltip>
-              )}
-            </div>
+              </div>
 
-            {/* Right: Actions */}
-            <div className="flex items-center gap-1.5">
-              {stats.online > 0 && (
+              {/* Right: Actions */}
+              <div className="flex items-center gap-1.5">
+                {stats.online > 0 && (
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <AdminButton
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setBroadcastURLDialogOpen(true)}
+                        className="h-7 px-2 text-xs border-blue-500/30 hover:border-blue-500/50 hover:bg-blue-500/10"
+                        icon={<Radio className="size-3.5 text-blue-500" strokeWidth={1.5} />}
+                      >
+                        <span className="hidden lg:inline text-blue-500">下发</span>
+                      </AdminButton>
+                    </TooltipTrigger>
+                    <TooltipContent>向 {stats.online} 个在线节点下发新API地址</TooltipContent>
+                  </Tooltip>
+                )}
+
+                {stats.updatable > 0 && (
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <AdminButton
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setBatchUpdateDialogOpen(true)}
+                        className="h-7 px-2 text-xs border-warning/30 hover:border-warning/50 hover:bg-warning-muted"
+                        icon={<ArrowUpCircle className="size-3.5 text-warning" strokeWidth={1.5} />}
+                      >
+                        <span className="hidden lg:inline text-warning">更新</span>
+                      </AdminButton>
+                    </TooltipTrigger>
+                    <TooltipContent>更新 {stats.updatable} 个节点</TooltipContent>
+                  </Tooltip>
+                )}
+
                 <Tooltip>
                   <TooltipTrigger asChild>
                     <AdminButton
-                      variant="outline"
+                      variant="ghost"
                       size="sm"
-                      onClick={() => setBroadcastURLDialogOpen(true)}
-                      className="h-7 px-2 text-xs border-blue-500/30 hover:border-blue-500/50 hover:bg-blue-500/10"
-                      icon={<Radio className="size-3.5 text-blue-500" strokeWidth={1.5} />}
+                      onClick={handleRefresh}
+                      className="h-7 w-7 p-0"
+                      icon={
+                        <RefreshCw
+                          key={refreshKey}
+                          className="size-3.5 animate-spin-once"
+                          strokeWidth={1.5}
+                        />
+                      }
                     >
-                      <span className="hidden lg:inline text-blue-500">下发</span>
+                      <span className="sr-only">刷新</span>
                     </AdminButton>
                   </TooltipTrigger>
-                  <TooltipContent>向 {stats.online} 个在线节点下发新API地址</TooltipContent>
+                  <TooltipContent>刷新列表</TooltipContent>
                 </Tooltip>
-              )}
 
-              {stats.updatable > 0 && (
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <AdminButton
-                      variant="outline"
-                      size="sm"
-                      onClick={() => setBatchUpdateDialogOpen(true)}
-                      className="h-7 px-2 text-xs border-warning/30 hover:border-warning/50 hover:bg-warning-muted"
-                      icon={<ArrowUpCircle className="size-3.5 text-warning" strokeWidth={1.5} />}
-                    >
-                      <span className="hidden lg:inline text-warning">更新</span>
-                    </AdminButton>
-                  </TooltipTrigger>
-                  <TooltipContent>更新 {stats.updatable} 个节点</TooltipContent>
-                </Tooltip>
-              )}
-
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <AdminButton
-                    variant="ghost"
-                    size="sm"
-                    onClick={handleRefresh}
-                    className="h-7 w-7 p-0"
-                    icon={
-                      <RefreshCw
-                        key={refreshKey}
-                        className="size-3.5 animate-spin-once"
-                        strokeWidth={1.5}
-                      />
-                    }
-                  >
-                    <span className="sr-only">刷新</span>
-                  </AdminButton>
-                </TooltipTrigger>
-                <TooltipContent>刷新列表</TooltipContent>
-              </Tooltip>
-
-              <AdminButton
-                variant="primary"
-                size="sm"
-                className="h-7 px-2.5 text-xs"
-                icon={<Plus className="size-3.5" strokeWidth={2} />}
-                onClick={() => {
-                  setCopyNodeData(undefined);
-                  setCreateDialogOpen(true);
-                }}
-              >
-                <span className="hidden sm:inline">新增节点</span>
-                <span className="sm:hidden">新增</span>
-              </AdminButton>
+                <AdminButton
+                  variant="primary"
+                  size="sm"
+                  className="h-7 px-2.5 text-xs"
+                  icon={<Plus className="size-3.5" strokeWidth={2} />}
+                  onClick={() => {
+                    setCopyNodeData(undefined);
+                    setCreateDialogOpen(true);
+                  }}
+                >
+                  新增节点
+                </AdminButton>
+              </div>
             </div>
-          </div>
-        </header>
+          </header>
 
-        {/* Node List */}
-        {isMobile ? (
-          <NodeListTable
-            nodes={nodes}
-            loading={isFetching || isReordering}
-            page={pagination.page}
-            pageSize={pagination.pageSize}
-            total={pagination.total}
-            resourceGroupsMap={resourceGroupsMap}
-            onPageChange={handlePageChange}
-            onPageSizeChange={handlePageSizeChange}
-            onEdit={handleEdit}
-            onDelete={handleDelete}
-            onActivate={handleActivate}
-            onDeactivate={handleDeactivate}
-            onGenerateToken={handleTokenGenerate}
-            onGetInstallScript={handleInstallScript}
-            onViewDetail={handleViewDetail}
-            onCopy={handleCopy}
-            onNotifyURL={handleNotifyURL}
-            onToggleMute={handleToggleMute}
-            enableDragSort={true}
-            onDragEnd={handleDragEnd}
-          />
-        ) : (
+          {/* Node List */}
           <AdminCard noPadding>
             <NodeListTable
               nodes={nodes}
@@ -452,8 +450,8 @@ export const NodeManagementPage = () => {
               onDragEnd={handleDragEnd}
             />
           </AdminCard>
-        )}
-      </div>
+        </div>
+      )}
 
       {/* Create Node Dialog/Sheet */}
       {isMobile ? (
