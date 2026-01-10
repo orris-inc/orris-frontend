@@ -490,7 +490,7 @@ export const CreateForwardRuleSheet: React.FC<CreateForwardRuleSheetProps> = ({
   const needsTunnelConfig = formData.ruleType === 'entry' || formData.ruleType === 'chain';
 
   return (
-    <Sheet open={open} onOpenChange={handleClose} repositionInputs>
+    <Sheet open={open} onOpenChange={handleClose}>
       <SheetContent>
         <SheetHeader>
           <SheetTitle className="flex items-center gap-2">

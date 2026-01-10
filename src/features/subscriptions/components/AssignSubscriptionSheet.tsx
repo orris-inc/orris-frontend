@@ -164,7 +164,7 @@ export const AssignSubscriptionSheet: React.FC<AssignSubscriptionSheetProps> = (
   if (!user) return null;
 
   return (
-    <Sheet open={open} onOpenChange={(o) => !submitting && onOpenChange(o)} repositionInputs>
+    <Sheet open={open} onOpenChange={(o) => !submitting && onOpenChange(o)}>
       <SheetContent>
         <SheetHeader>
           <SheetTitle className="flex items-center gap-2">

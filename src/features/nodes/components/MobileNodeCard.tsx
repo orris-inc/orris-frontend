@@ -299,7 +299,8 @@ export const MobileNodeCard = ({
         <ChevronDown
           className={cn(
             'size-5 text-muted-foreground shrink-0',
-            'transition-transform duration-200',
+            // Use iOS spring timing for consistency with CollapsibleContent
+            'transition-transform duration-[var(--spring-ios-default-duration)] ease-[var(--spring-ios-default)]',
             'motion-reduce:transition-none',
             isExpanded && 'rotate-180'
           )}

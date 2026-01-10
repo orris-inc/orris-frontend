@@ -11,3 +11,8 @@ export {
   supportsViewTransitions,
 } from './useViewTransition';
 export type { TransitionDirection } from './useViewTransition';
+
+export {
+  useKeyboardAwareness,
+  scrollFocusedIntoView,
+} from './useKeyboardAwareness';

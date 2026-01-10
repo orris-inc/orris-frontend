@@ -24,6 +24,7 @@ import {
   Loader2,
   Bot,
   Server,
+  Copy,
 } from 'lucide-react';
 import {
   Collapsible,
@@ -50,6 +51,7 @@ export interface MobileForwardRuleCardProps {
   onEnable: (rule: ForwardRule) => void;
   onDisable: (rule: ForwardRule) => void;
   onDelete: (rule: ForwardRule) => void;
+  onCopy?: (rule: ForwardRule) => void;
   onProbe?: (rule: ForwardRule) => void;
   isProbingThis?: boolean;
 }
@@ -166,6 +168,7 @@ export const MobileForwardRuleCard = ({
   onEnable,
   onDisable,
   onDelete,
+  onCopy,
   onProbe,
   isProbingThis = false,
 }: MobileForwardRuleCardProps) => {
@@ -402,6 +405,13 @@ export const MobileForwardRuleCard = ({
               onClick={() => onEdit(rule)}
               variant="primary"
             />
+            {onCopy && (
+              <MobileActionButton
+                icon={<Copy className="size-3.5" />}
+                label="复制"
+                onClick={() => onCopy(rule)}
+              />
+            )}
             {onProbe && (
               <MobileActionButton
                 icon={isProbingThis ? <Loader2 className="size-3.5 animate-spin" /> : <Activity className="size-3.5" />}

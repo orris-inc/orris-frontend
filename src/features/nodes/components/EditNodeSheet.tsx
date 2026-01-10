@@ -560,7 +560,7 @@ export const EditNodeSheet: React.FC<EditNodeSheetProps> = ({
   if (!node) return null;
 
   return (
-    <Sheet open={open} onOpenChange={handleClose} repositionInputs>
+    <Sheet open={open} onOpenChange={handleClose}>
       <SheetContent>
         <SheetHeader>
           <SheetTitle className="flex items-center gap-2">

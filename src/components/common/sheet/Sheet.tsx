@@ -8,15 +8,16 @@
  * Key Features:
  * - Native iOS-like gesture handling (swipe to dismiss)
  * - Built-in scroll handling (only draggable when scrolled to top)
- * - Keyboard avoidance via repositionInputs
+ * - Visual Viewport API for keyboard avoidance
  * - Safe area support for notched devices
  *
  * Usage Notes:
- * - For forms with inputs: repositionInputs handles keyboard automatically
+ * - For forms with inputs: keyboardAware mode handles keyboard automatically
  * - For scrollable content: use SheetBody which has data-vaul-no-drag
  * - scrollLockTimeout prevents accidental close after fast scrolling
  */
 
+import { useEffect, useRef } from 'react';
 import { Drawer } from 'vaul';
 import { X } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -32,14 +33,17 @@ import type { ComponentPropsWithoutRef } from 'react';
  * Default behavior:
  * - modal={true}: Prevents outside interaction
  * - dismissible={true}: Can close via drag/click/ESC
- * - repositionInputs={true}: Handles mobile keyboard automatically
  * - scrollLockTimeout={500}: Prevents accidental close after scrolling
+ * - repositionInputs={false}: Disabled because we handle keyboard via Visual Viewport API
  *
  * Override any prop as needed:
  * - handleOnly={true}: Only drag from handle (for complex scrollable content)
- * - repositionInputs={false}: Disable if you handle keyboard yourself
  */
-export const Sheet = Drawer.Root;
+type SheetProps = React.ComponentProps<typeof Drawer.Root>;
+
+export const Sheet = ({ repositionInputs = false, ...props }: SheetProps) => (
+  <Drawer.Root repositionInputs={repositionInputs} {...props} />
+);
 
 export const SheetTrigger = Drawer.Trigger;
 export const SheetPortal = Drawer.Portal;
@@ -68,70 +72,127 @@ interface SheetContentProps extends ComponentPropsWithoutRef<typeof Drawer.Conte
   showClose?: boolean;
   /** Show drag handle indicator (default: true) */
   showHandle?: boolean;
+  /** Enable keyboard-aware positioning using Visual Viewport API (default: true) */
+  keyboardAware?: boolean;
 }
 
 /**
  * Sheet Content - Main container
  *
  * Layout: Handle -> Children -> Close Button
- * Uses flex column with max-h-[85vh] for keyboard space
+ *
+ * Keyboard Handling:
+ * - Uses Visual Viewport API to track viewport changes
+ * - Positions Sheet at the top of the keyboard using visualViewport offset
+ * - Works reliably on iOS Safari
  */
 export const SheetContent = ({
   className,
   children,
   showClose = true,
   showHandle = true,
+  keyboardAware = true,
+  style,
   ...props
-}: SheetContentProps) => (
-  <SheetPortal>
-    <SheetOverlay />
-    <Drawer.Content
-      className={cn(
-        // Position & z-index
-        'fixed inset-x-0 bottom-0 z-50',
-        // Size - leave space for keyboard
-        'w-full max-h-[85vh]',
-        // Shape
-        'rounded-t-2xl',
-        // Background
-        'bg-background border-t border-border',
-        // Layout
-        'flex flex-col',
-        // Safe area for iOS
-        'pb-[env(safe-area-inset-bottom)]',
-        // Focus
-        'outline-none',
-        className
-      )}
-      {...props}
-    >
-      {/* Drag handle - always visible for affordance */}
-      {showHandle && (
-        <Drawer.Handle className="mx-auto mt-3 mb-2 h-1.5 w-10 rounded-full bg-muted-foreground/30" />
-      )}
+}: SheetContentProps) => {
+  const contentRef = useRef<HTMLDivElement>(null);
 
-      {children}
+  // iOS Safari keyboard handling using Visual Viewport API
+  // Mimics Vaul's internal approach: adjust height and bottom position
+  useEffect(() => {
+    if (!keyboardAware) return;
 
-      {/* Close button - absolute positioned */}
-      {showClose && (
-        <Drawer.Close
-          className={cn(
-            'absolute right-3 top-3',
-            'size-9 rounded-full',
-            'flex items-center justify-center',
-            'text-muted-foreground hover:text-foreground',
-            'hover:bg-muted/80 active:bg-muted',
-            'transition-colors',
-            'focus:outline-none focus-visible:ring-2 focus-visible:ring-ring'
-          )}
-        >
-          <X className="size-5" />
-          <span className="sr-only">Close</span>
-        </Drawer.Close>
-      )}
-    </Drawer.Content>
-  </SheetPortal>
-);
+    const content = contentRef.current;
+    const vv = window.visualViewport;
+    if (!content || !vv) return;
+
+    const updatePosition = () => {
+      // Calculate keyboard height
+      const keyboardHeight = window.innerHeight - vv.height;
+      const hasKeyboard = keyboardHeight > 100; // threshold
+
+      if (hasKeyboard) {
+        // Vaul-style positioning: adjust height and bottom
+        // This keeps the drawer above the keyboard
+        const maxSheetHeight = vv.height * 0.85;
+        content.style.height = `${maxSheetHeight}px`;
+        content.style.bottom = `${keyboardHeight}px`;
+      } else {
+        // Reset to CSS defaults
+        content.style.height = '';
+        content.style.bottom = '';
+      }
+    };
+
+    // Initial update
+    updatePosition();
+
+    // Listen for viewport changes
+    vv.addEventListener('resize', updatePosition);
+    vv.addEventListener('scroll', updatePosition);
+
+    return () => {
+      vv.removeEventListener('resize', updatePosition);
+      vv.removeEventListener('scroll', updatePosition);
+      // Cleanup styles
+      content.style.height = '';
+      content.style.bottom = '';
+    };
+  }, [keyboardAware]);
+
+  return (
+    <SheetPortal>
+      <SheetOverlay />
+      <Drawer.Content
+        ref={contentRef}
+        className={cn(
+          // Position & z-index
+          'fixed inset-x-0 bottom-0 z-50',
+          // Size - use dvh for dynamic viewport
+          'w-full max-h-[85dvh]',
+          // Shape
+          'rounded-t-2xl',
+          // Background
+          'bg-background border-t border-border',
+          // Layout
+          'flex flex-col',
+          // Safe area for iOS (JS will override when keyboard is visible)
+          'pb-[env(safe-area-inset-bottom)]',
+          // Focus
+          'outline-none',
+          className
+        )}
+        style={style}
+        {...props}
+      >
+        {/* Drag handle - always visible for affordance */}
+        {showHandle && (
+          <Drawer.Handle className="mx-auto mt-3 mb-2 h-1.5 w-10 rounded-full bg-muted-foreground/30" />
+        )}
+
+        {children}
+
+        {/* Close button - absolute positioned */}
+        {showClose && (
+          <Drawer.Close
+            className={cn(
+              'absolute right-3 top-3',
+              'size-9 rounded-full',
+              'flex items-center justify-center',
+              'text-muted-foreground hover:text-foreground',
+              'hover:bg-muted/80 active:bg-muted',
+              'transition-colors',
+              'focus:outline-none focus-visible:ring-2 focus-visible:ring-ring'
+            )}
+          >
+            <X className="size-5" />
+            <span className="sr-only">Close</span>
+          </Drawer.Close>
+        )}
+      </Drawer.Content>
+    </SheetPortal>
+  );
+};
 SheetContent.displayName = 'SheetContent';
 
 // ============================================================================
@@ -180,33 +241,88 @@ SheetDescription.displayName = 'SheetDescription';
 // ============================================================================
 
 /**
- * Sheet Body - Scrollable content area
+ * Sheet Body - Scrollable content area with keyboard-aware scrolling
  *
  * Key features:
  * - data-vaul-no-drag: Prevents drag-to-close while scrolling
  * - overscroll-contain: Prevents scroll chaining
+ * - Auto-scrolls focused inputs into view (iOS keyboard handling)
  * - Grows to fill available space
- *
- * Vaul's built-in behavior: Only allows drag-to-close when scrolled to top
  */
 export const SheetBody = ({
   className,
   ...props
-}: React.HTMLAttributes<HTMLDivElement>) => (
-  <div
-    data-vaul-no-drag
-    className={cn(
-      // Flex behavior
-      'flex-1 min-h-0',
-      // Scrolling
-      'overflow-y-auto overscroll-contain',
-      // Padding
-      'px-6',
-      className
-    )}
-    {...props}
-  />
-);
+}: React.HTMLAttributes<HTMLDivElement>) => {
+  const bodyRef = useRef<HTMLDivElement>(null);
+
+  // Handle focus events to scroll inputs into view
+  useEffect(() => {
+    const body = bodyRef.current;
+    if (!body) return;
+
+    const scrollInputIntoView = (input: HTMLElement) => {
+      // Get input position relative to scroll container
+      const bodyRect = body.getBoundingClientRect();
+      const inputRect = input.getBoundingClientRect();
+
+      // Calculate where input is relative to the scroll container
+      const inputTop = inputRect.top - bodyRect.top + body.scrollTop;
+      const inputBottom = inputTop + inputRect.height;
+
+      // Visible area within the scroll container
+      const visibleTop = body.scrollTop;
+      const visibleBottom = visibleTop + body.clientHeight;
+
+      // Check if input is fully visible
+      if (inputTop < visibleTop || inputBottom > visibleBottom) {
+        // Scroll to center the input in the visible area
+        const targetScroll = inputTop - (body.clientHeight / 2) + (inputRect.height / 2);
+        body.scrollTo({
+          top: Math.max(0, targetScroll),
+          behavior: 'smooth',
+        });
+      }
+    };
+
+    const handleFocusIn = (e: FocusEvent) => {
+      const target = e.target;
+      if (!(target instanceof HTMLElement)) return;
+
+      // Only handle input-like elements
+      const isInput = target.tagName === 'INPUT' ||
+                      target.tagName === 'TEXTAREA' ||
+                      target.tagName === 'SELECT' ||
+                      target.isContentEditable;
+      if (!isInput) return;
+
+      // Multiple attempts to handle iOS keyboard animation timing
+      // iOS keyboard animation takes ~300ms
+      setTimeout(() => scrollInputIntoView(target), 100);
+      setTimeout(() => scrollInputIntoView(target), 350);
+      setTimeout(() => scrollInputIntoView(target), 500);
+    };
+
+    body.addEventListener('focusin', handleFocusIn);
+    return () => body.removeEventListener('focusin', handleFocusIn);
+  }, []);
+
+  return (
+    <div
+      ref={bodyRef}
+      data-vaul-no-drag
+      className={cn(
+        // Flex behavior
+        'flex-1 min-h-0',
+        // Scrolling
+        'overflow-y-auto overscroll-contain',
+        // Padding
+        'px-6',
+        className
+      )}
+      {...props}
+    />
+  );
+};
 SheetBody.displayName = 'SheetBody';
 
 // ============================================================================

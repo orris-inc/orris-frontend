@@ -147,7 +147,7 @@ export const CreateUserSheet: React.FC<CreateUserSheetProps> = ({
   const strength = getPasswordStrength();
 
   return (
-    <Sheet open={open} onOpenChange={(isOpen) => !isOpen && handleClose()} repositionInputs>
+    <Sheet open={open} onOpenChange={(isOpen) => !isOpen && handleClose()}>
       <SheetContent>
         <SheetHeader className="pb-2">
           <SheetTitle className="flex items-center gap-2">

@@ -242,7 +242,7 @@ export const EditPlanSheet: React.FC<EditPlanSheetProps> = ({
   const isFormValid = formData.pricings.length > 0;
 
   return (
-    <Sheet open={open} onOpenChange={handleOpenChange} repositionInputs>
+    <Sheet open={open} onOpenChange={handleOpenChange}>
       <SheetContent>
         <SheetHeader className="pb-2">
           <SheetTitle className="flex items-center gap-2">

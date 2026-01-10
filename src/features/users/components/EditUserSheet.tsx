@@ -122,7 +122,7 @@ export const EditUserSheet: React.FC<EditUserSheetProps> = ({
   const currentStatus = STATUS_OPTIONS.find((s) => s.value === status);
 
   return (
-    <Sheet open={open} onOpenChange={onOpenChange} repositionInputs>
+    <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent>
         <SheetHeader>
           <SheetTitle className="flex items-center gap-2">

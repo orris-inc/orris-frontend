@@ -165,7 +165,7 @@ export const DuplicateSubscriptionSheet: React.FC<DuplicateSubscriptionSheetProp
   if (!subscription) return null;
 
   return (
-    <Sheet open={open} onOpenChange={(o) => !submitting && onOpenChange(o)} repositionInputs>
+    <Sheet open={open} onOpenChange={(o) => !submitting && onOpenChange(o)}>
       <SheetContent className="max-h-[95vh]">
         <SheetHeader className="pb-2">
           <SheetTitle className="flex items-center gap-2">

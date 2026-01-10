@@ -30,6 +30,7 @@ import {
 import { MobileStatsScroller } from '@/components/mobile/admin';
 import { AdminBadge } from '@/components/admin';
 import { Skeleton } from '@/components/common/Skeleton';
+import { Collapsible, CollapsibleContent } from '@/components/common/Collapsible';
 import { cn } from '@/lib/utils';
 import { MobileForwardRuleCard } from './MobileForwardRuleCard';
 import type { ForwardRule, ForwardAgent, ForwardStatus, ForwardProtocol, RuleOverallStatusResponse } from '@/api/forward';
@@ -56,6 +57,7 @@ export interface MobileForwardRuleManagementProps {
   onEnable: (rule: ForwardRule) => void;
   onDisable: (rule: ForwardRule) => void;
   onDelete: (rule: ForwardRule) => void;
+  onCopy?: (rule: ForwardRule) => void;
   onProbe?: (rule: ForwardRule) => void;
   probingRuleId?: string | null;
   onPageChange: (page: number) => void;
@@ -225,6 +227,7 @@ export const MobileForwardRuleManagement = ({
   onEnable,
   onDisable,
   onDelete,
+  onCopy,
   onProbe,
   probingRuleId,
   onPageChange,
@@ -437,83 +440,85 @@ export const MobileForwardRuleManagement = ({
         </button>
       </div>
 
-      {/* Filter Panel (Collapsible) */}
-      {filterPanelOpen && (
-        <div className="bg-foreground/5 rounded-xl border border-border/50 p-3 space-y-3">
-          {/* Status Filter */}
-          <div className="space-y-1.5">
-            <label className="text-xs font-medium text-muted-foreground">状态</label>
-            <div className="flex flex-wrap gap-2">
-              {STATUS_FILTERS.map((filter) => (
-                <button
-                  key={filter.value}
-                  onClick={() => setStatusFilter(filter.value)}
-                  className={cn(
-                    'px-3 py-1.5 rounded-lg text-xs font-medium transition-colors',
-                    statusFilter === filter.value
-                      ? 'bg-primary text-primary-foreground'
-                      : 'bg-foreground/5 text-muted-foreground hover:bg-foreground/10'
-                  )}
-                >
-                  {filter.label}
-                </button>
-              ))}
+      {/* Filter Panel (Collapsible with iOS spring animation) */}
+      <Collapsible open={filterPanelOpen} onOpenChange={setFilterPanelOpen}>
+        <CollapsibleContent className="text-base">
+          <div className="bg-foreground/5 rounded-xl border border-border/50 p-3 space-y-3">
+            {/* Status Filter */}
+            <div className="space-y-1.5">
+              <label className="text-xs font-medium text-muted-foreground">状态</label>
+              <div className="flex flex-wrap gap-2">
+                {STATUS_FILTERS.map((filter) => (
+                  <button
+                    key={filter.value}
+                    onClick={() => setStatusFilter(filter.value)}
+                    className={cn(
+                      'px-3 py-1.5 rounded-lg text-xs font-medium transition-colors',
+                      statusFilter === filter.value
+                        ? 'bg-primary text-primary-foreground'
+                        : 'bg-foreground/5 text-muted-foreground hover:bg-foreground/10'
+                    )}
+                  >
+                    {filter.label}
+                  </button>
+                ))}
+              </div>
             </div>
-          </div>
 
-          {/* Protocol Filter */}
-          <div className="space-y-1.5">
-            <label className="text-xs font-medium text-muted-foreground">协议</label>
-            <div className="flex flex-wrap gap-2">
-              {PROTOCOL_FILTERS.map((filter) => (
-                <button
-                  key={filter.value}
-                  onClick={() => setProtocolFilter(filter.value)}
-                  className={cn(
-                    'px-3 py-1.5 rounded-lg text-xs font-medium transition-colors',
-                    protocolFilter === filter.value
-                      ? 'bg-primary text-primary-foreground'
-                      : 'bg-foreground/5 text-muted-foreground hover:bg-foreground/10'
-                  )}
-                >
-                  {filter.label}
-                </button>
-              ))}
+            {/* Protocol Filter */}
+            <div className="space-y-1.5">
+              <label className="text-xs font-medium text-muted-foreground">协议</label>
+              <div className="flex flex-wrap gap-2">
+                {PROTOCOL_FILTERS.map((filter) => (
+                  <button
+                    key={filter.value}
+                    onClick={() => setProtocolFilter(filter.value)}
+                    className={cn(
+                      'px-3 py-1.5 rounded-lg text-xs font-medium transition-colors',
+                      protocolFilter === filter.value
+                        ? 'bg-primary text-primary-foreground'
+                        : 'bg-foreground/5 text-muted-foreground hover:bg-foreground/10'
+                    )}
+                  >
+                    {filter.label}
+                  </button>
+                ))}
+              </div>
             </div>
-          </div>
 
-          {/* Rule Type Filter */}
-          <div className="space-y-1.5">
-            <label className="text-xs font-medium text-muted-foreground">类型</label>
-            <div className="flex flex-wrap gap-2">
-              {RULE_TYPE_FILTERS.map((filter) => (
-                <button
-                  key={filter.value}
-                  onClick={() => setRuleTypeFilter(filter.value)}
-                  className={cn(
-                    'px-3 py-1.5 rounded-lg text-xs font-medium transition-colors',
-                    ruleTypeFilter === filter.value
-                      ? 'bg-primary text-primary-foreground'
-                      : 'bg-foreground/5 text-muted-foreground hover:bg-foreground/10'
-                  )}
-                >
-                  {filter.label}
-                </button>
-              ))}
+            {/* Rule Type Filter */}
+            <div className="space-y-1.5">
+              <label className="text-xs font-medium text-muted-foreground">类型</label>
+              <div className="flex flex-wrap gap-2">
+                {RULE_TYPE_FILTERS.map((filter) => (
+                  <button
+                    key={filter.value}
+                    onClick={() => setRuleTypeFilter(filter.value)}
+                    className={cn(
+                      'px-3 py-1.5 rounded-lg text-xs font-medium transition-colors',
+                      ruleTypeFilter === filter.value
+                        ? 'bg-primary text-primary-foreground'
+                        : 'bg-foreground/5 text-muted-foreground hover:bg-foreground/10'
+                    )}
+                  >
+                    {filter.label}
+                  </button>
+                ))}
+              </div>
             </div>
-          </div>
 
-          {/* Clear Filters Button */}
-          {hasFilter && (
-            <button
-              onClick={clearFilters}
-              className="w-full py-2 text-xs font-medium text-primary hover:underline"
-            >
-              清除所有筛选
-            </button>
-          )}
-        </div>
-      )}
+            {/* Clear Filters Button */}
+            {hasFilter && (
+              <button
+                onClick={clearFilters}
+                className="w-full py-2 text-xs font-medium text-primary hover:underline"
+              >
+                清除所有筛选
+              </button>
+            )}
+          </div>
+        </CollapsibleContent>
+      </Collapsible>
 
       {/* Active Filter Badge */}
       {hasFilter && (
@@ -549,6 +554,7 @@ export const MobileForwardRuleManagement = ({
               onEnable={onEnable}
               onDisable={onDisable}
               onDelete={onDelete}
+              onCopy={onCopy}
               onProbe={onProbe}
               isProbingThis={probingRuleId === rule.id}
             />

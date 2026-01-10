@@ -38,6 +38,7 @@ import {
   X,
   Shield,
   Globe,
+  Copy,
 } from 'lucide-react';
 import { useRuleOverallStatus } from '../hooks/useForwardRules';
 import type { ForwardRule, ForwardAgent, RuleSyncStatus, RuleRunStatus, AgentRuleSyncStatus } from '@/api/forward';
@@ -48,6 +49,7 @@ interface ForwardRuleDetailDialogProps {
   open: boolean;
   rule: ForwardRule | null;
   onClose: () => void;
+  onCopy?: (rule: ForwardRule) => void;
   agents?: ForwardAgent[];
   nodes?: Node[];
   resourceGroups?: ResourceGroup[];
@@ -316,6 +318,7 @@ export const ForwardRuleDetailDialog: React.FC<ForwardRuleDetailDialogProps> = (
   open,
   rule,
   onClose,
+  onCopy,
   agents = [],
   nodes = [],
   resourceGroups = [],
@@ -439,15 +442,28 @@ export const ForwardRuleDetailDialog: React.FC<ForwardRuleDetailDialogProps> = (
               </div>
             </div>
 
-            {/* Close button */}
-            <Button
-              variant="ghost"
-              size="sm"
-              className="size-8 p-0 rounded-full"
-              onClick={onClose}
-            >
-              <X className="size-4" />
-            </Button>
+            {/* Action buttons */}
+            <div className="flex items-center gap-1">
+              {onCopy && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="size-8 p-0 rounded-full"
+                  onClick={() => onCopy(rule)}
+                  title="复制规则"
+                >
+                  <Copy className="size-4" />
+                </Button>
+              )}
+              <Button
+                variant="ghost"
+                size="sm"
+                className="size-8 p-0 rounded-full"
+                onClick={onClose}
+              >
+                <X className="size-4" />
+              </Button>
+            </div>
           </div>
         </DialogHeader>
 

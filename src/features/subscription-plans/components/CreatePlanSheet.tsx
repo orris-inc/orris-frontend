@@ -294,7 +294,7 @@ export const CreatePlanSheet: React.FC<CreatePlanSheetProps> = ({
   const isFormValid = formData.name.trim() && formData.slug.trim() && formData.pricings.length > 0;
 
   return (
-    <Sheet open={open} onOpenChange={handleClose} repositionInputs>
+    <Sheet open={open} onOpenChange={handleClose}>
       <SheetContent>
         <SheetHeader className="pb-2">
           <SheetTitle className="flex items-center gap-2">

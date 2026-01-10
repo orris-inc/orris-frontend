@@ -67,12 +67,20 @@ const AccordionTrigger = forwardRef<
       ref={ref}
       className={cn(
         'flex flex-1 items-center justify-between py-4 font-medium transition-all hover:underline [&[data-state=open]>svg]:rotate-180',
-        className
+        className,
       )}
       {...props}
     >
       {children}
-      <ChevronDown className="size-4 shrink-0 transition-transform duration-200" />
+      <ChevronDown
+        className={cn(
+          'size-4 shrink-0',
+          'transition-transform',
+          'duration-[var(--spring-ios-default-duration)]',
+          'ease-[var(--spring-ios-default)]',
+          'motion-reduce:transition-none',
+        )}
+      />
     </AccordionPrimitive.Trigger>
   </AccordionPrimitive.Header>
 ));
@@ -81,6 +89,7 @@ AccordionTrigger.displayName = AccordionPrimitive.Trigger.displayName;
 
 /**
  * AccordionContent 组件
+ * Uses CSS Grid trick for smooth height animation (0 to auto)
  */
 const AccordionContent = forwardRef<
   React.ElementRef<typeof AccordionPrimitive.Content>,
@@ -88,10 +97,26 @@ const AccordionContent = forwardRef<
 >(({ className, children, ...props }, ref) => (
   <AccordionPrimitive.Content
     ref={ref}
-    className="overflow-hidden text-sm transition-all data-[state=closed]:animate-accordion-up data-[state=open]:animate-accordion-down"
+    className={cn(
+      // CSS Grid trick for smooth height animation (0 to auto)
+      'grid text-sm',
+      // Grid row transition - smoother than keyframes for height
+      'transition-[grid-template-rows,opacity]',
+      'duration-[var(--spring-ios-default-duration)]',
+      'ease-[var(--spring-ios-default)]',
+      // Closed state: 0fr = 0 height
+      'data-[state=closed]:grid-rows-[0fr] data-[state=closed]:opacity-0',
+      // Open state: 1fr = auto height
+      'data-[state=open]:grid-rows-[1fr] data-[state=open]:opacity-100',
+      // Respect reduced motion preference
+      'motion-reduce:transition-none',
+    )}
     {...props}
   >
-    <div className={cn('pb-4 pt-0', className)}>{children}</div>
+    {/* Inner wrapper must have overflow:hidden for grid trick to work */}
+    <div className={cn('overflow-hidden', className)}>
+      <div className="pb-4 pt-0">{children}</div>
+    </div>
   </AccordionPrimitive.Content>
 ));
 

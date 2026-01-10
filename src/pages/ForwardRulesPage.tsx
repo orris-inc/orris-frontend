@@ -331,6 +331,7 @@ export const ForwardRulesPage = () => {
             onEnable={handleEnable}
             onDisable={handleDisable}
             onDelete={handleDelete}
+            onCopy={handleCopy}
             onProbe={handleProbe}
             probingRuleId={probingRuleId}
             onPageChange={handlePageChange}
@@ -644,6 +645,11 @@ export const ForwardRulesPage = () => {
         onClose={() => {
           setDetailDialogOpen(false);
           setSelectedRule(null);
+        }}
+        onCopy={(rule) => {
+          setDetailDialogOpen(false);
+          setSelectedRule(null);
+          handleCopy(rule);
         }}
         agents={forwardAgents}
         nodes={nodes}

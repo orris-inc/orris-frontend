@@ -112,7 +112,7 @@ export const ResetPasswordSheet: React.FC<ResetPasswordSheetProps> = ({
   if (!user) return null;
 
   return (
-    <Sheet open={open} onOpenChange={handleOpenChange} repositionInputs>
+    <Sheet open={open} onOpenChange={handleOpenChange}>
       <SheetContent>
         <SheetHeader>
           <SheetTitle className="flex items-center gap-2">

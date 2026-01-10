@@ -84,10 +84,10 @@ export const MobileDataCard = ({
     canExpand && 'cursor-pointer'
   );
 
-  // Chevron icon classes with rotation animation
+  // Chevron icon classes with rotation animation (iOS spring timing)
   const chevronClasses = cn(
     'size-5 text-muted-foreground shrink-0',
-    'transition-transform duration-200',
+    'transition-transform duration-[var(--spring-ios-default-duration)] ease-[var(--spring-ios-default)]',
     // Respect reduced motion preference
     'motion-reduce:transition-none',
     isExpanded && 'rotate-180'

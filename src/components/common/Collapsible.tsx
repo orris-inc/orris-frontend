@@ -44,12 +44,24 @@ const CollapsibleContent = forwardRef<
   <CollapsiblePrimitive.Content
     ref={ref}
     className={cn(
-      'overflow-hidden text-sm transition-all data-[state=closed]:animate-[collapsible-up_200ms_ease-out] data-[state=open]:animate-[collapsible-down_200ms_ease-out]',
+      // CSS Grid trick for smooth height animation (0 to auto)
+      'grid text-sm',
+      // Grid row transition - smoother than keyframes for height
+      'transition-[grid-template-rows,opacity]',
+      'duration-[var(--spring-ios-default-duration)]',
+      'ease-[var(--spring-ios-default)]',
+      // Closed state: 0fr = 0 height
+      'data-[state=closed]:grid-rows-[0fr] data-[state=closed]:opacity-0',
+      // Open state: 1fr = auto height
+      'data-[state=open]:grid-rows-[1fr] data-[state=open]:opacity-100',
+      // Respect reduced motion preference
+      'motion-reduce:transition-none',
       className,
     )}
     {...props}
   >
-    <div className="px-4 py-2">{children}</div>
+    {/* Inner wrapper must have overflow:hidden for grid trick to work */}
+    <div className="overflow-hidden">{children}</div>
   </CollapsiblePrimitive.Content>
 ));
 CollapsibleContent.displayName = CollapsiblePrimitive.Content.displayName;

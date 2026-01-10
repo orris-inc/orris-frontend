@@ -219,7 +219,7 @@ export const EditForwardAgentSheet: React.FC<EditForwardAgentSheetProps> = ({
   if (!agent) return null;
 
   return (
-    <Sheet open={open} onOpenChange={(o) => !loading && onOpenChange(o)} repositionInputs>
+    <Sheet open={open} onOpenChange={(o) => !loading && onOpenChange(o)}>
       <SheetContent>
         <SheetHeader>
           <SheetTitle className="flex items-center gap-2">

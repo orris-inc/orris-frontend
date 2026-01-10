@@ -125,7 +125,7 @@ export const CreateResourceGroupSheet: React.FC<CreateResourceGroupSheetProps> =
   const isFormValid = name.trim() && planId;
 
   return (
-    <Sheet open={open} onOpenChange={(o) => !loading && handleOpenChange(o)} repositionInputs>
+    <Sheet open={open} onOpenChange={(o) => !loading && handleOpenChange(o)}>
       <SheetContent>
         <SheetHeader>
           <SheetTitle className="flex items-center gap-2">

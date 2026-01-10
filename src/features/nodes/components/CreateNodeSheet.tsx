@@ -917,7 +917,7 @@ export const CreateNodeSheet: React.FC<CreateNodeSheetProps> = ({
   const hasOtherSettings = Boolean(formData.region || formData.tagsInput || formData.sortOrder);
 
   return (
-    <Sheet open={open} onOpenChange={(o) => !loading && onOpenChange(o)} repositionInputs>
+    <Sheet open={open} onOpenChange={(o) => !loading && onOpenChange(o)}>
       <SheetContent>
         <SheetHeader>
           <SheetTitle className="flex items-center gap-3">

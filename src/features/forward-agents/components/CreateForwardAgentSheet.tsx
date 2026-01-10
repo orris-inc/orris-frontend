@@ -151,7 +151,7 @@ export const CreateForwardAgentSheet: React.FC<CreateForwardAgentSheetProps> = (
   const isFormValid = formData.name.trim();
 
   return (
-    <Sheet open={open} onOpenChange={(o) => !loading && onOpenChange(o)} repositionInputs>
+    <Sheet open={open} onOpenChange={(o) => !loading && onOpenChange(o)}>
       <SheetContent>
         <SheetHeader>
           <SheetTitle className="flex items-center gap-2">

@@ -108,7 +108,7 @@ export const EditResourceGroupSheet: React.FC<EditResourceGroupSheetProps> = ({
   const plan = plansMap[resourceGroup.planId];
 
   return (
-    <Sheet open={open} onOpenChange={handleOpenChange} repositionInputs>
+    <Sheet open={open} onOpenChange={handleOpenChange}>
       <SheetContent>
         <SheetHeader>
           <SheetTitle className="flex items-center gap-2">
