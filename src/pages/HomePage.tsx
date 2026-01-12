@@ -15,7 +15,7 @@ export const HomePage = () => {
   const { logout, isLoading } = useAuth();
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4 bg-background">
+    <div className="min-h-viewport flex items-center justify-center p-4 bg-background">
       <div className="w-full max-w-2xl">
         <div className={cardStyles}>
           <div className="p-8">

@@ -1,11 +1,12 @@
 /**
- * MobileForwardRuleManagement - iOS 26 Liquid Glass styled forward rule management for mobile
+ * MobileForwardRuleManagement - iOS-style forward rule management for mobile
  *
- * Designed to work inside AdminLayout:
- * - Compact inline header with title and actions
- * - Stats scroller for quick overview
- * - Search input with dropdown filters (status, protocol, rule type)
- * - Pull-to-refresh pattern (simulated via refresh button)
+ * Redesigned with:
+ * - Compact stats scroller for quick overview
+ * - iOS-style search bar
+ * - Segmented filter for quick status/type filtering
+ * - Swipe-action cards with tap-to-detail
+ * - Drag sort support
  * - Card list with pagination
  * - Empty and loading states with proper feedback
  * - All touch targets minimum 44px
@@ -17,25 +18,20 @@ import {
   RefreshCw,
   ArrowLeftRight,
   CheckCircle2,
-  XCircle,
   Activity,
-  RotateCw,
   Search,
   X,
   ChevronLeft,
   ChevronRight,
-  Filter,
   GripVertical,
 } from 'lucide-react';
-import { MobileStatsScroller } from '@/components/mobile/admin';
+import { MobileSegmentedFilter, type SegmentOption } from '@/components/mobile/admin';
 import { AdminBadge } from '@/components/admin';
 import { DraggableMobileList } from '@/components/admin/DraggableMobileList';
 import { Skeleton } from '@/components/common/Skeleton';
-import { Collapsible, CollapsibleContent } from '@/components/common/Collapsible';
 import { cn } from '@/lib/utils';
 import { MobileForwardRuleCard } from './MobileForwardRuleCard';
-import type { ForwardRule, ForwardAgent, ForwardStatus, ForwardProtocol, RuleOverallStatusResponse } from '@/api/forward';
-import type { Node } from '@/api/node';
+import type { ForwardRule, ForwardAgent, RuleOverallStatusResponse } from '@/api/forward';
 
 // ============================================================================
 // Types
@@ -44,7 +40,6 @@ import type { Node } from '@/api/node';
 export interface MobileForwardRuleManagementProps {
   rules: ForwardRule[];
   agentsMap?: Record<string, ForwardAgent>;
-  nodes?: Node[];
   polledStatusMap?: Record<string, RuleOverallStatusResponse>;
   pollingRuleIds?: string[];
   loading?: boolean;
@@ -55,46 +50,79 @@ export interface MobileForwardRuleManagementProps {
   onRefresh: () => void;
   onCreate: () => void;
   onEdit: (rule: ForwardRule) => void;
-  onEnable: (rule: ForwardRule) => void;
-  onDisable: (rule: ForwardRule) => void;
+  onCopy: (rule: ForwardRule) => void;
+  onToggleStatus: (rule: ForwardRule) => void;
   onDelete: (rule: ForwardRule) => void;
-  onCopy?: (rule: ForwardRule) => void;
-  onProbe?: (rule: ForwardRule) => void;
-  probingRuleId?: string | null;
   onPageChange: (page: number) => void;
+  /** Callback when viewing rule details */
+  onViewDetail: (rule: ForwardRule) => void;
   // Drag sort props
   onDragEnd?: (activeId: string, overId: string, oldIndex: number, newIndex: number) => void;
   isReordering?: boolean;
 }
 
-type StatusFilter = 'all' | ForwardStatus;
-type ProtocolFilter = 'all' | ForwardProtocol;
-type RuleTypeFilter = 'all' | 'direct' | 'entry' | 'chain' | 'direct_chain';
+// Filter type combining status and rule type
+type SegmentFilter = 'all' | 'enabled' | 'disabled' | 'direct' | 'entry' | 'chain' | 'direct_chain';
 
 // ============================================================================
 // Filter Options
 // ============================================================================
 
-const STATUS_FILTERS: { value: StatusFilter; label: string }[] = [
-  { value: 'all', label: '全部状态' },
+const SEGMENT_FILTER_OPTIONS: SegmentOption<SegmentFilter>[] = [
+  { value: 'all', label: '全部' },
   { value: 'enabled', label: '启用' },
-  { value: 'disabled', label: '禁用' },
-];
-
-const PROTOCOL_FILTERS: { value: ProtocolFilter; label: string }[] = [
-  { value: 'all', label: '全部协议' },
-  { value: 'tcp', label: 'TCP' },
-  { value: 'udp', label: 'UDP' },
-  { value: 'both', label: 'TCP/UDP' },
-];
-
-const RULE_TYPE_FILTERS: { value: RuleTypeFilter; label: string }[] = [
-  { value: 'all', label: '全部类型' },
+  { value: 'disabled', label: '禁用', hideWhenZero: true },
   { value: 'direct', label: '直连' },
   { value: 'entry', label: '入口' },
-  { value: 'chain', label: '链式' },
-  { value: 'direct_chain', label: '直连链' },
+  { value: 'chain', label: '链式', hideWhenZero: true },
+  { value: 'direct_chain', label: '直连链', hideWhenZero: true },
 ];
+
+// ============================================================================
+// Stats Summary (compact inline style)
+// ============================================================================
+
+const StatsSummary = ({
+  total,
+  enabled,
+  running,
+  loading,
+}: {
+  total: number;
+  enabled: number;
+  running: number;
+  loading: boolean;
+}) => {
+  if (loading) {
+    return (
+      <div className="flex items-center justify-between px-1">
+        <Skeleton className="h-5 w-20" />
+        <Skeleton className="h-5 w-20" />
+        <Skeleton className="h-5 w-20" />
+      </div>
+    );
+  }
+
+  return (
+    <div className="flex items-center justify-between text-xs px-1">
+      <div className="flex items-center gap-1.5">
+        <ArrowLeftRight className="size-3.5 text-muted-foreground" />
+        <span className="text-muted-foreground">总数</span>
+        <span className="font-semibold text-foreground tabular-nums">{total}</span>
+      </div>
+      <div className="flex items-center gap-1.5">
+        <CheckCircle2 className="size-3.5 text-success" />
+        <span className="text-muted-foreground">启用</span>
+        <span className="font-semibold text-success tabular-nums">{enabled}</span>
+      </div>
+      <div className="flex items-center gap-1.5">
+        <Activity className="size-3.5 text-info" />
+        <span className="text-muted-foreground">运行</span>
+        <span className="font-semibold text-info tabular-nums">{running}</span>
+      </div>
+    </div>
+  );
+};
 
 // ============================================================================
 // Loading Skeleton
@@ -127,33 +155,50 @@ const LoadingSkeleton = () => (
 interface EmptyStateProps {
   hasFilter: boolean;
   onClearFilter: () => void;
+  onCreate: () => void;
 }
 
-const EmptyState = ({ hasFilter, onClearFilter }: EmptyStateProps) => (
+const EmptyState = ({ hasFilter, onClearFilter, onCreate }: EmptyStateProps) => (
   <div className="flex flex-col items-center justify-center py-16 px-4">
-    <div className="size-16 rounded-full bg-muted/50 flex items-center justify-center mb-4">
-      <ArrowLeftRight className="size-8 text-muted-foreground" />
+    <div className="size-20 rounded-full bg-muted/30 flex items-center justify-center mb-4">
+      {hasFilter ? (
+        <Search className="size-10 text-muted-foreground/50" />
+      ) : (
+        <ArrowLeftRight className="size-10 text-muted-foreground/50" />
+      )}
     </div>
-    <p className="text-base font-medium text-foreground mb-1">
+    <p className="text-base font-medium text-foreground mb-1 text-center">
       {hasFilter ? '未找到匹配规则' : '暂无转发规则'}
     </p>
-    <p className="text-sm text-muted-foreground text-center mb-4">
-      {hasFilter ? '尝试调整搜索条件或清除筛选' : '点击右上角按钮创建第一个规则'}
+    <p className="text-sm text-muted-foreground text-center mb-5">
+      {hasFilter ? '尝试调整搜索条件或清除筛选' : '点击下方按钮创建第一个规则'}
     </p>
-    {hasFilter && (
-      <button
-        onClick={onClearFilter}
-        className={cn(
-          'px-4 py-2 min-h-[44px]',
-          'rounded-full',
-          'text-sm font-medium',
-          'bg-primary text-primary-foreground',
-          'motion-safe:active:scale-[0.97]'
-        )}
-      >
-        清除筛选
-      </button>
-    )}
+    <button
+      type="button"
+      onClick={hasFilter ? onClearFilter : onCreate}
+      className={cn(
+        'flex items-center gap-2',
+        'px-5 py-2.5 min-h-[44px]',
+        'rounded-full',
+        'text-sm font-medium',
+        hasFilter
+          ? 'bg-muted text-foreground'
+          : 'bg-primary text-primary-foreground',
+        'active:scale-[0.97] transition-transform'
+      )}
+    >
+      {hasFilter ? (
+        <>
+          <X className="size-4" />
+          清除筛选
+        </>
+      ) : (
+        <>
+          <Plus className="size-4" />
+          创建规则
+        </>
+      )}
+    </button>
   </div>
 );
 
@@ -174,38 +219,100 @@ const Pagination = ({ page, total, pageSize, onPageChange }: PaginationProps) =>
   if (totalPages <= 1) return null;
 
   return (
-    <div className="flex items-center justify-center gap-4 py-4 px-4">
+    <div className="flex items-center justify-center gap-6 py-4">
       <button
+        type="button"
         onClick={() => onPageChange(page - 1)}
         disabled={page <= 1}
         className={cn(
           'size-10 rounded-full',
           'flex items-center justify-center',
-          'bg-foreground/5',
-          'transition-colors',
-          page <= 1 ? 'opacity-40' : 'hover:bg-foreground/10 motion-safe:active:scale-[0.97]'
+          'bg-muted/50',
+          'transition-all',
+          page <= 1
+            ? 'opacity-40'
+            : 'active:scale-[0.95] active:bg-muted'
         )}
       >
         <ChevronLeft className="size-5" />
       </button>
 
       <span className="text-sm text-muted-foreground tabular-nums">
-        {page} / {totalPages}
+        <span className="font-medium text-foreground">{page}</span>
+        {' / '}
+        {totalPages}
       </span>
 
       <button
+        type="button"
         onClick={() => onPageChange(page + 1)}
         disabled={page >= totalPages}
         className={cn(
           'size-10 rounded-full',
           'flex items-center justify-center',
-          'bg-foreground/5',
-          'transition-colors',
-          page >= totalPages ? 'opacity-40' : 'hover:bg-foreground/10 motion-safe:active:scale-[0.97]'
+          'bg-muted/50',
+          'transition-all',
+          page >= totalPages
+            ? 'opacity-40'
+            : 'active:scale-[0.95] active:bg-muted'
         )}
       >
         <ChevronRight className="size-5" />
       </button>
+    </div>
+  );
+};
+
+// ============================================================================
+// Search Bar Component
+// ============================================================================
+
+const SearchBar = ({
+  value,
+  onChange,
+  onClear,
+  disabled = false,
+}: {
+  value: string;
+  onChange: (value: string) => void;
+  onClear: () => void;
+  disabled?: boolean;
+}) => {
+  return (
+    <div
+      className={cn(
+        'flex items-center gap-2',
+        'h-10 px-3',
+        'bg-muted/50 rounded-xl',
+        'focus-within:bg-muted/70',
+        'transition-colors',
+        disabled && 'opacity-50 pointer-events-none'
+      )}
+    >
+      <Search className="size-4 text-muted-foreground shrink-0" />
+      <input
+        type="text"
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        placeholder={disabled ? '排序中...' : '搜索规则名称...'}
+        disabled={disabled}
+        className={cn(
+          'flex-1 min-w-0',
+          'bg-transparent',
+          'text-sm text-foreground placeholder:text-muted-foreground/60',
+          'focus:outline-none',
+          'disabled:cursor-not-allowed'
+        )}
+      />
+      {value && !disabled && (
+        <button
+          type="button"
+          onClick={onClear}
+          className="size-5 rounded-full bg-muted-foreground/20 flex items-center justify-center"
+        >
+          <X className="size-3 text-muted-foreground" />
+        </button>
+      )}
     </div>
   );
 };
@@ -217,7 +324,6 @@ const Pagination = ({ page, total, pageSize, onPageChange }: PaginationProps) =>
 export const MobileForwardRuleManagement = ({
   rules,
   agentsMap = {},
-  nodes = [],
   polledStatusMap = {},
   pollingRuleIds = [],
   loading = false,
@@ -228,51 +334,79 @@ export const MobileForwardRuleManagement = ({
   onRefresh,
   onCreate,
   onEdit,
-  onEnable,
-  onDisable,
-  onDelete,
   onCopy,
-  onProbe,
-  probingRuleId,
+  onToggleStatus,
+  onDelete,
   onPageChange,
+  onViewDetail,
   onDragEnd,
   isReordering = false,
 }: MobileForwardRuleManagementProps) => {
   const [searchQuery, setSearchQuery] = useState('');
-  const [statusFilter, setStatusFilter] = useState<StatusFilter>('all');
-  const [protocolFilter, setProtocolFilter] = useState<ProtocolFilter>('all');
-  const [ruleTypeFilter, setRuleTypeFilter] = useState<RuleTypeFilter>('all');
-  const [filterPanelOpen, setFilterPanelOpen] = useState(false);
+  const [segmentFilter, setSegmentFilter] = useState<SegmentFilter>('all');
   const [dragSortEnabled, setDragSortEnabled] = useState(false);
 
   // Get rule ID for drag-and-drop
   const getRuleId = useCallback((rule: ForwardRule) => rule.id, []);
 
-  // Calculate stats from rules
+  // Calculate stats from rules - includes rule type counts
   const stats = useMemo(() => {
     const enabled = rules.filter((r) => r.status === 'enabled').length;
     const disabled = rules.filter((r) => r.status === 'disabled').length;
     const syncing = rules.filter((r) => r.syncStatus === 'pending').length;
     const running = rules.filter((r) => r.runStatus === 'running').length;
-    return { total, enabled, disabled, syncing, running };
+    const direct = rules.filter((r) => r.ruleType === 'direct').length;
+    const entry = rules.filter((r) => r.ruleType === 'entry').length;
+    const chain = rules.filter((r) => r.ruleType === 'chain').length;
+    const directChain = rules.filter((r) => r.ruleType === 'direct_chain').length;
+    return { total, enabled, disabled, syncing, running, direct, entry, chain, directChain };
   }, [rules, total]);
 
-  // Filter rules by search, status, protocol, and type
+  // Add counts to filter options for MobileSegmentedFilter
+  const filterOptionsWithCounts = useMemo(() => {
+    return SEGMENT_FILTER_OPTIONS.map((opt) => {
+      let count: number;
+      switch (opt.value) {
+        case 'all':
+          count = total;
+          break;
+        case 'enabled':
+          count = stats.enabled;
+          break;
+        case 'disabled':
+          count = stats.disabled;
+          break;
+        case 'direct':
+          count = stats.direct;
+          break;
+        case 'entry':
+          count = stats.entry;
+          break;
+        case 'chain':
+          count = stats.chain;
+          break;
+        case 'direct_chain':
+          count = stats.directChain;
+          break;
+        default:
+          count = 0;
+      }
+      return { ...opt, count };
+    });
+  }, [stats, total]);
+
+  // Filter rules by search and segment filter
   const filteredRules = useMemo(() => {
     return rules.filter((rule) => {
-      // Status filter
-      if (statusFilter !== 'all' && rule.status !== statusFilter) {
-        return false;
-      }
-
-      // Protocol filter
-      if (protocolFilter !== 'all' && rule.protocol !== protocolFilter) {
-        return false;
-      }
-
-      // Rule type filter
-      if (ruleTypeFilter !== 'all' && rule.ruleType !== ruleTypeFilter) {
-        return false;
+      // Segment filter (status or rule type)
+      if (segmentFilter !== 'all') {
+        // Check if it's a status filter
+        if (segmentFilter === 'enabled' || segmentFilter === 'disabled') {
+          if (rule.status !== segmentFilter) return false;
+        } else {
+          // It's a rule type filter
+          if (rule.ruleType !== segmentFilter) return false;
+        }
       }
 
       // Search filter
@@ -288,288 +422,106 @@ export const MobileForwardRuleManagement = ({
 
       return true;
     });
-  }, [rules, searchQuery, statusFilter, protocolFilter, ruleTypeFilter]);
+  }, [rules, searchQuery, segmentFilter]);
 
   // Clear all filters
   const clearFilters = useCallback(() => {
     setSearchQuery('');
-    setStatusFilter('all');
-    setProtocolFilter('all');
-    setRuleTypeFilter('all');
+    setSegmentFilter('all');
   }, []);
 
-  const hasFilter = searchQuery !== '' || statusFilter !== 'all' || protocolFilter !== 'all' || ruleTypeFilter !== 'all';
-
-  // Count active filters (excluding search)
-  const activeFilterCount = useMemo(() => {
-    let count = 0;
-    if (statusFilter !== 'all') count++;
-    if (protocolFilter !== 'all') count++;
-    if (ruleTypeFilter !== 'all') count++;
-    return count;
-  }, [statusFilter, protocolFilter, ruleTypeFilter]);
-
-  // Stats configuration for MobileStatsScroller
-  const statsConfig = [
-    {
-      title: '总规则',
-      value: stats.total,
-      icon: <ArrowLeftRight className="size-3.5" />,
-      iconBg: 'bg-primary/10',
-      iconColor: 'text-primary',
-      loading,
-    },
-    {
-      title: '启用',
-      value: stats.enabled,
-      icon: <CheckCircle2 className="size-3.5" />,
-      iconBg: 'bg-success/10',
-      iconColor: 'text-success',
-      loading,
-    },
-    {
-      title: '禁用',
-      value: stats.disabled,
-      icon: <XCircle className="size-3.5" />,
-      iconBg: 'bg-muted/50',
-      iconColor: 'text-muted-foreground',
-      loading,
-    },
-    {
-      title: '运行中',
-      value: stats.running,
-      icon: <Activity className="size-3.5" />,
-      iconBg: 'bg-info/10',
-      iconColor: 'text-info',
-      loading,
-    },
-    {
-      title: '同步中',
-      value: stats.syncing,
-      icon: <RotateCw className="size-3.5" />,
-      iconBg: 'bg-warning/10',
-      iconColor: 'text-warning',
-      loading,
-    },
-  ];
+  const hasFilter = searchQuery !== '' || segmentFilter !== 'all';
 
   return (
-    <div className="space-y-3">
-      {/* Stats Grid */}
-      <MobileStatsScroller stats={statsConfig} className="px-0" />
+    <div className="pb-20">
+      {/* Header Section */}
+      <div className="space-y-3 mb-4">
+        {/* Stats Summary */}
+        <StatsSummary
+          total={stats.total}
+          enabled={stats.enabled}
+          running={stats.running}
+          loading={loading}
+        />
 
-      {/* Action Bar - Search + Filter + Sort + Refresh + Add */}
-      <div className="flex items-center gap-1.5">
-        {/* Search Bar */}
-        <div
-          className={cn(
-            'flex-1 flex items-center gap-2',
-            'h-10 min-h-[44px] px-2.5',
-            'bg-foreground/5 rounded-xl',
-            'border border-border/50',
-            'focus-within:border-primary/50 focus-within:ring-1 focus-within:ring-primary/30',
-            'transition-colors',
-            dragSortEnabled && 'opacity-50 pointer-events-none'
-          )}
-        >
-          <Search className="size-4 text-muted-foreground shrink-0" />
-          <input
-            type="text"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder={dragSortEnabled ? '排序中...' : '搜索...'}
-            disabled={dragSortEnabled}
-            className={cn(
-              'flex-1 min-w-0',
-              'bg-transparent',
-              'text-sm text-foreground placeholder:text-muted-foreground',
-              'focus:outline-none',
-              'disabled:cursor-not-allowed'
-            )}
-          />
-          {searchQuery && !dragSortEnabled && (
+        {/* Search Bar with Refresh */}
+        <div className="flex items-center gap-2">
+          <div className="flex-1">
+            <SearchBar
+              value={searchQuery}
+              onChange={setSearchQuery}
+              onClear={() => setSearchQuery('')}
+              disabled={dragSortEnabled}
+            />
+          </div>
+
+          {/* Drag Sort Toggle Button */}
+          {onDragEnd && (
             <button
-              onClick={() => setSearchQuery('')}
-              className="size-7 rounded-full flex items-center justify-center hover:bg-foreground/10"
+              type="button"
+              onClick={() => {
+                const newState = !dragSortEnabled;
+                setDragSortEnabled(newState);
+                // Clear filters when entering drag sort mode
+                if (newState && hasFilter) {
+                  clearFilters();
+                }
+              }}
+              disabled={isReordering}
+              className={cn(
+                'size-10 rounded-xl shrink-0',
+                'flex items-center justify-center',
+                'transition-colors',
+                dragSortEnabled
+                  ? 'bg-primary/10 text-primary'
+                  : 'bg-muted/50 text-muted-foreground',
+                'active:bg-muted'
+              )}
             >
-              <X className="size-3.5 text-muted-foreground" />
+              <GripVertical className="size-4" />
             </button>
           )}
+
+          <button
+            type="button"
+            onClick={onRefresh}
+            disabled={refreshing || isReordering}
+            className={cn(
+              'size-10 rounded-xl shrink-0',
+              'flex items-center justify-center',
+              'bg-muted/50',
+              'active:bg-muted transition-colors'
+            )}
+          >
+            <RefreshCw
+              className={cn(
+                'size-4 text-muted-foreground',
+                (refreshing || isReordering) && 'animate-spin'
+              )}
+            />
+          </button>
         </div>
 
-        {/* Filter Button - hidden in drag sort mode */}
+        {/* Segmented Filter - hidden in drag sort mode */}
         {!dragSortEnabled && (
-          <button
-            onClick={() => setFilterPanelOpen(!filterPanelOpen)}
-            className={cn(
-              'size-10 min-h-[44px] min-w-[44px] rounded-xl shrink-0',
-              'flex items-center justify-center relative',
-              'bg-foreground/5 hover:bg-foreground/10',
-              'border border-border/50',
-              'transition-colors',
-              'focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/50',
-              hasFilter ? 'text-primary border-primary/50' : 'text-muted-foreground'
-            )}
-          >
-            <Filter className="size-4" />
-            {activeFilterCount > 0 && (
-              <span className="absolute -top-1 -right-1 size-4 rounded-full bg-primary text-primary-foreground text-[10px] flex items-center justify-center font-medium">
-                {activeFilterCount}
-              </span>
-            )}
-          </button>
-        )}
-
-        {/* Drag Sort Toggle Button */}
-        {onDragEnd && (
-          <button
-            onClick={() => {
-              const newState = !dragSortEnabled;
-              setDragSortEnabled(newState);
-              // Clear filters when entering drag sort mode
-              if (newState && hasFilter) {
-                clearFilters();
-                setFilterPanelOpen(false);
-              }
-            }}
-            disabled={isReordering}
-            className={cn(
-              'size-10 min-h-[44px] min-w-[44px] rounded-xl shrink-0',
-              'flex items-center justify-center',
-              'border border-border/50',
-              'transition-colors',
-              'focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/50',
-              dragSortEnabled
-                ? 'bg-primary/10 border-primary/50 text-primary'
-                : 'bg-foreground/5 hover:bg-foreground/10 text-muted-foreground'
-            )}
-          >
-            <GripVertical className="size-4" />
-          </button>
-        )}
-
-        {/* Refresh Button */}
-        <button
-          onClick={onRefresh}
-          disabled={refreshing || isReordering}
-          className={cn(
-            'size-10 min-h-[44px] min-w-[44px] rounded-xl shrink-0',
-            'flex items-center justify-center',
-            'bg-foreground/5 hover:bg-foreground/10',
-            'border border-border/50',
-            'transition-colors',
-            'focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/50'
-          )}
-        >
-          <RefreshCw
-            className={cn('size-4 text-muted-foreground', (refreshing || isReordering) && 'animate-spin')}
+          <MobileSegmentedFilter
+            options={filterOptionsWithCounts}
+            value={segmentFilter}
+            onChange={setSegmentFilter}
           />
-        </button>
-
-        {/* Add Button */}
-        <button
-          onClick={onCreate}
-          className={cn(
-            'size-10 min-h-[44px] min-w-[44px] rounded-xl shrink-0',
-            'flex items-center justify-center',
-            'bg-primary text-primary-foreground',
-            'motion-safe:active:scale-[0.97]',
-            'focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/50'
-          )}
-        >
-          <Plus className="size-5" />
-        </button>
+        )}
       </div>
 
-      {/* Filter Panel (Collapsible with iOS spring animation) */}
-      <Collapsible open={filterPanelOpen} onOpenChange={setFilterPanelOpen}>
-        <CollapsibleContent className="text-base">
-          <div className="bg-foreground/5 rounded-xl border border-border/50 p-3 space-y-3">
-            {/* Status Filter */}
-            <div className="space-y-1.5">
-              <label className="text-xs font-medium text-muted-foreground">状态</label>
-              <div className="flex flex-wrap gap-2">
-                {STATUS_FILTERS.map((filter) => (
-                  <button
-                    key={filter.value}
-                    onClick={() => setStatusFilter(filter.value)}
-                    className={cn(
-                      'px-3 py-1.5 rounded-lg text-xs font-medium transition-colors',
-                      statusFilter === filter.value
-                        ? 'bg-primary text-primary-foreground'
-                        : 'bg-foreground/5 text-muted-foreground hover:bg-foreground/10'
-                    )}
-                  >
-                    {filter.label}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            {/* Protocol Filter */}
-            <div className="space-y-1.5">
-              <label className="text-xs font-medium text-muted-foreground">协议</label>
-              <div className="flex flex-wrap gap-2">
-                {PROTOCOL_FILTERS.map((filter) => (
-                  <button
-                    key={filter.value}
-                    onClick={() => setProtocolFilter(filter.value)}
-                    className={cn(
-                      'px-3 py-1.5 rounded-lg text-xs font-medium transition-colors',
-                      protocolFilter === filter.value
-                        ? 'bg-primary text-primary-foreground'
-                        : 'bg-foreground/5 text-muted-foreground hover:bg-foreground/10'
-                    )}
-                  >
-                    {filter.label}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            {/* Rule Type Filter */}
-            <div className="space-y-1.5">
-              <label className="text-xs font-medium text-muted-foreground">类型</label>
-              <div className="flex flex-wrap gap-2">
-                {RULE_TYPE_FILTERS.map((filter) => (
-                  <button
-                    key={filter.value}
-                    onClick={() => setRuleTypeFilter(filter.value)}
-                    className={cn(
-                      'px-3 py-1.5 rounded-lg text-xs font-medium transition-colors',
-                      ruleTypeFilter === filter.value
-                        ? 'bg-primary text-primary-foreground'
-                        : 'bg-foreground/5 text-muted-foreground hover:bg-foreground/10'
-                    )}
-                  >
-                    {filter.label}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            {/* Clear Filters Button */}
-            {hasFilter && (
-              <button
-                onClick={clearFilters}
-                className="w-full py-2 text-xs font-medium text-primary hover:underline"
-              >
-                清除所有筛选
-              </button>
-            )}
-          </div>
-        </CollapsibleContent>
-      </Collapsible>
-
-      {/* Active Filter Badge */}
-      {hasFilter && (
-        <div className="flex items-center justify-between">
-          <AdminBadge variant="info" className="text-xs">
-            显示 {filteredRules.length} 条结果
-          </AdminBadge>
+      {/* Results count when filtered */}
+      {hasFilter && !loading && filteredRules.length > 0 && (
+        <div className="flex items-center justify-between mb-3 px-1">
+          <span className="text-xs text-muted-foreground">
+            找到 <span className="font-medium text-foreground">{filteredRules.length}</span> 个结果
+          </span>
           <button
+            type="button"
             onClick={clearFilters}
-            className="text-xs text-primary hover:underline"
+            className="text-xs text-primary font-medium"
           >
             清除筛选
           </button>
@@ -578,13 +530,14 @@ export const MobileForwardRuleManagement = ({
 
       {/* Drag Sort Mode Hint */}
       {dragSortEnabled && (
-        <div className="flex items-center justify-between px-1">
+        <div className="flex items-center justify-between mb-3 px-1">
           <AdminBadge variant="info" className="text-xs">
             长按卡片拖拽排序
           </AdminBadge>
           <button
+            type="button"
             onClick={() => setDragSortEnabled(false)}
-            className="text-xs text-primary hover:underline"
+            className="text-xs text-primary font-medium"
           >
             退出排序
           </button>
@@ -595,7 +548,11 @@ export const MobileForwardRuleManagement = ({
       {loading || isReordering ? (
         <LoadingSkeleton />
       ) : (dragSortEnabled ? rules : filteredRules).length === 0 ? (
-        <EmptyState hasFilter={hasFilter && !dragSortEnabled} onClearFilter={clearFilters} />
+        <EmptyState
+          hasFilter={hasFilter && !dragSortEnabled}
+          onClearFilter={clearFilters}
+          onCreate={onCreate}
+        />
       ) : dragSortEnabled && onDragEnd ? (
         // Drag sort mode: use DraggableMobileList with original rules order
         <DraggableMobileList
@@ -605,16 +562,13 @@ export const MobileForwardRuleManagement = ({
             <MobileForwardRuleCard
               rule={rule}
               agentsMap={agentsMap}
-              nodes={nodes}
               polledStatus={polledStatusMap[rule.id]}
               isPolling={pollingRuleIds.includes(rule.id)}
+              onCardPress={onViewDetail}
               onEdit={onEdit}
-              onEnable={onEnable}
-              onDisable={onDisable}
-              onDelete={onDelete}
               onCopy={onCopy}
-              onProbe={onProbe}
-              isProbingThis={probingRuleId === rule.id}
+              onToggleStatus={onToggleStatus}
+              onDelete={onDelete}
             />
           )}
           onDragEnd={onDragEnd}
@@ -630,23 +584,20 @@ export const MobileForwardRuleManagement = ({
               key={rule.id}
               rule={rule}
               agentsMap={agentsMap}
-              nodes={nodes}
               polledStatus={polledStatusMap[rule.id]}
               isPolling={pollingRuleIds.includes(rule.id)}
+              onCardPress={onViewDetail}
               onEdit={onEdit}
-              onEnable={onEnable}
-              onDisable={onDisable}
-              onDelete={onDelete}
               onCopy={onCopy}
-              onProbe={onProbe}
-              isProbingThis={probingRuleId === rule.id}
+              onToggleStatus={onToggleStatus}
+              onDelete={onDelete}
             />
           ))}
         </div>
       )}
 
       {/* Pagination */}
-      {!loading && filteredRules.length > 0 && (
+      {!loading && filteredRules.length > 0 && !dragSortEnabled && (
         <Pagination
           page={page}
           total={total}
@@ -654,6 +605,24 @@ export const MobileForwardRuleManagement = ({
           onPageChange={onPageChange}
         />
       )}
+
+      {/* Floating Action Button */}
+      <button
+        type="button"
+        onClick={onCreate}
+        className={cn(
+          'fixed right-4 bottom-6',
+          'size-14 rounded-full',
+          'bg-primary text-primary-foreground',
+          'shadow-lg shadow-primary/25',
+          'flex items-center justify-center',
+          'active:scale-[0.95] transition-transform',
+          'z-40'
+        )}
+        style={{ bottom: 'calc(env(safe-area-inset-bottom, 0px) + 24px)' }}
+      >
+        <Plus className="size-6" />
+      </button>
     </div>
   );
 };

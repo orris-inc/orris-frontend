@@ -44,9 +44,9 @@ export const useAuthStore = create<AuthState>()(
           isAuthenticated: false,
         });
 
-        // Redirect to login page
+        // Redirect to landing page
         if (typeof window !== 'undefined') {
-          window.location.href = '/login';
+          window.location.href = '/';
         }
       },
 

@@ -27,6 +27,7 @@ import { EditForwardRuleDialog } from '@/features/forward-rules/components/EditF
 import { EditForwardRuleSheet } from '@/features/forward-rules/components/EditForwardRuleSheet';
 import { DeleteForwardRuleSheet } from '@/features/forward-rules/components/DeleteForwardRuleSheet';
 import { ForwardRuleDetailDialog } from '@/features/forward-rules/components/ForwardRuleDetailDialog';
+import { ForwardRuleDetailSheet } from '@/features/forward-rules/components/ForwardRuleDetailSheet';
 import { ProbeResultDialog } from '@/features/forward-rules/components/ProbeResultDialog';
 import { Input } from '@/components/common/Input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/common/Select';
@@ -242,6 +243,15 @@ export const ForwardRulesPage = () => {
     await disableForwardRule(rule.id);
   };
 
+  // Toggle status handler for mobile swipe card
+  const handleToggleStatus = async (rule: ForwardRule) => {
+    if (rule.status === 'enabled') {
+      await handleDisable(rule);
+    } else {
+      await handleEnable(rule);
+    }
+  };
+
   const handleResetTraffic = (rule: ForwardRule) => {
     setRuleToResetTrafficRule(rule);
     setResetTrafficConfirmOpen(true);
@@ -378,7 +388,6 @@ export const ForwardRulesPage = () => {
           <MobileForwardRuleManagement
             rules={forwardRules}
             agentsMap={agentsMap}
-            nodes={nodes}
             polledStatusMap={polledStatusMap}
             pollingRuleIds={pollingRuleIds}
             loading={isLoading || isFetching}
@@ -392,13 +401,11 @@ export const ForwardRulesPage = () => {
               setCreateDialogOpen(true);
             }}
             onEdit={handleEdit}
-            onEnable={handleEnable}
-            onDisable={handleDisable}
-            onDelete={handleDelete}
             onCopy={handleCopy}
-            onProbe={handleProbe}
-            probingRuleId={probingRuleId}
+            onToggleStatus={handleToggleStatus}
+            onDelete={handleDelete}
             onPageChange={handlePageChange}
+            onViewDetail={handleViewDetail}
             onDragEnd={handleDragEnd}
             isReordering={isReordering}
           />
@@ -441,6 +448,34 @@ export const ForwardRulesPage = () => {
           entity={ruleToDelete}
           onConfirm={handleDeleteConfirmSheet}
           agentsMap={agentsMap}
+        />
+
+        {/* Forward Rule Detail Sheet (Mobile) */}
+        <ForwardRuleDetailSheet
+          open={detailDialogOpen}
+          onOpenChange={(open) => {
+            setDetailDialogOpen(open);
+            if (!open) setSelectedRule(null);
+          }}
+          rule={selectedRule}
+          agentsMap={agentsMap}
+          nodes={nodes}
+          polledStatus={selectedRule ? polledStatusMap[selectedRule.id] : null}
+          onEdit={(rule) => {
+            setDetailDialogOpen(false);
+            handleEdit(rule);
+          }}
+          onProbe={handleProbe}
+          onCopy={(rule) => {
+            setDetailDialogOpen(false);
+            handleCopy(rule);
+          }}
+          onToggleStatus={handleToggleStatus}
+          onDelete={(rule) => {
+            setDetailDialogOpen(false);
+            handleDelete(rule);
+          }}
+          isProbingThis={probingRuleId === selectedRule?.id}
         />
 
         {/* Probe Result Dialog */}

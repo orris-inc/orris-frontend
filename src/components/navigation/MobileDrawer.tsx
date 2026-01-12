@@ -18,14 +18,13 @@
  * @see https://github.com/emilkowalski/vaul
  */
 
-import { useMemo } from 'react';
-import { useLocation } from 'react-router-dom';
+import { useMemo, useCallback } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { Drawer } from 'vaul';
 import { X, LogOut, Shield, ArrowLeftRight, ChevronRight } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/common/Avatar';
 import { ThemeToggle } from '@/components/common/ThemeToggle';
-import { ViewTransitionLink } from '@/components/common/ViewTransitionLink';
 
 import type { NavigationItem } from '../../types/navigation.types';
 
@@ -64,7 +63,17 @@ export const MobileDrawer = ({
   onLogout,
 }: MobileDrawerProps) => {
   const location = useLocation();
+  const navigate = useNavigate();
   const initials = user?.initials || user?.displayName?.charAt(0).toUpperCase() || '?';
+
+  // Navigate and close drawer
+  const handleNavigation = useCallback((path: string) => {
+    onClose();
+    // Navigate after drawer starts closing
+    requestAnimationFrame(() => {
+      navigate(path);
+    });
+  }, [navigate, onClose]);
 
   const renderNavigationItems = useMemo(() => {
     return navigationItems.map((item) => {
@@ -80,14 +89,15 @@ export const MobileDrawer = ({
       const isActive = location.pathname === item.path;
 
       return (
-        <ViewTransitionLink
+        <button
           key={item.id}
-          to={item.path}
-          onBeforeNavigate={onClose}
+          type="button"
+          onClick={() => handleNavigation(item.path)}
           aria-current={isActive ? 'page' : undefined}
+          disabled={item.disabled}
           className={cn(
             // Base styles
-            'group relative flex items-center gap-3 px-3 py-3',
+            'group relative flex items-center gap-3 px-3 py-3 w-full text-left',
             // Touch target
             'min-h-[52px]',
             // Border radius
@@ -133,10 +143,10 @@ export const MobileDrawer = ({
               <div className="h-2 w-2 rounded-full bg-primary" />
             </div>
           )}
-        </ViewTransitionLink>
+        </button>
       );
     });
-  }, [navigationItems, location.pathname, onClose]);
+  }, [navigationItems, location.pathname, handleNavigation]);
 
   return (
     <Drawer.Root

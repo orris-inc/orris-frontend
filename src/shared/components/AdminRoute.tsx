@@ -47,7 +47,7 @@ const UnauthorizedMessage = () => {
   };
 
   return (
-    <div className="container mx-auto flex max-w-sm min-h-screen flex-col items-center justify-center gap-6 text-center">
+    <div className="container mx-auto flex max-w-sm min-h-viewport flex-col items-center justify-center gap-6 text-center">
       <Lock className="h-20 w-20 text-destructive opacity-80" />
       <div>
         <h1 className="mb-2 text-3xl font-bold tracking-tight">
@@ -134,7 +134,7 @@ export const AdminRoute = ({
   // Wait for auth state initialization to complete
   if (isLoading) {
     return (
-      <div className="flex min-h-screen items-center justify-center">
+      <div className="flex min-h-viewport items-center justify-center">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
       </div>
     );

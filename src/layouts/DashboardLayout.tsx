@@ -54,7 +54,7 @@ export const DashboardLayout = ({ children }: DashboardLayoutProps) => {
 
   return (
     <TooltipProvider delayDuration={0}>
-    <div className="flex min-h-screen min-h-dvh flex-col bg-background overflow-x-hidden">
+    <div className="flex min-h-viewport flex-col bg-background overflow-x-hidden">
       {/* Top navigation bar */}
       <header className="sticky top-0 z-40 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
         <div className="mx-auto max-w-6xl flex h-14 items-center px-4 sm:px-6">

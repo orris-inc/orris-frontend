@@ -4,6 +4,8 @@
  */
 
 import { Link } from 'react-router';
+import { motion } from 'framer-motion';
+import { useRef, useState, useEffect, useCallback } from 'react';
 import {
   Network,
   Server,
@@ -21,6 +23,21 @@ import { cn } from '@/lib/utils';
 import { getButtonClass } from '@/lib/ui-styles';
 import { ThemeToggle } from '@/components/common/ThemeToggle';
 
+// Animation variants
+const fadeInUp = {
+  initial: { opacity: 0, y: 20 },
+  animate: { opacity: 1, y: 0 },
+};
+
+const staggerContainer = {
+  animate: {
+    transition: {
+      staggerChildren: 0.1,
+    },
+  },
+};
+
+
 interface Feature {
   icon: LucideIcon;
   title: string;
@@ -37,61 +54,89 @@ interface Step {
 const features: Feature[] = [
   {
     icon: Network,
-    title: '统一管理',
-    description: '节点、转发规则与订阅一站式管理，告别多平台切换的烦恼',
+    title: 'All-in-One Dashboard',
+    description: 'Nodes, forwarding rules, and subscriptions—all managed from a single interface.',
   },
   {
     icon: GitBranch,
-    title: '多种转发模式',
-    description: '支持多种转发协议与链路组合，灵活应对不同场景需求',
+    title: 'Versatile Forwarding',
+    description: 'Multiple protocols and flexible link chaining to adapt to any network scenario.',
   },
   {
     icon: Layers,
-    title: '资源组解耦',
-    description: '资源组与订阅计划独立设计，实现更精细化的权限与配额管理',
+    title: 'Modular Resource Groups',
+    description: 'Decouple resources from plans for fine-grained access control and quota allocation.',
   },
   {
     icon: Users,
-    title: '灵活订阅模型',
-    description: '用户与订阅模型灵活配置，满足不同规模的拼车需求',
+    title: 'Scalable Subscriptions',
+    description: 'From personal use to team sharing—subscription models that grow with your needs.',
   },
   {
     icon: Zap,
-    title: '中转场景优化',
-    description: '专为拼车与中转场景设计，充分利用专线与高质量线路资源',
+    title: 'Relay-First Design',
+    description: 'Purpose-built for transit and sharing, maximizing your premium route investments.',
   },
 ];
 
 const steps: Step[] = [
   {
     step: '01',
-    title: '配置节点',
-    description: '添加您的专线节点，支持多种协议与部署方式',
+    title: 'Add Your Nodes',
+    description: 'Import your premium nodes—supports multiple protocols and deployment options.',
     icon: Server,
   },
   {
     step: '02',
-    title: '设置转发规则',
-    description: '创建转发规则，定义流量的路由策略与链路组合',
+    title: 'Define Forwarding Rules',
+    description: 'Set up routing policies and chain links to optimize traffic flow across your network.',
     icon: GitBranch,
   },
   {
     step: '03',
-    title: '创建订阅计划',
-    description: '配置资源组与订阅计划，设定配额与权限',
+    title: 'Build Subscription Plans',
+    description: 'Bundle resource groups into plans with custom quotas and access levels.',
     icon: Layers,
   },
   {
     step: '04',
-    title: '用户订阅使用',
-    description: '用户通过订阅链接即可使用服务，无需额外配置',
+    title: 'Share & Go Live',
+    description: 'Users subscribe via link and connect instantly—zero client-side setup required.',
     icon: Users,
   },
 ];
 
+// Track animation state outside component to survive StrictMode remounts
+const animatedSections = new Set<string>();
+
 export const LandingPage = () => {
+  const featuresRef = useRef<HTMLDivElement>(null);
+  const [featuresVisible, setFeaturesVisible] = useState(() =>
+    animatedSections.has('features')
+  );
+
+  const handleFeaturesIntersect = useCallback((entries: IntersectionObserverEntry[]) => {
+    const entry = entries[0];
+    if (entry.isIntersecting && !animatedSections.has('features')) {
+      animatedSections.add('features');
+      setFeaturesVisible(true);
+    }
+  }, []);
+
+  useEffect(() => {
+    const element = featuresRef.current;
+    if (!element || animatedSections.has('features')) return;
+
+    const observer = new IntersectionObserver(handleFeaturesIntersect, {
+      threshold: 0.2,
+    });
+    observer.observe(element);
+
+    return () => observer.disconnect();
+  }, [handleFeaturesIntersect]);
+
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-viewport bg-background">
       {/* Navigation */}
       <nav className="fixed top-4 left-4 right-4 z-50">
         <div className="max-w-6xl mx-auto">
@@ -104,36 +149,45 @@ export const LandingPage = () => {
             </Link>
 
             <div className="hidden md:flex items-center gap-8">
-              <a
+              <motion.a
                 href="#features"
-                className="text-sm text-muted-foreground hover:text-foreground transition-colors"
+                className="text-sm text-muted-foreground"
+                whileHover={{ color: 'hsl(var(--foreground))' }}
+                transition={{ duration: 0.2 }}
               >
-                功能特性
-              </a>
-              <a
+                Features
+              </motion.a>
+              <motion.a
                 href="#how-it-works"
-                className="text-sm text-muted-foreground hover:text-foreground transition-colors"
+                className="text-sm text-muted-foreground"
+                whileHover={{ color: 'hsl(var(--foreground))' }}
+                transition={{ duration: 0.2 }}
               >
-                工作流程
-              </a>
-              <Link to="/pricing" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
-                定价
-              </Link>
+                How It Works
+              </motion.a>
+              <motion.a
+                href="/pricing"
+                className="text-sm text-muted-foreground"
+                whileHover={{ color: 'hsl(var(--foreground))' }}
+                transition={{ duration: 0.2 }}
+              >
+                Pricing
+              </motion.a>
             </div>
 
             <div className="flex items-center gap-2">
               <ThemeToggle />
               <Link
                 to="/login"
-                className={cn(getButtonClass('ghost', 'sm'), 'hidden sm:inline-flex')}
+                className={getButtonClass('ghost', 'sm')}
               >
-                登录
+                Sign In
               </Link>
               <Link
                 to="/register"
                 className={getButtonClass('default', 'sm')}
               >
-                开始使用
+                Get Started
               </Link>
             </div>
           </div>
@@ -144,120 +198,229 @@ export const LandingPage = () => {
       <section className="relative pt-32 pb-20 px-4 overflow-hidden">
         {/* Background decoration */}
         <div className="absolute inset-0 -z-10">
-          <div className="absolute top-1/4 left-1/4 size-96 bg-primary/10 dark:bg-primary/20 rounded-full blur-3xl" />
-          <div className="absolute bottom-1/4 right-1/4 size-96 bg-accent/10 dark:bg-accent/15 rounded-full blur-3xl" />
+          <motion.div
+            initial={{ opacity: 0, scale: 0.8 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 1, ease: 'easeOut' }}
+            className="absolute top-1/4 left-1/4 size-96 bg-primary/10 dark:bg-primary/20 rounded-full blur-3xl"
+          />
+          <motion.div
+            initial={{ opacity: 0, scale: 0.8 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 1, delay: 0.2, ease: 'easeOut' }}
+            className="absolute bottom-1/4 right-1/4 size-96 bg-accent/10 dark:bg-accent/15 rounded-full blur-3xl"
+          />
         </div>
 
-        <div className="max-w-5xl mx-auto text-center">
+        <motion.div
+          className="max-w-5xl mx-auto text-center"
+          initial="initial"
+          animate="animate"
+          variants={staggerContainer}
+        >
           {/* Badge */}
-          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 text-primary text-sm font-medium mb-8">
+          <motion.div
+            variants={fadeInUp}
+            transition={{ duration: 0.5 }}
+            className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 text-primary text-sm font-medium mb-8"
+          >
             <Shield className="size-4" />
-            专为专线拼车场景设计
-          </div>
+            Designed for Premium Transit Sharing
+          </motion.div>
 
           {/* Main heading */}
-          <h1 className="text-fluid-3xl md:text-5xl lg:text-6xl font-bold tracking-tight mb-6">
-            统一管理您的
+          <motion.h1
+            variants={fadeInUp}
+            transition={{ duration: 0.5 }}
+            className="text-fluid-3xl md:text-5xl lg:text-6xl font-bold tracking-tight mb-6"
+          >
+            One Platform for
             <br />
-            <span className="text-primary">转发与订阅服务</span>
-          </h1>
+            <span className="text-primary">Forwarding & Subscriptions</span>
+          </motion.h1>
 
           {/* Subheading */}
-          <p className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto mb-10">
-            Orris 集转发、节点、订阅、资源组管理于一体，
-            让管理员轻松配置，用户一键订阅使用
-          </p>
+          <motion.p
+            variants={fadeInUp}
+            transition={{ duration: 0.5 }}
+            className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto mb-10"
+          >
+            Orris unifies node management, traffic forwarding, and subscription delivery in one streamlined platform.
+            Configure once, share effortlessly.
+          </motion.p>
 
           {/* CTA buttons */}
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+          <motion.div
+            variants={fadeInUp}
+            transition={{ duration: 0.5 }}
+            className="flex flex-col sm:flex-row items-center justify-center gap-4"
+          >
             <Link
               to="/register"
               className={cn(getButtonClass('default', 'lg'), 'gap-2 px-8')}
             >
-              免费开始
+              Get Started Free
               <ArrowRight className="size-4" />
             </Link>
             <a
               href="#features"
               className={cn(getButtonClass('outline', 'lg'), 'gap-2 px-8')}
             >
-              了解更多
+              Learn More
               <ChevronRight className="size-4" />
             </a>
-          </div>
+          </motion.div>
 
           {/* Stats */}
-          <div className="grid grid-cols-3 gap-8 mt-16 max-w-xl mx-auto">
-            <div className="text-center">
-              <div className="text-3xl font-bold text-primary">5+</div>
-              <div className="text-sm text-muted-foreground mt-1">转发模式</div>
-            </div>
-            <div className="text-center">
-              <div className="text-3xl font-bold text-primary">99.9%</div>
-              <div className="text-sm text-muted-foreground mt-1">服务可用性</div>
-            </div>
-            <div className="text-center">
-              <div className="text-3xl font-bold text-primary">24/7</div>
-              <div className="text-sm text-muted-foreground mt-1">稳定运行</div>
-            </div>
-          </div>
-        </div>
+          <motion.div
+            variants={fadeInUp}
+            transition={{ duration: 0.5 }}
+            className="grid grid-cols-3 gap-8 mt-16 max-w-xl mx-auto"
+          >
+            {[
+              { value: '5+', label: 'Forwarding Modes' },
+              { value: '99.9%', label: 'Uptime SLA' },
+              { value: '24/7', label: 'Always-On Service' },
+            ].map((stat, index) => (
+              <motion.div
+                key={index}
+                className="text-center"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5, delay: 0.6 + index * 0.1 }}
+              >
+                <div className="text-3xl font-bold text-primary">{stat.value}</div>
+                <div className="text-sm text-muted-foreground mt-1">{stat.label}</div>
+              </motion.div>
+            ))}
+          </motion.div>
+        </motion.div>
       </section>
 
       {/* Features Section */}
       <section id="features" className="py-20 px-4 bg-muted/30 dark:bg-muted/10">
-        <div className="max-w-6xl mx-auto">
+        <motion.div
+          ref={featuresRef}
+          className="max-w-6xl mx-auto"
+          initial="initial"
+          animate={featuresVisible ? 'animate' : 'initial'}
+          variants={{
+            initial: {},
+            animate: {
+              transition: {
+                staggerChildren: 0.08,
+              },
+            },
+          }}
+        >
           <div className="text-center mb-16">
-            <h2 className="text-3xl md:text-4xl font-bold mb-4">
-              功能特性
-            </h2>
-            <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
-              为拥有专线/IX/高质量线路的用户提供一站式管理方案
-            </p>
+            <motion.h2
+              variants={fadeInUp}
+              className="text-3xl md:text-4xl font-bold mb-4"
+            >
+              Features
+            </motion.h2>
+            <motion.p
+              variants={fadeInUp}
+              className="text-muted-foreground text-lg max-w-2xl mx-auto"
+            >
+              Built for operators with premium transit, IX peering, and quality routes
+            </motion.p>
           </div>
 
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
             {features.map((feature, index) => (
-              <div
+              <motion.div
                 key={index}
-                className="group p-6 rounded-2xl bg-card border border-border hover:border-primary/50 hover:shadow-lg dark:hover:shadow-primary/10 transition-all duration-300 cursor-pointer"
+                variants={{
+                  initial: { opacity: 0, scale: 0.9 },
+                  animate: {
+                    opacity: 1,
+                    scale: 1,
+                    transition: { duration: 0.4, ease: 'easeOut' },
+                  },
+                }}
+                whileHover={{
+                  y: -4,
+                  borderColor: 'hsl(var(--primary) / 0.5)',
+                  boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)',
+                  transition: { duration: 0.2 },
+                }}
+                className="p-6 rounded-2xl bg-card border border-border cursor-pointer"
               >
-                <div className="size-12 rounded-xl bg-primary/10 flex items-center justify-center mb-4 group-hover:bg-primary/20 transition-colors">
+                <div className="size-12 rounded-xl bg-primary/10 flex items-center justify-center mb-4">
                   <feature.icon className="size-6 text-primary" />
                 </div>
                 <h3 className="text-xl font-semibold mb-2">{feature.title}</h3>
                 <p className="text-muted-foreground">{feature.description}</p>
-              </div>
+              </motion.div>
             ))}
           </div>
-        </div>
+        </motion.div>
       </section>
 
       {/* How it Works Section */}
       <section id="how-it-works" className="py-20 px-4">
         <div className="max-w-6xl mx-auto">
-          <div className="text-center mb-16">
-            <h2 className="text-3xl md:text-4xl font-bold mb-4">
-              工作流程
-            </h2>
-            <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
-              简单四步，即可完成从配置到用户使用的全流程
-            </p>
-          </div>
+          <motion.div
+            className="text-center mb-16"
+            initial="initial"
+            whileInView="animate"
+            viewport={{ once: true, margin: '-100px' }}
+            variants={staggerContainer}
+          >
+            <motion.h2
+              variants={fadeInUp}
+              transition={{ duration: 0.5 }}
+              className="text-3xl md:text-4xl font-bold mb-4"
+            >
+              How It Works
+            </motion.h2>
+            <motion.p
+              variants={fadeInUp}
+              transition={{ duration: 0.5 }}
+              className="text-muted-foreground text-lg max-w-2xl mx-auto"
+            >
+              From setup to subscriber access in four straightforward steps
+            </motion.p>
+          </motion.div>
 
           <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
             {steps.map((step, index) => (
-              <div key={index} className="relative">
+              <motion.div
+                key={index}
+                className="relative"
+                initial={{ opacity: 0, y: 30 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true, margin: '-50px' }}
+                transition={{ duration: 0.5, delay: index * 0.15 }}
+              >
                 {/* Connector line */}
                 {index < steps.length - 1 && (
-                  <div className="hidden lg:block absolute top-12 left-1/2 w-full h-px bg-border" />
+                  <motion.div
+                    className="hidden lg:block absolute top-12 left-1/2 w-full h-px bg-border"
+                    initial={{ scaleX: 0 }}
+                    whileInView={{ scaleX: 1 }}
+                    viewport={{ once: true }}
+                    transition={{ duration: 0.4, delay: index * 0.15 + 0.3 }}
+                    style={{ originX: 0 }}
+                  />
                 )}
 
-                <div className="relative p-6 rounded-2xl bg-card border border-border text-center">
+                <motion.div
+                  className="relative p-6 rounded-2xl bg-card border border-border text-center"
+                  whileHover={{ y: -4, transition: { duration: 0.2 } }}
+                >
                   {/* Step number */}
-                  <div className="absolute -top-4 left-1/2 -translate-x-1/2 px-3 py-1 rounded-full bg-primary text-primary-foreground text-sm font-medium">
+                  <motion.div
+                    className="absolute -top-4 left-1/2 -translate-x-1/2 px-3 py-1 rounded-full bg-primary text-primary-foreground text-sm font-medium"
+                    initial={{ scale: 0 }}
+                    whileInView={{ scale: 1 }}
+                    viewport={{ once: true }}
+                    transition={{ type: 'spring', stiffness: 300, delay: index * 0.15 + 0.2 }}
+                  >
                     {step.step}
-                  </div>
+                  </motion.div>
 
                   <div className="size-16 rounded-2xl bg-muted flex items-center justify-center mx-auto mt-4 mb-4">
                     <step.icon className="size-8 text-primary" />
@@ -267,8 +430,8 @@ export const LandingPage = () => {
                   <p className="text-sm text-muted-foreground">
                     {step.description}
                   </p>
-                </div>
-              </div>
+                </motion.div>
+              </motion.div>
             ))}
           </div>
         </div>
@@ -277,37 +440,77 @@ export const LandingPage = () => {
       {/* CTA Section */}
       <section className="py-20 px-4">
         <div className="max-w-4xl mx-auto">
-          <div className="relative p-12 md:p-16 rounded-3xl bg-primary text-primary-foreground overflow-hidden">
+          <motion.div
+            className="relative p-12 md:p-16 rounded-3xl bg-primary text-primary-foreground overflow-hidden"
+            initial={{ opacity: 0, y: 40 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: '-100px' }}
+            transition={{ duration: 0.6, ease: 'easeOut' }}
+          >
             {/* Background decoration */}
             <div className="absolute inset-0 -z-0">
-              <div className="absolute top-0 right-0 size-64 bg-white/10 rounded-full blur-3xl" />
-              <div className="absolute bottom-0 left-0 size-64 bg-white/5 rounded-full blur-3xl" />
+              <motion.div
+                className="absolute top-0 right-0 size-64 bg-white/10 rounded-full blur-3xl"
+                initial={{ opacity: 0, scale: 0.5 }}
+                whileInView={{ opacity: 1, scale: 1 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.8, delay: 0.2 }}
+              />
+              <motion.div
+                className="absolute bottom-0 left-0 size-64 bg-white/5 rounded-full blur-3xl"
+                initial={{ opacity: 0, scale: 0.5 }}
+                whileInView={{ opacity: 1, scale: 1 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.8, delay: 0.3 }}
+              />
             </div>
 
-            <div className="relative z-10 text-center">
-              <h2 className="text-3xl md:text-4xl font-bold mb-4">
-                准备好开始了吗？
-              </h2>
-              <p className="text-primary-foreground/80 text-lg max-w-xl mx-auto mb-8">
-                立即注册 Orris，体验一站式转发与订阅管理服务
-              </p>
-              <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-                <Link
-                  to="/register"
-                  className="inline-flex items-center justify-center gap-2 h-12 px-8 rounded-xl bg-white dark:bg-background text-primary font-medium hover:bg-white/90 dark:hover:bg-background/90 transition-colors"
+            <motion.div
+              className="relative z-10 text-center"
+              initial="initial"
+              whileInView="animate"
+              viewport={{ once: true }}
+              variants={staggerContainer}
+            >
+              <motion.h2
+                variants={fadeInUp}
+                transition={{ duration: 0.5 }}
+                className="text-3xl md:text-4xl font-bold mb-4"
+              >
+                Ready to Simplify Your Workflow?
+              </motion.h2>
+              <motion.p
+                variants={fadeInUp}
+                transition={{ duration: 0.5 }}
+                className="text-primary-foreground/80 text-lg max-w-xl mx-auto mb-8"
+              >
+                Join Orris and manage your entire forwarding and subscription stack from one place
+              </motion.p>
+              <motion.div
+                variants={fadeInUp}
+                transition={{ duration: 0.5 }}
+                className="flex flex-col sm:flex-row items-center justify-center gap-4"
+              >
+                <motion.a
+                  href="/register"
+                  className="inline-flex items-center justify-center gap-2 h-12 px-8 rounded-xl bg-white dark:bg-background text-primary font-medium"
+                  whileHover={{ opacity: 0.9 }}
+                  transition={{ duration: 0.2 }}
                 >
-                  免费注册
+                  Get Started Free
                   <ArrowRight className="size-4" />
-                </Link>
-                <Link
-                  to="/login"
-                  className="inline-flex items-center justify-center gap-2 h-12 px-8 rounded-xl border border-white/30 text-white font-medium hover:bg-white/10 transition-colors"
+                </motion.a>
+                <motion.a
+                  href="/login"
+                  className="inline-flex items-center justify-center gap-2 h-12 px-8 rounded-xl border border-white/30 text-white font-medium"
+                  whileHover={{ backgroundColor: 'rgba(255, 255, 255, 0.1)' }}
+                  transition={{ duration: 0.2 }}
                 >
-                  已有账号？登录
-                </Link>
-              </div>
-            </div>
-          </div>
+                  Already a Member? Sign In
+                </motion.a>
+              </motion.div>
+            </motion.div>
+          </motion.div>
         </div>
       </section>
 
@@ -323,15 +526,27 @@ export const LandingPage = () => {
             </div>
 
             <div className="flex items-center gap-6 text-sm text-muted-foreground">
-              <a href="#features" className="hover:text-foreground transition-colors">
-                功能特性
-              </a>
-              <a href="#how-it-works" className="hover:text-foreground transition-colors">
-                工作流程
-              </a>
-              <Link to="/pricing" className="hover:text-foreground transition-colors">
-                定价
-              </Link>
+              <motion.a
+                href="#features"
+                whileHover={{ color: 'hsl(var(--foreground))' }}
+                transition={{ duration: 0.2 }}
+              >
+                Features
+              </motion.a>
+              <motion.a
+                href="#how-it-works"
+                whileHover={{ color: 'hsl(var(--foreground))' }}
+                transition={{ duration: 0.2 }}
+              >
+                How It Works
+              </motion.a>
+              <motion.a
+                href="/pricing"
+                whileHover={{ color: 'hsl(var(--foreground))' }}
+                transition={{ duration: 0.2 }}
+              >
+                Pricing
+              </motion.a>
             </div>
 
             <p className="text-sm text-muted-foreground">

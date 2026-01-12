@@ -276,9 +276,10 @@ export function useNodeDetailEvents(options: UseNodeDetailEventsOptions): UseNod
     }
 
     // Use auto-reconnect wrapper
+    // Subscribe to all nodes to receive batch status events, filter by nodeId in handleEvent
     controllerRef.current = createAutoReconnectSSE(
       subscribeNodeEvents,
-      { nodeIds: nodeId },
+      undefined,
       {
         onStateChange: setConnectionState,
         onEvent: handleEvent,

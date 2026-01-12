@@ -11,3 +11,7 @@ export type { MobileGroupedListProps, MobileListItemProps } from './MobileGroupe
 export { MobileDataCard } from './MobileDataCard';
 export type { MobileDataCardProps, MobileDataCardAction } from './MobileDataCard';
 export { MobileAdminDashboard } from './MobileAdminDashboard';
+export { MobileSegmentedFilter } from './MobileSegmentedFilter';
+export type { SegmentOption, MobileSegmentedFilterProps } from './MobileSegmentedFilter';
+export { MobileSwipeCard } from './MobileSwipeCard';
+export type { SwipeAction, MobileSwipeCardProps } from './MobileSwipeCard';

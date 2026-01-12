@@ -165,7 +165,7 @@ export const navigationConfig: readonly NavigationItem[] = [
   },
   {
     id: 'nodes',
-    label: '节点Agent管理',
+    label: '节点Agent',
     path: '/admin/nodes',
     icon: Server,
     roles: ['admin'], // Admin only

@@ -591,6 +591,17 @@
     padding-bottom: max(1rem, env(safe-area-inset-bottom));
   }
 
+  /* Dynamic viewport height (mobile browser address bar aware) */
+  .min-h-viewport {
+    min-height: 100vh;
+    min-height: 100dvh;
+  }
+
+  .h-viewport {
+    height: 100vh;
+    height: 100dvh;
+  }
+
   /* 触摸友好的最小点击区域 */
   .touch-target {
     min-height: 44px;

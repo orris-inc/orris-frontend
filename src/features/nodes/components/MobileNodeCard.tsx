@@ -1,41 +1,24 @@
 /**
- * MobileNodeCard - iOS 26 Liquid Glass styled node card for mobile
+ * MobileNodeCard - iOS-style node card with swipe actions
  *
- * Designed following iOS Human Interface Guidelines:
- * - Minimum 44px touch targets for all interactive elements
- * - Clear visual hierarchy with primary/secondary information
- * - Expandable details section with smooth animation
- * - Quick action buttons for common operations
- * - Respects prefers-reduced-motion
+ * Redesigned for better mobile UX:
+ * - Compact layout showing key info at a glance
+ * - Swipe left to reveal actions (Edit, Activate/Deactivate, Delete)
+ * - Tap to open details sheet
+ * - Clear visual hierarchy
  */
 
-import { useState } from 'react';
 import {
-  ChevronDown,
   Edit,
-  Trash2,
   Power,
   PowerOff,
-  Server,
-  Hash,
-  Globe,
+  Trash2,
   Activity,
   ArrowUpCircle,
-  Gauge,
-  HardDrive,
-  Network,
-  Calendar,
 } from 'lucide-react';
-import {
-  Collapsible,
-  CollapsibleContent,
-  CollapsibleTrigger,
-} from '@/components/common/Collapsible';
+import { MobileSwipeCard, type SwipeAction } from '@/components/mobile';
 import { AdminBadge } from '@/components/admin';
-import { Badge } from '@/components/common/Badge';
-import { MobileActionButton } from '@/components/mobile';
 import { cn } from '@/lib/utils';
-import { formatDate } from '@/shared/utils/date-utils';
 import type { Node, NodeStatus, NodeProtocol } from '@/api/node';
 import type { ResourceGroup } from '@/api/resource/types';
 
@@ -46,6 +29,7 @@ import type { ResourceGroup } from '@/api/resource/types';
 export interface MobileNodeCardProps {
   node: Node;
   resourceGroupsMap?: Record<string, ResourceGroup>;
+  onCardPress: (node: Node) => void;
   onEdit: (node: Node) => void;
   onDelete: (node: Node) => void;
   onActivate: (node: Node) => void;
@@ -70,49 +54,8 @@ const PROTOCOL_CONFIG: Record<NodeProtocol, { label: string; color: string }> = 
   trojan: { label: 'Trojan', color: 'bg-primary/10 text-primary' },
   vless: { label: 'VLESS', color: 'bg-success/10 text-success' },
   vmess: { label: 'VMess', color: 'bg-warning/10 text-warning' },
-  // Hysteria2 - uses info variant (blue family) for consistency with theme
   hysteria2: { label: 'Hy2', color: 'bg-info/10 text-info' },
-  // TUIC - uses warning variant (amber/orange family) for consistency with theme
   tuic: { label: 'TUIC', color: 'bg-warning/10 text-warning' },
-};
-
-// ============================================================================
-// Helper Functions
-// ============================================================================
-
-/**
- * Format bytes to human readable string
- */
-const formatBytes = (bytes: number): string => {
-  if (!bytes || bytes <= 0) return '0 B';
-  const units = ['B', 'KB', 'MB', 'GB', 'TB'];
-  const i = Math.floor(Math.log(bytes) / Math.log(1024));
-  const value = bytes / Math.pow(1024, i);
-  return `${value < 10 ? value.toFixed(2) : value.toFixed(1)} ${units[i]}`;
-};
-
-/**
- * Format bytes rate to human readable (per second)
- */
-const formatBytesRate = (bytesPerSec: number): string => {
-  if (!bytesPerSec || bytesPerSec <= 0) return '0';
-  const units = ['B', 'KB', 'MB', 'GB'];
-  const i = Math.floor(Math.log(bytesPerSec) / Math.log(1024));
-  const value = bytesPerSec / Math.pow(1024, i);
-  return `${value < 10 ? value.toFixed(1) : Math.round(value)}${units[i]}`;
-};
-
-/**
- * Format uptime seconds to human readable string
- */
-const formatUptime = (seconds: number): string => {
-  if (!seconds || seconds <= 0) return '-';
-  const days = Math.floor(seconds / 86400);
-  const hours = Math.floor((seconds % 86400) / 3600);
-  if (days > 0) return `${days}天${hours}时`;
-  const mins = Math.floor((seconds % 3600) / 60);
-  if (hours > 0) return `${hours}时${mins}分`;
-  return `${mins}分`;
 };
 
 // ============================================================================
@@ -139,106 +82,18 @@ const OnlineIndicator = ({ isOnline }: { isOnline: boolean }) => {
   );
 };
 
-
-// ============================================================================
-// System Status Display
-// ============================================================================
-
-interface SystemStatusProps {
-  node: Node;
-}
-
-const SystemStatus = ({ node }: SystemStatusProps) => {
-  const status = node.systemStatus;
-  if (!status) return null;
-
-  return (
-    <div className="space-y-2">
-      {/* Resource usage bars */}
-      <div className="flex items-center gap-3">
-        {/* CPU */}
-        <div className="flex items-center gap-1.5 flex-1">
-          <Gauge className="size-3 text-muted-foreground shrink-0" />
-          <div className="flex-1 h-1.5 bg-muted/30 rounded-full overflow-hidden">
-            <div
-              className={cn(
-                'h-full rounded-full transition-all',
-                status.cpuPercent > 80
-                  ? 'bg-destructive'
-                  : status.cpuPercent > 60
-                    ? 'bg-warning'
-                    : 'bg-success'
-              )}
-              style={{ width: `${Math.min(status.cpuPercent, 100)}%` }}
-            />
-          </div>
-          <span className="text-[10px] tabular-nums text-muted-foreground w-8">
-            {Math.round(status.cpuPercent)}%
-          </span>
-        </div>
-
-        {/* Memory */}
-        <div className="flex items-center gap-1.5 flex-1">
-          <HardDrive className="size-3 text-muted-foreground shrink-0" />
-          <div className="flex-1 h-1.5 bg-muted/30 rounded-full overflow-hidden">
-            <div
-              className={cn(
-                'h-full rounded-full transition-all',
-                status.memoryPercent > 80
-                  ? 'bg-destructive'
-                  : status.memoryPercent > 60
-                    ? 'bg-warning'
-                    : 'bg-info'
-              )}
-              style={{ width: `${Math.min(status.memoryPercent, 100)}%` }}
-            />
-          </div>
-          <span className="text-[10px] tabular-nums text-muted-foreground w-8">
-            {Math.round(status.memoryPercent)}%
-          </span>
-        </div>
-      </div>
-
-      {/* Network rates */}
-      <div className="flex items-center gap-3 text-[10px] font-mono">
-        <Network className="size-3 text-muted-foreground shrink-0" />
-        <span className="text-success">↓{formatBytesRate(status.networkRxRate)}/s</span>
-        <span className="text-info">↑{formatBytesRate(status.networkTxRate)}/s</span>
-        <span className="text-muted-foreground ml-auto">
-          累计: {formatBytes(status.networkRxBytes)} / {formatBytes(status.networkTxBytes)}
-        </span>
-      </div>
-
-      {/* Uptime and connections */}
-      <div className="flex items-center gap-3 text-[10px] text-muted-foreground">
-        <span>运行: {formatUptime(status.uptimeSeconds)}</span>
-        <span className="text-border">·</span>
-        <span>连接: {(status.tcpConnections || 0) + (status.udpConnections || 0)}</span>
-        {status.loadAvg1 !== undefined && (
-          <>
-            <span className="text-border">·</span>
-            <span>负载: {status.loadAvg1.toFixed(2)}</span>
-          </>
-        )}
-      </div>
-    </div>
-  );
-};
-
 // ============================================================================
 // Main Component
 // ============================================================================
 
 export const MobileNodeCard = ({
   node,
-  resourceGroupsMap = {},
+  onCardPress,
   onEdit,
   onDelete,
   onActivate,
   onDeactivate,
 }: MobileNodeCardProps) => {
-  const [isExpanded, setIsExpanded] = useState(false);
-
   const statusConfig = STATUS_CONFIG[node.status] || {
     label: node.status,
     variant: 'default' as const,
@@ -248,274 +103,101 @@ export const MobileNodeCard = ({
     color: 'bg-muted text-muted-foreground',
   };
 
+  // Swipe actions
+  const swipeActions: SwipeAction[] = [
+    {
+      key: 'edit',
+      icon: <Edit className="size-5" />,
+      label: '编辑',
+      bgColor: 'bg-primary',
+      onClick: () => onEdit(node),
+    },
+    {
+      key: 'toggle',
+      icon: node.status === 'active' ? <PowerOff className="size-5" /> : <Power className="size-5" />,
+      label: node.status === 'active' ? '停用' : '激活',
+      bgColor: node.status === 'active' ? 'bg-warning' : 'bg-success',
+      onClick: () => (node.status === 'active' ? onDeactivate(node) : onActivate(node)),
+    },
+    {
+      key: 'delete',
+      icon: <Trash2 className="size-5" />,
+      label: '删除',
+      bgColor: 'bg-destructive',
+      onClick: () => onDelete(node),
+    },
+  ];
+
   return (
-    <Collapsible
-      open={isExpanded}
-      onOpenChange={setIsExpanded}
-      className={cn(
-        'bg-card/60 backdrop-blur-sm',
-        'rounded-2xl',
-        'border border-border/50',
-        'overflow-hidden'
-      )}
-    >
-      {/* Header - Always visible */}
-      <CollapsibleTrigger
-        className={cn(
-          'w-full px-4 py-3 min-h-[60px]',
-          'flex items-center justify-between gap-3',
-          'text-left cursor-pointer',
-          // Active feedback
-          'motion-safe:active:bg-foreground/5'
-        )}
+    <MobileSwipeCard actions={swipeActions}>
+      <div
+        onClick={() => onCardPress(node)}
+        className="px-4 py-3 min-h-[72px] cursor-pointer active:bg-muted/30 transition-colors"
       >
-        {/* Node Info */}
-        <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-2 mb-0.5">
-            <span className="font-medium text-foreground truncate">{node.name}</span>
-            <AdminBadge
-              variant={statusConfig.variant}
-              className="text-[10px] px-1.5 py-0 shrink-0"
-            >
-              {statusConfig.label}
-            </AdminBadge>
+        {/* Row 1: Name + Status + Online */}
+        <div className="flex items-center justify-between gap-2 mb-1">
+          <div className="flex items-center gap-2 min-w-0 flex-1">
+            <span className="font-medium text-foreground truncate">
+              {node.name}
+            </span>
             <OnlineIndicator isOnline={node.isOnline} />
             {node.hasUpdate && node.isOnline && (
               <ArrowUpCircle className="size-3.5 text-warning shrink-0" />
             )}
           </div>
-          <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
-            <span className="font-mono truncate">
-              {node.serverAddress}:{node.agentPort}
-            </span>
-            <span className="text-border">·</span>
-            <span className={cn('px-1.5 py-0 text-[10px] font-medium rounded', protocolConfig.color)}>
-              {protocolConfig.label}
-            </span>
-          </div>
+          <AdminBadge
+            variant={statusConfig.variant}
+            className="text-[10px] px-1.5 py-0 shrink-0"
+          >
+            {statusConfig.label}
+          </AdminBadge>
         </div>
 
-        {/* Chevron */}
-        <ChevronDown
-          className={cn(
-            'size-5 text-muted-foreground shrink-0',
-            // Use iOS spring timing for consistency with CollapsibleContent
-            'transition-transform duration-[var(--spring-ios-default-duration)] ease-[var(--spring-ios-default)]',
-            'motion-reduce:transition-none',
-            isExpanded && 'rotate-180'
-          )}
-        />
-      </CollapsibleTrigger>
-
-      {/* Expandable Details */}
-      <CollapsibleContent>
-        {/* Details Section */}
-        <div className="border-t border-border/30 px-4 py-3 space-y-2.5">
-          {/* ID */}
-          <div className="flex items-center gap-3">
-            <Hash className="size-4 text-muted-foreground shrink-0" />
-            <div className="flex-1 min-w-0">
-              <div className="text-[10px] uppercase tracking-wide text-muted-foreground mb-0.5">
-                ID
-              </div>
-              <div className="text-xs font-mono text-foreground truncate">{node.id}</div>
-            </div>
-          </div>
-
+        {/* Row 2: Address + Protocol + Region */}
+        <div className="flex items-center gap-2 text-xs text-muted-foreground">
           {/* Address */}
-          <div className="flex items-center gap-3">
-            <Server className="size-4 text-muted-foreground shrink-0" />
-            <div className="flex-1 min-w-0">
-              <div className="text-[10px] uppercase tracking-wide text-muted-foreground mb-0.5">
-                地址
-              </div>
-              <div className="text-xs font-mono text-foreground">
-                {node.serverAddress}:{node.agentPort}
-                {node.subscriptionPort && node.subscriptionPort !== node.agentPort && (
-                  <span className="text-primary ml-1">(订阅: {node.subscriptionPort})</span>
-                )}
-              </div>
-            </div>
-          </div>
+          <span className="font-mono truncate max-w-[150px]">
+            {node.serverAddress}:{node.agentPort}
+          </span>
+
+          <span className="text-border">·</span>
 
           {/* Protocol */}
-          <div className="flex items-center gap-3">
-            <Globe className="size-4 text-muted-foreground shrink-0" />
-            <div className="flex-1 min-w-0">
-              <div className="text-[10px] uppercase tracking-wide text-muted-foreground mb-0.5">
-                协议
-              </div>
-              <div className="text-xs text-foreground flex items-center gap-2">
-                <span className={cn('px-1.5 py-0.5 text-[10px] font-medium rounded', protocolConfig.color)}>
-                  {protocolConfig.label}
-                </span>
-                {node.protocol === 'shadowsocks' && node.encryptionMethod && (
-                  <span className="font-mono text-muted-foreground">{node.encryptionMethod}</span>
-                )}
-                {node.protocol === 'trojan' && node.transportProtocol && (
-                  <span className="font-mono text-muted-foreground">
-                    {node.transportProtocol.toUpperCase()} + TLS
-                  </span>
-                )}
-                {node.protocol === 'vless' && node.vlessSecurity && (
-                  <span className="font-mono text-muted-foreground">
-                    {node.vlessTransportType?.toUpperCase() || 'TCP'} + {node.vlessSecurity.toUpperCase()}
-                  </span>
-                )}
-                {node.protocol === 'vmess' && (
-                  <span className="font-mono text-muted-foreground">
-                    {node.vmessTransportType?.toUpperCase() || 'TCP'}
-                    {node.vmessTls && ' + TLS'}
-                  </span>
-                )}
-                {node.protocol === 'hysteria2' && (
-                  <span className="font-mono text-muted-foreground">
-                    QUIC {node.hysteria2CongestionControl && `(${node.hysteria2CongestionControl})`}
-                  </span>
-                )}
-                {node.protocol === 'tuic' && (
-                  <span className="font-mono text-muted-foreground">
-                    QUIC {node.tuicCongestionControl && `(${node.tuicCongestionControl})`}
-                  </span>
-                )}
-              </div>
-            </div>
-          </div>
+          <span className={cn('px-1.5 py-0 text-[10px] font-medium rounded shrink-0', protocolConfig.color)}>
+            {protocolConfig.label}
+          </span>
 
           {/* Region */}
           {node.region && (
-            <div className="flex items-center gap-3">
-              <Globe className="size-4 text-muted-foreground shrink-0" />
-              <div className="flex-1 min-w-0">
-                <div className="text-[10px] uppercase tracking-wide text-muted-foreground mb-0.5">
-                  地区
-                </div>
-                <div className="text-xs text-foreground">{node.region}</div>
-              </div>
-            </div>
+            <>
+              <span className="text-border">·</span>
+              <span className="truncate">{node.region}</span>
+            </>
           )}
 
-          {/* System Status */}
+          {/* System metrics (if online) */}
           {node.isOnline && node.systemStatus && (
-            <div className="flex items-start gap-3">
-              <Activity className="size-4 text-muted-foreground shrink-0 mt-0.5" />
-              <div className="flex-1 min-w-0">
-                <div className="text-[10px] uppercase tracking-wide text-muted-foreground mb-1.5">
-                  系统状态
-                </div>
-                <SystemStatus node={node} />
-              </div>
-            </div>
+            <>
+              <span className="text-border">·</span>
+              <span className="flex items-center gap-1">
+                <Activity className="size-3" />
+                <span className="tabular-nums">
+                  {Math.round(node.systemStatus.cpuPercent)}%
+                </span>
+              </span>
+            </>
           )}
-
-          {/* Version */}
-          {(node.agentVersion || node.systemStatus?.agentVersion) && (
-            <div className="flex items-center gap-3">
-              <ArrowUpCircle className="size-4 text-muted-foreground shrink-0" />
-              <div className="flex-1 min-w-0">
-                <div className="text-[10px] uppercase tracking-wide text-muted-foreground mb-0.5">
-                  版本
-                </div>
-                <div className={cn('text-xs font-mono', node.hasUpdate ? 'text-warning' : 'text-foreground')}>
-                  v{node.agentVersion || node.systemStatus?.agentVersion}
-                  {(node.platform || node.systemStatus?.platform) && (
-                    <span className="text-muted-foreground ml-1">
-                      ({node.platform || node.systemStatus?.platform}/{node.arch || node.systemStatus?.arch})
-                    </span>
-                  )}
-                  {node.hasUpdate && <span className="text-warning ml-2">可更新</span>}
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* Tags */}
-          {node.tags && node.tags.length > 0 && (
-            <div className="flex items-start gap-3">
-              <Hash className="size-4 text-muted-foreground shrink-0 mt-0.5" />
-              <div className="flex-1 min-w-0">
-                <div className="text-[10px] uppercase tracking-wide text-muted-foreground mb-1">
-                  标签
-                </div>
-                <div className="flex flex-wrap gap-1">
-                  {node.tags.map((tag, index) => (
-                    <Badge key={index} variant="secondary" className="text-[10px] px-1.5 py-0">
-                      {tag}
-                    </Badge>
-                  ))}
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* Resource Groups */}
-          {node.groupIds && node.groupIds.length > 0 && (
-            <div className="flex items-start gap-3">
-              <Server className="size-4 text-muted-foreground shrink-0 mt-0.5" />
-              <div className="flex-1 min-w-0">
-                <div className="text-[10px] uppercase tracking-wide text-muted-foreground mb-1">
-                  资源组
-                </div>
-                <div className="flex flex-wrap gap-1">
-                  {node.groupIds.map((gid) => {
-                    const group = resourceGroupsMap[gid];
-                    return (
-                      <Badge key={gid} variant="outline" className="text-[10px] px-1.5 py-0">
-                        {group?.name || gid}
-                      </Badge>
-                    );
-                  })}
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* Created At */}
-          <div className="flex items-center gap-3">
-            <Calendar className="size-4 text-muted-foreground shrink-0" />
-            <div className="flex-1 min-w-0">
-              <div className="text-[10px] uppercase tracking-wide text-muted-foreground mb-0.5">
-                创建时间
-              </div>
-              <div className="text-xs text-foreground">{formatDate(node.createdAt)}</div>
-            </div>
-          </div>
         </div>
+      </div>
 
-        {/* Actions Section */}
-        <div className="border-t border-border/30 px-4 py-3">
-          <div className="flex gap-1.5 flex-wrap">
-            <MobileActionButton
-              icon={<Edit className="size-3.5" />}
-              label="编辑"
-              onClick={() => onEdit(node)}
-              variant="primary"
-            />
-            {node.status === 'active' ? (
-              <MobileActionButton
-                icon={<PowerOff className="size-3.5" />}
-                label="停用"
-                onClick={() => onDeactivate(node)}
-                variant="destructive"
-              />
-            ) : (
-              <MobileActionButton
-                icon={<Power className="size-3.5" />}
-                label="激活"
-                onClick={() => onActivate(node)}
-                variant="success"
-              />
-            )}
-            <MobileActionButton
-              icon={<Trash2 className="size-3.5" />}
-              label="删除"
-              onClick={() => onDelete(node)}
-              variant="destructive"
-            />
-          </div>
+      {/* Swipe hint indicator */}
+      <div className="absolute right-2 top-1/2 -translate-y-1/2 opacity-20 pointer-events-none">
+        <div className="flex gap-0.5">
+          <div className="w-0.5 h-4 rounded-full bg-foreground" />
+          <div className="w-0.5 h-4 rounded-full bg-foreground" />
         </div>
-      </CollapsibleContent>
-    </Collapsible>
+      </div>
+    </MobileSwipeCard>
   );
 };
 

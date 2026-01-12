@@ -5,15 +5,25 @@
  * - Automatic reconnection with exponential backoff
  * - Heartbeat timeout detection
  * - Connection state management
+ * - Page visibility awareness (pause when hidden)
+ * - Network status detection (online/offline)
  *
  * It does NOT create SSE connections directly - it wraps existing
  * subscription functions from the API layer.
  */
 
+// Only log in development mode
+const isDev = import.meta.env.DEV;
+const log = {
+  info: (...args: unknown[]) => isDev && console.log('[SSE]', ...args),
+  warn: (...args: unknown[]) => isDev && console.warn('[SSE]', ...args),
+  error: (...args: unknown[]) => console.error('[SSE]', ...args),
+};
+
 /**
  * SSE connection state
  */
-export type SSEConnectionState = 'connecting' | 'connected' | 'reconnecting' | 'disconnected';
+export type SSEConnectionState = 'connecting' | 'connected' | 'reconnecting' | 'disconnected' | 'paused';
 
 /**
  * Options for the original SSE subscription function
@@ -23,6 +33,8 @@ export interface OriginalSSEOptions<T> {
   onEvent: (event: T) => void;
   onError?: (error: Event) => void;
   onClose?: () => void;
+  /** Last event ID for resuming connection */
+  lastEventId?: string;
 }
 
 /**
@@ -53,6 +65,10 @@ export interface SSEAutoReconnectOptions<T> {
   maxReconnectAttempts?: number;
   /** Heartbeat timeout in ms - reconnect if no data received (default: 60000) */
   heartbeatTimeout?: number;
+  /** Pause connection when page is hidden (default: true) */
+  pauseWhenHidden?: boolean;
+  /** Disconnect when offline, reconnect when online (default: true) */
+  networkAware?: boolean;
 }
 
 /**
@@ -107,6 +123,8 @@ export function createAutoReconnectSSE<P, T>(
     maxReconnectDelay = 30000,
     maxReconnectAttempts = Infinity,
     heartbeatTimeout = 60000,
+    pauseWhenHidden = false,  // Disabled by default to avoid unexpected disconnections
+    networkAware = true,
   } = options;
 
   let cleanup: (() => void) | null = null;
@@ -116,6 +134,8 @@ export function createAutoReconnectSSE<P, T>(
   let reconnectTimer: ReturnType<typeof setTimeout> | null = null;
   let heartbeatTimer: ReturnType<typeof setTimeout> | null = null;
   let isManuallyClosed = false;
+  let isPaused = false;
+  let lastEventId: string | undefined;
 
   /**
    * Update connection state and notify listeners
@@ -134,9 +154,9 @@ export function createAutoReconnectSSE<P, T>(
     if (heartbeatTimer) {
       clearTimeout(heartbeatTimer);
     }
-    if (heartbeatTimeout > 0 && !isManuallyClosed && state === 'connected') {
+    if (heartbeatTimeout > 0 && !isManuallyClosed && !isPaused && state === 'connected') {
       heartbeatTimer = setTimeout(() => {
-        console.warn('SSE heartbeat timeout, reconnecting...');
+        log.warn('Heartbeat timeout, reconnecting...');
         scheduleReconnect();
       }, heartbeatTimeout);
     }
@@ -166,8 +186,15 @@ export function createAutoReconnectSSE<P, T>(
       cleanup = null;
     }
 
-    // Don't reconnect if manually closed
-    if (isManuallyClosed) {
+    // Don't reconnect if manually closed or paused
+    if (isManuallyClosed || isPaused) {
+      setState(isPaused ? 'paused' : 'disconnected');
+      return;
+    }
+
+    // Don't reconnect if offline (networkAware mode)
+    if (networkAware && typeof navigator !== 'undefined' && !navigator.onLine) {
+      log.info('Network offline, waiting for connection...');
       setState('disconnected');
       return;
     }
@@ -178,7 +205,7 @@ export function createAutoReconnectSSE<P, T>(
     }
 
     if (reconnectAttempts >= maxReconnectAttempts) {
-      console.warn(`SSE max reconnect attempts (${maxReconnectAttempts}) reached`);
+      log.warn(`Max reconnect attempts (${maxReconnectAttempts}) reached`);
       setState('disconnected');
       return;
     }
@@ -190,7 +217,7 @@ export function createAutoReconnectSSE<P, T>(
     const jitter = Math.random() * 0.3 + 0.85; // 0.85 - 1.15
     const delay = Math.min(reconnectDelay * jitter, maxReconnectDelay);
 
-    console.log(`SSE reconnecting in ${Math.round(delay)}ms (attempt ${reconnectAttempts})`);
+    log.info(`Reconnecting in ${Math.round(delay)}ms (attempt ${reconnectAttempts})`);
 
     reconnectTimer = setTimeout(() => {
       connect();
@@ -204,7 +231,14 @@ export function createAutoReconnectSSE<P, T>(
    * Establish SSE connection
    */
   const connect = () => {
-    if (isManuallyClosed) {
+    if (isManuallyClosed || isPaused) {
+      return;
+    }
+
+    // Don't connect if offline (networkAware mode)
+    if (networkAware && typeof navigator !== 'undefined' && !navigator.onLine) {
+      log.info('Network offline, skipping connection');
+      setState('disconnected');
       return;
     }
 
@@ -218,7 +252,7 @@ export function createAutoReconnectSSE<P, T>(
 
     cleanup = subscribeFn(params, {
       onOpen: () => {
-        console.log('SSE connection established');
+        log.info('Connection established');
         setState('connected');
         // Reset reconnection state on successful connection
         reconnectAttempts = 0;
@@ -229,6 +263,10 @@ export function createAutoReconnectSSE<P, T>(
       onEvent: (event) => {
         // Reset heartbeat on any data received
         resetHeartbeat();
+        // Store last event ID if available (for resuming)
+        if (event && typeof event === 'object' && 'id' in event) {
+          lastEventId = (event as { id?: string }).id;
+        }
         onEvent(event);
       },
       onError: (error) => {
@@ -238,12 +276,90 @@ export function createAutoReconnectSSE<P, T>(
       },
       onClose: () => {
         // Connection was closed (either by error or server)
-        // Schedule reconnect if not manually closed
-        if (!isManuallyClosed) {
+        // Schedule reconnect if not manually closed or paused
+        if (!isManuallyClosed && !isPaused) {
           scheduleReconnect();
         }
       },
+      lastEventId,
     });
+  };
+
+  /**
+   * Pause connection (e.g., when page is hidden)
+   */
+  const pause = () => {
+    if (isPaused) return;
+    isPaused = true;
+    clearTimers();
+
+    if (cleanup) {
+      cleanup();
+      cleanup = null;
+    }
+
+    setState('paused');
+    log.info('Connection paused');
+  };
+
+  /**
+   * Resume connection after pause
+   */
+  const resume = () => {
+    if (!isPaused) return;
+    isPaused = false;
+
+    // Only reconnect if not manually closed
+    if (!isManuallyClosed) {
+      log.info('Resuming connection...');
+      // Reset backoff on resume
+      reconnectAttempts = 0;
+      reconnectDelay = initialReconnectDelay;
+      connect();
+    }
+  };
+
+  /**
+   * Handle page visibility change
+   */
+  const handleVisibilityChange = () => {
+    if (!pauseWhenHidden) return;
+
+    if (document.hidden) {
+      pause();
+    } else {
+      resume();
+    }
+  };
+
+  /**
+   * Handle online event
+   */
+  const handleOnline = () => {
+    if (!networkAware) return;
+    log.info('Network online, reconnecting...');
+    // Don't reconnect if paused or manually closed
+    if (!isPaused && !isManuallyClosed) {
+      reconnectAttempts = 0;
+      reconnectDelay = initialReconnectDelay;
+      connect();
+    }
+  };
+
+  /**
+   * Handle offline event
+   */
+  const handleOffline = () => {
+    if (!networkAware) return;
+    log.info('Network offline, disconnecting...');
+    clearTimers();
+
+    if (cleanup) {
+      cleanup();
+      cleanup = null;
+    }
+
+    setState('disconnected');
   };
 
   /**
@@ -251,7 +367,17 @@ export function createAutoReconnectSSE<P, T>(
    */
   const close = () => {
     isManuallyClosed = true;
+    isPaused = false;
     clearTimers();
+
+    // Remove event listeners
+    if (typeof document !== 'undefined' && pauseWhenHidden) {
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    }
+    if (typeof window !== 'undefined' && networkAware) {
+      window.removeEventListener('online', handleOnline);
+      window.removeEventListener('offline', handleOffline);
+    }
 
     if (cleanup) {
       cleanup();
@@ -266,6 +392,7 @@ export function createAutoReconnectSSE<P, T>(
    */
   const reconnect = () => {
     isManuallyClosed = false;
+    isPaused = false;
     reconnectAttempts = 0;
     reconnectDelay = initialReconnectDelay;
     clearTimers();
@@ -277,8 +404,22 @@ export function createAutoReconnectSSE<P, T>(
    */
   const getState = (): SSEConnectionState => state;
 
-  // Start initial connection
-  connect();
+  // Set up event listeners for visibility and network changes
+  if (typeof document !== 'undefined' && pauseWhenHidden) {
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+  }
+  if (typeof window !== 'undefined' && networkAware) {
+    window.addEventListener('online', handleOnline);
+    window.addEventListener('offline', handleOffline);
+  }
+
+  // Start initial connection (unless page is hidden)
+  if (pauseWhenHidden && typeof document !== 'undefined' && document.hidden) {
+    isPaused = true;
+    setState('paused');
+  } else {
+    connect();
+  }
 
   return {
     close,

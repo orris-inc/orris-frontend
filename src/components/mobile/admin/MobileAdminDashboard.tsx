@@ -234,7 +234,7 @@ export const MobileAdminDashboard = ({
     {
       icon: <Server className="size-5 text-primary" strokeWidth={1.5} />,
       iconBg: 'bg-primary/10',
-      title: '节点Agent管理',
+      title: '节点Agent',
       subtitle: '监控和配置服务器节点',
       path: '/admin/nodes',
     },

@@ -16,3 +16,5 @@ export {
   useKeyboardAwareness,
   scrollFocusedIntoView,
 } from './useKeyboardAwareness';
+
+export { useCurrentPageTitle } from './useCurrentPageTitle';

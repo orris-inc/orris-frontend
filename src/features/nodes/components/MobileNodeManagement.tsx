@@ -1,14 +1,13 @@
 /**
- * MobileNodeManagement - iOS 26 Liquid Glass styled node management for mobile
+ * MobileNodeManagement - Redesigned iOS-style node management for mobile
  *
- * Designed to work inside AdminLayout:
- * - Compact inline header with title and actions
- * - 3-column stats grid for quick overview
- * - Search input with dropdown filter
- * - Pull-to-refresh pattern (simulated via refresh button)
- * - Infinite scroll friendly card list
- * - Empty and loading states with proper feedback
- * - All touch targets minimum 44px
+ * Key improvements:
+ * - Compact 3-stat summary row
+ * - Clean iOS-style search bar
+ * - Segmented filter for quick status filtering
+ * - Swipe-action cards with tap-to-detail
+ * - Floating action button for creating nodes
+ * - Better empty states
  */
 
 import { useState, useMemo, useCallback } from 'react';
@@ -17,29 +16,19 @@ import {
   RefreshCw,
   Server,
   CheckCircle2,
-  XCircle,
   Activity,
-  Wrench,
-  ArrowUpCircle,
   Search,
   X,
   ChevronLeft,
   ChevronRight,
-  Filter,
   GripVertical,
 } from 'lucide-react';
-import { MobileStatsScroller } from '@/components/mobile/admin';
-import { AdminBadge } from '@/components/admin';
+import { MobileSegmentedFilter, type SegmentOption } from '@/components/mobile';
 import { DraggableMobileList } from '@/components/admin/DraggableMobileList';
 import { Skeleton } from '@/components/common/Skeleton';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from '@/components/common/DropdownMenu';
 import { cn } from '@/lib/utils';
 import { MobileNodeCard } from './MobileNodeCard';
+import { NodeDetailSheet } from './NodeDetailSheet';
 import type { Node, NodeStatus } from '@/api/node';
 import type { ResourceGroup } from '@/api/resource/types';
 
@@ -62,132 +51,261 @@ export interface MobileNodeManagementProps {
   onActivate: (node: Node) => void;
   onDeactivate: (node: Node) => void;
   onPageChange: (page: number) => void;
-  // Drag sort props
+  // Drag sort
+  enableDragSort?: boolean;
+  onDragSortChange?: (enabled: boolean) => void;
   onDragEnd?: (activeId: string, overId: string, oldIndex: number, newIndex: number) => void;
-  isReordering?: boolean;
 }
 
-type StatusFilter = 'all' | NodeStatus | 'online' | 'offline';
+type StatusFilter = 'all' | 'online' | 'offline' | NodeStatus;
 
 // ============================================================================
 // Filter Options
 // ============================================================================
 
-const STATUS_FILTERS: { value: StatusFilter; label: string }[] = [
-  { value: 'all', label: '全部状态' },
+const STATUS_FILTER_OPTIONS: SegmentOption<StatusFilter>[] = [
+  { value: 'all', label: '全部' },
   { value: 'online', label: '在线' },
-  { value: 'offline', label: '离线' },
+  { value: 'offline', label: '离线', hideWhenZero: true },
   { value: 'active', label: '激活' },
-  { value: 'inactive', label: '未激活' },
-  { value: 'maintenance', label: '维护中' },
+  { value: 'inactive', label: '未激活', hideWhenZero: true },
+  { value: 'maintenance', label: '维护中', hideWhenZero: true },
 ];
 
 // ============================================================================
-// Loading Skeleton
+// Sub Components
 // ============================================================================
 
-const CardSkeleton = () => (
-  <div className="bg-card/60 backdrop-blur-sm rounded-2xl border border-border/50 p-4 space-y-3">
-    <div className="flex items-center justify-between">
-      <div className="space-y-2">
-        <Skeleton className="h-4 w-32" />
-        <Skeleton className="h-3 w-48" />
+/**
+ * Compact stats summary - 3 key metrics in one row
+ */
+const StatsSummary = ({
+  total,
+  online,
+  active,
+  loading,
+}: {
+  total: number;
+  online: number;
+  active: number;
+  loading: boolean;
+}) => {
+  if (loading) {
+    return (
+      <div className="flex items-center justify-between px-1">
+        <Skeleton className="h-5 w-20" />
+        <Skeleton className="h-5 w-20" />
+        <Skeleton className="h-5 w-20" />
       </div>
-      <Skeleton className="h-5 w-5 rounded-full" />
+    );
+  }
+
+  return (
+    <div className="flex items-center justify-between text-xs px-1">
+      <div className="flex items-center gap-1.5">
+        <Server className="size-3.5 text-muted-foreground" />
+        <span className="text-muted-foreground">总数</span>
+        <span className="font-semibold text-foreground tabular-nums">{total}</span>
+      </div>
+      <div className="flex items-center gap-1.5">
+        <Activity className="size-3.5 text-success" />
+        <span className="text-muted-foreground">在线</span>
+        <span className="font-semibold text-success tabular-nums">{online}</span>
+      </div>
+      <div className="flex items-center gap-1.5">
+        <CheckCircle2 className="size-3.5 text-info" />
+        <span className="text-muted-foreground">激活</span>
+        <span className="font-semibold text-info tabular-nums">{active}</span>
+      </div>
     </div>
+  );
+};
+
+/**
+ * iOS-style search bar
+ */
+const SearchBar = ({
+  value,
+  onChange,
+  onClear,
+}: {
+  value: string;
+  onChange: (value: string) => void;
+  onClear: () => void;
+}) => {
+  return (
+    <div
+      className={cn(
+        'flex items-center gap-2',
+        'h-10 px-3',
+        'bg-muted/50 rounded-xl',
+        'focus-within:bg-muted/70',
+        'transition-colors'
+      )}
+    >
+      <Search className="size-4 text-muted-foreground shrink-0" />
+      <input
+        type="text"
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        placeholder="搜索节点名称、地址..."
+        className={cn(
+          'flex-1 min-w-0',
+          'bg-transparent',
+          'text-sm text-foreground placeholder:text-muted-foreground/60',
+          'focus:outline-none'
+        )}
+      />
+      {value && (
+        <button
+          type="button"
+          onClick={onClear}
+          className="size-5 rounded-full bg-muted-foreground/20 flex items-center justify-center"
+        >
+          <X className="size-3 text-muted-foreground" />
+        </button>
+      )}
+    </div>
+  );
+};
+
+/**
+ * Empty state with illustration
+ */
+const EmptyState = ({
+  hasFilter,
+  onClearFilter,
+  onCreate,
+}: {
+  hasFilter: boolean;
+  onClearFilter: () => void;
+  onCreate: () => void;
+}) => (
+  <div className="flex flex-col items-center justify-center py-16 px-6">
+    <div className="size-20 rounded-full bg-muted/30 flex items-center justify-center mb-4">
+      {hasFilter ? (
+        <Search className="size-10 text-muted-foreground/50" />
+      ) : (
+        <Server className="size-10 text-muted-foreground/50" />
+      )}
+    </div>
+    <p className="text-base font-medium text-foreground mb-1 text-center">
+      {hasFilter ? '未找到匹配节点' : '暂无节点'}
+    </p>
+    <p className="text-sm text-muted-foreground text-center mb-5">
+      {hasFilter ? '尝试调整搜索条件或清除筛选' : '点击下方按钮创建第一个节点'}
+    </p>
+    <button
+      type="button"
+      onClick={hasFilter ? onClearFilter : onCreate}
+      className={cn(
+        'flex items-center gap-2',
+        'px-5 py-2.5 min-h-[44px]',
+        'rounded-full',
+        'text-sm font-medium',
+        hasFilter
+          ? 'bg-muted text-foreground'
+          : 'bg-primary text-primary-foreground',
+        'active:scale-[0.97] transition-transform'
+      )}
+    >
+      {hasFilter ? (
+        <>
+          <X className="size-4" />
+          清除筛选
+        </>
+      ) : (
+        <>
+          <Plus className="size-4" />
+          创建节点
+        </>
+      )}
+    </button>
   </div>
 );
 
+/**
+ * Loading skeleton for cards
+ */
 const LoadingSkeleton = () => (
   <div className="space-y-2.5">
     {[1, 2, 3, 4, 5].map((i) => (
-      <CardSkeleton key={i} />
+      <div
+        key={i}
+        className="bg-card/60 backdrop-blur-sm rounded-2xl border border-border/50 p-4"
+      >
+        <div className="flex items-center justify-between mb-2">
+          <div className="flex items-center gap-2">
+            <Skeleton className="h-4 w-24" />
+            <Skeleton className="h-4 w-12" />
+          </div>
+          <Skeleton className="h-5 w-10 rounded-full" />
+        </div>
+        <div className="flex items-center gap-2">
+          <Skeleton className="h-4 w-28 font-mono" />
+          <Skeleton className="h-3 w-1" />
+          <Skeleton className="h-3 w-10" />
+        </div>
+      </div>
     ))}
   </div>
 );
 
-// ============================================================================
-// Empty State
-// ============================================================================
-
-interface EmptyStateProps {
-  hasFilter: boolean;
-  onClearFilter: () => void;
-}
-
-const EmptyState = ({ hasFilter, onClearFilter }: EmptyStateProps) => (
-  <div className="flex flex-col items-center justify-center py-16 px-4">
-    <div className="size-16 rounded-full bg-muted/50 flex items-center justify-center mb-4">
-      <Server className="size-8 text-muted-foreground" />
-    </div>
-    <p className="text-base font-medium text-foreground mb-1">
-      {hasFilter ? '未找到匹配节点' : '暂无节点'}
-    </p>
-    <p className="text-sm text-muted-foreground text-center mb-4">
-      {hasFilter ? '尝试调整搜索条件或清除筛选' : '点击右上角按钮创建第一个节点'}
-    </p>
-    {hasFilter && (
-      <button
-        onClick={onClearFilter}
-        className={cn(
-          'px-4 py-2 min-h-[44px]',
-          'rounded-full',
-          'text-sm font-medium',
-          'bg-primary text-primary-foreground',
-          'motion-safe:active:scale-[0.97]'
-        )}
-      >
-        清除筛选
-      </button>
-    )}
-  </div>
-);
-
-// ============================================================================
-// Pagination
-// ============================================================================
-
-interface PaginationProps {
+/**
+ * Simple pagination
+ */
+const Pagination = ({
+  page,
+  total,
+  pageSize,
+  onPageChange,
+}: {
   page: number;
   total: number;
   pageSize: number;
   onPageChange: (page: number) => void;
-}
-
-const Pagination = ({ page, total, pageSize, onPageChange }: PaginationProps) => {
+}) => {
   const totalPages = Math.ceil(total / pageSize);
 
   if (totalPages <= 1) return null;
 
   return (
-    <div className="flex items-center justify-center gap-4 py-4 px-4">
+    <div className="flex items-center justify-center gap-6 py-4">
       <button
+        type="button"
         onClick={() => onPageChange(page - 1)}
         disabled={page <= 1}
         className={cn(
           'size-10 rounded-full',
           'flex items-center justify-center',
-          'bg-foreground/5',
-          'transition-colors',
-          page <= 1 ? 'opacity-40' : 'hover:bg-foreground/10 motion-safe:active:scale-[0.97]'
+          'bg-muted/50',
+          'transition-all',
+          page <= 1
+            ? 'opacity-40'
+            : 'active:scale-[0.95] active:bg-muted'
         )}
       >
         <ChevronLeft className="size-5" />
       </button>
 
       <span className="text-sm text-muted-foreground tabular-nums">
-        {page} / {totalPages}
+        <span className="font-medium text-foreground">{page}</span>
+        {' / '}
+        {totalPages}
       </span>
 
       <button
+        type="button"
         onClick={() => onPageChange(page + 1)}
         disabled={page >= totalPages}
         className={cn(
           'size-10 rounded-full',
           'flex items-center justify-center',
-          'bg-foreground/5',
-          'transition-colors',
-          page >= totalPages ? 'opacity-40' : 'hover:bg-foreground/10 motion-safe:active:scale-[0.97]'
+          'bg-muted/50',
+          'transition-all',
+          page >= totalPages
+            ? 'opacity-40'
+            : 'active:scale-[0.95] active:bg-muted'
         )}
       >
         <ChevronRight className="size-5" />
@@ -195,6 +313,32 @@ const Pagination = ({ page, total, pageSize, onPageChange }: PaginationProps) =>
     </div>
   );
 };
+
+/**
+ * Floating action button
+ */
+const FloatingActionButton = ({
+  onClick,
+}: {
+  onClick: () => void;
+}) => (
+  <button
+    type="button"
+    onClick={onClick}
+    className={cn(
+      'fixed right-4 bottom-6',
+      'size-14 rounded-full',
+      'bg-primary text-primary-foreground',
+      'shadow-lg shadow-primary/25',
+      'flex items-center justify-center',
+      'active:scale-[0.95] transition-transform',
+      'z-40'
+    )}
+    style={{ bottom: 'calc(env(safe-area-inset-bottom, 0px) + 24px)' }}
+  >
+    <Plus className="size-6" />
+  </button>
+);
 
 // ============================================================================
 // Main Component
@@ -215,38 +359,64 @@ export const MobileNodeManagement = ({
   onActivate,
   onDeactivate,
   onPageChange,
+  enableDragSort = false,
+  onDragSortChange,
   onDragEnd,
-  isReordering = false,
 }: MobileNodeManagementProps) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<StatusFilter>('all');
-  const [dragSortEnabled, setDragSortEnabled] = useState(false);
+  const [selectedNode, setSelectedNode] = useState<Node | null>(null);
+  const [detailSheetOpen, setDetailSheetOpen] = useState(false);
 
-  // Get node ID for drag-and-drop
-  const getNodeId = useCallback((node: Node) => node.id, []);
-
-  // Calculate stats from nodes
+  // Calculate stats
   const stats = useMemo(() => {
     const online = nodes.filter((n) => n.isOnline).length;
     const offline = nodes.filter((n) => !n.isOnline).length;
     const active = nodes.filter((n) => n.status === 'active').length;
     const inactive = nodes.filter((n) => n.status === 'inactive').length;
     const maintenance = nodes.filter((n) => n.status === 'maintenance').length;
-    const updatable = nodes.filter((n) => n.hasUpdate && n.isOnline).length;
-    return { total, online, offline, active, inactive, maintenance, updatable };
+    return { total, online, offline, active, inactive, maintenance };
   }, [nodes, total]);
 
-  // Filter nodes by search and status
+  // Add counts to filter options
+  const filterOptionsWithCounts = useMemo(() => {
+    return STATUS_FILTER_OPTIONS.map((opt) => {
+      let count: number;
+      switch (opt.value) {
+        case 'all':
+          count = total;
+          break;
+        case 'online':
+          count = stats.online;
+          break;
+        case 'offline':
+          count = stats.offline;
+          break;
+        case 'active':
+          count = stats.active;
+          break;
+        case 'inactive':
+          count = stats.inactive;
+          break;
+        case 'maintenance':
+          count = stats.maintenance;
+          break;
+        default:
+          count = 0;
+      }
+      return { ...opt, count };
+    });
+  }, [stats, total]);
+
+  // Filter nodes
   const filteredNodes = useMemo(() => {
     return nodes.filter((node) => {
       // Status filter
-      if (statusFilter !== 'all') {
-        if (statusFilter === 'online' && !node.isOnline) return false;
-        if (statusFilter === 'offline' && node.isOnline) return false;
-        if (statusFilter === 'active' && node.status !== 'active') return false;
-        if (statusFilter === 'inactive' && node.status !== 'inactive') return false;
-        if (statusFilter === 'maintenance' && node.status !== 'maintenance') return false;
-      }
+      if (statusFilter === 'online' && !node.isOnline) return false;
+      if (statusFilter === 'offline' && node.isOnline) return false;
+      if (statusFilter === 'active' && node.status !== 'active') return false;
+      if (statusFilter === 'inactive' && node.status !== 'inactive') return false;
+      if (statusFilter === 'maintenance' && node.status !== 'maintenance') return false;
 
       // Search filter
       if (searchQuery) {
@@ -273,224 +443,111 @@ export const MobileNodeManagement = ({
 
   const hasFilter = searchQuery !== '' || statusFilter !== 'all';
 
-  // Stats configuration for MobileStatsScroller
-  const statsConfig = [
-    {
-      title: '总节点',
-      value: stats.total,
-      icon: <Server className="size-3.5" />,
-      iconBg: 'bg-primary/10',
-      iconColor: 'text-primary',
-      loading,
-    },
-    {
-      title: '在线',
-      value: stats.online,
-      icon: <Activity className="size-3.5" />,
-      iconBg: 'bg-success/10',
-      iconColor: 'text-success',
-      loading,
-    },
-    {
-      title: '离线',
-      value: stats.offline,
-      icon: <XCircle className="size-3.5" />,
-      iconBg: 'bg-muted/50',
-      iconColor: 'text-muted-foreground',
-      loading,
-    },
-    {
-      title: '激活',
-      value: stats.active,
-      icon: <CheckCircle2 className="size-3.5" />,
-      iconBg: 'bg-info/10',
-      iconColor: 'text-info',
-      loading,
-    },
-    {
-      title: '维护',
-      value: stats.maintenance,
-      icon: <Wrench className="size-3.5" />,
-      iconBg: 'bg-warning/10',
-      iconColor: 'text-warning',
-      loading,
-    },
-    {
-      title: '可更新',
-      value: stats.updatable,
-      icon: <ArrowUpCircle className="size-3.5" />,
-      iconBg: 'bg-warning/10',
-      iconColor: 'text-warning',
-      loading,
-    },
-  ];
+  // Handle card press - open detail sheet
+  const handleCardPress = useCallback((node: Node) => {
+    setSelectedNode(node);
+    setDetailSheetOpen(true);
+  }, []);
+
+  // Get node ID for drag sort
+  const getNodeId = useCallback((node: Node) => node.id, []);
+
+  // Render single node card
+  const renderNodeCard = useCallback(
+    (node: Node) => (
+      <MobileNodeCard
+        key={node.id}
+        node={node}
+        resourceGroupsMap={resourceGroupsMap}
+        onCardPress={handleCardPress}
+        onEdit={onEdit}
+        onDelete={onDelete}
+        onActivate={onActivate}
+        onDeactivate={onDeactivate}
+      />
+    ),
+    [resourceGroupsMap, handleCardPress, onEdit, onDelete, onActivate, onDeactivate]
+  );
+
+  // Check if drag sort should be enabled (only when no filters active)
+  const isDragEnabled = enableDragSort && !hasFilter && onDragEnd;
 
   return (
-    <div className="space-y-3">
-      {/* Stats Grid */}
-      <MobileStatsScroller stats={statsConfig} className="px-0" />
+    <div className="pb-20">
+      {/* Header Section */}
+      <div className="space-y-3 mb-4">
+        {/* Stats Summary */}
+        <StatsSummary
+          total={stats.total}
+          online={stats.online}
+          active={stats.active}
+          loading={loading}
+        />
 
-      {/* Action Bar - Search + Filter + Sort + Refresh + Create */}
-      <div className="flex items-center gap-1.5">
-        {/* Search Bar */}
-        <div
-          className={cn(
-            'flex-1 flex items-center gap-2',
-            'h-10 min-h-[44px] px-2.5',
-            'bg-foreground/5 rounded-xl',
-            'border border-border/50',
-            'focus-within:border-primary/50 focus-within:ring-1 focus-within:ring-primary/30',
-            'transition-colors',
-            dragSortEnabled && 'opacity-50 pointer-events-none'
-          )}
-        >
-          <Search className="size-4 text-muted-foreground shrink-0" />
-          <input
-            type="text"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder={dragSortEnabled ? '排序中...' : '搜索...'}
-            disabled={dragSortEnabled}
-            className={cn(
-              'flex-1 min-w-0',
-              'bg-transparent',
-              'text-sm text-foreground placeholder:text-muted-foreground',
-              'focus:outline-none',
-              'disabled:cursor-not-allowed'
-            )}
-          />
-          {searchQuery && !dragSortEnabled && (
+        {/* Search Bar with Actions */}
+        <div className="flex items-center gap-2">
+          <div className="flex-1">
+            <SearchBar
+              value={searchQuery}
+              onChange={setSearchQuery}
+              onClear={() => setSearchQuery('')}
+            />
+          </div>
+          {/* Drag Sort Toggle */}
+          {onDragSortChange && (
             <button
-              onClick={() => setSearchQuery('')}
-              className="size-7 rounded-full flex items-center justify-center hover:bg-foreground/10"
+              type="button"
+              onClick={() => onDragSortChange(!enableDragSort)}
+              className={cn(
+                'size-10 rounded-xl shrink-0',
+                'flex items-center justify-center',
+                'transition-colors',
+                enableDragSort
+                  ? 'bg-primary/10 text-primary'
+                  : 'bg-muted/50 text-muted-foreground'
+              )}
             >
-              <X className="size-3.5 text-muted-foreground" />
+              <GripVertical className="size-4" />
             </button>
           )}
-        </div>
-
-        {/* Status Filter Dropdown - hidden in drag sort mode */}
-        {!dragSortEnabled && (
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <button
-                className={cn(
-                  'size-10 min-h-[44px] min-w-[44px] rounded-xl shrink-0',
-                  'flex items-center justify-center relative',
-                  'bg-foreground/5 hover:bg-foreground/10',
-                  'border border-border/50',
-                  'transition-colors',
-                  'focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/50',
-                  statusFilter !== 'all' ? 'text-primary border-primary/50' : 'text-muted-foreground'
-                )}
-              >
-                <Filter className="size-4" />
-                {statusFilter !== 'all' && (
-                  <span className="absolute -top-1 -right-1 size-2 rounded-full bg-primary" />
-                )}
-              </button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="min-w-[140px]">
-              {STATUS_FILTERS.map((filter) => (
-                <DropdownMenuItem
-                  key={filter.value}
-                  onClick={() => setStatusFilter(filter.value)}
-                  className={cn(
-                    'cursor-pointer',
-                    statusFilter === filter.value && 'bg-primary/10 text-primary'
-                  )}
-                >
-                  {filter.label}
-                </DropdownMenuItem>
-              ))}
-            </DropdownMenuContent>
-          </DropdownMenu>
-        )}
-
-        {/* Drag Sort Toggle Button */}
-        {onDragEnd && (
           <button
-            onClick={() => {
-              const newState = !dragSortEnabled;
-              setDragSortEnabled(newState);
-              // Clear filters when entering drag sort mode
-              if (newState && hasFilter) {
-                clearFilters();
-              }
-            }}
-            disabled={isReordering}
+            type="button"
+            onClick={onRefresh}
+            disabled={refreshing}
             className={cn(
-              'size-10 min-h-[44px] min-w-[44px] rounded-xl shrink-0',
+              'size-10 rounded-xl shrink-0',
               'flex items-center justify-center',
-              'border border-border/50',
-              'transition-colors',
-              'focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/50',
-              dragSortEnabled
-                ? 'bg-primary/10 border-primary/50 text-primary'
-                : 'bg-foreground/5 hover:bg-foreground/10 text-muted-foreground'
+              'bg-muted/50',
+              'active:bg-muted transition-colors'
             )}
           >
-            <GripVertical className="size-4" />
-          </button>
-        )}
-
-        {/* Refresh Button */}
-        <button
-          onClick={onRefresh}
-          disabled={refreshing || isReordering}
-          className={cn(
-            'size-10 min-h-[44px] min-w-[44px] rounded-xl shrink-0',
-            'flex items-center justify-center',
-            'bg-foreground/5 hover:bg-foreground/10',
-            'border border-border/50',
-            'transition-colors',
-            'focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/50'
-          )}
-        >
-          <RefreshCw
-            className={cn('size-4 text-muted-foreground', (refreshing || isReordering) && 'animate-spin')}
-          />
-        </button>
-
-        {/* Add Button */}
-        <button
-          onClick={onCreate}
-          className={cn(
-            'size-10 min-h-[44px] min-w-[44px] rounded-xl shrink-0',
-            'flex items-center justify-center',
-            'bg-primary text-primary-foreground',
-            'motion-safe:active:scale-[0.97]',
-            'focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/50'
-          )}
-        >
-          <Plus className="size-5" />
-        </button>
-      </div>
-
-      {/* Drag Sort Mode Hint */}
-      {dragSortEnabled && (
-        <div className="flex items-center justify-between px-1">
-          <AdminBadge variant="info" className="text-xs">
-            长按卡片拖拽排序
-          </AdminBadge>
-          <button
-            onClick={() => setDragSortEnabled(false)}
-            className="text-xs text-primary hover:underline"
-          >
-            退出排序
+            <RefreshCw
+              className={cn(
+                'size-4 text-muted-foreground',
+                refreshing && 'animate-spin'
+              )}
+            />
           </button>
         </div>
-      )}
 
-      {/* Active Filter Badge */}
-      {hasFilter && !dragSortEnabled && (
-        <div className="flex items-center justify-between">
-          <AdminBadge variant="info" className="text-xs">
-            显示 {filteredNodes.length} 条结果
-          </AdminBadge>
+        {/* Segmented Filter */}
+        <MobileSegmentedFilter
+          options={filterOptionsWithCounts}
+          value={statusFilter}
+          onChange={setStatusFilter}
+        />
+      </div>
+
+      {/* Results count when filtered */}
+      {hasFilter && !loading && filteredNodes.length > 0 && (
+        <div className="flex items-center justify-between mb-3 px-1">
+          <span className="text-xs text-muted-foreground">
+            找到 <span className="font-medium text-foreground">{filteredNodes.length}</span> 个结果
+          </span>
           <button
+            type="button"
             onClick={clearFilters}
-            className="text-xs text-primary hover:underline"
+            className="text-xs text-primary font-medium"
           >
             清除筛选
           </button>
@@ -498,51 +555,54 @@ export const MobileNodeManagement = ({
       )}
 
       {/* Node List */}
-      {loading || isReordering ? (
+      {loading ? (
         <LoadingSkeleton />
-      ) : (dragSortEnabled ? nodes : filteredNodes).length === 0 ? (
-        <EmptyState hasFilter={hasFilter && !dragSortEnabled} onClearFilter={clearFilters} />
-      ) : dragSortEnabled && onDragEnd ? (
-        // Drag sort mode: use DraggableMobileList with original nodes order
+      ) : filteredNodes.length === 0 ? (
+        <EmptyState
+          hasFilter={hasFilter}
+          onClearFilter={clearFilters}
+          onCreate={onCreate}
+        />
+      ) : isDragEnabled ? (
         <DraggableMobileList
-          items={nodes}
+          items={filteredNodes}
           getItemId={getNodeId}
-          renderItem={(node) => (
-            <MobileNodeCard
-              node={node}
-              resourceGroupsMap={resourceGroupsMap}
-              onEdit={onEdit}
-              onDelete={onDelete}
-              onActivate={onActivate}
-              onDeactivate={onDeactivate}
-            />
-          )}
+          renderItem={renderNodeCard}
           onDragEnd={onDragEnd}
           enabled={true}
           longPressDelay={250}
           className="space-y-2.5"
         />
       ) : (
-        // Normal mode: filtered list without drag
         <div className="space-y-2.5">
-          {filteredNodes.map((node) => (
-            <MobileNodeCard
-              key={node.id}
-              node={node}
-              resourceGroupsMap={resourceGroupsMap}
-              onEdit={onEdit}
-              onDelete={onDelete}
-              onActivate={onActivate}
-              onDeactivate={onDeactivate}
-            />
-          ))}
+          {filteredNodes.map((node) => renderNodeCard(node))}
         </div>
       )}
 
       {/* Pagination */}
       {!loading && filteredNodes.length > 0 && (
-        <Pagination page={page} total={total} pageSize={pageSize} onPageChange={onPageChange} />
+        <Pagination
+          page={page}
+          total={total}
+          pageSize={pageSize}
+          onPageChange={onPageChange}
+        />
       )}
+
+      {/* Floating Action Button */}
+      <FloatingActionButton onClick={onCreate} />
+
+      {/* Node Detail Sheet */}
+      <NodeDetailSheet
+        open={detailSheetOpen}
+        onOpenChange={setDetailSheetOpen}
+        node={selectedNode}
+        resourceGroupsMap={resourceGroupsMap}
+        onEdit={onEdit}
+        onDelete={onDelete}
+        onActivate={onActivate}
+        onDeactivate={onDeactivate}
+      />
     </div>
   );
 };

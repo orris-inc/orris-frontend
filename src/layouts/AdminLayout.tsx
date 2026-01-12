@@ -21,7 +21,7 @@ import { TooltipProvider } from '@/components/common/Tooltip';
 import { AdminSidebarNav, AdminSidebarFooter } from '@/components/navigation/AdminSidebarNav';
 import { MobileDrawer } from '@/components/navigation/MobileDrawer';
 import { UserMenu } from '@/components/navigation/UserMenu';
-import { useBreakpoint } from '@/hooks';
+import { useBreakpoint, useCurrentPageTitle } from '@/hooks';
 
 import { useAuthStore } from '@/features/auth/stores/auth-store';
 import { useAuth } from '@/features/auth/hooks/useAuth';
@@ -42,6 +42,7 @@ export const AdminLayout = ({ children }: AdminLayoutProps) => {
   const { logout } = useAuth();
   const { filterNavigationByPermission } = usePermissions();
   const { isMobile } = useBreakpoint();
+  const currentPageTitle = useCurrentPageTitle('管理控制台');
 
   const [mobileDrawerOpen, setMobileDrawerOpen] = useState(false);
   const [collapsed, setCollapsed] = useState(() => {
@@ -90,7 +91,7 @@ export const AdminLayout = ({ children }: AdminLayoutProps) => {
 
   return (
     <TooltipProvider delayDuration={0}>
-      <div className="min-h-screen min-h-dvh bg-background overflow-x-hidden">
+      <div className="min-h-viewport bg-background overflow-x-hidden">
         {/* 移动端侧边栏 - iOS 26 Liquid Glass Design */}
         <MobileDrawer
           open={mobileDrawerOpen}
@@ -151,7 +152,7 @@ export const AdminLayout = ({ children }: AdminLayoutProps) => {
         {/* 主内容区域 */}
         <div
           className={cn(
-            "flex min-h-screen flex-col transition-all duration-200",
+            "flex min-h-viewport flex-col transition-all duration-200",
             collapsed ? "md:pl-16" : "md:pl-56"
           )}
         >
@@ -172,7 +173,7 @@ export const AdminLayout = ({ children }: AdminLayoutProps) => {
             <div className="flex-1 min-w-0">
               {isMobile ? (
                 <h1 className="text-base font-semibold text-foreground truncate">
-                  管理控制台
+                  {currentPageTitle}
                 </h1>
               ) : (
                 <EnhancedBreadcrumbs />

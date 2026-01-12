@@ -121,7 +121,7 @@ export const LoginPage = () => {
   };
 
   return (
-    <div className="min-h-screen w-full bg-background flex items-center justify-center p-6 sm:p-8">
+    <div className="min-h-viewport w-full bg-background flex items-center justify-center p-6 sm:p-8">
       {/* Grid background decoration */}
       <div className="fixed inset-0 bg-[linear-gradient(to_right,hsl(var(--border))_1px,transparent_1px),linear-gradient(to_bottom,hsl(var(--border))_1px,transparent_1px)] bg-[size:4rem_4rem] [mask-image:radial-gradient(ellipse_80%_80%_at_50%_50%,black_40%,transparent_100%)] pointer-events-none" />
 

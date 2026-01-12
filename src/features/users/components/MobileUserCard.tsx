@@ -1,34 +1,25 @@
 /**
- * MobileUserCard - iOS 26 Liquid Glass styled user card for mobile
+ * MobileUserCard - iOS-style user card with swipe actions
  *
- * Designed following iOS Human Interface Guidelines:
- * - Minimum 44px touch targets for all interactive elements
- * - Clear visual hierarchy with primary/secondary information
- * - Expandable details section with smooth animation
- * - Quick action buttons for common operations
- * - Respects prefers-reduced-motion
+ * Redesigned for better mobile UX:
+ * - Compact layout showing key info at a glance
+ * - Swipe left to reveal actions (Edit, Subscription, Password, Delete)
+ * - Tap to select/view details
+ * - Clear visual hierarchy
  */
 
-import { useState } from 'react';
 import {
-  ChevronDown,
   Edit,
   Trash2,
   CreditCard,
   KeyRound,
   Mail,
-  Calendar,
-  User as UserIcon,
+  Shield,
+  Crown,
 } from 'lucide-react';
-import {
-  Collapsible,
-  CollapsibleContent,
-  CollapsibleTrigger,
-} from '@/components/common/Collapsible';
+import { MobileSwipeCard, type SwipeAction } from '@/components/mobile';
 import { AdminBadge } from '@/components/admin';
-import { MobileActionButton } from '@/components/mobile';
 import { cn } from '@/lib/utils';
-import { formatDate } from '@/shared/utils/date-utils';
 import { ACTIVE_STATUS_CONFIG, ROLE_CONFIG } from '@/shared/constants/status-config';
 import type { UserResponse } from '@/api/user';
 
@@ -38,6 +29,7 @@ import type { UserResponse } from '@/api/user';
 
 interface MobileUserCardProps {
   user: UserResponse;
+  onCardPress: (user: UserResponse) => void;
   onEdit: (user: UserResponse) => void;
   onDelete: (user: UserResponse) => void;
   onAssignSubscription: (user: UserResponse) => void;
@@ -45,149 +37,130 @@ interface MobileUserCardProps {
 }
 
 // ============================================================================
+// Helper Components
+// ============================================================================
+
+const UserAvatar = ({ name, email, role }: { name?: string; email: string; role?: string }) => {
+  const initial = (name || email).charAt(0).toUpperCase();
+  const isAdmin = role === 'admin';
+
+  return (
+    <div
+      className={cn(
+        'relative size-11 rounded-full flex items-center justify-center',
+        'text-base font-semibold',
+        isAdmin
+          ? 'bg-gradient-to-br from-amber-400 to-orange-500 text-white'
+          : 'bg-primary/10 text-primary'
+      )}
+    >
+      {initial}
+      {isAdmin && (
+        <div className="absolute -bottom-0.5 -right-0.5 size-4 rounded-full bg-amber-500 flex items-center justify-center">
+          <Crown className="size-2.5 text-white" />
+        </div>
+      )}
+    </div>
+  );
+};
+
+// ============================================================================
 // Main Component
 // ============================================================================
 
 export const MobileUserCard = ({
   user,
+  onCardPress,
   onEdit,
   onDelete,
   onAssignSubscription,
   onResetPassword,
 }: MobileUserCardProps) => {
-  const [isExpanded, setIsExpanded] = useState(false);
-
   const statusConfig = ACTIVE_STATUS_CONFIG[user.status] || { label: user.status, variant: 'default' as const };
   const roleConfig = ROLE_CONFIG[user.role || 'user'] || { label: '用户', variant: 'default' as const };
 
+  // Swipe actions
+  const swipeActions: SwipeAction[] = [
+    {
+      key: 'edit',
+      icon: <Edit className="size-5" />,
+      label: '编辑',
+      bgColor: 'bg-primary',
+      onClick: () => onEdit(user),
+    },
+    {
+      key: 'subscription',
+      icon: <CreditCard className="size-5" />,
+      label: '订阅',
+      bgColor: 'bg-success',
+      onClick: () => onAssignSubscription(user),
+    },
+    {
+      key: 'password',
+      icon: <KeyRound className="size-5" />,
+      label: '密码',
+      bgColor: 'bg-warning',
+      onClick: () => onResetPassword(user),
+    },
+    {
+      key: 'delete',
+      icon: <Trash2 className="size-5" />,
+      label: '删除',
+      bgColor: 'bg-destructive',
+      onClick: () => onDelete(user),
+    },
+  ];
+
   return (
-    <Collapsible
-      open={isExpanded}
-      onOpenChange={setIsExpanded}
-      className={cn(
-        'bg-card/60 backdrop-blur-sm',
-        'rounded-2xl',
-        'border border-border/50',
-        'overflow-hidden'
-      )}
-    >
-      {/* Header - Always visible */}
-      <CollapsibleTrigger
-        className={cn(
-          'w-full px-4 py-3 min-h-[60px]',
-          'flex items-center justify-between gap-3',
-          'text-left cursor-pointer',
-          // Active feedback
-          'motion-safe:active:bg-foreground/5'
-        )}
+    <MobileSwipeCard actions={swipeActions}>
+      <div
+        onClick={() => onCardPress(user)}
+        className="flex items-center gap-3 px-4 py-3 cursor-pointer active:bg-muted/30 transition-colors"
       >
+        {/* Avatar */}
+        <UserAvatar name={user.name} email={user.email} role={user.role} />
+
         {/* User Info */}
         <div className="flex-1 min-w-0">
+          {/* Name and Status */}
           <div className="flex items-center gap-2 mb-0.5">
-            <span className="font-medium text-foreground truncate">
-              {user.name || user.email}
+            <span className="font-medium text-foreground truncate text-sm">
+              {user.name || user.email.split('@')[0]}
             </span>
-            <AdminBadge variant={statusConfig.variant} className="text-[10px] px-1.5 py-0 shrink-0">
+            <AdminBadge
+              variant={statusConfig.variant}
+              className="text-[10px] px-1.5 py-0 shrink-0"
+            >
               {statusConfig.label}
             </AdminBadge>
           </div>
+
+          {/* Email and Role */}
           <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
-            {user.name && (
-              <>
-                <Mail className="size-3 shrink-0" />
-                <span className="truncate">{user.email}</span>
-                <span className="text-border">·</span>
-              </>
-            )}
-            <AdminBadge variant={roleConfig.variant} className="text-[10px] px-1.5 py-0">
-              {roleConfig.label}
-            </AdminBadge>
+            <Mail className="size-3 shrink-0" />
+            <span className="truncate">{user.email}</span>
           </div>
         </div>
 
-        {/* Chevron */}
-        <ChevronDown
-          className={cn(
-            'size-5 text-muted-foreground shrink-0',
-            'transition-transform duration-200',
-            'motion-reduce:transition-none',
-            isExpanded && 'rotate-180'
-          )}
-        />
-      </CollapsibleTrigger>
-
-      {/* Expandable Details */}
-      <CollapsibleContent>
-        {/* Details Section */}
-        <div className="border-t border-border/30 px-4 py-3 space-y-2.5">
-          {/* ID */}
-          <div className="flex items-center gap-3">
-            <UserIcon className="size-4 text-muted-foreground shrink-0" />
-            <div className="flex-1 min-w-0">
-              <div className="text-[10px] uppercase tracking-wide text-muted-foreground mb-0.5">ID</div>
-              <div className="text-xs font-mono text-foreground truncate">{user.id}</div>
+        {/* Role Badge - Only show for admin */}
+        {user.role === 'admin' && (
+          <div className="shrink-0">
+            <div className="flex items-center gap-1 px-2 py-1 rounded-full bg-amber-500/10 text-amber-600 dark:text-amber-400">
+              <Shield className="size-3" />
+              <span className="text-[10px] font-medium">{roleConfig.label}</span>
             </div>
           </div>
+        )}
+      </div>
 
-          {/* Email */}
-          <div className="flex items-center gap-3">
-            <Mail className="size-4 text-muted-foreground shrink-0" />
-            <div className="flex-1 min-w-0">
-              <div className="text-[10px] uppercase tracking-wide text-muted-foreground mb-0.5">邮箱</div>
-              <div className="text-xs text-foreground truncate">{user.email}</div>
-            </div>
-          </div>
-
-          {/* Name */}
-          {user.name && (
-            <div className="flex items-center gap-3">
-              <UserIcon className="size-4 text-muted-foreground shrink-0" />
-              <div className="flex-1 min-w-0">
-                <div className="text-[10px] uppercase tracking-wide text-muted-foreground mb-0.5">姓名</div>
-                <div className="text-xs text-foreground">{user.name}</div>
-              </div>
-            </div>
-          )}
-
-          {/* Created At */}
-          <div className="flex items-center gap-3">
-            <Calendar className="size-4 text-muted-foreground shrink-0" />
-            <div className="flex-1 min-w-0">
-              <div className="text-[10px] uppercase tracking-wide text-muted-foreground mb-0.5">创建时间</div>
-              <div className="text-xs text-foreground">{formatDate(user.createdAt)}</div>
-            </div>
-          </div>
+      {/* Swipe hint indicator - subtle visual cue */}
+      <div className="absolute right-2 top-1/2 -translate-y-1/2 opacity-20 pointer-events-none">
+        <div className="flex gap-0.5">
+          <div className="w-0.5 h-4 rounded-full bg-foreground" />
+          <div className="w-0.5 h-4 rounded-full bg-foreground" />
         </div>
-
-        {/* Actions Section */}
-        <div className="border-t border-border/30 px-4 py-3">
-          <div className="grid grid-cols-4 gap-1.5">
-            <MobileActionButton
-              icon={<Edit className="size-3.5" />}
-              label="编辑"
-              onClick={() => onEdit(user)}
-              variant="primary"
-            />
-            <MobileActionButton
-              icon={<CreditCard className="size-3.5" />}
-              label="订阅"
-              onClick={() => onAssignSubscription(user)}
-            />
-            <MobileActionButton
-              icon={<KeyRound className="size-3.5" />}
-              label="密码"
-              onClick={() => onResetPassword(user)}
-            />
-            <MobileActionButton
-              icon={<Trash2 className="size-3.5" />}
-              label="删除"
-              onClick={() => onDelete(user)}
-              variant="destructive"
-            />
-          </div>
-        </div>
-      </CollapsibleContent>
-    </Collapsible>
+      </div>
+    </MobileSwipeCard>
   );
 };
 

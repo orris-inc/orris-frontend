@@ -10,11 +10,6 @@
 import { createBrowserRouter, Navigate } from 'react-router';
 import { LandingPage } from '@/pages/LandingPage';
 import { LoginPage } from '@/pages/LoginPage';
-import { LoginPageNew } from '@/pages/LoginPageNew';
-import { LoginPageMinimal } from '@/pages/LoginPageMinimal';
-import { LoginPageGlass } from '@/pages/LoginPageGlass';
-import { LoginPageApple } from '@/pages/LoginPageApple';
-import { LoginSelector } from '@/pages/LoginSelector';
 import { RegisterPage } from '@/pages/RegisterPage';
 import { ForgotPasswordPage } from '@/pages/ForgotPasswordPage';
 import { ResetPasswordPage } from '@/pages/ResetPasswordPage';
@@ -44,12 +39,6 @@ export const router = createBrowserRouter([
   {
     path: '/',
     element: <LandingPage />,
-  },
-
-  // Login page selector
-  {
-    path: '/login-selector',
-    element: <LoginSelector />,
   },
 
   // ==================== User Routes ====================
@@ -226,34 +215,10 @@ export const router = createBrowserRouter([
 
   // ==================== Public Routes ====================
 
-  // Login (legacy)
+  // Login
   {
     path: '/login',
     element: <LoginPage />,
-  },
-
-  // Login (new design - Art Deco)
-  {
-    path: '/login-new',
-    element: <LoginPageNew />,
-  },
-
-  // Login (minimal style)
-  {
-    path: '/login-minimal',
-    element: <LoginPageMinimal />,
-  },
-
-  // Login (glass morphism - Tailwind)
-  {
-    path: '/login-glass',
-    element: <LoginPageGlass />,
-  },
-
-  // Login (Apple minimal style)
-  {
-    path: '/login-apple',
-    element: <LoginPageApple />,
   },
 
   // Register

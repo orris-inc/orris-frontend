@@ -23,7 +23,6 @@ import { useNotificationStore } from '@/shared/stores/notification-store';
 import { useSubscriptionsPage } from '@/features/subscriptions/hooks/useSubscriptions';
 import { SubscriptionListTable } from '@/features/subscriptions/components/SubscriptionListTable';
 import { SubscriptionDetailDialog } from '@/features/subscriptions/components/SubscriptionDetailDialog';
-import { SubscriptionDetailSheet } from '@/features/subscriptions/components/SubscriptionDetailSheet';
 import { DuplicateSubscriptionDialog } from '@/features/subscriptions/components/DuplicateSubscriptionDialog';
 import { DuplicateSubscriptionSheet } from '@/features/subscriptions/components/DuplicateSubscriptionSheet';
 import { CancelSubscriptionDialog } from '@/features/subscriptions/components/CancelSubscriptionDialog';
@@ -163,7 +162,7 @@ export const SubscriptionManagementPage: React.FC = () => {
     await handleDeleteConfirm(subscriptionToDelete);
   };
 
-  // Mobile view - uses MobileSubscriptionManagement with its own header/stats
+  // Mobile view - uses MobileSubscriptionManagement with built-in detail sheet
   if (isMobile) {
     return (
       <AdminLayout>
@@ -185,19 +184,6 @@ export const SubscriptionManagementPage: React.FC = () => {
             onPageChange={handlePageChange}
           />
         </div>
-
-        {/* Subscription Detail Sheet */}
-        <SubscriptionDetailSheet
-          open={detailDialogOpen}
-          onOpenChange={(open) => {
-            if (!open) {
-              setDetailDialogOpen(false);
-              setSelectedSubscription(null);
-            }
-          }}
-          entity={selectedSubscription}
-          user={selectedSubscription ? usersMap[selectedSubscription.userId] : undefined}
-        />
 
         {/* Duplicate Subscription Sheet */}
         <DuplicateSubscriptionSheet

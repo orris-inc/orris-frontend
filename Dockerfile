@@ -1,16 +1,14 @@
 # Stage 1: Build
-FROM node:20-alpine AS builder
+FROM node:22-alpine AS builder
 
 WORKDIR /app
 
-# Install dependencies
+# Install dependencies (layer cached when package*.json unchanged)
 COPY package.json package-lock.json ./
 RUN npm ci
 
-# Copy source code
+# Copy source code and build
 COPY . .
-
-# Build the application
 RUN npm run build
 
 # Stage 2: Production with Nginx

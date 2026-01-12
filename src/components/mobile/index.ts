@@ -36,3 +36,7 @@ export { MobileDataCard } from './admin/MobileDataCard';
 export type { MobileDataCardProps, MobileDataCardAction } from './admin/MobileDataCard';
 export { MobileActionButton } from './admin/MobileActionButton';
 export type { MobileActionButtonProps, MobileActionButtonVariant } from './admin/MobileActionButton';
+export { MobileSwipeCard } from './admin/MobileSwipeCard';
+export type { MobileSwipeCardProps, SwipeAction } from './admin/MobileSwipeCard';
+export { MobileSegmentedFilter } from './admin/MobileSegmentedFilter';
+export type { MobileSegmentedFilterProps, SegmentOption } from './admin/MobileSegmentedFilter';

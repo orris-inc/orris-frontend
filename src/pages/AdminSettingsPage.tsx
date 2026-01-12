@@ -321,7 +321,7 @@ export const AdminSettingsPage = () => {
         </div>
       ) : (
         /* Desktop Layout */
-        <div className="h-[calc(100vh-3.5rem)] flex flex-col">
+        <div className="h-[calc(100dvh-3.5rem)] flex flex-col">
           {/* Desktop Header */}
           <header className="shrink-0 py-6 sm:py-8">
             <div className="flex items-center gap-3">
