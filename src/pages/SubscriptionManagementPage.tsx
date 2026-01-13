@@ -4,6 +4,7 @@
  */
 
 import { useState, useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
   Receipt,
   RefreshCw,
@@ -33,7 +34,8 @@ import { adminCreateSubscription, adminUpdateSubscriptionStatus, adminDeleteSubs
 import type { Subscription } from '@/api/subscription/types';
 
 export const SubscriptionManagementPage: React.FC = () => {
-  usePageTitle('订阅管理');
+  const { t } = useTranslation();
+  usePageTitle(t('admin.subscriptions.pageTitle'));
 
   const { isMobile } = useBreakpoint();
 
@@ -88,22 +90,22 @@ export const SubscriptionManagementPage: React.FC = () => {
   const handleDuplicateSubmit = async (data: Parameters<typeof adminCreateSubscription>[0]) => {
     try {
       await adminCreateSubscription(data);
-      showSuccess('订阅创建成功');
+      showSuccess(t('messages.subscriptionCreateSuccess'));
       setDuplicateDialogOpen(false);
       setSelectedSubscription(null);
       refetch();
     } catch {
-      showError('创建订阅失败');
+      showError(t('messages.subscriptionCreateFailed'));
     }
   };
 
   const handleActivate = async (subscription: Subscription) => {
     try {
       await adminUpdateSubscriptionStatus(subscription.id, { status: 'active' });
-      showSuccess('订阅已激活');
+      showSuccess(t('messages.subscriptionActivated'));
       refetch();
     } catch {
-      showError('激活订阅失败');
+      showError(t('messages.subscriptionActivateFailed'));
     }
   };
 
@@ -120,22 +122,22 @@ export const SubscriptionManagementPage: React.FC = () => {
         reason,
         immediate,
       });
-      showSuccess('订阅已取消');
+      showSuccess(t('messages.subscriptionCancelled'));
       setCancelDialogOpen(false);
       setSelectedSubscription(null);
       refetch();
     } catch {
-      showError('取消订阅失败');
+      showError(t('messages.subscriptionCancelFailed'));
     }
   };
 
   const handleRenew = async (subscription: Subscription) => {
     try {
       await adminUpdateSubscriptionStatus(subscription.id, { status: 'renewed' });
-      showSuccess('订阅已续费');
+      showSuccess(t('messages.subscriptionRenewed'));
       refetch();
     } catch {
-      showError('续费订阅失败');
+      showError(t('messages.subscriptionRenewFailed'));
     }
   };
 
@@ -147,12 +149,12 @@ export const SubscriptionManagementPage: React.FC = () => {
   const handleDeleteConfirm = async (subscription: Subscription) => {
     try {
       await adminDeleteSubscription(subscription.id);
-      showSuccess('订阅已删除');
+      showSuccess(t('messages.subscriptionDeleted'));
       setDeleteDialogOpen(false);
       setSubscriptionToDelete(null);
       refetch();
     } catch {
-      showError('删除订阅失败');
+      showError(t('messages.subscriptionDeleteFailed'));
     }
   };
 
@@ -235,16 +237,16 @@ export const SubscriptionManagementPage: React.FC = () => {
       <div className="py-3 space-y-3">
         {/* High-Density Status Bar - All metrics inline */}
         <header className="bg-card rounded-lg border border-border px-3 py-2">
-          <div className="flex items-center justify-between gap-4 flex-wrap">
+          <div className="flex items-center justify-between gap-3 flex-wrap">
             {/* Left: Title + Primary Stats */}
-            <div className="flex items-center gap-4">
-              <h1 className="text-sm font-semibold text-foreground">订阅管理</h1>
+            <div className="flex items-center gap-3">
+              <h1 className="text-sm font-semibold text-foreground">{t('admin.subscriptions.pageTitle')}</h1>
               <div className="h-4 w-px bg-border hidden sm:block" />
               <div className="flex items-center gap-3 text-xs">
                 <span className="flex items-center gap-1 text-muted-foreground">
                   <Receipt className="size-3" />
                   <span className="font-medium text-foreground">{stats.total}</span>
-                  <span className="hidden sm:inline">订阅</span>
+                  <span className="hidden sm:inline">{t('admin.subscriptions.label')}</span>
                 </span>
                 <span className="flex items-center gap-1">
                   <CheckCircle2 className="size-3 text-success" />
@@ -257,25 +259,25 @@ export const SubscriptionManagementPage: React.FC = () => {
             <div className="hidden md:flex items-center gap-3 text-xs">
               <span className="flex items-center gap-1.5">
                 <XCircle className="size-3 text-destructive" />
-                <span className="text-muted-foreground">取消</span>
+                <span className="text-muted-foreground">{t('subscriptionStatus.cancelled')}</span>
                 <span className="font-semibold tabular-nums text-foreground">{stats.cancelled}</span>
               </span>
               <span className="flex items-center gap-1.5">
                 <AlertCircle className="size-3 text-muted-foreground" />
-                <span className="text-muted-foreground">过期</span>
+                <span className="text-muted-foreground">{t('subscriptionStatus.expired')}</span>
                 <span className="font-semibold tabular-nums text-foreground">{stats.expired}</span>
               </span>
               {stats.pending > 0 && (
                 <span className="flex items-center gap-1.5">
                   <Clock className="size-3 text-warning" />
-                  <span className="text-muted-foreground">待处理</span>
+                  <span className="text-muted-foreground">{t('subscriptionStatus.pending')}</span>
                   <span className="font-semibold tabular-nums text-warning">{stats.pending}</span>
                 </span>
               )}
               {stats.renewed > 0 && (
                 <span className="flex items-center gap-1.5">
                   <RotateCw className="size-3 text-info" />
-                  <span className="text-muted-foreground">续费</span>
+                  <span className="text-muted-foreground">{t('subscriptionStatus.renewed')}</span>
                   <span className="font-semibold tabular-nums text-info">{stats.renewed}</span>
                 </span>
               )}
@@ -298,10 +300,10 @@ export const SubscriptionManagementPage: React.FC = () => {
                       />
                     }
                   >
-                    <span className="sr-only">刷新</span>
+                    <span className="sr-only">{t('common.actions.refresh')}</span>
                   </AdminButton>
                 </TooltipTrigger>
-                <TooltipContent>刷新列表</TooltipContent>
+                <TooltipContent>{t('admin.subscriptions.refreshList')}</TooltipContent>
               </Tooltip>
             </div>
           </div>
@@ -367,14 +369,10 @@ export const SubscriptionManagementPage: React.FC = () => {
       <ConfirmDialog
         open={deleteDialogOpen}
         onOpenChange={setDeleteDialogOpen}
-        title="确认删除"
-        description={
-          subscriptionToDelete
-            ? `确认删除订阅 "${subscriptionToDelete.id}" 吗？此操作不可恢复。`
-            : ''
-        }
-        confirmText="删除"
-        cancelText="取消"
+        title={t('admin.subscriptions.confirmDeleteTitle')}
+        description={t('common.messages.confirmDelete')}
+        confirmText={t('common.actions.delete')}
+        cancelText={t('common.actions.cancel')}
         variant="destructive"
         onConfirm={handleDesktopDeleteConfirm}
       />

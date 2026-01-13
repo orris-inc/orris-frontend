@@ -780,11 +780,6 @@ export const ForwardRulesPage = () => {
           setDetailDialogOpen(false);
           setSelectedRule(null);
         }}
-        onCopy={(rule) => {
-          setDetailDialogOpen(false);
-          setSelectedRule(null);
-          handleCopy(rule);
-        }}
         agents={forwardAgents}
         nodes={nodes}
         resourceGroups={resourceGroups}

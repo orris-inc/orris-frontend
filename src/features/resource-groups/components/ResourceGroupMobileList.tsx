@@ -3,6 +3,7 @@
  * Mobile-friendly card list with Accordion for expanded details
  */
 
+import { useTranslation } from 'react-i18next';
 import {
   Edit,
   MoreHorizontal,
@@ -76,6 +77,7 @@ export const ResourceGroupMobileList: React.FC<ResourceGroupMobileListProps> = (
   onDelete,
   onToggleStatus,
 }) => {
+  const { t } = useTranslation();
   // Render dropdown menu
   const renderDropdownMenu = (resourceGroup: ResourceGroup) => {
     return (
@@ -133,7 +135,7 @@ export const ResourceGroupMobileList: React.FC<ResourceGroupMobileListProps> = (
     <Accordion type="multiple" className="space-y-1.5">
       {resourceGroups.map((resourceGroup) => {
         const status = resourceGroup.status;
-        const statusConfig = ACTIVE_STATUS_CONFIG[status] || { label: '未知', variant: 'default' as const };
+        const statusConfig = ACTIVE_STATUS_CONFIG[status] || { labelKey: 'common.status.unknown', variant: 'default' as const };
         const plan = plansMap[resourceGroup.planId];
 
         return (
@@ -152,7 +154,7 @@ export const ResourceGroupMobileList: React.FC<ResourceGroupMobileListProps> = (
                       {resourceGroup.name}
                     </span>
                     <AdminBadge variant={statusConfig.variant} className="text-[10px] px-1.5 py-0 flex-shrink-0">
-                      {statusConfig.label}
+                      {t(statusConfig.labelKey)}
                     </AdminBadge>
                   </div>
 

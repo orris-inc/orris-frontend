@@ -25,7 +25,7 @@ import {
   ChevronRight,
   GripVertical,
 } from 'lucide-react';
-import { MobileSegmentedFilter, type SegmentOption } from '@/components/mobile/admin';
+import { MobileSegmentedFilter, type SegmentOption } from '@/components/mobile';
 import { AdminBadge } from '@/components/admin';
 import { DraggableMobileList } from '@/components/admin/DraggableMobileList';
 import { Skeleton } from '@/components/common/Skeleton';
@@ -266,6 +266,32 @@ const Pagination = ({ page, total, pageSize, onPageChange }: PaginationProps) =>
 // ============================================================================
 // Search Bar Component
 // ============================================================================
+
+/**
+ * Floating action button
+ */
+const FloatingActionButton = ({
+  onClick,
+}: {
+  onClick: () => void;
+}) => (
+  <button
+    type="button"
+    onClick={onClick}
+    className={cn(
+      'fixed right-4 bottom-6',
+      'size-14 rounded-full',
+      'bg-primary text-primary-foreground',
+      'shadow-lg shadow-primary/25',
+      'flex items-center justify-center',
+      'active:scale-[0.95] transition-transform',
+      'z-40'
+    )}
+    style={{ bottom: 'calc(env(safe-area-inset-bottom, 0px) + 24px)' }}
+  >
+    <Plus className="size-6" />
+  </button>
+);
 
 const SearchBar = ({
   value,
@@ -607,22 +633,7 @@ export const MobileForwardRuleManagement = ({
       )}
 
       {/* Floating Action Button */}
-      <button
-        type="button"
-        onClick={onCreate}
-        className={cn(
-          'fixed right-4 bottom-6',
-          'size-14 rounded-full',
-          'bg-primary text-primary-foreground',
-          'shadow-lg shadow-primary/25',
-          'flex items-center justify-center',
-          'active:scale-[0.95] transition-transform',
-          'z-40'
-        )}
-        style={{ bottom: 'calc(env(safe-area-inset-bottom, 0px) + 24px)' }}
-      >
-        <Plus className="size-6" />
-      </button>
+      <FloatingActionButton onClick={onCreate} />
     </div>
   );
 };

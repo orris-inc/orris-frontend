@@ -53,15 +53,15 @@ export const AdminTelegramBindingCard = () => {
   // Loading state
   if (isLoading) {
     return (
-      <div className="rounded-xl border bg-card p-5 shadow-sm">
-        <div className="flex items-center gap-3 mb-5">
-          <Skeleton className="size-10 rounded-lg" />
+      <div className="glass-elevated rounded-2xl overflow-hidden">
+        <div className="flex items-center gap-3 p-5 pb-4 border-b border-border/50">
+          <Skeleton className="size-10 rounded-xl" />
           <div className="space-y-2 flex-1">
             <Skeleton className="h-5 w-32" />
             <Skeleton className="h-4 w-24" />
           </div>
         </div>
-        <div className="space-y-3">
+        <div className="p-5 space-y-3">
           <Skeleton className="h-10 w-full rounded-lg" />
           <Skeleton className="h-10 w-full rounded-lg" />
           <Skeleton className="h-10 w-full rounded-lg" />
@@ -73,13 +73,13 @@ export const AdminTelegramBindingCard = () => {
   // Feature not configured
   if (isNotConfigured) {
     return (
-      <div className="rounded-xl border bg-card p-5 shadow-sm">
-        <div className="flex items-center gap-3 text-muted-foreground">
-          <div className="p-2.5 rounded-lg bg-muted">
+      <div className="glass-elevated rounded-2xl overflow-hidden">
+        <div className="flex items-center gap-3 p-5 text-muted-foreground">
+          <div className="p-2.5 rounded-xl bg-muted">
             <Send className="size-5" />
           </div>
           <div>
-            <h3 className="font-medium text-foreground">Telegram 通知</h3>
+            <h3 className="font-medium text-foreground">Telegram 通知设置</h3>
             <p className="text-sm">功能暂未启用</p>
           </div>
         </div>
@@ -89,13 +89,13 @@ export const AdminTelegramBindingCard = () => {
 
   return (
     <>
-      <div className="rounded-xl border bg-card shadow-sm hover:shadow-md transition-shadow duration-200">
+      <div className="glass-elevated rounded-2xl overflow-hidden">
         {/* Header */}
-        <div className="flex items-center justify-between p-5 pb-4">
+        <div className="flex items-center justify-between p-5 pb-4 border-b border-border/50">
           <div className="flex items-center gap-3">
             <div
               className={cn(
-                "p-2.5 rounded-lg transition-colors duration-200",
+                "p-2.5 rounded-xl transition-colors duration-200",
                 isBound
                   ? "bg-[#26A5E4]/10 ring-1 ring-[#26A5E4]/20"
                   : "bg-muted",
@@ -110,7 +110,7 @@ export const AdminTelegramBindingCard = () => {
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <h3 className="font-semibold text-foreground">Telegram 通知</h3>
+                <h3 className="font-semibold text-foreground">Telegram 通知设置</h3>
                 {isBound && (
                   <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-success/10 text-success ring-1 ring-success/20">
                     <CheckCircle2 className="size-3" />

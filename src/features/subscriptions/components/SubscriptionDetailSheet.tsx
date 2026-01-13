@@ -9,6 +9,7 @@
  */
 
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
   Calendar,
   CheckCircle,
@@ -60,20 +61,20 @@ interface SubscriptionDetailSheetProps {
   onDelete?: (subscription: Subscription) => void;
 }
 
-// Status configuration
-const STATUS_CONFIG: Record<SubscriptionStatus, { label: string; color: string }> = {
-  active: { label: '激活', color: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400' },
-  renewed: { label: '已续费', color: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400' },
-  pending: { label: '待处理', color: 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400' },
-  cancelled: { label: '已取消', color: 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400' },
-  expired: { label: '已过期', color: 'bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400' },
+// Status configuration using CSS variables
+const STATUS_CONFIG: Record<SubscriptionStatus, { labelKey: string; color: string }> = {
+  active: { labelKey: 'subscriptionStatus.active', color: 'bg-success/10 text-success' },
+  renewed: { labelKey: 'subscriptionStatus.renewed', color: 'bg-success/10 text-success' },
+  pending: { labelKey: 'subscriptionStatus.pending', color: 'bg-warning/10 text-warning' },
+  cancelled: { labelKey: 'subscriptionStatus.cancelled', color: 'bg-destructive/10 text-destructive' },
+  expired: { labelKey: 'subscriptionStatus.expired', color: 'bg-muted text-muted-foreground' },
 };
 
-// Plan type configuration
-const PLAN_TYPE_CONFIG: Record<PlanType, { label: string; color: string }> = {
-  node: { label: '节点订阅', color: 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400' },
-  forward: { label: '端口转发', color: 'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400' },
-  hybrid: { label: '混合订阅', color: 'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400' },
+// Plan type configuration using CSS variables
+const PLAN_TYPE_CONFIG: Record<PlanType, { labelKey: string; color: string }> = {
+  node: { labelKey: 'planType.node', color: 'bg-info/10 text-info' },
+  forward: { labelKey: 'planType.forward', color: 'bg-warning/10 text-warning' },
+  hybrid: { labelKey: 'planType.hybrid', color: 'bg-primary/10 text-primary' },
 };
 
 // ============================================================================
@@ -135,12 +136,13 @@ const DetailRow = ({
   value: React.ReactNode;
   copyable?: string;
 }) => {
+  const { t } = useTranslation();
   const { showSuccess } = useNotificationStore();
 
   const handleCopy = async () => {
     if (copyable) {
       await navigator.clipboard.writeText(copyable);
-      showSuccess('已复制');
+      showSuccess(t('messages.copiedToClipboard'));
     }
   };
 
@@ -183,21 +185,22 @@ export const SubscriptionDetailSheet: React.FC<SubscriptionDetailSheetProps> = (
   onRenew,
   onDelete,
 }) => {
+  const { t } = useTranslation();
   const [actionSheetOpen, setActionSheetOpen] = useState(false);
 
   if (!subscription) return null;
 
-  const statusConfig = STATUS_CONFIG[subscription.status] || { label: subscription.status, color: 'bg-gray-100 text-gray-600' };
+  const statusConfig = STATUS_CONFIG[subscription.status] || { labelKey: subscription.status, color: 'bg-muted text-muted-foreground' };
   const planTypeConfig = subscription.plan?.planType
     ? PLAN_TYPE_CONFIG[subscription.plan.planType]
-    : { label: '节点订阅', color: 'bg-blue-100 text-blue-700' };
+    : { labelKey: 'planType.node', color: 'bg-info/10 text-info' };
 
   // Build action sheet actions based on subscription status
   const moreActions = [];
 
   if (canActivate(subscription) && onActivate) {
     moreActions.push({
-      label: '激活订阅',
+      label: t('subscription.activateSubscription'),
       icon: <Play className="size-5" />,
       onPress: async () => {
         onActivate(subscription);
@@ -208,7 +211,7 @@ export const SubscriptionDetailSheet: React.FC<SubscriptionDetailSheetProps> = (
 
   if (canRenew(subscription) && onRenew) {
     moreActions.push({
-      label: '续费订阅',
+      label: t('subscription.renewSubscription'),
       icon: <RotateCw className="size-5" />,
       onPress: async () => {
         onRenew(subscription);
@@ -219,7 +222,7 @@ export const SubscriptionDetailSheet: React.FC<SubscriptionDetailSheetProps> = (
 
   if (canCancel(subscription) && onCancel) {
     moreActions.push({
-      label: '取消订阅',
+      label: t('subscription.cancel'),
       icon: <XCircle className="size-5" />,
       onPress: async () => {
         onCancel(subscription);
@@ -231,7 +234,7 @@ export const SubscriptionDetailSheet: React.FC<SubscriptionDetailSheetProps> = (
 
   if (onDelete) {
     moreActions.push({
-      label: '删除订阅',
+      label: t('subscription.delete'),
       icon: <Trash2 className="size-5" />,
       onPress: async () => {
         onDelete(subscription);
@@ -257,9 +260,9 @@ export const SubscriptionDetailSheet: React.FC<SubscriptionDetailSheetProps> = (
               </div>
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2">
-                  <SheetTitle className="truncate">订阅详情</SheetTitle>
+                  <SheetTitle className="truncate">{t('subscription.details')}</SheetTitle>
                   <span className={cn('px-1.5 py-0.5 rounded text-xs font-medium shrink-0', statusConfig.color)}>
-                    {statusConfig.label}
+                    {t(statusConfig.labelKey)}
                   </span>
                 </div>
                 <SheetDescription className="flex items-center gap-1 text-xs">
@@ -273,37 +276,37 @@ export const SubscriptionDetailSheet: React.FC<SubscriptionDetailSheetProps> = (
             {/* Subscription Link */}
             {subscription.subscribeUrl && (
               <div className="rounded-xl border p-3 bg-muted/30">
-                <div className="text-xs font-medium text-muted-foreground mb-2">订阅链接</div>
+                <div className="text-xs font-medium text-muted-foreground mb-2">{t('subscription.link')}</div>
                 <SubscriptionLinkSelector subscribeUrl={subscription.subscribeUrl} compact />
               </div>
             )}
 
             {/* User Info */}
-            <DetailSection title="用户信息">
+            <DetailSection title={t('subscription.userInfo')}>
               <DetailRow
                 icon={<User className="size-3.5" />}
-                label="用户"
+                label={t('subscription.user')}
                 value={user ? (
                   <div>
-                    <div className="font-medium">{user.name || '未设置名称'}</div>
+                    <div className="font-medium">{user.name || t('userInfo.noNameSet')}</div>
                     <div className="text-xs text-muted-foreground">{user.email}</div>
                   </div>
-                ) : `用户 ID: ${subscription.userId}`}
+                ) : `${t('subscription.user')} ID: ${subscription.userId}`}
               />
             </DetailSection>
 
             {/* Plan Info */}
-            <DetailSection title="计划信息">
+            <DetailSection title={t('subscription.planInfo')}>
               {subscription.plan ? (
                 <>
                   <DetailRow
                     icon={<CreditCard className="size-3.5" />}
-                    label="计划"
+                    label={t('subscription.plan')}
                     value={
                       <div className="flex items-center gap-1.5 flex-wrap">
                         <span className="font-medium">{subscription.plan.name}</span>
                         <span className={cn('px-1.5 py-0.5 rounded text-[10px] font-medium', planTypeConfig.color)}>
-                          {planTypeConfig.label}
+                          {t(planTypeConfig.labelKey)}
                         </span>
                       </div>
                     }
@@ -311,13 +314,13 @@ export const SubscriptionDetailSheet: React.FC<SubscriptionDetailSheetProps> = (
                   {subscription.plan.pricings && subscription.plan.pricings.length > 0 && (
                     <DetailRow
                       icon={<Clock className="size-3.5" />}
-                      label="定价"
+                      label={t('subscription.pricing')}
                       value={
                         <div className="space-y-0.5">
                           {subscription.plan.pricings.slice(0, 3).map((pricing) => (
                             <div key={pricing.billingCycle} className="text-xs">
                               {pricing.billingCycle}: ¥{(pricing.price / 100).toFixed(2)}
-                              {!pricing.isActive && <span className="text-muted-foreground ml-1">(未启用)</span>}
+                              {!pricing.isActive && <span className="text-muted-foreground ml-1">({t('subscriptionStatus.inactive')})</span>}
                             </div>
                           ))}
                         </div>
@@ -326,61 +329,61 @@ export const SubscriptionDetailSheet: React.FC<SubscriptionDetailSheetProps> = (
                   )}
                 </>
               ) : (
-                <div className="text-sm text-muted-foreground py-3 px-3">未关联计划</div>
+                <div className="text-sm text-muted-foreground py-3 px-3">{t('subscription.noPlan')}</div>
               )}
             </DetailSection>
 
             {/* Date Info */}
-            <DetailSection title="日期信息">
+            <DetailSection title={t('subscription.dateInfo')}>
               <div className="grid grid-cols-2 gap-2 px-3 py-2.5">
                 <div>
                   <div className="flex items-center gap-1.5 text-muted-foreground mb-0.5">
                     <Calendar className="size-3.5" />
-                    <span className="text-xs">开始日期</span>
+                    <span className="text-xs">{t('subscription.startDate')}</span>
                   </div>
                   <div className="text-sm">{formatDate(subscription.startDate)}</div>
                 </div>
                 <div>
                   <div className="flex items-center gap-1.5 text-muted-foreground mb-0.5">
                     <Calendar className="size-3.5" />
-                    <span className="text-xs">结束日期</span>
+                    <span className="text-xs">{t('subscription.endDate')}</span>
                   </div>
                   <div className="text-sm">{subscription.endDate ? formatDate(subscription.endDate) : '-'}</div>
                 </div>
               </div>
               <DetailRow
                 icon={<Clock className="size-3.5" />}
-                label="当前周期"
+                label={t('subscription.currentPeriod')}
                 value={`${formatDate(subscription.currentPeriodStart)} ~ ${formatDate(subscription.currentPeriodEnd)}`}
               />
             </DetailSection>
 
             {/* Status Info */}
-            <DetailSection title="状态信息">
+            <DetailSection title={t('subscription.statusInfo')}>
               <div className="grid grid-cols-3 gap-2 px-3 py-2.5">
                 <div className="text-center p-2 rounded-lg bg-muted/30">
                   {subscription.autoRenew ? (
-                    <RefreshCw className="size-4 text-emerald-500 mx-auto" />
+                    <RefreshCw className="size-4 text-success mx-auto" />
                   ) : (
                     <XCircle className="size-4 text-muted-foreground mx-auto" />
                   )}
-                  <div className="text-xs mt-1">{subscription.autoRenew ? '自动续费' : '不续费'}</div>
+                  <div className="text-xs mt-1">{subscription.autoRenew ? t('subscription.autoRenewal') : t('subscription.noRenewal')}</div>
                 </div>
                 <div className="text-center p-2 rounded-lg bg-muted/30">
                   {subscription.isActive ? (
-                    <CheckCircle className="size-4 text-emerald-500 mx-auto" />
+                    <CheckCircle className="size-4 text-success mx-auto" />
                   ) : (
-                    <XCircle className="size-4 text-red-500 mx-auto" />
+                    <XCircle className="size-4 text-destructive mx-auto" />
                   )}
-                  <div className="text-xs mt-1">{subscription.isActive ? '已激活' : '未激活'}</div>
+                  <div className="text-xs mt-1">{subscription.isActive ? t('subscriptionStatus.activated') : t('subscriptionStatus.notActivated')}</div>
                 </div>
                 <div className="text-center p-2 rounded-lg bg-muted/30">
                   {subscription.isExpired ? (
-                    <XCircle className="size-4 text-red-500 mx-auto" />
+                    <XCircle className="size-4 text-destructive mx-auto" />
                   ) : (
-                    <CheckCircle className="size-4 text-emerald-500 mx-auto" />
+                    <CheckCircle className="size-4 text-success mx-auto" />
                   )}
-                  <div className="text-xs mt-1">{subscription.isExpired ? '已过期' : '未过期'}</div>
+                  <div className="text-xs mt-1">{subscription.isExpired ? t('subscriptionStatus.expired') : t('subscriptionStatus.notExpired')}</div>
                 </div>
               </div>
 
@@ -389,15 +392,15 @@ export const SubscriptionDetailSheet: React.FC<SubscriptionDetailSheetProps> = (
                   <Separator className="my-0" />
                   {subscription.cancelledAt && (
                     <DetailRow
-                      icon={<XCircle className="size-3.5 text-red-500" />}
-                      label="取消时间"
+                      icon={<XCircle className="size-3.5 text-destructive" />}
+                      label={t('subscription.cancelledAt')}
                       value={formatDate(subscription.cancelledAt)}
                     />
                   )}
                   {subscription.cancelReason && (
                     <DetailRow
-                      icon={<XCircle className="size-3.5 text-red-500" />}
-                      label="取消原因"
+                      icon={<XCircle className="size-3.5 text-destructive" />}
+                      label={t('subscription.cancelReason')}
                       value={subscription.cancelReason}
                     />
                   )}
@@ -406,10 +409,10 @@ export const SubscriptionDetailSheet: React.FC<SubscriptionDetailSheetProps> = (
             </DetailSection>
 
             {/* UUID */}
-            <DetailSection title="标识信息">
+            <DetailSection title={t('subscription.identifyInfo')}>
               <DetailRow
                 icon={<LinkIcon className="size-3.5" />}
-                label="UUID"
+                label={t('subscription.uuid')}
                 value={<TruncatedId id={subscription.uuid} />}
                 copyable={subscription.uuid}
               />
@@ -432,7 +435,7 @@ export const SubscriptionDetailSheet: React.FC<SubscriptionDetailSheetProps> = (
                   )}
                 >
                   <Eye className="size-4" />
-                  关闭
+                  {t('common.actions.close')}
                 </button>
                 <button
                   type="button"
@@ -446,7 +449,7 @@ export const SubscriptionDetailSheet: React.FC<SubscriptionDetailSheetProps> = (
                   )}
                 >
                   <MoreHorizontal className="size-4" />
-                  操作
+                  {t('tableColumns.operations')}
                 </button>
               </div>
             </SheetFooter>
@@ -459,7 +462,7 @@ export const SubscriptionDetailSheet: React.FC<SubscriptionDetailSheetProps> = (
         open={actionSheetOpen}
         onOpenChange={setActionSheetOpen}
         actions={moreActions}
-        title="订阅操作"
+        title={t('subscription.operations')}
       />
     </>
   );

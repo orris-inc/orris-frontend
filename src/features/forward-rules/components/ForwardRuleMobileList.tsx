@@ -5,6 +5,7 @@
  */
 
 import { useCallback } from 'react';
+import { useTranslation } from 'react-i18next';
 import { DraggableMobileList } from '@/components/admin/DraggableMobileList';
 import {
   Edit,
@@ -385,6 +386,7 @@ export const ForwardRuleMobileList: React.FC<ForwardRuleMobileListProps> = ({
   enableDragSort = false,
   onDragEnd,
 }) => {
+  const { t } = useTranslation();
   // Get rule ID for drag-and-drop
   const getRuleId = useCallback((rule: ForwardRule) => rule.id, []);
   // Get entry address for a rule
@@ -518,7 +520,7 @@ export const ForwardRuleMobileList: React.FC<ForwardRuleMobileListProps> = ({
     const agent = agentsMap[rule.agentId];
     const agentName = agent?.name || `ID: ${rule.agentId}`;
     const entryAddress = getEntryAddress(rule);
-    const statusConfig = ENABLED_STATUS_CONFIG[rule.status] || { label: rule.status, variant: 'default' as const };
+    const statusConfig = ENABLED_STATUS_CONFIG[rule.status] || { labelKey: 'common.status.unknown', variant: 'default' as const };
     const ruleTypeConfig = RULE_TYPE_CONFIG[rule.ruleType] || RULE_TYPE_CONFIG.direct;
     const protocolConfig = PROTOCOL_CONFIG[rule.protocol] || PROTOCOL_CONFIG.tcp;
     const tunnelTypeConfig = rule.tunnelType ? TUNNEL_TYPE_CONFIG[rule.tunnelType] : null;
@@ -563,7 +565,7 @@ export const ForwardRuleMobileList: React.FC<ForwardRuleMobileListProps> = ({
                       {rule.name}
                     </span>
                     <AdminBadge variant={statusConfig.variant} className="text-[10px] px-1.5 py-0 flex-shrink-0">
-                      {statusConfig.label}
+                      {t(statusConfig.labelKey)}
                     </AdminBadge>
                     {renderStatus(rule)}
                   </div>

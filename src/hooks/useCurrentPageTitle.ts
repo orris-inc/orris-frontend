@@ -5,23 +5,25 @@
 
 import { useMemo } from 'react';
 import { useLocation } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { navigationConfig } from '@/config/navigation';
 
 /**
  * Get the current page title based on URL path
  *
  * @param fallback - Fallback title when no match found
- * @returns Current page title
+ * @returns Current page title (translated)
  *
  * @example
  * ```tsx
  * const title = useCurrentPageTitle('Dashboard');
- * // Returns "用户管理" when on /admin/users
+ * // Returns "Users" (or "用户管理" in Chinese) when on /admin/users
  * // Returns "Dashboard" when no match found
  * ```
  */
 export function useCurrentPageTitle(fallback: string = ''): string {
   const location = useLocation();
+  const { t } = useTranslation();
 
   return useMemo(() => {
     const pathname = location.pathname;
@@ -29,7 +31,7 @@ export function useCurrentPageTitle(fallback: string = ''): string {
     // Try exact path match first
     const exactMatch = navigationConfig.find((item) => item.path === pathname);
     if (exactMatch) {
-      return exactMatch.label;
+      return t(exactMatch.labelKey);
     }
 
     // Try matching dynamic routes (e.g., /dashboard/subscriptions/:id)
@@ -40,7 +42,7 @@ export function useCurrentPageTitle(fallback: string = ''): string {
       return regex.test(pathname);
     });
     if (dynamicMatch) {
-      return dynamicMatch.label;
+      return t(dynamicMatch.labelKey);
     }
 
     // Try matching by last path segment
@@ -52,10 +54,10 @@ export function useCurrentPageTitle(fallback: string = ''): string {
         return itemSegments[itemSegments.length - 1] === lastSegment;
       });
       if (segmentMatch) {
-        return segmentMatch.label;
+        return t(segmentMatch.labelKey);
       }
     }
 
     return fallback;
-  }, [location.pathname, fallback]);
+  }, [location.pathname, fallback, t]);
 }

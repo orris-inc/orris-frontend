@@ -269,9 +269,9 @@ export const NodeManagementPage = () => {
         <div className="py-3 space-y-3">
           {/* High-Density Status Bar - All metrics inline */}
           <header className="bg-card rounded-lg border border-border px-3 py-2">
-            <div className="flex items-center justify-between gap-4 flex-wrap">
+            <div className="flex items-center justify-between gap-3 flex-wrap">
               {/* Left: Title + Primary Stats */}
-              <div className="flex items-center gap-4">
+              <div className="flex items-center gap-3">
                 <h1 className="text-sm font-semibold text-foreground">节点Agent</h1>
                 <div className="h-4 w-px bg-border hidden sm:block" />
                 <div className="flex items-center gap-3 text-xs">
@@ -359,10 +359,10 @@ export const NodeManagementPage = () => {
                         variant="outline"
                         size="sm"
                         onClick={() => setBroadcastURLDialogOpen(true)}
-                        className="h-7 px-2 text-xs border-blue-500/30 hover:border-blue-500/50 hover:bg-blue-500/10"
-                        icon={<Radio className="size-3.5 text-blue-500" strokeWidth={1.5} />}
+                        className="h-7 px-2 text-xs border-info/30 hover:border-info/50 hover:bg-info/10"
+                        icon={<Radio className="size-3.5 text-info" strokeWidth={1.5} />}
                       >
-                        <span className="hidden lg:inline text-blue-500">下发</span>
+                        <span className="hidden lg:inline text-info">下发</span>
                       </AdminButton>
                     </TooltipTrigger>
                     <TooltipContent>向 {stats.online} 个在线节点下发新API地址</TooltipContent>

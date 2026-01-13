@@ -5,6 +5,7 @@
  */
 
 import { useMemo, useCallback } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Edit, Power, MoreHorizontal, Users, Copy, Trash2 } from 'lucide-react';
 import { DataTable, AdminBadge, TruncatedId, type ColumnDef, type ResponsiveColumnMeta } from '@/components/admin';
 import { useBreakpoint } from '@/hooks/useBreakpoint';
@@ -127,6 +128,7 @@ export const PlanListTable: React.FC<PlanListTableProps> = ({
   onViewSubscriptions,
   onDelete,
 }) => {
+  const { t } = useTranslation();
   // Detect mobile screen
   const { isMobile } = useBreakpoint();
 
@@ -304,10 +306,10 @@ export const PlanListTable: React.FC<PlanListTableProps> = ({
       meta: { priority: 1 } as ResponsiveColumnMeta,
       cell: ({ row }) => {
         const status = row.original.status as PlanStatus | undefined;
-        const statusConfig = status ? ACTIVE_STATUS_CONFIG[status] : { label: '未知', variant: 'default' as const };
+        const statusConfig = status ? ACTIVE_STATUS_CONFIG[status] : { labelKey: 'common.status.unknown', variant: 'default' as const };
         return (
           <AdminBadge variant={statusConfig.variant}>
-            {statusConfig.label}
+            {t(statusConfig.labelKey)}
           </AdminBadge>
         );
       },

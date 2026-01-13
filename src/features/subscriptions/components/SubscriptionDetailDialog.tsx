@@ -1,7 +1,8 @@
 /**
- * 订阅详情对话框组件
+ * Subscription detail dialog component
  */
 
+import { useTranslation } from 'react-i18next';
 import {
   Calendar,
   CheckCircle,
@@ -44,13 +45,14 @@ const DetailItem: React.FC<{
   label: string;
   value: React.ReactNode;
   copyable?: string;
-}> = ({ icon, label, value, copyable }) => {
+  successMessage?: string;
+}> = ({ icon, label, value, copyable, successMessage }) => {
   const { showSuccess } = useNotificationStore();
 
   const handleCopy = async () => {
     if (copyable) {
       await navigator.clipboard.writeText(copyable);
-      showSuccess('已复制到剪贴板');
+      showSuccess(successMessage || 'Copied');
     }
   };
 
@@ -81,33 +83,35 @@ export const SubscriptionDetailDialog: React.FC<SubscriptionDetailDialogProps> =
   user,
   onClose,
 }) => {
+  const { t } = useTranslation();
+
   if (!subscription) return null;
 
-  const statusConfig = SUBSCRIPTION_STATUS_CONFIG[subscription.status] || { label: subscription.status, variant: 'default' as const };
+  const statusConfig = SUBSCRIPTION_STATUS_CONFIG[subscription.status] || { labelKey: 'common.status.unknown', variant: 'default' as const };
   const planTypeConfig = subscription.plan?.planType
     ? PLAN_TYPE_CONFIG[subscription.plan.planType]
-    : { label: '节点订阅', variant: 'info' as const };
+    : { labelKey: 'common.planType.node', variant: 'info' as const };
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-lg flex flex-col max-h-[90vh]">
         <DialogHeader className="flex-shrink-0">
           <DialogTitle className="flex items-center gap-2">
-            订阅详情
-            <AdminBadge variant={statusConfig.variant}>{statusConfig.label}</AdminBadge>
+            {t('subscription.details')}
+            <AdminBadge variant={statusConfig.variant}>{t(statusConfig.labelKey)}</AdminBadge>
           </DialogTitle>
           <DialogDescription className="flex items-center gap-1">
-            订阅 ID: <TruncatedId id={subscription.id} fullWidth />
+            {t('subscription.idLabel')} <TruncatedId id={subscription.id} fullWidth />
           </DialogDescription>
         </DialogHeader>
 
         <div className="flex-1 min-h-0 overflow-y-auto -mx-6 px-6">
           <div className="space-y-4 py-2">
-          {/* 订阅链接 */}
+          {/* Subscription link */}
           {subscription.subscribeUrl && (
             <div className="rounded-lg border border-border p-3 bg-muted/50">
               <div className="mb-2">
-                <span className="text-xs font-medium text-muted-foreground">订阅链接</span>
+                <span className="text-xs font-medium text-muted-foreground">{t('subscription.link')}</span>
               </div>
               <SubscriptionLinkSelector subscribeUrl={subscription.subscribeUrl} compact />
             </div>
@@ -115,134 +119,147 @@ export const SubscriptionDetailDialog: React.FC<SubscriptionDetailDialogProps> =
 
           <Separator />
 
-          {/* 用户信息 */}
+          {/* User info */}
           <div>
-            <h4 className="text-sm font-medium text-foreground mb-2">用户信息</h4>
+            <h4 className="text-sm font-medium text-foreground mb-2">{t('subscription.userInfo')}</h4>
             <DetailItem
               icon={<User className="size-4" />}
-              label="用户"
+              label={t('subscription.user')}
               value={user ? (
                 <div>
-                  <div>{user.name || '未设置名称'}</div>
+                  <div>{user.name || t('userInfo.noNameSet')}</div>
                   <div className="text-xs text-muted-foreground">{user.email}</div>
                 </div>
-              ) : `用户 ID: ${subscription.userId}`}
+              ) : `${t('subscription.user')} ID: ${subscription.userId}`}
+              successMessage={t('messages.copiedToClipboard')}
             />
           </div>
 
           <Separator />
 
-          {/* 计划信息 */}
+          {/* Plan info */}
           <div>
-            <h4 className="text-sm font-medium text-foreground mb-2">计划信息</h4>
+            <h4 className="text-sm font-medium text-foreground mb-2">{t('subscription.planInfo')}</h4>
             {subscription.plan ? (
               <>
                 <DetailItem
                   icon={<CreditCard className="size-4" />}
-                  label="计划名称"
+                  label={t('subscription.planName')}
                   value={
                     <div className="flex items-center gap-2">
                       <span>{subscription.plan.name}</span>
                       <AdminBadge variant={planTypeConfig.variant} className="text-[10px]">
-                        {planTypeConfig.label}
+                        {t(planTypeConfig.labelKey)}
                       </AdminBadge>
                     </div>
                   }
+                  successMessage={t('messages.copiedToClipboard')}
                 />
                 <DetailItem
                   icon={<Clock className="size-4" />}
-                  label="定价选项"
+                  label={t('subscription.pricingOptions')}
                   value={
                     subscription.plan.pricings && subscription.plan.pricings.length > 0 ? (
                       <div className="space-y-1">
                         {subscription.plan.pricings.map((pricing) => (
                           <div key={pricing.billingCycle} className="text-sm">
                             {pricing.billingCycle}: {pricing.price} {pricing.currency}
-                            {!pricing.isActive && <span className="text-xs text-muted-foreground ml-1">(未启用)</span>}
+                            {!pricing.isActive && <span className="text-xs text-muted-foreground ml-1">({t('subscriptionStatus.inactive')})</span>}
                           </div>
                         ))}
                       </div>
                     ) : '-'
                   }
+                  successMessage={t('messages.copiedToClipboard')}
                 />
               </>
             ) : (
-              <div className="text-sm text-muted-foreground">未关联计划</div>
+              <div className="text-sm text-muted-foreground">{t('subscription.noPlan')}</div>
             )}
           </div>
 
           <Separator />
 
-          {/* 日期信息 */}
+          {/* Date info */}
           <div>
-            <h4 className="text-sm font-medium text-foreground mb-2">日期信息</h4>
+            <h4 className="text-sm font-medium text-foreground mb-2">{t('subscription.dateInfo')}</h4>
             <DetailItem
               icon={<Calendar className="size-4" />}
-              label="开始日期"
+              label={t('subscription.startDate')}
               value={formatDate(subscription.startDate)}
+              successMessage={t('messages.copiedToClipboard')}
             />
             <DetailItem
               icon={<Calendar className="size-4" />}
-              label="结束日期"
+              label={t('subscription.endDate')}
               value={subscription.endDate ? formatDate(subscription.endDate) : '-'}
+              successMessage={t('messages.copiedToClipboard')}
             />
             <DetailItem
               icon={<Clock className="size-4" />}
-              label="当前周期"
+              label={t('subscription.currentPeriod')}
               value={`${formatDate(subscription.currentPeriodStart)} ~ ${formatDate(subscription.currentPeriodEnd)}`}
+              successMessage={t('messages.copiedToClipboard')}
             />
             <DetailItem
               icon={<Clock className="size-4" />}
-              label="创建时间"
+              label={t('subscription.createdAt')}
               value={formatDate(subscription.createdAt)}
+              successMessage={t('messages.copiedToClipboard')}
             />
           </div>
 
           <Separator />
 
-          {/* 状态信息 */}
+          {/* Status info */}
           <div>
-            <h4 className="text-sm font-medium text-foreground mb-2">状态信息</h4>
+            <h4 className="text-sm font-medium text-foreground mb-2">{t('subscription.statusInfo')}</h4>
             <DetailItem
               icon={subscription.autoRenew ? <CheckCircle className="size-4 text-emerald-500" /> : <XCircle className="size-4 text-muted-foreground" />}
-              label="自动续费"
-              value={subscription.autoRenew ? '已开启' : '未开启'}
+              label={t('subscription.autoRenewal')}
+              value={subscription.autoRenew ? t('common.status.enabled') : t('common.status.disabled')}
+              successMessage={t('messages.copiedToClipboard')}
             />
             <DetailItem
               icon={subscription.isActive ? <CheckCircle className="size-4 text-emerald-500" /> : <XCircle className="size-4 text-red-500" />}
-              label="是否激活"
-              value={subscription.isActive ? '是' : '否'}
+              label={t('subscription.isActive')}
+              value={subscription.isActive ? t('common.yes') : t('common.no')}
+              successMessage={t('messages.copiedToClipboard')}
             />
             <DetailItem
               icon={subscription.isExpired ? <XCircle className="size-4 text-red-500" /> : <CheckCircle className="size-4 text-emerald-500" />}
-              label="是否过期"
-              value={subscription.isExpired ? '已过期' : '未过期'}
+              label={t('subscription.isExpired')}
+              value={subscription.isExpired ? t('subscriptionStatus.expired') : t('subscriptionStatus.notExpired')}
+              successMessage={t('messages.copiedToClipboard')}
             />
             {subscription.cancelledAt && (
               <DetailItem
                 icon={<XCircle className="size-4 text-red-500" />}
-                label="取消时间"
+                label={t('subscription.cancelledAt')}
                 value={formatDate(subscription.cancelledAt)}
+                successMessage={t('messages.copiedToClipboard')}
               />
             )}
             {subscription.cancelReason && (
               <DetailItem
                 icon={<XCircle className="size-4 text-red-500" />}
-                label="取消原因"
+                label={t('subscription.cancelReason')}
                 value={subscription.cancelReason}
+                successMessage={t('messages.copiedToClipboard')}
               />
             )}
           </div>
 
           <Separator />
 
-          {/* UUID 信息 */}
+          {/* UUID info */}
           <div>
-            <h4 className="text-sm font-medium text-foreground mb-2">标识信息</h4>
+            <h4 className="text-sm font-medium text-foreground mb-2">{t('subscription.identifyInfo')}</h4>
             <DetailItem
               icon={<LinkIcon className="size-4" />}
-              label="UUID"
+              label={t('subscription.uuid')}
               value={<TruncatedId id={subscription.uuid} fullWidth />}
+              successMessage={t('messages.copiedToClipboard')}
             />
           </div>
           </div>
@@ -250,7 +267,7 @@ export const SubscriptionDetailDialog: React.FC<SubscriptionDetailDialogProps> =
 
         <DialogFooter className="flex-shrink-0">
           <Button variant="outline" onClick={onClose}>
-            关闭
+            {t('common.actions.close')}
           </Button>
         </DialogFooter>
       </DialogContent>

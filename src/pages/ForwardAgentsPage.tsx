@@ -154,6 +154,14 @@ export const ForwardAgentsPage = () => {
     await disableForwardAgent(agent.id);
   };
 
+  const handleToggleStatus = async (agent: ForwardAgent) => {
+    if (agent.status === 'enabled') {
+      await disableForwardAgent(agent.id);
+    } else {
+      await enableForwardAgent(agent.id);
+    }
+  };
+
   const handleTokenRegenerate = async (agent: ForwardAgent) => {
     const token = await handleRegenerateToken(agent.id);
     if (token) {
@@ -431,10 +439,10 @@ export const ForwardAgentsPage = () => {
                       variant="outline"
                       size="sm"
                       onClick={() => setBroadcastURLDialogOpen(true)}
-                      className="h-7 px-2 text-xs border-blue-500/30 hover:border-blue-500/50 hover:bg-blue-500/10"
-                      icon={<Radio className="size-3.5 text-blue-500" strokeWidth={1.5} />}
+                      className="h-7 px-2 text-xs border-info/30 hover:border-info/50 hover:bg-info/10"
+                      icon={<Radio className="size-3.5 text-info" strokeWidth={1.5} />}
                     >
-                      <span className="hidden xl:inline text-blue-500">下发</span>
+                      <span className="hidden xl:inline text-info">下发</span>
                     </AdminButton>
                   </TooltipTrigger>
                   <TooltipContent>向 {stats.online} 个在线节点下发新API地址</TooltipContent>
@@ -502,7 +510,7 @@ export const ForwardAgentsPage = () => {
           <MobileForwardAgentManagement
             forwardAgents={forwardAgents}
             loading={isLoading}
-            refreshing={isFetching}
+            refreshing={isFetching || isReordering}
             page={pagination.page}
             pageSize={pagination.pageSize}
             total={pagination.total}
@@ -513,16 +521,13 @@ export const ForwardAgentsPage = () => {
             }}
             onEdit={handleEdit}
             onDelete={handleDelete}
-            onEnable={handleEnable}
-            onDisable={handleDisable}
-            onGetInstallScript={handleInstallScript}
-            onCopy={handleCopy}
-            onRegenerateToken={handleTokenRegenerate}
-            onCheckUpdate={handleCheckUpdate}
+            onToggleStatus={handleToggleStatus}
             onPageChange={handlePageChange}
-            checkingAgentId={checkingAgentId}
+            enableDragSort={dragSortEnabled}
+            onDragSortChange={setDragSortEnabled}
             onDragEnd={handleDragEnd}
-            isReordering={isReordering}
+            onRegenerateToken={handleTokenRegenerate}
+            onGetInstallScript={handleInstallScript}
           />
         ) : (
           <AdminCard noPadding>

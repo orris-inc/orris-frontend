@@ -4,6 +4,7 @@
  */
 
 import { useMemo, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { useQuery } from "@tanstack/react-query";
 import {
   AreaChart,
@@ -23,6 +24,7 @@ import type {
   TrafficStatsRecord,
 } from "@/api/subscription/types";
 import { Skeleton } from "@/components/common/Skeleton";
+import type { TFunction } from "i18next";
 
 interface SubscriptionTrafficChartProps {
   subscription: Subscription;
@@ -201,9 +203,11 @@ const CustomTooltip = ({
   active,
   payload,
   label,
+  t,
 }: TooltipProps<number, string> & {
   payload?: TooltipPayloadItem[];
   label?: string;
+  t: TFunction;
 }) => {
   if (!active || !payload || !payload.length) {
     return null;
@@ -241,7 +245,7 @@ const CustomTooltip = ({
           <div className="flex items-center gap-2.5">
             <div className="size-3 rounded-full bg-chart-upload ring-2 ring-chart-upload/20" />
             <span className="text-sm font-medium text-muted-foreground">
-              上传
+              {t("userSubscription.upload")}
             </span>
           </div>
           <div className="flex items-center gap-1.5">
@@ -257,7 +261,7 @@ const CustomTooltip = ({
           <div className="flex items-center gap-2.5">
             <div className="size-3 rounded-full bg-chart-download ring-2 ring-chart-download/20" />
             <span className="text-sm font-medium text-muted-foreground">
-              下载
+              {t("userSubscription.download")}
             </span>
           </div>
           <div className="flex items-center gap-1.5">
@@ -273,7 +277,9 @@ const CustomTooltip = ({
 
         {/* Total */}
         <div className="flex items-center justify-between gap-4 pt-3 mt-1 border-t border-border">
-          <span className="text-sm font-semibold text-foreground">总计</span>
+          <span className="text-sm font-semibold text-foreground">
+            {t("userSubscription.total")}
+          </span>
           <span className="text-base font-bold text-foreground tabular-nums">
             {formatTrafficBytes(total)}
           </span>
@@ -289,21 +295,27 @@ const CustomTooltip = ({
 const ChartLegend = ({
   totalUpload,
   totalDownload,
+  t,
 }: {
   totalUpload: number;
   totalDownload: number;
+  t: TFunction;
 }) => (
   <div className="flex items-center justify-center gap-2 sm:gap-4 mt-3 sm:mt-4 pt-3 sm:pt-4 border-t border-border">
     <div className="flex items-center gap-1.5 sm:gap-2 px-2 sm:px-3 py-1.5 rounded-lg bg-chart-upload/10 ring-1 ring-chart-upload/20">
       <div className="size-2 sm:size-2.5 rounded-full bg-chart-upload" />
-      <span className="text-[10px] sm:text-xs text-muted-foreground">上传</span>
+      <span className="text-[10px] sm:text-xs text-muted-foreground">
+        {t("userSubscription.upload")}
+      </span>
       <span className="text-[10px] sm:text-xs font-bold text-chart-upload tabular-nums">
         {formatTrafficBytes(totalUpload)}
       </span>
     </div>
     <div className="flex items-center gap-1.5 sm:gap-2 px-2 sm:px-3 py-1.5 rounded-lg bg-chart-download/10 ring-1 ring-chart-download/20">
       <div className="size-2 sm:size-2.5 rounded-full bg-chart-download" />
-      <span className="text-[10px] sm:text-xs text-muted-foreground">下载</span>
+      <span className="text-[10px] sm:text-xs text-muted-foreground">
+        {t("userSubscription.download")}
+      </span>
       <span className="text-[10px] sm:text-xs font-bold text-chart-download tabular-nums">
         {formatTrafficBytes(totalDownload)}
       </span>
@@ -317,15 +329,17 @@ const ChartLegend = ({
 const TimeRangeSelector = ({
   value,
   onChange,
+  t,
 }: {
   value: TimeRange;
   onChange: (range: TimeRange) => void;
+  t: TFunction;
 }) => {
-  const options: { value: TimeRange; label: string }[] = [
-    { value: "today", label: "今天" },
-    { value: "yesterday", label: "昨天" },
-    { value: "7d", label: "7 天" },
-    { value: "30d", label: "30 天" },
+  const options: { value: TimeRange; labelKey: string }[] = [
+    { value: "today", labelKey: "userSubscription.today" },
+    { value: "yesterday", labelKey: "userSubscription.yesterday" },
+    { value: "7d", labelKey: "userSubscription.sevenDays" },
+    { value: "30d", labelKey: "userSubscription.thirtyDays" },
   ];
 
   return (
@@ -341,7 +355,7 @@ const TimeRangeSelector = ({
               : "text-muted-foreground hover:text-foreground",
           )}
         >
-          {option.label}
+          {t(option.labelKey)}
         </button>
       ))}
     </div>
@@ -368,16 +382,17 @@ const ChartSkeleton = () => (
 /**
  * Empty state
  */
-const EmptyState = () => (
+const EmptyState = ({ t }: { t: TFunction }) => (
   <div className="flex flex-col items-center justify-center py-12 text-muted-foreground">
     <Activity className="size-12 mb-4 opacity-50" />
-    <p className="text-sm">暂无流量数据</p>
+    <p className="text-sm">{t("userSubscription.noTrafficData")}</p>
   </div>
 );
 
 export const SubscriptionTrafficChart: React.FC<
   SubscriptionTrafficChartProps
 > = ({ subscription }) => {
+  const { t } = useTranslation();
   const [timeRange, setTimeRange] = useState<TimeRange>("7d");
   const dateRange = useMemo(() => getDateRange(timeRange), [timeRange]);
 
@@ -456,19 +471,19 @@ export const SubscriptionTrafficChart: React.FC<
           </div>
           <div>
             <h3 className="text-xs sm:text-sm font-semibold text-foreground">
-              流量趋势
+              {t("userSubscription.trafficTrend")}
             </h3>
             <p className="text-[10px] sm:text-xs text-muted-foreground hidden sm:block">
-              上传与下载流量统计
+              {t("userSubscription.uploadDownloadStats")}
             </p>
           </div>
         </div>
-        <TimeRangeSelector value={timeRange} onChange={setTimeRange} />
+        <TimeRangeSelector value={timeRange} onChange={setTimeRange} t={t} />
       </div>
 
       {/* Chart or Empty State */}
       {chartData.length === 0 ? (
-        <EmptyState />
+        <EmptyState t={t} />
       ) : (
         <>
           {/* Chart */}
@@ -541,7 +556,7 @@ export const SubscriptionTrafficChart: React.FC<
                   width={55}
                 />
                 <Tooltip
-                  content={<CustomTooltip />}
+                  content={<CustomTooltip t={t} />}
                   cursor={{
                     stroke: "currentColor",
                     strokeWidth: 1,
@@ -552,7 +567,7 @@ export const SubscriptionTrafficChart: React.FC<
                 <Area
                   type="monotone"
                   dataKey="download"
-                  name="下载"
+                  name={t("userSubscription.download")}
                   stroke="hsl(var(--chart-download))"
                   strokeWidth={2.5}
                   fill="url(#subscriptionDownloadGradient)"
@@ -568,7 +583,7 @@ export const SubscriptionTrafficChart: React.FC<
                 <Area
                   type="monotone"
                   dataKey="upload"
-                  name="上传"
+                  name={t("userSubscription.upload")}
                   stroke="hsl(var(--chart-upload))"
                   strokeWidth={2.5}
                   fill="url(#subscriptionUploadGradient)"
@@ -589,6 +604,7 @@ export const SubscriptionTrafficChart: React.FC<
           <ChartLegend
             totalUpload={totalUpload}
             totalDownload={totalDownload}
+            t={t}
           />
         </>
       )}

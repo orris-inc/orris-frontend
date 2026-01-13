@@ -11,6 +11,7 @@
  */
 
 import { useState, useMemo, useCallback } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
   RefreshCw,
   Receipt,
@@ -56,13 +57,15 @@ type StatusFilter = 'all' | SubscriptionStatus;
 // Filter Options
 // ============================================================================
 
-const STATUS_FILTER_OPTIONS: SegmentOption<StatusFilter>[] = [
-  { value: 'all', label: '全部' },
-  { value: 'active', label: '激活' },
-  { value: 'expired', label: '过期', hideWhenZero: true },
-  { value: 'cancelled', label: '取消', hideWhenZero: true },
-  { value: 'pending', label: '待处理', hideWhenZero: true },
-  { value: 'renewed', label: '续费', hideWhenZero: true },
+const getStatusFilterOptions = (
+  t: (key: string) => string
+): SegmentOption<StatusFilter>[] => [
+  { value: 'all', label: t('filter.all') },
+  { value: 'active', label: t('subscriptionStatus.active') },
+  { value: 'expired', label: t('subscriptionStatus.expired'), hideWhenZero: true },
+  { value: 'cancelled', label: t('subscriptionStatus.cancelled'), hideWhenZero: true },
+  { value: 'pending', label: t('subscriptionStatus.pending'), hideWhenZero: true },
+  { value: 'renewed', label: t('subscriptionStatus.renewed'), hideWhenZero: true },
 ];
 
 // ============================================================================
@@ -77,11 +80,13 @@ const StatsSummary = ({
   active,
   expired,
   loading,
+  t,
 }: {
   total: number;
   active: number;
   expired: number;
   loading: boolean;
+  t: (key: string) => string;
 }) => {
   if (loading) {
     return (
@@ -97,17 +102,17 @@ const StatsSummary = ({
     <div className="flex items-center justify-between text-xs px-1">
       <div className="flex items-center gap-1.5">
         <Receipt className="size-3.5 text-muted-foreground" />
-        <span className="text-muted-foreground">总数</span>
+        <span className="text-muted-foreground">{t('admin.subscriptions.total')}</span>
         <span className="font-semibold text-foreground tabular-nums">{total}</span>
       </div>
       <div className="flex items-center gap-1.5">
         <CheckCircle2 className="size-3.5 text-success" />
-        <span className="text-muted-foreground">激活</span>
+        <span className="text-muted-foreground">{t('subscriptionStatus.active')}</span>
         <span className="font-semibold text-success tabular-nums">{active}</span>
       </div>
       <div className="flex items-center gap-1.5">
         <AlertCircle className="size-3.5 text-muted-foreground" />
-        <span className="text-muted-foreground">过期</span>
+        <span className="text-muted-foreground">{t('subscriptionStatus.expired')}</span>
         <span className="font-semibold text-foreground tabular-nums">{expired}</span>
       </div>
     </div>
@@ -121,10 +126,12 @@ const SearchBar = ({
   value,
   onChange,
   onClear,
+  placeholder,
 }: {
   value: string;
   onChange: (value: string) => void;
   onClear: () => void;
+  placeholder: string;
 }) => {
   return (
     <div
@@ -141,7 +148,7 @@ const SearchBar = ({
         type="text"
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        placeholder="搜索用户、计划..."
+        placeholder={placeholder}
         className={cn(
           'flex-1 min-w-0',
           'bg-transparent',
@@ -168,9 +175,11 @@ const SearchBar = ({
 const EmptyState = ({
   hasFilter,
   onClearFilter,
+  t,
 }: {
   hasFilter: boolean;
   onClearFilter: () => void;
+  t: (key: string) => string;
 }) => (
   <div className="flex flex-col items-center justify-center py-16 px-6">
     <div className="size-20 rounded-full bg-muted/30 flex items-center justify-center mb-4">
@@ -181,10 +190,10 @@ const EmptyState = ({
       )}
     </div>
     <p className="text-base font-medium text-foreground mb-1 text-center">
-      {hasFilter ? '未找到匹配订阅' : '暂无订阅'}
+      {hasFilter ? t('subscription.noMatchingSubscription') : t('subscription.noSubscriptions')}
     </p>
     <p className="text-sm text-muted-foreground text-center mb-5">
-      {hasFilter ? '尝试调整搜索条件或清除筛选' : '当前没有任何订阅记录'}
+      {hasFilter ? t('subscription.tryAdjustSearch') : t('subscription.noSubscriptionRecords')}
     </p>
     {hasFilter && (
       <button
@@ -200,7 +209,7 @@ const EmptyState = ({
         )}
       >
         <X className="size-4" />
-        清除筛选
+        {t('messages.clearFilters')}
       </button>
     )}
   </div>
@@ -316,6 +325,7 @@ export const MobileSubscriptionManagement = ({
   onDelete,
   onPageChange,
 }: MobileSubscriptionManagementProps) => {
+  const { t } = useTranslation();
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<StatusFilter>('all');
   const [selectedSubscription, setSelectedSubscription] = useState<Subscription | null>(null);
@@ -333,7 +343,7 @@ export const MobileSubscriptionManagement = ({
 
   // Add counts to filter options
   const filterOptionsWithCounts = useMemo(() => {
-    return STATUS_FILTER_OPTIONS.map((opt) => {
+    return getStatusFilterOptions(t).map((opt) => {
       let count: number;
       switch (opt.value) {
         case 'all':
@@ -359,7 +369,7 @@ export const MobileSubscriptionManagement = ({
       }
       return { ...opt, count };
     });
-  }, [stats, total]);
+  }, [stats, total, t]);
 
   // Filter subscriptions
   const filteredSubscriptions = useMemo(() => {
@@ -413,6 +423,7 @@ export const MobileSubscriptionManagement = ({
           active={stats.active}
           expired={stats.expired}
           loading={loading}
+          t={t}
         />
 
         {/* Search Bar with Refresh */}
@@ -422,6 +433,7 @@ export const MobileSubscriptionManagement = ({
               value={searchQuery}
               onChange={setSearchQuery}
               onClear={() => setSearchQuery('')}
+              placeholder={t('placeholders.searchSubscription')}
             />
           </div>
           <button
@@ -456,14 +468,14 @@ export const MobileSubscriptionManagement = ({
       {hasFilter && !loading && filteredSubscriptions.length > 0 && (
         <div className="flex items-center justify-between mb-3 px-1">
           <span className="text-xs text-muted-foreground">
-            找到 <span className="font-medium text-foreground">{filteredSubscriptions.length}</span> 条结果
+            {t('admin.subscriptions.found')} <span className="font-medium text-foreground">{filteredSubscriptions.length}</span> {t('admin.subscriptions.results')}
           </span>
           <button
             type="button"
             onClick={clearFilters}
             className="text-xs text-primary font-medium"
           >
-            清除筛选
+            {t('messages.clearFilters')}
           </button>
         </div>
       )}
@@ -475,6 +487,7 @@ export const MobileSubscriptionManagement = ({
         <EmptyState
           hasFilter={hasFilter}
           onClearFilter={clearFilters}
+          t={t}
         />
       ) : (
         <div className="space-y-2.5">

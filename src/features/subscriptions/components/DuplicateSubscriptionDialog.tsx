@@ -4,6 +4,7 @@
  */
 
 import { useState, useEffect, useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Loader2, Info, X, Copy } from 'lucide-react';
 import * as Dialog from '@radix-ui/react-dialog';
 import * as LabelPrimitive from '@radix-ui/react-label';
@@ -24,16 +25,6 @@ interface DuplicateSubscriptionDialogProps {
   onSubmit: (data: AdminCreateSubscriptionRequest) => Promise<void>;
 }
 
-// Billing cycle display name mapping
-const BILLING_CYCLE_LABELS: Record<BillingCycle, string> = {
-  weekly: '周付',
-  monthly: '月付',
-  quarterly: '季付',
-  semi_annual: '半年付',
-  yearly: '年付',
-  lifetime: '终身',
-};
-
 // Get available pricing options for the plan
 const getAvailablePricings = (plan: SubscriptionPlan): PricingOption[] => {
   return plan.pricings?.filter(p => p.isActive) || [];
@@ -52,6 +43,7 @@ export const DuplicateSubscriptionDialog: React.FC<DuplicateSubscriptionDialogPr
   onClose,
   onSubmit,
 }) => {
+  const { t } = useTranslation();
   const { plans, isLoading: plansLoading } = useSubscriptionPlans({ enabled: open });
   const [submitting, setSubmitting] = useState(false);
   const [formData, setFormData] = useState<AdminCreateSubscriptionRequest>({
@@ -60,6 +52,16 @@ export const DuplicateSubscriptionDialog: React.FC<DuplicateSubscriptionDialogPr
     billingCycle: 'monthly',
     autoRenew: true,
   });
+
+  // Billing cycle display name mapping
+  const BILLING_CYCLE_LABELS: Record<BillingCycle, string> = useMemo(() => ({
+    weekly: t('billingCycle.weekly'),
+    monthly: t('billingCycle.monthly'),
+    quarterly: t('billingCycle.quarterly'),
+    semi_annual: t('billingCycle.semiAnnual'),
+    yearly: t('billingCycle.yearly'),
+    lifetime: t('billingCycle.lifetime'),
+  }), [t]);
 
   // Get selected plan
   const selectedPlan = useMemo(() => {
@@ -142,14 +144,14 @@ export const DuplicateSubscriptionDialog: React.FC<DuplicateSubscriptionDialogPr
         } else if (pricings.length === 1) {
           priceDisplay = formatPrice(pricings[0].price, pricings[0].currency);
         } else {
-          priceDisplay = '未设置价格';
+          priceDisplay = t('subscription.noPriceSet');
         }
         return {
           value: plan.id.toString(),
           label: `${plan.name} - ${priceDisplay}`
         };
       });
-  }, [plans]);
+  }, [plans, t]);
 
   // Prepare billing cycle options (based on selected plan's available pricing)
   const billingCycleOptions = useMemo(() => {
@@ -163,7 +165,7 @@ export const DuplicateSubscriptionDialog: React.FC<DuplicateSubscriptionDialogPr
       value: value as BillingCycle,
       label,
     }));
-  }, [availablePricings]);
+  }, [availablePricings, BILLING_CYCLE_LABELS]);
 
   if (!subscription) return null;
 
@@ -176,10 +178,10 @@ export const DuplicateSubscriptionDialog: React.FC<DuplicateSubscriptionDialogPr
             <div>
               <Dialog.Title className="text-lg font-semibold leading-none tracking-tight flex items-center gap-2">
                 <Copy className="size-5" />
-                复制订阅
+                {t('subscription.duplicate')}
               </Dialog.Title>
               <p className="text-sm text-muted-foreground mt-1 flex items-center gap-1">
-                基于订阅 <TruncatedId id={subscription.id} /> 创建新订阅
+                {t('subscription.baseOn')} <TruncatedId id={subscription.id} /> {t('subscription.createNew')}
               </p>
             </div>
             <Dialog.Close className="rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none">
@@ -196,37 +198,37 @@ export const DuplicateSubscriptionDialog: React.FC<DuplicateSubscriptionDialogPr
             <div className="grid gap-6 py-4">
               {/* Target user display */}
               <div className="grid gap-2">
-                <LabelPrimitive.Root className={labelStyles}>目标用户</LabelPrimitive.Root>
+                <LabelPrimitive.Root className={labelStyles}>{t('subscription.targetUser')}</LabelPrimitive.Root>
                 <div className="rounded-md border bg-muted/50 px-3 py-2 text-sm">
                   {user ? (
                     <span>{user.name || user.email} ({user.email})</span>
                   ) : (
-                    <span className="text-muted-foreground">用户 ID: {subscription.userId}</span>
+                    <span className="text-muted-foreground">{t('labels.userId')}: {subscription.userId}</span>
                   )}
                 </div>
                 <p className="text-xs text-muted-foreground">
-                  新订阅将分配给相同用户
+                  {t('subscription.sameUserAssignment')}
                 </p>
               </div>
 
               {/* Subscription plan selection */}
               <div className="grid gap-2">
-                <LabelPrimitive.Root className={labelStyles}>订阅计划</LabelPrimitive.Root>
+                <LabelPrimitive.Root className={labelStyles}>{t('subscription.plan')}</LabelPrimitive.Root>
                 <SimpleSelect
                   value={formData.planId}
                   onValueChange={(value) => setFormData({ ...formData, planId: value })}
                   options={planOptions}
-                  placeholder="请选择计划"
+                  placeholder={t('placeholders.selectPlan')}
                 />
               </div>
 
               {/* Billing cycle selection */}
               <div className="grid gap-2">
                 <LabelPrimitive.Root className={labelStyles}>
-                  计费周期
+                  {t('subscription.billingCycle')}
                   {availablePricings.length > 1 && (
                     <span className="ml-2 text-xs text-muted-foreground">
-                      ({availablePricings.length} 个可选)
+                      ({availablePricings.length} {t('subscription.optionsAvailable')})
                     </span>
                   )}
                 </LabelPrimitive.Root>
@@ -254,19 +256,19 @@ export const DuplicateSubscriptionDialog: React.FC<DuplicateSubscriptionDialogPr
                   htmlFor="auto_renew"
                   className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer"
                 >
-                  自动续费
+                  {t('subscription.autoRenewal')}
                 </LabelPrimitive.Root>
               </div>
 
               {/* Plan details */}
               {selectedPlan && (
                 <div className="rounded-md bg-muted p-4 text-sm">
-                  <h4 className="font-medium mb-2">计划详情</h4>
+                  <h4 className="font-medium mb-2">{t('subscription.planDetails')}</h4>
                   <div className="space-y-1 text-muted-foreground">
-                    <p>名称: {selectedPlan.name}</p>
+                    <p>{t('subscription.planName')}: {selectedPlan.name}</p>
                     {selectedPricing && (
                       <p>
-                        价格: {formatPrice(selectedPricing.price, selectedPricing.currency)} / {BILLING_CYCLE_LABELS[selectedPricing.billingCycle]}
+                        {t('subscription.pricing')}: {formatPrice(selectedPricing.price, selectedPricing.currency)} / {BILLING_CYCLE_LABELS[selectedPricing.billingCycle]}
                       </p>
                     )}
                     {selectedPlan.description && (
@@ -279,7 +281,7 @@ export const DuplicateSubscriptionDialog: React.FC<DuplicateSubscriptionDialogPr
               <div className={alertStyles}>
                 <Info className="h-4 w-4" />
                 <div className={alertDescriptionStyles}>
-                  将为用户创建一个新订阅，新订阅立即生效，会生成新的订阅链接。
+                  {t('subscription.duplicateInfo')}
                 </div>
               </div>
             </div>
@@ -291,7 +293,7 @@ export const DuplicateSubscriptionDialog: React.FC<DuplicateSubscriptionDialogPr
               disabled={submitting}
               className={getButtonClass('outline', 'default')}
             >
-              取消
+              {t('common.actions.cancel')}
             </button>
             <button
               onClick={handleSubmit}
@@ -301,10 +303,10 @@ export const DuplicateSubscriptionDialog: React.FC<DuplicateSubscriptionDialogPr
               {submitting ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  创建中...
+                  {t('subscription.creating')}
                 </>
               ) : (
-                '创建订阅'
+                t('subscription.create')
               )}
             </button>
           </div>

@@ -3,6 +3,7 @@
  * Horizontal layout for quick action buttons in Bento Grid
  */
 
+import { useTranslation } from 'react-i18next';
 import { Zap, CreditCard, ArrowRight } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -14,6 +15,8 @@ interface QuickActionsCardProps {
  * Quick actions with horizontal layout
  */
 export const QuickActionsCard = ({ className }: QuickActionsCardProps) => {
+  const { t } = useTranslation();
+
   return (
     <div className={cn(
       'col-span-4 md:col-span-6 lg:col-span-12',
@@ -35,8 +38,8 @@ export const QuickActionsCard = ({ className }: QuickActionsCardProps) => {
           <Zap className="size-4 text-primary" />
         </div>
         <div className="flex-1 min-w-0">
-          <div className="text-xs sm:text-sm font-medium text-foreground">升级订阅</div>
-          <div className="text-[10px] sm:text-xs text-muted-foreground truncate hidden sm:block">获取更多流量</div>
+          <div className="text-xs sm:text-sm font-medium text-foreground">{t('user.dashboard.quickActions.upgrade')}</div>
+          <div className="text-[10px] sm:text-xs text-muted-foreground truncate hidden sm:block">{t('user.dashboard.quickActions.upgradeDesc')}</div>
         </div>
         <ArrowRight className="size-3.5 sm:size-4 text-muted-foreground group-hover:text-primary transition-colors shrink-0" />
       </a>
@@ -56,8 +59,8 @@ export const QuickActionsCard = ({ className }: QuickActionsCardProps) => {
           <CreditCard className="size-4 text-success" />
         </div>
         <div className="flex-1 min-w-0">
-          <div className="text-xs sm:text-sm font-medium text-foreground">查看套餐</div>
-          <div className="text-[10px] sm:text-xs text-muted-foreground truncate hidden sm:block">对比所有方案</div>
+          <div className="text-xs sm:text-sm font-medium text-foreground">{t('user.dashboard.quickActions.viewPlans')}</div>
+          <div className="text-[10px] sm:text-xs text-muted-foreground truncate hidden sm:block">{t('user.dashboard.quickActions.viewPlansDesc')}</div>
         </div>
         <ArrowRight className="size-3.5 sm:size-4 text-muted-foreground group-hover:text-primary transition-colors shrink-0" />
       </a>

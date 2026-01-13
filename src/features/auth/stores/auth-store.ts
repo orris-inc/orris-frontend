@@ -37,17 +37,12 @@ export const useAuthStore = create<AuthState>()(
         });
       },
 
-      // Logout
+      // Logout - just clear state, redirection is handled by useAuth hook
       logout: () => {
         set({
           user: null,
           isAuthenticated: false,
         });
-
-        // Redirect to landing page
-        if (typeof window !== 'undefined') {
-          window.location.href = '/';
-        }
       },
 
       // Set user info

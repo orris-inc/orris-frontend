@@ -3,6 +3,7 @@
  * Mobile-friendly card list with Accordion for expanded details
  */
 
+import { useTranslation } from 'react-i18next';
 import {
   Edit,
   Trash2,
@@ -64,6 +65,7 @@ export const UserMobileList: React.FC<UserMobileListProps> = ({
   onAssignSubscription,
   onResetPassword,
 }) => {
+  const { t } = useTranslation();
   // Render dropdown menu
   const renderDropdownMenu = (user: UserResponse) => {
     return (
@@ -114,8 +116,8 @@ export const UserMobileList: React.FC<UserMobileListProps> = ({
   return (
     <Accordion type="multiple" className="space-y-1.5">
       {users.map((user) => {
-        const statusConfig = ACTIVE_STATUS_CONFIG[user.status] || { label: user.status, variant: 'default' as const };
-        const roleConfig = ROLE_CONFIG[user.role || 'user'] || { label: '用户', variant: 'default' as const };
+        const statusConfig = ACTIVE_STATUS_CONFIG[user.status] || { labelKey: 'common.status.unknown', variant: 'default' as const };
+        const roleConfig = ROLE_CONFIG[user.role || 'user'] || { labelKey: 'common.role.user', variant: 'default' as const };
 
         return (
           <AccordionItem
@@ -133,7 +135,7 @@ export const UserMobileList: React.FC<UserMobileListProps> = ({
                       {user.name || user.email}
                     </span>
                     <AdminBadge variant={statusConfig.variant} className="text-[10px] px-1.5 py-0 flex-shrink-0">
-                      {statusConfig.label}
+                      {t(statusConfig.labelKey)}
                     </AdminBadge>
                   </div>
 
@@ -147,7 +149,7 @@ export const UserMobileList: React.FC<UserMobileListProps> = ({
                       </>
                     )}
                     <AdminBadge variant={roleConfig.variant} className="text-[10px] px-1.5 py-0">
-                      {roleConfig.label}
+                      {t(roleConfig.labelKey)}
                     </AdminBadge>
                   </div>
                 </div>

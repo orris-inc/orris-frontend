@@ -29,6 +29,7 @@ import { usePermissions } from '@/features/auth/hooks/usePermissions';
 import { ProfileDialog } from '@/features/profile/components/ProfileDialog';
 import { EnhancedBreadcrumbs } from '@/components/navigation/EnhancedBreadcrumbs';
 import { ThemeToggle } from '@/components/common/ThemeToggle';
+import { LanguageSwitcher } from '@/components/common/LanguageSwitcher';
 import { getNavItems } from '@/config/navigation';
 import { cn } from '@/lib/utils';
 
@@ -109,18 +110,24 @@ export const AdminLayout = ({ children }: AdminLayoutProps) => {
           onLogout={handleLogout}
         />
 
-        {/* 桌面端侧边栏 */}
+        {/* 桌面端侧边栏 - Glass morphism design */}
         <aside
           className={cn(
-            "fixed inset-y-0 left-0 z-40 hidden flex-col border-r bg-background transition-all duration-200 md:flex overflow-hidden",
-            collapsed ? "w-16" : "w-56"
+            'fixed inset-y-0 left-0 z-40 hidden flex-col md:flex overflow-hidden',
+            'bg-muted/30 dark:bg-muted/20',
+            'border-r border-black/[0.04] dark:border-white/[0.06]',
+            'transition-all duration-200',
+            collapsed ? 'w-[72px]' : 'w-60'
           )}
         >
           {/* 侧边栏头部 */}
-          <div className={cn(
-            "flex h-14 items-center border-b",
-            collapsed ? "justify-center px-2" : "justify-between px-4"
-          )}>
+          <div
+            className={cn(
+              'flex h-14 items-center shrink-0',
+              'border-b border-black/[0.04] dark:border-white/[0.06]',
+              collapsed ? 'justify-center px-2' : 'justify-between px-4'
+            )}
+          >
             {!collapsed && (
               <span className="text-sm font-semibold text-foreground whitespace-nowrap">
                 管理控制台
@@ -128,7 +135,12 @@ export const AdminLayout = ({ children }: AdminLayoutProps) => {
             )}
             <button
               onClick={() => setCollapsed(!collapsed)}
-              className="flex items-center justify-center rounded-md hover:bg-accent transition-colors touch-target"
+              className={cn(
+                'flex items-center justify-center rounded-lg',
+                'hover:bg-black/[0.04] dark:hover:bg-white/[0.06]',
+                'transition-colors touch-target',
+                'h-8 w-8'
+              )}
             >
               {collapsed ? (
                 <ChevronRight className="h-4 w-4" />
@@ -139,7 +151,7 @@ export const AdminLayout = ({ children }: AdminLayoutProps) => {
           </div>
 
           {/* 导航菜单 */}
-          <div className="flex-1 overflow-y-auto py-4">
+          <div className="flex-1 overflow-y-auto py-3">
             <AdminSidebarNav items={adminNavItems} collapsed={collapsed} />
           </div>
 
@@ -152,46 +164,95 @@ export const AdminLayout = ({ children }: AdminLayoutProps) => {
         {/* 主内容区域 */}
         <div
           className={cn(
-            "flex min-h-viewport flex-col transition-all duration-200",
-            collapsed ? "md:pl-16" : "md:pl-56"
+            'flex min-h-viewport flex-col transition-all duration-200',
+            collapsed ? 'md:pl-[72px]' : 'md:pl-60'
           )}
         >
-          {/* 顶部导航栏 - Mobile optimized */}
-          <header className={cn(
-            "sticky top-0 z-30 flex items-center gap-4 border-b bg-background",
-            isMobile ? "h-12 px-4" : "h-14 px-4 sm:px-6"
-          )}>
-            {/* 移动端菜单按钮 */}
-            <button
-              className="md:hidden flex items-center justify-center rounded-lg hover:bg-accent touch-target p-2.5 min-w-[44px] min-h-[44px]"
-              onClick={() => setMobileDrawerOpen(true)}
-            >
-              <Menu className="h-6 w-6" />
-            </button>
-
-            {/* Breadcrumbs or simple title for mobile */}
-            <div className="flex-1 min-w-0">
-              {isMobile ? (
-                <h1 className="text-base font-semibold text-foreground truncate">
-                  {currentPageTitle}
-                </h1>
-              ) : (
-                <EnhancedBreadcrumbs />
+          {/* iOS-style Navigation Bar */}
+          <header
+            className={cn(
+              'sticky top-0 z-30',
+              // iOS glass background
+              isMobile
+                ? 'glass-elevated border-b border-border/40'
+                : 'border-b bg-background',
+              // Safe area support for notch/dynamic island
+              isMobile && 'pt-[env(safe-area-inset-top)]'
+            )}
+          >
+            <div
+              className={cn(
+                'flex items-center',
+                // iOS standard nav bar height: 44px, desktop: 56px
+                isMobile ? 'h-11 px-2' : 'h-14 px-4 sm:px-6 gap-4'
               )}
-            </div>
+            >
+              {/* Left section - fixed width for iOS symmetry */}
+              <div className={cn(isMobile ? 'w-11 flex-shrink-0' : 'contents')}>
+                {isMobile && (
+                  <button
+                    className={cn(
+                      'flex items-center justify-center',
+                      'size-11', // 44px touch target
+                      'rounded-full',
+                      'text-primary',
+                      'active:bg-foreground/10',
+                      'transition-colors motion-reduce:transition-none'
+                    )}
+                    onClick={() => setMobileDrawerOpen(true)}
+                    aria-label="Open menu"
+                  >
+                    <Menu className="size-[22px]" strokeWidth={2} />
+                  </button>
+                )}
+              </div>
 
-            {/* Theme toggle and user menu */}
-            <div className="flex items-center gap-2 md:gap-3">
-              {/* Hide theme toggle on mobile - available in drawer */}
-              {!isMobile && <ThemeToggle />}
+              {/* Center section - iOS centered title */}
+              <div
+                className={cn(
+                  'flex-1 min-w-0',
+                  isMobile && 'flex justify-center'
+                )}
+              >
+                {isMobile ? (
+                  <h1
+                    className={cn(
+                      'text-[17px] font-semibold leading-tight',
+                      'text-foreground truncate',
+                      'max-w-[60vw]' // Prevent title from overlapping buttons
+                    )}
+                  >
+                    {currentPageTitle}
+                  </h1>
+                ) : (
+                  <EnhancedBreadcrumbs />
+                )}
+              </div>
 
-              <UserMenu
-                user={user}
-                showUserSwitch
-                onProfileClick={() => setProfileDialogOpen(true)}
-                onUserClick={() => navigate('/dashboard')}
-                onLogout={handleLogout}
-              />
+              {/* Right section - fixed width for iOS symmetry */}
+              <div
+                className={cn(
+                  isMobile
+                    ? 'w-11 flex-shrink-0 flex justify-end'
+                    : 'flex items-center gap-3'
+                )}
+              >
+                {/* Desktop: show language switcher and theme toggle */}
+                {!isMobile && (
+                  <>
+                    <LanguageSwitcher />
+                    <ThemeToggle />
+                  </>
+                )}
+
+                <UserMenu
+                  user={user}
+                  showUserSwitch
+                  onProfileClick={() => setProfileDialogOpen(true)}
+                  onUserClick={() => navigate('/dashboard')}
+                  onLogout={handleLogout}
+                />
+              </div>
             </div>
           </header>
 

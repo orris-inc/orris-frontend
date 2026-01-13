@@ -8,6 +8,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { Link as RouterLink } from 'react-router';
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { ArrowLeft, Mail, Loader2, CircleAlert } from 'lucide-react';
 import * as LabelPrimitive from '@radix-ui/react-label';
 import * as authApi from '@/api/auth';
@@ -27,18 +28,22 @@ import {
 } from '@/lib/ui-styles';
 import { cn } from '@/lib/utils';
 
-// Zod validation
-const forgotPasswordSchema = z.object({
-  email: z.string().email('请输入有效的邮箱地址'),
-});
-
-type ForgotPasswordFormData = z.infer<typeof forgotPasswordSchema>;
+// Form data type
+type ForgotPasswordFormData = {
+  email: string;
+};
 
 export const ForgotPasswordPage = () => {
+  const { t } = useTranslation();
   const { showSuccess, showError } = useNotificationStore();
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
+
+  // Zod schema with i18n validation messages
+  const forgotPasswordSchema = z.object({
+    email: z.string().email(t('auth.validation.emailInvalid')),
+  });
 
   const {
     register,
@@ -55,7 +60,7 @@ export const ForgotPasswordPage = () => {
     try {
       await authApi.forgotPassword(data);
       setSuccess(true);
-      showSuccess('重置邮件已发送,请查收邮箱');
+      showSuccess(t('auth.forgotPassword.success'));
     } catch (err) {
       const errorMsg = extractErrorMessage(err);
       setError(errorMsg);
@@ -78,12 +83,12 @@ export const ForgotPasswordPage = () => {
               </div>
 
               <div className="grid gap-2">
-                <h1 className="text-2xl font-bold">邮件已发送</h1>
+                <h1 className="text-2xl font-bold">{t('auth.emailSent.title')}</h1>
                 <p className="text-muted-foreground">
-                  我们已经向您的邮箱发送了密码重置链接,请查收邮件并按照指引重置密码。
+                  {t('auth.emailSent.description')}
                 </p>
                 <p className="text-sm text-muted-foreground">
-                  如果您没有收到邮件,请检查垃圾邮件文件夹或稍后重试。
+                  {t('auth.emailSent.spamNotice')}
                 </p>
               </div>
 
@@ -92,7 +97,7 @@ export const ForgotPasswordPage = () => {
                 className="inline-flex items-center justify-center gap-2 text-sm text-primary underline-offset-4 hover:underline"
               >
                 <ArrowLeft className="size-4" />
-                返回登录
+                {t('auth.forgotPassword.backToLogin')}
               </RouterLink>
             </div>
           </div>
@@ -106,8 +111,8 @@ export const ForgotPasswordPage = () => {
       <div className="w-full max-w-md">
         <div className={cardStyles}>
           <div className={cn(cardHeaderStyles, "text-center")}>
-            <h3 className={cardTitleStyles}>忘记密码</h3>
-            <p className={cardDescriptionStyles}>输入您的邮箱地址,我们将发送密码重置链接</p>
+            <h3 className={cardTitleStyles}>{t('auth.forgotPassword.title')}</h3>
+            <p className={cardDescriptionStyles}>{t('auth.forgotPassword.subtitle')}</p>
           </div>
           <div className={cn(cardContentStyles, "grid gap-6")}>
             {/* Error Message */}
@@ -121,7 +126,7 @@ export const ForgotPasswordPage = () => {
             {/* Form */}
             <form onSubmit={handleSubmit(onSubmit)} className="grid gap-4">
               <div className="grid gap-2">
-                <LabelPrimitive.Root htmlFor="email" className={labelStyles}>邮箱</LabelPrimitive.Root>
+                <LabelPrimitive.Root htmlFor="email" className={labelStyles}>{t('auth.forgotPassword.email')}</LabelPrimitive.Root>
                 <input
                   id="email"
                   type="email"
@@ -138,7 +143,7 @@ export const ForgotPasswordPage = () => {
 
               <button type="submit" disabled={isLoading} className={cn(getButtonClass('default', 'lg'), "w-full")}>
                 {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                发送重置链接
+                {t('auth.forgotPassword.submit')}
               </button>
             </form>
 
@@ -149,7 +154,7 @@ export const ForgotPasswordPage = () => {
                 className="inline-flex items-center gap-2 text-sm text-primary underline-offset-4 hover:underline"
               >
                 <ArrowLeft className="size-4" />
-                返回登录
+                {t('auth.forgotPassword.backToLogin')}
               </RouterLink>
             </div>
           </div>

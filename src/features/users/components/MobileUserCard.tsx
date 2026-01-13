@@ -8,6 +8,7 @@
  * - Clear visual hierarchy
  */
 
+import { useTranslation } from 'react-i18next';
 import {
   Edit,
   Trash2,
@@ -76,8 +77,9 @@ export const MobileUserCard = ({
   onAssignSubscription,
   onResetPassword,
 }: MobileUserCardProps) => {
-  const statusConfig = ACTIVE_STATUS_CONFIG[user.status] || { label: user.status, variant: 'default' as const };
-  const roleConfig = ROLE_CONFIG[user.role || 'user'] || { label: '用户', variant: 'default' as const };
+  const { t } = useTranslation();
+  const statusConfig = ACTIVE_STATUS_CONFIG[user.status] || { labelKey: 'common.status.unknown', variant: 'default' as const };
+  const roleConfig = ROLE_CONFIG[user.role || 'user'] || { labelKey: 'common.role.user', variant: 'default' as const };
 
   // Swipe actions
   const swipeActions: SwipeAction[] = [
@@ -131,7 +133,7 @@ export const MobileUserCard = ({
               variant={statusConfig.variant}
               className="text-[10px] px-1.5 py-0 shrink-0"
             >
-              {statusConfig.label}
+              {t(statusConfig.labelKey)}
             </AdminBadge>
           </div>
 
@@ -147,7 +149,7 @@ export const MobileUserCard = ({
           <div className="shrink-0">
             <div className="flex items-center gap-1 px-2 py-1 rounded-full bg-amber-500/10 text-amber-600 dark:text-amber-400">
               <Shield className="size-3" />
-              <span className="text-[10px] font-medium">{roleConfig.label}</span>
+              <span className="text-[10px] font-medium">{t(roleConfig.labelKey)}</span>
             </div>
           </div>
         )}

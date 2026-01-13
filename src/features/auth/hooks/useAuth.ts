@@ -171,18 +171,16 @@ export const useAuth = () => {
    * Logout
    */
   const logout = useCallback(async () => {
-    setIsLoading(true);
-    setError(null);
+    // Redirect immediately to prevent ProtectedRoute from redirecting to /login
+    // before this navigation completes
+    window.location.href = '/';
 
-    try {
-      await authApi.logout();
-    } catch {
-      // Logout error ignored, proceed with local state cleanup
-    } finally {
-      storeLogout();
-      setIsLoading(false);
-    }
-  }, [storeLogout]);
+    // Call logout API in background (fire and forget)
+    // The page will refresh anyway, so we don't need to wait or handle errors
+    authApi.logout().catch(() => {
+      // Ignore errors - cookie will be cleared on page refresh anyway
+    });
+  }, []);
 
   return {
     user,

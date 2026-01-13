@@ -4,6 +4,7 @@
  */
 
 import { useState, useEffect, useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Loader2, Info, X, Check } from 'lucide-react';
 import * as Dialog from '@radix-ui/react-dialog';
 import * as LabelPrimitive from '@radix-ui/react-label';
@@ -21,24 +22,14 @@ interface AssignSubscriptionDialogProps {
   onSubmit: (data: AdminCreateSubscriptionRequest) => Promise<void>;
 }
 
-// Billing cycle options (for cases without multiple pricing)
-const BILLING_CYCLE_OPTIONS: { value: BillingCycle; label: string }[] = [
-  { value: 'weekly', label: '周付' },
-  { value: 'monthly', label: '月付' },
-  { value: 'quarterly', label: '季付' },
-  { value: 'semi_annual', label: '半年付' },
-  { value: 'yearly', label: '年付' },
-  { value: 'lifetime', label: '终身' },
-];
-
-// Billing cycle display name mapping
-const BILLING_CYCLE_LABELS: Record<BillingCycle, string> = {
-  weekly: '周付',
-  monthly: '月付',
-  quarterly: '季付',
-  semi_annual: '半年付',
-  yearly: '年付',
-  lifetime: '终身',
+// Billing cycle translation keys
+const BILLING_CYCLE_KEYS: Record<BillingCycle, string> = {
+  weekly: 'billingCycle.weekly',
+  monthly: 'billingCycle.monthly',
+  quarterly: 'billingCycle.quarterly',
+  semi_annual: 'billingCycle.semiAnnual',
+  yearly: 'billingCycle.yearly',
+  lifetime: 'billingCycle.lifetime',
 };
 
 // Get available pricing options for the plan
@@ -59,6 +50,7 @@ export const AssignSubscriptionDialog: React.FC<AssignSubscriptionDialogProps> =
   onClose,
   onSubmit,
 }) => {
+  const { t } = useTranslation();
   const { plans, isLoading: plansLoading } = useSubscriptionPlans({ enabled: open });
   const [submitting, setSubmitting] = useState(false);
   const [formData, setFormData] = useState<AdminCreateSubscriptionRequest>({
@@ -141,7 +133,7 @@ export const AssignSubscriptionDialog: React.FC<AssignSubscriptionDialogProps> =
         const pricings = getAvailablePricings(plan);
         let priceDisplay: string;
         if (pricings.length === 0) {
-          priceDisplay = '无定价';
+          priceDisplay = t('subscription.noPriceSet');
         } else if (pricings.length === 1) {
           priceDisplay = formatPrice(pricings[0].price, pricings[0].currency);
         } else {
@@ -158,18 +150,22 @@ export const AssignSubscriptionDialog: React.FC<AssignSubscriptionDialogProps> =
           label: `${plan.name} - ${priceDisplay}`
         };
       });
-  }, [plans]);
+  }, [plans, t]);
 
   // Prepare billing cycle options (based on selected plan's available pricing)
   const billingCycleOptions = useMemo(() => {
     if (availablePricings.length > 0) {
       return availablePricings.map(p => ({
         value: p.billingCycle,
-        label: `${BILLING_CYCLE_LABELS[p.billingCycle]} - ${formatPrice(p.price, p.currency)}`,
+        label: `${t(BILLING_CYCLE_KEYS[p.billingCycle])} - ${formatPrice(p.price, p.currency)}`,
       }));
     }
-    return BILLING_CYCLE_OPTIONS;
-  }, [availablePricings]);
+    // Default options when no pricing available
+    return Object.entries(BILLING_CYCLE_KEYS).map(([value, key]) => ({
+      value: value as BillingCycle,
+      label: t(key),
+    }));
+  }, [availablePricings, t]);
 
   return (
     <Dialog.Root open={open} onOpenChange={handleOpenChange}>
@@ -179,11 +175,11 @@ export const AssignSubscriptionDialog: React.FC<AssignSubscriptionDialogProps> =
           <div className="flex items-center justify-between">
             <div>
               <Dialog.Title className="text-lg font-semibold leading-none tracking-tight">
-                为用户分配订阅
+                {t('subscription.assignToUser')}
               </Dialog.Title>
               {user && (
                 <p className="text-sm text-muted-foreground mt-1">
-                  用户: {user.name} ({user.email})
+                  {t('subscription.user')}: {user.name} ({user.email})
                 </p>
               )}
             </div>
@@ -201,22 +197,22 @@ export const AssignSubscriptionDialog: React.FC<AssignSubscriptionDialogProps> =
             <div className="grid gap-6 py-4">
               {/* Subscription plan selection */}
               <div className="grid gap-2">
-                <LabelPrimitive.Root className={labelStyles}>订阅计划</LabelPrimitive.Root>
+                <LabelPrimitive.Root className={labelStyles}>{t('subscription.plan')}</LabelPrimitive.Root>
                 <SimpleSelect
                   value={formData.planId}
                   onValueChange={(value) => setFormData({ ...formData, planId: value })}
                   options={planOptions}
-                  placeholder="请选择计划"
+                  placeholder={t('placeholders.selectPlan')}
                 />
               </div>
 
               {/* Billing cycle selection */}
               <div className="grid gap-2">
                 <LabelPrimitive.Root className={labelStyles}>
-                  计费周期
+                  {t('subscription.billingCycle')}
                   {availablePricings.length > 1 && (
                     <span className="ml-2 text-xs text-muted-foreground">
-                      ({availablePricings.length} 个可选)
+                      ({availablePricings.length} {t('subscription.optionsAvailable')})
                     </span>
                   )}
                 </LabelPrimitive.Root>
@@ -244,19 +240,19 @@ export const AssignSubscriptionDialog: React.FC<AssignSubscriptionDialogProps> =
                   htmlFor="auto_renew"
                   className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer"
                 >
-                  自动续费
+                  {t('subscription.autoRenewal')}
                 </LabelPrimitive.Root>
               </div>
 
               {/* Plan details */}
               {selectedPlan && (
                 <div className="rounded-md bg-muted p-4 text-sm">
-                  <h4 className="font-medium mb-2">计划详情</h4>
+                  <h4 className="font-medium mb-2">{t('subscription.planDetails')}</h4>
                   <div className="space-y-1 text-muted-foreground">
-                    <p>名称: {selectedPlan.name}</p>
+                    <p>{t('fields.name')}: {selectedPlan.name}</p>
                     {selectedPricing && (
                       <p>
-                        价格: {formatPrice(selectedPricing.price, selectedPricing.currency)} / {BILLING_CYCLE_LABELS[selectedPricing.billingCycle]}
+                        {t('fields.price')}: {formatPrice(selectedPricing.price, selectedPricing.currency)} / {t(BILLING_CYCLE_KEYS[selectedPricing.billingCycle])}
                       </p>
                     )}
                     {selectedPlan.description && (
@@ -269,7 +265,7 @@ export const AssignSubscriptionDialog: React.FC<AssignSubscriptionDialogProps> =
               <div className={alertStyles}>
                 <Info className="h-4 w-4" />
                 <div className={alertDescriptionStyles}>
-                  管理员分配的订阅将立即生效，用户将获得对应计划的权限。
+                  {t('subscription.assignInfo')}
                 </div>
               </div>
             </div>
@@ -281,7 +277,7 @@ export const AssignSubscriptionDialog: React.FC<AssignSubscriptionDialogProps> =
               disabled={submitting}
               className={getButtonClass('outline', 'default')}
             >
-              取消
+              {t('common.actions.cancel')}
             </button>
             <button
               onClick={handleSubmit}
@@ -291,10 +287,10 @@ export const AssignSubscriptionDialog: React.FC<AssignSubscriptionDialogProps> =
               {submitting ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  分配中...
+                  {t('subscription.assigning')}
                 </>
               ) : (
-                '确认分配'
+                t('subscription.confirmAssign')
               )}
             </button>
           </div>

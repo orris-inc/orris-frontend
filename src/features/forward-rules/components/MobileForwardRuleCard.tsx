@@ -8,6 +8,7 @@
  * - Clear visual hierarchy
  */
 
+import { useTranslation } from 'react-i18next';
 import {
   Edit,
   Power,
@@ -69,7 +70,8 @@ export const MobileForwardRuleCard = ({
   onToggleStatus,
   onDelete,
 }: MobileForwardRuleCardProps) => {
-  const statusConfig = ENABLED_STATUS_CONFIG_SHORT[rule.status] || { label: rule.status, variant: 'default' as const };
+  const { t } = useTranslation();
+  const statusConfig = ENABLED_STATUS_CONFIG_SHORT[rule.status] || { labelKey: 'common.status.unknown', variant: 'default' as const };
   const ruleTypeConfig = RULE_TYPE_CONFIG[rule.ruleType] || { label: rule.ruleType, shortLabel: '?', variant: 'default' as const };
   const protocolConfig = PROTOCOL_CONFIG[rule.protocol] || { label: rule.protocol, variant: 'default' as const };
 
@@ -142,7 +144,7 @@ export const MobileForwardRuleCard = ({
             variant={statusConfig.variant}
             className="text-[10px] px-1.5 py-0 shrink-0"
           >
-            {statusConfig.label}
+            {t(statusConfig.labelKey)}
           </AdminBadge>
         </div>
 

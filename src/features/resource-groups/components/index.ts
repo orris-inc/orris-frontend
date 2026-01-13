@@ -8,6 +8,7 @@ export { DeleteResourceGroupDialog } from './DeleteResourceGroupDialog';
 export { CreateResourceGroupSheet } from './CreateResourceGroupSheet';
 export { EditResourceGroupSheet } from './EditResourceGroupSheet';
 export { DeleteResourceGroupSheet } from './DeleteResourceGroupSheet';
+export { ResourceGroupDetailSheet } from './ResourceGroupDetailSheet';
 
 // Mobile management components
 export { MobileResourceGroupCard } from './MobileResourceGroupCard';

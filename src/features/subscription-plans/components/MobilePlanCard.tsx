@@ -8,6 +8,7 @@
  * - Clear visual hierarchy
  */
 
+import { useTranslation } from 'react-i18next';
 import {
   Edit,
   Copy,
@@ -83,10 +84,11 @@ export const MobilePlanCard = ({
   onToggleStatus,
   onDelete,
 }: MobilePlanCardProps) => {
+  const { t } = useTranslation();
   const status = plan.status as PlanStatus | undefined;
-  const statusConfig = status ? ACTIVE_STATUS_CONFIG[status] : { label: '未知', variant: 'default' as const };
+  const statusConfig = status ? ACTIVE_STATUS_CONFIG[status] : { labelKey: 'common.status.unknown', variant: 'default' as const };
   const planType = plan.planType as PlanType | undefined;
-  const typeConfig = planType ? PLAN_TYPE_CONFIG[planType] : { label: '节点', variant: 'info' as const };
+  const typeConfig = planType ? PLAN_TYPE_CONFIG[planType] : { labelKey: 'common.planType.node', variant: 'info' as const };
   const pricingCount = getPricingCount(plan);
 
   // Swipe actions
@@ -141,7 +143,7 @@ export const MobilePlanCard = ({
             variant={statusConfig.variant}
             className="text-[10px] px-1.5 py-0 shrink-0"
           >
-            {statusConfig.label}
+            {t(statusConfig.labelKey)}
           </AdminBadge>
         </div>
 
@@ -151,7 +153,7 @@ export const MobilePlanCard = ({
           <div className="flex items-center gap-1">
             {planType && PLAN_TYPE_ICONS[planType]}
             <AdminBadge variant={typeConfig.variant} className="text-[10px] px-1.5 py-0">
-              {typeConfig.label}
+              {t(typeConfig.labelKey)}
             </AdminBadge>
           </div>
 

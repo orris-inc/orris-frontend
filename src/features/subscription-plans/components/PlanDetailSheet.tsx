@@ -9,6 +9,7 @@
  */
 
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
   Package,
   Globe,
@@ -168,14 +169,15 @@ export const PlanDetailSheet = ({
   onViewSubscriptions,
   onDelete,
 }: PlanDetailSheetProps) => {
+  const { t } = useTranslation();
   const [actionSheetOpen, setActionSheetOpen] = useState(false);
 
   if (!plan) return null;
 
   const status = plan.status as PlanStatus;
-  const statusConfig = ACTIVE_STATUS_CONFIG[status] || { label: '未知', variant: 'default' as const };
+  const statusConfig = ACTIVE_STATUS_CONFIG[status] || { labelKey: 'common.status.unknown', variant: 'default' as const };
   const planType = plan.planType as PlanType;
-  const typeConfig = PLAN_TYPE_CONFIG[planType] || { label: '未知', variant: 'default' as const };
+  const typeConfig = PLAN_TYPE_CONFIG[planType] || { labelKey: 'common.status.unknown', variant: 'default' as const };
 
   // Action Sheet actions
   const moreActions = [
@@ -224,7 +226,7 @@ export const PlanDetailSheet = ({
                 <div className="flex items-center gap-2">
                   <SheetTitle className="truncate">{plan.name}</SheetTitle>
                   <AdminBadge variant={statusConfig.variant} className="text-[10px] px-1.5 py-0 shrink-0">
-                    {statusConfig.label}
+                    {t(statusConfig.labelKey)}
                   </AdminBadge>
                 </div>
                 <SheetDescription className="truncate font-mono text-xs">
@@ -242,7 +244,7 @@ export const PlanDetailSheet = ({
                 label="计划类型"
                 value={
                   <AdminBadge variant={typeConfig.variant} className="text-xs">
-                    {typeConfig.label}
+                    {t(typeConfig.labelKey)}
                   </AdminBadge>
                 }
               />

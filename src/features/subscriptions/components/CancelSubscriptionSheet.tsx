@@ -4,6 +4,7 @@
  */
 
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { XCircle, AlertTriangle, Loader2 } from 'lucide-react';
 import {
   Sheet,
@@ -33,6 +34,7 @@ export const CancelSubscriptionSheet: React.FC<CancelSubscriptionSheetProps> = (
   subscription,
   onConfirm,
 }) => {
+  const { t } = useTranslation();
   const [reason, setReason] = useState('');
   const [immediate, setImmediate] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -68,10 +70,10 @@ export const CancelSubscriptionSheet: React.FC<CancelSubscriptionSheetProps> = (
             <div className="size-8 rounded-full bg-destructive/10 flex items-center justify-center">
               <XCircle className="size-4 text-destructive" />
             </div>
-            <span>取消订阅</span>
+            <span>{t('subscription.cancel')}</span>
           </SheetTitle>
           <SheetDescription className="text-xs flex items-center gap-1">
-            订阅 <TruncatedId id={subscription.id} />
+            {t('subscription.label')} <TruncatedId id={subscription.id} />
           </SheetDescription>
         </SheetHeader>
 
@@ -81,7 +83,7 @@ export const CancelSubscriptionSheet: React.FC<CancelSubscriptionSheetProps> = (
             <div className="flex items-start gap-2">
               <AlertTriangle className="size-4 text-yellow-600 dark:text-yellow-500 mt-0.5 shrink-0" />
               <p className="text-xs text-yellow-700 dark:text-yellow-400">
-                取消后，用户将无法继续使用该订阅的服务。请确认是否要取消此订阅。
+                {t('subscription.cancelWarning')}
               </p>
             </div>
           </div>
@@ -89,10 +91,10 @@ export const CancelSubscriptionSheet: React.FC<CancelSubscriptionSheetProps> = (
           {/* Reason Input */}
           <div className="space-y-1.5">
             <label className="text-xs font-medium">
-              取消原因 <span className="text-destructive">*</span>
+              {t('subscription.cancelReason')} <span className="text-destructive">*</span>
             </label>
             <textarea
-              placeholder="请输入取消原因..."
+              placeholder={t('placeholders.cancelReason')}
               value={reason}
               onChange={(e) => setReason(e.target.value)}
               disabled={loading}
@@ -116,10 +118,10 @@ export const CancelSubscriptionSheet: React.FC<CancelSubscriptionSheetProps> = (
             />
             <div>
               <Label htmlFor="immediate-cancel" className="cursor-pointer text-sm font-medium">
-                立即取消
+                {t('subscription.immediateCancel')}
               </Label>
               <p className="text-xs text-muted-foreground mt-0.5">
-                否则将在当前周期结束后取消
+                {t('subscription.cancelAtEndPeriod')}
               </p>
             </div>
           </div>
@@ -135,14 +137,14 @@ export const CancelSubscriptionSheet: React.FC<CancelSubscriptionSheetProps> = (
             {loading ? (
               <>
                 <Loader2 className="mr-2 size-4 animate-spin" />
-                处理中...
+                {t('messages.processing')}
               </>
             ) : (
-              '确认取消'
+              t('messages.confirmCancel')
             )}
           </Button>
           <Button variant="ghost" onClick={() => handleClose(false)} disabled={loading} className="w-full min-h-[44px]">
-            返回
+            {t('common.actions.back')}
           </Button>
         </SheetFooter>
       </SheetContent>

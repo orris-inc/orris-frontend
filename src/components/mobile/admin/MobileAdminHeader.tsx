@@ -1,42 +1,83 @@
 /**
- * Mobile Admin Header Component
+ * iOS-style Mobile Navigation Bar Component
  *
- * A compact iOS 26 Liquid Glass style header for mobile admin pages.
- * Features:
- * - Sticky positioning with safe area support
- * - Compact 48px height for maximum content space
- * - Glass elevated background with backdrop blur
- * - Optional back button with minimum touch target
- * - Support for custom right-side actions
- * - Respects prefers-reduced-motion
+ * A navigation bar following iOS Human Interface Guidelines:
+ * - Centered title (17pt semibold)
+ * - Left/right action slots with fixed width for symmetry
+ * - Optional back button with iOS chevron style
+ * - Glass morphism background with backdrop blur
+ * - Safe area support for notch/dynamic island
+ * - Optional Large Title mode with scroll-driven collapse
  */
 
-import { ArrowLeft } from 'lucide-react';
+import { ChevronLeft } from 'lucide-react';
+import { useRef, useState, useEffect, useCallback } from 'react';
 import { cn } from '@/lib/utils';
 
 interface MobileAdminHeaderProps {
-  /** Header title text */
+  /** Navigation bar title (centered) */
   title: string;
-  /** Optional subtitle below the title */
-  subtitle?: string;
-  /** Show back navigation button */
+  /** Show iOS-style back button with chevron */
   showBackButton?: boolean;
+  /** Back button label (default: "返回") */
+  backLabel?: string;
   /** Callback when back button is pressed */
   onBack?: () => void;
-  /** Custom action element on the right side */
-  action?: React.ReactNode;
-  /** Additional CSS classes */
+  /** Left side custom action (replaces back button if provided) */
+  leftAction?: React.ReactNode;
+  /** Right side custom action */
+  rightAction?: React.ReactNode;
+  /** Enable Large Title mode (iOS-style expandable title) */
+  largeTitleEnabled?: boolean;
+  /** Container element or ref for scroll tracking (required for Large Title) */
+  scrollContainer?: React.RefObject<HTMLElement | null>;
+  /** Additional CSS classes for the header */
   className?: string;
 }
 
 export const MobileAdminHeader = ({
   title,
-  subtitle,
   showBackButton = false,
+  backLabel,
   onBack,
-  action,
+  leftAction,
+  rightAction,
+  largeTitleEnabled = false,
+  scrollContainer,
   className,
 }: MobileAdminHeaderProps) => {
+  // Track scroll progress for Large Title collapse animation
+  const [scrollProgress, setScrollProgress] = useState(0);
+  const largeTitleRef = useRef<HTMLDivElement>(null);
+
+  // Large Title collapse threshold (scroll distance to fully collapse)
+  const COLLAPSE_THRESHOLD = 52;
+
+  // Handle scroll for Large Title mode
+  const handleScroll = useCallback(() => {
+    if (!largeTitleEnabled) return;
+
+    const container = scrollContainer?.current ?? window;
+    const scrollY =
+      container instanceof Window
+        ? container.scrollY
+        : (container as HTMLElement).scrollTop;
+
+    const progress = Math.min(1, Math.max(0, scrollY / COLLAPSE_THRESHOLD));
+    setScrollProgress(progress);
+  }, [largeTitleEnabled, scrollContainer]);
+
+  useEffect(() => {
+    if (!largeTitleEnabled) return;
+
+    const container = scrollContainer?.current ?? window;
+    container.addEventListener('scroll', handleScroll, { passive: true });
+
+    return () => {
+      container.removeEventListener('scroll', handleScroll);
+    };
+  }, [largeTitleEnabled, scrollContainer, handleScroll]);
+
   // Handle back navigation
   const handleBack = () => {
     if (onBack) {
@@ -46,84 +87,114 @@ export const MobileAdminHeader = ({
     }
   };
 
-  return (
-    <header
+  // Back button component - iOS chevron style
+  const BackButton = () => (
+    <button
+      type="button"
+      onClick={handleBack}
+      aria-label="Go back"
       className={cn(
-        // Positioning - sticky with safe area
-        'sticky top-0 z-30',
-        // Sizing
-        'h-12',
-        // Glass effect background
-        'glass-elevated',
-        // Border
-        'border-b border-border/50',
-        // Safe area padding
-        'pt-[env(safe-area-inset-top)]',
-        className
+        'flex items-center gap-0.5',
+        'h-11 min-w-[44px] px-1',
+        'text-primary',
+        'active:opacity-50',
+        'transition-opacity motion-reduce:transition-none',
+        '-ml-2' // Align chevron with edge visually
       )}
     >
-      <div
+      <ChevronLeft className="size-[28px] -mr-1" strokeWidth={2.5} />
+      {backLabel && (
+        <span className="text-[17px]">{backLabel}</span>
+      )}
+    </button>
+  );
+
+  // Standard title opacity - fades in as Large Title collapses
+  const standardTitleOpacity = largeTitleEnabled ? scrollProgress : 1;
+  // Large Title opacity and scale - fades out and shrinks as user scrolls
+  const largeTitleOpacity = 1 - scrollProgress;
+  const largeTitleScale = 1 - scrollProgress * 0.15;
+
+  return (
+    <div className={cn('sticky top-0 z-30', className)}>
+      {/* Standard Navigation Bar */}
+      <header
         className={cn(
-          // Layout
-          'flex items-center gap-3',
-          // Sizing - full height minus safe area
-          'h-12 px-4'
+          // Glass background
+          'glass-elevated',
+          'border-b border-border/40',
+          // Safe area padding for notch
+          'pt-[env(safe-area-inset-top)]',
+          // Hide bottom border when Large Title is visible
+          largeTitleEnabled && scrollProgress < 1 && 'border-b-transparent'
         )}
       >
-        {/* Back button */}
-        {showBackButton && (
-          <button
-            type="button"
-            onClick={handleBack}
-            aria-label="Go back"
-            className={cn(
-              // Touch target - minimum 44px
-              'min-w-[44px] min-h-[44px]',
-              // Center icon within touch target
-              'flex items-center justify-center',
-              // Negative margin to align visually while keeping touch target
-              '-ml-2',
-              // Interactive states
-              'rounded-full',
-              'active:bg-foreground/10',
-              'transition-colors duration-150',
-              'motion-reduce:transition-none',
-              // Focus state
-              'focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/50'
-            )}
-          >
-            <ArrowLeft
-              className="w-5 h-5 text-foreground"
-              aria-hidden="true"
-            />
-          </button>
-        )}
+        <nav
+          className={cn(
+            'flex items-center',
+            'h-11 px-2' // 44px iOS standard height
+          )}
+        >
+          {/* Left section - fixed width for symmetry */}
+          <div className="w-20 flex-shrink-0 flex items-center">
+            {leftAction ? (
+              leftAction
+            ) : showBackButton ? (
+              <BackButton />
+            ) : null}
+          </div>
 
-        {/* Title section - flex grow to fill space */}
-        <div className="flex-1 min-w-0">
+          {/* Center section - title */}
+          <div className="flex-1 flex justify-center min-w-0">
+            <h1
+              className={cn(
+                'text-[17px] font-semibold leading-tight',
+                'text-foreground truncate',
+                'transition-opacity duration-200 motion-reduce:transition-none'
+              )}
+              style={{ opacity: standardTitleOpacity }}
+            >
+              {title}
+            </h1>
+          </div>
+
+          {/* Right section - fixed width for symmetry */}
+          <div className="w-20 flex-shrink-0 flex items-center justify-end">
+            {rightAction}
+          </div>
+        </nav>
+      </header>
+
+      {/* Large Title section (iOS-style) */}
+      {largeTitleEnabled && (
+        <div
+          ref={largeTitleRef}
+          className={cn(
+            'glass-elevated',
+            'border-b border-border/40',
+            'px-4 pb-2',
+            'overflow-hidden',
+            'transition-[border-color] duration-200'
+          )}
+          style={{
+            opacity: largeTitleOpacity,
+            transform: `scale(${largeTitleScale})`,
+            transformOrigin: 'left center',
+            height: largeTitleOpacity > 0 ? 'auto' : 0,
+            paddingBottom: largeTitleOpacity > 0 ? undefined : 0,
+          }}
+        >
           <h1
             className={cn(
-              'text-base font-semibold truncate',
+              'text-[34px] font-bold leading-tight',
               'text-foreground'
             )}
           >
             {title}
           </h1>
-          {subtitle && (
-            <p className="text-xs text-muted-foreground truncate">
-              {subtitle}
-            </p>
-          )}
         </div>
-
-        {/* Right action slot */}
-        {action && (
-          <div className="flex-shrink-0">
-            {action}
-          </div>
-        )}
-      </div>
-    </header>
+      )}
+    </div>
   );
 };
 

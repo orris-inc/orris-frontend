@@ -5,6 +5,7 @@
  */
 
 import { useMemo } from "react";
+import { useTranslation } from "react-i18next";
 import { useQuery } from "@tanstack/react-query";
 import {
   Clock,
@@ -61,7 +62,7 @@ const getStatusConfig = (status: string) => {
   switch (status) {
     case "active":
       return {
-        label: "激活中",
+        labelKey: "subscriptionStatus.active",
         variant: "success" as const,
         color: "text-emerald-600 dark:text-emerald-400",
         bgColor: "bg-emerald-500/10",
@@ -69,7 +70,7 @@ const getStatusConfig = (status: string) => {
       };
     case "expired":
       return {
-        label: "已过期",
+        labelKey: "subscriptionStatus.expired",
         variant: "destructive" as const,
         color: "text-destructive",
         bgColor: "bg-destructive/10",
@@ -77,7 +78,7 @@ const getStatusConfig = (status: string) => {
       };
     case "cancelled":
       return {
-        label: "已取消",
+        labelKey: "subscriptionStatus.cancelled",
         variant: "outline" as const,
         color: "text-muted-foreground",
         bgColor: "bg-muted",
@@ -85,7 +86,7 @@ const getStatusConfig = (status: string) => {
       };
     case "pending":
       return {
-        label: "待处理",
+        labelKey: "subscriptionStatus.pending",
         variant: "secondary" as const,
         color: "text-amber-600 dark:text-amber-400",
         bgColor: "bg-amber-500/10",
@@ -93,7 +94,7 @@ const getStatusConfig = (status: string) => {
       };
     case "renewed":
       return {
-        label: "已续费",
+        labelKey: "subscriptionStatus.renewed",
         variant: "success" as const,
         color: "text-emerald-600 dark:text-emerald-400",
         bgColor: "bg-emerald-500/10",
@@ -101,7 +102,7 @@ const getStatusConfig = (status: string) => {
       };
     default:
       return {
-        label: status,
+        labelKey: status,
         variant: "secondary" as const,
         color: "text-muted-foreground",
         bgColor: "bg-muted",
@@ -237,6 +238,7 @@ const ProgressBar: React.FC<{
 export const SubscriptionOverviewTab: React.FC<
   SubscriptionOverviewTabProps
 > = ({ subscription, onResetLink, isResettingLink }) => {
+  const { t } = useTranslation();
   const statusConfig = getStatusConfig(subscription.status);
   const daysRemaining = getDaysRemaining(subscription.currentPeriodEnd);
   const totalDays = getTotalDays(
@@ -291,7 +293,7 @@ export const SubscriptionOverviewTab: React.FC<
   };
 
   const handleResetLink = async () => {
-    if (!confirm("确定要重置订阅链接吗？重置后旧链接将失效。")) {
+    if (!confirm(t("userSubscription.confirmResetLink"))) {
       return;
     }
     await onResetLink();
@@ -311,12 +313,12 @@ export const SubscriptionOverviewTab: React.FC<
             "ring-1"
           )}
         >
-          <span className={cn(getBadgeClass(statusConfig.variant), "text-[10px] px-1.5 py-0 mb-1 inline-block")}>{statusConfig.label}</span>
+          <span className={cn(getBadgeClass(statusConfig.variant), "text-[10px] px-1.5 py-0 mb-1 inline-block")}>{t(statusConfig.labelKey)}</span>
           <div className="flex items-baseline gap-0.5">
             <span className={cn("text-xl font-bold tabular-nums", statusConfig.color)}>
               {daysRemaining !== null ? daysRemaining : "-"}
             </span>
-            <span className="text-[10px] text-muted-foreground">天</span>
+            <span className="text-[10px] text-muted-foreground">{t("userSubscription.days")}</span>
           </div>
         </div>
 
@@ -324,7 +326,7 @@ export const SubscriptionOverviewTab: React.FC<
         <div className="p-2 rounded-xl bg-card border">
           <div className="flex items-center gap-1 mb-0.5">
             <TrendingUp className="size-3 text-chart-download" />
-            <span className="text-[10px] text-muted-foreground">流量</span>
+            <span className="text-[10px] text-muted-foreground">{t("userSubscription.traffic")}</span>
           </div>
           <div className="flex items-baseline gap-0.5">
             <span className="text-lg font-bold tabular-nums">{trafficPercentage.toFixed(0)}</span>
@@ -339,7 +341,7 @@ export const SubscriptionOverviewTab: React.FC<
         <div className="p-2 rounded-xl bg-card border">
           <div className="flex items-center gap-1 mb-0.5">
             <Clock className="size-3 text-primary" />
-            <span className="text-[10px] text-muted-foreground">到期</span>
+            <span className="text-[10px] text-muted-foreground">{t("userSubscription.expires")}</span>
           </div>
           <p className="text-xs font-medium tabular-nums leading-tight">{formatDate(subscription.currentPeriodEnd)}</p>
         </div>
@@ -366,7 +368,7 @@ export const SubscriptionOverviewTab: React.FC<
                   "text-xs"
                 )}
               >
-                {statusConfig.label}
+                {t(statusConfig.labelKey)}
               </span>
               <div
                 className={cn(
@@ -392,17 +394,17 @@ export const SubscriptionOverviewTab: React.FC<
                   {daysRemaining !== null ? daysRemaining : "-"}
                 </span>
                 <span className="text-sm text-muted-foreground font-medium">
-                  天
+                  {t("userSubscription.days")}
                 </span>
               </div>
-              <p className="text-xs text-muted-foreground mt-0.5">剩余有效期</p>
+              <p className="text-xs text-muted-foreground mt-0.5">{t("userSubscription.remainingValidity")}</p>
             </div>
 
             {/* Period Progress */}
             {totalDays !== null && totalDays > 0 && (
               <div className="mt-2 sm:mt-3 pt-2 sm:pt-3 border-t border-current/10">
                 <div className="flex justify-between text-xs text-muted-foreground mb-1">
-                  <span>周期进度</span>
+                  <span>{t("userSubscription.periodProgress")}</span>
                   <span className="tabular-nums">
                     {periodProgress.toFixed(0)}%
                   </span>
@@ -431,32 +433,32 @@ export const SubscriptionOverviewTab: React.FC<
             </div>
             <div>
               <h3 className="text-xs sm:text-sm font-semibold">
-                {subscription.plan?.name || "订阅计划"}
+                {subscription.plan?.name || t("userSubscription.currentSubscription")}
               </h3>
-              <p className="text-[10px] sm:text-xs text-muted-foreground">当前订阅</p>
+              <p className="text-[10px] sm:text-xs text-muted-foreground">{t("userSubscription.currentSubscription")}</p>
             </div>
           </div>
 
           <div className="space-y-0">
             {/* Start Date */}
             <div className="flex items-center justify-between py-1 sm:py-1.5 border-b border-border/50">
-              <span className="text-[10px] sm:text-xs text-muted-foreground">开始日期</span>
+              <span className="text-[10px] sm:text-xs text-muted-foreground">{t("subscription.startDate")}</span>
               <span className="text-[10px] sm:text-xs font-medium tabular-nums">
                 {formatDate(subscription.currentPeriodStart)}
               </span>
             </div>
             {/* End Date */}
             <div className="flex items-center justify-between py-1 sm:py-1.5 border-b border-border/50">
-              <span className="text-[10px] sm:text-xs text-muted-foreground">到期日期</span>
+              <span className="text-[10px] sm:text-xs text-muted-foreground">{t("subscription.endDate")}</span>
               <span className="text-[10px] sm:text-xs font-medium tabular-nums">
                 {formatDate(subscription.currentPeriodEnd)}
               </span>
             </div>
             {/* Total Days */}
             <div className="flex items-center justify-between py-1 sm:py-1.5">
-              <span className="text-[10px] sm:text-xs text-muted-foreground">周期天数</span>
+              <span className="text-[10px] sm:text-xs text-muted-foreground">{t("userSubscription.cycleDays")}</span>
               <span className="text-[10px] sm:text-xs font-medium tabular-nums">
-                {totalDays !== null ? `${totalDays} 天` : "-"}
+                {totalDays !== null ? `${totalDays} ${t("userSubscription.days")}` : "-"}
               </span>
             </div>
           </div>
@@ -469,8 +471,8 @@ export const SubscriptionOverviewTab: React.FC<
               <TrendingUp className="size-3.5 sm:size-4 text-chart-download" />
             </div>
             <div>
-              <h3 className="text-xs sm:text-sm font-semibold">流量概览</h3>
-              <p className="text-[10px] sm:text-xs text-muted-foreground">本周期使用情况</p>
+              <h3 className="text-xs sm:text-sm font-semibold">{t("userSubscription.trafficOverview")}</h3>
+              <p className="text-[10px] sm:text-xs text-muted-foreground">{t("userSubscription.currentPeriodUsage")}</p>
             </div>
           </div>
 
@@ -493,7 +495,7 @@ export const SubscriptionOverviewTab: React.FC<
           {/* Traffic Summary */}
           <div className="mt-2 pt-2 border-t border-border/50">
             <div className="flex items-center justify-between text-[10px] sm:text-xs">
-              <span className="text-muted-foreground">已使用</span>
+              <span className="text-muted-foreground">{t("userSubscription.used")}</span>
               <span className="font-medium tabular-nums">
                 {formatTraffic(trafficUsage.total).value}{" "}
                 <span className="text-muted-foreground font-normal">
@@ -503,7 +505,7 @@ export const SubscriptionOverviewTab: React.FC<
             </div>
             {trafficLimit > 0 && (
               <div className="flex items-center justify-between text-[10px] sm:text-xs mt-0.5">
-                <span className="text-muted-foreground">总配额</span>
+                <span className="text-muted-foreground">{t("userSubscription.totalQuota")}</span>
                 <span className="font-medium tabular-nums">
                   {formatTraffic(trafficLimit).value}{" "}
                   <span className="text-muted-foreground font-normal">
@@ -522,7 +524,7 @@ export const SubscriptionOverviewTab: React.FC<
           <div className="p-1 sm:p-1.5 rounded-md bg-primary/10 ring-1 ring-primary/20">
             <Gauge className="size-3 sm:size-3.5 text-primary" />
           </div>
-          <h3 className="text-xs sm:text-sm font-semibold">流量详情</h3>
+          <h3 className="text-xs sm:text-sm font-semibold">{t("userSubscription.trafficDetails")}</h3>
         </div>
 
         {/* Traffic Stats Grid - 3 columns on all screens */}
@@ -531,7 +533,7 @@ export const SubscriptionOverviewTab: React.FC<
           <div className="p-2 sm:p-3 rounded-lg bg-chart-upload/5 ring-1 ring-chart-upload/10">
             <div className="flex items-center gap-1 mb-1">
               <Upload className="size-3 sm:size-4 text-chart-upload" />
-              <span className="text-[10px] sm:text-xs text-muted-foreground">上传</span>
+              <span className="text-[10px] sm:text-xs text-muted-foreground">{t("userSubscription.upload")}</span>
             </div>
             <p className="text-sm sm:text-base font-semibold tabular-nums">
               {formatTraffic(trafficUsage.upload).value}
@@ -545,7 +547,7 @@ export const SubscriptionOverviewTab: React.FC<
           <div className="p-2 sm:p-3 rounded-lg bg-chart-download/5 ring-1 ring-chart-download/10">
             <div className="flex items-center gap-1 mb-1">
               <Download className="size-3 sm:size-4 text-chart-download" />
-              <span className="text-[10px] sm:text-xs text-muted-foreground">下载</span>
+              <span className="text-[10px] sm:text-xs text-muted-foreground">{t("userSubscription.download")}</span>
             </div>
             <p className="text-sm sm:text-base font-semibold tabular-nums">
               {formatTraffic(trafficUsage.download).value}
@@ -559,7 +561,7 @@ export const SubscriptionOverviewTab: React.FC<
           <div className="p-2 sm:p-3 rounded-lg bg-primary/5 ring-1 ring-primary/10">
             <div className="flex items-center gap-1 mb-1">
               <Zap className="size-3 sm:size-4 text-primary" />
-              <span className="text-[10px] sm:text-xs text-muted-foreground">总计</span>
+              <span className="text-[10px] sm:text-xs text-muted-foreground">{t("userSubscription.total")}</span>
             </div>
             <p className="text-sm sm:text-base font-semibold tabular-nums">
               {formatTraffic(trafficUsage.total).value}
@@ -593,9 +595,9 @@ export const SubscriptionOverviewTab: React.FC<
                 <Link2 className="size-3.5 sm:size-4 text-primary" />
               </div>
               <div>
-                <h3 className="text-xs sm:text-sm font-semibold">订阅链接</h3>
+                <h3 className="text-xs sm:text-sm font-semibold">{t("userSubscription.subscriptionLink")}</h3>
                 <p className="text-[10px] sm:text-xs text-muted-foreground hidden sm:block">
-                  选择格式并复制到客户端
+                  {t("userSubscription.selectFormatAndCopy")}
                 </p>
               </div>
             </div>
@@ -610,13 +612,13 @@ export const SubscriptionOverviewTab: React.FC<
               {isResettingLink ? (
                 <>
                   <Loader2 className="size-3 animate-spin" />
-                  <span className="hidden sm:inline">重置中...</span>
+                  <span className="hidden sm:inline">{t("userSubscription.resetting")}</span>
                 </>
               ) : (
                 <>
                   <RefreshCw className="size-3" />
-                  <span className="hidden sm:inline">重置链接</span>
-                  <span className="sm:hidden">重置</span>
+                  <span className="hidden sm:inline">{t("userSubscription.resetLink")}</span>
+                  <span className="sm:hidden">{t("userSubscription.reset")}</span>
                 </>
               )}
             </button>

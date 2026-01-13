@@ -4,6 +4,7 @@
  */
 
 import { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { CircleAlert, CreditCard, Loader2 } from 'lucide-react';
 import { DashboardLayout } from '@/layouts/DashboardLayout';
 import { useAuthStore } from '@/features/auth/stores/auth-store';
@@ -15,7 +16,8 @@ import { QuickActionsCard } from '@/components/dashboard/QuickActionsCard';
 import { getButtonClass } from '@/lib/ui-styles';
 
 export const DashboardPage = () => {
-  usePageTitle('仪表盘');
+  const { t } = useTranslation();
+  usePageTitle(t('user.dashboard.title'));
 
   const { user } = useAuthStore();
   const [dashboardData, setDashboardData] = useState<DashboardResponse | null>(null);
@@ -42,7 +44,7 @@ export const DashboardPage = () => {
       <DashboardLayout>
         <div className="flex items-center gap-3 p-4 bg-destructive/10 border border-destructive/20 rounded-lg text-destructive">
           <CircleAlert className="size-5" />
-          <span>无法加载用户信息</span>
+          <span>{t('user.dashboard.errorLoadUser')}</span>
         </div>
       </DashboardLayout>
     );
@@ -61,28 +63,31 @@ export const DashboardPage = () => {
             </div>
             <div>
               <h1 className="text-base sm:text-lg md:text-xl font-semibold text-foreground">
-                {user.displayName || user.email?.split('@')[0] || '用户'}
+                {user.displayName || user.email?.split('@')[0] || t('user.dashboard.defaultUser')}
               </h1>
-              <p className="text-xs sm:text-sm text-muted-foreground">我的订阅</p>
+              <p className="text-xs sm:text-sm text-muted-foreground">{t('user.dashboard.mySubscriptions')}</p>
             </div>
           </div>
         </div>
 
         {/* Loading State */}
         {isLoading && (
-          <div className="flex items-center justify-center py-8 text-muted-foreground glass rounded-xl">
-            <Loader2 className="size-5 animate-spin mr-2" />
-            <span className="text-sm">加载中...</span>
+          <div className="flex items-center justify-center py-8 bg-card rounded-lg border border-border">
+            <Loader2 className="size-5 animate-spin mr-2 text-muted-foreground" />
+            <span className="text-sm text-muted-foreground">{t('user.dashboard.loading')}</span>
           </div>
         )}
 
         {/* Empty State */}
         {!isLoading && subscriptions.length === 0 && (
-          <div className="text-center py-8 rounded-xl glass-elevated">
-            <CreditCard className="size-10 text-muted-foreground/50 mx-auto mb-3" />
-            <p className="text-sm text-muted-foreground mb-3">您还没有任何订阅</p>
+          <div className="flex flex-col items-center justify-center py-12 bg-card rounded-lg border border-border">
+            <div className="size-16 rounded-full bg-muted/30 flex items-center justify-center mb-4">
+              <CreditCard className="size-8 text-muted-foreground/50" />
+            </div>
+            <p className="text-sm font-medium text-foreground mb-1">{t('user.dashboard.empty.title')}</p>
+            <p className="text-xs text-muted-foreground mb-4">{t('user.dashboard.empty.description')}</p>
             <a href="/pricing" className={`${getButtonClass('default', 'sm')} touch-target inline-flex items-center justify-center`}>
-              查看订阅计划
+              {t('user.dashboard.empty.viewPlans')}
             </a>
           </div>
         )}

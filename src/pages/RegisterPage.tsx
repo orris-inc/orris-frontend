@@ -8,6 +8,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { Link as RouterLink, useNavigate } from 'react-router';
 import { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Eye, EyeOff, Chrome, Github, Loader2, CircleAlert } from 'lucide-react';
 import * as LabelPrimitive from '@radix-ui/react-label';
 import * as Separator from '@radix-ui/react-separator';
@@ -15,6 +16,8 @@ import * as Progress from '@radix-ui/react-progress';
 import { useAuth } from '@/features/auth/hooks/useAuth';
 import { useAuthStore } from '@/features/auth/stores/auth-store';
 import { useNotificationStore } from '@/shared/stores/notification-store';
+import { LanguageSwitcher } from '@/components/common/LanguageSwitcher';
+import { ThemeToggle } from '@/components/common/ThemeToggle';
 import {
   getButtonClass,
   inputStyles,
@@ -29,23 +32,13 @@ import {
 } from '@/lib/ui-styles';
 import { cn } from '@/lib/utils';
 
-// Zod 4 registration form validation
-const registerSchema = z
-  .object({
-    name: z.string().min(2, '姓名至少需要2个字符').max(100, '姓名最多100个字符'),
-    email: z.string().email('请输入有效的邮箱地址'),
-    password: z
-      .string()
-      .min(8, '密码至少需要8个字符')
-      .regex(/[A-Z]/, '密码必须至少包含一个大写字母'),
-    confirmPassword: z.string(),
-  })
-  .refine((data) => data.password === data.confirmPassword, {
-    message: '两次输入的密码不一致',
-    path: ['confirmPassword'],
-  });
-
-type RegisterFormData = z.infer<typeof registerSchema>;
+// Register form data type
+type RegisterFormData = {
+  name: string;
+  email: string;
+  password: string;
+  confirmPassword: string;
+};
 
 // Calculate password strength
 const calculatePasswordStrength = (password: string): number => {
@@ -59,6 +52,7 @@ const calculatePasswordStrength = (password: string): number => {
 };
 
 export const RegisterPage = () => {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const { isAuthenticated } = useAuthStore();
   const { register: registerUser, loginWithOAuth, isLoading, error, authError } = useAuth();
@@ -66,6 +60,24 @@ export const RegisterPage = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [passwordStrength, setPasswordStrength] = useState(0);
+
+  // Zod schema with i18n validation messages
+  const registerSchema = z
+    .object({
+      name: z.string()
+        .min(2, t('auth.validation.nameMinLength'))
+        .max(100, t('auth.validation.nameMaxLength')),
+      email: z.string().email(t('auth.validation.emailInvalid')),
+      password: z
+        .string()
+        .min(8, t('auth.validation.passwordMinLength'))
+        .regex(/[A-Z]/, t('auth.validation.passwordUppercase')),
+      confirmPassword: z.string(),
+    })
+    .refine((data) => data.password === data.confirmPassword, {
+      message: t('auth.validation.passwordMismatch'),
+      path: ['confirmPassword'],
+    });
 
   // Redirect to Dashboard if already logged in
   useEffect(() => {
@@ -97,7 +109,7 @@ export const RegisterPage = () => {
         email: data.email,
         password: data.password,
       });
-      showSuccess('注册成功！请查收验证邮件');
+      showSuccess(t('auth.register.success'));
     } catch {
       // Error already handled by useAuth
       // authError is now available for field-level error display
@@ -107,7 +119,7 @@ export const RegisterPage = () => {
   const handleOAuthRegister = async (provider: 'google' | 'github') => {
     try {
       await loginWithOAuth(provider);
-      showSuccess('注册成功！');
+      showSuccess(t('auth.register.successOAuth'));
     } catch {
       // Error already handled by useAuth
     }
@@ -121,19 +133,25 @@ export const RegisterPage = () => {
   };
 
   const getPasswordStrengthText = () => {
-    if (passwordStrength < 25) return '弱';
-    if (passwordStrength < 50) return '中';
-    if (passwordStrength < 75) return '良';
-    return '强';
+    if (passwordStrength < 25) return t('auth.register.strengthWeak');
+    if (passwordStrength < 50) return t('auth.register.strengthFair');
+    if (passwordStrength < 75) return t('auth.register.strengthGood');
+    return t('auth.register.strengthStrong');
   };
 
   return (
     <div className="min-h-viewport flex items-center justify-center p-4 bg-background">
+      {/* Top right controls */}
+      <div className="fixed top-4 right-4 z-20 flex items-center gap-2">
+        <LanguageSwitcher />
+        <ThemeToggle />
+      </div>
+
       <div className="w-full max-w-md">
         <div className={cardStyles}>
           <div className={cn(cardHeaderStyles, "text-center")}>
-            <h3 className={cn(cardTitleStyles, "text-3xl")}>创建账号</h3>
-            <p className={cardDescriptionStyles}>加入 Orris，开始您的旅程</p>
+            <h3 className={cn(cardTitleStyles, "text-3xl")}>{t('auth.register.title')}</h3>
+            <p className={cardDescriptionStyles}>{t('auth.register.subtitle')}</p>
           </div>
           <div className={cn(cardContentStyles, "grid gap-6")}>
             {/* 错误提示 */}
@@ -147,7 +165,7 @@ export const RegisterPage = () => {
             {/* 注册表单 */}
             <form onSubmit={handleSubmit(onSubmit)} className="grid gap-4">
               <div className="grid gap-2">
-                <LabelPrimitive.Root htmlFor="name" className={labelStyles}>姓名</LabelPrimitive.Root>
+                <LabelPrimitive.Root htmlFor="name" className={labelStyles}>{t('auth.register.name')}</LabelPrimitive.Root>
                 <input
                   id="name"
                   autoComplete="name"
@@ -164,7 +182,7 @@ export const RegisterPage = () => {
               </div>
 
               <div className="grid gap-2">
-                <LabelPrimitive.Root htmlFor="email" className={labelStyles}>邮箱</LabelPrimitive.Root>
+                <LabelPrimitive.Root htmlFor="email" className={labelStyles}>{t('auth.register.email')}</LabelPrimitive.Root>
                 <input
                   id="email"
                   type="email"
@@ -181,7 +199,7 @@ export const RegisterPage = () => {
               </div>
 
               <div className="grid gap-2">
-                <LabelPrimitive.Root htmlFor="password" className={labelStyles}>密码</LabelPrimitive.Root>
+                <LabelPrimitive.Root htmlFor="password" className={labelStyles}>{t('auth.register.password')}</LabelPrimitive.Root>
                 <div className="relative">
                   <input
                     id="password"
@@ -197,7 +215,7 @@ export const RegisterPage = () => {
                     type="button"
                     className="absolute right-1 top-1/2 -translate-y-1/2 inline-flex items-center justify-center rounded-md hover:bg-accent hover:text-accent-foreground h-8 w-8 transition-colors"
                     onClick={() => setShowPassword(!showPassword)}
-                    aria-label="切换密码显示"
+                    aria-label={t('auth.register.togglePasswordVisibility')}
                     tabIndex={-1}
                   >
                     {showPassword ? (
@@ -209,7 +227,7 @@ export const RegisterPage = () => {
                 </div>
                 {!errors.password && !authError?.fieldErrors?.password && !password && (
                   <p className="text-xs text-muted-foreground">
-                    密码至少需要 8 个字符，且包含至少一个大写字母
+                    {t('auth.register.passwordHint')}
                   </p>
                 )}
                 {(errors.password || authError?.fieldErrors?.password) && (
@@ -232,14 +250,14 @@ export const RegisterPage = () => {
                       />
                     </Progress.Root>
                     <p className="text-xs text-muted-foreground">
-                      密码强度：{getPasswordStrengthText()}
+                      {t('auth.register.passwordStrength')}{getPasswordStrengthText()}
                     </p>
                   </div>
                 )}
               </div>
 
               <div className="grid gap-2">
-                <LabelPrimitive.Root htmlFor="confirmPassword" className={labelStyles}>确认密码</LabelPrimitive.Root>
+                <LabelPrimitive.Root htmlFor="confirmPassword" className={labelStyles}>{t('auth.register.confirmPassword')}</LabelPrimitive.Root>
                 <div className="relative">
                   <input
                     id="confirmPassword"
@@ -253,7 +271,7 @@ export const RegisterPage = () => {
                     type="button"
                     className="absolute right-1 top-1/2 -translate-y-1/2 inline-flex items-center justify-center rounded-md hover:bg-accent hover:text-accent-foreground h-8 w-8 transition-colors"
                     onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                    aria-label="切换密码显示"
+                    aria-label={t('auth.register.togglePasswordVisibility')}
                     tabIndex={-1}
                   >
                     {showConfirmPassword ? (
@@ -270,7 +288,7 @@ export const RegisterPage = () => {
 
               <button type="submit" disabled={isLoading} className={cn(getButtonClass('default', 'lg'), "w-full")}>
                 {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                注册
+                {t('auth.register.signUp')}
               </button>
             </form>
 
@@ -280,7 +298,7 @@ export const RegisterPage = () => {
                 <Separator.Root className="w-full h-[1px] bg-border" />
               </div>
               <div className="relative flex justify-center text-xs uppercase">
-                <span className="bg-card px-2 text-muted-foreground">或</span>
+                <span className="bg-card px-2 text-muted-foreground">{t('auth.register.orContinueWith')}</span>
               </div>
             </div>
 
@@ -293,7 +311,7 @@ export const RegisterPage = () => {
                 className={getButtonClass('outline', 'lg')}
               >
                 <Chrome className="mr-2 h-4 w-4" />
-                使用 Google 注册
+                {t('auth.register.continueWithGoogle')}
               </button>
 
               <button
@@ -303,18 +321,18 @@ export const RegisterPage = () => {
                 className={getButtonClass('outline', 'lg')}
               >
                 <Github className="mr-2 h-4 w-4" />
-                使用 GitHub 注册
+                {t('auth.register.continueWithGithub')}
               </button>
             </div>
 
             {/* 登录链接 */}
             <div className="text-center text-sm text-muted-foreground">
-              已有账号？{' '}
+              {t('auth.register.haveAccount')}{' '}
               <RouterLink
                 to="/login"
                 className="text-primary underline-offset-4 hover:underline"
               >
-                立即登录
+                {t('auth.register.signInNow')}
               </RouterLink>
             </div>
           </div>

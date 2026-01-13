@@ -10,6 +10,7 @@
  */
 
 import { Link as RouterLink, useLocation } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { cn } from '@/lib/utils';
 
 import type { NavigationItem } from '../../types/navigation.types';
@@ -20,6 +21,7 @@ interface DesktopNavProps {
 
 export const DesktopNav = ({ navigationItems }: DesktopNavProps) => {
   const location = useLocation();
+  const { t } = useTranslation();
 
   return (
     <nav
@@ -60,7 +62,7 @@ export const DesktopNav = ({ navigationItems }: DesktopNavProps) => {
                 aria-hidden="true"
               />
             )}
-            <span>{item.label}</span>
+            <span>{t(item.labelKey)}</span>
             {/* Active indicator dot */}
             {isActive && (
               <span

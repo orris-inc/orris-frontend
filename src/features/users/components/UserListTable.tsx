@@ -5,6 +5,7 @@
  */
 
 import { useMemo, useCallback } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Edit, Trash2, CreditCard, MoreHorizontal, KeyRound } from 'lucide-react';
 import { DataTable, AdminBadge, TruncatedId, type ColumnDef, type ResponsiveColumnMeta } from '@/components/admin';
 import { useBreakpoint } from '@/hooks/useBreakpoint';
@@ -52,6 +53,7 @@ export const UserListTable: React.FC<UserListTableProps> = ({
   onAssignSubscription,
   onResetPassword,
 }) => {
+  const { t } = useTranslation();
   // Detect mobile screen
   const { isMobile } = useBreakpoint();
 
@@ -144,10 +146,10 @@ export const UserListTable: React.FC<UserListTableProps> = ({
       size: 72,
       meta: { priority: 2 } as ResponsiveColumnMeta,
       cell: ({ row }) => {
-        const roleConfig = ROLE_CONFIG[row.original.role || 'user'] || { label: '用户', variant: 'default' as const };
+        const roleConfig = ROLE_CONFIG[row.original.role || 'user'] || { labelKey: 'common.role.user', variant: 'default' as const };
         return (
           <AdminBadge variant={roleConfig.variant}>
-            {roleConfig.label}
+            {t(roleConfig.labelKey)}
           </AdminBadge>
         );
       },
@@ -158,10 +160,10 @@ export const UserListTable: React.FC<UserListTableProps> = ({
       size: 72,
       meta: { priority: 1 } as ResponsiveColumnMeta,
       cell: ({ row }) => {
-        const statusConfig = ACTIVE_STATUS_CONFIG[row.original.status] || { label: row.original.status, variant: 'default' as const };
+        const statusConfig = ACTIVE_STATUS_CONFIG[row.original.status] || { labelKey: 'common.status.unknown', variant: 'default' as const };
         return (
           <AdminBadge variant={statusConfig.variant}>
-            {statusConfig.label}
+            {t(statusConfig.labelKey)}
           </AdminBadge>
         );
       },

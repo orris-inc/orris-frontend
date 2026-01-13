@@ -17,8 +17,11 @@ import { DesktopNav } from '@/components/navigation/DesktopNav';
 import { UserMenu } from '@/components/navigation/UserMenu';
 import { EnhancedBreadcrumbs } from '@/components/navigation/EnhancedBreadcrumbs';
 import { ThemeToggle } from '@/components/common/ThemeToggle';
+import { LanguageSwitcher } from '@/components/common/LanguageSwitcher';
 import { getNavItems } from '@/config/navigation';
 import { usePermissions } from '@/features/auth/hooks/usePermissions';
+import { useBreakpoint } from '@/hooks';
+import { cn } from '@/lib/utils';
 
 interface DashboardLayoutProps {
   children: React.ReactNode;
@@ -29,6 +32,7 @@ export const DashboardLayout = ({ children }: DashboardLayoutProps) => {
   const { user } = useAuthStore();
   const { logout } = useAuth();
   const { filterNavigationByPermission, userRole } = usePermissions();
+  const { isMobile } = useBreakpoint();
 
   const [profileDialogOpen, setProfileDialogOpen] = useState(false);
   const [mobileDrawerOpen, setMobileDrawerOpen] = useState(false);
@@ -55,60 +59,108 @@ export const DashboardLayout = ({ children }: DashboardLayoutProps) => {
   return (
     <TooltipProvider delayDuration={0}>
     <div className="flex min-h-viewport flex-col bg-background overflow-x-hidden">
-      {/* Top navigation bar */}
-      <header className="sticky top-0 z-40 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-        <div className="mx-auto max-w-6xl flex h-14 items-center px-4 sm:px-6">
-          {/* Mobile menu button - only show for user side */}
-          {shouldShowNavigation && (
-            <button
-              className="mr-2 inline-flex items-center justify-center rounded-md hover:bg-accent hover:text-accent-foreground h-9 w-9 transition-colors md:hidden"
-              onClick={() => setMobileDrawerOpen(true)}
-            >
-              <Menu className="h-5 w-5" />
-              <span className="sr-only">Open menu</span>
-            </button>
+      {/* iOS-style Navigation Bar */}
+      <header
+        className={cn(
+          'sticky top-0 z-40 w-full border-b',
+          // iOS glass background for mobile
+          isMobile
+            ? 'glass-elevated border-border/40 pt-[env(safe-area-inset-top)]'
+            : 'bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60'
+        )}
+      >
+        <div
+          className={cn(
+            'mx-auto flex items-center',
+            // iOS standard height (44px) for mobile, 56px for desktop
+            isMobile ? 'h-11 px-2' : 'max-w-6xl h-14 px-4 sm:px-6'
           )}
+        >
+          {/* Mobile: iOS-style layout with centered logo */}
+          {isMobile ? (
+            <>
+              {/* Left section - menu button */}
+              <div className="w-11 flex-shrink-0">
+                {shouldShowNavigation && (
+                  <button
+                    className={cn(
+                      'flex items-center justify-center',
+                      'size-11',
+                      'rounded-full',
+                      'text-primary',
+                      'active:bg-foreground/10',
+                      'transition-colors motion-reduce:transition-none'
+                    )}
+                    onClick={() => setMobileDrawerOpen(true)}
+                    aria-label="Open menu"
+                  >
+                    <Menu className="size-[22px]" strokeWidth={2} />
+                  </button>
+                )}
+              </div>
 
-          {/* Logo/Brand - consistent with LandingPage */}
-          <ViewTransitionLink to="/" className="mr-4 hidden md:flex items-center gap-2">
-            <div className="size-8 rounded-lg bg-primary flex items-center justify-center">
-              <Globe className="size-5 text-primary-foreground" />
-            </div>
-            <span className="text-lg font-semibold">Orris</span>
-          </ViewTransitionLink>
-          <ViewTransitionLink to="/" className="flex md:hidden flex-1 items-center gap-2">
-            <div className="size-8 rounded-lg bg-primary flex items-center justify-center">
-              <Globe className="size-5 text-primary-foreground" />
-            </div>
-            <span className="text-lg font-semibold">Orris</span>
-          </ViewTransitionLink>
+              {/* Center section - brand logo */}
+              <div className="flex-1 flex justify-center">
+                <ViewTransitionLink to="/" className="flex items-center gap-2">
+                  <div className="size-8 rounded-lg bg-primary flex items-center justify-center">
+                    <Globe className="size-5 text-primary-foreground" />
+                  </div>
+                  <span className="text-[17px] font-semibold">Orris</span>
+                </ViewTransitionLink>
+              </div>
 
-          {/* Desktop navigation links - only show for user side */}
-          {shouldShowNavigation && (
-            <DesktopNav navigationItems={visibleNavigationItems} />
+              {/* Right section - user menu */}
+              <div className="w-11 flex-shrink-0 flex justify-end">
+                <UserMenu
+                  user={user}
+                  showAdminSwitch={userRole === 'admin'}
+                  onProfileClick={() => setProfileDialogOpen(true)}
+                  onNotificationsClick={() => navigate('/dashboard/notifications')}
+                  onAdminClick={handleGoToAdmin}
+                  onLogout={handleLogout}
+                />
+              </div>
+            </>
+          ) : (
+            /* Desktop: standard layout */
+            <>
+              {/* Logo/Brand */}
+              <ViewTransitionLink to="/" className="mr-4 flex items-center gap-2">
+                <div className="size-8 rounded-lg bg-primary flex items-center justify-center">
+                  <Globe className="size-5 text-primary-foreground" />
+                </div>
+                <span className="text-lg font-semibold">Orris</span>
+              </ViewTransitionLink>
+
+              {/* Desktop navigation links */}
+              {shouldShowNavigation && (
+                <DesktopNav navigationItems={visibleNavigationItems} />
+              )}
+
+              {/* Spacer */}
+              <div className="flex-1" />
+
+              {/* Theme toggle, language switcher and user menu */}
+              <div className="flex items-center gap-3">
+                <LanguageSwitcher />
+                <ThemeToggle />
+
+                <div className="text-right">
+                  <p className="text-sm font-medium leading-none">{user?.displayName}</p>
+                  <p className="text-xs text-muted-foreground">{user?.email}</p>
+                </div>
+
+                <UserMenu
+                  user={user}
+                  showAdminSwitch={userRole === 'admin'}
+                  onProfileClick={() => setProfileDialogOpen(true)}
+                  onNotificationsClick={() => navigate('/dashboard/notifications')}
+                  onAdminClick={handleGoToAdmin}
+                  onLogout={handleLogout}
+                />
+              </div>
+            </>
           )}
-
-          {/* Placeholder - push user menu to the right */}
-          <div className="flex-1 md:flex-none" />
-
-          {/* Theme toggle and user menu */}
-          <div className="flex items-center gap-3">
-            <ThemeToggle />
-
-            <div className="hidden sm:block text-right">
-              <p className="text-sm font-medium leading-none">{user?.displayName}</p>
-              <p className="text-xs text-muted-foreground">{user?.email}</p>
-            </div>
-
-            <UserMenu
-              user={user}
-              showAdminSwitch={userRole === 'admin'}
-              onProfileClick={() => setProfileDialogOpen(true)}
-              onNotificationsClick={() => navigate('/dashboard/notifications')}
-              onAdminClick={handleGoToAdmin}
-              onLogout={handleLogout}
-            />
-          </div>
         </div>
       </header>
 

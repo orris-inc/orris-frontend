@@ -9,6 +9,7 @@
  */
 
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
   Mail,
   Shield,
@@ -101,14 +102,14 @@ const UserAvatar = ({ name, email, role }: { name?: string; email: string; role?
         'relative size-12 rounded-xl flex items-center justify-center',
         'text-lg font-semibold',
         isAdmin
-          ? 'bg-gradient-to-br from-amber-400 to-orange-500 text-white'
+          ? 'bg-gradient-to-br from-warning to-warning/80 text-warning-foreground'
           : 'bg-primary/10 text-primary'
       )}
     >
       {initial}
       {isAdmin && (
-        <div className="absolute -bottom-0.5 -right-0.5 size-5 rounded-full bg-amber-500 flex items-center justify-center">
-          <Crown className="size-3 text-white" />
+        <div className="absolute -bottom-0.5 -right-0.5 size-5 rounded-full bg-warning flex items-center justify-center">
+          <Crown className="size-3 text-warning-foreground" />
         </div>
       )}
     </div>
@@ -128,16 +129,18 @@ export const UserDetailSheet = ({
   onResetPassword,
   onDelete,
 }: UserDetailSheetProps) => {
+  const { t, i18n } = useTranslation();
   const [actionSheetOpen, setActionSheetOpen] = useState(false);
 
   if (!user) return null;
 
-  const statusConfig = ACTIVE_STATUS_CONFIG[user.status] || { label: user.status, variant: 'default' as const };
-  const roleConfig = ROLE_CONFIG[user.role || 'user'] || { label: '用户', variant: 'default' as const };
+  const statusConfig = ACTIVE_STATUS_CONFIG[user.status] || { labelKey: user.status, variant: 'default' as const };
+  const roleConfig = ROLE_CONFIG[user.role || 'user'] || { labelKey: 'common.role.user', variant: 'default' as const };
 
   const formatDate = (dateString?: string) => {
     if (!dateString) return '-';
-    return new Date(dateString).toLocaleDateString('zh-CN', {
+    const locale = i18n.language === 'zh' ? 'zh-CN' : 'en-US';
+    return new Date(dateString).toLocaleDateString(locale, {
       year: 'numeric',
       month: 'short',
       day: 'numeric',
@@ -149,7 +152,7 @@ export const UserDetailSheet = ({
   // Action Sheet actions
   const moreActions = [
     {
-      label: '重置密码',
+      label: t('user.detail.resetPassword'),
       icon: <KeyRound className="size-5" />,
       onPress: async () => {
         onResetPassword(user);
@@ -157,7 +160,7 @@ export const UserDetailSheet = ({
       },
     },
     {
-      label: '删除用户',
+      label: t('user.detail.deleteUser'),
       icon: <Trash2 className="size-5" />,
       onPress: async () => {
         onDelete(user);
@@ -180,7 +183,7 @@ export const UserDetailSheet = ({
                     {user.name || user.email.split('@')[0]}
                   </SheetTitle>
                   <AdminBadge variant={statusConfig.variant} className="text-[10px] px-1.5 py-0 shrink-0">
-                    {statusConfig.label}
+                    {t(statusConfig.labelKey)}
                   </AdminBadge>
                 </div>
                 <SheetDescription className="truncate text-xs">
@@ -192,50 +195,50 @@ export const UserDetailSheet = ({
 
           <SheetBody className="space-y-4 pb-4">
             {/* Basic Info */}
-            <DetailSection title="基本信息">
+            <DetailSection title={t('user.detail.basicInfo')}>
               <DetailRow
                 icon={<Mail className="size-4" />}
-                label="邮箱"
+                label={t('user.detail.email')}
                 value={<span className="break-all">{user.email}</span>}
               />
               <DetailRow
                 icon={<Shield className="size-4" />}
-                label="角色"
+                label={t('user.detail.role')}
                 value={
                   <div className="flex items-center gap-1.5">
-                    {user.role === 'admin' && <Crown className="size-3.5 text-amber-500" />}
+                    {user.role === 'admin' && <Crown className="size-3.5 text-warning" />}
                     <AdminBadge variant={roleConfig.variant} className="text-xs">
-                      {roleConfig.label}
+                      {t(roleConfig.labelKey)}
                     </AdminBadge>
                   </div>
                 }
               />
               <DetailRow
                 icon={<UserCheck className="size-4" />}
-                label="状态"
+                label={t('user.detail.status')}
                 value={
                   <AdminBadge variant={statusConfig.variant} className="text-xs">
-                    {statusConfig.label}
+                    {t(statusConfig.labelKey)}
                   </AdminBadge>
                 }
               />
               <DetailRow
                 icon={<Hash className="size-4" />}
-                label="用户 ID"
+                label={t('user.detail.userId')}
                 value={<span className="font-mono text-xs">{user.id}</span>}
               />
             </DetailSection>
 
             {/* Time Info */}
-            <DetailSection title="时间信息">
+            <DetailSection title={t('user.detail.timeInfo')}>
               <DetailRow
                 icon={<Calendar className="size-4" />}
-                label="注册时间"
+                label={t('user.detail.registrationTime')}
                 value={formatDate(user.createdAt)}
               />
               <DetailRow
                 icon={<Clock className="size-4" />}
-                label="最后更新"
+                label={t('user.detail.lastUpdated')}
                 value={formatDate(user.updatedAt)}
               />
             </DetailSection>
@@ -258,7 +261,7 @@ export const UserDetailSheet = ({
                 )}
               >
                 <Edit className="size-4" />
-                编辑
+                {t('user.detail.edit')}
               </button>
               <button
                 type="button"
@@ -275,7 +278,7 @@ export const UserDetailSheet = ({
                 )}
               >
                 <CreditCard className="size-4" />
-                订阅
+                {t('user.detail.subscription')}
               </button>
               <button
                 type="button"
@@ -299,7 +302,7 @@ export const UserDetailSheet = ({
         open={actionSheetOpen}
         onOpenChange={setActionSheetOpen}
         actions={moreActions}
-        title="更多操作"
+        title={t('user.detail.moreActions')}
       />
     </>
   );

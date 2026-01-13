@@ -1,148 +1,151 @@
 /**
  * Error message mapping and conversion tool
- * Converts backend English error messages to user-friendly Chinese messages
+ * Uses i18n for internationalized error messages
  */
+
+import i18n from '@/lib/i18n';
 
 /**
- * Backend error message to Chinese mapping table
+ * Backend error message to i18n key mapping table
  */
-export const errorMessages: Record<string, string> = {
+const errorKeyMap: Record<string, string> = {
   // Account related
-  'account is not active': '您的账号尚未激活，请查收验证邮件',
-  'account not active': '您的账号尚未激活，请查收验证邮件',
-  'account is locked': '账号已被锁定，请联系客服',
-  'account is disabled': '账号已被禁用，请联系客服',
+  'account is not active': 'errors.account.notActive',
+  'account not active': 'errors.account.notActive',
+  'account is locked': 'errors.account.locked',
+  'account is disabled': 'errors.account.disabled',
 
   // Login related
-  'invalid email or password': '邮箱或密码错误',
-  'invalid credentials': '邮箱或密码错误',
-  'incorrect password': '密码错误',
-  'email not found': '该邮箱未注册',
-  'user not found': '用户不存在',
+  'invalid email or password': 'errors.login.invalidCredentials',
+  'invalid credentials': 'errors.login.invalidCredentials',
+  'incorrect password': 'errors.login.incorrectPassword',
+  'email not found': 'errors.login.emailNotFound',
+  'user not found': 'errors.login.userNotFound',
 
   // Registration related
-  'email already exists': '该邮箱已被注册',
-  'user already exists': '该用户已存在',
+  'email already exists': 'errors.register.emailExists',
+  'user already exists': 'errors.register.userExists',
 
   // Token related
-  'invalid token': '验证链接无效或已过期',
-  'token expired': '验证链接已过期，请重新申请',
-  'token is invalid': '验证链接无效',
-  'token not found': '验证链接无效',
-  'expired token': '验证链接已过期',
-  'invalid or expired token': '验证链接无效或已过期',
+  'invalid token': 'errors.token.invalid',
+  'token expired': 'errors.token.expired',
+  'token is invalid': 'errors.token.invalid',
+  'token not found': 'errors.token.notFound',
+  'expired token': 'errors.token.expired',
+  'invalid or expired token': 'errors.token.invalid',
 
   // Email verification
-  'email already verified': '该邮箱已经验证过了',
-  'email not verified': '邮箱尚未验证',
-  'verification failed': '验证失败，请重试',
+  'email already verified': 'errors.email.alreadyVerified',
+  'email not verified': 'errors.email.notVerified',
+  'verification failed': 'errors.email.verificationFailed',
 
   // Password reset
-  'password reset failed': '密码重置失败，请重试',
-  'invalid reset token': '重置链接无效或已过期',
-  'reset token expired': '重置链接已过期，请重新申请',
+  'password reset failed': 'errors.password.resetFailed',
+  'invalid reset token': 'errors.password.invalidResetToken',
+  'reset token expired': 'errors.password.resetTokenExpired',
 
   // OAuth related
-  'oauth authentication failed': 'OAuth登录失败，请重试',
-  'oauth provider error': 'OAuth服务商错误，请稍后重试',
-  'invalid oauth code': 'OAuth验证码无效',
+  'oauth authentication failed': 'errors.oauth.failed',
+  'oauth provider error': 'errors.oauth.providerError',
+  'invalid oauth code': 'errors.oauth.invalidCode',
 
   // Permission related
-  'unauthorized': '未授权，请先登录',
-  'forbidden': '没有权限访问此资源',
-  'access denied': '访问被拒绝',
-  'insufficient permissions': '权限不足',
+  'unauthorized': 'errors.permission.unauthorized',
+  'forbidden': 'errors.permission.forbidden',
+  'access denied': 'errors.permission.accessDenied',
+  'insufficient permissions': 'errors.permission.insufficient',
 
   // Network and server errors
-  'network error': '网络连接失败，请检查网络设置',
-  'timeout': '请求超时，请重试',
-  'request timeout': '请求超时，请重试',
-  'server error': '服务器错误，请稍后重试',
-  'internal server error': '服务器内部错误，请稍后重试',
-  'service unavailable': '服务暂不可用，请稍后重试',
-  'bad gateway': '网关错误，请稍后重试',
+  'network error': 'errors.network.error',
+  'timeout': 'errors.network.timeout',
+  'request timeout': 'errors.network.timeout',
+  'server error': 'errors.network.serverError',
+  'internal server error': 'errors.network.internalError',
+  'service unavailable': 'errors.network.unavailable',
+  'bad gateway': 'errors.network.badGateway',
 
   // Request related
-  'bad request': '请求参数错误',
-  'invalid request': '无效的请求',
-  'validation error': '数据验证失败',
-  'invalid input': '输入数据无效',
-  'missing required fields': '缺少必填字段',
+  'bad request': 'errors.request.badRequest',
+  'invalid request': 'errors.request.invalid',
+  'validation error': 'errors.request.validationError',
+  'invalid input': 'errors.request.invalidInput',
+  'missing required fields': 'errors.request.missingFields',
 
   // Resource related
-  'not found': '请求的资源不存在',
-  'resource not found': '资源不存在',
-  'page not found': '页面不存在',
+  'not found': 'errors.resource.notFound',
+  'resource not found': 'errors.resource.notFound',
+  'page not found': 'errors.resource.pageNotFound',
 
   // General errors
-  'unknown error': '操作失败，请稍后重试',
-  'something went wrong': '出现了一些问题，请稍后重试',
-  'operation failed': '操作失败，请重试',
+  'unknown error': 'errors.general.unknown',
+  'something went wrong': 'errors.general.somethingWrong',
+  'operation failed': 'errors.general.operationFailed',
 };
 
 /**
  * Error message fuzzy matching patterns
  * Used to match error messages containing variables (e.g., "user with email xxx already exists")
  */
-const errorPatterns: Array<{ pattern: RegExp; message: string }> = [
+const errorPatterns: Array<{ pattern: RegExp; key: string }> = [
   {
     pattern: /user with email .* already exists/i,
-    message: '该邮箱已被注册',
+    key: 'errors.register.emailExists',
   },
   {
     pattern: /email .* already exists/i,
-    message: '该邮箱已被注册',
+    key: 'errors.register.emailExists',
   },
   {
     pattern: /user .* not found/i,
-    message: '用户不存在',
+    key: 'errors.login.userNotFound',
   },
   {
     pattern: /email .* not found/i,
-    message: '该邮箱未注册',
+    key: 'errors.login.emailNotFound',
   },
   {
     pattern: /invalid .* format/i,
-    message: '数据格式无效',
+    key: 'errors.request.invalidInput',
   },
   {
     pattern: /token .* (expired|invalid)/i,
-    message: '验证链接无效或已过期',
+    key: 'errors.token.invalid',
   },
   {
     pattern: /password .* (weak|short|invalid)/i,
-    message: '密码不符合要求',
+    key: 'errors.request.validationError',
   },
 ];
 
 /**
- * Convert backend error message to Chinese
+ * Translate error message using i18n
  * @param message - Original error message (usually English)
- * @returns Converted Chinese error message
+ * @returns Translated error message based on current language
  */
 export function translateErrorMessage(message: string): string {
   if (!message) {
-    return '操作失败，请稍后重试';
+    return i18n.t('errors.general.default');
   }
 
-  // 1. Exact match
   const lowercaseMessage = message.toLowerCase();
-  const exactMatch = errorMessages[lowercaseMessage];
-  if (exactMatch) {
-    return exactMatch;
+
+  // 1. Exact match
+  const exactKey = errorKeyMap[lowercaseMessage];
+  if (exactKey) {
+    return i18n.t(exactKey);
   }
 
   // 2. Partial match (contains keyword)
-  for (const [key, value] of Object.entries(errorMessages)) {
+  for (const [key, i18nKey] of Object.entries(errorKeyMap)) {
     if (lowercaseMessage.includes(key.toLowerCase())) {
-      return value;
+      return i18n.t(i18nKey);
     }
   }
 
   // 3. Regular expression pattern match
-  for (const { pattern, message: patternMessage } of errorPatterns) {
+  for (const { pattern, key } of errorPatterns) {
     if (pattern.test(message)) {
-      return patternMessage;
+      return i18n.t(key);
     }
   }
 
@@ -152,10 +155,10 @@ export function translateErrorMessage(message: string): string {
 }
 
 /**
- * Extract and convert error message from error object
+ * Extract and translate error message from error object
  * Supports multiple error object formats
  * @param error - Error object
- * @returns Chinese error message
+ * @returns Translated error message
  */
 export function extractErrorMessage(error: unknown): string {
   // 1. Axios error
@@ -200,27 +203,27 @@ export function extractErrorMessage(error: unknown): string {
     // Return corresponding message based on HTTP status code
     const status = axiosError.response?.status;
     if (status === 401) {
-      return '认证失败，请重新登录';
+      return i18n.t('errors.http.401');
     }
     if (status === 403) {
-      return '没有权限访问此资源';
+      return i18n.t('errors.http.403');
     }
     if (status === 404) {
-      return '请求的资源不存在';
+      return i18n.t('errors.http.404');
     }
     if (status === 500) {
-      return '服务器错误，请稍后重试';
+      return i18n.t('errors.http.500');
     }
     if (status === 503) {
-      return '服务暂不可用，请稍后重试';
+      return i18n.t('errors.http.503');
     }
 
     // Network error
     if (axiosError.code === 'ECONNABORTED') {
-      return '请求超时，请重试';
+      return i18n.t('errors.network.timeout');
     }
     if (axiosError.message === 'Network Error') {
-      return '网络连接失败，请检查网络设置';
+      return i18n.t('errors.network.error');
     }
   }
 
@@ -244,7 +247,7 @@ export function extractErrorMessage(error: unknown): string {
   }
 
   // 5. Unknown error
-  return '操作失败，请稍后重试';
+  return i18n.t('errors.general.default');
 }
 
 /**
@@ -297,7 +300,7 @@ export interface AuthError {
 export function extractAuthError(error: unknown): AuthError {
   const defaultError: AuthError = {
     type: 'unknown',
-    message: '操作失败，请稍后重试',
+    message: i18n.t('errors.general.default'),
   };
 
   if (!error || typeof error !== 'object') {

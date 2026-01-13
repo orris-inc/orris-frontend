@@ -3,6 +3,7 @@
  * Mobile-friendly card list with Accordion for expanded details
  */
 
+import { useTranslation } from 'react-i18next';
 import {
   MoreHorizontal,
   Play,
@@ -86,6 +87,8 @@ export const SubscriptionMobileList: React.FC<SubscriptionMobileListProps> = ({
   onRenew,
   onDelete,
 }) => {
+  const { t } = useTranslation();
+
   // Render context menu content
   const renderContextMenuContent = (subscription: Subscription) => {
     const status = subscription.status;
@@ -99,26 +102,26 @@ export const SubscriptionMobileList: React.FC<SubscriptionMobileListProps> = ({
         {onViewDetail && (
           <ContextMenuItem onClick={() => onViewDetail(subscription)}>
             <Eye className="mr-2 size-4" />
-            查看详情
+            {t('subscription.viewDetails')}
           </ContextMenuItem>
         )}
         {onDuplicate && (
           <ContextMenuItem onClick={() => onDuplicate(subscription)}>
             <Copy className="mr-2 size-4" />
-            复制订阅
+            {t('subscription.duplicate')}
           </ContextMenuItem>
         )}
         {(onViewDetail || onDuplicate) && (canActivate || canRenew || canCancel) && <ContextMenuSeparator />}
         {canActivate && onActivate && (
           <ContextMenuItem onClick={() => onActivate(subscription)}>
             <Play className="mr-2 size-4" />
-            激活
+            {t('subscription.activate')}
           </ContextMenuItem>
         )}
         {canRenew && onRenew && (
           <ContextMenuItem onClick={() => onRenew(subscription)}>
             <RefreshCw className="mr-2 size-4" />
-            续费订阅
+            {t('subscription.renewSubscription')}
           </ContextMenuItem>
         )}
         {canCancel && onCancel && (
@@ -127,7 +130,7 @@ export const SubscriptionMobileList: React.FC<SubscriptionMobileListProps> = ({
             className="text-destructive focus:text-destructive"
           >
             <XCircle className="mr-2 size-4" />
-            取消订阅
+            {t('subscription.cancel')}
           </ContextMenuItem>
         )}
         {canDelete && onDelete && (
@@ -138,7 +141,7 @@ export const SubscriptionMobileList: React.FC<SubscriptionMobileListProps> = ({
               className="text-destructive focus:text-destructive"
             >
               <Trash2 className="mr-2 size-4" />
-              删除订阅
+              {t('subscription.delete')}
             </ContextMenuItem>
           </>
         )}
@@ -168,26 +171,26 @@ export const SubscriptionMobileList: React.FC<SubscriptionMobileListProps> = ({
           {onViewDetail && (
             <DropdownMenuItem onClick={() => onViewDetail(subscription)}>
               <Eye className="mr-2 size-4" />
-              查看详情
+              {t('subscription.viewDetails')}
             </DropdownMenuItem>
           )}
           {onDuplicate && (
             <DropdownMenuItem onClick={() => onDuplicate(subscription)}>
               <Copy className="mr-2 size-4" />
-              复制订阅
+              {t('subscription.duplicate')}
             </DropdownMenuItem>
           )}
           {(onViewDetail || onDuplicate) && (canActivate || canRenew || canCancel) && <DropdownMenuSeparator />}
           {canActivate && onActivate && (
             <DropdownMenuItem onClick={() => onActivate(subscription)}>
               <Play className="mr-2 size-4" />
-              激活
+              {t('subscription.activate')}
             </DropdownMenuItem>
           )}
           {canRenew && onRenew && (
             <DropdownMenuItem onClick={() => onRenew(subscription)}>
               <RefreshCw className="mr-2 size-4" />
-              续费订阅
+              {t('subscription.renewSubscription')}
             </DropdownMenuItem>
           )}
           {canCancel && onCancel && (
@@ -196,7 +199,7 @@ export const SubscriptionMobileList: React.FC<SubscriptionMobileListProps> = ({
               className="text-destructive focus:text-destructive"
             >
               <XCircle className="mr-2 size-4" />
-              取消订阅
+              {t('subscription.cancel')}
             </DropdownMenuItem>
           )}
           {canDelete && onDelete && (
@@ -207,7 +210,7 @@ export const SubscriptionMobileList: React.FC<SubscriptionMobileListProps> = ({
                 className="text-destructive focus:text-destructive"
               >
                 <Trash2 className="mr-2 size-4" />
-                删除订阅
+                {t('subscription.delete')}
               </DropdownMenuItem>
             </>
           )}
@@ -223,7 +226,7 @@ export const SubscriptionMobileList: React.FC<SubscriptionMobileListProps> = ({
   if (subscriptions.length === 0) {
     return (
       <div className="text-center py-12 text-slate-500 dark:text-slate-400">
-        暂无订阅数据
+        {t('subscription.noData')}
       </div>
     );
   }
@@ -231,7 +234,7 @@ export const SubscriptionMobileList: React.FC<SubscriptionMobileListProps> = ({
   return (
     <Accordion type="multiple" className="space-y-1.5">
       {subscriptions.map((subscription) => {
-        const statusConfig = SUBSCRIPTION_STATUS_CONFIG[subscription.status] || { label: subscription.status, variant: 'default' as const };
+        const statusConfig = SUBSCRIPTION_STATUS_CONFIG[subscription.status] || { labelKey: 'common.status.unknown', variant: 'default' as const };
         const user = usersMap[String(subscription.userId)];
         const isUserLoading = usersLoading || (!user && Object.keys(usersMap).length === 0);
         const plan = subscription.plan;
@@ -259,13 +262,13 @@ export const SubscriptionMobileList: React.FC<SubscriptionMobileListProps> = ({
                       </span>
                     )}
                     <AdminBadge variant={statusConfig.variant} className="text-[10px] px-1.5 py-0 flex-shrink-0">
-                      {statusConfig.label}
+                      {t(statusConfig.labelKey)}
                     </AdminBadge>
                   </div>
 
                   {/* Plan name */}
                   <div className="flex items-center gap-1.5 text-xs text-slate-500 dark:text-slate-400">
-                    <span className="truncate">{plan?.name || '未知计划'}</span>
+                    <span className="truncate">{plan?.name || t('subscription.unknownPlan')}</span>
                     <span className="text-slate-300 dark:text-slate-600">·</span>
                     <span className="flex items-center gap-0.5">
                       <Calendar className="size-3" />
@@ -286,7 +289,7 @@ export const SubscriptionMobileList: React.FC<SubscriptionMobileListProps> = ({
                           <Play className="size-3.5 text-green-500 hover:text-green-600" />
                         </button>
                       </TooltipTrigger>
-                      <TooltipContent>激活</TooltipContent>
+                      <TooltipContent>{t('subscription.activate')}</TooltipContent>
                     </Tooltip>
                   )}
                   {onViewDetail && (
@@ -299,7 +302,7 @@ export const SubscriptionMobileList: React.FC<SubscriptionMobileListProps> = ({
                           <Eye className="size-3.5 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300" />
                         </button>
                       </TooltipTrigger>
-                      <TooltipContent>详情</TooltipContent>
+                      <TooltipContent>{t('subscription.viewDetails')}</TooltipContent>
                     </Tooltip>
                   )}
                   {renderDropdownMenu(subscription)}
@@ -309,7 +312,7 @@ export const SubscriptionMobileList: React.FC<SubscriptionMobileListProps> = ({
 
             {/* Accordion Trigger */}
             <AccordionTrigger className="px-3 py-1.5 border-t border-slate-100 dark:border-slate-700 hover:no-underline hover:bg-slate-50 dark:hover:bg-slate-700/50">
-              <span className="text-xs text-slate-400 dark:text-slate-500">详情</span>
+              <span className="text-xs text-slate-400 dark:text-slate-500">{t('subscription.viewDetails')}</span>
             </AccordionTrigger>
 
             {/* Accordion Content - Expanded details */}
@@ -323,7 +326,7 @@ export const SubscriptionMobileList: React.FC<SubscriptionMobileListProps> = ({
 
                 {/* User info */}
                 <div className="flex items-center gap-2">
-                  <span className="text-[10px] text-slate-400 dark:text-slate-500 uppercase tracking-wide w-12 flex-shrink-0">用户</span>
+                  <span className="text-[10px] text-slate-400 dark:text-slate-500 uppercase tracking-wide w-12 flex-shrink-0">{t('tableColumns.user')}</span>
                   {isUserLoading ? (
                     <Skeleton className="h-4 w-32" />
                   ) : (
@@ -336,37 +339,37 @@ export const SubscriptionMobileList: React.FC<SubscriptionMobileListProps> = ({
 
                 {/* Plan */}
                 <div className="flex items-center gap-2">
-                  <span className="text-[10px] text-slate-400 dark:text-slate-500 uppercase tracking-wide w-12 flex-shrink-0">计划</span>
-                  <span className="text-xs text-slate-600 dark:text-slate-300">{plan?.name || '未知计划'}</span>
+                  <span className="text-[10px] text-slate-400 dark:text-slate-500 uppercase tracking-wide w-12 flex-shrink-0">{t('tableColumns.plan')}</span>
+                  <span className="text-xs text-slate-600 dark:text-slate-300">{plan?.name || t('subscription.unknownPlan')}</span>
                 </div>
 
                 {/* Date range */}
                 <div className="flex items-center gap-2">
-                  <span className="text-[10px] text-slate-400 dark:text-slate-500 uppercase tracking-wide w-12 flex-shrink-0">日期</span>
+                  <span className="text-[10px] text-slate-400 dark:text-slate-500 uppercase tracking-wide w-12 flex-shrink-0">{t('subscription.dateInfo')}</span>
                   <span className="text-xs text-slate-600 dark:text-slate-300">
-                    {formatDate(subscription.startDate)} ~ {subscription.endDate ? formatDate(subscription.endDate) : '无限期'}
+                    {formatDate(subscription.startDate)} ~ {subscription.endDate ? formatDate(subscription.endDate) : t('subscription.unlimited')}
                   </span>
                 </div>
 
                 {/* Auto renew */}
                 <div className="flex items-center gap-2">
-                  <span className="text-[10px] text-slate-400 dark:text-slate-500 uppercase tracking-wide w-12 flex-shrink-0">续费</span>
+                  <span className="text-[10px] text-slate-400 dark:text-slate-500 uppercase tracking-wide w-12 flex-shrink-0">{t('subscription.renew')}</span>
                   {subscription.autoRenew ? (
                     <span className="flex items-center gap-1 text-xs text-green-600 dark:text-green-400">
                       <CheckCircle className="size-3" />
-                      自动续费
+                      {t('subscription.autoRenewal')}
                     </span>
                   ) : (
                     <span className="flex items-center gap-1 text-xs text-slate-400 dark:text-slate-500">
                       <X className="size-3" />
-                      手动续费
+                      {t('subscription.manualRenewal')}
                     </span>
                   )}
                 </div>
 
                 {/* Created at */}
                 <div className="flex items-center gap-2">
-                  <span className="text-[10px] text-slate-400 dark:text-slate-500 uppercase tracking-wide w-12 flex-shrink-0">创建</span>
+                  <span className="text-[10px] text-slate-400 dark:text-slate-500 uppercase tracking-wide w-12 flex-shrink-0">{t('subscription.createdAt')}</span>
                   <span className="text-xs text-slate-500">{formatDate(subscription.createdAt)}</span>
                 </div>
               </div>

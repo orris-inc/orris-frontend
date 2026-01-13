@@ -12,6 +12,7 @@
  */
 
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
   ArrowRight,
   Bot,
@@ -560,11 +561,12 @@ export const ForwardRuleDetailSheet = ({
   onDelete,
   isProbingThis = false,
 }: ForwardRuleDetailSheetProps) => {
+  const { t } = useTranslation();
   const [actionSheetOpen, setActionSheetOpen] = useState(false);
 
   if (!rule) return null;
 
-  const statusConfig = ENABLED_STATUS_CONFIG[rule.status] || { label: '未知', variant: 'default' as const };
+  const statusConfig = ENABLED_STATUS_CONFIG[rule.status] || { labelKey: 'common.status.unknown', variant: 'default' as const };
   const ruleTypeConfig = RULE_TYPE_CONFIG[rule.ruleType] || RULE_TYPE_CONFIG.direct;
 
   // Get entry agent info
@@ -623,7 +625,7 @@ export const ForwardRuleDetailSheet = ({
                 <div className="flex items-center gap-2">
                   <SheetTitle className="truncate">{rule.name}</SheetTitle>
                   <AdminBadge variant={statusConfig.variant} className="text-[10px] px-1.5 py-0 shrink-0">
-                    {statusConfig.label}
+                    {t(statusConfig.labelKey)}
                   </AdminBadge>
                 </div>
                 <SheetDescription className="truncate font-mono text-xs">
@@ -772,7 +774,6 @@ export const ForwardRuleDetailSheet = ({
                 type="button"
                 onClick={() => {
                   onEdit(rule);
-                  onOpenChange(false);
                 }}
                 className={cn(
                   'flex-1 flex items-center justify-center gap-2',

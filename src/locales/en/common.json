@@ -1,0 +1,692 @@
+{
+  "app": {
+    "name": "Orris",
+    "loading": "Loading..."
+  },
+  "common": {
+    "actions": {
+      "create": "Create",
+      "edit": "Edit",
+      "delete": "Delete",
+      "save": "Save",
+      "cancel": "Cancel",
+      "confirm": "Confirm",
+      "close": "Close",
+      "search": "Search",
+      "filter": "Filter",
+      "refresh": "Refresh",
+      "export": "Export",
+      "import": "Import",
+      "copy": "Copy",
+      "submit": "Submit",
+      "reset": "Reset",
+      "back": "Back",
+      "next": "Next",
+      "previous": "Previous",
+      "view": "View",
+      "download": "Download",
+      "upload": "Upload",
+      "enable": "Enable",
+      "disable": "Disable",
+      "select": "Select",
+      "selectAll": "Select All",
+      "deselectAll": "Deselect All",
+      "expand": "Expand",
+      "collapse": "Collapse",
+      "more": "More",
+      "less": "Less",
+      "retry": "Retry",
+      "continue": "Continue",
+      "apply": "Apply",
+      "clear": "Clear"
+    },
+    "yes": "Yes",
+    "no": "No",
+    "status": {
+      "enabled": "Enabled",
+      "enabledShort": "On",
+      "disabled": "Disabled",
+      "disabledShort": "Off",
+      "online": "Online",
+      "offline": "Offline",
+      "active": "Active",
+      "inactive": "Inactive",
+      "pending": "Pending",
+      "suspended": "Suspended",
+      "deleted": "Deleted",
+      "maintenance": "Maintenance",
+      "completed": "Completed",
+      "failed": "Failed",
+      "loading": "Loading",
+      "success": "Success",
+      "error": "Error",
+      "warning": "Warning",
+      "info": "Info",
+      "renewed": "Renewed",
+      "cancelled": "Cancelled",
+      "expired": "Expired",
+      "synced": "Synced",
+      "syncing": "Syncing",
+      "syncFailed": "Sync Failed",
+      "unknown": "Unknown",
+      "running": "Running",
+      "stopped": "Stopped"
+    },
+    "role": {
+      "user": "User",
+      "admin": "Admin"
+    },
+    "planType": {
+      "node": "Node Subscription",
+      "forward": "Port Forward",
+      "hybrid": "Hybrid"
+    },
+    "ruleType": {
+      "portForward": "Port Forward",
+      "socks5Proxy": "SOCKS5 Proxy",
+      "httpProxy": "HTTP Proxy",
+      "tunnelForward": "Tunnel Forward"
+    },
+    "time": {
+      "now": "Just now",
+      "minutesAgo": "{{count}} minute ago",
+      "minutesAgo_other": "{{count}} minutes ago",
+      "hoursAgo": "{{count}} hour ago",
+      "hoursAgo_other": "{{count}} hours ago",
+      "daysAgo": "{{count}} day ago",
+      "daysAgo_other": "{{count}} days ago",
+      "today": "Today",
+      "yesterday": "Yesterday",
+      "thisWeek": "This week",
+      "thisMonth": "This month"
+    },
+    "validation": {
+      "required": "This field is required",
+      "email": "Please enter a valid email address",
+      "minLength": "Must be at least {{min}} characters",
+      "maxLength": "Must be at most {{max}} characters",
+      "min": "Must be at least {{min}}",
+      "max": "Must be at most {{max}}",
+      "pattern": "Invalid format",
+      "url": "Please enter a valid URL",
+      "number": "Must be a number",
+      "integer": "Must be an integer",
+      "positive": "Must be a positive number"
+    },
+    "messages": {
+      "confirmDelete": "Are you sure you want to delete this item?",
+      "deleteSuccess": "Deleted successfully",
+      "createSuccess": "Created successfully",
+      "updateSuccess": "Updated successfully",
+      "saveSuccess": "Saved successfully",
+      "copySuccess": "Copied to clipboard",
+      "operationFailed": "Operation failed",
+      "networkError": "Network error, please try again",
+      "unknownError": "An unknown error occurred",
+      "noData": "No data available",
+      "noResults": "No results found",
+      "loadingFailed": "Failed to load data"
+    },
+    "placeholders": {
+      "search": "Search...",
+      "select": "Please select",
+      "enter": "Please enter",
+      "email": "Enter email address",
+      "password": "Enter password"
+    },
+    "pagination": {
+      "page": "Page",
+      "of": "of",
+      "total": "Total {{count}} items",
+      "perPage": "per page",
+      "first": "First",
+      "last": "Last",
+      "previous": "Previous",
+      "next": "Next"
+    },
+    "table": {
+      "noData": "No data",
+      "loading": "Loading...",
+      "actions": "Actions",
+      "sortAsc": "Sort ascending",
+      "sortDesc": "Sort descending"
+    },
+    "dialog": {
+      "confirm": "Confirm",
+      "cancel": "Cancel",
+      "close": "Close"
+    },
+    "language": {
+      "label": "Language",
+      "en": "English",
+      "zh": "Chinese"
+    }
+  },
+  "nav": {
+    "home": "Home",
+    "dashboard": "Dashboard",
+    "admin": "Admin Console",
+    "settings": "Settings",
+    "profile": "Profile",
+    "logout": "Logout",
+    "notifications": "Notifications",
+    "switchToAdmin": "Switch to Admin",
+    "switchToUser": "Switch to User View",
+    "monitor": "Monitor",
+    "userNodes": "My Nodes",
+    "notifications": "Notifications",
+    "pricing": "Pricing",
+    "subscriptionDetail": "Subscription Details",
+    "adminDashboard": "Admin Console",
+    "liveMonitor": "Live Monitor",
+    "planManagement": "Subscription Plans",
+    "subscriptionManagement": "Subscriptions",
+    "userManagement": "Users",
+    "nodeAgent": "Node Agent",
+    "forwardAgent": "Forward Agent",
+    "forwardRules": "Forward Rules",
+    "resourceGroups": "Resource Groups",
+    "systemSettings": "System Settings",
+    "notificationSettings": "Notification Settings",
+    "groups": {
+      "overview": "Overview",
+      "business": "Business",
+      "infrastructure": "Infrastructure",
+      "system": "System"
+    }
+  },
+  "auth": {
+    "login": {
+      "title": "Sign In",
+      "subtitle": "Sign in to continue to your account",
+      "email": "Email",
+      "emailPlaceholder": "name@example.com",
+      "password": "Password",
+      "passwordPlaceholder": "Enter your password",
+      "rememberMe": "Remember me",
+      "forgotPassword": "Forgot password?",
+      "signIn": "Sign In",
+      "signingIn": "Signing in...",
+      "noAccount": "Don't have an account?",
+      "signUpNow": "Sign up now",
+      "signUp": "Sign Up",
+      "orContinueWith": "or",
+      "continueWithGoogle": "Continue with Google",
+      "continueWithGithub": "Continue with GitHub",
+      "togglePasswordVisibility": "Toggle password visibility",
+      "goToVerification": "Go to verification",
+      "success": "Signed in successfully!"
+    },
+    "register": {
+      "title": "Create Account",
+      "subtitle": "Join Orris and start your journey",
+      "name": "Name",
+      "email": "Email",
+      "password": "Password",
+      "confirmPassword": "Confirm Password",
+      "signUp": "Sign Up",
+      "signingUp": "Creating account...",
+      "haveAccount": "Already have an account?",
+      "signInNow": "Sign in now",
+      "signIn": "Sign In",
+      "orContinueWith": "or",
+      "continueWithGoogle": "Sign up with Google",
+      "continueWithGithub": "Sign up with GitHub",
+      "togglePasswordVisibility": "Toggle password visibility",
+      "passwordHint": "Password must be at least 8 characters with one uppercase letter",
+      "passwordStrength": "Password strength",
+      "strengthWeak": "Weak",
+      "strengthFair": "Fair",
+      "strengthGood": "Good",
+      "strengthStrong": "Strong",
+      "success": "Account created! Please check your email for verification.",
+      "successOAuth": "Account created successfully!"
+    },
+    "validation": {
+      "emailRequired": "Email is required",
+      "emailInvalid": "Please enter a valid email address",
+      "passwordRequired": "Password is required",
+      "passwordMinLength": "Password must be at least 8 characters",
+      "passwordUppercase": "Password must contain at least one uppercase letter",
+      "passwordMismatch": "Passwords do not match",
+      "nameRequired": "Name is required",
+      "nameMinLength": "Name must be at least 2 characters",
+      "nameMaxLength": "Name cannot exceed 100 characters"
+    },
+    "logout": {
+      "title": "Sign Out",
+      "confirm": "Are you sure you want to sign out?"
+    },
+    "forgotPassword": {
+      "title": "Reset Password",
+      "subtitle": "Enter your email to receive a password reset link",
+      "email": "Email",
+      "submit": "Send Reset Link",
+      "sending": "Sending...",
+      "success": "Reset link sent! Please check your email.",
+      "backToLogin": "Back to sign in"
+    },
+    "resetPassword": {
+      "title": "Set New Password",
+      "subtitle": "Enter your new password below",
+      "password": "New Password",
+      "confirmPassword": "Confirm New Password",
+      "submit": "Reset Password",
+      "resetting": "Resetting...",
+      "success": "Password reset successfully!",
+      "backToLogin": "Back to sign in"
+    },
+    "verifyEmail": {
+      "title": "Verify Your Email",
+      "subtitle": "We've sent a verification email to your inbox",
+      "checking": "Verifying...",
+      "success": "Email verified successfully!",
+      "resend": "Resend verification email",
+      "resending": "Sending...",
+      "resendSuccess": "Verification email sent!",
+      "emailSentTo": "Verification email sent to:",
+      "resendPrompt": "Didn't receive the email? Enter your email address to resend:",
+      "emailAddress": "Email Address",
+      "spamNotice": "Please check your spam folder. The verification link expires in 24 hours.",
+      "alreadyVerified": "Already verified?",
+      "backToLogin": "Back to sign in",
+      "steps": {
+        "title": "Please follow these steps to verify:",
+        "step1": "Open your email inbox",
+        "step2": "Find the email from Orris",
+        "step3": "Click the verification link in the email"
+      }
+    },
+    "emailSent": {
+      "title": "Email Sent",
+      "description": "We've sent a password reset link to your email. Please check your inbox and follow the instructions.",
+      "spamNotice": "If you don't see the email, please check your spam folder or try again later."
+    }
+  },
+  "admin": {
+    "title": "Admin Console",
+    "nodes": {
+      "title": "Node Management",
+      "description": "Manage proxy nodes",
+      "fields": {
+        "name": "Node Name",
+        "address": "Server Address",
+        "port": "Port",
+        "status": "Status",
+        "region": "Region",
+        "traffic": "Traffic",
+        "users": "Users"
+      }
+    },
+    "forwardRules": {
+      "title": "Forward Rules",
+      "description": "Manage forwarding rules"
+    },
+    "forwardAgents": {
+      "title": "Forward Agents",
+      "description": "Manage forward agents"
+    },
+    "users": {
+      "title": "User Management",
+      "description": "Manage users"
+    },
+    "subscriptions": {
+      "title": "Subscription Management",
+      "description": "Manage subscriptions",
+      "pageTitle": "Subscription Management",
+      "label": "Subscriptions",
+      "refreshList": "Refresh list",
+      "confirmDeleteTitle": "Confirm Delete",
+      "total": "Total",
+      "found": "Found",
+      "results": "results"
+    },
+    "plans": {
+      "title": "Plan Management",
+      "description": "Manage subscription plans"
+    },
+    "resourceGroups": {
+      "title": "Resource Groups",
+      "description": "Manage resource groups"
+    }
+  },
+  "subscription": {
+    "label": "Subscription",
+    "details": "Subscription Details",
+    "link": "Subscription Link",
+    "user": "User",
+    "userInfo": "User Information",
+    "plan": "Plan",
+    "planInfo": "Plan Information",
+    "planName": "Plan Name",
+    "planDetails": "Plan Details",
+    "pricingOptions": "Pricing Options",
+    "pricing": "Pricing",
+    "dateInfo": "Date Information",
+    "statusInfo": "Status Information",
+    "idLabel": "Subscription ID:",
+    "startDate": "Start Date",
+    "endDate": "End Date",
+    "unlimited": "Unlimited",
+    "currentPeriod": "Current Period",
+    "createdAt": "Created At",
+    "autoRenewal": "Auto Renewal",
+    "manualRenewal": "Manual Renewal",
+    "noRenewal": "No Renewal",
+    "isActive": "Is Active",
+    "isExpired": "Is Expired",
+    "cancelledAt": "Cancelled At",
+    "cancelReason": "Cancellation Reason",
+    "identifyInfo": "Identification Information",
+    "uuid": "UUID",
+    "noPlan": "No plan associated",
+    "unknownPlan": "Unknown Plan",
+    "activate": "Activate",
+    "activateSubscription": "Activate Subscription",
+    "cancel": "Cancel Subscription",
+    "renew": "Renew",
+    "renewSubscription": "Renew Subscription",
+    "delete": "Delete Subscription",
+    "duplicate": "Duplicate Subscription",
+    "viewDetails": "View Details",
+    "confirmCancel": "Are you sure you want to cancel subscription",
+    "confirmCancelSuffix": "? Please provide a cancellation reason.",
+    "cancelWarning": "After cancellation, users will not be able to continue using the subscription's services. Please confirm if you want to cancel this subscription.",
+    "immediateCancelOption": "Cancel immediately (otherwise cancel at the end of current period)",
+    "immediateCancel": "Cancel Immediately",
+    "cancelAtEndPeriod": "Otherwise it will be cancelled at the end of the current period",
+    "targetUser": "Target User",
+    "billingCycle": "Billing Cycle",
+    "optionsAvailable": "options available",
+    "noPriceSet": "No price set",
+    "baseOn": "Based on subscription",
+    "createNew": "Create new subscription",
+    "duplicateInfo": "A new subscription will be created for the user and will take effect immediately, generating a new subscription link.",
+    "sameUserAssignment": "New subscription will be assigned to the same user",
+    "creating": "Creating...",
+    "create": "Create Subscription",
+    "operations": "Subscription Operations",
+    "noData": "No subscription data",
+    "noSubscriptions": "No Subscriptions",
+    "noSubscriptionRecords": "There are no subscription records currently",
+    "noMatchingSubscription": "No matching subscriptions found",
+    "tryAdjustSearch": "Try adjusting search criteria or clear filters",
+    "selectPlanFirst": "Please select a plan first",
+    "assignToUser": "Assign Subscription to User",
+    "assignInfo": "Admin-assigned subscriptions take effect immediately, and users will get permissions for the corresponding plan.",
+    "assigning": "Assigning...",
+    "confirmAssign": "Confirm Assign",
+    "noPricing": "No pricing",
+    "assignSubscription": "Assign Subscription",
+    "assignSubscriptionDesc": "Assign a subscription plan to user {{user}}",
+    "loadingPlans": "Loading plans...",
+    "subscriptionPlan": "Subscription Plan",
+    "selectPlan": "Select a plan",
+    "autoRenew": "Auto Renew",
+    "autoRenewDesc": "Automatically renew after expiration",
+    "price": "Price",
+    "assignSubscriptionInfo": "Admin-assigned subscriptions take effect immediately, and users will get permissions for the corresponding plan."
+  },
+  "subscriptionLink": {
+    "nodeMode": {
+      "forward": "Forward",
+      "origin": "Origin",
+      "all": "All"
+    },
+    "viewMode": {
+      "textList": "Text list",
+      "qrCode": "QR code"
+    },
+    "copy": "Copy",
+    "copied": "Copied",
+    "copyLink": "Copy link"
+  },
+  "userSubscription": {
+    "details": "Subscription Details",
+    "backToHome": "Back to Home",
+    "loadingFailed": "Loading Failed",
+    "unableToLoad": "Unable to load subscription information, please try again later.",
+    "overview": "Overview",
+    "forward": "Forward",
+    "nodes": "Nodes",
+    "days": "days",
+    "day": "day",
+    "remainingValidity": "Remaining validity",
+    "periodProgress": "Period progress",
+    "currentSubscription": "Current subscription",
+    "subscriptionPlan": "Subscription Plan",
+    "cycleProgress": "Cycle progress",
+    "cycleDays": "Cycle days",
+    "traffic": "Traffic",
+    "expires": "Expires",
+    "trafficOverview": "Traffic Overview",
+    "currentPeriodUsage": "Current period usage",
+    "used": "Used",
+    "totalQuota": "Total quota",
+    "trafficDetails": "Traffic Details",
+    "upload": "Upload",
+    "download": "Download",
+    "total": "Total",
+    "subscriptionLink": "Subscription Link",
+    "selectFormatAndCopy": "Select format and copy to client",
+    "resetLink": "Reset Link",
+    "resetting": "Resetting...",
+    "reset": "Reset",
+    "confirmResetLink": "Are you sure you want to reset the subscription link? The old link will become invalid after reset.",
+    "trafficTrend": "Traffic Trend",
+    "uploadDownloadStats": "Upload and download traffic statistics",
+    "noTrafficData": "No traffic data",
+    "today": "Today",
+    "yesterday": "Yesterday",
+    "sevenDays": "7 Days",
+    "thirtyDays": "30 Days"
+  },
+  "fields": {
+    "name": "Name:",
+    "price": "Price:"
+  },
+  "billingCycle": {
+    "weekly": "Weekly",
+    "monthly": "Monthly",
+    "quarterly": "Quarterly",
+    "semiAnnual": "Semi-Annual",
+    "yearly": "Yearly",
+    "lifetime": "Lifetime"
+  },
+  "planType": {
+    "node": "Node Subscription",
+    "forward": "Port Forwarding",
+    "hybrid": "Hybrid Subscription"
+  },
+  "filter": {
+    "all": "All"
+  },
+  "subscriptionStatus": {
+    "active": "Active",
+    "activated": "Activated",
+    "notActivated": "Not Activated",
+    "expired": "Expired",
+    "notExpired": "Not Expired",
+    "cancelled": "Cancelled",
+    "pending": "Pending",
+    "renewed": "Renewed",
+    "inactive": "Inactive"
+  },
+  "messages": {
+    "subscriptionCreateSuccess": "Subscription created successfully",
+    "subscriptionCreateFailed": "Failed to create subscription",
+    "subscriptionActivated": "Subscription activated",
+    "subscriptionActivateFailed": "Failed to activate subscription",
+    "subscriptionCancelled": "Subscription cancelled",
+    "subscriptionCancelFailed": "Failed to cancel subscription",
+    "subscriptionRenewed": "Subscription renewed",
+    "subscriptionRenewFailed": "Failed to renew subscription",
+    "subscriptionDeleted": "Subscription deleted",
+    "subscriptionDeleteFailed": "Failed to delete subscription",
+    "copiedToClipboard": "Copied to clipboard",
+    "processing": "Processing...",
+    "confirmCancel": "Confirm Cancel",
+    "clearFilters": "Clear Filters",
+    "deleteIrreversible": "This action cannot be undone. Please confirm to continue.",
+    "confirmDeleteSubscription": "Confirm delete the following subscription?",
+    "deleteSubscriptionWarning": "Once deleted, the subscription will be permanently removed and users will no longer be able to use it."
+  },
+  "placeholders": {
+    "searchSubscription": "Search users, plans...",
+    "selectPlan": "Please select a plan",
+    "cancelReason": "Please enter cancellation reason..."
+  },
+  "aria": {
+    "openMenu": "Open menu"
+  },
+  "userInfo": {
+    "noNameSet": "No name set"
+  },
+  "tableColumns": {
+    "subscriptionId": "Subscription ID",
+    "user": "User",
+    "plan": "Plan",
+    "status": "Status",
+    "startDate": "Start Date",
+    "endDate": "End Date",
+    "autoRenew": "Auto Renewal",
+    "createdAt": "Created At",
+    "actions": "Actions",
+    "operations": "Operations"
+  },
+  "labels": {
+    "userId": "User ID",
+    "name": "Name:",
+    "price": "Price:"
+  },
+  "user": {
+    "detail": {
+      "basicInfo": "Basic Info",
+      "email": "Email",
+      "role": "Role",
+      "status": "Status",
+      "userId": "User ID",
+      "timeInfo": "Time Info",
+      "registrationTime": "Registration Time",
+      "lastUpdated": "Last Updated",
+      "edit": "Edit",
+      "subscription": "Subscription",
+      "moreActions": "More Actions",
+      "resetPassword": "Reset Password",
+      "deleteUser": "Delete User",
+      "roleUser": "User",
+      "roleAdmin": "Admin"
+    },
+    "dashboard": {
+      "title": "Dashboard",
+      "welcome": "Welcome, {{name}}",
+      "overview": "Overview",
+      "defaultUser": "User",
+      "mySubscriptions": "My Subscriptions",
+      "loading": "Loading...",
+      "errorLoadUser": "Unable to load user information",
+      "empty": {
+        "title": "No Subscriptions",
+        "description": "You don't have any subscriptions yet",
+        "viewPlans": "Browse Plans"
+      },
+      "subscription": {
+        "status": {
+          "active": "Active",
+          "expired": "Expired",
+          "cancelled": "Cancelled",
+          "pending": "Pending",
+          "renewed": "Renewed"
+        },
+        "unknownPlan": "Unknown Plan",
+        "daysRemaining": "{{count}} day",
+        "daysRemaining_other": "{{count}} days"
+      },
+      "quickActions": {
+        "upgrade": "Upgrade",
+        "upgradeDesc": "Get more bandwidth",
+        "viewPlans": "View Plans",
+        "viewPlansDesc": "Compare all options"
+      }
+    },
+    "profile": {
+      "title": "Profile",
+      "settings": "Settings"
+    }
+  },
+  "errors": {
+    "account": {
+      "notActive": "Your account is not active. Please check your email for verification.",
+      "locked": "Your account has been locked. Please contact support.",
+      "disabled": "Your account has been disabled. Please contact support."
+    },
+    "login": {
+      "invalidCredentials": "Invalid email or password",
+      "incorrectPassword": "Incorrect password",
+      "emailNotFound": "Email not registered",
+      "userNotFound": "User not found"
+    },
+    "register": {
+      "emailExists": "This email is already registered",
+      "userExists": "User already exists"
+    },
+    "token": {
+      "invalid": "Verification link is invalid or expired",
+      "expired": "Verification link has expired. Please request a new one.",
+      "notFound": "Verification link is invalid"
+    },
+    "email": {
+      "alreadyVerified": "This email has already been verified",
+      "notVerified": "Email has not been verified",
+      "verificationFailed": "Verification failed. Please try again."
+    },
+    "password": {
+      "resetFailed": "Password reset failed. Please try again.",
+      "invalidResetToken": "Reset link is invalid or expired",
+      "resetTokenExpired": "Reset link has expired. Please request a new one."
+    },
+    "oauth": {
+      "failed": "OAuth login failed. Please try again.",
+      "providerError": "OAuth provider error. Please try again later.",
+      "invalidCode": "Invalid OAuth code"
+    },
+    "permission": {
+      "unauthorized": "Unauthorized. Please log in first.",
+      "forbidden": "You do not have permission to access this resource.",
+      "accessDenied": "Access denied",
+      "insufficient": "Insufficient permissions"
+    },
+    "network": {
+      "error": "Network connection failed. Please check your network settings.",
+      "timeout": "Request timed out. Please try again.",
+      "serverError": "Server error. Please try again later.",
+      "internalError": "Internal server error. Please try again later.",
+      "unavailable": "Service temporarily unavailable. Please try again later.",
+      "badGateway": "Gateway error. Please try again later."
+    },
+    "request": {
+      "badRequest": "Invalid request parameters",
+      "invalid": "Invalid request",
+      "validationError": "Data validation failed",
+      "invalidInput": "Invalid input data",
+      "missingFields": "Missing required fields"
+    },
+    "resource": {
+      "notFound": "Requested resource not found",
+      "pageNotFound": "Page not found"
+    },
+    "general": {
+      "unknown": "Operation failed. Please try again later.",
+      "somethingWrong": "Something went wrong. Please try again later.",
+      "operationFailed": "Operation failed. Please try again.",
+      "default": "Operation failed. Please try again later."
+    },
+    "http": {
+      "401": "Authentication failed. Please log in again.",
+      "403": "You do not have permission to access this resource.",
+      "404": "Requested resource not found",
+      "500": "Server error. Please try again later.",
+      "503": "Service temporarily unavailable. Please try again later."
+    }
+  }
+}

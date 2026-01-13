@@ -17,6 +17,8 @@ import {
   Shield,
   Globe,
   ChevronRight,
+  Menu,
+  X,
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -109,11 +111,19 @@ const steps: Step[] = [
 // Track animation state outside component to survive StrictMode remounts
 const animatedSections = new Set<string>();
 
+// Navigation links for landing page
+const navLinks = [
+  { href: '#features', label: 'Features' },
+  { href: '#how-it-works', label: 'How It Works' },
+  { href: '/pricing', label: 'Pricing', isRoute: true },
+];
+
 export const LandingPage = () => {
   const featuresRef = useRef<HTMLDivElement>(null);
   const [featuresVisible, setFeaturesVisible] = useState(() =>
     animatedSections.has('features')
   );
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const handleFeaturesIntersect = useCallback((entries: IntersectionObserverEntry[]) => {
     const entry = entries[0];
@@ -138,9 +148,10 @@ export const LandingPage = () => {
   return (
     <div className="min-h-viewport bg-background">
       {/* Navigation */}
-      <nav className="fixed top-4 left-4 right-4 z-50">
-        <div className="max-w-6xl mx-auto">
-          <div className="flex items-center justify-between px-6 py-3 rounded-2xl bg-card/80 dark:bg-card/60 backdrop-blur-lg border border-border shadow-lg dark:shadow-primary/5">
+      <header className="fixed top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-sm border-b border-border/50">
+        <nav className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex items-center justify-between h-14">
+            {/* Logo */}
             <Link to="/" className="flex items-center gap-2">
               <div className="size-8 rounded-lg bg-primary flex items-center justify-center">
                 <Globe className="size-5 text-primary-foreground" />
@@ -148,54 +159,124 @@ export const LandingPage = () => {
               <span className="text-lg font-semibold">Orris</span>
             </Link>
 
+            {/* Desktop Navigation Links */}
             <div className="hidden md:flex items-center gap-8">
-              <motion.a
-                href="#features"
-                className="text-sm text-muted-foreground"
-                whileHover={{ color: 'hsl(var(--foreground))' }}
-                transition={{ duration: 0.2 }}
-              >
-                Features
-              </motion.a>
-              <motion.a
-                href="#how-it-works"
-                className="text-sm text-muted-foreground"
-                whileHover={{ color: 'hsl(var(--foreground))' }}
-                transition={{ duration: 0.2 }}
-              >
-                How It Works
-              </motion.a>
-              <motion.a
-                href="/pricing"
-                className="text-sm text-muted-foreground"
-                whileHover={{ color: 'hsl(var(--foreground))' }}
-                transition={{ duration: 0.2 }}
-              >
-                Pricing
-              </motion.a>
+              {navLinks.map((link) =>
+                link.isRoute ? (
+                  <Link
+                    key={link.href}
+                    to={link.href}
+                    className="text-sm text-muted-foreground hover:text-foreground transition-colors"
+                  >
+                    {link.label}
+                  </Link>
+                ) : (
+                  <a
+                    key={link.href}
+                    href={link.href}
+                    className="text-sm text-muted-foreground hover:text-foreground transition-colors"
+                  >
+                    {link.label}
+                  </a>
+                )
+              )}
             </div>
 
-            <div className="flex items-center gap-2">
+            {/* Desktop Actions */}
+            <div className="hidden md:flex items-center gap-4">
               <ThemeToggle />
               <Link
                 to="/login"
-                className={getButtonClass('ghost', 'sm')}
+                className="text-sm text-muted-foreground hover:text-foreground transition-colors"
               >
                 Sign In
               </Link>
               <Link
                 to="/register"
-                className={getButtonClass('default', 'sm')}
+                className={cn(
+                  'inline-flex items-center justify-center h-9 px-4 rounded-full',
+                  'text-sm font-medium',
+                  'bg-foreground text-background',
+                  'hover:bg-foreground/90 transition-colors'
+                )}
               >
                 Get Started
               </Link>
             </div>
+
+            {/* Mobile Actions */}
+            <div className="flex md:hidden items-center gap-2">
+              <ThemeToggle />
+              <Link
+                to="/login"
+                className="text-sm text-muted-foreground hover:text-foreground transition-colors"
+              >
+                Sign In
+              </Link>
+              <button
+                onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+                className="inline-flex h-9 w-9 items-center justify-center rounded-md hover:bg-accent transition-colors -mr-2"
+                aria-label={mobileMenuOpen ? 'Close menu' : 'Open menu'}
+                aria-expanded={mobileMenuOpen}
+              >
+                {mobileMenuOpen ? <X className="size-5" /> : <Menu className="size-5" />}
+              </button>
+            </div>
           </div>
-        </div>
-      </nav>
+
+          {/* Mobile Navigation Menu - Dropdown style */}
+          {mobileMenuOpen && (
+            <motion.div
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+              transition={{ duration: 0.15 }}
+              className="md:hidden py-4 border-t border-border/50"
+            >
+              <nav className="flex flex-col gap-1">
+                {navLinks.map((link) => (
+                  link.isRoute ? (
+                    <Link
+                      key={link.href}
+                      to={link.href}
+                      onClick={() => setMobileMenuOpen(false)}
+                      className="px-3 py-2.5 text-sm text-muted-foreground hover:text-foreground transition-colors"
+                    >
+                      {link.label}
+                    </Link>
+                  ) : (
+                    <a
+                      key={link.href}
+                      href={link.href}
+                      onClick={() => setMobileMenuOpen(false)}
+                      className="px-3 py-2.5 text-sm text-muted-foreground hover:text-foreground transition-colors"
+                    >
+                      {link.label}
+                    </a>
+                  )
+                ))}
+              </nav>
+              <div className="mt-4 pt-4 border-t border-border/50 px-3">
+                <Link
+                  to="/register"
+                  onClick={() => setMobileMenuOpen(false)}
+                  className={cn(
+                    'inline-flex items-center justify-center w-full h-10 rounded-full',
+                    'text-sm font-medium',
+                    'bg-foreground text-background',
+                    'hover:bg-foreground/90 transition-colors'
+                  )}
+                >
+                  Get Started
+                </Link>
+              </div>
+            </motion.div>
+          )}
+        </nav>
+      </header>
 
       {/* Hero Section */}
-      <section className="relative pt-32 pb-20 px-4 overflow-hidden">
+      <section className="relative pt-24 pb-20 px-4 overflow-hidden">
         {/* Background decoration */}
         <div className="absolute inset-0 -z-10">
           <motion.div

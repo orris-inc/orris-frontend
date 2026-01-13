@@ -9,6 +9,7 @@
  */
 
 import { useState, useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
 import { QRCodeSVG } from 'qrcode.react';
 import {
   Copy,
@@ -42,10 +43,10 @@ const LINK_FORMATS: { format: SubscriptionLinkFormat | undefined; label: string 
 /**
  * Node mode configuration
  */
-const NODE_MODES: { mode: SubscriptionNodeMode; label: string; icon: React.ElementType }[] = [
-  { mode: 'forward', label: '转发', icon: ArrowRightLeft },
-  { mode: 'origin', label: '源站', icon: Server },
-  { mode: 'all', label: '全部', icon: Globe },
+const NODE_MODES: { mode: SubscriptionNodeMode; labelKey: string; icon: React.ElementType }[] = [
+  { mode: 'forward', labelKey: 'subscriptionLink.nodeMode.forward', icon: ArrowRightLeft },
+  { mode: 'origin', labelKey: 'subscriptionLink.nodeMode.origin', icon: Server },
+  { mode: 'all', labelKey: 'subscriptionLink.nodeMode.all', icon: Globe },
 ];
 
 interface SubscriptionLinkSelectorProps {
@@ -109,6 +110,7 @@ const CopyButton: React.FC<{ text: string; variant?: 'default' | 'pill' }> = ({
   text,
   variant = 'default',
 }) => {
+  const { t } = useTranslation();
   const [copied, setCopied] = useState(false);
 
   const handleCopy = async () => {
@@ -137,12 +139,12 @@ const CopyButton: React.FC<{ text: string; variant?: 'default' | 'pill' }> = ({
         {copied ? (
           <>
             <Check className="size-3.5" />
-            已复制
+            {t('subscriptionLink.copied')}
           </>
         ) : (
           <>
             <Copy className="size-3.5" />
-            复制
+            {t('subscriptionLink.copy')}
           </>
         )}
       </button>
@@ -159,7 +161,7 @@ const CopyButton: React.FC<{ text: string; variant?: 'default' | 'pill' }> = ({
           ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400'
           : 'hover:bg-muted text-muted-foreground hover:text-foreground'
       )}
-      title={copied ? '已复制' : '复制链接'}
+      title={copied ? t('subscriptionLink.copied') : t('subscriptionLink.copyLink')}
     >
       {copied ? <Check className="size-4" /> : <Copy className="size-4" />}
     </button>
@@ -233,6 +235,7 @@ export const SubscriptionLinkSelector: React.FC<SubscriptionLinkSelectorProps> =
   compact = false,
   className,
 }) => {
+  const { t } = useTranslation();
   const [nodeMode, setNodeMode] = useState<SubscriptionNodeMode>('forward');
   const [viewMode, setViewMode] = useState<ViewMode>('text');
   const [selectedFormat, setSelectedFormat] = useState<string>('Clash');
@@ -256,7 +259,7 @@ export const SubscriptionLinkSelector: React.FC<SubscriptionLinkSelectorProps> =
       <div className="flex items-center justify-between gap-3 flex-wrap">
         {/* Node mode pills */}
         <div className="flex items-center gap-1 p-1 rounded-full bg-muted/50">
-          {NODE_MODES.map(({ mode, label, icon: Icon }) => (
+          {NODE_MODES.map(({ mode, labelKey, icon: Icon }) => (
             <PillButton
               key={mode}
               active={nodeMode === mode}
@@ -264,7 +267,7 @@ export const SubscriptionLinkSelector: React.FC<SubscriptionLinkSelectorProps> =
               className="flex items-center gap-1.5"
             >
               <Icon className="size-3.5" />
-              {!compact && label}
+              {!compact && t(labelKey)}
             </PillButton>
           ))}
         </div>
@@ -275,13 +278,13 @@ export const SubscriptionLinkSelector: React.FC<SubscriptionLinkSelectorProps> =
             active={viewMode === 'text'}
             onClick={() => setViewMode('text')}
             icon={List}
-            label="文本列表"
+            label={t('subscriptionLink.viewMode.textList')}
           />
           <IconToggle
             active={viewMode === 'qrcode'}
             onClick={() => setViewMode('qrcode')}
             icon={QrCode}
-            label="二维码"
+            label={t('subscriptionLink.viewMode.qrCode')}
           />
         </div>
       </div>

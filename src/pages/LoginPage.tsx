@@ -9,22 +9,23 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { Link as RouterLink, useNavigate, useLocation } from 'react-router-dom';
 import { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Eye, EyeOff, Loader2, Check, AlertCircle, CheckCircle2 } from 'lucide-react';
 import * as LabelPrimitive from '@radix-ui/react-label';
 import * as Checkbox from '@radix-ui/react-checkbox';
 import { useAuth } from '@/features/auth/hooks/useAuth';
 import { useAuthStore } from '@/features/auth/stores/auth-store';
 import { useNotificationStore } from '@/shared/stores/notification-store';
+import { LanguageSwitcher } from '@/components/common/LanguageSwitcher';
+import { ThemeToggle } from '@/components/common/ThemeToggle';
 import { cn } from '@/lib/utils';
 
-// Zod login form validation
-const loginSchema = z.object({
-  email: z.string().email('请输入有效的邮箱地址'),
-  password: z.string().min(8, '密码至少需要8个字符'),
-  rememberMe: z.boolean().catch(false),
-});
-
-type LoginFormData = z.infer<typeof loginSchema>;
+// Login form data type
+type LoginFormData = {
+  email: string;
+  password: string;
+  rememberMe: boolean;
+};
 
 // Google icon SVG component
 const GoogleIcon = ({ className }: { className?: string }) => (
@@ -56,6 +57,7 @@ const GitHubIcon = ({ className }: { className?: string }) => (
 );
 
 export const LoginPage = () => {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const location = useLocation();
   const { user, isAuthenticated } = useAuthStore();
@@ -63,6 +65,13 @@ export const LoginPage = () => {
   const { showSuccess } = useNotificationStore();
   const [showPassword, setShowPassword] = useState(false);
   const [userEmail, setUserEmail] = useState<string>('');
+
+  // Zod schema with i18n validation messages
+  const loginSchema = z.object({
+    email: z.string().email(t('auth.validation.emailInvalid')),
+    password: z.string().min(8, t('auth.validation.passwordMinLength')),
+    rememberMe: z.boolean().catch(false),
+  });
 
   const state = location.state as { message?: string } | null;
   const successMessage = state?.message;
@@ -96,7 +105,7 @@ export const LoginPage = () => {
 
     try {
       await login(data);
-      showSuccess('登录成功！');
+      showSuccess(t('auth.login.success'));
     } catch {
       // Error already handled by useAuth
     }
@@ -114,7 +123,7 @@ export const LoginPage = () => {
   const handleOAuthLogin = async (provider: 'google' | 'github') => {
     try {
       await loginWithOAuth(provider);
-      showSuccess('登录成功！');
+      showSuccess(t('auth.login.success'));
     } catch {
       // Error already handled by useAuth
     }
@@ -125,6 +134,12 @@ export const LoginPage = () => {
       {/* Grid background decoration */}
       <div className="fixed inset-0 bg-[linear-gradient(to_right,hsl(var(--border))_1px,transparent_1px),linear-gradient(to_bottom,hsl(var(--border))_1px,transparent_1px)] bg-[size:4rem_4rem] [mask-image:radial-gradient(ellipse_80%_80%_at_50%_50%,black_40%,transparent_100%)] pointer-events-none" />
 
+      {/* Top right controls */}
+      <div className="fixed top-4 right-4 z-20 flex items-center gap-2">
+        <LanguageSwitcher />
+        <ThemeToggle />
+      </div>
+
       <div className="relative z-10 w-full max-w-[420px]">
         {/* Header */}
         <header className="text-center mb-10">
@@ -134,7 +149,7 @@ export const LoginPage = () => {
             </h1>
           </RouterLink>
           <p className="mt-3 text-muted-foreground">
-            登录您的账号继续使用
+            {t('auth.login.subtitle')}
           </p>
         </header>
 
@@ -160,7 +175,7 @@ export const LoginPage = () => {
                     onClick={handleResendVerification}
                     className="mt-2 text-sm font-medium underline underline-offset-4 hover:no-underline"
                   >
-                    前往验证
+                    {t('auth.login.goToVerification')}
                   </button>
                 )}
               </div>
@@ -175,7 +190,7 @@ export const LoginPage = () => {
                 htmlFor="email"
                 className="text-sm font-medium text-foreground"
               >
-                邮箱
+                {t('auth.login.email')}
               </LabelPrimitive.Root>
               <input
                 id="email"
@@ -208,14 +223,14 @@ export const LoginPage = () => {
                 htmlFor="password"
                 className="text-sm font-medium text-foreground"
               >
-                密码
+                {t('auth.login.password')}
               </LabelPrimitive.Root>
               <div className="relative">
                 <input
                   id="password"
                   type={showPassword ? 'text' : 'password'}
                   autoComplete="current-password"
-                  placeholder="输入密码"
+                  placeholder={t('auth.login.passwordPlaceholder')}
                   aria-invalid={!!errors.password || !!authError?.fieldErrors?.password}
                   className={cn(
                     'flex h-11 w-full rounded-lg border bg-background px-4 pr-11 text-sm transition-colors',
@@ -232,7 +247,7 @@ export const LoginPage = () => {
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
                   className="absolute right-1 top-1/2 -translate-y-1/2 flex items-center justify-center size-9 rounded-md text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
-                  aria-label="切换密码显示"
+                  aria-label={t('auth.login.togglePasswordVisibility')}
                   tabIndex={-1}
                 >
                   {showPassword ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
@@ -259,14 +274,14 @@ export const LoginPage = () => {
                   </Checkbox.Indicator>
                 </Checkbox.Root>
                 <span className="text-sm text-muted-foreground group-hover:text-foreground transition-colors">
-                  记住我
+                  {t('auth.login.rememberMe')}
                 </span>
               </label>
               <RouterLink
                 to="/forgot-password"
                 className="text-sm text-primary hover:text-primary/80 underline-offset-4 hover:underline transition-colors"
               >
-                忘记密码？
+                {t('auth.login.forgotPassword')}
               </RouterLink>
             </div>
 
@@ -279,10 +294,10 @@ export const LoginPage = () => {
               {isLoading ? (
                 <>
                   <Loader2 className="mr-2 size-4 animate-spin" />
-                  登录中...
+                  {t('auth.login.signingIn')}
                 </>
               ) : (
-                '登录'
+                t('auth.login.signIn')
               )}
             </button>
           </form>
@@ -294,7 +309,7 @@ export const LoginPage = () => {
             </div>
             <div className="relative flex justify-center">
               <span className="bg-card px-3 text-xs uppercase tracking-wider text-muted-foreground">
-                或
+                {t('auth.login.orContinueWith')}
               </span>
             </div>
           </div>
@@ -308,7 +323,7 @@ export const LoginPage = () => {
               className="flex items-center justify-center gap-3 w-full h-11 rounded-lg border border-input bg-background text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50"
             >
               <GoogleIcon className="size-5" />
-              使用 Google 登录
+              {t('auth.login.continueWithGoogle')}
             </button>
             <button
               type="button"
@@ -317,7 +332,7 @@ export const LoginPage = () => {
               className="flex items-center justify-center gap-3 w-full h-11 rounded-lg border border-input bg-background text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50"
             >
               <GitHubIcon className="size-5" />
-              使用 GitHub 登录
+              {t('auth.login.continueWithGithub')}
             </button>
           </div>
         </main>
@@ -325,12 +340,12 @@ export const LoginPage = () => {
         {/* Footer */}
         <footer className="mt-8 text-center">
           <p className="text-sm text-muted-foreground">
-            还没有账号？{' '}
+            {t('auth.login.noAccount')}{' '}
             <RouterLink
               to="/register"
               className="font-medium text-primary hover:text-primary/80 underline-offset-4 hover:underline transition-colors"
             >
-              立即注册
+              {t('auth.login.signUpNow')}
             </RouterLink>
           </p>
         </footer>

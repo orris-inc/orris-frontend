@@ -17,6 +17,7 @@ import { EmailVerificationPage } from '@/pages/EmailVerificationPage';
 import { VerificationPendingPage } from '@/pages/VerificationPendingPage';
 import { DashboardPage } from '@/pages/DashboardPage';
 import { PricingPage } from '@/pages/PricingPage';
+import { PublicPricingPage } from '@/pages/PublicPricingPage';
 import { SubscriptionPlansManagementPage } from '@/pages/SubscriptionPlansManagementPage';
 import { SubscriptionManagementPage } from '@/pages/SubscriptionManagementPage';
 import { UserManagementPage } from '@/pages/UserManagementPage';
@@ -30,6 +31,7 @@ import { UserNodesPage } from '@/pages/UserNodesPage';
 import { UserSubscriptionDetailPage } from '@/pages/UserSubscriptionDetailPage';
 import { NewAdminDashboardPage } from '@/pages/NewAdminDashboardPage';
 import { AdminSettingsPage } from '@/pages/AdminSettingsPage';
+import { AdminNotificationsPage } from '@/pages/AdminNotificationsPage';
 import { MonitorPage } from '@/pages/MonitorPage';
 import { ProtectedRoute } from '@/shared/components/ProtectedRoute';
 import { AdminRoute } from '@/shared/components/AdminRoute';
@@ -105,10 +107,20 @@ export const router = createBrowserRouter([
     ),
   },
 
-  // Pricing page (public access)
+  // Pricing page (public access - for visitors from landing page)
   {
     path: '/pricing',
-    element: <PricingPage />,
+    element: <PublicPricingPage />,
+  },
+
+  // User pricing page (authenticated)
+  {
+    path: '/dashboard/pricing',
+    element: (
+      <ProtectedRoute>
+        <PricingPage />
+      </ProtectedRoute>
+    ),
   },
 
   // ==================== Admin Routes ====================
@@ -209,6 +221,16 @@ export const router = createBrowserRouter([
     element: (
       <AdminRoute>
         <AdminSettingsPage />
+      </AdminRoute>
+    ),
+  },
+
+  // Notification settings (admin)
+  {
+    path: '/admin/notifications',
+    element: (
+      <AdminRoute>
+        <AdminNotificationsPage />
       </AdminRoute>
     ),
   },

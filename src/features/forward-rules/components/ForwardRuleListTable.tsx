@@ -5,6 +5,7 @@
  */
 
 import { useMemo, useCallback } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Edit, Trash2, Eye, Power, PowerOff, MoreHorizontal, RotateCcw, Activity, Loader2, Server, Bot, ArrowRight, Files, CheckCircle2, CircleDashed, AlertCircle, Play, Square, AlertTriangle, RotateCw } from 'lucide-react';
 import { DataTable, DraggableDataTable, AdminBadge, TruncatedId, type ColumnDef, type ResponsiveColumnMeta, type RowSelectionState, type OnChangeFn } from '@/components/admin';
 import { Checkbox } from '@/components/common/Checkbox';
@@ -442,6 +443,7 @@ export const ForwardRuleListTable: React.FC<ForwardRuleListTableProps> = ({
   onRowSelectionChange,
   enableSelection = true,
 }) => {
+  const { t } = useTranslation();
   // Detect mobile screen
   const { isMobile } = useBreakpoint();
   // Forward rule context menu content
@@ -826,7 +828,7 @@ export const ForwardRuleListTable: React.FC<ForwardRuleListTableProps> = ({
       meta: { priority: 1 } as ResponsiveColumnMeta,
       cell: ({ row }) => {
         const rule = row.original;
-        const statusConfig = ENABLED_STATUS_CONFIG[rule.status] || { label: rule.status, variant: 'default' as const };
+        const statusConfig = ENABLED_STATUS_CONFIG[rule.status] || { labelKey: 'common.status.unknown', variant: 'default' as const };
         return (
           <Tooltip>
             <TooltipTrigger asChild>
@@ -836,7 +838,7 @@ export const ForwardRuleListTable: React.FC<ForwardRuleListTableProps> = ({
                   className="whitespace-nowrap cursor-pointer"
                   onClick={() => rule.status === 'enabled' ? onDisable(rule) : onEnable(rule)}
                 >
-                  {statusConfig.label}
+                  {t(statusConfig.labelKey)}
                 </AdminBadge>
               </span>
             </TooltipTrigger>

@@ -6,6 +6,7 @@
 
 import { useMemo, useRef, useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router';
+import { useTranslation } from 'react-i18next';
 import { ArrowLeft, AlertCircle, LayoutDashboard, ArrowRightLeft, Server } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { DashboardLayout } from '@/layouts/DashboardLayout';
@@ -20,6 +21,7 @@ import {
 import { SubscriptionForwardRulesSection } from '@/features/subscription-forward-rules';
 
 export const UserSubscriptionDetailPage = () => {
+  const { t } = useTranslation();
   const { id } = useParams<{ id: string }>();
   const subscriptionId = id || '';
   const tabsListRef = useRef<HTMLDivElement>(null);
@@ -39,10 +41,10 @@ export const UserSubscriptionDetailPage = () => {
 
   // Set page title
   const pageTitle = useMemo(() => {
-    if (isLoading) return '订阅详情';
+    if (isLoading) return t('userSubscription.details');
     if (subscription?.plan?.name) return subscription.plan.name;
-    return '订阅详情';
-  }, [isLoading, subscription?.plan?.name]);
+    return t('userSubscription.details');
+  }, [isLoading, subscription?.plan?.name, t]);
 
   usePageTitle(pageTitle);
 
@@ -101,7 +103,7 @@ export const UserSubscriptionDetailPage = () => {
             )}
           >
             <ArrowLeft className="size-4 transition-transform group-hover:-translate-x-0.5" />
-            <span className="hidden sm:inline">返回首页</span>
+            <span className="hidden sm:inline">{t('userSubscription.backToHome')}</span>
           </Link>
 
           {/* Error message - glass card */}
@@ -109,12 +111,12 @@ export const UserSubscriptionDetailPage = () => {
             <div className="p-4 rounded-2xl bg-destructive/10 mb-5 md:mb-6 ring-1 ring-destructive/20 animate-spring-in">
               <AlertCircle className="size-8 md:size-10 text-destructive" />
             </div>
-            <h2 className="text-lg md:text-xl font-semibold mb-2">加载失败</h2>
+            <h2 className="text-lg md:text-xl font-semibold mb-2">{t('userSubscription.loadingFailed')}</h2>
             <p className="text-sm md:text-base text-muted-foreground text-center max-w-md mb-5 md:mb-6 px-2">
-              {error || '无法加载订阅信息，请稍后重试。'}
+              {error || t('userSubscription.unableToLoad')}
             </p>
             <Button asChild className="w-full sm:w-auto min-h-11 glass-interactive">
-              <Link to="/dashboard">返回首页</Link>
+              <Link to="/dashboard">{t('userSubscription.backToHome')}</Link>
             </Button>
           </div>
         </div>
@@ -124,93 +126,53 @@ export const UserSubscriptionDetailPage = () => {
 
   return (
     <DashboardLayout>
-      <div className="space-y-3 md:space-y-4 animate-in fade-in duration-300 pb-safe">
-        {/* Tabs with integrated header - iOS 26 Liquid Glass style */}
+      <div className="animate-in fade-in duration-300 pb-safe">
         <Tabs
           defaultValue="overview"
-          className="space-y-2 sm:space-y-3 md:space-y-4"
+          className="space-y-3"
           onValueChange={setActiveTab}
         >
-          {/* Header + Tabs - responsive layout */}
-          <div className="flex flex-col gap-2 sm:gap-3">
-            {/* Header row - compact on mobile */}
-            <div className="flex items-center gap-2 sm:gap-3">
-              {/* Back button - touch-friendly */}
+          {/* Compact Header with Back + Title + Tabs inline */}
+          <div className="flex items-center gap-3 flex-wrap">
+            {/* Back + Title */}
+            <div className="flex items-center gap-2 mr-auto">
               <Link
                 to="/dashboard"
-                className={cn(
-                  "inline-flex items-center justify-center",
-                  "size-9 sm:size-10 md:size-9 rounded-xl md:rounded-lg",
-                  "text-muted-foreground hover:text-foreground",
-                  "glass-interactive",
-                  "transition-all duration-[var(--duration-fast)]",
-                  "group touch-target"
-                )}
-                title="返回首页"
+                className="inline-flex items-center justify-center size-7 rounded-md text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
+                title={t('userSubscription.backToHome')}
               >
-                <ArrowLeft className="size-4 sm:size-5 md:size-4 transition-transform group-hover:-translate-x-0.5" />
+                <ArrowLeft className="size-4" />
               </Link>
-              <h1 className="text-sm sm:text-base md:text-lg font-semibold text-foreground truncate">
-                {subscription.plan?.name || '订阅详情'}
+              <h1 className="text-base font-semibold text-foreground">
+                {subscription.plan?.name || t('userSubscription.details')}
               </h1>
             </div>
 
-            {/* Tabs - horizontal scrollable on mobile with glass effect */}
-            <div
-              ref={tabsListRef}
-              className={cn(
-                "overflow-x-auto scrollbar-hide",
-                "-mx-4 px-4 md:mx-0 md:px-0" // Full bleed on mobile
-              )}
-            >
-              <TabsList
-                className={cn(
-                  "h-9 sm:h-10 md:h-9 p-0.5 sm:p-1",
-                  "glass-tabbar",
-                  "inline-flex w-auto min-w-full md:min-w-0",
-                  "transition-all duration-[var(--duration-normal)]"
-                )}
-              >
+            {/* Tabs inline */}
+            <div ref={tabsListRef} className="overflow-x-auto scrollbar-hide">
+              <TabsList className="h-8 p-0.5 bg-muted/50">
                 <TabsTrigger
                   value="overview"
-                  className={cn(
-                    "gap-1 sm:gap-1.5 px-3 sm:px-4 md:px-3 h-8 sm:h-8 md:h-7",
-                    "text-xs sm:text-sm md:text-xs font-medium",
-                    "rounded-full transition-all duration-[var(--duration-fast)]",
-                    "data-[state=active]:bg-background data-[state=active]:shadow-sm",
-                    "touch-target min-w-[40px]"
-                  )}
+                  className="gap-1.5 px-3 h-7 text-xs font-medium rounded-md data-[state=active]:bg-background data-[state=active]:shadow-sm"
                 >
-                  <LayoutDashboard className="size-3.5 sm:size-4 md:size-3.5" />
-                  <span>概览</span>
+                  <LayoutDashboard className="size-3.5" />
+                  <span>{t('userSubscription.overview')}</span>
                 </TabsTrigger>
                 {showForwardTabs && (
                   <>
                     <TabsTrigger
                       value="forward-rules"
-                      className={cn(
-                        "gap-1 sm:gap-1.5 px-3 sm:px-4 md:px-3 h-8 sm:h-8 md:h-7",
-                        "text-xs sm:text-sm md:text-xs font-medium",
-                        "rounded-full transition-all duration-[var(--duration-fast)]",
-                        "data-[state=active]:bg-background data-[state=active]:shadow-sm",
-                        "touch-target min-w-[40px]"
-                      )}
+                      className="gap-1.5 px-3 h-7 text-xs font-medium rounded-md data-[state=active]:bg-background data-[state=active]:shadow-sm"
                     >
-                      <ArrowRightLeft className="size-3.5 sm:size-4 md:size-3.5" />
-                      <span>转发</span>
+                      <ArrowRightLeft className="size-3.5" />
+                      <span>{t('userSubscription.forward')}</span>
                     </TabsTrigger>
                     <TabsTrigger
                       value="nodes"
-                      className={cn(
-                        "gap-1 sm:gap-1.5 px-3 sm:px-4 md:px-3 h-8 sm:h-8 md:h-7",
-                        "text-xs sm:text-sm md:text-xs font-medium",
-                        "rounded-full transition-all duration-[var(--duration-fast)]",
-                        "data-[state=active]:bg-background data-[state=active]:shadow-sm",
-                        "touch-target min-w-[40px]"
-                      )}
+                      className="gap-1.5 px-3 h-7 text-xs font-medium rounded-md data-[state=active]:bg-background data-[state=active]:shadow-sm"
                     >
-                      <Server className="size-3.5 sm:size-4 md:size-3.5" />
-                      <span>节点</span>
+                      <Server className="size-3.5" />
+                      <span>{t('userSubscription.nodes')}</span>
                     </TabsTrigger>
                   </>
                 )}

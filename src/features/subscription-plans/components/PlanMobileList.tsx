@@ -3,6 +3,7 @@
  * Mobile-friendly card list with Accordion for expanded details
  */
 
+import { useTranslation } from 'react-i18next';
 import {
   Edit,
   MoreHorizontal,
@@ -137,6 +138,7 @@ export const PlanMobileList: React.FC<PlanMobileListProps> = ({
   onViewSubscriptions,
   onDelete,
 }) => {
+  const { t } = useTranslation();
   // Render dropdown menu
   const renderDropdownMenu = (plan: SubscriptionPlan) => {
     return (
@@ -198,7 +200,7 @@ export const PlanMobileList: React.FC<PlanMobileListProps> = ({
     <Accordion type="multiple" className="space-y-1.5">
       {plans.map((plan) => {
         const status = plan.status as PlanStatus | undefined;
-        const statusConfig = status ? ACTIVE_STATUS_CONFIG[status] : { label: '未知', variant: 'default' as const };
+        const statusConfig = status ? ACTIVE_STATUS_CONFIG[status] : { labelKey: 'common.status.unknown', variant: 'default' as const };
         const planType = plan.planType as PlanType | undefined;
         const priceRange = getPriceRange(plan);
 
@@ -218,7 +220,7 @@ export const PlanMobileList: React.FC<PlanMobileListProps> = ({
                       {plan.name}
                     </span>
                     <AdminBadge variant={statusConfig.variant} className="text-[10px] px-1.5 py-0 flex-shrink-0">
-                      {statusConfig.label}
+                      {t(statusConfig.labelKey)}
                     </AdminBadge>
                   </div>
 

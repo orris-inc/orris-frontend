@@ -5,6 +5,7 @@
 
 import { useState } from 'react';
 import { useLocation, Link as RouterLink } from 'react-router';
+import { useTranslation } from 'react-i18next';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -31,14 +32,13 @@ const resendVerificationEmail = async (email: string): Promise<void> => {
   await apiClient.post<APIResponse<null>>('/auth/resend-verification', { email });
 };
 
-// Form validation
-const resendSchema = z.object({
-  email: z.string().email('请输入有效的邮箱地址'),
-});
-
-type ResendFormData = z.infer<typeof resendSchema>;
+// Form data type
+type ResendFormData = {
+  email: string;
+};
 
 export const VerificationPendingPage = () => {
+  const { t } = useTranslation();
   const location = useLocation();
   const [resending, setResending] = useState(false);
   const [success, setSuccess] = useState(false);
@@ -46,6 +46,11 @@ export const VerificationPendingPage = () => {
 
   // Get email address from route state (if available)
   const emailFromState = (location.state as { email?: string })?.email || '';
+
+  // Zod schema with i18n validation messages
+  const resendSchema = z.object({
+    email: z.string().email(t('auth.validation.emailInvalid')),
+  });
 
   const {
     register,
@@ -84,9 +89,9 @@ export const VerificationPendingPage = () => {
                 <Mail className="size-12 text-primary" />
               </div>
             </div>
-            <h3 className={cn(cardTitleStyles, "text-2xl")}>验证您的邮箱</h3>
+            <h3 className={cn(cardTitleStyles, "text-2xl")}>{t('auth.verifyEmail.title')}</h3>
             <p className={cardDescriptionStyles}>
-              我们已向您的邮箱发送了一封验证邮件
+              {t('auth.verifyEmail.subtitle')}
             </p>
           </div>
           <div className={cn(cardContentStyles, "grid gap-6")}>
@@ -95,7 +100,7 @@ export const VerificationPendingPage = () => {
               <div className={getAlertClass('default')}>
                 <Info className="size-4" />
                 <div className={alertDescriptionStyles}>
-                  验证邮件已发送至：<strong>{emailFromState}</strong>
+                  {t('auth.verifyEmail.emailSentTo')}<strong>{emailFromState}</strong>
                 </div>
               </div>
             )}
@@ -105,7 +110,7 @@ export const VerificationPendingPage = () => {
               <div className={getAlertClass('default')}>
                 <CircleCheck className="size-4" />
                 <div className={alertDescriptionStyles}>
-                  验证邮件已重新发送，请查收您的邮箱
+                  {t('auth.verifyEmail.resendSuccess')}
                 </div>
               </div>
             )}
@@ -121,25 +126,25 @@ export const VerificationPendingPage = () => {
             {/* 操作说明 */}
             <div className="grid gap-2">
               <p className="text-sm text-muted-foreground">
-                请按照以下步骤完成验证：
+                {t('auth.verifyEmail.steps.title')}
               </p>
               <ol className="grid gap-2 list-decimal list-inside text-sm text-muted-foreground">
-                <li>打开您的邮箱收件箱</li>
-                <li>找到来自 Orris 的验证邮件</li>
-                <li>点击邮件中的验证链接</li>
+                <li>{t('auth.verifyEmail.steps.step1')}</li>
+                <li>{t('auth.verifyEmail.steps.step2')}</li>
+                <li>{t('auth.verifyEmail.steps.step3')}</li>
               </ol>
             </div>
 
             {/* 重发表单 */}
             <div className="grid gap-4">
               <p className="text-sm text-muted-foreground">
-                没有收到邮件？请输入您的邮箱地址重新发送：
+                {t('auth.verifyEmail.resendPrompt')}
               </p>
 
               <form onSubmit={handleSubmit(onSubmit)} className="grid gap-4">
                 <div className="grid gap-2">
                   <LabelPrimitive.Root htmlFor="email" className={labelStyles}>
-                    邮箱地址
+                    {t('auth.verifyEmail.emailAddress')}
                   </LabelPrimitive.Root>
                   <input
                     id="email"
@@ -161,7 +166,7 @@ export const VerificationPendingPage = () => {
                   className={cn(getButtonClass('default', 'lg'), "w-full")}
                 >
                   {resending && <Loader2 className="animate-spin" />}
-                  重新发送验证邮件
+                  {t('auth.verifyEmail.resend')}
                 </button>
               </form>
             </div>
@@ -170,18 +175,18 @@ export const VerificationPendingPage = () => {
             <div className={getAlertClass('default')}>
               <TriangleAlert className="size-4" />
               <div className={alertDescriptionStyles}>
-                请注意检查垃圾邮件文件夹。验证链接将在 24 小时后失效。
+                {t('auth.verifyEmail.spamNotice')}
               </div>
             </div>
 
             {/* 返回登录 */}
             <div className="text-center text-sm text-muted-foreground">
-              已经验证过了？{' '}
+              {t('auth.verifyEmail.alreadyVerified')}{' '}
               <RouterLink
                 to="/login"
                 className="text-primary underline-offset-4 hover:underline"
               >
-                返回登录
+                {t('auth.verifyEmail.backToLogin')}
               </RouterLink>
             </div>
           </div>

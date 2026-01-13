@@ -19,6 +19,22 @@ import type { LucideIcon } from 'lucide-react';
 export type UserRole = 'user' | 'admin';
 
 /**
+ * Navigation group configuration
+ *
+ * Used to group related navigation items together in the sidebar.
+ */
+export interface NavigationGroup {
+  /** Unique identifier */
+  id: string;
+
+  /** Translation key for display label */
+  labelKey: string;
+
+  /** Sort order (lower numbers appear first) */
+  order: number;
+}
+
+/**
  * 导航项配置
  *
  * 用于定义应用中的导航项,支持权限控制、层级关系和多场景显示。
@@ -27,8 +43,8 @@ export interface NavigationItem {
   /** 唯一标识符 */
   id: string;
 
-  /** 显示标签(用于导航栏、面包屑等) */
-  label: string;
+  /** Translation key for display label (used in navbar, breadcrumbs, etc.) */
+  labelKey: string;
 
   /** 路由路径 */
   path: string;
@@ -56,6 +72,9 @@ export interface NavigationItem {
 
   /** 排序权重(数字越小越靠前) */
   order?: number;
+
+  /** Group ID for sidebar grouping (admin navigation only) */
+  groupId?: string;
 }
 
 /**

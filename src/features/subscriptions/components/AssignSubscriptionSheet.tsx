@@ -4,6 +4,7 @@
  */
 
 import { useState, useEffect, useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
 import { CreditCard, Loader2, Info, Package, Calendar, RefreshCw } from 'lucide-react';
 import {
   Sheet,
@@ -30,14 +31,14 @@ interface AssignSubscriptionSheetProps extends BaseSheetProps {
   onSubmit: (data: AdminCreateSubscriptionRequest) => Promise<void>;
 }
 
-// Billing cycle display name mapping
-const BILLING_CYCLE_LABELS: Record<BillingCycle, string> = {
-  weekly: '周付',
-  monthly: '月付',
-  quarterly: '季付',
-  semi_annual: '半年付',
-  yearly: '年付',
-  lifetime: '终身',
+// Billing cycle translation keys
+const BILLING_CYCLE_KEYS: Record<BillingCycle, string> = {
+  weekly: 'billingCycle.weekly',
+  monthly: 'billingCycle.monthly',
+  quarterly: 'billingCycle.quarterly',
+  semi_annual: 'billingCycle.semiAnnual',
+  yearly: 'billingCycle.yearly',
+  lifetime: 'billingCycle.lifetime',
 };
 
 // Get available pricing options for the plan
@@ -58,6 +59,7 @@ export const AssignSubscriptionSheet: React.FC<AssignSubscriptionSheetProps> = (
   user,
   onSubmit,
 }) => {
+  const { t } = useTranslation();
   const { plans, isLoading: plansLoading } = useSubscriptionPlans({ enabled: open });
   const [submitting, setSubmitting] = useState(false);
   const [formData, setFormData] = useState<AdminCreateSubscriptionRequest>({
@@ -131,7 +133,7 @@ export const AssignSubscriptionSheet: React.FC<AssignSubscriptionSheetProps> = (
         const pricings = getAvailablePricings(plan);
         let priceDisplay: string;
         if (pricings.length === 0) {
-          priceDisplay = '无定价';
+          priceDisplay = t('subscription.noPricing');
         } else if (pricings.length === 1) {
           priceDisplay = formatPrice(pricings[0].price, pricings[0].currency);
         } else {
@@ -148,18 +150,18 @@ export const AssignSubscriptionSheet: React.FC<AssignSubscriptionSheetProps> = (
           label: `${plan.name} - ${priceDisplay}`
         };
       });
-  }, [plans]);
+  }, [plans, t]);
 
   // Prepare billing cycle options
   const billingCycleOptions = useMemo((): MobileSelectOption[] => {
     if (availablePricings.length > 0) {
       return availablePricings.map(p => ({
         value: p.billingCycle,
-        label: `${BILLING_CYCLE_LABELS[p.billingCycle]} - ${formatPrice(p.price, p.currency)}`,
+        label: `${t(BILLING_CYCLE_KEYS[p.billingCycle])} - ${formatPrice(p.price, p.currency)}`,
       }));
     }
     return [];
-  }, [availablePricings]);
+  }, [availablePricings, t]);
 
   if (!user) return null;
 
@@ -171,10 +173,10 @@ export const AssignSubscriptionSheet: React.FC<AssignSubscriptionSheetProps> = (
             <div className="size-10 rounded-full bg-info/10 flex items-center justify-center">
               <CreditCard className="size-5 text-info" />
             </div>
-            <span>分配订阅</span>
+            <span>{t('subscription.assignSubscription')}</span>
           </SheetTitle>
           <SheetDescription>
-            为用户 <span className="font-medium text-foreground">{user.name || user.email}</span> 分配订阅计划
+            {t('subscription.assignSubscriptionDesc', { user: user.name || user.email })}
           </SheetDescription>
         </SheetHeader>
 
@@ -182,20 +184,20 @@ export const AssignSubscriptionSheet: React.FC<AssignSubscriptionSheetProps> = (
           {plansLoading ? (
             <div className="flex flex-col items-center justify-center py-12 gap-3">
               <Loader2 className="size-8 animate-spin text-muted-foreground" />
-              <p className="text-sm text-muted-foreground">加载计划中...</p>
+              <p className="text-sm text-muted-foreground">{t('subscription.loadingPlans')}</p>
             </div>
           ) : (
             <>
               {/* Plan Selection */}
               <div className="space-y-1.5">
                 <Label className="px-1">
-                  订阅计划 <span className="text-destructive">*</span>
+                  {t('subscription.subscriptionPlan')} <span className="text-destructive">*</span>
                 </Label>
                 <MobileSelect
                   value={formData.planId}
                   onChange={(value) => setFormData({ ...formData, planId: value })}
                   options={planOptions}
-                  placeholder="请选择计划"
+                  placeholder={t('subscription.selectPlan')}
                   icon={<Package className="size-5" />}
                 />
               </div>
@@ -203,10 +205,10 @@ export const AssignSubscriptionSheet: React.FC<AssignSubscriptionSheetProps> = (
               {/* Billing Cycle Selection */}
               <div className="space-y-1.5">
                 <Label className="px-1 flex items-center gap-2">
-                  计费周期
+                  {t('subscription.billingCycle')}
                   {availablePricings.length > 1 && (
                     <span className="text-xs text-muted-foreground">
-                      ({availablePricings.length} 个可选)
+                      ({t('subscription.optionsAvailable', { count: availablePricings.length })})
                     </span>
                   )}
                 </Label>
@@ -214,7 +216,7 @@ export const AssignSubscriptionSheet: React.FC<AssignSubscriptionSheetProps> = (
                   value={formData.billingCycle}
                   onChange={(value) => setFormData({ ...formData, billingCycle: value as BillingCycle })}
                   options={billingCycleOptions}
-                  placeholder="请先选择计划"
+                  placeholder={t('subscription.selectPlanFirst')}
                   icon={<Calendar className="size-5" />}
                   disabled={!selectedPlan || billingCycleOptions.length === 0}
                 />
@@ -232,8 +234,8 @@ export const AssignSubscriptionSheet: React.FC<AssignSubscriptionSheetProps> = (
                   <RefreshCw className="size-5 text-primary" />
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="font-medium">自动续费</p>
-                  <p className="text-sm text-muted-foreground">到期后自动续订</p>
+                  <p className="font-medium">{t('subscription.autoRenew')}</p>
+                  <p className="text-sm text-muted-foreground">{t('subscription.autoRenewDesc')}</p>
                 </div>
                 <Checkbox
                   checked={formData.autoRenew}
@@ -247,18 +249,18 @@ export const AssignSubscriptionSheet: React.FC<AssignSubscriptionSheetProps> = (
                 <div className="rounded-xl border bg-muted/30 p-4 space-y-3">
                   <h4 className="font-medium flex items-center gap-2">
                     <Info className="size-4 text-muted-foreground" />
-                    计划详情
+                    {t('subscription.planDetails')}
                   </h4>
                   <div className="space-y-2 text-sm">
                     <div className="flex justify-between">
-                      <span className="text-muted-foreground">计划名称</span>
+                      <span className="text-muted-foreground">{t('subscription.planName')}</span>
                       <span className="font-medium">{selectedPlan.name}</span>
                     </div>
                     {selectedPricing && (
                       <div className="flex justify-between">
-                        <span className="text-muted-foreground">价格</span>
+                        <span className="text-muted-foreground">{t('subscription.price')}</span>
                         <span className="font-medium text-primary">
-                          {formatPrice(selectedPricing.price, selectedPricing.currency)} / {BILLING_CYCLE_LABELS[selectedPricing.billingCycle]}
+                          {formatPrice(selectedPricing.price, selectedPricing.currency)} / {t(BILLING_CYCLE_KEYS[selectedPricing.billingCycle])}
                         </span>
                       </div>
                     )}
@@ -275,7 +277,7 @@ export const AssignSubscriptionSheet: React.FC<AssignSubscriptionSheetProps> = (
               <Alert className="rounded-xl">
                 <Info className="size-4" />
                 <AlertDescription>
-                  管理员分配的订阅将立即生效，用户将获得对应计划的权限。
+                  {t('subscription.assignSubscriptionInfo')}
                 </AlertDescription>
               </Alert>
             </>
@@ -291,10 +293,10 @@ export const AssignSubscriptionSheet: React.FC<AssignSubscriptionSheetProps> = (
             {submitting ? (
               <>
                 <Loader2 className="mr-2 size-5 animate-spin" />
-                分配中...
+                {t('subscription.assigning')}
               </>
             ) : (
-              '确认分配'
+              t('subscription.confirmAssign')
             )}
           </Button>
           <Button
@@ -303,7 +305,7 @@ export const AssignSubscriptionSheet: React.FC<AssignSubscriptionSheetProps> = (
             disabled={submitting}
             className="w-full min-h-[44px]"
           >
-            取消
+            {t('common.cancel')}
           </Button>
         </SheetFooter>
       </SheetContent>

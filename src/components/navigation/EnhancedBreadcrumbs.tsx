@@ -5,6 +5,7 @@
 
 import { useMemo } from 'react';
 import { useLocation, Link as RouterLink } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { Home as HomeIcon, ChevronRight as NavigateNextIcon } from 'lucide-react';
 
 import { getNavigationItemBySegment } from '../../config/navigation';
@@ -47,6 +48,7 @@ const HIDDEN_PATHS = [
  */
 export const EnhancedBreadcrumbs = () => {
   const location = useLocation();
+  const { t } = useTranslation();
   const { userRole } = usePermissions();
 
   // Admin always shows full path (no simplification on mobile)
@@ -100,7 +102,7 @@ export const EnhancedBreadcrumbs = () => {
 
       if (navItem && navItem.showInBreadcrumb !== false) {
         items.push({
-          label: navItem.label,
+          label: t(navItem.labelKey),
           path: navItem.path,
           isActive: isLast,
         });
@@ -115,7 +117,7 @@ export const EnhancedBreadcrumbs = () => {
     });
 
     return items;
-  }, [location.pathname]);
+  }, [location.pathname, t]);
 
   // Don't render if no breadcrumbs
   if (breadcrumbs.length === 0) {

@@ -5,6 +5,7 @@
  */
 
 import { useMemo, useCallback } from 'react';
+import { useTranslation } from 'react-i18next';
 import { CheckCircle, X, MoreHorizontal, Play, XCircle, RefreshCw, Eye, Copy, Trash2 } from 'lucide-react';
 import { DataTable, AdminBadge, TruncatedId, type ColumnDef, type ResponsiveColumnMeta } from '@/components/admin';
 import { useBreakpoint } from '@/hooks/useBreakpoint';
@@ -63,20 +64,21 @@ export const SubscriptionListTable: React.FC<SubscriptionListTableProps> = ({
   onRenew,
   onDelete,
 }) => {
+  const { t } = useTranslation();
   // Detect mobile screen
   const { isMobile } = useBreakpoint();
 
   const columns = useMemo<ColumnDef<Subscription>[]>(() => [
     {
       accessorKey: 'id',
-      header: '订阅ID',
+      header: t('tableColumns.subscriptionId'),
       size: 120,
       meta: { priority: 4 } as ResponsiveColumnMeta,
       cell: ({ row }) => <TruncatedId id={row.original.id} />,
     },
     {
       id: 'user',
-      header: '用户',
+      header: t('tableColumns.user'),
       size: 160,
       meta: { priority: 1 } as ResponsiveColumnMeta,
       cell: ({ row }) => {
@@ -108,7 +110,7 @@ export const SubscriptionListTable: React.FC<SubscriptionListTableProps> = ({
     },
     {
       id: 'plan',
-      header: '计划',
+      header: t('tableColumns.plan'),
       meta: { priority: 1 } as ResponsiveColumnMeta,
       cell: ({ row }) => {
         const plan = row.original.plan;
@@ -122,7 +124,7 @@ export const SubscriptionListTable: React.FC<SubscriptionListTableProps> = ({
         return (
           <div className="space-y-1">
             <div className="font-medium text-slate-900 dark:text-white">
-              {plan?.name || '未知计划'}
+              {plan?.name || t('subscription.unknownPlan')}
             </div>
             <div className="text-xs text-slate-500 dark:text-slate-400">
               {cycleText}
@@ -133,21 +135,21 @@ export const SubscriptionListTable: React.FC<SubscriptionListTableProps> = ({
     },
     {
       accessorKey: 'status',
-      header: '状态',
+      header: t('tableColumns.status'),
       size: 72,
       meta: { priority: 1 } as ResponsiveColumnMeta,
       cell: ({ row }) => {
-        const statusConfig = SUBSCRIPTION_STATUS_CONFIG[row.original.status] || { label: row.original.status, variant: 'default' as const };
+        const statusConfig = SUBSCRIPTION_STATUS_CONFIG[row.original.status] || { labelKey: 'common.status.unknown', variant: 'default' as const };
         return (
           <AdminBadge variant={statusConfig.variant}>
-            {statusConfig.label}
+            {t(statusConfig.labelKey)}
           </AdminBadge>
         );
       },
     },
     {
       accessorKey: 'startDate',
-      header: '开始日期',
+      header: t('tableColumns.startDate'),
       size: 100,
       meta: { priority: 2 } as ResponsiveColumnMeta,
       cell: ({ row }) => (
@@ -158,7 +160,7 @@ export const SubscriptionListTable: React.FC<SubscriptionListTableProps> = ({
     },
     {
       accessorKey: 'endDate',
-      header: '结束日期',
+      header: t('tableColumns.endDate'),
       size: 100,
       meta: { priority: 2 } as ResponsiveColumnMeta,
       cell: ({ row }) => (
@@ -169,7 +171,7 @@ export const SubscriptionListTable: React.FC<SubscriptionListTableProps> = ({
     },
     {
       accessorKey: 'autoRenew',
-      header: '自动续费',
+      header: t('tableColumns.autoRenew'),
       size: 80,
       meta: { priority: 3 } as ResponsiveColumnMeta,
       cell: ({ row }) => (
@@ -182,7 +184,7 @@ export const SubscriptionListTable: React.FC<SubscriptionListTableProps> = ({
     },
     {
       accessorKey: 'createdAt',
-      header: '创建时间',
+      header: t('tableColumns.createdAt'),
       size: 100,
       meta: { priority: 4 } as ResponsiveColumnMeta,
       cell: ({ row }) => (
@@ -193,7 +195,7 @@ export const SubscriptionListTable: React.FC<SubscriptionListTableProps> = ({
     },
     {
       id: 'actions',
-      header: '操作',
+      header: t('tableColumns.actions'),
       size: 120,
       meta: { priority: 1 } as ResponsiveColumnMeta,
       cell: ({ row }) => {
@@ -219,34 +221,34 @@ export const SubscriptionListTable: React.FC<SubscriptionListTableProps> = ({
                 onClick={() => onActivate(subscription)}
               >
                 <Play className="size-4" />
-                <span className="ml-1">激活</span>
+                <span className="ml-1">{t('subscription.activate')}</span>
               </Button>
             )}
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
                   <MoreHorizontal className="size-4" />
-                  <span className="sr-only">打开菜单</span>
+                  <span className="sr-only">{t('aria.openMenu')}</span>
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
                 {onViewDetail && (
                   <DropdownMenuItem onClick={() => onViewDetail(subscription)}>
                     <Eye className="mr-2 size-4" />
-                    查看详情
+                    {t('subscription.viewDetails')}
                   </DropdownMenuItem>
                 )}
                 {onDuplicate && (
                   <DropdownMenuItem onClick={() => onDuplicate(subscription)}>
                     <Copy className="mr-2 size-4" />
-                    复制订阅
+                    {t('subscription.duplicate')}
                   </DropdownMenuItem>
                 )}
                 {(onViewDetail || onDuplicate) && (canRenew || canCancel) && <DropdownMenuSeparator />}
                 {canRenew && onRenew && (
                   <DropdownMenuItem onClick={() => onRenew(subscription)}>
                     <RefreshCw className="mr-2 size-4" />
-                    续费订阅
+                    {t('subscription.renewSubscription')}
                   </DropdownMenuItem>
                 )}
                 {canRenew && canCancel && onCancel && <DropdownMenuSeparator />}
@@ -256,7 +258,7 @@ export const SubscriptionListTable: React.FC<SubscriptionListTableProps> = ({
                     className="text-destructive focus:text-destructive"
                   >
                     <XCircle className="mr-2 size-4" />
-                    取消订阅
+                    {t('subscription.cancel')}
                   </DropdownMenuItem>
                 )}
                 {canDelete && onDelete && (
@@ -267,7 +269,7 @@ export const SubscriptionListTable: React.FC<SubscriptionListTableProps> = ({
                       className="text-destructive focus:text-destructive"
                     >
                       <Trash2 className="mr-2 size-4" />
-                      删除订阅
+                      {t('subscription.delete')}
                     </DropdownMenuItem>
                   </>
                 )}
@@ -277,7 +279,7 @@ export const SubscriptionListTable: React.FC<SubscriptionListTableProps> = ({
         );
       },
     },
-  ], [usersMap, usersLoading, onViewDetail, onDuplicate, onActivate, onCancel, onRenew, onDelete]);
+  ], [t, usersMap, usersLoading, onViewDetail, onDuplicate, onActivate, onCancel, onRenew, onDelete]);
 
   // Context menu content renderer
   const renderContextMenuContent = useCallback((subscription: Subscription) => {
@@ -292,26 +294,26 @@ export const SubscriptionListTable: React.FC<SubscriptionListTableProps> = ({
         {onViewDetail && (
           <ContextMenuItem onClick={() => onViewDetail(subscription)}>
             <Eye className="mr-2 size-4" />
-            查看详情
+            {t('subscription.viewDetails')}
           </ContextMenuItem>
         )}
         {onDuplicate && (
           <ContextMenuItem onClick={() => onDuplicate(subscription)}>
             <Copy className="mr-2 size-4" />
-            复制订阅
+            {t('subscription.duplicate')}
           </ContextMenuItem>
         )}
         {(onViewDetail || onDuplicate) && (canActivate || canRenew || canCancel) && <ContextMenuSeparator />}
         {canActivate && onActivate && (
           <ContextMenuItem onClick={() => onActivate(subscription)}>
             <Play className="mr-2 size-4" />
-            激活
+            {t('subscription.activate')}
           </ContextMenuItem>
         )}
         {canRenew && onRenew && (
           <ContextMenuItem onClick={() => onRenew(subscription)}>
             <RefreshCw className="mr-2 size-4" />
-            续费订阅
+            {t('subscription.renewSubscription')}
           </ContextMenuItem>
         )}
         {canCancel && onCancel && (
@@ -320,7 +322,7 @@ export const SubscriptionListTable: React.FC<SubscriptionListTableProps> = ({
             className="text-destructive focus:text-destructive"
           >
             <XCircle className="mr-2 size-4" />
-            取消订阅
+            {t('subscription.cancel')}
           </ContextMenuItem>
         )}
         {canDelete && onDelete && (
@@ -331,13 +333,13 @@ export const SubscriptionListTable: React.FC<SubscriptionListTableProps> = ({
               className="text-destructive focus:text-destructive"
             >
               <Trash2 className="mr-2 size-4" />
-              删除订阅
+              {t('subscription.delete')}
             </ContextMenuItem>
           </>
         )}
       </>
     );
-  }, [onViewDetail, onDuplicate, onActivate, onCancel, onRenew, onDelete]);
+  }, [t, onViewDetail, onDuplicate, onActivate, onCancel, onRenew, onDelete]);
 
   // Render mobile card list on small screens
   if (isMobile) {
@@ -367,7 +369,7 @@ export const SubscriptionListTable: React.FC<SubscriptionListTableProps> = ({
       total={total}
       onPageChange={onPageChange}
       onPageSizeChange={onPageSizeChange}
-      emptyMessage="暂无订阅数据"
+      emptyMessage={t('subscription.noData')}
       getRowId={(row) => String(row.id)}
       enableContextMenu
       contextMenuContent={renderContextMenuContent}

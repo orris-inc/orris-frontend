@@ -4,6 +4,7 @@
  */
 
 import { useState, useEffect, useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Loader2, Users, Search, CheckCircle, X, Calendar, RefreshCw } from 'lucide-react';
 import {
   Dialog,
@@ -34,6 +35,7 @@ export const ViewPlanSubscriptionsDialog: React.FC<ViewPlanSubscriptionsDialogPr
   onClose,
   plan,
 }) => {
+  const { t } = useTranslation();
   const [subscriptions, setSubscriptions] = useState<Subscription[]>([]);
   // Note: UserResponse.id is now string (Stripe-style)
   const [usersMap, setUsersMap] = useState<Map<string, UserResponse>>(new Map());
@@ -188,7 +190,7 @@ export const ViewPlanSubscriptionsDialog: React.FC<ViewPlanSubscriptionsDialogPr
             <div className="p-4 space-y-2">
               {filteredSubscriptions.map((subscription) => {
                 const statusConfig = SUBSCRIPTION_STATUS_CONFIG[subscription.status] || {
-                  label: subscription.status,
+                  labelKey: 'common.status.unknown',
                   variant: 'default' as const,
                 };
                 // userId is number, convert to string for lookup
@@ -223,7 +225,7 @@ export const ViewPlanSubscriptionsDialog: React.FC<ViewPlanSubscriptionsDialogPr
                             {displayName}
                           </span>
                           <AdminBadge variant={statusConfig.variant} size="sm">
-                            {statusConfig.label}
+                            {t(statusConfig.labelKey)}
                           </AdminBadge>
                         </div>
                         <div className="flex items-center gap-3 mt-1.5 text-xs text-slate-500 dark:text-slate-400">

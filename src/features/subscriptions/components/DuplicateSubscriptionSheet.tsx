@@ -4,6 +4,7 @@
  */
 
 import { useState, useEffect, useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Loader2, Info, Copy, User, CreditCard, RefreshCw } from 'lucide-react';
 import {
   Sheet,
@@ -30,14 +31,14 @@ interface DuplicateSubscriptionSheetProps extends BaseSheetProps {
   onSubmit: (data: AdminCreateSubscriptionRequest) => Promise<void>;
 }
 
-// Billing cycle display name mapping
-const BILLING_CYCLE_LABELS: Record<BillingCycle, string> = {
-  weekly: '周付',
-  monthly: '月付',
-  quarterly: '季付',
-  semi_annual: '半年付',
-  yearly: '年付',
-  lifetime: '终身',
+// Billing cycle translation keys
+const BILLING_CYCLE_KEYS: Record<BillingCycle, string> = {
+  weekly: 'billingCycle.weekly',
+  monthly: 'billingCycle.monthly',
+  quarterly: 'billingCycle.quarterly',
+  semi_annual: 'billingCycle.semiAnnual',
+  yearly: 'billingCycle.yearly',
+  lifetime: 'billingCycle.lifetime',
 };
 
 // Get available pricing options for the plan
@@ -58,6 +59,7 @@ export const DuplicateSubscriptionSheet: React.FC<DuplicateSubscriptionSheetProp
   user,
   onSubmit,
 }) => {
+  const { t } = useTranslation();
   const { plans, isLoading: plansLoading } = useSubscriptionPlans({ enabled: open });
   const [submitting, setSubmitting] = useState(false);
   const [formData, setFormData] = useState<AdminCreateSubscriptionRequest>({
@@ -139,28 +141,28 @@ export const DuplicateSubscriptionSheet: React.FC<DuplicateSubscriptionSheetProp
         } else if (pricings.length === 1) {
           priceDisplay = formatPrice(pricings[0].price, pricings[0].currency);
         } else {
-          priceDisplay = '未设置价格';
+          priceDisplay = t('subscription.noPriceSet');
         }
         return {
           value: plan.id.toString(),
           label: `${plan.name} - ${priceDisplay}`,
         };
       });
-  }, [plans]);
+  }, [plans, t]);
 
   // Prepare billing cycle options
   const billingCycleOptions = useMemo((): MobileSelectOption[] => {
     if (availablePricings.length > 0) {
       return availablePricings.map(p => ({
         value: p.billingCycle,
-        label: `${BILLING_CYCLE_LABELS[p.billingCycle]} - ${formatPrice(p.price, p.currency)}`,
+        label: `${t(BILLING_CYCLE_KEYS[p.billingCycle])} - ${formatPrice(p.price, p.currency)}`,
       }));
     }
-    return Object.entries(BILLING_CYCLE_LABELS).map(([value, label]) => ({
+    return Object.entries(BILLING_CYCLE_KEYS).map(([value, key]) => ({
       value: value as BillingCycle,
-      label,
+      label: t(key),
     }));
-  }, [availablePricings]);
+  }, [availablePricings, t]);
 
   if (!subscription) return null;
 
@@ -172,10 +174,10 @@ export const DuplicateSubscriptionSheet: React.FC<DuplicateSubscriptionSheetProp
             <div className="size-8 rounded-full bg-blue-500/10 flex items-center justify-center">
               <Copy className="size-4 text-blue-500" />
             </div>
-            <span>复制订阅</span>
+            <span>{t('subscription.duplicate')}</span>
           </SheetTitle>
           <SheetDescription className="text-xs flex items-center gap-1">
-            基于订阅 <TruncatedId id={subscription.id} /> 创建
+            {t('subscription.baseOn')} <TruncatedId id={subscription.id} /> {t('common.actions.create')}
           </SheetDescription>
         </SheetHeader>
 
@@ -188,7 +190,7 @@ export const DuplicateSubscriptionSheet: React.FC<DuplicateSubscriptionSheetProp
             <>
               {/* Target User */}
               <div className="space-y-1.5">
-                <label className="text-xs font-medium">目标用户</label>
+                <label className="text-xs font-medium">{t('subscription.targetUser')}</label>
                 <div className="rounded-lg border bg-muted/30 p-3">
                   <div className="flex items-center gap-2">
                     <User className="size-4 text-muted-foreground" />
@@ -198,21 +200,21 @@ export const DuplicateSubscriptionSheet: React.FC<DuplicateSubscriptionSheetProp
                         {user.name && <div className="text-xs text-muted-foreground">{user.email}</div>}
                       </div>
                     ) : (
-                      <span className="text-sm text-muted-foreground">用户 ID: {subscription.userId}</span>
+                      <span className="text-sm text-muted-foreground">{t('labels.userId')}: {subscription.userId}</span>
                     )}
                   </div>
                 </div>
-                <p className="text-xs text-muted-foreground">新订阅将分配给相同用户</p>
+                <p className="text-xs text-muted-foreground">{t('subscription.sameUserAssignment')}</p>
               </div>
 
               {/* Plan Selection */}
               <div className="space-y-1.5">
-                <label className="text-xs font-medium">订阅计划 <span className="text-destructive">*</span></label>
+                <label className="text-xs font-medium">{t('subscription.plan')} <span className="text-destructive">*</span></label>
                 <MobileSelect
                   value={formData.planId}
                   onChange={(value) => setFormData({ ...formData, planId: value })}
                   options={planOptions}
-                  placeholder="请选择计划"
+                  placeholder={t('placeholders.selectPlan')}
                   icon={<CreditCard className="size-5" />}
                   disabled={submitting}
                 />
@@ -221,16 +223,16 @@ export const DuplicateSubscriptionSheet: React.FC<DuplicateSubscriptionSheetProp
               {/* Billing Cycle */}
               <div className="space-y-1.5">
                 <label className="text-xs font-medium">
-                  计费周期
+                  {t('subscription.billingCycle')}
                   {availablePricings.length > 1 && (
-                    <span className="ml-1 text-muted-foreground">({availablePricings.length} 个可选)</span>
+                    <span className="ml-1 text-muted-foreground">({availablePricings.length} {t('subscription.optionsAvailable')})</span>
                   )}
                 </label>
                 <MobileSelect
                   value={formData.billingCycle}
                   onChange={(value) => setFormData({ ...formData, billingCycle: value as BillingCycle })}
                   options={billingCycleOptions}
-                  placeholder="请先选择计划"
+                  placeholder={t('subscription.selectPlanFirst')}
                   icon={<RefreshCw className="size-5" />}
                   disabled={submitting || !selectedPlan}
                 />
@@ -246,7 +248,7 @@ export const DuplicateSubscriptionSheet: React.FC<DuplicateSubscriptionSheetProp
                 />
                 <Label htmlFor="auto_renew" className="cursor-pointer text-sm flex items-center gap-1.5">
                   <RefreshCw className="size-3.5 text-muted-foreground" />
-                  自动续费
+                  {t('subscription.autoRenewal')}
                 </Label>
               </div>
 
@@ -255,13 +257,13 @@ export const DuplicateSubscriptionSheet: React.FC<DuplicateSubscriptionSheetProp
                 <div className="rounded-lg border p-3 space-y-2">
                   <div className="flex items-center gap-2 text-sm font-medium">
                     <CreditCard className="size-4 text-muted-foreground" />
-                    计划详情
+                    {t('subscription.planDetails')}
                   </div>
                   <div className="space-y-1 text-xs text-muted-foreground">
-                    <p>名称: {selectedPlan.name}</p>
+                    <p>{t('labels.name')}: {selectedPlan.name}</p>
                     {selectedPricing && (
                       <p>
-                        价格: {formatPrice(selectedPricing.price, selectedPricing.currency)} / {BILLING_CYCLE_LABELS[selectedPricing.billingCycle]}
+                        {t('labels.price')}: {formatPrice(selectedPricing.price, selectedPricing.currency)} / {t(BILLING_CYCLE_KEYS[selectedPricing.billingCycle])}
                       </p>
                     )}
                     {selectedPlan.description && (
@@ -276,7 +278,7 @@ export const DuplicateSubscriptionSheet: React.FC<DuplicateSubscriptionSheetProp
                 <div className="flex items-start gap-2">
                   <Info className="size-4 text-blue-500 mt-0.5 shrink-0" />
                   <p className="text-xs text-blue-700 dark:text-blue-400">
-                    将为用户创建一个新订阅，新订阅立即生效，会生成新的订阅链接。
+                    {t('subscription.duplicateInfo')}
                   </p>
                 </div>
               </div>
@@ -293,14 +295,14 @@ export const DuplicateSubscriptionSheet: React.FC<DuplicateSubscriptionSheetProp
             {submitting ? (
               <>
                 <Loader2 className="mr-2 size-4 animate-spin" />
-                创建中...
+                {t('subscription.creating')}
               </>
             ) : (
-              '创建订阅'
+              t('subscription.create')
             )}
           </Button>
           <Button variant="ghost" onClick={() => onOpenChange(false)} disabled={submitting} className="w-full min-h-[44px]">
-            取消
+            {t('common.actions.cancel')}
           </Button>
         </SheetFooter>
       </SheetContent>

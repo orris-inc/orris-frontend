@@ -8,6 +8,7 @@
  * - Clear visual hierarchy
  */
 
+import { useTranslation } from 'react-i18next';
 import {
   Eye,
   Play,
@@ -80,8 +81,9 @@ export const MobileSubscriptionCard = ({
   onRenew,
   onDelete,
 }: MobileSubscriptionCardProps) => {
+  const { t } = useTranslation();
   const statusConfig = SUBSCRIPTION_STATUS_CONFIG[subscription.status] || {
-    label: subscription.status,
+    labelKey: 'common.status.unknown',
     variant: 'default' as const,
   };
 
@@ -93,7 +95,7 @@ export const MobileSubscriptionCard = ({
     {
       key: 'view',
       icon: <Eye className="size-5" />,
-      label: '详情',
+      label: t('common.actions.view'),
       bgColor: 'bg-primary',
       onClick: () => onViewDetail(subscription),
     },
@@ -103,7 +105,7 @@ export const MobileSubscriptionCard = ({
     swipeActions.push({
       key: 'activate',
       icon: <Play className="size-5" />,
-      label: '激活',
+      label: t('subscription.activate'),
       bgColor: 'bg-success',
       onClick: () => onActivate(subscription),
     });
@@ -113,7 +115,7 @@ export const MobileSubscriptionCard = ({
     swipeActions.push({
       key: 'renew',
       icon: <RotateCw className="size-5" />,
-      label: '续费',
+      label: t('subscription.renew'),
       bgColor: 'bg-info',
       onClick: () => onRenew(subscription),
     });
@@ -123,7 +125,7 @@ export const MobileSubscriptionCard = ({
     swipeActions.push({
       key: 'cancel',
       icon: <XCircle className="size-5" />,
-      label: '取消',
+      label: t('common.actions.cancel'),
       bgColor: 'bg-warning',
       onClick: () => onCancel(subscription),
     });
@@ -132,7 +134,7 @@ export const MobileSubscriptionCard = ({
   swipeActions.push({
     key: 'delete',
     icon: <Trash2 className="size-5" />,
-    label: '删除',
+    label: t('common.actions.delete'),
     bgColor: 'bg-destructive',
     onClick: () => onDelete(subscription),
   });
@@ -155,7 +157,7 @@ export const MobileSubscriptionCard = ({
             variant={statusConfig.variant}
             className="text-[10px] px-1.5 py-0 shrink-0"
           >
-            {statusConfig.label}
+            {t(statusConfig.labelKey)}
           </AdminBadge>
         </div>
 
@@ -164,7 +166,7 @@ export const MobileSubscriptionCard = ({
           {/* Plan */}
           <div className="flex items-center gap-1">
             <CreditCard className="size-3" />
-            <span className="truncate max-w-[100px]">{subscription.plan?.name || '未知计划'}</span>
+            <span className="truncate max-w-[100px]">{subscription.plan?.name || t('subscription.unknownPlan')}</span>
           </div>
 
           <span className="text-border">·</span>
@@ -184,7 +186,7 @@ export const MobileSubscriptionCard = ({
               <span className="text-border">·</span>
               <span className="text-success flex items-center gap-0.5">
                 <RotateCw className="size-3" />
-                <span>自动续费</span>
+                <span>{t('subscription.autoRenewal')}</span>
               </span>
             </>
           )}

@@ -129,6 +129,12 @@ apiClient.interceptors.response.use(
 
     // 401 error and not retried yet
     if (error.response?.status === 401 && !originalRequest._retry) {
+      // Skip refresh for auth endpoints - their 401 means authentication failed, not token expired
+      const authEndpoints = ['/auth/login', '/auth/register', '/auth/refresh'];
+      if (authEndpoints.some(ep => originalRequest.url?.includes(ep))) {
+        return Promise.reject(error);
+      }
+
       originalRequest._retry = true;
 
       try {

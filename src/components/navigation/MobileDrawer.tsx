@@ -20,13 +20,15 @@
 
 import { useMemo, useCallback } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { Drawer } from 'vaul';
-import { X, LogOut, Shield, ArrowLeftRight, ChevronRight } from 'lucide-react';
+import { LogOut, Shield, ArrowLeftRight, Moon, Sun } from 'lucide-react';
+import { useTheme } from 'next-themes';
 import { cn } from '@/lib/utils';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/common/Avatar';
-import { ThemeToggle } from '@/components/common/ThemeToggle';
+import { getAdminNavItemsByGroup } from '@/config/navigation';
 
-import type { NavigationItem } from '../../types/navigation.types';
+import type { NavigationItem, NavigationGroup } from '../../types/navigation.types';
 
 interface MobileDrawerUser {
   displayName?: string;
@@ -64,6 +66,7 @@ export const MobileDrawer = ({
 }: MobileDrawerProps) => {
   const location = useLocation();
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const initials = user?.initials || user?.displayName?.charAt(0).toUpperCase() || '?';
 
   // Navigate and close drawer
@@ -75,78 +78,108 @@ export const MobileDrawer = ({
     });
   }, [navigate, onClose]);
 
-  const renderNavigationItems = useMemo(() => {
-    return navigationItems.map((item) => {
-      if (item.divider) {
-        return (
-          <div key={item.id} className="px-2 py-3">
-            <div className="h-px bg-border/40" />
-          </div>
-        );
-      }
+  // Get grouped items for admin view
+  const groupedItems = useMemo(() => {
+    if (isAdminView) {
+      return getAdminNavItemsByGroup(navigationItems);
+    }
+    return null;
+  }, [navigationItems, isAdminView]);
 
-      const Icon = item.icon;
-      const isActive = location.pathname === item.path;
-
+  // Render a single navigation item
+  const renderNavItem = useCallback((item: NavigationItem) => {
+    if (item.divider) {
       return (
-        <button
-          key={item.id}
-          type="button"
-          onClick={() => handleNavigation(item.path)}
-          aria-current={isActive ? 'page' : undefined}
-          disabled={item.disabled}
-          className={cn(
-            // Base styles
-            'group relative flex items-center gap-3 px-3 py-3 w-full text-left',
-            // Touch target
-            'min-h-[52px]',
-            // Border radius
-            'rounded-xl',
-            // Transition - iOS 26 spring timing
-            'transition-all duration-[var(--duration-fast)] ease-[var(--spring-smooth)]',
-            'motion-reduce:transition-none',
-            // Background and states
-            isActive
-              ? 'bg-primary/10'
-              : 'active:bg-muted/60',
-            // Disabled state
-            item.disabled && 'pointer-events-none opacity-50'
-          )}
-        >
-          {Icon && (
-            <span
-              className={cn(
-                'flex h-10 w-10 items-center justify-center rounded-xl',
-                'transition-colors duration-[var(--duration-fast)]',
-                'motion-reduce:transition-none',
-                isActive
-                  ? 'bg-primary text-primary-foreground'
-                  : 'bg-muted/60 text-muted-foreground group-active:bg-muted'
-              )}
-            >
-              <Icon
-                className="h-5 w-5 flex-shrink-0"
-                aria-hidden="true"
-              />
-            </span>
-          )}
-          <div className="flex-1 min-w-0">
-            <span className={cn(
-              'text-sm font-medium',
-              isActive ? 'text-primary' : 'text-foreground'
-            )}>
-              {item.label}
-            </span>
-          </div>
-          {isActive && (
-            <div className="flex items-center">
-              <div className="h-2 w-2 rounded-full bg-primary" />
-            </div>
-          )}
-        </button>
+        <div key={item.id} className="px-2 py-2">
+          <div className="h-px bg-border/40" />
+        </div>
       );
-    });
-  }, [navigationItems, location.pathname, handleNavigation]);
+    }
+
+    const Icon = item.icon;
+    const isActive = location.pathname === item.path;
+
+    return (
+      <button
+        key={item.id}
+        type="button"
+        onClick={() => handleNavigation(item.path)}
+        aria-current={isActive ? 'page' : undefined}
+        disabled={item.disabled}
+        className={cn(
+          // Base styles
+          'group relative flex items-center gap-3 px-2.5 py-2.5 w-full text-left',
+          // Touch target
+          'min-h-[48px]',
+          // Border radius
+          'rounded-xl',
+          // Transition
+          'transition-all duration-200 ease-out',
+          'motion-reduce:transition-none',
+          // Background and states
+          isActive
+            ? 'bg-primary text-primary-foreground shadow-sm'
+            : 'text-muted-foreground active:bg-black/[0.04] dark:active:bg-white/[0.06]',
+          // Disabled state
+          item.disabled && 'pointer-events-none opacity-50'
+        )}
+      >
+        {Icon && (
+          <Icon
+            className="h-[18px] w-[18px] flex-shrink-0"
+            aria-hidden="true"
+          />
+        )}
+        <span className="flex-1 min-w-0 text-[13px] font-medium">
+          {t(item.labelKey)}
+        </span>
+        {isActive && (
+          <span
+            className="absolute left-0 top-1/2 -translate-y-1/2 w-[3px] h-5 rounded-r-full bg-primary-foreground"
+            aria-hidden="true"
+          />
+        )}
+      </button>
+    );
+  }, [location.pathname, handleNavigation, t]);
+
+  // Render grouped navigation (admin view)
+  const renderGroupedNavigation = useMemo(() => {
+    if (!groupedItems) return null;
+
+    return Array.from(groupedItems.entries()).map(([group, items]: [NavigationGroup, NavigationItem[]]) => (
+      <div
+        key={group.id}
+        className={cn(
+          // Glass morphism card styling
+          'rounded-xl overflow-hidden',
+          'bg-white/60 dark:bg-white/[0.06]',
+          'backdrop-blur-[var(--glass-blur-md)]',
+          'border border-black/[0.04] dark:border-white/[0.08]',
+          'shadow-[0_2px_8px_rgba(0,0,0,0.04)]',
+          'dark:shadow-[0_2px_8px_rgba(0,0,0,0.2)]',
+          'p-2'
+        )}
+      >
+        {/* Group label */}
+        <div className="px-2 py-1.5 mb-1">
+          <span className="text-[11px] font-medium uppercase tracking-wider text-muted-foreground/70">
+            {t(group.labelKey)}
+          </span>
+        </div>
+
+        {/* Navigation items */}
+        <div className="space-y-0.5">
+          {items.map(renderNavItem)}
+        </div>
+      </div>
+    ));
+  }, [groupedItems, renderNavItem, t]);
+
+  // Render flat navigation (user view)
+  const renderFlatNavigation = useMemo(() => {
+    return navigationItems.map(renderNavItem);
+  }, [navigationItems, renderNavItem]);
 
   return (
     <Drawer.Root
@@ -176,7 +209,7 @@ export const MobileDrawer = ({
             'overflow-hidden',
             // iOS 26 Liquid Glass floating design
             'rounded-[28px]',
-            'bg-background/95 dark:bg-card/95',
+            'bg-muted/30 dark:bg-muted/20',
             'backdrop-blur-xl',
             'border border-border/50',
             'shadow-2xl shadow-black/20 dark:shadow-black/40',
@@ -186,142 +219,175 @@ export const MobileDrawer = ({
             'pb-safe'
           )}
         >
-          {/* Header with user profile */}
-          <div className="flex-shrink-0 p-4 pb-2">
-            {/* Close button - floating top right */}
-            <Drawer.Close
-              className={cn(
-                'absolute top-3 right-3',
-                'flex h-8 w-8 items-center justify-center rounded-full',
-                'bg-muted/60 hover:bg-muted',
-                'text-muted-foreground hover:text-foreground',
-                'transition-colors duration-150',
-                'focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/50',
-                'motion-reduce:transition-none'
-              )}
-            >
-              <X className="h-4 w-4" aria-hidden="true" />
-              <span className="sr-only">Close menu</span>
-            </Drawer.Close>
+          {/* Header with user profile and actions */}
+          <HeaderSection
+            user={user}
+            initials={initials}
+            title={title}
+            showAdminSwitch={showAdminSwitch}
+            isAdminView={isAdminView}
+            onAdminClick={onAdminClick}
+            onLogout={onLogout}
+            onClose={onClose}
+          />
 
-            {/* User Profile Card */}
-            {user && (
-              <div className="flex items-center gap-3 pr-10">
-                <Avatar className="h-12 w-12">
-                  {user.avatarUrl && (
-                    <AvatarImage
-                      src={user.avatarUrl}
-                      alt={user.displayName || 'User avatar'}
-                    />
-                  )}
-                  <AvatarFallback className="h-full w-full bg-primary/10 text-primary text-base font-semibold">
-                    {initials}
-                  </AvatarFallback>
-                </Avatar>
-                <div className="flex-1 min-w-0">
-                  <Drawer.Title className="text-base font-semibold text-foreground truncate">
-                    {user.displayName || 'User'}
-                  </Drawer.Title>
-                  <p className="text-sm text-muted-foreground truncate">
-                    {user.email}
-                  </p>
-                </div>
-              </div>
-            )}
-
-            {/* Fallback title when no user */}
-            {!user && (
-              <Drawer.Title className="text-lg font-bold text-foreground pr-10">
-                {title || 'Menu'}
-              </Drawer.Title>
-            )}
-          </div>
-
-          {/* Navigation List - data-vaul-no-drag prevents drag-to-close while scrolling */}
+          {/* Navigation List */}
           <div
             data-vaul-no-drag
-            className="flex-1 min-h-0 overflow-y-auto overscroll-contain scrollbar-hide px-4 py-2"
+            className="flex-1 min-h-0 overflow-y-auto overscroll-contain scrollbar-hide px-3 py-2"
           >
             <nav
               role="navigation"
               aria-label="Mobile navigation"
+              className="space-y-3"
             >
-              {renderNavigationItems}
+              {isAdminView ? renderGroupedNavigation : renderFlatNavigation}
             </nav>
           </div>
 
-          {/* Footer Actions */}
-          <div className="flex-shrink-0 px-4 pb-3 space-y-1">
+        </Drawer.Content>
+      </Drawer.Portal>
+    </Drawer.Root>
+  );
+};
+
+/**
+ * Header Action Button Component
+ */
+const HeaderActionButton = ({
+  onClick,
+  icon: Icon,
+  label,
+  variant = 'default',
+}: {
+  onClick: () => void;
+  icon: React.ElementType;
+  label: string;
+  variant?: 'default' | 'destructive';
+}) => (
+  <button
+    onClick={onClick}
+    aria-label={label}
+    className={cn(
+      'flex items-center justify-center',
+      'w-9 h-9 rounded-full',
+      'transition-colors duration-150',
+      'motion-reduce:transition-none',
+      variant === 'destructive'
+        ? 'text-destructive/70 active:bg-destructive/10 hover:text-destructive'
+        : 'text-muted-foreground active:bg-black/[0.04] dark:active:bg-white/[0.06] hover:text-foreground'
+    )}
+  >
+    <Icon className="h-[18px] w-[18px]" aria-hidden="true" />
+  </button>
+);
+
+/**
+ * Header Section Component - User profile with action buttons
+ */
+const HeaderSection = ({
+  user,
+  initials,
+  title,
+  showAdminSwitch,
+  isAdminView,
+  onAdminClick,
+  onLogout,
+  onClose,
+}: {
+  user?: MobileDrawerUser | null;
+  initials: string;
+  title?: string;
+  showAdminSwitch?: boolean;
+  isAdminView?: boolean;
+  onAdminClick?: () => void;
+  onLogout?: () => void;
+  onClose: () => void;
+}) => {
+  const { resolvedTheme, setTheme } = useTheme();
+  const isDark = resolvedTheme === 'dark';
+
+  const toggleTheme = useCallback(() => {
+    setTheme(isDark ? 'light' : 'dark');
+  }, [isDark, setTheme]);
+
+  const cardClassName = cn(
+    'rounded-xl',
+    'bg-white/60 dark:bg-white/[0.06]',
+    'backdrop-blur-[var(--glass-blur-md)]',
+    'border border-black/[0.04] dark:border-white/[0.08]',
+    'shadow-[0_2px_8px_rgba(0,0,0,0.04)]'
+  );
+
+  return (
+    <div className="flex-shrink-0 p-3 pb-2">
+      <div className={cn(cardClassName, 'p-3')}>
+        <div className="flex items-center gap-3">
+          {/* User Avatar or Title */}
+          {user ? (
+            <>
+              <Avatar className="h-10 w-10 shrink-0">
+                {user.avatarUrl && (
+                  <AvatarImage
+                    src={user.avatarUrl}
+                    alt={user.displayName || 'User avatar'}
+                  />
+                )}
+                <AvatarFallback className="h-full w-full bg-primary/10 text-primary text-sm font-semibold">
+                  {initials}
+                </AvatarFallback>
+              </Avatar>
+              <div className="flex-1 min-w-0">
+                <Drawer.Title className="text-sm font-semibold text-foreground truncate">
+                  {user.displayName || 'User'}
+                </Drawer.Title>
+                <p className="text-xs text-muted-foreground truncate">
+                  {user.email}
+                </p>
+              </div>
+            </>
+          ) : (
+            <Drawer.Title className="flex-1 text-base font-bold text-foreground">
+              {title || 'Menu'}
+            </Drawer.Title>
+          )}
+
+          {/* Action Buttons */}
+          <div className="flex items-center gap-0.5 shrink-0">
+            {/* Theme Toggle */}
+            <HeaderActionButton
+              onClick={toggleTheme}
+              icon={isDark ? Sun : Moon}
+              label={isDark ? 'Switch to light mode' : 'Switch to dark mode'}
+            />
+
             {/* Admin/User Switch */}
             {showAdminSwitch && onAdminClick && (
-              <button
+              <HeaderActionButton
                 onClick={() => {
                   onAdminClick();
                   onClose();
                 }}
-                className={cn(
-                  'group flex w-full items-center gap-3 px-3 py-3',
-                  'min-h-[52px]',
-                  'rounded-xl',
-                  'text-primary',
-                  'transition-colors duration-150',
-                  'active:bg-primary/10',
-                  'motion-reduce:transition-none'
-                )}
-              >
-                <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10">
-                  {isAdminView ? (
-                    <ArrowLeftRight className="h-5 w-5 text-primary" aria-hidden="true" />
-                  ) : (
-                    <Shield className="h-5 w-5 text-primary" aria-hidden="true" />
-                  )}
-                </span>
-                <span className="flex-1 text-left text-sm font-medium">
-                  {isAdminView ? '切换到用户视图' : '切换到管理端'}
-                </span>
-                <ChevronRight className="h-5 w-5 text-primary/50" aria-hidden="true" />
-              </button>
+                icon={isAdminView ? ArrowLeftRight : Shield}
+                label={isAdminView ? 'Switch to user view' : 'Switch to admin view'}
+              />
             )}
 
             {/* Logout */}
             {onLogout && (
-              <button
+              <HeaderActionButton
                 onClick={() => {
                   onLogout();
                   onClose();
                 }}
-                className={cn(
-                  'group flex w-full items-center gap-3 px-3 py-3',
-                  'min-h-[52px]',
-                  'rounded-xl',
-                  'text-destructive',
-                  'transition-colors duration-150',
-                  'active:bg-destructive/10',
-                  'motion-reduce:transition-none'
-                )}
-              >
-                <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-destructive/10">
-                  <LogOut className="h-5 w-5 text-destructive" aria-hidden="true" />
-                </span>
-                <span className="flex-1 text-left text-sm font-medium">退出登录</span>
-              </button>
+                icon={LogOut}
+                label="Logout"
+                variant="destructive"
+              />
             )}
-
-            {/* Theme toggle */}
-            <div className="flex justify-center pt-2">
-              <div className={cn(
-                'inline-flex items-center gap-2 px-4 py-2',
-                'rounded-full',
-                'bg-muted/40',
-                'text-sm text-muted-foreground'
-              )}>
-                <span>主题</span>
-                <ThemeToggle />
-              </div>
-            </div>
           </div>
-        </Drawer.Content>
-      </Drawer.Portal>
-    </Drawer.Root>
+        </div>
+      </div>
+    </div>
   );
 };

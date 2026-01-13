@@ -8,6 +8,9 @@ import { createRoot } from 'react-dom/client';
 import { App } from './app/App';
 import './index.css';
 
+// Initialize i18n before app renders
+import './lib/i18n';
+
 // Get root element
 const rootElement = document.getElementById('root');
 

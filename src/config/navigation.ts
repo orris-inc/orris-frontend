@@ -22,7 +22,19 @@ import {
   FileText,
 } from 'lucide-react';
 
-import type { NavigationItem } from '../types/navigation.types';
+import type { NavigationItem, NavigationGroup } from '../types/navigation.types';
+
+/**
+ * Admin Navigation Group Configuration
+ *
+ * Groups for organizing admin navigation items in the sidebar.
+ */
+export const adminNavigationGroups: readonly NavigationGroup[] = [
+  { id: 'overview', labelKey: 'nav.groups.overview', order: 1 },
+  { id: 'business', labelKey: 'nav.groups.business', order: 2 },
+  { id: 'infrastructure', labelKey: 'nav.groups.infrastructure', order: 3 },
+  { id: 'system', labelKey: 'nav.groups.system', order: 4 },
+] as const;
 
 /**
  * Main Navigation Configuration
@@ -45,7 +57,7 @@ export const navigationConfig: readonly NavigationItem[] = [
   // ==================== User Routes ====================
   {
     id: 'dashboard',
-    label: '首页',
+    labelKey: 'nav.home',
     path: '/dashboard',
     icon: LayoutDashboard,
     roles: ['user', 'admin'],
@@ -55,7 +67,7 @@ export const navigationConfig: readonly NavigationItem[] = [
   },
   {
     id: 'user-subscription-detail',
-    label: '订阅详情',
+    labelKey: 'nav.subscriptionDetail',
     path: '/dashboard/subscriptions/:id',
     icon: FileText,
     roles: ['user', 'admin'],
@@ -66,7 +78,7 @@ export const navigationConfig: readonly NavigationItem[] = [
   },
   {
     id: 'user-nodes',
-    label: '我的节点',
+    labelKey: 'nav.userNodes',
     path: '/dashboard/nodes',
     icon: Server,
     roles: ['user', 'admin'],
@@ -77,7 +89,7 @@ export const navigationConfig: readonly NavigationItem[] = [
   },
   {
     id: 'notifications',
-    label: '通知设置',
+    labelKey: 'nav.notifications',
     path: '/dashboard/notifications',
     icon: Bell,
     roles: ['user', 'admin'],
@@ -88,7 +100,7 @@ export const navigationConfig: readonly NavigationItem[] = [
   },
   {
     id: 'pricing',
-    label: '定价方案',
+    labelKey: 'nav.pricing',
     path: '/pricing',
     icon: DollarSign,
     roles: ['user', 'admin'],
@@ -98,7 +110,7 @@ export const navigationConfig: readonly NavigationItem[] = [
   },
   {
     id: 'profile',
-    label: '个人资料',
+    labelKey: 'nav.profile',
     path: '/dashboard/profile',
     icon: User,
     roles: ['user', 'admin'],
@@ -109,114 +121,140 @@ export const navigationConfig: readonly NavigationItem[] = [
   },
 
   // ==================== Admin Routes ====================
+  // Group: overview
   {
     id: 'admin-dashboard',
-    label: '管理控制台',
+    labelKey: 'nav.adminDashboard',
     path: '/admin',
     icon: LayoutDashboard,
-    roles: ['admin'], // Admin only
+    roles: ['admin'],
     showInNav: true,
-    showInBreadcrumb: false, // Not shown in breadcrumb, replaced by "Home"
+    showInBreadcrumb: false,
     order: 10,
+    groupId: 'overview',
   },
   {
     id: 'monitor',
-    label: '实时监控',
+    labelKey: 'nav.liveMonitor',
     path: '/admin/monitor',
     icon: Activity,
-    roles: ['admin'], // Admin only
+    roles: ['admin'],
     showInNav: true,
     showInBreadcrumb: true,
     parentId: 'admin-dashboard',
     order: 10.5,
+    groupId: 'overview',
   },
+  // Group: business
   {
     id: 'plans',
-    label: '订阅计划管理',
+    labelKey: 'nav.planManagement',
     path: '/admin/plans',
     icon: CreditCard,
-    roles: ['admin'], // Admin only
+    roles: ['admin'],
     showInNav: true,
     showInBreadcrumb: true,
     parentId: 'admin-dashboard',
     order: 11,
+    groupId: 'business',
   },
   {
     id: 'subscriptions',
-    label: '订阅管理',
+    labelKey: 'nav.subscriptionManagement',
     path: '/admin/subscriptions',
     icon: BadgeCheck,
-    roles: ['admin'], // Admin only
+    roles: ['admin'],
     showInNav: true,
     showInBreadcrumb: true,
     parentId: 'admin-dashboard',
     order: 12,
+    groupId: 'business',
   },
   {
     id: 'users',
-    label: '用户管理',
+    labelKey: 'nav.userManagement',
     path: '/admin/users',
     icon: Users,
-    roles: ['admin'], // Admin only
+    roles: ['admin'],
     showInNav: true,
     showInBreadcrumb: true,
     parentId: 'admin-dashboard',
     order: 13,
+    groupId: 'business',
   },
+  // Group: infrastructure
   {
     id: 'nodes',
-    label: '节点Agent',
+    labelKey: 'nav.nodeAgent',
     path: '/admin/nodes',
     icon: Server,
-    roles: ['admin'], // Admin only
+    roles: ['admin'],
     showInNav: true,
     showInBreadcrumb: true,
     parentId: 'admin-dashboard',
     order: 14,
+    groupId: 'infrastructure',
+  },
+  {
+    id: 'forward-agents',
+    labelKey: 'nav.forwardAgent',
+    path: '/admin/forward-agents',
+    icon: Cpu,
+    roles: ['admin'],
+    showInNav: true,
+    showInBreadcrumb: true,
+    parentId: 'admin-dashboard',
+    order: 15,
+    groupId: 'infrastructure',
   },
   {
     id: 'forward-rules',
-    label: '转发规则',
+    labelKey: 'nav.forwardRules',
     path: '/admin/forward-rules',
     icon: ArrowLeftRight,
-    roles: ['admin'], // Admin only
+    roles: ['admin'],
     showInNav: true,
     showInBreadcrumb: true,
     parentId: 'admin-dashboard',
     order: 16,
-  },
-  {
-    id: 'forward-agents',
-    label: '转发Agent',
-    path: '/admin/forward-agents',
-    icon: Cpu,
-    roles: ['admin'], // Admin only
-    showInNav: true,
-    showInBreadcrumb: true,
-    parentId: 'admin-dashboard',
-    order: 17,
+    groupId: 'infrastructure',
   },
   {
     id: 'resource-groups',
-    label: '资源组管理',
+    labelKey: 'nav.resourceGroups',
     path: '/admin/resource-groups',
     icon: Boxes,
-    roles: ['admin'], // Admin only
+    roles: ['admin'],
     showInNav: true,
     showInBreadcrumb: true,
     parentId: 'admin-dashboard',
     order: 18,
+    groupId: 'infrastructure',
   },
+  // Group: system
   {
     id: 'admin-settings',
-    label: '系统设置',
+    labelKey: 'nav.systemSettings',
     path: '/admin/settings',
     icon: Settings,
-    roles: ['admin'], // Admin only
+    roles: ['admin'],
     showInNav: true,
     showInBreadcrumb: true,
     parentId: 'admin-dashboard',
-    order: 99, // Always at the bottom
+    order: 98,
+    groupId: 'system',
+  },
+  {
+    id: 'admin-notifications',
+    labelKey: 'nav.notificationSettings',
+    path: '/admin/notifications',
+    icon: Bell,
+    roles: ['admin'],
+    showInNav: true,
+    showInBreadcrumb: true,
+    parentId: 'admin-dashboard',
+    order: 99,
+    groupId: 'system',
   },
 ] as const;
 
@@ -291,4 +329,36 @@ export const buildBreadcrumbPath = (itemId: string): NavigationItem[] => {
   }
 
   return result;
+};
+
+/**
+ * Get admin navigation groups
+ */
+export const getAdminNavigationGroups = (): NavigationGroup[] => {
+  return [...adminNavigationGroups].sort((a, b) => a.order - b.order);
+};
+
+/**
+ * Get admin navigation items grouped by their groupId
+ *
+ * @param items - Navigation items to group
+ * @returns Map of group to its navigation items
+ */
+export const getAdminNavItemsByGroup = (
+  items: NavigationItem[]
+): Map<NavigationGroup, NavigationItem[]> => {
+  const groups = getAdminNavigationGroups();
+  const groupedItems = new Map<NavigationGroup, NavigationItem[]>();
+
+  for (const group of groups) {
+    const groupItems = items
+      .filter((item) => item.groupId === group.id)
+      .sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
+
+    if (groupItems.length > 0) {
+      groupedItems.set(group, groupItems);
+    }
+  }
+
+  return groupedItems;
 };

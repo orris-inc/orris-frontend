@@ -249,13 +249,16 @@ export const MonitorPage = () => {
                   </div>
                 )
               ) : (
-                <div className="flex items-center justify-center py-8 bg-card rounded-lg border border-border">
-                  <div className="text-center">
-                    <Activity className="size-8 text-muted-foreground/30 mx-auto mb-2" />
-                    <p className="text-sm text-muted-foreground">
-                      {entityFilter === 'all' ? '等待数据...' : '暂无数据'}
-                    </p>
+                <div className="flex flex-col items-center justify-center py-12 bg-card rounded-lg border border-border">
+                  <div className="size-16 rounded-full bg-muted/30 flex items-center justify-center mb-4">
+                    <Activity className="size-8 text-muted-foreground/50" />
                   </div>
+                  <p className="text-sm font-medium text-foreground mb-1">
+                    {entityFilter === 'all' ? '等待数据' : '暂无数据'}
+                  </p>
+                  <p className="text-xs text-muted-foreground">
+                    {entityFilter === 'all' ? '正在等待实体数据...' : '当前筛选条件下没有实体'}
+                  </p>
                 </div>
               )}
             </div>

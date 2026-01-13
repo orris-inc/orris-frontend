@@ -243,9 +243,9 @@ export const UserManagementPage = () => {
       <div className="py-3 space-y-3">
         {/* High-Density Status Bar - All metrics inline */}
         <header className="bg-card rounded-lg border border-border px-3 py-2">
-          <div className="flex items-center justify-between gap-4 flex-wrap">
+          <div className="flex items-center justify-between gap-3 flex-wrap">
             {/* Left: Title + Primary Stats */}
-            <div className="flex items-center gap-4">
+            <div className="flex items-center gap-3">
               <h1 className="text-sm font-semibold text-foreground">用户管理</h1>
               <div className="h-4 w-px bg-border hidden sm:block" />
               <div className="flex items-center gap-3 text-xs">

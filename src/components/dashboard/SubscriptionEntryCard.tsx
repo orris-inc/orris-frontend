@@ -4,10 +4,12 @@
  */
 
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { Calendar, ArrowRight, Clock } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { getBadgeClass } from '@/lib/ui-styles';
 import type { DashboardSubscription } from '@/api/user/types';
+import type { TFunction } from 'i18next';
 
 interface SubscriptionEntryCardProps {
   subscription: DashboardSubscription;
@@ -29,18 +31,18 @@ const formatTraffic = (bytes: number): string => {
 /**
  * Get subscription status display configuration
  */
-const getStatusConfig = (status: string) => {
+const getStatusConfig = (status: string, t: TFunction) => {
   switch (status) {
     case 'active':
-      return { label: '激活中', variant: 'success' as const };
+      return { label: t('user.dashboard.subscription.status.active'), variant: 'success' as const };
     case 'expired':
-      return { label: '已过期', variant: 'destructive' as const };
+      return { label: t('user.dashboard.subscription.status.expired'), variant: 'destructive' as const };
     case 'cancelled':
-      return { label: '已取消', variant: 'outline' as const };
+      return { label: t('user.dashboard.subscription.status.cancelled'), variant: 'outline' as const };
     case 'pending':
-      return { label: '待处理', variant: 'secondary' as const };
+      return { label: t('user.dashboard.subscription.status.pending'), variant: 'secondary' as const };
     case 'renewed':
-      return { label: '已续费', variant: 'success' as const };
+      return { label: t('user.dashboard.subscription.status.renewed'), variant: 'success' as const };
     default:
       return { label: status, variant: 'secondary' as const };
   }
@@ -58,11 +60,12 @@ const getDaysRemaining = (endDate?: string): number | null => {
 };
 
 /**
- * Format date for display
+ * Format date for display based on locale
  */
-const formatDate = (dateString?: string): string => {
+const formatDate = (dateString?: string, locale?: string): string => {
   if (!dateString) return '-';
-  return new Date(dateString).toLocaleDateString('zh-CN', {
+  const dateLocale = locale === 'zh' ? 'zh-CN' : 'en-US';
+  return new Date(dateString).toLocaleDateString(dateLocale, {
     year: 'numeric',
     month: '2-digit',
     day: '2-digit',
@@ -74,7 +77,8 @@ const formatDate = (dateString?: string): string => {
  */
 export const SubscriptionEntryCard = ({ subscription, className }: SubscriptionEntryCardProps) => {
   const navigate = useNavigate();
-  const statusConfig = getStatusConfig(subscription.status);
+  const { t, i18n } = useTranslation();
+  const statusConfig = getStatusConfig(subscription.status, t);
   const isActive = subscription.isActive;
   const limits = subscription.plan?.limits as { trafficLimit?: number } | undefined;
   const trafficLimit = limits?.trafficLimit ?? 0;
@@ -104,11 +108,11 @@ export const SubscriptionEntryCard = ({ subscription, className }: SubscriptionE
       {/* Row 1: Plan name + status badge + days remaining (compact on mobile) */}
       <div className="flex items-center justify-between gap-2 mb-1.5 sm:mb-2">
         <div className="flex items-center gap-2 min-w-0">
-          <h3 className="font-semibold text-sm truncate">{subscription.plan?.name || '未知计划'}</h3>
+          <h3 className="font-semibold text-sm truncate">{subscription.plan?.name || t('user.dashboard.subscription.unknownPlan')}</h3>
           {isActive && daysRemaining !== null && (
             <span className="text-xs text-muted-foreground whitespace-nowrap flex items-center gap-0.5">
               <Clock className="size-3" />
-              {daysRemaining}天
+              {t('user.dashboard.subscription.daysRemaining', { count: daysRemaining })}
             </span>
           )}
         </div>
@@ -141,7 +145,7 @@ export const SubscriptionEntryCard = ({ subscription, className }: SubscriptionE
       <div className="flex items-center justify-between">
         <span className="flex items-center gap-1 text-xs text-muted-foreground">
           <Calendar className="size-3" />
-          {formatDate(subscription.currentPeriodEnd)}
+          {formatDate(subscription.currentPeriodEnd, i18n.language)}
         </span>
         <ArrowRight className="size-3.5 text-muted-foreground group-hover:text-primary transition-colors" />
       </div>

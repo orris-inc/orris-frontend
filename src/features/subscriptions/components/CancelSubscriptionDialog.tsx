@@ -1,8 +1,9 @@
 /**
- * 取消订阅对话框组件
+ * Cancel subscription dialog component
  */
 
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
   Dialog,
   DialogContent,
@@ -31,6 +32,7 @@ export const CancelSubscriptionDialog: React.FC<CancelSubscriptionDialogProps> =
   onClose,
   onConfirm,
 }) => {
+  const { t } = useTranslation();
   const [reason, setReason] = useState('');
   const [immediate, setImmediate] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -59,18 +61,18 @@ export const CancelSubscriptionDialog: React.FC<CancelSubscriptionDialogProps> =
     <Dialog open={open} onOpenChange={handleClose}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle>取消订阅</DialogTitle>
+          <DialogTitle>{t('subscription.cancel')}</DialogTitle>
           <DialogDescription className="flex items-center gap-1 flex-wrap">
-            确定要取消订阅 {subscription?.id && <TruncatedId id={subscription.id} />} 吗？请填写取消原因。
+            {t('subscription.confirmCancel')} {subscription?.id && <TruncatedId id={subscription.id} />} {t('subscription.confirmCancelSuffix')}
           </DialogDescription>
         </DialogHeader>
 
         <div className="space-y-4 py-4">
           <div className="space-y-2">
-            <Label htmlFor="reason">取消原因 *</Label>
+            <Label htmlFor="reason">{t('subscription.cancelReason')} *</Label>
             <Textarea
               id="reason"
-              placeholder="请输入取消原因..."
+              placeholder={t('placeholders.cancelReason')}
               value={reason}
               onChange={(e) => setReason(e.target.value)}
               disabled={loading}
@@ -86,21 +88,21 @@ export const CancelSubscriptionDialog: React.FC<CancelSubscriptionDialogProps> =
               disabled={loading}
             />
             <Label htmlFor="immediate" className="cursor-pointer">
-              立即取消（否则在当前周期结束后取消）
+              {t('subscription.immediateCancelOption')}
             </Label>
           </div>
         </div>
 
         <DialogFooter>
           <Button variant="outline" onClick={handleClose} disabled={loading}>
-            返回
+            {t('common.actions.back')}
           </Button>
           <Button
             variant="destructive"
             onClick={handleSubmit}
             disabled={loading || !reason.trim()}
           >
-            {loading ? '处理中...' : '确认取消'}
+            {loading ? t('messages.processing') : t('messages.confirmCancel')}
           </Button>
         </DialogFooter>
       </DialogContent>

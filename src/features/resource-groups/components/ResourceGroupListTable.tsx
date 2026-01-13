@@ -5,6 +5,7 @@
  */
 
 import { useMemo, useCallback } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Edit, Power, MoreHorizontal, Trash2, Eye } from 'lucide-react';
 import { DataTable, AdminBadge, type ColumnDef, type ResponsiveColumnMeta } from '@/components/admin';
 import { useBreakpoint } from '@/hooks/useBreakpoint';
@@ -54,6 +55,7 @@ export const ResourceGroupListTable: React.FC<ResourceGroupListTableProps> = ({
   onDelete,
   onToggleStatus,
 }) => {
+  const { t } = useTranslation();
   // Detect mobile screen
   const { isMobile } = useBreakpoint();
 
@@ -174,10 +176,10 @@ export const ResourceGroupListTable: React.FC<ResourceGroupListTableProps> = ({
       meta: { priority: 1 } as ResponsiveColumnMeta,
       cell: ({ row }) => {
         const status = row.original.status;
-        const statusConfig = ACTIVE_STATUS_CONFIG[status] || { label: '未知', variant: 'default' as const };
+        const statusConfig = ACTIVE_STATUS_CONFIG[status] || { labelKey: 'common.status.unknown', variant: 'default' as const };
         return (
           <AdminBadge variant={statusConfig.variant}>
-            {statusConfig.label}
+            {t(statusConfig.labelKey)}
           </AdminBadge>
         );
       },

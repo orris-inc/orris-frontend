@@ -1,54 +1,33 @@
 /**
- * MobileResourceGroupCard - iOS 26 Liquid Glass styled resource group card for mobile
+ * MobileResourceGroupCard - iOS-style resource group card with swipe actions
  *
- * Designed following iOS Human Interface Guidelines:
- * - Minimum 44px touch targets for all interactive elements
- * - Clear visual hierarchy with primary/secondary information
- * - Expandable details section with smooth animation
- * - Quick action buttons for common operations
- * - Respects prefers-reduced-motion
+ * Redesigned for better mobile UX:
+ * - Compact two-row layout showing key info at a glance
+ * - Swipe left to reveal actions (Edit, Enable/Disable, Delete)
+ * - Tap to open details sheet
+ * - Clear visual hierarchy
  */
 
-import { useState } from 'react';
-import {
-  ChevronDown,
-  Edit,
-  Trash2,
-  Power,
-  PowerOff,
-  Boxes,
-  Hash,
-  FileText,
-  Server,
-  ArrowLeftRight,
-  Calendar,
-} from 'lucide-react';
-import {
-  Collapsible,
-  CollapsibleContent,
-  CollapsibleTrigger,
-} from '@/components/common/Collapsible';
+import { useTranslation } from 'react-i18next';
+import { Edit, Power, PowerOff, Trash2, Boxes, Users } from 'lucide-react';
+import { MobileSwipeCard, type SwipeAction } from '@/components/mobile';
 import { AdminBadge } from '@/components/admin';
-import { Badge } from '@/components/common/Badge';
-import { MobileActionButton } from '@/components/mobile';
 import { cn } from '@/lib/utils';
-import { formatDate } from '@/shared/utils/date-utils';
 import { ACTIVE_STATUS_CONFIG } from '@/shared/constants/status-config';
 import type { ResourceGroup } from '@/api/resource/types';
-import type { SubscriptionPlan } from '@/api/subscription/types';
 
 // ============================================================================
 // Types
 // ============================================================================
 
 export interface MobileResourceGroupCardProps {
-  resourceGroup: ResourceGroup;
-  plansMap?: Record<string, SubscriptionPlan>;
-  nodeCount?: number;
-  ruleCount?: number;
-  onEdit: (resourceGroup: ResourceGroup) => void;
-  onDelete: (resourceGroup: ResourceGroup) => void;
-  onToggleStatus: (resourceGroup: ResourceGroup) => void;
+  group: ResourceGroup;
+  planName?: string;
+  memberCount?: number;
+  onCardPress: (group: ResourceGroup) => void;
+  onEdit: (group: ResourceGroup) => void;
+  onDelete: (group: ResourceGroup) => void;
+  onToggleStatus: (group: ResourceGroup) => void;
 }
 
 // ============================================================================
@@ -56,215 +35,93 @@ export interface MobileResourceGroupCardProps {
 // ============================================================================
 
 export const MobileResourceGroupCard = ({
-  resourceGroup,
-  plansMap = {},
-  nodeCount = 0,
-  ruleCount = 0,
+  group,
+  planName,
+  memberCount = 0,
+  onCardPress,
   onEdit,
   onDelete,
   onToggleStatus,
 }: MobileResourceGroupCardProps) => {
-  const [isExpanded, setIsExpanded] = useState(false);
-
-  const statusConfig = ACTIVE_STATUS_CONFIG[resourceGroup.status] || {
-    label: resourceGroup.status,
+  const { t } = useTranslation();
+  const statusConfig = ACTIVE_STATUS_CONFIG[group.status] || {
+    labelKey: 'common.status.unknown',
     variant: 'default' as const,
   };
 
-  // Get associated plan info
-  const plan = resourceGroup.planId ? plansMap[resourceGroup.planId] : null;
+  // Swipe actions
+  const swipeActions: SwipeAction[] = [
+    {
+      key: 'edit',
+      icon: <Edit className="size-5" />,
+      label: '编辑',
+      bgColor: 'bg-primary',
+      onClick: () => onEdit(group),
+    },
+    {
+      key: 'toggle',
+      icon:
+        group.status === 'active' ? (
+          <PowerOff className="size-5" />
+        ) : (
+          <Power className="size-5" />
+        ),
+      label: group.status === 'active' ? '禁用' : '启用',
+      bgColor: group.status === 'active' ? 'bg-warning' : 'bg-success',
+      onClick: () => onToggleStatus(group),
+    },
+    {
+      key: 'delete',
+      icon: <Trash2 className="size-5" />,
+      label: '删除',
+      bgColor: 'bg-destructive',
+      onClick: () => onDelete(group),
+    },
+  ];
 
   return (
-    <Collapsible
-      open={isExpanded}
-      onOpenChange={setIsExpanded}
-      className={cn(
-        'bg-card/60 backdrop-blur-sm',
-        'rounded-2xl',
-        'border border-border/50',
-        'overflow-hidden'
-      )}
-    >
-      {/* Header - Always visible */}
-      <CollapsibleTrigger
-        className={cn(
-          'w-full px-4 py-3 min-h-[60px]',
-          'flex items-center justify-between gap-3',
-          'text-left cursor-pointer',
-          // Active feedback
-          'motion-safe:active:bg-foreground/5'
-        )}
+    <MobileSwipeCard actions={swipeActions}>
+      <div
+        onClick={() => onCardPress(group)}
+        className="px-4 py-3 min-h-[72px] cursor-pointer active:bg-muted/30 transition-colors"
       >
-        {/* Resource Group Info */}
-        <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-2 mb-0.5">
-            <span className="font-medium text-foreground truncate">
-              {resourceGroup.name}
-            </span>
-            <AdminBadge
-              variant={statusConfig.variant}
-              className="text-[10px] px-1.5 py-0 shrink-0"
-            >
-              {statusConfig.label}
-            </AdminBadge>
-          </div>
-          <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
-            <Server className="size-3 shrink-0" />
-            <span>{nodeCount} 节点</span>
-            <span className="text-border">·</span>
-            <ArrowLeftRight className="size-3 shrink-0" />
-            <span>{ruleCount} 规则</span>
-            {plan && (
-              <>
-                <span className="text-border">·</span>
-                <Badge variant="outline" className="text-[10px] px-1.5 py-0">
-                  {plan.name}
-                </Badge>
-              </>
-            )}
-          </div>
+        {/* Row 1: Name + Status */}
+        <div className="flex items-center justify-between gap-2 mb-1">
+          <span className="font-medium text-foreground truncate flex-1 min-w-0">
+            {group.name}
+          </span>
+          <AdminBadge
+            variant={statusConfig.variant}
+            className="text-[10px] px-1.5 py-0 shrink-0"
+          >
+            {t(statusConfig.labelKey)}
+          </AdminBadge>
         </div>
 
-        {/* Chevron */}
-        <ChevronDown
-          className={cn(
-            'size-5 text-muted-foreground shrink-0',
-            'transition-transform duration-200',
-            'motion-reduce:transition-none',
-            isExpanded && 'rotate-180'
-          )}
-        />
-      </CollapsibleTrigger>
+        {/* Row 2: Plan + Member count */}
+        <div className="flex items-center gap-2 text-xs text-muted-foreground">
+          {/* Plan */}
+          <Boxes className="size-3 shrink-0" />
+          <span className={cn('truncate', !planName && 'text-muted-foreground/60')}>
+            {planName || '未关联套餐'}
+          </span>
 
-      {/* Expandable Details */}
-      <CollapsibleContent>
-        {/* Details Section */}
-        <div className="border-t border-border/30 px-4 py-3 space-y-2.5">
-          {/* ID */}
-          <div className="flex items-center gap-3">
-            <Hash className="size-4 text-muted-foreground shrink-0" />
-            <div className="flex-1 min-w-0">
-              <div className="text-[10px] uppercase tracking-wide text-muted-foreground mb-0.5">
-                ID
-              </div>
-              <div className="text-xs font-mono text-foreground truncate">
-                {resourceGroup.sid}
-              </div>
-            </div>
-          </div>
+          <span className="text-border">·</span>
 
-          {/* Description */}
-          {resourceGroup.description && (
-            <div className="flex items-start gap-3">
-              <FileText className="size-4 text-muted-foreground shrink-0 mt-0.5" />
-              <div className="flex-1 min-w-0">
-                <div className="text-[10px] uppercase tracking-wide text-muted-foreground mb-0.5">
-                  描述
-                </div>
-                <div className="text-xs text-foreground whitespace-pre-wrap break-words">
-                  {resourceGroup.description}
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* Associated Plan */}
-          <div className="flex items-center gap-3">
-            <Boxes className="size-4 text-muted-foreground shrink-0" />
-            <div className="flex-1 min-w-0">
-              <div className="text-[10px] uppercase tracking-wide text-muted-foreground mb-0.5">
-                关联套餐
-              </div>
-              <div className="text-xs text-foreground">
-                {plan ? (
-                  <Badge variant="secondary" className="text-[10px] px-1.5 py-0">
-                    {plan.name}
-                  </Badge>
-                ) : (
-                  <span className="text-muted-foreground">未关联</span>
-                )}
-              </div>
-            </div>
-          </div>
-
-          {/* Resource Stats */}
-          <div className="flex items-center gap-3">
-            <Server className="size-4 text-muted-foreground shrink-0" />
-            <div className="flex-1 min-w-0">
-              <div className="text-[10px] uppercase tracking-wide text-muted-foreground mb-0.5">
-                关联资源
-              </div>
-              <div className="flex items-center gap-2 text-xs text-foreground">
-                <span className="flex items-center gap-1">
-                  <Server className="size-3" />
-                  {nodeCount} 节点
-                </span>
-                <span className="text-border">·</span>
-                <span className="flex items-center gap-1">
-                  <ArrowLeftRight className="size-3" />
-                  {ruleCount} 规则
-                </span>
-              </div>
-            </div>
-          </div>
-
-          {/* Created At */}
-          <div className="flex items-center gap-3">
-            <Calendar className="size-4 text-muted-foreground shrink-0" />
-            <div className="flex-1 min-w-0">
-              <div className="text-[10px] uppercase tracking-wide text-muted-foreground mb-0.5">
-                创建时间
-              </div>
-              <div className="text-xs text-foreground">{formatDate(resourceGroup.createdAt)}</div>
-            </div>
-          </div>
-
-          {/* Updated At */}
-          <div className="flex items-center gap-3">
-            <Calendar className="size-4 text-muted-foreground shrink-0" />
-            <div className="flex-1 min-w-0">
-              <div className="text-[10px] uppercase tracking-wide text-muted-foreground mb-0.5">
-                更新时间
-              </div>
-              <div className="text-xs text-foreground">{formatDate(resourceGroup.updatedAt)}</div>
-            </div>
-          </div>
+          {/* Member count */}
+          <Users className="size-3 shrink-0" />
+          <span>{memberCount} 成员</span>
         </div>
+      </div>
 
-        {/* Actions Section */}
-        <div className="border-t border-border/30 px-4 py-3">
-          <div className="flex gap-1.5 flex-wrap">
-            <MobileActionButton
-              icon={<Edit className="size-3.5" />}
-              label="编辑"
-              onClick={() => onEdit(resourceGroup)}
-              variant="primary"
-            />
-            {resourceGroup.status === 'active' ? (
-              <MobileActionButton
-                icon={<PowerOff className="size-3.5" />}
-                label="禁用"
-                onClick={() => onToggleStatus(resourceGroup)}
-                variant="destructive"
-              />
-            ) : (
-              <MobileActionButton
-                icon={<Power className="size-3.5" />}
-                label="启用"
-                onClick={() => onToggleStatus(resourceGroup)}
-                variant="success"
-              />
-            )}
-            <MobileActionButton
-              icon={<Trash2 className="size-3.5" />}
-              label="删除"
-              onClick={() => onDelete(resourceGroup)}
-              variant="destructive"
-            />
-          </div>
+      {/* Swipe hint indicator */}
+      <div className="absolute right-2 top-1/2 -translate-y-1/2 opacity-20 pointer-events-none">
+        <div className="flex gap-0.5">
+          <div className="w-0.5 h-4 rounded-full bg-foreground" />
+          <div className="w-0.5 h-4 rounded-full bg-foreground" />
         </div>
-      </CollapsibleContent>
-    </Collapsible>
+      </div>
+    </MobileSwipeCard>
   );
 };
 

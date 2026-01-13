@@ -20,6 +20,13 @@ import {
 import { Switch, SwitchThumb } from "@/components/common/Switch";
 import { Input } from "@/components/common/Input";
 import { Button } from "@/components/common/Button";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/common/Select";
 import type {
   AdminTelegramBindingResponse,
   UpdateAdminPreferencesRequest,
@@ -33,6 +40,10 @@ const preferencesSchema = z.object({
   notifyDailySummary: z.boolean(),
   notifyWeeklySummary: z.boolean(),
   offlineThresholdMinutes: z.number().min(3).max(30),
+  dailySummaryHour: z.number().min(0).max(23),
+  weeklySummaryHour: z.number().min(0).max(23),
+  weeklySummaryWeekday: z.number().min(0).max(6),
+  offlineCheckIntervalMinutes: z.number().min(1).max(30),
 });
 
 type PreferencesFormData = z.infer<typeof preferencesSchema>;
@@ -109,12 +120,35 @@ export const AdminNotificationPreferencesForm = ({
       notifyDailySummary: binding.notifyDailySummary,
       notifyWeeklySummary: binding.notifyWeeklySummary,
       offlineThresholdMinutes: binding.offlineThresholdMinutes,
+      dailySummaryHour: binding.dailySummaryHour,
+      weeklySummaryHour: binding.weeklySummaryHour,
+      weeklySummaryWeekday: binding.weeklySummaryWeekday,
+      offlineCheckIntervalMinutes: binding.offlineCheckIntervalMinutes,
     },
   });
 
   const notifyNodeOffline = watch("notifyNodeOffline");
   const notifyAgentOffline = watch("notifyAgentOffline");
-  const showThreshold = notifyNodeOffline || notifyAgentOffline;
+  const notifyDailySummary = watch("notifyDailySummary");
+  const notifyWeeklySummary = watch("notifyWeeklySummary");
+  const showOfflineSettings = notifyNodeOffline || notifyAgentOffline;
+
+  // Hour options for selects (0-23)
+  const hourOptions = Array.from({ length: 24 }, (_, i) => ({
+    value: i.toString(),
+    label: `${i.toString().padStart(2, "0")}:00`,
+  }));
+
+  // Weekday options
+  const weekdayOptions = [
+    { value: "0", label: "周日" },
+    { value: "1", label: "周一" },
+    { value: "2", label: "周二" },
+    { value: "3", label: "周三" },
+    { value: "4", label: "周四" },
+    { value: "5", label: "周五" },
+    { value: "6", label: "周六" },
+  ];
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
@@ -154,34 +188,63 @@ export const AdminNotificationPreferencesForm = ({
           />
         </PreferenceItem>
 
-        {/* Offline threshold - only show when node or agent offline is enabled */}
-        {showThreshold && (
-          <PreferenceItem
-            icon={<Clock className="size-4 text-muted-foreground" />}
-            iconBg="bg-muted"
-            label="离线检测阈值"
-            description="超过此时间未响应视为离线"
-          >
-            <div className="flex items-center gap-1.5">
-              <Controller
-                name="offlineThresholdMinutes"
-                control={control}
-                render={({ field }) => (
-                  <Input
-                    type="number"
-                    min={3}
-                    max={30}
-                    className="w-14 h-7 text-center text-xs px-1"
-                    {...field}
-                    onChange={(e) =>
-                      field.onChange(parseInt(e.target.value, 10) || 3)
-                    }
-                  />
-                )}
-              />
-              <span className="text-xs text-muted-foreground">分钟</span>
-            </div>
-          </PreferenceItem>
+        {/* Offline settings - only show when node or agent offline is enabled */}
+        {showOfflineSettings && (
+          <>
+            <PreferenceItem
+              icon={<Clock className="size-4 text-muted-foreground" />}
+              iconBg="bg-muted"
+              label="离线检测阈值"
+              description="超过此时间未响应视为离线"
+            >
+              <div className="flex items-center gap-1.5">
+                <Controller
+                  name="offlineThresholdMinutes"
+                  control={control}
+                  render={({ field }) => (
+                    <Input
+                      type="number"
+                      min={3}
+                      max={30}
+                      className="w-14 h-7 text-center text-xs px-1"
+                      {...field}
+                      onChange={(e) =>
+                        field.onChange(parseInt(e.target.value, 10) || 3)
+                      }
+                    />
+                  )}
+                />
+                <span className="text-xs text-muted-foreground">分钟</span>
+              </div>
+            </PreferenceItem>
+
+            <PreferenceItem
+              icon={<Clock className="size-4 text-muted-foreground" />}
+              iconBg="bg-muted"
+              label="检查间隔"
+              description="检测离线状态的频率"
+            >
+              <div className="flex items-center gap-1.5">
+                <Controller
+                  name="offlineCheckIntervalMinutes"
+                  control={control}
+                  render={({ field }) => (
+                    <Input
+                      type="number"
+                      min={1}
+                      max={30}
+                      className="w-14 h-7 text-center text-xs px-1"
+                      {...field}
+                      onChange={(e) =>
+                        field.onChange(parseInt(e.target.value, 10) || 5)
+                      }
+                    />
+                  )}
+                />
+                <span className="text-xs text-muted-foreground">分钟</span>
+              </div>
+            </PreferenceItem>
+          </>
         )}
       </Section>
 
@@ -241,6 +304,38 @@ export const AdminNotificationPreferencesForm = ({
           />
         </PreferenceItem>
 
+        {/* Daily summary time - only show when enabled */}
+        {notifyDailySummary && (
+          <PreferenceItem
+            icon={<Clock className="size-4 text-muted-foreground" />}
+            iconBg="bg-muted"
+            label="发送时间"
+            description="每日汇总的发送时间"
+          >
+            <Controller
+              name="dailySummaryHour"
+              control={control}
+              render={({ field }) => (
+                <Select
+                  value={field.value.toString()}
+                  onValueChange={(v) => field.onChange(parseInt(v, 10))}
+                >
+                  <SelectTrigger className="w-20 h-7 text-xs">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {hourOptions.map((opt) => (
+                      <SelectItem key={opt.value} value={opt.value}>
+                        {opt.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              )}
+            />
+          </PreferenceItem>
+        )}
+
         <PreferenceItem
           icon={<Calendar className="size-4 text-primary" />}
           iconBg="bg-primary/10"
@@ -257,6 +352,69 @@ export const AdminNotificationPreferencesForm = ({
             )}
           />
         </PreferenceItem>
+
+        {/* Weekly summary settings - only show when enabled */}
+        {notifyWeeklySummary && (
+          <>
+            <PreferenceItem
+              icon={<Calendar className="size-4 text-muted-foreground" />}
+              iconBg="bg-muted"
+              label="发送星期"
+              description="每周汇总的发送日期"
+            >
+              <Controller
+                name="weeklySummaryWeekday"
+                control={control}
+                render={({ field }) => (
+                  <Select
+                    value={field.value.toString()}
+                    onValueChange={(v) => field.onChange(parseInt(v, 10))}
+                  >
+                    <SelectTrigger className="w-16 h-7 text-xs">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {weekdayOptions.map((opt) => (
+                        <SelectItem key={opt.value} value={opt.value}>
+                          {opt.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                )}
+              />
+            </PreferenceItem>
+
+            <PreferenceItem
+              icon={<Clock className="size-4 text-muted-foreground" />}
+              iconBg="bg-muted"
+              label="发送时间"
+              description="每周汇总的发送时间"
+            >
+              <Controller
+                name="weeklySummaryHour"
+                control={control}
+                render={({ field }) => (
+                  <Select
+                    value={field.value.toString()}
+                    onValueChange={(v) => field.onChange(parseInt(v, 10))}
+                  >
+                    <SelectTrigger className="w-20 h-7 text-xs">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {hourOptions.map((opt) => (
+                        <SelectItem key={opt.value} value={opt.value}>
+                          {opt.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                )}
+              />
+            </PreferenceItem>
+          </>
+        )}
       </Section>
 
       {/* Save button */}
