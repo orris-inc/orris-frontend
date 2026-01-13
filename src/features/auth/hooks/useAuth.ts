@@ -40,7 +40,7 @@ const isSafeRedirectUrl = (url: string): boolean => {
 export const useAuth = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const { user, isAuthenticated, login: storeLogin, logout: storeLogout } = useAuthStore();
+  const { user, isAuthenticated, login: storeLogin } = useAuthStore();
 
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
