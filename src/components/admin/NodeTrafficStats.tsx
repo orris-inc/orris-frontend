@@ -3,6 +3,7 @@
  * Displays node traffic statistics in card list format (consistent with TrafficRankingList)
  */
 
+import { useTranslation } from 'react-i18next';
 import { Server, ArrowUp, ArrowDown, Activity } from 'lucide-react';
 import { NodeTrafficStatsItem, formatTrafficBytes } from '@/api/admin';
 import { AdminCard } from './AdminCard';
@@ -166,11 +167,11 @@ const NodeListSkeleton = () => {
 /**
  * Empty state component
  */
-const EmptyState = () => {
+const EmptyState = ({ message }: { message: string }) => {
   return (
     <div className="flex flex-col items-center justify-center py-12 text-center">
       <Server className="size-12 text-muted-foreground/50 mb-3" strokeWidth={1.5} />
-      <p className="text-sm text-muted-foreground">暂无节点流量数据</p>
+      <p className="text-sm text-muted-foreground">{message}</p>
     </div>
   );
 };
@@ -183,11 +184,13 @@ const Pagination = ({
   pageSize,
   total,
   onPageChange,
+  t,
 }: {
   page: number;
   pageSize: number;
   total: number;
   onPageChange: (page: number) => void;
+  t: (key: string, options?: Record<string, unknown>) => string;
 }) => {
   const totalPages = Math.ceil(total / pageSize);
   if (totalPages <= 1) return null;
@@ -195,7 +198,7 @@ const Pagination = ({
   return (
     <div className="flex items-center justify-between px-4 sm:px-6 py-3 sm:py-4 border-t border-border">
       <span className="text-xs sm:text-sm text-muted-foreground">
-        共 {total} 个节点
+        {t('admin.traffic.totalNodes', { count: total })}
       </span>
       <div className="flex items-center gap-2">
         <button
@@ -203,7 +206,7 @@ const Pagination = ({
           disabled={page <= 1}
           className="px-4 py-2.5 sm:px-3 sm:py-1.5 text-sm rounded-lg border border-border disabled:opacity-50 disabled:cursor-not-allowed hover:bg-accent transition-colors touch-target min-h-[44px] sm:min-h-0"
         >
-          上一页
+          {t('admin.traffic.prevPage')}
         </button>
         <span className="text-xs sm:text-sm text-muted-foreground px-1">
           {page} / {totalPages}
@@ -213,7 +216,7 @@ const Pagination = ({
           disabled={page >= totalPages}
           className="px-4 py-2.5 sm:px-3 sm:py-1.5 text-sm rounded-lg border border-border disabled:opacity-50 disabled:cursor-not-allowed hover:bg-accent transition-colors touch-target min-h-[44px] sm:min-h-0"
         >
-          下一页
+          {t('admin.traffic.nextPage')}
         </button>
       </div>
     </div>
@@ -226,12 +229,14 @@ export const NodeTrafficStats = ({
   pagination,
   onPageChange,
 }: NodeTrafficStatsProps) => {
+  const { t } = useTranslation();
+
   return (
     <AdminCard noPadding>
       {/* Header - height matches TrafficRankingList */}
       <div className="flex items-center justify-between px-4 sm:px-6 h-[56px] sm:h-[72px] border-b border-border">
         <h3 className="text-base sm:text-lg font-semibold text-foreground">
-          节点流量统计
+          {t('admin.traffic.nodeStats')}
         </h3>
       </div>
 
@@ -240,7 +245,7 @@ export const NodeTrafficStats = ({
         {loading ? (
           <NodeListSkeleton />
         ) : items.length === 0 ? (
-          <EmptyState />
+          <EmptyState message={t('admin.traffic.noNodeData')} />
         ) : (
           <ScrollArea className="h-[320px] sm:h-[480px]">
             <div className="space-y-2 sm:space-y-3 pr-4">
@@ -259,6 +264,7 @@ export const NodeTrafficStats = ({
           pageSize={pagination.pageSize}
           total={pagination.total}
           onPageChange={onPageChange}
+          t={t}
         />
       )}
     </AdminCard>

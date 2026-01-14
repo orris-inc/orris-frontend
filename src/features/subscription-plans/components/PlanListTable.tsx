@@ -1,13 +1,13 @@
 /**
  * Subscription Plan List Table Component (Admin)
- * Implemented using TanStack Table
+ * Design: Catalyst-style clean table with minimal visual hierarchy
  * Switches to mobile card list on small screens
  */
 
 import { useMemo, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Edit, Power, MoreHorizontal, Users, Copy, Trash2 } from 'lucide-react';
-import { DataTable, AdminBadge, TruncatedId, type ColumnDef, type ResponsiveColumnMeta } from '@/components/admin';
+import { DataTable, AdminBadge, type ColumnDef, type ResponsiveColumnMeta } from '@/components/admin';
 import { useBreakpoint } from '@/hooks/useBreakpoint';
 import { PlanMobileList } from './PlanMobileList';
 import {
@@ -22,77 +22,69 @@ import {
   ContextMenuSeparator,
 } from '@/components/common/ContextMenu';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/common/Tooltip';
-import { BillingCycleBadge } from './BillingCycleBadge';
 import { ACTIVE_STATUS_CONFIG } from '@/shared/constants/status-config';
 import type { SubscriptionPlan, PlanStatus, BillingCycle, PlanType } from '@/api/subscription/types';
 
-// Plan type display names
-const PLAN_TYPE_LABELS: Record<PlanType, string> = {
-  node: '节点订阅',
-  forward: '端口转发',
-  hybrid: '混合订阅',
+// Plan type configuration with semantic colors
+const PLAN_TYPE_CONFIG: Record<PlanType, { labelKey: string; className: string }> = {
+  node: { labelKey: 'common.planType.node', className: 'bg-info-muted text-info' },
+  forward: { labelKey: 'common.planType.forward', className: 'bg-warning-muted text-warning' },
+  hybrid: { labelKey: 'common.planType.hybrid', className: 'bg-primary/10 text-primary' },
 };
 
-// Billing cycle display names
-const BILLING_CYCLE_LABELS: Record<BillingCycle, string> = {
-  weekly: '周付',
-  monthly: '月付',
-  quarterly: '季付',
-  semi_annual: '半年付',
-  yearly: '年付',
-  lifetime: '终身',
+// Billing cycle translation keys
+const BILLING_CYCLE_KEYS: Record<BillingCycle, string> = {
+  weekly: 'billingCycle.weekly',
+  monthly: 'billingCycle.monthly',
+  quarterly: 'billingCycle.quarterly',
+  semi_annual: 'billingCycle.semiAnnual',
+  yearly: 'billingCycle.yearly',
+  lifetime: 'billingCycle.lifetime',
 };
 
-// Get plan price range (supports multiple pricing)
-const getPriceRange = (plan: SubscriptionPlan): {
+// Get plan price info (supports multiple pricing)
+const getPriceInfo = (plan: SubscriptionPlan): {
   display: string;
-  details: Array<{ cycle: BillingCycle; label: string; price: string }> | null;
+  details: Array<{ cycle: BillingCycle; labelKey: string; price: string }> | null;
   primaryCycle: BillingCycle;
 } => {
-  // Prevent pricings from being null or undefined (compatible with legacy data)
   if (!plan.pricings || plan.pricings.length === 0) {
-    return {
-      display: '-',
-      details: null,
-      primaryCycle: 'monthly' as BillingCycle,
-    };
+    return { display: '—', details: null, primaryCycle: 'monthly' as BillingCycle };
   }
 
   const activePricings = plan.pricings.filter(p => p.isActive);
-
   if (activePricings.length === 0) {
-    return {
-      display: '-',
-      details: null,
-      primaryCycle: 'monthly' as BillingCycle,
-    };
+    return { display: '—', details: null, primaryCycle: 'monthly' as BillingCycle };
   }
+
+  const formatPrice = (price: number, currency: string) => {
+    const symbol = currency === 'CNY' ? '¥' : '$';
+    return `${symbol}${(price / 100).toFixed(2)}`;
+  };
 
   if (activePricings.length === 1) {
     const p = activePricings[0];
-    const currencySymbol = p.currency === 'CNY' ? '¥' : '$';
     return {
-      display: `${currencySymbol}${(p.price / 100).toFixed(2)}`,
+      display: formatPrice(p.price, p.currency),
       details: null,
       primaryCycle: p.billingCycle,
     };
   }
 
-  // Multiple active pricing options
+  // Multiple pricing options - show range
   const prices = activePricings.map(p => p.price);
   const minPrice = Math.min(...prices);
   const maxPrice = Math.max(...prices);
   const currency = activePricings[0].currency;
-  const currencySymbol = currency === 'CNY' ? '¥' : '$';
 
   return {
     display: minPrice === maxPrice
-      ? `${currencySymbol}${(minPrice / 100).toFixed(2)}`
-      : `${currencySymbol}${(minPrice / 100).toFixed(2)} - ${currencySymbol}${(maxPrice / 100).toFixed(2)}`,
+      ? formatPrice(minPrice, currency)
+      : `${formatPrice(minPrice, currency)} – ${formatPrice(maxPrice, currency)}`,
     details: activePricings.map(p => ({
       cycle: p.billingCycle,
-      label: BILLING_CYCLE_LABELS[p.billingCycle] || p.billingCycle,
-      price: `${p.currency === 'CNY' ? '¥' : '$'}${(p.price / 100).toFixed(2)}`,
+      labelKey: BILLING_CYCLE_KEYS[p.billingCycle] || p.billingCycle,
+      price: formatPrice(p.price, p.currency),
     })),
     primaryCycle: activePricings[0].billingCycle,
   };
@@ -137,239 +129,220 @@ export const PlanListTable: React.FC<PlanListTableProps> = ({
     <>
       <ContextMenuItem onClick={() => onEdit(plan)}>
         <Edit className="mr-2 size-4" />
-        编辑
+        {t('common.actions.edit')}
       </ContextMenuItem>
       {onDuplicate && (
         <ContextMenuItem onClick={() => onDuplicate(plan)}>
           <Copy className="mr-2 size-4" />
-          复制计划
+          {t('admin.plans.table.duplicatePlan')}
         </ContextMenuItem>
       )}
       {onViewSubscriptions && (
         <ContextMenuItem onClick={() => onViewSubscriptions(plan)}>
           <Users className="mr-2 size-4" />
-          查看订阅用户
+          {t('admin.plans.table.viewSubscribers')}
         </ContextMenuItem>
       )}
       <ContextMenuSeparator />
       <ContextMenuItem onClick={() => onToggleStatus(plan)}>
         <Power className="mr-2 size-4" />
-        {plan.status === 'active' ? '停用' : '激活'}
+        {plan.status === 'active' ? t('admin.plans.table.deactivate') : t('admin.plans.table.activate')}
       </ContextMenuItem>
       {onDelete && (
-        <ContextMenuItem onClick={() => onDelete(plan)} className="text-red-600 dark:text-red-400">
+        <ContextMenuItem onClick={() => onDelete(plan)} className="text-destructive">
           <Trash2 className="mr-2 size-4" />
-          删除
+          {t('common.actions.delete')}
         </ContextMenuItem>
       )}
     </>
-  ), [onEdit, onDuplicate, onToggleStatus, onViewSubscriptions, onDelete]);
+  ), [t, onEdit, onDuplicate, onToggleStatus, onViewSubscriptions, onDelete]);
 
   // Subscription plan dropdown menu content
   const renderDropdownMenuActions = useCallback((plan: SubscriptionPlan) => (
     <>
       <DropdownMenuItem onClick={() => onEdit(plan)}>
         <Edit className="mr-2 size-4" />
-        编辑
+        {t('common.actions.edit')}
       </DropdownMenuItem>
       {onDuplicate && (
         <DropdownMenuItem onClick={() => onDuplicate(plan)}>
           <Copy className="mr-2 size-4" />
-          复制计划
+          {t('admin.plans.table.duplicatePlan')}
         </DropdownMenuItem>
       )}
       {onViewSubscriptions && (
         <DropdownMenuItem onClick={() => onViewSubscriptions(plan)}>
           <Users className="mr-2 size-4" />
-          查看订阅用户
+          {t('admin.plans.table.viewSubscribers')}
         </DropdownMenuItem>
       )}
       <DropdownMenuSeparator />
       <DropdownMenuItem onClick={() => onToggleStatus(plan)}>
         <Power className="mr-2 size-4" />
-        {plan.status === 'active' ? '停用' : '激活'}
+        {plan.status === 'active' ? t('admin.plans.table.deactivate') : t('admin.plans.table.activate')}
       </DropdownMenuItem>
       {onDelete && (
-        <DropdownMenuItem onClick={() => onDelete(plan)} className="text-red-600 dark:text-red-400">
+        <DropdownMenuItem onClick={() => onDelete(plan)} className="text-destructive">
           <Trash2 className="mr-2 size-4" />
-          删除
+          {t('common.actions.delete')}
         </DropdownMenuItem>
       )}
     </>
-  ), [onEdit, onDuplicate, onToggleStatus, onViewSubscriptions, onDelete]);
+  ), [t, onEdit, onDuplicate, onToggleStatus, onViewSubscriptions, onDelete]);
 
   const columns = useMemo<ColumnDef<SubscriptionPlan>[]>(() => [
     {
-      accessorKey: 'id',
-      header: 'ID',
-      size: 120,
-      meta: { priority: 4 } as ResponsiveColumnMeta,
-      cell: ({ row }) => <TruncatedId id={row.original.id} />,
-    },
-    {
       accessorKey: 'name',
-      header: '计划名称',
+      header: t('admin.plans.table.planName'),
+      // No size - auto fill remaining space in table-fixed layout
       meta: { priority: 1 } as ResponsiveColumnMeta,
-      cell: ({ row }) => (
-        <div className="space-y-1">
-          <div className="text-[15px] text-slate-900 dark:text-white leading-tight">
-            {row.original.name}
-          </div>
-          <div className="text-xs text-slate-400 dark:text-slate-500 leading-tight font-mono">
-            {row.original.slug}
-          </div>
-        </div>
-      ),
-    },
-    {
-      accessorKey: 'planType',
-      header: '类型',
-      size: 80,
-      meta: { priority: 2 } as ResponsiveColumnMeta,
       cell: ({ row }) => {
-        const planType = row.original.planType as PlanType | undefined;
+        const plan = row.original;
+        const planType = plan.planType as PlanType | undefined;
+        const typeConfig = planType ? PLAN_TYPE_CONFIG[planType] : PLAN_TYPE_CONFIG.node;
         return (
-          <AdminBadge variant={planType === 'forward' ? 'warning' : 'info'}>
-            {planType ? PLAN_TYPE_LABELS[planType] : '节点订阅'}
-          </AdminBadge>
+          <div className="min-w-0">
+            <div className="flex items-center gap-2">
+              <span className="font-medium text-foreground truncate">
+                {plan.name}
+              </span>
+              <span className={`shrink-0 px-1.5 py-0.5 text-[10px] font-medium rounded ${typeConfig.className}`}>
+                {t(typeConfig.labelKey)}
+              </span>
+            </div>
+            <div className="text-sm text-muted-foreground mt-0.5 truncate">
+              {plan.slug}
+            </div>
+          </div>
         );
       },
     },
     {
       accessorKey: 'price',
-      header: '价格',
-      size: 100,
-      meta: { priority: 2 } as ResponsiveColumnMeta,
+      header: t('admin.plans.table.price'),
+      size: 120,
+      meta: { priority: 1 } as ResponsiveColumnMeta,
       cell: ({ row }) => {
-        const priceRange = getPriceRange(row.original);
-        return priceRange.details ? (
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <span className="inline-flex items-center gap-1 cursor-help group">
-                <span className="font-mono text-[15px] tabular-nums text-slate-900 dark:text-white group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">
-                  {priceRange.display}
-                </span>
-                <svg className="size-3.5 text-slate-400 group-hover:text-indigo-500 transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-              </span>
-            </TooltipTrigger>
-            <TooltipContent>
-              <div className="text-xs space-y-1">
-                <p className="font-semibold text-white mb-1.5">所有定价选项：</p>
-                {priceRange.details.map((detail, idx) => (
-                  <p key={idx} className="font-mono text-indigo-100">{detail.label}: {detail.price}</p>
-                ))}
-              </div>
-            </TooltipContent>
-          </Tooltip>
-        ) : (
-          <span className="font-mono text-[15px] tabular-nums text-slate-900 dark:text-white">
-            {priceRange.display}
-          </span>
-        );
-      },
-    },
-    {
-      accessorKey: 'billingCycle',
-      header: '计费周期',
-      size: 80,
-      meta: { priority: 2 } as ResponsiveColumnMeta,
-      cell: ({ row }) => {
-        const priceRange = getPriceRange(row.original);
-        // If there are multiple pricing options, show the count; otherwise show the primary billing cycle
-        if (priceRange.details && priceRange.details.length > 1) {
+        const priceInfo = getPriceInfo(row.original);
+        if (priceInfo.details) {
           return (
             <Tooltip>
               <TooltipTrigger asChild>
-                <span className="inline-flex items-center gap-1 cursor-help text-sm text-slate-600 dark:text-slate-400">
-                  {priceRange.details.length} 种周期
+                <span className="font-medium tabular-nums text-foreground cursor-help">
+                  {priceInfo.display}
                 </span>
               </TooltipTrigger>
               <TooltipContent>
-                <div className="text-xs space-y-1">
-                  {priceRange.details.map((detail, idx) => (
-                    <p key={idx}>{detail.label}</p>
+                <div className="space-y-1">
+                  {priceInfo.details.map((detail, idx) => (
+                    <div key={idx} className="flex justify-between gap-4 text-xs">
+                      <span className="text-muted-foreground">{t(detail.labelKey)}</span>
+                      <span className="font-medium tabular-nums">{detail.price}</span>
+                    </div>
                   ))}
                 </div>
               </TooltipContent>
             </Tooltip>
           );
         }
-        return <BillingCycleBadge billingCycle={priceRange.primaryCycle} />;
-      },
-    },
-    {
-      accessorKey: 'status',
-      header: '状态',
-      size: 72,
-      meta: { priority: 1 } as ResponsiveColumnMeta,
-      cell: ({ row }) => {
-        const status = row.original.status as PlanStatus | undefined;
-        const statusConfig = status ? ACTIVE_STATUS_CONFIG[status] : { labelKey: 'common.status.unknown', variant: 'default' as const };
         return (
-          <AdminBadge variant={statusConfig.variant}>
-            {t(statusConfig.labelKey)}
-          </AdminBadge>
+          <span className="font-medium tabular-nums text-foreground">
+            {priceInfo.display}
+          </span>
         );
       },
     },
     {
-      accessorKey: 'isPublic',
-      header: '公开',
-      size: 64,
-      meta: { priority: 3 } as ResponsiveColumnMeta,
-      cell: ({ row }) => (
-        <AdminBadge variant={row.original.isPublic ? 'success' : 'outline'}>
-          {row.original.isPublic ? '是' : '否'}
-        </AdminBadge>
-      ),
+      accessorKey: 'billingCycle',
+      header: t('admin.plans.table.billingCycle'),
+      size: 100,
+      meta: { priority: 2 } as ResponsiveColumnMeta,
+      cell: ({ row }) => {
+        const priceInfo = getPriceInfo(row.original);
+        if (priceInfo.details && priceInfo.details.length > 1) {
+          return (
+            <span className="text-muted-foreground">
+              {t('admin.plans.table.multipleCycles', { count: priceInfo.details.length })}
+            </span>
+          );
+        }
+        return (
+          <span className="text-muted-foreground">
+            {t(BILLING_CYCLE_KEYS[priceInfo.primaryCycle])}
+          </span>
+        );
+      },
     },
     {
-      accessorKey: 'trialDays',
-      header: '试用天数',
-      size: 80,
-      meta: { priority: 3 } as ResponsiveColumnMeta,
-      cell: ({ row }) => (
-        <span className="font-mono tabular-nums text-slate-700 dark:text-slate-300">
-          {row.original.trialDays ? `${row.original.trialDays}天` : '-'}
-        </span>
-      ),
-    },
-    {
-      accessorKey: 'sortOrder',
-      header: '排序',
-      size: 56,
-      meta: { priority: 3 } as ResponsiveColumnMeta,
-      cell: ({ row }) => (
-        <span className="font-mono tabular-nums text-slate-600 dark:text-slate-400">
-          {row.original.sortOrder || '-'}
-        </span>
-      ),
-    },
-    {
-      id: 'actions',
-      header: '操作',
-      size: 56,
-      enableSorting: false,
+      id: 'status',
+      header: t('admin.plans.table.status'),
+      size: 120,
       meta: { priority: 1 } as ResponsiveColumnMeta,
       cell: ({ row }) => {
         const plan = row.original;
+        const status = plan.status as PlanStatus | undefined;
+        const statusConfig = status ? ACTIVE_STATUS_CONFIG[status] : { labelKey: 'common.status.unknown', variant: 'default' as const };
         return (
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <button className="inline-flex items-center justify-center size-8 rounded-lg text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-700 transition-all duration-200 group">
-                <MoreHorizontal className="size-4 group-hover:scale-110 transition-transform" strokeWidth={2} />
-              </button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              {renderDropdownMenuActions(plan)}
-            </DropdownMenuContent>
-          </DropdownMenu>
+          <div className="flex items-center gap-2">
+            <AdminBadge variant={statusConfig.variant}>
+              {t(statusConfig.labelKey)}
+            </AdminBadge>
+            {!plan.isPublic && (
+              <span className="text-xs text-muted-foreground">
+                {t('admin.plans.table.privatePlan')}
+              </span>
+            )}
+          </div>
         );
       },
     },
-  ], [renderDropdownMenuActions]);
+    {
+      id: 'extras',
+      header: t('admin.plans.table.extras'),
+      size: 100,
+      meta: { priority: 3 } as ResponsiveColumnMeta,
+      cell: ({ row }) => {
+        const { trialDays, sortOrder } = row.original;
+        const parts: string[] = [];
+
+        if (trialDays && trialDays > 0) {
+          parts.push(`${trialDays}${t('admin.plans.table.days')}`);
+        }
+        if (sortOrder && sortOrder > 0) {
+          parts.push(`#${sortOrder}`);
+        }
+
+        if (parts.length === 0) {
+          return <span className="text-muted-foreground">—</span>;
+        }
+
+        return (
+          <span className="text-muted-foreground tabular-nums">
+            {parts.join(' · ')}
+          </span>
+        );
+      },
+    },
+    {
+      id: 'actions',
+      header: '',
+      size: 48,
+      enableSorting: false,
+      meta: { priority: 1 } as ResponsiveColumnMeta,
+      cell: ({ row }) => (
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <button className="inline-flex items-center justify-center size-8 rounded-lg text-muted-foreground hover:text-foreground hover:bg-accent/50 transition-colors">
+              <MoreHorizontal className="size-4" />
+            </button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end">
+            {renderDropdownMenuActions(row.original)}
+          </DropdownMenuContent>
+        </DropdownMenu>
+      ),
+    },
+  ], [t, renderDropdownMenuActions]);
 
   // Render mobile card list on small screens
   if (isMobile) {
@@ -396,7 +369,7 @@ export const PlanListTable: React.FC<PlanListTableProps> = ({
       total={total}
       onPageChange={onPageChange}
       onPageSizeChange={onPageSizeChange}
-      emptyMessage="暂无订阅计划"
+      emptyMessage={t('admin.plans.table.noPlans')}
       getRowId={(row) => String(row.id)}
       enableContextMenu={true}
       contextMenuContent={renderContextMenuActions}

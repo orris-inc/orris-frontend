@@ -24,6 +24,7 @@ import {
   Shuffle,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { useTranslation } from 'react-i18next';
 
 /**
  * Extended metrics data interface
@@ -243,6 +244,8 @@ export const ExtendedMetricsPanel = ({
   className,
   defaultOpen = [],
 }: ExtendedMetricsPanelProps) => {
+  const { t } = useTranslation();
+
   if (!hasExtendedMetrics(data)) {
     return null;
   }
@@ -256,17 +259,17 @@ export const ExtendedMetricsPanel = ({
             <AccordionTrigger className="px-3 py-2.5 hover:no-underline hover:bg-muted/50 rounded-t-lg">
               <SectionHeader
                 icon={<Cpu className="size-4" />}
-                title="CPU 详情"
+                title={t('admin.monitor.metrics.cpuDetails')}
                 iconColor="text-blue-500"
               />
             </AccordionTrigger>
             <AccordionContent className="px-3 pb-3 pt-0">
               <div className="space-y-0.5 bg-muted/30 rounded-md p-2">
-                <MetricItem label="核心数" value={data.cpuCores} suffix="核" />
+                <MetricItem label={t('admin.monitor.metrics.cores')} value={data.cpuCores} suffix={t('admin.monitor.metrics.coresUnit')} />
                 {data.cpuModelName && (
-                  <MetricItem label="型号" value={data.cpuModelName} mono />
+                  <MetricItem label={t('admin.monitor.metrics.model')} value={data.cpuModelName} mono />
                 )}
-                <MetricItem label="频率" value={data.cpuMhz?.toFixed(0)} suffix="MHz" />
+                <MetricItem label={t('admin.monitor.metrics.frequency')} value={data.cpuMhz?.toFixed(0)} suffix="MHz" />
               </div>
             </AccordionContent>
           </AccordionItem>
@@ -278,7 +281,7 @@ export const ExtendedMetricsPanel = ({
             <AccordionTrigger className="px-3 py-2.5 hover:no-underline hover:bg-muted/50">
               <SectionHeader
                 icon={<MemoryStick className="size-4" />}
-                title="Swap 内存"
+                title={t('admin.monitor.metrics.swapMemory')}
                 iconColor="text-purple-500"
               />
             </AccordionTrigger>
@@ -287,7 +290,7 @@ export const ExtendedMetricsPanel = ({
                 {data.swapPercent !== undefined && (
                   <div className="space-y-1">
                     <div className="flex justify-between text-xs">
-                      <span className="text-muted-foreground">使用率</span>
+                      <span className="text-muted-foreground">{t('admin.monitor.metrics.usage')}</span>
                       <span className="font-medium">{data.swapPercent.toFixed(1)}%</span>
                     </div>
                     <Progress value={data.swapPercent} className="h-1.5">
@@ -298,8 +301,8 @@ export const ExtendedMetricsPanel = ({
                     </Progress>
                   </div>
                 )}
-                <MetricItem label="已用" value={formatBytes(data.swapUsed)} />
-                <MetricItem label="总量" value={formatBytes(data.swapTotal)} />
+                <MetricItem label={t('admin.monitor.metrics.used')} value={formatBytes(data.swapUsed)} />
+                <MetricItem label={t('admin.monitor.metrics.total')} value={formatBytes(data.swapTotal)} />
               </div>
             </AccordionContent>
           </AccordionItem>
@@ -311,17 +314,17 @@ export const ExtendedMetricsPanel = ({
             <AccordionTrigger className="px-3 py-2.5 hover:no-underline hover:bg-muted/50">
               <SectionHeader
                 icon={<HardDrive className="size-4" />}
-                title="磁盘 I/O"
+                title={t('admin.monitor.metrics.diskIO')}
                 iconColor="text-orange-500"
               />
             </AccordionTrigger>
             <AccordionContent className="px-3 pb-3 pt-0">
               <div className="space-y-0.5 bg-muted/30 rounded-md p-2">
-                <MetricItem label="读取总量" value={formatBytes(data.diskReadBytes)} />
-                <MetricItem label="写入总量" value={formatBytes(data.diskWriteBytes)} />
-                <MetricItem label="读取速率" value={formatRate(data.diskReadRate)} />
-                <MetricItem label="写入速率" value={formatRate(data.diskWriteRate)} />
-                <MetricItem label="IOPS" value={formatNumber(data.diskIops)} />
+                <MetricItem label={t('admin.monitor.metrics.readTotal')} value={formatBytes(data.diskReadBytes)} />
+                <MetricItem label={t('admin.monitor.metrics.writeTotal')} value={formatBytes(data.diskWriteBytes)} />
+                <MetricItem label={t('admin.monitor.metrics.readRate')} value={formatRate(data.diskReadRate)} />
+                <MetricItem label={t('admin.monitor.metrics.writeRate')} value={formatRate(data.diskWriteRate)} />
+                <MetricItem label={t('admin.monitor.metrics.iops')} value={formatNumber(data.diskIops)} />
               </div>
             </AccordionContent>
           </AccordionItem>
@@ -333,7 +336,7 @@ export const ExtendedMetricsPanel = ({
             <AccordionTrigger className="px-3 py-2.5 hover:no-underline hover:bg-muted/50">
               <SectionHeader
                 icon={<Gauge className="size-4" />}
-                title="压力指标 (PSI)"
+                title={t('admin.monitor.metrics.pressureIndicators')}
                 iconColor="text-red-500"
               />
             </AccordionTrigger>
@@ -380,23 +383,23 @@ export const ExtendedMetricsPanel = ({
             <AccordionTrigger className="px-3 py-2.5 hover:no-underline hover:bg-muted/50">
               <SectionHeader
                 icon={<Network className="size-4" />}
-                title="网络统计"
+                title={t('admin.monitor.metrics.networkStats')}
                 iconColor="text-cyan-500"
               />
             </AccordionTrigger>
             <AccordionContent className="px-3 pb-3 pt-0">
               <div className="grid grid-cols-2 gap-2">
                 <div className="bg-muted/30 rounded-md p-2">
-                  <p className="text-[10px] text-muted-foreground mb-1">接收 (RX)</p>
-                  <MetricItem label="数据包" value={formatNumber(data.networkRxPackets)} />
-                  <MetricItem label="错误" value={formatNumber(data.networkRxErrors)} />
-                  <MetricItem label="丢弃" value={formatNumber(data.networkRxDropped)} />
+                  <p className="text-[10px] text-muted-foreground mb-1">{t('admin.monitor.metrics.rxReceive')}</p>
+                  <MetricItem label={t('admin.monitor.metrics.packets')} value={formatNumber(data.networkRxPackets)} />
+                  <MetricItem label={t('admin.monitor.metrics.errors')} value={formatNumber(data.networkRxErrors)} />
+                  <MetricItem label={t('admin.monitor.metrics.drops')} value={formatNumber(data.networkRxDropped)} />
                 </div>
                 <div className="bg-muted/30 rounded-md p-2">
-                  <p className="text-[10px] text-muted-foreground mb-1">发送 (TX)</p>
-                  <MetricItem label="数据包" value={formatNumber(data.networkTxPackets)} />
-                  <MetricItem label="错误" value={formatNumber(data.networkTxErrors)} />
-                  <MetricItem label="丢弃" value={formatNumber(data.networkTxDropped)} />
+                  <p className="text-[10px] text-muted-foreground mb-1">{t('admin.monitor.metrics.txSend')}</p>
+                  <MetricItem label={t('admin.monitor.metrics.packets')} value={formatNumber(data.networkTxPackets)} />
+                  <MetricItem label={t('admin.monitor.metrics.errors')} value={formatNumber(data.networkTxErrors)} />
+                  <MetricItem label={t('admin.monitor.metrics.drops')} value={formatNumber(data.networkTxDropped)} />
                 </div>
               </div>
             </AccordionContent>
@@ -409,17 +412,17 @@ export const ExtendedMetricsPanel = ({
             <AccordionTrigger className="px-3 py-2.5 hover:no-underline hover:bg-muted/50">
               <SectionHeader
                 icon={<Layers className="size-4" />}
-                title="Socket 统计"
+                title={t('admin.monitor.metrics.socketStats')}
                 iconColor="text-indigo-500"
               />
             </AccordionTrigger>
             <AccordionContent className="px-3 pb-3 pt-0">
               <div className="space-y-0.5 bg-muted/30 rounded-md p-2">
-                <MetricItem label="总使用" value={formatNumber(data.socketsUsed)} />
-                <MetricItem label="TCP 使用" value={formatNumber(data.socketsTcpInUse)} />
-                <MetricItem label="UDP 使用" value={formatNumber(data.socketsUdpInUse)} />
-                <MetricItem label="TCP 孤立" value={formatNumber(data.socketsTcpOrphan)} />
-                <MetricItem label="TCP TIME_WAIT" value={formatNumber(data.socketsTcpTw)} />
+                <MetricItem label={t('admin.monitor.metrics.totalUsed')} value={formatNumber(data.socketsUsed)} />
+                <MetricItem label={t('admin.monitor.metrics.tcpUsed')} value={formatNumber(data.socketsTcpInUse)} />
+                <MetricItem label={t('admin.monitor.metrics.udpUsed')} value={formatNumber(data.socketsUdpInUse)} />
+                <MetricItem label={t('admin.monitor.metrics.tcpOrphan')} value={formatNumber(data.socketsTcpOrphan)} />
+                <MetricItem label={t('admin.monitor.metrics.tcpTimeWait')} value={formatNumber(data.socketsTcpTw)} />
               </div>
             </AccordionContent>
           </AccordionItem>
@@ -431,24 +434,24 @@ export const ExtendedMetricsPanel = ({
             <AccordionTrigger className="px-3 py-2.5 hover:no-underline hover:bg-muted/50">
               <SectionHeader
                 icon={<Activity className="size-4" />}
-                title="进程统计"
+                title={t('admin.monitor.metrics.processStats')}
                 iconColor="text-green-500"
               />
             </AccordionTrigger>
             <AccordionContent className="px-3 pb-3 pt-0">
               <div className="grid grid-cols-3 gap-2">
                 <div className="bg-muted/30 rounded-md p-2 text-center">
-                  <p className="text-[10px] text-muted-foreground">总数</p>
+                  <p className="text-[10px] text-muted-foreground">{t('admin.monitor.metrics.totalCount')}</p>
                   <p className="text-sm font-medium">{formatNumber(data.processesTotal)}</p>
                 </div>
                 <div className="bg-muted/30 rounded-md p-2 text-center">
-                  <p className="text-[10px] text-muted-foreground">运行中</p>
+                  <p className="text-[10px] text-muted-foreground">{t('admin.monitor.metrics.running')}</p>
                   <p className="text-sm font-medium text-green-600">
                     {formatNumber(data.processesRunning)}
                   </p>
                 </div>
                 <div className="bg-muted/30 rounded-md p-2 text-center">
-                  <p className="text-[10px] text-muted-foreground">阻塞</p>
+                  <p className="text-[10px] text-muted-foreground">{t('admin.monitor.metrics.blocked')}</p>
                   <p className="text-sm font-medium text-orange-600">
                     {formatNumber(data.processesBlocked)}
                   </p>
@@ -464,14 +467,14 @@ export const ExtendedMetricsPanel = ({
             <AccordionTrigger className="px-3 py-2.5 hover:no-underline hover:bg-muted/50">
               <SectionHeader
                 icon={<Shuffle className="size-4" />}
-                title="上下文切换"
+                title={t('admin.monitor.metrics.contextSwitch')}
                 iconColor="text-pink-500"
               />
             </AccordionTrigger>
             <AccordionContent className="px-3 pb-3 pt-0">
               <div className="space-y-0.5 bg-muted/30 rounded-md p-2">
-                <MetricItem label="上下文切换" value={formatNumber(data.contextSwitches)} />
-                <MetricItem label="中断" value={formatNumber(data.interrupts)} />
+                <MetricItem label={t('admin.monitor.metrics.contextSwitches')} value={formatNumber(data.contextSwitches)} />
+                <MetricItem label={t('admin.monitor.metrics.interrupts')} value={formatNumber(data.interrupts)} />
               </div>
             </AccordionContent>
           </AccordionItem>
@@ -483,7 +486,7 @@ export const ExtendedMetricsPanel = ({
             <AccordionTrigger className="px-3 py-2.5 hover:no-underline hover:bg-muted/50">
               <SectionHeader
                 icon={<Server className="size-4" />}
-                title="虚拟内存"
+                title={t('admin.monitor.metrics.virtualMemory')}
                 iconColor="text-amber-500"
               />
             </AccordionTrigger>
@@ -511,23 +514,23 @@ export const ExtendedMetricsPanel = ({
             <AccordionTrigger className="px-3 py-2.5 hover:no-underline hover:bg-muted/50 rounded-b-lg">
               <SectionHeader
                 icon={<Terminal className="size-4" />}
-                title="系统信息"
+                title={t('admin.monitor.metrics.systemInfo')}
                 iconColor="text-slate-500"
               />
             </AccordionTrigger>
             <AccordionContent className="px-3 pb-3 pt-0">
               <div className="space-y-0.5 bg-muted/30 rounded-md p-2">
-                {data.hostname && <MetricItem label="主机名" value={data.hostname} mono />}
+                {data.hostname && <MetricItem label={t('admin.monitor.metrics.hostname')} value={data.hostname} mono />}
                 {data.kernelVersion && (
-                  <MetricItem label="内核版本" value={data.kernelVersion} mono />
+                  <MetricItem label={t('admin.monitor.metrics.kernelVersion')} value={data.kernelVersion} mono />
                 )}
                 {data.fileNrAllocated !== undefined && data.fileNrMax !== undefined && (
                   <MetricItem
-                    label="文件描述符"
+                    label={t('admin.monitor.metrics.fileDescriptors')}
                     value={`${formatNumber(data.fileNrAllocated)} / ${formatNumber(data.fileNrMax)}`}
                   />
                 )}
-                <MetricItem label="熵池可用" value={formatNumber(data.entropyAvailable)} suffix="bits" />
+                <MetricItem label={t('admin.monitor.metrics.entropyAvailable')} value={formatNumber(data.entropyAvailable)} suffix={t('admin.monitor.metrics.bits')} />
               </div>
             </AccordionContent>
           </AccordionItem>

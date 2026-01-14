@@ -5,6 +5,7 @@
  */
 
 import { memo, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
   Server,
   Cpu,
@@ -149,6 +150,7 @@ const formatUptime = (seconds?: number): string => {
 };
 
 export const EntityFullDetailPanel = memo(({ entity, className, onClose }: EntityFullDetailPanelProps) => {
+  const { t } = useTranslation();
   const status = entity.status as (NodeSystemStatus | AgentSystemStatus) | null;
   const isOnline = entity.isOnline && status;
 
@@ -176,11 +178,11 @@ export const EntityFullDetailPanel = memo(({ entity, className, onClose }: Entit
           {entity.name || entity.id}
         </h3>
         <p className="text-xs text-muted-foreground">
-          {entity.type === 'node' ? 'Node Agent' : '转发 Agent'} 离线
+          {entity.type === 'node' ? t('admin.monitor.detail.nodeAgentOffline') : t('admin.monitor.detail.forwardAgentOffline')}
         </p>
         {entity.lastSeenAt && (
           <p className="text-[10px] text-muted-foreground/70 mt-2">
-            最后在线: {formatRelativeTime(entity.lastSeenAt)}
+            {t('admin.monitor.detail.lastOnline')}: {formatRelativeTime(entity.lastSeenAt)}
           </p>
         )}
       </div>
@@ -210,7 +212,7 @@ export const EntityFullDetailPanel = memo(({ entity, className, onClose }: Entit
           <div className="flex items-center gap-2 shrink-0">
             <Badge variant="default" className="bg-success text-success-foreground">
               <Wifi className="size-3 mr-1" />
-              在线
+              {t('admin.monitor.detail.online')}
             </Badge>
             {onClose && (
               <Button variant="ghost" size="sm" onClick={onClose} className="h-7 w-7 p-0">
@@ -226,25 +228,25 @@ export const EntityFullDetailPanel = memo(({ entity, className, onClose }: Entit
             <p className={cn('text-lg font-bold tabular-nums', getResourceTextClass(status.cpuPercent))}>
               {status.cpuPercent.toFixed(0)}%
             </p>
-            <p className="text-[9px] text-muted-foreground">CPU</p>
+            <p className="text-[9px] text-muted-foreground">{t('admin.monitor.cpu')}</p>
           </div>
           <div>
             <p className={cn('text-lg font-bold tabular-nums', getResourceTextClass(status.memoryPercent))}>
               {status.memoryPercent.toFixed(0)}%
             </p>
-            <p className="text-[9px] text-muted-foreground">内存</p>
+            <p className="text-[9px] text-muted-foreground">{t('admin.monitor.memory')}</p>
           </div>
           <div>
             <p className={cn('text-lg font-bold tabular-nums', getResourceTextClass(status.diskPercent))}>
               {status.diskPercent.toFixed(0)}%
             </p>
-            <p className="text-[9px] text-muted-foreground">磁盘</p>
+            <p className="text-[9px] text-muted-foreground">{t('admin.monitor.disk')}</p>
           </div>
           <div>
             <p className="text-lg font-bold tabular-nums text-primary">
               {formatUptime(status.uptimeSeconds).split(' ')[0]}
             </p>
-            <p className="text-[9px] text-muted-foreground">运行</p>
+            <p className="text-[9px] text-muted-foreground">{t('admin.monitor.uptime')}</p>
           </div>
         </div>
       </div>
@@ -254,34 +256,34 @@ export const EntityFullDetailPanel = memo(({ entity, className, onClose }: Entit
           {/* Resources Section */}
           <SectionHeader
             icon={<Gauge className="size-3.5 text-primary" />}
-            title="资源使用"
+            title={t('admin.monitor.detail.resourceUsage')}
             isExpanded={expandedSections.resources}
             onToggle={() => toggleSection('resources')}
           />
           {expandedSections.resources && (
             <div className="pl-5 space-y-1 pb-2">
               <ProgressMetricRow
-                label="CPU"
+                label={t('admin.monitor.cpu')}
                 value={status.cpuPercent}
               />
-              <MetricRow label="CPU 核心" value={status.cpuCores} />
-              <MetricRow label="CPU 型号" value={status.cpuModelName} />
-              <MetricRow label="CPU 频率" value={status.cpuMhz ? `${status.cpuMhz.toFixed(0)} MHz` : undefined} />
+              <MetricRow label={t('admin.monitor.detail.cpuCores')} value={status.cpuCores} />
+              <MetricRow label={t('admin.monitor.detail.cpuModel')} value={status.cpuModelName} />
+              <MetricRow label={t('admin.monitor.detail.cpuFrequency')} value={status.cpuMhz ? `${status.cpuMhz.toFixed(0)} MHz` : undefined} />
 
               <div className="h-px bg-border/50 my-2" />
 
               <ProgressMetricRow
-                label="内存"
+                label={t('admin.monitor.memory')}
                 value={status.memoryPercent}
                 used={status.memoryUsed}
                 total={status.memoryTotal}
               />
-              <MetricRow label="可用内存" value={formatBytes(status.memoryAvail)} />
+              <MetricRow label={t('admin.monitor.detail.availableMemory')} value={formatBytes(status.memoryAvail)} />
 
               <div className="h-px bg-border/50 my-2" />
 
               <ProgressMetricRow
-                label="磁盘"
+                label={t('admin.monitor.disk')}
                 value={status.diskPercent}
                 used={status.diskUsed}
                 total={status.diskTotal}
@@ -302,17 +304,17 @@ export const EntityFullDetailPanel = memo(({ entity, className, onClose }: Entit
 
               <div className="h-px bg-border/50 my-2" />
 
-              <MetricRow label="运行时间" value={formatUptime(status.uptimeSeconds)} />
-              <MetricRow label="1分钟负载" value={status.loadAvg1?.toFixed(2)} />
-              <MetricRow label="5分钟负载" value={status.loadAvg5?.toFixed(2)} />
-              <MetricRow label="15分钟负载" value={status.loadAvg15?.toFixed(2)} />
+              <MetricRow label={t('admin.monitor.detail.uptimeLabel')} value={formatUptime(status.uptimeSeconds)} />
+              <MetricRow label={t('admin.monitor.metrics.loadAvg1', '1m Load')} value={status.loadAvg1?.toFixed(2)} />
+              <MetricRow label={t('admin.monitor.metrics.loadAvg5', '5m Load')} value={status.loadAvg5?.toFixed(2)} />
+              <MetricRow label={t('admin.monitor.metrics.loadAvg15', '15m Load')} value={status.loadAvg15?.toFixed(2)} />
             </div>
           )}
 
           {/* Network Section */}
           <SectionHeader
             icon={<Network className="size-3.5 text-info" />}
-            title="网络流量"
+            title={t('admin.monitor.detail.networkTraffic')}
             isExpanded={expandedSections.network}
             onToggle={() => toggleSection('network')}
           />
@@ -322,7 +324,7 @@ export const EntityFullDetailPanel = memo(({ entity, className, onClose }: Entit
                 <div className="flex-1">
                   <div className="flex items-center gap-1 mb-0.5">
                     <ArrowDown className="size-3 text-success" />
-                    <span className="text-[10px] text-muted-foreground">下载速率</span>
+                    <span className="text-[10px] text-muted-foreground">{t('admin.monitor.detail.downloadRate')}</span>
                   </div>
                   <p className="text-sm font-bold text-success tabular-nums">
                     {formatRate(status.networkRxRate)}
@@ -332,7 +334,7 @@ export const EntityFullDetailPanel = memo(({ entity, className, onClose }: Entit
                 <div className="flex-1">
                   <div className="flex items-center gap-1 mb-0.5">
                     <ArrowUp className="size-3 text-primary" />
-                    <span className="text-[10px] text-muted-foreground">上传速率</span>
+                    <span className="text-[10px] text-muted-foreground">{t('admin.monitor.detail.uploadRate')}</span>
                   </div>
                   <p className="text-sm font-bold text-primary tabular-nums">
                     {formatRate(status.networkTxRate)}
@@ -340,65 +342,65 @@ export const EntityFullDetailPanel = memo(({ entity, className, onClose }: Entit
                 </div>
               </div>
 
-              <MetricRow label="总下载流量" value={formatBytes(status.networkRxBytes)} />
-              <MetricRow label="总上传流量" value={formatBytes(status.networkTxBytes)} />
+              <MetricRow label={t('admin.monitor.detail.totalDownload')} value={formatBytes(status.networkRxBytes)} />
+              <MetricRow label={t('admin.monitor.detail.totalUpload')} value={formatBytes(status.networkTxBytes)} />
 
               <div className="h-px bg-border/50 my-2" />
 
-              <MetricRow label="接收数据包" value={formatNumber(status.networkRxPackets)} />
-              <MetricRow label="发送数据包" value={formatNumber(status.networkTxPackets)} />
+              <MetricRow label={t('admin.monitor.detail.rxPackets')} value={formatNumber(status.networkRxPackets)} />
+              <MetricRow label={t('admin.monitor.detail.txPackets')} value={formatNumber(status.networkTxPackets)} />
               <MetricRow
-                label="接收错误"
+                label={t('admin.monitor.detail.rxErrors')}
                 value={status.networkRxErrors}
                 colorClass={status.networkRxErrors && status.networkRxErrors > 0 ? 'text-destructive' : undefined}
               />
               <MetricRow
-                label="发送错误"
+                label={t('admin.monitor.detail.txErrors')}
                 value={status.networkTxErrors}
                 colorClass={status.networkTxErrors && status.networkTxErrors > 0 ? 'text-destructive' : undefined}
               />
-              <MetricRow label="接收丢包" value={status.networkRxDropped} />
-              <MetricRow label="发送丢包" value={status.networkTxDropped} />
+              <MetricRow label={t('admin.monitor.detail.rxDropped')} value={status.networkRxDropped} />
+              <MetricRow label={t('admin.monitor.detail.txDropped')} value={status.networkTxDropped} />
 
               <div className="h-px bg-border/50 my-2" />
 
-              <MetricRow label="TCP 连接" value={status.tcpConnections} />
-              <MetricRow label="UDP 连接" value={status.udpConnections} />
+              <MetricRow label={t('admin.monitor.detail.tcpConnections')} value={status.tcpConnections} />
+              <MetricRow label={t('admin.monitor.detail.udpConnections')} value={status.udpConnections} />
             </div>
           )}
 
           {/* System Info Section */}
           <SectionHeader
             icon={<Terminal className="size-3.5 text-violet-500" />}
-            title="系统信息"
+            title={t('admin.monitor.detail.systemInfo')}
             isExpanded={expandedSections.system}
             onToggle={() => toggleSection('system')}
           />
           {expandedSections.system && (
             <div className="pl-5 space-y-1 pb-2">
-              <MetricRow label="Agent 版本" value={status.agentVersion} />
-              <MetricRow label="平台" value={status.platform} />
-              <MetricRow label="架构" value={status.arch} />
-              <MetricRow label="主机名" value={status.hostname} />
-              <MetricRow label="内核版本" value={status.kernelVersion} />
-              <MetricRow label="公网 IPv4" value={(status as NodeSystemStatus).publicIpv4} />
-              <MetricRow label="公网 IPv6" value={(status as NodeSystemStatus).publicIpv6} />
+              <MetricRow label={t('admin.monitor.detail.agentVersion')} value={status.agentVersion} />
+              <MetricRow label={t('admin.monitor.detail.platform')} value={status.platform} />
+              <MetricRow label={t('admin.monitor.detail.architecture')} value={status.arch} />
+              <MetricRow label={t('admin.monitor.detail.hostname')} value={status.hostname} />
+              <MetricRow label={t('admin.monitor.detail.kernelVersion')} value={status.kernelVersion} />
+              <MetricRow label={t('admin.monitor.detail.publicIpv4')} value={(status as NodeSystemStatus).publicIpv4} />
+              <MetricRow label={t('admin.monitor.detail.publicIpv6')} value={(status as NodeSystemStatus).publicIpv6} />
             </div>
           )}
 
           {/* Disk I/O Section */}
           <SectionHeader
             icon={<HardDrive className="size-3.5 text-orange-500" />}
-            title="磁盘 I/O"
+            title={t('admin.monitor.detail.diskIO')}
             isExpanded={expandedSections.io}
             onToggle={() => toggleSection('io')}
           />
           {expandedSections.io && (
             <div className="pl-5 space-y-1 pb-2">
-              <MetricRow label="读取速率" value={formatRate(status.diskReadRate)} />
-              <MetricRow label="写入速率" value={formatRate(status.diskWriteRate)} />
-              <MetricRow label="总读取" value={formatBytes(status.diskReadBytes ?? 0)} />
-              <MetricRow label="总写入" value={formatBytes(status.diskWriteBytes ?? 0)} />
+              <MetricRow label={t('admin.monitor.detail.readRate')} value={formatRate(status.diskReadRate)} />
+              <MetricRow label={t('admin.monitor.detail.writeRate')} value={formatRate(status.diskWriteRate)} />
+              <MetricRow label={t('admin.monitor.detail.totalRead')} value={formatBytes(status.diskReadBytes ?? 0)} />
+              <MetricRow label={t('admin.monitor.detail.totalWrite')} value={formatBytes(status.diskWriteBytes ?? 0)} />
               <MetricRow label="IOPS" value={status.diskIops?.toFixed(0)} />
             </div>
           )}
@@ -408,14 +410,14 @@ export const EntityFullDetailPanel = memo(({ entity, className, onClose }: Entit
             <>
               <SectionHeader
                 icon={<AlertTriangle className="size-3.5 text-warning" />}
-                title="压力指标 (PSI)"
+                title={t('admin.monitor.detail.pressureIndicators')}
                 isExpanded={expandedSections.psi}
                 onToggle={() => toggleSection('psi')}
               />
               {expandedSections.psi && (
                 <div className="pl-5 space-y-1 pb-2">
                   <div className="text-[10px] text-muted-foreground mb-1">
-                    CPU 压力
+                    {t('admin.monitor.detail.cpuPressure')}
                   </div>
                   <MetricRow
                     label="Some"
@@ -430,7 +432,7 @@ export const EntityFullDetailPanel = memo(({ entity, className, onClose }: Entit
 
                   <div className="h-px bg-border/50 my-2" />
                   <div className="text-[10px] text-muted-foreground mb-1">
-                    内存压力
+                    {t('admin.monitor.detail.memoryPressure')}
                   </div>
                   <MetricRow
                     label="Some"
@@ -445,7 +447,7 @@ export const EntityFullDetailPanel = memo(({ entity, className, onClose }: Entit
 
                   <div className="h-px bg-border/50 my-2" />
                   <div className="text-[10px] text-muted-foreground mb-1">
-                    I/O 压力
+                    {t('admin.monitor.detail.ioPressure')}
                   </div>
                   <MetricRow
                     label="Some"
@@ -465,46 +467,46 @@ export const EntityFullDetailPanel = memo(({ entity, className, onClose }: Entit
           {/* Sockets Section */}
           <SectionHeader
             icon={<Layers className="size-3.5 text-cyan-500" />}
-            title="Socket 统计"
+            title={t('admin.monitor.detail.socketStats')}
             isExpanded={expandedSections.sockets}
             onToggle={() => toggleSection('sockets')}
           />
           {expandedSections.sockets && (
             <div className="pl-5 space-y-1 pb-2">
-              <MetricRow label="总 Sockets" value={status.socketsUsed} />
-              <MetricRow label="TCP 使用中" value={status.socketsTcpInUse} />
-              <MetricRow label="UDP 使用中" value={status.socketsUdpInUse} />
-              <MetricRow label="TCP 孤立" value={status.socketsTcpOrphan} />
-              <MetricRow label="TCP TIME_WAIT" value={status.socketsTcpTw} />
+              <MetricRow label={t('admin.monitor.detail.totalSockets')} value={status.socketsUsed} />
+              <MetricRow label={t('admin.monitor.detail.tcpInUse')} value={status.socketsTcpInUse} />
+              <MetricRow label={t('admin.monitor.detail.udpInUse')} value={status.socketsUdpInUse} />
+              <MetricRow label={t('admin.monitor.detail.tcpOrphan')} value={status.socketsTcpOrphan} />
+              <MetricRow label={t('admin.monitor.detail.tcpTimeWait')} value={status.socketsTcpTw} />
             </div>
           )}
 
           {/* Processes Section */}
           <SectionHeader
             icon={<Box className="size-3.5 text-emerald-500" />}
-            title="进程统计"
+            title={t('admin.monitor.detail.processStats')}
             isExpanded={expandedSections.processes}
             onToggle={() => toggleSection('processes')}
           />
           {expandedSections.processes && (
             <div className="pl-5 space-y-1 pb-2">
-              <MetricRow label="总进程数" value={status.processesTotal} />
-              <MetricRow label="运行中" value={status.processesRunning} />
-              <MetricRow label="阻塞" value={status.processesBlocked} />
+              <MetricRow label={t('admin.monitor.detail.totalProcesses')} value={status.processesTotal} />
+              <MetricRow label={t('admin.monitor.detail.running')} value={status.processesRunning} />
+              <MetricRow label={t('admin.monitor.detail.blocked')} value={status.processesBlocked} />
 
               <div className="h-px bg-border/50 my-2" />
 
-              <MetricRow label="文件描述符" value={status.fileNrAllocated} subValue={`/ ${status.fileNrMax}`} />
-              <MetricRow label="上下文切换" value={formatNumber(status.contextSwitches)} />
-              <MetricRow label="中断" value={formatNumber(status.interrupts)} />
-              <MetricRow label="可用熵" value={status.entropyAvailable} />
+              <MetricRow label={t('admin.monitor.detail.fileDescriptors')} value={status.fileNrAllocated} subValue={`/ ${status.fileNrMax}`} />
+              <MetricRow label={t('admin.monitor.detail.contextSwitches')} value={formatNumber(status.contextSwitches)} />
+              <MetricRow label={t('admin.monitor.detail.interrupts')} value={formatNumber(status.interrupts)} />
+              <MetricRow label={t('admin.monitor.detail.entropyAvailable')} value={status.entropyAvailable} />
             </div>
           )}
 
           {/* VM Stats Section */}
           <SectionHeader
             icon={<MemoryStick className="size-3.5 text-pink-500" />}
-            title="虚拟内存"
+            title={t('admin.monitor.detail.virtualMemory')}
             isExpanded={expandedSections.vm}
             onToggle={() => toggleSection('vm')}
           />
@@ -525,7 +527,7 @@ export const EntityFullDetailPanel = memo(({ entity, className, onClose }: Entit
           {/* Last updated */}
           <div className="pt-2 border-t border-border/50 text-center">
             <p className="text-[9px] text-muted-foreground">
-              运行时间: {formatUptime(status.uptimeSeconds)}
+              {t('admin.monitor.detail.uptimeLabel')}: {formatUptime(status.uptimeSeconds)}
             </p>
           </div>
         </div>

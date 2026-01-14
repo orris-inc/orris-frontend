@@ -1,6 +1,14 @@
 # Stage 1: Build
 FROM node:22-alpine AS builder
 
+# Build arguments for version injection
+ARG APP_VERSION=0.0.0
+ARG COMMIT_HASH=dev
+
+# Set environment variables for build
+ENV APP_VERSION=${APP_VERSION}
+ENV COMMIT_HASH=${COMMIT_HASH}
+
 WORKDIR /app
 
 # Install dependencies (layer cached when package*.json unchanged)

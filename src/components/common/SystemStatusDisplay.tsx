@@ -4,6 +4,7 @@
  */
 
 import { Cpu, MemoryStick, HardDrive, Clock, Activity } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { Tooltip, TooltipTrigger, TooltipContent } from '@/components/common/Tooltip';
 import { Progress, ProgressIndicator } from '@/components/common/Progress';
 
@@ -102,6 +103,8 @@ export const SystemStatusDisplay: React.FC<SystemStatusDisplayProps> = ({
   status,
   emptyText = '-',
 }) => {
+  const { t } = useTranslation();
+
   if (!status) {
     return <span className="text-xs text-muted-foreground/50">{emptyText}</span>;
   }
@@ -122,13 +125,13 @@ export const SystemStatusDisplay: React.FC<SystemStatusDisplayProps> = ({
       <TooltipContent className="w-56 p-3">
         <div className="space-y-2.5">
           <StatusProgressBar
-            label="CPU"
+            label={t('admin.monitor.cpu')}
             value={cpu}
             icon={<Cpu className="size-3" />}
           />
           <div className="space-y-1">
             <StatusProgressBar
-              label="内存"
+              label={t('admin.monitor.memory')}
               value={memory}
               icon={<MemoryStick className="size-3" />}
             />
@@ -140,7 +143,7 @@ export const SystemStatusDisplay: React.FC<SystemStatusDisplayProps> = ({
           </div>
           <div className="space-y-1">
             <StatusProgressBar
-              label="磁盘"
+              label={t('admin.monitor.disk')}
               value={disk}
               icon={<HardDrive className="size-3" />}
             />
@@ -155,7 +158,7 @@ export const SystemStatusDisplay: React.FC<SystemStatusDisplayProps> = ({
             <div className="flex items-center justify-between text-xs pt-2 border-t border-border">
               <span className="flex items-center gap-1.5 text-muted-foreground">
                 <Activity className="size-3" />
-                负载
+                {t('admin.monitor.load')}
               </span>
               <span className="font-mono text-[11px] text-foreground">
                 {status.loadAvg1.toFixed(2)} / {status.loadAvg5?.toFixed(2) || '-'} / {status.loadAvg15?.toFixed(2) || '-'}
@@ -166,7 +169,7 @@ export const SystemStatusDisplay: React.FC<SystemStatusDisplayProps> = ({
             <div className="flex items-center justify-between text-xs pt-2 border-t border-border">
               <span className="flex items-center gap-1.5 text-muted-foreground">
                 <Clock className="size-3" />
-                运行时间
+                {t('admin.monitor.uptime')}
               </span>
               <span className="font-medium text-foreground">{formatUptime(status.uptime)}</span>
             </div>

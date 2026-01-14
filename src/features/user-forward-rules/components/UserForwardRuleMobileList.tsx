@@ -5,6 +5,7 @@
  */
 
 import { useCallback, useRef, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
   Edit,
   Trash2,
@@ -68,38 +69,70 @@ interface UserForwardRuleMobileListProps {
 const LONG_PRESS_DURATION = 500;
 
 // Status configuration
-const STATUS_CONFIG: Record<string, { label: string; variant: 'default' | 'secondary' }> = {
-  enabled: { label: '已启用', variant: 'default' },
-  disabled: { label: '已禁用', variant: 'secondary' },
+const STATUS_CONFIG: Record<string, { labelKey: string; variant: 'default' | 'secondary' }> = {
+  enabled: { labelKey: 'common.status.enabled', variant: 'default' },
+  disabled: { labelKey: 'common.status.disabled', variant: 'secondary' },
 };
 
 // Rule type configuration
-const RULE_TYPE_CONFIG: Record<string, { label: string; shortLabel: string; color: string; bgColor: string }> = {
+const RULE_TYPE_CONFIG: Record<string, { labelKey: string; shortLabelKey: string; color: string; bgColor: string }> = {
   direct: {
-    label: '直连',
-    shortLabel: '直',
+    labelKey: 'admin.forwardRules.ruleType.direct',
+    shortLabelKey: 'admin.forwardRules.ruleType.directShort',
     color: 'text-blue-600 dark:text-blue-400',
     bgColor: 'bg-blue-50 dark:bg-blue-900/20',
   },
   entry: {
-    label: '入口',
-    shortLabel: '入',
+    labelKey: 'admin.forwardRules.ruleType.entry',
+    shortLabelKey: 'admin.forwardRules.ruleType.entryShort',
     color: 'text-green-600 dark:text-green-400',
     bgColor: 'bg-green-50 dark:bg-green-900/20',
   },
   chain: {
-    label: '链式',
-    shortLabel: '链',
+    labelKey: 'admin.forwardRules.ruleType.chain',
+    shortLabelKey: 'admin.forwardRules.ruleType.chainShort',
     color: 'text-purple-600 dark:text-purple-400',
     bgColor: 'bg-purple-50 dark:bg-purple-900/20',
   },
   direct_chain: {
-    label: '直连链',
-    shortLabel: '直链',
+    labelKey: 'admin.forwardRules.ruleType.directChain',
+    shortLabelKey: 'admin.forwardRules.ruleType.directChainShort',
     color: 'text-amber-600 dark:text-amber-400',
     bgColor: 'bg-amber-50 dark:bg-amber-900/20',
   },
 };
+
+// Mobile flow node configuration (without labels)
+const FLOW_NODE_CONFIG = {
+  entry: {
+    icon: Bot,
+    color: 'text-green-500',
+    bgColor: 'bg-green-50 dark:bg-green-900/30',
+    borderColor: 'border-green-200 dark:border-green-800',
+    labelKey: 'admin.forwardRules.flowNode.entry',
+  },
+  relay: {
+    icon: Bot,
+    color: 'text-purple-500',
+    bgColor: 'bg-purple-50 dark:bg-purple-900/30',
+    borderColor: 'border-purple-200 dark:border-purple-800',
+    labelKey: 'admin.forwardRules.flowNode.relay',
+  },
+  exit: {
+    icon: Bot,
+    color: 'text-orange-500',
+    bgColor: 'bg-orange-50 dark:bg-orange-900/30',
+    borderColor: 'border-orange-200 dark:border-orange-800',
+    labelKey: 'admin.forwardRules.flowNode.exit',
+  },
+  target: {
+    icon: Server,
+    color: 'text-blue-500',
+    bgColor: 'bg-blue-50 dark:bg-blue-900/30',
+    borderColor: 'border-blue-200 dark:border-blue-800',
+    labelKey: 'admin.forwardRules.flowNode.target',
+  },
+} as const;
 
 // Mobile flow node component
 const MobileFlowNode: React.FC<{
@@ -107,43 +140,16 @@ const MobileFlowNode: React.FC<{
   name: string;
   address?: string;
 }> = ({ type, name, address }) => {
-  const config = {
-    entry: {
-      icon: Bot,
-      color: 'text-green-500',
-      bgColor: 'bg-green-50 dark:bg-green-900/30',
-      borderColor: 'border-green-200 dark:border-green-800',
-      label: '入口',
-    },
-    relay: {
-      icon: Bot,
-      color: 'text-purple-500',
-      bgColor: 'bg-purple-50 dark:bg-purple-900/30',
-      borderColor: 'border-purple-200 dark:border-purple-800',
-      label: '中转',
-    },
-    exit: {
-      icon: Bot,
-      color: 'text-orange-500',
-      bgColor: 'bg-orange-50 dark:bg-orange-900/30',
-      borderColor: 'border-orange-200 dark:border-orange-800',
-      label: '出口',
-    },
-    target: {
-      icon: Server,
-      color: 'text-blue-500',
-      bgColor: 'bg-blue-50 dark:bg-blue-900/30',
-      borderColor: 'border-blue-200 dark:border-blue-800',
-      label: '目标',
-    },
-  }[type];
+  const { t } = useTranslation();
+  const config = FLOW_NODE_CONFIG[type];
+  const label = t(config.labelKey);
 
   const IconComponent = config.icon;
 
   return (
     <div
       className={`flex items-center gap-1 px-2 py-1 rounded-lg ${config.bgColor} border ${config.borderColor} touch-manipulation`}
-      title={address ? `${config.label}: ${name}\n${address}` : `${config.label}: ${name}`}
+      title={address ? `${label}: ${name}\n${address}` : `${label}: ${name}`}
     >
       <IconComponent className={`size-3 flex-shrink-0 ${config.color}`} />
       <span className="text-xs font-medium text-foreground truncate max-w-[60px]">{name}</span>
@@ -157,6 +163,7 @@ const ChainNodesDisplayMobile: React.FC<{
   agentsMap: Record<string, UserForwardAgent>;
   targetDisplay: { name: string; address: string } | null;
 }> = ({ chainAgentIds, agentsMap, targetDisplay }) => {
+  const { t } = useTranslation();
   const chainCount = chainAgentIds.length;
 
   const getAgentName = (id: string) => {
@@ -193,16 +200,16 @@ const ChainNodesDisplayMobile: React.FC<{
       <Popover>
         <PopoverTrigger asChild>
           <button className="flex items-center gap-1 px-2 py-1 text-xs font-medium rounded-lg bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300 border border-purple-200 dark:border-purple-800 touch-manipulation min-h-[28px]">
-            +{chainCount - 1} 节点
+            +{chainCount - 1} {t('admin.forwardRules.flowNode.relay')}
             <ChevronDown className="size-3" />
           </button>
         </PopoverTrigger>
         <PopoverContent className="w-72" align="start">
           <div className="space-y-3">
             <div className="flex items-center justify-between">
-              <h4 className="text-sm font-semibold">链路节点详情</h4>
+              <h4 className="text-sm font-semibold">{t('userForwardRules.popover.chainNodeDetails')}</h4>
               <Badge variant="outline" className="text-xs">
-                {chainCount} 个节点
+                {t('userForwardRules.popover.nodesCount', { count: chainCount })}
               </Badge>
             </div>
             <div className="space-y-2">
@@ -293,6 +300,7 @@ export const UserForwardRuleMobileList: React.FC<UserForwardRuleMobileListProps>
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   onExitSelectMode: _onExitSelectMode,
 }) => {
+  const { t } = useTranslation();
   const [deleteConfirm, setDeleteConfirm] = useState<{
     open: boolean;
     rule: ForwardRule | null;
@@ -378,18 +386,18 @@ export const UserForwardRuleMobileList: React.FC<UserForwardRuleMobileListProps>
       <DropdownMenuContent align="end" className="w-48">
         <DropdownMenuItem onClick={() => onEdit(rule)} className="min-h-[44px]">
           <Edit className="mr-2 size-4" />
-          编辑规则
+          {t('userForwardRules.menu.edit')}
         </DropdownMenuItem>
         <DropdownMenuSeparator />
         {rule.status === 'enabled' ? (
           <DropdownMenuItem onClick={() => onToggleStatus(rule)} className="min-h-[44px]">
             <PowerOff className="mr-2 size-4" />
-            禁用规则
+            {t('userForwardRules.menu.disableRule')}
           </DropdownMenuItem>
         ) : (
           <DropdownMenuItem onClick={() => onToggleStatus(rule)} className="min-h-[44px]">
             <Power className="mr-2 size-4" />
-            启用规则
+            {t('userForwardRules.menu.enableRule')}
           </DropdownMenuItem>
         )}
         <DropdownMenuItem
@@ -397,11 +405,11 @@ export const UserForwardRuleMobileList: React.FC<UserForwardRuleMobileListProps>
           className="text-destructive focus:text-destructive min-h-[44px]"
         >
           <Trash2 className="mr-2 size-4" />
-          删除规则
+          {t('userForwardRules.menu.deleteRule')}
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
-  ), [onEdit, onToggleStatus, handleDeleteClick]);
+  ), [onEdit, onToggleStatus, handleDeleteClick, t]);
 
   if (isLoading) {
     return <MobileCardSkeleton />;
@@ -410,7 +418,7 @@ export const UserForwardRuleMobileList: React.FC<UserForwardRuleMobileListProps>
   if (rules.length === 0) {
     return (
       <div className="glass rounded-2xl py-16 px-4 text-center">
-        <p className="text-muted-foreground">暂无转发规则</p>
+        <p className="text-muted-foreground">{t('userForwardRules.empty')}</p>
       </div>
     );
   }
@@ -424,7 +432,7 @@ export const UserForwardRuleMobileList: React.FC<UserForwardRuleMobileListProps>
     const agent = agentsMap[rule.agentId];
     const agentName = agent?.name || `ID: ${rule.agentId.slice(0, 8)}...`;
     const entryAddress = getEntryAddress(rule);
-    const statusConfig = STATUS_CONFIG[rule.status] || { label: rule.status, variant: 'secondary' as const };
+    const statusConfig = STATUS_CONFIG[rule.status] || { labelKey: rule.status, variant: 'secondary' as const };
     const ruleTypeConfig = RULE_TYPE_CONFIG[rule.ruleType] || RULE_TYPE_CONFIG.direct;
     const totalBytes = (rule.uploadBytes || 0) + (rule.downloadBytes || 0);
     const isSelected = selectedIds?.has(rule.id) ?? false;
@@ -433,7 +441,7 @@ export const UserForwardRuleMobileList: React.FC<UserForwardRuleMobileListProps>
     const getTargetDisplay = () => {
       if (rule.targetAddress) {
         return {
-          name: '目标地址',
+          name: t('userForwardRules.tooltip.targetAddress'),
           address: `${rule.targetAddress}:${rule.targetPort}`,
         };
       }
@@ -481,10 +489,10 @@ export const UserForwardRuleMobileList: React.FC<UserForwardRuleMobileListProps>
                 <Tooltip>
                   <TooltipTrigger asChild>
                     <span className={`inline-flex items-center justify-center px-1.5 py-0.5 text-[10px] font-semibold rounded ${ruleTypeConfig.bgColor} ${ruleTypeConfig.color}`}>
-                      {ruleTypeConfig.shortLabel}
+                      {t(ruleTypeConfig.shortLabelKey)}
                     </span>
                   </TooltipTrigger>
-                  <TooltipContent>{ruleTypeConfig.label}模式</TooltipContent>
+                  <TooltipContent>{t(ruleTypeConfig.labelKey)}{t('admin.forwardRules.mode')}</TooltipContent>
                 </Tooltip>
                 <span className="font-medium text-sm text-foreground truncate flex-1">
                   {rule.name}
@@ -495,7 +503,7 @@ export const UserForwardRuleMobileList: React.FC<UserForwardRuleMobileListProps>
                     className="text-[10px] px-1.5 py-0 h-5 flex-shrink-0 cursor-pointer"
                     onClick={() => onToggleStatus(rule)}
                   >
-                    {statusConfig.label}
+                    {t(statusConfig.labelKey)}
                   </Badge>
                 )}
               </div>
@@ -520,7 +528,7 @@ export const UserForwardRuleMobileList: React.FC<UserForwardRuleMobileListProps>
                 <button
                   onClick={() => onEdit(rule)}
                   className="glass-interactive rounded-full p-2 min-h-[40px] min-w-[40px] flex items-center justify-center touch-manipulation"
-                  title="编辑"
+                  title={t('common.actions.edit')}
                 >
                   <Edit className="size-4 text-muted-foreground" />
                 </button>
@@ -533,7 +541,7 @@ export const UserForwardRuleMobileList: React.FC<UserForwardRuleMobileListProps>
         {/* Accordion Trigger - more compact (hidden in selection mode) */}
         {!isSelectMode && (
           <AccordionTrigger className="px-3 py-1.5 border-t border-border/50 hover:no-underline hover:bg-muted/30 transition-colors">
-            <span className="text-xs text-muted-foreground">详情</span>
+            <span className="text-xs text-muted-foreground">{t('common.actions.view')}</span>
           </AccordionTrigger>
         )}
 
@@ -543,7 +551,7 @@ export const UserForwardRuleMobileList: React.FC<UserForwardRuleMobileListProps>
             <div className="px-3 pb-3 space-y-2.5 border-t border-border/50 pt-2.5">
               {/* Exit/Target info */}
               <div className="space-y-1">
-                <span className="text-[10px] text-muted-foreground uppercase tracking-wide font-medium">出口链路</span>
+                <span className="text-[10px] text-muted-foreground uppercase tracking-wide font-medium">{t('userForwardRules.exitChain')}</span>
                 <div className="flex-1 min-w-0">
                   {/* entry type: show exit agent -> target */}
                   {rule.ruleType === 'entry' && rule.exitAgentId && (() => {
@@ -589,7 +597,7 @@ export const UserForwardRuleMobileList: React.FC<UserForwardRuleMobileListProps>
 
               {/* Traffic usage - compact inline */}
               <div className="flex items-center justify-between py-1.5 px-2 rounded-lg bg-muted/30">
-                <span className="text-[10px] text-muted-foreground uppercase tracking-wide font-medium">已用流量</span>
+                <span className="text-[10px] text-muted-foreground uppercase tracking-wide font-medium">{t('userForwardRules.columns.usedTraffic')}</span>
                 <div className="flex items-center gap-2">
                   <span className="text-sm font-semibold font-mono text-foreground">
                     {formatBytesGB(totalBytes)}
@@ -606,8 +614,8 @@ export const UserForwardRuleMobileList: React.FC<UserForwardRuleMobileListProps>
                     </TooltipTrigger>
                     <TooltipContent>
                       <div className="space-y-0.5 text-xs">
-                        <div>上传: {formatBytesGB(rule.uploadBytes)}</div>
-                        <div>下载: {formatBytesGB(rule.downloadBytes)}</div>
+                        <div>{t('userForwardRules.traffic.upload')} {formatBytesGB(rule.uploadBytes)}</div>
+                        <div>{t('userForwardRules.traffic.download')} {formatBytesGB(rule.downloadBytes)}</div>
                       </div>
                     </TooltipContent>
                   </Tooltip>
@@ -617,7 +625,7 @@ export const UserForwardRuleMobileList: React.FC<UserForwardRuleMobileListProps>
               {/* Remark - compact */}
               {rule.remark && (
                 <div className="text-xs text-muted-foreground">
-                  <span className="font-medium">备注:</span> {rule.remark}
+                  <span className="font-medium">{t('userForwardRules.remark')}</span> {rule.remark}
                 </div>
               )}
             </div>
@@ -640,7 +648,7 @@ export const UserForwardRuleMobileList: React.FC<UserForwardRuleMobileListProps>
             onClick={() => onPageChange(page + 1)}
             className="glass-interactive w-full rounded-2xl py-4 text-sm font-medium text-foreground min-h-[44px] touch-manipulation"
           >
-            加载更多 ({page * pageSize} / {total})
+            {t('userForwardRules.loadMore')} ({page * pageSize} / {total})
           </button>
         </div>
       )}
@@ -649,10 +657,10 @@ export const UserForwardRuleMobileList: React.FC<UserForwardRuleMobileListProps>
       <ConfirmDialog
         open={deleteConfirm.open}
         onOpenChange={(open) => setDeleteConfirm({ open, rule: null })}
-        title="确认删除"
-        description={`确认删除转发规则「${deleteConfirm.rule?.name}」吗？此操作不可恢复。`}
-        confirmText="删除"
-        cancelText="取消"
+        title={t('userForwardRules.confirmDelete.title')}
+        description={t('userForwardRules.confirmDelete.description', { name: deleteConfirm.rule?.name })}
+        confirmText={t('common.actions.delete')}
+        cancelText={t('common.actions.cancel')}
         variant="destructive"
         onConfirm={handleDeleteConfirm}
       />

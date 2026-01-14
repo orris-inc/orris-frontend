@@ -4,6 +4,7 @@
  */
 
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Send, Unlink, CheckCircle2 } from 'lucide-react';
 import { Button } from '@/components/common/Button';
 import { Skeleton } from '@/components/common/Skeleton';
@@ -17,6 +18,7 @@ import { NotificationPreferencesForm } from './NotificationPreferencesForm';
  * Main card component for Telegram binding management
  */
 export const TelegramBindingCard = () => {
+  const { t } = useTranslation();
   const {
     isLoading,
     isNotConfigured,
@@ -62,8 +64,8 @@ export const TelegramBindingCard = () => {
             <Send className="size-5" />
           </div>
           <div>
-            <h3 className="font-medium text-foreground">Telegram 绑定</h3>
-            <p className="text-sm">功能暂未启用，请联系管理员</p>
+            <h3 className="font-medium text-foreground">{t('notifications.telegram.binding')}</h3>
+            <p className="text-sm">{t('notifications.telegram.notConfiguredDesc')}</p>
           </div>
         </div>
       </div>
@@ -87,11 +89,11 @@ export const TelegramBindingCard = () => {
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <h3 className="font-medium">Telegram 绑定</h3>
+                <h3 className="font-medium">{t('notifications.telegram.binding')}</h3>
                 {isBound && (
                   <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-xs bg-success/10 text-success">
                     <CheckCircle2 className="size-3" />
-                    已绑定
+                    {t('notifications.status.bound')}
                   </span>
                 )}
               </div>
@@ -128,9 +130,9 @@ export const TelegramBindingCard = () => {
       <ConfirmDialog
         open={showUnbindDialog}
         onOpenChange={setShowUnbindDialog}
-        title="解除 Telegram 绑定"
-        description="解除绑定后，您将不再通过 Telegram 接收任何通知。"
-        confirmText="解除绑定"
+        title={t('notifications.telegram.unbindTitle')}
+        description={t('notifications.telegram.unbindDesc')}
+        confirmText={t('notifications.telegram.unbind')}
         variant="destructive"
         onConfirm={handleUnbind}
         loading={isUnbinding}

@@ -18,7 +18,7 @@
  * @see https://github.com/emilkowalski/vaul
  */
 
-import { useMemo, useCallback } from 'react';
+import { useMemo, useCallback, useState, useRef } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Drawer } from 'vaul';
@@ -49,6 +49,10 @@ interface MobileDrawerProps {
   isAdminView?: boolean;
   /** Title shown in header when no user */
   title?: string;
+  /** Server version */
+  serverVersion?: string;
+  /** Client version */
+  clientVersion?: string;
   onAdminClick?: () => void;
   onLogout?: () => void;
 }
@@ -61,6 +65,8 @@ export const MobileDrawer = ({
   showAdminSwitch = false,
   isAdminView = false,
   title,
+  serverVersion,
+  clientVersion,
   onAdminClick,
   onLogout,
 }: MobileDrawerProps) => {
@@ -68,6 +74,20 @@ export const MobileDrawer = ({
   const navigate = useNavigate();
   const { t } = useTranslation();
   const initials = user?.initials || user?.displayName?.charAt(0).toUpperCase() || '?';
+
+  // Smart scroll detection for drag-to-close
+  const navListRef = useRef<HTMLDivElement>(null);
+  const [isNavScrolled, setIsNavScrolled] = useState(false);
+
+  const handleNavScroll = useCallback(() => {
+    const navList = navListRef.current;
+    if (!navList) return;
+    // Use a small threshold to avoid floating-point issues
+    const scrolled = navList.scrollTop > 1;
+    if (scrolled !== isNavScrolled) {
+      setIsNavScrolled(scrolled);
+    }
+  }, [isNavScrolled]);
 
   // Navigate and close drawer
   const handleNavigation = useCallback((path: string) => {
@@ -231,9 +251,11 @@ export const MobileDrawer = ({
             onClose={onClose}
           />
 
-          {/* Navigation List */}
+          {/* Navigation List - Smart drag control: only block when scrolled */}
           <div
-            data-vaul-no-drag
+            ref={navListRef}
+            data-vaul-no-drag={isNavScrolled || undefined}
+            onScroll={handleNavScroll}
             className="flex-1 min-h-0 overflow-y-auto overscroll-contain scrollbar-hide px-3 py-2"
           >
             <nav
@@ -244,6 +266,36 @@ export const MobileDrawer = ({
               {isAdminView ? renderGroupedNavigation : renderFlatNavigation}
             </nav>
           </div>
+
+          {/* Version Info Card */}
+          {(serverVersion || clientVersion) && (
+            <div className="flex-shrink-0 px-3 py-2">
+              <div
+                className={cn(
+                  'rounded-xl px-3 py-2.5',
+                  'bg-white/60 dark:bg-white/[0.06]',
+                  'backdrop-blur-[var(--glass-blur-md)]',
+                  'border border-black/[0.04] dark:border-white/[0.08]',
+                  'shadow-[0_2px_8px_rgba(0,0,0,0.04)]'
+                )}
+              >
+                <div className="flex items-center justify-center gap-4 text-[11px]">
+                  {serverVersion && (
+                    <div className="flex items-center gap-1.5">
+                      <span className="text-muted-foreground/60">{t('app.serverVersion')}</span>
+                      <span className="font-mono text-muted-foreground">{serverVersion}</span>
+                    </div>
+                  )}
+                  {clientVersion && (
+                    <div className="flex items-center gap-1.5">
+                      <span className="text-muted-foreground/60">{t('app.clientVersion')}</span>
+                      <span className="font-mono text-muted-foreground">{clientVersion}</span>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
 
         </Drawer.Content>
       </Drawer.Portal>

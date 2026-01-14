@@ -4,6 +4,7 @@
  */
 
 import { useState, useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
   Boxes,
   Plus,
@@ -40,7 +41,8 @@ import type { SubscriptionPlan } from '@/api/subscription/types';
 type StatusFilter = 'all' | ResourceGroupStatus;
 
 export const ResourceGroupManagementPage = () => {
-  usePageTitle('资源组管理');
+  const { t } = useTranslation();
+  usePageTitle(t('admin.resourceGroups.title'));
 
   const { isMobile } = useBreakpoint();
 
@@ -102,11 +104,11 @@ export const ResourceGroupManagementPage = () => {
     const diffHours = Math.floor(diffMs / 3600000);
     const diffDays = Math.floor(diffMs / 86400000);
 
-    if (diffMins < 1) return '刚刚';
-    if (diffMins < 60) return `${diffMins}分钟前`;
-    if (diffHours < 24) return `${diffHours}小时前`;
-    if (diffDays < 7) return `${diffDays}天前`;
-    return date.toLocaleDateString('zh-CN');
+    if (diffMins < 1) return t('common.time.now');
+    if (diffMins < 60) return t('common.time.minutesAgo', { count: diffMins });
+    if (diffHours < 24) return t('common.time.hoursAgo', { count: diffHours });
+    if (diffDays < 7) return t('common.time.daysAgo', { count: diffDays });
+    return date.toLocaleDateString();
   };
 
   // Status filter
@@ -240,7 +242,7 @@ export const ResourceGroupManagementPage = () => {
           <div className="flex items-center justify-between gap-3 flex-wrap">
             {/* Left: Title + Stats */}
             <div className="flex items-center gap-3">
-              <h1 className="text-sm font-semibold text-foreground">资源组管理</h1>
+              <h1 className="text-sm font-semibold text-foreground">{t('admin.resourceGroups.title')}</h1>
               <div className="h-4 w-px bg-border hidden sm:block" />
               <div className="flex items-center gap-2.5 text-xs">
                 <span className="flex items-center gap-1 text-muted-foreground">
@@ -270,7 +272,7 @@ export const ResourceGroupManagementPage = () => {
               <Tabs value={statusFilter} onValueChange={(v) => setStatusFilter(v as StatusFilter)}>
                 <TabsList className="h-7">
                   <TabsTrigger value="all" className="text-[10px] px-2 h-6">
-                    全部
+                    {t('filter.all')}
                   </TabsTrigger>
                   <TabsTrigger value="active" className="text-[10px] px-2 h-6 gap-1">
                     <CheckCircle2 className="size-2.5" />
@@ -295,7 +297,7 @@ export const ResourceGroupManagementPage = () => {
                       </span>
                     </TooltipTrigger>
                     <TooltipContent>
-                      最近更新: {stats.lastUpdated.toLocaleString('zh-CN')}
+                      {t('admin.resourceGroups.lastUpdated')}: {stats.lastUpdated.toLocaleString()}
                     </TooltipContent>
                   </Tooltip>
                 </>
@@ -319,10 +321,10 @@ export const ResourceGroupManagementPage = () => {
                       />
                     }
                   >
-                    <span className="sr-only">刷新</span>
+                    <span className="sr-only">{t('common.actions.refresh')}</span>
                   </AdminButton>
                 </TooltipTrigger>
-                <TooltipContent>刷新列表</TooltipContent>
+                <TooltipContent>{t('admin.common.refreshList')}</TooltipContent>
               </Tooltip>
 
               <AdminButton
@@ -332,8 +334,8 @@ export const ResourceGroupManagementPage = () => {
                 icon={<Plus className="size-3.5" strokeWidth={2} />}
                 onClick={() => setCreateDialogOpen(true)}
               >
-                <span className="hidden sm:inline">创建</span>
-                <span className="sm:hidden">创建</span>
+                <span className="hidden sm:inline">{t('common.actions.create')}</span>
+                <span className="sm:hidden">{t('common.actions.create')}</span>
               </AdminButton>
             </div>
           </div>

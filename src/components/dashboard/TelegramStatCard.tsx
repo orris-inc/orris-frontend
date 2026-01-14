@@ -5,6 +5,7 @@
 
 import { Link } from 'react-router';
 import { Send, ChevronRight } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { Skeleton } from '@/components/common/Skeleton';
 import { cn } from '@/lib/utils';
 
@@ -33,6 +34,8 @@ export const TelegramStatCard = ({
   isLoading = false,
   className,
 }: TelegramStatCardProps) => {
+  const { t } = useTranslation();
+
   // Loading skeleton
   if (isLoading) {
     return (
@@ -53,15 +56,15 @@ export const TelegramStatCard = ({
 
   const statusConfig = isBound
     ? {
-        status: '已绑定',
+        status: t('notifications.status.bound'),
         statusClass: 'text-success',
-        subtitle: username ? `@${username}` : '接收通知中',
+        subtitle: username ? `@${username}` : t('notifications.telegram.receivingNotifications'),
         iconBgClass: 'bg-[#26A5E4]/10 ring-[#26A5E4]/20',
       }
     : {
-        status: '未绑定',
+        status: t('notifications.status.unbound'),
         statusClass: 'text-muted-foreground',
-        subtitle: '点击绑定接收通知',
+        subtitle: t('notifications.telegram.clickToBind'),
         iconBgClass: 'bg-muted ring-border',
       };
 

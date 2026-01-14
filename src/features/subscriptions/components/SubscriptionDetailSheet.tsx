@@ -24,8 +24,11 @@ import {
   Eye,
   MoreHorizontal,
   Play,
+  PlayCircle,
+  Pause,
   Trash2,
   RotateCw,
+  RefreshCcw,
 } from 'lucide-react';
 import {
   Sheet,
@@ -58,14 +61,20 @@ interface SubscriptionDetailSheetProps {
   onActivate?: (subscription: Subscription) => void;
   onCancel?: (subscription: Subscription) => void;
   onRenew?: (subscription: Subscription) => void;
+  onSuspend?: (subscription: Subscription) => void;
+  onUnsuspend?: (subscription: Subscription) => void;
+  onResetUsage?: (subscription: Subscription) => void;
   onDelete?: (subscription: Subscription) => void;
 }
 
-// Status configuration using CSS variables
+// Status configuration using CSS variables (synced with SDK 2025-01-14)
 const STATUS_CONFIG: Record<SubscriptionStatus, { labelKey: string; color: string }> = {
+  inactive: { labelKey: 'subscriptionStatus.inactive', color: 'bg-muted text-muted-foreground' },
+  pending_payment: { labelKey: 'subscriptionStatus.pendingPayment', color: 'bg-warning/10 text-warning' },
+  trialing: { labelKey: 'subscriptionStatus.trialing', color: 'bg-info/10 text-info' },
   active: { labelKey: 'subscriptionStatus.active', color: 'bg-success/10 text-success' },
-  renewed: { labelKey: 'subscriptionStatus.renewed', color: 'bg-success/10 text-success' },
-  pending: { labelKey: 'subscriptionStatus.pending', color: 'bg-warning/10 text-warning' },
+  past_due: { labelKey: 'subscriptionStatus.pastDue', color: 'bg-warning/10 text-warning' },
+  suspended: { labelKey: 'subscriptionStatus.suspended', color: 'bg-destructive/10 text-destructive' },
   cancelled: { labelKey: 'subscriptionStatus.cancelled', color: 'bg-destructive/10 text-destructive' },
   expired: { labelKey: 'subscriptionStatus.expired', color: 'bg-muted text-muted-foreground' },
 };
@@ -83,23 +92,49 @@ const PLAN_TYPE_CONFIG: Record<PlanType, { labelKey: string; color: string }> = 
 
 /**
  * Check if subscription can be activated
+ * Updated: 2025-01-14 - Synced with backend status.go
  */
 const canActivate = (subscription: Subscription): boolean => {
-  return subscription.status === 'pending' || subscription.status === 'cancelled';
+  const status = subscription.status;
+  return status === 'inactive' || status === 'pending_payment';
+};
+
+/**
+ * Check if subscription can be unsuspended
+ */
+const canUnsuspend = (subscription: Subscription): boolean => {
+  return subscription.status === 'suspended';
 };
 
 /**
  * Check if subscription can be cancelled
+ * Updated: 2025-01-14 - Synced with backend status.go
  */
 const canCancel = (subscription: Subscription): boolean => {
-  return subscription.status === 'active' || subscription.status === 'renewed';
+  const status = subscription.status;
+  return status === 'active' || status === 'trialing' || status === 'past_due';
+};
+
+/**
+ * Check if subscription can be suspended
+ */
+const canSuspend = (subscription: Subscription): boolean => {
+  return subscription.status === 'active';
 };
 
 /**
  * Check if subscription can be renewed
  */
 const canRenew = (subscription: Subscription): boolean => {
-  return subscription.status === 'expired' || subscription.status === 'cancelled';
+  return subscription.status === 'expired';
+};
+
+/**
+ * Check if subscription usage can be reset
+ * Can reset for active or suspended subscriptions
+ */
+const canResetUsage = (subscription: Subscription): boolean => {
+  return subscription.status === 'active' || subscription.status === 'suspended';
 };
 
 // ============================================================================
@@ -183,6 +218,9 @@ export const SubscriptionDetailSheet: React.FC<SubscriptionDetailSheetProps> = (
   onActivate,
   onCancel,
   onRenew,
+  onSuspend,
+  onUnsuspend,
+  onResetUsage,
   onDelete,
 }) => {
   const { t } = useTranslation();
@@ -209,12 +247,45 @@ export const SubscriptionDetailSheet: React.FC<SubscriptionDetailSheetProps> = (
     });
   }
 
+  if (canUnsuspend(subscription) && onUnsuspend) {
+    moreActions.push({
+      label: t('subscription.unsuspend'),
+      icon: <PlayCircle className="size-5" />,
+      onPress: async () => {
+        onUnsuspend(subscription);
+        onOpenChange(false);
+      },
+    });
+  }
+
   if (canRenew(subscription) && onRenew) {
     moreActions.push({
       label: t('subscription.renewSubscription'),
       icon: <RotateCw className="size-5" />,
       onPress: async () => {
         onRenew(subscription);
+        onOpenChange(false);
+      },
+    });
+  }
+
+  if (canSuspend(subscription) && onSuspend) {
+    moreActions.push({
+      label: t('subscription.suspend'),
+      icon: <Pause className="size-5" />,
+      onPress: async () => {
+        onSuspend(subscription);
+        onOpenChange(false);
+      },
+    });
+  }
+
+  if (canResetUsage(subscription) && onResetUsage) {
+    moreActions.push({
+      label: t('subscription.resetUsage'),
+      icon: <RefreshCcw className="size-5" />,
+      onPress: async () => {
+        onResetUsage(subscription);
         onOpenChange(false);
       },
     });

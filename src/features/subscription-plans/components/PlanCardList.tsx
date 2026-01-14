@@ -4,6 +4,7 @@
  */
 
 import { Loader2 } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import { PlanCard } from "./PlanCard";
 import type { SubscriptionPlan } from "@/api/subscription/types";
 
@@ -20,6 +21,8 @@ export const PlanCardList: React.FC<PlanCardListProps> = ({
   recommendedPlanId,
   onSelectPlan,
 }) => {
+  const { t } = useTranslation();
+
   if (loading) {
     return (
       <div className="flex justify-center items-center min-h-[300px]">
@@ -31,7 +34,7 @@ export const PlanCardList: React.FC<PlanCardListProps> = ({
   if (!plans || plans.length === 0) {
     return (
       <div className="text-center py-12">
-        <p className="text-muted-foreground">暂无可用的订阅计划</p>
+        <p className="text-muted-foreground">{t("pricing.noPlans")}</p>
       </div>
     );
   }

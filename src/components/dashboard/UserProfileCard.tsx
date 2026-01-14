@@ -4,6 +4,7 @@
  */
 
 import { Settings } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { cardStyles, getButtonClass } from '@/lib/ui-styles';
 import { Avatar, AvatarFallback } from '@/components/common/Avatar';
 import type { UserDisplayInfo } from '@/api/auth';
@@ -14,6 +15,7 @@ interface UserProfileCardProps {
 }
 
 export const UserProfileCard = ({ user }: UserProfileCardProps) => {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const avatarText = user.initials ||
     user.displayName?.charAt(0).toUpperCase() ||
@@ -34,7 +36,7 @@ export const UserProfileCard = ({ user }: UserProfileCardProps) => {
             className={getButtonClass('secondary', 'sm', 'w-full rounded-xl')}
           >
             <Settings className="size-4 mr-2" />
-            个人设置
+            {t('nav.profile')}
           </button>
         </div>
       </div>

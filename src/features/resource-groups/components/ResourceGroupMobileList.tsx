@@ -94,17 +94,17 @@ export const ResourceGroupMobileList: React.FC<ResourceGroupMobileListProps> = (
           {onViewDetail && (
             <DropdownMenuItem onClick={() => onViewDetail(resourceGroup)}>
               <Eye className="mr-2 size-4" />
-              查看详情
+              {t('common.actions.viewDetail')}
             </DropdownMenuItem>
           )}
           <DropdownMenuItem onClick={() => onEdit(resourceGroup)}>
             <Edit className="mr-2 size-4" />
-            编辑
+            {t('common.actions.edit')}
           </DropdownMenuItem>
           <DropdownMenuSeparator />
           <DropdownMenuItem onClick={() => onToggleStatus(resourceGroup)}>
             <Power className="mr-2 size-4" />
-            {resourceGroup.status === 'active' ? '停用' : '激活'}
+            {resourceGroup.status === 'active' ? t('common.actions.deactivate') : t('common.actions.activate')}
           </DropdownMenuItem>
           <DropdownMenuSeparator />
           <DropdownMenuItem
@@ -112,7 +112,7 @@ export const ResourceGroupMobileList: React.FC<ResourceGroupMobileListProps> = (
             className="text-destructive focus:text-destructive"
           >
             <Trash2 className="mr-2 size-4" />
-            删除
+            {t('common.actions.delete')}
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
@@ -126,7 +126,7 @@ export const ResourceGroupMobileList: React.FC<ResourceGroupMobileListProps> = (
   if (resourceGroups.length === 0) {
     return (
       <div className="text-center py-12 text-slate-500 dark:text-slate-400">
-        暂无资源组
+        {t('admin.resourceGroups.emptyState')}
       </div>
     );
   }
@@ -161,7 +161,7 @@ export const ResourceGroupMobileList: React.FC<ResourceGroupMobileListProps> = (
                   {/* Plan name */}
                   <div className="flex items-center gap-1.5 text-xs text-slate-500 dark:text-slate-400">
                     <FileText className="size-3 text-slate-400 flex-shrink-0" />
-                    <span className="truncate">{plan?.name || `计划 #${resourceGroup.planId}`}</span>
+                    <span className="truncate">{plan?.name || `${t('admin.resourceGroups.detail.plan')} #${resourceGroup.planId}`}</span>
                   </div>
                 </div>
 
@@ -176,7 +176,7 @@ export const ResourceGroupMobileList: React.FC<ResourceGroupMobileListProps> = (
                         <Edit className="size-3.5 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300" />
                       </button>
                     </TooltipTrigger>
-                    <TooltipContent>编辑</TooltipContent>
+                    <TooltipContent>{t('common.actions.edit')}</TooltipContent>
                   </Tooltip>
                   <Tooltip>
                     <TooltipTrigger asChild>
@@ -195,7 +195,7 @@ export const ResourceGroupMobileList: React.FC<ResourceGroupMobileListProps> = (
                         }`} />
                       </button>
                     </TooltipTrigger>
-                    <TooltipContent>{resourceGroup.status === 'active' ? '停用' : '激活'}</TooltipContent>
+                    <TooltipContent>{resourceGroup.status === 'active' ? t('common.actions.deactivate') : t('common.actions.activate')}</TooltipContent>
                   </Tooltip>
                   {renderDropdownMenu(resourceGroup)}
                 </div>
@@ -204,7 +204,7 @@ export const ResourceGroupMobileList: React.FC<ResourceGroupMobileListProps> = (
 
             {/* Accordion Trigger */}
             <AccordionTrigger className="px-3 py-1.5 border-t border-slate-100 dark:border-slate-700 hover:no-underline hover:bg-slate-50 dark:hover:bg-slate-700/50">
-              <span className="text-xs text-slate-400 dark:text-slate-500">详情</span>
+              <span className="text-xs text-slate-400 dark:text-slate-500">{t('common.detail')}</span>
             </AccordionTrigger>
 
             {/* Accordion Content - Expanded details */}
@@ -218,7 +218,7 @@ export const ResourceGroupMobileList: React.FC<ResourceGroupMobileListProps> = (
 
                 {/* Plan */}
                 <div className="flex items-center gap-2">
-                  <span className="text-[10px] text-slate-400 dark:text-slate-500 uppercase tracking-wide w-10 flex-shrink-0">计划</span>
+                  <span className="text-[10px] text-slate-400 dark:text-slate-500 uppercase tracking-wide w-10 flex-shrink-0">{t('admin.resourceGroups.detail.plan')}</span>
                   <div className="text-xs text-slate-600 dark:text-slate-300">
                     {plan ? (
                       <span>
@@ -226,7 +226,7 @@ export const ResourceGroupMobileList: React.FC<ResourceGroupMobileListProps> = (
                         <span className="ml-1 font-mono text-slate-400">({plan.slug})</span>
                       </span>
                     ) : (
-                      <span className="text-slate-400">计划 #{resourceGroup.planId}</span>
+                      <span className="text-slate-400">{t('admin.resourceGroups.detail.plan')} #{resourceGroup.planId}</span>
                     )}
                   </div>
                 </div>
@@ -234,14 +234,14 @@ export const ResourceGroupMobileList: React.FC<ResourceGroupMobileListProps> = (
                 {/* Description */}
                 {resourceGroup.description && (
                   <div className="flex items-start gap-2">
-                    <span className="text-[10px] text-slate-400 dark:text-slate-500 uppercase tracking-wide w-10 pt-0.5 flex-shrink-0">描述</span>
+                    <span className="text-[10px] text-slate-400 dark:text-slate-500 uppercase tracking-wide w-10 pt-0.5 flex-shrink-0">{t('admin.resourceGroups.detail.description')}</span>
                     <span className="text-xs text-slate-600 dark:text-slate-300 flex-1">{resourceGroup.description}</span>
                   </div>
                 )}
 
                 {/* Created at */}
                 <div className="flex items-center gap-2">
-                  <span className="text-[10px] text-slate-400 dark:text-slate-500 uppercase tracking-wide w-10 flex-shrink-0">创建</span>
+                  <span className="text-[10px] text-slate-400 dark:text-slate-500 uppercase tracking-wide w-10 flex-shrink-0">{t('admin.resourceGroups.detail.created')}</span>
                   <span className="text-xs text-slate-500">{formatDate(resourceGroup.createdAt)}</span>
                 </div>
               </div>

@@ -3,6 +3,7 @@
  * Displays user and subscription traffic rankings with tabs
  */
 
+import { useTranslation } from 'react-i18next';
 import { Trophy, ArrowUp, ArrowDown, Activity } from 'lucide-react';
 import { TrafficRankingItem, formatTrafficBytes } from '@/api/admin';
 import { AdminCard } from './AdminCard';
@@ -173,17 +174,19 @@ export const TrafficRankingList = ({
   subscriptionRanking,
   loading,
 }: TrafficRankingListProps) => {
+  const { t } = useTranslation();
+
   return (
     <AdminCard noPadding>
       <Tabs defaultValue="user" className="w-full">
         {/* Header with Title and Tabs */}
         <div className="flex items-center justify-between px-4 sm:px-6 py-4 sm:py-0 sm:h-[72px] border-b border-border">
           <h3 className="text-base sm:text-lg font-semibold text-foreground">
-            流量排行榜
+            {t('admin.traffic.ranking')}
           </h3>
           <TabsList className="h-8 sm:h-9">
-            <TabsTrigger value="user" className="text-xs sm:text-sm px-2.5 sm:px-3">用户排行</TabsTrigger>
-            <TabsTrigger value="subscription" className="text-xs sm:text-sm px-2.5 sm:px-3">订阅排行</TabsTrigger>
+            <TabsTrigger value="user" className="text-xs sm:text-sm px-2.5 sm:px-3">{t('admin.traffic.userRanking')}</TabsTrigger>
+            <TabsTrigger value="subscription" className="text-xs sm:text-sm px-2.5 sm:px-3">{t('admin.traffic.subscriptionRanking')}</TabsTrigger>
           </TabsList>
         </div>
 
@@ -192,7 +195,7 @@ export const TrafficRankingList = ({
           {loading ? (
             <RankingListSkeleton />
           ) : userRanking.length === 0 ? (
-            <EmptyState message="暂无用户流量数据" />
+            <EmptyState message={t('admin.traffic.noUserData')} />
           ) : (
             <ScrollArea className="h-[320px] sm:h-[480px]">
               <div className="space-y-2 sm:space-y-3 pr-4">
@@ -209,7 +212,7 @@ export const TrafficRankingList = ({
           {loading ? (
             <RankingListSkeleton />
           ) : subscriptionRanking.length === 0 ? (
-            <EmptyState message="暂无订阅流量数据" />
+            <EmptyState message={t('admin.traffic.noSubscriptionData')} />
           ) : (
             <ScrollArea className="h-[320px] sm:h-[480px]">
               <div className="space-y-2 sm:space-y-3 pr-4">

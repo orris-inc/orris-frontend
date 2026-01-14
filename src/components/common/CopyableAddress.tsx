@@ -3,6 +3,7 @@
  * Displays an address with truncation and copy functionality
  */
 import { useState, useCallback } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Copy, Check } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/common/Tooltip';
 import { cn } from '@/lib/utils';
@@ -31,9 +32,12 @@ export const CopyableAddress: React.FC<CopyableAddressProps> = ({
   startChars = 8,
   endChars = 6,
   showTooltip = true,
-  copyTitle = '复制地址',
+  copyTitle,
 }) => {
+  const { t } = useTranslation();
   const [copied, setCopied] = useState(false);
+
+  const resolvedCopyTitle = copyTitle ?? t('common.copyAddress');
 
   const handleCopy = useCallback((e: React.MouseEvent) => {
     e.stopPropagation();
@@ -60,7 +64,7 @@ export const CopyableAddress: React.FC<CopyableAddressProps> = ({
         type="button"
         onClick={handleCopy}
         className="flex-shrink-0 p-0.5 opacity-0 group-hover:opacity-100 hover:bg-muted rounded transition-all"
-        title={copied ? '已复制' : copyTitle}
+        title={copied ? t('common.copied') : resolvedCopyTitle}
       >
         {copied ? (
           <Check className="size-3 text-green-500" />

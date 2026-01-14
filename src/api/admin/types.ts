@@ -395,3 +395,30 @@ export interface TelegramTestResult {
   /** Error message (on failure) */
   error?: string;
 }
+
+// ========== Admin Subscription Management Types (Added 2025-01-14) ==========
+
+/**
+ * Request to suspend a subscription
+ * Used by POST /admin/subscriptions/:id/suspend
+ */
+export interface SuspendSubscriptionRequest {
+  /** Reason for suspension (required) */
+  reason: string;
+}
+
+/**
+ * Response from reset subscription usage operation
+ * Used by POST /admin/subscriptions/:id/reset-usage
+ * Added: 2026-01-14
+ */
+export interface ResetSubscriptionUsageResponse {
+  /** Subscription Stripe-style ID (e.g., "sub_xK9mP2vL3nQ") */
+  subscriptionId: string;
+  /** Whether the subscription was suspended before reset */
+  wasSuspended: boolean;
+  /** New billing period start time (ISO8601 format) */
+  newPeriodStart: string;
+  /** Billing period end time (ISO8601 format, unchanged) */
+  newPeriodEnd: string;
+}

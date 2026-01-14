@@ -4,6 +4,7 @@
  */
 
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Copy, Check, Terminal, Download } from 'lucide-react';
 import { safeWindowOpen } from '@/shared/utils/url-utils';
 import {
@@ -32,6 +33,7 @@ export const UserNodeInstallScriptDialog: React.FC<UserNodeInstallScriptDialogPr
   isLoading = false,
   onClose,
 }) => {
+  const { t } = useTranslation();
   const [copiedInstall, setCopiedInstall] = useState(false);
   const [copiedUninstall, setCopiedUninstall] = useState(false);
   const [copiedScriptUrl, setCopiedScriptUrl] = useState(false);
@@ -93,21 +95,23 @@ export const UserNodeInstallScriptDialog: React.FC<UserNodeInstallScriptDialogPr
         <DialogHeader className="flex-shrink-0">
           <DialogTitle className="flex items-center gap-2">
             <Terminal className="size-5" />
-            安装命令
+            {t('userNodes.installScript.title')}
           </DialogTitle>
           <DialogDescription>
-            {nodeName ? `节点「${nodeName}」的` : ''}安装命令，在目标服务器上执行即可完成部署
+            {nodeName
+              ? t('userNodes.installScript.descriptionWithNode', { name: nodeName })
+              : t('userNodes.installScript.description')}
           </DialogDescription>
         </DialogHeader>
 
         <div className="flex-1 min-h-0 overflow-y-auto -mx-6 px-6">
         {isLoading ? (
           <div className="py-8 text-center text-muted-foreground">
-            加载中...
+            {t('app.loading')}
           </div>
         ) : !installScriptData ? (
           <div className="py-8 text-center text-muted-foreground">
-            暂无安装脚本数据
+            {t('userNodes.installScript.noData')}
           </div>
         ) : (
           <div className="space-y-4">
@@ -116,8 +120,8 @@ export const UserNodeInstallScriptDialog: React.FC<UserNodeInstallScriptDialogPr
               <div className="border border-primary/20 rounded-lg p-4 bg-primary/5">
                 <div className="flex items-center justify-between mb-2">
                   <h4 className="text-sm font-medium flex items-center gap-2">
-                    安装命令
-                    <span className="text-xs px-1.5 py-0.5 rounded bg-primary/10 text-primary">推荐</span>
+                    {t('userNodes.installScript.installCommand')}
+                    <span className="text-xs px-1.5 py-0.5 rounded bg-primary/10 text-primary">{t('userNodes.installScript.recommended')}</span>
                   </h4>
                   <Button
                     variant="ghost"
@@ -128,12 +132,12 @@ export const UserNodeInstallScriptDialog: React.FC<UserNodeInstallScriptDialogPr
                     {copiedInstall ? (
                       <>
                         <Check className="size-3.5 mr-1 text-green-500" />
-                        已复制
+                        {t('common.copied')}
                       </>
                     ) : (
                       <>
                         <Copy className="size-3.5 mr-1" />
-                        复制
+                        {t('common.actions.copy')}
                       </>
                     )}
                   </Button>
@@ -144,7 +148,7 @@ export const UserNodeInstallScriptDialog: React.FC<UserNodeInstallScriptDialogPr
                   </pre>
                 </div>
                 <p className="text-xs text-muted-foreground mt-2">
-                  在目标服务器上以 root 权限执行此命令，将自动下载并安装节点
+                  {t('userNodes.installScript.installHint')}
                 </p>
               </div>
             )}
@@ -153,7 +157,7 @@ export const UserNodeInstallScriptDialog: React.FC<UserNodeInstallScriptDialogPr
             {installScriptData.uninstallCommand && (
               <div>
                 <div className="flex items-center justify-between mb-2">
-                  <h4 className="text-sm font-medium">卸载命令</h4>
+                  <h4 className="text-sm font-medium">{t('userNodes.installScript.uninstallCommand')}</h4>
                   <Button
                     variant="ghost"
                     size="sm"
@@ -163,12 +167,12 @@ export const UserNodeInstallScriptDialog: React.FC<UserNodeInstallScriptDialogPr
                     {copiedUninstall ? (
                       <>
                         <Check className="size-3.5 mr-1 text-green-500" />
-                        已复制
+                        {t('common.copied')}
                       </>
                     ) : (
                       <>
                         <Copy className="size-3.5 mr-1" />
-                        复制
+                        {t('common.actions.copy')}
                       </>
                     )}
                   </Button>
@@ -185,7 +189,7 @@ export const UserNodeInstallScriptDialog: React.FC<UserNodeInstallScriptDialogPr
             {installScriptData.scriptUrl && (
               <div>
                 <div className="flex items-center justify-between mb-2">
-                  <h4 className="text-sm font-medium">脚本地址</h4>
+                  <h4 className="text-sm font-medium">{t('userNodes.installScript.scriptUrl')}</h4>
                   <div className="flex gap-1">
                     <Button
                       variant="ghost"
@@ -196,12 +200,12 @@ export const UserNodeInstallScriptDialog: React.FC<UserNodeInstallScriptDialogPr
                       {copiedScriptUrl ? (
                         <>
                           <Check className="size-3.5 mr-1 text-green-500" />
-                          已复制
+                          {t('common.copied')}
                         </>
                       ) : (
                         <>
                           <Copy className="size-3.5 mr-1" />
-                          复制
+                          {t('common.actions.copy')}
                         </>
                       )}
                     </Button>
@@ -212,7 +216,7 @@ export const UserNodeInstallScriptDialog: React.FC<UserNodeInstallScriptDialogPr
                       className="h-7 px-2"
                     >
                       <Download className="size-3.5 mr-1" />
-                      打开
+                      {t('userNodes.installScript.open')}
                     </Button>
                   </div>
                 </div>
@@ -225,16 +229,16 @@ export const UserNodeInstallScriptDialog: React.FC<UserNodeInstallScriptDialogPr
             {/* Details (collapsible) */}
             <details className="group">
               <summary className="flex items-center justify-between cursor-pointer list-none">
-                <h4 className="text-sm font-medium">查看详细信息</h4>
-                <span className="text-xs text-muted-foreground group-open:hidden">点击展开</span>
-                <span className="text-xs text-muted-foreground hidden group-open:inline">点击收起</span>
+                <h4 className="text-sm font-medium">{t('userNodes.installScript.viewDetails')}</h4>
+                <span className="text-xs text-muted-foreground group-open:hidden">{t('userNodes.installScript.clickToExpand')}</span>
+                <span className="text-xs text-muted-foreground hidden group-open:inline">{t('userNodes.installScript.clickToCollapse')}</span>
               </summary>
               <div className="mt-3 space-y-3">
                 {/* API URL */}
                 {installScriptData.apiUrl && (
                   <div>
                     <div className="flex items-center justify-between mb-2">
-                      <h5 className="text-sm font-medium">API 地址</h5>
+                      <h5 className="text-sm font-medium">{t('userNodes.installScript.apiUrl')}</h5>
                       <Button
                         variant="ghost"
                         size="sm"
@@ -244,12 +248,12 @@ export const UserNodeInstallScriptDialog: React.FC<UserNodeInstallScriptDialogPr
                         {copiedApiUrl ? (
                           <>
                             <Check className="size-3.5 mr-1 text-green-500" />
-                            已复制
+                            {t('common.copied')}
                           </>
                         ) : (
                           <>
                             <Copy className="size-3.5 mr-1" />
-                            复制
+                            {t('common.actions.copy')}
                           </>
                         )}
                       </Button>
@@ -264,7 +268,7 @@ export const UserNodeInstallScriptDialog: React.FC<UserNodeInstallScriptDialogPr
                 {installScriptData.token && (
                   <div>
                     <div className="flex items-center justify-between mb-2">
-                      <h5 className="text-sm font-medium">Token</h5>
+                      <h5 className="text-sm font-medium">{t('userNodes.installScript.token')}</h5>
                       <Button
                         variant="ghost"
                         size="sm"
@@ -274,12 +278,12 @@ export const UserNodeInstallScriptDialog: React.FC<UserNodeInstallScriptDialogPr
                         {copiedToken ? (
                           <>
                             <Check className="size-3.5 mr-1 text-green-500" />
-                            已复制
+                            {t('common.copied')}
                           </>
                         ) : (
                           <>
                             <Copy className="size-3.5 mr-1" />
-                            复制
+                            {t('common.actions.copy')}
                           </>
                         )}
                       </Button>
@@ -297,7 +301,7 @@ export const UserNodeInstallScriptDialog: React.FC<UserNodeInstallScriptDialogPr
 
         <DialogFooter className="flex-shrink-0">
           <Button variant="outline" onClick={handleClose}>
-            关闭
+            {t('common.actions.close')}
           </Button>
         </DialogFooter>
       </DialogContent>

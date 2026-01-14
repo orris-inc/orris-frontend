@@ -2,10 +2,11 @@
  * Admin Data Table Component
  * Built on TanStack Table v8
  * Maintains consistent elegant business style with AdminTable
- * Supports responsive column hiding
+ * Supports responsive column hiding and virtualization for large datasets
  */
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useRef } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
   useReactTable,
   getCoreRowModel,
@@ -16,7 +17,8 @@ import {
   type RowSelectionState,
   type OnChangeFn,
 } from '@tanstack/react-table';
-import { ChevronUp, ChevronDown, ChevronsUpDown, Loader2 } from 'lucide-react';
+import { useVirtualizer } from '@tanstack/react-virtual';
+import { Loader2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { AdminTablePagination } from './AdminTable';
 import { useBreakpoint, type BreakpointKey } from '@/hooks/useBreakpoint';
@@ -76,6 +78,10 @@ interface DataTableProps<TData> {
   enableContextMenu?: boolean;
   // Accessibility
   ariaLabel?: string;
+  // Virtualization - auto-enabled when rows > threshold
+  virtualizeThreshold?: number; // Default: 50
+  estimatedRowHeight?: number; // Default: 52
+  maxHeight?: number | string; // Default: 600
 }
 
 // ============ Breakpoint Priority ============
@@ -152,13 +158,19 @@ export function DataTable<TData>({
   onRowSelectionChange,
   getRowId,
   onRowClick,
-  emptyMessage = 'No data',
+  emptyMessage,
   contextMenuContent,
   enableContextMenu = false,
   ariaLabel,
+  virtualizeThreshold = 50,
+  estimatedRowHeight = 52,
+  maxHeight = 600,
 }: DataTableProps<TData>) {
+  const { t } = useTranslation();
   // Responsive breakpoint
   const { current: currentBreakpoint } = useBreakpoint();
+  // Ref for virtualization scroll container
+  const tableContainerRef = useRef<HTMLDivElement>(null);
 
   // Internal sorting state (if not provided externally)
   const [internalSorting, setInternalSorting] = useState<SortingState>([]);
@@ -189,170 +201,270 @@ export function DataTable<TData>({
     manualSorting: !!onSortingChange,
   });
 
+  const { rows } = table.getRowModel();
   const colCount = visibleColumns.length;
 
+  // Enable virtualization for large datasets
+  const shouldVirtualize = rows.length > virtualizeThreshold;
+
+  const rowVirtualizer = useVirtualizer({
+    count: rows.length,
+    getScrollElement: () => tableContainerRef.current,
+    estimateSize: () => estimatedRowHeight,
+    overscan: 5, // Render 5 extra rows above/below viewport
+    enabled: shouldVirtualize,
+  });
+
+  // Render a single row (shared between virtualized and non-virtualized modes)
+  const renderRow = (row: (typeof rows)[number], style?: React.CSSProperties) => {
+    const rowContent = (
+      <tr
+        key={row.id}
+        onClick={() => onRowClick?.(row.original)}
+        style={style}
+        className={cn(
+          onRowClick && 'cursor-pointer hover:bg-muted/50 transition-colors duration-200',
+          row.getIsSelected() && 'bg-primary/5'
+        )}
+      >
+        {row.getVisibleCells().map((cell) => {
+          const meta = cell.column.columnDef.meta as ResponsiveColumnMeta | undefined;
+          return (
+            <td
+              key={cell.id}
+              role="gridcell"
+              className={cn(
+                'px-4 py-4 text-sm overflow-hidden',
+                meta?.numeric && 'text-right tabular-nums',
+                meta?.align === 'right' && 'text-right',
+                meta?.align === 'center' && 'text-center'
+              )}
+            >
+              {flexRender(cell.column.columnDef.cell, cell.getContext())}
+            </td>
+          );
+        })}
+      </tr>
+    );
+
+    // Wrap with ContextMenu if enabled
+    if (enableContextMenu && contextMenuContent) {
+      return (
+        <ContextMenu key={row.id}>
+          <ContextMenuTrigger asChild>{rowContent}</ContextMenuTrigger>
+          <ContextMenuPortal>
+            <ContextMenuContent>{contextMenuContent(row.original)}</ContextMenuContent>
+          </ContextMenuPortal>
+        </ContextMenu>
+      );
+    }
+
+    return rowContent;
+  };
+
+  // Render table body content
+  const renderTableBody = () => {
+    if (loading && data.length === 0) {
+      return (
+        <tr>
+          <td colSpan={colCount} className="px-4 py-16 text-center">
+            <div className="flex flex-col items-center gap-3">
+              <Loader2
+                className="size-8 animate-spin text-primary"
+                strokeWidth={2}
+              />
+              <p className="text-muted-foreground text-sm">
+                {t('common.table.loading')}
+              </p>
+            </div>
+          </td>
+        </tr>
+      );
+    }
+
+    if (rows.length === 0) {
+      return (
+        <tr>
+          <td colSpan={colCount} className="px-4 py-16 text-center">
+            <div className="flex flex-col items-center gap-3">
+              <div className="size-12 rounded-full bg-muted/80 flex items-center justify-center">
+                <svg
+                  className="size-6 text-muted-foreground"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                  strokeWidth={1.5}
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"
+                  />
+                </svg>
+              </div>
+              <p className="text-muted-foreground text-sm">
+                {emptyMessage ?? t('common.table.noData')}
+              </p>
+            </div>
+          </td>
+        </tr>
+      );
+    }
+
+    // Virtualized rendering for large datasets
+    if (shouldVirtualize) {
+      const virtualRows = rowVirtualizer.getVirtualItems();
+      const totalSize = rowVirtualizer.getTotalSize();
+
+      return (
+        <>
+          {/* Top padding row */}
+          {virtualRows[0]?.start > 0 && (
+            <tr>
+              <td
+                colSpan={colCount}
+                style={{ height: virtualRows[0].start }}
+              />
+            </tr>
+          )}
+          {/* Visible rows */}
+          {virtualRows.map((virtualRow) => {
+            const row = rows[virtualRow.index];
+            return renderRow(row);
+          })}
+          {/* Bottom padding row */}
+          {virtualRows[virtualRows.length - 1]?.end < totalSize && (
+            <tr>
+              <td
+                colSpan={colCount}
+                style={{
+                  height: totalSize - virtualRows[virtualRows.length - 1].end,
+                }}
+              />
+            </tr>
+          )}
+        </>
+      );
+    }
+
+    // Standard rendering for small datasets
+    return rows.map((row) => renderRow(row));
+  };
+
   return (
-    <div className="relative">
-      <div className="overflow-x-auto bg-card rounded-xl">
+    <div className="flex flex-col">
+      {/* Table Container */}
+      <div
+        ref={tableContainerRef}
+        className={cn(
+          'overflow-hidden border border-border rounded-lg',
+          shouldVirtualize && 'overflow-y-auto'
+        )}
+        style={shouldVirtualize ? { maxHeight } : undefined}
+      >
         <table
-          className="w-full table-fixed text-sm border-separate border-spacing-0"
+          className="w-full table-fixed divide-y divide-border"
           role="grid"
           aria-label={ariaLabel}
           aria-busy={loading}
           aria-rowcount={data.length}
         >
-          <thead className="sticky top-0 z-10">
+          <thead className="bg-muted">
             {table.getHeaderGroups().map((headerGroup) => (
-              <tr key={headerGroup.id} className="bg-muted/50">
+              <tr key={headerGroup.id}>
                 {headerGroup.headers.map((header) => {
                   const canSort = header.column.getCanSort();
                   const sorted = header.column.getIsSorted();
+                  const meta = header.column.columnDef.meta as ResponsiveColumnMeta | undefined;
 
                   return (
                     <th
                       key={header.id}
+                      scope="col"
                       role="columnheader"
-                      aria-sort={sorted ? (sorted === 'asc' ? 'ascending' : 'descending') : undefined}
-                      tabIndex={canSort ? 0 : undefined}
-                      style={{ width: header.column.columnDef.size }}
+                      aria-sort={
+                        sorted
+                          ? sorted === 'asc'
+                            ? 'ascending'
+                            : 'descending'
+                          : undefined
+                      }
+                      style={{
+                        width: header.column.columnDef.size,
+                      }}
                       className={cn(
-                        'px-4 py-3.5 font-medium',
-                        'text-sm text-muted-foreground',
-                        'whitespace-nowrap text-left',
-                        'border-b-2 border-border/60',
-                        'first:rounded-tl-xl last:rounded-tr-xl',
-                        canSort && 'cursor-pointer select-none hover:text-foreground hover:bg-muted/80 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-primary/50 focus:ring-inset'
+                        'py-3.5 px-4 text-sm font-normal text-left rtl:text-right text-muted-foreground truncate',
+                        meta?.align === 'right' && 'text-right',
+                        meta?.align === 'center' && 'text-center'
                       )}
-                      onClick={canSort ? header.column.getToggleSortingHandler() : undefined}
-                      onKeyDown={canSort ? (e) => {
-                        if (e.key === 'Enter' || e.key === ' ') {
-                          e.preventDefault();
-                          header.column.getToggleSortingHandler()?.(e);
-                        }
-                      } : undefined}
                     >
-                      <div className="flex items-center gap-1.5">
-                        {header.isPlaceholder
-                          ? null
-                          : flexRender(header.column.columnDef.header, header.getContext())}
-                        {canSort && (
-                          <span className={cn(
-                            'transition-colors duration-200',
-                            sorted ? 'text-primary' : 'text-muted-foreground/40'
-                          )}>
-                            {sorted === 'asc' ? (
-                              <ChevronUp className="size-4" />
-                            ) : sorted === 'desc' ? (
-                              <ChevronDown className="size-4" />
-                            ) : (
-                              <ChevronsUpDown className="size-3.5 opacity-60" />
-                            )}
+                      {canSort ? (
+                        <button
+                          className="flex items-center gap-x-3 focus:outline-none"
+                          onClick={header.column.getToggleSortingHandler()}
+                        >
+                          <span>
+                            {header.isPlaceholder
+                              ? null
+                              : flexRender(
+                                  header.column.columnDef.header,
+                                  header.getContext()
+                                )}
                           </span>
-                        )}
-                      </div>
+                          {/* Sort Icon */}
+                          <svg className="h-3" viewBox="0 0 10 11" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path
+                              d="M2.13347 0.0999756H2.98516L5.01902 4.79058H3.86226L3.45549 3.79907H1.63772L1.24366 4.79058H0.0996094L2.13347 0.0999756ZM2.54025 1.46012L1.96822 2.92196H3.11227L2.54025 1.46012Z"
+                              fill="currentColor"
+                              stroke="currentColor"
+                              strokeWidth="0.1"
+                            />
+                            <path
+                              d="M0.722656 9.60832L3.09974 6.78633H0.811638V5.87109H4.35819V6.78633L2.01925 9.60832H4.43446V10.5617H0.722656V9.60832Z"
+                              fill="currentColor"
+                              stroke="currentColor"
+                              strokeWidth="0.1"
+                            />
+                            <path
+                              d="M8.45558 7.25664V7.40664H8.60558H9.66065C9.72481 7.40664 9.74667 7.42274 9.75141 7.42691C9.75148 7.42808 9.75146 7.42993 9.75116 7.43262C9.75001 7.44265 9.74458 7.46304 9.72525 7.49314C9.72522 7.4932 9.72518 7.49326 9.72514 7.49332L7.86959 10.3529L7.86924 10.3534C7.83227 10.4109 7.79863 10.418 7.78568 10.418C7.77272 10.418 7.73908 10.4109 7.70211 10.3534L7.70177 10.3529L5.84621 7.49332C5.84617 7.49325 5.84612 7.49318 5.84608 7.49311C5.82677 7.46302 5.82135 7.44264 5.8202 7.43262C5.81989 7.42993 5.81987 7.42808 5.81994 7.42691C5.82469 7.42274 5.84655 7.40664 5.91071 7.40664H6.96578H7.11578V7.25664V0.633865C7.11578 0.42434 7.29014 0.249976 7.49967 0.249976H8.07169C8.28121 0.249976 8.45558 0.42434 8.45558 0.633865V7.25664Z"
+                              fill="currentColor"
+                              stroke="currentColor"
+                              strokeWidth="0.3"
+                            />
+                          </svg>
+                        </button>
+                      ) : (
+                        header.isPlaceholder
+                          ? null
+                          : flexRender(
+                              header.column.columnDef.header,
+                              header.getContext()
+                            )
+                      )}
                     </th>
                   );
                 })}
               </tr>
             ))}
           </thead>
-          <tbody className="divide-y divide-border/60">
-            {loading && data.length === 0 ? (
-              <tr>
-                <td colSpan={colCount} className="py-20 text-center">
-                  <div className="flex flex-col items-center gap-4">
-                    <div className="relative">
-                      <Loader2 className="size-9 animate-spin text-primary" strokeWidth={2.5} />
-                      <div className="absolute inset-0 rounded-full bg-primary/20 blur-xl animate-pulse" />
-                    </div>
-                    <p className="text-muted-foreground text-sm">加载中...</p>
-                  </div>
-                </td>
-              </tr>
-            ) : table.getRowModel().rows.length === 0 ? (
-              <tr>
-                <td colSpan={colCount} className="py-20 text-center">
-                  <div className="flex flex-col items-center gap-3">
-                    <div className="size-14 rounded-2xl bg-muted flex items-center justify-center shadow-inner">
-                      <svg className="size-7 text-muted-foreground" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4" />
-                      </svg>
-                    </div>
-                    <p className="text-muted-foreground text-sm">{emptyMessage}</p>
-                  </div>
-                </td>
-              </tr>
-            ) : (
-              table.getRowModel().rows.map((row) => {
-                const rowContent = (
-                  <tr
-                    key={row.id}
-                    onClick={() => onRowClick?.(row.original)}
-                    className={cn(
-                      'group transition-all duration-200',
-                      'hover:bg-accent/50',
-                      onRowClick && 'cursor-pointer',
-                      row.getIsSelected() && 'bg-primary/5'
-                    )}
-                  >
-                    {row.getVisibleCells().map((cell) => {
-                      const meta = cell.column.columnDef.meta as ResponsiveColumnMeta | undefined;
-                      return (
-                        <td
-                          key={cell.id}
-                          role="gridcell"
-                          className={cn(
-                            'px-4 py-3.5 text-foreground',
-                            'align-middle',
-                            'transition-colors duration-200',
-                            // Numeric columns: right-align with tabular numbers
-                            meta?.numeric && 'text-right tabular-nums',
-                            // Explicit alignment
-                            meta?.align === 'right' && 'text-right',
-                            meta?.align === 'center' && 'text-center'
-                          )}
-                        >
-                          {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                        </td>
-                      );
-                    })}
-                  </tr>
-                );
-
-                // Wrap with ContextMenu if enabled
-                if (enableContextMenu && contextMenuContent) {
-                  return (
-                    <ContextMenu key={row.id}>
-                      <ContextMenuTrigger asChild>
-                        {rowContent}
-                      </ContextMenuTrigger>
-                      <ContextMenuPortal>
-                        <ContextMenuContent>
-                          {contextMenuContent(row.original)}
-                        </ContextMenuContent>
-                      </ContextMenuPortal>
-                    </ContextMenu>
-                  );
-                }
-
-                return rowContent;
-              })
-            )}
-          </tbody>
+          <tbody className="bg-card divide-y divide-border">{renderTableBody()}</tbody>
         </table>
       </div>
 
       {/* Pagination */}
-      {page !== undefined && pageSize !== undefined && total !== undefined && onPageChange && (
-        <AdminTablePagination
-          page={page}
-          pageSize={pageSize}
-          total={total}
-          onPageChange={onPageChange}
-          onPageSizeChange={onPageSizeChange}
-          loading={loading}
-        />
-      )}
+      {page !== undefined &&
+        pageSize !== undefined &&
+        total !== undefined &&
+        onPageChange && (
+          <AdminTablePagination
+            page={page}
+            pageSize={pageSize}
+            total={total}
+            onPageChange={onPageChange}
+            onPageSizeChange={onPageSizeChange}
+            loading={loading}
+          />
+        )}
     </div>
   );
 }

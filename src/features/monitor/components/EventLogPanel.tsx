@@ -4,6 +4,7 @@
  */
 
 import { memo, useState, useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Server, Cpu, ArrowUpCircle, ArrowDownCircle, RefreshCw, Filter, Check } from 'lucide-react';
 import { ScrollArea } from '@/components/common/ScrollArea';
 import { Badge } from '@/components/common/Badge';
@@ -15,6 +16,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/common/DropdownMenu';
 import type { MonitorEvent } from '../hooks/useMonitorData';
+import type { TFunction } from 'i18next';
 
 interface EventLogPanelProps {
   events: MonitorEvent[];
@@ -47,18 +49,18 @@ const getEventBadgeVariant = (eventType: string): 'default' | 'secondary' | 'des
 };
 
 // Format relative time
-const formatEventTime = (timestamp: number): string => {
+const formatEventTime = (timestamp: number, t: TFunction): string => {
   const now = Math.floor(Date.now() / 1000);
   const diff = now - timestamp;
 
-  if (diff < 60) return `${diff}秒前`;
-  if (diff < 3600) return `${Math.floor(diff / 60)}分钟前`;
-  if (diff < 86400) return `${Math.floor(diff / 3600)}小时前`;
-  return new Date(timestamp * 1000).toLocaleDateString('zh-CN');
+  if (diff < 60) return t('admin.monitor.secondsAgo', { count: diff });
+  if (diff < 3600) return t('admin.monitor.minutesAgo', { count: Math.floor(diff / 60) });
+  if (diff < 86400) return t('admin.monitor.hoursAgo', { count: Math.floor(diff / 3600) });
+  return new Date(timestamp * 1000).toLocaleDateString();
 };
 
 // Event item component - ultra compact
-const EventItem = memo(({ event }: { event: MonitorEvent }) => (
+const EventItem = memo(({ event, t }: { event: MonitorEvent; t: TFunction }) => (
   <div className="flex items-center gap-2 py-1.5 px-2 hover:bg-accent/50 transition-colors">
     {/* Icon */}
     <div className="shrink-0">
@@ -80,13 +82,14 @@ const EventItem = memo(({ event }: { event: MonitorEvent }) => (
 
     {/* Time */}
     <div className="text-[9px] text-muted-foreground shrink-0 tabular-nums">
-      {formatEventTime(event.timestamp)}
+      {formatEventTime(event.timestamp, t)}
     </div>
   </div>
 ));
 EventItem.displayName = 'EventItem';
 
 export const EventLogPanel = memo(({ events }: EventLogPanelProps) => {
+  const { t } = useTranslation();
   const [filters, setFilters] = useState<Set<EventFilter>>(new Set(['all']));
 
   // Filter events
@@ -126,7 +129,7 @@ export const EventLogPanel = memo(({ events }: EventLogPanelProps) => {
       {/* Compact Header */}
       <div className="flex items-center justify-between px-2.5 py-2 border-b border-border shrink-0">
         <div className="flex items-center gap-2">
-          <span className="text-xs font-medium text-foreground">事件</span>
+          <span className="text-xs font-medium text-foreground">{t('admin.monitor.events')}</span>
           <Badge variant="secondary" className="text-[9px] h-4 px-1">
             {filteredEvents.length}
           </Badge>
@@ -146,7 +149,7 @@ export const EventLogPanel = memo(({ events }: EventLogPanelProps) => {
               className="cursor-pointer"
             >
               <Check className={`size-4 mr-2 ${filters.has('all') ? 'opacity-100' : 'opacity-0'}`} />
-              全部
+              {t('admin.monitor.filterAll')}
             </DropdownMenuItem>
             <DropdownMenuItem
               onClick={() => toggleFilter('node')}
@@ -160,21 +163,21 @@ export const EventLogPanel = memo(({ events }: EventLogPanelProps) => {
               className="cursor-pointer"
             >
               <Check className={`size-4 mr-2 ${filters.has('agent') ? 'opacity-100' : 'opacity-0'}`} />
-              转发 Agent
+              {t('admin.monitor.filterForwardAgent')}
             </DropdownMenuItem>
             <DropdownMenuItem
               onClick={() => toggleFilter('online')}
               className="cursor-pointer"
             >
               <Check className={`size-4 mr-2 ${filters.has('online') ? 'opacity-100' : 'opacity-0'}`} />
-              上线事件
+              {t('admin.monitor.filterOnlineEvent')}
             </DropdownMenuItem>
             <DropdownMenuItem
               onClick={() => toggleFilter('offline')}
               className="cursor-pointer"
             >
               <Check className={`size-4 mr-2 ${filters.has('offline') ? 'opacity-100' : 'opacity-0'}`} />
-              离线事件
+              {t('admin.monitor.filterOfflineEvent')}
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
@@ -186,13 +189,13 @@ export const EventLogPanel = memo(({ events }: EventLogPanelProps) => {
           <div className="flex items-center justify-center h-24">
             <div className="text-center">
               <RefreshCw className="size-5 text-muted-foreground/30 mx-auto mb-1" />
-              <p className="text-xs text-muted-foreground">暂无事件</p>
+              <p className="text-xs text-muted-foreground">{t('admin.monitor.noEvents')}</p>
             </div>
           </div>
         ) : (
           <div className="divide-y divide-border/30">
             {filteredEvents.map((event) => (
-              <EventItem key={event.id} event={event} />
+              <EventItem key={event.id} event={event} t={t} />
             ))}
           </div>
         )}

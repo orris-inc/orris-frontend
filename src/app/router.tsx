@@ -5,42 +5,144 @@
  * - User Routes: /dashboard/* (regular user access)
  * - Admin Routes: /admin/* (administrator access)
  * - Public Routes: /login, /register, etc. (no authentication required)
+ *
+ * Performance: All pages are lazy-loaded for optimal code splitting
  */
 
+import { lazy } from 'react';
 import { createBrowserRouter, Navigate } from 'react-router';
-import { LandingPage } from '@/pages/LandingPage';
-import { LoginPage } from '@/pages/LoginPage';
-import { RegisterPage } from '@/pages/RegisterPage';
-import { ForgotPasswordPage } from '@/pages/ForgotPasswordPage';
-import { ResetPasswordPage } from '@/pages/ResetPasswordPage';
-import { EmailVerificationPage } from '@/pages/EmailVerificationPage';
-import { VerificationPendingPage } from '@/pages/VerificationPendingPage';
-import { DashboardPage } from '@/pages/DashboardPage';
-import { PricingPage } from '@/pages/PricingPage';
-import { PublicPricingPage } from '@/pages/PublicPricingPage';
-import { SubscriptionPlansManagementPage } from '@/pages/SubscriptionPlansManagementPage';
-import { SubscriptionManagementPage } from '@/pages/SubscriptionManagementPage';
-import { UserManagementPage } from '@/pages/UserManagementPage';
-import { NodeManagementPage } from '@/pages/NodeManagementPage';
-import { ForwardRulesPage } from '@/pages/ForwardRulesPage';
-import { ForwardAgentsPage } from '@/pages/ForwardAgentsPage';
-import { ResourceGroupManagementPage } from '@/pages/ResourceGroupManagementPage';
-import { ProfileSettingsPage } from '@/pages/ProfileSettingsPage';
-import { NotificationsPage } from '@/pages/NotificationsPage';
-import { UserNodesPage } from '@/pages/UserNodesPage';
-import { UserSubscriptionDetailPage } from '@/pages/UserSubscriptionDetailPage';
-import { NewAdminDashboardPage } from '@/pages/NewAdminDashboardPage';
-import { AdminSettingsPage } from '@/pages/AdminSettingsPage';
-import { AdminNotificationsPage } from '@/pages/AdminNotificationsPage';
-import { MonitorPage } from '@/pages/MonitorPage';
 import { ProtectedRoute } from '@/shared/components/ProtectedRoute';
 import { AdminRoute } from '@/shared/components/AdminRoute';
+import { SuspenseWrapper } from '@/shared/utils/lazy-import';
+
+// ==================== Lazy Loaded Pages ====================
+
+// Public Pages
+const LandingPage = lazy(() =>
+  import('@/pages/LandingPage').then((m) => ({ default: m.LandingPage }))
+);
+const LoginPage = lazy(() =>
+  import('@/pages/LoginPage').then((m) => ({ default: m.LoginPage }))
+);
+const RegisterPage = lazy(() =>
+  import('@/pages/RegisterPage').then((m) => ({ default: m.RegisterPage }))
+);
+const ForgotPasswordPage = lazy(() =>
+  import('@/pages/ForgotPasswordPage').then((m) => ({
+    default: m.ForgotPasswordPage,
+  }))
+);
+const ResetPasswordPage = lazy(() =>
+  import('@/pages/ResetPasswordPage').then((m) => ({
+    default: m.ResetPasswordPage,
+  }))
+);
+const EmailVerificationPage = lazy(() =>
+  import('@/pages/EmailVerificationPage').then((m) => ({
+    default: m.EmailVerificationPage,
+  }))
+);
+const VerificationPendingPage = lazy(() =>
+  import('@/pages/VerificationPendingPage').then((m) => ({
+    default: m.VerificationPendingPage,
+  }))
+);
+const PublicPricingPage = lazy(() =>
+  import('@/pages/PublicPricingPage').then((m) => ({
+    default: m.PublicPricingPage,
+  }))
+);
+
+// User Dashboard Pages
+const DashboardPage = lazy(() =>
+  import('@/pages/DashboardPage').then((m) => ({ default: m.DashboardPage }))
+);
+const ProfileSettingsPage = lazy(() =>
+  import('@/pages/ProfileSettingsPage').then((m) => ({
+    default: m.ProfileSettingsPage,
+  }))
+);
+const NotificationsPage = lazy(() =>
+  import('@/pages/NotificationsPage').then((m) => ({
+    default: m.NotificationsPage,
+  }))
+);
+const UserSubscriptionDetailPage = lazy(() =>
+  import('@/pages/UserSubscriptionDetailPage').then((m) => ({
+    default: m.UserSubscriptionDetailPage,
+  }))
+);
+const UserNodesPage = lazy(() =>
+  import('@/pages/UserNodesPage').then((m) => ({ default: m.UserNodesPage }))
+);
+const PricingPage = lazy(() =>
+  import('@/pages/PricingPage').then((m) => ({ default: m.PricingPage }))
+);
+
+// Admin Pages
+const NewAdminDashboardPage = lazy(() =>
+  import('@/pages/NewAdminDashboardPage').then((m) => ({
+    default: m.NewAdminDashboardPage,
+  }))
+);
+const MonitorPage = lazy(() =>
+  import('@/pages/MonitorPage').then((m) => ({ default: m.MonitorPage }))
+);
+const SubscriptionPlansManagementPage = lazy(() =>
+  import('@/pages/SubscriptionPlansManagementPage').then((m) => ({
+    default: m.SubscriptionPlansManagementPage,
+  }))
+);
+const SubscriptionManagementPage = lazy(() =>
+  import('@/pages/SubscriptionManagementPage').then((m) => ({
+    default: m.SubscriptionManagementPage,
+  }))
+);
+const UserManagementPage = lazy(() =>
+  import('@/pages/UserManagementPage').then((m) => ({
+    default: m.UserManagementPage,
+  }))
+);
+const NodeManagementPage = lazy(() =>
+  import('@/pages/NodeManagementPage').then((m) => ({
+    default: m.NodeManagementPage,
+  }))
+);
+const ForwardRulesPage = lazy(() =>
+  import('@/pages/ForwardRulesPage').then((m) => ({
+    default: m.ForwardRulesPage,
+  }))
+);
+const ForwardAgentsPage = lazy(() =>
+  import('@/pages/ForwardAgentsPage').then((m) => ({
+    default: m.ForwardAgentsPage,
+  }))
+);
+const ResourceGroupManagementPage = lazy(() =>
+  import('@/pages/ResourceGroupManagementPage').then((m) => ({
+    default: m.ResourceGroupManagementPage,
+  }))
+);
+const AdminSettingsPage = lazy(() =>
+  import('@/pages/AdminSettingsPage').then((m) => ({
+    default: m.AdminSettingsPage,
+  }))
+);
+const AdminNotificationsPage = lazy(() =>
+  import('@/pages/AdminNotificationsPage').then((m) => ({
+    default: m.AdminNotificationsPage,
+  }))
+);
 
 export const router = createBrowserRouter([
   // Root path - Landing page
   {
     path: '/',
-    element: <LandingPage />,
+    element: (
+      <SuspenseWrapper>
+        <LandingPage />
+      </SuspenseWrapper>
+    ),
   },
 
   // ==================== User Routes ====================
@@ -50,7 +152,9 @@ export const router = createBrowserRouter([
     path: '/dashboard',
     element: (
       <ProtectedRoute>
-        <DashboardPage />
+        <SuspenseWrapper>
+          <DashboardPage />
+        </SuspenseWrapper>
       </ProtectedRoute>
     ),
   },
@@ -60,7 +164,9 @@ export const router = createBrowserRouter([
     path: '/dashboard/profile',
     element: (
       <ProtectedRoute>
-        <ProfileSettingsPage />
+        <SuspenseWrapper>
+          <ProfileSettingsPage />
+        </SuspenseWrapper>
       </ProtectedRoute>
     ),
   },
@@ -70,7 +176,9 @@ export const router = createBrowserRouter([
     path: '/dashboard/notifications',
     element: (
       <ProtectedRoute>
-        <NotificationsPage />
+        <SuspenseWrapper>
+          <NotificationsPage />
+        </SuspenseWrapper>
       </ProtectedRoute>
     ),
   },
@@ -80,7 +188,9 @@ export const router = createBrowserRouter([
     path: '/dashboard/subscriptions/:id',
     element: (
       <ProtectedRoute>
-        <UserSubscriptionDetailPage />
+        <SuspenseWrapper>
+          <UserSubscriptionDetailPage />
+        </SuspenseWrapper>
       </ProtectedRoute>
     ),
   },
@@ -102,7 +212,9 @@ export const router = createBrowserRouter([
     path: '/dashboard/nodes',
     element: (
       <ProtectedRoute>
-        <UserNodesPage />
+        <SuspenseWrapper>
+          <UserNodesPage />
+        </SuspenseWrapper>
       </ProtectedRoute>
     ),
   },
@@ -110,7 +222,11 @@ export const router = createBrowserRouter([
   // Pricing page (public access - for visitors from landing page)
   {
     path: '/pricing',
-    element: <PublicPricingPage />,
+    element: (
+      <SuspenseWrapper>
+        <PublicPricingPage />
+      </SuspenseWrapper>
+    ),
   },
 
   // User pricing page (authenticated)
@@ -118,7 +234,9 @@ export const router = createBrowserRouter([
     path: '/dashboard/pricing',
     element: (
       <ProtectedRoute>
-        <PricingPage />
+        <SuspenseWrapper>
+          <PricingPage />
+        </SuspenseWrapper>
       </ProtectedRoute>
     ),
   },
@@ -130,7 +248,9 @@ export const router = createBrowserRouter([
     path: '/admin',
     element: (
       <AdminRoute>
-        <NewAdminDashboardPage />
+        <SuspenseWrapper>
+          <NewAdminDashboardPage />
+        </SuspenseWrapper>
       </AdminRoute>
     ),
   },
@@ -140,7 +260,9 @@ export const router = createBrowserRouter([
     path: '/admin/monitor',
     element: (
       <AdminRoute>
-        <MonitorPage />
+        <SuspenseWrapper>
+          <MonitorPage />
+        </SuspenseWrapper>
       </AdminRoute>
     ),
   },
@@ -150,7 +272,9 @@ export const router = createBrowserRouter([
     path: '/admin/plans',
     element: (
       <AdminRoute>
-        <SubscriptionPlansManagementPage />
+        <SuspenseWrapper>
+          <SubscriptionPlansManagementPage />
+        </SuspenseWrapper>
       </AdminRoute>
     ),
   },
@@ -160,7 +284,9 @@ export const router = createBrowserRouter([
     path: '/admin/subscriptions',
     element: (
       <AdminRoute>
-        <SubscriptionManagementPage />
+        <SuspenseWrapper>
+          <SubscriptionManagementPage />
+        </SuspenseWrapper>
       </AdminRoute>
     ),
   },
@@ -170,7 +296,9 @@ export const router = createBrowserRouter([
     path: '/admin/users',
     element: (
       <AdminRoute>
-        <UserManagementPage />
+        <SuspenseWrapper>
+          <UserManagementPage />
+        </SuspenseWrapper>
       </AdminRoute>
     ),
   },
@@ -180,7 +308,9 @@ export const router = createBrowserRouter([
     path: '/admin/nodes',
     element: (
       <AdminRoute>
-        <NodeManagementPage />
+        <SuspenseWrapper>
+          <NodeManagementPage />
+        </SuspenseWrapper>
       </AdminRoute>
     ),
   },
@@ -190,7 +320,9 @@ export const router = createBrowserRouter([
     path: '/admin/forward-rules',
     element: (
       <AdminRoute>
-        <ForwardRulesPage />
+        <SuspenseWrapper>
+          <ForwardRulesPage />
+        </SuspenseWrapper>
       </AdminRoute>
     ),
   },
@@ -200,7 +332,9 @@ export const router = createBrowserRouter([
     path: '/admin/forward-agents',
     element: (
       <AdminRoute>
-        <ForwardAgentsPage />
+        <SuspenseWrapper>
+          <ForwardAgentsPage />
+        </SuspenseWrapper>
       </AdminRoute>
     ),
   },
@@ -210,7 +344,9 @@ export const router = createBrowserRouter([
     path: '/admin/resource-groups',
     element: (
       <AdminRoute>
-        <ResourceGroupManagementPage />
+        <SuspenseWrapper>
+          <ResourceGroupManagementPage />
+        </SuspenseWrapper>
       </AdminRoute>
     ),
   },
@@ -220,7 +356,9 @@ export const router = createBrowserRouter([
     path: '/admin/settings',
     element: (
       <AdminRoute>
-        <AdminSettingsPage />
+        <SuspenseWrapper>
+          <AdminSettingsPage />
+        </SuspenseWrapper>
       </AdminRoute>
     ),
   },
@@ -230,7 +368,9 @@ export const router = createBrowserRouter([
     path: '/admin/notifications',
     element: (
       <AdminRoute>
-        <AdminNotificationsPage />
+        <SuspenseWrapper>
+          <AdminNotificationsPage />
+        </SuspenseWrapper>
       </AdminRoute>
     ),
   },
@@ -240,37 +380,61 @@ export const router = createBrowserRouter([
   // Login
   {
     path: '/login',
-    element: <LoginPage />,
+    element: (
+      <SuspenseWrapper>
+        <LoginPage />
+      </SuspenseWrapper>
+    ),
   },
 
   // Register
   {
     path: '/register',
-    element: <RegisterPage />,
+    element: (
+      <SuspenseWrapper>
+        <RegisterPage />
+      </SuspenseWrapper>
+    ),
   },
 
   // Forgot password
   {
     path: '/forgot-password',
-    element: <ForgotPasswordPage />,
+    element: (
+      <SuspenseWrapper>
+        <ForgotPasswordPage />
+      </SuspenseWrapper>
+    ),
   },
 
   // Reset password
   {
     path: '/reset-password',
-    element: <ResetPasswordPage />,
+    element: (
+      <SuspenseWrapper>
+        <ResetPasswordPage />
+      </SuspenseWrapper>
+    ),
   },
 
   // Email verification
   {
     path: '/verify-email',
-    element: <EmailVerificationPage />,
+    element: (
+      <SuspenseWrapper>
+        <EmailVerificationPage />
+      </SuspenseWrapper>
+    ),
   },
 
   // Email verification pending
   {
     path: '/verification-pending',
-    element: <VerificationPendingPage />,
+    element: (
+      <SuspenseWrapper>
+        <VerificationPendingPage />
+      </SuspenseWrapper>
+    ),
   },
 
   // 404 - redirect to landing page

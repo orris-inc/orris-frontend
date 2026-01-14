@@ -11,6 +11,7 @@
  */
 
 import { useState, useMemo, useCallback } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
   Plus,
   RefreshCw,
@@ -60,16 +61,20 @@ export interface MobileNodeManagementProps {
 type StatusFilter = 'all' | 'online' | 'offline' | NodeStatus;
 
 // ============================================================================
-// Filter Options
+// Filter Options - Using labelKey for i18n
 // ============================================================================
 
-const STATUS_FILTER_OPTIONS: SegmentOption<StatusFilter>[] = [
-  { value: 'all', label: '全部' },
-  { value: 'online', label: '在线' },
-  { value: 'offline', label: '离线', hideWhenZero: true },
-  { value: 'active', label: '激活' },
-  { value: 'inactive', label: '未激活', hideWhenZero: true },
-  { value: 'maintenance', label: '维护中', hideWhenZero: true },
+interface StatusFilterOption extends SegmentOption<StatusFilter> {
+  labelKey: string;
+}
+
+const STATUS_FILTER_OPTIONS: StatusFilterOption[] = [
+  { value: 'all', label: '', labelKey: 'filter.all' },
+  { value: 'online', label: '', labelKey: 'common.status.online' },
+  { value: 'offline', label: '', labelKey: 'common.status.offline', hideWhenZero: true },
+  { value: 'active', label: '', labelKey: 'common.status.active' },
+  { value: 'inactive', label: '', labelKey: 'common.status.inactive', hideWhenZero: true },
+  { value: 'maintenance', label: '', labelKey: 'common.status.maintenance', hideWhenZero: true },
 ];
 
 // ============================================================================
@@ -84,11 +89,13 @@ const StatsSummary = ({
   online,
   active,
   loading,
+  t,
 }: {
   total: number;
   online: number;
   active: number;
   loading: boolean;
+  t: (key: string) => string;
 }) => {
   if (loading) {
     return (
@@ -104,17 +111,17 @@ const StatsSummary = ({
     <div className="flex items-center justify-between text-xs px-1">
       <div className="flex items-center gap-1.5">
         <Server className="size-3.5 text-muted-foreground" />
-        <span className="text-muted-foreground">总数</span>
+        <span className="text-muted-foreground">{t('admin.stats.totalNodes')}</span>
         <span className="font-semibold text-foreground tabular-nums">{total}</span>
       </div>
       <div className="flex items-center gap-1.5">
         <Activity className="size-3.5 text-success" />
-        <span className="text-muted-foreground">在线</span>
+        <span className="text-muted-foreground">{t('common.status.online')}</span>
         <span className="font-semibold text-success tabular-nums">{online}</span>
       </div>
       <div className="flex items-center gap-1.5">
         <CheckCircle2 className="size-3.5 text-info" />
-        <span className="text-muted-foreground">激活</span>
+        <span className="text-muted-foreground">{t('common.status.active')}</span>
         <span className="font-semibold text-info tabular-nums">{active}</span>
       </div>
     </div>
@@ -128,10 +135,12 @@ const SearchBar = ({
   value,
   onChange,
   onClear,
+  placeholder,
 }: {
   value: string;
   onChange: (value: string) => void;
   onClear: () => void;
+  placeholder: string;
 }) => {
   return (
     <div
@@ -148,7 +157,7 @@ const SearchBar = ({
         type="text"
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        placeholder="搜索节点名称、地址..."
+        placeholder={placeholder}
         className={cn(
           'flex-1 min-w-0',
           'bg-transparent',
@@ -176,10 +185,12 @@ const EmptyState = ({
   hasFilter,
   onClearFilter,
   onCreate,
+  t,
 }: {
   hasFilter: boolean;
   onClearFilter: () => void;
   onCreate: () => void;
+  t: (key: string) => string;
 }) => (
   <div className="flex flex-col items-center justify-center py-16 px-6">
     <div className="size-20 rounded-full bg-muted/30 flex items-center justify-center mb-4">
@@ -190,10 +201,12 @@ const EmptyState = ({
       )}
     </div>
     <p className="text-base font-medium text-foreground mb-1 text-center">
-      {hasFilter ? '未找到匹配节点' : '暂无节点'}
+      {hasFilter ? t('common.messages.noResults') : t('admin.nodes.noData')}
     </p>
     <p className="text-sm text-muted-foreground text-center mb-5">
-      {hasFilter ? '尝试调整搜索条件或清除筛选' : '点击下方按钮创建第一个节点'}
+      {hasFilter
+        ? t('subscription.tryAdjustSearch')
+        : t('admin.nodes.addNode')}
     </p>
     <button
       type="button"
@@ -212,12 +225,12 @@ const EmptyState = ({
       {hasFilter ? (
         <>
           <X className="size-4" />
-          清除筛选
+          {t('messages.clearFilters')}
         </>
       ) : (
         <>
           <Plus className="size-4" />
-          创建节点
+          {t('admin.nodes.addNode')}
         </>
       )}
     </button>
@@ -363,10 +376,19 @@ export const MobileNodeManagement = ({
   onDragSortChange,
   onDragEnd,
 }: MobileNodeManagementProps) => {
+  const { t } = useTranslation();
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<StatusFilter>('all');
   const [selectedNode, setSelectedNode] = useState<Node | null>(null);
   const [detailSheetOpen, setDetailSheetOpen] = useState(false);
+
+  // Build filter options with translated labels
+  const translatedFilterOptions = useMemo(() => {
+    return STATUS_FILTER_OPTIONS.map((opt) => ({
+      ...opt,
+      label: t(opt.labelKey),
+    }));
+  }, [t]);
 
   // Calculate stats
   const stats = useMemo(() => {
@@ -380,7 +402,7 @@ export const MobileNodeManagement = ({
 
   // Add counts to filter options
   const filterOptionsWithCounts = useMemo(() => {
-    return STATUS_FILTER_OPTIONS.map((opt) => {
+    return translatedFilterOptions.map((opt) => {
       let count: number;
       switch (opt.value) {
         case 'all':
@@ -406,7 +428,7 @@ export const MobileNodeManagement = ({
       }
       return { ...opt, count };
     });
-  }, [stats, total]);
+  }, [translatedFilterOptions, stats, total]);
 
   // Filter nodes
   const filteredNodes = useMemo(() => {
@@ -482,6 +504,7 @@ export const MobileNodeManagement = ({
           online={stats.online}
           active={stats.active}
           loading={loading}
+          t={t}
         />
 
         {/* Search Bar with Actions */}
@@ -491,6 +514,7 @@ export const MobileNodeManagement = ({
               value={searchQuery}
               onChange={setSearchQuery}
               onClear={() => setSearchQuery('')}
+              placeholder={t('common.placeholders.search')}
             />
           </div>
           {/* Drag Sort Toggle */}
@@ -542,14 +566,14 @@ export const MobileNodeManagement = ({
       {hasFilter && !loading && filteredNodes.length > 0 && (
         <div className="flex items-center justify-between mb-3 px-1">
           <span className="text-xs text-muted-foreground">
-            找到 <span className="font-medium text-foreground">{filteredNodes.length}</span> 个结果
+            {t('admin.subscriptions.found')} <span className="font-medium text-foreground">{filteredNodes.length}</span> {t('admin.subscriptions.results')}
           </span>
           <button
             type="button"
             onClick={clearFilters}
             className="text-xs text-primary font-medium"
           >
-            清除筛选
+            {t('messages.clearFilters')}
           </button>
         </div>
       )}
@@ -562,6 +586,7 @@ export const MobileNodeManagement = ({
           hasFilter={hasFilter}
           onClearFilter={clearFilters}
           onCreate={onCreate}
+          t={t}
         />
       ) : isDragEnabled ? (
         <DraggableMobileList

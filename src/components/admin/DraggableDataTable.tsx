@@ -10,6 +10,7 @@
  */
 
 import { useState, useMemo, useCallback, memo } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
   useReactTable,
   getCoreRowModel,
@@ -257,6 +258,7 @@ export function DraggableDataTable<TData>({
   contextMenuContent,
   enableContextMenu = false,
 }: DraggableDataTableProps<TData>) {
+  const { t } = useTranslation();
   const { current: currentBreakpoint } = useBreakpoint();
   const [activeId, setActiveId] = useState<string | null>(null);
 
@@ -335,7 +337,7 @@ export function DraggableDataTable<TData>({
               <tr key={headerGroup.id} className="bg-muted/50">
                 {enableDragSort && (
                   <th className="w-10 px-2 py-3.5 font-medium text-sm text-muted-foreground whitespace-nowrap text-left border-b-2 border-border/60 first:rounded-tl-xl">
-                    <span className="sr-only">排序</span>
+                    <span className="sr-only">{t('common.table.sort')}</span>
                   </th>
                 )}
                 {headerGroup.headers.map((header, index) => {
@@ -386,7 +388,7 @@ export function DraggableDataTable<TData>({
                 <td colSpan={colCount} className="py-20 text-center">
                   <div className="flex flex-col items-center gap-4">
                     <Loader2 className="size-8 animate-spin text-primary" strokeWidth={2} />
-                    <p className="text-muted-foreground text-sm">加载中...</p>
+                    <p className="text-muted-foreground text-sm">{t('common.table.loading')}</p>
                   </div>
                 </td>
               </tr>

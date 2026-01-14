@@ -12,6 +12,7 @@
  */
 
 import { useState, useMemo, useCallback } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
   Plus,
   RefreshCw,
@@ -61,15 +62,19 @@ export interface MobileForwardAgentManagementProps {
 type StatusFilter = 'all' | 'online' | 'offline' | 'enabled' | 'disabled';
 
 // ============================================================================
-// Filter Options
+// Filter Options - Using labelKey for i18n
 // ============================================================================
 
-const STATUS_FILTER_OPTIONS: SegmentOption<StatusFilter>[] = [
-  { value: 'all', label: '全部' },
-  { value: 'online', label: '在线' },
-  { value: 'offline', label: '离线', hideWhenZero: true },
-  { value: 'enabled', label: '启用' },
-  { value: 'disabled', label: '禁用', hideWhenZero: true },
+interface StatusFilterOption extends SegmentOption<StatusFilter> {
+  labelKey: string;
+}
+
+const STATUS_FILTER_OPTIONS: StatusFilterOption[] = [
+  { value: 'all', label: '', labelKey: 'filter.all' },
+  { value: 'online', label: '', labelKey: 'common.status.online' },
+  { value: 'offline', label: '', labelKey: 'common.status.offline', hideWhenZero: true },
+  { value: 'enabled', label: '', labelKey: 'common.status.enabled' },
+  { value: 'disabled', label: '', labelKey: 'common.status.disabled', hideWhenZero: true },
 ];
 
 // ============================================================================
@@ -84,11 +89,13 @@ const StatsSummary = ({
   online,
   enabled,
   loading,
+  t,
 }: {
   total: number;
   online: number;
   enabled: number;
   loading: boolean;
+  t: (key: string) => string;
 }) => {
   if (loading) {
     return (
@@ -104,17 +111,17 @@ const StatsSummary = ({
     <div className="flex items-center justify-between text-xs px-1">
       <div className="flex items-center gap-1.5">
         <Router className="size-3.5 text-muted-foreground" />
-        <span className="text-muted-foreground">总数</span>
+        <span className="text-muted-foreground">{t('admin.stats.totalNodes')}</span>
         <span className="font-semibold text-foreground tabular-nums">{total}</span>
       </div>
       <div className="flex items-center gap-1.5">
         <Activity className="size-3.5 text-success" />
-        <span className="text-muted-foreground">在线</span>
+        <span className="text-muted-foreground">{t('common.status.online')}</span>
         <span className="font-semibold text-success tabular-nums">{online}</span>
       </div>
       <div className="flex items-center gap-1.5">
         <CheckCircle2 className="size-3.5 text-info" />
-        <span className="text-muted-foreground">启用</span>
+        <span className="text-muted-foreground">{t('common.status.enabled')}</span>
         <span className="font-semibold text-info tabular-nums">{enabled}</span>
       </div>
     </div>
@@ -128,10 +135,12 @@ const SearchBar = ({
   value,
   onChange,
   onClear,
+  placeholder,
 }: {
   value: string;
   onChange: (value: string) => void;
   onClear: () => void;
+  placeholder: string;
 }) => {
   return (
     <div
@@ -148,7 +157,7 @@ const SearchBar = ({
         type="text"
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        placeholder="搜索名称、地址、备注..."
+        placeholder={placeholder}
         className={cn(
           'flex-1 min-w-0',
           'bg-transparent',
@@ -176,10 +185,12 @@ const EmptyState = ({
   hasFilter,
   onClearFilter,
   onCreate,
+  t,
 }: {
   hasFilter: boolean;
   onClearFilter: () => void;
   onCreate: () => void;
+  t: (key: string) => string;
 }) => (
   <div className="flex flex-col items-center justify-center py-16 px-6">
     <div className="size-20 rounded-full bg-muted/30 flex items-center justify-center mb-4">
@@ -190,10 +201,12 @@ const EmptyState = ({
       )}
     </div>
     <p className="text-base font-medium text-foreground mb-1 text-center">
-      {hasFilter ? '未找到匹配 Agent' : '暂无转发 Agent'}
+      {hasFilter ? t('common.messages.noResults') : t('admin.forwardAgents.table.empty')}
     </p>
     <p className="text-sm text-muted-foreground text-center mb-5">
-      {hasFilter ? '尝试调整搜索条件或清除筛选' : '点击下方按钮创建第一个 Agent'}
+      {hasFilter
+        ? t('subscription.tryAdjustSearch')
+        : t('admin.forwardAgents.form.create')}
     </p>
     <button
       type="button"
@@ -212,12 +225,12 @@ const EmptyState = ({
       {hasFilter ? (
         <>
           <X className="size-4" />
-          清除筛选
+          {t('messages.clearFilters')}
         </>
       ) : (
         <>
           <Plus className="size-4" />
-          创建 Agent
+          {t('admin.forwardAgents.actions.create')}
         </>
       )}
     </button>
@@ -363,10 +376,19 @@ export const MobileForwardAgentManagement = ({
   onRegenerateToken,
   onGetInstallScript,
 }: MobileForwardAgentManagementProps) => {
+  const { t } = useTranslation();
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<StatusFilter>('all');
   const [selectedAgent, setSelectedAgent] = useState<ForwardAgent | null>(null);
   const [detailSheetOpen, setDetailSheetOpen] = useState(false);
+
+  // Build filter options with translated labels
+  const translatedFilterOptions = useMemo(() => {
+    return STATUS_FILTER_OPTIONS.map((opt) => ({
+      ...opt,
+      label: t(opt.labelKey),
+    }));
+  }, [t]);
 
   // Calculate stats
   const stats = useMemo(() => {
@@ -379,7 +401,7 @@ export const MobileForwardAgentManagement = ({
 
   // Add counts to filter options
   const filterOptionsWithCounts = useMemo(() => {
-    return STATUS_FILTER_OPTIONS.map((opt) => {
+    return translatedFilterOptions.map((opt) => {
       let count: number;
       switch (opt.value) {
         case 'all':
@@ -402,7 +424,7 @@ export const MobileForwardAgentManagement = ({
       }
       return { ...opt, count };
     });
-  }, [stats, total]);
+  }, [translatedFilterOptions, stats, total]);
 
   // Filter agents
   const filteredAgents = useMemo(() => {
@@ -493,6 +515,7 @@ export const MobileForwardAgentManagement = ({
           online={stats.online}
           enabled={stats.enabled}
           loading={loading}
+          t={t}
         />
 
         {/* Search Bar with Actions */}
@@ -502,6 +525,7 @@ export const MobileForwardAgentManagement = ({
               value={searchQuery}
               onChange={setSearchQuery}
               onClear={() => setSearchQuery('')}
+              placeholder={t('common.placeholders.search')}
             />
           </div>
           {/* Drag Sort Toggle */}
@@ -553,14 +577,14 @@ export const MobileForwardAgentManagement = ({
       {hasFilter && !loading && filteredAgents.length > 0 && (
         <div className="flex items-center justify-between mb-3 px-1">
           <span className="text-xs text-muted-foreground">
-            找到 <span className="font-medium text-foreground">{filteredAgents.length}</span> 个结果
+            {t('admin.subscriptions.found')} <span className="font-medium text-foreground">{filteredAgents.length}</span> {t('admin.subscriptions.results')}
           </span>
           <button
             type="button"
             onClick={clearFilters}
             className="text-xs text-primary font-medium"
           >
-            清除筛选
+            {t('messages.clearFilters')}
           </button>
         </div>
       )}
@@ -573,6 +597,7 @@ export const MobileForwardAgentManagement = ({
           hasFilter={hasFilter}
           onClearFilter={clearFilters}
           onCreate={onCreate}
+          t={t}
         />
       ) : isDragEnabled ? (
         <DraggableMobileList

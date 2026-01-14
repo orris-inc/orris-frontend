@@ -1,5 +1,5 @@
 /**
- * 转发Agent详情查看对话框
+ * Forward Agent detail dialog component
  */
 
 import {
@@ -49,6 +49,7 @@ import {
   formatBytes,
   formatUptime,
 } from "@/shared/utils/format-utils";
+import { useTranslation } from "react-i18next";
 
 interface ForwardAgentDetailDialogProps {
   open: boolean;
@@ -78,12 +79,12 @@ const getProgressColor = (value: number): string => {
 };
 
 // Protocol groups for display
-const PROTOCOL_GROUPS: {
+const getProtocolGroups = (t: (key: string) => string): {
   label: string;
   protocols: { value: BlockedProtocol; label: string }[];
-}[] = [
+}[] => [
   {
-    label: "代理协议",
+    label: t("admin.forwardAgents.detail.proxyProtocols"),
     protocols: [
       { value: "http_connect", label: "HTTP CONNECT" },
       { value: "socks4", label: "SOCKS4" },
@@ -91,7 +92,7 @@ const PROTOCOL_GROUPS: {
     ],
   },
   {
-    label: "应用协议",
+    label: t("admin.forwardAgents.detail.appProtocols"),
     protocols: [
       { value: "http", label: "HTTP" },
       { value: "tls", label: "TLS" },
@@ -105,6 +106,7 @@ const PROTOCOL_GROUPS: {
 export const ForwardAgentDetailDialog: React.FC<
   ForwardAgentDetailDialogProps
 > = ({ open, agent, onClose }) => {
+  const { t } = useTranslation();
   const [versionInfo, setVersionInfo] = useState<AgentVersionInfo | null>(null);
   const [versionLoading, setVersionLoading] = useState(false);
   const [updateLoading, setUpdateLoading] = useState(false);
@@ -142,7 +144,7 @@ export const ForwardAgentDetailDialog: React.FC<
       const response = await triggerAgentUpdate(agent.id);
       setUpdateMessage(response.message);
     } catch {
-      setUpdateMessage("更新触发失败");
+      setUpdateMessage(t("admin.forwardAgents.detail.updateTriggerFailed"));
     } finally {
       setUpdateLoading(false);
     }
@@ -158,30 +160,30 @@ export const ForwardAgentDetailDialog: React.FC<
             <DialogTitle className="flex items-center gap-3">
               {agent.name}
               <Badge variant="outline" className="font-normal">
-                转发Agent
+                {t("admin.forwardAgents.detail.badge")}
               </Badge>
             </DialogTitle>
             <div className="flex items-center gap-2 mr-6">
               {isOnline ? (
                 <span className="flex items-center gap-1 text-xs text-green-600">
                   <span className="h-2 w-2 rounded-full bg-green-500"></span>
-                  节点在线
+                  {t("admin.forwardAgents.detail.nodeOnline")}
                 </span>
               ) : agent.status === "enabled" ? (
                 <span className="flex items-center gap-1 text-xs text-slate-400">
                   <span className="h-2 w-2 rounded-full bg-slate-300"></span>
-                  {isConnected ? "等待状态" : "连接中..."}
+                  {isConnected ? t("admin.forwardAgents.detail.waitingStatus") : t("admin.forwardAgents.detail.connecting")}
                 </span>
               ) : (
                 <span className="flex items-center gap-1 text-xs text-slate-400">
                   <span className="h-2 w-2 rounded-full bg-slate-300"></span>
-                  节点离线
+                  {t("admin.forwardAgents.detail.nodeOffline")}
                 </span>
               )}
               <Badge
                 variant={agent.status === "enabled" ? "default" : "secondary"}
               >
-                {agent.status === "enabled" ? "启用" : "禁用"}
+                {agent.status === "enabled" ? t("common.status.enabledShort") : t("common.status.disabledShort")}
               </Badge>
             </div>
           </div>
@@ -189,9 +191,9 @@ export const ForwardAgentDetailDialog: React.FC<
 
         <div className="flex-1 min-h-0 overflow-y-auto -mx-6 px-6">
           <div className="space-y-6">
-            {/* 节点状态 */}
+            {/* Node Status */}
             <div>
-              <h3 className="text-sm font-semibold mb-3">节点状态</h3>
+              <h3 className="text-sm font-semibold mb-3">{t("admin.forwardAgents.detail.nodeStatus")}</h3>
               <Separator className="mb-4" />
               <div className="space-y-4">
                 {/* Status Bar */}
@@ -208,7 +210,7 @@ export const ForwardAgentDetailDialog: React.FC<
                       </div>
                     </TooltipTrigger>
                     <TooltipContent>
-                      {isConnected ? "实时连接已建立" : "正在连接..."}
+                      {isConnected ? t("admin.forwardAgents.detail.realtimeConnected") : t("admin.forwardAgents.detail.connectingRealtime")}
                     </TooltipContent>
                   </Tooltip>
                   <span className="text-slate-300 dark:text-slate-600">|</span>
@@ -221,14 +223,14 @@ export const ForwardAgentDetailDialog: React.FC<
                           <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-green-500"></span>
                         </span>
                         <span className="text-sm font-medium text-green-600">
-                          在线
+                          {t("common.status.online")}
                         </span>
                       </>
                     ) : (
                       <>
                         <span className="h-2.5 w-2.5 rounded-full bg-slate-300"></span>
                         <span className="text-sm font-medium text-slate-500">
-                          离线
+                          {t("common.status.offline")}
                         </span>
                       </>
                     )}
@@ -242,7 +244,7 @@ export const ForwardAgentDetailDialog: React.FC<
                         <div className="flex items-center gap-1.5 text-sm text-muted-foreground">
                           <Activity className="h-3.5 w-3.5" />
                           <span>
-                            运行: {formatUptime(runtimeStatus.uptimeSeconds)}
+                            {t("admin.forwardAgents.detail.uptime")}: {formatUptime(runtimeStatus.uptimeSeconds)}
                           </span>
                         </div>
                       </>
@@ -270,7 +272,7 @@ export const ForwardAgentDetailDialog: React.FC<
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-2">
                         <Package className="h-4 w-4 text-blue-500" />
-                        <span className="text-sm font-medium">版本管理</span>
+                        <span className="text-sm font-medium">{t("admin.forwardAgents.detail.versionManagement")}</span>
                       </div>
                       {versionLoading ? (
                         <Loader2 className="h-4 w-4 animate-spin text-slate-400" />
@@ -278,7 +280,7 @@ export const ForwardAgentDetailDialog: React.FC<
                         <div className="flex items-center gap-3">
                           <div className="text-sm">
                             <span className="text-muted-foreground">
-                              当前:{" "}
+                              {t("admin.forwardAgents.detail.current")}{" "}
                             </span>
                             <span className="font-mono">
                               v{versionInfo.currentVersion}
@@ -286,7 +288,7 @@ export const ForwardAgentDetailDialog: React.FC<
                           </div>
                           <div className="text-sm">
                             <span className="text-muted-foreground">
-                              最新:{" "}
+                              {t("admin.forwardAgents.detail.latest")}{" "}
                             </span>
                             <span className="font-mono">
                               v{versionInfo.latestVersion}
@@ -307,11 +309,11 @@ export const ForwardAgentDetailDialog: React.FC<
                                   ) : (
                                     <ArrowUpCircle className="h-3.5 w-3.5" />
                                   )}
-                                  更新
+                                  {t("admin.forwardAgents.detail.update")}
                                 </Button>
                               </TooltipTrigger>
                               <TooltipContent>
-                                更新到 v{versionInfo.latestVersion}
+                                {t("admin.forwardAgents.detail.updateToVersion", { version: versionInfo.latestVersion })}
                               </TooltipContent>
                             </Tooltip>
                           )}
@@ -320,7 +322,7 @@ export const ForwardAgentDetailDialog: React.FC<
                               variant="outline"
                               className="text-green-600 border-green-200 dark:border-green-800"
                             >
-                              已是最新
+                              {t("admin.forwardAgents.detail.upToDate")}
                             </Badge>
                           )}
                         </div>
@@ -340,7 +342,7 @@ export const ForwardAgentDetailDialog: React.FC<
                               <RefreshCw className="h-4 w-4 text-slate-400" />
                             </button>
                           </TooltipTrigger>
-                          <TooltipContent>刷新版本信息</TooltipContent>
+                          <TooltipContent>{t("admin.forwardAgents.detail.refreshVersion")}</TooltipContent>
                         </Tooltip>
                       )}
                     </div>
@@ -356,7 +358,7 @@ export const ForwardAgentDetailDialog: React.FC<
                   <div className="flex items-center justify-center py-8">
                     <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
                     <span className="ml-2 text-sm text-muted-foreground">
-                      正在建立实时连接...
+                      {t("admin.forwardAgents.detail.establishingConnection")}
                     </span>
                   </div>
                 ) : (
@@ -369,7 +371,7 @@ export const ForwardAgentDetailDialog: React.FC<
                           <div className="flex items-center justify-between mb-2">
                             <div className="flex items-center gap-1.5">
                               <Cpu className="h-4 w-4 text-blue-500" />
-                              <span className="text-xs font-medium">CPU</span>
+                              <span className="text-xs font-medium">{t("admin.forwardAgents.detail.cpu")}</span>
                             </div>
                             <span className="text-sm font-semibold">
                               {(runtimeStatus.cpuPercent ?? 0).toFixed(1)}%
@@ -390,7 +392,7 @@ export const ForwardAgentDetailDialog: React.FC<
                           </Progress>
                           {runtimeStatus.loadAvg1 !== undefined && (
                             <p className="text-xs text-muted-foreground mt-1.5">
-                              负载: {runtimeStatus.loadAvg1.toFixed(2)}
+                              {t("admin.forwardAgents.detail.load")}: {runtimeStatus.loadAvg1.toFixed(2)}
                             </p>
                           )}
                         </div>
@@ -399,7 +401,7 @@ export const ForwardAgentDetailDialog: React.FC<
                           <div className="flex items-center justify-between mb-2">
                             <div className="flex items-center gap-1.5">
                               <MemoryStick className="h-4 w-4 text-green-500" />
-                              <span className="text-xs font-medium">内存</span>
+                              <span className="text-xs font-medium">{t("admin.forwardAgents.detail.memory")}</span>
                             </div>
                             <span className="text-sm font-semibold">
                               {(runtimeStatus.memoryPercent ?? 0).toFixed(1)}%
@@ -431,7 +433,7 @@ export const ForwardAgentDetailDialog: React.FC<
                           <div className="flex items-center justify-between mb-2">
                             <div className="flex items-center gap-1.5">
                               <HardDrive className="h-4 w-4 text-orange-500" />
-                              <span className="text-xs font-medium">磁盘</span>
+                              <span className="text-xs font-medium">{t("admin.forwardAgents.detail.disk")}</span>
                             </div>
                             <span className="text-sm font-semibold">
                               {(runtimeStatus.diskPercent ?? 0).toFixed(1)}%
@@ -467,7 +469,7 @@ export const ForwardAgentDetailDialog: React.FC<
                           <div className="flex items-center gap-1.5 mb-2">
                             <Network className="h-4 w-4 text-indigo-500" />
                             <span className="text-xs font-medium">
-                              网络流量
+                              {t("admin.forwardAgents.detail.networkTraffic")}
                             </span>
                           </div>
                           <div className="flex items-center gap-4 text-sm">
@@ -490,13 +492,13 @@ export const ForwardAgentDetailDialog: React.FC<
                           <div className="flex items-center gap-1.5 mb-2">
                             <ArrowUpDown className="h-4 w-4 text-pink-500" />
                             <span className="text-xs font-medium">
-                              转发状态
+                              {t("admin.forwardAgents.detail.forwardStatus")}
                             </span>
                           </div>
                           <div className="space-y-0.5 text-sm">
-                            <p>活跃规则: {runtimeStatus.activeRules ?? 0}</p>
+                            <p>{t("admin.forwardAgents.detail.activeRules")}: {runtimeStatus.activeRules ?? 0}</p>
                             <p>
-                              活跃连接: {runtimeStatus.activeConnections ?? 0}
+                              {t("admin.forwardAgents.detail.activeConnections")}: {runtimeStatus.activeConnections ?? 0}
                             </p>
                           </div>
                         </div>
@@ -515,7 +517,7 @@ export const ForwardAgentDetailDialog: React.FC<
                               <div className="flex items-center gap-1.5 mb-2">
                                 <Radio className="h-4 w-4 text-purple-500" />
                                 <span className="text-xs font-medium">
-                                  隧道端口
+                                  {t("admin.forwardAgents.detail.tunnelPorts")}
                                 </span>
                               </div>
                               <div className="space-y-0.5 font-mono text-sm">
@@ -535,7 +537,7 @@ export const ForwardAgentDetailDialog: React.FC<
                               <div className="flex items-center gap-1.5 mb-2">
                                 <Globe className="h-4 w-4 text-cyan-500" />
                                 <span className="text-xs font-medium">
-                                  公网 IP
+                                  {t("admin.forwardAgents.detail.publicIp")}
                                 </span>
                               </div>
                               <div className="space-y-0.5 font-mono text-sm">
@@ -560,7 +562,7 @@ export const ForwardAgentDetailDialog: React.FC<
                       {hasExtendedMetrics(runtimeStatus) && (
                         <div className="mt-3">
                           <p className="text-xs font-medium text-muted-foreground mb-2">
-                            扩展指标
+                            {t("admin.forwardAgents.detail.extendedMetrics")}
                           </p>
                           <ExtendedMetricsPanel data={runtimeStatus} />
                         </div>
@@ -571,24 +573,24 @@ export const ForwardAgentDetailDialog: React.FC<
               </div>
             </div>
 
-            {/* 基本信息 */}
+            {/* Basic Info */}
             <div>
-              <h3 className="text-sm font-semibold mb-3">基本信息</h3>
+              <h3 className="text-sm font-semibold mb-3">{t("admin.forwardAgents.detail.basicInfo")}</h3>
               <Separator className="mb-4" />
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-1">
-                  <p className="text-sm text-muted-foreground">节点ID</p>
+                  <p className="text-sm text-muted-foreground">{t("admin.forwardAgents.detail.agentId")}</p>
                   <TruncatedId id={agent.id} fullWidth />
                 </div>
 
                 <div className="space-y-1">
-                  <p className="text-sm text-muted-foreground">节点名称</p>
+                  <p className="text-sm text-muted-foreground">{t("admin.forwardAgents.detail.agentName")}</p>
                   <p className="text-sm">{agent.name}</p>
                 </div>
 
                 {agent.publicAddress && (
                   <div className="space-y-1">
-                    <p className="text-sm text-muted-foreground">公网地址</p>
+                    <p className="text-sm text-muted-foreground">{t("admin.forwardAgents.detail.publicAddress")}</p>
                     <p className="text-sm font-mono bg-muted px-2 py-1 rounded inline-block">
                       {agent.publicAddress}
                     </p>
@@ -597,7 +599,7 @@ export const ForwardAgentDetailDialog: React.FC<
 
                 {agent.tunnelAddress && (
                   <div className="space-y-1">
-                    <p className="text-sm text-muted-foreground">隧道地址</p>
+                    <p className="text-sm text-muted-foreground">{t("admin.forwardAgents.detail.tunnelAddress")}</p>
                     <p className="text-sm font-mono bg-muted px-2 py-1 rounded inline-block">
                       {agent.tunnelAddress}
                     </p>
@@ -605,24 +607,24 @@ export const ForwardAgentDetailDialog: React.FC<
                 )}
 
                 <div className="space-y-1">
-                  <p className="text-sm text-muted-foreground">端口限制</p>
+                  <p className="text-sm text-muted-foreground">{t("admin.forwardAgents.detail.portLimit")}</p>
                   <p className="text-sm font-mono bg-muted px-2 py-1 rounded inline-block">
-                    {agent.allowedPortRange || "无限制"}
+                    {agent.allowedPortRange || t("admin.forwardAgents.detail.noLimit")}
                   </p>
                 </div>
 
                 <div className="space-y-1">
-                  <p className="text-sm text-muted-foreground">通知状态</p>
+                  <p className="text-sm text-muted-foreground">{t("admin.forwardAgents.detail.notificationStatus")}</p>
                   <Badge variant={agent.muteNotification ? "secondary" : "outline"}>
-                    {agent.muteNotification ? "已静音" : "正常通知"}
+                    {agent.muteNotification ? t("admin.forwardAgents.detail.muted") : t("admin.forwardAgents.detail.normalNotification")}
                   </Badge>
                 </div>
 
                 <div className="space-y-2 md:col-span-2">
-                  <p className="text-sm text-muted-foreground">阻止协议</p>
+                  <p className="text-sm text-muted-foreground">{t("admin.forwardAgents.detail.blockedProtocols")}</p>
                   {agent.blockedProtocols && agent.blockedProtocols.length > 0 ? (
                     <div className="space-y-2">
-                      {PROTOCOL_GROUPS.map((group) => {
+                      {getProtocolGroups(t).map((group) => {
                         const blockedInGroup = group.protocols.filter((p) =>
                           agent.blockedProtocols?.includes(p.value)
                         );
@@ -646,53 +648,53 @@ export const ForwardAgentDetailDialog: React.FC<
                       })}
                     </div>
                   ) : (
-                    <p className="text-sm text-muted-foreground">无</p>
+                    <p className="text-sm text-muted-foreground">{t("admin.forwardAgents.detail.none")}</p>
                   )}
                 </div>
 
                 {agent.remark && (
                   <div className="space-y-1 md:col-span-2">
-                    <p className="text-sm text-muted-foreground">备注</p>
+                    <p className="text-sm text-muted-foreground">{t("admin.forwardAgents.detail.remark")}</p>
                     <p className="text-sm">{agent.remark}</p>
                   </div>
                 )}
               </div>
             </div>
 
-            {/* 时间信息 */}
+            {/* Time Info */}
             <div>
-              <h3 className="text-sm font-semibold mb-3">时间信息</h3>
+              <h3 className="text-sm font-semibold mb-3">{t("admin.forwardAgents.detail.timeInfo")}</h3>
               <Separator className="mb-4" />
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-1">
-                  <p className="text-sm text-muted-foreground">创建时间</p>
+                  <p className="text-sm text-muted-foreground">{t("admin.forwardAgents.detail.createdAt")}</p>
                   <p className="text-xs">{formatDate(agent.createdAt)}</p>
                 </div>
 
                 {agent.updatedAt && (
                   <div className="space-y-1">
-                    <p className="text-sm text-muted-foreground">更新时间</p>
+                    <p className="text-sm text-muted-foreground">{t("admin.forwardAgents.detail.updatedAt")}</p>
                     <p className="text-xs">{formatDate(agent.updatedAt)}</p>
                   </div>
                 )}
 
                 {agent.lastSeenAt && (
                   <div className="space-y-1">
-                    <p className="text-sm text-muted-foreground">最后在线</p>
+                    <p className="text-sm text-muted-foreground">{t("admin.forwardAgents.detail.lastOnline")}</p>
                     <p className="text-xs">{formatDate(agent.lastSeenAt)}</p>
                   </div>
                 )}
               </div>
             </div>
 
-            {/* Token说明 */}
+            {/* Token Notice */}
             <div>
-              <h3 className="text-sm font-semibold mb-3">Token说明</h3>
+              <h3 className="text-sm font-semibold mb-3">{t("admin.forwardAgents.detail.tokenNotice")}</h3>
               <Separator className="mb-4" />
               <div className="space-y-2 text-sm text-muted-foreground">
-                <p>• Token仅在创建节点或重新生成时完整显示一次</p>
-                <p>• 请妥善保存Token，丢失后需要重新生成</p>
-                <p>• 重新生成Token后，旧Token将立即失效</p>
+                <p>• {t("admin.forwardAgents.detail.tokenNotice1")}</p>
+                <p>• {t("admin.forwardAgents.detail.tokenNotice2")}</p>
+                <p>• {t("admin.forwardAgents.detail.tokenNotice3")}</p>
               </div>
             </div>
           </div>
@@ -700,7 +702,7 @@ export const ForwardAgentDetailDialog: React.FC<
 
         <DialogFooter className="flex-shrink-0">
           <Button variant="outline" onClick={onClose}>
-            关闭
+            {t("common.actions.close")}
           </Button>
         </DialogFooter>
       </DialogContent>

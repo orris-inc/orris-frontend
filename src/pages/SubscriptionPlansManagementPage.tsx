@@ -4,6 +4,7 @@
  */
 
 import { useState, useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
   CreditCard,
   Plus,
@@ -34,7 +35,8 @@ import { deletePlan } from '@/api/subscription';
 import type { SubscriptionPlan, CreatePlanRequest, UpdatePlanRequest } from '@/api/subscription/types';
 
 export const SubscriptionPlansManagementPage = () => {
-  usePageTitle('订阅计划管理');
+  const { t } = useTranslation();
+  usePageTitle(t('admin.plans.pageTitle'));
 
   const { isMobile } = useBreakpoint();
 
@@ -126,12 +128,12 @@ export const SubscriptionPlansManagementPage = () => {
     if (!targetPlan) return;
     try {
       await deletePlan(targetPlan.id);
-      showSuccess('计划已删除');
+      showSuccess(t('admin.plans.deleteSuccess'));
       setDeleteDialogOpen(false);
       setPlanToDelete(null);
       refetch();
     } catch {
-      showError('删除计划失败，可能存在活跃订阅');
+      showError(t('admin.plans.deleteError'));
     }
   };
 
@@ -213,13 +215,13 @@ export const SubscriptionPlansManagementPage = () => {
           <div className="flex items-center justify-between gap-3 flex-wrap">
             {/* Left: Title + Stats */}
             <div className="flex items-center gap-3">
-              <h1 className="text-sm font-semibold text-foreground">订阅计划管理</h1>
+              <h1 className="text-sm font-semibold text-foreground">{t('admin.plans.pageTitle')}</h1>
               <div className="h-4 w-px bg-border hidden sm:block" />
               <div className="flex items-center gap-3 text-xs">
                 <span className="flex items-center gap-1 text-muted-foreground">
                   <CreditCard className="size-3" />
                   <span className="font-medium text-foreground">{planStats.total}</span>
-                  <span className="hidden sm:inline">计划</span>
+                  <span className="hidden sm:inline">{t('admin.plans.plans')}</span>
                 </span>
                 <span className="flex items-center gap-1">
                   <CheckCircle2 className="size-3 text-success" />
@@ -236,12 +238,12 @@ export const SubscriptionPlansManagementPage = () => {
             <div className="hidden md:flex items-center gap-3 text-xs">
               <span className="flex items-center gap-1.5">
                 <Globe className="size-3 text-info" />
-                <span className="text-muted-foreground">公开</span>
+                <span className="text-muted-foreground">{t('admin.plans.public')}</span>
                 <span className="font-semibold tabular-nums text-foreground">{planStats.publicPlans}</span>
               </span>
               <span className="flex items-center gap-1.5">
                 <Lock className="size-3 text-warning" />
-                <span className="text-muted-foreground">私有</span>
+                <span className="text-muted-foreground">{t('admin.plans.private')}</span>
                 <span className="font-semibold tabular-nums text-foreground">{planStats.privatePlans}</span>
               </span>
             </div>
@@ -263,10 +265,10 @@ export const SubscriptionPlansManagementPage = () => {
                       />
                     }
                   >
-                    <span className="sr-only">刷新</span>
+                    <span className="sr-only">{t('common.actions.refresh')}</span>
                   </AdminButton>
                 </TooltipTrigger>
-                <TooltipContent>刷新列表</TooltipContent>
+                <TooltipContent>{t('admin.plans.refreshList')}</TooltipContent>
               </Tooltip>
 
               <AdminButton
@@ -279,7 +281,7 @@ export const SubscriptionPlansManagementPage = () => {
                   setCreateDialogOpen(true);
                 }}
               >
-                创建计划
+                {t('admin.plans.createPlan')}
               </AdminButton>
             </div>
           </div>
@@ -337,10 +339,10 @@ export const SubscriptionPlansManagementPage = () => {
       <ConfirmDialog
         open={deleteDialogOpen}
         onOpenChange={setDeleteDialogOpen}
-        title="确认删除"
-        description={planToDelete ? `确认删除计划 "${planToDelete.name}" 吗？此操作不可恢复。注意：只有无活跃订阅的计划才能删除。` : ''}
-        confirmText="删除"
-        cancelText="取消"
+        title={t('admin.plans.confirmDeleteTitle')}
+        description={planToDelete ? t('admin.plans.confirmDeleteDescription', { name: planToDelete.name }) : ''}
+        confirmText={t('common.actions.delete')}
+        cancelText={t('common.actions.cancel')}
         variant="destructive"
         onConfirm={handleDeleteConfirm}
       />

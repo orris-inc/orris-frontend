@@ -5,6 +5,7 @@
  */
 
 import { memo } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Server, Cpu, HardDrive, Activity, ArrowDown, ArrowUp, Clock, Wifi, Globe, Network } from 'lucide-react';
 import { Badge } from '@/components/common/Badge';
 import { formatBitRate, formatBytes, formatRelativeTime } from '@/shared/utils/format-utils';
@@ -124,6 +125,7 @@ const arePropsEqual = (
 };
 
 export const EntityDetailCard = memo(({ entity, compact = false }: EntityDetailCardProps) => {
+  const { t } = useTranslation();
   const status = entity.status as (NodeSystemStatus | AgentSystemStatus) | null;
   const isOnline = entity.isOnline && status;
 
@@ -228,7 +230,7 @@ export const EntityDetailCard = memo(({ entity, compact = false }: EntityDetailC
               variant={isOnline ? 'default' : 'secondary'}
               className={`shrink-0 text-[10px] sm:text-xs ${isOnline ? 'bg-success text-success-foreground' : ''}`}
             >
-              {isOnline ? '在线' : '离线'}
+              {isOnline ? t('admin.monitor.detail.online') : t('admin.monitor.detail.offline')}
             </Badge>
           </div>
 
@@ -308,7 +310,7 @@ export const EntityDetailCard = memo(({ entity, compact = false }: EntityDetailC
             variant={isOnline ? 'default' : 'secondary'}
             className={`shrink-0 text-[10px] ${isOnline ? 'bg-success text-success-foreground' : ''}`}
           >
-            {isOnline ? '在线' : '离线'}
+            {isOnline ? t('admin.monitor.detail.online') : t('admin.monitor.detail.offline')}
           </Badge>
         </div>
       </div>
@@ -317,23 +319,23 @@ export const EntityDetailCard = memo(({ entity, compact = false }: EntityDetailC
         <div className="px-2.5 pb-2.5 sm:px-3 sm:pb-3 space-y-2">
           {/* Resource metrics - inline progress bars */}
           <div className="grid grid-cols-3 gap-2 p-2 rounded-lg bg-muted/30">
-            <InlineProgress value={cpuPercent} label="CPU" />
-            <InlineProgress value={memoryPercent} label="内存" />
-            <InlineProgress value={diskPercent} label="磁盘" />
+            <InlineProgress value={cpuPercent} label={t('admin.monitor.cpu')} />
+            <InlineProgress value={memoryPercent} label={t('admin.monitor.memory')} />
+            <InlineProgress value={diskPercent} label={t('admin.monitor.disk')} />
           </div>
 
           {/* Network Traffic - compact inline */}
           <div className="flex items-center gap-3 px-1">
             <div className="flex items-center gap-1.5 flex-1 min-w-0">
               <ArrowDown className="size-3 text-success shrink-0" />
-              <span className="text-[10px] text-muted-foreground">下载</span>
+              <span className="text-[10px] text-muted-foreground">{t('admin.monitor.download')}</span>
               <span className="text-[11px] font-semibold text-success tabular-nums">{formatBitRate(status.networkRxRate ?? 0)}</span>
               <span className="text-[9px] text-muted-foreground/70 truncate">({formatBytes(status.networkRxBytes ?? 0)})</span>
             </div>
             <div className="w-px h-3 bg-border" />
             <div className="flex items-center gap-1.5 flex-1 min-w-0">
               <ArrowUp className="size-3 text-info shrink-0" />
-              <span className="text-[10px] text-muted-foreground">上传</span>
+              <span className="text-[10px] text-muted-foreground">{t('admin.monitor.upload')}</span>
               <span className="text-[11px] font-semibold text-info tabular-nums">{formatBitRate(status.networkTxRate ?? 0)}</span>
               <span className="text-[9px] text-muted-foreground/70 truncate">({formatBytes(status.networkTxBytes ?? 0)})</span>
             </div>
@@ -343,37 +345,37 @@ export const EntityDetailCard = memo(({ entity, compact = false }: EntityDetailC
           <div className="grid grid-cols-3 gap-x-2 gap-y-1.5 pt-1.5 border-t border-border/40">
             <CompactStat
               icon={<Clock className="size-3" />}
-              label="运行时间"
+              label={t('admin.monitor.detail.uptimeLabel')}
               value={formatUptime(status.uptimeSeconds)}
             />
             <CompactStat
               icon={<Activity className="size-3" />}
-              label="负载"
+              label={t('admin.monitor.load')}
               value={status.loadAvg1?.toFixed(2) ?? '-'}
             />
             <CompactStat
               icon={<HardDrive className="size-3" />}
-              label="内存"
+              label={t('admin.monitor.memory')}
               value={formatBytes(status.memoryUsed)}
               subValue={`/ ${formatBytes(status.memoryTotal)}`}
             />
             <CompactStat
               icon={<Network className="size-3" />}
-              label="连接"
+              label={t('admin.monitor.connections')}
               value={`${(status.tcpConnections ?? 0) + (status.udpConnections ?? 0)}`}
               subValue={`T:${status.tcpConnections ?? 0} U:${status.udpConnections ?? 0}`}
             />
             {(status as NodeSystemStatus).publicIpv4 && (
               <CompactStat
                 icon={<Globe className="size-3" />}
-                label="公网 IP"
+                label={t('admin.monitor.detail.publicIp')}
                 value={(status as NodeSystemStatus).publicIpv4 ?? '-'}
               />
             )}
             {(status as NodeSystemStatus).agentVersion && (
               <CompactStat
                 icon={<Server className="size-3" />}
-                label="版本"
+                label={t('admin.monitor.detail.version')}
                 value={(status as NodeSystemStatus).agentVersion ?? '-'}
               />
             )}
@@ -386,11 +388,11 @@ export const EntityDetailCard = memo(({ entity, compact = false }: EntityDetailC
             <Wifi className="size-4 text-muted-foreground/40" />
           </div>
           <p className="text-xs font-medium text-muted-foreground">
-            {entity.type === 'node' ? 'Node Agent 离线' : '转发 Agent 离线'}
+            {entity.type === 'node' ? t('admin.monitor.detail.nodeAgentOffline') : t('admin.monitor.detail.forwardAgentOffline')}
           </p>
           {entity.lastSeenAt && (
             <p className="text-[10px] text-muted-foreground/70 mt-1">
-              最后在线: {formatRelativeTime(entity.lastSeenAt)}
+              {t('admin.monitor.detail.lastOnline')}: {formatRelativeTime(entity.lastSeenAt)}
             </p>
           )}
         </div>

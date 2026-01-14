@@ -4,6 +4,7 @@
  */
 
 import { useState, useMemo, useCallback } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
   Cpu,
   Plus,
@@ -44,7 +45,8 @@ import { getAgentVersion } from '@/api/forward';
 import type { AgentVersionInfo, ForwardAgent, UpdateForwardAgentRequest, CreateForwardAgentRequest, ForwardStatus } from '@/api/forward';
 
 export const ForwardAgentsPage = () => {
-  usePageTitle('转发Agent管理');
+  const { t } = useTranslation();
+  usePageTitle(t('admin.forwardAgents.title'));
 
   const { isMobile } = useBreakpoint();
 
@@ -136,7 +138,7 @@ export const ForwardAgentsPage = () => {
       setAgentToDelete(agent);
       setDeleteDialogOpen(true);
     } else {
-      if (window.confirm(`确认删除转发Agent "${agent.name}" 吗？此操作不可恢复。`)) {
+      if (window.confirm(t('admin.forwardAgents.confirmDelete', { name: agent.name }))) {
         await deleteForwardAgent(agent.id);
       }
     }
@@ -184,7 +186,7 @@ export const ForwardAgentsPage = () => {
 
   const handleCopy = (agent: ForwardAgent) => {
     const copyData: Partial<CreateForwardAgentRequest> = {
-      name: `${agent.name} - 副本`,
+      name: `${agent.name} - ${t('admin.forwardAgents.copySuffix')}`,
       remark: agent.remark,
     };
     setCopyAgentData(copyData);
@@ -204,14 +206,14 @@ export const ForwardAgentsPage = () => {
       if (info.hasUpdate) {
         setUpdateConfirmOpen(true);
       } else {
-        showInfo(`${agent.name} 已是最新版本 (v${info.currentVersion})`);
+        showInfo(t('admin.forwardAgents.version.upToDate', { name: agent.name, version: info.currentVersion }));
       }
     } catch {
-      showError('获取版本信息失败');
+      showError(t('admin.forwardAgents.version.fetchFailed'));
     } finally {
       setCheckingAgentId(null);
     }
-  }, [showInfo, showError]);
+  }, [showInfo, showError, t]);
 
   const handleConfirmUpdate = useCallback(async () => {
     if (!updateAgent) return;
@@ -331,7 +333,7 @@ export const ForwardAgentsPage = () => {
           <div className="flex items-center justify-between gap-3 flex-wrap">
             {/* Left: Title + Primary Stats */}
             <div className="flex items-center gap-3">
-              <h1 className="text-sm font-semibold text-foreground">转发Agent管理</h1>
+              <h1 className="text-sm font-semibold text-foreground">{t('admin.forwardAgents.title')}</h1>
               <div className="h-4 w-px bg-border hidden sm:block" />
               <div className="flex items-center gap-2.5 text-xs">
                 <span className="flex items-center gap-1 text-muted-foreground">
@@ -360,12 +362,12 @@ export const ForwardAgentsPage = () => {
               {/* Status filter */}
               <Select value={filters.status || '_all_'} onValueChange={handleStatusChange}>
                 <SelectTrigger className="h-7 w-20 text-xs">
-                  <SelectValue placeholder="状态" />
+                  <SelectValue placeholder={t('admin.forwardAgents.filters.status')} />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="_all_">全部</SelectItem>
-                  <SelectItem value="enabled">启用</SelectItem>
-                  <SelectItem value="disabled">禁用</SelectItem>
+                  <SelectItem value="_all_">{t('admin.forwardAgents.filters.all')}</SelectItem>
+                  <SelectItem value="enabled">{t('admin.forwardAgents.filters.enabled')}</SelectItem>
+                  <SelectItem value="disabled">{t('admin.forwardAgents.filters.disabled')}</SelectItem>
                 </SelectContent>
               </Select>
 
@@ -373,7 +375,7 @@ export const ForwardAgentsPage = () => {
               <div className="relative flex-1 max-w-[180px]">
                 <Search className="absolute left-2 top-1/2 -translate-y-1/2 size-3 text-muted-foreground" />
                 <Input
-                  placeholder="搜索节点"
+                  placeholder={t('admin.forwardAgents.filters.searchAgent')}
                   value={filters.name || ''}
                   onChange={(e) => handleSearchChange(e.target.value)}
                   className="h-7 pl-7 text-xs"
@@ -383,13 +385,13 @@ export const ForwardAgentsPage = () => {
               {/* Sort filter */}
               <Select value={getSortValue()} onValueChange={handleSortChange}>
                 <SelectTrigger className="h-7 w-24 text-xs">
-                  <SelectValue placeholder="排序" />
+                  <SelectValue placeholder={t('admin.forwardAgents.filters.sort')} />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="_default_">默认</SelectItem>
-                  <SelectItem value="created_at_desc">创建 ↓</SelectItem>
-                  <SelectItem value="created_at_asc">创建 ↑</SelectItem>
-                  <SelectItem value="updated_at_desc">更新 ↓</SelectItem>
+                  <SelectItem value="_default_">{t('admin.forwardAgents.filters.default')}</SelectItem>
+                  <SelectItem value="created_at_desc">{t('admin.forwardAgents.filters.createdDesc')}</SelectItem>
+                  <SelectItem value="created_at_asc">{t('admin.forwardAgents.filters.createdAsc')}</SelectItem>
+                  <SelectItem value="updated_at_desc">{t('admin.forwardAgents.filters.updatedDesc')}</SelectItem>
                 </SelectContent>
               </Select>
 
@@ -404,7 +406,7 @@ export const ForwardAgentsPage = () => {
                       <FilterX className="size-3.5" />
                     </button>
                   </TooltipTrigger>
-                  <TooltipContent>重置筛选</TooltipContent>
+                  <TooltipContent>{t('admin.forwardAgents.filters.resetFilters')}</TooltipContent>
                 </Tooltip>
               )}
 
@@ -425,7 +427,7 @@ export const ForwardAgentsPage = () => {
                   </label>
                 </TooltipTrigger>
                 <TooltipContent>
-                  {dragSortEnabled ? '关闭拖拽排序' : '开启拖拽排序'}
+                  {dragSortEnabled ? t('admin.forwardAgents.dragSort.disable') : t('admin.forwardAgents.dragSort.enable')}
                 </TooltipContent>
               </Tooltip>
             </div>
@@ -442,10 +444,10 @@ export const ForwardAgentsPage = () => {
                       className="h-7 px-2 text-xs border-info/30 hover:border-info/50 hover:bg-info/10"
                       icon={<Radio className="size-3.5 text-info" strokeWidth={1.5} />}
                     >
-                      <span className="hidden xl:inline text-info">下发</span>
+                      <span className="hidden xl:inline text-info">{t('admin.forwardAgents.actions.broadcast')}</span>
                     </AdminButton>
                   </TooltipTrigger>
-                  <TooltipContent>向 {stats.online} 个在线节点下发新API地址</TooltipContent>
+                  <TooltipContent>{t('admin.forwardAgents.broadcast.tooltip', { count: stats.online })}</TooltipContent>
                 </Tooltip>
               )}
 
@@ -459,10 +461,10 @@ export const ForwardAgentsPage = () => {
                       className="h-7 px-2 text-xs border-warning/30 hover:border-warning/50 hover:bg-warning-muted"
                       icon={<ArrowUpCircle className="size-3.5 text-warning" strokeWidth={1.5} />}
                     >
-                      <span className="hidden xl:inline text-warning">更新</span>
+                      <span className="hidden xl:inline text-warning">{t('admin.forwardAgents.actions.update')}</span>
                     </AdminButton>
                   </TooltipTrigger>
-                  <TooltipContent>更新 {stats.updatable} 个转发Agent</TooltipContent>
+                  <TooltipContent>{t('admin.forwardAgents.batchUpdate.tooltip', { count: stats.updatable })}</TooltipContent>
                 </Tooltip>
               )}
 
@@ -481,10 +483,10 @@ export const ForwardAgentsPage = () => {
                       />
                     }
                   >
-                    <span className="sr-only">刷新</span>
+                    <span className="sr-only">{t('admin.forwardAgents.actions.refresh')}</span>
                   </AdminButton>
                 </TooltipTrigger>
-                <TooltipContent>刷新列表</TooltipContent>
+                <TooltipContent>{t('admin.forwardAgents.actions.refreshList')}</TooltipContent>
               </Tooltip>
 
               <AdminButton
@@ -497,8 +499,8 @@ export const ForwardAgentsPage = () => {
                   setCreateDialogOpen(true);
                 }}
               >
-                <span className="hidden sm:inline">新增</span>
-                <span className="sm:hidden">新增</span>
+                <span className="hidden sm:inline">{t('admin.forwardAgents.actions.create')}</span>
+                <span className="sm:hidden">{t('admin.forwardAgents.actions.create')}</span>
               </AdminButton>
             </div>
           </div>
@@ -619,7 +621,7 @@ export const ForwardAgentsPage = () => {
       <TokenDialog
         open={tokenDialogOpen}
         token={generatedToken?.token ?? null}
-        title="转发AgentToken"
+        title={t('admin.forwardAgents.token')}
         onClose={() => {
           setTokenDialogOpen(false);
           setGeneratedToken(null);
@@ -648,13 +650,17 @@ export const ForwardAgentsPage = () => {
             setVersionInfo(null);
           }
         }}
-        title="确认更新"
+        title={t('admin.forwardAgents.update.confirmTitle')}
         description={
           versionInfo && updateAgent
-            ? `确定要将 "${updateAgent.name}" 从 v${versionInfo.currentVersion} 更新到 v${versionInfo.latestVersion} 吗？更新过程中 Agent 会短暂离线。`
-            : '确定要更新 Agent 吗？'
+            ? t('admin.forwardAgents.update.confirmMessage', {
+                name: updateAgent.name,
+                currentVersion: versionInfo.currentVersion,
+                latestVersion: versionInfo.latestVersion,
+              })
+            : t('admin.forwardAgents.update.confirmDefault')
         }
-        confirmText="确认更新"
+        confirmText={t('admin.forwardAgents.update.confirmButton')}
         onConfirm={handleConfirmUpdate}
         loading={triggerUpdateMutation.isPending}
       />

@@ -9,18 +9,20 @@ import { AdminLayout } from "@/layouts/AdminLayout";
 import { usePageTitle } from "@/shared/hooks";
 import { Bell } from "lucide-react";
 import { AdminTelegramBindingCard } from "@/features/telegram";
+import { useTranslation } from "react-i18next";
 
 /**
  * Admin Notifications Page Component
  */
 export const AdminNotificationsPage = () => {
-  usePageTitle("通知设置");
+  const { t } = useTranslation();
+  usePageTitle(t("notifications.title"));
 
   return (
     <AdminLayout>
       <div className="flex flex-col min-h-0">
         {/* Page Header */}
-        <header className="shrink-0 py-4 sm:py-6 md:py-8">
+        <header className="shrink-0 py-4 sm:py-6">
           <div className="flex items-center gap-3">
             <div className="p-2 sm:p-2.5 rounded-xl bg-primary/10 ring-1 ring-primary/20">
               <Bell
@@ -30,10 +32,10 @@ export const AdminNotificationsPage = () => {
             </div>
             <div>
               <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-foreground tracking-tight">
-                通知设置
+                {t("notifications.title")}
               </h1>
               <p className="text-xs sm:text-sm text-muted-foreground mt-0.5">
-                管理通知偏好和绑定
+                {t("notifications.subtitle")}
               </p>
             </div>
           </div>

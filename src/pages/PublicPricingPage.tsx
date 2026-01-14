@@ -5,30 +5,15 @@
 
 import { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router';
+import { useTranslation } from 'react-i18next';
 import { motion } from 'framer-motion';
 import { Globe, Check, Loader2, Menu, X } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { ThemeToggle } from '@/components/common/ThemeToggle';
+import { LanguageSwitcher } from '@/components/common/LanguageSwitcher';
 import { useAuthStore } from '@/features/auth/stores/auth-store';
 import { usePublicPlans } from '@/features/subscription-plans/hooks/usePublicPlans';
 import type { SubscriptionPlan, BillingCycle } from '@/api/subscription/types';
-
-// Navigation links for public pages
-const navLinks = [
-  { href: '/#features', label: 'Features', isRoute: true },
-  { href: '/#how-it-works', label: 'How It Works', isRoute: true },
-  { href: '/pricing', label: 'Pricing', isRoute: true, active: true },
-];
-
-// Billing cycle labels
-const billingCycleLabels: Record<BillingCycle, string> = {
-  weekly: '/week',
-  monthly: '/month',
-  quarterly: '/quarter',
-  semi_annual: '/6 months',
-  yearly: '/year',
-  lifetime: ' lifetime',
-};
 
 // Format price
 const formatPrice = (price: number, currency: string) => {
@@ -49,25 +34,52 @@ const PricingCard: React.FC<PricingCardProps> = ({
   featured = false,
   onSelect,
 }) => {
+  const { t } = useTranslation();
+
+  // Billing cycle labels using i18n
+  const getBillingCycleLabel = (cycle: BillingCycle): string => {
+    const labels: Record<BillingCycle, string> = {
+      weekly: t('pricing.perWeek'),
+      monthly: t('pricing.perMonth'),
+      quarterly: t('pricing.perQuarter'),
+      semi_annual: t('pricing.perHalfYear'),
+      yearly: t('pricing.perYear'),
+      lifetime: t('pricing.lifetime'),
+    };
+    return labels[cycle];
+  };
+
   // Get primary pricing (first active one)
   const primaryPricing = plan.pricings?.find((p) => p.isActive) || plan.pricings?.[0];
 
-  // Build features list
+  // Build features list using i18n
   const features: string[] = [];
   if (plan.maxUsers > 0) {
-    features.push(plan.maxUsers === 1 ? '1 user account' : `Up to ${plan.maxUsers} user accounts`);
+    features.push(
+      plan.maxUsers === 1
+        ? t('pricing.features.oneUser')
+        : t('pricing.features.users', { count: plan.maxUsers })
+    );
   }
   if (plan.maxProjects > 0) {
-    features.push(plan.maxProjects === 1 ? '1 project' : `${plan.maxProjects} projects`);
+    features.push(
+      plan.maxProjects === 1
+        ? t('pricing.features.oneProject')
+        : t('pricing.features.projects', { count: plan.maxProjects })
+    );
   }
   if (plan.nodeLimit && plan.nodeLimit > 0) {
-    features.push(plan.nodeLimit === 1 ? '1 node' : `${plan.nodeLimit} nodes`);
+    features.push(
+      plan.nodeLimit === 1
+        ? t('pricing.features.oneNode')
+        : t('pricing.features.nodes', { count: plan.nodeLimit })
+    );
   }
   if (plan.apiRateLimit > 0) {
-    features.push(`${plan.apiRateLimit} API requests/min`);
+    features.push(t('pricing.features.apiRate', { count: plan.apiRateLimit }));
   }
   if (plan.trialDays > 0) {
-    features.push(`${plan.trialDays}-day free trial`);
+    features.push(t('pricing.features.trialDays', { count: plan.trialDays }));
   }
   // Add description as a feature if exists
   if (plan.description) {
@@ -111,7 +123,7 @@ const PricingCard: React.FC<PricingCardProps> = ({
                 featured ? 'text-white/70' : 'text-muted-foreground'
               )}
             >
-              {billingCycleLabels[primaryPricing.billingCycle]}
+              {getBillingCycleLabel(primaryPricing.billingCycle)}
             </span>
           </>
         ) : (
@@ -121,7 +133,7 @@ const PricingCard: React.FC<PricingCardProps> = ({
               featured ? 'text-white' : 'text-foreground'
             )}
           >
-            Contact us
+            {t('pricing.contactUs')}
           </span>
         )}
       </p>
@@ -134,8 +146,8 @@ const PricingCard: React.FC<PricingCardProps> = ({
         )}
       >
         {featured
-          ? 'Perfect for growing teams and businesses.'
-          : plan.description || 'Everything you need to get started.'}
+          ? t('pricing.features.featuredDesc')
+          : plan.description || t('pricing.features.defaultDesc')}
       </p>
 
       {/* CTA Button */}
@@ -148,7 +160,7 @@ const PricingCard: React.FC<PricingCardProps> = ({
             : 'bg-slate-900 text-white hover:bg-slate-800 dark:bg-white dark:text-slate-900 dark:hover:bg-slate-100 focus-visible:ring-slate-900'
         )}
       >
-        Get started
+        {t('pricing.getStarted')}
       </button>
 
       {/* Features */}
@@ -175,10 +187,18 @@ const PricingCard: React.FC<PricingCardProps> = ({
 };
 
 export const PublicPricingPage = () => {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const { isAuthenticated, isLoading: authLoading } = useAuthStore();
   const { publicPlans, isLoading: plansLoading } = usePublicPlans();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+
+  // Navigation links for public pages
+  const navLinks = [
+    { href: '/#features', label: t('landing.nav.features'), isRoute: true },
+    { href: '/#how-it-works', label: t('landing.nav.howItWorks'), isRoute: true },
+    { href: '/pricing', label: t('landing.nav.pricing'), isRoute: true, active: true },
+  ];
 
   // Redirect authenticated users to dashboard pricing
   useEffect(() => {
@@ -238,12 +258,13 @@ export const PublicPricingPage = () => {
 
             {/* Desktop Actions */}
             <div className="hidden md:flex items-center gap-4">
+              <LanguageSwitcher />
               <ThemeToggle />
               <Link
                 to="/login"
                 className="text-sm text-muted-foreground hover:text-foreground transition-colors"
               >
-                Sign In
+                {t('landing.nav.signIn')}
               </Link>
               <Link
                 to="/register"
@@ -254,23 +275,24 @@ export const PublicPricingPage = () => {
                   'hover:bg-foreground/90 transition-colors'
                 )}
               >
-                Get Started
+                {t('landing.nav.getStarted')}
               </Link>
             </div>
 
             {/* Mobile Actions */}
             <div className="flex md:hidden items-center gap-2">
+              <LanguageSwitcher />
               <ThemeToggle />
               <Link
                 to="/login"
                 className="text-sm text-muted-foreground hover:text-foreground transition-colors"
               >
-                Sign In
+                {t('landing.nav.signIn')}
               </Link>
               <button
                 onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
                 className="inline-flex h-9 w-9 items-center justify-center rounded-md hover:bg-accent transition-colors -mr-2"
-                aria-label={mobileMenuOpen ? 'Close menu' : 'Open menu'}
+                aria-label={mobileMenuOpen ? t('landing.nav.closeMenu') : t('landing.nav.openMenu')}
                 aria-expanded={mobileMenuOpen}
               >
                 {mobileMenuOpen ? <X className="size-5" /> : <Menu className="size-5" />}
@@ -315,7 +337,7 @@ export const PublicPricingPage = () => {
                     'hover:bg-foreground/90 transition-colors'
                   )}
                 >
-                  Get Started
+                  {t('landing.nav.getStarted')}
                 </Link>
               </div>
             </motion.div>
@@ -333,14 +355,10 @@ export const PublicPricingPage = () => {
           {/* Header */}
           <div className="md:text-center">
             <h2 className="font-display text-3xl tracking-tight text-foreground sm:text-4xl">
-              <span className="relative whitespace-nowrap">
-                <span className="relative">Simple pricing,</span>
-              </span>{' '}
-              for everyone.
+              {t('pricing.publicTitle')}
             </h2>
             <p className="mt-4 text-lg text-muted-foreground">
-              It doesn't matter what size your business is, our software won't
-              work well for you.
+              {t('pricing.publicSubtitle')}
             </p>
           </div>
 
@@ -353,7 +371,7 @@ export const PublicPricingPage = () => {
             ) : publicPlans.length === 0 ? (
               <div className="text-center py-12">
                 <p className="text-muted-foreground">
-                  No plans available at the moment.
+                  {t('pricing.noPlans')}
                 </p>
               </div>
             ) : (
@@ -398,24 +416,24 @@ export const PublicPricingPage = () => {
                 to="/#features"
                 className="hover:text-foreground transition-colors"
               >
-                Features
+                {t('landing.nav.features')}
               </Link>
               <Link
                 to="/#how-it-works"
                 className="hover:text-foreground transition-colors"
               >
-                How It Works
+                {t('landing.nav.howItWorks')}
               </Link>
               <Link
                 to="/pricing"
                 className="hover:text-foreground transition-colors"
               >
-                Pricing
+                {t('landing.nav.pricing')}
               </Link>
             </div>
 
             <p className="text-sm text-muted-foreground">
-              &copy; {new Date().getFullYear()} Orris. All rights reserved.
+              {t('landing.footer.copyright', { year: new Date().getFullYear() })}
             </p>
           </div>
         </div>

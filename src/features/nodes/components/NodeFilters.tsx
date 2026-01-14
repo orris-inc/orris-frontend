@@ -4,6 +4,7 @@
  */
 
 import { FilterX } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { Input } from '@/components/common/Input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/common/Select';
 import { Button } from '@/components/common/Button';
@@ -21,6 +22,8 @@ interface NodeFiltersComponentProps {
 }
 
 export const NodeFilters: React.FC<NodeFiltersComponentProps> = ({ filters, onChange }) => {
+  const { t } = useTranslation();
+
   const handleStatusChange = (value: string): void => {
     onChange({ status: value === '_all_' ? undefined : (value as NodeStatus) });
   };
@@ -41,20 +44,20 @@ export const NodeFilters: React.FC<NodeFiltersComponentProps> = ({ filters, onCh
       <div className="w-36">
         <Select value={filters.status || '_all_'} onValueChange={handleStatusChange}>
           <SelectTrigger>
-            <SelectValue placeholder="状态" />
+            <SelectValue placeholder={t('admin.forwardRules.filters.status')} />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="_all_">全部</SelectItem>
-            <SelectItem value="active">激活</SelectItem>
-            <SelectItem value="inactive">未激活</SelectItem>
-            <SelectItem value="maintenance">维护中</SelectItem>
+            <SelectItem value="_all_">{t('filter.all')}</SelectItem>
+            <SelectItem value="active">{t('common.status.active')}</SelectItem>
+            <SelectItem value="inactive">{t('common.status.inactive')}</SelectItem>
+            <SelectItem value="maintenance">{t('common.status.maintenance')}</SelectItem>
           </SelectContent>
         </Select>
       </div>
 
       <div className="flex-1 max-w-xs">
         <Input
-          placeholder="搜索名称或服务器地址"
+          placeholder={t('common.placeholders.search')}
           value={filters.search || ''}
           onChange={(e) => handleSearchChange(e.target.value)}
         />
@@ -65,7 +68,7 @@ export const NodeFilters: React.FC<NodeFiltersComponentProps> = ({ filters, onCh
         onClick={handleReset}
       >
         <FilterX className="mr-2 h-4 w-4" />
-        重置
+        {t('common.actions.reset')}
       </Button>
     </div>
   );

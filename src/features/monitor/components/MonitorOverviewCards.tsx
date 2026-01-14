@@ -4,6 +4,7 @@
  */
 
 import { memo } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Server, Cpu, Activity, ArrowDown, ArrowUp } from 'lucide-react';
 import { formatBitRate, formatBytes } from '@/shared/utils/format-utils';
 import type { MonitorOverview } from '../hooks/useMonitorData';
@@ -49,6 +50,14 @@ interface MonitorOverviewCardsProps {
 }
 
 export const MonitorOverviewCards = memo(({ overview }: MonitorOverviewCardsProps) => {
+  const { t } = useTranslation();
+
+  const getUsageLevel = (value: number) => {
+    if (value >= 80) return t('admin.monitor.levelHigh');
+    if (value >= 60) return t('admin.monitor.levelMedium');
+    return t('admin.monitor.levelNormal');
+  };
+
   const cards: OverviewCardProps[] = [
     {
       title: 'Node Agent',
@@ -71,33 +80,33 @@ export const MonitorOverviewCards = memo(({ overview }: MonitorOverviewCardsProp
       iconColor: 'text-violet-500',
     },
     {
-      title: 'CPU',
+      title: t('admin.monitor.cpu'),
       value: `${overview.avgCpu.toFixed(1)}%`,
-      subtitle: overview.avgCpu >= 80 ? '高' : overview.avgCpu >= 60 ? '中' : '正常',
+      subtitle: getUsageLevel(overview.avgCpu),
       icon: <Activity className="size-3.5" strokeWidth={1.5} />,
       iconBg: overview.avgCpu >= 80 ? 'bg-destructive/10' : overview.avgCpu >= 60 ? 'bg-warning/10' : 'bg-success/10',
       iconColor: overview.avgCpu >= 80 ? 'text-destructive' : overview.avgCpu >= 60 ? 'text-warning' : 'text-success',
     },
     {
-      title: '内存',
+      title: t('admin.monitor.memory'),
       value: `${overview.avgMemory.toFixed(1)}%`,
-      subtitle: overview.avgMemory >= 80 ? '高' : overview.avgMemory >= 60 ? '中' : '正常',
+      subtitle: getUsageLevel(overview.avgMemory),
       icon: <Cpu className="size-3.5" strokeWidth={1.5} />,
       iconBg: overview.avgMemory >= 80 ? 'bg-destructive/10' : overview.avgMemory >= 60 ? 'bg-warning/10' : 'bg-success/10',
       iconColor: overview.avgMemory >= 80 ? 'text-destructive' : overview.avgMemory >= 60 ? 'text-warning' : 'text-success',
     },
     {
-      title: '下载',
+      title: t('admin.monitor.download'),
       value: formatBitRate(overview.totalNetworkRxRate),
-      subtitle: `已用 ${formatBytes(overview.totalNetworkRxBytes)}`,
+      subtitle: `${t('admin.monitor.usedPrefix')} ${formatBytes(overview.totalNetworkRxBytes)}`,
       icon: <ArrowDown className="size-3.5" strokeWidth={1.5} />,
       iconBg: 'bg-success/10',
       iconColor: 'text-success',
     },
     {
-      title: '上传',
+      title: t('admin.monitor.upload'),
       value: formatBitRate(overview.totalNetworkTxRate),
-      subtitle: `已用 ${formatBytes(overview.totalNetworkTxBytes)}`,
+      subtitle: `${t('admin.monitor.usedPrefix')} ${formatBytes(overview.totalNetworkTxBytes)}`,
       icon: <ArrowUp className="size-3.5" strokeWidth={1.5} />,
       iconBg: 'bg-primary/10',
       iconColor: 'text-primary',

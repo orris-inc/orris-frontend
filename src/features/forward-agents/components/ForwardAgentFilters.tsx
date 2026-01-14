@@ -3,6 +3,7 @@
  * Supports: status, name search, sorting
  */
 
+import { useTranslation } from 'react-i18next';
 import { FilterX } from 'lucide-react';
 import { Input } from '@/components/common/Input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/common/Select';
@@ -22,6 +23,8 @@ interface ForwardAgentFiltersProps {
 }
 
 export const ForwardAgentFiltersComponent: React.FC<ForwardAgentFiltersProps> = ({ filters, onChange }) => {
+  const { t } = useTranslation();
+
   const handleStatusChange = (value: string): void => {
     onChange({ status: value === '_all_' ? undefined : (value as ForwardStatus) });
   };
@@ -63,12 +66,12 @@ export const ForwardAgentFiltersComponent: React.FC<ForwardAgentFiltersProps> = 
       <div className="w-[72px] sm:w-28">
         <Select value={filters.status || '_all_'} onValueChange={handleStatusChange}>
           <SelectTrigger className="text-xs sm:text-sm">
-            <SelectValue placeholder="状态" />
+            <SelectValue placeholder={t('admin.forwardAgents.filters.status')} />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="_all_">全部</SelectItem>
-            <SelectItem value="enabled">已启用</SelectItem>
-            <SelectItem value="disabled">已禁用</SelectItem>
+            <SelectItem value="_all_">{t('admin.forwardAgents.filters.all')}</SelectItem>
+            <SelectItem value="enabled">{t('admin.forwardAgents.filters.enabled')}</SelectItem>
+            <SelectItem value="disabled">{t('admin.forwardAgents.filters.disabled')}</SelectItem>
           </SelectContent>
         </Select>
       </div>
@@ -76,7 +79,7 @@ export const ForwardAgentFiltersComponent: React.FC<ForwardAgentFiltersProps> = 
       {/* Search input - hidden on mobile */}
       <div className="hidden sm:block flex-1 max-w-xs">
         <Input
-          placeholder="搜索节点名称"
+          placeholder={t('admin.forwardAgents.filters.searchAgent')}
           value={filters.name || ''}
           onChange={(e) => handleSearchChange(e.target.value)}
         />
@@ -86,13 +89,13 @@ export const ForwardAgentFiltersComponent: React.FC<ForwardAgentFiltersProps> = 
       <div className="w-[88px] sm:w-32">
         <Select value={getSortValue()} onValueChange={handleSortChange}>
           <SelectTrigger className="text-xs sm:text-sm">
-            <SelectValue placeholder="排序" />
+            <SelectValue placeholder={t('admin.forwardAgents.filters.sort')} />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="_default_">默认排序</SelectItem>
-            <SelectItem value="created_at_desc">创建时间 ↓</SelectItem>
-            <SelectItem value="created_at_asc">创建时间 ↑</SelectItem>
-            <SelectItem value="updated_at_desc">更新时间 ↓</SelectItem>
+            <SelectItem value="_default_">{t('admin.forwardAgents.filters.default')}</SelectItem>
+            <SelectItem value="created_at_desc">{t('admin.forwardAgents.filters.createdDesc')}</SelectItem>
+            <SelectItem value="created_at_asc">{t('admin.forwardAgents.filters.createdAsc')}</SelectItem>
+            <SelectItem value="updated_at_desc">{t('admin.forwardAgents.filters.updatedDesc')}</SelectItem>
           </SelectContent>
         </Select>
       </div>
@@ -100,7 +103,7 @@ export const ForwardAgentFiltersComponent: React.FC<ForwardAgentFiltersProps> = 
       {/* Reset button - icon only on mobile */}
       <Button variant="outline" size="sm" onClick={handleReset} className="shrink-0">
         <FilterX className="h-4 w-4 sm:mr-2" />
-        <span className="hidden sm:inline">重置</span>
+        <span className="hidden sm:inline">{t('common.actions.reset')}</span>
       </Button>
     </div>
   );

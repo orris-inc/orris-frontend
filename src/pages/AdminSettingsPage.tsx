@@ -14,11 +14,20 @@ import {
   TelegramSettingsFormSkeleton,
 } from "@/features/telegram/components/TelegramSettingsForm";
 import { cn } from "@/lib/utils";
+import { useTranslation } from "react-i18next";
 
 /**
  * Status badge component
  */
-const StatusBadge = ({ enabled }: { enabled: boolean }) => (
+const StatusBadge = ({
+  enabled,
+  enabledLabel,
+  disabledLabel,
+}: {
+  enabled: boolean;
+  enabledLabel: string;
+  disabledLabel: string;
+}) => (
   <span
     className={cn(
       "inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium",
@@ -33,7 +42,7 @@ const StatusBadge = ({ enabled }: { enabled: boolean }) => (
         enabled ? "bg-success" : "bg-muted-foreground"
       )}
     />
-    {enabled ? "已启用" : "未启用"}
+    {enabled ? enabledLabel : disabledLabel}
   </span>
 );
 
@@ -41,7 +50,8 @@ const StatusBadge = ({ enabled }: { enabled: boolean }) => (
  * Admin Settings Page Component
  */
 export const AdminSettingsPage = () => {
-  usePageTitle("系统设置");
+  const { t } = useTranslation();
+  usePageTitle(t("admin.settings.title"));
 
   const {
     config,
@@ -57,7 +67,7 @@ export const AdminSettingsPage = () => {
     <AdminLayout>
       <div className="flex flex-col min-h-0">
         {/* Page Header */}
-        <header className="shrink-0 py-4 sm:py-6 md:py-8">
+        <header className="shrink-0 py-4 sm:py-6">
           <div className="flex items-center gap-3">
             <div className="p-2 sm:p-2.5 rounded-xl bg-primary/10 ring-1 ring-primary/20">
               <Settings
@@ -67,10 +77,10 @@ export const AdminSettingsPage = () => {
             </div>
             <div>
               <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-foreground tracking-tight">
-                系统设置
+                {t("admin.settings.title")}
               </h1>
               <p className="text-xs sm:text-sm text-muted-foreground mt-0.5">
-                管理系统配置
+                {t("admin.settings.description")}
               </p>
             </div>
           </div>
@@ -89,14 +99,20 @@ export const AdminSettingsPage = () => {
                   </div>
                   <div>
                     <h3 className="font-semibold text-foreground">
-                      Telegram 设置
+                      {t("admin.settings.telegram.title")}
                     </h3>
                     <p className="text-sm text-muted-foreground">
-                      配置机器人 Token 和 Webhook
+                      {t("admin.settings.telegram.description")}
                     </p>
                   </div>
                 </div>
-                {config && <StatusBadge enabled={config.enabled} />}
+                {config && (
+                  <StatusBadge
+                    enabled={config.enabled}
+                    enabledLabel={t("admin.settings.enabled")}
+                    disabledLabel={t("admin.settings.disabled")}
+                  />
+                )}
               </div>
               {/* Content */}
               <div className="p-5">
@@ -114,7 +130,7 @@ export const AdminSettingsPage = () => {
                 ) : (
                   <div className="text-center py-8 text-muted-foreground">
                     <Wrench className="size-8 mx-auto mb-2 opacity-50" />
-                    <p>无法加载配置</p>
+                    <p>{t("admin.settings.unableToLoadConfig")}</p>
                   </div>
                 )}
               </div>

@@ -35,11 +35,14 @@ interface ViewPlanSubscriptionsSheetProps extends BaseSheetProps {
   plan: SubscriptionPlan | null;
 }
 
-// Status configuration
+// Status configuration (synced with SDK 2025-01-14)
 const STATUS_CONFIG: Record<SubscriptionStatus, { label: string; color: string }> = {
+  inactive: { label: '未激活', color: 'bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400' },
+  pending_payment: { label: '待支付', color: 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400' },
+  trialing: { label: '试用中', color: 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400' },
   active: { label: '激活', color: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400' },
-  renewed: { label: '已续费', color: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400' },
-  pending: { label: '待处理', color: 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400' },
+  past_due: { label: '逾期', color: 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400' },
+  suspended: { label: '已暂停', color: 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400' },
   cancelled: { label: '已取消', color: 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400' },
   expired: { label: '已过期', color: 'bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400' },
 };

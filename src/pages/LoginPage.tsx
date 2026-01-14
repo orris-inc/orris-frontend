@@ -16,6 +16,7 @@ import * as Checkbox from '@radix-ui/react-checkbox';
 import { useAuth } from '@/features/auth/hooks/useAuth';
 import { useAuthStore } from '@/features/auth/stores/auth-store';
 import { useNotificationStore } from '@/shared/stores/notification-store';
+import { useVersionInfo } from '@/hooks';
 import { LanguageSwitcher } from '@/components/common/LanguageSwitcher';
 import { ThemeToggle } from '@/components/common/ThemeToggle';
 import { cn } from '@/lib/utils';
@@ -63,6 +64,7 @@ export const LoginPage = () => {
   const { user, isAuthenticated } = useAuthStore();
   const { login, loginWithOAuth, isLoading, error, authError } = useAuth();
   const { showSuccess } = useNotificationStore();
+  const { serverVersion, clientVersion } = useVersionInfo();
   const [showPassword, setShowPassword] = useState(false);
   const [userEmail, setUserEmail] = useState<string>('');
 
@@ -338,7 +340,7 @@ export const LoginPage = () => {
         </main>
 
         {/* Footer */}
-        <footer className="mt-8 text-center">
+        <footer className="mt-8 text-center space-y-2">
           <p className="text-sm text-muted-foreground">
             {t('auth.login.noAccount')}{' '}
             <RouterLink
@@ -348,6 +350,11 @@ export const LoginPage = () => {
               {t('auth.login.signUpNow')}
             </RouterLink>
           </p>
+          {(serverVersion || clientVersion) && (
+            <p className="text-xs text-muted-foreground/50 font-mono">
+              {[serverVersion, clientVersion].filter(Boolean).join(' · ')}
+            </p>
+          )}
         </footer>
       </div>
     </div>

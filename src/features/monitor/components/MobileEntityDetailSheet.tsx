@@ -12,6 +12,7 @@
  */
 
 import { memo, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
   Server,
   Cpu,
@@ -199,42 +200,49 @@ const NetworkSpeedCard = memo(({
   txRate,
   rxBytes,
   txBytes,
+  labels,
 }: {
   rxRate: number;
   txRate: number;
   rxBytes: number;
   txBytes: number;
+  labels: {
+    title: string;
+    download: string;
+    upload: string;
+    total: string;
+  };
 }) => (
   <div className="glass rounded-2xl p-4">
     <div className="flex items-center gap-2 mb-3">
       <Network className="size-4 text-muted-foreground" />
-      <span className="text-sm font-semibold text-foreground">网络流量</span>
+      <span className="text-sm font-semibold text-foreground">{labels.title}</span>
     </div>
     <div className="grid grid-cols-2 gap-4">
       {/* Download */}
       <div className="p-3 rounded-xl bg-success/10 border border-success/20">
         <div className="flex items-center gap-1.5 mb-1">
           <ArrowDown className="size-4 text-success" />
-          <span className="text-xs text-muted-foreground">下载</span>
+          <span className="text-xs text-muted-foreground">{labels.download}</span>
         </div>
         <p className="text-lg font-bold text-success tabular-nums">
           {formatBitRate(rxRate)}
         </p>
         <p className="text-[10px] text-muted-foreground mt-0.5">
-          总计 {formatBytes(rxBytes)}
+          {labels.total} {formatBytes(rxBytes)}
         </p>
       </div>
       {/* Upload */}
       <div className="p-3 rounded-xl bg-primary/10 border border-primary/20">
         <div className="flex items-center gap-1.5 mb-1">
           <ArrowUp className="size-4 text-primary" />
-          <span className="text-xs text-muted-foreground">上传</span>
+          <span className="text-xs text-muted-foreground">{labels.upload}</span>
         </div>
         <p className="text-lg font-bold text-primary tabular-nums">
           {formatBitRate(txRate)}
         </p>
         <p className="text-[10px] text-muted-foreground mt-0.5">
-          总计 {formatBytes(txBytes)}
+          {labels.total} {formatBytes(txBytes)}
         </p>
       </div>
     </div>
@@ -242,15 +250,18 @@ const NetworkSpeedCard = memo(({
 ));
 NetworkSpeedCard.displayName = 'NetworkSpeedCard';
 
-// Format uptime
-const formatUptime = (seconds?: number): string => {
+// Format uptime - returns object for i18n
+const formatUptime = (seconds?: number, labels?: { days: string; hours: string; minutes: string }): string => {
   if (!seconds) return '-';
   const days = Math.floor(seconds / 86400);
   const hours = Math.floor((seconds % 86400) / 3600);
   const mins = Math.floor((seconds % 3600) / 60);
-  if (days > 0) return `${days}天 ${hours}小时 ${mins}分钟`;
-  if (hours > 0) return `${hours}小时 ${mins}分钟`;
-  return `${mins}分钟`;
+  const d = labels?.days ?? 'd';
+  const h = labels?.hours ?? 'h';
+  const m = labels?.minutes ?? 'm';
+  if (days > 0) return `${days}${d} ${hours}${h} ${mins}${m}`;
+  if (hours > 0) return `${hours}${h} ${mins}${m}`;
+  return `${mins}${m}`;
 };
 
 // Format number with unit
@@ -267,11 +278,15 @@ const ProgressBar = memo(({
   label,
   used,
   total,
+  usedLabel,
+  totalLabel,
 }: {
   value: number;
   label: string;
   used?: number;
   total?: number;
+  usedLabel?: string;
+  totalLabel?: string;
 }) => (
   <div className="py-2">
     <div className="flex items-center justify-between mb-1">
@@ -288,8 +303,8 @@ const ProgressBar = memo(({
     </div>
     {used !== undefined && total !== undefined && (
       <div className="flex justify-between mt-1 text-[10px] text-muted-foreground">
-        <span>已用 {formatBytes(used)}</span>
-        <span>总计 {formatBytes(total)}</span>
+        <span>{usedLabel ?? 'Used'} {formatBytes(used)}</span>
+        <span>{totalLabel ?? 'Total'} {formatBytes(total)}</span>
       </div>
     )}
   </div>
@@ -301,6 +316,8 @@ export const MobileEntityDetailSheet = memo(({
   open,
   onOpenChange,
 }: MobileEntityDetailSheetProps) => {
+  const { t } = useTranslation();
+
   if (!entity) return null;
 
   const status = entity.status as (NodeSystemStatus | AgentSystemStatus) | null;
@@ -338,12 +355,12 @@ export const MobileEntityDetailSheet = memo(({
                 {isOnline ? (
                   <>
                     <Wifi className="size-3 mr-1" />
-                    在线
+                    {t('admin.monitor.detail.online')}
                   </>
                 ) : (
                   <>
                     <WifiOff className="size-3 mr-1" />
-                    离线
+                    {t('admin.monitor.detail.offline')}
                   </>
                 )}
               </Badge>
@@ -372,17 +389,17 @@ export const MobileEntityDetailSheet = memo(({
                 <div className="flex justify-around">
                   <ProgressRing
                     value={status.cpuPercent}
-                    label="CPU"
-                    sublabel={`${status.cpuCores || '-'} 核心`}
+                    label={t('admin.monitor.cpu')}
+                    sublabel={`${status.cpuCores || '-'} ${t('admin.monitor.detail.cores')}`}
                   />
                   <ProgressRing
                     value={status.memoryPercent}
-                    label="内存"
+                    label={t('admin.monitor.memory')}
                     sublabel={formatBytes(status.memoryUsed)}
                   />
                   <ProgressRing
                     value={status.diskPercent}
-                    label="磁盘"
+                    label={t('admin.monitor.disk')}
                     sublabel={formatBytes(status.diskUsed)}
                   />
                 </div>
@@ -394,26 +411,32 @@ export const MobileEntityDetailSheet = memo(({
                 txRate={status.networkTxRate ?? 0}
                 rxBytes={status.networkRxBytes ?? 0}
                 txBytes={status.networkTxBytes ?? 0}
+                labels={{
+                  title: t('admin.monitor.detail.networkTraffic'),
+                  download: t('admin.monitor.download'),
+                  upload: t('admin.monitor.upload'),
+                  total: t('admin.monitor.total'),
+                }}
               />
 
               {/* Quick Stats */}
               <div className="glass rounded-2xl p-4 space-y-1">
                 <MetricItem
                   icon={<Clock className="size-4 text-muted-foreground" />}
-                  label="运行时间"
+                  label={t('admin.monitor.uptime')}
                   value={formatUptime(status.uptimeSeconds)}
                 />
                 <div className="h-px bg-border/30" />
                 <MetricItem
                   icon={<Gauge className="size-4 text-muted-foreground" />}
-                  label="系统负载"
+                  label={t('admin.monitor.detail.systemLoad')}
                   value={status.loadAvg1?.toFixed(2)}
                   subValue={`5m: ${status.loadAvg5?.toFixed(2) || '-'} / 15m: ${status.loadAvg15?.toFixed(2) || '-'}`}
                 />
                 <div className="h-px bg-border/30" />
                 <MetricItem
                   icon={<Network className="size-4 text-muted-foreground" />}
-                  label="连接数"
+                  label={t('admin.monitor.connections')}
                   value={`${(status.tcpConnections ?? 0) + (status.udpConnections ?? 0)}`}
                   subValue={`TCP ${status.tcpConnections ?? 0} / UDP ${status.udpConnections ?? 0}`}
                 />
@@ -422,7 +445,7 @@ export const MobileEntityDetailSheet = memo(({
               {/* System Info Section */}
               <CollapsibleSection
                 icon={<Terminal className="size-4 text-violet-500" />}
-                title="系统信息"
+                title={t('admin.monitor.detail.systemInfo')}
                 defaultOpen
               >
                 <div className="space-y-2 text-sm">
@@ -460,12 +483,12 @@ export const MobileEntityDetailSheet = memo(({
               {/* Resource Details Section */}
               <CollapsibleSection
                 icon={<Gauge className="size-4 text-primary" />}
-                title="资源详情"
+                title={t('admin.monitor.detail.resourceDetails')}
               >
                 <div className="space-y-3">
                   <ProgressBar
                     value={status.cpuPercent}
-                    label="CPU 使用率"
+                    label={t('admin.monitor.detail.cpuUsage')}
                   />
                   {status.cpuModelName && (
                     <p className="text-xs text-muted-foreground">
@@ -474,20 +497,20 @@ export const MobileEntityDetailSheet = memo(({
                   )}
                   <ProgressBar
                     value={status.memoryPercent}
-                    label="内存使用率"
+                    label={t('admin.monitor.detail.memoryUsage')}
                     used={status.memoryUsed}
                     total={status.memoryTotal}
                   />
                   <ProgressBar
                     value={status.diskPercent}
-                    label="磁盘使用率"
+                    label={t('admin.monitor.detail.diskUsage')}
                     used={status.diskUsed}
                     total={status.diskTotal}
                   />
                   {status.swapTotal !== undefined && status.swapTotal > 0 && (
                     <ProgressBar
                       value={status.swapPercent ?? 0}
-                      label="Swap 使用率"
+                      label={t('admin.monitor.detail.swapUsage')}
                       used={status.swapUsed}
                       total={status.swapTotal}
                     />
@@ -498,7 +521,7 @@ export const MobileEntityDetailSheet = memo(({
               {/* Network Details Section */}
               <CollapsibleSection
                 icon={<Globe className="size-4 text-info" />}
-                title="网络详情"
+                title={t('admin.monitor.detail.networkDetails')}
               >
                 <div className="space-y-2 text-sm">
                   <div className="flex justify-between">
@@ -535,7 +558,7 @@ export const MobileEntityDetailSheet = memo(({
               {/* Disk I/O Section */}
               <CollapsibleSection
                 icon={<HardDrive className="size-4 text-warning" />}
-                title="磁盘 I/O"
+                title={t('admin.monitor.metrics.diskIO')}
               >
                 <div className="space-y-2 text-sm">
                   <div className="flex justify-between">
@@ -566,7 +589,7 @@ export const MobileEntityDetailSheet = memo(({
               {/* Socket & Process Section */}
               <CollapsibleSection
                 icon={<Layers className="size-4 text-info" />}
-                title="Socket 与进程"
+                title={t('admin.monitor.detail.socketAndProcess')}
               >
                 <div className="space-y-2 text-sm">
                   <div className="flex justify-between">
@@ -603,7 +626,7 @@ export const MobileEntityDetailSheet = memo(({
               {(status.psiCpuSome !== undefined || status.psiMemorySome !== undefined) && (
                 <CollapsibleSection
                   icon={<AlertTriangle className="size-4 text-warning" />}
-                  title="压力指标 (PSI)"
+                  title={t('admin.monitor.metrics.pressureIndicators')}
                 >
                   <div className="space-y-3">
                     <div>
@@ -670,7 +693,7 @@ export const MobileEntityDetailSheet = memo(({
               {/* VM Stats Section */}
               <CollapsibleSection
                 icon={<MemoryStick className="size-4 text-primary" />}
-                title="虚拟内存"
+                title={t('admin.monitor.metrics.virtualMemory')}
               >
                 <div className="space-y-2 text-sm">
                   <div className="flex justify-between">
@@ -708,7 +731,7 @@ export const MobileEntityDetailSheet = memo(({
                 <WifiOff className="size-8 text-muted-foreground/40" />
               </div>
               <h3 className="text-base font-semibold text-foreground mb-2">
-                {entity.type === 'node' ? 'Node Agent 离线' : '转发 Agent 离线'}
+                {entity.type === 'node' ? t('admin.monitor.detail.nodeAgentOffline') : t('admin.monitor.detail.forwardAgentOffline')}
               </h3>
               <p className="text-sm text-muted-foreground">
                 无法获取实时数据

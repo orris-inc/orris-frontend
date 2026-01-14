@@ -22,14 +22,15 @@ export interface DatePresetOption {
 }
 
 /**
- * Available date range presets with Chinese labels
+ * Available date range presets
+ * Note: label is i18n translation key, use t(label) to get translated text
  */
 export const DATE_PRESETS: DatePresetOption[] = [
-  { value: 'today', label: '今天' },
-  { value: 'yesterday', label: '昨天' },
-  { value: 'last7days', label: '最近 7 天' },
-  { value: 'last30days', label: '最近 30 天' },
-  { value: 'thisMonth', label: '本月' },
+  { value: 'today', label: 'admin.dateRange.today' },
+  { value: 'yesterday', label: 'admin.dateRange.yesterday' },
+  { value: 'last7days', label: 'admin.dateRange.last7days' },
+  { value: 'last30days', label: 'admin.dateRange.last30days' },
+  { value: 'thisMonth', label: 'admin.dateRange.thisMonth' },
 ];
 
 /**

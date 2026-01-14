@@ -42,11 +42,11 @@ export interface MobileForwardRuleCardProps {
 // Constants
 // ============================================================================
 
-const RULE_TYPE_CONFIG: Record<string, { label: string; shortLabel: string; variant: 'info' | 'success' | 'warning' | 'default' }> = {
-  direct: { label: '直连', shortLabel: '直', variant: 'info' },
-  entry: { label: '入口', shortLabel: '入', variant: 'success' },
-  chain: { label: '链式', shortLabel: '链', variant: 'warning' },
-  direct_chain: { label: '直连链', shortLabel: '直链', variant: 'default' },
+const RULE_TYPE_CONFIG: Record<string, { labelKey: string; shortLabelKey: string; variant: 'info' | 'success' | 'warning' | 'default' }> = {
+  direct: { labelKey: 'admin.forwardRules.ruleType.direct', shortLabelKey: 'admin.forwardRules.ruleType.directShort', variant: 'info' },
+  entry: { labelKey: 'admin.forwardRules.ruleType.entry', shortLabelKey: 'admin.forwardRules.ruleType.entryShort', variant: 'success' },
+  chain: { labelKey: 'admin.forwardRules.ruleType.chain', shortLabelKey: 'admin.forwardRules.ruleType.chainShort', variant: 'warning' },
+  direct_chain: { labelKey: 'admin.forwardRules.ruleType.directChain', shortLabelKey: 'admin.forwardRules.ruleType.directChainShort', variant: 'default' },
 };
 
 const PROTOCOL_CONFIG: Record<string, { label: string; variant: 'info' | 'warning' | 'default' }> = {
@@ -72,7 +72,7 @@ export const MobileForwardRuleCard = ({
 }: MobileForwardRuleCardProps) => {
   const { t } = useTranslation();
   const statusConfig = ENABLED_STATUS_CONFIG_SHORT[rule.status] || { labelKey: 'common.status.unknown', variant: 'default' as const };
-  const ruleTypeConfig = RULE_TYPE_CONFIG[rule.ruleType] || { label: rule.ruleType, shortLabel: '?', variant: 'default' as const };
+  const ruleTypeConfig = RULE_TYPE_CONFIG[rule.ruleType] || { labelKey: rule.ruleType, shortLabelKey: '?', variant: 'default' as const };
   const protocolConfig = PROTOCOL_CONFIG[rule.protocol] || { label: rule.protocol, variant: 'default' as const };
 
   // Get entry agent for display
@@ -99,28 +99,28 @@ export const MobileForwardRuleCard = ({
     {
       key: 'edit',
       icon: <Edit className="size-5" />,
-      label: '编辑',
+      label: t('common.actions.edit'),
       bgColor: 'bg-primary',
       onClick: () => onEdit(rule),
     },
     {
       key: 'copy',
       icon: <Copy className="size-5" />,
-      label: '复制',
+      label: t('common.actions.copy'),
       bgColor: 'bg-info',
       onClick: () => onCopy(rule),
     },
     {
       key: 'toggle',
       icon: <Power className="size-5" />,
-      label: rule.status === 'enabled' ? '禁用' : '启用',
+      label: rule.status === 'enabled' ? t('common.actions.disable') : t('common.actions.enable'),
       bgColor: rule.status === 'enabled' ? 'bg-warning' : 'bg-success',
       onClick: () => onToggleStatus(rule),
     },
     {
       key: 'delete',
       icon: <Trash2 className="size-5" />,
-      label: '删除',
+      label: t('common.actions.delete'),
       bgColor: 'bg-destructive',
       onClick: () => onDelete(rule),
     },
@@ -135,7 +135,7 @@ export const MobileForwardRuleCard = ({
         {/* Row 1: Rule type badge + Name + Status badge */}
         <div className="flex items-center gap-2 mb-1">
           <AdminBadge variant={ruleTypeConfig.variant} className="text-[10px] px-1.5 py-0 shrink-0">
-            {ruleTypeConfig.shortLabel}
+            {t(ruleTypeConfig.shortLabelKey)}
           </AdminBadge>
           <span className="font-medium text-foreground truncate flex-1 min-w-0">
             {rule.name}

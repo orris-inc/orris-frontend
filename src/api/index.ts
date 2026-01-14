@@ -20,6 +20,7 @@ export {
   refreshToken,
   logout,
   getCurrentUser,
+  getVersion,
 } from './auth/client';
 
 export type {
@@ -33,6 +34,7 @@ export type {
   RefreshTokenRequest,
   RefreshTokenResponse as AuthRefreshTokenResponse,
   UserDisplayInfo,
+  VersionResponse,
 } from './auth/types';
 
 // User module (exclude types that conflict with profile module)

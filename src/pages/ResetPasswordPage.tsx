@@ -7,9 +7,10 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { Link as RouterLink, useSearchParams, useNavigate } from 'react-router';
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { Eye, EyeOff, Loader2, CircleAlert } from 'lucide-react';
 import * as LabelPrimitive from '@radix-ui/react-label';
+import { useTranslation } from 'react-i18next';
 import * as authApi from '@/api/auth';
 import { extractErrorMessage } from '@/shared/utils/error-messages';
 import { useNotificationStore } from '@/shared/stores/notification-store';
@@ -27,24 +28,31 @@ import {
 } from '@/lib/ui-styles';
 import { cn } from '@/lib/utils';
 
-// Zod validation
-const resetPasswordSchema = z
-  .object({
-    password: z.string().min(8, '密码至少需要8个字符'),
-    confirmPassword: z.string(),
-  })
-  .refine((data) => data.password === data.confirmPassword, {
-    message: '两次输入的密码不一致',
-    path: ['confirmPassword'],
-  });
-
-type ResetPasswordFormData = z.infer<typeof resetPasswordSchema>;
+type ResetPasswordFormData = {
+  password: string;
+  confirmPassword: string;
+};
 
 export const ResetPasswordPage = () => {
+  const { t } = useTranslation();
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const token = searchParams.get('token');
   const { showSuccess, showError } = useNotificationStore();
+
+  const resetPasswordSchema = useMemo(
+    () =>
+      z
+        .object({
+          password: z.string().min(8, t('auth.validation.passwordMinLength')),
+          confirmPassword: z.string(),
+        })
+        .refine((data) => data.password === data.confirmPassword, {
+          message: t('auth.validation.passwordMismatch'),
+          path: ['confirmPassword'],
+        }),
+    [t]
+  );
 
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -66,9 +74,9 @@ export const ResetPasswordPage = () => {
         <div className="w-full max-w-md">
           <div className={cardStyles}>
             <div className={cn(cardHeaderStyles, "text-center")}>
-              <h3 className={cardTitleStyles}>无效的重置链接</h3>
+              <h3 className={cardTitleStyles}>{t('auth.resetPassword.invalidLink')}</h3>
               <p className={cardDescriptionStyles}>
-                该密码重置链接无效或已过期，请重新申请。
+                {t('auth.resetPassword.invalidLinkDesc')}
               </p>
             </div>
             <div className={cn(cardContentStyles, "text-center")}>
@@ -76,7 +84,7 @@ export const ResetPasswordPage = () => {
                 to="/forgot-password"
                 className="text-primary underline-offset-4 hover:underline"
               >
-                重新申请
+                {t('auth.resetPassword.requestNew')}
               </RouterLink>
             </div>
           </div>
@@ -95,10 +103,10 @@ export const ResetPasswordPage = () => {
         password: data.password,
       });
 
-      showSuccess('密码重置成功！');
+      showSuccess(t('auth.resetPassword.success'));
       // Success, redirect to login page
       navigate('/login', {
-        state: { message: '密码重置成功，请使用新密码登录' },
+        state: { message: t('auth.resetPassword.successMessage') },
       });
     } catch (err) {
       const errorMsg = extractErrorMessage(err);
@@ -114,8 +122,8 @@ export const ResetPasswordPage = () => {
       <div className="w-full max-w-md">
         <div className={cardStyles}>
           <div className={cn(cardHeaderStyles, "text-center")}>
-            <h3 className={cn(cardTitleStyles, "text-3xl")}>重置密码</h3>
-            <p className={cardDescriptionStyles}>请输入您的新密码</p>
+            <h3 className={cn(cardTitleStyles, "text-3xl")}>{t('auth.resetPassword.title')}</h3>
+            <p className={cardDescriptionStyles}>{t('auth.resetPassword.subtitle')}</p>
           </div>
           <div className={cn(cardContentStyles, "grid gap-6")}>
             {/* 错误提示 */}
@@ -126,10 +134,9 @@ export const ResetPasswordPage = () => {
               </div>
             )}
 
-            {/* 表单 */}
             <form onSubmit={handleSubmit(onSubmit)} className="grid gap-4">
               <div className="grid gap-2">
-                <LabelPrimitive.Root htmlFor="password" className={labelStyles}>新密码</LabelPrimitive.Root>
+                <LabelPrimitive.Root htmlFor="password" className={labelStyles}>{t('auth.resetPassword.password')}</LabelPrimitive.Root>
                 <div className="relative">
                   <input
                     id="password"
@@ -144,7 +151,7 @@ export const ResetPasswordPage = () => {
                     type="button"
                     className="absolute right-1 top-1/2 -translate-y-1/2 inline-flex items-center justify-center rounded-md hover:bg-accent hover:text-accent-foreground h-8 w-8 transition-colors"
                     onClick={() => setShowPassword(!showPassword)}
-                    aria-label="切换密码显示"
+                    aria-label={t('auth.login.togglePasswordVisibility')}
                     tabIndex={-1}
                   >
                     {showPassword ? (
@@ -160,7 +167,7 @@ export const ResetPasswordPage = () => {
               </div>
 
               <div className="grid gap-2">
-                <LabelPrimitive.Root htmlFor="confirmPassword" className={labelStyles}>确认新密码</LabelPrimitive.Root>
+                <LabelPrimitive.Root htmlFor="confirmPassword" className={labelStyles}>{t('auth.resetPassword.confirmPassword')}</LabelPrimitive.Root>
                 <div className="relative">
                   <input
                     id="confirmPassword"
@@ -174,7 +181,7 @@ export const ResetPasswordPage = () => {
                     type="button"
                     className="absolute right-1 top-1/2 -translate-y-1/2 inline-flex items-center justify-center rounded-md hover:bg-accent hover:text-accent-foreground h-8 w-8 transition-colors"
                     onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                    aria-label="切换密码显示"
+                    aria-label={t('auth.login.togglePasswordVisibility')}
                     tabIndex={-1}
                   >
                     {showConfirmPassword ? (
@@ -191,17 +198,16 @@ export const ResetPasswordPage = () => {
 
               <button type="submit" disabled={isLoading} className={cn(getButtonClass('default', 'lg'), "w-full")}>
                 {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                重置密码
+                {t('auth.resetPassword.submit')}
               </button>
             </form>
 
-            {/* 返回登录 */}
             <div className="text-center text-sm text-muted-foreground">
               <RouterLink
                 to="/login"
                 className="text-primary underline-offset-4 hover:underline"
               >
-                返回登录
+                {t('auth.resetPassword.backToLogin')}
               </RouterLink>
             </div>
           </div>

@@ -6,7 +6,7 @@
 
 import { useMemo, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
-import { CheckCircle, X, MoreHorizontal, Play, XCircle, RefreshCw, Eye, Copy, Trash2 } from 'lucide-react';
+import { CheckCircle, X, MoreHorizontal, Play, XCircle, RefreshCw, Eye, Copy, Trash2, Pause, PlayCircle, RefreshCcw } from 'lucide-react';
 import { DataTable, AdminBadge, TruncatedId, type ColumnDef, type ResponsiveColumnMeta } from '@/components/admin';
 import { useBreakpoint } from '@/hooks/useBreakpoint';
 import { SubscriptionMobileList } from './SubscriptionMobileList';
@@ -43,6 +43,9 @@ interface SubscriptionListTableProps {
   onActivate?: (subscription: Subscription) => void;
   onCancel?: (subscription: Subscription) => void;
   onRenew?: (subscription: Subscription) => void;
+  onSuspend?: (subscription: Subscription) => void;
+  onUnsuspend?: (subscription: Subscription) => void;
+  onResetUsage?: (subscription: Subscription) => void;
   onDelete?: (subscription: Subscription) => void;
 }
 
@@ -62,6 +65,9 @@ export const SubscriptionListTable: React.FC<SubscriptionListTableProps> = ({
   onActivate,
   onCancel,
   onRenew,
+  onSuspend,
+  onUnsuspend,
+  onResetUsage,
   onDelete,
 }) => {
   const { t } = useTranslation();
@@ -202,10 +208,16 @@ export const SubscriptionListTable: React.FC<SubscriptionListTableProps> = ({
         const subscription = row.original;
         const status = subscription.status;
 
-        // Activate: can activate if not in active or renewed status
-        const canActivate = status !== 'active' && status !== 'renewed';
-        // Cancel: can cancel if in active or renewed status
-        const canCancel = status === 'active' || status === 'renewed';
+        // Activate: can activate if in inactive or pending_payment status
+        const canActivate = status === 'inactive' || status === 'pending_payment';
+        // Unsuspend: can unsuspend if in suspended status
+        const canUnsuspend = status === 'suspended';
+        // Cancel: can cancel if in active, trialing, or past_due status
+        const canCancel = status === 'active' || status === 'trialing' || status === 'past_due';
+        // Suspend: can suspend if in active status
+        const canSuspend = status === 'active';
+        // Reset usage: can reset if in active or suspended status
+        const canResetUsage = status === 'active' || status === 'suspended';
         // Renew: can renew if in expired status
         const canRenew = status === 'expired';
         // Delete: can delete if cancelled or expired
@@ -222,6 +234,17 @@ export const SubscriptionListTable: React.FC<SubscriptionListTableProps> = ({
               >
                 <Play className="size-4" />
                 <span className="ml-1">{t('subscription.activate')}</span>
+              </Button>
+            )}
+            {canUnsuspend && onUnsuspend && (
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-8 px-2 text-emerald-600 hover:text-emerald-700 hover:bg-emerald-50 dark:text-emerald-400 dark:hover:text-emerald-300 dark:hover:bg-emerald-950"
+                onClick={() => onUnsuspend(subscription)}
+              >
+                <PlayCircle className="size-4" />
+                <span className="ml-1">{t('subscription.unsuspend')}</span>
               </Button>
             )}
             <DropdownMenu>
@@ -244,14 +267,29 @@ export const SubscriptionListTable: React.FC<SubscriptionListTableProps> = ({
                     {t('subscription.duplicate')}
                   </DropdownMenuItem>
                 )}
-                {(onViewDetail || onDuplicate) && (canRenew || canCancel) && <DropdownMenuSeparator />}
+                {(onViewDetail || onDuplicate) && (canRenew || canCancel || canSuspend) && <DropdownMenuSeparator />}
                 {canRenew && onRenew && (
                   <DropdownMenuItem onClick={() => onRenew(subscription)}>
                     <RefreshCw className="mr-2 size-4" />
                     {t('subscription.renewSubscription')}
                   </DropdownMenuItem>
                 )}
-                {canRenew && canCancel && onCancel && <DropdownMenuSeparator />}
+                {canSuspend && onSuspend && (
+                  <DropdownMenuItem
+                    onClick={() => onSuspend(subscription)}
+                    className="text-warning focus:text-warning"
+                  >
+                    <Pause className="mr-2 size-4" />
+                    {t('subscription.suspend')}
+                  </DropdownMenuItem>
+                )}
+                {canResetUsage && onResetUsage && (
+                  <DropdownMenuItem onClick={() => onResetUsage(subscription)}>
+                    <RefreshCcw className="mr-2 size-4" />
+                    {t('subscription.resetUsage')}
+                  </DropdownMenuItem>
+                )}
+                {(canRenew || canSuspend || canResetUsage) && canCancel && onCancel && <DropdownMenuSeparator />}
                 {canCancel && onCancel && (
                   <DropdownMenuItem
                     onClick={() => onCancel(subscription)}
@@ -279,13 +317,16 @@ export const SubscriptionListTable: React.FC<SubscriptionListTableProps> = ({
         );
       },
     },
-  ], [t, usersMap, usersLoading, onViewDetail, onDuplicate, onActivate, onCancel, onRenew, onDelete]);
+  ], [t, usersMap, usersLoading, onViewDetail, onDuplicate, onActivate, onCancel, onRenew, onSuspend, onUnsuspend, onResetUsage, onDelete]);
 
   // Context menu content renderer
   const renderContextMenuContent = useCallback((subscription: Subscription) => {
     const status = subscription.status;
-    const canActivate = status !== 'active' && status !== 'renewed';
-    const canCancel = status === 'active' || status === 'renewed';
+    const canActivate = status === 'inactive' || status === 'pending_payment';
+    const canUnsuspend = status === 'suspended';
+    const canCancel = status === 'active' || status === 'trialing' || status === 'past_due';
+    const canSuspend = status === 'active';
+    const canResetUsage = status === 'active' || status === 'suspended';
     const canRenew = status === 'expired';
     const canDelete = status === 'cancelled' || status === 'expired';
 
@@ -303,17 +344,38 @@ export const SubscriptionListTable: React.FC<SubscriptionListTableProps> = ({
             {t('subscription.duplicate')}
           </ContextMenuItem>
         )}
-        {(onViewDetail || onDuplicate) && (canActivate || canRenew || canCancel) && <ContextMenuSeparator />}
+        {(onViewDetail || onDuplicate) && (canActivate || canUnsuspend || canRenew || canCancel || canSuspend) && <ContextMenuSeparator />}
         {canActivate && onActivate && (
           <ContextMenuItem onClick={() => onActivate(subscription)}>
             <Play className="mr-2 size-4" />
             {t('subscription.activate')}
           </ContextMenuItem>
         )}
+        {canUnsuspend && onUnsuspend && (
+          <ContextMenuItem onClick={() => onUnsuspend(subscription)}>
+            <PlayCircle className="mr-2 size-4" />
+            {t('subscription.unsuspend')}
+          </ContextMenuItem>
+        )}
         {canRenew && onRenew && (
           <ContextMenuItem onClick={() => onRenew(subscription)}>
             <RefreshCw className="mr-2 size-4" />
             {t('subscription.renewSubscription')}
+          </ContextMenuItem>
+        )}
+        {canSuspend && onSuspend && (
+          <ContextMenuItem
+            onClick={() => onSuspend(subscription)}
+            className="text-warning focus:text-warning"
+          >
+            <Pause className="mr-2 size-4" />
+            {t('subscription.suspend')}
+          </ContextMenuItem>
+        )}
+        {canResetUsage && onResetUsage && (
+          <ContextMenuItem onClick={() => onResetUsage(subscription)}>
+            <RefreshCcw className="mr-2 size-4" />
+            {t('subscription.resetUsage')}
           </ContextMenuItem>
         )}
         {canCancel && onCancel && (
@@ -339,7 +401,7 @@ export const SubscriptionListTable: React.FC<SubscriptionListTableProps> = ({
         )}
       </>
     );
-  }, [t, onViewDetail, onDuplicate, onActivate, onCancel, onRenew, onDelete]);
+  }, [t, onViewDetail, onDuplicate, onActivate, onUnsuspend, onCancel, onSuspend, onResetUsage, onRenew, onDelete]);
 
   // Render mobile card list on small screens
   if (isMobile) {
@@ -354,6 +416,9 @@ export const SubscriptionListTable: React.FC<SubscriptionListTableProps> = ({
         onActivate={onActivate}
         onCancel={onCancel}
         onRenew={onRenew}
+        onSuspend={onSuspend}
+        onUnsuspend={onUnsuspend}
+        onResetUsage={onResetUsage}
         onDelete={onDelete}
       />
     );

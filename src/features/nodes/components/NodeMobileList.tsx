@@ -5,6 +5,7 @@
  */
 
 import { useCallback } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
   Edit,
   Trash2,
@@ -66,10 +67,10 @@ interface NodeMobileListProps {
 }
 
 // Status configuration with semantic colors
-const STATUS_CONFIG: Record<NodeStatus, { label: string; variant: 'success' | 'default' | 'warning'; icon: React.ElementType }> = {
-  active: { label: '激活', variant: 'success', icon: CheckCircle2 },
-  inactive: { label: '未激活', variant: 'default', icon: XCircle },
-  maintenance: { label: '维护中', variant: 'warning', icon: Wrench },
+const STATUS_CONFIG: Record<NodeStatus, { labelKey: string; variant: 'success' | 'default' | 'warning'; icon: React.ElementType }> = {
+  active: { labelKey: 'common.status.active', variant: 'success', icon: CheckCircle2 },
+  inactive: { labelKey: 'common.status.inactive', variant: 'default', icon: XCircle },
+  maintenance: { labelKey: 'common.status.maintenance', variant: 'warning', icon: Wrench },
 };
 
 // Protocol configuration with semantic styling
@@ -107,16 +108,16 @@ const formatBytes = (bytes: number): string => {
   return `${value < 10 ? value.toFixed(2) : value.toFixed(1)} ${units[i]}`;
 };
 
-// Format relative time from unix timestamp
-const formatRelativeTime = (unixSeconds: number): string => {
+// Format relative time from unix timestamp - requires t function
+const createFormatRelativeTime = (t: (key: string, options?: Record<string, unknown>) => string) => (unixSeconds: number): string => {
   if (!unixSeconds) return '-';
   const now = Math.floor(Date.now() / 1000);
   const diff = now - unixSeconds;
-  if (diff < 0) return '刚刚';
-  if (diff < 60) return `${diff}秒前`;
-  if (diff < 3600) return `${Math.floor(diff / 60)}分钟前`;
-  if (diff < 86400) return `${Math.floor(diff / 3600)}小时前`;
-  return `${Math.floor(diff / 86400)}天前`;
+  if (diff < 0) return t('common.time.now');
+  if (diff < 60) return t('common.time.secondsAgo', { count: diff });
+  if (diff < 3600) return t('common.time.minutesAgo', { count: Math.floor(diff / 60) });
+  if (diff < 86400) return t('common.time.hoursAgo', { count: Math.floor(diff / 3600) });
+  return t('common.time.daysAgo', { count: Math.floor(diff / 86400) });
 };
 
 // Loading skeleton for mobile cards
@@ -136,7 +137,7 @@ const MobileCardSkeleton: React.FC = () => (
 );
 
 // Online status indicator with semantic colors
-const OnlineIndicator: React.FC<{ isOnline: boolean; lastSeenAt?: string }> = ({ isOnline, lastSeenAt }) => {
+const OnlineIndicator: React.FC<{ isOnline: boolean; lastSeenAt?: string; t: (key: string) => string }> = ({ isOnline, lastSeenAt, t }) => {
   if (isOnline) {
     return (
       <span className="inline-flex items-center gap-1 text-success">
@@ -144,7 +145,7 @@ const OnlineIndicator: React.FC<{ isOnline: boolean; lastSeenAt?: string }> = ({
           <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-success opacity-75"></span>
           <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-success"></span>
         </span>
-        <span className="text-[10px] font-medium">在线</span>
+        <span className="text-[10px] font-medium">{t('common.status.online')}</span>
       </span>
     );
   }
@@ -153,12 +154,12 @@ const OnlineIndicator: React.FC<{ isOnline: boolean; lastSeenAt?: string }> = ({
       <TooltipTrigger asChild>
         <span className="inline-flex items-center gap-1 text-muted-foreground">
           <span className="h-1.5 w-1.5 rounded-full bg-muted-foreground/30"></span>
-          <span className="text-[10px]">离线</span>
+          <span className="text-[10px]">{t('common.status.offline')}</span>
         </span>
       </TooltipTrigger>
       {lastSeenAt && (
         <TooltipContent>
-          最后在线: {formatDate(lastSeenAt)}
+          {t('admin.nodes.table.tooltip.lastOnline')}: {formatDate(lastSeenAt)}
         </TooltipContent>
       )}
     </Tooltip>
@@ -181,6 +182,8 @@ export const NodeMobileList: React.FC<NodeMobileListProps> = ({
   enableDragSort = false,
   onDragEnd,
 }) => {
+  const { t } = useTranslation();
+  const formatRelativeTime = createFormatRelativeTime(t);
   // Get node ID for drag-and-drop
   const getNodeId = useCallback((node: Node) => node.id, []);
 
@@ -199,39 +202,39 @@ export const NodeMobileList: React.FC<NodeMobileListProps> = ({
         <DropdownMenuContent align="end">
           <DropdownMenuItem onClick={() => onViewDetail(node)}>
             <Eye className="mr-2 size-4" />
-            查看详情
+            {t('common.actions.viewDetail')}
           </DropdownMenuItem>
           <DropdownMenuItem onClick={() => onEdit(node)}>
             <Edit className="mr-2 size-4" />
-            编辑
+            {t('common.actions.edit')}
           </DropdownMenuItem>
           <DropdownMenuItem onClick={() => onGetInstallScript(node)}>
             <Terminal className="mr-2 size-4" />
-            安装脚本
+            {t('admin.nodes.table.menu.installScript')}
           </DropdownMenuItem>
           <DropdownMenuItem onClick={() => onCopy(node)}>
             <Copy className="mr-2 size-4" />
-            复制节点
+            {t('admin.nodes.table.menu.copyNode')}
           </DropdownMenuItem>
           <DropdownMenuItem onClick={() => onGenerateToken(node)}>
             <Key className="mr-2 size-4" />
-            生成 Token
+            {t('admin.nodes.table.menu.generateToken')}
           </DropdownMenuItem>
           <DropdownMenuSeparator />
           {node.status === 'active' ? (
             <DropdownMenuItem onClick={() => onDeactivate(node)}>
               <PowerOff className="mr-2 size-4" />
-              停用节点
+              {t('admin.nodes.table.menu.deactivate')}
             </DropdownMenuItem>
           ) : (
             <DropdownMenuItem onClick={() => onActivate(node)}>
               <Power className="mr-2 size-4" />
-              激活节点
+              {t('admin.nodes.table.menu.activate')}
             </DropdownMenuItem>
           )}
           <DropdownMenuItem onClick={() => onDelete(node)} className="text-red-600 dark:text-red-400">
             <Trash2 className="mr-2 size-4" />
-            删除节点
+            {t('admin.nodes.table.menu.delete')}
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
@@ -245,14 +248,14 @@ export const NodeMobileList: React.FC<NodeMobileListProps> = ({
   if (nodes.length === 0) {
     return (
       <div className="text-center py-12 text-slate-500 dark:text-slate-400">
-        暂无节点数据
+        {t('admin.nodes.emptyState')}
       </div>
     );
   }
 
   // Render a single node card
   const renderNodeCard = (node: Node) => {
-    const statusConfig = STATUS_CONFIG[node.status] || { label: node.status, variant: 'default' as const, icon: XCircle };
+    const statusConfig = STATUS_CONFIG[node.status] || { labelKey: 'common.status.unknown', variant: 'default' as const, icon: XCircle };
     const StatusIcon = statusConfig.icon;
     const protocolConfig = PROTOCOL_CONFIG[node.protocol] || { label: node.protocol, color: 'bg-gray-100 text-gray-700' };
 
@@ -273,9 +276,9 @@ export const NodeMobileList: React.FC<NodeMobileListProps> = ({
                 </span>
                 <AdminBadge variant={statusConfig.variant} className="text-[10px] px-1.5 py-0 flex-shrink-0">
                   <StatusIcon className="size-2.5 mr-0.5" />
-                  {statusConfig.label}
+                  {t(statusConfig.labelKey)}
                 </AdminBadge>
-                <OnlineIndicator isOnline={node.isOnline} lastSeenAt={node.lastSeenAt} />
+                <OnlineIndicator isOnline={node.isOnline} lastSeenAt={node.lastSeenAt} t={t} />
               </div>
 
                   {/* Address and region info */}
@@ -291,9 +294,9 @@ export const NodeMobileList: React.FC<NodeMobileListProps> = ({
                       </TooltipTrigger>
                       <TooltipContent>
                         <div className="space-y-1 text-xs">
-                          <div>代理端口: {node.agentPort}</div>
+                          <div>{t('admin.nodes.detail.agentPort')}: {node.agentPort}</div>
                           {node.subscriptionPort && node.subscriptionPort !== node.agentPort && (
-                            <div>订阅端口: {node.subscriptionPort}</div>
+                            <div>{t('admin.nodes.detail.subscriptionPort')}: {node.subscriptionPort}</div>
                           )}
                           {node.systemStatus?.publicIpv4 && (
                             <div className="flex items-center gap-1">
@@ -334,7 +337,7 @@ export const NodeMobileList: React.FC<NodeMobileListProps> = ({
                         )}
                       </button>
                     </TooltipTrigger>
-                    <TooltipContent>{node.muteNotification ? '点击取消静音' : '点击静音通知'}</TooltipContent>
+                    <TooltipContent>{node.muteNotification ? t('admin.nodes.tooltip.clickToUnmute') : t('admin.nodes.tooltip.clickToMute')}</TooltipContent>
                   </Tooltip>
                   <Tooltip>
                     <TooltipTrigger asChild>
@@ -345,7 +348,7 @@ export const NodeMobileList: React.FC<NodeMobileListProps> = ({
                         <Edit className="size-3.5 text-muted-foreground hover:text-foreground" strokeWidth={1.5} />
                       </button>
                     </TooltipTrigger>
-                    <TooltipContent>编辑</TooltipContent>
+                    <TooltipContent>{t('common.actions.edit')}</TooltipContent>
                   </Tooltip>
                   <Tooltip>
                     <TooltipTrigger asChild>
@@ -356,7 +359,7 @@ export const NodeMobileList: React.FC<NodeMobileListProps> = ({
                         <Terminal className="size-3.5 text-muted-foreground hover:text-foreground" strokeWidth={1.5} />
                       </button>
                     </TooltipTrigger>
-                    <TooltipContent>安装脚本</TooltipContent>
+                    <TooltipContent>{t('admin.nodes.table.menu.installScript')}</TooltipContent>
                   </Tooltip>
                   <Tooltip>
                     <TooltipTrigger asChild>
@@ -375,7 +378,7 @@ export const NodeMobileList: React.FC<NodeMobileListProps> = ({
                         )}
                       </button>
                     </TooltipTrigger>
-                    <TooltipContent>{node.status === 'active' ? '停用' : '激活'}</TooltipContent>
+                    <TooltipContent>{node.status === 'active' ? t('common.actions.disable') : t('common.status.active')}</TooltipContent>
                   </Tooltip>
                   {renderDropdownMenu(node)}
                 </div>
@@ -384,7 +387,7 @@ export const NodeMobileList: React.FC<NodeMobileListProps> = ({
 
             {/* Accordion Trigger */}
             <AccordionTrigger className="px-3 py-1.5 border-t border-border hover:no-underline hover:bg-accent/30 transition-colors cursor-pointer">
-              <span className="text-xs text-muted-foreground">详情</span>
+              <span className="text-xs text-muted-foreground">{t('common.actions.view')}</span>
             </AccordionTrigger>
 
             {/* Accordion Content - Expanded details */}
@@ -392,7 +395,7 @@ export const NodeMobileList: React.FC<NodeMobileListProps> = ({
               <div className="px-3 pb-2 space-y-2 border-t border-border pt-2">
                 {/* Protocol config */}
                 <div className="flex items-center gap-2">
-                  <span className="text-[10px] text-muted-foreground uppercase tracking-wide w-8 flex-shrink-0">协议</span>
+                  <span className="text-[10px] text-muted-foreground uppercase tracking-wide w-8 flex-shrink-0">{t('common.protocol')}</span>
                   <div className="flex items-center gap-2">
                     <span className={`px-1.5 py-0.5 text-[10px] font-medium rounded ${protocolConfig.color}`}>
                       {protocolConfig.label}
@@ -413,7 +416,7 @@ export const NodeMobileList: React.FC<NodeMobileListProps> = ({
                 {/* Monitor (System + Network) */}
                 {node.systemStatus && (
                   <div className="flex items-start gap-2">
-                    <span className="text-[10px] text-muted-foreground uppercase tracking-wide w-8 pt-0.5 flex-shrink-0">监控</span>
+                    <span className="text-[10px] text-muted-foreground uppercase tracking-wide w-8 pt-0.5 flex-shrink-0">{t('nav.monitor')}</span>
                     <div className="flex flex-col gap-1.5 flex-1">
                       {/* System bars + Network rates in one row */}
                       <div className="flex items-center gap-3">
@@ -446,10 +449,10 @@ export const NodeMobileList: React.FC<NodeMobileListProps> = ({
                       {/* Extended info row - always show */}
                       <div className="flex items-center gap-2 text-[10px] text-muted-foreground">
                         <span className="font-mono">
-                          累计: ↓{formatBytes(node.systemStatus.networkRxBytes)} ↑{formatBytes(node.systemStatus.networkTxBytes)}
+                          {t('admin.forwardAgents.detail.totalLabel')}: ↓{formatBytes(node.systemStatus.networkRxBytes)} ↑{formatBytes(node.systemStatus.networkTxBytes)}
                         </span>
                         <span>
-                          {(node.systemStatus.tcpConnections || 0) + (node.systemStatus.udpConnections || 0)} 连接
+                          {(node.systemStatus.tcpConnections || 0) + (node.systemStatus.udpConnections || 0)} {t('admin.forwardAgents.detail.connections')}
                         </span>
                       </div>
                     </div>
@@ -459,7 +462,7 @@ export const NodeMobileList: React.FC<NodeMobileListProps> = ({
                 {/* Version */}
                 {(node.agentVersion || node.systemStatus?.agentVersion) && (
                   <div className="flex items-center gap-2">
-                    <span className="text-[10px] text-muted-foreground uppercase tracking-wide w-8 flex-shrink-0">版本</span>
+                    <span className="text-[10px] text-muted-foreground uppercase tracking-wide w-8 flex-shrink-0">{t('admin.forwardAgents.table.columns.version')}</span>
                     <div className="flex items-center gap-1.5">
                       {node.hasUpdate && (
                         <ArrowUpCircle className="size-3.5 text-warning" strokeWidth={1.5} />
@@ -473,7 +476,7 @@ export const NodeMobileList: React.FC<NodeMobileListProps> = ({
                         )}
                       </span>
                       {node.hasUpdate && (
-                        <span className="text-[10px] text-warning font-medium">可更新</span>
+                        <span className="text-[10px] text-warning font-medium">{t('admin.forwardAgents.detail.updatable')}</span>
                       )}
                     </div>
                   </div>
@@ -482,7 +485,7 @@ export const NodeMobileList: React.FC<NodeMobileListProps> = ({
                 {/* Tags */}
                 {node.tags && node.tags.length > 0 && (
                   <div className="flex items-start gap-2">
-                    <span className="text-[10px] text-muted-foreground uppercase tracking-wide w-8 pt-0.5 flex-shrink-0">标签</span>
+                    <span className="text-[10px] text-muted-foreground uppercase tracking-wide w-8 pt-0.5 flex-shrink-0">{t('admin.nodes.table.tags')}</span>
                     <div className="flex flex-wrap gap-1">
                       {node.tags.map((tag: string, index: number) => (
                         <Badge key={index} variant="secondary" className="text-[10px] px-1.5 py-0">
@@ -496,7 +499,7 @@ export const NodeMobileList: React.FC<NodeMobileListProps> = ({
                 {/* Resource groups */}
                 {node.groupIds && node.groupIds.length > 0 && (
                   <div className="flex items-start gap-2">
-                    <span className="text-[10px] text-muted-foreground uppercase tracking-wide w-8 pt-0.5 flex-shrink-0">资源</span>
+                    <span className="text-[10px] text-muted-foreground uppercase tracking-wide w-8 pt-0.5 flex-shrink-0">{t('admin.nodes.table.resourceGroup')}</span>
                     <div className="flex flex-wrap gap-1">
                       {node.groupIds.map((gid) => {
                         const group = resourceGroupsMap[gid];
@@ -512,7 +515,7 @@ export const NodeMobileList: React.FC<NodeMobileListProps> = ({
 
                 {/* Owner */}
                 <div className="flex items-center gap-2">
-                  <span className="text-[10px] text-muted-foreground uppercase tracking-wide w-8 flex-shrink-0">创建</span>
+                  <span className="text-[10px] text-muted-foreground uppercase tracking-wide w-8 flex-shrink-0">{t('admin.forwardAgents.table.columns.createdAt')}</span>
                   {node.owner ? (
                     <div className="flex items-center gap-1 text-xs text-muted-foreground">
                       <User className="size-3 text-muted-foreground/60" strokeWidth={1.5} />
@@ -521,7 +524,7 @@ export const NodeMobileList: React.FC<NodeMobileListProps> = ({
                   ) : (
                     <div className="flex items-center gap-1 text-xs">
                       <Shield className="size-3 text-info" strokeWidth={1.5} />
-                      <span className="text-info font-medium">管理员</span>
+                      <span className="text-info font-medium">{t('common.role.admin')}</span>
                     </div>
                   )}
                   <span className="text-border">·</span>

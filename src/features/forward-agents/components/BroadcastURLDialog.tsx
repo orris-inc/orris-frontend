@@ -8,6 +8,7 @@
  */
 
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
   Dialog,
   DialogContent,
@@ -65,6 +66,7 @@ export const BroadcastURLDialog: React.FC<BroadcastURLDialogProps> = ({
   onNotifySingle,
   isNotifying,
 }) => {
+  const { t } = useTranslation();
   const [newUrl, setNewUrl] = useState('');
   const [reason, setReason] = useState('');
   const [broadcastResult, setBroadcastResult] = useState<BroadcastAPIURLChangedResponse | null>(null);
@@ -81,7 +83,7 @@ export const BroadcastURLDialog: React.FC<BroadcastURLDialogProps> = ({
   // Validate and proceed to confirmation step
   const handleProceedToConfirm = () => {
     if (!newUrl.trim()) {
-      setError('请输入新的API地址');
+      setError(t('common.validation.required'));
       return;
     }
 
@@ -89,7 +91,7 @@ export const BroadcastURLDialog: React.FC<BroadcastURLDialogProps> = ({
     try {
       new URL(newUrl.trim());
     } catch {
-      setError('请输入有效的URL地址');
+      setError(t('common.validation.url'));
       return;
     }
 
@@ -151,14 +153,14 @@ export const BroadcastURLDialog: React.FC<BroadcastURLDialogProps> = ({
             ) : (
               <Radio className="size-5 text-blue-500" />
             )}
-            {isSingleMode ? '下发API地址' : '广播API地址'}
+            {isSingleMode ? t('admin.forwardAgents.dialog.notifyTitle') : t('admin.forwardAgents.dialog.broadcastTitle')}
           </DialogTitle>
           <DialogDescription>
             {showResult
-              ? '下发任务已完成'
+              ? t('admin.forwardAgents.broadcast.taskCompleted')
               : isSingleMode
-                ? `向转发Agent "${targetAgent?.name}" 下发新的API地址`
-                : '向所有在线转发Agent下发新的API地址'}
+                ? t('admin.forwardAgents.broadcast.notifyAgentDesc', { name: targetAgent?.name })
+                : t('admin.forwardAgents.broadcast.notifyAllDesc')}
           </DialogDescription>
         </DialogHeader>
 
@@ -169,7 +171,7 @@ export const BroadcastURLDialog: React.FC<BroadcastURLDialogProps> = ({
             <div className="p-3 bg-muted rounded-lg">
               <div className="flex items-center justify-between">
                 <span className="text-sm text-muted-foreground">
-                  {isSingleMode ? '目标节点' : '当前在线节点数'}
+                  {isSingleMode ? t('admin.forwardAgents.broadcast.targetNode') : t('admin.forwardAgents.broadcast.onlineNodeCount')}
                 </span>
                 {isSingleMode ? (
                   <div className="flex items-center gap-2">
@@ -177,12 +179,12 @@ export const BroadcastURLDialog: React.FC<BroadcastURLDialogProps> = ({
                     {targetAgent?.isOnline ? (
                       <span className="flex items-center gap-1 text-xs text-green-600">
                         <span className="size-2 rounded-full bg-green-500" />
-                        在线
+                        {t('admin.forwardAgents.broadcast.online')}
                       </span>
                     ) : (
                       <span className="flex items-center gap-1 text-xs text-muted-foreground">
                         <span className="size-2 rounded-full bg-muted-foreground/30" />
-                        离线
+                        {t('admin.forwardAgents.broadcast.offline')}
                       </span>
                     )}
                   </div>
@@ -196,18 +198,18 @@ export const BroadcastURLDialog: React.FC<BroadcastURLDialogProps> = ({
               <div className="flex items-center gap-2 p-3 bg-yellow-50 dark:bg-yellow-900/20 rounded-lg">
                 <AlertTriangle className="size-4 text-yellow-500" />
                 <span className="text-sm text-yellow-700 dark:text-yellow-300">
-                  {isSingleMode ? '节点当前不在线' : '当前没有在线的转发Agent'}
+                  {isSingleMode ? t('admin.forwardAgents.broadcast.nodeOffline') : t('admin.forwardAgents.broadcast.noOnlineAgents')}
                 </span>
               </div>
             ) : (
               <div className="space-y-4">
                 <div className="space-y-2">
-                  <Label htmlFor="newUrl">新API地址 *</Label>
+                  <Label htmlFor="newUrl">{t('admin.forwardAgents.broadcast.newApiUrl')} *</Label>
                   <Input
                     id="newUrl"
                     value={newUrl}
                     onChange={(e) => setNewUrl(e.target.value)}
-                    placeholder="https://new-api.example.com"
+                    placeholder={t('admin.forwardAgents.broadcast.newApiUrlPlaceholder')}
                     className={error ? 'border-destructive' : ''}
                   />
                   {error && (
@@ -216,12 +218,12 @@ export const BroadcastURLDialog: React.FC<BroadcastURLDialogProps> = ({
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="reason">变更原因（可选）</Label>
+                  <Label htmlFor="reason">{t('admin.forwardAgents.broadcast.changeReason')}</Label>
                   <Textarea
                     id="reason"
                     value={reason}
                     onChange={(e) => setReason(e.target.value)}
-                    placeholder="例如：服务器迁移到新数据中心"
+                    placeholder={t('admin.forwardAgents.broadcast.changeReasonPlaceholder')}
                     rows={2}
                   />
                 </div>
@@ -229,7 +231,7 @@ export const BroadcastURLDialog: React.FC<BroadcastURLDialogProps> = ({
                 <div className="flex items-center gap-2 p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
                   <AlertTriangle className="size-4 text-blue-500 flex-shrink-0" />
                   <span className="text-xs text-blue-700 dark:text-blue-300">
-                    转发Agent收到通知后会自动更新配置并重连到新地址
+                    {t('admin.forwardAgents.broadcast.agentAutoUpdateHint')}
                   </span>
                 </div>
               </div>
@@ -254,12 +256,14 @@ export const BroadcastURLDialog: React.FC<BroadcastURLDialogProps> = ({
                       id="warning-title"
                       className="text-base font-semibold text-orange-900 dark:text-orange-100"
                     >
-                      高危操作警告
+                      {t('admin.forwardAgents.broadcast.dangerWarningTitle')}
                     </h4>
                     <p className="text-sm text-orange-700 dark:text-orange-300 mt-1 leading-relaxed">
-                      此操作将立即影响{isSingleMode ? '目标节点' : (
-                        <>所有 <span className="font-semibold">{onlineCount}</span> 个在线节点</>
-                      )}的连接
+                      {t('admin.forwardAgents.broadcast.dangerWarningDesc', {
+                        target: isSingleMode
+                          ? t('admin.forwardAgents.broadcast.dangerWarningTargetNode')
+                          : t('admin.forwardAgents.broadcast.dangerWarningAllNodes', { count: onlineCount })
+                      })}
                     </p>
                   </div>
                 </div>
@@ -268,19 +272,19 @@ export const BroadcastURLDialog: React.FC<BroadcastURLDialogProps> = ({
 
             {/* Impact list - Enhanced visual design */}
             <div className="space-y-3">
-              <p className="text-sm font-medium text-foreground">操作影响：</p>
-              <ul className="space-y-2.5" aria-label="操作影响列表">
+              <p className="text-sm font-medium text-foreground">{t('admin.forwardAgents.broadcast.impactTitle')}</p>
+              <ul className="space-y-2.5" aria-label={t('admin.forwardAgents.broadcast.impactTitle')}>
                 <li className="flex items-start gap-3">
                   <span className="mt-1.5 flex size-2 items-center justify-center rounded-full bg-orange-500 ring-4 ring-orange-500/20" aria-hidden="true" />
-                  <span className="text-sm text-muted-foreground leading-relaxed">节点将断开当前连接并尝试重连到新地址</span>
+                  <span className="text-sm text-muted-foreground leading-relaxed">{t('admin.forwardAgents.broadcast.impact1')}</span>
                 </li>
                 <li className="flex items-start gap-3">
                   <span className="mt-1.5 flex size-2 items-center justify-center rounded-full bg-orange-500 ring-4 ring-orange-500/20" aria-hidden="true" />
-                  <span className="text-sm text-muted-foreground leading-relaxed">重连期间转发服务将暂时中断</span>
+                  <span className="text-sm text-muted-foreground leading-relaxed">{t('admin.forwardAgents.broadcast.impact2')}</span>
                 </li>
                 <li className="flex items-start gap-3">
                   <span className="mt-1.5 flex size-2 items-center justify-center rounded-full bg-orange-500 ring-4 ring-orange-500/20" aria-hidden="true" />
-                  <span className="text-sm text-muted-foreground leading-relaxed">如果新地址无法访问，节点可能无法恢复连接</span>
+                  <span className="text-sm text-muted-foreground leading-relaxed">{t('admin.forwardAgents.broadcast.impact3')}</span>
                 </li>
               </ul>
             </div>
@@ -288,7 +292,7 @@ export const BroadcastURLDialog: React.FC<BroadcastURLDialogProps> = ({
             {/* Operation summary - Enhanced card design */}
             <div className="rounded-lg border border-border bg-muted/50 divide-y divide-border">
               <div className="flex items-center justify-between px-4 py-3">
-                <span className="text-sm text-muted-foreground">新地址</span>
+                <span className="text-sm text-muted-foreground">{t('admin.forwardAgents.broadcast.newAddress')}</span>
                 <span
                   className="font-mono text-sm truncate max-w-[220px] text-foreground"
                   title={newUrl}
@@ -298,7 +302,7 @@ export const BroadcastURLDialog: React.FC<BroadcastURLDialogProps> = ({
               </div>
               {reason && (
                 <div className="flex items-center justify-between px-4 py-3">
-                  <span className="text-sm text-muted-foreground">原因</span>
+                  <span className="text-sm text-muted-foreground">{t('admin.forwardAgents.broadcast.reason')}</span>
                   <span className="text-sm truncate max-w-[220px] text-foreground" title={reason}>
                     {reason}
                   </span>
@@ -310,9 +314,17 @@ export const BroadcastURLDialog: React.FC<BroadcastURLDialogProps> = ({
             <div className="space-y-2.5">
               <Label htmlFor="confirmText" className="text-sm leading-relaxed">
                 {isSingleMode ? (
-                  <>请输入节点名称 <span className="inline-flex items-center rounded-md bg-orange-100 dark:bg-orange-900/40 px-2 py-0.5 font-semibold text-orange-700 dark:text-orange-300">{targetAgent?.name}</span> 以确认</>
+                  <>
+                    {t('admin.forwardAgents.broadcast.confirmInputNodeNamePrefix')}
+                    <span className="inline-flex items-center rounded-md bg-orange-100 dark:bg-orange-900/40 px-2 py-0.5 font-semibold text-orange-700 dark:text-orange-300">{targetAgent?.name}</span>
+                    {t('admin.forwardAgents.broadcast.confirmInputNodeNameSuffix')}
+                  </>
                 ) : (
-                  <>请输入在线节点数 <span className="inline-flex items-center rounded-md bg-orange-100 dark:bg-orange-900/40 px-2 py-0.5 font-mono font-semibold text-orange-700 dark:text-orange-300">{onlineCount}</span> 以确认</>
+                  <>
+                    {t('admin.forwardAgents.broadcast.confirmInputNodeCountPrefix')}
+                    <span className="inline-flex items-center rounded-md bg-orange-100 dark:bg-orange-900/40 px-2 py-0.5 font-mono font-semibold text-orange-700 dark:text-orange-300">{onlineCount}</span>
+                    {t('admin.forwardAgents.broadcast.confirmInputNodeCountSuffix')}
+                  </>
                 )}
               </Label>
               <Input
@@ -330,7 +342,7 @@ export const BroadcastURLDialog: React.FC<BroadcastURLDialogProps> = ({
               />
               {confirmText && !isConfirmValid && (
                 <p id="confirm-hint" className="text-xs text-orange-600 dark:text-orange-400" role="status">
-                  输入内容不匹配
+                  {t('admin.forwardAgents.broadcast.inputMismatch')}
                 </p>
               )}
             </div>
@@ -342,20 +354,20 @@ export const BroadcastURLDialog: React.FC<BroadcastURLDialogProps> = ({
               <div className="p-4 bg-green-50 dark:bg-green-900/20 rounded-lg text-center">
                 <CheckCircle2 className="size-8 text-green-500 mx-auto mb-3" />
                 <p className="text-lg font-semibold text-green-700 dark:text-green-300">
-                  通知成功
+                  {t('admin.forwardAgents.broadcast.notifySuccess')}
                 </p>
                 <p className="text-sm text-green-600 dark:text-green-400 mt-1">
-                  转发Agent "{targetAgent?.name}" 已收到API地址更新通知
+                  {t('admin.forwardAgents.broadcast.notifySuccessDesc', { name: targetAgent?.name })}
                 </p>
               </div>
             ) : (
               <div className="p-4 bg-yellow-50 dark:bg-yellow-900/20 rounded-lg text-center">
                 <AlertTriangle className="size-8 text-yellow-500 mx-auto mb-3" />
                 <p className="text-lg font-semibold text-yellow-700 dark:text-yellow-300">
-                  通知失败
+                  {t('admin.forwardAgents.broadcast.notifyFailed')}
                 </p>
                 <p className="text-sm text-yellow-600 dark:text-yellow-400 mt-1">
-                  节点当前不在线，无法接收通知
+                  {t('admin.forwardAgents.broadcast.notifyFailedDesc')}
                 </p>
               </div>
             )}
@@ -369,14 +381,14 @@ export const BroadcastURLDialog: React.FC<BroadcastURLDialogProps> = ({
                 <p className="text-2xl font-semibold text-green-700 dark:text-green-300">
                   {broadcastResult.agentsNotified}
                 </p>
-                <p className="text-sm text-green-600 dark:text-green-400">已通知</p>
+                <p className="text-sm text-green-600 dark:text-green-400">{t('admin.forwardAgents.broadcast.notified')}</p>
               </div>
               <div className="p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg text-center">
                 <Radio className="size-6 text-blue-500 mx-auto mb-2" />
                 <p className="text-2xl font-semibold text-blue-700 dark:text-blue-300">
                   {broadcastResult.agentsOnline}
                 </p>
-                <p className="text-sm text-blue-600 dark:text-blue-400">在线节点</p>
+                <p className="text-sm text-blue-600 dark:text-blue-400">{t('admin.forwardAgents.broadcast.onlineNodes')}</p>
               </div>
             </div>
 
@@ -384,7 +396,7 @@ export const BroadcastURLDialog: React.FC<BroadcastURLDialogProps> = ({
               <div className="flex items-center gap-2 p-3 bg-green-50 dark:bg-green-900/20 rounded-lg">
                 <CheckCircle2 className="size-4 text-green-500 flex-shrink-0" />
                 <span className="text-sm text-green-700 dark:text-green-300">
-                  已成功通知 {broadcastResult.agentsNotified} 个转发Agent更新API地址
+                  {t('admin.forwardAgents.broadcast.notifySuccessSummary', { count: broadcastResult.agentsNotified })}
                 </span>
               </div>
             )}
@@ -393,7 +405,7 @@ export const BroadcastURLDialog: React.FC<BroadcastURLDialogProps> = ({
               <div className="flex items-center gap-2 p-3 bg-yellow-50 dark:bg-yellow-900/20 rounded-lg">
                 <AlertTriangle className="size-4 text-yellow-500 flex-shrink-0" />
                 <span className="text-sm text-yellow-700 dark:text-yellow-300">
-                  没有在线的转发Agent接收通知
+                  {t('admin.forwardAgents.broadcast.noOnlineAgentsToNotify')}
                 </span>
               </div>
             )}
@@ -405,7 +417,7 @@ export const BroadcastURLDialog: React.FC<BroadcastURLDialogProps> = ({
             // Step 1: Input form buttons
             <>
               <Button variant="outline" onClick={handleClose}>
-                取消
+                {t('common.actions.cancel')}
               </Button>
               <Button
                 onClick={handleProceedToConfirm}
@@ -414,12 +426,12 @@ export const BroadcastURLDialog: React.FC<BroadcastURLDialogProps> = ({
                 {isSingleMode ? (
                   <>
                     <Cpu className="size-4 mr-2" />
-                    下一步
+                    {t('common.actions.next')}
                   </>
                 ) : (
                   <>
                     <Radio className="size-4 mr-2" />
-                    下一步
+                    {t('common.actions.next')}
                   </>
                 )}
               </Button>
@@ -429,7 +441,7 @@ export const BroadcastURLDialog: React.FC<BroadcastURLDialogProps> = ({
             <>
               <Button variant="outline" onClick={handleBackToInput}>
                 <ArrowLeft className="size-4 mr-2" />
-                返回修改
+                {t('admin.forwardAgents.broadcast.backToEdit')}
               </Button>
               <Button
                 variant="destructive"
@@ -440,19 +452,19 @@ export const BroadcastURLDialog: React.FC<BroadcastURLDialogProps> = ({
                 {isLoading ? (
                   <>
                     <Loader2 className="size-4 mr-2 animate-spin" />
-                    下发中...
+                    {t('admin.forwardAgents.broadcast.notifying')}
                   </>
                 ) : (
                   <>
                     <ShieldAlert className="size-4 mr-2" />
-                    确认下发
+                    {t('admin.forwardAgents.broadcast.confirmNotify')}
                   </>
                 )}
               </Button>
             </>
           ) : (
             // Step 3: Result
-            <Button onClick={handleClose}>关闭</Button>
+            <Button onClick={handleClose}>{t('common.actions.close')}</Button>
           )}
         </DialogFooter>
       </DialogContent>

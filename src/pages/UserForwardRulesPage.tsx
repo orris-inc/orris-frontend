@@ -187,7 +187,7 @@ export const UserForwardRulesPage = () => {
 
   return (
     <DashboardLayout>
-      <div className="space-y-4 sm:space-y-6 px-safe pb-safe">
+      <div className="space-y-4 sm:space-y-6 pb-safe">
         {/* Page header */}
         <div className="space-y-1">
           <h1 className="text-xl sm:text-2xl font-semibold text-foreground">端口转发</h1>

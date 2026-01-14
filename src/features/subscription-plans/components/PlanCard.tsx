@@ -4,6 +4,7 @@
  */
 
 import { Check } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import { cn } from "@/lib/utils";
 import { getButtonClass, getBadgeClass } from "@/lib/ui-styles";
 import { PlanPricingSelector } from "./PlanPricingSelector";
@@ -20,19 +21,21 @@ export const PlanCard: React.FC<PlanCardProps> = ({
   recommended = false,
   onSelect,
 }) => {
+  const { t } = useTranslation();
+
   // Build features list from plan data
   const features: string[] = [];
   if (plan.maxUsers > 0) {
-    features.push(`最多 ${plan.maxUsers} 个用户`);
+    features.push(t("pricing.card.maxUsers", { count: plan.maxUsers }));
   }
   if (plan.maxProjects > 0) {
-    features.push(`${plan.maxProjects} 个项目`);
+    features.push(t("pricing.card.projects", { count: plan.maxProjects }));
   }
   if (plan.nodeLimit && plan.nodeLimit > 0) {
-    features.push(`${plan.nodeLimit} 个节点`);
+    features.push(t("pricing.card.nodes", { count: plan.nodeLimit }));
   }
   if (plan.apiRateLimit > 0) {
-    features.push(`${plan.apiRateLimit} 次/分钟 API`);
+    features.push(t("pricing.card.apiRate", { count: plan.apiRateLimit }));
   }
 
   return (
@@ -52,7 +55,7 @@ export const PlanCard: React.FC<PlanCardProps> = ({
               "px-3 py-1 rounded-full font-medium shadow-sm",
             )}
           >
-            推荐
+            {t("pricing.card.recommended")}
           </span>
         </div>
       )}
@@ -71,7 +74,9 @@ export const PlanCard: React.FC<PlanCardProps> = ({
               defaultBillingCycle={plan.pricings[0]?.billingCycle}
             />
           ) : (
-            <div className="text-muted-foreground">价格待定</div>
+            <div className="text-muted-foreground">
+              {t("pricing.card.priceTbd")}
+            </div>
           )}
         </div>
 
@@ -103,7 +108,7 @@ export const PlanCard: React.FC<PlanCardProps> = ({
         {plan.trialDays > 0 && (
           <div className="mb-4">
             <span className={getBadgeClass("secondary", "text-xs font-medium")}>
-              免费试用 {plan.trialDays} 天
+              {t("pricing.card.freeTrial", { days: plan.trialDays })}
             </span>
           </div>
         )}
@@ -117,7 +122,7 @@ export const PlanCard: React.FC<PlanCardProps> = ({
           )}
           onClick={() => onSelect?.(plan)}
         >
-          选择计划
+          {t("pricing.card.selectPlan")}
         </button>
       </div>
     </div>

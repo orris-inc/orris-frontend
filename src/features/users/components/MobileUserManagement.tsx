@@ -12,6 +12,7 @@
  */
 
 import { useState, useMemo, useCallback } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
   Plus,
   RefreshCw,
@@ -54,15 +55,19 @@ export interface MobileUserManagementProps {
 type StatusFilter = 'all' | 'active' | 'pending' | 'inactive' | 'suspended';
 
 // ============================================================================
-// Filter Options
+// Filter Options - Using labelKey for i18n
 // ============================================================================
 
-const STATUS_FILTER_OPTIONS: SegmentOption<StatusFilter>[] = [
-  { value: 'all', label: '全部' },
-  { value: 'active', label: '激活' },
-  { value: 'pending', label: '待验证' },
-  { value: 'inactive', label: '未激活', hideWhenZero: true },
-  { value: 'suspended', label: '封禁', hideWhenZero: true },
+interface StatusFilterOption extends SegmentOption<StatusFilter> {
+  labelKey: string;
+}
+
+const STATUS_FILTER_OPTIONS: StatusFilterOption[] = [
+  { value: 'all', label: '', labelKey: 'filter.all' },
+  { value: 'active', label: '', labelKey: 'common.status.active' },
+  { value: 'pending', label: '', labelKey: 'common.status.pending' },
+  { value: 'inactive', label: '', labelKey: 'common.status.inactive', hideWhenZero: true },
+  { value: 'suspended', label: '', labelKey: 'common.status.suspended', hideWhenZero: true },
 ];
 
 // ============================================================================
@@ -77,11 +82,13 @@ const StatsSummary = ({
   active,
   pending,
   loading,
+  t,
 }: {
   total: number;
   active: number;
   pending: number;
   loading: boolean;
+  t: (key: string) => string;
 }) => {
   if (loading) {
     return (
@@ -97,17 +104,17 @@ const StatsSummary = ({
     <div className="flex items-center justify-between text-xs px-1">
       <div className="flex items-center gap-1.5">
         <Users className="size-3.5 text-muted-foreground" />
-        <span className="text-muted-foreground">总数</span>
+        <span className="text-muted-foreground">{t('admin.stats.totalUsers')}</span>
         <span className="font-semibold text-foreground tabular-nums">{total}</span>
       </div>
       <div className="flex items-center gap-1.5">
         <CheckCircle2 className="size-3.5 text-success" />
-        <span className="text-muted-foreground">激活</span>
+        <span className="text-muted-foreground">{t('common.status.active')}</span>
         <span className="font-semibold text-success tabular-nums">{active}</span>
       </div>
       <div className="flex items-center gap-1.5">
         <Clock className="size-3.5 text-warning" />
-        <span className="text-muted-foreground">待验证</span>
+        <span className="text-muted-foreground">{t('common.status.pending')}</span>
         <span className="font-semibold text-warning tabular-nums">{pending}</span>
       </div>
     </div>
@@ -121,10 +128,12 @@ const SearchBar = ({
   value,
   onChange,
   onClear,
+  placeholder,
 }: {
   value: string;
   onChange: (value: string) => void;
   onClear: () => void;
+  placeholder: string;
 }) => {
   return (
     <div
@@ -141,7 +150,7 @@ const SearchBar = ({
         type="text"
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        placeholder="搜索姓名或邮箱..."
+        placeholder={placeholder}
         className={cn(
           'flex-1 min-w-0',
           'bg-transparent',
@@ -169,10 +178,12 @@ const EmptyState = ({
   hasFilter,
   onClearFilter,
   onCreate,
+  t,
 }: {
   hasFilter: boolean;
   onClearFilter: () => void;
   onCreate: () => void;
+  t: (key: string) => string;
 }) => (
   <div className="flex flex-col items-center justify-center py-16 px-6">
     <div className="size-20 rounded-full bg-muted/30 flex items-center justify-center mb-4">
@@ -183,10 +194,12 @@ const EmptyState = ({
       )}
     </div>
     <p className="text-base font-medium text-foreground mb-1 text-center">
-      {hasFilter ? '未找到匹配用户' : '暂无用户'}
+      {hasFilter ? t('common.messages.noResults') : t('admin.users.noData')}
     </p>
     <p className="text-sm text-muted-foreground text-center mb-5">
-      {hasFilter ? '尝试调整搜索条件或清除筛选' : '点击下方按钮创建第一个用户'}
+      {hasFilter
+        ? t('subscription.tryAdjustSearch')
+        : t('admin.users.createUser')}
     </p>
     <button
       type="button"
@@ -205,12 +218,12 @@ const EmptyState = ({
       {hasFilter ? (
         <>
           <X className="size-4" />
-          清除筛选
+          {t('messages.clearFilters')}
         </>
       ) : (
         <>
           <Plus className="size-4" />
-          创建用户
+          {t('admin.users.createUser')}
         </>
       )}
     </button>
@@ -347,10 +360,19 @@ export const MobileUserManagement = ({
   onResetPassword,
   onPageChange,
 }: MobileUserManagementProps) => {
+  const { t } = useTranslation();
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<StatusFilter>('all');
   const [selectedUser, setSelectedUser] = useState<UserResponse | null>(null);
   const [detailSheetOpen, setDetailSheetOpen] = useState(false);
+
+  // Build filter options with translated labels
+  const translatedFilterOptions = useMemo(() => {
+    return STATUS_FILTER_OPTIONS.map((opt) => ({
+      ...opt,
+      label: t(opt.labelKey),
+    }));
+  }, [t]);
 
   // Calculate stats
   const stats = useMemo(() => {
@@ -363,11 +385,11 @@ export const MobileUserManagement = ({
 
   // Add counts to filter options
   const filterOptionsWithCounts = useMemo(() => {
-    return STATUS_FILTER_OPTIONS.map((opt) => ({
+    return translatedFilterOptions.map((opt) => ({
       ...opt,
       count: opt.value === 'all' ? total : stats[opt.value as keyof typeof stats],
     }));
-  }, [stats, total]);
+  }, [translatedFilterOptions, stats, total]);
 
   // Filter users
   const filteredUsers = useMemo(() => {
@@ -415,6 +437,7 @@ export const MobileUserManagement = ({
           active={stats.active}
           pending={stats.pending}
           loading={loading}
+          t={t}
         />
 
         {/* Search Bar with Refresh */}
@@ -424,6 +447,7 @@ export const MobileUserManagement = ({
               value={searchQuery}
               onChange={setSearchQuery}
               onClear={() => setSearchQuery('')}
+              placeholder={t('common.placeholders.search')}
             />
           </div>
           <button
@@ -458,14 +482,14 @@ export const MobileUserManagement = ({
       {hasFilter && !loading && filteredUsers.length > 0 && (
         <div className="flex items-center justify-between mb-3 px-1">
           <span className="text-xs text-muted-foreground">
-            找到 <span className="font-medium text-foreground">{filteredUsers.length}</span> 个结果
+            {t('admin.subscriptions.found')} <span className="font-medium text-foreground">{filteredUsers.length}</span> {t('admin.subscriptions.results')}
           </span>
           <button
             type="button"
             onClick={clearFilters}
             className="text-xs text-primary font-medium"
           >
-            清除筛选
+            {t('messages.clearFilters')}
           </button>
         </div>
       )}
@@ -478,6 +502,7 @@ export const MobileUserManagement = ({
           hasFilter={hasFilter}
           onClearFilter={clearFilters}
           onCreate={onCreate}
+          t={t}
         />
       ) : (
         <div className="space-y-2.5">

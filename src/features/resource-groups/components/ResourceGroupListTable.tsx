@@ -65,17 +65,17 @@ export const ResourceGroupListTable: React.FC<ResourceGroupListTableProps> = ({
       {onViewDetail && (
         <ContextMenuItem onClick={() => onViewDetail(resourceGroup)}>
           <Eye className="mr-2 size-4" />
-          查看详情
+          {t('subscription.viewDetails')}
         </ContextMenuItem>
       )}
       <ContextMenuItem onClick={() => onEdit(resourceGroup)}>
         <Edit className="mr-2 size-4" />
-        编辑
+        {t('common.actions.edit')}
       </ContextMenuItem>
       <ContextMenuSeparator />
       <ContextMenuItem onClick={() => onToggleStatus(resourceGroup)}>
         <Power className="mr-2 size-4" />
-        {resourceGroup.status === 'active' ? '停用' : '激活'}
+        {resourceGroup.status === 'active' ? t('common.actions.disable') : t('common.actions.enable')}
       </ContextMenuItem>
       <ContextMenuSeparator />
       <ContextMenuItem
@@ -83,10 +83,10 @@ export const ResourceGroupListTable: React.FC<ResourceGroupListTableProps> = ({
         className="text-destructive focus:text-destructive"
       >
         <Trash2 className="mr-2 size-4" />
-        删除
+        {t('common.actions.delete')}
       </ContextMenuItem>
     </>
-  ), [onViewDetail, onEdit, onDelete, onToggleStatus]);
+  ), [t, onViewDetail, onEdit, onDelete, onToggleStatus]);
 
   // Resource group dropdown menu content
   const renderDropdownMenuActions = useCallback((resourceGroup: ResourceGroup) => (
@@ -94,17 +94,17 @@ export const ResourceGroupListTable: React.FC<ResourceGroupListTableProps> = ({
       {onViewDetail && (
         <DropdownMenuItem onClick={() => onViewDetail(resourceGroup)}>
           <Eye className="mr-2 size-4" />
-          查看详情
+          {t('subscription.viewDetails')}
         </DropdownMenuItem>
       )}
       <DropdownMenuItem onClick={() => onEdit(resourceGroup)}>
         <Edit className="mr-2 size-4" />
-        编辑
+        {t('common.actions.edit')}
       </DropdownMenuItem>
       <DropdownMenuSeparator />
       <DropdownMenuItem onClick={() => onToggleStatus(resourceGroup)}>
         <Power className="mr-2 size-4" />
-        {resourceGroup.status === 'active' ? '停用' : '激活'}
+        {resourceGroup.status === 'active' ? t('common.actions.disable') : t('common.actions.enable')}
       </DropdownMenuItem>
       <DropdownMenuSeparator />
       <DropdownMenuItem
@@ -112,10 +112,10 @@ export const ResourceGroupListTable: React.FC<ResourceGroupListTableProps> = ({
         className="text-destructive focus:text-destructive"
       >
         <Trash2 className="mr-2 size-4" />
-        删除
+        {t('common.actions.delete')}
       </DropdownMenuItem>
     </>
-  ), [onViewDetail, onEdit, onDelete, onToggleStatus]);
+  ), [t, onViewDetail, onEdit, onDelete, onToggleStatus]);
 
   const columns = useMemo<ColumnDef<ResourceGroup>[]>(() => [
     {
@@ -131,7 +131,7 @@ export const ResourceGroupListTable: React.FC<ResourceGroupListTableProps> = ({
     },
     {
       accessorKey: 'name',
-      header: '名称',
+      header: t('tableColumns.name'),
       meta: { priority: 1 } as ResponsiveColumnMeta,
       cell: ({ row }) => (
         <div className="space-y-1">
@@ -148,7 +148,7 @@ export const ResourceGroupListTable: React.FC<ResourceGroupListTableProps> = ({
     },
     {
       accessorKey: 'planId',
-      header: '关联计划',
+      header: t('resourceGroups.associatedPlan'),
       size: 140,
       meta: { priority: 2 } as ResponsiveColumnMeta,
       cell: ({ row }) => {
@@ -164,14 +164,14 @@ export const ResourceGroupListTable: React.FC<ResourceGroupListTableProps> = ({
           </div>
         ) : (
           <span className="text-sm text-slate-400">
-            计划 #{row.original.planId}
+            {t('resourceGroups.planPlaceholder', { id: row.original.planId })}
           </span>
         );
       },
     },
     {
       accessorKey: 'status',
-      header: '状态',
+      header: t('tableColumns.status'),
       size: 72,
       meta: { priority: 1 } as ResponsiveColumnMeta,
       cell: ({ row }) => {
@@ -186,7 +186,7 @@ export const ResourceGroupListTable: React.FC<ResourceGroupListTableProps> = ({
     },
     {
       accessorKey: 'createdAt',
-      header: '创建时间',
+      header: t('tableColumns.createdAt'),
       size: 100,
       meta: { priority: 3 } as ResponsiveColumnMeta,
       cell: ({ row }) => (
@@ -197,7 +197,7 @@ export const ResourceGroupListTable: React.FC<ResourceGroupListTableProps> = ({
     },
     {
       id: 'actions',
-      header: '操作',
+      header: t('tableColumns.actions'),
       size: 56,
       enableSorting: false,
       meta: { priority: 1 } as ResponsiveColumnMeta,
@@ -217,7 +217,7 @@ export const ResourceGroupListTable: React.FC<ResourceGroupListTableProps> = ({
         );
       },
     },
-  ], [plansMap, renderDropdownMenuActions]);
+  ], [t, plansMap, renderDropdownMenuActions]);
 
   // Render mobile card list on small screens
   if (isMobile) {
@@ -244,7 +244,7 @@ export const ResourceGroupListTable: React.FC<ResourceGroupListTableProps> = ({
       total={total}
       onPageChange={onPageChange}
       onPageSizeChange={onPageSizeChange}
-      emptyMessage="暂无资源组"
+      emptyMessage={t('resourceGroups.noData')}
       getRowId={(row) => row.sid}
       enableContextMenu={true}
       contextMenuContent={renderContextMenuActions}

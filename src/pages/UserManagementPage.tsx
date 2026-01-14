@@ -4,6 +4,7 @@
  */
 
 import { useState, useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
   Users,
   Plus,
@@ -37,7 +38,8 @@ import type { UserResponse, UpdateUserRequest, CreateUserRequest } from '@/api/u
 import type { AdminCreateSubscriptionRequest } from '@/api/subscription/types';
 
 export const UserManagementPage = () => {
-  usePageTitle('用户管理');
+  const { t } = useTranslation();
+  usePageTitle(t('admin.users.title'));
 
   const { isMobile } = useBreakpoint();
 
@@ -94,7 +96,7 @@ export const UserManagementPage = () => {
       setSelectedUser(user);
       setDeleteDialogOpen(true);
     } else {
-      if (window.confirm(`确认删除用户 "${user.name}" (${user.email}) 吗？此操作不可恢复。`)) {
+      if (window.confirm(t('admin.users.confirmDelete', { name: user.name, email: user.email }))) {
         deleteUser(user.id);
       }
     }
@@ -146,13 +148,13 @@ export const UserManagementPage = () => {
   const handleAssignSubscriptionSubmit = async (data: AdminCreateSubscriptionRequest) => {
     try {
       await adminCreateSubscription(data);
-      showSuccess(`成功为用户 ${selectedUser?.name} 分配订阅`);
+      showSuccess(t('admin.users.assignSuccess', { name: selectedUser?.name }));
       setAssignSubscriptionDialogOpen(false);
       setSelectedUser(null);
     } catch (error: unknown) {
       const message = error instanceof Error
         ? error.message
-        : (error as { response?: { data?: { message?: string } } })?.response?.data?.message || '分配订阅失败';
+        : (error as { response?: { data?: { message?: string } } })?.response?.data?.message || t('admin.users.assignFailed');
       showError(message);
       throw error;
     }
@@ -162,7 +164,8 @@ export const UserManagementPage = () => {
   if (isMobile) {
     return (
       <AdminLayout>
-        <MobileUserManagement
+        <div className="py-3">
+          <MobileUserManagement
           users={users}
           loading={isLoading}
           refreshing={isFetching}
@@ -176,7 +179,8 @@ export const UserManagementPage = () => {
           onAssignSubscription={handleAssignSubscription}
           onResetPassword={handleResetPassword}
           onPageChange={handlePageChange}
-        />
+          />
+        </div>
 
         {/* Mobile Dialogs/Sheets */}
         <CreateUserSheet
@@ -246,13 +250,13 @@ export const UserManagementPage = () => {
           <div className="flex items-center justify-between gap-3 flex-wrap">
             {/* Left: Title + Primary Stats */}
             <div className="flex items-center gap-3">
-              <h1 className="text-sm font-semibold text-foreground">用户管理</h1>
+              <h1 className="text-sm font-semibold text-foreground">{t('admin.users.title')}</h1>
               <div className="h-4 w-px bg-border hidden sm:block" />
               <div className="flex items-center gap-3 text-xs">
                 <span className="flex items-center gap-1 text-muted-foreground">
                   <Users className="size-3" />
                   <span className="font-medium text-foreground">{stats.total}</span>
-                  <span className="hidden sm:inline">用户</span>
+                  <span className="hidden sm:inline">{t('admin.users.usersLabel')}</span>
                 </span>
                 <span className="flex items-center gap-1">
                   <CheckCircle2 className="size-3 text-success" />
@@ -266,25 +270,25 @@ export const UserManagementPage = () => {
               {stats.pending > 0 && (
                 <span className="flex items-center gap-1.5">
                   <Clock className="size-3 text-warning" />
-                  <span className="text-muted-foreground">待验证</span>
+                  <span className="text-muted-foreground">{t('admin.users.statusPending')}</span>
                   <span className="font-semibold tabular-nums text-warning">{stats.pending}</span>
                 </span>
               )}
               <span className="flex items-center gap-1.5">
                 <XCircle className="size-3 text-muted-foreground" />
-                <span className="text-muted-foreground">停用</span>
+                <span className="text-muted-foreground">{t('admin.users.statusInactive')}</span>
                 <span className="font-semibold tabular-nums text-foreground">{stats.inactive}</span>
               </span>
               {stats.suspended > 0 && (
                 <span className="flex items-center gap-1.5">
                   <UserX className="size-3 text-destructive" />
-                  <span className="text-muted-foreground">封禁</span>
+                  <span className="text-muted-foreground">{t('admin.users.statusSuspended')}</span>
                   <span className="font-semibold tabular-nums text-destructive">{stats.suspended}</span>
                 </span>
               )}
               <span className="flex items-center gap-1.5">
                 <Shield className="size-3 text-info" />
-                <span className="text-muted-foreground">管理员</span>
+                <span className="text-muted-foreground">{t('admin.users.roleAdmin')}</span>
                 <span className="font-semibold tabular-nums text-info">{stats.admins}</span>
               </span>
             </div>
@@ -306,10 +310,10 @@ export const UserManagementPage = () => {
                       />
                     }
                   >
-                    <span className="sr-only">刷新</span>
+                    <span className="sr-only">{t('common.actions.refresh')}</span>
                   </AdminButton>
                 </TooltipTrigger>
-                <TooltipContent>刷新列表</TooltipContent>
+                <TooltipContent>{t('admin.users.refreshList')}</TooltipContent>
               </Tooltip>
 
               <AdminButton
@@ -319,8 +323,8 @@ export const UserManagementPage = () => {
                 icon={<Plus className="size-3.5" strokeWidth={2} />}
                 onClick={() => setCreateDialogOpen(true)}
               >
-                <span className="hidden sm:inline">新增用户</span>
-                <span className="sm:hidden">新增</span>
+                <span className="hidden sm:inline">{t('admin.users.createUser')}</span>
+                <span className="sm:hidden">{t('common.actions.create')}</span>
               </AdminButton>
             </div>
           </div>

@@ -25,10 +25,18 @@ import { cn } from '@/lib/utils';
 import type { ComponentPropsWithoutRef } from 'react';
 
 /**
+ * ContextMenu Root 组件属性
+ */
+type ContextMenuProps = ComponentPropsWithoutRef<typeof ContextMenuPrimitive.Root>;
+
+/**
  * ContextMenu Root 组件
  * 右键菜单根容器，管理菜单的开闭状态
+ * 默认 modal=false 以避免滚动条消失导致页面布局偏移
  */
-const ContextMenu = ContextMenuPrimitive.Root;
+const ContextMenu = ({ modal = false, ...props }: ContextMenuProps) => (
+  <ContextMenuPrimitive.Root modal={modal} {...props} />
+);
 
 /**
  * ContextMenuTrigger 组件
@@ -62,7 +70,6 @@ const ContextMenuContent = ({
       'z-50 min-w-[14rem] overflow-hidden rounded-md border bg-popover p-1 text-popover-foreground shadow-md',
       'data-[state=open]:animate-in data-[state=closed]:animate-out',
       'data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0',
-      'data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95',
       'data-[side=bottom]:slide-in-from-top-2',
       'data-[side=left]:slide-in-from-right-2',
       'data-[side=right]:slide-in-from-left-2',
@@ -205,7 +212,6 @@ const ContextMenuSubContent = ({
       'z-50 min-w-[8rem] overflow-hidden rounded-md border bg-popover p-1 text-popover-foreground shadow-md',
       'data-[state=open]:animate-in data-[state=closed]:animate-out',
       'data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0',
-      'data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95',
       'data-[side=bottom]:slide-in-from-top-2',
       'data-[side=left]:slide-in-from-right-2',
       'data-[side=right]:slide-in-from-left-2',
@@ -232,6 +238,7 @@ export {
 };
 
 export type {
+  ContextMenuProps,
   ContextMenuContentProps,
   ContextMenuItemProps,
   ContextMenuLabelProps,

@@ -5,6 +5,7 @@
  */
 
 import { useCallback } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
   Edit,
   Trash2,
@@ -113,6 +114,7 @@ export const ForwardAgentMobileList: React.FC<ForwardAgentMobileListProps> = ({
   enableDragSort = false,
   onDragEnd,
 }) => {
+  const { t } = useTranslation();
   // Get agent ID for drag-and-drop
   const getAgentId = useCallback((agent: ForwardAgent) => String(agent.id), []);
   // Render dropdown menu
@@ -130,23 +132,23 @@ export const ForwardAgentMobileList: React.FC<ForwardAgentMobileListProps> = ({
         <DropdownMenuContent align="end">
           <DropdownMenuItem onClick={() => onViewDetail(agent)}>
             <Eye className="mr-2 size-4" />
-            查看详情
+            {t('common.actions.viewDetail')}
           </DropdownMenuItem>
           <DropdownMenuItem onClick={() => onEdit(agent)}>
             <Edit className="mr-2 size-4" />
-            编辑
+            {t('common.actions.edit')}
           </DropdownMenuItem>
           <DropdownMenuItem onClick={() => onGetInstallScript(agent)}>
             <Terminal className="mr-2 size-4" />
-            安装脚本
+            {t('admin.forwardAgents.table.menu.installScript')}
           </DropdownMenuItem>
           <DropdownMenuItem onClick={() => onCopy(agent)}>
             <Copy className="mr-2 size-4" />
-            复制节点
+            {t('admin.forwardAgents.table.menu.copyNode')}
           </DropdownMenuItem>
           <DropdownMenuItem onClick={() => onRegenerateToken(agent)}>
             <Key className="mr-2 size-4" />
-            重新生成Token
+            {t('admin.forwardAgents.table.menu.regenerateToken')}
           </DropdownMenuItem>
           {agent.status === 'enabled' && (
             <DropdownMenuItem
@@ -158,30 +160,30 @@ export const ForwardAgentMobileList: React.FC<ForwardAgentMobileListProps> = ({
               ) : (
                 <Download className="mr-2 size-4" />
               )}
-              {checkingAgentId === agent.id ? '检查中...' : '检查更新'}
+              {checkingAgentId === agent.id ? t('admin.forwardAgents.table.menu.checking') : t('admin.forwardAgents.table.menu.checkUpdate')}
             </DropdownMenuItem>
           )}
           {onBroadcastURL && (
             <DropdownMenuItem onClick={() => onBroadcastURL(agent)}>
               <Radio className="mr-2 size-4" />
-              下发地址
+              {t('admin.forwardAgents.table.menu.broadcastURL')}
             </DropdownMenuItem>
           )}
           <DropdownMenuSeparator />
           {agent.status === 'enabled' ? (
             <DropdownMenuItem onClick={() => onDisable(agent)}>
               <PowerOff className="mr-2 size-4" />
-              禁用
+              {t('common.actions.disable')}
             </DropdownMenuItem>
           ) : (
             <DropdownMenuItem onClick={() => onEnable(agent)}>
               <Power className="mr-2 size-4" />
-              启用
+              {t('common.actions.enable')}
             </DropdownMenuItem>
           )}
           <DropdownMenuItem onClick={() => onDelete(agent)} className="text-red-600 dark:text-red-400">
             <Trash2 className="mr-2 size-4" />
-            删除
+            {t('common.actions.delete')}
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
@@ -195,7 +197,7 @@ export const ForwardAgentMobileList: React.FC<ForwardAgentMobileListProps> = ({
   if (forwardAgents.length === 0) {
     return (
       <div className="text-center py-12 text-slate-500 dark:text-slate-400">
-        暂无转发Agent数据
+        {t('admin.forwardAgents.emptyState')}
       </div>
     );
   }
@@ -223,7 +225,7 @@ export const ForwardAgentMobileList: React.FC<ForwardAgentMobileListProps> = ({
                   variant={agent.status === 'enabled' ? 'success' : 'default'}
                   className="text-[10px] px-1.5 py-0 flex-shrink-0"
                 >
-                  {agent.status === 'enabled' ? '启用' : '禁用'}
+                  {agent.status === 'enabled' ? t('common.status.enabled') : t('common.status.disabled')}
                 </AdminBadge>
                 {/* Online status */}
                 {agent.isOnline ? (
@@ -232,19 +234,19 @@ export const ForwardAgentMobileList: React.FC<ForwardAgentMobileListProps> = ({
                       <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
                       <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-green-500"></span>
                     </span>
-                    <span className="text-[10px] font-medium">在线</span>
+                    <span className="text-[10px] font-medium">{t('common.status.online')}</span>
                   </span>
                 ) : (
                   <Tooltip>
                     <TooltipTrigger asChild>
                       <span className="inline-flex items-center gap-1 text-slate-400">
                         <span className="h-1.5 w-1.5 rounded-full bg-slate-300 dark:bg-slate-600"></span>
-                        <span className="text-[10px]">离线</span>
+                        <span className="text-[10px]">{t('common.status.offline')}</span>
                       </span>
                     </TooltipTrigger>
                     {agent.lastSeenAt && (
                       <TooltipContent>
-                        最后在线: {formatDate(agent.lastSeenAt)}
+                        {t('admin.forwardAgents.table.tooltip.lastOnline')}: {formatDate(agent.lastSeenAt)}
                       </TooltipContent>
                     )}
                   </Tooltip>
@@ -278,7 +280,7 @@ export const ForwardAgentMobileList: React.FC<ForwardAgentMobileListProps> = ({
                     )}
                   </button>
                 </TooltipTrigger>
-                <TooltipContent>{agent.muteNotification ? '点击取消静音' : '点击静音通知'}</TooltipContent>
+                <TooltipContent>{agent.muteNotification ? t('admin.forwardAgents.table.tooltip.clickToUnmute') : t('admin.forwardAgents.table.tooltip.clickToMute')}</TooltipContent>
               </Tooltip>
               <Tooltip>
                 <TooltipTrigger asChild>
@@ -289,7 +291,7 @@ export const ForwardAgentMobileList: React.FC<ForwardAgentMobileListProps> = ({
                     <Edit className="size-3.5 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300" />
                   </button>
                 </TooltipTrigger>
-                <TooltipContent>编辑</TooltipContent>
+                <TooltipContent>{t('common.actions.edit')}</TooltipContent>
               </Tooltip>
               <Tooltip>
                 <TooltipTrigger asChild>
@@ -300,7 +302,7 @@ export const ForwardAgentMobileList: React.FC<ForwardAgentMobileListProps> = ({
                     <Terminal className="size-3.5 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300" />
                   </button>
                 </TooltipTrigger>
-                <TooltipContent>安装脚本</TooltipContent>
+                <TooltipContent>{t('admin.forwardAgents.table.menu.installScript')}</TooltipContent>
               </Tooltip>
               <Tooltip>
                 <TooltipTrigger asChild>
@@ -319,7 +321,7 @@ export const ForwardAgentMobileList: React.FC<ForwardAgentMobileListProps> = ({
                     )}
                   </button>
                 </TooltipTrigger>
-                <TooltipContent>{agent.status === 'enabled' ? '禁用' : '启用'}</TooltipContent>
+                <TooltipContent>{agent.status === 'enabled' ? t('common.actions.disable') : t('common.actions.enable')}</TooltipContent>
               </Tooltip>
               {renderDropdownMenu(agent)}
             </div>
@@ -328,7 +330,7 @@ export const ForwardAgentMobileList: React.FC<ForwardAgentMobileListProps> = ({
 
         {/* Accordion Trigger */}
         <AccordionTrigger className="px-3 py-1.5 border-t border-slate-100 dark:border-slate-700 hover:no-underline hover:bg-slate-50 dark:hover:bg-slate-700/50">
-          <span className="text-xs text-slate-400 dark:text-slate-500">详情</span>
+          <span className="text-xs text-slate-400 dark:text-slate-500">{t('common.detail')}</span>
         </AccordionTrigger>
 
         {/* Accordion Content - Expanded details */}
@@ -337,7 +339,7 @@ export const ForwardAgentMobileList: React.FC<ForwardAgentMobileListProps> = ({
             {/* Monitor (System + Network) */}
             {agent.systemStatus && (
               <div className="flex items-start gap-2">
-                <span className="text-[10px] text-slate-400 dark:text-slate-500 uppercase tracking-wide w-8 pt-0.5 flex-shrink-0">监控</span>
+                <span className="text-[10px] text-slate-400 dark:text-slate-500 uppercase tracking-wide w-8 pt-0.5 flex-shrink-0">{t('admin.forwardAgents.detail.monitor')}</span>
                 <div className="flex flex-col gap-1.5 flex-1">
                   {/* System bars + Network rates in one row */}
                   <div className="flex items-center gap-3">
@@ -367,10 +369,10 @@ export const ForwardAgentMobileList: React.FC<ForwardAgentMobileListProps> = ({
                   {/* Extended info row */}
                   <div className="flex items-center gap-2 text-[10px] text-slate-500 dark:text-slate-400">
                     <span className="font-mono">
-                      累计: ↓{formatBytes(agent.systemStatus.networkRxBytes)} ↑{formatBytes(agent.systemStatus.networkTxBytes)}
+                      {t('admin.forwardAgents.detail.cumulative')}: ↓{formatBytes(agent.systemStatus.networkRxBytes)} ↑{formatBytes(agent.systemStatus.networkTxBytes)}
                     </span>
                     <span>
-                      {(agent.systemStatus.tcpConnections || 0) + (agent.systemStatus.udpConnections || 0)} 连接
+                      {(agent.systemStatus.tcpConnections || 0) + (agent.systemStatus.udpConnections || 0)} {t('admin.forwardAgents.detail.connections')}
                     </span>
                   </div>
                 </div>
@@ -380,7 +382,7 @@ export const ForwardAgentMobileList: React.FC<ForwardAgentMobileListProps> = ({
             {/* Tunnel address */}
             {agent.tunnelAddress && (
               <div className="flex items-center gap-2">
-                <span className="text-[10px] text-slate-400 dark:text-slate-500 uppercase tracking-wide w-8 flex-shrink-0">隧道</span>
+                <span className="text-[10px] text-slate-400 dark:text-slate-500 uppercase tracking-wide w-8 flex-shrink-0">{t('admin.forwardAgents.detail.tunnel')}</span>
                 <CopyableAddress
                   address={agent.tunnelAddress}
                   className="text-slate-600 dark:text-slate-300"
@@ -394,7 +396,7 @@ export const ForwardAgentMobileList: React.FC<ForwardAgentMobileListProps> = ({
             {/* Resource group */}
             {agent.groupId && (
               <div className="flex items-center gap-2">
-                <span className="text-[10px] text-slate-400 dark:text-slate-500 uppercase tracking-wide w-8 flex-shrink-0">资源</span>
+                <span className="text-[10px] text-slate-400 dark:text-slate-500 uppercase tracking-wide w-8 flex-shrink-0">{t('admin.forwardAgents.detail.resource')}</span>
                 <Badge variant="outline" className="text-[10px] px-1.5 py-0">
                   {group?.name || agent.groupId}
                 </Badge>
@@ -404,7 +406,7 @@ export const ForwardAgentMobileList: React.FC<ForwardAgentMobileListProps> = ({
             {/* Version */}
             {(agent.agentVersion || agent.systemStatus?.agentVersion) && (
               <div className="flex items-center gap-2">
-                <span className="text-[10px] text-slate-400 dark:text-slate-500 uppercase tracking-wide w-8 flex-shrink-0">版本</span>
+                <span className="text-[10px] text-slate-400 dark:text-slate-500 uppercase tracking-wide w-8 flex-shrink-0">{t('admin.forwardAgents.detail.version')}</span>
                 <div className="flex items-center gap-1.5">
                   {agent.hasUpdate && (
                     <ArrowUpCircle className="size-3.5 text-amber-500" />
@@ -418,7 +420,7 @@ export const ForwardAgentMobileList: React.FC<ForwardAgentMobileListProps> = ({
                     )}
                   </span>
                   {agent.hasUpdate && (
-                    <span className="text-[10px] text-amber-500">可更新</span>
+                    <span className="text-[10px] text-amber-500">{t('admin.forwardAgents.detail.updateAvailable')}</span>
                   )}
                 </div>
               </div>
@@ -427,14 +429,14 @@ export const ForwardAgentMobileList: React.FC<ForwardAgentMobileListProps> = ({
             {/* Remark */}
             {agent.remark && (
               <div className="flex items-start gap-2">
-                <span className="text-[10px] text-slate-400 dark:text-slate-500 uppercase tracking-wide w-8 pt-0.5 flex-shrink-0">备注</span>
+                <span className="text-[10px] text-slate-400 dark:text-slate-500 uppercase tracking-wide w-8 pt-0.5 flex-shrink-0">{t('admin.forwardAgents.detail.remark')}</span>
                 <span className="text-xs text-slate-600 dark:text-slate-300 flex-1">{agent.remark}</span>
               </div>
             )}
 
             {/* Created at */}
             <div className="flex items-center gap-2">
-              <span className="text-[10px] text-slate-400 dark:text-slate-500 uppercase tracking-wide w-8 flex-shrink-0">创建</span>
+              <span className="text-[10px] text-slate-400 dark:text-slate-500 uppercase tracking-wide w-8 flex-shrink-0">{t('admin.forwardAgents.detail.created')}</span>
               <span className="text-xs text-slate-500">{formatDate(agent.createdAt)}</span>
             </div>
           </div>

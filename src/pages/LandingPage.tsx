@@ -6,6 +6,7 @@
 import { Link } from 'react-router';
 import { motion } from 'framer-motion';
 import { useRef, useState, useEffect, useCallback } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
   Network,
   Server,
@@ -24,6 +25,8 @@ import type { LucideIcon } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { getButtonClass } from '@/lib/ui-styles';
 import { ThemeToggle } from '@/components/common/ThemeToggle';
+import { LanguageSwitcher } from '@/components/common/LanguageSwitcher';
+import { useVersionInfo } from '@/hooks';
 
 // Animation variants
 const fadeInUp = {
@@ -42,68 +45,70 @@ const staggerContainer = {
 
 interface Feature {
   icon: LucideIcon;
-  title: string;
-  description: string;
+  titleKey: string;
+  descriptionKey: string;
 }
 
 interface Step {
-  step: string;
-  title: string;
-  description: string;
+  stepKey: string;
+  titleKey: string;
+  descriptionKey: string;
   icon: LucideIcon;
 }
 
-const features: Feature[] = [
+// Feature icons mapping - titles and descriptions are loaded via i18n
+const featureConfigs: Feature[] = [
   {
     icon: Network,
-    title: 'All-in-One Dashboard',
-    description: 'Nodes, forwarding rules, and subscriptions—all managed from a single interface.',
+    titleKey: 'landing.features.dashboard.title',
+    descriptionKey: 'landing.features.dashboard.description',
   },
   {
     icon: GitBranch,
-    title: 'Versatile Forwarding',
-    description: 'Multiple protocols and flexible link chaining to adapt to any network scenario.',
+    titleKey: 'landing.features.forwarding.title',
+    descriptionKey: 'landing.features.forwarding.description',
   },
   {
     icon: Layers,
-    title: 'Modular Resource Groups',
-    description: 'Decouple resources from plans for fine-grained access control and quota allocation.',
+    titleKey: 'landing.features.resourceGroups.title',
+    descriptionKey: 'landing.features.resourceGroups.description',
   },
   {
     icon: Users,
-    title: 'Scalable Subscriptions',
-    description: 'From personal use to team sharing—subscription models that grow with your needs.',
+    titleKey: 'landing.features.subscriptions.title',
+    descriptionKey: 'landing.features.subscriptions.description',
   },
   {
     icon: Zap,
-    title: 'Relay-First Design',
-    description: 'Purpose-built for transit and sharing, maximizing your premium route investments.',
+    titleKey: 'landing.features.relay.title',
+    descriptionKey: 'landing.features.relay.description',
   },
 ];
 
-const steps: Step[] = [
+// Step icons mapping - content is loaded via i18n
+const stepConfigs: Step[] = [
   {
-    step: '01',
-    title: 'Add Your Nodes',
-    description: 'Import your premium nodes—supports multiple protocols and deployment options.',
+    stepKey: 'landing.howItWorks.step1.number',
+    titleKey: 'landing.howItWorks.step1.title',
+    descriptionKey: 'landing.howItWorks.step1.description',
     icon: Server,
   },
   {
-    step: '02',
-    title: 'Define Forwarding Rules',
-    description: 'Set up routing policies and chain links to optimize traffic flow across your network.',
+    stepKey: 'landing.howItWorks.step2.number',
+    titleKey: 'landing.howItWorks.step2.title',
+    descriptionKey: 'landing.howItWorks.step2.description',
     icon: GitBranch,
   },
   {
-    step: '03',
-    title: 'Build Subscription Plans',
-    description: 'Bundle resource groups into plans with custom quotas and access levels.',
+    stepKey: 'landing.howItWorks.step3.number',
+    titleKey: 'landing.howItWorks.step3.title',
+    descriptionKey: 'landing.howItWorks.step3.description',
     icon: Layers,
   },
   {
-    step: '04',
-    title: 'Share & Go Live',
-    description: 'Users subscribe via link and connect instantly—zero client-side setup required.',
+    stepKey: 'landing.howItWorks.step4.number',
+    titleKey: 'landing.howItWorks.step4.title',
+    descriptionKey: 'landing.howItWorks.step4.description',
     icon: Users,
   },
 ];
@@ -111,19 +116,21 @@ const steps: Step[] = [
 // Track animation state outside component to survive StrictMode remounts
 const animatedSections = new Set<string>();
 
-// Navigation links for landing page
-const navLinks = [
-  { href: '#features', label: 'Features' },
-  { href: '#how-it-works', label: 'How It Works' },
-  { href: '/pricing', label: 'Pricing', isRoute: true },
+// Navigation links for landing page - labels are i18n keys
+const navLinkConfigs = [
+  { href: '#features', labelKey: 'landing.nav.features' },
+  { href: '#how-it-works', labelKey: 'landing.nav.howItWorks' },
+  { href: '/pricing', labelKey: 'landing.nav.pricing', isRoute: true },
 ];
 
 export const LandingPage = () => {
+  const { t } = useTranslation();
   const featuresRef = useRef<HTMLDivElement>(null);
   const [featuresVisible, setFeaturesVisible] = useState(() =>
     animatedSections.has('features')
   );
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const { serverVersion, clientVersion } = useVersionInfo();
 
   const handleFeaturesIntersect = useCallback((entries: IntersectionObserverEntry[]) => {
     const entry = entries[0];
@@ -161,14 +168,14 @@ export const LandingPage = () => {
 
             {/* Desktop Navigation Links */}
             <div className="hidden md:flex items-center gap-8">
-              {navLinks.map((link) =>
+              {navLinkConfigs.map((link) =>
                 link.isRoute ? (
                   <Link
                     key={link.href}
                     to={link.href}
                     className="text-sm text-muted-foreground hover:text-foreground transition-colors"
                   >
-                    {link.label}
+                    {t(link.labelKey)}
                   </Link>
                 ) : (
                   <a
@@ -176,7 +183,7 @@ export const LandingPage = () => {
                     href={link.href}
                     className="text-sm text-muted-foreground hover:text-foreground transition-colors"
                   >
-                    {link.label}
+                    {t(link.labelKey)}
                   </a>
                 )
               )}
@@ -184,12 +191,13 @@ export const LandingPage = () => {
 
             {/* Desktop Actions */}
             <div className="hidden md:flex items-center gap-4">
+              <LanguageSwitcher />
               <ThemeToggle />
               <Link
                 to="/login"
                 className="text-sm text-muted-foreground hover:text-foreground transition-colors"
               >
-                Sign In
+                {t('landing.nav.signIn')}
               </Link>
               <Link
                 to="/register"
@@ -200,23 +208,24 @@ export const LandingPage = () => {
                   'hover:bg-foreground/90 transition-colors'
                 )}
               >
-                Get Started
+                {t('landing.nav.getStarted')}
               </Link>
             </div>
 
             {/* Mobile Actions */}
             <div className="flex md:hidden items-center gap-2">
+              <LanguageSwitcher />
               <ThemeToggle />
               <Link
                 to="/login"
                 className="text-sm text-muted-foreground hover:text-foreground transition-colors"
               >
-                Sign In
+                {t('landing.nav.signIn')}
               </Link>
               <button
                 onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
                 className="inline-flex h-9 w-9 items-center justify-center rounded-md hover:bg-accent transition-colors -mr-2"
-                aria-label={mobileMenuOpen ? 'Close menu' : 'Open menu'}
+                aria-label={mobileMenuOpen ? t('landing.nav.closeMenu') : t('landing.nav.openMenu')}
                 aria-expanded={mobileMenuOpen}
               >
                 {mobileMenuOpen ? <X className="size-5" /> : <Menu className="size-5" />}
@@ -234,7 +243,7 @@ export const LandingPage = () => {
               className="md:hidden py-4 border-t border-border/50"
             >
               <nav className="flex flex-col gap-1">
-                {navLinks.map((link) => (
+                {navLinkConfigs.map((link) => (
                   link.isRoute ? (
                     <Link
                       key={link.href}
@@ -242,7 +251,7 @@ export const LandingPage = () => {
                       onClick={() => setMobileMenuOpen(false)}
                       className="px-3 py-2.5 text-sm text-muted-foreground hover:text-foreground transition-colors"
                     >
-                      {link.label}
+                      {t(link.labelKey)}
                     </Link>
                   ) : (
                     <a
@@ -251,7 +260,7 @@ export const LandingPage = () => {
                       onClick={() => setMobileMenuOpen(false)}
                       className="px-3 py-2.5 text-sm text-muted-foreground hover:text-foreground transition-colors"
                     >
-                      {link.label}
+                      {t(link.labelKey)}
                     </a>
                   )
                 ))}
@@ -267,7 +276,7 @@ export const LandingPage = () => {
                     'hover:bg-foreground/90 transition-colors'
                   )}
                 >
-                  Get Started
+                  {t('landing.nav.getStarted')}
                 </Link>
               </div>
             </motion.div>
@@ -306,7 +315,7 @@ export const LandingPage = () => {
             className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 text-primary text-sm font-medium mb-8"
           >
             <Shield className="size-4" />
-            Designed for Premium Transit Sharing
+            {t('landing.hero.badge')}
           </motion.div>
 
           {/* Main heading */}
@@ -315,9 +324,9 @@ export const LandingPage = () => {
             transition={{ duration: 0.5 }}
             className="text-fluid-3xl md:text-5xl lg:text-6xl font-bold tracking-tight mb-6"
           >
-            One Platform for
+            {t('landing.hero.title')}
             <br />
-            <span className="text-primary">Forwarding & Subscriptions</span>
+            <span className="text-primary">{t('landing.hero.titleHighlight')}</span>
           </motion.h1>
 
           {/* Subheading */}
@@ -326,8 +335,7 @@ export const LandingPage = () => {
             transition={{ duration: 0.5 }}
             className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto mb-10"
           >
-            Orris unifies node management, traffic forwarding, and subscription delivery in one streamlined platform.
-            Configure once, share effortlessly.
+            {t('landing.hero.subtitle')}
           </motion.p>
 
           {/* CTA buttons */}
@@ -340,14 +348,14 @@ export const LandingPage = () => {
               to="/register"
               className={cn(getButtonClass('default', 'lg'), 'gap-2 px-8')}
             >
-              Get Started Free
+              {t('landing.hero.getStartedFree')}
               <ArrowRight className="size-4" />
             </Link>
             <a
               href="#features"
               className={cn(getButtonClass('outline', 'lg'), 'gap-2 px-8')}
             >
-              Learn More
+              {t('landing.hero.learnMore')}
               <ChevronRight className="size-4" />
             </a>
           </motion.div>
@@ -359,9 +367,9 @@ export const LandingPage = () => {
             className="grid grid-cols-3 gap-8 mt-16 max-w-xl mx-auto"
           >
             {[
-              { value: '5+', label: 'Forwarding Modes' },
-              { value: '99.9%', label: 'Uptime SLA' },
-              { value: '24/7', label: 'Always-On Service' },
+              { value: '5+', labelKey: 'landing.hero.stats.forwardingModes' },
+              { value: '99.9%', labelKey: 'landing.hero.stats.uptimeSla' },
+              { value: '24/7', labelKey: 'landing.hero.stats.alwaysOn' },
             ].map((stat, index) => (
               <motion.div
                 key={index}
@@ -371,7 +379,7 @@ export const LandingPage = () => {
                 transition={{ duration: 0.5, delay: 0.6 + index * 0.1 }}
               >
                 <div className="text-3xl font-bold text-primary">{stat.value}</div>
-                <div className="text-sm text-muted-foreground mt-1">{stat.label}</div>
+                <div className="text-sm text-muted-foreground mt-1">{t(stat.labelKey)}</div>
               </motion.div>
             ))}
           </motion.div>
@@ -399,18 +407,18 @@ export const LandingPage = () => {
               variants={fadeInUp}
               className="text-3xl md:text-4xl font-bold mb-4"
             >
-              Features
+              {t('landing.features.title')}
             </motion.h2>
             <motion.p
               variants={fadeInUp}
               className="text-muted-foreground text-lg max-w-2xl mx-auto"
             >
-              Built for operators with premium transit, IX peering, and quality routes
+              {t('landing.features.subtitle')}
             </motion.p>
           </div>
 
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {features.map((feature, index) => (
+            {featureConfigs.map((feature, index) => (
               <motion.div
                 key={index}
                 variants={{
@@ -432,8 +440,8 @@ export const LandingPage = () => {
                 <div className="size-12 rounded-xl bg-primary/10 flex items-center justify-center mb-4">
                   <feature.icon className="size-6 text-primary" />
                 </div>
-                <h3 className="text-xl font-semibold mb-2">{feature.title}</h3>
-                <p className="text-muted-foreground">{feature.description}</p>
+                <h3 className="text-xl font-semibold mb-2">{t(feature.titleKey)}</h3>
+                <p className="text-muted-foreground">{t(feature.descriptionKey)}</p>
               </motion.div>
             ))}
           </div>
@@ -455,19 +463,19 @@ export const LandingPage = () => {
               transition={{ duration: 0.5 }}
               className="text-3xl md:text-4xl font-bold mb-4"
             >
-              How It Works
+              {t('landing.howItWorks.title')}
             </motion.h2>
             <motion.p
               variants={fadeInUp}
               transition={{ duration: 0.5 }}
               className="text-muted-foreground text-lg max-w-2xl mx-auto"
             >
-              From setup to subscriber access in four straightforward steps
+              {t('landing.howItWorks.subtitle')}
             </motion.p>
           </motion.div>
 
           <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
-            {steps.map((step, index) => (
+            {stepConfigs.map((step, index) => (
               <motion.div
                 key={index}
                 className="relative"
@@ -477,7 +485,7 @@ export const LandingPage = () => {
                 transition={{ duration: 0.5, delay: index * 0.15 }}
               >
                 {/* Connector line */}
-                {index < steps.length - 1 && (
+                {index < stepConfigs.length - 1 && (
                   <motion.div
                     className="hidden lg:block absolute top-12 left-1/2 w-full h-px bg-border"
                     initial={{ scaleX: 0 }}
@@ -500,16 +508,16 @@ export const LandingPage = () => {
                     viewport={{ once: true }}
                     transition={{ type: 'spring', stiffness: 300, delay: index * 0.15 + 0.2 }}
                   >
-                    {step.step}
+                    {t(step.stepKey)}
                   </motion.div>
 
                   <div className="size-16 rounded-2xl bg-muted flex items-center justify-center mx-auto mt-4 mb-4">
                     <step.icon className="size-8 text-primary" />
                   </div>
 
-                  <h3 className="text-lg font-semibold mb-2">{step.title}</h3>
+                  <h3 className="text-lg font-semibold mb-2">{t(step.titleKey)}</h3>
                   <p className="text-sm text-muted-foreground">
-                    {step.description}
+                    {t(step.descriptionKey)}
                   </p>
                 </motion.div>
               </motion.div>
@@ -558,14 +566,14 @@ export const LandingPage = () => {
                 transition={{ duration: 0.5 }}
                 className="text-3xl md:text-4xl font-bold mb-4"
               >
-                Ready to Simplify Your Workflow?
+                {t('landing.cta.title')}
               </motion.h2>
               <motion.p
                 variants={fadeInUp}
                 transition={{ duration: 0.5 }}
                 className="text-primary-foreground/80 text-lg max-w-xl mx-auto mb-8"
               >
-                Join Orris and manage your entire forwarding and subscription stack from one place
+                {t('landing.cta.subtitle')}
               </motion.p>
               <motion.div
                 variants={fadeInUp}
@@ -578,7 +586,7 @@ export const LandingPage = () => {
                   whileHover={{ opacity: 0.9 }}
                   transition={{ duration: 0.2 }}
                 >
-                  Get Started Free
+                  {t('landing.cta.getStartedFree')}
                   <ArrowRight className="size-4" />
                 </motion.a>
                 <motion.a
@@ -587,7 +595,7 @@ export const LandingPage = () => {
                   whileHover={{ backgroundColor: 'rgba(255, 255, 255, 0.1)' }}
                   transition={{ duration: 0.2 }}
                 >
-                  Already a Member? Sign In
+                  {t('landing.cta.alreadyMember')}
                 </motion.a>
               </motion.div>
             </motion.div>
@@ -612,27 +620,32 @@ export const LandingPage = () => {
                 whileHover={{ color: 'hsl(var(--foreground))' }}
                 transition={{ duration: 0.2 }}
               >
-                Features
+                {t('landing.nav.features')}
               </motion.a>
               <motion.a
                 href="#how-it-works"
                 whileHover={{ color: 'hsl(var(--foreground))' }}
                 transition={{ duration: 0.2 }}
               >
-                How It Works
+                {t('landing.nav.howItWorks')}
               </motion.a>
               <motion.a
                 href="/pricing"
                 whileHover={{ color: 'hsl(var(--foreground))' }}
                 transition={{ duration: 0.2 }}
               >
-                Pricing
+                {t('landing.nav.pricing')}
               </motion.a>
             </div>
 
-            <p className="text-sm text-muted-foreground">
-              &copy; {new Date().getFullYear()} Orris. All rights reserved.
-            </p>
+            <div className="flex items-center gap-3 text-sm text-muted-foreground">
+              <span>{t('landing.footer.copyright', { year: new Date().getFullYear() })}</span>
+              {(serverVersion || clientVersion) && (
+                <span className="text-muted-foreground/50 text-xs font-mono">
+                  {[serverVersion, clientVersion].filter(Boolean).join(' · ')}
+                </span>
+              )}
+            </div>
           </div>
         </div>
       </footer>

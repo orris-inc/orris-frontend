@@ -5,6 +5,7 @@
  */
 
 import { useMemo, useCallback } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Edit, Trash2, Key, Eye, Power, PowerOff, MoreHorizontal, Terminal, Copy, Download, Loader2, Package, ArrowUpCircle, Radio, Bell, BellOff } from 'lucide-react';
 import { DataTable, DraggableDataTable, AdminBadge, TruncatedId, SystemStatusCell, SystemStatusHoverProvider, type ColumnDef, type ResponsiveColumnMeta } from '@/components/admin';
 import { useBreakpoint } from '@/hooks/useBreakpoint';
@@ -52,10 +53,10 @@ interface ForwardAgentListTableProps {
   onDragEnd?: (activeId: string, overId: string, oldIndex: number, newIndex: number) => void;
 }
 
-// Format date
-const formatDate = (dateString?: string) => {
+// Format date with i18n support
+const formatDate = (dateString?: string, locale?: string) => {
   if (!dateString) return '-';
-  return new Date(dateString).toLocaleString('zh-CN', {
+  return new Date(dateString).toLocaleString(locale === 'zh' ? 'zh-CN' : 'en-US', {
     year: 'numeric',
     month: '2-digit',
     day: '2-digit',
@@ -88,6 +89,7 @@ export const ForwardAgentListTable: React.FC<ForwardAgentListTableProps> = ({
   enableDragSort = false,
   onDragEnd,
 }) => {
+  const { t, i18n } = useTranslation();
   // Detect mobile screen
   const { isMobile } = useBreakpoint();
 
@@ -96,24 +98,24 @@ export const ForwardAgentListTable: React.FC<ForwardAgentListTableProps> = ({
     <>
       <ContextMenuItem onClick={() => onViewDetail(agent)}>
         <Eye className="mr-2 size-4" />
-        查看详情
+        {t('admin.forwardAgents.table.menu.viewDetail')}
       </ContextMenuItem>
       <ContextMenuItem onClick={() => onEdit(agent)}>
         <Edit className="mr-2 size-4" />
-        编辑
+        {t('admin.forwardAgents.table.menu.edit')}
       </ContextMenuItem>
       <ContextMenuItem onClick={() => onGetInstallScript(agent)}>
         <Terminal className="mr-2 size-4" />
-        获取安装脚本
+        {t('admin.forwardAgents.table.menu.getInstallScript')}
       </ContextMenuItem>
       <ContextMenuSeparator />
       <ContextMenuItem onClick={() => onCopy(agent)}>
         <Copy className="mr-2 size-4" />
-        复制节点
+        {t('admin.forwardAgents.table.menu.copyNode')}
       </ContextMenuItem>
       <ContextMenuItem onClick={() => onRegenerateToken(agent)}>
         <Key className="mr-2 size-4" />
-        重新生成Token
+        {t('admin.forwardAgents.table.menu.regenerateToken')}
       </ContextMenuItem>
       {agent.status === 'enabled' && (
         <ContextMenuItem
@@ -125,44 +127,44 @@ export const ForwardAgentListTable: React.FC<ForwardAgentListTableProps> = ({
           ) : (
             <Download className="mr-2 size-4" />
           )}
-          {checkingAgentId === agent.id ? '检查中...' : '检查更新'}
+          {checkingAgentId === agent.id ? t('admin.forwardAgents.table.menu.checking') : t('admin.forwardAgents.table.menu.checkUpdate')}
         </ContextMenuItem>
       )}
       {onBroadcastURL && (
         <ContextMenuItem onClick={() => onBroadcastURL(agent)}>
           <Radio className="mr-2 size-4" />
-          下发地址
+          {t('admin.forwardAgents.table.menu.broadcastUrl')}
         </ContextMenuItem>
       )}
       <ContextMenuSeparator />
       {agent.status === 'enabled' ? (
         <ContextMenuItem onClick={() => onDisable(agent)}>
           <PowerOff className="mr-2 size-4" />
-          禁用
+          {t('admin.forwardAgents.table.menu.disable')}
         </ContextMenuItem>
       ) : (
         <ContextMenuItem onClick={() => onEnable(agent)}>
           <Power className="mr-2 size-4" />
-          启用
+          {t('admin.forwardAgents.table.menu.enable')}
         </ContextMenuItem>
       )}
       <ContextMenuItem onClick={() => onDelete(agent)} className="text-red-600 dark:text-red-400">
         <Trash2 className="mr-2 size-4" />
-        删除
+        {t('admin.forwardAgents.table.menu.delete')}
       </ContextMenuItem>
     </>
-  ), [onViewDetail, onEdit, onGetInstallScript, onCopy, onRegenerateToken, onCheckUpdate, onBroadcastURL, checkingAgentId, onEnable, onDisable, onDelete]);
+  ), [t, onViewDetail, onEdit, onGetInstallScript, onCopy, onRegenerateToken, onCheckUpdate, onBroadcastURL, checkingAgentId, onEnable, onDisable, onDelete]);
 
   // Forward agent dropdown menu content
   const renderDropdownMenuActions = useCallback((agent: ForwardAgent) => (
     <>
       <DropdownMenuItem onClick={() => onCopy(agent)}>
         <Copy className="mr-2 size-4" />
-        复制节点
+        {t('admin.forwardAgents.table.menu.copyNode')}
       </DropdownMenuItem>
       <DropdownMenuItem onClick={() => onRegenerateToken(agent)}>
         <Key className="mr-2 size-4" />
-        重新生成Token
+        {t('admin.forwardAgents.table.menu.regenerateToken')}
       </DropdownMenuItem>
       {agent.status === 'enabled' && (
         <DropdownMenuItem
@@ -174,33 +176,33 @@ export const ForwardAgentListTable: React.FC<ForwardAgentListTableProps> = ({
           ) : (
             <Download className="mr-2 size-4" />
           )}
-          {checkingAgentId === agent.id ? '检查中...' : '检查更新'}
+          {checkingAgentId === agent.id ? t('admin.forwardAgents.table.menu.checking') : t('admin.forwardAgents.table.menu.checkUpdate')}
         </DropdownMenuItem>
       )}
       {onBroadcastURL && (
         <DropdownMenuItem onClick={() => onBroadcastURL(agent)}>
           <Radio className="mr-2 size-4" />
-          下发地址
+          {t('admin.forwardAgents.table.menu.broadcastUrl')}
         </DropdownMenuItem>
       )}
       <DropdownMenuSeparator />
       {agent.status === 'enabled' ? (
         <DropdownMenuItem onClick={() => onDisable(agent)}>
           <PowerOff className="mr-2 size-4" />
-          禁用
+          {t('admin.forwardAgents.table.menu.disable')}
         </DropdownMenuItem>
       ) : (
         <DropdownMenuItem onClick={() => onEnable(agent)}>
           <Power className="mr-2 size-4" />
-          启用
+          {t('admin.forwardAgents.table.menu.enable')}
         </DropdownMenuItem>
       )}
       <DropdownMenuItem onClick={() => onDelete(agent)} className="text-red-600 dark:text-red-400">
         <Trash2 className="mr-2 size-4" />
-        删除
+        {t('admin.forwardAgents.table.menu.delete')}
       </DropdownMenuItem>
     </>
-  ), [onCopy, onRegenerateToken, onCheckUpdate, onBroadcastURL, checkingAgentId, onEnable, onDisable, onDelete]);
+  ), [t, onCopy, onRegenerateToken, onCheckUpdate, onBroadcastURL, checkingAgentId, onEnable, onDisable, onDelete]);
 
   const columns = useMemo<ColumnDef<ForwardAgent>[]>(() => [
     {
@@ -212,7 +214,7 @@ export const ForwardAgentListTable: React.FC<ForwardAgentListTableProps> = ({
     },
     {
       accessorKey: 'name',
-      header: '名称',
+      header: t('admin.forwardAgents.table.columns.name'),
       meta: { priority: 1 } as ResponsiveColumnMeta,
       cell: ({ row }) => (
         <div className="space-y-1">
@@ -227,7 +229,7 @@ export const ForwardAgentListTable: React.FC<ForwardAgentListTableProps> = ({
     },
     {
       accessorKey: 'publicAddress',
-      header: '地址',
+      header: t('admin.forwardAgents.table.columns.address'),
       size: 180,
       meta: { priority: 2 } as ResponsiveColumnMeta,
       cell: ({ row }) => {
@@ -247,7 +249,7 @@ export const ForwardAgentListTable: React.FC<ForwardAgentListTableProps> = ({
               </TooltipTrigger>
               <TooltipContent>
                 <div className="space-y-1">
-                  <div className="text-xs text-slate-400">隧道地址</div>
+                  <div className="text-xs text-slate-400">{t('admin.forwardAgents.table.tooltip.tunnelAddress')}</div>
                   <CopyableAddress
                     address={agent.tunnelAddress}
                     className="font-mono text-xs"
@@ -264,7 +266,7 @@ export const ForwardAgentListTable: React.FC<ForwardAgentListTableProps> = ({
     },
     {
       accessorKey: 'status',
-      header: '状态',
+      header: t('admin.forwardAgents.table.columns.status'),
       size: 72,
       meta: { priority: 1 } as ResponsiveColumnMeta,
       cell: ({ row }) => {
@@ -277,12 +279,12 @@ export const ForwardAgentListTable: React.FC<ForwardAgentListTableProps> = ({
                   variant={agent.status === 'enabled' ? 'success' : 'default'}
                   onClick={() => agent.status === 'enabled' ? onDisable(agent) : onEnable(agent)}
                 >
-                  {agent.status === 'enabled' ? '启用' : '禁用'}
+                  {agent.status === 'enabled' ? t('admin.forwardAgents.table.menu.enable') : t('admin.forwardAgents.table.menu.disable')}
                 </AdminBadge>
               </span>
             </TooltipTrigger>
             <TooltipContent>
-              {agent.status === 'enabled' ? '点击禁用' : '点击启用'}
+              {agent.status === 'enabled' ? t('admin.forwardAgents.table.tooltip.clickToDisable') : t('admin.forwardAgents.table.tooltip.clickToEnable')}
             </TooltipContent>
           </Tooltip>
         );
@@ -290,7 +292,7 @@ export const ForwardAgentListTable: React.FC<ForwardAgentListTableProps> = ({
     },
     {
       id: 'availability',
-      header: '在线',
+      header: t('admin.forwardAgents.table.columns.online'),
       size: 70,
       meta: { priority: 2 } as ResponsiveColumnMeta,
       cell: ({ row }) => {
@@ -306,7 +308,7 @@ export const ForwardAgentListTable: React.FC<ForwardAgentListTableProps> = ({
                     <span className="relative inline-flex rounded-full size-2.5 bg-green-500"></span>
                   </span>
                 </TooltipTrigger>
-                <TooltipContent>在线</TooltipContent>
+                <TooltipContent>{t('admin.forwardAgents.table.tooltip.online')}</TooltipContent>
               </Tooltip>
             ) : (
               <Tooltip>
@@ -314,7 +316,7 @@ export const ForwardAgentListTable: React.FC<ForwardAgentListTableProps> = ({
                   <span className="size-2.5 rounded-full bg-slate-300 dark:bg-slate-600 block"></span>
                 </TooltipTrigger>
                 <TooltipContent>
-                  离线{agent.lastSeenAt && ` · 最后在线: ${formatDate(agent.lastSeenAt)}`}
+                  {t('admin.forwardAgents.table.tooltip.offline')}{agent.lastSeenAt && ` · ${t('admin.forwardAgents.table.tooltip.lastOnline')}: ${formatDate(agent.lastSeenAt, i18n.language)}`}
                 </TooltipContent>
               </Tooltip>
             )}
@@ -335,7 +337,7 @@ export const ForwardAgentListTable: React.FC<ForwardAgentListTableProps> = ({
                 </button>
               </TooltipTrigger>
               <TooltipContent>
-                {agent.muteNotification ? '点击取消静音' : '点击静音通知'}
+                {agent.muteNotification ? t('admin.forwardAgents.table.tooltip.clickToUnmute') : t('admin.forwardAgents.table.tooltip.clickToMute')}
               </TooltipContent>
             </Tooltip>
           </div>
@@ -344,7 +346,7 @@ export const ForwardAgentListTable: React.FC<ForwardAgentListTableProps> = ({
     },
     {
       id: 'systemStatus',
-      header: '监控',
+      header: t('admin.forwardAgents.table.columns.monitor'),
       size: 160,
       meta: { priority: 3 } as ResponsiveColumnMeta,
       cell: ({ row }) => (
@@ -353,7 +355,7 @@ export const ForwardAgentListTable: React.FC<ForwardAgentListTableProps> = ({
     },
     {
       id: 'resourceGroup',
-      header: '资源组',
+      header: t('admin.forwardAgents.table.columns.resourceGroup'),
       size: 120,
       meta: { priority: 3 } as ResponsiveColumnMeta,
       cell: ({ row }) => {
@@ -371,7 +373,7 @@ export const ForwardAgentListTable: React.FC<ForwardAgentListTableProps> = ({
             </TooltipTrigger>
             <TooltipContent>
               <div className="space-y-1">
-                <div>{group?.name || '未知资源组'}</div>
+                <div>{group?.name || t('admin.forwardAgents.table.tooltip.unknownResourceGroup')}</div>
                 <div className="text-xs text-slate-400 font-mono">{agent.groupId}</div>
               </div>
             </TooltipContent>
@@ -381,7 +383,7 @@ export const ForwardAgentListTable: React.FC<ForwardAgentListTableProps> = ({
     },
     {
       id: 'version',
-      header: '版本',
+      header: t('admin.forwardAgents.table.columns.version'),
       size: 100,
       meta: { priority: 3 } as ResponsiveColumnMeta,
       cell: ({ row }) => {
@@ -411,12 +413,12 @@ export const ForwardAgentListTable: React.FC<ForwardAgentListTableProps> = ({
             </TooltipTrigger>
             <TooltipContent>
               <div className="space-y-1">
-                <div className="text-xs">版本: v{version}</div>
+                <div className="text-xs">{t('admin.forwardAgents.table.tooltip.version')}: v{version}</div>
                 {platform && arch && (
                   <div className="text-xs text-slate-400">{platform}/{arch}</div>
                 )}
                 {agent.hasUpdate && (
-                  <div className="text-xs text-amber-500">有新版本可用</div>
+                  <div className="text-xs text-amber-500">{t('admin.forwardAgents.table.tooltip.newVersionAvailable')}</div>
                 )}
               </div>
             </TooltipContent>
@@ -426,18 +428,18 @@ export const ForwardAgentListTable: React.FC<ForwardAgentListTableProps> = ({
     },
     {
       accessorKey: 'createdAt',
-      header: '创建时间',
+      header: t('admin.forwardAgents.table.columns.createdAt'),
       size: 140,
       meta: { priority: 4 } as ResponsiveColumnMeta,
       cell: ({ row }) => (
         <span className="text-slate-500 dark:text-slate-400 text-sm">
-          {formatDate(row.original.createdAt)}
+          {formatDate(row.original.createdAt, i18n.language)}
         </span>
       ),
     },
     {
       id: 'actions',
-      header: '操作',
+      header: t('admin.forwardAgents.table.columns.actions'),
       size: 140,
       enableSorting: false,
       meta: { priority: 1 } as ResponsiveColumnMeta,
@@ -452,7 +454,7 @@ export const ForwardAgentListTable: React.FC<ForwardAgentListTableProps> = ({
                   <Eye className="size-4" strokeWidth={1.5} />
                 </button>
               </TooltipTrigger>
-              <TooltipContent>查看详情</TooltipContent>
+              <TooltipContent>{t('admin.forwardAgents.table.menu.viewDetail')}</TooltipContent>
             </Tooltip>
             <Tooltip>
               <TooltipTrigger asChild>
@@ -460,7 +462,7 @@ export const ForwardAgentListTable: React.FC<ForwardAgentListTableProps> = ({
                   <Edit className="size-4" strokeWidth={1.5} />
                 </button>
               </TooltipTrigger>
-              <TooltipContent>编辑</TooltipContent>
+              <TooltipContent>{t('admin.forwardAgents.table.menu.edit')}</TooltipContent>
             </Tooltip>
             <Tooltip>
               <TooltipTrigger asChild>
@@ -468,7 +470,7 @@ export const ForwardAgentListTable: React.FC<ForwardAgentListTableProps> = ({
                   <Terminal className="size-4" strokeWidth={1.5} />
                 </button>
               </TooltipTrigger>
-              <TooltipContent>获取安装脚本</TooltipContent>
+              <TooltipContent>{t('admin.forwardAgents.table.menu.getInstallScript')}</TooltipContent>
             </Tooltip>
             {agent.systemStatus && onBroadcastURL && (
               <Tooltip>
@@ -477,7 +479,7 @@ export const ForwardAgentListTable: React.FC<ForwardAgentListTableProps> = ({
                     <Radio className="size-4" strokeWidth={1.5} />
                   </button>
                 </TooltipTrigger>
-                <TooltipContent>下发地址</TooltipContent>
+                <TooltipContent>{t('admin.forwardAgents.table.menu.broadcastUrl')}</TooltipContent>
               </Tooltip>
             )}
             <DropdownMenu>
@@ -494,7 +496,7 @@ export const ForwardAgentListTable: React.FC<ForwardAgentListTableProps> = ({
         );
       },
     },
-  ], [onEdit, onDisable, onEnable, onGetInstallScript, onViewDetail, onBroadcastURL, onToggleMute, renderDropdownMenuActions, resourceGroupsMap]);
+  ], [t, i18n.language, onEdit, onDisable, onEnable, onGetInstallScript, onViewDetail, onBroadcastURL, onToggleMute, renderDropdownMenuActions, resourceGroupsMap]);
 
   // Render mobile card list on small screens
   if (isMobile) {
@@ -534,7 +536,7 @@ export const ForwardAgentListTable: React.FC<ForwardAgentListTableProps> = ({
           total={total}
           onPageChange={onPageChange}
           onPageSizeChange={onPageSizeChange}
-          emptyMessage="暂无转发Agent数据"
+          emptyMessage={t('admin.forwardAgents.table.empty')}
           getRowId={(row) => String(row.id)}
           enableDragSort={true}
           onDragEnd={onDragEnd}
@@ -556,7 +558,7 @@ export const ForwardAgentListTable: React.FC<ForwardAgentListTableProps> = ({
         total={total}
         onPageChange={onPageChange}
         onPageSizeChange={onPageSizeChange}
-        emptyMessage="暂无转发Agent数据"
+        emptyMessage={t('admin.forwardAgents.table.empty')}
         getRowId={(row) => String(row.id)}
         enableContextMenu={true}
         contextMenuContent={renderContextMenuActions}

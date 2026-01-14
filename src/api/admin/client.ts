@@ -28,6 +28,8 @@ import type {
   TelegramConfigResponse,
   UpdateTelegramConfigRequest,
   TelegramTestResult,
+  SuspendSubscriptionRequest,
+  ResetSubscriptionUsageResponse,
 } from './types';
 
 // ========== Traffic Statistics APIs (Admin only) ==========
@@ -457,6 +459,86 @@ export const updateTelegramConfig = async (
 export const testTelegramConnection = async (): Promise<TelegramTestResult> => {
   const response = await apiClient.post<APIResponse<TelegramTestResult>>(
     '/admin/settings/telegram/test'
+  );
+  return response.data.data;
+};
+
+// ========== Admin Subscription Management APIs (Added 2025-01-14) ==========
+
+/**
+ * Suspend a subscription
+ * POST /admin/subscriptions/:id/suspend
+ * @requires Authentication, Admin
+ *
+ * Suspends a subscription, preventing it from being used.
+ * The subscription can be unsuspended later to restore access.
+ *
+ * @param id - Subscription ID (Stripe-style SID like "sub_xxx" or numeric ID)
+ * @param data - Suspension details including reason
+ *
+ * @example
+ * ```typescript
+ * await suspendSubscription('sub_xK9mP2vL3nQ', {
+ *   reason: 'Traffic limit exceeded',
+ * });
+ * ```
+ */
+export const suspendSubscription = async (
+  id: string,
+  data: SuspendSubscriptionRequest
+): Promise<void> => {
+  await apiClient.post(`/admin/subscriptions/${id}/suspend`, data);
+};
+
+/**
+ * Unsuspend a subscription
+ * POST /admin/subscriptions/:id/unsuspend
+ * @requires Authentication, Admin
+ *
+ * Reactivates a suspended subscription, restoring access.
+ *
+ * @param id - Subscription ID (Stripe-style SID like "sub_xxx" or numeric ID)
+ *
+ * @example
+ * ```typescript
+ * await unsuspendSubscription('sub_xK9mP2vL3nQ');
+ * console.log('Subscription reactivated');
+ * ```
+ */
+export const unsuspendSubscription = async (id: string): Promise<void> => {
+  await apiClient.post(`/admin/subscriptions/${id}/unsuspend`);
+};
+
+/**
+ * Reset subscription usage
+ * POST /admin/subscriptions/:id/reset-usage
+ * @requires Authentication, Admin
+ * Added: 2026-01-14
+ *
+ * Resets the subscription's traffic usage by updating the billing period start time
+ * to now. This effectively clears all usage for the current period since usage is
+ * calculated from period_start to period_end. The period_end remains unchanged to
+ * maintain billing alignment.
+ *
+ * If the subscription is suspended (e.g., due to traffic limit exceeded), it will
+ * be automatically unsuspended.
+ *
+ * @param id - Subscription ID (Stripe-style SID like "sub_xxx" or numeric ID)
+ * @returns Reset result with new period information
+ *
+ * @example
+ * ```typescript
+ * const result = await resetSubscriptionUsage('sub_xK9mP2vL3nQ');
+ * console.log('Was suspended:', result.wasSuspended);
+ * console.log('New period start:', result.newPeriodStart);
+ * console.log('Period end:', result.newPeriodEnd);
+ * ```
+ */
+export const resetSubscriptionUsage = async (
+  id: string
+): Promise<ResetSubscriptionUsageResponse> => {
+  const response = await apiClient.post<APIResponse<ResetSubscriptionUsageResponse>>(
+    `/admin/subscriptions/${id}/reset-usage`
   );
   return response.data.data;
 };

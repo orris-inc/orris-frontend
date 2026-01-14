@@ -10,6 +10,7 @@
  * - Touch-friendly interactions
  */
 
+import { useTranslation } from 'react-i18next';
 import { useViewTransitionHandler } from '@/hooks/useViewTransition';
 import {
   Users,
@@ -27,7 +28,7 @@ import {
 } from 'lucide-react';
 import { MobileStatsScroller } from './MobileStatsScroller';
 import { MobileGroupedList, MobileListItem } from './MobileGroupedList';
-import { DateRangeSelector, TrafficTrendChart } from '@/components/admin';
+import { DateRangeSelector, LazyTrafficTrendChart } from '@/components/admin';
 import { formatTrafficBytes, type TrafficTrendPoint } from '@/api/admin';
 import { cn } from '@/lib/utils';
 import type {
@@ -55,6 +56,10 @@ interface TrafficOverview {
 interface MobileAdminDashboardProps {
   /** User display name */
   userName?: string;
+  /** Server version */
+  serverVersion?: string;
+  /** Client version */
+  clientVersion?: string;
   /** Dashboard basic stats */
   stats: DashboardStats;
   /** Traffic overview data */
@@ -152,6 +157,8 @@ const QuickActionItem = ({
 
 export const MobileAdminDashboard = ({
   userName,
+  serverVersion,
+  clientVersion,
   stats,
   trafficOverview,
   trafficTrend,
@@ -161,12 +168,13 @@ export const MobileAdminDashboard = ({
   loading = false,
   trafficLoading = false,
 }: MobileAdminDashboardProps) => {
+  const { t } = useTranslation();
   const navigateWithTransition = useViewTransitionHandler();
 
   // Stats cards data
   const statsCards = [
     {
-      title: '总用户数',
+      title: t('admin.stats.totalUsers'),
       value: stats.totalUsers.toLocaleString(),
       icon: <Users className="size-4" strokeWidth={1.5} />,
       iconBg: 'bg-info-muted',
@@ -174,7 +182,7 @@ export const MobileAdminDashboard = ({
       loading,
     },
     {
-      title: '订阅总数',
+      title: t('admin.stats.totalSubscriptions'),
       value: stats.activeSubscriptions.toLocaleString(),
       icon: <CreditCard className="size-4" strokeWidth={1.5} />,
       iconBg: 'bg-success-muted',
@@ -182,7 +190,7 @@ export const MobileAdminDashboard = ({
       loading,
     },
     {
-      title: '节点总数',
+      title: t('admin.stats.totalNodes'),
       value: stats.totalNodes.toLocaleString(),
       icon: <Server className="size-4" strokeWidth={1.5} />,
       iconBg: 'bg-primary/10',
@@ -190,7 +198,7 @@ export const MobileAdminDashboard = ({
       loading,
     },
     {
-      title: '在线节点',
+      title: t('admin.stats.onlineNodes'),
       value: stats.activeNodes.toLocaleString(),
       icon: <Activity className="size-4" strokeWidth={1.5} />,
       iconBg: 'bg-warning-muted',
@@ -198,7 +206,7 @@ export const MobileAdminDashboard = ({
       loading,
     },
     {
-      title: '总上传',
+      title: t('admin.stats.totalUpload'),
       value: trafficOverview ? formatTrafficBytes(trafficOverview.totalUpload) : '-',
       icon: <ArrowUp className="size-4" strokeWidth={1.5} />,
       iconBg: 'bg-chart-upload/10',
@@ -206,7 +214,7 @@ export const MobileAdminDashboard = ({
       loading: trafficLoading,
     },
     {
-      title: '总下载',
+      title: t('admin.stats.totalDownload'),
       value: trafficOverview ? formatTrafficBytes(trafficOverview.totalDownload) : '-',
       icon: <ArrowDown className="size-4" strokeWidth={1.5} />,
       iconBg: 'bg-chart-download/10',
@@ -220,29 +228,29 @@ export const MobileAdminDashboard = ({
     {
       icon: <Users className="size-5 text-info" strokeWidth={1.5} />,
       iconBg: 'bg-info-muted',
-      title: '用户管理',
-      subtitle: '管理所有用户账户和权限',
+      title: t('admin.quickAccess.users'),
+      subtitle: t('admin.quickAccess.usersDesc'),
       path: '/admin/users',
     },
     {
       icon: <CreditCard className="size-5 text-success" strokeWidth={1.5} />,
       iconBg: 'bg-success-muted',
-      title: '订阅管理',
-      subtitle: '查看和管理用户订阅',
+      title: t('admin.quickAccess.subscriptions'),
+      subtitle: t('admin.quickAccess.subscriptionsDesc'),
       path: '/admin/subscriptions',
     },
     {
       icon: <Server className="size-5 text-primary" strokeWidth={1.5} />,
       iconBg: 'bg-primary/10',
-      title: '节点Agent',
-      subtitle: '监控和配置服务器节点',
+      title: t('admin.quickAccess.nodeAgent'),
+      subtitle: t('admin.quickAccess.nodeAgentDesc'),
       path: '/admin/nodes',
     },
     {
       icon: <Monitor className="size-5 text-warning" strokeWidth={1.5} />,
       iconBg: 'bg-warning-muted',
-      title: '实时监控',
-      subtitle: '查看系统实时状态',
+      title: t('admin.quickAccess.liveMonitor'),
+      subtitle: t('admin.quickAccess.liveMonitorDesc'),
       path: '/admin/monitor',
     },
   ];
@@ -252,25 +260,25 @@ export const MobileAdminDashboard = ({
     {
       icon: <ArrowLeftRight className="size-5" strokeWidth={1.5} />,
       iconBg: 'bg-muted/60',
-      title: '转发规则',
+      title: t('admin.moreManagement.forwardRules'),
       path: '/admin/forward-rules',
     },
     {
       icon: <Cpu className="size-5" strokeWidth={1.5} />,
       iconBg: 'bg-muted/60',
-      title: '转发Agent',
+      title: t('admin.moreManagement.forwardAgent'),
       path: '/admin/forward-agents',
     },
     {
       icon: <Boxes className="size-5" strokeWidth={1.5} />,
       iconBg: 'bg-muted/60',
-      title: '资源组管理',
+      title: t('admin.moreManagement.resourceGroups'),
       path: '/admin/resource-groups',
     },
     {
       icon: <Settings className="size-5" strokeWidth={1.5} />,
       iconBg: 'bg-muted/60',
-      title: '系统设置',
+      title: t('admin.moreManagement.systemSettings'),
       path: '/admin/settings',
     },
   ];
@@ -282,11 +290,11 @@ export const MobileAdminDashboard = ({
         <div className="flex items-start justify-between">
           <div>
             <h1 className="text-xl font-bold text-foreground tracking-tight">
-              控制台
+              {t('admin.dashboard.title')}
             </h1>
             {userName && (
               <p className="text-sm text-muted-foreground mt-0.5">
-                欢迎回来，{userName}
+                {t('admin.dashboard.welcomeBack', { name: userName })}
               </p>
             )}
           </div>
@@ -304,17 +312,18 @@ export const MobileAdminDashboard = ({
 
       {/* Traffic Trend Chart */}
       <section className="px-4 mb-4">
-        <TrafficTrendChart
+        <LazyTrafficTrendChart
           data={trafficTrend?.points ?? []}
           granularity={granularity}
           loading={trafficLoading}
+          overview={trafficOverview}
         />
       </section>
 
       {/* Quick Actions */}
       <section className="px-4 mb-4">
         <h2 className="text-xs text-muted-foreground uppercase tracking-wide font-medium mb-2 px-0">
-          快速访问
+          {t('admin.quickAccess.title')}
         </h2>
         <div className="rounded-2xl overflow-hidden bg-card/60 backdrop-blur-sm shadow-sm shadow-black/5">
           {quickActions.map((action, index) => (
@@ -334,7 +343,7 @@ export const MobileAdminDashboard = ({
 
       {/* More Management */}
       <section className="px-4 mb-6">
-        <MobileGroupedList title="更多管理">
+        <MobileGroupedList title={t('admin.moreManagement.title')}>
           {moreManagementItems.map((item, index) => (
             <MobileListItem
               key={item.path}
@@ -349,6 +358,23 @@ export const MobileAdminDashboard = ({
           ))}
         </MobileGroupedList>
       </section>
+
+      {/* Version info */}
+      {(serverVersion || clientVersion) && (
+        <section className="px-4 mb-6">
+          <div className="flex items-center justify-center gap-3 text-[10px] text-muted-foreground/50">
+            {serverVersion && (
+              <span className="font-mono">{serverVersion}</span>
+            )}
+            {serverVersion && clientVersion && (
+              <span>·</span>
+            )}
+            {clientVersion && (
+              <span className="font-mono">{clientVersion}</span>
+            )}
+          </div>
+        </section>
+      )}
     </div>
   );
 };

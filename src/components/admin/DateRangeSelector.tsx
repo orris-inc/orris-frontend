@@ -3,6 +3,8 @@
  * Provides preset date range selection using ToggleGroup
  */
 
+import { useTranslation } from 'react-i18next';
+
 import { ToggleGroup, ToggleGroupItem } from '@/components/common/ToggleGroup';
 import { DATE_PRESETS, DateRangePreset } from '@/features/admin-traffic';
 
@@ -17,6 +19,8 @@ interface DateRangeSelectorProps {
  * Horizontally scrollable on mobile for better touch experience
  */
 export function DateRangeSelector({ value, onChange }: DateRangeSelectorProps) {
+  const { t } = useTranslation();
+
   return (
     <div className="overflow-x-auto scrollbar-hide">
       <ToggleGroup
@@ -37,7 +41,7 @@ export function DateRangeSelector({ value, onChange }: DateRangeSelectorProps) {
             value={preset.value}
             className="whitespace-nowrap text-[11px] sm:text-sm min-h-[36px] sm:min-h-[32px] px-2.5 sm:px-3"
           >
-            {preset.label}
+            {t(preset.label)}
           </ToggleGroupItem>
         ))}
       </ToggleGroup>

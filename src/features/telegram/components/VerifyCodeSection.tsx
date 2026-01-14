@@ -6,6 +6,7 @@
 
 import { Copy, Check, ExternalLink } from "lucide-react";
 import { useState, useCallback } from "react";
+import { useTranslation } from "react-i18next";
 import {
   Tooltip,
   TooltipContent,
@@ -26,6 +27,7 @@ export const VerifyCodeSection = ({
   verifyCode,
   botLink,
 }: VerifyCodeSectionProps) => {
+  const { t } = useTranslation();
   const [copied, setCopied] = useState(false);
 
   // Copy command with verify code together
@@ -56,7 +58,7 @@ export const VerifyCodeSection = ({
     <div className="space-y-3">
       {/* Instructions */}
       <p className="text-sm text-muted-foreground">
-        打开{" "}
+        {t("notifications.telegram.verifyInstruction1")}
         {botLink ? (
           <a
             href={botLink}
@@ -70,7 +72,7 @@ export const VerifyCodeSection = ({
         ) : (
           <span className="text-[#26A5E4]">{botUsername}</span>
         )}
-        ，发送以下命令完成绑定
+        {t("notifications.telegram.verifyInstruction2")}
       </p>
 
       {/* Command with verify code */}
@@ -112,13 +114,15 @@ export const VerifyCodeSection = ({
             </button>
           </TooltipTrigger>
           <TooltipContent side="top" className="text-xs">
-            {copied ? "已复制！" : "点击复制命令"}
+            {copied
+              ? t("notifications.telegram.copied")
+              : t("notifications.telegram.clickToCopy")}
           </TooltipContent>
         </Tooltip>
       </TooltipProvider>
 
       <p className="text-xs text-muted-foreground text-center">
-        验证码 10 分钟内有效
+        {t("notifications.telegram.codeExpiry")}
       </p>
     </div>
   );

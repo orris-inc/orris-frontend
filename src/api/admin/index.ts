@@ -68,3 +68,16 @@ export {
   updateTelegramConfig,
   testTelegramConnection,
 } from './client';
+
+// Types - Admin Subscription Management (Added 2025-01-14)
+export type {
+  SuspendSubscriptionRequest,
+  ResetSubscriptionUsageResponse,
+} from './types';
+
+// API functions - Admin Subscription Management (Added 2025-01-14)
+export {
+  suspendSubscription,
+  unsuspendSubscription,
+  resetSubscriptionUsage,
+} from './client';

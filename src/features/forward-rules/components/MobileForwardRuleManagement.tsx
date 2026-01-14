@@ -13,6 +13,7 @@
  */
 
 import { useState, useMemo, useCallback } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
   Plus,
   RefreshCw,
@@ -65,17 +66,21 @@ export interface MobileForwardRuleManagementProps {
 type SegmentFilter = 'all' | 'enabled' | 'disabled' | 'direct' | 'entry' | 'chain' | 'direct_chain';
 
 // ============================================================================
-// Filter Options
+// Filter Options - Using labelKey for i18n
 // ============================================================================
 
-const SEGMENT_FILTER_OPTIONS: SegmentOption<SegmentFilter>[] = [
-  { value: 'all', label: '全部' },
-  { value: 'enabled', label: '启用' },
-  { value: 'disabled', label: '禁用', hideWhenZero: true },
-  { value: 'direct', label: '直连' },
-  { value: 'entry', label: '入口' },
-  { value: 'chain', label: '链式', hideWhenZero: true },
-  { value: 'direct_chain', label: '直连链', hideWhenZero: true },
+interface SegmentFilterOption extends SegmentOption<SegmentFilter> {
+  labelKey: string;
+}
+
+const SEGMENT_FILTER_OPTIONS: SegmentFilterOption[] = [
+  { value: 'all', label: '', labelKey: 'filter.all' },
+  { value: 'enabled', label: '', labelKey: 'common.status.enabled' },
+  { value: 'disabled', label: '', labelKey: 'common.status.disabled', hideWhenZero: true },
+  { value: 'direct', label: '', labelKey: 'admin.forwardRules.ruleType.direct' },
+  { value: 'entry', label: '', labelKey: 'admin.forwardRules.ruleType.entry' },
+  { value: 'chain', label: '', labelKey: 'admin.forwardRules.ruleType.chain', hideWhenZero: true },
+  { value: 'direct_chain', label: '', labelKey: 'admin.forwardRules.ruleType.directChain', hideWhenZero: true },
 ];
 
 // ============================================================================
@@ -87,11 +92,13 @@ const StatsSummary = ({
   enabled,
   running,
   loading,
+  t,
 }: {
   total: number;
   enabled: number;
   running: number;
   loading: boolean;
+  t: (key: string) => string;
 }) => {
   if (loading) {
     return (
@@ -107,17 +114,17 @@ const StatsSummary = ({
     <div className="flex items-center justify-between text-xs px-1">
       <div className="flex items-center gap-1.5">
         <ArrowLeftRight className="size-3.5 text-muted-foreground" />
-        <span className="text-muted-foreground">总数</span>
+        <span className="text-muted-foreground">{t('admin.subscriptions.total')}</span>
         <span className="font-semibold text-foreground tabular-nums">{total}</span>
       </div>
       <div className="flex items-center gap-1.5">
         <CheckCircle2 className="size-3.5 text-success" />
-        <span className="text-muted-foreground">启用</span>
+        <span className="text-muted-foreground">{t('common.status.enabled')}</span>
         <span className="font-semibold text-success tabular-nums">{enabled}</span>
       </div>
       <div className="flex items-center gap-1.5">
         <Activity className="size-3.5 text-info" />
-        <span className="text-muted-foreground">运行</span>
+        <span className="text-muted-foreground">{t('common.status.running')}</span>
         <span className="font-semibold text-info tabular-nums">{running}</span>
       </div>
     </div>
@@ -156,9 +163,10 @@ interface EmptyStateProps {
   hasFilter: boolean;
   onClearFilter: () => void;
   onCreate: () => void;
+  t: (key: string) => string;
 }
 
-const EmptyState = ({ hasFilter, onClearFilter, onCreate }: EmptyStateProps) => (
+const EmptyState = ({ hasFilter, onClearFilter, onCreate, t }: EmptyStateProps) => (
   <div className="flex flex-col items-center justify-center py-16 px-4">
     <div className="size-20 rounded-full bg-muted/30 flex items-center justify-center mb-4">
       {hasFilter ? (
@@ -168,10 +176,12 @@ const EmptyState = ({ hasFilter, onClearFilter, onCreate }: EmptyStateProps) => 
       )}
     </div>
     <p className="text-base font-medium text-foreground mb-1 text-center">
-      {hasFilter ? '未找到匹配规则' : '暂无转发规则'}
+      {hasFilter ? t('common.messages.noResults') : t('admin.forwardRules.noData')}
     </p>
     <p className="text-sm text-muted-foreground text-center mb-5">
-      {hasFilter ? '尝试调整搜索条件或清除筛选' : '点击下方按钮创建第一个规则'}
+      {hasFilter
+        ? t('subscription.tryAdjustSearch')
+        : t('admin.forwardRules.add')}
     </p>
     <button
       type="button"
@@ -190,12 +200,12 @@ const EmptyState = ({ hasFilter, onClearFilter, onCreate }: EmptyStateProps) => 
       {hasFilter ? (
         <>
           <X className="size-4" />
-          清除筛选
+          {t('messages.clearFilters')}
         </>
       ) : (
         <>
           <Plus className="size-4" />
-          创建规则
+          {t('admin.forwardRules.add')}
         </>
       )}
     </button>
@@ -298,11 +308,15 @@ const SearchBar = ({
   onChange,
   onClear,
   disabled = false,
+  placeholder,
+  sortingPlaceholder,
 }: {
   value: string;
   onChange: (value: string) => void;
   onClear: () => void;
   disabled?: boolean;
+  placeholder: string;
+  sortingPlaceholder: string;
 }) => {
   return (
     <div
@@ -320,7 +334,7 @@ const SearchBar = ({
         type="text"
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        placeholder={disabled ? '排序中...' : '搜索规则名称...'}
+        placeholder={disabled ? sortingPlaceholder : placeholder}
         disabled={disabled}
         className={cn(
           'flex-1 min-w-0',
@@ -368,9 +382,18 @@ export const MobileForwardRuleManagement = ({
   onDragEnd,
   isReordering = false,
 }: MobileForwardRuleManagementProps) => {
+  const { t } = useTranslation();
   const [searchQuery, setSearchQuery] = useState('');
   const [segmentFilter, setSegmentFilter] = useState<SegmentFilter>('all');
   const [dragSortEnabled, setDragSortEnabled] = useState(false);
+
+  // Build filter options with translated labels
+  const translatedFilterOptions = useMemo(() => {
+    return SEGMENT_FILTER_OPTIONS.map((opt) => ({
+      ...opt,
+      label: t(opt.labelKey),
+    }));
+  }, [t]);
 
   // Get rule ID for drag-and-drop
   const getRuleId = useCallback((rule: ForwardRule) => rule.id, []);
@@ -390,7 +413,7 @@ export const MobileForwardRuleManagement = ({
 
   // Add counts to filter options for MobileSegmentedFilter
   const filterOptionsWithCounts = useMemo(() => {
-    return SEGMENT_FILTER_OPTIONS.map((opt) => {
+    return translatedFilterOptions.map((opt) => {
       let count: number;
       switch (opt.value) {
         case 'all':
@@ -419,7 +442,7 @@ export const MobileForwardRuleManagement = ({
       }
       return { ...opt, count };
     });
-  }, [stats, total]);
+  }, [translatedFilterOptions, stats, total]);
 
   // Filter rules by search and segment filter
   const filteredRules = useMemo(() => {
@@ -468,6 +491,7 @@ export const MobileForwardRuleManagement = ({
           enabled={stats.enabled}
           running={stats.running}
           loading={loading}
+          t={t}
         />
 
         {/* Search Bar with Refresh */}
@@ -478,6 +502,8 @@ export const MobileForwardRuleManagement = ({
               onChange={setSearchQuery}
               onClear={() => setSearchQuery('')}
               disabled={dragSortEnabled}
+              placeholder={t('common.placeholders.search')}
+              sortingPlaceholder={t('common.processing')}
             />
           </div>
 
@@ -542,14 +568,14 @@ export const MobileForwardRuleManagement = ({
       {hasFilter && !loading && filteredRules.length > 0 && (
         <div className="flex items-center justify-between mb-3 px-1">
           <span className="text-xs text-muted-foreground">
-            找到 <span className="font-medium text-foreground">{filteredRules.length}</span> 个结果
+            {t('admin.subscriptions.found')} <span className="font-medium text-foreground">{filteredRules.length}</span> {t('admin.subscriptions.results')}
           </span>
           <button
             type="button"
             onClick={clearFilters}
             className="text-xs text-primary font-medium"
           >
-            清除筛选
+            {t('messages.clearFilters')}
           </button>
         </div>
       )}
@@ -558,14 +584,14 @@ export const MobileForwardRuleManagement = ({
       {dragSortEnabled && (
         <div className="flex items-center justify-between mb-3 px-1">
           <AdminBadge variant="info" className="text-xs">
-            长按卡片拖拽排序
+            {t('admin.forwardRules.enableDragSort')}
           </AdminBadge>
           <button
             type="button"
             onClick={() => setDragSortEnabled(false)}
             className="text-xs text-primary font-medium"
           >
-            退出排序
+            {t('admin.forwardRules.disableDragSort')}
           </button>
         </div>
       )}
@@ -578,6 +604,7 @@ export const MobileForwardRuleManagement = ({
           hasFilter={hasFilter && !dragSortEnabled}
           onClearFilter={clearFilters}
           onCreate={onCreate}
+          t={t}
         />
       ) : dragSortEnabled && onDragEnd ? (
         // Drag sort mode: use DraggableMobileList with original rules order

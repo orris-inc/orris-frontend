@@ -5,6 +5,7 @@
  */
 
 import { useMemo, useCallback } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
   Edit,
   Trash2,
@@ -71,11 +72,11 @@ interface NodeListTableProps {
   onDragEnd?: (activeId: string, overId: string, oldIndex: number, newIndex: number) => void;
 }
 
-// Status configuration with semantic colors
-const STATUS_CONFIG: Record<NodeStatus, { label: string; colorClass: string; icon: React.ElementType }> = {
-  active: { label: '激活', colorClass: 'text-success hover:text-success', icon: CheckCircle2 },
-  inactive: { label: '未激活', colorClass: 'text-muted-foreground/50 hover:text-muted-foreground', icon: XCircle },
-  maintenance: { label: '维护中', colorClass: 'text-warning hover:text-warning', icon: Wrench },
+// Status configuration with semantic colors (labels are translation keys)
+const STATUS_CONFIG: Record<NodeStatus, { labelKey: string; colorClass: string; icon: React.ElementType }> = {
+  active: { labelKey: 'common.status.active', colorClass: 'text-success hover:text-success', icon: CheckCircle2 },
+  inactive: { labelKey: 'common.status.inactive', colorClass: 'text-muted-foreground/50 hover:text-muted-foreground', icon: XCircle },
+  maintenance: { labelKey: 'common.status.maintenance', colorClass: 'text-warning hover:text-warning', icon: Wrench },
 };
 
 // Protocol configuration with semantic styling
@@ -118,6 +119,7 @@ export const NodeListTable: React.FC<NodeListTableProps> = ({
   enableDragSort = false,
   onDragEnd,
 }) => {
+  const { t } = useTranslation();
   // Detect mobile screen
   const { isMobile } = useBreakpoint();
 
@@ -126,85 +128,85 @@ export const NodeListTable: React.FC<NodeListTableProps> = ({
     <>
       <ContextMenuItem onClick={() => onViewDetail(node)}>
         <Eye className="mr-2 size-4" />
-        查看详情
+        {t('admin.nodes.actions.viewDetail')}
       </ContextMenuItem>
       <ContextMenuItem onClick={() => onEdit(node)}>
         <Edit className="mr-2 size-4" />
-        编辑
+        {t('admin.nodes.actions.edit')}
       </ContextMenuItem>
       <ContextMenuItem onClick={() => onGetInstallScript(node)}>
         <Terminal className="mr-2 size-4" />
-        安装脚本
+        {t('admin.nodes.actions.installScript')}
       </ContextMenuItem>
       <ContextMenuSeparator />
       <ContextMenuItem onClick={() => onCopy(node)}>
         <Copy className="mr-2 size-4" />
-        复制节点
+        {t('admin.nodes.actions.copyNode')}
       </ContextMenuItem>
       <ContextMenuItem onClick={() => onGenerateToken(node)}>
         <Key className="mr-2 size-4" />
-        生成 Token
+        {t('admin.nodes.actions.generateToken')}
       </ContextMenuItem>
       {node.isOnline && onNotifyURL && (
         <ContextMenuItem onClick={() => onNotifyURL(node)}>
           <Radio className="mr-2 size-4" />
-          下发地址
+          {t('admin.nodes.actions.broadcastUrl')}
         </ContextMenuItem>
       )}
       <ContextMenuSeparator />
       {node.status === 'active' ? (
         <ContextMenuItem onClick={() => onDeactivate(node)}>
           <PowerOff className="mr-2 size-4" />
-          停用节点
+          {t('admin.nodes.actions.deactivate')}
         </ContextMenuItem>
       ) : (
         <ContextMenuItem onClick={() => onActivate(node)}>
           <Power className="mr-2 size-4" />
-          激活节点
+          {t('admin.nodes.actions.activate')}
         </ContextMenuItem>
       )}
-      <ContextMenuItem onClick={() => onDelete(node)} className="text-red-600 dark:text-red-400">
+      <ContextMenuItem onClick={() => onDelete(node)} className="text-destructive">
         <Trash2 className="mr-2 size-4" />
-        删除节点
+        {t('admin.nodes.actions.delete')}
       </ContextMenuItem>
     </>
-  ), [onViewDetail, onEdit, onGetInstallScript, onCopy, onGenerateToken, onActivate, onDeactivate, onDelete, onNotifyURL]);
+  ), [t, onViewDetail, onEdit, onGetInstallScript, onCopy, onGenerateToken, onActivate, onDeactivate, onDelete, onNotifyURL]);
 
   // Node dropdown menu content
   const renderDropdownMenuActions = useCallback((node: Node) => (
     <>
       <DropdownMenuItem onClick={() => onCopy(node)}>
         <Copy className="mr-2 size-4" />
-        复制节点
+        {t('admin.nodes.actions.copyNode')}
       </DropdownMenuItem>
       <DropdownMenuItem onClick={() => onGenerateToken(node)}>
         <Key className="mr-2 size-4" />
-        生成 Token
+        {t('admin.nodes.actions.generateToken')}
       </DropdownMenuItem>
       {node.isOnline && onNotifyURL && (
         <DropdownMenuItem onClick={() => onNotifyURL(node)}>
           <Radio className="mr-2 size-4" />
-          下发地址
+          {t('admin.nodes.actions.broadcastUrl')}
         </DropdownMenuItem>
       )}
       <DropdownMenuSeparator />
       {node.status === 'active' ? (
         <DropdownMenuItem onClick={() => onDeactivate(node)}>
           <PowerOff className="mr-2 size-4" />
-          停用节点
+          {t('admin.nodes.actions.deactivate')}
         </DropdownMenuItem>
       ) : (
         <DropdownMenuItem onClick={() => onActivate(node)}>
           <Power className="mr-2 size-4" />
-          激活节点
+          {t('admin.nodes.actions.activate')}
         </DropdownMenuItem>
       )}
-      <DropdownMenuItem onClick={() => onDelete(node)} className="text-red-600 dark:text-red-400">
+      <DropdownMenuItem onClick={() => onDelete(node)} className="text-destructive">
         <Trash2 className="mr-2 size-4" />
-        删除节点
+        {t('admin.nodes.actions.delete')}
       </DropdownMenuItem>
     </>
-  ), [onCopy, onGenerateToken, onActivate, onDeactivate, onDelete, onNotifyURL]);
+  ), [t, onCopy, onGenerateToken, onActivate, onDeactivate, onDelete, onNotifyURL]);
 
   const columns = useMemo<ColumnDef<Node>[]>(() => [
     {
@@ -220,7 +222,7 @@ export const NodeListTable: React.FC<NodeListTableProps> = ({
     },
     {
       accessorKey: 'name',
-      header: '节点',
+      header: t('admin.nodes.table.node'),
       size: 200,
       meta: { priority: 1 } as ResponsiveColumnMeta, // Core column, always visible
       cell: ({ row }) => {
@@ -241,9 +243,9 @@ export const NodeListTable: React.FC<NodeListTableProps> = ({
                 </TooltipTrigger>
                 <TooltipContent>
                   <div className="space-y-1 text-xs">
-                    <div>代理端口: {node.agentPort}</div>
+                    <div>{t('admin.nodes.tooltip.agentPort')}: {node.agentPort}</div>
                     {hasSubscriptionPort && (
-                      <div>订阅端口: {node.subscriptionPort}</div>
+                      <div>{t('admin.nodes.tooltip.subscriptionPort')}: {node.subscriptionPort}</div>
                     )}
                     {node.systemStatus?.publicIpv4 && (
                       <div className="flex items-center gap-1">
@@ -270,7 +272,7 @@ export const NodeListTable: React.FC<NodeListTableProps> = ({
     },
     {
       id: 'config',
-      header: '配置',
+      header: t('admin.nodes.table.config'),
       size: 140,
       meta: { priority: 3 } as ResponsiveColumnMeta, // Secondary column >= 1024px
       cell: ({ row }) => {
@@ -319,11 +321,11 @@ export const NodeListTable: React.FC<NodeListTableProps> = ({
             </TooltipTrigger>
             <TooltipContent className="max-w-xs">
               <div className="space-y-1 text-xs">
-                <div>传输协议: {transport}</div>
+                <div>{t('admin.nodes.tooltip.transportProtocol')}: {transport}</div>
                 {node.sni && <div>SNI: {node.sni}</div>}
                 {node.host && <div>Host: {node.host}</div>}
                 {node.path && <div>Path: {node.path}</div>}
-                {node.allowInsecure && <div className="text-amber-500">允许不安全连接</div>}
+                {node.allowInsecure && <div className="text-amber-500">{t('admin.nodes.tooltip.allowInsecure')}</div>}
               </div>
             </TooltipContent>
           </Tooltip>
@@ -332,7 +334,7 @@ export const NodeListTable: React.FC<NodeListTableProps> = ({
     },
     {
       id: 'availability',
-      header: '在线',
+      header: t('admin.nodes.table.online'),
       size: 70,
       meta: { priority: 2 } as ResponsiveColumnMeta, // Important column >= 640px
       cell: ({ row }) => {
@@ -348,7 +350,7 @@ export const NodeListTable: React.FC<NodeListTableProps> = ({
                     <span className="relative inline-flex rounded-full size-2.5 bg-success"></span>
                   </span>
                 </TooltipTrigger>
-                <TooltipContent>在线</TooltipContent>
+                <TooltipContent>{t('admin.nodes.tooltip.onlineStatus')}</TooltipContent>
               </Tooltip>
             ) : (
               <Tooltip>
@@ -356,7 +358,7 @@ export const NodeListTable: React.FC<NodeListTableProps> = ({
                   <span className="size-2.5 rounded-full bg-muted-foreground/30 block"></span>
                 </TooltipTrigger>
                 <TooltipContent>
-                  离线{node.lastSeenAt && ` · 最后在线: ${formatDate(node.lastSeenAt)}`}
+                  {t('admin.nodes.tooltip.offlineStatus')}{node.lastSeenAt && ` · ${t('admin.nodes.tooltip.lastOnline')}: ${formatDate(node.lastSeenAt)}`}
                 </TooltipContent>
               </Tooltip>
             )}
@@ -377,7 +379,7 @@ export const NodeListTable: React.FC<NodeListTableProps> = ({
                 </button>
               </TooltipTrigger>
               <TooltipContent>
-                {node.muteNotification ? '点击取消静音' : '点击静音通知'}
+                {node.muteNotification ? t('admin.nodes.tooltip.clickToUnmute') : t('admin.nodes.tooltip.clickToMute')}
               </TooltipContent>
             </Tooltip>
           </div>
@@ -386,7 +388,7 @@ export const NodeListTable: React.FC<NodeListTableProps> = ({
     },
     {
       id: 'monitor',
-      header: '监控',
+      header: t('admin.nodes.table.monitor'),
       size: 160,
       meta: { priority: 3 } as ResponsiveColumnMeta, // Secondary column >= 1024px
       cell: ({ row }) => {
@@ -396,12 +398,12 @@ export const NodeListTable: React.FC<NodeListTableProps> = ({
     },
     {
       accessorKey: 'status',
-      header: '状态',
+      header: t('admin.nodes.table.status'),
       size: 50,
       meta: { priority: 1 } as ResponsiveColumnMeta, // Core column, always visible
       cell: ({ row }) => {
         const node = row.original;
-        const statusConfig = STATUS_CONFIG[node.status] || { label: node.status, colorClass: 'text-muted-foreground', icon: AlertTriangle };
+        const statusConfig = STATUS_CONFIG[node.status] || { labelKey: 'common.status.unknown', colorClass: 'text-muted-foreground', icon: AlertTriangle };
         const StatusIcon = statusConfig.icon;
 
         return (
@@ -415,9 +417,9 @@ export const NodeListTable: React.FC<NodeListTableProps> = ({
               </button>
             </TooltipTrigger>
             <TooltipContent>
-              {statusConfig.label} · {node.status === 'active' ? '点击停用' : '点击激活'}
+              {t(statusConfig.labelKey)} · {node.status === 'active' ? t('admin.nodes.actions.clickToDeactivate') : t('admin.nodes.actions.clickToActivate')}
               {node.status === 'maintenance' && node.maintenanceReason && (
-                <div className="mt-1 text-xs opacity-80">原因: {node.maintenanceReason}</div>
+                <div className="mt-1 text-xs opacity-80">{t('admin.nodes.tooltip.maintenanceReason')}: {node.maintenanceReason}</div>
               )}
             </TooltipContent>
           </Tooltip>
@@ -426,7 +428,7 @@ export const NodeListTable: React.FC<NodeListTableProps> = ({
     },
     {
       id: 'tags',
-      header: '标签',
+      header: t('admin.nodes.table.tags'),
       size: 100,
       meta: { priority: 3 } as ResponsiveColumnMeta, // Secondary column >= 1024px
       cell: ({ row }) => {
@@ -459,7 +461,7 @@ export const NodeListTable: React.FC<NodeListTableProps> = ({
     },
     {
       id: 'version',
-      header: '版本',
+      header: t('admin.nodes.table.version'),
       size: 90,
       meta: { priority: 3 } as ResponsiveColumnMeta,
       cell: ({ row }) => {
@@ -489,12 +491,12 @@ export const NodeListTable: React.FC<NodeListTableProps> = ({
             </TooltipTrigger>
             <TooltipContent>
               <div className="space-y-1 text-xs">
-                <div>版本: v{version}</div>
+                <div>{t('admin.nodes.tooltip.versionInfo')}: v{version}</div>
                 {platform && arch && (
                   <div className="text-muted-foreground">{platform}/{arch}</div>
                 )}
                 {node.hasUpdate && (
-                  <div className="text-warning font-medium">有新版本可用</div>
+                  <div className="text-warning font-medium">{t('admin.nodes.tooltip.newVersionAvailable')}</div>
                 )}
               </div>
             </TooltipContent>
@@ -504,7 +506,7 @@ export const NodeListTable: React.FC<NodeListTableProps> = ({
     },
     {
       id: 'resourceGroup',
-      header: '资源组',
+      header: t('admin.nodes.table.resourceGroup'),
       size: 100,
       meta: { priority: 3 } as ResponsiveColumnMeta,
       cell: ({ row }) => {
@@ -525,7 +527,7 @@ export const NodeListTable: React.FC<NodeListTableProps> = ({
               </TooltipTrigger>
               <TooltipContent>
                 <div className="space-y-1 text-xs">
-                  <div>{firstGroup?.name || '未知资源组'}</div>
+                  <div>{firstGroup?.name || t('admin.nodes.tooltip.unknownResourceGroup')}</div>
                   <code className="text-muted-foreground font-mono">{groupIds[0]}</code>
                 </div>
               </TooltipContent>
@@ -557,7 +559,7 @@ export const NodeListTable: React.FC<NodeListTableProps> = ({
     },
     {
       id: 'owner',
-      header: '创建者',
+      header: t('admin.nodes.table.owner'),
       size: 100,
       meta: { priority: 3 } as ResponsiveColumnMeta,
       cell: ({ row }) => {
@@ -585,14 +587,14 @@ export const NodeListTable: React.FC<NodeListTableProps> = ({
         return (
           <div className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-info-muted border border-info/20">
             <Shield className="size-3 text-info" strokeWidth={1.5} />
-            <span className="text-[10px] font-medium text-info">管理员</span>
+            <span className="text-[10px] font-medium text-info">{t('common.role.admin')}</span>
           </div>
         );
       },
     },
     {
       accessorKey: 'createdAt',
-      header: '创建时间',
+      header: t('admin.nodes.table.createdAt'),
       size: 90,
       meta: { priority: 4 } as ResponsiveColumnMeta, // Optional column >= 1280px
       cell: ({ row }) => (
@@ -603,7 +605,7 @@ export const NodeListTable: React.FC<NodeListTableProps> = ({
     },
     {
       id: 'actions',
-      header: '操作',
+      header: t('admin.nodes.table.actions'),
       size: 160,
       meta: { priority: 1 } as ResponsiveColumnMeta, // Core column, always visible
       enableSorting: false,
@@ -618,7 +620,7 @@ export const NodeListTable: React.FC<NodeListTableProps> = ({
                   <Eye className="size-4" strokeWidth={1.5} />
                 </button>
               </TooltipTrigger>
-              <TooltipContent>查看详情</TooltipContent>
+              <TooltipContent>{t('admin.nodes.actions.viewDetail')}</TooltipContent>
             </Tooltip>
             <Tooltip>
               <TooltipTrigger asChild>
@@ -626,7 +628,7 @@ export const NodeListTable: React.FC<NodeListTableProps> = ({
                   <Edit className="size-4" strokeWidth={1.5} />
                 </button>
               </TooltipTrigger>
-              <TooltipContent>编辑</TooltipContent>
+              <TooltipContent>{t('admin.nodes.actions.edit')}</TooltipContent>
             </Tooltip>
             <Tooltip>
               <TooltipTrigger asChild>
@@ -634,7 +636,7 @@ export const NodeListTable: React.FC<NodeListTableProps> = ({
                   <Terminal className="size-4" strokeWidth={1.5} />
                 </button>
               </TooltipTrigger>
-              <TooltipContent>安装脚本</TooltipContent>
+              <TooltipContent>{t('admin.nodes.actions.installScript')}</TooltipContent>
             </Tooltip>
             {node.isOnline && onNotifyURL && (
               <Tooltip>
@@ -643,7 +645,7 @@ export const NodeListTable: React.FC<NodeListTableProps> = ({
                     <Radio className="size-4" strokeWidth={1.5} />
                   </button>
                 </TooltipTrigger>
-                <TooltipContent>下发地址</TooltipContent>
+                <TooltipContent>{t('admin.nodes.actions.broadcastUrl')}</TooltipContent>
               </Tooltip>
             )}
             <DropdownMenu>
@@ -660,7 +662,7 @@ export const NodeListTable: React.FC<NodeListTableProps> = ({
         );
       },
     },
-  ], [onEdit, onActivate, onDeactivate, onGetInstallScript, onViewDetail, onNotifyURL, onToggleMute, renderDropdownMenuActions, resourceGroupsMap]);
+  ], [t, onEdit, onActivate, onDeactivate, onGetInstallScript, onViewDetail, onNotifyURL, onToggleMute, renderDropdownMenuActions, resourceGroupsMap]);
 
   // Render mobile card list on small screens
   if (isMobile) {
@@ -697,7 +699,7 @@ export const NodeListTable: React.FC<NodeListTableProps> = ({
           total={total}
           onPageChange={onPageChange}
           onPageSizeChange={onPageSizeChange}
-          emptyMessage="暂无节点数据"
+          emptyMessage={t('admin.nodes.noData')}
           getRowId={(row) => String(row.id)}
           enableDragSort={true}
           onDragEnd={onDragEnd}
@@ -719,7 +721,7 @@ export const NodeListTable: React.FC<NodeListTableProps> = ({
         total={total}
         onPageChange={onPageChange}
         onPageSizeChange={onPageSizeChange}
-        emptyMessage="暂无节点数据"
+        emptyMessage={t('admin.nodes.noData')}
         getRowId={(row) => String(row.id)}
         enableContextMenu={true}
         contextMenuContent={renderContextMenuActions}

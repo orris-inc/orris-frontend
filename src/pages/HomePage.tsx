@@ -3,6 +3,7 @@
  * 登录后的主页面
  */
 
+import { useTranslation } from 'react-i18next';
 import { useAuthStore } from '@/features/auth/stores/auth-store';
 import { useAuth } from '@/features/auth/hooks/useAuth';
 import * as AvatarPrimitive from '@radix-ui/react-avatar';
@@ -11,6 +12,7 @@ import { cardStyles, getBadgeClass, getButtonClass } from '@/lib/ui-styles';
 import { cn } from '@/lib/utils';
 
 export const HomePage = () => {
+  const { t } = useTranslation();
   const { user } = useAuthStore();
   const { logout, isLoading } = useAuth();
 
@@ -20,7 +22,7 @@ export const HomePage = () => {
         <div className={cardStyles}>
           <div className="p-8">
             <div className="grid gap-6">
-              {/* 用户头像 */}
+              {/* User avatar */}
               <div className="flex justify-center">
                 <AvatarPrimitive.Root className="size-24 relative flex shrink-0 overflow-hidden rounded-full">
                   <AvatarPrimitive.Fallback className="flex h-full w-full items-center justify-center rounded-full bg-muted text-4xl">
@@ -29,29 +31,29 @@ export const HomePage = () => {
                 </AvatarPrimitive.Root>
               </div>
 
-              {/* 欢迎信息 */}
+              {/* Welcome message */}
               <div className="text-center grid gap-2">
                 <h1 className="text-4xl font-bold">
-                  欢迎回来，{user?.displayName}！
+                  {t('user.home.welcomeBack', { name: user?.displayName })}
                 </h1>
                 <p className="text-muted-foreground">
-                  您已成功登录 Orris
+                  {t('user.home.loginSuccess')}
                 </p>
               </div>
 
-              {/* 用户信息 */}
+              {/* User info */}
               <div className={cn(cardStyles, "border")}>
                 <div className="p-6 grid gap-4">
                   <div className="grid gap-1">
                     <p className="text-sm text-muted-foreground">
-                      邮箱
+                      {t('user.detail.email')}
                     </p>
                     <p className="text-base">{user?.email}</p>
                   </div>
 
                   <div className="grid gap-1">
                     <p className="text-sm text-muted-foreground">
-                      账号ID
+                      {t('user.home.accountId')}
                     </p>
                     <p className="font-mono text-base">
                       {user?.id}
@@ -60,18 +62,18 @@ export const HomePage = () => {
 
                   <div className="grid gap-1">
                     <p className="text-sm text-muted-foreground">
-                      角色
+                      {t('user.detail.role')}
                     </p>
                     <div>
                       <span className={getBadgeClass('default')}>
-                        {user?.role === 'admin' ? '管理员' : '用户'}
+                        {user?.role === 'admin' ? t('common.role.admin') : t('common.role.user')}
                       </span>
                     </div>
                   </div>
                 </div>
               </div>
 
-              {/* 登出按钮 */}
+              {/* Logout button */}
               <div className="flex justify-center mt-2">
                 <button
                   onClick={logout}
@@ -82,7 +84,7 @@ export const HomePage = () => {
                   )}
                 >
                   {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                  退出登录
+                  {t('nav.logout')}
                 </button>
               </div>
             </div>

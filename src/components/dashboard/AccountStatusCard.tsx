@@ -1,6 +1,7 @@
 /**
- * 账户状态卡片
+ * Account status card component
  */
+import { useTranslation } from 'react-i18next';
 import type { UserDisplayInfo } from '@/api/auth';
 import { cardStyles, cardHeaderStyles, cardTitleStyles, cardContentStyles, getBadgeClass } from '@/lib/ui-styles';
 
@@ -9,32 +10,34 @@ interface AccountStatusCardProps {
 }
 
 export const AccountStatusCard = ({ user }: AccountStatusCardProps) => {
+  const { t } = useTranslation();
+
   return (
     <div className={cardStyles}>
       <div className={cardHeaderStyles}>
-        <h3 className={cardTitleStyles}>账户状态</h3>
+        <h3 className={cardTitleStyles}>{t('dashboard.accountStatus.title')}</h3>
       </div>
       <div className={cardContentStyles}>
         <div className="space-y-4">
-          {/* 账户ID */}
+          {/* Account ID */}
           <div className="flex items-center justify-between">
-            <span className="text-sm text-muted-foreground">账户 ID</span>
+            <span className="text-sm text-muted-foreground">{t('dashboard.accountStatus.accountId')}</span>
             <span className="font-mono text-sm font-medium">{user.id}</span>
           </div>
 
-          {/* 角色 */}
+          {/* Role */}
           <div className="flex items-center justify-between">
-            <span className="text-sm text-muted-foreground">角色</span>
+            <span className="text-sm text-muted-foreground">{t('dashboard.accountStatus.role')}</span>
             <span className={getBadgeClass('default')}>
-              {user.role === 'admin' ? '管理员' : '用户'}
+              {user.role === 'admin' ? t('common.role.admin') : t('common.role.user')}
             </span>
           </div>
 
-          {/* 状态 */}
+          {/* Status */}
           <div className="flex items-center justify-between">
-            <span className="text-sm text-muted-foreground">状态</span>
+            <span className="text-sm text-muted-foreground">{t('dashboard.accountStatus.status')}</span>
             <span className={getBadgeClass(user.status === 'active' ? 'success' : 'secondary')}>
-              {user.status === 'active' ? '正常' : user.status === 'inactive' ? '未激活' : user.status}
+              {user.status === 'active' ? t('common.status.active') : user.status === 'inactive' ? t('common.status.inactive') : user.status}
             </span>
           </div>
         </div>

@@ -96,28 +96,28 @@ export const MobilePlanCard = ({
     {
       key: 'edit',
       icon: <Edit className="size-5" />,
-      label: '编辑',
+      label: t('common.actions.edit'),
       bgColor: 'bg-primary',
       onClick: () => onEdit(plan),
     },
     {
       key: 'duplicate',
       icon: <Copy className="size-5" />,
-      label: '复制',
+      label: t('common.actions.copy'),
       bgColor: 'bg-info',
       onClick: () => onDuplicate(plan),
     },
     {
       key: 'toggle',
       icon: <Power className="size-5" />,
-      label: plan.status === 'active' ? '停用' : '激活',
+      label: plan.status === 'active' ? t('common.actions.disable') : t('common.status.active'),
       bgColor: plan.status === 'active' ? 'bg-warning' : 'bg-success',
       onClick: () => onToggleStatus(plan),
     },
     {
       key: 'delete',
       icon: <Trash2 className="size-5" />,
-      label: '删除',
+      label: t('common.actions.delete'),
       bgColor: 'bg-destructive',
       onClick: () => onDelete(plan),
     },
@@ -167,12 +167,12 @@ export const MobilePlanCard = ({
             {plan.isPublic ? (
               <>
                 <Globe className="size-3" />
-                <span>公开</span>
+                <span>{t('admin.plans.public')}</span>
               </>
             ) : (
               <>
                 <Lock className="size-3" />
-                <span>私有</span>
+                <span>{t('admin.plans.private')}</span>
               </>
             )}
           </span>
@@ -181,7 +181,7 @@ export const MobilePlanCard = ({
           {plan.trialDays != null && plan.trialDays > 0 && (
             <>
               <span className="text-border">·</span>
-              <span>{plan.trialDays}天试用</span>
+              <span>{t('admin.plans.table.daysCount', { count: plan.trialDays })}</span>
             </>
           )}
 
@@ -189,7 +189,7 @@ export const MobilePlanCard = ({
           {pricingCount > 1 && (
             <>
               <span className="text-border">·</span>
-              <span>{pricingCount}种周期</span>
+              <span>{t('admin.plans.table.multipleCycles', { count: pricingCount })}</span>
             </>
           )}
         </div>

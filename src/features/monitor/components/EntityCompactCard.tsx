@@ -5,6 +5,7 @@
  */
 
 import { memo } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Server, Cpu, ArrowDown, ArrowUp, Wifi, WifiOff } from 'lucide-react';
 import { formatBitRate, formatBytes } from '@/shared/utils/format-utils';
 import type { EntityStatus } from '../hooks/useMonitorData';
@@ -83,6 +84,7 @@ const MiniBar = memo(({ value, className }: { value: number; className?: string 
 MiniBar.displayName = 'MiniBar';
 
 export const EntityCompactCard = memo(({ entity }: EntityCompactCardProps) => {
+  const { t } = useTranslation();
   const status = entity.status as (NodeSystemStatus | AgentSystemStatus) | null;
   const isOnline = entity.isOnline && status;
 
@@ -145,9 +147,9 @@ export const EntityCompactCard = memo(({ entity }: EntityCompactCardProps) => {
           <>
             {/* Gauges row */}
             <div className="flex items-center justify-between mb-3 px-1">
-              <MiniGauge value={cpuPercent} label="CPU" />
-              <MiniGauge value={memoryPercent} label="内存" />
-              <MiniGauge value={diskPercent} label="磁盘" />
+              <MiniGauge value={cpuPercent} label={t('admin.monitor.cpu')} />
+              <MiniGauge value={memoryPercent} label={t('admin.monitor.memory')} />
+              <MiniGauge value={diskPercent} label={t('admin.monitor.disk')} />
             </div>
 
             {/* Network stats */}
@@ -172,14 +174,14 @@ export const EntityCompactCard = memo(({ entity }: EntityCompactCardProps) => {
 
             {/* Footer stats */}
             <div className="flex items-center justify-between mt-2 pt-2 border-t border-border/50 text-[10px] text-muted-foreground">
-              <span>流量: {formatBytes((status.networkRxBytes ?? 0) + (status.networkTxBytes ?? 0))}</span>
-              <span>连接: {(status.tcpConnections ?? 0) + (status.udpConnections ?? 0)}</span>
+              <span>{t('admin.monitor.detail.traffic')}: {formatBytes((status.networkRxBytes ?? 0) + (status.networkTxBytes ?? 0))}</span>
+              <span>{t('admin.monitor.connections')}: {(status.tcpConnections ?? 0) + (status.udpConnections ?? 0)}</span>
             </div>
           </>
         ) : (
           /* Offline placeholder */
           <div className="py-4 text-center">
-            <p className="text-[10px] text-muted-foreground">离线</p>
+            <p className="text-[10px] text-muted-foreground">{t('admin.monitor.detail.offline')}</p>
           </div>
         )}
       </div>

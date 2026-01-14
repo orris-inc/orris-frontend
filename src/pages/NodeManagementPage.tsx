@@ -4,6 +4,7 @@
  */
 
 import { useState, useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
   Server,
   Plus,
@@ -39,7 +40,8 @@ import { useBreakpoint } from '@/hooks/useBreakpoint';
 import type { Node, UpdateNodeRequest, CreateNodeRequest } from '@/api/node';
 
 export const NodeManagementPage = () => {
-  usePageTitle('节点Agent');
+  const { t } = useTranslation();
+  usePageTitle(t('nav.nodeAgent'));
 
   const { isMobile } = useBreakpoint();
 
@@ -125,7 +127,7 @@ export const NodeManagementPage = () => {
       setNodeToDelete(node);
       setDeleteDialogOpen(true);
     } else {
-      if (window.confirm(`确认删除节点 "${node.name}" (${node.serverAddress}:${node.agentPort}) 吗？此操作不可恢复。`)) {
+      if (window.confirm(t('admin.nodes.confirmDelete', { name: node.name, address: node.serverAddress, port: node.agentPort }))) {
         await deleteNode(node.id);
       }
     }
@@ -169,7 +171,7 @@ export const NodeManagementPage = () => {
 
   const handleCopy = (node: Node) => {
     const copyData: Partial<CreateNodeRequest> = {
-      name: `${node.name} - 副本`,
+      name: `${node.name} - ${t('admin.nodes.copy')}`,
       protocol: node.protocol,
       serverAddress: node.serverAddress,
       agentPort: node.agentPort,
@@ -272,18 +274,18 @@ export const NodeManagementPage = () => {
             <div className="flex items-center justify-between gap-3 flex-wrap">
               {/* Left: Title + Primary Stats */}
               <div className="flex items-center gap-3">
-                <h1 className="text-sm font-semibold text-foreground">节点Agent</h1>
+                <h1 className="text-sm font-semibold text-foreground">{t('nav.nodeAgent')}</h1>
                 <div className="h-4 w-px bg-border hidden sm:block" />
                 <div className="flex items-center gap-3 text-xs">
                   <span className="flex items-center gap-1 text-muted-foreground">
                     <Server className="size-3" />
                     <span className="font-medium text-foreground">{stats.total}</span>
-                    <span className="hidden sm:inline">节点</span>
+                    <span className="hidden sm:inline">{t('admin.nodes.nodesUnit')}</span>
                   </span>
                   <span className="flex items-center gap-1">
                     <Activity className="size-3 text-success" />
                     <span className="font-medium text-success">{stats.online}</span>
-                    <span className="hidden lg:inline text-muted-foreground">在线</span>
+                    <span className="hidden lg:inline text-muted-foreground">{t('common.status.online')}</span>
                   </span>
                   <span className="flex items-center gap-1">
                     <CheckCircle2 className="size-3 text-info" />
@@ -297,14 +299,14 @@ export const NodeManagementPage = () => {
                 {stats.inactive > 0 && (
                   <span className="flex items-center gap-1.5">
                     <XCircle className="size-3 text-muted-foreground" />
-                    <span className="text-muted-foreground">未激活</span>
+                    <span className="text-muted-foreground">{t('common.status.inactive')}</span>
                     <span className="font-semibold tabular-nums text-foreground">{stats.inactive}</span>
                   </span>
                 )}
                 {stats.updatable > 0 && (
                   <span className="flex items-center gap-1.5">
                     <ArrowUpCircle className="size-3 text-warning" />
-                    <span className="text-muted-foreground">可更新</span>
+                    <span className="text-muted-foreground">{t('admin.nodes.updatable')}</span>
                     <span className="font-semibold tabular-nums text-warning">{stats.updatable}</span>
                   </span>
                 )}
@@ -314,7 +316,7 @@ export const NodeManagementPage = () => {
                     <label className="flex items-center gap-1.5 cursor-pointer group">
                       <Users className="size-3 text-muted-foreground group-hover:text-foreground transition-colors" strokeWidth={1.5} />
                       <span className="hidden lg:inline text-muted-foreground group-hover:text-foreground transition-colors">
-                        用户节点
+                        {t('admin.nodes.userNodes')}
                       </span>
                       <Switch
                         checked={includeUserNodes}
@@ -325,14 +327,14 @@ export const NodeManagementPage = () => {
                       </Switch>
                     </label>
                   </TooltipTrigger>
-                  <TooltipContent>显示用户创建的节点</TooltipContent>
+                  <TooltipContent>{t('admin.nodes.showUserNodes')}</TooltipContent>
                 </Tooltip>
                 <Tooltip>
                   <TooltipTrigger asChild>
                     <label className="flex items-center gap-1.5 cursor-pointer group">
                       <GripVertical className={`size-3 transition-colors ${dragSortEnabled ? 'text-primary' : 'text-muted-foreground group-hover:text-foreground'}`} strokeWidth={1.5} />
                       <span className="hidden lg:inline text-muted-foreground group-hover:text-foreground transition-colors">
-                        排序
+                        {t('admin.nodes.sort')}
                       </span>
                       <Switch
                         checked={dragSortEnabled}
@@ -345,7 +347,7 @@ export const NodeManagementPage = () => {
                     </label>
                   </TooltipTrigger>
                   <TooltipContent>
-                    {dragSortEnabled ? '关闭拖拽排序' : '开启拖拽排序'}
+                    {dragSortEnabled ? t('admin.nodes.disableDragSort') : t('admin.nodes.enableDragSort')}
                   </TooltipContent>
                 </Tooltip>
               </div>
@@ -362,10 +364,10 @@ export const NodeManagementPage = () => {
                         className="h-7 px-2 text-xs border-info/30 hover:border-info/50 hover:bg-info/10"
                         icon={<Radio className="size-3.5 text-info" strokeWidth={1.5} />}
                       >
-                        <span className="hidden lg:inline text-info">下发</span>
+                        <span className="hidden lg:inline text-info">{t('admin.nodes.broadcast')}</span>
                       </AdminButton>
                     </TooltipTrigger>
-                    <TooltipContent>向 {stats.online} 个在线节点下发新API地址</TooltipContent>
+                    <TooltipContent>{t('admin.nodes.broadcastTooltip', { count: stats.online })}</TooltipContent>
                   </Tooltip>
                 )}
 
@@ -379,10 +381,10 @@ export const NodeManagementPage = () => {
                         className="h-7 px-2 text-xs border-warning/30 hover:border-warning/50 hover:bg-warning-muted"
                         icon={<ArrowUpCircle className="size-3.5 text-warning" strokeWidth={1.5} />}
                       >
-                        <span className="hidden lg:inline text-warning">更新</span>
+                        <span className="hidden lg:inline text-warning">{t('admin.nodes.update')}</span>
                       </AdminButton>
                     </TooltipTrigger>
-                    <TooltipContent>更新 {stats.updatable} 个节点</TooltipContent>
+                    <TooltipContent>{t('admin.nodes.updateTooltip', { count: stats.updatable })}</TooltipContent>
                   </Tooltip>
                 )}
 
@@ -401,10 +403,10 @@ export const NodeManagementPage = () => {
                         />
                       }
                     >
-                      <span className="sr-only">刷新</span>
+                      <span className="sr-only">{t('common.actions.refresh')}</span>
                     </AdminButton>
                   </TooltipTrigger>
-                  <TooltipContent>刷新列表</TooltipContent>
+                  <TooltipContent>{t('admin.nodes.refreshList')}</TooltipContent>
                 </Tooltip>
 
                 <AdminButton
@@ -417,7 +419,7 @@ export const NodeManagementPage = () => {
                     setCreateDialogOpen(true);
                   }}
                 >
-                  新增节点
+                  {t('admin.nodes.addNode')}
                 </AdminButton>
               </div>
             </div>
@@ -520,7 +522,7 @@ export const NodeManagementPage = () => {
       <TokenDialog
         open={tokenDialogOpen}
         token={generatedToken?.token ?? null}
-        title="节点Token"
+        title={t('admin.nodes.nodeToken')}
         onClose={() => {
           setTokenDialogOpen(false);
           setGeneratedToken(null);

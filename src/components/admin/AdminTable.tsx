@@ -175,6 +175,8 @@ interface AdminTablePaginationProps {
   onPageSizeChange?: (pageSize: number) => void;
   pageSizeOptions?: number[];
   loading?: boolean;
+  // Prefetch callback - called on hover/focus to preload data
+  onPrefetchPage?: (page: number) => void;
 }
 
 export const AdminTablePagination = ({
@@ -185,6 +187,7 @@ export const AdminTablePagination = ({
   onPageSizeChange,
   pageSizeOptions = [10, 20, 50],
   loading,
+  onPrefetchPage,
 }: AdminTablePaginationProps) => {
   const totalPages = Math.ceil(total / pageSize);
   const startIndex = (page - 1) * pageSize + 1;
@@ -234,6 +237,8 @@ export const AdminTablePagination = ({
         <div className="flex items-center gap-1.5">
           <button
             onClick={() => onPageChange(page - 1)}
+            onMouseEnter={() => onPrefetchPage?.(page - 1)}
+            onFocus={() => onPrefetchPage?.(page - 1)}
             disabled={page === 1 || loading}
             className={cn(
               'flex items-center justify-center size-11 sm:size-9 rounded-lg touch-target',
@@ -249,13 +254,20 @@ export const AdminTablePagination = ({
 
           {/* Page number display */}
           <div className="flex items-center gap-1 px-0.5">
-            {generatePageNumbers(page, totalPages).map((pageNum, idx) => (
+            {generatePageNumbers(page, totalPages).map((pageNum, idx) =>
               pageNum === '...' ? (
-                <span key={`ellipsis-${idx}`} className="px-1.5 text-muted-foreground">...</span>
+                <span
+                  key={`ellipsis-${idx}`}
+                  className="px-1.5 text-muted-foreground"
+                >
+                  ...
+                </span>
               ) : (
                 <button
                   key={pageNum}
                   onClick={() => onPageChange(pageNum as number)}
+                  onMouseEnter={() => onPrefetchPage?.(pageNum as number)}
+                  onFocus={() => onPrefetchPage?.(pageNum as number)}
                   disabled={loading}
                   className={cn(
                     'flex items-center justify-center min-w-[44px] sm:min-w-[36px] h-11 sm:h-9 px-3 sm:px-2.5 rounded-lg text-sm touch-target',
@@ -268,11 +280,13 @@ export const AdminTablePagination = ({
                   {pageNum}
                 </button>
               )
-            ))}
+            )}
           </div>
 
           <button
             onClick={() => onPageChange(page + 1)}
+            onMouseEnter={() => onPrefetchPage?.(page + 1)}
+            onFocus={() => onPrefetchPage?.(page + 1)}
             disabled={page >= totalPages || loading}
             className={cn(
               'flex items-center justify-center size-11 sm:size-9 rounded-lg touch-target',

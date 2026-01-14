@@ -20,7 +20,7 @@ import { ThemeToggle } from '@/components/common/ThemeToggle';
 import { LanguageSwitcher } from '@/components/common/LanguageSwitcher';
 import { getNavItems } from '@/config/navigation';
 import { usePermissions } from '@/features/auth/hooks/usePermissions';
-import { useBreakpoint } from '@/hooks';
+import { useBreakpoint, useVersionInfo } from '@/hooks';
 import { cn } from '@/lib/utils';
 
 interface DashboardLayoutProps {
@@ -33,6 +33,7 @@ export const DashboardLayout = ({ children }: DashboardLayoutProps) => {
   const { logout } = useAuth();
   const { filterNavigationByPermission, userRole } = usePermissions();
   const { isMobile } = useBreakpoint();
+  const { serverVersion, clientVersion } = useVersionInfo();
 
   const [profileDialogOpen, setProfileDialogOpen] = useState(false);
   const [mobileDrawerOpen, setMobileDrawerOpen] = useState(false);
@@ -173,6 +174,8 @@ export const DashboardLayout = ({ children }: DashboardLayoutProps) => {
           brandName="Orris"
           user={user}
           showAdminSwitch={userRole === 'admin'}
+          serverVersion={serverVersion ?? undefined}
+          clientVersion={clientVersion}
           onAdminClick={handleGoToAdmin}
           onLogout={handleLogout}
         />

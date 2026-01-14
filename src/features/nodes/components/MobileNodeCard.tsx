@@ -8,6 +8,7 @@
  * - Clear visual hierarchy
  */
 
+import { useTranslation } from 'react-i18next';
 import {
   Edit,
   Power,
@@ -42,11 +43,11 @@ export interface MobileNodeCardProps {
 
 const STATUS_CONFIG: Record<
   NodeStatus,
-  { label: string; variant: 'success' | 'default' | 'warning' }
+  { labelKey: string; variant: 'success' | 'default' | 'warning' }
 > = {
-  active: { label: '激活', variant: 'success' },
-  inactive: { label: '未激活', variant: 'default' },
-  maintenance: { label: '维护中', variant: 'warning' },
+  active: { labelKey: 'common.status.active', variant: 'success' },
+  inactive: { labelKey: 'common.status.inactive', variant: 'default' },
+  maintenance: { labelKey: 'common.status.maintenance', variant: 'warning' },
 };
 
 const PROTOCOL_CONFIG: Record<NodeProtocol, { label: string; color: string }> = {
@@ -62,7 +63,7 @@ const PROTOCOL_CONFIG: Record<NodeProtocol, { label: string; color: string }> = 
 // Online Status Indicator
 // ============================================================================
 
-const OnlineIndicator = ({ isOnline }: { isOnline: boolean }) => {
+const OnlineIndicator = ({ isOnline, t }: { isOnline: boolean; t: (key: string) => string }) => {
   if (isOnline) {
     return (
       <span className="inline-flex items-center gap-1 text-success">
@@ -70,14 +71,14 @@ const OnlineIndicator = ({ isOnline }: { isOnline: boolean }) => {
           <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-success opacity-75 motion-reduce:hidden"></span>
           <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-success"></span>
         </span>
-        <span className="text-[10px] font-medium">在线</span>
+        <span className="text-[10px] font-medium">{t('common.status.online')}</span>
       </span>
     );
   }
   return (
     <span className="inline-flex items-center gap-1 text-muted-foreground">
       <span className="h-1.5 w-1.5 rounded-full bg-muted-foreground/30"></span>
-      <span className="text-[10px]">离线</span>
+      <span className="text-[10px]">{t('common.status.offline')}</span>
     </span>
   );
 };
@@ -94,8 +95,9 @@ export const MobileNodeCard = ({
   onActivate,
   onDeactivate,
 }: MobileNodeCardProps) => {
+  const { t } = useTranslation();
   const statusConfig = STATUS_CONFIG[node.status] || {
-    label: node.status,
+    labelKey: 'common.status.unknown',
     variant: 'default' as const,
   };
   const protocolConfig = PROTOCOL_CONFIG[node.protocol] || {
@@ -108,21 +110,21 @@ export const MobileNodeCard = ({
     {
       key: 'edit',
       icon: <Edit className="size-5" />,
-      label: '编辑',
+      label: t('common.actions.edit'),
       bgColor: 'bg-primary',
       onClick: () => onEdit(node),
     },
     {
       key: 'toggle',
       icon: node.status === 'active' ? <PowerOff className="size-5" /> : <Power className="size-5" />,
-      label: node.status === 'active' ? '停用' : '激活',
+      label: node.status === 'active' ? t('common.actions.disable') : t('common.status.active'),
       bgColor: node.status === 'active' ? 'bg-warning' : 'bg-success',
       onClick: () => (node.status === 'active' ? onDeactivate(node) : onActivate(node)),
     },
     {
       key: 'delete',
       icon: <Trash2 className="size-5" />,
-      label: '删除',
+      label: t('common.actions.delete'),
       bgColor: 'bg-destructive',
       onClick: () => onDelete(node),
     },
@@ -140,7 +142,7 @@ export const MobileNodeCard = ({
             <span className="font-medium text-foreground truncate">
               {node.name}
             </span>
-            <OnlineIndicator isOnline={node.isOnline} />
+            <OnlineIndicator isOnline={node.isOnline} t={t} />
             {node.hasUpdate && node.isOnline && (
               <ArrowUpCircle className="size-3.5 text-warning shrink-0" />
             )}
@@ -149,7 +151,7 @@ export const MobileNodeCard = ({
             variant={statusConfig.variant}
             className="text-[10px] px-1.5 py-0 shrink-0"
           >
-            {statusConfig.label}
+            {t(statusConfig.labelKey)}
           </AdminBadge>
         </div>
 

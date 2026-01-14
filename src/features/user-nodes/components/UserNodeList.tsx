@@ -3,6 +3,7 @@
  */
 
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Edit, Trash2, Key, Eye, MoreVertical, Wifi, WifiOff, Terminal } from 'lucide-react';
 import { Badge } from '@/components/common/Badge';
 import { Button } from '@/components/common/Button';
@@ -67,10 +68,10 @@ const STATUS_VARIANTS: Record<string, 'default' | 'secondary' | 'destructive' | 
   maintenance: 'outline',
 };
 
-const STATUS_LABELS: Record<string, string> = {
-  active: '活跃',
-  inactive: '停用',
-  maintenance: '维护中',
+const STATUS_LABEL_KEYS: Record<string, string> = {
+  active: 'common.status.active',
+  inactive: 'common.status.inactive',
+  maintenance: 'common.status.maintenance',
 };
 
 export const UserNodeList: React.FC<UserNodeListProps> = ({
@@ -82,6 +83,7 @@ export const UserNodeList: React.FC<UserNodeListProps> = ({
   onViewDetail,
   onInstallScript,
 }) => {
+  const { t } = useTranslation();
   const [deleteConfirm, setDeleteConfirm] = useState<{
     open: boolean;
     node: UserNode | null;
@@ -116,9 +118,9 @@ export const UserNodeList: React.FC<UserNodeListProps> = ({
 
   if (isLoading) {
     return (
-      <div className="space-y-3 px-1 sm:px-0">
+      <div className="space-y-3">
         {[1, 2, 3].map((i) => (
-          <div key={i} className="p-4 rounded-xl sm:rounded-lg glass">
+          <div key={i} className="p-4 rounded-xl glass">
             <div className="flex items-center justify-between">
               <div className="space-y-2 flex-1">
                 <Skeleton className="h-5 w-40" />
@@ -134,9 +136,9 @@ export const UserNodeList: React.FC<UserNodeListProps> = ({
 
   if (nodes.length === 0) {
     return (
-      <div className="p-8 sm:p-12 text-center rounded-xl sm:rounded-lg glass mx-1 sm:mx-0">
-        <p className="text-muted-foreground">暂无节点</p>
-        <p className="text-sm text-muted-foreground mt-1">点击上方「新增节点」按钮创建您的第一个节点</p>
+      <div className="p-8 sm:p-12 text-center rounded-xl glass">
+        <p className="text-muted-foreground">{t('nodeList.noNodes')}</p>
+        <p className="text-sm text-muted-foreground mt-1">{t('nodeList.createFirstNode')}</p>
       </div>
     );
   }
@@ -162,7 +164,7 @@ export const UserNodeList: React.FC<UserNodeListProps> = ({
                   </Badge>
                 </div>
                 <Badge variant={STATUS_VARIANTS[node.status]} className="text-[10px] px-1.5 h-5 shrink-0">
-                  {STATUS_LABELS[node.status] || node.status}
+                  {t(STATUS_LABEL_KEYS[node.status]) || node.status}
                 </Badge>
               </div>
 
@@ -172,7 +174,7 @@ export const UserNodeList: React.FC<UserNodeListProps> = ({
                 {node.subscriptionPort && node.subscriptionPort !== node.agentPort && (
                   <>
                     <span className="text-border">|</span>
-                    <span className="whitespace-nowrap">订阅: {node.subscriptionPort}</span>
+                    <span className="whitespace-nowrap">{t('nodeList.subscriptionShort')}: {node.subscriptionPort}</span>
                   </>
                 )}
               </div>
@@ -186,7 +188,7 @@ export const UserNodeList: React.FC<UserNodeListProps> = ({
                   className="flex-1 h-9 touch-target glass-interactive text-xs"
                 >
                   <Eye className="h-3.5 w-3.5 mr-1" />
-                  详情
+                  {t('nodeList.details')}
                 </Button>
                 <Button
                   variant="outline"
@@ -195,7 +197,7 @@ export const UserNodeList: React.FC<UserNodeListProps> = ({
                   className="flex-1 h-9 touch-target glass-interactive text-xs"
                 >
                   <Edit className="h-3.5 w-3.5 mr-1" />
-                  编辑
+                  {t('common.actions.edit')}
                 </Button>
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
@@ -210,11 +212,11 @@ export const UserNodeList: React.FC<UserNodeListProps> = ({
                   <DropdownMenuContent align="end" className="glass-elevated">
                     <DropdownMenuItem onClick={() => onInstallScript(node)} className="touch-target">
                       <Terminal className="mr-2 h-4 w-4" />
-                      安装脚本
+                      {t('nodeList.installScript')}
                     </DropdownMenuItem>
                     <DropdownMenuItem onClick={() => handleTokenClick(node)} className="touch-target">
                       <Key className="mr-2 h-4 w-4" />
-                      重新生成 Token
+                      {t('nodeList.regenerateToken')}
                     </DropdownMenuItem>
                     <DropdownMenuSeparator />
                     <DropdownMenuItem
@@ -222,7 +224,7 @@ export const UserNodeList: React.FC<UserNodeListProps> = ({
                       onClick={() => handleDeleteClick(node)}
                     >
                       <Trash2 className="mr-2 h-4 w-4" />
-                      删除节点
+                      {t('nodeList.deleteNode')}
                     </DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>
@@ -239,22 +241,22 @@ export const UserNodeList: React.FC<UserNodeListProps> = ({
             <thead>
               <tr className="border-b bg-muted/50">
                 <th className="h-12 px-4 text-left align-middle font-medium text-muted-foreground text-sm">
-                  节点名称
+                  {t('nodeList.columns.nodeName')}
                 </th>
                 <th className="h-12 px-4 text-left align-middle font-medium text-muted-foreground text-sm">
-                  地址
+                  {t('nodeList.columns.address')}
                 </th>
                 <th className="h-12 px-4 text-left align-middle font-medium text-muted-foreground text-sm">
-                  协议
+                  {t('nodeList.columns.protocol')}
                 </th>
                 <th className="h-12 px-4 text-left align-middle font-medium text-muted-foreground text-sm">
-                  在线状态
+                  {t('nodeList.columns.onlineStatus')}
                 </th>
                 <th className="h-12 px-4 text-left align-middle font-medium text-muted-foreground text-sm">
-                  状态
+                  {t('tableColumns.status')}
                 </th>
                 <th className="h-12 px-4 text-right align-middle font-medium text-muted-foreground text-sm">
-                  操作
+                  {t('tableColumns.actions')}
                 </th>
               </tr>
             </thead>
@@ -270,7 +272,7 @@ export const UserNodeList: React.FC<UserNodeListProps> = ({
                     </span>
                     {node.subscriptionPort && node.subscriptionPort !== node.agentPort && (
                       <div className="text-xs text-muted-foreground">
-                        订阅端口: {node.subscriptionPort}
+                        {t('nodeList.subscriptionPort')}: {node.subscriptionPort}
                       </div>
                     )}
                   </td>
@@ -284,19 +286,19 @@ export const UserNodeList: React.FC<UserNodeListProps> = ({
                       {node.isOnline ? (
                         <>
                           <Wifi className="h-4 w-4 text-green-500" />
-                          <span className="text-green-600 text-sm">在线</span>
+                          <span className="text-green-600 text-sm">{t('common.status.online')}</span>
                         </>
                       ) : (
                         <>
                           <WifiOff className="h-4 w-4 text-muted-foreground" />
-                          <span className="text-muted-foreground text-sm">离线</span>
+                          <span className="text-muted-foreground text-sm">{t('common.status.offline')}</span>
                         </>
                       )}
                     </div>
                   </td>
                   <td className="px-4 py-3">
                     <Badge variant={STATUS_VARIANTS[node.status]} className="text-xs">
-                      {STATUS_LABELS[node.status] || node.status}
+                      {t(STATUS_LABEL_KEYS[node.status]) || node.status}
                     </Badge>
                   </td>
                   <td className="px-4 py-3">
@@ -307,7 +309,7 @@ export const UserNodeList: React.FC<UserNodeListProps> = ({
                             <Eye className="h-4 w-4" />
                           </Button>
                         </TooltipTrigger>
-                        <TooltipContent>查看详情</TooltipContent>
+                        <TooltipContent>{t('subscription.viewDetails')}</TooltipContent>
                       </Tooltip>
                       <Tooltip>
                         <TooltipTrigger asChild>
@@ -315,7 +317,7 @@ export const UserNodeList: React.FC<UserNodeListProps> = ({
                             <Edit className="h-4 w-4" />
                           </Button>
                         </TooltipTrigger>
-                        <TooltipContent>编辑</TooltipContent>
+                        <TooltipContent>{t('common.actions.edit')}</TooltipContent>
                       </Tooltip>
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>
@@ -326,11 +328,11 @@ export const UserNodeList: React.FC<UserNodeListProps> = ({
                         <DropdownMenuContent align="end">
                           <DropdownMenuItem onClick={() => onInstallScript(node)}>
                             <Terminal className="mr-2 h-4 w-4" />
-                            安装脚本
+                            {t('nodeList.installScript')}
                           </DropdownMenuItem>
                           <DropdownMenuItem onClick={() => handleTokenClick(node)}>
                             <Key className="mr-2 h-4 w-4" />
-                            重新生成 Token
+                            {t('nodeList.regenerateToken')}
                           </DropdownMenuItem>
                           <DropdownMenuSeparator />
                           <DropdownMenuItem
@@ -338,7 +340,7 @@ export const UserNodeList: React.FC<UserNodeListProps> = ({
                             onClick={() => handleDeleteClick(node)}
                           >
                             <Trash2 className="mr-2 h-4 w-4" />
-                            删除节点
+                            {t('nodeList.deleteNode')}
                           </DropdownMenuItem>
                         </DropdownMenuContent>
                       </DropdownMenu>
@@ -355,10 +357,10 @@ export const UserNodeList: React.FC<UserNodeListProps> = ({
       <ConfirmDialog
         open={deleteConfirm.open}
         onOpenChange={(open) => setDeleteConfirm({ open, node: null })}
-        title="确认删除"
-        description={`确认删除节点「${deleteConfirm.node?.name}」吗？此操作不可恢复。`}
-        confirmText="删除"
-        cancelText="取消"
+        title={t('nodeList.confirmDeleteTitle')}
+        description={t('nodeList.confirmDeleteDesc', { name: deleteConfirm.node?.name })}
+        confirmText={t('common.actions.delete')}
+        cancelText={t('common.actions.cancel')}
         variant="destructive"
         onConfirm={handleDeleteConfirm}
       />
@@ -367,10 +369,10 @@ export const UserNodeList: React.FC<UserNodeListProps> = ({
       <ConfirmDialog
         open={tokenConfirm.open}
         onOpenChange={(open) => setTokenConfirm({ open, node: null })}
-        title="重新生成 Token"
-        description={`确认重新生成节点「${tokenConfirm.node?.name}」的 Token 吗？旧的 Token 将立即失效。`}
-        confirmText="确认"
-        cancelText="取消"
+        title={t('nodeList.regenerateTokenTitle')}
+        description={t('nodeList.regenerateTokenDesc', { name: tokenConfirm.node?.name })}
+        confirmText={t('common.actions.confirm')}
+        cancelText={t('common.actions.cancel')}
         onConfirm={handleTokenConfirm}
       />
     </>

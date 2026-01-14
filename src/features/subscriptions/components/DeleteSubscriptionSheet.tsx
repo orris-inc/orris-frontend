@@ -28,11 +28,14 @@ interface DeleteSubscriptionSheetProps extends DeleteSheetProps<Subscription> {
   user?: UserResponse;
 }
 
-// Status configuration with translation keys
+// Status configuration with translation keys (synced with SDK 2025-01-14)
 const STATUS_CONFIG: Record<SubscriptionStatus, { labelKey: string; color: string }> = {
+  inactive: { labelKey: 'subscriptionStatus.inactive', color: 'bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400' },
+  pending_payment: { labelKey: 'subscriptionStatus.pendingPayment', color: 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400' },
+  trialing: { labelKey: 'subscriptionStatus.trialing', color: 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400' },
   active: { labelKey: 'subscriptionStatus.active', color: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400' },
-  renewed: { labelKey: 'subscriptionStatus.renewed', color: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400' },
-  pending: { labelKey: 'subscriptionStatus.pending', color: 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400' },
+  past_due: { labelKey: 'subscriptionStatus.pastDue', color: 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400' },
+  suspended: { labelKey: 'subscriptionStatus.suspended', color: 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400' },
   cancelled: { labelKey: 'subscriptionStatus.cancelled', color: 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400' },
   expired: { labelKey: 'subscriptionStatus.expired', color: 'bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400' },
 };

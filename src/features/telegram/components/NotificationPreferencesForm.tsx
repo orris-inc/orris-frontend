@@ -7,6 +7,7 @@ import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { Loader2 } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { Switch, SwitchThumb } from '@/components/common/Switch';
 import { Input } from '@/components/common/Input';
 import { Button } from '@/components/common/Button';
@@ -35,6 +36,7 @@ export const NotificationPreferencesForm = ({
   onSubmit,
   isSubmitting,
 }: NotificationPreferencesFormProps) => {
+  const { t } = useTranslation();
   const {
     control,
     handleSubmit,
@@ -58,9 +60,9 @@ export const NotificationPreferencesForm = ({
       {/* Expiring notification */}
       <div className="flex items-center justify-between gap-4 py-2">
         <div className="flex-1 min-w-0">
-          <div className="text-sm font-medium">订阅到期提醒</div>
+          <div className="text-sm font-medium">{t('notifications.telegram.preferences.expiringTitle')}</div>
           <div className="flex items-center gap-2 text-sm text-muted-foreground">
-            <span>提前</span>
+            <span>{t('notifications.telegram.preferences.ahead')}</span>
             <Controller
               name="expiringDays"
               control={control}
@@ -76,7 +78,7 @@ export const NotificationPreferencesForm = ({
                 />
               )}
             />
-            <span>天通知</span>
+            <span>{t('notifications.telegram.preferences.daysNotify')}</span>
           </div>
         </div>
         <Controller
@@ -93,9 +95,9 @@ export const NotificationPreferencesForm = ({
       {/* Traffic notification */}
       <div className="flex items-center justify-between gap-4 py-2 border-t">
         <div className="flex-1 min-w-0">
-          <div className="text-sm font-medium">流量告警通知</div>
+          <div className="text-sm font-medium">{t('notifications.telegram.preferences.trafficTitle')}</div>
           <div className="flex items-center gap-2 text-sm text-muted-foreground">
-            <span>超过</span>
+            <span>{t('notifications.telegram.preferences.above')}</span>
             <Controller
               name="trafficThreshold"
               control={control}
@@ -111,7 +113,7 @@ export const NotificationPreferencesForm = ({
                 />
               )}
             />
-            <span>% 时告警</span>
+            <span>{t('notifications.telegram.preferences.percentAlert')}</span>
           </div>
         </div>
         <Controller
@@ -129,7 +131,7 @@ export const NotificationPreferencesForm = ({
       {isDirty && (
         <Button type="submit" size="sm" disabled={isSubmitting} className="w-full">
           {isSubmitting && <Loader2 className="mr-2 size-4 animate-spin" />}
-          保存
+          {t('common.actions.save')}
         </Button>
       )}
     </form>

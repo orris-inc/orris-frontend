@@ -1,9 +1,10 @@
 /**
- * 通用 Token 显示对话框组件
- * 用于显示生成的 Token，要求用户复制后才能关闭
+ * Token dialog component
+ * Displays generated token and requires user to copy before closing
  */
 
 import { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
   Dialog,
   DialogContent,
@@ -26,10 +27,11 @@ interface TokenDialogProps {
 export const TokenDialog: React.FC<TokenDialogProps> = ({
   open,
   token,
-  title = 'Token',
-  description = 'Token已生成，请妥善保存。此Token仅显示一次，丢失后需要重新生成。',
+  title,
+  description,
   onClose,
 }) => {
+  const { t } = useTranslation();
   const [hasCopied, setHasCopied] = useState(false);
 
   // Reset copy state
@@ -55,6 +57,9 @@ export const TokenDialog: React.FC<TokenDialogProps> = ({
 
   if (!token) return null;
 
+  const displayTitle = title ?? 'Token';
+  const displayDescription = description ?? t('common.token.defaultDescription');
+
   return (
     <Dialog
       open={open}
@@ -69,8 +74,8 @@ export const TokenDialog: React.FC<TokenDialogProps> = ({
         onPointerDownOutside={(e) => e.preventDefault()}
       >
         <DialogHeader>
-          <DialogTitle>{title}</DialogTitle>
-          <DialogDescription>{description}</DialogDescription>
+          <DialogTitle>{displayTitle}</DialogTitle>
+          <DialogDescription>{displayDescription}</DialogDescription>
         </DialogHeader>
         <div className="space-y-3">
           <textarea
@@ -81,11 +86,11 @@ export const TokenDialog: React.FC<TokenDialogProps> = ({
           />
           {hasCopied ? (
             <p className="text-sm text-green-600 dark:text-green-400 flex items-center gap-1">
-              <span>✓</span> Token已复制到剪贴板
+              {t('common.token.copied')}
             </p>
           ) : (
             <p className="text-sm text-amber-600 dark:text-amber-400">
-              请先复制Token后再关闭此对话框
+              {t('common.token.copyFirst')}
             </p>
           )}
         </div>
@@ -96,10 +101,10 @@ export const TokenDialog: React.FC<TokenDialogProps> = ({
             disabled={!hasCopied}
             className="w-full sm:w-auto"
           >
-            关闭
+            {t('common.actions.close')}
           </Button>
           <Button onClick={handleCopy} className="w-full sm:w-auto">
-            {hasCopied ? '再次复制' : '复制Token'}
+            {hasCopied ? t('common.token.copyAgain') : t('common.token.copy')}
           </Button>
         </DialogFooter>
       </DialogContent>

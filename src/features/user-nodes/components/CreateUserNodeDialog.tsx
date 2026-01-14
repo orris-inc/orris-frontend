@@ -3,6 +3,7 @@
  */
 
 import { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
   Dialog,
   DialogContent,
@@ -234,6 +235,7 @@ export const CreateUserNodeDialog: React.FC<CreateUserNodeDialogProps> = ({
   onSubmit,
   onTokenReceived,
 }) => {
+  const { t } = useTranslation();
   const [formData, setFormData] = useState<FormData>(getDefaultFormData());
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState<Partial<Record<keyof FormData, string>>>({});
@@ -258,13 +260,13 @@ export const CreateUserNodeDialog: React.FC<CreateUserNodeDialogProps> = ({
     const newErrors: Partial<Record<keyof FormData, string>> = {};
 
     if (!formData.name.trim()) {
-      newErrors.name = '请输入节点名称';
+      newErrors.name = t('userNodes.create.validation.nameRequired');
     }
     if (!formData.agentPort || isNaN(Number(formData.agentPort)) || Number(formData.agentPort) <= 0) {
-      newErrors.agentPort = '请输入有效的端口号';
+      newErrors.agentPort = t('userNodes.create.validation.portInvalid');
     }
     if (formData.subscriptionPort && (isNaN(Number(formData.subscriptionPort)) || Number(formData.subscriptionPort) <= 0)) {
-      newErrors.subscriptionPort = '请输入有效的端口号';
+      newErrors.subscriptionPort = t('userNodes.create.validation.portInvalid');
     }
 
     setErrors(newErrors);
@@ -447,9 +449,9 @@ export const CreateUserNodeDialog: React.FC<CreateUserNodeDialogProps> = ({
     <Dialog open={open} onOpenChange={handleClose}>
       <DialogContent className="sm:max-w-lg flex flex-col max-h-[90vh]">
         <DialogHeader className="flex-shrink-0">
-          <DialogTitle>创建节点</DialogTitle>
+          <DialogTitle>{t('userNodes.create.title')}</DialogTitle>
           <DialogDescription>
-            填写以下信息创建新节点。创建成功后将显示节点 Token，请妥善保管。
+            {t('userNodes.create.description')}
           </DialogDescription>
         </DialogHeader>
 
@@ -457,19 +459,19 @@ export const CreateUserNodeDialog: React.FC<CreateUserNodeDialogProps> = ({
         <div className="space-y-6 py-4">
           {/* Basic info */}
           <div className="space-y-4">
-            <h3 className="text-sm font-semibold">基本信息</h3>
+            <h3 className="text-sm font-semibold">{t('userNodes.create.basicInfo')}</h3>
             <Separator />
 
             <div className="space-y-4">
               <div className="flex flex-col gap-2">
                 <Label htmlFor="name">
-                  节点名称 <span className="text-destructive">*</span>
+                  {t('userNodes.create.nodeName')} <span className="text-destructive">*</span>
                 </Label>
                 <Input
                   id="name"
                   value={formData.name}
                   onChange={(e) => handleChange('name', e.target.value)}
-                  placeholder="例如：香港节点-01"
+                  placeholder={t('userNodes.create.placeholders.nodeName')}
                   disabled={loading}
                 />
                 {errors.name && <p className="text-xs text-destructive">{errors.name}</p>}
@@ -477,20 +479,20 @@ export const CreateUserNodeDialog: React.FC<CreateUserNodeDialogProps> = ({
 
               <div className="grid grid-cols-2 gap-4">
                 <div className="flex flex-col gap-2">
-                  <Label htmlFor="serverAddress">服务器地址</Label>
+                  <Label htmlFor="serverAddress">{t('userNodes.create.serverAddress')}</Label>
                   <Input
                     id="serverAddress"
                     value={formData.serverAddress}
                     onChange={(e) => handleChange('serverAddress', e.target.value)}
-                    placeholder="留空则自动检测"
+                    placeholder={t('userNodes.create.placeholders.serverAddress')}
                     disabled={loading}
                   />
-                  <p className="text-xs text-muted-foreground">可选，留空将从 Agent 公网 IP 自动检测</p>
+                  <p className="text-xs text-muted-foreground">{t('userNodes.create.hints.serverAddress')}</p>
                 </div>
 
                 <div className="flex flex-col gap-2">
                   <Label htmlFor="agentPort">
-                    Agent 端口 <span className="text-destructive">*</span>
+                    {t('userNodes.create.agentPort')} <span className="text-destructive">*</span>
                   </Label>
                   <Input
                     id="agentPort"
@@ -499,7 +501,7 @@ export const CreateUserNodeDialog: React.FC<CreateUserNodeDialogProps> = ({
                     max="65535"
                     value={formData.agentPort}
                     onChange={(e) => handleChange('agentPort', e.target.value)}
-                    placeholder="例如：8080"
+                    placeholder={t('userNodes.create.placeholders.agentPort')}
                     disabled={loading}
                   />
                   {errors.agentPort && <p className="text-xs text-destructive">{errors.agentPort}</p>}
@@ -508,7 +510,7 @@ export const CreateUserNodeDialog: React.FC<CreateUserNodeDialogProps> = ({
 
               <div className="grid grid-cols-2 gap-4">
                 <div className="flex flex-col gap-2">
-                  <Label htmlFor="subscriptionPort">订阅端口</Label>
+                  <Label htmlFor="subscriptionPort">{t('userNodes.create.subscriptionPort')}</Label>
                   <Input
                     id="subscriptionPort"
                     type="number"
@@ -516,7 +518,7 @@ export const CreateUserNodeDialog: React.FC<CreateUserNodeDialogProps> = ({
                     max="65535"
                     value={formData.subscriptionPort}
                     onChange={(e) => handleChange('subscriptionPort', e.target.value)}
-                    placeholder="留空则使用 Agent 端口"
+                    placeholder={t('userNodes.create.placeholders.subscriptionPort')}
                     disabled={loading}
                   />
                   {errors.subscriptionPort && <p className="text-xs text-destructive">{errors.subscriptionPort}</p>}
@@ -524,7 +526,7 @@ export const CreateUserNodeDialog: React.FC<CreateUserNodeDialogProps> = ({
 
                 <div className="flex flex-col gap-2">
                   <Label htmlFor="protocol">
-                    协议类型 <span className="text-destructive">*</span>
+                    {t('userNodes.create.protocol')} <span className="text-destructive">*</span>
                   </Label>
                   <Select
                     value={formData.protocol}
@@ -551,12 +553,12 @@ export const CreateUserNodeDialog: React.FC<CreateUserNodeDialogProps> = ({
           {/* Shadowsocks config */}
           {formData.protocol === 'shadowsocks' && (
             <div className="space-y-4">
-              <h3 className="text-sm font-semibold">Shadowsocks 配置</h3>
+              <h3 className="text-sm font-semibold">{t('userNodes.create.shadowsocks.title')}</h3>
               <Separator />
 
               <div className="space-y-4">
                 <div className="flex flex-col gap-2">
-                  <Label htmlFor="method">加密方法</Label>
+                  <Label htmlFor="method">{t('userNodes.create.shadowsocks.method')}</Label>
                   <Select
                     value={formData.method}
                     onValueChange={(value) => handleChange('method', value)}
@@ -576,18 +578,18 @@ export const CreateUserNodeDialog: React.FC<CreateUserNodeDialogProps> = ({
                 </div>
 
                 <div className="flex flex-col gap-2">
-                  <Label htmlFor="plugin">插件名称</Label>
+                  <Label htmlFor="plugin">{t('userNodes.create.shadowsocks.plugin')}</Label>
                   <Input
                     id="plugin"
                     value={formData.plugin}
                     onChange={(e) => handleChange('plugin', e.target.value)}
-                    placeholder="例如：v2ray-plugin"
+                    placeholder={t('userNodes.create.placeholders.plugin')}
                     disabled={loading}
                   />
                 </div>
 
                 <div className="flex flex-col gap-2">
-                  <Label htmlFor="pluginOpts">插件参数</Label>
+                  <Label htmlFor="pluginOpts">{t('userNodes.create.shadowsocks.pluginOpts')}</Label>
                   <Input
                     id="pluginOpts"
                     value={formData.pluginOpts}
@@ -595,7 +597,7 @@ export const CreateUserNodeDialog: React.FC<CreateUserNodeDialogProps> = ({
                     placeholder="key1=value1;key2=value2"
                     disabled={loading}
                   />
-                  <p className="text-xs text-muted-foreground">格式：key1=value1;key2=value2 或 JSON</p>
+                  <p className="text-xs text-muted-foreground">{t('userNodes.create.hints.pluginOpts')}</p>
                 </div>
               </div>
             </div>
@@ -604,12 +606,12 @@ export const CreateUserNodeDialog: React.FC<CreateUserNodeDialogProps> = ({
           {/* Trojan config */}
           {formData.protocol === 'trojan' && (
             <div className="space-y-4">
-              <h3 className="text-sm font-semibold">Trojan 配置</h3>
+              <h3 className="text-sm font-semibold">{t('userNodes.create.trojan.title')}</h3>
               <Separator />
 
               <div className="space-y-4">
                 <div className="flex flex-col gap-2">
-                  <Label htmlFor="transportProtocol">传输协议</Label>
+                  <Label htmlFor="transportProtocol">{t('userNodes.create.transportProtocol')}</Label>
                   <Select
                     value={formData.transportProtocol}
                     onValueChange={(value) => handleChange('transportProtocol', value as TransportProtocol)}
@@ -632,7 +634,7 @@ export const CreateUserNodeDialog: React.FC<CreateUserNodeDialogProps> = ({
                   <>
                     <div className="flex flex-col gap-2">
                       <Label htmlFor="host">
-                        {formData.transportProtocol === 'ws' ? 'Host 头' : 'Service Name'}
+                        {formData.transportProtocol === 'ws' ? t('userNodes.create.hostHeader') : 'Service Name'}
                       </Label>
                       <Input
                         id="host"
@@ -645,7 +647,7 @@ export const CreateUserNodeDialog: React.FC<CreateUserNodeDialogProps> = ({
 
                     {formData.transportProtocol === 'ws' && (
                       <div className="flex flex-col gap-2">
-                        <Label htmlFor="path">WebSocket 路径</Label>
+                        <Label htmlFor="path">{t('userNodes.create.wsPath')}</Label>
                         <Input
                           id="path"
                           value={formData.path}
@@ -659,7 +661,7 @@ export const CreateUserNodeDialog: React.FC<CreateUserNodeDialogProps> = ({
                 )}
 
                 <div className="flex flex-col gap-2">
-                  <Label htmlFor="sni">TLS SNI</Label>
+                  <Label htmlFor="sni">{t('userNodes.create.tlsSni')}</Label>
                   <Input
                     id="sni"
                     value={formData.sni}
@@ -677,7 +679,7 @@ export const CreateUserNodeDialog: React.FC<CreateUserNodeDialogProps> = ({
                     disabled={loading}
                   />
                   <Label htmlFor="allowInsecure" className="cursor-pointer">
-                    允许不安全的 TLS 连接
+                    {t('userNodes.create.allowInsecure')}
                   </Label>
                 </div>
               </div>
@@ -687,13 +689,13 @@ export const CreateUserNodeDialog: React.FC<CreateUserNodeDialogProps> = ({
           {/* VLESS config */}
           {formData.protocol === 'vless' && (
             <div className="space-y-4">
-              <h3 className="text-sm font-semibold">VLESS 配置</h3>
+              <h3 className="text-sm font-semibold">{t('userNodes.create.vless.title')}</h3>
               <Separator />
 
               <div className="space-y-4">
                 <div className="grid grid-cols-2 gap-4">
                   <div className="flex flex-col gap-2">
-                    <Label htmlFor="vlessTransportType">传输协议</Label>
+                    <Label htmlFor="vlessTransportType">{t('userNodes.create.transportProtocol')}</Label>
                     <Select
                       value={formData.vlessTransportType}
                       onValueChange={(value) => handleChange('vlessTransportType', value as TransportProtocol)}
@@ -713,7 +715,7 @@ export const CreateUserNodeDialog: React.FC<CreateUserNodeDialogProps> = ({
                   </div>
 
                   <div className="flex flex-col gap-2">
-                    <Label htmlFor="vlessSecurity">安全类型</Label>
+                    <Label htmlFor="vlessSecurity">{t('userNodes.create.vless.securityType')}</Label>
                     <Select
                       value={formData.vlessSecurity}
                       onValueChange={(value) => handleChange('vlessSecurity', value as VLESSSecurity)}
@@ -734,20 +736,20 @@ export const CreateUserNodeDialog: React.FC<CreateUserNodeDialogProps> = ({
                 </div>
 
                 <div className="flex flex-col gap-2">
-                  <Label htmlFor="vlessFlow">Flow (流控)</Label>
+                  <Label htmlFor="vlessFlow">{t('userNodes.create.vless.flow')}</Label>
                   <Input
                     id="vlessFlow"
                     value={formData.vlessFlow}
                     onChange={(e) => handleChange('vlessFlow', e.target.value)}
-                    placeholder="例如：xtls-rprx-vision"
+                    placeholder={t('userNodes.create.placeholders.vlessFlow')}
                     disabled={loading}
                   />
-                  <p className="text-xs text-muted-foreground">可选，用于 XTLS 流控</p>
+                  <p className="text-xs text-muted-foreground">{t('userNodes.create.hints.vlessFlow')}</p>
                 </div>
 
                 <div className="grid grid-cols-2 gap-4">
                   <div className="flex flex-col gap-2">
-                    <Label htmlFor="vlessSni">TLS SNI</Label>
+                    <Label htmlFor="vlessSni">{t('userNodes.create.tlsSni')}</Label>
                     <Input
                       id="vlessSni"
                       value={formData.vlessSni}
@@ -758,17 +760,17 @@ export const CreateUserNodeDialog: React.FC<CreateUserNodeDialogProps> = ({
                   </div>
 
                   <div className="flex flex-col gap-2">
-                    <Label htmlFor="vlessFingerprint">TLS 指纹</Label>
+                    <Label htmlFor="vlessFingerprint">{t('userNodes.create.tlsFingerprint')}</Label>
                     <Select
                       value={formData.vlessFingerprint}
                       onValueChange={(value) => handleChange('vlessFingerprint', value)}
                       disabled={loading}
                     >
                       <SelectTrigger id="vlessFingerprint">
-                        <SelectValue placeholder="选择指纹" />
+                        <SelectValue placeholder={t('userNodes.create.placeholders.selectFingerprint')} />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="">不指定</SelectItem>
+                        <SelectItem value="">{t('userNodes.create.notSpecified')}</SelectItem>
                         {TLS_FINGERPRINT_OPTIONS.map((fp) => (
                           <SelectItem key={fp.value} value={fp.value}>
                             {fp.label}
@@ -783,7 +785,7 @@ export const CreateUserNodeDialog: React.FC<CreateUserNodeDialogProps> = ({
                 {(formData.vlessTransportType === 'ws' || formData.vlessTransportType === 'h2') && (
                   <div className="grid grid-cols-2 gap-4">
                     <div className="flex flex-col gap-2">
-                      <Label htmlFor="vlessHost">Host 头</Label>
+                      <Label htmlFor="vlessHost">{t('userNodes.create.hostHeader')}</Label>
                       <Input
                         id="vlessHost"
                         value={formData.vlessHost}
@@ -794,7 +796,7 @@ export const CreateUserNodeDialog: React.FC<CreateUserNodeDialogProps> = ({
                     </div>
 
                     <div className="flex flex-col gap-2">
-                      <Label htmlFor="vlessPath">路径</Label>
+                      <Label htmlFor="vlessPath">{t('userNodes.create.path')}</Label>
                       <Input
                         id="vlessPath"
                         value={formData.vlessPath}
@@ -825,30 +827,30 @@ export const CreateUserNodeDialog: React.FC<CreateUserNodeDialogProps> = ({
                   <>
                     <div className="grid grid-cols-2 gap-4">
                       <div className="flex flex-col gap-2">
-                        <Label htmlFor="vlessRealityPublicKey">Reality 公钥</Label>
+                        <Label htmlFor="vlessRealityPublicKey">{t('userNodes.create.vless.realityPublicKey')}</Label>
                         <Input
                           id="vlessRealityPublicKey"
                           value={formData.vlessRealityPublicKey}
                           onChange={(e) => handleChange('vlessRealityPublicKey', e.target.value)}
-                          placeholder="服务端公钥"
+                          placeholder={t('userNodes.create.placeholders.realityPublicKey')}
                           disabled={loading}
                         />
                       </div>
 
                       <div className="flex flex-col gap-2">
-                        <Label htmlFor="vlessRealityShortId">Reality Short ID</Label>
+                        <Label htmlFor="vlessRealityShortId">{t('userNodes.create.vless.realityShortId')}</Label>
                         <Input
                           id="vlessRealityShortId"
                           value={formData.vlessRealityShortId}
                           onChange={(e) => handleChange('vlessRealityShortId', e.target.value)}
-                          placeholder="短 ID"
+                          placeholder={t('userNodes.create.placeholders.realityShortId')}
                           disabled={loading}
                         />
                       </div>
                     </div>
 
                     <div className="flex flex-col gap-2">
-                      <Label htmlFor="vlessRealitySpiderX">Reality Spider X</Label>
+                      <Label htmlFor="vlessRealitySpiderX">{t('userNodes.create.vless.realitySpiderX')}</Label>
                       <Input
                         id="vlessRealitySpiderX"
                         value={formData.vlessRealitySpiderX}
@@ -856,7 +858,7 @@ export const CreateUserNodeDialog: React.FC<CreateUserNodeDialogProps> = ({
                         placeholder="/"
                         disabled={loading}
                       />
-                      <p className="text-xs text-muted-foreground">可选</p>
+                      <p className="text-xs text-muted-foreground">{t('userNodes.create.hints.optional')}</p>
                     </div>
                   </>
                 )}
@@ -869,7 +871,7 @@ export const CreateUserNodeDialog: React.FC<CreateUserNodeDialogProps> = ({
                     disabled={loading}
                   />
                   <Label htmlFor="vlessAllowInsecure" className="cursor-pointer">
-                    允许不安全的 TLS 连接
+                    {t('userNodes.create.allowInsecure')}
                   </Label>
                 </div>
               </div>
@@ -879,13 +881,13 @@ export const CreateUserNodeDialog: React.FC<CreateUserNodeDialogProps> = ({
           {/* VMess config */}
           {formData.protocol === 'vmess' && (
             <div className="space-y-4">
-              <h3 className="text-sm font-semibold">VMess 配置</h3>
+              <h3 className="text-sm font-semibold">{t('userNodes.create.vmess.title')}</h3>
               <Separator />
 
               <div className="space-y-4">
                 <div className="grid grid-cols-2 gap-4">
                   <div className="flex flex-col gap-2">
-                    <Label htmlFor="vmessTransportType">传输协议</Label>
+                    <Label htmlFor="vmessTransportType">{t('userNodes.create.transportProtocol')}</Label>
                     <Select
                       value={formData.vmessTransportType}
                       onValueChange={(value) => handleChange('vmessTransportType', value as TransportProtocol)}
@@ -905,7 +907,7 @@ export const CreateUserNodeDialog: React.FC<CreateUserNodeDialogProps> = ({
                   </div>
 
                   <div className="flex flex-col gap-2">
-                    <Label htmlFor="vmessSecurity">加密方式</Label>
+                    <Label htmlFor="vmessSecurity">{t('userNodes.create.vmess.encryption')}</Label>
                     <Select
                       value={formData.vmessSecurity}
                       onValueChange={(value) => handleChange('vmessSecurity', value as VMessSecurity)}
@@ -926,7 +928,7 @@ export const CreateUserNodeDialog: React.FC<CreateUserNodeDialogProps> = ({
                 </div>
 
                 <div className="flex flex-col gap-2">
-                  <Label htmlFor="vmessAlterId">Alter ID</Label>
+                  <Label htmlFor="vmessAlterId">{t('userNodes.create.vmess.alterId')}</Label>
                   <Input
                     id="vmessAlterId"
                     type="number"
@@ -936,12 +938,12 @@ export const CreateUserNodeDialog: React.FC<CreateUserNodeDialogProps> = ({
                     placeholder="0"
                     disabled={loading}
                   />
-                  <p className="text-xs text-muted-foreground">通常为 0</p>
+                  <p className="text-xs text-muted-foreground">{t('userNodes.create.hints.alterId')}</p>
                 </div>
 
                 <div className="grid grid-cols-2 gap-4">
                   <div className="flex flex-col gap-2">
-                    <Label htmlFor="vmessSni">TLS SNI</Label>
+                    <Label htmlFor="vmessSni">{t('userNodes.create.tlsSni')}</Label>
                     <Input
                       id="vmessSni"
                       value={formData.vmessSni}
@@ -952,7 +954,7 @@ export const CreateUserNodeDialog: React.FC<CreateUserNodeDialogProps> = ({
                   </div>
 
                   <div className="flex flex-col gap-2">
-                    <Label>TLS 设置</Label>
+                    <Label>{t('userNodes.create.vmess.tlsSettings')}</Label>
                     <div className="flex items-center gap-4 h-10">
                       <div className="flex items-center gap-2">
                         <Checkbox
@@ -962,7 +964,7 @@ export const CreateUserNodeDialog: React.FC<CreateUserNodeDialogProps> = ({
                           disabled={loading}
                         />
                         <Label htmlFor="vmessTls" className="cursor-pointer text-sm">
-                          启用 TLS
+                          {t('userNodes.create.vmess.enableTls')}
                         </Label>
                       </div>
                     </div>
@@ -973,7 +975,7 @@ export const CreateUserNodeDialog: React.FC<CreateUserNodeDialogProps> = ({
                 {(formData.vmessTransportType === 'ws' || formData.vmessTransportType === 'http') && (
                   <div className="grid grid-cols-2 gap-4">
                     <div className="flex flex-col gap-2">
-                      <Label htmlFor="vmessHost">Host 头</Label>
+                      <Label htmlFor="vmessHost">{t('userNodes.create.hostHeader')}</Label>
                       <Input
                         id="vmessHost"
                         value={formData.vmessHost}
@@ -984,7 +986,7 @@ export const CreateUserNodeDialog: React.FC<CreateUserNodeDialogProps> = ({
                     </div>
 
                     <div className="flex flex-col gap-2">
-                      <Label htmlFor="vmessPath">路径</Label>
+                      <Label htmlFor="vmessPath">{t('userNodes.create.path')}</Label>
                       <Input
                         id="vmessPath"
                         value={formData.vmessPath}
@@ -1018,7 +1020,7 @@ export const CreateUserNodeDialog: React.FC<CreateUserNodeDialogProps> = ({
                     disabled={loading}
                   />
                   <Label htmlFor="vmessAllowInsecure" className="cursor-pointer">
-                    允许不安全的 TLS 连接
+                    {t('userNodes.create.allowInsecure')}
                   </Label>
                 </div>
               </div>
@@ -1028,12 +1030,12 @@ export const CreateUserNodeDialog: React.FC<CreateUserNodeDialogProps> = ({
           {/* Hysteria2 config */}
           {formData.protocol === 'hysteria2' && (
             <div className="space-y-4">
-              <h3 className="text-sm font-semibold">Hysteria2 配置</h3>
+              <h3 className="text-sm font-semibold">{t('userNodes.create.hysteria2.title')}</h3>
               <Separator />
 
               <div className="space-y-4">
                 <div className="flex flex-col gap-2">
-                  <Label htmlFor="hysteria2CongestionControl">拥塞控制</Label>
+                  <Label htmlFor="hysteria2CongestionControl">{t('userNodes.create.congestionControl')}</Label>
                   <Select
                     value={formData.hysteria2CongestionControl}
                     onValueChange={(value) => handleChange('hysteria2CongestionControl', value as CongestionControl)}
@@ -1050,12 +1052,12 @@ export const CreateUserNodeDialog: React.FC<CreateUserNodeDialogProps> = ({
                       ))}
                     </SelectContent>
                   </Select>
-                  <p className="text-xs text-muted-foreground">推荐使用 BBR</p>
+                  <p className="text-xs text-muted-foreground">{t('userNodes.create.hints.recommendBbr')}</p>
                 </div>
 
                 <div className="grid grid-cols-2 gap-4">
                   <div className="flex flex-col gap-2">
-                    <Label htmlFor="hysteria2Obfs">Obfs 类型</Label>
+                    <Label htmlFor="hysteria2Obfs">{t('userNodes.create.hysteria2.obfsType')}</Label>
                     <Input
                       id="hysteria2Obfs"
                       value={formData.hysteria2Obfs}
@@ -1063,16 +1065,16 @@ export const CreateUserNodeDialog: React.FC<CreateUserNodeDialogProps> = ({
                       placeholder="salamander"
                       disabled={loading}
                     />
-                    <p className="text-xs text-muted-foreground">可选，混淆类型</p>
+                    <p className="text-xs text-muted-foreground">{t('userNodes.create.hints.obfsType')}</p>
                   </div>
 
                   <div className="flex flex-col gap-2">
-                    <Label htmlFor="hysteria2ObfsPassword">Obfs 密码</Label>
+                    <Label htmlFor="hysteria2ObfsPassword">{t('userNodes.create.hysteria2.obfsPassword')}</Label>
                     <Input
                       id="hysteria2ObfsPassword"
                       value={formData.hysteria2ObfsPassword}
                       onChange={(e) => handleChange('hysteria2ObfsPassword', e.target.value)}
-                      placeholder="混淆密码"
+                      placeholder={t('userNodes.create.placeholders.obfsPassword')}
                       disabled={loading}
                     />
                   </div>
@@ -1080,7 +1082,7 @@ export const CreateUserNodeDialog: React.FC<CreateUserNodeDialogProps> = ({
 
                 <div className="grid grid-cols-2 gap-4">
                   <div className="flex flex-col gap-2">
-                    <Label htmlFor="hysteria2UpMbps">上行带宽 (Mbps)</Label>
+                    <Label htmlFor="hysteria2UpMbps">{t('userNodes.create.hysteria2.upMbps')}</Label>
                     <Input
                       id="hysteria2UpMbps"
                       type="number"
@@ -1090,11 +1092,11 @@ export const CreateUserNodeDialog: React.FC<CreateUserNodeDialogProps> = ({
                       placeholder="100"
                       disabled={loading}
                     />
-                    <p className="text-xs text-muted-foreground">可选</p>
+                    <p className="text-xs text-muted-foreground">{t('userNodes.create.hints.optional')}</p>
                   </div>
 
                   <div className="flex flex-col gap-2">
-                    <Label htmlFor="hysteria2DownMbps">下行带宽 (Mbps)</Label>
+                    <Label htmlFor="hysteria2DownMbps">{t('userNodes.create.hysteria2.downMbps')}</Label>
                     <Input
                       id="hysteria2DownMbps"
                       type="number"
@@ -1104,13 +1106,13 @@ export const CreateUserNodeDialog: React.FC<CreateUserNodeDialogProps> = ({
                       placeholder="100"
                       disabled={loading}
                     />
-                    <p className="text-xs text-muted-foreground">可选</p>
+                    <p className="text-xs text-muted-foreground">{t('userNodes.create.hints.optional')}</p>
                   </div>
                 </div>
 
                 <div className="grid grid-cols-2 gap-4">
                   <div className="flex flex-col gap-2">
-                    <Label htmlFor="hysteria2Sni">TLS SNI</Label>
+                    <Label htmlFor="hysteria2Sni">{t('userNodes.create.tlsSni')}</Label>
                     <Input
                       id="hysteria2Sni"
                       value={formData.hysteria2Sni}
@@ -1121,17 +1123,17 @@ export const CreateUserNodeDialog: React.FC<CreateUserNodeDialogProps> = ({
                   </div>
 
                   <div className="flex flex-col gap-2">
-                    <Label htmlFor="hysteria2Fingerprint">TLS 指纹</Label>
+                    <Label htmlFor="hysteria2Fingerprint">{t('userNodes.create.tlsFingerprint')}</Label>
                     <Select
                       value={formData.hysteria2Fingerprint}
                       onValueChange={(value) => handleChange('hysteria2Fingerprint', value)}
                       disabled={loading}
                     >
                       <SelectTrigger id="hysteria2Fingerprint">
-                        <SelectValue placeholder="选择指纹" />
+                        <SelectValue placeholder={t('userNodes.create.placeholders.selectFingerprint')} />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="">不指定</SelectItem>
+                        <SelectItem value="">{t('userNodes.create.notSpecified')}</SelectItem>
                         {TLS_FINGERPRINT_OPTIONS.map((fp) => (
                           <SelectItem key={fp.value} value={fp.value}>
                             {fp.label}
@@ -1150,7 +1152,7 @@ export const CreateUserNodeDialog: React.FC<CreateUserNodeDialogProps> = ({
                     disabled={loading}
                   />
                   <Label htmlFor="hysteria2AllowInsecure" className="cursor-pointer">
-                    允许不安全的 TLS 连接
+                    {t('userNodes.create.allowInsecure')}
                   </Label>
                 </div>
               </div>
@@ -1160,13 +1162,13 @@ export const CreateUserNodeDialog: React.FC<CreateUserNodeDialogProps> = ({
           {/* TUIC config */}
           {formData.protocol === 'tuic' && (
             <div className="space-y-4">
-              <h3 className="text-sm font-semibold">TUIC 配置</h3>
+              <h3 className="text-sm font-semibold">{t('userNodes.create.tuic.title')}</h3>
               <Separator />
 
               <div className="space-y-4">
                 <div className="grid grid-cols-2 gap-4">
                   <div className="flex flex-col gap-2">
-                    <Label htmlFor="tuicCongestionControl">拥塞控制</Label>
+                    <Label htmlFor="tuicCongestionControl">{t('userNodes.create.congestionControl')}</Label>
                     <Select
                       value={formData.tuicCongestionControl}
                       onValueChange={(value) => handleChange('tuicCongestionControl', value as CongestionControl)}
@@ -1183,11 +1185,11 @@ export const CreateUserNodeDialog: React.FC<CreateUserNodeDialogProps> = ({
                         ))}
                       </SelectContent>
                     </Select>
-                    <p className="text-xs text-muted-foreground">推荐使用 BBR</p>
+                    <p className="text-xs text-muted-foreground">{t('userNodes.create.hints.recommendBbr')}</p>
                   </div>
 
                   <div className="flex flex-col gap-2">
-                    <Label htmlFor="tuicUdpRelayMode">UDP 中继模式</Label>
+                    <Label htmlFor="tuicUdpRelayMode">{t('userNodes.create.tuic.udpRelayMode')}</Label>
                     <Select
                       value={formData.tuicUdpRelayMode}
                       onValueChange={(value) => handleChange('tuicUdpRelayMode', value as TUICUDPRelayMode)}
@@ -1209,7 +1211,7 @@ export const CreateUserNodeDialog: React.FC<CreateUserNodeDialogProps> = ({
 
                 <div className="grid grid-cols-2 gap-4">
                   <div className="flex flex-col gap-2">
-                    <Label htmlFor="tuicSni">TLS SNI</Label>
+                    <Label htmlFor="tuicSni">{t('userNodes.create.tlsSni')}</Label>
                     <Input
                       id="tuicSni"
                       value={formData.tuicSni}
@@ -1220,7 +1222,7 @@ export const CreateUserNodeDialog: React.FC<CreateUserNodeDialogProps> = ({
                   </div>
 
                   <div className="flex flex-col gap-2">
-                    <Label htmlFor="tuicAlpn">ALPN</Label>
+                    <Label htmlFor="tuicAlpn">{t('userNodes.create.tuic.alpn')}</Label>
                     <Input
                       id="tuicAlpn"
                       value={formData.tuicAlpn}
@@ -1228,7 +1230,7 @@ export const CreateUserNodeDialog: React.FC<CreateUserNodeDialogProps> = ({
                       placeholder="h3"
                       disabled={loading}
                     />
-                    <p className="text-xs text-muted-foreground">应用层协议协商</p>
+                    <p className="text-xs text-muted-foreground">{t('userNodes.create.hints.alpn')}</p>
                   </div>
                 </div>
 
@@ -1241,7 +1243,7 @@ export const CreateUserNodeDialog: React.FC<CreateUserNodeDialogProps> = ({
                       disabled={loading}
                     />
                     <Label htmlFor="tuicAllowInsecure" className="cursor-pointer">
-                      允许不安全的 TLS 连接
+                      {t('userNodes.create.allowInsecure')}
                     </Label>
                   </div>
 
@@ -1253,7 +1255,7 @@ export const CreateUserNodeDialog: React.FC<CreateUserNodeDialogProps> = ({
                       disabled={loading}
                     />
                     <Label htmlFor="tuicDisableSni" className="cursor-pointer">
-                      禁用 SNI
+                      {t('userNodes.create.tuic.disableSni')}
                     </Label>
                   </div>
                 </div>
@@ -1265,10 +1267,10 @@ export const CreateUserNodeDialog: React.FC<CreateUserNodeDialogProps> = ({
 
         <DialogFooter className="flex-shrink-0">
           <Button variant="outline" onClick={handleClose} disabled={loading}>
-            取消
+            {t('common.actions.cancel')}
           </Button>
           <Button onClick={handleSubmit} disabled={loading || !formData.name || !formData.agentPort}>
-            {loading ? '创建中...' : '创建'}
+            {loading ? t('userNodes.create.creating') : t('common.actions.create')}
           </Button>
         </DialogFooter>
       </DialogContent>

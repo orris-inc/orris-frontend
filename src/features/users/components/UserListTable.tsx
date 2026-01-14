@@ -62,23 +62,23 @@ export const UserListTable: React.FC<UserListTableProps> = ({
     <>
       <ContextMenuItem onClick={() => onAssignSubscription(user)}>
         <CreditCard className="mr-2 size-4" />
-        分配订阅
+        {t('admin.users.assignSubscription')}
       </ContextMenuItem>
       <ContextMenuItem onClick={() => onEdit(user)}>
         <Edit className="mr-2 size-4" />
-        编辑
+        {t('common.actions.edit')}
       </ContextMenuItem>
       <ContextMenuItem onClick={() => onResetPassword(user)}>
         <KeyRound className="mr-2 size-4" />
-        重置密码
+        {t('user.detail.resetPassword')}
       </ContextMenuItem>
       <ContextMenuSeparator />
       <ContextMenuItem
         onClick={() => onDelete(user)}
-        className="text-red-600 dark:text-red-400"
+        className="text-destructive"
       >
         <Trash2 className="mr-2 size-4" />
-        删除
+        {t('common.actions.delete')}
       </ContextMenuItem>
     </>
   ), [onAssignSubscription, onEdit, onResetPassword, onDelete]);
@@ -88,23 +88,23 @@ export const UserListTable: React.FC<UserListTableProps> = ({
     <>
       <DropdownMenuItem onClick={() => onAssignSubscription(user)}>
         <CreditCard className="mr-2 size-4" />
-        分配订阅
+        {t('admin.users.assignSubscription')}
       </DropdownMenuItem>
       <DropdownMenuItem onClick={() => onEdit(user)}>
         <Edit className="mr-2 size-4" />
-        编辑
+        {t('common.actions.edit')}
       </DropdownMenuItem>
       <DropdownMenuItem onClick={() => onResetPassword(user)}>
         <KeyRound className="mr-2 size-4" />
-        重置密码
+        {t('user.detail.resetPassword')}
       </DropdownMenuItem>
       <DropdownMenuSeparator />
       <DropdownMenuItem
         onClick={() => onDelete(user)}
-        className="text-red-600 dark:text-red-400"
+        className="text-destructive"
       >
         <Trash2 className="mr-2 size-4" />
-        删除
+        {t('common.actions.delete')}
       </DropdownMenuItem>
     </>
   ), [onAssignSubscription, onEdit, onResetPassword, onDelete]);
@@ -119,30 +119,28 @@ export const UserListTable: React.FC<UserListTableProps> = ({
     },
     {
       accessorKey: 'email',
-      header: '邮箱',
+      header: t('tableColumns.email'),
       meta: { priority: 1 } as ResponsiveColumnMeta,
       cell: ({ row }) => (
-        <span className="text-slate-900 dark:text-white">
+        <span className="text-foreground">
           {row.original.email}
         </span>
       ),
     },
     {
       accessorKey: 'name',
-      header: '姓名',
+      header: t('tableColumns.name'),
       size: 140,
       meta: { priority: 2 } as ResponsiveColumnMeta,
       cell: ({ row }) => (
-        <div className="space-y-1">
-          <div className="font-medium text-slate-900 dark:text-white">
-            {row.original.name || '-'}
-          </div>
-        </div>
+        <span className="font-medium text-foreground">
+          {row.original.name || '-'}
+        </span>
       ),
     },
     {
       accessorKey: 'role',
-      header: '角色',
+      header: t('tableColumns.role'),
       size: 72,
       meta: { priority: 2 } as ResponsiveColumnMeta,
       cell: ({ row }) => {
@@ -156,7 +154,7 @@ export const UserListTable: React.FC<UserListTableProps> = ({
     },
     {
       accessorKey: 'status',
-      header: '状态',
+      header: t('tableColumns.status'),
       size: 72,
       meta: { priority: 1 } as ResponsiveColumnMeta,
       cell: ({ row }) => {
@@ -170,26 +168,26 @@ export const UserListTable: React.FC<UserListTableProps> = ({
     },
     {
       accessorKey: 'createdAt',
-      header: '创建时间',
+      header: t('tableColumns.createdAt'),
       size: 140,
       meta: { priority: 4 } as ResponsiveColumnMeta,
       cell: ({ row }) => (
-        <span className="text-slate-500 dark:text-slate-400 text-sm">
+        <span className="text-sm text-muted-foreground">
           {formatDate(row.original.createdAt)}
         </span>
       ),
     },
     {
       id: 'actions',
-      header: '操作',
+      header: t('tableColumns.actions'),
       size: 56,
       enableSorting: false,
       meta: { priority: 1 } as ResponsiveColumnMeta,
       cell: ({ row }) => (
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <button className="inline-flex items-center justify-center size-8 rounded-lg text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-700 transition-all duration-200 group">
-              <MoreHorizontal className="size-4 group-hover:scale-110 transition-transform" strokeWidth={2} />
+            <button className="inline-flex items-center justify-center size-8 rounded-lg text-muted-foreground hover:text-foreground hover:bg-accent/50 transition-colors">
+              <MoreHorizontal className="size-4" />
             </button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
@@ -198,7 +196,7 @@ export const UserListTable: React.FC<UserListTableProps> = ({
         </DropdownMenu>
       ),
     },
-  ], [renderDropdownMenuActions]);
+  ], [t, renderDropdownMenuActions]);
 
   // Render mobile card list on small screens
   if (isMobile) {
@@ -224,7 +222,7 @@ export const UserListTable: React.FC<UserListTableProps> = ({
       total={total}
       onPageChange={onPageChange}
       onPageSizeChange={onPageSizeChange}
-      emptyMessage="暂无用户数据"
+      emptyMessage={t('admin.users.noData')}
       getRowId={(row) => String(row.id)}
       enableContextMenu={true}
       contextMenuContent={renderContextMenuActions}

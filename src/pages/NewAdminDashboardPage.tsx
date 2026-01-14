@@ -4,11 +4,12 @@
  */
 
 import { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router';
 import { AdminLayout } from '@/layouts/AdminLayout';
 import { useAuthStore } from '@/features/auth/stores/auth-store';
 import { usePageTitle } from '@/shared/hooks';
-import { useBreakpoint } from '@/hooks';
+import { useBreakpoint, useVersionInfo } from '@/hooks';
 import { listUsers } from '@/api/user';
 import { adminListSubscriptions } from '@/api/subscription';
 import { listNodes } from '@/api/node';
@@ -21,7 +22,7 @@ import {
 } from '@/features/admin-traffic';
 import {
   DateRangeSelector,
-  TrafficTrendChart,
+  LazyTrafficTrendChart,
   TrafficRankingList,
   NodeTrafficStats,
 } from '@/components/admin';
@@ -233,11 +234,13 @@ const useDashboardStats = () => {
 
 // ============ Main Page Component ============
 export const NewAdminDashboardPage = () => {
-  usePageTitle('控制台');
+  const { t } = useTranslation();
+  usePageTitle(t('admin.dashboard.title'));
 
   const { user } = useAuthStore();
   const navigate = useNavigate();
   const { isMobile } = useBreakpoint();
+  const { serverVersion, clientVersion } = useVersionInfo();
   const { stats, loading } = useDashboardStats();
 
   // Traffic analytics state
@@ -273,7 +276,7 @@ export const NewAdminDashboardPage = () => {
       <AdminLayout>
         <div className="p-4 rounded-lg border border-destructive/30 bg-destructive/10">
           <p className="text-sm text-destructive">
-            无法加载用户信息
+            {t('admin.dashboard.unableToLoadUser')}
           </p>
         </div>
       </AdminLayout>
@@ -286,6 +289,8 @@ export const NewAdminDashboardPage = () => {
       <AdminLayout>
         <MobileAdminDashboard
           userName={user.displayName || user.email?.split('@')[0]}
+          serverVersion={serverVersion ?? undefined}
+          clientVersion={clientVersion}
           stats={stats}
           trafficOverview={trafficOverview ?? undefined}
           trafficTrend={trafficTrend ?? undefined}
@@ -302,7 +307,7 @@ export const NewAdminDashboardPage = () => {
   // Combined stats cards - basic stats + traffic stats in one row
   const statsCards = [
     {
-      title: '总用户数',
+      title: t('admin.stats.totalUsers'),
       value: stats.totalUsers.toLocaleString(),
       icon: <Users className="size-4" strokeWidth={1.5} />,
       iconBg: 'bg-info-muted',
@@ -310,7 +315,7 @@ export const NewAdminDashboardPage = () => {
       loading,
     },
     {
-      title: '订阅总数',
+      title: t('admin.stats.totalSubscriptions'),
       value: stats.activeSubscriptions.toLocaleString(),
       icon: <CreditCard className="size-4" strokeWidth={1.5} />,
       iconBg: 'bg-success-muted',
@@ -318,7 +323,7 @@ export const NewAdminDashboardPage = () => {
       loading,
     },
     {
-      title: '节点总数',
+      title: t('admin.stats.totalNodes'),
       value: stats.totalNodes.toLocaleString(),
       icon: <Server className="size-4" strokeWidth={1.5} />,
       iconBg: 'bg-primary/10',
@@ -326,7 +331,7 @@ export const NewAdminDashboardPage = () => {
       loading,
     },
     {
-      title: '在线节点',
+      title: t('admin.stats.onlineNodes'),
       value: stats.activeNodes.toLocaleString(),
       icon: <Activity className="size-4" strokeWidth={1.5} />,
       iconBg: 'bg-warning-muted',
@@ -334,7 +339,7 @@ export const NewAdminDashboardPage = () => {
       loading,
     },
     {
-      title: '总上传',
+      title: t('admin.stats.totalUpload'),
       value: trafficOverview ? formatTrafficBytes(trafficOverview.totalUpload) : '-',
       icon: <ArrowUp className="size-4" strokeWidth={1.5} />,
       iconBg: 'bg-chart-upload/10',
@@ -342,7 +347,7 @@ export const NewAdminDashboardPage = () => {
       loading: isTrafficLoading,
     },
     {
-      title: '总下载',
+      title: t('admin.stats.totalDownload'),
       value: trafficOverview ? formatTrafficBytes(trafficOverview.totalDownload) : '-',
       icon: <ArrowDown className="size-4" strokeWidth={1.5} />,
       iconBg: 'bg-chart-download/10',
@@ -350,7 +355,7 @@ export const NewAdminDashboardPage = () => {
       loading: isTrafficLoading,
     },
     {
-      title: '总流量',
+      title: t('admin.stats.totalTraffic'),
       value: trafficOverview ? formatTrafficBytes(trafficOverview.totalTraffic) : '-',
       icon: <Activity className="size-4" strokeWidth={1.5} />,
       iconBg: 'bg-accent/10',
@@ -358,7 +363,7 @@ export const NewAdminDashboardPage = () => {
       loading: isTrafficLoading,
     },
     {
-      title: '活跃用户',
+      title: t('admin.stats.activeUsers'),
       value: trafficOverview ? trafficOverview.activeUsers.toLocaleString() : '-',
       icon: <Users className="size-4" strokeWidth={1.5} />,
       iconBg: 'bg-destructive/10',
@@ -369,24 +374,24 @@ export const NewAdminDashboardPage = () => {
 
   const quickActions = [
     {
-      title: '用户',
-      description: '管理所有用户账户和权限',
+      title: t('admin.quickAccess.users'),
+      description: t('admin.quickAccess.usersDesc'),
       icon: <Users className="size-4 sm:size-5" strokeWidth={1.5} />,
       iconBg: 'bg-info-muted',
       iconColor: 'text-info',
       onClick: () => navigate('/admin/users'),
     },
     {
-      title: '订阅',
-      description: '查看和管理用户订阅',
+      title: t('admin.quickAccess.subscriptions'),
+      description: t('admin.quickAccess.subscriptionsDesc'),
       icon: <CreditCard className="size-4 sm:size-5" strokeWidth={1.5} />,
       iconBg: 'bg-success-muted',
       iconColor: 'text-success',
       onClick: () => navigate('/admin/subscriptions'),
     },
     {
-      title: '节点',
-      description: '监控和配置服务器节点',
+      title: t('admin.quickAccess.nodes'),
+      description: t('admin.quickAccess.nodesDesc'),
       icon: <Server className="size-4 sm:size-5" strokeWidth={1.5} />,
       iconBg: 'bg-primary/10',
       iconColor: 'text-primary',
@@ -401,7 +406,7 @@ export const NewAdminDashboardPage = () => {
 
   const systemStatuses = [
     {
-      label: '节点在线率',
+      label: t('admin.systemStatus.nodeOnlineRate'),
       status:
         nodeOnlineRate >= 90
           ? ('online' as const)
@@ -412,24 +417,24 @@ export const NewAdminDashboardPage = () => {
       icon: <Server className="size-4" strokeWidth={1.5} />,
     },
     {
-      label: '活跃节点',
+      label: t('admin.systemStatus.activeNodes'),
       status: stats.activeNodes > 0 ? ('online' as const) : ('offline' as const),
-      value: `${stats.activeNodes} 个`,
+      value: t('admin.systemStatus.count', { count: stats.activeNodes }),
       icon: <Activity className="size-4" strokeWidth={1.5} />,
     },
   ];
 
   return (
     <AdminLayout>
-      <div className="py-4 sm:py-5">
+      <div className="py-4 sm:py-6">
         {/* Compact page header */}
         <header className="flex items-center justify-between mb-4">
           <div>
-            <h1 className="text-xl sm:text-2xl font-bold text-foreground tracking-tight">
-              控制台
+            <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-foreground tracking-tight">
+              {t('admin.dashboard.title')}
             </h1>
-            <p className="text-xs text-muted-foreground">
-              欢迎回来，{user.displayName || user.email?.split('@')[0]}
+            <p className="text-xs sm:text-sm text-muted-foreground mt-0.5">
+              {t('admin.dashboard.welcomeBack', { name: user.displayName || user.email?.split('@')[0] })}
             </p>
           </div>
           <DateRangeSelector
@@ -450,10 +455,11 @@ export const NewAdminDashboardPage = () => {
         {/* Traffic analytics section */}
         <section className="space-y-4">
           {/* Traffic trend chart */}
-          <TrafficTrendChart
+          <LazyTrafficTrendChart
             data={trafficTrend?.points ?? []}
             granularity={granularity}
             loading={isTrafficLoading}
+            overview={trafficOverview ?? undefined}
           />
 
           {/* Traffic ranking and node stats - 1:1 layout */}
@@ -480,7 +486,7 @@ export const NewAdminDashboardPage = () => {
             {/* Left: Quick actions */}
             <div className="lg:col-span-3">
               <h2 className="text-sm font-semibold text-foreground mb-2">
-                快速访问
+                {t('admin.quickAccess.title')}
               </h2>
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
                 {quickActions.map((action) => (
@@ -492,7 +498,7 @@ export const NewAdminDashboardPage = () => {
             {/* Right: System status */}
             <div>
               <h2 className="text-sm font-semibold text-foreground mb-2">
-                系统状态
+                {t('admin.systemStatus.title')}
               </h2>
               <div className="bg-card rounded-lg p-3 border border-border">
                 {loading ? (

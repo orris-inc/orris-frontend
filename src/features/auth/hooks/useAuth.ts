@@ -171,15 +171,15 @@ export const useAuth = () => {
    * Logout
    */
   const logout = useCallback(async () => {
-    // Redirect immediately to prevent ProtectedRoute from redirecting to /login
-    // before this navigation completes
-    window.location.href = '/';
-
-    // Call logout API in background (fire and forget)
-    // The page will refresh anyway, so we don't need to wait or handle errors
-    authApi.logout().catch(() => {
-      // Ignore errors - cookie will be cleared on page refresh anyway
-    });
+    try {
+      // Call logout API first to clear HttpOnly cookie on server
+      await authApi.logout();
+    } catch {
+      // Ignore errors - proceed with redirect anyway
+    } finally {
+      // Redirect after API call completes
+      window.location.href = '/';
+    }
   }, []);
 
   return {

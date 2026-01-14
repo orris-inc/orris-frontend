@@ -10,6 +10,7 @@
 
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { ViewTransitionLink } from '@/components/common/ViewTransitionLink';
 import {
   Menu,
@@ -21,7 +22,7 @@ import { TooltipProvider } from '@/components/common/Tooltip';
 import { AdminSidebarNav, AdminSidebarFooter } from '@/components/navigation/AdminSidebarNav';
 import { MobileDrawer } from '@/components/navigation/MobileDrawer';
 import { UserMenu } from '@/components/navigation/UserMenu';
-import { useBreakpoint, useCurrentPageTitle } from '@/hooks';
+import { useBreakpoint, useCurrentPageTitle, useVersionInfo } from '@/hooks';
 
 import { useAuthStore } from '@/features/auth/stores/auth-store';
 import { useAuth } from '@/features/auth/hooks/useAuth';
@@ -38,12 +39,14 @@ interface AdminLayoutProps {
 }
 
 export const AdminLayout = ({ children }: AdminLayoutProps) => {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const { user } = useAuthStore();
   const { logout } = useAuth();
   const { filterNavigationByPermission } = usePermissions();
   const { isMobile } = useBreakpoint();
   const currentPageTitle = useCurrentPageTitle('管理控制台');
+  const { serverVersion, clientVersion } = useVersionInfo();
 
   const [mobileDrawerOpen, setMobileDrawerOpen] = useState(false);
   const [collapsed, setCollapsed] = useState(() => {
@@ -106,6 +109,8 @@ export const AdminLayout = ({ children }: AdminLayoutProps) => {
           } : null}
           showAdminSwitch
           isAdminView
+          serverVersion={serverVersion ?? undefined}
+          clientVersion={clientVersion}
           onAdminClick={() => navigate('/dashboard')}
           onLogout={handleLogout}
         />
@@ -159,6 +164,37 @@ export const AdminLayout = ({ children }: AdminLayoutProps) => {
           <AdminSidebarFooter collapsed={collapsed} tooltipLabel="切换到用户视图">
             <SwitchToUserViewLink collapsed={collapsed} />
           </AdminSidebarFooter>
+
+          {/* Version info */}
+          {(serverVersion || clientVersion) && (
+            <div
+              className={cn(
+                'shrink-0 border-t border-black/[0.04] dark:border-white/[0.06]',
+                'py-2.5 text-[10px] text-muted-foreground/50',
+                collapsed ? 'px-2 text-center' : 'px-4'
+              )}
+            >
+              {collapsed ? (
+                <div className="space-y-0.5 font-mono text-[9px]">
+                  {serverVersion && <div>{serverVersion}</div>}
+                  <div>{clientVersion}</div>
+                </div>
+              ) : (
+                <div className="space-y-1">
+                  {serverVersion && (
+                    <div className="flex items-center justify-between">
+                      <span>{t('app.serverVersion')}</span>
+                      <span className="font-mono text-muted-foreground/70">{serverVersion}</span>
+                    </div>
+                  )}
+                  <div className="flex items-center justify-between">
+                    <span>{t('app.clientVersion')}</span>
+                    <span className="font-mono text-muted-foreground/70">{clientVersion}</span>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
         </aside>
 
         {/* 主内容区域 */}

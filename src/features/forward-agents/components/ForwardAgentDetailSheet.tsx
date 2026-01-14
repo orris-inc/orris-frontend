@@ -115,14 +115,21 @@ const formatBytesRate = (bytesPerSec: number): string => {
 /**
  * Format uptime seconds to human readable string
  */
-const formatUptime = (seconds: number): string => {
+const formatUptime = (
+  seconds: number,
+  t: (key: string, options?: Record<string, unknown>) => string
+): string => {
   if (!seconds || seconds <= 0) return '-';
   const days = Math.floor(seconds / 86400);
   const hours = Math.floor((seconds % 86400) / 3600);
-  if (days > 0) return `${days}天${hours}时`;
+  if (days > 0) {
+    return t('admin.forwardAgents.detail.uptimeFormat.daysHours', { days, hours });
+  }
   const mins = Math.floor((seconds % 3600) / 60);
-  if (hours > 0) return `${hours}时${mins}分`;
-  return `${mins}分`;
+  if (hours > 0) {
+    return t('admin.forwardAgents.detail.uptimeFormat.hoursMins', { hours, mins });
+  }
+  return t('admin.forwardAgents.detail.uptimeFormat.mins', { mins });
 };
 
 // ============================================================================
@@ -172,10 +179,12 @@ const OnlineIndicator = ({
   isOnline,
   isConnected,
   agentStatus,
+  t,
 }: {
   isOnline: boolean;
   isConnected: boolean;
   agentStatus: string;
+  t: (key: string) => string;
 }) => {
   return (
     <span className="inline-flex items-center gap-2">
@@ -195,17 +204,21 @@ const OnlineIndicator = ({
             <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-success opacity-75 motion-reduce:hidden"></span>
             <span className="relative inline-flex rounded-full h-2 w-2 bg-success"></span>
           </span>
-          <span className="text-sm font-medium">在线</span>
+          <span className="text-sm font-medium">{t('admin.forwardAgents.detail.online')}</span>
         </span>
       ) : agentStatus === 'enabled' || isConnected ? (
         <span className="inline-flex items-center gap-1.5 text-muted-foreground">
           <span className="inline-block h-2 w-2 rounded-full bg-muted-foreground/30"></span>
-          <span className="text-sm">{isConnected ? '等待状态' : '连接中...'}</span>
+          <span className="text-sm">
+            {isConnected
+              ? t('admin.forwardAgents.detail.waitingStatus')
+              : t('admin.forwardAgents.detail.connecting')}
+          </span>
         </span>
       ) : (
         <span className="inline-flex items-center gap-1.5 text-muted-foreground">
           <span className="inline-block h-2 w-2 rounded-full bg-muted-foreground/30"></span>
-          <span className="text-sm">离线</span>
+          <span className="text-sm">{t('admin.forwardAgents.detail.offline')}</span>
         </span>
       )}
     </span>
@@ -215,18 +228,26 @@ const OnlineIndicator = ({
 /**
  * System Status Display - uses real-time SSE status if available
  */
-const SystemStatusSection = ({ status }: { status: AgentSystemStatus }) => {
+const SystemStatusSection = ({
+  status,
+  t,
+}: {
+  status: AgentSystemStatus;
+  t: (key: string, options?: Record<string, unknown>) => string;
+}) => {
   if (!status) return null;
 
   return (
-    <DetailSection title="系统状态">
+    <DetailSection title={t('admin.forwardAgents.detail.systemStatus')}>
       {/* CPU */}
       <div className="px-3 py-2.5">
         <div className="flex items-center gap-3">
           <Gauge className="size-4 text-muted-foreground" />
           <div className="flex-1">
             <div className="flex items-center justify-between mb-1">
-              <span className="text-xs text-muted-foreground">CPU</span>
+              <span className="text-xs text-muted-foreground">
+                {t('admin.forwardAgents.detail.cpu')}
+              </span>
               <span className="text-xs font-medium tabular-nums">
                 {Math.round(status.cpuPercent)}%
               </span>
@@ -254,9 +275,12 @@ const SystemStatusSection = ({ status }: { status: AgentSystemStatus }) => {
           <HardDrive className="size-4 text-muted-foreground" />
           <div className="flex-1">
             <div className="flex items-center justify-between mb-1">
-              <span className="text-xs text-muted-foreground">内存</span>
+              <span className="text-xs text-muted-foreground">
+                {t('admin.forwardAgents.detail.memory')}
+              </span>
               <span className="text-xs font-medium tabular-nums">
-                {Math.round(status.memoryPercent)}% ({formatBytes(status.memoryUsed)} / {formatBytes(status.memoryTotal)})
+                {Math.round(status.memoryPercent)}% ({formatBytes(status.memoryUsed)} /{' '}
+                {formatBytes(status.memoryTotal)})
               </span>
             </div>
             <div className="h-1.5 bg-muted/30 rounded-full overflow-hidden">
@@ -283,9 +307,12 @@ const SystemStatusSection = ({ status }: { status: AgentSystemStatus }) => {
             <HardDrive className="size-4 text-muted-foreground" />
             <div className="flex-1">
               <div className="flex items-center justify-between mb-1">
-                <span className="text-xs text-muted-foreground">磁盘</span>
+                <span className="text-xs text-muted-foreground">
+                  {t('admin.forwardAgents.detail.disk')}
+                </span>
                 <span className="text-xs font-medium tabular-nums">
-                  {Math.round(status.diskPercent)}% ({formatBytes(status.diskUsed)} / {formatBytes(status.diskTotal)})
+                  {Math.round(status.diskPercent)}% ({formatBytes(status.diskUsed)} /{' '}
+                  {formatBytes(status.diskTotal)})
                 </span>
               </div>
               <div className="h-1.5 bg-muted/30 rounded-full overflow-hidden">
@@ -311,13 +338,16 @@ const SystemStatusSection = ({ status }: { status: AgentSystemStatus }) => {
         <div className="flex items-center gap-3">
           <Network className="size-4 text-muted-foreground" />
           <div className="flex-1">
-            <div className="text-xs text-muted-foreground mb-1">网络</div>
+            <div className="text-xs text-muted-foreground mb-1">
+              {t('admin.forwardAgents.detail.network')}
+            </div>
             <div className="flex items-center gap-3 text-xs font-mono">
               <span className="text-success">↓ {formatBytesRate(status.networkRxRate)}/s</span>
               <span className="text-info">↑ {formatBytesRate(status.networkTxRate)}/s</span>
             </div>
             <div className="text-[10px] text-muted-foreground mt-0.5">
-              累计: {formatBytes(status.networkRxBytes)} / {formatBytes(status.networkTxBytes)}
+              {t('admin.forwardAgents.detail.totalLabel')}: {formatBytes(status.networkRxBytes)} /{' '}
+              {formatBytes(status.networkTxBytes)}
             </div>
           </div>
         </div>
@@ -326,18 +356,21 @@ const SystemStatusSection = ({ status }: { status: AgentSystemStatus }) => {
       {/* Uptime and connections */}
       <DetailRow
         icon={<Clock className="size-4" />}
-        label="运行时间"
+        label={t('admin.forwardAgents.detail.uptime')}
         value={
           <span className="flex items-center gap-3 text-sm">
-            <span>{formatUptime(status.uptimeSeconds)}</span>
+            <span>{formatUptime(status.uptimeSeconds, t)}</span>
             <span className="text-muted-foreground">·</span>
             <span className="text-muted-foreground">
-              连接: {(status.tcpConnections || 0) + (status.udpConnections || 0)}
+              {t('admin.forwardAgents.detail.connections')}:{' '}
+              {(status.tcpConnections || 0) + (status.udpConnections || 0)}
             </span>
             {status.loadAvg1 !== undefined && (
               <>
                 <span className="text-muted-foreground">·</span>
-                <span className="text-muted-foreground">负载: {status.loadAvg1.toFixed(2)}</span>
+                <span className="text-muted-foreground">
+                  {t('admin.forwardAgents.detail.load')}: {status.loadAvg1.toFixed(2)}
+                </span>
               </>
             )}
           </span>
@@ -386,7 +419,7 @@ export const ForwardAgentDetailSheet = ({
     ...(onRegenerateToken
       ? [
           {
-            label: '重新生成 Token',
+            label: t('admin.forwardAgents.detail.regenerateToken'),
             icon: <Key className="size-5" />,
             onPress: async () => {
               onRegenerateToken(agent);
@@ -397,7 +430,7 @@ export const ForwardAgentDetailSheet = ({
     ...(onGetInstallScript
       ? [
           {
-            label: '获取安装脚本',
+            label: t('admin.forwardAgents.detail.getInstallScript'),
             icon: <Terminal className="size-5" />,
             onPress: async () => {
               onGetInstallScript(agent);
@@ -406,7 +439,7 @@ export const ForwardAgentDetailSheet = ({
         ]
       : []),
     {
-      label: '删除 Agent',
+      label: t('admin.forwardAgents.detail.deleteAgent'),
       icon: <Trash2 className="size-5" />,
       onPress: async () => {
         onDelete(agent);
@@ -442,11 +475,12 @@ export const ForwardAgentDetailSheet = ({
                     isOnline={isOnline || agent.isOnline}
                     isConnected={isConnected}
                     agentStatus={agent.status}
+                    t={t}
                   />
                   {agent.hasUpdate && (isOnline || agent.isOnline) && (
                     <span className="inline-flex items-center gap-1 text-warning text-xs">
                       <ArrowUpCircle className="size-3.5" />
-                      可更新
+                      {t('admin.forwardAgents.detail.updatable')}
                     </span>
                   )}
                 </SheetDescription>
@@ -456,7 +490,7 @@ export const ForwardAgentDetailSheet = ({
 
           <SheetBody className="space-y-4 pb-4">
             {/* Basic Info */}
-            <DetailSection title="基本信息">
+            <DetailSection title={t('admin.forwardAgents.detail.basicInfo')}>
               <DetailRow
                 icon={<Hash className="size-4" />}
                 label="Agent ID"
@@ -464,12 +498,14 @@ export const ForwardAgentDetailSheet = ({
               />
               <DetailRow
                 icon={<Globe className="size-4" />}
-                label="公网地址"
+                label={t('admin.forwardAgents.detail.publicAddress')}
                 value={
                   <span className="font-mono text-xs">
                     {agent.publicAddress || systemStatus?.publicIpv4 || '-'}
                     {!agent.publicAddress && systemStatus?.publicIpv4 && (
-                      <span className="text-muted-foreground ml-2">(自动)</span>
+                      <span className="text-muted-foreground ml-2">
+                        ({t('admin.forwardAgents.detail.auto')})
+                      </span>
                     )}
                   </span>
                 }
@@ -477,7 +513,7 @@ export const ForwardAgentDetailSheet = ({
               {agent.tunnelAddress && (
                 <DetailRow
                   icon={<Network className="size-4" />}
-                  label="隧道地址"
+                  label={t('admin.forwardAgents.detail.tunnelAddress')}
                   value={<span className="font-mono text-xs">{agent.tunnelAddress}</span>}
                 />
               )}
@@ -485,14 +521,17 @@ export const ForwardAgentDetailSheet = ({
               {(systemStatus?.publicIpv4 || systemStatus?.publicIpv6) && (
                 <DetailRow
                   icon={<Globe className="size-4" />}
-                  label="公网 IP"
+                  label={t('admin.forwardAgents.detail.publicIp')}
                   value={
                     <div className="space-y-0.5">
                       {systemStatus.publicIpv4 && (
                         <div className="font-mono text-xs">{systemStatus.publicIpv4}</div>
                       )}
                       {systemStatus.publicIpv6 && (
-                        <div className="font-mono text-xs text-muted-foreground truncate" title={systemStatus.publicIpv6}>
+                        <div
+                          className="font-mono text-xs text-muted-foreground truncate"
+                          title={systemStatus.publicIpv6}
+                        >
                           {systemStatus.publicIpv6}
                         </div>
                       )}
@@ -506,23 +545,27 @@ export const ForwardAgentDetailSheet = ({
             {!isConnected ? (
               <div className="flex items-center justify-center py-8">
                 <Loader2 className="size-6 animate-spin text-muted-foreground" />
-                <span className="ml-2 text-sm text-muted-foreground">正在建立实时连接...</span>
+                <span className="ml-2 text-sm text-muted-foreground">
+                  {t('admin.forwardAgents.detail.establishingConnection')}
+                </span>
               </div>
             ) : systemStatus ? (
-              <SystemStatusSection status={systemStatus} />
+              <SystemStatusSection status={systemStatus} t={t} />
             ) : (
               <div className="flex items-center justify-center py-8 text-sm text-muted-foreground">
-                暂无系统状态数据
+                {t('admin.forwardAgents.detail.noSystemStatusData')}
               </div>
             )}
 
             {/* Configuration Info */}
-            {(agent.allowedPortRange || (agent.blockedProtocols && agent.blockedProtocols.length > 0) || agent.muteNotification) && (
-              <DetailSection title="配置信息">
+            {(agent.allowedPortRange ||
+              (agent.blockedProtocols && agent.blockedProtocols.length > 0) ||
+              agent.muteNotification) && (
+              <DetailSection title={t('admin.forwardAgents.detail.configInfo')}>
                 {agent.allowedPortRange && (
                   <DetailRow
                     icon={<Shield className="size-4" />}
-                    label="允许端口范围"
+                    label={t('admin.forwardAgents.detail.allowedPortRange')}
                     value={<span className="font-mono text-xs">{agent.allowedPortRange}</span>}
                   />
                 )}
@@ -531,7 +574,9 @@ export const ForwardAgentDetailSheet = ({
                     <div className="flex items-start gap-3">
                       <Ban className="size-4 text-muted-foreground shrink-0 mt-0.5" />
                       <div className="flex-1 min-w-0">
-                        <div className="text-xs text-muted-foreground mb-1">阻止协议</div>
+                        <div className="text-xs text-muted-foreground mb-1">
+                          {t('admin.forwardAgents.detail.blockedProtocols')}
+                        </div>
                         <div className="flex flex-wrap gap-1.5">
                           {agent.blockedProtocols.map((protocol) => (
                             <Badge key={protocol} variant="secondary" className="text-xs">
@@ -546,8 +591,12 @@ export const ForwardAgentDetailSheet = ({
                 {agent.muteNotification && (
                   <DetailRow
                     icon={<BellOff className="size-4" />}
-                    label="通知"
-                    value={<span className="text-warning">已静音</span>}
+                    label={t('admin.forwardAgents.detail.notification')}
+                    value={
+                      <span className="text-warning">
+                        {t('admin.forwardAgents.detail.muted')}
+                      </span>
+                    }
                   />
                 )}
               </DetailSection>
@@ -555,10 +604,10 @@ export const ForwardAgentDetailSheet = ({
 
             {/* Version Info */}
             {(agent.agentVersion || systemStatus?.agentVersion) && (
-              <DetailSection title="版本信息">
+              <DetailSection title={t('admin.forwardAgents.detail.versionInfo')}>
                 <DetailRow
                   icon={<ArrowUpCircle className="size-4" />}
-                  label="Agent 版本"
+                  label={t('admin.forwardAgents.detail.agentVersion')}
                   value={
                     <span className={cn('font-mono text-xs', agent.hasUpdate ? 'text-warning' : '')}>
                       v{agent.agentVersion || systemStatus?.agentVersion}
@@ -567,7 +616,11 @@ export const ForwardAgentDetailSheet = ({
                           ({systemStatus?.platform}/{systemStatus?.arch})
                         </span>
                       )}
-                      {agent.hasUpdate && <span className="text-warning ml-2 font-normal">(可更新)</span>}
+                      {agent.hasUpdate && (
+                        <span className="text-warning ml-2 font-normal">
+                          ({t('admin.forwardAgents.detail.updatableLabel')})
+                        </span>
+                      )}
                     </span>
                   }
                 />
@@ -576,7 +629,7 @@ export const ForwardAgentDetailSheet = ({
 
             {/* Remark */}
             {agent.remark && (
-              <DetailSection title="备注">
+              <DetailSection title={t('admin.forwardAgents.detail.remark')}>
                 <div className="px-3 py-2.5">
                   <div className="flex items-start gap-3">
                     <FileText className="size-4 text-muted-foreground shrink-0 mt-0.5" />
@@ -589,20 +642,20 @@ export const ForwardAgentDetailSheet = ({
             )}
 
             {/* Timestamps */}
-            <DetailSection title="时间信息">
+            <DetailSection title={t('admin.forwardAgents.detail.timeInfo')}>
               <DetailRow
                 icon={<Calendar className="size-4" />}
-                label="创建时间"
+                label={t('admin.forwardAgents.detail.createdAt')}
                 value={formatDate(agent.createdAt)}
               />
               <DetailRow
                 icon={<Calendar className="size-4" />}
-                label="更新时间"
+                label={t('admin.forwardAgents.detail.updatedAt')}
                 value={formatDate(agent.updatedAt)}
               />
               <DetailRow
                 icon={<Activity className="size-4" />}
-                label="最后在线"
+                label={t('admin.forwardAgents.detail.lastOnline')}
                 value={agent.lastSeenAt ? formatDate(agent.lastSeenAt) : '-'}
               />
             </DetailSection>
@@ -625,7 +678,7 @@ export const ForwardAgentDetailSheet = ({
                 )}
               >
                 <Edit className="size-4" />
-                编辑
+                {t('common.actions.edit')}
               </button>
               <button
                 type="button"
@@ -650,12 +703,12 @@ export const ForwardAgentDetailSheet = ({
                 {agent.status === 'enabled' ? (
                   <>
                     <PowerOff className="size-4" />
-                    禁用
+                    {t('common.actions.disable')}
                   </>
                 ) : (
                   <>
                     <Power className="size-4" />
-                    启用
+                    {t('common.actions.enable')}
                   </>
                 )}
               </button>
@@ -681,7 +734,7 @@ export const ForwardAgentDetailSheet = ({
         open={actionSheetOpen}
         onOpenChange={setActionSheetOpen}
         actions={moreActions}
-        title="更多操作"
+        title={t('admin.forwardAgents.detail.moreActions')}
       />
     </>
   );

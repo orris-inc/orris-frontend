@@ -47,6 +47,9 @@ export interface MobileSubscriptionManagementProps {
   onActivate: (subscription: Subscription) => void;
   onCancel: (subscription: Subscription) => void;
   onRenew: (subscription: Subscription) => void;
+  onSuspend: (subscription: Subscription) => void;
+  onUnsuspend: (subscription: Subscription) => void;
+  onResetUsage: (subscription: Subscription) => void;
   onDelete: (subscription: Subscription) => void;
   onPageChange: (page: number) => void;
 }
@@ -62,10 +65,12 @@ const getStatusFilterOptions = (
 ): SegmentOption<StatusFilter>[] => [
   { value: 'all', label: t('filter.all') },
   { value: 'active', label: t('subscriptionStatus.active') },
+  { value: 'trialing', label: t('subscriptionStatus.trialing'), hideWhenZero: true },
+  { value: 'pending_payment', label: t('subscriptionStatus.pendingPayment'), hideWhenZero: true },
+  { value: 'past_due', label: t('subscriptionStatus.pastDue'), hideWhenZero: true },
+  { value: 'suspended', label: t('subscriptionStatus.suspended'), hideWhenZero: true },
   { value: 'expired', label: t('subscriptionStatus.expired'), hideWhenZero: true },
   { value: 'cancelled', label: t('subscriptionStatus.cancelled'), hideWhenZero: true },
-  { value: 'pending', label: t('subscriptionStatus.pending'), hideWhenZero: true },
-  { value: 'renewed', label: t('subscriptionStatus.renewed'), hideWhenZero: true },
 ];
 
 // ============================================================================
@@ -322,6 +327,9 @@ export const MobileSubscriptionManagement = ({
   onActivate,
   onCancel,
   onRenew,
+  onSuspend,
+  onUnsuspend,
+  onResetUsage,
   onDelete,
   onPageChange,
 }: MobileSubscriptionManagementProps) => {
@@ -331,14 +339,16 @@ export const MobileSubscriptionManagement = ({
   const [selectedSubscription, setSelectedSubscription] = useState<Subscription | null>(null);
   const [detailSheetOpen, setDetailSheetOpen] = useState(false);
 
-  // Calculate stats
+  // Calculate stats (synced with SDK 2025-01-14)
   const stats = useMemo(() => {
     const active = subscriptions.filter((s) => s.status === 'active').length;
+    const trialing = subscriptions.filter((s) => s.status === 'trialing').length;
+    const pendingPayment = subscriptions.filter((s) => s.status === 'pending_payment').length;
+    const pastDue = subscriptions.filter((s) => s.status === 'past_due').length;
+    const suspended = subscriptions.filter((s) => s.status === 'suspended').length;
     const cancelled = subscriptions.filter((s) => s.status === 'cancelled').length;
     const expired = subscriptions.filter((s) => s.status === 'expired').length;
-    const pending = subscriptions.filter((s) => s.status === 'pending').length;
-    const renewed = subscriptions.filter((s) => s.status === 'renewed').length;
-    return { total, active, cancelled, expired, pending, renewed };
+    return { total, active, trialing, pendingPayment, pastDue, suspended, cancelled, expired };
   }, [subscriptions, total]);
 
   // Add counts to filter options
@@ -352,17 +362,23 @@ export const MobileSubscriptionManagement = ({
         case 'active':
           count = stats.active;
           break;
+        case 'trialing':
+          count = stats.trialing;
+          break;
+        case 'pending_payment':
+          count = stats.pendingPayment;
+          break;
+        case 'past_due':
+          count = stats.pastDue;
+          break;
+        case 'suspended':
+          count = stats.suspended;
+          break;
         case 'expired':
           count = stats.expired;
           break;
         case 'cancelled':
           count = stats.cancelled;
-          break;
-        case 'pending':
-          count = stats.pending;
-          break;
-        case 'renewed':
-          count = stats.renewed;
           break;
         default:
           count = 0;
@@ -526,6 +542,9 @@ export const MobileSubscriptionManagement = ({
         onActivate={onActivate}
         onCancel={onCancel}
         onRenew={onRenew}
+        onSuspend={onSuspend}
+        onUnsuspend={onUnsuspend}
+        onResetUsage={onResetUsage}
         onDelete={onDelete}
       />
     </div>

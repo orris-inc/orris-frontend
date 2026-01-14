@@ -1,9 +1,10 @@
 /**
- * 节点详情查看对话框
- * 基于 Node API 类型定义
+ * Node detail view dialog
+ * Based on Node API type definitions
  */
 
 import { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
   Dialog,
   DialogContent,
@@ -33,11 +34,11 @@ interface NodeDetailDialogProps {
   nodes?: OutboundNodeOption[];
 }
 
-// Status label mapping
-const STATUS_CONFIG: Record<string, { label: string; variant: 'default' | 'secondary' | 'outline' | 'destructive' }> = {
-  active: { label: '已激活', variant: 'default' },
-  inactive: { label: '未激活', variant: 'secondary' },
-  maintenance: { label: '维护中', variant: 'outline' },
+// Status variant mapping (labels are now translated)
+const STATUS_VARIANT: Record<string, 'default' | 'secondary' | 'outline' | 'destructive'> = {
+  active: 'default',
+  inactive: 'secondary',
+  maintenance: 'outline',
 };
 
 // Protocol type label mapping
@@ -81,6 +82,7 @@ export const NodeDetailDialog: React.FC<NodeDetailDialogProps> = ({
   onClose,
   nodes = [],
 }) => {
+  const { t } = useTranslation();
   const [versionInfo, setVersionInfo] = useState<NodeVersionInfo | null>(null);
   const [versionLoading, setVersionLoading] = useState(false);
   const [updateLoading, setUpdateLoading] = useState(false);
@@ -117,7 +119,7 @@ export const NodeDetailDialog: React.FC<NodeDetailDialogProps> = ({
       const response = await triggerNodeUpdate(node.id);
       setUpdateMessage(response.message);
     } catch {
-      setUpdateMessage('更新触发失败');
+      setUpdateMessage(t('admin.nodes.detail.updateTriggerFailed'));
     } finally {
       setUpdateLoading(false);
     }
@@ -125,7 +127,8 @@ export const NodeDetailDialog: React.FC<NodeDetailDialogProps> = ({
 
   if (!node) return null;
 
-  const statusConfig = STATUS_CONFIG[node.status] || { label: node.status, variant: 'outline' as const };
+  const statusVariant = STATUS_VARIANT[node.status] || 'outline';
+  const statusLabel = t(`admin.nodes.statusLabel.${node.status}`, node.status);
   const isTrojan = node.protocol === 'trojan';
   const isShadowsocks = node.protocol === 'shadowsocks';
 
@@ -144,21 +147,21 @@ export const NodeDetailDialog: React.FC<NodeDetailDialogProps> = ({
               {isOnline ? (
                 <span className="flex items-center gap-1 text-xs text-green-600">
                   <span className="h-2 w-2 rounded-full bg-green-500"></span>
-                  节点在线
+                  {t('admin.nodes.detail.nodeOnline')}
                 </span>
               ) : node.status === 'active' ? (
                 <span className="flex items-center gap-1 text-xs text-slate-400">
                   <span className="h-2 w-2 rounded-full bg-slate-300"></span>
-                  {isConnected ? '等待状态' : '连接中...'}
+                  {isConnected ? t('admin.nodes.detail.waitingStatus') : t('admin.nodes.detail.connecting')}
                 </span>
               ) : (
                 <span className="flex items-center gap-1 text-xs text-slate-400">
                   <span className="h-2 w-2 rounded-full bg-slate-300"></span>
-                  节点离线
+                  {t('admin.nodes.detail.nodeOffline')}
                 </span>
               )}
-              <Badge variant={statusConfig.variant}>
-                {statusConfig.label}
+              <Badge variant={statusVariant}>
+                {statusLabel}
               </Badge>
             </div>
           </div>
@@ -166,9 +169,9 @@ export const NodeDetailDialog: React.FC<NodeDetailDialogProps> = ({
 
         <div className="flex-1 min-h-0 overflow-y-auto -mx-6 px-6">
         <div className="space-y-6">
-          {/* 节点状态 */}
+          {/* Node Status */}
           <div>
-            <h3 className="text-sm font-semibold mb-3">节点状态</h3>
+            <h3 className="text-sm font-semibold mb-3">{t('admin.nodes.detail.nodeStatus')}</h3>
             <Separator className="mb-4" />
             <div className="space-y-4">
               {/* Status Bar */}
@@ -185,7 +188,7 @@ export const NodeDetailDialog: React.FC<NodeDetailDialogProps> = ({
                     </div>
                   </TooltipTrigger>
                   <TooltipContent>
-                    {isConnected ? '实时连接已建立' : '正在连接...'}
+                    {isConnected ? t('admin.nodes.detail.realtimeConnected') : t('admin.nodes.detail.connectingRealtime')}
                   </TooltipContent>
                 </Tooltip>
                 <span className="text-slate-300 dark:text-slate-600">|</span>
@@ -197,12 +200,12 @@ export const NodeDetailDialog: React.FC<NodeDetailDialogProps> = ({
                         <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
                         <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-green-500"></span>
                       </span>
-                      <span className="text-sm font-medium text-green-600">在线</span>
+                      <span className="text-sm font-medium text-green-600">{t('admin.nodes.detail.online')}</span>
                     </>
                   ) : (
                     <>
                       <span className="h-2.5 w-2.5 rounded-full bg-slate-300"></span>
-                      <span className="text-sm font-medium text-slate-500">离线</span>
+                      <span className="text-sm font-medium text-slate-500">{t('admin.nodes.detail.offline')}</span>
                     </>
                   )}
                 </div>
@@ -211,7 +214,7 @@ export const NodeDetailDialog: React.FC<NodeDetailDialogProps> = ({
                     <span className="text-slate-300 dark:text-slate-600">|</span>
                     <div className="flex items-center gap-1.5 text-sm text-muted-foreground">
                       <Activity className="h-3.5 w-3.5" />
-                      <span>运行: {formatUptime(systemStatus.uptimeSeconds)}</span>
+                      <span>{t('admin.nodes.detail.uptime')}: {formatUptime(systemStatus.uptimeSeconds)}</span>
                     </div>
                   </>
                 )}
@@ -236,18 +239,18 @@ export const NodeDetailDialog: React.FC<NodeDetailDialogProps> = ({
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
                       <Package className="h-4 w-4 text-blue-500" />
-                      <span className="text-sm font-medium">版本管理</span>
+                      <span className="text-sm font-medium">{t('admin.nodes.detail.versionManagement')}</span>
                     </div>
                     {versionLoading ? (
                       <Loader2 className="h-4 w-4 animate-spin text-slate-400" />
                     ) : versionInfo ? (
                       <div className="flex items-center gap-3">
                         <div className="text-sm">
-                          <span className="text-muted-foreground">当前: </span>
+                          <span className="text-muted-foreground">{t('admin.nodes.detail.current')} </span>
                           <span className="font-mono">v{versionInfo.currentVersion}</span>
                         </div>
                         <div className="text-sm">
-                          <span className="text-muted-foreground">最新: </span>
+                          <span className="text-muted-foreground">{t('admin.nodes.detail.latest')} </span>
                           <span className="font-mono">v{versionInfo.latestVersion}</span>
                         </div>
                         {versionInfo.hasUpdate && (
@@ -265,17 +268,17 @@ export const NodeDetailDialog: React.FC<NodeDetailDialogProps> = ({
                                 ) : (
                                   <ArrowUpCircle className="h-3.5 w-3.5" />
                                 )}
-                                更新
+                                {t('admin.nodes.detail.update')}
                               </Button>
                             </TooltipTrigger>
                             <TooltipContent>
-                              更新到 v{versionInfo.latestVersion}
+                              {t('admin.nodes.detail.updateToVersion', { version: versionInfo.latestVersion })}
                             </TooltipContent>
                           </Tooltip>
                         )}
                         {!versionInfo.hasUpdate && (
                           <Badge variant="outline" className="text-green-600 border-green-200 dark:border-green-800">
-                            已是最新
+                            {t('admin.nodes.detail.upToDate')}
                           </Badge>
                         )}
                       </div>
@@ -295,7 +298,7 @@ export const NodeDetailDialog: React.FC<NodeDetailDialogProps> = ({
                             <RefreshCw className="h-4 w-4 text-slate-400" />
                           </button>
                         </TooltipTrigger>
-                        <TooltipContent>刷新版本信息</TooltipContent>
+                        <TooltipContent>{t('admin.nodes.detail.refreshVersion')}</TooltipContent>
                       </Tooltip>
                     )}
                   </div>
@@ -308,7 +311,7 @@ export const NodeDetailDialog: React.FC<NodeDetailDialogProps> = ({
               {!isConnected && node.status === 'active' ? (
                 <div className="flex items-center justify-center py-8">
                   <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
-                  <span className="ml-2 text-sm text-muted-foreground">正在建立实时连接...</span>
+                  <span className="ml-2 text-sm text-muted-foreground">{t('admin.nodes.detail.establishingConnection')}</span>
                 </div>
               ) : systemStatus && (
                 <>
@@ -331,7 +334,7 @@ export const NodeDetailDialog: React.FC<NodeDetailDialogProps> = ({
                       </Progress>
                       {systemStatus.loadAvg1 !== undefined && (
                         <p className="text-xs text-muted-foreground mt-1.5">
-                          负载: {systemStatus.loadAvg1.toFixed(2)}
+                          {t('admin.nodes.detail.load')}: {systemStatus.loadAvg1.toFixed(2)}
                         </p>
                       )}
                     </div>
@@ -340,7 +343,7 @@ export const NodeDetailDialog: React.FC<NodeDetailDialogProps> = ({
                       <div className="flex items-center justify-between mb-2">
                         <div className="flex items-center gap-1.5">
                           <MemoryStick className="h-4 w-4 text-green-500" />
-                          <span className="text-xs font-medium">内存</span>
+                          <span className="text-xs font-medium">{t('admin.nodes.detail.memory')}</span>
                         </div>
                         <span className="text-sm font-semibold">{(systemStatus.memoryPercent ?? 0).toFixed(1)}%</span>
                       </div>
@@ -361,7 +364,7 @@ export const NodeDetailDialog: React.FC<NodeDetailDialogProps> = ({
                       <div className="flex items-center justify-between mb-2">
                         <div className="flex items-center gap-1.5">
                           <HardDrive className="h-4 w-4 text-orange-500" />
-                          <span className="text-xs font-medium">磁盘</span>
+                          <span className="text-xs font-medium">{t('admin.nodes.detail.disk')}</span>
                         </div>
                         <span className="text-sm font-semibold">{(systemStatus.diskPercent ?? 0).toFixed(1)}%</span>
                       </div>
@@ -387,7 +390,7 @@ export const NodeDetailDialog: React.FC<NodeDetailDialogProps> = ({
                         <div className="p-3 bg-muted rounded-lg">
                           <div className="flex items-center gap-1.5 mb-2">
                             <Network className="h-4 w-4 text-indigo-500" />
-                            <span className="text-xs font-medium">网络流量</span>
+                            <span className="text-xs font-medium">{t('admin.nodes.detail.networkTraffic')}</span>
                           </div>
                           <div className="flex items-center gap-4 text-sm">
                             <span className="text-green-600">↓ {formatBitRate(systemStatus.networkRxRate ?? 0)}</span>
@@ -403,7 +406,7 @@ export const NodeDetailDialog: React.FC<NodeDetailDialogProps> = ({
                         <div className="p-3 bg-muted rounded-lg">
                           <div className="flex items-center gap-1.5 mb-2">
                             <Globe className="h-4 w-4 text-cyan-500" />
-                            <span className="text-xs font-medium">公网 IP</span>
+                            <span className="text-xs font-medium">{t('admin.nodes.detail.publicIp')}</span>
                           </div>
                           <div className="space-y-0.5 font-mono text-sm">
                             {systemStatus.publicIpv4 && <p>{systemStatus.publicIpv4}</p>}
@@ -421,7 +424,7 @@ export const NodeDetailDialog: React.FC<NodeDetailDialogProps> = ({
                   {/* Extended Metrics */}
                   {hasExtendedMetrics(systemStatus) && (
                     <div className="mt-3">
-                      <p className="text-xs font-medium text-muted-foreground mb-2">扩展指标</p>
+                      <p className="text-xs font-medium text-muted-foreground mb-2">{t('admin.nodes.detail.extendedMetrics')}</p>
                       <ExtendedMetricsPanel data={systemStatus} />
                     </div>
                   )}
@@ -430,43 +433,43 @@ export const NodeDetailDialog: React.FC<NodeDetailDialogProps> = ({
             </div>
           </div>
 
-          {/* 基本信息 */}
+          {/* Basic Info */}
           <div>
-            <h3 className="text-sm font-semibold mb-3">基本信息</h3>
+            <h3 className="text-sm font-semibold mb-3">{t('admin.nodes.detail.basicInfo')}</h3>
             <Separator className="mb-4" />
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-1">
-                <p className="text-sm text-muted-foreground">节点ID</p>
+                <p className="text-sm text-muted-foreground">{t('admin.nodes.detail.nodeId')}</p>
                 <TruncatedId id={node.id} fullWidth />
               </div>
 
               <div className="space-y-1">
-                <p className="text-sm text-muted-foreground">版本</p>
+                <p className="text-sm text-muted-foreground">{t('admin.nodes.detail.version')}</p>
                 <p className="text-sm">{node.version}</p>
               </div>
 
               <div className="space-y-1">
-                <p className="text-sm text-muted-foreground">排序顺序</p>
+                <p className="text-sm text-muted-foreground">{t('admin.nodes.detail.sortOrder')}</p>
                 <p className="text-sm">{node.sortOrder ?? 0}</p>
               </div>
 
               <div className="space-y-1">
-                <p className="text-sm text-muted-foreground">通知状态</p>
+                <p className="text-sm text-muted-foreground">{t('admin.nodes.detail.notificationStatus')}</p>
                 <Badge variant={node.muteNotification ? "secondary" : "outline"}>
-                  {node.muteNotification ? "已静音" : "正常通知"}
+                  {node.muteNotification ? t('admin.nodes.detail.muted') : t('admin.nodes.detail.normalNotification')}
                 </Badge>
               </div>
 
               {node.region && (
                 <div className="space-y-1">
-                  <p className="text-sm text-muted-foreground">地区</p>
+                  <p className="text-sm text-muted-foreground">{t('admin.nodes.detail.region')}</p>
                   <p className="text-sm">{node.region}</p>
                 </div>
               )}
 
               {node.tags && node.tags.length > 0 && (
                 <div className="space-y-1 md:col-span-2">
-                  <p className="text-sm text-muted-foreground">标签</p>
+                  <p className="text-sm text-muted-foreground">{t('admin.nodes.detail.tags')}</p>
                   <div className="flex gap-1 flex-wrap mt-1">
                     {node.tags.map((tag, index) => (
                       <Badge key={index} variant="secondary">
@@ -479,26 +482,26 @@ export const NodeDetailDialog: React.FC<NodeDetailDialogProps> = ({
             </div>
           </div>
 
-          {/* 连接信息 */}
+          {/* Connection Info */}
           <div>
-            <h3 className="text-sm font-semibold mb-3">连接信息</h3>
+            <h3 className="text-sm font-semibold mb-3">{t('admin.nodes.detail.connectionInfo')}</h3>
             <Separator className="mb-4" />
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-1">
-                <p className="text-sm text-muted-foreground">服务器地址</p>
+                <p className="text-sm text-muted-foreground">{t('admin.nodes.detail.serverAddress')}</p>
                 <p className="text-sm font-mono bg-muted px-2 py-1 rounded inline-block">
                   {node.serverAddress}
                 </p>
               </div>
               <div className="space-y-1">
-                <p className="text-sm text-muted-foreground">代理端口</p>
+                <p className="text-sm text-muted-foreground">{t('admin.nodes.detail.agentPort')}</p>
                 <p className="text-sm font-mono bg-muted px-2 py-1 rounded inline-block">
                   {node.agentPort}
                 </p>
               </div>
               {node.subscriptionPort && (
                 <div className="space-y-1">
-                  <p className="text-sm text-muted-foreground">订阅端口</p>
+                  <p className="text-sm text-muted-foreground">{t('admin.nodes.detail.subscriptionPort')}</p>
                   <p className="text-sm font-mono bg-muted px-2 py-1 rounded inline-block">
                     {node.subscriptionPort}
                   </p>
@@ -507,27 +510,27 @@ export const NodeDetailDialog: React.FC<NodeDetailDialogProps> = ({
             </div>
           </div>
 
-          {/* Shadowsocks 配置 */}
+          {/* Shadowsocks Config */}
           {isShadowsocks && (
             <div>
-              <h3 className="text-sm font-semibold mb-3">Shadowsocks 配置</h3>
+              <h3 className="text-sm font-semibold mb-3">{t('admin.nodes.detail.shadowsocksConfig')}</h3>
               <Separator className="mb-4" />
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-1">
-                  <p className="text-sm text-muted-foreground">加密方法</p>
+                  <p className="text-sm text-muted-foreground">{t('admin.nodes.detail.encryptionMethod')}</p>
                   <p className="text-sm font-mono">{node.encryptionMethod || '-'}</p>
                 </div>
 
                 {node.plugin && (
                   <div className="space-y-1">
-                    <p className="text-sm text-muted-foreground">插件</p>
+                    <p className="text-sm text-muted-foreground">{t('admin.nodes.detail.plugin')}</p>
                     <p className="text-sm font-mono">{node.plugin}</p>
                   </div>
                 )}
 
                 {node.pluginOpts && Object.keys(node.pluginOpts).length > 0 && (
                   <div className="space-y-1 md:col-span-2">
-                    <p className="text-sm text-muted-foreground">插件选项</p>
+                    <p className="text-sm text-muted-foreground">{t('admin.nodes.detail.pluginOptions')}</p>
                     <pre className="text-xs font-mono whitespace-pre-wrap break-all bg-muted p-3 rounded-md">
                       {JSON.stringify(node.pluginOpts, null, 2)}
                     </pre>
@@ -537,31 +540,31 @@ export const NodeDetailDialog: React.FC<NodeDetailDialogProps> = ({
             </div>
           )}
 
-          {/* Trojan 配置 */}
+          {/* Trojan Config */}
           {isTrojan && (
             <div>
-              <h3 className="text-sm font-semibold mb-3">Trojan 配置</h3>
+              <h3 className="text-sm font-semibold mb-3">{t('admin.nodes.detail.trojanConfig')}</h3>
               <Separator className="mb-4" />
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-1">
-                  <p className="text-sm text-muted-foreground">传输协议</p>
+                  <p className="text-sm text-muted-foreground">{t('admin.nodes.detail.transportProtocol')}</p>
                   <p className="text-sm font-mono">
                     {TRANSPORT_LABELS[node.transportProtocol || 'tcp'] || node.transportProtocol?.toUpperCase() || 'TCP'}
                   </p>
                 </div>
 
                 <div className="space-y-1">
-                  <p className="text-sm text-muted-foreground">TLS 安全</p>
+                  <p className="text-sm text-muted-foreground">{t('admin.nodes.detail.tlsSecurity')}</p>
                   <div className="flex items-center gap-1">
                     {node.allowInsecure ? (
                       <>
                         <ShieldAlert className="h-4 w-4 text-yellow-500" />
-                        <span className="text-sm text-yellow-600">允许不安全连接</span>
+                        <span className="text-sm text-yellow-600">{t('admin.nodes.detail.allowInsecure')}</span>
                       </>
                     ) : (
                       <>
                         <ShieldCheck className="h-4 w-4 text-green-500" />
-                        <span className="text-sm text-green-600">安全连接</span>
+                        <span className="text-sm text-green-600">{t('admin.nodes.detail.secureConnection')}</span>
                       </>
                     )}
                   </div>
@@ -569,7 +572,7 @@ export const NodeDetailDialog: React.FC<NodeDetailDialogProps> = ({
 
                 {node.sni && (
                   <div className="space-y-1">
-                    <p className="text-sm text-muted-foreground">SNI</p>
+                    <p className="text-sm text-muted-foreground">{t('admin.nodes.detail.sni')}</p>
                     <p className="text-sm font-mono">{node.sni}</p>
                   </div>
                 )}
@@ -577,7 +580,7 @@ export const NodeDetailDialog: React.FC<NodeDetailDialogProps> = ({
                 {node.host && (
                   <div className="space-y-1">
                     <p className="text-sm text-muted-foreground">
-                      {node.transportProtocol === 'grpc' ? 'gRPC 服务名' : 'Host'}
+                      {node.transportProtocol === 'grpc' ? t('admin.nodes.detail.grpcServiceName') : t('admin.nodes.detail.host')}
                     </p>
                     <p className="text-sm font-mono">{node.host}</p>
                   </div>
@@ -585,7 +588,7 @@ export const NodeDetailDialog: React.FC<NodeDetailDialogProps> = ({
 
                 {node.path && (
                   <div className="space-y-1">
-                    <p className="text-sm text-muted-foreground">WebSocket 路径</p>
+                    <p className="text-sm text-muted-foreground">{t('admin.nodes.detail.wsPath')}</p>
                     <p className="text-sm font-mono">{node.path}</p>
                   </div>
                 )}
@@ -593,19 +596,19 @@ export const NodeDetailDialog: React.FC<NodeDetailDialogProps> = ({
             </div>
           )}
 
-          {/* 路由配置 */}
+          {/* Route Config */}
           {node.route && (
             <div>
-              <h3 className="text-sm font-semibold mb-3">路由配置</h3>
+              <h3 className="text-sm font-semibold mb-3">{t('admin.nodes.detail.routeConfig')}</h3>
               <Separator className="mb-4" />
               <RouteConfigDisplay config={node.route} nodes={nodes} />
             </div>
           )}
 
-          {/* 维护信息 */}
+          {/* Maintenance Info */}
           {node.status === 'maintenance' && node.maintenanceReason && (
             <div>
-              <h3 className="text-sm font-semibold mb-3">维护信息</h3>
+              <h3 className="text-sm font-semibold mb-3">{t('admin.nodes.detail.maintenanceInfo')}</h3>
               <Separator className="mb-4" />
               <div className="p-3 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg">
                 <p className="text-sm text-yellow-800 dark:text-yellow-200">
@@ -615,24 +618,24 @@ export const NodeDetailDialog: React.FC<NodeDetailDialogProps> = ({
             </div>
           )}
 
-          {/* 时间信息 */}
+          {/* Time Info */}
           <div>
-            <h3 className="text-sm font-semibold mb-3">时间信息</h3>
+            <h3 className="text-sm font-semibold mb-3">{t('admin.nodes.detail.timeInfo')}</h3>
             <Separator className="mb-4" />
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-1">
-                <p className="text-sm text-muted-foreground">创建时间</p>
+                <p className="text-sm text-muted-foreground">{t('admin.nodes.detail.createdAt')}</p>
                 <p className="text-xs">{formatDate(node.createdAt)}</p>
               </div>
 
               <div className="space-y-1">
-                <p className="text-sm text-muted-foreground">更新时间</p>
+                <p className="text-sm text-muted-foreground">{t('admin.nodes.detail.updatedAt')}</p>
                 <p className="text-xs">{formatDate(node.updatedAt)}</p>
               </div>
 
               {node.lastSeenAt && (
                 <div className="space-y-1">
-                  <p className="text-sm text-muted-foreground">最后在线</p>
+                  <p className="text-sm text-muted-foreground">{t('admin.nodes.detail.lastOnline')}</p>
                   <p className="text-xs">{formatDate(node.lastSeenAt)}</p>
                 </div>
               )}
@@ -643,7 +646,7 @@ export const NodeDetailDialog: React.FC<NodeDetailDialogProps> = ({
 
         <DialogFooter className="flex-shrink-0">
           <Button variant="outline" onClick={onClose}>
-            关闭
+            {t('common.actions.close')}
           </Button>
         </DialogFooter>
       </DialogContent>

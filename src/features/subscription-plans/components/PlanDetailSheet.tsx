@@ -61,15 +61,6 @@ export interface PlanDetailSheetProps {
 // Constants
 // ============================================================================
 
-const BILLING_CYCLE_LABELS: Record<BillingCycle, string> = {
-  weekly: '周付',
-  monthly: '月付',
-  quarterly: '季付',
-  semi_annual: '半年付',
-  yearly: '年付',
-  lifetime: '终身',
-};
-
 const PLAN_TYPE_ICONS: Record<PlanType, React.ReactNode> = {
   node: <Zap className="size-4" />,
   forward: <ArrowLeftRight className="size-4" />,
@@ -126,6 +117,7 @@ const PricingItem = ({
   currency: string;
   isActive: boolean;
 }) => {
+  const { t } = useTranslation();
   const symbol = currency === 'CNY' ? '¥' : '$';
   const formattedPrice = `${symbol}${(price / 100).toFixed(2)}`;
 
@@ -142,9 +134,7 @@ const PricingItem = ({
           isActive ? 'bg-success' : 'bg-muted-foreground'
         )}
       />
-      <span className="flex-1 text-sm">
-        {BILLING_CYCLE_LABELS[cycle]}
-      </span>
+      <span className="flex-1 text-sm">{t(`billingCycle.${cycle}`)}</span>
       <span className="text-sm font-mono font-medium tabular-nums">
         {formattedPrice}
       </span>

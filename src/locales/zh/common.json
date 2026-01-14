@@ -1,7 +1,9 @@
 {
   "app": {
     "name": "Orris",
-    "loading": "加载中..."
+    "loading": "加载中...",
+    "serverVersion": "服务端",
+    "clientVersion": "客户端"
   },
   "common": {
     "actions": {
@@ -39,6 +41,17 @@
       "continue": "继续",
       "apply": "应用",
       "clear": "清空"
+    },
+    "processing": "处理中...",
+    "selected": "已选择 {{count}} 项",
+    "copyAddress": "复制地址",
+    "copied": "已复制",
+    "token": {
+      "defaultDescription": "Token已生成，请妥善保存。此Token仅显示一次，丢失后需要重新生成。",
+      "copied": "Token已复制到剪贴板",
+      "copyFirst": "请先复制Token后再关闭此对话框",
+      "copy": "复制Token",
+      "copyAgain": "再次复制"
     },
     "yes": "是",
     "no": "否",
@@ -130,6 +143,7 @@
     "placeholders": {
       "search": "搜索...",
       "select": "请选择",
+      "selectOption": "选择选项...",
       "enter": "请输入",
       "email": "请输入邮箱地址",
       "password": "请输入密码"
@@ -149,7 +163,8 @@
       "loading": "加载中...",
       "actions": "操作",
       "sortAsc": "升序排列",
-      "sortDesc": "降序排列"
+      "sortDesc": "降序排列",
+      "sort": "排序"
     },
     "dialog": {
       "confirm": "确认",
@@ -160,7 +175,10 @@
       "label": "语言",
       "en": "英文",
       "zh": "中文"
-    }
+    },
+    "protocol": "协议",
+    "auto": "自动",
+    "moreActions": "更多操作"
   },
   "nav": {
     "home": "首页",
@@ -174,7 +192,6 @@
     "switchToUser": "切换到用户视图",
     "monitor": "监控",
     "userNodes": "我的节点",
-    "notifications": "通知设置",
     "pricing": "定价方案",
     "subscriptionDetail": "订阅详情",
     "adminDashboard": "管理控制台",
@@ -193,7 +210,19 @@
       "business": "业务管理",
       "infrastructure": "资源管理",
       "system": "系统"
-    }
+    },
+    "userForwardAgents": "转发Agent"
+  },
+  "userForwardAgents": {
+    "title": "转发Agent",
+    "description": "查看您可使用的转发Agent",
+    "searchPlaceholder": "搜索节点名称...",
+    "totalNodes": "共 {{count}} 个节点",
+    "noAgents": "暂无可用的转发Agent",
+    "noAgentsHint": "请联系管理员或升级您的订阅计划",
+    "available": "可用",
+    "unavailable": "不可用",
+    "resourceGroup": "资源组"
   },
   "auth": {
     "login": {
@@ -274,7 +303,11 @@
       "submit": "重置密码",
       "resetting": "重置中...",
       "success": "密码重置成功！",
-      "backToLogin": "返回登录"
+      "successMessage": "密码重置成功，请使用新密码登录",
+      "backToLogin": "返回登录",
+      "invalidLink": "无效的重置链接",
+      "invalidLinkDesc": "该密码重置链接无效或已过期，请重新申请。",
+      "requestNew": "重新申请"
     },
     "verifyEmail": {
       "title": "验证您的邮箱",
@@ -301,13 +334,138 @@
       "title": "邮件已发送",
       "description": "我们已经向您的邮箱发送了密码重置链接，请查收邮件并按照指引重置密码。",
       "spamNotice": "如果您没有收到邮件，请检查垃圾邮件文件夹或稍后重试。"
+    },
+    "emailVerification": {
+      "missingToken": "验证链接无效，缺少验证令牌",
+      "verifying": "正在验证您的邮箱...",
+      "verifyingDesc": "请稍候，我们正在确认您的邮箱地址",
+      "successTitle": "邮箱验证成功！",
+      "successDesc": "您的邮箱已成功验证，现在可以登录您的账号了",
+      "goToLogin": "前往登录",
+      "alreadyVerifiedTitle": "邮箱已验证",
+      "alreadyVerifiedDesc": "您的邮箱之前已经验证过了，可以直接登录",
+      "failedTitle": "验证失败",
+      "invalidLink": "验证链接已失效或无效",
+      "failedDesc": "验证链接可能已过期或无效，请尝试重新发送验证邮件",
+      "resendEmail": "重新发送验证邮件",
+      "backToLogin": "返回登录"
+    }
+  },
+  "resourceGroups": {
+    "associatedPlan": "关联计划",
+    "planPlaceholder": "计划 #{{id}}",
+    "noData": "暂无资源组"
+  },
+  "nodeList": {
+    "noNodes": "暂无节点",
+    "createFirstNode": "点击上方「新增节点」按钮创建您的第一个节点",
+    "details": "详情",
+    "installScript": "安装脚本",
+    "regenerateToken": "重新生成 Token",
+    "deleteNode": "删除节点",
+    "subscriptionShort": "订阅",
+    "subscriptionPort": "订阅端口",
+    "confirmDeleteTitle": "确认删除",
+    "confirmDeleteDesc": "确认删除节点「{{name}}」吗？此操作不可恢复。",
+    "regenerateTokenTitle": "重新生成 Token",
+    "regenerateTokenDesc": "确认重新生成节点「{{name}}」的 Token 吗？旧的 Token 将立即失效。",
+    "columns": {
+      "nodeName": "节点名称",
+      "address": "地址",
+      "protocol": "协议",
+      "onlineStatus": "在线状态"
     }
   },
   "admin": {
     "title": "管理控制台",
+    "dashboard": {
+      "title": "控制台",
+      "welcomeBack": "欢迎回来，{{name}}",
+      "unableToLoadUser": "无法加载用户信息"
+    },
+    "common": {
+      "refreshList": "刷新列表"
+    },
+    "stats": {
+      "totalUsers": "总用户数",
+      "totalSubscriptions": "订阅总数",
+      "totalNodes": "节点总数",
+      "onlineNodes": "在线节点",
+      "totalUpload": "总上传",
+      "totalDownload": "总下载",
+      "totalTraffic": "总流量",
+      "activeUsers": "活跃用户"
+    },
+    "quickAccess": {
+      "title": "快速访问",
+      "users": "用户",
+      "usersDesc": "管理所有用户账户和权限",
+      "subscriptions": "订阅",
+      "subscriptionsDesc": "查看和管理用户订阅",
+      "nodes": "节点",
+      "nodesDesc": "监控和配置服务器节点",
+      "nodeAgent": "节点Agent",
+      "nodeAgentDesc": "监控和配置服务器节点",
+      "liveMonitor": "实时监控",
+      "liveMonitorDesc": "查看系统实时状态"
+    },
+    "moreManagement": {
+      "title": "更多管理",
+      "forwardRules": "转发规则",
+      "forwardAgent": "转发Agent",
+      "resourceGroups": "资源组管理",
+      "systemSettings": "系统设置"
+    },
+    "systemStatus": {
+      "title": "系统状态",
+      "nodeOnlineRate": "节点在线率",
+      "activeNodes": "活跃节点",
+      "count": "{{count}} 个"
+    },
+    "dateRange": {
+      "today": "今天",
+      "yesterday": "昨天",
+      "last7days": "最近 7 天",
+      "last30days": "最近 30 天",
+      "thisMonth": "本月"
+    },
+    "traffic": {
+      "trend": "流量趋势",
+      "trendDesc": "上传与下载流量统计",
+      "upload": "上传",
+      "download": "下载",
+      "total": "总计",
+      "ranking": "流量排行榜",
+      "userRanking": "用户排行",
+      "subscriptionRanking": "订阅排行",
+      "noUserData": "暂无用户流量数据",
+      "noSubscriptionData": "暂无订阅流量数据",
+      "nodeStats": "节点流量统计",
+      "noNodeData": "暂无节点流量数据",
+      "totalNodes": "共 {{count}} 个节点",
+      "prevPage": "上一页",
+      "nextPage": "下一页"
+    },
     "nodes": {
       "title": "节点管理",
       "description": "管理代理节点",
+      "confirmDelete": "确认删除节点 \"{{name}}\" ({{address}}:{{port}}) 吗？此操作不可恢复。",
+      "copy": "副本",
+      "nodesUnit": "节点",
+      "updatable": "可更新",
+      "userNodes": "用户节点",
+      "showUserNodes": "显示用户创建的节点",
+      "sort": "排序",
+      "enableDragSort": "开启拖拽排序",
+      "disableDragSort": "关闭拖拽排序",
+      "broadcast": "下发",
+      "broadcastTooltip": "向 {{count}} 个在线节点下发新API地址",
+      "update": "更新",
+      "updateTooltip": "更新 {{count}} 个节点",
+      "refreshList": "刷新列表",
+      "addNode": "新增节点",
+      "nodeToken": "节点Token",
+      "noData": "暂无节点数据",
       "fields": {
         "name": "节点名称",
         "address": "服务器地址",
@@ -316,19 +474,521 @@
         "region": "区域",
         "traffic": "流量",
         "users": "用户数"
+      },
+      "table": {
+        "node": "节点",
+        "config": "配置",
+        "online": "在线",
+        "monitor": "监控",
+        "status": "状态",
+        "tags": "标签",
+        "version": "版本",
+        "resourceGroup": "资源组",
+        "owner": "创建者",
+        "createdAt": "创建时间",
+        "actions": "操作"
+      },
+      "actions": {
+        "viewDetail": "查看详情",
+        "edit": "编辑",
+        "installScript": "安装脚本",
+        "copyNode": "复制节点",
+        "generateToken": "生成 Token",
+        "broadcastUrl": "下发地址",
+        "deactivate": "停用节点",
+        "activate": "激活节点",
+        "delete": "删除节点",
+        "clickToDeactivate": "点击停用",
+        "clickToActivate": "点击激活"
+      },
+      "tooltip": {
+        "agentPort": "代理端口",
+        "subscriptionPort": "订阅端口",
+        "transportProtocol": "传输协议",
+        "allowInsecure": "允许不安全连接",
+        "onlineStatus": "在线",
+        "offlineStatus": "离线",
+        "lastOnline": "最后在线",
+        "clickToUnmute": "点击取消静音",
+        "clickToMute": "点击静音通知",
+        "versionInfo": "版本",
+        "newVersionAvailable": "有新版本可用",
+        "unknownResourceGroup": "未知资源组",
+        "maintenanceReason": "原因"
+      },
+      "statusLabel": {
+        "active": "已激活",
+        "inactive": "未激活",
+        "maintenance": "维护中"
+      },
+      "detail": {
+        "nodeOnline": "节点在线",
+        "nodeOffline": "节点离线",
+        "waitingStatus": "等待状态",
+        "connecting": "连接中...",
+        "updateTriggerFailed": "更新触发失败",
+        "nodeStatus": "节点状态",
+        "realtimeConnected": "实时连接已建立",
+        "connectingRealtime": "正在连接...",
+        "online": "在线",
+        "offline": "离线",
+        "uptime": "运行",
+        "uptimeFormat": {
+          "daysHours": "{{days}}天{{hours}}时",
+          "hoursMins": "{{hours}}时{{mins}}分",
+          "mins": "{{mins}}分"
+        },
+        "versionManagement": "版本管理",
+        "current": "当前:",
+        "latest": "最新:",
+        "update": "更新",
+        "updateToVersion": "更新到 v{{version}}",
+        "upToDate": "已是最新",
+        "refreshVersion": "刷新版本信息",
+        "establishingConnection": "正在建立实时连接...",
+        "cpu": "CPU",
+        "memory": "内存",
+        "disk": "磁盘",
+        "load": "负载",
+        "networkTraffic": "网络流量",
+        "publicIp": "公网 IP",
+        "extendedMetrics": "扩展指标",
+        "basicInfo": "基本信息",
+        "nodeId": "节点ID",
+        "version": "版本",
+        "sortOrder": "排序顺序",
+        "notificationStatus": "通知状态",
+        "muted": "已静音",
+        "normalNotification": "正常通知",
+        "region": "地区",
+        "tags": "标签",
+        "connectionInfo": "连接信息",
+        "serverAddress": "服务器地址",
+        "agentPort": "代理端口",
+        "subscriptionPort": "订阅端口",
+        "shadowsocksConfig": "Shadowsocks 配置",
+        "encryptionMethod": "加密方法",
+        "plugin": "插件",
+        "pluginOptions": "插件选项",
+        "trojanConfig": "Trojan 配置",
+        "transportProtocol": "传输协议",
+        "tlsSecurity": "TLS 安全",
+        "allowInsecure": "允许不安全连接",
+        "secureConnection": "安全连接",
+        "sni": "SNI",
+        "host": "Host",
+        "grpcServiceName": "gRPC 服务名",
+        "wsPath": "WebSocket 路径",
+        "routeConfig": "路由配置",
+        "maintenanceInfo": "维护信息",
+        "timeInfo": "时间信息",
+        "createdAt": "创建时间",
+        "updatedAt": "更新时间",
+        "lastOnline": "最后在线"
       }
     },
     "forwardRules": {
       "title": "转发规则",
-      "description": "管理转发规则"
+      "description": "管理转发规则",
+      "ruleTypeInfo": {
+        "direct": {
+          "label": "直连转发",
+          "description": "直接将流量转发到目标地址"
+        },
+        "entry": {
+          "label": "入口节点",
+          "description": "作为转发链的入口，通过出口节点转发到目标地址"
+        },
+        "chain": {
+          "label": "隧道链式转发",
+          "description": "通过隧道（WS/TLS）进行多跳链式转发"
+        },
+        "directChain": {
+          "label": "直连链式转发",
+          "description": "通过直连 TCP/UDP 进行多跳链式转发"
+        }
+      },
+      "filters": {
+        "protocol": "协议",
+        "status": "状态"
+      },
+      "searchRules": "搜索规则",
+      "sort": "排序",
+      "sortOptions": {
+        "default": "默认",
+        "createdDesc": "创建 ↓",
+        "createdAsc": "创建 ↑",
+        "updatedDesc": "更新 ↓"
+      },
+      "resetFilters": "重置筛选",
+      "showUserRules": "显示用户创建的规则",
+      "enableDragSort": "开启拖拽排序",
+      "disableDragSort": "关闭拖拽排序",
+      "refreshList": "刷新列表",
+      "batchCreate": "批量创建",
+      "batchCreateJson": "批量创建 (JSON)",
+      "add": "新增",
+      "confirmDelete": "确认删除",
+      "confirmDeleteDesc": "确认删除转发规则 \"{{name}}\" 吗？此操作不可恢复。",
+      "confirmResetTraffic": "确认重置流量",
+      "confirmResetTrafficDesc": "确认重置规则 \"{{name}}\" 的流量统计吗？",
+      "copySuffix": "副本",
+      "noData": "暂无转发规则数据",
+      "mode": "模式",
+      "tunnel": "隧道",
+      "ruleType": {
+        "direct": "直连",
+        "directShort": "直",
+        "entry": "入口",
+        "entryShort": "入",
+        "chain": "链式",
+        "chainShort": "链",
+        "directChain": "直连链",
+        "directChainShort": "直链"
+      },
+      "flowNode": {
+        "entry": "入口",
+        "relay": "中转",
+        "exit": "出口",
+        "target": "目标"
+      },
+      "addressType": {
+        "public": "公网",
+        "tunnel": "隧道"
+      },
+      "target": {
+        "manual": "手动配置"
+      },
+      "columns": {
+        "ruleName": "规则名",
+        "path": "链路",
+        "resourceGroup": "资源组",
+        "traffic": "流量",
+        "syncStatus": "同步状态",
+        "status": "状态",
+        "actions": "操作"
+      },
+      "traffic": {
+        "upload": "上传",
+        "download": "下载",
+        "multiplier": "流量倍率",
+        "auto": "自动",
+        "custom": "自定义"
+      },
+      "status": {
+        "starting": "启动中",
+        "syncing": "正在同步...",
+        "syncLabel": "同步",
+        "runLabel": "运行",
+        "agents": "节点",
+        "healthy": "正常"
+      },
+      "actions": {
+        "viewDetail": "查看详情",
+        "probe": "拨测",
+        "probing": "拨测中...",
+        "probeDisabledHint": "仅启用状态可拨测",
+        "copyRule": "复制规则",
+        "resetTraffic": "重置流量",
+        "clickToDisable": "点击禁用",
+        "clickToEnable": "点击启用"
+      }
     },
     "forwardAgents": {
-      "title": "转发代理",
-      "description": "管理转发代理"
+      "title": "转发Agent管理",
+      "description": "管理转发代理",
+      "confirmDelete": "确认删除转发Agent \"{{name}}\" 吗？此操作不可恢复。",
+      "token": "转发Agent Token",
+      "copySuffix": "副本",
+      "version": {
+        "upToDate": "{{name}} 已是最新版本 (v{{version}})",
+        "fetchFailed": "获取版本信息失败"
+      },
+      "update": {
+        "confirmTitle": "确认更新",
+        "confirmMessage": "确定要将 \"{{name}}\" 从 v{{currentVersion}} 更新到 v{{latestVersion}} 吗？更新过程中 Agent 会短暂离线。",
+        "confirmDefault": "确定要更新 Agent 吗？",
+        "confirmButton": "确认更新"
+      },
+      "broadcast": {
+        "taskCompleted": "下发任务已完成",
+        "notifyAgentDesc": "向转发Agent \"{{name}}\" 下发新的API地址",
+        "notifyAllDesc": "向所有在线转发Agent下发新的API地址",
+        "targetNode": "目标节点",
+        "onlineNodeCount": "当前在线节点数",
+        "online": "在线",
+        "offline": "离线",
+        "nodeOffline": "节点当前不在线",
+        "noOnlineAgents": "当前没有在线的转发Agent",
+        "newApiUrl": "新API地址",
+        "newApiUrlPlaceholder": "https://new-api.example.com",
+        "changeReason": "变更原因（可选）",
+        "changeReasonPlaceholder": "例如：服务器迁移到新数据中心",
+        "agentAutoUpdateHint": "转发Agent收到通知后会自动更新配置并重连到新地址",
+        "dangerWarningTitle": "高危操作警告",
+        "dangerWarningTargetNode": "目标节点",
+        "dangerWarningAllNodes": "所有 {{count}} 个在线节点",
+        "dangerWarningDesc": "此操作将立即影响{{target}}的连接",
+        "impactTitle": "操作影响：",
+        "impact1": "节点将断开当前连接并尝试重连到新地址",
+        "impact2": "重连期间转发服务将暂时中断",
+        "impact3": "如果新地址无法访问，节点可能无法恢复连接",
+        "newAddress": "新地址",
+        "reason": "原因",
+        "confirmInputNodeNamePrefix": "请输入节点名称 ",
+        "confirmInputNodeNameSuffix": " 以确认",
+        "confirmInputNodeCountPrefix": "请输入在线节点数 ",
+        "confirmInputNodeCountSuffix": " 以确认",
+        "inputMismatch": "输入内容不匹配",
+        "backToEdit": "返回修改",
+        "notifying": "下发中...",
+        "confirmNotify": "确认下发",
+        "notifySuccess": "通知成功",
+        "notifySuccessDesc": "转发Agent \"{{name}}\" 已收到API地址更新通知",
+        "notifyFailed": "通知失败",
+        "notifyFailedDesc": "节点当前不在线，无法接收通知",
+        "notified": "已通知",
+        "onlineNodes": "在线节点",
+        "notifySuccessSummary": "已成功通知 {{count}} 个转发Agent更新API地址",
+        "noOnlineAgentsToNotify": "没有在线的转发Agent接收通知"
+      },
+      "batchUpdate": {
+        "tooltip": "更新 {{count}} 个转发Agent"
+      },
+      "filters": {
+        "status": "状态",
+        "all": "全部",
+        "enabled": "启用",
+        "disabled": "禁用",
+        "searchAgent": "搜索节点",
+        "sort": "排序",
+        "default": "默认",
+        "createdDesc": "创建 ↓",
+        "createdAsc": "创建 ↑",
+        "updatedDesc": "更新 ↓",
+        "resetFilters": "重置筛选"
+      },
+      "dragSort": {
+        "enable": "开启拖拽排序",
+        "disable": "关闭拖拽排序"
+      },
+      "actions": {
+        "broadcast": "下发",
+        "update": "更新",
+        "refresh": "刷新",
+        "refreshList": "刷新列表",
+        "create": "新增"
+      },
+      "table": {
+        "columns": {
+          "name": "名称",
+          "address": "地址",
+          "status": "状态",
+          "online": "在线",
+          "monitor": "监控",
+          "resourceGroup": "资源组",
+          "version": "版本",
+          "createdAt": "创建时间",
+          "actions": "操作"
+        },
+        "menu": {
+          "viewDetail": "查看详情",
+          "edit": "编辑",
+          "getInstallScript": "获取安装脚本",
+          "copyNode": "复制节点",
+          "regenerateToken": "重新生成Token",
+          "checkUpdate": "检查更新",
+          "checking": "检查中...",
+          "broadcastUrl": "下发地址",
+          "enable": "启用",
+          "disable": "禁用",
+          "delete": "删除"
+        },
+        "tooltip": {
+          "tunnelAddress": "隧道地址",
+          "clickToDisable": "点击禁用",
+          "clickToEnable": "点击启用",
+          "online": "在线",
+          "offline": "离线",
+          "lastOnline": "最后在线",
+          "clickToMute": "点击静音通知",
+          "clickToUnmute": "点击取消静音",
+          "unknownResourceGroup": "未知资源组",
+          "version": "版本",
+          "newVersionAvailable": "有新版本可用"
+        },
+        "empty": "暂无转发Agent数据"
+      },
+      "dialog": {
+        "createTitle": "新增转发Agent",
+        "copyTitle": "复制转发Agent",
+        "broadcastTitle": "广播API地址",
+        "notifyTitle": "下发API地址"
+      },
+      "form": {
+        "nodeName": "节点名称",
+        "nodeNameRequired": "必填项",
+        "nodeNamePlaceholder": "例如：主转发Agent",
+        "publicAddress": "公网地址",
+        "publicAddressPlaceholder": "例如：example.com 或 1.2.3.4",
+        "publicAddressHint": "可选，留空时由 Agent 自动检测",
+        "tunnelAddress": "隧道地址",
+        "tunnelAddressPlaceholder": "例如：10.0.0.1 或 internal.example.com",
+        "tunnelAddressHint": "可选，用于中继/出口节点的内网连接",
+        "portLimit": "端口限制",
+        "portLimitPlaceholder": "例如：80,443,8000-9000",
+        "portLimitHint": "可选，留空表示允许所有端口",
+        "sortOrder": "排序顺序",
+        "sortOrderPlaceholder": "例如：100",
+        "sortOrderHint": "可选，数值越小排序越靠前",
+        "blockedProtocols": "阻止协议",
+        "blockedProtocolsHint": "可选，点击选择需要阻止的协议类型",
+        "protocolGroupProxy": "代理协议",
+        "protocolGroupApp": "应用协议",
+        "remark": "备注",
+        "remarkPlaceholder": "可选：添加备注说明",
+        "remarkHint": "可选",
+        "creating": "创建中...",
+        "create": "创建"
+      },
+      "detail": {
+        "badge": "转发Agent",
+        "nodeOnline": "节点在线",
+        "nodeOffline": "节点离线",
+        "waitingStatus": "等待状态",
+        "connecting": "连接中...",
+        "nodeStatus": "节点状态",
+        "realtimeConnected": "实时连接已建立",
+        "connectingRealtime": "正在连接...",
+        "online": "在线",
+        "offline": "离线",
+        "uptime": "运行",
+        "versionManagement": "版本管理",
+        "current": "当前:",
+        "latest": "最新:",
+        "update": "更新",
+        "updateToVersion": "更新到 v{{version}}",
+        "upToDate": "已是最新",
+        "refreshVersion": "刷新版本信息",
+        "updateTriggerFailed": "更新触发失败",
+        "establishingConnection": "正在建立实时连接...",
+        "cpu": "CPU",
+        "memory": "内存",
+        "disk": "磁盘",
+        "load": "负载",
+        "networkTraffic": "网络流量",
+        "forwardStatus": "转发状态",
+        "activeRules": "活跃规则",
+        "activeConnections": "活跃连接",
+        "tunnelPorts": "隧道端口",
+        "publicIp": "公网 IP",
+        "extendedMetrics": "扩展指标",
+        "basicInfo": "基本信息",
+        "agentId": "节点ID",
+        "agentName": "节点名称",
+        "publicAddress": "公网地址",
+        "tunnelAddress": "隧道地址",
+        "portLimit": "端口限制",
+        "noLimit": "无限制",
+        "notificationStatus": "通知状态",
+        "muted": "已静音",
+        "normalNotification": "正常通知",
+        "blockedProtocols": "阻止协议",
+        "proxyProtocols": "代理协议",
+        "appProtocols": "应用协议",
+        "none": "无",
+        "remark": "备注",
+        "timeInfo": "时间信息",
+        "createdAt": "创建时间",
+        "updatedAt": "更新时间",
+        "lastOnline": "最后在线",
+        "tokenNotice": "Token说明",
+        "tokenNotice1": "Token仅在创建节点或重新生成时完整显示一次",
+        "tokenNotice2": "请妥善保存Token，丢失后需要重新生成",
+        "tokenNotice3": "重新生成Token后，旧Token将立即失效",
+        "systemStatus": "系统状态",
+        "network": "网络",
+        "totalLabel": "累计",
+        "connections": "连接",
+        "uptimeFormat": {
+          "daysHours": "{{days}}天{{hours}}时",
+          "hoursMins": "{{hours}}时{{mins}}分",
+          "mins": "{{mins}}分"
+        },
+        "updatable": "可更新",
+        "auto": "自动",
+        "noSystemStatusData": "暂无系统状态数据",
+        "configInfo": "配置信息",
+        "allowedPortRange": "允许端口范围",
+        "notification": "通知",
+        "versionInfo": "版本信息",
+        "agentVersion": "Agent 版本",
+        "updatableLabel": "可更新",
+        "regenerateToken": "重新生成 Token",
+        "getInstallScript": "获取安装脚本",
+        "deleteAgent": "删除 Agent",
+        "moreActions": "更多操作"
+      }
     },
     "users": {
       "title": "用户管理",
-      "description": "管理用户"
+      "description": "管理用户",
+      "usersLabel": "用户",
+      "confirmDelete": "确认删除用户 \"{{name}}\" ({{email}}) 吗？此操作不可恢复。",
+      "assignSuccess": "成功为用户 {{name}} 分配订阅",
+      "assignFailed": "分配订阅失败",
+      "statusPending": "待验证",
+      "statusInactive": "停用",
+      "statusSuspended": "封禁",
+      "roleAdmin": "管理员",
+      "refreshList": "刷新列表",
+      "createUser": "新增用户",
+      "assignSubscription": "分配订阅",
+      "noData": "暂无用户数据",
+      "form": {
+        "createDescription": "填写以下信息创建新用户账户，用户将收到包含初始密码的通知",
+        "accountInfo": "账户信息",
+        "securitySettings": "安全设置",
+        "email": "邮箱地址",
+        "emailRequired": "邮箱不能为空",
+        "emailInvalid": "邮箱格式不正确",
+        "name": "用户姓名",
+        "nameRequired": "姓名不能为空",
+        "nameLengthError": "姓名长度必须在 2-100 个字符之间",
+        "namePlaceholder": "请输入用户姓名",
+        "nameLengthHint": "长度 2-100 个字符",
+        "initialPassword": "初始密码",
+        "passwordRequired": "密码不能为空",
+        "passwordMinLength": "密码长度至少需要 8 个字符",
+        "passwordMaxLength": "密码长度不能超过 72 个字符",
+        "passwordNeedsLetter": "密码必须包含至少一个字母",
+        "passwordNeedsNumber": "密码必须包含至少一个数字",
+        "passwordPlaceholder": "设置初始密码",
+        "passwordHint": "8-72 个字符，必须包含字母和数字",
+        "passwordLength": "8-72 个字符",
+        "containsLetter": "包含字母",
+        "containsNumber": "包含数字",
+        "creating": "创建中...",
+        "createUser": "创建用户"
+      },
+      "resetPassword": {
+        "description": "为用户 {{email}} 设置新密码",
+        "newPassword": "新密码",
+        "newPasswordPlaceholder": "请输入新密码",
+        "confirmPassword": "确认密码",
+        "confirmPlaceholder": "请再次输入新密码",
+        "passwordRequired": "请输入新密码",
+        "passwordMinLength": "密码至少 {{min}} 个字符",
+        "passwordMaxLength": "密码不能超过 {{max}} 个字符",
+        "passwordNeedsLetter": "密码需包含字母",
+        "passwordNeedsNumber": "密码需包含数字",
+        "confirmRequired": "请确认新密码",
+        "passwordMismatch": "两次密码不一致",
+        "passwordMatch": "密码匹配",
+        "passwordHint": "{{min}}-{{max}} 个字符，必须包含字母和数字",
+        "resetting": "重置中...",
+        "confirmReset": "确认重置"
+      }
     },
     "subscriptions": {
       "title": "订阅管理",
@@ -343,11 +1003,272 @@
     },
     "plans": {
       "title": "套餐管理",
-      "description": "管理订阅套餐"
+      "pageTitle": "订阅计划管理",
+      "description": "管理订阅套餐",
+      "plans": "计划",
+      "public": "公开",
+      "private": "私有",
+      "refreshList": "刷新列表",
+      "cycleOptions": "种周期",
+      "createPlan": "创建计划",
+      "duplicatePlan": "复制订阅计划",
+      "createDescription": "填写以下信息创建新的订阅计划",
+      "duplicateDescription": "基于「{{name}}」创建新的订阅计划",
+      "copySuffix": "副本",
+      "confirmDeleteTitle": "确认删除",
+      "confirmDeleteDescription": "确认删除计划 \"{{name}}\" 吗？此操作不可恢复。注意：只有无活跃订阅的计划才能删除。",
+      "deleteSuccess": "计划已删除",
+      "deleteError": "删除计划失败，可能存在活跃订阅",
+      "ruleType": {
+        "direct": "直连",
+        "entry": "入口",
+        "chain": "链式",
+        "directChain": "直连链"
+      },
+      "table": {
+        "planName": "计划名称",
+        "type": "类型",
+        "price": "价格",
+        "billingCycle": "计费周期",
+        "status": "状态",
+        "public": "公开",
+        "trialDays": "试用天数",
+        "sortOrder": "排序",
+        "extras": "其他",
+        "days": "天",
+        "publicPlan": "公开计划",
+        "privatePlan": "私有计划",
+        "noPlans": "暂无订阅计划",
+        "allPricingOptions": "所有定价选项：",
+        "multipleCycles": "{{count}} 种周期",
+        "daysCount": "{{count}}天",
+        "duplicatePlan": "复制计划",
+        "viewSubscribers": "查看订阅用户",
+        "activate": "激活",
+        "deactivate": "停用"
+      },
+      "form": {
+        "basicInfo": "基本信息",
+        "planName": "计划名称",
+        "slug": "Slug (URL标识)",
+        "slugHint": "仅小写字母、数字和连字符",
+        "planType": "计划类型",
+        "pricingOptions": "定价选项",
+        "addPricing": "添加定价",
+        "pricingRequired": "至少需要添加一个定价选项",
+        "pricingNumber": "定价 #{{number}}",
+        "billingCyclePlaceholder": "计费周期",
+        "pricePlaceholder": "价格（元）",
+        "currencyPlaceholder": "货币",
+        "activatePricing": "激活此定价",
+        "nodeLimits": "节点限制配置",
+        "trafficLimit": "月流量上限 (GB)",
+        "deviceLimit": "设备数量上限",
+        "speedLimit": "速度限制 (Mbps)",
+        "connectionLimit": "连接数上限",
+        "nodeLimit": "用户可创建节点数上限",
+        "unlimitedPlaceholder": "0 表示无限制",
+        "forwardLimits": "转发限制配置",
+        "ruleLimit": "规则数量上限",
+        "trafficLimitGB": "流量上限 (GB)",
+        "allowedRuleTypes": "允许的规则类型",
+        "noSelectionAllowAll": "不选择表示允许所有类型",
+        "description": "描述",
+        "descriptionPlaceholder": "订阅计划的描述信息",
+        "generalConfig": "通用配置",
+        "trialDays": "试用天数",
+        "sortOrder": "排序顺序",
+        "sortOrderHint": "数字越小越靠前",
+        "isPublic": "公开显示此计划",
+        "creating": "创建中...",
+        "createCopy": "创建副本"
+      }
     },
     "resourceGroups": {
       "title": "资源组",
-      "description": "管理资源组"
+      "description": "管理资源组",
+      "lastUpdated": "最近更新"
+    },
+    "monitor": {
+      "systemMonitor": "系统监控",
+      "entityDetails": "实体详情",
+      "waitingData": "等待数据",
+      "waitingEntityData": "正在等待实体数据...",
+      "noEntityData": "暂无数据",
+      "noEntityUnderFilter": "当前筛选条件下没有实体",
+      "onlineCount": "{{online}}/{{total}} 在线",
+      "cpu": "CPU",
+      "memory": "内存",
+      "disk": "磁盘",
+      "network": "网络",
+      "load": "负载",
+      "uptime": "运行",
+      "download": "下载",
+      "upload": "上传",
+      "total": "累计",
+      "connections": "连接",
+      "activeRules": "活跃规则",
+      "activeConnections": "活跃连接",
+      "performanceMonitor": "性能监控",
+      "entitiesCount": "{{count}} 实体",
+      "add": "添加",
+      "noOnlineEntities": "暂无在线实体",
+      "waitingAgentOnline": "等待 Agent 上线...",
+      "clickAddToSelectEntities": "点击「添加」选择实体",
+      "levelHigh": "高",
+      "levelMedium": "中",
+      "levelNormal": "正常",
+      "usedPrefix": "已用",
+      "events": "事件",
+      "noEvents": "暂无事件",
+      "filterAll": "全部",
+      "filterForwardAgent": "转发 Agent",
+      "filterOnlineEvent": "上线事件",
+      "filterOfflineEvent": "离线事件",
+      "secondsAgo": "{{count}}秒前",
+      "minutesAgo": "{{count}}分钟前",
+      "hoursAgo": "{{count}}小时前",
+      "detail": {
+        "online": "在线",
+        "offline": "离线",
+        "nodeAgentOffline": "Node Agent 离线",
+        "forwardAgentOffline": "转发 Agent 离线",
+        "lastOnline": "最后在线",
+        "resourceUsage": "资源使用",
+        "cpuCores": "CPU 核心",
+        "cpuModel": "CPU 型号",
+        "cpuFrequency": "CPU 频率",
+        "availableMemory": "可用内存",
+        "networkTraffic": "网络流量",
+        "downloadRate": "下载速率",
+        "uploadRate": "上传速率",
+        "totalDownload": "总下载流量",
+        "totalUpload": "总上传流量",
+        "rxPackets": "接收数据包",
+        "txPackets": "发送数据包",
+        "rxErrors": "接收错误",
+        "txErrors": "发送错误",
+        "rxDropped": "接收丢包",
+        "txDropped": "发送丢包",
+        "tcpConnections": "TCP 连接",
+        "udpConnections": "UDP 连接",
+        "systemInfo": "系统信息",
+        "agentVersion": "Agent 版本",
+        "platform": "平台",
+        "architecture": "架构",
+        "hostname": "主机名",
+        "kernelVersion": "内核版本",
+        "publicIpv4": "公网 IPv4",
+        "publicIpv6": "公网 IPv6",
+        "diskIO": "磁盘 I/O",
+        "readRate": "读取速率",
+        "writeRate": "写入速率",
+        "totalRead": "总读取",
+        "totalWrite": "总写入",
+        "pressureIndicators": "压力指标 (PSI)",
+        "cpuPressure": "CPU 压力",
+        "memoryPressure": "内存压力",
+        "ioPressure": "I/O 压力",
+        "socketStats": "Socket 统计",
+        "totalSockets": "总 Sockets",
+        "tcpInUse": "TCP 使用中",
+        "udpInUse": "UDP 使用中",
+        "tcpOrphan": "TCP 孤立",
+        "tcpTimeWait": "TCP TIME_WAIT",
+        "processStats": "进程统计",
+        "totalProcesses": "总进程数",
+        "running": "运行中",
+        "blocked": "阻塞",
+        "fileDescriptors": "文件描述符",
+        "contextSwitches": "上下文切换",
+        "interrupts": "中断",
+        "entropyAvailable": "可用熵",
+        "virtualMemory": "虚拟内存",
+        "uptimeLabel": "运行时间",
+        "version": "版本",
+        "publicIp": "公网 IP",
+        "traffic": "流量",
+        "cores": "核心",
+        "used": "已用",
+        "totalLabel": "总计",
+        "systemLoad": "系统负载",
+        "resourceDetails": "资源详情",
+        "cpuUsage": "CPU 使用率",
+        "memoryUsage": "内存使用率",
+        "diskUsage": "磁盘使用率",
+        "swapUsage": "Swap 使用率",
+        "networkDetails": "网络详情",
+        "droppedRxTx": "丢包 (接收/发送)",
+        "socketAndProcess": "Socket 与进程",
+        "noRealtimeData": "无法获取实时数据"
+      },
+      "metrics": {
+        "cpuDetails": "CPU 详情",
+        "cores": "核心数",
+        "coresUnit": "核",
+        "model": "型号",
+        "frequency": "频率",
+        "swapMemory": "Swap 内存",
+        "usage": "使用率",
+        "used": "已用",
+        "total": "总量",
+        "diskIO": "磁盘 I/O",
+        "readTotal": "读取总量",
+        "writeTotal": "写入总量",
+        "readRate": "读取速率",
+        "writeRate": "写入速率",
+        "iops": "IOPS",
+        "pressureIndicators": "压力指标 (PSI)",
+        "networkStats": "网络统计",
+        "rxReceive": "接收 (RX)",
+        "txSend": "发送 (TX)",
+        "packets": "数据包",
+        "errors": "错误",
+        "drops": "丢弃",
+        "socketStats": "Socket 统计",
+        "totalUsed": "总使用",
+        "tcpUsed": "TCP 使用",
+        "udpUsed": "UDP 使用",
+        "tcpOrphan": "TCP 孤立",
+        "tcpTimeWait": "TCP TIME_WAIT",
+        "processStats": "进程统计",
+        "totalCount": "总数",
+        "running": "运行中",
+        "blocked": "阻塞",
+        "contextSwitch": "上下文切换",
+        "contextSwitches": "上下文切换",
+        "interrupts": "中断",
+        "virtualMemory": "虚拟内存",
+        "systemInfo": "系统信息",
+        "hostname": "主机名",
+        "kernelVersion": "内核版本",
+        "fileDescriptors": "文件描述符",
+        "entropyAvailable": "熵池可用",
+        "bits": "bits"
+      }
+    },
+    "settings": {
+      "title": "系统设置",
+      "description": "管理系统配置",
+      "enabled": "已启用",
+      "disabled": "未启用",
+      "unableToLoadConfig": "无法加载配置",
+      "telegram": {
+        "title": "Telegram 设置",
+        "description": "配置机器人 Token 和 Webhook",
+        "enable": "启用 Telegram 通知",
+        "enableDesc": "开启后管理员可以绑定 Telegram 接收通知",
+        "botToken": "Bot Token",
+        "botTokenDesc": "从 @BotFather 获取的机器人令牌",
+        "webhookUrl": "Webhook URL",
+        "webhookUrlDesc": "接收 Telegram 更新的 Webhook 地址",
+        "webhookSecret": "Webhook Secret",
+        "webhookSecretDesc": "用于验证 Webhook 请求的密钥",
+        "currentMode": "当前模式",
+        "testConnection": "测试连接",
+        "saveChanges": "保存更改",
+        "invalidUrl": "请输入有效的 URL"
+      }
     }
   },
   "subscription": {
@@ -386,6 +1307,14 @@
     "cancel": "取消订阅",
     "renew": "续费",
     "renewSubscription": "续费订阅",
+    "suspend": "暂停",
+    "unsuspend": "恢复",
+    "resetUsage": "重置用量",
+    "confirmSuspend": "确定要暂停",
+    "confirmSuspendSuffix": "吗？请填写原因。",
+    "suspendWarning": "暂停后用户将无法使用此订阅服务，可随时恢复。",
+    "suspendReason": "暂停原因",
+    "suspendReasonPlaceholder": "请输入原因",
     "delete": "删除订阅",
     "duplicate": "复制订阅",
     "viewDetails": "查看详情",
@@ -491,7 +1420,13 @@
     "quarterly": "季付",
     "semiAnnual": "半年付",
     "yearly": "年付",
-    "lifetime": "终身"
+    "lifetime": "终身",
+    "perWeek": "周",
+    "perMonth": "月",
+    "perQuarter": "季",
+    "perSemiAnnual": "半年",
+    "perYear": "年",
+    "perLifetime": "次（终身）"
   },
   "planType": {
     "node": "节点订阅",
@@ -502,15 +1437,17 @@
     "all": "全部"
   },
   "subscriptionStatus": {
+    "inactive": "未激活",
+    "pendingPayment": "待支付",
+    "trialing": "试用中",
     "active": "激活",
+    "pastDue": "逾期",
+    "suspended": "已暂停",
+    "cancelled": "已取消",
+    "expired": "已过期",
     "activated": "已激活",
     "notActivated": "未激活",
-    "expired": "已过期",
-    "notExpired": "未过期",
-    "cancelled": "已取消",
-    "pending": "待处理",
-    "renewed": "已续费",
-    "inactive": "未启用"
+    "notExpired": "未过期"
   },
   "messages": {
     "subscriptionCreateSuccess": "订阅创建成功",
@@ -521,6 +1458,13 @@
     "subscriptionCancelFailed": "取消订阅失败",
     "subscriptionRenewed": "订阅已续费",
     "subscriptionRenewFailed": "续费订阅失败",
+    "subscriptionSuspended": "已暂停订阅",
+    "subscriptionSuspendFailed": "暂停失败",
+    "subscriptionUnsuspended": "已恢复订阅",
+    "subscriptionUnsuspendFailed": "恢复失败",
+    "subscriptionUsageReset": "订阅用量已重置",
+    "subscriptionUsageResetAndUnsuspended": "订阅用量已重置，订阅已自动恢复",
+    "subscriptionUsageResetFailed": "重置用量失败",
     "subscriptionDeleted": "订阅已删除",
     "subscriptionDeleteFailed": "删除订阅失败",
     "copiedToClipboard": "已复制到剪贴板",
@@ -552,14 +1496,49 @@
     "autoRenew": "自动续费",
     "createdAt": "创建时间",
     "actions": "操作",
-    "operations": "操作"
+    "operations": "操作",
+    "email": "邮箱",
+    "name": "姓名",
+    "role": "角色"
   },
   "labels": {
     "userId": "用户 ID",
     "name": "名称:",
     "price": "价格:"
   },
+  "dashboard": {
+    "accountStatus": {
+      "title": "账户状态",
+      "accountId": "账户 ID",
+      "role": "角色",
+      "status": "状态"
+    },
+    "traffic": {
+      "title": "流量使用",
+      "monthlyUsage": "本月用量统计",
+      "percentUsed": "% 已使用",
+      "upload": "上传",
+      "download": "下载"
+    },
+    "quickLinks": {
+      "title": "快速访问",
+      "profileDesc": "管理您的个人信息和偏好",
+      "subscriptionDesc": "查看和管理您的订阅计划",
+      "nodeDesc": "管理您的节点配置",
+      "pricingDesc": "浏览可用的订阅套餐",
+      "comingSoon": "待实现"
+    },
+    "subscriptions": {
+      "showActiveOnly": "只看激活订阅",
+      "showAll": "显示全部 ({{count}})"
+    }
+  },
   "user": {
+    "home": {
+      "welcomeBack": "欢迎回来，{{name}}！",
+      "loginSuccess": "您已成功登录 Orris",
+      "accountId": "账号ID"
+    },
     "detail": {
       "basicInfo": "基本信息",
       "email": "邮箱",
@@ -599,8 +1578,8 @@
           "renewed": "已续费"
         },
         "unknownPlan": "未知计划",
-        "daysRemaining": "{{count}} 天",
-        "daysRemaining_other": "{{count}} 天"
+        "daysRemaining": "剩余 {{count}} 天",
+        "daysRemaining_other": "剩余 {{count}} 天"
       },
       "quickActions": {
         "upgrade": "升级订阅",
@@ -612,6 +1591,418 @@
     "profile": {
       "title": "个人资料",
       "settings": "设置"
+    }
+  },
+  "landing": {
+    "nav": {
+      "features": "特性",
+      "howItWorks": "工作原理",
+      "pricing": "定价",
+      "signIn": "登录",
+      "getStarted": "开始使用",
+      "openMenu": "打开菜单",
+      "closeMenu": "关闭菜单"
+    },
+    "hero": {
+      "badge": "专为优质线路共享而设计",
+      "title": "一站式平台",
+      "titleHighlight": "转发与订阅管理",
+      "subtitle": "Orris 将节点管理、流量转发和订阅分发统一在一个平台上。一次配置，轻松共享。",
+      "getStartedFree": "免费开始",
+      "learnMore": "了解更多",
+      "stats": {
+        "forwardingModes": "种转发模式",
+        "uptimeSla": "可用性 SLA",
+        "alwaysOn": "全天候服务"
+      }
+    },
+    "features": {
+      "title": "核心特性",
+      "subtitle": "为拥有优质线路、IX 对等和高质量路由的运营商打造",
+      "dashboard": {
+        "title": "一体化控制台",
+        "description": "节点、转发规则和订阅——在一个界面中统一管理。"
+      },
+      "forwarding": {
+        "title": "多样化转发",
+        "description": "多种协议支持和灵活的链式转发，适应各种网络场景。"
+      },
+      "resourceGroups": {
+        "title": "模块化资源组",
+        "description": "将资源与套餐解耦，实现细粒度的访问控制和配额分配。"
+      },
+      "subscriptions": {
+        "title": "可扩展订阅",
+        "description": "从个人使用到团队共享——订阅模式随需求成长。"
+      },
+      "relay": {
+        "title": "中转优先设计",
+        "description": "专为中转和共享打造，最大化您的优质线路投资回报。"
+      }
+    },
+    "howItWorks": {
+      "title": "工作原理",
+      "subtitle": "从配置到用户接入，只需四个简单步骤",
+      "step1": {
+        "number": "01",
+        "title": "添加节点",
+        "description": "导入您的优质节点——支持多种协议和部署方式。"
+      },
+      "step2": {
+        "number": "02",
+        "title": "定义转发规则",
+        "description": "设置路由策略和链式转发，优化网络流量走向。"
+      },
+      "step3": {
+        "number": "03",
+        "title": "创建订阅套餐",
+        "description": "将资源组打包成套餐，设置自定义配额和访问级别。"
+      },
+      "step4": {
+        "number": "04",
+        "title": "分享并上线",
+        "description": "用户通过链接订阅并即时连接——无需客户端配置。"
+      }
+    },
+    "cta": {
+      "title": "准备好简化您的工作流程了吗？",
+      "subtitle": "加入 Orris，在一个平台上管理您的整个转发和订阅系统",
+      "getStartedFree": "免费开始",
+      "alreadyMember": "已经是会员？立即登录"
+    },
+    "footer": {
+      "copyright": "© {{year}} Orris. 保留所有权利。"
+    }
+  },
+  "pricing": {
+    "title": "选择套餐",
+    "subtitle": "灵活的定价方案，满足不同需求",
+    "publicTitle": "简洁透明的定价",
+    "publicSubtitle": "无论您的业务规模如何，我们都能为您提供合适的方案。",
+    "noPlans": "暂无可用套餐。",
+    "contactUs": "联系我们",
+    "getStarted": "立即开始",
+    "footerNote": "所有计划均支持随时升级或降级，如有疑问请联系客服。",
+    "perWeek": "/周",
+    "perMonth": "/月",
+    "perQuarter": "/季",
+    "perHalfYear": "/半年",
+    "perYear": "/年",
+    "lifetime": " 终身",
+    "card": {
+      "maxUsers": "最多 {{count}} 个用户",
+      "projects": "{{count}} 个项目",
+      "nodes": "{{count}} 个节点",
+      "apiRate": "{{count}} 次/分钟 API",
+      "recommended": "推荐",
+      "priceTbd": "价格待定",
+      "freeTrial": "免费试用 {{days}} 天",
+      "selectPlan": "选择计划"
+    },
+    "features": {
+      "oneUser": "1 个用户账户",
+      "users": "最多 {{count}} 个用户账户",
+      "oneProject": "1 个项目",
+      "projects": "{{count}} 个项目",
+      "oneNode": "1 个节点",
+      "nodes": "{{count}} 个节点",
+      "apiRate": "每分钟 {{count}} 次 API 请求",
+      "trialDays": "{{count}} 天免费试用",
+      "featuredDesc": "非常适合成长中的团队和企业。",
+      "defaultDesc": "包含入门所需的一切。"
+    },
+    "confirm": {
+      "title": "确认订阅",
+      "paymentComingSoon": "支付功能即将上线！目前仅显示订阅信息预览。",
+      "paymentComingSoonShort": "支付功能即将上线！",
+      "priceDetails": "价格详情",
+      "subscriptionFee": "订阅费用",
+      "perCycle": "每{{cycle}}",
+      "trialNotice": "免费试用 {{days}} 天，试用期结束后自动扣费",
+      "limits": "使用限制",
+      "maxUsers": "最多 {{count}} 个用户",
+      "maxUsersDesc": "团队成员数量上限",
+      "maxProjects": "最多 {{count}} 个项目",
+      "maxProjectsDesc": "可创建的项目数量",
+      "note": "订阅后可随时取消或更换套餐。如有疑问，请联系客服。",
+      "startTrial": "开始免费试用",
+      "subscribeNow": "立即订阅"
+    }
+  },
+  "profile": {
+    "title": "个人资料设置",
+    "pleaseLogin": "请先登录",
+    "avatar": {
+      "title": "个人头像",
+      "description": "点击上传新头像，支持 JPG、PNG 和 WebP 格式，文件大小不超过 2MB"
+    },
+    "basicInfo": {
+      "title": "基本信息"
+    },
+    "tip": "提示：修改邮箱地址需要重新验证。如需更改密码，请访问账户设置页面。"
+  },
+  "notifications": {
+    "title": "通知设置",
+    "subtitle": "管理您的通知偏好和 Telegram 绑定",
+    "telegram": {
+      "label": "Telegram",
+      "binding": "Telegram 绑定",
+      "notConfiguredDesc": "功能暂未启用，请联系管理员",
+      "receivingNotifications": "接收通知中",
+      "clickToBind": "点击绑定接收通知",
+      "unbindTitle": "解除 Telegram 绑定",
+      "unbindDesc": "解除绑定后，您将不再通过 Telegram 接收任何通知。",
+      "unbind": "解除绑定",
+      "verifyInstruction1": "打开 ",
+      "verifyInstruction2": "，发送以下命令完成绑定",
+      "copied": "已复制！",
+      "clickToCopy": "点击复制命令",
+      "codeExpiry": "验证码 10 分钟内有效",
+      "preferences": {
+        "expiringTitle": "订阅到期提醒",
+        "ahead": "提前",
+        "daysNotify": "天通知",
+        "trafficTitle": "流量告警通知",
+        "above": "超过",
+        "percentAlert": "% 时告警"
+      }
+    },
+    "status": {
+      "title": "通知状态",
+      "bound": "已绑定",
+      "unbound": "未绑定",
+      "notConfigured": "未配置",
+      "enabled": "已开启",
+      "disabled": "已关闭",
+      "items": "{{count}} 项通知"
+    },
+    "expiring": {
+      "title": "到期提醒",
+      "daysAhead": "提前 {{days}} 天"
+    },
+    "traffic": {
+      "title": "流量告警",
+      "threshold": "阈值 {{percent}}%"
+    }
+  },
+  "userNodes": {
+    "title": "我的节点",
+    "subtitle": "管理您的代理节点",
+    "noSubscription": {
+      "title": "暂无可用的转发服务",
+      "description": "您当前没有包含端口转发功能的订阅计划。购买订阅后即可使用端口转发服务。",
+      "viewPlans": "查看订阅计划"
+    },
+    "totalNodes": "共 {{count}} 个节点",
+    "addNode": "新增节点",
+    "tokenTitle": "节点 Token",
+    "installScript": {
+      "title": "安装命令",
+      "description": "安装命令，在目标服务器上执行即可完成部署",
+      "descriptionWithNode": "节点「{{name}}」的安装命令，在目标服务器上执行即可完成部署",
+      "noData": "暂无安装脚本数据",
+      "installCommand": "安装命令",
+      "recommended": "推荐",
+      "installHint": "在目标服务器上以 root 权限执行此命令，将自动下载并安装节点",
+      "uninstallCommand": "卸载命令",
+      "scriptUrl": "脚本地址",
+      "open": "打开",
+      "viewDetails": "查看详细信息",
+      "clickToExpand": "点击展开",
+      "clickToCollapse": "点击收起",
+      "apiUrl": "API 地址",
+      "token": "Token"
+    },
+    "create": {
+      "title": "创建节点",
+      "description": "填写以下信息创建新节点。创建成功后将显示节点 Token，请妥善保管。",
+      "basicInfo": "基本信息",
+      "nodeName": "节点名称",
+      "serverAddress": "服务器地址",
+      "agentPort": "Agent 端口",
+      "subscriptionPort": "订阅端口",
+      "protocol": "协议类型",
+      "transportProtocol": "传输协议",
+      "tlsSni": "TLS SNI",
+      "tlsFingerprint": "TLS 指纹",
+      "hostHeader": "Host 头",
+      "wsPath": "WebSocket 路径",
+      "path": "路径",
+      "allowInsecure": "允许不安全的 TLS 连接",
+      "congestionControl": "拥塞控制",
+      "notSpecified": "不指定",
+      "creating": "创建中...",
+      "placeholders": {
+        "nodeName": "例如：香港节点-01",
+        "serverAddress": "留空则自动检测",
+        "agentPort": "例如：8080",
+        "subscriptionPort": "留空则使用 Agent 端口",
+        "plugin": "例如：v2ray-plugin",
+        "vlessFlow": "例如：xtls-rprx-vision",
+        "selectFingerprint": "选择指纹",
+        "realityPublicKey": "服务端公钥",
+        "realityShortId": "短 ID",
+        "obfsPassword": "混淆密码"
+      },
+      "hints": {
+        "serverAddress": "可选，留空将从 Agent 公网 IP 自动检测",
+        "pluginOpts": "格式：key1=value1;key2=value2 或 JSON",
+        "vlessFlow": "可选，用于 XTLS 流控",
+        "optional": "可选",
+        "alterId": "通常为 0",
+        "recommendBbr": "推荐使用 BBR",
+        "obfsType": "可选，混淆类型",
+        "alpn": "应用层协议协商"
+      },
+      "validation": {
+        "nameRequired": "请输入节点名称",
+        "portInvalid": "请输入有效的端口号"
+      },
+      "shadowsocks": {
+        "title": "Shadowsocks 配置",
+        "method": "加密方法",
+        "plugin": "插件名称",
+        "pluginOpts": "插件参数"
+      },
+      "trojan": {
+        "title": "Trojan 配置"
+      },
+      "vless": {
+        "title": "VLESS 配置",
+        "securityType": "安全类型",
+        "flow": "Flow (流控)",
+        "realityPublicKey": "Reality 公钥",
+        "realityShortId": "Reality Short ID",
+        "realitySpiderX": "Reality Spider X"
+      },
+      "vmess": {
+        "title": "VMess 配置",
+        "encryption": "加密方式",
+        "alterId": "Alter ID",
+        "tlsSettings": "TLS 设置",
+        "enableTls": "启用 TLS"
+      },
+      "hysteria2": {
+        "title": "Hysteria2 配置",
+        "obfsType": "Obfs 类型",
+        "obfsPassword": "Obfs 密码",
+        "upMbps": "上行带宽 (Mbps)",
+        "downMbps": "下行带宽 (Mbps)"
+      },
+      "tuic": {
+        "title": "TUIC 配置",
+        "udpRelayMode": "UDP 中继模式",
+        "alpn": "ALPN",
+        "disableSni": "禁用 SNI"
+      }
+    },
+    "detail": {
+      "title": "节点详情",
+      "basicInfo": "基本信息",
+      "nodeName": "节点名称：",
+      "serverAddress": "服务器地址：",
+      "agentPort": "Agent 端口：",
+      "subscriptionPort": "订阅端口：",
+      "protocol": "协议：",
+      "status": "状态：",
+      "statusLabels": {
+        "active": "活跃",
+        "inactive": "停用",
+        "maintenance": "维护中"
+      },
+      "onlineStatus": "在线状态",
+      "currentStatus": "当前状态：",
+      "lastOnline": "最后在线：",
+      "protocolConfig": "协议配置",
+      "encryptionMethod": "加密方法：",
+      "transportProtocol": "传输协议：",
+      "host": "Host：",
+      "path": "路径：",
+      "sni": "SNI：",
+      "allowInsecure": "允许不安全 TLS：",
+      "securityType": "安全类型：",
+      "flow": "Flow：",
+      "serviceName": "Service Name：",
+      "realityPublicKey": "Reality Public Key：",
+      "realityShortId": "Reality Short ID：",
+      "encryptionType": "加密方式：",
+      "alterId": "Alter ID：",
+      "tls": "TLS：",
+      "tlsEnabled": "启用",
+      "tlsDisabled": "未启用",
+      "congestionControl": "拥塞控制：",
+      "obfsType": "Obfs 类型：",
+      "bandwidthLimit": "带宽限制：",
+      "upload": "上行",
+      "download": "下行",
+      "udpRelayMode": "UDP 中继模式：",
+      "alpn": "ALPN：",
+      "disableSni": "禁用 SNI：",
+      "timeInfo": "时间信息",
+      "createdAt": "创建时间：",
+      "updatedAt": "更新时间："
+    }
+  },
+  "userForwardRules": {
+    "columns": {
+      "ruleName": "规则名",
+      "entry": "入口",
+      "exit": "出口",
+      "usedTraffic": "已用流量",
+      "status": "状态",
+      "actions": "操作"
+    },
+    "tooltip": {
+      "viaForwardAgent": "经由转发 Agent",
+      "entryAgent": "入口 Agent",
+      "targetAddress": "目标地址"
+    },
+    "popover": {
+      "chainNodeDetails": "链路节点详情",
+      "nodesCount": "{{count}} 个节点"
+    },
+    "menu": {
+      "edit": "编辑",
+      "enableRule": "启用规则",
+      "disableRule": "禁用规则",
+      "deleteRule": "删除规则"
+    },
+    "traffic": {
+      "upload": "上传:",
+      "download": "下载:"
+    },
+    "status": {
+      "enabled": "已启用",
+      "disabled": "已禁用",
+      "clickToDisable": "点击禁用",
+      "clickToEnable": "点击启用"
+    },
+    "empty": "暂无转发规则",
+    "exitChain": "出口链路",
+    "loadMore": "加载更多",
+    "remark": "备注:",
+    "confirmDelete": {
+      "title": "确认删除",
+      "description": "确认删除转发规则「{{name}}」吗？此操作不可恢复。"
+    }
+  },
+  "monitor": {
+    "table": {
+      "columns": {
+        "type": "类型",
+        "name": "名称",
+        "status": "状态",
+        "memory": "内存",
+        "disk": "磁盘",
+        "network": "网络",
+        "uptime": "运行时间",
+        "publicIp": "公网 IP"
+      },
+      "status": {
+        "online": "在线",
+        "offline": "离线"
+      },
+      "empty": "暂无数据"
     }
   },
   "errors": {

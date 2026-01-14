@@ -86,28 +86,28 @@ export const MobileUserCard = ({
     {
       key: 'edit',
       icon: <Edit className="size-5" />,
-      label: '编辑',
+      label: t('common.actions.edit'),
       bgColor: 'bg-primary',
       onClick: () => onEdit(user),
     },
     {
       key: 'subscription',
       icon: <CreditCard className="size-5" />,
-      label: '订阅',
+      label: t('subscription.label'),
       bgColor: 'bg-success',
       onClick: () => onAssignSubscription(user),
     },
     {
       key: 'password',
       icon: <KeyRound className="size-5" />,
-      label: '密码',
+      label: t('auth.login.password'),
       bgColor: 'bg-warning',
       onClick: () => onResetPassword(user),
     },
     {
       key: 'delete',
       icon: <Trash2 className="size-5" />,
-      label: '删除',
+      label: t('common.actions.delete'),
       bgColor: 'bg-destructive',
       onClick: () => onDelete(user),
     },
@@ -117,7 +117,7 @@ export const MobileUserCard = ({
     <MobileSwipeCard actions={swipeActions}>
       <div
         onClick={() => onCardPress(user)}
-        className="flex items-center gap-3 px-4 py-3 cursor-pointer active:bg-muted/30 transition-colors"
+        className="flex items-center gap-3 px-4 py-3 min-h-[72px] cursor-pointer active:bg-muted/30 transition-colors"
       >
         {/* Avatar */}
         <UserAvatar name={user.name} email={user.email} role={user.role} />

@@ -4,6 +4,7 @@
  */
 
 import { useState, useEffect, useCallback } from 'react';
+import { useTranslation } from 'react-i18next';
 import { KeyRound, Check } from 'lucide-react';
 import {
   Sheet,
@@ -40,6 +41,7 @@ export const ResetPasswordSheet: React.FC<ResetPasswordSheetProps> = ({
   isLoading = false,
   onSubmit,
 }) => {
+  const { t } = useTranslation();
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
@@ -61,19 +63,19 @@ export const ResetPasswordSheet: React.FC<ResetPasswordSheetProps> = ({
 
   // Validation
   const validatePassword = useCallback((value: string): string | undefined => {
-    if (!value) return '请输入新密码';
-    if (value.length < PASSWORD_MIN_LENGTH) return `密码至少 ${PASSWORD_MIN_LENGTH} 个字符`;
-    if (value.length > PASSWORD_MAX_LENGTH) return `密码不能超过 ${PASSWORD_MAX_LENGTH} 个字符`;
-    if (!/[a-zA-Z]/.test(value)) return '密码需包含字母';
-    if (!/\d/.test(value)) return '密码需包含数字';
+    if (!value) return t('admin.users.resetPassword.passwordRequired');
+    if (value.length < PASSWORD_MIN_LENGTH) return t('admin.users.resetPassword.passwordMinLength', { min: PASSWORD_MIN_LENGTH });
+    if (value.length > PASSWORD_MAX_LENGTH) return t('admin.users.resetPassword.passwordMaxLength', { max: PASSWORD_MAX_LENGTH });
+    if (!/[a-zA-Z]/.test(value)) return t('admin.users.resetPassword.passwordNeedsLetter');
+    if (!/\d/.test(value)) return t('admin.users.resetPassword.passwordNeedsNumber');
     return undefined;
-  }, []);
+  }, [t]);
 
   const validateConfirm = useCallback((value: string): string | undefined => {
-    if (!value) return '请确认新密码';
-    if (value !== password) return '两次密码不一致';
+    if (!value) return t('admin.users.resetPassword.confirmRequired');
+    if (value !== password) return t('admin.users.resetPassword.passwordMismatch');
     return undefined;
-  }, [password]);
+  }, [t, password]);
 
   const handleBlur = useCallback((field: 'password' | 'confirmPassword') => {
     setTouched((prev) => ({ ...prev, [field]: true }));
@@ -119,10 +121,10 @@ export const ResetPasswordSheet: React.FC<ResetPasswordSheetProps> = ({
             <div className="size-10 rounded-full bg-warning/10 flex items-center justify-center">
               <KeyRound className="size-5 text-warning" />
             </div>
-            <span>重置密码</span>
+            <span>{t('user.detail.resetPassword')}</span>
           </SheetTitle>
           <SheetDescription>
-            为用户 <span className="font-medium text-foreground">{user.email}</span> 设置新密码
+            {t('admin.users.resetPassword.description', { email: user.email })}
           </SheetDescription>
         </SheetHeader>
 
@@ -130,7 +132,7 @@ export const ResetPasswordSheet: React.FC<ResetPasswordSheetProps> = ({
           {/* New Password */}
           <div className="space-y-1.5">
             <label htmlFor="reset-password" className="text-sm font-medium px-1">
-              新密码 <span className="text-destructive">*</span>
+              {t('admin.users.resetPassword.newPassword')} <span className="text-destructive">*</span>
             </label>
             <MobilePasswordInput
               id="reset-password"
@@ -140,11 +142,11 @@ export const ResetPasswordSheet: React.FC<ResetPasswordSheetProps> = ({
                 if (touched.password) setErrors((prev) => ({ ...prev, password: validatePassword(v) }));
                 // Also update confirm validation if already touched
                 if (touched.confirmPassword && confirmPassword) {
-                  setErrors((prev) => ({ ...prev, confirmPassword: v !== confirmPassword ? '两次密码不一致' : undefined }));
+                  setErrors((prev) => ({ ...prev, confirmPassword: v !== confirmPassword ? t('admin.users.resetPassword.passwordMismatch') : undefined }));
                 }
               }}
               onBlur={() => handleBlur('password')}
-              placeholder="请输入新密码"
+              placeholder={t('admin.users.resetPassword.newPasswordPlaceholder')}
               error={touched.password ? errors.password : undefined}
               disabled={isLoading}
               showPassword={showPassword}
@@ -154,7 +156,7 @@ export const ResetPasswordSheet: React.FC<ResetPasswordSheetProps> = ({
             {/* Password Requirements */}
             {!password && !touched.password && (
               <p className="text-xs text-muted-foreground px-1">
-                {PASSWORD_MIN_LENGTH}-{PASSWORD_MAX_LENGTH} 个字符，必须包含字母和数字
+                {t('admin.users.resetPassword.passwordHint', { min: PASSWORD_MIN_LENGTH, max: PASSWORD_MAX_LENGTH })}
               </p>
             )}
 
@@ -165,7 +167,7 @@ export const ResetPasswordSheet: React.FC<ResetPasswordSheetProps> = ({
           {/* Confirm Password */}
           <div className="space-y-1.5">
             <label htmlFor="reset-confirm" className="text-sm font-medium px-1">
-              确认密码 <span className="text-destructive">*</span>
+              {t('admin.users.resetPassword.confirmPassword')} <span className="text-destructive">*</span>
             </label>
             <MobilePasswordInput
               id="reset-confirm"
@@ -175,7 +177,7 @@ export const ResetPasswordSheet: React.FC<ResetPasswordSheetProps> = ({
                 if (touched.confirmPassword) setErrors((prev) => ({ ...prev, confirmPassword: validateConfirm(v) }));
               }}
               onBlur={() => handleBlur('confirmPassword')}
-              placeholder="请再次输入新密码"
+              placeholder={t('admin.users.resetPassword.confirmPlaceholder')}
               error={touched.confirmPassword ? errors.confirmPassword : undefined}
               disabled={isLoading}
               showPassword={showConfirmPassword}
@@ -186,7 +188,7 @@ export const ResetPasswordSheet: React.FC<ResetPasswordSheetProps> = ({
             {confirmPassword && !errors.confirmPassword && password === confirmPassword && (
               <div className="flex items-center gap-1.5 text-success text-sm px-1">
                 <Check className="size-4" />
-                <span>密码匹配</span>
+                <span>{t('admin.users.resetPassword.passwordMatch')}</span>
               </div>
             )}
           </div>
@@ -198,7 +200,7 @@ export const ResetPasswordSheet: React.FC<ResetPasswordSheetProps> = ({
             disabled={isLoading || !isFormValid}
             className="w-full min-h-[48px]"
           >
-            {isLoading ? '重置中...' : '确认重置'}
+            {isLoading ? t('admin.users.resetPassword.resetting') : t('admin.users.resetPassword.confirmReset')}
           </Button>
           <Button
             variant="ghost"
@@ -206,7 +208,7 @@ export const ResetPasswordSheet: React.FC<ResetPasswordSheetProps> = ({
             disabled={isLoading}
             className="w-full min-h-[44px]"
           >
-            取消
+            {t('common.actions.cancel')}
           </Button>
         </SheetFooter>
       </SheetContent>

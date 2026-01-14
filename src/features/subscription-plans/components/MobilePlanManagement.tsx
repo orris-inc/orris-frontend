@@ -11,6 +11,7 @@
  */
 
 import { useState, useMemo, useCallback } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
   Plus,
   RefreshCw,
@@ -53,15 +54,19 @@ export interface MobilePlanManagementProps {
 type StatusFilter = 'all' | 'active' | 'inactive' | 'public' | 'private';
 
 // ============================================================================
-// Filter Options
+// Filter Options - Using labelKey for i18n
 // ============================================================================
 
-const STATUS_FILTER_OPTIONS: SegmentOption<StatusFilter>[] = [
-  { value: 'all', label: '全部' },
-  { value: 'active', label: '激活' },
-  { value: 'inactive', label: '停用', hideWhenZero: true },
-  { value: 'public', label: '公开' },
-  { value: 'private', label: '私有', hideWhenZero: true },
+interface StatusFilterOption extends SegmentOption<StatusFilter> {
+  labelKey: string;
+}
+
+const STATUS_FILTER_OPTIONS: StatusFilterOption[] = [
+  { value: 'all', label: '', labelKey: 'filter.all' },
+  { value: 'active', label: '', labelKey: 'common.status.active' },
+  { value: 'inactive', label: '', labelKey: 'common.status.inactive', hideWhenZero: true },
+  { value: 'public', label: '', labelKey: 'admin.plans.public' },
+  { value: 'private', label: '', labelKey: 'admin.plans.private', hideWhenZero: true },
 ];
 
 // ============================================================================
@@ -76,11 +81,13 @@ const StatsSummary = ({
   active,
   publicCount,
   loading,
+  t,
 }: {
   total: number;
   active: number;
   publicCount: number;
   loading: boolean;
+  t: (key: string) => string;
 }) => {
   if (loading) {
     return (
@@ -96,17 +103,17 @@ const StatsSummary = ({
     <div className="flex items-center justify-between text-xs px-1">
       <div className="flex items-center gap-1.5">
         <Package className="size-3.5 text-muted-foreground" />
-        <span className="text-muted-foreground">总数</span>
+        <span className="text-muted-foreground">{t('admin.subscriptions.total')}</span>
         <span className="font-semibold text-foreground tabular-nums">{total}</span>
       </div>
       <div className="flex items-center gap-1.5">
         <CheckCircle2 className="size-3.5 text-success" />
-        <span className="text-muted-foreground">激活</span>
+        <span className="text-muted-foreground">{t('common.status.active')}</span>
         <span className="font-semibold text-success tabular-nums">{active}</span>
       </div>
       <div className="flex items-center gap-1.5">
         <Globe className="size-3.5 text-info" />
-        <span className="text-muted-foreground">公开</span>
+        <span className="text-muted-foreground">{t('admin.plans.public')}</span>
         <span className="font-semibold text-info tabular-nums">{publicCount}</span>
       </div>
     </div>
@@ -120,10 +127,12 @@ const SearchBar = ({
   value,
   onChange,
   onClear,
+  placeholder,
 }: {
   value: string;
   onChange: (value: string) => void;
   onClear: () => void;
+  placeholder: string;
 }) => {
   return (
     <div
@@ -140,7 +149,7 @@ const SearchBar = ({
         type="text"
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        placeholder="搜索计划名称..."
+        placeholder={placeholder}
         className={cn(
           'flex-1 min-w-0',
           'bg-transparent',
@@ -168,10 +177,12 @@ const EmptyState = ({
   hasFilter,
   onClearFilter,
   onCreate,
+  t,
 }: {
   hasFilter: boolean;
   onClearFilter: () => void;
   onCreate: () => void;
+  t: (key: string) => string;
 }) => (
   <div className="flex flex-col items-center justify-center py-16 px-6">
     <div className="size-20 rounded-full bg-muted/30 flex items-center justify-center mb-4">
@@ -182,10 +193,12 @@ const EmptyState = ({
       )}
     </div>
     <p className="text-base font-medium text-foreground mb-1 text-center">
-      {hasFilter ? '未找到匹配计划' : '暂无订阅计划'}
+      {hasFilter ? t('common.messages.noResults') : t('admin.plans.table.noPlans')}
     </p>
     <p className="text-sm text-muted-foreground text-center mb-5">
-      {hasFilter ? '尝试调整搜索条件或清除筛选' : '点击下方按钮创建第一个计划'}
+      {hasFilter
+        ? t('subscription.tryAdjustSearch')
+        : t('admin.plans.createPlan')}
     </p>
     <button
       type="button"
@@ -204,12 +217,12 @@ const EmptyState = ({
       {hasFilter ? (
         <>
           <X className="size-4" />
-          清除筛选
+          {t('messages.clearFilters')}
         </>
       ) : (
         <>
           <Plus className="size-4" />
-          创建计划
+          {t('admin.plans.createPlan')}
         </>
       )}
     </button>
@@ -354,10 +367,19 @@ export const MobilePlanManagement = ({
   onDelete,
   onPageChange,
 }: MobilePlanManagementProps) => {
+  const { t } = useTranslation();
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<StatusFilter>('all');
   const [selectedPlan, setSelectedPlan] = useState<SubscriptionPlan | null>(null);
   const [detailSheetOpen, setDetailSheetOpen] = useState(false);
+
+  // Build filter options with translated labels
+  const translatedFilterOptions = useMemo(() => {
+    return STATUS_FILTER_OPTIONS.map((opt) => ({
+      ...opt,
+      label: t(opt.labelKey),
+    }));
+  }, [t]);
 
   // Calculate stats
   const stats = useMemo(() => {
@@ -370,7 +392,7 @@ export const MobilePlanManagement = ({
 
   // Add counts to filter options
   const filterOptionsWithCounts = useMemo(() => {
-    return STATUS_FILTER_OPTIONS.map((opt) => {
+    return translatedFilterOptions.map((opt) => {
       let count: number;
       switch (opt.value) {
         case 'all':
@@ -393,7 +415,7 @@ export const MobilePlanManagement = ({
       }
       return { ...opt, count };
     });
-  }, [stats, total]);
+  }, [translatedFilterOptions, stats, total]);
 
   // Filter plans
   const filteredPlans = useMemo(() => {
@@ -443,6 +465,7 @@ export const MobilePlanManagement = ({
           active={stats.active}
           publicCount={stats.publicPlans}
           loading={loading}
+          t={t}
         />
 
         {/* Search Bar with Refresh */}
@@ -452,6 +475,7 @@ export const MobilePlanManagement = ({
               value={searchQuery}
               onChange={setSearchQuery}
               onClear={() => setSearchQuery('')}
+              placeholder={t('common.placeholders.search')}
             />
           </div>
           <button
@@ -486,14 +510,14 @@ export const MobilePlanManagement = ({
       {hasFilter && !loading && filteredPlans.length > 0 && (
         <div className="flex items-center justify-between mb-3 px-1">
           <span className="text-xs text-muted-foreground">
-            找到 <span className="font-medium text-foreground">{filteredPlans.length}</span> 个结果
+            {t('admin.subscriptions.found')} <span className="font-medium text-foreground">{filteredPlans.length}</span> {t('admin.subscriptions.results')}
           </span>
           <button
             type="button"
             onClick={clearFilters}
             className="text-xs text-primary font-medium"
           >
-            清除筛选
+            {t('messages.clearFilters')}
           </button>
         </div>
       )}
@@ -506,6 +530,7 @@ export const MobilePlanManagement = ({
           hasFilter={hasFilter}
           onClearFilter={clearFilters}
           onCreate={onCreate}
+          t={t}
         />
       ) : (
         <div className="space-y-2.5">

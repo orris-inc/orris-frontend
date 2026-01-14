@@ -6,6 +6,7 @@
  */
 
 import { memo, useCallback } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/common/Tooltip';
 import { useSystemStatusHover } from './SystemStatusHoverContext';
 import { formatBitRate, formatBytes, formatRelativeTime } from '@/shared/utils/format-utils';
@@ -74,6 +75,7 @@ MiniBar.displayName = 'MiniBar';
 
 // Tooltip content component - separated to avoid re-render issues
 const StatusTooltipContent = memo(({ status }: { status: SystemStatusData }) => {
+  const { t } = useTranslation();
   const cpuPercent = status.cpuPercent ?? 0;
   const memoryPercent = status.memoryPercent ?? 0;
   const diskPercent = status.diskPercent ?? 0;
@@ -83,7 +85,7 @@ const StatusTooltipContent = memo(({ status }: { status: SystemStatusData }) => 
     <div className="space-y-2.5 text-xs">
       {/* Header with optional update time */}
       <div className="flex items-center justify-between">
-        <span className="font-medium">系统监控</span>
+        <span className="font-medium">{t('admin.monitor.systemMonitor')}</span>
         {status.updatedAt && (
           <span className="text-[10px] text-muted-foreground">{formatRelativeTime(status.updatedAt)}</span>
         )}
@@ -91,11 +93,11 @@ const StatusTooltipContent = memo(({ status }: { status: SystemStatusData }) => 
       {/* System stats */}
       <div className="space-y-1.5">
         <div className="flex items-center justify-between">
-          <span className="text-muted-foreground">CPU</span>
+          <span className="text-muted-foreground">{t('admin.monitor.cpu')}</span>
           <span className="font-mono">{cpuPercent.toFixed(1)}%</span>
         </div>
         <div className="flex items-center justify-between">
-          <span className="text-muted-foreground">内存</span>
+          <span className="text-muted-foreground">{t('admin.monitor.memory')}</span>
           <span className="font-mono">
             {memoryPercent.toFixed(1)}%
             {status.memoryUsed !== undefined && status.memoryTotal !== undefined && (
@@ -106,7 +108,7 @@ const StatusTooltipContent = memo(({ status }: { status: SystemStatusData }) => 
           </span>
         </div>
         <div className="flex items-center justify-between">
-          <span className="text-muted-foreground">磁盘</span>
+          <span className="text-muted-foreground">{t('admin.monitor.disk')}</span>
           <span className="font-mono">
             {diskPercent.toFixed(1)}%
             {status.diskUsed !== undefined && status.diskTotal !== undefined && (
@@ -118,7 +120,7 @@ const StatusTooltipContent = memo(({ status }: { status: SystemStatusData }) => 
         </div>
         {status.loadAvg1 !== undefined && (
           <div className="flex items-center justify-between">
-            <span className="text-muted-foreground">负载</span>
+            <span className="text-muted-foreground">{t('admin.monitor.load')}</span>
             <span className="font-mono">
               {status.loadAvg1.toFixed(2)} / {status.loadAvg5?.toFixed(2)} / {status.loadAvg15?.toFixed(2)}
             </span>
@@ -126,7 +128,7 @@ const StatusTooltipContent = memo(({ status }: { status: SystemStatusData }) => 
         )}
         {status.uptimeSeconds !== undefined && status.uptimeSeconds > 0 && (
           <div className="flex items-center justify-between">
-            <span className="text-muted-foreground">运行</span>
+            <span className="text-muted-foreground">{t('admin.monitor.uptime')}</span>
             <span className="font-mono">
               {Math.floor(status.uptimeSeconds / 86400)}d {Math.floor((status.uptimeSeconds % 86400) / 3600)}h
             </span>
@@ -136,21 +138,21 @@ const StatusTooltipContent = memo(({ status }: { status: SystemStatusData }) => 
       {/* Network stats */}
       <div className="space-y-1.5 pt-2 border-t border-border">
         <div className="flex items-center justify-between">
-          <span className="text-muted-foreground">下载</span>
+          <span className="text-muted-foreground">{t('admin.monitor.download')}</span>
           <span className="font-mono text-success">{formatBitRate(status.networkRxRate)}</span>
         </div>
         <div className="flex items-center justify-between">
-          <span className="text-muted-foreground">上传</span>
+          <span className="text-muted-foreground">{t('admin.monitor.upload')}</span>
           <span className="font-mono text-info">{formatBitRate(status.networkTxRate)}</span>
         </div>
         <div className="flex items-center justify-between">
-          <span className="text-muted-foreground">累计</span>
+          <span className="text-muted-foreground">{t('admin.monitor.total')}</span>
           <span className="font-mono text-[11px]">
             ↓{formatBytes(status.networkRxBytes)} ↑{formatBytes(status.networkTxBytes)}
           </span>
         </div>
         <div className="flex items-center justify-between">
-          <span className="text-muted-foreground">连接</span>
+          <span className="text-muted-foreground">{t('admin.monitor.connections')}</span>
           <span className="font-mono">
             {totalConnections} (TCP:{status.tcpConnections || 0} UDP:{status.udpConnections || 0})
           </span>
@@ -160,11 +162,11 @@ const StatusTooltipContent = memo(({ status }: { status: SystemStatusData }) => 
       {(status.activeRules !== undefined || status.activeConnections !== undefined) && (
         <div className="space-y-1.5 pt-2 border-t border-border">
           <div className="flex items-center justify-between">
-            <span className="text-muted-foreground">活跃规则</span>
+            <span className="text-muted-foreground">{t('admin.monitor.activeRules')}</span>
             <span className="font-mono">{status.activeRules ?? 0}</span>
           </div>
           <div className="flex items-center justify-between">
-            <span className="text-muted-foreground">活跃连接</span>
+            <span className="text-muted-foreground">{t('admin.monitor.activeConnections')}</span>
             <span className="font-mono">{status.activeConnections ?? 0}</span>
           </div>
         </div>

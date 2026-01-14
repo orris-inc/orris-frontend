@@ -7,8 +7,11 @@ import { useTranslation } from 'react-i18next';
 import {
   MoreHorizontal,
   Play,
+  PlayCircle,
+  Pause,
   XCircle,
   RefreshCw,
+  RefreshCcw,
   Eye,
   Copy,
   Trash2,
@@ -55,6 +58,9 @@ interface SubscriptionMobileListProps {
   onActivate?: (subscription: Subscription) => void;
   onCancel?: (subscription: Subscription) => void;
   onRenew?: (subscription: Subscription) => void;
+  onSuspend?: (subscription: Subscription) => void;
+  onUnsuspend?: (subscription: Subscription) => void;
+  onResetUsage?: (subscription: Subscription) => void;
   onDelete?: (subscription: Subscription) => void;
 }
 
@@ -85,6 +91,9 @@ export const SubscriptionMobileList: React.FC<SubscriptionMobileListProps> = ({
   onActivate,
   onCancel,
   onRenew,
+  onSuspend,
+  onUnsuspend,
+  onResetUsage,
   onDelete,
 }) => {
   const { t } = useTranslation();
@@ -92,8 +101,11 @@ export const SubscriptionMobileList: React.FC<SubscriptionMobileListProps> = ({
   // Render context menu content
   const renderContextMenuContent = (subscription: Subscription) => {
     const status = subscription.status;
-    const canActivate = status !== 'active' && status !== 'renewed';
-    const canCancel = status === 'active' || status === 'renewed';
+    const canActivate = status === 'inactive' || status === 'pending_payment';
+    const canUnsuspend = status === 'suspended';
+    const canCancel = status === 'active' || status === 'trialing' || status === 'past_due';
+    const canSuspend = status === 'active';
+    const canResetUsage = status === 'active' || status === 'suspended';
     const canRenew = status === 'expired';
     const canDelete = status === 'cancelled' || status === 'expired';
 
@@ -111,17 +123,38 @@ export const SubscriptionMobileList: React.FC<SubscriptionMobileListProps> = ({
             {t('subscription.duplicate')}
           </ContextMenuItem>
         )}
-        {(onViewDetail || onDuplicate) && (canActivate || canRenew || canCancel) && <ContextMenuSeparator />}
+        {(onViewDetail || onDuplicate) && (canActivate || canUnsuspend || canRenew || canCancel || canSuspend) && <ContextMenuSeparator />}
         {canActivate && onActivate && (
           <ContextMenuItem onClick={() => onActivate(subscription)}>
             <Play className="mr-2 size-4" />
             {t('subscription.activate')}
           </ContextMenuItem>
         )}
+        {canUnsuspend && onUnsuspend && (
+          <ContextMenuItem onClick={() => onUnsuspend(subscription)}>
+            <PlayCircle className="mr-2 size-4" />
+            {t('subscription.unsuspend')}
+          </ContextMenuItem>
+        )}
         {canRenew && onRenew && (
           <ContextMenuItem onClick={() => onRenew(subscription)}>
             <RefreshCw className="mr-2 size-4" />
             {t('subscription.renewSubscription')}
+          </ContextMenuItem>
+        )}
+        {canSuspend && onSuspend && (
+          <ContextMenuItem
+            onClick={() => onSuspend(subscription)}
+            className="text-warning focus:text-warning"
+          >
+            <Pause className="mr-2 size-4" />
+            {t('subscription.suspend')}
+          </ContextMenuItem>
+        )}
+        {canResetUsage && onResetUsage && (
+          <ContextMenuItem onClick={() => onResetUsage(subscription)}>
+            <RefreshCcw className="mr-2 size-4" />
+            {t('subscription.resetUsage')}
           </ContextMenuItem>
         )}
         {canCancel && onCancel && (
@@ -152,8 +185,9 @@ export const SubscriptionMobileList: React.FC<SubscriptionMobileListProps> = ({
   // Render dropdown menu
   const renderDropdownMenu = (subscription: Subscription) => {
     const status = subscription.status;
-    const canActivate = status !== 'active' && status !== 'renewed';
-    const canCancel = status === 'active' || status === 'renewed';
+    const canActivate = status === 'inactive' || status === 'pending_payment' || status === 'suspended';
+    const canCancel = status === 'active' || status === 'trialing' || status === 'past_due';
+    const canResetUsage = status === 'active' || status === 'suspended';
     const canRenew = status === 'expired';
     const canDelete = status === 'cancelled' || status === 'expired';
 
@@ -180,7 +214,7 @@ export const SubscriptionMobileList: React.FC<SubscriptionMobileListProps> = ({
               {t('subscription.duplicate')}
             </DropdownMenuItem>
           )}
-          {(onViewDetail || onDuplicate) && (canActivate || canRenew || canCancel) && <DropdownMenuSeparator />}
+          {(onViewDetail || onDuplicate) && (canActivate || canRenew || canResetUsage || canCancel) && <DropdownMenuSeparator />}
           {canActivate && onActivate && (
             <DropdownMenuItem onClick={() => onActivate(subscription)}>
               <Play className="mr-2 size-4" />
@@ -191,6 +225,12 @@ export const SubscriptionMobileList: React.FC<SubscriptionMobileListProps> = ({
             <DropdownMenuItem onClick={() => onRenew(subscription)}>
               <RefreshCw className="mr-2 size-4" />
               {t('subscription.renewSubscription')}
+            </DropdownMenuItem>
+          )}
+          {canResetUsage && onResetUsage && (
+            <DropdownMenuItem onClick={() => onResetUsage(subscription)}>
+              <RefreshCcw className="mr-2 size-4" />
+              {t('subscription.resetUsage')}
             </DropdownMenuItem>
           )}
           {canCancel && onCancel && (
@@ -239,7 +279,7 @@ export const SubscriptionMobileList: React.FC<SubscriptionMobileListProps> = ({
         const isUserLoading = usersLoading || (!user && Object.keys(usersMap).length === 0);
         const plan = subscription.plan;
         const status = subscription.status;
-        const canActivate = status !== 'active' && status !== 'renewed';
+        const canActivate = status === 'inactive' || status === 'pending_payment' || status === 'suspended';
 
         return (
           <ContextMenu key={subscription.id}>

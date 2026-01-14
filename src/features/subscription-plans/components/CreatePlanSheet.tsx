@@ -106,10 +106,10 @@ const FORWARD_RULE_TYPES: { value: ForwardRuleTypeOption; label: string }[] = [
   { value: 'direct_chain', label: '直连链' },
 ];
 
+// Plan type options (hybrid is not yet implemented)
 const PLAN_TYPES: { value: PlanType; label: string }[] = [
   { value: 'node', label: '节点订阅' },
   { value: 'forward', label: '端口转发' },
-  { value: 'hybrid', label: '混合订阅' },
 ];
 
 interface CreatePlanFormData extends Omit<CreatePlanRequest, 'limits' | 'pricings'> {

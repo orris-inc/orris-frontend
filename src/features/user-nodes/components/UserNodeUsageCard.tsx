@@ -27,7 +27,7 @@ export const UserNodeUsageCard: React.FC<UserNodeUsageCardProps> = ({
 
   if (isLoading) {
     return (
-      <div className="glass rounded-xl sm:rounded-lg p-4 mx-1 sm:mx-0">
+      <div className="glass rounded-xl p-4 ">
         <div className="flex items-center gap-3">
           <div className="h-10 w-10 sm:h-10 sm:w-10 rounded-full bg-muted/50 animate-pulse" />
           <div className="flex-1 space-y-2">
@@ -40,7 +40,7 @@ export const UserNodeUsageCard: React.FC<UserNodeUsageCardProps> = ({
   }
 
   return (
-    <div className="glass rounded-xl sm:rounded-lg p-3 sm:p-4 mx-1 sm:mx-0 transition-all duration-[var(--duration-normal)] ease-[var(--spring-smooth)]">
+    <div className="glass rounded-xl p-3 sm:p-4  transition-all duration-[var(--duration-normal)] ease-[var(--spring-smooth)]">
       <div className="flex items-center gap-2.5 sm:gap-3">
         {/* Status icon - compact on mobile */}
         <div className={`

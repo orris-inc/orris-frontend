@@ -1,9 +1,10 @@
 /**
- * 快速链接卡片
- * 提供实用的导航链接
+ * Quick Links Card
+ * Provides useful navigation links
  */
 
 import { User, CreditCard, Database, Tag, ArrowRight } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { cardStyles, getButtonClass, getBadgeClass } from '@/lib/ui-styles';
 import { useNavigate } from 'react-router-dom';
 import { useAuthStore } from '@/features/auth/stores/auth-store';
@@ -19,6 +20,7 @@ interface QuickLink {
 }
 
 export const QuickLinks = () => {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const { user } = useAuthStore();
   const isAdmin = user?.role === 'admin';
@@ -26,29 +28,29 @@ export const QuickLinks = () => {
   const links: QuickLink[] = [
     {
       icon: <User className="size-5" />,
-      title: '个人设置',
-      description: '管理您的个人信息和偏好',
+      title: t('nav.profile'),
+      description: t('dashboard.quickLinks.profileDesc'),
       path: '/dashboard/profile',
       implemented: true,
     },
     {
       icon: <CreditCard className="size-5" />,
-      title: '订阅管理',
-      description: '查看和管理您的订阅计划',
+      title: t('nav.subscriptionManagement'),
+      description: t('dashboard.quickLinks.subscriptionDesc'),
       implemented: false, // To be implemented
     },
     {
       icon: <Database className="size-5" />,
-      title: '节点Agent',
-      description: '管理您的节点配置',
+      title: t('nav.nodeAgent'),
+      description: t('dashboard.quickLinks.nodeDesc'),
       path: '/admin/nodes',
       adminOnly: true,
       implemented: true,
     },
     {
       icon: <Tag className="size-5" />,
-      title: '价格方案',
-      description: '浏览可用的订阅套餐',
+      title: t('nav.pricing'),
+      description: t('dashboard.quickLinks.pricingDesc'),
       path: '/pricing',
       implemented: true,
     },
@@ -66,7 +68,7 @@ export const QuickLinks = () => {
   return (
     <div className={cn(cardStyles, 'shadow-sm hover:shadow-md transition-shadow h-full')}>
       <div className="p-6">
-        <h3 className="text-xl font-bold mb-5">快速访问</h3>
+        <h3 className="text-xl font-bold mb-5">{t('dashboard.quickLinks.title')}</h3>
 
         <div className="space-y-3">
           {visibleLinks.map((link, index) => (
@@ -104,7 +106,7 @@ export const QuickLinks = () => {
                     </span>
                     {!link.implemented && (
                       <span className={getBadgeClass('outline', 'h-5 text-xs px-2')}>
-                        待实现
+                        {t('dashboard.quickLinks.comingSoon')}
                       </span>
                     )}
                   </div>

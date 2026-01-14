@@ -7,17 +7,19 @@
  *
  * Key Features:
  * - Native iOS-like gesture handling (swipe to dismiss)
- * - Built-in scroll handling (only draggable when scrolled to top)
+ * - Smart scroll detection: swipe-to-close works from anywhere when content is at top
  * - Visual Viewport API for keyboard avoidance
  * - Safe area support for notched devices
  *
  * Usage Notes:
  * - For forms with inputs: keyboardAware mode handles keyboard automatically
- * - For scrollable content: use SheetBody which has data-vaul-no-drag
+ * - For scrollable content: use SheetBody which intelligently handles drag vs scroll
+ *   - When scrollTop === 0: allows swipe-to-close from anywhere in the content
+ *   - When scrollTop > 0: blocks drag to allow normal scrolling
  * - scrollLockTimeout prevents accidental close after fast scrolling
  */
 
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState, useCallback } from 'react';
 import { Drawer } from 'vaul';
 import { X } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -244,7 +246,9 @@ SheetDescription.displayName = 'SheetDescription';
  * Sheet Body - Scrollable content area with keyboard-aware scrolling
  *
  * Key features:
- * - data-vaul-no-drag: Prevents drag-to-close while scrolling
+ * - Smart drag detection: Only prevents drag-to-close when content is scrolled
+ * - When scrolled to top (scrollTop === 0), allows swipe down to close from anywhere
+ * - When scrolled (scrollTop > 0), prevents drag to allow normal scrolling
  * - overscroll-contain: Prevents scroll chaining
  * - Auto-scrolls focused inputs into view (iOS keyboard handling)
  * - Grows to fill available space
@@ -254,6 +258,20 @@ export const SheetBody = ({
   ...props
 }: React.HTMLAttributes<HTMLDivElement>) => {
   const bodyRef = useRef<HTMLDivElement>(null);
+  // Track whether content is scrolled - only block drag when scrolled
+  const [isScrolled, setIsScrolled] = useState(false);
+
+  // Smart scroll detection - allow drag when at top, block when scrolled
+  const handleScroll = useCallback(() => {
+    const body = bodyRef.current;
+    if (!body) return;
+
+    // Use a small threshold to avoid floating-point issues
+    const scrolled = body.scrollTop > 1;
+    if (scrolled !== isScrolled) {
+      setIsScrolled(scrolled);
+    }
+  }, [isScrolled]);
 
   // Handle focus events to scroll inputs into view
   useEffect(() => {
@@ -309,7 +327,10 @@ export const SheetBody = ({
   return (
     <div
       ref={bodyRef}
-      data-vaul-no-drag
+      // Smart drag control: only block drag when content is scrolled
+      // When at top (scrollTop === 0), allow swipe-to-close from anywhere
+      data-vaul-no-drag={isScrolled || undefined}
+      onScroll={handleScroll}
       className={cn(
         // Flex behavior
         'flex-1 min-h-0',

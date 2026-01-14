@@ -18,3 +18,11 @@ export {
 } from './useKeyboardAwareness';
 
 export { useCurrentPageTitle } from './useCurrentPageTitle';
+
+export {
+  useServerVersion,
+  useVersionInfo,
+  CLIENT_VERSION,
+  BUILD_TIME,
+  COMMIT_HASH,
+} from './useServerVersion';

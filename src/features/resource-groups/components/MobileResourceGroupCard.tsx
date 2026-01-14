@@ -54,7 +54,7 @@ export const MobileResourceGroupCard = ({
     {
       key: 'edit',
       icon: <Edit className="size-5" />,
-      label: '编辑',
+      label: t('common.actions.edit'),
       bgColor: 'bg-primary',
       onClick: () => onEdit(group),
     },
@@ -66,14 +66,14 @@ export const MobileResourceGroupCard = ({
         ) : (
           <Power className="size-5" />
         ),
-      label: group.status === 'active' ? '禁用' : '启用',
+      label: group.status === 'active' ? t('common.actions.disable') : t('common.actions.enable'),
       bgColor: group.status === 'active' ? 'bg-warning' : 'bg-success',
       onClick: () => onToggleStatus(group),
     },
     {
       key: 'delete',
       icon: <Trash2 className="size-5" />,
-      label: '删除',
+      label: t('common.actions.delete'),
       bgColor: 'bg-destructive',
       onClick: () => onDelete(group),
     },
@@ -103,14 +103,14 @@ export const MobileResourceGroupCard = ({
           {/* Plan */}
           <Boxes className="size-3 shrink-0" />
           <span className={cn('truncate', !planName && 'text-muted-foreground/60')}>
-            {planName || '未关联套餐'}
+            {planName || t('subscription.noPlan')}
           </span>
 
           <span className="text-border">·</span>
 
           {/* Member count */}
           <Users className="size-3 shrink-0" />
-          <span>{memberCount} 成员</span>
+          <span>{memberCount} {t('admin.users.usersLabel')}</span>
         </div>
       </div>
 

@@ -4,6 +4,7 @@
  */
 
 import { useState, useCallback } from 'react';
+import { useTranslation } from 'react-i18next';
 import { UserPlus, Mail, User, Lock, Eye, EyeOff, Check, X } from 'lucide-react';
 import {
   Dialog,
@@ -40,9 +41,9 @@ interface FormTouched {
 
 // Password strength rules (8-72 chars, must contain letter and number)
 const PASSWORD_RULES = [
-  { key: 'length', label: '8-72 个字符', test: (p: string) => p.length >= 8 && p.length <= 72 },
-  { key: 'letter', label: '包含字母', test: (p: string) => /[a-zA-Z]/.test(p) },
-  { key: 'number', label: '包含数字', test: (p: string) => /\d/.test(p) },
+  { key: 'length', labelKey: 'admin.users.form.passwordLength', test: (p: string) => p.length >= 8 && p.length <= 72 },
+  { key: 'letter', labelKey: 'admin.users.form.containsLetter', test: (p: string) => /[a-zA-Z]/.test(p) },
+  { key: 'number', labelKey: 'admin.users.form.containsNumber', test: (p: string) => /\d/.test(p) },
 ];
 
 export const CreateUserDialog: React.FC<CreateUserDialogProps> = ({
@@ -50,6 +51,7 @@ export const CreateUserDialog: React.FC<CreateUserDialogProps> = ({
   onClose,
   onSubmit,
 }) => {
+  const { t } = useTranslation();
   const [email, setEmail] = useState('');
   const [name, setName] = useState('');
   const [password, setPassword] = useState('');
@@ -61,43 +63,43 @@ export const CreateUserDialog: React.FC<CreateUserDialogProps> = ({
   // Validation functions
   const validateEmail = useCallback((value: string): string | undefined => {
     if (!value.trim()) {
-      return '邮箱不能为空';
+      return t('admin.users.form.emailRequired');
     }
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) {
-      return '邮箱格式不正确';
+      return t('admin.users.form.emailInvalid');
     }
     return undefined;
-  }, []);
+  }, [t]);
 
   const validateName = useCallback((value: string): string | undefined => {
     if (!value.trim()) {
-      return '姓名不能为空';
+      return t('admin.users.form.nameRequired');
     }
     if (value.trim().length < 2 || value.trim().length > 100) {
-      return '姓名长度必须在 2-100 个字符之间';
+      return t('admin.users.form.nameLengthError');
     }
     return undefined;
-  }, []);
+  }, [t]);
 
   const validatePassword = useCallback((value: string): string | undefined => {
     const trimmed = value.trim();
     if (!trimmed) {
-      return '密码不能为空';
+      return t('admin.users.form.passwordRequired');
     }
     if (trimmed.length < 8) {
-      return '密码长度至少需要 8 个字符';
+      return t('admin.users.form.passwordMinLength');
     }
     if (trimmed.length > 72) {
-      return '密码长度不能超过 72 个字符';
+      return t('admin.users.form.passwordMaxLength');
     }
     if (!/[a-zA-Z]/.test(trimmed)) {
-      return '密码必须包含至少一个字母';
+      return t('admin.users.form.passwordNeedsLetter');
     }
     if (!/\d/.test(trimmed)) {
-      return '密码必须包含至少一个数字';
+      return t('admin.users.form.passwordNeedsNumber');
     }
     return undefined;
-  }, []);
+  }, [t]);
 
   // Handle blur events for inline validation
   const handleBlur = useCallback(
@@ -192,10 +194,10 @@ export const CreateUserDialog: React.FC<CreateUserDialogProps> = ({
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <UserPlus className="size-5 text-primary" />
-            新增用户
+            {t('admin.users.createUser')}
           </DialogTitle>
           <DialogDescription>
-            填写以下信息创建新用户账户，用户将收到包含初始密码的通知
+            {t('admin.users.form.createDescription')}
           </DialogDescription>
         </DialogHeader>
 
@@ -203,14 +205,14 @@ export const CreateUserDialog: React.FC<CreateUserDialogProps> = ({
           {/* Account Information Section */}
           <div className="space-y-4">
             <div className="flex items-center gap-2">
-              <h3 className="text-sm font-semibold">账户信息</h3>
+              <h3 className="text-sm font-semibold">{t('admin.users.form.accountInfo')}</h3>
             </div>
             <Separator />
 
             {/* Email Field */}
             <div className="flex flex-col gap-2">
               <Label htmlFor="create-user-email">
-                邮箱地址 <span className="text-destructive">*</span>
+                {t('admin.users.form.email')} <span className="text-destructive">*</span>
               </Label>
               <div className="relative">
                 <Mail className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
@@ -246,7 +248,7 @@ export const CreateUserDialog: React.FC<CreateUserDialogProps> = ({
             {/* Name Field */}
             <div className="flex flex-col gap-2">
               <Label htmlFor="create-user-name">
-                用户姓名 <span className="text-destructive">*</span>
+                {t('admin.users.form.name')} <span className="text-destructive">*</span>
               </Label>
               <div className="relative">
                 <User className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
@@ -264,7 +266,7 @@ export const CreateUserDialog: React.FC<CreateUserDialogProps> = ({
                     }
                   }}
                   onBlur={() => handleBlur('name')}
-                  placeholder="请输入用户姓名"
+                  placeholder={t('admin.users.form.namePlaceholder')}
                   className="pl-10"
                   error={touched.name && !!errors.name}
                   disabled={loading}
@@ -277,7 +279,7 @@ export const CreateUserDialog: React.FC<CreateUserDialogProps> = ({
                 </span>
               ) : (
                 <span className="text-xs text-muted-foreground">
-                  长度 2-100 个字符
+                  {t('admin.users.form.nameLengthHint')}
                 </span>
               )}
             </div>
@@ -286,14 +288,14 @@ export const CreateUserDialog: React.FC<CreateUserDialogProps> = ({
           {/* Password Section */}
           <div className="space-y-4">
             <div className="flex items-center gap-2">
-              <h3 className="text-sm font-semibold">安全设置</h3>
+              <h3 className="text-sm font-semibold">{t('admin.users.form.securitySettings')}</h3>
             </div>
             <Separator />
 
             {/* Password Field */}
             <div className="flex flex-col gap-2">
               <Label htmlFor="create-user-password">
-                初始密码 <span className="text-destructive">*</span>
+                {t('admin.users.form.initialPassword')} <span className="text-destructive">*</span>
               </Label>
               <div className="relative">
                 <Lock className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
@@ -311,7 +313,7 @@ export const CreateUserDialog: React.FC<CreateUserDialogProps> = ({
                     }
                   }}
                   onBlur={() => handleBlur('password')}
-                  placeholder="设置初始密码"
+                  placeholder={t('admin.users.form.passwordPlaceholder')}
                   className="pl-10 pr-10"
                   error={touched.password && !!errors.password}
                   disabled={loading}
@@ -337,7 +339,7 @@ export const CreateUserDialog: React.FC<CreateUserDialogProps> = ({
                 </span>
               ) : !password && (
                 <span className="text-xs text-muted-foreground">
-                  8-72 个字符，必须包含字母和数字
+                  {t('admin.users.form.passwordHint')}
                 </span>
               )}
 
@@ -377,7 +379,7 @@ export const CreateUserDialog: React.FC<CreateUserDialogProps> = ({
                           ) : (
                             <X className="size-3" />
                           )}
-                          {rule.label}
+                          {t(rule.labelKey)}
                         </div>
                       );
                     })}
@@ -390,10 +392,10 @@ export const CreateUserDialog: React.FC<CreateUserDialogProps> = ({
 
         <DialogFooter>
           <Button variant="outline" onClick={handleClose} disabled={loading}>
-            取消
+            {t('common.actions.cancel')}
           </Button>
           <Button onClick={handleSubmit} disabled={loading || !isFormValid}>
-            {loading ? '创建中...' : '创建用户'}
+            {loading ? t('admin.users.form.creating') : t('admin.users.form.createUser')}
           </Button>
         </DialogFooter>
       </DialogContent>

@@ -4,6 +4,7 @@
  */
 
 import { useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
   AreaChart,
   Area,
@@ -20,11 +21,18 @@ import { Skeleton } from '@/components/common/Skeleton';
 import { TrafficTrendPoint, formatTrafficBytes } from '@/api/admin';
 import { cn } from '@/lib/utils';
 
+interface TrafficOverviewData {
+  totalUpload: number;
+  totalDownload: number;
+}
+
 interface TrafficTrendChartProps {
   data: TrafficTrendPoint[];
   granularity: 'hour' | 'day' | 'month';
   loading: boolean;
   headerAction?: React.ReactNode;
+  /** Overview data from API - used for accurate totals display */
+  overview?: TrafficOverviewData;
 }
 
 /**
@@ -68,9 +76,10 @@ interface TooltipPayloadItem {
 /**
  * Custom Tooltip with glassmorphism style
  */
-const CustomTooltip = ({ active, payload, label }: TooltipProps<number, string> & {
+const CustomTooltip = ({ active, payload, label, t }: TooltipProps<number, string> & {
   payload?: TooltipPayloadItem[];
   label?: string;
+  t: (key: string) => string;
 }) => {
   if (!active || !payload || !payload.length) {
     return null;
@@ -104,7 +113,7 @@ const CustomTooltip = ({ active, payload, label }: TooltipProps<number, string> 
         <div className="flex items-center justify-between gap-4">
           <div className="flex items-center gap-2.5">
             <div className="size-3 rounded-full bg-chart-upload ring-2 ring-chart-upload/20" />
-            <span className="text-sm font-medium text-muted-foreground">上传</span>
+            <span className="text-sm font-medium text-muted-foreground">{t('admin.traffic.upload')}</span>
           </div>
           <div className="flex items-center gap-1.5">
             <ArrowUp className="size-3.5 text-chart-upload" strokeWidth={2} />
@@ -118,7 +127,7 @@ const CustomTooltip = ({ active, payload, label }: TooltipProps<number, string> 
         <div className="flex items-center justify-between gap-4">
           <div className="flex items-center gap-2.5">
             <div className="size-3 rounded-full bg-chart-download ring-2 ring-chart-download/20" />
-            <span className="text-sm font-medium text-muted-foreground">下载</span>
+            <span className="text-sm font-medium text-muted-foreground">{t('admin.traffic.download')}</span>
           </div>
           <div className="flex items-center gap-1.5">
             <ArrowDown className="size-3.5 text-chart-download" strokeWidth={2} />
@@ -130,7 +139,7 @@ const CustomTooltip = ({ active, payload, label }: TooltipProps<number, string> 
 
         {/* Total */}
         <div className="flex items-center justify-between gap-4 pt-3 mt-1 border-t border-border">
-          <span className="text-sm font-semibold text-foreground">总计</span>
+          <span className="text-sm font-semibold text-foreground">{t('admin.traffic.total')}</span>
           <span className="text-base font-bold text-foreground tabular-nums">
             {formatTrafficBytes(total)}
           </span>
@@ -143,14 +152,14 @@ const CustomTooltip = ({ active, payload, label }: TooltipProps<number, string> 
 /**
  * Legend component
  */
-const ChartLegend = ({ totalUpload, totalDownload }: { totalUpload: number; totalDownload: number }) => (
+const ChartLegend = ({ totalUpload, totalDownload, t }: { totalUpload: number; totalDownload: number; t: (key: string) => string }) => (
   <div className="flex flex-wrap items-center justify-center gap-3 sm:gap-6 mt-4 sm:mt-5 pt-4 sm:pt-5 border-t border-border">
     <div className="flex items-center gap-2 sm:gap-3 px-3 sm:px-4 py-2 rounded-lg sm:rounded-xl bg-chart-upload/10 ring-1 ring-chart-upload/20">
       <div className="flex items-center gap-1.5 sm:gap-2">
         <div className="size-2.5 sm:size-3 rounded-full bg-chart-upload ring-2 ring-chart-upload/20" />
         <ArrowUp className="size-3.5 sm:size-4 text-chart-upload" strokeWidth={2} />
       </div>
-      <span className="text-xs sm:text-sm font-medium text-muted-foreground">上传</span>
+      <span className="text-xs sm:text-sm font-medium text-muted-foreground">{t('admin.traffic.upload')}</span>
       <span className="text-xs sm:text-sm font-bold text-chart-upload tabular-nums">
         {formatTrafficBytes(totalUpload)}
       </span>
@@ -160,7 +169,7 @@ const ChartLegend = ({ totalUpload, totalDownload }: { totalUpload: number; tota
         <div className="size-2.5 sm:size-3 rounded-full bg-chart-download ring-2 ring-chart-download/20" />
         <ArrowDown className="size-3.5 sm:size-4 text-chart-download" strokeWidth={2} />
       </div>
-      <span className="text-xs sm:text-sm font-medium text-muted-foreground">下载</span>
+      <span className="text-xs sm:text-sm font-medium text-muted-foreground">{t('admin.traffic.download')}</span>
       <span className="text-xs sm:text-sm font-bold text-chart-download tabular-nums">
         {formatTrafficBytes(totalDownload)}
       </span>
@@ -171,7 +180,9 @@ const ChartLegend = ({ totalUpload, totalDownload }: { totalUpload: number; tota
 /**
  * Traffic Trend Chart Component
  */
-export const TrafficTrendChart = ({ data, granularity, loading, headerAction }: TrafficTrendChartProps) => {
+export const TrafficTrendChart = ({ data, granularity, loading, headerAction, overview }: TrafficTrendChartProps) => {
+  const { t } = useTranslation();
+
   // Transform data for recharts format
   const chartData = useMemo(() => data.map((point) => ({
     period: formatPeriod(point.period, granularity),
@@ -179,8 +190,14 @@ export const TrafficTrendChart = ({ data, granularity, loading, headerAction }: 
     download: point.download,
   })), [data, granularity]);
 
-  // Calculate totals
+  // Use overview data if provided (more accurate), otherwise calculate from trend points
   const { totalUpload, totalDownload } = useMemo(() => {
+    if (overview) {
+      return {
+        totalUpload: overview.totalUpload,
+        totalDownload: overview.totalDownload,
+      };
+    }
     return data.reduce(
       (acc, point) => ({
         totalUpload: acc.totalUpload + point.upload,
@@ -188,7 +205,7 @@ export const TrafficTrendChart = ({ data, granularity, loading, headerAction }: 
       }),
       { totalUpload: 0, totalDownload: 0 }
     );
-  }, [data]);
+  }, [data, overview]);
 
   if (loading) {
     return (
@@ -219,10 +236,10 @@ export const TrafficTrendChart = ({ data, granularity, loading, headerAction }: 
             </div>
             <div>
               <h3 className="text-base sm:text-lg font-semibold text-foreground whitespace-nowrap">
-                流量趋势
+                {t('admin.traffic.trend')}
               </h3>
               <p className="text-[11px] sm:text-xs text-muted-foreground">
-                上传与下载流量统计
+                {t('admin.traffic.trendDesc')}
               </p>
             </div>
           </div>
@@ -275,7 +292,7 @@ export const TrafficTrendChart = ({ data, granularity, loading, headerAction }: 
                 width={55}
               />
               <Tooltip
-                content={<CustomTooltip />}
+                content={<CustomTooltip t={t} />}
                 cursor={{
                   stroke: 'currentColor',
                   strokeWidth: 1,
@@ -286,7 +303,7 @@ export const TrafficTrendChart = ({ data, granularity, loading, headerAction }: 
               <Area
                 type="monotone"
                 dataKey="download"
-                name="下载"
+                name={t('admin.traffic.download')}
                 stroke="hsl(var(--chart-download))"
                 strokeWidth={2.5}
                 fill="url(#downloadGradient)"
@@ -302,7 +319,7 @@ export const TrafficTrendChart = ({ data, granularity, loading, headerAction }: 
               <Area
                 type="monotone"
                 dataKey="upload"
-                name="上传"
+                name={t('admin.traffic.upload')}
                 stroke="hsl(var(--chart-upload))"
                 strokeWidth={2.5}
                 fill="url(#uploadGradient)"
@@ -320,7 +337,7 @@ export const TrafficTrendChart = ({ data, granularity, loading, headerAction }: 
         </div>
 
         {/* Legend with totals */}
-        <ChartLegend totalUpload={totalUpload} totalDownload={totalDownload} />
+        <ChartLegend totalUpload={totalUpload} totalDownload={totalDownload} t={t} />
       </div>
     </AdminCard>
   );

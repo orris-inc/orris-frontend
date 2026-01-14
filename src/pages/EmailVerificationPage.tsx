@@ -5,6 +5,7 @@
 
 import { useEffect, useState } from 'react';
 import { useSearchParams, useNavigate } from 'react-router';
+import { useTranslation } from 'react-i18next';
 import { Loader2, CircleCheck, CircleAlert, Info } from 'lucide-react';
 import { verifyEmail } from '@/api/auth';
 import { handleApiError } from '@/shared/lib/axios';
@@ -22,6 +23,7 @@ import { cn } from '@/lib/utils';
 type VerificationStatus = 'loading' | 'success' | 'error' | 'already_verified';
 
 export const EmailVerificationPage = () => {
+  const { t } = useTranslation();
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const [status, setStatus] = useState<VerificationStatus>('loading');
@@ -33,7 +35,7 @@ export const EmailVerificationPage = () => {
     const verify = async () => {
       if (!token) {
         setStatus('error');
-        setErrorMessage('验证链接无效，缺少验证令牌');
+        setErrorMessage(t('auth.emailVerification.missingToken'));
         return;
       }
 
@@ -75,9 +77,9 @@ export const EmailVerificationPage = () => {
               <Loader2 className="size-16 animate-spin text-primary" />
             </div>
             <div className="grid gap-2">
-              <h3 className={cardTitleStyles}>正在验证您的邮箱...</h3>
+              <h3 className={cardTitleStyles}>{t('auth.emailVerification.verifying')}</h3>
               <p className={cardDescriptionStyles}>
-                请稍候，我们正在确认您的邮箱地址
+                {t('auth.emailVerification.verifyingDesc')}
               </p>
             </div>
           </div>
@@ -92,16 +94,16 @@ export const EmailVerificationPage = () => {
               </div>
             </div>
             <div className="grid gap-2">
-              <h3 className={cardTitleStyles}>邮箱验证成功！</h3>
+              <h3 className={cardTitleStyles}>{t('auth.emailVerification.successTitle')}</h3>
               <p className={cardDescriptionStyles}>
-                您的邮箱已成功验证，现在可以登录您的账号了
+                {t('auth.emailVerification.successDesc')}
               </p>
             </div>
             <button
               onClick={handleGoToLogin}
               className={cn(getButtonClass('default', 'lg'), "w-full")}
             >
-              前往登录
+              {t('auth.emailVerification.goToLogin')}
             </button>
           </div>
         );
@@ -115,16 +117,16 @@ export const EmailVerificationPage = () => {
               </div>
             </div>
             <div className="grid gap-2">
-              <h3 className={cardTitleStyles}>邮箱已验证</h3>
+              <h3 className={cardTitleStyles}>{t('auth.emailVerification.alreadyVerifiedTitle')}</h3>
               <p className={cardDescriptionStyles}>
-                您的邮箱之前已经验证过了，可以直接登录
+                {t('auth.emailVerification.alreadyVerifiedDesc')}
               </p>
             </div>
             <button
               onClick={handleGoToLogin}
               className={cn(getButtonClass('default', 'lg'), "w-full")}
             >
-              前往登录
+              {t('auth.emailVerification.goToLogin')}
             </button>
           </div>
         );
@@ -138,17 +140,17 @@ export const EmailVerificationPage = () => {
               </div>
             </div>
             <div className="grid gap-4">
-              <h3 className={cardTitleStyles}>验证失败</h3>
+              <h3 className={cardTitleStyles}>{t('auth.emailVerification.failedTitle')}</h3>
 
               <div className={getAlertClass('destructive')}>
                 <CircleAlert className="size-4" />
                 <div className={alertDescriptionStyles}>
-                  {errorMessage || '验证链接已失效或无效'}
+                  {errorMessage || t('auth.emailVerification.invalidLink')}
                 </div>
               </div>
 
               <p className={cardDescriptionStyles}>
-                验证链接可能已过期或无效，请尝试重新发送验证邮件
+                {t('auth.emailVerification.failedDesc')}
               </p>
 
               <div className="grid gap-2">
@@ -156,13 +158,13 @@ export const EmailVerificationPage = () => {
                   onClick={handleResendEmail}
                   className={cn(getButtonClass('default', 'lg'), "w-full")}
                 >
-                  重新发送验证邮件
+                  {t('auth.emailVerification.resendEmail')}
                 </button>
                 <button
                   onClick={handleGoToLogin}
                   className={cn(getButtonClass('outline', 'lg'), "w-full")}
                 >
-                  返回登录
+                  {t('auth.emailVerification.backToLogin')}
                 </button>
               </div>
             </div>

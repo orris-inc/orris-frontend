@@ -5,6 +5,7 @@
 
 import type { ReactNode } from 'react';
 import { forwardRef, useState, useCallback, useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Check, ChevronsUpDown, X } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -41,9 +42,9 @@ const Combobox = forwardRef<HTMLDivElement, ComboboxProps>(
       options,
       value,
       onChange,
-      placeholder = '选择选项...',
-      emptyText = '未找到结果',
-      searchPlaceholder = '搜索...',
+      placeholder,
+      emptyText,
+      searchPlaceholder,
       multiple = false,
       disabled = false,
       className,
@@ -51,8 +52,13 @@ const Combobox = forwardRef<HTMLDivElement, ComboboxProps>(
     },
     ref,
   ) => {
+    const { t } = useTranslation();
     const [open, setOpen] = useState(false);
     const [search, setSearch] = useState('');
+
+    const resolvedPlaceholder = placeholder ?? t('common.placeholders.selectOption');
+    const resolvedEmptyText = emptyText ?? t('common.messages.noResults');
+    const resolvedSearchPlaceholder = searchPlaceholder ?? t('common.placeholders.search');
 
     // Filter options
     const filteredOptions = options.filter((option) =>
@@ -97,11 +103,11 @@ const Combobox = forwardRef<HTMLDivElement, ComboboxProps>(
 
     // Get display text
     const getDisplayText = () => {
-      if (selectedValues.length === 0) return placeholder;
+      if (selectedValues.length === 0) return resolvedPlaceholder;
       if (multiple) {
-        return `已选择 ${selectedValues.length} 项`;
+        return t('common.selected', { count: selectedValues.length });
       }
-      return options.find((opt) => opt.value === selectedValues[0])?.label || placeholder;
+      return options.find((opt) => opt.value === selectedValues[0])?.label || resolvedPlaceholder;
     };
 
     return (
@@ -151,7 +157,7 @@ const Combobox = forwardRef<HTMLDivElement, ComboboxProps>(
             <div className="mb-1 px-2">
               <input
                 type="text"
-                placeholder={searchPlaceholder}
+                placeholder={resolvedSearchPlaceholder}
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 className="h-9 w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm outline-none placeholder:text-muted-foreground focus:ring-2 focus:ring-ring"
@@ -162,7 +168,7 @@ const Combobox = forwardRef<HTMLDivElement, ComboboxProps>(
             <div className="max-h-[300px] overflow-y-auto">
               {filteredOptions.length === 0 ? (
                 <div className="py-6 text-center text-sm text-muted-foreground">
-                  {emptyText}
+                  {resolvedEmptyText}
                 </div>
               ) : (
                 filteredOptions.map((option) => {

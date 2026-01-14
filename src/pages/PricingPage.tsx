@@ -4,6 +4,7 @@
  */
 
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { PlanCardList } from "@/features/subscription-plans/components/PlanCardList";
 import { SubscriptionConfirmDialog } from "@/features/subscription-plans/components/SubscriptionConfirmDialog";
 import { usePublicPlans } from "@/features/subscription-plans/hooks/usePublicPlans";
@@ -11,6 +12,7 @@ import type { SubscriptionPlan } from "@/api/subscription/types";
 import { DashboardLayout } from "@/layouts/DashboardLayout";
 
 export const PricingPage = () => {
+  const { t } = useTranslation();
   const [selectedPlan, setSelectedPlan] = useState<SubscriptionPlan | null>(
     null,
   );
@@ -24,11 +26,11 @@ export const PricingPage = () => {
 
   return (
     <DashboardLayout>
-      <div className="space-y-6">
+      <div className="space-y-4 sm:space-y-6 pb-safe">
         {/* Header - matching DashboardPage pattern */}
         <div>
-          <h1 className="text-2xl font-semibold text-foreground">选择套餐</h1>
-          <p className="text-muted-foreground">灵活的定价方案，满足不同需求</p>
+          <h1 className="text-xl sm:text-2xl font-semibold text-foreground">{t('pricing.title')}</h1>
+          <p className="text-sm sm:text-base text-muted-foreground">{t('pricing.subtitle')}</p>
         </div>
 
         {/* Plan cards */}
@@ -40,7 +42,7 @@ export const PricingPage = () => {
 
         {/* Footer note */}
         <p className="text-sm text-muted-foreground">
-          所有计划均支持随时升级或降级，如有疑问请联系客服。
+          {t('pricing.footerNote')}
         </p>
 
         {/* Subscription confirm dialog */}

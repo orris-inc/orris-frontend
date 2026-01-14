@@ -4,6 +4,7 @@
  */
 
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Server, Globe, CheckCircle, XCircle } from 'lucide-react';
 import { DashboardLayout } from '@/layouts/DashboardLayout';
 import { Badge } from '@/components/common/Badge';
@@ -13,7 +14,8 @@ import { useUserForwardAgents } from '@/features/user-forward-rules';
 import type { UserForwardAgent } from '@/api/forward';
 
 export const UserForwardAgentsPage = () => {
-  usePageTitle('转发Agent');
+  const { t } = useTranslation();
+  usePageTitle(t('userForwardAgents.title'));
 
   const [searchName, setSearchName] = useState('');
   const [page, setPage] = useState(1);
@@ -33,26 +35,26 @@ export const UserForwardAgentsPage = () => {
   return (
     <DashboardLayout>
       <div className="space-y-6">
-        {/* 页面标题 */}
+        {/* Page title */}
         <div>
-          <h1 className="text-2xl font-semibold text-foreground">转发Agent</h1>
-          <p className="text-muted-foreground">查看您可使用的转发Agent</p>
+          <h1 className="text-2xl font-semibold text-foreground">{t('userForwardAgents.title')}</h1>
+          <p className="text-muted-foreground">{t('userForwardAgents.description')}</p>
         </div>
 
-        {/* 搜索栏 */}
+        {/* Search bar */}
         <div className="flex items-center gap-4">
           <Input
-            placeholder="搜索节点名称..."
+            placeholder={t('userForwardAgents.searchPlaceholder')}
             value={searchName}
             onChange={(e) => handleSearchChange(e.target.value)}
             className="max-w-xs"
           />
           <p className="text-sm text-muted-foreground">
-            共 {pagination.total} 个节点
+            {t('userForwardAgents.totalNodes', { count: pagination.total })}
           </p>
         </div>
 
-        {/* 节点列表 */}
+        {/* Node list */}
         {isLoading ? (
           <div className="flex items-center justify-center py-12">
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
@@ -60,8 +62,8 @@ export const UserForwardAgentsPage = () => {
         ) : forwardAgents.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-12 text-muted-foreground">
             <Server className="h-12 w-12 mb-4 opacity-50" />
-            <p>暂无可用的转发Agent</p>
-            <p className="text-sm mt-1">请联系管理员或升级您的订阅计划</p>
+            <p>{t('userForwardAgents.noAgents')}</p>
+            <p className="text-sm mt-1">{t('userForwardAgents.noAgentsHint')}</p>
           </div>
         ) : (
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
@@ -71,7 +73,7 @@ export const UserForwardAgentsPage = () => {
           </div>
         )}
 
-        {/* 分页 */}
+        {/* Pagination */}
         {pagination.totalPages > 1 && (
           <div className="flex items-center justify-center gap-2">
             <button
@@ -79,7 +81,7 @@ export const UserForwardAgentsPage = () => {
               disabled={page === 1}
               className="px-3 py-1 text-sm border rounded disabled:opacity-50"
             >
-              上一页
+              {t('common.pagination.previous')}
             </button>
             <span className="text-sm text-muted-foreground">
               {page} / {pagination.totalPages}
@@ -89,7 +91,7 @@ export const UserForwardAgentsPage = () => {
               disabled={page === pagination.totalPages}
               className="px-3 py-1 text-sm border rounded disabled:opacity-50"
             >
-              下一页
+              {t('common.pagination.next')}
             </button>
           </div>
         )}
@@ -103,6 +105,7 @@ interface AgentCardProps {
 }
 
 const AgentCard: React.FC<AgentCardProps> = ({ agent }) => {
+  const { t } = useTranslation();
   const isEnabled = agent.status === 'enabled';
 
   return (
@@ -116,12 +119,12 @@ const AgentCard: React.FC<AgentCardProps> = ({ agent }) => {
           {isEnabled ? (
             <span className="flex items-center gap-1">
               <CheckCircle className="h-3 w-3" />
-              可用
+              {t('userForwardAgents.available')}
             </span>
           ) : (
             <span className="flex items-center gap-1">
               <XCircle className="h-3 w-3" />
-              不可用
+              {t('userForwardAgents.unavailable')}
             </span>
           )}
         </Badge>
@@ -136,7 +139,7 @@ const AgentCard: React.FC<AgentCardProps> = ({ agent }) => {
         )}
         {agent.groupName && (
           <div className="text-muted-foreground">
-            资源组：{agent.groupName}
+            {t('userForwardAgents.resourceGroup')}: {agent.groupName}
           </div>
         )}
       </div>

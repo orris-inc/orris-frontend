@@ -4,6 +4,7 @@
  */
 
 import { useState, useMemo, useCallback } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
   ArrowLeftRight,
   Plus,
@@ -53,7 +54,8 @@ import type { ForwardRule, CreateForwardRuleRequest, UpdateForwardRuleRequest, R
 import type { SubscriptionPlan } from '@/api/subscription/types';
 
 export const ForwardRulesPage = () => {
-  usePageTitle('转发规则管理');
+  const { t } = useTranslation();
+  usePageTitle(t('admin.forwardRules.title'));
 
   const {
     forwardRules,
@@ -306,7 +308,7 @@ export const ForwardRulesPage = () => {
       exitAgentId: rule.exitAgentId,
       chainAgentIds: filteredChainAgentIds,
       chainPortConfig: filteredChainPortConfig,
-      name: `${rule.name} - 副本`,
+      name: `${rule.name} - ${t('admin.forwardRules.copySuffix')}`,
       listenPort: rule.listenPort,
       targetAddress: rule.targetAddress,
       targetPort: rule.targetPort,
@@ -501,7 +503,7 @@ export const ForwardRulesPage = () => {
           <div className="flex items-center justify-between gap-3 flex-wrap">
             {/* Left: Title + Primary Stats */}
             <div className="flex items-center gap-3">
-              <h1 className="text-sm font-semibold text-foreground">转发规则管理</h1>
+              <h1 className="text-sm font-semibold text-foreground">{t('admin.forwardRules.title')}</h1>
               <div className="h-4 w-px bg-border hidden sm:block" />
               <div className="flex items-center gap-2.5 text-xs">
                 <span className="flex items-center gap-1 text-muted-foreground">
@@ -537,10 +539,10 @@ export const ForwardRulesPage = () => {
               {/* Protocol filter */}
               <Select value={filters.protocol || '_all_'} onValueChange={handleProtocolChange}>
                 <SelectTrigger className="h-7 w-20 text-xs">
-                  <SelectValue placeholder="协议" />
+                  <SelectValue placeholder={t('admin.forwardRules.filters.protocol')} />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="_all_">全部</SelectItem>
+                  <SelectItem value="_all_">{t('filter.all')}</SelectItem>
                   <SelectItem value="tcp">TCP</SelectItem>
                   <SelectItem value="udp">UDP</SelectItem>
                   <SelectItem value="both">Both</SelectItem>
@@ -550,12 +552,12 @@ export const ForwardRulesPage = () => {
               {/* Status filter */}
               <Select value={filters.status || '_all_'} onValueChange={handleStatusChange}>
                 <SelectTrigger className="h-7 w-20 text-xs">
-                  <SelectValue placeholder="状态" />
+                  <SelectValue placeholder={t('admin.forwardRules.filters.status')} />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="_all_">全部</SelectItem>
-                  <SelectItem value="enabled">启用</SelectItem>
-                  <SelectItem value="disabled">禁用</SelectItem>
+                  <SelectItem value="_all_">{t('filter.all')}</SelectItem>
+                  <SelectItem value="enabled">{t('common.status.enabledShort')}</SelectItem>
+                  <SelectItem value="disabled">{t('common.status.disabledShort')}</SelectItem>
                 </SelectContent>
               </Select>
 
@@ -563,7 +565,7 @@ export const ForwardRulesPage = () => {
               <div className="relative flex-1 max-w-[160px]">
                 <Search className="absolute left-2 top-1/2 -translate-y-1/2 size-3 text-muted-foreground" />
                 <Input
-                  placeholder="搜索规则"
+                  placeholder={t('admin.forwardRules.searchRules')}
                   value={filters.name || ''}
                   onChange={(e) => handleSearchChange(e.target.value)}
                   className="h-7 pl-7 text-xs"
@@ -573,13 +575,13 @@ export const ForwardRulesPage = () => {
               {/* Sort filter */}
               <Select value={getSortValue()} onValueChange={handleSortChange}>
                 <SelectTrigger className="h-7 w-24 text-xs">
-                  <SelectValue placeholder="排序" />
+                  <SelectValue placeholder={t('admin.forwardRules.sort')} />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="sort_order_asc">默认</SelectItem>
-                  <SelectItem value="created_at_desc">创建 ↓</SelectItem>
-                  <SelectItem value="created_at_asc">创建 ↑</SelectItem>
-                  <SelectItem value="updated_at_desc">更新 ↓</SelectItem>
+                  <SelectItem value="sort_order_asc">{t('admin.forwardRules.sortOptions.default')}</SelectItem>
+                  <SelectItem value="created_at_desc">{t('admin.forwardRules.sortOptions.createdDesc')}</SelectItem>
+                  <SelectItem value="created_at_asc">{t('admin.forwardRules.sortOptions.createdAsc')}</SelectItem>
+                  <SelectItem value="updated_at_desc">{t('admin.forwardRules.sortOptions.updatedDesc')}</SelectItem>
                 </SelectContent>
               </Select>
 
@@ -594,7 +596,7 @@ export const ForwardRulesPage = () => {
                       <FilterX className="size-3.5" />
                     </button>
                   </TooltipTrigger>
-                  <TooltipContent>重置筛选</TooltipContent>
+                  <TooltipContent>{t('admin.forwardRules.resetFilters')}</TooltipContent>
                 </Tooltip>
               )}
 
@@ -615,7 +617,7 @@ export const ForwardRulesPage = () => {
                     </Switch>
                   </label>
                 </TooltipTrigger>
-                <TooltipContent>显示用户创建的规则</TooltipContent>
+                <TooltipContent>{t('admin.forwardRules.showUserRules')}</TooltipContent>
               </Tooltip>
 
               {/* Drag sort toggle */}
@@ -634,7 +636,7 @@ export const ForwardRulesPage = () => {
                   </label>
                 </TooltipTrigger>
                 <TooltipContent>
-                  {dragSortEnabled ? '关闭拖拽排序' : '开启拖拽排序'}
+                  {dragSortEnabled ? t('admin.forwardRules.disableDragSort') : t('admin.forwardRules.enableDragSort')}
                 </TooltipContent>
               </Tooltip>
             </div>
@@ -656,10 +658,10 @@ export const ForwardRulesPage = () => {
                       />
                     }
                   >
-                    <span className="sr-only">刷新</span>
+                    <span className="sr-only">{t('common.actions.refresh')}</span>
                   </AdminButton>
                 </TooltipTrigger>
-                <TooltipContent>刷新列表</TooltipContent>
+                <TooltipContent>{t('admin.forwardRules.refreshList')}</TooltipContent>
               </Tooltip>
 
               <Tooltip>
@@ -671,10 +673,10 @@ export const ForwardRulesPage = () => {
                     className="h-7 w-7 p-0"
                     icon={<FileJson className="size-3.5" strokeWidth={1.5} />}
                   >
-                    <span className="sr-only">批量创建</span>
+                    <span className="sr-only">{t('admin.forwardRules.batchCreate')}</span>
                   </AdminButton>
                 </TooltipTrigger>
-                <TooltipContent>批量创建 (JSON)</TooltipContent>
+                <TooltipContent>{t('admin.forwardRules.batchCreateJson')}</TooltipContent>
               </Tooltip>
 
               <AdminButton
@@ -687,8 +689,8 @@ export const ForwardRulesPage = () => {
                   setCreateDialogOpen(true);
                 }}
               >
-                <span className="hidden sm:inline">新增</span>
-                <span className="sm:hidden">新增</span>
+                <span className="hidden sm:inline">{t('admin.forwardRules.add')}</span>
+                <span className="sm:hidden">{t('admin.forwardRules.add')}</span>
               </AdminButton>
             </div>
           </div>
@@ -800,10 +802,10 @@ export const ForwardRulesPage = () => {
       <ConfirmDialog
         open={deleteConfirmOpen}
         onOpenChange={setDeleteConfirmOpen}
-        title="确认删除"
-        description={ruleToDelete ? `确认删除转发规则 "${ruleToDelete.name}" 吗？此操作不可恢复。` : ''}
-        confirmText="删除"
-        cancelText="取消"
+        title={t('admin.forwardRules.confirmDelete')}
+        description={ruleToDelete ? t('admin.forwardRules.confirmDeleteDesc', { name: ruleToDelete.name }) : ''}
+        confirmText={t('common.actions.delete')}
+        cancelText={t('common.actions.cancel')}
         variant="destructive"
         onConfirm={handleDeleteConfirmDialog}
       />
@@ -812,10 +814,10 @@ export const ForwardRulesPage = () => {
       <ConfirmDialog
         open={resetTrafficConfirmOpen}
         onOpenChange={setResetTrafficConfirmOpen}
-        title="确认重置流量"
-        description={ruleToResetTraffic ? `确认重置规则 "${ruleToResetTraffic.name}" 的流量统计吗？` : ''}
-        confirmText="重置"
-        cancelText="取消"
+        title={t('admin.forwardRules.confirmResetTraffic')}
+        description={ruleToResetTraffic ? t('admin.forwardRules.confirmResetTrafficDesc', { name: ruleToResetTraffic.name }) : ''}
+        confirmText={t('common.actions.reset')}
+        cancelText={t('common.actions.cancel')}
         onConfirm={handleResetTrafficConfirm}
       />
 

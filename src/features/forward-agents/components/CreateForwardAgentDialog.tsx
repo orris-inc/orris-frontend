@@ -3,6 +3,7 @@
  */
 
 import { useState, useEffect } from "react";
+import { useTranslation } from "react-i18next";
 import {
   Dialog,
   DialogContent,
@@ -19,11 +20,11 @@ import type { CreateForwardAgentRequest, BlockedProtocol } from "@/api/forward";
 
 // Protocol groups for better organization
 const PROTOCOL_GROUPS: {
-  label: string;
+  labelKey: string;
   protocols: { value: BlockedProtocol; label: string }[];
 }[] = [
   {
-    label: "代理协议",
+    labelKey: "admin.forwardAgents.form.protocolGroupProxy",
     protocols: [
       { value: "http_connect", label: "HTTP CONNECT" },
       { value: "socks4", label: "SOCKS4" },
@@ -31,7 +32,7 @@ const PROTOCOL_GROUPS: {
     ],
   },
   {
-    label: "应用协议",
+    labelKey: "admin.forwardAgents.form.protocolGroupApp",
     protocols: [
       { value: "http", label: "HTTP" },
       { value: "tls", label: "TLS" },
@@ -63,6 +64,7 @@ const getDefaultFormData = (): CreateForwardAgentRequest => ({
 export const CreateForwardAgentDialog: React.FC<
   CreateForwardAgentDialogProps
 > = ({ open, onClose, onSubmit, initialData }) => {
+  const { t } = useTranslation();
   const [formData, setFormData] =
     useState<CreateForwardAgentRequest>(getDefaultFormData());
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -124,7 +126,7 @@ export const CreateForwardAgentDialog: React.FC<
     const newErrors: Record<string, string> = {};
 
     if (!formData.name.trim()) {
-      newErrors.name = "节点名称不能为空";
+      newErrors.name = t('common.validation.required');
     }
 
     setErrors(newErrors);
@@ -181,7 +183,7 @@ export const CreateForwardAgentDialog: React.FC<
       <DialogContent className="sm:max-w-[500px]">
         <DialogHeader>
           <DialogTitle>
-            {initialData ? "复制转发Agent" : "新增转发Agent"}
+            {initialData ? t('admin.forwardAgents.dialog.copyTitle') : t('admin.forwardAgents.dialog.createTitle')}
           </DialogTitle>
         </DialogHeader>
 
@@ -189,7 +191,7 @@ export const CreateForwardAgentDialog: React.FC<
           {/* Node Name */}
           <div className="flex flex-col gap-2">
             <Label htmlFor="name">
-              节点名称 <span className="text-destructive">*</span>
+              {t('admin.forwardAgents.form.nodeName')} <span className="text-destructive">*</span>
             </Label>
             <Input
               id="name"
@@ -197,79 +199,79 @@ export const CreateForwardAgentDialog: React.FC<
               onChange={(e) => handleChange("name", e.target.value)}
               error={!!errors.name}
               autoFocus
-              placeholder="例如：主转发Agent"
+              placeholder={t('admin.forwardAgents.form.nodeNamePlaceholder')}
             />
             <p className="text-xs text-muted-foreground">
-              {errors.name || "必填项"}
+              {errors.name || t('admin.forwardAgents.form.nodeNameRequired')}
             </p>
           </div>
 
           {/* Public Address */}
           <div className="flex flex-col gap-2">
-            <Label htmlFor="publicAddress">公网地址</Label>
+            <Label htmlFor="publicAddress">{t('admin.forwardAgents.form.publicAddress')}</Label>
             <Input
               id="publicAddress"
               value={formData.publicAddress}
               onChange={(e) => handleChange("publicAddress", e.target.value)}
-              placeholder="例如：example.com 或 1.2.3.4"
+              placeholder={t('admin.forwardAgents.form.publicAddressPlaceholder')}
             />
             <p className="text-xs text-muted-foreground">
-              可选，留空时由 Agent 自动检测
+              {t('admin.forwardAgents.form.publicAddressHint')}
             </p>
           </div>
 
           {/* Tunnel Address */}
           <div className="flex flex-col gap-2">
-            <Label htmlFor="tunnelAddress">隧道地址</Label>
+            <Label htmlFor="tunnelAddress">{t('admin.forwardAgents.form.tunnelAddress')}</Label>
             <Input
               id="tunnelAddress"
               value={formData.tunnelAddress}
               onChange={(e) => handleChange("tunnelAddress", e.target.value)}
-              placeholder="例如：10.0.0.1 或 internal.example.com"
+              placeholder={t('admin.forwardAgents.form.tunnelAddressPlaceholder')}
             />
             <p className="text-xs text-muted-foreground">
-              可选，用于中继/出口节点的内网连接
+              {t('admin.forwardAgents.form.tunnelAddressHint')}
             </p>
           </div>
 
           {/* Allowed Port Range */}
           <div className="flex flex-col gap-2">
-            <Label htmlFor="allowedPortRange">端口限制</Label>
+            <Label htmlFor="allowedPortRange">{t('admin.forwardAgents.form.portLimit')}</Label>
             <Input
               id="allowedPortRange"
               value={formData.allowedPortRange}
               onChange={(e) => handleChange("allowedPortRange", e.target.value)}
-              placeholder="例如：80,443,8000-9000"
+              placeholder={t('admin.forwardAgents.form.portLimitPlaceholder')}
             />
             <p className="text-xs text-muted-foreground">
-              可选，留空表示允许所有端口
+              {t('admin.forwardAgents.form.portLimitHint')}
             </p>
           </div>
 
           {/* Sort Order */}
           <div className="flex flex-col gap-2">
-            <Label htmlFor="sortOrder">排序顺序</Label>
+            <Label htmlFor="sortOrder">{t('admin.forwardAgents.form.sortOrder')}</Label>
             <Input
               id="sortOrder"
               type="number"
               min={0}
               value={formData.sortOrder ?? ""}
               onChange={(e) => handleSortOrderChange(e.target.value)}
-              placeholder="例如：100"
+              placeholder={t('admin.forwardAgents.form.sortOrderPlaceholder')}
             />
             <p className="text-xs text-muted-foreground">
-              可选，数值越小排序越靠前
+              {t('admin.forwardAgents.form.sortOrderHint')}
             </p>
           </div>
 
           {/* Blocked Protocols */}
           <div className="flex flex-col gap-3">
-            <Label>阻止协议</Label>
+            <Label>{t('admin.forwardAgents.form.blockedProtocols')}</Label>
             <div className="space-y-3">
               {PROTOCOL_GROUPS.map((group) => (
-                <div key={group.label}>
+                <div key={group.labelKey}>
                   <p className="text-xs text-muted-foreground mb-2">
-                    {group.label}
+                    {t(group.labelKey)}
                   </p>
                   <div className="flex flex-wrap gap-2">
                     {group.protocols.map((protocol) => {
@@ -299,21 +301,21 @@ export const CreateForwardAgentDialog: React.FC<
               ))}
             </div>
             <p className="text-xs text-muted-foreground">
-              可选，点击选择需要阻止的协议类型
+              {t('admin.forwardAgents.form.blockedProtocolsHint')}
             </p>
           </div>
 
           {/* Remark */}
           <div className="flex flex-col gap-2">
-            <Label htmlFor="remark">备注</Label>
+            <Label htmlFor="remark">{t('admin.forwardAgents.form.remark')}</Label>
             <Textarea
               id="remark"
               rows={3}
               value={formData.remark}
               onChange={(e) => handleChange("remark", e.target.value)}
-              placeholder="可选：添加备注说明"
+              placeholder={t('admin.forwardAgents.form.remarkPlaceholder')}
             />
-            <p className="text-xs text-muted-foreground">可选</p>
+            <p className="text-xs text-muted-foreground">{t('admin.forwardAgents.form.remarkHint')}</p>
           </div>
         </div>
 
@@ -323,13 +325,13 @@ export const CreateForwardAgentDialog: React.FC<
             onClick={handleClose}
             disabled={isSubmitting}
           >
-            取消
+            {t('common.actions.cancel')}
           </Button>
           <Button
             onClick={handleSubmit}
             disabled={!isFormValid || isSubmitting}
           >
-            {isSubmitting ? "创建中..." : "创建"}
+            {isSubmitting ? t('admin.forwardAgents.form.creating') : t('admin.forwardAgents.form.create')}
           </Button>
         </DialogFooter>
       </DialogContent>

@@ -52,13 +52,17 @@ export const ACTIVE_STATUS_CONFIG: Record<string, StatusConfig> = {
 
 // ============================================================================
 // Subscription Status
+// Updated: 2025-01-14 - Synced with backend status.go (8 statuses)
 // ============================================================================
 export const SUBSCRIPTION_STATUS_CONFIG: Record<string, StatusConfig> = {
-  active: { labelKey: 'common.status.active', variant: 'success' },
-  renewed: { labelKey: 'common.status.renewed', variant: 'success' },
-  pending: { labelKey: 'common.status.pending', variant: 'warning' },
-  cancelled: { labelKey: 'common.status.cancelled', variant: 'danger' },
-  expired: { labelKey: 'common.status.expired', variant: 'danger' },
+  inactive: { labelKey: 'subscriptionStatus.inactive', variant: 'default' },
+  pending_payment: { labelKey: 'subscriptionStatus.pendingPayment', variant: 'warning' },
+  trialing: { labelKey: 'subscriptionStatus.trialing', variant: 'info' },
+  active: { labelKey: 'subscriptionStatus.active', variant: 'success' },
+  past_due: { labelKey: 'subscriptionStatus.pastDue', variant: 'warning' },
+  suspended: { labelKey: 'subscriptionStatus.suspended', variant: 'danger' },
+  cancelled: { labelKey: 'subscriptionStatus.cancelled', variant: 'danger' },
+  expired: { labelKey: 'subscriptionStatus.expired', variant: 'danger' },
 };
 
 // ============================================================================

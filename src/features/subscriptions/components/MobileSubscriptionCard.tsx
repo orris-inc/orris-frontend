@@ -48,23 +48,27 @@ export interface MobileSubscriptionCardProps {
 
 /**
  * Check if subscription can be activated
+ * Updated: 2025-01-14 - Synced with backend status.go
  */
 const canActivate = (subscription: Subscription): boolean => {
-  return subscription.status === 'pending' || subscription.status === 'cancelled';
+  const status = subscription.status;
+  return status === 'inactive' || status === 'pending_payment' || status === 'suspended';
 };
 
 /**
  * Check if subscription can be cancelled
+ * Updated: 2025-01-14 - Synced with backend status.go
  */
 const canCancel = (subscription: Subscription): boolean => {
-  return subscription.status === 'active' || subscription.status === 'renewed';
+  const status = subscription.status;
+  return status === 'active' || status === 'trialing' || status === 'past_due';
 };
 
 /**
  * Check if subscription can be renewed
  */
 const canRenew = (subscription: Subscription): boolean => {
-  return subscription.status === 'expired' || subscription.status === 'cancelled';
+  return subscription.status === 'expired';
 };
 
 // ============================================================================

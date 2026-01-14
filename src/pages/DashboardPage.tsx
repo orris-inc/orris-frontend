@@ -54,7 +54,7 @@ export const DashboardPage = () => {
 
   return (
     <DashboardLayout>
-      <div className="space-y-4 pb-safe">
+      <div className="space-y-4 sm:space-y-6 pb-safe">
         {/* Header: Welcome + Subscriptions Title */}
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
@@ -62,10 +62,10 @@ export const DashboardPage = () => {
               <CreditCard className="size-4 sm:size-5 text-primary" />
             </div>
             <div>
-              <h1 className="text-base sm:text-lg md:text-xl font-semibold text-foreground">
+              <h1 className="text-xl sm:text-2xl font-semibold text-foreground">
                 {user.displayName || user.email?.split('@')[0] || t('user.dashboard.defaultUser')}
               </h1>
-              <p className="text-xs sm:text-sm text-muted-foreground">{t('user.dashboard.mySubscriptions')}</p>
+              <p className="text-sm sm:text-base text-muted-foreground">{t('user.dashboard.mySubscriptions')}</p>
             </div>
           </div>
         </div>

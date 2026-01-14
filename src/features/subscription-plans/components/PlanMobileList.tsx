@@ -42,28 +42,14 @@ interface PlanMobileListProps {
   onDelete?: (plan: SubscriptionPlan) => void;
 }
 
-// Plan type display names
-const PLAN_TYPE_LABELS: Record<PlanType, string> = {
-  node: '节点订阅',
-  forward: '端口转发',
-  hybrid: '混合订阅',
-};
-
-// Billing cycle display names
-const BILLING_CYCLE_LABELS: Record<BillingCycle, string> = {
-  weekly: '周付',
-  monthly: '月付',
-  quarterly: '季付',
-  semi_annual: '半年付',
-  yearly: '年付',
-  lifetime: '终身',
-};
 
 
 // Get plan price range (supports multiple pricing)
-const getPriceRange = (plan: SubscriptionPlan): {
+const getPriceRange = (
+  plan: SubscriptionPlan
+): {
   display: string;
-  details: Array<{ cycle: BillingCycle; label: string; price: string }> | null;
+  details: Array<{ cycle: BillingCycle; price: string }> | null;
   primaryCycle: BillingCycle;
 } => {
   if (!plan.pricings || plan.pricings.length === 0) {
@@ -101,12 +87,12 @@ const getPriceRange = (plan: SubscriptionPlan): {
   const currencySymbol = currency === 'CNY' ? '¥' : '$';
 
   return {
-    display: minPrice === maxPrice
-      ? `${currencySymbol}${(minPrice / 100).toFixed(2)}`
-      : `${currencySymbol}${(minPrice / 100).toFixed(2)} - ${currencySymbol}${(maxPrice / 100).toFixed(2)}`,
-    details: activePricings.map(p => ({
+    display:
+      minPrice === maxPrice
+        ? `${currencySymbol}${(minPrice / 100).toFixed(2)}`
+        : `${currencySymbol}${(minPrice / 100).toFixed(2)} - ${currencySymbol}${(maxPrice / 100).toFixed(2)}`,
+    details: activePricings.map((p) => ({
       cycle: p.billingCycle,
-      label: BILLING_CYCLE_LABELS[p.billingCycle] || p.billingCycle,
       price: `${p.currency === 'CNY' ? '¥' : '$'}${(p.price / 100).toFixed(2)}`,
     })),
     primaryCycle: activePricings[0].billingCycle,
@@ -154,29 +140,29 @@ export const PlanMobileList: React.FC<PlanMobileListProps> = ({
         <DropdownMenuContent align="end">
           <DropdownMenuItem onClick={() => onEdit(plan)}>
             <Edit className="mr-2 size-4" />
-            编辑
+            {t('common.actions.edit')}
           </DropdownMenuItem>
           {onDuplicate && (
             <DropdownMenuItem onClick={() => onDuplicate(plan)}>
               <Copy className="mr-2 size-4" />
-              复制计划
+              {t('admin.plans.actions.duplicate')}
             </DropdownMenuItem>
           )}
           {onViewSubscriptions && (
             <DropdownMenuItem onClick={() => onViewSubscriptions(plan)}>
               <Users className="mr-2 size-4" />
-              查看订阅用户
+              {t('admin.plans.actions.viewSubscriptions')}
             </DropdownMenuItem>
           )}
           <DropdownMenuSeparator />
           <DropdownMenuItem onClick={() => onToggleStatus(plan)}>
             <Power className="mr-2 size-4" />
-            {plan.status === 'active' ? '停用' : '激活'}
+            {plan.status === 'active' ? t('common.actions.deactivate') : t('common.actions.activate')}
           </DropdownMenuItem>
           {onDelete && (
             <DropdownMenuItem onClick={() => onDelete(plan)} className="text-red-600 dark:text-red-400">
               <Trash2 className="mr-2 size-4" />
-              删除
+              {t('common.actions.delete')}
             </DropdownMenuItem>
           )}
         </DropdownMenuContent>
@@ -191,7 +177,7 @@ export const PlanMobileList: React.FC<PlanMobileListProps> = ({
   if (plans.length === 0) {
     return (
       <div className="text-center py-12 text-slate-500 dark:text-slate-400">
-        暂无订阅计划
+        {t('admin.plans.emptyState')}
       </div>
     );
   }
@@ -228,8 +214,11 @@ export const PlanMobileList: React.FC<PlanMobileListProps> = ({
                   <div className="flex items-center gap-1.5 text-xs text-slate-500 dark:text-slate-400">
                     <span className="font-mono text-slate-700 dark:text-slate-300">{priceRange.display}</span>
                     <span className="text-slate-300 dark:text-slate-600">·</span>
-                    <AdminBadge variant={planType === 'forward' ? 'warning' : 'info'} className="text-[10px] px-1.5 py-0">
-                      {planType ? PLAN_TYPE_LABELS[planType] : '节点订阅'}
+                    <AdminBadge
+                      variant={planType === 'forward' ? 'warning' : 'info'}
+                      className="text-[10px] px-1.5 py-0"
+                    >
+                      {t(`planType.${planType ?? 'node'}`)}
                     </AdminBadge>
                   </div>
                 </div>
@@ -245,7 +234,7 @@ export const PlanMobileList: React.FC<PlanMobileListProps> = ({
                         <Edit className="size-3.5 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300" />
                       </button>
                     </TooltipTrigger>
-                    <TooltipContent>编辑</TooltipContent>
+                    <TooltipContent>{t('common.actions.edit')}</TooltipContent>
                   </Tooltip>
                   <Tooltip>
                     <TooltipTrigger asChild>
@@ -264,7 +253,7 @@ export const PlanMobileList: React.FC<PlanMobileListProps> = ({
                         }`} />
                       </button>
                     </TooltipTrigger>
-                    <TooltipContent>{plan.status === 'active' ? '停用' : '激活'}</TooltipContent>
+                    <TooltipContent>{plan.status === 'active' ? t('common.actions.deactivate') : t('common.actions.activate')}</TooltipContent>
                   </Tooltip>
                   {renderDropdownMenu(plan)}
                 </div>
@@ -273,7 +262,7 @@ export const PlanMobileList: React.FC<PlanMobileListProps> = ({
 
             {/* Accordion Trigger */}
             <AccordionTrigger className="px-3 py-1.5 border-t border-slate-100 dark:border-slate-700 hover:no-underline hover:bg-slate-50 dark:hover:bg-slate-700/50">
-              <span className="text-xs text-slate-400 dark:text-slate-500">详情</span>
+              <span className="text-xs text-slate-400 dark:text-slate-500">{t('common.detail')}</span>
             </AccordionTrigger>
 
             {/* Accordion Content - Expanded details */}
@@ -281,24 +270,27 @@ export const PlanMobileList: React.FC<PlanMobileListProps> = ({
               <div className="px-3 pb-2 space-y-2 border-t border-slate-100 dark:border-slate-700 pt-2">
                 {/* Slug */}
                 <div className="flex items-center gap-2">
-                  <span className="text-[10px] text-slate-400 dark:text-slate-500 uppercase tracking-wide w-12 flex-shrink-0">标识</span>
+                  <span className="text-[10px] text-slate-400 dark:text-slate-500 uppercase tracking-wide w-12 flex-shrink-0">{t('admin.plans.detail.slug')}</span>
                   <span className="text-xs font-mono text-slate-600 dark:text-slate-300">{plan.slug}</span>
                 </div>
 
                 {/* Billing cycle */}
                 <div className="flex items-center gap-2">
-                  <span className="text-[10px] text-slate-400 dark:text-slate-500 uppercase tracking-wide w-12 flex-shrink-0">周期</span>
+                  <span className="text-[10px] text-slate-400 dark:text-slate-500 uppercase tracking-wide w-12 flex-shrink-0">{t('admin.plans.detail.cycle')}</span>
                   {priceRange.details && priceRange.details.length > 1 ? (
                     <Tooltip>
                       <TooltipTrigger asChild>
                         <span className="text-xs text-slate-600 dark:text-slate-400 cursor-help">
-                          {priceRange.details.length} 种周期
+                          {priceRange.details.length}{' '}
+                          {t('plans.cycleOptions')}
                         </span>
                       </TooltipTrigger>
                       <TooltipContent>
                         <div className="text-xs space-y-1">
                           {priceRange.details.map((detail, idx) => (
-                            <p key={idx}>{detail.label}: {detail.price}</p>
+                            <p key={idx}>
+                              {t(`billingCycle.${detail.cycle}`)}: {detail.price}
+                            </p>
                           ))}
                         </div>
                       </TooltipContent>
@@ -310,24 +302,24 @@ export const PlanMobileList: React.FC<PlanMobileListProps> = ({
 
                 {/* Public status */}
                 <div className="flex items-center gap-2">
-                  <span className="text-[10px] text-slate-400 dark:text-slate-500 uppercase tracking-wide w-12 flex-shrink-0">公开</span>
+                  <span className="text-[10px] text-slate-400 dark:text-slate-500 uppercase tracking-wide w-12 flex-shrink-0">{t('admin.plans.detail.public')}</span>
                   <AdminBadge variant={plan.isPublic ? 'success' : 'outline'} className="text-[10px] px-1.5 py-0">
-                    {plan.isPublic ? '是' : '否'}
+                    {plan.isPublic ? t('common.yes') : t('common.no')}
                   </AdminBadge>
                 </div>
 
                 {/* Trial days */}
                 {plan.trialDays && plan.trialDays > 0 && (
                   <div className="flex items-center gap-2">
-                    <span className="text-[10px] text-slate-400 dark:text-slate-500 uppercase tracking-wide w-12 flex-shrink-0">试用</span>
-                    <span className="text-xs text-slate-600 dark:text-slate-300">{plan.trialDays} 天</span>
+                    <span className="text-[10px] text-slate-400 dark:text-slate-500 uppercase tracking-wide w-12 flex-shrink-0">{t('admin.plans.detail.trial')}</span>
+                    <span className="text-xs text-slate-600 dark:text-slate-300">{plan.trialDays} {t('common.days')}</span>
                   </div>
                 )}
 
                 {/* Sort order */}
                 {plan.sortOrder !== undefined && plan.sortOrder !== null && (
                   <div className="flex items-center gap-2">
-                    <span className="text-[10px] text-slate-400 dark:text-slate-500 uppercase tracking-wide w-12 flex-shrink-0">排序</span>
+                    <span className="text-[10px] text-slate-400 dark:text-slate-500 uppercase tracking-wide w-12 flex-shrink-0">{t('admin.plans.detail.sortOrder')}</span>
                     <span className="text-xs font-mono text-slate-600 dark:text-slate-300">{plan.sortOrder}</span>
                   </div>
                 )}
@@ -335,7 +327,7 @@ export const PlanMobileList: React.FC<PlanMobileListProps> = ({
                 {/* Description */}
                 {plan.description && (
                   <div className="flex items-start gap-2">
-                    <span className="text-[10px] text-slate-400 dark:text-slate-500 uppercase tracking-wide w-12 pt-0.5 flex-shrink-0">描述</span>
+                    <span className="text-[10px] text-slate-400 dark:text-slate-500 uppercase tracking-wide w-12 pt-0.5 flex-shrink-0">{t('admin.plans.detail.description')}</span>
                     <span className="text-xs text-slate-600 dark:text-slate-300 flex-1 line-clamp-2">{plan.description}</span>
                   </div>
                 )}

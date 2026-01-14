@@ -6,6 +6,7 @@
  */
 
 import { useState, useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
 import { AdminLayout } from '@/layouts/AdminLayout';
 import { usePageTitle } from '@/shared/hooks';
 import { useBreakpoint } from '@/hooks';
@@ -29,7 +30,8 @@ type EntityFilter = 'all' | 'node' | 'agent';
 type ViewMode = 'grid' | 'compact' | 'table';
 
 export const MonitorPage = () => {
-  usePageTitle('实时监控');
+  const { t } = useTranslation();
+  usePageTitle(t('nav.liveMonitor'));
   const { isMobile } = useBreakpoint();
 
   const {
@@ -95,7 +97,7 @@ export const MonitorPage = () => {
             <div className="flex items-center gap-4">
               <div className="flex items-center gap-2">
                 <div className={`size-2 rounded-full ${isConnected ? 'bg-success animate-pulse' : 'bg-muted-foreground'}`} />
-                <h1 className="text-sm font-semibold text-foreground">实时监控</h1>
+                <h1 className="text-sm font-semibold text-foreground">{t('nav.liveMonitor')}</h1>
               </div>
               <div className="h-4 w-px bg-border" />
               <div className="flex items-center gap-3 text-xs">
@@ -114,14 +116,14 @@ export const MonitorPage = () => {
             <div className="flex items-center gap-4 text-xs">
               <div className="flex items-center gap-1.5">
                 <Activity className="size-3 text-muted-foreground" />
-                <span className="text-muted-foreground">CPU</span>
+                <span className="text-muted-foreground">{t('admin.monitor.cpu')}</span>
                 <span className={`font-semibold tabular-nums ${getStatusColor(overview.avgCpu)}`}>
                   {overview.avgCpu.toFixed(0)}%
                 </span>
               </div>
               <div className="flex items-center gap-1.5">
                 <Cpu className="size-3 text-muted-foreground" />
-                <span className="text-muted-foreground">内存</span>
+                <span className="text-muted-foreground">{t('admin.monitor.memory')}</span>
                 <span className={`font-semibold tabular-nums ${getStatusColor(overview.avgMemory)}`}>
                   {overview.avgMemory.toFixed(0)}%
                 </span>
@@ -167,9 +169,9 @@ export const MonitorPage = () => {
           {/* Compact section header */}
           <div className="flex items-center justify-between gap-2 mb-2">
             <div className="flex items-center gap-2">
-              <h2 className="text-sm font-medium text-foreground">实体详情</h2>
+              <h2 className="text-sm font-medium text-foreground">{t('admin.monitor.entityDetails')}</h2>
               <Badge variant="secondary" className="text-[10px] h-5">
-                {onlineCount}/{allEntities.length} 在线
+                {t('admin.monitor.onlineCount', { online: onlineCount, total: allEntities.length })}
               </Badge>
             </div>
 
@@ -178,7 +180,7 @@ export const MonitorPage = () => {
               <Tabs value={entityFilter} onValueChange={(v) => setEntityFilter(v as EntityFilter)}>
                 <TabsList className="h-7">
                   <TabsTrigger value="all" className="text-[10px] px-2 h-6">
-                    全部
+                    {t('filter.all')}
                   </TabsTrigger>
                   <TabsTrigger value="node" className="text-[10px] px-2 h-6 gap-1">
                     <Server className="size-2.5" />
@@ -254,10 +256,10 @@ export const MonitorPage = () => {
                     <Activity className="size-8 text-muted-foreground/50" />
                   </div>
                   <p className="text-sm font-medium text-foreground mb-1">
-                    {entityFilter === 'all' ? '等待数据' : '暂无数据'}
+                    {entityFilter === 'all' ? t('admin.monitor.waitingData') : t('admin.monitor.noEntityData')}
                   </p>
                   <p className="text-xs text-muted-foreground">
-                    {entityFilter === 'all' ? '正在等待实体数据...' : '当前筛选条件下没有实体'}
+                    {entityFilter === 'all' ? t('admin.monitor.waitingEntityData') : t('admin.monitor.noEntityUnderFilter')}
                   </p>
                 </div>
               )}

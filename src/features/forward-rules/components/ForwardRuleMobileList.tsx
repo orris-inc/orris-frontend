@@ -76,28 +76,28 @@ interface ForwardRuleMobileListProps {
 }
 
 // Rule type configuration with icons and colors
-const RULE_TYPE_CONFIG: Record<string, { label: string; shortLabel: string; color: string; bgColor: string }> = {
+const RULE_TYPE_CONFIG: Record<string, { labelKey: string; shortLabelKey: string; color: string; bgColor: string }> = {
   direct: {
-    label: '直连',
-    shortLabel: '直',
+    labelKey: 'admin.forwardRules.ruleType.direct',
+    shortLabelKey: 'admin.forwardRules.ruleType.directShort',
     color: 'text-blue-600 dark:text-blue-400',
     bgColor: 'bg-blue-50 dark:bg-blue-900/20',
   },
   entry: {
-    label: '入口',
-    shortLabel: '入',
+    labelKey: 'admin.forwardRules.ruleType.entry',
+    shortLabelKey: 'admin.forwardRules.ruleType.entryShort',
     color: 'text-green-600 dark:text-green-400',
     bgColor: 'bg-green-50 dark:bg-green-900/20',
   },
   chain: {
-    label: '链式',
-    shortLabel: '链',
+    labelKey: 'admin.forwardRules.ruleType.chain',
+    shortLabelKey: 'admin.forwardRules.ruleType.chainShort',
     color: 'text-purple-600 dark:text-purple-400',
     bgColor: 'bg-purple-50 dark:bg-purple-900/20',
   },
   direct_chain: {
-    label: '直连链',
-    shortLabel: '直链',
+    labelKey: 'admin.forwardRules.ruleType.directChain',
+    shortLabelKey: 'admin.forwardRules.ruleType.directChainShort',
     color: 'text-amber-600 dark:text-amber-400',
     bgColor: 'bg-amber-50 dark:bg-amber-900/20',
   },
@@ -126,19 +126,19 @@ const TUNNEL_TYPE_CONFIG: Record<string, { label: string; color: string; bgColor
 
 
 // Sync status display config
-const SYNC_STATUS_CONFIG: Record<RuleSyncStatus, { label: string; icon: React.ElementType; className: string }> = {
-  synced: { label: '已同步', icon: CheckCircle2, className: 'text-green-500' },
-  pending: { label: '同步中', icon: CircleDashed, className: 'text-yellow-500' },
-  failed: { label: '同步失败', icon: AlertCircle, className: 'text-red-500' },
+const SYNC_STATUS_CONFIG: Record<RuleSyncStatus, { labelKey: string; icon: React.ElementType; className: string }> = {
+  synced: { labelKey: 'common.status.synced', icon: CheckCircle2, className: 'text-green-500' },
+  pending: { labelKey: 'common.status.syncing', icon: CircleDashed, className: 'text-yellow-500' },
+  failed: { labelKey: 'common.status.syncFailed', icon: AlertCircle, className: 'text-red-500' },
 };
 
 // Run status display config
-const RUN_STATUS_CONFIG: Record<RuleRunStatus | 'unknown', { label: string; icon: React.ElementType; className: string }> = {
-  running: { label: '运行中', icon: Play, className: 'text-green-500' },
-  stopped: { label: '已停止', icon: Square, className: 'text-gray-500' },
-  error: { label: '错误', icon: AlertTriangle, className: 'text-red-500' },
-  starting: { label: '启动中', icon: RotateCw, className: 'text-blue-500' },
-  unknown: { label: '未知', icon: CircleDashed, className: 'text-gray-400' },
+const RUN_STATUS_CONFIG: Record<RuleRunStatus | 'unknown', { labelKey: string; icon: React.ElementType; className: string }> = {
+  running: { labelKey: 'common.status.running', icon: Play, className: 'text-green-500' },
+  stopped: { labelKey: 'common.status.stopped', icon: Square, className: 'text-gray-500' },
+  error: { labelKey: 'common.status.error', icon: AlertTriangle, className: 'text-red-500' },
+  starting: { labelKey: 'admin.forwardRules.status.starting', icon: RotateCw, className: 'text-blue-500' },
+  unknown: { labelKey: 'common.status.unknown', icon: CircleDashed, className: 'text-gray-400' },
 };
 
 // Mobile flow node type configuration - consistent with desktop
@@ -148,28 +148,28 @@ const MOBILE_NODE_CONFIG = {
     color: 'text-green-500',
     bgColor: 'bg-green-50 dark:bg-green-900/30',
     borderColor: 'border-green-300 dark:border-green-700',
-    label: '入口',
+    labelKey: 'admin.forwardRules.flowNode.entry',
   },
   relay: {
     icon: Bot,
     color: 'text-purple-500',
     bgColor: 'bg-purple-50 dark:bg-purple-900/30',
     borderColor: 'border-purple-300 dark:border-purple-700',
-    label: '中转',
+    labelKey: 'admin.forwardRules.flowNode.relay',
   },
   exit: {
     icon: Bot,
     color: 'text-orange-500',
     bgColor: 'bg-orange-50 dark:bg-orange-900/30',
     borderColor: 'border-orange-300 dark:border-orange-700',
-    label: '出口',
+    labelKey: 'admin.forwardRules.flowNode.exit',
   },
   target: {
     icon: Server,
     color: 'text-blue-500',
     bgColor: 'bg-blue-50 dark:bg-blue-900/30',
     borderColor: 'border-blue-300 dark:border-blue-700',
-    label: '目标',
+    labelKey: 'admin.forwardRules.flowNode.target',
   },
 };
 
@@ -178,7 +178,8 @@ const MobileFlowNode: React.FC<{
   type: 'entry' | 'relay' | 'exit' | 'target';
   name: string;
   address?: string;
-}> = ({ type, name, address }) => {
+  label: string;
+}> = ({ type, name, address, label }) => {
   const config = MOBILE_NODE_CONFIG[type];
   const IconComponent = config.icon;
 
@@ -186,7 +187,7 @@ const MobileFlowNode: React.FC<{
   return (
     <div
       className={`flex items-center gap-0.5 px-1 py-0.5 rounded ${config.bgColor} border ${config.borderColor} touch-manipulation`}
-      title={address ? `${config.label}: ${name}\n${address}` : `${config.label}: ${name}`}
+      title={address ? `${label}: ${name}\n${address}` : `${label}: ${name}`}
     >
       <IconComponent className={`size-2.5 flex-shrink-0 ${config.color}`} />
       <span className="text-[10px] font-medium text-foreground truncate max-w-[45px]">{name}</span>
@@ -205,6 +206,8 @@ const FlowPathDisplayMobile: React.FC<{
   agentsMap: Record<string, ForwardAgent>;
   nodes: Node[];
 }> = ({ rule, agentsMap, nodes }) => {
+  const { t } = useTranslation();
+
   // Get entry agent info
   const entryAgent = agentsMap[rule.agentId];
   const entryName = entryAgent?.name || `ID: ${rule.agentId.slice(0, 8)}`;
@@ -228,7 +231,7 @@ const FlowPathDisplayMobile: React.FC<{
       return { name: nodeName, address: nodeAddress };
     }
     if (rule.targetAddress) {
-      return { name: '手动', address: `${rule.targetAddress}:${rule.targetPort}` };
+      return { name: t('admin.forwardRules.target.manual'), address: `${rule.targetAddress}:${rule.targetPort}` };
     }
     return null;
   };
@@ -270,7 +273,7 @@ const FlowPathDisplayMobile: React.FC<{
   return (
     <div className="flex items-center gap-0.5 flex-wrap py-0.5">
       {/* Entry node */}
-      <MobileFlowNode type="entry" name={entryName} address={entryAddress} />
+      <MobileFlowNode type="entry" name={entryName} address={entryAddress} label={t('admin.forwardRules.flowNode.entry')} />
 
       <MobileFlowArrow color={showRelays ? 'purple' : 'blue'} />
 
@@ -281,6 +284,7 @@ const FlowPathDisplayMobile: React.FC<{
             type={rule.ruleType === 'entry' ? 'exit' : 'relay'}
             name={firstRelay.name}
             address={firstRelay.address}
+            label={t(rule.ruleType === 'entry' ? 'admin.forwardRules.flowNode.exit' : 'admin.forwardRules.flowNode.relay')}
           />
           {remainingRelays.length > 0 && (
             <>
@@ -294,9 +298,9 @@ const FlowPathDisplayMobile: React.FC<{
                 <PopoverContent className="w-56" align="start">
                   <div className="space-y-2">
                     <div className="flex items-center justify-between">
-                      <h4 className="text-xs font-semibold">链路拓扑</h4>
+                      <h4 className="text-xs font-semibold">{t('admin.forwardRules.columns.path')}</h4>
                       <span className="text-[9px] px-1 py-0.5 rounded bg-muted text-muted-foreground font-medium">
-                        {relayAgents.length + 2}节点
+                        {t('admin.forwardRules.status.agents', { count: relayAgents.length + 2 })}
                       </span>
                     </div>
                     <div className="relative">
@@ -308,7 +312,7 @@ const FlowPathDisplayMobile: React.FC<{
                             <Bot className="size-2.5 text-green-500" />
                           </div>
                           <span className="text-[11px] font-medium truncate">{entryName}</span>
-                          <span className="text-[9px] px-1 py-0.5 rounded bg-green-50 dark:bg-green-900/20 text-green-600 dark:text-green-400 font-medium">入口</span>
+                          <span className="text-[9px] px-1 py-0.5 rounded bg-green-50 dark:bg-green-900/20 text-green-600 dark:text-green-400 font-medium">{t('admin.forwardRules.flowNode.entry')}</span>
                         </div>
                         {/* Relays */}
                         {relayAgents.map((relay, index) => (
@@ -326,7 +330,7 @@ const FlowPathDisplayMobile: React.FC<{
                               <Server className="size-2.5 text-blue-500" />
                             </div>
                             <span className="text-[11px] font-medium truncate">{target.name}</span>
-                            <span className="text-[9px] px-1 py-0.5 rounded bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 font-medium">目标</span>
+                            <span className="text-[9px] px-1 py-0.5 rounded bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 font-medium">{t('admin.forwardRules.flowNode.target')}</span>
                           </div>
                         )}
                       </div>
@@ -342,7 +346,7 @@ const FlowPathDisplayMobile: React.FC<{
 
       {/* Target node */}
       {target ? (
-        <MobileFlowNode type="target" name={target.name} address={target.address} />
+        <MobileFlowNode type="target" name={target.name} address={target.address} label={t('admin.forwardRules.flowNode.target')} />
       ) : (
         <span className="text-[10px] text-muted-foreground">-</span>
       )}
@@ -430,14 +434,14 @@ export const ForwardRuleMobileList: React.FC<ForwardRuleMobileListProps> = ({
     return (
       <div
         className="flex items-center gap-1"
-        title={`${isPolling ? '正在同步... / ' : ''}同步: ${syncConfig.label} / 运行: ${runConfig.label}`}
+        title={`${isPolling ? `${t('admin.forwardRules.status.syncing')} / ` : ''}${t('admin.forwardRules.status.syncLabel')}: ${t(syncConfig.labelKey)} / ${t('admin.forwardRules.status.runLabel')}: ${t(runConfig.labelKey)}`}
       >
         {isPolling && <Loader2 className="size-3 animate-spin text-blue-400" />}
         <SyncIcon className={`size-3.5 ${syncConfig.className}`} />
         <RunIcon className={`size-3.5 ${runConfig.className}`} />
       </div>
     );
-  }, [polledStatusMap, pollingRuleIds]);
+  }, [polledStatusMap, pollingRuleIds, t]);
 
   // Render dropdown menu
   const renderDropdownMenu = useCallback((rule: ForwardRule) => {
@@ -457,11 +461,11 @@ export const ForwardRuleMobileList: React.FC<ForwardRuleMobileListProps> = ({
         <DropdownMenuContent align="end">
           <DropdownMenuItem onClick={() => onViewDetail(rule)}>
             <Eye className="mr-2 size-4" />
-            查看详情
+            {t('admin.forwardRules.actions.viewDetail')}
           </DropdownMenuItem>
           <DropdownMenuItem onClick={() => onEdit(rule)}>
             <Edit className="mr-2 size-4" />
-            编辑
+            {t('common.actions.edit')}
           </DropdownMenuItem>
           <DropdownMenuItem
             onClick={() => canProbe && onProbe(rule)}
@@ -472,36 +476,36 @@ export const ForwardRuleMobileList: React.FC<ForwardRuleMobileListProps> = ({
             ) : (
               <Activity className="mr-2 size-4" />
             )}
-            {isProbing ? '拨测中...' : '拨测'}
+            {isProbing ? t('admin.forwardRules.actions.probing') : t('admin.forwardRules.actions.probe')}
           </DropdownMenuItem>
           <DropdownMenuItem onClick={() => onCopy(rule)}>
             <Files className="mr-2 size-4" />
-            复制规则
+            {t('admin.forwardRules.actions.copyRule')}
           </DropdownMenuItem>
           <DropdownMenuItem onClick={() => onResetTraffic(rule)}>
             <RotateCcw className="mr-2 size-4" />
-            重置流量
+            {t('admin.forwardRules.actions.resetTraffic')}
           </DropdownMenuItem>
           <DropdownMenuSeparator />
           {rule.status === 'enabled' ? (
             <DropdownMenuItem onClick={() => onDisable(rule)}>
               <PowerOff className="mr-2 size-4" />
-              禁用
+              {t('common.actions.disable')}
             </DropdownMenuItem>
           ) : (
             <DropdownMenuItem onClick={() => onEnable(rule)}>
               <Power className="mr-2 size-4" />
-              启用
+              {t('common.actions.enable')}
             </DropdownMenuItem>
           )}
           <DropdownMenuItem onClick={() => onDelete(rule)} className="text-red-600 dark:text-red-400">
             <Trash2 className="mr-2 size-4" />
-            删除
+            {t('common.actions.delete')}
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
     );
-  }, [onViewDetail, onEdit, onProbe, onCopy, onResetTraffic, onEnable, onDisable, onDelete, probingRuleId]);
+  }, [onViewDetail, onEdit, onProbe, onCopy, onResetTraffic, onEnable, onDisable, onDelete, probingRuleId, t]);
 
   if (loading) {
     return <MobileCardSkeleton />;
@@ -510,7 +514,7 @@ export const ForwardRuleMobileList: React.FC<ForwardRuleMobileListProps> = ({
   if (rules.length === 0) {
     return (
       <div className="text-center py-12 text-slate-500 dark:text-slate-400">
-        暂无转发规则数据
+        {t('admin.forwardRules.noData')}
       </div>
     );
   }
@@ -545,10 +549,10 @@ export const ForwardRuleMobileList: React.FC<ForwardRuleMobileListProps> = ({
                     <Tooltip>
                       <TooltipTrigger asChild>
                         <span className={`inline-flex items-center justify-center px-1 py-0.5 text-[9px] font-semibold rounded ${ruleTypeConfig.bgColor} ${ruleTypeConfig.color}`}>
-                          {ruleTypeConfig.shortLabel}
+                          {t(ruleTypeConfig.shortLabelKey)}
                         </span>
                       </TooltipTrigger>
-                      <TooltipContent>{ruleTypeConfig.label}模式</TooltipContent>
+                      <TooltipContent>{t(ruleTypeConfig.labelKey)}{t('admin.forwardRules.mode')}</TooltipContent>
                     </Tooltip>
                     {/* Show tunnel type for chain/entry types */}
                     {isChainType && tunnelTypeConfig && (
@@ -558,7 +562,7 @@ export const ForwardRuleMobileList: React.FC<ForwardRuleMobileListProps> = ({
                             {tunnelTypeConfig.label}
                           </span>
                         </TooltipTrigger>
-                        <TooltipContent>{tunnelTypeConfig.label} 隧道</TooltipContent>
+                        <TooltipContent>{tunnelTypeConfig.label}{t('admin.forwardRules.tunnel')}</TooltipContent>
                       </Tooltip>
                     )}
                     <span className="font-medium text-sm text-foreground truncate">
@@ -586,7 +590,7 @@ export const ForwardRuleMobileList: React.FC<ForwardRuleMobileListProps> = ({
                   <button
                     onClick={() => onEdit(rule)}
                     className="p-1.5 rounded hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors touch-manipulation"
-                    title="编辑"
+                    title={t('common.actions.edit')}
                   >
                     <Edit className="size-3.5 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300" />
                   </button>
@@ -598,7 +602,7 @@ export const ForwardRuleMobileList: React.FC<ForwardRuleMobileListProps> = ({
                         ? 'hover:bg-blue-50 dark:hover:bg-blue-900/20'
                         : 'opacity-50 cursor-not-allowed'
                     }`}
-                    title={probingRuleId === rule.id ? '拨测中...' : '拨测'}
+                    title={probingRuleId === rule.id ? t('admin.forwardRules.actions.probing') : t('admin.forwardRules.actions.probe')}
                   >
                     {probingRuleId === rule.id ? (
                       <Loader2 className="size-3.5 text-blue-500 animate-spin" />
@@ -613,7 +617,7 @@ export const ForwardRuleMobileList: React.FC<ForwardRuleMobileListProps> = ({
                         ? 'hover:bg-red-50 dark:hover:bg-red-900/20'
                         : 'hover:bg-green-50 dark:hover:bg-green-900/20'
                     }`}
-                    title={rule.status === 'enabled' ? '禁用' : '启用'}
+                    title={rule.status === 'enabled' ? t('admin.forwardRules.actions.clickToDisable') : t('admin.forwardRules.actions.clickToEnable')}
                   >
                     {rule.status === 'enabled' ? (
                       <PowerOff className="size-3.5 text-slate-400 hover:text-red-500" />
@@ -628,7 +632,7 @@ export const ForwardRuleMobileList: React.FC<ForwardRuleMobileListProps> = ({
 
             {/* Accordion Trigger */}
             <AccordionTrigger className="px-3 py-1.5 border-t border-slate-100 dark:border-slate-700 hover:no-underline hover:bg-slate-50 dark:hover:bg-slate-700/50">
-              <span className="text-xs text-slate-400 dark:text-slate-500">详情</span>
+              <span className="text-xs text-slate-400 dark:text-slate-500">{t('common.actions.view')}</span>
             </AccordionTrigger>
 
             {/* Accordion Content - Expanded details */}
@@ -636,7 +640,7 @@ export const ForwardRuleMobileList: React.FC<ForwardRuleMobileListProps> = ({
               <div className="px-3 pb-2 space-y-2 border-t border-slate-100 dark:border-slate-700 pt-2">
                 {/* Flow path visualization - unified style */}
                 <div className="flex items-start gap-2">
-                  <span className="text-[10px] text-muted-foreground uppercase tracking-wide w-6 pt-1 flex-shrink-0">链路</span>
+                  <span className="text-[10px] text-muted-foreground uppercase tracking-wide w-6 pt-1 flex-shrink-0">{t('admin.forwardRules.columns.path')}</span>
                   <div className="flex-1 min-w-0">
                     <FlowPathDisplayMobile rule={rule} agentsMap={agentsMap} nodes={nodes} />
                   </div>
@@ -644,10 +648,10 @@ export const ForwardRuleMobileList: React.FC<ForwardRuleMobileListProps> = ({
 
                 {/* Traffic with mini bar - simplified for mobile */}
                 <div className="flex items-center gap-2">
-                  <span className="text-[10px] text-muted-foreground uppercase tracking-wide w-6 flex-shrink-0">流量</span>
+                  <span className="text-[10px] text-muted-foreground uppercase tracking-wide w-6 flex-shrink-0">{t('admin.forwardRules.columns.traffic')}</span>
                   <div
                     className="flex items-center gap-2 flex-1"
-                    title={`上传: ${formatBytesGB(uploadBytes)} / 下载: ${formatBytesGB(downloadBytes)} / 倍率: ${rule.effectiveTrafficMultiplier?.toFixed(2) || '1.00'}x`}
+                    title={`${t('admin.forwardRules.traffic.upload')}: ${formatBytesGB(uploadBytes)} / ${t('admin.forwardRules.traffic.download')}: ${formatBytesGB(downloadBytes)} / ${t('admin.forwardRules.traffic.multiplier')}: ${rule.effectiveTrafficMultiplier?.toFixed(2) || '1.00'}x`}
                   >
                     <span className="text-xs font-medium text-foreground tabular-nums">
                       {formatBytesGB(totalBytes)}
@@ -679,7 +683,7 @@ export const ForwardRuleMobileList: React.FC<ForwardRuleMobileListProps> = ({
                   if (groups.length === 0) return null;
                   return (
                     <div className="flex items-start gap-2">
-                      <span className="text-[10px] text-muted-foreground uppercase tracking-wide w-6 pt-0.5 flex-shrink-0">分组</span>
+                      <span className="text-[10px] text-muted-foreground uppercase tracking-wide w-6 pt-0.5 flex-shrink-0">{t('admin.forwardRules.columns.resourceGroup')}</span>
                       <div className="flex-1 flex flex-wrap gap-1">
                         {groups.map((g) => (
                           <span
@@ -697,7 +701,7 @@ export const ForwardRuleMobileList: React.FC<ForwardRuleMobileListProps> = ({
                 {/* Remark - Inline */}
                 {rule.remark && (
                   <div className="flex items-start gap-2">
-                    <span className="text-[10px] text-slate-400 dark:text-slate-500 uppercase tracking-wide w-6 pt-0.5 flex-shrink-0">备注</span>
+                    <span className="text-[10px] text-slate-400 dark:text-slate-500 uppercase tracking-wide w-6 pt-0.5 flex-shrink-0">{t('admin.forwardAgents.form.remark')}</span>
                     <span className="text-xs text-slate-600 dark:text-slate-300 flex-1">{rule.remark}</span>
                   </div>
                 )}

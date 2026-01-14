@@ -10,6 +10,7 @@
  */
 
 import { memo, useMemo, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
   Server,
   Cpu,
@@ -62,7 +63,9 @@ const MicroProgress = memo(({ value, size = 'sm' }: { value: number; size?: 'sm'
 MicroProgress.displayName = 'MicroProgress';
 
 // Condensed status header for mobile
-const MobileStatusHeader = memo(({ overview, isConnected }: { overview: MonitorOverview; isConnected: boolean }) => (
+const MobileStatusHeader = memo(({ overview, isConnected }: { overview: MonitorOverview; isConnected: boolean }) => {
+  const { t } = useTranslation();
+  return (
   <div className="glass rounded-2xl p-3 space-y-2">
     {/* Top row: connection status + counts */}
     <div className="flex items-center justify-between">
@@ -72,7 +75,7 @@ const MobileStatusHeader = memo(({ overview, isConnected }: { overview: MonitorO
           isConnected ? 'bg-success animate-pulse' : 'bg-muted-foreground'
         )} />
         <span className="text-xs font-medium text-foreground">
-          {isConnected ? '实时监控' : '连接中...'}
+          {isConnected ? t('admin.monitor.systemMonitor') : t('admin.forwardAgents.detail.connecting')}
         </span>
       </div>
       <div className="flex items-center gap-3 text-xs">
@@ -134,11 +137,13 @@ const MobileStatusHeader = memo(({ overview, isConnected }: { overview: MonitorO
       </div>
     </div>
   </div>
-));
+);
+});
 MobileStatusHeader.displayName = 'MobileStatusHeader';
 
 // Ultra-compact entity row for mobile list
 const MobileEntityRow = memo(({ entity, onClick }: { entity: EntityStatus; onClick?: () => void }) => {
+  const { t } = useTranslation();
   const status = entity.status as (NodeSystemStatus | AgentSystemStatus) | null;
   const isOnline = entity.isOnline && status;
 
@@ -203,7 +208,7 @@ const MobileEntityRow = memo(({ entity, onClick }: { entity: EntityStatus; onCli
           </div>
         ) : (
           <p className="text-[10px] text-muted-foreground mt-0.5">
-            {entity.lastSeenAt ? `离线 · ${formatRelativeTime(entity.lastSeenAt)}` : '离线'}
+            {entity.lastSeenAt ? `${t('common.status.offline')} · ${formatRelativeTime(entity.lastSeenAt)}` : t('common.status.offline')}
           </p>
         )}
       </div>
@@ -292,6 +297,7 @@ export const MonitorMobileView = memo(({
   eventLog,
   isConnected,
 }: MonitorMobileViewProps) => {
+  const { t } = useTranslation();
   const [entityFilter, setEntityFilter] = useState<EntityFilter>('all');
   const [statusFilter, setStatusFilter] = useState<StatusFilter>('all');
   const [selectedEntity, setSelectedEntity] = useState<EntityStatus | null>(null);
@@ -337,7 +343,7 @@ export const MonitorMobileView = memo(({
                 : 'bg-muted/60 text-muted-foreground'
             )}
           >
-            全部 {entities.length}
+            {t('filter.all')} {entities.length}
           </button>
           <button
             onClick={() => setEntityFilter('node')}
@@ -371,22 +377,22 @@ export const MonitorMobileView = memo(({
             <Button variant="ghost" size="sm" className="h-8 gap-1 px-2">
               <Filter className="size-3.5" />
               <span className="text-xs">
-                {statusFilter === 'all' ? '全部' : statusFilter === 'online' ? '在线' : '离线'}
+                {statusFilter === 'all' ? t('filter.all') : statusFilter === 'online' ? t('common.status.online') : t('common.status.offline')}
               </span>
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="w-32">
             <DropdownMenuItem onClick={() => setStatusFilter('all')} className="cursor-pointer">
               <Check className={cn('size-4 mr-2', statusFilter === 'all' ? 'opacity-100' : 'opacity-0')} />
-              全部
+              {t('filter.all')}
             </DropdownMenuItem>
             <DropdownMenuItem onClick={() => setStatusFilter('online')} className="cursor-pointer">
               <Check className={cn('size-4 mr-2', statusFilter === 'online' ? 'opacity-100' : 'opacity-0')} />
-              在线 ({onlineCount})
+              {t('common.status.online')} ({onlineCount})
             </DropdownMenuItem>
             <DropdownMenuItem onClick={() => setStatusFilter('offline')} className="cursor-pointer">
               <Check className={cn('size-4 mr-2', statusFilter === 'offline' ? 'opacity-100' : 'opacity-0')} />
-              离线 ({entities.length - onlineCount})
+              {t('common.status.offline')} ({entities.length - onlineCount})
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
@@ -399,7 +405,7 @@ export const MonitorMobileView = memo(({
             <div className="py-8 text-center">
               <Activity className="size-8 text-muted-foreground/30 mx-auto mb-2" />
               <p className="text-sm text-muted-foreground">
-                {entities.length === 0 ? '等待数据...' : '暂无匹配结果'}
+                {entities.length === 0 ? t('admin.monitor.waitingData') : t('common.messages.noResults')}
               </p>
             </div>
           ) : (

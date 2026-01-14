@@ -5,6 +5,7 @@
  */
 
 import { useState, useEffect, useMemo } from "react";
+import { useTranslation } from "react-i18next";
 import {
   Dialog,
   DialogContent,
@@ -100,29 +101,18 @@ const isPortInAllowedRange = (
   return false;
 };
 
-// Rule type descriptions
-const RULE_TYPE_INFO: Record<
-  ForwardRuleType,
-  { label: string; description: string }
-> = {
-  direct: { label: "直连转发", description: "直接将流量转发到目标地址" },
-  entry: {
-    label: "入口节点",
-    description: "作为转发链的入口，通过出口节点转发到目标地址",
-  },
-  chain: {
-    label: "隧道链式转发",
-    description: "通过隧道（WS/TLS）进行多跳链式转发",
-  },
-  direct_chain: {
-    label: "直连链式转发",
-    description: "通过直连 TCP/UDP 进行多跳链式转发",
-  },
+// Rule type keys for translation lookup
+const RULE_TYPE_KEYS: Record<ForwardRuleType, string> = {
+  direct: "direct",
+  entry: "entry",
+  chain: "chain",
+  direct_chain: "directChain",
 };
 
 export const CreateForwardRuleDialog: React.FC<
   CreateForwardRuleDialogProps
 > = ({ open, onClose, onSubmit, agents, nodes = [], initialData, resourceGroups = [], plansMap = {} }) => {
+  const { t } = useTranslation();
   const [formData, setFormData] = useState({
     agentId: "",
     ruleType: "direct" as ForwardRuleType,
@@ -757,15 +747,15 @@ export const CreateForwardRuleDialog: React.FC<
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
-                        {Object.entries(RULE_TYPE_INFO).map(([type, info]) => (
+                        {(Object.keys(RULE_TYPE_KEYS) as ForwardRuleType[]).map((type) => (
                           <SelectItem key={type} value={type}>
-                            {info.label}
+                            {t(`admin.forwardRules.ruleTypeInfo.${RULE_TYPE_KEYS[type]}.label`)}
                           </SelectItem>
                         ))}
                       </SelectContent>
                     </Select>
                     <p className="text-xs text-muted-foreground">
-                      {RULE_TYPE_INFO[formData.ruleType].description}
+                      {t(`admin.forwardRules.ruleTypeInfo.${RULE_TYPE_KEYS[formData.ruleType]}.description`)}
                     </p>
                   </div>
 

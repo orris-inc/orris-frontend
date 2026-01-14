@@ -4,6 +4,7 @@
  */
 
 import { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Cpu, Loader2, Settings, ChevronDown } from 'lucide-react';
 import {
   Sheet,
@@ -24,28 +25,18 @@ import { useResourceGroups } from '@/features/resource-groups/hooks/useResourceG
 import { cn } from '@/lib/utils';
 import type { ForwardAgent, UpdateForwardAgentRequest, BlockedProtocol } from '@/api/forward';
 
-// Protocol groups
-const PROTOCOL_GROUPS: {
-  label: string;
-  protocols: { value: BlockedProtocol; label: string }[];
-}[] = [
-  {
-    label: '代理协议',
-    protocols: [
-      { value: 'http_connect', label: 'HTTP CONNECT' },
-      { value: 'socks4', label: 'SOCKS4' },
-      { value: 'socks5', label: 'SOCKS5' },
-    ],
-  },
-  {
-    label: '应用协议',
-    protocols: [
-      { value: 'http', label: 'HTTP' },
-      { value: 'tls', label: 'TLS' },
-      { value: 'ssh', label: 'SSH' },
-      { value: 'ftp', label: 'FTP' },
-    ],
-  },
+// Protocol groups definition
+const PROXY_PROTOCOLS: { value: BlockedProtocol; label: string }[] = [
+  { value: 'http_connect', label: 'HTTP CONNECT' },
+  { value: 'socks4', label: 'SOCKS4' },
+  { value: 'socks5', label: 'SOCKS5' },
+];
+
+const APP_PROTOCOLS: { value: BlockedProtocol; label: string }[] = [
+  { value: 'http', label: 'HTTP' },
+  { value: 'tls', label: 'TLS' },
+  { value: 'ssh', label: 'SSH' },
+  { value: 'ftp', label: 'FTP' },
 ];
 
 interface EditForwardAgentSheetProps extends EditSheetProps<ForwardAgent, UpdateForwardAgentRequest> {}
@@ -100,6 +91,7 @@ export const EditForwardAgentSheet: React.FC<EditForwardAgentSheetProps> = ({
   entity: agent,
   onSubmit,
 }) => {
+  const { t } = useTranslation();
   const [formData, setFormData] = useState<UpdateForwardAgentRequest>({});
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [openSections, setOpenSections] = useState<Set<string>>(new Set(['editable']));
@@ -168,7 +160,7 @@ export const EditForwardAgentSheet: React.FC<EditForwardAgentSheetProps> = ({
   const validate = () => {
     const newErrors: Record<string, string> = {};
     if (formData.name !== undefined && !formData.name.trim()) {
-      newErrors.name = '节点名称不能为空';
+      newErrors.name = t('common.validation.required');
     }
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -226,31 +218,31 @@ export const EditForwardAgentSheet: React.FC<EditForwardAgentSheetProps> = ({
             <div className="size-10 rounded-full bg-primary/10 flex items-center justify-center">
               <Cpu className="size-5 text-primary" />
             </div>
-            <span>编辑节点</span>
+            <span>{t('admin.forwardAgents.table.menu.edit')}</span>
           </SheetTitle>
           <SheetDescription>
-            修改转发Agent {agent.name} 的配置
+            {t('admin.forwardAgents.detail.agentName')}: {agent.name}
           </SheetDescription>
         </SheetHeader>
 
         <SheetBody className="py-4 space-y-3">
           {/* Basic Info (Read-only) */}
           <MobileSection
-            title="基本信息"
+            title={t('admin.forwardAgents.detail.basicInfo')}
             icon={Cpu}
-            badge="只读"
+            badge={t('common.status.disabled')}
             isOpen={openSections.has('basic')}
             onToggle={() => toggleSection('basic')}
           >
             <div className="space-y-3">
               <div className="space-y-1.5">
-                <label className="text-xs font-medium text-muted-foreground px-1">节点ID</label>
+                <label className="text-xs font-medium text-muted-foreground px-1">{t('admin.forwardAgents.detail.agentId')}</label>
                 <MobileFormInput value={String(agent.id)} disabled className="font-mono bg-muted" />
               </div>
               <div className="space-y-1.5">
-                <label className="text-xs font-medium text-muted-foreground px-1">创建时间</label>
+                <label className="text-xs font-medium text-muted-foreground px-1">{t('admin.forwardAgents.detail.createdAt')}</label>
                 <MobileFormInput
-                  value={new Date(agent.createdAt).toLocaleString('zh-CN')}
+                  value={new Date(agent.createdAt).toLocaleString()}
                   disabled
                   className="bg-muted"
                 />
@@ -260,7 +252,7 @@ export const EditForwardAgentSheet: React.FC<EditForwardAgentSheetProps> = ({
 
           {/* Editable Fields */}
           <MobileSection
-            title="可编辑信息"
+            title={t('admin.forwardAgents.detail.configInfo')}
             icon={Settings}
             isOpen={openSections.has('editable')}
             onToggle={() => toggleSection('editable')}
@@ -268,7 +260,7 @@ export const EditForwardAgentSheet: React.FC<EditForwardAgentSheetProps> = ({
             <div className="space-y-4">
               {/* Name */}
               <div className="space-y-1.5">
-                <label className="text-sm font-medium px-1">节点名称</label>
+                <label className="text-sm font-medium px-1">{t('admin.forwardAgents.form.nodeName')}</label>
                 <MobileFormInput
                   value={formData.name || ''}
                   onChange={(value) => handleChange('name', value)}
@@ -278,9 +270,9 @@ export const EditForwardAgentSheet: React.FC<EditForwardAgentSheetProps> = ({
 
               {/* Public Address */}
               <div className="space-y-1.5">
-                <label className="text-sm font-medium px-1">公网地址</label>
+                <label className="text-sm font-medium px-1">{t('admin.forwardAgents.detail.publicAddress')}</label>
                 <MobileFormInput
-                  placeholder="example.com 或 1.2.3.4"
+                  placeholder={t('admin.forwardAgents.form.publicAddressPlaceholder')}
                   value={formData.publicAddress || ''}
                   onChange={(value) => handleChange('publicAddress', value)}
                   className="font-mono"
@@ -289,7 +281,7 @@ export const EditForwardAgentSheet: React.FC<EditForwardAgentSheetProps> = ({
 
               {/* Tunnel Address */}
               <div className="space-y-1.5">
-                <label className="text-sm font-medium px-1">隧道地址</label>
+                <label className="text-sm font-medium px-1">{t('admin.forwardAgents.detail.tunnelAddress')}</label>
                 <MobileFormInput
                   placeholder="10.0.0.1"
                   value={formData.tunnelAddress || ''}
@@ -297,13 +289,13 @@ export const EditForwardAgentSheet: React.FC<EditForwardAgentSheetProps> = ({
                   className="font-mono"
                 />
                 <p className="text-xs text-muted-foreground px-1">
-                  用于中继/出口节点的内网连接
+                  {t('admin.forwardAgents.form.tunnelAddressHint')}
                 </p>
               </div>
 
               {/* Allowed Port Range */}
               <div className="space-y-1.5">
-                <label className="text-sm font-medium px-1">端口限制</label>
+                <label className="text-sm font-medium px-1">{t('admin.forwardAgents.detail.portLimit')}</label>
                 <MobileFormInput
                   placeholder="80,443,8000-9000"
                   value={formData.allowedPortRange || ''}
@@ -314,7 +306,7 @@ export const EditForwardAgentSheet: React.FC<EditForwardAgentSheetProps> = ({
 
               {/* Sort Order */}
               <div className="space-y-1.5">
-                <label className="text-sm font-medium px-1">排序顺序</label>
+                <label className="text-sm font-medium px-1">{t('admin.forwardAgents.form.sortOrder')}</label>
                 <MobileFormInput
                   type="number"
                   inputMode="numeric"
@@ -326,41 +318,64 @@ export const EditForwardAgentSheet: React.FC<EditForwardAgentSheetProps> = ({
 
               {/* Blocked Protocols */}
               <div className="space-y-2">
-                <label className="text-sm font-medium px-1">阻止协议</label>
+                <label className="text-sm font-medium px-1">{t('admin.forwardAgents.detail.blockedProtocols')}</label>
                 <div className="space-y-3">
-                  {PROTOCOL_GROUPS.map((group) => (
-                    <div key={group.label}>
-                      <p className="text-xs text-muted-foreground mb-2 px-1">{group.label}</p>
-                      <div className="flex flex-wrap gap-2">
-                        {group.protocols.map((protocol) => {
-                          const isSelected = formData.blockedProtocols?.includes(protocol.value) || false;
-                          return (
-                            <button
-                              key={protocol.value}
-                              type="button"
-                              onClick={() => handleProtocolToggle(protocol.value, !isSelected)}
-                              className={cn(
-                                'px-3 py-2 text-sm rounded-lg border transition-colors min-h-[44px]',
-                                isSelected
-                                  ? 'bg-destructive/10 border-destructive/50 text-destructive'
-                                  : 'bg-muted/50 border-border text-muted-foreground active:bg-muted'
-                              )}
-                            >
-                              {protocol.label}
-                            </button>
-                          );
-                        })}
-                      </div>
+                  {/* Proxy Protocols */}
+                  <div>
+                    <p className="text-xs text-muted-foreground mb-2 px-1">{t('admin.forwardAgents.form.protocolGroupProxy')}</p>
+                    <div className="flex flex-wrap gap-2">
+                      {PROXY_PROTOCOLS.map((protocol) => {
+                        const isSelected = formData.blockedProtocols?.includes(protocol.value) || false;
+                        return (
+                          <button
+                            key={protocol.value}
+                            type="button"
+                            onClick={() => handleProtocolToggle(protocol.value, !isSelected)}
+                            className={cn(
+                              'px-3 py-2 text-sm rounded-lg border transition-colors min-h-[44px]',
+                              isSelected
+                                ? 'bg-destructive/10 border-destructive/50 text-destructive'
+                                : 'bg-muted/50 border-border text-muted-foreground active:bg-muted'
+                            )}
+                          >
+                            {protocol.label}
+                          </button>
+                        );
+                      })}
                     </div>
-                  ))}
+                  </div>
+                  {/* App Protocols */}
+                  <div>
+                    <p className="text-xs text-muted-foreground mb-2 px-1">{t('admin.forwardAgents.form.protocolGroupApp')}</p>
+                    <div className="flex flex-wrap gap-2">
+                      {APP_PROTOCOLS.map((protocol) => {
+                        const isSelected = formData.blockedProtocols?.includes(protocol.value) || false;
+                        return (
+                          <button
+                            key={protocol.value}
+                            type="button"
+                            onClick={() => handleProtocolToggle(protocol.value, !isSelected)}
+                            className={cn(
+                              'px-3 py-2 text-sm rounded-lg border transition-colors min-h-[44px]',
+                              isSelected
+                                ? 'bg-destructive/10 border-destructive/50 text-destructive'
+                                : 'bg-muted/50 border-border text-muted-foreground active:bg-muted'
+                            )}
+                          >
+                            {protocol.label}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
                 </div>
               </div>
 
               {/* Remark */}
               <div className="space-y-1.5">
-                <label className="text-sm font-medium px-1">备注</label>
+                <label className="text-sm font-medium px-1">{t('admin.forwardAgents.form.remark')}</label>
                 <MobileFormInput
-                  placeholder="备注说明"
+                  placeholder={t('admin.forwardAgents.form.remarkPlaceholder')}
                   value={formData.remark || ''}
                   onChange={(value) => handleChange('remark', value)}
                 />
@@ -368,25 +383,25 @@ export const EditForwardAgentSheet: React.FC<EditForwardAgentSheetProps> = ({
 
               {/* Resource Group */}
               <div className="space-y-1.5">
-                <label className="text-sm font-medium px-1">资源组</label>
+                <label className="text-sm font-medium px-1">{t('admin.forwardAgents.table.columns.resourceGroup')}</label>
                 <MobileSelect
                   value={formData.groupSid ?? '__none__'}
                   onChange={(value) => handleChange('groupSid', value === '__none__' ? '' : value)}
                   disabled={isLoadingGroups}
                   options={[
-                    { value: '__none__', label: '不关联资源组' },
+                    { value: '__none__', label: t('admin.forwardAgents.detail.none') },
                     ...resourceGroups.map((group) => ({
                       value: group.sid,
                       label: group.name,
                     })),
                   ]}
-                  placeholder={isLoadingGroups ? '加载中...' : '选择资源组'}
+                  placeholder={isLoadingGroups ? t('app.loading') : t('common.placeholders.select')}
                 />
               </div>
 
               {/* Mute Notification */}
               <div className="space-y-1.5">
-                <label className="text-sm font-medium px-1">静音通知</label>
+                <label className="text-sm font-medium px-1">{t('admin.forwardAgents.detail.notificationStatus')}</label>
                 <div className="flex items-center gap-3 min-h-[52px] px-4 rounded-xl border bg-background">
                   <Switch
                     checked={formData.muteNotification ?? false}
@@ -395,12 +410,9 @@ export const EditForwardAgentSheet: React.FC<EditForwardAgentSheetProps> = ({
                     <SwitchThumb />
                   </Switch>
                   <span className="text-sm text-muted-foreground">
-                    {formData.muteNotification ? '已静音' : '未静音'}
+                    {formData.muteNotification ? t('admin.forwardAgents.detail.muted') : t('admin.forwardAgents.detail.normalNotification')}
                   </span>
                 </div>
-                <p className="text-xs text-muted-foreground px-1">
-                  开启后将不会发送此节点的上线/下线通知
-                </p>
               </div>
             </div>
           </MobileSection>
@@ -415,9 +427,9 @@ export const EditForwardAgentSheet: React.FC<EditForwardAgentSheetProps> = ({
             {loading ? (
               <>
                 <Loader2 className="mr-2 size-5 animate-spin" />
-                保存中...
+                {t('common.processing')}
               </>
-            ) : '保存'}
+            ) : t('common.actions.save')}
           </Button>
           <Button
             variant="ghost"
@@ -425,7 +437,7 @@ export const EditForwardAgentSheet: React.FC<EditForwardAgentSheetProps> = ({
             disabled={loading}
             className="w-full min-h-[44px]"
           >
-            取消
+            {t('common.actions.cancel')}
           </Button>
         </SheetFooter>
       </SheetContent>

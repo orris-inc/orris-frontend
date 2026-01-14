@@ -9,6 +9,7 @@
  */
 
 import { memo, useMemo, useState, useCallback } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
   AreaChart,
   Area,
@@ -115,12 +116,12 @@ const getUploadColor = (downloadColor: string): string => {
   return shiftHue(downloadColor, HUE_SHIFT);
 };
 
-// Metric config with icons
-const METRIC_CONFIG: Record<ChartMode, { label: string; icon: React.ElementType }> = {
-  cpu: { label: 'CPU', icon: Activity },
-  memory: { label: '内存', icon: Cpu },
-  disk: { label: '磁盘', icon: HardDrive },
-  network: { label: '网络', icon: Wifi },
+// Metric config with icons (labels are now provided via i18n)
+const METRIC_CONFIG: Record<ChartMode, { labelKey: string; icon: React.ElementType }> = {
+  cpu: { labelKey: 'admin.monitor.cpu', icon: Activity },
+  memory: { labelKey: 'admin.monitor.memory', icon: Cpu },
+  disk: { labelKey: 'admin.monitor.disk', icon: HardDrive },
+  network: { labelKey: 'admin.monitor.network', icon: Wifi },
 };
 
 // Animated wave SVG for empty state
@@ -284,6 +285,7 @@ export const RealtimeMetricsChart = memo(({
   onEntitySelect,
   getEntityChartData,
 }: RealtimeMetricsChartProps) => {
+  const { t } = useTranslation();
   const [mode, setMode] = useState<ChartMode>('cpu');
   const [selectorOpen, setSelectorOpen] = useState(false);
 
@@ -410,10 +412,10 @@ export const RealtimeMetricsChart = memo(({
           {/* Left: Compact title */}
           <div className="flex items-center gap-2">
             <BarChart3 className="size-4 text-primary" />
-            <span className="text-sm font-medium text-foreground">性能监控</span>
+            <span className="text-sm font-medium text-foreground">{t('admin.monitor.performanceMonitor')}</span>
             {selectedEntityIds.length > 0 && (
               <Badge variant="secondary" className="text-[10px] h-5">
-                {selectedEntityIds.length} 实体
+                {t('admin.monitor.entitiesCount', { count: selectedEntityIds.length })}
               </Badge>
             )}
           </div>
@@ -436,7 +438,7 @@ export const RealtimeMetricsChart = memo(({
                   )}
                 >
                   <Icon className="size-3" />
-                  <span className="hidden sm:inline">{config.label}</span>
+                  <span className="hidden sm:inline">{t(config.labelKey)}</span>
                 </button>
               );
             })}
@@ -458,7 +460,7 @@ export const RealtimeMetricsChart = memo(({
                 )}
               >
                 <Plus className="size-3.5" />
-                <span>添加</span>
+                <span>{t('admin.monitor.add')}</span>
               </Button>
             </PopoverTrigger>
             <PopoverContent className="w-[300px] p-0" align="start">
@@ -479,7 +481,7 @@ export const RealtimeMetricsChart = memo(({
                       disabled={onlineEntities.length === 0}
                       className="shrink-0"
                     />
-                    <span className="text-sm font-medium text-foreground">全选</span>
+                    <span className="text-sm font-medium text-foreground">{t('common.actions.selectAll')}</span>
                   </div>
                   <Badge variant="secondary" className="text-xs">
                     {selectedEntityIds.length}/{MAX_ENTITIES}
@@ -492,8 +494,8 @@ export const RealtimeMetricsChart = memo(({
                     <div className="size-12 rounded-full bg-muted/50 flex items-center justify-center mb-3">
                       <Wifi className="size-5 text-muted-foreground/40" />
                     </div>
-                    <p className="text-sm font-medium text-muted-foreground">暂无在线实体</p>
-                    <p className="text-xs text-muted-foreground/70 mt-1">等待 Agent 上线...</p>
+                    <p className="text-sm font-medium text-muted-foreground">{t('admin.monitor.noOnlineEntities')}</p>
+                    <p className="text-xs text-muted-foreground/70 mt-1">{t('admin.monitor.waitingAgentOnline')}</p>
                   </div>
                 ) : (
                   <div className="space-y-1">
@@ -594,19 +596,19 @@ export const RealtimeMetricsChart = memo(({
           <div className="h-full flex items-center justify-center">
             <div className="text-center">
               <BarChart3 className="size-10 text-muted-foreground/20 mx-auto mb-2" />
-              <p className="text-sm text-muted-foreground mb-1">点击「添加」选择实体</p>
+              <p className="text-sm text-muted-foreground mb-1">{t('admin.monitor.clickAddToSelectEntities')}</p>
               <div className="flex items-center justify-center gap-3 text-[10px] text-muted-foreground/60">
                 <span className="flex items-center gap-1">
-                  <Activity className="size-3" />CPU
+                  <Activity className="size-3" />{t('admin.monitor.cpu')}
                 </span>
                 <span className="flex items-center gap-1">
-                  <Cpu className="size-3" />内存
+                  <Cpu className="size-3" />{t('admin.monitor.memory')}
                 </span>
                 <span className="flex items-center gap-1">
-                  <HardDrive className="size-3" />磁盘
+                  <HardDrive className="size-3" />{t('admin.monitor.disk')}
                 </span>
                 <span className="flex items-center gap-1">
-                  <Wifi className="size-3" />网络
+                  <Wifi className="size-3" />{t('admin.monitor.network')}
                 </span>
               </div>
             </div>
@@ -621,7 +623,7 @@ export const RealtimeMetricsChart = memo(({
                 <div className="w-1.5 h-4 bg-primary/50 rounded-full animate-pulse delay-150" />
                 <div className="w-1.5 h-6 bg-primary/70 rounded-full animate-pulse delay-200" />
               </div>
-              <p className="text-xs text-muted-foreground">等待数据...</p>
+              <p className="text-xs text-muted-foreground">{t('admin.monitor.waitingData')}</p>
             </div>
           </div>
         ) : (

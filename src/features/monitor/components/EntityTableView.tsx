@@ -5,6 +5,7 @@
  */
 
 import { memo, useMemo, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
   useReactTable,
   getCoreRowModel,
@@ -74,11 +75,12 @@ const formatUptime = (seconds?: number): string => {
 };
 
 export const EntityTableView = memo(({ entities, onRowClick }: EntityTableViewProps) => {
+  const { t } = useTranslation();
   const [sorting, setSorting] = useState<SortingState>([]);
 
   const columns = useMemo(() => [
     columnHelper.accessor('type', {
-      header: '类型',
+      header: t('monitor.table.columns.type'),
       size: 60,
       cell: ({ row }) => {
         const isNode = row.original.type === 'node';
@@ -99,7 +101,7 @@ export const EntityTableView = memo(({ entities, onRowClick }: EntityTableViewPr
       },
     }),
     columnHelper.accessor('name', {
-      header: '名称',
+      header: t('monitor.table.columns.name'),
       size: 180,
       cell: ({ row }) => (
         <div className="min-w-0">
@@ -115,7 +117,7 @@ export const EntityTableView = memo(({ entities, onRowClick }: EntityTableViewPr
       ),
     }),
     columnHelper.accessor('isOnline', {
-      header: '状态',
+      header: t('monitor.table.columns.status'),
       size: 70,
       cell: ({ row }) => (
         <Badge
@@ -125,7 +127,7 @@ export const EntityTableView = memo(({ entities, onRowClick }: EntityTableViewPr
             row.original.isOnline ? 'bg-success text-success-foreground' : ''
           )}
         >
-          {row.original.isOnline ? '在线' : '离线'}
+          {row.original.isOnline ? t('monitor.table.status.online') : t('monitor.table.status.offline')}
         </Badge>
       ),
     }),
@@ -148,7 +150,7 @@ export const EntityTableView = memo(({ entities, onRowClick }: EntityTableViewPr
       row => (row.status as NodeSystemStatus | AgentSystemStatus)?.memoryPercent ?? 0,
       {
         id: 'memory',
-        header: '内存',
+        header: t('monitor.table.columns.memory'),
         size: 120,
         cell: ({ row }) => {
           const status = row.original.status as NodeSystemStatus | AgentSystemStatus | null;
@@ -163,7 +165,7 @@ export const EntityTableView = memo(({ entities, onRowClick }: EntityTableViewPr
       row => (row.status as NodeSystemStatus | AgentSystemStatus)?.diskPercent ?? 0,
       {
         id: 'disk',
-        header: '磁盘',
+        header: t('monitor.table.columns.disk'),
         size: 120,
         cell: ({ row }) => {
           const status = row.original.status as NodeSystemStatus | AgentSystemStatus | null;
@@ -178,7 +180,7 @@ export const EntityTableView = memo(({ entities, onRowClick }: EntityTableViewPr
       row => (row.status as NodeSystemStatus | AgentSystemStatus)?.networkRxRate ?? 0,
       {
         id: 'network',
-        header: '网络',
+        header: t('monitor.table.columns.network'),
         size: 150,
         cell: ({ row }) => {
           const status = row.original.status as NodeSystemStatus | AgentSystemStatus | null;
@@ -198,7 +200,7 @@ export const EntityTableView = memo(({ entities, onRowClick }: EntityTableViewPr
       row => (row.status as NodeSystemStatus | AgentSystemStatus)?.uptimeSeconds ?? 0,
       {
         id: 'uptime',
-        header: '运行时间',
+        header: t('monitor.table.columns.uptime'),
         size: 90,
         cell: ({ row }) => {
           const status = row.original.status as NodeSystemStatus | AgentSystemStatus | null;
@@ -217,7 +219,7 @@ export const EntityTableView = memo(({ entities, onRowClick }: EntityTableViewPr
       row => (row.status as NodeSystemStatus)?.publicIpv4 ?? '',
       {
         id: 'ip',
-        header: '公网 IP',
+        header: t('monitor.table.columns.publicIp'),
         size: 130,
         cell: ({ row }) => {
           const status = row.original.status as NodeSystemStatus | null;
@@ -233,7 +235,7 @@ export const EntityTableView = memo(({ entities, onRowClick }: EntityTableViewPr
         },
       }
     ),
-  ], []);
+  ], [t]);
 
   const table = useReactTable({
     data: entities,
@@ -298,7 +300,7 @@ export const EntityTableView = memo(({ entities, onRowClick }: EntityTableViewPr
           {table.getRowModel().rows.length === 0 ? (
             <tr>
               <td colSpan={columns.length} className="py-12 text-center">
-                <p className="text-sm text-muted-foreground">暂无数据</p>
+                <p className="text-sm text-muted-foreground">{t('monitor.table.empty')}</p>
               </td>
             </tr>
           ) : (

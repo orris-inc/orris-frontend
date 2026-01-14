@@ -39,7 +39,7 @@ export interface MobileForwardAgentCardProps {
 // Online Status Indicator
 // ============================================================================
 
-const OnlineIndicator = ({ isOnline }: { isOnline: boolean }) => {
+const OnlineIndicator = ({ isOnline, t }: { isOnline: boolean; t: (key: string) => string }) => {
   if (isOnline) {
     return (
       <span className="inline-flex items-center gap-1 text-success">
@@ -47,14 +47,14 @@ const OnlineIndicator = ({ isOnline }: { isOnline: boolean }) => {
           <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-success opacity-75 motion-reduce:hidden"></span>
           <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-success"></span>
         </span>
-        <span className="text-[10px] font-medium">在线</span>
+        <span className="text-[10px] font-medium">{t('common.status.online')}</span>
       </span>
     );
   }
   return (
     <span className="inline-flex items-center gap-1 text-muted-foreground">
       <span className="h-1.5 w-1.5 rounded-full bg-muted-foreground/30"></span>
-      <span className="text-[10px]">离线</span>
+      <span className="text-[10px]">{t('common.status.offline')}</span>
     </span>
   );
 };
@@ -81,21 +81,21 @@ export const MobileForwardAgentCard = ({
     {
       key: 'edit',
       icon: <Edit className="size-5" />,
-      label: '编辑',
+      label: t('common.actions.edit'),
       bgColor: 'bg-primary',
       onClick: () => onEdit(agent),
     },
     {
       key: 'toggle',
       icon: agent.status === 'enabled' ? <PowerOff className="size-5" /> : <Power className="size-5" />,
-      label: agent.status === 'enabled' ? '禁用' : '启用',
+      label: agent.status === 'enabled' ? t('common.actions.disable') : t('common.actions.enable'),
       bgColor: agent.status === 'enabled' ? 'bg-warning' : 'bg-success',
       onClick: () => onToggleStatus(agent),
     },
     {
       key: 'delete',
       icon: <Trash2 className="size-5" />,
-      label: '删除',
+      label: t('common.actions.delete'),
       bgColor: 'bg-destructive',
       onClick: () => onDelete(agent),
     },
@@ -113,7 +113,7 @@ export const MobileForwardAgentCard = ({
             <span className="font-medium text-foreground truncate">
               {agent.name}
             </span>
-            <OnlineIndicator isOnline={agent.isOnline} />
+            <OnlineIndicator isOnline={agent.isOnline} t={t} />
             {agent.hasUpdate && agent.isOnline && (
               <ArrowUpCircle className="size-3.5 text-warning shrink-0" />
             )}

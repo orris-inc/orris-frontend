@@ -10,6 +10,7 @@
  */
 
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
   Server,
   Hash,
@@ -115,14 +116,21 @@ const formatBytesRate = (bytesPerSec: number): string => {
 /**
  * Format uptime seconds to human readable string
  */
-const formatUptime = (seconds: number): string => {
+const formatUptime = (
+  seconds: number,
+  t: (key: string, options?: Record<string, unknown>) => string
+): string => {
   if (!seconds || seconds <= 0) return '-';
   const days = Math.floor(seconds / 86400);
   const hours = Math.floor((seconds % 86400) / 3600);
-  if (days > 0) return `${days}天${hours}时`;
+  if (days > 0) {
+    return t('admin.nodes.detail.uptimeFormat.daysHours', { days, hours });
+  }
   const mins = Math.floor((seconds % 3600) / 60);
-  if (hours > 0) return `${hours}时${mins}分`;
-  return `${mins}分`;
+  if (hours > 0) {
+    return t('admin.nodes.detail.uptimeFormat.hoursMins', { hours, mins });
+  }
+  return t('admin.nodes.detail.uptimeFormat.mins', { mins });
 };
 
 // ============================================================================
@@ -172,10 +180,12 @@ const OnlineIndicator = ({
   isOnline,
   isConnected,
   nodeStatus,
+  t,
 }: {
   isOnline: boolean;
   isConnected: boolean;
   nodeStatus: string;
+  t: (key: string, options?: Record<string, unknown>) => string;
 }) => {
   return (
     <span className="inline-flex items-center gap-2">
@@ -195,17 +205,17 @@ const OnlineIndicator = ({
             <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-success opacity-75 motion-reduce:hidden"></span>
             <span className="relative inline-flex rounded-full h-2 w-2 bg-success"></span>
           </span>
-          <span className="text-sm font-medium">在线</span>
+          <span className="text-sm font-medium">{t('admin.nodes.detail.online')}</span>
         </span>
       ) : nodeStatus === 'active' || isConnected ? (
         <span className="inline-flex items-center gap-1.5 text-muted-foreground">
           <span className="inline-block h-2 w-2 rounded-full bg-muted-foreground/30"></span>
-          <span className="text-sm">{isConnected ? '等待状态' : '连接中...'}</span>
+          <span className="text-sm">{isConnected ? t('admin.nodes.detail.waitingStatus') : t('admin.nodes.detail.connecting')}</span>
         </span>
       ) : (
         <span className="inline-flex items-center gap-1.5 text-muted-foreground">
           <span className="inline-block h-2 w-2 rounded-full bg-muted-foreground/30"></span>
-          <span className="text-sm">离线</span>
+          <span className="text-sm">{t('admin.nodes.detail.offline')}</span>
         </span>
       )}
     </span>
@@ -215,18 +225,24 @@ const OnlineIndicator = ({
 /**
  * System Status Display - uses real-time SSE status if available
  */
-const SystemStatusSection = ({ status }: { status: NodeSystemStatus }) => {
+const SystemStatusSection = ({
+  status,
+  t,
+}: {
+  status: NodeSystemStatus;
+  t: (key: string, options?: Record<string, unknown>) => string;
+}) => {
   if (!status) return null;
 
   return (
-    <DetailSection title="系统状态">
+    <DetailSection title={t('admin.nodes.detail.nodeStatus')}>
       {/* CPU */}
       <div className="px-3 py-2.5">
         <div className="flex items-center gap-3">
           <Gauge className="size-4 text-muted-foreground" />
           <div className="flex-1">
             <div className="flex items-center justify-between mb-1">
-              <span className="text-xs text-muted-foreground">CPU</span>
+              <span className="text-xs text-muted-foreground">{t('admin.nodes.detail.cpu')}</span>
               <span className="text-xs font-medium tabular-nums">
                 {Math.round(status.cpuPercent)}%
               </span>
@@ -254,7 +270,7 @@ const SystemStatusSection = ({ status }: { status: NodeSystemStatus }) => {
           <HardDrive className="size-4 text-muted-foreground" />
           <div className="flex-1">
             <div className="flex items-center justify-between mb-1">
-              <span className="text-xs text-muted-foreground">内存</span>
+              <span className="text-xs text-muted-foreground">{t('admin.nodes.detail.memory')}</span>
               <span className="text-xs font-medium tabular-nums">
                 {Math.round(status.memoryPercent)}% ({formatBytes(status.memoryUsed)} / {formatBytes(status.memoryTotal)})
               </span>
@@ -281,13 +297,13 @@ const SystemStatusSection = ({ status }: { status: NodeSystemStatus }) => {
         <div className="flex items-center gap-3">
           <Network className="size-4 text-muted-foreground" />
           <div className="flex-1">
-            <div className="text-xs text-muted-foreground mb-1">网络</div>
+            <div className="text-xs text-muted-foreground mb-1">{t('admin.nodes.detail.networkTraffic')}</div>
             <div className="flex items-center gap-3 text-xs font-mono">
               <span className="text-success">↓ {formatBytesRate(status.networkRxRate)}/s</span>
               <span className="text-info">↑ {formatBytesRate(status.networkTxRate)}/s</span>
             </div>
             <div className="text-[10px] text-muted-foreground mt-0.5">
-              累计: {formatBytes(status.networkRxBytes)} / {formatBytes(status.networkTxBytes)}
+              {t('admin.monitor.total')}: {formatBytes(status.networkRxBytes)} / {formatBytes(status.networkTxBytes)}
             </div>
           </div>
         </div>
@@ -296,18 +312,18 @@ const SystemStatusSection = ({ status }: { status: NodeSystemStatus }) => {
       {/* Uptime and connections */}
       <DetailRow
         icon={<Clock className="size-4" />}
-        label="运行时间"
+        label={t('admin.nodes.detail.uptime')}
         value={
           <span className="flex items-center gap-3 text-sm">
-            <span>{formatUptime(status.uptimeSeconds)}</span>
+            <span>{formatUptime(status.uptimeSeconds, t)}</span>
             <span className="text-muted-foreground">·</span>
             <span className="text-muted-foreground">
-              连接: {(status.tcpConnections || 0) + (status.udpConnections || 0)}
+              {t('admin.monitor.connections')}: {(status.tcpConnections || 0) + (status.udpConnections || 0)}
             </span>
             {status.loadAvg1 !== undefined && (
               <>
                 <span className="text-muted-foreground">·</span>
-                <span className="text-muted-foreground">负载: {status.loadAvg1.toFixed(2)}</span>
+                <span className="text-muted-foreground">{t('admin.nodes.detail.load')}: {status.loadAvg1.toFixed(2)}</span>
               </>
             )}
           </span>
@@ -331,6 +347,7 @@ export const NodeDetailSheet = ({
   onActivate,
   onDeactivate,
 }: NodeDetailSheetProps) => {
+  const { t } = useTranslation();
   const [actionSheetOpen, setActionSheetOpen] = useState(false);
 
   // Subscribe to real-time status via SSE - always enable when sheet is open
@@ -345,13 +362,14 @@ export const NodeDetailSheet = ({
 
   if (!node) return null;
 
-  const statusConfig = STATUS_CONFIG[node.status] || { label: '未知', variant: 'default' as const };
+  const statusLabel = t(`admin.nodes.statusLabel.${node.status}`, node.status);
+  const statusConfig = STATUS_CONFIG[node.status] || { label: statusLabel, variant: 'default' as const };
   const protocolConfig = PROTOCOL_CONFIG[node.protocol] || { label: node.protocol, color: 'bg-muted text-muted-foreground' };
 
   // Action Sheet actions
   const moreActions = [
     {
-      label: '删除节点',
+      label: t('admin.nodes.actions.delete'),
       icon: <Trash2 className="size-5" />,
       onPress: async () => {
         onDelete(node);
@@ -379,7 +397,7 @@ export const NodeDetailSheet = ({
                 <div className="flex items-center gap-2">
                   <SheetTitle className="truncate">{node.name}</SheetTitle>
                   <AdminBadge variant={statusConfig.variant} className="text-[10px] px-1.5 py-0 shrink-0">
-                    {statusConfig.label}
+                    {statusLabel}
                   </AdminBadge>
                 </div>
                 <SheetDescription className="flex items-center gap-2">
@@ -387,11 +405,12 @@ export const NodeDetailSheet = ({
                     isOnline={isOnline || node.isOnline}
                     isConnected={isConnected}
                     nodeStatus={node.status}
+                    t={t}
                   />
                   {node.hasUpdate && (isOnline || node.isOnline) && (
                     <span className="inline-flex items-center gap-1 text-warning text-xs">
                       <ArrowUpCircle className="size-3.5" />
-                      可更新
+                      {t('admin.nodes.updatable')}
                     </span>
                   )}
                 </SheetDescription>
@@ -401,23 +420,23 @@ export const NodeDetailSheet = ({
 
           <SheetBody className="space-y-4 pb-4">
             {/* Basic Info */}
-            <DetailSection title="基本信息">
+            <DetailSection title={t('admin.nodes.detail.basicInfo')}>
               <DetailRow
                 icon={<Hash className="size-4" />}
-                label="节点 ID"
+                label={t('admin.nodes.detail.nodeId')}
                 value={<span className="font-mono text-xs">{node.id}</span>}
               />
               <DetailRow
                 icon={<Server className="size-4" />}
-                label="服务器地址"
+                label={t('admin.nodes.detail.serverAddress')}
                 value={
                   <span className="font-mono text-xs">
                     {node.serverAddress || systemStatus?.publicIpv4 || '-'}:{node.agentPort}
                     {node.subscriptionPort && node.subscriptionPort !== node.agentPort && (
-                      <span className="text-primary ml-2">(订阅: {node.subscriptionPort})</span>
+                      <span className="text-primary ml-2">({t('admin.nodes.detail.subscriptionPort')}: {node.subscriptionPort})</span>
                     )}
                     {!node.serverAddress && systemStatus?.publicIpv4 && (
-                      <span className="text-muted-foreground ml-2">(自动)</span>
+                      <span className="text-muted-foreground ml-2">({t('common.auto')})</span>
                     )}
                   </span>
                 }
@@ -426,7 +445,7 @@ export const NodeDetailSheet = ({
               {(systemStatus?.publicIpv4 || systemStatus?.publicIpv6) && (
                 <DetailRow
                   icon={<Globe className="size-4" />}
-                  label="公网 IP"
+                  label={t('admin.nodes.detail.publicIp')}
                   value={
                     <div className="space-y-0.5">
                       {systemStatus.publicIpv4 && (
@@ -443,7 +462,7 @@ export const NodeDetailSheet = ({
               )}
               <DetailRow
                 icon={<Globe className="size-4" />}
-                label="协议"
+                label={t('common.protocol')}
                 value={
                   <div className="flex items-center gap-2">
                     <span className={cn('px-2 py-0.5 text-xs font-medium rounded', protocolConfig.color)}>
@@ -484,7 +503,7 @@ export const NodeDetailSheet = ({
               {node.region && (
                 <DetailRow
                   icon={<Globe className="size-4" />}
-                  label="地区"
+                  label={t('admin.nodes.detail.region')}
                   value={node.region}
                 />
               )}
@@ -494,22 +513,22 @@ export const NodeDetailSheet = ({
             {!isConnected ? (
               <div className="flex items-center justify-center py-8">
                 <Loader2 className="size-6 animate-spin text-muted-foreground" />
-                <span className="ml-2 text-sm text-muted-foreground">正在建立实时连接...</span>
+                <span className="ml-2 text-sm text-muted-foreground">{t('admin.nodes.detail.establishingConnection')}</span>
               </div>
             ) : systemStatus ? (
-              <SystemStatusSection status={systemStatus} />
+              <SystemStatusSection status={systemStatus} t={t} />
             ) : (
               <div className="flex items-center justify-center py-8 text-sm text-muted-foreground">
-                暂无系统状态数据
+                {t('admin.forwardAgents.detail.noSystemStatusData')}
               </div>
             )}
 
             {/* Version Info */}
             {(node.agentVersion || node.systemStatus?.agentVersion) && (
-              <DetailSection title="版本信息">
+              <DetailSection title={t('admin.nodes.detail.version')}>
                 <DetailRow
                   icon={<ArrowUpCircle className="size-4" />}
-                  label="Agent 版本"
+                  label={t('admin.forwardAgents.detail.agentVersion')}
                   value={
                     <span className={cn('font-mono text-xs', node.hasUpdate ? 'text-warning' : '')}>
                       v{node.agentVersion || node.systemStatus?.agentVersion}
@@ -518,7 +537,7 @@ export const NodeDetailSheet = ({
                           ({node.platform || node.systemStatus?.platform}/{node.arch || node.systemStatus?.arch})
                         </span>
                       )}
-                      {node.hasUpdate && <span className="text-warning ml-2 font-normal">(可更新)</span>}
+                      {node.hasUpdate && <span className="text-warning ml-2 font-normal">({t('admin.nodes.updatable')})</span>}
                     </span>
                   }
                 />
@@ -527,7 +546,7 @@ export const NodeDetailSheet = ({
 
             {/* Tags */}
             {node.tags && node.tags.length > 0 && (
-              <DetailSection title="标签">
+              <DetailSection title={t('admin.nodes.detail.tags')}>
                 <div className="px-3 py-2.5">
                   <div className="flex items-start gap-3">
                     <Tag className="size-4 text-muted-foreground shrink-0 mt-0.5" />
@@ -545,7 +564,7 @@ export const NodeDetailSheet = ({
 
             {/* Resource Groups */}
             {node.groupIds && node.groupIds.length > 0 && (
-              <DetailSection title="资源组">
+              <DetailSection title={t('admin.resourceGroups.title')}>
                 <div className="px-3 py-2.5">
                   <div className="flex items-start gap-3">
                     <Server className="size-4 text-muted-foreground shrink-0 mt-0.5" />
@@ -565,15 +584,15 @@ export const NodeDetailSheet = ({
             )}
 
             {/* Timestamps */}
-            <DetailSection title="时间信息">
+            <DetailSection title={t('admin.nodes.detail.timeInfo')}>
               <DetailRow
                 icon={<Calendar className="size-4" />}
-                label="创建时间"
+                label={t('admin.nodes.detail.createdAt')}
                 value={formatDate(node.createdAt)}
               />
               <DetailRow
                 icon={<Activity className="size-4" />}
-                label="最后在线"
+                label={t('admin.nodes.detail.lastOnline')}
                 value={node.lastSeenAt ? formatDate(node.lastSeenAt) : '-'}
               />
             </DetailSection>
@@ -596,7 +615,7 @@ export const NodeDetailSheet = ({
                 )}
               >
                 <Edit className="size-4" />
-                编辑
+                {t('admin.nodes.actions.edit')}
               </button>
               <button
                 type="button"
@@ -621,12 +640,12 @@ export const NodeDetailSheet = ({
                 {node.status === 'active' ? (
                   <>
                     <PowerOff className="size-4" />
-                    停用
+                    {t('admin.nodes.actions.deactivate')}
                   </>
                 ) : (
                   <>
                     <Power className="size-4" />
-                    激活
+                    {t('admin.nodes.actions.activate')}
                   </>
                 )}
               </button>
@@ -652,7 +671,7 @@ export const NodeDetailSheet = ({
         open={actionSheetOpen}
         onOpenChange={setActionSheetOpen}
         actions={moreActions}
-        title="更多操作"
+        title={t('common.moreActions')}
       />
     </>
   );

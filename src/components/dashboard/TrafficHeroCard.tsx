@@ -4,6 +4,7 @@
  */
 
 import { useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
 import { RadialBarChart, RadialBar, ResponsiveContainer, PolarAngleAxis } from 'recharts';
 import { Activity, ArrowUp, ArrowDown } from 'lucide-react';
 import { Skeleton } from '@/components/common/Skeleton';
@@ -41,6 +42,7 @@ export const TrafficHeroCard = ({
   isLoading = false,
   className,
 }: TrafficHeroCardProps) => {
+  const { t } = useTranslation();
   // Calculate usage percentage
   const usagePercent = useMemo(() => {
     if (limit <= 0) return 0;
@@ -105,8 +107,8 @@ export const TrafficHeroCard = ({
           <Activity className="size-5 text-primary" />
         </div>
         <div>
-          <h3 className="font-semibold text-foreground">流量使用</h3>
-          <p className="text-xs text-muted-foreground">本月用量统计</p>
+          <h3 className="font-semibold text-foreground">{t('dashboard.traffic.title')}</h3>
+          <p className="text-xs text-muted-foreground">{t('dashboard.traffic.monthlyUsage')}</p>
         </div>
       </div>
 
@@ -153,7 +155,7 @@ export const TrafficHeroCard = ({
             {totalFormatted.unit} / {limitFormatted.value} {limitFormatted.unit}
           </span>
           <span className="text-xs text-muted-foreground mt-1">
-            {usagePercent.toFixed(1)}% 已使用
+            {usagePercent.toFixed(1)}{t('dashboard.traffic.percentUsed')}
           </span>
         </div>
       </div>
@@ -176,14 +178,14 @@ export const TrafficHeroCard = ({
       <div className="flex justify-between mt-3 text-sm">
         <span className="flex items-center gap-1.5 text-muted-foreground">
           <ArrowUp className="size-4 text-chart-upload" />
-          <span>上传</span>
+          <span>{t('dashboard.traffic.upload')}</span>
           <span className="font-semibold text-foreground tabular-nums">
             {uploadFormatted.value} {uploadFormatted.unit}
           </span>
         </span>
         <span className="flex items-center gap-1.5 text-muted-foreground">
           <ArrowDown className="size-4 text-chart-download" />
-          <span>下载</span>
+          <span>{t('dashboard.traffic.download')}</span>
           <span className="font-semibold text-foreground tabular-nums">
             {downloadFormatted.value} {downloadFormatted.unit}
           </span>

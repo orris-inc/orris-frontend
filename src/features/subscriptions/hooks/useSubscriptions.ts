@@ -4,7 +4,7 @@
  */
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useCallback } from 'react';
 import { queryKeys } from '@/shared/lib/query-client';
 import { useNotificationStore } from '@/shared/stores/notification-store';
 import { handleApiError } from '@/shared/lib/axios';
@@ -20,13 +20,19 @@ import {
   revokeToken,
   refreshToken as refreshSubscriptionToken,
 } from '@/api/subscription';
+import {
+  suspendSubscription,
+  unsuspendSubscription,
+  resetSubscriptionUsage,
+  type SuspendSubscriptionRequest,
+  type ResetSubscriptionUsageResponse,
+} from '@/api/admin';
 import { listUsers } from '@/api/user';
 import type {
   Subscription,
+  SubscriptionStatus,
   GenerateTokenRequest,
   ListTokensParams,
-} from '@/api/subscription/types';
-import type {
   AdminListSubscriptionsParams,
   AdminCreateSubscriptionRequest,
   AdminChangePlanRequest,
@@ -34,7 +40,7 @@ import type {
 import type { UserResponse } from '@/api/user/types';
 
 interface SubscriptionFilters {
-  status?: 'active' | 'cancelled' | 'renewed' | 'expired' | 'pending';
+  status?: SubscriptionStatus;
   userId?: string;
 }
 
@@ -139,6 +145,65 @@ export const useSubscription = (id: string | null) => {
   };
 };
 
+// Subscription actions hook (suspend, unsuspend, reset usage)
+export const useSubscriptionActions = () => {
+  const queryClient = useQueryClient();
+  const { showSuccess, showError } = useNotificationStore();
+
+  // Suspend subscription
+  const suspendMutation = useMutation({
+    mutationFn: ({ id, data }: { id: string; data: SuspendSubscriptionRequest }) =>
+      suspendSubscription(id, data),
+    onSuccess: () => {
+      showSuccess('订阅已暂停');
+      queryClient.invalidateQueries({ queryKey: queryKeys.subscriptions.lists() });
+    },
+    onError: (error) => {
+      showError(handleApiError(error));
+    },
+  });
+
+  // Unsuspend subscription
+  const unsuspendMutation = useMutation({
+    mutationFn: (id: string) => unsuspendSubscription(id),
+    onSuccess: () => {
+      showSuccess('订阅已恢复');
+      queryClient.invalidateQueries({ queryKey: queryKeys.subscriptions.lists() });
+    },
+    onError: (error) => {
+      showError(handleApiError(error));
+    },
+  });
+
+  // Reset subscription usage
+  const resetUsageMutation = useMutation({
+    mutationFn: (id: string) => resetSubscriptionUsage(id),
+    onSuccess: (data: ResetSubscriptionUsageResponse) => {
+      const message = data.wasSuspended
+        ? '订阅用量已重置，订阅已自动恢复'
+        : '订阅用量已重置';
+      showSuccess(message);
+      queryClient.invalidateQueries({ queryKey: queryKeys.subscriptions.lists() });
+    },
+    onError: (error) => {
+      showError(handleApiError(error));
+    },
+  });
+
+  return {
+    // Actions
+    suspend: (id: string, data: SuspendSubscriptionRequest) =>
+      suspendMutation.mutateAsync({ id, data }),
+    unsuspend: (id: string) => unsuspendMutation.mutateAsync(id),
+    resetUsage: (id: string) => resetUsageMutation.mutateAsync(id),
+
+    // Mutation state
+    isSuspending: suspendMutation.isPending,
+    isUnsuspending: unsuspendMutation.isPending,
+    isResettingUsage: resetUsageMutation.isPending,
+  };
+};
+
 // Subscription token management Hook
 export const useSubscriptionTokens = (subscriptionId: string | null, params?: ListTokensParams) => {
   const queryClient = useQueryClient();
@@ -208,7 +273,9 @@ export const useSubscriptionsPage = () => {
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(20);
   const [filters, setFilters] = useState<SubscriptionFilters>({});
-  const [selectedSubscription, setSelectedSubscription] = useState<Subscription | null>(null);
+  const [selectedSubscription, setSelectedSubscription] =
+    useState<Subscription | null>(null);
+  const queryClient = useQueryClient();
 
   const subscriptionsQuery = useSubscriptions({ page, pageSize, filters });
 
@@ -250,6 +317,29 @@ export const useSubscriptionsPage = () => {
     setPage(1);
   };
 
+  // Prefetch page data on hover
+  const prefetchPage = useCallback(
+    (targetPage: number) => {
+      const totalPages = subscriptionsQuery.pagination.totalPages;
+      if (targetPage < 1 || targetPage > totalPages || targetPage === page)
+        return;
+
+      const params: AdminListSubscriptionsParams = {
+        page: targetPage,
+        pageSize,
+        status: filters.status,
+        userId: filters.userId as unknown as number,
+      };
+
+      queryClient.prefetchQuery({
+        queryKey: queryKeys.subscriptions.list(params),
+        queryFn: () => adminListSubscriptions(params),
+        staleTime: 5 * 60 * 1000,
+      });
+    },
+    [queryClient, page, pageSize, filters, subscriptionsQuery.pagination.totalPages]
+  );
+
   return {
     ...subscriptionsQuery,
     page,
@@ -262,5 +352,6 @@ export const useSubscriptionsPage = () => {
     handlePageChange,
     handlePageSizeChange,
     handleFiltersChange,
+    prefetchPage,
   };
 };

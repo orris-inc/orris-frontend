@@ -4,6 +4,7 @@
  */
 
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { ToggleGroup, ToggleGroupItem } from '@/components/common/ToggleGroup';
 import type { PricingOption, BillingCycle } from '@/api/subscription/types';
 
@@ -13,14 +14,14 @@ interface PlanPricingSelectorProps {
   onPricingChange?: (pricing: PricingOption) => void;
 }
 
-// Billing cycle display name mapping
-const billingCycleLabels: Record<BillingCycle, string> = {
-  weekly: '周付',
-  monthly: '月付',
-  quarterly: '季付',
-  semi_annual: '半年付',
-  yearly: '年付',
-  lifetime: '终身',
+// Billing cycle key mapping for i18n
+const billingCycleKeyMap: Record<BillingCycle, string> = {
+  weekly: 'billingCycle.weekly',
+  monthly: 'billingCycle.monthly',
+  quarterly: 'billingCycle.quarterly',
+  semi_annual: 'billingCycle.semiAnnual',
+  yearly: 'billingCycle.yearly',
+  lifetime: 'billingCycle.lifetime',
 };
 
 export const PlanPricingSelector: React.FC<PlanPricingSelectorProps> = ({
@@ -28,6 +29,13 @@ export const PlanPricingSelector: React.FC<PlanPricingSelectorProps> = ({
   defaultBillingCycle,
   onPricingChange,
 }) => {
+  const { t } = useTranslation();
+
+  // Get billing cycle label from i18n
+  const getBillingCycleLabel = (cycle: BillingCycle) => {
+    return t(billingCycleKeyMap[cycle]);
+  };
+
   // Filter active pricing options
   const activePricings = pricings.filter((p) => p.isActive);
 
@@ -69,7 +77,7 @@ export const PlanPricingSelector: React.FC<PlanPricingSelectorProps> = ({
           {formatPrice(pricing.price, pricing.currency)}
         </div>
         <p className="text-sm text-muted-foreground mt-1">
-          {billingCycleLabels[pricing.billingCycle] || pricing.billingCycle}
+          {getBillingCycleLabel(pricing.billingCycle)}
         </p>
       </div>
     );
@@ -78,7 +86,7 @@ export const PlanPricingSelector: React.FC<PlanPricingSelectorProps> = ({
   // Multiple pricing options, show selector
   return (
     <div>
-      {/* 计费周期选择器 */}
+      {/* Billing cycle selector */}
       <ToggleGroup
         type="single"
         value={selectedPricing.billingCycle}
@@ -91,17 +99,17 @@ export const PlanPricingSelector: React.FC<PlanPricingSelectorProps> = ({
             value={pricing.billingCycle}
             className="text-xs"
           >
-            {billingCycleLabels[pricing.billingCycle] || pricing.billingCycle}
+            {getBillingCycleLabel(pricing.billingCycle)}
           </ToggleGroupItem>
         ))}
       </ToggleGroup>
 
-      {/* 选中的价格 */}
+      {/* Selected price */}
       <div className="text-3xl font-bold">
         {formatPrice(selectedPricing.price, selectedPricing.currency)}
       </div>
       <p className="text-sm text-muted-foreground mt-1">
-        {billingCycleLabels[selectedPricing.billingCycle] || selectedPricing.billingCycle}
+        {getBillingCycleLabel(selectedPricing.billingCycle)}
       </p>
     </div>
   );
