@@ -25,7 +25,6 @@ import {
   unsuspendSubscription,
   resetSubscriptionUsage,
   type SuspendSubscriptionRequest,
-  type ResetSubscriptionUsageResponse,
 } from '@/api/admin';
 import { listUsers } from '@/api/user';
 import type {
@@ -178,11 +177,8 @@ export const useSubscriptionActions = () => {
   // Reset subscription usage
   const resetUsageMutation = useMutation({
     mutationFn: (id: string) => resetSubscriptionUsage(id),
-    onSuccess: (data: ResetSubscriptionUsageResponse) => {
-      const message = data.wasSuspended
-        ? '订阅用量已重置，订阅已自动恢复'
-        : '订阅用量已重置';
-      showSuccess(message);
+    onSuccess: () => {
+      showSuccess('订阅用量已重置');
       queryClient.invalidateQueries({ queryKey: queryKeys.subscriptions.lists() });
     },
     onError: (error) => {

@@ -180,11 +180,8 @@ export const SubscriptionManagementPage: React.FC = () => {
 
   const handleResetUsage = async (subscription: Subscription) => {
     try {
-      const result = await resetSubscriptionUsage(subscription.id);
-      const message = result.wasSuspended
-        ? t('messages.subscriptionUsageResetAndUnsuspended')
-        : t('messages.subscriptionUsageReset');
-      showSuccess(message);
+      await resetSubscriptionUsage(subscription.id);
+      showSuccess(t('messages.subscriptionUsageReset'));
       refetch();
     } catch {
       showError(t('messages.subscriptionUsageResetFailed'));

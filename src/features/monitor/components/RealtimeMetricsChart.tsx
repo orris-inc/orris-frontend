@@ -505,7 +505,7 @@ export const RealtimeMetricsChart = memo(({
                       const isDisabled = !isSelected && selectedEntityIds.length >= MAX_ENTITIES;
                       const entityChartData = getEntityChartData(entity.id);
                       const sparklineData = entityChartData.slice(-10).map(d => d.cpu);
-                      const sparklineColor = isSelected ? getEntityColor(selectedIndex) : '#94a3b8';
+                      const sparklineColor = isSelected ? getEntityColor(selectedIndex) : 'var(--color-chart-muted)';
 
                       return (
                         <label

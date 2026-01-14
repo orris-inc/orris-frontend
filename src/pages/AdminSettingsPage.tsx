@@ -94,8 +94,8 @@ export const AdminSettingsPage = () => {
               {/* Header */}
               <div className="flex items-center justify-between p-5 pb-4 border-b border-border/50">
                 <div className="flex items-center gap-3">
-                  <div className="p-2.5 rounded-xl bg-[#26A5E4]/10 ring-1 ring-[#26A5E4]/20">
-                    <Send className="size-5 text-[#26A5E4]" strokeWidth={1.5} />
+                  <div className="p-2.5 rounded-xl bg-[brand-telegram]/10 ring-1 ring-[brand-telegram]/20">
+                    <Send className="size-5 text-[brand-telegram]" strokeWidth={1.5} />
                   </div>
                   <div>
                     <h3 className="font-semibold text-foreground">

@@ -196,8 +196,8 @@ export const TelegramSettingsForm = ({
       {/* Enable/Disable */}
       <div className="flex items-center justify-between py-3 -mx-2 px-2 rounded-lg hover:bg-accent/50 transition-colors duration-150">
         <div className="flex items-center gap-3">
-          <div className="p-2 rounded-lg bg-[#26A5E4]/10">
-            <Send className="size-4 text-[#26A5E4]" />
+          <div className="p-2 rounded-lg bg-[brand-telegram]/10">
+            <Send className="size-4 text-[brand-telegram]" />
           </div>
           <div>
             <div className="text-sm font-medium text-foreground">
@@ -303,7 +303,7 @@ export const TelegramSettingsForm = ({
               href={config.botLink}
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center gap-1 text-[#26A5E4] hover:underline ml-auto"
+              className="inline-flex items-center gap-1 text-[brand-telegram] hover:underline ml-auto"
             >
               {config.botLink.replace("https://t.me/", "@")}
               <ExternalLink className="size-3" />

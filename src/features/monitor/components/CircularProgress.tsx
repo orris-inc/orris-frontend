@@ -36,28 +36,47 @@ export const CircularProgress = memo(({
   // Generate unique ID for gradients
   const gradientId = useMemo(() => `gauge-gradient-${Math.random().toString(36).slice(2, 9)}`, []);
 
-  // Determine colors based on value or mode
+  // Determine colors based on value or mode using CSS variables
   const colors = useMemo(() => {
+    // Color configurations using CSS variables
+    const colorConfigs = {
+      success: {
+        start: 'var(--color-progress-success-start)',
+        end: 'var(--color-progress-success-end)',
+        text: 'text-success',
+        glow: 'hsl(var(--progress-success-start) / 0.4)',
+      },
+      warning: {
+        start: 'var(--color-progress-warning-start)',
+        end: 'var(--color-progress-warning-end)',
+        text: 'text-warning',
+        glow: 'hsl(var(--progress-warning-start) / 0.4)',
+      },
+      danger: {
+        start: 'var(--color-progress-danger-start)',
+        end: 'var(--color-progress-danger-end)',
+        text: 'text-destructive',
+        glow: 'hsl(var(--progress-danger-start) / 0.4)',
+      },
+      info: {
+        start: 'var(--color-progress-info-start)',
+        end: 'var(--color-progress-info-end)',
+        text: 'text-info',
+        glow: 'hsl(var(--progress-info-start) / 0.4)',
+      },
+    };
+
     if (colorMode !== 'auto') {
-      switch (colorMode) {
-        case 'success':
-          return { start: '#22c55e', end: '#10b981', text: 'text-success', glow: 'rgba(34, 197, 94, 0.4)' };
-        case 'warning':
-          return { start: '#f59e0b', end: '#eab308', text: 'text-warning', glow: 'rgba(245, 158, 11, 0.4)' };
-        case 'danger':
-          return { start: '#ef4444', end: '#f97316', text: 'text-destructive', glow: 'rgba(239, 68, 68, 0.4)' };
-        case 'info':
-          return { start: '#3b82f6', end: '#06b6d4', text: 'text-info', glow: 'rgba(59, 130, 246, 0.4)' };
-      }
+      return colorConfigs[colorMode];
     }
     // Auto color based on value thresholds
     if (clampedValue >= 90) {
-      return { start: '#ef4444', end: '#f97316', text: 'text-destructive', glow: 'rgba(239, 68, 68, 0.4)' };
+      return colorConfigs.danger;
     }
     if (clampedValue >= 75) {
-      return { start: '#f59e0b', end: '#eab308', text: 'text-warning', glow: 'rgba(245, 158, 11, 0.4)' };
+      return colorConfigs.warning;
     }
-    return { start: '#22c55e', end: '#10b981', text: 'text-success', glow: 'rgba(34, 197, 94, 0.4)' };
+    return colorConfigs.success;
   }, [colorMode, clampedValue]);
 
   return (

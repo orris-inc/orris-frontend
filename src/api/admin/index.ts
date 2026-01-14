@@ -70,10 +70,7 @@ export {
 } from './client';
 
 // Types - Admin Subscription Management (Added 2025-01-14)
-export type {
-  SuspendSubscriptionRequest,
-  ResetSubscriptionUsageResponse,
-} from './types';
+export type { SuspendSubscriptionRequest } from './types';
 
 // API functions - Admin Subscription Management (Added 2025-01-14)
 export {

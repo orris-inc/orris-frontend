@@ -69,6 +69,26 @@
   --color-rank-bronze: hsl(var(--rank-bronze));
   --color-rank-bronze-muted: hsl(var(--rank-bronze-muted));
 
+  /* 品牌色 */
+  --color-brand-telegram: hsl(var(--brand-telegram));
+  --color-brand-google-blue: var(--brand-google-blue);
+  --color-brand-google-green: var(--brand-google-green);
+  --color-brand-google-yellow: var(--brand-google-yellow);
+  --color-brand-google-red: var(--brand-google-red);
+
+  /* 进度条渐变色 */
+  --color-progress-success-start: hsl(var(--progress-success-start));
+  --color-progress-success-end: hsl(var(--progress-success-end));
+  --color-progress-warning-start: hsl(var(--progress-warning-start));
+  --color-progress-warning-end: hsl(var(--progress-warning-end));
+  --color-progress-danger-start: hsl(var(--progress-danger-start));
+  --color-progress-danger-end: hsl(var(--progress-danger-end));
+  --color-progress-info-start: hsl(var(--progress-info-start));
+  --color-progress-info-end: hsl(var(--progress-info-end));
+
+  /* 图表辅助色 */
+  --color-chart-muted: hsl(var(--chart-muted));
+
   /* 圆角 - 使用更大的圆角 */
   --radius-lg: 1rem;
   --radius-md: 0.75rem;
@@ -331,6 +351,28 @@
     --rank-silver: 220 9% 46%;
     --rank-bronze: 25 95% 53%;
     --rank-bronze-muted: 33 100% 96%;
+
+    /* 品牌色 - Telegram */
+    --brand-telegram: 200 79% 52%;
+
+    /* 品牌色 - Google (保持 hex 格式以符合品牌规范) */
+    --brand-google-blue: #4285F4;
+    --brand-google-green: #34A853;
+    --brand-google-yellow: #FBBC05;
+    --brand-google-red: #EA4335;
+
+    /* 进度条渐变色 */
+    --progress-success-start: 142 71% 45%;
+    --progress-success-end: 160 84% 39%;
+    --progress-warning-start: 38 92% 50%;
+    --progress-warning-end: 48 96% 47%;
+    --progress-danger-start: 0 84% 60%;
+    --progress-danger-end: 25 95% 53%;
+    --progress-info-start: 217 91% 60%;
+    --progress-info-end: 187 92% 43%;
+
+    /* 图表辅助色 */
+    --chart-muted: 215 16% 62%;
   }
 
   .dark {
@@ -408,6 +450,28 @@
     --rank-silver: 220 9% 55%;
     --rank-bronze: 25 95% 60%;
     --rank-bronze-muted: 25 50% 15%;
+
+    /* 品牌色 - Telegram (深色模式保持一致) */
+    --brand-telegram: 200 79% 52%;
+
+    /* 品牌色 - Google (保持 hex 格式以符合品牌规范) */
+    --brand-google-blue: #4285F4;
+    --brand-google-green: #34A853;
+    --brand-google-yellow: #FBBC05;
+    --brand-google-red: #EA4335;
+
+    /* 进度条渐变色 - 深色模式更亮 */
+    --progress-success-start: 142 71% 50%;
+    --progress-success-end: 160 84% 45%;
+    --progress-warning-start: 38 92% 55%;
+    --progress-warning-end: 48 96% 52%;
+    --progress-danger-start: 0 84% 65%;
+    --progress-danger-end: 25 95% 58%;
+    --progress-info-start: 217 91% 65%;
+    --progress-info-end: 187 92% 48%;
+
+    /* 图表辅助色 */
+    --chart-muted: 215 16% 55%;
 
     /* iOS 26 Liquid Glass - Dark Mode */
     --glass-bg: rgba(30, 30, 35, 0.72);

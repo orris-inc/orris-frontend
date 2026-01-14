@@ -64,13 +64,13 @@ export const VerifyCodeSection = ({
             href={botLink}
             target="_blank"
             rel="noopener noreferrer"
-            className="text-[#26A5E4] hover:underline inline-flex items-center gap-0.5"
+            className="text-brand-telegram hover:underline inline-flex items-center gap-0.5"
           >
             {botUsername}
             <ExternalLink className="size-3" />
           </a>
         ) : (
-          <span className="text-[#26A5E4]">{botUsername}</span>
+          <span className="text-brand-telegram">{botUsername}</span>
         )}
         {t("notifications.telegram.verifyInstruction2")}
       </p>

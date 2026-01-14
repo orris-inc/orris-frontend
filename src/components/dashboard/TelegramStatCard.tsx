@@ -18,7 +18,7 @@ interface TelegramStatCardProps {
 
 /**
  * Telegram icon component using official brand colors
- * Brand color: #26A5E4 (Telegram Blue)
+ * Brand color: brand-telegram (Telegram Blue)
  */
 const TelegramIcon = ({ className }: { className?: string }) => (
   <Send className={cn('size-5', className)} />
@@ -59,7 +59,7 @@ export const TelegramStatCard = ({
         status: t('notifications.status.bound'),
         statusClass: 'text-success',
         subtitle: username ? `@${username}` : t('notifications.telegram.receivingNotifications'),
-        iconBgClass: 'bg-[#26A5E4]/10 ring-[#26A5E4]/20',
+        iconBgClass: 'bg-[brand-telegram]/10 ring-[brand-telegram]/20',
       }
     : {
         status: t('notifications.status.unbound'),
@@ -74,7 +74,7 @@ export const TelegramStatCard = ({
       className={cn(
         'col-span-2 md:col-span-3',
         'p-5 rounded-xl bg-card border',
-        'transition-all hover:shadow-md hover:border-[#26A5E4]/30',
+        'transition-all hover:shadow-md hover:border-[brand-telegram]/30',
         'cursor-pointer group',
         className
       )}
@@ -83,7 +83,7 @@ export const TelegramStatCard = ({
       <div className="flex items-center justify-between mb-3">
         <div className="flex items-center gap-3">
           <div className={cn('p-2 rounded-lg ring-1', statusConfig.iconBgClass)}>
-            <TelegramIcon className={isBound ? 'text-[#26A5E4]' : 'text-muted-foreground'} />
+            <TelegramIcon className={isBound ? 'text-[brand-telegram]' : 'text-muted-foreground'} />
           </div>
           <span className="text-sm text-muted-foreground">Telegram</span>
         </div>

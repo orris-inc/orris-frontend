@@ -80,11 +80,11 @@ export const TelegramBindingCard = () => {
           <div className="flex items-center gap-3">
             <div className={cn(
               'p-2 rounded-lg',
-              isBound ? 'bg-[#26A5E4]/10' : 'bg-muted'
+              isBound ? 'bg-brand-telegram/10' : 'bg-muted'
             )}>
               <Send className={cn(
                 'size-5',
-                isBound ? 'text-[#26A5E4]' : 'text-muted-foreground'
+                isBound ? 'text-brand-telegram' : 'text-muted-foreground'
               )} />
             </div>
             <div>
