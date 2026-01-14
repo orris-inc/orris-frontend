@@ -1,7 +1,8 @@
+import path from 'path'
+
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import tailwindcss from '@tailwindcss/vite'
-import path from 'path'
 
 // Version from package.json, can be overridden by CI via environment variable
 const version =
@@ -40,85 +41,37 @@ export default defineConfig({
     chunkSizeWarningLimit: 500,
     rollupOptions: {
       output: {
-        // Manual chunk splitting strategy for optimal caching
+        // Manual chunk splitting strategy
+        // IMPORTANT: manualChunks can cause loading order issues with React dependencies
+        // Vite's preload order doesn't respect dependency chains, causing errors like:
+        // "Cannot read properties of undefined (reading 'forwardRef'/'createContext')"
+        //
+        // Solution: Only split chunks that have NO React dependency whatsoever.
+        // Let Vite handle React-dependent libraries automatically.
         manualChunks: (id) => {
-          // React core - shared by all pages
-          if (
-            id.includes('node_modules/react/') ||
-            id.includes('node_modules/react-dom/') ||
-            id.includes('node_modules/scheduler/')
-          ) {
-            return 'react-core'
-          }
-
-          // React Router
-          if (id.includes('node_modules/react-router')) {
-            return 'react-router'
-          }
-
-          // UI framework - Radix UI components
-          if (id.includes('node_modules/@radix-ui/')) {
-            return 'radix-ui'
-          }
-
-          // Charts library - lazy loaded with chart pages
-          if (
-            id.includes('node_modules/recharts/') ||
-            id.includes('node_modules/d3-')
-          ) {
-            return 'charts'
-          }
-
-          // Animation library
-          if (id.includes('node_modules/framer-motion/')) {
-            return 'animations'
-          }
-
-          // TanStack libraries
-          if (id.includes('node_modules/@tanstack/')) {
-            return 'tanstack'
-          }
-
-          // Form handling
-          if (
-            id.includes('node_modules/react-hook-form/') ||
-            id.includes('node_modules/@hookform/') ||
-            id.includes('node_modules/zod/')
-          ) {
-            return 'forms'
-          }
-
-          // i18n
-          if (
-            id.includes('node_modules/i18next') ||
-            id.includes('node_modules/react-i18next')
-          ) {
-            return 'i18n'
-          }
-
-          // State management
-          if (id.includes('node_modules/zustand/')) {
-            return 'state'
-          }
-
-          // HTTP client
+          // HTTP client - no React dependency, safe to split
           if (id.includes('node_modules/axios/')) {
-            return 'http'
+            return 'vendor-http'
           }
 
-          // Icons
-          if (id.includes('node_modules/lucide-react/')) {
-            return 'icons'
+          // Zod - no React dependency, safe to split
+          if (id.includes('node_modules/zod/')) {
+            return 'vendor-validation'
           }
 
-          // Utilities
+          // Utilities - no React dependency, safe to split
           if (
             id.includes('node_modules/clsx/') ||
             id.includes('node_modules/tailwind-merge/') ||
             id.includes('node_modules/class-variance-authority/')
           ) {
-            return 'utils'
+            return 'vendor-utils'
           }
+
+          // All other libraries (React, React Router, Radix UI, recharts, framer-motion,
+          // react-hook-form, i18next, react-i18next, zustand, lucide-react, tanstack, etc.)
+          // are NOT manually chunked to avoid loading order issues.
+          // Vite will handle them correctly via automatic code splitting.
         },
         // Consistent chunk naming
         chunkFileNames: 'assets/[name]-[hash].js',
