@@ -102,11 +102,12 @@ export const navigationConfig: readonly NavigationItem[] = [
   {
     id: 'pricing',
     labelKey: 'nav.pricing',
-    path: '/pricing',
+    path: '/dashboard/pricing',
     icon: DollarSign,
     roles: ['user', 'admin'],
     showInNav: true,
     showInBreadcrumb: true,
+    parentId: 'dashboard',
     order: 5,
   },
   {

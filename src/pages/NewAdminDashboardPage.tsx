@@ -1,6 +1,7 @@
 /**
- * Admin Dashboard - Refined Business Style
+ * Admin Dashboard - Modern Bento Grid Design
  * Uses real API data with traffic analytics
+ * Desktop-first responsive design with Bento Grid layout
  */
 
 import { useState } from 'react';
@@ -9,7 +10,6 @@ import { useNavigate } from 'react-router';
 import { AdminLayout } from '@/layouts/AdminLayout';
 import { useAuthStore } from '@/features/auth/stores/auth-store';
 import { usePageTitle } from '@/shared/hooks';
-import { useBreakpoint, useVersionInfo } from '@/hooks';
 import {
   useAdminTrafficStats,
   useNodeTrafficStats,
@@ -24,7 +24,6 @@ import {
   TrafficRankingList,
   NodeTrafficStats,
 } from '@/components/admin';
-import { MobileAdminDashboard } from '@/components/mobile/admin';
 import {
   Users,
   CreditCard,
@@ -33,71 +32,141 @@ import {
   ArrowDown,
   Server,
   Activity,
+  Settings,
+  Monitor,
+  Boxes,
+  ArrowLeftRight,
+  type LucideIcon,
 } from 'lucide-react';
 import { formatTrafficBytes } from '@/api/admin';
-import { Separator } from '@/components/common/Separator';
+import { cn } from '@/lib/utils';
 
-// ============ Stats Card Component ============
-// Uses container queries for component-level responsiveness
-interface StatsCardProps {
+// ============================================================================
+// Types
+// ============================================================================
+
+interface BentoStatCardProps {
   title: string;
   value: string;
-  icon: React.ReactNode;
+  icon: LucideIcon;
   iconBg: string;
   iconColor: string;
   loading?: boolean;
+  large?: boolean;
+  className?: string;
 }
 
-const StatsCard = ({
-  title,
-  value,
-  icon,
-  iconBg,
-  iconColor,
-  loading,
-}: StatsCardProps) => {
-  return (
-    <div className="@container group relative overflow-hidden bg-card rounded-lg border border-border hover:bg-accent/30 transition-colors duration-150">
-      {/* Responsive padding: compact by default, larger when container allows */}
-      <div className="relative z-10 flex items-center gap-1.5 @[120px]:gap-2 px-2 py-1.5 @[120px]:px-2.5 @[120px]:py-2 @[180px]:px-3">
-        {/* Icon: scales with container */}
-        <div className={`${iconBg} p-1 @[120px]:p-1.5 @[180px]:p-2 rounded-md shrink-0`}>
-          <div className={`${iconColor} [&>svg]:size-3.5 @[120px]:[&>svg]:size-4 @[180px]:[&>svg]:size-5`}>
-            {icon}
-          </div>
-        </div>
-        {/* Content area */}
-        <div className="min-w-0 flex-1">
-          <div className="text-xs @[120px]:text-sm @[180px]:text-base font-semibold text-foreground tracking-tight tabular-nums truncate leading-tight">
-            {loading ? (
-              <div className="h-3 @[120px]:h-4 w-8 @[120px]:w-10 bg-muted rounded animate-pulse" />
-            ) : (
-              value
-            )}
-          </div>
-          <div className="text-[9px] @[120px]:text-[10px] @[180px]:text-xs font-medium text-muted-foreground truncate leading-tight">
-            {title}
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-};
-
-// ============ Quick Action Card ============
-// Uses container queries for component-level responsiveness
 interface QuickActionCardProps {
   title: string;
   description: string;
-  icon: React.ReactNode;
+  icon: LucideIcon;
   iconBg: string;
   iconColor: string;
   onClick: () => void;
 }
 
+type StatusType = 'online' | 'warning' | 'offline';
+
+interface SystemStatusProps {
+  label: string;
+  status: StatusType;
+  value: string;
+  icon: LucideIcon;
+}
+
+interface StatusConfig {
+  dot: string;
+  text: string;
+  bg: string;
+  iconColor: string;
+  pulse: boolean;
+}
+
+// ============================================================================
+// Bento Stat Card Component
+// ============================================================================
+
+const BentoStatCard = ({
+  title,
+  value,
+  icon: Icon,
+  iconBg,
+  iconColor,
+  loading,
+  large = false,
+  className,
+}: BentoStatCardProps) => {
+  if (loading) {
+    return (
+      <div
+        className={cn(
+          '@container rounded-xl bg-card border border-border',
+          'transition-shadow hover:shadow-md',
+          large ? 'p-5 @sm:p-6' : 'p-4 @sm:p-5',
+          className
+        )}
+      >
+        <div className={cn('flex items-center mb-3', large ? 'gap-3' : 'gap-2')}>
+          <div className={cn('rounded-lg bg-muted animate-pulse', large ? 'size-9' : 'size-8')} />
+          <div className="h-4 w-16 bg-muted rounded animate-pulse" />
+        </div>
+        <div className={cn('w-20 bg-muted rounded animate-pulse', large ? 'h-8' : 'h-6')} />
+      </div>
+    );
+  }
+
+  return (
+    <div
+      className={cn(
+        '@container rounded-xl bg-card border border-border',
+        'transition-all duration-200 hover:shadow-md hover:border-border/80',
+        large ? 'p-5 @sm:p-6' : 'p-4 @sm:p-5',
+        className
+      )}
+    >
+      {/* Header with icon */}
+      <div className={cn('flex items-center', large ? 'gap-3 mb-4' : 'gap-2.5 mb-3')}>
+        <div
+          className={cn(
+            'rounded-lg ring-1 ring-inset',
+            large ? 'p-2.5' : 'p-2',
+            iconBg,
+            iconBg.includes('/') ? 'ring-current/20' : 'ring-border'
+          )}
+        >
+          <Icon
+            className={cn(large ? 'size-5' : 'size-4', iconColor)}
+            strokeWidth={1.5}
+          />
+        </div>
+        <span className={cn('text-muted-foreground font-medium', large ? 'text-sm' : 'text-xs')}>
+          {title}
+        </span>
+      </div>
+
+      {/* Value */}
+      <div className="flex items-baseline gap-1">
+        <span
+          className={cn(
+            'font-semibold tabular-nums text-foreground tracking-tight',
+            large ? 'text-3xl @sm:text-4xl font-bold' : 'text-2xl @sm:text-3xl'
+          )}
+        >
+          {value}
+        </span>
+      </div>
+    </div>
+  );
+};
+
+// ============================================================================
+// Quick Action Card Component
+// ============================================================================
+
 const QuickActionCard = ({
   title,
-  icon,
+  description,
+  icon: Icon,
   iconBg,
   iconColor,
   onClick,
@@ -105,84 +174,93 @@ const QuickActionCard = ({
   return (
     <button
       onClick={onClick}
-      className="@container group w-full text-left rounded-lg overflow-hidden relative bg-card border border-border hover:bg-accent/30 hover:border-primary/30 transition-colors duration-150 cursor-pointer"
+      className={cn(
+        '@container group w-full text-left rounded-xl overflow-hidden relative',
+        'bg-card border border-border',
+        'hover:bg-accent/30 hover:border-primary/30',
+        'active:bg-accent/50',
+        'transition-all duration-200',
+        'cursor-pointer p-3 @sm:p-4',
+        'min-h-[44px]' // Touch target
+      )}
     >
-      {/* Responsive padding and layout */}
-      <div className="relative z-10 flex items-center gap-2 @[200px]:gap-2.5 px-2.5 py-2 @[200px]:px-3 @[200px]:py-2.5">
+      <div className="flex items-center gap-2 @sm:gap-3">
         <div
-          className={`${iconBg} p-1.5 @[200px]:p-2 rounded-md @[200px]:rounded-lg group-hover:scale-105 transition-transform duration-150 shrink-0`}
+          className={cn(
+            'p-2 @sm:p-2.5 rounded-lg @sm:rounded-xl',
+            'group-hover:scale-105 transition-transform duration-200',
+            'shrink-0',
+            iconBg
+          )}
         >
-          <div className={`${iconColor} [&>svg]:size-4 @[200px]:[&>svg]:size-5`}>
-            {icon}
-          </div>
+          <Icon className={cn('size-4 @sm:size-5', iconColor)} strokeWidth={1.5} />
         </div>
 
         <div className="flex-1 min-w-0">
-          <h3 className="text-xs @[200px]:text-sm font-medium text-foreground group-hover:text-primary transition-colors duration-150 truncate">
+          <h3 className="text-xs @sm:text-sm font-medium text-foreground group-hover:text-primary transition-colors duration-200 truncate">
             {title}
           </h3>
+          <p className="text-[10px] @sm:text-xs text-muted-foreground truncate mt-0.5 hidden @sm:block">
+            {description}
+          </p>
         </div>
 
-        <ArrowUpRight className="size-3.5 @[200px]:size-4 text-muted-foreground group-hover:text-primary transition-colors duration-150 shrink-0" />
+        <ArrowUpRight className="size-3.5 @sm:size-4 text-muted-foreground group-hover:text-primary transition-colors duration-200 shrink-0" />
       </div>
     </button>
   );
 };
 
-// ============ System Status ============
-interface SystemStatusProps {
-  label: string;
-  status: 'online' | 'warning' | 'offline';
-  value: string;
-  icon: React.ReactNode;
-}
+// ============================================================================
+// System Status Component
+// ============================================================================
 
-const SystemStatus = ({ label, status, value, icon }: SystemStatusProps) => {
-  const statusConfig = {
-    online: {
-      dot: 'bg-status-online',
-      text: 'text-success',
-      bg: 'bg-success-muted',
-      iconColor: 'text-success',
-      pulse: true,
-    },
-    warning: {
-      dot: 'bg-status-warning',
-      text: 'text-warning',
-      bg: 'bg-warning-muted',
-      iconColor: 'text-warning',
-      pulse: true,
-    },
-    offline: {
-      dot: 'bg-status-offline',
-      text: 'text-destructive',
-      bg: 'bg-destructive/10',
-      iconColor: 'text-destructive',
-      pulse: false,
-    },
-  };
+const STATUS_CONFIG: Record<StatusType, StatusConfig> = {
+  online: {
+    dot: 'bg-status-online',
+    text: 'text-success',
+    bg: 'bg-success/10',
+    iconColor: 'text-success',
+    pulse: true,
+  },
+  warning: {
+    dot: 'bg-status-warning',
+    text: 'text-warning',
+    bg: 'bg-warning/10',
+    iconColor: 'text-warning',
+    pulse: true,
+  },
+  offline: {
+    dot: 'bg-status-offline',
+    text: 'text-destructive',
+    bg: 'bg-destructive/10',
+    iconColor: 'text-destructive',
+    pulse: false,
+  },
+} as const;
 
-  const config = statusConfig[status];
+const SystemStatus = ({ label, status, value, icon: Icon }: SystemStatusProps) => {
+  const config = STATUS_CONFIG[status];
 
   return (
-    <div className="flex items-center justify-between py-2.5 border-b border-border last:border-0 group hover:bg-accent/30 -mx-2 px-2 rounded transition-colors duration-150">
-      <div className="flex items-center gap-2">
-        <div className={`p-1.5 rounded-md ${config.bg}`}>
-          <div className={config.iconColor}>{icon}</div>
+    <div className="flex items-center justify-between py-3 border-b border-border/50 last:border-0 group hover:bg-accent/30 -mx-3 px-3 rounded-lg transition-colors duration-150">
+      <div className="flex items-center gap-2.5">
+        <div className={cn('p-2 rounded-lg', config.bg)}>
+          <Icon className={cn('size-4', config.iconColor)} strokeWidth={1.5} />
         </div>
         <span className="text-sm font-medium text-foreground">
           {label}
         </span>
       </div>
-      <div className="flex items-center gap-2">
-        <span className={`text-xs font-semibold px-2 py-0.5 rounded ${config.text} ${config.bg}`}>
+      <div className="flex items-center gap-2.5">
+        <span className={cn('text-xs font-semibold px-2.5 py-1 rounded-full', config.text, config.bg)}>
           {value}
         </span>
         <div className="relative flex items-center justify-center">
-          <div className={`size-2 rounded-full ${config.dot}`} />
+          <div className={cn('size-2.5 rounded-full', config.dot)} />
           {config.pulse && (
             <div
-              className={`absolute inset-0 rounded-full ${config.dot} animate-ping opacity-30`}
+              className={cn('absolute inset-0 rounded-full animate-ping opacity-30', config.dot)}
             />
           )}
         </div>
@@ -191,15 +269,33 @@ const SystemStatus = ({ label, status, value, icon }: SystemStatusProps) => {
   );
 };
 
-// ============ Main Page Component ============
+// ============================================================================
+// Section Header Component
+// ============================================================================
+
+interface SectionHeaderProps {
+  title: string;
+  action?: React.ReactNode;
+  className?: string;
+}
+
+const SectionHeader = ({ title, action, className }: SectionHeaderProps) => (
+  <div className={cn('flex items-center justify-between mb-4', className)}>
+    <h2 className="text-lg font-semibold text-foreground tracking-tight">{title}</h2>
+    {action}
+  </div>
+);
+
+// ============================================================================
+// Main Page Component
+// ============================================================================
+
 export const NewAdminDashboardPage = () => {
   const { t } = useTranslation();
   usePageTitle(t('admin.dashboard.title'));
 
   const { user } = useAuthStore();
   const navigate = useNavigate();
-  const { isMobile } = useBreakpoint();
-  const { serverVersion, clientVersion } = useVersionInfo();
   const { stats, loading } = useDashboardStats();
 
   // Traffic analytics state
@@ -242,49 +338,38 @@ export const NewAdminDashboardPage = () => {
     );
   }
 
-  // Mobile view - optimized for touch interactions
-  if (isMobile) {
-    return (
-      <AdminLayout>
-        <MobileAdminDashboard
-          userName={user.displayName || user.email?.split('@')[0]}
-          serverVersion={serverVersion ?? undefined}
-          clientVersion={clientVersion}
-          stats={stats}
-          trafficOverview={trafficOverview ?? undefined}
-          trafficTrend={trafficTrend ?? undefined}
-          dateRangePreset={dateRangePreset}
-          onDateRangeChange={setDateRangePreset}
-          granularity={granularity}
-          loading={loading}
-          trafficLoading={isTrafficLoading}
-        />
-      </AdminLayout>
-    );
-  }
+  // Node online rate calculation
+  const nodeOnlineRate =
+    stats.totalNodes > 0
+      ? Math.round((stats.activeNodes / stats.totalNodes) * 100)
+      : 0;
 
-  // Combined stats cards - basic stats + traffic stats in one row
-  const statsCards = [
+  // Stats cards data - Primary metrics (large cards)
+  const primaryStats = [
     {
       title: t('admin.stats.totalUsers'),
       value: stats.totalUsers.toLocaleString(),
-      icon: <Users className="size-4" strokeWidth={1.5} />,
-      iconBg: 'bg-info-muted',
+      icon: Users,
+      iconBg: 'bg-info/10',
       iconColor: 'text-info',
       loading,
     },
     {
       title: t('admin.stats.totalSubscriptions'),
       value: stats.activeSubscriptions.toLocaleString(),
-      icon: <CreditCard className="size-4" strokeWidth={1.5} />,
-      iconBg: 'bg-success-muted',
+      icon: CreditCard,
+      iconBg: 'bg-success/10',
       iconColor: 'text-success',
       loading,
     },
+  ];
+
+  // Secondary stats - Nodes and traffic
+  const secondaryStats = [
     {
       title: t('admin.stats.totalNodes'),
       value: stats.totalNodes.toLocaleString(),
-      icon: <Server className="size-4" strokeWidth={1.5} />,
+      icon: Server,
       iconBg: 'bg-primary/10',
       iconColor: 'text-primary',
       loading,
@@ -292,15 +377,15 @@ export const NewAdminDashboardPage = () => {
     {
       title: t('admin.stats.onlineNodes'),
       value: stats.activeNodes.toLocaleString(),
-      icon: <Activity className="size-4" strokeWidth={1.5} />,
-      iconBg: 'bg-warning-muted',
+      icon: Activity,
+      iconBg: 'bg-warning/10',
       iconColor: 'text-warning',
       loading,
     },
     {
       title: t('admin.stats.totalUpload'),
       value: trafficOverview ? formatTrafficBytes(trafficOverview.totalUpload) : '-',
-      icon: <ArrowUp className="size-4" strokeWidth={1.5} />,
+      icon: ArrowUp,
       iconBg: 'bg-chart-upload/10',
       iconColor: 'text-chart-upload',
       loading: isTrafficLoading,
@@ -308,61 +393,66 @@ export const NewAdminDashboardPage = () => {
     {
       title: t('admin.stats.totalDownload'),
       value: trafficOverview ? formatTrafficBytes(trafficOverview.totalDownload) : '-',
-      icon: <ArrowDown className="size-4" strokeWidth={1.5} />,
+      icon: ArrowDown,
       iconBg: 'bg-chart-download/10',
       iconColor: 'text-chart-download',
       loading: isTrafficLoading,
     },
-    {
-      title: t('admin.stats.totalTraffic'),
-      value: trafficOverview ? formatTrafficBytes(trafficOverview.totalTraffic) : '-',
-      icon: <Activity className="size-4" strokeWidth={1.5} />,
-      iconBg: 'bg-accent/10',
-      iconColor: 'text-accent',
-      loading: isTrafficLoading,
-    },
-    {
-      title: t('admin.stats.activeUsers'),
-      value: trafficOverview ? trafficOverview.activeUsers.toLocaleString() : '-',
-      icon: <Users className="size-4" strokeWidth={1.5} />,
-      iconBg: 'bg-destructive/10',
-      iconColor: 'text-destructive',
-      loading: isTrafficLoading,
-    },
   ];
 
+  // Quick actions data
   const quickActions = [
     {
       title: t('admin.quickAccess.users'),
       description: t('admin.quickAccess.usersDesc'),
-      icon: <Users className="size-4 sm:size-5" strokeWidth={1.5} />,
-      iconBg: 'bg-info-muted',
+      icon: Users,
+      iconBg: 'bg-info/10',
       iconColor: 'text-info',
       onClick: () => navigate('/admin/users'),
     },
     {
       title: t('admin.quickAccess.subscriptions'),
       description: t('admin.quickAccess.subscriptionsDesc'),
-      icon: <CreditCard className="size-4 sm:size-5" strokeWidth={1.5} />,
-      iconBg: 'bg-success-muted',
+      icon: CreditCard,
+      iconBg: 'bg-success/10',
       iconColor: 'text-success',
       onClick: () => navigate('/admin/subscriptions'),
     },
     {
       title: t('admin.quickAccess.nodes'),
       description: t('admin.quickAccess.nodesDesc'),
-      icon: <Server className="size-4 sm:size-5" strokeWidth={1.5} />,
+      icon: Server,
       iconBg: 'bg-primary/10',
       iconColor: 'text-primary',
       onClick: () => navigate('/admin/nodes'),
     },
+    {
+      title: t('admin.quickAccess.liveMonitor'),
+      description: t('admin.quickAccess.liveMonitorDesc'),
+      icon: Monitor,
+      iconBg: 'bg-warning/10',
+      iconColor: 'text-warning',
+      onClick: () => navigate('/admin/monitor'),
+    },
+    {
+      title: t('admin.quickAccess.forwardRules'),
+      description: t('admin.quickAccess.forwardRulesDesc'),
+      icon: ArrowLeftRight,
+      iconBg: 'bg-accent/10',
+      iconColor: 'text-accent-foreground',
+      onClick: () => navigate('/admin/forward-rules'),
+    },
+    {
+      title: t('admin.quickAccess.resourceGroups'),
+      description: t('admin.quickAccess.resourceGroupsDesc'),
+      icon: Boxes,
+      iconBg: 'bg-muted',
+      iconColor: 'text-muted-foreground',
+      onClick: () => navigate('/admin/resource-groups'),
+    },
   ];
 
-  const nodeOnlineRate =
-    stats.totalNodes > 0
-      ? Math.round((stats.activeNodes / stats.totalNodes) * 100)
-      : 0;
-
+  // System status data
   const systemStatuses = [
     {
       label: t('admin.systemStatus.nodeOnlineRate'),
@@ -373,26 +463,34 @@ export const NewAdminDashboardPage = () => {
             ? ('warning' as const)
             : ('offline' as const),
       value: `${nodeOnlineRate}%`,
-      icon: <Server className="size-4" strokeWidth={1.5} />,
+      icon: Server,
     },
     {
       label: t('admin.systemStatus.activeNodes'),
       status: stats.activeNodes > 0 ? ('online' as const) : ('offline' as const),
       value: t('admin.systemStatus.count', { count: stats.activeNodes }),
-      icon: <Activity className="size-4" strokeWidth={1.5} />,
+      icon: Activity,
+    },
+    {
+      label: t('admin.systemStatus.activeUsers'),
+      status: (trafficOverview?.activeUsers ?? 0) > 0 ? ('online' as const) : ('offline' as const),
+      value: t('admin.systemStatus.count', { count: trafficOverview?.activeUsers ?? 0 }),
+      icon: Users,
     },
   ];
 
   return (
     <AdminLayout>
-      <div className="py-4 sm:py-6">
-        {/* Compact page header */}
-        <header className="flex items-center justify-between mb-4">
+      <div className="py-4 lg:py-6 space-y-4 sm:space-y-6 pb-safe">
+        {/* ================================================================== */}
+        {/* Page Header */}
+        {/* ================================================================== */}
+        <header className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
-            <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-foreground tracking-tight">
+            <h1 className="text-2xl lg:text-3xl font-bold text-foreground tracking-tight">
               {t('admin.dashboard.title')}
             </h1>
-            <p className="text-xs sm:text-sm text-muted-foreground mt-0.5">
+            <p className="text-sm text-muted-foreground mt-1">
               {t('admin.dashboard.welcomeBack', { name: user.displayName || user.email?.split('@')[0] })}
             </p>
           </div>
@@ -402,18 +500,37 @@ export const NewAdminDashboardPage = () => {
           />
         </header>
 
-        {/* All statistics cards - responsive grid layout */}
-        <section className="mb-4">
-          <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-2">
-            {statsCards.map((stat) => (
-              <StatsCard key={stat.title} {...stat} />
+        {/* ================================================================== */}
+        {/* Bento Grid - Statistics Overview */}
+        {/* ================================================================== */}
+        <section>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4">
+            {/* Primary stats - large cards */}
+            {primaryStats.map((stat) => (
+              <BentoStatCard
+                key={stat.title}
+                {...stat}
+                large
+                className="col-span-1 md:col-span-2"
+              />
+            ))}
+
+            {/* Secondary stats - smaller cards */}
+            {secondaryStats.map((stat) => (
+              <BentoStatCard
+                key={stat.title}
+                {...stat}
+                className="col-span-1"
+              />
             ))}
           </div>
         </section>
 
-        {/* Traffic analytics section */}
+        {/* ================================================================== */}
+        {/* Traffic Analytics Section */}
+        {/* ================================================================== */}
         <section className="space-y-4">
-          {/* Traffic trend chart */}
+          {/* Traffic trend chart - full width */}
           <LazyTrafficTrendChart
             data={trafficTrend?.points ?? []}
             granularity={granularity}
@@ -437,41 +554,48 @@ export const NewAdminDashboardPage = () => {
           </div>
         </section>
 
-        <Separator className="my-4" />
-
-        {/* Quick actions and system status - compact layout */}
+        {/* ================================================================== */}
+        {/* Quick Actions & System Status */}
+        {/* ================================================================== */}
         <section>
-          <div className="grid grid-cols-1 lg:grid-cols-4 gap-4">
-            {/* Left: Quick actions */}
-            <div className="lg:col-span-3">
-              <h2 className="text-sm font-semibold text-foreground mb-2">
-                {t('admin.quickAccess.title')}
-              </h2>
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
+            {/* Quick Actions - 2 columns on large screens */}
+            <div className="lg:col-span-2">
+              <SectionHeader title={t('admin.quickAccess.title')} />
+              <div className="grid grid-cols-2 sm:grid-cols-2 xl:grid-cols-3 gap-2 sm:gap-3">
                 {quickActions.map((action) => (
                   <QuickActionCard key={action.title} {...action} />
                 ))}
               </div>
             </div>
 
-            {/* Right: System status */}
+            {/* System Status - 1 column */}
             <div>
-              <h2 className="text-sm font-semibold text-foreground mb-2">
-                {t('admin.systemStatus.title')}
-              </h2>
-              <div className="bg-card rounded-lg p-3 border border-border">
+              <SectionHeader
+                title={t('admin.systemStatus.title')}
+                action={
+                  <button
+                    onClick={() => navigate('/admin/settings')}
+                    className="text-xs text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1"
+                  >
+                    <Settings className="size-3.5" />
+                    {t('admin.systemStatus.settings')}
+                  </button>
+                }
+              />
+              <div className="bg-card rounded-xl p-4 border border-border">
                 {loading ? (
-                  <div className="space-y-2">
-                    {[1, 2].map((i) => (
+                  <div className="space-y-3">
+                    {[1, 2, 3].map((i) => (
                       <div
                         key={i}
-                        className="flex items-center gap-2 py-2"
+                        className="flex items-center gap-3 py-2"
                       >
-                        <div className="size-7 bg-muted rounded-md animate-pulse" />
+                        <div className="size-8 bg-muted rounded-lg animate-pulse" />
                         <div className="flex-1">
-                          <div className="h-3 w-16 bg-muted rounded animate-pulse" />
+                          <div className="h-4 w-20 bg-muted rounded animate-pulse" />
                         </div>
-                        <div className="h-5 w-12 bg-muted rounded animate-pulse" />
+                        <div className="h-6 w-14 bg-muted rounded-full animate-pulse" />
                       </div>
                     ))}
                   </div>
@@ -486,7 +610,6 @@ export const NewAdminDashboardPage = () => {
             </div>
           </div>
         </section>
-
       </div>
     </AdminLayout>
   );

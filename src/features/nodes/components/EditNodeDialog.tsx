@@ -2,7 +2,7 @@
  * Edit node dialog component
  */
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import {
   Dialog,
   DialogContent,
@@ -28,6 +28,8 @@ import {
 } from '@/components/common/Accordion';
 import { Badge } from '@/components/common/Badge';
 import { Switch, SwitchThumb } from '@/components/common/Switch';
+import { Checkbox } from '@/components/common/Checkbox';
+import { Layers, X } from 'lucide-react';
 import type {
   Node,
   UpdateNodeRequest,
@@ -40,6 +42,7 @@ import type {
   TUICUDPRelayMode,
 } from '@/api/node';
 import { useResourceGroups } from '@/features/resource-groups/hooks/useResourceGroups';
+import { useSubscriptionPlans } from '@/features/subscription-plans/hooks/useSubscriptionPlans';
 import { RouteConfigEditor } from './RouteConfigEditor';
 import type { OutboundNodeOption } from './RouteRuleEditor';
 
@@ -50,6 +53,11 @@ interface EditNodeDialogProps {
   onSubmit: (id: string, data: UpdateNodeRequest) => void;
   /** Available nodes for route outbound selection */
   nodes?: OutboundNodeOption[];
+}
+
+interface FormData extends Omit<UpdateNodeRequest, 'groupSids'> {
+  tagsInput: string;
+  groupSids: string[];
 }
 
 // Shadowsocks encryption methods
@@ -159,7 +167,7 @@ export const EditNodeDialog: React.FC<EditNodeDialogProps> = ({
   onSubmit,
   nodes = [],
 }) => {
-  const [formData, setFormData] = useState<UpdateNodeRequest & { tagsInput: string }>({ tagsInput: '' });
+  const [formData, setFormData] = useState<FormData>({ tagsInput: '', groupSids: [] });
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [pluginOptsStr, setPluginOptsStr] = useState<string>('');
 
@@ -169,6 +177,20 @@ export const EditNodeDialog: React.FC<EditNodeDialogProps> = ({
     filters: { status: 'active' },
     enabled: open,
   });
+
+  const { plans, isLoading: isLoadingPlans } = useSubscriptionPlans({
+    pageSize: 100,
+    enabled: open,
+  });
+
+  const filteredResourceGroups = useMemo(() => {
+    if (!plans.length) return resourceGroups;
+    const planTypeMap = new Map(plans.map((plan) => [plan.id, plan.planType]));
+    return resourceGroups.filter((group) => {
+      const planType = planTypeMap.get(group.planId);
+      return planType === 'node' || planType === 'hybrid';
+    });
+  }, [resourceGroups, plans]);
 
   useEffect(() => {
     if (node) {
@@ -194,8 +216,8 @@ export const EditNodeDialog: React.FC<EditNodeDialogProps> = ({
         allowInsecure: node.allowInsecure,
         // Route configuration
         route: node.route,
-        // Resource group (use first group if exists)
-        groupSid: node.groupIds?.[0] ?? '',
+        // Resource groups
+        groupSids: node.groupIds ?? [],
         // Notification setting
         muteNotification: node.muteNotification,
         // VLESS fields
@@ -504,9 +526,11 @@ export const EditNodeDialog: React.FC<EditNodeDialogProps> = ({
     }
 
     // Resource group association - only send if changed
-    const originalGroupSid = node.groupIds?.[0] ?? '';
-    if (formData.groupSid !== undefined && formData.groupSid !== originalGroupSid) {
-      updates.groupSid = formData.groupSid;
+    const originalGroupSids = node.groupIds ?? [];
+    const newGroupSids = formData.groupSids ?? [];
+    const groupSidsChanged = JSON.stringify([...newGroupSids].sort()) !== JSON.stringify([...originalGroupSids].sort());
+    if (groupSidsChanged) {
+      updates.groupSids = newGroupSids;
     }
 
     // Tags - parse tagsInput and compare with original
@@ -1464,29 +1488,76 @@ export const EditNodeDialog: React.FC<EditNodeDialogProps> = ({
                     </p>
                   </div>
 
-                  {/* 资源组 */}
-                  <div className="flex flex-col gap-2">
-                    <Label htmlFor="groupSid">资源组</Label>
-                    <Select
-                      value={formData.groupSid ?? '__none__'}
-                      onValueChange={(value) => handleChange('groupSid', value === '__none__' ? '' : value)}
-                      disabled={isLoadingGroups}
-                    >
-                      <SelectTrigger id="groupSid">
-                        <SelectValue placeholder={isLoadingGroups ? '加载中...' : '选择资源组'} />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="__none__">不关联资源组</SelectItem>
-                        {resourceGroups.map((group) => (
-                          <SelectItem key={group.sid} value={group.sid}>
-                            {group.name}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
+                  {/* 资源组（多选） */}
+                  <div className="flex flex-col gap-2 md:col-span-2">
+                    <Label>资源组</Label>
                     <p className="text-xs text-muted-foreground">
-                      可选，将节点关联到资源组
+                      可选，将节点关联到一个或多个资源组
                     </p>
+
+                    {/* Selected groups chips */}
+                    {formData.groupSids.length > 0 && (
+                      <div className="flex flex-wrap gap-1.5">
+                        {formData.groupSids.map((sid) => {
+                          const group = filteredResourceGroups.find((g) => g.sid === sid);
+                          return (
+                            <Badge key={sid} variant="secondary" className="gap-1 pr-1">
+                              <Layers className="size-3" />
+                              {group?.name ?? sid}
+                              <button
+                                type="button"
+                                onClick={() => setFormData((prev) => ({
+                                  ...prev,
+                                  groupSids: prev.groupSids.filter((id) => id !== sid),
+                                }))}
+                                className="ml-0.5 rounded-full p-0.5 hover:bg-muted"
+                              >
+                                <X className="size-3" />
+                              </button>
+                            </Badge>
+                          );
+                        })}
+                      </div>
+                    )}
+
+                    {/* Group selection list */}
+                    <div className="border rounded-lg max-h-[120px] overflow-y-auto">
+                      {isLoadingGroups || isLoadingPlans ? (
+                        <div className="p-3 text-center text-sm text-muted-foreground">加载中...</div>
+                      ) : filteredResourceGroups.length === 0 ? (
+                        <div className="p-3 text-center text-sm text-muted-foreground">暂无可用资源组</div>
+                      ) : (
+                        <div className="divide-y">
+                          {filteredResourceGroups.map((group) => (
+                            <label
+                              key={group.sid}
+                              className="flex items-center gap-3 p-2.5 hover:bg-muted/50 cursor-pointer transition-colors"
+                            >
+                              <Checkbox
+                                checked={formData.groupSids.includes(group.sid)}
+                                onCheckedChange={(checked) => {
+                                  setFormData((prev) => ({
+                                    ...prev,
+                                    groupSids: checked
+                                      ? [...prev.groupSids, group.sid]
+                                      : prev.groupSids.filter((id) => id !== group.sid),
+                                  }));
+                                }}
+                              />
+                              <div className="flex-1 min-w-0">
+                                <div className="flex items-center gap-2">
+                                  <span className="font-medium text-sm">{group.name}</span>
+                                  <Badge variant={group.status === 'active' ? 'default' : 'secondary'} className="text-[10px]">
+                                    {group.status === 'active' ? '激活' : '未激活'}
+                                  </Badge>
+                                </div>
+                                {group.description && <p className="text-xs text-muted-foreground truncate">{group.description}</p>}
+                              </div>
+                            </label>
+                          ))}
+                        </div>
+                      )}
+                    </div>
                   </div>
 
                   {/* 静音通知 */}

@@ -2,11 +2,11 @@
  * Admin External Forward Rule Form
  * Shared form component for creating and editing external forward rules
  *
- * Tailwind CSS v4 Best Practices:
- * - Desktop-first approach (use max-* for mobile overrides)
+ * Responsive Design Best Practices:
+ * - Container queries (@sm, @md) for component-level responsiveness
+ * - Mobile-first within container (base styles for small, @sm: for larger)
  * - Fluid spacing with CSS variables (--spacing-fluid-*)
- * - Container queries (@container) for component-level responsiveness
- * - Min 44px touch targets for mobile
+ * - Min 44px touch targets for mobile, compact for desktop (@sm:size-[22px])
  */
 
 import { useState, useEffect, useMemo, useCallback } from 'react';
@@ -32,6 +32,7 @@ import type {
 } from '@/api/admin/types';
 import { useResourceGroups } from '@/features/resource-groups/hooks/useResourceGroups';
 import { useNodes } from '@/features/nodes/hooks/useNodes';
+import { useSubscriptionPlans } from '@/features/subscription-plans/hooks/useSubscriptionPlans';
 
 // ============================================================================
 // Types
@@ -86,7 +87,7 @@ export const AdminExternalForwardRuleForm: React.FC<AdminExternalForwardRuleForm
 
   const { resourceGroups, isLoading: isLoadingGroups } = useResourceGroups({
     pageSize: 100,
-    enabled: mode === 'create',
+    enabled: true,
   });
 
   const { nodes, isLoading: isLoadingNodes } = useNodes({
@@ -94,6 +95,28 @@ export const AdminExternalForwardRuleForm: React.FC<AdminExternalForwardRuleForm
     enabled: true,
     filters: { status: 'active' },
   });
+
+  // Get plans to filter resource groups by plan type
+  const { plans, isLoading: isLoadingPlans } = useSubscriptionPlans({
+    pageSize: 100,
+    enabled: true,
+  });
+
+  // Filter resource groups: only show node/hybrid plan groups (exclude forward plan)
+  // External forward rules should only be bound to node/hybrid resource groups
+  const filteredResourceGroups = useMemo(() => {
+    // Wait for plans to load before filtering
+    if (isLoadingPlans || !plans.length) return [];
+
+    // Create a map of planId -> planType
+    const planTypeMap = new Map(plans.map((plan) => [plan.id, plan.planType]));
+
+    // Filter to only include node and hybrid plan resource groups
+    return resourceGroups.filter((group) => {
+      const planType = planTypeMap.get(group.planId);
+      return planType === 'node' || planType === 'hybrid';
+    });
+  }, [resourceGroups, plans, isLoadingPlans]);
 
   const initialFormData: FormData = useMemo(() => {
     if (mode === 'edit' && rule) {
@@ -106,7 +129,7 @@ export const AdminExternalForwardRuleForm: React.FC<AdminExternalForwardRuleForm
         remark: rule.remark || '',
         sortOrder: rule.sortOrder?.toString() || '',
         groupIds: rule.groupIds || [],
-        nodeId: rule.nodeSid || '',
+        nodeId: rule.nodeSid ?? (rule.nodeId != null ? String(rule.nodeId) : ''),
       };
     }
     return {
@@ -202,7 +225,18 @@ export const AdminExternalForwardRuleForm: React.FC<AdminExternalForwardRuleForm
       if (formData.listenPort !== rule.listenPort.toString()) updates.listenPort = parseInt(formData.listenPort);
       if (formData.remark.trim() !== (rule.remark || '')) updates.remark = formData.remark.trim() || undefined;
       if (formData.sortOrder !== (rule.sortOrder?.toString() || '')) updates.sortOrder = formData.sortOrder ? parseInt(formData.sortOrder) : undefined;
-      if (formData.nodeId !== (rule.nodeSid || '')) updates.nodeId = formData.nodeId;
+      const originalNodeId = rule.nodeSid ?? (rule.nodeId != null ? String(rule.nodeId) : '');
+      if (formData.nodeId !== originalNodeId) updates.nodeId = formData.nodeId;
+
+      // Check if groupIds changed
+      const originalGroupIds = rule.groupIds || [];
+      const currentGroupIds = formData.groupIds;
+      const groupIdsChanged =
+        originalGroupIds.length !== currentGroupIds.length ||
+        !originalGroupIds.every((id) => currentGroupIds.includes(id));
+      if (groupIdsChanged) {
+        updates.groupIds = currentGroupIds;
+      }
 
       if (Object.keys(updates).length > 0) {
         props.onSubmit(rule.id, updates);
@@ -219,17 +253,25 @@ export const AdminExternalForwardRuleForm: React.FC<AdminExternalForwardRuleForm
 
   const hasChanges = useMemo(() => {
     if (mode !== 'edit' || !rule) return true;
+
+    const originalGroupIds = rule.groupIds || [];
+    const currentGroupIds = formData.groupIds;
+    const groupIdsChanged =
+      originalGroupIds.length !== currentGroupIds.length ||
+      !originalGroupIds.every((id) => currentGroupIds.includes(id));
+
     return (
       formData.name !== rule.name ||
       formData.serverAddress !== rule.serverAddress ||
       formData.listenPort !== rule.listenPort.toString() ||
       formData.remark !== (rule.remark || '') ||
       formData.sortOrder !== (rule.sortOrder?.toString() || '') ||
-      formData.nodeId !== (rule.nodeSid || '')
+      formData.nodeId !== (rule.nodeSid ?? (rule.nodeId != null ? String(rule.nodeId) : '')) ||
+      groupIdsChanged
     );
   }, [formData, rule, mode]);
 
-  const selectedGroups = resourceGroups.filter((g) => formData.groupIds.includes(g.sid));
+  const selectedGroups = filteredResourceGroups.filter((g) => formData.groupIds.includes(g.sid));
 
   // ============================================================================
   // Render
@@ -246,8 +288,8 @@ export const AdminExternalForwardRuleForm: React.FC<AdminExternalForwardRuleForm
           </h3>
           <Separator className="mb-3" />
 
-          {/* Desktop: 2-col grid | Mobile: stack */}
-          <div className="grid grid-cols-2 gap-3 max-md:grid-cols-1">
+          {/* Container query: 2-col when container >= 400px */}
+          <div className="grid grid-cols-1 @sm:grid-cols-2 gap-3">
             {/* Name */}
             <div className="flex flex-col gap-1.5">
               <Label htmlFor="efr-name" className="text-sm">
@@ -260,7 +302,7 @@ export const AdminExternalForwardRuleForm: React.FC<AdminExternalForwardRuleForm
                 placeholder={t('externalForwardRules.form.namePlaceholder')}
                 error={!!errors.name}
                 disabled={isSubmitting}
-                className="h-9 max-md:h-11"
+                className="h-11 @sm:h-9"
               />
               {errors.name && (
                 <p className="text-xs text-destructive flex items-center gap-1">
@@ -283,7 +325,7 @@ export const AdminExternalForwardRuleForm: React.FC<AdminExternalForwardRuleForm
                   placeholder={t('admin.externalForwardRules.form.externalSourcePlaceholder')}
                   error={!!errors.externalSource}
                   disabled={isSubmitting}
-                  className="h-9 max-md:h-11"
+                  className="h-11 @sm:h-9"
                 />
                 {errors.externalSource && (
                   <p className="text-xs text-destructive flex items-center gap-1">
@@ -306,13 +348,13 @@ export const AdminExternalForwardRuleForm: React.FC<AdminExternalForwardRuleForm
                   onChange={(e) => handleChange('externalRuleId', e.target.value)}
                   placeholder={t('admin.externalForwardRules.form.externalRuleIdPlaceholder')}
                   disabled={isSubmitting}
-                  className="h-9 max-md:h-11"
+                  className="h-11 @sm:h-9"
                 />
               </div>
             )}
 
             {/* Remark - full width */}
-            <div className="flex flex-col gap-1.5 col-span-2 max-md:col-span-1">
+            <div className="flex flex-col gap-1.5 @sm:col-span-2">
               <Label htmlFor="efr-remark" className="text-sm">{t('externalForwardRules.form.remark')}</Label>
               <Textarea
                 id="efr-remark"
@@ -334,8 +376,8 @@ export const AdminExternalForwardRuleForm: React.FC<AdminExternalForwardRuleForm
           </h3>
           <Separator className="mb-3" />
 
-          {/* Desktop: 3-col [2fr 1fr 1fr] | Mobile: stack */}
-          <div className="grid grid-cols-[2fr_1fr_1fr] gap-3 max-md:grid-cols-1">
+          {/* Container query: 3-col when container >= 400px */}
+          <div className="grid grid-cols-1 @sm:grid-cols-[2fr_1fr_1fr] gap-3">
             {/* Server Address */}
             <div className="flex flex-col gap-1.5">
               <Label htmlFor="efr-serverAddress" className="text-sm">
@@ -348,7 +390,7 @@ export const AdminExternalForwardRuleForm: React.FC<AdminExternalForwardRuleForm
                 placeholder={t('externalForwardRules.form.serverAddressPlaceholder')}
                 error={!!errors.serverAddress}
                 disabled={isSubmitting}
-                className="h-9 max-md:h-11"
+                className="h-11 @sm:h-9"
               />
               {errors.serverAddress && (
                 <p className="text-xs text-destructive flex items-center gap-1">
@@ -371,7 +413,7 @@ export const AdminExternalForwardRuleForm: React.FC<AdminExternalForwardRuleForm
                 placeholder="1-65535"
                 error={!!errors.listenPort}
                 disabled={isSubmitting}
-                className="h-9 max-md:h-11"
+                className="h-11 @sm:h-9"
               />
               {errors.listenPort && (
                 <p className="text-xs text-destructive flex items-center gap-1">
@@ -392,7 +434,7 @@ export const AdminExternalForwardRuleForm: React.FC<AdminExternalForwardRuleForm
                 onChange={(e) => handleChange('sortOrder', e.target.value)}
                 placeholder="0"
                 disabled={isSubmitting}
-                className="h-9 max-md:h-11"
+                className="h-11 @sm:h-9"
               />
             </div>
           </div>
@@ -409,7 +451,7 @@ export const AdminExternalForwardRuleForm: React.FC<AdminExternalForwardRuleForm
             {t(mode === 'create' ? 'admin.externalForwardRules.createDialog.nodeRoutingHint' : 'admin.externalForwardRules.editDialog.nodeRoutingHint')}
           </p>
 
-          <div className="max-w-xs max-md:max-w-full">
+          <div className="w-full @sm:max-w-xs">
             <Select
               value={formData.nodeId || '__none__'}
               onValueChange={(value) => handleChange('nodeId', value === '__none__' ? '' : value)}
@@ -435,13 +477,20 @@ export const AdminExternalForwardRuleForm: React.FC<AdminExternalForwardRuleForm
           </div>
 
           {/* Current node info (edit mode) */}
-          {mode === 'edit' && rule?.nodeServerAddress && (
+          {mode === 'edit' && (rule?.nodeName || rule?.nodeId) && (
             <div className="mt-3 p-3 rounded-lg bg-muted/50 text-sm">
               <p className="text-xs text-muted-foreground mb-1.5">{t('admin.externalForwardRules.editDialog.currentNodeInfo')}</p>
               <div className="space-y-0.5 font-mono text-xs">
-                <div className="break-all">
-                  <span className="text-muted-foreground">{t('admin.externalForwardRules.columns.nodeServerAddress')}:</span> {rule.nodeServerAddress}
-                </div>
+                {rule.nodeName && (
+                  <div className="break-all">
+                    <span className="text-muted-foreground">{t('admin.externalForwardRules.columns.nodeName')}:</span> {rule.nodeName}
+                  </div>
+                )}
+                {rule.nodeProtocol && (
+                  <div>
+                    <span className="text-muted-foreground">{t('admin.externalForwardRules.columns.protocol')}:</span> {rule.nodeProtocol.toUpperCase()}
+                  </div>
+                )}
                 {rule.nodePublicIpv4 && <div><span className="text-muted-foreground">IPv4:</span> {rule.nodePublicIpv4}</div>}
                 {rule.nodePublicIpv6 && <div className="break-all"><span className="text-muted-foreground">IPv6:</span> {rule.nodePublicIpv6}</div>}
               </div>
@@ -449,71 +498,69 @@ export const AdminExternalForwardRuleForm: React.FC<AdminExternalForwardRuleForm
           )}
         </section>
 
-        {/* Section: Resource Groups (create only) */}
-        {mode === 'create' && (
-          <section>
-            <h3 className="text-sm font-medium text-muted-foreground mb-2">
-              {t('admin.externalForwardRules.createDialog.resourceGroups')}
-            </h3>
-            <Separator className="mb-3" />
-            <p className="text-xs text-muted-foreground mb-2">
-              {t('admin.externalForwardRules.createDialog.resourceGroupsHint')}
-            </p>
+        {/* Section: Resource Groups */}
+        <section>
+          <h3 className="text-sm font-medium text-muted-foreground mb-2">
+            {t(mode === 'create' ? 'admin.externalForwardRules.createDialog.resourceGroups' : 'admin.externalForwardRules.editDialog.resourceGroups')}
+          </h3>
+          <Separator className="mb-3" />
+          <p className="text-xs text-muted-foreground mb-2">
+            {t(mode === 'create' ? 'admin.externalForwardRules.createDialog.resourceGroupsHint' : 'admin.externalForwardRules.editDialog.resourceGroupsHint')}
+          </p>
 
-            {/* Selected groups chips */}
-            {selectedGroups.length > 0 && (
-              <div className="flex flex-wrap gap-1.5 mb-2">
-                {selectedGroups.map((group) => (
-                  <Badge key={group.sid} variant="secondary" className="gap-1 pr-1">
-                    <Layers className="size-3" />
-                    {group.name}
-                    <button
-                      type="button"
-                      onClick={() => handleRemoveGroup(group.sid)}
-                      className="ml-0.5 rounded-full p-0.5 hover:bg-muted min-w-[22px] min-h-[22px] max-md:min-w-[44px] max-md:min-h-[44px] flex items-center justify-center"
+          {/* Selected groups chips */}
+          {selectedGroups.length > 0 && (
+            <div className="flex flex-wrap gap-1.5 mb-2">
+              {selectedGroups.map((group) => (
+                <Badge key={group.sid} variant="secondary" className="gap-1 pr-1">
+                  <Layers className="size-3" />
+                  {group.name}
+                  <button
+                    type="button"
+                    onClick={() => handleRemoveGroup(group.sid)}
+                    className="ml-0.5 rounded-full p-0.5 hover:bg-muted size-11 @sm:size-[22px] flex items-center justify-center"
+                    disabled={isSubmitting}
+                  >
+                    <X className="size-3" />
+                  </button>
+                </Badge>
+              ))}
+            </div>
+          )}
+
+          {/* Group selection list */}
+          <div className="border rounded-lg max-h-[120px] overflow-y-auto">
+            {isLoadingGroups || isLoadingPlans ? (
+              <div className="p-3 text-center text-sm text-muted-foreground">{t('common.loading')}...</div>
+            ) : filteredResourceGroups.length === 0 ? (
+              <div className="p-3 text-center text-sm text-muted-foreground">{t('admin.externalForwardRules.noResourceGroups')}</div>
+            ) : (
+              <div className="divide-y">
+                {filteredResourceGroups.map((group) => (
+                  <label
+                    key={group.sid}
+                    className="flex items-center gap-3 p-2.5 hover:bg-muted/50 cursor-pointer transition-colors min-h-[44px]"
+                  >
+                    <Checkbox
+                      checked={formData.groupIds.includes(group.sid)}
+                      onCheckedChange={(checked) => handleGroupToggle(group.sid, !!checked)}
                       disabled={isSubmitting}
-                    >
-                      <X className="size-3" />
-                    </button>
-                  </Badge>
+                    />
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2">
+                        <span className="font-medium text-sm">{group.name}</span>
+                        <Badge variant={group.status === 'active' ? 'default' : 'secondary'} className="text-[10px]">
+                          {group.status === 'active' ? t('common.status.active') : t('common.status.inactive')}
+                        </Badge>
+                      </div>
+                      {group.description && <p className="text-xs text-muted-foreground truncate">{group.description}</p>}
+                    </div>
+                  </label>
                 ))}
               </div>
             )}
-
-            {/* Group selection list */}
-            <div className="border rounded-lg max-h-[120px] overflow-y-auto">
-              {isLoadingGroups ? (
-                <div className="p-3 text-center text-sm text-muted-foreground">{t('common.loading')}...</div>
-              ) : resourceGroups.length === 0 ? (
-                <div className="p-3 text-center text-sm text-muted-foreground">{t('admin.externalForwardRules.createDialog.noResourceGroups')}</div>
-              ) : (
-                <div className="divide-y">
-                  {resourceGroups.map((group) => (
-                    <label
-                      key={group.sid}
-                      className="flex items-center gap-3 p-2.5 hover:bg-muted/50 cursor-pointer transition-colors min-h-[44px]"
-                    >
-                      <Checkbox
-                        checked={formData.groupIds.includes(group.sid)}
-                        onCheckedChange={(checked) => handleGroupToggle(group.sid, !!checked)}
-                        disabled={isSubmitting}
-                      />
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2">
-                          <span className="font-medium text-sm">{group.name}</span>
-                          <Badge variant={group.status === 'active' ? 'default' : 'secondary'} className="text-[10px]">
-                            {group.status === 'active' ? t('common.status.active') : t('common.status.inactive')}
-                          </Badge>
-                        </div>
-                        {group.description && <p className="text-xs text-muted-foreground truncate">{group.description}</p>}
-                      </div>
-                    </label>
-                  ))}
-                </div>
-              )}
-            </div>
-          </section>
-        )}
+          </div>
+        </section>
 
         {/* Section: Read-only info (edit mode) */}
         {mode === 'edit' && rule && (
@@ -545,13 +592,6 @@ export const AdminExternalForwardRuleForm: React.FC<AdminExternalForwardRuleForm
                 <div className="break-all">
                   <span className="text-muted-foreground">{t('admin.externalForwardRules.columns.externalRuleId')}:</span>{' '}
                   <span className="font-mono text-xs">{rule.externalRuleId}</span>
-                </div>
-              )}
-              {rule.groupIds && rule.groupIds.length > 0 && (
-                <div className="flex items-center gap-1.5">
-                  <Layers className="size-3.5 text-muted-foreground shrink-0" />
-                  <span className="text-muted-foreground">{t('admin.externalForwardRules.columns.resourceGroups')}:</span>
-                  <span className="text-xs">{rule.groupIds.length} {t('admin.externalForwardRules.groupCount')}</span>
                 </div>
               )}
             </div>

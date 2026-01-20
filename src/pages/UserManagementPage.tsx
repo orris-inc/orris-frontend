@@ -249,8 +249,8 @@ export const UserManagementPage = () => {
         <header className="bg-card rounded-lg border border-border px-3 py-2">
           <div className="flex items-center justify-between gap-3 flex-wrap">
             {/* Left: Title + Primary Stats */}
-            <div className="flex items-center gap-3">
-              <h1 className="text-sm font-semibold text-foreground">{t('admin.users.title')}</h1>
+            <div className="flex items-center gap-fluid-sm">
+              <h1 className="text-sm font-semibold text-foreground whitespace-nowrap">{t('admin.users.title')}</h1>
               <div className="h-4 w-px bg-border hidden sm:block" />
               <div className="flex items-center gap-3 text-xs">
                 <span className="flex items-center gap-1 text-muted-foreground">

@@ -38,10 +38,12 @@ export const apiClient = applyCaseMiddleware(
     // Preserve keys inside chainPortConfig/chain_port_config from being transformed
     // These keys are agent IDs (e.g., fa_xK9mP2vL3nQ), containing underscores but should not be transformed
     preservedKeys: (key) => {
-      // Preserve ID keys that start with fa_, fr_, node_, user_ prefixes and are longer
-      // Field names like user_id, node_id are shorter (<= 10) and won't be preserved
-      // While agent IDs (e.g., fa_xK9mP2vL3nQ) are longer and will be preserved
-      return /^(fa|fr|node|user)_/.test(key) && key.length > 10;
+      // Preserve only Stripe-style IDs: prefix + underscore + alphanumeric string with mixed case
+      // IDs like fa_xK9mP2vL3nQ, node_pzJTiBQh2naI contain uppercase letters
+      // Field names like node_protocol, user_email are all lowercase and should be converted
+      const idPattern = /^(fa|fr|node|user|efr|rg|sub|usr)_[a-zA-Z0-9]+$/;
+      const hasUpperCase = /[A-Z]/.test(key);
+      return idPattern.test(key) && hasUpperCase;
     },
   }
 );

@@ -153,24 +153,24 @@ const CustomTooltip = ({ active, payload, label, t }: TooltipProps<number, strin
  * Legend component
  */
 const ChartLegend = ({ totalUpload, totalDownload, t }: { totalUpload: number; totalDownload: number; t: (key: string) => string }) => (
-  <div className="flex flex-wrap items-center justify-center gap-3 sm:gap-6 mt-4 sm:mt-5 pt-4 sm:pt-5 border-t border-border">
-    <div className="flex items-center gap-2 sm:gap-3 px-3 sm:px-4 py-2 rounded-lg sm:rounded-xl bg-chart-upload/10 ring-1 ring-chart-upload/20">
-      <div className="flex items-center gap-1.5 sm:gap-2">
-        <div className="size-2.5 sm:size-3 rounded-full bg-chart-upload ring-2 ring-chart-upload/20" />
-        <ArrowUp className="size-3.5 sm:size-4 text-chart-upload" strokeWidth={2} />
+  <div className="flex flex-wrap items-center justify-center gap-3 @sm:gap-6 mt-4 @sm:mt-5 pt-4 @sm:pt-5 border-t border-border">
+    <div className="flex items-center gap-2 @sm:gap-3 px-3 @sm:px-4 py-2 rounded-lg @sm:rounded-xl bg-chart-upload/10 ring-1 ring-chart-upload/20">
+      <div className="flex items-center gap-1.5 @sm:gap-2">
+        <div className="size-2.5 @sm:size-3 rounded-full bg-chart-upload ring-2 ring-chart-upload/20" />
+        <ArrowUp className="size-3.5 @sm:size-4 text-chart-upload" strokeWidth={2} />
       </div>
-      <span className="text-xs sm:text-sm font-medium text-muted-foreground">{t('admin.traffic.upload')}</span>
-      <span className="text-xs sm:text-sm font-bold text-chart-upload tabular-nums">
+      <span className="text-xs @sm:text-sm font-medium text-muted-foreground">{t('admin.traffic.upload')}</span>
+      <span className="text-xs @sm:text-sm font-bold text-chart-upload tabular-nums">
         {formatTrafficBytes(totalUpload)}
       </span>
     </div>
-    <div className="flex items-center gap-2 sm:gap-3 px-3 sm:px-4 py-2 rounded-lg sm:rounded-xl bg-chart-download/10 ring-1 ring-chart-download/20">
-      <div className="flex items-center gap-1.5 sm:gap-2">
-        <div className="size-2.5 sm:size-3 rounded-full bg-chart-download ring-2 ring-chart-download/20" />
-        <ArrowDown className="size-3.5 sm:size-4 text-chart-download" strokeWidth={2} />
+    <div className="flex items-center gap-2 @sm:gap-3 px-3 @sm:px-4 py-2 rounded-lg @sm:rounded-xl bg-chart-download/10 ring-1 ring-chart-download/20">
+      <div className="flex items-center gap-1.5 @sm:gap-2">
+        <div className="size-2.5 @sm:size-3 rounded-full bg-chart-download ring-2 ring-chart-download/20" />
+        <ArrowDown className="size-3.5 @sm:size-4 text-chart-download" strokeWidth={2} />
       </div>
-      <span className="text-xs sm:text-sm font-medium text-muted-foreground">{t('admin.traffic.download')}</span>
-      <span className="text-xs sm:text-sm font-bold text-chart-download tabular-nums">
+      <span className="text-xs @sm:text-sm font-medium text-muted-foreground">{t('admin.traffic.download')}</span>
+      <span className="text-xs @sm:text-sm font-bold text-chart-download tabular-nums">
         {formatTrafficBytes(totalDownload)}
       </span>
     </div>
@@ -210,15 +210,15 @@ export const TrafficTrendChart = ({ data, granularity, loading, headerAction, ov
   if (loading) {
     return (
       <AdminCard variant="glass" noPadding>
-        <div className="p-4 sm:p-6">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4 mb-4 sm:mb-6">
+        <div className="@container p-4 @sm:p-6">
+          <div className="flex flex-col @sm:flex-row @sm:items-center justify-between gap-3 @sm:gap-4 mb-4 @sm:mb-6">
             <Skeleton className="h-10 w-32" />
             {headerAction}
           </div>
-          <Skeleton className="w-full h-[200px] sm:h-[280px] rounded-xl" />
-          <div className="flex flex-wrap justify-center gap-3 sm:gap-6 mt-4 sm:mt-5 pt-4 sm:pt-5 border-t border-border">
-            <Skeleton className="h-8 w-28 sm:w-32" />
-            <Skeleton className="h-8 w-28 sm:w-32" />
+          <Skeleton className="w-full h-[200px] @sm:h-[280px] rounded-xl" />
+          <div className="flex flex-wrap justify-center gap-3 @sm:gap-6 mt-4 @sm:mt-5 pt-4 @sm:pt-5 border-t border-border">
+            <Skeleton className="h-8 w-28 @sm:w-32" />
+            <Skeleton className="h-8 w-28 @sm:w-32" />
           </div>
         </div>
       </AdminCard>
@@ -227,31 +227,31 @@ export const TrafficTrendChart = ({ data, granularity, loading, headerAction, ov
 
   return (
     <AdminCard variant="glass" noPadding>
-      <div className="p-4 sm:p-6">
+      <div className="@container p-4 @sm:p-6">
         {/* Header */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4 mb-4 sm:mb-6">
+        <div className="flex flex-col @sm:flex-row @sm:items-center justify-between gap-3 @sm:gap-4 mb-4 @sm:mb-6">
           <div className="flex items-center gap-3 shrink-0">
-            <div className="p-2 sm:p-2.5 rounded-xl bg-primary/10 ring-1 ring-primary/20">
-              <Activity className="size-4 sm:size-5 text-primary" strokeWidth={1.5} />
+            <div className="p-2 @sm:p-2.5 rounded-xl bg-primary/10 ring-1 ring-primary/20">
+              <Activity className="size-4 @sm:size-5 text-primary" strokeWidth={1.5} />
             </div>
             <div>
-              <h3 className="text-base sm:text-lg font-semibold text-foreground whitespace-nowrap">
+              <h3 className="text-base @sm:text-lg font-semibold text-foreground whitespace-nowrap">
                 {t('admin.traffic.trend')}
               </h3>
-              <p className="text-[11px] sm:text-xs text-muted-foreground">
+              <p className="text-[11px] @sm:text-xs text-muted-foreground">
                 {t('admin.traffic.trendDesc')}
               </p>
             </div>
           </div>
           {headerAction && (
-            <div className="shrink-0 -mx-1 sm:mx-0">
+            <div className="shrink-0 -mx-1 @sm:mx-0">
               {headerAction}
             </div>
           )}
         </div>
 
         {/* Chart */}
-        <div className="w-full h-[200px] sm:h-[280px]">
+        <div className="w-full h-[200px] @sm:h-[280px]">
           <ResponsiveContainer width="100%" height="100%">
             <AreaChart
               data={chartData}

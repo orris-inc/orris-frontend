@@ -147,110 +147,112 @@ export const EntityDetailCard = memo(({ entity, compact = false }: EntityDetailC
   // Compact mode - simplified horizontal card (responsive)
   if (compact) {
     return (
-      <div className={`
-        relative overflow-hidden rounded-xl border shadow-sm transition-all duration-200
-        ${isOnline
-          ? 'bg-card border-border hover:shadow-md hover:border-primary/30'
-          : 'bg-muted/30 border-border/50'
-        }
-      `}>
-        {/* Gradient accent for online entities */}
-        {isOnline && (
-          <div className="absolute left-0 top-0 bottom-0 w-1 bg-gradient-to-b from-success via-primary to-info" />
-        )}
-
-        <div className="p-3 pl-4">
-          <div className="flex items-center gap-3">
-            {/* Icon */}
-            <div className={`
-              p-1.5 sm:p-2 rounded-lg shrink-0
-              ${entity.type === 'node'
-                ? isOnline ? 'bg-info-muted' : 'bg-muted'
-                : isOnline ? 'bg-primary/10' : 'bg-muted'
-              }
-            `}>
-              {entity.type === 'node'
-                ? <Server className={`size-3.5 sm:size-4 ${isOnline ? 'text-info' : 'text-muted-foreground'}`} strokeWidth={1.5} />
-                : <Cpu className={`size-3.5 sm:size-4 ${isOnline ? 'text-primary' : 'text-muted-foreground'}`} strokeWidth={1.5} />
-              }
-            </div>
-
-            {/* Name and ID */}
-            <div className="min-w-0 flex-1">
-              <h3 className="text-sm font-semibold text-foreground truncate">
-                {entity.name || entity.id}
-              </h3>
-              {entity.name && (
-                <p className="text-[10px] sm:text-xs text-muted-foreground truncate">{entity.id}</p>
-              )}
-            </div>
-
-            {/* Desktop: Resource meters */}
-            {isOnline && status && (
-              <div className="hidden md:flex items-center gap-4">
-                <div className="flex items-center gap-2">
-                  <span className="text-xs text-muted-foreground">CPU</span>
-                  <div className="w-16 h-1.5 bg-muted rounded-full overflow-hidden">
-                    <div
-                      className={`h-full rounded-full transition-all ${getResourceBgClass(cpuPercent)}`}
-                      style={{ width: `${cpuPercent}%` }}
-                    />
-                  </div>
-                  <span className="text-xs font-medium tabular-nums w-10">{cpuPercent.toFixed(0)}%</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <span className="text-xs text-muted-foreground">MEM</span>
-                  <div className="w-16 h-1.5 bg-muted rounded-full overflow-hidden">
-                    <div
-                      className={`h-full rounded-full transition-all ${getResourceBgClass(memoryPercent)}`}
-                      style={{ width: `${memoryPercent}%` }}
-                    />
-                  </div>
-                  <span className="text-xs font-medium tabular-nums w-10">{memoryPercent.toFixed(0)}%</span>
-                </div>
-              </div>
-            )}
-
-            {/* Desktop: Network rates */}
-            {isOnline && status && (
-              <div className="hidden lg:flex items-center gap-3 text-xs">
-                <div className="flex items-center gap-1.5">
-                  <ArrowDown className="size-3 text-success" />
-                  <span className="tabular-nums text-muted-foreground">{formatBitRate(status.networkRxRate ?? 0)}</span>
-                </div>
-                <div className="flex items-center gap-1.5">
-                  <ArrowUp className="size-3 text-info" />
-                  <span className="tabular-nums text-muted-foreground">{formatBitRate(status.networkTxRate ?? 0)}</span>
-                </div>
-              </div>
-            )}
-
-            {/* Status badge */}
-            <Badge
-              variant={isOnline ? 'default' : 'secondary'}
-              className={`shrink-0 text-[10px] sm:text-xs ${isOnline ? 'bg-success text-success-foreground' : ''}`}
-            >
-              {isOnline ? t('admin.monitor.detail.online') : t('admin.monitor.detail.offline')}
-            </Badge>
-          </div>
-
-          {/* Mobile: Resource meters below */}
-          {isOnline && status && (
-            <div className="md:hidden mt-2.5 pt-2.5 border-t border-border/50 space-y-1.5">
-              <MiniProgressBar value={cpuPercent} label="CPU" colorClass={getResourceBgClass(cpuPercent)} />
-              <MiniProgressBar value={memoryPercent} label="MEM" colorClass={getResourceBgClass(memoryPercent)} />
-              <div className="flex items-center justify-between text-[10px] text-muted-foreground pt-1">
-                <div className="flex items-center gap-1">
-                  <ArrowDown className="size-2.5 text-success" />
-                  <span className="tabular-nums">{formatBitRate(status.networkRxRate ?? 0)}</span>
-                </div>
-                <div className="flex items-center gap-1">
-                  <ArrowUp className="size-2.5 text-info" />
-                  <span className="tabular-nums">{formatBitRate(status.networkTxRate ?? 0)}</span>
-                </div>
-              </div>
-            </div>
+      <div className="@container">
+        <div className={`
+          relative overflow-hidden rounded-xl border shadow-sm transition-all duration-200
+          ${isOnline
+            ? 'bg-card border-border hover:shadow-md hover:border-primary/30'
+            : 'bg-muted/30 border-border/50'
+          }
+        `}>
+          {/* Gradient accent for online entities */}
+          {isOnline && (
+            <div className="absolute left-0 top-0 bottom-0 w-1 bg-gradient-to-b from-success via-primary to-info" />
           )}
+
+          <div className="p-3 pl-4">
+            <div className="flex items-center gap-3">
+              {/* Icon */}
+              <div className={`
+                p-1.5 @sm:p-2 rounded-lg shrink-0
+                ${entity.type === 'node'
+                  ? isOnline ? 'bg-info-muted' : 'bg-muted'
+                  : isOnline ? 'bg-primary/10' : 'bg-muted'
+                }
+              `}>
+                {entity.type === 'node'
+                  ? <Server className={`size-3.5 @sm:size-4 ${isOnline ? 'text-info' : 'text-muted-foreground'}`} strokeWidth={1.5} />
+                  : <Cpu className={`size-3.5 @sm:size-4 ${isOnline ? 'text-primary' : 'text-muted-foreground'}`} strokeWidth={1.5} />
+                }
+              </div>
+
+              {/* Name and ID */}
+              <div className="min-w-0 flex-1">
+                <h3 className="text-sm font-semibold text-foreground truncate">
+                  {entity.name || entity.id}
+                </h3>
+                {entity.name && (
+                  <p className="text-[10px] @sm:text-xs text-muted-foreground truncate">{entity.id}</p>
+                )}
+              </div>
+
+              {/* Desktop: Resource meters */}
+              {isOnline && status && (
+                <div className="hidden @md:flex items-center gap-4">
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs text-muted-foreground">CPU</span>
+                    <div className="w-16 h-1.5 bg-muted rounded-full overflow-hidden">
+                      <div
+                        className={`h-full rounded-full transition-all ${getResourceBgClass(cpuPercent)}`}
+                        style={{ width: `${cpuPercent}%` }}
+                      />
+                    </div>
+                    <span className="text-xs font-medium tabular-nums w-10">{cpuPercent.toFixed(0)}%</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs text-muted-foreground">MEM</span>
+                    <div className="w-16 h-1.5 bg-muted rounded-full overflow-hidden">
+                      <div
+                        className={`h-full rounded-full transition-all ${getResourceBgClass(memoryPercent)}`}
+                        style={{ width: `${memoryPercent}%` }}
+                      />
+                    </div>
+                    <span className="text-xs font-medium tabular-nums w-10">{memoryPercent.toFixed(0)}%</span>
+                  </div>
+                </div>
+              )}
+
+              {/* Desktop: Network rates */}
+              {isOnline && status && (
+                <div className="hidden @lg:flex items-center gap-3 text-xs">
+                  <div className="flex items-center gap-1.5">
+                    <ArrowDown className="size-3 text-success" />
+                    <span className="tabular-nums text-muted-foreground">{formatBitRate(status.networkRxRate ?? 0)}</span>
+                  </div>
+                  <div className="flex items-center gap-1.5">
+                    <ArrowUp className="size-3 text-info" />
+                    <span className="tabular-nums text-muted-foreground">{formatBitRate(status.networkTxRate ?? 0)}</span>
+                  </div>
+                </div>
+              )}
+
+              {/* Status badge */}
+              <Badge
+                variant={isOnline ? 'default' : 'secondary'}
+                className={`shrink-0 text-[10px] @sm:text-xs ${isOnline ? 'bg-success text-success-foreground' : ''}`}
+              >
+                {isOnline ? t('admin.monitor.detail.online') : t('admin.monitor.detail.offline')}
+              </Badge>
+            </div>
+
+            {/* Mobile: Resource meters below */}
+            {isOnline && status && (
+              <div className="@md:hidden mt-2.5 pt-2.5 border-t border-border/50 space-y-1.5">
+                <MiniProgressBar value={cpuPercent} label="CPU" colorClass={getResourceBgClass(cpuPercent)} />
+                <MiniProgressBar value={memoryPercent} label="MEM" colorClass={getResourceBgClass(memoryPercent)} />
+                <div className="flex items-center justify-between text-[10px] text-muted-foreground pt-1">
+                  <div className="flex items-center gap-1">
+                    <ArrowDown className="size-2.5 text-success" />
+                    <span className="tabular-nums">{formatBitRate(status.networkRxRate ?? 0)}</span>
+                  </div>
+                  <div className="flex items-center gap-1">
+                    <ArrowUp className="size-2.5 text-info" />
+                    <span className="tabular-nums">{formatBitRate(status.networkTxRate ?? 0)}</span>
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
         </div>
       </div>
     );
@@ -258,65 +260,66 @@ export const EntityDetailCard = memo(({ entity, compact = false }: EntityDetailC
 
   // Full mode - compact detailed card
   return (
-    <div className={`
-      relative overflow-hidden rounded-xl border shadow-sm transition-all duration-200 cursor-pointer
-      ${isOnline
-        ? 'bg-card border-border hover:shadow-md hover:border-primary/30'
-        : 'bg-muted/30 border-border/50'
-      }
-    `}>
-      {/* Gradient accent for online entities */}
-      {isOnline && (
-        <div className="absolute top-0 left-0 right-0 h-0.5 bg-gradient-to-r from-success via-primary to-info" />
-      )}
+    <div className="@container">
+      <div className={`
+        relative overflow-hidden rounded-xl border shadow-sm transition-all duration-200 cursor-pointer
+        ${isOnline
+          ? 'bg-card border-border hover:shadow-md hover:border-primary/30'
+          : 'bg-muted/30 border-border/50'
+        }
+      `}>
+        {/* Gradient accent for online entities */}
+        {isOnline && (
+          <div className="absolute top-0 left-0 right-0 h-0.5 bg-gradient-to-r from-success via-primary to-info" />
+        )}
 
-      {/* Header with resource metrics inline */}
-      <div className="p-2.5 sm:p-3">
-        <div className="flex items-center gap-2 sm:gap-3">
-          {/* Icon */}
-          <div className={`
-            p-1.5 sm:p-2 rounded-lg shrink-0
-            ${entity.type === 'node'
-              ? isOnline ? 'bg-info-muted' : 'bg-muted'
-              : isOnline ? 'bg-primary/10' : 'bg-muted'
-            }
-          `}>
-            {entity.type === 'node'
-              ? <Server className={`size-4 ${isOnline ? 'text-info' : 'text-muted-foreground'}`} strokeWidth={1.5} />
-              : <Cpu className={`size-4 ${isOnline ? 'text-primary' : 'text-muted-foreground'}`} strokeWidth={1.5} />
-            }
-          </div>
-
-          {/* Name and ID */}
-          <div className="min-w-0 flex-1">
-            <div className="flex items-center gap-2">
-              <h3 className="text-sm font-semibold text-foreground truncate">
-                {entity.name || entity.id}
-              </h3>
-              {isOnline && (
-                <div className="hidden sm:flex items-center gap-1 text-success shrink-0">
-                  <Wifi className="size-3" />
-                  <span className="text-[10px] font-medium">SSE</span>
-                </div>
-              )}
+        {/* Header with resource metrics inline */}
+        <div className="p-2.5 @sm:p-3">
+          <div className="flex items-center gap-2 @sm:gap-3">
+            {/* Icon */}
+            <div className={`
+              p-1.5 @sm:p-2 rounded-lg shrink-0
+              ${entity.type === 'node'
+                ? isOnline ? 'bg-info-muted' : 'bg-muted'
+                : isOnline ? 'bg-primary/10' : 'bg-muted'
+              }
+            `}>
+              {entity.type === 'node'
+                ? <Server className={`size-4 ${isOnline ? 'text-info' : 'text-muted-foreground'}`} strokeWidth={1.5} />
+                : <Cpu className={`size-4 ${isOnline ? 'text-primary' : 'text-muted-foreground'}`} strokeWidth={1.5} />
+              }
             </div>
-            <p className="text-[10px] text-muted-foreground truncate font-mono">
-              {entity.id}
-            </p>
+
+            {/* Name and ID */}
+            <div className="min-w-0 flex-1">
+              <div className="flex items-center gap-2">
+                <h3 className="text-sm font-semibold text-foreground truncate">
+                  {entity.name || entity.id}
+                </h3>
+                {isOnline && (
+                  <div className="hidden @sm:flex items-center gap-1 text-success shrink-0">
+                    <Wifi className="size-3" />
+                    <span className="text-[10px] font-medium">SSE</span>
+                  </div>
+                )}
+              </div>
+              <p className="text-[10px] text-muted-foreground truncate font-mono">
+                {entity.id}
+              </p>
+            </div>
+
+            {/* Status badge */}
+            <Badge
+              variant={isOnline ? 'default' : 'secondary'}
+              className={`shrink-0 text-[10px] ${isOnline ? 'bg-success text-success-foreground' : ''}`}
+            >
+              {isOnline ? t('admin.monitor.detail.online') : t('admin.monitor.detail.offline')}
+            </Badge>
           </div>
-
-          {/* Status badge */}
-          <Badge
-            variant={isOnline ? 'default' : 'secondary'}
-            className={`shrink-0 text-[10px] ${isOnline ? 'bg-success text-success-foreground' : ''}`}
-          >
-            {isOnline ? t('admin.monitor.detail.online') : t('admin.monitor.detail.offline')}
-          </Badge>
         </div>
-      </div>
 
-      {isOnline && status ? (
-        <div className="px-2.5 pb-2.5 sm:px-3 sm:pb-3 space-y-2">
+        {isOnline && status ? (
+          <div className="px-2.5 pb-2.5 @sm:px-3 @sm:pb-3 space-y-2">
           {/* Resource metrics - inline progress bars */}
           <div className="grid grid-cols-3 gap-2 p-2 rounded-lg bg-muted/30">
             <InlineProgress value={cpuPercent} label={t('admin.monitor.cpu')} />
@@ -381,22 +384,23 @@ export const EntityDetailCard = memo(({ entity, compact = false }: EntityDetailC
             )}
           </div>
         </div>
-      ) : (
-        /* Offline state - compact */
-        <div className="p-4 flex flex-col items-center justify-center text-center">
-          <div className="size-10 rounded-full bg-muted/50 flex items-center justify-center mb-2">
-            <Wifi className="size-4 text-muted-foreground/40" />
-          </div>
-          <p className="text-xs font-medium text-muted-foreground">
-            {entity.type === 'node' ? t('admin.monitor.detail.nodeAgentOffline') : t('admin.monitor.detail.forwardAgentOffline')}
-          </p>
-          {entity.lastSeenAt && (
-            <p className="text-[10px] text-muted-foreground/70 mt-1">
-              {t('admin.monitor.detail.lastOnline')}: {formatRelativeTime(entity.lastSeenAt)}
+        ) : (
+          /* Offline state - compact */
+          <div className="p-4 flex flex-col items-center justify-center text-center">
+            <div className="size-10 rounded-full bg-muted/50 flex items-center justify-center mb-2">
+              <Wifi className="size-4 text-muted-foreground/40" />
+            </div>
+            <p className="text-xs font-medium text-muted-foreground">
+              {entity.type === 'node' ? t('admin.monitor.detail.nodeAgentOffline') : t('admin.monitor.detail.forwardAgentOffline')}
             </p>
-          )}
-        </div>
-      )}
+            {entity.lastSeenAt && (
+              <p className="text-[10px] text-muted-foreground/70 mt-1">
+                {t('admin.monitor.detail.lastOnline')}: {formatRelativeTime(entity.lastSeenAt)}
+              </p>
+            )}
+          </div>
+        )}
+      </div>
     </div>
   );
 }, arePropsEqual);

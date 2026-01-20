@@ -18,7 +18,7 @@ import { ThemeToggle } from '@/components/common/ThemeToggle';
 import { LanguageSwitcher } from '@/components/common/LanguageSwitcher';
 import { getNavItems } from '@/config/navigation';
 import { usePermissions } from '@/features/auth/hooks/usePermissions';
-import { useBreakpoint, useVersionInfo } from '@/hooks';
+import { useVersionInfo } from '@/hooks';
 import { cn } from '@/lib/utils';
 
 // Lazy load dialogs and drawers (only needed on interaction)
@@ -42,7 +42,6 @@ export const DashboardLayout = ({ children }: DashboardLayoutProps) => {
   const { user } = useAuthStore();
   const { logout } = useAuth();
   const { filterNavigationByPermission, userRole } = usePermissions();
-  const { isMobile } = useBreakpoint();
   const { serverVersion, clientVersion } = useVersionInfo();
 
   const [profileDialogOpen, setProfileDialogOpen] = useState(false);
@@ -85,100 +84,90 @@ export const DashboardLayout = ({ children }: DashboardLayoutProps) => {
         <div
           className={cn(
             'mx-auto flex items-center',
-            // iOS standard height (44px) for mobile, 56px for desktop
-            isMobile ? 'h-11 px-2' : 'max-w-6xl h-14 px-4 sm:px-6'
+            // Mobile: iOS standard height 44px
+            'h-11 px-2',
+            // Desktop: 56px height with container
+            'md:max-w-6xl md:h-14 md:px-4 lg:px-6'
           )}
         >
-          {/* Mobile: iOS-style layout with centered logo */}
-          {isMobile ? (
-            <>
-              {/* Left section - menu button */}
-              <div className="w-11 flex-shrink-0">
-                {shouldShowNavigation && (
-                  <button
-                    className={cn(
-                      'flex items-center justify-center',
-                      'size-11',
-                      'rounded-full',
-                      'text-primary',
-                      'active:bg-foreground/5',
-                      'transition-colors motion-reduce:transition-none'
-                    )}
-                    onClick={() => setMobileDrawerOpen(true)}
-                    aria-label="Open menu"
-                  >
-                    <Menu className="size-[22px]" strokeWidth={2} />
-                  </button>
+          {/* ===== Mobile Layout ===== */}
+          {/* Left section - menu button (mobile only) */}
+          <div className="w-11 flex-shrink-0 md:hidden">
+            {shouldShowNavigation && (
+              <button
+                className={cn(
+                  'flex items-center justify-center',
+                  'size-11',
+                  'rounded-full',
+                  'text-primary',
+                  'active:bg-foreground/5',
+                  'transition-colors motion-reduce:transition-none'
                 )}
+                onClick={() => setMobileDrawerOpen(true)}
+                aria-label="Open menu"
+              >
+                <Menu className="size-[22px]" strokeWidth={2} />
+              </button>
+            )}
+          </div>
+
+          {/* Center section - brand logo (mobile: centered, desktop: left-aligned) */}
+          <div className="flex-1 flex justify-center md:flex-none md:mr-4">
+            <ViewTransitionLink to="/" className="flex items-center gap-2">
+              <div className="size-8 rounded-lg bg-primary flex items-center justify-center">
+                <Globe className="size-5 text-primary-foreground" />
               </div>
+              <span className="text-[17px] font-semibold md:text-lg">Orris</span>
+            </ViewTransitionLink>
+          </div>
 
-              {/* Center section - brand logo */}
-              <div className="flex-1 flex justify-center">
-                <ViewTransitionLink to="/" className="flex items-center gap-2">
-                  <div className="size-8 rounded-lg bg-primary flex items-center justify-center">
-                    <Globe className="size-5 text-primary-foreground" />
-                  </div>
-                  <span className="text-[17px] font-semibold">Orris</span>
-                </ViewTransitionLink>
-              </div>
+          {/* Right section - user menu (mobile only) */}
+          <div className="w-11 flex-shrink-0 flex justify-end md:hidden">
+            <UserMenu
+              user={user}
+              showAdminSwitch={userRole === 'admin'}
+              onProfileClick={() => setProfileDialogOpen(true)}
+              onNotificationsClick={() => navigate('/dashboard/notifications')}
+              onAdminClick={handleGoToAdmin}
+              onLogout={handleLogout}
+            />
+          </div>
 
-              {/* Right section - user menu */}
-              <div className="w-11 flex-shrink-0 flex justify-end">
-                <UserMenu
-                  user={user}
-                  showAdminSwitch={userRole === 'admin'}
-                  onProfileClick={() => setProfileDialogOpen(true)}
-                  onNotificationsClick={() => navigate('/dashboard/notifications')}
-                  onAdminClick={handleGoToAdmin}
-                  onLogout={handleLogout}
-                />
-              </div>
-            </>
-          ) : (
-            /* Desktop: standard layout */
-            <>
-              {/* Logo/Brand */}
-              <ViewTransitionLink to="/" className="mr-4 flex items-center gap-2">
-                <div className="size-8 rounded-lg bg-primary flex items-center justify-center">
-                  <Globe className="size-5 text-primary-foreground" />
-                </div>
-                <span className="text-lg font-semibold">Orris</span>
-              </ViewTransitionLink>
+          {/* ===== Desktop Layout ===== */}
+          {/* Desktop navigation links */}
+          <div className="hidden md:block">
+            {shouldShowNavigation && (
+              <DesktopNav navigationItems={visibleNavigationItems} />
+            )}
+          </div>
 
-              {/* Desktop navigation links */}
-              {shouldShowNavigation && (
-                <DesktopNav navigationItems={visibleNavigationItems} />
-              )}
+          {/* Spacer */}
+          <div className="hidden md:block md:flex-1" />
 
-              {/* Spacer */}
-              <div className="flex-1" />
+          {/* Theme toggle, language switcher and user menu (desktop) */}
+          <div className="hidden md:flex md:items-center md:gap-3">
+            <LanguageSwitcher />
+            <ThemeToggle />
 
-              {/* Theme toggle, language switcher and user menu */}
-              <div className="flex items-center gap-3">
-                <LanguageSwitcher />
-                <ThemeToggle />
+            <div className="text-right">
+              <p className="text-sm font-medium leading-none">{user?.displayName}</p>
+              <p className="text-xs text-muted-foreground">{user?.email}</p>
+            </div>
 
-                <div className="text-right">
-                  <p className="text-sm font-medium leading-none">{user?.displayName}</p>
-                  <p className="text-xs text-muted-foreground">{user?.email}</p>
-                </div>
-
-                <UserMenu
-                  user={user}
-                  showAdminSwitch={userRole === 'admin'}
-                  onProfileClick={() => setProfileDialogOpen(true)}
-                  onNotificationsClick={() => navigate('/dashboard/notifications')}
-                  onAdminClick={handleGoToAdmin}
-                  onLogout={handleLogout}
-                />
-              </div>
-            </>
-          )}
+            <UserMenu
+              user={user}
+              showAdminSwitch={userRole === 'admin'}
+              onProfileClick={() => setProfileDialogOpen(true)}
+              onNotificationsClick={() => navigate('/dashboard/notifications')}
+              onAdminClick={handleGoToAdmin}
+              onLogout={handleLogout}
+            />
+          </div>
         </div>
       </header>
 
-      {/* Lazy-loaded mobile drawer - only render on mobile */}
-      {shouldShowNavigation && isMobile && (
+      {/* Lazy-loaded mobile drawer - renders when open */}
+      {shouldShowNavigation && mobileDrawerOpen && (
         <Suspense fallback={null}>
           <MobileDrawer
             open={mobileDrawerOpen}

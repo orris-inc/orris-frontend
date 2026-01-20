@@ -399,16 +399,20 @@
     },
     "quickAccess": {
       "title": "Quick Access",
-      "users": "Users",
+      "users": "User Management",
       "usersDesc": "Manage all user accounts and permissions",
-      "subscriptions": "Subscriptions",
+      "subscriptions": "Subscription Management",
       "subscriptionsDesc": "View and manage user subscriptions",
-      "nodes": "Nodes",
+      "nodes": "Node Management",
       "nodesDesc": "Monitor and configure server nodes",
       "nodeAgent": "Node Agent",
       "nodeAgentDesc": "Monitor and configure server nodes",
       "liveMonitor": "Live Monitor",
-      "liveMonitorDesc": "View real-time system status"
+      "liveMonitorDesc": "View real-time system status",
+      "forwardRules": "Forward Rules",
+      "forwardRulesDesc": "Manage port forwarding rules",
+      "resourceGroups": "Resource Groups",
+      "resourceGroupsDesc": "Manage resource group allocation"
     },
     "moreManagement": {
       "title": "More",
@@ -422,7 +426,9 @@
       "title": "System Status",
       "nodeOnlineRate": "Node Online Rate",
       "activeNodes": "Active Nodes",
-      "count": "{{count}} nodes"
+      "activeUsers": "Active Users",
+      "count": "{{count}}",
+      "settings": "Settings"
     },
     "dateRange": {
       "today": "Today",
@@ -1111,6 +1117,7 @@
         "owner": "Owner",
         "node": "Node",
         "nodeInfo": "Node Info",
+        "nodeName": "Node Name",
         "nodeServerAddress": "Node Server Address",
         "status": "Status",
         "resourceGroups": "Resource Groups",
@@ -1165,9 +1172,12 @@
         "nodeRouting": "Node Routing",
         "nodeRoutingHint": "Change the node for this rule. If not selected, the rule will be auto-assigned.",
         "currentNodeInfo": "Current Node Info",
+        "resourceGroups": "Resource Groups",
+        "resourceGroupsHint": "Modify resource groups bound to this rule. Clearing all will unbind all groups.",
         "readOnlyInfo": "Read-only Info (cannot be modified)",
         "saving": "Saving..."
-      }
+      },
+      "noResourceGroups": "No resource groups available"
     },
     "monitor": {
       "systemMonitor": "System Monitor",
@@ -1642,11 +1652,30 @@
       "overview": "Overview",
       "defaultUser": "User",
       "mySubscriptions": "My Subscriptions",
+      "viewAllPlans": "View All Plans",
+      "welcomeMessage": "Manage your subscriptions and view usage.",
       "loading": "Loading...",
       "errorLoadUser": "Unable to load user information",
+      "greeting": {
+        "morning": "Good morning",
+        "afternoon": "Good afternoon",
+        "evening": "Good evening"
+      },
+      "stats": {
+        "totalTraffic": "Total Traffic",
+        "upload": "Upload",
+        "download": "Download"
+      },
+      "status": {
+        "noSubscription": "Start your first subscription to unlock premium services",
+        "expiringSoon": "\"{{plan}}\" expires in {{days}} days, remember to renew",
+        "highUsage": "You've used {{percent}}% of your traffic, consider upgrading?",
+        "allGood": "{{count}} subscription running smoothly",
+        "allGood_other": "{{count}} subscriptions running smoothly"
+      },
       "empty": {
         "title": "No Subscriptions",
-        "description": "You don't have any subscriptions yet",
+        "description": "Start your first subscription to unlock premium services",
         "viewPlans": "Browse Plans"
       },
       "subscription": {
@@ -1663,7 +1692,7 @@
       },
       "quickActions": {
         "upgrade": "Upgrade",
-        "upgradeDesc": "Get more bandwidth",
+        "upgradeDesc": "Get more bandwidth and features",
         "viewPlans": "View Plans",
         "viewPlansDesc": "Compare all options"
       }
@@ -1763,6 +1792,43 @@
     "contactUs": "Contact us",
     "getStarted": "Get started",
     "footerNote": "All plans support upgrade or downgrade at any time. Contact support if you have any questions.",
+    "hero": {
+      "available": "{{count}} plans available for you",
+      "noPlans": "No plans available at the moment"
+    },
+    "plans": {
+      "title": "Available Plans"
+    },
+    "features": {
+      "instant": {
+        "title": "Instant Activation",
+        "desc": "Start using immediately after subscription"
+      },
+      "flexible": {
+        "title": "Flexible Plans",
+        "desc": "Upgrade or downgrade anytime"
+      },
+      "support": {
+        "title": "24/7 Support",
+        "desc": "Get help whenever you need"
+      },
+      "oneUser": "1 user account",
+      "users": "Up to {{count}} user accounts",
+      "oneProject": "1 project",
+      "projects": "{{count}} projects",
+      "oneNode": "1 node",
+      "nodes": "{{count}} nodes",
+      "apiRate": "{{count}} API requests/min",
+      "trialDays": "{{count}}-day free trial",
+      "featuredDesc": "Perfect for growing teams and businesses.",
+      "defaultDesc": "Everything you need to get started."
+    },
+    "quickActions": {
+      "viewSubscriptions": "View Subscriptions",
+      "viewSubscriptionsDesc": "Check your current subscription status",
+      "setupNotifications": "Setup Notifications",
+      "setupNotificationsDesc": "Get notified about subscription updates"
+    },
     "perWeek": "/week",
     "perMonth": "/month",
     "perQuarter": "/quarter",
@@ -1778,18 +1844,6 @@
       "priceTbd": "Price TBD",
       "freeTrial": "{{days}}-day free trial",
       "selectPlan": "Select Plan"
-    },
-    "features": {
-      "oneUser": "1 user account",
-      "users": "Up to {{count}} user accounts",
-      "oneProject": "1 project",
-      "projects": "{{count}} projects",
-      "oneNode": "1 node",
-      "nodes": "{{count}} nodes",
-      "apiRate": "{{count}} API requests/min",
-      "trialDays": "{{count}}-day free trial",
-      "featuredDesc": "Perfect for growing teams and businesses.",
-      "defaultDesc": "Everything you need to get started."
     },
     "confirm": {
       "title": "Confirm Subscription",
@@ -1824,6 +1878,28 @@
   "notifications": {
     "title": "Notification Settings",
     "subtitle": "Manage your notification preferences and Telegram binding",
+    "hero": {
+      "bound": "{{count}} notification types enabled",
+      "unbound": "Bind Telegram to receive notifications",
+      "notConfigured": "Notification service is not configured"
+    },
+    "stats": {
+      "active": "Active",
+      "channels": "Channels",
+      "channelUnit": "channel"
+    },
+    "types": {
+      "title": "Notification Types"
+    },
+    "channels": {
+      "title": "Notification Channels"
+    },
+    "quickActions": {
+      "viewDashboard": "View Dashboard",
+      "viewDashboardDesc": "Check your subscription usage and status",
+      "viewSettings": "Account Settings",
+      "viewSettingsDesc": "Manage your account preferences"
+    },
     "telegram": {
       "label": "Telegram",
       "binding": "Telegram Binding",
@@ -1858,10 +1934,12 @@
     },
     "expiring": {
       "title": "Expiry Reminder",
+      "description": "Get notified before your subscription expires",
       "daysAhead": "{{days}} days ahead"
     },
     "traffic": {
       "title": "Traffic Alert",
+      "description": "Get notified when traffic usage exceeds threshold",
       "threshold": "Threshold {{percent}}%"
     }
   },
@@ -1876,6 +1954,21 @@
     "totalNodes": "{{count}} nodes in total",
     "addNode": "Add Node",
     "tokenTitle": "Node Token",
+    "myNodes": "My Nodes",
+    "stats": {
+      "quota": "Node Quota",
+      "online": "Online",
+      "offline": "Offline",
+      "nodes": "nodes",
+      "summary": "{{total}} nodes total, {{online}} online",
+      "noNodes": "Create your first node to get started"
+    },
+    "quickActions": {
+      "viewAgents": "View Forward Agents",
+      "viewAgentsDesc": "Check available forward agents for your nodes",
+      "upgradePlan": "Upgrade Plan",
+      "upgradePlanDesc": "Increase your node quota and unlock more features"
+    },
     "installScript": {
       "title": "Install Command",
       "description": "Run the install command on the target server to complete deployment",

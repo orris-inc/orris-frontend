@@ -59,7 +59,7 @@ const RankingItem = ({ item }: { item: TrafficRankingItem }) => {
   return (
     <div
       className={cn(
-        'flex items-center gap-2 sm:gap-4 p-3 sm:p-4 rounded-lg sm:rounded-xl border transition-all duration-300',
+        'flex items-center gap-2 @sm:gap-4 p-3 @sm:p-4 rounded-lg @sm:rounded-xl border transition-all duration-300',
         'bg-card',
         'hover:shadow-md',
         colors.border
@@ -68,7 +68,7 @@ const RankingItem = ({ item }: { item: TrafficRankingItem }) => {
       {/* Rank Badge */}
       <div
         className={cn(
-          'flex items-center justify-center min-w-8 h-8 sm:min-w-10 sm:h-10 rounded-md sm:rounded-lg border transition-all',
+          'flex items-center justify-center min-w-8 h-8 @sm:min-w-10 @sm:h-10 rounded-md @sm:rounded-lg border transition-all',
           colors.bg,
           colors.text,
           colors.border,
@@ -76,26 +76,26 @@ const RankingItem = ({ item }: { item: TrafficRankingItem }) => {
         )}
       >
         {isTopThree ? (
-          <Trophy className="size-4 sm:size-5" strokeWidth={2} />
+          <Trophy className="size-4 @sm:size-5" strokeWidth={2} />
         ) : (
-          <span className="font-semibold text-xs sm:text-sm">#{item.rank}</span>
+          <span className="font-semibold text-xs @sm:text-sm">#{item.rank}</span>
         )}
       </div>
 
       {/* Name */}
       <div className="flex-1 min-w-0">
-        <p className="text-xs sm:text-sm font-semibold text-foreground truncate">
+        <p className="text-xs @sm:text-sm font-semibold text-foreground truncate">
           {item.name}
         </p>
-        <p className="text-[11px] sm:text-xs text-muted-foreground truncate">
+        <p className="text-[11px] @sm:text-xs text-muted-foreground truncate">
           {item.id}
         </p>
       </div>
 
       {/* Traffic Stats */}
-      <div className="flex items-center gap-2 sm:gap-4 text-[11px] sm:text-xs">
+      <div className="flex items-center gap-2 @sm:gap-4 text-[11px] @sm:text-xs">
         {/* Upload - hidden on mobile */}
-        <div className="hidden sm:flex items-center gap-1.5 whitespace-nowrap">
+        <div className="hidden @sm:flex items-center gap-1.5 whitespace-nowrap">
           <ArrowUp className="size-3.5 text-chart-upload" strokeWidth={2} />
           <span className="font-medium text-foreground">
             {formatTrafficBytes(item.upload)}
@@ -103,7 +103,7 @@ const RankingItem = ({ item }: { item: TrafficRankingItem }) => {
         </div>
 
         {/* Download - hidden on mobile */}
-        <div className="hidden sm:flex items-center gap-1.5 whitespace-nowrap">
+        <div className="hidden @sm:flex items-center gap-1.5 whitespace-nowrap">
           <ArrowDown className="size-3.5 text-chart-download" strokeWidth={2} />
           <span className="font-medium text-foreground">
             {formatTrafficBytes(item.download)}
@@ -111,8 +111,8 @@ const RankingItem = ({ item }: { item: TrafficRankingItem }) => {
         </div>
 
         {/* Total - always visible */}
-        <div className="flex items-center gap-1 sm:gap-1.5 whitespace-nowrap">
-          <Activity className="size-3 sm:size-3.5 text-primary" strokeWidth={2} />
+        <div className="flex items-center gap-1 @sm:gap-1.5 whitespace-nowrap">
+          <Activity className="size-3 @sm:size-3.5 text-primary" strokeWidth={2} />
           <span className="font-bold text-foreground">
             {formatTrafficBytes(item.total)}
           </span>
@@ -127,11 +127,11 @@ const RankingItem = ({ item }: { item: TrafficRankingItem }) => {
  */
 const RankingListSkeleton = () => {
   return (
-    <div className="h-[320px] sm:h-[480px] space-y-2 sm:space-y-3">
+    <div className="h-[320px] @sm:h-[480px] space-y-2 @sm:space-y-3">
       {[...Array(7)].map((_, index) => (
         <div
           key={index}
-          className="flex items-center gap-2 sm:gap-4 p-3 sm:p-4 rounded-lg sm:rounded-xl border border-border bg-card"
+          className="flex items-center gap-2 @sm:gap-4 p-3 @sm:p-4 rounded-lg @sm:rounded-xl border border-border bg-card"
         >
           {/* Rank Badge Skeleton */}
           <div className="min-w-10 h-10 bg-muted rounded-lg animate-pulse motion-reduce:animate-none" />
@@ -178,27 +178,27 @@ export const TrafficRankingList = ({
 
   return (
     <AdminCard noPadding>
-      <Tabs defaultValue="user" className="w-full">
+      <Tabs defaultValue="user" className="@container w-full">
         {/* Header with Title and Tabs */}
-        <div className="flex items-center justify-between px-4 sm:px-6 py-4 sm:py-0 sm:h-[72px] border-b border-border">
-          <h3 className="text-base sm:text-lg font-semibold text-foreground">
+        <div className="flex items-center justify-between px-4 @sm:px-6 py-4 @sm:py-0 @sm:h-[72px] border-b border-border">
+          <h3 className="text-base @sm:text-lg font-semibold text-foreground">
             {t('admin.traffic.ranking')}
           </h3>
-          <TabsList className="h-8 sm:h-9">
-            <TabsTrigger value="user" className="text-xs sm:text-sm px-2.5 sm:px-3">{t('admin.traffic.userRanking')}</TabsTrigger>
-            <TabsTrigger value="subscription" className="text-xs sm:text-sm px-2.5 sm:px-3">{t('admin.traffic.subscriptionRanking')}</TabsTrigger>
+          <TabsList className="h-8 @sm:h-9">
+            <TabsTrigger value="user" className="text-xs @sm:text-sm px-2.5 @sm:px-3">{t('admin.traffic.userRanking')}</TabsTrigger>
+            <TabsTrigger value="subscription" className="text-xs @sm:text-sm px-2.5 @sm:px-3">{t('admin.traffic.subscriptionRanking')}</TabsTrigger>
           </TabsList>
         </div>
 
         {/* User Ranking Tab */}
-        <TabsContent value="user" className="px-4 sm:px-6 pb-4 sm:pb-6 pt-3 sm:pt-4">
+        <TabsContent value="user" className="px-4 @sm:px-6 pb-4 @sm:pb-6 pt-3 @sm:pt-4">
           {loading ? (
             <RankingListSkeleton />
           ) : userRanking.length === 0 ? (
             <EmptyState message={t('admin.traffic.noUserData')} />
           ) : (
-            <ScrollArea className="h-[320px] sm:h-[480px]">
-              <div className="space-y-2 sm:space-y-3 pr-4">
+            <ScrollArea className="h-[320px] @sm:h-[480px]">
+              <div className="space-y-2 @sm:space-y-3 pr-4">
                 {userRanking.map((item) => (
                   <RankingItem key={item.id} item={item} />
                 ))}
@@ -208,14 +208,14 @@ export const TrafficRankingList = ({
         </TabsContent>
 
         {/* Subscription Ranking Tab */}
-        <TabsContent value="subscription" className="px-4 sm:px-6 pb-4 sm:pb-6 pt-3 sm:pt-4">
+        <TabsContent value="subscription" className="px-4 @sm:px-6 pb-4 @sm:pb-6 pt-3 @sm:pt-4">
           {loading ? (
             <RankingListSkeleton />
           ) : subscriptionRanking.length === 0 ? (
             <EmptyState message={t('admin.traffic.noSubscriptionData')} />
           ) : (
-            <ScrollArea className="h-[320px] sm:h-[480px]">
-              <div className="space-y-2 sm:space-y-3 pr-4">
+            <ScrollArea className="h-[320px] @sm:h-[480px]">
+              <div className="space-y-2 @sm:space-y-3 pr-4">
                 {subscriptionRanking.map((item) => (
                   <RankingItem key={item.id} item={item} />
                 ))}

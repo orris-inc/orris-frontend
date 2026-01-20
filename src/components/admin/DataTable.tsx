@@ -352,8 +352,8 @@ export function DataTable<TData>({
   };
 
   return (
-    <div className="flex flex-col">
-      {/* Table Container */}
+    <div className="flex flex-col @container">
+      {/* Table Container - supports container queries for responsive column sizing */}
       <div
         ref={tableContainerRef}
         className={cn(

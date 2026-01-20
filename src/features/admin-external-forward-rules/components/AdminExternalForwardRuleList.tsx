@@ -197,25 +197,25 @@ export const AdminExternalForwardRuleList: React.FC<AdminExternalForwardRuleList
         },
       },
       {
-        id: 'nodeSid',
+        id: 'nodeName',
         header: t('admin.externalForwardRules.columns.node'),
-        size: 100,
+        size: 140,
         meta: { priority: 2 } as ResponsiveColumnMeta,
         cell: ({ row }) => {
-          const nodeSid = row.original.nodeSid;
-          if (!nodeSid) {
+          const { nodeName, nodeProtocol } = row.original;
+          if (!nodeName) {
             return <span className="text-muted-foreground text-xs">-</span>;
           }
           return (
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <div className="flex items-center gap-1.5 cursor-help">
-                  <Server className="size-3.5 text-muted-foreground" />
-                  <span className="text-xs font-mono truncate max-w-[80px]">{nodeSid}</span>
-                </div>
-              </TooltipTrigger>
-              <TooltipContent>{nodeSid}</TooltipContent>
-            </Tooltip>
+            <div className="flex items-center gap-1.5">
+              <Server className="size-3.5 text-muted-foreground" />
+              <span className="text-sm truncate">{nodeName}</span>
+              {nodeProtocol && (
+                <Badge variant="outline" className="text-[10px] px-1 py-0">
+                  {nodeProtocol.toUpperCase()}
+                </Badge>
+              )}
+            </div>
           );
         },
       },

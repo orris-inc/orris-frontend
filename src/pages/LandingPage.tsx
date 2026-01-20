@@ -405,13 +405,13 @@ export const LandingPage = () => {
           <div className="text-center mb-16">
             <motion.h2
               variants={fadeInUp}
-              className="text-3xl md:text-4xl font-bold mb-4"
+              className="text-fluid-2xl font-bold mb-4"
             >
               {t('landing.features.title')}
             </motion.h2>
             <motion.p
               variants={fadeInUp}
-              className="text-muted-foreground text-lg max-w-2xl mx-auto"
+              className="text-muted-foreground text-fluid-lg max-w-2xl mx-auto"
             >
               {t('landing.features.subtitle')}
             </motion.p>
@@ -461,14 +461,14 @@ export const LandingPage = () => {
             <motion.h2
               variants={fadeInUp}
               transition={{ duration: 0.5 }}
-              className="text-3xl md:text-4xl font-bold mb-4"
+              className="text-fluid-2xl font-bold mb-4"
             >
               {t('landing.howItWorks.title')}
             </motion.h2>
             <motion.p
               variants={fadeInUp}
               transition={{ duration: 0.5 }}
-              className="text-muted-foreground text-lg max-w-2xl mx-auto"
+              className="text-muted-foreground text-fluid-lg max-w-2xl mx-auto"
             >
               {t('landing.howItWorks.subtitle')}
             </motion.p>
@@ -564,14 +564,14 @@ export const LandingPage = () => {
               <motion.h2
                 variants={fadeInUp}
                 transition={{ duration: 0.5 }}
-                className="text-3xl md:text-4xl font-bold mb-4"
+                className="text-fluid-2xl font-bold mb-4"
               >
                 {t('landing.cta.title')}
               </motion.h2>
               <motion.p
                 variants={fadeInUp}
                 transition={{ duration: 0.5 }}
-                className="text-primary-foreground/80 text-lg max-w-xl mx-auto mb-8"
+                className="text-primary-foreground/80 text-fluid-lg max-w-xl mx-auto mb-8"
               >
                 {t('landing.cta.subtitle')}
               </motion.p>

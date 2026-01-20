@@ -1,23 +1,48 @@
 /**
  * User nodes management page
+ * Modern Bento Grid layout with node stats and management
  */
 
-import { lazy, Suspense, useState } from 'react';
+import { lazy, Suspense, useState, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Plus, AlertCircle, Zap } from 'lucide-react';
+import {
+  Plus,
+  AlertCircle,
+  Zap,
+  Server,
+  Wifi,
+  WifiOff,
+  Sparkles,
+} from 'lucide-react';
 import { Link } from 'react-router';
-import { DashboardLayout } from '@/layouts/DashboardLayout';
+
+import type {
+  UserNode,
+  CreateUserNodeRequest,
+  CreateUserNodeResponse,
+  UpdateUserNodeRequest,
+  RegenerateUserNodeTokenResponse,
+} from '@/api/node';
 import { Button } from '@/components/common/Button';
+import { Progress } from '@/components/common/Progress';
 import { TokenDialog } from '@/components/common/TokenDialog';
-import { usePageTitle } from '@/shared/hooks';
+import { useUserForwardUsage } from '@/features/user-forward-rules/hooks/useUserForwardRules';
+import { UserNodeList } from '@/features/user-nodes/components/UserNodeList';
 import {
   useUserNodesPage,
   useUserNodeUsage,
   useUserNodeInstallScript,
 } from '@/features/user-nodes/hooks/useUserNodes';
-import { useUserForwardUsage } from '@/features/user-forward-rules/hooks/useUserForwardRules';
-import { UserNodeList } from '@/features/user-nodes/components/UserNodeList';
-import { UserNodeUsageCard } from '@/features/user-nodes/components/UserNodeUsageCard';
+import { DashboardLayout } from '@/layouts/DashboardLayout';
+import { cn } from '@/lib/utils';
+import { usePageTitle } from '@/shared/hooks';
+import {
+  PageHeroSection,
+  BentoStatCard,
+  SectionHeader,
+  EmptyState,
+  QuickActionLink,
+} from '@/components/common/bento';
 
 const CreateUserNodeDialog = lazy(() =>
   import('@/features/user-nodes/components/CreateUserNodeDialog').then((m) => ({
@@ -43,14 +68,6 @@ const UserNodeInstallScriptDialog = lazy(() =>
   }))
 );
 
-import type {
-  UserNode,
-  CreateUserNodeRequest,
-  CreateUserNodeResponse,
-  UpdateUserNodeRequest,
-  RegenerateUserNodeTokenResponse,
-} from '@/api/node';
-
 export const UserNodesPage = () => {
   const { t } = useTranslation();
   usePageTitle(t('userNodes.title'));
@@ -69,17 +86,14 @@ export const UserNodesPage = () => {
     isRegeneratingToken,
   } = useUserNodesPage();
 
-  // Fetch user node usage/quota
   const {
     nodeCount,
     nodeLimit,
     isLoading: isUsageLoading,
   } = useUserNodeUsage();
 
-  // Fetch forward usage to check subscription status
   const { usage: forwardUsage, isLoading: isForwardUsageLoading } = useUserForwardUsage();
 
-  // Check if user has no forward subscription (no allowed types means no permission)
   const hasNoSubscription = forwardUsage && forwardUsage.allowedTypes.length === 0;
 
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
@@ -90,15 +104,40 @@ export const UserNodesPage = () => {
   const [installScriptNode, setInstallScriptNode] = useState<UserNode | null>(null);
   const [currentToken, setCurrentToken] = useState<string | null>(null);
 
-  // Fetch install script for selected node
   const {
     installScript,
     isLoading: isInstallScriptLoading,
   } = useUserNodeInstallScript(installScriptNode?.id ?? null);
 
-  const handleCreateClick = () => {
-    setCreateDialogOpen(true);
-  };
+  const nodeStats = useMemo(() => {
+    const onlineCount = nodes.filter((n) => n.isOnline).length;
+    const offlineCount = nodes.filter((n) => !n.isOnline).length;
+    const isUnlimited = !nodeLimit || nodeLimit === 0;
+    const usagePercent = isUnlimited ? 0 : Math.min((nodeCount / nodeLimit) * 100, 100);
+    const isNearLimit = !isUnlimited && usagePercent >= 80;
+    const isAtLimit = !isUnlimited && nodeCount >= nodeLimit;
+
+    return {
+      total: pagination.total,
+      online: onlineCount,
+      offline: offlineCount,
+      isUnlimited,
+      usagePercent,
+      isNearLimit,
+      isAtLimit,
+    };
+  }, [nodes, nodeCount, nodeLimit, pagination.total]);
+
+  const isPageLoading = isLoading || isUsageLoading || isForwardUsageLoading;
+
+  const heroStatusMessage = useMemo(() => {
+    if (isPageLoading || hasNoSubscription) return undefined;
+    return nodeStats.total > 0
+      ? t('userNodes.stats.summary', { total: nodeStats.total, online: nodeStats.online })
+      : t('userNodes.stats.noNodes');
+  }, [isPageLoading, hasNoSubscription, nodeStats.total, nodeStats.online, t]);
+
+  const handleCreateClick = () => setCreateDialogOpen(true);
 
   const handleEditClick = (node: UserNode) => {
     setSelectedNode(node);
@@ -155,70 +194,166 @@ export const UserNodesPage = () => {
 
   return (
     <DashboardLayout>
-      <div className="space-y-4 sm:space-y-6 pb-safe">
-        {/* Page header */}
-        <div>
-          <h1 className="text-xl sm:text-2xl font-semibold text-foreground">{t('userNodes.title')}</h1>
-          <p className="text-sm sm:text-base text-muted-foreground">{t('userNodes.subtitle')}</p>
-        </div>
+      <div className="space-y-6 pb-safe">
+        {/* Hero Section */}
+        <PageHeroSection
+          title={t('userNodes.title')}
+          subtitle={t('userNodes.subtitle')}
+          statusMessage={heroStatusMessage}
+          icon={Server}
+        />
 
-        {/* No subscription prompt - glass effect on mobile */}
+        {/* No subscription prompt */}
         {hasNoSubscription && (
-          <div className="flex flex-col items-center justify-center py-12 sm:py-16 px-4 glass-elevated rounded-2xl">
-            <div className="p-4 rounded-full bg-amber-500/10 mb-4 sm:mb-6">
-              <AlertCircle className="h-8 w-8 sm:h-10 sm:w-10 text-amber-500" />
-            </div>
-            <h2 className="text-lg sm:text-xl font-semibold mb-2 text-center">{t('userNodes.noSubscription.title')}</h2>
-            <p className="text-sm sm:text-base text-muted-foreground text-center max-w-md mb-4 sm:mb-6">
-              {t('userNodes.noSubscription.description')}
-            </p>
-            <Button asChild className="touch-target glass-interactive">
-              <Link to="/pricing" className="gap-2">
-                <Zap className="h-4 w-4" />
-                {t('userNodes.noSubscription.viewPlans')}
-              </Link>
-            </Button>
-          </div>
+          <EmptyState
+            icon={AlertCircle}
+            title={t('userNodes.noSubscription.title')}
+            description={t('userNodes.noSubscription.description')}
+            variant="warning"
+            action={
+              <Button asChild className="touch-target">
+                <Link to="/dashboard/pricing" className="gap-2">
+                  <Zap className="size-4" />
+                  {t('userNodes.noSubscription.viewPlans')}
+                </Link>
+              </Button>
+            }
+          />
         )}
 
         {/* Show normal content when subscription exists */}
         {!hasNoSubscription && (
           <>
-            {/* Usage card */}
-            <UserNodeUsageCard
-              nodeCount={nodeCount}
-              nodeLimit={nodeLimit}
-              isLoading={isLoading || isUsageLoading || isForwardUsageLoading}
-            />
-
-            {/* Action bar - stack on mobile */}
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-              <div className="flex items-center gap-2">
-                <p className="text-sm text-muted-foreground">
-                  {t('userNodes.totalNodes', { count: pagination.total })}
-                </p>
+            {/* Stats Grid */}
+            <section className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+              {/* Node Quota Card - Custom with Progress bar */}
+              <div className="col-span-2 p-4 sm:p-5 rounded-xl bg-card border transition-shadow hover:shadow-md">
+                <div className="flex items-center gap-3 mb-3">
+                  <div
+                    className={cn(
+                      'p-2 rounded-lg ring-1',
+                      nodeStats.isAtLimit
+                        ? 'bg-destructive/10 ring-destructive/20'
+                        : nodeStats.isNearLimit
+                          ? 'bg-warning/10 ring-warning/20'
+                          : 'bg-primary/10 ring-primary/20'
+                    )}
+                  >
+                    <Server
+                      className={cn(
+                        'size-4 sm:size-5',
+                        nodeStats.isAtLimit
+                          ? 'text-destructive'
+                          : nodeStats.isNearLimit
+                            ? 'text-warning'
+                            : 'text-primary'
+                      )}
+                    />
+                  </div>
+                  <span className="text-sm text-muted-foreground">
+                    {t('userNodes.stats.quota')}
+                  </span>
+                </div>
+                <div className="flex items-baseline gap-1 mb-2">
+                  <span
+                    className={cn(
+                      'text-2xl sm:text-3xl font-bold tabular-nums text-foreground',
+                      nodeStats.isAtLimit && 'text-destructive',
+                      nodeStats.isNearLimit && !nodeStats.isAtLimit && 'text-warning'
+                    )}
+                  >
+                    {nodeCount}
+                  </span>
+                  <span className="text-lg text-muted-foreground">
+                    / {nodeStats.isUnlimited ? '∞' : nodeLimit}
+                  </span>
+                </div>
+                {!nodeStats.isUnlimited && (
+                  <Progress
+                    value={nodeStats.usagePercent}
+                    className={cn(
+                      'h-2',
+                      nodeStats.isAtLimit
+                        ? '[&>div]:bg-destructive'
+                        : nodeStats.isNearLimit
+                          ? '[&>div]:bg-warning'
+                          : ''
+                    )}
+                  />
+                )}
               </div>
-              <Button
-                onClick={handleCreateClick}
-                className="gap-2 touch-target w-full sm:w-auto glass-interactive"
-              >
-                <Plus className="h-4 w-4" />
-                {t('userNodes.addNode')}
-              </Button>
-            </div>
 
-            {/* Node list */}
-            <UserNodeList
-              nodes={nodes}
-              isLoading={isLoading}
-              onEdit={handleEditClick}
-              onDelete={handleDeleteClick}
-              onRegenerateToken={handleRegenerateToken}
-              onViewDetail={handleViewDetail}
-              onInstallScript={handleInstallScript}
-              onDeleting={isDeleting}
-              onRegeneratingToken={isRegeneratingToken}
-            />
+              {/* Online Nodes */}
+              <BentoStatCard
+                icon={Wifi}
+                label={t('userNodes.stats.online')}
+                value={isPageLoading ? '-' : nodeStats.online}
+                unit={t('userNodes.stats.nodes')}
+                variant="success"
+              />
+
+              {/* Offline Nodes */}
+              <BentoStatCard
+                icon={WifiOff}
+                label={t('userNodes.stats.offline')}
+                value={isPageLoading ? '-' : nodeStats.offline}
+                unit={t('userNodes.stats.nodes')}
+                variant="muted"
+              />
+            </section>
+
+            {/* Nodes Section */}
+            <section>
+              <SectionHeader
+                icon={Server}
+                title={t('userNodes.myNodes')}
+                count={!isPageLoading ? nodeStats.total : undefined}
+                action={
+                  <Button
+                    onClick={handleCreateClick}
+                    size="sm"
+                    className="gap-1.5 touch-target"
+                    disabled={nodeStats.isAtLimit}
+                  >
+                    <Plus className="size-4" />
+                    <span className="hidden sm:inline">{t('userNodes.addNode')}</span>
+                    <span className="sm:hidden">{t('common.actions.create')}</span>
+                  </Button>
+                }
+              />
+
+              <UserNodeList
+                nodes={nodes}
+                isLoading={isLoading}
+                onEdit={handleEditClick}
+                onDelete={handleDeleteClick}
+                onRegenerateToken={handleRegenerateToken}
+                onViewDetail={handleViewDetail}
+                onInstallScript={handleInstallScript}
+                onDeleting={isDeleting}
+                onRegeneratingToken={isRegeneratingToken}
+              />
+            </section>
+
+            {/* Quick Actions */}
+            {!isPageLoading && nodeStats.total > 0 && (
+              <section className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <QuickActionLink
+                  to="/dashboard/forward-agents"
+                  icon={Server}
+                  title={t('userNodes.quickActions.viewAgents')}
+                  description={t('userNodes.quickActions.viewAgentsDesc')}
+                  variant="primary"
+                />
+                <QuickActionLink
+                  to="/dashboard/pricing"
+                  icon={Sparkles}
+                  title={t('userNodes.quickActions.upgradePlan')}
+                  description={t('userNodes.quickActions.upgradePlanDesc')}
+                  variant="success"
+                />
+              </section>
+            )}
           </>
         )}
       </div>

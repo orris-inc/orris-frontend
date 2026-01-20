@@ -22,7 +22,7 @@ import { TooltipProvider } from '@/components/common/Tooltip';
 import { AdminSidebarNav, AdminSidebarFooter } from '@/components/navigation/AdminSidebarNav';
 import { MobileDrawer } from '@/components/navigation/MobileDrawer';
 import { UserMenu } from '@/components/navigation/UserMenu';
-import { useBreakpoint, useCurrentPageTitle, useVersionInfo } from '@/hooks';
+import { useCurrentPageTitle, useVersionInfo } from '@/hooks';
 
 import { useAuthStore } from '@/features/auth/stores/auth-store';
 import { useAuth } from '@/features/auth/hooks/useAuth';
@@ -44,7 +44,6 @@ export const AdminLayout = ({ children }: AdminLayoutProps) => {
   const { user } = useAuthStore();
   const { logout } = useAuth();
   const { filterNavigationByPermission } = usePermissions();
-  const { isMobile } = useBreakpoint();
   const currentPageTitle = useCurrentPageTitle('管理控制台');
   const { serverVersion, clientVersion } = useVersionInfo();
 
@@ -203,82 +202,80 @@ export const AdminLayout = ({ children }: AdminLayoutProps) => {
             collapsed ? 'md:pl-18' : 'md:pl-60'
           )}
         >
-          {/* iOS-style Navigation Bar */}
+          {/* iOS-style Navigation Bar - CSS-first responsive */}
           <header
             className={cn(
-              'sticky top-0 z-30',
-              // iOS glass background
-              isMobile
-                ? 'glass-elevated border-b border-border/40'
-                : 'border-b bg-background',
-              // Safe area support for notch/dynamic island
-              isMobile && 'pt-[env(safe-area-inset-top)]'
+              'sticky top-0 z-30 border-b',
+              // Mobile: glass effect with safe area
+              'glass-elevated border-border/40 pt-[env(safe-area-inset-top)]',
+              // Desktop: standard background
+              'md:bg-background md:border-border md:pt-0 md:backdrop-blur-none md:shadow-none'
             )}
+            style={{
+              // Reset glass styles on desktop
+              ['--tw-backdrop-blur' as string]: undefined,
+            }}
           >
             <div
               className={cn(
                 'flex items-center',
-                // iOS standard nav bar height: 44px, desktop: 56px
-                isMobile ? 'h-11 px-2' : 'h-14 px-4 sm:px-6 gap-4'
+                // Mobile: iOS standard nav bar height 44px
+                'h-11 px-2',
+                // Desktop: 56px height with more padding
+                'md:h-14 md:px-4 md:gap-4 lg:px-6'
               )}
             >
-              {/* Left section - fixed width for iOS symmetry */}
-              <div className={cn(isMobile ? 'w-11 flex-shrink-0' : 'contents')}>
-                {isMobile && (
-                  <button
-                    className={cn(
-                      'flex items-center justify-center',
-                      'size-11', // 44px touch target
-                      'rounded-full',
-                      'text-primary',
-                      'active:bg-foreground/10',
-                      'transition-colors motion-reduce:transition-none'
-                    )}
-                    onClick={() => setMobileDrawerOpen(true)}
-                    aria-label="Open menu"
-                  >
-                    <Menu className="size-[22px]" strokeWidth={2} />
-                  </button>
-                )}
+              {/* Left section - menu button (mobile only) */}
+              <div className="w-11 flex-shrink-0 md:hidden">
+                <button
+                  className={cn(
+                    'flex items-center justify-center',
+                    'size-11', // 44px touch target
+                    'rounded-full',
+                    'text-primary',
+                    'active:bg-foreground/10',
+                    'transition-colors motion-reduce:transition-none'
+                  )}
+                  onClick={() => setMobileDrawerOpen(true)}
+                  aria-label="Open menu"
+                >
+                  <Menu className="size-[22px]" strokeWidth={2} />
+                </button>
               </div>
 
-              {/* Center section - iOS centered title */}
-              <div
-                className={cn(
-                  'flex-1 min-w-0',
-                  isMobile && 'flex justify-center'
-                )}
-              >
-                {isMobile ? (
-                  <h1
-                    className={cn(
-                      'text-[17px] font-semibold leading-tight',
-                      'text-foreground truncate',
-                      'max-w-[60vw]' // Prevent title from overlapping buttons
-                    )}
-                  >
-                    {currentPageTitle}
-                  </h1>
-                ) : (
+              {/* Center section - title (mobile) / breadcrumbs (desktop) */}
+              <div className="flex-1 min-w-0 flex justify-center md:justify-start">
+                {/* Mobile: centered page title */}
+                <h1
+                  className={cn(
+                    'text-[17px] font-semibold leading-tight',
+                    'text-foreground truncate',
+                    'max-w-[60vw]',
+                    'md:hidden'
+                  )}
+                >
+                  {currentPageTitle}
+                </h1>
+                {/* Desktop: breadcrumbs */}
+                <div className="hidden md:block">
                   <EnhancedBreadcrumbs />
-                )}
+                </div>
               </div>
 
-              {/* Right section - fixed width for iOS symmetry */}
+              {/* Right section */}
               <div
                 className={cn(
-                  isMobile
-                    ? 'w-11 flex-shrink-0 flex justify-end'
-                    : 'flex items-center gap-3'
+                  // Mobile: fixed width for symmetry
+                  'w-11 flex-shrink-0 flex justify-end',
+                  // Desktop: expand to fit content
+                  'md:w-auto md:items-center md:gap-3'
                 )}
               >
                 {/* Desktop: show language switcher and theme toggle */}
-                {!isMobile && (
-                  <>
-                    <LanguageSwitcher />
-                    <ThemeToggle />
-                  </>
-                )}
+                <div className="hidden md:flex md:items-center md:gap-3">
+                  <LanguageSwitcher />
+                  <ThemeToggle />
+                </div>
 
                 <UserMenu
                   user={user}
@@ -291,12 +288,9 @@ export const AdminLayout = ({ children }: AdminLayoutProps) => {
             </div>
           </header>
 
-          {/* Page content - Mobile optimized padding */}
+          {/* Page content - CSS-first responsive padding */}
           <main
-            className={cn(
-              "flex-1 overflow-x-hidden",
-              isMobile ? "p-3" : "p-4 sm:p-6"
-            )}
+            className="flex-1 overflow-x-hidden p-3 md:p-4 lg:p-6"
             data-view-transition="content"
           >
             <div className="min-w-0 max-w-full">

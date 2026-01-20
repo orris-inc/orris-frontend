@@ -25,6 +25,7 @@ import { DeleteNodeSheet } from '@/features/nodes/components/DeleteNodeSheet';
 import { MobileNodeManagement } from '@/features/nodes/components/MobileNodeManagement';
 import { useNodesPage, useBroadcastNodeAPIURL, useNotifyNodeAPIURL } from '@/features/nodes/hooks/useNodes';
 import { useResourceGroups } from '@/features/resource-groups/hooks/useResourceGroups';
+import { useSubscriptionPlans } from '@/features/subscription-plans/hooks/useSubscriptionPlans';
 import { AdminLayout } from '@/layouts/AdminLayout';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/common/Tooltip';
 import { AdminButton, AdminCard } from '@/components/admin';
@@ -106,14 +107,26 @@ export const NodeManagementPage = () => {
   const broadcastURLMutation = useBroadcastNodeAPIURL();
   const notifyURLMutation = useNotifyNodeAPIURL();
 
-  const { resourceGroups } = useResourceGroups({ pageSize: 100 });
+  const { resourceGroups, isLoading: isResourceGroupsLoading } = useResourceGroups({ pageSize: 100 });
+  const { plans, isLoading: isPlansLoading } = useSubscriptionPlans({ pageSize: 100 });
+
+  // Filter out forward type plans, only show node/hybrid types
+  const filteredResourceGroups = useMemo(() => {
+    if (!plans.length) return resourceGroups;
+    const planTypeMap = new Map(plans.map((plan) => [plan.id, plan.planType]));
+    return resourceGroups.filter((group) => {
+      const planType = planTypeMap.get(group.planId);
+      return planType === 'node' || planType === 'hybrid';
+    });
+  }, [resourceGroups, plans]);
+
   const resourceGroupsMap = useMemo(() => {
-    const map: Record<string, typeof resourceGroups[0]> = {};
-    resourceGroups.forEach((group) => {
+    const map: Record<string, typeof filteredResourceGroups[0]> = {};
+    filteredResourceGroups.forEach((group) => {
       map[group.sid] = group;
     });
     return map;
-  }, [resourceGroups]);
+  }, [filteredResourceGroups]);
 
   const nodesForOutbound = useMemo(() => {
     return nodes.map((node) => ({
@@ -277,7 +290,7 @@ export const NodeManagementPage = () => {
           <MobileNodeManagement
             nodes={nodes}
             resourceGroupsMap={resourceGroupsMap}
-            loading={isFetching || isReordering}
+            loading={isFetching || isReordering || isResourceGroupsLoading || isPlansLoading}
             refreshing={isFetching}
             page={pagination.page}
             pageSize={pagination.pageSize}
@@ -303,8 +316,8 @@ export const NodeManagementPage = () => {
           <header className="bg-card rounded-lg border border-border px-3 py-2">
             <div className="flex items-center justify-between gap-3 flex-wrap">
               {/* Left: Title + Primary Stats */}
-              <div className="flex items-center gap-3">
-                <h1 className="text-sm font-semibold text-foreground">{t('nav.nodeAgent')}</h1>
+              <div className="flex items-center gap-fluid-sm">
+                <h1 className="text-sm font-semibold text-foreground whitespace-nowrap">{t('nav.nodeAgent')}</h1>
                 <div className="h-4 w-px bg-border hidden sm:block" />
                 <div className="flex items-center gap-3 text-xs">
                   <span className="flex items-center gap-1 text-muted-foreground">
@@ -459,7 +472,7 @@ export const NodeManagementPage = () => {
           <AdminCard noPadding>
             <NodeListTable
               nodes={nodes}
-              loading={isFetching || isReordering}
+              loading={isFetching || isReordering || isResourceGroupsLoading || isPlansLoading}
               page={pagination.page}
               pageSize={pagination.pageSize}
               total={pagination.total}

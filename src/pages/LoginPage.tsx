@@ -217,10 +217,10 @@ export const LoginPage = () => {
           <div className="w-full max-w-sm">
             {/* Header */}
             <div className="text-center mb-8">
-              <h2 className="text-2xl font-bold text-foreground tracking-tight">
+              <h2 className="text-fluid-xl font-bold text-foreground tracking-tight">
                 {t('auth.login.title', 'Welcome back')}
               </h2>
-              <p className="mt-2 text-muted-foreground">
+              <p className="mt-2 text-fluid-sm text-muted-foreground">
                 {t('auth.login.subtitle')}
               </p>
             </div>

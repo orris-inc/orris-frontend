@@ -597,11 +597,11 @@ export const createAdminExternalForwardRule = async (
 export const listAdminExternalForwardRules = async (
   params?: AdminListExternalForwardRulesParams
 ): Promise<ListResponse<AdminExternalForwardRule>> => {
-  const response = await apiClient.get<ListResponse<AdminExternalForwardRule>>(
+  const response = await apiClient.get<APIResponse<ListResponse<AdminExternalForwardRule>>>(
     '/admin/external-forward-rules',
     { params }
   );
-  return response.data;
+  return response.data.data;
 };
 
 /**

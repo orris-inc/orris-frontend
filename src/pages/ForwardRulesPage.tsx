@@ -155,8 +155,8 @@ export const ForwardRulesPage = () => {
   } = useBatchForwardRules({ isAdmin: true });
 
   // Get resource groups and plans for rule binding
-  const { resourceGroups } = useResourceGroups({ pageSize: 100 });
-  const { plans } = useSubscriptionPlans({ pageSize: 100 });
+  const { resourceGroups, isLoading: isLoadingResourceGroups } = useResourceGroups({ pageSize: 100 });
+  const { plans, isLoading: isLoadingPlans } = useSubscriptionPlans({ pageSize: 100 });
   const plansMap = useMemo(() => {
     const map: Record<string, SubscriptionPlan> = {};
     plans.forEach((plan) => {
@@ -172,6 +172,18 @@ export const ForwardRulesPage = () => {
     });
     return map;
   }, [resourceGroups]);
+
+  // Filter resource groups to only show node/hybrid type plans (exclude forward type)
+  const filteredResourceGroups = useMemo(() => {
+    // Return empty array while loading to prevent showing unfiltered data
+    if (isLoadingResourceGroups || isLoadingPlans) return [];
+    if (!plans.length) return resourceGroups;
+    const planTypeMap = new Map(plans.map((plan) => [plan.id, plan.planType]));
+    return resourceGroups.filter((group) => {
+      const planType = planTypeMap.get(group.planId);
+      return planType === 'node' || planType === 'hybrid';
+    });
+  }, [resourceGroups, plans, isLoadingResourceGroups, isLoadingPlans]);
 
   const stats = useMemo(() => {
     const total = pagination.total;
@@ -474,7 +486,7 @@ export const ForwardRulesPage = () => {
               agents={forwardAgents}
               nodes={nodes}
               initialData={copyRuleData}
-              resourceGroups={resourceGroups}
+              resourceGroups={filteredResourceGroups}
               plansMap={plansMap}
             />
           </Suspense>
@@ -493,7 +505,7 @@ export const ForwardRulesPage = () => {
               onSubmit={handleUpdateSubmit}
               nodes={nodes}
               agents={forwardAgents}
-              resourceGroups={resourceGroups}
+              resourceGroups={filteredResourceGroups}
               plansMap={plansMap}
             />
           </Suspense>
@@ -570,8 +582,8 @@ export const ForwardRulesPage = () => {
         <header className="bg-card rounded-lg border border-border px-3 py-2">
           <div className="flex items-center justify-between gap-3 flex-wrap">
             {/* Left: Title + Primary Stats */}
-            <div className="flex items-center gap-3">
-              <h1 className="text-sm font-semibold text-foreground">{t('admin.forwardRules.title')}</h1>
+            <div className="flex items-center gap-fluid-sm">
+              <h1 className="text-sm font-semibold text-foreground whitespace-nowrap">{t('admin.forwardRules.title')}</h1>
               <div className="h-4 w-px bg-border hidden sm:block" />
               <div className="flex items-center gap-2.5 text-xs">
                 <span className="flex items-center gap-1 text-muted-foreground">
@@ -825,7 +837,7 @@ export const ForwardRulesPage = () => {
             agents={forwardAgents}
             nodes={nodes}
             initialData={copyRuleData}
-            resourceGroups={resourceGroups}
+            resourceGroups={filteredResourceGroups}
             plansMap={plansMap}
           />
         </Suspense>
@@ -844,7 +856,7 @@ export const ForwardRulesPage = () => {
             onSubmit={handleUpdateSubmitLegacy}
             nodes={nodes}
             agents={forwardAgents}
-            resourceGroups={resourceGroups}
+            resourceGroups={filteredResourceGroups}
             plansMap={plansMap}
           />
         </Suspense>

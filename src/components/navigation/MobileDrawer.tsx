@@ -7,10 +7,12 @@
  * Features:
  * - iOS 26 Liquid Glass floating design with rounded corners
  * - Native iOS-like swipe gestures (powered by Vaul)
- * - Physics-based spring animations
+ * - Physics-based spring animations (using Framer Motion)
+ * - Staggered fade-in animation for nav items on drawer open
+ * - Animated sliding background indicator for active state
+ * - Press feedback animation with scale effect
  * - Clear visual hierarchy with grouped navigation
  * - Touch-friendly targets (min 44px)
- * - Active state with subtle highlight
  * - Quick actions footer (theme, logout)
  * - Respects reduced-motion preferences
  * - Safe area insets support for notched devices
@@ -22,6 +24,7 @@ import { useMemo, useCallback, useState, useRef } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Drawer } from 'vaul';
+import { motion } from 'framer-motion';
 import { LogOut, Shield, ArrowLeftRight, Moon, Sun } from 'lucide-react';
 import { useTheme } from 'next-themes';
 import { cn } from '@/lib/utils';
@@ -29,6 +32,35 @@ import { Avatar, AvatarImage, AvatarFallback } from '@/components/common/Avatar'
 import { getAdminNavItemsByGroup } from '@/config/navigation';
 
 import type { NavigationItem, NavigationGroup } from '../../types/navigation.types';
+
+// Check for reduced motion preference
+const prefersReducedMotion = () => {
+  if (typeof window === 'undefined') return false;
+  return window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+};
+
+// Spring configuration matching iOS system animations
+const springTransition = {
+  type: 'spring' as const,
+  stiffness: 400,
+  damping: 30,
+  mass: 1,
+};
+
+// Stagger animation variants for nav items
+const navItemVariants = {
+  hidden: { opacity: 0, x: -8 },
+  visible: (i: number) => ({
+    opacity: 1,
+    x: 0,
+    transition: {
+      delay: i * 0.05,
+      duration: 0.3,
+      ease: [0.25, 0.46, 0.45, 0.94] as const, // ease-gentle
+    },
+  }),
+  exit: { opacity: 0, x: -8 },
+};
 
 interface MobileDrawerUser {
   displayName?: string;
@@ -106,13 +138,20 @@ export const MobileDrawer = ({
     return null;
   }, [navigationItems, isAdminView]);
 
-  // Render a single navigation item
-  const renderNavItem = useCallback((item: NavigationItem) => {
+  // Render a single navigation item with animation
+  const renderNavItem = useCallback((item: NavigationItem, index: number) => {
     if (item.divider) {
       return (
-        <div key={item.id} className="px-2 py-2">
+        <motion.div
+          key={item.id}
+          className="px-2 py-2"
+          custom={index}
+          variants={prefersReducedMotion() ? undefined : navItemVariants}
+          initial="hidden"
+          animate="visible"
+        >
           <div className="h-px bg-border/40" />
-        </div>
+        </motion.div>
       );
     }
 
@@ -120,12 +159,18 @@ export const MobileDrawer = ({
     const isActive = location.pathname === item.path;
 
     return (
-      <button
+      <motion.button
         key={item.id}
         type="button"
         onClick={() => handleNavigation(item.path)}
         aria-current={isActive ? 'page' : undefined}
         disabled={item.disabled}
+        custom={index}
+        variants={prefersReducedMotion() ? undefined : navItemVariants}
+        initial="hidden"
+        animate="visible"
+        // Press animation
+        whileTap={prefersReducedMotion() ? undefined : { scale: 0.98 }}
         className={cn(
           // Base styles
           'group relative flex items-center gap-3 px-2.5 py-2.5 w-full text-left',
@@ -133,43 +178,63 @@ export const MobileDrawer = ({
           'min-h-[48px]',
           // Border radius
           'rounded-xl',
-          // Transition
-          'transition-all duration-200 ease-out',
+          // Transition for colors
+          'transition-colors duration-200 ease-out',
           'motion-reduce:transition-none',
-          // Background and states
+          // Text color states (background handled separately for animation)
           isActive
-            ? 'bg-primary text-primary-foreground shadow-sm'
+            ? 'text-primary-foreground'
             : 'text-muted-foreground active:bg-foreground/5',
           // Disabled state
           item.disabled && 'pointer-events-none opacity-50'
         )}
       >
+        {/* Animated background indicator */}
+        {isActive && (
+          <motion.span
+            layoutId="mobile-nav-indicator"
+            className="absolute inset-0 bg-primary rounded-xl shadow-sm"
+            aria-hidden="true"
+            transition={springTransition}
+            style={{ willChange: 'transform' }}
+          />
+        )}
+        {/* Icon */}
         {Icon && (
           <Icon
-            className="h-[18px] w-[18px] flex-shrink-0"
+            className="relative z-10 h-[18px] w-[18px] flex-shrink-0"
             aria-hidden="true"
           />
         )}
-        <span className="flex-1 min-w-0 text-[13px] font-medium">
+        {/* Label */}
+        <span className="relative z-10 flex-1 min-w-0 text-[13px] font-medium">
           {t(item.labelKey)}
         </span>
+        {/* Left indicator bar - animated */}
         {isActive && (
-          <span
+          <motion.span
+            layoutId="mobile-nav-bar"
             className="absolute left-0 top-1/2 -translate-y-1/2 w-[3px] h-5 rounded-r-full bg-primary-foreground"
             aria-hidden="true"
+            transition={springTransition}
           />
         )}
-      </button>
+      </motion.button>
     );
   }, [location.pathname, handleNavigation, t]);
 
-  // Render grouped navigation (admin view)
+  // Render grouped navigation (admin view) with staggered animation
   const renderGroupedNavigation = useMemo(() => {
     if (!groupedItems) return null;
 
-    return Array.from(groupedItems.entries()).map(([group, items]: [NavigationGroup, NavigationItem[]]) => (
-      <div
+    let globalIndex = 0;
+    return Array.from(groupedItems.entries()).map(([group, items]: [NavigationGroup, NavigationItem[]], groupIdx) => (
+      <motion.div
         key={group.id}
+        custom={groupIdx}
+        variants={prefersReducedMotion() ? undefined : navItemVariants}
+        initial="hidden"
+        animate="visible"
         className={cn(
           // Glass morphism card styling
           'glass-card rounded-xl overflow-hidden p-2'
@@ -184,15 +249,18 @@ export const MobileDrawer = ({
 
         {/* Navigation items */}
         <div className="space-y-0.5">
-          {items.map(renderNavItem)}
+          {items.map((item) => {
+            const idx = globalIndex++;
+            return renderNavItem(item, idx);
+          })}
         </div>
-      </div>
+      </motion.div>
     ));
   }, [groupedItems, renderNavItem, t]);
 
-  // Render flat navigation (user view)
+  // Render flat navigation (user view) with staggered animation
   const renderFlatNavigation = useMemo(() => {
-    return navigationItems.map(renderNavItem);
+    return navigationItems.map((item, index) => renderNavItem(item, index));
   }, [navigationItems, renderNavItem]);
 
   return (

@@ -239,7 +239,7 @@ export const UserForwardRulesPage = () => {
               您当前没有包含端口转发功能的订阅计划。购买订阅后即可使用端口转发服务。
             </p>
             <Button asChild className="min-h-[44px] px-6">
-              <Link to="/pricing" className="gap-2">
+              <Link to="/dashboard/pricing" className="gap-2">
                 <Zap className="h-4 w-4" />
                 查看订阅计划
               </Link>

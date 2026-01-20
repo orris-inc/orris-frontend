@@ -176,7 +176,7 @@ export const SubscriptionCard = ({ subscriptions, isLoading, error }: Subscripti
         </div>
         <div className="text-center py-6">
           <p className="text-muted-foreground mb-4">{t('user.dashboard.empty.description')}</p>
-          <a href="/pricing" className={getButtonClass('default', 'sm')}>
+          <a href="/dashboard/pricing" className={getButtonClass('default', 'sm')}>
             {t('user.dashboard.empty.viewPlans')}
           </a>
         </div>

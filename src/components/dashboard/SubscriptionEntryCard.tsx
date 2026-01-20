@@ -5,7 +5,7 @@
 
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { Calendar, ArrowRight, Clock } from 'lucide-react';
+import { Calendar, ChevronRight, Clock, Activity } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { getBadgeClass } from '@/lib/ui-styles';
 import type { DashboardSubscription } from '@/api/user/types';
@@ -19,13 +19,13 @@ interface SubscriptionEntryCardProps {
 /**
  * Format bytes to readable traffic units
  */
-const formatTraffic = (bytes: number): string => {
-  if (bytes === 0) return '0 B';
-  const units = ['B', 'KB', 'MB', 'GB', 'TB'];
+const formatTraffic = (bytes: number): { value: string; unit: string } => {
+  if (bytes === 0) return { value: '0', unit: 'B' };
+  const units = ['B', 'KB', 'MB', 'GB', 'TB'] as const;
   const k = 1024;
-  const i = Math.floor(Math.log(bytes) / Math.log(k));
+  const i = Math.min(Math.floor(Math.log(bytes) / Math.log(k)), units.length - 1);
   const value = (bytes / Math.pow(k, i)).toFixed(1);
-  return `${value} ${units[i]}`;
+  return { value, unit: units[i] };
 };
 
 /**
@@ -67,9 +67,18 @@ const formatDate = (dateString?: string, locale?: string): string => {
   const dateLocale = locale === 'zh' ? 'zh-CN' : 'en-US';
   return new Date(dateString).toLocaleDateString(dateLocale, {
     year: 'numeric',
-    month: '2-digit',
-    day: '2-digit',
+    month: 'short',
+    day: 'numeric',
   });
+};
+
+/**
+ * Get progress bar color based on usage percentage
+ */
+const getProgressColor = (percent: number) => {
+  if (percent > 90) return 'bg-destructive';
+  if (percent > 70) return 'bg-warning';
+  return 'bg-success';
 };
 
 /**
@@ -85,6 +94,9 @@ export const SubscriptionEntryCard = ({ subscription, className }: SubscriptionE
   const usagePercent = trafficLimit > 0 ? (subscription.usage.total / trafficLimit) * 100 : 0;
   const daysRemaining = getDaysRemaining(subscription.currentPeriodEnd);
 
+  const usedFormatted = formatTraffic(subscription.usage.total);
+  const limitFormatted = formatTraffic(trafficLimit);
+
   const handleClick = () => {
     navigate(`/dashboard/subscriptions/${subscription.id}`);
   };
@@ -93,61 +105,89 @@ export const SubscriptionEntryCard = ({ subscription, className }: SubscriptionE
     <div
       onClick={handleClick}
       className={cn(
-        'p-3 sm:p-4 rounded-xl cursor-pointer touch-target',
-        'transition-all duration-normal ease-smooth group',
-        // Mobile: glass effect, Desktop: solid background
-        'glass-elevated md:bg-card md:border md:shadow-none md:backdrop-blur-none',
+        'relative p-4 sm:p-5 rounded-xl cursor-pointer touch-target',
+        'transition-all duration-200 group',
+        'bg-card border hover:shadow-md',
         isActive
-          ? 'md:bg-emerald-500/5 md:border-emerald-500/20 hover:md:border-emerald-500/40 hover:shadow-sm'
-          : 'md:bg-muted/30 md:border-border/50 hover:md:border-border hover:shadow-sm',
-        // Press feedback for mobile
-        'active:scale-[0.98] active:opacity-90',
+          ? 'border-success/20 hover:border-success/40'
+          : 'border-border hover:border-border/80',
+        'active:scale-[0.98]',
         className
       )}
     >
-      {/* Row 1: Plan name + status badge + days remaining (compact on mobile) */}
-      <div className="flex items-center justify-between gap-2 mb-1.5 sm:mb-2">
-        <div className="flex items-center gap-2 min-w-0">
-          <h3 className="font-semibold text-sm truncate">{subscription.plan?.name || t('user.dashboard.subscription.unknownPlan')}</h3>
-          {isActive && daysRemaining !== null && (
-            <span className="text-xs text-muted-foreground whitespace-nowrap flex items-center gap-0.5">
-              <Clock className="size-3" />
-              {t('user.dashboard.subscription.daysRemaining', { count: daysRemaining })}
-            </span>
-          )}
+      {/* Header: Plan name + Status badge */}
+      <div className="flex items-start justify-between gap-3 mb-3">
+        <div className="flex items-center gap-3 min-w-0">
+          <div
+            className={cn(
+              'p-2 rounded-lg shrink-0',
+              isActive
+                ? 'bg-success/10 ring-1 ring-success/20'
+                : 'bg-muted ring-1 ring-border'
+            )}
+          >
+            <Activity
+              className={cn(
+                'size-4',
+                isActive ? 'text-success' : 'text-muted-foreground'
+              )}
+            />
+          </div>
+          <div className="min-w-0">
+            <h3 className="font-semibold text-foreground truncate">
+              {subscription.plan?.name || t('user.dashboard.subscription.unknownPlan')}
+            </h3>
+            {isActive && daysRemaining !== null && (
+              <span className="text-xs text-muted-foreground flex items-center gap-1 mt-0.5">
+                <Clock className="size-3" />
+                {t('user.dashboard.subscription.daysRemaining', { count: daysRemaining })}
+              </span>
+            )}
+          </div>
         </div>
-        <span className={cn(getBadgeClass(statusConfig.variant), 'text-xs shrink-0')}>{statusConfig.label}</span>
+        <span className={cn(getBadgeClass(statusConfig.variant), 'text-xs shrink-0')}>
+          {statusConfig.label}
+        </span>
       </div>
 
-      {/* Row 2: Traffic usage - compact inline layout on mobile */}
+      {/* Traffic Usage Section */}
       {isActive && trafficLimit > 0 && (
-        <div className="flex items-center gap-2 mb-1.5 sm:mb-2">
-          <div className="flex-1 h-1.5 rounded-full bg-muted overflow-hidden">
+        <div className="mb-3">
+          <div className="flex items-center justify-between mb-1.5">
+            <span className="text-xs text-muted-foreground">
+              {t('user.dashboard.stats.totalTraffic')}
+            </span>
+            <span className="text-xs tabular-nums text-muted-foreground">
+              {usagePercent.toFixed(0)}%
+            </span>
+          </div>
+          <div className="h-2 rounded-full bg-muted overflow-hidden">
             <div
               className={cn(
-                'h-full rounded-full transition-all',
-                usagePercent > 90
-                  ? 'bg-destructive'
-                  : usagePercent > 70
-                    ? 'bg-amber-500'
-                    : 'bg-emerald-500'
+                'h-full rounded-full transition-all duration-300',
+                getProgressColor(usagePercent)
               )}
               style={{ width: `${Math.min(usagePercent, 100)}%` }}
             />
           </div>
-          <span className="text-xs tabular-nums text-muted-foreground whitespace-nowrap">
-            {formatTraffic(subscription.usage.total)} / {formatTraffic(trafficLimit)}
-          </span>
+          <div className="flex items-center justify-between mt-1.5">
+            <span className="text-sm font-medium tabular-nums text-foreground">
+              {usedFormatted.value} <span className="text-muted-foreground">{usedFormatted.unit}</span>
+            </span>
+            <span className="text-xs tabular-nums text-muted-foreground">
+              / {limitFormatted.value} {limitFormatted.unit}
+            </span>
+          </div>
         </div>
       )}
 
-      {/* Row 3: Expiry date + arrow - compact layout */}
-      <div className="flex items-center justify-between">
-        <span className="flex items-center gap-1 text-xs text-muted-foreground">
-          <Calendar className="size-3" />
+      {/* Footer: Expiry date + Navigate arrow */}
+      <div className="flex items-center justify-between pt-2 border-t border-border/50">
+        <span className="flex items-center gap-1.5 text-xs text-muted-foreground">
+          <Calendar className="size-3.5" />
           {formatDate(subscription.currentPeriodEnd, i18n.language)}
         </span>
-        <ArrowRight className="size-3.5 text-muted-foreground group-hover:text-primary transition-colors" />
+        <ChevronRight className="size-4 text-muted-foreground group-hover:text-primary transition-colors" />
       </div>
     </div>
   );

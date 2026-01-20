@@ -3,7 +3,7 @@
  * Redesigned with improved UI/UX - clean visual hierarchy, icons, and better form layout
  */
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import {
   Dialog,
   DialogContent,
@@ -24,6 +24,7 @@ import {
 import { Badge } from '@/components/common/Badge';
 import { Separator } from '@/components/common/Separator';
 import { useResourceGroups } from '@/features/resource-groups/hooks/useResourceGroups';
+import { useSubscriptionPlans } from '@/features/subscription-plans/hooks/useSubscriptionPlans';
 import { RouteConfigEditor } from './RouteConfigEditor';
 import type { OutboundNodeOption } from './RouteRuleEditor';
 import type {
@@ -322,6 +323,20 @@ export const CreateNodeDialog: React.FC<CreateNodeDialogProps> = ({
     filters: { status: 'active' },
     enabled: open,
   });
+
+  const { plans, isLoading: isLoadingPlans } = useSubscriptionPlans({
+    pageSize: 100,
+    enabled: open,
+  });
+
+  const filteredResourceGroups = useMemo(() => {
+    if (!plans.length) return resourceGroups;
+    const planTypeMap = new Map(plans.map((plan) => [plan.id, plan.planType]));
+    return resourceGroups.filter((group) => {
+      const planType = planTypeMap.get(group.planId);
+      return planType === 'node' || planType === 'hybrid';
+    });
+  }, [resourceGroups, plans]);
 
   // Update form data when initialData changes
   useEffect(() => {
@@ -1565,13 +1580,13 @@ export const CreateNodeDialog: React.FC<CreateNodeDialogProps> = ({
                 </FormField>
 
                 <FormField label="资源组" hint="创建后可在编辑中关联">
-                  <Select value="__none__" disabled={isLoadingGroups}>
+                  <Select value="__none__" disabled={isLoadingGroups || isLoadingPlans}>
                     <SelectTrigger className="h-10">
-                      <SelectValue placeholder={isLoadingGroups ? '加载中...' : '选择资源组'} />
+                      <SelectValue placeholder={isLoadingGroups || isLoadingPlans ? '加载中...' : '选择资源组'} />
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="__none__">不关联资源组</SelectItem>
-                      {resourceGroups.map((group) => (
+                      {filteredResourceGroups.map((group) => (
                         <SelectItem key={group.sid} value={group.sid}>
                           {group.name}
                         </SelectItem>

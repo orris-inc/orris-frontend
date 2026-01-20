@@ -1,6 +1,7 @@
 /**
  * Subscription Plan Card Component (User-facing)
  * Following StatCard and QuickActionsCard patterns
+ * Uses container queries for responsive design
  */
 
 import { Check } from "lucide-react";
@@ -39,94 +40,96 @@ function PlanCard({
   }
 
   return (
-    <div
-      className={cn(
-        "relative flex flex-col h-full p-4 sm:p-5 rounded-xl",
-        // Mobile: glass effect, Desktop: solid card
-        "glass-elevated md:bg-card md:border md:shadow-none md:backdrop-blur-none",
-        "transition-all duration-normal ease-smooth",
-        "hover:shadow-md active:scale-[0.98]",
-        recommended && "border-primary ring-1 ring-primary/20",
-      )}
-    >
-      {/* Recommended badge */}
-      {recommended && (
-        <div className="absolute -top-3 left-1/2 -translate-x-1/2 z-10">
-          <span
-            className={getBadgeClass(
-              "default",
-              "px-3 py-1 rounded-full font-medium shadow-sm",
-            )}
-          >
-            {t("pricing.card.recommended")}
-          </span>
-        </div>
-      )}
-
-      <div className={cn("flex flex-col flex-1", recommended && "pt-2")}>
-        {/* Plan name */}
-        <h3 className="text-lg sm:text-xl font-semibold text-foreground mb-2">
-          {plan.name}
-        </h3>
-
-        {/* Pricing selector */}
-        <div className="mb-3 sm:mb-4">
-          {plan.pricings && plan.pricings.length > 0 ? (
-            <PlanPricingSelector
-              pricings={plan.pricings}
-              defaultBillingCycle={plan.pricings[0]?.billingCycle}
-            />
-          ) : (
-            <div className="text-muted-foreground">
-              {t("pricing.card.priceTbd")}
-            </div>
-          )}
-        </div>
-
-        {/* Description */}
-        {plan.description && (
-          <p className="text-xs sm:text-sm text-muted-foreground mb-3 sm:mb-4">
-            {plan.description}
-          </p>
+    <div className="@container h-full">
+      <div
+        className={cn(
+          "relative flex flex-col h-full p-4 @sm:p-5 rounded-xl",
+          // Base: glass effect, @md container: solid card
+          "glass-elevated @md:bg-card @md:border @md:shadow-none @md:backdrop-blur-none",
+          "transition-all duration-normal ease-smooth",
+          "hover:shadow-md active:scale-[0.98]",
+          recommended && "border-primary ring-1 ring-primary/20",
         )}
-
-        {/* Divider */}
-        <div className="border-t border-border/50 my-2 sm:my-3" />
-
-        {/* Features list */}
-        {features.length > 0 && (
-          <ul className="space-y-1.5 sm:space-y-2 mb-3 sm:mb-4 flex-1">
-            {features.map((feature, index) => (
-              <li key={index} className="flex items-center gap-2 text-xs sm:text-sm">
-                <div className="p-0.5 sm:p-1 rounded-md bg-success/10 ring-1 ring-success/20 shrink-0">
-                  <Check className="size-3 text-success" />
-                </div>
-                <span className="text-muted-foreground">{feature}</span>
-              </li>
-            ))}
-          </ul>
-        )}
-
-        {/* Trial badge */}
-        {plan.trialDays > 0 && (
-          <div className="mb-3 sm:mb-4">
-            <span className={getBadgeClass("secondary", "text-xs font-medium")}>
-              {t("pricing.card.freeTrial", { days: plan.trialDays })}
+      >
+        {/* Recommended badge */}
+        {recommended && (
+          <div className="absolute -top-3 left-1/2 -translate-x-1/2 z-10">
+            <span
+              className={getBadgeClass(
+                "default",
+                "px-3 py-1 rounded-full font-medium shadow-sm",
+              )}
+            >
+              {t("pricing.card.recommended")}
             </span>
           </div>
         )}
 
-        {/* Select button */}
-        <button
-          className={getButtonClass(
-            recommended ? "default" : "outline",
-            "default",
-            "w-full mt-auto touch-target",
+        <div className={cn("flex flex-col flex-1", recommended && "pt-2")}>
+          {/* Plan name */}
+          <h3 className="text-lg @sm:text-xl font-semibold text-foreground mb-2">
+            {plan.name}
+          </h3>
+
+          {/* Pricing selector */}
+          <div className="mb-3 @sm:mb-4">
+            {plan.pricings && plan.pricings.length > 0 ? (
+              <PlanPricingSelector
+                pricings={plan.pricings}
+                defaultBillingCycle={plan.pricings[0]?.billingCycle}
+              />
+            ) : (
+              <div className="text-muted-foreground">
+                {t("pricing.card.priceTbd")}
+              </div>
+            )}
+          </div>
+
+          {/* Description */}
+          {plan.description && (
+            <p className="text-xs @sm:text-sm text-muted-foreground mb-3 @sm:mb-4">
+              {plan.description}
+            </p>
           )}
-          onClick={() => onSelect?.(plan)}
-        >
-          {t("pricing.card.selectPlan")}
-        </button>
+
+          {/* Divider */}
+          <div className="border-t border-border/50 my-2 @sm:my-3" />
+
+          {/* Features list */}
+          {features.length > 0 && (
+            <ul className="space-y-1.5 @sm:space-y-2 mb-3 @sm:mb-4 flex-1">
+              {features.map((feature, index) => (
+                <li key={index} className="flex items-center gap-2 text-xs @sm:text-sm">
+                  <div className="p-0.5 @sm:p-1 rounded-md bg-success/10 ring-1 ring-success/20 shrink-0">
+                    <Check className="size-3 text-success" />
+                  </div>
+                  <span className="text-muted-foreground">{feature}</span>
+                </li>
+              ))}
+            </ul>
+          )}
+
+          {/* Trial badge */}
+          {plan.trialDays > 0 && (
+            <div className="mb-3 @sm:mb-4">
+              <span className={getBadgeClass("secondary", "text-xs font-medium")}>
+                {t("pricing.card.freeTrial", { days: plan.trialDays })}
+              </span>
+            </div>
+          )}
+
+          {/* Select button - min-h-11 ensures 44px touch target */}
+          <button
+            className={getButtonClass(
+              recommended ? "default" : "outline",
+              "default",
+              "w-full mt-auto min-h-11",
+            )}
+            onClick={() => onSelect?.(plan)}
+          >
+            {t("pricing.card.selectPlan")}
+          </button>
+        </div>
       </div>
     </div>
   );

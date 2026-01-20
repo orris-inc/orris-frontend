@@ -399,16 +399,20 @@
     },
     "quickAccess": {
       "title": "快速访问",
-      "users": "用户",
+      "users": "用户管理",
       "usersDesc": "管理所有用户账户和权限",
-      "subscriptions": "订阅",
+      "subscriptions": "订阅管理",
       "subscriptionsDesc": "查看和管理用户订阅",
-      "nodes": "节点",
+      "nodes": "节点管理",
       "nodesDesc": "监控和配置服务器节点",
       "nodeAgent": "节点Agent",
       "nodeAgentDesc": "监控和配置服务器节点",
       "liveMonitor": "实时监控",
-      "liveMonitorDesc": "查看系统实时状态"
+      "liveMonitorDesc": "查看系统实时状态",
+      "forwardRules": "转发规则",
+      "forwardRulesDesc": "管理端口转发规则",
+      "resourceGroups": "资源组",
+      "resourceGroupsDesc": "管理资源组分配"
     },
     "moreManagement": {
       "title": "更多管理",
@@ -422,7 +426,9 @@
       "title": "系统状态",
       "nodeOnlineRate": "节点在线率",
       "activeNodes": "活跃节点",
-      "count": "{{count}} 个"
+      "activeUsers": "活跃用户",
+      "count": "{{count}} 个",
+      "settings": "设置"
     },
     "dateRange": {
       "today": "今天",
@@ -1111,6 +1117,7 @@
         "owner": "归属",
         "node": "节点",
         "nodeInfo": "节点信息",
+        "nodeName": "节点名称",
         "nodeServerAddress": "节点服务地址",
         "status": "状态",
         "resourceGroups": "资源组",
@@ -1165,9 +1172,12 @@
         "nodeRouting": "节点路由",
         "nodeRoutingHint": "修改此规则的节点，不选择则自动分配。",
         "currentNodeInfo": "当前节点信息",
+        "resourceGroups": "资源组绑定",
+        "resourceGroupsHint": "修改此规则绑定的资源组，清空将解除所有绑定",
         "readOnlyInfo": "只读信息（无法修改）",
         "saving": "保存中..."
-      }
+      },
+      "noResourceGroups": "暂无可用资源组"
     },
     "monitor": {
       "systemMonitor": "系统监控",
@@ -1642,12 +1652,31 @@
       "overview": "概览",
       "defaultUser": "用户",
       "mySubscriptions": "我的订阅",
+      "viewAllPlans": "查看全部套餐",
+      "welcomeMessage": "管理您的订阅和查看使用情况。",
       "loading": "加载中...",
       "errorLoadUser": "无法加载用户信息",
+      "greeting": {
+        "morning": "早上好",
+        "afternoon": "下午好",
+        "evening": "晚上好"
+      },
+      "stats": {
+        "totalTraffic": "总流量使用",
+        "upload": "上传",
+        "download": "下载"
+      },
+      "status": {
+        "noSubscription": "开始您的第一个订阅，解锁优质线路服务",
+        "expiringSoon": "「{{plan}}」将在 {{days}} 天后到期，记得续费",
+        "highUsage": "本月流量已使用 {{percent}}%，考虑升级套餐？",
+        "allGood": "{{count}} 个订阅运行正常",
+        "allGood_other": "{{count}} 个订阅运行正常"
+      },
       "empty": {
         "title": "暂无订阅",
-        "description": "您还没有任何订阅",
-        "viewPlans": "查看订阅计划"
+        "description": "开始您的第一个订阅，解锁优质线路服务",
+        "viewPlans": "浏览套餐"
       },
       "subscription": {
         "status": {
@@ -1663,7 +1692,7 @@
       },
       "quickActions": {
         "upgrade": "升级订阅",
-        "upgradeDesc": "获取更多流量",
+        "upgradeDesc": "获取更多流量和功能",
         "viewPlans": "查看套餐",
         "viewPlansDesc": "对比所有方案"
       }
@@ -1763,6 +1792,43 @@
     "contactUs": "联系我们",
     "getStarted": "立即开始",
     "footerNote": "所有计划均支持随时升级或降级，如有疑问请联系客服。",
+    "hero": {
+      "available": "共 {{count}} 个套餐可供选择",
+      "noPlans": "暂无可用套餐"
+    },
+    "plans": {
+      "title": "可用套餐"
+    },
+    "features": {
+      "instant": {
+        "title": "即时激活",
+        "desc": "订阅后即可立即使用"
+      },
+      "flexible": {
+        "title": "灵活计划",
+        "desc": "随时升级或降级"
+      },
+      "support": {
+        "title": "全天候支持",
+        "desc": "随时获取帮助"
+      },
+      "oneUser": "1 个用户账户",
+      "users": "最多 {{count}} 个用户账户",
+      "oneProject": "1 个项目",
+      "projects": "{{count}} 个项目",
+      "oneNode": "1 个节点",
+      "nodes": "{{count}} 个节点",
+      "apiRate": "每分钟 {{count}} 次 API 请求",
+      "trialDays": "{{count}} 天免费试用",
+      "featuredDesc": "非常适合成长中的团队和企业。",
+      "defaultDesc": "包含入门所需的一切。"
+    },
+    "quickActions": {
+      "viewSubscriptions": "查看订阅",
+      "viewSubscriptionsDesc": "查看当前订阅状态",
+      "setupNotifications": "设置通知",
+      "setupNotificationsDesc": "获取订阅更新通知"
+    },
     "perWeek": "/周",
     "perMonth": "/月",
     "perQuarter": "/季",
@@ -1778,18 +1844,6 @@
       "priceTbd": "价格待定",
       "freeTrial": "免费试用 {{days}} 天",
       "selectPlan": "选择计划"
-    },
-    "features": {
-      "oneUser": "1 个用户账户",
-      "users": "最多 {{count}} 个用户账户",
-      "oneProject": "1 个项目",
-      "projects": "{{count}} 个项目",
-      "oneNode": "1 个节点",
-      "nodes": "{{count}} 个节点",
-      "apiRate": "每分钟 {{count}} 次 API 请求",
-      "trialDays": "{{count}} 天免费试用",
-      "featuredDesc": "非常适合成长中的团队和企业。",
-      "defaultDesc": "包含入门所需的一切。"
     },
     "confirm": {
       "title": "确认订阅",
@@ -1824,6 +1878,28 @@
   "notifications": {
     "title": "通知设置",
     "subtitle": "管理您的通知偏好和 Telegram 绑定",
+    "hero": {
+      "bound": "已启用 {{count}} 种通知类型",
+      "unbound": "绑定 Telegram 以接收通知",
+      "notConfigured": "通知服务未配置"
+    },
+    "stats": {
+      "active": "已启用",
+      "channels": "通知渠道",
+      "channelUnit": "个"
+    },
+    "types": {
+      "title": "通知类型"
+    },
+    "channels": {
+      "title": "通知渠道"
+    },
+    "quickActions": {
+      "viewDashboard": "查看仪表盘",
+      "viewDashboardDesc": "查看订阅使用情况和状态",
+      "viewSettings": "账户设置",
+      "viewSettingsDesc": "管理您的账户偏好设置"
+    },
     "telegram": {
       "label": "Telegram",
       "binding": "Telegram 绑定",
@@ -1858,10 +1934,12 @@
     },
     "expiring": {
       "title": "到期提醒",
+      "description": "在订阅到期前收到提醒通知",
       "daysAhead": "提前 {{days}} 天"
     },
     "traffic": {
       "title": "流量告警",
+      "description": "当流量使用超过阈值时收到通知",
       "threshold": "阈值 {{percent}}%"
     }
   },
@@ -1876,6 +1954,21 @@
     "totalNodes": "共 {{count}} 个节点",
     "addNode": "新增节点",
     "tokenTitle": "节点 Token",
+    "myNodes": "我的节点",
+    "stats": {
+      "quota": "节点配额",
+      "online": "在线",
+      "offline": "离线",
+      "nodes": "个",
+      "summary": "共 {{total}} 个节点，{{online}} 个在线",
+      "noNodes": "创建第一个节点开始使用"
+    },
+    "quickActions": {
+      "viewAgents": "查看转发代理",
+      "viewAgentsDesc": "查看可用于节点的转发代理",
+      "upgradePlan": "升级套餐",
+      "upgradePlanDesc": "提升节点配额，解锁更多功能"
+    },
     "installScript": {
       "title": "安装命令",
       "description": "安装命令，在目标服务器上执行即可完成部署",

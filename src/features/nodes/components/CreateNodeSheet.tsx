@@ -38,6 +38,7 @@ import { Badge } from '@/components/common/Badge';
 import { Separator } from '@/components/common/Separator';
 import { MobileFormInput, MobileSelect, type MobileSelectOption } from '@/components/common/mobile-form';
 import { useResourceGroups } from '@/features/resource-groups/hooks/useResourceGroups';
+import { useSubscriptionPlans } from '@/features/subscription-plans/hooks/useSubscriptionPlans';
 import { RouteConfigEditor } from './RouteConfigEditor';
 import { cn } from '@/lib/utils';
 import type { OutboundNodeOption } from './RouteRuleEditor';
@@ -536,6 +537,20 @@ export const CreateNodeSheet: React.FC<CreateNodeSheetProps> = ({
     filters: { status: 'active' },
     enabled: open,
   });
+
+  const { plans, isLoading: isLoadingPlans } = useSubscriptionPlans({
+    pageSize: 100,
+    enabled: open,
+  });
+
+  const filteredResourceGroups = useMemo(() => {
+    if (!plans.length) return resourceGroups;
+    const planTypeMap = new Map(plans.map((plan) => [plan.id, plan.planType]));
+    return resourceGroups.filter((group) => {
+      const planType = planTypeMap.get(group.planId);
+      return planType === 'node' || planType === 'hybrid';
+    });
+  }, [resourceGroups, plans]);
 
   // Calculate completed steps
   const completedSteps = useMemo(() => {
@@ -1672,10 +1687,10 @@ export const CreateNodeSheet: React.FC<CreateNodeSheetProps> = ({
                   <MobileSelect
                     value="__none__"
                     onChange={() => {}}
-                    disabled={isLoadingGroups}
+                    disabled={isLoadingGroups || isLoadingPlans}
                     options={[
                       { value: '__none__', label: '不关联' },
-                      ...resourceGroups.map((g) => ({ value: g.sid, label: g.name })),
+                      ...filteredResourceGroups.map((g) => ({ value: g.sid, label: g.name })),
                     ]}
                   />
                 </div>

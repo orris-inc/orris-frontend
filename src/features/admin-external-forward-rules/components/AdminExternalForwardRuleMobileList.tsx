@@ -269,31 +269,41 @@ export const AdminExternalForwardRuleMobileList: React.FC<AdminExternalForwardRu
             )}
 
             {/* Node info if assigned */}
-            {rule.nodeSid && (
+            {rule.nodeName && (
               <div className="py-1.5 px-2 rounded-lg bg-muted/30">
-                <div className="flex items-center gap-1.5 mb-1">
-                  <Server className="size-3.5 text-muted-foreground" />
+                <div className="flex items-center justify-between">
                   <span className="text-[10px] text-muted-foreground uppercase tracking-wide font-medium">
-                    {t('admin.externalForwardRules.columns.nodeInfo')}
+                    {t('admin.externalForwardRules.columns.node')}
                   </span>
+                  <div className="flex items-center gap-1.5">
+                    <Server className="size-3.5 text-muted-foreground" />
+                    <span className="text-sm font-medium text-foreground">{rule.nodeName}</span>
+                    {rule.nodeProtocol && (
+                      <Badge variant="outline" className="text-[10px] px-1 py-0">
+                        {rule.nodeProtocol.toUpperCase()}
+                      </Badge>
+                    )}
+                  </div>
                 </div>
-                <div className="text-xs text-muted-foreground space-y-0.5">
-                  {rule.nodeServerAddress && (
-                    <div>
-                      {t('admin.externalForwardRules.columns.nodeServerAddress')}: <span className="font-mono">{rule.nodeServerAddress}</span>
-                    </div>
-                  )}
-                  {rule.nodePublicIpv4 && (
-                    <div>
-                      IPv4: <span className="font-mono">{rule.nodePublicIpv4}</span>
-                    </div>
-                  )}
-                  {rule.nodePublicIpv6 && (
-                    <div>
-                      IPv6: <span className="font-mono">{rule.nodePublicIpv6}</span>
-                    </div>
-                  )}
-                </div>
+                {(rule.nodeServerAddress || rule.nodePublicIpv4 || rule.nodePublicIpv6) && (
+                  <div className="text-xs text-muted-foreground space-y-0.5 mt-1.5 pt-1.5 border-t border-border/30">
+                    {rule.nodeServerAddress && (
+                      <div>
+                        {t('admin.externalForwardRules.columns.nodeServerAddress')}: <span className="font-mono">{rule.nodeServerAddress}</span>
+                      </div>
+                    )}
+                    {rule.nodePublicIpv4 && (
+                      <div>
+                        IPv4: <span className="font-mono">{rule.nodePublicIpv4}</span>
+                      </div>
+                    )}
+                    {rule.nodePublicIpv6 && (
+                      <div>
+                        IPv6: <span className="font-mono">{rule.nodePublicIpv6}</span>
+                      </div>
+                    )}
+                  </div>
+                )}
               </div>
             )}
 

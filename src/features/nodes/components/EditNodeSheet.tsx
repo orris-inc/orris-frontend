@@ -3,7 +3,7 @@
  * Mobile-optimized bottom sheet for editing nodes
  */
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import {
   Server,
   Network,
@@ -17,6 +17,7 @@ import {
   Layers,
   Gauge,
   Workflow,
+  X,
 } from 'lucide-react';
 import {
   Sheet,
@@ -32,8 +33,10 @@ import { Button } from '@/components/common/Button';
 import { Badge } from '@/components/common/Badge';
 import { Separator } from '@/components/common/Separator';
 import { Switch, SwitchThumb } from '@/components/common/Switch';
+import { Checkbox } from '@/components/common/Checkbox';
 import { MobileFormInput, MobileSelect, type MobileSelectOption } from '@/components/common/mobile-form';
 import { useResourceGroups } from '@/features/resource-groups/hooks/useResourceGroups';
+import { useSubscriptionPlans } from '@/features/subscription-plans/hooks/useSubscriptionPlans';
 import { RouteConfigEditor } from './RouteConfigEditor';
 import { cn } from '@/lib/utils';
 import type { OutboundNodeOption } from './RouteRuleEditor';
@@ -51,6 +54,11 @@ import type {
 
 interface EditNodeSheetProps extends EditSheetProps<Node, UpdateNodeRequest> {
   nodes?: OutboundNodeOption[];
+}
+
+interface FormData extends Omit<UpdateNodeRequest, 'groupSids'> {
+  tagsInput: string;
+  groupSids: string[];
 }
 
 // Shadowsocks encryption methods
@@ -266,7 +274,7 @@ export const EditNodeSheet: React.FC<EditNodeSheetProps> = ({
   onSubmit,
   nodes = [],
 }) => {
-  const [formData, setFormData] = useState<UpdateNodeRequest & { tagsInput: string }>({ tagsInput: '' });
+  const [formData, setFormData] = useState<FormData>({ tagsInput: '', groupSids: [] });
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [pluginOptsStr, setPluginOptsStr] = useState<string>('');
   const [openSections, setOpenSections] = useState<Set<string>>(new Set(['basic', 'network']));
@@ -277,6 +285,20 @@ export const EditNodeSheet: React.FC<EditNodeSheetProps> = ({
     filters: { status: 'active' },
     enabled: open,
   });
+
+  const { plans, isLoading: isLoadingPlans } = useSubscriptionPlans({
+    pageSize: 100,
+    enabled: open,
+  });
+
+  const filteredResourceGroups = useMemo(() => {
+    if (!plans.length) return resourceGroups;
+    const planTypeMap = new Map(plans.map((plan) => [plan.id, plan.planType]));
+    return resourceGroups.filter((group) => {
+      const planType = planTypeMap.get(group.planId);
+      return planType === 'node' || planType === 'hybrid';
+    });
+  }, [resourceGroups, plans]);
 
   useEffect(() => {
     if (node) {
@@ -299,7 +321,7 @@ export const EditNodeSheet: React.FC<EditNodeSheetProps> = ({
         sni: node.sni,
         allowInsecure: node.allowInsecure,
         route: node.route,
-        groupSid: node.groupIds?.[0] ?? '',
+        groupSids: node.groupIds ?? [],
         muteNotification: node.muteNotification,
         // VLESS fields
         vlessTransportType: node.vlessTransportType,
@@ -490,9 +512,12 @@ export const EditNodeSheet: React.FC<EditNodeSheetProps> = ({
       }
     }
 
-    const originalGroupSid = node.groupIds?.[0] ?? '';
-    if (formData.groupSid !== undefined && formData.groupSid !== originalGroupSid) {
-      updates.groupSid = formData.groupSid;
+    // Resource group association - only send if changed
+    const originalGroupSids = node.groupIds ?? [];
+    const newGroupSids = formData.groupSids ?? [];
+    const groupSidsChanged = JSON.stringify([...newGroupSids].sort()) !== JSON.stringify([...originalGroupSids].sort());
+    if (groupSidsChanged) {
+      updates.groupSids = newGroupSids;
     }
 
     const newTags = formData.tagsInput
@@ -1232,20 +1257,71 @@ export const EditNodeSheet: React.FC<EditNodeSheetProps> = ({
               </div>
 
               <div className="space-y-1.5">
-                <FormFieldLabel label="资源组" hint="将节点关联到资源组" />
-                <MobileSelect
-                  value={formData.groupSid ?? '__none__'}
-                  onChange={(value) => handleChange('groupSid', value === '__none__' ? '' : value)}
-                  disabled={isLoadingGroups}
-                  options={[
-                    { value: '__none__', label: '不关联资源组' },
-                    ...resourceGroups.map((group) => ({
-                      value: group.sid,
-                      label: group.name,
-                    })),
-                  ]}
-                  placeholder={isLoadingGroups ? '加载中...' : '选择资源组'}
-                />
+                <FormFieldLabel label="资源组" hint="将节点关联到一个或多个资源组" />
+
+                {/* Selected groups chips */}
+                {formData.groupSids.length > 0 && (
+                  <div className="flex flex-wrap gap-1.5">
+                    {formData.groupSids.map((sid) => {
+                      const group = filteredResourceGroups.find((g) => g.sid === sid);
+                      return (
+                        <Badge key={sid} variant="secondary" className="gap-1 pr-1">
+                          <Layers className="size-3" />
+                          {group?.name ?? sid}
+                          <button
+                            type="button"
+                            onClick={() => setFormData((prev) => ({
+                              ...prev,
+                              groupSids: prev.groupSids.filter((id) => id !== sid),
+                            }))}
+                            className="ml-0.5 rounded-full p-1 hover:bg-muted min-w-[28px] min-h-[28px] flex items-center justify-center"
+                          >
+                            <X className="size-3" />
+                          </button>
+                        </Badge>
+                      );
+                    })}
+                  </div>
+                )}
+
+                {/* Group selection list */}
+                <div className="border rounded-xl max-h-[150px] overflow-y-auto bg-background">
+                  {isLoadingGroups || isLoadingPlans ? (
+                    <div className="p-3 text-center text-sm text-muted-foreground">加载中...</div>
+                  ) : filteredResourceGroups.length === 0 ? (
+                    <div className="p-3 text-center text-sm text-muted-foreground">暂无可用资源组</div>
+                  ) : (
+                    <div className="divide-y divide-border/50">
+                      {filteredResourceGroups.map((group) => (
+                        <label
+                          key={group.sid}
+                          className="flex items-center gap-3 p-3 active:bg-accent/30 transition-colors min-h-[52px]"
+                        >
+                          <Checkbox
+                            checked={formData.groupSids.includes(group.sid)}
+                            onCheckedChange={(checked) => {
+                              setFormData((prev) => ({
+                                ...prev,
+                                groupSids: checked
+                                  ? [...prev.groupSids, group.sid]
+                                  : prev.groupSids.filter((id) => id !== group.sid),
+                              }));
+                            }}
+                          />
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-2">
+                              <span className="font-medium text-sm">{group.name}</span>
+                              <Badge variant={group.status === 'active' ? 'default' : 'secondary'} className="text-[10px]">
+                                {group.status === 'active' ? '激活' : '未激活'}
+                              </Badge>
+                            </div>
+                            {group.description && <p className="text-xs text-muted-foreground truncate">{group.description}</p>}
+                          </div>
+                        </label>
+                      ))}
+                    </div>
+                  )}
+                </div>
               </div>
 
               <div className="space-y-1.5">

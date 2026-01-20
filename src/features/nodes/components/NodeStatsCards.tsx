@@ -61,7 +61,7 @@ export const NodeStatsCards: React.FC<NodeStatsCardsProps> = ({ nodes, loading }
   ];
 
   return (
-    <div className="grid grid-cols-4 gap-2 sm:gap-4 mb-6">
+    <div className="@container grid grid-cols-2 @md:grid-cols-4 gap-2 @sm:gap-4 mb-6">
       {statCards.map((stat, index) => {
         const Icon = stat.icon;
         return (
@@ -69,16 +69,16 @@ export const NodeStatsCards: React.FC<NodeStatsCardsProps> = ({ nodes, loading }
             key={index}
             className="transition-all duration-300 hover:-translate-y-1 hover:shadow-lg"
           >
-            <CardContent className="p-2 sm:p-4 md:p-6">
-              <div className="flex items-center justify-center sm:justify-between mb-1 sm:mb-2">
-                <div className={`size-8 sm:size-10 md:size-14 rounded-lg ${stat.bgColor} flex items-center justify-center ${stat.color}`}>
-                  <Icon className="size-5 sm:size-6 md:size-10" />
+            <CardContent className="@container p-3 @sm:p-4 @md:p-6">
+              <div className="flex items-center justify-center @sm:justify-between mb-1 @sm:mb-2">
+                <div className={`size-11 @sm:size-12 @md:size-14 rounded-lg ${stat.bgColor} flex items-center justify-center ${stat.color}`}>
+                  <Icon className="size-5 @sm:size-6 @md:size-8" />
                 </div>
               </div>
-              <h4 className={`text-lg sm:text-2xl md:text-3xl font-bold ${stat.color} text-center sm:text-left`}>
+              <h4 className={`text-lg @sm:text-2xl @md:text-3xl font-bold ${stat.color} text-center @sm:text-left`}>
                 {loading ? '-' : stat.value}
               </h4>
-              <p className="text-xs sm:text-sm text-muted-foreground mt-0.5 sm:mt-1 text-center sm:text-left truncate">
+              <p className="text-xs @sm:text-sm text-muted-foreground mt-0.5 @sm:mt-1 text-center @sm:text-left truncate">
                 {stat.title}
               </p>
             </CardContent>
