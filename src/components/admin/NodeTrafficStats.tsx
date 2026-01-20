@@ -144,19 +144,19 @@ const NodeListSkeleton = () => {
           className="flex items-center gap-2 sm:gap-4 p-3 sm:p-4 rounded-lg sm:rounded-xl border border-border bg-card"
         >
           {/* Icon Skeleton */}
-          <div className="min-w-8 h-8 sm:min-w-10 sm:h-10 bg-muted rounded-md sm:rounded-lg animate-pulse" />
+          <div className="min-w-8 h-8 sm:min-w-10 sm:h-10 bg-muted rounded-md sm:rounded-lg animate-pulse motion-reduce:animate-none" />
 
           {/* Name Skeleton */}
           <div className="flex-1 space-y-2">
-            <div className="h-3 sm:h-4 bg-muted rounded w-1/3 animate-pulse" />
-            <div className="h-2.5 sm:h-3 bg-muted rounded w-1/2 animate-pulse" />
+            <div className="h-3 sm:h-4 bg-muted rounded w-1/3 animate-pulse motion-reduce:animate-none" />
+            <div className="h-2.5 sm:h-3 bg-muted rounded w-1/2 animate-pulse motion-reduce:animate-none" />
           </div>
 
           {/* Stats Skeleton */}
           <div className="flex items-center gap-2 sm:gap-4">
-            <div className="hidden sm:block h-3 w-16 bg-muted rounded animate-pulse" />
-            <div className="hidden sm:block h-3 w-16 bg-muted rounded animate-pulse" />
-            <div className="h-3 w-12 sm:w-16 bg-muted rounded animate-pulse" />
+            <div className="hidden sm:block h-3 w-16 bg-muted rounded animate-pulse motion-reduce:animate-none" />
+            <div className="hidden sm:block h-3 w-16 bg-muted rounded animate-pulse motion-reduce:animate-none" />
+            <div className="h-3 w-12 sm:w-16 bg-muted rounded animate-pulse motion-reduce:animate-none" />
           </div>
         </div>
       ))}

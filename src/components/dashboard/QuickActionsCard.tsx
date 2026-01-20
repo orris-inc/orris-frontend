@@ -31,7 +31,7 @@ export const QuickActionsCard = ({ className }: QuickActionsCardProps) => {
           // Mobile: glass-interactive, Desktop: solid card
           'glass-interactive md:bg-card md:border md:shadow-none md:backdrop-blur-none',
           'hover:md:border-primary/50 hover:shadow-sm',
-          'transition-all duration-[var(--duration-normal)] ease-[var(--spring-smooth)] group'
+          'transition-all duration-normal ease-smooth group'
         )}
       >
         <div className="p-1.5 sm:p-2 rounded-lg bg-primary/10 ring-1 ring-primary/20 shrink-0">
@@ -52,7 +52,7 @@ export const QuickActionsCard = ({ className }: QuickActionsCardProps) => {
           // Mobile: glass-interactive, Desktop: solid card
           'glass-interactive md:bg-card md:border md:shadow-none md:backdrop-blur-none',
           'hover:md:border-primary/50 hover:shadow-sm',
-          'transition-all duration-[var(--duration-normal)] ease-[var(--spring-smooth)] group'
+          'transition-all duration-normal ease-smooth group'
         )}
       >
         <div className="p-1.5 sm:p-2 rounded-lg bg-success/10 ring-1 ring-success/20 shrink-0">

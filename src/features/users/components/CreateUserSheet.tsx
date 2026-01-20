@@ -21,7 +21,7 @@ import { MobileFormInput, MobilePasswordInput } from '@/components/common/mobile
 import { cn } from '@/lib/utils';
 import type { CreateUserRequest } from '@/api/user';
 
-interface CreateUserSheetProps extends CreateSheetProps<CreateUserRequest> {}
+type CreateUserSheetProps = CreateSheetProps<CreateUserRequest>;
 
 interface FormErrors {
   email?: string;

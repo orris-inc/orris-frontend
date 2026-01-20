@@ -126,10 +126,10 @@ export const RegisterPage = () => {
   };
 
   const getPasswordStrengthColor = () => {
-    if (passwordStrength < 25) return 'hsl(var(--destructive))';
-    if (passwordStrength < 50) return 'hsl(var(--warning))';
-    if (passwordStrength < 75) return 'hsl(var(--chart-2))';
-    return 'hsl(var(--chart-1))';
+    if (passwordStrength < 25) return 'var(--color-destructive)';
+    if (passwordStrength < 50) return 'var(--color-warning)';
+    if (passwordStrength < 75) return 'var(--color-chart-2)';
+    return 'var(--color-chart-1)';
   };
 
   const getPasswordStrengthText = () => {

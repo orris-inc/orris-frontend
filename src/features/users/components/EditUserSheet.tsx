@@ -22,7 +22,7 @@ import { MobileFormInput, MobileSelect, type MobileSelectOption } from '@/compon
 import type { UserResponse, UpdateUserRequest } from '@/api/user';
 import type { UserStatus, UserRole } from '../types/users.types';
 
-interface EditUserSheetProps extends EditSheetProps<UserResponse, UpdateUserRequest> {}
+type EditUserSheetProps = EditSheetProps<UserResponse, UpdateUserRequest>;
 
 // Status options using CSS variables
 const STATUS_OPTIONS: MobileSelectOption[] = [

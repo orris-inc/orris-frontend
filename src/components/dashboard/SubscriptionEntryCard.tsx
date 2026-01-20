@@ -94,7 +94,7 @@ export const SubscriptionEntryCard = ({ subscription, className }: SubscriptionE
       onClick={handleClick}
       className={cn(
         'p-3 sm:p-4 rounded-xl cursor-pointer touch-target',
-        'transition-all duration-[var(--duration-normal)] ease-[var(--spring-smooth)] group',
+        'transition-all duration-normal ease-smooth group',
         // Mobile: glass effect, Desktop: solid background
         'glass-elevated md:bg-card md:border md:shadow-none md:backdrop-blur-none',
         isActive

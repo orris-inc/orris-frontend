@@ -150,7 +150,7 @@ export const UserNodeList: React.FC<UserNodeListProps> = ({
         {nodes.map((node) => (
           <div
             key={node.id}
-            className="p-3 rounded-xl glass-elevated transition-transform duration-[var(--duration-fast)] ease-[var(--spring-bounce)] active:scale-[0.98]"
+            className="p-3 rounded-xl glass-elevated transition-transform duration-fast ease-bounce active:scale-[0.98]"
           >
             <div className="space-y-2">
               {/* Title row - compact with inline status */}

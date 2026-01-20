@@ -4,7 +4,7 @@
  * Compact, sortable, and responsive design
  */
 
-import { memo, useMemo, useState } from 'react';
+import { memo, useMemo, useState, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   useReactTable,
@@ -14,6 +14,7 @@ import {
   createColumnHelper,
   type SortingState,
 } from '@tanstack/react-table';
+import { useVirtualizer } from '@tanstack/react-virtual';
 import { Server, Cpu, ChevronUp, ChevronDown, ChevronsUpDown, ArrowDown, ArrowUp } from 'lucide-react';
 import { Badge } from '@/components/common/Badge';
 import { cn } from '@/lib/utils';
@@ -26,6 +27,10 @@ import type { AgentSystemStatus } from '@/api/forward';
 interface EntityTableViewProps {
   entities: EntityStatus[];
   onRowClick?: (entity: EntityStatus) => void;
+  /** Enable virtualization when entity count exceeds this threshold */
+  virtualizeThreshold?: number;
+  /** Maximum height of the table container when virtualized */
+  maxHeight?: number;
 }
 
 const columnHelper = createColumnHelper<EntityStatus>();
@@ -74,9 +79,21 @@ const formatUptime = (seconds?: number): string => {
   return `<1h`;
 };
 
-export const EntityTableView = memo(({ entities, onRowClick }: EntityTableViewProps) => {
+// Row height constant for virtualization
+const ROW_HEIGHT = 52;
+
+export const EntityTableView = memo(({
+  entities,
+  onRowClick,
+  virtualizeThreshold = 50,
+  maxHeight = 600,
+}: EntityTableViewProps) => {
   const { t } = useTranslation();
   const [sorting, setSorting] = useState<SortingState>([]);
+  const tableContainerRef = useRef<HTMLDivElement>(null);
+
+  // Determine if virtualization should be enabled
+  const shouldVirtualize = entities.length > virtualizeThreshold;
 
   const columns = useMemo(() => [
     columnHelper.accessor('type', {
@@ -247,83 +264,150 @@ export const EntityTableView = memo(({ entities, onRowClick }: EntityTableViewPr
     getRowId: (row) => row.id,
   });
 
+  const { rows } = table.getRowModel();
+
+  // Initialize virtualizer for large datasets
+  const rowVirtualizer = useVirtualizer({
+    count: rows.length,
+    getScrollElement: () => tableContainerRef.current,
+    estimateSize: () => ROW_HEIGHT,
+    overscan: 10,
+    enabled: shouldVirtualize,
+  });
+
+  // Render table header (shared between virtualized and non-virtualized)
+  const renderHeader = () => (
+    <thead className="sticky top-0 z-10">
+      {table.getHeaderGroups().map((headerGroup) => (
+        <tr key={headerGroup.id} className="bg-muted/50">
+          {headerGroup.headers.map((header) => {
+            const canSort = header.column.getCanSort();
+            const sorted = header.column.getIsSorted();
+
+            return (
+              <th
+                key={header.id}
+                style={{ width: header.column.columnDef.size }}
+                className={cn(
+                  'px-3 py-2.5 font-medium',
+                  'text-xs text-muted-foreground',
+                  'whitespace-nowrap text-left',
+                  'border-b border-border/60',
+                  'first:rounded-tl-xl last:rounded-tr-xl',
+                  canSort && 'cursor-pointer select-none hover:text-foreground hover:bg-muted/80 transition-colors'
+                )}
+                onClick={canSort ? header.column.getToggleSortingHandler() : undefined}
+              >
+                <div className="flex items-center gap-1">
+                  {header.isPlaceholder
+                    ? null
+                    : flexRender(header.column.columnDef.header, header.getContext())}
+                  {canSort && (
+                    <span className={cn(
+                      'transition-colors',
+                      sorted ? 'text-primary' : 'text-muted-foreground/40'
+                    )}>
+                      {sorted === 'asc' ? (
+                        <ChevronUp className="size-3.5" />
+                      ) : sorted === 'desc' ? (
+                        <ChevronDown className="size-3.5" />
+                      ) : (
+                        <ChevronsUpDown className="size-3 opacity-60" />
+                      )}
+                    </span>
+                  )}
+                </div>
+              </th>
+            );
+          })}
+        </tr>
+      ))}
+    </thead>
+  );
+
+  // Render row content
+  const renderRow = (row: typeof rows[number]) => (
+    <tr
+      key={row.id}
+      onClick={() => onRowClick?.(row.original)}
+      className={cn(
+        'group transition-colors',
+        'hover:bg-accent/50',
+        onRowClick && 'cursor-pointer'
+      )}
+    >
+      {row.getVisibleCells().map((cell) => (
+        <td
+          key={cell.id}
+          className="px-3 py-2.5 align-middle"
+        >
+          {flexRender(cell.column.columnDef.cell, cell.getContext())}
+        </td>
+      ))}
+    </tr>
+  );
+
+  // Virtualized table body
+  if (shouldVirtualize) {
+    const virtualRows = rowVirtualizer.getVirtualItems();
+    const totalSize = rowVirtualizer.getTotalSize();
+
+    return (
+      <div
+        ref={tableContainerRef}
+        className="overflow-auto bg-card rounded-xl border border-border"
+        style={{ maxHeight }}
+      >
+        <table className="w-full text-sm border-separate border-spacing-0">
+          {renderHeader()}
+          <tbody>
+            {rows.length === 0 ? (
+              <tr>
+                <td colSpan={columns.length} className="py-12 text-center">
+                  <p className="text-sm text-muted-foreground">{t('monitor.table.empty')}</p>
+                </td>
+              </tr>
+            ) : (
+              <>
+                {/* Spacer for virtual scroll offset */}
+                {virtualRows.length > 0 && virtualRows[0].start > 0 && (
+                  <tr>
+                    <td colSpan={columns.length} style={{ height: virtualRows[0].start, padding: 0 }} />
+                  </tr>
+                )}
+                {/* Render virtual rows */}
+                {virtualRows.map((virtualRow) => {
+                  const row = rows[virtualRow.index];
+                  return renderRow(row);
+                })}
+                {/* Spacer for remaining virtual space */}
+                {virtualRows.length > 0 && (
+                  <tr>
+                    <td colSpan={columns.length} style={{ height: totalSize - (virtualRows[virtualRows.length - 1]?.end ?? 0), padding: 0 }} />
+                  </tr>
+                )}
+              </>
+            )}
+          </tbody>
+        </table>
+      </div>
+    );
+  }
+
+  // Non-virtualized table (for small datasets)
   return (
     <div className="overflow-x-auto bg-card rounded-xl border border-border">
       <table className="w-full text-sm border-separate border-spacing-0">
-        <thead className="sticky top-0 z-10">
-          {table.getHeaderGroups().map((headerGroup) => (
-            <tr key={headerGroup.id} className="bg-muted/50">
-              {headerGroup.headers.map((header) => {
-                const canSort = header.column.getCanSort();
-                const sorted = header.column.getIsSorted();
-
-                return (
-                  <th
-                    key={header.id}
-                    style={{ width: header.column.columnDef.size }}
-                    className={cn(
-                      'px-3 py-2.5 font-medium',
-                      'text-xs text-muted-foreground',
-                      'whitespace-nowrap text-left',
-                      'border-b border-border/60',
-                      'first:rounded-tl-xl last:rounded-tr-xl',
-                      canSort && 'cursor-pointer select-none hover:text-foreground hover:bg-muted/80 transition-colors'
-                    )}
-                    onClick={canSort ? header.column.getToggleSortingHandler() : undefined}
-                  >
-                    <div className="flex items-center gap-1">
-                      {header.isPlaceholder
-                        ? null
-                        : flexRender(header.column.columnDef.header, header.getContext())}
-                      {canSort && (
-                        <span className={cn(
-                          'transition-colors',
-                          sorted ? 'text-primary' : 'text-muted-foreground/40'
-                        )}>
-                          {sorted === 'asc' ? (
-                            <ChevronUp className="size-3.5" />
-                          ) : sorted === 'desc' ? (
-                            <ChevronDown className="size-3.5" />
-                          ) : (
-                            <ChevronsUpDown className="size-3 opacity-60" />
-                          )}
-                        </span>
-                      )}
-                    </div>
-                  </th>
-                );
-              })}
-            </tr>
-          ))}
-        </thead>
+        {renderHeader()}
         <tbody className="divide-y divide-border/40">
-          {table.getRowModel().rows.length === 0 ? (
+          {rows.length === 0 ? (
             <tr>
               <td colSpan={columns.length} className="py-12 text-center">
                 <p className="text-sm text-muted-foreground">{t('monitor.table.empty')}</p>
               </td>
             </tr>
           ) : (
-            table.getRowModel().rows.map((row) => (
-              <tr
-                key={row.id}
-                onClick={() => onRowClick?.(row.original)}
-                className={cn(
-                  'group transition-colors',
-                  'hover:bg-accent/50',
-                  onRowClick && 'cursor-pointer'
-                )}
-              >
-                {row.getVisibleCells().map((cell) => (
-                  <td
-                    key={cell.id}
-                    className="px-3 py-2.5 align-middle"
-                  >
-                    {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                  </td>
-                ))}
-              </tr>
-            ))
+            rows.map(renderRow)
           )}
         </tbody>
       </table>

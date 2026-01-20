@@ -241,23 +241,22 @@ const EmptyState = ({
  * Loading skeleton for cards
  */
 const LoadingSkeleton = () => (
-  <div className="space-y-2.5">
+  <div className="space-y-2">
     {[1, 2, 3, 4, 5].map((i) => (
       <div
         key={i}
-        className="bg-card/60 backdrop-blur-sm rounded-2xl border border-border/50 p-4"
+        className="bg-card/60 backdrop-blur-sm rounded-xl border border-border/50 px-3 py-2.5"
       >
-        <div className="flex items-center justify-between mb-2">
+        <div className="flex items-center justify-between mb-1.5">
           <div className="flex items-center gap-2">
             <Skeleton className="h-4 w-24" />
-            <Skeleton className="h-4 w-12" />
+            <Skeleton className="h-3 w-10" />
           </div>
-          <Skeleton className="h-5 w-10 rounded-full" />
+          <Skeleton className="h-4 w-10 rounded" />
         </div>
         <div className="flex items-center gap-2">
-          <Skeleton className="h-4 w-28 font-mono" />
-          <Skeleton className="h-3 w-1" />
-          <Skeleton className="h-3 w-10" />
+          <Skeleton className="h-3 w-28 font-mono" />
+          <Skeleton className="h-3 w-8" />
         </div>
       </div>
     ))}
@@ -507,8 +506,8 @@ export const MobileForwardAgentManagement = ({
 
   return (
     <div className="pb-20">
-      {/* Header Section */}
-      <div className="space-y-3 mb-4">
+      {/* Header Section - optimized spacing */}
+      <div className="space-y-2 mb-3">
         {/* Stats Summary */}
         <StatsSummary
           total={stats.total}
@@ -607,10 +606,10 @@ export const MobileForwardAgentManagement = ({
           onDragEnd={onDragEnd}
           enabled={true}
           longPressDelay={250}
-          className="space-y-2.5"
+          className="space-y-2"
         />
       ) : (
-        <div className="space-y-2.5">
+        <div className="space-y-2">
           {filteredAgents.map((agent) => renderAgentCard(agent))}
         </div>
       )}

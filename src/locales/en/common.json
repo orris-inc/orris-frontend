@@ -202,6 +202,7 @@
     "nodeAgent": "Node Agent",
     "forwardAgent": "Forward Agent",
     "forwardRules": "Forward Rules",
+    "externalForwardRules": "External Forward Rules",
     "resourceGroups": "Resource Groups",
     "systemSettings": "System Settings",
     "notificationSettings": "Notification Settings",
@@ -413,6 +414,7 @@
       "title": "More",
       "forwardRules": "Forward Rules",
       "forwardAgent": "Forward Agent",
+      "externalForwardRules": "External Forward Rules",
       "resourceGroups": "Resource Groups",
       "systemSettings": "System Settings"
     },
@@ -1088,6 +1090,84 @@
       "title": "Resource Groups",
       "description": "Manage resource groups",
       "lastUpdated": "Last updated"
+    },
+    "externalForwardRules": {
+      "title": "External Forward Rules",
+      "description": "Manage external forward rules",
+      "empty": "No external forward rules",
+      "loadMore": "Load More",
+      "refreshList": "Refresh list",
+      "resetFilters": "Reset filters",
+      "adminCreated": "Admin Created",
+      "groupCount": "groups",
+      "columns": {
+        "name": "Rule Name",
+        "protocol": "Protocol",
+        "serverAddress": "Server Address",
+        "externalSource": "External Source",
+        "externalRuleId": "External Rule ID",
+        "subscriptionId": "Subscription ID",
+        "userId": "User ID",
+        "owner": "Owner",
+        "node": "Node",
+        "nodeInfo": "Node Info",
+        "nodeServerAddress": "Node Server Address",
+        "status": "Status",
+        "resourceGroups": "Resource Groups",
+        "actions": "Actions"
+      },
+      "filters": {
+        "status": "Status",
+        "externalSource": "Search external source..."
+      },
+      "actions": {
+        "enable": "Enable Rule",
+        "disable": "Disable Rule",
+        "delete": "Delete Rule"
+      },
+      "tooltip": {
+        "clickToEnable": "Click to enable",
+        "clickToDisable": "Click to disable"
+      },
+      "confirmDelete": {
+        "title": "Confirm Delete",
+        "description": "Are you sure you want to delete external rule \"{{name}}\"? This action cannot be undone."
+      },
+      "form": {
+        "externalSource": "External Source",
+        "externalSourcePlaceholder": "e.g., subscription-provider",
+        "externalRuleId": "External Rule ID",
+        "externalRuleIdPlaceholder": "Source system rule identifier (optional)",
+        "nodeId": "Node",
+        "nodeIdPlaceholder": "Select a node",
+        "noNode": "No node (auto-assigned)"
+      },
+      "validation": {
+        "externalSourceRequired": "Please enter external source"
+      },
+      "createDialog": {
+        "title": "Create External Forward Rule",
+        "basicInfo": "Basic Info",
+        "serverConfig": "Server Config",
+        "protocolConfig": "Protocol Config",
+        "nodeRouting": "Node Routing",
+        "nodeRoutingHint": "Optionally specify a node for direct routing. If not selected, the rule will be auto-assigned.",
+        "resourceGroups": "Resource Groups",
+        "resourceGroupsHint": "Select resource groups to bind. Rules will be distributed to subscriptions under these groups.",
+        "noResourceGroups": "No resource groups available",
+        "creating": "Creating..."
+      },
+      "editDialog": {
+        "title": "Edit External Forward Rule",
+        "basicInfo": "Basic Info",
+        "serverConfig": "Server Config",
+        "protocolConfig": "Protocol Config",
+        "nodeRouting": "Node Routing",
+        "nodeRoutingHint": "Change the node for this rule. If not selected, the rule will be auto-assigned.",
+        "currentNodeInfo": "Current Node Info",
+        "readOnlyInfo": "Read-only Info (cannot be modified)",
+        "saving": "Saving..."
+      }
     },
     "monitor": {
       "systemMonitor": "System Monitor",
@@ -1984,6 +2064,99 @@
     "confirmDelete": {
       "title": "Confirm Delete",
       "description": "Are you sure you want to delete forward rule \"{{name}}\"? This action cannot be undone."
+    }
+  },
+  "externalForwardRules": {
+    "title": "External Rules",
+    "totalCount": "{{count}} rules total",
+    "createRule": "Create External Rule",
+    "empty": "No external rules",
+    "loadMore": "Load More",
+    "protocolConfig": "Protocol Config",
+    "columns": {
+      "name": "Rule Name",
+      "protocol": "Protocol",
+      "serverAddress": "Server Address",
+      "externalSource": "Source",
+      "externalRuleId": "External ID",
+      "node": "Node",
+      "status": "Status",
+      "actions": "Actions"
+    },
+    "form": {
+      "name": "Rule Name",
+      "namePlaceholder": "Give your rule a name",
+      "serverAddress": "Server Address",
+      "serverAddressPlaceholder": "e.g., example.com or 192.168.1.1",
+      "listenPort": "Listen Port",
+      "protocol": "Protocol Type",
+      "externalSource": "External Source",
+      "externalSourcePlaceholder": "e.g., subscription-provider",
+      "externalRuleId": "External Rule ID",
+      "externalRuleIdPlaceholder": "Source system rule identifier (optional)",
+      "remark": "Remark",
+      "remarkPlaceholder": "Add remark (optional)",
+      "sortOrder": "Sort Order",
+      "sortOrderPlaceholder": "Leave empty for default 0",
+      "sortOrderHint": "Lower value means higher priority",
+      "encryptionMethod": "Encryption Method",
+      "selectEncryptionMethod": "Select encryption method",
+      "password": "Password",
+      "passwordPlaceholder": "Enter protocol password",
+      "transportProtocol": "Transport Protocol",
+      "host": "Host",
+      "hostPlaceholder": "WebSocket/HTTP2 Host header",
+      "path": "Path",
+      "pathPlaceholder": "WebSocket/HTTP2 path",
+      "sni": "SNI",
+      "sniPlaceholder": "TLS Server Name Indication",
+      "allowInsecure": "Allow Insecure Connection",
+      "nodeId": "Node",
+      "nodeIdPlaceholder": "Select a node",
+      "noNode": "No node (auto-assigned)",
+      "protocolPlaceholder": "Select protocol",
+      "noProtocol": "Not specified"
+    },
+    "validation": {
+      "nameRequired": "Please enter rule name",
+      "serverAddressRequired": "Please enter server address",
+      "listenPortRequired": "Please enter listen port",
+      "portRange": "Port must be between 1-65535",
+      "externalSourceRequired": "Please enter external source",
+      "encryptionMethodRequired": "Please select encryption method",
+      "passwordRequired": "Please enter password"
+    },
+    "createDialog": {
+      "title": "Create External Rule",
+      "basicInfo": "Basic Info",
+      "serverConfig": "Server Config",
+      "protocolConfig": "Protocol Config",
+      "nodeRouting": "Node Routing",
+      "nodeRoutingHint": "Optionally specify a node for direct routing. If not selected, the rule will be auto-assigned.",
+      "creating": "Creating..."
+    },
+    "editDialog": {
+      "title": "Edit External Rule",
+      "basicInfo": "Basic Info",
+      "serverConfig": "Server Config",
+      "protocolConfig": "Protocol Config",
+      "nodeRouting": "Node Routing",
+      "nodeRoutingHint": "Change the node for this rule. If not selected, the rule will be auto-assigned.",
+      "readOnlyInfo": "Read-only Info",
+      "saving": "Saving..."
+    },
+    "menu": {
+      "enableRule": "Enable Rule",
+      "disableRule": "Disable Rule",
+      "deleteRule": "Delete Rule"
+    },
+    "tooltip": {
+      "clickToEnable": "Click to enable",
+      "clickToDisable": "Click to disable"
+    },
+    "confirmDelete": {
+      "title": "Confirm Delete",
+      "description": "Are you sure you want to delete external rule \"{{name}}\"? This action cannot be undone."
     }
   },
   "monitor": {

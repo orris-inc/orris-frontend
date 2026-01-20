@@ -431,7 +431,7 @@ export const LandingPage = () => {
                 }}
                 whileHover={{
                   y: -4,
-                  borderColor: 'hsl(var(--primary) / 0.5)',
+                  borderColor: 'oklch(from var(--color-primary) l c h / 0.5)',
                   boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)',
                   transition: { duration: 0.2 },
                 }}
@@ -617,21 +617,21 @@ export const LandingPage = () => {
             <div className="flex items-center gap-6 text-sm text-muted-foreground">
               <motion.a
                 href="#features"
-                whileHover={{ color: 'hsl(var(--foreground))' }}
+                whileHover={{ color: 'var(--color-foreground)' }}
                 transition={{ duration: 0.2 }}
               >
                 {t('landing.nav.features')}
               </motion.a>
               <motion.a
                 href="#how-it-works"
-                whileHover={{ color: 'hsl(var(--foreground))' }}
+                whileHover={{ color: 'var(--color-foreground)' }}
                 transition={{ duration: 0.2 }}
               >
                 {t('landing.nav.howItWorks')}
               </motion.a>
               <motion.a
                 href="/pricing"
-                whileHover={{ color: 'hsl(var(--foreground))' }}
+                whileHover={{ color: 'var(--color-foreground)' }}
                 transition={{ duration: 0.2 }}
               >
                 {t('landing.nav.pricing')}

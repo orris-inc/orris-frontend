@@ -3,7 +3,7 @@
  * High-density data management interface
  */
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, lazy, Suspense } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   Server,
@@ -19,25 +19,55 @@ import {
 } from 'lucide-react';
 import { Switch, SwitchThumb } from '@/components/common/Switch';
 import { NodeListTable } from '@/features/nodes/components/NodeListTable';
-import { EditNodeDialog } from '@/features/nodes/components/EditNodeDialog';
-import { CreateNodeDialog } from '@/features/nodes/components/CreateNodeDialog';
 import { CreateNodeSheet } from '@/features/nodes/components/CreateNodeSheet';
 import { EditNodeSheet } from '@/features/nodes/components/EditNodeSheet';
 import { DeleteNodeSheet } from '@/features/nodes/components/DeleteNodeSheet';
-import { NodeDetailDialog } from '@/features/nodes/components/NodeDetailDialog';
-import { NodeInstallScriptDialog } from '@/features/nodes/components/NodeInstallScriptDialog';
-import { BatchUpdateDialog } from '@/features/nodes/components/BatchUpdateDialog';
-import { BroadcastNodeURLDialog } from '@/features/nodes/components/BroadcastNodeURLDialog';
 import { MobileNodeManagement } from '@/features/nodes/components/MobileNodeManagement';
 import { useNodesPage, useBroadcastNodeAPIURL, useNotifyNodeAPIURL } from '@/features/nodes/hooks/useNodes';
 import { useResourceGroups } from '@/features/resource-groups/hooks/useResourceGroups';
 import { AdminLayout } from '@/layouts/AdminLayout';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/common/Tooltip';
-import { TokenDialog } from '@/components/common/TokenDialog';
 import { AdminButton, AdminCard } from '@/components/admin';
 import { usePageTitle } from '@/shared/hooks';
 import { useBreakpoint } from '@/hooks/useBreakpoint';
 import type { Node, UpdateNodeRequest, CreateNodeRequest } from '@/api/node';
+
+// Lazy load dialog components
+const CreateNodeDialog = lazy(() =>
+  import('@/features/nodes/components/CreateNodeDialog').then((m) => ({
+    default: m.CreateNodeDialog,
+  }))
+);
+const EditNodeDialog = lazy(() =>
+  import('@/features/nodes/components/EditNodeDialog').then((m) => ({
+    default: m.EditNodeDialog,
+  }))
+);
+const NodeDetailDialog = lazy(() =>
+  import('@/features/nodes/components/NodeDetailDialog').then((m) => ({
+    default: m.NodeDetailDialog,
+  }))
+);
+const NodeInstallScriptDialog = lazy(() =>
+  import('@/features/nodes/components/NodeInstallScriptDialog').then((m) => ({
+    default: m.NodeInstallScriptDialog,
+  }))
+);
+const BatchUpdateDialog = lazy(() =>
+  import('@/features/nodes/components/BatchUpdateDialog').then((m) => ({
+    default: m.BatchUpdateDialog,
+  }))
+);
+const BroadcastNodeURLDialog = lazy(() =>
+  import('@/features/nodes/components/BroadcastNodeURLDialog').then((m) => ({
+    default: m.BroadcastNodeURLDialog,
+  }))
+);
+const TokenDialog = lazy(() =>
+  import('@/components/common/TokenDialog').then((m) => ({
+    default: m.TokenDialog,
+  }))
+);
 
 export const NodeManagementPage = () => {
   const { t } = useTranslation();
@@ -468,16 +498,20 @@ export const NodeManagementPage = () => {
           nodes={nodesForOutbound}
         />
       ) : (
-        <CreateNodeDialog
-          open={createDialogOpen}
-          onClose={() => {
-            setCreateDialogOpen(false);
-            setCopyNodeData(undefined);
-          }}
-          onSubmit={handleCreateSubmit}
-          initialData={copyNodeData}
-          nodes={nodesForOutbound}
-        />
+        createDialogOpen && (
+          <Suspense fallback={null}>
+            <CreateNodeDialog
+              open={createDialogOpen}
+              onClose={() => {
+                setCreateDialogOpen(false);
+                setCopyNodeData(undefined);
+              }}
+              onSubmit={handleCreateSubmit}
+              initialData={copyNodeData}
+              nodes={nodesForOutbound}
+            />
+          </Suspense>
+        )
       )}
 
       {/* Edit Node Dialog/Sheet */}
@@ -495,85 +529,109 @@ export const NodeManagementPage = () => {
           nodes={nodesForOutbound}
         />
       ) : (
-        <EditNodeDialog
-          open={editDialogOpen}
-          node={selectedNode}
-          onClose={() => {
-            setEditDialogOpen(false);
-            setSelectedNode(null);
-          }}
-          onSubmit={handleUpdateSubmit}
-          nodes={nodesForOutbound}
-        />
+        editDialogOpen && (
+          <Suspense fallback={null}>
+            <EditNodeDialog
+              open={editDialogOpen}
+              node={selectedNode}
+              onClose={() => {
+                setEditDialogOpen(false);
+                setSelectedNode(null);
+              }}
+              onSubmit={handleUpdateSubmit}
+              nodes={nodesForOutbound}
+            />
+          </Suspense>
+        )
       )}
 
       {/* Node Detail Dialog */}
-      <NodeDetailDialog
-        open={detailDialogOpen}
-        node={selectedNode}
-        onClose={() => {
-          setDetailDialogOpen(false);
-          setSelectedNode(null);
-        }}
-        nodes={nodesForOutbound}
-      />
+      {detailDialogOpen && (
+        <Suspense fallback={null}>
+          <NodeDetailDialog
+            open={detailDialogOpen}
+            node={selectedNode}
+            onClose={() => {
+              setDetailDialogOpen(false);
+              setSelectedNode(null);
+            }}
+            nodes={nodesForOutbound}
+          />
+        </Suspense>
+      )}
 
       {/* Token Dialog */}
-      <TokenDialog
-        open={tokenDialogOpen}
-        token={generatedToken?.token ?? null}
-        title={t('admin.nodes.nodeToken')}
-        onClose={() => {
-          setTokenDialogOpen(false);
-          setGeneratedToken(null);
-        }}
-      />
+      {tokenDialogOpen && (
+        <Suspense fallback={null}>
+          <TokenDialog
+            open={tokenDialogOpen}
+            token={generatedToken?.token ?? null}
+            title={t('admin.nodes.nodeToken')}
+            onClose={() => {
+              setTokenDialogOpen(false);
+              setGeneratedToken(null);
+            }}
+          />
+        </Suspense>
+      )}
 
       {/* Install Script Dialog */}
-      <NodeInstallScriptDialog
-        open={installScriptDialogOpen}
-        installScriptData={installScriptData}
-        nodeName={installScriptNodeName}
-        onClose={() => {
-          setInstallScriptDialogOpen(false);
-          setInstallScriptData(null);
-          setInstallScriptNodeName('');
-        }}
-      />
+      {installScriptDialogOpen && (
+        <Suspense fallback={null}>
+          <NodeInstallScriptDialog
+            open={installScriptDialogOpen}
+            installScriptData={installScriptData}
+            nodeName={installScriptNodeName}
+            onClose={() => {
+              setInstallScriptDialogOpen(false);
+              setInstallScriptData(null);
+              setInstallScriptNodeName('');
+            }}
+          />
+        </Suspense>
+      )}
 
       {/* Batch Update Dialog */}
-      <BatchUpdateDialog
-        open={batchUpdateDialogOpen}
-        onClose={() => {
-          setBatchUpdateDialogOpen(false);
-          setBatchUpdateResult(null);
-        }}
-        nodes={nodes}
-        onBatchUpdate={(updateAll) => handleBatchUpdate({ updateAll })}
-        isUpdating={isBatchUpdating}
-        result={batchUpdateResult}
-      />
+      {batchUpdateDialogOpen && (
+        <Suspense fallback={null}>
+          <BatchUpdateDialog
+            open={batchUpdateDialogOpen}
+            onClose={() => {
+              setBatchUpdateDialogOpen(false);
+              setBatchUpdateResult(null);
+            }}
+            nodes={nodes}
+            onBatchUpdate={(updateAll) => handleBatchUpdate({ updateAll })}
+            isUpdating={isBatchUpdating}
+            result={batchUpdateResult}
+          />
+        </Suspense>
+      )}
 
       {/* Broadcast URL Dialog */}
-      <BroadcastNodeURLDialog
-        open={broadcastURLDialogOpen || notifyURLNode !== null}
-        onClose={() => {
-          setBroadcastURLDialogOpen(false);
-          setNotifyURLNode(null);
-        }}
-        onBroadcast={(newUrl, reason) => broadcastURLMutation.mutateAsync({ newUrl, reason })}
-        isBroadcasting={broadcastURLMutation.isPending}
-        onlineCount={stats.online}
-        targetNode={notifyURLNode ? {
-          id: notifyURLNode.id,
-          name: notifyURLNode.name,
-          isOnline: notifyURLNode.isOnline,
-        } : null}
-        onNotifySingle={(nodeId, newUrl, reason) =>
-          notifyURLMutation.mutateAsync({ nodeId, data: { newUrl, reason } })
-        }
-        isNotifying={notifyURLMutation.isPending}
-      />
+      {(broadcastURLDialogOpen || notifyURLNode !== null) && (
+        <Suspense fallback={null}>
+          <BroadcastNodeURLDialog
+            open={broadcastURLDialogOpen || notifyURLNode !== null}
+            onClose={() => {
+              setBroadcastURLDialogOpen(false);
+              setNotifyURLNode(null);
+            }}
+            onBroadcast={(newUrl, reason) => broadcastURLMutation.mutateAsync({ newUrl, reason })}
+            isBroadcasting={broadcastURLMutation.isPending}
+            onlineCount={stats.online}
+            targetNode={notifyURLNode ? {
+              id: notifyURLNode.id,
+              name: notifyURLNode.name,
+              isOnline: notifyURLNode.isOnline,
+            } : null}
+            onNotifySingle={(nodeId, newUrl, reason) =>
+              notifyURLMutation.mutateAsync({ nodeId, data: { newUrl, reason } })
+            }
+            isNotifying={notifyURLMutation.isPending}
+          />
+        </Suspense>
+      )}
 
       {/* Delete Node Confirmation Sheet (Mobile only) */}
       <DeleteNodeSheet

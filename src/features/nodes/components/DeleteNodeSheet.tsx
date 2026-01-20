@@ -20,7 +20,7 @@ import { Button } from '@/components/common/Button';
 import { Badge } from '@/components/common/Badge';
 import type { Node } from '@/api/node';
 
-interface DeleteNodeSheetProps extends DeleteSheetProps<Node> {}
+type DeleteNodeSheetProps = DeleteSheetProps<Node>;
 
 export const DeleteNodeSheet: React.FC<DeleteNodeSheetProps> = ({
   open,

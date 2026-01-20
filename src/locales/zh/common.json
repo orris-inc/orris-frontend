@@ -202,6 +202,7 @@
     "nodeAgent": "节点Agent",
     "forwardAgent": "转发Agent",
     "forwardRules": "转发规则",
+    "externalForwardRules": "外部转发规则",
     "resourceGroups": "资源组管理",
     "systemSettings": "系统设置",
     "notificationSettings": "通知设置",
@@ -413,6 +414,7 @@
       "title": "更多管理",
       "forwardRules": "转发规则",
       "forwardAgent": "转发Agent",
+      "externalForwardRules": "外部转发规则",
       "resourceGroups": "资源组管理",
       "systemSettings": "系统设置"
     },
@@ -1088,6 +1090,84 @@
       "title": "资源组",
       "description": "管理资源组",
       "lastUpdated": "最近更新"
+    },
+    "externalForwardRules": {
+      "title": "外部转发规则",
+      "description": "管理外部转发规则",
+      "empty": "暂无外部转发规则",
+      "loadMore": "加载更多",
+      "refreshList": "刷新列表",
+      "resetFilters": "重置筛选",
+      "adminCreated": "管理员创建",
+      "groupCount": "个资源组",
+      "columns": {
+        "name": "规则名称",
+        "protocol": "协议",
+        "serverAddress": "服务器地址",
+        "externalSource": "外部来源",
+        "externalRuleId": "外部规则ID",
+        "subscriptionId": "订阅ID",
+        "userId": "用户ID",
+        "owner": "归属",
+        "node": "节点",
+        "nodeInfo": "节点信息",
+        "nodeServerAddress": "节点服务地址",
+        "status": "状态",
+        "resourceGroups": "资源组",
+        "actions": "操作"
+      },
+      "filters": {
+        "status": "状态",
+        "externalSource": "搜索外部来源..."
+      },
+      "actions": {
+        "enable": "启用规则",
+        "disable": "禁用规则",
+        "delete": "删除规则"
+      },
+      "tooltip": {
+        "clickToEnable": "点击启用",
+        "clickToDisable": "点击禁用"
+      },
+      "confirmDelete": {
+        "title": "确认删除",
+        "description": "确定要删除外部规则 \"{{name}}\" 吗？此操作不可撤销。"
+      },
+      "form": {
+        "externalSource": "外部来源",
+        "externalSourcePlaceholder": "例如: subscription-provider",
+        "externalRuleId": "外部规则ID",
+        "externalRuleIdPlaceholder": "来源系统的规则标识（可选）",
+        "nodeId": "节点",
+        "nodeIdPlaceholder": "选择节点",
+        "noNode": "不指定（自动分配）"
+      },
+      "validation": {
+        "externalSourceRequired": "请输入外部来源"
+      },
+      "createDialog": {
+        "title": "新增外部转发规则",
+        "basicInfo": "基本信息",
+        "serverConfig": "服务器配置",
+        "protocolConfig": "协议配置",
+        "nodeRouting": "节点路由",
+        "nodeRoutingHint": "可选择指定节点进行直接路由，不选择则自动分配。",
+        "resourceGroups": "资源组绑定",
+        "resourceGroupsHint": "选择要绑定的资源组，规则将分发给这些资源组下的订阅",
+        "noResourceGroups": "暂无可用资源组",
+        "creating": "创建中..."
+      },
+      "editDialog": {
+        "title": "编辑外部转发规则",
+        "basicInfo": "基本信息",
+        "serverConfig": "服务器配置",
+        "protocolConfig": "协议配置",
+        "nodeRouting": "节点路由",
+        "nodeRoutingHint": "修改此规则的节点，不选择则自动分配。",
+        "currentNodeInfo": "当前节点信息",
+        "readOnlyInfo": "只读信息（无法修改）",
+        "saving": "保存中..."
+      }
     },
     "monitor": {
       "systemMonitor": "系统监控",
@@ -1984,6 +2064,99 @@
     "confirmDelete": {
       "title": "确认删除",
       "description": "确认删除转发规则「{{name}}」吗？此操作不可恢复。"
+    }
+  },
+  "externalForwardRules": {
+    "title": "外部规则",
+    "totalCount": "共 {{count}} 条规则",
+    "createRule": "新增外部规则",
+    "empty": "暂无外部规则",
+    "loadMore": "加载更多",
+    "protocolConfig": "协议配置",
+    "columns": {
+      "name": "规则名",
+      "protocol": "协议",
+      "serverAddress": "服务器地址",
+      "externalSource": "来源",
+      "externalRuleId": "外部ID",
+      "node": "节点",
+      "status": "状态",
+      "actions": "操作"
+    },
+    "form": {
+      "name": "规则名称",
+      "namePlaceholder": "为您的规则起个名字",
+      "serverAddress": "服务器地址",
+      "serverAddressPlaceholder": "例如: example.com 或 192.168.1.1",
+      "listenPort": "监听端口",
+      "protocol": "协议类型",
+      "externalSource": "外部来源",
+      "externalSourcePlaceholder": "例如: subscription-provider",
+      "externalRuleId": "外部规则ID",
+      "externalRuleIdPlaceholder": "来源系统的规则标识（可选）",
+      "remark": "备注",
+      "remarkPlaceholder": "添加备注信息（可选）",
+      "sortOrder": "排序顺序",
+      "sortOrderPlaceholder": "留空则默认为 0",
+      "sortOrderHint": "值越小排序越靠前",
+      "encryptionMethod": "加密方式",
+      "selectEncryptionMethod": "选择加密方式",
+      "password": "密码",
+      "passwordPlaceholder": "输入协议密码",
+      "transportProtocol": "传输协议",
+      "host": "Host",
+      "hostPlaceholder": "WebSocket/HTTP2 Host 头",
+      "path": "Path",
+      "pathPlaceholder": "WebSocket/HTTP2 路径",
+      "sni": "SNI",
+      "sniPlaceholder": "TLS 服务器名称指示",
+      "allowInsecure": "允许不安全连接",
+      "nodeId": "节点",
+      "nodeIdPlaceholder": "选择节点",
+      "noNode": "不指定（自动分配）",
+      "protocolPlaceholder": "选择协议",
+      "noProtocol": "不指定"
+    },
+    "validation": {
+      "nameRequired": "请输入规则名称",
+      "serverAddressRequired": "请输入服务器地址",
+      "listenPortRequired": "请输入监听端口",
+      "portRange": "端口号必须在 1-65535 之间",
+      "externalSourceRequired": "请输入外部来源",
+      "encryptionMethodRequired": "请选择加密方式",
+      "passwordRequired": "请输入密码"
+    },
+    "createDialog": {
+      "title": "新增外部规则",
+      "basicInfo": "基本信息",
+      "serverConfig": "服务器配置",
+      "protocolConfig": "协议配置",
+      "nodeRouting": "节点路由",
+      "nodeRoutingHint": "可选择指定节点进行直接路由，不选择则自动分配。",
+      "creating": "创建中..."
+    },
+    "editDialog": {
+      "title": "编辑外部规则",
+      "basicInfo": "基本信息",
+      "serverConfig": "服务器配置",
+      "protocolConfig": "协议配置",
+      "nodeRouting": "节点路由",
+      "nodeRoutingHint": "修改此规则的节点，不选择则自动分配。",
+      "readOnlyInfo": "不可修改的信息",
+      "saving": "保存中..."
+    },
+    "menu": {
+      "enableRule": "启用规则",
+      "disableRule": "禁用规则",
+      "deleteRule": "删除规则"
+    },
+    "tooltip": {
+      "clickToEnable": "点击启用",
+      "clickToDisable": "点击禁用"
+    },
+    "confirmDelete": {
+      "title": "确认删除",
+      "description": "确认删除外部规则「{{name}}」吗？此操作不可恢复。"
     }
   },
   "monitor": {

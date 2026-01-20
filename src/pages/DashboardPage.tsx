@@ -80,12 +80,12 @@ export const DashboardPage = () => {
 
         {/* Empty State */}
         {!isLoading && subscriptions.length === 0 && (
-          <div className="flex flex-col items-center justify-center py-12 bg-card rounded-lg border border-border">
-            <div className="size-16 rounded-full bg-muted/30 flex items-center justify-center mb-4">
-              <CreditCard className="size-8 text-muted-foreground/50" />
+          <div className="flex flex-col items-center justify-center py-12 sm:py-16 px-4 glass-elevated rounded-2xl md:bg-card md:border md:border-border md:backdrop-blur-none">
+            <div className="size-14 sm:size-16 rounded-full bg-muted/30 flex items-center justify-center mb-4">
+              <CreditCard className="size-7 sm:size-8 text-muted-foreground/50" />
             </div>
-            <p className="text-sm font-medium text-foreground mb-1">{t('user.dashboard.empty.title')}</p>
-            <p className="text-xs text-muted-foreground mb-4">{t('user.dashboard.empty.description')}</p>
+            <p className="text-sm font-medium text-foreground mb-1 text-center">{t('user.dashboard.empty.title')}</p>
+            <p className="text-xs text-muted-foreground mb-4 text-center">{t('user.dashboard.empty.description')}</p>
             <a href="/pricing" className={`${getButtonClass('default', 'sm')} touch-target inline-flex items-center justify-center`}>
               {t('user.dashboard.empty.viewPlans')}
             </a>

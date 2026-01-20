@@ -3,7 +3,7 @@
  * High-density data management interface
  */
 
-import { useState, useMemo, useCallback } from 'react';
+import { useState, useMemo, useCallback, lazy, Suspense } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   ArrowLeftRight,
@@ -22,26 +22,74 @@ import type { RowSelectionState } from '@tanstack/react-table';
 import { Switch, SwitchThumb } from '@/components/common/Switch';
 import { ForwardRuleListTable } from '@/features/forward-rules/components/ForwardRuleListTable';
 import { MobileForwardRuleManagement } from '@/features/forward-rules/components/MobileForwardRuleManagement';
-import { CreateForwardRuleDialog } from '@/features/forward-rules/components/CreateForwardRuleDialog';
-import { CreateForwardRuleSheet } from '@/features/forward-rules/components/CreateForwardRuleSheet';
-import { EditForwardRuleDialog } from '@/features/forward-rules/components/EditForwardRuleDialog';
-import { EditForwardRuleSheet } from '@/features/forward-rules/components/EditForwardRuleSheet';
-import { DeleteForwardRuleSheet } from '@/features/forward-rules/components/DeleteForwardRuleSheet';
-import { ForwardRuleDetailDialog } from '@/features/forward-rules/components/ForwardRuleDetailDialog';
-import { ForwardRuleDetailSheet } from '@/features/forward-rules/components/ForwardRuleDetailSheet';
-import { ProbeResultDialog } from '@/features/forward-rules/components/ProbeResultDialog';
 import { Input } from '@/components/common/Input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/common/Select';
 import { ConfirmDialog } from '@/components/common/ConfirmDialog';
 import { useForwardRulesPage, useRuleStatusPolling } from '@/features/forward-rules/hooks/useForwardRules';
 import { useBatchForwardRules } from '@/features/forward-rules/hooks/useBatchForwardRules';
-import {
-  BatchActionBar,
-  BatchCreateDialog,
-  BatchDeleteDialog,
-  BatchToggleStatusDialog,
-  BatchUpdateDialog,
-} from '@/features/forward-rules/components/batch';
+import { BatchActionBar } from '@/features/forward-rules/components/batch';
+
+// Lazy load dialog/sheet components
+const CreateForwardRuleDialog = lazy(() =>
+  import('@/features/forward-rules/components/CreateForwardRuleDialog').then((m) => ({
+    default: m.CreateForwardRuleDialog,
+  }))
+);
+const CreateForwardRuleSheet = lazy(() =>
+  import('@/features/forward-rules/components/CreateForwardRuleSheet').then((m) => ({
+    default: m.CreateForwardRuleSheet,
+  }))
+);
+const EditForwardRuleDialog = lazy(() =>
+  import('@/features/forward-rules/components/EditForwardRuleDialog').then((m) => ({
+    default: m.EditForwardRuleDialog,
+  }))
+);
+const EditForwardRuleSheet = lazy(() =>
+  import('@/features/forward-rules/components/EditForwardRuleSheet').then((m) => ({
+    default: m.EditForwardRuleSheet,
+  }))
+);
+const DeleteForwardRuleSheet = lazy(() =>
+  import('@/features/forward-rules/components/DeleteForwardRuleSheet').then((m) => ({
+    default: m.DeleteForwardRuleSheet,
+  }))
+);
+const ForwardRuleDetailDialog = lazy(() =>
+  import('@/features/forward-rules/components/ForwardRuleDetailDialog').then((m) => ({
+    default: m.ForwardRuleDetailDialog,
+  }))
+);
+const ForwardRuleDetailSheet = lazy(() =>
+  import('@/features/forward-rules/components/ForwardRuleDetailSheet').then((m) => ({
+    default: m.ForwardRuleDetailSheet,
+  }))
+);
+const ProbeResultDialog = lazy(() =>
+  import('@/features/forward-rules/components/ProbeResultDialog').then((m) => ({
+    default: m.ProbeResultDialog,
+  }))
+);
+const BatchCreateDialog = lazy(() =>
+  import('@/features/forward-rules/components/batch').then((m) => ({
+    default: m.BatchCreateDialog,
+  }))
+);
+const BatchDeleteDialog = lazy(() =>
+  import('@/features/forward-rules/components/batch').then((m) => ({
+    default: m.BatchDeleteDialog,
+  }))
+);
+const BatchToggleStatusDialog = lazy(() =>
+  import('@/features/forward-rules/components/batch').then((m) => ({
+    default: m.BatchToggleStatusDialog,
+  }))
+);
+const BatchUpdateDialog = lazy(() =>
+  import('@/features/forward-rules/components/batch').then((m) => ({
+    default: m.BatchUpdateDialog,
+  }))
+);
 import { useNodes } from '@/features/nodes/hooks/useNodes';
 import { useResourceGroups } from '@/features/resource-groups/hooks/useResourceGroups';
 import { useSubscriptionPlans } from '@/features/subscription-plans/hooks/useSubscriptionPlans';
@@ -414,82 +462,102 @@ export const ForwardRulesPage = () => {
         </div>
 
         {/* Create Forward Rule Sheet */}
-        <CreateForwardRuleSheet
-          open={createDialogOpen}
-          onOpenChange={(open) => {
-            setCreateDialogOpen(open);
-            if (!open) setCopyRuleData(undefined);
-          }}
-          onSubmit={handleCreateSubmit}
-          agents={forwardAgents}
-          nodes={nodes}
-          initialData={copyRuleData}
-          resourceGroups={resourceGroups}
-          plansMap={plansMap}
-        />
+        {createDialogOpen && (
+          <Suspense fallback={null}>
+            <CreateForwardRuleSheet
+              open={createDialogOpen}
+              onOpenChange={(open) => {
+                setCreateDialogOpen(open);
+                if (!open) setCopyRuleData(undefined);
+              }}
+              onSubmit={handleCreateSubmit}
+              agents={forwardAgents}
+              nodes={nodes}
+              initialData={copyRuleData}
+              resourceGroups={resourceGroups}
+              plansMap={plansMap}
+            />
+          </Suspense>
+        )}
 
         {/* Edit Forward Rule Sheet */}
-        <EditForwardRuleSheet
-          open={editDialogOpen}
-          onOpenChange={(open) => {
-            setEditDialogOpen(open);
-            if (!open) setSelectedRule(null);
-          }}
-          entity={selectedRule}
-          onSubmit={handleUpdateSubmit}
-          nodes={nodes}
-          agents={forwardAgents}
-          resourceGroups={resourceGroups}
-          plansMap={plansMap}
-        />
+        {editDialogOpen && (
+          <Suspense fallback={null}>
+            <EditForwardRuleSheet
+              open={editDialogOpen}
+              onOpenChange={(open) => {
+                setEditDialogOpen(open);
+                if (!open) setSelectedRule(null);
+              }}
+              entity={selectedRule}
+              onSubmit={handleUpdateSubmit}
+              nodes={nodes}
+              agents={forwardAgents}
+              resourceGroups={resourceGroups}
+              plansMap={plansMap}
+            />
+          </Suspense>
+        )}
 
         {/* Delete Forward Rule Sheet */}
-        <DeleteForwardRuleSheet
-          open={deleteConfirmOpen}
-          onOpenChange={setDeleteConfirmOpen}
-          entity={ruleToDelete}
-          onConfirm={handleDeleteConfirmSheet}
-          agentsMap={agentsMap}
-        />
+        {deleteConfirmOpen && (
+          <Suspense fallback={null}>
+            <DeleteForwardRuleSheet
+              open={deleteConfirmOpen}
+              onOpenChange={setDeleteConfirmOpen}
+              entity={ruleToDelete}
+              onConfirm={handleDeleteConfirmSheet}
+              agentsMap={agentsMap}
+            />
+          </Suspense>
+        )}
 
         {/* Forward Rule Detail Sheet (Mobile) */}
-        <ForwardRuleDetailSheet
-          open={detailDialogOpen}
-          onOpenChange={(open) => {
-            setDetailDialogOpen(open);
-            if (!open) setSelectedRule(null);
-          }}
-          rule={selectedRule}
-          agentsMap={agentsMap}
-          nodes={nodes}
-          polledStatus={selectedRule ? polledStatusMap[selectedRule.id] : null}
-          onEdit={(rule) => {
-            setDetailDialogOpen(false);
-            handleEdit(rule);
-          }}
-          onProbe={handleProbe}
-          onCopy={(rule) => {
-            setDetailDialogOpen(false);
-            handleCopy(rule);
-          }}
-          onToggleStatus={handleToggleStatus}
-          onDelete={(rule) => {
-            setDetailDialogOpen(false);
-            handleDelete(rule);
-          }}
-          isProbingThis={probingRuleId === selectedRule?.id}
-        />
+        {detailDialogOpen && (
+          <Suspense fallback={null}>
+            <ForwardRuleDetailSheet
+              open={detailDialogOpen}
+              onOpenChange={(open) => {
+                setDetailDialogOpen(open);
+                if (!open) setSelectedRule(null);
+              }}
+              rule={selectedRule}
+              agentsMap={agentsMap}
+              nodes={nodes}
+              polledStatus={selectedRule ? polledStatusMap[selectedRule.id] : null}
+              onEdit={(rule) => {
+                setDetailDialogOpen(false);
+                handleEdit(rule);
+              }}
+              onProbe={handleProbe}
+              onCopy={(rule) => {
+                setDetailDialogOpen(false);
+                handleCopy(rule);
+              }}
+              onToggleStatus={handleToggleStatus}
+              onDelete={(rule) => {
+                setDetailDialogOpen(false);
+                handleDelete(rule);
+              }}
+              isProbingThis={probingRuleId === selectedRule?.id}
+            />
+          </Suspense>
+        )}
 
         {/* Probe Result Dialog */}
-        <ProbeResultDialog
-          open={probeDialogOpen}
-          onOpenChange={setProbeDialogOpen}
-          rule={probingRule}
-          probeResult={probeResult}
-          isProbing={probingRuleId !== null}
-          agents={forwardAgents}
-          nodes={nodes}
-        />
+        {probeDialogOpen && (
+          <Suspense fallback={null}>
+            <ProbeResultDialog
+              open={probeDialogOpen}
+              onOpenChange={setProbeDialogOpen}
+              rule={probingRule}
+              probeResult={probeResult}
+              isProbing={probingRuleId !== null}
+              agents={forwardAgents}
+              nodes={nodes}
+            />
+          </Suspense>
+        )}
       </AdminLayout>
     );
   }
@@ -745,58 +813,74 @@ export const ForwardRulesPage = () => {
       </div>
 
       {/* Create Forward Rule Dialog */}
-      <CreateForwardRuleDialog
-        open={createDialogOpen}
-        onClose={() => {
-          setCreateDialogOpen(false);
-          setCopyRuleData(undefined);
-        }}
-        onSubmit={handleCreateSubmit}
-        agents={forwardAgents}
-        nodes={nodes}
-        initialData={copyRuleData}
-        resourceGroups={resourceGroups}
-        plansMap={plansMap}
-      />
+      {createDialogOpen && (
+        <Suspense fallback={null}>
+          <CreateForwardRuleDialog
+            open={createDialogOpen}
+            onClose={() => {
+              setCreateDialogOpen(false);
+              setCopyRuleData(undefined);
+            }}
+            onSubmit={handleCreateSubmit}
+            agents={forwardAgents}
+            nodes={nodes}
+            initialData={copyRuleData}
+            resourceGroups={resourceGroups}
+            plansMap={plansMap}
+          />
+        </Suspense>
+      )}
 
       {/* Edit Forward Rule Dialog */}
-      <EditForwardRuleDialog
-        open={editDialogOpen}
-        rule={selectedRule}
-        onClose={() => {
-          setEditDialogOpen(false);
-          setSelectedRule(null);
-        }}
-        onSubmit={handleUpdateSubmitLegacy}
-        nodes={nodes}
-        agents={forwardAgents}
-        resourceGroups={resourceGroups}
-        plansMap={plansMap}
-      />
+      {editDialogOpen && (
+        <Suspense fallback={null}>
+          <EditForwardRuleDialog
+            open={editDialogOpen}
+            rule={selectedRule}
+            onClose={() => {
+              setEditDialogOpen(false);
+              setSelectedRule(null);
+            }}
+            onSubmit={handleUpdateSubmitLegacy}
+            nodes={nodes}
+            agents={forwardAgents}
+            resourceGroups={resourceGroups}
+            plansMap={plansMap}
+          />
+        </Suspense>
+      )}
 
       {/* Forward Rule Detail Dialog */}
-      <ForwardRuleDetailDialog
-        open={detailDialogOpen}
-        rule={selectedRule}
-        onClose={() => {
-          setDetailDialogOpen(false);
-          setSelectedRule(null);
-        }}
-        agents={forwardAgents}
-        nodes={nodes}
-        resourceGroups={resourceGroups}
-      />
+      {detailDialogOpen && (
+        <Suspense fallback={null}>
+          <ForwardRuleDetailDialog
+            open={detailDialogOpen}
+            rule={selectedRule}
+            onClose={() => {
+              setDetailDialogOpen(false);
+              setSelectedRule(null);
+            }}
+            agents={forwardAgents}
+            nodes={nodes}
+            resourceGroups={resourceGroups}
+          />
+        </Suspense>
+      )}
 
       {/* Probe Result Dialog */}
-      <ProbeResultDialog
-        open={probeDialogOpen}
-        onOpenChange={setProbeDialogOpen}
-        rule={probingRule}
-        probeResult={probeResult}
-        isProbing={probingRuleId !== null}
-        agents={forwardAgents}
-        nodes={nodes}
-      />
+      {probeDialogOpen && (
+        <Suspense fallback={null}>
+          <ProbeResultDialog
+            open={probeDialogOpen}
+            onOpenChange={setProbeDialogOpen}
+            rule={probingRule}
+            probeResult={probeResult}
+            isProbing={probingRuleId !== null}
+            agents={forwardAgents}
+            nodes={nodes}
+          />
+        </Suspense>
+      )}
 
       {/* Delete Confirm Dialog */}
       <ConfirmDialog
@@ -822,51 +906,71 @@ export const ForwardRulesPage = () => {
       />
 
       {/* Batch Create Dialog */}
-      <BatchCreateDialog
-        open={batchCreateOpen}
-        onOpenChange={setBatchCreateOpen}
-        onConfirm={batchCreate}
-        isCreating={isBatchCreating}
-      />
+      {batchCreateOpen && (
+        <Suspense fallback={null}>
+          <BatchCreateDialog
+            open={batchCreateOpen}
+            onOpenChange={setBatchCreateOpen}
+            onConfirm={batchCreate}
+            isCreating={isBatchCreating}
+          />
+        </Suspense>
+      )}
 
       {/* Batch Delete Dialog */}
-      <BatchDeleteDialog
-        open={batchDeleteOpen}
-        onOpenChange={setBatchDeleteOpen}
-        selectedCount={selectedCount}
-        onConfirm={batchDelete}
-        isDeleting={isBatchDeleting}
-      />
+      {batchDeleteOpen && (
+        <Suspense fallback={null}>
+          <BatchDeleteDialog
+            open={batchDeleteOpen}
+            onOpenChange={setBatchDeleteOpen}
+            selectedCount={selectedCount}
+            onConfirm={batchDelete}
+            isDeleting={isBatchDeleting}
+          />
+        </Suspense>
+      )}
 
       {/* Batch Enable Dialog */}
-      <BatchToggleStatusDialog
-        open={batchEnableOpen}
-        onOpenChange={setBatchEnableOpen}
-        selectedCount={selectedCount}
-        targetStatus="enabled"
-        onConfirm={batchEnable}
-        isProcessing={isBatchEnabling}
-      />
+      {batchEnableOpen && (
+        <Suspense fallback={null}>
+          <BatchToggleStatusDialog
+            open={batchEnableOpen}
+            onOpenChange={setBatchEnableOpen}
+            selectedCount={selectedCount}
+            targetStatus="enabled"
+            onConfirm={batchEnable}
+            isProcessing={isBatchEnabling}
+          />
+        </Suspense>
+      )}
 
       {/* Batch Disable Dialog */}
-      <BatchToggleStatusDialog
-        open={batchDisableOpen}
-        onOpenChange={setBatchDisableOpen}
-        selectedCount={selectedCount}
-        targetStatus="disabled"
-        onConfirm={batchDisable}
-        isProcessing={isBatchDisabling}
-      />
+      {batchDisableOpen && (
+        <Suspense fallback={null}>
+          <BatchToggleStatusDialog
+            open={batchDisableOpen}
+            onOpenChange={setBatchDisableOpen}
+            selectedCount={selectedCount}
+            targetStatus="disabled"
+            onConfirm={batchDisable}
+            isProcessing={isBatchDisabling}
+          />
+        </Suspense>
+      )}
 
       {/* Batch Update Dialog */}
-      <BatchUpdateDialog
-        open={batchUpdateOpen}
-        onOpenChange={setBatchUpdateOpen}
-        selectedIds={selectedIdsArray}
-        onConfirm={batchUpdate}
-        isUpdating={isBatchUpdating}
-        agents={forwardAgents}
-      />
+      {batchUpdateOpen && (
+        <Suspense fallback={null}>
+          <BatchUpdateDialog
+            open={batchUpdateOpen}
+            onOpenChange={setBatchUpdateOpen}
+            selectedIds={selectedIdsArray}
+            onConfirm={batchUpdate}
+            isUpdating={isBatchUpdating}
+            agents={forwardAgents}
+          />
+        </Suspense>
+      )}
     </AdminLayout>
   );
 };

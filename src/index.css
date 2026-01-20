@@ -3,9 +3,35 @@
 /* Configure dark mode to use class selector instead of media query */
 @custom-variant dark (&:where(.dark, .dark *));
 
+/* ========== Device & Interaction Variants ========== */
+/* Touch device - for coarse pointer devices like phones/tablets */
+@custom-variant touch (@media (pointer: coarse));
+
+/* Pointer fine - for precise pointer devices like mouse */
+@custom-variant pointer-fine (@media (pointer: fine));
+
+/* High refresh rate displays (120Hz+) */
+@custom-variant hfr (@media (update: fast));
+
+/* Reduced motion preference */
+@custom-variant motion-safe (@media (prefers-reduced-motion: no-preference));
+@custom-variant motion-reduce (@media (prefers-reduced-motion: reduce));
+
+/* Hover capability */
+@custom-variant can-hover (@media (hover: hover));
+@custom-variant no-hover (@media (hover: none));
+
+/* ============================================
+ * Tailwind v4 Optimized Theme Configuration
+ * ============================================
+ * - Uses oklch color space for perceptually uniform colors
+ * - Uses light-dark() for automatic theme switching
+ * - Integrates fluid typography into Tailwind's namespace
+ * - Removes redundant utility classes
+ */
+
 @theme {
-  /* ========== 响应式流式排版 ========== */
-  /* 字体大小 - 自动适配屏幕 */
+  /* ========== Fluid Typography ========== */
   --text-fluid-xs: clamp(0.75rem, 0.7rem + 0.25vw, 0.875rem);
   --text-fluid-sm: clamp(0.875rem, 0.8rem + 0.25vw, 1rem);
   --text-fluid-base: clamp(1rem, 0.925rem + 0.375vw, 1.125rem);
@@ -14,122 +40,139 @@
   --text-fluid-2xl: clamp(1.5rem, 1.25rem + 1.25vw, 2rem);
   --text-fluid-3xl: clamp(1.875rem, 1.5rem + 1.875vw, 2.5rem);
 
-  /* 间距 - 响应式间距 */
+  /* ========== Fluid Spacing ========== */
   --spacing-fluid-xs: clamp(0.5rem, 0.375rem + 0.5vw, 0.75rem);
   --spacing-fluid-sm: clamp(0.75rem, 0.5rem + 1vw, 1rem);
   --spacing-fluid-md: clamp(1rem, 0.75rem + 1.25vw, 1.5rem);
   --spacing-fluid-lg: clamp(1.5rem, 1rem + 2vw, 2rem);
   --spacing-fluid-xl: clamp(2rem, 1.5rem + 2.5vw, 3rem);
 
-  /* 颜色主题 */
-  --color-border: hsl(var(--border));
-  --color-input: hsl(var(--input));
-  --color-ring: hsl(var(--ring));
-  --color-background: hsl(var(--background));
-  --color-foreground: hsl(var(--foreground));
-  --color-primary: hsl(var(--primary));
-  --color-primary-foreground: hsl(var(--primary-foreground));
-  --color-secondary: hsl(var(--secondary));
-  --color-secondary-foreground: hsl(var(--secondary-foreground));
-  --color-destructive: hsl(var(--destructive));
-  --color-destructive-foreground: hsl(var(--destructive-foreground));
-  --color-muted: hsl(var(--muted));
-  --color-muted-foreground: hsl(var(--muted-foreground));
-  --color-accent: hsl(var(--accent));
-  --color-accent-foreground: hsl(var(--accent-foreground));
-  --color-popover: hsl(var(--popover));
-  --color-popover-foreground: hsl(var(--popover-foreground));
-  --color-card: hsl(var(--card));
-  --color-card-foreground: hsl(var(--card-foreground));
+  /* ========== Atomic Colors (Base Palette) ========== */
+  --color-base-emerald: light-dark(oklch(0.6 0.19 160), oklch(0.65 0.19 160));
+  --color-base-red: light-dark(oklch(0.55 0.22 25), oklch(0.6 0.22 25));
+  --color-base-amber: light-dark(oklch(0.75 0.18 70), oklch(0.78 0.18 70));
+  --color-base-indigo: light-dark(oklch(0.55 0.25 265), oklch(0.65 0.25 265));
+  --color-base-blue: light-dark(oklch(0.6 0.2 250), oklch(0.68 0.2 250));
 
-  /* 状态语义色 */
-  --color-success: hsl(var(--success));
-  --color-success-foreground: hsl(var(--success-foreground));
-  --color-success-muted: hsl(var(--success-muted));
-  --color-warning: hsl(var(--warning));
-  --color-warning-foreground: hsl(var(--warning-foreground));
-  --color-warning-muted: hsl(var(--warning-muted));
-  --color-info: hsl(var(--info));
-  --color-info-foreground: hsl(var(--info-foreground));
-  --color-info-muted: hsl(var(--info-muted));
+  /* ========== Semantic Colors (oklch + light-dark) ========== */
+  /* Background & Foreground */
+  --color-background: light-dark(oklch(0.995 0 0), oklch(0.145 0.015 260));
+  --color-foreground: light-dark(oklch(0.2 0.02 260), oklch(0.95 0.01 260));
 
-  /* 图表专用色 */
-  --color-chart-upload: hsl(var(--chart-upload));
-  --color-chart-download: hsl(var(--chart-download));
+  /* Card */
+  --color-card: light-dark(oklch(1 0 0), oklch(0.18 0.015 260));
+  --color-card-foreground: light-dark(oklch(0.2 0.02 260), oklch(0.95 0.01 260));
 
-  /* 状态指示器色 */
-  --color-status-online: hsl(var(--status-online));
-  --color-status-offline: hsl(var(--status-offline));
-  --color-status-warning: hsl(var(--status-warning));
+  /* Popover */
+  --color-popover: light-dark(oklch(1 0 0), oklch(0.18 0.015 260));
+  --color-popover-foreground: light-dark(oklch(0.2 0.02 260), oklch(0.95 0.01 260));
 
-  /* 排名徽章色 */
-  --color-rank-gold: hsl(var(--rank-gold));
-  --color-rank-gold-muted: hsl(var(--rank-gold-muted));
-  --color-rank-silver: hsl(var(--rank-silver));
-  --color-rank-bronze: hsl(var(--rank-bronze));
-  --color-rank-bronze-muted: hsl(var(--rank-bronze-muted));
+  /* Primary - Indigo */
+  --color-primary: var(--color-base-indigo);
+  --color-primary-foreground: light-dark(oklch(1 0 0), oklch(0.145 0.015 260));
 
-  /* 品牌色 */
-  --color-brand-telegram: hsl(var(--brand-telegram));
-  --color-brand-google-blue: var(--brand-google-blue);
-  --color-brand-google-green: var(--brand-google-green);
-  --color-brand-google-yellow: var(--brand-google-yellow);
-  --color-brand-google-red: var(--brand-google-red);
+  /* Secondary */
+  --color-secondary: light-dark(oklch(0.97 0.02 270), oklch(0.25 0.02 260));
+  --color-secondary-foreground: var(--color-base-indigo);
 
-  /* 进度条渐变色 */
-  --color-progress-success-start: hsl(var(--progress-success-start));
-  --color-progress-success-end: hsl(var(--progress-success-end));
-  --color-progress-warning-start: hsl(var(--progress-warning-start));
-  --color-progress-warning-end: hsl(var(--progress-warning-end));
-  --color-progress-danger-start: hsl(var(--progress-danger-start));
-  --color-progress-danger-end: hsl(var(--progress-danger-end));
-  --color-progress-info-start: hsl(var(--progress-info-start));
-  --color-progress-info-end: hsl(var(--progress-info-end));
+  /* Muted */
+  --color-muted: light-dark(oklch(0.97 0.01 260), oklch(0.22 0.015 260));
+  --color-muted-foreground: light-dark(oklch(0.45 0.02 260), oklch(0.65 0.02 260));
 
-  /* 图表辅助色 */
-  --color-chart-muted: hsl(var(--chart-muted));
+  /* Accent - Orange */
+  --color-accent: var(--color-base-amber);
+  --color-accent-foreground: light-dark(oklch(1 0 0), oklch(0.145 0.015 260));
 
-  /* 圆角 - 使用更大的圆角 */
-  --radius-lg: 1rem;
-  --radius-md: 0.75rem;
-  --radius-sm: 0.5rem;
-  --radius-xs: 0.375rem;
-  --radius-full: 9999px;
+  /* Destructive - Red */
+  --color-destructive: var(--color-base-red);
+  --color-destructive-foreground: light-dark(oklch(1 0 0), oklch(0.95 0.01 260));
+
+  /* Success - Emerald */
+  --color-success: var(--color-base-emerald);
+  --color-success-foreground: light-dark(oklch(1 0 0), oklch(0.145 0.015 260));
+  --color-success-muted: light-dark(oklch(0.97 0.04 160), oklch(0.2 0.05 160));
+
+  /* Warning - Amber */
+  --color-warning: var(--color-base-amber);
+  --color-warning-foreground: light-dark(oklch(1 0 0), oklch(0.145 0.015 260));
+  --color-warning-muted: light-dark(oklch(0.97 0.05 85), oklch(0.2 0.05 70));
+
+  /* Info - Blue */
+  --color-info: var(--color-base-blue);
+  --color-info-foreground: light-dark(oklch(1 0 0), oklch(0.145 0.015 260));
+  --color-info-muted: light-dark(oklch(0.97 0.03 250), oklch(0.2 0.05 250));
+
+  /* Border & Input */
+  --color-border: light-dark(oklch(0.92 0.01 260), oklch(0.28 0.015 260));
+  --color-input: light-dark(oklch(0.9 0.01 260), oklch(0.25 0.015 260));
+  --color-ring: var(--color-base-indigo);
+
+  /* ========== Chart Colors ========== */
+  --color-chart-1: var(--color-base-indigo);
+  --color-chart-2: var(--color-base-amber);
+  --color-chart-3: light-dark(oklch(0.6 0.15 180), oklch(0.65 0.15 180));
+  --color-chart-4: light-dark(oklch(0.6 0.2 300), oklch(0.65 0.2 300));
+  --color-chart-5: light-dark(oklch(0.6 0.2 350), oklch(0.65 0.2 350));
+  --color-chart-upload: var(--color-base-blue);
+  --color-chart-download: var(--color-base-emerald);
+  --color-chart-muted: light-dark(oklch(0.6 0.02 260), oklch(0.55 0.02 260));
+
+  /* ========== Status Colors ========== */
+  --color-status-online: var(--color-base-emerald);
+  --color-status-offline: var(--color-base-red);
+  --color-status-warning: var(--color-base-amber);
+
+  /* ========== Rank Badge Colors ========== */
+  --color-rank-gold: light-dark(oklch(0.8 0.16 85), oklch(0.82 0.16 85));
+  --color-rank-gold-muted: light-dark(oklch(0.97 0.04 85), oklch(0.2 0.05 85));
+  --color-rank-silver: light-dark(oklch(0.55 0.02 260), oklch(0.6 0.02 260));
+  --color-rank-bronze: light-dark(oklch(0.7 0.15 50), oklch(0.72 0.15 50));
+  --color-rank-bronze-muted: light-dark(oklch(0.97 0.04 50), oklch(0.2 0.05 50));
+
+  /* ========== Brand Colors ========== */
+  --color-brand-telegram: oklch(0.65 0.18 220);
+  --color-brand-google-blue: oklch(0.62 0.21 264);
+  --color-brand-google-green: oklch(0.63 0.18 145);
+  --color-brand-google-yellow: oklch(0.87 0.17 85);
+  --color-brand-google-red: oklch(0.63 0.24 27);
+
+  /* ========== Progress Gradient Colors ========== */
+  --color-progress-success-start: light-dark(oklch(0.65 0.2 145), oklch(0.68 0.2 145));
+  --color-progress-success-end: var(--color-base-emerald);
+  --color-progress-warning-start: var(--color-base-amber);
+  --color-progress-warning-end: light-dark(oklch(0.8 0.16 85), oklch(0.82 0.16 85));
+  --color-progress-danger-start: light-dark(oklch(0.6 0.22 25), oklch(0.65 0.22 25));
+  --color-progress-danger-end: light-dark(oklch(0.7 0.18 45), oklch(0.72 0.18 45));
+  --color-progress-info-start: var(--color-base-blue);
+  --color-progress-info-end: light-dark(oklch(0.65 0.18 200), oklch(0.7 0.18 200));
 
   /* ========== iOS 26 Liquid Glass System ========== */
-  /* Blur values */
-  --glass-blur-sm: 10px;
-  --glass-blur-md: 16px;
-  --glass-blur-lg: 24px;
-  --glass-blur-xl: 32px;
+  /* Blur - Tailwind standard namespace for blur-* utilities */
+  --blur-glass-sm: 10px;
+  --blur-glass-md: 16px;
+  --blur-glass-lg: 24px;
+  --blur-glass-xl: 32px;
 
-  /* Glass backgrounds - light mode */
-  --glass-bg-light: rgba(255, 255, 255, 0.72);
-  --glass-bg-light-elevated: rgba(255, 255, 255, 0.85);
-  --glass-bg-light-intense: rgba(255, 255, 255, 0.92);
+  /* Glass backgrounds */
+  --glass-bg: light-dark(rgba(255, 255, 255, 0.72), rgba(30, 30, 35, 0.72));
+  --glass-bg-elevated: light-dark(rgba(255, 255, 255, 0.85), rgba(40, 40, 48, 0.85));
+  --glass-bg-intense: light-dark(rgba(255, 255, 255, 0.92), rgba(50, 50, 58, 0.92));
 
-  /* Glass borders - light mode */
-  --glass-border-light: rgba(255, 255, 255, 0.5);
-  --glass-border-light-subtle: rgba(0, 0, 0, 0.06);
+  /* Glass borders */
+  --glass-border: light-dark(rgba(255, 255, 255, 0.5), rgba(255, 255, 255, 0.12));
+  --glass-border-subtle: light-dark(rgba(0, 0, 0, 0.06), rgba(255, 255, 255, 0.06));
 
-  /* Glass shadows - light mode */
-  --glass-shadow-light: 0 2px 20px rgba(0, 0, 0, 0.08), 0 0 1px rgba(0, 0, 0, 0.1);
-  --glass-shadow-light-elevated: 0 8px 32px rgba(0, 0, 0, 0.12), 0 0 1px rgba(0, 0, 0, 0.12);
+  /* Shadow - Tailwind standard namespace for shadow-* utilities */
+  --shadow-glass: 0 2px 20px rgba(0, 0, 0, 0.08), 0 0 1px rgba(0, 0, 0, 0.1);
+  --shadow-glass-dark: 0 2px 20px rgba(0, 0, 0, 0.3), 0 0 1px rgba(0, 0, 0, 0.4);
+  --shadow-glass-elevated: 0 8px 32px rgba(0, 0, 0, 0.12), 0 0 1px rgba(0, 0, 0, 0.12);
+  --shadow-glass-elevated-dark: 0 8px 32px rgba(0, 0, 0, 0.4), 0 0 1px rgba(0, 0, 0, 0.5);
 
-  /* Glass inset highlights - simulates light refraction */
+  /* Glass inset highlights */
   --glass-highlight-top: inset 0 0.5px 0 0 rgba(255, 255, 255, 0.8);
   --glass-highlight-full: inset 0 0.5px 0 0 rgba(255, 255, 255, 0.8), inset 0 -0.5px 0 0 rgba(255, 255, 255, 0.3);
 
-  /* ===========================================
-   * iOS Native Spring Animations using linear()
-   * ===========================================
-   * Based on iOS UIKit CASpringAnimation physics model.
-   * Using linear() function for true spring physics simulation.
-   * Reference: https://developer.apple.com/videos/play/wwdc2023/10158/
-   */
-
-  /* iOS Default Spring - smooth, no overshoot (mass=1, stiffness=100, damping=20)
-   * Used for most UI transitions in iOS */
+  /* ========== iOS Native Spring Animations ========== */
   --spring-ios-default: linear(
     0, 0.006, 0.025 2.8%, 0.101 6.1%, 0.539 18.9%, 0.721 25.3%, 0.849 31.5%,
     0.937 38.1%, 0.968 41.8%, 0.991 45.7%, 1.006 50%, 1.015 54.8%,
@@ -137,8 +180,6 @@
   );
   --spring-ios-default-duration: 0.5s;
 
-  /* iOS Bouncy Spring - slight overshoot (mass=1, stiffness=100, damping=10)
-   * Used for playful animations, notifications */
   --spring-ios-bouncy: linear(
     0, 0.004, 0.016 2.3%, 0.06 4.7%, 0.13 7%, 0.217 9.3%, 0.318 11.6%,
     0.427 13.9%, 0.54 16.2%, 0.653 18.5%, 0.763 20.9%, 0.867 23.2%,
@@ -152,8 +193,6 @@
   );
   --spring-ios-bouncy-duration: 0.8s;
 
-  /* iOS Snappy Spring - fast and responsive (mass=1, stiffness=300, damping=20)
-   * Used for quick feedback like button taps */
   --spring-ios-snappy: linear(
     0, 0.017, 0.068 3.3%, 0.152 5%, 0.263 6.7%, 0.395 8.3%, 0.539 10%,
     0.689 11.7%, 0.834 13.3%, 0.964 15%, 1.072 16.7%, 1.157 18.3%,
@@ -168,8 +207,6 @@
   );
   --spring-ios-snappy-duration: 0.35s;
 
-  /* iOS Interactive Spring - for gesture-driven animations
-   * Lower stiffness for smoother following (mass=1, stiffness=80, damping=12) */
   --spring-ios-interactive: linear(
     0, 0.007, 0.029 3.3%, 0.064 5%, 0.111 6.7%, 0.168 8.3%, 0.234 10%,
     0.306 11.7%, 0.382 13.3%, 0.46 15%, 0.539 16.7%, 0.615 18.3%,
@@ -184,26 +221,17 @@
   );
   --spring-ios-interactive-duration: 0.6s;
 
-  /* Legacy cubic-bezier fallbacks for older browsers */
-  --spring-bounce: cubic-bezier(0.34, 1.56, 0.64, 1);
-  --spring-smooth: cubic-bezier(0.4, 0, 0.2, 1);
-  --spring-gentle: cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  /* Easing - Tailwind namespace generates ease-bounce, ease-smooth, ease-gentle utilities */
+  --ease-bounce: cubic-bezier(0.34, 1.56, 0.64, 1);
+  --ease-smooth: cubic-bezier(0.4, 0, 0.2, 1);
+  --ease-gentle: cubic-bezier(0.25, 0.46, 0.45, 0.94);
 
-  /* Animation durations - aligned with iOS HIG */
-  --duration-fast: 0.2s;
-  --duration-normal: 0.35s;
-  --duration-slow: 0.5s;
+  /* Animation durations - Tailwind namespace generates duration-fast, etc. */
+  --duration-fast: 200ms;
+  --duration-normal: 350ms;
+  --duration-slow: 500ms;
 
-  /* Glass colors for dark mode (will be overridden in .dark) */
-  --glass-bg: var(--glass-bg-light);
-  --glass-bg-elevated: var(--glass-bg-light-elevated);
-  --glass-bg-intense: var(--glass-bg-light-intense);
-  --glass-border: var(--glass-border-light);
-  --glass-border-subtle: var(--glass-border-light-subtle);
-  --glass-shadow: var(--glass-shadow-light);
-  --glass-shadow-elevated: var(--glass-shadow-light-elevated);
-
-  /* 动画 */
+  /* ========== Animations ========== */
   --animate-accordion-down: accordion-down 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   --animate-accordion-up: accordion-up 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   --animate-collapsible-down: collapsible-down var(--spring-ios-default-duration) var(--spring-ios-default);
@@ -273,218 +301,28 @@
 }
 
 @layer base {
+  /* Theme variables */
   :root {
-    /* 背景色 - Apple 风格更浅的灰色 */
-    --background: 0 0% 99%;
-    --foreground: 230 15% 15%;
-
-    /* 卡片 - 纯白 */
-    --card: 0 0% 100%;
-    --card-foreground: 230 15% 15%;
-
-    /* 弹出层 */
-    --popover: 0 0% 100%;
-    --popover-foreground: 230 15% 15%;
-
-    /* 主色 - 蓝紫色系 (Indigo) */
-    --primary: 239 84% 67%;
-    --primary-foreground: 0 0% 100%;
-
-    /* 辅助色 - 柔和的紫色 */
-    --secondary: 250 60% 96%;
-    --secondary-foreground: 239 84% 67%;
-
-    /* 静音色 - 用于次要信息 */
-    --muted: 220 20% 96%;
-    --muted-foreground: 220 10% 40%;
-
-    /* 强调色 - 温暖的橙色 */
-    --accent: 38 92% 50%;
-    --accent-foreground: 0 0% 100%;
-
-    /* 危险色 - 柔和的红色 */
-    --destructive: 0 72% 51%;
-    --destructive-foreground: 0 0% 100%;
-
-    /* 成功色 - 翠绿色 */
-    --success: 160 84% 39%;
-    --success-foreground: 0 0% 100%;
-    --success-muted: 152 76% 96%;
-
-    /* 警告色 - 琥珀色 */
-    --warning: 38 92% 50%;
-    --warning-foreground: 0 0% 100%;
-    --warning-muted: 48 96% 95%;
-
-    /* 信息色 - 蓝色 */
-    --info: 217 91% 60%;
-    --info-foreground: 0 0% 100%;
-    --info-muted: 214 95% 96%;
-
-    /* 边框和输入框 */
-    --border: 220 20% 90%;
-    --input: 220 20% 88%;
-    --ring: 239 84% 67%;
-
-    /* 圆角 - 使用更大的圆角 */
-    --radius: 0.75rem;
-
-    /* 图表色 - 语义化 */
-    --chart-1: 239 84% 67%;
-    --chart-2: 38 92% 50%;
-    --chart-3: 173 58% 45%;
-    --chart-4: 280 65% 60%;
-    --chart-5: 340 75% 55%;
-
-    /* 流量图表专用色 */
-    --chart-upload: 217 91% 60%;
-    --chart-download: 160 84% 39%;
-
-    /* 状态指示器色 */
-    --status-online: 160 84% 39%;
-    --status-offline: 0 72% 51%;
-    --status-warning: 38 92% 50%;
-
-    /* 排名徽章色 */
-    --rank-gold: 45 93% 47%;
-    --rank-gold-muted: 48 96% 95%;
-    --rank-silver: 220 9% 46%;
-    --rank-bronze: 25 95% 53%;
-    --rank-bronze-muted: 33 100% 96%;
-
-    /* 品牌色 - Telegram */
-    --brand-telegram: 200 79% 52%;
-
-    /* 品牌色 - Google (保持 hex 格式以符合品牌规范) */
-    --brand-google-blue: #4285F4;
-    --brand-google-green: #34A853;
-    --brand-google-yellow: #FBBC05;
-    --brand-google-red: #EA4335;
-
-    /* 进度条渐变色 */
-    --progress-success-start: 142 71% 45%;
-    --progress-success-end: 160 84% 39%;
-    --progress-warning-start: 38 92% 50%;
-    --progress-warning-end: 48 96% 47%;
-    --progress-danger-start: 0 84% 60%;
-    --progress-danger-end: 25 95% 53%;
-    --progress-info-start: 217 91% 60%;
-    --progress-info-end: 187 92% 43%;
-
-    /* 图表辅助色 */
-    --chart-muted: 215 16% 62%;
+    color-scheme: light dark;
+    --glass-shadow: var(--shadow-glass);
+    --glass-shadow-elevated: var(--shadow-glass-elevated);
   }
 
   .dark {
-    /* 背景色 - Apple 风格深色 */
-    --background: 230 20% 9%;
-    --foreground: 220 20% 95%;
-
-    /* 卡片 */
-    --card: 230 18% 13%;
-    --card-foreground: 220 20% 95%;
-
-    /* 弹出层 */
-    --popover: 230 18% 13%;
-    --popover-foreground: 220 20% 95%;
-
-    /* 主色 - 更亮的蓝紫色 */
-    --primary: 239 84% 70%;
-    --primary-foreground: 230 20% 9%;
-
-    /* 辅助色 */
-    --secondary: 230 18% 20%;
-    --secondary-foreground: 239 84% 70%;
-
-    /* 静音色 */
-    --muted: 230 18% 18%;
-    --muted-foreground: 220 15% 60%;
-
-    /* 强调色 */
-    --accent: 38 92% 55%;
-    --accent-foreground: 230 20% 9%;
-
-    /* 危险色 */
-    --destructive: 0 72% 55%;
-    --destructive-foreground: 220 20% 95%;
-
-    /* 成功色 - 深色模式下更亮 */
-    --success: 160 84% 45%;
-    --success-foreground: 230 20% 9%;
-    --success-muted: 160 50% 15%;
-
-    /* 警告色 */
-    --warning: 38 92% 55%;
-    --warning-foreground: 230 20% 9%;
-    --warning-muted: 38 50% 15%;
-
-    /* 信息色 */
-    --info: 217 91% 65%;
-    --info-foreground: 230 20% 9%;
-    --info-muted: 217 50% 15%;
-
-    /* 边框和输入框 */
-    --border: 230 18% 22%;
-    --input: 230 18% 20%;
-    --ring: 239 84% 70%;
-
-    /* 图表色 - 深色模式下更鲜艳 */
-    --chart-1: 239 84% 70%;
-    --chart-2: 38 92% 60%;
-    --chart-3: 173 58% 50%;
-    --chart-4: 280 65% 65%;
-    --chart-5: 340 75% 60%;
-
-    /* 流量图表专用色 */
-    --chart-upload: 217 91% 65%;
-    --chart-download: 160 84% 45%;
-
-    /* 状态指示器色 */
-    --status-online: 160 84% 45%;
-    --status-offline: 0 72% 55%;
-    --status-warning: 38 92% 55%;
-
-    /* 排名徽章色 */
-    --rank-gold: 45 93% 55%;
-    --rank-gold-muted: 45 50% 15%;
-    --rank-silver: 220 9% 55%;
-    --rank-bronze: 25 95% 60%;
-    --rank-bronze-muted: 25 50% 15%;
-
-    /* 品牌色 - Telegram (深色模式保持一致) */
-    --brand-telegram: 200 79% 52%;
-
-    /* 品牌色 - Google (保持 hex 格式以符合品牌规范) */
-    --brand-google-blue: #4285F4;
-    --brand-google-green: #34A853;
-    --brand-google-yellow: #FBBC05;
-    --brand-google-red: #EA4335;
-
-    /* 进度条渐变色 - 深色模式更亮 */
-    --progress-success-start: 142 71% 50%;
-    --progress-success-end: 160 84% 45%;
-    --progress-warning-start: 38 92% 55%;
-    --progress-warning-end: 48 96% 52%;
-    --progress-danger-start: 0 84% 65%;
-    --progress-danger-end: 25 95% 58%;
-    --progress-info-start: 217 91% 65%;
-    --progress-info-end: 187 92% 48%;
-
-    /* 图表辅助色 */
-    --chart-muted: 215 16% 55%;
-
-    /* iOS 26 Liquid Glass - Dark Mode */
-    --glass-bg: rgba(30, 30, 35, 0.72);
-    --glass-bg-elevated: rgba(40, 40, 48, 0.85);
-    --glass-bg-intense: rgba(50, 50, 58, 0.92);
-    --glass-border: rgba(255, 255, 255, 0.12);
-    --glass-border-subtle: rgba(255, 255, 255, 0.06);
-    --glass-shadow: 0 2px 20px rgba(0, 0, 0, 0.3), 0 0 1px rgba(0, 0, 0, 0.4);
-    --glass-shadow-elevated: 0 8px 32px rgba(0, 0, 0, 0.4), 0 0 1px rgba(0, 0, 0, 0.5);
+    color-scheme: dark;
+    --glass-shadow: var(--shadow-glass-dark);
+    --glass-shadow-elevated: var(--shadow-glass-elevated-dark);
   }
 
+  .light {
+    color-scheme: light;
+    --glass-shadow: var(--shadow-glass);
+    --glass-shadow-elevated: var(--shadow-glass-elevated);
+  }
+
+  /* Global border color */
   * {
-    border-color: hsl(var(--border));
+    border-color: var(--color-border);
   }
 
   /* Hide native input inside Radix Checkbox */
@@ -500,25 +338,24 @@
     border: 0 !important;
   }
 
-  /* Prevent horizontal overflow on all devices */
-  html,
-  body {
-    overflow-x: hidden;
-    max-width: 100vw;
-  }
-
+  /* Document setup */
   html {
     scroll-behavior: smooth;
-  }
+    overflow-x: hidden;
+    max-width: 100vw;
 
-  body {
-    background-color: hsl(var(--background));
-    color: hsl(var(--foreground));
-    font-feature-settings: "rlig" 1, "calt" 1;
-    -webkit-font-smoothing: antialiased;
-    -moz-osx-font-smoothing: grayscale;
-    min-height: 100vh;
-    min-height: 100dvh; /* Dynamic viewport height for mobile */
+    /* Nested body styles */
+    & body {
+      overflow-x: hidden;
+      max-width: 100vw;
+      background-color: var(--color-background);
+      color: var(--color-foreground);
+      font-feature-settings: "rlig" 1, "calt" 1;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+      min-height: 100vh;
+      min-height: 100dvh;
+    }
   }
 
   /* Root app container */
@@ -529,34 +366,34 @@
     flex-direction: column;
   }
 
-  /* 选中文本的颜色 */
+  /* Selection color */
   ::selection {
-    background-color: hsl(var(--primary) / 0.2);
-    color: hsl(var(--foreground));
+    background-color: oklch(from var(--color-primary) l c h / 0.2);
+    color: var(--color-foreground);
   }
 
-  /* 自定义滚动条 */
+  /* Custom scrollbar - nested styles */
   ::-webkit-scrollbar {
     width: 8px;
     height: 8px;
   }
 
   ::-webkit-scrollbar-track {
-    background: hsl(var(--muted));
+    background: var(--color-muted);
     border-radius: 4px;
   }
 
   ::-webkit-scrollbar-thumb {
-    background: hsl(var(--muted-foreground) / 0.3);
+    background: oklch(from var(--color-muted-foreground) l c h / 0.3);
     border-radius: 4px;
     transition: background 0.2s;
+
+    &:hover {
+      background: oklch(from var(--color-muted-foreground) l c h / 0.5);
+    }
   }
 
-  ::-webkit-scrollbar-thumb:hover {
-    background: hsl(var(--muted-foreground) / 0.5);
-  }
-
-  /* 网格背景装饰 */
+  /* Grid background decoration */
   .bg-grid-white\/10 {
     background-image: linear-gradient(to right, rgba(255, 255, 255, 0.1) 1px, transparent 1px),
                       linear-gradient(to bottom, rgba(255, 255, 255, 0.1) 1px, transparent 1px);
@@ -564,238 +401,211 @@
   }
 }
 
-/* ========== 响应式工具类 ========== */
-@layer utilities {
-  /* 响应式网格 - 自动适配列数 */
-  .grid-auto-fit {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(min(100%, 280px), 1fr));
-    gap: 1rem;
-  }
+/* ============================================
+ * Tailwind v4 @utility Definitions
+ * ============================================
+ * Benefits of @utility over @layer utilities:
+ * - Better IntelliSense support in IDEs
+ * - Proper integration with Tailwind's utility system
+ * - Automatic variant support (hover:, focus:, etc.)
+ */
 
-  .grid-auto-fill {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(min(100%, 280px), 1fr));
-    gap: 1rem;
-  }
+/* ========== Container Queries ========== */
+@utility container-card {
+  container-type: inline-size;
+  container-name: card;
+}
 
-  /* 流式字体 */
-  .text-fluid-xs { font-size: var(--text-fluid-xs); }
-  .text-fluid-sm { font-size: var(--text-fluid-sm); }
-  .text-fluid-base { font-size: var(--text-fluid-base); }
-  .text-fluid-lg { font-size: var(--text-fluid-lg); }
-  .text-fluid-xl { font-size: var(--text-fluid-xl); }
-  .text-fluid-2xl { font-size: var(--text-fluid-2xl); }
-  .text-fluid-3xl { font-size: var(--text-fluid-3xl); }
+@utility container-stat {
+  container-type: inline-size;
+  container-name: stat;
+}
 
-  /* 流式间距 */
-  .p-fluid-xs { padding: var(--spacing-fluid-xs); }
-  .p-fluid-sm { padding: var(--spacing-fluid-sm); }
-  .p-fluid-md { padding: var(--spacing-fluid-md); }
-  .p-fluid-lg { padding: var(--spacing-fluid-lg); }
-  .p-fluid-xl { padding: var(--spacing-fluid-xl); }
+@utility container-panel {
+  container-type: inline-size;
+  container-name: panel;
+}
 
-  .gap-fluid-xs { gap: var(--spacing-fluid-xs); }
-  .gap-fluid-sm { gap: var(--spacing-fluid-sm); }
-  .gap-fluid-md { gap: var(--spacing-fluid-md); }
-  .gap-fluid-lg { gap: var(--spacing-fluid-lg); }
-  .gap-fluid-xl { gap: var(--spacing-fluid-xl); }
+/* ========== Responsive Grid ========== */
+@utility grid-auto-fit {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 280px), 1fr));
+  gap: 1rem;
+}
 
-  /* 流式外边距 */
-  .m-fluid-xs { margin: var(--spacing-fluid-xs); }
-  .m-fluid-sm { margin: var(--spacing-fluid-sm); }
-  .m-fluid-md { margin: var(--spacing-fluid-md); }
-  .m-fluid-lg { margin: var(--spacing-fluid-lg); }
-  .m-fluid-xl { margin: var(--spacing-fluid-xl); }
+@utility grid-auto-fill {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 280px), 1fr));
+  gap: 1rem;
+}
 
-  .mx-fluid-xs { margin-left: var(--spacing-fluid-xs); margin-right: var(--spacing-fluid-xs); }
-  .mx-fluid-sm { margin-left: var(--spacing-fluid-sm); margin-right: var(--spacing-fluid-sm); }
-  .mx-fluid-md { margin-left: var(--spacing-fluid-md); margin-right: var(--spacing-fluid-md); }
-  .mx-fluid-lg { margin-left: var(--spacing-fluid-lg); margin-right: var(--spacing-fluid-lg); }
-  .mx-fluid-xl { margin-left: var(--spacing-fluid-xl); margin-right: var(--spacing-fluid-xl); }
+/* ========== Safe Area ========== */
+@utility px-safe {
+  padding-left: max(1rem, env(safe-area-inset-left));
+  padding-right: max(1rem, env(safe-area-inset-right));
+}
 
-  .my-fluid-xs { margin-top: var(--spacing-fluid-xs); margin-bottom: var(--spacing-fluid-xs); }
-  .my-fluid-sm { margin-top: var(--spacing-fluid-sm); margin-bottom: var(--spacing-fluid-sm); }
-  .my-fluid-md { margin-top: var(--spacing-fluid-md); margin-bottom: var(--spacing-fluid-md); }
-  .my-fluid-lg { margin-top: var(--spacing-fluid-lg); margin-bottom: var(--spacing-fluid-lg); }
-  .my-fluid-xl { margin-top: var(--spacing-fluid-xl); margin-bottom: var(--spacing-fluid-xl); }
+@utility pb-safe {
+  padding-bottom: max(1rem, env(safe-area-inset-bottom));
+}
 
-  .mt-fluid-xs { margin-top: var(--spacing-fluid-xs); }
-  .mt-fluid-sm { margin-top: var(--spacing-fluid-sm); }
-  .mt-fluid-md { margin-top: var(--spacing-fluid-md); }
-  .mt-fluid-lg { margin-top: var(--spacing-fluid-lg); }
-  .mt-fluid-xl { margin-top: var(--spacing-fluid-xl); }
+@utility pt-safe {
+  padding-top: max(1rem, env(safe-area-inset-top));
+}
 
-  .mb-fluid-xs { margin-bottom: var(--spacing-fluid-xs); }
-  .mb-fluid-sm { margin-bottom: var(--spacing-fluid-sm); }
-  .mb-fluid-md { margin-bottom: var(--spacing-fluid-md); }
-  .mb-fluid-lg { margin-bottom: var(--spacing-fluid-lg); }
-  .mb-fluid-xl { margin-bottom: var(--spacing-fluid-xl); }
+/* ========== Dynamic Viewport ========== */
+@utility min-h-viewport {
+  min-height: 100vh;
+  min-height: 100dvh;
+}
 
-  /* 流式宽度 */
-  .w-fluid-xs { width: clamp(200px, 20vw, 280px); }
-  .w-fluid-sm { width: clamp(280px, 30vw, 400px); }
-  .w-fluid-md { width: clamp(400px, 50vw, 600px); }
-  .w-fluid-lg { width: clamp(600px, 70vw, 900px); }
-  .w-fluid-xl { width: clamp(900px, 90vw, 1200px); }
+@utility h-viewport {
+  height: 100vh;
+  height: 100dvh;
+}
 
-  .max-w-fluid-xs { max-width: clamp(200px, 20vw, 280px); }
-  .max-w-fluid-sm { max-width: clamp(280px, 30vw, 400px); }
-  .max-w-fluid-md { max-width: clamp(400px, 50vw, 600px); }
-  .max-w-fluid-lg { max-width: clamp(600px, 70vw, 900px); }
-  .max-w-fluid-xl { max-width: clamp(900px, 90vw, 1200px); }
+/* ========== Touch Target ========== */
+@utility touch-target {
+  min-height: 44px;
+  min-width: 44px;
+}
 
-  /* 安全区域内边距（移动端适配） */
-  .px-safe {
-    padding-left: max(1rem, env(safe-area-inset-left));
-    padding-right: max(1rem, env(safe-area-inset-right));
-  }
+/* ========== Overflow Utilities ========== */
+@utility overflow-wrap {
+  overflow-wrap: break-word;
+  word-wrap: break-word;
+  word-break: break-word;
+}
 
-  .pb-safe {
-    padding-bottom: max(1rem, env(safe-area-inset-bottom));
-  }
+@utility scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
 
-  /* Dynamic viewport height (mobile browser address bar aware) */
-  .min-h-viewport {
-    min-height: 100vh;
-    min-height: 100dvh;
-  }
+@utility scroll-x-auto {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
 
-  .h-viewport {
-    height: 100vh;
-    height: 100dvh;
-  }
+@utility table-container {
+  width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
 
-  /* 触摸友好的最小点击区域 */
-  .touch-target {
-    min-height: 44px;
-    min-width: 44px;
-  }
+@utility card-contained {
+  max-width: 100%;
+  overflow: hidden;
+}
 
-  /* Prevent content overflow */
-  .overflow-wrap {
-    overflow-wrap: break-word;
-    word-wrap: break-word;
-    word-break: break-word;
-  }
+/* ========== iOS 26 Liquid Glass Effects ========== */
+@utility glass {
+  background: var(--glass-bg);
+  backdrop-filter: blur(var(--blur-glass-md));
+  -webkit-backdrop-filter: blur(var(--blur-glass-md));
+  border: 1px solid var(--glass-border);
+  box-shadow: var(--glass-shadow), var(--glass-highlight-top);
+}
 
-  /* Scrollable container with hidden scrollbar */
-  .scrollbar-hide {
-    -ms-overflow-style: none;
-    scrollbar-width: none;
-  }
-  .scrollbar-hide::-webkit-scrollbar {
-    display: none;
-  }
+@utility glass-elevated {
+  background: var(--glass-bg-elevated);
+  backdrop-filter: blur(var(--blur-glass-lg));
+  -webkit-backdrop-filter: blur(var(--blur-glass-lg));
+  border: 1px solid var(--glass-border);
+  box-shadow: var(--glass-shadow-elevated), var(--glass-highlight-full);
+}
 
-  /* Horizontal scroll container for mobile */
-  .scroll-x-auto {
-    overflow-x: auto;
-    -webkit-overflow-scrolling: touch;
-  }
+@utility glass-intense {
+  background: var(--glass-bg-intense);
+  backdrop-filter: blur(var(--blur-glass-xl));
+  -webkit-backdrop-filter: blur(var(--blur-glass-xl));
+  border: 1px solid var(--glass-border);
+  box-shadow: var(--glass-shadow-elevated), var(--glass-highlight-full);
+}
 
-  /* Table container with scroll */
-  .table-container {
-    width: 100%;
-    overflow-x: auto;
-    -webkit-overflow-scrolling: touch;
-  }
+@utility glass-interactive {
+  background: var(--glass-bg);
+  backdrop-filter: blur(var(--blur-glass-md));
+  -webkit-backdrop-filter: blur(var(--blur-glass-md));
+  border: 1px solid var(--glass-border);
+  box-shadow: var(--glass-shadow), var(--glass-highlight-top);
+  transition: transform var(--duration-fast) var(--ease-bounce),
+              box-shadow var(--duration-fast) var(--ease-smooth);
+}
 
-  /* Prevent flex children from overflowing */
-  .flex-overflow-fix > * {
-    min-width: 0;
-    min-height: 0;
-  }
+@utility glass-tabbar {
+  background: var(--glass-bg-elevated);
+  backdrop-filter: blur(var(--blur-glass-xl));
+  -webkit-backdrop-filter: blur(var(--blur-glass-xl));
+  border: 1px solid var(--glass-border);
+  box-shadow: var(--glass-shadow-elevated), var(--glass-highlight-full);
+  border-radius: 9999px;
+}
 
-  /* Card that doesn't overflow its container */
-  .card-contained {
-    max-width: 100%;
-    overflow: hidden;
-  }
+/* Glass card for sidebar navigation groups - lighter blur for nested content */
+@utility glass-card {
+  background: light-dark(rgba(255, 255, 255, 0.6), rgba(255, 255, 255, 0.06));
+  backdrop-filter: blur(var(--blur-glass-md));
+  -webkit-backdrop-filter: blur(var(--blur-glass-md));
+  border: 1px solid var(--glass-border-subtle);
+  box-shadow: 0 2px 8px light-dark(rgba(0, 0, 0, 0.04), rgba(0, 0, 0, 0.2));
+}
 
-  /* ========== iOS 26 Liquid Glass Effects ========== */
-  /* Base glass effect */
-  .glass {
-    background: var(--glass-bg);
-    backdrop-filter: blur(var(--glass-blur-md));
-    -webkit-backdrop-filter: blur(var(--glass-blur-md));
-    border: 1px solid var(--glass-border);
-    box-shadow: var(--glass-shadow), var(--glass-highlight-top);
-  }
+/* ========== Spring Animations ========== */
+@utility animate-spring-in {
+  animation: spring-in var(--duration-normal) var(--ease-bounce) forwards;
+}
 
-  .glass-elevated {
-    background: var(--glass-bg-elevated);
-    backdrop-filter: blur(var(--glass-blur-lg));
-    -webkit-backdrop-filter: blur(var(--glass-blur-lg));
-    border: 1px solid var(--glass-border);
-    box-shadow: var(--glass-shadow-elevated), var(--glass-highlight-full);
-  }
+@utility animate-spring-out {
+  animation: spring-out var(--duration-fast) var(--ease-smooth) forwards;
+}
 
-  .glass-intense {
-    background: var(--glass-bg-intense);
-    backdrop-filter: blur(var(--glass-blur-xl));
-    -webkit-backdrop-filter: blur(var(--glass-blur-xl));
-    border: 1px solid var(--glass-border);
-    box-shadow: var(--glass-shadow-elevated), var(--glass-highlight-full);
-  }
+@utility animate-morph {
+  transition: all var(--duration-normal) var(--ease-bounce);
+}
 
-  /* Interactive glass - for buttons/controls */
+/* ============================================
+ * Styles requiring pseudo-classes/selectors
+ * ============================================
+ * These cannot be defined with @utility as they
+ * require pseudo-classes, pseudo-elements, or
+ * child selectors.
+ */
+
+/* Scrollbar hide - WebKit pseudo-element */
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+
+/* Flex overflow fix - child selector */
+.flex-overflow-fix > * {
+  min-width: 0;
+  min-height: 0;
+}
+
+/* Glass interactive - active state */
+.glass-interactive:active {
+  transform: scale(0.96);
+  box-shadow: var(--glass-shadow);
+}
+
+/* ========== Reduced Motion ========== */
+@media (prefers-reduced-motion: reduce) {
   .glass-interactive {
-    background: var(--glass-bg);
-    backdrop-filter: blur(var(--glass-blur-md));
-    -webkit-backdrop-filter: blur(var(--glass-blur-md));
-    border: 1px solid var(--glass-border);
-    box-shadow: var(--glass-shadow), var(--glass-highlight-top);
-    transition: transform var(--duration-fast) var(--spring-bounce),
-                box-shadow var(--duration-fast) var(--spring-smooth);
+    transition: none;
   }
-
   .glass-interactive:active {
-    transform: scale(0.96);
-    box-shadow: var(--glass-shadow);
+    transform: none;
   }
-
-  /* iOS 26 Tab Bar glass - capsule shaped */
-  .glass-tabbar {
-    background: var(--glass-bg-elevated);
-    backdrop-filter: blur(var(--glass-blur-xl));
-    -webkit-backdrop-filter: blur(var(--glass-blur-xl));
-    border: 1px solid var(--glass-border);
-    box-shadow: var(--glass-shadow-elevated), var(--glass-highlight-full);
-    border-radius: 9999px;
-  }
-
-  /* Spring animations for iOS 26 */
-  .animate-spring-in {
-    animation: spring-in var(--duration-normal) var(--spring-bounce) forwards;
-  }
-
-  .animate-spring-out {
-    animation: spring-out var(--duration-fast) var(--spring-smooth) forwards;
-  }
-
+  .animate-spring-in,
+  .animate-spring-out,
   .animate-morph {
-    transition: all var(--duration-normal) var(--spring-bounce);
-  }
-
-  /* Reduced motion support */
-  @media (prefers-reduced-motion: reduce) {
-    .glass-interactive {
-      transition: none;
-    }
-    .glass-interactive:active {
-      transform: none;
-    }
-    .animate-spring-in,
-    .animate-spring-out,
-    .animate-morph {
-      animation: none;
-      transition: opacity var(--duration-fast) ease;
-    }
+    animation: none;
+    transition: opacity var(--duration-fast) ease;
   }
 }
 
-/* iOS 26 Spring Keyframes */
+/* ========== Spring Keyframes ========== */
 @keyframes spring-in {
   0% {
     opacity: 0;
@@ -821,69 +631,26 @@
   }
 }
 
-/* ============================================
- * High Refresh Rate (120Hz ProMotion) Optimizations
- * ============================================
- * These optimizations target devices with high refresh displays
- * like iPhone Pro (ProMotion) and iPad Pro models.
- */
-
-/* Utility classes for GPU-accelerated animations */
-@layer utilities {
-  /* Apply during active drag/animation for GPU layer promotion */
-  .will-change-transform {
-    will-change: transform;
-  }
-
-  .will-change-opacity {
-    will-change: opacity;
-  }
-
-  /* Optimize paint containment for better compositor performance */
-  .contain-layout {
-    contain: layout;
-  }
-
-  .contain-style {
-    contain: style;
-  }
-
-  .contain-paint {
-    contain: paint;
-  }
-
-  /* Force GPU compositing layer (use sparingly) */
-  .gpu-layer {
-    transform: translateZ(0);
-    backface-visibility: hidden;
-  }
-}
-
-/* High refresh rate media query - detects fast update displays */
+/* ========== High Refresh Rate Optimizations ========== */
 @media (update: fast) {
-  /* Enable smoother animations on high-refresh displays */
   .glass-interactive {
     transition-timing-function: var(--spring-ios-snappy);
     transition-duration: var(--spring-ios-snappy-duration);
   }
 
-  /* Optimize drawer/sheet animations for ProMotion with iOS springs */
   [data-drawer-content],
   [data-sheet-content] {
-    /* Hint browser to prepare GPU layer during animation */
     transform: translateZ(0);
   }
 }
 
-/* Touch device optimizations - improves gesture responsiveness */
+/* ========== Touch Device Optimizations ========== */
 @media (pointer: coarse) {
-  /* Disable pointer hover effects that cause repaints */
   .glass-interactive:hover {
     transform: none;
     box-shadow: var(--glass-shadow);
   }
 
-  /* Ensure touch-action allows native-like scrolling */
   [data-drawer-content],
   [data-sheet-content] {
     touch-action: pan-y;
@@ -891,7 +658,7 @@
   }
 }
 
-/* iOS native spring animations for drawer/sheet transitions */
+/* ========== Drawer/Sheet Transitions ========== */
 [data-drawer-content] {
   transition-timing-function: var(--spring-ios-interactive);
   transition-duration: var(--spring-ios-interactive-duration);
@@ -902,43 +669,31 @@
   transition-duration: var(--spring-ios-interactive-duration);
 }
 
-/* Override to disable spring during drag (direct DOM manipulation) */
 [data-drawer-content][style*="transition: none"],
 [data-sheet-content][style*="transition: none"] {
   transition: none !important;
 }
 
-/* ============================================
- * View Transitions API - 2025-2026 Best Practice
- * ============================================
- * Native browser page transition animations.
- * @see https://developer.chrome.com/docs/web-platform/view-transitions
- */
-
-/* Enable View Transitions on the root */
+/* ========== View Transitions API ========== */
 @supports (view-transition-name: none) {
   :root {
     view-transition-name: none;
   }
 
-  /* Main content area participates in transitions */
   main,
   [data-view-transition="content"] {
     view-transition-name: main-content;
   }
 
-  /* Hero elements can have their own transition */
   [data-view-transition="hero"] {
     view-transition-name: hero;
   }
 
-  /* Card elements for shared element transitions */
   [data-view-transition="card"] {
     view-transition-name: var(--view-transition-name, card);
   }
 }
 
-/* Default cross-fade transition with iOS spring timing */
 ::view-transition-old(root),
 ::view-transition-new(root) {
   animation-duration: var(--spring-ios-default-duration);
@@ -953,12 +708,10 @@
   animation-name: vt-fade-in;
 }
 
-/* Main content transition - slide + fade */
 ::view-transition-old(main-content),
 ::view-transition-new(main-content) {
   animation-duration: var(--spring-ios-default-duration);
   animation-timing-function: var(--spring-ios-default);
-  /* Prevent layout shift during transition */
   height: 100%;
   overflow: clip;
 }
@@ -971,7 +724,6 @@
   animation-name: vt-slide-in-right;
 }
 
-/* Forward navigation - slide left */
 .vt-forward::view-transition-old(main-content) {
   animation-name: vt-slide-out-left;
 }
@@ -980,7 +732,6 @@
   animation-name: vt-slide-in-right;
 }
 
-/* Backward navigation - slide right */
 .vt-backward::view-transition-old(main-content) {
   animation-name: vt-slide-out-right;
 }
@@ -989,7 +740,6 @@
   animation-name: vt-slide-in-left;
 }
 
-/* Hero element transitions - scale + fade */
 ::view-transition-old(hero),
 ::view-transition-new(hero) {
   animation-duration: var(--spring-ios-bouncy-duration);
@@ -1004,103 +754,56 @@
   animation-name: vt-scale-in;
 }
 
-/* Shared element card transitions */
 ::view-transition-old(card),
 ::view-transition-new(card) {
   animation-duration: var(--spring-ios-snappy-duration);
   animation-timing-function: var(--spring-ios-snappy);
-  /* Keep aspect ratio during morph */
   object-fit: cover;
 }
 
-/* View Transition Keyframes */
+/* ========== View Transition Keyframes ========== */
 @keyframes vt-fade-in {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
+  from { opacity: 0; }
+  to { opacity: 1; }
 }
 
 @keyframes vt-fade-out {
-  from {
-    opacity: 1;
-  }
-  to {
-    opacity: 0;
-  }
+  from { opacity: 1; }
+  to { opacity: 0; }
 }
 
 @keyframes vt-slide-in-right {
-  from {
-    opacity: 0;
-    transform: translateX(30px);
-  }
-  to {
-    opacity: 1;
-    transform: translateX(0);
-  }
+  from { opacity: 0; transform: translateX(30px); }
+  to { opacity: 1; transform: translateX(0); }
 }
 
 @keyframes vt-slide-out-left {
-  from {
-    opacity: 1;
-    transform: translateX(0);
-  }
-  to {
-    opacity: 0;
-    transform: translateX(-30px);
-  }
+  from { opacity: 1; transform: translateX(0); }
+  to { opacity: 0; transform: translateX(-30px); }
 }
 
 @keyframes vt-slide-in-left {
-  from {
-    opacity: 0;
-    transform: translateX(-30px);
-  }
-  to {
-    opacity: 1;
-    transform: translateX(0);
-  }
+  from { opacity: 0; transform: translateX(-30px); }
+  to { opacity: 1; transform: translateX(0); }
 }
 
 @keyframes vt-slide-out-right {
-  from {
-    opacity: 1;
-    transform: translateX(0);
-  }
-  to {
-    opacity: 0;
-    transform: translateX(30px);
-  }
+  from { opacity: 1; transform: translateX(0); }
+  to { opacity: 0; transform: translateX(30px); }
 }
 
 @keyframes vt-scale-in {
-  from {
-    opacity: 0;
-    transform: scale(0.95);
-  }
-  to {
-    opacity: 1;
-    transform: scale(1);
-  }
+  from { opacity: 0; transform: scale(0.95); }
+  to { opacity: 1; transform: scale(1); }
 }
 
 @keyframes vt-scale-out {
-  from {
-    opacity: 1;
-    transform: scale(1);
-  }
-  to {
-    opacity: 0;
-    transform: scale(1.05);
-  }
+  from { opacity: 1; transform: scale(1); }
+  to { opacity: 0; transform: scale(1.05); }
 }
 
-/* Mobile-specific: vertical slide transitions */
+/* ========== Mobile View Transitions ========== */
 @media (max-width: 768px) {
-  /* Up transition for modals/sheets */
   .vt-slide-up::view-transition-old(main-content) {
     animation-name: vt-slide-out-down;
   }
@@ -1110,29 +813,17 @@
   }
 
   @keyframes vt-slide-in-up {
-    from {
-      opacity: 0;
-      transform: translateY(20px);
-    }
-    to {
-      opacity: 1;
-      transform: translateY(0);
-    }
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
   }
 
   @keyframes vt-slide-out-down {
-    from {
-      opacity: 1;
-      transform: translateY(0);
-    }
-    to {
-      opacity: 0;
-      transform: translateY(20px);
-    }
+    from { opacity: 1; transform: translateY(0); }
+    to { opacity: 0; transform: translateY(20px); }
   }
 }
 
-/* Reduced motion: simple fade only */
+/* ========== Reduced Motion for View Transitions ========== */
 @media (prefers-reduced-motion: reduce) {
   ::view-transition-old(root),
   ::view-transition-new(root),
@@ -1157,7 +848,7 @@
   }
 }
 
-/* High refresh rate optimization for view transitions */
+/* ========== High Refresh Rate View Transitions ========== */
 @media (update: fast) {
   ::view-transition-old(main-content),
   ::view-transition-new(main-content) {

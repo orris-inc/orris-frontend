@@ -71,7 +71,7 @@ export const TrafficOverviewCards = ({
             <div className="min-w-0">
               <div className="text-lg sm:text-xl font-semibold text-slate-900 dark:text-white whitespace-nowrap">
                 {loading ? (
-                  <div className="h-5 w-12 bg-slate-200 dark:bg-slate-700 rounded animate-pulse" />
+                  <div className="h-5 w-12 bg-slate-200 dark:bg-slate-700 rounded animate-pulse motion-reduce:animate-none" />
                 ) : (
                   data ? card.getValue(data) : '-'
                 )}

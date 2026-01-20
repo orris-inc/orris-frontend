@@ -15,32 +15,32 @@ interface PlanCardListProps {
   onSelectPlan?: (plan: SubscriptionPlan) => void;
 }
 
-export const PlanCardList: React.FC<PlanCardListProps> = ({
+export function PlanCardList({
   plans,
   loading = false,
   recommendedPlanId,
   onSelectPlan,
-}) => {
+}: PlanCardListProps) {
   const { t } = useTranslation();
 
   if (loading) {
     return (
-      <div className="flex justify-center items-center min-h-[300px]">
-        <Loader2 className="size-8 animate-spin text-muted-foreground" />
+      <div className="flex justify-center items-center min-h-[200px] sm:min-h-[300px]">
+        <Loader2 className="size-6 sm:size-8 animate-spin text-muted-foreground" />
       </div>
     );
   }
 
   if (!plans || plans.length === 0) {
     return (
-      <div className="text-center py-12">
-        <p className="text-muted-foreground">{t("pricing.noPlans")}</p>
+      <div className="flex flex-col items-center justify-center py-12 sm:py-16 px-4 glass-elevated rounded-2xl">
+        <p className="text-muted-foreground text-center">{t("pricing.noPlans")}</p>
       </div>
     );
   }
 
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 lg:gap-5">
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 lg:gap-5">
       {plans.map((plan) => (
         <PlanCard
           key={plan.id}
@@ -51,4 +51,4 @@ export const PlanCardList: React.FC<PlanCardListProps> = ({
       ))}
     </div>
   );
-};
+}

@@ -133,6 +133,11 @@ const AdminNotificationsPage = lazy(() =>
     default: m.AdminNotificationsPage,
   }))
 );
+const AdminExternalForwardRulesPage = lazy(() =>
+  import('@/pages/AdminExternalForwardRulesPage').then((m) => ({
+    default: m.AdminExternalForwardRulesPage,
+  }))
+);
 
 export const router = createBrowserRouter([
   // Root path - Landing page
@@ -370,6 +375,18 @@ export const router = createBrowserRouter([
       <AdminRoute>
         <SuspenseWrapper>
           <AdminNotificationsPage />
+        </SuspenseWrapper>
+      </AdminRoute>
+    ),
+  },
+
+  // External forward rules management (admin)
+  {
+    path: '/admin/external-forward-rules',
+    element: (
+      <AdminRoute>
+        <SuspenseWrapper>
+          <AdminExternalForwardRulesPage />
         </SuspenseWrapper>
       </AdminRoute>
     ),

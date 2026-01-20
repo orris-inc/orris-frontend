@@ -105,17 +105,17 @@ export const MobileForwardAgentCard = ({
     <MobileSwipeCard actions={swipeActions}>
       <div
         onClick={() => onCardPress(agent)}
-        className="px-4 py-3 min-h-[72px] cursor-pointer active:bg-muted/30 transition-colors"
+        className="px-3 py-2.5 min-h-[60px] cursor-pointer active:bg-muted/30 transition-colors"
       >
         {/* Row 1: Name + Online + Update + Status */}
-        <div className="flex items-center justify-between gap-2 mb-1">
-          <div className="flex items-center gap-2 min-w-0 flex-1">
-            <span className="font-medium text-foreground truncate">
+        <div className="flex items-center justify-between gap-2 mb-0.5">
+          <div className="flex items-center gap-1.5 min-w-0 flex-1">
+            <span className="text-[13px] font-medium text-foreground truncate">
               {agent.name}
             </span>
             <OnlineIndicator isOnline={agent.isOnline} t={t} />
             {agent.hasUpdate && agent.isOnline && (
-              <ArrowUpCircle className="size-3.5 text-warning shrink-0" />
+              <ArrowUpCircle className="size-3 text-warning shrink-0" />
             )}
           </div>
           <AdminBadge
@@ -127,10 +127,10 @@ export const MobileForwardAgentCard = ({
         </div>
 
         {/* Row 2: Address + Version + CPU */}
-        <div className="flex items-center gap-2 text-xs text-muted-foreground">
+        <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
           {/* Address */}
           <Network className="size-3 shrink-0" />
-          <span className="font-mono truncate max-w-[150px]">
+          <span className="font-mono truncate max-w-[140px]">
             {agent.publicAddress || '-'}
           </span>
 
@@ -146,7 +146,7 @@ export const MobileForwardAgentCard = ({
           {agent.isOnline && agent.systemStatus && (
             <>
               <span className="text-border">·</span>
-              <span className="flex items-center gap-1">
+              <span className="flex items-center gap-0.5">
                 <Activity className="size-3" />
                 <span className="tabular-nums">
                   {Math.round(agent.systemStatus.cpuPercent)}%
@@ -158,10 +158,10 @@ export const MobileForwardAgentCard = ({
       </div>
 
       {/* Swipe hint indicator */}
-      <div className="absolute right-2 top-1/2 -translate-y-1/2 opacity-20 pointer-events-none">
+      <div className="absolute right-1.5 top-1/2 -translate-y-1/2 opacity-15 pointer-events-none">
         <div className="flex gap-0.5">
-          <div className="w-0.5 h-4 rounded-full bg-foreground" />
-          <div className="w-0.5 h-4 rounded-full bg-foreground" />
+          <div className="w-0.5 h-3 rounded-full bg-foreground" />
+          <div className="w-0.5 h-3 rounded-full bg-foreground" />
         </div>
       </div>
     </MobileSwipeCard>

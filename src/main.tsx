@@ -11,6 +11,10 @@ import './index.css';
 // Initialize i18n before app renders
 import './lib/i18n';
 
+// Register Service Worker for PWA support
+import { registerServiceWorker } from './lib/service-worker';
+registerServiceWorker();
+
 // Get root element
 const rootElement = document.getElementById('root');
 

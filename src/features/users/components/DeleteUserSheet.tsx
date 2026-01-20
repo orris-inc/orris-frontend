@@ -19,7 +19,7 @@ import {
 import { Button } from '@/components/common/Button';
 import type { UserResponse } from '@/api/user';
 
-interface DeleteUserSheetProps extends DeleteSheetProps<UserResponse> {}
+type DeleteUserSheetProps = DeleteSheetProps<UserResponse>;
 
 export const DeleteUserSheet: React.FC<DeleteUserSheetProps> = ({
   open,

@@ -20,7 +20,7 @@ import { Button } from '@/components/common/Button';
 import { cn } from '@/lib/utils';
 import type { SubscriptionPlan } from '@/api/subscription/types';
 
-interface DeletePlanSheetProps extends DeleteSheetProps<SubscriptionPlan> {}
+type DeletePlanSheetProps = DeleteSheetProps<SubscriptionPlan>;
 
 const PLAN_TYPE_LABELS: Record<string, string> = {
   node: '节点订阅',

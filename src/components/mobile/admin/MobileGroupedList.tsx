@@ -63,12 +63,12 @@ export const MobileGroupedList = ({
   className,
 }: MobileGroupedListProps) => {
   return (
-    <div className={cn('space-y-2', className)}>
+    <div className={cn('space-y-1.5', className)}>
       {/* Section header with title and optional action */}
       {(title || action) && (
-        <div className="flex items-center justify-between px-4">
+        <div className="flex items-center justify-between px-3">
           {title && (
-            <h3 className="text-xs text-muted-foreground uppercase tracking-wide font-medium">
+            <h3 className="text-[10px] text-muted-foreground uppercase tracking-wide font-medium">
               {title}
             </h3>
           )}
@@ -79,7 +79,7 @@ export const MobileGroupedList = ({
       {/* Card container for list items */}
       <div
         className={cn(
-          'rounded-2xl overflow-hidden',
+          'rounded-xl overflow-hidden',
           'bg-card/60 backdrop-blur-sm',
           'shadow-sm shadow-black/5'
         )}
@@ -117,14 +117,14 @@ export const MobileListItem = ({
       onClick={onClick}
       type={isInteractive ? 'button' : undefined}
       className={cn(
-        // Base layout
-        'group relative flex w-full items-center gap-3 px-4 py-3',
-        // Minimum touch target height
-        'min-h-[52px]',
+        // Base layout - more compact
+        'group relative flex w-full items-center gap-2.5 px-3 py-2',
+        // Minimum touch target height (iOS standard)
+        'min-h-[44px]',
         // Border radius for first/last items
-        first && last && 'rounded-2xl',
-        first && !last && 'rounded-t-2xl',
-        !first && last && 'rounded-b-2xl',
+        first && last && 'rounded-xl',
+        first && !last && 'rounded-t-xl',
+        !first && last && 'rounded-b-xl',
         // Divider between items (not on last item)
         !last && 'border-b border-border/30',
         // Interactive states
@@ -138,11 +138,11 @@ export const MobileListItem = ({
         isInteractive && 'text-left'
       )}
     >
-      {/* Icon container */}
+      {/* Icon container - smaller for higher density */}
       {icon && (
         <span
           className={cn(
-            'flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-xl',
+            'flex size-8 flex-shrink-0 items-center justify-center rounded-lg',
             'transition-colors duration-150',
             'motion-reduce:transition-none',
             iconBg || 'bg-muted/60',
@@ -164,14 +164,14 @@ export const MobileListItem = ({
       <div className="flex-1 min-w-0">
         <span
           className={cn(
-            'block text-sm font-medium',
+            'block text-[13px] font-medium',
             destructive ? 'text-destructive' : 'text-foreground'
           )}
         >
           {title}
         </span>
         {subtitle && (
-          <span className="block text-sm text-muted-foreground truncate">
+          <span className="block text-xs text-muted-foreground truncate">
             {subtitle}
           </span>
         )}
@@ -179,7 +179,7 @@ export const MobileListItem = ({
 
       {/* Right side value/accessory */}
       {value && (
-        <span className="flex-shrink-0 text-sm text-muted-foreground">
+        <span className="flex-shrink-0 text-xs text-muted-foreground">
           {value}
         </span>
       )}
@@ -188,7 +188,7 @@ export const MobileListItem = ({
       {showChevron && (
         <ChevronRight
           className={cn(
-            'h-5 w-5 flex-shrink-0',
+            'size-4 flex-shrink-0',
             destructive ? 'text-destructive/50' : 'text-muted-foreground/50'
           )}
           aria-hidden="true"

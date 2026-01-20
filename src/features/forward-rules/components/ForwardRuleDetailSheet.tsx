@@ -244,7 +244,7 @@ const PathNode = ({ type, name, address, port, isRunning }: PathNodeProps) => {
 
 // Connection arrow between nodes
 const ConnectionArrow = ({ animated }: { animated?: boolean }) => (
-  <div className={cn('px-0.5 pt-3', animated && 'animate-pulse')}>
+  <div className={cn('px-0.5 pt-3', animated && 'animate-pulse motion-reduce:animate-none')}>
     <ArrowRight className="size-3 text-muted-foreground/50" />
   </div>
 );
@@ -444,7 +444,7 @@ const AgentStatusRow = ({
             className={cn(
               'size-3',
               syncConfig.colorClass,
-              agentStatus.syncStatus === 'pending' && 'animate-pulse'
+              agentStatus.syncStatus === 'pending' && 'animate-pulse motion-reduce:animate-none'
             )}
           />
           <span className={cn('text-[10px]', syncConfig.colorClass)}>
@@ -463,7 +463,7 @@ const AgentStatusRow = ({
             {runConfig.label}
           </span>
           {agentStatus.runStatus === 'running' && (
-            <span className="size-1.5 rounded-full bg-success animate-pulse" />
+            <span className="size-1.5 rounded-full bg-success animate-pulse motion-reduce:animate-none" />
           )}
         </div>
         {agentStatus.connections > 0 && (

@@ -267,7 +267,7 @@ const ChainNodesDisplayMobile: React.FC<{
 const MobileCardSkeleton: React.FC = () => (
   <div className="space-y-3">
     {[1, 2, 3].map((i) => (
-      <div key={i} className="glass rounded-2xl p-4 space-y-3 animate-pulse">
+      <div key={i} className="glass rounded-2xl p-4 space-y-3 animate-pulse motion-reduce:animate-none">
         <div className="flex items-center justify-between">
           <Skeleton className="h-5 w-32" />
           <Skeleton className="h-5 w-16" />

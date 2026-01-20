@@ -26,3 +26,10 @@ export {
   BUILD_TIME,
   COMMIT_HASH,
 } from './useServerVersion';
+
+export {
+  useNetworkStatus,
+  useShouldReduceData,
+  useAdaptiveQuality,
+} from './useNetworkStatus';
+export type { NetworkStatus, ConnectionEffectiveType } from './useNetworkStatus';

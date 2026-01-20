@@ -3,7 +3,7 @@
  * Contains top navigation bar, Tabs navigation, and main content area
  */
 
-import { useState } from 'react';
+import { useState, lazy, Suspense } from 'react';
 import { useNavigate } from 'react-router';
 import { ViewTransitionLink } from '@/components/common/ViewTransitionLink';
 import { Menu, Globe } from 'lucide-react';
@@ -11,8 +11,6 @@ import { TooltipProvider } from '@/components/common/Tooltip';
 
 import { useAuthStore } from '@/features/auth/stores/auth-store';
 import { useAuth } from '@/features/auth/hooks/useAuth';
-import { ProfileDialog } from '@/features/profile/components/ProfileDialog';
-import { MobileDrawer } from '@/components/navigation/MobileDrawer';
 import { DesktopNav } from '@/components/navigation/DesktopNav';
 import { UserMenu } from '@/components/navigation/UserMenu';
 import { EnhancedBreadcrumbs } from '@/components/navigation/EnhancedBreadcrumbs';
@@ -22,6 +20,18 @@ import { getNavItems } from '@/config/navigation';
 import { usePermissions } from '@/features/auth/hooks/usePermissions';
 import { useBreakpoint, useVersionInfo } from '@/hooks';
 import { cn } from '@/lib/utils';
+
+// Lazy load dialogs and drawers (only needed on interaction)
+const ProfileDialog = lazy(() =>
+  import('@/features/profile/components/ProfileDialog').then((m) => ({
+    default: m.ProfileDialog,
+  }))
+);
+const MobileDrawer = lazy(() =>
+  import('@/components/navigation/MobileDrawer').then((m) => ({
+    default: m.MobileDrawer,
+  }))
+);
 
 interface DashboardLayoutProps {
   children: React.ReactNode;
@@ -63,11 +73,13 @@ export const DashboardLayout = ({ children }: DashboardLayoutProps) => {
       {/* iOS-style Navigation Bar */}
       <header
         className={cn(
-          'sticky top-0 z-40 w-full border-b',
-          // iOS glass background for mobile
-          isMobile
-            ? 'glass-elevated border-border/40 pt-[env(safe-area-inset-top)]'
-            : 'bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60'
+          'z-40 w-full border-b',
+          // Mobile: fixed positioning for reliable header pinning (CSS-based, no JS hydration delay)
+          // Desktop: sticky is fine since no overflow issues
+          'fixed top-0 left-0 right-0 md:sticky md:left-auto md:right-auto',
+          // iOS glass background for mobile, standard background for desktop
+          'glass-elevated border-border/50 pt-[env(safe-area-inset-top)]',
+          'md:pt-0 md:border-border md:bg-background/95 md:backdrop-blur md:supports-[backdrop-filter]:bg-background/60'
         )}
       >
         <div
@@ -89,7 +101,7 @@ export const DashboardLayout = ({ children }: DashboardLayoutProps) => {
                       'size-11',
                       'rounded-full',
                       'text-primary',
-                      'active:bg-foreground/10',
+                      'active:bg-foreground/5',
                       'transition-colors motion-reduce:transition-none'
                     )}
                     onClick={() => setMobileDrawerOpen(true)}
@@ -165,24 +177,34 @@ export const DashboardLayout = ({ children }: DashboardLayoutProps) => {
         </div>
       </header>
 
-      {/* Mobile drawer menu - only show for user side */}
-      {shouldShowNavigation && (
-        <MobileDrawer
-          open={mobileDrawerOpen}
-          onClose={() => setMobileDrawerOpen(false)}
-          navigationItems={visibleNavigationItems}
-          brandName="Orris"
-          user={user}
-          showAdminSwitch={userRole === 'admin'}
-          serverVersion={serverVersion ?? undefined}
-          clientVersion={clientVersion}
-          onAdminClick={handleGoToAdmin}
-          onLogout={handleLogout}
-        />
+      {/* Lazy-loaded mobile drawer - only render on mobile */}
+      {shouldShowNavigation && isMobile && (
+        <Suspense fallback={null}>
+          <MobileDrawer
+            open={mobileDrawerOpen}
+            onClose={() => setMobileDrawerOpen(false)}
+            navigationItems={visibleNavigationItems}
+            brandName="Orris"
+            user={user}
+            showAdminSwitch={userRole === 'admin'}
+            serverVersion={serverVersion ?? undefined}
+            clientVersion={clientVersion}
+            onAdminClick={handleGoToAdmin}
+            onLogout={handleLogout}
+          />
+        </Suspense>
       )}
 
       {/* Main content area */}
-      <main className="flex-1 py-4 sm:py-6 overflow-x-hidden" data-view-transition="content">
+      <main
+        className={cn(
+          "flex-1 overflow-x-hidden pb-safe",
+          // Mobile: add top padding to account for fixed header (44px + safe-area)
+          // CSS-based responsive padding, no JS dependency
+          "py-4 pt-[calc(2.75rem+env(safe-area-inset-top)+1rem)] md:pt-4 sm:py-6"
+        )}
+        data-view-transition="content"
+      >
         <div className="mx-auto px-4 sm:px-6 max-w-6xl w-full">
           {/* Enhanced breadcrumb navigation - only show for admin side (not in DashboardLayout unless configured) */}
           {shouldShowBreadcrumbs && <EnhancedBreadcrumbs />}
@@ -194,11 +216,15 @@ export const DashboardLayout = ({ children }: DashboardLayoutProps) => {
         </div>
       </main>
 
-      {/* Profile dialog */}
-      <ProfileDialog
-        open={profileDialogOpen}
-        onClose={() => setProfileDialogOpen(false)}
-      />
+      {/* Lazy-loaded profile dialog - only render when opened */}
+      {profileDialogOpen && (
+        <Suspense fallback={null}>
+          <ProfileDialog
+            open={profileDialogOpen}
+            onClose={() => setProfileDialogOpen(false)}
+          />
+        </Suspense>
+      )}
     </div>
     </TooltipProvider>
   );

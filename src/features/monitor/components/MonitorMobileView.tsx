@@ -72,7 +72,7 @@ const MobileStatusHeader = memo(({ overview, isConnected }: { overview: MonitorO
       <div className="flex items-center gap-2">
         <div className={cn(
           'size-2 rounded-full',
-          isConnected ? 'bg-success animate-pulse' : 'bg-muted-foreground'
+          isConnected ? 'bg-success animate-pulse motion-reduce:animate-none' : 'bg-muted-foreground'
         )} />
         <span className="text-xs font-medium text-foreground">
           {isConnected ? t('admin.monitor.systemMonitor') : t('admin.forwardAgents.detail.connecting')}

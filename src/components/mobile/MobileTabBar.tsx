@@ -93,7 +93,7 @@ export const MobileTabBar = ({
           ? 'h-12 gap-1 py-1'
           : 'h-14 gap-2 py-2',
         // Animation timing
-        'duration-300 ease-[var(--spring-bounce)]',
+        'duration-300 ease-bounce',
         'motion-reduce:transition-none',
         className
       )}
@@ -118,7 +118,7 @@ export const MobileTabBar = ({
               // Base styles
               'relative flex items-center justify-center',
               'rounded-full cursor-pointer',
-              'transition-all duration-200 ease-[var(--spring-bounce)]',
+              'transition-all duration-200 ease-bounce',
               'motion-reduce:transition-none',
               // Size based on compact state
               isCompact

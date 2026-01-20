@@ -59,7 +59,7 @@ export function Table({
 // ============================================================================
 // TableHead
 // ============================================================================
-interface TableHeadProps extends React.HTMLAttributes<HTMLTableSectionElement> {}
+type TableHeadProps = React.HTMLAttributes<HTMLTableSectionElement>;
 
 export function TableHead({ className, ...props }: TableHeadProps) {
   return (
@@ -73,7 +73,7 @@ export function TableHead({ className, ...props }: TableHeadProps) {
 // ============================================================================
 // TableBody
 // ============================================================================
-interface TableBodyProps extends React.HTMLAttributes<HTMLTableSectionElement> {}
+type TableBodyProps = React.HTMLAttributes<HTMLTableSectionElement>;
 
 export function TableBody({ className, ...props }: TableBodyProps) {
   return <tbody {...props} className={className} />;
@@ -129,8 +129,7 @@ export function TableRow({ href, className, children, ...props }: TableRowProps)
 // ============================================================================
 // TableHeader
 // ============================================================================
-interface TableHeaderProps
-  extends React.ThHTMLAttributes<HTMLTableCellElement> {}
+type TableHeaderProps = React.ThHTMLAttributes<HTMLTableCellElement>;
 
 export function TableHeader({ className, ...props }: TableHeaderProps) {
   const { dense, bleed } = React.useContext(TableContext);

@@ -123,9 +123,9 @@ export const MobileSegmentedFilter = <T extends string = string>({
             onClick={() => onChange(option.value)}
             className={cn(
               'relative z-10',
-              'flex items-center justify-center gap-1.5',
-              'px-3 py-2 min-h-[36px]',
-              'text-sm font-medium whitespace-nowrap',
+              'flex items-center justify-center gap-2',
+              'px-3 py-2 min-h-[40px]',
+              'text-[13px] font-medium whitespace-nowrap',
               'rounded-lg',
               'transition-colors duration-150',
               'motion-reduce:transition-none',
@@ -138,7 +138,7 @@ export const MobileSegmentedFilter = <T extends string = string>({
             {option.count !== undefined && option.count > 0 && (
               <span
                 className={cn(
-                  'px-1.5 py-0.5 min-w-[20px]',
+                  'px-1.5 py-0.5 min-w-[18px]',
                   'text-[10px] font-semibold',
                   'rounded-full',
                   'text-center',

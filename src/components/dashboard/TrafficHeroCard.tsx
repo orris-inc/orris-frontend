@@ -127,8 +127,8 @@ export const TrafficHeroCard = ({
           >
             <defs>
               <linearGradient id="trafficGradient" x1="0" y1="0" x2="1" y2="0">
-                <stop offset="0%" stopColor="hsl(var(--chart-upload))" />
-                <stop offset="100%" stopColor="hsl(var(--chart-download))" />
+                <stop offset="0%" stopColor="var(--color-chart-upload)" />
+                <stop offset="100%" stopColor="var(--color-chart-download)" />
               </linearGradient>
             </defs>
             <PolarAngleAxis
@@ -138,7 +138,7 @@ export const TrafficHeroCard = ({
               tick={false}
             />
             <RadialBar
-              background={{ fill: 'hsl(var(--muted))' }}
+              background={{ fill: 'var(--color-muted)' }}
               dataKey="value"
               cornerRadius={10}
               fill="url(#trafficGradient)"

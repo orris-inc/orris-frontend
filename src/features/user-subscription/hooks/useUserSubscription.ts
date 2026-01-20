@@ -1,11 +1,20 @@
 /**
  * User Subscription Hook
- * Manages subscription detail data fetching and state
+ * Manages subscription detail data fetching and state with TanStack Query
  */
 
-import { useState, useEffect, useCallback } from 'react';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { getSubscription, resetSubscriptionLink } from '@/api/subscription';
 import type { Subscription } from '@/api/subscription/types';
+
+// Cache time: 2 minutes for subscription data
+const STALE_TIME = 2 * 60 * 1000;
+
+// Query keys for subscription
+const subscriptionQueryKeys = {
+  all: ['subscription'] as const,
+  detail: (id: string) => [...subscriptionQueryKeys.all, 'detail', id] as const,
+};
 
 interface UseUserSubscriptionResult {
   subscription: Subscription | null;
@@ -18,61 +27,52 @@ interface UseUserSubscriptionResult {
 
 /**
  * Hook to fetch and manage a single subscription
+ * Uses TanStack Query for caching and automatic refetching
+ *
  * @param subscriptionId - Subscription's Stripe-style ID (sub_xxx)
  */
 export function useUserSubscription(subscriptionId: string): UseUserSubscriptionResult {
-  const [subscription, setSubscription] = useState<Subscription | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [isResettingLink, setIsResettingLink] = useState(false);
+  const queryClient = useQueryClient();
 
-  const fetchSubscription = useCallback(async () => {
-    if (!subscriptionId) {
-      setIsLoading(false);
-      setError('Invalid subscription ID');
-      return;
-    }
-
-    setIsLoading(true);
-    setError(null);
-
-    try {
-      const data = await getSubscription(subscriptionId);
-      setSubscription(data);
-    } catch (err) {
-      console.error('Failed to fetch subscription:', err);
-      setError('Failed to load subscription');
-      setSubscription(null);
-    } finally {
-      setIsLoading(false);
-    }
-  }, [subscriptionId]);
-
-  const resetLink = useCallback(async () => {
-    if (!subscriptionId) return;
-
-    setIsResettingLink(true);
-    try {
-      const updated = await resetSubscriptionLink(subscriptionId);
-      setSubscription(updated);
-    } catch (err) {
-      console.error('Failed to reset subscription link:', err);
-      throw err;
-    } finally {
-      setIsResettingLink(false);
-    }
-  }, [subscriptionId]);
-
-  useEffect(() => {
-    fetchSubscription();
-  }, [fetchSubscription]);
-
-  return {
-    subscription,
+  // Query subscription data
+  const {
+    data: subscription,
     isLoading,
     error,
-    refetch: fetchSubscription,
+    refetch: queryRefetch,
+  } = useQuery({
+    queryKey: subscriptionQueryKeys.detail(subscriptionId),
+    queryFn: () => getSubscription(subscriptionId),
+    enabled: !!subscriptionId,
+    staleTime: STALE_TIME,
+  });
+
+  // Reset link mutation
+  const resetLinkMutation = useMutation({
+    mutationFn: () => resetSubscriptionLink(subscriptionId),
+    onSuccess: (updatedSubscription) => {
+      // Update cache with new subscription data
+      queryClient.setQueryData(
+        subscriptionQueryKeys.detail(subscriptionId),
+        updatedSubscription
+      );
+    },
+  });
+
+  const refetch = async () => {
+    await queryRefetch();
+  };
+
+  const resetLink = async () => {
+    await resetLinkMutation.mutateAsync();
+  };
+
+  return {
+    subscription: subscription ?? null,
+    isLoading,
+    error: error ? 'Failed to load subscription' : null,
+    refetch,
     resetLink,
-    isResettingLink,
+    isResettingLink: resetLinkMutation.isPending,
   };
 }

@@ -618,10 +618,10 @@ export const RealtimeMetricsChart = memo(({
           <div className="h-full flex items-center justify-center">
             <div className="text-center">
               <div className="flex gap-1 items-end justify-center mb-2">
-                <div className="w-1.5 h-3 bg-primary/40 rounded-full animate-pulse" />
-                <div className="w-1.5 h-5 bg-primary/60 rounded-full animate-pulse delay-75" />
-                <div className="w-1.5 h-4 bg-primary/50 rounded-full animate-pulse delay-150" />
-                <div className="w-1.5 h-6 bg-primary/70 rounded-full animate-pulse delay-200" />
+                <div className="w-1.5 h-3 bg-primary/40 rounded-full animate-pulse motion-reduce:animate-none" />
+                <div className="w-1.5 h-5 bg-primary/60 rounded-full animate-pulse motion-reduce:animate-none delay-75" />
+                <div className="w-1.5 h-4 bg-primary/50 rounded-full animate-pulse motion-reduce:animate-none delay-150" />
+                <div className="w-1.5 h-6 bg-primary/70 rounded-full animate-pulse motion-reduce:animate-none delay-200" />
               </div>
               <p className="text-xs text-muted-foreground">{t('admin.monitor.waitingData')}</p>
             </div>
@@ -635,14 +635,14 @@ export const RealtimeMetricsChart = memo(({
               <ChartGradients entityCount={selectedEntityIds.length} isNetworkMode={mode === 'network'} />
               <CartesianGrid
                 strokeDasharray="3 3"
-                stroke="hsl(var(--border))"
+                stroke="var(--color-border)"
                 strokeOpacity={0.4}
                 vertical={false}
               />
               <XAxis
                 dataKey="timestamp"
                 tickFormatter={formatXAxis}
-                stroke="hsl(var(--muted-foreground))"
+                stroke="var(--color-muted-foreground)"
                 fontSize={11}
                 tickLine={false}
                 axisLine={false}
@@ -651,7 +651,7 @@ export const RealtimeMetricsChart = memo(({
               <YAxis
                 domain={yAxisConfig.domain}
                 tickFormatter={yAxisConfig.formatter}
-                stroke="hsl(var(--muted-foreground))"
+                stroke="var(--color-muted-foreground)"
                 fontSize={11}
                 tickLine={false}
                 axisLine={false}
@@ -660,7 +660,7 @@ export const RealtimeMetricsChart = memo(({
               <Tooltip
                 content={<GlassTooltip mode={mode} />}
                 cursor={{
-                  stroke: 'hsl(var(--primary))',
+                  stroke: 'var(--color-primary)',
                   strokeWidth: 1,
                   strokeDasharray: '4 4',
                   strokeOpacity: 0.5,

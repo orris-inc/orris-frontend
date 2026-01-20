@@ -7,6 +7,9 @@ import { useQuery } from '@tanstack/react-query';
 import { getNodeTrafficStats } from '@/api/admin';
 import type { NodeTrafficStatsItem, TrafficStatsQueryParams } from '@/api/admin';
 
+// Cache time: 2 minutes for node traffic stats
+const STALE_TIME = 2 * 60 * 1000;
+
 /**
  * Parameters for useNodeTrafficStats hook
  */
@@ -83,6 +86,7 @@ export const useNodeTrafficStats = (
     queryKey: ['admin', 'traffic-stats', 'nodes', queryParams],
     queryFn: () => getNodeTrafficStats(queryParams),
     enabled,
+    staleTime: STALE_TIME,
   });
 
   return {

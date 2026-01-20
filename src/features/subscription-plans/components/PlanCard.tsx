@@ -16,11 +16,11 @@ interface PlanCardProps {
   onSelect?: (plan: SubscriptionPlan) => void;
 }
 
-export const PlanCard: React.FC<PlanCardProps> = ({
+function PlanCard({
   plan,
   recommended = false,
   onSelect,
-}) => {
+}: PlanCardProps) {
   const { t } = useTranslation();
 
   // Build features list from plan data
@@ -41,8 +41,11 @@ export const PlanCard: React.FC<PlanCardProps> = ({
   return (
     <div
       className={cn(
-        "relative flex flex-col h-full p-5 rounded-xl bg-card border",
-        "transition-all hover:shadow-md",
+        "relative flex flex-col h-full p-4 sm:p-5 rounded-xl",
+        // Mobile: glass effect, Desktop: solid card
+        "glass-elevated md:bg-card md:border md:shadow-none md:backdrop-blur-none",
+        "transition-all duration-normal ease-smooth",
+        "hover:shadow-md active:scale-[0.98]",
         recommended && "border-primary ring-1 ring-primary/20",
       )}
     >
@@ -62,12 +65,12 @@ export const PlanCard: React.FC<PlanCardProps> = ({
 
       <div className={cn("flex flex-col flex-1", recommended && "pt-2")}>
         {/* Plan name */}
-        <h3 className="text-xl font-semibold text-foreground mb-2">
+        <h3 className="text-lg sm:text-xl font-semibold text-foreground mb-2">
           {plan.name}
         </h3>
 
         {/* Pricing selector */}
-        <div className="mb-4">
+        <div className="mb-3 sm:mb-4">
           {plan.pricings && plan.pricings.length > 0 ? (
             <PlanPricingSelector
               pricings={plan.pricings}
@@ -82,20 +85,20 @@ export const PlanCard: React.FC<PlanCardProps> = ({
 
         {/* Description */}
         {plan.description && (
-          <p className="text-sm text-muted-foreground mb-4">
+          <p className="text-xs sm:text-sm text-muted-foreground mb-3 sm:mb-4">
             {plan.description}
           </p>
         )}
 
         {/* Divider */}
-        <div className="border-t border-border my-3" />
+        <div className="border-t border-border/50 my-2 sm:my-3" />
 
         {/* Features list */}
         {features.length > 0 && (
-          <ul className="space-y-2 mb-4 flex-1">
+          <ul className="space-y-1.5 sm:space-y-2 mb-3 sm:mb-4 flex-1">
             {features.map((feature, index) => (
-              <li key={index} className="flex items-center gap-2 text-sm">
-                <div className="p-1 rounded-md bg-success/10 ring-1 ring-success/20">
+              <li key={index} className="flex items-center gap-2 text-xs sm:text-sm">
+                <div className="p-0.5 sm:p-1 rounded-md bg-success/10 ring-1 ring-success/20 shrink-0">
                   <Check className="size-3 text-success" />
                 </div>
                 <span className="text-muted-foreground">{feature}</span>
@@ -106,7 +109,7 @@ export const PlanCard: React.FC<PlanCardProps> = ({
 
         {/* Trial badge */}
         {plan.trialDays > 0 && (
-          <div className="mb-4">
+          <div className="mb-3 sm:mb-4">
             <span className={getBadgeClass("secondary", "text-xs font-medium")}>
               {t("pricing.card.freeTrial", { days: plan.trialDays })}
             </span>
@@ -118,7 +121,7 @@ export const PlanCard: React.FC<PlanCardProps> = ({
           className={getButtonClass(
             recommended ? "default" : "outline",
             "default",
-            "w-full mt-auto",
+            "w-full mt-auto touch-target",
           )}
           onClick={() => onSelect?.(plan)}
         >
@@ -127,4 +130,6 @@ export const PlanCard: React.FC<PlanCardProps> = ({
       </div>
     </div>
   );
-};
+}
+
+export { PlanCard };

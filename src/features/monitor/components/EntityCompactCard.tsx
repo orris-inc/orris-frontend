@@ -138,7 +138,7 @@ export const EntityCompactCard = memo(({ entity }: EntityCompactCardProps) => {
             )}
             <span className={`
               size-1.5 rounded-full
-              ${isOnline ? 'bg-success animate-pulse' : 'bg-muted-foreground'}
+              ${isOnline ? 'bg-success animate-pulse motion-reduce:animate-none' : 'bg-muted-foreground'}
             `} />
           </div>
         </div>

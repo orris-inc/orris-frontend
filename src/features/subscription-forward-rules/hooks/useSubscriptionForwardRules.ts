@@ -30,6 +30,9 @@ import { getSubscription, getTrafficStats } from '@/api/subscription';
 // Export types for external use
 export type { SubscriptionForwardUsage };
 
+// Cache time: 2 minutes for subscription forward rules data
+const STALE_TIME = 2 * 60 * 1000;
+
 // Query Keys for Subscription Forward Rules
 const subscriptionForwardRulesQueryKeys = {
   all: ['subscriptionForwardRules'] as const,
@@ -79,6 +82,7 @@ export const useSubscriptionForwardRules = (options: UseSubscriptionForwardRules
     queryKey: subscriptionForwardRulesQueryKeys.list(subscriptionId, params),
     queryFn: () => listSubscriptionForwardRules(subscriptionId, params),
     enabled: enabled && !!subscriptionId,
+    staleTime: STALE_TIME,
   });
 
   // Create forward rule
@@ -219,6 +223,7 @@ export const useSubscriptionForwardRule = (subscriptionId: string, ruleId: strin
     queryKey: subscriptionForwardRulesQueryKeys.detail(subscriptionId, ruleId!),
     queryFn: () => getSubscriptionForwardRule(subscriptionId, ruleId!),
     enabled: !!subscriptionId && !!ruleId,
+    staleTime: STALE_TIME,
   });
 
   return {
@@ -245,6 +250,7 @@ export const useSubscriptionForwardUsage = (subscriptionId: string, enabled = tr
     queryKey: [...subscriptionForwardRulesQueryKeys.all, 'subscription', subscriptionId] as const,
     queryFn: () => getSubscription(subscriptionId),
     enabled: enabled && !!subscriptionId,
+    staleTime: STALE_TIME,
   });
 
   // Query rule list to get current rule count
@@ -252,6 +258,7 @@ export const useSubscriptionForwardUsage = (subscriptionId: string, enabled = tr
     queryKey: subscriptionForwardRulesQueryKeys.list(subscriptionId, { page: 1, pageSize: 1 }),
     queryFn: () => listSubscriptionForwardRules(subscriptionId, { page: 1, pageSize: 1 }),
     enabled: enabled && !!subscriptionId,
+    staleTime: STALE_TIME,
   });
 
   // Query traffic stats for current billing period
@@ -267,6 +274,7 @@ export const useSubscriptionForwardUsage = (subscriptionId: string, enabled = tr
       return getTrafficStats(subscriptionId, { from, to });
     },
     enabled: enabled && !!subscriptionId && !!subscriptionQuery.data && !!subscriptionQuery.data.currentPeriodStart,
+    staleTime: STALE_TIME,
   });
 
   // Combine data into SubscriptionForwardUsage format
@@ -326,6 +334,7 @@ export const useSubscriptionForwardRulesSection = (subscriptionId: string) => {
     queryKey: subscriptionForwardRulesQueryKeys.agents(),
     queryFn: () => listUserForwardAgents({ page: 1, pageSize: 1000 }),
     enabled: !!subscriptionId,
+    staleTime: STALE_TIME,
   });
 
   // Build agentsMap from agents list

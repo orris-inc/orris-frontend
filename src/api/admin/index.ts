@@ -78,3 +78,22 @@ export {
   unsuspendSubscription,
   resetSubscriptionUsage,
 } from './client';
+
+// Types - Admin External Forward Rules (Added 2025-01-18, Updated 2025-01-19)
+export type {
+  AdminExternalForwardStatus,
+  AdminExternalForwardRule,
+  AdminListExternalForwardRulesParams,
+  AdminCreateExternalForwardRuleRequest,
+  AdminUpdateExternalForwardRuleRequest,
+} from './types';
+
+// API functions - Admin External Forward Rules (Added 2025-01-18)
+export {
+  listAdminExternalForwardRules,
+  getAdminExternalForwardRule,
+  updateAdminExternalForwardRule,
+  deleteAdminExternalForwardRule,
+  enableAdminExternalForwardRule,
+  disableAdminExternalForwardRule,
+} from './client';

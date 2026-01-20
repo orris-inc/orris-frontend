@@ -51,14 +51,14 @@ const StatCard = ({
       <div
         className={cn(
           'flex flex-col items-center justify-center',
-          'p-2.5 rounded-xl',
+          'px-1.5 py-2 rounded-lg',
           'bg-card/80 backdrop-blur-sm',
           'border border-border/60'
         )}
       >
-        <Skeleton className="size-6 rounded-md mb-1.5" />
-        <Skeleton className="h-4 w-10 mb-0.5" />
-        <Skeleton className="h-2.5 w-8" />
+        <Skeleton className="size-5 rounded mb-1" />
+        <Skeleton className="h-3.5 w-10 mb-0.5" />
+        <Skeleton className="h-2 w-8" />
       </div>
     );
   }
@@ -68,8 +68,8 @@ const StatCard = ({
       className={cn(
         // Centered vertical layout
         'flex flex-col items-center justify-center',
-        // Compact padding
-        'p-2.5 rounded-xl',
+        // More compact padding
+        'px-1.5 py-2 rounded-lg',
         // Glass style
         'bg-card/80 backdrop-blur-sm',
         'border border-border/60',
@@ -77,13 +77,13 @@ const StatCard = ({
         'motion-safe:transition-transform motion-safe:active:scale-[0.97]'
       )}
     >
-      {/* Icon */}
-      <div className={cn('size-6 rounded-md flex items-center justify-center mb-1', iconBg)}>
-        <span className={iconColor}>{icon}</span>
+      {/* Icon - smaller for higher density */}
+      <div className={cn('size-5 rounded flex items-center justify-center mb-0.5', iconBg)}>
+        <span className={cn(iconColor, '[&_svg]:size-3')}>{icon}</span>
       </div>
 
       {/* Value */}
-      <div className="text-sm font-semibold text-foreground tabular-nums leading-tight text-center">
+      <div className="text-[13px] font-semibold text-foreground tabular-nums leading-tight text-center">
         {value}
       </div>
 
@@ -103,10 +103,8 @@ export const MobileStatsScroller = ({ stats, className }: MobileStatsScrollerPro
   return (
     <div
       className={cn(
-        // 3-column grid
-        'grid grid-cols-3 gap-2',
-        // Horizontal padding matching other sections
-        'px-4',
+        // 3-column grid with tighter gap
+        'grid grid-cols-3 gap-1.5',
         className
       )}
     >

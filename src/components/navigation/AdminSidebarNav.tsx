@@ -48,16 +48,10 @@ export const AdminSidebarNav = ({
         <div
           key={group.id}
           className={cn(
-            // Glass morphism card styling
-            'rounded-xl overflow-hidden',
-            'bg-white/60 dark:bg-white/[0.06]',
-            'backdrop-blur-[var(--glass-blur-md)]',
-            'border border-black/[0.04] dark:border-white/[0.08]',
-            'shadow-[0_2px_8px_rgba(0,0,0,0.04)]',
-            'dark:shadow-[0_2px_8px_rgba(0,0,0,0.2)]',
+            // Glass card styling
+            'glass-card overflow-hidden rounded-xl',
             // Transition
-            'transition-all duration-200 ease-out',
-            'motion-reduce:transition-none',
+            'transition-all duration-200 ease-out motion-reduce:transition-none',
             // Padding
             collapsed ? 'p-1.5' : 'p-2'
           )}
@@ -119,7 +113,7 @@ const NavItem = ({ item, collapsed, isActive, onItemClick, t }: NavItemProps) =>
         // Active state
         isActive
           ? 'bg-primary text-primary-foreground shadow-sm'
-          : 'text-muted-foreground hover:bg-black/[0.04] dark:hover:bg-white/[0.06] hover:text-foreground'
+          : 'text-muted-foreground hover:bg-foreground/5 hover:text-foreground'
       )}
     >
       {/* Left border indicator for active state */}
@@ -185,13 +179,7 @@ export const AdminSidebarFooter = ({
   const content = (
     <div
       className={cn(
-        // Glass morphism card styling
-        'rounded-xl overflow-hidden',
-        'bg-white/60 dark:bg-white/[0.06]',
-        'backdrop-blur-[var(--glass-blur-md)]',
-        'border border-black/[0.04] dark:border-white/[0.08]',
-        'shadow-[0_2px_8px_rgba(0,0,0,0.04)]',
-        'dark:shadow-[0_2px_8px_rgba(0,0,0,0.2)]',
+        'glass-card overflow-hidden rounded-xl',
         collapsed ? 'p-1.5' : 'p-2'
       )}
     >

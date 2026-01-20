@@ -139,7 +139,7 @@ export const MobileDrawer = ({
           // Background and states
           isActive
             ? 'bg-primary text-primary-foreground shadow-sm'
-            : 'text-muted-foreground active:bg-black/[0.04] dark:active:bg-white/[0.06]',
+            : 'text-muted-foreground active:bg-foreground/5',
           // Disabled state
           item.disabled && 'pointer-events-none opacity-50'
         )}
@@ -172,13 +172,7 @@ export const MobileDrawer = ({
         key={group.id}
         className={cn(
           // Glass morphism card styling
-          'rounded-xl overflow-hidden',
-          'bg-white/60 dark:bg-white/[0.06]',
-          'backdrop-blur-[var(--glass-blur-md)]',
-          'border border-black/[0.04] dark:border-white/[0.08]',
-          'shadow-[0_2px_8px_rgba(0,0,0,0.04)]',
-          'dark:shadow-[0_2px_8px_rgba(0,0,0,0.2)]',
-          'p-2'
+          'glass-card rounded-xl overflow-hidden p-2'
         )}
       >
         {/* Group label */}
@@ -270,15 +264,7 @@ export const MobileDrawer = ({
           {/* Version Info Card */}
           {(serverVersion || clientVersion) && (
             <div className="flex-shrink-0 px-3 py-2">
-              <div
-                className={cn(
-                  'rounded-xl px-3 py-2.5',
-                  'bg-white/60 dark:bg-white/[0.06]',
-                  'backdrop-blur-[var(--glass-blur-md)]',
-                  'border border-black/[0.04] dark:border-white/[0.08]',
-                  'shadow-[0_2px_8px_rgba(0,0,0,0.04)]'
-                )}
-              >
+              <div className="glass-card rounded-xl px-3 py-2.5">
                 <div className="flex items-center justify-center gap-4 text-[11px]">
                   {serverVersion && (
                     <div className="flex items-center gap-1.5">
@@ -327,7 +313,7 @@ const HeaderActionButton = ({
       'motion-reduce:transition-none',
       variant === 'destructive'
         ? 'text-destructive/70 active:bg-destructive/10 hover:text-destructive'
-        : 'text-muted-foreground active:bg-black/[0.04] dark:active:bg-white/[0.06] hover:text-foreground'
+        : 'text-muted-foreground active:bg-foreground/5 hover:text-foreground'
     )}
   >
     <Icon className="h-[18px] w-[18px]" aria-hidden="true" />
@@ -363,13 +349,7 @@ const HeaderSection = ({
     setTheme(isDark ? 'light' : 'dark');
   }, [isDark, setTheme]);
 
-  const cardClassName = cn(
-    'rounded-xl',
-    'bg-white/60 dark:bg-white/[0.06]',
-    'backdrop-blur-[var(--glass-blur-md)]',
-    'border border-black/[0.04] dark:border-white/[0.08]',
-    'shadow-[0_2px_8px_rgba(0,0,0,0.04)]'
-  );
+  const cardClassName = 'glass-card rounded-xl';
 
   return (
     <div className="flex-shrink-0 p-3 pb-2">

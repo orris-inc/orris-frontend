@@ -3,19 +3,17 @@
  * Uses real API data with traffic analytics
  */
 
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router';
 import { AdminLayout } from '@/layouts/AdminLayout';
 import { useAuthStore } from '@/features/auth/stores/auth-store';
 import { usePageTitle } from '@/shared/hooks';
 import { useBreakpoint, useVersionInfo } from '@/hooks';
-import { listUsers } from '@/api/user';
-import { adminListSubscriptions } from '@/api/subscription';
-import { listNodes } from '@/api/node';
 import {
   useAdminTrafficStats,
   useNodeTrafficStats,
+  useDashboardStats,
   getDateRangeFromPreset,
   detectGranularity,
   type DateRangePreset,
@@ -40,6 +38,7 @@ import { formatTrafficBytes } from '@/api/admin';
 import { Separator } from '@/components/common/Separator';
 
 // ============ Stats Card Component ============
+// Uses container queries for component-level responsiveness
 interface StatsCardProps {
   title: string;
   value: string;
@@ -58,20 +57,25 @@ const StatsCard = ({
   loading,
 }: StatsCardProps) => {
   return (
-    <div className="group relative overflow-hidden bg-card rounded-lg px-2.5 py-2 sm:px-3 sm:py-2 border border-border hover:bg-accent/30 transition-colors duration-150">
-      <div className="relative z-10 flex items-center gap-2">
-        <div className={`${iconBg} p-1.5 rounded-md shrink-0`}>
-          <div className={iconColor}>{icon}</div>
+    <div className="@container group relative overflow-hidden bg-card rounded-lg border border-border hover:bg-accent/30 transition-colors duration-150">
+      {/* Responsive padding: compact by default, larger when container allows */}
+      <div className="relative z-10 flex items-center gap-1.5 @[120px]:gap-2 px-2 py-1.5 @[120px]:px-2.5 @[120px]:py-2 @[180px]:px-3">
+        {/* Icon: scales with container */}
+        <div className={`${iconBg} p-1 @[120px]:p-1.5 @[180px]:p-2 rounded-md shrink-0`}>
+          <div className={`${iconColor} [&>svg]:size-3.5 @[120px]:[&>svg]:size-4 @[180px]:[&>svg]:size-5`}>
+            {icon}
+          </div>
         </div>
+        {/* Content area */}
         <div className="min-w-0 flex-1">
-          <div className="text-sm sm:text-base font-semibold text-foreground tracking-tight tabular-nums truncate leading-tight">
+          <div className="text-xs @[120px]:text-sm @[180px]:text-base font-semibold text-foreground tracking-tight tabular-nums truncate leading-tight">
             {loading ? (
-              <div className="h-4 w-10 bg-muted rounded animate-pulse" />
+              <div className="h-3 @[120px]:h-4 w-8 @[120px]:w-10 bg-muted rounded animate-pulse" />
             ) : (
               value
             )}
           </div>
-          <div className="text-[10px] font-medium text-muted-foreground truncate leading-tight">
+          <div className="text-[9px] @[120px]:text-[10px] @[180px]:text-xs font-medium text-muted-foreground truncate leading-tight">
             {title}
           </div>
         </div>
@@ -81,6 +85,7 @@ const StatsCard = ({
 };
 
 // ============ Quick Action Card ============
+// Uses container queries for component-level responsiveness
 interface QuickActionCardProps {
   title: string;
   description: string;
@@ -100,22 +105,25 @@ const QuickActionCard = ({
   return (
     <button
       onClick={onClick}
-      className="group w-full text-left px-3 py-2.5 rounded-lg overflow-hidden relative bg-card border border-border hover:bg-accent/30 hover:border-primary/30 transition-colors duration-150 cursor-pointer"
+      className="@container group w-full text-left rounded-lg overflow-hidden relative bg-card border border-border hover:bg-accent/30 hover:border-primary/30 transition-colors duration-150 cursor-pointer"
     >
-      <div className="relative z-10 flex items-center gap-2.5">
+      {/* Responsive padding and layout */}
+      <div className="relative z-10 flex items-center gap-2 @[200px]:gap-2.5 px-2.5 py-2 @[200px]:px-3 @[200px]:py-2.5">
         <div
-          className={`${iconBg} p-2 rounded-lg group-hover:scale-105 transition-transform duration-150 shrink-0`}
+          className={`${iconBg} p-1.5 @[200px]:p-2 rounded-md @[200px]:rounded-lg group-hover:scale-105 transition-transform duration-150 shrink-0`}
         >
-          <div className={iconColor}>{icon}</div>
+          <div className={`${iconColor} [&>svg]:size-4 @[200px]:[&>svg]:size-5`}>
+            {icon}
+          </div>
         </div>
 
         <div className="flex-1 min-w-0">
-          <h3 className="text-sm font-medium text-foreground group-hover:text-primary transition-colors duration-150 truncate">
+          <h3 className="text-xs @[200px]:text-sm font-medium text-foreground group-hover:text-primary transition-colors duration-150 truncate">
             {title}
           </h3>
         </div>
 
-        <ArrowUpRight className="size-4 text-muted-foreground group-hover:text-primary transition-colors duration-150 shrink-0" />
+        <ArrowUpRight className="size-3.5 @[200px]:size-4 text-muted-foreground group-hover:text-primary transition-colors duration-150 shrink-0" />
       </div>
     </button>
   );
@@ -181,55 +189,6 @@ const SystemStatus = ({ label, status, value, icon }: SystemStatusProps) => {
       </div>
     </div>
   );
-};
-
-// ============ Dashboard Data Hook ============
-interface DashboardStats {
-  totalUsers: number;
-  activeSubscriptions: number;
-  totalNodes: number;
-  activeNodes: number;
-}
-
-const useDashboardStats = () => {
-  const [stats, setStats] = useState<DashboardStats>({
-    totalUsers: 0,
-    activeSubscriptions: 0,
-    totalNodes: 0,
-    activeNodes: 0,
-  });
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    const fetchStats = async () => {
-      try {
-        setLoading(true);
-        const [usersRes, subscriptionsRes, nodesRes] = await Promise.all([
-          listUsers({ page: 1, pageSize: 1 }),
-          adminListSubscriptions({ page: 1, pageSize: 1 }),
-          listNodes({ page: 1, pageSize: 100, includeUserNodes: true }),
-        ]);
-
-        const nodes = nodesRes.items || [];
-        const activeNodes = nodes.filter((node) => node.status === 'active').length;
-
-        setStats({
-          totalUsers: usersRes.total || 0,
-          activeSubscriptions: subscriptionsRes.total || 0,
-          totalNodes: nodesRes.total || 0,
-          activeNodes,
-        });
-      } catch {
-        // Failed to fetch statistics
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchStats();
-  }, []);
-
-  return { stats, loading };
 };
 
 // ============ Main Page Component ============

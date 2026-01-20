@@ -134,17 +134,17 @@ export const MobileNodeCard = ({
     <MobileSwipeCard actions={swipeActions}>
       <div
         onClick={() => onCardPress(node)}
-        className="px-4 py-3 min-h-[72px] cursor-pointer active:bg-muted/30 transition-colors"
+        className="px-3 py-2.5 min-h-[60px] cursor-pointer active:bg-muted/30 transition-colors"
       >
         {/* Row 1: Name + Status + Online */}
-        <div className="flex items-center justify-between gap-2 mb-1">
-          <div className="flex items-center gap-2 min-w-0 flex-1">
-            <span className="font-medium text-foreground truncate">
+        <div className="flex items-center justify-between gap-2 mb-0.5">
+          <div className="flex items-center gap-1.5 min-w-0 flex-1">
+            <span className="text-[13px] font-medium text-foreground truncate">
               {node.name}
             </span>
             <OnlineIndicator isOnline={node.isOnline} t={t} />
             {node.hasUpdate && node.isOnline && (
-              <ArrowUpCircle className="size-3.5 text-warning shrink-0" />
+              <ArrowUpCircle className="size-3 text-warning shrink-0" />
             )}
           </div>
           <AdminBadge
@@ -156,16 +156,16 @@ export const MobileNodeCard = ({
         </div>
 
         {/* Row 2: Address + Protocol + Region */}
-        <div className="flex items-center gap-2 text-xs text-muted-foreground">
+        <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
           {/* Address */}
-          <span className="font-mono truncate max-w-[150px]">
+          <span className="font-mono truncate max-w-[140px]">
             {node.serverAddress}:{node.agentPort}
           </span>
 
           <span className="text-border">·</span>
 
           {/* Protocol */}
-          <span className={cn('px-1.5 py-0 text-[10px] font-medium rounded shrink-0', protocolConfig.color)}>
+          <span className={cn('px-1 py-0 text-[10px] font-medium rounded shrink-0', protocolConfig.color)}>
             {protocolConfig.label}
           </span>
 
@@ -181,7 +181,7 @@ export const MobileNodeCard = ({
           {node.isOnline && node.systemStatus && (
             <>
               <span className="text-border">·</span>
-              <span className="flex items-center gap-1">
+              <span className="flex items-center gap-0.5">
                 <Activity className="size-3" />
                 <span className="tabular-nums">
                   {Math.round(node.systemStatus.cpuPercent)}%
@@ -193,10 +193,10 @@ export const MobileNodeCard = ({
       </div>
 
       {/* Swipe hint indicator */}
-      <div className="absolute right-2 top-1/2 -translate-y-1/2 opacity-20 pointer-events-none">
+      <div className="absolute right-1.5 top-1/2 -translate-y-1/2 opacity-15 pointer-events-none">
         <div className="flex gap-0.5">
-          <div className="w-0.5 h-4 rounded-full bg-foreground" />
-          <div className="w-0.5 h-4 rounded-full bg-foreground" />
+          <div className="w-0.5 h-3 rounded-full bg-foreground" />
+          <div className="w-0.5 h-3 rounded-full bg-foreground" />
         </div>
       </div>
     </MobileSwipeCard>

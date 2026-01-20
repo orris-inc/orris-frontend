@@ -18,6 +18,9 @@ import type {
 import { detectGranularity } from '../utils/date-range';
 import type { DateRange } from '../utils/date-range';
 
+// Cache time: 2 minutes for traffic stats (more dynamic data)
+const STALE_TIME = 2 * 60 * 1000;
+
 interface UseAdminTrafficStatsParams {
   /** Date range for traffic statistics */
   dateRange: DateRange;
@@ -78,6 +81,7 @@ export const useAdminTrafficStats = ({
           to: dateRange.to,
         }),
         enabled,
+        staleTime: STALE_TIME,
       },
       // Query 2: Traffic Trend
       {
@@ -88,6 +92,7 @@ export const useAdminTrafficStats = ({
           granularity,
         }),
         enabled,
+        staleTime: STALE_TIME,
       },
       // Query 3: User Traffic Ranking
       {
@@ -98,6 +103,7 @@ export const useAdminTrafficStats = ({
           limit: 10,
         }),
         enabled,
+        staleTime: STALE_TIME,
       },
       // Query 4: Subscription Traffic Ranking
       {
@@ -108,6 +114,7 @@ export const useAdminTrafficStats = ({
           limit: 10,
         }),
         enabled,
+        staleTime: STALE_TIME,
       },
     ],
   });

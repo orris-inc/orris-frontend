@@ -37,6 +37,9 @@ export type {
   UserNodeInstallScriptResponse,
 };
 
+// Cache time: 2 minutes for user nodes data
+const STALE_TIME = 2 * 60 * 1000;
+
 // Query Keys for User Nodes
 const userNodesQueryKeys = {
   all: ['userNodes'] as const,
@@ -87,6 +90,7 @@ export const useUserNodes = (options: UseUserNodesOptions = {}) => {
     queryKey: userNodesQueryKeys.list(params),
     queryFn: () => listUserNodes(params),
     enabled,
+    staleTime: STALE_TIME,
   });
 
   // Create user node
@@ -176,6 +180,7 @@ export const useUserNode = (id: string | null) => {
     queryKey: userNodesQueryKeys.detail(id!),
     queryFn: () => getUserNode(id!),
     enabled: !!id,
+    staleTime: STALE_TIME,
   });
 
   return {
@@ -231,6 +236,7 @@ export const useUserNodeUsage = () => {
   const { data, isLoading, error, refetch } = useQuery({
     queryKey: userNodesQueryKeys.usage(),
     queryFn: getUserNodeUsage,
+    staleTime: STALE_TIME,
   });
 
   return {
@@ -255,6 +261,7 @@ export const useUserNodeInstallScript = (
     queryKey: userNodesQueryKeys.installScript(id!, params),
     queryFn: () => getUserNodeInstallScript(id!, params),
     enabled: !!id,
+    staleTime: STALE_TIME,
   });
 
   return {

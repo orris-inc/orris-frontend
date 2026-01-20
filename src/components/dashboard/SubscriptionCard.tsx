@@ -143,7 +143,7 @@ export const SubscriptionCard = ({ subscriptions, isLoading, error }: Subscripti
           <span className="text-sm text-muted-foreground">{t('user.dashboard.mySubscriptions')}</span>
         </div>
         <div className="space-y-3">
-          <div className="h-24 w-full rounded-xl bg-muted animate-pulse" />
+          <div className="h-24 w-full rounded-xl bg-muted animate-pulse motion-reduce:animate-none" />
         </div>
       </div>
     );

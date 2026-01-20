@@ -82,7 +82,7 @@ function parsePlanLimits(apiLimits: Record<string, unknown> | undefined): PlanLi
   };
 }
 
-interface EditPlanSheetProps extends EditSheetProps<SubscriptionPlan, UpdatePlanRequest> {}
+type EditPlanSheetProps = EditSheetProps<SubscriptionPlan, UpdatePlanRequest>;
 
 const BILLING_CYCLES: { value: string; label: string }[] = [
   { value: 'weekly', label: '周付' },

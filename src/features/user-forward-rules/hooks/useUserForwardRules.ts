@@ -29,6 +29,9 @@ import type { UserForwardUsage } from '@/api/forward';
 // Export types for external use
 export type { UserForwardUsage };
 
+// Cache time: 2 minutes for forward rules data
+const STALE_TIME = 2 * 60 * 1000;
+
 // Query Keys for User Forward Rules
 const userForwardRulesQueryKeys = {
   all: ['userForwardRules'] as const,
@@ -80,6 +83,7 @@ export const useUserForwardRules = (options: UseUserForwardRulesOptions = {}) =>
     queryKey: userForwardRulesQueryKeys.list(params),
     queryFn: () => listUserForwardRules(params),
     enabled,
+    staleTime: STALE_TIME,
   });
 
   // Create forward rule
@@ -186,6 +190,7 @@ export const useUserForwardRule = (id: string | null) => {
     queryKey: userForwardRulesQueryKeys.detail(id!),
     queryFn: () => getUserForwardRule(id!),
     enabled: !!id,
+    staleTime: STALE_TIME,
   });
 
   return {
@@ -202,6 +207,7 @@ export const useUserForwardUsage = () => {
   const { data, isLoading, error, refetch } = useQuery({
     queryKey: userForwardRulesQueryKeys.usage(),
     queryFn: getUserForwardUsage,
+    staleTime: STALE_TIME,
   });
 
   return {
@@ -228,6 +234,7 @@ export const useUserForwardRulesPage = () => {
   const agentsQuery = useQuery({
     queryKey: userForwardRulesQueryKeys.agents(),
     queryFn: () => listUserForwardAgents({ page: 1, pageSize: 1000 }),
+    staleTime: STALE_TIME,
   });
 
   // Build agentsMap from agents list

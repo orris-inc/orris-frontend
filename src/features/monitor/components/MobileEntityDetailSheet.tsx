@@ -48,7 +48,7 @@ import type { EntityStatus } from '../hooks/useMonitorData';
 import type { NodeSystemStatus } from '@/api/node';
 import type { AgentSystemStatus } from '@/api/forward';
 
-interface MobileEntityDetailSheetProps extends DetailSheetProps<EntityStatus> {}
+type MobileEntityDetailSheetProps = DetailSheetProps<EntityStatus>;
 
 // Circular progress ring component
 const ProgressRing = memo(({

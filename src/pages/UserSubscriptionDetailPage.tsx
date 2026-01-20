@@ -7,7 +7,7 @@
 import { useMemo, useRef, useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router';
 import { useTranslation } from 'react-i18next';
-import { ArrowLeft, AlertCircle, LayoutDashboard, ArrowRightLeft, Server } from 'lucide-react';
+import { ArrowLeft, AlertCircle, LayoutDashboard, ArrowRightLeft, Server, Globe } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { DashboardLayout } from '@/layouts/DashboardLayout';
 import { usePageTitle } from '@/shared/hooks';
@@ -19,6 +19,7 @@ import {
   SubscriptionNodeList,
 } from '@/features/user-subscription';
 import { SubscriptionForwardRulesSection } from '@/features/subscription-forward-rules';
+import { ExternalForwardRulesSection } from '@/features/external-forward-rules';
 
 export const UserSubscriptionDetailPage = () => {
   const { t } = useTranslation();
@@ -98,7 +99,7 @@ export const UserSubscriptionDetailPage = () => {
               "min-h-11 min-w-11 px-3 rounded-xl",
               "text-sm text-muted-foreground hover:text-foreground",
               "glass-interactive",
-              "transition-all duration-[var(--duration-fast)]",
+              "transition-all duration-fast",
               "group"
             )}
           >
@@ -174,6 +175,13 @@ export const UserSubscriptionDetailPage = () => {
                       <Server className="size-3.5" />
                       <span>{t('userSubscription.nodes')}</span>
                     </TabsTrigger>
+                    <TabsTrigger
+                      value="external-rules"
+                      className="gap-1.5 px-3 h-7 text-xs font-medium rounded-md data-[state=active]:bg-background data-[state=active]:shadow-sm"
+                    >
+                      <Globe className="size-3.5" />
+                      <span>{t('externalForwardRules.title')}</span>
+                    </TabsTrigger>
                   </>
                 )}
               </TabsList>
@@ -209,6 +217,16 @@ export const UserSubscriptionDetailPage = () => {
               className="animate-in fade-in slide-in-from-left-2 duration-300 mt-0"
             >
               <SubscriptionNodeList subscriptionId={subscriptionId} />
+            </TabsContent>
+          )}
+
+          {/* External Rules Tab */}
+          {showForwardTabs && (
+            <TabsContent
+              value="external-rules"
+              className="animate-in fade-in slide-in-from-left-2 duration-300 mt-0"
+            >
+              <ExternalForwardRulesSection subscriptionId={subscriptionId} />
             </TabsContent>
           )}
         </Tabs>

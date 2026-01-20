@@ -179,8 +179,8 @@ const CircularProgress: React.FC<{
         />
         <defs>
           <linearGradient id="progressGradient" x1="0%" y1="0%" x2="100%" y2="0%">
-            <stop offset="0%" stopColor="hsl(var(--primary))" />
-            <stop offset="100%" stopColor="hsl(var(--primary) / 0.6)" />
+            <stop offset="0%" stopColor="var(--color-primary)" />
+            <stop offset="100%" stopColor="oklch(from var(--color-primary) l c h / 0.6)" />
           </linearGradient>
         </defs>
       </svg>

@@ -3,7 +3,7 @@
  * Responsive design with iOS 26 Liquid Glass style for mobile
  */
 
-import { useState, useMemo, useCallback, useEffect } from 'react';
+import { useState, useMemo, useCallback, useEffect, lazy, Suspense } from 'react';
 import { Plus, AlertCircle, Zap } from 'lucide-react';
 import { Link } from 'react-router';
 import { DashboardLayout } from '@/layouts/DashboardLayout';
@@ -15,17 +15,51 @@ import {
   UserForwardUsageCard,
   UserForwardRuleList,
   UserForwardRuleMobileList,
-  CreateUserForwardRuleDialog,
-  EditUserForwardRuleDialog,
 } from '@/features/user-forward-rules';
 import { useBatchForwardRules } from '@/features/forward-rules/hooks/useBatchForwardRules';
-import {
-  BatchActionBar,
-  BatchDeleteDialog,
-  BatchToggleStatusDialog,
-  BatchUpdateDialog,
-  MobileBatchActionSheet,
-} from '@/features/forward-rules/components/batch';
+
+// Lazy load Dialog/Sheet components
+const CreateUserForwardRuleDialog = lazy(() =>
+  import('@/features/user-forward-rules/components/CreateUserForwardRuleDialog').then((m) => ({
+    default: m.CreateUserForwardRuleDialog,
+  }))
+);
+
+const EditUserForwardRuleDialog = lazy(() =>
+  import('@/features/user-forward-rules/components/EditUserForwardRuleDialog').then((m) => ({
+    default: m.EditUserForwardRuleDialog,
+  }))
+);
+
+const BatchActionBar = lazy(() =>
+  import('@/features/forward-rules/components/batch').then((m) => ({
+    default: m.BatchActionBar,
+  }))
+);
+
+const BatchDeleteDialog = lazy(() =>
+  import('@/features/forward-rules/components/batch').then((m) => ({
+    default: m.BatchDeleteDialog,
+  }))
+);
+
+const BatchToggleStatusDialog = lazy(() =>
+  import('@/features/forward-rules/components/batch').then((m) => ({
+    default: m.BatchToggleStatusDialog,
+  }))
+);
+
+const BatchUpdateDialog = lazy(() =>
+  import('@/features/forward-rules/components/batch').then((m) => ({
+    default: m.BatchUpdateDialog,
+  }))
+);
+
+const MobileBatchActionSheet = lazy(() =>
+  import('@/features/forward-rules/components/batch').then((m) => ({
+    default: m.MobileBatchActionSheet,
+  }))
+);
 import type { ForwardRule, CreateForwardRuleRequest, UpdateForwardRuleRequest } from '@/api/forward';
 import { canCreateMoreRules } from '@/api/forward';
 import type { RowSelectionState } from '@tanstack/react-table';
@@ -251,17 +285,19 @@ export const UserForwardRulesPage = () => {
 
             {/* Batch action bar - show above table when items selected (desktop only) */}
             {selectedCount > 0 && !isMobile && (
-              <BatchActionBar
-                selectedCount={selectedCount}
-                onBatchDelete={() => setBatchDeleteOpen(true)}
-                onBatchEnable={() => setBatchEnableOpen(true)}
-                onBatchDisable={() => setBatchDisableOpen(true)}
-                onBatchUpdate={() => setBatchUpdateOpen(true)}
-                onClearSelection={clearSelection}
-                isDeleting={isBatchDeleting}
-                isTogglingStatus={isBatchEnabling || isBatchDisabling}
-                isUpdating={isBatchUpdating}
-              />
+              <Suspense fallback={null}>
+                <BatchActionBar
+                  selectedCount={selectedCount}
+                  onBatchDelete={() => setBatchDeleteOpen(true)}
+                  onBatchEnable={() => setBatchEnableOpen(true)}
+                  onBatchDisable={() => setBatchDisableOpen(true)}
+                  onBatchUpdate={() => setBatchUpdateOpen(true)}
+                  onClearSelection={clearSelection}
+                  isDeleting={isBatchDeleting}
+                  isTogglingStatus={isBatchEnabling || isBatchDisabling}
+                  isUpdating={isBatchUpdating}
+                />
+              </Suspense>
             )}
 
             {/* Rule list - Responsive view */}
@@ -313,105 +349,131 @@ export const UserForwardRulesPage = () => {
       </div>
 
       {/* Create rule dialog */}
-      <CreateUserForwardRuleDialog
-        open={createDialogOpen}
-        onClose={() => setCreateDialogOpen(false)}
-        onSubmit={handleCreateSubmit}
-        allowedTypes={usage?.allowedTypes || []}
-        isCreating={isCreating}
-      />
+      {createDialogOpen && (
+        <Suspense fallback={null}>
+          <CreateUserForwardRuleDialog
+            open={createDialogOpen}
+            onClose={() => setCreateDialogOpen(false)}
+            onSubmit={handleCreateSubmit}
+            allowedTypes={usage?.allowedTypes || []}
+            isCreating={isCreating}
+          />
+        </Suspense>
+      )}
 
       {/* Edit rule dialog */}
-      <EditUserForwardRuleDialog
-        open={editDialogOpen}
-        onClose={() => {
-          setEditDialogOpen(false);
-          setSelectedRule(null);
-        }}
-        onSubmit={handleEditSubmit}
-        rule={selectedRule}
-        isUpdating={isUpdating}
-      />
+      {editDialogOpen && (
+        <Suspense fallback={null}>
+          <EditUserForwardRuleDialog
+            open={editDialogOpen}
+            onClose={() => {
+              setEditDialogOpen(false);
+              setSelectedRule(null);
+            }}
+            onSubmit={handleEditSubmit}
+            rule={selectedRule}
+            isUpdating={isUpdating}
+          />
+        </Suspense>
+      )}
 
       {/* Mobile batch action sheet */}
       {isMobile && selectedCount > 0 && (
-        <MobileBatchActionSheet
-          open={mobileActionSheetOpen}
-          onOpenChange={setMobileActionSheetOpen}
-          selectedCount={selectedCount}
-          onBatchDelete={() => {
-            setMobileActionSheetOpen(false);
-            setBatchDeleteOpen(true);
-          }}
-          onBatchEnable={() => {
-            setMobileActionSheetOpen(false);
-            setBatchEnableOpen(true);
-          }}
-          onBatchDisable={() => {
-            setMobileActionSheetOpen(false);
-            setBatchDisableOpen(true);
-          }}
-          onBatchUpdate={() => {
-            setMobileActionSheetOpen(false);
-            setBatchUpdateOpen(true);
-          }}
-          onClearSelection={() => {
-            exitSelectMode();
-            setMobileActionSheetOpen(false);
-          }}
-          isDeleting={isBatchDeleting}
-          isTogglingStatus={isBatchEnabling || isBatchDisabling}
-          isUpdating={isBatchUpdating}
-        />
+        <Suspense fallback={null}>
+          <MobileBatchActionSheet
+            open={mobileActionSheetOpen}
+            onOpenChange={setMobileActionSheetOpen}
+            selectedCount={selectedCount}
+            onBatchDelete={() => {
+              setMobileActionSheetOpen(false);
+              setBatchDeleteOpen(true);
+            }}
+            onBatchEnable={() => {
+              setMobileActionSheetOpen(false);
+              setBatchEnableOpen(true);
+            }}
+            onBatchDisable={() => {
+              setMobileActionSheetOpen(false);
+              setBatchDisableOpen(true);
+            }}
+            onBatchUpdate={() => {
+              setMobileActionSheetOpen(false);
+              setBatchUpdateOpen(true);
+            }}
+            onClearSelection={() => {
+              exitSelectMode();
+              setMobileActionSheetOpen(false);
+            }}
+            isDeleting={isBatchDeleting}
+            isTogglingStatus={isBatchEnabling || isBatchDisabling}
+            isUpdating={isBatchUpdating}
+          />
+        </Suspense>
       )}
 
       {/* Batch delete dialog */}
-      <BatchDeleteDialog
-        open={batchDeleteOpen}
-        onOpenChange={setBatchDeleteOpen}
-        selectedCount={selectedCount}
-        onConfirm={async () => {
-          const result = await batchDelete();
-          return result;
-        }}
-        isDeleting={isBatchDeleting}
-      />
+      {batchDeleteOpen && (
+        <Suspense fallback={null}>
+          <BatchDeleteDialog
+            open={batchDeleteOpen}
+            onOpenChange={setBatchDeleteOpen}
+            selectedCount={selectedCount}
+            onConfirm={async () => {
+              const result = await batchDelete();
+              return result;
+            }}
+            isDeleting={isBatchDeleting}
+          />
+        </Suspense>
+      )}
 
       {/* Batch enable dialog */}
-      <BatchToggleStatusDialog
-        open={batchEnableOpen}
-        onOpenChange={setBatchEnableOpen}
-        selectedCount={selectedCount}
-        targetStatus="enabled"
-        onConfirm={async () => {
-          const result = await batchEnable();
-          return result;
-        }}
-        isProcessing={isBatchEnabling}
-      />
+      {batchEnableOpen && (
+        <Suspense fallback={null}>
+          <BatchToggleStatusDialog
+            open={batchEnableOpen}
+            onOpenChange={setBatchEnableOpen}
+            selectedCount={selectedCount}
+            targetStatus="enabled"
+            onConfirm={async () => {
+              const result = await batchEnable();
+              return result;
+            }}
+            isProcessing={isBatchEnabling}
+          />
+        </Suspense>
+      )}
 
       {/* Batch disable dialog */}
-      <BatchToggleStatusDialog
-        open={batchDisableOpen}
-        onOpenChange={setBatchDisableOpen}
-        selectedCount={selectedCount}
-        targetStatus="disabled"
-        onConfirm={async () => {
-          const result = await batchDisable();
-          return result;
-        }}
-        isProcessing={isBatchDisabling}
-      />
+      {batchDisableOpen && (
+        <Suspense fallback={null}>
+          <BatchToggleStatusDialog
+            open={batchDisableOpen}
+            onOpenChange={setBatchDisableOpen}
+            selectedCount={selectedCount}
+            targetStatus="disabled"
+            onConfirm={async () => {
+              const result = await batchDisable();
+              return result;
+            }}
+            isProcessing={isBatchDisabling}
+          />
+        </Suspense>
+      )}
 
       {/* Batch update dialog */}
-      <BatchUpdateDialog
-        open={batchUpdateOpen}
-        onOpenChange={setBatchUpdateOpen}
-        selectedIds={selectedIdsArray}
-        onConfirm={batchUpdate}
-        isUpdating={isBatchUpdating}
-        agents={forwardAgents}
-      />
+      {batchUpdateOpen && (
+        <Suspense fallback={null}>
+          <BatchUpdateDialog
+            open={batchUpdateOpen}
+            onOpenChange={setBatchUpdateOpen}
+            selectedIds={selectedIdsArray}
+            onConfirm={batchUpdate}
+            isUpdating={isBatchUpdating}
+            agents={forwardAgents}
+          />
+        </Suspense>
+      )}
     </DashboardLayout>
   );
 };

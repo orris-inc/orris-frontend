@@ -10,8 +10,11 @@ import { Loader2 } from 'lucide-react';
 import { router } from './router';
 import { queryClient } from '@/shared/lib/query-client';
 import { GlobalSnackbar } from '@/shared/components/GlobalSnackbar';
+import { ErrorBoundary } from '@/components/common/ErrorBoundary';
 import { useAuthInitializer } from '@/features/auth/hooks/useAuthInitializer';
 import { useAuthStore } from '@/features/auth/stores/auth-store';
+import { NetworkStatusIndicator, ServiceWorkerUpdatePrompt } from '@/components/common/NetworkStatusIndicator';
+import { DefaultResourceHints } from '@/components/common/ResourceHints';
 
 export const App = () => {
   // Initialize auth state
@@ -30,17 +33,28 @@ export const App = () => {
   }
 
   return (
-    <ThemeProvider
-      attribute="class"
-      defaultTheme="system"
-      enableSystem
-      storageKey="orris-theme"
-      disableTransitionOnChange
-    >
-      <QueryClientProvider client={queryClient}>
-        <RouterProvider router={router} />
-        <GlobalSnackbar />
-      </QueryClientProvider>
-    </ThemeProvider>
+    <ErrorBoundary>
+      <ThemeProvider
+        attribute="class"
+        defaultTheme="system"
+        enableSystem
+        storageKey="orris-theme"
+        disableTransitionOnChange
+      >
+        <QueryClientProvider client={queryClient}>
+          {/* Resource hints for performance optimization */}
+          <DefaultResourceHints />
+
+          <RouterProvider router={router} />
+          <GlobalSnackbar />
+
+          {/* Network status indicator for offline/online notifications */}
+          <NetworkStatusIndicator position="top" />
+
+          {/* Service worker update prompt */}
+          <ServiceWorkerUpdatePrompt />
+        </QueryClientProvider>
+      </ThemeProvider>
+    </ErrorBoundary>
   );
 };

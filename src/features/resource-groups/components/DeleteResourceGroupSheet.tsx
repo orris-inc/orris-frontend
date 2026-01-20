@@ -19,7 +19,7 @@ import type { DeleteSheetProps } from '@/components/common/sheet';
 import { Button } from '@/components/common/Button';
 import type { ResourceGroup } from '@/api/resource/types';
 
-interface DeleteResourceGroupSheetProps extends DeleteSheetProps<ResourceGroup> {}
+type DeleteResourceGroupSheetProps = DeleteSheetProps<ResourceGroup>;
 
 export const DeleteResourceGroupSheet: React.FC<DeleteResourceGroupSheetProps> = ({
   open,

@@ -29,10 +29,10 @@ export const UserNodeUsageCard: React.FC<UserNodeUsageCardProps> = ({
     return (
       <div className="glass rounded-xl p-4 ">
         <div className="flex items-center gap-3">
-          <div className="h-10 w-10 sm:h-10 sm:w-10 rounded-full bg-muted/50 animate-pulse" />
+          <div className="h-10 w-10 sm:h-10 sm:w-10 rounded-full bg-muted/50 animate-pulse motion-reduce:animate-none" />
           <div className="flex-1 space-y-2">
-            <div className="h-4 w-24 bg-muted/50 rounded animate-pulse" />
-            <div className="h-3 w-32 bg-muted/50 rounded animate-pulse" />
+            <div className="h-4 w-24 bg-muted/50 rounded animate-pulse motion-reduce:animate-none" />
+            <div className="h-3 w-32 bg-muted/50 rounded animate-pulse motion-reduce:animate-none" />
           </div>
         </div>
       </div>
@@ -40,12 +40,12 @@ export const UserNodeUsageCard: React.FC<UserNodeUsageCardProps> = ({
   }
 
   return (
-    <div className="glass rounded-xl p-3 sm:p-4  transition-all duration-[var(--duration-normal)] ease-[var(--spring-smooth)]">
+    <div className="glass rounded-xl p-3 sm:p-4  transition-all duration-normal ease-smooth">
       <div className="flex items-center gap-2.5 sm:gap-3">
         {/* Status icon - compact on mobile */}
         <div className={`
           flex h-9 w-9 sm:h-10 sm:w-10 items-center justify-center rounded-full shrink-0
-          transition-colors duration-[var(--duration-fast)]
+          transition-colors duration-fast
           ${isAtLimit ? 'bg-destructive/10 text-destructive' : isNearLimit ? 'bg-yellow-500/10 text-yellow-600' : 'bg-primary/10 text-primary'}
         `}>
           <Server className="h-4 w-4 sm:h-5 sm:w-5" />

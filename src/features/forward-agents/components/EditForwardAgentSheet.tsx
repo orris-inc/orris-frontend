@@ -39,7 +39,7 @@ const APP_PROTOCOLS: { value: BlockedProtocol; label: string }[] = [
   { value: 'ftp', label: 'FTP' },
 ];
 
-interface EditForwardAgentSheetProps extends EditSheetProps<ForwardAgent, UpdateForwardAgentRequest> {}
+type EditForwardAgentSheetProps = EditSheetProps<ForwardAgent, UpdateForwardAgentRequest>;
 
 // Collapsible Section
 interface MobileSectionProps {

@@ -260,13 +260,13 @@ export const TrafficTrendChart = ({ data, granularity, loading, headerAction, ov
               <defs>
                 {/* Upload gradient - uses CSS variable */}
                 <linearGradient id="uploadGradient" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor="hsl(var(--chart-upload))" stopOpacity={0.25} />
-                  <stop offset="100%" stopColor="hsl(var(--chart-upload))" stopOpacity={0.02} />
+                  <stop offset="0%" stopColor="var(--color-chart-upload)" stopOpacity={0.25} />
+                  <stop offset="100%" stopColor="var(--color-chart-upload)" stopOpacity={0.02} />
                 </linearGradient>
                 {/* Download gradient - uses CSS variable */}
                 <linearGradient id="downloadGradient" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor="hsl(var(--chart-download))" stopOpacity={0.25} />
-                  <stop offset="100%" stopColor="hsl(var(--chart-download))" stopOpacity={0.02} />
+                  <stop offset="0%" stopColor="var(--color-chart-download)" stopOpacity={0.25} />
+                  <stop offset="100%" stopColor="var(--color-chart-download)" stopOpacity={0.02} />
                 </linearGradient>
               </defs>
               <CartesianGrid
@@ -304,14 +304,14 @@ export const TrafficTrendChart = ({ data, granularity, loading, headerAction, ov
                 type="monotone"
                 dataKey="download"
                 name={t('admin.traffic.download')}
-                stroke="hsl(var(--chart-download))"
+                stroke="var(--color-chart-download)"
                 strokeWidth={2.5}
                 fill="url(#downloadGradient)"
                 dot={false}
                 activeDot={{
                   r: 5,
-                  fill: 'hsl(var(--chart-download))',
-                  stroke: 'hsl(var(--card))',
+                  fill: 'var(--color-chart-download)',
+                  stroke: 'var(--color-card)',
                   strokeWidth: 2,
                   className: 'drop-shadow-md',
                 }}
@@ -320,14 +320,14 @@ export const TrafficTrendChart = ({ data, granularity, loading, headerAction, ov
                 type="monotone"
                 dataKey="upload"
                 name={t('admin.traffic.upload')}
-                stroke="hsl(var(--chart-upload))"
+                stroke="var(--color-chart-upload)"
                 strokeWidth={2.5}
                 fill="url(#uploadGradient)"
                 dot={false}
                 activeDot={{
                   r: 5,
-                  fill: 'hsl(var(--chart-upload))',
-                  stroke: 'hsl(var(--card))',
+                  fill: 'var(--color-chart-upload)',
+                  stroke: 'var(--color-card)',
                   strokeWidth: 2,
                   className: 'drop-shadow-md',
                 }}

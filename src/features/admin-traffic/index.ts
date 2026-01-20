@@ -9,3 +9,4 @@ export * from './utils/date-range';
 // Export hooks
 export { useAdminTrafficStats } from './hooks/useAdminTrafficStats';
 export { useNodeTrafficStats } from './hooks/useNodeTrafficStats';
+export { useDashboardStats } from './hooks/useDashboardStats';

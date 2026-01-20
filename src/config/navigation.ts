@@ -20,6 +20,7 @@ import {
   Activity,
   Settings,
   FileText,
+  Globe,
 } from 'lucide-react';
 
 import type { NavigationItem, NavigationGroup } from '../types/navigation.types';
@@ -229,6 +230,18 @@ export const navigationConfig: readonly NavigationItem[] = [
     showInBreadcrumb: true,
     parentId: 'admin-dashboard',
     order: 18,
+    groupId: 'infrastructure',
+  },
+  {
+    id: 'external-forward-rules',
+    labelKey: 'nav.externalForwardRules',
+    path: '/admin/external-forward-rules',
+    icon: Globe,
+    roles: ['admin'],
+    showInNav: true,
+    showInBreadcrumb: true,
+    parentId: 'admin-dashboard',
+    order: 17,
     groupId: 'infrastructure',
   },
   // Group: system

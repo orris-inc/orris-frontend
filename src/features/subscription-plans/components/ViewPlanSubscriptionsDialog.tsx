@@ -163,7 +163,7 @@ export const ViewPlanSubscriptionsDialog: React.FC<ViewPlanSubscriptionsDialogPr
             <div className="flex flex-col items-center justify-center h-full py-16">
               <div className="relative">
                 <Loader2 className="size-10 animate-spin text-indigo-500" strokeWidth={2} />
-                <div className="absolute inset-0 rounded-full bg-indigo-500/20 blur-xl animate-pulse" />
+                <div className="absolute inset-0 rounded-full bg-indigo-500/20 blur-xl animate-pulse motion-reduce:animate-none" />
               </div>
               <p className="mt-4 text-sm text-slate-500 dark:text-slate-400">加载中...</p>
             </div>

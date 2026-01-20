@@ -2,7 +2,7 @@
  * User nodes management page
  */
 
-import { useState } from 'react';
+import { lazy, Suspense, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Plus, AlertCircle, Zap } from 'lucide-react';
 import { Link } from 'react-router';
@@ -18,10 +18,31 @@ import {
 import { useUserForwardUsage } from '@/features/user-forward-rules/hooks/useUserForwardRules';
 import { UserNodeList } from '@/features/user-nodes/components/UserNodeList';
 import { UserNodeUsageCard } from '@/features/user-nodes/components/UserNodeUsageCard';
-import { CreateUserNodeDialog } from '@/features/user-nodes/components/CreateUserNodeDialog';
-import { EditUserNodeDialog } from '@/features/user-nodes/components/EditUserNodeDialog';
-import { UserNodeDetailDialog } from '@/features/user-nodes/components/UserNodeDetailDialog';
-import { UserNodeInstallScriptDialog } from '@/features/user-nodes/components/UserNodeInstallScriptDialog';
+
+const CreateUserNodeDialog = lazy(() =>
+  import('@/features/user-nodes/components/CreateUserNodeDialog').then((m) => ({
+    default: m.CreateUserNodeDialog,
+  }))
+);
+
+const EditUserNodeDialog = lazy(() =>
+  import('@/features/user-nodes/components/EditUserNodeDialog').then((m) => ({
+    default: m.EditUserNodeDialog,
+  }))
+);
+
+const UserNodeDetailDialog = lazy(() =>
+  import('@/features/user-nodes/components/UserNodeDetailDialog').then((m) => ({
+    default: m.UserNodeDetailDialog,
+  }))
+);
+
+const UserNodeInstallScriptDialog = lazy(() =>
+  import('@/features/user-nodes/components/UserNodeInstallScriptDialog').then((m) => ({
+    default: m.UserNodeInstallScriptDialog,
+  }))
+);
+
 import type {
   UserNode,
   CreateUserNodeRequest,
@@ -203,33 +224,45 @@ export const UserNodesPage = () => {
       </div>
 
       {/* Create node dialog */}
-      <CreateUserNodeDialog
-        open={createDialogOpen}
-        onClose={() => setCreateDialogOpen(false)}
-        onSubmit={handleCreateSubmit}
-        onTokenReceived={handleTokenReceived}
-      />
+      {createDialogOpen && (
+        <Suspense fallback={null}>
+          <CreateUserNodeDialog
+            open={createDialogOpen}
+            onClose={() => setCreateDialogOpen(false)}
+            onSubmit={handleCreateSubmit}
+            onTokenReceived={handleTokenReceived}
+          />
+        </Suspense>
+      )}
 
       {/* Edit node dialog */}
-      <EditUserNodeDialog
-        open={editDialogOpen}
-        node={selectedNode}
-        onClose={() => {
-          setEditDialogOpen(false);
-          setSelectedNode(null);
-        }}
-        onSubmit={handleEditSubmit}
-      />
+      {editDialogOpen && (
+        <Suspense fallback={null}>
+          <EditUserNodeDialog
+            open={editDialogOpen}
+            node={selectedNode}
+            onClose={() => {
+              setEditDialogOpen(false);
+              setSelectedNode(null);
+            }}
+            onSubmit={handleEditSubmit}
+          />
+        </Suspense>
+      )}
 
       {/* Node detail dialog */}
-      <UserNodeDetailDialog
-        open={detailDialogOpen}
-        node={selectedNode}
-        onClose={() => {
-          setDetailDialogOpen(false);
-          setSelectedNode(null);
-        }}
-      />
+      {detailDialogOpen && (
+        <Suspense fallback={null}>
+          <UserNodeDetailDialog
+            open={detailDialogOpen}
+            node={selectedNode}
+            onClose={() => {
+              setDetailDialogOpen(false);
+              setSelectedNode(null);
+            }}
+          />
+        </Suspense>
+      )}
 
       {/* Token display dialog */}
       <TokenDialog
@@ -243,16 +276,20 @@ export const UserNodesPage = () => {
       />
 
       {/* Install script dialog */}
-      <UserNodeInstallScriptDialog
-        open={installScriptDialogOpen}
-        installScriptData={installScript}
-        nodeName={installScriptNode?.name}
-        isLoading={isInstallScriptLoading}
-        onClose={() => {
-          setInstallScriptDialogOpen(false);
-          setInstallScriptNode(null);
-        }}
-      />
+      {installScriptDialogOpen && (
+        <Suspense fallback={null}>
+          <UserNodeInstallScriptDialog
+            open={installScriptDialogOpen}
+            installScriptData={installScript}
+            nodeName={installScriptNode?.name}
+            isLoading={isInstallScriptLoading}
+            onClose={() => {
+              setInstallScriptDialogOpen(false);
+              setInstallScriptNode(null);
+            }}
+          />
+        </Suspense>
+      )}
     </DashboardLayout>
   );
 };

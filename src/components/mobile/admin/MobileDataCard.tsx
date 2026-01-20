@@ -77,16 +77,16 @@ export const MobileDataCard = ({
     className
   );
 
-  // Header section classes
+  // Header section classes - optimized for mobile density
   const headerClasses = cn(
-    'px-4 py-3 min-h-[52px]',
-    'flex items-center justify-between gap-3',
+    'px-3 py-2.5 min-h-[48px]',
+    'flex items-center justify-between gap-2.5',
     canExpand && 'cursor-pointer'
   );
 
   // Chevron icon classes with rotation animation (iOS spring timing)
   const chevronClasses = cn(
-    'size-5 text-muted-foreground shrink-0',
+    'size-4 text-muted-foreground shrink-0',
     'transition-transform duration-[var(--spring-ios-default-duration)] ease-[var(--spring-ios-default)]',
     // Respect reduced motion preference
     'motion-reduce:transition-none',
@@ -112,13 +112,13 @@ export const MobileDataCard = ({
 
         {/* Expandable details section */}
         <CollapsibleContent className="px-0">
-          <div className="border-t border-border/30 px-4 py-3">{details}</div>
+          <div className="border-t border-border/30 px-3 py-2.5">{details}</div>
         </CollapsibleContent>
 
         {/* Actions section (if provided) */}
         {actions && actions.length > 0 && (
-          <div className="border-t border-border/30 px-4 py-3">
-            <div className="flex gap-1.5 flex-wrap">
+          <div className="border-t border-border/30 px-3 py-2.5">
+            <div className="flex gap-2 flex-wrap">
               {actions.map((action, index) => (
                 <MobileActionButton
                   key={index}
@@ -146,13 +146,13 @@ export const MobileDataCard = ({
 
       {/* Details section (if provided, always visible) */}
       {details && (
-        <div className="border-t border-border/30 px-4 py-3">{details}</div>
+        <div className="border-t border-border/30 px-3 py-2.5">{details}</div>
       )}
 
       {/* Actions section (if provided) */}
       {actions && actions.length > 0 && (
-        <div className="border-t border-border/30 px-4 py-3">
-          <div className="flex gap-1.5 flex-wrap">
+        <div className="border-t border-border/30 px-3 py-2.5">
+          <div className="flex gap-2 flex-wrap">
             {actions.map((action, index) => (
               <MobileActionButton
                 key={index}

@@ -50,13 +50,13 @@ export const PageStatsCard = ({
         >
           <div className={cn(iconColor, '[&>svg]:size-3.5')}>{icon}</div>
           {showPulse && (
-            <div className="absolute -top-0.5 -right-0.5 size-1.5 rounded-full bg-success animate-pulse ring-1 ring-card" />
+            <div className="absolute -top-0.5 -right-0.5 size-1.5 rounded-full bg-success animate-pulse motion-reduce:animate-none ring-1 ring-card" />
           )}
         </div>
         <div className="min-w-0 flex-1">
           <div className="text-sm sm:text-base font-semibold text-foreground tracking-tight tabular-nums truncate leading-tight">
             {loading ? (
-              <div className="h-4 w-8 bg-muted rounded animate-pulse" />
+              <div className="h-4 w-8 bg-muted rounded animate-pulse motion-reduce:animate-none" />
             ) : (
               value
             )}

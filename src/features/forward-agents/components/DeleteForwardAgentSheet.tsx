@@ -20,7 +20,7 @@ import { Button } from '@/components/common/Button';
 import { Badge } from '@/components/common/Badge';
 import type { ForwardAgent } from '@/api/forward';
 
-interface DeleteForwardAgentSheetProps extends DeleteSheetProps<ForwardAgent> {}
+type DeleteForwardAgentSheetProps = DeleteSheetProps<ForwardAgent>;
 
 export const DeleteForwardAgentSheet: React.FC<DeleteForwardAgentSheetProps> = ({
   open,

@@ -96,7 +96,7 @@ export const AdminLayout = ({ children }: AdminLayoutProps) => {
   return (
     <TooltipProvider delayDuration={0}>
       <div className="min-h-viewport bg-background overflow-x-hidden">
-        {/* 移动端侧边栏 - iOS 26 Liquid Glass Design */}
+        {/* Mobile drawer - iOS 26 Liquid Glass Design */}
         <MobileDrawer
           open={mobileDrawerOpen}
           onClose={() => setMobileDrawerOpen(false)}
@@ -115,21 +115,21 @@ export const AdminLayout = ({ children }: AdminLayoutProps) => {
           onLogout={handleLogout}
         />
 
-        {/* 桌面端侧边栏 - Glass morphism design */}
+        {/* Desktop sidebar - Glass morphism design */}
         <aside
           className={cn(
-            'fixed inset-y-0 left-0 z-40 hidden flex-col md:flex overflow-hidden',
+            'fixed inset-y-0 left-0 z-40 hidden flex-col overflow-hidden md:flex',
             'bg-muted/30 dark:bg-muted/20',
-            'border-r border-black/[0.04] dark:border-white/[0.06]',
-            'transition-all duration-200',
-            collapsed ? 'w-[72px]' : 'w-60'
+            'border-r border-border/50',
+            'transition-all duration-200 motion-reduce:transition-none',
+            collapsed ? 'w-18' : 'w-60'
           )}
         >
-          {/* 侧边栏头部 */}
+          {/* Sidebar header */}
           <div
             className={cn(
-              'flex h-14 items-center shrink-0',
-              'border-b border-black/[0.04] dark:border-white/[0.06]',
+              'flex h-14 shrink-0 items-center',
+              'border-b border-border/50',
               collapsed ? 'justify-center px-2' : 'justify-between px-4'
             )}
           >
@@ -141,10 +141,9 @@ export const AdminLayout = ({ children }: AdminLayoutProps) => {
             <button
               onClick={() => setCollapsed(!collapsed)}
               className={cn(
-                'flex items-center justify-center rounded-lg',
-                'hover:bg-black/[0.04] dark:hover:bg-white/[0.06]',
-                'transition-colors touch-target',
-                'h-8 w-8'
+                'flex size-8 items-center justify-center rounded-lg',
+                'transition-colors motion-reduce:transition-none',
+                'hover:bg-foreground/5'
               )}
             >
               {collapsed ? (
@@ -155,12 +154,12 @@ export const AdminLayout = ({ children }: AdminLayoutProps) => {
             </button>
           </div>
 
-          {/* 导航菜单 */}
+          {/* Navigation menu */}
           <div className="flex-1 overflow-y-auto py-3">
             <AdminSidebarNav items={adminNavItems} collapsed={collapsed} />
           </div>
 
-          {/* 侧边栏底部 */}
+          {/* Sidebar footer */}
           <AdminSidebarFooter collapsed={collapsed} tooltipLabel="切换到用户视图">
             <SwitchToUserViewLink collapsed={collapsed} />
           </AdminSidebarFooter>
@@ -169,7 +168,7 @@ export const AdminLayout = ({ children }: AdminLayoutProps) => {
           {(serverVersion || clientVersion) && (
             <div
               className={cn(
-                'shrink-0 border-t border-black/[0.04] dark:border-white/[0.06]',
+                'shrink-0 border-t border-border/50',
                 'py-2.5 text-[10px] text-muted-foreground/50',
                 collapsed ? 'px-2 text-center' : 'px-4'
               )}
@@ -197,11 +196,11 @@ export const AdminLayout = ({ children }: AdminLayoutProps) => {
           )}
         </aside>
 
-        {/* 主内容区域 */}
+        {/* Main content area */}
         <div
           className={cn(
-            'flex min-h-viewport flex-col transition-all duration-200',
-            collapsed ? 'md:pl-[72px]' : 'md:pl-60'
+            'flex min-h-viewport flex-col transition-all duration-200 motion-reduce:transition-none',
+            collapsed ? 'md:pl-18' : 'md:pl-60'
           )}
         >
           {/* iOS-style Navigation Bar */}
@@ -292,7 +291,7 @@ export const AdminLayout = ({ children }: AdminLayoutProps) => {
             </div>
           </header>
 
-          {/* 页面内容 - Mobile optimized padding */}
+          {/* Page content - Mobile optimized padding */}
           <main
             className={cn(
               "flex-1 overflow-x-hidden",

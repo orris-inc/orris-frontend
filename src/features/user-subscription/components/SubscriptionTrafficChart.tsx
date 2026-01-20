@@ -504,12 +504,12 @@ export const SubscriptionTrafficChart: React.FC<
                   >
                     <stop
                       offset="0%"
-                      stopColor="hsl(var(--chart-upload))"
+                      stopColor="var(--color-chart-upload)"
                       stopOpacity={0.25}
                     />
                     <stop
                       offset="100%"
-                      stopColor="hsl(var(--chart-upload))"
+                      stopColor="var(--color-chart-upload)"
                       stopOpacity={0.02}
                     />
                   </linearGradient>
@@ -523,12 +523,12 @@ export const SubscriptionTrafficChart: React.FC<
                   >
                     <stop
                       offset="0%"
-                      stopColor="hsl(var(--chart-download))"
+                      stopColor="var(--color-chart-download)"
                       stopOpacity={0.25}
                     />
                     <stop
                       offset="100%"
-                      stopColor="hsl(var(--chart-download))"
+                      stopColor="var(--color-chart-download)"
                       stopOpacity={0.02}
                     />
                   </linearGradient>
@@ -568,14 +568,14 @@ export const SubscriptionTrafficChart: React.FC<
                   type="monotone"
                   dataKey="download"
                   name={t("userSubscription.download")}
-                  stroke="hsl(var(--chart-download))"
+                  stroke="var(--color-chart-download)"
                   strokeWidth={2.5}
                   fill="url(#subscriptionDownloadGradient)"
                   dot={false}
                   activeDot={{
                     r: 5,
-                    fill: "hsl(var(--chart-download))",
-                    stroke: "hsl(var(--card))",
+                    fill: "var(--color-chart-download)",
+                    stroke: "var(--color-card)",
                     strokeWidth: 2,
                     className: "drop-shadow-md",
                   }}
@@ -584,14 +584,14 @@ export const SubscriptionTrafficChart: React.FC<
                   type="monotone"
                   dataKey="upload"
                   name={t("userSubscription.upload")}
-                  stroke="hsl(var(--chart-upload))"
+                  stroke="var(--color-chart-upload)"
                   strokeWidth={2.5}
                   fill="url(#subscriptionUploadGradient)"
                   dot={false}
                   activeDot={{
                     r: 5,
-                    fill: "hsl(var(--chart-upload))",
-                    stroke: "hsl(var(--card))",
+                    fill: "var(--color-chart-upload)",
+                    stroke: "var(--color-card)",
                     strokeWidth: 2,
                     className: "drop-shadow-md",
                   }}
