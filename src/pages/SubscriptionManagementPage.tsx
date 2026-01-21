@@ -1,23 +1,14 @@
 /**
  * Subscription Management Page (Admin)
- * High-density data management interface with responsive mobile support
+ * Tailwind UI Application UI style with PageHeader and AdminCard
  */
 
 import { useState, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
-import {
-  Receipt,
-  RefreshCw,
-  CheckCircle2,
-  XCircle,
-  Clock,
-  AlertCircle,
-  Pause,
-  CreditCard,
-  Sparkles,
-} from 'lucide-react';
+import { Receipt, RefreshCw, CheckCircle2, Pause, Sparkles } from 'lucide-react';
 import { AdminLayout } from '@/layouts/AdminLayout';
-import { AdminButton, AdminCard } from '@/components/admin';
+import { PageHeader } from '@/components/admin';
+import { Button } from '@/components/common/Button';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/common/Tooltip';
 import { ConfirmDialog } from '@/components/common/ConfirmDialog';
 import { usePageTitle } from '@/shared/hooks';
@@ -294,123 +285,69 @@ export const SubscriptionManagementPage: React.FC = () => {
     );
   }
 
-  // Desktop view - original layout with header and table
+  // Desktop view - Tailwind UI Application UI style
   return (
     <AdminLayout>
-      <div className="py-3 space-y-3">
-        {/* High-Density Status Bar - All metrics inline */}
-        <header className="bg-card rounded-lg border border-border px-3 py-2">
-          <div className="flex items-center justify-between gap-3 flex-wrap">
-            {/* Left: Title + Primary Stats */}
-            <div className="flex items-center gap-3">
-              <h1 className="text-sm font-semibold text-foreground">{t('admin.subscriptions.pageTitle')}</h1>
-              <div className="h-4 w-px bg-border hidden sm:block" />
-              <div className="flex items-center gap-3 text-xs">
-                <span className="flex items-center gap-1 text-muted-foreground">
-                  <Receipt className="size-3" />
-                  <span className="font-medium text-foreground">{stats.total}</span>
-                  <span className="hidden sm:inline">{t('admin.subscriptions.label')}</span>
-                </span>
-                <span className="flex items-center gap-1">
-                  <CheckCircle2 className="size-3 text-success" />
-                  <span className="font-medium text-success">{stats.active}</span>
-                </span>
-              </div>
-            </div>
-
-            {/* Center: Secondary Stats */}
-            <div className="hidden md:flex items-center gap-3 text-xs">
-              {stats.trialing > 0 && (
-                <span className="flex items-center gap-1.5">
-                  <Sparkles className="size-3 text-info" />
-                  <span className="text-muted-foreground">{t('subscriptionStatus.trialing')}</span>
-                  <span className="font-semibold tabular-nums text-info">{stats.trialing}</span>
-                </span>
-              )}
-              {stats.pendingPayment > 0 && (
-                <span className="flex items-center gap-1.5">
-                  <CreditCard className="size-3 text-warning" />
-                  <span className="text-muted-foreground">{t('subscriptionStatus.pendingPayment')}</span>
-                  <span className="font-semibold tabular-nums text-warning">{stats.pendingPayment}</span>
-                </span>
-              )}
-              {stats.pastDue > 0 && (
-                <span className="flex items-center gap-1.5">
-                  <Clock className="size-3 text-warning" />
-                  <span className="text-muted-foreground">{t('subscriptionStatus.pastDue')}</span>
-                  <span className="font-semibold tabular-nums text-warning">{stats.pastDue}</span>
-                </span>
-              )}
-              {stats.suspended > 0 && (
-                <span className="flex items-center gap-1.5">
-                  <Pause className="size-3 text-destructive" />
-                  <span className="text-muted-foreground">{t('subscriptionStatus.suspended')}</span>
-                  <span className="font-semibold tabular-nums text-destructive">{stats.suspended}</span>
-                </span>
-              )}
-              <span className="flex items-center gap-1.5">
-                <XCircle className="size-3 text-destructive" />
-                <span className="text-muted-foreground">{t('subscriptionStatus.cancelled')}</span>
-                <span className="font-semibold tabular-nums text-foreground">{stats.cancelled}</span>
-              </span>
-              <span className="flex items-center gap-1.5">
-                <AlertCircle className="size-3 text-muted-foreground" />
-                <span className="text-muted-foreground">{t('subscriptionStatus.expired')}</span>
-                <span className="font-semibold tabular-nums text-foreground">{stats.expired}</span>
-              </span>
-            </div>
-
-            {/* Right: Actions */}
-            <div className="flex items-center gap-1.5">
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <AdminButton
-                    variant="ghost"
-                    size="sm"
-                    onClick={handleRefresh}
-                    className="h-7 w-7 p-0"
-                    icon={
-                      <RefreshCw
-                        key={refreshKey}
-                        className="size-3.5 animate-spin-once"
-                        strokeWidth={1.5}
-                      />
-                    }
-                  >
-                    <span className="sr-only">{t('common.actions.refresh')}</span>
-                  </AdminButton>
-                </TooltipTrigger>
-                <TooltipContent>{t('admin.subscriptions.refreshList')}</TooltipContent>
-              </Tooltip>
-            </div>
-          </div>
-        </header>
+      <div className="space-y-6">
+        {/* Page Header with stats metadata */}
+        <PageHeader
+          title={t('admin.subscriptions.pageTitle')}
+          icon={Receipt}
+          metadata={
+            [
+              { icon: Receipt, text: `${stats.total} ${t('admin.subscriptions.label')}` },
+              { icon: CheckCircle2, text: `${stats.active} ${t('subscriptionStatus.active')}` },
+              stats.trialing > 0 && {
+                icon: Sparkles,
+                text: `${stats.trialing} ${t('subscriptionStatus.trialing')}`,
+              },
+              stats.suspended > 0 && {
+                icon: Pause,
+                text: `${stats.suspended} ${t('subscriptionStatus.suspended')}`,
+              },
+            ].filter(Boolean) as { icon: typeof Receipt; text: string }[]
+          }
+          action={
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button variant="ghost" size="icon" onClick={handleRefresh}>
+                  <RefreshCw
+                    key={refreshKey}
+                    className="size-4 animate-spin-once"
+                    strokeWidth={1.5}
+                  />
+                  <span className="sr-only">{t('common.actions.refresh')}</span>
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>{t('admin.subscriptions.refreshList')}</TooltipContent>
+            </Tooltip>
+          }
+        />
 
         {/* Subscription List Table */}
-        <AdminCard noPadding>
-          <SubscriptionListTable
-            subscriptions={subscriptions}
-            usersMap={usersMap}
-            usersLoading={isUsersLoading}
-            loading={isLoading || isFetching}
-            page={pagination.page}
-            pageSize={pagination.pageSize}
-            total={pagination.total}
-            onPageChange={handlePageChange}
-            onPageSizeChange={handlePageSizeChange}
-            onViewDetail={handleViewDetail}
-            onDuplicate={handleDuplicate}
-            onActivate={handleActivate}
-            onCancel={handleCancelClick}
-            onRenew={handleRenew}
-            onSuspend={handleSuspendClick}
-            onUnsuspend={handleUnsuspend}
-            onResetUsage={handleResetUsage}
-            onDelete={handleDeleteClick}
-          />
-        </AdminCard>
+        <SubscriptionListTable
+          subscriptions={subscriptions}
+          usersMap={usersMap}
+          usersLoading={isUsersLoading}
+          loading={isLoading || isFetching}
+          page={pagination.page}
+          pageSize={pagination.pageSize}
+          total={pagination.total}
+          onPageChange={handlePageChange}
+          onPageSizeChange={handlePageSizeChange}
+          onViewDetail={handleViewDetail}
+          onDuplicate={handleDuplicate}
+          onActivate={handleActivate}
+          onCancel={handleCancelClick}
+          onRenew={handleRenew}
+          onSuspend={handleSuspendClick}
+          onUnsuspend={handleUnsuspend}
+          onResetUsage={handleResetUsage}
+          onDelete={handleDeleteClick}
+        />
       </div>
 
+      {/* Dialogs */}
       {/* Subscription Detail Dialog */}
       <SubscriptionDetailDialog
         open={detailDialogOpen}

@@ -54,19 +54,7 @@ const TRANSPORT_LABELS: Record<string, string> = {
   grpc: 'gRPC',
 };
 
-// Format date
-const formatDate = (dateString: string) => {
-  if (!dateString) return '-';
-  const date = new Date(dateString);
-  return date.toLocaleString('zh-CN', {
-    year: 'numeric',
-    month: '2-digit',
-    day: '2-digit',
-    hour: '2-digit',
-    minute: '2-digit',
-    second: '2-digit',
-  });
-};
+import { formatDateTime } from '@/shared/utils/date-utils';
 
 
 // Get progress color based on value
@@ -134,7 +122,7 @@ export const NodeDetailDialog: React.FC<NodeDetailDialogProps> = ({
 
   return (
     <Dialog open={open} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="sm:max-w-[700px] flex flex-col max-h-[90vh]">
+      <DialogContent className="@container sm:max-w-[700px] flex flex-col max-h-[90vh]">
         <DialogHeader className="flex-shrink-0">
           <div className="flex items-center justify-between">
             <DialogTitle className="flex items-center gap-3">
@@ -316,7 +304,7 @@ export const NodeDetailDialog: React.FC<NodeDetailDialogProps> = ({
               ) : systemStatus && (
                 <>
                   {/* Resource Usage */}
-                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                  <div className="grid grid-cols-1 @sm:grid-cols-3 gap-3">
                     {/* CPU */}
                     <div className="p-3 bg-muted rounded-lg">
                       <div className="flex items-center justify-between mb-2">
@@ -384,7 +372,7 @@ export const NodeDetailDialog: React.FC<NodeDetailDialogProps> = ({
 
                   {/* Network & IP Info */}
                   {(systemStatus.networkRxRate !== undefined || systemStatus.publicIpv4 || systemStatus.publicIpv6) && (
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div className="grid grid-cols-1 @sm:grid-cols-2 gap-3">
                       {/* Network */}
                       {(systemStatus.networkRxRate !== undefined || systemStatus.tcpConnections !== undefined) && (
                         <div className="p-3 bg-muted rounded-lg">
@@ -434,10 +422,10 @@ export const NodeDetailDialog: React.FC<NodeDetailDialogProps> = ({
           </div>
 
           {/* Basic Info */}
-          <div>
+          <div className="@container">
             <h3 className="text-sm font-semibold mb-3">{t('admin.nodes.detail.basicInfo')}</h3>
             <Separator className="mb-4" />
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 @md:grid-cols-2 gap-4">
               <div className="space-y-1">
                 <p className="text-sm text-muted-foreground">{t('admin.nodes.detail.nodeId')}</p>
                 <TruncatedId id={node.id} fullWidth />
@@ -468,7 +456,7 @@ export const NodeDetailDialog: React.FC<NodeDetailDialogProps> = ({
               )}
 
               {node.tags && node.tags.length > 0 && (
-                <div className="space-y-1 md:col-span-2">
+                <div className="space-y-1 @md:col-span-2">
                   <p className="text-sm text-muted-foreground">{t('admin.nodes.detail.tags')}</p>
                   <div className="flex gap-1 flex-wrap mt-1">
                     {node.tags.map((tag, index) => (
@@ -483,10 +471,10 @@ export const NodeDetailDialog: React.FC<NodeDetailDialogProps> = ({
           </div>
 
           {/* Connection Info */}
-          <div>
+          <div className="@container">
             <h3 className="text-sm font-semibold mb-3">{t('admin.nodes.detail.connectionInfo')}</h3>
             <Separator className="mb-4" />
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 @md:grid-cols-2 gap-4">
               <div className="space-y-1">
                 <p className="text-sm text-muted-foreground">{t('admin.nodes.detail.serverAddress')}</p>
                 <p className="text-sm font-mono bg-muted px-2 py-1 rounded inline-block">
@@ -512,10 +500,10 @@ export const NodeDetailDialog: React.FC<NodeDetailDialogProps> = ({
 
           {/* Shadowsocks Config */}
           {isShadowsocks && (
-            <div>
+            <div className="@container">
               <h3 className="text-sm font-semibold mb-3">{t('admin.nodes.detail.shadowsocksConfig')}</h3>
               <Separator className="mb-4" />
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 @md:grid-cols-2 gap-4">
                 <div className="space-y-1">
                   <p className="text-sm text-muted-foreground">{t('admin.nodes.detail.encryptionMethod')}</p>
                   <p className="text-sm font-mono">{node.encryptionMethod || '-'}</p>
@@ -529,7 +517,7 @@ export const NodeDetailDialog: React.FC<NodeDetailDialogProps> = ({
                 )}
 
                 {node.pluginOpts && Object.keys(node.pluginOpts).length > 0 && (
-                  <div className="space-y-1 md:col-span-2">
+                  <div className="space-y-1 @md:col-span-2">
                     <p className="text-sm text-muted-foreground">{t('admin.nodes.detail.pluginOptions')}</p>
                     <pre className="text-xs font-mono whitespace-pre-wrap break-all bg-muted p-3 rounded-md">
                       {JSON.stringify(node.pluginOpts, null, 2)}
@@ -542,10 +530,10 @@ export const NodeDetailDialog: React.FC<NodeDetailDialogProps> = ({
 
           {/* Trojan Config */}
           {isTrojan && (
-            <div>
+            <div className="@container">
               <h3 className="text-sm font-semibold mb-3">{t('admin.nodes.detail.trojanConfig')}</h3>
               <Separator className="mb-4" />
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 @md:grid-cols-2 gap-4">
                 <div className="space-y-1">
                   <p className="text-sm text-muted-foreground">{t('admin.nodes.detail.transportProtocol')}</p>
                   <p className="text-sm font-mono">
@@ -619,24 +607,24 @@ export const NodeDetailDialog: React.FC<NodeDetailDialogProps> = ({
           )}
 
           {/* Time Info */}
-          <div>
+          <div className="@container">
             <h3 className="text-sm font-semibold mb-3">{t('admin.nodes.detail.timeInfo')}</h3>
             <Separator className="mb-4" />
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 @md:grid-cols-2 gap-4">
               <div className="space-y-1">
                 <p className="text-sm text-muted-foreground">{t('admin.nodes.detail.createdAt')}</p>
-                <p className="text-xs">{formatDate(node.createdAt)}</p>
+                <p className="text-xs">{formatDateTime(node.createdAt)}</p>
               </div>
 
               <div className="space-y-1">
                 <p className="text-sm text-muted-foreground">{t('admin.nodes.detail.updatedAt')}</p>
-                <p className="text-xs">{formatDate(node.updatedAt)}</p>
+                <p className="text-xs">{formatDateTime(node.updatedAt)}</p>
               </div>
 
               {node.lastSeenAt && (
                 <div className="space-y-1">
                   <p className="text-sm text-muted-foreground">{t('admin.nodes.detail.lastOnline')}</p>
-                  <p className="text-xs">{formatDate(node.lastSeenAt)}</p>
+                  <p className="text-xs">{formatDateTime(node.lastSeenAt)}</p>
                 </div>
               )}
             </div>

@@ -45,6 +45,7 @@ const RULE_TYPE_LABELS: Record<ForwardRuleType, string> = {
   entry: '入口节点',
   chain: '隧道链式转发',
   direct_chain: '直连链式转发',
+  external: '外部规则',
 };
 
 interface EditSubscriptionForwardRuleDialogProps {
@@ -259,7 +260,7 @@ export const EditSubscriptionForwardRuleDialog: React.FC<EditSubscriptionForward
 
   return (
     <Dialog open={open} onOpenChange={handleClose}>
-      <DialogContent className="sm:max-w-[600px] flex flex-col max-h-[90vh]">
+      <DialogContent className="@container sm:max-w-[600px] flex flex-col max-h-[90vh]">
         <DialogHeader className="flex-shrink-0">
           <DialogTitle>编辑转发规则</DialogTitle>
         </DialogHeader>
@@ -311,7 +312,7 @@ export const EditSubscriptionForwardRuleDialog: React.FC<EditSubscriptionForward
             <div>
               <h3 className="text-sm font-medium text-muted-foreground mb-3">转发配置</h3>
               <Separator className="mb-4" />
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 @md:grid-cols-2 gap-4">
                 {/* Protocol type */}
                 <div className="flex flex-col gap-2">
                   <Label htmlFor="edit-sub-protocol">协议类型</Label>
@@ -351,7 +352,7 @@ export const EditSubscriptionForwardRuleDialog: React.FC<EditSubscriptionForward
                 </div>
 
                 {/* Target type selection */}
-                <div className="flex flex-col gap-2 md:col-span-2">
+                <div className="flex flex-col gap-2 @md:col-span-2">
                   <Label>
                     目标类型 <span className="text-destructive">*</span>
                   </Label>
@@ -433,7 +434,7 @@ export const EditSubscriptionForwardRuleDialog: React.FC<EditSubscriptionForward
 
                 {/* Select target node */}
                 {targetType === 'node' && (
-                  <div className="flex flex-col gap-2 md:col-span-2">
+                  <div className="flex flex-col gap-2 @md:col-span-2">
                     <Label htmlFor="edit-sub-targetNodeId">
                       目标节点 <span className="text-destructive">*</span>
                     </Label>

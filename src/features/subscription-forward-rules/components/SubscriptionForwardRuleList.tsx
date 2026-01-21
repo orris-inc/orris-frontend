@@ -21,6 +21,7 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuPortal,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/common/DropdownMenu';
@@ -470,9 +471,11 @@ export const SubscriptionForwardRuleList: React.FC<SubscriptionForwardRuleListPr
                     <MoreHorizontal className="size-4" />
                   </button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent align="end">
-                  {renderDropdownMenuActions(rule)}
-                </DropdownMenuContent>
+                <DropdownMenuPortal>
+                  <DropdownMenuContent align="end" collisionPadding={16}>
+                    {renderDropdownMenuActions(rule)}
+                  </DropdownMenuContent>
+                </DropdownMenuPortal>
               </DropdownMenu>
             </div>
           );

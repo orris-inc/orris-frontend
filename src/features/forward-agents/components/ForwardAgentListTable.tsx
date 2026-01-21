@@ -7,7 +7,7 @@
 import { useMemo, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Edit, Trash2, Key, Eye, Power, PowerOff, MoreHorizontal, Terminal, Copy, Download, Loader2, Package, ArrowUpCircle, Radio, Bell, BellOff } from 'lucide-react';
-import { DataTable, DraggableDataTable, AdminBadge, TruncatedId, SystemStatusCell, SystemStatusHoverProvider, type ColumnDef, type ResponsiveColumnMeta } from '@/components/admin';
+import { DataTable, DraggableDataTable, AdminBadge, TruncatedId, SystemStatusCell, TableHoverCardProvider, type ColumnDef, type ResponsiveColumnMeta } from '@/components/admin';
 import { useBreakpoint } from '@/hooks/useBreakpoint';
 import { ForwardAgentMobileList } from './ForwardAgentMobileList';
 import { Badge } from '@/components/common/Badge';
@@ -15,6 +15,7 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuPortal,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/common/DropdownMenu';
@@ -53,17 +54,7 @@ interface ForwardAgentListTableProps {
   onDragEnd?: (activeId: string, overId: string, oldIndex: number, newIndex: number) => void;
 }
 
-// Format date with i18n support
-const formatDate = (dateString?: string, locale?: string) => {
-  if (!dateString) return '-';
-  return new Date(dateString).toLocaleString(locale === 'zh' ? 'zh-CN' : 'en-US', {
-    year: 'numeric',
-    month: '2-digit',
-    day: '2-digit',
-    hour: '2-digit',
-    minute: '2-digit',
-  });
-};
+import { formatDateTime } from '@/shared/utils/date-utils';
 
 export const ForwardAgentListTable: React.FC<ForwardAgentListTableProps> = ({
   forwardAgents,
@@ -316,7 +307,7 @@ export const ForwardAgentListTable: React.FC<ForwardAgentListTableProps> = ({
                   <span className="size-2.5 rounded-full bg-slate-300 dark:bg-slate-600 block"></span>
                 </TooltipTrigger>
                 <TooltipContent>
-                  {t('admin.forwardAgents.table.tooltip.offline')}{agent.lastSeenAt && ` · ${t('admin.forwardAgents.table.tooltip.lastOnline')}: ${formatDate(agent.lastSeenAt, i18n.language)}`}
+                  {t('admin.forwardAgents.table.tooltip.offline')}{agent.lastSeenAt && ` · ${t('admin.forwardAgents.table.tooltip.lastOnline')}: ${formatDateTime(agent.lastSeenAt, i18n.language)}`}
                 </TooltipContent>
               </Tooltip>
             )}
@@ -433,7 +424,7 @@ export const ForwardAgentListTable: React.FC<ForwardAgentListTableProps> = ({
       meta: { priority: 4 } as ResponsiveColumnMeta,
       cell: ({ row }) => (
         <span className="text-slate-500 dark:text-slate-400 text-sm">
-          {formatDate(row.original.createdAt, i18n.language)}
+          {formatDateTime(row.original.createdAt, i18n.language)}
         </span>
       ),
     },
@@ -488,9 +479,11 @@ export const ForwardAgentListTable: React.FC<ForwardAgentListTableProps> = ({
                   <MoreHorizontal className="size-4" strokeWidth={1.5} />
                 </button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="end">
-                {renderDropdownMenuActions(agent)}
-              </DropdownMenuContent>
+              <DropdownMenuPortal>
+                <DropdownMenuContent align="end" collisionPadding={16}>
+                  {renderDropdownMenuActions(agent)}
+                </DropdownMenuContent>
+              </DropdownMenuPortal>
             </DropdownMenu>
           </div>
         );
@@ -526,7 +519,7 @@ export const ForwardAgentListTable: React.FC<ForwardAgentListTableProps> = ({
   // Use DraggableDataTable when drag sort is enabled
   if (enableDragSort && onDragEnd) {
     return (
-      <SystemStatusHoverProvider>
+      <TableHoverCardProvider>
         <DraggableDataTable
           columns={columns}
           data={forwardAgents}
@@ -543,12 +536,12 @@ export const ForwardAgentListTable: React.FC<ForwardAgentListTableProps> = ({
           enableContextMenu={true}
           contextMenuContent={renderContextMenuActions}
         />
-      </SystemStatusHoverProvider>
+      </TableHoverCardProvider>
     );
   }
 
   return (
-    <SystemStatusHoverProvider>
+    <TableHoverCardProvider>
       <DataTable
         columns={columns}
         data={forwardAgents}
@@ -563,6 +556,6 @@ export const ForwardAgentListTable: React.FC<ForwardAgentListTableProps> = ({
         enableContextMenu={true}
         contextMenuContent={renderContextMenuActions}
       />
-    </SystemStatusHoverProvider>
+    </TableHoverCardProvider>
   );
 };

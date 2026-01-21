@@ -3,6 +3,7 @@
  */
 
 import { useState, useEffect } from "react";
+import { formatDateTime } from '@/shared/utils/date-utils';
 import {
   Dialog,
   DialogContent,
@@ -195,7 +196,7 @@ export const EditForwardAgentDialog: React.FC<EditForwardAgentDialogProps> = ({
 
   return (
     <Dialog open={open} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="sm:max-w-[600px] flex flex-col max-h-[90vh]">
+      <DialogContent className="@container sm:max-w-[600px] flex flex-col max-h-[90vh]">
         <DialogHeader className="flex-shrink-0">
           <DialogTitle>编辑转发Agent</DialogTitle>
         </DialogHeader>
@@ -208,7 +209,7 @@ export const EditForwardAgentDialog: React.FC<EditForwardAgentDialogProps> = ({
                 基本信息
               </h3>
               <Separator className="mb-4" />
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 @md:grid-cols-2 gap-4">
                 <div className="flex flex-col gap-2">
                   <Label htmlFor="agent_id">节点ID</Label>
                   <Input id="agent_id" value={agent.id} disabled />
@@ -218,7 +219,7 @@ export const EditForwardAgentDialog: React.FC<EditForwardAgentDialogProps> = ({
                   <Label htmlFor="createdAt">创建时间</Label>
                   <Input
                     id="createdAt"
-                    value={new Date(agent.createdAt).toLocaleString("zh-CN")}
+                    value={formatDateTime(agent.createdAt)}
                     disabled
                   />
                 </div>

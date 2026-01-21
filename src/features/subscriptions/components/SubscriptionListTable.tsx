@@ -7,7 +7,7 @@
 import { useMemo, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { CheckCircle, X, MoreHorizontal, Play, XCircle, RefreshCw, Eye, Copy, Trash2, Pause, PlayCircle, RefreshCcw } from 'lucide-react';
-import { DataTable, AdminBadge, TruncatedId, type ColumnDef, type ResponsiveColumnMeta } from '@/components/admin';
+import { DataTable, AdminBadge, TruncatedId, TableHoverCardProvider, type ColumnDef, type ResponsiveColumnMeta } from '@/components/admin';
 import { useBreakpoint } from '@/hooks/useBreakpoint';
 import { SubscriptionMobileList } from './SubscriptionMobileList';
 import { Skeleton } from '@/components/common/Skeleton';
@@ -16,6 +16,7 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuPortal,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/common/DropdownMenu';
@@ -254,64 +255,66 @@ export const SubscriptionListTable: React.FC<SubscriptionListTableProps> = ({
                   <span className="sr-only">{t('aria.openMenu')}</span>
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="end">
-                {onViewDetail && (
-                  <DropdownMenuItem onClick={() => onViewDetail(subscription)}>
-                    <Eye className="mr-2 size-4" />
-                    {t('subscription.viewDetails')}
-                  </DropdownMenuItem>
-                )}
-                {onDuplicate && (
-                  <DropdownMenuItem onClick={() => onDuplicate(subscription)}>
-                    <Copy className="mr-2 size-4" />
-                    {t('subscription.duplicate')}
-                  </DropdownMenuItem>
-                )}
-                {(onViewDetail || onDuplicate) && (canRenew || canCancel || canSuspend) && <DropdownMenuSeparator />}
-                {canRenew && onRenew && (
-                  <DropdownMenuItem onClick={() => onRenew(subscription)}>
-                    <RefreshCw className="mr-2 size-4" />
-                    {t('subscription.renewSubscription')}
-                  </DropdownMenuItem>
-                )}
-                {canSuspend && onSuspend && (
-                  <DropdownMenuItem
-                    onClick={() => onSuspend(subscription)}
-                    className="text-warning focus:text-warning"
-                  >
-                    <Pause className="mr-2 size-4" />
-                    {t('subscription.suspend')}
-                  </DropdownMenuItem>
-                )}
-                {canResetUsage && onResetUsage && (
-                  <DropdownMenuItem onClick={() => onResetUsage(subscription)}>
-                    <RefreshCcw className="mr-2 size-4" />
-                    {t('subscription.resetUsage')}
-                  </DropdownMenuItem>
-                )}
-                {(canRenew || canSuspend || canResetUsage) && canCancel && onCancel && <DropdownMenuSeparator />}
-                {canCancel && onCancel && (
-                  <DropdownMenuItem
-                    onClick={() => onCancel(subscription)}
-                    className="text-destructive focus:text-destructive"
-                  >
-                    <XCircle className="mr-2 size-4" />
-                    {t('subscription.cancel')}
-                  </DropdownMenuItem>
-                )}
-                {canDelete && onDelete && (
-                  <>
-                    <DropdownMenuSeparator />
+              <DropdownMenuPortal>
+                <DropdownMenuContent align="end" collisionPadding={16}>
+                  {onViewDetail && (
+                    <DropdownMenuItem onClick={() => onViewDetail(subscription)}>
+                      <Eye className="mr-2 size-4" />
+                      {t('subscription.viewDetails')}
+                    </DropdownMenuItem>
+                  )}
+                  {onDuplicate && (
+                    <DropdownMenuItem onClick={() => onDuplicate(subscription)}>
+                      <Copy className="mr-2 size-4" />
+                      {t('subscription.duplicate')}
+                    </DropdownMenuItem>
+                  )}
+                  {(onViewDetail || onDuplicate) && (canRenew || canCancel || canSuspend) && <DropdownMenuSeparator />}
+                  {canRenew && onRenew && (
+                    <DropdownMenuItem onClick={() => onRenew(subscription)}>
+                      <RefreshCw className="mr-2 size-4" />
+                      {t('subscription.renewSubscription')}
+                    </DropdownMenuItem>
+                  )}
+                  {canSuspend && onSuspend && (
                     <DropdownMenuItem
-                      onClick={() => onDelete(subscription)}
+                      onClick={() => onSuspend(subscription)}
+                      className="text-warning focus:text-warning"
+                    >
+                      <Pause className="mr-2 size-4" />
+                      {t('subscription.suspend')}
+                    </DropdownMenuItem>
+                  )}
+                  {canResetUsage && onResetUsage && (
+                    <DropdownMenuItem onClick={() => onResetUsage(subscription)}>
+                      <RefreshCcw className="mr-2 size-4" />
+                      {t('subscription.resetUsage')}
+                    </DropdownMenuItem>
+                  )}
+                  {(canRenew || canSuspend || canResetUsage) && canCancel && onCancel && <DropdownMenuSeparator />}
+                  {canCancel && onCancel && (
+                    <DropdownMenuItem
+                      onClick={() => onCancel(subscription)}
                       className="text-destructive focus:text-destructive"
                     >
-                      <Trash2 className="mr-2 size-4" />
-                      {t('subscription.delete')}
+                      <XCircle className="mr-2 size-4" />
+                      {t('subscription.cancel')}
                     </DropdownMenuItem>
-                  </>
-                )}
-              </DropdownMenuContent>
+                  )}
+                  {canDelete && onDelete && (
+                    <>
+                      <DropdownMenuSeparator />
+                      <DropdownMenuItem
+                        onClick={() => onDelete(subscription)}
+                        className="text-destructive focus:text-destructive"
+                      >
+                        <Trash2 className="mr-2 size-4" />
+                        {t('subscription.delete')}
+                      </DropdownMenuItem>
+                    </>
+                  )}
+                </DropdownMenuContent>
+              </DropdownMenuPortal>
             </DropdownMenu>
           </div>
         );
@@ -425,19 +428,21 @@ export const SubscriptionListTable: React.FC<SubscriptionListTableProps> = ({
   }
 
   return (
-    <DataTable
-      columns={columns}
-      data={subscriptions}
-      loading={loading}
-      page={page}
-      pageSize={pageSize}
-      total={total}
-      onPageChange={onPageChange}
-      onPageSizeChange={onPageSizeChange}
-      emptyMessage={t('subscription.noData')}
-      getRowId={(row) => String(row.id)}
-      enableContextMenu
-      contextMenuContent={renderContextMenuContent}
-    />
+    <TableHoverCardProvider>
+      <DataTable
+        columns={columns}
+        data={subscriptions}
+        loading={loading}
+        page={page}
+        pageSize={pageSize}
+        total={total}
+        onPageChange={onPageChange}
+        onPageSizeChange={onPageSizeChange}
+        emptyMessage={t('subscription.noData')}
+        getRowId={(row) => String(row.id)}
+        enableContextMenu
+        contextMenuContent={renderContextMenuContent}
+      />
+    </TableHoverCardProvider>
   );
 };

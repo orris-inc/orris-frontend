@@ -107,7 +107,7 @@ export const ProbeResultDialog: React.FC<ProbeResultDialogProps> = ({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-md max-h-[85vh] flex flex-col">
+      <DialogContent className="@container sm:max-w-md max-h-[85vh] flex flex-col">
         <DialogHeader className="flex-shrink-0">
           <DialogTitle className="flex items-center gap-2 text-base">
             拨测结果
@@ -303,7 +303,7 @@ export const ProbeResultDialog: React.FC<ProbeResultDialogProps> = ({
         </div>
 
         <DialogFooter className="flex-shrink-0 pt-2">
-          <Button variant="outline" size="sm" onClick={() => onOpenChange(false)} className="w-full sm:w-auto">
+          <Button variant="outline" size="sm" onClick={() => onOpenChange(false)} className="w-full @sm:w-auto">
             关闭
           </Button>
         </DialogFooter>

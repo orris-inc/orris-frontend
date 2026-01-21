@@ -23,6 +23,7 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuPortal,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/common/DropdownMenu';
@@ -137,35 +138,37 @@ export const PlanMobileList: React.FC<PlanMobileListProps> = ({
             <MoreHorizontal className="size-4 text-slate-500" />
           </button>
         </DropdownMenuTrigger>
-        <DropdownMenuContent align="end">
-          <DropdownMenuItem onClick={() => onEdit(plan)}>
-            <Edit className="mr-2 size-4" />
-            {t('common.actions.edit')}
-          </DropdownMenuItem>
-          {onDuplicate && (
-            <DropdownMenuItem onClick={() => onDuplicate(plan)}>
-              <Copy className="mr-2 size-4" />
-              {t('admin.plans.actions.duplicate')}
+        <DropdownMenuPortal>
+          <DropdownMenuContent align="end" collisionPadding={16}>
+            <DropdownMenuItem onClick={() => onEdit(plan)}>
+              <Edit className="mr-2 size-4" />
+              {t('common.actions.edit')}
             </DropdownMenuItem>
-          )}
-          {onViewSubscriptions && (
-            <DropdownMenuItem onClick={() => onViewSubscriptions(plan)}>
-              <Users className="mr-2 size-4" />
-              {t('admin.plans.actions.viewSubscriptions')}
+            {onDuplicate && (
+              <DropdownMenuItem onClick={() => onDuplicate(plan)}>
+                <Copy className="mr-2 size-4" />
+                {t('admin.plans.actions.duplicate')}
+              </DropdownMenuItem>
+            )}
+            {onViewSubscriptions && (
+              <DropdownMenuItem onClick={() => onViewSubscriptions(plan)}>
+                <Users className="mr-2 size-4" />
+                {t('admin.plans.actions.viewSubscriptions')}
+              </DropdownMenuItem>
+            )}
+            <DropdownMenuSeparator />
+            <DropdownMenuItem onClick={() => onToggleStatus(plan)}>
+              <Power className="mr-2 size-4" />
+              {plan.status === 'active' ? t('common.actions.deactivate') : t('common.actions.activate')}
             </DropdownMenuItem>
-          )}
-          <DropdownMenuSeparator />
-          <DropdownMenuItem onClick={() => onToggleStatus(plan)}>
-            <Power className="mr-2 size-4" />
-            {plan.status === 'active' ? t('common.actions.deactivate') : t('common.actions.activate')}
-          </DropdownMenuItem>
-          {onDelete && (
-            <DropdownMenuItem onClick={() => onDelete(plan)} className="text-red-600 dark:text-red-400">
-              <Trash2 className="mr-2 size-4" />
-              {t('common.actions.delete')}
-            </DropdownMenuItem>
-          )}
-        </DropdownMenuContent>
+            {onDelete && (
+              <DropdownMenuItem onClick={() => onDelete(plan)} className="text-red-600 dark:text-red-400">
+                <Trash2 className="mr-2 size-4" />
+                {t('common.actions.delete')}
+              </DropdownMenuItem>
+            )}
+          </DropdownMenuContent>
+        </DropdownMenuPortal>
       </DropdownMenu>
     );
   };

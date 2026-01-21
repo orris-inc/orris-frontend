@@ -38,6 +38,7 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuPortal,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/common/DropdownMenu';
@@ -79,16 +80,7 @@ const PROTOCOL_CONFIG: Record<string, { label: string; color: string }> = {
   trojan: { label: 'Trojan', color: 'bg-primary/10 text-primary' },
 };
 
-// Format date
-const formatDate = (dateString: string) => {
-  if (!dateString) return '-';
-  return new Date(dateString).toLocaleString('zh-CN', {
-    month: '2-digit',
-    day: '2-digit',
-    hour: '2-digit',
-    minute: '2-digit',
-  });
-};
+import { formatDateTime } from '@/shared/utils/date-utils';
 
 // Format bytes rate to human readable (per second)
 const formatBytesRate = (bytesPerSec: number): string => {
@@ -159,7 +151,7 @@ const OnlineIndicator: React.FC<{ isOnline: boolean; lastSeenAt?: string; t: (ke
       </TooltipTrigger>
       {lastSeenAt && (
         <TooltipContent>
-          {t('admin.nodes.table.tooltip.lastOnline')}: {formatDate(lastSeenAt)}
+          {t('admin.nodes.table.tooltip.lastOnline')}: {formatDateTime(lastSeenAt)}
         </TooltipContent>
       )}
     </Tooltip>
@@ -199,44 +191,46 @@ export const NodeMobileList: React.FC<NodeMobileListProps> = ({
             <MoreHorizontal className="size-4 text-muted-foreground" strokeWidth={1.5} />
           </button>
         </DropdownMenuTrigger>
-        <DropdownMenuContent align="end">
-          <DropdownMenuItem onClick={() => onViewDetail(node)}>
-            <Eye className="mr-2 size-4" />
-            {t('common.actions.viewDetail')}
-          </DropdownMenuItem>
-          <DropdownMenuItem onClick={() => onEdit(node)}>
-            <Edit className="mr-2 size-4" />
-            {t('common.actions.edit')}
-          </DropdownMenuItem>
-          <DropdownMenuItem onClick={() => onGetInstallScript(node)}>
-            <Terminal className="mr-2 size-4" />
-            {t('admin.nodes.table.menu.installScript')}
-          </DropdownMenuItem>
-          <DropdownMenuItem onClick={() => onCopy(node)}>
-            <Copy className="mr-2 size-4" />
-            {t('admin.nodes.table.menu.copyNode')}
-          </DropdownMenuItem>
-          <DropdownMenuItem onClick={() => onGenerateToken(node)}>
-            <Key className="mr-2 size-4" />
-            {t('admin.nodes.table.menu.generateToken')}
-          </DropdownMenuItem>
-          <DropdownMenuSeparator />
-          {node.status === 'active' ? (
-            <DropdownMenuItem onClick={() => onDeactivate(node)}>
-              <PowerOff className="mr-2 size-4" />
-              {t('admin.nodes.table.menu.deactivate')}
+        <DropdownMenuPortal>
+          <DropdownMenuContent align="end" collisionPadding={16}>
+            <DropdownMenuItem onClick={() => onViewDetail(node)}>
+              <Eye className="mr-2 size-4" />
+              {t('common.actions.viewDetail')}
             </DropdownMenuItem>
-          ) : (
-            <DropdownMenuItem onClick={() => onActivate(node)}>
-              <Power className="mr-2 size-4" />
-              {t('admin.nodes.table.menu.activate')}
+            <DropdownMenuItem onClick={() => onEdit(node)}>
+              <Edit className="mr-2 size-4" />
+              {t('common.actions.edit')}
             </DropdownMenuItem>
-          )}
-          <DropdownMenuItem onClick={() => onDelete(node)} className="text-red-600 dark:text-red-400">
-            <Trash2 className="mr-2 size-4" />
-            {t('admin.nodes.table.menu.delete')}
-          </DropdownMenuItem>
-        </DropdownMenuContent>
+            <DropdownMenuItem onClick={() => onGetInstallScript(node)}>
+              <Terminal className="mr-2 size-4" />
+              {t('admin.nodes.table.menu.installScript')}
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => onCopy(node)}>
+              <Copy className="mr-2 size-4" />
+              {t('admin.nodes.table.menu.copyNode')}
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => onGenerateToken(node)}>
+              <Key className="mr-2 size-4" />
+              {t('admin.nodes.table.menu.generateToken')}
+            </DropdownMenuItem>
+            <DropdownMenuSeparator />
+            {node.status === 'active' ? (
+              <DropdownMenuItem onClick={() => onDeactivate(node)}>
+                <PowerOff className="mr-2 size-4" />
+                {t('admin.nodes.table.menu.deactivate')}
+              </DropdownMenuItem>
+            ) : (
+              <DropdownMenuItem onClick={() => onActivate(node)}>
+                <Power className="mr-2 size-4" />
+                {t('admin.nodes.table.menu.activate')}
+              </DropdownMenuItem>
+            )}
+            <DropdownMenuItem onClick={() => onDelete(node)} className="text-red-600 dark:text-red-400">
+              <Trash2 className="mr-2 size-4" />
+              {t('admin.nodes.table.menu.delete')}
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenuPortal>
       </DropdownMenu>
     );
   };
@@ -528,7 +522,7 @@ export const NodeMobileList: React.FC<NodeMobileListProps> = ({
                     </div>
                   )}
                   <span className="text-border">·</span>
-                  <span className="text-xs text-muted-foreground">{formatDate(node.createdAt)}</span>
+                  <span className="text-xs text-muted-foreground">{formatDateTime(node.createdAt)}</span>
                 </div>
               </div>
             </AccordionContent>

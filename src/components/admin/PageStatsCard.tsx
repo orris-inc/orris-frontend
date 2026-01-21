@@ -31,9 +31,10 @@ export const PageStatsCard = ({
   return (
     <div
       className={cn(
+        '@container',
         'group relative overflow-hidden',
         'bg-card rounded-lg',
-        'px-2.5 py-2 sm:px-3 sm:py-2',
+        'px-2.5 py-2 @sm:px-3 @sm:py-2',
         'border border-border',
         'hover:bg-accent/30',
         'transition-colors duration-150',
@@ -54,7 +55,7 @@ export const PageStatsCard = ({
           )}
         </div>
         <div className="min-w-0 flex-1">
-          <div className="text-sm sm:text-base font-semibold text-foreground tracking-tight tabular-nums truncate leading-tight">
+          <div className="text-sm @sm:text-base font-semibold text-foreground tracking-tight tabular-nums truncate leading-tight">
             {loading ? (
               <div className="h-4 w-8 bg-muted rounded animate-pulse motion-reduce:animate-none" />
             ) : (

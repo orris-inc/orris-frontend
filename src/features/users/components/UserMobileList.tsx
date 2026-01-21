@@ -23,6 +23,7 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuPortal,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/common/DropdownMenu';
@@ -78,25 +79,27 @@ export const UserMobileList: React.FC<UserMobileListProps> = ({
             <MoreHorizontal className="size-4 text-slate-500" />
           </button>
         </DropdownMenuTrigger>
-        <DropdownMenuContent align="end">
-          <DropdownMenuItem onClick={() => onAssignSubscription(user)}>
-            <CreditCard className="mr-2 size-4" />
-            分配订阅
-          </DropdownMenuItem>
-          <DropdownMenuItem onClick={() => onEdit(user)}>
-            <Edit className="mr-2 size-4" />
-            编辑
-          </DropdownMenuItem>
-          <DropdownMenuItem onClick={() => onResetPassword(user)}>
-            <KeyRound className="mr-2 size-4" />
-            重置密码
-          </DropdownMenuItem>
-          <DropdownMenuSeparator />
-          <DropdownMenuItem onClick={() => onDelete(user)} className="text-red-600 dark:text-red-400">
-            <Trash2 className="mr-2 size-4" />
-            删除
-          </DropdownMenuItem>
-        </DropdownMenuContent>
+        <DropdownMenuPortal>
+          <DropdownMenuContent align="end" collisionPadding={16}>
+            <DropdownMenuItem onClick={() => onAssignSubscription(user)}>
+              <CreditCard className="mr-2 size-4" />
+              分配订阅
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => onEdit(user)}>
+              <Edit className="mr-2 size-4" />
+              编辑
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => onResetPassword(user)}>
+              <KeyRound className="mr-2 size-4" />
+              重置密码
+            </DropdownMenuItem>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem onClick={() => onDelete(user)} className="text-red-600 dark:text-red-400">
+              <Trash2 className="mr-2 size-4" />
+              删除
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenuPortal>
       </DropdownMenu>
     );
   };

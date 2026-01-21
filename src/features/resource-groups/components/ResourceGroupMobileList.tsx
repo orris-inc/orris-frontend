@@ -23,6 +23,7 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuPortal,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/common/DropdownMenu';
@@ -43,14 +44,7 @@ interface ResourceGroupMobileListProps {
 }
 
 
-// Format date
-const formatDate = (dateString: string) => {
-  return new Date(dateString).toLocaleDateString('zh-CN', {
-    year: 'numeric',
-    month: '2-digit',
-    day: '2-digit',
-  });
-};
+import { formatDate } from '@/shared/utils/date-utils';
 
 // Loading skeleton for mobile cards
 const MobileCardSkeleton: React.FC = () => (
@@ -90,31 +84,33 @@ export const ResourceGroupMobileList: React.FC<ResourceGroupMobileListProps> = (
             <MoreHorizontal className="size-4 text-slate-500" />
           </button>
         </DropdownMenuTrigger>
-        <DropdownMenuContent align="end">
-          {onViewDetail && (
-            <DropdownMenuItem onClick={() => onViewDetail(resourceGroup)}>
-              <Eye className="mr-2 size-4" />
-              {t('common.actions.viewDetail')}
+        <DropdownMenuPortal>
+          <DropdownMenuContent align="end" collisionPadding={16}>
+            {onViewDetail && (
+              <DropdownMenuItem onClick={() => onViewDetail(resourceGroup)}>
+                <Eye className="mr-2 size-4" />
+                {t('common.actions.viewDetail')}
+              </DropdownMenuItem>
+            )}
+            <DropdownMenuItem onClick={() => onEdit(resourceGroup)}>
+              <Edit className="mr-2 size-4" />
+              {t('common.actions.edit')}
             </DropdownMenuItem>
-          )}
-          <DropdownMenuItem onClick={() => onEdit(resourceGroup)}>
-            <Edit className="mr-2 size-4" />
-            {t('common.actions.edit')}
-          </DropdownMenuItem>
-          <DropdownMenuSeparator />
-          <DropdownMenuItem onClick={() => onToggleStatus(resourceGroup)}>
-            <Power className="mr-2 size-4" />
-            {resourceGroup.status === 'active' ? t('common.actions.deactivate') : t('common.actions.activate')}
-          </DropdownMenuItem>
-          <DropdownMenuSeparator />
-          <DropdownMenuItem
-            onClick={() => onDelete(resourceGroup)}
-            className="text-destructive focus:text-destructive"
-          >
-            <Trash2 className="mr-2 size-4" />
-            {t('common.actions.delete')}
-          </DropdownMenuItem>
-        </DropdownMenuContent>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem onClick={() => onToggleStatus(resourceGroup)}>
+              <Power className="mr-2 size-4" />
+              {resourceGroup.status === 'active' ? t('common.actions.deactivate') : t('common.actions.activate')}
+            </DropdownMenuItem>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem
+              onClick={() => onDelete(resourceGroup)}
+              className="text-destructive focus:text-destructive"
+            >
+              <Trash2 className="mr-2 size-4" />
+              {t('common.actions.delete')}
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenuPortal>
       </DropdownMenu>
     );
   };

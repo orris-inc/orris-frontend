@@ -9,6 +9,7 @@
  */
 
 import { useState } from 'react';
+import { formatDateTime } from '@/shared/utils/date-utils';
 import { useTranslation } from 'react-i18next';
 import {
   Mail,
@@ -137,18 +138,6 @@ export const UserDetailSheet = ({
   const statusConfig = ACTIVE_STATUS_CONFIG[user.status] || { labelKey: user.status, variant: 'default' as const };
   const roleConfig = ROLE_CONFIG[user.role || 'user'] || { labelKey: 'common.role.user', variant: 'default' as const };
 
-  const formatDate = (dateString?: string) => {
-    if (!dateString) return '-';
-    const locale = i18n.language === 'zh' ? 'zh-CN' : 'en-US';
-    return new Date(dateString).toLocaleDateString(locale, {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit',
-    });
-  };
-
   // Action Sheet actions
   const moreActions = [
     {
@@ -234,12 +223,12 @@ export const UserDetailSheet = ({
               <DetailRow
                 icon={<Calendar className="size-4" />}
                 label={t('user.detail.registrationTime')}
-                value={formatDate(user.createdAt)}
+                value={formatDateTime(user.createdAt)}
               />
               <DetailRow
                 icon={<Clock className="size-4" />}
                 label={t('user.detail.lastUpdated')}
-                value={formatDate(user.updatedAt)}
+                value={formatDateTime(user.updatedAt)}
               />
             </DetailSection>
           </SheetBody>

@@ -7,7 +7,7 @@
 import { useMemo, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Edit, Trash2, Eye, Power, PowerOff, MoreHorizontal, RotateCcw, Activity, Loader2, Server, Bot, ArrowRight, Files, CheckCircle2, CircleDashed, AlertCircle, Play, Square, AlertTriangle, RotateCw } from 'lucide-react';
-import { DataTable, DraggableDataTable, AdminBadge, TruncatedId, type ColumnDef, type ResponsiveColumnMeta, type RowSelectionState, type OnChangeFn } from '@/components/admin';
+import { DataTable, DraggableDataTable, AdminBadge, TruncatedId, TableHoverCardProvider, TableHoverCardList, type ColumnDef, type ResponsiveColumnMeta, type RowSelectionState, type OnChangeFn } from '@/components/admin';
 import { Checkbox } from '@/components/common/Checkbox';
 import { useBreakpoint } from '@/hooks/useBreakpoint';
 import { ForwardRuleMobileList } from './ForwardRuleMobileList';
@@ -15,6 +15,7 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuPortal,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/common/DropdownMenu';
@@ -87,6 +88,12 @@ const RULE_TYPE_CONFIG: Record<string, { labelKey: string; shortLabelKey: string
     shortLabelKey: 'admin.forwardRules.ruleType.directChainShort',
     color: 'text-amber-600 dark:text-amber-400',
     bgColor: 'bg-amber-50 dark:bg-amber-900/20',
+  },
+  external: {
+    labelKey: 'admin.forwardRules.ruleType.external',
+    shortLabelKey: 'admin.forwardRules.ruleType.externalShort',
+    color: 'text-cyan-600 dark:text-cyan-400',
+    bgColor: 'bg-cyan-50 dark:bg-cyan-900/20',
   },
 };
 
@@ -578,14 +585,14 @@ export const ForwardRuleListTable: React.FC<ForwardRuleListTableProps> = ({
     {
       accessorKey: 'id',
       header: 'ID',
-      size: 120,
+      size: 95,
       meta: { priority: 4 } as ResponsiveColumnMeta,
       cell: ({ row }) => <TruncatedId id={row.original.id} />,
     },
     {
       accessorKey: 'name',
       header: t('admin.forwardRules.columns.ruleName'),
-      size: 200,
+      size: 180,
       meta: { priority: 1 } as ResponsiveColumnMeta,
       cell: ({ row }) => {
         const rule = row.original;
@@ -633,7 +640,7 @@ export const ForwardRuleListTable: React.FC<ForwardRuleListTableProps> = ({
     {
       id: 'path',
       header: t('admin.forwardRules.columns.path'),
-      size: 400,
+      size: 270,
       meta: { priority: 1 } as ResponsiveColumnMeta,
       cell: ({ row }) => (
         <FlowPathDisplay rule={row.original} agentsMap={agentsMap} nodes={nodes} t={t} />
@@ -642,7 +649,7 @@ export const ForwardRuleListTable: React.FC<ForwardRuleListTableProps> = ({
     {
       id: 'resourceGroups',
       header: t('admin.forwardRules.columns.resourceGroup'),
-      size: 140,
+      size: 90,
       meta: { priority: 3 } as ResponsiveColumnMeta,
       cell: ({ row }) => {
         const rule = row.original;
@@ -664,28 +671,24 @@ export const ForwardRuleListTable: React.FC<ForwardRuleListTableProps> = ({
           );
         }
         return (
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <span className="text-xs font-medium text-foreground cursor-default">
-                {groups[0].name}
-                <span className="ml-1 text-muted-foreground">+{groups.length - 1}</span>
-              </span>
-            </TooltipTrigger>
-            <TooltipContent>
-              <div className="space-y-1">
-                {groups.map((g) => (
-                  <div key={g.sid} className="text-xs">{g.name}</div>
-                ))}
-              </div>
-            </TooltipContent>
-          </Tooltip>
+          <TableHoverCardList
+            columnKey="resourceGroups"
+            items={groups.map((g) => ({ label: g.name, value: g.sid }))}
+            title={t('admin.forwardRules.columns.resourceGroups')}
+            contentClassName="w-56"
+          >
+            <span className="text-xs font-medium text-foreground">
+              {groups[0].name}
+              <span className="ml-1 text-muted-foreground">+{groups.length - 1}</span>
+            </span>
+          </TableHoverCardList>
         );
       },
     },
     {
       id: 'traffic',
       header: t('admin.forwardRules.columns.traffic'),
-      size: 130,
+      size: 100,
       meta: { priority: 1, numeric: true } as ResponsiveColumnMeta,
       cell: ({ row }) => {
         const rule = row.original;
@@ -699,57 +702,49 @@ export const ForwardRuleListTable: React.FC<ForwardRuleListTableProps> = ({
         const uploadRatio = totalBytes > 0 ? (uploadBytes / totalBytes) * 100 : 50;
 
         return (
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <div className="space-y-1.5 min-w-0 cursor-default">
-                <div className="flex items-center gap-1.5">
-                  <span className="text-sm font-medium text-foreground tabular-nums">
-                    {formatBytesGB(totalBytes)}
+          <TableHoverCardList
+            columnKey="traffic"
+            items={[
+              { label: t('admin.forwardRules.traffic.upload'), value: <span className="flex items-center gap-1.5"><span className="inline-block w-2 h-2 rounded-full bg-green-500" />{formatBytesGB(uploadBytes)}</span> },
+              { label: t('admin.forwardRules.traffic.download'), value: <span className="flex items-center gap-1.5"><span className="inline-block w-2 h-2 rounded-full bg-blue-500" />{formatBytesGB(downloadBytes)}</span> },
+              { label: t('admin.forwardRules.traffic.multiplier'), value: `${multiplier?.toFixed(2) || '1.00'}x (${isAuto ? t('admin.forwardRules.traffic.auto') : t('admin.forwardRules.traffic.custom')})` },
+            ]}
+            title={t('admin.forwardRules.columns.traffic')}
+            contentClassName="w-64"
+          >
+            <div className="space-y-1 min-w-0">
+              <div className="flex items-center gap-1">
+                <span className="text-sm font-medium text-foreground tabular-nums whitespace-nowrap">
+                  {formatBytesGB(totalBytes)}
+                </span>
+                {multiplier && multiplier !== 1 && (
+                  <span className={`text-[10px] px-0.5 py-0.5 rounded font-medium whitespace-nowrap ${isAuto ? 'bg-muted text-muted-foreground' : 'bg-amber-50 dark:bg-amber-900/20 text-amber-600 dark:text-amber-400'}`}>
+                    ×{multiplier.toFixed(1)}
                   </span>
-                  {multiplier && multiplier !== 1 && (
-                    <span className={`text-[10px] px-1 py-0.5 rounded font-medium ${isAuto ? 'bg-muted text-muted-foreground' : 'bg-amber-50 dark:bg-amber-900/20 text-amber-600 dark:text-amber-400'}`}>
-                      ×{multiplier.toFixed(1)}
-                    </span>
-                  )}
-                </div>
-                {/* Mini traffic ratio bar */}
-                <div className="flex items-center gap-1 h-1.5">
-                  <div className="flex-1 h-full bg-muted rounded-full overflow-hidden flex">
-                    <div
-                      className="h-full bg-green-500 transition-all duration-300"
-                      style={{ width: `${uploadRatio}%` }}
-                    />
-                    <div
-                      className="h-full bg-blue-500 transition-all duration-300"
-                      style={{ width: `${100 - uploadRatio}%` }}
-                    />
-                  </div>
+                )}
+              </div>
+              {/* Mini traffic ratio bar */}
+              <div className="flex items-center h-1">
+                <div className="w-full h-full bg-muted rounded-full overflow-hidden flex">
+                  <div
+                    className="h-full bg-green-500 transition-all duration-300"
+                    style={{ width: `${uploadRatio}%` }}
+                  />
+                  <div
+                    className="h-full bg-blue-500 transition-all duration-300"
+                    style={{ width: `${100 - uploadRatio}%` }}
+                  />
                 </div>
               </div>
-            </TooltipTrigger>
-            <TooltipContent>
-              <div className="space-y-1.5 text-xs">
-                <div className="flex items-center gap-2">
-                  <span className="inline-block w-2 h-2 rounded-full bg-green-500" />
-                  <span>{t('admin.forwardRules.traffic.upload')}: {formatBytesGB(uploadBytes)}</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <span className="inline-block w-2 h-2 rounded-full bg-blue-500" />
-                  <span>{t('admin.forwardRules.traffic.download')}: {formatBytesGB(downloadBytes)}</span>
-                </div>
-                <div className="pt-1 border-t border-border">
-                  {t('admin.forwardRules.traffic.multiplier')}: {multiplier?.toFixed(2) || '1.00'}x ({isAuto ? t('admin.forwardRules.traffic.auto') : t('admin.forwardRules.traffic.custom')})
-                </div>
-              </div>
-            </TooltipContent>
-          </Tooltip>
+            </div>
+          </TableHoverCardList>
         );
       },
     },
     {
       id: 'syncStatus',
       header: t('admin.forwardRules.columns.syncStatus'),
-      size: 100,
+      size: 80,
       meta: { priority: 2 } as ResponsiveColumnMeta,
       cell: ({ row }) => {
         const rule = row.original;
@@ -802,45 +797,44 @@ export const ForwardRuleListTable: React.FC<ForwardRuleListTableProps> = ({
         const SyncIcon = syncConfig.icon;
         const RunIcon = runConfig.icon;
 
+        const statusItems = [
+          { label: t('admin.forwardRules.status.syncLabel'), value: t(syncConfig.labelKey) },
+          { label: t('admin.forwardRules.status.runLabel'), value: t(runConfig.labelKey) },
+          ...((totalAgents ?? 0) > 0 ? [{ label: t('admin.forwardRules.status.agents'), value: `${healthyAgents ?? 0}/${totalAgents ?? 0} ${t('admin.forwardRules.status.healthy')}` }] : []),
+        ];
+
         return (
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <div className="flex items-center gap-1.5">
-                {/* Show polling indicator */}
-                {isPolling && (
-                  <Loader2 className="size-3 animate-spin text-blue-400" />
-                )}
-                <span className={`flex items-center ${syncConfig.className}`}>
-                  <SyncIcon className="size-3.5" />
+          <TableHoverCardList
+            columnKey="syncStatus"
+            items={statusItems}
+            title={isPolling ? t('admin.forwardRules.status.syncing') : t('admin.forwardRules.columns.syncStatus')}
+            contentClassName="w-56"
+          >
+            <div className="flex items-center gap-1.5">
+              {/* Show polling indicator */}
+              {isPolling && (
+                <Loader2 className="size-3 animate-spin text-blue-400" />
+              )}
+              <span className={`flex items-center ${syncConfig.className}`}>
+                <SyncIcon className="size-3.5" />
+              </span>
+              <span className={`flex items-center ${runConfig.className}`}>
+                <RunIcon className="size-3.5" />
+              </span>
+              {(totalAgents ?? 0) > 1 && (
+                <span className="text-xs text-slate-500 dark:text-slate-400">
+                  {healthyAgents ?? 0}/{totalAgents ?? 0}
                 </span>
-                <span className={`flex items-center ${runConfig.className}`}>
-                  <RunIcon className="size-3.5" />
-                </span>
-                {(totalAgents ?? 0) > 1 && (
-                  <span className="text-xs text-slate-500 dark:text-slate-400">
-                    {healthyAgents ?? 0}/{totalAgents ?? 0}
-                  </span>
-                )}
-              </div>
-            </TooltipTrigger>
-            <TooltipContent>
-              <div className="space-y-1 text-xs">
-                {isPolling && <div className="text-blue-400">{t('admin.forwardRules.status.syncing')}</div>}
-                <div>{t('admin.forwardRules.status.syncLabel')}: {t(syncConfig.labelKey)}</div>
-                <div>{t('admin.forwardRules.status.runLabel')}: {t(runConfig.labelKey)}</div>
-                {(totalAgents ?? 0) > 0 && (
-                  <div>{t('admin.forwardRules.status.agents')}: {healthyAgents ?? 0}/{totalAgents ?? 0} {t('admin.forwardRules.status.healthy')}</div>
-                )}
-              </div>
-            </TooltipContent>
-          </Tooltip>
+              )}
+            </div>
+          </TableHoverCardList>
         );
       },
     },
     {
       accessorKey: 'status',
       header: t('admin.forwardRules.columns.status'),
-      size: 88,
+      size: 72,
       meta: { priority: 1 } as ResponsiveColumnMeta,
       cell: ({ row }) => {
         const rule = row.original;
@@ -868,7 +862,7 @@ export const ForwardRuleListTable: React.FC<ForwardRuleListTableProps> = ({
     {
       id: 'actions',
       header: t('admin.forwardRules.columns.actions'),
-      size: 140,
+      size: 120,
       meta: { priority: 1 } as ResponsiveColumnMeta,
       enableSorting: false,
       cell: ({ row }) => {
@@ -923,9 +917,11 @@ export const ForwardRuleListTable: React.FC<ForwardRuleListTableProps> = ({
                   <MoreHorizontal className="size-4" />
                 </button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="end">
-                {renderDropdownMenuActions(rule)}
-              </DropdownMenuContent>
+              <DropdownMenuPortal>
+                <DropdownMenuContent align="end" collisionPadding={16}>
+                  {renderDropdownMenuActions(rule)}
+                </DropdownMenuContent>
+              </DropdownMenuPortal>
             </DropdownMenu>
           </div>
         );
@@ -962,7 +958,32 @@ export const ForwardRuleListTable: React.FC<ForwardRuleListTableProps> = ({
   // Use DraggableDataTable when drag sort is enabled
   if (enableDragSort && onDragEnd) {
     return (
-      <DraggableDataTable
+      <TableHoverCardProvider>
+        <DraggableDataTable
+          columns={columns}
+          data={rules}
+          loading={loading}
+          page={page}
+          pageSize={pageSize}
+          total={total}
+          onPageChange={onPageChange}
+          onPageSizeChange={onPageSizeChange}
+          emptyMessage={t('admin.forwardRules.noData')}
+          getRowId={(row) => String(row.id)}
+          enableDragSort={true}
+          onDragEnd={onDragEnd}
+          enableContextMenu={true}
+          contextMenuContent={renderContextMenuActions}
+          rowSelection={rowSelection}
+          onRowSelectionChange={onRowSelectionChange}
+        />
+      </TableHoverCardProvider>
+    );
+  }
+
+  return (
+    <TableHoverCardProvider>
+      <DataTable
         columns={columns}
         data={rules}
         loading={loading}
@@ -973,32 +994,11 @@ export const ForwardRuleListTable: React.FC<ForwardRuleListTableProps> = ({
         onPageSizeChange={onPageSizeChange}
         emptyMessage={t('admin.forwardRules.noData')}
         getRowId={(row) => String(row.id)}
-        enableDragSort={true}
-        onDragEnd={onDragEnd}
         enableContextMenu={true}
         contextMenuContent={renderContextMenuActions}
         rowSelection={rowSelection}
         onRowSelectionChange={onRowSelectionChange}
       />
-    );
-  }
-
-  return (
-    <DataTable
-      columns={columns}
-      data={rules}
-      loading={loading}
-      page={page}
-      pageSize={pageSize}
-      total={total}
-      onPageChange={onPageChange}
-      onPageSizeChange={onPageSizeChange}
-      emptyMessage={t('admin.forwardRules.noData')}
-      getRowId={(row) => String(row.id)}
-      enableContextMenu={true}
-      contextMenuContent={renderContextMenuActions}
-      rowSelection={rowSelection}
-      onRowSelectionChange={onRowSelectionChange}
-    />
+    </TableHoverCardProvider>
   );
 };

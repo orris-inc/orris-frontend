@@ -24,18 +24,18 @@ import {
   Shield,
   Package,
   ArrowUpCircle,
-  Globe,
   Radio,
   Bell,
   BellOff,
 } from 'lucide-react';
-import { DataTable, DraggableDataTable, TruncatedId, SystemStatusCell, SystemStatusHoverProvider, type ColumnDef, type ResponsiveColumnMeta } from '@/components/admin';
+import { DataTable, DraggableDataTable, TruncatedId, SystemStatusCell, TableHoverCardProvider, TableHoverCardList, type ColumnDef, type ResponsiveColumnMeta } from '@/components/admin';
 import { useBreakpoint } from '@/hooks/useBreakpoint';
 import { NodeMobileList } from './NodeMobileList';
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuPortal,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/common/DropdownMenu';
@@ -86,16 +86,7 @@ const PROTOCOL_CONFIG: Record<string, { label: string; color: string }> = {
 };
 
 
-// Format date
-const formatDate = (dateString: string) => {
-  if (!dateString) return '-';
-  return new Date(dateString).toLocaleString('zh-CN', {
-    month: '2-digit',
-    day: '2-digit',
-    hour: '2-digit',
-    minute: '2-digit',
-  });
-};
+import { formatDateTime } from '@/shared/utils/date-utils';
 
 export const NodeListTable: React.FC<NodeListTableProps> = ({
   nodes,
@@ -224,44 +215,32 @@ export const NodeListTable: React.FC<NodeListTableProps> = ({
       accessorKey: 'name',
       header: t('admin.nodes.table.node'),
       size: 200,
-      meta: { priority: 1 } as ResponsiveColumnMeta, // Core column, always visible
+      meta: { priority: 1, sticky: 'left' } as ResponsiveColumnMeta, // Core column, always visible, sticky left
       cell: ({ row }) => {
         const node = row.original;
         const hasSubscriptionPort = node.subscriptionPort && node.subscriptionPort !== node.agentPort;
+        const hoverItems = [
+          { label: t('admin.nodes.tooltip.agentPort'), value: node.agentPort },
+          ...(hasSubscriptionPort ? [{ label: t('admin.nodes.tooltip.subscriptionPort'), value: node.subscriptionPort }] : []),
+          ...(node.systemStatus?.publicIpv4 ? [{ label: 'IPv4', value: node.systemStatus.publicIpv4 }] : []),
+          ...(node.systemStatus?.publicIpv6 ? [{ label: 'IPv6', value: node.systemStatus.publicIpv6 }] : []),
+        ];
         return (
           <div className="flex flex-col gap-0.5">
             <span className="font-semibold text-foreground whitespace-nowrap">
               {node.name}
             </span>
             <div className="flex items-center gap-1.5 text-xs text-muted-foreground whitespace-nowrap">
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <code className="font-mono text-[11px] bg-muted/50 px-1 py-0.5 rounded cursor-default">
-                    {node.serverAddress}:{node.agentPort}
-                    {hasSubscriptionPort && <span className="text-primary">/{node.subscriptionPort}</span>}
-                  </code>
-                </TooltipTrigger>
-                <TooltipContent>
-                  <div className="space-y-1 text-xs">
-                    <div>{t('admin.nodes.tooltip.agentPort')}: {node.agentPort}</div>
-                    {hasSubscriptionPort && (
-                      <div>{t('admin.nodes.tooltip.subscriptionPort')}: {node.subscriptionPort}</div>
-                    )}
-                    {node.systemStatus?.publicIpv4 && (
-                      <div className="flex items-center gap-1">
-                        <Globe className="size-3" />
-                        <span>IPv4: {node.systemStatus.publicIpv4}</span>
-                      </div>
-                    )}
-                    {node.systemStatus?.publicIpv6 && (
-                      <div className="flex items-center gap-1">
-                        <Globe className="size-3" />
-                        <span>IPv6: {node.systemStatus.publicIpv6}</span>
-                      </div>
-                    )}
-                  </div>
-                </TooltipContent>
-              </Tooltip>
+              <TableHoverCardList
+                columnKey="name"
+                items={hoverItems}
+                contentClassName="w-64"
+              >
+                <code className="font-mono text-[11px] bg-muted/50 px-1 py-0.5 rounded cursor-default">
+                  {node.serverAddress}:{node.agentPort}
+                  {hasSubscriptionPort && <span className="text-primary">/{node.subscriptionPort}</span>}
+                </code>
+              </TableHoverCardList>
               {node.region && (
                 <span className="text-muted-foreground/60">• {node.region}</span>
               )}
@@ -274,7 +253,10 @@ export const NodeListTable: React.FC<NodeListTableProps> = ({
       id: 'config',
       header: t('admin.nodes.table.config'),
       size: 140,
-      meta: { priority: 3 } as ResponsiveColumnMeta, // Secondary column >= 1024px
+      meta: {
+        priority: 3,
+        headerTooltip: t('admin.nodes.tooltip.configDescription'),
+      } as ResponsiveColumnMeta,
       cell: ({ row }) => {
         const node = row.original;
         const protocolConfig = PROTOCOL_CONFIG[node.protocol] || { label: node.protocol, color: 'bg-muted text-muted-foreground' };
@@ -300,35 +282,36 @@ export const NodeListTable: React.FC<NodeListTableProps> = ({
         }
         // Trojan displays transport protocol and TLS configuration
         const transport = node.transportProtocol?.toUpperCase() || 'TCP';
+        const configItems = [
+          { label: t('admin.nodes.tooltip.transportProtocol'), value: transport },
+          ...(node.sni ? [{ label: 'SNI', value: node.sni }] : []),
+          ...(node.host ? [{ label: 'Host', value: node.host }] : []),
+          ...(node.path ? [{ label: 'Path', value: node.path }] : []),
+        ];
         return (
-          <Tooltip>
-            <TooltipTrigger>
-              <div className="flex flex-col gap-1">
-                <div className="flex items-center gap-1.5">
-                  <span className={`px-1.5 py-0.5 text-[10px] font-semibold rounded ${protocolConfig.color}`}>
-                    {protocolConfig.label}
-                  </span>
-                  <code className="text-[11px] font-mono text-muted-foreground bg-muted/30 px-1 py-0.5 rounded">
-                    {transport} + TLS
-                  </code>
-                </div>
-                {node.sni && (
-                  <span className="text-[11px] text-muted-foreground/70 truncate max-w-[120px]">
-                    SNI: {node.sni}
-                  </span>
-                )}
+          <TableHoverCardList
+            columnKey="config"
+            items={configItems}
+            footer={node.allowInsecure && (
+              <span className="text-amber-500 text-xs">{t('admin.nodes.tooltip.allowInsecure')}</span>
+            )}
+          >
+            <div className="flex flex-col gap-1 cursor-default">
+              <div className="flex items-center gap-1.5">
+                <span className={`px-1.5 py-0.5 text-[10px] font-semibold rounded ${protocolConfig.color}`}>
+                  {protocolConfig.label}
+                </span>
+                <code className="text-[11px] font-mono text-muted-foreground bg-muted/30 px-1 py-0.5 rounded">
+                  {transport} + TLS
+                </code>
               </div>
-            </TooltipTrigger>
-            <TooltipContent className="max-w-xs">
-              <div className="space-y-1 text-xs">
-                <div>{t('admin.nodes.tooltip.transportProtocol')}: {transport}</div>
-                {node.sni && <div>SNI: {node.sni}</div>}
-                {node.host && <div>Host: {node.host}</div>}
-                {node.path && <div>Path: {node.path}</div>}
-                {node.allowInsecure && <div className="text-amber-500">{t('admin.nodes.tooltip.allowInsecure')}</div>}
-              </div>
-            </TooltipContent>
-          </Tooltip>
+              {node.sni && (
+                <span className="text-[11px] text-muted-foreground/70 truncate max-w-[120px]">
+                  SNI: {node.sni}
+                </span>
+              )}
+            </div>
+          </TableHoverCardList>
         );
       },
     },
@@ -358,7 +341,7 @@ export const NodeListTable: React.FC<NodeListTableProps> = ({
                   <span className="size-2.5 rounded-full bg-muted-foreground/30 block"></span>
                 </TooltipTrigger>
                 <TooltipContent>
-                  {t('admin.nodes.tooltip.offlineStatus')}{node.lastSeenAt && ` · ${t('admin.nodes.tooltip.lastOnline')}: ${formatDate(node.lastSeenAt)}`}
+                  {t('admin.nodes.tooltip.offlineStatus')}{node.lastSeenAt && ` · ${t('admin.nodes.tooltip.lastOnline')}: ${formatDateTime(node.lastSeenAt)}`}
                 </TooltipContent>
               </Tooltip>
             )}
@@ -390,7 +373,10 @@ export const NodeListTable: React.FC<NodeListTableProps> = ({
       id: 'monitor',
       header: t('admin.nodes.table.monitor'),
       size: 160,
-      meta: { priority: 3 } as ResponsiveColumnMeta, // Secondary column >= 1024px
+      meta: {
+        priority: 3,
+        headerTooltip: t('admin.nodes.tooltip.monitorDescription'),
+      } as ResponsiveColumnMeta,
       cell: ({ row }) => {
         const node = row.original;
         return <SystemStatusCell itemId={node.id} status={node.systemStatus} />;
@@ -416,7 +402,7 @@ export const NodeListTable: React.FC<NodeListTableProps> = ({
                 <StatusIcon className="size-4" strokeWidth={1.5} />
               </button>
             </TooltipTrigger>
-            <TooltipContent>
+            <TooltipContent side="top" align="center">
               {t(statusConfig.labelKey)} · {node.status === 'active' ? t('admin.nodes.actions.clickToDeactivate') : t('admin.nodes.actions.clickToActivate')}
               {node.status === 'maintenance' && node.maintenanceReason && (
                 <div className="mt-1 text-xs opacity-80">{t('admin.nodes.tooltip.maintenanceReason')}: {node.maintenanceReason}</div>
@@ -475,32 +461,31 @@ export const NodeListTable: React.FC<NodeListTableProps> = ({
           return <span className="text-xs text-muted-foreground/50">-</span>;
         }
 
+        const versionItems = [
+          { label: t('admin.nodes.tooltip.versionInfo'), value: `v${version}` },
+          ...(platform && arch ? [{ label: t('admin.nodes.table.platform'), value: `${platform}/${arch}` }] : []),
+        ];
+
         return (
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <div className={`inline-flex items-center gap-1.5 px-2 py-1 rounded-md cursor-default transition-colors ${node.hasUpdate ? 'bg-warning-muted border border-warning/20' : 'bg-muted/30 border border-transparent'}`}>
-                {node.hasUpdate ? (
-                  <ArrowUpCircle className="size-3.5 text-warning" strokeWidth={1.5} />
-                ) : (
-                  <Package className="size-3.5 text-muted-foreground/60" strokeWidth={1.5} />
-                )}
-                <code className={`text-[11px] font-mono ${node.hasUpdate ? 'text-warning' : 'text-muted-foreground'}`}>
-                  v{version}
-                </code>
-              </div>
-            </TooltipTrigger>
-            <TooltipContent>
-              <div className="space-y-1 text-xs">
-                <div>{t('admin.nodes.tooltip.versionInfo')}: v{version}</div>
-                {platform && arch && (
-                  <div className="text-muted-foreground">{platform}/{arch}</div>
-                )}
-                {node.hasUpdate && (
-                  <div className="text-warning font-medium">{t('admin.nodes.tooltip.newVersionAvailable')}</div>
-                )}
-              </div>
-            </TooltipContent>
-          </Tooltip>
+          <TableHoverCardList
+            columnKey="version"
+            items={versionItems}
+            footer={node.hasUpdate && (
+              <span className="text-warning text-xs font-medium">{t('admin.nodes.tooltip.newVersionAvailable')}</span>
+            )}
+            contentClassName="w-56"
+          >
+            <div className={`inline-flex items-center gap-1.5 px-2 py-1 rounded-md cursor-default transition-colors ${node.hasUpdate ? 'bg-warning-muted border border-warning/20' : 'bg-muted/30 border border-transparent'}`}>
+              {node.hasUpdate ? (
+                <ArrowUpCircle className="size-3.5 text-warning" strokeWidth={1.5} />
+              ) : (
+                <Package className="size-3.5 text-muted-foreground/60" strokeWidth={1.5} />
+              )}
+              <code className={`text-[11px] font-mono ${node.hasUpdate ? 'text-warning' : 'text-muted-foreground'}`}>
+                v{version}
+              </code>
+            </div>
+          </TableHoverCardList>
         );
       },
     },
@@ -517,43 +502,28 @@ export const NodeListTable: React.FC<NodeListTableProps> = ({
         }
         const firstGroup = resourceGroupsMap[groupIds[0]];
         const remainingCount = groupIds.length - 1;
+        const allGroupItems = groupIds.map((gid) => {
+          const g = resourceGroupsMap[gid];
+          return { label: g?.name || t('admin.nodes.tooltip.unknownResourceGroup'), value: gid };
+        });
         return (
-          <div className="flex items-center gap-1">
-            <Tooltip>
-              <TooltipTrigger>
-                <Badge variant="outline" className="text-[10px] truncate max-w-[80px]">
-                  {firstGroup?.name || groupIds[0]}
+          <TableHoverCardList
+            columnKey="resourceGroup"
+            title={t('admin.nodes.table.resourceGroup')}
+            items={allGroupItems}
+            contentClassName="w-64"
+          >
+            <div className="flex items-center gap-1 cursor-default">
+              <Badge variant="outline" className="text-[10px] truncate max-w-[80px]">
+                {firstGroup?.name || groupIds[0]}
+              </Badge>
+              {remainingCount > 0 && (
+                <Badge variant="secondary" className="text-[10px] px-1.5">
+                  +{remainingCount}
                 </Badge>
-              </TooltipTrigger>
-              <TooltipContent>
-                <div className="space-y-1 text-xs">
-                  <div>{firstGroup?.name || t('admin.nodes.tooltip.unknownResourceGroup')}</div>
-                  <code className="text-muted-foreground font-mono">{groupIds[0]}</code>
-                </div>
-              </TooltipContent>
-            </Tooltip>
-            {remainingCount > 0 && (
-              <Tooltip>
-                <TooltipTrigger>
-                  <Badge variant="secondary" className="text-[10px] px-1.5">
-                    +{remainingCount}
-                  </Badge>
-                </TooltipTrigger>
-                <TooltipContent>
-                  <div className="space-y-1 text-xs">
-                    {groupIds.slice(1).map((gid) => {
-                      const g = resourceGroupsMap[gid];
-                      return (
-                        <div key={gid}>
-                          {g?.name || gid}
-                        </div>
-                      );
-                    })}
-                  </div>
-                </TooltipContent>
-              </Tooltip>
-            )}
-          </div>
+              )}
+            </div>
+          </TableHoverCardList>
         );
       },
     },
@@ -565,23 +535,19 @@ export const NodeListTable: React.FC<NodeListTableProps> = ({
       cell: ({ row }) => {
         const node = row.original;
         if (node.owner) {
+          const ownerItems = [
+            ...(node.owner.name ? [{ label: t('admin.users.table.name'), value: node.owner.name }] : []),
+            { label: t('admin.users.table.email'), value: node.owner.email },
+          ];
           return (
-            <Tooltip>
-              <TooltipTrigger>
-                <div className="flex items-center gap-1.5">
-                  <User className="size-3.5 text-muted-foreground/60" strokeWidth={1.5} />
-                  <span className="text-xs text-muted-foreground truncate max-w-[80px]">
-                    {node.owner.name || node.owner.email}
-                  </span>
-                </div>
-              </TooltipTrigger>
-              <TooltipContent>
-                <div className="space-y-1 text-xs">
-                  {node.owner.name && <div>{node.owner.name}</div>}
-                  <div className="text-muted-foreground">{node.owner.email}</div>
-                </div>
-              </TooltipContent>
-            </Tooltip>
+            <TableHoverCardList columnKey="owner" items={ownerItems} contentClassName="w-64">
+              <div className="flex items-center gap-1.5 cursor-default">
+                <User className="size-3.5 text-muted-foreground/60" strokeWidth={1.5} />
+                <span className="text-xs text-muted-foreground truncate max-w-[80px]">
+                  {node.owner.name || node.owner.email}
+                </span>
+              </div>
+            </TableHoverCardList>
           );
         }
         return (
@@ -599,7 +565,7 @@ export const NodeListTable: React.FC<NodeListTableProps> = ({
       meta: { priority: 4 } as ResponsiveColumnMeta, // Optional column >= 1280px
       cell: ({ row }) => (
         <span className="text-xs text-muted-foreground">
-          {formatDate(row.original.createdAt)}
+          {formatDateTime(row.original.createdAt)}
         </span>
       ),
     },
@@ -607,7 +573,7 @@ export const NodeListTable: React.FC<NodeListTableProps> = ({
       id: 'actions',
       header: t('admin.nodes.table.actions'),
       size: 160,
-      meta: { priority: 1 } as ResponsiveColumnMeta, // Core column, always visible
+      meta: { priority: 1, sticky: 'right' } as ResponsiveColumnMeta, // Core column, always visible, sticky right
       enableSorting: false,
       cell: ({ row }) => {
         const node = row.original;
@@ -654,9 +620,11 @@ export const NodeListTable: React.FC<NodeListTableProps> = ({
                   <MoreHorizontal className="size-4" strokeWidth={1.5} />
                 </button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="end">
-                {renderDropdownMenuActions(node)}
-              </DropdownMenuContent>
+              <DropdownMenuPortal>
+                <DropdownMenuContent align="end" collisionPadding={16}>
+                  {renderDropdownMenuActions(node)}
+                </DropdownMenuContent>
+              </DropdownMenuPortal>
             </DropdownMenu>
           </div>
         );
@@ -689,7 +657,7 @@ export const NodeListTable: React.FC<NodeListTableProps> = ({
   // Use DraggableDataTable when drag sort is enabled
   if (enableDragSort && onDragEnd) {
     return (
-      <SystemStatusHoverProvider>
+      <TableHoverCardProvider>
         <DraggableDataTable
           columns={columns}
           data={nodes}
@@ -706,12 +674,12 @@ export const NodeListTable: React.FC<NodeListTableProps> = ({
           enableContextMenu={true}
           contextMenuContent={renderContextMenuActions}
         />
-      </SystemStatusHoverProvider>
+      </TableHoverCardProvider>
     );
   }
 
   return (
-    <SystemStatusHoverProvider>
+    <TableHoverCardProvider>
       <DataTable
         columns={columns}
         data={nodes}
@@ -726,6 +694,6 @@ export const NodeListTable: React.FC<NodeListTableProps> = ({
         enableContextMenu={true}
         contextMenuContent={renderContextMenuActions}
       />
-    </SystemStatusHoverProvider>
+    </TableHoverCardProvider>
   );
 };

@@ -31,6 +31,7 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuPortal,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/common/DropdownMenu';
@@ -201,60 +202,62 @@ export const SubscriptionMobileList: React.FC<SubscriptionMobileListProps> = ({
             <MoreHorizontal className="size-4 text-slate-500" />
           </button>
         </DropdownMenuTrigger>
-        <DropdownMenuContent align="end">
-          {onViewDetail && (
-            <DropdownMenuItem onClick={() => onViewDetail(subscription)}>
-              <Eye className="mr-2 size-4" />
-              {t('subscription.viewDetails')}
-            </DropdownMenuItem>
-          )}
-          {onDuplicate && (
-            <DropdownMenuItem onClick={() => onDuplicate(subscription)}>
-              <Copy className="mr-2 size-4" />
-              {t('subscription.duplicate')}
-            </DropdownMenuItem>
-          )}
-          {(onViewDetail || onDuplicate) && (canActivate || canRenew || canResetUsage || canCancel) && <DropdownMenuSeparator />}
-          {canActivate && onActivate && (
-            <DropdownMenuItem onClick={() => onActivate(subscription)}>
-              <Play className="mr-2 size-4" />
-              {t('subscription.activate')}
-            </DropdownMenuItem>
-          )}
-          {canRenew && onRenew && (
-            <DropdownMenuItem onClick={() => onRenew(subscription)}>
-              <RefreshCw className="mr-2 size-4" />
-              {t('subscription.renewSubscription')}
-            </DropdownMenuItem>
-          )}
-          {canResetUsage && onResetUsage && (
-            <DropdownMenuItem onClick={() => onResetUsage(subscription)}>
-              <RefreshCcw className="mr-2 size-4" />
-              {t('subscription.resetUsage')}
-            </DropdownMenuItem>
-          )}
-          {canCancel && onCancel && (
-            <DropdownMenuItem
-              onClick={() => onCancel(subscription)}
-              className="text-destructive focus:text-destructive"
-            >
-              <XCircle className="mr-2 size-4" />
-              {t('subscription.cancel')}
-            </DropdownMenuItem>
-          )}
-          {canDelete && onDelete && (
-            <>
-              <DropdownMenuSeparator />
+        <DropdownMenuPortal>
+          <DropdownMenuContent align="end" collisionPadding={16}>
+            {onViewDetail && (
+              <DropdownMenuItem onClick={() => onViewDetail(subscription)}>
+                <Eye className="mr-2 size-4" />
+                {t('subscription.viewDetails')}
+              </DropdownMenuItem>
+            )}
+            {onDuplicate && (
+              <DropdownMenuItem onClick={() => onDuplicate(subscription)}>
+                <Copy className="mr-2 size-4" />
+                {t('subscription.duplicate')}
+              </DropdownMenuItem>
+            )}
+            {(onViewDetail || onDuplicate) && (canActivate || canRenew || canResetUsage || canCancel) && <DropdownMenuSeparator />}
+            {canActivate && onActivate && (
+              <DropdownMenuItem onClick={() => onActivate(subscription)}>
+                <Play className="mr-2 size-4" />
+                {t('subscription.activate')}
+              </DropdownMenuItem>
+            )}
+            {canRenew && onRenew && (
+              <DropdownMenuItem onClick={() => onRenew(subscription)}>
+                <RefreshCw className="mr-2 size-4" />
+                {t('subscription.renewSubscription')}
+              </DropdownMenuItem>
+            )}
+            {canResetUsage && onResetUsage && (
+              <DropdownMenuItem onClick={() => onResetUsage(subscription)}>
+                <RefreshCcw className="mr-2 size-4" />
+                {t('subscription.resetUsage')}
+              </DropdownMenuItem>
+            )}
+            {canCancel && onCancel && (
               <DropdownMenuItem
-                onClick={() => onDelete(subscription)}
+                onClick={() => onCancel(subscription)}
                 className="text-destructive focus:text-destructive"
               >
-                <Trash2 className="mr-2 size-4" />
-                {t('subscription.delete')}
+                <XCircle className="mr-2 size-4" />
+                {t('subscription.cancel')}
               </DropdownMenuItem>
-            </>
-          )}
-        </DropdownMenuContent>
+            )}
+            {canDelete && onDelete && (
+              <>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem
+                  onClick={() => onDelete(subscription)}
+                  className="text-destructive focus:text-destructive"
+                >
+                  <Trash2 className="mr-2 size-4" />
+                  {t('subscription.delete')}
+                </DropdownMenuItem>
+              </>
+            )}
+          </DropdownMenuContent>
+        </DropdownMenuPortal>
       </DropdownMenu>
     );
   };

@@ -63,6 +63,7 @@ const RULE_TYPE_CONFIG: Record<string, { label: string; icon: React.ElementType;
   entry: { label: '入口', icon: Shield, gradient: 'from-emerald-500 to-teal-500' },
   chain: { label: '链式', icon: Activity, gradient: 'from-purple-500 to-pink-500' },
   direct_chain: { label: '直链', icon: Globe, gradient: 'from-amber-500 to-orange-500' },
+  external: { label: '外部', icon: Globe, gradient: 'from-cyan-500 to-teal-500' },
 };
 
 // Protocol labels
@@ -99,26 +100,11 @@ const formatBytes = (bytes?: number) => {
   return `${value.toFixed(unitIndex > 1 ? 2 : 0)} ${units[unitIndex]}`;
 };
 
-const formatDate = (dateString: string) => {
-  if (!dateString) return '-';
-  const date = new Date(dateString);
-  const now = new Date();
-  const diffMs = now.getTime() - date.getTime();
-  const diffMins = Math.floor(diffMs / 60000);
-  const diffHours = Math.floor(diffMins / 60);
-  const diffDays = Math.floor(diffHours / 24);
-
-  if (diffMins < 1) return '刚刚';
-  if (diffMins < 60) return `${diffMins} 分钟前`;
-  if (diffHours < 24) return `${diffHours} 小时前`;
-  if (diffDays < 7) return `${diffDays} 天前`;
-
-  return date.toLocaleDateString('zh-CN', { month: 'short', day: 'numeric', year: date.getFullYear() !== now.getFullYear() ? 'numeric' : undefined });
-};
+import { formatRelativeTime, formatDateTime } from '@/shared/utils/date-utils';
 
 const formatTimestamp = (timestamp?: number) => {
   if (!timestamp) return '-';
-  return formatDate(new Date(timestamp * 1000).toISOString());
+  return formatRelativeTime(new Date(timestamp * 1000).toISOString());
 };
 
 // Stat Card Component
@@ -279,13 +265,13 @@ const AgentStatusRow: React.FC<{ status: AgentRuleSyncStatus }> = ({ status }) =
   const RunIcon = runConfig.icon;
 
   return (
-    <div className="flex items-center justify-between p-2.5 rounded-lg bg-slate-50 dark:bg-slate-800/30 border border-slate-200/50 dark:border-slate-700/30 transition-colors hover:bg-slate-100 dark:hover:bg-slate-800/50 cursor-default">
-      <div className="flex items-center gap-2.5">
-        <div className="p-1.5 rounded-lg bg-slate-100 dark:bg-slate-700/50">
+    <div className="flex items-center justify-between gap-2 p-2.5 rounded-lg bg-slate-50 dark:bg-slate-800/30 border border-slate-200/50 dark:border-slate-700/30 transition-colors hover:bg-slate-100 dark:hover:bg-slate-800/50 cursor-default overflow-hidden">
+      <div className="flex items-center gap-2.5 min-w-0 flex-1">
+        <div className="p-1.5 rounded-lg bg-slate-100 dark:bg-slate-700/50 flex-shrink-0">
           <Bot className="size-3.5 text-slate-500" />
         </div>
-        <div>
-          <span className="text-sm font-medium">{status.agentName}</span>
+        <div className="min-w-0 flex-1">
+          <span className="text-sm font-medium truncate">{status.agentName}</span>
           {status.position === 0 && (
             <span className="ml-2 px-1.5 py-0.5 text-[10px] font-medium rounded bg-emerald-500/10 text-emerald-600 dark:text-emerald-400">
               入口
@@ -293,16 +279,14 @@ const AgentStatusRow: React.FC<{ status: AgentRuleSyncStatus }> = ({ status }) =
           )}
         </div>
       </div>
-      <div className="flex items-center gap-3 text-xs">
+      <div className="flex items-center gap-2 text-xs flex-shrink-0">
         <span className={`flex items-center gap-1 ${syncConfig.color}`}>
           <SyncIcon className="size-3.5" />
-          <span className="hidden sm:inline">{syncConfig.label}</span>
         </span>
         <span className={`flex items-center gap-1 ${runConfig.color}`}>
           <RunIcon className="size-3.5" />
-          <span className="hidden sm:inline">{runConfig.label}</span>
         </span>
-        <span className="text-muted-foreground tabular-nums font-mono">
+        <span className="text-muted-foreground tabular-nums font-mono whitespace-nowrap">
           :{status.listenPort}
         </span>
       </div>
@@ -361,52 +345,55 @@ export const ForwardRuleDetailDialog: React.FC<ForwardRuleDetailDialogProps> = (
 
   const totalBytes = (rule.uploadBytes || 0) + (rule.downloadBytes || 0);
 
-  // Build flow path nodes
+  // Build flow path nodes (not used for external type)
   const flowNodes: Array<{ type: 'entry' | 'relay' | 'exit' | 'target'; name: string; address?: string; port?: number }> = [];
 
-  // Entry node
-  flowNodes.push({
-    type: 'entry',
-    name: getAgentName(rule.agentId),
-    address: getAgentAddress(rule.agentId),
-    port: rule.listenPort,
-  });
-
-  // Exit/Relay nodes
-  if (rule.ruleType === 'entry' && rule.exitAgentId) {
+  // External type doesn't have flow path
+  if (rule.ruleType !== 'external') {
+    // Entry node
     flowNodes.push({
-      type: 'exit',
-      name: getAgentName(rule.exitAgentId),
-      address: getAgentAddress(rule.exitAgentId),
+      type: 'entry',
+      name: getAgentName(rule.agentId),
+      address: getAgentAddress(rule.agentId),
+      port: rule.listenPort,
     });
-  }
 
-  if ((rule.ruleType === 'chain' || rule.ruleType === 'direct_chain') && rule.chainAgentIds) {
-    rule.chainAgentIds
-      .filter((id) => id !== rule.agentId)
-      .forEach((id) => {
-        flowNodes.push({
-          type: 'relay',
-          name: getAgentName(id),
-          address: getAgentAddress(id),
-          port: rule.chainPortConfig?.[id],
-        });
+    // Exit/Relay nodes
+    if (rule.ruleType === 'entry' && rule.exitAgentId) {
+      flowNodes.push({
+        type: 'exit',
+        name: getAgentName(rule.exitAgentId),
+        address: getAgentAddress(rule.exitAgentId),
       });
-  }
+    }
 
-  // Target node
-  if (rule.targetNodeId || rule.targetAddress) {
-    flowNodes.push({
-      type: 'target',
-      name: rule.targetNodeId ? getNodeName(rule.targetNodeId) : (rule.targetAddress || '-'),
-      address: rule.targetNodeId ? (rule.targetNodeServerAddress || rule.targetNodePublicIpv4) : rule.targetAddress,
-      port: rule.targetPort,
-    });
+    if ((rule.ruleType === 'chain' || rule.ruleType === 'direct_chain') && rule.chainAgentIds) {
+      rule.chainAgentIds
+        .filter((id) => id !== rule.agentId)
+        .forEach((id) => {
+          flowNodes.push({
+            type: 'relay',
+            name: getAgentName(id),
+            address: getAgentAddress(id),
+            port: rule.chainPortConfig?.[id],
+          });
+        });
+    }
+
+    // Target node
+    if (rule.targetNodeId || rule.targetAddress) {
+      flowNodes.push({
+        type: 'target',
+        name: rule.targetNodeId ? getNodeName(rule.targetNodeId) : (rule.targetAddress || '-'),
+        address: rule.targetNodeId ? (rule.targetNodeServerAddress || rule.targetNodePublicIpv4) : rule.targetAddress,
+        port: rule.targetPort,
+      });
+    }
   }
 
   return (
     <Dialog open={open} onOpenChange={(isOpen) => !isOpen && onClose()}>
-      <DialogContent className="sm:max-w-[680px] p-0 gap-0 overflow-hidden flex flex-col max-h-[90vh]">
+      <DialogContent className="@container sm:max-w-[680px] p-0 gap-0 overflow-hidden flex flex-col max-h-[90vh]">
         {/* Header */}
         <DialogHeader className="flex-shrink-0 p-5 pb-4 border-b border-slate-200 dark:border-slate-700/50 bg-gradient-to-br from-slate-50 to-slate-100/50 dark:from-slate-800/50 dark:to-slate-900/50">
           <div className="flex items-start justify-between gap-4">
@@ -421,9 +408,11 @@ export const ForwardRuleDetailDialog: React.FC<ForwardRuleDetailDialogProps> = (
                   <span className={`px-2 py-0.5 text-xs font-semibold rounded-md ${statusConfig.bg} ${statusConfig.color} ring-1 ${statusConfig.ring}`}>
                     {statusConfig.label}
                   </span>
-                  <span className="text-xs text-muted-foreground">
-                    {PROTOCOL_LABELS[rule.protocol]} · {IP_VERSION_LABELS[rule.ipVersion]}
-                  </span>
+                  {rule.ruleType !== 'external' && (
+                    <span className="text-xs text-muted-foreground">
+                      {PROTOCOL_LABELS[rule.protocol]} · {IP_VERSION_LABELS[rule.ipVersion]}
+                    </span>
+                  )}
                 </div>
                 <DialogTitle className="text-lg font-bold">{rule.name}</DialogTitle>
                 <div className="flex items-center gap-2">
@@ -443,56 +432,121 @@ export const ForwardRuleDetailDialog: React.FC<ForwardRuleDetailDialogProps> = (
         {/* Content */}
         <div className="flex-1 min-h-0 overflow-y-auto">
           <div className="p-5 space-y-6">
-            {/* Flow Path Visualization */}
-            <section>
-              <div className="flex items-center gap-2 mb-1">
-                <Activity className="size-4 text-muted-foreground" />
-                <h3 className="text-sm font-semibold">转发链路</h3>
-                {(rule.ruleType === 'entry' || rule.ruleType === 'chain') && rule.tunnelType && (
-                  <span className="px-1.5 py-0.5 text-[10px] font-medium rounded bg-cyan-500/10 text-cyan-600 dark:text-cyan-400">
-                    {TUNNEL_TYPE_LABELS[rule.tunnelType]}
-                  </span>
-                )}
-                <span className="text-xs text-muted-foreground ml-auto">{flowNodes.length} 个节点</span>
-              </div>
-              <div className="p-3 rounded-xl bg-slate-50 dark:bg-slate-800/30 border border-slate-200/50 dark:border-slate-700/30">
-                <FlowPath nodes={flowNodes} />
-              </div>
-            </section>
+            {/* Flow Path Visualization - hidden for external type */}
+            {rule.ruleType !== 'external' && (
+              <section>
+                <div className="flex items-center gap-2 mb-1">
+                  <Activity className="size-4 text-muted-foreground" />
+                  <h3 className="text-sm font-semibold">转发链路</h3>
+                  {(rule.ruleType === 'entry' || rule.ruleType === 'chain') && rule.tunnelType && (
+                    <span className="px-1.5 py-0.5 text-[10px] font-medium rounded bg-cyan-500/10 text-cyan-600 dark:text-cyan-400">
+                      {TUNNEL_TYPE_LABELS[rule.tunnelType]}
+                    </span>
+                  )}
+                  <span className="text-xs text-muted-foreground ml-auto">{flowNodes.length} 个节点</span>
+                </div>
+                <div className="p-3 rounded-xl bg-slate-50 dark:bg-slate-800/30 border border-slate-200/50 dark:border-slate-700/30">
+                  <FlowPath nodes={flowNodes} />
+                </div>
+              </section>
+            )}
 
-            {/* Stats Grid */}
+            {/* External type: Server Info */}
+            {rule.ruleType === 'external' && (
+              <section>
+                <div className="flex items-center gap-2 mb-3">
+                  <Server className="size-4 text-muted-foreground" />
+                  <h3 className="text-sm font-semibold">服务器信息</h3>
+                </div>
+                <div className="grid grid-cols-2 gap-2">
+                  <StatCard
+                    icon={Globe}
+                    label="服务器地址"
+                    value={rule.serverAddress || '-'}
+                    color="text-cyan-500"
+                  />
+                  <StatCard
+                    icon={Zap}
+                    label="监听端口"
+                    value={rule.listenPort}
+                    color="text-blue-500"
+                  />
+                  {rule.externalSource && (
+                    <StatCard
+                      icon={FolderOpen}
+                      label="外部来源"
+                      value={rule.externalSource}
+                      color="text-purple-500"
+                    />
+                  )}
+                  {rule.externalRuleId && (
+                    <StatCard
+                      icon={Settings2}
+                      label="外部规则ID"
+                      value={rule.externalRuleId}
+                      color="text-slate-400"
+                    />
+                  )}
+                </div>
+              </section>
+            )}
+
+            {/* Stats Grid - different for external type */}
             <section>
               <div className="flex items-center gap-2 mb-3">
                 <Settings2 className="size-4 text-muted-foreground" />
                 <h3 className="text-sm font-semibold">配置概览</h3>
               </div>
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-                <StatCard
-                  icon={Zap}
-                  label="规则类型"
-                  value={ruleTypeConfig.label}
-                  color={`bg-gradient-to-br ${ruleTypeConfig.gradient} text-white`}
-                />
-                <StatCard
-                  icon={Globe}
-                  label="监听端口"
-                  value={rule.listenPort}
-                  color="text-blue-500"
-                />
-                <StatCard
-                  icon={Activity}
-                  label="流量倍率"
-                  value={`${rule.effectiveTrafficMultiplier?.toFixed(1) || '1.0'}x`}
-                  subValue={rule.isAutoMultiplier ? '自动' : '自定义'}
-                  color="text-amber-500"
-                />
-                <StatCard
-                  icon={Clock}
-                  label="创建时间"
-                  value={formatDate(rule.createdAt)}
-                  color="text-slate-400"
-                />
-              </div>
+              {rule.ruleType === 'external' ? (
+                <div className="grid grid-cols-2 @sm:grid-cols-3 gap-2">
+                  <StatCard
+                    icon={Zap}
+                    label="规则类型"
+                    value={ruleTypeConfig.label}
+                    color={`bg-gradient-to-br ${ruleTypeConfig.gradient} text-white`}
+                  />
+                  <StatCard
+                    icon={Activity}
+                    label="排序顺序"
+                    value={rule.sortOrder ?? 0}
+                    color="text-amber-500"
+                  />
+                  <StatCard
+                    icon={Clock}
+                    label="创建时间"
+                    value={formatRelativeTime(rule.createdAt)}
+                    color="text-slate-400"
+                  />
+                </div>
+              ) : (
+                <div className="grid grid-cols-2 @sm:grid-cols-4 gap-2">
+                  <StatCard
+                    icon={Zap}
+                    label="规则类型"
+                    value={ruleTypeConfig.label}
+                    color={`bg-gradient-to-br ${ruleTypeConfig.gradient} text-white`}
+                  />
+                  <StatCard
+                    icon={Globe}
+                    label="监听端口"
+                    value={rule.listenPort}
+                    color="text-blue-500"
+                  />
+                  <StatCard
+                    icon={Activity}
+                    label="流量倍率"
+                    value={`${rule.effectiveTrafficMultiplier?.toFixed(1) || '1.0'}x`}
+                    subValue={rule.isAutoMultiplier ? '自动' : '自定义'}
+                    color="text-amber-500"
+                  />
+                  <StatCard
+                    icon={Clock}
+                    label="创建时间"
+                    value={formatRelativeTime(rule.createdAt)}
+                    color="text-slate-400"
+                  />
+                </div>
+              )}
             </section>
 
             {/* Resource Groups */}
@@ -534,8 +588,8 @@ export const ForwardRuleDetailDialog: React.FC<ForwardRuleDetailDialogProps> = (
               </div>
             </section>
 
-            {/* Sync Status */}
-            {rule.status === 'enabled' && (
+            {/* Sync Status - hidden for external type */}
+            {rule.status === 'enabled' && rule.ruleType !== 'external' && (
               <section>
                 <div className="flex items-center gap-2 mb-3">
                   <RotateCw className="size-4 text-muted-foreground" />
@@ -611,12 +665,12 @@ export const ForwardRuleDetailDialog: React.FC<ForwardRuleDetailDialogProps> = (
               <div className="flex items-center justify-between text-xs text-muted-foreground">
                 <div className="flex items-center gap-1.5">
                   <Clock className="size-3.5" />
-                  <span>创建于 {formatDate(rule.createdAt)}</span>
+                  <span>创建于 {formatRelativeTime(rule.createdAt)}</span>
                 </div>
                 {rule.updatedAt && (
                   <div className="flex items-center gap-1.5">
                     <RotateCw className="size-3.5" />
-                    <span>更新于 {formatDate(rule.updatedAt)}</span>
+                    <span>更新于 {formatRelativeTime(rule.updatedAt)}</span>
                   </div>
                 )}
               </div>

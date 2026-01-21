@@ -24,7 +24,7 @@ interface AdminTableProps {
 
 export const AdminTable = ({ children, className }: AdminTableProps) => {
   return (
-    <div className="overflow-x-auto bg-card rounded-xl">
+    <div className="@container overflow-x-auto bg-card rounded-xl">
       <table className={cn('w-full text-sm border-separate border-spacing-0', className)}>
         {children}
       </table>
@@ -241,7 +241,7 @@ export const AdminTablePagination = ({
             onFocus={() => onPrefetchPage?.(page - 1)}
             disabled={page === 1 || loading}
             className={cn(
-              'flex items-center justify-center size-11 sm:size-9 rounded-lg touch-target',
+              'flex items-center justify-center size-11 @sm:size-9 rounded-lg touch-target',
               'text-muted-foreground',
               'hover:bg-accent',
               'hover:shadow-sm active:scale-95',
@@ -249,7 +249,7 @@ export const AdminTablePagination = ({
               'transition-all duration-200'
             )}
           >
-            <ChevronLeft className="size-5 sm:size-4.5" strokeWidth={2} />
+            <ChevronLeft className="size-5 @sm:size-4.5" strokeWidth={2} />
           </button>
 
           {/* Page number display */}
@@ -270,7 +270,7 @@ export const AdminTablePagination = ({
                   onFocus={() => onPrefetchPage?.(pageNum as number)}
                   disabled={loading}
                   className={cn(
-                    'flex items-center justify-center min-w-[44px] sm:min-w-[36px] h-11 sm:h-9 px-3 sm:px-2.5 rounded-lg text-sm touch-target',
+                    'flex items-center justify-center min-w-[44px] @sm:min-w-[36px] h-11 @sm:h-9 px-3 @sm:px-2.5 rounded-lg text-sm touch-target',
                     'transition-all duration-200',
                     pageNum === page
                       ? 'bg-primary text-primary-foreground shadow-md shadow-primary/30 scale-105'
@@ -289,7 +289,7 @@ export const AdminTablePagination = ({
             onFocus={() => onPrefetchPage?.(page + 1)}
             disabled={page >= totalPages || loading}
             className={cn(
-              'flex items-center justify-center size-11 sm:size-9 rounded-lg touch-target',
+              'flex items-center justify-center size-11 @sm:size-9 rounded-lg touch-target',
               'text-muted-foreground',
               'hover:bg-accent',
               'hover:shadow-sm active:scale-95',
@@ -297,7 +297,7 @@ export const AdminTablePagination = ({
               'transition-all duration-200'
             )}
           >
-            <ChevronRight className="size-5 sm:size-4.5" strokeWidth={2} />
+            <ChevronRight className="size-5 @sm:size-4.5" strokeWidth={2} />
           </button>
         </div>
       </div>

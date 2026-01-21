@@ -4,6 +4,7 @@
  */
 
 import { useState, useEffect } from 'react';
+import { formatDateTime } from '@/shared/utils/date-utils';
 import { useTranslation } from 'react-i18next';
 import { Cpu, Loader2, Settings, ChevronDown } from 'lucide-react';
 import {
@@ -242,7 +243,7 @@ export const EditForwardAgentSheet: React.FC<EditForwardAgentSheetProps> = ({
               <div className="space-y-1.5">
                 <label className="text-xs font-medium text-muted-foreground px-1">{t('admin.forwardAgents.detail.createdAt')}</label>
                 <MobileFormInput
-                  value={new Date(agent.createdAt).toLocaleString()}
+                  value={formatDateTime(agent.createdAt)}
                   disabled
                   className="bg-muted"
                 />

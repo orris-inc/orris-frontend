@@ -4,6 +4,7 @@
  */
 
 import { useState, useEffect, useCallback } from 'react';
+import { formatDate } from '@/shared/utils/date-utils';
 import { FolderEdit, Layers, FileText } from 'lucide-react';
 import {
   Sheet,
@@ -142,7 +143,7 @@ export const EditResourceGroupSheet: React.FC<EditResourceGroupSheetProps> = ({
               <div className="flex items-center justify-between">
                 <span className="text-sm text-muted-foreground">创建时间</span>
                 <span className="text-sm">
-                  {new Date(resourceGroup.createdAt).toLocaleDateString('zh-CN')}
+                  {formatDate(resourceGroup.createdAt)}
                 </span>
               </div>
             </div>

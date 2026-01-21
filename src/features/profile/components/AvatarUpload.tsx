@@ -78,7 +78,7 @@ export const AvatarUpload = ({ avatar, name }: AvatarUploadProps) => {
   };
 
   return (
-    <div className="flex flex-col items-center text-center">
+    <div className="@container flex flex-col items-center text-center">
       <input
         ref={inputRef}
         type="file"
@@ -89,7 +89,7 @@ export const AvatarUpload = ({ avatar, name }: AvatarUploadProps) => {
 
       {/* Avatar - responsive size with glass ring effect */}
       <AvatarPrimitive.Root
-        className="mx-auto mb-4 size-24 sm:size-32 cursor-pointer transition-all duration-300 hover:opacity-80 hover:scale-105 relative inline-flex shrink-0 overflow-hidden rounded-full ring-2 ring-border/30 ring-offset-2 ring-offset-background"
+        className="mx-auto mb-4 size-24 @sm:size-32 cursor-pointer transition-all duration-300 hover:opacity-80 hover:scale-105 relative inline-flex shrink-0 overflow-hidden rounded-full ring-2 ring-border/30 ring-offset-2 ring-offset-background"
         onClick={() => inputRef.current?.click()}
       >
         <AvatarPrimitive.Image
@@ -97,7 +97,7 @@ export const AvatarUpload = ({ avatar, name }: AvatarUploadProps) => {
           alt={name}
           className="aspect-square h-full w-full"
         />
-        <AvatarPrimitive.Fallback className="flex h-full w-full items-center justify-center rounded-full bg-muted text-4xl sm:text-5xl">
+        <AvatarPrimitive.Fallback className="flex h-full w-full items-center justify-center rounded-full bg-muted text-4xl @sm:text-5xl">
           {getAvatarFallback()}
         </AvatarPrimitive.Fallback>
       </AvatarPrimitive.Root>
@@ -106,7 +106,7 @@ export const AvatarUpload = ({ avatar, name }: AvatarUploadProps) => {
       <button
         onClick={() => inputRef.current?.click()}
         disabled={true}
-        className="glass-interactive inline-flex items-center justify-center rounded-xl text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 border border-border/50 bg-background hover:bg-accent hover:text-accent-foreground h-11 sm:h-10 px-4 py-2 mb-2 gap-2 touch-target"
+        className="glass-interactive inline-flex items-center justify-center rounded-xl text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 border border-border/50 bg-background hover:bg-accent hover:text-accent-foreground h-11 @sm:h-10 px-4 py-2 mb-2 gap-2 touch-target"
       >
         <Camera className="h-4 w-4" />
         更换头像（暂不可用）
@@ -119,7 +119,7 @@ export const AvatarUpload = ({ avatar, name }: AvatarUploadProps) => {
       {/* Backend API in development notice - iOS 26 Liquid Glass style */}
       <div className="glass relative w-full rounded-xl p-4 [&>svg~*]:pl-7 [&>svg+div]:translate-y-[-3px] [&>svg]:absolute [&>svg]:left-4 [&>svg]:top-4 [&>svg]:text-foreground">
         <Info className="size-4" />
-        <div className={`${alertDescriptionStyles} text-xs sm:text-sm`}>
+        <div className={`${alertDescriptionStyles} text-xs @sm:text-sm`}>
           头像上传功能正在开发中，后端API尚未就绪。请耐心等待更新。
         </div>
       </div>

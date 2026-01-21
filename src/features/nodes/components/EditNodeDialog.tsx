@@ -3,6 +3,7 @@
  */
 
 import { useState, useEffect, useMemo } from 'react';
+import { formatDateTime } from '@/shared/utils/date-utils';
 import {
   Dialog,
   DialogContent,
@@ -619,8 +620,8 @@ export const EditNodeDialog: React.FC<EditNodeDialogProps> = ({
                   <span className="text-sm font-medium">基本信息</span>
                 </div>
               </AccordionTrigger>
-              <AccordionContent>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <AccordionContent className="@container">
+                <div className="grid grid-cols-1 @md:grid-cols-2 gap-4">
                   {/* 节点ID（只读） */}
                   <div className="flex flex-col gap-2">
                     <Label htmlFor="node_id">节点ID</Label>
@@ -632,7 +633,7 @@ export const EditNodeDialog: React.FC<EditNodeDialogProps> = ({
                     <Label htmlFor="createdAt">创建时间</Label>
                     <Input
                       id="createdAt"
-                      value={new Date(node.createdAt).toLocaleString('zh-CN')}
+                      value={formatDateTime(node.createdAt)}
                       disabled
                     />
                   </div>
@@ -885,10 +886,10 @@ export const EditNodeDialog: React.FC<EditNodeDialogProps> = ({
                   <span className="text-sm font-medium">网络配置</span>
                 </div>
               </AccordionTrigger>
-              <AccordionContent>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <AccordionContent className="@container">
+                <div className="grid grid-cols-1 @md:grid-cols-2 gap-4">
                   {/* 服务器地址 */}
-                  <div className="flex flex-col gap-2 md:col-span-2">
+                  <div className="flex flex-col gap-2 @md:col-span-2">
                     <Label htmlFor="serverAddress">服务器地址</Label>
                     <Input
                       id="serverAddress"
@@ -951,8 +952,8 @@ export const EditNodeDialog: React.FC<EditNodeDialogProps> = ({
                   )}
                 </div>
               </AccordionTrigger>
-              <AccordionContent>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <AccordionContent className="@container">
+                <div className="grid grid-cols-1 @md:grid-cols-2 gap-4">
                   {/* Shadowsocks 插件 */}
                   {isShadowsocks && (
                     <>
@@ -969,7 +970,7 @@ export const EditNodeDialog: React.FC<EditNodeDialogProps> = ({
                         </p>
                       </div>
 
-                      <div className="flex flex-col gap-2 md:col-span-2">
+                      <div className="flex flex-col gap-2 @md:col-span-2">
                         <Label htmlFor="pluginOpts">插件选项</Label>
                         <Input
                           id="pluginOpts"
@@ -1180,7 +1181,7 @@ export const EditNodeDialog: React.FC<EditNodeDialogProps> = ({
                             />
                           </div>
 
-                          <div className="flex flex-col gap-2 md:col-span-2">
+                          <div className="flex flex-col gap-2 @md:col-span-2">
                             <Label htmlFor="vlessRealitySpiderX">Reality Spider X</Label>
                             <Input
                               id="vlessRealitySpiderX"
@@ -1362,7 +1363,7 @@ export const EditNodeDialog: React.FC<EditNodeDialogProps> = ({
                         />
                       </div>
 
-                      <div className="flex flex-col gap-2 md:col-span-2">
+                      <div className="flex flex-col gap-2 @md:col-span-2">
                         <Label htmlFor="hysteria2Fingerprint">Fingerprint</Label>
                         <Select
                           value={formData.hysteria2Fingerprint || ''}
@@ -1450,8 +1451,8 @@ export const EditNodeDialog: React.FC<EditNodeDialogProps> = ({
                   <span className="text-sm font-medium">其他设置</span>
                 </div>
               </AccordionTrigger>
-              <AccordionContent>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <AccordionContent className="@container">
+                <div className="grid grid-cols-1 @md:grid-cols-2 gap-4">
                   {/* 地区 */}
                   <div className="flex flex-col gap-2">
                     <Label htmlFor="region">地区</Label>
@@ -1475,7 +1476,7 @@ export const EditNodeDialog: React.FC<EditNodeDialogProps> = ({
                   </div>
 
                   {/* 标签 */}
-                  <div className="flex flex-col gap-2 md:col-span-2">
+                  <div className="flex flex-col gap-2 @md:col-span-2">
                     <Label htmlFor="tagsInput">标签</Label>
                     <Input
                       id="tagsInput"
@@ -1489,7 +1490,7 @@ export const EditNodeDialog: React.FC<EditNodeDialogProps> = ({
                   </div>
 
                   {/* 资源组（多选） */}
-                  <div className="flex flex-col gap-2 md:col-span-2">
+                  <div className="flex flex-col gap-2 @md:col-span-2">
                     <Label>资源组</Label>
                     <p className="text-xs text-muted-foreground">
                       可选，将节点关联到一个或多个资源组

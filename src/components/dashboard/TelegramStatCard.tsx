@@ -40,8 +40,7 @@ export const TelegramStatCard = ({
   if (isLoading) {
     return (
       <div className={cn(
-        'col-span-2 md:col-span-3',
-        'p-5 rounded-xl bg-card border',
+        '@container p-5 rounded-xl bg-card border',
         className
       )}>
         <div className="flex items-center gap-3 mb-3">
@@ -72,8 +71,7 @@ export const TelegramStatCard = ({
     <Link
       to="/notifications"
       className={cn(
-        'col-span-2 md:col-span-3',
-        'p-5 rounded-xl bg-card border',
+        '@container p-5 rounded-xl bg-card border',
         'transition-all hover:shadow-md hover:border-[brand-telegram]/30',
         'cursor-pointer group',
         className

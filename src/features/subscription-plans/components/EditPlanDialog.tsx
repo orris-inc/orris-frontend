@@ -229,7 +229,7 @@ export const EditPlanDialog: React.FC<EditPlanDialogProps> = ({
 
   return (
     <Dialog open={open} onOpenChange={handleClose}>
-      <DialogContent className="sm:max-w-3xl flex flex-col max-h-[90vh]">
+      <DialogContent className="@container sm:max-w-3xl flex flex-col max-h-[90vh]">
         <DialogHeader className="flex-shrink-0">
           <DialogTitle>编辑订阅计划: {plan.name}</DialogTitle>
           <DialogDescription>修改订阅计划的配置信息</DialogDescription>
@@ -241,7 +241,7 @@ export const EditPlanDialog: React.FC<EditPlanDialogProps> = ({
           <div className="space-y-4">
             <h3 className="text-sm font-semibold">基本信息（只读）</h3>
             <Separator />
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+            <div className="grid grid-cols-1 gap-4 @sm:grid-cols-2">
               <div className="flex flex-col gap-2">
                 <Label>计划ID</Label>
                 <div className="flex h-10 items-center px-3 rounded-md border bg-muted">
@@ -265,9 +265,9 @@ export const EditPlanDialog: React.FC<EditPlanDialogProps> = ({
           <div className="space-y-4">
             <h3 className="text-sm font-semibold">可编辑信息</h3>
             <Separator />
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+            <div className="grid grid-cols-1 gap-4 @sm:grid-cols-2">
               {/* Pricing Options */}
-              <div className="space-y-4 sm:col-span-2">
+              <div className="space-y-4 @sm:col-span-2">
                 <div className="flex items-center justify-between">
                   <Label>
                     定价选项 <span className="text-destructive">*</span>
@@ -368,7 +368,7 @@ export const EditPlanDialog: React.FC<EditPlanDialogProps> = ({
             <div className="space-y-4">
               <h3 className="text-sm font-semibold">节点限制配置</h3>
               <Separator />
-              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+              <div className="grid grid-cols-1 gap-4 @sm:grid-cols-2">
                 <div className="flex flex-col gap-2">
                   <Label htmlFor="trafficLimit">月流量上限 (GB)</Label>
                   <Input
@@ -443,7 +443,7 @@ export const EditPlanDialog: React.FC<EditPlanDialogProps> = ({
             <div className="space-y-4">
               <h3 className="text-sm font-semibold">转发限制配置</h3>
               <Separator />
-              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+              <div className="grid grid-cols-1 gap-4 @sm:grid-cols-2">
                 <div className="flex flex-col gap-2">
                   <Label htmlFor="ruleLimit">规则数量上限</Label>
                   <Input
@@ -471,7 +471,7 @@ export const EditPlanDialog: React.FC<EditPlanDialogProps> = ({
                   />
                 </div>
 
-                <div className="flex flex-col gap-2 sm:col-span-2">
+                <div className="flex flex-col gap-2 @sm:col-span-2">
                   <Label>允许的规则类型</Label>
                   <div className="flex flex-wrap gap-3 pt-1">
                     {FORWARD_RULE_TYPES.map((type) => (
@@ -514,7 +514,7 @@ export const EditPlanDialog: React.FC<EditPlanDialogProps> = ({
           <div className="space-y-4">
             <h3 className="text-sm font-semibold">通用配置</h3>
             <Separator />
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+            <div className="grid grid-cols-1 gap-4 @sm:grid-cols-2">
               <div className="flex flex-col gap-2">
                 <Label htmlFor="sortOrder">排序顺序</Label>
                 <Input

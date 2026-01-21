@@ -121,17 +121,17 @@ export const SubscriptionForwardRulesSection: React.FC<SubscriptionForwardRulesS
   }
 
   return (
-    <div className="space-y-3 sm:space-y-4">
+    <div className="@container space-y-3 @sm:space-y-4">
       {/* Usage quota card */}
       <SubscriptionForwardUsageCard usage={usage} isLoading={isUsageLoading} />
 
       {/* Rule limit reached warning - compact on mobile */}
       {isAtLimit && (
-        <div className="flex items-start sm:items-center gap-2 sm:gap-3 p-2.5 sm:p-3 bg-amber-500/10 border border-amber-500/20 rounded-lg">
-          <AlertCircle className="h-4 w-4 sm:h-5 sm:w-5 text-amber-500 shrink-0 mt-0.5 sm:mt-0" />
+        <div className="flex items-start @sm:items-center gap-2 @sm:gap-3 p-2.5 @sm:p-3 bg-amber-500/10 border border-amber-500/20 rounded-lg">
+          <AlertCircle className="h-4 w-4 @sm:h-5 @sm:w-5 text-amber-500 shrink-0 mt-0.5 @sm:mt-0" />
           <div>
-            <p className="text-xs sm:text-sm font-medium text-amber-600 dark:text-amber-400">已达到规则上限</p>
-            <p className="text-[10px] sm:text-xs text-muted-foreground">
+            <p className="text-xs @sm:text-sm font-medium text-amber-600 dark:text-amber-400">已达到规则上限</p>
+            <p className="text-[10px] @sm:text-xs text-muted-foreground">
               已创建 {usage?.ruleCount} 条，升级订阅可创建更多
             </p>
           </div>
@@ -140,16 +140,16 @@ export const SubscriptionForwardRulesSection: React.FC<SubscriptionForwardRulesS
 
       {/* Action bar - compact */}
       <div className="flex items-center justify-between gap-2">
-        <p className="text-xs sm:text-sm text-muted-foreground">共 {pagination.total} 条规则</p>
+        <p className="text-xs @sm:text-sm text-muted-foreground">共 {pagination.total} 条规则</p>
         <Button
           onClick={handleCreateClick}
           disabled={isAtLimit || isUsageLoading}
           size="sm"
-          className="gap-1.5 h-8 sm:h-9 text-xs sm:text-sm"
+          className="gap-1.5 h-8 @sm:h-9 text-xs @sm:text-sm"
         >
-          <Plus className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
-          <span className="hidden sm:inline">新增规则</span>
-          <span className="sm:hidden">新增</span>
+          <Plus className="h-3.5 w-3.5 @sm:h-4 @sm:w-4" />
+          <span className="hidden @sm:inline">新增规则</span>
+          <span className="@sm:hidden">新增</span>
         </Button>
       </div>
 

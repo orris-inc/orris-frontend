@@ -36,18 +36,7 @@ import { AddMembersDialog } from './AddMembersDialog';
 import type { ResourceGroup } from '@/api/resource/types';
 import type { SubscriptionPlan } from '@/api/subscription/types';
 
-// Format date
-const formatDate = (dateString: string) => {
-  if (!dateString) return '-';
-  const date = new Date(dateString);
-  return date.toLocaleString('zh-CN', {
-    year: 'numeric',
-    month: '2-digit',
-    day: '2-digit',
-    hour: '2-digit',
-    minute: '2-digit',
-  });
-};
+import { formatDateTime } from '@/shared/utils/date-utils';
 
 // Detail item component
 const DetailItem: React.FC<{
@@ -378,12 +367,12 @@ export const ResourceGroupDetailDialog: React.FC<ResourceGroupDetailDialogProps>
                 <DetailItem
                   icon={<Clock className="size-4" />}
                   label="创建时间"
-                  value={formatDate(resourceGroup.createdAt)}
+                  value={formatDateTime(resourceGroup.createdAt)}
                 />
                 <DetailItem
                   icon={<Clock className="size-4" />}
                   label="更新时间"
-                  value={formatDate(resourceGroup.updatedAt)}
+                  value={formatDateTime(resourceGroup.updatedAt)}
                 />
               </div>
 

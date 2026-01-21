@@ -1,6 +1,6 @@
 /**
  * Node Management Page (Admin)
- * High-density data management interface
+ * Tailwind UI Application UI style
  */
 
 import { useState, useMemo, lazy, Suspense } from 'react';
@@ -9,15 +9,13 @@ import {
   Server,
   Plus,
   RefreshCw,
-  Users,
   ArrowUpCircle,
   Activity,
   CheckCircle2,
-  XCircle,
   Radio,
-  GripVertical,
 } from 'lucide-react';
 import { Switch, SwitchThumb } from '@/components/common/Switch';
+import { Button } from '@/components/common/Button';
 import { NodeListTable } from '@/features/nodes/components/NodeListTable';
 import { CreateNodeSheet } from '@/features/nodes/components/CreateNodeSheet';
 import { EditNodeSheet } from '@/features/nodes/components/EditNodeSheet';
@@ -27,8 +25,7 @@ import { useNodesPage, useBroadcastNodeAPIURL, useNotifyNodeAPIURL } from '@/fea
 import { useResourceGroups } from '@/features/resource-groups/hooks/useResourceGroups';
 import { useSubscriptionPlans } from '@/features/subscription-plans/hooks/useSubscriptionPlans';
 import { AdminLayout } from '@/layouts/AdminLayout';
-import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/common/Tooltip';
-import { AdminButton, AdminCard } from '@/components/admin';
+import { PageHeader } from '@/components/admin';
 import { usePageTitle } from '@/shared/hooks';
 import { useBreakpoint } from '@/hooks/useBreakpoint';
 import type { Node, UpdateNodeRequest, CreateNodeRequest } from '@/api/node';
@@ -311,188 +308,95 @@ export const NodeManagementPage = () => {
           />
         </div>
       ) : (
-        <div className="py-3 space-y-3">
-          {/* High-Density Status Bar - All metrics inline */}
-          <header className="bg-card rounded-lg border border-border px-3 py-2">
-            <div className="flex items-center justify-between gap-3 flex-wrap">
-              {/* Left: Title + Primary Stats */}
-              <div className="flex items-center gap-fluid-sm">
-                <h1 className="text-sm font-semibold text-foreground whitespace-nowrap">{t('nav.nodeAgent')}</h1>
-                <div className="h-4 w-px bg-border hidden sm:block" />
-                <div className="flex items-center gap-3 text-xs">
-                  <span className="flex items-center gap-1 text-muted-foreground">
-                    <Server className="size-3" />
-                    <span className="font-medium text-foreground">{stats.total}</span>
-                    <span className="hidden sm:inline">{t('admin.nodes.nodesUnit')}</span>
-                  </span>
-                  <span className="flex items-center gap-1">
-                    <Activity className="size-3 text-success" />
-                    <span className="font-medium text-success">{stats.online}</span>
-                    <span className="hidden lg:inline text-muted-foreground">{t('common.status.online')}</span>
-                  </span>
-                  <span className="flex items-center gap-1">
-                    <CheckCircle2 className="size-3 text-info" />
-                    <span className="font-medium text-info">{stats.active}</span>
-                  </span>
-                </div>
-              </div>
-
-              {/* Center: Secondary Stats + Filters */}
-              <div className="hidden md:flex items-center gap-3 text-xs">
-                {stats.inactive > 0 && (
-                  <span className="flex items-center gap-1.5">
-                    <XCircle className="size-3 text-muted-foreground" />
-                    <span className="text-muted-foreground">{t('common.status.inactive')}</span>
-                    <span className="font-semibold tabular-nums text-foreground">{stats.inactive}</span>
-                  </span>
-                )}
-                {stats.updatable > 0 && (
-                  <span className="flex items-center gap-1.5">
-                    <ArrowUpCircle className="size-3 text-warning" />
-                    <span className="text-muted-foreground">{t('admin.nodes.updatable')}</span>
-                    <span className="font-semibold tabular-nums text-warning">{stats.updatable}</span>
-                  </span>
-                )}
-                <div className="h-3 w-px bg-border" />
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <label className="flex items-center gap-1.5 cursor-pointer group">
-                      <Users className="size-3 text-muted-foreground group-hover:text-foreground transition-colors" strokeWidth={1.5} />
-                      <span className="hidden lg:inline text-muted-foreground group-hover:text-foreground transition-colors">
-                        {t('admin.nodes.userNodes')}
-                      </span>
-                      <Switch
-                        checked={includeUserNodes}
-                        onCheckedChange={handleIncludeUserNodesChange}
-                        className="scale-75"
-                      >
-                        <SwitchThumb />
-                      </Switch>
-                    </label>
-                  </TooltipTrigger>
-                  <TooltipContent>{t('admin.nodes.showUserNodes')}</TooltipContent>
-                </Tooltip>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <label className="flex items-center gap-1.5 cursor-pointer group">
-                      <GripVertical className={`size-3 transition-colors ${dragSortEnabled ? 'text-primary' : 'text-muted-foreground group-hover:text-foreground'}`} strokeWidth={1.5} />
-                      <span className="hidden lg:inline text-muted-foreground group-hover:text-foreground transition-colors">
-                        {t('admin.nodes.sort')}
-                      </span>
-                      <Switch
-                        checked={dragSortEnabled}
-                        onCheckedChange={setDragSortEnabled}
-                        disabled={isReordering}
-                        className="scale-75"
-                      >
-                        <SwitchThumb />
-                      </Switch>
-                    </label>
-                  </TooltipTrigger>
-                  <TooltipContent>
-                    {dragSortEnabled ? t('admin.nodes.disableDragSort') : t('admin.nodes.enableDragSort')}
-                  </TooltipContent>
-                </Tooltip>
-              </div>
-
-              {/* Right: Actions */}
-              <div className="flex items-center gap-1.5">
+        <div className="space-y-6">
+          {/* Page Header - Tailwind UI Application UI style */}
+          <PageHeader
+            title={t('nav.nodeAgent')}
+            icon={Server}
+            metadata={[
+              { icon: Server, text: `${stats.total} ${t('admin.nodes.nodesUnit')}` },
+              { icon: Activity, text: `${stats.online} ${t('common.status.online')}` },
+              { icon: CheckCircle2, text: `${stats.active} ${t('common.status.active')}` },
+            ]}
+            action={
+              <div className="flex items-center gap-2">
+                {/* Batch actions */}
                 {stats.online > 0 && (
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <AdminButton
-                        variant="outline"
-                        size="sm"
-                        onClick={() => setBroadcastURLDialogOpen(true)}
-                        className="h-7 px-2 text-xs border-info/30 hover:border-info/50 hover:bg-info/10"
-                        icon={<Radio className="size-3.5 text-info" strokeWidth={1.5} />}
-                      >
-                        <span className="hidden lg:inline text-info">{t('admin.nodes.broadcast')}</span>
-                      </AdminButton>
-                    </TooltipTrigger>
-                    <TooltipContent>{t('admin.nodes.broadcastTooltip', { count: stats.online })}</TooltipContent>
-                  </Tooltip>
+                  <Button variant="outline" size="sm" onClick={() => setBroadcastURLDialogOpen(true)}>
+                    <Radio className="size-4 mr-2" />
+                    {t('admin.nodes.broadcast')}
+                  </Button>
                 )}
-
                 {stats.updatable > 0 && (
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <AdminButton
-                        variant="outline"
-                        size="sm"
-                        onClick={() => setBatchUpdateDialogOpen(true)}
-                        className="h-7 px-2 text-xs border-warning/30 hover:border-warning/50 hover:bg-warning-muted"
-                        icon={<ArrowUpCircle className="size-3.5 text-warning" strokeWidth={1.5} />}
-                      >
-                        <span className="hidden lg:inline text-warning">{t('admin.nodes.update')}</span>
-                      </AdminButton>
-                    </TooltipTrigger>
-                    <TooltipContent>{t('admin.nodes.updateTooltip', { count: stats.updatable })}</TooltipContent>
-                  </Tooltip>
+                  <Button variant="outline" size="sm" onClick={() => setBatchUpdateDialogOpen(true)}>
+                    <ArrowUpCircle className="size-4 mr-2" />
+                    {t('admin.nodes.update')}
+                  </Button>
                 )}
-
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <AdminButton
-                      variant="ghost"
-                      size="sm"
-                      onClick={handleRefresh}
-                      className="h-7 w-7 p-0"
-                      icon={
-                        <RefreshCw
-                          key={refreshKey}
-                          className="size-3.5 animate-spin-once"
-                          strokeWidth={1.5}
-                        />
-                      }
-                    >
-                      <span className="sr-only">{t('common.actions.refresh')}</span>
-                    </AdminButton>
-                  </TooltipTrigger>
-                  <TooltipContent>{t('admin.nodes.refreshList')}</TooltipContent>
-                </Tooltip>
-
-                <AdminButton
-                  variant="primary"
-                  size="sm"
-                  className="h-7 px-2.5 text-xs"
-                  icon={<Plus className="size-3.5" strokeWidth={2} />}
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={handleRefresh}
+                  className="size-9"
+                >
+                  <RefreshCw
+                    key={refreshKey}
+                    className="size-4 animate-spin-once"
+                  />
+                  <span className="sr-only">{t('common.actions.refresh')}</span>
+                </Button>
+                <Button
                   onClick={() => {
                     setCopyNodeData(undefined);
                     setCreateDialogOpen(true);
                   }}
                 >
+                  <Plus className="size-4 mr-2" />
                   {t('admin.nodes.addNode')}
-                </AdminButton>
+                </Button>
               </div>
-            </div>
-          </header>
+            }
+          />
 
-          {/* Node List */}
-          <AdminCard noPadding>
-            <NodeListTable
-              nodes={nodes}
-              loading={isFetching || isReordering || isResourceGroupsLoading || isPlansLoading}
-              page={pagination.page}
-              pageSize={pagination.pageSize}
-              total={pagination.total}
-              resourceGroupsMap={resourceGroupsMap}
-              onPageChange={handlePageChange}
-              onPageSizeChange={handlePageSizeChange}
-              onEdit={handleEdit}
-              onDelete={handleDelete}
-              onActivate={handleActivate}
-              onDeactivate={handleDeactivate}
-              onGenerateToken={handleTokenGenerate}
-              onGetInstallScript={handleInstallScript}
-              onViewDetail={handleViewDetail}
-              onCopy={handleCopy}
-              onNotifyURL={handleNotifyURL}
-              onToggleMute={handleToggleMute}
-              enableDragSort={dragSortEnabled}
-              onDragEnd={handleDragEnd}
-            />
-          </AdminCard>
+          {/* Filter toggles */}
+          <div className="flex items-center gap-6">
+            <label className="flex items-center gap-2 text-sm cursor-pointer">
+              <Switch checked={includeUserNodes} onCheckedChange={handleIncludeUserNodesChange}>
+                <SwitchThumb />
+              </Switch>
+              <span className="text-muted-foreground">{t('admin.nodes.userNodes')}</span>
+            </label>
+            <label className="flex items-center gap-2 text-sm cursor-pointer">
+              <Switch checked={dragSortEnabled} onCheckedChange={setDragSortEnabled} disabled={isReordering}>
+                <SwitchThumb />
+              </Switch>
+              <span className="text-muted-foreground">{t('admin.nodes.sort')}</span>
+            </label>
+          </div>
+
+          {/* Node List - table has its own border/rounded styling */}
+          <NodeListTable
+            nodes={nodes}
+            loading={isFetching || isReordering || isResourceGroupsLoading || isPlansLoading}
+            page={pagination.page}
+            pageSize={pagination.pageSize}
+            total={pagination.total}
+            resourceGroupsMap={resourceGroupsMap}
+            onPageChange={handlePageChange}
+            onPageSizeChange={handlePageSizeChange}
+            onEdit={handleEdit}
+            onDelete={handleDelete}
+            onActivate={handleActivate}
+            onDeactivate={handleDeactivate}
+            onGenerateToken={handleTokenGenerate}
+            onGetInstallScript={handleInstallScript}
+            onViewDetail={handleViewDetail}
+            onCopy={handleCopy}
+            onNotifyURL={handleNotifyURL}
+            onToggleMute={handleToggleMute}
+            enableDragSort={dragSortEnabled}
+            onDragEnd={handleDragEnd}
+          />
         </div>
       )}
 

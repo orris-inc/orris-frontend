@@ -30,6 +30,7 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuPortal,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/common/DropdownMenu';
@@ -383,31 +384,33 @@ export const UserForwardRuleMobileList: React.FC<UserForwardRuleMobileListProps>
           <MoreHorizontal className="size-5 text-muted-foreground" />
         </button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" className="w-48">
-        <DropdownMenuItem onClick={() => onEdit(rule)} className="min-h-[44px]">
-          <Edit className="mr-2 size-4" />
-          {t('userForwardRules.menu.edit')}
-        </DropdownMenuItem>
-        <DropdownMenuSeparator />
-        {rule.status === 'enabled' ? (
-          <DropdownMenuItem onClick={() => onToggleStatus(rule)} className="min-h-[44px]">
-            <PowerOff className="mr-2 size-4" />
-            {t('userForwardRules.menu.disableRule')}
+      <DropdownMenuPortal>
+        <DropdownMenuContent align="end" className="w-48" collisionPadding={16}>
+          <DropdownMenuItem onClick={() => onEdit(rule)} className="min-h-[44px]">
+            <Edit className="mr-2 size-4" />
+            {t('userForwardRules.menu.edit')}
           </DropdownMenuItem>
-        ) : (
-          <DropdownMenuItem onClick={() => onToggleStatus(rule)} className="min-h-[44px]">
-            <Power className="mr-2 size-4" />
-            {t('userForwardRules.menu.enableRule')}
+          <DropdownMenuSeparator />
+          {rule.status === 'enabled' ? (
+            <DropdownMenuItem onClick={() => onToggleStatus(rule)} className="min-h-[44px]">
+              <PowerOff className="mr-2 size-4" />
+              {t('userForwardRules.menu.disableRule')}
+            </DropdownMenuItem>
+          ) : (
+            <DropdownMenuItem onClick={() => onToggleStatus(rule)} className="min-h-[44px]">
+              <Power className="mr-2 size-4" />
+              {t('userForwardRules.menu.enableRule')}
+            </DropdownMenuItem>
+          )}
+          <DropdownMenuItem
+            onClick={() => handleDeleteClick(rule)}
+            className="text-destructive focus:text-destructive min-h-[44px]"
+          >
+            <Trash2 className="mr-2 size-4" />
+            {t('userForwardRules.menu.deleteRule')}
           </DropdownMenuItem>
-        )}
-        <DropdownMenuItem
-          onClick={() => handleDeleteClick(rule)}
-          className="text-destructive focus:text-destructive min-h-[44px]"
-        >
-          <Trash2 className="mr-2 size-4" />
-          {t('userForwardRules.menu.deleteRule')}
-        </DropdownMenuItem>
-      </DropdownMenuContent>
+        </DropdownMenuContent>
+      </DropdownMenuPortal>
     </DropdownMenu>
   ), [onEdit, onToggleStatus, handleDeleteClick, t]);
 

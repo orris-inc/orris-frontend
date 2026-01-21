@@ -59,18 +59,7 @@ const getDaysRemaining = (endDate?: string): number | null => {
   return diff > 0 ? diff : 0;
 };
 
-/**
- * Format date for display based on locale
- */
-const formatDate = (dateString?: string, locale?: string): string => {
-  if (!dateString) return '-';
-  const dateLocale = locale === 'zh' ? 'zh-CN' : 'en-US';
-  return new Date(dateString).toLocaleDateString(dateLocale, {
-    year: 'numeric',
-    month: 'short',
-    day: 'numeric',
-  });
-};
+import { formatDate } from '@/shared/utils/date-utils';
 
 /**
  * Get progress bar color based on usage percentage
@@ -185,7 +174,7 @@ export const SubscriptionEntryCard = ({ subscription, className }: SubscriptionE
       <div className="flex items-center justify-between pt-2 border-t border-border/50">
         <span className="flex items-center gap-1.5 text-xs text-muted-foreground">
           <Calendar className="size-3.5" />
-          {formatDate(subscription.currentPeriodEnd, i18n.language)}
+          {formatDate(subscription.currentPeriodEnd)}
         </span>
         <ChevronRight className="size-4 text-muted-foreground group-hover:text-primary transition-colors" />
       </div>

@@ -79,22 +79,6 @@ export {
   resetSubscriptionUsage,
 } from './client';
 
-// Types - Admin External Forward Rules (Added 2025-01-18, Updated 2025-01-20)
-export type {
-  AdminExternalForwardStatus,
-  AdminExternalForwardRule,
-  AdminListExternalForwardRulesParams,
-  AdminCreateExternalForwardRuleRequest,
-  AdminUpdateExternalForwardRuleRequest,
-} from './types';
-
-// API functions - Admin External Forward Rules (Added 2025-01-18, Updated 2025-01-20)
-export {
-  createAdminExternalForwardRule,
-  listAdminExternalForwardRules,
-  getAdminExternalForwardRule,
-  updateAdminExternalForwardRule,
-  deleteAdminExternalForwardRule,
-  enableAdminExternalForwardRule,
-  disableAdminExternalForwardRule,
-} from './client';
+// Note: Admin External Forward Rules have been removed (2026-01-20)
+// External forward rules are now part of the unified ForwardRule model with rule_type='external'
+// Use the forward module's Admin APIs with ruleType='external' filter instead

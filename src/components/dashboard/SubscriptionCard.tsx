@@ -62,17 +62,7 @@ const getStatusConfig = (status: string, t: (key: string) => string) => {
   }
 };
 
-/**
- * Format date for display
- */
-const formatDate = (dateString?: string): string => {
-  if (!dateString) return '-';
-  return new Date(dateString).toLocaleDateString('zh-CN', {
-    year: 'numeric',
-    month: '2-digit',
-    day: '2-digit',
-  });
-};
+import { formatDate } from '@/shared/utils/date-utils';
 
 /**
  * Calculate remaining days

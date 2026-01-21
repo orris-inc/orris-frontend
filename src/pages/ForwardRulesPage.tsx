@@ -1,6 +1,6 @@
 /**
  * Forward Rules Management Page (Admin)
- * High-density data management interface
+ * Tailwind UI Application UI style layout
  */
 
 import { useState, useMemo, useCallback, lazy, Suspense } from 'react';
@@ -11,7 +11,6 @@ import {
   RefreshCw,
   Users,
   CheckCircle2,
-  RotateCw,
   Activity,
   GripVertical,
   Search,
@@ -23,6 +22,7 @@ import { Switch, SwitchThumb } from '@/components/common/Switch';
 import { ForwardRuleListTable } from '@/features/forward-rules/components/ForwardRuleListTable';
 import { MobileForwardRuleManagement } from '@/features/forward-rules/components/MobileForwardRuleManagement';
 import { Input } from '@/components/common/Input';
+import { Button } from '@/components/common/Button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/common/Select';
 import { ConfirmDialog } from '@/components/common/ConfirmDialog';
 import { useForwardRulesPage, useRuleStatusPolling } from '@/features/forward-rules/hooks/useForwardRules';
@@ -95,7 +95,7 @@ import { useResourceGroups } from '@/features/resource-groups/hooks/useResourceG
 import { useSubscriptionPlans } from '@/features/subscription-plans/hooks/useSubscriptionPlans';
 import { AdminLayout } from '@/layouts/AdminLayout';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/common/Tooltip';
-import { AdminButton, AdminCard } from '@/components/admin';
+import { PageHeader } from '@/components/admin';
 import { usePageTitle } from '@/shared/hooks';
 import { useBreakpoint } from '@/hooks/useBreakpoint';
 import type { ForwardRule, CreateForwardRuleRequest, UpdateForwardRuleRequest, RuleProbeResponse, ForwardRuleType, ForwardProtocol, ForwardStatus, IPVersion } from '@/api/forward';
@@ -185,13 +185,12 @@ export const ForwardRulesPage = () => {
     });
   }, [resourceGroups, plans, isLoadingResourceGroups, isLoadingPlans]);
 
+  // Calculate statistics for metadata display
   const stats = useMemo(() => {
     const total = pagination.total;
     const enabled = forwardRules.filter((r) => r.status === 'enabled').length;
-    const disabled = forwardRules.filter((r) => r.status === 'disabled').length;
-    const syncing = forwardRules.filter((r) => r.syncStatus === 'pending').length;
     const running = forwardRules.filter((r) => r.runStatus === 'running').length;
-    return { total, enabled, disabled, syncing, running };
+    return { total, enabled, running };
   }, [forwardRules, pagination.total]);
 
   // Convert Set<string> to Record<string, boolean> for table row selection
@@ -574,207 +573,172 @@ export const ForwardRulesPage = () => {
     );
   }
 
-  // Desktop view - original layout with header and table
+  // Desktop view - Tailwind UI Application UI style layout
   return (
     <AdminLayout>
-      <div className="py-3 space-y-3">
-        {/* High-Density Status Bar with Integrated Filters */}
-        <header className="bg-card rounded-lg border border-border px-3 py-2">
-          <div className="flex items-center justify-between gap-3 flex-wrap">
-            {/* Left: Title + Primary Stats */}
-            <div className="flex items-center gap-fluid-sm">
-              <h1 className="text-sm font-semibold text-foreground whitespace-nowrap">{t('admin.forwardRules.title')}</h1>
-              <div className="h-4 w-px bg-border hidden sm:block" />
-              <div className="flex items-center gap-2.5 text-xs">
-                <span className="flex items-center gap-1 text-muted-foreground">
-                  <ArrowLeftRight className="size-3" />
-                  <span className="font-medium text-foreground">{stats.total}</span>
-                </span>
-                <span className="flex items-center gap-1">
-                  <CheckCircle2 className="size-3 text-success" />
-                  <span className="font-medium text-success">{stats.enabled}</span>
-                </span>
-                {stats.disabled > 0 && (
-                  <span className="flex items-center gap-1 text-muted-foreground">
-                    <span className="font-medium">{stats.disabled}</span>
-                  </span>
-                )}
-                {stats.running > 0 && (
-                  <span className="flex items-center gap-1">
-                    <Activity className="size-3 text-info" />
-                    <span className="font-medium text-info">{stats.running}</span>
-                  </span>
-                )}
-                {stats.syncing > 0 && (
-                  <span className="flex items-center gap-1">
-                    <RotateCw className="size-3 text-warning animate-spin" />
-                    <span className="font-medium text-warning">{stats.syncing}</span>
-                  </span>
-                )}
-              </div>
-            </div>
-
-            {/* Center: Filters (hidden on mobile) */}
-            <div className="hidden md:flex items-center gap-2 flex-1 justify-center max-w-lg">
-              {/* Protocol filter */}
-              <Select value={filters.protocol || '_all_'} onValueChange={handleProtocolChange}>
-                <SelectTrigger className="h-7 w-20 text-xs">
-                  <SelectValue placeholder={t('admin.forwardRules.filters.protocol')} />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="_all_">{t('filter.all')}</SelectItem>
-                  <SelectItem value="tcp">TCP</SelectItem>
-                  <SelectItem value="udp">UDP</SelectItem>
-                  <SelectItem value="both">Both</SelectItem>
-                </SelectContent>
-              </Select>
-
-              {/* Status filter */}
-              <Select value={filters.status || '_all_'} onValueChange={handleStatusChange}>
-                <SelectTrigger className="h-7 w-20 text-xs">
-                  <SelectValue placeholder={t('admin.forwardRules.filters.status')} />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="_all_">{t('filter.all')}</SelectItem>
-                  <SelectItem value="enabled">{t('common.status.enabledShort')}</SelectItem>
-                  <SelectItem value="disabled">{t('common.status.disabledShort')}</SelectItem>
-                </SelectContent>
-              </Select>
-
-              {/* Search input */}
-              <div className="relative flex-1 max-w-[160px]">
-                <Search className="absolute left-2 top-1/2 -translate-y-1/2 size-3 text-muted-foreground" />
-                <Input
-                  placeholder={t('admin.forwardRules.searchRules')}
-                  value={filters.name || ''}
-                  onChange={(e) => handleSearchChange(e.target.value)}
-                  className="h-7 pl-7 text-xs"
-                />
-              </div>
-
-              {/* Sort filter */}
-              <Select value={getSortValue()} onValueChange={handleSortChange}>
-                <SelectTrigger className="h-7 w-24 text-xs">
-                  <SelectValue placeholder={t('admin.forwardRules.sort')} />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="sort_order_asc">{t('admin.forwardRules.sortOptions.default')}</SelectItem>
-                  <SelectItem value="created_at_desc">{t('admin.forwardRules.sortOptions.createdDesc')}</SelectItem>
-                  <SelectItem value="created_at_asc">{t('admin.forwardRules.sortOptions.createdAsc')}</SelectItem>
-                  <SelectItem value="updated_at_desc">{t('admin.forwardRules.sortOptions.updatedDesc')}</SelectItem>
-                </SelectContent>
-              </Select>
-
-              {/* Reset button */}
-              {hasActiveFilters && (
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <button
-                      onClick={handleResetFilters}
-                      className="h-7 w-7 flex items-center justify-center rounded-md text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
-                    >
-                      <FilterX className="size-3.5" />
-                    </button>
-                  </TooltipTrigger>
-                  <TooltipContent>{t('admin.forwardRules.resetFilters')}</TooltipContent>
-                </Tooltip>
-              )}
-
-              {/* Divider */}
-              <div className="h-4 w-px bg-border" />
-
-              {/* Include user rules toggle */}
+      <div className="space-y-6">
+        {/* Page Header */}
+        <PageHeader
+          title={t('admin.forwardRules.title')}
+          icon={ArrowLeftRight}
+          metadata={[
+            { icon: ArrowLeftRight, text: `${stats.total} ${t('admin.forwardRules.rulesUnit')}` },
+            { icon: CheckCircle2, text: `${stats.enabled} ${t('common.status.enabled')}` },
+            ...(stats.running > 0 ? [{ icon: Activity, text: `${stats.running} ${t('common.status.running')}` }] : []),
+          ]}
+          action={
+            <div className="flex items-center gap-2">
               <Tooltip>
                 <TooltipTrigger asChild>
-                  <label className="flex items-center gap-1 cursor-pointer group">
-                    <Users className="size-3 text-muted-foreground group-hover:text-foreground transition-colors" strokeWidth={1.5} />
-                    <Switch
-                      checked={includeUserRules}
-                      onCheckedChange={handleIncludeUserRulesChange}
-                      className="scale-75"
-                    >
-                      <SwitchThumb />
-                    </Switch>
-                  </label>
-                </TooltipTrigger>
-                <TooltipContent>{t('admin.forwardRules.showUserRules')}</TooltipContent>
-              </Tooltip>
-
-              {/* Drag sort toggle */}
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <label className="flex items-center gap-1 cursor-pointer group">
-                    <GripVertical className={`size-3 transition-colors ${dragSortEnabled ? 'text-primary' : 'text-muted-foreground group-hover:text-foreground'}`} strokeWidth={1.5} />
-                    <Switch
-                      checked={dragSortEnabled}
-                      onCheckedChange={setDragSortEnabled}
-                      disabled={isReordering}
-                      className="scale-75"
-                    >
-                      <SwitchThumb />
-                    </Switch>
-                  </label>
-                </TooltipTrigger>
-                <TooltipContent>
-                  {dragSortEnabled ? t('admin.forwardRules.disableDragSort') : t('admin.forwardRules.enableDragSort')}
-                </TooltipContent>
-              </Tooltip>
-            </div>
-
-            {/* Right: Actions */}
-            <div className="flex items-center gap-1.5">
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <AdminButton
+                  <Button
                     variant="ghost"
-                    size="sm"
-                    onClick={handleRefresh}
-                    className="h-7 w-7 p-0"
-                    icon={
-                      <RefreshCw
-                        key={refreshKey}
-                        className="size-3.5 animate-spin-once"
-                        strokeWidth={1.5}
-                      />
-                    }
-                  >
-                    <span className="sr-only">{t('common.actions.refresh')}</span>
-                  </AdminButton>
-                </TooltipTrigger>
-                <TooltipContent>{t('admin.forwardRules.refreshList')}</TooltipContent>
-              </Tooltip>
-
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <AdminButton
-                    variant="ghost"
-                    size="sm"
+                    size="icon"
                     onClick={() => setBatchCreateOpen(true)}
-                    className="h-7 w-7 p-0"
-                    icon={<FileJson className="size-3.5" strokeWidth={1.5} />}
                   >
-                    <span className="sr-only">{t('admin.forwardRules.batchCreate')}</span>
-                  </AdminButton>
+                    <FileJson className="size-4" />
+                  </Button>
                 </TooltipTrigger>
                 <TooltipContent>{t('admin.forwardRules.batchCreateJson')}</TooltipContent>
               </Tooltip>
-
-              <AdminButton
-                variant="primary"
-                size="sm"
-                className="h-7 px-2.5 text-xs"
-                icon={<Plus className="size-3.5" strokeWidth={2} />}
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={handleRefresh}
+                  >
+                    <RefreshCw
+                      key={refreshKey}
+                      className="size-4 animate-spin-once"
+                    />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>{t('admin.forwardRules.refreshList')}</TooltipContent>
+              </Tooltip>
+              <Button
                 onClick={() => {
                   setCopyRuleData(undefined);
                   setCreateDialogOpen(true);
                 }}
               >
-                <span className="hidden sm:inline">{t('admin.forwardRules.add')}</span>
-                <span className="sm:hidden">{t('admin.forwardRules.add')}</span>
-              </AdminButton>
+                <Plus className="size-4 mr-2" />
+                {t('admin.forwardRules.add')}
+              </Button>
             </div>
+          }
+        />
+
+        {/* Filters row */}
+        <div className="flex flex-wrap items-center gap-3">
+          {/* Protocol filter */}
+          <Select value={filters.protocol || '_all_'} onValueChange={handleProtocolChange}>
+            <SelectTrigger className="w-24">
+              <SelectValue placeholder={t('admin.forwardRules.filters.protocol')} />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="_all_">{t('filter.all')}</SelectItem>
+              <SelectItem value="tcp">TCP</SelectItem>
+              <SelectItem value="udp">UDP</SelectItem>
+              <SelectItem value="both">Both</SelectItem>
+            </SelectContent>
+          </Select>
+
+          {/* Status filter */}
+          <Select value={filters.status || '_all_'} onValueChange={handleStatusChange}>
+            <SelectTrigger className="w-24">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="_all_">{t('filter.all')}</SelectItem>
+              <SelectItem value="enabled">{t('common.status.enabled')}</SelectItem>
+              <SelectItem value="disabled">{t('common.status.disabled')}</SelectItem>
+            </SelectContent>
+          </Select>
+
+          {/* Search input */}
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
+            <Input
+              placeholder={t('admin.forwardRules.searchRules')}
+              value={filters.name || ''}
+              onChange={(e) => handleSearchChange(e.target.value)}
+              className="pl-9 w-48"
+            />
           </div>
-        </header>
+
+          {/* Sort filter */}
+          <Select value={getSortValue()} onValueChange={handleSortChange}>
+            <SelectTrigger className="w-32">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="sort_order_asc">{t('admin.forwardRules.sortOptions.default')}</SelectItem>
+              <SelectItem value="created_at_desc">{t('admin.forwardRules.sortOptions.createdDesc')}</SelectItem>
+              <SelectItem value="created_at_asc">{t('admin.forwardRules.sortOptions.createdAsc')}</SelectItem>
+              <SelectItem value="updated_at_desc">{t('admin.forwardRules.sortOptions.updatedDesc')}</SelectItem>
+            </SelectContent>
+          </Select>
+
+          {/* Reset filters button */}
+          {hasActiveFilters && (
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={handleResetFilters}
+                >
+                  <FilterX className="size-4" />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>{t('admin.forwardRules.resetFilters')}</TooltipContent>
+            </Tooltip>
+          )}
+
+          {/* Vertical divider */}
+          <div className="h-6 w-px bg-border" />
+
+          {/* User rules toggle */}
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <label className="flex items-center gap-2 text-sm cursor-pointer">
+                <Switch
+                  checked={includeUserRules}
+                  onCheckedChange={handleIncludeUserRulesChange}
+                >
+                  <SwitchThumb />
+                </Switch>
+                <span className="text-muted-foreground flex items-center gap-1.5">
+                  <Users className="size-4" />
+                  {t('admin.forwardRules.userRules')}
+                </span>
+              </label>
+            </TooltipTrigger>
+            <TooltipContent>{t('admin.forwardRules.showUserRules')}</TooltipContent>
+          </Tooltip>
+
+          {/* Drag sort toggle */}
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <label className="flex items-center gap-2 text-sm cursor-pointer">
+                <Switch
+                  checked={dragSortEnabled}
+                  onCheckedChange={setDragSortEnabled}
+                  disabled={isReordering}
+                >
+                  <SwitchThumb />
+                </Switch>
+                <span className="text-muted-foreground flex items-center gap-1.5">
+                  <GripVertical className={dragSortEnabled ? 'size-4 text-primary' : 'size-4'} />
+                  {t('admin.forwardRules.dragSort')}
+                </span>
+              </label>
+            </TooltipTrigger>
+            <TooltipContent>
+              {dragSortEnabled ? t('admin.forwardRules.disableDragSort') : t('admin.forwardRules.enableDragSort')}
+            </TooltipContent>
+          </Tooltip>
+        </div>
 
         {/* Batch Action Bar */}
         {selectedCount > 0 && (
@@ -791,37 +755,35 @@ export const ForwardRulesPage = () => {
           />
         )}
 
-        {/* Forward Rules List Table */}
-        <AdminCard noPadding>
-          <ForwardRuleListTable
-            rules={forwardRules}
-            agentsMap={agentsMap}
-            resourceGroupsMap={resourceGroupsMap}
-            nodes={nodes}
-            polledStatusMap={polledStatusMap}
-            pollingRuleIds={pollingRuleIds}
-            loading={isLoading || isFetching || isReordering}
-            page={pagination.page}
-            pageSize={pagination.pageSize}
-            total={pagination.total}
-            onPageChange={handlePageChangeWithClear}
-            onPageSizeChange={handlePageSizeChange}
-            onEdit={handleEdit}
-            onDelete={handleDelete}
-            onEnable={handleEnable}
-            onDisable={handleDisable}
-            onResetTraffic={handleResetTraffic}
-            onViewDetail={handleViewDetail}
-            onProbe={handleProbe}
-            onCopy={handleCopy}
-            probingRuleId={probingRuleId}
-            enableDragSort={dragSortEnabled}
-            onDragEnd={handleDragEnd}
-            rowSelection={rowSelection}
-            onRowSelectionChange={handleRowSelectionChange}
-            enableSelection={true}
-          />
-        </AdminCard>
+        {/* Forward Rules Table - no wrapper needed, tables have their own border/rounded styling */}
+        <ForwardRuleListTable
+          rules={forwardRules}
+          agentsMap={agentsMap}
+          resourceGroupsMap={resourceGroupsMap}
+          nodes={nodes}
+          polledStatusMap={polledStatusMap}
+          pollingRuleIds={pollingRuleIds}
+          loading={isLoading || isFetching || isReordering}
+          page={pagination.page}
+          pageSize={pagination.pageSize}
+          total={pagination.total}
+          onPageChange={handlePageChangeWithClear}
+          onPageSizeChange={handlePageSizeChange}
+          onEdit={handleEdit}
+          onDelete={handleDelete}
+          onEnable={handleEnable}
+          onDisable={handleDisable}
+          onResetTraffic={handleResetTraffic}
+          onViewDetail={handleViewDetail}
+          onProbe={handleProbe}
+          onCopy={handleCopy}
+          probingRuleId={probingRuleId}
+          enableDragSort={dragSortEnabled}
+          onDragEnd={handleDragEnd}
+          rowSelection={rowSelection}
+          onRowSelectionChange={handleRowSelectionChange}
+          enableSelection={true}
+        />
       </div>
 
       {/* Create Forward Rule Dialog */}

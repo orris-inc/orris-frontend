@@ -54,6 +54,7 @@ const RULE_TYPE_INFO: Record<ForwardRuleType, { label: string; description: stri
   entry: { label: '入口节点', description: '作为转发链的入口，通过出口节点转发到目标地址' },
   chain: { label: '隧道链式转发', description: '通过隧道（WS/TLS）进行多跳链式转发' },
   direct_chain: { label: '直连链式转发', description: '通过直连 TCP/UDP 进行多跳链式转发' },
+  external: { label: '外部规则', description: '由管理员创建的外部转发规则' },
 };
 
 export const CreateSubscriptionForwardRuleDialog: React.FC<
@@ -583,7 +584,7 @@ export const CreateSubscriptionForwardRuleDialog: React.FC<
             <div>
               <h3 className="text-sm font-medium text-muted-foreground mb-3">转发配置</h3>
               <Separator className="mb-4" />
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="@container grid grid-cols-1 @md:grid-cols-2 gap-4">
                 {/* Listen port */}
                 <div className="flex flex-col gap-2">
                   <Label htmlFor="sub-listenPort">监听端口</Label>
@@ -625,7 +626,7 @@ export const CreateSubscriptionForwardRuleDialog: React.FC<
                 </div>
 
                 {/* Target type selection */}
-                <div className="flex flex-col gap-2 md:col-span-2">
+                <div className="flex flex-col gap-2 @md:col-span-2">
                   <Label>
                     目标类型 <span className="text-destructive">*</span>
                   </Label>
@@ -707,7 +708,7 @@ export const CreateSubscriptionForwardRuleDialog: React.FC<
 
                 {/* Select target node */}
                 {targetType === 'node' && (
-                  <div className="flex flex-col gap-2 md:col-span-2">
+                  <div className="flex flex-col gap-2 @md:col-span-2">
                     <Label htmlFor="sub-targetNodeId">
                       目标节点 <span className="text-destructive">*</span>
                     </Label>

@@ -56,10 +56,8 @@
     "yes": "是",
     "no": "否",
     "status": {
-      "enabled": "已启用",
-      "enabledShort": "启用",
-      "disabled": "已禁用",
-      "disabledShort": "禁用",
+      "enabled": "启用",
+      "disabled": "禁用",
       "online": "在线",
       "offline": "离线",
       "active": "激活",
@@ -491,6 +489,7 @@
         "status": "状态",
         "tags": "标签",
         "version": "版本",
+        "platform": "平台",
         "resourceGroup": "资源组",
         "owner": "创建者",
         "createdAt": "创建时间",
@@ -522,10 +521,12 @@
         "versionInfo": "版本",
         "newVersionAvailable": "有新版本可用",
         "unknownResourceGroup": "未知资源组",
-        "maintenanceReason": "原因"
+        "maintenanceReason": "原因",
+        "configDescription": "节点的协议配置，包括加密方式、传输协议等",
+        "monitorDescription": "节点的实时系统状态，包括 CPU、内存、网络等信息"
       },
       "statusLabel": {
-        "active": "已激活",
+        "active": "激活",
         "inactive": "未激活",
         "maintenance": "维护中"
       },
@@ -614,6 +615,10 @@
         "directChain": {
           "label": "直连链式转发",
           "description": "通过直连 TCP/UDP 进行多跳链式转发"
+        },
+        "external": {
+          "label": "外部规则",
+          "description": "外部来源的转发规则，直接指定服务器地址"
         }
       },
       "filters": {
@@ -632,6 +637,9 @@
       "showUserRules": "显示用户创建的规则",
       "enableDragSort": "开启拖拽排序",
       "disableDragSort": "关闭拖拽排序",
+      "rulesUnit": "条规则",
+      "userRules": "用户规则",
+      "dragSort": "拖拽排序",
       "refreshList": "刷新列表",
       "batchCreate": "批量创建",
       "batchCreateJson": "批量创建 (JSON)",
@@ -652,7 +660,9 @@
         "chain": "链式",
         "chainShort": "链",
         "directChain": "直连链",
-        "directChainShort": "直链"
+        "directChainShort": "直链",
+        "external": "外部",
+        "externalShort": "外"
       },
       "flowNode": {
         "entry": "入口",
@@ -705,6 +715,8 @@
     "forwardAgents": {
       "title": "转发Agent管理",
       "description": "管理转发代理",
+      "agentsUnit": "个节点",
+      "updatable": "个可更新",
       "confirmDelete": "确认删除转发Agent \"{{name}}\" 吗？此操作不可恢复。",
       "token": "转发Agent Token",
       "copySuffix": "副本",
@@ -778,7 +790,8 @@
       },
       "dragSort": {
         "enable": "开启拖拽排序",
-        "disable": "关闭拖拽排序"
+        "disable": "关闭拖拽排序",
+        "label": "拖拽排序"
       },
       "actions": {
         "broadcast": "下发",
@@ -1340,8 +1353,8 @@
     "settings": {
       "title": "系统设置",
       "description": "管理系统配置",
-      "enabled": "已启用",
-      "disabled": "未启用",
+      "enabled": "启用",
+      "disabled": "禁用",
       "unableToLoadConfig": "无法加载配置",
       "telegram": {
         "title": "Telegram 设置",
@@ -1532,10 +1545,10 @@
     "trialing": "试用中",
     "active": "激活",
     "pastDue": "逾期",
-    "suspended": "已暂停",
-    "cancelled": "已取消",
-    "expired": "已过期",
-    "activated": "已激活",
+    "suspended": "暂停",
+    "cancelled": "取消",
+    "expired": "过期",
+    "activated": "激活",
     "notActivated": "未激活",
     "notExpired": "未过期"
   },
@@ -1680,11 +1693,11 @@
       },
       "subscription": {
         "status": {
-          "active": "激活中",
-          "expired": "已过期",
-          "cancelled": "已取消",
+          "active": "激活",
+          "expired": "过期",
+          "cancelled": "取消",
           "pending": "待处理",
-          "renewed": "已续费"
+          "renewed": "续费"
         },
         "unknownPlan": "未知计划",
         "daysRemaining": "剩余 {{count}} 天",
@@ -1879,12 +1892,12 @@
     "title": "通知设置",
     "subtitle": "管理您的通知偏好和 Telegram 绑定",
     "hero": {
-      "bound": "已启用 {{count}} 种通知类型",
+      "bound": "启用 {{count}} 种通知类型",
       "unbound": "绑定 Telegram 以接收通知",
       "notConfigured": "通知服务未配置"
     },
     "stats": {
-      "active": "已启用",
+      "active": "启用",
       "channels": "通知渠道",
       "channelUnit": "个"
     },
@@ -1928,8 +1941,8 @@
       "bound": "已绑定",
       "unbound": "未绑定",
       "notConfigured": "未配置",
-      "enabled": "已开启",
-      "disabled": "已关闭",
+      "enabled": "启用",
+      "disabled": "禁用",
       "items": "{{count}} 项通知"
     },
     "expiring": {
@@ -2102,7 +2115,7 @@
       "alterId": "Alter ID：",
       "tls": "TLS：",
       "tlsEnabled": "启用",
-      "tlsDisabled": "未启用",
+      "tlsDisabled": "禁用",
       "congestionControl": "拥塞控制：",
       "obfsType": "Obfs 类型：",
       "bandwidthLimit": "带宽限制：",
@@ -2145,8 +2158,8 @@
       "download": "下载:"
     },
     "status": {
-      "enabled": "已启用",
-      "disabled": "已禁用",
+      "enabled": "启用",
+      "disabled": "禁用",
       "clickToDisable": "点击禁用",
       "clickToEnable": "点击启用"
     },

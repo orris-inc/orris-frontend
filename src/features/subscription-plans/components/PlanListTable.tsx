@@ -7,13 +7,14 @@
 import { useMemo, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Edit, Power, MoreHorizontal, Users, Copy, Trash2 } from 'lucide-react';
-import { DataTable, AdminBadge, type ColumnDef, type ResponsiveColumnMeta } from '@/components/admin';
+import { DataTable, AdminBadge, TableHoverCardProvider, type ColumnDef, type ResponsiveColumnMeta } from '@/components/admin';
 import { useBreakpoint } from '@/hooks/useBreakpoint';
 import { PlanMobileList } from './PlanMobileList';
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuPortal,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/common/DropdownMenu';
@@ -336,9 +337,11 @@ export const PlanListTable: React.FC<PlanListTableProps> = ({
               <MoreHorizontal className="size-4" />
             </button>
           </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
-            {renderDropdownMenuActions(row.original)}
-          </DropdownMenuContent>
+          <DropdownMenuPortal>
+            <DropdownMenuContent align="end" collisionPadding={16}>
+              {renderDropdownMenuActions(row.original)}
+            </DropdownMenuContent>
+          </DropdownMenuPortal>
         </DropdownMenu>
       ),
     },
@@ -360,19 +363,21 @@ export const PlanListTable: React.FC<PlanListTableProps> = ({
   }
 
   return (
-    <DataTable
-      columns={columns}
-      data={plans}
-      loading={loading}
-      page={page}
-      pageSize={pageSize}
-      total={total}
-      onPageChange={onPageChange}
-      onPageSizeChange={onPageSizeChange}
-      emptyMessage={t('admin.plans.table.noPlans')}
-      getRowId={(row) => String(row.id)}
-      enableContextMenu={true}
-      contextMenuContent={renderContextMenuActions}
-    />
+    <TableHoverCardProvider>
+      <DataTable
+        columns={columns}
+        data={plans}
+        loading={loading}
+        page={page}
+        pageSize={pageSize}
+        total={total}
+        onPageChange={onPageChange}
+        onPageSizeChange={onPageSizeChange}
+        emptyMessage={t('admin.plans.table.noPlans')}
+        getRowId={(row) => String(row.id)}
+        enableContextMenu={true}
+        contextMenuContent={renderContextMenuActions}
+      />
+    </TableHoverCardProvider>
   );
 };

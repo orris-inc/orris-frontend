@@ -74,53 +74,55 @@ export const ForwardRuleFilters: React.FC<ForwardRuleFiltersProps> = ({ filters,
 
   // Filter controls component
   const filterControls = (
-    <div className="grid grid-cols-2 gap-2 sm:flex sm:flex-wrap sm:items-center sm:gap-3">
-      <Input
-        placeholder={t('common.placeholders.search')}
-        value={filters.name || ''}
-        onChange={(e) => handleSearchChange(e.target.value)}
-        className="col-span-2 sm:w-48"
-      />
+    <div className="@container">
+      <div className="grid grid-cols-2 gap-2 @sm:flex @sm:flex-wrap @sm:items-center @sm:gap-3">
+        <Input
+          placeholder={t('common.placeholders.search')}
+          value={filters.name || ''}
+          onChange={(e) => handleSearchChange(e.target.value)}
+          className="col-span-2 @sm:w-48"
+        />
 
-      <Select value={filters.protocol || '_all_'} onValueChange={handleProtocolChange}>
-        <SelectTrigger className="w-full sm:w-28">
-          <SelectValue placeholder={t('admin.forwardRules.filters.protocol')} />
-        </SelectTrigger>
-        <SelectContent>
-          <SelectItem value="_all_">{t('filter.all')}</SelectItem>
-          <SelectItem value="tcp">TCP</SelectItem>
-          <SelectItem value="udp">UDP</SelectItem>
-          <SelectItem value="both">TCP/UDP</SelectItem>
-        </SelectContent>
-      </Select>
+        <Select value={filters.protocol || '_all_'} onValueChange={handleProtocolChange}>
+          <SelectTrigger className="w-full @sm:w-28">
+            <SelectValue placeholder={t('admin.forwardRules.filters.protocol')} />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="_all_">{t('filter.all')}</SelectItem>
+            <SelectItem value="tcp">TCP</SelectItem>
+            <SelectItem value="udp">UDP</SelectItem>
+            <SelectItem value="both">TCP/UDP</SelectItem>
+          </SelectContent>
+        </Select>
 
-      <Select value={filters.status || '_all_'} onValueChange={handleStatusChange}>
-        <SelectTrigger className="w-full sm:w-28">
-          <SelectValue placeholder={t('admin.forwardRules.filters.status')} />
-        </SelectTrigger>
-        <SelectContent>
-          <SelectItem value="_all_">{t('filter.all')}</SelectItem>
-          <SelectItem value="enabled">{t('common.status.enabled')}</SelectItem>
-          <SelectItem value="disabled">{t('common.status.disabled')}</SelectItem>
-        </SelectContent>
-      </Select>
+        <Select value={filters.status || '_all_'} onValueChange={handleStatusChange}>
+          <SelectTrigger className="w-full @sm:w-28">
+            <SelectValue placeholder={t('admin.forwardRules.filters.status')} />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="_all_">{t('filter.all')}</SelectItem>
+            <SelectItem value="enabled">{t('common.status.enabled')}</SelectItem>
+            <SelectItem value="disabled">{t('common.status.disabled')}</SelectItem>
+          </SelectContent>
+        </Select>
 
-      <Select value={getSortValue()} onValueChange={handleSortChange}>
-        <SelectTrigger className="w-full sm:w-32">
-          <SelectValue placeholder={t('admin.forwardRules.sort')} />
-        </SelectTrigger>
-        <SelectContent>
-          <SelectItem value="sort_order_asc">{t('admin.forwardRules.sortOptions.default')}</SelectItem>
-          <SelectItem value="created_at_desc">{t('admin.forwardRules.sortOptions.createdDesc')}</SelectItem>
-          <SelectItem value="created_at_asc">{t('admin.forwardRules.sortOptions.createdAsc')}</SelectItem>
-          <SelectItem value="updated_at_desc">{t('admin.forwardRules.sortOptions.updatedDesc')}</SelectItem>
-        </SelectContent>
-      </Select>
+        <Select value={getSortValue()} onValueChange={handleSortChange}>
+          <SelectTrigger className="w-full @sm:w-32">
+            <SelectValue placeholder={t('admin.forwardRules.sort')} />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="sort_order_asc">{t('admin.forwardRules.sortOptions.default')}</SelectItem>
+            <SelectItem value="created_at_desc">{t('admin.forwardRules.sortOptions.createdDesc')}</SelectItem>
+            <SelectItem value="created_at_asc">{t('admin.forwardRules.sortOptions.createdAsc')}</SelectItem>
+            <SelectItem value="updated_at_desc">{t('admin.forwardRules.sortOptions.updatedDesc')}</SelectItem>
+          </SelectContent>
+        </Select>
 
-      <Button variant="outline" size="sm" onClick={handleReset} className="w-full sm:w-auto">
-        <FilterX className="mr-1.5 h-3.5 w-3.5" />
-        {t('common.actions.reset')}
-      </Button>
+        <Button variant="outline" size="sm" onClick={handleReset} className="w-full @sm:w-auto">
+          <FilterX className="mr-1.5 h-3.5 w-3.5" />
+          {t('common.actions.reset')}
+        </Button>
+      </div>
     </div>
   );
 

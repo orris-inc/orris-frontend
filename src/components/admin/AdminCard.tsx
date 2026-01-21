@@ -1,51 +1,46 @@
 /**
- * Admin Card Component
- * Modern glassmorphism style with refined shadows
+ * Admin Container Component
+ * A simple container for content sections - not a decorative card
+ * Following Tailwind UI Application UI patterns where tables/lists have their own borders
  */
 
 import { ReactNode } from 'react';
 import { cn } from '@/lib/utils';
 
-interface AdminCardProps {
+export interface AdminCardProps {
   children: ReactNode;
   className?: string;
   noPadding?: boolean;
-  variant?: 'default' | 'glass' | 'elevated';
+  /**
+   * Container variants:
+   * - default: transparent container (content provides its own styling)
+   * - bordered: adds ring border (for sections that need visual separation)
+   * - flush: no styling, just a wrapper
+   */
+  variant?: 'default' | 'bordered' | 'flush';
 }
 
 /**
- * Admin standard card
- * Unified rounded corners, borders, shadows and hover effects
+ * Admin content container
+ * Default is transparent - let the content (tables, lists) provide their own styling
  */
 export const AdminCard = ({ children, className, noPadding, variant = 'default' }: AdminCardProps) => {
+  // Flush variant - just a wrapper
+  if (variant === 'flush') {
+    return <div className={className}>{children}</div>;
+  }
+
   const variants = {
-    default: cn(
-      'bg-card',
-      'border border-border',
-      'shadow-sm hover:shadow-md'
-    ),
-    glass: cn(
-      'bg-card/95',
-      'backdrop-blur-xl',
-      'border border-border',
-      'shadow-sm hover:shadow-lg'
-    ),
-    elevated: cn(
-      'bg-card',
-      'border border-border',
-      'shadow-lg shadow-muted/50',
-      'hover:shadow-xl hover:shadow-muted/60',
-      'hover:-translate-y-0.5'
-    ),
+    default: '', // Transparent container
+    bordered: 'ring-1 ring-border rounded-lg overflow-hidden',
   };
 
   return (
     <div
       className={cn(
-        'rounded-xl sm:rounded-2xl',
-        'transition-all duration-200 ease-out',
+        '@container',
         variants[variant],
-        !noPadding && 'p-4 sm:p-6',
+        !noPadding && variant !== 'default' && 'p-4 @sm:p-6',
         className
       )}
     >
@@ -54,24 +49,25 @@ export const AdminCard = ({ children, className, noPadding, variant = 'default' 
   );
 };
 
-interface AdminCardHeaderProps {
+export interface AdminCardHeaderProps {
   title: string;
   description?: string;
   action?: ReactNode;
+  className?: string;
 }
 
 /**
- * 卡片头部
+ * Section header - can be used independently
  */
-export const AdminCardHeader = ({ title, description, action }: AdminCardHeaderProps) => {
+export const AdminCardHeader = ({ title, description, action, className }: AdminCardHeaderProps) => {
   return (
-    <div className="flex items-start justify-between mb-4 sm:mb-6 gap-3">
-      <div>
-        <h3 className="text-base sm:text-lg font-semibold text-foreground">
+    <div className={cn('flex items-start justify-between gap-4', className)}>
+      <div className="min-w-0">
+        <h3 className="text-base font-semibold text-foreground">
           {title}
         </h3>
         {description && (
-          <p className="text-xs sm:text-sm text-muted-foreground mt-1">
+          <p className="text-sm text-muted-foreground mt-1">
             {description}
           </p>
         )}
@@ -82,8 +78,8 @@ export const AdminCardHeader = ({ title, description, action }: AdminCardHeaderP
 };
 
 /**
- * 卡片内容区
+ * Content wrapper
  */
 export const AdminCardContent = ({ children, className }: { children: ReactNode; className?: string }) => {
-  return <div className={cn('space-y-4', className)}>{children}</div>;
+  return <div className={cn(className)}>{children}</div>;
 };

@@ -209,7 +209,7 @@ export const TrafficTrendChart = ({ data, granularity, loading, headerAction, ov
 
   if (loading) {
     return (
-      <AdminCard variant="glass" noPadding>
+      <AdminCard variant="bordered" noPadding>
         <div className="@container p-4 @sm:p-6">
           <div className="flex flex-col @sm:flex-row @sm:items-center justify-between gap-3 @sm:gap-4 mb-4 @sm:mb-6">
             <Skeleton className="h-10 w-32" />
@@ -226,7 +226,7 @@ export const TrafficTrendChart = ({ data, granularity, loading, headerAction, ov
   }
 
   return (
-    <AdminCard variant="glass" noPadding>
+    <AdminCard variant="bordered" noPadding>
       <div className="@container p-4 @sm:p-6">
         {/* Header */}
         <div className="flex flex-col @sm:flex-row @sm:items-center justify-between gap-3 @sm:gap-4 mb-4 @sm:mb-6">

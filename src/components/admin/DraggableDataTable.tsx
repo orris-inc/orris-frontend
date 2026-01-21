@@ -9,7 +9,7 @@
  * - State sync only on drag end
  */
 
-import { useState, useMemo, useCallback, memo } from 'react';
+import { useState, useMemo, useCallback, memo, useRef, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   useReactTable,
@@ -35,7 +35,7 @@ import {
   SortableContext,
   useSortable,
 } from '@dnd-kit/sortable';
-import { ChevronUp, ChevronDown, ChevronsUpDown, Loader2, GripVertical } from 'lucide-react';
+import { ChevronUp, ChevronDown, ChevronsUpDown, Loader2, GripVertical, HelpCircle } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { AdminTablePagination } from './AdminTable';
 import { useBreakpoint, type BreakpointKey } from '@/hooks/useBreakpoint';
@@ -46,6 +46,12 @@ import {
   ContextMenuPortal,
   ContextMenuTrigger,
 } from '@/components/common/ContextMenu';
+import {
+  HoverCard,
+  HoverCardContent,
+  HoverCardTrigger,
+} from '@/components/common/HoverCard';
+import { TableRowProvider } from './TableHoverCard';
 
 // ============ Breakpoint Priority ============
 const BREAKPOINT_ORDER: (BreakpointKey | 'xs')[] = ['xs', 'sm', 'md', 'lg', 'xl', '2xl'];
@@ -92,10 +98,18 @@ const shouldShowColumn = (
 
 // ============ Sortable Row Component ============
 
+interface StickyConfig {
+  leftOffsets: Record<string, number>;
+  rightOffsets: Record<string, number>;
+  canScrollLeft: boolean;
+  canScrollRight: boolean;
+}
+
 interface SortableRowProps<TData> {
   row: Row<TData>;
   contextMenuContent?: (data: TData) => React.ReactNode;
   enableContextMenu?: boolean;
+  stickyConfig?: StickyConfig;
 }
 
 /**
@@ -106,6 +120,7 @@ const SortableRowInner = memo(function SortableRowInner<TData>({
   row,
   contextMenuContent,
   enableContextMenu = false,
+  stickyConfig,
 }: SortableRowProps<TData>) {
   const {
     attributes,
@@ -144,11 +159,35 @@ const SortableRowInner = memo(function SortableRowInner<TData>({
           <GripVertical className="size-4" strokeWidth={1.5} />
         </button>
       </td>
-      {row.getVisibleCells().map((cell) => (
-        <td key={cell.id} className="px-4 py-3.5 text-foreground align-middle">
-          {flexRender(cell.column.columnDef.cell, cell.getContext())}
-        </td>
-      ))}
+      {row.getVisibleCells().map((cell) => {
+        const meta = cell.column.columnDef.meta as ResponsiveColumnMeta | undefined;
+        const colId = cell.column.id;
+        const isLeftSticky = meta?.sticky === 'left';
+        const isRightSticky = meta?.sticky === 'right';
+        const leftOffset = stickyConfig?.leftOffsets[colId];
+        const rightOffset = stickyConfig?.rightOffsets[colId];
+
+        return (
+          <td
+            key={cell.id}
+            className={cn(
+              'px-4 py-3.5 text-foreground align-middle',
+              // Sticky cell styles
+              (isLeftSticky || isRightSticky) && 'sticky z-10 bg-card',
+              isLeftSticky && stickyConfig?.canScrollLeft && 'shadow-[2px_0_8px_-2px_rgba(0,0,0,0.1)]',
+              isRightSticky && stickyConfig?.canScrollRight && 'shadow-[-2px_0_8px_-2px_rgba(0,0,0,0.1)]'
+            )}
+            style={{
+              ...(isLeftSticky && leftOffset !== undefined ? { left: leftOffset } : {}),
+              ...(isRightSticky && rightOffset !== undefined ? { right: rightOffset } : {}),
+            }}
+          >
+            <TableRowProvider rowId={row.id}>
+              {flexRender(cell.column.columnDef.cell, cell.getContext())}
+            </TableRowProvider>
+          </td>
+        );
+      })}
     </tr>
   );
 
@@ -177,20 +216,46 @@ interface StaticRowProps<TData> {
   row: Row<TData>;
   contextMenuContent?: (data: TData) => React.ReactNode;
   enableContextMenu?: boolean;
+  stickyConfig?: StickyConfig;
 }
 
 const StaticRow = memo(function StaticRow<TData>({
   row,
   contextMenuContent,
   enableContextMenu = false,
+  stickyConfig,
 }: StaticRowProps<TData>) {
   const rowContent = (
     <tr className="hover:bg-accent/50">
-      {row.getVisibleCells().map((cell) => (
-        <td key={cell.id} className="px-4 py-3.5 text-foreground align-middle">
-          {flexRender(cell.column.columnDef.cell, cell.getContext())}
-        </td>
-      ))}
+      {row.getVisibleCells().map((cell) => {
+        const meta = cell.column.columnDef.meta as ResponsiveColumnMeta | undefined;
+        const colId = cell.column.id;
+        const isLeftSticky = meta?.sticky === 'left';
+        const isRightSticky = meta?.sticky === 'right';
+        const leftOffset = stickyConfig?.leftOffsets[colId];
+        const rightOffset = stickyConfig?.rightOffsets[colId];
+
+        return (
+          <td
+            key={cell.id}
+            className={cn(
+              'px-4 py-3.5 text-foreground align-middle',
+              // Sticky cell styles
+              (isLeftSticky || isRightSticky) && 'sticky z-10 bg-card',
+              isLeftSticky && stickyConfig?.canScrollLeft && 'shadow-[2px_0_8px_-2px_rgba(0,0,0,0.1)]',
+              isRightSticky && stickyConfig?.canScrollRight && 'shadow-[-2px_0_8px_-2px_rgba(0,0,0,0.1)]'
+            )}
+            style={{
+              ...(isLeftSticky && leftOffset !== undefined ? { left: leftOffset } : {}),
+              ...(isRightSticky && rightOffset !== undefined ? { right: rightOffset } : {}),
+            }}
+          >
+            <TableRowProvider rowId={row.id}>
+              {flexRender(cell.column.columnDef.cell, cell.getContext())}
+            </TableRowProvider>
+          </td>
+        );
+      })}
     </tr>
   );
 
@@ -261,6 +326,42 @@ export function DraggableDataTable<TData>({
   const { t } = useTranslation();
   const { current: currentBreakpoint } = useBreakpoint();
   const [activeId, setActiveId] = useState<string | null>(null);
+  const tableContainerRef = useRef<HTMLDivElement>(null);
+
+  // Scroll state for shadow indicators
+  const [scrollState, setScrollState] = useState({ canScrollLeft: false, canScrollRight: false });
+
+  // Handle scroll to update shadow indicators
+  const handleScroll = useCallback(() => {
+    const container = tableContainerRef.current;
+    if (!container) return;
+    const { scrollLeft, scrollWidth, clientWidth } = container;
+    setScrollState({
+      canScrollLeft: scrollLeft > 1,
+      canScrollRight: scrollLeft < scrollWidth - clientWidth - 1,
+    });
+  }, []);
+
+  // Initialize and observe scroll state
+  useEffect(() => {
+    const container = tableContainerRef.current;
+    if (!container) return;
+
+    // Initial check
+    handleScroll();
+
+    // Listen for scroll events
+    container.addEventListener('scroll', handleScroll, { passive: true });
+
+    // Observe resize to update scroll state
+    const resizeObserver = new ResizeObserver(handleScroll);
+    resizeObserver.observe(container);
+
+    return () => {
+      container.removeEventListener('scroll', handleScroll);
+      resizeObserver.disconnect();
+    };
+  }, [handleScroll]);
 
   const [internalSorting, setInternalSorting] = useState<SortingState>([]);
   const sorting = externalSorting ?? internalSorting;
@@ -272,6 +373,40 @@ export function DraggableDataTable<TData>({
       return shouldShowColumn(meta, currentBreakpoint);
     });
   }, [columns, currentBreakpoint]);
+
+  // Calculate sticky column positions
+  const stickyOffsets = useMemo(() => {
+    const leftOffsets: Record<string, number> = {};
+    const rightOffsets: Record<string, number> = {};
+
+    // For draggable table, add drag handle width (40px) to left offsets
+    const dragHandleWidth = enableDragSort ? 40 : 0;
+
+    // Calculate left sticky offsets (cumulative from left)
+    let leftAccum = dragHandleWidth;
+    for (const col of visibleColumns) {
+      const meta = col.meta as ResponsiveColumnMeta | undefined;
+      const colId = col.id || (col as { accessorKey?: string }).accessorKey || '';
+      if (meta?.sticky === 'left') {
+        leftOffsets[colId] = leftAccum;
+        leftAccum += (col.size as number) || 150;
+      }
+    }
+
+    // Calculate right sticky offsets (cumulative from right, reversed)
+    let rightAccum = 0;
+    for (let i = visibleColumns.length - 1; i >= 0; i--) {
+      const col = visibleColumns[i];
+      const meta = col.meta as ResponsiveColumnMeta | undefined;
+      const colId = col.id || (col as { accessorKey?: string }).accessorKey || '';
+      if (meta?.sticky === 'right') {
+        rightOffsets[colId] = rightAccum;
+        rightAccum += (col.size as number) || 150;
+      }
+    }
+
+    return { leftOffsets, rightOffsets, hasSticky: Object.keys(leftOffsets).length > 0 || Object.keys(rightOffsets).length > 0 };
+  }, [visibleColumns, enableDragSort]);
 
   const table = useReactTable({
     data,
@@ -330,7 +465,7 @@ export function DraggableDataTable<TData>({
 
   const tableContent = (
     <div className="relative">
-      <div className="overflow-x-auto bg-card rounded-xl">
+      <div ref={tableContainerRef} className="overflow-x-auto bg-card rounded-xl">
         <table className="w-full table-fixed text-sm border-separate border-spacing-0">
           <thead className="sticky top-0 z-10">
             {table.getHeaderGroups().map((headerGroup) => (
@@ -345,22 +480,52 @@ export function DraggableDataTable<TData>({
                   const sorted = header.column.getIsSorted();
                   const isFirst = !enableDragSort && index === 0;
                   const isLast = index === headerGroup.headers.length - 1;
+                  const meta = header.column.columnDef.meta as ResponsiveColumnMeta | undefined;
+                  const colId = header.column.id;
+                  const isLeftSticky = meta?.sticky === 'left';
+                  const isRightSticky = meta?.sticky === 'right';
+                  const leftOffset = stickyOffsets.leftOffsets[colId];
+                  const rightOffset = stickyOffsets.rightOffsets[colId];
 
                   return (
                     <th
                       key={header.id}
-                      style={{ width: header.column.columnDef.size }}
+                      style={{
+                        width: header.column.columnDef.size,
+                        ...(isLeftSticky && leftOffset !== undefined ? { left: leftOffset } : {}),
+                        ...(isRightSticky && rightOffset !== undefined ? { right: rightOffset } : {}),
+                      }}
                       className={cn(
                         'px-4 py-3.5 font-medium text-sm text-muted-foreground',
                         'whitespace-nowrap text-left border-b-2 border-border/60',
                         isFirst && 'rounded-tl-xl',
                         isLast && 'rounded-tr-xl',
-                        canSort && 'cursor-pointer select-none hover:text-foreground hover:bg-muted/80'
+                        canSort && 'cursor-pointer select-none hover:text-foreground hover:bg-muted/80',
+                        // Sticky header styles
+                        (isLeftSticky || isRightSticky) && 'sticky z-20 bg-muted/50',
+                        isLeftSticky && scrollState.canScrollLeft && 'shadow-[2px_0_8px_-2px_rgba(0,0,0,0.15)]',
+                        isRightSticky && scrollState.canScrollRight && 'shadow-[-2px_0_8px_-2px_rgba(0,0,0,0.15)]'
                       )}
                       onClick={canSort ? header.column.getToggleSortingHandler() : undefined}
                     >
                       <div className="flex items-center gap-1.5">
                         {header.isPlaceholder ? null : flexRender(header.column.columnDef.header, header.getContext())}
+                        {meta?.headerTooltip && (
+                          <HoverCard openDelay={200} closeDelay={300}>
+                            <HoverCardTrigger asChild>
+                              <button
+                                type="button"
+                                className="text-muted-foreground/50 hover:text-muted-foreground transition-colors"
+                                onClick={(e) => e.stopPropagation()}
+                              >
+                                <HelpCircle className="size-3.5" />
+                              </button>
+                            </HoverCardTrigger>
+                            <HoverCardContent className="w-72 text-sm font-normal">
+                              {meta.headerTooltip}
+                            </HoverCardContent>
+                          </HoverCard>
+                        )}
                         {canSort && (
                           <span className={sorted ? 'text-primary' : 'text-muted-foreground/40'}>
                             {sorted === 'asc' ? (
@@ -406,6 +571,12 @@ export function DraggableDataTable<TData>({
                     row={row}
                     contextMenuContent={contextMenuContent}
                     enableContextMenu={enableContextMenu}
+                    stickyConfig={{
+                      leftOffsets: stickyOffsets.leftOffsets,
+                      rightOffsets: stickyOffsets.rightOffsets,
+                      canScrollLeft: scrollState.canScrollLeft,
+                      canScrollRight: scrollState.canScrollRight,
+                    }}
                   />
                 ))}
               </SortableContext>
@@ -416,6 +587,12 @@ export function DraggableDataTable<TData>({
                   row={row}
                   contextMenuContent={contextMenuContent}
                   enableContextMenu={enableContextMenu}
+                  stickyConfig={{
+                    leftOffsets: stickyOffsets.leftOffsets,
+                    rightOffsets: stickyOffsets.rightOffsets,
+                    canScrollLeft: scrollState.canScrollLeft,
+                    canScrollRight: scrollState.canScrollRight,
+                  }}
                 />
               ))
             )}

@@ -79,40 +79,37 @@ export const SubscriptionNodeList: React.FC<SubscriptionNodeListProps> = ({
   }
 
   return (
-    <div className="space-y-2 sm:space-y-3">
+    <div className="@container space-y-2 @sm:space-y-3">
       <div className="flex items-center justify-between">
-        <p className="text-xs sm:text-sm text-muted-foreground">共 {agents.length} 个可用节点</p>
+        <p className="text-xs @sm:text-sm text-muted-foreground">共 {agents.length} 个可用节点</p>
       </div>
 
-      {/* Mobile: compact list, Desktop: grid */}
-      <div className="space-y-2 sm:grid sm:grid-cols-2 lg:grid-cols-3 sm:gap-3 sm:space-y-0">
+      <div className="space-y-2 @sm:grid @sm:grid-cols-2 @lg:grid-cols-3 @sm:gap-3 @sm:space-y-0">
         {agents.map((agent) => (
           <div
             key={agent.id}
             className={cn(
-              'p-2.5 sm:p-3 rounded-xl border transition-all',
+              'p-2.5 @sm:p-3 rounded-xl border transition-all',
               agent.status === 'enabled'
                 ? 'bg-card hover:shadow-md'
                 : 'bg-muted/30 opacity-60'
             )}
           >
-            {/* Header - compact inline on mobile */}
-            <div className="flex items-center justify-between gap-2 mb-1.5 sm:mb-2">
-              <div className="flex items-center gap-1.5 sm:gap-2 min-w-0">
-                <Server className="size-3.5 sm:size-4 text-muted-foreground shrink-0" />
-                <h4 className="text-sm sm:text-base font-medium truncate">{agent.name}</h4>
+            <div className="flex items-center justify-between gap-2 mb-1.5 @sm:mb-2">
+              <div className="flex items-center gap-1.5 @sm:gap-2 min-w-0">
+                <Server className="size-3.5 @sm:size-4 text-muted-foreground shrink-0" />
+                <h4 className="text-sm @sm:text-base font-medium truncate">{agent.name}</h4>
               </div>
               <span
                 className={cn(
                   getBadgeClass(agent.status === 'enabled' ? 'success' : 'secondary'),
-                  'text-[10px] sm:text-xs px-1.5 sm:px-2 shrink-0'
+                  'text-[10px] @sm:text-xs px-1.5 @sm:px-2 shrink-0'
                 )}
               >
                 {agent.status === 'enabled' ? '可用' : '不可用'}
               </span>
             </div>
 
-            {/* Address + Group - inline on mobile */}
             <div className="flex items-center gap-2 text-xs text-muted-foreground">
               {agent.publicAddress && (
                 <span className="truncate font-mono">{agent.publicAddress}</span>

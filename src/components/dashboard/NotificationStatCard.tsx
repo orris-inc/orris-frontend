@@ -42,8 +42,7 @@ export const NotificationStatCard = ({
   if (isLoading) {
     return (
       <div className={cn(
-        'col-span-2 md:col-span-3',
-        'p-5 rounded-xl bg-card border',
+        '@container p-5 rounded-xl bg-card border',
         className
       )}>
         <div className="flex items-center gap-3 mb-3">
@@ -58,8 +57,7 @@ export const NotificationStatCard = ({
 
   return (
     <div className={cn(
-      'col-span-2 md:col-span-3',
-      'p-5 rounded-xl bg-card border',
+      '@container p-5 rounded-xl bg-card border',
       'transition-shadow hover:shadow-md',
       className
     )}>

@@ -7,13 +7,14 @@
 import { useMemo, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Edit, Trash2, CreditCard, MoreHorizontal, KeyRound } from 'lucide-react';
-import { DataTable, AdminBadge, TruncatedId, type ColumnDef, type ResponsiveColumnMeta } from '@/components/admin';
+import { DataTable, AdminBadge, TruncatedId, TableHoverCardProvider, type ColumnDef, type ResponsiveColumnMeta } from '@/components/admin';
 import { useBreakpoint } from '@/hooks/useBreakpoint';
 import { UserMobileList } from './UserMobileList';
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuPortal,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/common/DropdownMenu';
@@ -190,9 +191,11 @@ export const UserListTable: React.FC<UserListTableProps> = ({
               <MoreHorizontal className="size-4" />
             </button>
           </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
-            {renderDropdownMenuActions(row.original)}
-          </DropdownMenuContent>
+          <DropdownMenuPortal>
+            <DropdownMenuContent align="end" collisionPadding={16}>
+              {renderDropdownMenuActions(row.original)}
+            </DropdownMenuContent>
+          </DropdownMenuPortal>
         </DropdownMenu>
       ),
     },
@@ -213,19 +216,21 @@ export const UserListTable: React.FC<UserListTableProps> = ({
   }
 
   return (
-    <DataTable
-      columns={columns}
-      data={users}
-      loading={loading}
-      page={page}
-      pageSize={pageSize}
-      total={total}
-      onPageChange={onPageChange}
-      onPageSizeChange={onPageSizeChange}
-      emptyMessage={t('admin.users.noData')}
-      getRowId={(row) => String(row.id)}
-      enableContextMenu={true}
-      contextMenuContent={renderContextMenuActions}
-    />
+    <TableHoverCardProvider>
+      <DataTable
+        columns={columns}
+        data={users}
+        loading={loading}
+        page={page}
+        pageSize={pageSize}
+        total={total}
+        onPageChange={onPageChange}
+        onPageSizeChange={onPageSizeChange}
+        emptyMessage={t('admin.users.noData')}
+        getRowId={(row) => String(row.id)}
+        enableContextMenu={true}
+        contextMenuContent={renderContextMenuActions}
+      />
+    </TableHoverCardProvider>
   );
 };

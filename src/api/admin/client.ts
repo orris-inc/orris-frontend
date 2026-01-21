@@ -29,10 +29,8 @@ import type {
   UpdateTelegramConfigRequest,
   TelegramTestResult,
   SuspendSubscriptionRequest,
-  AdminExternalForwardRule,
-  AdminListExternalForwardRulesParams,
-  AdminCreateExternalForwardRuleRequest,
-  AdminUpdateExternalForwardRuleRequest,
+  // Note: Admin External Forward Rule types have been removed (2026-01-20)
+  // External forward rules are now part of the unified ForwardRule model
 } from './types';
 
 // ========== Traffic Statistics APIs (Admin only) ==========
@@ -538,169 +536,9 @@ export const resetSubscriptionUsage = async (id: string): Promise<void> => {
   await apiClient.post(`/admin/subscriptions/${id}/reset-usage`);
 };
 
-// ========== Admin External Forward Rules APIs (Added 2025-01-18, Updated 2025-01-19) ==========
-
-/**
- * Create external forward rule (Admin)
- * POST /admin/external-forward-rules
- * @requires Authentication, Admin
- * Added: 2025-01-19
- *
- * Creates a new external forward rule. Can optionally bind to resource groups.
- * Admin-created rules can be distributed to subscriptions via resource groups.
- *
- * @param data - External forward rule creation data
- * @returns Created external forward rule
- *
- * @example
- * ```typescript
- * const rule = await createAdminExternalForwardRule({
- *   name: 'MySQL Forward',
- *   serverAddress: '192.168.1.100',
- *   listenPort: 13306,
- *   protocol: 'shadowsocks',
- *   externalSource: 'provider_abc',
- *   groupIds: ['rg_xK9mP2vL3nQ'], // Optional: bind to resource groups
- * });
- * ```
- */
-export const createAdminExternalForwardRule = async (
-  data: AdminCreateExternalForwardRuleRequest
-): Promise<AdminExternalForwardRule> => {
-  const response = await apiClient.post<APIResponse<AdminExternalForwardRule>>(
-    '/admin/external-forward-rules',
-    data
-  );
-  return response.data.data;
-};
-
-/**
- * List external forward rules (Admin)
- * GET /admin/external-forward-rules
- * @requires Authentication, Admin
- *
- * Returns paginated external forward rules with optional filters.
- * Admin-only endpoint that can filter by subscription, user, status, and external source.
- *
- * @param params - Query parameters for filtering and pagination
- * @returns Paginated list of external forward rules
- *
- * @example
- * ```typescript
- * const rules = await listAdminExternalForwardRules({
- *   page: 1,
- *   pageSize: 20,
- *   status: 'enabled',
- * });
- * ```
- */
-export const listAdminExternalForwardRules = async (
-  params?: AdminListExternalForwardRulesParams
-): Promise<ListResponse<AdminExternalForwardRule>> => {
-  const response = await apiClient.get<APIResponse<ListResponse<AdminExternalForwardRule>>>(
-    '/admin/external-forward-rules',
-    { params }
-  );
-  return response.data.data;
-};
-
-/**
- * Get external forward rule by ID (Admin)
- * GET /admin/external-forward-rules/:id
- * @requires Authentication, Admin
- *
- * @param id - External forward rule ID (efr_xxx format)
- * @returns External forward rule details
- *
- * @example
- * ```typescript
- * const rule = await getAdminExternalForwardRule('efr_xK9mP2vL3nQ');
- * ```
- */
-export const getAdminExternalForwardRule = async (
-  id: string
-): Promise<AdminExternalForwardRule> => {
-  const response = await apiClient.get<APIResponse<AdminExternalForwardRule>>(
-    `/admin/external-forward-rules/${id}`
-  );
-  return response.data.data;
-};
-
-/**
- * Update external forward rule (Admin)
- * PUT /admin/external-forward-rules/:id
- * @requires Authentication, Admin
- *
- * Updates an external forward rule. Only specified fields will be updated.
- *
- * @param id - External forward rule ID (efr_xxx format)
- * @param data - Fields to update
- *
- * @example
- * ```typescript
- * await updateAdminExternalForwardRule('efr_xK9mP2vL3nQ', {
- *   name: 'Updated Rule Name',
- *   remark: 'Updated by admin',
- * });
- * ```
- */
-export const updateAdminExternalForwardRule = async (
-  id: string,
-  data: AdminUpdateExternalForwardRuleRequest
-): Promise<void> => {
-  await apiClient.put(`/admin/external-forward-rules/${id}`, data);
-};
-
-/**
- * Delete external forward rule (Admin)
- * DELETE /admin/external-forward-rules/:id
- * @requires Authentication, Admin
- *
- * Permanently deletes an external forward rule.
- *
- * @param id - External forward rule ID (efr_xxx format)
- *
- * @example
- * ```typescript
- * await deleteAdminExternalForwardRule('efr_xK9mP2vL3nQ');
- * ```
- */
-export const deleteAdminExternalForwardRule = async (id: string): Promise<void> => {
-  await apiClient.delete(`/admin/external-forward-rules/${id}`);
-};
-
-/**
- * Enable external forward rule (Admin)
- * POST /admin/external-forward-rules/:id/enable
- * @requires Authentication, Admin
- *
- * Enables a disabled external forward rule.
- *
- * @param id - External forward rule ID (efr_xxx format)
- *
- * @example
- * ```typescript
- * await enableAdminExternalForwardRule('efr_xK9mP2vL3nQ');
- * ```
- */
-export const enableAdminExternalForwardRule = async (id: string): Promise<void> => {
-  await apiClient.post(`/admin/external-forward-rules/${id}/enable`);
-};
-
-/**
- * Disable external forward rule (Admin)
- * POST /admin/external-forward-rules/:id/disable
- * @requires Authentication, Admin
- *
- * Disables an enabled external forward rule.
- *
- * @param id - External forward rule ID (efr_xxx format)
- *
- * @example
- * ```typescript
- * await disableAdminExternalForwardRule('efr_xK9mP2vL3nQ');
- * ```
- */
-export const disableAdminExternalForwardRule = async (id: string): Promise<void> => {
-  await apiClient.post(`/admin/external-forward-rules/${id}/disable`);
-};
+// Note: Admin External Forward Rules APIs have been removed (2026-01-20)
+// External forward rules are now part of the unified ForwardRule model with rule_type='external'
+// Use the forward module's Admin APIs with ruleType='external' filter instead:
+// - listForwardRules({ ruleType: 'external' })
+// - createForwardRule({ ruleType: 'external', ... })
+// etc.

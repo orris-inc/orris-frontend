@@ -286,7 +286,7 @@ export const CreatePlanDialog: React.FC<CreatePlanDialogProps> = ({
 
   return (
     <Dialog open={open} onOpenChange={handleClose}>
-      <DialogContent className="sm:max-w-3xl flex flex-col max-h-[90vh]">
+      <DialogContent className="@container sm:max-w-3xl flex flex-col max-h-[90vh]">
         <DialogHeader className="flex-shrink-0">
           <DialogTitle className="flex items-center gap-2">
             {isDuplicateMode && <Copy className="size-5" />}
@@ -305,7 +305,7 @@ export const CreatePlanDialog: React.FC<CreatePlanDialogProps> = ({
           <div className="space-y-4">
             <h3 className="text-sm font-semibold">{t('admin.plans.form.basicInfo')}</h3>
             <Separator />
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+            <div className="grid grid-cols-1 gap-4 @sm:grid-cols-2">
               <div className="flex flex-col gap-2">
                 <Label htmlFor="name">
                   {t('admin.plans.form.planName')} <span className="text-destructive">*</span>
@@ -354,7 +354,7 @@ export const CreatePlanDialog: React.FC<CreatePlanDialogProps> = ({
               </div>
 
               {/* Pricing Options */}
-              <div className="space-y-4 sm:col-span-2">
+              <div className="space-y-4 @sm:col-span-2">
                 <div className="flex items-center justify-between">
                   <Label>
                     {t('admin.plans.form.pricingOptions')} <span className="text-destructive">*</span>
@@ -455,7 +455,7 @@ export const CreatePlanDialog: React.FC<CreatePlanDialogProps> = ({
             <div className="space-y-4">
               <h3 className="text-sm font-semibold">{t('admin.plans.form.nodeLimits')}</h3>
               <Separator />
-              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+              <div className="grid grid-cols-1 gap-4 @sm:grid-cols-2">
                 <div className="flex flex-col gap-2">
                   <Label htmlFor="trafficLimit">{t('admin.plans.form.trafficLimit')}</Label>
                   <Input
@@ -530,7 +530,7 @@ export const CreatePlanDialog: React.FC<CreatePlanDialogProps> = ({
             <div className="space-y-4">
               <h3 className="text-sm font-semibold">{t('admin.plans.form.forwardLimits')}</h3>
               <Separator />
-              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+              <div className="grid grid-cols-1 gap-4 @sm:grid-cols-2">
                 <div className="flex flex-col gap-2">
                   <Label htmlFor="ruleLimit">{t('admin.plans.form.ruleLimit')}</Label>
                   <Input
@@ -558,7 +558,7 @@ export const CreatePlanDialog: React.FC<CreatePlanDialogProps> = ({
                   />
                 </div>
 
-                <div className="flex flex-col gap-2 sm:col-span-2">
+                <div className="flex flex-col gap-2 @sm:col-span-2">
                   <Label>{t('admin.plans.form.allowedRuleTypes')}</Label>
                   <div className="flex flex-wrap gap-3 pt-1">
                     {FORWARD_RULE_TYPE_VALUES.map((type) => (
@@ -601,7 +601,7 @@ export const CreatePlanDialog: React.FC<CreatePlanDialogProps> = ({
           <div className="space-y-4">
             <h3 className="text-sm font-semibold">{t('admin.plans.form.generalConfig')}</h3>
             <Separator />
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+            <div className="grid grid-cols-1 gap-4 @sm:grid-cols-2">
               <div className="flex flex-col gap-2">
                 <Label htmlFor="trialDays">{t('admin.plans.form.trialDays')}</Label>
                 <Input
@@ -626,7 +626,7 @@ export const CreatePlanDialog: React.FC<CreatePlanDialogProps> = ({
                 <p className="text-xs text-muted-foreground">{t('admin.plans.form.sortOrderHint')}</p>
               </div>
 
-              <div className="flex items-center gap-2 sm:col-span-2">
+              <div className="flex items-center gap-2 @sm:col-span-2">
                 <Checkbox
                   id="isPublic"
                   checked={formData.isPublic}

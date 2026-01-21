@@ -4,6 +4,7 @@
  */
 
 import { memo, useState, useMemo } from 'react';
+import { formatDate } from '@/shared/utils/date-utils';
 import { useTranslation } from 'react-i18next';
 import { Server, Cpu, ArrowUpCircle, ArrowDownCircle, RefreshCw, Filter, Check } from 'lucide-react';
 import { ScrollArea } from '@/components/common/ScrollArea';
@@ -13,6 +14,7 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuPortal,
   DropdownMenuTrigger,
 } from '@/components/common/DropdownMenu';
 import type { MonitorEvent } from '../hooks/useMonitorData';
@@ -56,7 +58,7 @@ const formatEventTime = (timestamp: number, t: TFunction): string => {
   if (diff < 60) return t('admin.monitor.secondsAgo', { count: diff });
   if (diff < 3600) return t('admin.monitor.minutesAgo', { count: Math.floor(diff / 60) });
   if (diff < 86400) return t('admin.monitor.hoursAgo', { count: Math.floor(diff / 3600) });
-  return new Date(timestamp * 1000).toLocaleDateString();
+  return formatDate(new Date(timestamp * 1000));
 };
 
 // Event item component - ultra compact
@@ -143,43 +145,45 @@ export const EventLogPanel = memo(({ events }: EventLogPanelProps) => {
               )}
             </Button>
           </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" className="w-40">
-            <DropdownMenuItem
-              onClick={() => toggleFilter('all')}
-              className="cursor-pointer"
-            >
-              <Check className={`size-4 mr-2 ${filters.has('all') ? 'opacity-100' : 'opacity-0'}`} />
-              {t('admin.monitor.filterAll')}
-            </DropdownMenuItem>
-            <DropdownMenuItem
-              onClick={() => toggleFilter('node')}
-              className="cursor-pointer"
-            >
-              <Check className={`size-4 mr-2 ${filters.has('node') ? 'opacity-100' : 'opacity-0'}`} />
-              Node Agent
-            </DropdownMenuItem>
-            <DropdownMenuItem
-              onClick={() => toggleFilter('agent')}
-              className="cursor-pointer"
-            >
-              <Check className={`size-4 mr-2 ${filters.has('agent') ? 'opacity-100' : 'opacity-0'}`} />
-              {t('admin.monitor.filterForwardAgent')}
-            </DropdownMenuItem>
-            <DropdownMenuItem
-              onClick={() => toggleFilter('online')}
-              className="cursor-pointer"
-            >
-              <Check className={`size-4 mr-2 ${filters.has('online') ? 'opacity-100' : 'opacity-0'}`} />
-              {t('admin.monitor.filterOnlineEvent')}
-            </DropdownMenuItem>
-            <DropdownMenuItem
-              onClick={() => toggleFilter('offline')}
-              className="cursor-pointer"
-            >
-              <Check className={`size-4 mr-2 ${filters.has('offline') ? 'opacity-100' : 'opacity-0'}`} />
-              {t('admin.monitor.filterOfflineEvent')}
-            </DropdownMenuItem>
-          </DropdownMenuContent>
+          <DropdownMenuPortal>
+            <DropdownMenuContent align="end" className="w-40" collisionPadding={16}>
+              <DropdownMenuItem
+                onClick={() => toggleFilter('all')}
+                className="cursor-pointer"
+              >
+                <Check className={`size-4 mr-2 ${filters.has('all') ? 'opacity-100' : 'opacity-0'}`} />
+                {t('admin.monitor.filterAll')}
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                onClick={() => toggleFilter('node')}
+                className="cursor-pointer"
+              >
+                <Check className={`size-4 mr-2 ${filters.has('node') ? 'opacity-100' : 'opacity-0'}`} />
+                Node Agent
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                onClick={() => toggleFilter('agent')}
+                className="cursor-pointer"
+              >
+                <Check className={`size-4 mr-2 ${filters.has('agent') ? 'opacity-100' : 'opacity-0'}`} />
+                {t('admin.monitor.filterForwardAgent')}
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                onClick={() => toggleFilter('online')}
+                className="cursor-pointer"
+              >
+                <Check className={`size-4 mr-2 ${filters.has('online') ? 'opacity-100' : 'opacity-0'}`} />
+                {t('admin.monitor.filterOnlineEvent')}
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                onClick={() => toggleFilter('offline')}
+                className="cursor-pointer"
+              >
+                <Check className={`size-4 mr-2 ${filters.has('offline') ? 'opacity-100' : 'opacity-0'}`} />
+                {t('admin.monitor.filterOfflineEvent')}
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenuPortal>
         </DropdownMenu>
       </div>
 

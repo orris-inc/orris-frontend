@@ -1,50 +1,80 @@
 /**
- * 日期时间工具函数
+ * Date time utility functions
+ *
+ * Unified date/time format:
+ * - Date: YYYY/MM/DD (e.g., 2024/01/15)
+ * - Time: HH:mm (24-hour, no seconds, e.g., 14:30)
+ * - DateTime: YYYY/MM/DD HH:mm (e.g., 2024/01/15 14:30)
  */
 
 /**
- * 格式化日期时间为本地字符串
- * @param dateString ISO 8601 格式的日期字符串
- * @returns 格式化后的日期时间字符串
+ * Format a date value to YYYY/MM/DD format
  */
-export const formatDateTime = (dateString: string): string => {
+const formatDateParts = (date: Date): string => {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  return `${year}/${month}/${day}`;
+};
+
+/**
+ * Format a time value to HH:mm format (24-hour, no seconds)
+ */
+const formatTimeParts = (date: Date): string => {
+  const hours = String(date.getHours()).padStart(2, '0');
+  const minutes = String(date.getMinutes()).padStart(2, '0');
+  return `${hours}:${minutes}`;
+};
+
+/**
+ * Format date time string to unified format: YYYY/MM/DD HH:mm
+ * @param dateString ISO 8601 date string or timestamp
+ * @returns Formatted date time string
+ */
+export const formatDateTime = (dateString: string | number | Date): string => {
   if (!dateString) return '-';
 
   try {
-    const date = new Date(dateString);
+    const date = dateString instanceof Date ? dateString : new Date(dateString);
     if (isNaN(date.getTime())) return '-';
 
-    return date.toLocaleString('zh-CN', {
-      year: 'numeric',
-      month: '2-digit',
-      day: '2-digit',
-      hour: '2-digit',
-      minute: '2-digit',
-      second: '2-digit',
-      hour12: false,
-    });
+    return `${formatDateParts(date)} ${formatTimeParts(date)}`;
   } catch {
     return '-';
   }
 };
 
 /**
- * 格式化日期为本地字符串（不含时间）
- * @param dateString ISO 8601 格式的日期字符串
- * @returns 格式化后的日期字符串
+ * Format date string to unified format: YYYY/MM/DD (without time)
+ * @param dateString ISO 8601 date string or timestamp
+ * @returns Formatted date string
  */
-export const formatDate = (dateString: string): string => {
+export const formatDate = (dateString: string | number | Date): string => {
   if (!dateString) return '-';
 
   try {
-    const date = new Date(dateString);
+    const date = dateString instanceof Date ? dateString : new Date(dateString);
     if (isNaN(date.getTime())) return '-';
 
-    return date.toLocaleDateString('zh-CN', {
-      year: 'numeric',
-      month: '2-digit',
-      day: '2-digit',
-    });
+    return formatDateParts(date);
+  } catch {
+    return '-';
+  }
+};
+
+/**
+ * Format time string to unified format: HH:mm (without date)
+ * @param dateString ISO 8601 date string or timestamp
+ * @returns Formatted time string
+ */
+export const formatTime = (dateString: string | number | Date): string => {
+  if (!dateString) return '-';
+
+  try {
+    const date = dateString instanceof Date ? dateString : new Date(dateString);
+    if (isNaN(date.getTime())) return '-';
+
+    return formatTimeParts(date);
   } catch {
     return '-';
   }

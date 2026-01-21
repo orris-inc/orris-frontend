@@ -5,15 +5,17 @@
  */
 
 import { useMemo, useCallback } from 'react';
+import { formatDate } from '@/shared/utils/date-utils';
 import { useTranslation } from 'react-i18next';
 import { Edit, Power, MoreHorizontal, Trash2, Eye } from 'lucide-react';
-import { DataTable, AdminBadge, type ColumnDef, type ResponsiveColumnMeta } from '@/components/admin';
+import { DataTable, AdminBadge, TableHoverCardProvider, type ColumnDef, type ResponsiveColumnMeta } from '@/components/admin';
 import { useBreakpoint } from '@/hooks/useBreakpoint';
 import { ResourceGroupMobileList } from './ResourceGroupMobileList';
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuPortal,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/common/DropdownMenu';
@@ -191,7 +193,7 @@ export const ResourceGroupListTable: React.FC<ResourceGroupListTableProps> = ({
       meta: { priority: 3 } as ResponsiveColumnMeta,
       cell: ({ row }) => (
         <span className="text-sm text-slate-600 dark:text-slate-400">
-          {new Date(row.original.createdAt).toLocaleDateString('zh-CN')}
+          {formatDate(row.original.createdAt)}
         </span>
       ),
     },
@@ -210,9 +212,11 @@ export const ResourceGroupListTable: React.FC<ResourceGroupListTableProps> = ({
                 <MoreHorizontal className="size-4 group-hover:scale-110 transition-transform" strokeWidth={2} />
               </button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              {renderDropdownMenuActions(resourceGroup)}
-            </DropdownMenuContent>
+            <DropdownMenuPortal>
+              <DropdownMenuContent align="end" collisionPadding={16}>
+                {renderDropdownMenuActions(resourceGroup)}
+              </DropdownMenuContent>
+            </DropdownMenuPortal>
           </DropdownMenu>
         );
       },
@@ -235,19 +239,21 @@ export const ResourceGroupListTable: React.FC<ResourceGroupListTableProps> = ({
   }
 
   return (
-    <DataTable
-      columns={columns}
-      data={resourceGroups}
-      loading={loading}
-      page={page}
-      pageSize={pageSize}
-      total={total}
-      onPageChange={onPageChange}
-      onPageSizeChange={onPageSizeChange}
-      emptyMessage={t('resourceGroups.noData')}
-      getRowId={(row) => row.sid}
-      enableContextMenu={true}
-      contextMenuContent={renderContextMenuActions}
-    />
+    <TableHoverCardProvider>
+      <DataTable
+        columns={columns}
+        data={resourceGroups}
+        loading={loading}
+        page={page}
+        pageSize={pageSize}
+        total={total}
+        onPageChange={onPageChange}
+        onPageSizeChange={onPageSizeChange}
+        emptyMessage={t('resourceGroups.noData')}
+        getRowId={(row) => row.sid}
+        enableContextMenu={true}
+        contextMenuContent={renderContextMenuActions}
+      />
+    </TableHoverCardProvider>
   );
 };

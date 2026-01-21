@@ -40,6 +40,7 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuPortal,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/common/DropdownMenu';
@@ -100,6 +101,12 @@ const RULE_TYPE_CONFIG: Record<string, { labelKey: string; shortLabelKey: string
     shortLabelKey: 'admin.forwardRules.ruleType.directChainShort',
     color: 'text-amber-600 dark:text-amber-400',
     bgColor: 'bg-amber-50 dark:bg-amber-900/20',
+  },
+  external: {
+    labelKey: 'admin.forwardRules.ruleType.external',
+    shortLabelKey: 'admin.forwardRules.ruleType.externalShort',
+    color: 'text-cyan-600 dark:text-cyan-400',
+    bgColor: 'bg-cyan-50 dark:bg-cyan-900/20',
   },
 };
 
@@ -458,51 +465,53 @@ export const ForwardRuleMobileList: React.FC<ForwardRuleMobileListProps> = ({
             <MoreHorizontal className="size-4 text-slate-500" />
           </button>
         </DropdownMenuTrigger>
-        <DropdownMenuContent align="end">
-          <DropdownMenuItem onClick={() => onViewDetail(rule)}>
-            <Eye className="mr-2 size-4" />
-            {t('admin.forwardRules.actions.viewDetail')}
-          </DropdownMenuItem>
-          <DropdownMenuItem onClick={() => onEdit(rule)}>
-            <Edit className="mr-2 size-4" />
-            {t('common.actions.edit')}
-          </DropdownMenuItem>
-          <DropdownMenuItem
-            onClick={() => canProbe && onProbe(rule)}
-            disabled={!canProbe}
-          >
-            {isProbing ? (
-              <Loader2 className="mr-2 size-4 animate-spin" />
+        <DropdownMenuPortal>
+          <DropdownMenuContent align="end" collisionPadding={16}>
+            <DropdownMenuItem onClick={() => onViewDetail(rule)}>
+              <Eye className="mr-2 size-4" />
+              {t('admin.forwardRules.actions.viewDetail')}
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => onEdit(rule)}>
+              <Edit className="mr-2 size-4" />
+              {t('common.actions.edit')}
+            </DropdownMenuItem>
+            <DropdownMenuItem
+              onClick={() => canProbe && onProbe(rule)}
+              disabled={!canProbe}
+            >
+              {isProbing ? (
+                <Loader2 className="mr-2 size-4 animate-spin" />
+              ) : (
+                <Activity className="mr-2 size-4" />
+              )}
+              {isProbing ? t('admin.forwardRules.actions.probing') : t('admin.forwardRules.actions.probe')}
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => onCopy(rule)}>
+              <Files className="mr-2 size-4" />
+              {t('admin.forwardRules.actions.copyRule')}
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => onResetTraffic(rule)}>
+              <RotateCcw className="mr-2 size-4" />
+              {t('admin.forwardRules.actions.resetTraffic')}
+            </DropdownMenuItem>
+            <DropdownMenuSeparator />
+            {rule.status === 'enabled' ? (
+              <DropdownMenuItem onClick={() => onDisable(rule)}>
+                <PowerOff className="mr-2 size-4" />
+                {t('common.actions.disable')}
+              </DropdownMenuItem>
             ) : (
-              <Activity className="mr-2 size-4" />
+              <DropdownMenuItem onClick={() => onEnable(rule)}>
+                <Power className="mr-2 size-4" />
+                {t('common.actions.enable')}
+              </DropdownMenuItem>
             )}
-            {isProbing ? t('admin.forwardRules.actions.probing') : t('admin.forwardRules.actions.probe')}
-          </DropdownMenuItem>
-          <DropdownMenuItem onClick={() => onCopy(rule)}>
-            <Files className="mr-2 size-4" />
-            {t('admin.forwardRules.actions.copyRule')}
-          </DropdownMenuItem>
-          <DropdownMenuItem onClick={() => onResetTraffic(rule)}>
-            <RotateCcw className="mr-2 size-4" />
-            {t('admin.forwardRules.actions.resetTraffic')}
-          </DropdownMenuItem>
-          <DropdownMenuSeparator />
-          {rule.status === 'enabled' ? (
-            <DropdownMenuItem onClick={() => onDisable(rule)}>
-              <PowerOff className="mr-2 size-4" />
-              {t('common.actions.disable')}
+            <DropdownMenuItem onClick={() => onDelete(rule)} className="text-red-600 dark:text-red-400">
+              <Trash2 className="mr-2 size-4" />
+              {t('common.actions.delete')}
             </DropdownMenuItem>
-          ) : (
-            <DropdownMenuItem onClick={() => onEnable(rule)}>
-              <Power className="mr-2 size-4" />
-              {t('common.actions.enable')}
-            </DropdownMenuItem>
-          )}
-          <DropdownMenuItem onClick={() => onDelete(rule)} className="text-red-600 dark:text-red-400">
-            <Trash2 className="mr-2 size-4" />
-            {t('common.actions.delete')}
-          </DropdownMenuItem>
-        </DropdownMenuContent>
+          </DropdownMenuContent>
+        </DropdownMenuPortal>
       </DropdownMenu>
     );
   }, [onViewDetail, onEdit, onProbe, onCopy, onResetTraffic, onEnable, onDisable, onDelete, probingRuleId, t]);

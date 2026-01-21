@@ -114,22 +114,22 @@ export const AdminLayout = ({ children }: AdminLayoutProps) => {
           onLogout={handleLogout}
         />
 
-        {/* Desktop sidebar - Glass morphism design */}
+        {/* Desktop sidebar - Clean background without glass effects */}
         <aside
           className={cn(
             'fixed inset-y-0 left-0 z-40 hidden flex-col overflow-hidden md:flex',
-            'bg-muted/30 dark:bg-muted/20',
-            'border-r border-border/50',
+            'bg-background',
+            'border-r border-border',
             'transition-all duration-200 motion-reduce:transition-none',
-            collapsed ? 'w-18' : 'w-60'
+            collapsed ? 'w-16' : 'w-64'
           )}
         >
           {/* Sidebar header */}
           <div
             className={cn(
               'flex h-14 shrink-0 items-center',
-              'border-b border-border/50',
-              collapsed ? 'justify-center px-2' : 'justify-between px-4'
+              'border-b border-border',
+              collapsed ? 'justify-center px-1.5' : 'justify-between px-4'
             )}
           >
             {!collapsed && (
@@ -140,15 +140,17 @@ export const AdminLayout = ({ children }: AdminLayoutProps) => {
             <button
               onClick={() => setCollapsed(!collapsed)}
               className={cn(
-                'flex size-8 items-center justify-center rounded-lg',
+                'flex items-center justify-center rounded-lg',
+                'size-9 min-h-[36px]',
                 'transition-colors motion-reduce:transition-none',
-                'hover:bg-foreground/5'
+                'hover:bg-foreground/5 active:bg-foreground/10'
               )}
+              aria-label={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
             >
               {collapsed ? (
-                <ChevronRight className="h-4 w-4" />
+                <ChevronRight className="size-4" />
               ) : (
-                <ChevronLeft className="h-4 w-4" />
+                <ChevronLeft className="size-4" />
               )}
             </button>
           </div>
@@ -167,7 +169,7 @@ export const AdminLayout = ({ children }: AdminLayoutProps) => {
           {(serverVersion || clientVersion) && (
             <div
               className={cn(
-                'shrink-0 border-t border-border/50',
+                'shrink-0 border-t border-border',
                 'py-2.5 text-[10px] text-muted-foreground/50',
                 collapsed ? 'px-2 text-center' : 'px-4'
               )}
@@ -199,22 +201,18 @@ export const AdminLayout = ({ children }: AdminLayoutProps) => {
         <div
           className={cn(
             'flex min-h-viewport flex-col transition-all duration-200 motion-reduce:transition-none',
-            collapsed ? 'md:pl-18' : 'md:pl-60'
+            collapsed ? 'md:pl-16' : 'md:pl-64'
           )}
         >
-          {/* iOS-style Navigation Bar - CSS-first responsive */}
+          {/* Navigation Bar - CSS-first responsive */}
           <header
             className={cn(
-              'sticky top-0 z-30 border-b',
-              // Mobile: glass effect with safe area
-              'glass-elevated border-border/40 pt-[env(safe-area-inset-top)]',
-              // Desktop: standard background
-              'md:bg-background md:border-border md:pt-0 md:backdrop-blur-none md:shadow-none'
+              'sticky top-0 z-30 border-b border-border',
+              // Mobile: light blur with safe area
+              'bg-background/95 backdrop-blur-sm pt-[env(safe-area-inset-top)]',
+              // Desktop: solid background without blur
+              'md:bg-background md:pt-0 md:backdrop-blur-none'
             )}
-            style={{
-              // Reset glass styles on desktop
-              ['--tw-backdrop-blur' as string]: undefined,
-            }}
           >
             <div
               className={cn(
@@ -293,7 +291,7 @@ export const AdminLayout = ({ children }: AdminLayoutProps) => {
             className="flex-1 overflow-x-hidden p-3 md:p-4 lg:p-6"
             data-view-transition="content"
           >
-            <div className="min-w-0 max-w-full">
+            <div className="mx-auto max-w-7xl min-w-0">
               {children}
             </div>
           </main>

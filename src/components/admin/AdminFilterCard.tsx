@@ -16,8 +16,8 @@ interface AdminFilterCardProps {
  */
 export const AdminFilterCard = ({ children }: AdminFilterCardProps) => {
   return (
-    <AdminCard>
-      <div className="space-y-4">
+    <AdminCard variant="bordered">
+      <div className="@container space-y-4">
         {children}
       </div>
     </AdminCard>
@@ -34,10 +34,10 @@ interface FilterRowProps {
  */
 export const FilterRow = ({ children, columns = 4 }: FilterRowProps) => {
   const gridCols = {
-    2: 'md:grid-cols-2',
-    3: 'md:grid-cols-3',
-    4: 'md:grid-cols-4',
-    5: 'md:grid-cols-5',
+    2: '@md:grid-cols-2',
+    3: '@md:grid-cols-3',
+    4: '@md:grid-cols-4',
+    5: '@md:grid-cols-5',
   };
 
   return (

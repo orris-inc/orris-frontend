@@ -22,7 +22,7 @@ export function DateRangeSelector({ value, onChange }: DateRangeSelectorProps) {
   const { t } = useTranslation();
 
   return (
-    <div className="overflow-x-auto scrollbar-hide">
+    <div className="shrink-0">
       <ToggleGroup
         type="single"
         value={value}
@@ -39,7 +39,7 @@ export function DateRangeSelector({ value, onChange }: DateRangeSelectorProps) {
           <ToggleGroupItem
             key={preset.value}
             value={preset.value}
-            className="whitespace-nowrap text-[11px] sm:text-sm min-h-[36px] sm:min-h-[32px] px-2.5 sm:px-3"
+            className="whitespace-nowrap text-[11px] @sm:text-sm min-h-[36px] @sm:min-h-[32px] px-2.5 @sm:px-3"
           >
             {t(preset.label)}
           </ToggleGroupItem>

@@ -58,25 +58,25 @@ export const TrafficOverviewCards = ({
   const { t } = useTranslation();
 
   return (
-    <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+    <div className="@container grid grid-cols-2 @sm:grid-cols-4 gap-3">
       {CARDS_CONFIG.map((card, index) => (
         <div
           key={index}
-          className="group relative bg-white dark:bg-slate-900 rounded-lg p-3 sm:p-4 border border-slate-100 dark:border-slate-800 hover:border-slate-200 dark:hover:border-slate-700 transition-all duration-200 hover:shadow-md"
+          className="group relative bg-card rounded-lg p-3 @sm:p-4 border border-border hover:border-border/80 transition-all duration-200 hover:shadow-md"
         >
           <div className="flex items-center gap-3">
             <div className={`${card.iconBg} p-2 rounded-lg shrink-0`}>
               <div className={card.iconColor}>{card.icon}</div>
             </div>
             <div className="min-w-0">
-              <div className="text-lg sm:text-xl font-semibold text-slate-900 dark:text-white whitespace-nowrap">
+              <div className="text-lg @sm:text-xl font-semibold text-foreground whitespace-nowrap">
                 {loading ? (
-                  <div className="h-5 w-12 bg-slate-200 dark:bg-slate-700 rounded animate-pulse motion-reduce:animate-none" />
+                  <div className="h-5 w-12 bg-muted rounded animate-pulse motion-reduce:animate-none" />
                 ) : (
                   data ? card.getValue(data) : '-'
                 )}
               </div>
-              <div className="text-xs text-slate-500 dark:text-slate-400 truncate">
+              <div className="text-xs text-muted-foreground truncate">
                 {t(card.title)}
               </div>
             </div>

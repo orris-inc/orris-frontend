@@ -1,14 +1,13 @@
 /**
  * System Status Cell Component
  * Memoized component to prevent unnecessary re-renders during SSE updates
- * Uses Context-based hover state to keep Tooltip open when data updates
+ * Uses TableHoverCard with columnKey for stable hover state
  * Shared by Node and Forward Agent pages
  */
 
-import { memo, useCallback } from 'react';
+import { memo } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/common/Tooltip';
-import { useSystemStatusHover } from './SystemStatusHoverContext';
+import { TableHoverCard } from './TableHoverCard';
 import { formatBitRate, formatBytes, formatRelativeTime } from '@/shared/utils/format-utils';
 
 /**
@@ -50,7 +49,7 @@ export interface SystemStatusData {
 }
 
 interface SystemStatusCellProps {
-  /** Unique identifier for the item (node ID or agent ID) */
+  /** Unique identifier for the item (node ID or agent ID) - used for backward compatibility */
   itemId: string;
   /** System status data */
   status: SystemStatusData | undefined;
@@ -73,8 +72,8 @@ const MiniBar = memo(({ label, percent }: { label: string; percent: number }) =>
 ));
 MiniBar.displayName = 'MiniBar';
 
-// Tooltip content component - separated to avoid re-render issues
-const StatusTooltipContent = memo(({ status }: { status: SystemStatusData }) => {
+// HoverCard content component - separated to avoid re-render issues
+const StatusHoverContent = memo(({ status }: { status: SystemStatusData }) => {
   const { t } = useTranslation();
   const cpuPercent = status.cpuPercent ?? 0;
   const memoryPercent = status.memoryPercent ?? 0;
@@ -174,25 +173,14 @@ const StatusTooltipContent = memo(({ status }: { status: SystemStatusData }) => 
     </div>
   );
 });
-StatusTooltipContent.displayName = 'StatusTooltipContent';
+StatusHoverContent.displayName = 'StatusHoverContent';
 
 /**
- * System Status Cell - displays system metrics with tooltip
- * Uses Context-based hover state lifted to table level
- * This prevents state loss when cell re-renders due to SSE updates
+ * System Status Cell - displays system metrics with hover card
+ * Uses TableHoverCard with columnKey="monitor" for stable state
+ * Requires TableHoverCardProvider and TableRowProvider in parent tree
  */
-export const SystemStatusCell = memo(({ itemId, status }: SystemStatusCellProps) => {
-  // Hover state is managed at table level via Context
-  const { hoveredId, setHoveredId } = useSystemStatusHover();
-  const isOpen = hoveredId === itemId;
-
-  const handleOpenChange = useCallback(
-    (open: boolean) => {
-      setHoveredId(open ? itemId : null);
-    },
-    [itemId, setHoveredId]
-  );
-
+export const SystemStatusCell = memo(({ itemId: _itemId, status }: SystemStatusCellProps) => {
   if (!status) {
     return <span className="text-xs text-muted-foreground/50">-</span>;
   }
@@ -202,31 +190,32 @@ export const SystemStatusCell = memo(({ itemId, status }: SystemStatusCellProps)
   const diskPercent = status.diskPercent ?? 0;
 
   return (
-    <Tooltip open={isOpen} onOpenChange={handleOpenChange}>
-      <TooltipTrigger asChild>
-        <div className="inline-flex items-center gap-2.5 cursor-default">
-          {/* System mini bars */}
-          <div className="flex items-center gap-1.5">
-            <MiniBar label="C" percent={cpuPercent} />
-            <MiniBar label="M" percent={memoryPercent} />
-            <MiniBar label="D" percent={diskPercent} />
-          </div>
-          {/* Network rates */}
-          <div className="w-px h-4 bg-border" />
-          <div className="flex flex-col gap-0 min-w-[56px]">
-            <span className="text-[10px] font-mono text-success leading-tight">
-              ↓{formatBitRate(status.networkRxRate, true)}
-            </span>
-            <span className="text-[10px] font-mono text-info leading-tight">
-              ↑{formatBitRate(status.networkTxRate, true)}
-            </span>
-          </div>
+    <TableHoverCard
+      columnKey="monitor"
+      content={<StatusHoverContent status={status} />}
+      contentClassName="w-64"
+      align="start"
+      side="bottom"
+    >
+      <div className="inline-flex items-center gap-2.5">
+        {/* System mini bars */}
+        <div className="flex items-center gap-1.5">
+          <MiniBar label="C" percent={cpuPercent} />
+          <MiniBar label="M" percent={memoryPercent} />
+          <MiniBar label="D" percent={diskPercent} />
         </div>
-      </TooltipTrigger>
-      <TooltipContent className="w-64">
-        <StatusTooltipContent status={status} />
-      </TooltipContent>
-    </Tooltip>
+        {/* Network rates */}
+        <div className="w-px h-4 bg-border" />
+        <div className="flex flex-col gap-0 min-w-[56px]">
+          <span className="text-[10px] font-mono text-success leading-tight">
+            ↓{formatBitRate(status.networkRxRate, true)}
+          </span>
+          <span className="text-[10px] font-mono text-info leading-tight">
+            ↑{formatBitRate(status.networkTxRate, true)}
+          </span>
+        </div>
+      </div>
+    </TableHoverCard>
   );
 });
 SystemStatusCell.displayName = 'SystemStatusCell';

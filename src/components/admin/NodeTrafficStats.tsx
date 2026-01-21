@@ -67,7 +67,7 @@ const NodeItem = ({ item }: { item: NodeTrafficStatsItem }) => {
   return (
     <div
       className={cn(
-        'flex items-center gap-2 sm:gap-4 p-3 sm:p-4 rounded-lg sm:rounded-xl border transition-all duration-300',
+        'flex items-center gap-2 @md:gap-4 p-3 @md:p-4 rounded-lg @md:rounded-xl border transition-all duration-300',
         'bg-card',
         'hover:shadow-md',
         colors.border
@@ -76,17 +76,17 @@ const NodeItem = ({ item }: { item: NodeTrafficStatsItem }) => {
       {/* Node Icon with Status */}
       <div
         className={cn(
-          'relative flex items-center justify-center min-w-8 h-8 sm:min-w-10 sm:h-10 rounded-md sm:rounded-lg border transition-all',
+          'relative flex items-center justify-center min-w-8 h-8 @md:min-w-10 @md:h-10 rounded-md @md:rounded-lg border transition-all',
           colors.bg,
           colors.text,
           colors.border
         )}
       >
-        <Server className="size-4 sm:size-5" strokeWidth={1.5} />
+        <Server className="size-4 @md:size-5" strokeWidth={1.5} />
         {/* Status dot */}
         <div
           className={cn(
-            'absolute -top-1 -right-1 size-2.5 sm:size-3 rounded-full border-2 border-card',
+            'absolute -top-1 -right-1 size-2.5 @md:size-3 rounded-full border-2 border-card',
             colors.dot
           )}
         />
@@ -94,18 +94,18 @@ const NodeItem = ({ item }: { item: NodeTrafficStatsItem }) => {
 
       {/* Name */}
       <div className="flex-1 min-w-0">
-        <p className="text-xs sm:text-sm font-semibold text-foreground truncate">
+        <p className="text-xs @md:text-sm font-semibold text-foreground truncate">
           {item.nodeName}
         </p>
-        <p className="text-[11px] sm:text-xs text-muted-foreground truncate">
+        <p className="text-[11px] @md:text-xs text-muted-foreground truncate">
           {item.nodeId}
         </p>
       </div>
 
       {/* Traffic Stats */}
-      <div className="flex items-center gap-2 sm:gap-4 text-[11px] sm:text-xs">
+      <div className="flex items-center gap-2 @md:gap-4 text-[11px] @md:text-xs">
         {/* Upload - hidden on mobile */}
-        <div className="hidden sm:flex items-center gap-1.5 whitespace-nowrap">
+        <div className="hidden @md:flex items-center gap-1.5 whitespace-nowrap">
           <ArrowUp className="size-3.5 text-chart-upload" strokeWidth={2} />
           <span className="font-medium text-foreground">
             {formatTrafficBytes(item.upload)}
@@ -113,7 +113,7 @@ const NodeItem = ({ item }: { item: NodeTrafficStatsItem }) => {
         </div>
 
         {/* Download - hidden on mobile */}
-        <div className="hidden sm:flex items-center gap-1.5 whitespace-nowrap">
+        <div className="hidden @md:flex items-center gap-1.5 whitespace-nowrap">
           <ArrowDown className="size-3.5 text-chart-download" strokeWidth={2} />
           <span className="font-medium text-foreground">
             {formatTrafficBytes(item.download)}
@@ -121,8 +121,8 @@ const NodeItem = ({ item }: { item: NodeTrafficStatsItem }) => {
         </div>
 
         {/* Total - always visible */}
-        <div className="flex items-center gap-1 sm:gap-1.5 whitespace-nowrap">
-          <Activity className="size-3 sm:size-3.5 text-primary" strokeWidth={2} />
+        <div className="flex items-center gap-1 @md:gap-1.5 whitespace-nowrap">
+          <Activity className="size-3 @md:size-3.5 text-primary" strokeWidth={2} />
           <span className="font-bold text-foreground">
             {formatTrafficBytes(item.total)}
           </span>
@@ -137,26 +137,26 @@ const NodeItem = ({ item }: { item: NodeTrafficStatsItem }) => {
  */
 const NodeListSkeleton = () => {
   return (
-    <div className="h-[320px] sm:h-[480px] space-y-2 sm:space-y-3">
+    <div className="h-[280px] @md:h-[360px] @lg:h-[480px] space-y-2 @md:space-y-3">
       {[...Array(7)].map((_, index) => (
         <div
           key={index}
-          className="flex items-center gap-2 sm:gap-4 p-3 sm:p-4 rounded-lg sm:rounded-xl border border-border bg-card"
+          className="flex items-center gap-2 @md:gap-4 p-3 @md:p-4 rounded-lg @md:rounded-xl border border-border bg-card"
         >
           {/* Icon Skeleton */}
-          <div className="min-w-8 h-8 sm:min-w-10 sm:h-10 bg-muted rounded-md sm:rounded-lg animate-pulse motion-reduce:animate-none" />
+          <div className="min-w-8 h-8 @md:min-w-10 @md:h-10 bg-muted rounded-md @md:rounded-lg animate-pulse motion-reduce:animate-none" />
 
           {/* Name Skeleton */}
           <div className="flex-1 space-y-2">
-            <div className="h-3 sm:h-4 bg-muted rounded w-1/3 animate-pulse motion-reduce:animate-none" />
-            <div className="h-2.5 sm:h-3 bg-muted rounded w-1/2 animate-pulse motion-reduce:animate-none" />
+            <div className="h-3 @md:h-4 bg-muted rounded w-1/3 animate-pulse motion-reduce:animate-none" />
+            <div className="h-2.5 @md:h-3 bg-muted rounded w-1/2 animate-pulse motion-reduce:animate-none" />
           </div>
 
           {/* Stats Skeleton */}
-          <div className="flex items-center gap-2 sm:gap-4">
-            <div className="hidden sm:block h-3 w-16 bg-muted rounded animate-pulse motion-reduce:animate-none" />
-            <div className="hidden sm:block h-3 w-16 bg-muted rounded animate-pulse motion-reduce:animate-none" />
-            <div className="h-3 w-12 sm:w-16 bg-muted rounded animate-pulse motion-reduce:animate-none" />
+          <div className="flex items-center gap-2 @md:gap-4">
+            <div className="hidden @md:block h-3 w-16 bg-muted rounded animate-pulse motion-reduce:animate-none" />
+            <div className="hidden @md:block h-3 w-16 bg-muted rounded animate-pulse motion-reduce:animate-none" />
+            <div className="h-3 w-12 @md:w-16 bg-muted rounded animate-pulse motion-reduce:animate-none" />
           </div>
         </div>
       ))}
@@ -196,25 +196,25 @@ const Pagination = ({
   if (totalPages <= 1) return null;
 
   return (
-    <div className="flex items-center justify-between px-4 sm:px-6 py-3 sm:py-4 border-t border-border">
-      <span className="text-xs sm:text-sm text-muted-foreground">
+    <div className="flex items-center justify-between px-4 @md:px-6 py-3 @md:py-4 border-t border-border">
+      <span className="text-xs @md:text-sm text-muted-foreground">
         {t('admin.traffic.totalNodes', { count: total })}
       </span>
       <div className="flex items-center gap-2">
         <button
           onClick={() => onPageChange(page - 1)}
           disabled={page <= 1}
-          className="px-4 py-2.5 sm:px-3 sm:py-1.5 text-sm rounded-lg border border-border disabled:opacity-50 disabled:cursor-not-allowed hover:bg-accent transition-colors touch-target min-h-[44px] sm:min-h-0"
+          className="px-4 py-2.5 @md:px-3 @md:py-1.5 text-sm rounded-lg border border-border disabled:opacity-50 disabled:cursor-not-allowed hover:bg-accent transition-colors touch-target min-h-[44px] @md:min-h-0"
         >
           {t('admin.traffic.prevPage')}
         </button>
-        <span className="text-xs sm:text-sm text-muted-foreground px-1">
+        <span className="text-xs @md:text-sm text-muted-foreground px-1">
           {page} / {totalPages}
         </span>
         <button
           onClick={() => onPageChange(page + 1)}
           disabled={page >= totalPages}
-          className="px-4 py-2.5 sm:px-3 sm:py-1.5 text-sm rounded-lg border border-border disabled:opacity-50 disabled:cursor-not-allowed hover:bg-accent transition-colors touch-target min-h-[44px] sm:min-h-0"
+          className="px-4 py-2.5 @md:px-3 @md:py-1.5 text-sm rounded-lg border border-border disabled:opacity-50 disabled:cursor-not-allowed hover:bg-accent transition-colors touch-target min-h-[44px] @md:min-h-0"
         >
           {t('admin.traffic.nextPage')}
         </button>
@@ -232,23 +232,23 @@ export const NodeTrafficStats = ({
   const { t } = useTranslation();
 
   return (
-    <AdminCard noPadding>
+    <AdminCard variant="bordered" noPadding className="@container">
       {/* Header - height matches TrafficRankingList */}
-      <div className="flex items-center justify-between px-4 sm:px-6 h-[56px] sm:h-[72px] border-b border-border">
-        <h3 className="text-base sm:text-lg font-semibold text-foreground">
+      <div className="flex items-center justify-between px-4 @md:px-6 h-[56px] @md:h-[72px] border-b border-border">
+        <h3 className="text-base @md:text-lg font-semibold text-foreground">
           {t('admin.traffic.nodeStats')}
         </h3>
       </div>
 
       {/* Content */}
-      <div className="px-4 sm:px-6 pb-4 sm:pb-6 pt-3 sm:pt-4">
+      <div className="px-4 @md:px-6 pb-4 @md:pb-6 pt-3 @md:pt-4">
         {loading ? (
           <NodeListSkeleton />
         ) : items.length === 0 ? (
           <EmptyState message={t('admin.traffic.noNodeData')} />
         ) : (
-          <ScrollArea className="h-[320px] sm:h-[480px]">
-            <div className="space-y-2 sm:space-y-3 pr-4">
+          <ScrollArea className="max-h-[280px] @md:max-h-[360px] @lg:max-h-[480px]">
+            <div className="space-y-2 @md:space-y-3 pr-4">
               {items.map((item) => (
                 <NodeItem key={item.nodeId} item={item} />
               ))}

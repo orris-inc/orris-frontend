@@ -1,6 +1,6 @@
 /**
  * Subscription Plans Management Page (Admin)
- * High-density data management interface
+ * Tailwind UI Application UI style layout
  */
 
 import { useState, useMemo } from 'react';
@@ -10,12 +10,12 @@ import {
   Plus,
   RefreshCw,
   CheckCircle2,
-  XCircle,
   Globe,
   Lock,
 } from 'lucide-react';
 import { AdminLayout } from '@/layouts/AdminLayout';
-import { AdminButton, AdminCard } from '@/components/admin';
+import { PageHeader } from '@/components/admin';
+import { Button } from '@/components/common/Button';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/common/Tooltip';
 import { ConfirmDialog } from '@/components/common/ConfirmDialog';
 import { usePageTitle } from '@/shared/hooks';
@@ -209,101 +209,55 @@ export const SubscriptionPlansManagementPage = () => {
   // Desktop layout
   return (
     <AdminLayout>
-      <div className="py-3 space-y-3">
-        {/* High-Density Status Bar - All metrics inline */}
-        <header className="bg-card rounded-lg border border-border px-3 py-2">
-          <div className="flex items-center justify-between gap-3 flex-wrap">
-            {/* Left: Title + Stats */}
-            <div className="flex items-center gap-3">
-              <h1 className="text-sm font-semibold text-foreground">{t('admin.plans.pageTitle')}</h1>
-              <div className="h-4 w-px bg-border hidden sm:block" />
-              <div className="flex items-center gap-3 text-xs">
-                <span className="flex items-center gap-1 text-muted-foreground">
-                  <CreditCard className="size-3" />
-                  <span className="font-medium text-foreground">{planStats.total}</span>
-                  <span className="hidden sm:inline">{t('admin.plans.plans')}</span>
-                </span>
-                <span className="flex items-center gap-1">
-                  <CheckCircle2 className="size-3 text-success" />
-                  <span className="font-medium text-success">{planStats.active}</span>
-                </span>
-                <span className="flex items-center gap-1">
-                  <XCircle className="size-3 text-muted-foreground" />
-                  <span className="font-medium text-muted-foreground">{planStats.inactive}</span>
-                </span>
-              </div>
-            </div>
-
-            {/* Center: Visibility stats */}
-            <div className="hidden md:flex items-center gap-3 text-xs">
-              <span className="flex items-center gap-1.5">
-                <Globe className="size-3 text-info" />
-                <span className="text-muted-foreground">{t('admin.plans.public')}</span>
-                <span className="font-semibold tabular-nums text-foreground">{planStats.publicPlans}</span>
-              </span>
-              <span className="flex items-center gap-1.5">
-                <Lock className="size-3 text-warning" />
-                <span className="text-muted-foreground">{t('admin.plans.private')}</span>
-                <span className="font-semibold tabular-nums text-foreground">{planStats.privatePlans}</span>
-              </span>
-            </div>
-
-            {/* Right: Actions */}
-            <div className="flex items-center gap-1.5">
+      <div className="space-y-6">
+        {/* Page header with stats and actions */}
+        <PageHeader
+          title={t('admin.plans.pageTitle')}
+          icon={CreditCard}
+          metadata={[
+            { icon: CreditCard, text: `${planStats.total} ${t('admin.plans.plans')}` },
+            { icon: CheckCircle2, text: `${planStats.active} ${t('common.status.active')}` },
+            { icon: Globe, text: `${planStats.publicPlans} ${t('admin.plans.public')}` },
+            { icon: Lock, text: `${planStats.privatePlans} ${t('admin.plans.private')}` },
+          ]}
+          action={
+            <div className="flex items-center gap-2">
               <Tooltip>
                 <TooltipTrigger asChild>
-                  <AdminButton
-                    variant="ghost"
-                    size="sm"
-                    onClick={handleRefresh}
-                    className="h-7 w-7 p-0"
-                    icon={
-                      <RefreshCw
-                        key={refreshKey}
-                        className="size-3.5 animate-spin-once"
-                        strokeWidth={1.5}
-                      />
-                    }
-                  >
-                    <span className="sr-only">{t('common.actions.refresh')}</span>
-                  </AdminButton>
+                  <Button variant="ghost" size="icon" onClick={handleRefresh}>
+                    <RefreshCw key={refreshKey} className="size-4" />
+                  </Button>
                 </TooltipTrigger>
                 <TooltipContent>{t('admin.plans.refreshList')}</TooltipContent>
               </Tooltip>
-
-              <AdminButton
-                variant="primary"
-                size="sm"
-                className="h-7 px-2.5 text-xs"
-                icon={<Plus className="size-3.5" strokeWidth={2} />}
+              <Button
                 onClick={() => {
                   setDuplicatePlan(null);
                   setCreateDialogOpen(true);
                 }}
               >
+                <Plus className="size-4 mr-2" />
                 {t('admin.plans.createPlan')}
-              </AdminButton>
+              </Button>
             </div>
-          </div>
-        </header>
+          }
+        />
 
         {/* Plan List */}
-        <AdminCard noPadding>
-          <PlanListTable
-            plans={plans}
-            loading={isLoading || isFetching}
-            page={pagination.page}
-            pageSize={pagination.pageSize}
-            total={pagination.total}
-            onPageChange={handlePageChange}
-            onPageSizeChange={handlePageSizeChange}
-            onEdit={handleEdit}
-            onDuplicate={handleDuplicate}
-            onToggleStatus={handleToggleStatus}
-            onViewSubscriptions={handleViewSubscriptions}
-            onDelete={handleDeleteClick}
-          />
-        </AdminCard>
+        <PlanListTable
+          plans={plans}
+          loading={isLoading || isFetching}
+          page={pagination.page}
+          pageSize={pagination.pageSize}
+          total={pagination.total}
+          onPageChange={handlePageChange}
+          onPageSizeChange={handlePageSizeChange}
+          onEdit={handleEdit}
+          onDuplicate={handleDuplicate}
+          onToggleStatus={handleToggleStatus}
+          onViewSubscriptions={handleViewSubscriptions}
+          onDelete={handleDeleteClick}
+        />
       </div>
 
       {/* Desktop Dialogs */}

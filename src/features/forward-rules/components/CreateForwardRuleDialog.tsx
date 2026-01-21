@@ -107,6 +107,7 @@ const RULE_TYPE_KEYS: Record<ForwardRuleType, string> = {
   entry: "entry",
   chain: "chain",
   direct_chain: "directChain",
+  external: "external",
 };
 
 export const CreateForwardRuleDialog: React.FC<
@@ -133,6 +134,10 @@ export const CreateForwardRuleDialog: React.FC<
     ipVersion: "auto" as IPVersion,
     remark: "",
     groupSids: [] as string[],
+    // External rule fields
+    serverAddress: "",
+    externalSource: "",
+    externalRuleId: "",
   });
   const [targetType, setTargetType] = useState<TargetType>("manual");
 
@@ -163,6 +168,10 @@ export const CreateForwardRuleDialog: React.FC<
           ipVersion: initialData.ipVersion || "auto",
           remark: initialData.remark || "",
           groupSids: initialData.groupSids || [],
+          // External rule fields
+          serverAddress: (initialData as Record<string, unknown>).serverAddress as string || "",
+          externalSource: (initialData as Record<string, unknown>).externalSource as string || "",
+          externalRuleId: (initialData as Record<string, unknown>).externalRuleId as string || "",
         });
         // Set target type based on initial data
         setTargetType(
@@ -191,6 +200,10 @@ export const CreateForwardRuleDialog: React.FC<
           ipVersion: "auto",
           remark: "",
           groupSids: [],
+          // External rule fields
+          serverAddress: "",
+          externalSource: "",
+          externalRuleId: "",
         });
         setTargetType("manual");
       }
@@ -248,6 +261,22 @@ export const CreateForwardRuleDialog: React.FC<
   const validate = () => {
     const newErrors: Record<string, string> = {};
 
+    // External type has different validation requirements
+    if (formData.ruleType === "external") {
+      if (!formData.name.trim()) {
+        newErrors.name = "规则名称不能为空";
+      }
+      if (!formData.serverAddress.trim()) {
+        newErrors.serverAddress = "服务器地址不能为空";
+      }
+      if (!formData.listenPort || formData.listenPort < 1 || formData.listenPort > 65535) {
+        newErrors.listenPort = "监听端口必须在1-65535之间";
+      }
+      setErrors(newErrors);
+      return Object.keys(newErrors).length === 0;
+    }
+
+    // Non-external types require agentId
     if (!formData.agentId) {
       newErrors.agentId = "请选择转发Agent";
     }
@@ -445,6 +474,25 @@ export const CreateForwardRuleDialog: React.FC<
 
   const handleSubmit = () => {
     if (validate()) {
+      // External type has different submit data structure
+      if (formData.ruleType === "external") {
+        const submitData = {
+          ruleType: formData.ruleType,
+          name: formData.name.trim(),
+          serverAddress: formData.serverAddress.trim(),
+          listenPort: formData.listenPort,
+          ...(formData.externalSource?.trim() && { externalSource: formData.externalSource.trim() }),
+          ...(formData.externalRuleId?.trim() && { externalRuleId: formData.externalRuleId.trim() }),
+          ...(formData.sortOrder !== undefined && formData.sortOrder !== null && formData.sortOrder >= 0 && { sortOrder: formData.sortOrder }),
+          ...(formData.remark?.trim() && { remark: formData.remark.trim() }),
+          ...(formData.groupSids && formData.groupSids.length > 0 && { groupSids: formData.groupSids }),
+        } as unknown as CreateForwardRuleRequest;
+
+        onSubmit(submitData);
+        handleClose();
+        return;
+      }
+
       const submitData: CreateForwardRuleRequest = {
         agentId: formData.agentId,
         ruleType: formData.ruleType,
@@ -548,6 +596,16 @@ export const CreateForwardRuleDialog: React.FC<
 
   // Check if form is valid
   const isFormValid = () => {
+    // External type has different validation
+    if (formData.ruleType === "external") {
+      return (
+        formData.name.trim() !== "" &&
+        formData.serverAddress.trim() !== "" &&
+        formData.listenPort > 0 &&
+        formData.listenPort <= 65535
+      );
+    }
+
     if (!formData.agentId || !formData.name.trim() || !formData.protocol)
       return false;
 
@@ -658,7 +716,7 @@ export const CreateForwardRuleDialog: React.FC<
 
   return (
     <Dialog open={open} onOpenChange={(isOpen) => !isOpen && handleClose()}>
-      <DialogContent className="sm:max-w-[650px] flex flex-col max-h-[90vh]">
+      <DialogContent className="@container sm:max-w-[650px] flex flex-col max-h-[90vh]">
         <DialogHeader className="flex-shrink-0">
           <DialogTitle>
             {initialData ? "复制转发规则" : "新增转发规则"}
@@ -677,60 +735,62 @@ export const CreateForwardRuleDialog: React.FC<
                 <span className="text-sm font-medium">基本信息</span>
               </AccordionTrigger>
               <AccordionContent>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pb-4">
-                  {/* Forward Agent */}
-                  <div className="flex flex-col gap-2">
-                    <Label htmlFor="agentId">
-                      转发Agent <span className="text-destructive">*</span>
-                    </Label>
-                    <Select
-                      value={formData.agentId}
-                      onValueChange={(value) => handleChange("agentId", value)}
-                    >
-                      <SelectTrigger
-                        id="agentId"
-                        className={errors.agentId ? "border-destructive" : ""}
+                <div className="grid grid-cols-1 @sm:grid-cols-2 gap-4 pb-4">
+                  {/* Forward Agent - hidden for external type */}
+                  {formData.ruleType !== "external" && (
+                    <div className="flex flex-col gap-2">
+                      <Label htmlFor="agentId">
+                        转发Agent <span className="text-destructive">*</span>
+                      </Label>
+                      <Select
+                        value={formData.agentId}
+                        onValueChange={(value) => handleChange("agentId", value)}
                       >
-                        <SelectValue placeholder="选择转发Agent" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {availableAgentsForSelect.map((agent) => (
-                          <SelectItem key={agent.id} value={agent.id}>
-                            <span className="flex items-center gap-2">
-                              {agent.name}
-                              {agent.allowedPortRange && (
-                                <Badge
-                                  variant="outline"
-                                  className="text-[10px] px-1.5 py-0 border-amber-300 text-amber-600 dark:border-amber-700 dark:text-amber-400"
-                                >
-                                  {agent.allowedPortRange}
-                                </Badge>
-                              )}
-                            </span>
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                    {errors.agentId && (
-                      <p className="text-xs text-destructive">
-                        {errors.agentId}
-                      </p>
-                    )}
-                    {formData.agentId &&
-                      (() => {
-                        const selectedAgent = agents.find(
-                          (a) => a.id === formData.agentId,
-                        );
-                        return selectedAgent?.allowedPortRange ? (
-                          <div className="flex items-center gap-1.5 text-xs text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800 rounded-md px-2.5 py-1.5">
-                            <Info className="size-3.5 shrink-0" />
-                            <span>
-                              端口限制: {selectedAgent.allowedPortRange}
-                            </span>
-                          </div>
-                        ) : null;
-                      })()}
-                  </div>
+                        <SelectTrigger
+                          id="agentId"
+                          className={errors.agentId ? "border-destructive" : ""}
+                        >
+                          <SelectValue placeholder="选择转发Agent" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {availableAgentsForSelect.map((agent) => (
+                            <SelectItem key={agent.id} value={agent.id}>
+                              <span className="flex items-center gap-2">
+                                {agent.name}
+                                {agent.allowedPortRange && (
+                                  <Badge
+                                    variant="outline"
+                                    className="text-[10px] px-1.5 py-0 border-amber-300 text-amber-600 dark:border-amber-700 dark:text-amber-400"
+                                  >
+                                    {agent.allowedPortRange}
+                                  </Badge>
+                                )}
+                              </span>
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      {errors.agentId && (
+                        <p className="text-xs text-destructive">
+                          {errors.agentId}
+                        </p>
+                      )}
+                      {formData.agentId &&
+                        (() => {
+                          const selectedAgent = agents.find(
+                            (a) => a.id === formData.agentId,
+                          );
+                          return selectedAgent?.allowedPortRange ? (
+                            <div className="flex items-center gap-1.5 text-xs text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800 rounded-md px-2.5 py-1.5">
+                              <Info className="size-3.5 shrink-0" />
+                              <span>
+                                端口限制: {selectedAgent.allowedPortRange}
+                              </span>
+                            </div>
+                          ) : null;
+                        })()}
+                    </div>
+                  )}
 
                   {/* Rule Type */}
                   <div className="flex flex-col gap-2">
@@ -760,7 +820,7 @@ export const CreateForwardRuleDialog: React.FC<
                   </div>
 
                   {/* Rule Name */}
-                  <div className="flex flex-col gap-2 sm:col-span-2">
+                  <div className="flex flex-col gap-2 @sm:col-span-2">
                     <Label htmlFor="name">
                       规则名称 <span className="text-destructive">*</span>
                     </Label>
@@ -776,50 +836,54 @@ export const CreateForwardRuleDialog: React.FC<
                     )}
                   </div>
 
-                  {/* Protocol Type */}
-                  <div className="flex flex-col gap-2">
-                    <Label htmlFor="protocol">
-                      协议类型 <span className="text-destructive">*</span>
-                    </Label>
-                    <Select
-                      value={formData.protocol}
-                      onValueChange={(value) =>
-                        handleChange("protocol", value as ForwardProtocol)
-                      }
-                    >
-                      <SelectTrigger id="protocol">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="tcp">TCP</SelectItem>
-                        <SelectItem value="udp">UDP</SelectItem>
-                        <SelectItem value="both">TCP/UDP</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
+                  {/* Protocol Type - hidden for external type */}
+                  {formData.ruleType !== "external" && (
+                    <div className="flex flex-col gap-2">
+                      <Label htmlFor="protocol">
+                        协议类型 <span className="text-destructive">*</span>
+                      </Label>
+                      <Select
+                        value={formData.protocol}
+                        onValueChange={(value) =>
+                          handleChange("protocol", value as ForwardProtocol)
+                        }
+                      >
+                        <SelectTrigger id="protocol">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="tcp">TCP</SelectItem>
+                          <SelectItem value="udp">UDP</SelectItem>
+                          <SelectItem value="both">TCP/UDP</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  )}
 
-                  {/* IP Version */}
-                  <div className="flex flex-col gap-2">
-                    <Label htmlFor="ipVersion">IP 版本</Label>
-                    <Select
-                      value={formData.ipVersion}
-                      onValueChange={(value) =>
-                        handleChange("ipVersion", value as IPVersion)
-                      }
-                    >
-                      <SelectTrigger id="ipVersion">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="auto">自动</SelectItem>
-                        <SelectItem value="ipv4">IPv4</SelectItem>
-                        <SelectItem value="ipv6">IPv6</SelectItem>
-                      </SelectContent>
-                    </Select>
-                    <p className="text-xs text-muted-foreground">
-                      目标地址解析时优先使用的 IP 版本
-                    </p>
-                  </div>
+                  {/* IP Version - hidden for external type */}
+                  {formData.ruleType !== "external" && (
+                    <div className="flex flex-col gap-2">
+                      <Label htmlFor="ipVersion">IP 版本</Label>
+                      <Select
+                        value={formData.ipVersion}
+                        onValueChange={(value) =>
+                          handleChange("ipVersion", value as IPVersion)
+                        }
+                      >
+                        <SelectTrigger id="ipVersion">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="auto">自动</SelectItem>
+                          <SelectItem value="ipv4">IPv4</SelectItem>
+                          <SelectItem value="ipv6">IPv6</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      <p className="text-xs text-muted-foreground">
+                        目标地址解析时优先使用的 IP 版本
+                      </p>
+                    </div>
+                  )}
                 </div>
               </AccordionContent>
             </AccordionItem>
@@ -830,7 +894,7 @@ export const CreateForwardRuleDialog: React.FC<
                 <span className="text-sm font-medium">转发配置</span>
               </AccordionTrigger>
               <AccordionContent>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pb-4">
+                <div className="grid grid-cols-1 @sm:grid-cols-2 gap-4 pb-4">
                   {/* direct, entry, chain and direct_chain types: Listen Port */}
                   {(formData.ruleType === "direct" ||
                     formData.ruleType === "entry" ||
@@ -859,6 +923,81 @@ export const CreateForwardRuleDialog: React.FC<
                         </p>
                       )}
                     </div>
+                  )}
+
+                  {/* External type: Server Address */}
+                  {formData.ruleType === "external" && (
+                    <>
+                      <div className="flex flex-col gap-2">
+                        <Label htmlFor="serverAddress">
+                          服务器地址 <span className="text-destructive">*</span>
+                        </Label>
+                        <Input
+                          id="serverAddress"
+                          value={formData.serverAddress}
+                          onChange={(e) => handleChange("serverAddress", e.target.value)}
+                          error={!!errors.serverAddress}
+                          placeholder="例如：example.com 或 192.168.1.1"
+                        />
+                        {errors.serverAddress && (
+                          <p className="text-xs text-destructive">
+                            {errors.serverAddress}
+                          </p>
+                        )}
+                      </div>
+
+                      <div className="flex flex-col gap-2">
+                        <Label htmlFor="listenPort">
+                          监听端口 <span className="text-destructive">*</span>
+                        </Label>
+                        <Input
+                          id="listenPort"
+                          type="number"
+                          min={1}
+                          max={65535}
+                          value={formData.listenPort || ""}
+                          onChange={(e) =>
+                            handleChange(
+                              "listenPort",
+                              parseInt(e.target.value, 10) || 0,
+                            )
+                          }
+                          error={!!errors.listenPort}
+                          placeholder="1-65535"
+                        />
+                        {errors.listenPort && (
+                          <p className="text-xs text-destructive">
+                            {errors.listenPort}
+                          </p>
+                        )}
+                      </div>
+
+                      <div className="flex flex-col gap-2">
+                        <Label htmlFor="externalSource">外部来源</Label>
+                        <Input
+                          id="externalSource"
+                          value={formData.externalSource}
+                          onChange={(e) => handleChange("externalSource", e.target.value)}
+                          placeholder="例如：subscription-provider"
+                        />
+                        <p className="text-xs text-muted-foreground">
+                          规则的外部来源标识（可选）
+                        </p>
+                      </div>
+
+                      <div className="flex flex-col gap-2">
+                        <Label htmlFor="externalRuleId">外部规则ID</Label>
+                        <Input
+                          id="externalRuleId"
+                          value={formData.externalRuleId}
+                          onChange={(e) => handleChange("externalRuleId", e.target.value)}
+                          placeholder="来源系统的规则标识"
+                        />
+                        <p className="text-xs text-muted-foreground">
+                          来源系统中的规则标识（可选）
+                        </p>
+                      </div>
+                    </>
                   )}
 
                   {/* entry type: Exit Agent */}
@@ -974,7 +1113,7 @@ export const CreateForwardRuleDialog: React.FC<
 
                   {/* chain type: Intermediate Nodes List */}
                   {formData.ruleType === "chain" && (
-                    <div className="flex flex-col gap-2 sm:col-span-2">
+                    <div className="flex flex-col gap-2 @sm:col-span-2">
                       <Label>
                         中间节点 <span className="text-destructive">*</span>
                       </Label>
@@ -1032,7 +1171,7 @@ export const CreateForwardRuleDialog: React.FC<
 
                   {/* direct_chain type: Intermediate Nodes List (with port configuration) */}
                   {formData.ruleType === "direct_chain" && (
-                    <div className="flex flex-col gap-2 sm:col-span-2">
+                    <div className="flex flex-col gap-2 @sm:col-span-2">
                       <Label>
                         中间节点及端口{" "}
                         <span className="text-destructive">*</span>
@@ -1082,7 +1221,7 @@ export const CreateForwardRuleDialog: React.FC<
                     formData.ruleType === "direct_chain") && (
                     <>
                       {/* Target Type Selection */}
-                      <div className="flex flex-col gap-2 sm:col-span-2">
+                      <div className="flex flex-col gap-2 @sm:col-span-2">
                         <Label>
                           目标类型 <span className="text-destructive">*</span>
                         </Label>
@@ -1176,7 +1315,7 @@ export const CreateForwardRuleDialog: React.FC<
 
                       {/* Select Target Node */}
                       {targetType === "node" && (
-                        <div className="flex flex-col gap-2 sm:col-span-2">
+                        <div className="flex flex-col gap-2 @sm:col-span-2">
                           <Label htmlFor="targetNodeId">
                             目标节点 <span className="text-destructive">*</span>
                           </Label>
@@ -1224,42 +1363,48 @@ export const CreateForwardRuleDialog: React.FC<
                 <span className="text-sm font-medium">高级选项</span>
               </AccordionTrigger>
               <AccordionContent>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pb-4">
-                  <div className="flex flex-col gap-2">
-                    <Label htmlFor="bindIp">绑定 IP</Label>
-                    <Input
-                      id="bindIp"
-                      value={formData.bindIp}
-                      onChange={(e) => handleChange("bindIp", e.target.value)}
-                      placeholder="可选：出站连接绑定的本地 IP"
-                    />
-                    <p className="text-xs text-muted-foreground">
-                      指定出站连接使用的本地 IP 地址
-                    </p>
-                  </div>
+                <div className="grid grid-cols-1 @sm:grid-cols-2 gap-4 pb-4">
+                  {/* Bind IP - hidden for external type */}
+                  {formData.ruleType !== "external" && (
+                    <div className="flex flex-col gap-2">
+                      <Label htmlFor="bindIp">绑定 IP</Label>
+                      <Input
+                        id="bindIp"
+                        value={formData.bindIp}
+                        onChange={(e) => handleChange("bindIp", e.target.value)}
+                        placeholder="可选：出站连接绑定的本地 IP"
+                      />
+                      <p className="text-xs text-muted-foreground">
+                        指定出站连接使用的本地 IP 地址
+                      </p>
+                    </div>
+                  )}
 
-                  <div className="flex flex-col gap-2">
-                    <Label htmlFor="trafficMultiplier">流量倍率（可选）</Label>
-                    <Input
-                      id="trafficMultiplier"
-                      type="number"
-                      min={0}
-                      max={1000000}
-                      step={0.01}
-                      value={formData.trafficMultiplier ?? ""}
-                      onChange={(e) => {
-                        const value =
-                          e.target.value === ""
-                            ? undefined
-                            : parseFloat(e.target.value);
-                        handleChange("trafficMultiplier", value);
-                      }}
-                      placeholder="留空则自动计算"
-                    />
-                    <p className="text-xs text-muted-foreground">
-                      自定义流量倍率会影响流量统计，留空则根据节点数量自动计算
-                    </p>
-                  </div>
+                  {/* Traffic Multiplier - hidden for external type */}
+                  {formData.ruleType !== "external" && (
+                    <div className="flex flex-col gap-2">
+                      <Label htmlFor="trafficMultiplier">流量倍率（可选）</Label>
+                      <Input
+                        id="trafficMultiplier"
+                        type="number"
+                        min={0}
+                        max={1000000}
+                        step={0.01}
+                        value={formData.trafficMultiplier ?? ""}
+                        onChange={(e) => {
+                          const value =
+                            e.target.value === ""
+                              ? undefined
+                              : parseFloat(e.target.value);
+                          handleChange("trafficMultiplier", value);
+                        }}
+                        placeholder="留空则自动计算"
+                      />
+                      <p className="text-xs text-muted-foreground">
+                        自定义流量倍率会影响流量统计，留空则根据节点数量自动计算
+                      </p>
+                    </div>
+                  )}
 
                   <div className="flex flex-col gap-2">
                     <Label htmlFor="sortOrder">排序顺序（可选）</Label>
@@ -1282,7 +1427,7 @@ export const CreateForwardRuleDialog: React.FC<
                     </p>
                   </div>
 
-                  <div className="flex flex-col gap-1.5 sm:col-span-2">
+                  <div className="flex flex-col gap-1.5 @sm:col-span-2">
                     <Label htmlFor="remark">备注</Label>
                     <Textarea
                       id="remark"
@@ -1296,7 +1441,7 @@ export const CreateForwardRuleDialog: React.FC<
 
                   {/* Resource Groups Selection */}
                   {availableResourceGroups.length > 0 && (
-                    <div className="flex flex-col gap-2 sm:col-span-2">
+                    <div className="flex flex-col gap-2 @sm:col-span-2">
                       <Label className="flex items-center gap-1.5">
                         <FolderTree className="size-4" />
                         绑定资源组（可选）

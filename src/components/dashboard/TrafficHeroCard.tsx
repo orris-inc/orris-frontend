@@ -73,8 +73,7 @@ export const TrafficHeroCard = ({
   if (isLoading) {
     return (
       <div className={cn(
-        'col-span-4 md:col-span-6 lg:col-span-6 lg:row-span-2',
-        'p-6 rounded-2xl bg-card border',
+        '@container p-6 rounded-2xl bg-card border',
         className
       )}>
         <div className="flex items-center gap-3 mb-4">
@@ -84,7 +83,7 @@ export const TrafficHeroCard = ({
             <Skeleton className="h-3 w-16" />
           </div>
         </div>
-        <Skeleton className="h-[180px] lg:h-[200px] w-full rounded-xl" />
+        <Skeleton className="h-[180px] @lg:h-[200px] w-full rounded-xl" />
         <Skeleton className="h-2 w-full mt-4 rounded-full" />
         <div className="flex justify-between mt-3">
           <Skeleton className="h-4 w-24" />
@@ -96,8 +95,7 @@ export const TrafficHeroCard = ({
 
   return (
     <div className={cn(
-      'col-span-4 md:col-span-6 lg:col-span-6 lg:row-span-2',
-      'p-6 rounded-2xl bg-card border',
+      '@container p-6 rounded-2xl bg-card border',
       'transition-shadow hover:shadow-md',
       className
     )}>
@@ -113,7 +111,7 @@ export const TrafficHeroCard = ({
       </div>
 
       {/* Radial Chart */}
-      <div className="relative h-[180px] lg:h-[200px]">
+      <div className="relative h-[180px] @lg:h-[200px]">
         <ResponsiveContainer width="100%" height="100%">
           <RadialBarChart
             cx="50%"
@@ -148,7 +146,7 @@ export const TrafficHeroCard = ({
 
         {/* Center content overlay */}
         <div className="absolute inset-0 flex items-center justify-center flex-col">
-          <span className="text-3xl lg:text-4xl font-bold tabular-nums text-foreground">
+          <span className="text-3xl @lg:text-4xl font-bold tabular-nums text-foreground">
             {totalFormatted.value}
           </span>
           <span className="text-sm text-muted-foreground">

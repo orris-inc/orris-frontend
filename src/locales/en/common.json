@@ -57,9 +57,7 @@
     "no": "No",
     "status": {
       "enabled": "Enabled",
-      "enabledShort": "On",
       "disabled": "Disabled",
-      "disabledShort": "Off",
       "online": "Online",
       "offline": "Offline",
       "active": "Active",
@@ -491,6 +489,7 @@
         "status": "Status",
         "tags": "Tags",
         "version": "Version",
+        "platform": "Platform",
         "resourceGroup": "Resource Group",
         "owner": "Owner",
         "createdAt": "Created At",
@@ -522,10 +521,12 @@
         "versionInfo": "Version",
         "newVersionAvailable": "New version available",
         "unknownResourceGroup": "Unknown resource group",
-        "maintenanceReason": "Reason"
+        "maintenanceReason": "Reason",
+        "configDescription": "Node protocol configuration including encryption method, transport protocol, etc.",
+        "monitorDescription": "Real-time system status including CPU, memory, network, etc."
       },
       "statusLabel": {
-        "active": "Activated",
+        "active": "Active",
         "inactive": "Inactive",
         "maintenance": "Maintenance"
       },
@@ -614,6 +615,10 @@
         "directChain": {
           "label": "Direct Chain Forward",
           "description": "Multi-hop chain forwarding via direct TCP/UDP"
+        },
+        "external": {
+          "label": "External Rule",
+          "description": "External forwarding rule with direct server address"
         }
       },
       "filters": {
@@ -632,6 +637,9 @@
       "showUserRules": "Show user-created rules",
       "enableDragSort": "Enable drag sorting",
       "disableDragSort": "Disable drag sorting",
+      "rulesUnit": "rules",
+      "userRules": "User rules",
+      "dragSort": "Drag sort",
       "refreshList": "Refresh list",
       "batchCreate": "Batch create",
       "batchCreateJson": "Batch create (JSON)",
@@ -652,7 +660,9 @@
         "chain": "Chain",
         "chainShort": "C",
         "directChain": "Direct Chain",
-        "directChainShort": "DC"
+        "directChainShort": "DC",
+        "external": "External",
+        "externalShort": "X"
       },
       "flowNode": {
         "entry": "Entry",
@@ -705,6 +715,8 @@
     "forwardAgents": {
       "title": "Forward Agents",
       "description": "Manage forward agents",
+      "agentsUnit": "agents",
+      "updatable": "updatable",
       "confirmDelete": "Are you sure you want to delete Forward Agent \"{{name}}\"? This action cannot be undone.",
       "token": "Forward Agent Token",
       "copySuffix": "Copy",
@@ -778,7 +790,8 @@
       },
       "dragSort": {
         "enable": "Enable drag sort",
-        "disable": "Disable drag sort"
+        "disable": "Disable drag sort",
+        "label": "Drag Sort"
       },
       "actions": {
         "broadcast": "Broadcast",
@@ -1535,8 +1548,8 @@
     "suspended": "Suspended",
     "cancelled": "Cancelled",
     "expired": "Expired",
-    "activated": "Activated",
-    "notActivated": "Not Activated",
+    "activated": "Active",
+    "notActivated": "Inactive",
     "notExpired": "Not Expired"
   },
   "messages": {

@@ -57,19 +57,7 @@ interface ForwardAgentDetailDialogProps {
   onClose: () => void;
 }
 
-// Format date
-const formatDate = (dateString?: string) => {
-  if (!dateString) return "-";
-  const date = new Date(dateString);
-  return date.toLocaleString("zh-CN", {
-    year: "numeric",
-    month: "2-digit",
-    day: "2-digit",
-    hour: "2-digit",
-    minute: "2-digit",
-    second: "2-digit",
-  });
-};
+import { formatDateTime } from '@/shared/utils/date-utils';
 
 // Get progress color based on value
 const getProgressColor = (value: number): string => {
@@ -183,13 +171,13 @@ export const ForwardAgentDetailDialog: React.FC<
               <Badge
                 variant={agent.status === "enabled" ? "default" : "secondary"}
               >
-                {agent.status === "enabled" ? t("common.status.enabledShort") : t("common.status.disabledShort")}
+                {agent.status === "enabled" ? t("common.status.enabled") : t("common.status.disabled")}
               </Badge>
             </div>
           </div>
         </DialogHeader>
 
-        <div className="flex-1 min-h-0 overflow-y-auto -mx-6 px-6">
+        <div className="@container flex-1 min-h-0 overflow-y-auto -mx-6 px-6">
           <div className="space-y-6">
             {/* Node Status */}
             <div>
@@ -365,7 +353,7 @@ export const ForwardAgentDetailDialog: React.FC<
                   runtimeStatus && (
                     <>
                       {/* Resource Usage */}
-                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                      <div className="grid grid-cols-1 @sm:grid-cols-3 gap-3">
                         {/* CPU */}
                         <div className="p-3 bg-muted rounded-lg">
                           <div className="flex items-center justify-between mb-2">
@@ -463,7 +451,7 @@ export const ForwardAgentDetailDialog: React.FC<
                       </div>
 
                       {/* Network & Forward Info */}
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      <div className="grid grid-cols-1 @sm:grid-cols-2 gap-3">
                         {/* Network */}
                         <div className="p-3 bg-muted rounded-lg">
                           <div className="flex items-center gap-1.5 mb-2">
@@ -509,7 +497,7 @@ export const ForwardAgentDetailDialog: React.FC<
                         runtimeStatus.tlsListenPort ||
                         runtimeStatus.publicIpv4 ||
                         runtimeStatus.publicIpv6) && (
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        <div className="grid grid-cols-1 @sm:grid-cols-2 gap-3">
                           {/* Tunnel Ports */}
                           {(runtimeStatus.wsListenPort ||
                             runtimeStatus.tlsListenPort) && (
@@ -577,7 +565,7 @@ export const ForwardAgentDetailDialog: React.FC<
             <div>
               <h3 className="text-sm font-semibold mb-3">{t("admin.forwardAgents.detail.basicInfo")}</h3>
               <Separator className="mb-4" />
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 @md:grid-cols-2 gap-4">
                 <div className="space-y-1">
                   <p className="text-sm text-muted-foreground">{t("admin.forwardAgents.detail.agentId")}</p>
                   <TruncatedId id={agent.id} fullWidth />
@@ -620,7 +608,7 @@ export const ForwardAgentDetailDialog: React.FC<
                   </Badge>
                 </div>
 
-                <div className="space-y-2 md:col-span-2">
+                <div className="space-y-2 @md:col-span-2">
                   <p className="text-sm text-muted-foreground">{t("admin.forwardAgents.detail.blockedProtocols")}</p>
                   {agent.blockedProtocols && agent.blockedProtocols.length > 0 ? (
                     <div className="space-y-2">
@@ -653,7 +641,7 @@ export const ForwardAgentDetailDialog: React.FC<
                 </div>
 
                 {agent.remark && (
-                  <div className="space-y-1 md:col-span-2">
+                  <div className="space-y-1 @md:col-span-2">
                     <p className="text-sm text-muted-foreground">{t("admin.forwardAgents.detail.remark")}</p>
                     <p className="text-sm">{agent.remark}</p>
                   </div>
@@ -665,23 +653,23 @@ export const ForwardAgentDetailDialog: React.FC<
             <div>
               <h3 className="text-sm font-semibold mb-3">{t("admin.forwardAgents.detail.timeInfo")}</h3>
               <Separator className="mb-4" />
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 @md:grid-cols-2 gap-4">
                 <div className="space-y-1">
                   <p className="text-sm text-muted-foreground">{t("admin.forwardAgents.detail.createdAt")}</p>
-                  <p className="text-xs">{formatDate(agent.createdAt)}</p>
+                  <p className="text-xs">{formatDateTime(agent.createdAt)}</p>
                 </div>
 
                 {agent.updatedAt && (
                   <div className="space-y-1">
                     <p className="text-sm text-muted-foreground">{t("admin.forwardAgents.detail.updatedAt")}</p>
-                    <p className="text-xs">{formatDate(agent.updatedAt)}</p>
+                    <p className="text-xs">{formatDateTime(agent.updatedAt)}</p>
                   </div>
                 )}
 
                 {agent.lastSeenAt && (
                   <div className="space-y-1">
                     <p className="text-sm text-muted-foreground">{t("admin.forwardAgents.detail.lastOnline")}</p>
-                    <p className="text-xs">{formatDate(agent.lastSeenAt)}</p>
+                    <p className="text-xs">{formatDateTime(agent.lastSeenAt)}</p>
                   </div>
                 )}
               </div>

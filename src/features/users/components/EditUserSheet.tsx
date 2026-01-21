@@ -4,6 +4,7 @@
  */
 
 import { useState, useEffect, useCallback } from 'react';
+import { formatDate } from '@/shared/utils/date-utils';
 import { UserPen, Mail, User, Shield, Activity } from 'lucide-react';
 import {
   Sheet,
@@ -148,7 +149,7 @@ export const EditUserSheet: React.FC<EditUserSheetProps> = ({
               <Separator />
               <div className="flex items-center justify-between">
                 <span className="text-sm text-muted-foreground">创建时间</span>
-                <span className="text-sm">{new Date(user.createdAt).toLocaleDateString('zh-CN')}</span>
+                <span className="text-sm">{formatDate(user.createdAt)}</span>
               </div>
             </div>
           </div>

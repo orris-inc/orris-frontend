@@ -52,7 +52,6 @@ interface BentoStatCardProps {
   iconBg: string;
   iconColor: string;
   loading?: boolean;
-  large?: boolean;
   className?: string;
 }
 
@@ -93,24 +92,24 @@ const BentoStatCard = ({
   iconBg,
   iconColor,
   loading,
-  large = false,
   className,
 }: BentoStatCardProps) => {
   if (loading) {
     return (
       <div
         className={cn(
-          '@container rounded-xl bg-card border border-border',
+          '@container rounded-xl bg-card border border-border p-3 @[140px]:p-4',
           'transition-shadow hover:shadow-md',
-          large ? 'p-5 @sm:p-6' : 'p-4 @sm:p-5',
           className
         )}
       >
-        <div className={cn('flex items-center mb-3', large ? 'gap-3' : 'gap-2')}>
-          <div className={cn('rounded-lg bg-muted animate-pulse', large ? 'size-9' : 'size-8')} />
-          <div className="h-4 w-16 bg-muted rounded animate-pulse" />
+        <div className="flex items-center gap-2.5 @[140px]:gap-3">
+          <div className="rounded-lg bg-muted animate-pulse size-9 @[140px]:size-10 shrink-0" />
+          <div className="flex-1 min-w-0 space-y-1.5">
+            <div className="h-3 w-10 bg-muted rounded animate-pulse" />
+            <div className="h-5 w-14 bg-muted rounded animate-pulse" />
+          </div>
         </div>
-        <div className={cn('w-20 bg-muted rounded animate-pulse', large ? 'h-8' : 'h-6')} />
       </div>
     );
   }
@@ -118,42 +117,32 @@ const BentoStatCard = ({
   return (
     <div
       className={cn(
-        '@container rounded-xl bg-card border border-border',
+        '@container rounded-xl bg-card border border-border p-3 @[140px]:p-4',
         'transition-all duration-200 hover:shadow-md hover:border-border/80',
-        large ? 'p-5 @sm:p-6' : 'p-4 @sm:p-5',
         className
       )}
     >
-      {/* Header with icon */}
-      <div className={cn('flex items-center', large ? 'gap-3 mb-4' : 'gap-2.5 mb-3')}>
+      <div className="flex items-center gap-2.5 @[140px]:gap-3">
+        {/* Icon */}
         <div
           className={cn(
-            'rounded-lg ring-1 ring-inset',
-            large ? 'p-2.5' : 'p-2',
+            'rounded-lg ring-1 ring-inset p-2 @[140px]:p-2.5 shrink-0',
             iconBg,
             iconBg.includes('/') ? 'ring-current/20' : 'ring-border'
           )}
         >
-          <Icon
-            className={cn(large ? 'size-5' : 'size-4', iconColor)}
-            strokeWidth={1.5}
-          />
+          <Icon className={cn('size-4 @[140px]:size-5', iconColor)} strokeWidth={1.5} />
         </div>
-        <span className={cn('text-muted-foreground font-medium', large ? 'text-sm' : 'text-xs')}>
-          {title}
-        </span>
-      </div>
 
-      {/* Value */}
-      <div className="flex items-baseline gap-1">
-        <span
-          className={cn(
-            'font-semibold tabular-nums text-foreground tracking-tight',
-            large ? 'text-3xl @sm:text-4xl font-bold' : 'text-2xl @sm:text-3xl'
-          )}
-        >
-          {value}
-        </span>
+        {/* Content */}
+        <div className="flex-1 min-w-0">
+          <p className="text-[11px] @[140px]:text-xs text-muted-foreground font-medium">
+            {title}
+          </p>
+          <p className="text-base @[140px]:text-lg font-semibold tabular-nums text-foreground tracking-tight">
+            {value}
+          </p>
+        </div>
       </div>
     </div>
   );
@@ -501,27 +490,13 @@ export const NewAdminDashboardPage = () => {
         </header>
 
         {/* ================================================================== */}
-        {/* Bento Grid - Statistics Overview */}
+        {/* Statistics Overview - Unified compact grid */}
         {/* ================================================================== */}
         <section>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4">
-            {/* Primary stats - large cards */}
-            {primaryStats.map((stat) => (
-              <BentoStatCard
-                key={stat.title}
-                {...stat}
-                large
-                className="col-span-1 md:col-span-2"
-              />
-            ))}
-
-            {/* Secondary stats - smaller cards */}
-            {secondaryStats.map((stat) => (
-              <BentoStatCard
-                key={stat.title}
-                {...stat}
-                className="col-span-1"
-              />
+          <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-6 gap-3">
+            {/* All stats in unified grid */}
+            {[...primaryStats, ...secondaryStats].map((stat) => (
+              <BentoStatCard key={stat.title} {...stat} />
             ))}
           </div>
         </section>
@@ -562,7 +537,7 @@ export const NewAdminDashboardPage = () => {
             {/* Quick Actions - 2 columns on large screens */}
             <div className="lg:col-span-2">
               <SectionHeader title={t('admin.quickAccess.title')} />
-              <div className="grid grid-cols-2 sm:grid-cols-2 xl:grid-cols-3 gap-2 sm:gap-3">
+              <div className="grid grid-cols-2 xl:grid-cols-3 gap-2 sm:gap-3">
                 {quickActions.map((action) => (
                   <QuickActionCard key={action.title} {...action} />
                 ))}

@@ -95,6 +95,7 @@ const RULE_TYPE_CONFIG: Record<ForwardRuleType, { label: string; icon: React.Rea
   entry: { label: '入口', icon: <Shield className="size-4" />, variant: 'success' },
   chain: { label: '链式', icon: <Link2 className="size-4" />, variant: 'warning' },
   direct_chain: { label: '直连链', icon: <Globe className="size-4" />, variant: 'default' },
+  external: { label: '外部', icon: <Globe className="size-4" />, variant: 'default' },
 };
 
 const PROTOCOL_LABELS: Record<ForwardProtocol, string> = {
@@ -276,54 +277,57 @@ const ForwardPathVisualization = ({
     return node?.name || id.slice(0, 10);
   };
 
-  // Build path nodes
+  // Build path nodes (not used for external type)
   const pathNodes: PathNodeProps[] = [];
 
-  // Entry node
-  pathNodes.push({
-    type: 'entry',
-    name: getAgentName(rule.agentId),
-    address: getAgentAddress(rule.agentId),
-    port: rule.listenPort,
-    isRunning,
-  });
-
-  // Relay/Exit nodes based on rule type
-  if (rule.ruleType === 'entry' && rule.exitAgentId) {
+  // External type doesn't have path nodes
+  if (rule.ruleType !== 'external') {
+    // Entry node
     pathNodes.push({
-      type: 'exit',
-      name: getAgentName(rule.exitAgentId),
-      address: getAgentAddress(rule.exitAgentId),
+      type: 'entry',
+      name: getAgentName(rule.agentId),
+      address: getAgentAddress(rule.agentId),
+      port: rule.listenPort,
       isRunning,
     });
-  }
 
-  if ((rule.ruleType === 'chain' || rule.ruleType === 'direct_chain') && rule.chainAgentIds) {
-    rule.chainAgentIds
-      .filter((id) => id !== rule.agentId)
-      .forEach((id) => {
-        pathNodes.push({
-          type: 'relay',
-          name: getAgentName(id),
-          address: getAgentAddress(id),
-          port: rule.chainPortConfig?.[id],
-          isRunning,
-        });
+    // Relay/Exit nodes based on rule type
+    if (rule.ruleType === 'entry' && rule.exitAgentId) {
+      pathNodes.push({
+        type: 'exit',
+        name: getAgentName(rule.exitAgentId),
+        address: getAgentAddress(rule.exitAgentId),
+        isRunning,
       });
-  }
+    }
 
-  // Target node
-  if (rule.targetNodeId || rule.targetAddress) {
-    pathNodes.push({
-      type: 'target',
-      name: rule.targetNodeId
-        ? getNodeName(rule.targetNodeId)
-        : rule.targetAddress || '-',
-      address: rule.targetNodeId
-        ? rule.targetNodeServerAddress || rule.targetNodePublicIpv4
-        : rule.targetAddress,
-      port: rule.targetPort,
-    });
+    if ((rule.ruleType === 'chain' || rule.ruleType === 'direct_chain') && rule.chainAgentIds) {
+      rule.chainAgentIds
+        .filter((id) => id !== rule.agentId)
+        .forEach((id) => {
+          pathNodes.push({
+            type: 'relay',
+            name: getAgentName(id),
+            address: getAgentAddress(id),
+            port: rule.chainPortConfig?.[id],
+            isRunning,
+          });
+        });
+    }
+
+    // Target node
+    if (rule.targetNodeId || rule.targetAddress) {
+      pathNodes.push({
+        type: 'target',
+        name: rule.targetNodeId
+          ? getNodeName(rule.targetNodeId)
+          : rule.targetAddress || '-',
+        address: rule.targetNodeId
+          ? rule.targetNodeServerAddress || rule.targetNodePublicIpv4
+          : rule.targetAddress,
+        port: rule.targetPort,
+      });
+    }
   }
 
   const nodeCount = pathNodes.length;
@@ -647,16 +651,20 @@ export const ForwardRuleDetailSheet = ({
                   </AdminBadge>
                 }
               />
-              <DetailRow
-                icon={<Activity className="size-4" />}
-                label="协议"
-                value={PROTOCOL_LABELS[rule.protocol]}
-              />
-              <DetailRow
-                icon={<Globe className="size-4" />}
-                label="IP版本"
-                value={IP_VERSION_LABELS[rule.ipVersion]}
-              />
+              {rule.ruleType !== 'external' && (
+                <>
+                  <DetailRow
+                    icon={<Activity className="size-4" />}
+                    label="协议"
+                    value={PROTOCOL_LABELS[rule.protocol]}
+                  />
+                  <DetailRow
+                    icon={<Globe className="size-4" />}
+                    label="IP版本"
+                    value={IP_VERSION_LABELS[rule.ipVersion]}
+                  />
+                </>
+              )}
               {(rule.ruleType === 'entry' || rule.ruleType === 'chain') && rule.tunnelType && (
                 <DetailRow
                   icon={<Link2 className="size-4" />}
@@ -671,83 +679,121 @@ export const ForwardRuleDetailSheet = ({
               />
             </DetailSection>
 
-            {/* Listen Info */}
-            <DetailSection title="监听信息">
-              <DetailRow
-                icon={<Bot className="size-4" />}
-                label="入口代理"
-                value={entryAgent?.name || rule.agentId.slice(0, 10)}
-              />
-              <DetailRow
-                icon={<Globe className="size-4" />}
-                label="监听端口"
-                value={rule.listenPort}
-              />
-              <DetailRow
-                icon={<Server className="size-4" />}
-                label="入口地址"
-                value={<span className="font-mono text-xs">{entryAddress}</span>}
-              />
-            </DetailSection>
-
-            {/* Target Info */}
-            <DetailSection title="目标信息">
-              <DetailRow
-                icon={<Server className="size-4" />}
-                label="目标类型"
-                value={TARGET_TYPE_LABELS[targetType]}
-              />
-              {rule.targetNodeId ? (
-                <DetailRow
-                  icon={<Server className="size-4" />}
-                  label="目标节点"
-                  value={nodes.find((n) => n.id === rule.targetNodeId)?.name || rule.targetNodeId.slice(0, 10)}
-                />
-              ) : (
+            {/* External type: Server Info */}
+            {rule.ruleType === 'external' && (
+              <DetailSection title="服务器信息">
                 <DetailRow
                   icon={<Globe className="size-4" />}
-                  label="目标地址"
+                  label="服务器地址"
+                  value={<span className="font-mono text-xs">{rule.serverAddress || '-'}</span>}
+                />
+                <DetailRow
+                  icon={<Zap className="size-4" />}
+                  label="监听端口"
+                  value={rule.listenPort}
+                />
+                {rule.externalSource && (
+                  <DetailRow
+                    icon={<FileText className="size-4" />}
+                    label="外部来源"
+                    value={rule.externalSource}
+                  />
+                )}
+                {rule.externalRuleId && (
+                  <DetailRow
+                    icon={<Hash className="size-4" />}
+                    label="外部规则ID"
+                    value={<span className="font-mono text-xs">{rule.externalRuleId}</span>}
+                  />
+                )}
+              </DetailSection>
+            )}
+
+            {/* Listen Info - hidden for external type */}
+            {rule.ruleType !== 'external' && (
+              <DetailSection title="监听信息">
+                <DetailRow
+                  icon={<Bot className="size-4" />}
+                  label="入口代理"
+                  value={entryAgent?.name || rule.agentId.slice(0, 10)}
+                />
+                <DetailRow
+                  icon={<Globe className="size-4" />}
+                  label="监听端口"
+                  value={rule.listenPort}
+                />
+                <DetailRow
+                  icon={<Server className="size-4" />}
+                  label="入口地址"
+                  value={<span className="font-mono text-xs">{entryAddress}</span>}
+                />
+              </DetailSection>
+            )}
+
+            {/* Target Info - hidden for external type */}
+            {rule.ruleType !== 'external' && (
+              <DetailSection title="目标信息">
+                <DetailRow
+                  icon={<Server className="size-4" />}
+                  label="目标类型"
+                  value={TARGET_TYPE_LABELS[targetType]}
+                />
+                {rule.targetNodeId ? (
+                  <DetailRow
+                    icon={<Server className="size-4" />}
+                    label="目标节点"
+                    value={nodes.find((n) => n.id === rule.targetNodeId)?.name || rule.targetNodeId.slice(0, 10)}
+                  />
+                ) : (
+                  <DetailRow
+                    icon={<Globe className="size-4" />}
+                    label="目标地址"
+                    value={
+                      <span className="font-mono text-xs">
+                        {rule.targetAddress}:{rule.targetPort}
+                      </span>
+                    }
+                  />
+                )}
+              </DetailSection>
+            )}
+
+            {/* Forward Path Visualization - hidden for external type */}
+            {rule.ruleType !== 'external' && (
+              <DetailSection title="转发路径" allowOverflow>
+                <ForwardPathVisualization
+                  rule={rule}
+                  agentsMap={agentsMap}
+                  nodes={nodes}
+                  isRunning={rule.status === 'enabled' && (polledStatus?.overallRunStatus || rule.runStatus) === 'running'}
+                />
+              </DetailSection>
+            )}
+
+            {/* Traffic Statistics - different for external type */}
+            <DetailSection title="流量统计">
+              <TrafficStats rule={rule} />
+              {/* Traffic multiplier - hidden for external type */}
+              {rule.ruleType !== 'external' && (
+                <DetailRow
+                  icon={<Activity className="size-4" />}
+                  label="流量倍率"
                   value={
-                    <span className="font-mono text-xs">
-                      {rule.targetAddress}:{rule.targetPort}
+                    <span className="flex items-center gap-2">
+                      <span className="font-mono">{rule.effectiveTrafficMultiplier?.toFixed(1) || '1.0'}x</span>
+                      {rule.isAutoMultiplier && (
+                        <AdminBadge variant="default" className="text-[10px] px-1.5 py-0">
+                          自动
+                        </AdminBadge>
+                      )}
                     </span>
                   }
                 />
               )}
             </DetailSection>
 
-            {/* Forward Path Visualization */}
-            <DetailSection title="转发路径" allowOverflow>
-              <ForwardPathVisualization
-                rule={rule}
-                agentsMap={agentsMap}
-                nodes={nodes}
-                isRunning={rule.status === 'enabled' && (polledStatus?.overallRunStatus || rule.runStatus) === 'running'}
-              />
-            </DetailSection>
-
-            {/* Traffic Statistics */}
-            <DetailSection title="流量统计">
-              <TrafficStats rule={rule} />
-              {/* Traffic multiplier */}
-              <DetailRow
-                icon={<Activity className="size-4" />}
-                label="流量倍率"
-                value={
-                  <span className="flex items-center gap-2">
-                    <span className="font-mono">{rule.effectiveTrafficMultiplier?.toFixed(1) || '1.0'}x</span>
-                    {rule.isAutoMultiplier && (
-                      <AdminBadge variant="default" className="text-[10px] px-1.5 py-0">
-                        自动
-                      </AdminBadge>
-                    )}
-                  </span>
-                }
-              />
-            </DetailSection>
-
-            {/* Sync Status (only for enabled rules) */}
-            {rule.status === 'enabled' && (
+            {/* Sync Status (only for enabled rules, hidden for external type) */}
+            {rule.status === 'enabled' && rule.ruleType !== 'external' && (
               <DetailSection title="同步状态" noPadding>
                 <SyncStatusDisplay polledStatus={polledStatus} rule={rule} />
               </DetailSection>

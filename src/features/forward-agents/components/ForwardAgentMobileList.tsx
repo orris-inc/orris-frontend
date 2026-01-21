@@ -35,6 +35,7 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuPortal,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/common/DropdownMenu';
@@ -68,16 +69,7 @@ interface ForwardAgentMobileListProps {
   onDragEnd?: (activeId: string, overId: string, oldIndex: number, newIndex: number) => void;
 }
 
-// Format date
-const formatDate = (dateString?: string) => {
-  if (!dateString) return '-';
-  return new Date(dateString).toLocaleString('zh-CN', {
-    month: '2-digit',
-    day: '2-digit',
-    hour: '2-digit',
-    minute: '2-digit',
-  });
-};
+import { formatDateTime } from '@/shared/utils/date-utils';
 
 // Loading skeleton for mobile cards
 const MobileCardSkeleton: React.FC = () => (
@@ -129,63 +121,65 @@ export const ForwardAgentMobileList: React.FC<ForwardAgentMobileListProps> = ({
             <MoreHorizontal className="size-4 text-slate-500" />
           </button>
         </DropdownMenuTrigger>
-        <DropdownMenuContent align="end">
-          <DropdownMenuItem onClick={() => onViewDetail(agent)}>
-            <Eye className="mr-2 size-4" />
-            {t('common.actions.viewDetail')}
-          </DropdownMenuItem>
-          <DropdownMenuItem onClick={() => onEdit(agent)}>
-            <Edit className="mr-2 size-4" />
-            {t('common.actions.edit')}
-          </DropdownMenuItem>
-          <DropdownMenuItem onClick={() => onGetInstallScript(agent)}>
-            <Terminal className="mr-2 size-4" />
-            {t('admin.forwardAgents.table.menu.installScript')}
-          </DropdownMenuItem>
-          <DropdownMenuItem onClick={() => onCopy(agent)}>
-            <Copy className="mr-2 size-4" />
-            {t('admin.forwardAgents.table.menu.copyNode')}
-          </DropdownMenuItem>
-          <DropdownMenuItem onClick={() => onRegenerateToken(agent)}>
-            <Key className="mr-2 size-4" />
-            {t('admin.forwardAgents.table.menu.regenerateToken')}
-          </DropdownMenuItem>
-          {agent.status === 'enabled' && (
-            <DropdownMenuItem
-              onClick={() => onCheckUpdate(agent)}
-              disabled={checkingAgentId === agent.id}
-            >
-              {checkingAgentId === agent.id ? (
-                <Loader2 className="mr-2 size-4 animate-spin" />
-              ) : (
-                <Download className="mr-2 size-4" />
-              )}
-              {checkingAgentId === agent.id ? t('admin.forwardAgents.table.menu.checking') : t('admin.forwardAgents.table.menu.checkUpdate')}
+        <DropdownMenuPortal>
+          <DropdownMenuContent align="end" collisionPadding={16}>
+            <DropdownMenuItem onClick={() => onViewDetail(agent)}>
+              <Eye className="mr-2 size-4" />
+              {t('common.actions.viewDetail')}
             </DropdownMenuItem>
-          )}
-          {onBroadcastURL && (
-            <DropdownMenuItem onClick={() => onBroadcastURL(agent)}>
-              <Radio className="mr-2 size-4" />
-              {t('admin.forwardAgents.table.menu.broadcastURL')}
+            <DropdownMenuItem onClick={() => onEdit(agent)}>
+              <Edit className="mr-2 size-4" />
+              {t('common.actions.edit')}
             </DropdownMenuItem>
-          )}
-          <DropdownMenuSeparator />
-          {agent.status === 'enabled' ? (
-            <DropdownMenuItem onClick={() => onDisable(agent)}>
-              <PowerOff className="mr-2 size-4" />
-              {t('common.actions.disable')}
+            <DropdownMenuItem onClick={() => onGetInstallScript(agent)}>
+              <Terminal className="mr-2 size-4" />
+              {t('admin.forwardAgents.table.menu.installScript')}
             </DropdownMenuItem>
-          ) : (
-            <DropdownMenuItem onClick={() => onEnable(agent)}>
-              <Power className="mr-2 size-4" />
-              {t('common.actions.enable')}
+            <DropdownMenuItem onClick={() => onCopy(agent)}>
+              <Copy className="mr-2 size-4" />
+              {t('admin.forwardAgents.table.menu.copyNode')}
             </DropdownMenuItem>
-          )}
-          <DropdownMenuItem onClick={() => onDelete(agent)} className="text-red-600 dark:text-red-400">
-            <Trash2 className="mr-2 size-4" />
-            {t('common.actions.delete')}
-          </DropdownMenuItem>
-        </DropdownMenuContent>
+            <DropdownMenuItem onClick={() => onRegenerateToken(agent)}>
+              <Key className="mr-2 size-4" />
+              {t('admin.forwardAgents.table.menu.regenerateToken')}
+            </DropdownMenuItem>
+            {agent.status === 'enabled' && (
+              <DropdownMenuItem
+                onClick={() => onCheckUpdate(agent)}
+                disabled={checkingAgentId === agent.id}
+              >
+                {checkingAgentId === agent.id ? (
+                  <Loader2 className="mr-2 size-4 animate-spin" />
+                ) : (
+                  <Download className="mr-2 size-4" />
+                )}
+                {checkingAgentId === agent.id ? t('admin.forwardAgents.table.menu.checking') : t('admin.forwardAgents.table.menu.checkUpdate')}
+              </DropdownMenuItem>
+            )}
+            {onBroadcastURL && (
+              <DropdownMenuItem onClick={() => onBroadcastURL(agent)}>
+                <Radio className="mr-2 size-4" />
+                {t('admin.forwardAgents.table.menu.broadcastURL')}
+              </DropdownMenuItem>
+            )}
+            <DropdownMenuSeparator />
+            {agent.status === 'enabled' ? (
+              <DropdownMenuItem onClick={() => onDisable(agent)}>
+                <PowerOff className="mr-2 size-4" />
+                {t('common.actions.disable')}
+              </DropdownMenuItem>
+            ) : (
+              <DropdownMenuItem onClick={() => onEnable(agent)}>
+                <Power className="mr-2 size-4" />
+                {t('common.actions.enable')}
+              </DropdownMenuItem>
+            )}
+            <DropdownMenuItem onClick={() => onDelete(agent)} className="text-red-600 dark:text-red-400">
+              <Trash2 className="mr-2 size-4" />
+              {t('common.actions.delete')}
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenuPortal>
       </DropdownMenu>
     );
   };
@@ -246,7 +240,7 @@ export const ForwardAgentMobileList: React.FC<ForwardAgentMobileListProps> = ({
                     </TooltipTrigger>
                     {agent.lastSeenAt && (
                       <TooltipContent>
-                        {t('admin.forwardAgents.table.tooltip.lastOnline')}: {formatDate(agent.lastSeenAt)}
+                        {t('admin.forwardAgents.table.tooltip.lastOnline')}: {formatDateTime(agent.lastSeenAt)}
                       </TooltipContent>
                     )}
                   </Tooltip>
@@ -437,7 +431,7 @@ export const ForwardAgentMobileList: React.FC<ForwardAgentMobileListProps> = ({
             {/* Created at */}
             <div className="flex items-center gap-2">
               <span className="text-[10px] text-slate-400 dark:text-slate-500 uppercase tracking-wide w-8 flex-shrink-0">{t('admin.forwardAgents.detail.created')}</span>
-              <span className="text-xs text-slate-500">{formatDate(agent.createdAt)}</span>
+              <span className="text-xs text-slate-500">{formatDateTime(agent.createdAt)}</span>
             </div>
           </div>
         </AccordionContent>

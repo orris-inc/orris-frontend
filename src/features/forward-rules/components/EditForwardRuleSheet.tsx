@@ -4,6 +4,7 @@
  */
 
 import { useState, useEffect, useMemo } from 'react';
+import { formatDateTime } from '@/shared/utils/date-utils';
 import {
   ArrowLeftRight,
   Settings,
@@ -55,6 +56,7 @@ const RULE_TYPE_LABELS: Record<string, string> = {
   entry: '入口节点',
   chain: '隧道链式转发',
   direct_chain: '直连链式转发',
+  external: '外部规则',
 };
 
 // Protocol options
@@ -162,6 +164,10 @@ export const EditForwardRuleSheet: React.FC<EditForwardRuleSheetProps> = ({
       tunnelType?: TunnelType;
       tunnelHops?: number;
       groupSids?: string[];
+      // External rule fields
+      serverAddress?: string;
+      externalSource?: string;
+      externalRuleId?: string;
     }
   >({});
   const [targetType, setTargetType] = useState<TargetType>('manual');
@@ -195,6 +201,10 @@ export const EditForwardRuleSheet: React.FC<EditForwardRuleSheetProps> = ({
         tunnelType: rule.tunnelType,
         tunnelHops: rule.tunnelHops,
         groupSids: rule.groupSids || [],
+        // External rule fields
+        serverAddress: rule.serverAddress,
+        externalSource: rule.externalSource,
+        externalRuleId: rule.externalRuleId,
       });
       setTargetType(rule.targetNodeId ? 'node' : 'manual');
       setErrors({});
@@ -328,6 +338,18 @@ export const EditForwardRuleSheet: React.FC<EditForwardRuleSheetProps> = ({
       newErrors.name = '规则名称不能为空';
     }
 
+    // External type has different validation
+    if (rule?.ruleType === 'external') {
+      if (formData.serverAddress !== undefined && !formData.serverAddress.trim()) {
+        newErrors.serverAddress = '服务器地址不能为空';
+      }
+      if (formData.listenPort && (formData.listenPort < 1 || formData.listenPort > 65535)) {
+        newErrors.listenPort = '监听端口必须在1-65535之间';
+      }
+      setErrors(newErrors);
+      return Object.keys(newErrors).length === 0;
+    }
+
     if (formData.listenPort && (formData.listenPort < 1 || formData.listenPort > 65535)) {
       newErrors.listenPort = '监听端口必须在1-65535之间';
     } else if (formData.listenPort && selectedAgent?.allowedPortRange &&
@@ -375,11 +397,41 @@ export const EditForwardRuleSheet: React.FC<EditForwardRuleSheetProps> = ({
 
       // Compare and collect changes
       if (formData.name !== rule.name) updates.name = formData.name;
+      if (formData.remark !== rule.remark) updates.remark = formData.remark;
+
+      // External type has different fields
+      if (rule.ruleType === 'external') {
+        if (formData.listenPort !== rule.listenPort)
+          updates.listenPort = formData.listenPort;
+        if (formData.serverAddress !== rule.serverAddress)
+          (updates as Record<string, unknown>).serverAddress = formData.serverAddress;
+        if (formData.externalSource !== rule.externalSource)
+          (updates as Record<string, unknown>).externalSource = formData.externalSource;
+        if (formData.externalRuleId !== rule.externalRuleId)
+          (updates as Record<string, unknown>).externalRuleId = formData.externalRuleId;
+        if (formData.sortOrder !== rule.sortOrder && formData.sortOrder !== undefined)
+          updates.sortOrder = formData.sortOrder;
+        // Handle resource groups
+        const currentGroups = formData.groupSids || [];
+        const originalGroups = rule.groupSids || [];
+        const hasGroupsChange =
+          currentGroups.length !== originalGroups.length ||
+          currentGroups.some((sid) => !originalGroups.includes(sid)) ||
+          originalGroups.some((sid) => !currentGroups.includes(sid));
+        if (hasGroupsChange) {
+          updates.groupSids = currentGroups;
+        }
+        // Submit update if there are any changes
+        if (Object.keys(updates).length > 0) {
+          await onSubmit(rule.id, updates);
+        }
+        return;
+      }
+
       if (formData.protocol !== rule.protocol) updates.protocol = formData.protocol;
       if (formData.listenPort !== rule.listenPort) updates.listenPort = formData.listenPort;
       if (formData.ipVersion !== rule.ipVersion) updates.ipVersion = formData.ipVersion;
       if (formData.bindIp !== rule.bindIp) updates.bindIp = formData.bindIp;
-      if (formData.remark !== rule.remark) updates.remark = formData.remark;
       if (formData.agentId !== rule.agentId) updates.agentId = formData.agentId;
 
       // Entry type: exit agent
@@ -507,7 +559,7 @@ export const EditForwardRuleSheet: React.FC<EditForwardRuleSheetProps> = ({
               <div className="space-y-1">
                 <Field label="创建时间" />
                 <MobileFormInput
-                  value={new Date(rule.createdAt).toLocaleString('zh-CN')}
+                  value={formatDateTime(rule.createdAt)}
                   disabled
                   className="bg-muted"
                 />
@@ -532,16 +584,65 @@ export const EditForwardRuleSheet: React.FC<EditForwardRuleSheetProps> = ({
                 />
               </div>
 
-              <div className="space-y-1">
-                <Field label="入口代理" />
-                <MobileSelect
-                  value={formData.agentId || ''}
-                  onChange={(value) => handleChange('agentId', value)}
-                  options={agentOptions}
-                />
-              </div>
+              {/* External type: Server Address and Listen Port */}
+              {rule.ruleType === 'external' && (
+                <>
+                  <div className="space-y-1">
+                    <Field label="服务器地址" />
+                    <MobileFormInput
+                      placeholder="例如：example.com 或 192.168.1.1"
+                      value={formData.serverAddress || ''}
+                      onChange={(value) => handleChange('serverAddress' as keyof UpdateForwardRuleRequest, value)}
+                      error={errors.serverAddress}
+                    />
+                  </div>
 
-              {selectedAgent?.allowedPortRange && (
+                  <div className="space-y-1">
+                    <Field label="监听端口" />
+                    <MobileFormInput
+                      type="number"
+                      inputMode="numeric"
+                      placeholder="1-65535"
+                      value={formData.listenPort ? String(formData.listenPort) : ''}
+                      onChange={(value) => handleChange('listenPort', parseInt(value, 10) || 0)}
+                      error={errors.listenPort}
+                      className="font-mono"
+                    />
+                  </div>
+
+                  <div className="space-y-1">
+                    <Field label="外部来源" hint="可选" />
+                    <MobileFormInput
+                      placeholder="例如：subscription-provider"
+                      value={formData.externalSource || ''}
+                      onChange={(value) => handleChange('externalSource' as keyof UpdateForwardRuleRequest, value)}
+                    />
+                  </div>
+
+                  <div className="space-y-1">
+                    <Field label="外部规则ID" hint="可选" />
+                    <MobileFormInput
+                      placeholder="来源系统的规则标识"
+                      value={formData.externalRuleId || ''}
+                      onChange={(value) => handleChange('externalRuleId' as keyof UpdateForwardRuleRequest, value)}
+                    />
+                  </div>
+                </>
+              )}
+
+              {/* Entry Agent - hidden for external type */}
+              {rule.ruleType !== 'external' && (
+                <div className="space-y-1">
+                  <Field label="入口代理" />
+                  <MobileSelect
+                    value={formData.agentId || ''}
+                    onChange={(value) => handleChange('agentId', value)}
+                    options={agentOptions}
+                  />
+                </div>
+              )}
+
+              {rule.ruleType !== 'external' && selectedAgent?.allowedPortRange && (
                 <div className="flex items-center gap-1.5 text-xs text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800 rounded-lg px-3 py-2">
                   <Info className="size-3.5 shrink-0" />
                   <span>端口限制: {selectedAgent.allowedPortRange}</span>
@@ -622,38 +723,44 @@ export const EditForwardRuleSheet: React.FC<EditForwardRuleSheetProps> = ({
                 </div>
               )}
 
-              <div className="grid grid-cols-2 gap-2">
+              {/* Protocol and IP Version - hidden for external type */}
+              {rule.ruleType !== 'external' && (
+                <div className="grid grid-cols-2 gap-2">
+                  <div className="space-y-1">
+                    <Field label="协议类型" />
+                    <MobileSelect
+                      value={formData.protocol || 'tcp'}
+                      onChange={(value) => handleChange('protocol', value as ForwardProtocol)}
+                      options={PROTOCOL_OPTIONS}
+                    />
+                  </div>
+
+                  <div className="space-y-1">
+                    <Field label="IP 版本" />
+                    <MobileSelect
+                      value={formData.ipVersion || 'auto'}
+                      onChange={(value) => handleChange('ipVersion', value as IPVersion)}
+                      options={IP_VERSION_OPTIONS}
+                    />
+                  </div>
+                </div>
+              )}
+
+              {/* Listen Port - hidden for external type (already shown above for external) */}
+              {rule.ruleType !== 'external' && (
                 <div className="space-y-1">
-                  <Field label="协议类型" />
-                  <MobileSelect
-                    value={formData.protocol || 'tcp'}
-                    onChange={(value) => handleChange('protocol', value as ForwardProtocol)}
-                    options={PROTOCOL_OPTIONS}
+                  <Field label="监听端口" hint="留空自动分配" />
+                  <MobileFormInput
+                    type="number"
+                    inputMode="numeric"
+                    placeholder="留空自动分配"
+                    value={formData.listenPort ? String(formData.listenPort) : ''}
+                    onChange={(value) => handleChange('listenPort', parseInt(value, 10) || 0)}
+                    error={errors.listenPort}
+                    className="font-mono"
                   />
                 </div>
-
-                <div className="space-y-1">
-                  <Field label="IP 版本" />
-                  <MobileSelect
-                    value={formData.ipVersion || 'auto'}
-                    onChange={(value) => handleChange('ipVersion', value as IPVersion)}
-                    options={IP_VERSION_OPTIONS}
-                  />
-                </div>
-              </div>
-
-              <div className="space-y-1">
-                <Field label="监听端口" hint="留空自动分配" />
-                <MobileFormInput
-                  type="number"
-                  inputMode="numeric"
-                  placeholder="留空自动分配"
-                  value={formData.listenPort ? String(formData.listenPort) : ''}
-                  onChange={(value) => handleChange('listenPort', parseInt(value, 10) || 0)}
-                  error={errors.listenPort}
-                  className="font-mono"
-                />
-              </div>
+              )}
 
               {/* Target configuration */}
               {['direct', 'entry', 'chain', 'direct_chain'].includes(rule.ruleType) && (
@@ -718,31 +825,50 @@ export const EditForwardRuleSheet: React.FC<EditForwardRuleSheetProps> = ({
                 </>
               )}
 
-              <Separator />
+              {/* Bind IP and Traffic Multiplier - hidden for external type */}
+              {rule.ruleType !== 'external' && (
+                <>
+                  <Separator />
 
-              <div className="space-y-1">
-                <Field label="绑定 IP" hint="出站连接绑定的本地IP" />
-                <MobileFormInput
-                  placeholder="可选"
-                  value={formData.bindIp || ''}
-                  onChange={(value) => handleChange('bindIp', value)}
-                  className="font-mono"
-                />
-              </div>
+                  <div className="space-y-1">
+                    <Field label="绑定 IP" hint="出站连接绑定的本地IP" />
+                    <MobileFormInput
+                      placeholder="可选"
+                      value={formData.bindIp || ''}
+                      onChange={(value) => handleChange('bindIp', value)}
+                      className="font-mono"
+                    />
+                  </div>
 
-              <div className="grid grid-cols-2 gap-2">
-                <div className="space-y-1">
-                  <Field label="流量倍率" />
-                  <MobileFormInput
-                    type="number"
-                    inputMode="decimal"
-                    placeholder="自动"
-                    value={formData.trafficMultiplier !== undefined ? String(formData.trafficMultiplier) : ''}
-                    onChange={(value) => handleChange('trafficMultiplier', value ? parseFloat(value) : undefined)}
-                    className="font-mono"
-                  />
-                </div>
+                  <div className="grid grid-cols-2 gap-2">
+                    <div className="space-y-1">
+                      <Field label="流量倍率" />
+                      <MobileFormInput
+                        type="number"
+                        inputMode="decimal"
+                        placeholder="自动"
+                        value={formData.trafficMultiplier !== undefined ? String(formData.trafficMultiplier) : ''}
+                        onChange={(value) => handleChange('trafficMultiplier', value ? parseFloat(value) : undefined)}
+                        className="font-mono"
+                      />
+                    </div>
 
+                    <div className="space-y-1">
+                      <Field label="排序" />
+                      <MobileFormInput
+                        type="number"
+                        inputMode="numeric"
+                        value={String(formData.sortOrder ?? 0)}
+                        onChange={(value) => handleChange('sortOrder', parseInt(value, 10) || 0)}
+                        className="font-mono"
+                      />
+                    </div>
+                  </div>
+                </>
+              )}
+
+              {/* Sort order for external type (shown separately) */}
+              {rule.ruleType === 'external' && (
                 <div className="space-y-1">
                   <Field label="排序" />
                   <MobileFormInput
@@ -753,7 +879,7 @@ export const EditForwardRuleSheet: React.FC<EditForwardRuleSheetProps> = ({
                     className="font-mono"
                   />
                 </div>
-              </div>
+              )}
 
               <div className="space-y-1">
                 <Field label="备注" />

@@ -41,13 +41,13 @@ export const UserForwardUsageCard: React.FC<UserForwardUsageCardProps> = ({
 }) => {
   if (isLoading) {
     return (
-      <div className="p-4 sm:p-5 rounded-2xl glass">
+      <div className="@container p-4 @sm:p-5 rounded-2xl glass">
         <div className="space-y-4">
           <Skeleton className="h-5 w-24" />
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3 sm:gap-4">
-            <Skeleton className="h-20 sm:h-16 rounded-xl" />
-            <Skeleton className="h-20 sm:h-16 rounded-xl" />
-            <Skeleton className="h-20 sm:h-16 rounded-xl" />
+          <div className="grid grid-cols-1 @sm:grid-cols-2 @md:grid-cols-3 gap-3 @sm:gap-4">
+            <Skeleton className="h-20 @sm:h-16 rounded-xl" />
+            <Skeleton className="h-20 @sm:h-16 rounded-xl" />
+            <Skeleton className="h-20 @sm:h-16 rounded-xl" />
           </div>
         </div>
       </div>
@@ -66,23 +66,23 @@ export const UserForwardUsageCard: React.FC<UserForwardUsageCardProps> = ({
   const uploadLimit = usage.trafficLimit > 0 ? formatTraffic(usage.trafficLimit) : null;
 
   return (
-    <div className="p-3 sm:p-4 rounded-2xl glass">
-      <div className="space-y-3 sm:space-y-4">
+    <div className="@container p-3 @sm:p-4 rounded-2xl glass">
+      <div className="space-y-3 @sm:space-y-4">
         {/* Header - hidden on mobile for density */}
-        <h3 className="text-sm font-medium text-foreground hidden sm:block">配额使用情况</h3>
+        <h3 className="text-sm font-medium text-foreground hidden @sm:block">配额使用情况</h3>
 
         {/* Stats grid - horizontal scroll on mobile for density */}
-        <div className="flex gap-2 sm:grid sm:grid-cols-3 sm:gap-3 overflow-x-auto pb-1 sm:pb-0 -mx-1 px-1 sm:mx-0 sm:px-0">
+        <div className="flex gap-2 @sm:grid @sm:grid-cols-3 @sm:gap-3 overflow-x-auto pb-1 @sm:pb-0 -mx-1 px-1 @sm:mx-0 @sm:px-0">
           {/* 规则数量 */}
-          <div className="flex-shrink-0 w-[140px] sm:w-auto p-2.5 sm:p-3 rounded-xl bg-muted/50 glass-elevated">
+          <div className="flex-shrink-0 w-[140px] @sm:w-auto p-2.5 @sm:p-3 rounded-xl bg-muted/50 glass-elevated">
             <div className="flex items-center gap-1.5 mb-1.5">
               <div className="p-1 rounded-md bg-blue-500/10">
                 <Server className="h-3.5 w-3.5 text-blue-500" />
               </div>
-              <span className="text-[10px] sm:text-xs text-muted-foreground">规则</span>
+              <span className="text-[10px] @sm:text-xs text-muted-foreground">规则</span>
             </div>
             <div className="flex items-baseline gap-0.5">
-              <span className="text-lg sm:text-xl font-semibold font-mono">{usage.ruleCount}</span>
+              <span className="text-lg @sm:text-xl font-semibold font-mono">{usage.ruleCount}</span>
               <span className="text-xs text-muted-foreground">/ {usage.ruleLimit > 0 ? usage.ruleLimit : '∞'}</span>
             </div>
             {usage.ruleLimit > 0 && (
@@ -96,15 +96,15 @@ export const UserForwardUsageCard: React.FC<UserForwardUsageCardProps> = ({
           </div>
 
           {/* 流量使用 */}
-          <div className="flex-shrink-0 w-[140px] sm:w-auto p-2.5 sm:p-3 rounded-xl bg-muted/50 glass-elevated">
+          <div className="flex-shrink-0 w-[140px] @sm:w-auto p-2.5 @sm:p-3 rounded-xl bg-muted/50 glass-elevated">
             <div className="flex items-center gap-1.5 mb-1.5">
               <div className="p-1 rounded-md bg-emerald-500/10">
                 <TrendingUp className="h-3.5 w-3.5 text-emerald-500" />
               </div>
-              <span className="text-[10px] sm:text-xs text-muted-foreground">流量</span>
+              <span className="text-[10px] @sm:text-xs text-muted-foreground">流量</span>
             </div>
             <div className="flex items-baseline gap-0.5 flex-wrap">
-              <span className="text-lg sm:text-xl font-semibold font-mono">{upload.value}</span>
+              <span className="text-lg @sm:text-xl font-semibold font-mono">{upload.value}</span>
               <span className="text-xs text-muted-foreground">{upload.unit}</span>
               {uploadLimit && (
                 <span className="text-[10px] text-muted-foreground">/ {uploadLimit.value}{uploadLimit.unit}</span>
@@ -121,12 +121,12 @@ export const UserForwardUsageCard: React.FC<UserForwardUsageCardProps> = ({
           </div>
 
           {/* 允许的规则类型 */}
-          <div className="flex-shrink-0 w-[140px] sm:w-auto p-2.5 sm:p-3 rounded-xl bg-muted/50 glass-elevated">
+          <div className="flex-shrink-0 w-[140px] @sm:w-auto p-2.5 @sm:p-3 rounded-xl bg-muted/50 glass-elevated">
             <div className="flex items-center gap-1.5 mb-1.5">
               <div className="p-1 rounded-md bg-purple-500/10">
                 <Layers className="h-3.5 w-3.5 text-purple-500" />
               </div>
-              <span className="text-[10px] sm:text-xs text-muted-foreground">类型</span>
+              <span className="text-[10px] @sm:text-xs text-muted-foreground">类型</span>
             </div>
             <div className="flex flex-wrap gap-1">
               {usage.allowedTypes.length > 0 ? (

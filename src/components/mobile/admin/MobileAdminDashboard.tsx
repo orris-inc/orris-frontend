@@ -25,7 +25,6 @@ import {
   Boxes,
   ArrowLeftRight,
   Cpu,
-  Globe,
 } from 'lucide-react';
 import { MobileStatsScroller } from './MobileStatsScroller';
 import { MobileGroupedList, MobileListItem } from './MobileGroupedList';
@@ -255,12 +254,6 @@ export const MobileAdminDashboard = ({
       iconBg: 'bg-muted/60',
       title: t('admin.moreManagement.forwardAgent'),
       path: '/admin/forward-agents',
-    },
-    {
-      icon: <Globe className="size-4" strokeWidth={1.5} />,
-      iconBg: 'bg-muted/60',
-      title: t('admin.moreManagement.externalForwardRules'),
-      path: '/admin/external-forward-rules',
     },
     {
       icon: <Boxes className="size-4" strokeWidth={1.5} />,

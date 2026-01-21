@@ -61,11 +61,10 @@ export const ForwardAgentFiltersComponent: React.FC<ForwardAgentFiltersProps> = 
   };
 
   return (
-    <div className="flex items-center gap-2 sm:gap-4">
-      {/* Status filter - responsive width */}
-      <div className="w-[72px] sm:w-28">
+    <div className="@container flex items-center gap-2 @sm:gap-4">
+      <div className="w-[72px] @sm:w-28">
         <Select value={filters.status || '_all_'} onValueChange={handleStatusChange}>
-          <SelectTrigger className="text-xs sm:text-sm">
+          <SelectTrigger className="text-xs @sm:text-sm">
             <SelectValue placeholder={t('admin.forwardAgents.filters.status')} />
           </SelectTrigger>
           <SelectContent>
@@ -76,8 +75,7 @@ export const ForwardAgentFiltersComponent: React.FC<ForwardAgentFiltersProps> = 
         </Select>
       </div>
 
-      {/* Search input - hidden on mobile */}
-      <div className="hidden sm:block flex-1 max-w-xs">
+      <div className="hidden @sm:block flex-1 max-w-xs">
         <Input
           placeholder={t('admin.forwardAgents.filters.searchAgent')}
           value={filters.name || ''}
@@ -85,10 +83,9 @@ export const ForwardAgentFiltersComponent: React.FC<ForwardAgentFiltersProps> = 
         />
       </div>
 
-      {/* Sort filter - responsive width */}
-      <div className="w-[88px] sm:w-32">
+      <div className="w-[88px] @sm:w-32">
         <Select value={getSortValue()} onValueChange={handleSortChange}>
-          <SelectTrigger className="text-xs sm:text-sm">
+          <SelectTrigger className="text-xs @sm:text-sm">
             <SelectValue placeholder={t('admin.forwardAgents.filters.sort')} />
           </SelectTrigger>
           <SelectContent>
@@ -100,10 +97,9 @@ export const ForwardAgentFiltersComponent: React.FC<ForwardAgentFiltersProps> = 
         </Select>
       </div>
 
-      {/* Reset button - icon only on mobile */}
       <Button variant="outline" size="sm" onClick={handleReset} className="shrink-0">
-        <FilterX className="h-4 w-4 sm:mr-2" />
-        <span className="hidden sm:inline">{t('common.actions.reset')}</span>
+        <FilterX className="h-4 w-4 @sm:mr-2" />
+        <span className="hidden @sm:inline">{t('common.actions.reset')}</span>
       </Button>
     </div>
   );

@@ -421,7 +421,7 @@ export const RealtimeMetricsChart = memo(({
           </div>
 
           {/* Right: Metric tabs - compact pills */}
-          <div className="flex items-center p-0.5 rounded-md bg-muted/60 border border-border/50">
+          <div className="@container flex items-center p-0.5 rounded-md bg-muted/60 border border-border/50">
             {(Object.keys(METRIC_CONFIG) as ChartMode[]).map((key) => {
               const config = METRIC_CONFIG[key];
               const Icon = config.icon;
@@ -438,7 +438,7 @@ export const RealtimeMetricsChart = memo(({
                   )}
                 >
                   <Icon className="size-3" />
-                  <span className="hidden sm:inline">{t(config.labelKey)}</span>
+                  <span className="hidden @sm:inline">{t(config.labelKey)}</span>
                 </button>
               );
             })}

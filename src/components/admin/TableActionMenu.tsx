@@ -8,6 +8,7 @@ import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/common/Too
 import {
   DropdownMenu,
   DropdownMenuContent,
+  DropdownMenuPortal,
   DropdownMenuTrigger,
 } from '@/components/common/DropdownMenu';
 import { cn } from '@/lib/utils';
@@ -126,9 +127,11 @@ export const TableActionMenu: React.FC<TableActionMenuProps> = ({
               <MoreHorizontal className={iconSizeClasses[size]} strokeWidth={1.5} />
             </button>
           </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" onClick={(e) => e.stopPropagation()}>
-            {dropdownContent}
-          </DropdownMenuContent>
+          <DropdownMenuPortal>
+            <DropdownMenuContent align="end" collisionPadding={16} onClick={(e) => e.stopPropagation()}>
+              {dropdownContent}
+            </DropdownMenuContent>
+          </DropdownMenuPortal>
         </DropdownMenu>
       )}
     </div>

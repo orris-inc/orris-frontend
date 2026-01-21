@@ -1,6 +1,6 @@
 /**
  * Forward Agents Management Page (Admin)
- * High-density data management interface
+ * Tailwind UI Application UI style layout
  */
 
 import { useState, useMemo, useCallback } from 'react';
@@ -13,14 +13,13 @@ import {
   CheckCircle2,
   Activity,
   Radio,
-  GripVertical,
   Search,
   FilterX,
 } from 'lucide-react';
 import { Switch, SwitchThumb } from '@/components/common/Switch';
 import { AdminLayout } from '@/layouts/AdminLayout';
-import { AdminButton, AdminCard } from '@/components/admin';
-import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/common/Tooltip';
+import { PageHeader } from '@/components/admin';
+import { Button } from '@/components/common/Button';
 import { Input } from '@/components/common/Input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/common/Select';
 import { TokenDialog } from '@/components/common/TokenDialog';
@@ -326,188 +325,111 @@ export const ForwardAgentsPage = () => {
 
   return (
     <AdminLayout>
-      <div className="py-3 space-y-3">
-        {/* High-Density Status Bar with Integrated Filters - Desktop only */}
-        {!isMobile && (
-        <header className="bg-card rounded-lg border border-border px-3 py-2">
-          <div className="flex items-center justify-between gap-3 flex-wrap">
-            {/* Left: Title + Primary Stats */}
-            <div className="flex items-center gap-3">
-              <h1 className="text-sm font-semibold text-foreground">{t('admin.forwardAgents.title')}</h1>
-              <div className="h-4 w-px bg-border hidden sm:block" />
-              <div className="flex items-center gap-2.5 text-xs">
-                <span className="flex items-center gap-1 text-muted-foreground">
-                  <Cpu className="size-3" />
-                  <span className="font-medium text-foreground">{stats.total}</span>
-                </span>
-                <span className="flex items-center gap-1">
-                  <CheckCircle2 className="size-3 text-success" />
-                  <span className="font-medium text-success">{stats.enabled}</span>
-                </span>
-                <span className="flex items-center gap-1">
-                  <Activity className="size-3 text-info" />
-                  <span className="font-medium text-info">{stats.online}</span>
-                </span>
-                {stats.updatable > 0 && (
-                  <span className="flex items-center gap-1">
-                    <ArrowUpCircle className="size-3 text-warning" />
-                    <span className="font-medium text-warning">{stats.updatable}</span>
-                  </span>
-                )}
-              </div>
-            </div>
-
-            {/* Center: Filters (hidden on mobile) */}
-            <div className="hidden md:flex items-center gap-2 flex-1 justify-center max-w-md">
-              {/* Status filter */}
-              <Select value={filters.status || '_all_'} onValueChange={handleStatusChange}>
-                <SelectTrigger className="h-7 w-20 text-xs">
-                  <SelectValue placeholder={t('admin.forwardAgents.filters.status')} />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="_all_">{t('admin.forwardAgents.filters.all')}</SelectItem>
-                  <SelectItem value="enabled">{t('admin.forwardAgents.filters.enabled')}</SelectItem>
-                  <SelectItem value="disabled">{t('admin.forwardAgents.filters.disabled')}</SelectItem>
-                </SelectContent>
-              </Select>
-
-              {/* Search input */}
-              <div className="relative flex-1 max-w-[180px]">
-                <Search className="absolute left-2 top-1/2 -translate-y-1/2 size-3 text-muted-foreground" />
-                <Input
-                  placeholder={t('admin.forwardAgents.filters.searchAgent')}
-                  value={filters.name || ''}
-                  onChange={(e) => handleSearchChange(e.target.value)}
-                  className="h-7 pl-7 text-xs"
-                />
-              </div>
-
-              {/* Sort filter */}
-              <Select value={getSortValue()} onValueChange={handleSortChange}>
-                <SelectTrigger className="h-7 w-24 text-xs">
-                  <SelectValue placeholder={t('admin.forwardAgents.filters.sort')} />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="_default_">{t('admin.forwardAgents.filters.default')}</SelectItem>
-                  <SelectItem value="created_at_desc">{t('admin.forwardAgents.filters.createdDesc')}</SelectItem>
-                  <SelectItem value="created_at_asc">{t('admin.forwardAgents.filters.createdAsc')}</SelectItem>
-                  <SelectItem value="updated_at_desc">{t('admin.forwardAgents.filters.updatedDesc')}</SelectItem>
-                </SelectContent>
-              </Select>
-
-              {/* Reset button */}
-              {hasActiveFilters && (
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <button
-                      onClick={handleResetFilters}
-                      className="h-7 w-7 flex items-center justify-center rounded-md text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
-                    >
-                      <FilterX className="size-3.5" />
-                    </button>
-                  </TooltipTrigger>
-                  <TooltipContent>{t('admin.forwardAgents.filters.resetFilters')}</TooltipContent>
-                </Tooltip>
-              )}
-
-              {/* Drag sort toggle */}
-              <div className="h-4 w-px bg-border" />
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <label className="flex items-center gap-1 cursor-pointer group">
-                    <GripVertical className={`size-3 transition-colors ${dragSortEnabled ? 'text-primary' : 'text-muted-foreground group-hover:text-foreground'}`} strokeWidth={1.5} />
-                    <Switch
-                      checked={dragSortEnabled}
-                      onCheckedChange={setDragSortEnabled}
-                      disabled={isReordering}
-                      className="scale-75"
-                    >
-                      <SwitchThumb />
-                    </Switch>
-                  </label>
-                </TooltipTrigger>
-                <TooltipContent>
-                  {dragSortEnabled ? t('admin.forwardAgents.dragSort.disable') : t('admin.forwardAgents.dragSort.enable')}
-                </TooltipContent>
-              </Tooltip>
-            </div>
-
-            {/* Right: Actions */}
-            <div className="flex items-center gap-1.5">
+      <div className="space-y-6">
+        {/* Page Header with metadata and actions */}
+        <PageHeader
+          title={t('admin.forwardAgents.title')}
+          icon={Cpu}
+          metadata={[
+            { icon: Cpu, text: `${stats.total} ${t('admin.forwardAgents.agentsUnit')}` },
+            { icon: CheckCircle2, text: `${stats.enabled} ${t('common.status.enabled')}` },
+            { icon: Activity, text: `${stats.online} ${t('common.status.online')}` },
+            ...(stats.updatable > 0 ? [{ icon: ArrowUpCircle, text: `${stats.updatable} ${t('admin.forwardAgents.updatable')}` }] : []),
+          ]}
+          action={
+            <div className="flex items-center gap-2">
               {stats.online > 0 && (
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <AdminButton
-                      variant="outline"
-                      size="sm"
-                      onClick={() => setBroadcastURLDialogOpen(true)}
-                      className="h-7 px-2 text-xs border-info/30 hover:border-info/50 hover:bg-info/10"
-                      icon={<Radio className="size-3.5 text-info" strokeWidth={1.5} />}
-                    >
-                      <span className="hidden xl:inline text-info">{t('admin.forwardAgents.actions.broadcast')}</span>
-                    </AdminButton>
-                  </TooltipTrigger>
-                  <TooltipContent>{t('admin.forwardAgents.broadcast.tooltip', { count: stats.online })}</TooltipContent>
-                </Tooltip>
+                <Button variant="outline" size="sm" onClick={() => setBroadcastURLDialogOpen(true)}>
+                  <Radio className="size-4 mr-2" />
+                  {t('admin.forwardAgents.actions.broadcast')}
+                </Button>
               )}
-
               {stats.updatable > 0 && (
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <AdminButton
-                      variant="outline"
-                      size="sm"
-                      onClick={() => setBatchUpdateDialogOpen(true)}
-                      className="h-7 px-2 text-xs border-warning/30 hover:border-warning/50 hover:bg-warning-muted"
-                      icon={<ArrowUpCircle className="size-3.5 text-warning" strokeWidth={1.5} />}
-                    >
-                      <span className="hidden xl:inline text-warning">{t('admin.forwardAgents.actions.update')}</span>
-                    </AdminButton>
-                  </TooltipTrigger>
-                  <TooltipContent>{t('admin.forwardAgents.batchUpdate.tooltip', { count: stats.updatable })}</TooltipContent>
-                </Tooltip>
+                <Button variant="outline" size="sm" onClick={() => setBatchUpdateDialogOpen(true)}>
+                  <ArrowUpCircle className="size-4 mr-2" />
+                  {t('admin.forwardAgents.actions.update')}
+                </Button>
               )}
-
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <AdminButton
-                    variant="ghost"
-                    size="sm"
-                    onClick={handleRefresh}
-                    className="h-7 w-7 p-0"
-                    icon={
-                      <RefreshCw
-                        key={refreshKey}
-                        className="size-3.5 animate-spin-once"
-                        strokeWidth={1.5}
-                      />
-                    }
-                  >
-                    <span className="sr-only">{t('admin.forwardAgents.actions.refresh')}</span>
-                  </AdminButton>
-                </TooltipTrigger>
-                <TooltipContent>{t('admin.forwardAgents.actions.refreshList')}</TooltipContent>
-              </Tooltip>
-
-              <AdminButton
-                variant="primary"
-                size="sm"
-                className="h-7 px-2.5 text-xs"
-                icon={<Plus className="size-3.5" strokeWidth={2} />}
-                onClick={() => {
-                  setCopyAgentData(undefined);
-                  setCreateDialogOpen(true);
-                }}
-              >
-                <span className="hidden sm:inline">{t('admin.forwardAgents.actions.create')}</span>
-                <span className="sm:hidden">{t('admin.forwardAgents.actions.create')}</span>
-              </AdminButton>
+              <Button variant="ghost" size="icon" onClick={handleRefresh}>
+                <RefreshCw key={refreshKey} className="size-4" />
+              </Button>
+              <Button onClick={() => { setCopyAgentData(undefined); setCreateDialogOpen(true); }}>
+                <Plus className="size-4 mr-2" />
+                {t('admin.forwardAgents.actions.create')}
+              </Button>
             </div>
+          }
+        />
+
+        {/* Filters row - desktop only */}
+        {!isMobile && (
+          <div className="flex flex-wrap items-center gap-3">
+            {/* Status filter */}
+            <Select value={filters.status || '_all_'} onValueChange={handleStatusChange}>
+              <SelectTrigger className="w-[120px]">
+                <SelectValue placeholder={t('admin.forwardAgents.filters.status')} />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="_all_">{t('admin.forwardAgents.filters.all')}</SelectItem>
+                <SelectItem value="enabled">{t('admin.forwardAgents.filters.enabled')}</SelectItem>
+                <SelectItem value="disabled">{t('admin.forwardAgents.filters.disabled')}</SelectItem>
+              </SelectContent>
+            </Select>
+
+            {/* Search input */}
+            <div className="relative w-[200px]">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
+              <Input
+                placeholder={t('admin.forwardAgents.filters.searchAgent')}
+                value={filters.name || ''}
+                onChange={(e) => handleSearchChange(e.target.value)}
+                className="pl-9"
+              />
+            </div>
+
+            {/* Sort filter */}
+            <Select value={getSortValue()} onValueChange={handleSortChange}>
+              <SelectTrigger className="w-[140px]">
+                <SelectValue placeholder={t('admin.forwardAgents.filters.sort')} />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="_default_">{t('admin.forwardAgents.filters.default')}</SelectItem>
+                <SelectItem value="created_at_desc">{t('admin.forwardAgents.filters.createdDesc')}</SelectItem>
+                <SelectItem value="created_at_asc">{t('admin.forwardAgents.filters.createdAsc')}</SelectItem>
+                <SelectItem value="updated_at_desc">{t('admin.forwardAgents.filters.updatedDesc')}</SelectItem>
+              </SelectContent>
+            </Select>
+
+            {/* Reset filters button */}
+            {hasActiveFilters && (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={handleResetFilters}
+              >
+                <FilterX className="size-4 mr-2" />
+                {t('admin.forwardAgents.filters.resetFilters')}
+              </Button>
+            )}
+
+            {/* Divider */}
+            <div className="h-6 w-px bg-border" />
+
+            {/* Drag sort toggle */}
+            <label className="flex items-center gap-2 text-sm">
+              <Switch
+                checked={dragSortEnabled}
+                onCheckedChange={setDragSortEnabled}
+                disabled={isReordering}
+              >
+                <SwitchThumb />
+              </Switch>
+              <span className="text-muted-foreground">{t('admin.forwardAgents.dragSort.label')}</span>
+            </label>
           </div>
-        </header>
         )}
 
-        {/* Forward Agent List */}
+        {/* Mobile: MobileForwardAgentManagement handles its own layout */}
         {isMobile ? (
           <MobileForwardAgentManagement
             forwardAgents={forwardAgents}
@@ -532,32 +454,30 @@ export const ForwardAgentsPage = () => {
             onGetInstallScript={handleInstallScript}
           />
         ) : (
-          <AdminCard noPadding>
-            <ForwardAgentListTable
-              forwardAgents={forwardAgents}
-              loading={isLoading || isFetching || isReordering}
-              page={pagination.page}
-              pageSize={pagination.pageSize}
-              total={pagination.total}
-              resourceGroupsMap={resourceGroupsMap}
-              onPageChange={handlePageChange}
-              onPageSizeChange={handlePageSizeChange}
-              onEdit={handleEdit}
-              onDelete={handleDelete}
-              onEnable={handleEnable}
-              onDisable={handleDisable}
-              onRegenerateToken={handleTokenRegenerate}
-              onGetInstallScript={handleInstallScript}
-              onViewDetail={handleViewDetail}
-              onCopy={handleCopy}
-              onCheckUpdate={handleCheckUpdate}
-              onBroadcastURL={handleBroadcastToAgent}
-              onToggleMute={handleToggleMute}
-              checkingAgentId={checkingAgentId}
-              enableDragSort={dragSortEnabled}
-              onDragEnd={handleDragEnd}
-            />
-          </AdminCard>
+          <ForwardAgentListTable
+            forwardAgents={forwardAgents}
+            loading={isLoading || isFetching || isReordering}
+            page={pagination.page}
+            pageSize={pagination.pageSize}
+            total={pagination.total}
+            resourceGroupsMap={resourceGroupsMap}
+            onPageChange={handlePageChange}
+            onPageSizeChange={handlePageSizeChange}
+            onEdit={handleEdit}
+            onDelete={handleDelete}
+            onEnable={handleEnable}
+            onDisable={handleDisable}
+            onRegenerateToken={handleTokenRegenerate}
+            onGetInstallScript={handleInstallScript}
+            onViewDetail={handleViewDetail}
+            onCopy={handleCopy}
+            onCheckUpdate={handleCheckUpdate}
+            onBroadcastURL={handleBroadcastToAgent}
+            onToggleMute={handleToggleMute}
+            checkingAgentId={checkingAgentId}
+            enableDragSort={dragSortEnabled}
+            onDragEnd={handleDragEnd}
+          />
         )}
       </div>
 

@@ -3,6 +3,7 @@
  */
 
 import { useTranslation } from 'react-i18next';
+import { formatDateTime } from '@/shared/utils/date-utils';
 import { Wifi, WifiOff, Clock, Server, Shield, Globe } from 'lucide-react';
 import {
   Dialog,
@@ -48,24 +49,6 @@ export const UserNodeDetailDialog: React.FC<UserNodeDetailDialogProps> = ({
 }) => {
   const { t, i18n } = useTranslation();
 
-  /**
-   * Format date string to localized format
-   */
-  const formatDate = (dateString: string | undefined): string => {
-    if (!dateString) return '-';
-    try {
-      const locale = i18n.language === 'zh' ? 'zh-CN' : 'en-US';
-      return new Date(dateString).toLocaleString(locale, {
-        year: 'numeric',
-        month: '2-digit',
-        day: '2-digit',
-        hour: '2-digit',
-        minute: '2-digit',
-      });
-    } catch {
-      return dateString;
-    }
-  };
 
   if (!node) return null;
 
@@ -142,7 +125,7 @@ export const UserNodeDetailDialog: React.FC<UserNodeDetailDialogProps> = ({
               </div>
               <div>
                 <span className="text-muted-foreground">{t('userNodes.detail.lastOnline')}</span>
-                <span className="ml-2">{formatDate(node.lastSeenAt)}</span>
+                <span className="ml-2">{formatDateTime(node.lastSeenAt)}</span>
               </div>
             </div>
           </div>
@@ -383,11 +366,11 @@ export const UserNodeDetailDialog: React.FC<UserNodeDetailDialogProps> = ({
             <div className="grid grid-cols-2 gap-4 text-sm">
               <div>
                 <span className="text-muted-foreground">{t('userNodes.detail.createdAt')}</span>
-                <span className="ml-2">{formatDate(node.createdAt)}</span>
+                <span className="ml-2">{formatDateTime(node.createdAt)}</span>
               </div>
               <div>
                 <span className="text-muted-foreground">{t('userNodes.detail.updatedAt')}</span>
-                <span className="ml-2">{formatDate(node.updatedAt)}</span>
+                <span className="ml-2">{formatDateTime(node.updatedAt)}</span>
               </div>
             </div>
           </div>
