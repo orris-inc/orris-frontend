@@ -10,9 +10,10 @@ import { z } from 'zod';
 import { Link as RouterLink, useNavigate, useLocation } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Loader2, Check } from 'lucide-react';
+import { Loader2, Check, Fingerprint } from 'lucide-react';
 import * as Checkbox from '@radix-ui/react-checkbox';
 import { useAuth } from '@/features/auth/hooks/useAuth';
+import { usePasskey } from '@/features/auth/hooks/usePasskey';
 import { useAuthStore } from '@/features/auth/stores/auth-store';
 import { useNotificationStore } from '@/shared/stores/notification-store';
 import { useVersionInfo } from '@/hooks';
@@ -134,6 +135,13 @@ export const LoginPage = () => {
   const location = useLocation();
   const { user, isAuthenticated } = useAuthStore();
   const { login, loginWithOAuth, isLoading, error, authError } = useAuth();
+  const {
+    isSupported: isPasskeySupported,
+    isLoading: isPasskeyLoading,
+    error: passkeyError,
+    loginWithPasskey,
+    clearError: clearPasskeyError,
+  } = usePasskey();
   const { showSuccess } = useNotificationStore();
   const { serverVersion, clientVersion } = useVersionInfo();
   const [userEmail, setUserEmail] = useState('');
@@ -273,6 +281,39 @@ export const LoginPage = () => {
                 {t('auth.login.continueWithGithub')}
               </button>
             </div>
+
+            {/* Passkey login (only shown when WebAuthn is supported) */}
+            {isPasskeySupported && (
+              <>
+                <OrDivider text={t('auth.login.orUsePasskey')} />
+                <button
+                  type="button"
+                  onClick={() => {
+                    clearPasskeyError();
+                    loginWithPasskey();
+                  }}
+                  disabled={isLoading || isPasskeyLoading}
+                  className="flex h-11 w-full items-center justify-center gap-3 rounded-lg bg-background text-sm font-medium shadow-sm ring-1 ring-inset ring-input transition-all hover:bg-muted/50 hover:ring-muted-foreground/30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary active:bg-muted/70 disabled:pointer-events-none disabled:opacity-50"
+                >
+                  {isPasskeyLoading ? (
+                    <>
+                      <Loader2 className="size-5 animate-spin" />
+                      {t('auth.login.signingInWithPasskey')}
+                    </>
+                  ) : (
+                    <>
+                      <Fingerprint className="size-5" />
+                      {t('auth.login.signInWithPasskey')}
+                    </>
+                  )}
+                </button>
+                {passkeyError && (
+                  <AuthAlert variant="error" className="mt-3">
+                    {passkeyError}
+                  </AuthAlert>
+                )}
+              </>
+            )}
 
             <OrDivider text={t('auth.login.orContinueWith')} />
 

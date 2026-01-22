@@ -1,6 +1,7 @@
 import * as Separator from '@radix-ui/react-separator';
 import { useTranslation } from 'react-i18next';
 import { ChangePasswordForm } from './ChangePasswordForm';
+import { PasskeyManagement } from './PasskeyManagement';
 
 /**
  * Security settings tab
@@ -23,6 +24,11 @@ export const SecurityTab = () => {
           </div>
         </div>
       </div>
+
+      <Separator.Root className="shrink-0 bg-border h-[1px] w-full" />
+
+      {/* Passkey management */}
+      <PasskeyManagement />
 
       <Separator.Root className="shrink-0 bg-border h-[1px] w-full" />
 

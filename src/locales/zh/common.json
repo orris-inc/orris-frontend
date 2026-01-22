@@ -274,6 +274,9 @@
       "signUpNow": "立即注册",
       "signUp": "注册",
       "orContinueWith": "或",
+      "orUsePasskey": "或使用通行密钥",
+      "signInWithPasskey": "使用通行密钥登录",
+      "signingInWithPasskey": "正在验证...",
       "continueWithGoogle": "使用 Google 登录",
       "continueWithGithub": "使用 GitHub 登录",
       "togglePasswordVisibility": "切换密码显示",
@@ -395,6 +398,16 @@
       "description": "您没有权限访问此页面。如果您认为这是错误的，请联系管理员。",
       "goBack": "返回",
       "goToDashboard": "前往仪表盘"
+    },
+    "passkey": {
+      "errors": {
+        "notSupported": "您的浏览器不支持通行密钥",
+        "notAllowed": "验证已取消或超时",
+        "securityError": "安全要求未满足，请确保使用 HTTPS",
+        "aborted": "验证已取消",
+        "invalidState": "此通行密钥已注册",
+        "unknown": "发生意外错误，请重试"
+      }
     }
   },
   "resourceGroups": {
@@ -2995,6 +3008,41 @@
     "security": {
       "changePasswordTitle": "修改密码",
       "changePasswordDesc": "定期更改密码有助于保护您的账户安全",
+      "passkey": {
+        "title": "通行密钥",
+        "desc": "使用指纹、面容或屏幕锁定快速安全地登录",
+        "add": "添加通行密钥",
+        "addTitle": "添加通行密钥",
+        "addDesc": "使用设备内置的验证器注册新的通行密钥",
+        "deviceName": "通行密钥名称",
+        "deviceNamePlaceholder": "例如：MacBook Pro",
+        "deviceNameHint": "为通行密钥取一个名称，方便日后识别（可选）",
+        "registering": "正在注册...",
+        "empty": "尚未注册通行密钥",
+        "addedOn": "添加于 {{date}}",
+        "lastUsed": "上次使用：{{date}}",
+        "neverUsed": "从未使用",
+        "transportInternal": "内置",
+        "transportUsb": "USB",
+        "transportBle": "蓝牙",
+        "transportHybrid": "跨设备",
+        "transportNfc": "NFC",
+        "transportUnknown": "未知",
+        "deleteConfirmTitle": "删除通行密钥",
+        "deleteConfirmDesc": "确定要删除「{{name}}」吗？删除后将无法使用此通行密钥登录。",
+        "notSupportedTitle": "浏览器不支持",
+        "notSupportedDesc": "您的浏览器不支持通行密钥，请使用 Chrome、Safari、Edge 或 Firefox 等现代浏览器。",
+        "errors": {
+          "notSupported": "您的浏览器不支持通行密钥",
+          "notAllowed": "注册已取消或超时",
+          "securityError": "安全要求未满足，请确保使用 HTTPS",
+          "aborted": "注册已取消",
+          "alreadyRegistered": "此验证器已注册",
+          "unknown": "发生意外错误，请重试",
+          "fetchFailed": "加载通行密钥失败",
+          "deleteFailed": "删除通行密钥失败"
+        }
+      },
       "oauthBindingTitle": "第三方账户绑定",
       "oauthBindingDesc": "关联第三方账户以快速登录",
       "oauthComingSoon": "第三方账户绑定功能即将上线",

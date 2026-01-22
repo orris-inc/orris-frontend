@@ -25,7 +25,7 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Drawer } from 'vaul';
 import { motion } from 'framer-motion';
-import { LogOut, Shield, ArrowLeftRight, Moon, Sun } from 'lucide-react';
+import { LogOut, Shield, ArrowLeftRight, Moon, Sun, Globe } from 'lucide-react';
 import { useTheme } from 'next-themes';
 import { cn } from '@/lib/utils';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/common/Avatar';
@@ -410,12 +410,18 @@ const HeaderSection = ({
   onLogout?: () => void;
   onClose: () => void;
 }) => {
+  const { i18n } = useTranslation();
   const { resolvedTheme, setTheme } = useTheme();
   const isDark = resolvedTheme === 'dark';
 
   const toggleTheme = useCallback(() => {
     setTheme(isDark ? 'light' : 'dark');
   }, [isDark, setTheme]);
+
+  const toggleLanguage = useCallback(() => {
+    const newLang = i18n.language === 'zh' ? 'en' : 'zh';
+    i18n.changeLanguage(newLang);
+  }, [i18n]);
 
   const cardClassName = 'glass-card rounded-xl';
 
@@ -454,6 +460,13 @@ const HeaderSection = ({
 
           {/* Action Buttons */}
           <div className="flex items-center gap-0.5 shrink-0">
+            {/* Language Toggle */}
+            <HeaderActionButton
+              onClick={toggleLanguage}
+              icon={Globe}
+              label={i18n.language === 'zh' ? 'Switch to English' : '切换到中文'}
+            />
+
             {/* Theme Toggle */}
             <HeaderActionButton
               onClick={toggleTheme}

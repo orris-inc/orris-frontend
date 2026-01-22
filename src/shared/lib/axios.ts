@@ -23,8 +23,25 @@ export const baseURL =
   window.__APP_CONFIG__?.API_BASE_URL ||
   '/api';
 
+// WebAuthn field names that must be preserved (go-webauthn expects exact camelCase)
+const WEBAUTHN_PRESERVED_KEYS = new Set([
+  'clientDataJSON',
+  'attestationObject',
+  'authenticatorData',
+  'rawId',
+  'authenticatorAttachment',
+  'clientExtensionResults',
+  'userHandle',
+  'pubKeyCredParams',
+  'excludeCredentials',
+  'allowCredentials',
+  'userVerification',
+  'rpId',
+  'displayName',
+]);
+
 // Create Axios instance with automatic snake_case <-> camelCase conversion
-// Configure preservedKeys to keep specific field keys from being transformed (e.g., agent IDs)
+// Configure preservedKeys to keep specific field keys from being transformed (e.g., agent IDs, WebAuthn fields)
 export const apiClient = applyCaseMiddleware(
   axios.create({
     baseURL,
@@ -35,10 +52,16 @@ export const apiClient = applyCaseMiddleware(
     withCredentials: true, // Allow carrying cookies
   }),
   {
-    // Preserve keys inside chainPortConfig/chain_port_config from being transformed
-    // These keys are agent IDs (e.g., fa_xK9mP2vL3nQ), containing underscores but should not be transformed
+    // Preserve keys that should not be transformed:
+    // 1. Stripe-style IDs (e.g., fa_xK9mP2vL3nQ) - contain underscores but should not be converted
+    // 2. WebAuthn field names - go-webauthn expects exact camelCase format
     preservedKeys: (key) => {
-      // Preserve only Stripe-style IDs: prefix + underscore + alphanumeric string with mixed case
+      // Preserve WebAuthn field names (exact match)
+      if (WEBAUTHN_PRESERVED_KEYS.has(key)) {
+        return true;
+      }
+
+      // Preserve Stripe-style IDs: prefix + underscore + alphanumeric string with mixed case
       // IDs like fa_xK9mP2vL3nQ, node_pzJTiBQh2naI contain uppercase letters
       // Field names like node_protocol, user_email are all lowercase and should be converted
       const idPattern = /^(fa|fr|node|user|efr|rg|sub|usr)_[a-zA-Z0-9]+$/;
@@ -60,12 +83,30 @@ const REFRESH_COOLDOWN = 5000; // Do not repeat refresh within 5 seconds
  */
 apiClient.interceptors.request.use(
   (config: InternalAxiosRequestConfig) => {
+    // Debug: log passkey requests to verify case conversion
+    if (config.url?.includes('passkey')) {
+      console.log('[Axios] Passkey request:', config.url);
+      console.log('[Axios] Passkey request data:', JSON.stringify(config.data, null, 2));
+    }
     return config;
   },
   (error) => {
     return Promise.reject(error);
   }
 );
+
+/**
+ * Raw axios instance without case conversion
+ * Used for WebAuthn requests that require exact field names
+ */
+export const rawApiClient = axios.create({
+  baseURL,
+  headers: {
+    'Content-Type': 'application/json',
+  },
+  timeout: 30000,
+  withCredentials: true,
+});
 
 /**
  * Refresh Access Token
@@ -127,6 +168,11 @@ apiClient.interceptors.response.use(
     return response;
   },
   async (error: AxiosError) => {
+    // Debug: log passkey errors with full response
+    if (error.config?.url?.includes('passkey')) {
+      console.error('[Axios] Passkey error status:', error.response?.status);
+      console.error('[Axios] Passkey error data:', JSON.stringify(error.response?.data, null, 2));
+    }
     const originalRequest = error.config as InternalAxiosRequestConfig & { _retry?: boolean };
 
     // 401 error and not retried yet

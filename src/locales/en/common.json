@@ -274,6 +274,9 @@
       "signUpNow": "Sign up now",
       "signUp": "Sign Up",
       "orContinueWith": "or",
+      "orUsePasskey": "or use passkey",
+      "signInWithPasskey": "Sign in with Passkey",
+      "signingInWithPasskey": "Authenticating...",
       "continueWithGoogle": "Continue with Google",
       "continueWithGithub": "Continue with GitHub",
       "togglePasswordVisibility": "Toggle password visibility",
@@ -395,6 +398,16 @@
       "description": "You do not have permission to access this page. Please contact your administrator if you believe this is an error.",
       "goBack": "Go Back",
       "goToDashboard": "Go to Dashboard"
+    },
+    "passkey": {
+      "errors": {
+        "notSupported": "Your browser does not support passkeys",
+        "notAllowed": "Authentication was cancelled or timed out",
+        "securityError": "Security requirements not met. Make sure you're using HTTPS.",
+        "aborted": "Authentication was cancelled",
+        "invalidState": "This passkey is already registered",
+        "unknown": "An unexpected error occurred. Please try again."
+      }
     }
   },
   "resourceGroups": {
@@ -3007,6 +3020,41 @@
     "security": {
       "changePasswordTitle": "Change Password",
       "changePasswordDesc": "Regularly changing your password helps keep your account secure",
+      "passkey": {
+        "title": "Passkeys",
+        "desc": "Sign in quickly and securely using your fingerprint, face, or screen lock",
+        "add": "Add Passkey",
+        "addTitle": "Add Passkey",
+        "addDesc": "Register a new passkey using your device's built-in authenticator",
+        "deviceName": "Passkey Name",
+        "deviceNamePlaceholder": "e.g., MacBook Pro",
+        "deviceNameHint": "Give your passkey a name to help you identify it later (optional)",
+        "registering": "Registering...",
+        "empty": "No passkeys registered yet",
+        "addedOn": "Added on {{date}}",
+        "lastUsed": "Last used: {{date}}",
+        "neverUsed": "Never used",
+        "transportInternal": "Built-in",
+        "transportUsb": "USB",
+        "transportBle": "Bluetooth",
+        "transportHybrid": "Cross-device",
+        "transportNfc": "NFC",
+        "transportUnknown": "Unknown",
+        "deleteConfirmTitle": "Delete Passkey",
+        "deleteConfirmDesc": "Are you sure you want to delete \"{{name}}\"? You will no longer be able to use this passkey to sign in.",
+        "notSupportedTitle": "Browser Not Supported",
+        "notSupportedDesc": "Your browser does not support passkeys. Please use a modern browser like Chrome, Safari, Edge, or Firefox.",
+        "errors": {
+          "notSupported": "Your browser does not support passkeys",
+          "notAllowed": "Registration was cancelled or timed out",
+          "securityError": "Security requirements not met. Make sure you're using HTTPS.",
+          "aborted": "Registration was cancelled",
+          "alreadyRegistered": "This authenticator is already registered",
+          "unknown": "An unexpected error occurred. Please try again.",
+          "fetchFailed": "Failed to load passkeys",
+          "deleteFailed": "Failed to delete passkey"
+        }
+      },
       "oauthBindingTitle": "Third-Party Account Binding",
       "oauthBindingDesc": "Link third-party accounts for quick login",
       "oauthComingSoon": "Third-party account binding feature is coming soon",
