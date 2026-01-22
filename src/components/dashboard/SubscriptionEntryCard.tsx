@@ -75,7 +75,7 @@ const getProgressColor = (percent: number) => {
  */
 export const SubscriptionEntryCard = ({ subscription, className }: SubscriptionEntryCardProps) => {
   const navigate = useNavigate();
-  const { t, i18n } = useTranslation();
+  const { t } = useTranslation();
   const statusConfig = getStatusConfig(subscription.status, t);
   const isActive = subscription.isActive;
   const limits = subscription.plan?.limits as { trafficLimit?: number } | undefined;

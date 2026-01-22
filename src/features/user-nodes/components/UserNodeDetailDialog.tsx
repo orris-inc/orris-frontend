@@ -47,7 +47,7 @@ export const UserNodeDetailDialog: React.FC<UserNodeDetailDialogProps> = ({
   node,
   onClose,
 }) => {
-  const { t, i18n } = useTranslation();
+  const { t } = useTranslation();
 
 
   if (!node) return null;
@@ -125,7 +125,7 @@ export const UserNodeDetailDialog: React.FC<UserNodeDetailDialogProps> = ({
               </div>
               <div>
                 <span className="text-muted-foreground">{t('userNodes.detail.lastOnline')}</span>
-                <span className="ml-2">{formatDateTime(node.lastSeenAt)}</span>
+                <span className="ml-2">{node.lastSeenAt ? formatDateTime(node.lastSeenAt) : '-'}</span>
               </div>
             </div>
           </div>

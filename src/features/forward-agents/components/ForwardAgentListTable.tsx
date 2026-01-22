@@ -80,7 +80,7 @@ export const ForwardAgentListTable: React.FC<ForwardAgentListTableProps> = ({
   enableDragSort = false,
   onDragEnd,
 }) => {
-  const { t, i18n } = useTranslation();
+  const { t } = useTranslation();
   // Detect mobile screen
   const { isMobile } = useBreakpoint();
 
@@ -307,7 +307,7 @@ export const ForwardAgentListTable: React.FC<ForwardAgentListTableProps> = ({
                   <span className="size-2.5 rounded-full bg-slate-300 dark:bg-slate-600 block"></span>
                 </TooltipTrigger>
                 <TooltipContent>
-                  {t('admin.forwardAgents.table.tooltip.offline')}{agent.lastSeenAt && ` · ${t('admin.forwardAgents.table.tooltip.lastOnline')}: ${formatDateTime(agent.lastSeenAt, i18n.language)}`}
+                  {t('admin.forwardAgents.table.tooltip.offline')}{agent.lastSeenAt && ` · ${t('admin.forwardAgents.table.tooltip.lastOnline')}: ${formatDateTime(agent.lastSeenAt)}`}
                 </TooltipContent>
               </Tooltip>
             )}
@@ -424,7 +424,7 @@ export const ForwardAgentListTable: React.FC<ForwardAgentListTableProps> = ({
       meta: { priority: 4 } as ResponsiveColumnMeta,
       cell: ({ row }) => (
         <span className="text-slate-500 dark:text-slate-400 text-sm">
-          {formatDateTime(row.original.createdAt, i18n.language)}
+          {formatDateTime(row.original.createdAt)}
         </span>
       ),
     },
@@ -489,7 +489,7 @@ export const ForwardAgentListTable: React.FC<ForwardAgentListTableProps> = ({
         );
       },
     },
-  ], [t, i18n.language, onEdit, onDisable, onEnable, onGetInstallScript, onViewDetail, onBroadcastURL, onToggleMute, renderDropdownMenuActions, resourceGroupsMap]);
+  ], [t, onEdit, onDisable, onEnable, onGetInstallScript, onViewDetail, onBroadcastURL, onToggleMute, renderDropdownMenuActions, resourceGroupsMap]);
 
   // Render mobile card list on small screens
   if (isMobile) {

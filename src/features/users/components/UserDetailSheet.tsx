@@ -130,7 +130,7 @@ export const UserDetailSheet = ({
   onResetPassword,
   onDelete,
 }: UserDetailSheetProps) => {
-  const { t, i18n } = useTranslation();
+  const { t } = useTranslation();
   const [actionSheetOpen, setActionSheetOpen] = useState(false);
 
   if (!user) return null;

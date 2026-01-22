@@ -100,7 +100,7 @@ const formatBytes = (bytes?: number) => {
   return `${value.toFixed(unitIndex > 1 ? 2 : 0)} ${units[unitIndex]}`;
 };
 
-import { formatRelativeTime, formatDateTime } from '@/shared/utils/date-utils';
+import { formatRelativeTime } from '@/shared/utils/date-utils';
 
 const formatTimestamp = (timestamp?: number) => {
   if (!timestamp) return '-';
