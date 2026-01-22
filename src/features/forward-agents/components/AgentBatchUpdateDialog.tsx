@@ -4,6 +4,7 @@
  */
 
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
   Dialog,
   DialogContent,
@@ -48,6 +49,7 @@ export const AgentBatchUpdateDialog: React.FC<AgentBatchUpdateDialogProps> = ({
   isUpdating,
   result,
 }) => {
+  const { t } = useTranslation();
   const [hasTriggered, setHasTriggered] = useState(false);
 
   // Count agents with updates available (online = enabled + has systemStatus)
@@ -75,10 +77,10 @@ export const AgentBatchUpdateDialog: React.FC<AgentBatchUpdateDialogProps> = ({
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <ArrowUpCircle className="size-5 text-blue-500" />
-            批量更新转发Agent
+            {t('admin.forwardAgents.batchUpdateDialog.title')}
           </DialogTitle>
           <DialogDescription>
-            {showResult ? '更新任务已提交' : '更新所有有可用更新的在线转发Agent'}
+            {showResult ? t('admin.forwardAgents.batchUpdateDialog.taskSubmitted') : t('admin.forwardAgents.batchUpdateDialog.description')}
           </DialogDescription>
         </DialogHeader>
 
@@ -87,7 +89,7 @@ export const AgentBatchUpdateDialog: React.FC<AgentBatchUpdateDialogProps> = ({
           <div className="space-y-4">
             <div className="p-4 bg-muted rounded-lg">
               <div className="flex items-center justify-between">
-                <span className="text-sm text-muted-foreground">可更新转发Agent数</span>
+                <span className="text-sm text-muted-foreground">{t('admin.forwardAgents.batchUpdateDialog.updatableCount')}</span>
                 <Badge variant={updateCount > 0 ? 'default' : 'secondary'}>
                   {updateCount}
                 </Badge>
@@ -98,14 +100,14 @@ export const AgentBatchUpdateDialog: React.FC<AgentBatchUpdateDialogProps> = ({
               <div className="flex items-center gap-2 p-3 bg-green-50 dark:bg-green-900/20 rounded-lg">
                 <CheckCircle2 className="size-4 text-green-500" />
                 <span className="text-sm text-green-700 dark:text-green-300">
-                  所有在线转发Agent均为最新版本
+                  {t('admin.forwardAgents.batchUpdateDialog.allUpToDate')}
                 </span>
               </div>
             ) : (
               <>
                 <Separator />
                 <div className="space-y-2">
-                  <p className="text-sm font-medium">将更新以下转发Agent：</p>
+                  <p className="text-sm font-medium">{t('admin.forwardAgents.batchUpdateDialog.willUpdateAgents')}</p>
                   <div className="max-h-[200px] overflow-y-auto space-y-1">
                     {agentsWithUpdates.map((agent) => (
                       <div
@@ -132,21 +134,21 @@ export const AgentBatchUpdateDialog: React.FC<AgentBatchUpdateDialogProps> = ({
                 <p className="text-lg font-semibold text-green-700 dark:text-green-300">
                   {result.succeeded.length}
                 </p>
-                <p className="text-xs text-green-600 dark:text-green-400">成功</p>
+                <p className="text-xs text-green-600 dark:text-green-400">{t('admin.forwardAgents.batchUpdateDialog.succeeded')}</p>
               </div>
               <div className="p-3 bg-red-50 dark:bg-red-900/20 rounded-lg text-center">
                 <XCircle className="size-5 text-red-500 mx-auto mb-1" />
                 <p className="text-lg font-semibold text-red-700 dark:text-red-300">
                   {result.failed.length}
                 </p>
-                <p className="text-xs text-red-600 dark:text-red-400">失败</p>
+                <p className="text-xs text-red-600 dark:text-red-400">{t('admin.forwardAgents.batchUpdateDialog.failed')}</p>
               </div>
               <div className="p-3 bg-yellow-50 dark:bg-yellow-900/20 rounded-lg text-center">
                 <AlertTriangle className="size-5 text-yellow-500 mx-auto mb-1" />
                 <p className="text-lg font-semibold text-yellow-700 dark:text-yellow-300">
                   {result.skipped.length}
                 </p>
-                <p className="text-xs text-yellow-600 dark:text-yellow-400">跳过</p>
+                <p className="text-xs text-yellow-600 dark:text-yellow-400">{t('admin.forwardAgents.batchUpdateDialog.skipped')}</p>
               </div>
             </div>
 
@@ -154,7 +156,7 @@ export const AgentBatchUpdateDialog: React.FC<AgentBatchUpdateDialogProps> = ({
               <div className="flex items-center gap-2 p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
                 <Info className="size-4 text-blue-500 flex-shrink-0" />
                 <span className="text-sm text-blue-700 dark:text-blue-300">
-                  结果已截断，单次最多处理 1000 个转发Agent
+                  {t('admin.forwardAgents.batchUpdateDialog.truncatedNotice')}
                 </span>
               </div>
             )}
@@ -162,7 +164,7 @@ export const AgentBatchUpdateDialog: React.FC<AgentBatchUpdateDialogProps> = ({
             {result.succeeded.length > 0 && (
               <div className="space-y-2">
                 <p className="text-sm font-medium text-green-700 dark:text-green-300">
-                  已触发更新
+                  {t('admin.forwardAgents.batchUpdateDialog.updateTriggered')}
                 </p>
                 <div className="max-h-[100px] overflow-y-auto space-y-1">
                   {result.succeeded.map((item: AgentBatchUpdateSuccess) => (
@@ -182,7 +184,7 @@ export const AgentBatchUpdateDialog: React.FC<AgentBatchUpdateDialogProps> = ({
 
             {result.failed.length > 0 && (
               <div className="space-y-2">
-                <p className="text-sm font-medium text-red-700 dark:text-red-300">更新失败</p>
+                <p className="text-sm font-medium text-red-700 dark:text-red-300">{t('admin.forwardAgents.batchUpdateDialog.updateFailed')}</p>
                 <div className="max-h-[100px] overflow-y-auto space-y-1">
                   {result.failed.map((item: AgentBatchUpdateFailed) => (
                     <div
@@ -202,7 +204,7 @@ export const AgentBatchUpdateDialog: React.FC<AgentBatchUpdateDialogProps> = ({
             {result.skipped.length > 0 && (
               <div className="space-y-2">
                 <p className="text-sm font-medium text-yellow-700 dark:text-yellow-300">
-                  已跳过
+                  {t('admin.forwardAgents.batchUpdateDialog.updateSkipped')}
                 </p>
                 <div className="max-h-[100px] overflow-y-auto space-y-1">
                   {result.skipped.map((item: AgentBatchUpdateSkipped) => (
@@ -226,7 +228,7 @@ export const AgentBatchUpdateDialog: React.FC<AgentBatchUpdateDialogProps> = ({
           {!showResult ? (
             <>
               <Button variant="outline" onClick={handleClose}>
-                取消
+                {t('common.cancel')}
               </Button>
               <Button
                 onClick={handleUpdate}
@@ -235,18 +237,18 @@ export const AgentBatchUpdateDialog: React.FC<AgentBatchUpdateDialogProps> = ({
                 {isUpdating ? (
                   <>
                     <Loader2 className="size-4 mr-2 animate-spin" />
-                    更新中...
+                    {t('admin.forwardAgents.batchUpdateDialog.updating')}
                   </>
                 ) : (
                   <>
                     <ArrowUpCircle className="size-4 mr-2" />
-                    更新 {updateCount} 个转发Agent
+                    {t('admin.forwardAgents.batchUpdateDialog.updateButton', { count: updateCount })}
                   </>
                 )}
               </Button>
             </>
           ) : (
-            <Button onClick={handleClose}>关闭</Button>
+            <Button onClick={handleClose}>{t('common.close')}</Button>
           )}
         </DialogFooter>
       </DialogContent>

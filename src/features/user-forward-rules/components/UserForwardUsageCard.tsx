@@ -1,8 +1,9 @@
 /**
- * 用户转发规则配额和使用情况卡片
+ * User forward rule quota and usage card
  */
 
 import { Server, TrendingUp, Layers } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { Badge } from '@/components/common/Badge';
 import { Skeleton } from '@/components/common/Skeleton';
 import type { UserForwardUsage } from '@/api/forward';
@@ -13,7 +14,7 @@ interface UserForwardUsageCardProps {
 }
 
 /**
- * 格式化字节数为可读的流量单位
+ * Format bytes to readable traffic unit
  */
 const formatTraffic = (bytes: number): { value: string; unit: string } => {
   if (bytes === 0) return { value: '0', unit: 'B' };
@@ -24,21 +25,11 @@ const formatTraffic = (bytes: number): { value: string; unit: string } => {
   return { value, unit: units[i] };
 };
 
-/**
- * 规则类型映射表
- */
-const RULE_TYPE_LABELS: Record<string, string> = {
-  direct: '直连',
-  entry: '入口',
-  exit: '出口',
-  chain: '链式',
-  direct_chain: '直连链',
-};
-
 export const UserForwardUsageCard: React.FC<UserForwardUsageCardProps> = ({
   usage,
   isLoading,
 }) => {
+  const { t } = useTranslation();
   if (isLoading) {
     return (
       <div className="@container p-4 @sm:p-5 rounded-2xl glass">
@@ -69,17 +60,17 @@ export const UserForwardUsageCard: React.FC<UserForwardUsageCardProps> = ({
     <div className="@container p-3 @sm:p-4 rounded-2xl glass">
       <div className="space-y-3 @sm:space-y-4">
         {/* Header - hidden on mobile for density */}
-        <h3 className="text-sm font-medium text-foreground hidden @sm:block">配额使用情况</h3>
+        <h3 className="text-sm font-medium text-foreground hidden @sm:block">{t('forwardUsage.quotaUsage')}</h3>
 
         {/* Stats grid - horizontal scroll on mobile for density */}
         <div className="flex gap-2 @sm:grid @sm:grid-cols-3 @sm:gap-3 overflow-x-auto pb-1 @sm:pb-0 -mx-1 px-1 @sm:mx-0 @sm:px-0">
-          {/* 规则数量 */}
+          {/* Rule count */}
           <div className="flex-shrink-0 w-[140px] @sm:w-auto p-2.5 @sm:p-3 rounded-xl bg-muted/50 glass-elevated">
             <div className="flex items-center gap-1.5 mb-1.5">
               <div className="p-1 rounded-md bg-blue-500/10">
                 <Server className="h-3.5 w-3.5 text-blue-500" />
               </div>
-              <span className="text-[10px] @sm:text-xs text-muted-foreground">规则</span>
+              <span className="text-[10px] @sm:text-xs text-muted-foreground">{t('forwardUsage.rules')}</span>
             </div>
             <div className="flex items-baseline gap-0.5">
               <span className="text-lg @sm:text-xl font-semibold font-mono">{usage.ruleCount}</span>
@@ -95,13 +86,13 @@ export const UserForwardUsageCard: React.FC<UserForwardUsageCardProps> = ({
             )}
           </div>
 
-          {/* 流量使用 */}
+          {/* Traffic usage */}
           <div className="flex-shrink-0 w-[140px] @sm:w-auto p-2.5 @sm:p-3 rounded-xl bg-muted/50 glass-elevated">
             <div className="flex items-center gap-1.5 mb-1.5">
               <div className="p-1 rounded-md bg-emerald-500/10">
                 <TrendingUp className="h-3.5 w-3.5 text-emerald-500" />
               </div>
-              <span className="text-[10px] @sm:text-xs text-muted-foreground">流量</span>
+              <span className="text-[10px] @sm:text-xs text-muted-foreground">{t('forwardUsage.traffic')}</span>
             </div>
             <div className="flex items-baseline gap-0.5 flex-wrap">
               <span className="text-lg @sm:text-xl font-semibold font-mono">{upload.value}</span>
@@ -120,23 +111,23 @@ export const UserForwardUsageCard: React.FC<UserForwardUsageCardProps> = ({
             )}
           </div>
 
-          {/* 允许的规则类型 */}
+          {/* Allowed rule types */}
           <div className="flex-shrink-0 w-[140px] @sm:w-auto p-2.5 @sm:p-3 rounded-xl bg-muted/50 glass-elevated">
             <div className="flex items-center gap-1.5 mb-1.5">
               <div className="p-1 rounded-md bg-purple-500/10">
                 <Layers className="h-3.5 w-3.5 text-purple-500" />
               </div>
-              <span className="text-[10px] @sm:text-xs text-muted-foreground">类型</span>
+              <span className="text-[10px] @sm:text-xs text-muted-foreground">{t('forwardUsage.types')}</span>
             </div>
             <div className="flex flex-wrap gap-1">
               {usage.allowedTypes.length > 0 ? (
                 usage.allowedTypes.map((type) => (
                   <Badge key={type} variant="secondary" className="text-[10px] px-1.5 h-5">
-                    {RULE_TYPE_LABELS[type] || type}
+                    {t(`forwardUsage.ruleTypes.${type}`)}
                   </Badge>
                 ))
               ) : (
-                <span className="text-[10px] text-muted-foreground">无</span>
+                <span className="text-[10px] text-muted-foreground">{t('common.none')}</span>
               )}
             </div>
           </div>

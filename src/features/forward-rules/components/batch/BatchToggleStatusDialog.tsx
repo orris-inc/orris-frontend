@@ -4,6 +4,7 @@
  */
 
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
   Dialog,
   DialogContent,
@@ -33,11 +34,12 @@ export const BatchToggleStatusDialog: React.FC<BatchToggleStatusDialogProps> = (
   onConfirm,
   isProcessing,
 }) => {
+  const { t } = useTranslation();
   const [result, setResult] = useState<BatchOperationResult | null>(null);
   const [hasTriggered, setHasTriggered] = useState(false);
 
   const isEnabling = targetStatus === 'enabled';
-  const statusText = isEnabling ? '启用' : '禁用';
+  const actionText = isEnabling ? t('admin.forwardRules.batch.enable') : t('admin.forwardRules.batch.disable');
   const StatusIcon = isEnabling ? Power : PowerOff;
 
   const handleConfirm = async () => {
@@ -63,10 +65,12 @@ export const BatchToggleStatusDialog: React.FC<BatchToggleStatusDialogProps> = (
             <StatusIcon
               className={`size-5 ${isEnabling ? 'text-green-500' : 'text-orange-500'}`}
             />
-            批量{statusText}规则
+            {t('admin.forwardRules.batch.toggleTitle', { action: actionText })}
           </DialogTitle>
           <DialogDescription>
-            {showResult ? `${statusText}操作已完成` : `确认${statusText}选中的转发规则`}
+            {showResult
+              ? t('admin.forwardRules.batch.toggleComplete', { action: actionText })
+              : t('admin.forwardRules.batch.toggleDescription', { action: actionText })}
           </DialogDescription>
         </DialogHeader>
 
@@ -86,13 +90,12 @@ export const BatchToggleStatusDialog: React.FC<BatchToggleStatusDialogProps> = (
                     : 'text-orange-700 dark:text-orange-300'
                 }`}
               >
-                您即将{statusText}{' '}
-                <span className="font-semibold">{selectedCount}</span> 条转发规则。
+                {t('admin.forwardRules.batch.toggleConfirm', { action: actionText, count: selectedCount })}
               </p>
               <p className="text-sm text-muted-foreground mt-2">
                 {isEnabling
-                  ? '启用后，这些规则将开始生效。'
-                  : '禁用后，这些规则将暂停转发。'}
+                  ? t('admin.forwardRules.batch.toggleEnableHint')
+                  : t('admin.forwardRules.batch.toggleDisableHint')}
               </p>
             </div>
           </div>
@@ -104,21 +107,21 @@ export const BatchToggleStatusDialog: React.FC<BatchToggleStatusDialogProps> = (
                 <p className="text-lg font-semibold text-green-700 dark:text-green-300">
                   {result.succeeded.length}
                 </p>
-                <p className="text-xs text-green-600 dark:text-green-400">成功</p>
+                <p className="text-xs text-green-600 dark:text-green-400">{t('admin.forwardRules.batch.succeeded')}</p>
               </div>
               <div className="p-3 bg-red-50 dark:bg-red-900/20 rounded-lg text-center">
                 <XCircle className="size-5 text-red-500 mx-auto mb-1" />
                 <p className="text-lg font-semibold text-red-700 dark:text-red-300">
                   {failedCount}
                 </p>
-                <p className="text-xs text-red-600 dark:text-red-400">失败</p>
+                <p className="text-xs text-red-600 dark:text-red-400">{t('admin.forwardRules.batch.failed')}</p>
               </div>
             </div>
 
             {failedCount > 0 && result.failed && (
               <div className="space-y-2">
                 <p className="text-sm font-medium text-red-700 dark:text-red-300">
-                  {statusText}失败
+                  {t('admin.forwardRules.batch.toggleFailed', { action: actionText })}
                 </p>
                 <div className="max-h-[150px] overflow-y-auto space-y-1">
                   {result.failed.map((item) => (
@@ -142,7 +145,7 @@ export const BatchToggleStatusDialog: React.FC<BatchToggleStatusDialogProps> = (
           {!showResult ? (
             <>
               <Button variant="outline" onClick={handleClose} disabled={isProcessing}>
-                取消
+                {t('admin.forwardRules.batch.cancel')}
               </Button>
               <Button
                 variant={isEnabling ? 'default' : 'secondary'}
@@ -152,18 +155,18 @@ export const BatchToggleStatusDialog: React.FC<BatchToggleStatusDialogProps> = (
                 {isProcessing ? (
                   <>
                     <Loader2 className="size-4 mr-2 animate-spin" />
-                    处理中...
+                    {t('admin.forwardRules.batch.processing')}
                   </>
                 ) : (
                   <>
                     <StatusIcon className="size-4 mr-2" />
-                    {statusText} {selectedCount} 条规则
+                    {t('admin.forwardRules.batch.toggleCount', { action: actionText, count: selectedCount })}
                   </>
                 )}
               </Button>
             </>
           ) : (
-            <Button onClick={handleClose}>关闭</Button>
+            <Button onClick={handleClose}>{t('admin.forwardRules.batch.close')}</Button>
           )}
         </DialogFooter>
       </DialogContent>

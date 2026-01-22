@@ -3,6 +3,7 @@
  */
 
 import { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
   Dialog,
   DialogContent,
@@ -50,6 +51,7 @@ export const EditUserNodeDialog: React.FC<EditUserNodeDialogProps> = ({
   onClose,
   onSubmit,
 }) => {
+  const { t } = useTranslation();
   const [formData, setFormData] = useState<FormData>({
     name: '',
     serverAddress: '',
@@ -84,13 +86,13 @@ export const EditUserNodeDialog: React.FC<EditUserNodeDialogProps> = ({
     const newErrors: Partial<Record<keyof FormData, string>> = {};
 
     if (!formData.name.trim()) {
-      newErrors.name = '请输入节点名称';
+      newErrors.name = t('userNodes.edit.validation.nameRequired');
     }
     if (!formData.agentPort || isNaN(Number(formData.agentPort)) || Number(formData.agentPort) <= 0) {
-      newErrors.agentPort = '请输入有效的端口号';
+      newErrors.agentPort = t('userNodes.edit.validation.validPort');
     }
     if (formData.subscriptionPort && (isNaN(Number(formData.subscriptionPort)) || Number(formData.subscriptionPort) <= 0)) {
-      newErrors.subscriptionPort = '请输入有效的端口号';
+      newErrors.subscriptionPort = t('userNodes.edit.validation.validPort');
     }
 
     setErrors(newErrors);
@@ -142,42 +144,42 @@ export const EditUserNodeDialog: React.FC<EditUserNodeDialogProps> = ({
     <Dialog open={open} onOpenChange={handleClose}>
       <DialogContent className="sm:max-w-lg">
         <DialogHeader>
-          <DialogTitle>编辑节点</DialogTitle>
+          <DialogTitle>{t('userNodes.edit.title')}</DialogTitle>
           <DialogDescription>
-            修改节点的基本信息。协议相关配置不可修改。
+            {t('userNodes.edit.description')}
           </DialogDescription>
         </DialogHeader>
 
         <div className="space-y-6 py-4">
           {/* Read-only info */}
           <div className="space-y-4">
-            <h3 className="text-sm font-semibold">只读信息</h3>
+            <h3 className="text-sm font-semibold">{t('userNodes.edit.readOnlyInfo')}</h3>
             <Separator />
             <div className="grid grid-cols-2 gap-4 text-sm">
               <div>
-                <span className="text-muted-foreground">协议：</span>
+                <span className="text-muted-foreground">{t('userNodes.edit.protocol')}</span>
                 <Badge variant="outline" className="ml-2">
                   {PROTOCOL_NAMES[node.protocol] || node.protocol}
                 </Badge>
               </div>
               <div>
-                <span className="text-muted-foreground">状态：</span>
+                <span className="text-muted-foreground">{t('userNodes.edit.status')}</span>
                 <Badge
                   variant={node.status === 'active' ? 'default' : 'secondary'}
                   className="ml-2"
                 >
-                  {node.status === 'active' ? '活跃' : node.status === 'inactive' ? '停用' : '维护中'}
+                  {t(`common.status.${node.status}`)}
                 </Badge>
               </div>
               {node.encryptionMethod && (
                 <div className="col-span-2">
-                  <span className="text-muted-foreground">加密方法：</span>
+                  <span className="text-muted-foreground">{t('userNodes.edit.encryptionMethod')}</span>
                   <span className="font-mono ml-2">{node.encryptionMethod}</span>
                 </div>
               )}
               {node.transportProtocol && (
                 <div className="col-span-2">
-                  <span className="text-muted-foreground">传输协议：</span>
+                  <span className="text-muted-foreground">{t('userNodes.edit.transportProtocol')}</span>
                   <span className="ml-2">{node.transportProtocol.toUpperCase()}</span>
                 </div>
               )}
@@ -186,13 +188,13 @@ export const EditUserNodeDialog: React.FC<EditUserNodeDialogProps> = ({
 
           {/* Editable fields */}
           <div className="space-y-4">
-            <h3 className="text-sm font-semibold">可编辑信息</h3>
+            <h3 className="text-sm font-semibold">{t('userNodes.edit.editableInfo')}</h3>
             <Separator />
 
             <div className="space-y-4">
               <div className="flex flex-col gap-2">
                 <Label htmlFor="name">
-                  节点名称 <span className="text-destructive">*</span>
+                  {t('userNodes.edit.nodeName')} <span className="text-destructive">*</span>
                 </Label>
                 <Input
                   id="name"
@@ -204,21 +206,21 @@ export const EditUserNodeDialog: React.FC<EditUserNodeDialogProps> = ({
               </div>
 
               <div className="flex flex-col gap-2">
-                <Label htmlFor="serverAddress">服务器地址</Label>
+                <Label htmlFor="serverAddress">{t('userNodes.edit.serverAddress')}</Label>
                 <Input
                   id="serverAddress"
                   value={formData.serverAddress}
                   onChange={(e) => handleChange('serverAddress', e.target.value)}
-                  placeholder="留空则自动检测"
+                  placeholder={t('userNodes.edit.serverAddressPlaceholder')}
                   disabled={loading}
                 />
-                <p className="text-xs text-muted-foreground">可选，留空将从 Agent 公网 IP 自动检测</p>
+                <p className="text-xs text-muted-foreground">{t('userNodes.edit.serverAddressHint')}</p>
               </div>
 
               <div className="grid grid-cols-2 gap-4">
                 <div className="flex flex-col gap-2">
                   <Label htmlFor="agentPort">
-                    Agent 端口 <span className="text-destructive">*</span>
+                    {t('userNodes.edit.agentPort')} <span className="text-destructive">*</span>
                   </Label>
                   <Input
                     id="agentPort"
@@ -233,7 +235,7 @@ export const EditUserNodeDialog: React.FC<EditUserNodeDialogProps> = ({
                 </div>
 
                 <div className="flex flex-col gap-2">
-                  <Label htmlFor="subscriptionPort">订阅端口</Label>
+                  <Label htmlFor="subscriptionPort">{t('userNodes.edit.subscriptionPort')}</Label>
                   <Input
                     id="subscriptionPort"
                     type="number"
@@ -241,7 +243,7 @@ export const EditUserNodeDialog: React.FC<EditUserNodeDialogProps> = ({
                     max="65535"
                     value={formData.subscriptionPort}
                     onChange={(e) => handleChange('subscriptionPort', e.target.value)}
-                    placeholder="留空则使用 Agent 端口"
+                    placeholder={t('userNodes.edit.subscriptionPortPlaceholder')}
                     disabled={loading}
                   />
                   {errors.subscriptionPort && <p className="text-xs text-destructive">{errors.subscriptionPort}</p>}
@@ -253,10 +255,10 @@ export const EditUserNodeDialog: React.FC<EditUserNodeDialogProps> = ({
 
         <DialogFooter>
           <Button variant="outline" onClick={handleClose} disabled={loading}>
-            取消
+            {t('common.actions.cancel')}
           </Button>
           <Button onClick={handleSubmit} disabled={loading}>
-            {loading ? '保存中...' : '保存'}
+            {loading ? t('userNodes.edit.saving') : t('common.actions.save')}
           </Button>
         </DialogFooter>
       </DialogContent>

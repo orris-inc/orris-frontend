@@ -5,6 +5,7 @@
  */
 
 import { Navigate, useLocation } from 'react-router';
+import { useTranslation } from 'react-i18next';
 import { useAuthStore } from '@/features/auth/stores/auth-store';
 import { usePermissions } from '@/features/auth/hooks/usePermissions';
 import { Loader2, Lock } from 'lucide-react';
@@ -38,6 +39,7 @@ interface AdminRouteProps {
  * 当用户已登录但不是admin角色时显示
  */
 const UnauthorizedMessage = () => {
+  const { t } = useTranslation();
   const handleGoBack = () => {
     window.history.back();
   };
@@ -51,18 +53,18 @@ const UnauthorizedMessage = () => {
       <Lock className="h-20 w-20 text-destructive opacity-80" />
       <div>
         <h1 className="mb-2 text-3xl font-bold tracking-tight">
-          访问受限
+          {t('auth.unauthorized.title')}
         </h1>
         <p className="text-muted-foreground">
-          抱歉，您没有权限访问此页面。此页面仅限管理员访问。
+          {t('auth.unauthorized.description')}
         </p>
       </div>
       <div className="mt-2 flex gap-4">
         <button className={getButtonClass('outline')} onClick={handleGoBack}>
-          返回上一页
+          {t('auth.unauthorized.goBack')}
         </button>
         <button className={getButtonClass('default')} onClick={handleGoToDashboard}>
-          前往仪表板
+          {t('auth.unauthorized.goToDashboard')}
         </button>
       </div>
     </div>

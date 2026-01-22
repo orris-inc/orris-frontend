@@ -285,7 +285,7 @@ export const PlanMobileList: React.FC<PlanMobileListProps> = ({
                       <TooltipTrigger asChild>
                         <span className="text-xs text-slate-600 dark:text-slate-400 cursor-help">
                           {priceRange.details.length}{' '}
-                          {t('plans.cycleOptions')}
+                          {t('admin.plans.cycleOptions')}
                         </span>
                       </TooltipTrigger>
                       <TooltipContent>

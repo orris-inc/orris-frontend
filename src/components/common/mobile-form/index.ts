@@ -10,5 +10,6 @@ export {
   PasswordStrengthIndicator,
   type PasswordStrengthIndicatorProps,
   type PasswordRule,
-  DEFAULT_PASSWORD_RULES,
+  getDefaultPasswordRules,
+  useDefaultPasswordRules,
 } from './PasswordStrengthIndicator';

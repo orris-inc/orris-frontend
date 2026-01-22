@@ -4,6 +4,7 @@
  */
 
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
   Trash2,
   AlertTriangle,
@@ -31,12 +32,12 @@ interface DeleteForwardRuleSheetProps extends DeleteSheetProps<ForwardRule> {
   agentsMap?: Record<string, ForwardAgent>;
 }
 
-// Rule type labels
-const RULE_TYPE_LABELS: Record<string, string> = {
-  direct: '直连转发',
-  entry: '入口节点',
-  chain: '隧道链式',
-  direct_chain: '直连链式',
+// Rule type label keys
+const RULE_TYPE_LABEL_KEYS: Record<string, string> = {
+  direct: 'admin.forwardRules.ruleTypeInfo.direct.label',
+  entry: 'admin.forwardRules.ruleTypeInfo.entry.label',
+  chain: 'admin.forwardRules.ruleTypeInfo.chain.label',
+  direct_chain: 'admin.forwardRules.ruleTypeInfo.directChain.label',
 };
 
 export const DeleteForwardRuleSheet: React.FC<DeleteForwardRuleSheetProps> = ({
@@ -46,6 +47,7 @@ export const DeleteForwardRuleSheet: React.FC<DeleteForwardRuleSheetProps> = ({
   onConfirm,
   agentsMap = {},
 }) => {
+  const { t } = useTranslation();
   const [loading, setLoading] = useState(false);
   const [confirmOpen, setConfirmOpen] = useState(false);
 
@@ -75,10 +77,10 @@ export const DeleteForwardRuleSheet: React.FC<DeleteForwardRuleSheetProps> = ({
             <div className="size-10 rounded-full bg-destructive/10 flex items-center justify-center">
               <Trash2 className="size-5 text-destructive" />
             </div>
-            <span>删除规则</span>
+            <span>{t('admin.forwardRules.sheet.deleteRule')}</span>
           </SheetTitle>
           <SheetDescription>
-            此操作不可恢复，请确认是否继续
+            {t('admin.forwardRules.sheet.deleteConfirmDesc')}
           </SheetDescription>
         </SheetHeader>
 
@@ -88,9 +90,9 @@ export const DeleteForwardRuleSheet: React.FC<DeleteForwardRuleSheetProps> = ({
             <div className="flex items-start gap-3">
               <AlertTriangle className="size-5 text-destructive flex-shrink-0 mt-0.5" />
               <div className="space-y-1">
-                <p className="font-medium text-destructive">确认删除以下转发规则？</p>
+                <p className="font-medium text-destructive">{t('admin.forwardRules.sheet.deleteWarningTitle')}</p>
                 <p className="text-sm text-muted-foreground">
-                  删除后，该规则的所有配置将被永久移除，正在使用此规则的连接将被中断。
+                  {t('admin.forwardRules.sheet.deleteWarningDesc')}
                 </p>
               </div>
             </div>
@@ -105,7 +107,7 @@ export const DeleteForwardRuleSheet: React.FC<DeleteForwardRuleSheetProps> = ({
                 <div className="flex-1 min-w-0">
                   <p className="font-medium truncate">{rule.name}</p>
                   <p className="text-xs text-muted-foreground font-mono">
-                    {rule.listenPort ? `:${rule.listenPort}` : '自动分配'} → {rule.targetAddress || rule.targetNodeId}:{rule.targetPort}
+                    {rule.listenPort ? `:${rule.listenPort}` : t('admin.forwardRules.sheet.autoAssign')} → {rule.targetAddress || rule.targetNodeId}:{rule.targetPort}
                   </p>
                 </div>
               </div>
@@ -114,7 +116,7 @@ export const DeleteForwardRuleSheet: React.FC<DeleteForwardRuleSheetProps> = ({
               <div className="flex flex-wrap gap-2">
                 {/* Rule Type */}
                 <Badge variant="outline" className="text-xs">
-                  {RULE_TYPE_LABELS[rule.ruleType] || rule.ruleType}
+                  {t(RULE_TYPE_LABEL_KEYS[rule.ruleType]) || rule.ruleType}
                 </Badge>
 
                 {/* Protocol */}
@@ -127,14 +129,14 @@ export const DeleteForwardRuleSheet: React.FC<DeleteForwardRuleSheetProps> = ({
                   variant={rule.status === 'enabled' ? 'default' : 'secondary'}
                   className="text-xs"
                 >
-                  {rule.status === 'enabled' ? '已启用' : '已禁用'}
+                  {rule.status === 'enabled' ? t('common.status.enabled') : t('common.status.disabled')}
                 </Badge>
 
                 {/* Run Status */}
                 {rule.runStatus === 'running' && (
                   <Badge variant="default" className="text-xs">
                     <Activity className="size-3 mr-1" />
-                    运行中
+                    {t('admin.forwardRules.runStatus.running')}
                   </Badge>
                 )}
               </div>
@@ -144,7 +146,7 @@ export const DeleteForwardRuleSheet: React.FC<DeleteForwardRuleSheetProps> = ({
                 <div className="flex items-center gap-2 pt-1">
                   <Server className="size-3.5 text-muted-foreground" />
                   <span className="text-xs text-muted-foreground">
-                    转发Agent: {agent.name}
+                    {t('admin.forwardRules.sheet.forwardAgent')}: {agent.name}
                   </span>
                 </div>
               )}
@@ -152,7 +154,7 @@ export const DeleteForwardRuleSheet: React.FC<DeleteForwardRuleSheetProps> = ({
               {/* Traffic Stats */}
               {(rule.uploadBytes > 0 || rule.downloadBytes > 0) && (
                 <div className="text-xs text-muted-foreground pt-1">
-                  已使用流量: ↑{formatBytes(rule.uploadBytes)} ↓{formatBytes(rule.downloadBytes)}
+                  {t('admin.forwardRules.sheet.trafficUsed')}: ↑{formatBytes(rule.uploadBytes)} ↓{formatBytes(rule.downloadBytes)}
                 </div>
               )}
             </div>
@@ -169,10 +171,10 @@ export const DeleteForwardRuleSheet: React.FC<DeleteForwardRuleSheetProps> = ({
             {loading ? (
               <>
                 <Loader2 className="mr-2 size-5 animate-spin" />
-                删除中...
+                {t('admin.forwardRules.sheet.deleting')}
               </>
             ) : (
-              '确认删除'
+              t('admin.forwardRules.sheet.confirmDeleteButton')
             )}
           </Button>
           <Button
@@ -181,7 +183,7 @@ export const DeleteForwardRuleSheet: React.FC<DeleteForwardRuleSheetProps> = ({
             disabled={loading}
             className="w-full min-h-[44px]"
           >
-            取消
+            {t('admin.forwardRules.sheet.cancel')}
           </Button>
         </SheetFooter>
       </SheetContent>
@@ -191,9 +193,9 @@ export const DeleteForwardRuleSheet: React.FC<DeleteForwardRuleSheetProps> = ({
         open={confirmOpen}
         onOpenChange={setConfirmOpen}
         variant="destructive"
-        title="确认删除？"
-        description="删除后无法恢复"
-        confirmText="确认删除"
+        title={t('admin.forwardRules.sheet.confirmDeleteTitle')}
+        description={t('admin.forwardRules.sheet.confirmDeleteDesc')}
+        confirmText={t('admin.forwardRules.sheet.confirmDeleteButton')}
         onConfirm={handleConfirm}
       />
     </>

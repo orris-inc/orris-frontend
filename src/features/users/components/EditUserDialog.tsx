@@ -1,8 +1,9 @@
 /**
- * 编辑用户对话框组件
+ * Edit User Dialog Component
  */
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
 import { formatDateTime } from '@/shared/utils/date-utils';
 import * as Dialog from '@radix-ui/react-dialog';
 import * as LabelPrimitive from '@radix-ui/react-label';
@@ -22,31 +23,32 @@ interface EditUserDialogProps {
   onSubmit: (id: string, data: UpdateUserRequest) => void;
 }
 
-// Status options
-const STATUS_OPTIONS: { value: UserStatus; label: string }[] = [
-  { value: 'active', label: '激活' },
-  { value: 'inactive', label: '未激活' },
-  { value: 'pending', label: '待处理' },
-  { value: 'suspended', label: '暂停' },
-];
-
-// Role options
-const ROLE_OPTIONS: { value: UserRole; label: string }[] = [
-  { value: 'user', label: '普通用户' },
-  { value: 'admin', label: '管理员' },
-];
-
 export const EditUserDialog: React.FC<EditUserDialogProps> = ({
   open,
   user,
   onClose,
   onSubmit,
 }) => {
+  const { t } = useTranslation();
   const [email, setEmail] = useState('');
   const [name, setName] = useState('');
   const [status, setStatus] = useState<UserStatus>('active');
   const [role, setRole] = useState<UserRole>('user');
   const [errors, setErrors] = useState<{ email?: string; name?: string }>({});
+
+  // Build status options with translations
+  const statusOptions = useMemo(() => [
+    { value: 'active' as UserStatus, label: t('admin.users.status.active') },
+    { value: 'inactive' as UserStatus, label: t('admin.users.status.inactive') },
+    { value: 'pending' as UserStatus, label: t('admin.users.status.pending') },
+    { value: 'suspended' as UserStatus, label: t('admin.users.status.suspended') },
+  ], [t]);
+
+  // Build role options with translations
+  const roleOptions = useMemo(() => [
+    { value: 'user' as UserRole, label: t('admin.users.role.user') },
+    { value: 'admin' as UserRole, label: t('admin.users.role.admin') },
+  ], [t]);
 
   useEffect(() => {
     if (user) {
@@ -63,12 +65,12 @@ export const EditUserDialog: React.FC<EditUserDialogProps> = ({
 
     // Email validation (if provided)
     if (email.trim() && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-      newErrors.email = '邮箱格式不正确';
+      newErrors.email = t('admin.users.validation.emailInvalid');
     }
 
     // Name validation (if provided)
     if (name.trim() && (name.trim().length < 2 || name.trim().length > 100)) {
-      newErrors.name = '姓名长度必须在2-100个字符之间';
+      newErrors.name = t('admin.users.validation.nameLengthError');
     }
 
     setErrors(newErrors);
@@ -114,7 +116,7 @@ export const EditUserDialog: React.FC<EditUserDialogProps> = ({
         <Dialog.Content className="@container fixed left-[50%] top-[50%] z-50 w-full max-w-lg translate-x-[-50%] translate-y-[-50%] gap-4 border bg-background p-6 shadow-lg duration-200 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[state=closed]:slide-out-to-left-1/2 data-[state=closed]:slide-out-to-top-[48%] data-[state=open]:slide-in-from-left-1/2 data-[state=open]:slide-in-from-top-[48%] sm:rounded-lg">
           <div className="flex items-center justify-between">
             <Dialog.Title className="text-lg font-semibold leading-none tracking-tight">
-              编辑用户
+              {t('admin.users.edit.title')}
             </Dialog.Title>
             <Dialog.Close className="rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none data-[state=open]:bg-accent data-[state=open]:text-muted-foreground">
               <X className="h-4 w-4" />
@@ -123,21 +125,21 @@ export const EditUserDialog: React.FC<EditUserDialogProps> = ({
           </div>
 
           <div className="grid gap-6 py-4">
-            {/* 用户基本信息（只读） */}
+            {/* Read-only basic info */}
             <div className="space-y-4">
               <div className="flex items-center justify-between">
-                <h4 className="text-sm font-medium text-muted-foreground">基本信息</h4>
+                <h4 className="text-sm font-medium text-muted-foreground">{t('admin.users.edit.basicInfo')}</h4>
               </div>
               <Separator.Root className="shrink-0 bg-border h-[1px] w-full" />
               <div className="grid gap-4">
                 <div className="grid gap-2">
-                  <LabelPrimitive.Root className={labelStyles}>用户ID</LabelPrimitive.Root>
+                  <LabelPrimitive.Root className={labelStyles}>{t('admin.users.edit.userId')}</LabelPrimitive.Root>
                   <div className={cn(inputStyles, "bg-muted flex items-center")}>
                     <TruncatedId id={user.id} fullWidth />
                   </div>
                 </div>
                 <div className="grid gap-2">
-                  <LabelPrimitive.Root className={labelStyles}>创建时间</LabelPrimitive.Root>
+                  <LabelPrimitive.Root className={labelStyles}>{t('admin.users.edit.createdAt')}</LabelPrimitive.Root>
                   <input
                     value={formatDateTime(user.createdAt)}
                     disabled
@@ -147,16 +149,16 @@ export const EditUserDialog: React.FC<EditUserDialogProps> = ({
               </div>
             </div>
 
-            {/* 可编辑字段 */}
+            {/* Editable fields */}
             <div className="space-y-4">
               <div className="flex items-center justify-between">
-                <h4 className="text-sm font-medium text-muted-foreground">可编辑信息</h4>
+                <h4 className="text-sm font-medium text-muted-foreground">{t('admin.users.edit.editableInfo')}</h4>
               </div>
               <Separator.Root className="shrink-0 bg-border h-[1px] w-full" />
               <div className="grid gap-4">
                 <div className="grid gap-2">
                   <LabelPrimitive.Root htmlFor="email" className={labelStyles}>
-                    邮箱
+                    {t('admin.users.fields.emailShort')}
                   </LabelPrimitive.Root>
                   <input
                     id="email"
@@ -171,7 +173,7 @@ export const EditUserDialog: React.FC<EditUserDialogProps> = ({
 
                 <div className="grid gap-2">
                   <LabelPrimitive.Root htmlFor="name" className={labelStyles}>
-                    姓名
+                    {t('admin.users.fields.nameShort')}
                   </LabelPrimitive.Root>
                   <input
                     id="name"
@@ -182,26 +184,26 @@ export const EditUserDialog: React.FC<EditUserDialogProps> = ({
                   {errors.name ? (
                     <span className="text-sm text-destructive">{errors.name}</span>
                   ) : (
-                    <span className="text-sm text-muted-foreground">长度2-100个字符</span>
+                    <span className="text-sm text-muted-foreground">{t('admin.users.fields.nameLengthHint')}</span>
                   )}
                 </div>
 
                 <div className="grid grid-cols-1 gap-4 @sm:grid-cols-2">
                   <div className="grid gap-2">
-                    <LabelPrimitive.Root className={labelStyles}>状态</LabelPrimitive.Root>
+                    <LabelPrimitive.Root className={labelStyles}>{t('admin.users.fields.status')}</LabelPrimitive.Root>
                     <SimpleSelect
                       value={status}
                       onValueChange={(value) => setStatus(value as UserStatus)}
-                      options={STATUS_OPTIONS}
+                      options={statusOptions}
                     />
                   </div>
 
                   <div className="grid gap-2">
-                    <LabelPrimitive.Root className={labelStyles}>角色</LabelPrimitive.Root>
+                    <LabelPrimitive.Root className={labelStyles}>{t('admin.users.fields.role')}</LabelPrimitive.Root>
                     <SimpleSelect
                       value={role}
                       onValueChange={(value) => setRole(value as UserRole)}
-                      options={ROLE_OPTIONS}
+                      options={roleOptions}
                     />
                   </div>
                 </div>
@@ -214,14 +216,14 @@ export const EditUserDialog: React.FC<EditUserDialogProps> = ({
               onClick={onClose}
               className={getButtonClass('outline', 'default')}
             >
-              取消
+              {t('admin.users.actions.cancel')}
             </button>
             <button
               onClick={handleSubmit}
               disabled={!hasChanges}
               className={getButtonClass('default', 'default')}
             >
-              保存
+              {t('admin.users.edit.save')}
             </button>
           </div>
         </Dialog.Content>

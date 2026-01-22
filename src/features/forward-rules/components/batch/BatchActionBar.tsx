@@ -5,6 +5,7 @@
  * Positioned above the data table with glass morphism effect.
  */
 
+import { useTranslation } from 'react-i18next';
 import { Power, PowerOff, Pencil, Trash2, X, Loader2 } from 'lucide-react';
 import { Button } from '@/components/common/Button';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/common/Tooltip';
@@ -32,17 +33,18 @@ export const BatchActionBar: React.FC<BatchActionBarProps> = ({
   isTogglingStatus = false,
   isUpdating = false,
 }) => {
+  const { t } = useTranslation();
   const isLoading = isDeleting || isTogglingStatus || isUpdating;
 
   return (
     <div className="@container flex items-center justify-between gap-3 px-4 py-2.5 bg-primary/5 border border-primary/20 rounded-xl animate-in fade-in slide-in-from-top-2 duration-200">
       {/* Left: Selected count */}
       <div className="flex items-center gap-2 text-sm">
-        <span className="text-muted-foreground">已选择</span>
+        <span className="text-muted-foreground">{t('admin.forwardRules.batch.selected')}</span>
         <span className="inline-flex items-center justify-center min-w-[24px] h-6 px-2 rounded-full bg-primary text-primary-foreground text-xs font-semibold tabular-nums">
           {selectedCount}
         </span>
-        <span className="text-muted-foreground hidden @sm:inline">条规则</span>
+        <span className="text-muted-foreground hidden @sm:inline">{t('admin.forwardRules.batch.rules')}</span>
       </div>
 
       {/* Center: Action buttons */}
@@ -61,10 +63,10 @@ export const BatchActionBar: React.FC<BatchActionBarProps> = ({
               ) : (
                 <Power className="size-3.5 text-green-500" />
               )}
-              <span className="hidden @lg:inline text-green-600 dark:text-green-400">启用</span>
+              <span className="hidden @lg:inline text-green-600 dark:text-green-400">{t('admin.forwardRules.batch.enableRules')}</span>
             </Button>
           </TooltipTrigger>
-          <TooltipContent>启用选中的规则</TooltipContent>
+          <TooltipContent>{t('admin.forwardRules.batch.enableTooltip')}</TooltipContent>
         </Tooltip>
 
         <Tooltip>
@@ -81,10 +83,10 @@ export const BatchActionBar: React.FC<BatchActionBarProps> = ({
               ) : (
                 <PowerOff className="size-3.5 text-orange-500" />
               )}
-              <span className="hidden @lg:inline text-orange-600 dark:text-orange-400">禁用</span>
+              <span className="hidden @lg:inline text-orange-600 dark:text-orange-400">{t('admin.forwardRules.batch.disableRules')}</span>
             </Button>
           </TooltipTrigger>
-          <TooltipContent>禁用选中的规则</TooltipContent>
+          <TooltipContent>{t('admin.forwardRules.batch.disableTooltip')}</TooltipContent>
         </Tooltip>
 
         <Tooltip>
@@ -101,10 +103,10 @@ export const BatchActionBar: React.FC<BatchActionBarProps> = ({
               ) : (
                 <Pencil className="size-3.5 text-blue-500" />
               )}
-              <span className="hidden @lg:inline text-blue-600 dark:text-blue-400">更新</span>
+              <span className="hidden @lg:inline text-blue-600 dark:text-blue-400">{t('admin.forwardRules.batch.update')}</span>
             </Button>
           </TooltipTrigger>
-          <TooltipContent>批量更新名称、备注或排序</TooltipContent>
+          <TooltipContent>{t('admin.forwardRules.batch.updateTooltip')}</TooltipContent>
         </Tooltip>
 
         <div className="w-px h-5 bg-border mx-1 hidden @sm:block" />
@@ -123,10 +125,10 @@ export const BatchActionBar: React.FC<BatchActionBarProps> = ({
               ) : (
                 <Trash2 className="size-3.5 text-destructive" />
               )}
-              <span className="hidden @lg:inline text-destructive">删除</span>
+              <span className="hidden @lg:inline text-destructive">{t('admin.forwardRules.batch.delete')}</span>
             </Button>
           </TooltipTrigger>
-          <TooltipContent>删除选中的规则</TooltipContent>
+          <TooltipContent>{t('admin.forwardRules.batch.deleteTooltip')}</TooltipContent>
         </Tooltip>
       </div>
 
@@ -141,10 +143,10 @@ export const BatchActionBar: React.FC<BatchActionBarProps> = ({
             className="h-8 px-2.5 gap-1.5"
           >
             <X className="size-3.5" />
-            <span className="hidden @sm:inline">取消</span>
+            <span className="hidden @sm:inline">{t('admin.forwardRules.batch.cancel')}</span>
           </Button>
         </TooltipTrigger>
-        <TooltipContent>取消选择</TooltipContent>
+        <TooltipContent>{t('admin.forwardRules.batch.cancelSelection')}</TooltipContent>
       </Tooltip>
     </div>
   );

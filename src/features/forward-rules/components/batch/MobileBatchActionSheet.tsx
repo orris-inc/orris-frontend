@@ -9,6 +9,7 @@
  * - Safe area support
  */
 
+import { useTranslation } from 'react-i18next';
 import { Power, PowerOff, Pencil, Trash2, X, Loader2 } from 'lucide-react';
 import {
   Sheet,
@@ -48,6 +49,7 @@ export const MobileBatchActionSheet: React.FC<MobileBatchActionSheetProps> = ({
   isTogglingStatus = false,
   isUpdating = false,
 }) => {
+  const { t } = useTranslation();
   const isLoading = isDeleting || isTogglingStatus || isUpdating;
 
   const handleClearSelection = () => {
@@ -60,9 +62,9 @@ export const MobileBatchActionSheet: React.FC<MobileBatchActionSheetProps> = ({
       <SheetContent showClose={false} keyboardAware={false}>
         <SheetHeader>
           <SheetTitle className="text-center">
-            <span className="text-muted-foreground">已选择 </span>
+            <span className="text-muted-foreground">{t('admin.forwardRules.batch.selected')} </span>
             <span className="text-primary font-semibold">{selectedCount}</span>
-            <span className="text-muted-foreground"> 条规则</span>
+            <span className="text-muted-foreground"> {t('admin.forwardRules.batch.rules')}</span>
           </SheetTitle>
         </SheetHeader>
 
@@ -89,7 +91,7 @@ export const MobileBatchActionSheet: React.FC<MobileBatchActionSheetProps> = ({
               ) : (
                 <Power className="size-5 text-primary" />
               )}
-              <span className="flex-1 font-medium">启用所选规则</span>
+              <span className="flex-1 font-medium">{t('admin.forwardRules.batch.enableSelectedRules')}</span>
             </button>
 
             {/* Disable action */}
@@ -113,7 +115,7 @@ export const MobileBatchActionSheet: React.FC<MobileBatchActionSheetProps> = ({
               ) : (
                 <PowerOff className="size-5 text-muted-foreground" />
               )}
-              <span className="flex-1 font-medium">禁用所选规则</span>
+              <span className="flex-1 font-medium">{t('admin.forwardRules.batch.disableSelectedRules')}</span>
             </button>
 
             {/* Update action */}
@@ -137,7 +139,7 @@ export const MobileBatchActionSheet: React.FC<MobileBatchActionSheetProps> = ({
               ) : (
                 <Pencil className="size-5 text-primary" />
               )}
-              <span className="flex-1 font-medium">批量更新</span>
+              <span className="flex-1 font-medium">{t('admin.forwardRules.batch.batchUpdate')}</span>
             </button>
 
             {/* Delete action */}
@@ -161,7 +163,7 @@ export const MobileBatchActionSheet: React.FC<MobileBatchActionSheetProps> = ({
               ) : (
                 <Trash2 className="size-5" />
               )}
-              <span className="flex-1 font-medium">删除所选规则</span>
+              <span className="flex-1 font-medium">{t('admin.forwardRules.batch.deleteSelectedRules')}</span>
             </button>
           </div>
         </SheetBody>
@@ -174,7 +176,7 @@ export const MobileBatchActionSheet: React.FC<MobileBatchActionSheetProps> = ({
             className="w-full min-h-[44px] gap-2"
           >
             <X className="size-4" />
-            取消选择
+            {t('admin.forwardRules.batch.cancelSelection')}
           </Button>
         </SheetFooter>
       </SheetContent>

@@ -81,7 +81,7 @@ export const EnhancedBreadcrumbs = () => {
 
     // Add home page
     items.push({
-      label: '首页',
+      label: t('nav.home'),
       path: homePath,
       isActive: location.pathname === homePath,
     });

@@ -69,13 +69,14 @@ export interface NodeDetailSheetProps {
 // Constants
 // ============================================================================
 
+// Status config - labels will be translated at render time
 const STATUS_CONFIG: Record<
   NodeStatus,
-  { label: string; variant: 'success' | 'default' | 'warning' }
+  { labelKey: string; variant: 'success' | 'default' | 'warning' }
 > = {
-  active: { label: '激活', variant: 'success' },
-  inactive: { label: '未激活', variant: 'default' },
-  maintenance: { label: '维护中', variant: 'warning' },
+  active: { labelKey: 'admin.nodes.statusLabel.active', variant: 'success' },
+  inactive: { labelKey: 'admin.nodes.statusLabel.inactive', variant: 'default' },
+  maintenance: { labelKey: 'admin.nodes.statusLabel.maintenance', variant: 'warning' },
 };
 
 const PROTOCOL_CONFIG: Record<NodeProtocol, { label: string; color: string }> = {
@@ -362,8 +363,8 @@ export const NodeDetailSheet = ({
 
   if (!node) return null;
 
-  const statusLabel = t(`admin.nodes.statusLabel.${node.status}`, node.status);
-  const statusConfig = STATUS_CONFIG[node.status] || { label: statusLabel, variant: 'default' as const };
+  const statusConfig = STATUS_CONFIG[node.status] || { labelKey: 'admin.nodes.statusLabel.inactive', variant: 'default' as const };
+  const statusLabel = t(statusConfig.labelKey);
   const protocolConfig = PROTOCOL_CONFIG[node.protocol] || { label: node.protocol, color: 'bg-muted text-muted-foreground' };
 
   // Action Sheet actions

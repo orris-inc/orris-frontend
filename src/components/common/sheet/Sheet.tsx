@@ -20,6 +20,7 @@
  */
 
 import { useEffect, useRef, useState, useCallback } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Drawer } from 'vaul';
 import { X } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -97,6 +98,7 @@ export const SheetContent = ({
   style,
   ...props
 }: SheetContentProps) => {
+  const { t } = useTranslation();
   const contentRef = useRef<HTMLDivElement>(null);
 
   // iOS Safari keyboard handling using Visual Viewport API
@@ -188,7 +190,7 @@ export const SheetContent = ({
             )}
           >
             <X className="size-5" />
-            <span className="sr-only">Close</span>
+            <span className="sr-only">{t('common.actions.close')}</span>
           </Drawer.Close>
         )}
       </Drawer.Content>

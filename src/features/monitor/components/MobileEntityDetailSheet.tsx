@@ -451,30 +451,30 @@ export const MobileEntityDetailSheet = memo(({
                 <div className="space-y-2 text-sm">
                   {(status as NodeSystemStatus).publicIpv4 && (
                     <div className="flex justify-between">
-                      <span className="text-muted-foreground">公网 IPv4</span>
+                      <span className="text-muted-foreground">{t('admin.monitor.detail.publicIpv4')}</span>
                       <span className="font-mono text-foreground">{(status as NodeSystemStatus).publicIpv4}</span>
                     </div>
                   )}
                   {(status as NodeSystemStatus).publicIpv6 && (
                     <div className="flex justify-between">
-                      <span className="text-muted-foreground">公网 IPv6</span>
+                      <span className="text-muted-foreground">{t('admin.monitor.detail.publicIpv6')}</span>
                       <span className="font-mono text-foreground text-xs">{(status as NodeSystemStatus).publicIpv6}</span>
                     </div>
                   )}
                   <div className="flex justify-between">
-                    <span className="text-muted-foreground">平台</span>
+                    <span className="text-muted-foreground">{t('admin.monitor.detail.platform')}</span>
                     <span className="text-foreground">{status.platform} / {status.arch}</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-muted-foreground">主机名</span>
+                    <span className="text-muted-foreground">{t('admin.monitor.detail.hostname')}</span>
                     <span className="text-foreground">{status.hostname || '-'}</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-muted-foreground">内核版本</span>
+                    <span className="text-muted-foreground">{t('admin.monitor.detail.kernelVersion')}</span>
                     <span className="text-foreground text-xs">{status.kernelVersion || '-'}</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-muted-foreground">Agent 版本</span>
+                    <span className="text-muted-foreground">{t('admin.monitor.detail.agentVersion')}</span>
                     <span className="text-foreground">{status.agentVersion || '-'}</span>
                   </div>
                 </div>
@@ -525,29 +525,29 @@ export const MobileEntityDetailSheet = memo(({
               >
                 <div className="space-y-2 text-sm">
                   <div className="flex justify-between">
-                    <span className="text-muted-foreground">接收数据包</span>
+                    <span className="text-muted-foreground">{t('admin.monitor.detail.rxPackets')}</span>
                     <span className="tabular-nums text-foreground">{formatNumber(status.networkRxPackets)}</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-muted-foreground">发送数据包</span>
+                    <span className="text-muted-foreground">{t('admin.monitor.detail.txPackets')}</span>
                     <span className="tabular-nums text-foreground">{formatNumber(status.networkTxPackets)}</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-muted-foreground">接收错误</span>
+                    <span className="text-muted-foreground">{t('admin.monitor.detail.rxErrors')}</span>
                     <span className={cn(
                       'tabular-nums',
                       status.networkRxErrors && status.networkRxErrors > 0 ? 'text-destructive' : 'text-foreground'
                     )}>{status.networkRxErrors ?? 0}</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-muted-foreground">发送错误</span>
+                    <span className="text-muted-foreground">{t('admin.monitor.detail.txErrors')}</span>
                     <span className={cn(
                       'tabular-nums',
                       status.networkTxErrors && status.networkTxErrors > 0 ? 'text-destructive' : 'text-foreground'
                     )}>{status.networkTxErrors ?? 0}</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-muted-foreground">丢包 (接收/发送)</span>
+                    <span className="text-muted-foreground">{t('admin.monitor.detail.droppedRxTx')}</span>
                     <span className="tabular-nums text-foreground">
                       {status.networkRxDropped ?? 0} / {status.networkTxDropped ?? 0}
                     </span>
@@ -562,19 +562,19 @@ export const MobileEntityDetailSheet = memo(({
               >
                 <div className="space-y-2 text-sm">
                   <div className="flex justify-between">
-                    <span className="text-muted-foreground">读取速率</span>
+                    <span className="text-muted-foreground">{t('admin.monitor.detail.readRate')}</span>
                     <span className="tabular-nums text-foreground">{formatBitRate(status.diskReadRate ?? 0)}</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-muted-foreground">写入速率</span>
+                    <span className="text-muted-foreground">{t('admin.monitor.detail.writeRate')}</span>
                     <span className="tabular-nums text-foreground">{formatBitRate(status.diskWriteRate ?? 0)}</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-muted-foreground">总读取</span>
+                    <span className="text-muted-foreground">{t('admin.monitor.detail.totalRead')}</span>
                     <span className="tabular-nums text-foreground">{formatBytes(status.diskReadBytes ?? 0)}</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-muted-foreground">总写入</span>
+                    <span className="text-muted-foreground">{t('admin.monitor.detail.totalWrite')}</span>
                     <span className="tabular-nums text-foreground">{formatBytes(status.diskWriteBytes ?? 0)}</span>
                   </div>
                   {status.diskIops !== undefined && (
@@ -593,28 +593,28 @@ export const MobileEntityDetailSheet = memo(({
               >
                 <div className="space-y-2 text-sm">
                   <div className="flex justify-between">
-                    <span className="text-muted-foreground">总 Sockets</span>
+                    <span className="text-muted-foreground">{t('admin.monitor.detail.totalSockets')}</span>
                     <span className="tabular-nums text-foreground">{status.socketsUsed ?? '-'}</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-muted-foreground">TCP 使用中</span>
+                    <span className="text-muted-foreground">{t('admin.monitor.detail.tcpInUse')}</span>
                     <span className="tabular-nums text-foreground">{status.socketsTcpInUse ?? '-'}</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-muted-foreground">TCP TIME_WAIT</span>
+                    <span className="text-muted-foreground">{t('admin.monitor.detail.tcpTimeWait')}</span>
                     <span className="tabular-nums text-foreground">{status.socketsTcpTw ?? '-'}</span>
                   </div>
                   <div className="h-px bg-border/30 my-2" />
                   <div className="flex justify-between">
-                    <span className="text-muted-foreground">总进程数</span>
+                    <span className="text-muted-foreground">{t('admin.monitor.detail.totalProcesses')}</span>
                     <span className="tabular-nums text-foreground">{status.processesTotal ?? '-'}</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-muted-foreground">运行中</span>
+                    <span className="text-muted-foreground">{t('admin.monitor.detail.running')}</span>
                     <span className="tabular-nums text-foreground">{status.processesRunning ?? '-'}</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-muted-foreground">文件描述符</span>
+                    <span className="text-muted-foreground">{t('admin.monitor.detail.fileDescriptors')}</span>
                     <span className="tabular-nums text-foreground">
                       {status.fileNrAllocated ?? '-'} / {status.fileNrMax ?? '-'}
                     </span>
@@ -630,7 +630,7 @@ export const MobileEntityDetailSheet = memo(({
                 >
                   <div className="space-y-3">
                     <div>
-                      <p className="text-xs text-muted-foreground mb-1">CPU 压力</p>
+                      <p className="text-xs text-muted-foreground mb-1">{t('admin.monitor.detail.cpuPressure')}</p>
                       <div className="flex gap-4 text-sm">
                         <div>
                           <span className="text-muted-foreground">Some: </span>
@@ -649,7 +649,7 @@ export const MobileEntityDetailSheet = memo(({
                       </div>
                     </div>
                     <div>
-                      <p className="text-xs text-muted-foreground mb-1">内存压力</p>
+                      <p className="text-xs text-muted-foreground mb-1">{t('admin.monitor.detail.memoryPressure')}</p>
                       <div className="flex gap-4 text-sm">
                         <div>
                           <span className="text-muted-foreground">Some: </span>
@@ -668,7 +668,7 @@ export const MobileEntityDetailSheet = memo(({
                       </div>
                     </div>
                     <div>
-                      <p className="text-xs text-muted-foreground mb-1">I/O 压力</p>
+                      <p className="text-xs text-muted-foreground mb-1">{t('admin.monitor.detail.ioPressure')}</p>
                       <div className="flex gap-4 text-sm">
                         <div>
                           <span className="text-muted-foreground">Some: </span>
@@ -734,11 +734,11 @@ export const MobileEntityDetailSheet = memo(({
                 {entity.type === 'node' ? t('admin.monitor.detail.nodeAgentOffline') : t('admin.monitor.detail.forwardAgentOffline')}
               </h3>
               <p className="text-sm text-muted-foreground">
-                无法获取实时数据
+                {t('admin.monitor.detail.noRealtimeData')}
               </p>
               {entity.lastSeenAt && (
                 <p className="text-xs text-muted-foreground/70 mt-4">
-                  最后在线: {formatRelativeTime(entity.lastSeenAt)}
+                  {t('admin.monitor.detail.lastOnline')}: {formatRelativeTime(entity.lastSeenAt)}
                 </p>
               )}
             </div>

@@ -5,6 +5,7 @@
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useState, useMemo, useCallback } from 'react';
+import { useTranslation } from 'react-i18next';
 import { queryKeys } from '@/shared/lib/query-client';
 import { useNotificationStore } from '@/shared/stores/notification-store';
 import { handleApiError } from '@/shared/lib/axios';
@@ -52,6 +53,7 @@ interface UseSubscriptionsOptions {
 
 export const useSubscriptions = (options: UseSubscriptionsOptions = {}) => {
   const { page = 1, pageSize = 20, filters = {}, enabled = true } = options;
+  const { t } = useTranslation();
   const queryClient = useQueryClient();
   const { showSuccess, showError } = useNotificationStore();
 
@@ -81,7 +83,7 @@ export const useSubscriptions = (options: UseSubscriptionsOptions = {}) => {
   const createMutation = useMutation({
     mutationFn: adminCreateSubscription,
     onSuccess: () => {
-      showSuccess('订阅创建成功');
+      showSuccess(t('subscriptionsHook.createSuccess'));
       queryClient.invalidateQueries({ queryKey: queryKeys.subscriptions.lists() });
     },
     onError: (error) => {
@@ -94,7 +96,7 @@ export const useSubscriptions = (options: UseSubscriptionsOptions = {}) => {
     mutationFn: ({ id, data }: { id: string; data: AdminChangePlanRequest }) =>
       adminChangeSubscriptionPlan(id, data),
     onSuccess: () => {
-      showSuccess('订阅计划更换成功');
+      showSuccess(t('subscriptionsHook.changePlanSuccess'));
       queryClient.invalidateQueries({ queryKey: queryKeys.subscriptions.lists() });
     },
     onError: (error) => {
@@ -146,6 +148,7 @@ export const useSubscription = (id: string | null) => {
 
 // Subscription actions hook (suspend, unsuspend, reset usage)
 export const useSubscriptionActions = () => {
+  const { t } = useTranslation();
   const queryClient = useQueryClient();
   const { showSuccess, showError } = useNotificationStore();
 
@@ -154,7 +157,7 @@ export const useSubscriptionActions = () => {
     mutationFn: ({ id, data }: { id: string; data: SuspendSubscriptionRequest }) =>
       suspendSubscription(id, data),
     onSuccess: () => {
-      showSuccess('订阅已暂停');
+      showSuccess(t('subscriptionsHook.suspendSuccess'));
       queryClient.invalidateQueries({ queryKey: queryKeys.subscriptions.lists() });
     },
     onError: (error) => {
@@ -166,7 +169,7 @@ export const useSubscriptionActions = () => {
   const unsuspendMutation = useMutation({
     mutationFn: (id: string) => unsuspendSubscription(id),
     onSuccess: () => {
-      showSuccess('订阅已恢复');
+      showSuccess(t('subscriptionsHook.unsuspendSuccess'));
       queryClient.invalidateQueries({ queryKey: queryKeys.subscriptions.lists() });
     },
     onError: (error) => {
@@ -178,7 +181,7 @@ export const useSubscriptionActions = () => {
   const resetUsageMutation = useMutation({
     mutationFn: (id: string) => resetSubscriptionUsage(id),
     onSuccess: () => {
-      showSuccess('订阅用量已重置');
+      showSuccess(t('subscriptionsHook.resetUsageSuccess'));
       queryClient.invalidateQueries({ queryKey: queryKeys.subscriptions.lists() });
     },
     onError: (error) => {
@@ -202,6 +205,7 @@ export const useSubscriptionActions = () => {
 
 // Subscription token management Hook
 export const useSubscriptionTokens = (subscriptionId: string | null, params?: ListTokensParams) => {
+  const { t } = useTranslation();
   const queryClient = useQueryClient();
   const { showSuccess, showError } = useNotificationStore();
 
@@ -216,7 +220,7 @@ export const useSubscriptionTokens = (subscriptionId: string | null, params?: Li
     mutationFn: (data: GenerateTokenRequest) =>
       generateToken(subscriptionId!, data),
     onSuccess: () => {
-      showSuccess('令牌生成成功');
+      showSuccess(t('subscriptionsHook.generateTokenSuccess'));
       queryClient.invalidateQueries({ queryKey: queryKeys.subscriptions.tokens(subscriptionId!) });
     },
     onError: (error) => {
@@ -229,7 +233,7 @@ export const useSubscriptionTokens = (subscriptionId: string | null, params?: Li
     mutationFn: (tokenId: string) =>
       revokeToken(subscriptionId!, tokenId),
     onSuccess: () => {
-      showSuccess('令牌已撤销');
+      showSuccess(t('subscriptionsHook.revokeTokenSuccess'));
       queryClient.invalidateQueries({ queryKey: queryKeys.subscriptions.tokens(subscriptionId!) });
     },
     onError: (error) => {
@@ -242,7 +246,7 @@ export const useSubscriptionTokens = (subscriptionId: string | null, params?: Li
     mutationFn: (tokenId: string) =>
       refreshSubscriptionToken(subscriptionId!, tokenId),
     onSuccess: () => {
-      showSuccess('令牌已刷新');
+      showSuccess(t('subscriptionsHook.refreshTokenSuccess'));
       queryClient.invalidateQueries({ queryKey: queryKeys.subscriptions.tokens(subscriptionId!) });
     },
     onError: (error) => {

@@ -4,6 +4,7 @@
  */
 
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
   CheckCircle2,
   XCircle,
@@ -44,6 +45,7 @@ export const ProbeResultDialog: React.FC<ProbeResultDialogProps> = ({
   agents,
   nodes,
 }) => {
+  const { t } = useTranslation();
   const [copiedAddress, setCopiedAddress] = useState(false);
 
   // Get agent name
@@ -77,26 +79,26 @@ export const ProbeResultDialog: React.FC<ProbeResultDialogProps> = ({
 
   // Get target display name
   const getTargetDisplay = () => {
-    if (!rule) return '目标';
+    if (!rule) return t('admin.forwardRules.probe.target');
     if (rule.targetNodeId) {
       const node = nodes.find((n) => n.id === rule.targetNodeId);
-      return node?.name ?? '目标';
+      return node?.name ?? t('admin.forwardRules.probe.target');
     }
     if (rule.targetAddress) {
       return `${rule.targetAddress}:${rule.targetPort}`;
     }
-    return '目标';
+    return t('admin.forwardRules.probe.target');
   };
 
   // Get entry agent name
   const getEntryAgentName = () => {
-    if (!rule?.agentId) return '入口';
+    if (!rule?.agentId) return t('admin.forwardRules.probe.entry');
     return getAgentName(rule.agentId);
   };
 
   // Get exit agent name (for entry type)
   const getExitAgentName = () => {
-    if (!rule?.exitAgentId) return '出口';
+    if (!rule?.exitAgentId) return t('admin.forwardRules.probe.exit');
     return getAgentName(rule.exitAgentId);
   };
 
@@ -110,7 +112,7 @@ export const ProbeResultDialog: React.FC<ProbeResultDialogProps> = ({
       <DialogContent className="@container sm:max-w-md max-h-[85vh] flex flex-col">
         <DialogHeader className="flex-shrink-0">
           <DialogTitle className="flex items-center gap-2 text-base">
-            拨测结果
+            {t('admin.forwardRules.probe.title')}
             {probeResult && (
               <Badge variant={probeResult.success ? 'default' : 'destructive'} className="text-xs">
                 {probeResult.ruleType}
@@ -123,7 +125,7 @@ export const ProbeResultDialog: React.FC<ProbeResultDialogProps> = ({
           {isProbing ? (
             <div className="flex flex-col items-center justify-center py-6">
               <Loader2 className="size-6 animate-spin text-blue-500 mb-2" />
-              <p className="text-sm text-muted-foreground">正在拨测...</p>
+              <p className="text-sm text-muted-foreground">{t('admin.forwardRules.probe.probing')}</p>
             </div>
           ) : probeResult ? (
             <div className="space-y-3">
@@ -149,7 +151,7 @@ export const ProbeResultDialog: React.FC<ProbeResultDialogProps> = ({
                           : 'text-red-700 dark:text-red-300'
                       }`}
                     >
-                      {probeResult.success ? '拨测成功' : '拨测失败'}
+                      {probeResult.success ? t('admin.forwardRules.probe.success') : t('admin.forwardRules.probe.failed')}
                     </p>
                     {probeResult.success && probeResult.totalLatencyMs !== undefined && (
                       <Badge className="font-mono text-xs">{probeResult.totalLatencyMs}ms</Badge>
@@ -172,7 +174,7 @@ export const ProbeResultDialog: React.FC<ProbeResultDialogProps> = ({
                       {targetInfo.name ? (
                         <span className="text-xs font-medium truncate">{targetInfo.name}</span>
                       ) : (
-                        <span className="text-xs text-muted-foreground">目标</span>
+                        <span className="text-xs text-muted-foreground">{t('admin.forwardRules.probe.target')}</span>
                       )}
                       <Badge variant="outline" className="text-[10px] px-1 py-0">
                         {rule.ipVersion}
@@ -188,7 +190,7 @@ export const ProbeResultDialog: React.FC<ProbeResultDialogProps> = ({
                           setTimeout(() => setCopiedAddress(false), 2000);
                         }}
                         className="p-1 hover:bg-muted rounded transition-colors flex-shrink-0"
-                        title="复制地址"
+                        title={t('admin.forwardRules.probe.copyAddress')}
                       >
                         {copiedAddress ? (
                           <Check className="size-3 text-green-500" />
@@ -209,7 +211,7 @@ export const ProbeResultDialog: React.FC<ProbeResultDialogProps> = ({
               {/* Latency Information */}
               {probeResult.success && (
                 <div className="space-y-1.5">
-                  <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-wide">延迟详情</p>
+                  <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-wide">{t('admin.forwardRules.probe.latencyDetails')}</p>
                   <div className="space-y-1">
                     {/* direct type: entry → target */}
                     {probeResult.ruleType === 'direct' &&
@@ -280,7 +282,7 @@ export const ProbeResultDialog: React.FC<ProbeResultDialogProps> = ({
                               </span>
                               {!hop.online && (
                                 <Badge variant="outline" className="text-yellow-600 text-[10px] px-1 py-0 flex-shrink-0">
-                                  离线
+                                  {t('admin.forwardRules.probe.offline')}
                                 </Badge>
                               )}
                             </span>
@@ -288,7 +290,7 @@ export const ProbeResultDialog: React.FC<ProbeResultDialogProps> = ({
                               variant={hop.success ? 'outline' : 'destructive'}
                               className="font-mono text-[10px] px-1.5 py-0 flex-shrink-0"
                             >
-                              {hop.success ? `${hop.latencyMs}ms` : hop.error ?? '失败'}
+                              {hop.success ? `${hop.latencyMs}ms` : hop.error ?? t('admin.forwardRules.probe.failedShort')}
                             </Badge>
                           </div>
                         );
@@ -298,13 +300,13 @@ export const ProbeResultDialog: React.FC<ProbeResultDialogProps> = ({
               )}
             </div>
           ) : (
-            <p className="text-sm text-muted-foreground text-center py-4">拨测失败，请重试</p>
+            <p className="text-sm text-muted-foreground text-center py-4">{t('admin.forwardRules.probe.retryHint')}</p>
           )}
         </div>
 
         <DialogFooter className="flex-shrink-0 pt-2">
           <Button variant="outline" size="sm" onClick={() => onOpenChange(false)} className="w-full @sm:w-auto">
-            关闭
+            {t('admin.forwardRules.probe.close')}
           </Button>
         </DialogFooter>
       </DialogContent>

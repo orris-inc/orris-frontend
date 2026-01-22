@@ -4,6 +4,7 @@
  */
 
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
   Plus,
   Trash2,
@@ -34,20 +35,25 @@ interface RouteRulesListProps {
 
 const PRESET_OUTBOUND_BADGE: Record<
   string,
-  { label: string; variant: 'default' | 'secondary' | 'destructive' | 'outline' }
+  { labelKey: string; variant: 'default' | 'secondary' | 'destructive' | 'outline' }
 > = {
-  proxy: { label: '代理', variant: 'default' },
-  direct: { label: '直连', variant: 'secondary' },
-  block: { label: '阻断', variant: 'destructive' },
+  proxy: { labelKey: 'admin.nodes.route.outbound.proxy', variant: 'default' },
+  direct: { labelKey: 'admin.nodes.route.outbound.direct', variant: 'secondary' },
+  block: { labelKey: 'admin.nodes.route.outbound.block', variant: 'destructive' },
 };
 
 /** Get badge info for outbound value */
 const getOutboundBadge = (
   outbound: OutboundType,
-  nodes?: OutboundNodeOption[]
+  nodes: OutboundNodeOption[] | undefined,
+  t: (key: string) => string
 ): { label: string; variant: 'default' | 'secondary' | 'destructive' | 'outline' } => {
   if (!isNodeOutbound(outbound)) {
-    return PRESET_OUTBOUND_BADGE[outbound] || { label: outbound, variant: 'outline' };
+    const preset = PRESET_OUTBOUND_BADGE[outbound];
+    if (preset) {
+      return { label: t(preset.labelKey), variant: preset.variant };
+    }
+    return { label: outbound, variant: 'outline' };
   }
   const node = nodes?.find((n) => n.id === outbound);
   return {
@@ -57,23 +63,23 @@ const getOutboundBadge = (
 };
 
 // Generate rule summary for collapsed view
-const getRuleSummary = (rule: RouteRule): string => {
+const getRuleSummary = (rule: RouteRule, t: (key: string) => string): string => {
   const parts: string[] = [];
 
   if (rule.domain?.length)
-    parts.push(`域名: ${rule.domain.length}个`);
+    parts.push(`${t('admin.nodes.route.display.domain')}: ${rule.domain.length}`);
   if (rule.domainSuffix?.length)
-    parts.push(`后缀: ${rule.domainSuffix.length}个`);
+    parts.push(`${t('admin.nodes.route.display.suffix')}: ${rule.domainSuffix.length}`);
   if (rule.domainKeyword?.length)
-    parts.push(`关键字: ${rule.domainKeyword.length}个`);
+    parts.push(`${t('admin.nodes.route.display.keyword')}: ${rule.domainKeyword.length}`);
   if (rule.geoip?.length) parts.push(`GeoIP: ${rule.geoip.join(', ')}`);
   if (rule.geosite?.length) parts.push(`GeoSite: ${rule.geosite.join(', ')}`);
-  if (rule.ipCidr?.length) parts.push(`IP: ${rule.ipCidr.length}个`);
-  if (rule.port?.length) parts.push(`端口: ${rule.port.join(', ')}`);
-  if (rule.ipIsPrivate) parts.push('私有IP');
-  if (rule.ruleSet?.length) parts.push(`规则集: ${rule.ruleSet.length}个`);
+  if (rule.ipCidr?.length) parts.push(`IP: ${rule.ipCidr.length}`);
+  if (rule.port?.length) parts.push(`${t('admin.nodes.route.display.port')}: ${rule.port.join(', ')}`);
+  if (rule.ipIsPrivate) parts.push(t('admin.nodes.route.display.privateIp'));
+  if (rule.ruleSet?.length) parts.push(`${t('admin.nodes.route.display.ruleSet')}: ${rule.ruleSet.length}`);
 
-  return parts.length > 0 ? parts.join(' | ') : '未配置匹配条件';
+  return parts.length > 0 ? parts.join(' | ') : t('admin.nodes.route.display.noConditions');
 };
 
 export const RouteRulesList: React.FC<RouteRulesListProps> = ({
@@ -84,6 +90,7 @@ export const RouteRulesList: React.FC<RouteRulesListProps> = ({
   nodes = [],
   currentNodeId,
 }) => {
+  const { t } = useTranslation();
   const [expandedIndices, setExpandedIndices] = useState<Set<number>>(
     new Set()
   );
@@ -170,7 +177,7 @@ export const RouteRulesList: React.FC<RouteRulesListProps> = ({
   return (
     <div className="space-y-3">
       <div className="flex justify-between items-center">
-        <h4 className="text-sm font-medium">路由规则</h4>
+        <h4 className="text-sm font-medium">{t('admin.nodes.route.rulesTitle')}</h4>
         <Button
           variant="outline"
           size="sm"
@@ -178,19 +185,19 @@ export const RouteRulesList: React.FC<RouteRulesListProps> = ({
           disabled={disabled}
         >
           <Plus className="h-4 w-4 mr-1" />
-          添加规则
+          {t('admin.nodes.route.addRule')}
         </Button>
       </div>
 
       {rules.length === 0 ? (
         <div className="text-sm text-muted-foreground text-center py-4 border border-dashed rounded-md">
-          暂无路由规则，点击"添加规则"开始配置
+          {t('admin.nodes.detail.noRouteRules')}
         </div>
       ) : (
         <div className="space-y-2">
           {rules.map((rule, index) => {
             const isExpanded = expandedIndices.has(index);
-            const outboundInfo = getOutboundBadge(rule.outbound, nodes);
+            const outboundInfo = getOutboundBadge(rule.outbound, nodes, t);
 
             return (
               <Card key={index} className="overflow-hidden">
@@ -211,7 +218,7 @@ export const RouteRulesList: React.FC<RouteRulesListProps> = ({
                     </Badge>
                     {!isExpanded && (
                       <span className="text-xs text-muted-foreground truncate">
-                        {getRuleSummary(rule)}
+                        {getRuleSummary(rule, t)}
                       </span>
                     )}
                   </div>
@@ -226,7 +233,7 @@ export const RouteRulesList: React.FC<RouteRulesListProps> = ({
                       className="h-7 w-7"
                       onClick={() => handleMoveUp(index)}
                       disabled={disabled || index === 0}
-                      title="上移"
+                      title={t('admin.nodes.route.moveUp')}
                     >
                       <ChevronUp className="h-4 w-4" />
                     </Button>
@@ -236,7 +243,7 @@ export const RouteRulesList: React.FC<RouteRulesListProps> = ({
                       className="h-7 w-7"
                       onClick={() => handleMoveDown(index)}
                       disabled={disabled || index === rules.length - 1}
-                      title="下移"
+                      title={t('admin.nodes.route.moveDown')}
                     >
                       <ChevronDown className="h-4 w-4" />
                     </Button>
@@ -246,7 +253,7 @@ export const RouteRulesList: React.FC<RouteRulesListProps> = ({
                       className="h-7 w-7 text-destructive hover:text-destructive"
                       onClick={() => handleRemoveRule(index)}
                       disabled={disabled}
-                      title="删除"
+                      title={t('common.delete')}
                     >
                       <Trash2 className="h-4 w-4" />
                     </Button>
@@ -273,7 +280,7 @@ export const RouteRulesList: React.FC<RouteRulesListProps> = ({
       )}
 
       <p className="text-xs text-muted-foreground">
-        规则按顺序匹配，第一个匹配的规则生效。可使用上下箭头调整规则顺序。
+        {t('admin.nodes.route.rulesOrderHint')}
       </p>
     </div>
   );

@@ -4,6 +4,7 @@
  */
 
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
   Dialog,
   DialogContent,
@@ -42,6 +43,7 @@ export const BatchUpdateDialog: React.FC<BatchUpdateDialogProps> = ({
   isUpdating,
   result,
 }) => {
+  const { t } = useTranslation();
   const [hasTriggered, setHasTriggered] = useState(false);
 
   // Count nodes with updates available
@@ -67,10 +69,10 @@ export const BatchUpdateDialog: React.FC<BatchUpdateDialogProps> = ({
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <ArrowUpCircle className="size-5 text-blue-500" />
-            批量更新节点
+            {t('admin.nodes.batchUpdate.title')}
           </DialogTitle>
           <DialogDescription>
-            {showResult ? '更新任务已提交' : '更新所有有可用更新的在线节点'}
+            {showResult ? t('admin.nodes.batchUpdate.taskSubmitted') : t('admin.nodes.batchUpdate.description')}
           </DialogDescription>
         </DialogHeader>
 
@@ -79,7 +81,7 @@ export const BatchUpdateDialog: React.FC<BatchUpdateDialogProps> = ({
           <div className="space-y-4">
             <div className="p-4 bg-muted rounded-lg">
               <div className="flex items-center justify-between">
-                <span className="text-sm text-muted-foreground">可更新节点数</span>
+                <span className="text-sm text-muted-foreground">{t('admin.nodes.batchUpdate.updatableCount')}</span>
                 <Badge variant={updateCount > 0 ? 'default' : 'secondary'}>
                   {updateCount}
                 </Badge>
@@ -90,14 +92,14 @@ export const BatchUpdateDialog: React.FC<BatchUpdateDialogProps> = ({
               <div className="flex items-center gap-2 p-3 bg-green-50 dark:bg-green-900/20 rounded-lg">
                 <CheckCircle2 className="size-4 text-green-500" />
                 <span className="text-sm text-green-700 dark:text-green-300">
-                  所有在线节点均为最新版本
+                  {t('admin.nodes.batchUpdate.allUpToDate')}
                 </span>
               </div>
             ) : (
               <>
                 <Separator />
                 <div className="space-y-2">
-                  <p className="text-sm font-medium">将更新以下节点：</p>
+                  <p className="text-sm font-medium">{t('admin.nodes.batchUpdate.willUpdateNodes')}</p>
                   <div className="max-h-[200px] overflow-y-auto space-y-1">
                     {nodesWithUpdates.map((node) => (
                       <div
@@ -124,21 +126,21 @@ export const BatchUpdateDialog: React.FC<BatchUpdateDialogProps> = ({
                 <p className="text-lg font-semibold text-green-700 dark:text-green-300">
                   {result.succeeded.length}
                 </p>
-                <p className="text-xs text-green-600 dark:text-green-400">成功</p>
+                <p className="text-xs text-green-600 dark:text-green-400">{t('admin.nodes.batchUpdate.succeeded')}</p>
               </div>
               <div className="p-3 bg-red-50 dark:bg-red-900/20 rounded-lg text-center">
                 <XCircle className="size-5 text-red-500 mx-auto mb-1" />
                 <p className="text-lg font-semibold text-red-700 dark:text-red-300">
                   {result.failed.length}
                 </p>
-                <p className="text-xs text-red-600 dark:text-red-400">失败</p>
+                <p className="text-xs text-red-600 dark:text-red-400">{t('admin.nodes.batchUpdate.failed')}</p>
               </div>
               <div className="p-3 bg-yellow-50 dark:bg-yellow-900/20 rounded-lg text-center">
                 <AlertTriangle className="size-5 text-yellow-500 mx-auto mb-1" />
                 <p className="text-lg font-semibold text-yellow-700 dark:text-yellow-300">
                   {result.skipped.length}
                 </p>
-                <p className="text-xs text-yellow-600 dark:text-yellow-400">跳过</p>
+                <p className="text-xs text-yellow-600 dark:text-yellow-400">{t('admin.nodes.batchUpdate.skipped')}</p>
               </div>
             </div>
 
@@ -146,7 +148,7 @@ export const BatchUpdateDialog: React.FC<BatchUpdateDialogProps> = ({
               <div className="flex items-center gap-2 p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
                 <Info className="size-4 text-blue-500 flex-shrink-0" />
                 <span className="text-sm text-blue-700 dark:text-blue-300">
-                  结果已截断，单次最多处理 1000 个节点
+                  {t('admin.nodes.batchUpdate.truncatedHint')}
                 </span>
               </div>
             )}
@@ -154,7 +156,7 @@ export const BatchUpdateDialog: React.FC<BatchUpdateDialogProps> = ({
             {result.succeeded.length > 0 && (
               <div className="space-y-2">
                 <p className="text-sm font-medium text-green-700 dark:text-green-300">
-                  已触发更新
+                  {t('admin.nodes.batchUpdate.updateTriggered')}
                 </p>
                 <div className="max-h-[100px] overflow-y-auto space-y-1">
                   {result.succeeded.map((item) => (
@@ -174,7 +176,7 @@ export const BatchUpdateDialog: React.FC<BatchUpdateDialogProps> = ({
 
             {result.failed.length > 0 && (
               <div className="space-y-2">
-                <p className="text-sm font-medium text-red-700 dark:text-red-300">更新失败</p>
+                <p className="text-sm font-medium text-red-700 dark:text-red-300">{t('admin.nodes.batchUpdate.updateFailed')}</p>
                 <div className="max-h-[100px] overflow-y-auto space-y-1">
                   {result.failed.map((item) => (
                     <div
@@ -194,7 +196,7 @@ export const BatchUpdateDialog: React.FC<BatchUpdateDialogProps> = ({
             {result.skipped.length > 0 && (
               <div className="space-y-2">
                 <p className="text-sm font-medium text-yellow-700 dark:text-yellow-300">
-                  已跳过
+                  {t('admin.nodes.batchUpdate.updateSkipped')}
                 </p>
                 <div className="max-h-[100px] overflow-y-auto space-y-1">
                   {result.skipped.map((item) => (
@@ -218,7 +220,7 @@ export const BatchUpdateDialog: React.FC<BatchUpdateDialogProps> = ({
           {!showResult ? (
             <>
               <Button variant="outline" onClick={handleClose}>
-                取消
+                {t('common.cancel')}
               </Button>
               <Button
                 onClick={handleUpdate}
@@ -227,18 +229,18 @@ export const BatchUpdateDialog: React.FC<BatchUpdateDialogProps> = ({
                 {isUpdating ? (
                   <>
                     <Loader2 className="size-4 mr-2 animate-spin" />
-                    更新中...
+                    {t('admin.nodes.batchUpdate.updating')}
                   </>
                 ) : (
                   <>
                     <ArrowUpCircle className="size-4 mr-2" />
-                    更新 {updateCount} 个节点
+                    {t('admin.nodes.batchUpdate.updateCount', { count: updateCount })}
                   </>
                 )}
               </Button>
             </>
           ) : (
-            <Button onClick={handleClose}>关闭</Button>
+            <Button onClick={handleClose}>{t('common.close')}</Button>
           )}
         </DialogFooter>
       </DialogContent>

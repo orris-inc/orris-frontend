@@ -11,7 +11,7 @@ import { cn } from '@/lib/utils';
  * Avatar 组件属性
  */
 interface AvatarProps extends React.ComponentPropsWithoutRef<typeof AvatarPrimitive.Root> {
-  /** 自定义样式类名 */
+  /** Custom class name */
   className?: string;
 }
 
@@ -19,7 +19,7 @@ interface AvatarProps extends React.ComponentPropsWithoutRef<typeof AvatarPrimit
  * AvatarImage 组件属性
  */
 interface AvatarImageProps extends React.ComponentPropsWithoutRef<typeof AvatarPrimitive.Image> {
-  /** 自定义样式类名 */
+  /** Custom class name */
   className?: string;
 }
 
@@ -27,7 +27,7 @@ interface AvatarImageProps extends React.ComponentPropsWithoutRef<typeof AvatarP
  * AvatarFallback 组件属性
  */
 interface AvatarFallbackProps extends React.ComponentPropsWithoutRef<typeof AvatarPrimitive.Fallback> {
-  /** 自定义样式类名 */
+  /** Custom class name */
   className?: string;
 }
 

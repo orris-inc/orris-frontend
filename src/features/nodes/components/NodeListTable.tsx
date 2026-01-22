@@ -372,7 +372,7 @@ export const NodeListTable: React.FC<NodeListTableProps> = ({
     {
       id: 'monitor',
       header: t('admin.nodes.table.monitor'),
-      size: 160,
+      size: 180,
       meta: {
         priority: 3,
         headerTooltip: t('admin.nodes.tooltip.monitorDescription'),

@@ -3,6 +3,7 @@
  * Displays node quota usage information
  */
 
+import { useTranslation } from 'react-i18next';
 import { Server } from 'lucide-react';
 import { Progress } from '@/components/common/Progress';
 
@@ -20,6 +21,7 @@ export const UserNodeUsageCard: React.FC<UserNodeUsageCardProps> = ({
   nodeLimit,
   isLoading = false,
 }) => {
+  const { t } = useTranslation();
   const isUnlimited = !nodeLimit || nodeLimit === 0;
   const usagePercentage = isUnlimited ? 0 : Math.min((nodeCount / nodeLimit) * 100, 100);
   const isNearLimit = !isUnlimited && usagePercentage >= 80;
@@ -53,7 +55,7 @@ export const UserNodeUsageCard: React.FC<UserNodeUsageCardProps> = ({
         <div className="flex-1 min-w-0">
           {/* Header row - inline on mobile */}
           <div className="flex items-center justify-between gap-2">
-            <span className="text-xs @sm:text-sm font-medium text-muted-foreground">节点配额</span>
+            <span className="text-xs @sm:text-sm font-medium text-muted-foreground">{t('userNodes.stats.quota')}</span>
             <span className={`text-sm font-semibold font-mono ${isAtLimit ? 'text-destructive' : isNearLimit ? 'text-yellow-600' : ''}`}>
               {nodeCount} / {isUnlimited ? '∞' : nodeLimit}
             </span>

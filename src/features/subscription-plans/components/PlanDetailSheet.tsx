@@ -172,7 +172,7 @@ export const PlanDetailSheet = ({
   // Action Sheet actions
   const moreActions = [
     {
-      label: '复制计划',
+      label: t('admin.plans.actions.duplicate'),
       icon: <Copy className="size-5" />,
       onPress: async () => {
         onDuplicate(plan);
@@ -180,7 +180,7 @@ export const PlanDetailSheet = ({
       },
     },
     {
-      label: plan.status === 'active' ? '停用计划' : '激活计划',
+      label: plan.status === 'active' ? t('admin.plans.actions.deactivatePlan') : t('admin.plans.actions.activatePlan'),
       icon: <Power className="size-5" />,
       onPress: async () => {
         onToggleStatus(plan);
@@ -188,7 +188,7 @@ export const PlanDetailSheet = ({
       },
     },
     {
-      label: '删除计划',
+      label: t('admin.plans.actions.deletePlan'),
       icon: <Trash2 className="size-5" />,
       onPress: async () => {
         onDelete(plan);
@@ -228,10 +228,10 @@ export const PlanDetailSheet = ({
 
           <SheetBody className="space-y-4 pb-4">
             {/* Basic Info */}
-            <DetailSection title="基本信息">
+            <DetailSection title={t('admin.plans.detail.basicInfo')}>
               <DetailRow
                 icon={PLAN_TYPE_ICONS[planType] || <Package className="size-4" />}
-                label="计划类型"
+                label={t('admin.plans.detail.planType')}
                 value={
                   <AdminBadge variant={typeConfig.variant} className="text-xs">
                     {t(typeConfig.labelKey)}
@@ -240,7 +240,7 @@ export const PlanDetailSheet = ({
               />
               <DetailRow
                 icon={plan.isPublic ? <Globe className="size-4" /> : <Lock className="size-4" />}
-                label="可见性"
+                label={t('admin.plans.detail.visibility')}
                 value={
                   <span className={cn(
                     'inline-flex items-center gap-1.5',
@@ -249,12 +249,12 @@ export const PlanDetailSheet = ({
                     {plan.isPublic ? (
                       <>
                         <Globe className="size-3.5" />
-                        公开
+                        {t('admin.plans.public')}
                       </>
                     ) : (
                       <>
                         <Lock className="size-3.5" />
-                        私有
+                        {t('admin.plans.private')}
                       </>
                     )}
                   </span>
@@ -263,20 +263,20 @@ export const PlanDetailSheet = ({
               {plan.trialDays != null && plan.trialDays > 0 && (
                 <DetailRow
                   icon={<Calendar className="size-4" />}
-                  label="试用期"
-                  value={`${plan.trialDays} 天`}
+                  label={t('admin.plans.detail.trialPeriod')}
+                  value={`${plan.trialDays} ${t('common.days')}`}
                 />
               )}
               <DetailRow
                 icon={<Hash className="size-4" />}
-                label="计划 ID"
+                label={t('admin.plans.detail.planId')}
                 value={<span className="font-mono text-xs">{plan.id}</span>}
               />
             </DetailSection>
 
             {/* Pricing */}
             {plan.pricings && plan.pricings.length > 0 && (
-              <DetailSection title="计费周期">
+              <DetailSection title={t('admin.plans.detail.billingCycles')}>
                 {plan.pricings.map((pricing, idx) => (
                   <PricingItem
                     key={idx}
@@ -291,7 +291,7 @@ export const PlanDetailSheet = ({
 
             {/* Description */}
             {plan.description && (
-              <DetailSection title="描述">
+              <DetailSection title={t('admin.plans.detail.description')}>
                 <div className="px-3 py-2.5">
                   <div className="flex items-start gap-3">
                     <FileText className="size-4 text-muted-foreground shrink-0 mt-0.5" />
@@ -321,7 +321,7 @@ export const PlanDetailSheet = ({
                 )}
               >
                 <Edit className="size-4" />
-                编辑
+                {t('common.actions.edit')}
               </button>
               <button
                 type="button"
@@ -338,7 +338,7 @@ export const PlanDetailSheet = ({
                 )}
               >
                 <Users className="size-4" />
-                查看订阅
+                {t('admin.plans.actions.viewSubscriptions')}
               </button>
               <button
                 type="button"
@@ -362,7 +362,7 @@ export const PlanDetailSheet = ({
         open={actionSheetOpen}
         onOpenChange={setActionSheetOpen}
         actions={moreActions}
-        title="更多操作"
+        title={t('common.moreActions')}
       />
     </>
   );

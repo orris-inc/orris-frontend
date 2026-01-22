@@ -3,6 +3,7 @@
  */
 
 import { Server, TrendingUp, Layers } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { Badge } from '@/components/common/Badge';
 import { Skeleton } from '@/components/common/Skeleton';
 import type { SubscriptionForwardUsage } from '@/api/forward';
@@ -24,21 +25,12 @@ const formatTraffic = (bytes: number): { value: string; unit: string } => {
   return { value, unit: units[i] };
 };
 
-/**
- * Rule type label mapping
- */
-const RULE_TYPE_LABELS: Record<string, string> = {
-  direct: '直连',
-  entry: '入口',
-  exit: '出口',
-  chain: '链式',
-  direct_chain: '直连链',
-};
 
 export const SubscriptionForwardUsageCard: React.FC<SubscriptionForwardUsageCardProps> = ({
   usage,
   isLoading,
 }) => {
+  const { t } = useTranslation();
   if (isLoading) {
     return (
       <div className="@container p-5 rounded-xl bg-card border">
@@ -69,7 +61,7 @@ export const SubscriptionForwardUsageCard: React.FC<SubscriptionForwardUsageCard
     <div className="@container p-3 @sm:p-4 rounded-xl bg-card border">
       <div className="space-y-2 @sm:space-y-3">
         {/* Header - hidden on small containers */}
-        <h3 className="text-sm font-medium text-foreground hidden @sm:block">转发配额</h3>
+        <h3 className="text-sm font-medium text-foreground hidden @sm:block">{t('forwardUsage.forwardQuota')}</h3>
 
         {/* Stats - horizontal scroll on small containers, grid on larger */}
         <div className="flex gap-2 @sm:grid @sm:grid-cols-3 @sm:gap-3 overflow-x-auto pb-1 @sm:pb-0 -mx-1 px-1 @sm:mx-0 @sm:px-0 scrollbar-hide">
@@ -79,7 +71,7 @@ export const SubscriptionForwardUsageCard: React.FC<SubscriptionForwardUsageCard
               <div className="p-1 rounded bg-blue-500/10">
                 <Server className="h-3.5 w-3.5 text-blue-500" />
               </div>
-              <span className="text-[10px] @sm:text-xs text-muted-foreground">规则</span>
+              <span className="text-[10px] @sm:text-xs text-muted-foreground">{t('forwardUsage.rules')}</span>
             </div>
             <div className="flex items-baseline gap-0.5">
               <span className="text-lg @sm:text-xl font-semibold font-mono">{usage.ruleCount}</span>
@@ -101,7 +93,7 @@ export const SubscriptionForwardUsageCard: React.FC<SubscriptionForwardUsageCard
               <div className="p-1 rounded bg-emerald-500/10">
                 <TrendingUp className="h-3.5 w-3.5 text-emerald-500" />
               </div>
-              <span className="text-[10px] @sm:text-xs text-muted-foreground">流量</span>
+              <span className="text-[10px] @sm:text-xs text-muted-foreground">{t('forwardUsage.traffic')}</span>
             </div>
             <div className="flex items-baseline gap-0.5 flex-wrap">
               <span className="text-lg @sm:text-xl font-semibold font-mono">{trafficUsed.value}</span>
@@ -126,17 +118,17 @@ export const SubscriptionForwardUsageCard: React.FC<SubscriptionForwardUsageCard
               <div className="p-1 rounded bg-purple-500/10">
                 <Layers className="h-3.5 w-3.5 text-purple-500" />
               </div>
-              <span className="text-[10px] @sm:text-xs text-muted-foreground">类型</span>
+              <span className="text-[10px] @sm:text-xs text-muted-foreground">{t('forwardUsage.types')}</span>
             </div>
             <div className="flex flex-wrap gap-1">
               {usage.allowedTypes.length > 0 ? (
                 usage.allowedTypes.map((type) => (
                   <Badge key={type} variant="secondary" className="text-[10px] px-1.5 h-5">
-                    {RULE_TYPE_LABELS[type] || type}
+                    {t(`forwardUsage.ruleTypes.${type}`)}
                   </Badge>
                 ))
               ) : (
-                <span className="text-[10px] text-muted-foreground">无</span>
+                <span className="text-[10px] text-muted-foreground">{t('common.none')}</span>
               )}
             </div>
           </div>

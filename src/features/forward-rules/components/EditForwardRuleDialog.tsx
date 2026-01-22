@@ -4,6 +4,7 @@
  */
 
 import { useState, useEffect, useMemo } from "react";
+import { useTranslation } from "react-i18next";
 import { formatDateTime } from '@/shared/utils/date-utils';
 import {
   Dialog,
@@ -83,13 +84,13 @@ const isPortInAllowedRange = (
   return false;
 };
 
-// Rule type label mapping
-const RULE_TYPE_LABELS: Record<string, string> = {
-  direct: "直连转发",
-  entry: "入口节点",
-  chain: "隧道链式转发",
-  direct_chain: "直连链式转发",
-  external: "外部规则",
+// Rule type keys for translation lookup
+const RULE_TYPE_KEYS: Record<string, string> = {
+  direct: "direct",
+  entry: "entry",
+  chain: "chain",
+  direct_chain: "directChain",
+  external: "external",
 };
 
 interface EditForwardRuleDialogProps {
@@ -115,6 +116,7 @@ export const EditForwardRuleDialog: React.FC<EditForwardRuleDialogProps> = ({
   resourceGroups = [],
   plansMap = {},
 }) => {
+  const { t } = useTranslation();
   const [formData, setFormData] = useState<
     UpdateForwardRuleRequest & {
       chainAgentIds?: string[];
@@ -267,16 +269,16 @@ export const EditForwardRuleDialog: React.FC<EditForwardRuleDialogProps> = ({
     const newErrors: Record<string, string> = {};
 
     if (formData.name !== undefined && !formData.name.trim()) {
-      newErrors.name = "规则名称不能为空";
+      newErrors.name = t('admin.forwardRules.validation.ruleNameRequired');
     }
 
     // External type has different validation
     if (rule?.ruleType === "external") {
       if (formData.serverAddress !== undefined && !formData.serverAddress.trim()) {
-        newErrors.serverAddress = "服务器地址不能为空";
+        newErrors.serverAddress = t('admin.forwardRules.validation.serverAddressRequired');
       }
       if (formData.listenPort && (formData.listenPort < 1 || formData.listenPort > 65535)) {
-        newErrors.listenPort = "监听端口必须在1-65535之间";
+        newErrors.listenPort = t('admin.forwardRules.validation.listenPortRange');
       }
       setErrors(newErrors);
       return Object.keys(newErrors).length === 0;
@@ -290,13 +292,13 @@ export const EditForwardRuleDialog: React.FC<EditForwardRuleDialogProps> = ({
       formData.listenPort &&
       (formData.listenPort < 1 || formData.listenPort > 65535)
     ) {
-      newErrors.listenPort = "监听端口必须在1-65535之间";
+      newErrors.listenPort = t('admin.forwardRules.validation.listenPortRange');
     } else if (
       formData.listenPort &&
       selectedAgent?.allowedPortRange &&
       !isPortInAllowedRange(formData.listenPort, selectedAgent.allowedPortRange)
     ) {
-      newErrors.listenPort = `端口 ${formData.listenPort} 不在允许范围 [${selectedAgent.allowedPortRange}] 内`;
+      newErrors.listenPort = t('admin.forwardRules.validation.portNotInRange', { port: formData.listenPort, range: selectedAgent.allowedPortRange });
     }
 
     // direct, entry, chain and direct_chain types need target validation
@@ -312,17 +314,17 @@ export const EditForwardRuleDialog: React.FC<EditForwardRuleDialogProps> = ({
           formData.targetAddress !== undefined &&
           !formData.targetAddress.trim()
         ) {
-          newErrors.targetAddress = "目标地址不能为空";
+          newErrors.targetAddress = t('admin.forwardRules.validation.targetAddressRequired');
         }
         if (
           formData.targetPort !== undefined &&
           (formData.targetPort < 1 || formData.targetPort > 65535)
         ) {
-          newErrors.targetPort = "目标端口必须在1-65535之间";
+          newErrors.targetPort = t('admin.forwardRules.validation.targetPortRange');
         }
       } else if (targetType === "node") {
         if (!formData.targetNodeId) {
-          newErrors.targetNodeId = "请选择目标节点";
+          newErrors.targetNodeId = t('admin.forwardRules.validation.selectTargetNode');
         }
       }
     }
@@ -343,10 +345,9 @@ export const EditForwardRuleDialog: React.FC<EditForwardRuleDialogProps> = ({
 
       if (missingPorts.length > 0) {
         if (missingPorts.length === chainIds.length) {
-          newErrors.chainPortConfig =
-            "请为每个节点配置有效的监听端口（1-65535）";
+          newErrors.chainPortConfig = t('admin.forwardRules.validation.configureValidPorts');
         } else {
-          newErrors.chainPortConfig = `请为以下节点配置有效端口：${missingPorts.join("、")}`;
+          newErrors.chainPortConfig = t('admin.forwardRules.validation.configurePortsForNodes', { nodes: missingPorts.join(", ") });
         }
       }
     }
@@ -375,10 +376,9 @@ export const EditForwardRuleDialog: React.FC<EditForwardRuleDialogProps> = ({
         if (missingPorts.length > 0) {
           const totalNodes = chainIds.length - formData.tunnelHops;
           if (missingPorts.length === totalNodes) {
-            newErrors.chainPortConfig =
-              "请为直连节点配置有效的监听端口（1-65535）";
+            newErrors.chainPortConfig = t('admin.forwardRules.validation.configureValidPortsForDirectNodes');
           } else {
-            newErrors.chainPortConfig = `请为以下节点配置有效端口：${missingPorts.join("、")}`;
+            newErrors.chainPortConfig = t('admin.forwardRules.validation.configurePortsForNodes', { nodes: missingPorts.join(", ") });
           }
         }
       }
@@ -402,6 +402,8 @@ export const EditForwardRuleDialog: React.FC<EditForwardRuleDialogProps> = ({
           updates.listenPort = formData.listenPort;
         if (formData.serverAddress !== rule.serverAddress)
           (updates as Record<string, unknown>).serverAddress = formData.serverAddress;
+        if (formData.targetNodeId !== rule.targetNodeId)
+          updates.targetNodeId = formData.targetNodeId || undefined;
         if (formData.externalSource !== rule.externalSource)
           (updates as Record<string, unknown>).externalSource = formData.externalSource;
         if (formData.externalRuleId !== rule.externalRuleId)
@@ -563,7 +565,7 @@ export const EditForwardRuleDialog: React.FC<EditForwardRuleDialogProps> = ({
     <Dialog open={open} onOpenChange={(open) => !open && onClose()}>
       <DialogContent className="@container sm:max-w-[700px] flex flex-col max-h-[90vh]">
         <DialogHeader className="flex-shrink-0">
-          <DialogTitle>编辑转发规则</DialogTitle>
+          <DialogTitle>{t('admin.forwardRules.form.editRule')}</DialogTitle>
         </DialogHeader>
 
         <div className="flex-1 min-h-0 overflow-y-auto -mx-6 px-6">
@@ -575,26 +577,26 @@ export const EditForwardRuleDialog: React.FC<EditForwardRuleDialogProps> = ({
             {/* Basic Information (Read-only) */}
             <AccordionItem value="basic" className="border rounded-lg px-4">
               <AccordionTrigger className="hover:no-underline py-3">
-                <span className="text-sm font-medium">基本信息（只读）</span>
+                <span className="text-sm font-medium">{t('admin.forwardRules.form.basicInfoReadonly')}</span>
               </AccordionTrigger>
               <AccordionContent>
                 <div className="grid grid-cols-1 @sm:grid-cols-2 gap-4 pb-4">
                   <div className="flex flex-col gap-2">
-                    <Label htmlFor="rule_id">规则ID</Label>
+                    <Label htmlFor="rule_id">{t('admin.forwardRules.form.ruleId')}</Label>
                     <Input id="rule_id" value={rule.id} disabled />
                   </div>
 
                   <div className="flex flex-col gap-2">
-                    <Label htmlFor="rule_type">规则类型</Label>
+                    <Label htmlFor="rule_type">{t('admin.forwardRules.form.ruleType')}</Label>
                     <Input
                       id="rule_type"
-                      value={RULE_TYPE_LABELS[rule.ruleType] || rule.ruleType}
+                      value={t(`admin.forwardRules.ruleTypeInfo.${RULE_TYPE_KEYS[rule.ruleType] || rule.ruleType}.label`)}
                       disabled
                     />
                   </div>
 
                   <div className="flex flex-col gap-2 @sm:col-span-2">
-                    <Label htmlFor="created_at">创建时间</Label>
+                    <Label htmlFor="created_at">{t('admin.forwardRules.form.createdTime')}</Label>
                     <Input
                       id="created_at"
                       value={formatDateTime(rule.createdAt)}
@@ -608,13 +610,13 @@ export const EditForwardRuleDialog: React.FC<EditForwardRuleDialogProps> = ({
             {/* Editable Fields */}
             <AccordionItem value="editable" className="border rounded-lg px-4">
               <AccordionTrigger className="hover:no-underline py-3">
-                <span className="text-sm font-medium">可编辑信息</span>
+                <span className="text-sm font-medium">{t('admin.forwardRules.form.editableInfo')}</span>
               </AccordionTrigger>
               <AccordionContent>
                 <div className="grid grid-cols-1 @sm:grid-cols-2 gap-4 pb-4">
                   {/* Rule Name */}
                   <div className="flex flex-col gap-2 @sm:col-span-2">
-                    <Label htmlFor="name">规则名称</Label>
+                    <Label htmlFor="name">{t('admin.forwardRules.form.ruleName')}</Label>
                     <Input
                       id="name"
                       value={formData.name || ""}
@@ -630,13 +632,13 @@ export const EditForwardRuleDialog: React.FC<EditForwardRuleDialogProps> = ({
                   {rule.ruleType === "external" && (
                     <>
                       <div className="flex flex-col gap-2">
-                        <Label htmlFor="serverAddress">服务器地址</Label>
+                        <Label htmlFor="serverAddress">{t('admin.forwardRules.form.serverAddress')}</Label>
                         <Input
                           id="serverAddress"
                           value={formData.serverAddress || ""}
                           onChange={(e) => handleChange("serverAddress" as keyof UpdateForwardRuleRequest, e.target.value)}
                           error={!!errors.serverAddress}
-                          placeholder="例如：example.com 或 192.168.1.1"
+                          placeholder={t('admin.forwardRules.form.serverAddressPlaceholder')}
                         />
                         {errors.serverAddress && (
                           <p className="text-xs text-destructive">{errors.serverAddress}</p>
@@ -644,7 +646,7 @@ export const EditForwardRuleDialog: React.FC<EditForwardRuleDialogProps> = ({
                       </div>
 
                       <div className="flex flex-col gap-2">
-                        <Label htmlFor="listenPort">监听端口</Label>
+                        <Label htmlFor="listenPort">{t('admin.forwardRules.form.listenPort')}</Label>
                         <Input
                           id="listenPort"
                           type="number"
@@ -666,28 +668,52 @@ export const EditForwardRuleDialog: React.FC<EditForwardRuleDialogProps> = ({
                       </div>
 
                       <div className="flex flex-col gap-2">
-                        <Label htmlFor="externalSource">外部来源</Label>
-                        <Input
-                          id="externalSource"
-                          value={formData.externalSource || ""}
-                          onChange={(e) => handleChange("externalSource" as keyof UpdateForwardRuleRequest, e.target.value)}
-                          placeholder="例如：subscription-provider"
-                        />
+                        <Label htmlFor="editExternalTargetNodeId">{t('admin.forwardRules.form.targetNode')}</Label>
+                        <Select
+                          value={formData.targetNodeId || ""}
+                          onValueChange={(value) =>
+                            handleChange("targetNodeId", value)
+                          }
+                        >
+                          <SelectTrigger id="editExternalTargetNodeId">
+                            <SelectValue placeholder={t('admin.forwardRules.form.selectTargetNodeOptional')} />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {availableNodes.map((node) => (
+                              <SelectItem key={node.id} value={node.id}>
+                                {node.name} ({node.serverAddress})
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
                         <p className="text-xs text-muted-foreground">
-                          规则的外部来源标识（可选）
+                          {t('admin.forwardRules.form.targetNodeHint')}
                         </p>
                       </div>
 
                       <div className="flex flex-col gap-2">
-                        <Label htmlFor="externalRuleId">外部规则ID</Label>
+                        <Label htmlFor="externalSource">{t('admin.forwardRules.form.externalSource')}</Label>
+                        <Input
+                          id="externalSource"
+                          value={formData.externalSource || ""}
+                          onChange={(e) => handleChange("externalSource" as keyof UpdateForwardRuleRequest, e.target.value)}
+                          placeholder={t('admin.forwardRules.form.externalSourcePlaceholder')}
+                        />
+                        <p className="text-xs text-muted-foreground">
+                          {t('admin.forwardRules.form.externalSourceHint')}
+                        </p>
+                      </div>
+
+                      <div className="flex flex-col gap-2">
+                        <Label htmlFor="externalRuleId">{t('admin.forwardRules.form.externalRuleId')}</Label>
                         <Input
                           id="externalRuleId"
                           value={formData.externalRuleId || ""}
                           onChange={(e) => handleChange("externalRuleId" as keyof UpdateForwardRuleRequest, e.target.value)}
-                          placeholder="来源系统的规则标识"
+                          placeholder={t('admin.forwardRules.form.externalRuleIdPlaceholder')}
                         />
                         <p className="text-xs text-muted-foreground">
-                          来源系统中的规则标识（可选）
+                          {t('admin.forwardRules.form.externalRuleIdHint')}
                         </p>
                       </div>
                     </>
@@ -696,13 +722,13 @@ export const EditForwardRuleDialog: React.FC<EditForwardRuleDialogProps> = ({
                   {/* Entry Agent - hidden for external type */}
                   {rule.ruleType !== "external" && (
                   <div className="flex flex-col gap-2">
-                    <Label htmlFor="agentId">入口代理</Label>
+                    <Label htmlFor="agentId">{t('admin.forwardRules.form.entryAgent')}</Label>
                     <Select
                       value={formData.agentId || ""}
                       onValueChange={(value) => handleChange("agentId", value)}
                     >
                       <SelectTrigger id="agentId">
-                        <SelectValue placeholder="选择入口代理" />
+                        <SelectValue placeholder={t('admin.forwardRules.form.selectEntryAgent')} />
                       </SelectTrigger>
                       <SelectContent>
                         {availableAgents.map((agent) => (
@@ -731,7 +757,7 @@ export const EditForwardRuleDialog: React.FC<EditForwardRuleDialogProps> = ({
                           <div className="flex items-center gap-1.5 text-xs text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800 rounded-md px-2.5 py-1.5">
                             <Info className="size-3.5 shrink-0" />
                             <span>
-                              端口限制: {selectedAgent.allowedPortRange}
+                              {t('admin.forwardRules.form.portRestriction', { range: selectedAgent.allowedPortRange })}
                             </span>
                           </div>
                         ) : null;
@@ -742,7 +768,7 @@ export const EditForwardRuleDialog: React.FC<EditForwardRuleDialogProps> = ({
                   {/* entry type: Exit Agent */}
                   {rule.ruleType === "entry" && (
                     <div className="flex flex-col gap-2">
-                      <Label htmlFor="exitAgentId">出口代理</Label>
+                      <Label htmlFor="exitAgentId">{t('admin.forwardRules.form.exitAgent')}</Label>
                       <Select
                         value={formData.exitAgentId || ""}
                         onValueChange={(value) =>
@@ -750,7 +776,7 @@ export const EditForwardRuleDialog: React.FC<EditForwardRuleDialogProps> = ({
                         }
                       >
                         <SelectTrigger id="exitAgentId">
-                          <SelectValue placeholder="选择出口代理" />
+                          <SelectValue placeholder={t('admin.forwardRules.form.selectExitAgent')} />
                         </SelectTrigger>
                         <SelectContent>
                           {availableExitAgents.map((agent) => (
@@ -779,7 +805,7 @@ export const EditForwardRuleDialog: React.FC<EditForwardRuleDialogProps> = ({
                             <div className="flex items-center gap-1.5 text-xs text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800 rounded-md px-2.5 py-1.5">
                               <Info className="size-3.5 shrink-0" />
                               <span>
-                                端口限制: {selectedAgent.allowedPortRange}
+                                {t('admin.forwardRules.form.portRestriction', { range: selectedAgent.allowedPortRange })}
                               </span>
                             </div>
                           ) : null;
@@ -790,7 +816,7 @@ export const EditForwardRuleDialog: React.FC<EditForwardRuleDialogProps> = ({
                   {/* Tunnel Type - entry and chain types */}
                   {(rule.ruleType === "entry" || rule.ruleType === "chain") && (
                     <div className="flex flex-col gap-2">
-                      <Label htmlFor="tunnelType">隧道类型</Label>
+                      <Label htmlFor="tunnelType">{t('admin.forwardRules.form.tunnelType')}</Label>
                       <Select
                         value={formData.tunnelType || "ws"}
                         onValueChange={(value) =>
@@ -807,8 +833,8 @@ export const EditForwardRuleDialog: React.FC<EditForwardRuleDialogProps> = ({
                       </Select>
                       <p className="text-xs text-muted-foreground">
                         {formData.tunnelType === "tls"
-                          ? "通过 TLS 建立隧道连接"
-                          : "通过 WebSocket 建立隧道连接"}
+                          ? t('admin.forwardRules.form.tunnelTypeTlsHint')
+                          : t('admin.forwardRules.form.tunnelTypeWsHint')}
                       </p>
                     </div>
                   )}
@@ -816,7 +842,7 @@ export const EditForwardRuleDialog: React.FC<EditForwardRuleDialogProps> = ({
                   {/* Tunnel Hops - chain type only */}
                   {rule.ruleType === "chain" && (
                     <div className="flex flex-col gap-2">
-                      <Label htmlFor="tunnelHops">隧道跳数（可选）</Label>
+                      <Label htmlFor="tunnelHops">{t('admin.forwardRules.form.tunnelHops')}</Label>
                       <Input
                         id="tunnelHops"
                         type="number"
@@ -829,10 +855,10 @@ export const EditForwardRuleDialog: React.FC<EditForwardRuleDialogProps> = ({
                               : parseInt(e.target.value, 10);
                           handleChange("tunnelHops", value);
                         }}
-                        placeholder="留空表示全程隧道"
+                        placeholder={t('admin.forwardRules.form.tunnelHopsPlaceholder')}
                       />
                       <p className="text-xs text-muted-foreground">
-                        设置后，前 N 跳使用隧道，后续节点使用直连
+                        {t('admin.forwardRules.form.tunnelHopsHint')}
                       </p>
                     </div>
                   )}
@@ -841,12 +867,12 @@ export const EditForwardRuleDialog: React.FC<EditForwardRuleDialogProps> = ({
                   {rule.ruleType === "chain" && (
                     <div className="flex flex-col gap-2 @sm:col-span-2">
                       <Label>
-                        中间节点
                         {formData.tunnelHops !== undefined &&
                           formData.tunnelHops >= 0 &&
                           formData.tunnelHops <
-                            (formData.chainAgentIds?.length || 0) &&
-                          "及端口"}
+                            (formData.chainAgentIds?.length || 0)
+                          ? t('admin.forwardRules.form.chainNodesWithPort')
+                          : t('admin.forwardRules.form.chainNodes')}
                       </Label>
                       <SortableChainAgentList
                         agents={availableChainAgents}
@@ -891,8 +917,7 @@ export const EditForwardRuleDialog: React.FC<EditForwardRuleDialogProps> = ({
                         formData.tunnelHops <
                           (formData.chainAgentIds?.length || 0) && (
                           <p className="text-xs text-muted-foreground">
-                            混合链模式：前 {formData.tunnelHops}{" "}
-                            跳使用隧道，后续节点使用直连
+                            {t('admin.forwardRules.form.hybridChainHint', { count: formData.tunnelHops })}
                           </p>
                         )}
                       {errors.chainPortConfig && (
@@ -906,7 +931,7 @@ export const EditForwardRuleDialog: React.FC<EditForwardRuleDialogProps> = ({
                   {/* direct_chain type: Chain Agents (with port configuration) */}
                   {rule.ruleType === "direct_chain" && (
                     <div className="flex flex-col gap-2 @sm:col-span-2">
-                      <Label>中间节点及端口</Label>
+                      <Label>{t('admin.forwardRules.form.chainNodesWithPort')}</Label>
                       <SortableChainAgentList
                         agents={availableChainAgents}
                         selectedIds={formData.chainAgentIds || []}
@@ -943,7 +968,7 @@ export const EditForwardRuleDialog: React.FC<EditForwardRuleDialogProps> = ({
                   {/* Protocol Type - hidden for external type */}
                   {rule.ruleType !== "external" && (
                     <div className="flex flex-col gap-2">
-                      <Label htmlFor="protocol">协议类型</Label>
+                      <Label htmlFor="protocol">{t('admin.forwardRules.form.protocolType')}</Label>
                       <Select
                         value={formData.protocol || "tcp"}
                         onValueChange={(value) =>
@@ -965,7 +990,7 @@ export const EditForwardRuleDialog: React.FC<EditForwardRuleDialogProps> = ({
                   {/* IP Version - hidden for external type */}
                   {rule.ruleType !== "external" && (
                     <div className="flex flex-col gap-2">
-                      <Label htmlFor="ipVersion">IP 版本</Label>
+                      <Label htmlFor="ipVersion">{t('admin.forwardRules.form.ipVersion')}</Label>
                       <Select
                         value={formData.ipVersion || "auto"}
                         onValueChange={(value) =>
@@ -976,13 +1001,13 @@ export const EditForwardRuleDialog: React.FC<EditForwardRuleDialogProps> = ({
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="auto">自动</SelectItem>
+                          <SelectItem value="auto">{t('admin.forwardRules.form.ipVersionAuto')}</SelectItem>
                           <SelectItem value="ipv4">IPv4</SelectItem>
                           <SelectItem value="ipv6">IPv6</SelectItem>
                         </SelectContent>
                       </Select>
                       <p className="text-xs text-muted-foreground">
-                        目标地址解析时优先使用的 IP 版本
+                        {t('admin.forwardRules.form.ipVersionHint')}
                       </p>
                     </div>
                   )}
@@ -990,7 +1015,7 @@ export const EditForwardRuleDialog: React.FC<EditForwardRuleDialogProps> = ({
                   {/* Listen Port - hidden for external type (already shown above) */}
                   {rule.ruleType !== "external" && (
                     <div className="flex flex-col gap-2">
-                      <Label htmlFor="listenPort">监听端口</Label>
+                      <Label htmlFor="listenPort">{t('admin.forwardRules.form.listenPort')}</Label>
                       <Input
                         id="listenPort"
                         type="number"
@@ -1004,7 +1029,7 @@ export const EditForwardRuleDialog: React.FC<EditForwardRuleDialogProps> = ({
                           )
                         }
                         error={!!errors.listenPort}
-                        placeholder="留空自动分配"
+                        placeholder={t('admin.forwardRules.form.listenPortAutoHint')}
                       />
                       {errors.listenPort && (
                         <p className="text-xs text-destructive">
@@ -1023,7 +1048,7 @@ export const EditForwardRuleDialog: React.FC<EditForwardRuleDialogProps> = ({
                       <>
                         {/* Target Type Selection */}
                         <div className="flex flex-col gap-2 @sm:col-span-2">
-                          <Label>目标类型</Label>
+                          <Label>{t('admin.forwardRules.form.targetType')}</Label>
                           <RadioGroup
                             value={targetType}
                             onValueChange={(value) => {
@@ -1047,7 +1072,7 @@ export const EditForwardRuleDialog: React.FC<EditForwardRuleDialogProps> = ({
                                 htmlFor="edit-target-manual"
                                 className="font-normal cursor-pointer"
                               >
-                                手动输入地址
+                                {t('admin.forwardRules.form.targetTypeManual')}
                               </Label>
                             </div>
                             <div className="flex items-center space-x-2">
@@ -1059,7 +1084,7 @@ export const EditForwardRuleDialog: React.FC<EditForwardRuleDialogProps> = ({
                                 htmlFor="edit-target-node"
                                 className="font-normal cursor-pointer"
                               >
-                                选择节点（动态解析）
+                                {t('admin.forwardRules.form.targetTypeNode')}
                               </Label>
                             </div>
                           </RadioGroup>
@@ -1069,7 +1094,7 @@ export const EditForwardRuleDialog: React.FC<EditForwardRuleDialogProps> = ({
                         {targetType === "manual" && (
                           <>
                             <div className="flex flex-col gap-2">
-                              <Label htmlFor="targetAddress">目标地址</Label>
+                              <Label htmlFor="targetAddress">{t('admin.forwardRules.form.targetAddress')}</Label>
                               <Input
                                 id="targetAddress"
                                 value={formData.targetAddress || ""}
@@ -1086,7 +1111,7 @@ export const EditForwardRuleDialog: React.FC<EditForwardRuleDialogProps> = ({
                             </div>
 
                             <div className="flex flex-col gap-2">
-                              <Label htmlFor="targetPort">目标端口</Label>
+                              <Label htmlFor="targetPort">{t('admin.forwardRules.form.targetPort')}</Label>
                               <Input
                                 id="targetPort"
                                 type="number"
@@ -1113,7 +1138,7 @@ export const EditForwardRuleDialog: React.FC<EditForwardRuleDialogProps> = ({
                         {/* Select Target Node */}
                         {targetType === "node" && (
                           <div className="flex flex-col gap-2 @sm:col-span-2">
-                            <Label htmlFor="targetNodeId">目标节点</Label>
+                            <Label htmlFor="targetNodeId">{t('admin.forwardRules.form.targetNode')}</Label>
                             <Select
                               value={formData.targetNodeId || ""}
                               onValueChange={(value) =>
@@ -1128,7 +1153,7 @@ export const EditForwardRuleDialog: React.FC<EditForwardRuleDialogProps> = ({
                                     : ""
                                 }
                               >
-                                <SelectValue placeholder="选择目标节点" />
+                                <SelectValue placeholder={t('admin.forwardRules.form.selectTargetNode')} />
                               </SelectTrigger>
                               <SelectContent>
                                 {availableNodes.map((node) => (
@@ -1139,7 +1164,7 @@ export const EditForwardRuleDialog: React.FC<EditForwardRuleDialogProps> = ({
                               </SelectContent>
                             </Select>
                             <p className="text-xs text-muted-foreground">
-                              选择节点后，目标地址将动态解析为节点的服务器地址
+                              {t('admin.forwardRules.form.targetNodeDynamicHint')}
                             </p>
                             {errors.targetNodeId && (
                               <p className="text-xs text-destructive">
@@ -1154,15 +1179,15 @@ export const EditForwardRuleDialog: React.FC<EditForwardRuleDialogProps> = ({
                   {/* Bind IP - hidden for external type */}
                   {rule.ruleType !== "external" && (
                     <div className="flex flex-col gap-2">
-                      <Label htmlFor="bindIp">绑定 IP</Label>
+                      <Label htmlFor="bindIp">{t('admin.forwardRules.form.bindIp')}</Label>
                       <Input
                         id="bindIp"
                         value={formData.bindIp || ""}
                         onChange={(e) => handleChange("bindIp", e.target.value)}
-                        placeholder="可选：出站连接绑定的本地 IP"
+                        placeholder={t('admin.forwardRules.form.bindIpPlaceholder')}
                       />
                       <p className="text-xs text-muted-foreground">
-                        指定出站连接使用的本地 IP 地址
+                        {t('admin.forwardRules.form.bindIpHint')}
                       </p>
                     </div>
                   )}
@@ -1170,7 +1195,7 @@ export const EditForwardRuleDialog: React.FC<EditForwardRuleDialogProps> = ({
                   {/* Traffic Multiplier - hidden for external type */}
                   {rule.ruleType !== "external" && (
                     <div className="flex flex-col gap-2">
-                      <Label htmlFor="trafficMultiplier">流量倍率（可选）</Label>
+                      <Label htmlFor="trafficMultiplier">{t('admin.forwardRules.form.trafficMultiplier')}</Label>
                       <Input
                         id="trafficMultiplier"
                         type="number"
@@ -1186,21 +1211,20 @@ export const EditForwardRuleDialog: React.FC<EditForwardRuleDialogProps> = ({
                               : undefined,
                           )
                         }
-                        placeholder="留空表示不修改"
+                        placeholder={t('admin.forwardRules.form.trafficMultiplierNotModify')}
                       />
                       <p className="text-xs text-muted-foreground">
-                        当前: {rule.effectiveTrafficMultiplier}x (
-                        {rule.isAutoMultiplier ? "自动计算" : "自定义"})
+                        {t('admin.forwardRules.form.trafficMultiplierCurrent', { value: rule.effectiveTrafficMultiplier, type: rule.isAutoMultiplier ? t('admin.forwardRules.form.multiplierAuto') : t('admin.forwardRules.form.multiplierCustom') })}
                       </p>
                       <p className="text-xs text-muted-foreground">
-                        修改此值会影响后续流量统计
+                        {t('admin.forwardRules.form.trafficMultiplierUpdateHint')}
                       </p>
                     </div>
                   )}
 
                   {/* Sort Order */}
                   <div className="flex flex-col gap-2">
-                    <Label htmlFor="sortOrder">排序顺序</Label>
+                    <Label htmlFor="sortOrder">{t('admin.forwardRules.form.sortOrder')}</Label>
                     <Input
                       id="sortOrder"
                       type="number"
@@ -1213,13 +1237,13 @@ export const EditForwardRuleDialog: React.FC<EditForwardRuleDialogProps> = ({
                       }
                     />
                     <p className="text-xs text-muted-foreground">
-                      数字越小越靠前
+                      {t('admin.forwardRules.form.sortSmallFirst')}
                     </p>
                   </div>
 
                   {/* Remark */}
                   <div className="flex flex-col gap-1.5 @sm:col-span-2">
-                    <Label htmlFor="remark">备注</Label>
+                    <Label htmlFor="remark">{t('admin.forwardRules.form.remark')}</Label>
                     <Textarea
                       id="remark"
                       rows={3}
@@ -1234,10 +1258,10 @@ export const EditForwardRuleDialog: React.FC<EditForwardRuleDialogProps> = ({
                     <div className="flex flex-col gap-2 @sm:col-span-2">
                       <Label className="flex items-center gap-1.5">
                         <FolderTree className="size-4" />
-                        绑定资源组
+                        {t('admin.forwardRules.form.bindResourceGroupsEdit')}
                       </Label>
                       <p className="text-xs text-muted-foreground">
-                        选择要绑定的资源组，规则将自动添加到订阅内容中
+                        {t('admin.forwardRules.form.bindResourceGroupsHint')}
                       </p>
                       <div className="border rounded-lg overflow-hidden">
                         <ScrollArea className="h-[120px]">
@@ -1268,7 +1292,7 @@ export const EditForwardRuleDialog: React.FC<EditForwardRuleDialogProps> = ({
                                   </div>
                                   {plan && (
                                     <Badge variant="outline" className="text-[10px] flex-shrink-0">
-                                      {plan.planType === "node" ? "节点" : "混合"}
+                                      {plan.planType === "node" ? t('admin.forwardRules.form.planTypeNode') : t('admin.forwardRules.form.planTypeHybrid')}
                                     </Badge>
                                   )}
                                 </label>
@@ -1279,7 +1303,7 @@ export const EditForwardRuleDialog: React.FC<EditForwardRuleDialogProps> = ({
                       </div>
                       {formData.groupSids && formData.groupSids.length > 0 && (
                         <p className="text-xs text-muted-foreground">
-                          已选择 {formData.groupSids.length} 个资源组
+                          {t('admin.forwardRules.form.selectedGroupsCount', { count: formData.groupSids.length })}
                         </p>
                       )}
                     </div>
@@ -1292,10 +1316,10 @@ export const EditForwardRuleDialog: React.FC<EditForwardRuleDialogProps> = ({
 
         <DialogFooter className="flex-shrink-0 mt-6 gap-3">
           <Button variant="outline" onClick={onClose}>
-            取消
+            {t('common.actions.cancel')}
           </Button>
           <Button onClick={handleSubmit} disabled={!hasChanges}>
-            保存
+            {t('common.actions.save')}
           </Button>
         </DialogFooter>
       </DialogContent>

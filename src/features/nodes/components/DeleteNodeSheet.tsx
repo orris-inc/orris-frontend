@@ -4,6 +4,7 @@
  */
 
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Trash2, AlertTriangle, Loader2, Server, MapPin, Activity } from 'lucide-react';
 import {
   Sheet,
@@ -28,6 +29,7 @@ export const DeleteNodeSheet: React.FC<DeleteNodeSheetProps> = ({
   entity: node,
   onConfirm,
 }) => {
+  const { t } = useTranslation();
   const [loading, setLoading] = useState(false);
   const [confirmOpen, setConfirmOpen] = useState(false);
 
@@ -55,10 +57,10 @@ export const DeleteNodeSheet: React.FC<DeleteNodeSheetProps> = ({
               <div className="size-10 rounded-full bg-destructive/10 flex items-center justify-center">
                 <Trash2 className="size-5 text-destructive" />
               </div>
-              <span>删除节点</span>
+              <span>{t('admin.nodes.deleteSheet.title')}</span>
             </SheetTitle>
             <SheetDescription>
-              此操作不可恢复，请确认是否继续
+              {t('admin.nodes.deleteSheet.description')}
             </SheetDescription>
           </SheetHeader>
 
@@ -68,9 +70,9 @@ export const DeleteNodeSheet: React.FC<DeleteNodeSheetProps> = ({
               <div className="flex items-start gap-3">
                 <AlertTriangle className="size-5 text-destructive flex-shrink-0 mt-0.5" />
                 <div className="space-y-1">
-                  <p className="font-medium text-destructive">确认删除以下节点？</p>
+                  <p className="font-medium text-destructive">{t('admin.nodes.deleteSheet.confirmQuestion')}</p>
                   <p className="text-sm text-muted-foreground">
-                    删除后，该节点的所有配置和关联数据将被永久移除，无法恢复。
+                    {t('admin.nodes.deleteSheet.warningText')}
                   </p>
                 </div>
               </div>
@@ -102,7 +104,7 @@ export const DeleteNodeSheet: React.FC<DeleteNodeSheetProps> = ({
                     variant={node.status === 'active' ? 'default' : 'secondary'}
                     className="text-xs"
                   >
-                    {node.status === 'active' ? '激活' : node.status === 'maintenance' ? '维护中' : '未激活'}
+                    {t(`admin.nodes.statusLabel.${node.status}`)}
                   </Badge>
 
                   {/* Online Status */}
@@ -111,7 +113,7 @@ export const DeleteNodeSheet: React.FC<DeleteNodeSheetProps> = ({
                     className="text-xs"
                   >
                     <Activity className="size-3 mr-1" />
-                    {node.isOnline ? '在线' : '离线'}
+                    {node.isOnline ? t('admin.nodes.tooltip.onlineStatus') : t('admin.nodes.tooltip.offlineStatus')}
                   </Badge>
 
                   {/* Region */}
@@ -151,10 +153,10 @@ export const DeleteNodeSheet: React.FC<DeleteNodeSheetProps> = ({
               {loading ? (
                 <>
                   <Loader2 className="mr-2 size-5 animate-spin" />
-                  删除中...
+                  {t('admin.nodes.deleteSheet.deleting')}
                 </>
               ) : (
-                '确认删除'
+                t('admin.nodes.deleteSheet.confirmButton')
               )}
             </Button>
             <Button
@@ -163,7 +165,7 @@ export const DeleteNodeSheet: React.FC<DeleteNodeSheetProps> = ({
               disabled={loading}
               className="w-full min-h-[44px]"
             >
-              取消
+              {t('common.cancel')}
             </Button>
           </SheetFooter>
         </SheetContent>
@@ -173,9 +175,9 @@ export const DeleteNodeSheet: React.FC<DeleteNodeSheetProps> = ({
         open={confirmOpen}
         onOpenChange={setConfirmOpen}
         variant="destructive"
-        title="确认删除？"
-        description="删除后无法恢复"
-        confirmText="确认删除"
+        title={t('admin.nodes.deleteSheet.confirmTitle')}
+        description={t('admin.nodes.deleteSheet.confirmDesc')}
+        confirmText={t('admin.nodes.deleteSheet.confirmButton')}
         onConfirm={handleConfirm}
       />
     </>

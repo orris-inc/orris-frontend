@@ -4,6 +4,7 @@
  */
 
 import { useState, useEffect, useCallback } from 'react';
+import { useTranslation } from 'react-i18next';
 import { formatDate } from '@/shared/utils/date-utils';
 import { FolderEdit, Layers, FileText } from 'lucide-react';
 import {
@@ -38,6 +39,7 @@ export const EditResourceGroupSheet: React.FC<EditResourceGroupSheetProps> = ({
   plansMap,
   onSubmit,
 }) => {
+  const { t } = useTranslation();
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
   const [errors, setErrors] = useState<FormErrors>({});
@@ -56,10 +58,10 @@ export const EditResourceGroupSheet: React.FC<EditResourceGroupSheetProps> = ({
 
   // Validation functions
   const validateName = useCallback((value: string): string | undefined => {
-    if (!value.trim()) return '请输入资源组名称';
-    if (value.trim().length > 100) return '名称不能超过 100 个字符';
+    if (!value.trim()) return t('resourceGroups.nameRequired');
+    if (value.trim().length > 100) return t('resourceGroups.nameTooLong');
     return undefined;
-  }, []);
+  }, [t]);
 
   const handleBlur = useCallback((field: 'name') => {
     setTouched((prev) => ({ ...prev, [field]: true }));
@@ -116,17 +118,17 @@ export const EditResourceGroupSheet: React.FC<EditResourceGroupSheetProps> = ({
             <div className="size-10 rounded-full bg-blue-500/10 flex items-center justify-center">
               <FolderEdit className="size-5 text-blue-500" />
             </div>
-            <span>编辑资源组</span>
+            <span>{t('resourceGroups.editTitle')}</span>
           </SheetTitle>
           <SheetDescription>
-            修改资源组 {resourceGroup.name} 的信息
+            {t('resourceGroups.editSheet.description', { name: resourceGroup.name })}
           </SheetDescription>
         </SheetHeader>
 
         <SheetBody className="space-y-6 py-4">
           {/* Read-only Info */}
           <div className="space-y-3">
-            <h4 className="text-sm font-medium text-muted-foreground px-1">基本信息</h4>
+            <h4 className="text-sm font-medium text-muted-foreground px-1">{t('resourceGroups.editSheet.basicInfo')}</h4>
             <div className="rounded-xl border bg-muted/30 p-4 space-y-3">
               <div className="flex items-center justify-between">
                 <span className="text-sm text-muted-foreground">SID</span>
@@ -134,14 +136,14 @@ export const EditResourceGroupSheet: React.FC<EditResourceGroupSheetProps> = ({
               </div>
               <Separator />
               <div className="flex items-center justify-between">
-                <span className="text-sm text-muted-foreground">关联计划</span>
+                <span className="text-sm text-muted-foreground">{t('resourceGroups.editSheet.associatedPlan')}</span>
                 <span className="text-sm font-medium">
-                  {plan?.name || `计划 #${resourceGroup.planId}`}
+                  {plan?.name || t('resourceGroups.planPrefix', { id: resourceGroup.planId })}
                 </span>
               </div>
               <Separator />
               <div className="flex items-center justify-between">
-                <span className="text-sm text-muted-foreground">创建时间</span>
+                <span className="text-sm text-muted-foreground">{t('resourceGroups.editSheet.createdAt')}</span>
                 <span className="text-sm">
                   {formatDate(resourceGroup.createdAt)}
                 </span>
@@ -151,12 +153,12 @@ export const EditResourceGroupSheet: React.FC<EditResourceGroupSheetProps> = ({
 
           {/* Editable Fields */}
           <div className="space-y-4">
-            <h4 className="text-sm font-medium text-muted-foreground px-1">可编辑信息</h4>
+            <h4 className="text-sm font-medium text-muted-foreground px-1">{t('resourceGroups.editSheet.editableInfo')}</h4>
 
             {/* Name */}
             <div className="space-y-1.5">
               <label htmlFor="edit-rg-name" className="text-sm font-medium px-1">
-                资源组名称 <span className="text-destructive">*</span>
+                {t('resourceGroups.name')} <span className="text-destructive">*</span>
               </label>
               <MobileFormInput
                 id="edit-rg-name"
@@ -166,7 +168,7 @@ export const EditResourceGroupSheet: React.FC<EditResourceGroupSheetProps> = ({
                   if (touched.name) setErrors((prev) => ({ ...prev, name: validateName(v) }));
                 }}
                 onBlur={() => handleBlur('name')}
-                placeholder="输入资源组名称"
+                placeholder={t('resourceGroups.namePlaceholder')}
                 icon={<Layers className="size-5" />}
                 error={touched.name ? errors.name : undefined}
                 disabled={loading}
@@ -176,7 +178,7 @@ export const EditResourceGroupSheet: React.FC<EditResourceGroupSheetProps> = ({
             {/* Description */}
             <div className="space-y-1.5">
               <label htmlFor="edit-rg-description" className="text-sm font-medium px-1">
-                描述
+                {t('resourceGroups.description')}
               </label>
               <div className="relative">
                 <div className="absolute left-4 top-4 text-muted-foreground">
@@ -186,7 +188,7 @@ export const EditResourceGroupSheet: React.FC<EditResourceGroupSheetProps> = ({
                   id="edit-rg-description"
                   value={description}
                   onChange={(e) => setDescription(e.target.value)}
-                  placeholder="输入资源组描述（可选）"
+                  placeholder={t('resourceGroups.descriptionPlaceholder')}
                   rows={3}
                   disabled={loading}
                   className="w-full min-h-[100px] py-3 pl-12 pr-4 text-base rounded-xl border bg-background placeholder:text-muted-foreground/60 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary disabled:opacity-50 disabled:cursor-not-allowed resize-none"
@@ -202,7 +204,7 @@ export const EditResourceGroupSheet: React.FC<EditResourceGroupSheetProps> = ({
             disabled={loading || !hasChanges}
             className="w-full min-h-[48px] text-base"
           >
-            {loading ? '保存中...' : '保存修改'}
+            {loading ? t('resourceGroups.saving') : t('resourceGroups.saveChanges')}
           </Button>
           <Button
             variant="ghost"
@@ -210,7 +212,7 @@ export const EditResourceGroupSheet: React.FC<EditResourceGroupSheetProps> = ({
             disabled={loading}
             className="w-full min-h-[44px]"
           >
-            取消
+            {t('resourceGroups.cancel')}
           </Button>
         </SheetFooter>
       </SheetContent>

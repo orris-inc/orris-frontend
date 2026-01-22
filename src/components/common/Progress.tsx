@@ -11,7 +11,7 @@ import { cn } from '@/lib/utils';
  * Progress 组件属性
  */
 interface ProgressProps extends React.ComponentPropsWithoutRef<typeof ProgressPrimitive.Root> {
-  /** 自定义样式类名 */
+  /** Custom class name */
   className?: string;
 }
 
@@ -19,7 +19,7 @@ interface ProgressProps extends React.ComponentPropsWithoutRef<typeof ProgressPr
  * ProgressIndicator 组件属性
  */
 interface ProgressIndicatorProps extends React.ComponentPropsWithoutRef<typeof ProgressPrimitive.Indicator> {
-  /** 自定义样式类名 */
+  /** Custom class name */
   className?: string;
 }
 

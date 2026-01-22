@@ -37,6 +37,9 @@ export {
 export { ActionSheet } from './ActionSheet';
 export { ConfirmActionSheet } from './ConfirmActionSheet';
 
+// SelectSheet component
+export { SelectSheet } from './SelectSheet';
+
 // Types
 export type {
   BaseSheetProps,
@@ -47,4 +50,7 @@ export type {
   ActionSheetProps,
   ActionSheetAction,
   ConfirmActionSheetProps,
+  SelectSheetProps,
+  SelectSheetOption,
+  SelectSheetOptionGroup,
 } from './types';

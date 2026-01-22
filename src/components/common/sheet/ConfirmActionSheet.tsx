@@ -7,6 +7,7 @@
  * Maximum nesting: 2 levels (Primary Sheet + ConfirmActionSheet)
  */
 
+import { useTranslation } from 'react-i18next';
 import { ActionSheet } from './ActionSheet';
 import type { ConfirmActionSheetProps } from './types';
 
@@ -16,20 +17,24 @@ export const ConfirmActionSheet: React.FC<ConfirmActionSheetProps> = ({
   variant = 'default',
   title,
   description,
-  confirmText = '确认',
-  cancelText = '取消',
+  confirmText,
+  cancelText,
   onConfirm,
 }) => {
+  const { t } = useTranslation();
+  const resolvedConfirmText = confirmText ?? t('common.actions.confirm');
+  const resolvedCancelText = cancelText ?? t('common.actions.cancel');
+
   return (
     <ActionSheet
       open={open}
       onOpenChange={onOpenChange}
       title={title}
       description={description}
-      cancelText={cancelText}
+      cancelText={resolvedCancelText}
       actions={[
         {
-          label: confirmText,
+          label: resolvedConfirmText,
           variant,
           onPress: onConfirm,
         },

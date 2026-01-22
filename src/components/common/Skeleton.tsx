@@ -6,7 +6,7 @@
 import { cn } from '@/lib/utils';
 
 interface SkeletonProps extends React.HTMLAttributes<HTMLDivElement> {
-  /** 自定义样式类名 */
+  /** Custom class name */
   className?: string;
 }
 

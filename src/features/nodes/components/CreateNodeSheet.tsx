@@ -5,6 +5,7 @@
  */
 
 import { useState, useEffect, useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
   Server,
   Network,
@@ -85,7 +86,7 @@ const VLESS_TRANSPORT_PROTOCOLS: TransportProtocol[] = ['tcp', 'ws', 'grpc', 'h2
 const VLESS_SECURITY_OPTIONS: { value: VLESSSecurity; label: string }[] = [
   { value: 'tls', label: 'TLS' },
   { value: 'reality', label: 'Reality' },
-  { value: 'none', label: '无' },
+  { value: 'none', label: 'None' },
 ];
 
 // VMess transport protocols
@@ -93,16 +94,16 @@ const VMESS_TRANSPORT_PROTOCOLS: TransportProtocol[] = ['tcp', 'ws', 'grpc', 'ht
 
 // VMess security types
 const VMESS_SECURITY_OPTIONS: { value: VMessSecurity; label: string }[] = [
-  { value: 'auto', label: 'Auto (推荐)' },
+  { value: 'auto', label: 'Auto (Recommended)' },
   { value: 'aes-128-gcm', label: 'AES-128-GCM' },
   { value: 'chacha20-poly1305', label: 'ChaCha20-Poly1305' },
-  { value: 'none', label: '无' },
+  { value: 'none', label: 'None' },
   { value: 'zero', label: 'Zero' },
 ];
 
 // Congestion control algorithms
 const CONGESTION_CONTROL_OPTIONS: { value: CongestionControl; label: string }[] = [
-  { value: 'bbr', label: 'BBR (推荐)' },
+  { value: 'bbr', label: 'BBR (Recommended)' },
   { value: 'cubic', label: 'Cubic' },
   { value: 'new_reno', label: 'New Reno' },
 ];
@@ -119,34 +120,34 @@ const TLS_FINGERPRINT_OPTIONS: MobileSelectOption[] = [
   { value: 'firefox', label: 'Firefox' },
   { value: 'safari', label: 'Safari' },
   { value: 'edge', label: 'Edge' },
-  { value: 'random', label: '随机' },
+  { value: 'random', label: 'Random' },
 ];
 
-// Protocol configuration
-const PROTOCOL_CONFIG: Record<NodeProtocol, { name: string; desc: string; icon: React.ElementType }> = {
-  shadowsocks: { name: 'Shadowsocks', desc: '轻量高效', icon: Zap },
-  trojan: { name: 'Trojan', desc: 'TLS加密', icon: Lock },
-  vless: { name: 'VLESS', desc: 'Reality', icon: Radio },
-  vmess: { name: 'VMess', desc: 'V2Ray', icon: Layers },
-  hysteria2: { name: 'Hysteria2', desc: 'QUIC加速', icon: Gauge },
-  tuic: { name: 'TUIC', desc: 'UDP优化', icon: Workflow },
+// Protocol configuration - descriptions need translation at render time
+const PROTOCOL_CONFIG: Record<NodeProtocol, { name: string; descKey: string; icon: React.ElementType }> = {
+  shadowsocks: { name: 'Shadowsocks', descKey: 'admin.nodes.form.protocolDesc.shadowsocks', icon: Zap },
+  trojan: { name: 'Trojan', descKey: 'admin.nodes.form.protocolDesc.trojan', icon: Lock },
+  vless: { name: 'VLESS', descKey: 'admin.nodes.form.protocolDesc.vless', icon: Radio },
+  vmess: { name: 'VMess', descKey: 'admin.nodes.form.protocolDesc.vmess', icon: Layers },
+  hysteria2: { name: 'Hysteria2', descKey: 'admin.nodes.form.protocolDesc.hysteria2', icon: Gauge },
+  tuic: { name: 'TUIC', descKey: 'admin.nodes.form.protocolDesc.tuic', icon: Workflow },
 };
 
-// TLS security options
-const TLS_SECURITY_OPTIONS: MobileSelectOption[] = [
-  { value: 'false', label: '验证证书（安全）' },
-  { value: 'true', label: '跳过验证（不安全）' },
+// TLS security options - need to be generated with translation at runtime
+const getTlsSecurityOptions = (t: (key: string) => string): MobileSelectOption[] => [
+  { value: 'false', label: t('admin.nodes.form.verifyCert') },
+  { value: 'true', label: t('admin.nodes.form.skipVerify') },
 ];
 
-// Common port presets
-const PORT_PRESETS = [
-  { port: 8388, label: 'SS默认' },
-  { port: 443, label: 'HTTPS' },
-  { port: 8443, label: '备用HTTPS' },
+// Common port presets - need to be generated with translation at runtime
+const getPortPresets = (t: (key: string) => string) => [
+  { port: 8388, label: t('admin.nodes.form.ssDefault') },
+  { port: 443, label: t('admin.nodes.form.httpsDefault') },
+  { port: 8443, label: t('admin.nodes.form.httpsAlt') },
 ];
 
-// Common region presets
-const REGION_PRESETS = ['香港', '日本', '新加坡', '美国', '台湾', '韩国'];
+// Common region presets - these are location names, keep them as is for now
+const REGION_PRESETS = ['Hong Kong', 'Japan', 'Singapore', 'USA', 'Taiwan', 'Korea'];
 
 // Default form data
 const getDefaultFormData = (): CreateNodeRequest & { tagsInput: string } => ({
@@ -212,17 +213,17 @@ const getDefaultFormData = (): CreateNodeRequest & { tagsInput: string } => ({
 // Step configuration
 interface StepConfig {
   id: string;
-  title: string;
+  titleKey: string;
   icon: React.ElementType;
   required?: boolean;
 }
 
 const STEPS: StepConfig[] = [
-  { id: 'basic', title: '基本信息', icon: Server, required: true },
-  { id: 'network', title: '网络配置', icon: Network, required: true },
-  { id: 'protocol', title: '协议配置', icon: Shield },
-  { id: 'other', title: '其他设置', icon: Settings },
-  { id: 'route', title: '路由配置', icon: Route },
+  { id: 'basic', titleKey: 'admin.nodes.form.section.basicInfo', icon: Server, required: true },
+  { id: 'network', titleKey: 'admin.nodes.form.section.networkConfig', icon: Network, required: true },
+  { id: 'protocol', titleKey: 'admin.nodes.form.protocolType', icon: Shield },
+  { id: 'other', titleKey: 'admin.nodes.form.section.otherSettings', icon: Settings },
+  { id: 'route', titleKey: 'admin.nodes.form.section.routeConfig', icon: Route },
 ];
 
 // Progress Indicator Component
@@ -230,12 +231,14 @@ interface ProgressIndicatorProps {
   steps: StepConfig[];
   completedSteps: Set<string>;
   currentStep: string;
+  t: (key: string) => string;
 }
 
 const ProgressIndicator: React.FC<ProgressIndicatorProps> = ({
   steps,
   completedSteps,
   currentStep,
+  t,
 }) => {
   const progress = (completedSteps.size / steps.filter(s => s.required).length) * 100;
 
@@ -279,7 +282,7 @@ const ProgressIndicator: React.FC<ProgressIndicatorProps> = ({
                   isCompleted || isCurrent ? 'text-foreground' : 'text-muted-foreground'
                 )}
               >
-                {step.title}
+                {t(step.titleKey)}
               </span>
             </div>
           );
@@ -292,20 +295,26 @@ const ProgressIndicator: React.FC<ProgressIndicatorProps> = ({
 // Collapsible Section with step styling
 interface StepSectionProps {
   step: StepConfig;
+  title: string;
   badge?: string | null;
   isOpen: boolean;
   isCompleted: boolean;
   onToggle: () => void;
   children: React.ReactNode;
+  requiredLabel: string;
+  completedLabel: string;
 }
 
 const StepSection: React.FC<StepSectionProps> = ({
   step,
+  title,
   badge,
   isOpen,
   isCompleted,
   onToggle,
   children,
+  requiredLabel,
+  completedLabel,
 }) => {
   const Icon = step.icon;
 
@@ -343,9 +352,9 @@ const StepSection: React.FC<StepSectionProps> = ({
           </div>
           <div>
             <div className="flex items-center gap-2">
-              <span className="text-sm font-semibold">{step.title}</span>
+              <span className="text-sm font-semibold">{title}</span>
               {step.required && !isCompleted && (
-                <span className="text-[10px] text-primary font-medium">必填</span>
+                <span className="text-[10px] text-primary font-medium">{requiredLabel}</span>
               )}
               {badge && (
                 <Badge variant="secondary" className="text-[10px] px-1.5 py-0">
@@ -354,7 +363,7 @@ const StepSection: React.FC<StepSectionProps> = ({
               )}
             </div>
             {isCompleted && (
-              <span className="text-xs text-success">已完成</span>
+              <span className="text-xs text-success">{completedLabel}</span>
             )}
           </div>
         </div>
@@ -413,9 +422,10 @@ interface ProtocolCardProps {
   protocol: NodeProtocol;
   selected: boolean;
   onSelect: () => void;
+  t: (key: string) => string;
 }
 
-const ProtocolCard: React.FC<ProtocolCardProps> = ({ protocol, selected, onSelect }) => {
+const ProtocolCard: React.FC<ProtocolCardProps> = ({ protocol, selected, onSelect, t }) => {
   const config = PROTOCOL_CONFIG[protocol];
   const Icon = config.icon;
 
@@ -450,7 +460,7 @@ const ProtocolCard: React.FC<ProtocolCardProps> = ({ protocol, selected, onSelec
           {config.name}
         </p>
         <p className="text-[10px] text-muted-foreground truncate">
-          {config.desc}
+          {t(config.descKey)}
         </p>
       </div>
 
@@ -496,11 +506,12 @@ const QuickChips: React.FC<QuickChipsProps> = ({ options, selected, onSelect }) 
 interface PortPresetsProps {
   currentPort: number;
   onSelect: (port: number) => void;
+  presets: { port: number; label: string }[];
 }
 
-const PortPresets: React.FC<PortPresetsProps> = ({ currentPort, onSelect }) => (
+const PortPresets: React.FC<PortPresetsProps> = ({ currentPort, onSelect, presets }) => (
   <div className="flex gap-2">
-    {PORT_PRESETS.map(({ port, label }) => (
+    {presets.map(({ port, label }) => (
       <button
         key={port}
         type="button"
@@ -526,6 +537,7 @@ export const CreateNodeSheet: React.FC<CreateNodeSheetProps> = ({
   initialData,
   nodes = [],
 }) => {
+  const { t } = useTranslation();
   const [formData, setFormData] = useState<CreateNodeRequest & { tagsInput: string }>(getDefaultFormData());
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [pluginOptsString, setPluginOptsString] = useState<string>('');
@@ -676,23 +688,23 @@ export const CreateNodeSheet: React.FC<CreateNodeSheetProps> = ({
     const newErrors: Record<string, string> = {};
 
     if (!formData.name.trim()) {
-      newErrors.name = '请输入节点名称';
+      newErrors.name = t('admin.nodes.form.validation.nameRequired');
     }
 
     if (!formData.agentPort || formData.agentPort < 1 || formData.agentPort > 65535) {
-      newErrors.agentPort = '端口范围: 1-65535';
+      newErrors.agentPort = t('admin.nodes.form.validation.portRange');
     }
 
     if (formData.subscriptionPort !== undefined && (formData.subscriptionPort < 1 || formData.subscriptionPort > 65535)) {
-      newErrors.subscriptionPort = '端口范围: 1-65535';
+      newErrors.subscriptionPort = t('admin.nodes.form.validation.portRange');
     }
 
     if (!formData.protocol) {
-      newErrors.protocol = '请选择协议类型';
+      newErrors.protocol = t('admin.nodes.form.validation.protocolRequired');
     }
 
     if (isShadowsocks && !formData.encryptionMethod) {
-      newErrors.encryptionMethod = '请选择加密方法';
+      newErrors.encryptionMethod = t('admin.nodes.form.validation.encryptionRequired');
     }
 
     setErrors(newErrors);
@@ -944,9 +956,9 @@ export const CreateNodeSheet: React.FC<CreateNodeSheetProps> = ({
               )}
             </div>
             <div>
-              <span className="text-lg">{initialData ? '复制节点' : '新增节点'}</span>
+              <span className="text-lg">{initialData ? t('admin.nodes.form.copyNode') : t('admin.nodes.form.createNode')}</span>
               <p className="text-xs text-muted-foreground font-normal mt-0.5">
-                配置代理节点信息
+                {t('admin.nodes.form.description')}
               </p>
             </div>
           </SheetTitle>
@@ -958,6 +970,7 @@ export const CreateNodeSheet: React.FC<CreateNodeSheetProps> = ({
             steps={STEPS}
             completedSteps={completedSteps}
             currentStep={currentStep}
+            t={t}
           />
         </div>
 
@@ -965,16 +978,19 @@ export const CreateNodeSheet: React.FC<CreateNodeSheetProps> = ({
           {/* Step 1: Basic Info */}
           <StepSection
             step={STEPS[0]}
+            title={t(STEPS[0].titleKey)}
             isOpen={openSections.has('basic')}
             isCompleted={completedSteps.has('basic')}
             onToggle={() => toggleSection('basic')}
+            requiredLabel={t('admin.nodes.form.required')}
+            completedLabel={t('admin.nodes.form.completed')}
           >
             <div className="space-y-5">
               {/* Node Name */}
               <div className="space-y-1.5">
-                <FormFieldLabel label="节点名称" required />
+                <FormFieldLabel label={t('admin.nodes.form.nodeName')} required />
                 <MobileFormInput
-                  placeholder="例如：香港节点-01"
+                  placeholder={t('admin.nodes.form.nodeNamePlaceholder')}
                   value={formData.name}
                   onChange={(value) => handleChange('name', value)}
                   error={errors.name}
@@ -984,37 +1000,43 @@ export const CreateNodeSheet: React.FC<CreateNodeSheetProps> = ({
 
               {/* Protocol Selection */}
               <div className="space-y-2">
-                <FormFieldLabel label="协议类型" required />
+                <FormFieldLabel label={t('admin.nodes.form.protocolType')} required />
                 <div className="grid grid-cols-2 gap-2">
                   <ProtocolCard
                     protocol="shadowsocks"
                     selected={isShadowsocks}
                     onSelect={() => handleChange('protocol', 'shadowsocks')}
+                    t={t}
                   />
                   <ProtocolCard
                     protocol="trojan"
                     selected={isTrojan}
                     onSelect={() => handleChange('protocol', 'trojan')}
+                    t={t}
                   />
                   <ProtocolCard
                     protocol="vless"
                     selected={isVless}
                     onSelect={() => handleChange('protocol', 'vless')}
+                    t={t}
                   />
                   <ProtocolCard
                     protocol="vmess"
                     selected={isVmess}
                     onSelect={() => handleChange('protocol', 'vmess')}
+                    t={t}
                   />
                   <ProtocolCard
                     protocol="hysteria2"
                     selected={isHysteria2}
                     onSelect={() => handleChange('protocol', 'hysteria2')}
+                    t={t}
                   />
                   <ProtocolCard
                     protocol="tuic"
                     selected={isTuic}
                     onSelect={() => handleChange('protocol', 'tuic')}
+                    t={t}
                   />
                 </div>
               </div>
@@ -1022,15 +1044,15 @@ export const CreateNodeSheet: React.FC<CreateNodeSheetProps> = ({
               {/* Encryption Method (SS) */}
               {isShadowsocks && (
                 <div className="space-y-1.5">
-                  <FormFieldLabel label="加密方法" required />
+                  <FormFieldLabel label={t('admin.nodes.form.encryptionMethod')} required />
                   <MobileSelect
                     value={formData.encryptionMethod || ''}
                     onChange={(value) => handleChange('encryptionMethod', value)}
                     options={SS_ENCRYPTION_METHODS.map((m) => ({
                       value: m.value,
-                      label: m.recommended ? `${m.label} (推荐)` : m.label,
+                      label: m.recommended ? `${m.label} (${t('common.recommended')})` : m.label,
                     }))}
-                    placeholder="选择加密方法"
+                    placeholder={t('admin.nodes.form.encryptionMethod')}
                   />
                 </div>
               )}
@@ -1038,7 +1060,7 @@ export const CreateNodeSheet: React.FC<CreateNodeSheetProps> = ({
               {/* Transport Protocol (Trojan) */}
               {isTrojan && (
                 <div className="space-y-1.5">
-                  <FormFieldLabel label="传输协议" hint="选择底层传输方式" />
+                  <FormFieldLabel label={t('admin.nodes.form.transportProtocol')} hint={t('admin.nodes.form.transportProtocolHint')} />
                   <MobileSelect
                     value={formData.transportProtocol || 'tcp'}
                     onChange={(value) => handleChange('transportProtocol', value)}
@@ -1055,7 +1077,7 @@ export const CreateNodeSheet: React.FC<CreateNodeSheetProps> = ({
                 <div className="space-y-4">
                   <div className="grid grid-cols-2 gap-3">
                     <div className="space-y-1.5">
-                      <FormFieldLabel label="传输协议" />
+                      <FormFieldLabel label={t('admin.nodes.form.transportProtocol')} />
                       <MobileSelect
                         value={formData.vlessTransportType || 'tcp'}
                         onChange={(value) => handleChange('vlessTransportType', value as TransportProtocol)}
@@ -1066,7 +1088,7 @@ export const CreateNodeSheet: React.FC<CreateNodeSheetProps> = ({
                       />
                     </div>
                     <div className="space-y-1.5">
-                      <FormFieldLabel label="安全类型" />
+                      <FormFieldLabel label={t('admin.nodes.form.securityType')} />
                       <MobileSelect
                         value={formData.vlessSecurity || 'tls'}
                         onChange={(value) => handleChange('vlessSecurity', value as VLESSSecurity)}
@@ -1082,7 +1104,7 @@ export const CreateNodeSheet: React.FC<CreateNodeSheetProps> = ({
                 <div className="space-y-4">
                   <div className="grid grid-cols-2 gap-3">
                     <div className="space-y-1.5">
-                      <FormFieldLabel label="传输协议" />
+                      <FormFieldLabel label={t('admin.nodes.form.transportProtocol')} />
                       <MobileSelect
                         value={formData.vmessTransportType || 'tcp'}
                         onChange={(value) => handleChange('vmessTransportType', value as TransportProtocol)}
@@ -1093,7 +1115,7 @@ export const CreateNodeSheet: React.FC<CreateNodeSheetProps> = ({
                       />
                     </div>
                     <div className="space-y-1.5">
-                      <FormFieldLabel label="加密方式" />
+                      <FormFieldLabel label={t('admin.nodes.form.encryptionMethod')} />
                       <MobileSelect
                         value={formData.vmessSecurity || 'auto'}
                         onChange={(value) => handleChange('vmessSecurity', value as VMessSecurity)}
@@ -1107,7 +1129,7 @@ export const CreateNodeSheet: React.FC<CreateNodeSheetProps> = ({
               {/* Hysteria2 Basic Config */}
               {isHysteria2 && (
                 <div className="space-y-1.5">
-                  <FormFieldLabel label="拥塞控制" hint="推荐使用 BBR" />
+                  <FormFieldLabel label={t('admin.nodes.form.congestionControl')} hint={t('admin.nodes.form.congestionControlHint')} />
                   <MobileSelect
                     value={formData.hysteria2CongestionControl || 'bbr'}
                     onChange={(value) => handleChange('hysteria2CongestionControl', value as CongestionControl)}
@@ -1120,7 +1142,7 @@ export const CreateNodeSheet: React.FC<CreateNodeSheetProps> = ({
               {isTuic && (
                 <div className="grid grid-cols-2 gap-3">
                   <div className="space-y-1.5">
-                    <FormFieldLabel label="拥塞控制" />
+                    <FormFieldLabel label={t('admin.nodes.form.congestionControl')} />
                     <MobileSelect
                       value={formData.tuicCongestionControl || 'bbr'}
                       onChange={(value) => handleChange('tuicCongestionControl', value as CongestionControl)}
@@ -1128,7 +1150,7 @@ export const CreateNodeSheet: React.FC<CreateNodeSheetProps> = ({
                     />
                   </div>
                   <div className="space-y-1.5">
-                    <FormFieldLabel label="UDP 中继" />
+                    <FormFieldLabel label={t('admin.nodes.form.udpRelayMode')} />
                     <MobileSelect
                       value={formData.tuicUdpRelayMode || 'native'}
                       onChange={(value) => handleChange('tuicUdpRelayMode', value as TUICUDPRelayMode)}
@@ -1146,7 +1168,7 @@ export const CreateNodeSheet: React.FC<CreateNodeSheetProps> = ({
                 disabled={!completedSteps.has('basic')}
                 className="w-full mt-2"
               >
-                下一步：网络配置
+                {t('admin.nodes.form.nextStepNetwork')}
                 <ChevronRight className="size-4 ml-1" />
               </Button>
             </div>
@@ -1155,16 +1177,19 @@ export const CreateNodeSheet: React.FC<CreateNodeSheetProps> = ({
           {/* Step 2: Network */}
           <StepSection
             step={STEPS[1]}
+            title={t(STEPS[1].titleKey)}
             isOpen={openSections.has('network')}
             isCompleted={completedSteps.has('network')}
             onToggle={() => toggleSection('network')}
+            requiredLabel={t('admin.nodes.form.required')}
+            completedLabel={t('admin.nodes.form.completed')}
           >
             <div className="space-y-5">
               {/* Server Address */}
               <div className="space-y-1.5">
-                <FormFieldLabel label="服务器地址" hint="可选，留空则自动检测" />
+                <FormFieldLabel label={t('admin.nodes.form.serverAddress')} hint={t('admin.nodes.form.serverAddressHint')} />
                 <MobileFormInput
-                  placeholder="example.com 或 IP"
+                  placeholder={t('admin.nodes.form.serverAddressPlaceholder')}
                   value={formData.serverAddress}
                   onChange={(value) => handleChange('serverAddress', value)}
                   icon={<Globe className="size-5" />}
@@ -1174,17 +1199,18 @@ export const CreateNodeSheet: React.FC<CreateNodeSheetProps> = ({
 
               {/* Port Presets */}
               <div className="space-y-2">
-                <FormFieldLabel label="常用端口" />
+                <FormFieldLabel label={t('admin.nodes.form.commonPorts')} />
                 <PortPresets
                   currentPort={formData.agentPort}
                   onSelect={(port) => handleChange('agentPort', port)}
+                  presets={getPortPresets(t)}
                 />
               </div>
 
               {/* Ports */}
               <div className="grid grid-cols-2 gap-3">
                 <div className="space-y-1.5">
-                  <FormFieldLabel label="代理端口" required />
+                  <FormFieldLabel label={t('admin.nodes.form.agentPort')} required />
                   <MobileFormInput
                     type="number"
                     inputMode="numeric"
@@ -1198,13 +1224,13 @@ export const CreateNodeSheet: React.FC<CreateNodeSheetProps> = ({
                 </div>
 
                 <div className="space-y-1.5">
-                  <FormFieldLabel label="订阅端口" />
+                  <FormFieldLabel label={t('admin.nodes.form.subscriptionPort')} />
                   <MobileFormInput
                     type="number"
                     inputMode="numeric"
                     min={1}
                     max={65535}
-                    placeholder="同代理"
+                    placeholder={t('admin.nodes.form.sameAsAgentPort')}
                     value={formData.subscriptionPort !== undefined ? String(formData.subscriptionPort) : ''}
                     onChange={(value) => handleChange('subscriptionPort', value ? parseInt(value, 10) : undefined)}
                     error={errors.subscriptionPort}
@@ -1220,7 +1246,7 @@ export const CreateNodeSheet: React.FC<CreateNodeSheetProps> = ({
                 onClick={() => goToNextSection('network')}
                 className="w-full mt-2"
               >
-                下一步：协议配置（可选）
+                {t('admin.nodes.form.nextStepProtocol')}
                 <ChevronRight className="size-4 ml-1" />
               </Button>
             </div>
@@ -1229,16 +1255,19 @@ export const CreateNodeSheet: React.FC<CreateNodeSheetProps> = ({
           {/* Step 3: Protocol Settings */}
           <StepSection
             step={STEPS[2]}
-            badge={hasProtocolSettings ? '已配置' : null}
+            title={`${PROTOCOL_CONFIG[formData.protocol].name} ${t('admin.nodes.form.config')}`}
+            badge={hasProtocolSettings ? t('admin.nodes.form.configured') : null}
             isOpen={openSections.has('protocol')}
             isCompleted={completedSteps.has('protocol')}
             onToggle={() => toggleSection('protocol')}
+            requiredLabel={t('admin.nodes.form.required')}
+            completedLabel={t('admin.nodes.form.completed')}
           >
             <div className="space-y-4">
               {isShadowsocks && (
                 <>
                   <div className="space-y-1.5">
-                    <FormFieldLabel label="插件" hint="可选，如 obfs-local" />
+                    <FormFieldLabel label={t('admin.nodes.form.plugin')} hint={t('admin.nodes.form.pluginHint')} />
                     <MobileFormInput
                       placeholder="obfs-local"
                       value={formData.plugin || ''}
@@ -1248,7 +1277,7 @@ export const CreateNodeSheet: React.FC<CreateNodeSheetProps> = ({
                   </div>
 
                   <div className="space-y-1.5">
-                    <FormFieldLabel label="插件选项" hint="格式：key=value;key2=value2" />
+                    <FormFieldLabel label={t('admin.nodes.form.pluginOptions')} hint={t('admin.nodes.form.pluginOptionsHint')} />
                     <MobileFormInput
                       placeholder="obfs=http;obfs-host=..."
                       value={pluginOptsString}
@@ -1262,7 +1291,7 @@ export const CreateNodeSheet: React.FC<CreateNodeSheetProps> = ({
               {isTrojan && (
                 <>
                   <div className="space-y-1.5">
-                    <FormFieldLabel label="SNI" hint="TLS 服务器名称" />
+                    <FormFieldLabel label="SNI" hint={t('admin.nodes.form.sniHint')} />
                     <MobileFormInput
                       placeholder="example.com"
                       value={formData.sni || ''}
@@ -1272,11 +1301,11 @@ export const CreateNodeSheet: React.FC<CreateNodeSheetProps> = ({
                   </div>
 
                   <div className="space-y-1.5">
-                    <FormFieldLabel label="TLS 验证" />
+                    <FormFieldLabel label={t('admin.nodes.form.tlsSecurity')} />
                     <MobileSelect
                       value={formData.allowInsecure ? 'true' : 'false'}
                       onChange={(value) => handleChange('allowInsecure', value === 'true')}
-                      options={TLS_SECURITY_OPTIONS}
+                      options={getTlsSecurityOptions(t)}
                     />
                   </div>
 
@@ -1293,7 +1322,7 @@ export const CreateNodeSheet: React.FC<CreateNodeSheetProps> = ({
                       </div>
 
                       <div className="space-y-1.5">
-                        <FormFieldLabel label="Path" hint="WebSocket 路径" />
+                        <FormFieldLabel label="Path" hint={t('admin.nodes.form.wsPathHint')} />
                         <MobileFormInput
                           placeholder="/ws"
                           value={formData.path || ''}
@@ -1323,7 +1352,7 @@ export const CreateNodeSheet: React.FC<CreateNodeSheetProps> = ({
                 <>
                   <div className="grid grid-cols-2 gap-3">
                     <div className="space-y-1.5">
-                      <FormFieldLabel label="SNI" hint="TLS 服务器名称" />
+                      <FormFieldLabel label="SNI" hint={t('admin.nodes.form.sniHint')} />
                       <MobileFormInput
                         placeholder="example.com"
                         value={formData.vlessSni || ''}
@@ -1332,18 +1361,18 @@ export const CreateNodeSheet: React.FC<CreateNodeSheetProps> = ({
                       />
                     </div>
                     <div className="space-y-1.5">
-                      <FormFieldLabel label="TLS 验证" />
+                      <FormFieldLabel label={t('admin.nodes.form.tlsSecurity')} />
                       <MobileSelect
                         value={formData.vlessAllowInsecure ? 'true' : 'false'}
                         onChange={(value) => handleChange('vlessAllowInsecure', value === 'true')}
-                        options={TLS_SECURITY_OPTIONS}
+                        options={getTlsSecurityOptions(t)}
                       />
                     </div>
                   </div>
 
                   <div className="grid grid-cols-2 gap-3">
                     <div className="space-y-1.5">
-                      <FormFieldLabel label="Flow" hint="流控" />
+                      <FormFieldLabel label="Flow" hint={t('admin.nodes.form.flowHint')} />
                       <MobileFormInput
                         placeholder="xtls-rprx-vision"
                         value={formData.vlessFlow || ''}
@@ -1352,11 +1381,11 @@ export const CreateNodeSheet: React.FC<CreateNodeSheetProps> = ({
                       />
                     </div>
                     <div className="space-y-1.5">
-                      <FormFieldLabel label="指纹" />
+                      <FormFieldLabel label={t('admin.nodes.form.fingerprintHint')} />
                       <MobileSelect
                         value={formData.vlessFingerprint || '__none__'}
                         onChange={(value) => handleChange('vlessFingerprint', value === '__none__' ? '' : value)}
-                        options={[{ value: '__none__', label: '无' }, ...TLS_FINGERPRINT_OPTIONS]}
+                        options={[{ value: '__none__', label: t('common.none') }, ...TLS_FINGERPRINT_OPTIONS]}
                       />
                     </div>
                   </div>
@@ -1373,7 +1402,7 @@ export const CreateNodeSheet: React.FC<CreateNodeSheetProps> = ({
                         />
                       </div>
                       <div className="space-y-1.5">
-                        <FormFieldLabel label="Path" hint="WS/H2 路径" />
+                        <FormFieldLabel label="Path" hint={t('admin.nodes.form.wsH2PathHint')} />
                         <MobileFormInput
                           placeholder="/ws"
                           value={formData.vlessPath || ''}
@@ -1386,7 +1415,7 @@ export const CreateNodeSheet: React.FC<CreateNodeSheetProps> = ({
 
                   {showVlessGrpcFields && (
                     <div className="space-y-1.5">
-                      <FormFieldLabel label="Service Name" hint="gRPC 服务名称" />
+                      <FormFieldLabel label="Service Name" hint={t('admin.nodes.form.grpcServiceNameHint')} />
                       <MobileFormInput
                         placeholder="grpc-service"
                         value={formData.vlessServiceName || ''}
@@ -1400,9 +1429,9 @@ export const CreateNodeSheet: React.FC<CreateNodeSheetProps> = ({
                     <>
                       <div className="grid grid-cols-2 gap-3">
                         <div className="space-y-1.5">
-                          <FormFieldLabel label="Public Key" hint="Reality 公钥" />
+                          <FormFieldLabel label="Public Key" hint={t('admin.nodes.form.realityPublicKeyHint')} />
                           <MobileFormInput
-                            placeholder="公钥"
+                            placeholder={t('admin.nodes.form.publicKeyPlaceholder')}
                             value={formData.vlessRealityPublicKey || ''}
                             onChange={(value) => handleChange('vlessRealityPublicKey', value)}
                             className="font-mono text-xs"
@@ -1411,7 +1440,7 @@ export const CreateNodeSheet: React.FC<CreateNodeSheetProps> = ({
                         <div className="space-y-1.5">
                           <FormFieldLabel label="Short ID" />
                           <MobileFormInput
-                            placeholder="短 ID"
+                            placeholder={t('admin.nodes.form.shortIdPlaceholder')}
                             value={formData.vlessRealityShortId || ''}
                             onChange={(value) => handleChange('vlessRealityShortId', value)}
                             className="font-mono"
@@ -1419,7 +1448,7 @@ export const CreateNodeSheet: React.FC<CreateNodeSheetProps> = ({
                         </div>
                       </div>
                       <div className="space-y-1.5">
-                        <FormFieldLabel label="Spider X" hint="可选" />
+                        <FormFieldLabel label="Spider X" hint={t('admin.nodes.form.optional')} />
                         <MobileFormInput
                           placeholder="/"
                           value={formData.vlessRealitySpiderX || ''}
@@ -1437,7 +1466,7 @@ export const CreateNodeSheet: React.FC<CreateNodeSheetProps> = ({
                 <>
                   <div className="grid grid-cols-2 gap-3">
                     <div className="space-y-1.5">
-                      <FormFieldLabel label="Alter ID" hint="通常为 0" />
+                      <FormFieldLabel label="Alter ID" hint={t('admin.nodes.form.alterIdHint')} />
                       <MobileFormInput
                         type="number"
                         inputMode="numeric"
@@ -1452,8 +1481,8 @@ export const CreateNodeSheet: React.FC<CreateNodeSheetProps> = ({
                         value={formData.vmessTls ? 'true' : 'false'}
                         onChange={(value) => handleChange('vmessTls', value === 'true')}
                         options={[
-                          { value: 'true', label: '启用 TLS' },
-                          { value: 'false', label: '不启用' },
+                          { value: 'true', label: t('admin.nodes.form.enableTls') },
+                          { value: 'false', label: t('admin.nodes.form.disableTls') },
                         ]}
                       />
                     </div>
@@ -1461,7 +1490,7 @@ export const CreateNodeSheet: React.FC<CreateNodeSheetProps> = ({
 
                   <div className="grid grid-cols-2 gap-3">
                     <div className="space-y-1.5">
-                      <FormFieldLabel label="SNI" hint="TLS 服务器名称" />
+                      <FormFieldLabel label="SNI" hint={t('admin.nodes.form.sniHint')} />
                       <MobileFormInput
                         placeholder="example.com"
                         value={formData.vmessSni || ''}
@@ -1470,11 +1499,11 @@ export const CreateNodeSheet: React.FC<CreateNodeSheetProps> = ({
                       />
                     </div>
                     <div className="space-y-1.5">
-                      <FormFieldLabel label="TLS 验证" />
+                      <FormFieldLabel label={t('admin.nodes.form.tlsSecurity')} />
                       <MobileSelect
                         value={formData.vmessAllowInsecure ? 'true' : 'false'}
                         onChange={(value) => handleChange('vmessAllowInsecure', value === 'true')}
-                        options={TLS_SECURITY_OPTIONS}
+                        options={getTlsSecurityOptions(t)}
                       />
                     </div>
                   </div>
@@ -1491,7 +1520,7 @@ export const CreateNodeSheet: React.FC<CreateNodeSheetProps> = ({
                         />
                       </div>
                       <div className="space-y-1.5">
-                        <FormFieldLabel label="Path" hint="WS/HTTP 路径" />
+                        <FormFieldLabel label="Path" hint={t('admin.nodes.form.wsHttpPathHint')} />
                         <MobileFormInput
                           placeholder="/ws"
                           value={formData.vmessPath || ''}
@@ -1504,7 +1533,7 @@ export const CreateNodeSheet: React.FC<CreateNodeSheetProps> = ({
 
                   {showVmessGrpcFields && (
                     <div className="space-y-1.5">
-                      <FormFieldLabel label="Service Name" hint="gRPC 服务名称" />
+                      <FormFieldLabel label="Service Name" hint={t('admin.nodes.form.grpcServiceNameHint')} />
                       <MobileFormInput
                         placeholder="grpc-service"
                         value={formData.vmessServiceName || ''}
@@ -1521,7 +1550,7 @@ export const CreateNodeSheet: React.FC<CreateNodeSheetProps> = ({
                 <>
                   <div className="grid grid-cols-2 gap-3">
                     <div className="space-y-1.5">
-                      <FormFieldLabel label="SNI" hint="TLS 服务器名称" />
+                      <FormFieldLabel label="SNI" hint={t('admin.nodes.form.sniHint')} />
                       <MobileFormInput
                         placeholder="example.com"
                         value={formData.hysteria2Sni || ''}
@@ -1530,18 +1559,18 @@ export const CreateNodeSheet: React.FC<CreateNodeSheetProps> = ({
                       />
                     </div>
                     <div className="space-y-1.5">
-                      <FormFieldLabel label="TLS 验证" />
+                      <FormFieldLabel label={t('admin.nodes.form.tlsSecurity')} />
                       <MobileSelect
                         value={formData.hysteria2AllowInsecure ? 'true' : 'false'}
                         onChange={(value) => handleChange('hysteria2AllowInsecure', value === 'true')}
-                        options={TLS_SECURITY_OPTIONS}
+                        options={getTlsSecurityOptions(t)}
                       />
                     </div>
                   </div>
 
                   <div className="grid grid-cols-2 gap-3">
                     <div className="space-y-1.5">
-                      <FormFieldLabel label="Obfs 类型" hint="混淆" />
+                      <FormFieldLabel label={t('admin.nodes.form.obfsType')} hint={t('admin.nodes.form.obfsTypeHint')} />
                       <MobileFormInput
                         placeholder="salamander"
                         value={formData.hysteria2Obfs || ''}
@@ -1550,9 +1579,9 @@ export const CreateNodeSheet: React.FC<CreateNodeSheetProps> = ({
                       />
                     </div>
                     <div className="space-y-1.5">
-                      <FormFieldLabel label="Obfs 密码" />
+                      <FormFieldLabel label={t('admin.nodes.form.obfsPassword')} />
                       <MobileFormInput
-                        placeholder="密码"
+                        placeholder={t('admin.nodes.form.passwordPlaceholder')}
                         value={formData.hysteria2ObfsPassword || ''}
                         onChange={(value) => handleChange('hysteria2ObfsPassword', value)}
                         className="font-mono"
@@ -1562,7 +1591,7 @@ export const CreateNodeSheet: React.FC<CreateNodeSheetProps> = ({
 
                   <div className="grid grid-cols-2 gap-3">
                     <div className="space-y-1.5">
-                      <FormFieldLabel label="上行 (Mbps)" />
+                      <FormFieldLabel label={t('admin.nodes.form.upBandwidth')} />
                       <MobileFormInput
                         type="number"
                         inputMode="numeric"
@@ -1573,7 +1602,7 @@ export const CreateNodeSheet: React.FC<CreateNodeSheetProps> = ({
                       />
                     </div>
                     <div className="space-y-1.5">
-                      <FormFieldLabel label="下行 (Mbps)" />
+                      <FormFieldLabel label={t('admin.nodes.form.downBandwidth')} />
                       <MobileFormInput
                         type="number"
                         inputMode="numeric"
@@ -1586,11 +1615,11 @@ export const CreateNodeSheet: React.FC<CreateNodeSheetProps> = ({
                   </div>
 
                   <div className="space-y-1.5">
-                    <FormFieldLabel label="指纹" />
+                    <FormFieldLabel label={t('admin.nodes.form.fingerprintHint')} />
                     <MobileSelect
                       value={formData.hysteria2Fingerprint || '__none__'}
                       onChange={(value) => handleChange('hysteria2Fingerprint', value === '__none__' ? '' : value)}
-                      options={[{ value: '__none__', label: '无' }, ...TLS_FINGERPRINT_OPTIONS]}
+                      options={[{ value: '__none__', label: t('common.none') }, ...TLS_FINGERPRINT_OPTIONS]}
                     />
                   </div>
                 </>
@@ -1601,7 +1630,7 @@ export const CreateNodeSheet: React.FC<CreateNodeSheetProps> = ({
                 <>
                   <div className="grid grid-cols-2 gap-3">
                     <div className="space-y-1.5">
-                      <FormFieldLabel label="SNI" hint="TLS 服务器名称" />
+                      <FormFieldLabel label="SNI" hint={t('admin.nodes.form.sniHint')} />
                       <MobileFormInput
                         placeholder="example.com"
                         value={formData.tuicSni || ''}
@@ -1610,18 +1639,18 @@ export const CreateNodeSheet: React.FC<CreateNodeSheetProps> = ({
                       />
                     </div>
                     <div className="space-y-1.5">
-                      <FormFieldLabel label="TLS 验证" />
+                      <FormFieldLabel label={t('admin.nodes.form.tlsSecurity')} />
                       <MobileSelect
                         value={formData.tuicAllowInsecure ? 'true' : 'false'}
                         onChange={(value) => handleChange('tuicAllowInsecure', value === 'true')}
-                        options={TLS_SECURITY_OPTIONS}
+                        options={getTlsSecurityOptions(t)}
                       />
                     </div>
                   </div>
 
                   <div className="grid grid-cols-2 gap-3">
                     <div className="space-y-1.5">
-                      <FormFieldLabel label="ALPN" hint="应用层协议" />
+                      <FormFieldLabel label="ALPN" hint={t('admin.nodes.form.alpnHint')} />
                       <MobileFormInput
                         placeholder="h3"
                         value={formData.tuicAlpn || ''}
@@ -1630,13 +1659,13 @@ export const CreateNodeSheet: React.FC<CreateNodeSheetProps> = ({
                       />
                     </div>
                     <div className="space-y-1.5">
-                      <FormFieldLabel label="禁用 SNI" />
+                      <FormFieldLabel label={t('admin.nodes.form.disableSni')} />
                       <MobileSelect
                         value={formData.tuicDisableSni ? 'true' : 'false'}
                         onChange={(value) => handleChange('tuicDisableSni', value === 'true')}
                         options={[
-                          { value: 'false', label: '不禁用' },
-                          { value: 'true', label: '禁用' },
+                          { value: 'false', label: t('admin.nodes.form.notDisabled') },
+                          { value: 'true', label: t('admin.nodes.form.disableSniOption') },
                         ]}
                       />
                     </div>
@@ -1649,22 +1678,25 @@ export const CreateNodeSheet: React.FC<CreateNodeSheetProps> = ({
           {/* Step 4: Other Settings */}
           <StepSection
             step={STEPS[3]}
-            badge={hasOtherSettings ? '已配置' : null}
+            title={t(STEPS[3].titleKey)}
+            badge={hasOtherSettings ? t('admin.nodes.form.configured') : null}
             isOpen={openSections.has('other')}
             isCompleted={completedSteps.has('other')}
             onToggle={() => toggleSection('other')}
+            requiredLabel={t('admin.nodes.form.required')}
+            completedLabel={t('admin.nodes.form.completed')}
           >
             <div className="space-y-4">
               {/* Region Quick Select */}
               <div className="space-y-2">
-                <FormFieldLabel label="地区" hint="选择或输入" />
+                <FormFieldLabel label={t('admin.nodes.form.region')} hint={t('admin.nodes.form.regionHint')} />
                 <QuickChips
                   options={REGION_PRESETS}
                   selected={formData.region}
                   onSelect={(value) => handleChange('region', value)}
                 />
                 <MobileFormInput
-                  placeholder="自定义地区"
+                  placeholder={t('admin.nodes.form.regionPlaceholder')}
                   value={formData.region}
                   onChange={(value) => handleChange('region', value)}
                 />
@@ -1672,7 +1704,7 @@ export const CreateNodeSheet: React.FC<CreateNodeSheetProps> = ({
 
               <div className="grid grid-cols-2 gap-3">
                 <div className="space-y-1.5">
-                  <FormFieldLabel label="排序" hint="越小越靠前" />
+                  <FormFieldLabel label={t('admin.nodes.form.sortOrder')} hint={t('admin.nodes.form.sortOrderHint')} />
                   <MobileFormInput
                     type="number"
                     inputMode="numeric"
@@ -1683,13 +1715,13 @@ export const CreateNodeSheet: React.FC<CreateNodeSheetProps> = ({
                 </div>
 
                 <div className="space-y-1.5">
-                  <FormFieldLabel label="资源组" />
+                  <FormFieldLabel label={t('admin.resourceGroups.title')} />
                   <MobileSelect
                     value="__none__"
                     onChange={() => {}}
                     disabled={isLoadingGroups || isLoadingPlans}
                     options={[
-                      { value: '__none__', label: '不关联' },
+                      { value: '__none__', label: t('admin.nodes.form.noResourceGroup') },
                       ...filteredResourceGroups.map((g) => ({ value: g.sid, label: g.name })),
                     ]}
                   />
@@ -1697,9 +1729,9 @@ export const CreateNodeSheet: React.FC<CreateNodeSheetProps> = ({
               </div>
 
               <div className="space-y-1.5">
-                <FormFieldLabel label="标签" hint="逗号分隔多个标签" />
+                <FormFieldLabel label={t('admin.nodes.form.tags')} hint={t('admin.nodes.form.tagsHint')} />
                 <MobileFormInput
-                  placeholder="高速, 稳定, 推荐"
+                  placeholder={t('admin.nodes.form.tagsPlaceholder')}
                   value={formData.tagsInput}
                   onChange={(value) => handleChange('tagsInput', value)}
                 />
@@ -1710,10 +1742,13 @@ export const CreateNodeSheet: React.FC<CreateNodeSheetProps> = ({
           {/* Step 5: Route Config */}
           <StepSection
             step={STEPS[4]}
-            badge={formData.route ? '已配置' : null}
+            title={t(STEPS[4].titleKey)}
+            badge={formData.route ? t('admin.nodes.form.configured') : null}
             isOpen={openSections.has('route')}
             isCompleted={completedSteps.has('route')}
             onToggle={() => toggleSection('route')}
+            requiredLabel={t('admin.nodes.form.required')}
+            completedLabel={t('admin.nodes.form.completed')}
           >
             <RouteConfigEditor
               value={formData.route}
@@ -1733,12 +1768,12 @@ export const CreateNodeSheet: React.FC<CreateNodeSheetProps> = ({
             {loading ? (
               <>
                 <Loader2 className="size-5 animate-spin" />
-                创建中...
+                {t('admin.nodes.form.creating')}
               </>
             ) : (
               <>
                 <Check className="size-5" />
-                {initialData ? '创建副本' : '创建节点'}
+                {initialData ? t('admin.nodes.form.createCopy') : t('admin.nodes.form.createNode')}
               </>
             )}
           </Button>
@@ -1748,7 +1783,7 @@ export const CreateNodeSheet: React.FC<CreateNodeSheetProps> = ({
             disabled={loading}
             className="w-full min-h-[44px]"
           >
-            取消
+            {t('common.actions.cancel')}
           </Button>
         </SheetFooter>
       </SheetContent>

@@ -4,6 +4,7 @@
  */
 
 import { useState, useMemo, useCallback, useEffect, lazy, Suspense } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Plus, AlertCircle, Zap } from 'lucide-react';
 import { Link } from 'react-router';
 import { DashboardLayout } from '@/layouts/DashboardLayout';
@@ -65,7 +66,8 @@ import { canCreateMoreRules } from '@/api/forward';
 import type { RowSelectionState } from '@tanstack/react-table';
 
 export const UserForwardRulesPage = () => {
-  usePageTitle('端口转发');
+  const { t } = useTranslation();
+  usePageTitle(t('userForwardRules.pageTitle'));
   const { isMobile } = useBreakpoint();
 
   const {
@@ -224,8 +226,8 @@ export const UserForwardRulesPage = () => {
       <div className="space-y-4 sm:space-y-6 pb-safe">
         {/* Page header */}
         <div className="space-y-1">
-          <h1 className="text-xl sm:text-2xl font-semibold text-foreground">端口转发</h1>
-          <p className="text-sm sm:text-base text-muted-foreground hidden sm:block">管理您的端口转发规则</p>
+          <h1 className="text-xl sm:text-2xl font-semibold text-foreground">{t('userForwardRules.pageTitle')}</h1>
+          <p className="text-sm sm:text-base text-muted-foreground hidden sm:block">{t('userForwardRules.pageDescription')}</p>
         </div>
 
         {/* No subscription prompt */}
@@ -234,14 +236,14 @@ export const UserForwardRulesPage = () => {
             <div className="p-4 rounded-full bg-amber-500/10 mb-4 sm:mb-6">
               <AlertCircle className="h-8 w-8 sm:h-10 sm:w-10 text-amber-500" />
             </div>
-            <h2 className="text-lg sm:text-xl font-semibold mb-2 text-center">暂无可用的转发服务</h2>
+            <h2 className="text-lg sm:text-xl font-semibold mb-2 text-center">{t('userForwardRules.noSubscription.title')}</h2>
             <p className="text-sm sm:text-base text-muted-foreground text-center max-w-md mb-4 sm:mb-6">
-              您当前没有包含端口转发功能的订阅计划。购买订阅后即可使用端口转发服务。
+              {t('userForwardRules.noSubscription.description')}
             </p>
             <Button asChild className="min-h-[44px] px-6">
               <Link to="/dashboard/pricing" className="gap-2">
                 <Zap className="h-4 w-4" />
-                查看订阅计划
+                {t('userForwardRules.noSubscription.viewPlans')}
               </Link>
             </Button>
           </div>
@@ -258,9 +260,9 @@ export const UserForwardRulesPage = () => {
               <div className="glass rounded-2xl flex items-start sm:items-center gap-3 p-3 sm:p-4 bg-amber-500/10 border border-amber-500/20">
                 <AlertCircle className="h-5 w-5 text-amber-500 shrink-0 mt-0.5 sm:mt-0" />
                 <div className="flex-1 min-w-0">
-                  <p className="font-medium text-amber-600 dark:text-amber-400 text-sm sm:text-base">已达到规则数量上限</p>
+                  <p className="font-medium text-amber-600 dark:text-amber-400 text-sm sm:text-base">{t('userForwardRules.limitReached.title')}</p>
                   <p className="text-xs sm:text-sm text-muted-foreground">
-                    您已创建了 {usage?.ruleCount} 条规则，达到了订阅计划的上限。如需创建更多规则，请升级您的订阅计划。
+                    {t('userForwardRules.limitReached.description', { count: usage?.ruleCount })}
                   </p>
                 </div>
               </div>
@@ -269,7 +271,7 @@ export const UserForwardRulesPage = () => {
             {/* Action bar */}
             <div className="flex items-center justify-between gap-4">
               <p className="text-xs sm:text-sm text-muted-foreground">
-                共 <span className="font-medium text-foreground">{pagination.total}</span> 条规则
+                {t('userForwardRules.totalRules', { count: pagination.total })}
               </p>
 
               <Button
@@ -278,8 +280,8 @@ export const UserForwardRulesPage = () => {
                 className="gap-2 min-h-[44px] touch-manipulation"
               >
                 <Plus className="h-4 w-4" />
-                <span className="hidden sm:inline">新增规则</span>
-                <span className="sm:hidden">新增</span>
+                <span className="hidden sm:inline">{t('userForwardRules.addRule')}</span>
+                <span className="sm:hidden">{t('userForwardRules.addRuleShort')}</span>
               </Button>
             </div>
 

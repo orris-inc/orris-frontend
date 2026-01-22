@@ -3,6 +3,7 @@
  */
 
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { AlertTriangle } from 'lucide-react';
 import {
   Dialog,
@@ -28,6 +29,7 @@ export const DeleteResourceGroupDialog: React.FC<DeleteResourceGroupDialogProps>
   onClose,
   onConfirm,
 }) => {
+  const { t } = useTranslation();
   const [loading, setLoading] = useState(false);
 
   const handleConfirm = async () => {
@@ -54,30 +56,30 @@ export const DeleteResourceGroupDialog: React.FC<DeleteResourceGroupDialogProps>
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2 text-destructive">
             <AlertTriangle className="size-5" />
-            删除资源组
+            {t('resourceGroups.deleteTitle')}
           </DialogTitle>
           <DialogDescription>
-            此操作不可撤销，请确认是否删除此资源组。
+            {t('resourceGroups.deleteDescription')}
           </DialogDescription>
         </DialogHeader>
 
         <div className="py-4">
           <div className="rounded-lg bg-destructive/10 border border-destructive/20 p-4">
             <p className="text-sm">
-              您即将删除资源组：<strong>{resourceGroup?.name}</strong>
+              {t('resourceGroups.deleteConfirm')} <strong>{resourceGroup?.name}</strong>
             </p>
             <p className="text-sm text-muted-foreground mt-2">
-              如果此资源组已关联资源，删除操作将失败。
+              {t('resourceGroups.deleteFailWarning')}
             </p>
           </div>
         </div>
 
         <DialogFooter>
           <Button variant="outline" onClick={handleClose} disabled={loading}>
-            取消
+            {t('resourceGroups.cancel')}
           </Button>
           <Button variant="destructive" onClick={handleConfirm} disabled={loading}>
-            {loading ? '删除中...' : '确认删除'}
+            {loading ? t('resourceGroups.deleting') : t('resourceGroups.confirmDelete')}
           </Button>
         </DialogFooter>
       </DialogContent>

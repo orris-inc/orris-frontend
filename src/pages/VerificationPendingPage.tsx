@@ -95,7 +95,7 @@ export const VerificationPendingPage = () => {
             </p>
           </div>
           <div className={cn(cardContentStyles, "grid gap-6")}>
-            {/* 邮箱提示 */}
+            {/* Email notification */}
             {emailFromState && (
               <div className={getAlertClass('default')}>
                 <Info className="size-4" />
@@ -105,7 +105,7 @@ export const VerificationPendingPage = () => {
               </div>
             )}
 
-            {/* 成功提示 */}
+            {/* Success message */}
             {success && (
               <div className={getAlertClass('default')}>
                 <CircleCheck className="size-4" />
@@ -115,7 +115,7 @@ export const VerificationPendingPage = () => {
               </div>
             )}
 
-            {/* 错误提示 */}
+            {/* Error message */}
             {error && (
               <div className={getAlertClass('destructive')}>
                 <TriangleAlert className="size-4" />
@@ -123,7 +123,7 @@ export const VerificationPendingPage = () => {
               </div>
             )}
 
-            {/* 操作说明 */}
+            {/* Instructions */}
             <div className="grid gap-2">
               <p className="text-sm text-muted-foreground">
                 {t('auth.verifyEmail.steps.title')}
@@ -135,7 +135,7 @@ export const VerificationPendingPage = () => {
               </ol>
             </div>
 
-            {/* 重发表单 */}
+            {/* Resend form */}
             <div className="grid gap-4">
               <p className="text-sm text-muted-foreground">
                 {t('auth.verifyEmail.resendPrompt')}
@@ -171,7 +171,7 @@ export const VerificationPendingPage = () => {
               </form>
             </div>
 
-            {/* 提示信息 */}
+            {/* Notice */}
             <div className={getAlertClass('default')}>
               <TriangleAlert className="size-4" />
               <div className={alertDescriptionStyles}>
@@ -179,7 +179,7 @@ export const VerificationPendingPage = () => {
               </div>
             </div>
 
-            {/* 返回登录 */}
+            {/* Back to login */}
             <div className="text-center text-sm text-muted-foreground">
               {t('auth.verifyEmail.alreadyVerified')}{' '}
               <RouterLink

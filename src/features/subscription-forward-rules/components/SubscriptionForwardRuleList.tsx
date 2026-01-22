@@ -4,6 +4,7 @@
  */
 
 import { useMemo, useCallback, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
   Edit,
   Trash2,
@@ -55,7 +56,8 @@ const ChainNodesDisplay: React.FC<{
   chainAgentIds: string[];
   agentsMap: Record<string, UserForwardAgent>;
   targetDisplay: { name: string; address: string } | null;
-}> = ({ chainAgentIds, agentsMap, targetDisplay }) => {
+  t: (key: string, options?: Record<string, unknown>) => string;
+}> = ({ chainAgentIds, agentsMap, targetDisplay, t }) => {
   const chainCount = chainAgentIds.length;
 
   // Get agent name
@@ -76,7 +78,7 @@ const ChainNodesDisplay: React.FC<{
             <TooltipTrigger asChild>
               <Bot className="size-3.5 text-purple-500 flex-shrink-0" />
             </TooltipTrigger>
-            <TooltipContent>经由转发 Agent</TooltipContent>
+            <TooltipContent>{t('userForwardRules.tooltip.viaForwardAgent')}</TooltipContent>
           </Tooltip>
           <span className="truncate">{firstTwoNames}</span>
         </div>
@@ -96,7 +98,7 @@ const ChainNodesDisplay: React.FC<{
           <TooltipTrigger asChild>
             <Bot className="size-3.5 text-purple-500 flex-shrink-0" />
           </TooltipTrigger>
-          <TooltipContent>经由转发 Agent</TooltipContent>
+          <TooltipContent>{t('userForwardRules.tooltip.viaForwardAgent')}</TooltipContent>
         </Tooltip>
         <span className="truncate">{firstTwoNames} ...</span>
         <Popover>
@@ -108,9 +110,9 @@ const ChainNodesDisplay: React.FC<{
           <PopoverContent className="w-80" align="start">
             <div className="space-y-3">
               <div className="flex items-center justify-between">
-                <h4 className="text-sm font-semibold">链路节点详情</h4>
+                <h4 className="text-sm font-semibold">{t('userForwardRules.popover.chainNodeDetails')}</h4>
                 <Badge variant="outline" className="text-xs">
-                  {chainCount} 个节点
+                  {t('userForwardRules.popover.nodesCount', { count: chainCount })}
                 </Badge>
               </div>
               <div className="space-y-2">
@@ -174,6 +176,7 @@ export const SubscriptionForwardRuleList: React.FC<SubscriptionForwardRuleListPr
   onDelete,
   onToggleStatus,
 }) => {
+  const { t } = useTranslation();
   const [deleteConfirm, setDeleteConfirm] = useState<{
     open: boolean;
     rule: ForwardRule | null;
@@ -196,18 +199,18 @@ export const SubscriptionForwardRuleList: React.FC<SubscriptionForwardRuleListPr
       <>
         <ContextMenuItem onClick={() => onEdit(rule)}>
           <Edit className="mr-2 size-4" />
-          编辑
+          {t('userForwardRules.menu.edit')}
         </ContextMenuItem>
         <ContextMenuSeparator />
         {rule.status === 'enabled' ? (
           <ContextMenuItem onClick={() => onToggleStatus(rule)}>
             <PowerOff className="mr-2 size-4" />
-            禁用规则
+            {t('userForwardRules.menu.disableRule')}
           </ContextMenuItem>
         ) : (
           <ContextMenuItem onClick={() => onToggleStatus(rule)}>
             <Power className="mr-2 size-4" />
-            启用规则
+            {t('userForwardRules.menu.enableRule')}
           </ContextMenuItem>
         )}
         <ContextMenuItem
@@ -215,11 +218,11 @@ export const SubscriptionForwardRuleList: React.FC<SubscriptionForwardRuleListPr
           className="text-destructive focus:text-destructive"
         >
           <Trash2 className="mr-2 size-4" />
-          删除规则
+          {t('userForwardRules.menu.deleteRule')}
         </ContextMenuItem>
       </>
     ),
-    [onEdit, onToggleStatus, handleDeleteClick]
+    [onEdit, onToggleStatus, handleDeleteClick, t]
   );
 
   // Dropdown menu content
@@ -229,12 +232,12 @@ export const SubscriptionForwardRuleList: React.FC<SubscriptionForwardRuleListPr
         {rule.status === 'enabled' ? (
           <DropdownMenuItem onClick={() => onToggleStatus(rule)}>
             <PowerOff className="mr-2 size-4" />
-            禁用规则
+            {t('userForwardRules.menu.disableRule')}
           </DropdownMenuItem>
         ) : (
           <DropdownMenuItem onClick={() => onToggleStatus(rule)}>
             <Power className="mr-2 size-4" />
-            启用规则
+            {t('userForwardRules.menu.enableRule')}
           </DropdownMenuItem>
         )}
         <DropdownMenuSeparator />
@@ -243,18 +246,18 @@ export const SubscriptionForwardRuleList: React.FC<SubscriptionForwardRuleListPr
           className="text-destructive focus:text-destructive"
         >
           <Trash2 className="mr-2 size-4" />
-          删除规则
+          {t('userForwardRules.menu.deleteRule')}
         </DropdownMenuItem>
       </>
     ),
-    [onToggleStatus, handleDeleteClick]
+    [onToggleStatus, handleDeleteClick, t]
   );
 
   const columns = useMemo<ColumnDef<ForwardRule, unknown>[]>(
     () => [
       {
         accessorKey: 'name',
-        header: '规则名',
+        header: t('userForwardRules.columns.ruleName'),
         size: 150,
         meta: { priority: 1 } as ResponsiveColumnMeta,
         cell: ({ row }) => (
@@ -270,7 +273,7 @@ export const SubscriptionForwardRuleList: React.FC<SubscriptionForwardRuleListPr
       },
       {
         id: 'entry',
-        header: '入口',
+        header: t('userForwardRules.columns.entry'),
         size: 220,
         meta: { priority: 1 } as ResponsiveColumnMeta,
         cell: ({ row }) => {
@@ -287,7 +290,7 @@ export const SubscriptionForwardRuleList: React.FC<SubscriptionForwardRuleListPr
                   <TooltipTrigger asChild>
                     <Bot className="size-3.5 text-green-500 flex-shrink-0" />
                   </TooltipTrigger>
-                  <TooltipContent>入口 Agent</TooltipContent>
+                  <TooltipContent>{t('userForwardRules.tooltip.entryAgent')}</TooltipContent>
                 </Tooltip>
                 <span className="truncate">{agentName}</span>
               </div>
@@ -301,7 +304,7 @@ export const SubscriptionForwardRuleList: React.FC<SubscriptionForwardRuleListPr
       },
       {
         id: 'exit',
-        header: '出口',
+        header: t('userForwardRules.columns.exit'),
         size: 240,
         meta: { priority: 1 } as ResponsiveColumnMeta,
         cell: ({ row }) => {
@@ -311,7 +314,7 @@ export const SubscriptionForwardRuleList: React.FC<SubscriptionForwardRuleListPr
           const getTargetDisplay = () => {
             if (rule.targetAddress) {
               return {
-                name: '目标地址',
+                name: t('userForwardRules.tooltip.targetAddress'),
                 address: `${rule.targetAddress}:${rule.targetPort}`,
                 type: 'manual' as const,
               };
@@ -332,7 +335,7 @@ export const SubscriptionForwardRuleList: React.FC<SubscriptionForwardRuleListPr
                     <TooltipTrigger asChild>
                       <Bot {...iconProps} />
                     </TooltipTrigger>
-                    <TooltipContent>经由转发 Agent</TooltipContent>
+                    <TooltipContent>{t('userForwardRules.tooltip.viaForwardAgent')}</TooltipContent>
                   </Tooltip>
                 );
               case 'manual':
@@ -341,7 +344,7 @@ export const SubscriptionForwardRuleList: React.FC<SubscriptionForwardRuleListPr
                     <TooltipTrigger asChild>
                       <Settings {...iconProps} />
                     </TooltipTrigger>
-                    <TooltipContent>目标地址</TooltipContent>
+                    <TooltipContent>{t('userForwardRules.tooltip.targetAddress')}</TooltipContent>
                   </Tooltip>
                 );
             }
@@ -376,6 +379,7 @@ export const SubscriptionForwardRuleList: React.FC<SubscriptionForwardRuleListPr
                 chainAgentIds={rule.chainAgentIds}
                 agentsMap={agentsMap}
                 targetDisplay={target}
+                t={t}
               />
             );
           }
@@ -399,7 +403,7 @@ export const SubscriptionForwardRuleList: React.FC<SubscriptionForwardRuleListPr
       },
       {
         id: 'traffic',
-        header: '已用流量',
+        header: t('userForwardRules.columns.usedTraffic'),
         size: 100,
         meta: { priority: 1 } as ResponsiveColumnMeta,
         cell: ({ row }) => {
@@ -411,8 +415,8 @@ export const SubscriptionForwardRuleList: React.FC<SubscriptionForwardRuleListPr
               </TooltipTrigger>
               <TooltipContent>
                 <div className="space-y-1">
-                  <div>上传: {formatBytesGB(row.original.uploadBytes)}</div>
-                  <div>下载: {formatBytesGB(row.original.downloadBytes)}</div>
+                  <div>{t('userForwardRules.traffic.upload')} {formatBytesGB(row.original.uploadBytes)}</div>
+                  <div>{t('userForwardRules.traffic.download')} {formatBytesGB(row.original.downloadBytes)}</div>
                 </div>
               </TooltipContent>
             </Tooltip>
@@ -421,7 +425,7 @@ export const SubscriptionForwardRuleList: React.FC<SubscriptionForwardRuleListPr
       },
       {
         accessorKey: 'status',
-        header: '状态',
+        header: t('userForwardRules.columns.status'),
         size: 88,
         meta: { priority: 1 } as ResponsiveColumnMeta,
         cell: ({ row }) => {
@@ -435,18 +439,18 @@ export const SubscriptionForwardRuleList: React.FC<SubscriptionForwardRuleListPr
                     className="text-xs cursor-pointer"
                     onClick={() => onToggleStatus(rule)}
                   >
-                    {rule.status === 'enabled' ? '已启用' : '已禁用'}
+                    {rule.status === 'enabled' ? t('userForwardRules.status.enabled') : t('userForwardRules.status.disabled')}
                   </Badge>
                 </span>
               </TooltipTrigger>
-              <TooltipContent>{rule.status === 'enabled' ? '点击禁用' : '点击启用'}</TooltipContent>
+              <TooltipContent>{rule.status === 'enabled' ? t('userForwardRules.status.clickToDisable') : t('userForwardRules.status.clickToEnable')}</TooltipContent>
             </Tooltip>
           );
         },
       },
       {
         id: 'actions',
-        header: '操作',
+        header: t('userForwardRules.columns.actions'),
         size: 100,
         meta: { priority: 1 } as ResponsiveColumnMeta,
         enableSorting: false,
@@ -463,7 +467,7 @@ export const SubscriptionForwardRuleList: React.FC<SubscriptionForwardRuleListPr
                     <Edit className="size-4" />
                   </button>
                 </TooltipTrigger>
-                <TooltipContent>编辑</TooltipContent>
+                <TooltipContent>{t('userForwardRules.menu.edit')}</TooltipContent>
               </Tooltip>
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
@@ -482,7 +486,7 @@ export const SubscriptionForwardRuleList: React.FC<SubscriptionForwardRuleListPr
         },
       },
     ],
-    [agentsMap, onEdit, onToggleStatus, renderDropdownMenuActions]
+    [agentsMap, onEdit, onToggleStatus, renderDropdownMenuActions, t]
   );
 
   return (
@@ -496,7 +500,7 @@ export const SubscriptionForwardRuleList: React.FC<SubscriptionForwardRuleListPr
         total={total}
         onPageChange={onPageChange}
         onPageSizeChange={onPageSizeChange}
-        emptyMessage="暂无转发规则"
+        emptyMessage={t('userForwardRules.empty')}
         getRowId={(row) => String(row.id)}
         enableContextMenu={true}
         contextMenuContent={renderContextMenuActions}
@@ -506,10 +510,10 @@ export const SubscriptionForwardRuleList: React.FC<SubscriptionForwardRuleListPr
       <ConfirmDialog
         open={deleteConfirm.open}
         onOpenChange={(open) => setDeleteConfirm({ open, rule: null })}
-        title="确认删除"
-        description={`确认删除转发规则「${deleteConfirm.rule?.name}」吗？此操作不可恢复。`}
-        confirmText="删除"
-        cancelText="取消"
+        title={t('userForwardRules.confirmDelete.title')}
+        description={t('userForwardRules.confirmDelete.description', { name: deleteConfirm.rule?.name })}
+        confirmText={t('common.actions.delete')}
+        cancelText={t('common.actions.cancel')}
         variant="destructive"
         onConfirm={handleDeleteConfirm}
       />

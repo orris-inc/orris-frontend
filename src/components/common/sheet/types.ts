@@ -159,3 +159,68 @@ export interface ConfirmActionSheetProps extends BaseSheetProps {
   /** Confirm callback - can be async */
   onConfirm: () => void | Promise<void>;
 }
+
+// ============================================================================
+// SelectSheet
+// ============================================================================
+
+/**
+ * SelectSheet Option - Single option item
+ */
+export interface SelectSheetOption<T extends string = string> {
+  /** Option value */
+  value: T;
+  /** Display label */
+  label: string;
+  /** Optional description below label */
+  description?: string;
+  /** Optional left icon */
+  icon?: ReactNode;
+  /** Optional color indicator (Tailwind class) */
+  color?: string;
+  /** Disabled state */
+  disabled?: boolean;
+}
+
+/**
+ * SelectSheet Option Group - For grouped options
+ */
+export interface SelectSheetOptionGroup<T extends string = string> {
+  /** Group label */
+  label: string;
+  /** Options in this group */
+  options: SelectSheetOption<T>[];
+}
+
+/**
+ * SelectSheet Props - Bottom sheet select picker
+ *
+ * Features:
+ * - Bottom drawer with option list
+ * - Check mark on selected item
+ * - Optional search filter
+ * - Optional grouped options
+ * - Touch-friendly 48px targets
+ */
+export interface SelectSheetProps<T extends string = string> extends BaseSheetProps {
+  /** Current selected value */
+  value: T | null;
+  /** Change handler - called when option selected */
+  onChange: (value: T) => void;
+  /** Flat options list (use this OR groups, not both) */
+  options?: SelectSheetOption<T>[];
+  /** Grouped options (use this OR options, not both) */
+  groups?: SelectSheetOptionGroup<T>[];
+  /** Sheet title */
+  title?: string;
+  /** Optional description */
+  description?: string;
+  /** Placeholder when no selection */
+  placeholder?: string;
+  /** Enable search filter */
+  searchable?: boolean;
+  /** Search placeholder text */
+  searchPlaceholder?: string;
+  /** Close sheet after selection (default: true) */
+  closeOnSelect?: boolean;
+}

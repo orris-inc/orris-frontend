@@ -64,7 +64,7 @@ const getPriceDisplay = (plan: SubscriptionPlan): string => {
   const currency = activePricings[0].currency;
   const currencySymbol = currency === 'CNY' ? '¥' : '$';
 
-  return `${currencySymbol}${(minPrice / 100).toFixed(0)}起`;
+  return `${currencySymbol}${(minPrice / 100).toFixed(0)}+`;
 };
 
 const getPricingCount = (plan: SubscriptionPlan): number => {

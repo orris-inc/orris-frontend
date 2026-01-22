@@ -4,6 +4,7 @@
  */
 
 import { useState, useEffect, useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
   Server,
   Network,
@@ -75,62 +76,36 @@ const SS_ENCRYPTION_METHODS = [
 // Trojan transport protocols
 const TRANSPORT_PROTOCOLS: TransportProtocol[] = ['tcp', 'ws', 'grpc'];
 
-// Status options for MobileSelect
-const STATUS_OPTIONS: MobileSelectOption[] = [
-  { value: 'active', label: '激活', color: 'bg-emerald-500' },
-  { value: 'inactive', label: '未激活', color: 'bg-gray-400' },
-  { value: 'maintenance', label: '维护中', color: 'bg-amber-500' },
-];
+// Status options for MobileSelect - labels will be translated in component
+const STATUS_OPTIONS_VALUES = ['active', 'inactive', 'maintenance'] as const;
+const STATUS_COLORS: Record<string, string> = {
+  active: 'bg-emerald-500',
+  inactive: 'bg-gray-400',
+  maintenance: 'bg-amber-500',
+};
 
-// TLS security options for MobileSelect
-const TLS_SECURITY_OPTIONS: MobileSelectOption[] = [
-  { value: 'false', label: '验证证书（安全）' },
-  { value: 'true', label: '跳过验证（不安全）' },
-];
+// TLS security options are created dynamically in component with translations
 
 // VLESS transport protocols
 const VLESS_TRANSPORT_PROTOCOLS: TransportProtocol[] = ['tcp', 'ws', 'grpc', 'h2'];
 
-// VLESS security types
-const VLESS_SECURITY_OPTIONS: { value: VLESSSecurity; label: string }[] = [
-  { value: 'tls', label: 'TLS' },
-  { value: 'reality', label: 'Reality' },
-  { value: 'none', label: '无' },
-];
+// VLESS security types - labels will be translated in component
+const VLESS_SECURITY_VALUES: VLESSSecurity[] = ['tls', 'reality', 'none'];
 
 // VMess transport protocols
 const VMESS_TRANSPORT_PROTOCOLS: TransportProtocol[] = ['tcp', 'ws', 'grpc', 'http', 'quic'];
 
-// VMess security types
-const VMESS_SECURITY_OPTIONS: { value: VMessSecurity; label: string }[] = [
-  { value: 'auto', label: 'Auto (推荐)' },
-  { value: 'aes-128-gcm', label: 'AES-128-GCM' },
-  { value: 'chacha20-poly1305', label: 'ChaCha20-Poly1305' },
-  { value: 'none', label: '无' },
-  { value: 'zero', label: 'Zero' },
-];
+// VMess security types - labels will be translated in component
+const VMESS_SECURITY_VALUES: VMessSecurity[] = ['auto', 'aes-128-gcm', 'chacha20-poly1305', 'none', 'zero'];
 
-// Congestion control algorithms
-const CONGESTION_CONTROL_OPTIONS: { value: CongestionControl; label: string }[] = [
-  { value: 'bbr', label: 'BBR (推荐)' },
-  { value: 'cubic', label: 'Cubic' },
-  { value: 'new_reno', label: 'New Reno' },
-];
+// Congestion control algorithms - labels will be translated in component
+const CONGESTION_CONTROL_VALUES: CongestionControl[] = ['bbr', 'cubic', 'new_reno'];
 
 // TUIC UDP relay modes
-const TUIC_UDP_RELAY_MODES: { value: TUICUDPRelayMode; label: string }[] = [
-  { value: 'native', label: 'Native' },
-  { value: 'quic', label: 'QUIC' },
-];
+const TUIC_UDP_RELAY_VALUES: TUICUDPRelayMode[] = ['native', 'quic'];
 
-// TLS fingerprint options
-const TLS_FINGERPRINT_OPTIONS: MobileSelectOption[] = [
-  { value: 'chrome', label: 'Chrome' },
-  { value: 'firefox', label: 'Firefox' },
-  { value: 'safari', label: 'Safari' },
-  { value: 'edge', label: 'Edge' },
-  { value: 'random', label: '随机' },
-];
+// TLS fingerprint options - labels will be translated in component
+const TLS_FINGERPRINT_VALUES = ['chrome', 'firefox', 'safari', 'edge', 'random'] as const;
 
 // Protocol configuration for display
 const PROTOCOL_CONFIG: Record<NodeProtocol, { name: string; icon: React.ElementType }> = {
@@ -274,6 +249,7 @@ export const EditNodeSheet: React.FC<EditNodeSheetProps> = ({
   onSubmit,
   nodes = [],
 }) => {
+  const { t } = useTranslation();
   const [formData, setFormData] = useState<FormData>({ tagsInput: '', groupSids: [] });
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [pluginOptsStr, setPluginOptsStr] = useState<string>('');
@@ -299,6 +275,51 @@ export const EditNodeSheet: React.FC<EditNodeSheetProps> = ({
       return planType === 'node' || planType === 'hybrid';
     });
   }, [resourceGroups, plans]);
+
+  // Translated select options
+  const statusOptions: MobileSelectOption[] = useMemo(() =>
+    STATUS_OPTIONS_VALUES.map((value) => ({
+      value,
+      label: t(`admin.nodes.form.status.${value}`),
+      color: STATUS_COLORS[value],
+    })), [t]);
+
+  const tlsSecurityOptions: MobileSelectOption[] = useMemo(() => [
+    { value: 'false', label: t('admin.nodes.form.verifyCert') },
+    { value: 'true', label: t('admin.nodes.form.skipVerify') },
+  ], [t]);
+
+  const vlessSecurityOptions: MobileSelectOption[] = useMemo(() =>
+    VLESS_SECURITY_VALUES.map((value) => ({
+      value,
+      label: value === 'none' ? t('admin.nodes.form.disableTls') : value.toUpperCase(),
+    })), [t]);
+
+  const vmessSecurityOptions: MobileSelectOption[] = useMemo(() =>
+    VMESS_SECURITY_VALUES.map((value) => ({
+      value,
+      label: value === 'auto' ? `Auto (${t('admin.nodes.form.vmessSecurityRecommended')})` : value === 'none' ? t('admin.nodes.form.disableTls') : value.toUpperCase(),
+    })), [t]);
+
+  const congestionControlOptions: MobileSelectOption[] = useMemo(() =>
+    CONGESTION_CONTROL_VALUES.map((value) => ({
+      value,
+      label: value === 'bbr' ? `BBR (${t('admin.nodes.form.congestionControlRecommended')})` : value.replace('_', ' ').toUpperCase(),
+    })), [t]);
+
+  const udpRelayModeOptions: MobileSelectOption[] = useMemo(() =>
+    TUIC_UDP_RELAY_VALUES.map((value) => ({
+      value,
+      label: value.toUpperCase(),
+    })), []);
+
+  const fingerprintOptions: MobileSelectOption[] = useMemo(() => [
+    { value: '__none__', label: t('admin.nodes.form.disableTls') },
+    ...TLS_FINGERPRINT_VALUES.map((value) => ({
+      value,
+      label: value === 'random' ? t('admin.nodes.form.randomFingerprint') : value.charAt(0).toUpperCase() + value.slice(1),
+    })),
+  ], [t]);
 
   useEffect(() => {
     if (node) {
@@ -443,7 +464,7 @@ export const EditNodeSheet: React.FC<EditNodeSheetProps> = ({
     if (formData.name !== undefined && hasStringChanged(formData.name, node.name)) {
       const trimmedName = formData.name.trim();
       if (!trimmedName) {
-        newErrors.name = '节点名称不能为空';
+        newErrors.name = t('admin.nodes.form.validation.nameRequired');
       } else {
         updates.name = trimmedName;
       }
@@ -455,7 +476,7 @@ export const EditNodeSheet: React.FC<EditNodeSheetProps> = ({
 
     if (formData.agentPort !== node.agentPort && formData.agentPort !== undefined) {
       if (formData.agentPort < 1 || formData.agentPort > 65535) {
-        newErrors.agentPort = '端口必须在1-65535之间';
+        newErrors.agentPort = t('admin.nodes.form.validation.portRange');
       } else {
         updates.agentPort = formData.agentPort;
       }
@@ -463,7 +484,7 @@ export const EditNodeSheet: React.FC<EditNodeSheetProps> = ({
 
     if (formData.subscriptionPort !== node.subscriptionPort && formData.subscriptionPort !== undefined) {
       if (formData.subscriptionPort < 1 || formData.subscriptionPort > 65535) {
-        newErrors.subscriptionPort = '端口必须在1-65535之间';
+        newErrors.subscriptionPort = t('admin.nodes.form.validation.portRange');
       } else {
         updates.subscriptionPort = formData.subscriptionPort;
       }
@@ -592,29 +613,29 @@ export const EditNodeSheet: React.FC<EditNodeSheetProps> = ({
             <div className="size-10 rounded-full bg-primary/10 flex items-center justify-center">
               <Server className="size-5 text-primary" />
             </div>
-            <span>编辑节点</span>
+            <span>{t('admin.nodes.form.editNode')}</span>
           </SheetTitle>
           <SheetDescription>
-            修改节点 {node.name} 的配置
+            {t('admin.nodes.form.editNodeDesc', { name: node.name })}
           </SheetDescription>
         </SheetHeader>
 
         <SheetBody className="py-4 space-y-3">
           {/* Basic Info Section */}
           <MobileSection
-            title="基本信息"
+            title={t('admin.nodes.form.section.basicInfo')}
             icon={Server}
             isOpen={openSections.has('basic')}
             onToggle={() => toggleSection('basic')}
           >
             <div className="space-y-4">
               <div className="space-y-1.5">
-                <FormFieldLabel label="节点ID" hint="不可修改" />
+                <FormFieldLabel label={t('admin.nodes.form.nodeId')} hint={t('admin.nodes.form.protocolCannotChange')} />
                 <MobileFormInput value={node.id} disabled className="font-mono bg-muted" />
               </div>
 
               <div className="space-y-1.5">
-                <FormFieldLabel label="节点名称" />
+                <FormFieldLabel label={t('admin.nodes.form.nodeName')} />
                 <MobileFormInput
                   value={formData.name || ''}
                   onChange={(value) => handleChange('name', value)}
@@ -623,7 +644,7 @@ export const EditNodeSheet: React.FC<EditNodeSheetProps> = ({
               </div>
 
               <div className="space-y-1.5">
-                <FormFieldLabel label="协议类型" hint="创建后不可修改" />
+                <FormFieldLabel label={t('admin.nodes.form.protocolType')} hint={t('admin.nodes.form.protocolCannotChange')} />
                 <MobileFormInput
                   value={PROTOCOL_CONFIG[node.protocol]?.name || node.protocol}
                   disabled
@@ -632,17 +653,17 @@ export const EditNodeSheet: React.FC<EditNodeSheetProps> = ({
               </div>
 
               <div className="space-y-1.5">
-                <FormFieldLabel label="状态" />
+                <FormFieldLabel label={t('admin.nodes.fields.status')} />
                 <MobileSelect
                   value={formData.status || 'inactive'}
                   onChange={(value) => handleChange('status', value)}
-                  options={STATUS_OPTIONS}
+                  options={statusOptions}
                 />
               </div>
 
               {isShadowsocks && (
                 <div className="space-y-1.5">
-                  <FormFieldLabel label="加密方法" />
+                  <FormFieldLabel label={t('admin.nodes.form.encryptionMethod')} />
                   <MobileSelect
                     value={formData.encryptionMethod || ''}
                     onChange={(value) => handleChange('encryptionMethod', value)}
@@ -656,7 +677,7 @@ export const EditNodeSheet: React.FC<EditNodeSheetProps> = ({
 
               {isTrojan && (
                 <div className="space-y-1.5">
-                  <FormFieldLabel label="传输协议" />
+                  <FormFieldLabel label={t('admin.nodes.form.transportProtocol')} />
                   <MobileSelect
                     value={formData.transportProtocol || 'tcp'}
                     onChange={(value) => handleChange('transportProtocol', value)}
@@ -671,7 +692,7 @@ export const EditNodeSheet: React.FC<EditNodeSheetProps> = ({
               {isVless && (
                 <div className="grid grid-cols-2 gap-3">
                   <div className="space-y-1.5">
-                    <FormFieldLabel label="传输协议" />
+                    <FormFieldLabel label={t('admin.nodes.form.transportProtocol')} />
                     <MobileSelect
                       value={formData.vlessTransportType || 'tcp'}
                       onChange={(value) => handleChange('vlessTransportType', value as TransportProtocol)}
@@ -682,11 +703,11 @@ export const EditNodeSheet: React.FC<EditNodeSheetProps> = ({
                     />
                   </div>
                   <div className="space-y-1.5">
-                    <FormFieldLabel label="安全类型" />
+                    <FormFieldLabel label={t('admin.nodes.form.securityType')} />
                     <MobileSelect
                       value={formData.vlessSecurity || 'tls'}
                       onChange={(value) => handleChange('vlessSecurity', value as VLESSSecurity)}
-                      options={VLESS_SECURITY_OPTIONS}
+                      options={vlessSecurityOptions}
                     />
                   </div>
                 </div>
@@ -695,7 +716,7 @@ export const EditNodeSheet: React.FC<EditNodeSheetProps> = ({
               {isVmess && (
                 <div className="grid grid-cols-2 gap-3">
                   <div className="space-y-1.5">
-                    <FormFieldLabel label="传输协议" />
+                    <FormFieldLabel label={t('admin.nodes.form.transportProtocol')} />
                     <MobileSelect
                       value={formData.vmessTransportType || 'tcp'}
                       onChange={(value) => handleChange('vmessTransportType', value as TransportProtocol)}
@@ -706,11 +727,11 @@ export const EditNodeSheet: React.FC<EditNodeSheetProps> = ({
                     />
                   </div>
                   <div className="space-y-1.5">
-                    <FormFieldLabel label="加密方式" />
+                    <FormFieldLabel label={t('admin.nodes.form.encryptionMethod')} />
                     <MobileSelect
                       value={formData.vmessSecurity || 'auto'}
                       onChange={(value) => handleChange('vmessSecurity', value as VMessSecurity)}
-                      options={VMESS_SECURITY_OPTIONS}
+                      options={vmessSecurityOptions}
                     />
                   </div>
                 </div>
@@ -718,11 +739,11 @@ export const EditNodeSheet: React.FC<EditNodeSheetProps> = ({
 
               {isHysteria2 && (
                 <div className="space-y-1.5">
-                  <FormFieldLabel label="拥塞控制" />
+                  <FormFieldLabel label={t('admin.nodes.form.congestionControl')} />
                   <MobileSelect
                     value={formData.hysteria2CongestionControl || 'bbr'}
                     onChange={(value) => handleChange('hysteria2CongestionControl', value as CongestionControl)}
-                    options={CONGESTION_CONTROL_OPTIONS}
+                    options={congestionControlOptions}
                   />
                 </div>
               )}
@@ -730,19 +751,19 @@ export const EditNodeSheet: React.FC<EditNodeSheetProps> = ({
               {isTuic && (
                 <div className="grid grid-cols-2 gap-3">
                   <div className="space-y-1.5">
-                    <FormFieldLabel label="拥塞控制" />
+                    <FormFieldLabel label={t('admin.nodes.form.congestionControl')} />
                     <MobileSelect
                       value={formData.tuicCongestionControl || 'bbr'}
                       onChange={(value) => handleChange('tuicCongestionControl', value as CongestionControl)}
-                      options={CONGESTION_CONTROL_OPTIONS}
+                      options={congestionControlOptions}
                     />
                   </div>
                   <div className="space-y-1.5">
-                    <FormFieldLabel label="UDP 中继" />
+                    <FormFieldLabel label={t('admin.nodes.form.udpRelayMode')} />
                     <MobileSelect
                       value={formData.tuicUdpRelayMode || 'native'}
                       onChange={(value) => handleChange('tuicUdpRelayMode', value as TUICUDPRelayMode)}
-                      options={TUIC_UDP_RELAY_MODES}
+                      options={udpRelayModeOptions}
                     />
                   </div>
                 </div>
@@ -752,14 +773,14 @@ export const EditNodeSheet: React.FC<EditNodeSheetProps> = ({
 
           {/* Network Section */}
           <MobileSection
-            title="网络配置"
+            title={t('admin.nodes.form.section.networkConfig')}
             icon={Network}
             isOpen={openSections.has('network')}
             onToggle={() => toggleSection('network')}
           >
             <div className="space-y-4">
               <div className="space-y-1.5">
-                <FormFieldLabel label="服务器地址" />
+                <FormFieldLabel label={t('admin.nodes.form.serverAddress')} />
                 <MobileFormInput
                   value={formData.serverAddress || ''}
                   onChange={(value) => handleChange('serverAddress', value)}
@@ -770,7 +791,7 @@ export const EditNodeSheet: React.FC<EditNodeSheetProps> = ({
 
               <div className="grid grid-cols-2 gap-3">
                 <div className="space-y-1.5">
-                  <FormFieldLabel label="代理端口" />
+                  <FormFieldLabel label={t('admin.nodes.form.agentPort')} />
                   <MobileFormInput
                     type="number"
                     min={1}
@@ -783,12 +804,12 @@ export const EditNodeSheet: React.FC<EditNodeSheetProps> = ({
                 </div>
 
                 <div className="space-y-1.5">
-                  <FormFieldLabel label="订阅端口" />
+                  <FormFieldLabel label={t('admin.nodes.form.subscriptionPort')} />
                   <MobileFormInput
                     type="number"
                     min={1}
                     max={65535}
-                    placeholder="默认使用代理端口"
+                    placeholder={t('admin.nodes.form.subscriptionPortPlaceholder')}
                     value={formData.subscriptionPort !== undefined ? String(formData.subscriptionPort) : ''}
                     onChange={(value) => handleChange('subscriptionPort', value ? parseInt(value, 10) : undefined)}
                     error={errors.subscriptionPort}
@@ -801,9 +822,9 @@ export const EditNodeSheet: React.FC<EditNodeSheetProps> = ({
 
           {/* Protocol Settings Section */}
           <MobileSection
-            title={`${PROTOCOL_CONFIG[node.protocol]?.name || node.protocol} 配置`}
+            title={`${PROTOCOL_CONFIG[node.protocol]?.name || node.protocol} ${t('admin.nodes.form.config')}`}
             icon={PROTOCOL_CONFIG[node.protocol]?.icon || Shield}
-            badge={hasProtocolSettings ? '已配置' : null}
+            badge={hasProtocolSettings ? t('admin.nodes.form.configured') : null}
             isOpen={openSections.has('protocol')}
             onToggle={() => toggleSection('protocol')}
           >
@@ -811,7 +832,7 @@ export const EditNodeSheet: React.FC<EditNodeSheetProps> = ({
               {isShadowsocks && (
                 <>
                   <div className="space-y-1.5">
-                    <FormFieldLabel label="插件" hint="可选，如 obfs-local, v2ray-plugin" />
+                    <FormFieldLabel label={t('admin.nodes.form.plugin')} hint={t('admin.nodes.form.pluginHint')} />
                     <MobileFormInput
                       placeholder="obfs-local"
                       value={formData.plugin || ''}
@@ -821,7 +842,7 @@ export const EditNodeSheet: React.FC<EditNodeSheetProps> = ({
                   </div>
 
                   <div className="space-y-1.5">
-                    <FormFieldLabel label="插件选项" hint="格式：key1=value1;key2=value2" />
+                    <FormFieldLabel label={t('admin.nodes.form.pluginOptions')} hint={t('admin.nodes.form.pluginOptionsHint')} />
                     <MobileFormInput
                       placeholder="obfs=http;obfs-host=www.bing.com"
                       value={pluginOptsStr}
@@ -835,7 +856,7 @@ export const EditNodeSheet: React.FC<EditNodeSheetProps> = ({
               {isTrojan && (
                 <>
                   <div className="space-y-1.5">
-                    <FormFieldLabel label="SNI" hint="TLS 服务器名称" />
+                    <FormFieldLabel label="SNI" hint={t('admin.nodes.form.sniHint')} />
                     <MobileFormInput
                       placeholder="example.com"
                       value={formData.sni || ''}
@@ -845,11 +866,11 @@ export const EditNodeSheet: React.FC<EditNodeSheetProps> = ({
                   </div>
 
                   <div className="space-y-1.5">
-                    <FormFieldLabel label="TLS 安全" hint="自签名证书可跳过验证" />
+                    <FormFieldLabel label={t('admin.nodes.form.tlsSecurity')} hint={t('admin.nodes.form.tlsSecurityHint')} />
                     <MobileSelect
                       value={formData.allowInsecure ? 'true' : 'false'}
                       onChange={(value) => handleChange('allowInsecure', value === 'true')}
-                      options={TLS_SECURITY_OPTIONS}
+                      options={tlsSecurityOptions}
                     />
                   </div>
 
@@ -866,7 +887,7 @@ export const EditNodeSheet: React.FC<EditNodeSheetProps> = ({
                       </div>
 
                       <div className="space-y-1.5">
-                        <FormFieldLabel label="Path" hint="WebSocket 路径" />
+                        <FormFieldLabel label="Path" hint={t('admin.nodes.form.wsPathHint')} />
                         <MobileFormInput
                           placeholder="/path"
                           value={formData.path || ''}
@@ -879,7 +900,7 @@ export const EditNodeSheet: React.FC<EditNodeSheetProps> = ({
 
                   {showGrpcFields && (
                     <div className="space-y-1.5">
-                      <FormFieldLabel label="Service Name" hint="gRPC 服务名称" />
+                      <FormFieldLabel label="Service Name" hint={t('admin.nodes.form.grpcServiceNameHint')} />
                       <MobileFormInput
                         placeholder="grpc-service"
                         value={formData.host || ''}
@@ -896,7 +917,7 @@ export const EditNodeSheet: React.FC<EditNodeSheetProps> = ({
                 <>
                   <div className="grid grid-cols-2 gap-3">
                     <div className="space-y-1.5">
-                      <FormFieldLabel label="SNI" hint="TLS 服务器名称" />
+                      <FormFieldLabel label="SNI" hint={t('admin.nodes.form.sniHint')} />
                       <MobileFormInput
                         placeholder="example.com"
                         value={formData.vlessSni || ''}
@@ -905,18 +926,18 @@ export const EditNodeSheet: React.FC<EditNodeSheetProps> = ({
                       />
                     </div>
                     <div className="space-y-1.5">
-                      <FormFieldLabel label="TLS 验证" />
+                      <FormFieldLabel label={t('admin.nodes.form.tlsVerify')} />
                       <MobileSelect
                         value={formData.vlessAllowInsecure ? 'true' : 'false'}
                         onChange={(value) => handleChange('vlessAllowInsecure', value === 'true')}
-                        options={TLS_SECURITY_OPTIONS}
+                        options={tlsSecurityOptions}
                       />
                     </div>
                   </div>
 
                   <div className="grid grid-cols-2 gap-3">
                     <div className="space-y-1.5">
-                      <FormFieldLabel label="Flow" hint="流控" />
+                      <FormFieldLabel label="Flow" hint={t('admin.nodes.form.flowHint')} />
                       <MobileFormInput
                         placeholder="xtls-rprx-vision"
                         value={formData.vlessFlow || ''}
@@ -925,11 +946,11 @@ export const EditNodeSheet: React.FC<EditNodeSheetProps> = ({
                       />
                     </div>
                     <div className="space-y-1.5">
-                      <FormFieldLabel label="指纹" />
+                      <FormFieldLabel label={t('admin.nodes.form.fingerprintHint')} />
                       <MobileSelect
                         value={formData.vlessFingerprint || '__none__'}
                         onChange={(value) => handleChange('vlessFingerprint', value === '__none__' ? '' : value)}
-                        options={[{ value: '__none__', label: '无' }, ...TLS_FINGERPRINT_OPTIONS]}
+                        options={fingerprintOptions}
                       />
                     </div>
                   </div>
@@ -946,7 +967,7 @@ export const EditNodeSheet: React.FC<EditNodeSheetProps> = ({
                         />
                       </div>
                       <div className="space-y-1.5">
-                        <FormFieldLabel label="Path" hint="WS/H2 路径" />
+                        <FormFieldLabel label="Path" hint={t('admin.nodes.form.wsH2PathHint')} />
                         <MobileFormInput
                           placeholder="/ws"
                           value={formData.vlessPath || ''}
@@ -959,7 +980,7 @@ export const EditNodeSheet: React.FC<EditNodeSheetProps> = ({
 
                   {showVlessGrpcFields && (
                     <div className="space-y-1.5">
-                      <FormFieldLabel label="Service Name" hint="gRPC 服务名称" />
+                      <FormFieldLabel label="Service Name" hint={t('admin.nodes.form.grpcServiceNameHint')} />
                       <MobileFormInput
                         placeholder="grpc-service"
                         value={formData.vlessServiceName || ''}
@@ -973,9 +994,9 @@ export const EditNodeSheet: React.FC<EditNodeSheetProps> = ({
                     <>
                       <div className="grid grid-cols-2 gap-3">
                         <div className="space-y-1.5">
-                          <FormFieldLabel label="Public Key" hint="Reality 公钥" />
+                          <FormFieldLabel label="Public Key" hint={t('admin.nodes.form.realityPublicKeyHint')} />
                           <MobileFormInput
-                            placeholder="公钥"
+                            placeholder={t('admin.nodes.form.publicKeyPlaceholder')}
                             value={formData.vlessRealityPublicKey || ''}
                             onChange={(value) => handleChange('vlessRealityPublicKey', value)}
                             className="font-mono text-xs"
@@ -984,7 +1005,7 @@ export const EditNodeSheet: React.FC<EditNodeSheetProps> = ({
                         <div className="space-y-1.5">
                           <FormFieldLabel label="Short ID" />
                           <MobileFormInput
-                            placeholder="短 ID"
+                            placeholder={t('admin.nodes.form.shortIdPlaceholder')}
                             value={formData.vlessRealityShortId || ''}
                             onChange={(value) => handleChange('vlessRealityShortId', value)}
                             className="font-mono"
@@ -992,7 +1013,7 @@ export const EditNodeSheet: React.FC<EditNodeSheetProps> = ({
                         </div>
                       </div>
                       <div className="space-y-1.5">
-                        <FormFieldLabel label="Spider X" hint="可选" />
+                        <FormFieldLabel label="Spider X" hint={t('admin.nodes.form.optional')} />
                         <MobileFormInput
                           placeholder="/"
                           value={formData.vlessRealitySpiderX || ''}
@@ -1010,7 +1031,7 @@ export const EditNodeSheet: React.FC<EditNodeSheetProps> = ({
                 <>
                   <div className="grid grid-cols-2 gap-3">
                     <div className="space-y-1.5">
-                      <FormFieldLabel label="Alter ID" hint="通常为 0" />
+                      <FormFieldLabel label="Alter ID" hint={t('admin.nodes.form.alterIdHint')} />
                       <MobileFormInput
                         type="number"
                         inputMode="numeric"
@@ -1025,8 +1046,8 @@ export const EditNodeSheet: React.FC<EditNodeSheetProps> = ({
                         value={formData.vmessTls ? 'true' : 'false'}
                         onChange={(value) => handleChange('vmessTls', value === 'true')}
                         options={[
-                          { value: 'true', label: '启用 TLS' },
-                          { value: 'false', label: '不启用' },
+                          { value: 'true', label: t('admin.nodes.form.enableTls') },
+                          { value: 'false', label: t('admin.nodes.form.disableTls') },
                         ]}
                       />
                     </div>
@@ -1034,7 +1055,7 @@ export const EditNodeSheet: React.FC<EditNodeSheetProps> = ({
 
                   <div className="grid grid-cols-2 gap-3">
                     <div className="space-y-1.5">
-                      <FormFieldLabel label="SNI" hint="TLS 服务器名称" />
+                      <FormFieldLabel label="SNI" hint={t('admin.nodes.form.sniHint')} />
                       <MobileFormInput
                         placeholder="example.com"
                         value={formData.vmessSni || ''}
@@ -1043,11 +1064,11 @@ export const EditNodeSheet: React.FC<EditNodeSheetProps> = ({
                       />
                     </div>
                     <div className="space-y-1.5">
-                      <FormFieldLabel label="TLS 验证" />
+                      <FormFieldLabel label={t('admin.nodes.form.tlsVerify')} />
                       <MobileSelect
                         value={formData.vmessAllowInsecure ? 'true' : 'false'}
                         onChange={(value) => handleChange('vmessAllowInsecure', value === 'true')}
-                        options={TLS_SECURITY_OPTIONS}
+                        options={tlsSecurityOptions}
                       />
                     </div>
                   </div>
@@ -1064,7 +1085,7 @@ export const EditNodeSheet: React.FC<EditNodeSheetProps> = ({
                         />
                       </div>
                       <div className="space-y-1.5">
-                        <FormFieldLabel label="Path" hint="WS/HTTP 路径" />
+                        <FormFieldLabel label="Path" hint={t('admin.nodes.form.wsHttpPathHint')} />
                         <MobileFormInput
                           placeholder="/ws"
                           value={formData.vmessPath || ''}
@@ -1077,7 +1098,7 @@ export const EditNodeSheet: React.FC<EditNodeSheetProps> = ({
 
                   {showVmessGrpcFields && (
                     <div className="space-y-1.5">
-                      <FormFieldLabel label="Service Name" hint="gRPC 服务名称" />
+                      <FormFieldLabel label="Service Name" hint={t('admin.nodes.form.grpcServiceNameHint')} />
                       <MobileFormInput
                         placeholder="grpc-service"
                         value={formData.vmessServiceName || ''}
@@ -1094,7 +1115,7 @@ export const EditNodeSheet: React.FC<EditNodeSheetProps> = ({
                 <>
                   <div className="grid grid-cols-2 gap-3">
                     <div className="space-y-1.5">
-                      <FormFieldLabel label="SNI" hint="TLS 服务器名称" />
+                      <FormFieldLabel label="SNI" hint={t('admin.nodes.form.sniHint')} />
                       <MobileFormInput
                         placeholder="example.com"
                         value={formData.hysteria2Sni || ''}
@@ -1103,18 +1124,18 @@ export const EditNodeSheet: React.FC<EditNodeSheetProps> = ({
                       />
                     </div>
                     <div className="space-y-1.5">
-                      <FormFieldLabel label="TLS 验证" />
+                      <FormFieldLabel label={t('admin.nodes.form.tlsVerify')} />
                       <MobileSelect
                         value={formData.hysteria2AllowInsecure ? 'true' : 'false'}
                         onChange={(value) => handleChange('hysteria2AllowInsecure', value === 'true')}
-                        options={TLS_SECURITY_OPTIONS}
+                        options={tlsSecurityOptions}
                       />
                     </div>
                   </div>
 
                   <div className="grid grid-cols-2 gap-3">
                     <div className="space-y-1.5">
-                      <FormFieldLabel label="Obfs 类型" hint="混淆" />
+                      <FormFieldLabel label={t('admin.nodes.form.obfsType')} hint={t('admin.nodes.form.obfsTypeHint')} />
                       <MobileFormInput
                         placeholder="salamander"
                         value={formData.hysteria2Obfs || ''}
@@ -1123,9 +1144,9 @@ export const EditNodeSheet: React.FC<EditNodeSheetProps> = ({
                       />
                     </div>
                     <div className="space-y-1.5">
-                      <FormFieldLabel label="Obfs 密码" />
+                      <FormFieldLabel label={t('admin.nodes.form.obfsPassword')} />
                       <MobileFormInput
-                        placeholder="密码"
+                        placeholder={t('admin.nodes.form.passwordPlaceholder')}
                         value={formData.hysteria2ObfsPassword || ''}
                         onChange={(value) => handleChange('hysteria2ObfsPassword', value)}
                         className="font-mono"
@@ -1135,7 +1156,7 @@ export const EditNodeSheet: React.FC<EditNodeSheetProps> = ({
 
                   <div className="grid grid-cols-2 gap-3">
                     <div className="space-y-1.5">
-                      <FormFieldLabel label="上行 (Mbps)" />
+                      <FormFieldLabel label={t('admin.nodes.form.upBandwidth')} />
                       <MobileFormInput
                         type="number"
                         inputMode="numeric"
@@ -1146,7 +1167,7 @@ export const EditNodeSheet: React.FC<EditNodeSheetProps> = ({
                       />
                     </div>
                     <div className="space-y-1.5">
-                      <FormFieldLabel label="下行 (Mbps)" />
+                      <FormFieldLabel label={t('admin.nodes.form.downBandwidth')} />
                       <MobileFormInput
                         type="number"
                         inputMode="numeric"
@@ -1159,11 +1180,11 @@ export const EditNodeSheet: React.FC<EditNodeSheetProps> = ({
                   </div>
 
                   <div className="space-y-1.5">
-                    <FormFieldLabel label="指纹" />
+                    <FormFieldLabel label={t('admin.nodes.form.fingerprintHint')} />
                     <MobileSelect
                       value={formData.hysteria2Fingerprint || '__none__'}
                       onChange={(value) => handleChange('hysteria2Fingerprint', value === '__none__' ? '' : value)}
-                      options={[{ value: '__none__', label: '无' }, ...TLS_FINGERPRINT_OPTIONS]}
+                      options={fingerprintOptions}
                     />
                   </div>
                 </>
@@ -1174,7 +1195,7 @@ export const EditNodeSheet: React.FC<EditNodeSheetProps> = ({
                 <>
                   <div className="grid grid-cols-2 gap-3">
                     <div className="space-y-1.5">
-                      <FormFieldLabel label="SNI" hint="TLS 服务器名称" />
+                      <FormFieldLabel label="SNI" hint={t('admin.nodes.form.sniHint')} />
                       <MobileFormInput
                         placeholder="example.com"
                         value={formData.tuicSni || ''}
@@ -1183,18 +1204,18 @@ export const EditNodeSheet: React.FC<EditNodeSheetProps> = ({
                       />
                     </div>
                     <div className="space-y-1.5">
-                      <FormFieldLabel label="TLS 验证" />
+                      <FormFieldLabel label={t('admin.nodes.form.tlsVerify')} />
                       <MobileSelect
                         value={formData.tuicAllowInsecure ? 'true' : 'false'}
                         onChange={(value) => handleChange('tuicAllowInsecure', value === 'true')}
-                        options={TLS_SECURITY_OPTIONS}
+                        options={tlsSecurityOptions}
                       />
                     </div>
                   </div>
 
                   <div className="grid grid-cols-2 gap-3">
                     <div className="space-y-1.5">
-                      <FormFieldLabel label="ALPN" hint="应用层协议" />
+                      <FormFieldLabel label="ALPN" hint={t('admin.nodes.form.alpnHint')} />
                       <MobileFormInput
                         placeholder="h3"
                         value={formData.tuicAlpn || ''}
@@ -1203,13 +1224,13 @@ export const EditNodeSheet: React.FC<EditNodeSheetProps> = ({
                       />
                     </div>
                     <div className="space-y-1.5">
-                      <FormFieldLabel label="禁用 SNI" />
+                      <FormFieldLabel label={t('admin.nodes.form.disableSni')} />
                       <MobileSelect
                         value={formData.tuicDisableSni ? 'true' : 'false'}
                         onChange={(value) => handleChange('tuicDisableSni', value === 'true')}
                         options={[
-                          { value: 'false', label: '不禁用' },
-                          { value: 'true', label: '禁用' },
+                          { value: 'false', label: t('admin.nodes.form.notDisabled') },
+                          { value: 'true', label: t('admin.nodes.form.disableSniOption') },
                         ]}
                       />
                     </div>
@@ -1221,7 +1242,7 @@ export const EditNodeSheet: React.FC<EditNodeSheetProps> = ({
 
           {/* Other Settings Section */}
           <MobileSection
-            title="其他设置"
+            title={t('admin.nodes.form.section.otherSettings')}
             icon={Settings}
             isOpen={openSections.has('other')}
             onToggle={() => toggleSection('other')}
@@ -1229,7 +1250,7 @@ export const EditNodeSheet: React.FC<EditNodeSheetProps> = ({
             <div className="space-y-4">
               <div className="grid grid-cols-2 gap-3">
                 <div className="space-y-1.5">
-                  <FormFieldLabel label="地区" />
+                  <FormFieldLabel label={t('admin.nodes.form.region')} />
                   <MobileFormInput
                     value={formData.region || ''}
                     onChange={(value) => handleChange('region', value)}
@@ -1237,7 +1258,7 @@ export const EditNodeSheet: React.FC<EditNodeSheetProps> = ({
                 </div>
 
                 <div className="space-y-1.5">
-                  <FormFieldLabel label="排序" />
+                  <FormFieldLabel label={t('admin.nodes.form.sortOrder')} />
                   <MobileFormInput
                     type="number"
                     value={String(formData.sortOrder ?? 0)}
@@ -1248,16 +1269,16 @@ export const EditNodeSheet: React.FC<EditNodeSheetProps> = ({
               </div>
 
               <div className="space-y-1.5">
-                <FormFieldLabel label="标签" hint="多个标签用逗号分隔" />
+                <FormFieldLabel label={t('admin.nodes.form.tags')} hint={t('admin.nodes.form.tagsHint')} />
                 <MobileFormInput
-                  placeholder="高速, 香港, 优选"
+                  placeholder={t('admin.nodes.form.tagsPlaceholder')}
                   value={formData.tagsInput ?? ''}
                   onChange={(value) => handleChange('tagsInput', value)}
                 />
               </div>
 
               <div className="space-y-1.5">
-                <FormFieldLabel label="资源组" hint="将节点关联到一个或多个资源组" />
+                <FormFieldLabel label={t('admin.nodes.form.resourceGroup')} hint={t('admin.nodes.form.resourceGroupSelectHint')} />
 
                 {/* Selected groups chips */}
                 {formData.groupSids.length > 0 && (
@@ -1287,9 +1308,9 @@ export const EditNodeSheet: React.FC<EditNodeSheetProps> = ({
                 {/* Group selection list */}
                 <div className="border rounded-xl max-h-[150px] overflow-y-auto bg-background">
                   {isLoadingGroups || isLoadingPlans ? (
-                    <div className="p-3 text-center text-sm text-muted-foreground">加载中...</div>
+                    <div className="p-3 text-center text-sm text-muted-foreground">{t('app.loading')}</div>
                   ) : filteredResourceGroups.length === 0 ? (
-                    <div className="p-3 text-center text-sm text-muted-foreground">暂无可用资源组</div>
+                    <div className="p-3 text-center text-sm text-muted-foreground">{t('admin.nodes.detail.noResourceGroups')}</div>
                   ) : (
                     <div className="divide-y divide-border/50">
                       {filteredResourceGroups.map((group) => (
@@ -1312,7 +1333,7 @@ export const EditNodeSheet: React.FC<EditNodeSheetProps> = ({
                             <div className="flex items-center gap-2">
                               <span className="font-medium text-sm">{group.name}</span>
                               <Badge variant={group.status === 'active' ? 'default' : 'secondary'} className="text-[10px]">
-                                {group.status === 'active' ? '激活' : '未激活'}
+                                {group.status === 'active' ? t('admin.nodes.form.status.active') : t('admin.nodes.form.status.inactive')}
                               </Badge>
                             </div>
                             {group.description && <p className="text-xs text-muted-foreground truncate">{group.description}</p>}
@@ -1325,7 +1346,7 @@ export const EditNodeSheet: React.FC<EditNodeSheetProps> = ({
               </div>
 
               <div className="space-y-1.5">
-                <FormFieldLabel label="静音通知" hint="开启后将不会发送此节点的上线/下线通知" />
+                <FormFieldLabel label={t('admin.nodes.form.muteNotification')} hint={t('admin.nodes.form.muteNotificationHint')} />
                 <div className="flex items-center gap-3 min-h-[52px] px-4 rounded-xl border bg-background">
                   <Switch
                     checked={formData.muteNotification ?? false}
@@ -1334,7 +1355,7 @@ export const EditNodeSheet: React.FC<EditNodeSheetProps> = ({
                     <SwitchThumb />
                   </Switch>
                   <span className="text-sm text-muted-foreground">
-                    {formData.muteNotification ? '已静音' : '未静音'}
+                    {formData.muteNotification ? t('admin.nodes.form.muted') : t('admin.nodes.form.unmuted')}
                   </span>
                 </div>
               </div>
@@ -1343,9 +1364,9 @@ export const EditNodeSheet: React.FC<EditNodeSheetProps> = ({
 
           {/* Route Config Section */}
           <MobileSection
-            title="路由配置"
+            title={t('admin.nodes.form.section.routeConfig')}
             icon={Route}
-            badge={formData.route ? '已配置' : null}
+            badge={formData.route ? t('admin.nodes.form.configured') : null}
             isOpen={openSections.has('route')}
             onToggle={() => toggleSection('route')}
           >
@@ -1365,7 +1386,7 @@ export const EditNodeSheet: React.FC<EditNodeSheetProps> = ({
             disabled={loading || !hasChanges}
             className="w-full min-h-[52px] text-base"
           >
-            {loading ? '保存中...' : '保存'}
+            {loading ? t('admin.nodes.form.saving') : t('common.actions.save')}
           </Button>
           <Button
             variant="ghost"
@@ -1373,7 +1394,7 @@ export const EditNodeSheet: React.FC<EditNodeSheetProps> = ({
             disabled={loading}
             className="w-full min-h-[44px]"
           >
-            取消
+            {t('common.actions.cancel')}
           </Button>
         </SheetFooter>
       </SheetContent>

@@ -4,6 +4,7 @@
  */
 
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Trash2, AlertTriangle, Loader2, CreditCard, Globe, Lock, CheckCircle2, XCircle } from 'lucide-react';
 import {
   Sheet,
@@ -22,20 +23,20 @@ import type { SubscriptionPlan } from '@/api/subscription/types';
 
 type DeletePlanSheetProps = DeleteSheetProps<SubscriptionPlan>;
 
-const PLAN_TYPE_LABELS: Record<string, string> = {
-  node: '节点订阅',
-  forward: '端口转发',
-  hybrid: '混合订阅',
+const PLAN_TYPE_LABEL_KEYS: Record<string, string> = {
+  node: 'common.planType.node',
+  forward: 'common.planType.forward',
+  hybrid: 'common.planType.hybrid',
 };
 
-const STATUS_CONFIG: Record<string, { label: string; color: string; icon: React.ReactNode }> = {
+const STATUS_CONFIG: Record<string, { labelKey: string; color: string; icon: React.ReactNode }> = {
   active: {
-    label: '已激活',
+    labelKey: 'common.status.active',
     color: 'text-emerald-600 bg-emerald-100 dark:bg-emerald-900/30',
     icon: <CheckCircle2 className="size-3.5" />,
   },
   inactive: {
-    label: '已停用',
+    labelKey: 'common.status.inactive',
     color: 'text-gray-600 bg-gray-100 dark:bg-gray-800',
     icon: <XCircle className="size-3.5" />,
   },
@@ -47,6 +48,7 @@ export const DeletePlanSheet: React.FC<DeletePlanSheetProps> = ({
   entity: plan,
   onConfirm,
 }) => {
+  const { t } = useTranslation();
   const [loading, setLoading] = useState(false);
   const [confirmOpen, setConfirmOpen] = useState(false);
 
@@ -69,9 +71,9 @@ export const DeletePlanSheet: React.FC<DeletePlanSheetProps> = ({
 
   // Format price range for display
   const formatPriceRange = () => {
-    if (!plan.pricings || plan.pricings.length === 0) return '暂无定价';
+    if (!plan.pricings || plan.pricings.length === 0) return t('subscription.noPricing');
     const prices = plan.pricings.filter((p) => p.isActive).map((p) => p.price / 100);
-    if (prices.length === 0) return '暂无定价';
+    if (prices.length === 0) return t('subscription.noPricing');
     const min = Math.min(...prices);
     const max = Math.max(...prices);
     if (min === max) return `¥${min}`;
@@ -87,9 +89,9 @@ export const DeletePlanSheet: React.FC<DeletePlanSheetProps> = ({
               <div className="size-10 rounded-full bg-destructive/10 flex items-center justify-center">
                 <Trash2 className="size-5 text-destructive" />
               </div>
-              <span>删除订阅计划</span>
+              <span>{t('subscriptionPlans.deletePlan')}</span>
             </SheetTitle>
-            <SheetDescription>此操作不可恢复，请确认是否继续</SheetDescription>
+            <SheetDescription>{t('subscriptionPlans.deleteConfirmHint')}</SheetDescription>
           </SheetHeader>
 
           <SheetBody className="py-6">
@@ -98,9 +100,9 @@ export const DeletePlanSheet: React.FC<DeletePlanSheetProps> = ({
               <div className="flex items-start gap-3">
                 <AlertTriangle className="size-5 text-destructive flex-shrink-0 mt-0.5" />
                 <div className="space-y-1">
-                  <p className="font-medium text-destructive">确认删除以下订阅计划？</p>
+                  <p className="font-medium text-destructive">{t('subscriptionPlans.confirmDeletePlan')}</p>
                   <p className="text-sm text-muted-foreground">
-                    删除后，该计划将被永久移除。注意：只有无活跃订阅的计划才能删除。
+                    {t('admin.plans.confirmDeleteDescription', { name: plan.name })}
                   </p>
                 </div>
               </div>
@@ -108,38 +110,38 @@ export const DeletePlanSheet: React.FC<DeletePlanSheetProps> = ({
               {/* Plan Info */}
               <div className="rounded-lg bg-background p-4 space-y-3">
                 <div className="flex items-center justify-between">
-                  <span className="text-sm text-muted-foreground">计划名称</span>
+                  <span className="text-sm text-muted-foreground">{t('admin.plans.form.planName')}</span>
                   <span className="font-medium">{plan.name}</span>
                 </div>
                 <div className="flex items-center justify-between">
-                  <span className="text-sm text-muted-foreground">Slug</span>
+                  <span className="text-sm text-muted-foreground">{t('admin.plans.form.slug')}</span>
                   <span className="font-mono text-sm">{plan.slug}</span>
                 </div>
                 <div className="flex items-center justify-between">
-                  <span className="text-sm text-muted-foreground">计划类型</span>
+                  <span className="text-sm text-muted-foreground">{t('admin.plans.form.planType')}</span>
                   <div className="flex items-center gap-1.5">
                     <CreditCard className="size-4 text-muted-foreground" />
-                    <span className="text-sm">{PLAN_TYPE_LABELS[plan.planType] || plan.planType}</span>
+                    <span className="text-sm">{t(PLAN_TYPE_LABEL_KEYS[plan.planType]) || plan.planType}</span>
                   </div>
                 </div>
                 <div className="flex items-center justify-between">
-                  <span className="text-sm text-muted-foreground">可见性</span>
+                  <span className="text-sm text-muted-foreground">{t('subscriptionPlans.visibility')}</span>
                   <div className="flex items-center gap-1.5">
                     {plan.isPublic ? (
                       <>
                         <Globe className="size-4 text-blue-500" />
-                        <span className="text-sm">公开</span>
+                        <span className="text-sm">{t('admin.plans.public')}</span>
                       </>
                     ) : (
                       <>
                         <Lock className="size-4 text-yellow-500" />
-                        <span className="text-sm">私有</span>
+                        <span className="text-sm">{t('admin.plans.private')}</span>
                       </>
                     )}
                   </div>
                 </div>
                 <div className="flex items-center justify-between">
-                  <span className="text-sm text-muted-foreground">状态</span>
+                  <span className="text-sm text-muted-foreground">{t('admin.plans.table.status')}</span>
                   <span
                     className={cn(
                       'inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium',
@@ -147,11 +149,11 @@ export const DeletePlanSheet: React.FC<DeletePlanSheetProps> = ({
                     )}
                   >
                     {statusConfig.icon}
-                    {statusConfig.label}
+                    {t(statusConfig.labelKey)}
                   </span>
                 </div>
                 <div className="flex items-center justify-between">
-                  <span className="text-sm text-muted-foreground">价格范围</span>
+                  <span className="text-sm text-muted-foreground">{t('subscriptionPlans.priceRange')}</span>
                   <span className="font-medium">{formatPriceRange()}</span>
                 </div>
               </div>
@@ -169,10 +171,10 @@ export const DeletePlanSheet: React.FC<DeletePlanSheetProps> = ({
               {loading ? (
                 <>
                   <Loader2 className="mr-2 size-5 animate-spin" />
-                  删除中...
+                  {t('subscriptionPlans.deleting')}
                 </>
               ) : (
-                '确认删除'
+                t('subscriptionPlans.confirmDelete')
               )}
             </Button>
             <Button
@@ -181,7 +183,7 @@ export const DeletePlanSheet: React.FC<DeletePlanSheetProps> = ({
               disabled={loading}
               className="w-full min-h-[44px]"
             >
-              取消
+              {t('common.actions.cancel')}
             </Button>
           </SheetFooter>
         </SheetContent>
@@ -191,9 +193,9 @@ export const DeletePlanSheet: React.FC<DeletePlanSheetProps> = ({
         open={confirmOpen}
         onOpenChange={setConfirmOpen}
         variant="destructive"
-        title="确认删除？"
-        description={`确定要删除计划 "${plan.name}" 吗？此操作不可恢复。`}
-        confirmText="确认删除"
+        title={t('subscriptionPlans.confirmDeleteTitle')}
+        description={t('admin.plans.confirmDeleteDescription', { name: plan.name })}
+        confirmText={t('subscriptionPlans.confirmDelete')}
         onConfirm={handleConfirm}
       />
     </>

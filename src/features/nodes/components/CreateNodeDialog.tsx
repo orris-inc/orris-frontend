@@ -4,6 +4,7 @@
  */
 
 import { useState, useEffect, useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
   Dialog,
   DialogContent,
@@ -175,6 +176,7 @@ interface CollapsibleSectionProps {
   onToggle: () => void;
   children: React.ReactNode;
   getBadgeText?: () => string | null;
+  requiredLabel: string;
 }
 
 const CollapsibleSection: React.FC<CollapsibleSectionProps> = ({
@@ -183,6 +185,7 @@ const CollapsibleSection: React.FC<CollapsibleSectionProps> = ({
   onToggle,
   children,
   getBadgeText,
+  requiredLabel,
 }) => {
   const Icon = config.icon;
   const badgeText = getBadgeText?.();
@@ -202,7 +205,7 @@ const CollapsibleSection: React.FC<CollapsibleSectionProps> = ({
             <span className="text-sm font-medium text-foreground">{config.title}</span>
             {config.required && (
               <Badge variant="outline" className="text-[10px] px-1.5 py-0 border-primary/30 text-primary">
-                必填
+                {requiredLabel}
               </Badge>
             )}
             {badgeText && (
@@ -259,14 +262,14 @@ const FormField: React.FC<FormFieldProps> = ({
   </div>
 );
 
-// Protocol configuration
-const PROTOCOL_CONFIG: Record<NodeProtocol, { name: string; desc: string; icon: React.ElementType }> = {
-  shadowsocks: { name: 'Shadowsocks', desc: '轻量高效', icon: Zap },
-  trojan: { name: 'Trojan', desc: 'TLS 加密', icon: Lock },
-  vless: { name: 'VLESS', desc: 'Reality 支持', icon: Radio },
-  vmess: { name: 'VMess', desc: 'V2Ray 协议', icon: Layers },
-  hysteria2: { name: 'Hysteria2', desc: 'QUIC 加速', icon: Gauge },
-  tuic: { name: 'TUIC', desc: 'UDP 优化', icon: Workflow },
+// Protocol configuration - labels will be translated at render time
+const PROTOCOL_CONFIG: Record<NodeProtocol, { name: string; descKey: string; icon: React.ElementType }> = {
+  shadowsocks: { name: 'Shadowsocks', descKey: 'admin.nodes.form.protocolDesc.shadowsocks', icon: Zap },
+  trojan: { name: 'Trojan', descKey: 'admin.nodes.form.protocolDesc.trojan', icon: Lock },
+  vless: { name: 'VLESS', descKey: 'admin.nodes.form.protocolDesc.vless', icon: Radio },
+  vmess: { name: 'VMess', descKey: 'admin.nodes.form.protocolDesc.vmess', icon: Layers },
+  hysteria2: { name: 'Hysteria2', descKey: 'admin.nodes.form.protocolDesc.hysteria2', icon: Gauge },
+  tuic: { name: 'TUIC', descKey: 'admin.nodes.form.protocolDesc.tuic', icon: Workflow },
 };
 
 // Protocol Card Component - Compact version
@@ -276,7 +279,7 @@ interface ProtocolCardProps {
   onSelect: () => void;
 }
 
-const ProtocolCard: React.FC<ProtocolCardProps> = ({ protocol, selected, onSelect }) => {
+const ProtocolCard: React.FC<ProtocolCardProps & { t: (key: string) => string }> = ({ protocol, selected, onSelect, t }) => {
   const config = PROTOCOL_CONFIG[protocol];
   const Icon = config.icon;
 
@@ -298,7 +301,7 @@ const ProtocolCard: React.FC<ProtocolCardProps> = ({ protocol, selected, onSelec
           {config.name}
         </p>
         <p className="text-[11px] text-muted-foreground mt-0.5">
-          {config.desc}
+          {t(config.descKey)}
         </p>
       </div>
     </button>
@@ -312,6 +315,7 @@ export const CreateNodeDialog: React.FC<CreateNodeDialogProps> = ({
   initialData,
   nodes = [],
 }) => {
+  const { t } = useTranslation();
   const [formData, setFormData] = useState<CreateNodeRequest & { tagsInput: string }>(getDefaultFormData());
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [pluginOptsString, setPluginOptsString] = useState<string>('');
@@ -423,23 +427,23 @@ export const CreateNodeDialog: React.FC<CreateNodeDialogProps> = ({
     const newErrors: Record<string, string> = {};
 
     if (!formData.name.trim()) {
-      newErrors.name = '节点名称不能为空';
+      newErrors.name = t('admin.nodes.form.validation.nameRequired');
     }
 
     if (!formData.agentPort || formData.agentPort < 1 || formData.agentPort > 65535) {
-      newErrors.agentPort = '端口必须在1-65535之间';
+      newErrors.agentPort = t('admin.nodes.form.validation.portRange');
     }
 
     if (formData.subscriptionPort !== undefined && (formData.subscriptionPort < 1 || formData.subscriptionPort > 65535)) {
-      newErrors.subscriptionPort = '端口必须在1-65535之间';
+      newErrors.subscriptionPort = t('admin.nodes.form.validation.portRange');
     }
 
     if (!formData.protocol) {
-      newErrors.protocol = '协议类型不能为空';
+      newErrors.protocol = t('admin.nodes.form.validation.protocolRequired');
     }
 
     if (isShadowsocks && !formData.encryptionMethod) {
-      newErrors.encryptionMethod = '加密方法不能为空';
+      newErrors.encryptionMethod = t('admin.nodes.form.validation.encryptionRequired');
     }
 
     setErrors(newErrors);
@@ -686,10 +690,10 @@ export const CreateNodeDialog: React.FC<CreateNodeDialogProps> = ({
             </div>
             <div>
               <DialogTitle className="text-lg font-semibold">
-                {initialData ? '复制节点' : '新增节点'}
+                {initialData ? t('admin.nodes.form.copyNode') : t('admin.nodes.form.createNode')}
               </DialogTitle>
               <p className="text-sm text-muted-foreground mt-0.5">
-                配置代理节点的基本信息和协议参数
+                {t('admin.nodes.form.description')}
               </p>
             </div>
           </div>
@@ -702,16 +706,17 @@ export const CreateNodeDialog: React.FC<CreateNodeDialogProps> = ({
           <div className="space-y-3">
             {/* Basic Info Section */}
             <CollapsibleSection
-              config={{ id: 'basic', title: '基本信息', icon: Server, required: true }}
+              config={{ id: 'basic', title: t('admin.nodes.form.section.basicInfo'), icon: Server, required: true }}
               isOpen={openSections.has('basic')}
               onToggle={() => toggleSection('basic')}
+              requiredLabel={t('admin.nodes.form.required')}
             >
               <div className="space-y-5">
                 {/* Node Name */}
-                <FormField label="节点名称" required error={errors.name} hint="为节点设置一个易于识别的名称">
+                <FormField label={t('admin.nodes.form.nodeName')} required error={errors.name} hint={t('admin.nodes.form.nodeNameHint')}>
                   <Input
                     id="name"
-                    placeholder="例如：香港节点-01"
+                    placeholder={t('admin.nodes.form.nodeNamePlaceholder')}
                     value={formData.name}
                     onChange={(e) => handleChange('name', e.target.value)}
                     error={!!errors.name}
@@ -723,45 +728,51 @@ export const CreateNodeDialog: React.FC<CreateNodeDialogProps> = ({
                 {/* Protocol Selection */}
                 <div className="space-y-1.5">
                   <Label className="text-sm font-medium">
-                    协议类型 <span className="text-destructive">*</span>
+                    {t('admin.nodes.form.protocolType')} <span className="text-destructive">*</span>
                   </Label>
                   <div className="grid grid-cols-3 gap-2">
                     <ProtocolCard
                       protocol="shadowsocks"
                       selected={isShadowsocks}
                       onSelect={() => handleChange('protocol', 'shadowsocks')}
+                      t={t}
                     />
                     <ProtocolCard
                       protocol="trojan"
                       selected={isTrojan}
                       onSelect={() => handleChange('protocol', 'trojan')}
+                      t={t}
                     />
                     <ProtocolCard
                       protocol="vless"
                       selected={isVless}
                       onSelect={() => handleChange('protocol', 'vless')}
+                      t={t}
                     />
                     <ProtocolCard
                       protocol="vmess"
                       selected={isVmess}
                       onSelect={() => handleChange('protocol', 'vmess')}
+                      t={t}
                     />
                     <ProtocolCard
                       protocol="hysteria2"
                       selected={isHysteria2}
                       onSelect={() => handleChange('protocol', 'hysteria2')}
+                      t={t}
                     />
                     <ProtocolCard
                       protocol="tuic"
                       selected={isTuic}
                       onSelect={() => handleChange('protocol', 'tuic')}
+                      t={t}
                     />
                   </div>
                 </div>
 
                 {/* Encryption Method (Shadowsocks) */}
                 {isShadowsocks && (
-                  <FormField label="加密方法" required error={errors.encryptionMethod}>
+                  <FormField label={t('admin.nodes.form.encryptionMethod')} required error={errors.encryptionMethod}>
                     <Select
                       value={formData.encryptionMethod}
                       onValueChange={(value) => handleChange('encryptionMethod', value)}
@@ -782,7 +793,7 @@ export const CreateNodeDialog: React.FC<CreateNodeDialogProps> = ({
 
                 {/* Transport Protocol (Trojan) */}
                 {isTrojan && (
-                  <FormField label="传输协议" hint="选择底层传输方式">
+                  <FormField label={t('admin.nodes.form.transportProtocol')} hint={t('admin.nodes.form.transportProtocolHint')}>
                     <Select
                       value={formData.transportProtocol}
                       onValueChange={(value) => handleChange('transportProtocol', value)}
@@ -805,7 +816,7 @@ export const CreateNodeDialog: React.FC<CreateNodeDialogProps> = ({
                 {isVless && (
                   <>
                     <div className="grid grid-cols-2 gap-4">
-                      <FormField label="传输协议" hint="选择底层传输方式">
+                      <FormField label={t('admin.nodes.form.transportProtocol')} hint={t('admin.nodes.form.transportProtocolHint')}>
                         <Select
                           value={formData.vlessTransportType}
                           onValueChange={(value) => handleChange('vlessTransportType', value as TransportProtocol)}
@@ -823,7 +834,7 @@ export const CreateNodeDialog: React.FC<CreateNodeDialogProps> = ({
                         </Select>
                       </FormField>
 
-                      <FormField label="安全类型" hint="TLS 或 Reality">
+                      <FormField label={t('admin.nodes.form.securityType')} hint={t('admin.nodes.form.securityTypeHint')}>
                         <Select
                           value={formData.vlessSecurity}
                           onValueChange={(value) => handleChange('vlessSecurity', value as VLESSSecurity)}
@@ -848,7 +859,7 @@ export const CreateNodeDialog: React.FC<CreateNodeDialogProps> = ({
                 {isVmess && (
                   <>
                     <div className="grid grid-cols-2 gap-4">
-                      <FormField label="传输协议" hint="选择底层传输方式">
+                      <FormField label={t('admin.nodes.form.transportProtocol')} hint={t('admin.nodes.form.transportProtocolHint')}>
                         <Select
                           value={formData.vmessTransportType}
                           onValueChange={(value) => handleChange('vmessTransportType', value as TransportProtocol)}
@@ -866,7 +877,7 @@ export const CreateNodeDialog: React.FC<CreateNodeDialogProps> = ({
                         </Select>
                       </FormField>
 
-                      <FormField label="加密方式" hint="推荐使用 auto">
+                      <FormField label={t('admin.nodes.form.encryptionMethod')} hint={t('admin.nodes.form.vmessSecurityHint')}>
                         <Select
                           value={formData.vmessSecurity}
                           onValueChange={(value) => handleChange('vmessSecurity', value as VMessSecurity)}
@@ -889,7 +900,7 @@ export const CreateNodeDialog: React.FC<CreateNodeDialogProps> = ({
 
                 {/* Hysteria2 Basic Config */}
                 {isHysteria2 && (
-                  <FormField label="拥塞控制" hint="推荐使用 BBR">
+                  <FormField label={t('admin.nodes.form.congestionControl')} hint={t('admin.nodes.form.congestionControlHint')}>
                     <Select
                       value={formData.hysteria2CongestionControl}
                       onValueChange={(value) => handleChange('hysteria2CongestionControl', value as CongestionControl)}
@@ -911,7 +922,7 @@ export const CreateNodeDialog: React.FC<CreateNodeDialogProps> = ({
                 {/* TUIC Basic Config */}
                 {isTuic && (
                   <div className="grid grid-cols-2 gap-4">
-                    <FormField label="拥塞控制" hint="推荐使用 BBR">
+                    <FormField label={t('admin.nodes.form.congestionControl')} hint={t('admin.nodes.form.congestionControlHint')}>
                       <Select
                         value={formData.tuicCongestionControl}
                         onValueChange={(value) => handleChange('tuicCongestionControl', value as CongestionControl)}
@@ -929,7 +940,7 @@ export const CreateNodeDialog: React.FC<CreateNodeDialogProps> = ({
                       </Select>
                     </FormField>
 
-                    <FormField label="UDP 中继模式" hint="native 或 quic">
+                    <FormField label={t('admin.nodes.form.udpRelayMode')} hint={t('admin.nodes.form.udpRelayModeHint')}>
                       <Select
                         value={formData.tuicUdpRelayMode}
                         onValueChange={(value) => handleChange('tuicUdpRelayMode', value as TUICUDPRelayMode)}
@@ -953,16 +964,17 @@ export const CreateNodeDialog: React.FC<CreateNodeDialogProps> = ({
 
             {/* Network Section */}
             <CollapsibleSection
-              config={{ id: 'network', title: '网络配置', icon: Network, required: true }}
+              config={{ id: 'network', title: t('admin.nodes.form.section.networkConfig'), icon: Network, required: true }}
               isOpen={openSections.has('network')}
               onToggle={() => toggleSection('network')}
+              requiredLabel={t('admin.nodes.form.required')}
             >
               <div className="space-y-4">
                 {/* Server Address */}
-                <FormField label="服务器地址" hint="可选，留空时由 Agent 自动检测公网 IP">
+                <FormField label={t('admin.nodes.form.serverAddress')} hint={t('admin.nodes.form.serverAddressHint')}>
                   <Input
                     id="serverAddress"
-                    placeholder="example.com 或 IP 地址"
+                    placeholder={t('admin.nodes.form.serverAddressPlaceholder')}
                     value={formData.serverAddress}
                     onChange={(e) => handleChange('serverAddress', e.target.value)}
                     className="h-10 font-mono"
@@ -971,7 +983,7 @@ export const CreateNodeDialog: React.FC<CreateNodeDialogProps> = ({
 
                 {/* Ports */}
                 <div className="grid grid-cols-2 gap-4">
-                  <FormField label="代理端口" required error={errors.agentPort} hint="1-65535">
+                  <FormField label={t('admin.nodes.form.agentPort')} required error={errors.agentPort} hint="1-65535">
                     <Input
                       id="agentPort"
                       type="number"
@@ -984,13 +996,13 @@ export const CreateNodeDialog: React.FC<CreateNodeDialogProps> = ({
                     />
                   </FormField>
 
-                  <FormField label="订阅端口" error={errors.subscriptionPort} hint="可选，默认同代理端口">
+                  <FormField label={t('admin.nodes.form.subscriptionPort')} error={errors.subscriptionPort} hint={t('admin.nodes.form.subscriptionPortHint')}>
                     <Input
                       id="subscriptionPort"
                       type="number"
                       min={1}
                       max={65535}
-                      placeholder="同代理端口"
+                      placeholder={t('admin.nodes.form.sameAsAgentPort')}
                       value={formData.subscriptionPort ?? ''}
                       onChange={(e) => handleChange('subscriptionPort', e.target.value ? parseInt(e.target.value, 10) : undefined)}
                       error={!!errors.subscriptionPort}
@@ -1003,15 +1015,16 @@ export const CreateNodeDialog: React.FC<CreateNodeDialogProps> = ({
 
             {/* Protocol Settings Section */}
             <CollapsibleSection
-              config={{ id: 'protocol', title: `${PROTOCOL_CONFIG[formData.protocol].name} 配置`, icon: Shield }}
+              config={{ id: 'protocol', title: `${PROTOCOL_CONFIG[formData.protocol].name} ${t('admin.nodes.form.config')}`, icon: Shield }}
               isOpen={openSections.has('protocol')}
               onToggle={() => toggleSection('protocol')}
-              getBadgeText={() => hasProtocolSettings ? '已配置' : null}
+              getBadgeText={() => hasProtocolSettings ? t('admin.nodes.form.configured') : null}
+              requiredLabel={t('admin.nodes.form.required')}
             >
               <div className="space-y-4">
                 {isShadowsocks && (
                   <>
-                    <FormField label="插件" hint="可选，如 obfs-local, v2ray-plugin">
+                    <FormField label={t('admin.nodes.form.plugin')} hint={t('admin.nodes.form.pluginHint')}>
                       <Input
                         id="plugin"
                         placeholder="obfs-local"
@@ -1021,7 +1034,7 @@ export const CreateNodeDialog: React.FC<CreateNodeDialogProps> = ({
                       />
                     </FormField>
 
-                    <FormField label="插件选项" hint="格式：key1=value1;key2=value2">
+                    <FormField label={t('admin.nodes.form.pluginOptions')} hint={t('admin.nodes.form.pluginOptionsHint')}>
                       <Input
                         id="pluginOpts"
                         placeholder="obfs=http;obfs-host=www.bing.com"
@@ -1036,7 +1049,7 @@ export const CreateNodeDialog: React.FC<CreateNodeDialogProps> = ({
                 {isTrojan && (
                   <>
                     <div className="grid grid-cols-2 gap-4">
-                      <FormField label="SNI" hint="TLS 服务器名称">
+                      <FormField label="SNI" hint={t('admin.nodes.form.sniHint')}>
                         <Input
                           id="sni"
                           placeholder="example.com"
@@ -1046,7 +1059,7 @@ export const CreateNodeDialog: React.FC<CreateNodeDialogProps> = ({
                         />
                       </FormField>
 
-                      <FormField label="TLS 安全" hint="自签名证书可跳过验证">
+                      <FormField label={t('admin.nodes.form.tlsSecurity')} hint={t('admin.nodes.form.tlsSecurityHint')}>
                         <Select
                           value={formData.allowInsecure ? 'true' : 'false'}
                           onValueChange={(value) => handleChange('allowInsecure', value === 'true')}
@@ -1058,13 +1071,13 @@ export const CreateNodeDialog: React.FC<CreateNodeDialogProps> = ({
                             <SelectItem value="false">
                               <div className="flex items-center gap-2">
                                 <Shield className="size-3.5 text-success" />
-                                验证证书
+                                {t('admin.nodes.form.verifyCert')}
                               </div>
                             </SelectItem>
                             <SelectItem value="true">
                               <div className="flex items-center gap-2">
                                 <AlertCircle className="size-3.5 text-warning" />
-                                跳过验证
+                                {t('admin.nodes.form.skipVerify')}
                               </div>
                             </SelectItem>
                           </SelectContent>
@@ -1084,7 +1097,7 @@ export const CreateNodeDialog: React.FC<CreateNodeDialogProps> = ({
                           />
                         </FormField>
 
-                        <FormField label="Path" hint="WebSocket 路径">
+                        <FormField label="Path" hint={t('admin.nodes.form.wsPathHint')}>
                           <Input
                             id="path"
                             placeholder="/ws"
@@ -1097,7 +1110,7 @@ export const CreateNodeDialog: React.FC<CreateNodeDialogProps> = ({
                     )}
 
                     {showGrpcFields && (
-                      <FormField label="Service Name" hint="gRPC 服务名称">
+                      <FormField label="Service Name" hint={t('admin.nodes.form.grpcServiceNameHint')}>
                         <Input
                           id="grpcHost"
                           placeholder="grpc-service"
@@ -1114,7 +1127,7 @@ export const CreateNodeDialog: React.FC<CreateNodeDialogProps> = ({
                 {isVless && (
                   <>
                     <div className="grid grid-cols-2 gap-4">
-                      <FormField label="SNI" hint="TLS 服务器名称">
+                      <FormField label="SNI" hint={t('admin.nodes.form.sniHint')}>
                         <Input
                           id="vlessSni"
                           placeholder="example.com"
@@ -1124,7 +1137,7 @@ export const CreateNodeDialog: React.FC<CreateNodeDialogProps> = ({
                         />
                       </FormField>
 
-                      <FormField label="TLS 安全" hint="自签名证书可跳过验证">
+                      <FormField label={t('admin.nodes.form.tlsSecurity')} hint={t('admin.nodes.form.tlsSecurityHint')}>
                         <Select
                           value={formData.vlessAllowInsecure ? 'true' : 'false'}
                           onValueChange={(value) => handleChange('vlessAllowInsecure', value === 'true')}
@@ -1136,13 +1149,13 @@ export const CreateNodeDialog: React.FC<CreateNodeDialogProps> = ({
                             <SelectItem value="false">
                               <div className="flex items-center gap-2">
                                 <Shield className="size-3.5 text-success" />
-                                验证证书
+                                {t('admin.nodes.form.verifyCert')}
                               </div>
                             </SelectItem>
                             <SelectItem value="true">
                               <div className="flex items-center gap-2">
                                 <AlertCircle className="size-3.5 text-warning" />
-                                跳过验证
+                                {t('admin.nodes.form.skipVerify')}
                               </div>
                             </SelectItem>
                           </SelectContent>
@@ -1151,7 +1164,7 @@ export const CreateNodeDialog: React.FC<CreateNodeDialogProps> = ({
                     </div>
 
                     <div className="grid grid-cols-2 gap-4">
-                      <FormField label="Flow" hint="流控，如 xtls-rprx-vision">
+                      <FormField label="Flow" hint={t('admin.nodes.form.flowHint')}>
                         <Input
                           id="vlessFlow"
                           placeholder="xtls-rprx-vision"
@@ -1161,13 +1174,13 @@ export const CreateNodeDialog: React.FC<CreateNodeDialogProps> = ({
                         />
                       </FormField>
 
-                      <FormField label="Fingerprint" hint="TLS 指纹">
+                      <FormField label="Fingerprint" hint={t('admin.nodes.form.fingerprintHint')}>
                         <Select
                           value={formData.vlessFingerprint || ''}
                           onValueChange={(value) => handleChange('vlessFingerprint', value)}
                         >
                           <SelectTrigger className="h-10">
-                            <SelectValue placeholder="选择指纹" />
+                            <SelectValue placeholder={t('admin.nodes.form.selectFingerprint')} />
                           </SelectTrigger>
                           <SelectContent>
                             {TLS_FINGERPRINT_OPTIONS.map((fp) => (
@@ -1192,7 +1205,7 @@ export const CreateNodeDialog: React.FC<CreateNodeDialogProps> = ({
                           />
                         </FormField>
 
-                        <FormField label="Path" hint="WS/H2 路径">
+                        <FormField label="Path" hint={t('admin.nodes.form.wsH2PathHint')}>
                           <Input
                             id="vlessPath"
                             placeholder="/ws"
@@ -1205,7 +1218,7 @@ export const CreateNodeDialog: React.FC<CreateNodeDialogProps> = ({
                     )}
 
                     {showVlessGrpcFields && (
-                      <FormField label="Service Name" hint="gRPC 服务名称">
+                      <FormField label="Service Name" hint={t('admin.nodes.form.grpcServiceNameHint')}>
                         <Input
                           id="vlessServiceName"
                           placeholder="grpc-service"
@@ -1219,20 +1232,20 @@ export const CreateNodeDialog: React.FC<CreateNodeDialogProps> = ({
                     {showVlessRealityFields && (
                       <>
                         <div className="grid grid-cols-2 gap-4">
-                          <FormField label="Reality Public Key" hint="服务端公钥">
+                          <FormField label="Reality Public Key" hint={t('admin.nodes.form.realityPublicKeyHint')}>
                             <Input
                               id="vlessRealityPublicKey"
-                              placeholder="公钥"
+                              placeholder={t('admin.nodes.form.publicKeyPlaceholder')}
                               value={formData.vlessRealityPublicKey || ''}
                               onChange={(e) => handleChange('vlessRealityPublicKey', e.target.value)}
                               className="h-10 font-mono"
                             />
                           </FormField>
 
-                          <FormField label="Reality Short ID" hint="短 ID">
+                          <FormField label="Reality Short ID" hint={t('admin.nodes.form.shortIdHint')}>
                             <Input
                               id="vlessRealityShortId"
-                              placeholder="短 ID"
+                              placeholder={t('admin.nodes.form.shortIdPlaceholder')}
                               value={formData.vlessRealityShortId || ''}
                               onChange={(e) => handleChange('vlessRealityShortId', e.target.value)}
                               className="h-10 font-mono"
@@ -1240,7 +1253,7 @@ export const CreateNodeDialog: React.FC<CreateNodeDialogProps> = ({
                           </FormField>
                         </div>
 
-                        <FormField label="Reality Spider X" hint="可选">
+                        <FormField label="Reality Spider X" hint={t('admin.nodes.form.optional')}>
                           <Input
                             id="vlessRealitySpiderX"
                             placeholder="/"
@@ -1258,7 +1271,7 @@ export const CreateNodeDialog: React.FC<CreateNodeDialogProps> = ({
                 {isVmess && (
                   <>
                     <div className="grid grid-cols-2 gap-4">
-                      <FormField label="Alter ID" hint="通常为 0">
+                      <FormField label="Alter ID" hint={t('admin.nodes.form.alterIdHint')}>
                         <Input
                           id="vmessAlterId"
                           type="number"
@@ -1269,7 +1282,7 @@ export const CreateNodeDialog: React.FC<CreateNodeDialogProps> = ({
                         />
                       </FormField>
 
-                      <FormField label="TLS" hint="是否启用 TLS">
+                      <FormField label="TLS" hint={t('admin.nodes.form.enableTlsHint')}>
                         <Select
                           value={formData.vmessTls ? 'true' : 'false'}
                           onValueChange={(value) => handleChange('vmessTls', value === 'true')}
@@ -1278,15 +1291,15 @@ export const CreateNodeDialog: React.FC<CreateNodeDialogProps> = ({
                             <SelectValue />
                           </SelectTrigger>
                           <SelectContent>
-                            <SelectItem value="true">启用 TLS</SelectItem>
-                            <SelectItem value="false">不启用 TLS</SelectItem>
+                            <SelectItem value="true">{t('admin.nodes.form.enableTls')}</SelectItem>
+                            <SelectItem value="false">{t('admin.nodes.form.disableTls')}</SelectItem>
                           </SelectContent>
                         </Select>
                       </FormField>
                     </div>
 
                     <div className="grid grid-cols-2 gap-4">
-                      <FormField label="SNI" hint="TLS 服务器名称">
+                      <FormField label="SNI" hint={t('admin.nodes.form.sniHint')}>
                         <Input
                           id="vmessSni"
                           placeholder="example.com"
@@ -1296,7 +1309,7 @@ export const CreateNodeDialog: React.FC<CreateNodeDialogProps> = ({
                         />
                       </FormField>
 
-                      <FormField label="TLS 安全" hint="自签名证书可跳过验证">
+                      <FormField label={t('admin.nodes.form.tlsSecurity')} hint={t('admin.nodes.form.tlsSecurityHint')}>
                         <Select
                           value={formData.vmessAllowInsecure ? 'true' : 'false'}
                           onValueChange={(value) => handleChange('vmessAllowInsecure', value === 'true')}
@@ -1308,13 +1321,13 @@ export const CreateNodeDialog: React.FC<CreateNodeDialogProps> = ({
                             <SelectItem value="false">
                               <div className="flex items-center gap-2">
                                 <Shield className="size-3.5 text-success" />
-                                验证证书
+                                {t('admin.nodes.form.verifyCert')}
                               </div>
                             </SelectItem>
                             <SelectItem value="true">
                               <div className="flex items-center gap-2">
                                 <AlertCircle className="size-3.5 text-warning" />
-                                跳过验证
+                                {t('admin.nodes.form.skipVerify')}
                               </div>
                             </SelectItem>
                           </SelectContent>
@@ -1334,7 +1347,7 @@ export const CreateNodeDialog: React.FC<CreateNodeDialogProps> = ({
                           />
                         </FormField>
 
-                        <FormField label="Path" hint="WS/HTTP 路径">
+                        <FormField label="Path" hint={t('admin.nodes.form.wsHttpPathHint')}>
                           <Input
                             id="vmessPath"
                             placeholder="/ws"
@@ -1347,7 +1360,7 @@ export const CreateNodeDialog: React.FC<CreateNodeDialogProps> = ({
                     )}
 
                     {showVmessGrpcFields && (
-                      <FormField label="Service Name" hint="gRPC 服务名称">
+                      <FormField label="Service Name" hint={t('admin.nodes.form.grpcServiceNameHint')}>
                         <Input
                           id="vmessServiceName"
                           placeholder="grpc-service"
@@ -1364,7 +1377,7 @@ export const CreateNodeDialog: React.FC<CreateNodeDialogProps> = ({
                 {isHysteria2 && (
                   <>
                     <div className="grid grid-cols-2 gap-4">
-                      <FormField label="SNI" hint="TLS 服务器名称">
+                      <FormField label="SNI" hint={t('admin.nodes.form.sniHint')}>
                         <Input
                           id="hysteria2Sni"
                           placeholder="example.com"
@@ -1374,7 +1387,7 @@ export const CreateNodeDialog: React.FC<CreateNodeDialogProps> = ({
                         />
                       </FormField>
 
-                      <FormField label="TLS 安全" hint="自签名证书可跳过验证">
+                      <FormField label={t('admin.nodes.form.tlsSecurity')} hint={t('admin.nodes.form.tlsSecurityHint')}>
                         <Select
                           value={formData.hysteria2AllowInsecure ? 'true' : 'false'}
                           onValueChange={(value) => handleChange('hysteria2AllowInsecure', value === 'true')}
@@ -1386,13 +1399,13 @@ export const CreateNodeDialog: React.FC<CreateNodeDialogProps> = ({
                             <SelectItem value="false">
                               <div className="flex items-center gap-2">
                                 <Shield className="size-3.5 text-success" />
-                                验证证书
+                                {t('admin.nodes.form.verifyCert')}
                               </div>
                             </SelectItem>
                             <SelectItem value="true">
                               <div className="flex items-center gap-2">
                                 <AlertCircle className="size-3.5 text-warning" />
-                                跳过验证
+                                {t('admin.nodes.form.skipVerify')}
                               </div>
                             </SelectItem>
                           </SelectContent>
@@ -1401,7 +1414,7 @@ export const CreateNodeDialog: React.FC<CreateNodeDialogProps> = ({
                     </div>
 
                     <div className="grid grid-cols-2 gap-4">
-                      <FormField label="Obfs 类型" hint="混淆类型，如 salamander">
+                      <FormField label={t('admin.nodes.form.obfsType')} hint={t('admin.nodes.form.obfsTypeHint')}>
                         <Input
                           id="hysteria2Obfs"
                           placeholder="salamander"
@@ -1411,10 +1424,10 @@ export const CreateNodeDialog: React.FC<CreateNodeDialogProps> = ({
                         />
                       </FormField>
 
-                      <FormField label="Obfs 密码" hint="混淆密码">
+                      <FormField label={t('admin.nodes.form.obfsPassword')} hint={t('admin.nodes.form.obfsPasswordHint')}>
                         <Input
                           id="hysteria2ObfsPassword"
-                          placeholder="密码"
+                          placeholder={t('admin.nodes.form.passwordPlaceholder')}
                           value={formData.hysteria2ObfsPassword || ''}
                           onChange={(e) => handleChange('hysteria2ObfsPassword', e.target.value)}
                           className="h-10 font-mono"
@@ -1423,7 +1436,7 @@ export const CreateNodeDialog: React.FC<CreateNodeDialogProps> = ({
                     </div>
 
                     <div className="grid grid-cols-2 gap-4">
-                      <FormField label="上行带宽 (Mbps)" hint="可选">
+                      <FormField label={t('admin.nodes.form.upBandwidth')} hint={t('admin.nodes.form.optional')}>
                         <Input
                           id="hysteria2UpMbps"
                           type="number"
@@ -1435,7 +1448,7 @@ export const CreateNodeDialog: React.FC<CreateNodeDialogProps> = ({
                         />
                       </FormField>
 
-                      <FormField label="下行带宽 (Mbps)" hint="可选">
+                      <FormField label={t('admin.nodes.form.downBandwidth')} hint={t('admin.nodes.form.optional')}>
                         <Input
                           id="hysteria2DownMbps"
                           type="number"
@@ -1448,13 +1461,13 @@ export const CreateNodeDialog: React.FC<CreateNodeDialogProps> = ({
                       </FormField>
                     </div>
 
-                    <FormField label="Fingerprint" hint="TLS 指纹">
+                    <FormField label="Fingerprint" hint={t('admin.nodes.form.fingerprintHint')}>
                       <Select
                         value={formData.hysteria2Fingerprint || ''}
                         onValueChange={(value) => handleChange('hysteria2Fingerprint', value)}
                       >
                         <SelectTrigger className="h-10">
-                          <SelectValue placeholder="选择指纹" />
+                          <SelectValue placeholder={t('admin.nodes.form.selectFingerprint')} />
                         </SelectTrigger>
                         <SelectContent>
                           {TLS_FINGERPRINT_OPTIONS.map((fp) => (
@@ -1472,7 +1485,7 @@ export const CreateNodeDialog: React.FC<CreateNodeDialogProps> = ({
                 {isTuic && (
                   <>
                     <div className="grid grid-cols-2 gap-4">
-                      <FormField label="SNI" hint="TLS 服务器名称">
+                      <FormField label="SNI" hint={t('admin.nodes.form.sniHint')}>
                         <Input
                           id="tuicSni"
                           placeholder="example.com"
@@ -1482,7 +1495,7 @@ export const CreateNodeDialog: React.FC<CreateNodeDialogProps> = ({
                         />
                       </FormField>
 
-                      <FormField label="TLS 安全" hint="自签名证书可跳过验证">
+                      <FormField label={t('admin.nodes.form.tlsSecurity')} hint={t('admin.nodes.form.tlsSecurityHint')}>
                         <Select
                           value={formData.tuicAllowInsecure ? 'true' : 'false'}
                           onValueChange={(value) => handleChange('tuicAllowInsecure', value === 'true')}
@@ -1494,13 +1507,13 @@ export const CreateNodeDialog: React.FC<CreateNodeDialogProps> = ({
                             <SelectItem value="false">
                               <div className="flex items-center gap-2">
                                 <Shield className="size-3.5 text-success" />
-                                验证证书
+                                {t('admin.nodes.form.verifyCert')}
                               </div>
                             </SelectItem>
                             <SelectItem value="true">
                               <div className="flex items-center gap-2">
                                 <AlertCircle className="size-3.5 text-warning" />
-                                跳过验证
+                                {t('admin.nodes.form.skipVerify')}
                               </div>
                             </SelectItem>
                           </SelectContent>
@@ -1509,7 +1522,7 @@ export const CreateNodeDialog: React.FC<CreateNodeDialogProps> = ({
                     </div>
 
                     <div className="grid grid-cols-2 gap-4">
-                      <FormField label="ALPN" hint="应用层协议协商">
+                      <FormField label="ALPN" hint={t('admin.nodes.form.alpnHint')}>
                         <Input
                           id="tuicAlpn"
                           placeholder="h3"
@@ -1519,7 +1532,7 @@ export const CreateNodeDialog: React.FC<CreateNodeDialogProps> = ({
                         />
                       </FormField>
 
-                      <FormField label="禁用 SNI" hint="是否禁用 SNI">
+                      <FormField label={t('admin.nodes.form.disableSni')} hint={t('admin.nodes.form.disableSniHint')}>
                         <Select
                           value={formData.tuicDisableSni ? 'true' : 'false'}
                           onValueChange={(value) => handleChange('tuicDisableSni', value === 'true')}
@@ -1528,8 +1541,8 @@ export const CreateNodeDialog: React.FC<CreateNodeDialogProps> = ({
                             <SelectValue />
                           </SelectTrigger>
                           <SelectContent>
-                            <SelectItem value="false">不禁用</SelectItem>
-                            <SelectItem value="true">禁用 SNI</SelectItem>
+                            <SelectItem value="false">{t('admin.nodes.form.notDisabled')}</SelectItem>
+                            <SelectItem value="true">{t('admin.nodes.form.disableSniOption')}</SelectItem>
                           </SelectContent>
                         </Select>
                       </FormField>
@@ -1541,24 +1554,25 @@ export const CreateNodeDialog: React.FC<CreateNodeDialogProps> = ({
 
             {/* Other Settings Section */}
             <CollapsibleSection
-              config={{ id: 'other', title: '其他设置', icon: Settings }}
+              config={{ id: 'other', title: t('admin.nodes.form.section.otherSettings'), icon: Settings }}
               isOpen={openSections.has('other')}
               onToggle={() => toggleSection('other')}
-              getBadgeText={() => hasOtherSettings ? '已配置' : null}
+              getBadgeText={() => hasOtherSettings ? t('admin.nodes.form.configured') : null}
+              requiredLabel={t('admin.nodes.form.required')}
             >
               <div className="space-y-4">
                 <div className="grid grid-cols-2 gap-4">
-                  <FormField label="地区" hint="节点所在地区">
+                  <FormField label={t('admin.nodes.form.region')} hint={t('admin.nodes.form.regionHint')}>
                     <Input
                       id="region"
-                      placeholder="例如：香港、东京"
+                      placeholder={t('admin.nodes.form.regionPlaceholder')}
                       value={formData.region}
                       onChange={(e) => handleChange('region', e.target.value)}
                       className="h-10"
                     />
                   </FormField>
 
-                  <FormField label="排序顺序" hint="数字越小越靠前">
+                  <FormField label={t('admin.nodes.form.sortOrder')} hint={t('admin.nodes.form.sortOrderHint')}>
                     <Input
                       id="sortOrder"
                       type="number"
@@ -1569,23 +1583,23 @@ export const CreateNodeDialog: React.FC<CreateNodeDialogProps> = ({
                   </FormField>
                 </div>
 
-                <FormField label="标签" hint="多个标签用逗号分隔">
+                <FormField label={t('admin.nodes.form.tags')} hint={t('admin.nodes.form.tagsHint')}>
                   <Input
                     id="tagsInput"
-                    placeholder="高速, 稳定, 推荐"
+                    placeholder={t('admin.nodes.form.tagsPlaceholder')}
                     value={formData.tagsInput}
                     onChange={(e) => handleChange('tagsInput', e.target.value)}
                     className="h-10"
                   />
                 </FormField>
 
-                <FormField label="资源组" hint="创建后可在编辑中关联">
+                <FormField label={t('admin.resourceGroups.title')} hint={t('admin.nodes.form.resourceGroupHint')}>
                   <Select value="__none__" disabled={isLoadingGroups || isLoadingPlans}>
                     <SelectTrigger className="h-10">
-                      <SelectValue placeholder={isLoadingGroups || isLoadingPlans ? '加载中...' : '选择资源组'} />
+                      <SelectValue placeholder={isLoadingGroups || isLoadingPlans ? t('common.status.loading') : t('admin.nodes.form.selectResourceGroup')} />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="__none__">不关联资源组</SelectItem>
+                      <SelectItem value="__none__">{t('admin.nodes.form.noResourceGroup')}</SelectItem>
                       {filteredResourceGroups.map((group) => (
                         <SelectItem key={group.sid} value={group.sid}>
                           {group.name}
@@ -1599,10 +1613,11 @@ export const CreateNodeDialog: React.FC<CreateNodeDialogProps> = ({
 
             {/* Route Config Section */}
             <CollapsibleSection
-              config={{ id: 'route', title: '路由配置', icon: Route }}
+              config={{ id: 'route', title: t('admin.nodes.form.section.routeConfig'), icon: Route }}
               isOpen={openSections.has('route')}
               onToggle={() => toggleSection('route')}
-              getBadgeText={() => formData.route ? '已配置' : null}
+              getBadgeText={() => formData.route ? t('admin.nodes.form.configured') : null}
+              requiredLabel={t('admin.nodes.form.required')}
             >
               <RouteConfigEditor
                 value={formData.route}
@@ -1620,14 +1635,14 @@ export const CreateNodeDialog: React.FC<CreateNodeDialogProps> = ({
         <DialogFooter className="flex-shrink-0 px-6 py-4">
           <div className="flex items-center justify-between w-full">
             <p className="text-xs text-muted-foreground">
-              <span className="text-destructive">*</span> 为必填项
+              <span className="text-destructive">*</span> {t('admin.nodes.form.requiredFieldsNote')}
             </p>
             <div className="flex items-center gap-2">
               <Button variant="outline" onClick={handleClose} className="h-9 px-4">
-                取消
+                {t('common.actions.cancel')}
               </Button>
               <Button onClick={handleSubmit} disabled={!isFormValid} className="h-9 px-6">
-                {initialData ? '创建副本' : '创建节点'}
+                {initialData ? t('admin.nodes.form.createCopy') : t('admin.nodes.form.createNode')}
               </Button>
             </div>
           </div>

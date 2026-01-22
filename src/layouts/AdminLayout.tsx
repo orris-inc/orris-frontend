@@ -44,7 +44,7 @@ export const AdminLayout = ({ children }: AdminLayoutProps) => {
   const { user } = useAuthStore();
   const { logout } = useAuth();
   const { filterNavigationByPermission } = usePermissions();
-  const currentPageTitle = useCurrentPageTitle('管理控制台');
+  const currentPageTitle = useCurrentPageTitle(t('nav.admin'));
   const { serverVersion, clientVersion } = useVersionInfo();
 
   const [mobileDrawerOpen, setMobileDrawerOpen] = useState(false);
@@ -86,7 +86,7 @@ export const AdminLayout = ({ children }: AdminLayoutProps) => {
           <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary/10">
             <ArrowLeftRight className="h-5 w-5 text-primary" aria-hidden="true" />
           </span>
-          <span className="text-sm font-medium whitespace-nowrap">切换到用户视图</span>
+          <span className="text-sm font-medium whitespace-nowrap">{t('nav.switchToUser')}</span>
         </>
       )}
     </ViewTransitionLink>
@@ -100,7 +100,7 @@ export const AdminLayout = ({ children }: AdminLayoutProps) => {
           open={mobileDrawerOpen}
           onClose={() => setMobileDrawerOpen(false)}
           navigationItems={adminNavItems}
-          title="管理控制台"
+          title={t('nav.admin')}
           user={user ? {
             displayName: user.displayName,
             email: user.email,
@@ -134,7 +134,7 @@ export const AdminLayout = ({ children }: AdminLayoutProps) => {
           >
             {!collapsed && (
               <span className="text-sm font-semibold text-foreground whitespace-nowrap">
-                管理控制台
+                {t('nav.admin')}
               </span>
             )}
             <button
@@ -161,7 +161,7 @@ export const AdminLayout = ({ children }: AdminLayoutProps) => {
           </div>
 
           {/* Sidebar footer */}
-          <AdminSidebarFooter collapsed={collapsed} tooltipLabel="切换到用户视图">
+          <AdminSidebarFooter collapsed={collapsed} tooltipLabel={t('nav.switchToUser')}>
             <SwitchToUserViewLink collapsed={collapsed} />
           </AdminSidebarFooter>
 

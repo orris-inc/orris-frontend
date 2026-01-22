@@ -5,6 +5,7 @@
  */
 
 import { useState, useCallback, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { FolderPlus, Layers, FileText } from 'lucide-react';
 import {
   Sheet,
@@ -37,6 +38,7 @@ export const CreateResourceGroupSheet: React.FC<CreateResourceGroupSheetProps> =
   onSubmit,
   plans,
 }) => {
+  const { t } = useTranslation();
   const [name, setName] = useState('');
   const [planId, setPlanId] = useState('');
   const [description, setDescription] = useState('');
@@ -52,15 +54,15 @@ export const CreateResourceGroupSheet: React.FC<CreateResourceGroupSheetProps> =
 
   // Validation functions
   const validateName = useCallback((value: string): string | undefined => {
-    if (!value.trim()) return '请输入资源组名称';
-    if (value.trim().length > 100) return '名称不能超过 100 个字符';
+    if (!value.trim()) return t('resourceGroups.nameRequired');
+    if (value.trim().length > 100) return t('resourceGroups.nameTooLong');
     return undefined;
-  }, []);
+  }, [t]);
 
   const validatePlanId = useCallback((value: string): string | undefined => {
-    if (!value) return '请选择关联计划';
+    if (!value) return t('resourceGroups.selectPlanRequired');
     return undefined;
-  }, []);
+  }, [t]);
 
   // Handle blur for inline validation
   const handleBlur = useCallback((field: keyof FormErrors) => {
@@ -132,10 +134,10 @@ export const CreateResourceGroupSheet: React.FC<CreateResourceGroupSheetProps> =
             <div className="size-10 rounded-full bg-primary/10 flex items-center justify-center">
               <FolderPlus className="size-5 text-primary" />
             </div>
-            <span>创建资源组</span>
+            <span>{t('resourceGroups.createTitle')}</span>
           </SheetTitle>
           <SheetDescription>
-            填写以下信息创建新的资源组
+            {t('resourceGroups.createDescription')}
           </SheetDescription>
         </SheetHeader>
 
@@ -143,7 +145,7 @@ export const CreateResourceGroupSheet: React.FC<CreateResourceGroupSheetProps> =
           {/* Name Field */}
           <div className="space-y-1.5">
             <label htmlFor="mobile-rg-name" className="text-sm font-medium px-1">
-              资源组名称 <span className="text-destructive">*</span>
+              {t('resourceGroups.name')} <span className="text-destructive">*</span>
             </label>
             <MobileFormInput
               id="mobile-rg-name"
@@ -153,7 +155,7 @@ export const CreateResourceGroupSheet: React.FC<CreateResourceGroupSheetProps> =
                 if (touched.name) setErrors((prev) => ({ ...prev, name: validateName(v) }));
               }}
               onBlur={() => handleBlur('name')}
-              placeholder="输入资源组名称"
+              placeholder={t('resourceGroups.namePlaceholder')}
               icon={<Layers className="size-5" />}
               error={touched.name ? errors.name : undefined}
               disabled={loading}
@@ -163,7 +165,7 @@ export const CreateResourceGroupSheet: React.FC<CreateResourceGroupSheetProps> =
           {/* Plan Selection Field */}
           <div className="space-y-1.5">
             <label className="text-sm font-medium px-1">
-              关联计划 <span className="text-destructive">*</span>
+              {t('resourceGroups.associatedPlan')} <span className="text-destructive">*</span>
             </label>
             <MobileSelect
               value={planId}
@@ -172,7 +174,7 @@ export const CreateResourceGroupSheet: React.FC<CreateResourceGroupSheetProps> =
                 if (touched.planId) setErrors((prev) => ({ ...prev, planId: validatePlanId(v) }));
               }}
               options={planOptions}
-              placeholder="选择关联的订阅计划"
+              placeholder={t('resourceGroups.selectPlan')}
               disabled={loading}
             />
             {touched.planId && errors.planId && (
@@ -183,7 +185,7 @@ export const CreateResourceGroupSheet: React.FC<CreateResourceGroupSheetProps> =
           {/* Description Field */}
           <div className="space-y-1.5">
             <label htmlFor="mobile-rg-description" className="text-sm font-medium px-1">
-              描述
+              {t('resourceGroups.description')}
             </label>
             <div className="relative">
               <div className="absolute left-4 top-4 text-muted-foreground">
@@ -193,7 +195,7 @@ export const CreateResourceGroupSheet: React.FC<CreateResourceGroupSheetProps> =
                 id="mobile-rg-description"
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
-                placeholder="输入资源组描述（可选）"
+                placeholder={t('resourceGroups.descriptionPlaceholder')}
                 rows={3}
                 disabled={loading}
                 className="w-full min-h-[100px] py-3 pl-12 pr-4 text-base rounded-xl border bg-background placeholder:text-muted-foreground/60 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary disabled:opacity-50 disabled:cursor-not-allowed resize-none"
@@ -209,7 +211,7 @@ export const CreateResourceGroupSheet: React.FC<CreateResourceGroupSheetProps> =
             disabled={loading || !isFormValid}
             className="w-full min-h-[48px] text-base"
           >
-            {loading ? '创建中...' : '创建资源组'}
+            {loading ? t('resourceGroups.creating') : t('resourceGroups.createResourceGroup')}
           </Button>
 
           {/* Secondary action */}
@@ -219,7 +221,7 @@ export const CreateResourceGroupSheet: React.FC<CreateResourceGroupSheetProps> =
             disabled={loading}
             className="w-full min-h-[44px]"
           >
-            取消
+            {t('resourceGroups.cancel')}
           </Button>
         </SheetFooter>
       </SheetContent>

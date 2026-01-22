@@ -4,6 +4,7 @@
  */
 
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Trash2, AlertTriangle } from 'lucide-react';
 import {
   Sheet,
@@ -27,6 +28,7 @@ export const DeleteResourceGroupSheet: React.FC<DeleteResourceGroupSheetProps> =
   entity: resourceGroup,
   onConfirm,
 }) => {
+  const { t } = useTranslation();
   const [loading, setLoading] = useState(false);
   const [confirmOpen, setConfirmOpen] = useState(false);
 
@@ -53,10 +55,10 @@ export const DeleteResourceGroupSheet: React.FC<DeleteResourceGroupSheetProps> =
               <div className="size-10 rounded-full bg-destructive/10 flex items-center justify-center">
                 <Trash2 className="size-5 text-destructive" />
               </div>
-              <span>删除资源组</span>
+              <span>{t('resourceGroups.deleteTitle')}</span>
             </SheetTitle>
             <SheetDescription>
-              此操作不可撤销，请确认是否删除此资源组
+              {t('resourceGroups.deleteDescription')}
             </SheetDescription>
           </SheetHeader>
 
@@ -66,9 +68,9 @@ export const DeleteResourceGroupSheet: React.FC<DeleteResourceGroupSheetProps> =
               <div className="flex items-start gap-3">
                 <AlertTriangle className="size-5 text-destructive flex-shrink-0 mt-0.5" />
                 <div className="space-y-1">
-                  <p className="font-medium text-destructive">确认删除以下资源组？</p>
+                  <p className="font-medium text-destructive">{t('resourceGroups.deleteConfirm')}</p>
                   <p className="text-sm text-muted-foreground">
-                    删除后，该资源组的所有配置将被永久移除，无法恢复。
+                    {t('resourceGroups.deleteWarning')}
                   </p>
                 </div>
               </div>
@@ -76,7 +78,7 @@ export const DeleteResourceGroupSheet: React.FC<DeleteResourceGroupSheetProps> =
               {/* Resource Group Info */}
               <div className="rounded-lg bg-background p-4 space-y-2">
                 <div className="flex justify-between items-center">
-                  <span className="text-sm text-muted-foreground">资源组名称</span>
+                  <span className="text-sm text-muted-foreground">{t('resourceGroups.name')}</span>
                   <span className="font-medium">{resourceGroup.name}</span>
                 </div>
                 <div className="flex justify-between items-center">
@@ -84,16 +86,16 @@ export const DeleteResourceGroupSheet: React.FC<DeleteResourceGroupSheetProps> =
                   <span className="font-mono text-xs">{resourceGroup.sid}</span>
                 </div>
                 <div className="flex justify-between items-center">
-                  <span className="text-sm text-muted-foreground">状态</span>
+                  <span className="text-sm text-muted-foreground">{t('common.status.label')}</span>
                   <span className="font-medium">
-                    {resourceGroup.status === 'active' ? '已激活' : '已停用'}
+                    {resourceGroup.status === 'active' ? t('resourceGroups.status.activated') : t('resourceGroups.status.deactivated')}
                   </span>
                 </div>
               </div>
 
               {/* Additional Warning */}
               <p className="text-xs text-muted-foreground">
-                如果此资源组已关联资源，删除操作将失败。
+                {t('resourceGroups.deleteFailWarning')}
               </p>
             </div>
           </SheetBody>
@@ -106,7 +108,7 @@ export const DeleteResourceGroupSheet: React.FC<DeleteResourceGroupSheetProps> =
               disabled={loading}
               className="w-full min-h-[48px] text-base"
             >
-              确认删除
+              {t('resourceGroups.confirmDelete')}
             </Button>
             <Button
               variant="ghost"
@@ -114,7 +116,7 @@ export const DeleteResourceGroupSheet: React.FC<DeleteResourceGroupSheetProps> =
               disabled={loading}
               className="w-full min-h-[44px]"
             >
-              取消
+              {t('resourceGroups.cancel')}
             </Button>
           </SheetFooter>
         </SheetContent>
@@ -124,9 +126,9 @@ export const DeleteResourceGroupSheet: React.FC<DeleteResourceGroupSheetProps> =
         open={confirmOpen}
         onOpenChange={setConfirmOpen}
         variant="destructive"
-        title="确认删除？"
-        description="删除后无法恢复"
-        confirmText="确认删除"
+        title={t('resourceGroups.deleteConfirmTitle')}
+        description={t('resourceGroups.deleteConfirmDescription')}
+        confirmText={t('resourceGroups.confirmDelete')}
         onConfirm={handleConfirm}
       />
     </>

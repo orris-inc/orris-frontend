@@ -4,6 +4,7 @@
  */
 
 import { useState, useEffect, useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
   ArrowLeftRight,
   Network,
@@ -52,12 +53,12 @@ interface CreateForwardRuleSheetProps extends CreateSheetProps<CreateForwardRule
   plansMap?: Record<string, SubscriptionPlan>;
 }
 
-// Rule type options
-const RULE_TYPE_OPTIONS: MobileSelectOption[] = [
-  { value: 'direct', label: '直连转发' },
-  { value: 'entry', label: '入口节点' },
-  { value: 'chain', label: '隧道链式转发' },
-  { value: 'direct_chain', label: '直连链式转发' },
+// Rule type options - labels will be translated at runtime
+const RULE_TYPE_OPTIONS_KEYS = [
+  { value: 'direct', labelKey: 'admin.forwardRules.ruleTypeInfo.direct.label' },
+  { value: 'entry', labelKey: 'admin.forwardRules.ruleTypeInfo.entry.label' },
+  { value: 'chain', labelKey: 'admin.forwardRules.ruleTypeInfo.chain.label' },
+  { value: 'direct_chain', labelKey: 'admin.forwardRules.ruleTypeInfo.directChain.label' },
 ];
 
 // Protocol options
@@ -67,9 +68,9 @@ const PROTOCOL_OPTIONS: MobileSelectOption[] = [
   { value: 'both', label: 'TCP/UDP' },
 ];
 
-// IP version options
-const IP_VERSION_OPTIONS: MobileSelectOption[] = [
-  { value: 'auto', label: '自动' },
+// IP version options - labels will be translated at runtime
+const IP_VERSION_OPTIONS_KEYS = [
+  { value: 'auto', labelKey: 'admin.forwardRules.form.ipVersionAuto' },
   { value: 'ipv4', label: 'IPv4' },
   { value: 'ipv6', label: 'IPv6' },
 ];
@@ -80,10 +81,10 @@ const TUNNEL_TYPE_OPTIONS: MobileSelectOption[] = [
   { value: 'tls', label: 'TLS' },
 ];
 
-// Target type options
-const TARGET_TYPE_OPTIONS: MobileSelectOption[] = [
-  { value: 'manual', label: '手动输入地址' },
-  { value: 'node', label: '选择节点（动态解析）' },
+// Target type options - labels will be translated at runtime
+const TARGET_TYPE_OPTIONS_KEYS = [
+  { value: 'manual', labelKey: 'admin.forwardRules.form.targetTypeManual' },
+  { value: 'node', labelKey: 'admin.forwardRules.form.targetTypeNode' },
 ];
 
 // Check if port is in allowed range
@@ -170,6 +171,22 @@ export const CreateForwardRuleSheet: React.FC<CreateForwardRuleSheetProps> = ({
   resourceGroups = [],
   plansMap = {},
 }) => {
+  const { t } = useTranslation();
+
+  // Translated options
+  const RULE_TYPE_OPTIONS = useMemo(() =>
+    RULE_TYPE_OPTIONS_KEYS.map(opt => ({ value: opt.value, label: t(opt.labelKey) })),
+    [t]
+  );
+  const IP_VERSION_OPTIONS = useMemo(() =>
+    IP_VERSION_OPTIONS_KEYS.map(opt => ({ value: opt.value, label: opt.label || t(opt.labelKey as string) })),
+    [t]
+  );
+  const TARGET_TYPE_OPTIONS = useMemo(() =>
+    TARGET_TYPE_OPTIONS_KEYS.map(opt => ({ value: opt.value, label: t(opt.labelKey) })),
+    [t]
+  );
+
   const [formData, setFormData] = useState({
     agentId: '',
     ruleType: 'direct' as ForwardRuleType,
@@ -371,36 +388,36 @@ export const CreateForwardRuleSheet: React.FC<CreateForwardRuleSheetProps> = ({
   const validate = () => {
     const newErrors: Record<string, string> = {};
 
-    if (!formData.agentId) newErrors.agentId = '请选择转发Agent';
-    if (!formData.name.trim()) newErrors.name = '规则名称不能为空';
-    if (!formData.protocol) newErrors.protocol = '协议类型不能为空';
+    if (!formData.agentId) newErrors.agentId = t('admin.forwardRules.validation.selectForwardAgent');
+    if (!formData.name.trim()) newErrors.name = t('admin.forwardRules.validation.ruleNameRequired');
+    if (!formData.protocol) newErrors.protocol = t('admin.forwardRules.validation.protocolRequired');
 
     // Listen port validation
     if (formData.listenPort && (formData.listenPort < 1 || formData.listenPort > 65535)) {
-      newErrors.listenPort = '监听端口必须在1-65535之间';
+      newErrors.listenPort = t('admin.forwardRules.validation.listenPortRange');
     } else if (formData.listenPort && selectedAgent?.allowedPortRange &&
                !isPortInAllowedRange(formData.listenPort, selectedAgent.allowedPortRange)) {
-      newErrors.listenPort = `端口不在允许范围 [${selectedAgent.allowedPortRange}] 内`;
+      newErrors.listenPort = t('admin.forwardRules.validation.portNotInRangeSimple');
     }
 
     // Target validation for all rule types
     if (targetType === 'manual') {
-      if (!formData.targetAddress.trim()) newErrors.targetAddress = '目标地址不能为空';
+      if (!formData.targetAddress.trim()) newErrors.targetAddress = t('admin.forwardRules.validation.targetAddressRequired');
       if (!formData.targetPort || formData.targetPort < 1 || formData.targetPort > 65535) {
-        newErrors.targetPort = '目标端口必须在1-65535之间';
+        newErrors.targetPort = t('admin.forwardRules.validation.targetPortRange');
       }
     } else if (targetType === 'node') {
-      if (!formData.targetNodeId) newErrors.targetNodeId = '请选择目标节点';
+      if (!formData.targetNodeId) newErrors.targetNodeId = t('admin.forwardRules.validation.selectTargetNode');
     }
 
     // Rule type specific validation
     if (formData.ruleType === 'entry' && !formData.exitAgentId) {
-      newErrors.exitAgentId = '请选择出口节点';
+      newErrors.exitAgentId = t('admin.forwardRules.validation.selectExitNode');
     }
 
     if ((formData.ruleType === 'chain' || formData.ruleType === 'direct_chain') &&
         formData.chainAgentIds.length === 0) {
-      newErrors.chainAgentIds = '请至少选择一个中间节点';
+      newErrors.chainAgentIds = t('admin.forwardRules.validation.selectAtLeastOneNode');
     }
 
     // Port config validation for direct_chain
@@ -410,7 +427,7 @@ export const CreateForwardRuleSheet: React.FC<CreateForwardRuleSheetProps> = ({
         return !port || port < 1 || port > 65535;
       });
       if (missingPorts.length > 0) {
-        newErrors.chainPortConfig = '请为每个节点配置有效端口';
+        newErrors.chainPortConfig = t('admin.forwardRules.validation.configureValidPortsForDirectNodes');
       }
     }
 
@@ -495,14 +512,14 @@ export const CreateForwardRuleSheet: React.FC<CreateForwardRuleSheetProps> = ({
         <SheetHeader>
           <SheetTitle className="flex items-center gap-2">
             <ArrowLeftRight className="size-5 text-primary" />
-            <span>{initialData ? '复制规则' : '新增规则'}</span>
+            <span>{initialData ? t('admin.forwardRules.form.copyRuleShort') : t('admin.forwardRules.form.createRule')}</span>
           </SheetTitle>
         </SheetHeader>
 
         <SheetBody className="py-3 space-y-2">
           {/* Basic Info Section */}
           <MobileSection
-            title="基本信息"
+            title={t('admin.forwardRules.form.basicInfo')}
             icon={ArrowLeftRight}
             required
             isOpen={openSections.has('basic')}
@@ -510,12 +527,12 @@ export const CreateForwardRuleSheet: React.FC<CreateForwardRuleSheetProps> = ({
           >
             <div className="space-y-2.5">
               <div className="space-y-1">
-                <Field label="转发Agent" required />
+                <Field label={t('admin.forwardRules.form.forwardAgent')} required />
                 <MobileSelect
                   value={formData.agentId}
                   onChange={(value) => handleChange('agentId', value)}
                   options={agentOptions}
-                  placeholder="选择转发Agent"
+                  placeholder={t('admin.forwardRules.form.selectForwardAgent')}
                 />
                 {errors.agentId && (
                   <p className="text-xs text-destructive px-1">{errors.agentId}</p>
@@ -524,12 +541,12 @@ export const CreateForwardRuleSheet: React.FC<CreateForwardRuleSheetProps> = ({
 
               {selectedAgent?.allowedPortRange && (
                 <p className="text-xs text-amber-600 dark:text-amber-400">
-                  端口限制: {selectedAgent.allowedPortRange}
+                  {t('admin.forwardRules.form.portRestriction', { range: selectedAgent.allowedPortRange })}
                 </p>
               )}
 
               <div className="space-y-1">
-                <Field label="规则类型" required />
+                <Field label={t('admin.forwardRules.form.ruleType')} required />
                 <MobileSelect
                   value={formData.ruleType}
                   onChange={(value) => handleChange('ruleType', value)}
@@ -538,9 +555,9 @@ export const CreateForwardRuleSheet: React.FC<CreateForwardRuleSheetProps> = ({
               </div>
 
               <div className="space-y-1">
-                <Field label="规则名称" required />
+                <Field label={t('admin.forwardRules.form.ruleName')} required />
                 <MobileFormInput
-                  placeholder="例如：Web服务转发"
+                  placeholder={t('admin.forwardRules.form.ruleNamePlaceholder')}
                   value={formData.name}
                   onChange={(value) => handleChange('name', value)}
                   error={errors.name}
@@ -549,7 +566,7 @@ export const CreateForwardRuleSheet: React.FC<CreateForwardRuleSheetProps> = ({
 
               <div className="grid grid-cols-2 gap-2">
                 <div className="space-y-1">
-                  <Field label="协议类型" required />
+                  <Field label={t('admin.forwardRules.form.protocolType')} required />
                   <MobileSelect
                     value={formData.protocol}
                     onChange={(value) => handleChange('protocol', value)}
@@ -558,7 +575,7 @@ export const CreateForwardRuleSheet: React.FC<CreateForwardRuleSheetProps> = ({
                 </div>
 
                 <div className="space-y-1">
-                  <Field label="IP 版本" />
+                  <Field label={t('admin.forwardRules.form.ipVersion')} />
                   <MobileSelect
                     value={formData.ipVersion}
                     onChange={(value) => handleChange('ipVersion', value)}
@@ -571,7 +588,7 @@ export const CreateForwardRuleSheet: React.FC<CreateForwardRuleSheetProps> = ({
 
           {/* Forward Config Section */}
           <MobileSection
-            title="转发配置"
+            title={t('admin.forwardRules.form.forwardConfig')}
             icon={Network}
             required
             isOpen={openSections.has('forward')}
@@ -579,11 +596,11 @@ export const CreateForwardRuleSheet: React.FC<CreateForwardRuleSheetProps> = ({
           >
             <div className="space-y-2.5">
               <div className="space-y-1">
-                <Field label="监听端口" hint="留空自动分配" />
+                <Field label={t('admin.forwardRules.form.listenPort')} hint={t('admin.forwardRules.form.listenPortAutoHint')} />
                 <MobileFormInput
                   type="number"
                   inputMode="numeric"
-                  placeholder="留空自动分配"
+                  placeholder={t('admin.forwardRules.form.listenPortAutoHint')}
                   value={formData.listenPort ? String(formData.listenPort) : ''}
                   onChange={(value) => handleChange('listenPort', parseInt(value, 10) || 0)}
                   error={errors.listenPort}
@@ -594,12 +611,12 @@ export const CreateForwardRuleSheet: React.FC<CreateForwardRuleSheetProps> = ({
               {/* Entry type: Exit Agent */}
               {needsExitAgent && (
                 <div className="space-y-1">
-                  <Field label="出口节点" required />
+                  <Field label={t('admin.forwardRules.form.exitNode')} required />
                   <MobileSelect
                     value={formData.exitAgentId}
                     onChange={(value) => handleChange('exitAgentId', value)}
                     options={exitAgentOptions}
-                    placeholder="选择出口节点"
+                    placeholder={t('admin.forwardRules.form.selectExitNode')}
                   />
                   {errors.exitAgentId && (
                     <p className="text-xs text-destructive px-1">{errors.exitAgentId}</p>
@@ -610,7 +627,7 @@ export const CreateForwardRuleSheet: React.FC<CreateForwardRuleSheetProps> = ({
               {/* Tunnel type for entry and chain */}
               {needsTunnelConfig && (
                 <div className="space-y-1">
-                  <Field label="隧道类型" />
+                  <Field label={t('admin.forwardRules.form.tunnelType')} />
                   <MobileSelect
                     value={formData.tunnelType}
                     onChange={(value) => handleChange('tunnelType', value)}
@@ -622,11 +639,11 @@ export const CreateForwardRuleSheet: React.FC<CreateForwardRuleSheetProps> = ({
               {/* Chain type: Tunnel hops */}
               {formData.ruleType === 'chain' && (
                 <div className="space-y-1">
-                  <Field label="隧道跳数" hint="留空表示全程隧道" />
+                  <Field label={t('admin.forwardRules.form.tunnelHops')} hint={t('admin.forwardRules.form.tunnelHopsPlaceholder')} />
                   <MobileFormInput
                     type="number"
                     inputMode="numeric"
-                    placeholder="留空表示全程隧道"
+                    placeholder={t('admin.forwardRules.form.tunnelHopsPlaceholder')}
                     value={formData.tunnelHops !== undefined ? String(formData.tunnelHops) : ''}
                     onChange={(value) => handleChange('tunnelHops', value ? parseInt(value, 10) : undefined)}
                     className="font-mono"
@@ -638,7 +655,7 @@ export const CreateForwardRuleSheet: React.FC<CreateForwardRuleSheetProps> = ({
               {needsChainConfig && (
                 <div className="space-y-1">
                   <Field
-                    label={formData.ruleType === 'direct_chain' ? '中间节点及端口' : '中间节点'}
+                    label={formData.ruleType === 'direct_chain' ? t('admin.forwardRules.form.chainNodesWithPort') : t('admin.forwardRules.form.chainNodes')}
                     required
                   />
                   <SortableChainAgentList
@@ -681,7 +698,7 @@ export const CreateForwardRuleSheet: React.FC<CreateForwardRuleSheetProps> = ({
 
               {/* Target Type */}
               <div className="space-y-1">
-                <Field label="目标类型" required />
+                <Field label={t('admin.forwardRules.form.targetType')} required />
                 <MobileSelect
                   value={targetType}
                   onChange={(value) => {
@@ -700,9 +717,9 @@ export const CreateForwardRuleSheet: React.FC<CreateForwardRuleSheetProps> = ({
               {targetType === 'manual' ? (
                 <div className="grid grid-cols-2 gap-2">
                   <div className="space-y-1.5 col-span-2">
-                    <Field label="目标地址" required />
+                    <Field label={t('admin.forwardRules.form.targetAddress')} required />
                     <MobileFormInput
-                      placeholder="IP或域名"
+                      placeholder={t('admin.forwardRules.form.targetAddressPlaceholder')}
                       value={formData.targetAddress}
                       onChange={(value) => handleChange('targetAddress', value)}
                       error={errors.targetAddress}
@@ -711,7 +728,7 @@ export const CreateForwardRuleSheet: React.FC<CreateForwardRuleSheetProps> = ({
                     />
                   </div>
                   <div className="space-y-1.5 col-span-2">
-                    <Field label="目标端口" required />
+                    <Field label={t('admin.forwardRules.form.targetPort')} required />
                     <MobileFormInput
                       type="number"
                       inputMode="numeric"
@@ -725,12 +742,12 @@ export const CreateForwardRuleSheet: React.FC<CreateForwardRuleSheetProps> = ({
                 </div>
               ) : (
                 <div className="space-y-1">
-                  <Field label="目标节点" required hint="地址将动态解析为节点服务器地址" />
+                  <Field label={t('admin.forwardRules.form.targetNode')} required hint={t('admin.forwardRules.form.targetNodeDynamicHint')} />
                   <MobileSelect
                     value={formData.targetNodeId}
                     onChange={(value) => handleChange('targetNodeId', value)}
                     options={nodeOptions}
-                    placeholder="选择目标节点"
+                    placeholder={t('admin.forwardRules.form.selectTargetNode')}
                   />
                   {errors.targetNodeId && (
                     <p className="text-xs text-destructive px-1">{errors.targetNodeId}</p>
@@ -742,17 +759,17 @@ export const CreateForwardRuleSheet: React.FC<CreateForwardRuleSheetProps> = ({
 
           {/* Advanced Section */}
           <MobileSection
-            title="高级选项"
+            title={t('admin.forwardRules.form.advancedOptions')}
             icon={Settings}
-            badge={formData.bindIp || formData.remark ? '已配置' : null}
+            badge={formData.bindIp || formData.remark ? t('admin.forwardRules.form.configured') : null}
             isOpen={openSections.has('advanced')}
             onToggle={() => toggleSection('advanced')}
           >
             <div className="space-y-2.5">
               <div className="space-y-1">
-                <Field label="绑定 IP" hint="出站连接绑定的本地IP" />
+                <Field label={t('admin.forwardRules.form.bindIp')} hint={t('admin.forwardRules.form.bindIpHint')} />
                 <MobileFormInput
-                  placeholder="可选"
+                  placeholder={t('admin.forwardRules.form.bindIpPlaceholder')}
                   value={formData.bindIp}
                   onChange={(value) => handleChange('bindIp', value)}
                   className="font-mono"
@@ -761,11 +778,11 @@ export const CreateForwardRuleSheet: React.FC<CreateForwardRuleSheetProps> = ({
 
               <div className="grid grid-cols-2 gap-2">
                 <div className="space-y-1">
-                  <Field label="流量倍率" />
+                  <Field label={t('admin.forwardRules.form.trafficMultiplier')} />
                   <MobileFormInput
                     type="number"
                     inputMode="decimal"
-                    placeholder="自动"
+                    placeholder={t('admin.forwardRules.form.trafficMultiplierAutoHint')}
                     value={formData.trafficMultiplier !== undefined ? String(formData.trafficMultiplier) : ''}
                     onChange={(value) => handleChange('trafficMultiplier', value ? parseFloat(value) : undefined)}
                     className="font-mono"
@@ -773,7 +790,7 @@ export const CreateForwardRuleSheet: React.FC<CreateForwardRuleSheetProps> = ({
                 </div>
 
                 <div className="space-y-1">
-                  <Field label="排序" />
+                  <Field label={t('admin.forwardRules.form.sortOrder')} />
                   <MobileFormInput
                     type="number"
                     inputMode="numeric"
@@ -786,9 +803,9 @@ export const CreateForwardRuleSheet: React.FC<CreateForwardRuleSheetProps> = ({
               </div>
 
               <div className="space-y-1">
-                <Field label="备注" />
+                <Field label={t('admin.forwardRules.form.remark')} />
                 <MobileFormInput
-                  placeholder="可选备注"
+                  placeholder={t('admin.forwardRules.form.remarkPlaceholder')}
                   value={formData.remark}
                   onChange={(value) => handleChange('remark', value)}
                 />
@@ -799,7 +816,7 @@ export const CreateForwardRuleSheet: React.FC<CreateForwardRuleSheetProps> = ({
           {/* Resource Groups Section */}
           {availableResourceGroups.length > 0 && (
             <MobileSection
-              title="资源组"
+              title={t('admin.forwardRules.form.bindResourceGroups')}
               icon={FolderTree}
               badge={formData.groupSids.length > 0 ? `${formData.groupSids.length}` : null}
               isOpen={openSections.has('groups')}
@@ -827,10 +844,10 @@ export const CreateForwardRuleSheet: React.FC<CreateForwardRuleSheetProps> = ({
             className="w-full h-11 gap-2"
           >
             {loading ? <Loader2 className="size-4 animate-spin" /> : <Check className="size-4" />}
-            {loading ? '创建中...' : (initialData ? '创建副本' : '创建')}
+            {loading ? t('admin.forwardRules.form.creating') : (initialData ? t('admin.forwardRules.form.createCopy') : t('common.actions.create'))}
           </Button>
           <Button variant="ghost" onClick={() => onOpenChange(false)} disabled={loading} className="w-full h-10">
-            取消
+            {t('common.actions.cancel')}
           </Button>
         </SheetFooter>
       </SheetContent>

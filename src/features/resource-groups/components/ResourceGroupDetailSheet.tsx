@@ -11,6 +11,7 @@
  */
 
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
   Layers,
   Hash,
@@ -69,16 +70,16 @@ export interface ResourceGroupDetailSheetProps {
 
 const STATUS_CONFIG: Record<
   ResourceGroupStatus,
-  { label: string; variant: 'success' | 'default' }
+  { labelKey: string; variant: 'success' | 'default' }
 > = {
-  active: { label: '激活', variant: 'success' },
-  inactive: { label: '未激活', variant: 'default' },
+  active: { labelKey: 'resourceGroups.status.active', variant: 'success' },
+  inactive: { labelKey: 'resourceGroups.status.inactive', variant: 'default' },
 };
 
-const PLAN_TYPE_LABELS: Record<PlanType, string> = {
-  node: '节点计划',
-  forward: '转发计划',
-  hybrid: '混合计划',
+const PLAN_TYPE_LABEL_KEYS: Record<PlanType, string> = {
+  node: 'resourceGroups.planTypes.node',
+  forward: 'resourceGroups.planTypes.forward',
+  hybrid: 'resourceGroups.planTypes.hybrid',
 };
 
 // ============================================================================
@@ -129,12 +130,14 @@ const StatCard = ({
   value,
   isLoading,
   colorClass,
+  unit,
 }: {
   icon: React.ReactNode;
   label: string;
   value: number;
   isLoading: boolean;
   colorClass: string;
+  unit: string;
 }) => (
   <div className="flex items-center gap-3 p-3 rounded-lg bg-muted/30">
     <div className={cn('size-8 rounded-lg flex items-center justify-center', colorClass)}>
@@ -146,7 +149,7 @@ const StatCard = ({
         {isLoading ? (
           <Loader2 className="size-4 animate-spin" />
         ) : (
-          `${value} 个`
+          `${value} ${unit}`
         )}
       </div>
     </div>
@@ -166,6 +169,7 @@ export const ResourceGroupDetailSheet = ({
   onDelete,
   onToggleStatus,
 }: ResourceGroupDetailSheetProps) => {
+  const { t } = useTranslation();
   const [actionSheetOpen, setActionSheetOpen] = useState(false);
 
   // Fetch member counts
@@ -189,7 +193,7 @@ export const ResourceGroupDetailSheet = ({
 
   if (!group) return null;
 
-  const statusConfig = STATUS_CONFIG[group.status] || { label: '未知', variant: 'default' as const };
+  const statusConfig = STATUS_CONFIG[group.status] || { labelKey: 'resourceGroups.status.inactive', variant: 'default' as const };
   const plan = plansMap[group.planId];
   const planType = plan?.planType;
 
@@ -201,7 +205,7 @@ export const ResourceGroupDetailSheet = ({
   // Action Sheet actions
   const moreActions = [
     {
-      label: group.status === 'active' ? '停用资源组' : '启用资源组',
+      label: group.status === 'active' ? t('resourceGroups.actions.disableGroup') : t('resourceGroups.actions.enableGroup'),
       icon: group.status === 'active' ? (
         <PowerOff className="size-5" />
       ) : (
@@ -214,7 +218,7 @@ export const ResourceGroupDetailSheet = ({
       variant: 'default' as const,
     },
     {
-      label: '删除资源组',
+      label: t('resourceGroups.actions.deleteGroup'),
       icon: <Trash2 className="size-5" />,
       onPress: async () => {
         onDelete(group);
@@ -242,7 +246,7 @@ export const ResourceGroupDetailSheet = ({
                 <div className="flex items-center gap-2">
                   <SheetTitle className="truncate">{group.name}</SheetTitle>
                   <AdminBadge variant={statusConfig.variant} className="text-[10px] px-1.5 py-0 shrink-0">
-                    {statusConfig.label}
+                    {t(statusConfig.labelKey)}
                   </AdminBadge>
                 </div>
                 <SheetDescription>
@@ -254,7 +258,7 @@ export const ResourceGroupDetailSheet = ({
 
           <SheetBody className="space-y-4 pb-4">
             {/* Basic Info */}
-            <DetailSection title="基本信息">
+            <DetailSection title={t('resourceGroups.tabs.basicInfo')}>
               <DetailRow
                 icon={<Hash className="size-4" />}
                 label="SID"
@@ -262,20 +266,20 @@ export const ResourceGroupDetailSheet = ({
               />
               <DetailRow
                 icon={<Layers className="size-4" />}
-                label="名称"
+                label={t('resourceGroups.labels.name')}
                 value={group.name}
               />
               {group.description && (
                 <DetailRow
                   icon={<FileText className="size-4" />}
-                  label="描述"
+                  label={t('resourceGroups.sections.description')}
                   value={group.description}
                 />
               )}
             </DetailSection>
 
             {/* Associated Plan */}
-            <DetailSection title="关联套餐">
+            <DetailSection title={t('resourceGroups.sections.associatedPlan')}>
               {plan ? (
                 <div className="px-3 py-3">
                   <div className="flex items-center gap-3">
@@ -288,7 +292,7 @@ export const ResourceGroupDetailSheet = ({
                         <span className="font-mono text-xs text-muted-foreground">{plan.slug}</span>
                         {planType && (
                           <span className="text-xs px-1.5 py-0.5 rounded bg-muted text-muted-foreground">
-                            {PLAN_TYPE_LABELS[planType]}
+                            {t(PLAN_TYPE_LABEL_KEYS[planType])}
                           </span>
                         )}
                       </div>
@@ -298,40 +302,43 @@ export const ResourceGroupDetailSheet = ({
               ) : (
                 <DetailRow
                   icon={<CreditCard className="size-4" />}
-                  label="套餐 ID"
+                  label={t('resourceGroups.labels.planId')}
                   value={<span className="font-mono text-xs">{group.planId}</span>}
                 />
               )}
             </DetailSection>
 
             {/* Member Statistics */}
-            <DetailSection title="成员统计">
+            <DetailSection title={t('resourceGroups.sections.memberStats')}>
               <div className="p-3 space-y-2">
                 {canBindNodes && (
                   <StatCard
                     icon={<Server className="size-4 text-primary" />}
-                    label="节点数量"
+                    label={t('resourceGroups.labels.nodeCount')}
                     value={nodesPagination.total}
                     isLoading={isLoadingNodes}
                     colorClass="bg-primary/10"
+                    unit={t('resourceGroups.unit')}
                   />
                 )}
                 {canBindAgents && (
                   <StatCard
                     icon={<Cpu className="size-4 text-success" />}
-                    label="转发代理数量"
+                    label={t('resourceGroups.labels.forwardAgentCount')}
                     value={agentsPagination.total}
                     isLoading={isLoadingAgents}
                     colorClass="bg-success/10"
+                    unit={t('resourceGroups.unit')}
                   />
                 )}
                 {canBindRules && (
                   <StatCard
                     icon={<ArrowRightLeft className="size-4 text-warning" />}
-                    label="转发规则数量"
+                    label={t('resourceGroups.labels.forwardRuleCount')}
                     value={rulesPagination.total}
                     isLoading={isLoadingRules}
                     colorClass="bg-warning/10"
+                    unit={t('resourceGroups.unit')}
                   />
                 )}
                 {/* Show all stats if plan type is unknown */}
@@ -339,24 +346,27 @@ export const ResourceGroupDetailSheet = ({
                   <>
                     <StatCard
                       icon={<Server className="size-4 text-primary" />}
-                      label="节点数量"
+                      label={t('resourceGroups.labels.nodeCount')}
                       value={nodesPagination.total}
                       isLoading={isLoadingNodes}
                       colorClass="bg-primary/10"
+                      unit={t('resourceGroups.unit')}
                     />
                     <StatCard
                       icon={<Cpu className="size-4 text-success" />}
-                      label="转发代理数量"
+                      label={t('resourceGroups.labels.forwardAgentCount')}
                       value={agentsPagination.total}
                       isLoading={isLoadingAgents}
                       colorClass="bg-success/10"
+                      unit={t('resourceGroups.unit')}
                     />
                     <StatCard
                       icon={<ArrowRightLeft className="size-4 text-warning" />}
-                      label="转发规则数量"
+                      label={t('resourceGroups.labels.forwardRuleCount')}
                       value={rulesPagination.total}
                       isLoading={isLoadingRules}
                       colorClass="bg-warning/10"
+                      unit={t('resourceGroups.unit')}
                     />
                   </>
                 )}
@@ -364,15 +374,15 @@ export const ResourceGroupDetailSheet = ({
             </DetailSection>
 
             {/* Timestamps */}
-            <DetailSection title="时间信息">
+            <DetailSection title={t('resourceGroups.sections.timeInfo')}>
               <DetailRow
                 icon={<Calendar className="size-4" />}
-                label="创建时间"
+                label={t('resourceGroups.labels.createdAt')}
                 value={formatDate(group.createdAt)}
               />
               <DetailRow
                 icon={<Activity className="size-4" />}
-                label="更新时间"
+                label={t('resourceGroups.labels.updatedAt')}
                 value={formatDate(group.updatedAt)}
               />
             </DetailSection>
@@ -395,7 +405,7 @@ export const ResourceGroupDetailSheet = ({
                 )}
               >
                 <Edit className="size-4" />
-                编辑
+                {t('resourceGroups.actions.edit')}
               </button>
               <button
                 type="button"
@@ -419,7 +429,7 @@ export const ResourceGroupDetailSheet = ({
         open={actionSheetOpen}
         onOpenChange={setActionSheetOpen}
         actions={moreActions}
-        title="更多操作"
+        title={t('resourceGroups.actions.moreActions')}
       />
     </>
   );

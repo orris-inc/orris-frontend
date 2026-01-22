@@ -4,6 +4,7 @@
  */
 
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
   Dialog,
   DialogContent,
@@ -31,6 +32,7 @@ export const BatchDeleteDialog: React.FC<BatchDeleteDialogProps> = ({
   onConfirm,
   isDeleting,
 }) => {
+  const { t } = useTranslation();
   const [result, setResult] = useState<BatchOperationResult | null>(null);
   const [hasTriggered, setHasTriggered] = useState(false);
 
@@ -55,10 +57,12 @@ export const BatchDeleteDialog: React.FC<BatchDeleteDialogProps> = ({
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Trash2 className="size-5 text-destructive" />
-            批量删除规则
+            {t('admin.forwardRules.batch.deleteTitle')}
           </DialogTitle>
           <DialogDescription>
-            {showResult ? '删除操作已完成' : '此操作不可撤销，请确认是否继续'}
+            {showResult
+              ? t('admin.forwardRules.batch.deleteComplete')
+              : t('admin.forwardRules.batch.deleteDescription')}
           </DialogDescription>
         </DialogHeader>
 
@@ -66,10 +70,10 @@ export const BatchDeleteDialog: React.FC<BatchDeleteDialogProps> = ({
           <div className="space-y-4">
             <div className="p-4 bg-destructive/10 rounded-lg">
               <p className="text-sm text-destructive">
-                您即将删除 <span className="font-semibold">{selectedCount}</span> 条转发规则。
+                {t('admin.forwardRules.batch.deleteConfirm', { count: selectedCount })}
               </p>
               <p className="text-sm text-muted-foreground mt-2">
-                删除后将无法恢复，请确认操作。
+                {t('admin.forwardRules.batch.deleteWarning')}
               </p>
             </div>
           </div>
@@ -81,20 +85,20 @@ export const BatchDeleteDialog: React.FC<BatchDeleteDialogProps> = ({
                 <p className="text-lg font-semibold text-green-700 dark:text-green-300">
                   {result.succeeded.length}
                 </p>
-                <p className="text-xs text-green-600 dark:text-green-400">成功</p>
+                <p className="text-xs text-green-600 dark:text-green-400">{t('admin.forwardRules.batch.succeeded')}</p>
               </div>
               <div className="p-3 bg-red-50 dark:bg-red-900/20 rounded-lg text-center">
                 <XCircle className="size-5 text-red-500 mx-auto mb-1" />
                 <p className="text-lg font-semibold text-red-700 dark:text-red-300">
                   {failedCount}
                 </p>
-                <p className="text-xs text-red-600 dark:text-red-400">失败</p>
+                <p className="text-xs text-red-600 dark:text-red-400">{t('admin.forwardRules.batch.failed')}</p>
               </div>
             </div>
 
             {failedCount > 0 && result.failed && (
               <div className="space-y-2">
-                <p className="text-sm font-medium text-red-700 dark:text-red-300">删除失败</p>
+                <p className="text-sm font-medium text-red-700 dark:text-red-300">{t('admin.forwardRules.batch.deleteFailed')}</p>
                 <div className="max-h-[150px] overflow-y-auto space-y-1">
                   {result.failed.map((item) => (
                     <div
@@ -117,7 +121,7 @@ export const BatchDeleteDialog: React.FC<BatchDeleteDialogProps> = ({
           {!showResult ? (
             <>
               <Button variant="outline" onClick={handleClose} disabled={isDeleting}>
-                取消
+                {t('admin.forwardRules.batch.cancel')}
               </Button>
               <Button
                 variant="destructive"
@@ -127,18 +131,18 @@ export const BatchDeleteDialog: React.FC<BatchDeleteDialogProps> = ({
                 {isDeleting ? (
                   <>
                     <Loader2 className="size-4 mr-2 animate-spin" />
-                    删除中...
+                    {t('admin.forwardRules.batch.deleting')}
                   </>
                 ) : (
                   <>
                     <Trash2 className="size-4 mr-2" />
-                    删除 {selectedCount} 条规则
+                    {t('admin.forwardRules.batch.deleteRulesCount', { count: selectedCount })}
                   </>
                 )}
               </Button>
             </>
           ) : (
-            <Button onClick={handleClose}>关闭</Button>
+            <Button onClick={handleClose}>{t('admin.forwardRules.batch.close')}</Button>
           )}
         </DialogFooter>
       </DialogContent>

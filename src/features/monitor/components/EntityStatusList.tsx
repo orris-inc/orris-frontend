@@ -4,6 +4,7 @@
  */
 
 import { memo, useState, useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Server, Cpu, Search, ChevronDown, ChevronUp } from 'lucide-react';
 import { ScrollArea } from '@/components/common/ScrollArea';
 import { Input } from '@/components/common/Input';
@@ -42,6 +43,7 @@ StatusProgress.displayName = 'StatusProgress';
 
 // Entity card component
 const EntityCard = memo(({ entity }: { entity: EntityStatus }) => {
+  const { t } = useTranslation();
   const [isExpanded, setIsExpanded] = useState(false);
   const status = entity.status as (NodeSystemStatus | AgentSystemStatus) | null;
 
@@ -79,16 +81,16 @@ const EntityCard = memo(({ entity }: { entity: EntityStatus }) => {
                   variant={entity.isOnline ? 'default' : 'secondary'}
                   className="text-[10px] px-1.5 py-0 h-4 shrink-0"
                 >
-                  {entity.isOnline ? '在线' : '离线'}
+                  {entity.isOnline ? t('admin.monitor.detail.online') : t('admin.monitor.detail.offline')}
                 </Badge>
               </div>
               {entity.isOnline && status && (
                 <div className="flex items-center gap-3 mt-1">
                   <span className="text-[10px] text-muted-foreground">
-                    CPU: {cpuPercent.toFixed(0)}%
+                    {t('admin.monitor.cpu')}: {cpuPercent.toFixed(0)}%
                   </span>
                   <span className="text-[10px] text-muted-foreground">
-                    内存: {memoryPercent.toFixed(0)}%
+                    {t('admin.monitor.memory')}: {memoryPercent.toFixed(0)}%
                   </span>
                   {status.networkRxRate !== undefined && (
                     <span className="text-[10px] text-success">
@@ -114,33 +116,33 @@ const EntityCard = memo(({ entity }: { entity: EntityStatus }) => {
             <div className="p-3 pt-0 border-t border-border">
               {/* Resource metrics */}
               <div className="grid grid-cols-3 gap-3 mb-3">
-                <StatusProgress value={cpuPercent} label="CPU" />
-                <StatusProgress value={memoryPercent} label="内存" />
-                <StatusProgress value={diskPercent} label="磁盘" />
+                <StatusProgress value={cpuPercent} label={t('admin.monitor.cpu')} />
+                <StatusProgress value={memoryPercent} label={t('admin.monitor.memory')} />
+                <StatusProgress value={diskPercent} label={t('admin.monitor.disk')} />
               </div>
 
               {/* Network stats */}
               <div className="grid grid-cols-2 gap-3 text-xs">
                 <div className="flex items-center justify-between">
-                  <span className="text-muted-foreground">下载速率</span>
+                  <span className="text-muted-foreground">{t('admin.monitor.detail.downloadRate')}</span>
                   <span className="font-mono text-success">
                     {formatBitRate(status.networkRxRate)}
                   </span>
                 </div>
                 <div className="flex items-center justify-between">
-                  <span className="text-muted-foreground">上传速率</span>
+                  <span className="text-muted-foreground">{t('admin.monitor.detail.uploadRate')}</span>
                   <span className="font-mono text-info">
                     {formatBitRate(status.networkTxRate)}
                   </span>
                 </div>
                 <div className="flex items-center justify-between">
-                  <span className="text-muted-foreground">累计下载</span>
+                  <span className="text-muted-foreground">{t('admin.monitor.detail.totalDownload')}</span>
                   <span className="font-mono text-foreground">
                     {formatBytes(status.networkRxBytes)}
                   </span>
                 </div>
                 <div className="flex items-center justify-between">
-                  <span className="text-muted-foreground">累计上传</span>
+                  <span className="text-muted-foreground">{t('admin.monitor.detail.totalUpload')}</span>
                   <span className="font-mono text-foreground">
                     {formatBytes(status.networkTxBytes)}
                   </span>
@@ -170,6 +172,7 @@ const EntityCard = memo(({ entity }: { entity: EntityStatus }) => {
 EntityCard.displayName = 'EntityCard';
 
 export const EntityStatusList = memo(({ entities }: EntityStatusListProps) => {
+  const { t } = useTranslation();
   const [searchQuery, setSearchQuery] = useState('');
 
   // Filter entities by search
@@ -195,16 +198,16 @@ export const EntityStatusList = memo(({ entities }: EntityStatusListProps) => {
       <div className="p-4 border-b border-border shrink-0">
         <div className="flex items-center justify-between mb-3">
           <div>
-            <h3 className="text-base font-semibold text-foreground">实体状态</h3>
+            <h3 className="text-base font-semibold text-foreground">{t('admin.monitor.entityStatus')}</h3>
             <p className="text-xs text-muted-foreground mt-0.5">
-              {entities.length} 个实体 ({entities.filter(e => e.isOnline).length} 在线)
+              {t('admin.monitor.onlineCount', { online: entities.filter(e => e.isOnline).length, total: entities.length })}
             </p>
           </div>
         </div>
         <div className="relative">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
           <Input
-            placeholder="搜索 Agent..."
+            placeholder={t('admin.monitor.searchAgent')}
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="pl-9 h-8 text-sm"
@@ -238,7 +241,7 @@ export const EntityStatusList = memo(({ entities }: EntityStatusListProps) => {
             <div>
               <div className="flex items-center gap-2 mb-2">
                 <Cpu className="size-4 text-primary" />
-                <span className="text-sm font-medium text-foreground">转发 Agent</span>
+                <span className="text-sm font-medium text-foreground">{t('admin.monitor.filterForwardAgent')}</span>
                 <Badge variant="secondary" className="text-[10px]">
                   {agents.filter(a => a.isOnline).length}/{agents.length}
                 </Badge>
@@ -259,7 +262,7 @@ export const EntityStatusList = memo(({ entities }: EntityStatusListProps) => {
                   <Search className="size-4 text-muted-foreground/50" />
                 </div>
                 <p className="text-sm text-muted-foreground">
-                  {searchQuery ? '未找到匹配的实体' : '暂无实体'}
+                  {searchQuery ? t('admin.monitor.noMatchingEntities') : t('admin.monitor.noEntities')}
                 </p>
               </div>
             </div>

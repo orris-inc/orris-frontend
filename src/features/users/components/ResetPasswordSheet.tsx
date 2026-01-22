@@ -20,7 +20,7 @@ import { Button } from '@/components/common/Button';
 import {
   MobilePasswordInput,
   PasswordStrengthIndicator,
-  DEFAULT_PASSWORD_RULES,
+  useDefaultPasswordRules,
 } from '@/components/common/mobile-form';
 import type { UserResponse } from '@/api/user';
 
@@ -42,6 +42,7 @@ export const ResetPasswordSheet: React.FC<ResetPasswordSheetProps> = ({
   onSubmit,
 }) => {
   const { t } = useTranslation();
+  const passwordRules = useDefaultPasswordRules();
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
@@ -161,7 +162,7 @@ export const ResetPasswordSheet: React.FC<ResetPasswordSheetProps> = ({
             )}
 
             {/* Password Strength Indicator */}
-            <PasswordStrengthIndicator password={password} rules={DEFAULT_PASSWORD_RULES} />
+            <PasswordStrengthIndicator password={password} rules={passwordRules} />
           </div>
 
           {/* Confirm Password */}

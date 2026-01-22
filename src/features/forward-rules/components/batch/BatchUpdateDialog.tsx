@@ -4,6 +4,7 @@
  */
 
 import { useState, useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
   Dialog,
   DialogContent,
@@ -47,17 +48,17 @@ type FieldKey = 'name' | 'remark' | 'sortOrder' | 'agentId' | 'exitAgentId';
 
 interface FieldConfig {
   key: FieldKey;
-  label: string;
+  labelKey: string;
   type: 'text' | 'number' | 'select';
-  placeholder: string;
+  placeholderKey: string;
 }
 
 const FIELD_CONFIGS: FieldConfig[] = [
-  { key: 'name', label: '名称', type: 'text', placeholder: '请输入新名称' },
-  { key: 'remark', label: '备注', type: 'text', placeholder: '请输入新备注' },
-  { key: 'sortOrder', label: '排序', type: 'number', placeholder: '请输入排序值' },
-  { key: 'agentId', label: '入口代理', type: 'select', placeholder: '选择入口代理' },
-  { key: 'exitAgentId', label: '出口代理', type: 'select', placeholder: '选择出口代理' },
+  { key: 'name', labelKey: 'admin.forwardRules.batch.fieldName', type: 'text', placeholderKey: 'admin.forwardRules.batch.namePlaceholder' },
+  { key: 'remark', labelKey: 'admin.forwardRules.batch.fieldRemark', type: 'text', placeholderKey: 'admin.forwardRules.batch.remarkPlaceholder' },
+  { key: 'sortOrder', labelKey: 'admin.forwardRules.batch.fieldSortOrder', type: 'number', placeholderKey: 'admin.forwardRules.batch.sortOrderPlaceholder' },
+  { key: 'agentId', labelKey: 'admin.forwardRules.batch.fieldEntryAgent', type: 'select', placeholderKey: 'admin.forwardRules.batch.selectEntryAgent' },
+  { key: 'exitAgentId', labelKey: 'admin.forwardRules.batch.fieldExitAgent', type: 'select', placeholderKey: 'admin.forwardRules.batch.selectExitAgent' },
 ];
 
 export const BatchUpdateDialog: React.FC<BatchUpdateDialogProps> = ({
@@ -68,6 +69,7 @@ export const BatchUpdateDialog: React.FC<BatchUpdateDialogProps> = ({
   isUpdating,
   agents = [],
 }) => {
+  const { t } = useTranslation();
   const [result, setResult] = useState<BatchOperationResult | null>(null);
   const [hasTriggered, setHasTriggered] = useState(false);
 
@@ -186,18 +188,29 @@ export const BatchUpdateDialog: React.FC<BatchUpdateDialogProps> = ({
     }
   };
 
+  // Get selected field labels for summary
+  const getSelectedFieldLabels = () => {
+    return Array.from(selectedFields)
+      .map((f) => {
+        const config = availableFieldConfigs.find((c) => c.key === f);
+        return config ? t(config.labelKey) : '';
+      })
+      .filter(Boolean)
+      .join(', ');
+  };
+
   return (
     <Dialog open={open} onOpenChange={(open) => !open && handleClose()}>
       <DialogContent className="sm:max-w-[500px]">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Edit3 className="size-5 text-blue-500" />
-            批量更新规则
+            {t('admin.forwardRules.batch.updateTitle')}
           </DialogTitle>
           <DialogDescription>
             {showResult
-              ? '更新操作已完成'
-              : `选择要更新的字段，将应用到 ${selectedIds.length} 条规则`}
+              ? t('admin.forwardRules.batch.updateComplete')
+              : t('admin.forwardRules.batch.updateDescription', { count: selectedIds.length })}
           </DialogDescription>
         </DialogHeader>
 
@@ -205,7 +218,7 @@ export const BatchUpdateDialog: React.FC<BatchUpdateDialogProps> = ({
           <div className="space-y-6">
             {/* Phase 1: Select fields */}
             <div className="space-y-3">
-              <p className="text-sm font-medium">选择要更新的字段</p>
+              <p className="text-sm font-medium">{t('admin.forwardRules.batch.selectFieldsToUpdate')}</p>
               <div className="space-y-2">
                 {availableFieldConfigs.map((config) => (
                   <div key={config.key} className="flex items-center space-x-2">
@@ -220,7 +233,7 @@ export const BatchUpdateDialog: React.FC<BatchUpdateDialogProps> = ({
                       htmlFor={`field-${config.key}`}
                       className="text-sm font-normal cursor-pointer"
                     >
-                      {config.label}
+                      {t(config.labelKey)}
                     </Label>
                   </div>
                 ))}
@@ -230,19 +243,19 @@ export const BatchUpdateDialog: React.FC<BatchUpdateDialogProps> = ({
             {/* Phase 2: Input values for selected fields */}
             {selectedFields.size > 0 && (
               <div className="space-y-4">
-                <p className="text-sm font-medium">输入新值</p>
+                <p className="text-sm font-medium">{t('admin.forwardRules.batch.enterNewValues')}</p>
                 {availableFieldConfigs
                   .filter((config) => selectedFields.has(config.key))
                   .map((config) => (
                     <div key={config.key} className="space-y-2">
-                      <Label htmlFor={`input-${config.key}`}>{config.label}</Label>
+                      <Label htmlFor={`input-${config.key}`}>{t(config.labelKey)}</Label>
                       {config.type === 'select' ? (
                         <Select
                           value={getFieldValue(config.key)}
                           onValueChange={(value) => setFieldValue(config.key, value)}
                         >
                           <SelectTrigger id={`input-${config.key}`}>
-                            <SelectValue placeholder={config.placeholder} />
+                            <SelectValue placeholder={t(config.placeholderKey)} />
                           </SelectTrigger>
                           <SelectContent>
                             {availableAgents.map((agent) => (
@@ -256,7 +269,7 @@ export const BatchUpdateDialog: React.FC<BatchUpdateDialogProps> = ({
                         <Input
                           id={`input-${config.key}`}
                           type={config.type}
-                          placeholder={config.placeholder}
+                          placeholder={t(config.placeholderKey)}
                           value={getFieldValue(config.key)}
                           onChange={(e) => setFieldValue(config.key, e.target.value)}
                         />
@@ -269,10 +282,10 @@ export const BatchUpdateDialog: React.FC<BatchUpdateDialogProps> = ({
             {selectedFields.size > 0 && (
               <div className="p-3 bg-muted rounded-lg">
                 <p className="text-sm text-muted-foreground">
-                  将更新 <span className="font-semibold">{selectedIds.length}</span> 条规则的
-                  {Array.from(selectedFields)
-                    .map((f) => availableFieldConfigs.find((c) => c.key === f)?.label)
-                    .join('、')}
+                  {t('admin.forwardRules.batch.updateSummary', {
+                    count: selectedIds.length,
+                    fields: getSelectedFieldLabels()
+                  })}
                 </p>
               </div>
             )}
@@ -285,20 +298,20 @@ export const BatchUpdateDialog: React.FC<BatchUpdateDialogProps> = ({
                 <p className="text-lg font-semibold text-green-700 dark:text-green-300">
                   {result.succeeded.length}
                 </p>
-                <p className="text-xs text-green-600 dark:text-green-400">成功</p>
+                <p className="text-xs text-green-600 dark:text-green-400">{t('admin.forwardRules.batch.succeeded')}</p>
               </div>
               <div className="p-3 bg-red-50 dark:bg-red-900/20 rounded-lg text-center">
                 <XCircle className="size-5 text-red-500 mx-auto mb-1" />
                 <p className="text-lg font-semibold text-red-700 dark:text-red-300">
                   {failedCount}
                 </p>
-                <p className="text-xs text-red-600 dark:text-red-400">失败</p>
+                <p className="text-xs text-red-600 dark:text-red-400">{t('admin.forwardRules.batch.failed')}</p>
               </div>
             </div>
 
             {failedCount > 0 && result.failed && (
               <div className="space-y-2">
-                <p className="text-sm font-medium text-red-700 dark:text-red-300">更新失败</p>
+                <p className="text-sm font-medium text-red-700 dark:text-red-300">{t('admin.forwardRules.batch.updateFailed')}</p>
                 <div className="max-h-[150px] overflow-y-auto space-y-1">
                   {result.failed.map((item) => (
                     <div
@@ -321,7 +334,7 @@ export const BatchUpdateDialog: React.FC<BatchUpdateDialogProps> = ({
           {!showResult ? (
             <>
               <Button variant="outline" onClick={handleClose} disabled={isUpdating}>
-                取消
+                {t('admin.forwardRules.batch.cancel')}
               </Button>
               <Button
                 onClick={handleConfirm}
@@ -330,18 +343,18 @@ export const BatchUpdateDialog: React.FC<BatchUpdateDialogProps> = ({
                 {isUpdating ? (
                   <>
                     <Loader2 className="size-4 mr-2 animate-spin" />
-                    更新中...
+                    {t('admin.forwardRules.batch.updating')}
                   </>
                 ) : (
                   <>
                     <Edit3 className="size-4 mr-2" />
-                    更新 {selectedIds.length} 条规则
+                    {t('admin.forwardRules.batch.updateRulesCount', { count: selectedIds.length })}
                   </>
                 )}
               </Button>
             </>
           ) : (
-            <Button onClick={handleClose}>关闭</Button>
+            <Button onClick={handleClose}>{t('admin.forwardRules.batch.close')}</Button>
           )}
         </DialogFooter>
       </DialogContent>

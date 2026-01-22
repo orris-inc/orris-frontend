@@ -7,6 +7,7 @@
  */
 
 import { useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
   Dialog,
   DialogContent,
@@ -53,38 +54,38 @@ interface ForwardRuleDetailDialogProps {
 
 // Status configuration
 const STATUS_CONFIG = {
-  enabled: { label: '运行中', color: 'text-emerald-500', bg: 'bg-emerald-500/10', ring: 'ring-emerald-500/20' },
-  disabled: { label: '已停止', color: 'text-slate-400', bg: 'bg-slate-500/10', ring: 'ring-slate-500/20' },
+  enabled: { labelKey: 'admin.forwardRules.detail.statusEnabled', color: 'text-emerald-500', bg: 'bg-emerald-500/10', ring: 'ring-emerald-500/20' },
+  disabled: { labelKey: 'admin.forwardRules.detail.statusDisabled', color: 'text-slate-400', bg: 'bg-slate-500/10', ring: 'ring-slate-500/20' },
 };
 
 // Rule type configuration
-const RULE_TYPE_CONFIG: Record<string, { label: string; icon: React.ElementType; gradient: string }> = {
-  direct: { label: '直连', icon: Zap, gradient: 'from-blue-500 to-cyan-500' },
-  entry: { label: '入口', icon: Shield, gradient: 'from-emerald-500 to-teal-500' },
-  chain: { label: '链式', icon: Activity, gradient: 'from-purple-500 to-pink-500' },
-  direct_chain: { label: '直链', icon: Globe, gradient: 'from-amber-500 to-orange-500' },
-  external: { label: '外部', icon: Globe, gradient: 'from-cyan-500 to-teal-500' },
+const RULE_TYPE_CONFIG: Record<string, { labelKey: string; icon: React.ElementType; gradient: string }> = {
+  direct: { labelKey: 'admin.forwardRules.ruleType.direct', icon: Zap, gradient: 'from-blue-500 to-cyan-500' },
+  entry: { labelKey: 'admin.forwardRules.ruleType.entry', icon: Shield, gradient: 'from-emerald-500 to-teal-500' },
+  chain: { labelKey: 'admin.forwardRules.ruleType.chain', icon: Activity, gradient: 'from-purple-500 to-pink-500' },
+  direct_chain: { labelKey: 'admin.forwardRules.ruleType.directChain', icon: Globe, gradient: 'from-amber-500 to-orange-500' },
+  external: { labelKey: 'admin.forwardRules.ruleType.external', icon: Globe, gradient: 'from-cyan-500 to-teal-500' },
 };
 
 // Protocol labels
 const PROTOCOL_LABELS: Record<string, string> = { tcp: 'TCP', udp: 'UDP', both: 'TCP/UDP' };
-const IP_VERSION_LABELS: Record<string, string> = { auto: '自动', ipv4: 'IPv4', ipv6: 'IPv6' };
-const TUNNEL_TYPE_LABELS: Record<string, string> = { ws: 'WebSocket', tls: 'TLS' };
+const IP_VERSION_LABEL_KEYS: Record<string, string> = { auto: 'admin.forwardRules.detail.ipVersionAuto', ipv4: 'admin.forwardRules.detail.ipVersionIpv4', ipv6: 'admin.forwardRules.detail.ipVersionIpv6' };
+const TUNNEL_TYPE_LABEL_KEYS: Record<string, string> = { ws: 'admin.forwardRules.detail.tunnelTypeWs', tls: 'admin.forwardRules.detail.tunnelTypeTls' };
 
 // Sync status config
-const SYNC_STATUS_CONFIG: Record<RuleSyncStatus, { label: string; icon: React.ElementType; color: string }> = {
-  synced: { label: '已同步', icon: CheckCircle2, color: 'text-emerald-500' },
-  pending: { label: '同步中', icon: CircleDashed, color: 'text-amber-500' },
-  failed: { label: '失败', icon: AlertCircle, color: 'text-red-500' },
+const SYNC_STATUS_CONFIG: Record<RuleSyncStatus, { labelKey: string; icon: React.ElementType; color: string }> = {
+  synced: { labelKey: 'admin.forwardRules.syncStatus.synced', icon: CheckCircle2, color: 'text-emerald-500' },
+  pending: { labelKey: 'admin.forwardRules.syncStatus.pending', icon: CircleDashed, color: 'text-amber-500' },
+  failed: { labelKey: 'admin.forwardRules.syncStatus.failed', icon: AlertCircle, color: 'text-red-500' },
 };
 
 // Run status config
-const RUN_STATUS_CONFIG: Record<RuleRunStatus | 'unknown', { label: string; icon: React.ElementType; color: string }> = {
-  running: { label: '运行中', icon: Play, color: 'text-emerald-500' },
-  stopped: { label: '已停止', icon: Square, color: 'text-slate-400' },
-  error: { label: '错误', icon: AlertTriangle, color: 'text-red-500' },
-  starting: { label: '启动中', icon: RotateCw, color: 'text-blue-500' },
-  unknown: { label: '未知', icon: HelpCircle, color: 'text-slate-400' },
+const RUN_STATUS_CONFIG: Record<RuleRunStatus | 'unknown', { labelKey: string; icon: React.ElementType; color: string }> = {
+  running: { labelKey: 'admin.forwardRules.runStatus.running', icon: Play, color: 'text-emerald-500' },
+  stopped: { labelKey: 'admin.forwardRules.runStatus.stopped', icon: Square, color: 'text-slate-400' },
+  error: { labelKey: 'admin.forwardRules.runStatus.error', icon: AlertTriangle, color: 'text-red-500' },
+  starting: { labelKey: 'admin.forwardRules.runStatus.starting', icon: RotateCw, color: 'text-blue-500' },
+  unknown: { labelKey: 'admin.forwardRules.runStatus.unknown', icon: HelpCircle, color: 'text-slate-400' },
 };
 
 // Format helpers
@@ -136,11 +137,12 @@ const FlowPath: React.FC<{
     port?: number;
   }>;
 }> = ({ nodes }) => {
+  const { t } = useTranslation();
   const config = {
-    entry: { icon: Bot, color: 'text-emerald-500', bg: 'bg-emerald-500', bgLight: 'bg-emerald-500/10', borderColor: 'border-emerald-500', label: '入口' },
-    relay: { icon: Bot, color: 'text-purple-500', bg: 'bg-purple-500', bgLight: 'bg-purple-500/10', borderColor: 'border-purple-500', label: '中继' },
-    exit: { icon: Bot, color: 'text-orange-500', bg: 'bg-orange-500', bgLight: 'bg-orange-500/10', borderColor: 'border-orange-500', label: '出口' },
-    target: { icon: Server, color: 'text-blue-500', bg: 'bg-blue-500', bgLight: 'bg-blue-500/10', borderColor: 'border-blue-500', label: '目标' },
+    entry: { icon: Bot, color: 'text-emerald-500', bg: 'bg-emerald-500', bgLight: 'bg-emerald-500/10', borderColor: 'border-emerald-500', labelKey: 'admin.forwardRules.flowNode.entry' },
+    relay: { icon: Bot, color: 'text-purple-500', bg: 'bg-purple-500', bgLight: 'bg-purple-500/10', borderColor: 'border-purple-500', labelKey: 'admin.forwardRules.flowNode.relay' },
+    exit: { icon: Bot, color: 'text-orange-500', bg: 'bg-orange-500', bgLight: 'bg-orange-500/10', borderColor: 'border-orange-500', labelKey: 'admin.forwardRules.flowNode.exit' },
+    target: { icon: Server, color: 'text-blue-500', bg: 'bg-blue-500', bgLight: 'bg-blue-500/10', borderColor: 'border-blue-500', labelKey: 'admin.forwardRules.flowNode.target' },
   };
 
   // Format address for display (truncate long addresses)
@@ -177,7 +179,7 @@ const FlowPath: React.FC<{
                 </div>
                 {/* Type label badge */}
                 <span className={`absolute -top-1.5 left-1/2 -translate-x-1/2 px-1.5 py-0.5 text-[9px] font-semibold rounded-full ${nodeConfig.bg} text-white shadow-sm whitespace-nowrap`}>
-                  {nodeConfig.label}
+                  {t(nodeConfig.labelKey)}
                 </span>
               </div>
 
@@ -212,6 +214,7 @@ const TrafficBar: React.FC<{
   download: number;
   total: number;
 }> = ({ upload, download, total }) => {
+  const { t } = useTranslation();
   const uploadPercent = total > 0 ? (upload / total) * 100 : 50;
   const downloadPercent = 100 - uploadPercent;
 
@@ -239,17 +242,17 @@ const TrafficBar: React.FC<{
         <div className="flex items-center gap-4">
           <div className="flex items-center gap-1.5">
             <Upload className="size-3.5 text-emerald-500" />
-            <span className="text-muted-foreground">上传</span>
+            <span className="text-muted-foreground">{t('admin.forwardRules.detail.upload')}</span>
             <span className="font-semibold tabular-nums">{formatBytes(upload)}</span>
           </div>
           <div className="flex items-center gap-1.5">
             <Download className="size-3.5 text-blue-500" />
-            <span className="text-muted-foreground">下载</span>
+            <span className="text-muted-foreground">{t('admin.forwardRules.detail.download')}</span>
             <span className="font-semibold tabular-nums">{formatBytes(download)}</span>
           </div>
         </div>
         <div className="flex items-center gap-1.5">
-          <span className="text-muted-foreground">总计</span>
+          <span className="text-muted-foreground">{t('admin.forwardRules.detail.total')}</span>
           <span className="font-bold tabular-nums">{formatBytes(total)}</span>
         </div>
       </div>
@@ -259,6 +262,7 @@ const TrafficBar: React.FC<{
 
 // Agent Status Row Component
 const AgentStatusRow: React.FC<{ status: AgentRuleSyncStatus }> = ({ status }) => {
+  const { t } = useTranslation();
   const syncConfig = SYNC_STATUS_CONFIG[status.syncStatus];
   const runConfig = RUN_STATUS_CONFIG[status.runStatus];
   const SyncIcon = syncConfig.icon;
@@ -274,7 +278,7 @@ const AgentStatusRow: React.FC<{ status: AgentRuleSyncStatus }> = ({ status }) =
           <span className="text-sm font-medium truncate">{status.agentName}</span>
           {status.position === 0 && (
             <span className="ml-2 px-1.5 py-0.5 text-[10px] font-medium rounded bg-emerald-500/10 text-emerald-600 dark:text-emerald-400">
-              入口
+              {t('admin.forwardRules.flowNode.entry')}
             </span>
           )}
         </div>
@@ -302,6 +306,8 @@ export const ForwardRuleDetailDialog: React.FC<ForwardRuleDetailDialogProps> = (
   nodes = [],
   resourceGroups = [],
 }) => {
+  const { t } = useTranslation();
+
   // Get rule overall status
   const { ruleOverallStatus, isLoading: isLoadingStatus } = useRuleOverallStatus(
     open && rule?.status === 'enabled' ? rule.id : null
@@ -406,11 +412,11 @@ export const ForwardRuleDetailDialog: React.FC<ForwardRuleDetailDialogProps> = (
               <div className="space-y-1">
                 <div className="flex items-center gap-2">
                   <span className={`px-2 py-0.5 text-xs font-semibold rounded-md ${statusConfig.bg} ${statusConfig.color} ring-1 ${statusConfig.ring}`}>
-                    {statusConfig.label}
+                    {t(statusConfig.labelKey)}
                   </span>
                   {rule.ruleType !== 'external' && (
                     <span className="text-xs text-muted-foreground">
-                      {PROTOCOL_LABELS[rule.protocol]} · {IP_VERSION_LABELS[rule.ipVersion]}
+                      {PROTOCOL_LABELS[rule.protocol]} · {t(IP_VERSION_LABEL_KEYS[rule.ipVersion])}
                     </span>
                   )}
                 </div>
@@ -437,13 +443,13 @@ export const ForwardRuleDetailDialog: React.FC<ForwardRuleDetailDialogProps> = (
               <section>
                 <div className="flex items-center gap-2 mb-1">
                   <Activity className="size-4 text-muted-foreground" />
-                  <h3 className="text-sm font-semibold">转发链路</h3>
+                  <h3 className="text-sm font-semibold">{t('admin.forwardRules.detail.forwardPath')}</h3>
                   {(rule.ruleType === 'entry' || rule.ruleType === 'chain') && rule.tunnelType && (
                     <span className="px-1.5 py-0.5 text-[10px] font-medium rounded bg-cyan-500/10 text-cyan-600 dark:text-cyan-400">
-                      {TUNNEL_TYPE_LABELS[rule.tunnelType]}
+                      {t(TUNNEL_TYPE_LABEL_KEYS[rule.tunnelType])}
                     </span>
                   )}
-                  <span className="text-xs text-muted-foreground ml-auto">{flowNodes.length} 个节点</span>
+                  <span className="text-xs text-muted-foreground ml-auto">{t('admin.forwardRules.detail.nodesCount', { count: flowNodes.length })}</span>
                 </div>
                 <div className="p-3 rounded-xl bg-slate-50 dark:bg-slate-800/30 border border-slate-200/50 dark:border-slate-700/30">
                   <FlowPath nodes={flowNodes} />
@@ -456,25 +462,33 @@ export const ForwardRuleDetailDialog: React.FC<ForwardRuleDetailDialogProps> = (
               <section>
                 <div className="flex items-center gap-2 mb-3">
                   <Server className="size-4 text-muted-foreground" />
-                  <h3 className="text-sm font-semibold">服务器信息</h3>
+                  <h3 className="text-sm font-semibold">{t('admin.forwardRules.detail.serverInfo')}</h3>
                 </div>
                 <div className="grid grid-cols-2 gap-2">
                   <StatCard
                     icon={Globe}
-                    label="服务器地址"
+                    label={t('admin.forwardRules.detail.serverAddress')}
                     value={rule.serverAddress || '-'}
                     color="text-cyan-500"
                   />
                   <StatCard
                     icon={Zap}
-                    label="监听端口"
+                    label={t('admin.forwardRules.detail.listenPort')}
                     value={rule.listenPort}
                     color="text-blue-500"
                   />
+                  {rule.targetNodeId && (
+                    <StatCard
+                      icon={Server}
+                      label={t('admin.forwardRules.detail.targetNode')}
+                      value={getNodeName(rule.targetNodeId)}
+                      color="text-emerald-500"
+                    />
+                  )}
                   {rule.externalSource && (
                     <StatCard
                       icon={FolderOpen}
-                      label="外部来源"
+                      label={t('admin.forwardRules.detail.externalSourceLabel')}
                       value={rule.externalSource}
                       color="text-purple-500"
                     />
@@ -482,7 +496,7 @@ export const ForwardRuleDetailDialog: React.FC<ForwardRuleDetailDialogProps> = (
                   {rule.externalRuleId && (
                     <StatCard
                       icon={Settings2}
-                      label="外部规则ID"
+                      label={t('admin.forwardRules.detail.externalRuleIdLabel')}
                       value={rule.externalRuleId}
                       color="text-slate-400"
                     />
@@ -495,25 +509,25 @@ export const ForwardRuleDetailDialog: React.FC<ForwardRuleDetailDialogProps> = (
             <section>
               <div className="flex items-center gap-2 mb-3">
                 <Settings2 className="size-4 text-muted-foreground" />
-                <h3 className="text-sm font-semibold">配置概览</h3>
+                <h3 className="text-sm font-semibold">{t('admin.forwardRules.detail.configOverview')}</h3>
               </div>
               {rule.ruleType === 'external' ? (
                 <div className="grid grid-cols-2 @sm:grid-cols-3 gap-2">
                   <StatCard
                     icon={Zap}
-                    label="规则类型"
-                    value={ruleTypeConfig.label}
+                    label={t('admin.forwardRules.detail.ruleType')}
+                    value={t(ruleTypeConfig.labelKey)}
                     color={`bg-gradient-to-br ${ruleTypeConfig.gradient} text-white`}
                   />
                   <StatCard
                     icon={Activity}
-                    label="排序顺序"
+                    label={t('admin.forwardRules.detail.sortOrder')}
                     value={rule.sortOrder ?? 0}
                     color="text-amber-500"
                   />
                   <StatCard
                     icon={Clock}
-                    label="创建时间"
+                    label={t('admin.forwardRules.detail.createdTime')}
                     value={formatRelativeTime(rule.createdAt)}
                     color="text-slate-400"
                   />
@@ -522,26 +536,26 @@ export const ForwardRuleDetailDialog: React.FC<ForwardRuleDetailDialogProps> = (
                 <div className="grid grid-cols-2 @sm:grid-cols-4 gap-2">
                   <StatCard
                     icon={Zap}
-                    label="规则类型"
-                    value={ruleTypeConfig.label}
+                    label={t('admin.forwardRules.detail.ruleType')}
+                    value={t(ruleTypeConfig.labelKey)}
                     color={`bg-gradient-to-br ${ruleTypeConfig.gradient} text-white`}
                   />
                   <StatCard
                     icon={Globe}
-                    label="监听端口"
+                    label={t('admin.forwardRules.detail.listenPort')}
                     value={rule.listenPort}
                     color="text-blue-500"
                   />
                   <StatCard
                     icon={Activity}
-                    label="流量倍率"
+                    label={t('admin.forwardRules.detail.trafficMultiplier')}
                     value={`${rule.effectiveTrafficMultiplier?.toFixed(1) || '1.0'}x`}
-                    subValue={rule.isAutoMultiplier ? '自动' : '自定义'}
+                    subValue={rule.isAutoMultiplier ? t('admin.forwardRules.traffic.auto') : t('admin.forwardRules.traffic.custom')}
                     color="text-amber-500"
                   />
                   <StatCard
                     icon={Clock}
-                    label="创建时间"
+                    label={t('admin.forwardRules.detail.createdTime')}
                     value={formatRelativeTime(rule.createdAt)}
                     color="text-slate-400"
                   />
@@ -554,7 +568,7 @@ export const ForwardRuleDetailDialog: React.FC<ForwardRuleDetailDialogProps> = (
               <section>
                 <div className="flex items-center gap-2 mb-3">
                   <FolderOpen className="size-4 text-muted-foreground" />
-                  <h3 className="text-sm font-semibold">资源组</h3>
+                  <h3 className="text-sm font-semibold">{t('admin.forwardRules.detail.resourceGroups')}</h3>
                   <span className="px-1.5 py-0.5 text-[10px] font-medium rounded-full bg-slate-100 dark:bg-slate-800 text-muted-foreground">
                     {ruleGroups.length}
                   </span>
@@ -577,7 +591,7 @@ export const ForwardRuleDetailDialog: React.FC<ForwardRuleDetailDialogProps> = (
             <section>
               <div className="flex items-center gap-2 mb-3">
                 <Activity className="size-4 text-muted-foreground" />
-                <h3 className="text-sm font-semibold">流量统计</h3>
+                <h3 className="text-sm font-semibold">{t('admin.forwardRules.detail.trafficStats')}</h3>
               </div>
               <div className="p-4 rounded-xl bg-slate-50 dark:bg-slate-800/30 border border-slate-200/50 dark:border-slate-700/30">
                 <TrafficBar
@@ -593,10 +607,10 @@ export const ForwardRuleDetailDialog: React.FC<ForwardRuleDetailDialogProps> = (
               <section>
                 <div className="flex items-center gap-2 mb-3">
                   <RotateCw className="size-4 text-muted-foreground" />
-                  <h3 className="text-sm font-semibold">同步状态</h3>
+                  <h3 className="text-sm font-semibold">{t('admin.forwardRules.detail.syncStatus')}</h3>
                   {ruleOverallStatus && (
                     <span className="text-xs text-muted-foreground">
-                      · 更新于 {formatTimestamp(ruleOverallStatus.updatedAt)}
+                      · {t('admin.forwardRules.detail.updatedAt', { time: formatTimestamp(ruleOverallStatus.updatedAt) })}
                     </span>
                   )}
                 </div>
@@ -616,8 +630,8 @@ export const ForwardRuleDetailDialog: React.FC<ForwardRuleDetailDialogProps> = (
                           return (
                             <>
                               <Icon className={`size-5 mx-auto mb-1 ${config.color}`} />
-                              <p className="text-xs text-muted-foreground">同步</p>
-                              <p className="text-sm font-semibold">{config.label}</p>
+                              <p className="text-xs text-muted-foreground">{t('admin.forwardRules.detail.sync')}</p>
+                              <p className="text-sm font-semibold">{t(config.labelKey)}</p>
                             </>
                           );
                         })()}
@@ -629,8 +643,8 @@ export const ForwardRuleDetailDialog: React.FC<ForwardRuleDetailDialogProps> = (
                           return (
                             <>
                               <Icon className={`size-5 mx-auto mb-1 ${config.color}`} />
-                              <p className="text-xs text-muted-foreground">运行</p>
-                              <p className="text-sm font-semibold">{config.label}</p>
+                              <p className="text-xs text-muted-foreground">{t('admin.forwardRules.detail.run')}</p>
+                              <p className="text-sm font-semibold">{t(config.labelKey)}</p>
                             </>
                           );
                         })()}
@@ -639,7 +653,7 @@ export const ForwardRuleDetailDialog: React.FC<ForwardRuleDetailDialogProps> = (
                         <p className="text-xl font-bold text-emerald-500 mb-0.5">
                           {ruleOverallStatus.healthyAgents}/{ruleOverallStatus.totalAgents}
                         </p>
-                        <p className="text-xs text-muted-foreground">节点正常</p>
+                        <p className="text-xs text-muted-foreground">{t('admin.forwardRules.detail.healthyAgents')}</p>
                       </div>
                     </div>
 
@@ -654,7 +668,7 @@ export const ForwardRuleDetailDialog: React.FC<ForwardRuleDetailDialogProps> = (
                   </div>
                 ) : (
                   <div className="text-center py-8 text-sm text-muted-foreground">
-                    暂无同步状态数据
+                    {t('admin.forwardRules.detail.noSyncStatus')}
                   </div>
                 )}
               </section>
@@ -665,12 +679,12 @@ export const ForwardRuleDetailDialog: React.FC<ForwardRuleDetailDialogProps> = (
               <div className="flex items-center justify-between text-xs text-muted-foreground">
                 <div className="flex items-center gap-1.5">
                   <Clock className="size-3.5" />
-                  <span>创建于 {formatRelativeTime(rule.createdAt)}</span>
+                  <span>{t('admin.forwardRules.detail.createdAt', { time: formatRelativeTime(rule.createdAt) })}</span>
                 </div>
                 {rule.updatedAt && (
                   <div className="flex items-center gap-1.5">
                     <RotateCw className="size-3.5" />
-                    <span>更新于 {formatRelativeTime(rule.updatedAt)}</span>
+                    <span>{t('admin.forwardRules.detail.updatedAt', { time: formatRelativeTime(rule.updatedAt) })}</span>
                   </div>
                 )}
               </div>

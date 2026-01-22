@@ -110,10 +110,10 @@ export const ViewPlanSubscriptionsDialog: React.FC<ViewPlanSubscriptionsDialogPr
             </div>
             <div>
               <DialogTitle className="text-lg font-semibold text-slate-900 dark:text-white">
-                订阅用户
+                {t('subscriptionPlans.subscribers')}
               </DialogTitle>
               <DialogDescription className="text-sm text-slate-500 dark:text-slate-400 mt-0.5">
-                订阅计划「<span className="font-medium text-slate-700 dark:text-slate-300">{plan?.name}</span>」的所有用户
+                {t('subscriptionPlans.subscribersOfPlan', { name: plan?.name })}
               </DialogDescription>
             </div>
           </div>
@@ -127,11 +127,11 @@ export const ViewPlanSubscriptionsDialog: React.FC<ViewPlanSubscriptionsDialogPr
           <div className="flex items-center gap-2">
             <AdminBadge variant="info" size="md">
               <Users className="mr-1.5 size-3.5" strokeWidth={2} />
-              {subscriptions.length} 个订阅
+              {t('subscriptionPlans.subscriptionsCount', { count: subscriptions.length })}
             </AdminBadge>
             <AdminBadge variant="success" size="md">
               <CheckCircle className="mr-1.5 size-3.5" strokeWidth={2} />
-              {activeCount} 激活
+              {t('subscriptionPlans.activeCount', { count: activeCount })}
             </AdminBadge>
           </div>
 
@@ -140,7 +140,7 @@ export const ViewPlanSubscriptionsDialog: React.FC<ViewPlanSubscriptionsDialogPr
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-slate-400" strokeWidth={2} />
             <input
               type="text"
-              placeholder="搜索用户名、邮箱..."
+              placeholder={t('subscriptionPlans.searchUsersPlaceholder')}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className={cn(
@@ -165,7 +165,7 @@ export const ViewPlanSubscriptionsDialog: React.FC<ViewPlanSubscriptionsDialogPr
                 <Loader2 className="size-10 animate-spin text-indigo-500" strokeWidth={2} />
                 <div className="absolute inset-0 rounded-full bg-indigo-500/20 blur-xl animate-pulse motion-reduce:animate-none" />
               </div>
-              <p className="mt-4 text-sm text-slate-500 dark:text-slate-400">加载中...</p>
+              <p className="mt-4 text-sm text-slate-500 dark:text-slate-400">{t('app.loading')}</p>
             </div>
           ) : filteredSubscriptions.length === 0 ? (
             <div className="flex flex-col items-center justify-center h-full py-16">
@@ -180,10 +180,10 @@ export const ViewPlanSubscriptionsDialog: React.FC<ViewPlanSubscriptionsDialogPr
                 <div className="absolute inset-0 rounded-2xl bg-gradient-to-br from-slate-200/20 to-transparent dark:from-slate-700/20 blur-xl -z-10" />
               </div>
               <p className="mt-4 text-sm font-medium text-slate-600 dark:text-slate-400">
-                {searchQuery ? '未找到匹配的订阅' : '暂无订阅用户'}
+                {searchQuery ? t('subscriptionPlans.noMatchingSubscriptions') : t('subscriptionPlans.noSubscribers')}
               </p>
               <p className="mt-1 text-xs text-slate-400 dark:text-slate-500">
-                {searchQuery ? '尝试使用不同的关键词搜索' : '该计划还没有用户订阅'}
+                {searchQuery ? t('subscriptionPlans.tryOtherKeywords') : t('subscriptionPlans.noPlanSubscribers')}
               </p>
             </div>
           ) : (
@@ -195,7 +195,7 @@ export const ViewPlanSubscriptionsDialog: React.FC<ViewPlanSubscriptionsDialogPr
                 };
                 // userId is number, convert to string for lookup
                 const user = usersMap.get(String(subscription.userId));
-                const displayName = user?.name || user?.displayName || `用户 #${subscription.userId}`;
+                const displayName = user?.name || user?.displayName || t('subscriptionPlans.userNumber', { id: subscription.userId });
                 const initials = user?.initials || `U${subscription.userId}`;
 
                 return (
@@ -247,12 +247,12 @@ export const ViewPlanSubscriptionsDialog: React.FC<ViewPlanSubscriptionsDialogPr
                         {subscription.autoRenew ? (
                           <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-emerald-50 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400">
                             <RefreshCw className="size-3.5" strokeWidth={2} />
-                            <span className="text-xs font-medium">自动续费</span>
+                            <span className="text-xs font-medium">{t('subscription.autoRenewal')}</span>
                           </div>
                         ) : (
                           <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-400 dark:text-slate-500">
                             <X className="size-3.5" strokeWidth={2} />
-                            <span className="text-xs font-medium">不续费</span>
+                            <span className="text-xs font-medium">{t('subscription.noRenewal')}</span>
                           </div>
                         )}
                       </div>
@@ -270,7 +270,7 @@ export const ViewPlanSubscriptionsDialog: React.FC<ViewPlanSubscriptionsDialogPr
         <div className="px-6 py-4 flex items-center justify-between bg-gradient-to-b from-white to-slate-50/50 dark:from-slate-900 dark:to-slate-800/30">
           <div className="text-xs text-slate-400">
             {searchQuery && filteredSubscriptions.length !== subscriptions.length && (
-              <span>筛选结果：{filteredSubscriptions.length} / {subscriptions.length}</span>
+              <span>{t('subscriptionPlans.filterResults', { filtered: filteredSubscriptions.length, total: subscriptions.length })}</span>
             )}
           </div>
           <button
@@ -284,7 +284,7 @@ export const ViewPlanSubscriptionsDialog: React.FC<ViewPlanSubscriptionsDialogPr
               'transition-all duration-200'
             )}
           >
-            关闭
+            {t('common.actions.close')}
           </button>
         </div>
       </DialogContent>

@@ -205,12 +205,12 @@ export const SystemStatusCell = memo(({ itemId: _itemId, status }: SystemStatusC
           <MiniBar label="D" percent={diskPercent} />
         </div>
         {/* Network rates */}
-        <div className="w-px h-4 bg-border" />
-        <div className="flex flex-col gap-0 min-w-[56px]">
-          <span className="text-[10px] font-mono text-success leading-tight">
+        <div className="w-px h-4 bg-border shrink-0" />
+        <div className="flex flex-col gap-0 min-w-[60px] shrink-0">
+          <span className="text-[10px] font-mono text-success leading-tight whitespace-nowrap">
             ↓{formatBitRate(status.networkRxRate, true)}
           </span>
-          <span className="text-[10px] font-mono text-info leading-tight">
+          <span className="text-[10px] font-mono text-info leading-tight whitespace-nowrap">
             ↑{formatBitRate(status.networkTxRate, true)}
           </span>
         </div>

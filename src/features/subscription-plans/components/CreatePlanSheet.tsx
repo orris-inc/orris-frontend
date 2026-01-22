@@ -5,6 +5,7 @@
  */
 
 import { useState, useEffect, useCallback } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
   CreditCard,
   Tag,
@@ -25,18 +26,14 @@ import {
   SheetDescription,
   SheetBody,
   SheetFooter,
+  SelectSheet,
   type CreateSheetProps,
+  type SelectSheetOption,
 } from '@/components/common/sheet';
 import { Button } from '@/components/common/Button';
 import { Checkbox } from '@/components/common/Checkbox';
 import { Label } from '@/components/common/Label';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/common/Select';
+import { ChevronDown } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import type {
   CreatePlanRequest,
@@ -90,27 +87,12 @@ interface CreatePlanSheetProps extends CreateSheetProps<CreatePlanRequest> {
   initialPlan?: SubscriptionPlan | null;
 }
 
-const BILLING_CYCLES: { value: string; label: string }[] = [
-  { value: 'weekly', label: '周付' },
-  { value: 'monthly', label: '月付' },
-  { value: 'quarterly', label: '季付' },
-  { value: 'semi_annual', label: '半年付' },
-  { value: 'yearly', label: '年付' },
-  { value: 'lifetime', label: '终身' },
-];
+const BILLING_CYCLES = ['weekly', 'monthly', 'quarterly', 'semi_annual', 'yearly', 'lifetime'] as const;
 
-const FORWARD_RULE_TYPES: { value: ForwardRuleTypeOption; label: string }[] = [
-  { value: 'direct', label: '直连' },
-  { value: 'entry', label: '入口' },
-  { value: 'chain', label: '链式' },
-  { value: 'direct_chain', label: '直连链' },
-];
+const FORWARD_RULE_TYPES: ForwardRuleTypeOption[] = ['direct', 'entry', 'chain', 'direct_chain'];
 
 // Plan type options (hybrid is not yet implemented)
-const PLAN_TYPES: { value: PlanType; label: string }[] = [
-  { value: 'node', label: '节点订阅' },
-  { value: 'forward', label: '端口转发' },
-];
+const PLAN_TYPES: PlanType[] = ['node', 'forward'];
 
 interface CreatePlanFormData extends Omit<CreatePlanRequest, 'limits' | 'pricings'> {
   pricings: PricingOptionInput[];
@@ -152,9 +134,32 @@ export const CreatePlanSheet: React.FC<CreatePlanSheetProps> = ({
   onSubmit,
   initialPlan,
 }) => {
+  const { t } = useTranslation();
   const [formData, setFormData] = useState<CreatePlanFormData>(getDefaultFormData());
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState<{ name?: string; slug?: string }>({});
+
+  // SelectSheet states
+  const [planTypeSheetOpen, setPlanTypeSheetOpen] = useState(false);
+  const [activePricingIndex, setActivePricingIndex] = useState<number | null>(null);
+  const [billingCycleSheetOpen, setBillingCycleSheetOpen] = useState(false);
+  const [currencySheetOpen, setCurrencySheetOpen] = useState(false);
+
+  // SelectSheet options
+  const planTypeOptions: SelectSheetOption<PlanType>[] = PLAN_TYPES.map((type) => ({
+    value: type,
+    label: t(`planType.${type}`),
+  }));
+
+  const billingCycleOptions: SelectSheetOption<string>[] = BILLING_CYCLES.map((cycle) => ({
+    value: cycle,
+    label: t(`billingCycle.${cycle}`),
+  }));
+
+  const currencyOptions: SelectSheetOption<string>[] = [
+    { value: 'CNY', label: 'CNY' },
+    { value: 'USD', label: 'USD' },
+  ];
 
   const isDuplicateMode = !!initialPlan;
 
@@ -163,7 +168,7 @@ export const CreatePlanSheet: React.FC<CreatePlanSheetProps> = ({
     if (open && initialPlan) {
       const planLimits = parsePlanLimits(initialPlan.limits);
       setFormData({
-        name: `${initialPlan.name} (副本)`,
+        name: `${initialPlan.name} (${t('admin.plans.copySuffix')})`,
         slug: `${initialPlan.slug}-copy`,
         planType: initialPlan.planType || 'node',
         description: initialPlan.description || '',
@@ -240,12 +245,12 @@ export const CreatePlanSheet: React.FC<CreatePlanSheetProps> = ({
 
   const validate = useCallback((): boolean => {
     const newErrors: { name?: string; slug?: string } = {};
-    if (!formData.name.trim()) newErrors.name = '请输入计划名称';
-    if (!formData.slug.trim()) newErrors.slug = '请输入 Slug';
-    else if (!/^[a-z0-9-]+$/.test(formData.slug)) newErrors.slug = '仅允许小写字母、数字和连字符';
+    if (!formData.name.trim()) newErrors.name = t('admin.plans.form.planName') + ' ' + t('common.validation.required');
+    if (!formData.slug.trim()) newErrors.slug = t('admin.plans.form.slug') + ' ' + t('common.validation.required');
+    else if (!/^[a-z0-9-]+$/.test(formData.slug)) newErrors.slug = t('admin.plans.form.slugHint');
     setErrors(newErrors);
     return !newErrors.name && !newErrors.slug;
-  }, [formData.name, formData.slug]);
+  }, [formData.name, formData.slug, t]);
 
   const handleSubmit = useCallback(async () => {
     if (!validate()) return;
@@ -310,30 +315,30 @@ export const CreatePlanSheet: React.FC<CreatePlanSheetProps> = ({
                 <CreditCard className="size-4 text-primary" />
               )}
             </div>
-            <span>{isDuplicateMode ? '复制订阅计划' : '创建订阅计划'}</span>
+            <span>{isDuplicateMode ? t('admin.plans.duplicatePlan') : t('admin.plans.createPlan')}</span>
           </SheetTitle>
           <SheetDescription className="text-xs">
             {isDuplicateMode
-              ? `基于「${initialPlan?.name}」创建新计划`
-              : '填写以下信息创建新的订阅计划'}
+              ? t('admin.plans.duplicateDescription', { name: initialPlan?.name })
+              : t('admin.plans.createDescription')}
           </SheetDescription>
         </SheetHeader>
 
         <SheetBody className="space-y-4 py-3">
           {/* Basic Information - 2 column grid */}
           <div className="space-y-3">
-            <h4 className="text-xs font-medium text-muted-foreground uppercase tracking-wider">基本信息</h4>
+            <h4 className="text-xs font-medium text-muted-foreground uppercase tracking-wider">{t('admin.plans.form.basicInfo')}</h4>
 
             <div className="grid grid-cols-2 gap-2">
               <div className="space-y-1">
                 <label htmlFor="plan-name" className="text-xs font-medium">
-                  计划名称 <span className="text-destructive">*</span>
+                  {t('admin.plans.form.planName')} <span className="text-destructive">*</span>
                 </label>
                 <MobileFormInput
                   id="plan-name"
                   value={formData.name}
                   onChange={(v) => handleChange('name', v)}
-                  placeholder="计划名称"
+                  placeholder={t('admin.plans.form.planName')}
                   icon={<Tag className="size-4" />}
                   error={errors.name}
                   disabled={loading}
@@ -343,13 +348,13 @@ export const CreatePlanSheet: React.FC<CreatePlanSheetProps> = ({
               </div>
               <div className="space-y-1">
                 <label htmlFor="plan-slug" className="text-xs font-medium">
-                  Slug <span className="text-destructive">*</span>
+                  {t('admin.plans.form.slug')} <span className="text-destructive">*</span>
                 </label>
                 <MobileFormInput
                   id="plan-slug"
                   value={formData.slug}
                   onChange={(v) => handleChange('slug', v)}
-                  placeholder="url-slug"
+                  placeholder={t('admin.plans.form.slugPlaceholder')}
                   icon={<Hash className="size-4" />}
                   error={errors.slug}
                   disabled={loading}
@@ -361,23 +366,30 @@ export const CreatePlanSheet: React.FC<CreatePlanSheetProps> = ({
 
             <div className="grid grid-cols-2 gap-2">
               <div className="space-y-1">
-                <label className="text-xs font-medium">计划类型</label>
-                <Select
-                  value={formData.planType}
-                  onValueChange={(v) => handleChange('planType', v as PlanType)}
+                <label className="text-xs font-medium">{t('admin.plans.form.planType')}</label>
+                <button
+                  type="button"
+                  onClick={() => !loading && setPlanTypeSheetOpen(true)}
                   disabled={loading}
+                  className={cn(
+                    'w-full h-11 px-3 rounded-lg text-sm text-left',
+                    'flex items-center justify-between',
+                    'border bg-background',
+                    'focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary',
+                    loading && 'opacity-50 cursor-not-allowed'
+                  )}
                 >
-                  <SelectTrigger className="h-11 rounded-lg text-sm">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {PLAN_TYPES.map((opt) => (
-                      <SelectItem key={opt.value} value={opt.value}>
-                        {opt.label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                  <span>{t(`planType.${formData.planType}`)}</span>
+                  <ChevronDown className="size-4 text-muted-foreground" />
+                </button>
+                <SelectSheet
+                  open={planTypeSheetOpen}
+                  onOpenChange={setPlanTypeSheetOpen}
+                  value={formData.planType}
+                  onChange={(v) => handleChange('planType', v as PlanType)}
+                  options={planTypeOptions}
+                  title={t('admin.plans.form.planType')}
+                />
               </div>
               <div className="flex items-end pb-0.5">
                 <div className="flex items-center gap-2 h-11 px-3 rounded-lg border bg-muted/30 w-full">
@@ -389,7 +401,7 @@ export const CreatePlanSheet: React.FC<CreatePlanSheetProps> = ({
                   />
                   <Label htmlFor="plan-public" className="cursor-pointer text-sm flex items-center gap-1.5">
                     <Globe className="size-3.5 text-muted-foreground" />
-                    公开
+                    {t('admin.plans.public')}
                   </Label>
                 </div>
               </div>
@@ -400,7 +412,7 @@ export const CreatePlanSheet: React.FC<CreatePlanSheetProps> = ({
           <div className="space-y-2">
             <div className="flex items-center justify-between">
               <h4 className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
-                定价选项
+                {t('admin.plans.form.pricingOptions')}
               </h4>
               <Button
                 variant="ghost"
@@ -410,7 +422,7 @@ export const CreatePlanSheet: React.FC<CreatePlanSheetProps> = ({
                 className="h-7 text-xs"
               >
                 <Plus className="size-3.5 mr-1" />
-                添加
+                {t('admin.plans.form.addPricing')}
               </Button>
             </div>
 
@@ -418,7 +430,7 @@ export const CreatePlanSheet: React.FC<CreatePlanSheetProps> = ({
               <div className="rounded-lg border border-destructive/20 bg-destructive/5 p-3">
                 <div className="flex items-center gap-2 text-destructive text-xs">
                   <AlertCircle className="size-3.5" />
-                  <span>至少需要添加一个定价选项</span>
+                  <span>{t('admin.plans.form.pricingRequired')}</span>
                 </div>
               </div>
             ) : (
@@ -426,7 +438,7 @@ export const CreatePlanSheet: React.FC<CreatePlanSheetProps> = ({
                 {formData.pricings.map((pricing, index) => (
                   <div key={index} className="rounded-lg border p-3 space-y-2">
                     <div className="flex items-center justify-between">
-                      <span className="text-xs text-muted-foreground">定价 #{index + 1}</span>
+                      <span className="text-xs text-muted-foreground">{t('admin.plans.form.pricingNumber', { number: index + 1 })}</span>
                       <Button
                         variant="ghost"
                         size="sm"
@@ -438,27 +450,31 @@ export const CreatePlanSheet: React.FC<CreatePlanSheetProps> = ({
                       </Button>
                     </div>
                     <div className="grid grid-cols-3 gap-2">
-                      <Select
-                        value={pricing.billingCycle}
-                        onValueChange={(value) => handleUpdatePricing(index, { billingCycle: value })}
+                      <button
+                        type="button"
+                        onClick={() => {
+                          if (!loading) {
+                            setActivePricingIndex(index);
+                            setBillingCycleSheetOpen(true);
+                          }
+                        }}
                         disabled={loading}
+                        className={cn(
+                          'w-full h-10 px-3 rounded-lg text-sm text-left',
+                          'flex items-center justify-between',
+                          'border bg-background',
+                          'focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary',
+                          loading && 'opacity-50 cursor-not-allowed'
+                        )}
                       >
-                        <SelectTrigger className="h-10 rounded-lg text-sm">
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {BILLING_CYCLES.map((opt) => (
-                            <SelectItem key={opt.value} value={opt.value}>
-                              {opt.label}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
+                        <span className="truncate">{t(`billingCycle.${pricing.billingCycle}`)}</span>
+                        <ChevronDown className="size-4 text-muted-foreground shrink-0" />
+                      </button>
                       <input
                         type="number"
                         step="0.01"
                         min="0"
-                        placeholder="价格"
+                        placeholder={t('admin.plans.form.pricePlaceholder')}
                         value={pricing.price / 100 || ''}
                         onChange={(e) =>
                           handleUpdatePricing(index, {
@@ -468,19 +484,26 @@ export const CreatePlanSheet: React.FC<CreatePlanSheetProps> = ({
                         disabled={loading}
                         className={compactInputStyles}
                       />
-                      <Select
-                        value={pricing.currency}
-                        onValueChange={(value) => handleUpdatePricing(index, { currency: value })}
+                      <button
+                        type="button"
+                        onClick={() => {
+                          if (!loading) {
+                            setActivePricingIndex(index);
+                            setCurrencySheetOpen(true);
+                          }
+                        }}
                         disabled={loading}
+                        className={cn(
+                          'w-full h-10 px-3 rounded-lg text-sm text-left',
+                          'flex items-center justify-between',
+                          'border bg-background',
+                          'focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary',
+                          loading && 'opacity-50 cursor-not-allowed'
+                        )}
                       >
-                        <SelectTrigger className="h-10 rounded-lg text-sm">
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="CNY">CNY</SelectItem>
-                          <SelectItem value="USD">USD</SelectItem>
-                        </SelectContent>
-                      </Select>
+                        <span>{pricing.currency}</span>
+                        <ChevronDown className="size-4 text-muted-foreground" />
+                      </button>
                     </div>
                     <div className="flex items-center gap-2">
                       <Checkbox
@@ -492,7 +515,7 @@ export const CreatePlanSheet: React.FC<CreatePlanSheetProps> = ({
                         disabled={loading}
                       />
                       <Label htmlFor={`pricing-active-${index}`} className="cursor-pointer text-xs">
-                        激活
+                        {t('admin.plans.form.activatePricing')}
                       </Label>
                     </div>
                   </div>
@@ -505,16 +528,16 @@ export const CreatePlanSheet: React.FC<CreatePlanSheetProps> = ({
           {(formData.planType === 'node' || formData.planType === 'hybrid') && (
             <div className="space-y-2">
               <h4 className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
-                节点限制
+                {t('admin.plans.form.nodeLimits')}
               </h4>
               <div className="grid grid-cols-3 gap-2">
                 <div className="space-y-1">
-                  <label className="text-xs text-muted-foreground">流量 (GB)</label>
+                  <label className="text-xs text-muted-foreground">{t('admin.plans.form.trafficLimit')}</label>
                   <input
                     type="number"
                     min="0"
                     step="0.1"
-                    placeholder="无限"
+                    placeholder={t('common.unlimited')}
                     value={
                       formData.planLimits.trafficLimit
                         ? formData.planLimits.trafficLimit / (1024 * 1024 * 1024)
@@ -533,11 +556,11 @@ export const CreatePlanSheet: React.FC<CreatePlanSheetProps> = ({
                   />
                 </div>
                 <div className="space-y-1">
-                  <label className="text-xs text-muted-foreground">设备数</label>
+                  <label className="text-xs text-muted-foreground">{t('admin.plans.form.deviceLimit')}</label>
                   <input
                     type="number"
                     min="0"
-                    placeholder="无限"
+                    placeholder={t('common.unlimited')}
                     value={formData.planLimits.deviceLimit || ''}
                     onChange={(e) =>
                       handleLimitChange(
@@ -550,11 +573,11 @@ export const CreatePlanSheet: React.FC<CreatePlanSheetProps> = ({
                   />
                 </div>
                 <div className="space-y-1">
-                  <label className="text-xs text-muted-foreground">速度 (Mbps)</label>
+                  <label className="text-xs text-muted-foreground">{t('admin.plans.form.speedLimit')}</label>
                   <input
                     type="number"
                     min="0"
-                    placeholder="无限"
+                    placeholder={t('common.unlimited')}
                     value={formData.planLimits.speedLimit || ''}
                     onChange={(e) =>
                       handleLimitChange(
@@ -567,11 +590,11 @@ export const CreatePlanSheet: React.FC<CreatePlanSheetProps> = ({
                   />
                 </div>
                 <div className="space-y-1">
-                  <label className="text-xs text-muted-foreground">连接数</label>
+                  <label className="text-xs text-muted-foreground">{t('admin.plans.form.connectionLimit')}</label>
                   <input
                     type="number"
                     min="0"
-                    placeholder="无限"
+                    placeholder={t('common.unlimited')}
                     value={formData.planLimits.connectionLimit || ''}
                     onChange={(e) =>
                       handleLimitChange(
@@ -584,11 +607,11 @@ export const CreatePlanSheet: React.FC<CreatePlanSheetProps> = ({
                   />
                 </div>
                 <div className="space-y-1">
-                  <label className="text-xs text-muted-foreground">节点数</label>
+                  <label className="text-xs text-muted-foreground">{t('admin.plans.form.nodeLimit')}</label>
                   <input
                     type="number"
                     min="0"
-                    placeholder="无限"
+                    placeholder={t('common.unlimited')}
                     value={formData.planLimits.nodeLimit || ''}
                     onChange={(e) =>
                       handleLimitChange(
@@ -608,15 +631,15 @@ export const CreatePlanSheet: React.FC<CreatePlanSheetProps> = ({
           {(formData.planType === 'forward' || formData.planType === 'hybrid') && (
             <div className="space-y-2">
               <h4 className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
-                转发限制
+                {t('admin.plans.form.forwardLimits')}
               </h4>
               <div className="grid grid-cols-2 gap-2">
                 <div className="space-y-1">
-                  <label className="text-xs text-muted-foreground">规则数</label>
+                  <label className="text-xs text-muted-foreground">{t('admin.plans.form.ruleLimit')}</label>
                   <input
                     type="number"
                     min="0"
-                    placeholder="无限"
+                    placeholder={t('common.unlimited')}
                     value={formData.planLimits.ruleLimit || ''}
                     onChange={(e) =>
                       handleLimitChange(
@@ -629,12 +652,12 @@ export const CreatePlanSheet: React.FC<CreatePlanSheetProps> = ({
                   />
                 </div>
                 <div className="space-y-1">
-                  <label className="text-xs text-muted-foreground">流量 (GB)</label>
+                  <label className="text-xs text-muted-foreground">{t('admin.plans.form.trafficLimitGB')}</label>
                   <input
                     type="number"
                     min="0"
                     step="0.1"
-                    placeholder="无限"
+                    placeholder={t('common.unlimited')}
                     value={
                       formData.planLimits.trafficLimit
                         ? formData.planLimits.trafficLimit / (1024 * 1024 * 1024)
@@ -654,19 +677,19 @@ export const CreatePlanSheet: React.FC<CreatePlanSheetProps> = ({
                 </div>
               </div>
               <div className="space-y-1">
-                <label className="text-xs text-muted-foreground">允许的规则类型</label>
+                <label className="text-xs text-muted-foreground">{t('admin.plans.form.allowedRuleTypes')}</label>
                 <div className="flex flex-wrap gap-x-4 gap-y-1">
                   {FORWARD_RULE_TYPES.map((type) => (
-                    <div key={type.value} className="flex items-center gap-1.5">
+                    <div key={type} className="flex items-center gap-1.5">
                       <Checkbox
-                        id={`rule-type-${type.value}`}
-                        checked={formData.planLimits.ruleTypes?.includes(type.value) || false}
-                        onCheckedChange={() => handleRuleTypeToggle(type.value)}
+                        id={`rule-type-${type}`}
+                        checked={formData.planLimits.ruleTypes?.includes(type) || false}
+                        onCheckedChange={() => handleRuleTypeToggle(type)}
                         disabled={loading}
                         className="size-4"
                       />
-                      <Label htmlFor={`rule-type-${type.value}`} className="cursor-pointer text-xs">
-                        {type.label}
+                      <Label htmlFor={`rule-type-${type}`} className="cursor-pointer text-xs">
+                        {t(`admin.plans.ruleType.${type}`)}
                       </Label>
                     </div>
                   ))}
@@ -678,10 +701,10 @@ export const CreatePlanSheet: React.FC<CreatePlanSheetProps> = ({
           {/* Description & Config - Compact */}
           <div className="space-y-2">
             <h4 className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
-              其他配置
+              {t('admin.plans.form.otherConfig')}
             </h4>
             <textarea
-              placeholder="计划描述（可选）"
+              placeholder={t('admin.plans.form.descriptionPlaceholder')}
               value={formData.description || ''}
               onChange={(e) => handleChange('description', e.target.value)}
               disabled={loading}
@@ -694,7 +717,7 @@ export const CreatePlanSheet: React.FC<CreatePlanSheetProps> = ({
             />
             <div className="grid grid-cols-2 gap-2">
               <div className="space-y-1">
-                <label className="text-xs text-muted-foreground">试用天数</label>
+                <label className="text-xs text-muted-foreground">{t('admin.plans.form.trialDays')}</label>
                 <input
                   type="number"
                   min="0"
@@ -707,7 +730,7 @@ export const CreatePlanSheet: React.FC<CreatePlanSheetProps> = ({
                 />
               </div>
               <div className="space-y-1">
-                <label className="text-xs text-muted-foreground">排序</label>
+                <label className="text-xs text-muted-foreground">{t('admin.plans.form.sortOrder')}</label>
                 <input
                   type="number"
                   value={formData.sortOrder || 0}
@@ -731,19 +754,47 @@ export const CreatePlanSheet: React.FC<CreatePlanSheetProps> = ({
             {loading ? (
               <>
                 <Loader2 className="mr-2 size-4 animate-spin" />
-                创建中...
+                {t('admin.plans.form.creating')}
               </>
             ) : isDuplicateMode ? (
-              '创建副本'
+              t('admin.plans.form.createCopy')
             ) : (
-              '创建计划'
+              t('admin.plans.createPlan')
             )}
           </Button>
           <Button variant="ghost" onClick={() => handleClose(false)} disabled={loading} className="w-full h-10">
-            取消
+            {t('common.actions.cancel')}
           </Button>
         </SheetFooter>
       </SheetContent>
+
+      {/* Billing Cycle SelectSheet */}
+      <SelectSheet
+        open={billingCycleSheetOpen}
+        onOpenChange={setBillingCycleSheetOpen}
+        value={activePricingIndex !== null ? formData.pricings[activePricingIndex]?.billingCycle ?? null : null}
+        onChange={(v) => {
+          if (activePricingIndex !== null) {
+            handleUpdatePricing(activePricingIndex, { billingCycle: v });
+          }
+        }}
+        options={billingCycleOptions}
+        title={t('admin.plans.form.billingCyclePlaceholder')}
+      />
+
+      {/* Currency SelectSheet */}
+      <SelectSheet
+        open={currencySheetOpen}
+        onOpenChange={setCurrencySheetOpen}
+        value={activePricingIndex !== null ? formData.pricings[activePricingIndex]?.currency ?? null : null}
+        onChange={(v) => {
+          if (activePricingIndex !== null) {
+            handleUpdatePricing(activePricingIndex, { currency: v });
+          }
+        }}
+        options={currencyOptions}
+        title={t('admin.plans.form.currencyPlaceholder')}
+      />
     </Sheet>
   );
 };

@@ -17,7 +17,7 @@ type AccordionProps = React.ComponentPropsWithoutRef<typeof AccordionPrimitive.R
  * AccordionItem 组件属性
  */
 interface AccordionItemProps extends React.ComponentPropsWithoutRef<typeof AccordionPrimitive.Item> {
-  /** 自定义样式类名 */
+  /** Custom class name */
   className?: string;
 }
 
@@ -25,7 +25,7 @@ interface AccordionItemProps extends React.ComponentPropsWithoutRef<typeof Accor
  * AccordionTrigger 组件属性
  */
 interface AccordionTriggerProps extends React.ComponentPropsWithoutRef<typeof AccordionPrimitive.Trigger> {
-  /** 自定义样式类名 */
+  /** Custom class name */
   className?: string;
 }
 
@@ -33,7 +33,7 @@ interface AccordionTriggerProps extends React.ComponentPropsWithoutRef<typeof Ac
  * AccordionContent 组件属性
  */
 interface AccordionContentProps extends React.ComponentPropsWithoutRef<typeof AccordionPrimitive.Content> {
-  /** 自定义样式类名 */
+  /** Custom class name */
   className?: string;
 }
 

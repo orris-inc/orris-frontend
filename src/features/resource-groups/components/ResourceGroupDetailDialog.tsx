@@ -3,6 +3,7 @@
  */
 
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
   Server,
   Cpu,
@@ -44,13 +45,14 @@ const DetailItem: React.FC<{
   label: string;
   value: React.ReactNode;
   copyable?: string;
-}> = ({ icon, label, value, copyable }) => {
+  copySuccessMessage?: string;
+}> = ({ icon, label, value, copyable, copySuccessMessage }) => {
   const { showSuccess } = useNotificationStore();
 
   const handleCopy = async () => {
     if (copyable) {
       await navigator.clipboard.writeText(copyable);
-      showSuccess('已复制到剪贴板');
+      showSuccess(copySuccessMessage ?? 'Copied to clipboard');
     }
   };
 
@@ -88,6 +90,7 @@ export const ResourceGroupDetailDialog: React.FC<ResourceGroupDetailDialogProps>
   plansMap,
   onClose,
 }) => {
+  const { t } = useTranslation();
   // Member selection state
   const [selectedNodeIds, setSelectedNodeIds] = useState<Set<string>>(new Set());
   const [selectedAgentIds, setSelectedAgentIds] = useState<Set<string>>(new Set());
@@ -267,7 +270,7 @@ export const ResourceGroupDetailDialog: React.FC<ResourceGroupDetailDialogProps>
             <DialogTitle className="flex items-center gap-2">
               {resourceGroup.name}
               <AdminBadge variant={resourceGroup.status === 'active' ? 'success' : 'default'}>
-                {resourceGroup.status === 'active' ? '激活' : '未激活'}
+                {resourceGroup.status === 'active' ? t('resourceGroups.status.active') : t('resourceGroups.status.inactive')}
               </AdminBadge>
             </DialogTitle>
             <DialogDescription>
@@ -278,20 +281,20 @@ export const ResourceGroupDetailDialog: React.FC<ResourceGroupDetailDialogProps>
           <div className="flex-1 min-h-0 overflow-y-auto -mx-6 px-6">
           <Tabs defaultValue="info" className="w-full">
             <TabsList className={`grid w-full ${gridColsClass}`}>
-              <TabsTrigger value="info">基本信息</TabsTrigger>
+              <TabsTrigger value="info">{t('resourceGroups.tabs.basicInfo')}</TabsTrigger>
               {canBindNodes && (
                 <TabsTrigger value="nodes">
-                  节点 ({nodesPagination.total})
+                  {t('resourceGroups.tabs.nodes')} ({nodesPagination.total})
                 </TabsTrigger>
               )}
               {canBindAgents && (
                 <TabsTrigger value="agents">
-                  转发代理 ({agentsPagination.total})
+                  {t('resourceGroups.tabs.forwardAgents')} ({agentsPagination.total})
                 </TabsTrigger>
               )}
               {canBindRules && (
                 <TabsTrigger value="rules">
-                  转发规则 ({rulesPagination.total})
+                  {t('resourceGroups.tabs.forwardRules')} ({rulesPagination.total})
                 </TabsTrigger>
               )}
             </TabsList>
@@ -299,12 +302,13 @@ export const ResourceGroupDetailDialog: React.FC<ResourceGroupDetailDialogProps>
             <TabsContent value="info" className="space-y-4 py-2">
               {/* Identification info */}
               <div>
-                <h4 className="text-sm font-medium text-slate-900 dark:text-white mb-2">标识信息</h4>
+                <h4 className="text-sm font-medium text-slate-900 dark:text-white mb-2">{t('resourceGroups.sections.identificationInfo')}</h4>
                 <DetailItem
                   icon={<Hash className="size-4" />}
                   label="SID"
                   value={<code className="text-xs font-mono">{resourceGroup.sid}</code>}
                   copyable={resourceGroup.sid}
+                  copySuccessMessage={t('resourceGroups.copiedToClipboard')}
                 />
               </div>
 
@@ -312,7 +316,7 @@ export const ResourceGroupDetailDialog: React.FC<ResourceGroupDetailDialogProps>
 
               {/* Associated plan */}
               <div>
-                <h4 className="text-sm font-medium text-slate-900 dark:text-white mb-2">关联计划</h4>
+                <h4 className="text-sm font-medium text-slate-900 dark:text-white mb-2">{t('resourceGroups.sections.associatedPlan')}</h4>
                 {plan ? (
                   <div className="rounded-lg border border-slate-200 dark:border-slate-700 p-3 bg-slate-50 dark:bg-slate-800/50">
                     <div className="flex items-center gap-2 mb-1">
@@ -326,7 +330,7 @@ export const ResourceGroupDetailDialog: React.FC<ResourceGroupDetailDialogProps>
                 ) : (
                   <DetailItem
                     icon={<CreditCard className="size-4" />}
-                    label="计划 ID"
+                    label={t('resourceGroups.labels.planId')}
                     value={resourceGroup.planId}
                   />
                 )}
@@ -336,10 +340,10 @@ export const ResourceGroupDetailDialog: React.FC<ResourceGroupDetailDialogProps>
                     <Info className="size-4 mt-0.5 flex-shrink-0" />
                     <p className="text-xs">
                       {planType === 'forward'
-                        ? '转发计划仅支持绑定转发代理'
+                        ? t('resourceGroups.planHints.forward')
                         : planType === 'hybrid'
-                          ? '混合计划支持绑定节点和转发规则'
-                          : '节点计划支持绑定节点和转发规则'}
+                          ? t('resourceGroups.planHints.hybrid')
+                          : t('resourceGroups.planHints.node')}
                     </p>
                   </div>
                 )}
@@ -349,10 +353,10 @@ export const ResourceGroupDetailDialog: React.FC<ResourceGroupDetailDialogProps>
                 <>
                   <Separator />
                   <div>
-                    <h4 className="text-sm font-medium text-slate-900 dark:text-white mb-2">描述</h4>
+                    <h4 className="text-sm font-medium text-slate-900 dark:text-white mb-2">{t('resourceGroups.sections.description')}</h4>
                     <DetailItem
                       icon={<FileText className="size-4" />}
-                      label="资源组描述"
+                      label={t('resourceGroups.labels.groupDescription')}
                       value={resourceGroup.description}
                     />
                   </div>
@@ -363,15 +367,15 @@ export const ResourceGroupDetailDialog: React.FC<ResourceGroupDetailDialogProps>
 
               {/* Time info */}
               <div>
-                <h4 className="text-sm font-medium text-slate-900 dark:text-white mb-2">时间信息</h4>
+                <h4 className="text-sm font-medium text-slate-900 dark:text-white mb-2">{t('resourceGroups.sections.timeInfo')}</h4>
                 <DetailItem
                   icon={<Clock className="size-4" />}
-                  label="创建时间"
+                  label={t('resourceGroups.labels.createdAt')}
                   value={formatDateTime(resourceGroup.createdAt)}
                 />
                 <DetailItem
                   icon={<Clock className="size-4" />}
-                  label="更新时间"
+                  label={t('resourceGroups.labels.updatedAt')}
                   value={formatDateTime(resourceGroup.updatedAt)}
                 />
               </div>
@@ -379,14 +383,14 @@ export const ResourceGroupDetailDialog: React.FC<ResourceGroupDetailDialogProps>
               {/* Resource statistics */}
               <Separator />
               <div>
-                <h4 className="text-sm font-medium text-slate-900 dark:text-white mb-3">资源统计</h4>
+                <h4 className="text-sm font-medium text-slate-900 dark:text-white mb-3">{t('resourceGroups.sections.resourceStats')}</h4>
                 <div className={`grid gap-3 ${canBindNodes && canBindRules ? 'grid-cols-2' : 'grid-cols-1'}`}>
                   {canBindNodes && (
                     <div className="flex items-center gap-2 p-3 bg-muted rounded-lg">
                       <Server className="size-4 text-blue-500" />
                       <div>
-                        <p className="text-xs text-muted-foreground">关联节点</p>
-                        <p className="text-sm font-medium">{nodesPagination.total} 个</p>
+                        <p className="text-xs text-muted-foreground">{t('resourceGroups.labels.associatedNodes')}</p>
+                        <p className="text-sm font-medium">{nodesPagination.total} {t('resourceGroups.unit')}</p>
                       </div>
                     </div>
                   )}
@@ -394,8 +398,8 @@ export const ResourceGroupDetailDialog: React.FC<ResourceGroupDetailDialogProps>
                     <div className="flex items-center gap-2 p-3 bg-muted rounded-lg">
                       <Cpu className="size-4 text-green-500" />
                       <div>
-                        <p className="text-xs text-muted-foreground">转发代理</p>
-                        <p className="text-sm font-medium">{agentsPagination.total} 个</p>
+                        <p className="text-xs text-muted-foreground">{t('resourceGroups.labels.forwardAgents')}</p>
+                        <p className="text-sm font-medium">{agentsPagination.total} {t('resourceGroups.unit')}</p>
                       </div>
                     </div>
                   )}
@@ -403,8 +407,8 @@ export const ResourceGroupDetailDialog: React.FC<ResourceGroupDetailDialogProps>
                     <div className="flex items-center gap-2 p-3 bg-muted rounded-lg">
                       <ArrowRightLeft className="size-4 text-orange-500" />
                       <div>
-                        <p className="text-xs text-muted-foreground">转发规则</p>
-                        <p className="text-sm font-medium">{rulesPagination.total} 个</p>
+                        <p className="text-xs text-muted-foreground">{t('resourceGroups.labels.forwardRules')}</p>
+                        <p className="text-sm font-medium">{rulesPagination.total} {t('resourceGroups.unit')}</p>
                       </div>
                     </div>
                   )}
@@ -424,7 +428,7 @@ export const ResourceGroupDetailDialog: React.FC<ResourceGroupDetailDialogProps>
                           onCheckedChange={handleToggleAllNodes}
                         />
                         <span className="text-sm text-muted-foreground">
-                          {selectedNodeIds.size > 0 ? `已选择 ${selectedNodeIds.size} 项` : '全选'}
+                          {selectedNodeIds.size > 0 ? t('resourceGroups.actions.selectedCount', { count: selectedNodeIds.size }) : t('resourceGroups.actions.selectAll')}
                         </span>
                       </>
                     )}
@@ -442,7 +446,7 @@ export const ResourceGroupDetailDialog: React.FC<ResourceGroupDetailDialogProps>
                         ) : (
                           <Trash2 className="size-4 mr-1" />
                         )}
-                        移除 ({selectedNodeIds.size})
+                        {t('resourceGroups.actions.remove')} ({selectedNodeIds.size})
                       </Button>
                     )}
                     <Button
@@ -451,7 +455,7 @@ export const ResourceGroupDetailDialog: React.FC<ResourceGroupDetailDialogProps>
                       onClick={() => setAddNodesDialogOpen(true)}
                     >
                       <Plus className="size-4 mr-1" />
-                      添加节点
+                      {t('resourceGroups.actions.addNode')}
                     </Button>
                   </div>
                 </div>
@@ -464,7 +468,7 @@ export const ResourceGroupDetailDialog: React.FC<ResourceGroupDetailDialogProps>
                 ) : nodes.length === 0 ? (
                   <div className="flex flex-col items-center justify-center py-8 text-muted-foreground">
                     <Server className="size-8 mb-2" />
-                    <p className="text-sm">暂无关联节点</p>
+                    <p className="text-sm">{t('resourceGroups.empty.noNodes')}</p>
                     <Button
                       variant="link"
                       size="sm"
@@ -472,7 +476,7 @@ export const ResourceGroupDetailDialog: React.FC<ResourceGroupDetailDialogProps>
                       onClick={() => setAddNodesDialogOpen(true)}
                     >
                       <Plus className="size-4 mr-1" />
-                      添加节点
+                      {t('resourceGroups.actions.addNode')}
                     </Button>
                   </div>
                 ) : (
@@ -496,13 +500,13 @@ export const ResourceGroupDetailDialog: React.FC<ResourceGroupDetailDialogProps>
                           <p className="text-xs text-muted-foreground font-mono truncate">{node.id}</p>
                         </div>
                         <Badge variant={node.status === 'active' ? 'default' : 'secondary'}>
-                          {node.status === 'active' ? '激活' : '未激活'}
+                          {node.status === 'active' ? t('resourceGroups.status.active') : t('resourceGroups.status.inactive')}
                         </Badge>
                       </label>
                     ))}
                     {nodesPagination.total > nodes.length && (
                       <p className="text-xs text-muted-foreground text-center pt-2">
-                        显示前 {nodes.length} 个，共 {nodesPagination.total} 个节点
+                        {t('resourceGroups.pagination.showingOfTotal', { showing: nodes.length, total: nodesPagination.total, type: t('resourceGroups.tabs.nodes') })}
                       </p>
                     )}
                   </div>
@@ -522,7 +526,7 @@ export const ResourceGroupDetailDialog: React.FC<ResourceGroupDetailDialogProps>
                           onCheckedChange={handleToggleAllAgents}
                         />
                         <span className="text-sm text-muted-foreground">
-                          {selectedAgentIds.size > 0 ? `已选择 ${selectedAgentIds.size} 项` : '全选'}
+                          {selectedAgentIds.size > 0 ? t('resourceGroups.actions.selectedCount', { count: selectedAgentIds.size }) : t('resourceGroups.actions.selectAll')}
                         </span>
                       </>
                     )}
@@ -540,7 +544,7 @@ export const ResourceGroupDetailDialog: React.FC<ResourceGroupDetailDialogProps>
                         ) : (
                           <Trash2 className="size-4 mr-1" />
                         )}
-                        移除 ({selectedAgentIds.size})
+                        {t('resourceGroups.actions.remove')} ({selectedAgentIds.size})
                       </Button>
                     )}
                     <Button
@@ -549,7 +553,7 @@ export const ResourceGroupDetailDialog: React.FC<ResourceGroupDetailDialogProps>
                       onClick={() => setAddAgentsDialogOpen(true)}
                     >
                       <Plus className="size-4 mr-1" />
-                      添加转发代理
+                      {t('resourceGroups.actions.addForwardAgent')}
                     </Button>
                   </div>
                 </div>
@@ -562,7 +566,7 @@ export const ResourceGroupDetailDialog: React.FC<ResourceGroupDetailDialogProps>
                 ) : forwardAgents.length === 0 ? (
                   <div className="flex flex-col items-center justify-center py-8 text-muted-foreground">
                     <Cpu className="size-8 mb-2" />
-                    <p className="text-sm">暂无关联转发代理</p>
+                    <p className="text-sm">{t('resourceGroups.empty.noAgents')}</p>
                     <Button
                       variant="link"
                       size="sm"
@@ -570,7 +574,7 @@ export const ResourceGroupDetailDialog: React.FC<ResourceGroupDetailDialogProps>
                       onClick={() => setAddAgentsDialogOpen(true)}
                     >
                       <Plus className="size-4 mr-1" />
-                      添加转发代理
+                      {t('resourceGroups.actions.addForwardAgent')}
                     </Button>
                   </div>
                 ) : (
@@ -594,13 +598,13 @@ export const ResourceGroupDetailDialog: React.FC<ResourceGroupDetailDialogProps>
                           <p className="text-xs text-muted-foreground font-mono truncate">{agent.id}</p>
                         </div>
                         <Badge variant={agent.status === 'enabled' ? 'default' : 'secondary'}>
-                          {agent.status === 'enabled' ? '启用' : '禁用'}
+                          {agent.status === 'enabled' ? t('resourceGroups.status.enabled') : t('resourceGroups.status.disabled')}
                         </Badge>
                       </label>
                     ))}
                     {agentsPagination.total > forwardAgents.length && (
                       <p className="text-xs text-muted-foreground text-center pt-2">
-                        显示前 {forwardAgents.length} 个，共 {agentsPagination.total} 个转发代理
+                        {t('resourceGroups.pagination.showingOfTotal', { showing: forwardAgents.length, total: agentsPagination.total, type: t('resourceGroups.tabs.forwardAgents') })}
                       </p>
                     )}
                   </div>
@@ -620,7 +624,7 @@ export const ResourceGroupDetailDialog: React.FC<ResourceGroupDetailDialogProps>
                           onCheckedChange={handleToggleAllRules}
                         />
                         <span className="text-sm text-muted-foreground">
-                          {selectedRuleIds.size > 0 ? `已选择 ${selectedRuleIds.size} 项` : '全选'}
+                          {selectedRuleIds.size > 0 ? t('resourceGroups.actions.selectedCount', { count: selectedRuleIds.size }) : t('resourceGroups.actions.selectAll')}
                         </span>
                       </>
                     )}
@@ -638,7 +642,7 @@ export const ResourceGroupDetailDialog: React.FC<ResourceGroupDetailDialogProps>
                         ) : (
                           <Trash2 className="size-4 mr-1" />
                         )}
-                        移除 ({selectedRuleIds.size})
+                        {t('resourceGroups.actions.remove')} ({selectedRuleIds.size})
                       </Button>
                     )}
                     <Button
@@ -647,7 +651,7 @@ export const ResourceGroupDetailDialog: React.FC<ResourceGroupDetailDialogProps>
                       onClick={() => setAddRulesDialogOpen(true)}
                     >
                       <Plus className="size-4 mr-1" />
-                      添加转发规则
+                      {t('resourceGroups.actions.addForwardRule')}
                     </Button>
                   </div>
                 </div>
@@ -660,7 +664,7 @@ export const ResourceGroupDetailDialog: React.FC<ResourceGroupDetailDialogProps>
                 ) : forwardRules.length === 0 ? (
                   <div className="flex flex-col items-center justify-center py-8 text-muted-foreground">
                     <ArrowRightLeft className="size-8 mb-2" />
-                    <p className="text-sm">暂无关联转发规则</p>
+                    <p className="text-sm">{t('resourceGroups.empty.noRules')}</p>
                     <Button
                       variant="link"
                       size="sm"
@@ -668,7 +672,7 @@ export const ResourceGroupDetailDialog: React.FC<ResourceGroupDetailDialogProps>
                       onClick={() => setAddRulesDialogOpen(true)}
                     >
                       <Plus className="size-4 mr-1" />
-                      添加转发规则
+                      {t('resourceGroups.actions.addForwardRule')}
                     </Button>
                   </div>
                 ) : (
@@ -694,13 +698,13 @@ export const ResourceGroupDetailDialog: React.FC<ResourceGroupDetailDialogProps>
                           </p>
                         </div>
                         <Badge variant={rule.status === 'enabled' ? 'default' : 'secondary'}>
-                          {rule.status === 'enabled' ? '启用' : '停用'}
+                          {rule.status === 'enabled' ? t('resourceGroups.status.enabled') : t('resourceGroups.status.stopped')}
                         </Badge>
                       </label>
                     ))}
                     {rulesPagination.total > forwardRules.length && (
                       <p className="text-xs text-muted-foreground text-center pt-2">
-                        显示前 {forwardRules.length} 个，共 {rulesPagination.total} 个转发规则
+                        {t('resourceGroups.pagination.showingOfTotal', { showing: forwardRules.length, total: rulesPagination.total, type: t('resourceGroups.tabs.forwardRules') })}
                       </p>
                     )}
                   </div>

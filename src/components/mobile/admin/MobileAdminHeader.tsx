@@ -19,7 +19,7 @@ interface MobileAdminHeaderProps {
   title: string;
   /** Show iOS-style back button with chevron */
   showBackButton?: boolean;
-  /** Back button label (default: "返回") */
+  /** Back button label (default: "Back") */
   backLabel?: string;
   /** Callback when back button is pressed */
   onBack?: () => void;

@@ -1,4 +1,5 @@
 import { useState, useCallback } from 'react';
+import { useTranslation } from 'react-i18next';
 import Cropper, { Area } from 'react-easy-crop';
 import * as Dialog from '@radix-ui/react-dialog';
 import * as Slider from '@radix-ui/react-slider';
@@ -78,6 +79,7 @@ export const AvatarCropDialog = ({
   onClose,
   onConfirm,
 }: AvatarCropDialogProps) => {
+  const { t } = useTranslation();
   const [crop, setCrop] = useState({ x: 0, y: 0 });
   const [zoom, setZoom] = useState(1);
   const [croppedAreaPixels, setCroppedAreaPixels] = useState<Area | null>(null);
@@ -112,7 +114,7 @@ export const AvatarCropDialog = ({
         <Dialog.Content className="@container fixed left-[50%] top-[50%] z-50 translate-x-[-50%] translate-y-[-50%] border bg-background p-6 shadow-lg duration-200 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[state=closed]:slide-out-to-left-1/2 data-[state=closed]:slide-out-to-top-[48%] data-[state=open]:slide-in-from-left-1/2 data-[state=open]:slide-in-from-top-[48%] sm:rounded-lg sm:max-w-[600px] w-full">
           <div className="flex items-center justify-between mb-4">
             <Dialog.Title className="text-lg font-semibold leading-none tracking-tight">
-              裁剪头像
+              {t('profile.avatarCrop.title')}
             </Dialog.Title>
             <Dialog.Close className="rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none data-[state=open]:bg-accent data-[state=open]:text-muted-foreground">
               <X className="h-4 w-4" />
@@ -121,7 +123,7 @@ export const AvatarCropDialog = ({
           </div>
 
           <Dialog.Description className="text-sm text-muted-foreground mb-4">
-            调整图片位置和缩放比例，裁剪出您满意的头像
+            {t('profile.avatarCrop.description')}
           </Dialog.Description>
 
           <div className="grid gap-4 py-4">
@@ -144,7 +146,7 @@ export const AvatarCropDialog = ({
                 htmlFor="zoom"
                 className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
               >
-                缩放
+                {t('profile.avatarCrop.zoom')}
               </LabelPrimitive.Root>
               <Slider.Root
                 id="zoom"
@@ -170,7 +172,7 @@ export const AvatarCropDialog = ({
               onClick={onClose}
               disabled={isUploading}
             >
-              取消
+              {t('common.actions.cancel')}
             </button>
             <button
               className={getButtonClass('default')}
@@ -178,7 +180,7 @@ export const AvatarCropDialog = ({
               disabled={isUploading}
             >
               {isUploading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-              确认
+              {t('common.actions.confirm')}
             </button>
           </div>
         </Dialog.Content>

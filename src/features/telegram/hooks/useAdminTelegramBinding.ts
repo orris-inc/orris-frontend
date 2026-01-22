@@ -1,5 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { AxiosError } from "axios";
+import { useTranslation } from "react-i18next";
 import { useNotificationStore } from "@/shared/stores/notification-store";
 import { extractErrorMessage } from "@/shared/utils/error-messages";
 import {
@@ -26,6 +27,7 @@ const isNotFoundError = (error: unknown): boolean => {
  * Hook for managing admin Telegram binding state and operations
  */
 export const useAdminTelegramBinding = () => {
+  const { t } = useTranslation();
   const queryClient = useQueryClient();
   const { showSuccess, showError } = useNotificationStore();
 
@@ -52,7 +54,7 @@ export const useAdminTelegramBinding = () => {
   const unbindMutation = useMutation({
     mutationFn: unbindAdminTelegram,
     onSuccess: () => {
-      showSuccess("已解除 Telegram 绑定");
+      showSuccess(t("telegramAdmin.unbindSuccess"));
       queryClient.invalidateQueries({ queryKey: ADMIN_TELEGRAM_BINDING_KEY });
     },
     onError: (error) => {
@@ -65,7 +67,7 @@ export const useAdminTelegramBinding = () => {
     mutationFn: (data: UpdateAdminPreferencesRequest) =>
       updateAdminTelegramPreferences(data),
     onSuccess: () => {
-      showSuccess("通知偏好已更新");
+      showSuccess(t("telegramAdmin.preferencesUpdateSuccess"));
       queryClient.invalidateQueries({ queryKey: ADMIN_TELEGRAM_BINDING_KEY });
     },
     onError: (error) => {

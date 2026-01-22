@@ -1,8 +1,9 @@
 /**
- * 计划多定价编辑器组件
- * 用于在创建/编辑计划时管理多个定价选项
+ * Plan multi-pricing editor component
+ * Used to manage multiple pricing options when creating/editing plans
  */
 
+import { useTranslation } from 'react-i18next';
 import { Plus, Trash2 } from 'lucide-react';
 import { Button } from '@/components/common/Button';
 import { Input } from '@/components/common/Input';
@@ -26,18 +27,18 @@ interface PlanPricingsEditorProps {
   disabled?: boolean;
 }
 
-const BILLING_CYCLE_OPTIONS: { value: BillingCycle; label: string }[] = [
-  { value: 'weekly', label: '周付' },
-  { value: 'monthly', label: '月付' },
-  { value: 'quarterly', label: '季付' },
-  { value: 'semi_annual', label: '半年付' },
-  { value: 'yearly', label: '年付' },
-  { value: 'lifetime', label: '终身' },
+const BILLING_CYCLE_OPTIONS: { value: BillingCycle; labelKey: string }[] = [
+  { value: 'weekly', labelKey: 'billingCycle.weekly' },
+  { value: 'monthly', labelKey: 'billingCycle.monthly' },
+  { value: 'quarterly', labelKey: 'billingCycle.quarterly' },
+  { value: 'semi_annual', labelKey: 'billingCycle.semiAnnual' },
+  { value: 'yearly', labelKey: 'billingCycle.yearly' },
+  { value: 'lifetime', labelKey: 'billingCycle.lifetime' },
 ];
 
 const CURRENCY_OPTIONS: { value: string; label: string }[] = [
-  { value: 'CNY', label: 'CNY (人民币)' },
-  { value: 'USD', label: 'USD (美元)' },
+  { value: 'CNY', label: 'CNY' },
+  { value: 'USD', label: 'USD' },
 ];
 
 export const PlanPricingsEditor: React.FC<PlanPricingsEditorProps> = ({
@@ -45,6 +46,7 @@ export const PlanPricingsEditor: React.FC<PlanPricingsEditorProps> = ({
   onChange,
   disabled = false,
 }) => {
+  const { t } = useTranslation();
   const handleAddPricing = () => {
     const newPricing: PricingOption = {
       billingCycle: 'monthly',
@@ -78,7 +80,7 @@ export const PlanPricingsEditor: React.FC<PlanPricingsEditorProps> = ({
   return (
     <div>
       <div className="flex justify-between items-center mb-4">
-        <h3 className="text-sm font-semibold">多定价选项（可选）</h3>
+        <h3 className="text-sm font-semibold">{t('subscriptionPlans.pricingOptionsOptional')}</h3>
         <Button
           variant="outline"
           size="sm"
@@ -86,19 +88,19 @@ export const PlanPricingsEditor: React.FC<PlanPricingsEditorProps> = ({
           disabled={disabled}
         >
           <Plus className="h-4 w-4 mr-2" />
-          添加定价
+          {t('admin.plans.form.addPricing')}
         </Button>
       </div>
 
       {hasDuplicates && (
         <Alert variant="warning" className="mb-4">
-          检测到重复的计费周期：{duplicateCycles.join(', ')}。每个计费周期只能有一个定价选项。
+          {t('subscriptionPlans.duplicateBillingCycles', { cycles: duplicateCycles.join(', ') })}
         </Alert>
       )}
 
       {pricings.length === 0 ? (
         <Alert variant="info">
-          未配置多定价选项。点击"添加定价"按钮可为此计划添加不同计费周期的价格。
+          {t('subscriptionPlans.noPricingConfigured')}
         </Alert>
       ) : (
         <div className="space-y-4">
@@ -106,7 +108,7 @@ export const PlanPricingsEditor: React.FC<PlanPricingsEditorProps> = ({
             <Card key={index} className="p-4">
               <div className="flex justify-between items-center mb-4">
                 <h4 className="text-sm font-medium text-primary">
-                  定价选项 #{index + 1}
+                  {t('admin.plans.form.pricingNumber', { number: index + 1 })}
                 </h4>
                 <Button
                   variant="ghost"
@@ -122,7 +124,7 @@ export const PlanPricingsEditor: React.FC<PlanPricingsEditorProps> = ({
               <div className="space-y-4">
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <Label htmlFor={`billingCycle-${index}`}>计费周期</Label>
+                    <Label htmlFor={`billingCycle-${index}`}>{t('subscription.billingCycle')}</Label>
                     <Select
                       value={pricing.billingCycle}
                       onValueChange={(value) =>
@@ -141,18 +143,18 @@ export const PlanPricingsEditor: React.FC<PlanPricingsEditorProps> = ({
                       <SelectContent>
                         {BILLING_CYCLE_OPTIONS.map((option) => (
                           <SelectItem key={option.value} value={option.value}>
-                            {option.label}
+                            {t(option.labelKey)}
                           </SelectItem>
                         ))}
                       </SelectContent>
                     </Select>
                     {duplicateCycles.includes(pricing.billingCycle as string) && (
-                      <p className="text-xs text-destructive">此计费周期已存在</p>
+                      <p className="text-xs text-destructive">{t('subscriptionPlans.billingCycleExists')}</p>
                     )}
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor={`currency-${index}`}>货币</Label>
+                    <Label htmlFor={`currency-${index}`}>{t('subscriptionPlans.currency')}</Label>
                     <Select
                       value={pricing.currency}
                       onValueChange={(value) =>
@@ -175,7 +177,7 @@ export const PlanPricingsEditor: React.FC<PlanPricingsEditorProps> = ({
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor={`price-${index}`}>价格（元）</Label>
+                  <Label htmlFor={`price-${index}`}>{t('admin.plans.form.pricePlaceholder')}</Label>
                   <Input
                     id={`price-${index}`}
                     type="number"
@@ -191,7 +193,7 @@ export const PlanPricingsEditor: React.FC<PlanPricingsEditorProps> = ({
                     disabled={disabled}
                   />
                   <p className="text-xs text-muted-foreground">
-                    {pricing.price / 100} 元 = {pricing.price} 分
+                    {t('subscriptionPlans.priceConversion', { yuan: pricing.price / 100, fen: pricing.price })}
                   </p>
                 </div>
 
@@ -204,7 +206,7 @@ export const PlanPricingsEditor: React.FC<PlanPricingsEditorProps> = ({
                     }
                     disabled={disabled}
                   />
-                  <Label htmlFor={`isActive-${index}`}>激活此定价选项</Label>
+                  <Label htmlFor={`isActive-${index}`}>{t('admin.plans.form.activatePricing')}</Label>
                 </div>
               </div>
             </Card>
@@ -215,7 +217,7 @@ export const PlanPricingsEditor: React.FC<PlanPricingsEditorProps> = ({
       <Separator className="my-4" />
 
       <p className="text-xs text-muted-foreground">
-        提示：多定价功能允许您为同一个计划配置不同计费周期的价格，如月付、年付等。用户在订阅时可以选择适合自己的计费周期。
+        {t('subscriptionPlans.pricingHint')}
       </p>
     </div>
   );

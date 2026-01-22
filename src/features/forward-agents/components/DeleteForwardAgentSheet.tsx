@@ -4,6 +4,7 @@
  */
 
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Trash2, AlertTriangle, Loader2, Cpu, Activity } from 'lucide-react';
 import {
   Sheet,
@@ -28,6 +29,7 @@ export const DeleteForwardAgentSheet: React.FC<DeleteForwardAgentSheetProps> = (
   entity: agent,
   onConfirm,
 }) => {
+  const { t } = useTranslation();
   const [loading, setLoading] = useState(false);
   const [confirmOpen, setConfirmOpen] = useState(false);
 
@@ -55,10 +57,10 @@ export const DeleteForwardAgentSheet: React.FC<DeleteForwardAgentSheetProps> = (
             <div className="size-10 rounded-full bg-destructive/10 flex items-center justify-center">
               <Trash2 className="size-5 text-destructive" />
             </div>
-            <span>删除节点</span>
+            <span>{t('admin.forwardAgents.delete.title')}</span>
           </SheetTitle>
           <SheetDescription>
-            此操作不可恢复，请确认是否继续
+            {t('admin.forwardAgents.delete.description')}
           </SheetDescription>
         </SheetHeader>
 
@@ -68,9 +70,9 @@ export const DeleteForwardAgentSheet: React.FC<DeleteForwardAgentSheetProps> = (
             <div className="flex items-start gap-3">
               <AlertTriangle className="size-5 text-destructive flex-shrink-0 mt-0.5" />
               <div className="space-y-1">
-                <p className="font-medium text-destructive">确认删除以下转发Agent？</p>
+                <p className="font-medium text-destructive">{t('admin.forwardAgents.delete.confirmTitle')}</p>
                 <p className="text-sm text-muted-foreground">
-                  删除后，该节点的所有配置和关联的转发规则将无法继续使用。
+                  {t('admin.forwardAgents.delete.confirmMessage')}
                 </p>
               </div>
             </div>
@@ -85,7 +87,7 @@ export const DeleteForwardAgentSheet: React.FC<DeleteForwardAgentSheetProps> = (
                 <div className="flex-1 min-w-0">
                   <p className="font-medium truncate">{agent.name}</p>
                   <p className="text-xs text-muted-foreground font-mono">
-                    {agent.publicAddress || '未设置公网地址'}
+                    {agent.publicAddress || t('admin.forwardAgents.delete.noPublicAddress')}
                   </p>
                 </div>
               </div>
@@ -97,7 +99,7 @@ export const DeleteForwardAgentSheet: React.FC<DeleteForwardAgentSheetProps> = (
                   variant={agent.status === 'enabled' ? 'default' : 'secondary'}
                   className="text-xs"
                 >
-                  {agent.status === 'enabled' ? '已启用' : '已禁用'}
+                  {agent.status === 'enabled' ? t('admin.forwardAgents.delete.enabled') : t('admin.forwardAgents.delete.disabled')}
                 </Badge>
 
                 {/* Online Status */}
@@ -106,7 +108,7 @@ export const DeleteForwardAgentSheet: React.FC<DeleteForwardAgentSheetProps> = (
                   className="text-xs"
                 >
                   <Activity className="size-3 mr-1" />
-                  {agent.systemStatus ? '在线' : '离线'}
+                  {agent.systemStatus ? t('admin.forwardAgents.delete.online') : t('admin.forwardAgents.delete.offline')}
                 </Badge>
 
                 {/* Version */}
@@ -137,10 +139,10 @@ export const DeleteForwardAgentSheet: React.FC<DeleteForwardAgentSheetProps> = (
             {loading ? (
               <>
                 <Loader2 className="mr-2 size-5 animate-spin" />
-                删除中...
+                {t('admin.forwardAgents.delete.deleting')}
               </>
             ) : (
-              '确认删除'
+              t('admin.forwardAgents.delete.confirmButton')
             )}
           </Button>
           <Button
@@ -149,7 +151,7 @@ export const DeleteForwardAgentSheet: React.FC<DeleteForwardAgentSheetProps> = (
             disabled={loading}
             className="w-full min-h-[44px]"
           >
-            取消
+            {t('common.cancel')}
           </Button>
         </SheetFooter>
       </SheetContent>
@@ -159,9 +161,9 @@ export const DeleteForwardAgentSheet: React.FC<DeleteForwardAgentSheetProps> = (
       open={confirmOpen}
       onOpenChange={setConfirmOpen}
       variant="destructive"
-      title="确认删除？"
-      description="删除后无法恢复"
-      confirmText="确认删除"
+      title={t('admin.forwardAgents.delete.finalConfirmTitle')}
+      description={t('admin.forwardAgents.delete.finalConfirmDescription')}
+      confirmText={t('admin.forwardAgents.delete.confirmButton')}
       onConfirm={handleConfirm}
     />
   </>

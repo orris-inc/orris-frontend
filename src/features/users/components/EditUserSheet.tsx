@@ -3,7 +3,8 @@
  * Mobile-optimized bottom sheet for editing user information
  */
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
 import { formatDate } from '@/shared/utils/date-utils';
 import { UserPen, Mail, User, Shield, Activity } from 'lucide-react';
 import {
@@ -25,19 +26,13 @@ import type { UserStatus, UserRole } from '../types/users.types';
 
 type EditUserSheetProps = EditSheetProps<UserResponse, UpdateUserRequest>;
 
-// Status options using CSS variables
-const STATUS_OPTIONS: MobileSelectOption[] = [
-  { value: 'active', label: '激活', color: 'bg-success' },
-  { value: 'inactive', label: '未激活', color: 'bg-muted-foreground' },
-  { value: 'pending', label: '待处理', color: 'bg-warning' },
-  { value: 'suspended', label: '暂停', color: 'bg-destructive' },
-];
-
-// Role options
-const ROLE_OPTIONS: MobileSelectOption[] = [
-  { value: 'user', label: '普通用户' },
-  { value: 'admin', label: '管理员' },
-];
+// Status options with color configuration
+const STATUS_COLOR_MAP: Record<string, string> = {
+  active: 'bg-success',
+  inactive: 'bg-muted-foreground',
+  pending: 'bg-warning',
+  suspended: 'bg-destructive',
+};
 
 export const EditUserSheet: React.FC<EditUserSheetProps> = ({
   open,
@@ -45,12 +40,27 @@ export const EditUserSheet: React.FC<EditUserSheetProps> = ({
   entity: user,
   onSubmit,
 }) => {
+  const { t } = useTranslation();
   const [email, setEmail] = useState('');
   const [name, setName] = useState('');
   const [status, setStatus] = useState<UserStatus>('active');
   const [role, setRole] = useState<UserRole>('user');
   const [errors, setErrors] = useState<{ email?: string; name?: string }>({});
   const [touched, setTouched] = useState<Record<string, boolean>>({});
+
+  // Build status options with translations
+  const statusOptions: MobileSelectOption[] = useMemo(() => [
+    { value: 'active', label: t('admin.users.status.active'), color: 'bg-success' },
+    { value: 'inactive', label: t('admin.users.status.inactive'), color: 'bg-muted-foreground' },
+    { value: 'pending', label: t('admin.users.status.pending'), color: 'bg-warning' },
+    { value: 'suspended', label: t('admin.users.status.suspended'), color: 'bg-destructive' },
+  ], [t]);
+
+  // Build role options with translations
+  const roleOptions: MobileSelectOption[] = useMemo(() => [
+    { value: 'user', label: t('admin.users.role.user') },
+    { value: 'admin', label: t('admin.users.role.admin') },
+  ], [t]);
 
   // Initialize form when user changes
   useEffect(() => {
@@ -67,17 +77,17 @@ export const EditUserSheet: React.FC<EditUserSheetProps> = ({
   // Validation functions
   const validateEmail = useCallback((value: string): string | undefined => {
     if (value.trim() && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) {
-      return '邮箱格式不正确';
+      return t('admin.users.validation.emailInvalid');
     }
     return undefined;
-  }, []);
+  }, [t]);
 
   const validateName = useCallback((value: string): string | undefined => {
     if (value.trim() && (value.trim().length < 2 || value.trim().length > 100)) {
-      return '姓名需 2-100 个字符';
+      return t('admin.users.validation.nameLengthError');
     }
     return undefined;
-  }, []);
+  }, [t]);
 
   const handleBlur = useCallback((field: 'email' | 'name') => {
     setTouched((prev) => ({ ...prev, [field]: true }));
@@ -120,7 +130,7 @@ export const EditUserSheet: React.FC<EditUserSheetProps> = ({
 
   if (!user) return null;
 
-  const currentStatus = STATUS_OPTIONS.find((s) => s.value === status);
+  const currentStatusColor = STATUS_COLOR_MAP[status];
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
@@ -130,25 +140,25 @@ export const EditUserSheet: React.FC<EditUserSheetProps> = ({
             <div className="size-10 rounded-full bg-info/10 flex items-center justify-center">
               <UserPen className="size-5 text-info" />
             </div>
-            <span>编辑用户</span>
+            <span>{t('admin.users.edit.title')}</span>
           </SheetTitle>
           <SheetDescription>
-            修改用户 {user.name || user.email} 的信息
+            {t('admin.users.edit.description', { name: user.name || user.email })}
           </SheetDescription>
         </SheetHeader>
 
         <SheetBody className="space-y-5 py-3">
           {/* Read-only Info */}
           <div className="space-y-3">
-            <h4 className="text-sm font-medium text-muted-foreground px-1">基本信息</h4>
+            <h4 className="text-sm font-medium text-muted-foreground px-1">{t('admin.users.edit.basicInfo')}</h4>
             <div className="rounded-xl border bg-muted/30 p-4 space-y-3">
               <div className="flex items-center justify-between">
-                <span className="text-sm text-muted-foreground">用户 ID</span>
+                <span className="text-sm text-muted-foreground">{t('admin.users.edit.userId')}</span>
                 <TruncatedId id={user.id} />
               </div>
               <Separator />
               <div className="flex items-center justify-between">
-                <span className="text-sm text-muted-foreground">创建时间</span>
+                <span className="text-sm text-muted-foreground">{t('admin.users.edit.createdAt')}</span>
                 <span className="text-sm">{formatDate(user.createdAt)}</span>
               </div>
             </div>
@@ -156,11 +166,11 @@ export const EditUserSheet: React.FC<EditUserSheetProps> = ({
 
           {/* Editable Fields */}
           <div className="space-y-4">
-            <h4 className="text-sm font-medium text-muted-foreground px-1">可编辑信息</h4>
+            <h4 className="text-sm font-medium text-muted-foreground px-1">{t('admin.users.edit.editableInfo')}</h4>
 
             {/* Email */}
             <div className="space-y-1.5">
-              <label htmlFor="edit-email" className="text-sm font-medium px-1">邮箱地址</label>
+              <label htmlFor="edit-email" className="text-sm font-medium px-1">{t('admin.users.fields.email')}</label>
               <MobileFormInput
                 id="edit-email"
                 type="email"
@@ -177,7 +187,7 @@ export const EditUserSheet: React.FC<EditUserSheetProps> = ({
 
             {/* Name */}
             <div className="space-y-1.5">
-              <label htmlFor="edit-name" className="text-sm font-medium px-1">用户姓名</label>
+              <label htmlFor="edit-name" className="text-sm font-medium px-1">{t('admin.users.fields.name')}</label>
               <MobileFormInput
                 id="edit-name"
                 value={name}
@@ -186,12 +196,12 @@ export const EditUserSheet: React.FC<EditUserSheetProps> = ({
                   if (touched.name) setErrors((prev) => ({ ...prev, name: validateName(v) }));
                 }}
                 onBlur={() => handleBlur('name')}
-                placeholder="请输入用户姓名"
+                placeholder={t('admin.users.fields.namePlaceholder')}
                 icon={<User className="size-5" />}
                 error={touched.name ? errors.name : undefined}
               />
               {!touched.name && !errors.name && (
-                <p className="text-xs text-muted-foreground px-1">2-100 个字符</p>
+                <p className="text-xs text-muted-foreground px-1">{t('admin.users.fields.nameLengthHint')}</p>
               )}
             </div>
 
@@ -199,25 +209,25 @@ export const EditUserSheet: React.FC<EditUserSheetProps> = ({
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-1.5">
                 <label className="text-sm font-medium px-1 flex items-center gap-2">
-                  状态
-                  {currentStatus?.color && (
-                    <span className={`size-2 rounded-full ${currentStatus.color}`} />
+                  {t('admin.users.fields.status')}
+                  {currentStatusColor && (
+                    <span className={`size-2 rounded-full ${currentStatusColor}`} />
                   )}
                 </label>
                 <MobileSelect
                   value={status}
                   onChange={(v) => setStatus(v as UserStatus)}
-                  options={STATUS_OPTIONS}
+                  options={statusOptions}
                   icon={<Activity className="size-5" />}
                 />
               </div>
 
               <div className="space-y-1.5">
-                <label className="text-sm font-medium px-1">角色</label>
+                <label className="text-sm font-medium px-1">{t('admin.users.fields.role')}</label>
                 <MobileSelect
                   value={role}
                   onChange={(v) => setRole(v as UserRole)}
-                  options={ROLE_OPTIONS}
+                  options={roleOptions}
                   icon={<Shield className="size-5" />}
                 />
               </div>
@@ -231,14 +241,14 @@ export const EditUserSheet: React.FC<EditUserSheetProps> = ({
             disabled={!hasChanges}
             className="w-full min-h-[48px]"
           >
-            保存修改
+            {t('admin.users.edit.saveChanges')}
           </Button>
           <Button
             variant="ghost"
             onClick={() => onOpenChange(false)}
             className="w-full min-h-[44px]"
           >
-            取消
+            {t('admin.users.actions.cancel')}
           </Button>
         </SheetFooter>
       </SheetContent>

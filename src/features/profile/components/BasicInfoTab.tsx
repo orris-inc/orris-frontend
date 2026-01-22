@@ -2,6 +2,7 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Mail, Loader2 } from 'lucide-react';
 import * as LabelPrimitive from '@radix-ui/react-label';
+import { useTranslation } from 'react-i18next';
 import { useProfile } from '../hooks/useProfile';
 import {
   updateProfileSchema,
@@ -17,6 +18,7 @@ interface BasicInfoTabProps {
  * Basic information tab with iOS 26 Liquid Glass style
  */
 export const BasicInfoTab = ({ user }: BasicInfoTabProps) => {
+  const { t } = useTranslation();
   const { updateProfile, isLoading } = useProfile();
 
   const {
@@ -62,7 +64,7 @@ export const BasicInfoTab = ({ user }: BasicInfoTabProps) => {
             htmlFor="name"
             className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
           >
-            用户名
+            {t('profile.basicInfo.username')}
           </LabelPrimitive.Root>
           <input
             id="name"
@@ -71,7 +73,7 @@ export const BasicInfoTab = ({ user }: BasicInfoTabProps) => {
             aria-invalid={!!errors.name}
           />
           <p className="text-xs @sm:text-sm text-muted-foreground">
-            {errors.name?.message || '2-100个字符'}
+            {errors.name?.message || t('profile.basicInfo.usernameHint')}
           </p>
         </div>
 
@@ -81,7 +83,7 @@ export const BasicInfoTab = ({ user }: BasicInfoTabProps) => {
             htmlFor="email"
             className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
           >
-            邮箱
+            {t('profile.basicInfo.email')}
           </LabelPrimitive.Root>
           <div className="relative">
             <Mail className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
@@ -94,14 +96,14 @@ export const BasicInfoTab = ({ user }: BasicInfoTabProps) => {
             />
           </div>
           <p className="text-xs @sm:text-sm text-muted-foreground">
-            {errors.email?.message || '修改邮箱后需要重新验证'}
+            {errors.email?.message || t('profile.basicInfo.emailHint')}
           </p>
         </div>
 
         {/* Account status */}
         <div className="grid gap-2">
           <LabelPrimitive.Root className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
-            账号状态
+            {t('profile.basicInfo.accountStatus')}
           </LabelPrimitive.Root>
           <div>
             <span
@@ -111,15 +113,7 @@ export const BasicInfoTab = ({ user }: BasicInfoTabProps) => {
                   : 'border-transparent bg-secondary text-secondary-foreground hover:bg-secondary/80'
               }`}
             >
-              {user.status === 'active'
-                ? '正常'
-                : user.status === 'inactive'
-                  ? '未激活'
-                  : user.status === 'suspended'
-                    ? '已暂停'
-                    : user.status === 'pending'
-                      ? '待处理'
-                      : '未知'}
+              {t(`common.status.${user.status}`)}
             </span>
           </div>
         </div>
@@ -129,7 +123,7 @@ export const BasicInfoTab = ({ user }: BasicInfoTabProps) => {
           <div className="glass relative w-full rounded-xl p-4 [&>svg~*]:pl-7 [&>svg+div]:translate-y-[-3px] [&>svg]:absolute [&>svg]:left-4 [&>svg]:top-4 [&>svg]:text-foreground animate-spring-in">
             <Mail className="size-4" />
             <div className="text-xs @sm:text-sm [&_p]:leading-relaxed">
-              修改邮箱地址后需要重新验证，请查收验证邮件
+              {t('profile.basicInfo.emailChangeReminder')}
             </div>
           </div>
         )}
@@ -141,7 +135,7 @@ export const BasicInfoTab = ({ user }: BasicInfoTabProps) => {
           className="glass-interactive inline-flex items-center justify-center rounded-xl text-sm font-medium ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 bg-primary text-primary-foreground hover:bg-primary/90 h-12 @sm:h-11 px-4 py-2 w-full touch-target"
         >
           {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-          保存更改
+          {t('profile.basicInfo.saveChanges')}
         </button>
       </form>
     </div>

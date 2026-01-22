@@ -1,8 +1,9 @@
 /**
- * 编辑转发Agent对话框组件
+ * Edit Forward Agent Dialog Component
  */
 
 import { useState, useEffect } from "react";
+import { useTranslation } from "react-i18next";
 import { formatDateTime } from '@/shared/utils/date-utils';
 import {
   Dialog,
@@ -34,11 +35,11 @@ import { useResourceGroups } from "@/features/resource-groups/hooks/useResourceG
 
 // Protocol groups for better organization
 const PROTOCOL_GROUPS: {
-  label: string;
+  labelKey: string;
   protocols: { value: BlockedProtocol; label: string }[];
 }[] = [
   {
-    label: "代理协议",
+    labelKey: "admin.forwardAgents.form.protocolGroupProxy",
     protocols: [
       { value: "http_connect", label: "HTTP CONNECT" },
       { value: "socks4", label: "SOCKS4" },
@@ -46,7 +47,7 @@ const PROTOCOL_GROUPS: {
     ],
   },
   {
-    label: "应用协议",
+    labelKey: "admin.forwardAgents.form.protocolGroupApp",
     protocols: [
       { value: "http", label: "HTTP" },
       { value: "tls", label: "TLS" },
@@ -69,6 +70,7 @@ export const EditForwardAgentDialog: React.FC<EditForwardAgentDialogProps> = ({
   onClose,
   onSubmit,
 }) => {
+  const { t } = useTranslation();
   const [formData, setFormData] = useState<UpdateForwardAgentRequest>({});
   const [errors, setErrors] = useState<Record<string, string>>({});
 
@@ -132,7 +134,7 @@ export const EditForwardAgentDialog: React.FC<EditForwardAgentDialogProps> = ({
     const newErrors: Record<string, string> = {};
 
     if (formData.name !== undefined && !formData.name.trim()) {
-      newErrors.name = "节点名称不能为空";
+      newErrors.name = t("admin.forwardAgents.edit.validation.nameRequired");
     }
 
     setErrors(newErrors);
@@ -198,25 +200,25 @@ export const EditForwardAgentDialog: React.FC<EditForwardAgentDialogProps> = ({
     <Dialog open={open} onOpenChange={(open) => !open && onClose()}>
       <DialogContent className="@container sm:max-w-[600px] flex flex-col max-h-[90vh]">
         <DialogHeader className="flex-shrink-0">
-          <DialogTitle>编辑转发Agent</DialogTitle>
+          <DialogTitle>{t("admin.forwardAgents.edit.title")}</DialogTitle>
         </DialogHeader>
 
         <div className="flex-1 min-h-0 overflow-y-auto -mx-6 px-6">
           <div className="space-y-6">
-            {/* 节点基本信息（只读） */}
+            {/* Basic info (read-only) */}
             <div>
               <h3 className="text-sm font-medium text-muted-foreground mb-3">
-                基本信息
+                {t("admin.forwardAgents.edit.sections.basicInfo")}
               </h3>
               <Separator className="mb-4" />
               <div className="grid grid-cols-1 @md:grid-cols-2 gap-4">
                 <div className="flex flex-col gap-2">
-                  <Label htmlFor="agent_id">节点ID</Label>
+                  <Label htmlFor="agent_id">{t("admin.forwardAgents.edit.labels.agentId")}</Label>
                   <Input id="agent_id" value={agent.id} disabled />
                 </div>
 
                 <div className="flex flex-col gap-2">
-                  <Label htmlFor="createdAt">创建时间</Label>
+                  <Label htmlFor="createdAt">{t("admin.forwardAgents.edit.labels.createdAt")}</Label>
                   <Input
                     id="createdAt"
                     value={formatDateTime(agent.createdAt)}
@@ -226,16 +228,16 @@ export const EditForwardAgentDialog: React.FC<EditForwardAgentDialogProps> = ({
               </div>
             </div>
 
-            {/* 可编辑字段 */}
+            {/* Editable fields */}
             <div>
               <h3 className="text-sm font-medium text-muted-foreground mb-3">
-                可编辑信息
+                {t("admin.forwardAgents.edit.sections.editableInfo")}
               </h3>
               <Separator className="mb-4" />
               <div className="grid grid-cols-1 gap-4">
-                {/* 节点名称 */}
+                {/* Node name */}
                 <div className="flex flex-col gap-2">
-                  <Label htmlFor="name">节点名称</Label>
+                  <Label htmlFor="name">{t("admin.forwardAgents.edit.labels.nodeName")}</Label>
                   <Input
                     id="name"
                     value={formData.name || ""}
@@ -247,79 +249,78 @@ export const EditForwardAgentDialog: React.FC<EditForwardAgentDialogProps> = ({
                   )}
                 </div>
 
-                {/* 公网地址 */}
+                {/* Public address */}
                 <div className="flex flex-col gap-2">
-                  <Label htmlFor="publicAddress">公网地址</Label>
+                  <Label htmlFor="publicAddress">{t("admin.forwardAgents.edit.labels.publicAddress")}</Label>
                   <Input
                     id="publicAddress"
                     value={formData.publicAddress || ""}
                     onChange={(e) =>
                       handleChange("publicAddress", e.target.value)
                     }
-                    placeholder="例如：192.168.1.100 或 example.com"
+                    placeholder={t("admin.forwardAgents.edit.placeholders.publicAddress")}
                   />
                   <p className="text-xs text-muted-foreground">
-                    可选，用于标识节点的公网访问地址
+                    {t("admin.forwardAgents.edit.hints.publicAddress")}
                   </p>
                 </div>
 
-                {/* 隧道地址 */}
+                {/* Tunnel address */}
                 <div className="flex flex-col gap-2">
-                  <Label htmlFor="tunnelAddress">隧道地址</Label>
+                  <Label htmlFor="tunnelAddress">{t("admin.forwardAgents.edit.labels.tunnelAddress")}</Label>
                   <Input
                     id="tunnelAddress"
                     value={formData.tunnelAddress || ""}
                     onChange={(e) =>
                       handleChange("tunnelAddress", e.target.value)
                     }
-                    placeholder="例如：10.0.0.1 或 internal.example.com"
+                    placeholder={t("admin.forwardAgents.edit.placeholders.tunnelAddress")}
                   />
                   <p className="text-xs text-muted-foreground">
-                    若 Agent 可能作为 relay/exit 角色，需配置此地址（IP
-                    或主机名，不含端口）
+                    {t("admin.forwardAgents.edit.hints.tunnelAddress")}
                   </p>
                 </div>
 
-                {/* 端口限制 */}
+                {/* Port limit */}
                 <div className="flex flex-col gap-2">
-                  <Label htmlFor="allowedPortRange">端口限制</Label>
+                  <Label htmlFor="allowedPortRange">{t("admin.forwardAgents.edit.labels.portLimit")}</Label>
                   <Input
                     id="allowedPortRange"
                     value={formData.allowedPortRange || ""}
                     onChange={(e) =>
                       handleChange("allowedPortRange", e.target.value)
                     }
-                    placeholder="例如：80,443,8000-9000"
+                    placeholder={t("admin.forwardAgents.edit.placeholders.portLimit")}
                   />
                   <p className="text-xs text-muted-foreground">
-                    可选，留空表示允许所有端口
+                    {t("admin.forwardAgents.edit.hints.portLimit")}
                   </p>
                 </div>
 
-                {/* 排序顺序 */}
+                {/* Sort order */}
                 <div className="flex flex-col gap-2">
-                  <Label htmlFor="sortOrder">排序顺序</Label>
+                  <Label htmlFor="sortOrder">{t("admin.forwardAgents.edit.labels.sortOrder")}</Label>
                   <Input
                     id="sortOrder"
                     type="number"
                     min={0}
                     value={formData.sortOrder ?? ""}
                     onChange={(e) => handleSortOrderChange(e.target.value)}
-                    placeholder="例如：100"
+                    placeholder={t("admin.forwardAgents.edit.placeholders.sortOrder")}
                   />
                   <p className="text-xs text-muted-foreground">
-                    数值越小排序越靠前
+                    {t("admin.forwardAgents.edit.hints.sortOrder")}
                   </p>
                 </div>
 
-                {/* 阻止协议 */}
+                {/* Blocked protocols */}
                 <div className="flex flex-col gap-3">
-                  <Label>阻止协议</Label>
+                  <Label>{t("admin.forwardAgents.edit.labels.blockedProtocols")}</Label>
                   <div className="space-y-3">
                     {PROTOCOL_GROUPS.map((group) => (
-                      <div key={group.label}>
+                      <div key={group.labelKey}>
                         <p className="text-xs text-muted-foreground mb-2">
-                          {group.label}
+                          {t(group.labelKey)}
                         </p>
                         <div className="flex flex-wrap gap-2">
                           {group.protocols.map((protocol) => {
@@ -353,13 +354,13 @@ export const EditForwardAgentDialog: React.FC<EditForwardAgentDialogProps> = ({
                     ))}
                   </div>
                   <p className="text-xs text-muted-foreground">
-                    点击选择需要阻止的协议类型
+                    {t("admin.forwardAgents.edit.hints.blockedProtocols")}
                   </p>
                 </div>
 
-                {/* 备注 */}
+                {/* Remark */}
                 <div className="flex flex-col gap-2">
-                  <Label htmlFor="remark">备注</Label>
+                  <Label htmlFor="remark">{t("admin.forwardAgents.edit.labels.remark")}</Label>
                   <Textarea
                     id="remark"
                     rows={3}
@@ -368,9 +369,9 @@ export const EditForwardAgentDialog: React.FC<EditForwardAgentDialogProps> = ({
                   />
                 </div>
 
-                {/* 资源组 */}
+                {/* Resource group */}
                 <div className="flex flex-col gap-2">
-                  <Label htmlFor="groupSid">资源组</Label>
+                  <Label htmlFor="groupSid">{t("admin.forwardAgents.edit.labels.resourceGroup")}</Label>
                   <Select
                     value={formData.groupSid ?? "__none__"}
                     onValueChange={(value) =>
@@ -384,12 +385,12 @@ export const EditForwardAgentDialog: React.FC<EditForwardAgentDialogProps> = ({
                     <SelectTrigger id="groupSid">
                       <SelectValue
                         placeholder={
-                          isLoadingGroups ? "加载中..." : "选择资源组"
+                          isLoadingGroups ? t("common.loading") : t("admin.forwardAgents.edit.placeholders.selectResourceGroup")
                         }
                       />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="__none__">不关联资源组</SelectItem>
+                      <SelectItem value="__none__">{t("admin.forwardAgents.edit.noResourceGroup")}</SelectItem>
                       {resourceGroups.map((group) => (
                         <SelectItem key={group.sid} value={group.sid}>
                           {group.name}
@@ -398,13 +399,13 @@ export const EditForwardAgentDialog: React.FC<EditForwardAgentDialogProps> = ({
                     </SelectContent>
                   </Select>
                   <p className="text-xs text-muted-foreground">
-                    可选，将转发Agent关联到资源组
+                    {t("admin.forwardAgents.edit.hints.resourceGroup")}
                   </p>
                 </div>
 
-                {/* 静音通知 */}
+                {/* Mute notification */}
                 <div className="flex flex-col gap-2">
-                  <Label htmlFor="muteNotification">静音通知</Label>
+                  <Label htmlFor="muteNotification">{t("admin.forwardAgents.edit.labels.muteNotification")}</Label>
                   <div className="flex items-center gap-3">
                     <Switch
                       id="muteNotification"
@@ -416,11 +417,11 @@ export const EditForwardAgentDialog: React.FC<EditForwardAgentDialogProps> = ({
                       <SwitchThumb />
                     </Switch>
                     <span className="text-sm text-muted-foreground">
-                      {formData.muteNotification ? "已静音" : "未静音"}
+                      {formData.muteNotification ? t("admin.forwardAgents.edit.muted") : t("admin.forwardAgents.edit.unmuted")}
                     </span>
                   </div>
                   <p className="text-xs text-muted-foreground">
-                    开启后将不会发送此节点的上线/下线通知
+                    {t("admin.forwardAgents.edit.hints.muteNotification")}
                   </p>
                 </div>
               </div>
@@ -430,10 +431,10 @@ export const EditForwardAgentDialog: React.FC<EditForwardAgentDialogProps> = ({
 
         <DialogFooter className="flex-shrink-0">
           <Button variant="outline" onClick={onClose}>
-            取消
+            {t("common.cancel")}
           </Button>
           <Button onClick={handleSubmit} disabled={!hasChanges}>
-            保存
+            {t("common.save")}
           </Button>
         </DialogFooter>
       </DialogContent>

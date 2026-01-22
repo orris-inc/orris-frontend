@@ -1,8 +1,9 @@
 /**
- * 创建资源组对话框
+ * Create Resource Group Dialog
  */
 
 import { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
   Dialog,
   DialogContent,
@@ -50,6 +51,7 @@ export const CreateResourceGroupDialog: React.FC<CreateResourceGroupDialogProps>
   onClose,
   onSubmit,
 }) => {
+  const { t } = useTranslation();
   const [formData, setFormData] = useState<FormData>(getDefaultFormData());
   const [loading, setLoading] = useState(false);
 
@@ -95,20 +97,20 @@ export const CreateResourceGroupDialog: React.FC<CreateResourceGroupDialogProps>
     <Dialog open={open} onOpenChange={handleClose}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle>创建资源组</DialogTitle>
+          <DialogTitle>{t('resourceGroups.createTitle')}</DialogTitle>
           <DialogDescription>
-            填写以下信息创建新的资源组
+            {t('resourceGroups.createDescription')}
           </DialogDescription>
         </DialogHeader>
 
         <div className="space-y-4 py-4">
           <div className="flex flex-col gap-2">
             <Label htmlFor="name">
-              资源组名称 <span className="text-destructive">*</span>
+              {t('resourceGroups.name')} <span className="text-destructive">*</span>
             </Label>
             <Input
               id="name"
-              placeholder="输入资源组名称"
+              placeholder={t('resourceGroups.namePlaceholder')}
               value={formData.name}
               onChange={(e) => handleChange('name', e.target.value)}
               disabled={loading}
@@ -117,7 +119,7 @@ export const CreateResourceGroupDialog: React.FC<CreateResourceGroupDialogProps>
 
           <div className="flex flex-col gap-2">
             <Label htmlFor="planId">
-              关联计划 <span className="text-destructive">*</span>
+              {t('resourceGroups.associatedPlan')} <span className="text-destructive">*</span>
             </Label>
             <Select
               value={formData.planId}
@@ -125,7 +127,7 @@ export const CreateResourceGroupDialog: React.FC<CreateResourceGroupDialogProps>
               disabled={loading}
             >
               <SelectTrigger id="planId">
-                <SelectValue placeholder="选择关联的订阅计划" />
+                <SelectValue placeholder={t('resourceGroups.selectPlan')} />
               </SelectTrigger>
               <SelectContent>
                 {plans.map((plan) => (
@@ -139,10 +141,10 @@ export const CreateResourceGroupDialog: React.FC<CreateResourceGroupDialogProps>
           </div>
 
           <div className="flex flex-col gap-2">
-            <Label htmlFor="description">描述</Label>
+            <Label htmlFor="description">{t('resourceGroups.description')}</Label>
             <Textarea
               id="description"
-              placeholder="输入资源组描述（可选）"
+              placeholder={t('resourceGroups.descriptionPlaceholder')}
               rows={3}
               value={formData.description}
               onChange={(e) => handleChange('description', e.target.value)}
@@ -153,10 +155,10 @@ export const CreateResourceGroupDialog: React.FC<CreateResourceGroupDialogProps>
 
         <DialogFooter>
           <Button variant="outline" onClick={handleClose} disabled={loading}>
-            取消
+            {t('resourceGroups.cancel')}
           </Button>
           <Button onClick={handleSubmit} disabled={loading || !isValid}>
-            {loading ? '创建中...' : '创建'}
+            {loading ? t('resourceGroups.creating') : t('resourceGroups.create')}
           </Button>
         </DialogFooter>
       </DialogContent>

@@ -126,7 +126,7 @@ export const ResetPasswordPage = () => {
             <p className={cardDescriptionStyles}>{t('auth.resetPassword.subtitle')}</p>
           </div>
           <div className={cn(cardContentStyles, "grid gap-6")}>
-            {/* 错误提示 */}
+            {/* Error message */}
             {error && (
               <div className={getAlertClass('destructive')}>
                 <CircleAlert className="h-4 w-4" />

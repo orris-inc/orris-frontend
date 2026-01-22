@@ -1,8 +1,9 @@
 /**
- * 重置用户密码对话框组件
+ * Reset User Password Dialog Component
  */
 
 import { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import * as Dialog from '@radix-ui/react-dialog';
 import * as LabelPrimitive from '@radix-ui/react-label';
 import { X, Eye, EyeOff } from 'lucide-react';
@@ -29,6 +30,7 @@ export const ResetPasswordDialog: React.FC<ResetPasswordDialogProps> = ({
   onClose,
   onSubmit,
 }) => {
+  const { t } = useTranslation();
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
@@ -49,21 +51,21 @@ export const ResetPasswordDialog: React.FC<ResetPasswordDialogProps> = ({
     const newErrors: { password?: string; confirmPassword?: string } = {};
 
     if (!password) {
-      newErrors.password = '请输入新密码';
+      newErrors.password = t('admin.users.resetPassword.passwordRequired');
     } else if (password.length < PASSWORD_MIN_LENGTH) {
-      newErrors.password = `密码长度至少 ${PASSWORD_MIN_LENGTH} 个字符`;
+      newErrors.password = t('admin.users.resetPassword.passwordMinLength', { min: PASSWORD_MIN_LENGTH });
     } else if (password.length > PASSWORD_MAX_LENGTH) {
-      newErrors.password = `密码长度不能超过 ${PASSWORD_MAX_LENGTH} 个字符`;
+      newErrors.password = t('admin.users.resetPassword.passwordMaxLength', { max: PASSWORD_MAX_LENGTH });
     } else if (!/[a-zA-Z]/.test(password)) {
-      newErrors.password = '密码必须包含至少一个字母';
+      newErrors.password = t('admin.users.resetPassword.passwordNeedsLetter');
     } else if (!/\d/.test(password)) {
-      newErrors.password = '密码必须包含至少一个数字';
+      newErrors.password = t('admin.users.resetPassword.passwordNeedsNumber');
     }
 
     if (!confirmPassword) {
-      newErrors.confirmPassword = '请确认新密码';
+      newErrors.confirmPassword = t('admin.users.resetPassword.confirmRequired');
     } else if (password !== confirmPassword) {
-      newErrors.confirmPassword = '两次输入的密码不一致';
+      newErrors.confirmPassword = t('admin.users.resetPassword.passwordMismatch');
     }
 
     setErrors(newErrors);
@@ -91,7 +93,7 @@ export const ResetPasswordDialog: React.FC<ResetPasswordDialogProps> = ({
         <Dialog.Content className="@container fixed left-[50%] top-[50%] z-50 w-full max-w-md translate-x-[-50%] translate-y-[-50%] gap-4 border bg-background p-6 shadow-lg duration-200 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[state=closed]:slide-out-to-left-1/2 data-[state=closed]:slide-out-to-top-[48%] data-[state=open]:slide-in-from-left-1/2 data-[state=open]:slide-in-from-top-[48%] sm:rounded-lg">
           <div className="flex items-center justify-between">
             <Dialog.Title className="text-lg font-semibold leading-none tracking-tight">
-              重置密码
+              {t('admin.users.resetPassword.title')}
             </Dialog.Title>
             <Dialog.Close
               disabled={isLoading}
@@ -103,13 +105,13 @@ export const ResetPasswordDialog: React.FC<ResetPasswordDialogProps> = ({
           </div>
 
           <Dialog.Description className="text-sm text-muted-foreground mt-2">
-            为用户 <span className="font-medium text-foreground">{user.email}</span> 设置新密码
+            {t('admin.users.resetPassword.description', { email: user.email })}
           </Dialog.Description>
 
           <div className="grid gap-4 py-4">
             <div className="grid gap-2">
               <LabelPrimitive.Root htmlFor="password" className={labelStyles}>
-                新密码
+                {t('admin.users.resetPassword.newPassword')}
               </LabelPrimitive.Root>
               <div className="relative">
                 <input
@@ -119,7 +121,7 @@ export const ResetPasswordDialog: React.FC<ResetPasswordDialogProps> = ({
                   onChange={(e) => setPassword(e.target.value)}
                   disabled={isLoading}
                   className={cn(inputStyles, 'pr-10', errors.password && 'border-destructive')}
-                  placeholder="请输入新密码"
+                  placeholder={t('admin.users.resetPassword.newPasswordPlaceholder')}
                 />
                 <button
                   type="button"
@@ -133,14 +135,14 @@ export const ResetPasswordDialog: React.FC<ResetPasswordDialogProps> = ({
                 <span className="text-sm text-destructive">{errors.password}</span>
               ) : (
                 <span className="text-sm text-muted-foreground">
-                  {PASSWORD_MIN_LENGTH}-{PASSWORD_MAX_LENGTH} 个字符，必须包含字母和数字
+                  {t('admin.users.resetPassword.passwordHint', { min: PASSWORD_MIN_LENGTH, max: PASSWORD_MAX_LENGTH })}
                 </span>
               )}
             </div>
 
             <div className="grid gap-2">
               <LabelPrimitive.Root htmlFor="confirmPassword" className={labelStyles}>
-                确认密码
+                {t('admin.users.resetPassword.confirmPassword')}
               </LabelPrimitive.Root>
               <div className="relative">
                 <input
@@ -150,7 +152,7 @@ export const ResetPasswordDialog: React.FC<ResetPasswordDialogProps> = ({
                   onChange={(e) => setConfirmPassword(e.target.value)}
                   disabled={isLoading}
                   className={cn(inputStyles, 'pr-10', errors.confirmPassword && 'border-destructive')}
-                  placeholder="请再次输入新密码"
+                  placeholder={t('admin.users.resetPassword.confirmPlaceholder')}
                 />
                 <button
                   type="button"
@@ -172,14 +174,14 @@ export const ResetPasswordDialog: React.FC<ResetPasswordDialogProps> = ({
               disabled={isLoading}
               className={getButtonClass('outline', 'default')}
             >
-              取消
+              {t('admin.users.actions.cancel')}
             </button>
             <button
               onClick={handleSubmit}
               disabled={isLoading || !password || !confirmPassword}
               className={getButtonClass('default', 'default')}
             >
-              {isLoading ? '重置中...' : '确认重置'}
+              {isLoading ? t('admin.users.resetPassword.resetting') : t('admin.users.resetPassword.confirmReset')}
             </button>
           </div>
         </Dialog.Content>

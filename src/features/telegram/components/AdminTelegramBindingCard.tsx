@@ -5,6 +5,7 @@
  */
 
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { Send, Unlink, CheckCircle2, Bell } from "lucide-react";
 import { Button } from "@/components/common/Button";
 import { Skeleton } from "@/components/common/Skeleton";
@@ -18,6 +19,7 @@ import { AdminNotificationPreferencesForm } from "./AdminNotificationPreferences
  * Main card component for admin Telegram binding management
  */
 export const AdminTelegramBindingCard = () => {
+  const { t } = useTranslation();
   const {
     isLoading,
     isNotConfigured,
@@ -79,8 +81,10 @@ export const AdminTelegramBindingCard = () => {
             <Send className="size-5" />
           </div>
           <div>
-            <h3 className="font-medium text-foreground">Telegram 通知设置</h3>
-            <p className="text-sm">功能暂未启用</p>
+            <h3 className="font-medium text-foreground">
+              {t("telegramAdmin.binding.title")}
+            </h3>
+            <p className="text-sm">{t("telegramAdmin.binding.notEnabled")}</p>
           </div>
         </div>
       </div>
@@ -110,11 +114,13 @@ export const AdminTelegramBindingCard = () => {
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <h3 className="font-semibold text-foreground">Telegram 通知设置</h3>
+                <h3 className="font-semibold text-foreground">
+                  {t("telegramAdmin.binding.title")}
+                </h3>
                 {isBound && (
                   <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-success/10 text-success ring-1 ring-success/20">
                     <CheckCircle2 className="size-3" />
-                    已绑定
+                    {t("telegramAdmin.binding.bound")}
                   </span>
                 )}
               </div>
@@ -127,7 +133,9 @@ export const AdminTelegramBindingCard = () => {
                 {isBound && activeCount > 0 && (
                   <span className="inline-flex items-center gap-1 text-xs text-muted-foreground">
                     <Bell className="size-3" />
-                    {activeCount} 项通知
+                    {t("telegramAdmin.binding.notifications", {
+                      count: activeCount,
+                    })}
                   </span>
                 )}
               </div>
@@ -168,9 +176,9 @@ export const AdminTelegramBindingCard = () => {
       <ConfirmDialog
         open={showUnbindDialog}
         onOpenChange={setShowUnbindDialog}
-        title="解除 Telegram 绑定"
-        description="解除绑定后，您将不再通过 Telegram 接收任何管理通知。"
-        confirmText="解除绑定"
+        title={t("telegramAdmin.binding.unbindTitle")}
+        description={t("telegramAdmin.binding.unbindDesc")}
+        confirmText={t("telegramAdmin.binding.unbind")}
         variant="destructive"
         onConfirm={handleUnbind}
         loading={isUnbinding}

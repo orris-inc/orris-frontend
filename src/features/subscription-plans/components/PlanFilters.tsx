@@ -29,7 +29,7 @@ export const PlanFilters: React.FC<PlanFiltersProps> = ({
   return (
     <div className="@container">
       <div className="grid grid-cols-1 gap-4 @sm:grid-cols-3">
-        {/* 状态筛选 */}
+        {/* Status filter */}
         <div className="space-y-2">
           <Label.Root className="text-sm font-medium">{t('admin.forwardRules.filters.status')}</Label.Root>
           <Select.Root
@@ -65,7 +65,7 @@ export const PlanFilters: React.FC<PlanFiltersProps> = ({
           </Select.Root>
         </div>
 
-        {/* 搜索名称 */}
+        {/* Search by name */}
         <div className="space-y-2">
           <Label.Root className="text-sm font-medium">{t('common.actions.search')}</Label.Root>
           <input
@@ -76,7 +76,7 @@ export const PlanFilters: React.FC<PlanFiltersProps> = ({
           />
         </div>
 
-        {/* 仅公开计划 */}
+        {/* Public plans only */}
         <div className="flex items-end space-y-2">
           <div className="flex items-center gap-2">
             <Checkbox.Root

@@ -1,7 +1,8 @@
 /**
- * 节点统计卡片组件
+ * Node stats cards component
  */
 
+import { useTranslation } from 'react-i18next';
 import type { LucideIcon } from 'lucide-react';
 import { Server, CheckCircle, XCircle, Wrench } from 'lucide-react';
 import { Card, CardContent } from '@/components/common/Card';
@@ -21,6 +22,8 @@ interface StatCard {
 }
 
 export const NodeStatsCards: React.FC<NodeStatsCardsProps> = ({ nodes, loading }) => {
+  const { t } = useTranslation();
+
   // Calculate statistics
   const stats = {
     total: nodes.length,
@@ -31,28 +34,28 @@ export const NodeStatsCards: React.FC<NodeStatsCardsProps> = ({ nodes, loading }
 
   const statCards: StatCard[] = [
     {
-      title: '总节点数',
+      title: t('admin.nodes.stats.total'),
       value: stats.total,
       icon: Server,
       color: 'text-blue-600',
       bgColor: 'bg-blue-50',
     },
     {
-      title: '激活',
+      title: t('admin.nodes.stats.active'),
       value: stats.active,
       icon: CheckCircle,
       color: 'text-green-600',
       bgColor: 'bg-green-50',
     },
     {
-      title: '未激活',
+      title: t('admin.nodes.stats.inactive'),
       value: stats.inactive,
       icon: XCircle,
       color: 'text-gray-600',
       bgColor: 'bg-gray-50',
     },
     {
-      title: '维护中',
+      title: t('admin.nodes.stats.maintenance'),
       value: stats.maintenance,
       icon: Wrench,
       color: 'text-orange-600',

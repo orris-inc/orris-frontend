@@ -4,6 +4,7 @@
  */
 
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Plus, AlertCircle } from 'lucide-react';
 import { Button } from '@/components/common/Button';
 import { canSubscriptionCreateMoreRules } from '@/api/forward';
@@ -25,6 +26,7 @@ interface SubscriptionForwardRulesSectionProps {
 export const SubscriptionForwardRulesSection: React.FC<SubscriptionForwardRulesSectionProps> = ({
   subscriptionId,
 }) => {
+  const { t } = useTranslation();
   const {
     forwardRules,
     pagination,
@@ -112,9 +114,9 @@ export const SubscriptionForwardRulesSection: React.FC<SubscriptionForwardRulesS
         <div className="p-4 rounded-full bg-muted mb-4">
           <AlertCircle className="h-8 w-8 text-muted-foreground" />
         </div>
-        <h3 className="text-lg font-medium mb-2">此订阅不支持转发功能</h3>
+        <h3 className="text-lg font-medium mb-2">{t('userForwardRules.noSubscription.title')}</h3>
         <p className="text-muted-foreground text-center max-w-md">
-          当前订阅计划不包含端口转发功能。如需使用转发服务，请升级到支持转发的订阅计划。
+          {t('userForwardRules.noSubscription.description')}
         </p>
       </div>
     );
@@ -130,9 +132,9 @@ export const SubscriptionForwardRulesSection: React.FC<SubscriptionForwardRulesS
         <div className="flex items-start @sm:items-center gap-2 @sm:gap-3 p-2.5 @sm:p-3 bg-amber-500/10 border border-amber-500/20 rounded-lg">
           <AlertCircle className="h-4 w-4 @sm:h-5 @sm:w-5 text-amber-500 shrink-0 mt-0.5 @sm:mt-0" />
           <div>
-            <p className="text-xs @sm:text-sm font-medium text-amber-600 dark:text-amber-400">已达到规则上限</p>
+            <p className="text-xs @sm:text-sm font-medium text-amber-600 dark:text-amber-400">{t('userForwardRules.limitReached.title')}</p>
             <p className="text-[10px] @sm:text-xs text-muted-foreground">
-              已创建 {usage?.ruleCount} 条，升级订阅可创建更多
+              {t('userForwardRules.limitReached.description', { count: usage?.ruleCount })}
             </p>
           </div>
         </div>
@@ -140,7 +142,7 @@ export const SubscriptionForwardRulesSection: React.FC<SubscriptionForwardRulesS
 
       {/* Action bar - compact */}
       <div className="flex items-center justify-between gap-2">
-        <p className="text-xs @sm:text-sm text-muted-foreground">共 {pagination.total} 条规则</p>
+        <p className="text-xs @sm:text-sm text-muted-foreground">{t('userForwardRules.totalRules', { count: pagination.total })}</p>
         <Button
           onClick={handleCreateClick}
           disabled={isAtLimit || isUsageLoading}
@@ -148,8 +150,8 @@ export const SubscriptionForwardRulesSection: React.FC<SubscriptionForwardRulesS
           className="gap-1.5 h-8 @sm:h-9 text-xs @sm:text-sm"
         >
           <Plus className="h-3.5 w-3.5 @sm:h-4 @sm:w-4" />
-          <span className="hidden @sm:inline">新增规则</span>
-          <span className="@sm:hidden">新增</span>
+          <span className="hidden @sm:inline">{t('userForwardRules.addRule')}</span>
+          <span className="@sm:hidden">{t('userForwardRules.addRuleShort')}</span>
         </Button>
       </div>
 

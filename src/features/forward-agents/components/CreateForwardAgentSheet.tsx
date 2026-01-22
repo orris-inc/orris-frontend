@@ -4,6 +4,7 @@
  */
 
 import { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Cpu, Loader2, Check } from 'lucide-react';
 import {
   Sheet,
@@ -22,11 +23,11 @@ import type { CreateForwardAgentRequest, BlockedProtocol } from '@/api/forward';
 
 // Protocol groups
 const PROTOCOL_GROUPS: {
-  label: string;
+  labelKey: string;
   protocols: { value: BlockedProtocol; label: string }[];
 }[] = [
   {
-    label: '代理协议',
+    labelKey: 'admin.forwardAgents.form.protocolGroupProxy',
     protocols: [
       { value: 'http_connect', label: 'HTTP CONNECT' },
       { value: 'socks4', label: 'SOCKS4' },
@@ -34,7 +35,7 @@ const PROTOCOL_GROUPS: {
     ],
   },
   {
-    label: '应用协议',
+    labelKey: 'admin.forwardAgents.form.protocolGroupApp',
     protocols: [
       { value: 'http', label: 'HTTP' },
       { value: 'tls', label: 'TLS' },
@@ -64,6 +65,7 @@ export const CreateForwardAgentSheet: React.FC<CreateForwardAgentSheetProps> = (
   onSubmit,
   initialData,
 }) => {
+  const { t } = useTranslation();
   const [formData, setFormData] = useState<CreateForwardAgentRequest>(getDefaultFormData());
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(false);
@@ -106,7 +108,7 @@ export const CreateForwardAgentSheet: React.FC<CreateForwardAgentSheetProps> = (
   const validate = () => {
     const newErrors: Record<string, string> = {};
     if (!formData.name.trim()) {
-      newErrors.name = '节点名称不能为空';
+      newErrors.name = t('admin.forwardAgents.create.validation.nameRequired');
     }
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -158,10 +160,10 @@ export const CreateForwardAgentSheet: React.FC<CreateForwardAgentSheetProps> = (
             <div className="size-10 rounded-full bg-primary/10 flex items-center justify-center">
               <Cpu className="size-5 text-primary" />
             </div>
-            <span>{initialData ? '复制节点' : '新增节点'}</span>
+            <span>{initialData ? t('admin.forwardAgents.create.copyTitle') : t('admin.forwardAgents.create.title')}</span>
           </SheetTitle>
           <SheetDescription>
-            创建新的转发Agent，用于管理端口转发规则
+            {t('admin.forwardAgents.create.description')}
           </SheetDescription>
         </SheetHeader>
 
@@ -169,10 +171,10 @@ export const CreateForwardAgentSheet: React.FC<CreateForwardAgentSheetProps> = (
           {/* Node Name */}
           <div className="space-y-1.5">
             <label className="text-sm font-medium px-1">
-              节点名称 <span className="text-destructive">*</span>
+              {t('admin.forwardAgents.create.labels.nodeName')} <span className="text-destructive">*</span>
             </label>
             <MobileFormInput
-              placeholder="例如：主转发Agent"
+              placeholder={t('admin.forwardAgents.create.placeholders.nodeName')}
               value={formData.name}
               onChange={(value) => handleChange('name', value)}
               error={errors.name}
@@ -182,69 +184,69 @@ export const CreateForwardAgentSheet: React.FC<CreateForwardAgentSheetProps> = (
 
           {/* Public Address */}
           <div className="space-y-1.5">
-            <label className="text-sm font-medium px-1">公网地址</label>
+            <label className="text-sm font-medium px-1">{t('admin.forwardAgents.create.labels.publicAddress')}</label>
             <MobileFormInput
-              placeholder="example.com 或 1.2.3.4"
+              placeholder={t('admin.forwardAgents.create.placeholders.publicAddress')}
               value={formData.publicAddress || ''}
               onChange={(value) => handleChange('publicAddress', value)}
               className="font-mono"
             />
             <p className="text-xs text-muted-foreground px-1">
-              可选，留空时由 Agent 自动检测
+              {t('admin.forwardAgents.create.hints.publicAddress')}
             </p>
           </div>
 
           {/* Tunnel Address */}
           <div className="space-y-1.5">
-            <label className="text-sm font-medium px-1">隧道地址</label>
+            <label className="text-sm font-medium px-1">{t('admin.forwardAgents.create.labels.tunnelAddress')}</label>
             <MobileFormInput
-              placeholder="10.0.0.1 或 internal.example.com"
+              placeholder={t('admin.forwardAgents.create.placeholders.tunnelAddress')}
               value={formData.tunnelAddress || ''}
               onChange={(value) => handleChange('tunnelAddress', value)}
               className="font-mono"
             />
             <p className="text-xs text-muted-foreground px-1">
-              可选，用于中继/出口节点的内网连接
+              {t('admin.forwardAgents.create.hints.tunnelAddress')}
             </p>
           </div>
 
           {/* Allowed Port Range */}
           <div className="space-y-1.5">
-            <label className="text-sm font-medium px-1">端口限制</label>
+            <label className="text-sm font-medium px-1">{t('admin.forwardAgents.create.labels.portLimit')}</label>
             <MobileFormInput
-              placeholder="80,443,8000-9000"
+              placeholder={t('admin.forwardAgents.create.placeholders.portLimit')}
               value={formData.allowedPortRange || ''}
               onChange={(value) => handleChange('allowedPortRange', value)}
               className="font-mono"
             />
             <p className="text-xs text-muted-foreground px-1">
-              可选，留空表示允许所有端口
+              {t('admin.forwardAgents.create.hints.portLimit')}
             </p>
           </div>
 
           {/* Sort Order */}
           <div className="space-y-1.5">
-            <label className="text-sm font-medium px-1">排序顺序</label>
+            <label className="text-sm font-medium px-1">{t('admin.forwardAgents.create.labels.sortOrder')}</label>
             <MobileFormInput
               type="number"
               inputMode="numeric"
-              placeholder="100"
+              placeholder={t('admin.forwardAgents.create.placeholders.sortOrder')}
               value={formData.sortOrder !== undefined ? String(formData.sortOrder) : ''}
               onChange={(value) => handleChange('sortOrder', value ? parseInt(value, 10) : undefined)}
               className="font-mono"
             />
             <p className="text-xs text-muted-foreground px-1">
-              数值越小排序越靠前
+              {t('admin.forwardAgents.create.hints.sortOrder')}
             </p>
           </div>
 
           {/* Blocked Protocols */}
           <div className="space-y-2">
-            <label className="text-sm font-medium px-1">阻止协议</label>
+            <label className="text-sm font-medium px-1">{t('admin.forwardAgents.create.labels.blockedProtocols')}</label>
             <div className="space-y-3">
               {PROTOCOL_GROUPS.map((group) => (
-                <div key={group.label}>
-                  <p className="text-xs text-muted-foreground mb-2 px-1">{group.label}</p>
+                <div key={group.labelKey}>
+                  <p className="text-xs text-muted-foreground mb-2 px-1">{t(group.labelKey)}</p>
                   <div className="flex flex-wrap gap-2">
                     {group.protocols.map((protocol) => {
                       const isSelected = formData.blockedProtocols?.includes(protocol.value) || false;
@@ -269,15 +271,15 @@ export const CreateForwardAgentSheet: React.FC<CreateForwardAgentSheetProps> = (
               ))}
             </div>
             <p className="text-xs text-muted-foreground px-1">
-              可选，点击选择需要阻止的协议类型
+              {t('admin.forwardAgents.create.hints.blockedProtocols')}
             </p>
           </div>
 
           {/* Remark */}
           <div className="space-y-1.5">
-            <label className="text-sm font-medium px-1">备注</label>
+            <label className="text-sm font-medium px-1">{t('admin.forwardAgents.create.labels.remark')}</label>
             <MobileFormInput
-              placeholder="添加备注说明"
+              placeholder={t('admin.forwardAgents.create.placeholders.remark')}
               value={formData.remark || ''}
               onChange={(value) => handleChange('remark', value)}
             />
@@ -293,12 +295,12 @@ export const CreateForwardAgentSheet: React.FC<CreateForwardAgentSheetProps> = (
             {loading ? (
               <>
                 <Loader2 className="size-5 animate-spin" />
-                创建中...
+                {t('admin.forwardAgents.create.creating')}
               </>
             ) : (
               <>
                 <Check className="size-5" />
-                创建
+                {t('common.create')}
               </>
             )}
           </Button>
@@ -308,7 +310,7 @@ export const CreateForwardAgentSheet: React.FC<CreateForwardAgentSheetProps> = (
             disabled={loading}
             className="w-full min-h-[44px]"
           >
-            取消
+            {t('common.cancel')}
           </Button>
         </SheetFooter>
       </SheetContent>

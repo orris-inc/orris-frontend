@@ -1,4 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useTranslation } from "react-i18next";
 import { useNotificationStore } from "@/shared/stores/notification-store";
 import { extractErrorMessage } from "@/shared/utils/error-messages";
 import {
@@ -16,6 +17,7 @@ const TELEGRAM_CONFIG_KEY = ["admin", "settings", "telegram", "config"];
  * Hook for managing Telegram bot configuration
  */
 export const useTelegramSettings = () => {
+  const { t } = useTranslation();
   const queryClient = useQueryClient();
   const { showSuccess, showError } = useNotificationStore();
 
@@ -34,7 +36,7 @@ export const useTelegramSettings = () => {
   const updateMutation = useMutation({
     mutationFn: (data: UpdateTelegramConfigRequest) => updateTelegramConfig(data),
     onSuccess: () => {
-      showSuccess("Telegram 配置已更新");
+      showSuccess(t("telegramAdmin.configUpdateSuccess"));
       queryClient.invalidateQueries({ queryKey: TELEGRAM_CONFIG_KEY });
     },
     onError: (err) => {
@@ -47,9 +49,9 @@ export const useTelegramSettings = () => {
     mutationFn: testTelegramConnection,
     onSuccess: (result: TelegramTestResult) => {
       if (result.success) {
-        showSuccess(`连接成功！Bot: @${result.botUsername}`);
+        showSuccess(t("telegramAdmin.connectionSuccess", { username: result.botUsername }));
       } else {
-        showError(result.error || "连接测试失败");
+        showError(result.error || t("telegramAdmin.connectionFailed"));
       }
     },
     onError: (err) => {

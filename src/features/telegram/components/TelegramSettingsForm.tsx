@@ -8,6 +8,7 @@ import { useState, useEffect } from "react";
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
+import { useTranslation } from "react-i18next";
 import {
   Loader2,
   Eye,
@@ -32,10 +33,11 @@ import type {
   TelegramTestResult,
 } from "@/api/admin";
 
+// Validation message will be handled at display time
 const settingsSchema = z.object({
   enabled: z.boolean(),
   botToken: z.string().optional(),
-  webhookUrl: z.string().url("请输入有效的 URL").optional().or(z.literal("")),
+  webhookUrl: z.string().url().optional().or(z.literal("")),
   webhookSecret: z.string().optional(),
 });
 
@@ -138,6 +140,7 @@ export const TelegramSettingsForm = ({
   isTesting,
   testResult,
 }: TelegramSettingsFormProps) => {
+  const { t } = useTranslation();
   // Track config values individually to avoid unnecessary resets
   const configKey = `${config.enabled}-${config.botToken}-${config.webhookUrl}-${config.webhookSecret}`;
 
@@ -201,10 +204,10 @@ export const TelegramSettingsForm = ({
           </div>
           <div>
             <div className="text-sm font-medium text-foreground">
-              启用 Telegram 通知
+              {t("telegramAdmin.settings.enableNotifications")}
             </div>
             <div className="text-xs text-muted-foreground">
-              开启后管理员可以绑定 Telegram 接收通知
+              {t("telegramAdmin.settings.enableNotificationsDesc")}
             </div>
           </div>
         </div>
@@ -224,7 +227,7 @@ export const TelegramSettingsForm = ({
         icon={<Key className="size-4 text-warning" />}
         iconBg="bg-warning/10"
         label="Bot Token"
-        description="从 @BotFather 获取的机器人令牌"
+        description={t("telegramAdmin.settings.botTokenDesc")}
       >
         <Controller
           name="botToken"
@@ -245,7 +248,7 @@ export const TelegramSettingsForm = ({
         icon={<Globe className="size-4 text-info" />}
         iconBg="bg-info/10"
         label="Webhook URL"
-        description="接收 Telegram 更新的 Webhook 地址"
+        description={t("telegramAdmin.settings.webhookUrlDesc")}
       >
         <Controller
           name="webhookUrl"
@@ -268,7 +271,7 @@ export const TelegramSettingsForm = ({
         icon={<Shield className="size-4 text-success" />}
         iconBg="bg-success/10"
         label="Webhook Secret"
-        description="用于验证 Webhook 请求的密钥"
+        description={t("telegramAdmin.settings.webhookSecretDesc")}
       >
         <Controller
           name="webhookSecret"
@@ -287,7 +290,9 @@ export const TelegramSettingsForm = ({
       {/* Current Mode & Bot Link */}
       {config.mode && (
         <div className="flex items-center gap-3 py-3 -mx-2 px-2 text-sm">
-          <span className="text-muted-foreground">当前模式:</span>
+          <span className="text-muted-foreground">
+            {t("telegramAdmin.settings.currentMode")}
+          </span>
           <span
             className={cn(
               "px-2 py-0.5 rounded-full text-xs font-medium",
@@ -328,7 +333,7 @@ export const TelegramSettingsForm = ({
           ) : (
             <RefreshCw className="size-4" />
           )}
-          测试连接
+          {t("telegramAdmin.settings.testConnection")}
         </Button>
 
         {/* Test Result */}
@@ -362,7 +367,7 @@ export const TelegramSettingsForm = ({
             className="ml-auto gap-2"
           >
             {isSubmitting && <Loader2 className="size-4 animate-spin" />}
-            保存更改
+            {t("telegramAdmin.settings.saveChanges")}
           </Button>
         )}
       </div>

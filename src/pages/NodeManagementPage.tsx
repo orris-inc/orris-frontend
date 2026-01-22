@@ -324,7 +324,7 @@ export const NodeManagementPage = () => {
                 {stats.online > 0 && (
                   <Button variant="outline" size="sm" onClick={() => setBroadcastURLDialogOpen(true)}>
                     <Radio className="size-4 mr-2" />
-                    {t('admin.nodes.broadcast')}
+                    {t('admin.nodes.broadcast.label')}
                   </Button>
                 )}
                 {stats.updatable > 0 && (

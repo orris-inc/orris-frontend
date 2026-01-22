@@ -5,6 +5,7 @@
  */
 
 import { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
   Dialog,
   DialogContent,
@@ -48,15 +49,6 @@ interface CreateUserForwardRuleDialogProps {
   isCreating?: boolean;
 }
 
-// Rule type descriptions
-const RULE_TYPE_INFO: Record<ForwardRuleType, { label: string; description: string }> = {
-  direct: { label: '直连转发', description: '直接将流量转发到目标地址' },
-  entry: { label: '入口节点', description: '作为转发链的入口，通过出口节点转发到目标地址' },
-  chain: { label: '隧道链式转发', description: '通过隧道（WS/TLS）进行多跳链式转发' },
-  direct_chain: { label: '直连链式转发', description: '通过直连 TCP/UDP 进行多跳链式转发' },
-  external: { label: '外部规则', description: '由管理员创建的外部转发规则' },
-};
-
 export const CreateUserForwardRuleDialog: React.FC<CreateUserForwardRuleDialogProps> = ({
   open,
   onClose,
@@ -64,6 +56,7 @@ export const CreateUserForwardRuleDialog: React.FC<CreateUserForwardRuleDialogPr
   allowedTypes,
   isCreating = false,
 }) => {
+  const { t } = useTranslation();
   const { forwardAgents, isLoading: isLoadingAgents } = useUserForwardAgents({
     pageSize: 100,
     enabled: open,
@@ -180,33 +173,33 @@ export const CreateUserForwardRuleDialog: React.FC<CreateUserForwardRuleDialogPr
     const newErrors: Record<string, string> = {};
 
     if (!formData.agentId) {
-      newErrors.agentId = '请选择转发Agent';
+      newErrors.agentId = t('userForwardRules.form.validation.selectAgent');
     }
 
     if (!formData.name.trim()) {
-      newErrors.name = '请输入规则名称';
+      newErrors.name = t('userForwardRules.form.validation.ruleNameRequired');
     }
 
     // Listen port is optional, validate if provided
     if (formData.listenPort) {
       const port = parseInt(formData.listenPort);
       if (isNaN(port) || port < 1 || port > 65535) {
-        newErrors.listenPort = '端口号必须在 1-65535 之间';
+        newErrors.listenPort = t('userForwardRules.form.validation.portRange');
       }
     }
 
     // Validate different fields based on rule type
     if (formData.ruleType === 'entry') {
       if (!formData.exitAgentId) {
-        newErrors.exitAgentId = '请选择出口节点';
+        newErrors.exitAgentId = t('userForwardRules.form.validation.selectExitNode');
       }
     } else if (formData.ruleType === 'chain') {
       if (!formData.chainAgentIds || formData.chainAgentIds.length === 0) {
-        newErrors.chainAgentIds = '请至少选择一个中间节点';
+        newErrors.chainAgentIds = t('userForwardRules.form.validation.selectChainNode');
       }
     } else if (formData.ruleType === 'direct_chain') {
       if (!formData.chainAgentIds || formData.chainAgentIds.length === 0) {
-        newErrors.chainAgentIds = '请至少选择一个中间节点';
+        newErrors.chainAgentIds = t('userForwardRules.form.validation.selectChainNode');
       }
       // Validate that each chain node has a port configured
       if (formData.chainAgentIds && formData.chainAgentIds.length > 0) {
@@ -221,9 +214,9 @@ export const CreateUserForwardRuleDialog: React.FC<CreateUserForwardRuleDialogPr
         }
         if (missingPorts.length > 0) {
           if (missingPorts.length === formData.chainAgentIds.length) {
-            newErrors.chainPortConfig = '请为每个节点配置有效的监听端口（1-65535）';
+            newErrors.chainPortConfig = t('userForwardRules.form.validation.chainPortRequired');
           } else {
-            newErrors.chainPortConfig = `请为以下节点配置有效端口：${missingPorts.join('、')}`;
+            newErrors.chainPortConfig = t('userForwardRules.form.validation.chainPortMissing', { nodes: missingPorts.join(', ') });
           }
         }
       }
@@ -232,19 +225,19 @@ export const CreateUserForwardRuleDialog: React.FC<CreateUserForwardRuleDialogPr
     // Target validation based on target type
     if (targetType === 'manual') {
       if (!formData.targetAddress.trim()) {
-        newErrors.targetAddress = '请输入目标地址';
+        newErrors.targetAddress = t('userForwardRules.form.validation.targetAddressRequired');
       }
       if (!formData.targetPort) {
-        newErrors.targetPort = '请输入目标端口';
+        newErrors.targetPort = t('userForwardRules.form.validation.targetPortRequired');
       } else {
         const port = parseInt(formData.targetPort);
         if (isNaN(port) || port < 1 || port > 65535) {
-          newErrors.targetPort = '端口号必须在 1-65535 之间';
+          newErrors.targetPort = t('userForwardRules.form.validation.portRange');
         }
       }
     } else if (targetType === 'node') {
       if (!formData.targetNodeId) {
-        newErrors.targetNodeId = '请选择目标节点';
+        newErrors.targetNodeId = t('userForwardRules.form.validation.targetNodeRequired');
       }
     }
 
@@ -337,26 +330,26 @@ export const CreateUserForwardRuleDialog: React.FC<CreateUserForwardRuleDialogPr
     <Dialog open={open} onOpenChange={handleClose}>
       <DialogContent className="@container sm:max-w-[600px] flex flex-col max-h-[90vh]">
         <DialogHeader className="flex-shrink-0">
-          <DialogTitle>新增转发规则</DialogTitle>
+          <DialogTitle>{t('userForwardRules.addRule')}</DialogTitle>
         </DialogHeader>
 
         <div className="flex-1 min-h-0 overflow-y-auto -mx-6 px-6">
         <div className="space-y-6 py-4">
           {/* Basic info */}
           <div>
-            <h3 className="text-sm font-medium text-muted-foreground mb-3">基本信息</h3>
+            <h3 className="text-sm font-medium text-muted-foreground mb-3">{t('userForwardRules.form.basicInfo')}</h3>
             <Separator className="mb-4" />
             <div className="space-y-4">
               {/* Rule name */}
               <div className="flex flex-col gap-2">
                 <Label htmlFor="name">
-                  规则名称 <span className="text-destructive">*</span>
+                  {t('userForwardRules.form.ruleName')} <span className="text-destructive">*</span>
                 </Label>
                 <Input
                   id="name"
                   value={formData.name}
                   onChange={(e) => handleChange('name', e.target.value)}
-                  placeholder="为您的规则起个名字"
+                  placeholder={t('userForwardRules.form.ruleNamePlaceholder')}
                   error={!!errors.name}
                   disabled={isCreating}
                 />
@@ -371,7 +364,7 @@ export const CreateUserForwardRuleDialog: React.FC<CreateUserForwardRuleDialogPr
               {/* Forward agent selection */}
               <div className="flex flex-col gap-2">
                 <Label htmlFor="agentId">
-                  转发Agent <span className="text-destructive">*</span>
+                  {t('userForwardRules.form.forwardAgent')} <span className="text-destructive">*</span>
                 </Label>
                 <Select
                   value={formData.agentId}
@@ -379,7 +372,7 @@ export const CreateUserForwardRuleDialog: React.FC<CreateUserForwardRuleDialogPr
                   disabled={isCreating || isLoadingAgents}
                 >
                   <SelectTrigger id="agentId" className={errors.agentId ? 'border-destructive' : ''}>
-                    <SelectValue placeholder={isLoadingAgents ? '加载中...' : '选择转发Agent'} />
+                    <SelectValue placeholder={isLoadingAgents ? t('userForwardRules.form.loading') : t('userForwardRules.form.selectAgent')} />
                   </SelectTrigger>
                   <SelectContent>
                     {forwardAgents
@@ -405,7 +398,7 @@ export const CreateUserForwardRuleDialog: React.FC<CreateUserForwardRuleDialogPr
                 )}
                 {!isLoadingAgents && forwardAgents.filter(a => a.status === 'enabled').length === 0 && (
                   <p className="text-xs text-amber-600 dark:text-amber-400">
-                    暂无可用的转发Agent，请联系管理员
+                    {t('userForwardRules.form.noAgentsAvailable')}
                   </p>
                 )}
               </div>
@@ -413,7 +406,7 @@ export const CreateUserForwardRuleDialog: React.FC<CreateUserForwardRuleDialogPr
               {/* Rule type */}
               {allowedTypes.length > 1 && (
                 <div className="flex flex-col gap-2">
-                  <Label htmlFor="ruleType">规则类型</Label>
+                  <Label htmlFor="ruleType">{t('userForwardRules.form.ruleType')}</Label>
                   <Select
                     value={formData.ruleType}
                     onValueChange={(value) => handleChange('ruleType', value as ForwardRuleType)}
@@ -425,29 +418,27 @@ export const CreateUserForwardRuleDialog: React.FC<CreateUserForwardRuleDialogPr
                     <SelectContent>
                       {allowedTypes.map((type) => (
                         <SelectItem key={type} value={type}>
-                          {RULE_TYPE_INFO[type as ForwardRuleType]?.label || type}
+                          {t(`admin.forwardRules.ruleTypeInfo.${type === 'direct_chain' ? 'directChain' : type}.label`)}
                         </SelectItem>
                       ))}
                     </SelectContent>
                   </Select>
-                  {RULE_TYPE_INFO[formData.ruleType] && (
-                    <p className="text-xs text-muted-foreground">
-                      {RULE_TYPE_INFO[formData.ruleType].description}
-                    </p>
-                  )}
+                  <p className="text-xs text-muted-foreground">
+                    {t(`admin.forwardRules.ruleTypeInfo.${formData.ruleType === 'direct_chain' ? 'directChain' : formData.ruleType}.description`)}
+                  </p>
                 </div>
               )}
 
               {/* If only one type, display as read-only badge */}
               {allowedTypes.length === 1 && (
                 <div className="flex flex-col gap-2">
-                  <Label>规则类型</Label>
+                  <Label>{t('userForwardRules.form.ruleType')}</Label>
                   <div>
                     <Badge variant="secondary">
-                      {RULE_TYPE_INFO[formData.ruleType]?.label || formData.ruleType}
+                      {t(`admin.forwardRules.ruleTypeInfo.${formData.ruleType === 'direct_chain' ? 'directChain' : formData.ruleType}.label`)}
                     </Badge>
                     <p className="text-xs text-muted-foreground mt-2">
-                      {RULE_TYPE_INFO[formData.ruleType]?.description}
+                      {t(`admin.forwardRules.ruleTypeInfo.${formData.ruleType === 'direct_chain' ? 'directChain' : formData.ruleType}.description`)}
                     </p>
                   </div>
                 </div>
@@ -457,7 +448,7 @@ export const CreateUserForwardRuleDialog: React.FC<CreateUserForwardRuleDialogPr
               {formData.ruleType === 'entry' && (
                 <div className="flex flex-col gap-2">
                   <Label htmlFor="exitAgentId">
-                    出口节点 <span className="text-destructive">*</span>
+                    {t('userForwardRules.form.exitNode')} <span className="text-destructive">*</span>
                   </Label>
                   <Select
                     value={formData.exitAgentId}
@@ -465,7 +456,7 @@ export const CreateUserForwardRuleDialog: React.FC<CreateUserForwardRuleDialogPr
                     disabled={isCreating || isLoadingAgents}
                   >
                     <SelectTrigger id="exitAgentId" className={errors.exitAgentId ? 'border-destructive' : ''}>
-                      <SelectValue placeholder="选择出口节点" />
+                      <SelectValue placeholder={t('userForwardRules.form.selectExitNode')} />
                     </SelectTrigger>
                     <SelectContent>
                       {availableExitAgents.map((agent) => (
@@ -494,7 +485,7 @@ export const CreateUserForwardRuleDialog: React.FC<CreateUserForwardRuleDialogPr
               {formData.ruleType === 'chain' && (
                 <div className="flex flex-col gap-2">
                   <Label>
-                    中间节点 <span className="text-destructive">*</span>
+                    {t('userForwardRules.form.relayNode')} <span className="text-destructive">*</span>
                   </Label>
                   <UserSortableChainAgentList
                     agents={availableChainAgents}
@@ -516,7 +507,7 @@ export const CreateUserForwardRuleDialog: React.FC<CreateUserForwardRuleDialogPr
               {formData.ruleType === 'direct_chain' && (
                 <div className="flex flex-col gap-2">
                   <Label>
-                    中间节点及端口 <span className="text-destructive">*</span>
+                    {t('userForwardRules.form.relayNodeWithPort')} <span className="text-destructive">*</span>
                   </Label>
                   <UserSortableChainAgentList
                     agents={availableChainAgents}
@@ -558,12 +549,12 @@ export const CreateUserForwardRuleDialog: React.FC<CreateUserForwardRuleDialogPr
 
               {/* Remark */}
               <div className="flex flex-col gap-2">
-                <Label htmlFor="remark">备注</Label>
+                <Label htmlFor="remark">{t('userForwardRules.form.remark')}</Label>
                 <Textarea
                   id="remark"
                   value={formData.remark}
                   onChange={(e) => handleChange('remark', e.target.value)}
-                  placeholder="添加备注信息（可选）"
+                  placeholder={t('userForwardRules.form.remarkPlaceholder')}
                   rows={2}
                   disabled={isCreating}
                 />
@@ -573,18 +564,18 @@ export const CreateUserForwardRuleDialog: React.FC<CreateUserForwardRuleDialogPr
 
           {/* Forward config */}
           <div>
-            <h3 className="text-sm font-medium text-muted-foreground mb-3">转发配置</h3>
+            <h3 className="text-sm font-medium text-muted-foreground mb-3">{t('userForwardRules.form.forwardConfig')}</h3>
             <Separator className="mb-4" />
             <div className="grid grid-cols-1 @md:grid-cols-2 gap-4">
               {/* Listen port */}
               <div className="flex flex-col gap-2">
-                <Label htmlFor="listenPort">监听端口</Label>
+                <Label htmlFor="listenPort">{t('userForwardRules.form.listenPort')}</Label>
                 <Input
                   id="listenPort"
                   type="number"
                   value={formData.listenPort}
                   onChange={(e) => handleChange('listenPort', e.target.value)}
-                  placeholder="留空自动分配"
+                  placeholder={t('userForwardRules.form.listenPortPlaceholder')}
                   error={!!errors.listenPort}
                   disabled={isCreating}
                 />
@@ -595,13 +586,13 @@ export const CreateUserForwardRuleDialog: React.FC<CreateUserForwardRuleDialogPr
                   </p>
                 )}
                 <p className="text-xs text-muted-foreground">
-                  留空由系统自动分配可用端口
+                  {t('userForwardRules.form.listenPortHint')}
                 </p>
               </div>
 
               {/* Protocol type */}
               <div className="flex flex-col gap-2">
-                <Label htmlFor="protocol">协议类型</Label>
+                <Label htmlFor="protocol">{t('userForwardRules.form.protocol')}</Label>
                 <Select
                   value={formData.protocol}
                   onValueChange={(value) => handleChange('protocol', value)}
@@ -620,7 +611,7 @@ export const CreateUserForwardRuleDialog: React.FC<CreateUserForwardRuleDialogPr
 
               {/* Target type selection */}
               <div className="flex flex-col gap-2 @md:col-span-2">
-                <Label>目标类型 <span className="text-destructive">*</span></Label>
+                <Label>{t('userForwardRules.form.targetType')} <span className="text-destructive">*</span></Label>
                 <RadioGroup
                   value={targetType}
                   onValueChange={(value) => {
@@ -639,13 +630,13 @@ export const CreateUserForwardRuleDialog: React.FC<CreateUserForwardRuleDialogPr
                   <div className="flex items-center space-x-2">
                     <RadioGroupItem value="manual" id="target-manual" />
                     <Label htmlFor="target-manual" className="font-normal cursor-pointer">
-                      手动输入地址
+                      {t('userForwardRules.form.manualAddress')}
                     </Label>
                   </div>
                   <div className="flex items-center space-x-2">
                     <RadioGroupItem value="node" id="target-node" />
                     <Label htmlFor="target-node" className="font-normal cursor-pointer">
-                      选择节点（动态解析）
+                      {t('userForwardRules.form.selectNodeDynamic')}
                     </Label>
                   </div>
                 </RadioGroup>
@@ -656,13 +647,13 @@ export const CreateUserForwardRuleDialog: React.FC<CreateUserForwardRuleDialogPr
                 <>
                   <div className="flex flex-col gap-2">
                     <Label htmlFor="targetAddress">
-                      目标地址 <span className="text-destructive">*</span>
+                      {t('userForwardRules.form.targetAddress')} <span className="text-destructive">*</span>
                     </Label>
                     <Input
                       id="targetAddress"
                       value={formData.targetAddress}
                       onChange={(e) => handleChange('targetAddress', e.target.value)}
-                      placeholder="例如: example.com 或 192.168.1.1"
+                      placeholder={t('userForwardRules.form.targetAddressPlaceholder')}
                       error={!!errors.targetAddress}
                       disabled={isCreating}
                     />
@@ -676,7 +667,7 @@ export const CreateUserForwardRuleDialog: React.FC<CreateUserForwardRuleDialogPr
 
                   <div className="flex flex-col gap-2">
                     <Label htmlFor="targetPort">
-                      目标端口 <span className="text-destructive">*</span>
+                      {t('userForwardRules.form.targetPort')} <span className="text-destructive">*</span>
                     </Label>
                     <Input
                       id="targetPort"
@@ -701,7 +692,7 @@ export const CreateUserForwardRuleDialog: React.FC<CreateUserForwardRuleDialogPr
               {targetType === 'node' && (
                 <div className="flex flex-col gap-2 @md:col-span-2">
                   <Label htmlFor="targetNodeId">
-                    目标节点 <span className="text-destructive">*</span>
+                    {t('userForwardRules.form.targetNode')} <span className="text-destructive">*</span>
                   </Label>
                   <Select
                     value={formData.targetNodeId}
@@ -709,7 +700,7 @@ export const CreateUserForwardRuleDialog: React.FC<CreateUserForwardRuleDialogPr
                     disabled={isCreating || isLoadingNodes}
                   >
                     <SelectTrigger id="targetNodeId" className={errors.targetNodeId ? 'border-destructive' : ''}>
-                      <SelectValue placeholder={isLoadingNodes ? '加载中...' : '选择目标节点'} />
+                      <SelectValue placeholder={isLoadingNodes ? t('userForwardRules.form.loading') : t('userForwardRules.form.selectTargetNode')} />
                     </SelectTrigger>
                     <SelectContent>
                       {availableNodes.map((node) => (
@@ -726,7 +717,7 @@ export const CreateUserForwardRuleDialog: React.FC<CreateUserForwardRuleDialogPr
                     </SelectContent>
                   </Select>
                   <p className="text-xs text-muted-foreground">
-                    选择节点后，目标地址将动态解析为节点的服务器地址
+                    {t('userForwardRules.form.targetNodeHint')}
                   </p>
                   {errors.targetNodeId && (
                     <p className="text-xs text-destructive flex items-center gap-1">
@@ -736,7 +727,7 @@ export const CreateUserForwardRuleDialog: React.FC<CreateUserForwardRuleDialogPr
                   )}
                   {!isLoadingNodes && availableNodes.length === 0 && (
                     <p className="text-xs text-amber-600 dark:text-amber-400">
-                      暂无可用节点，请先在「我的节点」页面创建节点
+                      {t('userForwardRules.form.noNodesAvailable')}
                     </p>
                   )}
                 </div>
@@ -744,7 +735,7 @@ export const CreateUserForwardRuleDialog: React.FC<CreateUserForwardRuleDialogPr
 
               {/* IP version */}
               <div className="flex flex-col gap-2">
-                <Label htmlFor="ipVersion">IP 版本</Label>
+                <Label htmlFor="ipVersion">{t('userForwardRules.form.ipVersion')}</Label>
                 <Select
                   value={formData.ipVersion}
                   onValueChange={(value) => handleChange('ipVersion', value)}
@@ -754,7 +745,7 @@ export const CreateUserForwardRuleDialog: React.FC<CreateUserForwardRuleDialogPr
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="auto">自动</SelectItem>
+                    <SelectItem value="auto">{t('userForwardRules.form.ipVersionAuto')}</SelectItem>
                     <SelectItem value="ipv4">IPv4</SelectItem>
                     <SelectItem value="ipv6">IPv6</SelectItem>
                   </SelectContent>
@@ -763,18 +754,18 @@ export const CreateUserForwardRuleDialog: React.FC<CreateUserForwardRuleDialogPr
 
               {/* Sort order */}
               <div className="flex flex-col gap-2">
-                <Label htmlFor="sortOrder">排序顺序</Label>
+                <Label htmlFor="sortOrder">{t('userForwardRules.form.sortOrder')}</Label>
                 <Input
                   id="sortOrder"
                   type="number"
                   min={0}
                   value={formData.sortOrder}
                   onChange={(e) => handleChange('sortOrder', e.target.value)}
-                  placeholder="留空则默认为 0"
+                  placeholder={t('userForwardRules.form.sortOrderPlaceholder')}
                   disabled={isCreating}
                 />
                 <p className="text-xs text-muted-foreground">
-                  值越小排序越靠前
+                  {t('userForwardRules.form.sortOrderHint')}
                 </p>
               </div>
             </div>
@@ -784,10 +775,10 @@ export const CreateUserForwardRuleDialog: React.FC<CreateUserForwardRuleDialogPr
 
         <DialogFooter className="flex-shrink-0 gap-3">
           <Button variant="outline" onClick={handleClose} disabled={isCreating}>
-            取消
+            {t('userForwardRules.form.cancel')}
           </Button>
           <Button onClick={handleSubmit} disabled={!isFormValid() || isCreating}>
-            {isCreating ? '创建中...' : '创建'}
+            {isCreating ? t('userForwardRules.form.creating') : t('userForwardRules.form.create')}
           </Button>
         </DialogFooter>
       </DialogContent>

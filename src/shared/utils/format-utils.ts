@@ -3,6 +3,8 @@
  * Shared across components for consistent formatting
  */
 
+import i18n from '@/lib/i18n';
+
 /**
  * Format bytes rate to bits per second (bps/Kbps/Mbps/Gbps)
  * Uses 1000 as base for network units (not 1024)
@@ -110,10 +112,10 @@ export function getTrafficPercentage(used: number | undefined, total: number | u
  * Format uptime seconds to human readable string
  *
  * @param seconds - Uptime in seconds (can be undefined)
- * @returns Formatted string like "3天 2小时"
+ * @returns Formatted string like "3 days 2 hours"
  *
  * @example
- * formatUptime(90061) // "1天 1小时"
+ * formatUptime(90061) // "1 day 1 hour"
  */
 export function formatUptime(seconds: number | undefined): string {
   if (!seconds || seconds <= 0) return '-';
@@ -122,26 +124,26 @@ export function formatUptime(seconds: number | undefined): string {
   const minutes = Math.floor((seconds % 3600) / 60);
 
   const parts = [];
-  if (days > 0) parts.push(`${days}天`);
-  if (hours > 0) parts.push(`${hours}小时`);
-  if (minutes > 0 && days === 0) parts.push(`${minutes}分钟`);
+  if (days > 0) parts.push(i18n.t('common.time.days', { count: days }));
+  if (hours > 0) parts.push(i18n.t('common.time.hours', { count: hours }));
+  if (minutes > 0 && days === 0) parts.push(i18n.t('common.time.minutes', { count: minutes }));
 
-  return parts.join(' ') || '刚刚启动';
+  return parts.join(' ') || i18n.t('common.time.justStarted');
 }
 
 /**
  * Format relative time from unix timestamp
  *
  * @param unixSeconds - Unix timestamp in seconds
- * @returns Formatted string like "5分钟前"
+ * @returns Formatted string like "5 minutes ago"
  */
 export function formatRelativeTime(unixSeconds: number): string {
   if (!unixSeconds) return '-';
   const now = Math.floor(Date.now() / 1000);
   const diff = now - unixSeconds;
-  if (diff < 0) return '刚刚';
-  if (diff < 60) return `${diff}秒前`;
-  if (diff < 3600) return `${Math.floor(diff / 60)}分钟前`;
-  if (diff < 86400) return `${Math.floor(diff / 3600)}小时前`;
-  return `${Math.floor(diff / 86400)}天前`;
+  if (diff < 0) return i18n.t('common.time.now');
+  if (diff < 60) return i18n.t('common.time.secondsAgo', { count: diff });
+  if (diff < 3600) return i18n.t('common.time.minutesAgo', { count: Math.floor(diff / 60) });
+  if (diff < 86400) return i18n.t('common.time.hoursAgo', { count: Math.floor(diff / 3600) });
+  return i18n.t('common.time.daysAgo', { count: Math.floor(diff / 86400) });
 }

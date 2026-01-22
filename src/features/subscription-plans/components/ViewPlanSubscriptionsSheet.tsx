@@ -4,6 +4,7 @@
  */
 
 import { useState, useEffect, useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
   Loader2,
   Users,
@@ -36,15 +37,15 @@ interface ViewPlanSubscriptionsSheetProps extends BaseSheetProps {
 }
 
 // Status configuration (synced with SDK 2025-01-14)
-const STATUS_CONFIG: Record<SubscriptionStatus, { label: string; color: string }> = {
-  inactive: { label: '未激活', color: 'bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400' },
-  pending_payment: { label: '待支付', color: 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400' },
-  trialing: { label: '试用中', color: 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400' },
-  active: { label: '激活', color: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400' },
-  past_due: { label: '逾期', color: 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400' },
-  suspended: { label: '已暂停', color: 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400' },
-  cancelled: { label: '已取消', color: 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400' },
-  expired: { label: '已过期', color: 'bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400' },
+const STATUS_CONFIG: Record<SubscriptionStatus, { labelKey: string; color: string }> = {
+  inactive: { labelKey: 'subscriptionStatus.inactive', color: 'bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400' },
+  pending_payment: { labelKey: 'subscriptionStatus.pendingPayment', color: 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400' },
+  trialing: { labelKey: 'subscriptionStatus.trialing', color: 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400' },
+  active: { labelKey: 'subscriptionStatus.active', color: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400' },
+  past_due: { labelKey: 'subscriptionStatus.pastDue', color: 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400' },
+  suspended: { labelKey: 'subscriptionStatus.suspended', color: 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400' },
+  cancelled: { labelKey: 'subscriptionStatus.cancelled', color: 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400' },
+  expired: { labelKey: 'subscriptionStatus.expired', color: 'bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400' },
 };
 
 export const ViewPlanSubscriptionsSheet: React.FC<ViewPlanSubscriptionsSheetProps> = ({
@@ -52,6 +53,7 @@ export const ViewPlanSubscriptionsSheet: React.FC<ViewPlanSubscriptionsSheetProp
   onOpenChange,
   plan,
 }) => {
+  const { t } = useTranslation();
   const [subscriptions, setSubscriptions] = useState<Subscription[]>([]);
   const [usersMap, setUsersMap] = useState<Map<string, UserResponse>>(new Map());
   const [loading, setLoading] = useState(false);
@@ -121,10 +123,10 @@ export const ViewPlanSubscriptionsSheet: React.FC<ViewPlanSubscriptionsSheetProp
             <div className="size-8 rounded-full bg-indigo-500/10 flex items-center justify-center">
               <Users className="size-4 text-indigo-500" />
             </div>
-            <span>订阅用户</span>
+            <span>{t('subscriptionPlans.subscribers')}</span>
           </SheetTitle>
           <SheetDescription className="text-xs">
-            「{plan.name}」的所有订阅用户
+            {t('subscriptionPlans.subscribersOfPlan', { name: plan.name })}
           </SheetDescription>
         </SheetHeader>
 
@@ -134,11 +136,11 @@ export const ViewPlanSubscriptionsSheet: React.FC<ViewPlanSubscriptionsSheetProp
             <div className="flex items-center gap-2">
               <span className="inline-flex items-center gap-1 px-2 py-1 rounded-md bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 text-xs">
                 <Users className="size-3" />
-                {subscriptions.length} 个
+                {t('subscriptionPlans.subscriptionsCount', { count: subscriptions.length })}
               </span>
               <span className="inline-flex items-center gap-1 px-2 py-1 rounded-md bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 dark:text-emerald-400 text-xs">
                 <CheckCircle className="size-3" />
-                {activeCount} 激活
+                {t('subscriptionPlans.activeCount', { count: activeCount })}
               </span>
             </div>
 
@@ -146,7 +148,7 @@ export const ViewPlanSubscriptionsSheet: React.FC<ViewPlanSubscriptionsSheetProp
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
               <input
                 type="text"
-                placeholder="搜索用户名、邮箱..."
+                placeholder={t('subscriptionPlans.searchUsersPlaceholder')}
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className={cn(
@@ -164,7 +166,7 @@ export const ViewPlanSubscriptionsSheet: React.FC<ViewPlanSubscriptionsSheetProp
             {loading ? (
               <div className="flex flex-col items-center justify-center py-12">
                 <Loader2 className="size-8 animate-spin text-primary" />
-                <p className="mt-3 text-sm text-muted-foreground">加载中...</p>
+                <p className="mt-3 text-sm text-muted-foreground">{t('app.loading')}</p>
               </div>
             ) : filteredSubscriptions.length === 0 ? (
               <div className="flex flex-col items-center justify-center py-12">
@@ -176,21 +178,21 @@ export const ViewPlanSubscriptionsSheet: React.FC<ViewPlanSubscriptionsSheetProp
                   )}
                 </div>
                 <p className="mt-3 text-sm font-medium text-muted-foreground">
-                  {searchQuery ? '未找到匹配的订阅' : '暂无订阅用户'}
+                  {searchQuery ? t('subscriptionPlans.noMatchingSubscriptions') : t('subscriptionPlans.noSubscribers')}
                 </p>
                 <p className="mt-1 text-xs text-muted-foreground/70">
-                  {searchQuery ? '尝试其他关键词' : '该计划还没有用户订阅'}
+                  {searchQuery ? t('subscriptionPlans.tryOtherKeywords') : t('subscriptionPlans.noPlanSubscribers')}
                 </p>
               </div>
             ) : (
               <div className="space-y-2">
                 {filteredSubscriptions.map((subscription) => {
                   const statusConfig = STATUS_CONFIG[subscription.status] || {
-                    label: subscription.status,
+                    labelKey: 'common.status.unknown',
                     color: 'bg-gray-100 text-gray-600',
                   };
                   const user = usersMap.get(String(subscription.userId));
-                  const displayName = user?.name || user?.displayName || `用户 #${subscription.userId}`;
+                  const displayName = user?.name || user?.displayName || t('subscriptionPlans.userNumber', { id: subscription.userId });
                   const initials = user?.initials || displayName.charAt(0).toUpperCase();
 
                   return (
@@ -213,7 +215,7 @@ export const ViewPlanSubscriptionsSheet: React.FC<ViewPlanSubscriptionsSheetProp
                               {displayName}
                             </span>
                             <span className={cn('px-1.5 py-0.5 rounded text-xs font-medium', statusConfig.color)}>
-                              {statusConfig.label}
+                              {t(statusConfig.labelKey)}
                             </span>
                           </div>
 
@@ -231,12 +233,12 @@ export const ViewPlanSubscriptionsSheet: React.FC<ViewPlanSubscriptionsSheetProp
                             {subscription.autoRenew ? (
                               <span className="flex items-center gap-1 text-emerald-600 dark:text-emerald-400">
                                 <RefreshCw className="size-3" />
-                                自动续费
+                                {t('subscription.autoRenewal')}
                               </span>
                             ) : (
                               <span className="flex items-center gap-1 text-muted-foreground/60">
                                 <X className="size-3" />
-                                不续费
+                                {t('subscription.noRenewal')}
                               </span>
                             )}
                           </div>
@@ -252,14 +254,14 @@ export const ViewPlanSubscriptionsSheet: React.FC<ViewPlanSubscriptionsSheetProp
           {/* Filter info */}
           {searchQuery && filteredSubscriptions.length !== subscriptions.length && (
             <p className="text-xs text-muted-foreground text-center">
-              筛选结果：{filteredSubscriptions.length} / {subscriptions.length}
+              {t('subscriptionPlans.filterResults', { filtered: filteredSubscriptions.length, total: subscriptions.length })}
             </p>
           )}
         </SheetBody>
 
         <SheetFooter className="pt-3 pb-1">
           <Button variant="ghost" onClick={() => onOpenChange(false)} className="w-full h-10">
-            关闭
+            {t('common.actions.close')}
           </Button>
         </SheetFooter>
       </SheetContent>

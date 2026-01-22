@@ -1,6 +1,7 @@
 import { useState, useRef } from 'react';
 import { Camera, Info } from 'lucide-react';
 import * as AvatarPrimitive from '@radix-ui/react-avatar';
+import { useTranslation } from 'react-i18next';
 import { AvatarCropDialog } from './AvatarCropDialog';
 import { useProfile } from '../hooks/useProfile';
 import { useNotificationStore } from '@/shared/stores/notification-store';
@@ -18,6 +19,7 @@ const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/webp'];
  * Avatar upload component with iOS 26 Liquid Glass style
  */
 export const AvatarUpload = ({ avatar, name }: AvatarUploadProps) => {
+  const { t } = useTranslation();
   const [cropDialogOpen, setCropDialogOpen] = useState(false);
   const [imageSrc, setImageSrc] = useState<string>('');
   const inputRef = useRef<HTMLInputElement>(null);
@@ -36,13 +38,13 @@ export const AvatarUpload = ({ avatar, name }: AvatarUploadProps) => {
 
     // File size validation
     if (file.size > MAX_FILE_SIZE) {
-      showError('图片大小不能超过2MB');
+      showError(t('profile.avatar.fileSizeError'));
       return;
     }
 
     // File type validation
     if (!ALLOWED_TYPES.includes(file.type)) {
-      showError('只支持JPG、PNG和WebP格式');
+      showError(t('profile.avatar.fileTypeError'));
       return;
     }
 
@@ -109,18 +111,18 @@ export const AvatarUpload = ({ avatar, name }: AvatarUploadProps) => {
         className="glass-interactive inline-flex items-center justify-center rounded-xl text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 border border-border/50 bg-background hover:bg-accent hover:text-accent-foreground h-11 @sm:h-10 px-4 py-2 mb-2 gap-2 touch-target"
       >
         <Camera className="h-4 w-4" />
-        更换头像（暂不可用）
+        {t('profile.avatar.changeAvatar')}
       </button>
 
       <p className="mb-4 text-xs text-muted-foreground">
-        支持JPG、PNG、WebP格式，最大2MB
+        {t('profile.avatar.supportedFormats')}
       </p>
 
       {/* Backend API in development notice - iOS 26 Liquid Glass style */}
       <div className="glass relative w-full rounded-xl p-4 [&>svg~*]:pl-7 [&>svg+div]:translate-y-[-3px] [&>svg]:absolute [&>svg]:left-4 [&>svg]:top-4 [&>svg]:text-foreground">
         <Info className="size-4" />
         <div className={`${alertDescriptionStyles} text-xs @sm:text-sm`}>
-          头像上传功能正在开发中，后端API尚未就绪。请耐心等待更新。
+          {t('profile.avatar.comingSoon')}
         </div>
       </div>
 

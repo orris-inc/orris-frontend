@@ -5,6 +5,7 @@
  */
 
 import { useState, useEffect, useCallback } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
   Pencil,
   Plus,
@@ -21,20 +22,16 @@ import {
   SheetDescription,
   SheetBody,
   SheetFooter,
+  SelectSheet,
   type EditSheetProps,
+  type SelectSheetOption,
 } from '@/components/common/sheet';
 import { Button } from '@/components/common/Button';
 import { Checkbox } from '@/components/common/Checkbox';
 import { Label } from '@/components/common/Label';
 import { Separator } from '@/components/common/Separator';
 import { TruncatedId } from '@/components/admin';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/common/Select';
+import { ChevronDown } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import type {
   SubscriptionPlan,
@@ -84,27 +81,9 @@ function parsePlanLimits(apiLimits: Record<string, unknown> | undefined): PlanLi
 
 type EditPlanSheetProps = EditSheetProps<SubscriptionPlan, UpdatePlanRequest>;
 
-const BILLING_CYCLES: { value: string; label: string }[] = [
-  { value: 'weekly', label: '周付' },
-  { value: 'monthly', label: '月付' },
-  { value: 'quarterly', label: '季付' },
-  { value: 'semi_annual', label: '半年付' },
-  { value: 'yearly', label: '年付' },
-  { value: 'lifetime', label: '终身' },
-];
+const BILLING_CYCLES = ['weekly', 'monthly', 'quarterly', 'semi_annual', 'yearly', 'lifetime'] as const;
 
-const FORWARD_RULE_TYPES: { value: ForwardRuleTypeOption; label: string }[] = [
-  { value: 'direct', label: '直连' },
-  { value: 'entry', label: '入口' },
-  { value: 'chain', label: '链式' },
-  { value: 'direct_chain', label: '直连链' },
-];
-
-const PLAN_TYPE_LABELS: Record<string, string> = {
-  node: '节点订阅',
-  forward: '端口转发',
-  hybrid: '混合订阅',
-};
+const FORWARD_RULE_TYPES: ForwardRuleTypeOption[] = ['direct', 'entry', 'chain', 'direct_chain'];
 
 interface UpdatePlanFormData extends Omit<UpdatePlanRequest, 'limits'> {
   pricings: PricingOptionInput[];
@@ -124,8 +103,25 @@ export const EditPlanSheet: React.FC<EditPlanSheetProps> = ({
   entity: plan,
   onSubmit,
 }) => {
+  const { t } = useTranslation();
   const [formData, setFormData] = useState<UpdatePlanFormData>({ pricings: [], planLimits: {} });
   const [loading, setLoading] = useState(false);
+
+  // SelectSheet states
+  const [activePricingIndex, setActivePricingIndex] = useState<number | null>(null);
+  const [billingCycleSheetOpen, setBillingCycleSheetOpen] = useState(false);
+  const [currencySheetOpen, setCurrencySheetOpen] = useState(false);
+
+  // SelectSheet options
+  const billingCycleOptions: SelectSheetOption<string>[] = BILLING_CYCLES.map((cycle) => ({
+    value: cycle,
+    label: t(`billingCycle.${cycle}`),
+  }));
+
+  const currencyOptions: SelectSheetOption<string>[] = [
+    { value: 'CNY', label: 'CNY' },
+    { value: 'USD', label: 'USD' },
+  ];
 
   // Update form data when plan changes
   useEffect(() => {
@@ -249,9 +245,9 @@ export const EditPlanSheet: React.FC<EditPlanSheetProps> = ({
             <div className="size-8 rounded-full bg-blue-500/10 flex items-center justify-center">
               <Pencil className="size-4 text-blue-500" />
             </div>
-            <span>编辑订阅计划</span>
+            <span>{t('admin.plans.form.editPlan')}</span>
           </SheetTitle>
-          <SheetDescription className="text-xs">修改「{plan.name}」的配置</SheetDescription>
+          <SheetDescription className="text-xs">{t('admin.plans.form.editDescription', { name: plan.name })}</SheetDescription>
         </SheetHeader>
 
         <SheetBody className="space-y-4 py-3">
@@ -263,18 +259,18 @@ export const EditPlanSheet: React.FC<EditPlanSheetProps> = ({
                 <TruncatedId id={plan.id} />
               </div>
               <div className="flex items-center justify-between">
-                <span className="text-xs text-muted-foreground">类型</span>
-                <span className="text-xs">{PLAN_TYPE_LABELS[plan.planType] || plan.planType}</span>
+                <span className="text-xs text-muted-foreground">{t('admin.plans.table.type')}</span>
+                <span className="text-xs">{t(`planType.${plan.planType}`)}</span>
               </div>
             </div>
             <Separator />
             <div className="grid grid-cols-2 gap-2 text-sm">
               <div className="flex items-center justify-between">
-                <span className="text-xs text-muted-foreground">名称</span>
+                <span className="text-xs text-muted-foreground">{t('admin.plans.table.planName')}</span>
                 <span className="text-xs font-medium truncate max-w-[100px]">{plan.name}</span>
               </div>
               <div className="flex items-center justify-between">
-                <span className="text-xs text-muted-foreground">Slug</span>
+                <span className="text-xs text-muted-foreground">{t('admin.plans.form.slug')}</span>
                 <span className="text-xs font-mono truncate max-w-[80px]">{plan.slug}</span>
               </div>
             </div>
@@ -290,7 +286,7 @@ export const EditPlanSheet: React.FC<EditPlanSheetProps> = ({
             />
             <Label htmlFor="edit-plan-public" className="cursor-pointer text-sm flex items-center gap-1.5">
               <Globe className="size-3.5 text-muted-foreground" />
-              公开显示
+              {t('admin.plans.form.isPublic')}
             </Label>
           </div>
 
@@ -298,7 +294,7 @@ export const EditPlanSheet: React.FC<EditPlanSheetProps> = ({
           <div className="space-y-2">
             <div className="flex items-center justify-between">
               <h4 className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
-                定价选项
+                {t('admin.plans.form.pricingOptions')}
               </h4>
               <Button
                 variant="ghost"
@@ -308,7 +304,7 @@ export const EditPlanSheet: React.FC<EditPlanSheetProps> = ({
                 className="h-7 text-xs"
               >
                 <Plus className="size-3.5 mr-1" />
-                添加
+                {t('admin.plans.form.addPricing')}
               </Button>
             </div>
 
@@ -316,7 +312,7 @@ export const EditPlanSheet: React.FC<EditPlanSheetProps> = ({
               <div className="rounded-lg border border-destructive/20 bg-destructive/5 p-3">
                 <div className="flex items-center gap-2 text-destructive text-xs">
                   <AlertCircle className="size-3.5" />
-                  <span>至少需要添加一个定价选项</span>
+                  <span>{t('admin.plans.form.pricingRequired')}</span>
                 </div>
               </div>
             ) : (
@@ -324,7 +320,7 @@ export const EditPlanSheet: React.FC<EditPlanSheetProps> = ({
                 {formData.pricings.map((pricing, index) => (
                   <div key={index} className="rounded-lg border p-3 space-y-2">
                     <div className="flex items-center justify-between">
-                      <span className="text-xs text-muted-foreground">定价 #{index + 1}</span>
+                      <span className="text-xs text-muted-foreground">{t('admin.plans.form.pricingNumber', { number: index + 1 })}</span>
                       <Button
                         variant="ghost"
                         size="sm"
@@ -336,27 +332,31 @@ export const EditPlanSheet: React.FC<EditPlanSheetProps> = ({
                       </Button>
                     </div>
                     <div className="grid grid-cols-3 gap-2">
-                      <Select
-                        value={pricing.billingCycle}
-                        onValueChange={(value) => handleUpdatePricing(index, { billingCycle: value })}
+                      <button
+                        type="button"
+                        onClick={() => {
+                          if (!loading) {
+                            setActivePricingIndex(index);
+                            setBillingCycleSheetOpen(true);
+                          }
+                        }}
                         disabled={loading}
+                        className={cn(
+                          'w-full h-10 px-3 rounded-lg text-sm text-left',
+                          'flex items-center justify-between',
+                          'border bg-background',
+                          'focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary',
+                          loading && 'opacity-50 cursor-not-allowed'
+                        )}
                       >
-                        <SelectTrigger className="h-10 rounded-lg text-sm">
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {BILLING_CYCLES.map((opt) => (
-                            <SelectItem key={opt.value} value={opt.value}>
-                              {opt.label}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
+                        <span className="truncate">{t(`billingCycle.${pricing.billingCycle}`)}</span>
+                        <ChevronDown className="size-4 text-muted-foreground shrink-0" />
+                      </button>
                       <input
                         type="number"
                         step="0.01"
                         min="0"
-                        placeholder="价格"
+                        placeholder={t('admin.plans.form.pricePlaceholder')}
                         value={pricing.price / 100 || ''}
                         onChange={(e) =>
                           handleUpdatePricing(index, {
@@ -366,19 +366,26 @@ export const EditPlanSheet: React.FC<EditPlanSheetProps> = ({
                         disabled={loading}
                         className={compactInputStyles}
                       />
-                      <Select
-                        value={pricing.currency}
-                        onValueChange={(value) => handleUpdatePricing(index, { currency: value })}
+                      <button
+                        type="button"
+                        onClick={() => {
+                          if (!loading) {
+                            setActivePricingIndex(index);
+                            setCurrencySheetOpen(true);
+                          }
+                        }}
                         disabled={loading}
+                        className={cn(
+                          'w-full h-10 px-3 rounded-lg text-sm text-left',
+                          'flex items-center justify-between',
+                          'border bg-background',
+                          'focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary',
+                          loading && 'opacity-50 cursor-not-allowed'
+                        )}
                       >
-                        <SelectTrigger className="h-10 rounded-lg text-sm">
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="CNY">CNY</SelectItem>
-                          <SelectItem value="USD">USD</SelectItem>
-                        </SelectContent>
-                      </Select>
+                        <span>{pricing.currency}</span>
+                        <ChevronDown className="size-4 text-muted-foreground" />
+                      </button>
                     </div>
                     <div className="flex items-center gap-2">
                       <Checkbox
@@ -390,7 +397,7 @@ export const EditPlanSheet: React.FC<EditPlanSheetProps> = ({
                         disabled={loading}
                       />
                       <Label htmlFor={`edit-pricing-active-${index}`} className="cursor-pointer text-xs">
-                        激活
+                        {t('admin.plans.form.activatePricing')}
                       </Label>
                     </div>
                   </div>
@@ -403,16 +410,16 @@ export const EditPlanSheet: React.FC<EditPlanSheetProps> = ({
           {(plan.planType === 'node' || plan.planType === 'hybrid') && (
             <div className="space-y-2">
               <h4 className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
-                节点限制
+                {t('admin.plans.form.nodeLimits')}
               </h4>
               <div className="grid grid-cols-3 gap-2">
                 <div className="space-y-1">
-                  <label className="text-xs text-muted-foreground">流量 (GB)</label>
+                  <label className="text-xs text-muted-foreground">{t('admin.plans.form.trafficLimit')}</label>
                   <input
                     type="number"
                     min="0"
                     step="0.1"
-                    placeholder="无限"
+                    placeholder={t('common.unlimited')}
                     value={
                       formData.planLimits.trafficLimit
                         ? formData.planLimits.trafficLimit / (1024 * 1024 * 1024)
@@ -431,11 +438,11 @@ export const EditPlanSheet: React.FC<EditPlanSheetProps> = ({
                   />
                 </div>
                 <div className="space-y-1">
-                  <label className="text-xs text-muted-foreground">设备数</label>
+                  <label className="text-xs text-muted-foreground">{t('admin.plans.form.deviceLimit')}</label>
                   <input
                     type="number"
                     min="0"
-                    placeholder="无限"
+                    placeholder={t('common.unlimited')}
                     value={formData.planLimits.deviceLimit || ''}
                     onChange={(e) =>
                       handleLimitChange(
@@ -448,11 +455,11 @@ export const EditPlanSheet: React.FC<EditPlanSheetProps> = ({
                   />
                 </div>
                 <div className="space-y-1">
-                  <label className="text-xs text-muted-foreground">速度 (Mbps)</label>
+                  <label className="text-xs text-muted-foreground">{t('admin.plans.form.speedLimit')}</label>
                   <input
                     type="number"
                     min="0"
-                    placeholder="无限"
+                    placeholder={t('common.unlimited')}
                     value={formData.planLimits.speedLimit || ''}
                     onChange={(e) =>
                       handleLimitChange(
@@ -465,11 +472,11 @@ export const EditPlanSheet: React.FC<EditPlanSheetProps> = ({
                   />
                 </div>
                 <div className="space-y-1">
-                  <label className="text-xs text-muted-foreground">连接数</label>
+                  <label className="text-xs text-muted-foreground">{t('admin.plans.form.connectionLimit')}</label>
                   <input
                     type="number"
                     min="0"
-                    placeholder="无限"
+                    placeholder={t('common.unlimited')}
                     value={formData.planLimits.connectionLimit || ''}
                     onChange={(e) =>
                       handleLimitChange(
@@ -482,11 +489,11 @@ export const EditPlanSheet: React.FC<EditPlanSheetProps> = ({
                   />
                 </div>
                 <div className="space-y-1">
-                  <label className="text-xs text-muted-foreground">节点数</label>
+                  <label className="text-xs text-muted-foreground">{t('admin.plans.form.nodeLimit')}</label>
                   <input
                     type="number"
                     min="0"
-                    placeholder="无限"
+                    placeholder={t('common.unlimited')}
                     value={formData.planLimits.nodeLimit || ''}
                     onChange={(e) =>
                       handleLimitChange(
@@ -506,15 +513,15 @@ export const EditPlanSheet: React.FC<EditPlanSheetProps> = ({
           {(plan.planType === 'forward' || plan.planType === 'hybrid') && (
             <div className="space-y-2">
               <h4 className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
-                转发限制
+                {t('admin.plans.form.forwardLimits')}
               </h4>
               <div className="grid grid-cols-2 gap-2">
                 <div className="space-y-1">
-                  <label className="text-xs text-muted-foreground">规则数</label>
+                  <label className="text-xs text-muted-foreground">{t('admin.plans.form.ruleLimit')}</label>
                   <input
                     type="number"
                     min="0"
-                    placeholder="无限"
+                    placeholder={t('common.unlimited')}
                     value={formData.planLimits.ruleLimit || ''}
                     onChange={(e) =>
                       handleLimitChange(
@@ -527,12 +534,12 @@ export const EditPlanSheet: React.FC<EditPlanSheetProps> = ({
                   />
                 </div>
                 <div className="space-y-1">
-                  <label className="text-xs text-muted-foreground">流量 (GB)</label>
+                  <label className="text-xs text-muted-foreground">{t('admin.plans.form.trafficLimitGB')}</label>
                   <input
                     type="number"
                     min="0"
                     step="0.1"
-                    placeholder="无限"
+                    placeholder={t('common.unlimited')}
                     value={
                       formData.planLimits.trafficLimit
                         ? formData.planLimits.trafficLimit / (1024 * 1024 * 1024)
@@ -552,19 +559,19 @@ export const EditPlanSheet: React.FC<EditPlanSheetProps> = ({
                 </div>
               </div>
               <div className="space-y-1">
-                <label className="text-xs text-muted-foreground">允许的规则类型</label>
+                <label className="text-xs text-muted-foreground">{t('admin.plans.form.allowedRuleTypes')}</label>
                 <div className="flex flex-wrap gap-x-4 gap-y-1">
                   {FORWARD_RULE_TYPES.map((type) => (
-                    <div key={type.value} className="flex items-center gap-1.5">
+                    <div key={type} className="flex items-center gap-1.5">
                       <Checkbox
-                        id={`edit-rule-type-${type.value}`}
-                        checked={formData.planLimits.ruleTypes?.includes(type.value) || false}
-                        onCheckedChange={() => handleRuleTypeToggle(type.value)}
+                        id={`edit-rule-type-${type}`}
+                        checked={formData.planLimits.ruleTypes?.includes(type) || false}
+                        onCheckedChange={() => handleRuleTypeToggle(type)}
                         disabled={loading}
                         className="size-4"
                       />
-                      <Label htmlFor={`edit-rule-type-${type.value}`} className="cursor-pointer text-xs">
-                        {type.label}
+                      <Label htmlFor={`edit-rule-type-${type}`} className="cursor-pointer text-xs">
+                        {t(`admin.plans.ruleType.${type}`)}
                       </Label>
                     </div>
                   ))}
@@ -576,10 +583,10 @@ export const EditPlanSheet: React.FC<EditPlanSheetProps> = ({
           {/* Description & Config - Compact */}
           <div className="space-y-2">
             <h4 className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
-              其他配置
+              {t('admin.plans.form.otherConfig')}
             </h4>
             <textarea
-              placeholder="计划描述（可选）"
+              placeholder={t('admin.plans.form.descriptionPlaceholder')}
               value={formData.description || ''}
               onChange={(e) => handleChange('description', e.target.value)}
               disabled={loading}
@@ -591,7 +598,7 @@ export const EditPlanSheet: React.FC<EditPlanSheetProps> = ({
               )}
             />
             <div className="space-y-1">
-              <label className="text-xs text-muted-foreground">排序顺序</label>
+              <label className="text-xs text-muted-foreground">{t('admin.plans.form.sortOrder')}</label>
               <input
                 type="number"
                 value={formData.sortOrder || 0}
@@ -614,17 +621,45 @@ export const EditPlanSheet: React.FC<EditPlanSheetProps> = ({
             {loading ? (
               <>
                 <Loader2 className="mr-2 size-4 animate-spin" />
-                保存中...
+                {t('admin.plans.form.saving')}
               </>
             ) : (
-              '保存修改'
+              t('admin.plans.form.saveChanges')
             )}
           </Button>
           <Button variant="ghost" onClick={() => handleOpenChange(false)} disabled={loading} className="w-full h-10">
-            取消
+            {t('common.actions.cancel')}
           </Button>
         </SheetFooter>
       </SheetContent>
+
+      {/* Billing Cycle SelectSheet */}
+      <SelectSheet
+        open={billingCycleSheetOpen}
+        onOpenChange={setBillingCycleSheetOpen}
+        value={activePricingIndex !== null ? formData.pricings[activePricingIndex]?.billingCycle ?? null : null}
+        onChange={(v) => {
+          if (activePricingIndex !== null) {
+            handleUpdatePricing(activePricingIndex, { billingCycle: v });
+          }
+        }}
+        options={billingCycleOptions}
+        title={t('admin.plans.form.billingCyclePlaceholder')}
+      />
+
+      {/* Currency SelectSheet */}
+      <SelectSheet
+        open={currencySheetOpen}
+        onOpenChange={setCurrencySheetOpen}
+        value={activePricingIndex !== null ? formData.pricings[activePricingIndex]?.currency ?? null : null}
+        onChange={(v) => {
+          if (activePricingIndex !== null) {
+            handleUpdatePricing(activePricingIndex, { currency: v });
+          }
+        }}
+        options={currencyOptions}
+        title={t('admin.plans.form.currencyPlaceholder')}
+      />
     </Sheet>
   );
 };

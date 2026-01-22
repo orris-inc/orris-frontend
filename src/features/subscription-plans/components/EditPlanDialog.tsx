@@ -4,6 +4,7 @@
  */
 
 import { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Plus, Trash2, AlertCircle } from 'lucide-react';
 import {
   Dialog,
@@ -77,21 +78,21 @@ interface EditPlanDialogProps {
   onSubmit: (id: string, data: UpdatePlanRequest) => Promise<void>;
 }
 
-const BILLING_CYCLES: { value: string; label: string }[] = [
-  { value: 'weekly', label: '周付' },
-  { value: 'monthly', label: '月付' },
-  { value: 'quarterly', label: '季付' },
-  { value: 'semi_annual', label: '半年付' },
-  { value: 'yearly', label: '年付' },
-  { value: 'lifetime', label: '终身' },
+const BILLING_CYCLES: { value: string; labelKey: string }[] = [
+  { value: 'weekly', labelKey: 'billingCycle.weekly' },
+  { value: 'monthly', labelKey: 'billingCycle.monthly' },
+  { value: 'quarterly', labelKey: 'billingCycle.quarterly' },
+  { value: 'semi_annual', labelKey: 'billingCycle.semiAnnual' },
+  { value: 'yearly', labelKey: 'billingCycle.yearly' },
+  { value: 'lifetime', labelKey: 'billingCycle.lifetime' },
 ];
 
 // Forward rule type options
-const FORWARD_RULE_TYPES: { value: ForwardRuleTypeOption; label: string }[] = [
-  { value: 'direct', label: '直连' },
-  { value: 'entry', label: '入口' },
-  { value: 'chain', label: '链式' },
-  { value: 'direct_chain', label: '直连链' },
+const FORWARD_RULE_TYPES: { value: ForwardRuleTypeOption; labelKey: string }[] = [
+  { value: 'direct', labelKey: 'admin.plans.ruleType.direct' },
+  { value: 'entry', labelKey: 'admin.plans.ruleType.entry' },
+  { value: 'chain', labelKey: 'admin.plans.ruleType.chain' },
+  { value: 'direct_chain', labelKey: 'admin.plans.ruleType.directChain' },
 ];
 
 // Extend UpdatePlanRequest to support multi-pricing management and plan limits
@@ -107,6 +108,7 @@ export const EditPlanDialog: React.FC<EditPlanDialogProps> = ({
   onClose,
   onSubmit,
 }) => {
+  const { t } = useTranslation();
   const [formData, setFormData] = useState<UpdatePlanFormData>({ pricings: [], planLimits: {} });
   const [loading, setLoading] = useState(false);
 
@@ -231,31 +233,31 @@ export const EditPlanDialog: React.FC<EditPlanDialogProps> = ({
     <Dialog open={open} onOpenChange={handleClose}>
       <DialogContent className="@container sm:max-w-3xl flex flex-col max-h-[90vh]">
         <DialogHeader className="flex-shrink-0">
-          <DialogTitle>编辑订阅计划: {plan.name}</DialogTitle>
-          <DialogDescription>修改订阅计划的配置信息</DialogDescription>
+          <DialogTitle>{t('subscriptionPlans.editPlan')}: {plan.name}</DialogTitle>
+          <DialogDescription>{t('subscriptionPlans.editPlanDescription')}</DialogDescription>
         </DialogHeader>
 
         <div className="flex-1 min-h-0 overflow-y-auto -mx-6 px-6">
         <div className="space-y-6 py-4">
           {/* Basic Information (Read-only) */}
           <div className="space-y-4">
-            <h3 className="text-sm font-semibold">基本信息（只读）</h3>
+            <h3 className="text-sm font-semibold">{t('admin.forwardRules.form.basicInfoReadonly')}</h3>
             <Separator />
             <div className="grid grid-cols-1 gap-4 @sm:grid-cols-2">
               <div className="flex flex-col gap-2">
-                <Label>计划ID</Label>
+                <Label>{t('subscriptionPlans.planId')}</Label>
                 <div className="flex h-10 items-center px-3 rounded-md border bg-muted">
                   <TruncatedId id={plan.id} fullWidth />
                 </div>
               </div>
 
               <div className="flex flex-col gap-2">
-                <Label>计划名称</Label>
+                <Label>{t('admin.plans.form.planName')}</Label>
                 <Input value={plan.name} disabled />
               </div>
 
               <div className="flex flex-col gap-2">
-                <Label>Slug</Label>
+                <Label>{t('admin.plans.form.slug')}</Label>
                 <Input value={plan.slug} disabled />
               </div>
             </div>
@@ -263,18 +265,18 @@ export const EditPlanDialog: React.FC<EditPlanDialogProps> = ({
 
           {/* Editable Fields */}
           <div className="space-y-4">
-            <h3 className="text-sm font-semibold">可编辑信息</h3>
+            <h3 className="text-sm font-semibold">{t('admin.forwardRules.form.editableInfo')}</h3>
             <Separator />
             <div className="grid grid-cols-1 gap-4 @sm:grid-cols-2">
               {/* Pricing Options */}
               <div className="space-y-4 @sm:col-span-2">
                 <div className="flex items-center justify-between">
                   <Label>
-                    定价选项 <span className="text-destructive">*</span>
+                    {t('admin.plans.form.pricingOptions')} <span className="text-destructive">*</span>
                   </Label>
                   <Button variant="outline" size="sm" onClick={handleAddPricing} disabled={loading}>
                     <Plus className="size-4 mr-1" />
-                    添加定价
+                    {t('admin.plans.form.addPricing')}
                   </Button>
                 </div>
 
@@ -282,7 +284,7 @@ export const EditPlanDialog: React.FC<EditPlanDialogProps> = ({
                   <Alert variant="destructive">
                     <AlertCircle className="h-4 w-4" />
                     <AlertDescription>
-                      至少需要添加一个定价选项
+                      {t('admin.plans.form.pricingRequired')}
                     </AlertDescription>
                   </Alert>
                 ) : (
@@ -290,7 +292,7 @@ export const EditPlanDialog: React.FC<EditPlanDialogProps> = ({
                     {formData.pricings.map((pricing, index) => (
                       <div key={index} className="rounded-lg border p-4 space-y-3">
                         <div className="flex items-center justify-between">
-                          <span className="text-sm font-medium text-muted-foreground">定价 #{index + 1}</span>
+                          <span className="text-sm font-medium text-muted-foreground">{t('admin.plans.form.pricingNumber', { number: index + 1 })}</span>
                           <Button
                             variant="ghost"
                             size="sm"
@@ -308,12 +310,12 @@ export const EditPlanDialog: React.FC<EditPlanDialogProps> = ({
                             disabled={loading}
                           >
                             <SelectTrigger>
-                              <SelectValue placeholder="计费周期" />
+                              <SelectValue placeholder={t('admin.plans.form.billingCyclePlaceholder')} />
                             </SelectTrigger>
                             <SelectContent>
                               {BILLING_CYCLES.map((opt) => (
                                 <SelectItem key={opt.value} value={opt.value}>
-                                  {opt.label}
+                                  {t(opt.labelKey)}
                                 </SelectItem>
                               ))}
                             </SelectContent>
@@ -323,7 +325,7 @@ export const EditPlanDialog: React.FC<EditPlanDialogProps> = ({
                             type="number"
                             step="0.01"
                             min="0"
-                            placeholder="价格（元）"
+                            placeholder={t('admin.plans.form.pricePlaceholder')}
                             value={pricing.price / 100 || ''}
                             onChange={(e) => handleUpdatePricing(index, { price: Math.round(Number(e.target.value) * 100) })}
                             disabled={loading}
@@ -335,7 +337,7 @@ export const EditPlanDialog: React.FC<EditPlanDialogProps> = ({
                             disabled={loading}
                           >
                             <SelectTrigger>
-                              <SelectValue placeholder="货币" />
+                              <SelectValue placeholder={t('admin.plans.form.currencyPlaceholder')} />
                             </SelectTrigger>
                             <SelectContent>
                               <SelectItem value="CNY">CNY</SelectItem>
@@ -351,7 +353,7 @@ export const EditPlanDialog: React.FC<EditPlanDialogProps> = ({
                             disabled={loading}
                           />
                           <Label htmlFor={`pricing-active-${index}`} className="cursor-pointer">
-                            激活此定价
+                            {t('admin.plans.form.activatePricing')}
                           </Label>
                         </div>
                       </div>
@@ -366,17 +368,17 @@ export const EditPlanDialog: React.FC<EditPlanDialogProps> = ({
           {/* Node subscription limit configuration - shown for node and hybrid type plans */}
           {(plan.planType === 'node' || plan.planType === 'hybrid') && (
             <div className="space-y-4">
-              <h3 className="text-sm font-semibold">节点限制配置</h3>
+              <h3 className="text-sm font-semibold">{t('admin.plans.form.nodeLimits')}</h3>
               <Separator />
               <div className="grid grid-cols-1 gap-4 @sm:grid-cols-2">
                 <div className="flex flex-col gap-2">
-                  <Label htmlFor="trafficLimit">月流量上限 (GB)</Label>
+                  <Label htmlFor="trafficLimit">{t('admin.plans.form.trafficLimit')}</Label>
                   <Input
                     id="trafficLimit"
                     type="number"
                     min="0"
                     step="0.1"
-                    placeholder="0 表示无限制"
+                    placeholder={t('admin.plans.form.unlimitedPlaceholder')}
                     value={formData.planLimits.trafficLimit ? formData.planLimits.trafficLimit / (1024 * 1024 * 1024) : ''}
                     onChange={(e) => handleLimitChange('trafficLimit', e.target.value === '' ? undefined : Math.round(Number(e.target.value) * 1024 * 1024 * 1024))}
                     disabled={loading}
@@ -384,12 +386,12 @@ export const EditPlanDialog: React.FC<EditPlanDialogProps> = ({
                 </div>
 
                 <div className="flex flex-col gap-2">
-                  <Label htmlFor="deviceLimit">设备数量上限</Label>
+                  <Label htmlFor="deviceLimit">{t('admin.plans.form.deviceLimit')}</Label>
                   <Input
                     id="deviceLimit"
                     type="number"
                     min="0"
-                    placeholder="0 表示无限制"
+                    placeholder={t('admin.plans.form.unlimitedPlaceholder')}
                     value={formData.planLimits.deviceLimit || ''}
                     onChange={(e) => handleLimitChange('deviceLimit', e.target.value === '' ? undefined : Number(e.target.value))}
                     disabled={loading}
@@ -397,12 +399,12 @@ export const EditPlanDialog: React.FC<EditPlanDialogProps> = ({
                 </div>
 
                 <div className="flex flex-col gap-2">
-                  <Label htmlFor="speedLimit">速度限制 (Mbps)</Label>
+                  <Label htmlFor="speedLimit">{t('admin.plans.form.speedLimit')}</Label>
                   <Input
                     id="speedLimit"
                     type="number"
                     min="0"
-                    placeholder="0 表示无限制"
+                    placeholder={t('admin.plans.form.unlimitedPlaceholder')}
                     value={formData.planLimits.speedLimit || ''}
                     onChange={(e) => handleLimitChange('speedLimit', e.target.value === '' ? undefined : Number(e.target.value))}
                     disabled={loading}
@@ -410,12 +412,12 @@ export const EditPlanDialog: React.FC<EditPlanDialogProps> = ({
                 </div>
 
                 <div className="flex flex-col gap-2">
-                  <Label htmlFor="connectionLimit">连接数上限</Label>
+                  <Label htmlFor="connectionLimit">{t('admin.plans.form.connectionLimit')}</Label>
                   <Input
                     id="connectionLimit"
                     type="number"
                     min="0"
-                    placeholder="0 表示无限制"
+                    placeholder={t('admin.plans.form.unlimitedPlaceholder')}
                     value={formData.planLimits.connectionLimit || ''}
                     onChange={(e) => handleLimitChange('connectionLimit', e.target.value === '' ? undefined : Number(e.target.value))}
                     disabled={loading}
@@ -423,12 +425,12 @@ export const EditPlanDialog: React.FC<EditPlanDialogProps> = ({
                 </div>
 
                 <div className="flex flex-col gap-2">
-                  <Label htmlFor="nodeLimit">用户可创建节点数上限</Label>
+                  <Label htmlFor="nodeLimit">{t('admin.plans.form.nodeLimit')}</Label>
                   <Input
                     id="nodeLimit"
                     type="number"
                     min="0"
-                    placeholder="0 表示无限制"
+                    placeholder={t('admin.plans.form.unlimitedPlaceholder')}
                     value={formData.planLimits.nodeLimit || ''}
                     onChange={(e) => handleLimitChange('nodeLimit', e.target.value === '' ? undefined : Number(e.target.value))}
                     disabled={loading}
@@ -441,16 +443,16 @@ export const EditPlanDialog: React.FC<EditPlanDialogProps> = ({
           {/* Forward limit configuration - shown for forward and hybrid type plans */}
           {(plan.planType === 'forward' || plan.planType === 'hybrid') && (
             <div className="space-y-4">
-              <h3 className="text-sm font-semibold">转发限制配置</h3>
+              <h3 className="text-sm font-semibold">{t('admin.plans.form.forwardLimits')}</h3>
               <Separator />
               <div className="grid grid-cols-1 gap-4 @sm:grid-cols-2">
                 <div className="flex flex-col gap-2">
-                  <Label htmlFor="ruleLimit">规则数量上限</Label>
+                  <Label htmlFor="ruleLimit">{t('admin.plans.form.ruleLimit')}</Label>
                   <Input
                     id="ruleLimit"
                     type="number"
                     min="0"
-                    placeholder="0 表示无限制"
+                    placeholder={t('admin.plans.form.unlimitedPlaceholder')}
                     value={formData.planLimits.ruleLimit || ''}
                     onChange={(e) => handleLimitChange('ruleLimit', e.target.value === '' ? undefined : Number(e.target.value))}
                     disabled={loading}
@@ -458,13 +460,13 @@ export const EditPlanDialog: React.FC<EditPlanDialogProps> = ({
                 </div>
 
                 <div className="flex flex-col gap-2">
-                  <Label htmlFor="trafficLimit">流量上限 (GB)</Label>
+                  <Label htmlFor="trafficLimit">{t('admin.plans.form.trafficLimitGB')}</Label>
                   <Input
                     id="trafficLimit"
                     type="number"
                     min="0"
                     step="0.1"
-                    placeholder="0 表示无限制"
+                    placeholder={t('admin.plans.form.unlimitedPlaceholder')}
                     value={formData.planLimits.trafficLimit ? formData.planLimits.trafficLimit / (1024 * 1024 * 1024) : ''}
                     onChange={(e) => handleLimitChange('trafficLimit', e.target.value === '' ? undefined : Math.round(Number(e.target.value) * 1024 * 1024 * 1024))}
                     disabled={loading}
@@ -472,7 +474,7 @@ export const EditPlanDialog: React.FC<EditPlanDialogProps> = ({
                 </div>
 
                 <div className="flex flex-col gap-2 @sm:col-span-2">
-                  <Label>允许的规则类型</Label>
+                  <Label>{t('admin.plans.form.allowedRuleTypes')}</Label>
                   <div className="flex flex-wrap gap-3 pt-1">
                     {FORWARD_RULE_TYPES.map((type) => (
                       <div key={type.value} className="flex items-center gap-2">
@@ -483,12 +485,12 @@ export const EditPlanDialog: React.FC<EditPlanDialogProps> = ({
                           disabled={loading}
                         />
                         <Label htmlFor={`rule-type-${type.value}`} className="cursor-pointer">
-                          {type.label}
+                          {t(type.labelKey)}
                         </Label>
                       </div>
                     ))}
                   </div>
-                  <p className="text-xs text-muted-foreground">不选择表示允许所有类型</p>
+                  <p className="text-xs text-muted-foreground">{t('admin.plans.form.noSelectionAllowAll')}</p>
                 </div>
               </div>
             </div>
@@ -496,13 +498,13 @@ export const EditPlanDialog: React.FC<EditPlanDialogProps> = ({
 
           {/* Description */}
           <div className="space-y-4">
-            <h3 className="text-sm font-semibold">描述</h3>
+            <h3 className="text-sm font-semibold">{t('admin.plans.form.description')}</h3>
             <Separator />
             <div className="flex flex-col gap-2">
               <Textarea
                 id="description"
                 rows={3}
-                placeholder="订阅计划的描述信息"
+                placeholder={t('admin.plans.form.descriptionPlaceholder')}
                 value={formData.description || ''}
                 onChange={(e) => handleChange('description', e.target.value)}
                 disabled={loading}
@@ -512,11 +514,11 @@ export const EditPlanDialog: React.FC<EditPlanDialogProps> = ({
 
           {/* General Configuration */}
           <div className="space-y-4">
-            <h3 className="text-sm font-semibold">通用配置</h3>
+            <h3 className="text-sm font-semibold">{t('admin.plans.form.generalConfig')}</h3>
             <Separator />
             <div className="grid grid-cols-1 gap-4 @sm:grid-cols-2">
               <div className="flex flex-col gap-2">
-                <Label htmlFor="sortOrder">排序顺序</Label>
+                <Label htmlFor="sortOrder">{t('admin.plans.form.sortOrder')}</Label>
                 <Input
                   id="sortOrder"
                   type="number"
@@ -524,7 +526,7 @@ export const EditPlanDialog: React.FC<EditPlanDialogProps> = ({
                   onChange={(e) => handleChange('sortOrder', e.target.value === '' ? undefined : Number(e.target.value))}
                   disabled={loading}
                 />
-                <p className="text-xs text-muted-foreground">数字越小越靠前</p>
+                <p className="text-xs text-muted-foreground">{t('admin.plans.form.sortOrderHint')}</p>
               </div>
 
               <div className="flex items-center gap-2">
@@ -535,7 +537,7 @@ export const EditPlanDialog: React.FC<EditPlanDialogProps> = ({
                   disabled={loading}
                 />
                 <Label htmlFor="isPublic" className="cursor-pointer font-medium">
-                  公开显示此计划
+                  {t('admin.plans.form.isPublic')}
                 </Label>
               </div>
             </div>
@@ -545,10 +547,10 @@ export const EditPlanDialog: React.FC<EditPlanDialogProps> = ({
 
         <DialogFooter className="flex-shrink-0">
           <Button variant="outline" onClick={handleClose} disabled={loading}>
-            取消
+            {t('common.actions.cancel')}
           </Button>
           <Button onClick={handleSubmit} disabled={loading}>
-            {loading ? '保存中...' : '保存'}
+            {loading ? t('admin.forwardRules.form.saving') : t('common.actions.save')}
           </Button>
         </DialogFooter>
       </DialogContent>

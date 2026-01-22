@@ -3,6 +3,7 @@
  * Supports selecting agents, adjusting order, and optional port configuration (direct_chain type)
  */
 
+import { useTranslation } from 'react-i18next';
 import { ChevronUp, ChevronDown, GripVertical } from 'lucide-react';
 import { Checkbox } from '@/components/common/Checkbox';
 import { Label } from '@/components/common/Label';
@@ -41,6 +42,8 @@ export const UserSortableChainAgentList: React.FC<UserSortableChainAgentListProp
   hasError = false,
   idPrefix = 'chain-agent',
 }) => {
+  const { t } = useTranslation();
+
   // Toggle selection state
   const handleToggle = (agentId: string) => {
     const isRemoving = selectedIds.includes(agentId);
@@ -79,7 +82,7 @@ export const UserSortableChainAgentList: React.FC<UserSortableChainAgentListProp
       <div className={`border rounded-md ${hasError ? 'border-destructive' : 'border-input'}`}>
         <ScrollArea className="h-[120px] p-3">
           {agents.length === 0 ? (
-            <p className="text-sm text-muted-foreground">暂无可用节点</p>
+            <p className="text-sm text-muted-foreground">{t('userForwardRules.form.noNodesEmpty')}</p>
           ) : (
             <div className="space-y-2">
               {agents.map((agent) => {
@@ -121,7 +124,7 @@ export const UserSortableChainAgentList: React.FC<UserSortableChainAgentListProp
         <div className="border rounded-md border-input">
           <div className="px-3 py-2 bg-muted/50 border-b border-input">
             <p className="text-xs font-medium text-muted-foreground">
-              转发顺序（可调整）
+              {t('userForwardRules.form.forwardOrderAdjustable')}
             </p>
           </div>
           <div className="p-2 space-y-1">
@@ -140,7 +143,7 @@ export const UserSortableChainAgentList: React.FC<UserSortableChainAgentListProp
                     type="number"
                     min={1}
                     max={65535}
-                    placeholder="端口"
+                    placeholder={t('userForwardRules.form.portPlaceholder')}
                     className="w-24 h-8 text-sm"
                     value={portConfig[agent.id] || ''}
                     onChange={(e) => {
@@ -180,8 +183,8 @@ export const UserSortableChainAgentList: React.FC<UserSortableChainAgentListProp
       )}
 
       <p className="text-xs text-muted-foreground">
-        已选择 {selectedIds.length} 个节点
-        {selectedIds.length > 0 && '，使用上下箭头调整转发顺序'}
+        {t('userForwardRules.form.selectedNodesCount', { count: selectedIds.length })}
+        {selectedIds.length > 0 && t('userForwardRules.form.adjustOrderHint')}
       </p>
     </div>
   );

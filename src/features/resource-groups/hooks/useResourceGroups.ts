@@ -5,6 +5,7 @@
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { queryKeys } from '@/shared/lib/query-client';
 import { useNotificationStore } from '@/shared/stores/notification-store';
 import { handleApiError } from '@/shared/lib/axios';
@@ -50,6 +51,7 @@ interface UseResourceGroupsOptions {
 
 export const useResourceGroups = (options: UseResourceGroupsOptions = {}) => {
   const { page = 1, pageSize = 20, filters = {}, enabled = true } = options;
+  const { t } = useTranslation();
   const queryClient = useQueryClient();
   const { showSuccess, showError } = useNotificationStore();
 
@@ -78,7 +80,7 @@ export const useResourceGroups = (options: UseResourceGroupsOptions = {}) => {
   const createMutation = useMutation({
     mutationFn: createResourceGroup,
     onSuccess: () => {
-      showSuccess('资源组创建成功');
+      showSuccess(t('resourceGroups.createSuccess'));
       queryClient.invalidateQueries({ queryKey: queryKeys.resourceGroups.lists() });
     },
     onError: (error) => {
@@ -91,7 +93,7 @@ export const useResourceGroups = (options: UseResourceGroupsOptions = {}) => {
     mutationFn: ({ id, data }: { id: string; data: UpdateResourceGroupRequest }) =>
       updateResourceGroup(id, data),
     onSuccess: () => {
-      showSuccess('资源组更新成功');
+      showSuccess(t('resourceGroups.updateSuccess'));
       queryClient.invalidateQueries({ queryKey: queryKeys.resourceGroups.lists() });
     },
     onError: (error) => {
@@ -103,7 +105,7 @@ export const useResourceGroups = (options: UseResourceGroupsOptions = {}) => {
   const deleteMutation = useMutation({
     mutationFn: (id: string) => deleteResourceGroup(id),
     onSuccess: () => {
-      showSuccess('资源组删除成功');
+      showSuccess(t('resourceGroups.deleteSuccess'));
       queryClient.invalidateQueries({ queryKey: queryKeys.resourceGroups.lists() });
     },
     onError: (error) => {
@@ -130,7 +132,7 @@ export const useResourceGroups = (options: UseResourceGroupsOptions = {}) => {
       return { previousData };
     },
     onSuccess: () => {
-      showSuccess('资源组已激活');
+      showSuccess(t('resourceGroups.activateSuccess'));
     },
     onError: (error, _id, context) => {
       if (context?.previousData) {
@@ -159,7 +161,7 @@ export const useResourceGroups = (options: UseResourceGroupsOptions = {}) => {
       return { previousData };
     },
     onSuccess: () => {
-      showSuccess('资源组已停用');
+      showSuccess(t('resourceGroups.deactivateSuccess'));
     },
     onError: (error, _id, context) => {
       if (context?.previousData) {
@@ -362,6 +364,7 @@ export const useGroupForwardRules = (options: UseGroupForwardRulesOptions) => {
 
 // Resource group member management hook
 export const useGroupMemberManagement = (groupId: string | null) => {
+  const { t } = useTranslation();
   const queryClient = useQueryClient();
   const { showSuccess, showError } = useNotificationStore();
 
@@ -372,9 +375,9 @@ export const useGroupMemberManagement = (groupId: string | null) => {
       const successCount = result.succeeded.length;
       const failCount = result.failed?.length ?? 0;
       if (failCount === 0) {
-        showSuccess(`成功添加 ${successCount} 个节点`);
+        showSuccess(t('resourceGroups.addNodesSuccess', { count: successCount }));
       } else {
-        showSuccess(`添加完成：${successCount} 成功，${failCount} 失败`);
+        showSuccess(t('resourceGroups.addNodesPartial', { success: successCount, fail: failCount }));
       }
       queryClient.invalidateQueries({ queryKey: ['resourceGroups', 'nodes', groupId] });
       queryClient.invalidateQueries({ queryKey: queryKeys.nodes.lists() });
@@ -391,9 +394,9 @@ export const useGroupMemberManagement = (groupId: string | null) => {
       const successCount = result.succeeded.length;
       const failCount = result.failed?.length ?? 0;
       if (failCount === 0) {
-        showSuccess(`成功移除 ${successCount} 个节点`);
+        showSuccess(t('resourceGroups.removeNodesSuccess', { count: successCount }));
       } else {
-        showSuccess(`移除完成：${successCount} 成功，${failCount} 失败`);
+        showSuccess(t('resourceGroups.removeNodesPartial', { success: successCount, fail: failCount }));
       }
       queryClient.invalidateQueries({ queryKey: ['resourceGroups', 'nodes', groupId] });
       queryClient.invalidateQueries({ queryKey: queryKeys.nodes.lists() });
@@ -410,9 +413,9 @@ export const useGroupMemberManagement = (groupId: string | null) => {
       const successCount = result.succeeded.length;
       const failCount = result.failed?.length ?? 0;
       if (failCount === 0) {
-        showSuccess(`成功添加 ${successCount} 个转发代理`);
+        showSuccess(t('resourceGroups.addAgentsSuccess', { count: successCount }));
       } else {
-        showSuccess(`添加完成：${successCount} 成功，${failCount} 失败`);
+        showSuccess(t('resourceGroups.addAgentsPartial', { success: successCount, fail: failCount }));
       }
       queryClient.invalidateQueries({ queryKey: ['resourceGroups', 'forwardAgents', groupId] });
       queryClient.invalidateQueries({ queryKey: queryKeys.forwardAgents.lists() });
@@ -429,9 +432,9 @@ export const useGroupMemberManagement = (groupId: string | null) => {
       const successCount = result.succeeded.length;
       const failCount = result.failed?.length ?? 0;
       if (failCount === 0) {
-        showSuccess(`成功移除 ${successCount} 个转发代理`);
+        showSuccess(t('resourceGroups.removeAgentsSuccess', { count: successCount }));
       } else {
-        showSuccess(`移除完成：${successCount} 成功，${failCount} 失败`);
+        showSuccess(t('resourceGroups.removeAgentsPartial', { success: successCount, fail: failCount }));
       }
       queryClient.invalidateQueries({ queryKey: ['resourceGroups', 'forwardAgents', groupId] });
       queryClient.invalidateQueries({ queryKey: queryKeys.forwardAgents.lists() });
@@ -448,9 +451,9 @@ export const useGroupMemberManagement = (groupId: string | null) => {
       const successCount = result.succeeded.length;
       const failCount = result.failed?.length ?? 0;
       if (failCount === 0) {
-        showSuccess(`成功添加 ${successCount} 个转发规则`);
+        showSuccess(t('resourceGroups.addRulesSuccess', { count: successCount }));
       } else {
-        showSuccess(`添加完成：${successCount} 成功，${failCount} 失败`);
+        showSuccess(t('resourceGroups.addRulesPartial', { success: successCount, fail: failCount }));
       }
       queryClient.invalidateQueries({ queryKey: ['resourceGroups', 'forwardRules', groupId] });
       queryClient.invalidateQueries({ queryKey: queryKeys.forwardRules.lists() });
@@ -467,9 +470,9 @@ export const useGroupMemberManagement = (groupId: string | null) => {
       const successCount = result.succeeded.length;
       const failCount = result.failed?.length ?? 0;
       if (failCount === 0) {
-        showSuccess(`成功移除 ${successCount} 个转发规则`);
+        showSuccess(t('resourceGroups.removeRulesSuccess', { count: successCount }));
       } else {
-        showSuccess(`移除完成：${successCount} 成功，${failCount} 失败`);
+        showSuccess(t('resourceGroups.removeRulesPartial', { success: successCount, fail: failCount }));
       }
       queryClient.invalidateQueries({ queryKey: ['resourceGroups', 'forwardRules', groupId] });
       queryClient.invalidateQueries({ queryKey: queryKeys.forwardRules.lists() });

@@ -3,6 +3,7 @@ import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Eye, EyeOff, Smartphone, Loader2, AlertTriangle } from 'lucide-react';
 import * as LabelPrimitive from '@radix-ui/react-label';
+import { useTranslation } from 'react-i18next';
 import { Checkbox } from '@/components/common/Checkbox';
 import { useProfile } from '../hooks/useProfile';
 import { inputStyles, labelStyles, getAlertClass } from '@/lib/ui-styles';
@@ -36,19 +37,20 @@ const getStrengthColor = (strength: number): string => {
 };
 
 /**
- * Get password strength text
+ * Get password strength text key
  */
-const getStrengthText = (strength: number): string => {
-  if (strength < 25) return '弱';
-  if (strength < 50) return '中';
-  if (strength < 75) return '良';
-  return '强';
+const getStrengthKey = (strength: number): string => {
+  if (strength < 25) return 'weak';
+  if (strength < 50) return 'medium';
+  if (strength < 75) return 'good';
+  return 'strong';
 };
 
 /**
  * Change password form
  */
 export const ChangePasswordForm = () => {
+  const { t } = useTranslation();
   const [showOldPassword, setShowOldPassword] = useState(false);
   const [showNewPassword, setShowNewPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
@@ -98,7 +100,7 @@ export const ChangePasswordForm = () => {
       {/* Current password */}
       <div className="grid gap-2">
         <LabelPrimitive.Root htmlFor="oldPassword" className={labelStyles}>
-          当前密码
+          {t('profile.changePassword.currentPassword')}
         </LabelPrimitive.Root>
         <div className="relative">
           <input
@@ -128,7 +130,7 @@ export const ChangePasswordForm = () => {
       {/* New password */}
       <div className="grid gap-2">
         <LabelPrimitive.Root htmlFor="newPassword" className={labelStyles}>
-          新密码
+          {t('profile.changePassword.newPassword')}
         </LabelPrimitive.Root>
         <div className="relative">
           <input
@@ -164,7 +166,7 @@ export const ChangePasswordForm = () => {
               />
             </div>
             <p className="text-xs text-muted-foreground">
-              密码强度：{getStrengthText(newPasswordStrength)}
+              {t('profile.changePassword.passwordStrength')}{t(`profile.changePassword.strength.${getStrengthKey(newPasswordStrength)}`)}
             </p>
           </div>
         )}
@@ -173,7 +175,7 @@ export const ChangePasswordForm = () => {
       {/* Confirm new password */}
       <div className="grid gap-2">
         <LabelPrimitive.Root htmlFor="confirmPassword" className={labelStyles}>
-          确认新密码
+          {t('profile.changePassword.confirmPassword')}
         </LabelPrimitive.Root>
         <div className="relative">
           <input
@@ -219,10 +221,10 @@ export const ChangePasswordForm = () => {
             className="flex items-center gap-2 text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
           >
             <Smartphone className="h-4 w-4" />
-            登出所有设备
+            {t('profile.changePassword.logoutAllDevices')}
           </label>
           <p className="text-sm text-muted-foreground">
-            修改密码后，强制其他设备重新登录
+            {t('profile.changePassword.logoutAllDevicesDesc')}
           </p>
         </div>
       </div>
@@ -231,9 +233,9 @@ export const ChangePasswordForm = () => {
       <div className={getAlertClass('destructive')}>
         <AlertTriangle className="h-4 w-4" />
         <div>
-          <p className="text-sm font-medium">安全提示</p>
+          <p className="text-sm font-medium">{t('profile.changePassword.securityTip')}</p>
           <p className="text-sm">
-            修改密码后，如果选择"登出所有设备"，您需要在所有设备上重新登录
+            {t('profile.changePassword.securityTipDesc')}
           </p>
         </div>
       </div>
@@ -245,7 +247,7 @@ export const ChangePasswordForm = () => {
         className="inline-flex items-center justify-center rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 bg-primary text-primary-foreground hover:bg-primary/90 h-10 px-4 py-2 w-full"
       >
         {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-        修改密码
+        {t('profile.changePassword.submit')}
       </button>
     </form>
   );

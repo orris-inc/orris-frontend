@@ -3,6 +3,7 @@
  */
 
 import { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
   Dialog,
   DialogContent,
@@ -38,6 +39,7 @@ export const EditResourceGroupDialog: React.FC<EditResourceGroupDialogProps> = (
   onClose,
   onSubmit,
 }) => {
+  const { t } = useTranslation();
   const [formData, setFormData] = useState<FormData>({
     name: '',
     description: '',
@@ -89,9 +91,9 @@ export const EditResourceGroupDialog: React.FC<EditResourceGroupDialogProps> = (
     <Dialog open={open} onOpenChange={handleClose}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle>编辑资源组</DialogTitle>
+          <DialogTitle>{t('resourceGroups.editTitle')}</DialogTitle>
           <DialogDescription>
-            修改资源组信息
+            {t('resourceGroups.editDescription')}
           </DialogDescription>
         </DialogHeader>
 
@@ -103,18 +105,18 @@ export const EditResourceGroupDialog: React.FC<EditResourceGroupDialogProps> = (
               <span className="font-mono text-xs">{resourceGroup?.sid}</span>
             </div>
             <div className="flex justify-between text-sm">
-              <span className="text-muted-foreground">关联计划</span>
-              <span>{plan?.name || `计划 #${resourceGroup?.planId}`}</span>
+              <span className="text-muted-foreground">{t('resourceGroups.associatedPlan')}</span>
+              <span>{plan?.name || t('resourceGroups.planPrefix', { id: resourceGroup?.planId })}</span>
             </div>
           </div>
 
           <div className="flex flex-col gap-2">
             <Label htmlFor="name">
-              资源组名称 <span className="text-destructive">*</span>
+              {t('resourceGroups.name')} <span className="text-destructive">*</span>
             </Label>
             <Input
               id="name"
-              placeholder="输入资源组名称"
+              placeholder={t('resourceGroups.namePlaceholder')}
               value={formData.name}
               onChange={(e) => handleChange('name', e.target.value)}
               disabled={loading}
@@ -122,10 +124,10 @@ export const EditResourceGroupDialog: React.FC<EditResourceGroupDialogProps> = (
           </div>
 
           <div className="flex flex-col gap-2">
-            <Label htmlFor="description">描述</Label>
+            <Label htmlFor="description">{t('resourceGroups.description')}</Label>
             <Textarea
               id="description"
-              placeholder="输入资源组描述（可选）"
+              placeholder={t('resourceGroups.descriptionPlaceholder')}
               rows={3}
               value={formData.description}
               onChange={(e) => handleChange('description', e.target.value)}
@@ -136,10 +138,10 @@ export const EditResourceGroupDialog: React.FC<EditResourceGroupDialogProps> = (
 
         <DialogFooter>
           <Button variant="outline" onClick={handleClose} disabled={loading}>
-            取消
+            {t('resourceGroups.cancel')}
           </Button>
           <Button onClick={handleSubmit} disabled={loading || !isValid}>
-            {loading ? '保存中...' : '保存'}
+            {loading ? t('resourceGroups.saving') : t('resourceGroups.save')}
           </Button>
         </DialogFooter>
       </DialogContent>

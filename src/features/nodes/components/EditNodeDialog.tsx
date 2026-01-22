@@ -3,6 +3,7 @@
  */
 
 import { useState, useEffect, useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
 import { formatDateTime } from '@/shared/utils/date-utils';
 import {
   Dialog,
@@ -168,6 +169,7 @@ export const EditNodeDialog: React.FC<EditNodeDialogProps> = ({
   onSubmit,
   nodes = [],
 }) => {
+  const { t } = useTranslation();
   const [formData, setFormData] = useState<FormData>({ tagsInput: '', groupSids: [] });
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [pluginOptsStr, setPluginOptsStr] = useState<string>('');
@@ -332,7 +334,7 @@ export const EditNodeDialog: React.FC<EditNodeDialogProps> = ({
     if (formData.name !== undefined && hasStringChanged(formData.name, node.name)) {
       const trimmedName = formData.name.trim();
       if (!trimmedName) {
-        newErrors.name = '节点名称不能为空';
+        newErrors.name = t('admin.nodes.form.validation.nameRequired');
       } else {
         updates.name = trimmedName;
       }
@@ -346,7 +348,7 @@ export const EditNodeDialog: React.FC<EditNodeDialogProps> = ({
 
     if (formData.agentPort !== node.agentPort && formData.agentPort !== undefined) {
       if (formData.agentPort < 1 || formData.agentPort > 65535) {
-        newErrors.agentPort = '端口必须在1-65535之间';
+        newErrors.agentPort = t('admin.nodes.form.validation.portRange');
       } else {
         updates.agentPort = formData.agentPort;
       }
@@ -354,7 +356,7 @@ export const EditNodeDialog: React.FC<EditNodeDialogProps> = ({
 
     if (formData.subscriptionPort !== node.subscriptionPort && formData.subscriptionPort !== undefined) {
       if (formData.subscriptionPort < 1 || formData.subscriptionPort > 65535) {
-        newErrors.subscriptionPort = '端口必须在1-65535之间';
+        newErrors.subscriptionPort = t('admin.nodes.form.validation.portRange');
       } else {
         updates.subscriptionPort = formData.subscriptionPort;
       }
@@ -604,7 +606,7 @@ export const EditNodeDialog: React.FC<EditNodeDialogProps> = ({
     <Dialog open={open} onOpenChange={(open) => !open && onClose()}>
       <DialogContent className="sm:max-w-[700px] flex flex-col max-h-[90vh]">
         <DialogHeader className="flex-shrink-0">
-          <DialogTitle>编辑节点</DialogTitle>
+          <DialogTitle>{t('admin.nodes.form.editNode')}</DialogTitle>
         </DialogHeader>
 
         <div className="flex-1 min-h-0 overflow-y-auto -mx-6 px-6">
@@ -613,24 +615,24 @@ export const EditNodeDialog: React.FC<EditNodeDialogProps> = ({
             defaultValue={['basic', 'network']}
             className="w-full"
           >
-            {/* 基本信息 */}
+            {/* Basic Info */}
             <AccordionItem value="basic" className="border rounded-md px-3 mb-2">
               <AccordionTrigger className="py-3 hover:no-underline">
                 <div className="flex items-center gap-2">
-                  <span className="text-sm font-medium">基本信息</span>
+                  <span className="text-sm font-medium">{t('admin.nodes.form.section.basicInfo')}</span>
                 </div>
               </AccordionTrigger>
               <AccordionContent className="@container">
                 <div className="grid grid-cols-1 @md:grid-cols-2 gap-4">
-                  {/* 节点ID（只读） */}
+                  {/* Node ID (readonly) */}
                   <div className="flex flex-col gap-2">
-                    <Label htmlFor="node_id">节点ID</Label>
+                    <Label htmlFor="node_id">{t('admin.nodes.form.nodeId')}</Label>
                     <Input id="node_id" value={node.id} disabled />
                   </div>
 
-                  {/* 创建时间（只读） */}
+                  {/* Created At (readonly) */}
                   <div className="flex flex-col gap-2">
-                    <Label htmlFor="createdAt">创建时间</Label>
+                    <Label htmlFor="createdAt">{t('admin.nodes.form.createdAt')}</Label>
                     <Input
                       id="createdAt"
                       value={formatDateTime(node.createdAt)}
@@ -638,9 +640,9 @@ export const EditNodeDialog: React.FC<EditNodeDialogProps> = ({
                     />
                   </div>
 
-                  {/* 节点名称 */}
+                  {/* Node Name */}
                   <div className="flex flex-col gap-2">
-                    <Label htmlFor="name">节点名称</Label>
+                    <Label htmlFor="name">{t('admin.nodes.form.nodeName')}</Label>
                     <Input
                       id="name"
                       value={formData.name || ''}
@@ -652,20 +654,20 @@ export const EditNodeDialog: React.FC<EditNodeDialogProps> = ({
                     )}
                   </div>
 
-                  {/* 协议类型（只读） */}
+                  {/* Protocol Type (readonly) */}
                   <div className="flex flex-col gap-2">
-                    <Label htmlFor="protocol">协议类型</Label>
+                    <Label htmlFor="protocol">{t('admin.nodes.form.protocolType')}</Label>
                     <Input
                       id="protocol"
                       value={PROTOCOL_NAMES[node.protocol]}
                       disabled
                     />
-                    <p className="text-xs text-muted-foreground">协议创建后不可修改</p>
+                    <p className="text-xs text-muted-foreground">{t('admin.nodes.form.protocolCannotChange')}</p>
                   </div>
 
-                  {/* 状态 */}
+                  {/* Status */}
                   <div className="flex flex-col gap-2">
-                    <Label htmlFor="status">状态</Label>
+                    <Label htmlFor="status">{t('admin.nodes.fields.status')}</Label>
                     <Select
                       value={formData.status || 'inactive'}
                       onValueChange={(value) => handleChange('status', value)}
@@ -674,17 +676,17 @@ export const EditNodeDialog: React.FC<EditNodeDialogProps> = ({
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="active">激活</SelectItem>
-                        <SelectItem value="inactive">未激活</SelectItem>
-                        <SelectItem value="maintenance">维护中</SelectItem>
+                        <SelectItem value="active">{t('admin.nodes.form.status.active')}</SelectItem>
+                        <SelectItem value="inactive">{t('admin.nodes.form.status.inactive')}</SelectItem>
+                        <SelectItem value="maintenance">{t('admin.nodes.form.status.maintenance')}</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
 
-                  {/* Shadowsocks 加密方法 */}
+                  {/* Shadowsocks Encryption Method */}
                   {isShadowsocks && (
                     <div className="flex flex-col gap-2">
-                      <Label htmlFor="encryptionMethod">加密方法</Label>
+                      <Label htmlFor="encryptionMethod">{t('admin.nodes.form.encryptionMethod')}</Label>
                       <Select
                         value={formData.encryptionMethod || ''}
                         onValueChange={(value) => handleChange('encryptionMethod', value)}
@@ -703,10 +705,10 @@ export const EditNodeDialog: React.FC<EditNodeDialogProps> = ({
                     </div>
                   )}
 
-                  {/* Trojan 传输协议 */}
+                  {/* Trojan Transport Protocol */}
                   {isTrojan && (
                     <div className="flex flex-col gap-2">
-                      <Label htmlFor="transportProtocol">传输协议</Label>
+                      <Label htmlFor="transportProtocol">{t('admin.nodes.form.transportProtocol')}</Label>
                       <Select
                         value={formData.transportProtocol || 'tcp'}
                         onValueChange={(value) => handleChange('transportProtocol', value)}
@@ -725,11 +727,11 @@ export const EditNodeDialog: React.FC<EditNodeDialogProps> = ({
                     </div>
                   )}
 
-                  {/* VLESS 基本配置 */}
+                  {/* VLESS Basic Config */}
                   {isVless && (
                     <>
                       <div className="flex flex-col gap-2">
-                        <Label htmlFor="vlessTransportType">传输协议</Label>
+                        <Label htmlFor="vlessTransportType">{t('admin.nodes.form.transportProtocol')}</Label>
                         <Select
                           value={formData.vlessTransportType || 'tcp'}
                           onValueChange={(value) => handleChange('vlessTransportType', value as TransportProtocol)}
@@ -748,7 +750,7 @@ export const EditNodeDialog: React.FC<EditNodeDialogProps> = ({
                       </div>
 
                       <div className="flex flex-col gap-2">
-                        <Label htmlFor="vlessSecurity">安全类型</Label>
+                        <Label htmlFor="vlessSecurity">{t('admin.nodes.form.securityType')}</Label>
                         <Select
                           value={formData.vlessSecurity || 'tls'}
                           onValueChange={(value) => handleChange('vlessSecurity', value as VLESSSecurity)}
@@ -768,11 +770,11 @@ export const EditNodeDialog: React.FC<EditNodeDialogProps> = ({
                     </>
                   )}
 
-                  {/* VMess 基本配置 */}
+                  {/* VMess Basic Config */}
                   {isVmess && (
                     <>
                       <div className="flex flex-col gap-2">
-                        <Label htmlFor="vmessTransportType">传输协议</Label>
+                        <Label htmlFor="vmessTransportType">{t('admin.nodes.form.transportProtocol')}</Label>
                         <Select
                           value={formData.vmessTransportType || 'tcp'}
                           onValueChange={(value) => handleChange('vmessTransportType', value as TransportProtocol)}
@@ -791,7 +793,7 @@ export const EditNodeDialog: React.FC<EditNodeDialogProps> = ({
                       </div>
 
                       <div className="flex flex-col gap-2">
-                        <Label htmlFor="vmessSecurity">加密方式</Label>
+                        <Label htmlFor="vmessSecurity">{t('admin.nodes.form.encryptionMethod')}</Label>
                         <Select
                           value={formData.vmessSecurity || 'auto'}
                           onValueChange={(value) => handleChange('vmessSecurity', value as VMessSecurity)}
@@ -811,10 +813,10 @@ export const EditNodeDialog: React.FC<EditNodeDialogProps> = ({
                     </>
                   )}
 
-                  {/* Hysteria2 基本配置 */}
+                  {/* Hysteria2 Basic Config */}
                   {isHysteria2 && (
                     <div className="flex flex-col gap-2">
-                      <Label htmlFor="hysteria2CongestionControl">拥塞控制</Label>
+                      <Label htmlFor="hysteria2CongestionControl">{t('admin.nodes.form.congestionControl')}</Label>
                       <Select
                         value={formData.hysteria2CongestionControl || 'bbr'}
                         onValueChange={(value) => handleChange('hysteria2CongestionControl', value as CongestionControl)}
@@ -833,11 +835,11 @@ export const EditNodeDialog: React.FC<EditNodeDialogProps> = ({
                     </div>
                   )}
 
-                  {/* TUIC 基本配置 */}
+                  {/* TUIC Basic Config */}
                   {isTuic && (
                     <>
                       <div className="flex flex-col gap-2">
-                        <Label htmlFor="tuicCongestionControl">拥塞控制</Label>
+                        <Label htmlFor="tuicCongestionControl">{t('admin.nodes.form.congestionControl')}</Label>
                         <Select
                           value={formData.tuicCongestionControl || 'bbr'}
                           onValueChange={(value) => handleChange('tuicCongestionControl', value as CongestionControl)}
@@ -856,7 +858,7 @@ export const EditNodeDialog: React.FC<EditNodeDialogProps> = ({
                       </div>
 
                       <div className="flex flex-col gap-2">
-                        <Label htmlFor="tuicUdpRelayMode">UDP 中继模式</Label>
+                        <Label htmlFor="tuicUdpRelayMode">{t('admin.nodes.form.udpRelayMode')}</Label>
                         <Select
                           value={formData.tuicUdpRelayMode || 'native'}
                           onValueChange={(value) => handleChange('tuicUdpRelayMode', value as TUICUDPRelayMode)}
@@ -879,18 +881,18 @@ export const EditNodeDialog: React.FC<EditNodeDialogProps> = ({
               </AccordionContent>
             </AccordionItem>
 
-            {/* 网络配置 */}
+            {/* Network Config */}
             <AccordionItem value="network" className="border rounded-md px-3 mb-2">
               <AccordionTrigger className="py-3 hover:no-underline">
                 <div className="flex items-center gap-2">
-                  <span className="text-sm font-medium">网络配置</span>
+                  <span className="text-sm font-medium">{t('admin.nodes.form.section.networkConfig')}</span>
                 </div>
               </AccordionTrigger>
               <AccordionContent className="@container">
                 <div className="grid grid-cols-1 @md:grid-cols-2 gap-4">
-                  {/* 服务器地址 */}
+                  {/* Server Address */}
                   <div className="flex flex-col gap-2 @md:col-span-2">
-                    <Label htmlFor="serverAddress">服务器地址</Label>
+                    <Label htmlFor="serverAddress">{t('admin.nodes.form.serverAddress')}</Label>
                     <Input
                       id="serverAddress"
                       value={formData.serverAddress || ''}
@@ -902,9 +904,9 @@ export const EditNodeDialog: React.FC<EditNodeDialogProps> = ({
                     )}
                   </div>
 
-                  {/* 代理端口 */}
+                  {/* Agent Port */}
                   <div className="flex flex-col gap-2">
-                    <Label htmlFor="agentPort">代理端口</Label>
+                    <Label htmlFor="agentPort">{t('admin.nodes.form.agentPort')}</Label>
                     <Input
                       id="agentPort"
                       type="number"
@@ -919,15 +921,15 @@ export const EditNodeDialog: React.FC<EditNodeDialogProps> = ({
                     )}
                   </div>
 
-                  {/* 订阅端口 */}
+                  {/* Subscription Port */}
                   <div className="flex flex-col gap-2">
-                    <Label htmlFor="subscriptionPort">订阅端口</Label>
+                    <Label htmlFor="subscriptionPort">{t('admin.nodes.form.subscriptionPort')}</Label>
                     <Input
                       id="subscriptionPort"
                       type="number"
                       min={1}
                       max={65535}
-                      placeholder="默认使用代理端口"
+                      placeholder={t('admin.nodes.form.subscriptionPortPlaceholder')}
                       value={formData.subscriptionPort ?? ''}
                       onChange={(e) => handleChange('subscriptionPort', e.target.value ? parseInt(e.target.value, 10) : undefined)}
                       error={!!errors.subscriptionPort}
@@ -940,41 +942,41 @@ export const EditNodeDialog: React.FC<EditNodeDialogProps> = ({
               </AccordionContent>
             </AccordionItem>
 
-            {/* 协议配置 */}
+            {/* Protocol Config */}
             <AccordionItem value="protocol" className="border rounded-md px-3 mb-2">
               <AccordionTrigger className="py-3 hover:no-underline">
                 <div className="flex items-center gap-2">
                   <span className="text-sm font-medium">
-                    {PROTOCOL_NAMES[node.protocol]} 配置
+                    {PROTOCOL_NAMES[node.protocol]} {t('admin.nodes.form.config')}
                   </span>
                   {hasProtocolSettings && (
-                    <Badge variant="secondary" className="text-xs">已配置</Badge>
+                    <Badge variant="secondary" className="text-xs">{t('admin.nodes.form.configured')}</Badge>
                   )}
                 </div>
               </AccordionTrigger>
               <AccordionContent className="@container">
                 <div className="grid grid-cols-1 @md:grid-cols-2 gap-4">
-                  {/* Shadowsocks 插件 */}
+                  {/* Shadowsocks Plugin */}
                   {isShadowsocks && (
                     <>
                       <div className="flex flex-col gap-2">
-                        <Label htmlFor="plugin">插件</Label>
+                        <Label htmlFor="plugin">{t('admin.nodes.form.plugin')}</Label>
                         <Input
                           id="plugin"
-                          placeholder="例如：obfs-local, v2ray-plugin"
+                          placeholder="obfs-local, v2ray-plugin"
                           value={formData.plugin || ''}
                           onChange={(e) => handleChange('plugin', e.target.value)}
                         />
                         <p className="text-xs text-muted-foreground">
-                          可选，Shadowsocks 混淆插件
+                          {t('admin.nodes.form.pluginHint')}
                         </p>
                       </div>
 
                       <div className="flex flex-col gap-2 @md:col-span-2">
-                        <Label htmlFor="pluginOpts">插件选项</Label>
+                        <Label htmlFor="pluginOpts">{t('admin.nodes.form.pluginOptions')}</Label>
                         <Input
                           id="pluginOpts"
-                          placeholder="例如：obfs=http;obfs-host=www.bing.com"
+                          placeholder="obfs=http;obfs-host=www.bing.com"
                           value={pluginOptsStr}
                           onChange={(e) => handlePluginOptsChange(e.target.value)}
                           error={!!errors.pluginOpts}
@@ -983,13 +985,13 @@ export const EditNodeDialog: React.FC<EditNodeDialogProps> = ({
                           <p className="text-xs text-destructive">{errors.pluginOpts}</p>
                         )}
                         <p className="text-xs text-muted-foreground">
-                          可选，格式：key1=value1;key2=value2
+                          {t('admin.nodes.form.pluginOptionsHint')}
                         </p>
                       </div>
                     </>
                   )}
 
-                  {/* Trojan 配置 */}
+                  {/* Trojan Config */}
                   {isTrojan && (
                     <>
                       <div className="flex flex-col gap-2">
@@ -1000,11 +1002,11 @@ export const EditNodeDialog: React.FC<EditNodeDialogProps> = ({
                           value={formData.sni || ''}
                           onChange={(e) => handleChange('sni', e.target.value)}
                         />
-                        <p className="text-xs text-muted-foreground">可选</p>
+                        <p className="text-xs text-muted-foreground">{t('admin.nodes.form.optional')}</p>
                       </div>
 
                       <div className="flex flex-col gap-2">
-                        <Label htmlFor="allowInsecure">TLS 安全</Label>
+                        <Label htmlFor="allowInsecure">{t('admin.nodes.form.tlsSecurity')}</Label>
                         <Select
                           value={formData.allowInsecure ? 'true' : 'false'}
                           onValueChange={(value) => handleChange('allowInsecure', value === 'true')}
@@ -1013,14 +1015,14 @@ export const EditNodeDialog: React.FC<EditNodeDialogProps> = ({
                             <SelectValue />
                           </SelectTrigger>
                           <SelectContent>
-                            <SelectItem value="false">验证证书（安全）</SelectItem>
-                            <SelectItem value="true">跳过验证（不安全）</SelectItem>
+                            <SelectItem value="false">{t('admin.nodes.form.verifyCert')}</SelectItem>
+                            <SelectItem value="true">{t('admin.nodes.form.skipVerify')}</SelectItem>
                           </SelectContent>
                         </Select>
-                        <p className="text-xs text-muted-foreground">自签名证书可跳过验证</p>
+                        <p className="text-xs text-muted-foreground">{t('admin.nodes.form.tlsSecurityHint')}</p>
                       </div>
 
-                      {/* WebSocket 配置 */}
+                      {/* WebSocket Config */}
                       {showWsFields && (
                         <>
                           <div className="flex flex-col gap-2">
@@ -1031,7 +1033,7 @@ export const EditNodeDialog: React.FC<EditNodeDialogProps> = ({
                               value={formData.host || ''}
                               onChange={(e) => handleChange('host', e.target.value)}
                             />
-                            <p className="text-xs text-muted-foreground">可选</p>
+                            <p className="text-xs text-muted-foreground">{t('admin.nodes.form.optional')}</p>
                           </div>
 
                           <div className="flex flex-col gap-2">
@@ -1042,12 +1044,12 @@ export const EditNodeDialog: React.FC<EditNodeDialogProps> = ({
                               value={formData.path || ''}
                               onChange={(e) => handleChange('path', e.target.value)}
                             />
-                            <p className="text-xs text-muted-foreground">可选</p>
+                            <p className="text-xs text-muted-foreground">{t('admin.nodes.form.optional')}</p>
                           </div>
                         </>
                       )}
 
-                      {/* gRPC 配置 */}
+                      {/* gRPC Config */}
                       {showGrpcFields && (
                         <div className="flex flex-col gap-2">
                           <Label htmlFor="grpcHost">Service Name</Label>
@@ -1057,13 +1059,13 @@ export const EditNodeDialog: React.FC<EditNodeDialogProps> = ({
                             value={formData.host || ''}
                             onChange={(e) => handleChange('host', e.target.value)}
                           />
-                          <p className="text-xs text-muted-foreground">可选</p>
+                          <p className="text-xs text-muted-foreground">{t('admin.nodes.form.optional')}</p>
                         </div>
                       )}
                     </>
                   )}
 
-                  {/* VLESS 配置 */}
+                  {/* VLESS Config */}
                   {isVless && (
                     <>
                       <div className="flex flex-col gap-2">
@@ -1074,11 +1076,11 @@ export const EditNodeDialog: React.FC<EditNodeDialogProps> = ({
                           value={formData.vlessSni || ''}
                           onChange={(e) => handleChange('vlessSni', e.target.value)}
                         />
-                        <p className="text-xs text-muted-foreground">可选</p>
+                        <p className="text-xs text-muted-foreground">{t('admin.nodes.form.optional')}</p>
                       </div>
 
                       <div className="flex flex-col gap-2">
-                        <Label htmlFor="vlessAllowInsecure">TLS 安全</Label>
+                        <Label htmlFor="vlessAllowInsecure">{t('admin.nodes.form.tlsSecurity')}</Label>
                         <Select
                           value={formData.vlessAllowInsecure ? 'true' : 'false'}
                           onValueChange={(value) => handleChange('vlessAllowInsecure', value === 'true')}
@@ -1087,8 +1089,8 @@ export const EditNodeDialog: React.FC<EditNodeDialogProps> = ({
                             <SelectValue />
                           </SelectTrigger>
                           <SelectContent>
-                            <SelectItem value="false">验证证书（安全）</SelectItem>
-                            <SelectItem value="true">跳过验证（不安全）</SelectItem>
+                            <SelectItem value="false">{t('admin.nodes.form.verifyCert')}</SelectItem>
+                            <SelectItem value="true">{t('admin.nodes.form.skipVerify')}</SelectItem>
                           </SelectContent>
                         </Select>
                       </div>
@@ -1097,11 +1099,11 @@ export const EditNodeDialog: React.FC<EditNodeDialogProps> = ({
                         <Label htmlFor="vlessFlow">Flow</Label>
                         <Input
                           id="vlessFlow"
-                          placeholder="如 xtls-rprx-vision"
+                          placeholder="xtls-rprx-vision"
                           value={formData.vlessFlow || ''}
                           onChange={(e) => handleChange('vlessFlow', e.target.value)}
                         />
-                        <p className="text-xs text-muted-foreground">可选</p>
+                        <p className="text-xs text-muted-foreground">{t('admin.nodes.form.optional')}</p>
                       </div>
 
                       <div className="flex flex-col gap-2">
@@ -1111,7 +1113,7 @@ export const EditNodeDialog: React.FC<EditNodeDialogProps> = ({
                           onValueChange={(value) => handleChange('vlessFingerprint', value)}
                         >
                           <SelectTrigger id="vlessFingerprint">
-                            <SelectValue placeholder="选择指纹" />
+                            <SelectValue placeholder={t('admin.nodes.form.selectFingerprint')} />
                           </SelectTrigger>
                           <SelectContent>
                             {TLS_FINGERPRINT_OPTIONS.map((fp) => (
@@ -1165,7 +1167,7 @@ export const EditNodeDialog: React.FC<EditNodeDialogProps> = ({
                             <Label htmlFor="vlessRealityPublicKey">Reality Public Key</Label>
                             <Input
                               id="vlessRealityPublicKey"
-                              placeholder="服务端公钥"
+                              placeholder={t('admin.nodes.form.publicKeyPlaceholder')}
                               value={formData.vlessRealityPublicKey || ''}
                               onChange={(e) => handleChange('vlessRealityPublicKey', e.target.value)}
                             />
@@ -1175,7 +1177,7 @@ export const EditNodeDialog: React.FC<EditNodeDialogProps> = ({
                             <Label htmlFor="vlessRealityShortId">Reality Short ID</Label>
                             <Input
                               id="vlessRealityShortId"
-                              placeholder="短 ID"
+                              placeholder={t('admin.nodes.form.shortIdPlaceholder')}
                               value={formData.vlessRealityShortId || ''}
                               onChange={(e) => handleChange('vlessRealityShortId', e.target.value)}
                             />
@@ -1195,7 +1197,7 @@ export const EditNodeDialog: React.FC<EditNodeDialogProps> = ({
                     </>
                   )}
 
-                  {/* VMess 配置 */}
+                  {/* VMess Config */}
                   {isVmess && (
                     <>
                       <div className="flex flex-col gap-2">
@@ -1207,7 +1209,7 @@ export const EditNodeDialog: React.FC<EditNodeDialogProps> = ({
                           value={formData.vmessAlterId ?? 0}
                           onChange={(e) => handleChange('vmessAlterId', parseInt(e.target.value, 10) || 0)}
                         />
-                        <p className="text-xs text-muted-foreground">通常为 0</p>
+                        <p className="text-xs text-muted-foreground">{t('admin.nodes.form.alterIdHint')}</p>
                       </div>
 
                       <div className="flex flex-col gap-2">
@@ -1220,8 +1222,8 @@ export const EditNodeDialog: React.FC<EditNodeDialogProps> = ({
                             <SelectValue />
                           </SelectTrigger>
                           <SelectContent>
-                            <SelectItem value="true">启用 TLS</SelectItem>
-                            <SelectItem value="false">不启用 TLS</SelectItem>
+                            <SelectItem value="true">{t('admin.nodes.form.enableTls')}</SelectItem>
+                            <SelectItem value="false">{t('admin.nodes.form.disableTls')}</SelectItem>
                           </SelectContent>
                         </Select>
                       </div>
@@ -1237,7 +1239,7 @@ export const EditNodeDialog: React.FC<EditNodeDialogProps> = ({
                       </div>
 
                       <div className="flex flex-col gap-2">
-                        <Label htmlFor="vmessAllowInsecure">TLS 安全</Label>
+                        <Label htmlFor="vmessAllowInsecure">{t('admin.nodes.form.tlsSecurity')}</Label>
                         <Select
                           value={formData.vmessAllowInsecure ? 'true' : 'false'}
                           onValueChange={(value) => handleChange('vmessAllowInsecure', value === 'true')}
@@ -1246,8 +1248,8 @@ export const EditNodeDialog: React.FC<EditNodeDialogProps> = ({
                             <SelectValue />
                           </SelectTrigger>
                           <SelectContent>
-                            <SelectItem value="false">验证证书（安全）</SelectItem>
-                            <SelectItem value="true">跳过验证（不安全）</SelectItem>
+                            <SelectItem value="false">{t('admin.nodes.form.verifyCert')}</SelectItem>
+                            <SelectItem value="true">{t('admin.nodes.form.skipVerify')}</SelectItem>
                           </SelectContent>
                         </Select>
                       </div>
@@ -1290,7 +1292,7 @@ export const EditNodeDialog: React.FC<EditNodeDialogProps> = ({
                     </>
                   )}
 
-                  {/* Hysteria2 配置 */}
+                  {/* Hysteria2 Config */}
                   {isHysteria2 && (
                     <>
                       <div className="flex flex-col gap-2">
@@ -1304,7 +1306,7 @@ export const EditNodeDialog: React.FC<EditNodeDialogProps> = ({
                       </div>
 
                       <div className="flex flex-col gap-2">
-                        <Label htmlFor="hysteria2AllowInsecure">TLS 安全</Label>
+                        <Label htmlFor="hysteria2AllowInsecure">{t('admin.nodes.form.tlsSecurity')}</Label>
                         <Select
                           value={formData.hysteria2AllowInsecure ? 'true' : 'false'}
                           onValueChange={(value) => handleChange('hysteria2AllowInsecure', value === 'true')}
@@ -1313,34 +1315,34 @@ export const EditNodeDialog: React.FC<EditNodeDialogProps> = ({
                             <SelectValue />
                           </SelectTrigger>
                           <SelectContent>
-                            <SelectItem value="false">验证证书（安全）</SelectItem>
-                            <SelectItem value="true">跳过验证（不安全）</SelectItem>
+                            <SelectItem value="false">{t('admin.nodes.form.verifyCert')}</SelectItem>
+                            <SelectItem value="true">{t('admin.nodes.form.skipVerify')}</SelectItem>
                           </SelectContent>
                         </Select>
                       </div>
 
                       <div className="flex flex-col gap-2">
-                        <Label htmlFor="hysteria2Obfs">Obfs 类型</Label>
+                        <Label htmlFor="hysteria2Obfs">{t('admin.nodes.form.obfsType')}</Label>
                         <Input
                           id="hysteria2Obfs"
-                          placeholder="如 salamander"
+                          placeholder="salamander"
                           value={formData.hysteria2Obfs || ''}
                           onChange={(e) => handleChange('hysteria2Obfs', e.target.value)}
                         />
                       </div>
 
                       <div className="flex flex-col gap-2">
-                        <Label htmlFor="hysteria2ObfsPassword">Obfs 密码</Label>
+                        <Label htmlFor="hysteria2ObfsPassword">{t('admin.nodes.form.obfsPassword')}</Label>
                         <Input
                           id="hysteria2ObfsPassword"
-                          placeholder="混淆密码"
+                          placeholder={t('admin.nodes.form.passwordPlaceholder')}
                           value={formData.hysteria2ObfsPassword || ''}
                           onChange={(e) => handleChange('hysteria2ObfsPassword', e.target.value)}
                         />
                       </div>
 
                       <div className="flex flex-col gap-2">
-                        <Label htmlFor="hysteria2UpMbps">上行带宽 (Mbps)</Label>
+                        <Label htmlFor="hysteria2UpMbps">{t('admin.nodes.form.upBandwidth')}</Label>
                         <Input
                           id="hysteria2UpMbps"
                           type="number"
@@ -1352,7 +1354,7 @@ export const EditNodeDialog: React.FC<EditNodeDialogProps> = ({
                       </div>
 
                       <div className="flex flex-col gap-2">
-                        <Label htmlFor="hysteria2DownMbps">下行带宽 (Mbps)</Label>
+                        <Label htmlFor="hysteria2DownMbps">{t('admin.nodes.form.downBandwidth')}</Label>
                         <Input
                           id="hysteria2DownMbps"
                           type="number"
@@ -1370,7 +1372,7 @@ export const EditNodeDialog: React.FC<EditNodeDialogProps> = ({
                           onValueChange={(value) => handleChange('hysteria2Fingerprint', value)}
                         >
                           <SelectTrigger id="hysteria2Fingerprint">
-                            <SelectValue placeholder="选择指纹" />
+                            <SelectValue placeholder={t('admin.nodes.form.selectFingerprint')} />
                           </SelectTrigger>
                           <SelectContent>
                             {TLS_FINGERPRINT_OPTIONS.map((fp) => (
@@ -1384,7 +1386,7 @@ export const EditNodeDialog: React.FC<EditNodeDialogProps> = ({
                     </>
                   )}
 
-                  {/* TUIC 配置 */}
+                  {/* TUIC Config */}
                   {isTuic && (
                     <>
                       <div className="flex flex-col gap-2">
@@ -1398,7 +1400,7 @@ export const EditNodeDialog: React.FC<EditNodeDialogProps> = ({
                       </div>
 
                       <div className="flex flex-col gap-2">
-                        <Label htmlFor="tuicAllowInsecure">TLS 安全</Label>
+                        <Label htmlFor="tuicAllowInsecure">{t('admin.nodes.form.tlsSecurity')}</Label>
                         <Select
                           value={formData.tuicAllowInsecure ? 'true' : 'false'}
                           onValueChange={(value) => handleChange('tuicAllowInsecure', value === 'true')}
@@ -1407,8 +1409,8 @@ export const EditNodeDialog: React.FC<EditNodeDialogProps> = ({
                             <SelectValue />
                           </SelectTrigger>
                           <SelectContent>
-                            <SelectItem value="false">验证证书（安全）</SelectItem>
-                            <SelectItem value="true">跳过验证（不安全）</SelectItem>
+                            <SelectItem value="false">{t('admin.nodes.form.verifyCert')}</SelectItem>
+                            <SelectItem value="true">{t('admin.nodes.form.skipVerify')}</SelectItem>
                           </SelectContent>
                         </Select>
                       </div>
@@ -1417,14 +1419,14 @@ export const EditNodeDialog: React.FC<EditNodeDialogProps> = ({
                         <Label htmlFor="tuicAlpn">ALPN</Label>
                         <Input
                           id="tuicAlpn"
-                          placeholder="如 h3"
+                          placeholder="h3"
                           value={formData.tuicAlpn || ''}
                           onChange={(e) => handleChange('tuicAlpn', e.target.value)}
                         />
                       </div>
 
                       <div className="flex flex-col gap-2">
-                        <Label htmlFor="tuicDisableSni">禁用 SNI</Label>
+                        <Label htmlFor="tuicDisableSni">{t('admin.nodes.form.disableSni')}</Label>
                         <Select
                           value={formData.tuicDisableSni ? 'true' : 'false'}
                           onValueChange={(value) => handleChange('tuicDisableSni', value === 'true')}
@@ -1433,8 +1435,8 @@ export const EditNodeDialog: React.FC<EditNodeDialogProps> = ({
                             <SelectValue />
                           </SelectTrigger>
                           <SelectContent>
-                            <SelectItem value="false">不禁用</SelectItem>
-                            <SelectItem value="true">禁用 SNI</SelectItem>
+                            <SelectItem value="false">{t('admin.nodes.form.notDisabled')}</SelectItem>
+                            <SelectItem value="true">{t('admin.nodes.form.disableSniOption')}</SelectItem>
                           </SelectContent>
                         </Select>
                       </div>
@@ -1444,18 +1446,18 @@ export const EditNodeDialog: React.FC<EditNodeDialogProps> = ({
               </AccordionContent>
             </AccordionItem>
 
-            {/* 其他设置 */}
+            {/* Other Settings */}
             <AccordionItem value="other" className="border rounded-md px-3 mb-2">
               <AccordionTrigger className="py-3 hover:no-underline">
                 <div className="flex items-center gap-2">
-                  <span className="text-sm font-medium">其他设置</span>
+                  <span className="text-sm font-medium">{t('admin.nodes.form.section.otherSettings')}</span>
                 </div>
               </AccordionTrigger>
               <AccordionContent className="@container">
                 <div className="grid grid-cols-1 @md:grid-cols-2 gap-4">
-                  {/* 地区 */}
+                  {/* Region */}
                   <div className="flex flex-col gap-2">
-                    <Label htmlFor="region">地区</Label>
+                    <Label htmlFor="region">{t('admin.nodes.form.region')}</Label>
                     <Input
                       id="region"
                       value={formData.region || ''}
@@ -1463,37 +1465,37 @@ export const EditNodeDialog: React.FC<EditNodeDialogProps> = ({
                     />
                   </div>
 
-                  {/* 排序顺序 */}
+                  {/* Sort Order */}
                   <div className="flex flex-col gap-2">
-                    <Label htmlFor="sortOrder">排序顺序</Label>
+                    <Label htmlFor="sortOrder">{t('admin.nodes.form.sortOrder')}</Label>
                     <Input
                       id="sortOrder"
                       type="number"
                       value={formData.sortOrder ?? 0}
                       onChange={(e) => handleChange('sortOrder', parseInt(e.target.value, 10) || 0)}
                     />
-                    <p className="text-xs text-muted-foreground">数字越小越靠前</p>
+                    <p className="text-xs text-muted-foreground">{t('admin.nodes.form.sortOrderHint')}</p>
                   </div>
 
-                  {/* 标签 */}
+                  {/* Tags */}
                   <div className="flex flex-col gap-2 @md:col-span-2">
-                    <Label htmlFor="tagsInput">标签</Label>
+                    <Label htmlFor="tagsInput">{t('admin.nodes.form.tags')}</Label>
                     <Input
                       id="tagsInput"
-                      placeholder="例如：高速, 香港, 优选"
+                      placeholder={t('admin.nodes.form.tagsPlaceholder')}
                       value={formData.tagsInput ?? ''}
                       onChange={(e) => handleChange('tagsInput', e.target.value)}
                     />
                     <p className="text-xs text-muted-foreground">
-                      可选，多个标签用逗号分隔
+                      {t('admin.nodes.form.tagsHint')}
                     </p>
                   </div>
 
-                  {/* 资源组（多选） */}
+                  {/* Resource Groups (multi-select) */}
                   <div className="flex flex-col gap-2 @md:col-span-2">
-                    <Label>资源组</Label>
+                    <Label>{t('admin.nodes.form.resourceGroup')}</Label>
                     <p className="text-xs text-muted-foreground">
-                      可选，将节点关联到一个或多个资源组
+                      {t('admin.nodes.form.resourceGroupSelectHint')}
                     </p>
 
                     {/* Selected groups chips */}
@@ -1524,9 +1526,9 @@ export const EditNodeDialog: React.FC<EditNodeDialogProps> = ({
                     {/* Group selection list */}
                     <div className="border rounded-lg max-h-[120px] overflow-y-auto">
                       {isLoadingGroups || isLoadingPlans ? (
-                        <div className="p-3 text-center text-sm text-muted-foreground">加载中...</div>
+                        <div className="p-3 text-center text-sm text-muted-foreground">{t('app.loading')}</div>
                       ) : filteredResourceGroups.length === 0 ? (
-                        <div className="p-3 text-center text-sm text-muted-foreground">暂无可用资源组</div>
+                        <div className="p-3 text-center text-sm text-muted-foreground">{t('admin.nodes.detail.noResourceGroups')}</div>
                       ) : (
                         <div className="divide-y">
                           {filteredResourceGroups.map((group) => (
@@ -1549,7 +1551,7 @@ export const EditNodeDialog: React.FC<EditNodeDialogProps> = ({
                                 <div className="flex items-center gap-2">
                                   <span className="font-medium text-sm">{group.name}</span>
                                   <Badge variant={group.status === 'active' ? 'default' : 'secondary'} className="text-[10px]">
-                                    {group.status === 'active' ? '激活' : '未激活'}
+                                    {group.status === 'active' ? t('admin.nodes.form.status.active') : t('admin.nodes.form.status.inactive')}
                                   </Badge>
                                 </div>
                                 {group.description && <p className="text-xs text-muted-foreground truncate">{group.description}</p>}
@@ -1561,9 +1563,9 @@ export const EditNodeDialog: React.FC<EditNodeDialogProps> = ({
                     </div>
                   </div>
 
-                  {/* 静音通知 */}
+                  {/* Mute Notification */}
                   <div className="flex flex-col gap-2">
-                    <Label htmlFor="muteNotification">静音通知</Label>
+                    <Label htmlFor="muteNotification">{t('admin.nodes.form.muteNotification')}</Label>
                     <div className="flex items-center gap-3">
                       <Switch
                         id="muteNotification"
@@ -1573,24 +1575,24 @@ export const EditNodeDialog: React.FC<EditNodeDialogProps> = ({
                         <SwitchThumb />
                       </Switch>
                       <span className="text-sm text-muted-foreground">
-                        {formData.muteNotification ? '已静音' : '未静音'}
+                        {formData.muteNotification ? t('admin.nodes.form.muted') : t('admin.nodes.form.unmuted')}
                       </span>
                     </div>
                     <p className="text-xs text-muted-foreground">
-                      开启后将不会发送此节点的上线/下线通知
+                      {t('admin.nodes.form.muteNotificationHint')}
                     </p>
                   </div>
                 </div>
               </AccordionContent>
             </AccordionItem>
 
-            {/* 路由配置 */}
+            {/* Route Config */}
             <AccordionItem value="route" className="border rounded-md px-3 mb-2">
               <AccordionTrigger className="py-3 hover:no-underline">
                 <div className="flex items-center gap-2">
-                  <span className="text-sm font-medium">路由配置</span>
+                  <span className="text-sm font-medium">{t('admin.nodes.form.section.routeConfig')}</span>
                   {formData.route && (
-                    <Badge variant="secondary" className="text-xs">已配置</Badge>
+                    <Badge variant="secondary" className="text-xs">{t('admin.nodes.form.configured')}</Badge>
                   )}
                 </div>
               </AccordionTrigger>
@@ -1609,10 +1611,10 @@ export const EditNodeDialog: React.FC<EditNodeDialogProps> = ({
 
         <DialogFooter className="flex-shrink-0">
           <Button variant="outline" onClick={onClose}>
-            取消
+            {t('common.actions.cancel')}
           </Button>
           <Button onClick={handleSubmit} disabled={!hasChanges}>
-            保存
+            {t('common.actions.save')}
           </Button>
         </DialogFooter>
       </DialogContent>

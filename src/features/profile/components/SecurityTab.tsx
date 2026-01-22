@@ -1,17 +1,19 @@
 import * as Separator from '@radix-ui/react-separator';
+import { useTranslation } from 'react-i18next';
 import { ChangePasswordForm } from './ChangePasswordForm';
 
 /**
- * 安全设置Tab
+ * Security settings tab
  */
 export const SecurityTab = () => {
+  const { t } = useTranslation();
   return (
     <div className="space-y-6 py-4">
       <div className="space-y-4">
         <div>
-          <h3 className="text-lg font-medium">修改密码</h3>
+          <h3 className="text-lg font-medium">{t('profile.security.changePasswordTitle')}</h3>
           <p className="text-sm text-muted-foreground">
-            设置一个强密码以保护您的账号安全
+            {t('profile.security.changePasswordDesc')}
           </p>
         </div>
 
@@ -24,19 +26,19 @@ export const SecurityTab = () => {
 
       <Separator.Root className="shrink-0 bg-border h-[1px] w-full" />
 
-      {/* OAuth绑定管理（占位） */}
+      {/* OAuth binding management (placeholder) */}
       <div className="space-y-4">
         <div>
-          <h3 className="text-lg font-medium">OAuth账号绑定</h3>
+          <h3 className="text-lg font-medium">{t('profile.security.oauthBindingTitle')}</h3>
           <p className="text-sm text-muted-foreground">
-            绑定OAuth账号后可使用快捷登录
+            {t('profile.security.oauthBindingDesc')}
           </p>
         </div>
 
         <div className="rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm">
           <div className="p-6">
             <p className="text-sm text-muted-foreground">
-              OAuth绑定管理功能即将推出
+              {t('profile.security.oauthComingSoon')}
             </p>
           </div>
         </div>
@@ -44,19 +46,19 @@ export const SecurityTab = () => {
 
       <Separator.Root className="shrink-0 bg-border h-[1px] w-full" />
 
-      {/* 危险操作区域（占位） */}
+      {/* Danger zone (placeholder) */}
       <div className="space-y-4">
         <div>
-          <h3 className="text-lg font-medium text-destructive">危险操作</h3>
+          <h3 className="text-lg font-medium text-destructive">{t('profile.security.dangerZoneTitle')}</h3>
           <p className="text-sm text-muted-foreground">
-            这些操作将永久影响您的账号
+            {t('profile.security.dangerZoneDesc')}
           </p>
         </div>
 
         <div className="rounded-lg border border-destructive/50 bg-white dark:bg-slate-900 shadow-sm">
           <div className="p-6">
             <p className="text-sm text-muted-foreground">
-              账号注销功能即将推出
+              {t('profile.security.deleteAccountComingSoon')}
             </p>
           </div>
         </div>

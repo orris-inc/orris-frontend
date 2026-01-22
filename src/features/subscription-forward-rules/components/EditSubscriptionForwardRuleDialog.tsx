@@ -5,6 +5,7 @@
  */
 
 import { useState, useEffect, useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
   Dialog,
   DialogContent,
@@ -39,13 +40,13 @@ import { useUserNodes } from '@/features/user-nodes/hooks/useUserNodes';
 // Target type for forward rule
 type TargetType = 'manual' | 'node';
 
-// Rule type label mapping
-const RULE_TYPE_LABELS: Record<ForwardRuleType, string> = {
-  direct: '直连转发',
-  entry: '入口节点',
-  chain: '隧道链式转发',
-  direct_chain: '直连链式转发',
-  external: '外部规则',
+// Rule type i18n key mapping
+const RULE_TYPE_LABEL_KEYS: Record<ForwardRuleType, string> = {
+  direct: 'admin.forwardRules.ruleTypeInfo.direct.label',
+  entry: 'admin.forwardRules.ruleTypeInfo.entry.label',
+  chain: 'admin.forwardRules.ruleTypeInfo.chain.label',
+  direct_chain: 'admin.forwardRules.ruleTypeInfo.directChain.label',
+  external: 'admin.forwardRules.ruleTypeInfo.external.label',
 };
 
 interface EditSubscriptionForwardRuleDialogProps {
@@ -63,6 +64,7 @@ export const EditSubscriptionForwardRuleDialog: React.FC<EditSubscriptionForward
   rule,
   isUpdating = false,
 }) => {
+  const { t } = useTranslation();
   const { forwardAgents } = useUserForwardAgents({
     pageSize: 100,
     enabled: open && !!rule,
@@ -132,25 +134,25 @@ export const EditSubscriptionForwardRuleDialog: React.FC<EditSubscriptionForward
     const newErrors: Record<string, string> = {};
 
     if (!formData.name.trim()) {
-      newErrors.name = '请输入规则名称';
+      newErrors.name = t('admin.forwardRules.validation.ruleNameRequired');
     }
 
     // Target validation based on target type
     if (targetType === 'manual') {
       if (!formData.targetAddress.trim()) {
-        newErrors.targetAddress = '请输入目标地址';
+        newErrors.targetAddress = t('admin.forwardRules.validation.targetAddressRequired');
       }
       if (!formData.targetPort) {
-        newErrors.targetPort = '请输入目标端口';
+        newErrors.targetPort = t('admin.forwardRules.validation.targetPortRange');
       } else {
         const port = parseInt(formData.targetPort);
         if (isNaN(port) || port < 1 || port > 65535) {
-          newErrors.targetPort = '端口号必须在 1-65535 之间';
+          newErrors.targetPort = t('admin.forwardRules.validation.targetPortRange');
         }
       }
     } else if (targetType === 'node') {
       if (!formData.targetNodeId) {
-        newErrors.targetNodeId = '请选择目标节点';
+        newErrors.targetNodeId = t('admin.forwardRules.validation.selectTargetNode');
       }
     }
 
@@ -262,26 +264,26 @@ export const EditSubscriptionForwardRuleDialog: React.FC<EditSubscriptionForward
     <Dialog open={open} onOpenChange={handleClose}>
       <DialogContent className="@container sm:max-w-[600px] flex flex-col max-h-[90vh]">
         <DialogHeader className="flex-shrink-0">
-          <DialogTitle>编辑转发规则</DialogTitle>
+          <DialogTitle>{t('admin.forwardRules.form.editRule')}</DialogTitle>
         </DialogHeader>
 
         <div className="flex-1 min-h-0 overflow-y-auto -mx-6 px-6">
           <div className="space-y-6 py-4">
             {/* Basic info */}
             <div>
-              <h3 className="text-sm font-medium text-muted-foreground mb-3">基本信息</h3>
+              <h3 className="text-sm font-medium text-muted-foreground mb-3">{t('admin.forwardRules.form.basicInfo')}</h3>
               <Separator className="mb-4" />
               <div className="space-y-4">
                 {/* Rule name */}
                 <div className="flex flex-col gap-2">
                   <Label htmlFor="edit-sub-name">
-                    规则名称 <span className="text-destructive">*</span>
+                    {t('admin.forwardRules.form.ruleName')} <span className="text-destructive">*</span>
                   </Label>
                   <Input
                     id="edit-sub-name"
                     value={formData.name}
                     onChange={(e) => handleChange('name', e.target.value)}
-                    placeholder="为您的规则起个名字"
+                    placeholder={t('admin.forwardRules.form.ruleNamePlaceholder')}
                     error={!!errors.name}
                     disabled={isUpdating}
                   />
@@ -295,12 +297,12 @@ export const EditSubscriptionForwardRuleDialog: React.FC<EditSubscriptionForward
 
                 {/* Remark */}
                 <div className="flex flex-col gap-2">
-                  <Label htmlFor="edit-sub-remark">备注</Label>
+                  <Label htmlFor="edit-sub-remark">{t('admin.forwardRules.form.remark')}</Label>
                   <Textarea
                     id="edit-sub-remark"
                     value={formData.remark}
                     onChange={(e) => handleChange('remark', e.target.value)}
-                    placeholder="添加备注信息（可选）"
+                    placeholder={t('admin.forwardRules.form.remarkPlaceholder')}
                     rows={2}
                     disabled={isUpdating}
                   />
@@ -310,12 +312,12 @@ export const EditSubscriptionForwardRuleDialog: React.FC<EditSubscriptionForward
 
             {/* Forward config */}
             <div>
-              <h3 className="text-sm font-medium text-muted-foreground mb-3">转发配置</h3>
+              <h3 className="text-sm font-medium text-muted-foreground mb-3">{t('admin.forwardRules.form.forwardConfig')}</h3>
               <Separator className="mb-4" />
               <div className="grid grid-cols-1 @md:grid-cols-2 gap-4">
                 {/* Protocol type */}
                 <div className="flex flex-col gap-2">
-                  <Label htmlFor="edit-sub-protocol">协议类型</Label>
+                  <Label htmlFor="edit-sub-protocol">{t('admin.forwardRules.form.protocolType')}</Label>
                   <Select
                     value={formData.protocol}
                     onValueChange={(value) => handleChange('protocol', value)}
@@ -334,7 +336,7 @@ export const EditSubscriptionForwardRuleDialog: React.FC<EditSubscriptionForward
 
                 {/* IP version */}
                 <div className="flex flex-col gap-2">
-                  <Label htmlFor="edit-sub-ipVersion">IP 版本</Label>
+                  <Label htmlFor="edit-sub-ipVersion">{t('admin.forwardRules.form.ipVersion')}</Label>
                   <Select
                     value={formData.ipVersion}
                     onValueChange={(value) => handleChange('ipVersion', value)}
@@ -344,7 +346,7 @@ export const EditSubscriptionForwardRuleDialog: React.FC<EditSubscriptionForward
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="auto">自动</SelectItem>
+                      <SelectItem value="auto">{t('admin.forwardRules.form.ipVersionAuto')}</SelectItem>
                       <SelectItem value="ipv4">IPv4</SelectItem>
                       <SelectItem value="ipv6">IPv6</SelectItem>
                     </SelectContent>
@@ -354,7 +356,7 @@ export const EditSubscriptionForwardRuleDialog: React.FC<EditSubscriptionForward
                 {/* Target type selection */}
                 <div className="flex flex-col gap-2 @md:col-span-2">
                   <Label>
-                    目标类型 <span className="text-destructive">*</span>
+                    {t('admin.forwardRules.form.targetType')} <span className="text-destructive">*</span>
                   </Label>
                   <RadioGroup
                     value={targetType}
@@ -374,13 +376,13 @@ export const EditSubscriptionForwardRuleDialog: React.FC<EditSubscriptionForward
                     <div className="flex items-center space-x-2">
                       <RadioGroupItem value="manual" id="edit-sub-target-manual" />
                       <Label htmlFor="edit-sub-target-manual" className="font-normal cursor-pointer">
-                        手动输入地址
+                        {t('admin.forwardRules.form.targetTypeManual')}
                       </Label>
                     </div>
                     <div className="flex items-center space-x-2">
                       <RadioGroupItem value="node" id="edit-sub-target-node" />
                       <Label htmlFor="edit-sub-target-node" className="font-normal cursor-pointer">
-                        选择节点（动态解析）
+                        {t('admin.forwardRules.form.targetTypeNode')}
                       </Label>
                     </div>
                   </RadioGroup>
@@ -391,13 +393,13 @@ export const EditSubscriptionForwardRuleDialog: React.FC<EditSubscriptionForward
                   <>
                     <div className="flex flex-col gap-2">
                       <Label htmlFor="edit-sub-targetAddress">
-                        目标地址 <span className="text-destructive">*</span>
+                        {t('admin.forwardRules.form.targetAddress')} <span className="text-destructive">*</span>
                       </Label>
                       <Input
                         id="edit-sub-targetAddress"
                         value={formData.targetAddress}
                         onChange={(e) => handleChange('targetAddress', e.target.value)}
-                        placeholder="例如: example.com 或 192.168.1.1"
+                        placeholder={t('admin.forwardRules.form.targetAddressPlaceholder')}
                         error={!!errors.targetAddress}
                         disabled={isUpdating}
                       />
@@ -411,7 +413,7 @@ export const EditSubscriptionForwardRuleDialog: React.FC<EditSubscriptionForward
 
                     <div className="flex flex-col gap-2">
                       <Label htmlFor="edit-sub-targetPort">
-                        目标端口 <span className="text-destructive">*</span>
+                        {t('admin.forwardRules.form.targetPort')} <span className="text-destructive">*</span>
                       </Label>
                       <Input
                         id="edit-sub-targetPort"
@@ -436,7 +438,7 @@ export const EditSubscriptionForwardRuleDialog: React.FC<EditSubscriptionForward
                 {targetType === 'node' && (
                   <div className="flex flex-col gap-2 @md:col-span-2">
                     <Label htmlFor="edit-sub-targetNodeId">
-                      目标节点 <span className="text-destructive">*</span>
+                      {t('admin.forwardRules.form.targetNode')} <span className="text-destructive">*</span>
                     </Label>
                     <Select
                       value={formData.targetNodeId}
@@ -447,7 +449,7 @@ export const EditSubscriptionForwardRuleDialog: React.FC<EditSubscriptionForward
                         id="edit-sub-targetNodeId"
                         className={errors.targetNodeId ? 'border-destructive' : ''}
                       >
-                        <SelectValue placeholder={isLoadingNodes ? '加载中...' : '选择目标节点'} />
+                        <SelectValue placeholder={isLoadingNodes ? t('app.loading') : t('admin.forwardRules.form.selectTargetNode')} />
                       </SelectTrigger>
                       <SelectContent>
                         {availableNodes.map((node) => (
@@ -464,7 +466,7 @@ export const EditSubscriptionForwardRuleDialog: React.FC<EditSubscriptionForward
                       </SelectContent>
                     </Select>
                     <p className="text-xs text-muted-foreground">
-                      选择节点后，目标地址将动态解析为节点的服务器地址
+                      {t('admin.forwardRules.form.targetNodeDynamicHint')}
                     </p>
                     {errors.targetNodeId && (
                       <p className="text-xs text-destructive flex items-center gap-1">
@@ -474,7 +476,7 @@ export const EditSubscriptionForwardRuleDialog: React.FC<EditSubscriptionForward
                     )}
                     {!isLoadingNodes && availableNodes.length === 0 && (
                       <p className="text-xs text-amber-600 dark:text-amber-400">
-                        暂无可用节点，请先在「我的节点」页面创建节点
+                        {t('subscriptionForwardRules.noAvailableNodes')}
                       </p>
                     )}
                   </div>
@@ -484,24 +486,24 @@ export const EditSubscriptionForwardRuleDialog: React.FC<EditSubscriptionForward
 
             {/* Read-only info */}
             <div className="p-3 rounded-lg bg-muted/50">
-              <p className="text-xs text-muted-foreground mb-2">不可修改的信息</p>
+              <p className="text-xs text-muted-foreground mb-2">{t('subscriptionForwardRules.readOnlyInfo')}</p>
               <div className="grid grid-cols-2 gap-2 text-sm">
                 <div>
-                  <span className="text-muted-foreground">转发Agent：</span>
+                  <span className="text-muted-foreground">{t('admin.forwardRules.form.forwardAgent')}:</span>
                   <span>{currentAgent?.name || rule.agentId}</span>
                 </div>
                 <div>
-                  <span className="text-muted-foreground">规则类型：</span>
-                  <span>{RULE_TYPE_LABELS[rule.ruleType] || rule.ruleType}</span>
+                  <span className="text-muted-foreground">{t('admin.forwardRules.form.ruleType')}:</span>
+                  <span>{t(RULE_TYPE_LABEL_KEYS[rule.ruleType]) || rule.ruleType}</span>
                 </div>
                 <div>
-                  <span className="text-muted-foreground">监听端口：</span>
-                  <span className="font-mono">{rule.listenPort || '系统分配'}</span>
+                  <span className="text-muted-foreground">{t('admin.forwardRules.form.listenPort')}:</span>
+                  <span className="font-mono">{rule.listenPort || t('subscriptionForwardRules.systemAssigned')}</span>
                 </div>
                 {/* entry type: show exit agent */}
                 {rule.ruleType === 'entry' && rule.exitAgentId && (
                   <div>
-                    <span className="text-muted-foreground">出口节点：</span>
+                    <span className="text-muted-foreground">{t('admin.forwardRules.form.exitNode')}:</span>
                     <span>
                       {forwardAgents.find((a) => a.id === rule.exitAgentId)?.name || rule.exitAgentId}
                     </span>
@@ -513,7 +515,7 @@ export const EditSubscriptionForwardRuleDialog: React.FC<EditSubscriptionForward
                 rule.chainAgentIds &&
                 rule.chainAgentIds.length > 0 && (
                   <div className="mt-2 pt-2 border-t border-border/50">
-                    <span className="text-muted-foreground text-sm">中间节点：</span>
+                    <span className="text-muted-foreground text-sm">{t('admin.forwardRules.form.chainNodes')}:</span>
                     <div className="flex flex-wrap gap-1 mt-1">
                       {rule.chainAgentIds.map((agentId, index) => {
                         const agent = forwardAgents.find((a) => a.id === agentId);
@@ -540,10 +542,10 @@ export const EditSubscriptionForwardRuleDialog: React.FC<EditSubscriptionForward
 
         <DialogFooter className="flex-shrink-0 gap-3">
           <Button variant="outline" onClick={handleClose} disabled={isUpdating}>
-            取消
+            {t('common.actions.cancel')}
           </Button>
           <Button onClick={handleSubmit} disabled={!isFormValid() || !hasChanges || isUpdating}>
-            {isUpdating ? '保存中...' : '保存'}
+            {isUpdating ? t('admin.forwardRules.form.saving') : t('common.actions.save')}
           </Button>
         </DialogFooter>
       </DialogContent>

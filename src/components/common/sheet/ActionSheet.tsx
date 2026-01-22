@@ -13,6 +13,7 @@
  */
 
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Drawer } from 'vaul';
 import { Loader2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -24,9 +25,11 @@ export const ActionSheet: React.FC<ActionSheetProps> = ({
   actions,
   title,
   description,
-  cancelText = '取消',
+  cancelText,
 }) => {
+  const { t } = useTranslation();
   const [loadingIndex, setLoadingIndex] = useState<number | null>(null);
+  const resolvedCancelText = cancelText ?? t('common.actions.cancel');
 
   const handleAction = async (
     action: ActionSheetProps['actions'][number],
@@ -125,7 +128,7 @@ export const ActionSheet: React.FC<ActionSheetProps> = ({
               'disabled:opacity-50 disabled:cursor-not-allowed'
             )}
           >
-            {cancelText}
+            {resolvedCancelText}
           </button>
         </Drawer.Content>
       </Drawer.Portal>

@@ -40,7 +40,10 @@
       "retry": "Retry",
       "continue": "Continue",
       "apply": "Apply",
-      "clear": "Clear"
+      "clear": "Clear",
+      "activate": "Activate",
+      "deactivate": "Deactivate",
+      "viewDetail": "View Detail"
     },
     "processing": "Processing...",
     "selected": "{{count}} selected",
@@ -56,6 +59,7 @@
     "yes": "Yes",
     "no": "No",
     "status": {
+      "label": "Status",
       "enabled": "Enabled",
       "disabled": "Disabled",
       "online": "Online",
@@ -100,6 +104,8 @@
     },
     "time": {
       "now": "Just now",
+      "secondsAgo": "{{count}} second ago",
+      "secondsAgo_other": "{{count}} seconds ago",
       "minutesAgo": "{{count}} minute ago",
       "minutesAgo_other": "{{count}} minutes ago",
       "hoursAgo": "{{count}} hour ago",
@@ -109,7 +115,14 @@
       "today": "Today",
       "yesterday": "Yesterday",
       "thisWeek": "This week",
-      "thisMonth": "This month"
+      "thisMonth": "This month",
+      "days": "{{count}} day",
+      "days_other": "{{count}} days",
+      "hours": "{{count}} hour",
+      "hours_other": "{{count}} hours",
+      "minutes": "{{count}} minute",
+      "minutes_other": "{{count}} minutes",
+      "justStarted": "Just started"
     },
     "validation": {
       "required": "This field is required",
@@ -176,7 +189,29 @@
     },
     "protocol": "Protocol",
     "auto": "Auto",
-    "moreActions": "More Actions"
+    "moreActions": "More Actions",
+    "cancel": "Cancel",
+    "close": "Close",
+    "copy": "Copy",
+    "create": "Create",
+    "days": "days",
+    "delete": "Delete",
+    "detail": "Detail",
+    "loading": "Loading...",
+    "nextStep": "Next Step",
+    "none": "None",
+    "open": "Open",
+    "optional": "Optional",
+    "readOnly": "Read Only",
+    "recommended": "Recommended",
+    "save": "Save",
+    "unlimited": "Unlimited",
+    "time": {
+      "now": "Just now",
+      "minutesAgo": "{{count}} min ago",
+      "hoursAgo": "{{count}} hr ago",
+      "daysAgo": "{{count}} days ago"
+    }
   },
   "nav": {
     "home": "Home",
@@ -348,12 +383,153 @@
       "failedDesc": "The verification link may have expired or is invalid. Please try resending the verification email.",
       "resendEmail": "Resend Verification Email",
       "backToLogin": "Back to Sign In"
+    },
+    "passwordRules": {
+      "length": "At least 8 characters",
+      "letter": "Contains a letter",
+      "number": "Contains a number",
+      "strengthValid": "Password meets requirements"
+    },
+    "unauthorized": {
+      "title": "Access Denied",
+      "description": "You do not have permission to access this page. Please contact your administrator if you believe this is an error.",
+      "goBack": "Go Back",
+      "goToDashboard": "Go to Dashboard"
     }
   },
   "resourceGroups": {
     "associatedPlan": "Associated Plan",
     "planPlaceholder": "Plan #{{id}}",
-    "noData": "No resource groups"
+    "planPrefix": "Plan #{{id}}",
+    "noData": "No resource groups",
+    "unit": "items",
+    "copiedToClipboard": "Copied to clipboard",
+    "name": "Name",
+    "namePlaceholder": "Enter resource group name",
+    "nameRequired": "Name is required",
+    "nameTooLong": "Name cannot exceed 100 characters",
+    "description": "Description",
+    "descriptionPlaceholder": "Enter resource group description (optional)",
+    "selectPlan": "Select plan",
+    "selectPlanRequired": "Please select a plan",
+    "createTitle": "Create Resource Group",
+    "createDescription": "Create a new resource group and associate it with a subscription plan",
+    "createResourceGroup": "Create Resource Group",
+    "creating": "Creating...",
+    "cancel": "Cancel",
+    "create": "Create",
+    "editTitle": "Edit Resource Group",
+    "editDescription": "Modify resource group settings",
+    "save": "Save",
+    "saving": "Saving...",
+    "saveChanges": "Save Changes",
+    "deleteTitle": "Delete Resource Group",
+    "deleteDescription": "This action cannot be undone",
+    "deleteConfirm": "Are you sure you want to delete this resource group?",
+    "deleteWarning": "All member bindings will be removed",
+    "deleteFailWarning": "This action cannot be undone. Please confirm you want to delete this resource group.",
+    "confirmDelete": "Confirm Delete",
+    "deleting": "Deleting...",
+    "deleteConfirmTitle": "Confirm Deletion",
+    "deleteConfirmDescription": "Are you sure you want to delete this resource group? This action cannot be undone.",
+    "status": {
+      "active": "Active",
+      "inactive": "Inactive",
+      "enabled": "Enabled",
+      "disabled": "Disabled",
+      "stopped": "Stopped",
+      "activated": "Activated",
+      "deactivated": "Deactivated"
+    },
+    "tabs": {
+      "basicInfo": "Basic Info",
+      "nodes": "Nodes",
+      "forwardAgents": "Forward Agents",
+      "forwardRules": "Forward Rules"
+    },
+    "sections": {
+      "identificationInfo": "Identification",
+      "associatedPlan": "Associated Plan",
+      "description": "Description",
+      "timeInfo": "Time Information",
+      "resourceStats": "Resource Statistics",
+      "memberStats": "Member Statistics"
+    },
+    "labels": {
+      "planId": "Plan ID",
+      "groupDescription": "Description",
+      "createdAt": "Created At",
+      "updatedAt": "Updated At",
+      "associatedNodes": "Associated Nodes",
+      "forwardAgents": "Forward Agents",
+      "forwardRules": "Forward Rules",
+      "name": "Name",
+      "nodeCount": "Node Count",
+      "forwardAgentCount": "Forward Agent Count",
+      "forwardRuleCount": "Forward Rule Count"
+    },
+    "planHints": {
+      "forward": "This resource group belongs to a Forward plan and can only bind Forward Agents.",
+      "hybrid": "This resource group belongs to a Hybrid plan and can bind Nodes and Forward Rules.",
+      "node": "This resource group belongs to a Node plan and can bind Nodes and Forward Rules."
+    },
+    "actions": {
+      "selectAll": "Select All",
+      "deselectAll": "Deselect All",
+      "selectedCount": "{{count}} selected",
+      "remove": "Remove",
+      "addNode": "Add Node",
+      "addForwardAgent": "Add Forward Agent",
+      "addForwardRule": "Add Forward Rule",
+      "edit": "Edit",
+      "enableGroup": "Enable Group",
+      "disableGroup": "Disable Group",
+      "deleteGroup": "Delete Group",
+      "moreActions": "More Actions"
+    },
+    "empty": {
+      "noNodes": "No nodes in this resource group",
+      "noAgents": "No forward agents in this resource group",
+      "noRules": "No forward rules in this resource group"
+    },
+    "pagination": {
+      "showingOfTotal": "Showing {{showing}} of {{total}} {{type}}"
+    },
+    "addMembers": {
+      "title": {
+        "nodes": "Add Nodes",
+        "agents": "Add Forward Agents",
+        "rules": "Add Forward Rules"
+      },
+      "memberTypes": {
+        "nodes": "nodes",
+        "agents": "forward agents",
+        "rules": "forward rules"
+      },
+      "description": "Select {{memberType}} to add to resource group \"{{groupName}}\"",
+      "searchPlaceholder": "Search {{memberType}}...",
+      "empty": {
+        "nodes": "No available nodes",
+        "agents": "No available forward agents",
+        "rules": "No available forward rules"
+      },
+      "tryOtherKeywords": "Try other keywords",
+      "stats": {
+        "total": "Total {{memberType}}",
+        "associated": "Associated",
+        "available": "Available"
+      },
+      "cancel": "Cancel",
+      "adding": "Adding...",
+      "confirmAdd": "Add {{count}} items"
+    },
+    "editSheet": {
+      "description": "Modify information for resource group \"{{name}}\"",
+      "basicInfo": "Basic Information",
+      "associatedPlan": "Associated Plan",
+      "createdAt": "Created At",
+      "editableInfo": "Editable Information"
+    }
   },
   "nodeList": {
     "noNodes": "No nodes",
@@ -464,7 +640,6 @@
       "sort": "Sort",
       "enableDragSort": "Enable drag to sort",
       "disableDragSort": "Disable drag to sort",
-      "broadcast": "Broadcast",
       "broadcastTooltip": "Broadcast new API URL to {{count}} online nodes",
       "update": "Update",
       "updateTooltip": "Update {{count}} nodes",
@@ -480,20 +655,6 @@
         "region": "Region",
         "traffic": "Traffic",
         "users": "Users"
-      },
-      "table": {
-        "node": "Node",
-        "config": "Config",
-        "online": "Online",
-        "monitor": "Monitor",
-        "status": "Status",
-        "tags": "Tags",
-        "version": "Version",
-        "platform": "Platform",
-        "resourceGroup": "Resource Group",
-        "owner": "Owner",
-        "createdAt": "Created At",
-        "actions": "Actions"
       },
       "actions": {
         "viewDetail": "View Details",
@@ -526,6 +687,22 @@
         "monitorDescription": "Real-time system status including CPU, memory, network, etc."
       },
       "statusLabel": {
+        "active": "Active",
+        "inactive": "Inactive",
+        "maintenance": "Maintenance"
+      },
+      "deleteSheet": {
+        "title": "Delete Node",
+        "description": "This action cannot be undone. The node will be permanently removed.",
+        "confirmQuestion": "Are you sure you want to delete this node?",
+        "warningText": "All associated data and configurations will be permanently deleted. This action cannot be reversed.",
+        "deleting": "Deleting...",
+        "confirmButton": "Delete Node",
+        "confirmTitle": "Final Confirmation",
+        "confirmDesc": "This is your last chance to cancel. Are you sure you want to proceed?"
+      },
+      "stats": {
+        "total": "Total Nodes",
         "active": "Active",
         "inactive": "Inactive",
         "maintenance": "Maintenance"
@@ -593,7 +770,332 @@
         "timeInfo": "Time Info",
         "createdAt": "Created At",
         "updatedAt": "Updated At",
-        "lastOnline": "Last Online"
+        "lastOnline": "Last Online",
+        "noResourceGroups": "No resource groups available",
+        "noRouteRules": "No routing rules configured"
+      },
+      "emptyState": "No nodes",
+      "batchUpdate": {
+        "title": "Batch Update Nodes",
+        "description": "Trigger updates for all nodes with available updates",
+        "taskSubmitted": "Update tasks have been submitted",
+        "updatableCount": "Updatable Nodes",
+        "allUpToDate": "All nodes are up to date",
+        "willUpdateNodes": "The following nodes will be updated:",
+        "succeeded": "Succeeded",
+        "failed": "Failed",
+        "skipped": "Skipped",
+        "truncatedHint": "Results have been truncated. Check node details for full status.",
+        "updateTriggered": "Update triggered for these nodes:",
+        "updateFailed": "Failed to trigger update for these nodes:",
+        "updateSkipped": "Update skipped for these nodes:",
+        "updating": "Updating...",
+        "updateCount": "Update {{count}} Nodes"
+      },
+      "broadcast": {
+        "label": "Broadcast",
+        "broadcastTitle": "Broadcast API URL",
+        "notifyTitle": "Notify API URL Change",
+        "taskCompleted": "Notification task completed",
+        "notifyNodeDesc": "Notify node \"{{name}}\" with new API URL",
+        "notifyAllDesc": "Notify all online nodes with new API URL",
+        "targetNode": "Target Node",
+        "onlineNodeCount": "Online Node Count",
+        "online": "Online",
+        "offline": "Offline",
+        "nodeOffline": "Node is currently offline",
+        "noOnlineNodes": "No online nodes",
+        "newApiUrl": "New API URL",
+        "newApiUrlPlaceholder": "https://new-api.example.com",
+        "changeReason": "Change Reason (Optional)",
+        "changeReasonPlaceholder": "e.g., Server migrated to new data center",
+        "nodeAutoUpdateHint": "Node will automatically update configuration and reconnect to new URL",
+        "enterNewUrl": "Please enter a new API URL",
+        "invalidUrl": "Please enter a valid URL",
+        "dangerWarningTitle": "Dangerous Action Warning",
+        "dangerWarningDescSingle": "This action will immediately affect the target node's connection",
+        "dangerWarningDescAll": "This action will immediately affect all {{count}} online nodes' connections",
+        "impactTitle": "Action Impact:",
+        "impact1": "Nodes will disconnect and attempt to reconnect to new URL",
+        "impact2": "Service will be temporarily interrupted during reconnection",
+        "impact3": "Nodes may not recover if new URL is inaccessible",
+        "newAddress": "New Address",
+        "reason": "Reason",
+        "confirmInputNodeName": "Enter node name \"{{name}}\" to confirm",
+        "confirmInputNodeCount": "Enter online node count \"{{count}}\" to confirm",
+        "inputMismatch": "Input does not match",
+        "backToEdit": "Back to Edit",
+        "notifying": "Notifying...",
+        "confirmNotify": "Confirm Notify",
+        "notifySuccess": "Notification Successful",
+        "notifySuccessDesc": "Node \"{{name}}\" has received the API URL update notification",
+        "notifyFailed": "Notification Failed",
+        "notifyFailedDesc": "Node is currently offline and cannot receive notification",
+        "notified": "Notified",
+        "onlineNodes": "Online Nodes",
+        "notifySuccessSummary": "Successfully notified {{count}} nodes to update API URL",
+        "noOnlineNodesToNotify": "No online nodes to receive notification"
+      },
+      "form": {
+        "createNode": "Create Node",
+        "editNode": "Edit Node",
+        "copyNode": "Copy Node",
+        "createCopy": "Create Copy",
+        "description": "Configure the proxy node settings",
+        "required": "Required",
+        "configured": "Configured",
+        "config": "Settings",
+        "section": {
+          "basicInfo": "Basic Information",
+          "networkConfig": "Network Configuration",
+          "otherSettings": "Other Settings",
+          "routeConfig": "Route Configuration"
+        },
+        "nodeName": "Node Name",
+        "nodeNamePlaceholder": "e.g., Hong Kong Node 01",
+        "nodeNameHint": "A descriptive name for the node",
+        "nodeId": "Node ID",
+        "createdAt": "Created At",
+        "protocolType": "Protocol Type",
+        "protocolCannotChange": "Protocol type cannot be changed after creation",
+        "protocolDesc": {
+          "shadowsocks": "Fast & Secure",
+          "trojan": "TLS Disguise",
+          "vless": "Lightweight Protocol",
+          "vmess": "V2Ray Protocol",
+          "hysteria2": "QUIC Based",
+          "tuic": "UDP Optimized"
+        },
+        "encryptionMethod": "Encryption Method",
+        "transportProtocol": "Transport Protocol",
+        "transportProtocolHint": "Select the transport layer protocol",
+        "securityType": "Security Type",
+        "securityTypeHint": "Select the security mode",
+        "congestionControl": "Congestion Control",
+        "congestionControlHint": "Select congestion control algorithm",
+        "udpRelayMode": "UDP Relay Mode",
+        "udpRelayModeHint": "Select UDP relay mode",
+        "serverAddress": "Server Address",
+        "serverAddressPlaceholder": "e.g., example.com or 1.2.3.4",
+        "serverAddressHint": "Leave empty to auto-detect from agent",
+        "agentPort": "Agent Port",
+        "subscriptionPort": "Subscription Port",
+        "subscriptionPortPlaceholder": "Same as agent port if empty",
+        "subscriptionPortHint": "Port for subscription, defaults to agent port",
+        "sameAsAgentPort": "Same as agent port",
+        "plugin": "Plugin",
+        "pluginHint": "e.g., obfs-local, v2ray-plugin",
+        "pluginOptions": "Plugin Options",
+        "pluginOptionsHint": "Format: key1=value1;key2=value2",
+        "sniHint": "Server Name Indication for TLS",
+        "tlsSecurity": "TLS Verification",
+        "tlsSecurityHint": "Whether to verify TLS certificate",
+        "verifyCert": "Verify Certificate",
+        "skipVerify": "Skip Verification",
+        "wsPathHint": "WebSocket path, e.g., /ws",
+        "wsH2PathHint": "WS/H2 path, e.g., /ws",
+        "wsHttpPathHint": "WS/HTTP path, e.g., /ws",
+        "grpcServiceNameHint": "gRPC service name",
+        "flowHint": "VLESS flow control, e.g., xtls-rprx-vision",
+        "fingerprintHint": "TLS fingerprint for browser simulation",
+        "selectFingerprint": "Select fingerprint",
+        "realityPublicKeyHint": "Reality protocol public key",
+        "publicKeyPlaceholder": "Enter public key",
+        "shortIdHint": "Reality short ID",
+        "shortIdPlaceholder": "Enter short ID",
+        "optional": "Optional",
+        "alterIdHint": "VMess alterId, usually 0 for modern configs",
+        "enableTlsHint": "Enable TLS encryption",
+        "enableTls": "Enable TLS",
+        "disableTls": "Disable TLS",
+        "vmessSecurityHint": "VMess encryption method",
+        "obfsType": "Obfuscation Type",
+        "obfsTypeHint": "e.g., salamander",
+        "obfsPassword": "Obfuscation Password",
+        "obfsPasswordHint": "Password for obfuscation",
+        "passwordPlaceholder": "Enter password",
+        "upBandwidth": "Upload Bandwidth (Mbps)",
+        "downBandwidth": "Download Bandwidth (Mbps)",
+        "alpnHint": "ALPN protocol, e.g., h3",
+        "disableSni": "Disable SNI",
+        "disableSniHint": "Whether to disable SNI",
+        "notDisabled": "Not Disabled",
+        "disableSniOption": "Disable SNI",
+        "region": "Region",
+        "regionPlaceholder": "e.g., Hong Kong",
+        "regionHint": "Geographic location of the node",
+        "sortOrder": "Sort Order",
+        "sortOrderHint": "Lower values appear first in lists",
+        "tags": "Tags",
+        "tagsPlaceholder": "premium, gaming, streaming",
+        "tagsHint": "Comma-separated tags for categorization",
+        "resourceGroup": "Resource Groups",
+        "resourceGroupHint": "Associate node with resource groups",
+        "resourceGroupSelectHint": "Select one or more resource groups",
+        "selectResourceGroup": "Select resource group",
+        "noResourceGroup": "No resource group",
+        "requiredFieldsNote": "Required fields",
+        "muteNotification": "Mute Notifications",
+        "muteNotificationHint": "When muted, no alerts will be sent for this node",
+        "muted": "Muted",
+        "unmuted": "Not Muted",
+        "completed": "Completed",
+        "nextStepNetwork": "Next: Network Config",
+        "nextStepProtocol": "Next: Protocol Settings",
+        "commonPorts": "Common Ports",
+        "ssDefault": "SS Default (8388)",
+        "httpsDefault": "HTTPS (443)",
+        "httpsAlt": "HTTPS Alt (8443)",
+        "creating": "Creating...",
+        "saving": "Saving...",
+        "editNodeDesc": "Editing node \"{{name}}\"",
+        "vmessSecurityRecommended": "Recommended",
+        "congestionControlRecommended": "Recommended",
+        "randomFingerprint": "Random",
+        "tlsVerify": "TLS Verification",
+        "status": {
+          "active": "Active",
+          "inactive": "Inactive",
+          "maintenance": "Maintenance"
+        },
+        "validation": {
+          "nameRequired": "Node name is required",
+          "portRange": "Port must be between 1 and 65535",
+          "protocolRequired": "Protocol is required",
+          "encryptionRequired": "Encryption method is required"
+        }
+      },
+      "table": {
+        "node": "Node",
+        "config": "Config",
+        "online": "Online",
+        "monitor": "Monitor",
+        "status": "Status",
+        "tags": "Tags",
+        "version": "Version",
+        "platform": "Platform",
+        "resourceGroup": "Resource Group",
+        "owner": "Owner",
+        "createdAt": "Created At",
+        "actions": "Actions",
+        "tooltip": {
+          "lastOnline": "Last online"
+        },
+        "menu": {
+          "installScript": "Get Install Script",
+          "copyNode": "Copy Node",
+          "generateToken": "Generate Token",
+          "activate": "Activate",
+          "deactivate": "Deactivate",
+          "delete": "Delete"
+        }
+      },
+      "installScript": {
+        "title": "Install Script",
+        "description": "Run the install command on the target server to complete deployment",
+        "descriptionWithNode": "Install script for node \"{{name}}\", run on the target server to complete deployment",
+        "installCommand": "Install Command",
+        "recommended": "Recommended",
+        "installCommandHint": "Run this command with root privileges on the target server to automatically download and install the node agent",
+        "uninstallCommand": "Uninstall Command",
+        "scriptUrl": "Script URL",
+        "viewDetails": "View Details",
+        "clickToExpand": "Click to expand",
+        "clickToCollapse": "Click to collapse",
+        "apiUrl": "API URL"
+      },
+      "route": {
+        "title": "Route Configuration",
+        "noConfigHint": "No routing configuration. Click to enable custom routing rules.",
+        "enableConfig": "Enable Route Config",
+        "disableConfig": "Disable Route Config",
+        "modeVisual": "Visual",
+        "defaultOutbound": "Default Outbound",
+        "defaultOutboundHint": "Traffic that doesn't match any rule will use this outbound",
+        "rulesTitle": "Routing Rules",
+        "addRule": "Add Rule",
+        "moveUp": "Move Up",
+        "moveDown": "Move Down",
+        "rulesOrderHint": "Rules are matched in order from top to bottom. First matching rule wins.",
+        "json": {
+          "mustBeObject": "Configuration must be a JSON object",
+          "invalidFinal": "The 'final' field must be 'proxy', 'direct', 'block', or a valid node reference",
+          "parseErrorSwitch": "Invalid JSON format. Please fix errors before switching to visual mode.",
+          "parseError": "Invalid JSON format",
+          "hint": "Edit the raw JSON configuration directly. Supports all sing-box route rule options."
+        },
+        "outboundAction": "Outbound Action",
+        "outboundHint": "Select how matched traffic should be handled",
+        "routeToNode": "Route to Node",
+        "configured": "Configured",
+        "outbound": {
+          "proxy": "Proxy",
+          "direct": "Direct",
+          "block": "Block",
+          "node": "Node: {{name}}"
+        },
+        "section": {
+          "domain": "Domain Matching",
+          "ip": "IP Matching",
+          "geo": "GeoIP / GeoSite",
+          "portProtocol": "Port & Protocol",
+          "ruleSet": "Rule Set"
+        },
+        "domain": {
+          "exact": "Exact Domain",
+          "exactHint": "One domain per line, exact match",
+          "suffix": "Domain Suffix",
+          "suffixHint": "One suffix per line, matches domains ending with this suffix",
+          "keyword": "Domain Keyword",
+          "keywordHint": "One keyword per line, matches domains containing this keyword",
+          "regex": "Domain Regex",
+          "regexHint": "One regex pattern per line"
+        },
+        "ip": {
+          "targetCidr": "Target IP CIDR",
+          "targetCidrHint": "One CIDR per line, e.g., 192.168.0.0/16",
+          "sourceCidr": "Source IP CIDR",
+          "sourceCidrHint": "One CIDR per line, matches client source IP",
+          "privateIp": "Match Private IP"
+        },
+        "geo": {
+          "geoipHint": "One country code per line, e.g., cn, us, private",
+          "geositeHint": "One site category per line, e.g., cn, google, telegram"
+        },
+        "port": {
+          "target": "Target Port",
+          "source": "Source Port"
+        },
+        "protocol": {
+          "label": "Protocol",
+          "hint": "One protocol per line, e.g., http, tls, quic"
+        },
+        "network": {
+          "label": "Network",
+          "hint": "One network type per line, e.g., tcp, udp"
+        },
+        "ruleSet": {
+          "label": "Rule Set",
+          "hint": "One rule set name per line, e.g., geoip-cn, geosite-cn"
+        },
+        "display": {
+          "noConfig": "No route configuration",
+          "defaultOutbound": "Default Outbound",
+          "rulesCount": "{{count}} routing rules",
+          "noConditions": "No matching conditions",
+          "noRules": "No routing rules configured",
+          "domain": "Domain",
+          "suffix": "Suffix",
+          "keyword": "Keyword",
+          "regex": "Regex",
+          "sourceIp": "Source IP",
+          "privateIp": "Private IP",
+          "port": "Port",
+          "sourcePort": "Source Port",
+          "protocol": "Protocol",
+          "network": "Network",
+          "ruleSet": "Rule Set"
+        }
       }
     },
     "forwardRules": {
@@ -677,10 +1179,18 @@
       "target": {
         "manual": "Manual Config"
       },
+      "chainAgents": {
+        "noAgents": "No available agents",
+        "forwardOrder": "Forward Order (drag to sort)",
+        "portPlaceholder": "Port",
+        "selectedCount": "{{count}} agent(s) selected",
+        "selectedCountWithHint": "{{count}} agent(s) selected (drag to sort)"
+      },
       "columns": {
         "ruleName": "Rule Name",
         "path": "Path",
         "resourceGroup": "Resource Group",
+        "resourceGroups": "Resource Groups",
         "traffic": "Traffic",
         "syncStatus": "Sync Status",
         "status": "Status",
@@ -710,6 +1220,297 @@
         "resetTraffic": "Reset Traffic",
         "clickToDisable": "Click to disable",
         "clickToEnable": "Click to enable"
+      },
+      "detail": {
+        "statusEnabled": "Enabled",
+        "statusDisabled": "Disabled",
+        "basicInfo": "Basic Info",
+        "serverInfo": "Server Info",
+        "serverAddress": "Server Address",
+        "listenPort": "Listen Port",
+        "targetNode": "Target Node",
+        "externalSourceLabel": "External Source",
+        "externalRuleIdLabel": "External Rule ID",
+        "configOverview": "Config Overview",
+        "ruleType": "Rule Type",
+        "sortOrder": "Sort Order",
+        "createdTime": "Created Time",
+        "resourceGroups": "Resource Groups",
+        "trafficStats": "Traffic Stats",
+        "upload": "Upload",
+        "download": "Download",
+        "total": "Total",
+        "forwardPath": "Forward Path",
+        "forwardPathTitle": "Forward Path",
+        "nodesCount": "{{count}} nodes",
+        "trafficMultiplier": "Traffic Multiplier",
+        "multiplierAuto": "Auto",
+        "syncStatus": "Sync Status",
+        "sync": "Sync",
+        "run": "Run",
+        "healthyAgents": "Healthy Agents",
+        "noSyncStatus": "No sync status available",
+        "createdAt": "Created {{time}}",
+        "updatedAt": "Updated {{time}}",
+        "ipVersionAuto": "Auto",
+        "ipVersionIpv4": "IPv4",
+        "ipVersionIpv6": "IPv6",
+        "tunnelTypeWs": "WebSocket",
+        "tunnelTypeTls": "TLS",
+        "targetTypeNode": "Node",
+        "targetTypeManual": "Manual Config",
+        "protocol": "Protocol",
+        "ipVersion": "IP Version",
+        "tunnelType": "Tunnel Type",
+        "ruleId": "Rule ID",
+        "listenInfo": "Listen Info",
+        "entryAgent": "Entry Agent",
+        "entryAddress": "Entry Address",
+        "targetInfo": "Target Info",
+        "targetType": "Target Type",
+        "targetAddress": "Target Address",
+        "remark": "Remark"
+      },
+      "syncStatus": {
+        "synced": "Synced",
+        "pending": "Pending",
+        "failed": "Failed"
+      },
+      "runStatus": {
+        "running": "Running",
+        "stopped": "Stopped",
+        "error": "Error",
+        "starting": "Starting",
+        "unknown": "Unknown"
+      },
+      "form": {
+        "editButton": "Edit",
+        "probe": "Probe",
+        "probing": "Probing...",
+        "moreActions": "More Actions",
+        "copyRuleAction": "Copy Rule",
+        "disableRule": "Disable Rule",
+        "enableRule": "Enable Rule",
+        "deleteRule": "Delete Rule",
+        "createRule": "Create Rule",
+        "copyRule": "Copy Rule",
+        "editRule": "Edit Rule",
+        "basicInfo": "Basic Information",
+        "forwardAgent": "Forward Agent",
+        "selectForwardAgent": "Select forward agent",
+        "portRestriction": "Port restriction: {{range}}",
+        "ruleType": "Rule Type",
+        "ruleName": "Rule Name",
+        "ruleNamePlaceholder": "Enter rule name",
+        "protocolType": "Protocol Type",
+        "ipVersion": "IP Version",
+        "ipVersionAuto": "Auto",
+        "ipVersionHint": "Select which IP version to use for connections",
+        "forwardConfig": "Forwarding Configuration",
+        "listenPort": "Listen Port",
+        "listenPortAutoHint": "Leave empty to auto-assign",
+        "serverAddress": "Server Address",
+        "serverAddressPlaceholder": "Enter server address",
+        "targetNode": "Target Node",
+        "selectTargetNode": "Select target node",
+        "selectTargetNodeOptional": "Select target node (optional)",
+        "targetNodeHint": "Bind rule to a specific node for display purposes",
+        "externalSource": "External Source",
+        "externalSourcePlaceholder": "e.g., panel-name",
+        "externalSourceHint": "Optional, used to identify the source of this external rule",
+        "externalRuleId": "External Rule ID",
+        "externalRuleIdPlaceholder": "e.g., original-rule-id",
+        "externalRuleIdHint": "Optional, the original rule ID from external source",
+        "exitNode": "Exit Node",
+        "selectExitNode": "Select exit node",
+        "tunnelType": "Tunnel Type",
+        "tunnelTypeWsHint": "WebSocket: HTTP-friendly, supports CDN",
+        "tunnelTypeTlsHint": "TLS: Direct encrypted connection",
+        "tunnelHops": "Tunnel Hops",
+        "tunnelHopsPlaceholder": "Leave empty for full tunnel",
+        "tunnelHopsHint": "Number of nodes using tunnel mode (0 = start direct mode from first node)",
+        "chainNodes": "Chain Nodes",
+        "chainNodesWithPort": "Chain Nodes (with port config)",
+        "hybridChainHint": "First {{count}} nodes use tunnel, rest use direct connection",
+        "targetType": "Target Type",
+        "targetTypeManual": "Manual Input",
+        "targetTypeNode": "Node Selection",
+        "targetAddress": "Target Address",
+        "targetAddressPlaceholder": "IP or domain name",
+        "targetPort": "Target Port",
+        "targetNodeDynamicHint": "Node address will be dynamically resolved at runtime",
+        "advancedOptions": "Advanced Options",
+        "bindIp": "Bind IP",
+        "bindIpPlaceholder": "e.g., 0.0.0.0",
+        "bindIpHint": "Bind to specific IP, leave empty to bind all interfaces",
+        "trafficMultiplier": "Traffic Multiplier",
+        "trafficMultiplierAutoHint": "Leave empty to use auto multiplier",
+        "trafficMultiplierHint": "Traffic will be multiplied by this value for billing",
+        "trafficMultiplierNotModify": "Leave empty to keep current",
+        "trafficMultiplierCurrent": "Current: {{value}}x ({{type}})",
+        "trafficMultiplierUpdateHint": "Leave empty to keep current value, enter 0 to reset to auto",
+        "multiplierAuto": "auto",
+        "multiplierCustom": "custom",
+        "sortOrder": "Sort Order",
+        "sortOrderPlaceholder": "e.g., 100",
+        "sortOrderHint": "Lower values appear first in the list",
+        "sortSmallFirst": "Smaller values appear first",
+        "remark": "Remark",
+        "remarkPlaceholder": "Optional notes about this rule",
+        "bindResourceGroups": "Bind Resource Groups",
+        "bindResourceGroupsEdit": "Bind Resource Groups",
+        "bindResourceGroupsHint": "Select which resource groups can use this rule",
+        "selectedGroupsCount": "{{count}} groups selected",
+        "planTypeNode": "Node",
+        "planTypeHybrid": "Hybrid",
+        "basicInfoReadonly": "Basic Information (Read-only)",
+        "ruleId": "Rule ID",
+        "createdTime": "Created Time",
+        "editableInfo": "Editable Information",
+        "entryAgent": "Entry Agent",
+        "selectEntryAgent": "Select entry agent",
+        "exitAgent": "Exit Agent",
+        "selectExitAgent": "Select exit agent",
+        "copyRuleShort": "Copy Rule",
+        "creating": "Creating...",
+        "createCopy": "Create Copy",
+        "configured": "Configured",
+        "saving": "Saving..."
+      },
+      "batch": {
+        "createTitle": "Batch Create Rules",
+        "createDescription": "Create multiple forwarding rules by pasting JSON configuration",
+        "createComplete": "Batch creation completed",
+        "loadTemplate": "Load Template",
+        "copyTemplate": "Copy Template",
+        "jsonConfig": "JSON Configuration",
+        "validationError": "Validation Errors",
+        "moreErrors": "...and {{count}} more errors",
+        "jsonValid": "Valid JSON, {{count}} rules ready to create",
+        "succeeded": "Succeeded",
+        "failed": "Failed",
+        "createFailed": "Failed to create:",
+        "createSuccess": "Successfully created:",
+        "ruleIndex": "Rule #{{index}}",
+        "moreRules": "...and {{count}} more rules",
+        "cancel": "Cancel",
+        "creating": "Creating...",
+        "createRulesCount": "Create {{count}} Rules",
+        "close": "Close",
+        "deleteTitle": "Batch Delete Rules",
+        "deleteDescription": "Confirm batch delete operation",
+        "deleteComplete": "Batch deletion completed",
+        "deleteConfirm": "Are you sure you want to delete {{count}} selected rules?",
+        "deleteWarning": "This action cannot be undone. Please confirm carefully.",
+        "deleting": "Deleting...",
+        "deleteRulesCount": "Delete {{count}} Rules",
+        "deleteFailed": "Failed to delete:",
+        "updateTitle": "Batch Update Rules",
+        "updateDescription": "Update {{count}} selected rules",
+        "updateComplete": "Batch update completed",
+        "selectFieldsToUpdate": "Select fields to update",
+        "enterNewValues": "Enter new values",
+        "updateSummary": "Will update {{fields}} for {{count}} rules",
+        "updating": "Updating...",
+        "updateRulesCount": "Update {{count}} Rules",
+        "updateFailed": "Failed to update:",
+        "fieldName": "Rule Name",
+        "fieldRemark": "Remark",
+        "fieldSortOrder": "Sort Order",
+        "fieldEntryAgent": "Entry Agent",
+        "fieldExitAgent": "Exit Agent",
+        "namePlaceholder": "Enter new name",
+        "remarkPlaceholder": "Enter new remark",
+        "sortOrderPlaceholder": "Enter sort order",
+        "selectEntryAgent": "Select entry agent",
+        "selectExitAgent": "Select exit agent",
+        "selected": "Selected",
+        "rules": "rules",
+        "enableRules": "Enable",
+        "enableTooltip": "Enable selected rules",
+        "disableRules": "Disable",
+        "disableTooltip": "Disable selected rules",
+        "update": "Update",
+        "updateTooltip": "Update selected rules",
+        "delete": "Delete",
+        "deleteTooltip": "Delete selected rules",
+        "enableSelectedRules": "Enable Selected Rules",
+        "disableSelectedRules": "Disable Selected Rules",
+        "batchUpdate": "Batch Update",
+        "deleteSelectedRules": "Delete Selected Rules",
+        "cancelSelection": "Cancel Selection",
+        "enable": "Enable",
+        "disable": "Disable",
+        "processing": "Processing...",
+        "toggleTitle": "{{action}} Rules",
+        "toggleDescription": "Confirm batch {{action}} operation",
+        "toggleComplete": "Batch {{action}} completed",
+        "toggleConfirm": "Are you sure you want to {{action}} {{count}} selected rule(s)?",
+        "toggleEnableHint": "Enabled rules will start forwarding traffic immediately",
+        "toggleDisableHint": "Disabled rules will stop forwarding traffic",
+        "toggleFailed": "Failed to {{action}}:",
+        "toggleCount": "{{action}} {{count}} Rule(s)",
+        "validation": {
+          "invalidJson": "Invalid JSON format",
+          "mustBeObject": "JSON must be an object",
+          "missingRulesArray": "Missing \"rules\" array",
+          "rulesEmpty": "Rules array is empty",
+          "maxRulesExceeded": "Maximum 100 rules allowed per batch",
+          "missingField": "Rule #{{index}}: missing required field \"{{field}}\"",
+          "invalidRuleType": "Rule #{{index}}: invalid ruleType, must be one of: {{types}}",
+          "invalidProtocol": "Rule #{{index}}: invalid protocol, must be one of: {{protocols}}",
+          "missingTarget": "Rule #{{index}}: must specify either targetAddress+targetPort or targetNodeId",
+          "missingExitAgent": "Rule #{{index}}: entry type requires exitAgentId",
+          "missingChainAgents": "Rule #{{index}}: {{type}} type requires chainAgentIds"
+        }
+      },
+      "validation": {
+        "ruleNameRequired": "Rule name is required",
+        "serverAddressRequired": "Server address is required",
+        "listenPortRange": "Listen port must be between 1-65535",
+        "portNotInRange": "Port {{port}} is not allowed. Allowed range: {{range}}",
+        "portNotInRangeSimple": "Port is not in the allowed range",
+        "selectForwardAgent": "Please select a forward agent",
+        "protocolRequired": "Please select a protocol",
+        "targetAddressRequired": "Target address is required",
+        "targetPortRange": "Target port must be between 1-65535",
+        "selectTargetNode": "Please select a target node",
+        "selectExitNode": "Please select an exit node",
+        "selectAtLeastOneNode": "Please select at least one chain node",
+        "configurePortsForNodes": "Please configure ports for nodes: {{nodes}}",
+        "configureValidPorts": "Please configure valid ports for all chain nodes",
+        "configureValidPortsForDirectNodes": "Please configure valid ports for direct connection nodes"
+      },
+      "probe": {
+        "title": "Probe Result",
+        "target": "Target",
+        "entry": "Entry",
+        "exit": "Exit",
+        "probing": "Probing connection...",
+        "success": "Connection successful",
+        "failed": "Connection failed",
+        "copyAddress": "Copy address",
+        "latencyDetails": "Latency Details",
+        "offline": "Offline",
+        "failedShort": "Failed",
+        "retryHint": "Click probe button to test connection",
+        "close": "Close"
+      },
+      "sheet": {
+        "deleteRule": "Delete Rule",
+        "deleteConfirmDesc": "This action cannot be undone. Please confirm.",
+        "deleteWarningTitle": "Warning",
+        "deleteWarningDesc": "Deleting this rule will stop all traffic forwarding immediately. Active connections will be terminated.",
+        "autoAssign": "Auto",
+        "forwardAgent": "Forward Agent",
+        "trafficUsed": "Traffic Used",
+        "deleting": "Deleting...",
+        "confirmDeleteButton": "Delete Rule",
+        "cancel": "Cancel",
+        "confirmDeleteTitle": "Confirm Delete",
+        "confirmDeleteDesc": "Are you sure you want to permanently delete this rule?",
+        "save": "Save Changes",
+        "saving": "Saving..."
       }
     },
     "forwardAgents": {
@@ -775,6 +1576,23 @@
       "batchUpdate": {
         "tooltip": "Update {{count}} Forward Agents"
       },
+      "batchUpdateDialog": {
+        "title": "Batch Update Forward Agents",
+        "description": "Update all Forward Agents that have available updates",
+        "taskSubmitted": "Update task has been submitted",
+        "updatableCount": "Updatable Agents",
+        "allUpToDate": "All agents are already up to date",
+        "willUpdateAgents": "Following agents will be updated:",
+        "succeeded": "Succeeded",
+        "failed": "Failed",
+        "skipped": "Skipped",
+        "truncatedNotice": "Some results are truncated due to large number of agents",
+        "updateTriggered": "Update triggered for:",
+        "updateFailed": "Failed to update:",
+        "updateSkipped": "Skipped:",
+        "updating": "Updating...",
+        "updateButton": "Update {{count}} Agents"
+      },
       "filters": {
         "status": "Status",
         "all": "All",
@@ -816,11 +1634,13 @@
           "viewDetail": "View Details",
           "edit": "Edit",
           "getInstallScript": "Get Install Script",
+          "installScript": "Install Script",
           "copyNode": "Copy Node",
           "regenerateToken": "Regenerate Token",
           "checkUpdate": "Check Update",
           "checking": "Checking...",
           "broadcastUrl": "Broadcast URL",
+          "broadcastURL": "Broadcast URL",
           "enable": "Enable",
           "disable": "Disable",
           "delete": "Delete"
@@ -948,8 +1768,120 @@
         "regenerateToken": "Regenerate Token",
         "getInstallScript": "Get Install Script",
         "deleteAgent": "Delete Agent",
-        "moreActions": "More Actions"
-      }
+        "moreActions": "More Actions",
+        "monitor": "Monitor",
+        "cumulative": "Total",
+        "tunnel": "Tunnel",
+        "resource": "Group",
+        "version": "Ver",
+        "updateAvailable": "Update available",
+        "created": "Created"
+      },
+      "edit": {
+        "title": "Edit Forward Agent",
+        "sections": {
+          "basicInfo": "Basic Information",
+          "editableInfo": "Editable Information"
+        },
+        "labels": {
+          "agentId": "Agent ID",
+          "createdAt": "Created At",
+          "nodeName": "Node Name",
+          "publicAddress": "Public Address",
+          "tunnelAddress": "Tunnel Address",
+          "portLimit": "Port Limit",
+          "sortOrder": "Sort Order",
+          "blockedProtocols": "Blocked Protocols",
+          "remark": "Remark",
+          "resourceGroup": "Resource Group",
+          "muteNotification": "Mute Notification"
+        },
+        "placeholders": {
+          "publicAddress": "e.g., example.com or 1.2.3.4",
+          "tunnelAddress": "e.g., 10.0.0.1 or internal.example.com",
+          "portLimit": "e.g., 80,443,8000-9000",
+          "sortOrder": "e.g., 100",
+          "selectResourceGroup": "Select resource group"
+        },
+        "hints": {
+          "publicAddress": "Optional, auto-detected by Agent if empty",
+          "tunnelAddress": "Optional, for relay/exit node internal connection",
+          "portLimit": "Optional, empty allows all ports",
+          "sortOrder": "Optional, lower values appear first",
+          "blockedProtocols": "Optional, click to select protocols to block",
+          "resourceGroup": "Optional, assign agent to a resource group",
+          "muteNotification": "When enabled, no notifications will be sent for this agent"
+        },
+        "validation": {
+          "nameRequired": "Node name is required"
+        },
+        "noResourceGroup": "No resource group",
+        "muted": "Muted",
+        "unmuted": "Not muted"
+      },
+      "create": {
+        "title": "Create Forward Agent",
+        "copyTitle": "Copy Forward Agent",
+        "description": "Create a new Forward Agent node to manage your proxy services",
+        "labels": {
+          "nodeName": "Node Name",
+          "publicAddress": "Public Address",
+          "tunnelAddress": "Tunnel Address",
+          "portLimit": "Port Limit",
+          "sortOrder": "Sort Order",
+          "blockedProtocols": "Blocked Protocols",
+          "remark": "Remark"
+        },
+        "placeholders": {
+          "nodeName": "e.g., Main Forward Agent",
+          "publicAddress": "e.g., example.com or 1.2.3.4",
+          "tunnelAddress": "e.g., 10.0.0.1 or internal.example.com",
+          "portLimit": "e.g., 80,443,8000-9000",
+          "sortOrder": "e.g., 100",
+          "remark": "Optional: add a remark"
+        },
+        "hints": {
+          "publicAddress": "Optional, auto-detected by Agent if empty",
+          "tunnelAddress": "Optional, for relay/exit node internal connection",
+          "portLimit": "Optional, empty allows all ports",
+          "sortOrder": "Optional, lower values appear first",
+          "blockedProtocols": "Optional, click to select protocols to block"
+        },
+        "validation": {
+          "nameRequired": "Node name is required"
+        },
+        "creating": "Creating..."
+      },
+      "delete": {
+        "title": "Delete Forward Agent",
+        "description": "This action cannot be undone",
+        "confirmTitle": "Are you sure?",
+        "confirmMessage": "Deleting this Forward Agent will remove all associated configurations and cannot be recovered.",
+        "noPublicAddress": "No public address",
+        "enabled": "Enabled",
+        "disabled": "Disabled",
+        "online": "Online",
+        "offline": "Offline",
+        "deleting": "Deleting...",
+        "confirmButton": "Delete",
+        "finalConfirmTitle": "Final Confirmation",
+        "finalConfirmDescription": "Please confirm that you want to permanently delete this Forward Agent."
+      },
+      "installScript": {
+        "title": "Install Script",
+        "description": "Use the command below to install Forward Agent on your server",
+        "descriptionWithName": "Use the command below to install Forward Agent \"{{name}}\" on your server",
+        "installCommand": "Install Command",
+        "recommended": "Recommended",
+        "installCommandHint": "Run this command on your server to install and configure the Forward Agent",
+        "uninstallCommand": "Uninstall Command",
+        "scriptUrl": "Script URL",
+        "viewDetails": "View Details",
+        "clickToExpand": "Click to expand",
+        "clickToCollapse": "Click to collapse",
+        "serverUrl": "Server URL"
+      },
+      "emptyState": "No forward agent data"
     },
     "users": {
       "title": "User Management",
@@ -993,6 +1925,7 @@
         "createUser": "Create User"
       },
       "resetPassword": {
+        "title": "Reset Password",
         "description": "Set a new password for user {{email}}",
         "newPassword": "New Password",
         "newPasswordPlaceholder": "Enter new password",
@@ -1009,6 +1942,74 @@
         "passwordHint": "{{min}}-{{max}} characters, must contain letters and numbers",
         "resetting": "Resetting...",
         "confirmReset": "Confirm Reset"
+      },
+      "actions": {
+        "assignSubscription": "Assign Subscription",
+        "edit": "Edit",
+        "resetPassword": "Reset Password",
+        "delete": "Delete",
+        "details": "View Details",
+        "cancel": "Cancel"
+      },
+      "fields": {
+        "email": "Email",
+        "emailShort": "Email",
+        "name": "Name",
+        "nameShort": "Name",
+        "namePlaceholder": "Enter username",
+        "namePlaceholderShort": "Username",
+        "nameLengthHint": "2-100 characters",
+        "passwordPlaceholder": "Enter password",
+        "status": "Status",
+        "role": "Role",
+        "createdAt": "Created"
+      },
+      "create": {
+        "title": "Create User",
+        "description": "Fill in the information to create a new user account",
+        "passwordValid": "Valid",
+        "passwordSecurityHint": "The initial password should be communicated to the user securely. It is recommended that the user change their password after first login.",
+        "creating": "Creating...",
+        "createUser": "Create User"
+      },
+      "delete": {
+        "title": "Delete User",
+        "description": "This action cannot be undone",
+        "confirmQuestion": "Are you sure you want to delete this user?",
+        "warningMessage": "All user data will be permanently deleted, including subscriptions and related records.",
+        "username": "Username",
+        "deleting": "Deleting...",
+        "confirmDelete": "Delete User",
+        "confirmDeleteQuestion": "Confirm delete this user?",
+        "cannotRecover": "This action cannot be undone. All user data will be permanently deleted."
+      },
+      "edit": {
+        "title": "Edit User",
+        "description": "Editing user {{name}}",
+        "basicInfo": "Basic Information",
+        "userId": "User ID",
+        "createdAt": "Created At",
+        "editableInfo": "Editable Information",
+        "saveChanges": "Save Changes",
+        "save": "Save"
+      },
+      "status": {
+        "active": "Active",
+        "inactive": "Inactive",
+        "pending": "Pending",
+        "suspended": "Suspended"
+      },
+      "role": {
+        "user": "User",
+        "admin": "Admin"
+      },
+      "validation": {
+        "emailInvalid": "Invalid email format",
+        "nameLengthError": "Name must be 2-100 characters"
+      },
+      "table": {
+        "name": "Name",
+        "email": "Email"
       }
     },
     "subscriptions": {
@@ -1044,7 +2045,8 @@
         "direct": "Direct",
         "entry": "Entry",
         "chain": "Chain",
-        "directChain": "Direct Chain"
+        "directChain": "Direct Chain",
+        "direct_chain": "Direct Chain"
       },
       "table": {
         "planName": "Plan Name",
@@ -1102,13 +2104,47 @@
         "sortOrderHint": "Lower numbers appear first",
         "isPublic": "Show this plan publicly",
         "creating": "Creating...",
-        "createCopy": "Create Copy"
-      }
+        "createCopy": "Create Copy",
+        "editPlan": "Edit Plan",
+        "editDescription": "Modify settings for plan \"{{name}}\"",
+        "saving": "Saving...",
+        "saveChanges": "Save Changes",
+        "otherConfig": "Other Configuration",
+        "slugPlaceholder": "url-slug"
+      },
+      "detail": {
+        "basicInfo": "Basic Info",
+        "planType": "Plan Type",
+        "visibility": "Visibility",
+        "trialPeriod": "Trial Period",
+        "planId": "Plan ID",
+        "billingCycles": "Billing Cycles",
+        "description": "Description",
+        "slug": "Slug",
+        "cycle": "Cycle",
+        "public": "Public",
+        "trial": "Trial",
+        "sortOrder": "Sort"
+      },
+      "actions": {
+        "activatePlan": "Activate Plan",
+        "deactivatePlan": "Deactivate Plan",
+        "deletePlan": "Delete Plan",
+        "duplicate": "Duplicate",
+        "viewSubscriptions": "View Subscriptions"
+      },
+      "emptyState": "No subscription plans"
     },
     "resourceGroups": {
       "title": "Resource Groups",
       "description": "Manage resource groups",
-      "lastUpdated": "Last updated"
+      "lastUpdated": "Last updated",
+      "emptyState": "No resource groups",
+      "detail": {
+        "plan": "Plan",
+        "description": "Description",
+        "created": "Created"
+      }
     },
     "externalForwardRules": {
       "title": "External Forward Rules",
@@ -1218,6 +2254,11 @@
       "noOnlineEntities": "No online entities",
       "waitingAgentOnline": "Waiting for agent to come online...",
       "clickAddToSelectEntities": "Click \"Add\" to select entities",
+      "entityStatus": "Entity Status",
+      "searchAgent": "Search by name...",
+      "noMatchingEntities": "No matching entities",
+      "noEntities": "No entities available",
+      "eventLog": "Event Log",
       "levelHigh": "High",
       "levelMedium": "Medium",
       "levelNormal": "Normal",
@@ -1306,6 +2347,9 @@
         "noRealtimeData": "No realtime data available"
       },
       "metrics": {
+        "memory": "Memory",
+        "download": "Download",
+        "upload": "Upload",
         "cpuDetails": "CPU Details",
         "cores": "Cores",
         "coresUnit": "cores",
@@ -1347,7 +2391,10 @@
         "kernelVersion": "Kernel Version",
         "fileDescriptors": "File Descriptors",
         "entropyAvailable": "Entropy Available",
-        "bits": "bits"
+        "bits": "bits",
+        "loadAvg1": "Load Avg (1m)",
+        "loadAvg5": "Load Avg (5m)",
+        "loadAvg15": "Load Avg (15m)"
       }
     },
     "settings": {
@@ -1371,6 +2418,19 @@
         "testConnection": "Test Connection",
         "saveChanges": "Save Changes",
         "invalidUrl": "Please enter a valid URL"
+      }
+    },
+    "resourceGroups": {
+      "title": "Resource Groups",
+      "description": "Manage resource groups",
+      "groupsUnit": "groups",
+      "withPlans": "with plans",
+      "lastUpdated": "Last updated",
+      "emptyState": "No resource groups",
+      "detail": {
+        "plan": "Plan",
+        "description": "Description",
+        "created": "Created"
       }
     }
   },
@@ -1511,7 +2571,27 @@
     "today": "Today",
     "yesterday": "Yesterday",
     "sevenDays": "7 Days",
-    "thirtyDays": "30 Days"
+    "thirtyDays": "30 Days",
+    "noAvailableNodes": "No Available Nodes",
+    "noAvailableNodesDesc": "There are no available forward agents for your subscription.",
+    "availableNodesCount": "{{count}} available nodes",
+    "nodeAvailable": "Available",
+    "nodeUnavailable": "Unavailable"
+  },
+  "forwardUsage": {
+    "quotaUsage": "Quota Usage",
+    "forwardQuota": "Forward Quota",
+    "rules": "Rules",
+    "traffic": "Traffic",
+    "types": "Types",
+    "ruleTypes": {
+      "portForward": "Port Forward",
+      "socks5Proxy": "SOCKS5",
+      "httpProxy": "HTTP",
+      "relayTunnel": "Relay",
+      "nodeProxy": "Node",
+      "chain": "Chain"
+    }
   },
   "fields": {
     "name": "Name:",
@@ -1879,12 +2959,60 @@
   "profile": {
     "title": "Profile Settings",
     "pleaseLogin": "Please log in first",
+    "tabs": {
+      "basicInfo": "Basic Info",
+      "security": "Security"
+    },
     "avatar": {
       "title": "Profile Avatar",
-      "description": "Click to upload a new avatar. Supports JPG, PNG and WebP formats, max 2MB."
+      "description": "Click to upload a new avatar. Supports JPG, PNG and WebP formats, max 2MB.",
+      "fileSizeError": "File size exceeds 2MB limit",
+      "fileTypeError": "Only JPG, PNG and WebP formats are supported",
+      "changeAvatar": "Change Avatar",
+      "supportedFormats": "Supports JPG, PNG, WebP, max 2MB",
+      "comingSoon": "Avatar upload feature is coming soon"
+    },
+    "avatarCrop": {
+      "title": "Crop Avatar",
+      "description": "Drag to adjust the crop area, use the slider to zoom in or out",
+      "zoom": "Zoom"
     },
     "basicInfo": {
-      "title": "Basic Information"
+      "title": "Basic Information",
+      "username": "Username",
+      "usernameHint": "This is your public display name",
+      "email": "Email",
+      "emailHint": "Used for login and receiving notifications",
+      "accountStatus": "Account Status",
+      "emailChangeReminder": "Changing your email address requires re-verification",
+      "saveChanges": "Save Changes"
+    },
+    "changePassword": {
+      "currentPassword": "Current Password",
+      "newPassword": "New Password",
+      "confirmPassword": "Confirm New Password",
+      "passwordStrength": "Password Strength: ",
+      "strength": {
+        "weak": "Weak",
+        "medium": "Medium",
+        "good": "Good",
+        "strong": "Strong"
+      },
+      "logoutAllDevices": "Log out from all devices",
+      "logoutAllDevicesDesc": "Signing out from all devices will invalidate all active sessions",
+      "securityTip": "Security Reminder",
+      "securityTipDesc": "Never share your password with anyone. Use a unique password for each account.",
+      "submit": "Change Password"
+    },
+    "security": {
+      "changePasswordTitle": "Change Password",
+      "changePasswordDesc": "Regularly changing your password helps keep your account secure",
+      "oauthBindingTitle": "Third-Party Account Binding",
+      "oauthBindingDesc": "Link third-party accounts for quick login",
+      "oauthComingSoon": "Third-party account binding feature is coming soon",
+      "dangerZoneTitle": "Danger Zone",
+      "dangerZoneDesc": "Irreversible and destructive actions",
+      "deleteAccountComingSoon": "Account deletion feature is coming soon"
     },
     "tip": "Tip: Changing your email address requires re-verification. To change your password, please visit the account settings page."
   },
@@ -1954,6 +3082,71 @@
       "title": "Traffic Alert",
       "description": "Get notified when traffic usage exceeds threshold",
       "threshold": "Threshold {{percent}}%"
+    }
+  },
+  "telegramAdmin": {
+    "settings": {
+      "enableNotifications": "Enable Telegram Notifications",
+      "enableNotificationsDesc": "Enable administrators to bind Telegram and receive notifications",
+      "botTokenDesc": "Bot token obtained from @BotFather",
+      "webhookUrlDesc": "Webhook URL for receiving Telegram updates",
+      "webhookSecretDesc": "Secret key for verifying Webhook requests",
+      "currentMode": "Current Mode",
+      "testConnection": "Test Connection",
+      "saveChanges": "Save Changes"
+    },
+    "binding": {
+      "title": "Telegram Notification",
+      "notEnabled": "Telegram notification feature is not enabled",
+      "bound": "Bound",
+      "notifications": "{{count}} notifications enabled",
+      "unbindTitle": "Unbind Telegram",
+      "unbindDesc": "Are you sure you want to unbind Telegram? You will no longer receive notifications.",
+      "unbind": "Unbind"
+    },
+    "preferences": {
+      "systemAlerts": "System Alerts",
+      "nodeOffline": "Node Offline",
+      "nodeOfflineDesc": "Notify when node goes offline",
+      "agentOffline": "Agent Offline",
+      "agentOfflineDesc": "Notify when forward agent goes offline",
+      "offlineThreshold": "Offline Threshold",
+      "offlineThresholdDesc": "Time before marking as offline",
+      "checkInterval": "Check Interval",
+      "checkIntervalDesc": "Interval between offline checks",
+      "minutes": "min",
+      "businessEvents": "Business Events",
+      "newUser": "New User Registration",
+      "newUserDesc": "Notify when new user registers",
+      "paymentSuccess": "Payment Success",
+      "paymentSuccessDesc": "Notify when payment is successful",
+      "reports": "Reports",
+      "dailySummary": "Daily Summary",
+      "dailySummaryDesc": "Receive daily summary report",
+      "weeklySummary": "Weekly Summary",
+      "weeklySummaryDesc": "Receive weekly summary report",
+      "sendTime": "Send Time",
+      "dailySendTimeDesc": "Time to send daily summary",
+      "weeklySendTimeDesc": "Time to send weekly summary",
+      "sendWeekday": "Send Day",
+      "weeklySendWeekdayDesc": "Day to send weekly summary",
+      "weekdays": {
+        "sunday": "Sun",
+        "monday": "Mon",
+        "tuesday": "Tue",
+        "wednesday": "Wed",
+        "thursday": "Thu",
+        "friday": "Fri",
+        "saturday": "Sat"
+      },
+      "saveChanges": "Save Changes"
+    },
+    "verifyCode": {
+      "instruction1": "Open Telegram and send the following command to ",
+      "instruction2": " to complete binding:",
+      "copied": "Copied!",
+      "clickToCopy": "Click to copy",
+      "codeExpiry": "Code expires in 10 minutes"
     }
   },
   "userNodes": {
@@ -2127,9 +3320,35 @@
       "timeInfo": "Time Information",
       "createdAt": "Created At:",
       "updatedAt": "Updated At:"
+    },
+    "edit": {
+      "title": "Edit Node",
+      "description": "Modify node configuration. Some fields cannot be changed after creation.",
+      "readOnlyInfo": "Read-only Information",
+      "editableInfo": "Editable Information",
+      "protocol": "Protocol",
+      "status": "Status",
+      "encryptionMethod": "Encryption Method",
+      "transportProtocol": "Transport Protocol",
+      "nodeName": "Node Name",
+      "serverAddress": "Server Address",
+      "serverAddressPlaceholder": "Leave empty to auto-detect",
+      "serverAddressHint": "Optional, will auto-detect from Agent public IP if empty",
+      "agentPort": "Agent Port",
+      "subscriptionPort": "Subscription Port",
+      "subscriptionPortPlaceholder": "Leave empty to use Agent port",
+      "saving": "Saving...",
+      "validation": {
+        "nameRequired": "Please enter node name",
+        "validPort": "Please enter a valid port number"
+      }
     }
   },
   "userForwardRules": {
+    "pageTitle": "Forward Rules",
+    "pageDescription": "Manage your port forwarding rules",
+    "totalRules": "{{count}} rules total",
+    "addRuleShort": "Add",
     "columns": {
       "ruleName": "Rule Name",
       "entry": "Entry",
@@ -2167,9 +3386,87 @@
     "exitChain": "Exit Chain",
     "loadMore": "Load More",
     "remark": "Remark:",
+    "addRule": "Add Rule",
     "confirmDelete": {
       "title": "Confirm Delete",
       "description": "Are you sure you want to delete forward rule \"{{name}}\"? This action cannot be undone."
+    },
+    "limitReached": {
+      "title": "Rule Limit Reached",
+      "description": "You have reached the maximum of {{count}} forward rules allowed by your subscription plan."
+    },
+    "noSubscription": {
+      "title": "No Active Subscription",
+      "description": "You need an active subscription to create forward rules.",
+      "viewPlans": "View Plans"
+    },
+    "form": {
+      "basicInfo": "Basic Info",
+      "ruleName": "Rule Name",
+      "ruleNamePlaceholder": "Give your rule a name",
+      "forwardAgent": "Forward Agent",
+      "loading": "Loading...",
+      "selectAgent": "Select Agent",
+      "noAgentsAvailable": "No agents available",
+      "ruleType": "Rule Type",
+      "exitNode": "Exit Node",
+      "selectExitNode": "Select Exit Node",
+      "relayNode": "Relay Nodes",
+      "relayNodeWithPort": "Relay Nodes (with Port)",
+      "remark": "Remark",
+      "remarkPlaceholder": "Add remark (optional)",
+      "forwardConfig": "Forward Config",
+      "listenPort": "Listen Port",
+      "listenPortPlaceholder": "Leave empty for auto-assign",
+      "listenPortHint": "Leave empty for system auto-assignment",
+      "protocol": "Protocol",
+      "targetType": "Target Type",
+      "manualAddress": "Manual Address",
+      "selectNodeDynamic": "Select Node (Dynamic)",
+      "targetAddress": "Target Address",
+      "targetAddressPlaceholder": "e.g., example.com or 192.168.1.1",
+      "targetPort": "Target Port",
+      "targetNode": "Target Node",
+      "selectTargetNode": "Select Target Node",
+      "targetNodeHint": "The target address will be dynamically resolved from the selected node",
+      "noNodesAvailable": "No available nodes",
+      "noNodesEmpty": "No nodes available",
+      "ipVersion": "IP Version",
+      "ipVersionAuto": "Auto",
+      "sortOrder": "Sort Order",
+      "sortOrderPlaceholder": "Leave empty for default 0",
+      "sortOrderHint": "Lower value means higher priority",
+      "cancel": "Cancel",
+      "creating": "Creating...",
+      "create": "Create",
+      "editRuleTitle": "Edit Rule",
+      "saving": "Saving...",
+      "save": "Save",
+      "forwardOrderAdjustable": "Forward order (drag to adjust)",
+      "portPlaceholder": "Port",
+      "adjustOrderHint": ", drag to adjust order",
+      "selectedNodesCount": "{{count}} node(s) selected",
+      "readonlyInfo": {
+        "title": "Read-only Info",
+        "forwardAgent": "Forward Agent: ",
+        "ruleType": "Rule Type: ",
+        "listenPort": "Listen Port: ",
+        "systemAssigned": "System Assigned",
+        "exitNode": "Exit Node: ",
+        "relayNodes": "Relay Nodes: "
+      },
+      "validation": {
+        "selectAgent": "Please select a forward agent",
+        "ruleNameRequired": "Rule name is required",
+        "portRange": "Port must be between 1-65535",
+        "selectExitNode": "Please select an exit node",
+        "selectChainNode": "Please select at least one relay node",
+        "chainPortRequired": "Please configure port for each relay node",
+        "chainPortMissing": "Missing port for nodes: {{nodes}}",
+        "targetAddressRequired": "Target address is required",
+        "targetPortRequired": "Target port is required",
+        "targetNodeRequired": "Please select a target node"
+      }
     }
   },
   "externalForwardRules": {
@@ -2358,5 +3655,42 @@
       "500": "Server error. Please try again later.",
       "503": "Service temporarily unavailable. Please try again later."
     }
+  },
+  "subscriptionPlans": {
+    "subscribers": "Subscribers",
+    "subscribersOfPlan": "Subscribers of \"{{name}}\"",
+    "subscriptionsCount": "{{count}} subscriptions",
+    "activeCount": "{{count}} active",
+    "searchUsersPlaceholder": "Search users...",
+    "noMatchingSubscriptions": "No matching subscriptions",
+    "noSubscribers": "No subscribers",
+    "tryOtherKeywords": "Try other keywords",
+    "noPlanSubscribers": "This plan has no subscribers yet",
+    "userNumber": "User #{{id}}",
+    "filterResults": "Showing {{filtered}} of {{total}} results",
+    "editPlan": "Edit Plan",
+    "editPlanDescription": "Modify the settings for this subscription plan",
+    "planId": "Plan ID",
+    "pricingOptionsOptional": "Pricing Options (Optional)",
+    "noPricingConfigured": "No pricing options configured",
+    "billingCycleExists": "This billing cycle already exists",
+    "currency": "Currency",
+    "pricingHint": "At least one pricing option with a price > 0 is recommended for paid plans",
+    "deletePlan": "Delete Plan",
+    "deleteConfirmHint": "This action cannot be undone. Please confirm carefully.",
+    "confirmDeletePlan": "Are you sure you want to delete this plan?",
+    "visibility": "Visibility",
+    "priceRange": "Price Range",
+    "deleting": "Deleting...",
+    "confirmDelete": "Confirm Delete",
+    "confirmDeleteTitle": "Confirm Delete Plan",
+    "duplicateBillingCycles": "Duplicate billing cycles found",
+    "priceConversion": "≈ ¥{{price}}/month"
+  },
+  "subscriptionForwardRules": {
+    "noAvailableAgents": "No available agents",
+    "noAvailableNodes": "No available nodes",
+    "readOnlyInfo": "Read-only Information",
+    "systemAssigned": "System Assigned"
   }
 }

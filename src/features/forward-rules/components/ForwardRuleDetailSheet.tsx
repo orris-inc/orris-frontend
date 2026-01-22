@@ -90,12 +90,12 @@ export interface ForwardRuleDetailSheetProps {
 // Constants
 // ============================================================================
 
-const RULE_TYPE_CONFIG: Record<ForwardRuleType, { label: string; icon: React.ReactNode; variant: 'info' | 'success' | 'warning' | 'default' }> = {
-  direct: { label: '直连', icon: <Zap className="size-4" />, variant: 'info' },
-  entry: { label: '入口', icon: <Shield className="size-4" />, variant: 'success' },
-  chain: { label: '链式', icon: <Link2 className="size-4" />, variant: 'warning' },
-  direct_chain: { label: '直连链', icon: <Globe className="size-4" />, variant: 'default' },
-  external: { label: '外部', icon: <Globe className="size-4" />, variant: 'default' },
+const RULE_TYPE_CONFIG: Record<ForwardRuleType, { labelKey: string; icon: React.ReactNode; variant: 'info' | 'success' | 'warning' | 'default' }> = {
+  direct: { labelKey: 'admin.forwardRules.ruleType.direct', icon: <Zap className="size-4" />, variant: 'info' },
+  entry: { labelKey: 'admin.forwardRules.ruleType.entry', icon: <Shield className="size-4" />, variant: 'success' },
+  chain: { labelKey: 'admin.forwardRules.ruleType.chain', icon: <Link2 className="size-4" />, variant: 'warning' },
+  direct_chain: { labelKey: 'admin.forwardRules.ruleType.directChain', icon: <Globe className="size-4" />, variant: 'default' },
+  external: { labelKey: 'admin.forwardRules.ruleType.external', icon: <Globe className="size-4" />, variant: 'default' },
 };
 
 const PROTOCOL_LABELS: Record<ForwardProtocol, string> = {
@@ -104,36 +104,36 @@ const PROTOCOL_LABELS: Record<ForwardProtocol, string> = {
   both: 'TCP/UDP',
 };
 
-const IP_VERSION_LABELS: Record<IPVersion, string> = {
-  auto: '自动',
-  ipv4: 'IPv4',
-  ipv6: 'IPv6',
+const IP_VERSION_LABEL_KEYS: Record<IPVersion, string> = {
+  auto: 'admin.forwardRules.detail.ipVersionAuto',
+  ipv4: 'admin.forwardRules.detail.ipVersionIpv4',
+  ipv6: 'admin.forwardRules.detail.ipVersionIpv6',
 };
 
-const TUNNEL_TYPE_LABELS: Record<TunnelType, string> = {
-  ws: 'WebSocket',
-  tls: 'TLS',
+const TUNNEL_TYPE_LABEL_KEYS: Record<TunnelType, string> = {
+  ws: 'admin.forwardRules.detail.tunnelTypeWs',
+  tls: 'admin.forwardRules.detail.tunnelTypeTls',
 };
 
-const TARGET_TYPE_LABELS: Record<'node' | 'manual', string> = {
-  node: '节点',
-  manual: '手动',
+const TARGET_TYPE_LABEL_KEYS: Record<'node' | 'manual', string> = {
+  node: 'admin.forwardRules.detail.targetTypeNode',
+  manual: 'admin.forwardRules.detail.targetTypeManual',
 };
 
 // Sync status config with explicit color classes for Tailwind scanning
-const SYNC_STATUS_CONFIG: Record<RuleSyncStatus, { label: string; icon: React.ElementType; colorClass: string }> = {
-  synced: { label: '已同步', icon: CheckCircle2, colorClass: 'text-success' },
-  pending: { label: '同步中', icon: CircleDashed, colorClass: 'text-warning' },
-  failed: { label: '同步失败', icon: AlertCircle, colorClass: 'text-danger' },
+const SYNC_STATUS_CONFIG: Record<RuleSyncStatus, { labelKey: string; icon: React.ElementType; colorClass: string }> = {
+  synced: { labelKey: 'admin.forwardRules.syncStatus.synced', icon: CheckCircle2, colorClass: 'text-success' },
+  pending: { labelKey: 'admin.forwardRules.syncStatus.pending', icon: CircleDashed, colorClass: 'text-warning' },
+  failed: { labelKey: 'admin.forwardRules.syncStatus.failed', icon: AlertCircle, colorClass: 'text-danger' },
 };
 
 // Run status config with explicit color classes for Tailwind scanning
-const RUN_STATUS_CONFIG: Record<RuleRunStatus | 'unknown', { label: string; icon: React.ElementType; colorClass: string }> = {
-  running: { label: '运行中', icon: Play, colorClass: 'text-success' },
-  stopped: { label: '已停止', icon: Square, colorClass: 'text-muted-foreground' },
-  error: { label: '错误', icon: AlertTriangle, colorClass: 'text-danger' },
-  starting: { label: '启动中', icon: RotateCw, colorClass: 'text-info' },
-  unknown: { label: '未知', icon: HelpCircle, colorClass: 'text-muted-foreground' },
+const RUN_STATUS_CONFIG: Record<RuleRunStatus | 'unknown', { labelKey: string; icon: React.ElementType; colorClass: string }> = {
+  running: { labelKey: 'admin.forwardRules.runStatus.running', icon: Play, colorClass: 'text-success' },
+  stopped: { labelKey: 'admin.forwardRules.runStatus.stopped', icon: Square, colorClass: 'text-muted-foreground' },
+  error: { labelKey: 'admin.forwardRules.runStatus.error', icon: AlertTriangle, colorClass: 'text-danger' },
+  starting: { labelKey: 'admin.forwardRules.runStatus.starting', icon: RotateCw, colorClass: 'text-info' },
+  unknown: { labelKey: 'admin.forwardRules.runStatus.unknown', icon: HelpCircle, colorClass: 'text-muted-foreground' },
 };
 
 // ============================================================================
@@ -206,11 +206,12 @@ interface PathNodeProps {
 }
 
 const PathNode = ({ type, name, address, port, isRunning }: PathNodeProps) => {
+  const { t } = useTranslation();
   const config = {
-    entry: { icon: Bot, color: 'text-success', bg: 'bg-success/10', label: '入口' },
-    relay: { icon: Bot, color: 'text-primary', bg: 'bg-primary/10', label: '中继' },
-    exit: { icon: Bot, color: 'text-warning', bg: 'bg-warning/10', label: '出口' },
-    target: { icon: Server, color: 'text-info', bg: 'bg-info/10', label: '目标' },
+    entry: { icon: Bot, color: 'text-success', bg: 'bg-success/10', labelKey: 'admin.forwardRules.flowNode.entry' },
+    relay: { icon: Bot, color: 'text-primary', bg: 'bg-primary/10', labelKey: 'admin.forwardRules.flowNode.relay' },
+    exit: { icon: Bot, color: 'text-warning', bg: 'bg-warning/10', labelKey: 'admin.forwardRules.flowNode.exit' },
+    target: { icon: Server, color: 'text-info', bg: 'bg-info/10', labelKey: 'admin.forwardRules.flowNode.target' },
   };
 
   const nodeConfig = config[type];
@@ -229,7 +230,7 @@ const PathNode = ({ type, name, address, port, isRunning }: PathNodeProps) => {
       </div>
       {/* Label + Name */}
       <span className={cn('text-[9px] font-semibold uppercase', nodeConfig.color)}>
-        {nodeConfig.label}
+        {t(nodeConfig.labelKey)}
       </span>
       <span className="text-[10px] font-medium text-center truncate max-w-[60px] leading-tight">
         {name}
@@ -399,11 +400,11 @@ const TrafficStats = ({ rule }: { rule: ForwardRule }) => {
   );
 };
 
-// Helper to get position label based on position and total agents
-const getPositionLabel = (position: number, total: number): string => {
-  if (position === 0) return '入口';
-  if (position === total - 1 && total > 1) return '出口';
-  return '中继';
+// Helper to get position label key based on position and total agents
+const getPositionLabelKey = (position: number, total: number): string => {
+  if (position === 0) return 'admin.forwardRules.flowNode.entry';
+  if (position === total - 1 && total > 1) return 'admin.forwardRules.flowNode.exit';
+  return 'admin.forwardRules.flowNode.relay';
 };
 
 // Single agent status row component
@@ -416,11 +417,12 @@ const AgentStatusRow = ({
   position: number;
   total: number;
 }) => {
+  const { t } = useTranslation();
   const syncConfig = SYNC_STATUS_CONFIG[agentStatus.syncStatus];
   const runConfig = RUN_STATUS_CONFIG[agentStatus.runStatus || 'unknown'];
   const SyncIcon = syncConfig.icon;
   const RunIcon = runConfig.icon;
-  const positionLabel = getPositionLabel(position, total);
+  const positionLabel = t(getPositionLabelKey(position, total));
 
   return (
     <div className="px-2.5 py-2 space-y-1.5">
@@ -452,7 +454,7 @@ const AgentStatusRow = ({
             )}
           />
           <span className={cn('text-[10px]', syncConfig.colorClass)}>
-            {syncConfig.label}
+            {t(syncConfig.labelKey)}
           </span>
         </div>
         <div className="flex items-center gap-1.5">
@@ -464,7 +466,7 @@ const AgentStatusRow = ({
             )}
           />
           <span className={cn('text-[10px]', runConfig.colorClass)}>
-            {runConfig.label}
+            {t(runConfig.labelKey)}
           </span>
           {agentStatus.runStatus === 'running' && (
             <span className="size-1.5 rounded-full bg-success animate-pulse motion-reduce:animate-none" />
@@ -496,6 +498,7 @@ const SyncStatusDisplay = ({
   polledStatus?: RuleOverallStatusResponse | null;
   rule: ForwardRule;
 }) => {
+  const { t } = useTranslation();
   const agentStatuses = polledStatus?.agentStatuses;
 
   // If no detailed statuses available, show fallback
@@ -516,13 +519,13 @@ const SyncStatusDisplay = ({
           <div className="flex items-center gap-1.5">
             <SyncIcon className={cn('size-3.5', syncConfig.colorClass)} />
             <span className={cn('text-[11px] font-medium', syncConfig.colorClass)}>
-              {syncConfig.label}
+              {t(syncConfig.labelKey)}
             </span>
           </div>
           <div className="flex items-center gap-1.5">
             <RunIcon className={cn('size-3.5', runConfig.colorClass)} />
             <span className={cn('text-[11px] font-medium', runConfig.colorClass)}>
-              {runConfig.label}
+              {t(runConfig.labelKey)}
             </span>
           </div>
         </div>
@@ -585,7 +588,7 @@ export const ForwardRuleDetailSheet = ({
   // ActionSheet actions
   const moreActions = [
     {
-      label: '复制规则',
+      label: t('admin.forwardRules.form.copyRuleAction'),
       icon: <Copy className="size-5" />,
       onPress: async () => {
         onCopy(rule);
@@ -593,7 +596,7 @@ export const ForwardRuleDetailSheet = ({
       },
     },
     {
-      label: rule.status === 'enabled' ? '禁用规则' : '启用规则',
+      label: rule.status === 'enabled' ? t('admin.forwardRules.form.disableRule') : t('admin.forwardRules.form.enableRule'),
       icon: <Power className="size-5" />,
       onPress: async () => {
         onToggleStatus(rule);
@@ -601,7 +604,7 @@ export const ForwardRuleDetailSheet = ({
       },
     },
     {
-      label: '删除规则',
+      label: t('admin.forwardRules.form.deleteRule'),
       icon: <Trash2 className="size-5" />,
       onPress: async () => {
         onDelete(rule);
@@ -641,13 +644,13 @@ export const ForwardRuleDetailSheet = ({
 
           <SheetBody className="space-y-3 pb-3">
             {/* Basic Info */}
-            <DetailSection title="基本信息">
+            <DetailSection title={t('admin.forwardRules.detail.basicInfo')}>
               <DetailRow
                 icon={ruleTypeConfig.icon}
-                label="规则类型"
+                label={t('admin.forwardRules.detail.ruleType')}
                 value={
                   <AdminBadge variant={ruleTypeConfig.variant} className="text-xs">
-                    {ruleTypeConfig.label}
+                    {t(ruleTypeConfig.labelKey)}
                   </AdminBadge>
                 }
               />
@@ -655,54 +658,61 @@ export const ForwardRuleDetailSheet = ({
                 <>
                   <DetailRow
                     icon={<Activity className="size-4" />}
-                    label="协议"
+                    label={t('admin.forwardRules.detail.protocol')}
                     value={PROTOCOL_LABELS[rule.protocol]}
                   />
                   <DetailRow
                     icon={<Globe className="size-4" />}
-                    label="IP版本"
-                    value={IP_VERSION_LABELS[rule.ipVersion]}
+                    label={t('admin.forwardRules.detail.ipVersion')}
+                    value={t(IP_VERSION_LABEL_KEYS[rule.ipVersion])}
                   />
                 </>
               )}
               {(rule.ruleType === 'entry' || rule.ruleType === 'chain') && rule.tunnelType && (
                 <DetailRow
                   icon={<Link2 className="size-4" />}
-                  label="隧道类型"
-                  value={TUNNEL_TYPE_LABELS[rule.tunnelType]}
+                  label={t('admin.forwardRules.detail.tunnelType')}
+                  value={t(TUNNEL_TYPE_LABEL_KEYS[rule.tunnelType])}
                 />
               )}
               <DetailRow
                 icon={<Hash className="size-4" />}
-                label="规则 ID"
+                label={t('admin.forwardRules.detail.ruleId')}
                 value={<span className="font-mono text-xs">{rule.id}</span>}
               />
             </DetailSection>
 
             {/* External type: Server Info */}
             {rule.ruleType === 'external' && (
-              <DetailSection title="服务器信息">
+              <DetailSection title={t('admin.forwardRules.detail.serverInfo')}>
                 <DetailRow
                   icon={<Globe className="size-4" />}
-                  label="服务器地址"
+                  label={t('admin.forwardRules.detail.serverAddress')}
                   value={<span className="font-mono text-xs">{rule.serverAddress || '-'}</span>}
                 />
                 <DetailRow
                   icon={<Zap className="size-4" />}
-                  label="监听端口"
+                  label={t('admin.forwardRules.detail.listenPort')}
                   value={rule.listenPort}
                 />
+                {rule.targetNodeId && (
+                  <DetailRow
+                    icon={<Server className="size-4" />}
+                    label={t('admin.forwardRules.detail.targetNode')}
+                    value={nodes.find((n) => n.id === rule.targetNodeId)?.name || rule.targetNodeId.slice(0, 10)}
+                  />
+                )}
                 {rule.externalSource && (
                   <DetailRow
                     icon={<FileText className="size-4" />}
-                    label="外部来源"
+                    label={t('admin.forwardRules.detail.externalSourceLabel')}
                     value={rule.externalSource}
                   />
                 )}
                 {rule.externalRuleId && (
                   <DetailRow
                     icon={<Hash className="size-4" />}
-                    label="外部规则ID"
+                    label={t('admin.forwardRules.detail.externalRuleIdLabel')}
                     value={<span className="font-mono text-xs">{rule.externalRuleId}</span>}
                   />
                 )}
@@ -711,20 +721,20 @@ export const ForwardRuleDetailSheet = ({
 
             {/* Listen Info - hidden for external type */}
             {rule.ruleType !== 'external' && (
-              <DetailSection title="监听信息">
+              <DetailSection title={t('admin.forwardRules.detail.listenInfo')}>
                 <DetailRow
                   icon={<Bot className="size-4" />}
-                  label="入口代理"
+                  label={t('admin.forwardRules.detail.entryAgent')}
                   value={entryAgent?.name || rule.agentId.slice(0, 10)}
                 />
                 <DetailRow
                   icon={<Globe className="size-4" />}
-                  label="监听端口"
+                  label={t('admin.forwardRules.detail.listenPort')}
                   value={rule.listenPort}
                 />
                 <DetailRow
                   icon={<Server className="size-4" />}
-                  label="入口地址"
+                  label={t('admin.forwardRules.detail.entryAddress')}
                   value={<span className="font-mono text-xs">{entryAddress}</span>}
                 />
               </DetailSection>
@@ -732,22 +742,22 @@ export const ForwardRuleDetailSheet = ({
 
             {/* Target Info - hidden for external type */}
             {rule.ruleType !== 'external' && (
-              <DetailSection title="目标信息">
+              <DetailSection title={t('admin.forwardRules.detail.targetInfo')}>
                 <DetailRow
                   icon={<Server className="size-4" />}
-                  label="目标类型"
-                  value={TARGET_TYPE_LABELS[targetType]}
+                  label={t('admin.forwardRules.detail.targetType')}
+                  value={t(TARGET_TYPE_LABEL_KEYS[targetType])}
                 />
                 {rule.targetNodeId ? (
                   <DetailRow
                     icon={<Server className="size-4" />}
-                    label="目标节点"
+                    label={t('admin.forwardRules.detail.targetNode')}
                     value={nodes.find((n) => n.id === rule.targetNodeId)?.name || rule.targetNodeId.slice(0, 10)}
                   />
                 ) : (
                   <DetailRow
                     icon={<Globe className="size-4" />}
-                    label="目标地址"
+                    label={t('admin.forwardRules.detail.targetAddress')}
                     value={
                       <span className="font-mono text-xs">
                         {rule.targetAddress}:{rule.targetPort}
@@ -760,7 +770,7 @@ export const ForwardRuleDetailSheet = ({
 
             {/* Forward Path Visualization - hidden for external type */}
             {rule.ruleType !== 'external' && (
-              <DetailSection title="转发路径" allowOverflow>
+              <DetailSection title={t('admin.forwardRules.detail.forwardPathTitle')} allowOverflow>
                 <ForwardPathVisualization
                   rule={rule}
                   agentsMap={agentsMap}
@@ -771,19 +781,19 @@ export const ForwardRuleDetailSheet = ({
             )}
 
             {/* Traffic Statistics - different for external type */}
-            <DetailSection title="流量统计">
+            <DetailSection title={t('admin.forwardRules.detail.trafficStats')}>
               <TrafficStats rule={rule} />
               {/* Traffic multiplier - hidden for external type */}
               {rule.ruleType !== 'external' && (
                 <DetailRow
                   icon={<Activity className="size-4" />}
-                  label="流量倍率"
+                  label={t('admin.forwardRules.detail.trafficMultiplier')}
                   value={
                     <span className="flex items-center gap-2">
                       <span className="font-mono">{rule.effectiveTrafficMultiplier?.toFixed(1) || '1.0'}x</span>
                       {rule.isAutoMultiplier && (
                         <AdminBadge variant="default" className="text-[10px] px-1.5 py-0">
-                          自动
+                          {t('admin.forwardRules.detail.multiplierAuto')}
                         </AdminBadge>
                       )}
                     </span>
@@ -794,14 +804,14 @@ export const ForwardRuleDetailSheet = ({
 
             {/* Sync Status (only for enabled rules, hidden for external type) */}
             {rule.status === 'enabled' && rule.ruleType !== 'external' && (
-              <DetailSection title="同步状态" noPadding>
+              <DetailSection title={t('admin.forwardRules.detail.syncStatus')} noPadding>
                 <SyncStatusDisplay polledStatus={polledStatus} rule={rule} />
               </DetailSection>
             )}
 
             {/* Remark */}
             {rule.remark && (
-              <DetailSection title="备注">
+              <DetailSection title={t('admin.forwardRules.detail.remark')}>
                 <div className="px-3 py-2.5">
                   <div className="flex items-start gap-3">
                     <FileText className="size-4 text-muted-foreground shrink-0 mt-0.5" />
@@ -830,7 +840,7 @@ export const ForwardRuleDetailSheet = ({
                 )}
               >
                 <Edit className="size-4" />
-                编辑
+                {t('admin.forwardRules.form.editButton')}
               </button>
               <button
                 type="button"
@@ -854,7 +864,7 @@ export const ForwardRuleDetailSheet = ({
                 ) : (
                   <Activity className="size-4" />
                 )}
-                {isProbingThis ? '拨测中' : '拨测'}
+                {isProbingThis ? t('admin.forwardRules.form.probing') : t('admin.forwardRules.form.probe')}
               </button>
               <button
                 type="button"
@@ -878,7 +888,7 @@ export const ForwardRuleDetailSheet = ({
         open={actionSheetOpen}
         onOpenChange={setActionSheetOpen}
         actions={moreActions}
-        title="更多操作"
+        title={t('admin.forwardRules.form.moreActions')}
       />
     </>
   );

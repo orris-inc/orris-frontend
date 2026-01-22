@@ -4,6 +4,7 @@
  */
 
 import { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Code, FormInput } from 'lucide-react';
 import { Button } from '@/components/common/Button';
 import { Label } from '@/components/common/Label';
@@ -35,10 +36,10 @@ interface RouteConfigEditorProps {
   currentNodeId?: string;
 }
 
-const PRESET_OUTBOUND_OPTIONS: { value: OutboundType; label: string }[] = [
-  { value: 'proxy', label: '代理' },
-  { value: 'direct', label: '直连' },
-  { value: 'block', label: '阻断' },
+const PRESET_OUTBOUND_OPTIONS: { value: OutboundType; labelKey: string }[] = [
+  { value: 'proxy', labelKey: 'admin.nodes.route.outbound.proxy' },
+  { value: 'direct', labelKey: 'admin.nodes.route.outbound.direct' },
+  { value: 'block', labelKey: 'admin.nodes.route.outbound.block' },
 ];
 
 // Default configuration when enabling route config
@@ -55,6 +56,7 @@ export const RouteConfigEditor: React.FC<RouteConfigEditorProps> = ({
   nodes = [],
   currentNodeId,
 }) => {
+  const { t } = useTranslation();
   const [editorMode, setEditorMode] = useState<'visual' | 'json'>('visual');
   const [jsonText, setJsonText] = useState<string>('');
   const [jsonError, setJsonError] = useState<string | null>(null);
@@ -90,7 +92,7 @@ export const RouteConfigEditor: React.FC<RouteConfigEditorProps> = ({
       const parsed = JSON.parse(jsonText);
       // Validate basic structure
       if (typeof parsed !== 'object' || parsed === null) {
-        setJsonError('JSON 必须是一个对象');
+        setJsonError(t('admin.nodes.route.json.mustBeObject'));
         return;
       }
       // Validate final field - can be preset type or node reference
@@ -99,14 +101,14 @@ export const RouteConfigEditor: React.FC<RouteConfigEditorProps> = ({
         (['direct', 'block', 'proxy'].includes(parsed.final) ||
           parsed.final.startsWith('node_'));
       if (!isValidFinal) {
-        setJsonError('缺少有效的 final 字段（direct/block/proxy 或 node_xxx）');
+        setJsonError(t('admin.nodes.route.json.invalidFinal'));
         return;
       }
       onChange(parsed as RouteConfig);
       setJsonError(null);
       setEditorMode('visual');
     } catch {
-      setJsonError('JSON 格式错误，请修正后再切换');
+      setJsonError(t('admin.nodes.route.json.parseErrorSwitch'));
     }
   };
 
@@ -123,7 +125,7 @@ export const RouteConfigEditor: React.FC<RouteConfigEditorProps> = ({
         setJsonError(null);
       }
     } catch {
-      setJsonError('JSON 格式错误');
+      setJsonError(t('admin.nodes.route.json.parseError'));
     }
   };
 
@@ -154,17 +156,17 @@ export const RouteConfigEditor: React.FC<RouteConfigEditorProps> = ({
     return (
       <div className="space-y-3">
         <div className="flex items-center justify-between">
-          <Label className="text-base font-medium">路由配置</Label>
+          <Label className="text-base font-medium">{t('admin.nodes.route.title')}</Label>
         </div>
         <div className="text-sm text-muted-foreground border border-dashed rounded-md p-4 text-center">
-          <p className="mb-3">未配置路由规则，使用默认代理行为</p>
+          <p className="mb-3">{t('admin.nodes.route.noConfigHint')}</p>
           <Button
             variant="outline"
             size="sm"
             onClick={handleEnableConfig}
             disabled={disabled}
           >
-            启用路由配置
+            {t('admin.nodes.route.enableConfig')}
           </Button>
         </div>
       </div>
@@ -175,7 +177,7 @@ export const RouteConfigEditor: React.FC<RouteConfigEditorProps> = ({
     <div className="space-y-4">
       {/* Header with mode toggle */}
       <div className="flex items-center justify-between">
-        <Label className="text-base font-medium">路由配置</Label>
+        <Label className="text-base font-medium">{t('admin.nodes.route.title')}</Label>
         <div className="flex items-center gap-2">
           <Button
             variant={editorMode === 'visual' ? 'default' : 'ghost'}
@@ -184,7 +186,7 @@ export const RouteConfigEditor: React.FC<RouteConfigEditorProps> = ({
             disabled={disabled || editorMode === 'visual'}
           >
             <FormInput className="h-4 w-4 mr-1" />
-            可视化
+            {t('admin.nodes.route.modeVisual')}
           </Button>
           <Button
             variant={editorMode === 'json' ? 'default' : 'ghost'}
@@ -203,7 +205,7 @@ export const RouteConfigEditor: React.FC<RouteConfigEditorProps> = ({
         <div className="space-y-4">
           {/* Default outbound */}
           <div className="space-y-2">
-            <Label htmlFor={`${idPrefix}-final`}>默认出站</Label>
+            <Label htmlFor={`${idPrefix}-final`}>{t('admin.nodes.route.defaultOutbound')}</Label>
             <Select
               value={value?.final || 'proxy'}
               onValueChange={(v) => handleFinalChange(v as OutboundType)}
@@ -211,19 +213,19 @@ export const RouteConfigEditor: React.FC<RouteConfigEditorProps> = ({
             >
               <SelectTrigger id={`${idPrefix}-final`}>
                 <SelectValue>
-                  {getOutboundLabel(value?.final || 'proxy', nodes)}
+                  {getOutboundLabel(value?.final || 'proxy', nodes, t)}
                 </SelectValue>
               </SelectTrigger>
               <SelectContent>
                 {PRESET_OUTBOUND_OPTIONS.map((option) => (
                   <SelectItem key={option.value} value={option.value}>
-                    {option.label}
+                    {t(option.labelKey)}
                   </SelectItem>
                 ))}
                 {availableNodes.length > 0 && (
                   <>
                     <div className="px-2 py-1.5 text-xs font-medium text-muted-foreground">
-                      路由到节点
+                      {t('admin.nodes.route.routeToNode')}
                     </div>
                     {availableNodes.map((node) => (
                       <SelectItem key={node.id} value={node.id}>
@@ -235,7 +237,7 @@ export const RouteConfigEditor: React.FC<RouteConfigEditorProps> = ({
               </SelectContent>
             </Select>
             <p className="text-xs text-muted-foreground">
-              当没有规则匹配时的默认行为
+              {t('admin.nodes.route.defaultOutboundHint')}
             </p>
           </div>
 
@@ -262,7 +264,7 @@ export const RouteConfigEditor: React.FC<RouteConfigEditorProps> = ({
               disabled={disabled}
               className="text-muted-foreground"
             >
-              禁用路由配置
+              {t('admin.nodes.route.disableConfig')}
             </Button>
           </div>
         </div>
@@ -288,7 +290,7 @@ export const RouteConfigEditor: React.FC<RouteConfigEditorProps> = ({
           )}
 
           <p className="text-xs text-muted-foreground">
-            直接编辑 JSON 配置，格式兼容 sing-box 路由规则。
+            {t('admin.nodes.route.json.hint')}
           </p>
 
           {/* Disable button */}
@@ -303,7 +305,7 @@ export const RouteConfigEditor: React.FC<RouteConfigEditorProps> = ({
               disabled={disabled}
               className="text-muted-foreground"
             >
-              禁用路由配置
+              {t('admin.nodes.route.disableConfig')}
             </Button>
           </div>
         </div>

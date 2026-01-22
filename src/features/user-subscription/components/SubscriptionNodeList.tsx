@@ -4,6 +4,7 @@
  */
 
 import { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Server, Loader2, AlertCircle } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { getBadgeClass } from '@/lib/ui-styles';
@@ -17,6 +18,7 @@ interface SubscriptionNodeListProps {
 export const SubscriptionNodeList: React.FC<SubscriptionNodeListProps> = ({
   subscriptionId,
 }) => {
+  const { t } = useTranslation();
   const [agents, setAgents] = useState<UserForwardAgent[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -57,7 +59,7 @@ export const SubscriptionNodeList: React.FC<SubscriptionNodeListProps> = ({
         <div className="p-4 rounded-full bg-destructive/10 mb-4">
           <AlertCircle className="h-8 w-8 text-destructive" />
         </div>
-        <h3 className="text-lg font-medium mb-2">加载失败</h3>
+        <h3 className="text-lg font-medium mb-2">{t('userSubscription.loadingFailed')}</h3>
         <p className="text-muted-foreground text-center max-w-md">{error}</p>
       </div>
     );
@@ -70,9 +72,9 @@ export const SubscriptionNodeList: React.FC<SubscriptionNodeListProps> = ({
         <div className="p-4 rounded-full bg-muted mb-4">
           <Server className="h-8 w-8 text-muted-foreground" />
         </div>
-        <h3 className="text-lg font-medium mb-2">暂无可用节点</h3>
+        <h3 className="text-lg font-medium mb-2">{t('userSubscription.noAvailableNodes')}</h3>
         <p className="text-muted-foreground text-center max-w-md">
-          当前订阅计划没有可用的转发Agent。如需使用转发服务，请联系管理员。
+          {t('userSubscription.noAvailableNodesDesc')}
         </p>
       </div>
     );
@@ -81,7 +83,7 @@ export const SubscriptionNodeList: React.FC<SubscriptionNodeListProps> = ({
   return (
     <div className="@container space-y-2 @sm:space-y-3">
       <div className="flex items-center justify-between">
-        <p className="text-xs @sm:text-sm text-muted-foreground">共 {agents.length} 个可用节点</p>
+        <p className="text-xs @sm:text-sm text-muted-foreground">{t('userSubscription.availableNodesCount', { count: agents.length })}</p>
       </div>
 
       <div className="space-y-2 @sm:grid @sm:grid-cols-2 @lg:grid-cols-3 @sm:gap-3 @sm:space-y-0">
@@ -106,7 +108,7 @@ export const SubscriptionNodeList: React.FC<SubscriptionNodeListProps> = ({
                   'text-[10px] @sm:text-xs px-1.5 @sm:px-2 shrink-0'
                 )}
               >
-                {agent.status === 'enabled' ? '可用' : '不可用'}
+                {agent.status === 'enabled' ? t('userSubscription.nodeAvailable') : t('userSubscription.nodeUnavailable')}
               </span>
             </div>
 

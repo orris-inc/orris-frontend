@@ -5,6 +5,7 @@
  */
 
 import { useState, useCallback } from 'react';
+import { useTranslation } from 'react-i18next';
 import { UserPlus, Mail, User, Lock } from 'lucide-react';
 import {
   Sheet,
@@ -38,6 +39,7 @@ export const CreateUserSheet: React.FC<CreateUserSheetProps> = ({
   onOpenChange,
   onSubmit,
 }) => {
+  const { t } = useTranslation();
   const [email, setEmail] = useState('');
   const [name, setName] = useState('');
   const [password, setPassword] = useState('');
@@ -48,26 +50,26 @@ export const CreateUserSheet: React.FC<CreateUserSheetProps> = ({
 
   // Validation functions
   const validateEmail = useCallback((value: string): string | undefined => {
-    if (!value.trim()) return '请输入邮箱地址';
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) return '邮箱格式不正确';
+    if (!value.trim()) return t('admin.users.form.emailRequired');
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) return t('admin.users.form.emailInvalid');
     return undefined;
-  }, []);
+  }, [t]);
 
   const validateName = useCallback((value: string): string | undefined => {
-    if (!value.trim()) return '请输入用户姓名';
-    if (value.trim().length < 2 || value.trim().length > 100) return '姓名需 2-100 个字符';
+    if (!value.trim()) return t('admin.users.form.nameRequired');
+    if (value.trim().length < 2 || value.trim().length > 100) return t('admin.users.validation.nameLengthError');
     return undefined;
-  }, []);
+  }, [t]);
 
   const validatePassword = useCallback((value: string): string | undefined => {
     const trimmed = value.trim();
-    if (!trimmed) return '请设置初始密码';
-    if (trimmed.length < 8) return '密码至少 8 个字符';
-    if (trimmed.length > 72) return '密码不能超过 72 个字符';
-    if (!/[a-zA-Z]/.test(trimmed)) return '密码需包含字母';
-    if (!/\d/.test(trimmed)) return '密码需包含数字';
+    if (!trimmed) return t('admin.users.form.passwordRequired');
+    if (trimmed.length < 8) return t('admin.users.form.passwordMinLength');
+    if (trimmed.length > 72) return t('admin.users.form.passwordMaxLength');
+    if (!/[a-zA-Z]/.test(trimmed)) return t('admin.users.form.passwordNeedsLetter');
+    if (!/\d/.test(trimmed)) return t('admin.users.form.passwordNeedsNumber');
     return undefined;
-  }, []);
+  }, [t]);
 
   // Handle blur for inline validation
   const handleBlur = useCallback((field: keyof FormErrors) => {
@@ -154,24 +156,24 @@ export const CreateUserSheet: React.FC<CreateUserSheetProps> = ({
             <div className="size-8 rounded-full bg-primary/10 flex items-center justify-center">
               <UserPlus className="size-4 text-primary" />
             </div>
-            <span>新增用户</span>
+            <span>{t('admin.users.create.title')}</span>
           </SheetTitle>
           <SheetDescription className="text-xs">
-            创建新用户账户，用户将使用此密码首次登录
+            {t('admin.users.create.description')}
           </SheetDescription>
         </SheetHeader>
 
         <SheetBody className="space-y-4 py-3">
           {/* Section Header */}
           <h4 className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
-            账户信息
+            {t('admin.users.form.accountInfo')}
           </h4>
 
           {/* Email & Name - 2 column grid */}
           <div className="grid grid-cols-2 gap-2">
             <div className="space-y-1">
               <label htmlFor="mobile-email" className="text-xs font-medium">
-                邮箱地址 <span className="text-destructive">*</span>
+                {t('admin.users.fields.email')} <span className="text-destructive">*</span>
               </label>
               <MobileFormInput
                 id="mobile-email"
@@ -193,7 +195,7 @@ export const CreateUserSheet: React.FC<CreateUserSheetProps> = ({
             </div>
             <div className="space-y-1">
               <label htmlFor="mobile-name" className="text-xs font-medium">
-                用户姓名 <span className="text-destructive">*</span>
+                {t('admin.users.fields.name')} <span className="text-destructive">*</span>
               </label>
               <MobileFormInput
                 id="mobile-name"
@@ -203,7 +205,7 @@ export const CreateUserSheet: React.FC<CreateUserSheetProps> = ({
                   if (touched.name) setErrors((prev) => ({ ...prev, name: validateName(v) }));
                 }}
                 onBlur={() => handleBlur('name')}
-                placeholder="姓名"
+                placeholder={t('admin.users.fields.namePlaceholderShort')}
                 icon={<User className="size-4" />}
                 error={touched.name ? errors.name : undefined}
                 disabled={loading}
@@ -217,7 +219,7 @@ export const CreateUserSheet: React.FC<CreateUserSheetProps> = ({
           {/* Password */}
           <div className="space-y-1">
             <label htmlFor="mobile-password" className="text-xs font-medium">
-              初始密码 <span className="text-destructive">*</span>
+              {t('admin.users.form.initialPassword')} <span className="text-destructive">*</span>
             </label>
             <MobilePasswordInput
               id="mobile-password"
@@ -227,7 +229,7 @@ export const CreateUserSheet: React.FC<CreateUserSheetProps> = ({
                 if (touched.password) setErrors((prev) => ({ ...prev, password: validatePassword(v) }));
               }}
               onBlur={() => handleBlur('password')}
-              placeholder="8-72字符，含字母和数字"
+              placeholder={t('admin.users.fields.passwordPlaceholder')}
               error={touched.password ? errors.password : undefined}
               disabled={loading}
               showPassword={showPassword}
@@ -258,7 +260,7 @@ export const CreateUserSheet: React.FC<CreateUserSheetProps> = ({
                   'text-xs',
                   strength.passed === strength.total ? 'text-emerald-600' : 'text-muted-foreground'
                 )}>
-                  {strength.passed === strength.total ? '密码合格' : `${strength.passed}/${strength.total}`}
+                  {strength.passed === strength.total ? t('admin.users.create.passwordValid') : `${strength.passed}/${strength.total}`}
                 </span>
               </div>
             )}
@@ -269,7 +271,7 @@ export const CreateUserSheet: React.FC<CreateUserSheetProps> = ({
             <div className="flex items-start gap-2">
               <Lock className="size-4 text-muted-foreground mt-0.5 flex-shrink-0" />
               <p className="text-xs text-muted-foreground">
-                用户首次登录后可自行修改密码。建议设置强密码以保护账户安全。
+                {t('admin.users.create.passwordSecurityHint')}
               </p>
             </div>
           </div>
@@ -281,7 +283,7 @@ export const CreateUserSheet: React.FC<CreateUserSheetProps> = ({
             disabled={loading || !isFormValid}
             className="w-full min-h-[48px]"
           >
-            {loading ? '创建中...' : '创建用户'}
+            {loading ? t('admin.users.create.creating') : t('admin.users.create.createUser')}
           </Button>
           <Button
             variant="ghost"
@@ -289,7 +291,7 @@ export const CreateUserSheet: React.FC<CreateUserSheetProps> = ({
             disabled={loading}
             className="w-full min-h-[44px]"
           >
-            取消
+            {t('admin.users.actions.cancel')}
           </Button>
         </SheetFooter>
       </SheetContent>

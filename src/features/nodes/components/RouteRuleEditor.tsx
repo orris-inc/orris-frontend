@@ -3,6 +3,7 @@
  * Edit a single routing rule with all matching conditions
  */
 
+import { useTranslation } from 'react-i18next';
 import { Label } from '@/components/common/Label';
 import { Textarea } from '@/components/common/Textarea';
 import { Checkbox } from '@/components/common/Checkbox';
@@ -39,10 +40,10 @@ interface RouteRuleEditorProps {
   currentNodeId?: string;
 }
 
-const PRESET_OUTBOUND_OPTIONS: { value: OutboundType; label: string }[] = [
-  { value: 'proxy', label: '代理' },
-  { value: 'direct', label: '直连' },
-  { value: 'block', label: '阻断' },
+const PRESET_OUTBOUND_OPTIONS: { value: OutboundType; labelKey: string }[] = [
+  { value: 'proxy', labelKey: 'admin.nodes.route.outbound.proxy' },
+  { value: 'direct', labelKey: 'admin.nodes.route.outbound.direct' },
+  { value: 'block', labelKey: 'admin.nodes.route.outbound.block' },
 ];
 
 /** Check if outbound value is a node reference */
@@ -53,14 +54,23 @@ export const isNodeOutbound = (outbound: OutboundType): boolean => {
 /** Get display label for outbound value */
 export const getOutboundLabel = (
   outbound: OutboundType,
-  nodes?: OutboundNodeOption[]
+  nodes?: OutboundNodeOption[],
+  t?: (key: string, options?: Record<string, unknown>) => string
 ): string => {
   if (!isNodeOutbound(outbound)) {
     const preset = PRESET_OUTBOUND_OPTIONS.find((o) => o.value === outbound);
-    return preset?.label || outbound;
+    if (preset && t) {
+      return t(preset.labelKey);
+    }
+    // Fallback if no translation function
+    const fallback: Record<string, string> = { proxy: 'Proxy', direct: 'Direct', block: 'Block' };
+    return fallback[outbound] || outbound;
   }
   const node = nodes?.find((n) => n.id === outbound);
-  return node ? `节点: ${node.name}` : outbound;
+  if (node && t) {
+    return t('admin.nodes.route.outbound.node', { name: node.name });
+  }
+  return node ? `Node: ${node.name}` : outbound;
 };
 
 // Parse comma/newline separated string to array
@@ -131,6 +141,7 @@ export const RouteRuleEditor: React.FC<RouteRuleEditorProps> = ({
   nodes = [],
   currentNodeId,
 }) => {
+  const { t } = useTranslation();
   // Filter out current node from available options
   const availableNodes = nodes.filter((n) => n.id !== currentNodeId);
 
@@ -179,7 +190,7 @@ export const RouteRuleEditor: React.FC<RouteRuleEditorProps> = ({
     <div className="space-y-4">
       {/* Outbound action */}
       <div className="space-y-2">
-        <Label htmlFor={`${idPrefix}-outbound`}>出站动作</Label>
+        <Label htmlFor={`${idPrefix}-outbound`}>{t('admin.nodes.route.outboundAction')}</Label>
         <Select
           value={rule.outbound}
           onValueChange={(value) =>
@@ -189,19 +200,19 @@ export const RouteRuleEditor: React.FC<RouteRuleEditorProps> = ({
         >
           <SelectTrigger id={`${idPrefix}-outbound`}>
             <SelectValue>
-              {getOutboundLabel(rule.outbound, nodes)}
+              {getOutboundLabel(rule.outbound, nodes, t)}
             </SelectValue>
           </SelectTrigger>
           <SelectContent>
             {PRESET_OUTBOUND_OPTIONS.map((option) => (
               <SelectItem key={option.value} value={option.value}>
-                {option.label}
+                {t(option.labelKey)}
               </SelectItem>
             ))}
             {availableNodes.length > 0 && (
               <>
                 <div className="px-2 py-1.5 text-xs font-medium text-muted-foreground">
-                  路由到节点
+                  {t('admin.nodes.route.routeToNode')}
                 </div>
                 {availableNodes.map((node) => (
                   <SelectItem key={node.id} value={node.id}>
@@ -213,7 +224,7 @@ export const RouteRuleEditor: React.FC<RouteRuleEditorProps> = ({
           </SelectContent>
         </Select>
         <p className="text-xs text-muted-foreground">
-          选择流量处理方式或路由到指定节点
+          {t('admin.nodes.route.outboundHint')}
         </p>
       </div>
 
@@ -227,10 +238,10 @@ export const RouteRuleEditor: React.FC<RouteRuleEditorProps> = ({
         <AccordionItem value="domain" className="border rounded-md px-3 mb-2">
           <AccordionTrigger className="py-3 hover:no-underline">
             <div className="flex items-center gap-2">
-              <span className="text-sm font-medium">域名匹配</span>
+              <span className="text-sm font-medium">{t('admin.nodes.route.section.domain')}</span>
               {hasDomainContent && (
                 <Badge variant="secondary" className="text-xs">
-                  已配置
+                  {t('admin.nodes.route.configured')}
                 </Badge>
               )}
             </div>
@@ -238,7 +249,7 @@ export const RouteRuleEditor: React.FC<RouteRuleEditorProps> = ({
           <AccordionContent>
             <div className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor={`${idPrefix}-domain`}>精确域名</Label>
+                <Label htmlFor={`${idPrefix}-domain`}>{t('admin.nodes.route.domain.exact')}</Label>
                 <Textarea
                   id={`${idPrefix}-domain`}
                   value={formatArrayDisplay(rule.domain)}
@@ -250,12 +261,12 @@ export const RouteRuleEditor: React.FC<RouteRuleEditorProps> = ({
                   disabled={disabled}
                 />
                 <p className="text-xs text-muted-foreground">
-                  每行一个或逗号分隔，精确匹配整个域名
+                  {t('admin.nodes.route.domain.exactHint')}
                 </p>
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor={`${idPrefix}-domainSuffix`}>域名后缀</Label>
+                <Label htmlFor={`${idPrefix}-domainSuffix`}>{t('admin.nodes.route.domain.suffix')}</Label>
                 <Textarea
                   id={`${idPrefix}-domainSuffix`}
                   value={formatArrayDisplay(rule.domainSuffix)}
@@ -267,12 +278,12 @@ export const RouteRuleEditor: React.FC<RouteRuleEditorProps> = ({
                   disabled={disabled}
                 />
                 <p className="text-xs text-muted-foreground">
-                  匹配以指定后缀结尾的域名
+                  {t('admin.nodes.route.domain.suffixHint')}
                 </p>
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor={`${idPrefix}-domainKeyword`}>域名关键字</Label>
+                <Label htmlFor={`${idPrefix}-domainKeyword`}>{t('admin.nodes.route.domain.keyword')}</Label>
                 <Textarea
                   id={`${idPrefix}-domainKeyword`}
                   value={formatArrayDisplay(rule.domainKeyword)}
@@ -284,12 +295,12 @@ export const RouteRuleEditor: React.FC<RouteRuleEditorProps> = ({
                   disabled={disabled}
                 />
                 <p className="text-xs text-muted-foreground">
-                  匹配包含指定关键字的域名
+                  {t('admin.nodes.route.domain.keywordHint')}
                 </p>
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor={`${idPrefix}-domainRegex`}>域名正则</Label>
+                <Label htmlFor={`${idPrefix}-domainRegex`}>{t('admin.nodes.route.domain.regex')}</Label>
                 <Textarea
                   id={`${idPrefix}-domainRegex`}
                   value={formatArrayDisplay(rule.domainRegex)}
@@ -301,7 +312,7 @@ export const RouteRuleEditor: React.FC<RouteRuleEditorProps> = ({
                   disabled={disabled}
                 />
                 <p className="text-xs text-muted-foreground">
-                  使用正则表达式匹配域名
+                  {t('admin.nodes.route.domain.regexHint')}
                 </p>
               </div>
             </div>
@@ -312,10 +323,10 @@ export const RouteRuleEditor: React.FC<RouteRuleEditorProps> = ({
         <AccordionItem value="ip" className="border rounded-md px-3 mb-2">
           <AccordionTrigger className="py-3 hover:no-underline">
             <div className="flex items-center gap-2">
-              <span className="text-sm font-medium">IP 匹配</span>
+              <span className="text-sm font-medium">{t('admin.nodes.route.section.ip')}</span>
               {hasIpContent && (
                 <Badge variant="secondary" className="text-xs">
-                  已配置
+                  {t('admin.nodes.route.configured')}
                 </Badge>
               )}
             </div>
@@ -323,7 +334,7 @@ export const RouteRuleEditor: React.FC<RouteRuleEditorProps> = ({
           <AccordionContent>
             <div className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor={`${idPrefix}-ipCidr`}>目标 IP CIDR</Label>
+                <Label htmlFor={`${idPrefix}-ipCidr`}>{t('admin.nodes.route.ip.targetCidr')}</Label>
                 <Textarea
                   id={`${idPrefix}-ipCidr`}
                   value={formatArrayDisplay(rule.ipCidr)}
@@ -335,12 +346,12 @@ export const RouteRuleEditor: React.FC<RouteRuleEditorProps> = ({
                   disabled={disabled}
                 />
                 <p className="text-xs text-muted-foreground">
-                  匹配目标 IP 地址范围（CIDR 格式）
+                  {t('admin.nodes.route.ip.targetCidrHint')}
                 </p>
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor={`${idPrefix}-sourceIpCidr`}>源 IP CIDR</Label>
+                <Label htmlFor={`${idPrefix}-sourceIpCidr`}>{t('admin.nodes.route.ip.sourceCidr')}</Label>
                 <Textarea
                   id={`${idPrefix}-sourceIpCidr`}
                   value={formatArrayDisplay(rule.sourceIpCidr)}
@@ -352,7 +363,7 @@ export const RouteRuleEditor: React.FC<RouteRuleEditorProps> = ({
                   disabled={disabled}
                 />
                 <p className="text-xs text-muted-foreground">
-                  匹配源 IP 地址范围（CIDR 格式）
+                  {t('admin.nodes.route.ip.sourceCidrHint')}
                 </p>
               </div>
 
@@ -369,7 +380,7 @@ export const RouteRuleEditor: React.FC<RouteRuleEditorProps> = ({
                   disabled={disabled}
                 />
                 <Label htmlFor={`${idPrefix}-ipIsPrivate`}>
-                  匹配私有/内网 IP
+                  {t('admin.nodes.route.ip.privateIp')}
                 </Label>
               </div>
             </div>
@@ -380,10 +391,10 @@ export const RouteRuleEditor: React.FC<RouteRuleEditorProps> = ({
         <AccordionItem value="geo" className="border rounded-md px-3 mb-2">
           <AccordionTrigger className="py-3 hover:no-underline">
             <div className="flex items-center gap-2">
-              <span className="text-sm font-medium">GeoIP / GeoSite</span>
+              <span className="text-sm font-medium">{t('admin.nodes.route.section.geo')}</span>
               {hasGeoContent && (
                 <Badge variant="secondary" className="text-xs">
-                  已配置
+                  {t('admin.nodes.route.configured')}
                 </Badge>
               )}
             </div>
@@ -403,7 +414,7 @@ export const RouteRuleEditor: React.FC<RouteRuleEditorProps> = ({
                   disabled={disabled}
                 />
                 <p className="text-xs text-muted-foreground">
-                  匹配 IP 所属国家/地区代码（如 cn, us）
+                  {t('admin.nodes.route.geo.geoipHint')}
                 </p>
               </div>
 
@@ -420,7 +431,7 @@ export const RouteRuleEditor: React.FC<RouteRuleEditorProps> = ({
                   disabled={disabled}
                 />
                 <p className="text-xs text-muted-foreground">
-                  匹配预定义的域名分类（如 cn, google, telegram）
+                  {t('admin.nodes.route.geo.geositeHint')}
                 </p>
               </div>
             </div>
@@ -434,10 +445,10 @@ export const RouteRuleEditor: React.FC<RouteRuleEditorProps> = ({
         >
           <AccordionTrigger className="py-3 hover:no-underline">
             <div className="flex items-center gap-2">
-              <span className="text-sm font-medium">端口 / 协议</span>
+              <span className="text-sm font-medium">{t('admin.nodes.route.section.portProtocol')}</span>
               {hasPortProtocolContent && (
                 <Badge variant="secondary" className="text-xs">
-                  已配置
+                  {t('admin.nodes.route.configured')}
                 </Badge>
               )}
             </div>
@@ -446,7 +457,7 @@ export const RouteRuleEditor: React.FC<RouteRuleEditorProps> = ({
             <div className="space-y-4">
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label htmlFor={`${idPrefix}-port`}>目标端口</Label>
+                  <Label htmlFor={`${idPrefix}-port`}>{t('admin.nodes.route.port.target')}</Label>
                   <Textarea
                     id={`${idPrefix}-port`}
                     value={formatPortDisplay(rule.port)}
@@ -460,7 +471,7 @@ export const RouteRuleEditor: React.FC<RouteRuleEditorProps> = ({
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor={`${idPrefix}-sourcePort`}>源端口</Label>
+                  <Label htmlFor={`${idPrefix}-sourcePort`}>{t('admin.nodes.route.port.source')}</Label>
                   <Textarea
                     id={`${idPrefix}-sourcePort`}
                     value={formatPortDisplay(rule.sourcePort)}
@@ -475,7 +486,7 @@ export const RouteRuleEditor: React.FC<RouteRuleEditorProps> = ({
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor={`${idPrefix}-protocol`}>协议</Label>
+                <Label htmlFor={`${idPrefix}-protocol`}>{t('admin.nodes.route.protocol.label')}</Label>
                 <Textarea
                   id={`${idPrefix}-protocol`}
                   value={formatArrayDisplay(rule.protocol)}
@@ -487,12 +498,12 @@ export const RouteRuleEditor: React.FC<RouteRuleEditorProps> = ({
                   disabled={disabled}
                 />
                 <p className="text-xs text-muted-foreground">
-                  匹配嗅探到的协议（如 http, tls, quic）
+                  {t('admin.nodes.route.protocol.hint')}
                 </p>
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor={`${idPrefix}-network`}>网络类型</Label>
+                <Label htmlFor={`${idPrefix}-network`}>{t('admin.nodes.route.network.label')}</Label>
                 <Textarea
                   id={`${idPrefix}-network`}
                   value={formatArrayDisplay(rule.network)}
@@ -504,7 +515,7 @@ export const RouteRuleEditor: React.FC<RouteRuleEditorProps> = ({
                   disabled={disabled}
                 />
                 <p className="text-xs text-muted-foreground">
-                  匹配网络类型（tcp, udp）
+                  {t('admin.nodes.route.network.hint')}
                 </p>
               </div>
             </div>
@@ -515,17 +526,17 @@ export const RouteRuleEditor: React.FC<RouteRuleEditorProps> = ({
         <AccordionItem value="rule-set" className="border rounded-md px-3">
           <AccordionTrigger className="py-3 hover:no-underline">
             <div className="flex items-center gap-2">
-              <span className="text-sm font-medium">规则集</span>
+              <span className="text-sm font-medium">{t('admin.nodes.route.section.ruleSet')}</span>
               {hasRuleSetContent && (
                 <Badge variant="secondary" className="text-xs">
-                  已配置
+                  {t('admin.nodes.route.configured')}
                 </Badge>
               )}
             </div>
           </AccordionTrigger>
           <AccordionContent>
             <div className="space-y-2">
-              <Label htmlFor={`${idPrefix}-ruleSet`}>规则集引用</Label>
+              <Label htmlFor={`${idPrefix}-ruleSet`}>{t('admin.nodes.route.ruleSet.label')}</Label>
               <Textarea
                 id={`${idPrefix}-ruleSet`}
                 value={formatArrayDisplay(rule.ruleSet)}
@@ -537,7 +548,7 @@ export const RouteRuleEditor: React.FC<RouteRuleEditorProps> = ({
                 disabled={disabled}
               />
               <p className="text-xs text-muted-foreground">
-                引用预定义的规则集名称
+                {t('admin.nodes.route.ruleSet.hint')}
               </p>
             </div>
           </AccordionContent>

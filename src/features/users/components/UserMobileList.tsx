@@ -83,20 +83,20 @@ export const UserMobileList: React.FC<UserMobileListProps> = ({
           <DropdownMenuContent align="end" collisionPadding={16}>
             <DropdownMenuItem onClick={() => onAssignSubscription(user)}>
               <CreditCard className="mr-2 size-4" />
-              分配订阅
+              {t('admin.users.actions.assignSubscription')}
             </DropdownMenuItem>
             <DropdownMenuItem onClick={() => onEdit(user)}>
               <Edit className="mr-2 size-4" />
-              编辑
+              {t('admin.users.actions.edit')}
             </DropdownMenuItem>
             <DropdownMenuItem onClick={() => onResetPassword(user)}>
               <KeyRound className="mr-2 size-4" />
-              重置密码
+              {t('admin.users.actions.resetPassword')}
             </DropdownMenuItem>
             <DropdownMenuSeparator />
             <DropdownMenuItem onClick={() => onDelete(user)} className="text-red-600 dark:text-red-400">
               <Trash2 className="mr-2 size-4" />
-              删除
+              {t('admin.users.actions.delete')}
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenuPortal>
@@ -111,7 +111,7 @@ export const UserMobileList: React.FC<UserMobileListProps> = ({
   if (users.length === 0) {
     return (
       <div className="text-center py-12 text-slate-500 dark:text-slate-400">
-        暂无用户数据
+        {t('admin.users.noData')}
       </div>
     );
   }
@@ -168,7 +168,7 @@ export const UserMobileList: React.FC<UserMobileListProps> = ({
                         <Edit className="size-3.5 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300" />
                       </button>
                     </TooltipTrigger>
-                    <TooltipContent>编辑</TooltipContent>
+                    <TooltipContent>{t('admin.users.actions.edit')}</TooltipContent>
                   </Tooltip>
                   <Tooltip>
                     <TooltipTrigger asChild>
@@ -179,7 +179,7 @@ export const UserMobileList: React.FC<UserMobileListProps> = ({
                         <CreditCard className="size-3.5 text-slate-400 hover:text-blue-500" />
                       </button>
                     </TooltipTrigger>
-                    <TooltipContent>分配订阅</TooltipContent>
+                    <TooltipContent>{t('admin.users.actions.assignSubscription')}</TooltipContent>
                   </Tooltip>
                   {renderDropdownMenu(user)}
                 </div>
@@ -188,7 +188,7 @@ export const UserMobileList: React.FC<UserMobileListProps> = ({
 
             {/* Accordion Trigger */}
             <AccordionTrigger className="px-3 py-1.5 border-t border-slate-100 dark:border-slate-700 hover:no-underline hover:bg-slate-50 dark:hover:bg-slate-700/50">
-              <span className="text-xs text-slate-400 dark:text-slate-500">详情</span>
+              <span className="text-xs text-slate-400 dark:text-slate-500">{t('admin.users.actions.details')}</span>
             </AccordionTrigger>
 
             {/* Accordion Content - Expanded details */}
@@ -202,19 +202,19 @@ export const UserMobileList: React.FC<UserMobileListProps> = ({
 
                 {/* Email (always show in details) */}
                 <div className="flex items-center gap-2">
-                  <span className="text-[10px] text-slate-400 dark:text-slate-500 uppercase tracking-wide w-10 flex-shrink-0">邮箱</span>
+                  <span className="text-[10px] text-slate-400 dark:text-slate-500 uppercase tracking-wide w-10 flex-shrink-0">{t('admin.users.fields.emailShort')}</span>
                   <span className="text-xs text-slate-600 dark:text-slate-300 truncate">{user.email}</span>
                 </div>
 
                 {/* Name */}
                 <div className="flex items-center gap-2">
-                  <span className="text-[10px] text-slate-400 dark:text-slate-500 uppercase tracking-wide w-10 flex-shrink-0">姓名</span>
+                  <span className="text-[10px] text-slate-400 dark:text-slate-500 uppercase tracking-wide w-10 flex-shrink-0">{t('admin.users.fields.nameShort')}</span>
                   <span className="text-xs text-slate-600 dark:text-slate-300">{user.name || '-'}</span>
                 </div>
 
                 {/* Created at */}
                 <div className="flex items-center gap-2">
-                  <span className="text-[10px] text-slate-400 dark:text-slate-500 uppercase tracking-wide w-10 flex-shrink-0">创建</span>
+                  <span className="text-[10px] text-slate-400 dark:text-slate-500 uppercase tracking-wide w-10 flex-shrink-0">{t('admin.users.fields.createdAt')}</span>
                   <span className="text-xs text-slate-500">{formatDate(user.createdAt)}</span>
                 </div>
               </div>

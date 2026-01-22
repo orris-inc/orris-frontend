@@ -5,6 +5,7 @@
  */
 
 import { Check, X } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { cn } from '@/lib/utils';
 
 export interface PasswordRule {
@@ -25,35 +26,48 @@ export interface PasswordStrengthIndicatorProps {
   className?: string;
   /** Compact mode - horizontal layout for rules */
   compact?: boolean;
+  /** Override for strength valid text (uses translation by default) */
+  strengthValidText?: string;
 }
 
-/** Default password rules (8-72 chars, letter, number) */
-export const DEFAULT_PASSWORD_RULES: PasswordRule[] = [
+/** Create default password rules with translations */
+export const getDefaultPasswordRules = (
+  t: (key: string) => string
+): PasswordRule[] => [
   {
     key: 'length',
-    label: '8-72 个字符',
+    label: t('auth.passwordRules.length'),
     test: (p: string) => p.length >= 8 && p.length <= 72,
   },
   {
     key: 'letter',
-    label: '包含字母',
+    label: t('auth.passwordRules.letter'),
     test: (p: string) => /[a-zA-Z]/.test(p),
   },
   {
     key: 'number',
-    label: '包含数字',
+    label: t('auth.passwordRules.number'),
     test: (p: string) => /\d/.test(p),
   },
 ];
+
+/** Hook for getting default password rules with translations */
+export const useDefaultPasswordRules = (): PasswordRule[] => {
+  const { t } = useTranslation();
+  return getDefaultPasswordRules(t);
+};
 
 export const PasswordStrengthIndicator: React.FC<PasswordStrengthIndicatorProps> = ({
   password,
   rules,
   className,
   compact = false,
+  strengthValidText,
 }) => {
+  const { t } = useTranslation();
   const passedRules = rules.filter((rule) => rule.test(password));
   const strengthPercent = (passedRules.length / rules.length) * 100;
+  const validText = strengthValidText ?? t('auth.passwordRules.strengthValid');
 
   if (!password) return null;
 
@@ -84,7 +98,7 @@ export const PasswordStrengthIndicator: React.FC<PasswordStrengthIndicatorProps>
           'text-xs',
           strengthPercent === 100 ? 'text-emerald-600' : 'text-muted-foreground'
         )}>
-          {strengthPercent === 100 ? '密码强度合格' : `${passedRules.length}/${rules.length}`}
+          {strengthPercent === 100 ? validText : `${passedRules.length}/${rules.length}`}
         </span>
       </div>
     );

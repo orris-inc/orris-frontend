@@ -154,7 +154,7 @@ export const RegisterPage = () => {
             <p className={cardDescriptionStyles}>{t('auth.register.subtitle')}</p>
           </div>
           <div className={cn(cardContentStyles, "grid gap-6")}>
-            {/* 错误提示 */}
+            {/* Error message */}
             {error && (
               <div className={getAlertClass('destructive')}>
                 <CircleAlert className="h-4 w-4" />
@@ -162,7 +162,7 @@ export const RegisterPage = () => {
               </div>
             )}
 
-            {/* 注册表单 */}
+            {/* Registration form */}
             <form onSubmit={handleSubmit(onSubmit)} className="grid gap-4">
               <div className="grid gap-2">
                 <LabelPrimitive.Root htmlFor="name" className={labelStyles}>{t('auth.register.name')}</LabelPrimitive.Root>
@@ -292,7 +292,7 @@ export const RegisterPage = () => {
               </button>
             </form>
 
-            {/* 分隔线 */}
+            {/* Divider */}
             <div className="relative">
               <div className="absolute inset-0 flex items-center">
                 <Separator.Root className="w-full h-[1px] bg-border" />
@@ -302,7 +302,7 @@ export const RegisterPage = () => {
               </div>
             </div>
 
-            {/* OAuth 注册按钮 */}
+            {/* OAuth registration buttons */}
             <div className="grid gap-2">
               <button
                 type="button"
@@ -325,7 +325,7 @@ export const RegisterPage = () => {
               </button>
             </div>
 
-            {/* 登录链接 */}
+            {/* Login link */}
             <div className="text-center text-sm text-muted-foreground">
               {t('auth.register.haveAccount')}{' '}
               <RouterLink

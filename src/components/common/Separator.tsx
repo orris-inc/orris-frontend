@@ -11,9 +11,9 @@ import { cn } from '@/lib/utils';
  * Separator 组件属性
  */
 interface SeparatorProps extends React.ComponentPropsWithoutRef<typeof SeparatorPrimitive.Root> {
-  /** 自定义样式类名 */
+  /** Custom class name */
   className?: string;
-  /** 是否为垂直方向 (默认: false - 水平方向) */
+  /** Whether vertical (default: false - horizontal) */
   orientation?: 'horizontal' | 'vertical';
 }
 

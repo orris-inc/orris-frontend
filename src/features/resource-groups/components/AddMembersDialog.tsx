@@ -1,9 +1,10 @@
 /**
- * 添加成员对话框
- * 支持批量选择节点或转发代理添加到资源组
+ * Add Members Dialog
+ * Support batch selection of nodes or forward agents to add to resource group
  */
 
 import { useState, useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Search, Server, Cpu, Loader2, Check, Users, ArrowRightLeft } from 'lucide-react';
 import {
   Dialog,
@@ -44,6 +45,7 @@ export const AddMembersDialog: React.FC<AddMembersDialogProps> = ({
   onSubmit,
   isSubmitting = false,
 }) => {
+  const { t } = useTranslation();
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
 
@@ -118,9 +120,9 @@ export const AddMembersDialog: React.FC<AddMembersDialogProps> = ({
   };
 
   const Icon = type === 'nodes' ? Server : type === 'agents' ? Cpu : ArrowRightLeft;
-  const title = type === 'nodes' ? '添加节点' : type === 'agents' ? '添加转发代理' : '添加转发规则';
-  const memberLabel = type === 'nodes' ? '节点' : type === 'agents' ? '转发代理' : '转发规则';
-  const emptyText = type === 'nodes' ? '暂无可添加的节点' : type === 'agents' ? '暂无可添加的转发代理' : '暂无可添加的转发规则';
+  const title = t(`resourceGroups.addMembers.title.${type}`);
+  const memberLabel = t(`resourceGroups.addMembers.memberTypes.${type}`);
+  const emptyText = t(`resourceGroups.addMembers.empty.${type}`);
 
   // Statistics
   const totalItems = type === 'nodes' ? nodes.length : type === 'agents' ? forwardAgents.length : forwardRules.length;
@@ -135,31 +137,31 @@ export const AddMembersDialog: React.FC<AddMembersDialogProps> = ({
             {title}
           </DialogTitle>
           <DialogDescription>
-            选择要添加到「{groupName}」的{memberLabel}
+            {t('resourceGroups.addMembers.description', { groupName, memberType: memberLabel })}
           </DialogDescription>
         </DialogHeader>
 
-        {/* 统计信息 */}
+        {/* Statistics */}
         <div className="grid grid-cols-3 gap-3">
           <div className="flex items-center gap-2 p-2.5 bg-muted rounded-lg">
             <Users className="size-4 text-blue-500" />
             <div>
-              <p className="text-xs text-muted-foreground">全部{memberLabel}</p>
-              <p className="text-sm font-medium">{totalItems} 个</p>
+              <p className="text-xs text-muted-foreground">{t('resourceGroups.addMembers.stats.total', { memberType: memberLabel })}</p>
+              <p className="text-sm font-medium">{totalItems} {t('resourceGroups.unit')}</p>
             </div>
           </div>
           <div className="flex items-center gap-2 p-2.5 bg-muted rounded-lg">
             <Check className="size-4 text-green-500" />
             <div>
-              <p className="text-xs text-muted-foreground">已关联</p>
-              <p className="text-sm font-medium">{existingCount} 个</p>
+              <p className="text-xs text-muted-foreground">{t('resourceGroups.addMembers.stats.associated')}</p>
+              <p className="text-sm font-medium">{existingCount} {t('resourceGroups.unit')}</p>
             </div>
           </div>
           <div className="flex items-center gap-2 p-2.5 bg-muted rounded-lg">
             <Icon className="size-4 text-orange-500" />
             <div>
-              <p className="text-xs text-muted-foreground">可添加</p>
-              <p className="text-sm font-medium">{availableItems.length} 个</p>
+              <p className="text-xs text-muted-foreground">{t('resourceGroups.addMembers.stats.available')}</p>
+              <p className="text-sm font-medium">{availableItems.length} {t('resourceGroups.unit')}</p>
             </div>
           </div>
         </div>
@@ -167,18 +169,18 @@ export const AddMembersDialog: React.FC<AddMembersDialogProps> = ({
         <Separator />
 
         <div className="flex-1 overflow-hidden flex flex-col gap-3">
-          {/* 搜索框 */}
+          {/* Search box */}
           <div className="relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
             <Input
-              placeholder={`搜索${memberLabel}名称或ID...`}
+              placeholder={t('resourceGroups.addMembers.searchPlaceholder', { memberType: memberLabel })}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="pl-9"
             />
           </div>
 
-          {/* 全选和已选统计 */}
+          {/* Select all and selected count */}
           {availableItems.length > 0 && (
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
@@ -187,18 +189,18 @@ export const AddMembersDialog: React.FC<AddMembersDialogProps> = ({
                   onCheckedChange={handleSelectAll}
                 />
                 <span className="text-sm text-muted-foreground">
-                  {selectedIds.size === availableItems.length ? '取消全选' : '全选'}
+                  {selectedIds.size === availableItems.length ? t('resourceGroups.actions.deselectAll') : t('resourceGroups.actions.selectAll')}
                 </span>
               </div>
               {selectedIds.size > 0 && (
                 <Badge variant="secondary">
-                  已选择 {selectedIds.size} 项
+                  {t('resourceGroups.actions.selectedCount', { count: selectedIds.size })}
                 </Badge>
               )}
             </div>
           )}
 
-          {/* 列表 */}
+          {/* List */}
           <div className="flex-1 min-h-[200px] border rounded-lg overflow-hidden">
             {isLoading ? (
               <div className="flex items-center justify-center py-12">
@@ -209,7 +211,7 @@ export const AddMembersDialog: React.FC<AddMembersDialogProps> = ({
                 <Icon className="size-8 mb-2" />
                 <p className="text-sm">{emptyText}</p>
                 {searchQuery && (
-                  <p className="text-xs mt-1">尝试使用其他关键词搜索</p>
+                  <p className="text-xs mt-1">{t('resourceGroups.addMembers.tryOtherKeywords')}</p>
                 )}
               </div>
             ) : (
@@ -241,7 +243,7 @@ export const AddMembersDialog: React.FC<AddMembersDialogProps> = ({
                           </p>
                         </div>
                         <Badge variant={isActive ? 'default' : 'secondary'} className="flex-shrink-0">
-                          {isActive ? (type === 'nodes' ? '激活' : '启用') : (type === 'nodes' ? '未激活' : '停用')}
+                          {isActive ? (type === 'nodes' ? t('resourceGroups.status.active') : t('resourceGroups.status.enabled')) : (type === 'nodes' ? t('resourceGroups.status.inactive') : t('resourceGroups.status.stopped'))}
                         </Badge>
                       </label>
                     );
@@ -256,7 +258,7 @@ export const AddMembersDialog: React.FC<AddMembersDialogProps> = ({
 
         <DialogFooter>
           <Button variant="outline" onClick={handleClose} disabled={isSubmitting}>
-            取消
+            {t('resourceGroups.addMembers.cancel')}
           </Button>
           <Button
             onClick={handleSubmit}
@@ -265,12 +267,12 @@ export const AddMembersDialog: React.FC<AddMembersDialogProps> = ({
             {isSubmitting ? (
               <>
                 <Loader2 className="size-4 animate-spin mr-2" />
-                添加中...
+                {t('resourceGroups.addMembers.adding')}
               </>
             ) : (
               <>
                 <Check className="size-4 mr-2" />
-                确认添加 ({selectedIds.size})
+                {t('resourceGroups.addMembers.confirmAdd', { count: selectedIds.size })}
               </>
             )}
           </Button>

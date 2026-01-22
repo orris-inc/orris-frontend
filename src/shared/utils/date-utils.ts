@@ -7,6 +7,8 @@
  * - DateTime: YYYY/MM/DD HH:mm (e.g., 2024/01/15 14:30)
  */
 
+import i18n from '@/lib/i18n';
+
 /**
  * Format a date value to YYYY/MM/DD format
  */
@@ -81,9 +83,9 @@ export const formatTime = (dateString: string | number | Date): string => {
 };
 
 /**
- * 格式化相对时间（如：3分钟前、2小时前）
- * @param dateString ISO 8601 格式的日期字符串
- * @returns 相对时间字符串
+ * Format relative time (e.g., 3 minutes ago, 2 hours ago)
+ * @param dateString ISO 8601 date string
+ * @returns Relative time string (internationalized)
  */
 export const formatRelativeTime = (dateString: string): string => {
   if (!dateString) return '-';
@@ -99,10 +101,10 @@ export const formatRelativeTime = (dateString: string): string => {
     const diffHour = Math.floor(diffMin / 60);
     const diffDay = Math.floor(diffHour / 24);
 
-    if (diffSec < 60) return '刚刚';
-    if (diffMin < 60) return `${diffMin}分钟前`;
-    if (diffHour < 24) return `${diffHour}小时前`;
-    if (diffDay < 7) return `${diffDay}天前`;
+    if (diffSec < 60) return i18n.t('common.time.now');
+    if (diffMin < 60) return i18n.t('common.time.minutesAgo', { count: diffMin });
+    if (diffHour < 24) return i18n.t('common.time.hoursAgo', { count: diffHour });
+    if (diffDay < 7) return i18n.t('common.time.daysAgo', { count: diffDay });
 
     return formatDate(dateString);
   } catch {

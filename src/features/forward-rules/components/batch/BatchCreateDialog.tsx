@@ -4,6 +4,7 @@
  */
 
 import { useState, useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
   Dialog,
   DialogContent,
@@ -16,6 +17,7 @@ import { Button } from '@/components/common/Button';
 import { Label } from '@/components/common/Label';
 import { Loader2, CheckCircle2, XCircle, Plus, FileJson, Copy } from 'lucide-react';
 import type { BatchCreateResponse, CreateForwardRuleRequest } from '@/api/forward';
+import type { TFunction } from 'i18next';
 
 interface BatchCreateDialogProps {
   open: boolean;
@@ -57,7 +59,7 @@ interface ValidationResult {
   errors: string[];
 }
 
-function validateJsonInput(jsonStr: string): ValidationResult {
+function validateJsonInput(jsonStr: string, t: TFunction): ValidationResult {
   const errors: string[] = [];
   let rules: CreateForwardRuleRequest[] = [];
 
@@ -66,25 +68,25 @@ function validateJsonInput(jsonStr: string): ValidationResult {
   try {
     parsed = JSON.parse(jsonStr);
   } catch {
-    return { valid: false, rules: [], errors: ['JSON 格式无效'] };
+    return { valid: false, rules: [], errors: [t('admin.forwardRules.batch.validation.invalidJson')] };
   }
 
   // Check structure
   if (typeof parsed !== 'object' || parsed === null) {
-    return { valid: false, rules: [], errors: ['JSON 必须是对象格式'] };
+    return { valid: false, rules: [], errors: [t('admin.forwardRules.batch.validation.mustBeObject')] };
   }
 
   const obj = parsed as Record<string, unknown>;
   if (!Array.isArray(obj.rules)) {
-    return { valid: false, rules: [], errors: ['缺少 rules 数组'] };
+    return { valid: false, rules: [], errors: [t('admin.forwardRules.batch.validation.missingRulesArray')] };
   }
 
   if (obj.rules.length === 0) {
-    return { valid: false, rules: [], errors: ['rules 数组不能为空'] };
+    return { valid: false, rules: [], errors: [t('admin.forwardRules.batch.validation.rulesEmpty')] };
   }
 
   if (obj.rules.length > 100) {
-    return { valid: false, rules: [], errors: ['最多支持 100 条规则'] };
+    return { valid: false, rules: [], errors: [t('admin.forwardRules.batch.validation.maxRulesExceeded')] };
   }
 
   // Validate each rule
@@ -95,35 +97,35 @@ function validateJsonInput(jsonStr: string): ValidationResult {
     // Check required fields
     for (const field of REQUIRED_FIELDS) {
       if (!rule[field]) {
-        errors.push(`规则 ${ruleIndex}: 缺少必填字段 ${field}`);
+        errors.push(t('admin.forwardRules.batch.validation.missingField', { index: ruleIndex, field }));
       }
     }
 
     // Validate ruleType
     if (rule.ruleType && !VALID_RULE_TYPES.includes(rule.ruleType as string)) {
-      errors.push(`规则 ${ruleIndex}: ruleType 必须是 ${VALID_RULE_TYPES.join(', ')} 之一`);
+      errors.push(t('admin.forwardRules.batch.validation.invalidRuleType', { index: ruleIndex, types: VALID_RULE_TYPES.join(', ') }));
     }
 
     // Validate protocol
     if (rule.protocol && !VALID_PROTOCOLS.includes(rule.protocol as string)) {
-      errors.push(`规则 ${ruleIndex}: protocol 必须是 ${VALID_PROTOCOLS.join(', ')} 之一`);
+      errors.push(t('admin.forwardRules.batch.validation.invalidProtocol', { index: ruleIndex, protocols: VALID_PROTOCOLS.join(', ') }));
     }
 
     // Validate target (must have targetAddress+targetPort or targetNodeId)
     const hasManualTarget = rule.targetAddress && rule.targetPort;
     const hasNodeTarget = rule.targetNodeId;
     if (!hasManualTarget && !hasNodeTarget) {
-      errors.push(`规则 ${ruleIndex}: 必须指定目标 (targetAddress+targetPort 或 targetNodeId)`);
+      errors.push(t('admin.forwardRules.batch.validation.missingTarget', { index: ruleIndex }));
     }
 
     // Validate entry type specific fields
     if (rule.ruleType === 'entry' && !rule.exitAgentId) {
-      errors.push(`规则 ${ruleIndex}: entry 类型必须指定 exitAgentId`);
+      errors.push(t('admin.forwardRules.batch.validation.missingExitAgent', { index: ruleIndex }));
     }
 
     // Validate chain type specific fields
     if ((rule.ruleType === 'chain' || rule.ruleType === 'direct_chain') && !rule.chainAgentIds) {
-      errors.push(`规则 ${ruleIndex}: ${rule.ruleType} 类型必须指定 chainAgentIds`);
+      errors.push(t('admin.forwardRules.batch.validation.missingChainAgents', { index: ruleIndex, type: rule.ruleType }));
     }
   }
 
@@ -141,6 +143,7 @@ export const BatchCreateDialog: React.FC<BatchCreateDialogProps> = ({
   onConfirm,
   isCreating,
 }) => {
+  const { t } = useTranslation();
   const [jsonInput, setJsonInput] = useState('');
   const [result, setResult] = useState<BatchCreateResponse | null>(null);
   const [hasTriggered, setHasTriggered] = useState(false);
@@ -150,8 +153,8 @@ export const BatchCreateDialog: React.FC<BatchCreateDialogProps> = ({
     if (!jsonInput.trim()) {
       return { valid: false, rules: [], errors: [] };
     }
-    return validateJsonInput(jsonInput);
-  }, [jsonInput]);
+    return validateJsonInput(jsonInput, t);
+  }, [jsonInput, t]);
 
   const handleLoadTemplate = () => {
     setJsonInput(JSON_TEMPLATE);
@@ -185,12 +188,12 @@ export const BatchCreateDialog: React.FC<BatchCreateDialogProps> = ({
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <FileJson className="size-5 text-blue-500" />
-            批量创建规则
+            {t('admin.forwardRules.batch.createTitle')}
           </DialogTitle>
           <DialogDescription>
             {showResult
-              ? '创建操作已完成'
-              : '粘贴 JSON 格式的规则配置，一次最多创建 100 条规则'}
+              ? t('admin.forwardRules.batch.createComplete')
+              : t('admin.forwardRules.batch.createDescription')}
           </DialogDescription>
         </DialogHeader>
 
@@ -205,7 +208,7 @@ export const BatchCreateDialog: React.FC<BatchCreateDialogProps> = ({
                 className="text-xs"
               >
                 <FileJson className="size-3.5 mr-1.5" />
-                加载示例
+                {t('admin.forwardRules.batch.loadTemplate')}
               </Button>
               <Button
                 variant="outline"
@@ -214,13 +217,13 @@ export const BatchCreateDialog: React.FC<BatchCreateDialogProps> = ({
                 className="text-xs"
               >
                 <Copy className="size-3.5 mr-1.5" />
-                复制模板
+                {t('admin.forwardRules.batch.copyTemplate')}
               </Button>
             </div>
 
             {/* JSON input */}
             <div className="space-y-2">
-              <Label htmlFor="json-input">JSON 配置</Label>
+              <Label htmlFor="json-input">{t('admin.forwardRules.batch.jsonConfig')}</Label>
               <textarea
                 id="json-input"
                 value={jsonInput}
@@ -235,14 +238,14 @@ export const BatchCreateDialog: React.FC<BatchCreateDialogProps> = ({
             {validation.errors.length > 0 && (
               <div className="p-3 bg-red-50 dark:bg-red-900/20 rounded-lg border border-red-200 dark:border-red-800">
                 <p className="text-sm font-medium text-red-700 dark:text-red-300 mb-2">
-                  验证错误
+                  {t('admin.forwardRules.batch.validationError')}
                 </p>
                 <ul className="text-xs text-red-600 dark:text-red-400 space-y-1 max-h-[100px] overflow-y-auto">
                   {validation.errors.slice(0, 10).map((error, i) => (
-                    <li key={i}>• {error}</li>
+                    <li key={i}>{error}</li>
                   ))}
                   {validation.errors.length > 10 && (
-                    <li>• ...还有 {validation.errors.length - 10} 个错误</li>
+                    <li>{t('admin.forwardRules.batch.moreErrors', { count: validation.errors.length - 10 })}</li>
                   )}
                 </ul>
               </div>
@@ -253,7 +256,7 @@ export const BatchCreateDialog: React.FC<BatchCreateDialogProps> = ({
               <div className="p-3 bg-green-50 dark:bg-green-900/20 rounded-lg border border-green-200 dark:border-green-800">
                 <p className="text-sm text-green-700 dark:text-green-300">
                   <CheckCircle2 className="size-4 inline-block mr-1.5 -mt-0.5" />
-                  JSON 格式有效，将创建 <span className="font-semibold">{validation.rules.length}</span> 条规则
+                  {t('admin.forwardRules.batch.jsonValid', { count: validation.rules.length })}
                 </p>
               </div>
             )}
@@ -267,21 +270,21 @@ export const BatchCreateDialog: React.FC<BatchCreateDialogProps> = ({
                 <p className="text-lg font-semibold text-green-700 dark:text-green-300">
                   {result.succeeded.length}
                 </p>
-                <p className="text-xs text-green-600 dark:text-green-400">成功</p>
+                <p className="text-xs text-green-600 dark:text-green-400">{t('admin.forwardRules.batch.succeeded')}</p>
               </div>
               <div className="p-3 bg-red-50 dark:bg-red-900/20 rounded-lg text-center">
                 <XCircle className="size-5 text-red-500 mx-auto mb-1" />
                 <p className="text-lg font-semibold text-red-700 dark:text-red-300">
                   {failedCount}
                 </p>
-                <p className="text-xs text-red-600 dark:text-red-400">失败</p>
+                <p className="text-xs text-red-600 dark:text-red-400">{t('admin.forwardRules.batch.failed')}</p>
               </div>
             </div>
 
             {/* Failed items */}
             {failedCount > 0 && result.failed && (
               <div className="space-y-2">
-                <p className="text-sm font-medium text-red-700 dark:text-red-300">创建失败</p>
+                <p className="text-sm font-medium text-red-700 dark:text-red-300">{t('admin.forwardRules.batch.createFailed')}</p>
                 <div className="max-h-[150px] overflow-y-auto space-y-1">
                   {result.failed.map((item, i) => (
                     <div
@@ -289,7 +292,7 @@ export const BatchCreateDialog: React.FC<BatchCreateDialogProps> = ({
                       className="flex items-center justify-between p-2 bg-red-50 dark:bg-red-900/10 rounded text-sm"
                     >
                       <span className="font-mono text-xs truncate max-w-[150px]">
-                        规则 {item.id}
+                        {t('admin.forwardRules.batch.ruleIndex', { index: item.id })}
                       </span>
                       <span className="text-xs text-red-600 dark:text-red-400 truncate max-w-[280px]">
                         {item.reason}
@@ -303,7 +306,7 @@ export const BatchCreateDialog: React.FC<BatchCreateDialogProps> = ({
             {/* Success items */}
             {result.succeeded.length > 0 && (
               <div className="space-y-2">
-                <p className="text-sm font-medium text-green-700 dark:text-green-300">创建成功</p>
+                <p className="text-sm font-medium text-green-700 dark:text-green-300">{t('admin.forwardRules.batch.createSuccess')}</p>
                 <div className="max-h-[100px] overflow-y-auto space-y-1">
                   {result.succeeded.slice(0, 10).map((item) => (
                     <div
@@ -316,7 +319,7 @@ export const BatchCreateDialog: React.FC<BatchCreateDialogProps> = ({
                   ))}
                   {result.succeeded.length > 10 && (
                     <p className="text-xs text-muted-foreground px-2">
-                      ...还有 {result.succeeded.length - 10} 条规则
+                      {t('admin.forwardRules.batch.moreRules', { count: result.succeeded.length - 10 })}
                     </p>
                   )}
                 </div>
@@ -329,7 +332,7 @@ export const BatchCreateDialog: React.FC<BatchCreateDialogProps> = ({
           {!showResult ? (
             <>
               <Button variant="outline" onClick={handleClose} disabled={isCreating}>
-                取消
+                {t('admin.forwardRules.batch.cancel')}
               </Button>
               <Button
                 onClick={handleConfirm}
@@ -338,18 +341,18 @@ export const BatchCreateDialog: React.FC<BatchCreateDialogProps> = ({
                 {isCreating ? (
                   <>
                     <Loader2 className="size-4 mr-2 animate-spin" />
-                    创建中...
+                    {t('admin.forwardRules.batch.creating')}
                   </>
                 ) : (
                   <>
                     <Plus className="size-4 mr-2" />
-                    创建 {validation.rules.length || 0} 条规则
+                    {t('admin.forwardRules.batch.createRulesCount', { count: validation.rules.length || 0 })}
                   </>
                 )}
               </Button>
             </>
           ) : (
-            <Button onClick={handleClose}>关闭</Button>
+            <Button onClick={handleClose}>{t('admin.forwardRules.batch.close')}</Button>
           )}
         </DialogFooter>
       </DialogContent>

@@ -5,6 +5,7 @@
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { queryKeys } from '@/shared/lib/query-client';
 import { useNotificationStore } from '@/shared/stores/notification-store';
 import { handleApiError } from '@/shared/lib/axios';
@@ -34,6 +35,7 @@ interface UseUsersOptions {
 
 export const useUsers = (options: UseUsersOptions = {}) => {
   const { page = 1, pageSize = 20, filters = {}, enabled = true } = options;
+  const { t } = useTranslation();
   const queryClient = useQueryClient();
   const { showSuccess, showError } = useNotificationStore();
 
@@ -62,7 +64,7 @@ export const useUsers = (options: UseUsersOptions = {}) => {
   const createMutation = useMutation({
     mutationFn: createUser,
     onSuccess: () => {
-      showSuccess('用户创建成功');
+      showSuccess(t('usersManagement.createSuccess'));
       queryClient.invalidateQueries({ queryKey: queryKeys.users.lists() });
     },
     onError: (error) => {
@@ -75,7 +77,7 @@ export const useUsers = (options: UseUsersOptions = {}) => {
     mutationFn: ({ id, data }: { id: string; data: UpdateUserRequest }) =>
       updateUser(id, data),
     onSuccess: () => {
-      showSuccess('用户信息更新成功');
+      showSuccess(t('usersManagement.updateSuccess'));
       queryClient.invalidateQueries({ queryKey: queryKeys.users.lists() });
     },
     onError: (error) => {
@@ -87,7 +89,7 @@ export const useUsers = (options: UseUsersOptions = {}) => {
   const deleteMutation = useMutation({
     mutationFn: deleteUser,
     onSuccess: () => {
-      showSuccess('用户删除成功');
+      showSuccess(t('usersManagement.deleteSuccess'));
       queryClient.invalidateQueries({ queryKey: queryKeys.users.lists() });
     },
     onError: (error) => {
@@ -100,7 +102,7 @@ export const useUsers = (options: UseUsersOptions = {}) => {
     mutationFn: ({ id, data }: { id: string; data: AdminResetPasswordRequest }) =>
       adminResetPassword(id, data),
     onSuccess: () => {
-      showSuccess('密码重置成功');
+      showSuccess(t('usersManagement.resetPasswordSuccess'));
     },
     onError: (error) => {
       showError(handleApiError(error));

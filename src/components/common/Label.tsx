@@ -12,7 +12,7 @@ import { labelStyles } from '@/lib/ui-styles';
  * Label 组件属性
  */
 interface LabelProps extends React.ComponentPropsWithoutRef<typeof LabelPrimitive.Root> {
-  /** 自定义样式类名 */
+  /** Custom class name */
   className?: string;
 }
 

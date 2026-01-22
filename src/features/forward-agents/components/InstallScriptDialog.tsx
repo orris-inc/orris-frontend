@@ -1,9 +1,10 @@
 /**
- * 安装脚本对话框组件
- * 显示 Agent 安装脚本和一键安装命令
+ * Install Script Dialog Component
+ * Display Agent install script and one-click install command
  */
 
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Copy, Check, Terminal, Download } from 'lucide-react';
 import { safeWindowOpen } from '@/shared/utils/url-utils';
 import {
@@ -30,6 +31,7 @@ export const InstallScriptDialog: React.FC<InstallScriptDialogProps> = ({
   agentName,
   onClose,
 }) => {
+  const { t } = useTranslation();
   const [copiedInstall, setCopiedInstall] = useState(false);
   const [copiedUninstall, setCopiedUninstall] = useState(false);
   const [copiedScriptUrl, setCopiedScriptUrl] = useState(false);
@@ -93,21 +95,23 @@ export const InstallScriptDialog: React.FC<InstallScriptDialogProps> = ({
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Terminal className="size-5" />
-            安装命令
+            {t("admin.forwardAgents.installScript.title")}
           </DialogTitle>
           <DialogDescription>
-            {agentName ? `节点 "${agentName}" 的` : ''}安装命令，在目标服务器上执行即可完成部署
+            {agentName
+              ? t("admin.forwardAgents.installScript.descriptionWithName", { name: agentName })
+              : t("admin.forwardAgents.installScript.description")}
           </DialogDescription>
         </DialogHeader>
 
         <div className="space-y-4">
-          {/* 安装命令（主要） */}
+          {/* Install command (main) */}
           {installCommandData.installCommand && (
             <div className="border border-primary/20 rounded-lg p-4 bg-primary/5">
               <div className="flex items-center justify-between mb-2">
                 <h4 className="text-sm font-medium flex items-center gap-2">
-                  安装命令
-                  <span className="text-xs px-1.5 py-0.5 rounded bg-primary/10 text-primary">推荐</span>
+                  {t("admin.forwardAgents.installScript.installCommand")}
+                  <span className="text-xs px-1.5 py-0.5 rounded bg-primary/10 text-primary">{t("admin.forwardAgents.installScript.recommended")}</span>
                 </h4>
                 <Button
                   variant="ghost"
@@ -118,12 +122,12 @@ export const InstallScriptDialog: React.FC<InstallScriptDialogProps> = ({
                   {copiedInstall ? (
                     <>
                       <Check className="size-3.5 mr-1 text-green-500" />
-                      已复制
+                      {t("common.copied")}
                     </>
                   ) : (
                     <>
                       <Copy className="size-3.5 mr-1" />
-                      复制
+                      {t("common.copy")}
                     </>
                   )}
                 </Button>
@@ -134,16 +138,16 @@ export const InstallScriptDialog: React.FC<InstallScriptDialogProps> = ({
                 </pre>
               </div>
               <p className="text-xs text-muted-foreground mt-2">
-                在目标服务器上以 root 权限执行此命令，将自动下载并安装 Agent
+                {t("admin.forwardAgents.installScript.installCommandHint")}
               </p>
             </div>
           )}
 
-          {/* 卸载命令 */}
+          {/* Uninstall command */}
           {installCommandData.uninstallCommand && (
             <div>
               <div className="flex items-center justify-between mb-2">
-                <h4 className="text-sm font-medium">卸载命令</h4>
+                <h4 className="text-sm font-medium">{t("admin.forwardAgents.installScript.uninstallCommand")}</h4>
                 <Button
                   variant="ghost"
                   size="sm"
@@ -153,12 +157,12 @@ export const InstallScriptDialog: React.FC<InstallScriptDialogProps> = ({
                   {copiedUninstall ? (
                     <>
                       <Check className="size-3.5 mr-1 text-green-500" />
-                      已复制
+                      {t("common.copied")}
                     </>
                   ) : (
                     <>
                       <Copy className="size-3.5 mr-1" />
-                      复制
+                      {t("common.copy")}
                     </>
                   )}
                 </Button>
@@ -171,11 +175,11 @@ export const InstallScriptDialog: React.FC<InstallScriptDialogProps> = ({
             </div>
           )}
 
-          {/* 脚本地址 */}
+          {/* Script URL */}
           {installCommandData.scriptUrl && (
             <div>
               <div className="flex items-center justify-between mb-2">
-                <h4 className="text-sm font-medium">脚本地址</h4>
+                <h4 className="text-sm font-medium">{t("admin.forwardAgents.installScript.scriptUrl")}</h4>
                 <div className="flex gap-1">
                   <Button
                     variant="ghost"
@@ -186,12 +190,12 @@ export const InstallScriptDialog: React.FC<InstallScriptDialogProps> = ({
                     {copiedScriptUrl ? (
                       <>
                         <Check className="size-3.5 mr-1 text-green-500" />
-                        已复制
+                        {t("common.copied")}
                       </>
                     ) : (
                       <>
                         <Copy className="size-3.5 mr-1" />
-                        复制
+                        {t("common.copy")}
                       </>
                     )}
                   </Button>
@@ -202,7 +206,7 @@ export const InstallScriptDialog: React.FC<InstallScriptDialogProps> = ({
                     className="h-7 px-2"
                   >
                     <Download className="size-3.5 mr-1" />
-                    打开
+                    {t("common.open")}
                   </Button>
                 </div>
               </div>
@@ -212,19 +216,19 @@ export const InstallScriptDialog: React.FC<InstallScriptDialogProps> = ({
             </div>
           )}
 
-          {/* 其他信息（可折叠） */}
+          {/* Other info (collapsible) */}
           <details className="group">
             <summary className="flex items-center justify-between cursor-pointer list-none">
-              <h4 className="text-sm font-medium">查看详细信息</h4>
-              <span className="text-xs text-muted-foreground group-open:hidden">点击展开</span>
-              <span className="text-xs text-muted-foreground hidden group-open:inline">点击收起</span>
+              <h4 className="text-sm font-medium">{t("admin.forwardAgents.installScript.viewDetails")}</h4>
+              <span className="text-xs text-muted-foreground group-open:hidden">{t("admin.forwardAgents.installScript.clickToExpand")}</span>
+              <span className="text-xs text-muted-foreground hidden group-open:inline">{t("admin.forwardAgents.installScript.clickToCollapse")}</span>
             </summary>
             <div className="mt-3 space-y-3">
               {/* Server URL */}
               {installCommandData.serverUrl && (
                 <div>
                   <div className="flex items-center justify-between mb-2">
-                    <h5 className="text-sm font-medium">服务器地址</h5>
+                    <h5 className="text-sm font-medium">{t("admin.forwardAgents.installScript.serverUrl")}</h5>
                     <Button
                       variant="ghost"
                       size="sm"
@@ -234,12 +238,12 @@ export const InstallScriptDialog: React.FC<InstallScriptDialogProps> = ({
                       {copiedServerUrl ? (
                         <>
                           <Check className="size-3.5 mr-1 text-green-500" />
-                          已复制
+                          {t("common.copied")}
                         </>
                       ) : (
                         <>
                           <Copy className="size-3.5 mr-1" />
-                          复制
+                          {t("common.copy")}
                         </>
                       )}
                     </Button>
@@ -264,12 +268,12 @@ export const InstallScriptDialog: React.FC<InstallScriptDialogProps> = ({
                       {copiedToken ? (
                         <>
                           <Check className="size-3.5 mr-1 text-green-500" />
-                          已复制
+                          {t("common.copied")}
                         </>
                       ) : (
                         <>
                           <Copy className="size-3.5 mr-1" />
-                          复制
+                          {t("common.copy")}
                         </>
                       )}
                     </Button>
@@ -285,7 +289,7 @@ export const InstallScriptDialog: React.FC<InstallScriptDialogProps> = ({
 
         <DialogFooter>
           <Button variant="outline" onClick={handleClose}>
-            关闭
+            {t("common.close")}
           </Button>
         </DialogFooter>
       </DialogContent>

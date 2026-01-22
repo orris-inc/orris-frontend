@@ -7,6 +7,7 @@
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
+import { useTranslation } from "react-i18next";
 import {
   Loader2,
   Server,
@@ -105,6 +106,7 @@ export const AdminNotificationPreferencesForm = ({
   onSubmit,
   isSubmitting,
 }: AdminNotificationPreferencesFormProps) => {
+  const { t } = useTranslation();
   const {
     control,
     handleSubmit,
@@ -141,24 +143,24 @@ export const AdminNotificationPreferencesForm = ({
 
   // Weekday options
   const weekdayOptions = [
-    { value: "0", label: "周日" },
-    { value: "1", label: "周一" },
-    { value: "2", label: "周二" },
-    { value: "3", label: "周三" },
-    { value: "4", label: "周四" },
-    { value: "5", label: "周五" },
-    { value: "6", label: "周六" },
+    { value: "0", label: t("telegramAdmin.preferences.weekdays.sunday") },
+    { value: "1", label: t("telegramAdmin.preferences.weekdays.monday") },
+    { value: "2", label: t("telegramAdmin.preferences.weekdays.tuesday") },
+    { value: "3", label: t("telegramAdmin.preferences.weekdays.wednesday") },
+    { value: "4", label: t("telegramAdmin.preferences.weekdays.thursday") },
+    { value: "5", label: t("telegramAdmin.preferences.weekdays.friday") },
+    { value: "6", label: t("telegramAdmin.preferences.weekdays.saturday") },
   ];
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
       {/* System Alerts */}
-      <Section title="系统告警">
+      <Section title={t("telegramAdmin.preferences.systemAlerts")}>
         <PreferenceItem
           icon={<Server className="size-4 text-destructive" />}
           iconBg="bg-destructive/10"
-          label="节点离线通知"
-          description="当节点离线时发送通知"
+          label={t("telegramAdmin.preferences.nodeOffline")}
+          description={t("telegramAdmin.preferences.nodeOfflineDesc")}
         >
           <Controller
             name="notifyNodeOffline"
@@ -174,8 +176,8 @@ export const AdminNotificationPreferencesForm = ({
         <PreferenceItem
           icon={<Network className="size-4 text-warning" />}
           iconBg="bg-warning/10"
-          label="代理离线通知"
-          description="当代理离线时发送通知"
+          label={t("telegramAdmin.preferences.agentOffline")}
+          description={t("telegramAdmin.preferences.agentOfflineDesc")}
         >
           <Controller
             name="notifyAgentOffline"
@@ -194,8 +196,8 @@ export const AdminNotificationPreferencesForm = ({
             <PreferenceItem
               icon={<Clock className="size-4 text-muted-foreground" />}
               iconBg="bg-muted"
-              label="离线检测阈值"
-              description="超过此时间未响应视为离线"
+              label={t("telegramAdmin.preferences.offlineThreshold")}
+              description={t("telegramAdmin.preferences.offlineThresholdDesc")}
             >
               <div className="flex items-center gap-1.5">
                 <Controller
@@ -214,15 +216,17 @@ export const AdminNotificationPreferencesForm = ({
                     />
                   )}
                 />
-                <span className="text-xs text-muted-foreground">分钟</span>
+                <span className="text-xs text-muted-foreground">
+                  {t("telegramAdmin.preferences.minutes")}
+                </span>
               </div>
             </PreferenceItem>
 
             <PreferenceItem
               icon={<Clock className="size-4 text-muted-foreground" />}
               iconBg="bg-muted"
-              label="检查间隔"
-              description="检测离线状态的频率"
+              label={t("telegramAdmin.preferences.checkInterval")}
+              description={t("telegramAdmin.preferences.checkIntervalDesc")}
             >
               <div className="flex items-center gap-1.5">
                 <Controller
@@ -241,7 +245,9 @@ export const AdminNotificationPreferencesForm = ({
                     />
                   )}
                 />
-                <span className="text-xs text-muted-foreground">分钟</span>
+                <span className="text-xs text-muted-foreground">
+                  {t("telegramAdmin.preferences.minutes")}
+                </span>
               </div>
             </PreferenceItem>
           </>
@@ -249,12 +255,12 @@ export const AdminNotificationPreferencesForm = ({
       </Section>
 
       {/* Business Events */}
-      <Section title="业务事件">
+      <Section title={t("telegramAdmin.preferences.businessEvents")}>
         <PreferenceItem
           icon={<UserPlus className="size-4 text-info" />}
           iconBg="bg-info/10"
-          label="新用户注册"
-          description="当有新用户注册时发送通知"
+          label={t("telegramAdmin.preferences.newUser")}
+          description={t("telegramAdmin.preferences.newUserDesc")}
         >
           <Controller
             name="notifyNewUser"
@@ -270,8 +276,8 @@ export const AdminNotificationPreferencesForm = ({
         <PreferenceItem
           icon={<CreditCard className="size-4 text-success" />}
           iconBg="bg-success/10"
-          label="支付成功"
-          description="当用户完成支付时发送通知"
+          label={t("telegramAdmin.preferences.paymentSuccess")}
+          description={t("telegramAdmin.preferences.paymentSuccessDesc")}
         >
           <Controller
             name="notifyPaymentSuccess"
@@ -286,12 +292,12 @@ export const AdminNotificationPreferencesForm = ({
       </Section>
 
       {/* Reports */}
-      <Section title="定期报告">
+      <Section title={t("telegramAdmin.preferences.reports")}>
         <PreferenceItem
           icon={<BarChart3 className="size-4 text-primary" />}
           iconBg="bg-primary/10"
-          label="每日汇总"
-          description="每日发送业务数据汇总"
+          label={t("telegramAdmin.preferences.dailySummary")}
+          description={t("telegramAdmin.preferences.dailySummaryDesc")}
         >
           <Controller
             name="notifyDailySummary"
@@ -309,15 +315,15 @@ export const AdminNotificationPreferencesForm = ({
           <PreferenceItem
             icon={<Clock className="size-4 text-muted-foreground" />}
             iconBg="bg-muted"
-            label="发送时间"
-            description="每日汇总的发送时间"
+            label={t("telegramAdmin.preferences.sendTime")}
+            description={t("telegramAdmin.preferences.dailySendTimeDesc")}
           >
             <Controller
               name="dailySummaryHour"
               control={control}
               render={({ field }) => (
                 <Select
-                  value={field.value.toString()}
+                  value={(field.value ?? 0).toString()}
                   onValueChange={(v) => field.onChange(parseInt(v, 10))}
                 >
                   <SelectTrigger className="w-20 h-7 text-xs">
@@ -339,8 +345,8 @@ export const AdminNotificationPreferencesForm = ({
         <PreferenceItem
           icon={<Calendar className="size-4 text-primary" />}
           iconBg="bg-primary/10"
-          label="每周汇总"
-          description="每周发送业务数据汇总"
+          label={t("telegramAdmin.preferences.weeklySummary")}
+          description={t("telegramAdmin.preferences.weeklySummaryDesc")}
         >
           <Controller
             name="notifyWeeklySummary"
@@ -359,15 +365,15 @@ export const AdminNotificationPreferencesForm = ({
             <PreferenceItem
               icon={<Calendar className="size-4 text-muted-foreground" />}
               iconBg="bg-muted"
-              label="发送星期"
-              description="每周汇总的发送日期"
+              label={t("telegramAdmin.preferences.sendWeekday")}
+              description={t("telegramAdmin.preferences.weeklySendWeekdayDesc")}
             >
               <Controller
                 name="weeklySummaryWeekday"
                 control={control}
                 render={({ field }) => (
                   <Select
-                    value={field.value.toString()}
+                    value={(field.value ?? 0).toString()}
                     onValueChange={(v) => field.onChange(parseInt(v, 10))}
                   >
                     <SelectTrigger className="w-16 h-7 text-xs">
@@ -388,15 +394,15 @@ export const AdminNotificationPreferencesForm = ({
             <PreferenceItem
               icon={<Clock className="size-4 text-muted-foreground" />}
               iconBg="bg-muted"
-              label="发送时间"
-              description="每周汇总的发送时间"
+              label={t("telegramAdmin.preferences.sendTime")}
+              description={t("telegramAdmin.preferences.weeklySendTimeDesc")}
             >
               <Controller
                 name="weeklySummaryHour"
                 control={control}
                 render={({ field }) => (
                   <Select
-                    value={field.value.toString()}
+                    value={(field.value ?? 0).toString()}
                     onValueChange={(v) => field.onChange(parseInt(v, 10))}
                   >
                     <SelectTrigger className="w-20 h-7 text-xs">
@@ -427,7 +433,7 @@ export const AdminNotificationPreferencesForm = ({
             className="w-full"
           >
             {isSubmitting && <Loader2 className="mr-2 size-4 animate-spin" />}
-            保存更改
+            {t("telegramAdmin.preferences.saveChanges")}
           </Button>
         </div>
       )}

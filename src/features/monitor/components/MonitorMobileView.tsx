@@ -110,7 +110,7 @@ const MobileStatusHeader = memo(({ overview, isConnected }: { overview: MonitorO
         <span className={cn('text-sm font-bold tabular-nums', getResourceTextClass(overview.avgMemory))}>
           {overview.avgMemory.toFixed(0)}%
         </span>
-        <span className="text-[9px] text-muted-foreground">内存</span>
+        <span className="text-[9px] text-muted-foreground">{t('admin.monitor.metrics.memory')}</span>
       </div>
 
       {/* Download */}
@@ -119,7 +119,7 @@ const MobileStatusHeader = memo(({ overview, isConnected }: { overview: MonitorO
         <span className="text-sm font-bold tabular-nums text-success">
           {formatBitRate(overview.totalNetworkRxRate, true)}
         </span>
-        <span className="text-[9px] text-muted-foreground">下载</span>
+        <span className="text-[9px] text-muted-foreground">{t('admin.monitor.metrics.download')}</span>
         <span className="text-[8px] text-muted-foreground/60 tabular-nums">
           {formatBytes(overview.totalNetworkRxBytes)}
         </span>
@@ -131,7 +131,7 @@ const MobileStatusHeader = memo(({ overview, isConnected }: { overview: MonitorO
         <span className="text-sm font-bold tabular-nums text-primary">
           {formatBitRate(overview.totalNetworkTxRate, true)}
         </span>
-        <span className="text-[9px] text-muted-foreground">上传</span>
+        <span className="text-[9px] text-muted-foreground">{t('admin.monitor.metrics.upload')}</span>
         <span className="text-[8px] text-muted-foreground/60 tabular-nums">
           {formatBytes(overview.totalNetworkTxBytes)}
         </span>
@@ -238,6 +238,7 @@ const MobileEventLog = memo(({ events, isExpanded, onToggle }: {
   isExpanded: boolean;
   onToggle: () => void;
 }) => {
+  const { t } = useTranslation();
   const recentEvents = isExpanded ? events : events.slice(0, 3);
 
   const formatEventTime = (timestamp: number): string => {
@@ -262,7 +263,7 @@ const MobileEventLog = memo(({ events, isExpanded, onToggle }: {
         className="w-full flex items-center justify-between p-3 cursor-pointer touch-manipulation"
       >
         <div className="flex items-center gap-2">
-          <span className="text-sm font-medium text-foreground">事件日志</span>
+          <span className="text-sm font-medium text-foreground">{t('admin.monitor.eventLog')}</span>
           <Badge variant="secondary" className="text-[10px] h-5">{events.length}</Badge>
         </div>
         {isExpanded ? <ChevronUp className="size-4 text-muted-foreground" /> : <ChevronDown className="size-4 text-muted-foreground" />}
@@ -273,7 +274,7 @@ const MobileEventLog = memo(({ events, isExpanded, onToggle }: {
         <ScrollArea className="h-full">
           <div className="divide-y divide-border/30">
             {recentEvents.length === 0 ? (
-              <div className="py-4 text-center text-xs text-muted-foreground">暂无事件</div>
+              <div className="py-4 text-center text-xs text-muted-foreground">{t('admin.monitor.noEvents')}</div>
             ) : (
               recentEvents.map((event) => (
                 <div key={event.id} className="flex items-center gap-2 px-3 py-2">
