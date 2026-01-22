@@ -1,5 +1,5 @@
 # Stage 1: Build
-FROM node:22-alpine AS builder
+FROM node:24-alpine AS builder
 
 # Build arguments for version injection
 ARG APP_VERSION=0.0.0
@@ -13,7 +13,7 @@ WORKDIR /app
 
 # Install dependencies (layer cached when package*.json unchanged)
 COPY package.json package-lock.json ./
-RUN npm install
+RUN npm ci
 
 # Copy source code and build
 COPY . .
