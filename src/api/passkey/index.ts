@@ -13,7 +13,8 @@
  * These functions handle the complete WebAuthn ceremony automatically:
  *
  * - `checkPasskeySupport()` - Check browser capabilities
- * - `registerPasskey()` - Register a new passkey
+ * - `signupWithPasskey()` - Register new user with passkey (no password) - Added 2026-01-22
+ * - `registerPasskey()` - Register a new passkey (for existing users)
  * - `authenticateWithPasskey()` - Authenticate with passkey
  * - `startConditionalAuthentication()` - Enable autofill passkey login
  * - `listUserPasskeys()` - List user's passkeys
@@ -92,6 +93,7 @@ export * from './utils';
 // Export high-level client functions
 export {
   checkPasskeySupport,
+  signupWithPasskey,
   registerPasskey,
   authenticateWithPasskey,
   startConditionalAuthentication,

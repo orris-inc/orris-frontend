@@ -21,6 +21,11 @@ export type {
   PasskeyRegistrationResponse,
   PasskeyLoginResponse,
   ListPasskeysResponse,
+  // Passkey Signup types - Added 2026-01-22
+  StartPasskeySignupRequest,
+  StartPasskeySignupResponse,
+  FinishPasskeySignupRequest,
+  PasskeySignupResponse,
 } from '../auth/types';
 
 // Re-export user display info for login response
@@ -110,4 +115,46 @@ export interface PasskeyCapabilities {
 
   /** Whether conditional UI (autofill) is supported */
   hasConditionalUI: boolean;
+}
+
+// ============================================================================
+// Passkey Signup Types - Added 2026-01-22
+// ============================================================================
+
+/**
+ * Options for the high-level signupWithPasskey function
+ */
+export interface SignupWithPasskeyOptions {
+  /** User's email address */
+  email: string;
+
+  /** User's display name */
+  name: string;
+
+  /** Optional friendly name for the passkey (e.g., "MacBook Pro", "iPhone 15") */
+  deviceName?: string;
+
+  /**
+   * Preferred authenticator attachment
+   * - 'platform': Built-in authenticator (Touch ID, Face ID, Windows Hello)
+   * - 'cross-platform': External authenticator (USB key, phone via QR)
+   */
+  authenticatorAttachment?: 'platform' | 'cross-platform';
+
+  /**
+   * AbortController signal for cancelling the operation
+   */
+  signal?: AbortSignal;
+}
+
+/**
+ * Result of a successful passkey signup
+ */
+export interface PasskeySignupResult {
+  /** The newly created user's display information */
+  user: import('../auth/types').UserDisplayInfo;
+  /** The registered passkey credential info */
+  passkey: import('../auth/types').PasskeyCredential;
+  /** Token expiration time in seconds */
+  expiresIn: number;
 }

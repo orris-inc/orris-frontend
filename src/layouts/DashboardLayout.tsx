@@ -21,12 +21,7 @@ import { usePermissions } from '@/features/auth/hooks/usePermissions';
 import { useVersionInfo } from '@/hooks';
 import { cn } from '@/lib/utils';
 
-// Lazy load dialogs and drawers (only needed on interaction)
-const ProfileDialog = lazy(() =>
-  import('@/features/profile/components/ProfileDialog').then((m) => ({
-    default: m.ProfileDialog,
-  }))
-);
+// Lazy load drawers (only needed on interaction)
 const MobileDrawer = lazy(() =>
   import('@/components/navigation/MobileDrawer').then((m) => ({
     default: m.MobileDrawer,
@@ -44,7 +39,6 @@ export const DashboardLayout = ({ children }: DashboardLayoutProps) => {
   const { filterNavigationByPermission, userRole } = usePermissions();
   const { serverVersion, clientVersion } = useVersionInfo();
 
-  const [profileDialogOpen, setProfileDialogOpen] = useState(false);
   const [mobileDrawerOpen, setMobileDrawerOpen] = useState(false);
 
   // Filter navigation items by permission
@@ -126,7 +120,7 @@ export const DashboardLayout = ({ children }: DashboardLayoutProps) => {
             <UserMenu
               user={user}
               showAdminSwitch={userRole === 'admin'}
-              onProfileClick={() => setProfileDialogOpen(true)}
+              onProfileClick={() => navigate('/dashboard/profile')}
               onNotificationsClick={() => navigate('/dashboard/notifications')}
               onAdminClick={handleGoToAdmin}
               onLogout={handleLogout}
@@ -157,7 +151,7 @@ export const DashboardLayout = ({ children }: DashboardLayoutProps) => {
             <UserMenu
               user={user}
               showAdminSwitch={userRole === 'admin'}
-              onProfileClick={() => setProfileDialogOpen(true)}
+              onProfileClick={() => navigate('/dashboard/profile')}
               onNotificationsClick={() => navigate('/dashboard/notifications')}
               onAdminClick={handleGoToAdmin}
               onLogout={handleLogout}
@@ -205,15 +199,6 @@ export const DashboardLayout = ({ children }: DashboardLayoutProps) => {
         </div>
       </main>
 
-      {/* Lazy-loaded profile dialog - only render when opened */}
-      {profileDialogOpen && (
-        <Suspense fallback={null}>
-          <ProfileDialog
-            open={profileDialogOpen}
-            onClose={() => setProfileDialogOpen(false)}
-          />
-        </Suspense>
-      )}
     </div>
     </TooltipProvider>
   );

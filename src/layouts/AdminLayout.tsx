@@ -27,7 +27,6 @@ import { useCurrentPageTitle, useVersionInfo } from '@/hooks';
 import { useAuthStore } from '@/features/auth/stores/auth-store';
 import { useAuth } from '@/features/auth/hooks/useAuth';
 import { usePermissions } from '@/features/auth/hooks/usePermissions';
-import { ProfileDialog } from '@/features/profile/components/ProfileDialog';
 import { EnhancedBreadcrumbs } from '@/components/navigation/EnhancedBreadcrumbs';
 import { ThemeToggle } from '@/components/common/ThemeToggle';
 import { LanguageSwitcher } from '@/components/common/LanguageSwitcher';
@@ -52,7 +51,6 @@ export const AdminLayout = ({ children }: AdminLayoutProps) => {
     const saved = localStorage.getItem('admin-sidebar-collapsed');
     return saved === 'true';
   });
-  const [profileDialogOpen, setProfileDialogOpen] = useState(false);
 
   useEffect(() => {
     localStorage.setItem('admin-sidebar-collapsed', String(collapsed));
@@ -278,7 +276,7 @@ export const AdminLayout = ({ children }: AdminLayoutProps) => {
                 <UserMenu
                   user={user}
                   showUserSwitch
-                  onProfileClick={() => setProfileDialogOpen(true)}
+                  onProfileClick={() => navigate('/admin/profile')}
                   onUserClick={() => navigate('/dashboard')}
                   onLogout={handleLogout}
                 />
@@ -296,11 +294,6 @@ export const AdminLayout = ({ children }: AdminLayoutProps) => {
             </div>
           </main>
         </div>
-
-        <ProfileDialog
-          open={profileDialogOpen}
-          onClose={() => setProfileDialogOpen(false)}
-        />
       </div>
     </TooltipProvider>
   );

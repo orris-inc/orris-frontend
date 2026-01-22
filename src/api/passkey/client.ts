@@ -20,6 +20,8 @@ import {
   finishPasskeyRegistration as apiFinishRegistration,
   startPasskeyAuthentication as apiStartAuthentication,
   finishPasskeyAuthentication as apiFinishAuthentication,
+  startPasskeySignup as apiStartSignup,
+  finishPasskeySignup as apiFinishSignup,
 } from '../auth/client';
 import { listPasskeys as apiListPasskeys, deletePasskey as apiDeletePasskey } from '../user/client';
 import {
@@ -40,6 +42,8 @@ import type {
   PasskeyCapabilities,
   PasskeyCredential,
   ListPasskeysResponse,
+  SignupWithPasskeyOptions,
+  PasskeySignupResult,
 } from './types';
 
 // ============================================================================
@@ -188,6 +192,109 @@ export async function registerPasskey(
 
   return {
     passkey: result.passkey,
+  };
+}
+
+// ============================================================================
+// High-Level Passkey Signup (New User Registration) - Added 2026-01-22
+// ============================================================================
+
+/**
+ * Register a new user account using a passkey (no password required)
+ *
+ * This function handles the complete passwordless registration flow:
+ * 1. Sends email and name to start the signup ceremony
+ * 2. Prompts the user to create a credential using their authenticator
+ * 3. Sends the credential to the server to create user account and session
+ *
+ * The user is immediately logged in after successful registration.
+ *
+ * @param options - Signup options including email, name, and optional device settings
+ * @returns The newly created user info and passkey credential
+ * @throws Error if registration fails, email exists, or user cancels
+ *
+ * @example
+ * ```typescript
+ * try {
+ *   const result = await signupWithPasskey({
+ *     email: 'user@example.com',
+ *     name: 'John Doe',
+ *     deviceName: 'My MacBook Pro',
+ *     authenticatorAttachment: 'platform', // Use Touch ID
+ *   });
+ *   console.log(`Welcome, ${result.user.displayName}!`);
+ *   console.log(`Passkey registered: ${result.passkey.id}`);
+ * } catch (error) {
+ *   const { type, message } = parsePasskeyError(error);
+ *   if (type === 'user_cancelled') {
+ *     return; // User closed the dialog
+ *   }
+ *   showError(message);
+ * }
+ * ```
+ */
+export async function signupWithPasskey(
+  options: SignupWithPasskeyOptions
+): Promise<PasskeySignupResult> {
+  const { email, name, deviceName, authenticatorAttachment, signal } = options;
+
+  // 1. Get credential creation options and session token from server
+  // Note: apiStartSignup extracts publicKey from raw response for consistency
+  const { options: creationOptions, sessionToken } = await apiStartSignup({ email, name });
+
+  // 2. Convert Base64URL-encoded values to ArrayBuffer for WebAuthn API
+  const publicKeyOptions: PublicKeyCredentialCreationOptions = {
+    ...creationOptions,
+    challenge: base64URLToArrayBuffer(creationOptions.challenge as unknown as string),
+    user: {
+      ...creationOptions.user,
+      id: base64URLToArrayBuffer(creationOptions.user.id as unknown as string),
+    },
+    excludeCredentials: creationOptions.excludeCredentials?.map((cred) => ({
+      ...cred,
+      id: base64URLToArrayBuffer(cred.id as unknown as string),
+    })),
+  };
+
+  // Apply authenticator attachment preference if specified
+  if (authenticatorAttachment && publicKeyOptions.authenticatorSelection) {
+    publicKeyOptions.authenticatorSelection = {
+      ...publicKeyOptions.authenticatorSelection,
+      authenticatorAttachment,
+    };
+  }
+
+  // 3. Create credential using WebAuthn API
+  const credential = (await navigator.credentials.create({
+    publicKey: publicKeyOptions,
+    signal,
+  })) as PublicKeyCredential | null;
+
+  if (!credential) {
+    throw new Error('Failed to create credential');
+  }
+
+  const response = credential.response as AuthenticatorAttestationResponse;
+
+  // 4. Send credential to server to create user and session
+  const result = await apiFinishSignup({
+    sessionToken,
+    id: credential.id,
+    rawId: arrayBufferToBase64URL(credential.rawId),
+    type: credential.type,
+    response: {
+      clientDataJSON: arrayBufferToBase64URL(response.clientDataJSON),
+      attestationObject: arrayBufferToBase64URL(response.attestationObject),
+      transports: getTransports(response),
+    },
+    authenticatorAttachment: getAuthenticatorAttachment(credential),
+    deviceName,
+  });
+
+  return {
+    user: result.user,
+    passkey: result.passkey,
+    expiresIn: result.expiresIn,
   };
 }
 

@@ -1,6 +1,6 @@
 /**
  * Register Page
- * Supports email registration and OAuth2 quick registration
+ * Supports passkey registration, email registration, and OAuth2 quick registration
  */
 
 import { useForm } from 'react-hook-form';
@@ -9,26 +9,23 @@ import { z } from 'zod';
 import { Link as RouterLink, useNavigate } from 'react-router';
 import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Eye, EyeOff, Chrome, Github, Loader2, CircleAlert } from 'lucide-react';
-import * as LabelPrimitive from '@radix-ui/react-label';
-import * as Separator from '@radix-ui/react-separator';
+import { Loader2, Fingerprint } from 'lucide-react';
 import * as Progress from '@radix-ui/react-progress';
 import { useAuth } from '@/features/auth/hooks/useAuth';
+import { usePasskeySignup } from '@/features/auth/hooks/usePasskeySignup';
 import { useAuthStore } from '@/features/auth/stores/auth-store';
 import { useNotificationStore } from '@/shared/stores/notification-store';
 import { LanguageSwitcher } from '@/components/common/LanguageSwitcher';
 import { ThemeToggle } from '@/components/common/ThemeToggle';
+import { GoogleIcon, GitHubIcon } from '@/components/common/SocialIcons';
+import { FormField, AuthAlert } from '@/components/auth';
 import {
   getButtonClass,
-  inputStyles,
-  labelStyles,
   cardStyles,
   cardHeaderStyles,
   cardTitleStyles,
   cardDescriptionStyles,
   cardContentStyles,
-  getAlertClass,
-  alertDescriptionStyles
 } from '@/lib/ui-styles';
 import { cn } from '@/lib/utils';
 
@@ -38,6 +35,12 @@ type RegisterFormData = {
   email: string;
   password: string;
   confirmPassword: string;
+};
+
+// Passkey signup form data type
+type PasskeyFormData = {
+  name: string;
+  email: string;
 };
 
 // Calculate password strength
@@ -51,15 +54,35 @@ const calculatePasswordStrength = (password: string): number => {
   return Math.min(strength, 100);
 };
 
+// Divider component
+const OrDivider = ({ text }: { text: string }) => (
+  <div className="relative my-6">
+    <div className="absolute inset-0 flex items-center">
+      <div className="w-full border-t border-border" />
+    </div>
+    <div className="relative flex justify-center">
+      <span className="bg-card px-4 text-xs uppercase tracking-wider text-muted-foreground">
+        {text}
+      </span>
+    </div>
+  </div>
+);
+
 export const RegisterPage = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const { isAuthenticated } = useAuthStore();
   const { register: registerUser, loginWithOAuth, isLoading, error, authError } = useAuth();
+  const {
+    isSupported: isPasskeySupported,
+    isLoading: isPasskeyLoading,
+    error: passkeyError,
+    signupWithPasskey,
+    clearError: clearPasskeyError,
+  } = usePasskeySignup();
   const { showSuccess } = useNotificationStore();
-  const [showPassword, setShowPassword] = useState(false);
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [passwordStrength, setPasswordStrength] = useState(0);
+  const [showPasskeyForm, setShowPasskeyForm] = useState(false);
 
   // Zod schema with i18n validation messages
   const registerSchema = z
@@ -79,6 +102,14 @@ export const RegisterPage = () => {
       path: ['confirmPassword'],
     });
 
+  // Passkey form schema (only name and email)
+  const passkeySchema = z.object({
+    name: z.string()
+      .min(2, t('auth.validation.nameMinLength'))
+      .max(100, t('auth.validation.nameMaxLength')),
+    email: z.string().email(t('auth.validation.emailInvalid')),
+  });
+
   // Redirect to Dashboard if already logged in
   useEffect(() => {
     if (isAuthenticated) {
@@ -93,6 +124,14 @@ export const RegisterPage = () => {
     watch,
   } = useForm<RegisterFormData>({
     resolver: zodResolver(registerSchema),
+  });
+
+  const {
+    register: registerPasskey,
+    handleSubmit: handlePasskeySubmit,
+    formState: { errors: passkeyErrors },
+  } = useForm<PasskeyFormData>({
+    resolver: zodResolver(passkeySchema),
   });
 
   const password = watch('password', '');
@@ -112,7 +151,14 @@ export const RegisterPage = () => {
       showSuccess(t('auth.register.success'));
     } catch {
       // Error already handled by useAuth
-      // authError is now available for field-level error display
+    }
+  };
+
+  const onPasskeySubmit = async (data: PasskeyFormData) => {
+    clearPasskeyError();
+    const success = await signupWithPasskey(data.email, data.name);
+    if (success) {
+      showSuccess(t('auth.register.successPasskey'));
     }
   };
 
@@ -149,90 +195,151 @@ export const RegisterPage = () => {
 
       <div className="w-full max-w-md">
         <div className={cardStyles}>
-          <div className={cn(cardHeaderStyles, "text-center")}>
-            <h3 className={cn(cardTitleStyles, "text-3xl")}>{t('auth.register.title')}</h3>
+          <div className={cn(cardHeaderStyles, 'text-center')}>
+            <h3 className={cn(cardTitleStyles, 'text-3xl')}>{t('auth.register.title')}</h3>
             <p className={cardDescriptionStyles}>{t('auth.register.subtitle')}</p>
           </div>
-          <div className={cn(cardContentStyles, "grid gap-6")}>
+          <div className={cn(cardContentStyles, 'grid gap-6')}>
             {/* Error message */}
             {error && (
-              <div className={getAlertClass('destructive')}>
-                <CircleAlert className="h-4 w-4" />
-                <div className={alertDescriptionStyles}>{error}</div>
-              </div>
+              <AuthAlert variant="error">
+                {error}
+              </AuthAlert>
             )}
 
-            {/* Registration form */}
-            <form onSubmit={handleSubmit(onSubmit)} className="grid gap-4">
-              <div className="grid gap-2">
-                <LabelPrimitive.Root htmlFor="name" className={labelStyles}>{t('auth.register.name')}</LabelPrimitive.Root>
-                <input
-                  id="name"
-                  autoComplete="name"
-                  autoFocus
-                  aria-invalid={!!errors.name || !!authError?.fieldErrors?.name}
-                  className={inputStyles}
-                  {...register('name')}
-                />
-                {(errors.name || authError?.fieldErrors?.name) && (
-                  <p className="text-sm text-destructive">
-                    {errors.name?.message || authError?.fieldErrors?.name}
-                  </p>
-                )}
-              </div>
+            {/* OAuth registration buttons */}
+            <div className="space-y-3">
+              <button
+                type="button"
+                onClick={() => handleOAuthRegister('google')}
+                disabled={isLoading}
+                className="flex h-11 w-full items-center justify-center gap-3 rounded-lg bg-background text-sm font-medium shadow-sm ring-1 ring-inset ring-input transition-all hover:bg-muted/50 hover:ring-muted-foreground/30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary active:bg-muted/70 disabled:pointer-events-none disabled:opacity-50"
+              >
+                <GoogleIcon className="size-5" />
+                {t('auth.register.continueWithGoogle')}
+              </button>
+              <button
+                type="button"
+                onClick={() => handleOAuthRegister('github')}
+                disabled={isLoading}
+                className="flex h-11 w-full items-center justify-center gap-3 rounded-lg bg-background text-sm font-medium shadow-sm ring-1 ring-inset ring-input transition-all hover:bg-muted/50 hover:ring-muted-foreground/30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary active:bg-muted/70 disabled:pointer-events-none disabled:opacity-50"
+              >
+                <GitHubIcon className="size-5" />
+                {t('auth.register.continueWithGithub')}
+              </button>
+            </div>
 
-              <div className="grid gap-2">
-                <LabelPrimitive.Root htmlFor="email" className={labelStyles}>{t('auth.register.email')}</LabelPrimitive.Root>
-                <input
-                  id="email"
-                  type="email"
-                  autoComplete="email"
-                  aria-invalid={!!errors.email || !!authError?.fieldErrors?.email}
-                  className={inputStyles}
-                  {...register('email')}
-                />
-                {(errors.email || authError?.fieldErrors?.email) && (
-                  <p className="text-sm text-destructive">
-                    {errors.email?.message || authError?.fieldErrors?.email}
-                  </p>
-                )}
-              </div>
+            {/* Passkey signup (only shown when WebAuthn is supported) */}
+            {isPasskeySupported && (
+              <>
+                <OrDivider text={t('auth.register.orUsePasskey')} />
 
-              <div className="grid gap-2">
-                <LabelPrimitive.Root htmlFor="password" className={labelStyles}>{t('auth.register.password')}</LabelPrimitive.Root>
-                <div className="relative">
-                  <input
-                    id="password"
-                    type={showPassword ? 'text' : 'password'}
-                    autoComplete="new-password"
-                    aria-invalid={!!errors.password || !!authError?.fieldErrors?.password}
-                    className={cn(inputStyles, "pr-10")}
-                    {...register('password', {
-                      onChange: (e) => handlePasswordChange(e.target.value),
-                    })}
-                  />
+                {!showPasskeyForm ? (
                   <button
                     type="button"
-                    className="absolute right-1 top-1/2 -translate-y-1/2 inline-flex items-center justify-center rounded-md hover:bg-accent hover:text-accent-foreground h-8 w-8 transition-colors"
-                    onClick={() => setShowPassword(!showPassword)}
-                    aria-label={t('auth.register.togglePasswordVisibility')}
-                    tabIndex={-1}
+                    onClick={() => {
+                      clearPasskeyError();
+                      setShowPasskeyForm(true);
+                    }}
+                    disabled={isLoading || isPasskeyLoading}
+                    className="flex h-11 w-full items-center justify-center gap-3 rounded-lg bg-background text-sm font-medium shadow-sm ring-1 ring-inset ring-input transition-all hover:bg-muted/50 hover:ring-muted-foreground/30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary active:bg-muted/70 disabled:pointer-events-none disabled:opacity-50"
                   >
-                    {showPassword ? (
-                      <EyeOff className="size-4" />
-                    ) : (
-                      <Eye className="size-4" />
-                    )}
+                    <Fingerprint className="size-5" />
+                    {t('auth.register.signUpWithPasskey')}
                   </button>
-                </div>
+                ) : (
+                  <form onSubmit={handlePasskeySubmit(onPasskeySubmit)} className="space-y-4">
+                    <FormField
+                      label={t('auth.register.name')}
+                      type="text"
+                      autoComplete="name"
+                      autoFocus
+                      error={passkeyErrors.name?.message}
+                      {...registerPasskey('name')}
+                    />
+
+                    <FormField
+                      label={t('auth.register.email')}
+                      type="email"
+                      autoComplete="email"
+                      error={passkeyErrors.email?.message}
+                      {...registerPasskey('email')}
+                    />
+
+                    {passkeyError && (
+                      <AuthAlert variant="error">
+                        {passkeyError}
+                      </AuthAlert>
+                    )}
+
+                    <div className="flex gap-3">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setShowPasskeyForm(false);
+                          clearPasskeyError();
+                        }}
+                        className={cn(getButtonClass('outline', 'lg'), 'flex-1')}
+                      >
+                        {t('common.actions.cancel')}
+                      </button>
+                      <button
+                        type="submit"
+                        disabled={isPasskeyLoading}
+                        className={cn(getButtonClass('default', 'lg'), 'flex-1')}
+                      >
+                        {isPasskeyLoading ? (
+                          <>
+                            <Loader2 className="mr-2 size-4 animate-spin" />
+                            {t('auth.register.creatingPasskey')}
+                          </>
+                        ) : (
+                          <>
+                            <Fingerprint className="mr-2 size-4" />
+                            {t('auth.register.createPasskey')}
+                          </>
+                        )}
+                      </button>
+                    </div>
+                  </form>
+                )}
+              </>
+            )}
+
+            <OrDivider text={t('auth.register.orContinueWith')} />
+
+            {/* Registration form */}
+            <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+              <FormField
+                label={t('auth.register.name')}
+                type="text"
+                autoComplete="name"
+                error={errors.name?.message || authError?.fieldErrors?.name}
+                {...register('name')}
+              />
+
+              <FormField
+                label={t('auth.register.email')}
+                type="email"
+                autoComplete="email"
+                error={errors.email?.message || authError?.fieldErrors?.email}
+                {...register('email')}
+              />
+
+              <div className="grid gap-2">
+                <FormField
+                  label={t('auth.register.password')}
+                  type="password"
+                  autoComplete="new-password"
+                  togglePasswordLabel={t('auth.register.togglePasswordVisibility')}
+                  error={errors.password?.message || authError?.fieldErrors?.password}
+                  {...register('password', {
+                    onChange: (e) => handlePasswordChange(e.target.value),
+                  })}
+                />
                 {!errors.password && !authError?.fieldErrors?.password && !password && (
                   <p className="text-xs text-muted-foreground">
                     {t('auth.register.passwordHint')}
-                  </p>
-                )}
-                {(errors.password || authError?.fieldErrors?.password) && (
-                  <p className="text-sm text-destructive">
-                    {errors.password?.message || authError?.fieldErrors?.password}
                   </p>
                 )}
                 {password && (
@@ -256,74 +363,24 @@ export const RegisterPage = () => {
                 )}
               </div>
 
-              <div className="grid gap-2">
-                <LabelPrimitive.Root htmlFor="confirmPassword" className={labelStyles}>{t('auth.register.confirmPassword')}</LabelPrimitive.Root>
-                <div className="relative">
-                  <input
-                    id="confirmPassword"
-                    type={showConfirmPassword ? 'text' : 'password'}
-                    autoComplete="new-password"
-                    aria-invalid={!!errors.confirmPassword}
-                    className={cn(inputStyles, "pr-10")}
-                    {...register('confirmPassword')}
-                  />
-                  <button
-                    type="button"
-                    className="absolute right-1 top-1/2 -translate-y-1/2 inline-flex items-center justify-center rounded-md hover:bg-accent hover:text-accent-foreground h-8 w-8 transition-colors"
-                    onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                    aria-label={t('auth.register.togglePasswordVisibility')}
-                    tabIndex={-1}
-                  >
-                    {showConfirmPassword ? (
-                      <EyeOff className="size-4" />
-                    ) : (
-                      <Eye className="size-4" />
-                    )}
-                  </button>
-                </div>
-                {errors.confirmPassword && (
-                  <p className="text-sm text-destructive">{errors.confirmPassword.message}</p>
-                )}
-              </div>
+              <FormField
+                label={t('auth.register.confirmPassword')}
+                type="password"
+                autoComplete="new-password"
+                togglePasswordLabel={t('auth.register.togglePasswordVisibility')}
+                error={errors.confirmPassword?.message}
+                {...register('confirmPassword')}
+              />
 
-              <button type="submit" disabled={isLoading} className={cn(getButtonClass('default', 'lg'), "w-full")}>
+              <button
+                type="submit"
+                disabled={isLoading}
+                className={cn(getButtonClass('default', 'lg'), 'w-full')}
+              >
                 {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                 {t('auth.register.signUp')}
               </button>
             </form>
-
-            {/* Divider */}
-            <div className="relative">
-              <div className="absolute inset-0 flex items-center">
-                <Separator.Root className="w-full h-[1px] bg-border" />
-              </div>
-              <div className="relative flex justify-center text-xs uppercase">
-                <span className="bg-card px-2 text-muted-foreground">{t('auth.register.orContinueWith')}</span>
-              </div>
-            </div>
-
-            {/* OAuth registration buttons */}
-            <div className="grid gap-2">
-              <button
-                type="button"
-                onClick={() => handleOAuthRegister('google')}
-                disabled={isLoading}
-                className={getButtonClass('outline', 'lg')}
-              >
-                <Chrome className="mr-2 h-4 w-4" />
-                {t('auth.register.continueWithGoogle')}
-              </button>
-
-              <button
-                type="button"
-                onClick={() => handleOAuthRegister('github')}
-                disabled={isLoading}
-                className={getButtonClass('outline', 'lg')}
-              >
-                <Github className="mr-2 h-4 w-4" />
-                {t('auth.register.continueWithGithub')}
-              </button>
-            </div>
 
             {/* Login link */}
             <div className="text-center text-sm text-muted-foreground">

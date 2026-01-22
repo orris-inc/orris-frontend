@@ -306,7 +306,12 @@
       "strengthGood": "Good",
       "strengthStrong": "Strong",
       "success": "Account created! Please check your email for verification.",
-      "successOAuth": "Account created successfully!"
+      "successOAuth": "Account created successfully!",
+      "orUsePasskey": "or use passkey",
+      "signUpWithPasskey": "Sign up with Passkey",
+      "creatingPasskey": "Creating passkey...",
+      "createPasskey": "Create Passkey",
+      "successPasskey": "Account created with passkey!"
     },
     "validation": {
       "emailRequired": "Email is required",
@@ -3061,6 +3066,56 @@
       "dangerZoneTitle": "Danger Zone",
       "dangerZoneDesc": "Irreversible and destructive actions",
       "deleteAccountComingSoon": "Account deletion feature is coming soon"
+    },
+    "nav": {
+      "profile": "Profile",
+      "security": "Security",
+      "notifications": "Notifications",
+      "appearance": "Appearance",
+      "system": "System",
+      "selectSection": "Select section"
+    },
+    "notifications": {
+      "title": "Notifications",
+      "description": "Manage how you receive notifications",
+      "emailNotifications": "Email Notifications",
+      "emailNotificationsDesc": "Choose what types of emails you receive",
+      "marketingEmails": "Marketing Emails",
+      "marketingEmailsDesc": "Receive product updates and offers",
+      "securityAlerts": "Security Alerts",
+      "securityAlertsDesc": "Important security notifications",
+      "productUpdates": "Product Updates",
+      "productUpdatesDesc": "New features and improvements",
+      "pushNotifications": "Push Notifications",
+      "pushNotificationsDesc": "Browser push notifications",
+      "comingSoon": "Push notifications coming soon"
+    },
+    "appearance": {
+      "title": "Appearance",
+      "description": "Customize how the app looks",
+      "theme": "Theme",
+      "themeDesc": "Select your preferred theme",
+      "themeLight": "Light",
+      "themeDark": "Dark",
+      "themeSystem": "System",
+      "language": "Language",
+      "languageDesc": "Select your preferred language"
+    },
+    "system": {
+      "infoTitle": "System Information",
+      "infoDesc": "View current system version and status",
+      "serverVersion": "Server Version",
+      "serverVersionDesc": "Backend API service version",
+      "clientVersion": "Client Version",
+      "clientVersionDesc": "Frontend application version",
+      "cacheTitle": "Cache Management",
+      "cacheDesc": "Manage local storage and cached data",
+      "clearCache": "Clear Cache",
+      "clearCacheDesc": "Clear locally stored cache data",
+      "clearCacheButton": "Clear",
+      "advancedTitle": "Advanced Settings",
+      "advancedDesc": "Advanced system configuration options",
+      "comingSoon": "More advanced settings coming soon"
     },
     "tip": "Tip: Changing your email address requires re-verification. To change your password, please visit the account settings page."
   },

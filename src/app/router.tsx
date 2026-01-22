@@ -133,6 +133,11 @@ const AdminNotificationsPage = lazy(() =>
     default: m.AdminNotificationsPage,
   }))
 );
+const AdminProfilePage = lazy(() =>
+  import('@/pages/AdminProfilePage').then((m) => ({
+    default: m.AdminProfilePage,
+  }))
+);
 
 export const router = createBrowserRouter([
   // Root path - Landing page
@@ -370,6 +375,18 @@ export const router = createBrowserRouter([
       <AdminRoute>
         <SuspenseWrapper>
           <AdminNotificationsPage />
+        </SuspenseWrapper>
+      </AdminRoute>
+    ),
+  },
+
+  // Profile settings (admin)
+  {
+    path: '/admin/profile',
+    element: (
+      <AdminRoute>
+        <SuspenseWrapper>
+          <AdminProfilePage />
         </SuspenseWrapper>
       </AdminRoute>
     ),

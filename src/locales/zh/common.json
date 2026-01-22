@@ -306,7 +306,12 @@
       "strengthGood": "良",
       "strengthStrong": "强",
       "success": "注册成功！请查收验证邮件",
-      "successOAuth": "注册成功！"
+      "successOAuth": "注册成功！",
+      "orUsePasskey": "或使用通行密钥",
+      "signUpWithPasskey": "使用通行密钥注册",
+      "creatingPasskey": "创建通行密钥中...",
+      "createPasskey": "创建通行密钥",
+      "successPasskey": "通行密钥注册成功！"
     },
     "validation": {
       "emailRequired": "请输入邮箱地址",
@@ -3049,6 +3054,56 @@
       "dangerZoneTitle": "危险操作",
       "dangerZoneDesc": "不可逆的危险操作",
       "deleteAccountComingSoon": "账户删除功能即将上线"
+    },
+    "nav": {
+      "profile": "个人资料",
+      "security": "安全设置",
+      "notifications": "通知设置",
+      "appearance": "外观设置",
+      "system": "系统设置",
+      "selectSection": "选择设置项"
+    },
+    "notifications": {
+      "title": "通知设置",
+      "description": "管理您接收通知的方式",
+      "emailNotifications": "邮件通知",
+      "emailNotificationsDesc": "选择您希望通过邮件接收的通知类型",
+      "marketingEmails": "营销邮件",
+      "marketingEmailsDesc": "接收产品更新和优惠信息",
+      "securityAlerts": "安全提醒",
+      "securityAlertsDesc": "账户安全相关的重要通知",
+      "productUpdates": "产品更新",
+      "productUpdatesDesc": "新功能和改进通知",
+      "pushNotifications": "推送通知",
+      "pushNotificationsDesc": "浏览器推送通知",
+      "comingSoon": "推送通知功能即将上线"
+    },
+    "appearance": {
+      "title": "外观设置",
+      "description": "自定义应用的显示方式",
+      "theme": "主题",
+      "themeDesc": "选择您喜欢的主题模式",
+      "themeLight": "浅色",
+      "themeDark": "深色",
+      "themeSystem": "跟随系统",
+      "language": "语言",
+      "languageDesc": "选择应用显示语言"
+    },
+    "system": {
+      "infoTitle": "系统信息",
+      "infoDesc": "查看当前系统版本和运行状态",
+      "serverVersion": "服务端版本",
+      "serverVersionDesc": "后端 API 服务版本",
+      "clientVersion": "客户端版本",
+      "clientVersionDesc": "前端应用版本",
+      "cacheTitle": "缓存管理",
+      "cacheDesc": "管理本地存储和缓存数据",
+      "clearCache": "清除缓存",
+      "clearCacheDesc": "清除本地存储的缓存数据",
+      "clearCacheButton": "清除",
+      "advancedTitle": "高级设置",
+      "advancedDesc": "系统高级配置选项",
+      "comingSoon": "更多高级设置即将上线"
     },
     "tip": "提示：修改邮箱地址需要重新验证。如需更改密码，请访问账户设置页面。"
   },
