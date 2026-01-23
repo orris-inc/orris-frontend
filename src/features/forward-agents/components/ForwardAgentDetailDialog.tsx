@@ -561,57 +561,68 @@ export const ForwardAgentDetailDialog: React.FC<
               </div>
             </div>
 
-            {/* Basic Info */}
+            {/* Basic Info - Description List Pattern */}
             <div>
               <h3 className="text-sm font-semibold mb-3">{t("admin.forwardAgents.detail.basicInfo")}</h3>
               <Separator className="mb-4" />
-              <div className="grid grid-cols-1 @md:grid-cols-2 gap-4">
-                <div className="space-y-1">
-                  <p className="text-sm text-muted-foreground">{t("admin.forwardAgents.detail.agentId")}</p>
+              <dl className="grid grid-cols-1 @sm:grid-cols-[minmax(120px,1fr)_2fr] gap-x-4 text-sm">
+                {/* Agent ID */}
+                <dt className="py-2 text-muted-foreground @sm:border-t @sm:border-border first:border-t-0">
+                  {t("admin.forwardAgents.detail.agentId")}
+                </dt>
+                <dd className="pb-2 @sm:py-2 @sm:border-t @sm:border-border @sm:[&:nth-child(2)]:border-t-0">
                   <TruncatedId id={agent.id} fullWidth />
-                </div>
+                </dd>
 
-                <div className="space-y-1">
-                  <p className="text-sm text-muted-foreground">{t("admin.forwardAgents.detail.agentName")}</p>
-                  <p className="text-sm">{agent.name}</p>
-                </div>
+                {/* Agent Name */}
+                <dt className="py-2 text-muted-foreground @sm:border-t @sm:border-border">
+                  {t("admin.forwardAgents.detail.agentName")}
+                </dt>
+                <dd className="pb-2 @sm:py-2 text-foreground @sm:border-t @sm:border-border">
+                  {agent.name}
+                </dd>
 
-                {agent.publicAddress && (
-                  <div className="space-y-1">
-                    <p className="text-sm text-muted-foreground">{t("admin.forwardAgents.detail.publicAddress")}</p>
-                    <p className="text-sm font-mono bg-muted px-2 py-1 rounded inline-block">
-                      {agent.publicAddress}
-                    </p>
-                  </div>
-                )}
-
+                {/* Tunnel Address */}
                 {agent.tunnelAddress && (
-                  <div className="space-y-1">
-                    <p className="text-sm text-muted-foreground">{t("admin.forwardAgents.detail.tunnelAddress")}</p>
-                    <p className="text-sm font-mono bg-muted px-2 py-1 rounded inline-block">
-                      {agent.tunnelAddress}
-                    </p>
-                  </div>
+                  <>
+                    <dt className="py-2 text-muted-foreground @sm:border-t @sm:border-border">
+                      {t("admin.forwardAgents.detail.tunnelAddress")}
+                    </dt>
+                    <dd className="pb-2 @sm:py-2 @sm:border-t @sm:border-border">
+                      <span className="font-mono text-xs bg-muted px-2 py-1 rounded">
+                        {agent.tunnelAddress}
+                      </span>
+                    </dd>
+                  </>
                 )}
 
-                <div className="space-y-1">
-                  <p className="text-sm text-muted-foreground">{t("admin.forwardAgents.detail.portLimit")}</p>
-                  <p className="text-sm font-mono bg-muted px-2 py-1 rounded inline-block">
+                {/* Port Limit */}
+                <dt className="py-2 text-muted-foreground @sm:border-t @sm:border-border">
+                  {t("admin.forwardAgents.detail.portLimit")}
+                </dt>
+                <dd className="pb-2 @sm:py-2 @sm:border-t @sm:border-border">
+                  <span className="font-mono text-xs bg-muted px-2 py-1 rounded">
                     {agent.allowedPortRange || t("admin.forwardAgents.detail.noLimit")}
-                  </p>
-                </div>
+                  </span>
+                </dd>
 
-                <div className="space-y-1">
-                  <p className="text-sm text-muted-foreground">{t("admin.forwardAgents.detail.notificationStatus")}</p>
+                {/* Notification Status */}
+                <dt className="py-2 text-muted-foreground @sm:border-t @sm:border-border">
+                  {t("admin.forwardAgents.detail.notificationStatus")}
+                </dt>
+                <dd className="pb-2 @sm:py-2 @sm:border-t @sm:border-border">
                   <Badge variant={agent.muteNotification ? "secondary" : "outline"}>
                     {agent.muteNotification ? t("admin.forwardAgents.detail.muted") : t("admin.forwardAgents.detail.normalNotification")}
                   </Badge>
-                </div>
+                </dd>
 
-                <div className="space-y-2 @md:col-span-2">
-                  <p className="text-sm text-muted-foreground">{t("admin.forwardAgents.detail.blockedProtocols")}</p>
+                {/* Blocked Protocols */}
+                <dt className="py-2 text-muted-foreground @sm:border-t @sm:border-border">
+                  {t("admin.forwardAgents.detail.blockedProtocols")}
+                </dt>
+                <dd className="pb-2 @sm:py-2 @sm:border-t @sm:border-border">
                   {agent.blockedProtocols && agent.blockedProtocols.length > 0 ? (
-                    <div className="space-y-2">
+                    <div className="space-y-1.5">
                       {getProtocolGroups(t).map((group) => {
                         const blockedInGroup = group.protocols.filter((p) =>
                           agent.blockedProtocols?.includes(p.value)
@@ -619,7 +630,7 @@ export const ForwardAgentDetailDialog: React.FC<
                         if (blockedInGroup.length === 0) return null;
                         return (
                           <div key={group.label} className="flex flex-wrap items-center gap-1.5">
-                            <span className="text-xs text-muted-foreground mr-1">
+                            <span className="text-xs text-muted-foreground mr-0.5">
                               {group.label}:
                             </span>
                             {blockedInGroup.map((protocol) => (
@@ -636,43 +647,53 @@ export const ForwardAgentDetailDialog: React.FC<
                       })}
                     </div>
                   ) : (
-                    <p className="text-sm text-muted-foreground">{t("admin.forwardAgents.detail.none")}</p>
+                    <span className="text-muted-foreground">{t("admin.forwardAgents.detail.none")}</span>
                   )}
-                </div>
+                </dd>
 
+                {/* Remark */}
                 {agent.remark && (
-                  <div className="space-y-1 @md:col-span-2">
-                    <p className="text-sm text-muted-foreground">{t("admin.forwardAgents.detail.remark")}</p>
-                    <p className="text-sm">{agent.remark}</p>
-                  </div>
+                  <>
+                    <dt className="py-2 text-muted-foreground @sm:border-t @sm:border-border">
+                      {t("admin.forwardAgents.detail.remark")}
+                    </dt>
+                    <dd className="pb-2 @sm:py-2 text-foreground @sm:border-t @sm:border-border">
+                      {agent.remark}
+                    </dd>
+                  </>
                 )}
-              </div>
+              </dl>
             </div>
 
-            {/* Time Info */}
+            {/* Time Info - Description List Pattern */}
             <div>
               <h3 className="text-sm font-semibold mb-3">{t("admin.forwardAgents.detail.timeInfo")}</h3>
               <Separator className="mb-4" />
-              <div className="grid grid-cols-1 @md:grid-cols-2 gap-4">
-                <div className="space-y-1">
-                  <p className="text-sm text-muted-foreground">{t("admin.forwardAgents.detail.createdAt")}</p>
-                  <p className="text-xs">{formatDateTime(agent.createdAt)}</p>
-                </div>
+              <dl className="grid grid-cols-1 @sm:grid-cols-[minmax(120px,1fr)_2fr] gap-x-4 text-sm">
+                {/* Created At */}
+                <dt className="py-2 text-muted-foreground @sm:border-t @sm:border-border first:border-t-0">
+                  {t("admin.forwardAgents.detail.createdAt")}
+                </dt>
+                <dd className="pb-2 @sm:py-2 text-foreground tabular-nums @sm:border-t @sm:border-border @sm:[&:nth-child(2)]:border-t-0">
+                  {formatDateTime(agent.createdAt)}
+                </dd>
 
-                {agent.updatedAt && (
-                  <div className="space-y-1">
-                    <p className="text-sm text-muted-foreground">{t("admin.forwardAgents.detail.updatedAt")}</p>
-                    <p className="text-xs">{formatDateTime(agent.updatedAt)}</p>
-                  </div>
-                )}
+                {/* Updated At */}
+                <dt className="py-2 text-muted-foreground @sm:border-t @sm:border-border">
+                  {t("admin.forwardAgents.detail.updatedAt")}
+                </dt>
+                <dd className="pb-2 @sm:py-2 text-foreground tabular-nums @sm:border-t @sm:border-border">
+                  {agent.updatedAt ? formatDateTime(agent.updatedAt) : '-'}
+                </dd>
 
-                {agent.lastSeenAt && (
-                  <div className="space-y-1">
-                    <p className="text-sm text-muted-foreground">{t("admin.forwardAgents.detail.lastOnline")}</p>
-                    <p className="text-xs">{formatDateTime(agent.lastSeenAt)}</p>
-                  </div>
-                )}
-              </div>
+                {/* Last Online */}
+                <dt className="py-2 text-muted-foreground @sm:border-t @sm:border-border">
+                  {t("admin.forwardAgents.detail.lastOnline")}
+                </dt>
+                <dd className="pb-2 @sm:py-2 text-foreground tabular-nums @sm:border-t @sm:border-border">
+                  {agent.lastSeenAt ? formatDateTime(agent.lastSeenAt) : '-'}
+                </dd>
+              </dl>
             </div>
 
             {/* Token Notice */}

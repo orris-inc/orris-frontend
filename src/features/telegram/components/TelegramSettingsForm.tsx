@@ -1,43 +1,41 @@
 /**
  * Telegram Settings Form
- * Form for configuring Telegram bot settings
- * Includes sensitive field masking and connection testing
+ * Form for configuring Telegram bot settings with two-column layout
  */
 
-import { useState, useEffect } from "react";
-import { useForm, Controller } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { z } from "zod";
-import { useTranslation } from "react-i18next";
+import { useEffect } from 'react';
+import { useForm, Controller } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { z } from 'zod';
+import { useTranslation } from 'react-i18next';
 import {
   Loader2,
-  Eye,
-  EyeOff,
-  Send,
   CheckCircle2,
   XCircle,
   RefreshCw,
   ExternalLink,
-  Globe,
-  Key,
-  Shield,
-} from "lucide-react";
-import { Switch, SwitchThumb } from "@/components/common/Switch";
-import { Input } from "@/components/common/Input";
-import { Button } from "@/components/common/Button";
-import { Skeleton } from "@/components/common/Skeleton";
-import { cn } from "@/lib/utils";
+} from 'lucide-react';
+import { Switch, SwitchThumb } from '@/components/common/Switch';
+import { Input } from '@/components/common/Input';
+import { Button } from '@/components/common/Button';
+import { Skeleton } from '@/components/common/Skeleton';
+import {
+  FormSection,
+  FormField,
+  FormActions,
+} from '@/features/settings/components/FormField';
+import { SecretInput } from '@/features/settings/components/SecretInput';
+import { cn } from '@/lib/utils';
 import type {
   TelegramConfigResponse,
   UpdateTelegramConfigRequest,
   TelegramTestResult,
-} from "@/api/admin";
+} from '@/api/admin';
 
-// Validation message will be handled at display time
 const settingsSchema = z.object({
   enabled: z.boolean(),
   botToken: z.string().optional(),
-  webhookUrl: z.string().url().optional().or(z.literal("")),
+  webhookUrl: z.string().url().optional().or(z.literal('')),
   webhookSecret: z.string().optional(),
 });
 
@@ -52,80 +50,22 @@ interface TelegramSettingsFormProps {
   testResult?: TelegramTestResult;
 }
 
-interface SettingFieldProps {
-  icon: React.ReactNode;
-  iconBg: string;
-  label: string;
-  description?: string;
-  children: React.ReactNode;
-}
-
-const SettingField = ({
-  icon,
-  iconBg,
-  label,
-  description,
-  children,
-}: SettingFieldProps) => (
-  <div className="py-3 -mx-2 px-2 rounded-lg transition-colors duration-150 space-y-2">
-    {/* Header: icon + label always on same row */}
-    <div className="flex items-start gap-3">
-      <div className={`p-2 rounded-lg ${iconBg} shrink-0`}>{icon}</div>
-      <div className="flex-1 min-w-0 pt-1">
-        <div className="text-sm font-medium text-foreground">{label}</div>
-        {description && (
-          <div className="text-xs text-muted-foreground mt-0.5">
-            {description}
-          </div>
-        )}
-      </div>
-    </div>
-    {/* Input: indented to align with text */}
-    <div className="ml-11">{children}</div>
-  </div>
-);
-
 /**
- * Password input with show/hide toggle
+ * Status badge component
  */
-const SecretInput = ({
-  value,
-  onChange,
-  placeholder,
-  disabled,
-}: {
-  value: string;
-  onChange: (value: string) => void;
-  placeholder?: string;
-  disabled?: boolean;
-}) => {
-  const [show, setShow] = useState(false);
-  const isMasked = value?.includes("*");
+const StatusBadge = ({ enabled }: { enabled: boolean }) => {
+  const { t } = useTranslation();
 
-  return (
-    <div className="relative">
-      <Input
-        type={show ? "text" : "password"}
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-        placeholder={placeholder}
-        disabled={disabled}
-        className="pr-10 font-mono text-sm"
-      />
-      <button
-        type="button"
-        onClick={() => setShow(!show)}
-        disabled={disabled || isMasked}
-        className={cn(
-          "absolute right-2 top-1/2 -translate-y-1/2 p-1.5 rounded-md transition-colors",
-          disabled || isMasked
-            ? "text-muted-foreground/50 cursor-not-allowed"
-            : "text-muted-foreground hover:text-foreground hover:bg-accent"
-        )}
-      >
-        {show ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
-      </button>
-    </div>
+  return enabled ? (
+    <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-success/10 text-success ring-1 ring-success/20">
+      <span className="size-1.5 rounded-full bg-success" />
+      {t('admin.settings.enabled')}
+    </span>
+  ) : (
+    <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-muted text-muted-foreground">
+      <span className="size-1.5 rounded-full bg-muted-foreground" />
+      {t('admin.settings.disabled')}
+    </span>
   );
 };
 
@@ -171,7 +111,7 @@ export const TelegramSettingsForm = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [configKey]);
 
-  const enabled = watch("enabled");
+  const enabled = watch('enabled');
 
   const handleFormSubmit = async (data: SettingsFormData) => {
     // Only include fields that have actually changed
@@ -181,13 +121,13 @@ export const TelegramSettingsForm = ({
       updates.enabled = data.enabled;
     }
     // Only include token/secret if they're not masked values
-    if (data.botToken && !data.botToken.includes("*")) {
+    if (data.botToken && !data.botToken.includes('*')) {
       updates.botToken = data.botToken;
     }
     if (data.webhookUrl !== config.webhookUrl) {
       updates.webhookUrl = data.webhookUrl;
     }
-    if (data.webhookSecret && !data.webhookSecret.includes("*")) {
+    if (data.webhookSecret && !data.webhookSecret.includes('*')) {
       updates.webhookSecret = data.webhookSecret;
     }
 
@@ -195,182 +135,177 @@ export const TelegramSettingsForm = ({
   };
 
   return (
-    <form onSubmit={handleSubmit(handleFormSubmit)} className="space-y-1">
-      {/* Enable/Disable */}
-      <div className="flex items-center justify-between py-3 -mx-2 px-2 rounded-lg hover:bg-accent/50 transition-colors duration-150">
-        <div className="flex items-center gap-3">
-          <div className="p-2 rounded-lg bg-[brand-telegram]/10">
-            <Send className="size-4 text-[brand-telegram]" />
-          </div>
-          <div>
-            <div className="text-sm font-medium text-foreground">
-              {t("telegramAdmin.settings.enableNotifications")}
-            </div>
-            <div className="text-xs text-muted-foreground">
-              {t("telegramAdmin.settings.enableNotificationsDesc")}
-            </div>
-          </div>
-        </div>
-        <Controller
-          name="enabled"
-          control={control}
-          render={({ field }) => (
-            <Switch checked={field.value} onCheckedChange={field.onChange}>
-              <SwitchThumb />
-            </Switch>
-          )}
-        />
-      </div>
-
-      {/* Bot Token */}
-      <SettingField
-        icon={<Key className="size-4 text-warning" />}
-        iconBg="bg-warning/10"
-        label="Bot Token"
-        description={t("telegramAdmin.settings.botTokenDesc")}
+    <form onSubmit={handleSubmit(handleFormSubmit)}>
+      <FormSection
+        title={t('admin.settings.telegram.title')}
+        description={t('admin.settings.telegram.description')}
+        headerRight={<StatusBadge enabled={config.enabled} />}
       >
-        <Controller
-          name="botToken"
-          control={control}
-          render={({ field }) => (
-            <SecretInput
-              value={field.value || ""}
-              onChange={field.onChange}
-              placeholder="123456789:ABCdefGHIjklMNOpqrsTUVwxyz"
-              disabled={!enabled}
-            />
-          )}
-        />
-      </SettingField>
-
-      {/* Webhook URL */}
-      <SettingField
-        icon={<Globe className="size-4 text-info" />}
-        iconBg="bg-info/10"
-        label="Webhook URL"
-        description={t("telegramAdmin.settings.webhookUrlDesc")}
-      >
-        <Controller
-          name="webhookUrl"
-          control={control}
-          render={({ field }) => (
-            <Input
-              type="url"
-              value={field.value || ""}
-              onChange={field.onChange}
-              placeholder="https://your-domain.com/api/webhooks/telegram"
-              disabled={!enabled}
-              className="font-mono text-sm"
-            />
-          )}
-        />
-      </SettingField>
-
-      {/* Webhook Secret */}
-      <SettingField
-        icon={<Shield className="size-4 text-success" />}
-        iconBg="bg-success/10"
-        label="Webhook Secret"
-        description={t("telegramAdmin.settings.webhookSecretDesc")}
-      >
-        <Controller
-          name="webhookSecret"
-          control={control}
-          render={({ field }) => (
-            <SecretInput
-              value={field.value || ""}
-              onChange={field.onChange}
-              placeholder="your-webhook-secret"
-              disabled={!enabled}
-            />
-          )}
-        />
-      </SettingField>
-
-      {/* Current Mode & Bot Link */}
-      {config.mode && (
-        <div className="flex items-center gap-3 py-3 -mx-2 px-2 text-sm">
-          <span className="text-muted-foreground">
-            {t("telegramAdmin.settings.currentMode")}
-          </span>
-          <span
-            className={cn(
-              "px-2 py-0.5 rounded-full text-xs font-medium",
-              config.mode === "webhook"
-                ? "bg-success/10 text-success"
-                : "bg-info/10 text-info"
-            )}
-          >
-            {config.mode === "webhook" ? "Webhook" : "Polling"}
-          </span>
-          {config.botLink && (
-            <a
-              href={config.botLink}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center gap-1 text-[brand-telegram] hover:underline ml-auto"
-            >
-              {config.botLink.replace("https://t.me/", "@")}
-              <ExternalLink className="size-3" />
-            </a>
-          )}
-        </div>
-      )}
-
-      {/* Actions */}
-      <div className="flex items-center gap-3 pt-4 border-t border-border">
-        {/* Test Connection */}
-        <Button
-          type="button"
-          variant="outline"
-          size="sm"
-          onClick={() => onTestConnection()}
-          disabled={isTesting || !enabled}
-          className="gap-2"
+        {/* Enable/Disable */}
+        <FormField
+          label={t('telegramAdmin.settings.enableNotifications')}
+          description={t('telegramAdmin.settings.enableNotificationsDesc')}
         >
-          {isTesting ? (
-            <Loader2 className="size-4 animate-spin" />
-          ) : (
-            <RefreshCw className="size-4" />
-          )}
-          {t("telegramAdmin.settings.testConnection")}
-        </Button>
-
-        {/* Test Result */}
-        {testResult && (
-          <div
-            className={cn(
-              "flex items-center gap-1.5 text-sm",
-              testResult.success ? "text-success" : "text-destructive"
+          <Controller
+            name="enabled"
+            control={control}
+            render={({ field }) => (
+              <Switch checked={field.value} onCheckedChange={field.onChange}>
+                <SwitchThumb />
+              </Switch>
             )}
-          >
-            {testResult.success ? (
-              <>
-                <CheckCircle2 className="size-4" />
-                <span>@{testResult.botUsername}</span>
-              </>
-            ) : (
-              <>
-                <XCircle className="size-4" />
-                <span className="truncate max-w-[200px]">{testResult.error}</span>
-              </>
+          />
+        </FormField>
+
+        {/* Bot Token */}
+        <FormField
+          label="Bot Token"
+          description={t('telegramAdmin.settings.botTokenDesc')}
+          disabled={!enabled}
+        >
+          <Controller
+            name="botToken"
+            control={control}
+            render={({ field }) => (
+              <SecretInput
+                value={field.value || ''}
+                onChange={field.onChange}
+                placeholder="123456789:ABCdefGHIjklMNOpqrsTUVwxyz"
+                disabled={!enabled}
+              />
+            )}
+          />
+        </FormField>
+
+        {/* Webhook URL */}
+        <FormField
+          label="Webhook URL"
+          description={t('telegramAdmin.settings.webhookUrlDesc')}
+          disabled={!enabled}
+        >
+          <Controller
+            name="webhookUrl"
+            control={control}
+            render={({ field }) => (
+              <Input
+                type="url"
+                value={field.value || ''}
+                onChange={field.onChange}
+                placeholder="https://your-domain.com/api/webhooks/telegram"
+                disabled={!enabled}
+                className="font-mono text-sm"
+              />
+            )}
+          />
+        </FormField>
+
+        {/* Webhook Secret */}
+        <FormField
+          label="Webhook Secret"
+          description={t('telegramAdmin.settings.webhookSecretDesc')}
+          disabled={!enabled}
+        >
+          <Controller
+            name="webhookSecret"
+            control={control}
+            render={({ field }) => (
+              <SecretInput
+                value={field.value || ''}
+                onChange={field.onChange}
+                placeholder="your-webhook-secret"
+                disabled={!enabled}
+              />
+            )}
+          />
+        </FormField>
+
+        {/* Current Mode & Bot Link */}
+        {config.mode && (
+          <div className="flex items-center gap-3 p-5 text-sm border-t border-border/50">
+            <span className="text-muted-foreground">
+              {t('telegramAdmin.settings.currentMode')}
+            </span>
+            <span
+              className={cn(
+                'px-2 py-0.5 rounded-full text-xs font-medium',
+                config.mode === 'webhook'
+                  ? 'bg-success/10 text-success'
+                  : 'bg-info/10 text-info'
+              )}
+            >
+              {config.mode === 'webhook' ? 'Webhook' : 'Polling'}
+            </span>
+            {config.botLink && (
+              <a
+                href={config.botLink}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-1 text-[var(--brand-telegram)] hover:underline ml-auto"
+              >
+                {config.botLink.replace('https://t.me/', '@')}
+                <ExternalLink className="size-3" />
+              </a>
             )}
           </div>
         )}
 
-        {/* Save Button */}
-        {isDirty && (
+        {/* Actions */}
+        <FormActions>
+          {/* Test Connection */}
           <Button
-            type="submit"
+            type="button"
+            variant="outline"
             size="sm"
-            disabled={isSubmitting}
-            className="ml-auto gap-2"
+            onClick={() => onTestConnection()}
+            disabled={isTesting || !enabled}
+            className="gap-2"
           >
-            {isSubmitting && <Loader2 className="size-4 animate-spin" />}
-            {t("telegramAdmin.settings.saveChanges")}
+            {isTesting ? (
+              <Loader2 className="size-4 animate-spin" />
+            ) : (
+              <RefreshCw className="size-4" />
+            )}
+            {t('telegramAdmin.settings.testConnection')}
           </Button>
-        )}
-      </div>
+
+          {/* Test Result */}
+          {testResult && (
+            <div
+              className={cn(
+                'flex items-center gap-1.5 text-sm',
+                testResult.success ? 'text-success' : 'text-destructive'
+              )}
+            >
+              {testResult.success ? (
+                <>
+                  <CheckCircle2 className="size-4" />
+                  <span>@{testResult.botUsername}</span>
+                </>
+              ) : (
+                <>
+                  <XCircle className="size-4" />
+                  <span className="truncate max-w-[200px]">
+                    {testResult.error}
+                  </span>
+                </>
+              )}
+            </div>
+          )}
+
+          {/* Save Button */}
+          {isDirty && (
+            <Button
+              type="submit"
+              size="sm"
+              disabled={isSubmitting}
+              className="ml-auto gap-2"
+            >
+              {isSubmitting && <Loader2 className="size-4 animate-spin" />}
+              {t('telegramAdmin.settings.saveChanges')}
+            </Button>
+          )}
+        </FormActions>
+      </FormSection>
     </form>
   );
 };
@@ -379,32 +314,46 @@ export const TelegramSettingsForm = ({
  * Loading skeleton for the form
  */
 export const TelegramSettingsFormSkeleton = () => (
-  <div className="space-y-4">
-    <div className="flex items-center justify-between py-3">
-      <div className="flex items-center gap-3">
-        <Skeleton className="size-8 rounded-lg" />
-        <div className="space-y-1.5">
+  <div className="bg-card rounded-lg ring-1 ring-border overflow-hidden">
+    {/* Header skeleton */}
+    <div className="flex items-center justify-between p-5 pb-4 border-b border-border/50">
+      <div className="space-y-1.5">
+        <Skeleton className="h-5 w-32" />
+        <Skeleton className="h-3.5 w-48" />
+      </div>
+      <Skeleton className="h-6 w-16 rounded-full" />
+    </div>
+    {/* Fields skeleton */}
+    <div className="divide-y divide-border/50">
+      {/* Enable switch */}
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-x-6 gap-y-2 p-5">
+        <div className="sm:pt-2 space-y-1.5">
           <Skeleton className="h-4 w-32" />
           <Skeleton className="h-3 w-48" />
         </div>
+        <div className="sm:col-span-2">
+          <Skeleton className="h-6 w-11 rounded-full" />
+        </div>
       </div>
-      <Skeleton className="h-6 w-11 rounded-full" />
-    </div>
-    {[1, 2, 3].map((i) => (
-      <div key={i} className="space-y-2 py-3">
-        <div className="flex items-center gap-3">
-          <Skeleton className="size-8 rounded-lg" />
-          <div className="space-y-1.5">
+      {/* Form fields */}
+      {[1, 2, 3].map((i) => (
+        <div
+          key={i}
+          className="grid grid-cols-1 sm:grid-cols-3 gap-x-6 gap-y-2 p-5"
+        >
+          <div className="sm:pt-2 space-y-1.5">
             <Skeleton className="h-4 w-24" />
             <Skeleton className="h-3 w-40" />
           </div>
+          <div className="sm:col-span-2">
+            <Skeleton className="h-10 w-full rounded-md" />
+          </div>
         </div>
-        <Skeleton className="h-10 w-full rounded-md ml-11" />
-      </div>
-    ))}
-    <Skeleton className="h-px w-full" />
-    <div className="flex items-center gap-3 pt-2">
-      <Skeleton className="h-8 w-24 rounded-md" />
+      ))}
+    </div>
+    {/* Actions skeleton */}
+    <div className="flex items-center justify-end gap-3 p-5 bg-muted/30">
+      <Skeleton className="h-8 w-28 rounded-md" />
     </div>
   </div>
 );

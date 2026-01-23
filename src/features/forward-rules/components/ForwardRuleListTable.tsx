@@ -698,6 +698,7 @@ export const ForwardRuleListTable: React.FC<ForwardRuleListTableProps> = ({
       id: 'traffic',
       header: t('admin.forwardRules.columns.traffic'),
       size: 100,
+      minSize: 85,
       meta: { priority: 1, numeric: true } as ResponsiveColumnMeta,
       cell: ({ row }) => {
         const rule = row.original;
@@ -707,7 +708,7 @@ export const ForwardRuleListTable: React.FC<ForwardRuleListTableProps> = ({
           return (
             <Tooltip>
               <TooltipTrigger asChild>
-                <span className="inline-flex items-center gap-1 px-2 py-1 text-xs font-medium rounded-md bg-cyan-50 dark:bg-cyan-900/20 text-cyan-600 dark:text-cyan-400 cursor-default">
+                <span className="text-xs text-cyan-600 dark:text-cyan-400 cursor-default whitespace-nowrap">
                   {t('admin.forwardRules.traffic.external')}
                 </span>
               </TooltipTrigger>
@@ -724,44 +725,23 @@ export const ForwardRuleListTable: React.FC<ForwardRuleListTableProps> = ({
         const multiplier = rule.effectiveTrafficMultiplier;
         const isAuto = rule.isAutoMultiplier;
 
-        // Calculate upload/download ratio for mini bar
-        const uploadRatio = totalBytes > 0 ? (uploadBytes / totalBytes) * 100 : 50;
-
         return (
           <TableHoverCardList
             columnKey="traffic"
             items={[
-              { label: t('admin.forwardRules.traffic.upload'), value: <span className="flex items-center gap-1.5"><span className="inline-block w-2 h-2 rounded-full bg-green-500" />{formatBytesGB(uploadBytes)}</span> },
-              { label: t('admin.forwardRules.traffic.download'), value: <span className="flex items-center gap-1.5"><span className="inline-block w-2 h-2 rounded-full bg-blue-500" />{formatBytesGB(downloadBytes)}</span> },
+              { label: t('admin.forwardRules.traffic.total'), value: formatBytesGB(totalBytes) },
+              { label: t('admin.forwardRules.traffic.upload'), value: formatBytesGB(uploadBytes) },
+              { label: t('admin.forwardRules.traffic.download'), value: formatBytesGB(downloadBytes) },
               { label: t('admin.forwardRules.traffic.multiplier'), value: `${multiplier?.toFixed(2) || '1.00'}x (${isAuto ? t('admin.forwardRules.traffic.auto') : t('admin.forwardRules.traffic.custom')})` },
             ]}
             title={t('admin.forwardRules.columns.traffic')}
-            contentClassName="w-64"
+            contentClassName="w-48"
           >
-            <div className="space-y-1 min-w-0">
-              <div className="flex items-center gap-1">
-                <span className="text-sm font-medium text-foreground tabular-nums whitespace-nowrap">
-                  {formatBytesGB(totalBytes)}
-                </span>
-                {multiplier && multiplier !== 1 && (
-                  <span className={`text-[10px] px-0.5 py-0.5 rounded font-medium whitespace-nowrap ${isAuto ? 'bg-muted text-muted-foreground' : 'bg-amber-50 dark:bg-amber-900/20 text-amber-600 dark:text-amber-400'}`}>
-                    ×{multiplier.toFixed(1)}
-                  </span>
-                )}
-              </div>
-              {/* Mini traffic ratio bar */}
-              <div className="flex items-center h-1">
-                <div className="w-full h-full bg-muted rounded-full overflow-hidden flex">
-                  <div
-                    className="h-full bg-green-500 transition-all duration-300"
-                    style={{ width: `${uploadRatio}%` }}
-                  />
-                  <div
-                    className="h-full bg-blue-500 transition-all duration-300"
-                    style={{ width: `${100 - uploadRatio}%` }}
-                  />
-                </div>
-              </div>
+            <div className="grid grid-cols-[10px_1fr] gap-x-1 gap-y-0.5 text-xs font-mono whitespace-nowrap">
+              <span className="text-green-500">↑</span>
+              <span className="text-foreground tabular-nums">{formatBytesGB(uploadBytes)}</span>
+              <span className="text-blue-500">↓</span>
+              <span className="text-foreground tabular-nums">{formatBytesGB(downloadBytes)}</span>
             </div>
           </TableHoverCardList>
         );
@@ -784,7 +764,7 @@ export const ForwardRuleListTable: React.FC<ForwardRuleListTableProps> = ({
               <TooltipTrigger asChild>
                 <button
                   onClick={() => onEnable(rule)}
-                  className="inline-flex items-center gap-1.5 px-2 py-1 rounded-md text-xs font-medium cursor-pointer active:scale-95 transition-all bg-muted text-muted-foreground"
+                  className="inline-flex items-center gap-1.5 px-2 py-1 rounded-md text-xs font-medium cursor-pointer active:scale-95 transition-all whitespace-nowrap bg-muted text-muted-foreground"
                 >
                   <span className="relative flex">
                     <Square className="relative size-3 fill-current opacity-40" strokeWidth={1.5} />
@@ -868,7 +848,7 @@ export const ForwardRuleListTable: React.FC<ForwardRuleListTableProps> = ({
             <TooltipTrigger asChild>
               <button
                 onClick={() => onDisable(rule)}
-                className={`inline-flex items-center gap-1.5 px-2 py-1 rounded-md text-xs font-medium cursor-pointer active:scale-95 transition-all ${healthConfig.bgClass} ${healthConfig.colorClass}`}
+                className={`inline-flex items-center gap-1.5 px-2 py-1 rounded-md text-xs font-medium cursor-pointer active:scale-95 transition-all whitespace-nowrap ${healthConfig.bgClass} ${healthConfig.colorClass}`}
               >
                 <span className="relative flex">
                   {healthConfig.showPulse && (
