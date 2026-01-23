@@ -963,7 +963,7 @@ export const EditNodeDialog: React.FC<EditNodeDialogProps> = ({
                         <Label htmlFor="plugin">{t('admin.nodes.form.plugin')}</Label>
                         <Input
                           id="plugin"
-                          placeholder="obfs-local, v2ray-plugin"
+                          placeholder={t('admin.nodes.form.placeholders.plugin')}
                           value={formData.plugin || ''}
                           onChange={(e) => handleChange('plugin', e.target.value)}
                         />
@@ -976,7 +976,7 @@ export const EditNodeDialog: React.FC<EditNodeDialogProps> = ({
                         <Label htmlFor="pluginOpts">{t('admin.nodes.form.pluginOptions')}</Label>
                         <Input
                           id="pluginOpts"
-                          placeholder="obfs=http;obfs-host=www.bing.com"
+                          placeholder={t('admin.nodes.form.placeholders.pluginOpts')}
                           value={pluginOptsStr}
                           onChange={(e) => handlePluginOptsChange(e.target.value)}
                           error={!!errors.pluginOpts}
@@ -995,10 +995,10 @@ export const EditNodeDialog: React.FC<EditNodeDialogProps> = ({
                   {isTrojan && (
                     <>
                       <div className="flex flex-col gap-2">
-                        <Label htmlFor="sni">SNI</Label>
+                        <Label htmlFor="sni">{t('admin.nodes.form.fields.sni')}</Label>
                         <Input
                           id="sni"
-                          placeholder="TLS Server Name Indication"
+                          placeholder={t('admin.nodes.form.placeholders.sni')}
                           value={formData.sni || ''}
                           onChange={(e) => handleChange('sni', e.target.value)}
                         />
@@ -1026,10 +1026,10 @@ export const EditNodeDialog: React.FC<EditNodeDialogProps> = ({
                       {showWsFields && (
                         <>
                           <div className="flex flex-col gap-2">
-                            <Label htmlFor="host">Host</Label>
+                            <Label htmlFor="host">{t('admin.nodes.form.fields.host')}</Label>
                             <Input
                               id="host"
-                              placeholder="WebSocket Host Header"
+                              placeholder={t('admin.nodes.form.placeholders.wsHost')}
                               value={formData.host || ''}
                               onChange={(e) => handleChange('host', e.target.value)}
                             />
@@ -1037,10 +1037,10 @@ export const EditNodeDialog: React.FC<EditNodeDialogProps> = ({
                           </div>
 
                           <div className="flex flex-col gap-2">
-                            <Label htmlFor="path">Path</Label>
+                            <Label htmlFor="path">{t('admin.nodes.form.fields.path')}</Label>
                             <Input
                               id="path"
-                              placeholder="/path"
+                              placeholder={t('admin.nodes.form.placeholders.path')}
                               value={formData.path || ''}
                               onChange={(e) => handleChange('path', e.target.value)}
                             />
@@ -1052,10 +1052,10 @@ export const EditNodeDialog: React.FC<EditNodeDialogProps> = ({
                       {/* gRPC Config */}
                       {showGrpcFields && (
                         <div className="flex flex-col gap-2">
-                          <Label htmlFor="grpcHost">Service Name</Label>
+                          <Label htmlFor="grpcHost">{t('admin.nodes.form.fields.serviceName')}</Label>
                           <Input
                             id="grpcHost"
-                            placeholder="gRPC Service Name"
+                            placeholder={t('admin.nodes.form.placeholders.grpcServiceName')}
                             value={formData.host || ''}
                             onChange={(e) => handleChange('host', e.target.value)}
                           />
@@ -1069,10 +1069,10 @@ export const EditNodeDialog: React.FC<EditNodeDialogProps> = ({
                   {isVless && (
                     <>
                       <div className="flex flex-col gap-2">
-                        <Label htmlFor="vlessSni">SNI</Label>
+                        <Label htmlFor="vlessSni">{t('admin.nodes.form.fields.sni')}</Label>
                         <Input
                           id="vlessSni"
-                          placeholder="TLS Server Name Indication"
+                          placeholder={t('admin.nodes.form.placeholders.sni')}
                           value={formData.vlessSni || ''}
                           onChange={(e) => handleChange('vlessSni', e.target.value)}
                         />
@@ -1096,10 +1096,10 @@ export const EditNodeDialog: React.FC<EditNodeDialogProps> = ({
                       </div>
 
                       <div className="flex flex-col gap-2">
-                        <Label htmlFor="vlessFlow">Flow</Label>
+                        <Label htmlFor="vlessFlow">{t('admin.nodes.form.fields.flow')}</Label>
                         <Input
                           id="vlessFlow"
-                          placeholder="xtls-rprx-vision"
+                          placeholder={t('admin.nodes.form.placeholders.vlessFlow')}
                           value={formData.vlessFlow || ''}
                           onChange={(e) => handleChange('vlessFlow', e.target.value)}
                         />
@@ -1107,7 +1107,7 @@ export const EditNodeDialog: React.FC<EditNodeDialogProps> = ({
                       </div>
 
                       <div className="flex flex-col gap-2">
-                        <Label htmlFor="vlessFingerprint">Fingerprint</Label>
+                        <Label htmlFor="vlessFingerprint">{t('admin.nodes.form.fields.fingerprint')}</Label>
                         <Select
                           value={formData.vlessFingerprint || ''}
                           onValueChange={(value) => handleChange('vlessFingerprint', value)}
@@ -1128,20 +1128,20 @@ export const EditNodeDialog: React.FC<EditNodeDialogProps> = ({
                       {showVlessWsFields && (
                         <>
                           <div className="flex flex-col gap-2">
-                            <Label htmlFor="vlessHost">Host</Label>
+                            <Label htmlFor="vlessHost">{t('admin.nodes.form.fields.host')}</Label>
                             <Input
                               id="vlessHost"
-                              placeholder="WS/H2 Host Header"
+                              placeholder={t('admin.nodes.form.placeholders.wsH2Host')}
                               value={formData.vlessHost || ''}
                               onChange={(e) => handleChange('vlessHost', e.target.value)}
                             />
                           </div>
 
                           <div className="flex flex-col gap-2">
-                            <Label htmlFor="vlessPath">Path</Label>
+                            <Label htmlFor="vlessPath">{t('admin.nodes.form.fields.path')}</Label>
                             <Input
                               id="vlessPath"
-                              placeholder="/path"
+                              placeholder={t('admin.nodes.form.placeholders.path')}
                               value={formData.vlessPath || ''}
                               onChange={(e) => handleChange('vlessPath', e.target.value)}
                             />
@@ -1151,10 +1151,10 @@ export const EditNodeDialog: React.FC<EditNodeDialogProps> = ({
 
                       {showVlessGrpcFields && (
                         <div className="flex flex-col gap-2">
-                          <Label htmlFor="vlessServiceName">Service Name</Label>
+                          <Label htmlFor="vlessServiceName">{t('admin.nodes.form.fields.serviceName')}</Label>
                           <Input
                             id="vlessServiceName"
-                            placeholder="gRPC Service Name"
+                            placeholder={t('admin.nodes.form.placeholders.grpcServiceName')}
                             value={formData.vlessServiceName || ''}
                             onChange={(e) => handleChange('vlessServiceName', e.target.value)}
                           />
@@ -1164,7 +1164,7 @@ export const EditNodeDialog: React.FC<EditNodeDialogProps> = ({
                       {showVlessRealityFields && (
                         <>
                           <div className="flex flex-col gap-2">
-                            <Label htmlFor="vlessRealityPublicKey">Reality Public Key</Label>
+                            <Label htmlFor="vlessRealityPublicKey">{t('admin.nodes.form.fields.realityPublicKey')}</Label>
                             <Input
                               id="vlessRealityPublicKey"
                               placeholder={t('admin.nodes.form.publicKeyPlaceholder')}
@@ -1174,7 +1174,7 @@ export const EditNodeDialog: React.FC<EditNodeDialogProps> = ({
                           </div>
 
                           <div className="flex flex-col gap-2">
-                            <Label htmlFor="vlessRealityShortId">Reality Short ID</Label>
+                            <Label htmlFor="vlessRealityShortId">{t('admin.nodes.form.fields.realityShortId')}</Label>
                             <Input
                               id="vlessRealityShortId"
                               placeholder={t('admin.nodes.form.shortIdPlaceholder')}
@@ -1184,7 +1184,7 @@ export const EditNodeDialog: React.FC<EditNodeDialogProps> = ({
                           </div>
 
                           <div className="flex flex-col gap-2 @md:col-span-2">
-                            <Label htmlFor="vlessRealitySpiderX">Reality Spider X</Label>
+                            <Label htmlFor="vlessRealitySpiderX">{t('admin.nodes.form.fields.realitySpiderX')}</Label>
                             <Input
                               id="vlessRealitySpiderX"
                               placeholder="/"
@@ -1201,7 +1201,7 @@ export const EditNodeDialog: React.FC<EditNodeDialogProps> = ({
                   {isVmess && (
                     <>
                       <div className="flex flex-col gap-2">
-                        <Label htmlFor="vmessAlterId">Alter ID</Label>
+                        <Label htmlFor="vmessAlterId">{t('admin.nodes.form.fields.alterId')}</Label>
                         <Input
                           id="vmessAlterId"
                           type="number"
@@ -1213,7 +1213,7 @@ export const EditNodeDialog: React.FC<EditNodeDialogProps> = ({
                       </div>
 
                       <div className="flex flex-col gap-2">
-                        <Label htmlFor="vmessTls">TLS</Label>
+                        <Label htmlFor="vmessTls">{t('admin.nodes.form.fields.tls')}</Label>
                         <Select
                           value={formData.vmessTls ? 'true' : 'false'}
                           onValueChange={(value) => handleChange('vmessTls', value === 'true')}
@@ -1229,10 +1229,10 @@ export const EditNodeDialog: React.FC<EditNodeDialogProps> = ({
                       </div>
 
                       <div className="flex flex-col gap-2">
-                        <Label htmlFor="vmessSni">SNI</Label>
+                        <Label htmlFor="vmessSni">{t('admin.nodes.form.fields.sni')}</Label>
                         <Input
                           id="vmessSni"
-                          placeholder="TLS Server Name Indication"
+                          placeholder={t('admin.nodes.form.placeholders.sni')}
                           value={formData.vmessSni || ''}
                           onChange={(e) => handleChange('vmessSni', e.target.value)}
                         />
@@ -1257,20 +1257,20 @@ export const EditNodeDialog: React.FC<EditNodeDialogProps> = ({
                       {showVmessWsFields && (
                         <>
                           <div className="flex flex-col gap-2">
-                            <Label htmlFor="vmessHost">Host</Label>
+                            <Label htmlFor="vmessHost">{t('admin.nodes.form.fields.host')}</Label>
                             <Input
                               id="vmessHost"
-                              placeholder="WS/HTTP Host Header"
+                              placeholder={t('admin.nodes.form.placeholders.wsHttpHost')}
                               value={formData.vmessHost || ''}
                               onChange={(e) => handleChange('vmessHost', e.target.value)}
                             />
                           </div>
 
                           <div className="flex flex-col gap-2">
-                            <Label htmlFor="vmessPath">Path</Label>
+                            <Label htmlFor="vmessPath">{t('admin.nodes.form.fields.path')}</Label>
                             <Input
                               id="vmessPath"
-                              placeholder="/path"
+                              placeholder={t('admin.nodes.form.placeholders.path')}
                               value={formData.vmessPath || ''}
                               onChange={(e) => handleChange('vmessPath', e.target.value)}
                             />
@@ -1280,10 +1280,10 @@ export const EditNodeDialog: React.FC<EditNodeDialogProps> = ({
 
                       {showVmessGrpcFields && (
                         <div className="flex flex-col gap-2">
-                          <Label htmlFor="vmessServiceName">Service Name</Label>
+                          <Label htmlFor="vmessServiceName">{t('admin.nodes.form.fields.serviceName')}</Label>
                           <Input
                             id="vmessServiceName"
-                            placeholder="gRPC Service Name"
+                            placeholder={t('admin.nodes.form.placeholders.grpcServiceName')}
                             value={formData.vmessServiceName || ''}
                             onChange={(e) => handleChange('vmessServiceName', e.target.value)}
                           />
@@ -1296,10 +1296,10 @@ export const EditNodeDialog: React.FC<EditNodeDialogProps> = ({
                   {isHysteria2 && (
                     <>
                       <div className="flex flex-col gap-2">
-                        <Label htmlFor="hysteria2Sni">SNI</Label>
+                        <Label htmlFor="hysteria2Sni">{t('admin.nodes.form.fields.sni')}</Label>
                         <Input
                           id="hysteria2Sni"
-                          placeholder="TLS Server Name Indication"
+                          placeholder={t('admin.nodes.form.placeholders.sni')}
                           value={formData.hysteria2Sni || ''}
                           onChange={(e) => handleChange('hysteria2Sni', e.target.value)}
                         />
@@ -1325,7 +1325,7 @@ export const EditNodeDialog: React.FC<EditNodeDialogProps> = ({
                         <Label htmlFor="hysteria2Obfs">{t('admin.nodes.form.obfsType')}</Label>
                         <Input
                           id="hysteria2Obfs"
-                          placeholder="salamander"
+                          placeholder={t('admin.nodes.form.placeholders.hysteria2Obfs')}
                           value={formData.hysteria2Obfs || ''}
                           onChange={(e) => handleChange('hysteria2Obfs', e.target.value)}
                         />
@@ -1347,7 +1347,7 @@ export const EditNodeDialog: React.FC<EditNodeDialogProps> = ({
                           id="hysteria2UpMbps"
                           type="number"
                           min={0}
-                          placeholder="100"
+                          placeholder={t('admin.nodes.form.placeholders.bandwidth')}
                           value={formData.hysteria2UpMbps ?? ''}
                           onChange={(e) => handleChange('hysteria2UpMbps', e.target.value ? parseInt(e.target.value, 10) : undefined)}
                         />
@@ -1359,14 +1359,14 @@ export const EditNodeDialog: React.FC<EditNodeDialogProps> = ({
                           id="hysteria2DownMbps"
                           type="number"
                           min={0}
-                          placeholder="100"
+                          placeholder={t('admin.nodes.form.placeholders.bandwidth')}
                           value={formData.hysteria2DownMbps ?? ''}
                           onChange={(e) => handleChange('hysteria2DownMbps', e.target.value ? parseInt(e.target.value, 10) : undefined)}
                         />
                       </div>
 
                       <div className="flex flex-col gap-2 @md:col-span-2">
-                        <Label htmlFor="hysteria2Fingerprint">Fingerprint</Label>
+                        <Label htmlFor="hysteria2Fingerprint">{t('admin.nodes.form.fields.fingerprint')}</Label>
                         <Select
                           value={formData.hysteria2Fingerprint || ''}
                           onValueChange={(value) => handleChange('hysteria2Fingerprint', value)}
@@ -1390,10 +1390,10 @@ export const EditNodeDialog: React.FC<EditNodeDialogProps> = ({
                   {isTuic && (
                     <>
                       <div className="flex flex-col gap-2">
-                        <Label htmlFor="tuicSni">SNI</Label>
+                        <Label htmlFor="tuicSni">{t('admin.nodes.form.fields.sni')}</Label>
                         <Input
                           id="tuicSni"
-                          placeholder="TLS Server Name Indication"
+                          placeholder={t('admin.nodes.form.placeholders.sni')}
                           value={formData.tuicSni || ''}
                           onChange={(e) => handleChange('tuicSni', e.target.value)}
                         />
@@ -1416,10 +1416,10 @@ export const EditNodeDialog: React.FC<EditNodeDialogProps> = ({
                       </div>
 
                       <div className="flex flex-col gap-2">
-                        <Label htmlFor="tuicAlpn">ALPN</Label>
+                        <Label htmlFor="tuicAlpn">{t('admin.nodes.form.fields.alpn')}</Label>
                         <Input
                           id="tuicAlpn"
-                          placeholder="h3"
+                          placeholder={t('admin.nodes.form.placeholders.alpn')}
                           value={formData.tuicAlpn || ''}
                           onChange={(e) => handleChange('tuicAlpn', e.target.value)}
                         />

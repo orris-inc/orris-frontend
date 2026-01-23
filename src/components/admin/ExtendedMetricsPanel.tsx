@@ -492,13 +492,13 @@ export const ExtendedMetricsPanel = ({
             </AccordionTrigger>
             <AccordionContent className="px-3 pb-3 pt-0">
               <div className="space-y-0.5 bg-muted/30 rounded-md p-2">
-                <MetricItem label="Page In" value={formatNumber(data.vmPageIn)} />
-                <MetricItem label="Page Out" value={formatNumber(data.vmPageOut)} />
-                <MetricItem label="Swap In" value={formatNumber(data.vmSwapIn)} />
-                <MetricItem label="Swap Out" value={formatNumber(data.vmSwapOut)} />
+                <MetricItem label={t('admin.monitor.detail.pageIn')} value={formatNumber(data.vmPageIn)} />
+                <MetricItem label={t('admin.monitor.detail.pageOut')} value={formatNumber(data.vmPageOut)} />
+                <MetricItem label={t('admin.monitor.detail.swapIn')} value={formatNumber(data.vmSwapIn)} />
+                <MetricItem label={t('admin.monitor.detail.swapOut')} value={formatNumber(data.vmSwapOut)} />
                 {data.vmOomKill !== undefined && data.vmOomKill > 0 && (
                   <MetricItem
-                    label="OOM Kill"
+                    label={t('admin.monitor.detail.oomKills')}
                     value={formatNumber(data.vmOomKill)}
                     valueClassName="text-red-600"
                   />

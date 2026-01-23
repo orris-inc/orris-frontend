@@ -336,7 +336,7 @@ export const OAuthSettingsForm = ({
         <ProviderSection
           name="google"
           icon={<GoogleIcon />}
-          label="Google"
+          label={t('admin.settings.oauth.google')}
           settings={settings.google}
           control={control}
           isExpanded={expandedProviders.has('google')}
@@ -347,7 +347,7 @@ export const OAuthSettingsForm = ({
         <ProviderSection
           name="github"
           icon={<GitHubIcon />}
-          label="GitHub"
+          label={t('admin.settings.oauth.github')}
           settings={settings.github}
           control={control}
           isExpanded={expandedProviders.has('github')}

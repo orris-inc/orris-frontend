@@ -410,7 +410,7 @@ const HeaderSection = ({
   onLogout?: () => void;
   onClose: () => void;
 }) => {
-  const { i18n } = useTranslation();
+  const { t, i18n } = useTranslation();
   const { resolvedTheme, setTheme } = useTheme();
   const isDark = resolvedTheme === 'dark';
 
@@ -464,14 +464,14 @@ const HeaderSection = ({
             <HeaderActionButton
               onClick={toggleLanguage}
               icon={Globe}
-              label={i18n.language === 'zh' ? 'Switch to English' : '切换到中文'}
+              label={i18n.language === 'zh' ? t('common.language.en') : t('common.language.zh')}
             />
 
             {/* Theme Toggle */}
             <HeaderActionButton
               onClick={toggleTheme}
               icon={isDark ? Sun : Moon}
-              label={isDark ? 'Switch to light mode' : 'Switch to dark mode'}
+              label={isDark ? t('settings.appearance.themeLight') : t('settings.appearance.themeDark')}
             />
 
             {/* Admin/User Switch */}
@@ -482,7 +482,7 @@ const HeaderSection = ({
                   onClose();
                 }}
                 icon={isAdminView ? ArrowLeftRight : Shield}
-                label={isAdminView ? 'Switch to user view' : 'Switch to admin view'}
+                label={isAdminView ? t('nav.switchToUser') : t('nav.switchToAdmin')}
               />
             )}
 
@@ -494,7 +494,7 @@ const HeaderSection = ({
                   onClose();
                 }}
                 icon={LogOut}
-                label="Logout"
+                label={t('nav.logout')}
                 variant="destructive"
               />
             )}

@@ -848,7 +848,7 @@ export const EditNodeSheet: React.FC<EditNodeSheetProps> = ({
               {isTrojan && (
                 <>
                   <div className="space-y-1.5">
-                    <FormFieldLabel label="SNI" hint={t('admin.nodes.form.sniHint')} />
+                    <FormFieldLabel label={t('admin.nodes.form.fields.sni')} hint={t('admin.nodes.form.sniHint')} />
                     <MobileFormInput
                       placeholder="example.com"
                       value={formData.sni || ''}
@@ -869,7 +869,7 @@ export const EditNodeSheet: React.FC<EditNodeSheetProps> = ({
                   {showWsFields && (
                     <>
                       <div className="space-y-1.5">
-                        <FormFieldLabel label="Host" hint="WebSocket Host Header" />
+                        <FormFieldLabel label={t('admin.nodes.form.fields.host')} hint={t('admin.nodes.form.hints.wsHostHeader')} />
                         <MobileFormInput
                           placeholder="example.com"
                           value={formData.host || ''}
@@ -879,7 +879,7 @@ export const EditNodeSheet: React.FC<EditNodeSheetProps> = ({
                       </div>
 
                       <div className="space-y-1.5">
-                        <FormFieldLabel label="Path" hint={t('admin.nodes.form.wsPathHint')} />
+                        <FormFieldLabel label={t('admin.nodes.form.fields.path')} hint={t('admin.nodes.form.wsPathHint')} />
                         <MobileFormInput
                           placeholder="/path"
                           value={formData.path || ''}
@@ -892,7 +892,7 @@ export const EditNodeSheet: React.FC<EditNodeSheetProps> = ({
 
                   {showGrpcFields && (
                     <div className="space-y-1.5">
-                      <FormFieldLabel label="Service Name" hint={t('admin.nodes.form.grpcServiceNameHint')} />
+                      <FormFieldLabel label={t('admin.nodes.form.fields.serviceName')} hint={t('admin.nodes.form.grpcServiceNameHint')} />
                       <MobileFormInput
                         placeholder="grpc-service"
                         value={formData.host || ''}
@@ -909,7 +909,7 @@ export const EditNodeSheet: React.FC<EditNodeSheetProps> = ({
                 <>
                   <div className="grid grid-cols-2 gap-3">
                     <div className="space-y-1.5">
-                      <FormFieldLabel label="SNI" hint={t('admin.nodes.form.sniHint')} />
+                      <FormFieldLabel label={t('admin.nodes.form.fields.sni')} hint={t('admin.nodes.form.sniHint')} />
                       <MobileFormInput
                         placeholder="example.com"
                         value={formData.vlessSni || ''}
@@ -929,7 +929,7 @@ export const EditNodeSheet: React.FC<EditNodeSheetProps> = ({
 
                   <div className="grid grid-cols-2 gap-3">
                     <div className="space-y-1.5">
-                      <FormFieldLabel label="Flow" hint={t('admin.nodes.form.flowHint')} />
+                      <FormFieldLabel label={t('admin.nodes.form.fields.flow')} hint={t('admin.nodes.form.flowHint')} />
                       <MobileFormInput
                         placeholder="xtls-rprx-vision"
                         value={formData.vlessFlow || ''}
@@ -950,7 +950,7 @@ export const EditNodeSheet: React.FC<EditNodeSheetProps> = ({
                   {showVlessWsFields && (
                     <div className="grid grid-cols-2 gap-3">
                       <div className="space-y-1.5">
-                        <FormFieldLabel label="Host" hint="WS/H2 Host" />
+                        <FormFieldLabel label={t('admin.nodes.form.fields.host')} hint={t('admin.nodes.form.hints.wsH2Host')} />
                         <MobileFormInput
                           placeholder="example.com"
                           value={formData.vlessHost || ''}
@@ -959,7 +959,7 @@ export const EditNodeSheet: React.FC<EditNodeSheetProps> = ({
                         />
                       </div>
                       <div className="space-y-1.5">
-                        <FormFieldLabel label="Path" hint={t('admin.nodes.form.wsH2PathHint')} />
+                        <FormFieldLabel label={t('admin.nodes.form.fields.path')} hint={t('admin.nodes.form.wsH2PathHint')} />
                         <MobileFormInput
                           placeholder="/ws"
                           value={formData.vlessPath || ''}
@@ -972,7 +972,7 @@ export const EditNodeSheet: React.FC<EditNodeSheetProps> = ({
 
                   {showVlessGrpcFields && (
                     <div className="space-y-1.5">
-                      <FormFieldLabel label="Service Name" hint={t('admin.nodes.form.grpcServiceNameHint')} />
+                      <FormFieldLabel label={t('admin.nodes.form.fields.serviceName')} hint={t('admin.nodes.form.grpcServiceNameHint')} />
                       <MobileFormInput
                         placeholder="grpc-service"
                         value={formData.vlessServiceName || ''}
@@ -986,7 +986,7 @@ export const EditNodeSheet: React.FC<EditNodeSheetProps> = ({
                     <>
                       <div className="grid grid-cols-2 gap-3">
                         <div className="space-y-1.5">
-                          <FormFieldLabel label="Public Key" hint={t('admin.nodes.form.realityPublicKeyHint')} />
+                          <FormFieldLabel label={t('admin.nodes.form.fields.publicKey')} hint={t('admin.nodes.form.realityPublicKeyHint')} />
                           <MobileFormInput
                             placeholder={t('admin.nodes.form.publicKeyPlaceholder')}
                             value={formData.vlessRealityPublicKey || ''}
@@ -995,7 +995,7 @@ export const EditNodeSheet: React.FC<EditNodeSheetProps> = ({
                           />
                         </div>
                         <div className="space-y-1.5">
-                          <FormFieldLabel label="Short ID" />
+                          <FormFieldLabel label={t('admin.nodes.form.fields.shortId')} />
                           <MobileFormInput
                             placeholder={t('admin.nodes.form.shortIdPlaceholder')}
                             value={formData.vlessRealityShortId || ''}
@@ -1005,7 +1005,7 @@ export const EditNodeSheet: React.FC<EditNodeSheetProps> = ({
                         </div>
                       </div>
                       <div className="space-y-1.5">
-                        <FormFieldLabel label="Spider X" hint={t('admin.nodes.form.optional')} />
+                        <FormFieldLabel label={t('admin.nodes.form.fields.spiderX')} hint={t('admin.nodes.form.optional')} />
                         <MobileFormInput
                           placeholder="/"
                           value={formData.vlessRealitySpiderX || ''}
@@ -1023,7 +1023,7 @@ export const EditNodeSheet: React.FC<EditNodeSheetProps> = ({
                 <>
                   <div className="grid grid-cols-2 gap-3">
                     <div className="space-y-1.5">
-                      <FormFieldLabel label="Alter ID" hint={t('admin.nodes.form.alterIdHint')} />
+                      <FormFieldLabel label={t('admin.nodes.form.fields.alterId')} hint={t('admin.nodes.form.alterIdHint')} />
                       <MobileFormInput
                         type="number"
                         inputMode="numeric"
@@ -1033,7 +1033,7 @@ export const EditNodeSheet: React.FC<EditNodeSheetProps> = ({
                       />
                     </div>
                     <div className="space-y-1.5">
-                      <FormFieldLabel label="TLS" />
+                      <FormFieldLabel label={t('admin.nodes.form.fields.tls')} />
                       <MobileSelect
                         value={formData.vmessTls ? 'true' : 'false'}
                         onChange={(value) => handleChange('vmessTls', value === 'true')}
@@ -1047,7 +1047,7 @@ export const EditNodeSheet: React.FC<EditNodeSheetProps> = ({
 
                   <div className="grid grid-cols-2 gap-3">
                     <div className="space-y-1.5">
-                      <FormFieldLabel label="SNI" hint={t('admin.nodes.form.sniHint')} />
+                      <FormFieldLabel label={t('admin.nodes.form.fields.sni')} hint={t('admin.nodes.form.sniHint')} />
                       <MobileFormInput
                         placeholder="example.com"
                         value={formData.vmessSni || ''}
@@ -1068,7 +1068,7 @@ export const EditNodeSheet: React.FC<EditNodeSheetProps> = ({
                   {showVmessWsFields && (
                     <div className="grid grid-cols-2 gap-3">
                       <div className="space-y-1.5">
-                        <FormFieldLabel label="Host" hint="WS/HTTP Host" />
+                        <FormFieldLabel label={t('admin.nodes.form.fields.host')} hint={t('admin.nodes.form.hints.wsHttpHost')} />
                         <MobileFormInput
                           placeholder="example.com"
                           value={formData.vmessHost || ''}
@@ -1077,7 +1077,7 @@ export const EditNodeSheet: React.FC<EditNodeSheetProps> = ({
                         />
                       </div>
                       <div className="space-y-1.5">
-                        <FormFieldLabel label="Path" hint={t('admin.nodes.form.wsHttpPathHint')} />
+                        <FormFieldLabel label={t('admin.nodes.form.fields.path')} hint={t('admin.nodes.form.wsHttpPathHint')} />
                         <MobileFormInput
                           placeholder="/ws"
                           value={formData.vmessPath || ''}
@@ -1090,7 +1090,7 @@ export const EditNodeSheet: React.FC<EditNodeSheetProps> = ({
 
                   {showVmessGrpcFields && (
                     <div className="space-y-1.5">
-                      <FormFieldLabel label="Service Name" hint={t('admin.nodes.form.grpcServiceNameHint')} />
+                      <FormFieldLabel label={t('admin.nodes.form.fields.serviceName')} hint={t('admin.nodes.form.grpcServiceNameHint')} />
                       <MobileFormInput
                         placeholder="grpc-service"
                         value={formData.vmessServiceName || ''}
@@ -1107,7 +1107,7 @@ export const EditNodeSheet: React.FC<EditNodeSheetProps> = ({
                 <>
                   <div className="grid grid-cols-2 gap-3">
                     <div className="space-y-1.5">
-                      <FormFieldLabel label="SNI" hint={t('admin.nodes.form.sniHint')} />
+                      <FormFieldLabel label={t('admin.nodes.form.fields.sni')} hint={t('admin.nodes.form.sniHint')} />
                       <MobileFormInput
                         placeholder="example.com"
                         value={formData.hysteria2Sni || ''}
@@ -1187,7 +1187,7 @@ export const EditNodeSheet: React.FC<EditNodeSheetProps> = ({
                 <>
                   <div className="grid grid-cols-2 gap-3">
                     <div className="space-y-1.5">
-                      <FormFieldLabel label="SNI" hint={t('admin.nodes.form.sniHint')} />
+                      <FormFieldLabel label={t('admin.nodes.form.fields.sni')} hint={t('admin.nodes.form.sniHint')} />
                       <MobileFormInput
                         placeholder="example.com"
                         value={formData.tuicSni || ''}
@@ -1207,7 +1207,7 @@ export const EditNodeSheet: React.FC<EditNodeSheetProps> = ({
 
                   <div className="grid grid-cols-2 gap-3">
                     <div className="space-y-1.5">
-                      <FormFieldLabel label="ALPN" hint={t('admin.nodes.form.alpnHint')} />
+                      <FormFieldLabel label={t('admin.nodes.form.fields.alpn')} hint={t('admin.nodes.form.alpnHint')} />
                       <MobileFormInput
                         placeholder="h3"
                         value={formData.tuicAlpn || ''}

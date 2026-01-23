@@ -56,7 +56,7 @@ interface SystemStatusCellProps {
 }
 
 
-// Mini progress bar component
+// Mini progress bar component - accepts translated label
 const MiniBar = memo(({ label, percent }: { label: string; percent: number }) => (
   <div className="flex flex-col gap-0.5">
     <span className="text-[9px] text-muted-foreground/70 leading-none">{label}</span>
@@ -180,7 +180,9 @@ StatusHoverContent.displayName = 'StatusHoverContent';
  * Uses TableHoverCard with columnKey="monitor" for stable state
  * Requires TableHoverCardProvider and TableRowProvider in parent tree
  */
-export const SystemStatusCell = memo(({ itemId: _itemId, status }: SystemStatusCellProps) => {
+export const SystemStatusCell = memo(({ status }: SystemStatusCellProps) => {
+  const { t } = useTranslation();
+
   if (!status) {
     return <span className="text-xs text-muted-foreground/50">-</span>;
   }
@@ -200,9 +202,9 @@ export const SystemStatusCell = memo(({ itemId: _itemId, status }: SystemStatusC
       <div className="inline-flex items-center gap-2 whitespace-nowrap">
         {/* System mini bars */}
         <div className="flex items-center gap-1">
-          <MiniBar label="C" percent={cpuPercent} />
-          <MiniBar label="M" percent={memoryPercent} />
-          <MiniBar label="D" percent={diskPercent} />
+          <MiniBar label={t('admin.monitor.detail.cpuShort')} percent={cpuPercent} />
+          <MiniBar label={t('admin.monitor.detail.memShort')} percent={memoryPercent} />
+          <MiniBar label={t('admin.monitor.detail.diskShort')} percent={diskPercent} />
         </div>
         {/* Network rates */}
         <div className="w-px h-4 bg-border shrink-0" />

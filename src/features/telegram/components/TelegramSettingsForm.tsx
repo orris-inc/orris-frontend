@@ -159,7 +159,7 @@ export const TelegramSettingsForm = ({
 
         {/* Bot Token */}
         <FormField
-          label="Bot Token"
+          label={t('telegramAdmin.settings.botToken')}
           description={t('telegramAdmin.settings.botTokenDesc')}
           disabled={!enabled}
         >
@@ -179,7 +179,7 @@ export const TelegramSettingsForm = ({
 
         {/* Webhook URL */}
         <FormField
-          label="Webhook URL"
+          label={t('telegramAdmin.settings.webhookUrl')}
           description={t('telegramAdmin.settings.webhookUrlDesc')}
           disabled={!enabled}
         >
@@ -201,7 +201,7 @@ export const TelegramSettingsForm = ({
 
         {/* Webhook Secret */}
         <FormField
-          label="Webhook Secret"
+          label={t('telegramAdmin.settings.webhookSecret')}
           description={t('telegramAdmin.settings.webhookSecretDesc')}
           disabled={!enabled}
         >
@@ -233,7 +233,9 @@ export const TelegramSettingsForm = ({
                   : 'bg-info/10 text-info'
               )}
             >
-              {config.mode === 'webhook' ? 'Webhook' : 'Polling'}
+              {config.mode === 'webhook'
+                ? t('telegramAdmin.settings.modeWebhook')
+                : t('telegramAdmin.settings.modePolling')}
             </span>
             {config.botLink && (
               <a

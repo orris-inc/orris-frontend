@@ -983,7 +983,7 @@ export const CreateNodeDialog: React.FC<CreateNodeDialogProps> = ({
 
                 {/* Ports */}
                 <div className="grid grid-cols-2 gap-4">
-                  <FormField label={t('admin.nodes.form.agentPort')} required error={errors.agentPort} hint="1-65535">
+                  <FormField label={t('admin.nodes.form.agentPort')} required error={errors.agentPort} hint={t('admin.nodes.form.hints.portRange')}>
                     <Input
                       id="agentPort"
                       type="number"
@@ -1049,7 +1049,7 @@ export const CreateNodeDialog: React.FC<CreateNodeDialogProps> = ({
                 {isTrojan && (
                   <>
                     <div className="grid grid-cols-2 gap-4">
-                      <FormField label="SNI" hint={t('admin.nodes.form.sniHint')}>
+                      <FormField label={t('admin.nodes.form.fields.sni')} hint={t('admin.nodes.form.sniHint')}>
                         <Input
                           id="sni"
                           placeholder="example.com"
@@ -1087,7 +1087,7 @@ export const CreateNodeDialog: React.FC<CreateNodeDialogProps> = ({
 
                     {showWsFields && (
                       <div className="grid grid-cols-2 gap-4">
-                        <FormField label="Host" hint="WebSocket Host Header">
+                        <FormField label={t('admin.nodes.form.fields.host')} hint={t('admin.nodes.form.hints.wsHostHeader')}>
                           <Input
                             id="host"
                             placeholder="example.com"
@@ -1097,7 +1097,7 @@ export const CreateNodeDialog: React.FC<CreateNodeDialogProps> = ({
                           />
                         </FormField>
 
-                        <FormField label="Path" hint={t('admin.nodes.form.wsPathHint')}>
+                        <FormField label={t('admin.nodes.form.fields.path')} hint={t('admin.nodes.form.wsPathHint')}>
                           <Input
                             id="path"
                             placeholder="/ws"
@@ -1110,7 +1110,7 @@ export const CreateNodeDialog: React.FC<CreateNodeDialogProps> = ({
                     )}
 
                     {showGrpcFields && (
-                      <FormField label="Service Name" hint={t('admin.nodes.form.grpcServiceNameHint')}>
+                      <FormField label={t('admin.nodes.form.fields.serviceName')} hint={t('admin.nodes.form.grpcServiceNameHint')}>
                         <Input
                           id="grpcHost"
                           placeholder="grpc-service"
@@ -1127,7 +1127,7 @@ export const CreateNodeDialog: React.FC<CreateNodeDialogProps> = ({
                 {isVless && (
                   <>
                     <div className="grid grid-cols-2 gap-4">
-                      <FormField label="SNI" hint={t('admin.nodes.form.sniHint')}>
+                      <FormField label={t('admin.nodes.form.fields.sni')} hint={t('admin.nodes.form.sniHint')}>
                         <Input
                           id="vlessSni"
                           placeholder="example.com"
@@ -1164,7 +1164,7 @@ export const CreateNodeDialog: React.FC<CreateNodeDialogProps> = ({
                     </div>
 
                     <div className="grid grid-cols-2 gap-4">
-                      <FormField label="Flow" hint={t('admin.nodes.form.flowHint')}>
+                      <FormField label={t('admin.nodes.form.fields.flow')} hint={t('admin.nodes.form.flowHint')}>
                         <Input
                           id="vlessFlow"
                           placeholder="xtls-rprx-vision"
@@ -1174,7 +1174,7 @@ export const CreateNodeDialog: React.FC<CreateNodeDialogProps> = ({
                         />
                       </FormField>
 
-                      <FormField label="Fingerprint" hint={t('admin.nodes.form.fingerprintHint')}>
+                      <FormField label={t('admin.nodes.form.fields.fingerprint')} hint={t('admin.nodes.form.fingerprintHint')}>
                         <Select
                           value={formData.vlessFingerprint || ''}
                           onValueChange={(value) => handleChange('vlessFingerprint', value)}
@@ -1195,7 +1195,7 @@ export const CreateNodeDialog: React.FC<CreateNodeDialogProps> = ({
 
                     {showVlessWsFields && (
                       <div className="grid grid-cols-2 gap-4">
-                        <FormField label="Host" hint="WS/H2 Host Header">
+                        <FormField label={t('admin.nodes.form.fields.host')} hint={t('admin.nodes.form.hints.wsH2Host')}>
                           <Input
                             id="vlessHost"
                             placeholder="example.com"
@@ -1205,7 +1205,7 @@ export const CreateNodeDialog: React.FC<CreateNodeDialogProps> = ({
                           />
                         </FormField>
 
-                        <FormField label="Path" hint={t('admin.nodes.form.wsH2PathHint')}>
+                        <FormField label={t('admin.nodes.form.fields.path')} hint={t('admin.nodes.form.wsH2PathHint')}>
                           <Input
                             id="vlessPath"
                             placeholder="/ws"
@@ -1218,7 +1218,7 @@ export const CreateNodeDialog: React.FC<CreateNodeDialogProps> = ({
                     )}
 
                     {showVlessGrpcFields && (
-                      <FormField label="Service Name" hint={t('admin.nodes.form.grpcServiceNameHint')}>
+                      <FormField label={t('admin.nodes.form.fields.serviceName')} hint={t('admin.nodes.form.grpcServiceNameHint')}>
                         <Input
                           id="vlessServiceName"
                           placeholder="grpc-service"
@@ -1232,7 +1232,7 @@ export const CreateNodeDialog: React.FC<CreateNodeDialogProps> = ({
                     {showVlessRealityFields && (
                       <>
                         <div className="grid grid-cols-2 gap-4">
-                          <FormField label="Reality Public Key" hint={t('admin.nodes.form.realityPublicKeyHint')}>
+                          <FormField label={t('admin.nodes.form.fields.realityPublicKey')} hint={t('admin.nodes.form.realityPublicKeyHint')}>
                             <Input
                               id="vlessRealityPublicKey"
                               placeholder={t('admin.nodes.form.publicKeyPlaceholder')}
@@ -1242,7 +1242,7 @@ export const CreateNodeDialog: React.FC<CreateNodeDialogProps> = ({
                             />
                           </FormField>
 
-                          <FormField label="Reality Short ID" hint={t('admin.nodes.form.shortIdHint')}>
+                          <FormField label={t('admin.nodes.form.fields.realityShortId')} hint={t('admin.nodes.form.shortIdHint')}>
                             <Input
                               id="vlessRealityShortId"
                               placeholder={t('admin.nodes.form.shortIdPlaceholder')}
@@ -1253,7 +1253,7 @@ export const CreateNodeDialog: React.FC<CreateNodeDialogProps> = ({
                           </FormField>
                         </div>
 
-                        <FormField label="Reality Spider X" hint={t('admin.nodes.form.optional')}>
+                        <FormField label={t('admin.nodes.form.fields.realitySpiderX')} hint={t('admin.nodes.form.optional')}>
                           <Input
                             id="vlessRealitySpiderX"
                             placeholder="/"
@@ -1271,7 +1271,7 @@ export const CreateNodeDialog: React.FC<CreateNodeDialogProps> = ({
                 {isVmess && (
                   <>
                     <div className="grid grid-cols-2 gap-4">
-                      <FormField label="Alter ID" hint={t('admin.nodes.form.alterIdHint')}>
+                      <FormField label={t('admin.nodes.form.fields.alterId')} hint={t('admin.nodes.form.alterIdHint')}>
                         <Input
                           id="vmessAlterId"
                           type="number"
@@ -1282,7 +1282,7 @@ export const CreateNodeDialog: React.FC<CreateNodeDialogProps> = ({
                         />
                       </FormField>
 
-                      <FormField label="TLS" hint={t('admin.nodes.form.enableTlsHint')}>
+                      <FormField label={t('admin.nodes.form.fields.tls')} hint={t('admin.nodes.form.enableTlsHint')}>
                         <Select
                           value={formData.vmessTls ? 'true' : 'false'}
                           onValueChange={(value) => handleChange('vmessTls', value === 'true')}
@@ -1299,7 +1299,7 @@ export const CreateNodeDialog: React.FC<CreateNodeDialogProps> = ({
                     </div>
 
                     <div className="grid grid-cols-2 gap-4">
-                      <FormField label="SNI" hint={t('admin.nodes.form.sniHint')}>
+                      <FormField label={t('admin.nodes.form.fields.sni')} hint={t('admin.nodes.form.sniHint')}>
                         <Input
                           id="vmessSni"
                           placeholder="example.com"
@@ -1337,7 +1337,7 @@ export const CreateNodeDialog: React.FC<CreateNodeDialogProps> = ({
 
                     {showVmessWsFields && (
                       <div className="grid grid-cols-2 gap-4">
-                        <FormField label="Host" hint="WS/HTTP Host Header">
+                        <FormField label={t('admin.nodes.form.fields.host')} hint={t('admin.nodes.form.hints.wsHttpHost')}>
                           <Input
                             id="vmessHost"
                             placeholder="example.com"
@@ -1347,7 +1347,7 @@ export const CreateNodeDialog: React.FC<CreateNodeDialogProps> = ({
                           />
                         </FormField>
 
-                        <FormField label="Path" hint={t('admin.nodes.form.wsHttpPathHint')}>
+                        <FormField label={t('admin.nodes.form.fields.path')} hint={t('admin.nodes.form.wsHttpPathHint')}>
                           <Input
                             id="vmessPath"
                             placeholder="/ws"
@@ -1360,7 +1360,7 @@ export const CreateNodeDialog: React.FC<CreateNodeDialogProps> = ({
                     )}
 
                     {showVmessGrpcFields && (
-                      <FormField label="Service Name" hint={t('admin.nodes.form.grpcServiceNameHint')}>
+                      <FormField label={t('admin.nodes.form.fields.serviceName')} hint={t('admin.nodes.form.grpcServiceNameHint')}>
                         <Input
                           id="vmessServiceName"
                           placeholder="grpc-service"
@@ -1377,7 +1377,7 @@ export const CreateNodeDialog: React.FC<CreateNodeDialogProps> = ({
                 {isHysteria2 && (
                   <>
                     <div className="grid grid-cols-2 gap-4">
-                      <FormField label="SNI" hint={t('admin.nodes.form.sniHint')}>
+                      <FormField label={t('admin.nodes.form.fields.sni')} hint={t('admin.nodes.form.sniHint')}>
                         <Input
                           id="hysteria2Sni"
                           placeholder="example.com"
@@ -1461,7 +1461,7 @@ export const CreateNodeDialog: React.FC<CreateNodeDialogProps> = ({
                       </FormField>
                     </div>
 
-                    <FormField label="Fingerprint" hint={t('admin.nodes.form.fingerprintHint')}>
+                    <FormField label={t('admin.nodes.form.fields.fingerprint')} hint={t('admin.nodes.form.fingerprintHint')}>
                       <Select
                         value={formData.hysteria2Fingerprint || ''}
                         onValueChange={(value) => handleChange('hysteria2Fingerprint', value)}
@@ -1485,7 +1485,7 @@ export const CreateNodeDialog: React.FC<CreateNodeDialogProps> = ({
                 {isTuic && (
                   <>
                     <div className="grid grid-cols-2 gap-4">
-                      <FormField label="SNI" hint={t('admin.nodes.form.sniHint')}>
+                      <FormField label={t('admin.nodes.form.fields.sni')} hint={t('admin.nodes.form.sniHint')}>
                         <Input
                           id="tuicSni"
                           placeholder="example.com"
@@ -1522,7 +1522,7 @@ export const CreateNodeDialog: React.FC<CreateNodeDialogProps> = ({
                     </div>
 
                     <div className="grid grid-cols-2 gap-4">
-                      <FormField label="ALPN" hint={t('admin.nodes.form.alpnHint')}>
+                      <FormField label={t('admin.nodes.form.fields.alpn')} hint={t('admin.nodes.form.alpnHint')}>
                         <Input
                           id="tuicAlpn"
                           placeholder="h3"

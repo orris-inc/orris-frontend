@@ -190,7 +190,7 @@ export const EntityDetailCard = memo(({ entity, compact = false }: EntityDetailC
               {isOnline && status && (
                 <div className="hidden @md:flex items-center gap-4">
                   <div className="flex items-center gap-2">
-                    <span className="text-xs text-muted-foreground">CPU</span>
+                    <span className="text-xs text-muted-foreground">{t('admin.monitor.cpu')}</span>
                     <div className="w-16 h-1.5 bg-muted rounded-full overflow-hidden">
                       <div
                         className={`h-full rounded-full transition-all ${getResourceBgClass(cpuPercent)}`}
@@ -200,7 +200,7 @@ export const EntityDetailCard = memo(({ entity, compact = false }: EntityDetailC
                     <span className="text-xs font-medium tabular-nums w-10">{cpuPercent.toFixed(0)}%</span>
                   </div>
                   <div className="flex items-center gap-2">
-                    <span className="text-xs text-muted-foreground">MEM</span>
+                    <span className="text-xs text-muted-foreground">{t('admin.monitor.memory')}</span>
                     <div className="w-16 h-1.5 bg-muted rounded-full overflow-hidden">
                       <div
                         className={`h-full rounded-full transition-all ${getResourceBgClass(memoryPercent)}`}
@@ -238,8 +238,8 @@ export const EntityDetailCard = memo(({ entity, compact = false }: EntityDetailC
             {/* Mobile: Resource meters below */}
             {isOnline && status && (
               <div className="@md:hidden mt-2.5 pt-2.5 border-t border-border/50 space-y-1.5">
-                <MiniProgressBar value={cpuPercent} label="CPU" colorClass={getResourceBgClass(cpuPercent)} />
-                <MiniProgressBar value={memoryPercent} label="MEM" colorClass={getResourceBgClass(memoryPercent)} />
+                <MiniProgressBar value={cpuPercent} label={t('admin.monitor.cpu')} colorClass={getResourceBgClass(cpuPercent)} />
+                <MiniProgressBar value={memoryPercent} label={t('admin.monitor.memory')} colorClass={getResourceBgClass(memoryPercent)} />
                 <div className="flex items-center justify-between text-[10px] text-muted-foreground pt-1">
                   <div className="flex items-center gap-1">
                     <ArrowDown className="size-2.5 text-success" />

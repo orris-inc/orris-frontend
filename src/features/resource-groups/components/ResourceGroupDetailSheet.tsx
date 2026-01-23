@@ -318,7 +318,7 @@ export const ResourceGroupDetailSheet = ({
             <DetailSection title={t('resourceGroups.tabs.basicInfo')}>
               <DetailRow
                 icon={<Hash className="size-3.5" />}
-                label="SID"
+                label={t('common.labels.sid')}
                 value={group.sid}
                 mono
                 copyable

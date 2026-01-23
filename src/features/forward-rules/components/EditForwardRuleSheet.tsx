@@ -524,7 +524,7 @@ export const EditForwardRuleSheet: React.FC<EditForwardRuleSheetProps> = ({
         <SheetBody className="space-y-4 py-4">
           {/* Read-only Info */}
           <div className="rounded-lg border border-border bg-muted/30 px-3 divide-y divide-border">
-            <InfoRow label="ID" value={<span className="font-mono text-xs truncate max-w-[200px]">{rule.id}</span>} />
+            <InfoRow label={t('common.labels.id')} value={<span className="font-mono text-xs truncate max-w-[200px]">{rule.id}</span>} />
             <InfoRow
               label={t('admin.forwardRules.form.ruleType')}
               value={

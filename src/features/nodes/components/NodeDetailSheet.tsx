@@ -525,7 +525,7 @@ export const NodeDetailSheet = ({
             <DetailSection title={t('admin.nodes.detail.basicInfo')}>
               <DetailRow
                 icon={<Hash className="size-3.5" />}
-                label="ID"
+                label={t('common.labels.id')}
                 value={node.id}
                 mono
                 copyable

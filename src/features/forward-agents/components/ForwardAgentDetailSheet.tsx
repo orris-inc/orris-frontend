@@ -566,7 +566,7 @@ export const ForwardAgentDetailSheet = ({
             <DetailSection title={t('admin.forwardAgents.detail.basicInfo')}>
               <DetailRow
                 icon={<Hash className="size-3.5" />}
-                label="ID"
+                label={t('common.labels.id')}
                 value={agent.id}
                 mono
                 copyable

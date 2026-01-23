@@ -305,7 +305,7 @@ export const ResourceGroupDetailDialog: React.FC<ResourceGroupDetailDialogProps>
                 <h4 className="text-sm font-medium text-slate-900 dark:text-white mb-2">{t('resourceGroups.sections.identificationInfo')}</h4>
                 <DetailItem
                   icon={<Hash className="size-4" />}
-                  label="SID"
+                  label={t('common.labels.sid')}
                   value={<code className="text-xs font-mono">{resourceGroup.sid}</code>}
                   copyable={resourceGroup.sid}
                   copySuccessMessage={t('resourceGroups.copiedToClipboard')}

@@ -294,7 +294,7 @@ export const EntityFullDetailPanel = memo(({ entity, className, onClose }: Entit
                 <>
                   <div className="h-px bg-border/50 my-2" />
                   <ProgressMetricRow
-                    label="Swap"
+                    label={t('admin.monitor.detail.swap')}
                     value={status.swapPercent ?? 0}
                     used={status.swapUsed}
                     total={status.swapTotal}
@@ -401,7 +401,7 @@ export const EntityFullDetailPanel = memo(({ entity, className, onClose }: Entit
               <MetricRow label={t('admin.monitor.detail.writeRate')} value={formatRate(status.diskWriteRate)} />
               <MetricRow label={t('admin.monitor.detail.totalRead')} value={formatBytes(status.diskReadBytes ?? 0)} />
               <MetricRow label={t('admin.monitor.detail.totalWrite')} value={formatBytes(status.diskWriteBytes ?? 0)} />
-              <MetricRow label="IOPS" value={status.diskIops?.toFixed(0)} />
+              <MetricRow label={t('admin.monitor.detail.iops')} value={status.diskIops?.toFixed(0)} />
             </div>
           )}
 
@@ -420,12 +420,12 @@ export const EntityFullDetailPanel = memo(({ entity, className, onClose }: Entit
                     {t('admin.monitor.detail.cpuPressure')}
                   </div>
                   <MetricRow
-                    label="Some"
+                    label={t('admin.monitor.detail.psiSome')}
                     value={status.psiCpuSome !== undefined ? `${status.psiCpuSome.toFixed(2)}%` : undefined}
                     colorClass={status.psiCpuSome && status.psiCpuSome > 10 ? 'text-warning' : undefined}
                   />
                   <MetricRow
-                    label="Full"
+                    label={t('admin.monitor.detail.psiFull')}
                     value={status.psiCpuFull !== undefined ? `${status.psiCpuFull.toFixed(2)}%` : undefined}
                     colorClass={status.psiCpuFull && status.psiCpuFull > 10 ? 'text-destructive' : undefined}
                   />
@@ -435,12 +435,12 @@ export const EntityFullDetailPanel = memo(({ entity, className, onClose }: Entit
                     {t('admin.monitor.detail.memoryPressure')}
                   </div>
                   <MetricRow
-                    label="Some"
+                    label={t('admin.monitor.detail.psiSome')}
                     value={status.psiMemorySome !== undefined ? `${status.psiMemorySome.toFixed(2)}%` : undefined}
                     colorClass={status.psiMemorySome && status.psiMemorySome > 10 ? 'text-warning' : undefined}
                   />
                   <MetricRow
-                    label="Full"
+                    label={t('admin.monitor.detail.psiFull')}
                     value={status.psiMemoryFull !== undefined ? `${status.psiMemoryFull.toFixed(2)}%` : undefined}
                     colorClass={status.psiMemoryFull && status.psiMemoryFull > 10 ? 'text-destructive' : undefined}
                   />
@@ -450,12 +450,12 @@ export const EntityFullDetailPanel = memo(({ entity, className, onClose }: Entit
                     {t('admin.monitor.detail.ioPressure')}
                   </div>
                   <MetricRow
-                    label="Some"
+                    label={t('admin.monitor.detail.psiSome')}
                     value={status.psiIoSome !== undefined ? `${status.psiIoSome.toFixed(2)}%` : undefined}
                     colorClass={status.psiIoSome && status.psiIoSome > 10 ? 'text-warning' : undefined}
                   />
                   <MetricRow
-                    label="Full"
+                    label={t('admin.monitor.detail.psiFull')}
                     value={status.psiIoFull !== undefined ? `${status.psiIoFull.toFixed(2)}%` : undefined}
                     colorClass={status.psiIoFull && status.psiIoFull > 10 ? 'text-destructive' : undefined}
                   />
@@ -512,12 +512,12 @@ export const EntityFullDetailPanel = memo(({ entity, className, onClose }: Entit
           />
           {expandedSections.vm && (
             <div className="pl-5 space-y-1 pb-2">
-              <MetricRow label="Page In" value={formatNumber(status.vmPageIn)} />
-              <MetricRow label="Page Out" value={formatNumber(status.vmPageOut)} />
-              <MetricRow label="Swap In" value={formatNumber(status.vmSwapIn)} />
-              <MetricRow label="Swap Out" value={formatNumber(status.vmSwapOut)} />
+              <MetricRow label={t('admin.monitor.detail.pageIn')} value={formatNumber(status.vmPageIn)} />
+              <MetricRow label={t('admin.monitor.detail.pageOut')} value={formatNumber(status.vmPageOut)} />
+              <MetricRow label={t('admin.monitor.detail.swapIn')} value={formatNumber(status.vmSwapIn)} />
+              <MetricRow label={t('admin.monitor.detail.swapOut')} value={formatNumber(status.vmSwapOut)} />
               <MetricRow
-                label="OOM Kills"
+                label={t('admin.monitor.detail.oomKills')}
                 value={status.vmOomKill}
                 colorClass={status.vmOomKill && status.vmOomKill > 0 ? 'text-destructive' : undefined}
               />

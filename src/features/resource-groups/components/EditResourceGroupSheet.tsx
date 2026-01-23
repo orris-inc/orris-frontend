@@ -337,7 +337,7 @@ export const EditResourceGroupSheet: React.FC<EditResourceGroupSheetProps> = ({
               <dl className="divide-y divide-border/50">
                 <InfoRow
                   icon={<Hash className="size-3.5" />}
-                  label="SID"
+                  label={t('common.labels.sid')}
                   value={resourceGroup.sid}
                   mono
                   copyable
