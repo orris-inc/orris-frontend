@@ -7,7 +7,7 @@
 import { useMemo, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Edit, Trash2, Eye, Power, PowerOff, MoreHorizontal, RotateCcw, Activity, Loader2, Server, Bot, ArrowRight, Files, CheckCircle2, CircleDashed, AlertCircle, Play, Square, AlertTriangle, RotateCw } from 'lucide-react';
-import { DataTable, DraggableDataTable, AdminBadge, TruncatedId, TableHoverCardProvider, TableHoverCardList, type ColumnDef, type ResponsiveColumnMeta, type RowSelectionState, type OnChangeFn } from '@/components/admin';
+import { DataTable, DraggableDataTable, TableHoverCardProvider, TableHoverCardList, type ColumnDef, type ResponsiveColumnMeta, type RowSelectionState, type OnChangeFn } from '@/components/admin';
 import { Checkbox } from '@/components/common/Checkbox';
 import { useBreakpoint } from '@/hooks/useBreakpoint';
 import { ForwardRuleMobileList } from './ForwardRuleMobileList';
@@ -27,7 +27,6 @@ import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/common/Too
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/common/Popover';
 import { CopyableAddressRow } from '@/components/common/CopyableAddress';
 import { formatBytesGB } from '@/shared/utils/format-utils';
-import { ENABLED_STATUS_CONFIG } from '@/shared/constants/status-config';
 import type { ForwardRule, ForwardAgent, RuleOverallStatusResponse, RuleSyncStatus, RuleRunStatus } from '@/api/forward';
 import type { Node } from '@/api/node';
 import type { ResourceGroup } from '@/api/resource';
@@ -560,13 +559,17 @@ export const ForwardRuleListTable: React.FC<ForwardRuleListTableProps> = ({
     minSize: 40,
     maxSize: 40,
     meta: { priority: 1 } as ResponsiveColumnMeta,
-    header: ({ table }) => (
-      <Checkbox
-        checked={table.getIsAllPageRowsSelected()}
-        onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
-        aria-label="Select all"
-      />
-    ),
+    header: ({ table }) => {
+      const isAllSelected = table.getIsAllPageRowsSelected();
+      const isSomeSelected = table.getIsSomePageRowsSelected();
+      return (
+        <Checkbox
+          checked={isAllSelected ? true : isSomeSelected ? 'indeterminate' : false}
+          onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
+          aria-label="Select all"
+        />
+      );
+    },
     cell: ({ row }) => (
       <Checkbox
         checked={row.getIsSelected()}
@@ -583,57 +586,63 @@ export const ForwardRuleListTable: React.FC<ForwardRuleListTableProps> = ({
     // Conditionally add select column at the beginning
     ...(enableSelection && rowSelection !== undefined && onRowSelectionChange ? [selectColumn] : []),
     {
-      accessorKey: 'id',
-      header: 'ID',
-      size: 95,
-      meta: { priority: 4 } as ResponsiveColumnMeta,
-      cell: ({ row }) => <TruncatedId id={row.original.id} />,
-    },
-    {
       accessorKey: 'name',
       header: t('admin.forwardRules.columns.ruleName'),
-      size: 180,
-      meta: { priority: 1 } as ResponsiveColumnMeta,
+      size: 200,
+      meta: { priority: 1, sticky: 'left' } as ResponsiveColumnMeta,
       cell: ({ row }) => {
         const rule = row.original;
         const ruleTypeConfig = RULE_TYPE_CONFIG[rule.ruleType] || RULE_TYPE_CONFIG.direct;
         const protocolConfig = PROTOCOL_CONFIG[rule.protocol] || PROTOCOL_CONFIG.tcp;
         const tunnelTypeConfig = rule.tunnelType ? TUNNEL_TYPE_CONFIG[rule.tunnelType] : null;
         const isChainType = rule.ruleType === 'chain' || rule.ruleType === 'direct_chain' || rule.ruleType === 'entry';
+
+        // Build hover items including ID and protocol details
+        const hoverItems = [
+          { label: 'ID', value: rule.id },
+          { label: t('admin.forwardRules.columns.ruleType'), value: t(ruleTypeConfig.labelKey) },
+          { label: t('admin.forwardRules.columns.protocol'), value: protocolConfig.label },
+          ...(tunnelTypeConfig ? [{ label: t('admin.forwardRules.tunnel'), value: tunnelTypeConfig.label }] : []),
+          ...(rule.remark ? [{ label: t('tableColumns.remark'), value: rule.remark }] : []),
+        ];
+
         return (
-          <div className="space-y-1.5 min-w-0">
-            <div className="flex items-center gap-1.5">
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <span className={`inline-flex items-center justify-center px-1.5 py-0.5 text-[10px] font-semibold rounded ${ruleTypeConfig.bgColor} ${ruleTypeConfig.color}`}>
-                    {t(ruleTypeConfig.shortLabelKey)}
-                  </span>
-                </TooltipTrigger>
-                <TooltipContent>{t(ruleTypeConfig.labelKey)}{t('admin.forwardRules.mode')}</TooltipContent>
-              </Tooltip>
-              {/* Show tunnel type for chain/entry types */}
-              {isChainType && tunnelTypeConfig && (
+          <TableHoverCardList
+            columnKey="name"
+            items={hoverItems}
+            contentClassName="w-72"
+          >
+            <div className="flex flex-col gap-0.5 min-w-0 cursor-default">
+              <div className="flex items-center gap-1.5">
                 <Tooltip>
                   <TooltipTrigger asChild>
-                    <span className={`inline-flex items-center justify-center px-1 py-0.5 text-[9px] font-semibold rounded ${tunnelTypeConfig.bgColor} ${tunnelTypeConfig.color}`}>
-                      {tunnelTypeConfig.label}
+                    <span className={`inline-flex items-center justify-center px-1.5 py-0.5 text-[10px] font-semibold rounded shrink-0 ${ruleTypeConfig.bgColor} ${ruleTypeConfig.color}`}>
+                      {t(ruleTypeConfig.shortLabelKey)}
                     </span>
                   </TooltipTrigger>
-                  <TooltipContent>{tunnelTypeConfig.label} {t('admin.forwardRules.tunnel')}</TooltipContent>
+                  <TooltipContent>{t(ruleTypeConfig.labelKey)}{t('admin.forwardRules.mode')}</TooltipContent>
                 </Tooltip>
-              )}
-              <span className="font-medium text-foreground truncate">{rule.name}</span>
+                {/* Show tunnel type for chain/entry types */}
+                {isChainType && tunnelTypeConfig && (
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <span className={`inline-flex items-center justify-center px-1 py-0.5 text-[9px] font-semibold rounded shrink-0 ${tunnelTypeConfig.bgColor} ${tunnelTypeConfig.color}`}>
+                        {tunnelTypeConfig.label}
+                      </span>
+                    </TooltipTrigger>
+                    <TooltipContent>{tunnelTypeConfig.label} {t('admin.forwardRules.tunnel')}</TooltipContent>
+                  </Tooltip>
+                )}
+                <span className="font-semibold text-foreground truncate">{rule.name}</span>
+              </div>
+              <div className="flex items-center gap-1.5 text-xs">
+                <span className={`font-mono ${protocolConfig.color}`}>{protocolConfig.label}</span>
+                <code className="font-mono text-[11px] text-muted-foreground bg-muted/50 px-1 py-0.5 rounded">
+                  {rule.id.slice(0, 8)}
+                </code>
+              </div>
             </div>
-            <div className="flex items-center gap-1.5 text-xs">
-              <span className={`font-mono ${protocolConfig.color}`}>{protocolConfig.label}</span>
-              {rule.remark && (
-                <>
-                  <span className="text-border">·</span>
-                  <span className="text-muted-foreground truncate">{rule.remark}</span>
-                </>
-              )}
-            </div>
-          </div>
+          </TableHoverCardList>
         );
       },
     },
@@ -692,6 +701,23 @@ export const ForwardRuleListTable: React.FC<ForwardRuleListTableProps> = ({
       meta: { priority: 1, numeric: true } as ResponsiveColumnMeta,
       cell: ({ row }) => {
         const rule = row.original;
+
+        // External rules: traffic is tracked externally
+        if (rule.ruleType === 'external') {
+          return (
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <span className="inline-flex items-center gap-1 px-2 py-1 text-xs font-medium rounded-md bg-cyan-50 dark:bg-cyan-900/20 text-cyan-600 dark:text-cyan-400 cursor-default">
+                  {t('admin.forwardRules.traffic.external')}
+                </span>
+              </TooltipTrigger>
+              <TooltipContent>
+                {t('admin.forwardRules.traffic.externalHint')}
+              </TooltipContent>
+            </Tooltip>
+          );
+        }
+
         const uploadBytes = rule.uploadBytes || 0;
         const downloadBytes = rule.downloadBytes || 0;
         const totalBytes = uploadBytes + downloadBytes;
@@ -742,19 +768,35 @@ export const ForwardRuleListTable: React.FC<ForwardRuleListTableProps> = ({
       },
     },
     {
-      id: 'syncStatus',
-      header: t('admin.forwardRules.columns.syncStatus'),
-      size: 80,
-      meta: { priority: 2 } as ResponsiveColumnMeta,
+      id: 'health',
+      header: t('admin.forwardRules.columns.status'),
+      size: 100,
+      meta: { priority: 1 } as ResponsiveColumnMeta,
       cell: ({ row }) => {
         const rule = row.original;
         const isPolling = pollingRuleIds.includes(rule.id);
         const polledStatus = polledStatusMap[rule.id];
 
-        // Rule not enabled, show disabled state
+        // Rule not enabled, show stopped state
         if (rule.status !== 'enabled') {
           return (
-            <span className="text-xs text-slate-400 dark:text-slate-500">-</span>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <button
+                  onClick={() => onEnable(rule)}
+                  className="inline-flex items-center gap-1.5 px-2 py-1 rounded-md text-xs font-medium cursor-pointer active:scale-95 transition-all bg-muted text-muted-foreground"
+                >
+                  <span className="relative flex">
+                    <Square className="relative size-3 fill-current opacity-40" strokeWidth={1.5} />
+                  </span>
+                  {t('common.status.stopped')}
+                </button>
+              </TooltipTrigger>
+              <TooltipContent side="top" align="start">
+                <div>{t('common.status.stopped')}</div>
+                <div className="text-xs opacity-80 mt-0.5">{t('admin.forwardRules.actions.clickToEnable')}</div>
+              </TooltipContent>
+            </Tooltip>
           );
         }
 
@@ -765,95 +807,91 @@ export const ForwardRuleListTable: React.FC<ForwardRuleListTableProps> = ({
         let healthyAgents: number | undefined;
 
         if (polledStatus) {
-          // Use polled status when available (during/after polling)
           syncStatus = polledStatus.overallSyncStatus;
           runStatus = polledStatus.overallRunStatus;
           totalAgents = polledStatus.totalAgents;
           healthyAgents = polledStatus.healthyAgents;
         } else if (rule.syncStatus) {
-          // Use inline status from list API
           syncStatus = rule.syncStatus;
           runStatus = rule.runStatus;
           totalAgents = rule.totalAgents;
           healthyAgents = rule.healthyAgents;
         }
 
-        // Show loading spinner while polling and no status yet
-        if (isPolling && !polledStatus && !rule.syncStatus) {
-          return (
-            <Loader2 className="size-3.5 animate-spin text-slate-400" />
-          );
-        }
+        // Determine overall health status
+        const getHealthConfig = () => {
+          if (isPolling && !polledStatus && !rule.syncStatus) {
+            return { labelKey: 'admin.forwardRules.status.syncing', colorClass: 'text-blue-500', bgClass: 'bg-blue-500/10', showPulse: true };
+          }
+          if (!syncStatus) {
+            return { labelKey: 'common.status.enabled', colorClass: 'text-success', bgClass: 'bg-success/10', showPulse: false };
+          }
+          if (syncStatus === 'failed') {
+            return { labelKey: 'common.status.syncFailed', colorClass: 'text-destructive', bgClass: 'bg-destructive/10', showPulse: false };
+          }
+          if (syncStatus === 'pending') {
+            return { labelKey: 'admin.forwardRules.status.syncing', colorClass: 'text-warning', bgClass: 'bg-warning/10', showPulse: true };
+          }
+          // synced
+          if (runStatus === 'running') {
+            return { labelKey: 'common.status.running', colorClass: 'text-success', bgClass: 'bg-success/10', showPulse: true };
+          }
+          if (runStatus === 'error') {
+            return { labelKey: 'common.status.error', colorClass: 'text-destructive', bgClass: 'bg-destructive/10', showPulse: false };
+          }
+          return { labelKey: 'common.status.enabled', colorClass: 'text-success', bgClass: 'bg-success/10', showPulse: false };
+        };
 
-        // No status data available
-        if (!syncStatus) {
-          return (
-            <span className="text-xs text-slate-400 dark:text-slate-500">-</span>
-          );
-        }
-
-        const syncConfig = SYNC_STATUS_CONFIG[syncStatus];
+        const healthConfig = getHealthConfig();
+        const syncConfig = syncStatus ? SYNC_STATUS_CONFIG[syncStatus] : null;
         const runConfig = RUN_STATUS_CONFIG[runStatus || 'unknown'];
-        const SyncIcon = syncConfig.icon;
         const RunIcon = runConfig.icon;
 
-        const statusItems = [
-          { label: t('admin.forwardRules.status.syncLabel'), value: t(syncConfig.labelKey) },
-          { label: t('admin.forwardRules.status.runLabel'), value: t(runConfig.labelKey) },
-          ...((totalAgents ?? 0) > 0 ? [{ label: t('admin.forwardRules.status.agents'), value: `${healthyAgents ?? 0}/${totalAgents ?? 0} ${t('admin.forwardRules.status.healthy')}` }] : []),
-        ];
+        // Build tooltip content
+        const getTooltipContent = () => {
+          const lines: string[] = [t(healthConfig.labelKey)];
+          if (syncConfig) {
+            lines.push(`${t('admin.forwardRules.status.syncLabel')}: ${t(syncConfig.labelKey)}`);
+          }
+          if (runStatus && runStatus !== 'unknown') {
+            lines.push(`${t('admin.forwardRules.status.runLabel')}: ${t(runConfig.labelKey)}`);
+          }
+          if ((totalAgents ?? 0) > 0) {
+            lines.push(`${t('admin.forwardRules.status.agents')}: ${healthyAgents ?? 0}/${totalAgents ?? 0}`);
+          }
+          lines.push(t('admin.forwardRules.actions.clickToDisable'));
+          return lines;
+        };
 
-        return (
-          <TableHoverCardList
-            columnKey="syncStatus"
-            items={statusItems}
-            title={isPolling ? t('admin.forwardRules.status.syncing') : t('admin.forwardRules.columns.syncStatus')}
-            contentClassName="w-56"
-          >
-            <div className="flex items-center gap-1.5">
-              {/* Show polling indicator */}
-              {isPolling && (
-                <Loader2 className="size-3 animate-spin text-blue-400" />
-              )}
-              <span className={`flex items-center ${syncConfig.className}`}>
-                <SyncIcon className="size-3.5" />
-              </span>
-              <span className={`flex items-center ${runConfig.className}`}>
-                <RunIcon className="size-3.5" />
-              </span>
-              {(totalAgents ?? 0) > 1 && (
-                <span className="text-xs text-slate-500 dark:text-slate-400">
-                  {healthyAgents ?? 0}/{totalAgents ?? 0}
-                </span>
-              )}
-            </div>
-          </TableHoverCardList>
-        );
-      },
-    },
-    {
-      accessorKey: 'status',
-      header: t('admin.forwardRules.columns.status'),
-      size: 72,
-      meta: { priority: 1 } as ResponsiveColumnMeta,
-      cell: ({ row }) => {
-        const rule = row.original;
-        const statusConfig = ENABLED_STATUS_CONFIG[rule.status] || { labelKey: 'common.status.unknown', variant: 'default' as const };
         return (
           <Tooltip>
             <TooltipTrigger asChild>
-              <span className="inline-block">
-                <AdminBadge
-                  variant={statusConfig.variant}
-                  className="whitespace-nowrap cursor-pointer"
-                  onClick={() => rule.status === 'enabled' ? onDisable(rule) : onEnable(rule)}
-                >
-                  {t(statusConfig.labelKey)}
-                </AdminBadge>
-              </span>
+              <button
+                onClick={() => onDisable(rule)}
+                className={`inline-flex items-center gap-1.5 px-2 py-1 rounded-md text-xs font-medium cursor-pointer active:scale-95 transition-all ${healthConfig.bgClass} ${healthConfig.colorClass}`}
+              >
+                <span className="relative flex">
+                  {healthConfig.showPulse && (
+                    <span className={`animate-ping absolute inline-flex size-full rounded-full ${healthConfig.colorClass.replace('text-', 'bg-')} opacity-75`}></span>
+                  )}
+                  {isPolling && !polledStatus && !rule.syncStatus ? (
+                    <Loader2 className="relative size-3 animate-spin" />
+                  ) : (
+                    <RunIcon className={`relative size-3 ${runStatus === 'running' ? 'fill-current' : ''}`} strokeWidth={runStatus === 'stopped' ? 1.5 : 2} />
+                  )}
+                </span>
+                {t(healthConfig.labelKey)}
+                {(totalAgents ?? 0) > 1 && (
+                  <span className="text-[10px] opacity-70">
+                    {healthyAgents ?? 0}/{totalAgents ?? 0}
+                  </span>
+                )}
+              </button>
             </TooltipTrigger>
-            <TooltipContent>
-              {rule.status === 'enabled' ? t('admin.forwardRules.actions.clickToDisable') : t('admin.forwardRules.actions.clickToEnable')}
+            <TooltipContent side="top" align="start">
+              {getTooltipContent().map((line, i) => (
+                <div key={i} className={i > 0 ? 'text-xs opacity-80 mt-0.5' : ''}>{line}</div>
+              ))}
             </TooltipContent>
           </Tooltip>
         );
@@ -863,7 +901,7 @@ export const ForwardRuleListTable: React.FC<ForwardRuleListTableProps> = ({
       id: 'actions',
       header: t('admin.forwardRules.columns.actions'),
       size: 120,
-      meta: { priority: 1 } as ResponsiveColumnMeta,
+      meta: { priority: 1, sticky: 'right' } as ResponsiveColumnMeta,
       enableSorting: false,
       cell: ({ row }) => {
         const rule = row.original;

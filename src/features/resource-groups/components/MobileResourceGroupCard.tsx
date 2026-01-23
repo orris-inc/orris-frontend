@@ -1,20 +1,19 @@
 /**
- * MobileResourceGroupCard - iOS-style resource group card with swipe actions
+ * MobileResourceGroupCard - Tailwind Application UI style list item
  *
- * Redesigned for better mobile UX:
- * - Compact two-row layout showing key info at a glance
- * - Swipe left to reveal actions (Edit, Enable/Disable, Delete)
- * - Tap to open details sheet
- * - Clear visual hierarchy
+ * Design principles:
+ * - Clean stacked list item (used with divide-y parent)
+ * - Two-line layout: name + status | plan + member count
+ * - Status badge on the right
+ * - Tap to open detail sheet
  */
 
 import { useTranslation } from 'react-i18next';
-import { Edit, Power, PowerOff, Trash2, Boxes, Users } from 'lucide-react';
-import { MobileSwipeCard, type SwipeAction } from '@/components/mobile';
-import { AdminBadge } from '@/components/admin';
+import { CreditCard, Users } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { ACTIVE_STATUS_CONFIG } from '@/shared/constants/status-config';
-import type { ResourceGroup } from '@/api/resource/types';
+import { mobileListItemStyles } from '@/lib/ui-styles';
+import type { ResourceGroup, ResourceGroupStatus } from '@/api/resource/types';
+import type { PlanType } from '@/api/subscription/types';
 
 // ============================================================================
 // Types
@@ -23,12 +22,71 @@ import type { ResourceGroup } from '@/api/resource/types';
 export interface MobileResourceGroupCardProps {
   group: ResourceGroup;
   planName?: string;
+  planType?: PlanType;
   memberCount?: number;
   onCardPress: (group: ResourceGroup) => void;
-  onEdit: (group: ResourceGroup) => void;
-  onDelete: (group: ResourceGroup) => void;
-  onToggleStatus: (group: ResourceGroup) => void;
 }
+
+// ============================================================================
+// Constants
+// ============================================================================
+
+const STATUS_CONFIG: Record<ResourceGroupStatus, { labelKey: string; className: string }> = {
+  active: {
+    labelKey: 'common.status.enabled',
+    className: 'bg-success/10 text-success',
+  },
+  inactive: {
+    labelKey: 'common.status.disabled',
+    className: 'bg-muted text-muted-foreground',
+  },
+};
+
+const PLAN_TYPE_CONFIG: Record<PlanType, { labelKey: string; className: string }> = {
+  node: {
+    labelKey: 'resourceGroups.planTypes.node',
+    className: 'text-primary',
+  },
+  forward: {
+    labelKey: 'resourceGroups.planTypes.forward',
+    className: 'text-success',
+  },
+  hybrid: {
+    labelKey: 'resourceGroups.planTypes.hybrid',
+    className: 'text-info',
+  },
+};
+
+// ============================================================================
+// Sub Components
+// ============================================================================
+
+/**
+ * Status badge - compact pill style
+ */
+const StatusBadge = ({
+  status,
+  t,
+}: {
+  status: ResourceGroupStatus;
+  t: (key: string) => string;
+}) => {
+  const config = STATUS_CONFIG[status] || {
+    labelKey: 'common.status.unknown',
+    className: 'bg-muted text-muted-foreground',
+  };
+
+  return (
+    <span
+      className={cn(
+        'inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium',
+        config.className
+      )}
+    >
+      {t(config.labelKey)}
+    </span>
+  );
+};
 
 // ============================================================================
 // Main Component
@@ -37,91 +95,63 @@ export interface MobileResourceGroupCardProps {
 export const MobileResourceGroupCard = ({
   group,
   planName,
+  planType,
   memberCount = 0,
   onCardPress,
-  onEdit,
-  onDelete,
-  onToggleStatus,
 }: MobileResourceGroupCardProps) => {
   const { t } = useTranslation();
-  const statusConfig = ACTIVE_STATUS_CONFIG[group.status] || {
-    labelKey: 'common.status.unknown',
-    variant: 'default' as const,
-  };
 
-  // Swipe actions
-  const swipeActions: SwipeAction[] = [
-    {
-      key: 'edit',
-      icon: <Edit className="size-5" />,
-      label: t('common.actions.edit'),
-      bgColor: 'bg-primary',
-      onClick: () => onEdit(group),
-    },
-    {
-      key: 'toggle',
-      icon:
-        group.status === 'active' ? (
-          <PowerOff className="size-5" />
-        ) : (
-          <Power className="size-5" />
-        ),
-      label: group.status === 'active' ? t('common.actions.disable') : t('common.actions.enable'),
-      bgColor: group.status === 'active' ? 'bg-warning' : 'bg-success',
-      onClick: () => onToggleStatus(group),
-    },
-    {
-      key: 'delete',
-      icon: <Trash2 className="size-5" />,
-      label: t('common.actions.delete'),
-      bgColor: 'bg-destructive',
-      onClick: () => onDelete(group),
-    },
-  ];
+  const planTypeConfig = planType ? PLAN_TYPE_CONFIG[planType] : null;
 
   return (
-    <MobileSwipeCard actions={swipeActions}>
-      <div
-        onClick={() => onCardPress(group)}
-        className="px-4 py-3 min-h-[72px] cursor-pointer active:bg-muted/30 transition-colors"
-      >
-        {/* Row 1: Name + Status */}
-        <div className="flex items-center justify-between gap-2 mb-1">
-          <span className="font-medium text-foreground truncate flex-1 min-w-0">
+    <div
+      role="button"
+      tabIndex={0}
+      onClick={() => onCardPress(group)}
+      onKeyDown={(e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          onCardPress(group);
+        }
+      }}
+      className={mobileListItemStyles}
+    >
+      {/* Main content */}
+      <div className="flex-1 min-w-0">
+        {/* Row 1: Name */}
+        <div className="flex items-center gap-2 mb-1">
+          <span className="text-sm font-medium text-foreground truncate">
             {group.name}
           </span>
-          <AdminBadge
-            variant={statusConfig.variant}
-            className="text-[10px] px-1.5 py-0 shrink-0"
-          >
-            {t(statusConfig.labelKey)}
-          </AdminBadge>
         </div>
 
-        {/* Row 2: Plan + Member count */}
+        {/* Row 2: Plan + Plan type + Member count */}
         <div className="flex items-center gap-2 text-xs text-muted-foreground">
-          {/* Plan */}
-          <Boxes className="size-3 shrink-0" />
-          <span className={cn('truncate', !planName && 'text-muted-foreground/60')}>
+          <CreditCard className="size-3 shrink-0" />
+          <span className={cn('truncate max-w-[120px]', !planName && 'italic')}>
             {planName || t('subscription.noPlan')}
           </span>
 
+          {planTypeConfig && (
+            <>
+              <span className="text-border">·</span>
+              <span className={cn('shrink-0', planTypeConfig.className)}>
+                {t(planTypeConfig.labelKey)}
+              </span>
+            </>
+          )}
+
           <span className="text-border">·</span>
-
-          {/* Member count */}
-          <Users className="size-3 shrink-0" />
-          <span>{memberCount} {t('admin.users.usersLabel')}</span>
+          <span className="flex items-center gap-1 shrink-0">
+            <Users className="size-3" />
+            <span className="tabular-nums">{memberCount}</span>
+          </span>
         </div>
       </div>
 
-      {/* Swipe hint indicator */}
-      <div className="absolute right-2 top-1/2 -translate-y-1/2 opacity-20 pointer-events-none">
-        <div className="flex gap-0.5">
-          <div className="w-0.5 h-4 rounded-full bg-foreground" />
-          <div className="w-0.5 h-4 rounded-full bg-foreground" />
-        </div>
-      </div>
-    </MobileSwipeCard>
+      {/* Right side: Status */}
+      <StatusBadge status={group.status} t={t} />
+    </div>
   );
 };
 

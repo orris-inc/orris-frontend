@@ -546,7 +546,16 @@
       "basicInfo": "基本信息",
       "associatedPlan": "关联计划",
       "createdAt": "创建时间",
-      "editableInfo": "可编辑信息"
+      "editableInfo": "可编辑信息",
+      "readOnlyHint": "以上信息创建后不可修改"
+    },
+    "nameHint": "用于识别资源组的显示名称",
+    "descriptionHint": "可选的资源组描述信息",
+    "selectedPlanInfo": "已选择: {{name}} ({{slug}})",
+    "planTypes": {
+      "node": "节点",
+      "forward": "转发",
+      "hybrid": "混合"
     }
   },
   "nodeList": {
@@ -1206,6 +1215,8 @@
       },
       "columns": {
         "ruleName": "规则名",
+        "ruleType": "规则类型",
+        "protocol": "协议",
         "path": "链路",
         "resourceGroup": "资源组",
         "resourceGroups": "资源组",
@@ -1219,7 +1230,9 @@
         "download": "下载",
         "multiplier": "流量倍率",
         "auto": "自动",
-        "custom": "自定义"
+        "custom": "自定义",
+        "external": "外部",
+        "externalHint": "流量由外部系统统计"
       },
       "status": {
         "starting": "启动中",
@@ -1287,7 +1300,9 @@
         "targetInfo": "目标信息",
         "targetType": "目标类型",
         "targetAddress": "目标地址",
-        "remark": "备注"
+        "remark": "备注",
+        "connectionInfo": "连接信息",
+        "listenAddress": "监听地址"
       },
       "syncStatus": {
         "synced": "已同步",
@@ -1311,6 +1326,7 @@
         "enableRule": "启用规则",
         "deleteRule": "删除规则",
         "createRule": "创建规则",
+        "createRuleDesc": "配置新的端口转发规则",
         "copyRule": "复制规则",
         "editRule": "编辑规则",
         "basicInfo": "基本信息",
@@ -2677,6 +2693,7 @@
   },
   "tableColumns": {
     "subscriptionId": "订阅ID",
+    "userId": "用户ID",
     "user": "用户",
     "plan": "计划",
     "status": "状态",
@@ -2688,7 +2705,9 @@
     "operations": "操作",
     "email": "邮箱",
     "name": "姓名",
-    "role": "角色"
+    "role": "角色",
+    "description": "描述",
+    "remark": "备注"
   },
   "labels": {
     "userId": "用户 ID",

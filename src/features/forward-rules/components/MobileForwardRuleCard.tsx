@@ -1,24 +1,17 @@
 /**
- * MobileForwardRuleCard - iOS-style forward rule card with swipe actions
+ * MobileForwardRuleCard - Tailwind Application UI style list item
  *
- * Redesigned for better mobile UX:
- * - Compact layout showing key info at a glance
- * - Swipe left to reveal actions (Edit, Copy, Toggle, Delete)
- * - Tap to open details sheet
- * - Clear visual hierarchy
+ * Design principles:
+ * - Clean stacked list item (used with divide-y parent)
+ * - Two-line layout: name + type | address + status
+ * - Status badge on the right
+ * - Tap to open detail sheet
  */
 
 import { useTranslation } from 'react-i18next';
-import {
-  Edit,
-  Power,
-  Trash2,
-  Copy,
-  Loader2,
-} from 'lucide-react';
-import { MobileSwipeCard, type SwipeAction } from '@/components/mobile/admin';
-import { AdminBadge } from '@/components/admin';
+import { Activity, Loader2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { mobileListItemStyles } from '@/lib/ui-styles';
 import { ENABLED_STATUS_CONFIG_SHORT } from '@/shared/constants/status-config';
 import type { ForwardRule, ForwardAgent, RuleOverallStatusResponse } from '@/api/forward';
 
@@ -32,27 +25,88 @@ export interface MobileForwardRuleCardProps {
   polledStatus?: RuleOverallStatusResponse;
   isPolling?: boolean;
   onCardPress: (rule: ForwardRule) => void;
-  onEdit: (rule: ForwardRule) => void;
-  onCopy: (rule: ForwardRule) => void;
-  onToggleStatus: (rule: ForwardRule) => void;
-  onDelete: (rule: ForwardRule) => void;
 }
 
 // ============================================================================
 // Constants
 // ============================================================================
 
-const RULE_TYPE_CONFIG: Record<string, { labelKey: string; shortLabelKey: string; variant: 'info' | 'success' | 'warning' | 'default' }> = {
-  direct: { labelKey: 'admin.forwardRules.ruleType.direct', shortLabelKey: 'admin.forwardRules.ruleType.directShort', variant: 'info' },
-  entry: { labelKey: 'admin.forwardRules.ruleType.entry', shortLabelKey: 'admin.forwardRules.ruleType.entryShort', variant: 'success' },
-  chain: { labelKey: 'admin.forwardRules.ruleType.chain', shortLabelKey: 'admin.forwardRules.ruleType.chainShort', variant: 'warning' },
-  direct_chain: { labelKey: 'admin.forwardRules.ruleType.directChain', shortLabelKey: 'admin.forwardRules.ruleType.directChainShort', variant: 'default' },
+const RULE_TYPE_CONFIG: Record<string, { labelKey: string; shortLabel: string; className: string }> = {
+  direct: { labelKey: 'admin.forwardRules.ruleType.direct', shortLabel: 'D', className: 'bg-info/10 text-info' },
+  entry: { labelKey: 'admin.forwardRules.ruleType.entry', shortLabel: 'E', className: 'bg-success/10 text-success' },
+  chain: { labelKey: 'admin.forwardRules.ruleType.chain', shortLabel: 'C', className: 'bg-warning/10 text-warning' },
+  direct_chain: { labelKey: 'admin.forwardRules.ruleType.directChain', shortLabel: 'DC', className: 'bg-muted text-muted-foreground' },
 };
 
-const PROTOCOL_CONFIG: Record<string, { label: string; variant: 'info' | 'warning' | 'default' }> = {
-  tcp: { label: 'TCP', variant: 'info' },
-  udp: { label: 'UDP', variant: 'warning' },
-  both: { label: 'TCP/UDP', variant: 'default' },
+const PROTOCOL_LABELS: Record<string, string> = {
+  tcp: 'TCP',
+  udp: 'UDP',
+  both: 'TCP/UDP',
+};
+
+// ============================================================================
+// Sub Components
+// ============================================================================
+
+/**
+ * Run status indicator - compact dot
+ */
+const RunStatusIndicator = ({
+  status,
+  isPolling,
+}: {
+  status: string | null;
+  isPolling: boolean;
+}) => {
+  if (isPolling) {
+    return <Loader2 className="size-3.5 animate-spin text-info" />;
+  }
+
+  if (!status) return null;
+
+  return (
+    <span
+      className={cn(
+        'size-2 rounded-full shrink-0',
+        status === 'running' && 'bg-success',
+        status === 'stopped' && 'bg-muted-foreground',
+        status === 'error' && 'bg-destructive',
+        status === 'starting' && 'bg-info animate-pulse motion-reduce:animate-none',
+        status === 'unknown' && 'bg-muted-foreground/60'
+      )}
+    />
+  );
+};
+
+/**
+ * Status badge
+ */
+const StatusBadge = ({
+  status,
+  t,
+}: {
+  status: 'enabled' | 'disabled';
+  t: (key: string) => string;
+}) => {
+  const config = ENABLED_STATUS_CONFIG_SHORT[status] || {
+    labelKey: 'common.status.unknown',
+    variant: 'default' as const,
+  };
+
+  const colorClass = status === 'enabled'
+    ? 'bg-success/10 text-success'
+    : 'bg-muted text-muted-foreground';
+
+  return (
+    <span
+      className={cn(
+        'inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium',
+        colorClass
+      )}
+    >
+      {t(config.labelKey)}
+    </span>
+  );
 };
 
 // ============================================================================
@@ -65,15 +119,14 @@ export const MobileForwardRuleCard = ({
   polledStatus,
   isPolling = false,
   onCardPress,
-  onEdit,
-  onCopy,
-  onToggleStatus,
-  onDelete,
 }: MobileForwardRuleCardProps) => {
   const { t } = useTranslation();
-  const statusConfig = ENABLED_STATUS_CONFIG_SHORT[rule.status] || { labelKey: 'common.status.unknown', variant: 'default' as const };
-  const ruleTypeConfig = RULE_TYPE_CONFIG[rule.ruleType] || { labelKey: rule.ruleType, shortLabelKey: '?', variant: 'default' as const };
-  const protocolConfig = PROTOCOL_CONFIG[rule.protocol] || { label: rule.protocol, variant: 'default' as const };
+  const ruleTypeConfig = RULE_TYPE_CONFIG[rule.ruleType] || {
+    labelKey: rule.ruleType,
+    shortLabel: '?',
+    className: 'bg-muted text-muted-foreground',
+  };
+  const protocolLabel = PROTOCOL_LABELS[rule.protocol] || rule.protocol;
 
   // Get entry agent for display
   const entryAgent = agentsMap[rule.agentId];
@@ -81,110 +134,59 @@ export const MobileForwardRuleCard = ({
     ? `${entryAgent.publicAddress}:${rule.listenPort}`
     : `:${rule.listenPort}`;
 
-  // Determine run status indicator
+  // Determine run status
   const getRunStatus = () => {
     if (rule.status !== 'enabled') return null;
-
-    const status = polledStatus || {
-      overallRunStatus: rule.runStatus,
-    };
-
+    const status = polledStatus || { overallRunStatus: rule.runStatus };
     return status.overallRunStatus || 'unknown';
   };
 
   const runStatus = getRunStatus();
 
-  // Swipe actions
-  const swipeActions: SwipeAction[] = [
-    {
-      key: 'edit',
-      icon: <Edit className="size-5" />,
-      label: t('common.actions.edit'),
-      bgColor: 'bg-primary',
-      onClick: () => onEdit(rule),
-    },
-    {
-      key: 'copy',
-      icon: <Copy className="size-5" />,
-      label: t('common.actions.copy'),
-      bgColor: 'bg-info',
-      onClick: () => onCopy(rule),
-    },
-    {
-      key: 'toggle',
-      icon: <Power className="size-5" />,
-      label: rule.status === 'enabled' ? t('common.actions.disable') : t('common.actions.enable'),
-      bgColor: rule.status === 'enabled' ? 'bg-warning' : 'bg-success',
-      onClick: () => onToggleStatus(rule),
-    },
-    {
-      key: 'delete',
-      icon: <Trash2 className="size-5" />,
-      label: t('common.actions.delete'),
-      bgColor: 'bg-destructive',
-      onClick: () => onDelete(rule),
-    },
-  ];
-
   return (
-    <MobileSwipeCard actions={swipeActions}>
-      <div
-        onClick={() => onCardPress(rule)}
-        className="px-4 py-3 min-h-[72px] cursor-pointer active:bg-muted/30 transition-colors"
-      >
-        {/* Row 1: Rule type badge + Name + Status badge */}
+    <div
+      role="button"
+      tabIndex={0}
+      onClick={() => onCardPress(rule)}
+      onKeyDown={(e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          onCardPress(rule);
+        }
+      }}
+      className={mobileListItemStyles}
+    >
+      {/* Main content */}
+      <div className="flex-1 min-w-0">
+        {/* Row 1: Rule type badge + Name + Run status */}
         <div className="flex items-center gap-2 mb-1">
-          <AdminBadge variant={ruleTypeConfig.variant} className="text-[10px] px-1.5 py-0 shrink-0">
-            {t(ruleTypeConfig.shortLabelKey)}
-          </AdminBadge>
-          <span className="font-medium text-foreground truncate flex-1 min-w-0">
+          <span
+            className={cn(
+              'inline-flex items-center justify-center',
+              'size-5 rounded text-[10px] font-bold shrink-0',
+              ruleTypeConfig.className
+            )}
+          >
+            {ruleTypeConfig.shortLabel}
+          </span>
+          <span className="text-sm font-medium text-foreground truncate">
             {rule.name}
           </span>
-          <AdminBadge
-            variant={statusConfig.variant}
-            className="text-[10px] px-1.5 py-0 shrink-0"
-          >
-            {t(statusConfig.labelKey)}
-          </AdminBadge>
+          <RunStatusIndicator status={runStatus} isPolling={isPolling} />
         </div>
 
-        {/* Row 2: Protocol + Entry address + Run status indicator */}
+        {/* Row 2: Protocol + Address */}
         <div className="flex items-center gap-2 text-xs text-muted-foreground">
-          {/* Protocol */}
-          <AdminBadge variant={protocolConfig.variant} className="text-[10px] px-1.5 py-0">
-            {protocolConfig.label}
-          </AdminBadge>
-
+          <Activity className="size-3 shrink-0" />
+          <span className="shrink-0">{protocolLabel}</span>
           <span className="text-border">·</span>
-
-          {/* Entry address */}
           <span className="font-mono truncate">{entryAddress}</span>
-
-          {/* Run status indicator */}
-          {isPolling && (
-            <Loader2 className="size-3 animate-spin text-info shrink-0 ml-auto" />
-          )}
-          {runStatus && !isPolling && (
-            <span className={cn(
-              'size-2 rounded-full shrink-0 ml-auto',
-              runStatus === 'running' && 'bg-success',
-              runStatus === 'stopped' && 'bg-muted-foreground',
-              runStatus === 'error' && 'bg-destructive',
-              runStatus === 'starting' && 'bg-info',
-              runStatus === 'unknown' && 'bg-muted-foreground/60'
-            )} />
-          )}
         </div>
       </div>
 
-      {/* Swipe hint indicator */}
-      <div className="absolute right-2 top-1/2 -translate-y-1/2 opacity-20 pointer-events-none">
-        <div className="flex gap-0.5">
-          <div className="w-0.5 h-4 rounded-full bg-foreground" />
-          <div className="w-0.5 h-4 rounded-full bg-foreground" />
-        </div>
-      </div>
-    </MobileSwipeCard>
+      {/* Right side: Status */}
+      <StatusBadge status={rule.status} t={t} />
+    </div>
   );
 };
 

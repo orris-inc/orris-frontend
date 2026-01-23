@@ -1,42 +1,45 @@
 /**
  * ForwardAgentDetailSheet - Mobile forward agent details with actions
  *
+ * Design: Tailwind Application UI style
+ * - Stacked layout with description lists
+ * - Card sections with dividers
+ * - Hero header with status indicator
+ * - Stats cards for system metrics
+ *
  * Features:
  * - Full agent details in a bottom sheet
  * - System status metrics (CPU, Memory, Network)
  * - Real-time status via SSE
  * - Primary actions in footer
  * - ActionSheet for secondary actions
- * - iOS-style design
  */
 
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
-  Router,
+  Server,
   Hash,
   Globe,
-  Activity,
-  Calendar,
   Edit,
   MoreHorizontal,
   Power,
   PowerOff,
   Trash2,
-  Gauge,
-  HardDrive,
   Network,
   ArrowUpCircle,
   Clock,
   Wifi,
   WifiOff,
-  Loader2,
-  FileText,
   Key,
   Terminal,
   Ban,
   BellOff,
   Shield,
+  Copy,
+  Check,
+  Download,
+  Loader2,
 } from 'lucide-react';
 import { useForwardAgentDetailEvents } from '../hooks/useForwardAgentEvents';
 import {
@@ -49,10 +52,8 @@ import {
   SheetFooter,
 } from '@/components/common/sheet/Sheet';
 import { ActionSheet } from '@/components/common/sheet/ActionSheet';
-import { AdminBadge } from '@/components/admin';
-import { Badge } from '@/components/common/Badge';
 import { cn } from '@/lib/utils';
-import { formatDate } from '@/shared/utils/date-utils';
+import { formatDateTime } from '@/shared/utils/date-utils';
 import { ENABLED_STATUS_CONFIG_SHORT } from '@/shared/constants/status-config';
 import type { ForwardAgent, AgentSystemStatus, BlockedProtocol } from '@/api/forward';
 
@@ -70,36 +71,41 @@ export interface ForwardAgentDetailSheetProps {
   onDisable: (agent: ForwardAgent) => void;
   onRegenerateToken?: (agent: ForwardAgent) => void;
   onGetInstallScript?: (agent: ForwardAgent) => void;
+  onTriggerUpdate?: (agent: ForwardAgent) => void;
+  isUpdating?: boolean;
 }
 
 // ============================================================================
 // Constants
 // ============================================================================
 
-const BLOCKED_PROTOCOL_LABELS: Record<BlockedProtocol, string> = {
-  http_connect: 'HTTP CONNECT',
-  socks4: 'SOCKS4',
-  socks5: 'SOCKS5',
-  http: 'HTTP',
-  tls: 'TLS',
-  ssh: 'SSH',
-  ftp: 'FTP',
-};
+// Protocol groups for display (consistent with desktop)
+const getProtocolGroups = (t: (key: string) => string): {
+  label: string;
+  protocols: { value: BlockedProtocol; label: string }[];
+}[] => [
+  {
+    label: t('admin.forwardAgents.detail.proxyProtocols'),
+    protocols: [
+      { value: 'http_connect', label: 'HTTP CONNECT' },
+      { value: 'socks4', label: 'SOCKS4' },
+      { value: 'socks5', label: 'SOCKS5' },
+    ],
+  },
+  {
+    label: t('admin.forwardAgents.detail.appProtocols'),
+    protocols: [
+      { value: 'http', label: 'HTTP' },
+      { value: 'tls', label: 'TLS' },
+      { value: 'ssh', label: 'SSH' },
+      { value: 'ftp', label: 'FTP' },
+    ],
+  },
+];
 
 // ============================================================================
 // Helper Functions
 // ============================================================================
-
-/**
- * Format bytes to human readable string
- */
-const formatBytes = (bytes: number): string => {
-  if (!bytes || bytes <= 0) return '0 B';
-  const units = ['B', 'KB', 'MB', 'GB', 'TB'];
-  const i = Math.floor(Math.log(bytes) / Math.log(1024));
-  const value = bytes / Math.pow(1024, i);
-  return `${value < 10 ? value.toFixed(2) : value.toFixed(1)} ${units[i]}`;
-};
 
 /**
  * Format bytes rate to human readable (per second)
@@ -133,250 +139,271 @@ const formatUptime = (
 };
 
 // ============================================================================
-// Helper Components
+// Helper Components - Compact Mobile Layout
 // ============================================================================
 
+/**
+ * Section container - minimal spacing
+ */
 const DetailSection = ({
   title,
   children,
+  className,
 }: {
   title: string;
   children: React.ReactNode;
+  className?: string;
 }) => (
-  <div className="space-y-2">
-    <h4 className="text-xs font-medium text-muted-foreground uppercase tracking-wider px-1">
+  <div className={cn('', className)}>
+    <h3 className="text-[11px] font-medium text-muted-foreground uppercase tracking-wide mb-2 px-1">
       {title}
-    </h4>
-    <div className="rounded-xl bg-muted/30 border border-border/50 divide-y divide-border/30">
-      {children}
+    </h3>
+    <div className="overflow-hidden rounded-lg bg-card border border-border">
+      <dl className="divide-y divide-border">{children}</dl>
     </div>
   </div>
 );
 
+/**
+ * Compact row - inline label and value
+ */
 const DetailRow = ({
   icon,
   label,
   value,
+  mono = false,
+  copyable = false,
 }: {
-  icon: React.ReactNode;
+  icon?: React.ReactNode;
   label: string;
   value: React.ReactNode;
-}) => (
-  <div className="flex items-center gap-3 px-3 py-2.5">
-    <div className="text-muted-foreground">{icon}</div>
-    <div className="flex-1 min-w-0">
-      <div className="text-xs text-muted-foreground">{label}</div>
-      <div className="text-sm font-medium">{value}</div>
-    </div>
-  </div>
-);
-
-/**
- * Online Status Indicator with SSE connection status
- * Uses span elements to be valid inside p tags
- */
-const OnlineIndicator = ({
-  isOnline,
-  isConnected,
-  agentStatus,
-  t,
-}: {
-  isOnline: boolean;
-  isConnected: boolean;
-  agentStatus: string;
-  t: (key: string) => string;
+  mono?: boolean;
+  copyable?: boolean;
 }) => {
-  return (
-    <span className="inline-flex items-center gap-2">
-      {/* SSE Connection Status */}
-      <span className="text-muted-foreground">
-        {isConnected ? (
-          <Wifi className="size-3.5 text-success" />
-        ) : (
-          <WifiOff className="size-3.5" />
-        )}
-      </span>
+  const [copied, setCopied] = useState(false);
 
-      {/* Online Status */}
-      {isOnline ? (
-        <span className="inline-flex items-center gap-1.5 text-success">
-          <span className="relative inline-flex h-2 w-2">
-            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-success opacity-75 motion-reduce:hidden"></span>
-            <span className="relative inline-flex rounded-full h-2 w-2 bg-success"></span>
-          </span>
-          <span className="text-sm font-medium">{t('admin.forwardAgents.detail.online')}</span>
+  const handleCopy = () => {
+    if (typeof value === 'string') {
+      navigator.clipboard.writeText(value);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    }
+  };
+
+  return (
+    <div className="flex items-center justify-between gap-3 px-3 py-2.5 min-h-[44px]">
+      <dt className="flex items-center gap-2 text-sm text-muted-foreground shrink-0">
+        {icon && <span className="text-muted-foreground/60">{icon}</span>}
+        {label}
+      </dt>
+      <dd className="flex items-center gap-1.5 text-sm text-foreground min-w-0">
+        <span className={cn('truncate', mono && 'font-mono text-xs')}>
+          {value}
         </span>
-      ) : agentStatus === 'enabled' || isConnected ? (
-        <span className="inline-flex items-center gap-1.5 text-muted-foreground">
-          <span className="inline-block h-2 w-2 rounded-full bg-muted-foreground/30"></span>
-          <span className="text-sm">
-            {isConnected
-              ? t('admin.forwardAgents.detail.waitingStatus')
-              : t('admin.forwardAgents.detail.connecting')}
-          </span>
-        </span>
-      ) : (
-        <span className="inline-flex items-center gap-1.5 text-muted-foreground">
-          <span className="inline-block h-2 w-2 rounded-full bg-muted-foreground/30"></span>
-          <span className="text-sm">{t('admin.forwardAgents.detail.offline')}</span>
-        </span>
-      )}
-    </span>
+        {copyable && typeof value === 'string' && (
+          <button
+            type="button"
+            onClick={handleCopy}
+            className="shrink-0 p-1 -mr-1 rounded hover:bg-muted transition-colors touch-target"
+          >
+            {copied ? (
+              <Check className="size-3.5 text-success" />
+            ) : (
+              <Copy className="size-3.5 text-muted-foreground/50" />
+            )}
+          </button>
+        )}
+      </dd>
+    </div>
   );
 };
 
 /**
- * System Status Display - uses real-time SSE status if available
+ * Inline stat item - ultra compact
+ */
+const StatItem = ({
+  label,
+  value,
+  subValue,
+  progress,
+  color = 'primary',
+}: {
+  label: string;
+  value: string;
+  subValue?: string;
+  progress?: number;
+  color?: 'primary' | 'success' | 'warning' | 'destructive' | 'info';
+}) => {
+  const colorClasses = {
+    primary: 'text-primary bg-primary',
+    success: 'text-success bg-success',
+    warning: 'text-warning bg-warning',
+    destructive: 'text-destructive bg-destructive',
+    info: 'text-info bg-info',
+  };
+
+  return (
+    <div className="flex-1 min-w-0">
+      <div className="flex items-baseline justify-between gap-1 mb-1">
+        <span className="text-[11px] text-muted-foreground truncate">{label}</span>
+        <span className={cn('text-sm font-semibold tabular-nums', colorClasses[color].split(' ')[0])}>
+          {value}
+        </span>
+      </div>
+      {progress !== undefined && (
+        <div className="h-1 bg-muted rounded-full overflow-hidden">
+          <div
+            className={cn('h-full rounded-full transition-all', colorClasses[color].split(' ')[1])}
+            style={{ width: `${Math.min(progress, 100)}%` }}
+          />
+        </div>
+      )}
+      {subValue && (
+        <p className="text-[10px] text-muted-foreground mt-0.5 truncate">{subValue}</p>
+      )}
+    </div>
+  );
+};
+
+/**
+ * Get color based on percentage threshold
+ */
+const getProgressColor = (
+  percent: number,
+  thresholds: { warning: number; danger: number }
+): 'success' | 'warning' | 'destructive' => {
+  if (percent >= thresholds.danger) return 'destructive';
+  if (percent >= thresholds.warning) return 'warning';
+  return 'success';
+};
+
+/**
+ * System Status Display - Compact single card with connection info
  */
 const SystemStatusSection = ({
   status,
+  isConnected,
+  agentVersion,
+  hasUpdate,
+  platform,
+  arch,
   t,
 }: {
-  status: AgentSystemStatus;
+  status: AgentSystemStatus | null;
+  isConnected: boolean;
+  agentVersion?: string;
+  hasUpdate?: boolean;
+  platform?: string;
+  arch?: string;
   t: (key: string, options?: Record<string, unknown>) => string;
 }) => {
-  if (!status) return null;
+  const cpuColor = status ? getProgressColor(status.cpuPercent, { warning: 60, danger: 80 }) : 'primary';
+  const memColor = status ? getProgressColor(status.memoryPercent, { warning: 60, danger: 80 }) : 'primary';
+  const diskColor = status?.diskPercent !== undefined
+    ? getProgressColor(status.diskPercent, { warning: 75, danger: 90 })
+    : 'primary';
 
   return (
-    <DetailSection title={t('admin.forwardAgents.detail.systemStatus')}>
-      {/* CPU */}
-      <div className="px-3 py-2.5">
-        <div className="flex items-center gap-3">
-          <Gauge className="size-4 text-muted-foreground" />
-          <div className="flex-1">
-            <div className="flex items-center justify-between mb-1">
-              <span className="text-xs text-muted-foreground">
-                {t('admin.forwardAgents.detail.cpu')}
-              </span>
-              <span className="text-xs font-medium tabular-nums">
-                {Math.round(status.cpuPercent)}%
-              </span>
-            </div>
-            <div className="h-1.5 bg-muted/30 rounded-full overflow-hidden">
-              <div
-                className={cn(
-                  'h-full rounded-full transition-all',
-                  status.cpuPercent > 80
-                    ? 'bg-destructive'
-                    : status.cpuPercent > 60
-                      ? 'bg-warning'
-                      : 'bg-success'
-                )}
-                style={{ width: `${Math.min(status.cpuPercent, 100)}%` }}
-              />
-            </div>
-          </div>
-        </div>
-      </div>
+    <div>
+      <h3 className="text-[11px] font-medium text-muted-foreground uppercase tracking-wide mb-2 px-1">
+        {t('admin.forwardAgents.detail.systemStatus')}
+      </h3>
 
-      {/* Memory */}
-      <div className="px-3 py-2.5">
-        <div className="flex items-center gap-3">
-          <HardDrive className="size-4 text-muted-foreground" />
-          <div className="flex-1">
-            <div className="flex items-center justify-between mb-1">
-              <span className="text-xs text-muted-foreground">
-                {t('admin.forwardAgents.detail.memory')}
-              </span>
-              <span className="text-xs font-medium tabular-nums">
-                {Math.round(status.memoryPercent)}% ({formatBytes(status.memoryUsed)} /{' '}
-                {formatBytes(status.memoryTotal)})
-              </span>
-            </div>
-            <div className="h-1.5 bg-muted/30 rounded-full overflow-hidden">
-              <div
-                className={cn(
-                  'h-full rounded-full transition-all',
-                  status.memoryPercent > 80
-                    ? 'bg-destructive'
-                    : status.memoryPercent > 60
-                      ? 'bg-warning'
-                      : 'bg-info'
-                )}
-                style={{ width: `${Math.min(status.memoryPercent, 100)}%` }}
-              />
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Disk */}
-      {status.diskPercent !== undefined && (
-        <div className="px-3 py-2.5">
-          <div className="flex items-center gap-3">
-            <HardDrive className="size-4 text-muted-foreground" />
-            <div className="flex-1">
-              <div className="flex items-center justify-between mb-1">
-                <span className="text-xs text-muted-foreground">
-                  {t('admin.forwardAgents.detail.disk')}
-                </span>
-                <span className="text-xs font-medium tabular-nums">
-                  {Math.round(status.diskPercent)}% ({formatBytes(status.diskUsed)} /{' '}
-                  {formatBytes(status.diskTotal)})
-                </span>
-              </div>
-              <div className="h-1.5 bg-muted/30 rounded-full overflow-hidden">
-                <div
-                  className={cn(
-                    'h-full rounded-full transition-all',
-                    status.diskPercent > 90
-                      ? 'bg-destructive'
-                      : status.diskPercent > 75
-                        ? 'bg-warning'
-                        : 'bg-primary'
-                  )}
-                  style={{ width: `${Math.min(status.diskPercent, 100)}%` }}
-                />
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Network */}
-      <div className="px-3 py-2.5">
-        <div className="flex items-center gap-3">
-          <Network className="size-4 text-muted-foreground" />
-          <div className="flex-1">
-            <div className="text-xs text-muted-foreground mb-1">
-              {t('admin.forwardAgents.detail.network')}
-            </div>
-            <div className="flex items-center gap-3 text-xs font-mono">
-              <span className="text-success">↓ {formatBytesRate(status.networkRxRate)}/s</span>
-              <span className="text-info">↑ {formatBytesRate(status.networkTxRate)}/s</span>
-            </div>
-            <div className="text-[10px] text-muted-foreground mt-0.5">
-              {t('admin.forwardAgents.detail.totalLabel')}: {formatBytes(status.networkRxBytes)} /{' '}
-              {formatBytes(status.networkTxBytes)}
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Uptime and connections */}
-      <DetailRow
-        icon={<Clock className="size-4" />}
-        label={t('admin.forwardAgents.detail.uptime')}
-        value={
-          <span className="flex items-center gap-3 text-sm">
-            <span>{formatUptime(status.uptimeSeconds, t)}</span>
-            <span className="text-muted-foreground">·</span>
-            <span className="text-muted-foreground">
-              {t('admin.forwardAgents.detail.connections')}:{' '}
-              {(status.tcpConnections || 0) + (status.udpConnections || 0)}
-            </span>
-            {status.loadAvg1 !== undefined && (
-              <>
-                <span className="text-muted-foreground">·</span>
-                <span className="text-muted-foreground">
-                  {t('admin.forwardAgents.detail.load')}: {status.loadAvg1.toFixed(2)}
-                </span>
-              </>
+      <div className="overflow-hidden rounded-lg bg-card border border-border divide-y divide-border">
+        {/* Connection & Version row */}
+        <div className="px-3 py-2.5 flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            {isConnected ? (
+              <Wifi className="size-3.5 text-success" />
+            ) : (
+              <WifiOff className="size-3.5 text-muted-foreground" />
             )}
-          </span>
-        }
-      />
-    </DetailSection>
+            <span className={cn('text-xs font-medium', isConnected ? 'text-success' : 'text-muted-foreground')}>
+              {isConnected ? 'SSE Connected' : 'SSE Disconnected'}
+            </span>
+          </div>
+          {agentVersion && (
+            <div className="flex items-center gap-1.5">
+              <span className="text-xs text-muted-foreground font-mono">v{agentVersion}</span>
+              {platform && arch && (
+                <span className="text-[10px] text-muted-foreground/70">{platform}/{arch}</span>
+              )}
+              {hasUpdate && (
+                <span className="inline-flex items-center gap-0.5 px-1 py-0.5 rounded bg-warning/10 text-warning text-[10px] font-medium">
+                  <ArrowUpCircle className="size-2.5" />
+                  {t('admin.forwardAgents.detail.updatableLabel')}
+                </span>
+              )}
+            </div>
+          )}
+        </div>
+
+        {status ? (
+          <>
+            {/* Resource usage row */}
+            <div className="p-3 grid grid-cols-3 gap-3">
+              <StatItem
+                label={t('admin.forwardAgents.detail.cpu')}
+                value={`${Math.round(status.cpuPercent)}%`}
+                progress={status.cpuPercent}
+                color={cpuColor}
+              />
+              <StatItem
+                label={t('admin.forwardAgents.detail.memory')}
+                value={`${Math.round(status.memoryPercent)}%`}
+                progress={status.memoryPercent}
+                color={memColor}
+              />
+              {status.diskPercent !== undefined ? (
+                <StatItem
+                  label={t('admin.forwardAgents.detail.disk')}
+                  value={`${Math.round(status.diskPercent)}%`}
+                  progress={status.diskPercent}
+                  color={diskColor}
+                />
+              ) : (
+                <StatItem
+                  label={t('admin.forwardAgents.detail.uptime')}
+                  value={formatUptime(status.uptimeSeconds, t)}
+                  color="primary"
+                />
+              )}
+            </div>
+
+            {/* Network row */}
+            <div className="px-3 py-2.5 flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <Network className="size-4 text-muted-foreground/60" />
+                <div className="flex items-center gap-3 text-sm tabular-nums">
+                  <span className="text-success">↓ {formatBytesRate(status.networkRxRate)}/s</span>
+                  <span className="text-info">↑ {formatBytesRate(status.networkTxRate)}/s</span>
+                </div>
+              </div>
+              <span className="text-xs text-muted-foreground tabular-nums">
+                TCP {status.tcpConnections ?? 0} · UDP {status.udpConnections ?? 0}
+              </span>
+            </div>
+
+            {/* Uptime row - only if disk exists */}
+            {status.diskPercent !== undefined && (
+              <div className="px-3 py-2 flex items-center justify-between text-xs text-muted-foreground">
+                <span className="flex items-center gap-1.5">
+                  <Clock className="size-3" />
+                  {formatUptime(status.uptimeSeconds, t)}
+                </span>
+                {status.loadAvg1 !== undefined && (
+                  <span>Load: {status.loadAvg1.toFixed(2)}</span>
+                )}
+              </div>
+            )}
+          </>
+        ) : (
+          <div className="px-3 py-4 text-center text-xs text-muted-foreground">
+            {t('admin.forwardAgents.detail.noSystemStatusData')}
+          </div>
+        )}
+      </div>
+    </div>
   );
 };
 
@@ -394,6 +421,8 @@ export const ForwardAgentDetailSheet = ({
   onDisable,
   onRegenerateToken,
   onGetInstallScript,
+  onTriggerUpdate,
+  isUpdating = false,
 }: ForwardAgentDetailSheetProps) => {
   const { t } = useTranslation();
   const [actionSheetOpen, setActionSheetOpen] = useState(false);
@@ -414,8 +443,32 @@ export const ForwardAgentDetailSheet = ({
     variant: 'default' as const,
   };
 
+  // Check if agent can be updated (online, enabled, and has update available)
+  const canUpdate = agent.hasUpdate && (isOnline || agent.isOnline) && agent.status === 'enabled';
+
   // Action Sheet actions
   const moreActions = [
+    // Update action - only show when update available and agent is online
+    ...(onTriggerUpdate && canUpdate
+      ? [
+          {
+            label: isUpdating
+              ? t('admin.forwardAgents.detail.updating')
+              : t('admin.forwardAgents.detail.triggerUpdate'),
+            icon: isUpdating ? (
+              <Loader2 className="size-5 animate-spin" />
+            ) : (
+              <Download className="size-5" />
+            ),
+            onPress: async () => {
+              if (!isUpdating) {
+                onTriggerUpdate(agent);
+              }
+            },
+            disabled: isUpdating,
+          },
+        ]
+      : []),
     ...(onRegenerateToken
       ? [
           {
@@ -453,216 +506,208 @@ export const ForwardAgentDetailSheet = ({
     <>
       <Sheet open={open} onOpenChange={onOpenChange}>
         <SheetContent showClose>
+          {/* Compact Header - Core status only */}
           <SheetHeader>
             <div className="flex items-center gap-3">
-              <div
-                className={cn(
-                  'size-12 rounded-xl flex items-center justify-center',
-                  'bg-primary/10 text-primary'
-                )}
-              >
-                <Router className="size-6" />
-              </div>
-              <div className="flex-1 min-w-0">
-                <div className="flex items-center gap-2">
-                  <SheetTitle className="truncate">{agent.name}</SheetTitle>
-                  <AdminBadge variant={statusConfig.variant} className="text-[10px] px-1.5 py-0 shrink-0">
-                    {t(statusConfig.labelKey)}
-                  </AdminBadge>
+              {/* Icon with online indicator */}
+              <div className="relative shrink-0">
+                <div className="size-11 rounded-xl flex items-center justify-center bg-primary/10">
+                  <Server className="size-5 text-primary" />
                 </div>
-                <SheetDescription className="flex items-center gap-2">
-                  <OnlineIndicator
-                    isOnline={isOnline || agent.isOnline}
-                    isConnected={isConnected}
-                    agentStatus={agent.status}
-                    t={t}
-                  />
-                  {agent.hasUpdate && (isOnline || agent.isOnline) && (
-                    <span className="inline-flex items-center gap-1 text-warning text-xs">
-                      <ArrowUpCircle className="size-3.5" />
-                      {t('admin.forwardAgents.detail.updatable')}
-                    </span>
+                {/* Online status dot */}
+                <span
+                  className={cn(
+                    'absolute -bottom-0.5 -right-0.5 size-3 rounded-full ring-2 ring-background',
+                    (isOnline || agent.isOnline) ? 'bg-success' : 'bg-muted-foreground/30'
                   )}
+                >
+                  {(isOnline || agent.isOnline) && (
+                    <span className="absolute inset-0 rounded-full bg-success animate-ping opacity-75 motion-reduce:hidden" />
+                  )}
+                </span>
+              </div>
+
+              {/* Title and config status */}
+              <div className="flex-1 min-w-0">
+                <SheetTitle className="truncate">{agent.name}</SheetTitle>
+                <SheetDescription className="flex items-center gap-2 mt-0.5">
+                  <span
+                    className={cn(
+                      'text-xs',
+                      agent.status === 'enabled' ? 'text-success' : 'text-muted-foreground'
+                    )}
+                  >
+                    {t(statusConfig.labelKey)}
+                  </span>
+                  <span className="text-border">·</span>
+                  <span className="text-xs text-muted-foreground">
+                    {(isOnline || agent.isOnline)
+                      ? t('admin.forwardAgents.detail.online')
+                      : t('admin.forwardAgents.detail.offline')}
+                  </span>
                 </SheetDescription>
               </div>
             </div>
           </SheetHeader>
 
           <SheetBody className="space-y-4 pb-4">
+            {/* System Status - Connection, Version, Resources */}
+            <SystemStatusSection
+              status={systemStatus ?? null}
+              isConnected={isConnected}
+              agentVersion={agent.agentVersion || systemStatus?.agentVersion}
+              hasUpdate={agent.hasUpdate}
+              platform={systemStatus?.platform}
+              arch={systemStatus?.arch}
+              t={t}
+            />
+
             {/* Basic Info */}
             <DetailSection title={t('admin.forwardAgents.detail.basicInfo')}>
               <DetailRow
-                icon={<Hash className="size-4" />}
-                label="Agent ID"
-                value={<span className="font-mono text-xs">{agent.id}</span>}
+                icon={<Hash className="size-3.5" />}
+                label="ID"
+                value={agent.id}
+                mono
+                copyable
               />
               <DetailRow
-                icon={<Globe className="size-4" />}
+                icon={<Globe className="size-3.5" />}
                 label={t('admin.forwardAgents.detail.publicAddress')}
-                value={
-                  <span className="font-mono text-xs">
-                    {agent.publicAddress || systemStatus?.publicIpv4 || '-'}
-                    {!agent.publicAddress && systemStatus?.publicIpv4 && (
-                      <span className="text-muted-foreground ml-2">
-                        ({t('admin.forwardAgents.detail.auto')})
-                      </span>
-                    )}
-                  </span>
-                }
+                value={agent.publicAddress || systemStatus?.publicIpv4 || '-'}
+                mono
+                copyable={!!(agent.publicAddress || systemStatus?.publicIpv4)}
               />
               {agent.tunnelAddress && (
                 <DetailRow
-                  icon={<Network className="size-4" />}
+                  icon={<Network className="size-3.5" />}
                   label={t('admin.forwardAgents.detail.tunnelAddress')}
-                  value={<span className="font-mono text-xs">{agent.tunnelAddress}</span>}
-                />
-              )}
-              {/* Public IP addresses from agent report */}
-              {(systemStatus?.publicIpv4 || systemStatus?.publicIpv6) && (
-                <DetailRow
-                  icon={<Globe className="size-4" />}
-                  label={t('admin.forwardAgents.detail.publicIp')}
-                  value={
-                    <div className="space-y-0.5">
-                      {systemStatus.publicIpv4 && (
-                        <div className="font-mono text-xs">{systemStatus.publicIpv4}</div>
-                      )}
-                      {systemStatus.publicIpv6 && (
-                        <div
-                          className="font-mono text-xs text-muted-foreground truncate"
-                          title={systemStatus.publicIpv6}
-                        >
-                          {systemStatus.publicIpv6}
-                        </div>
-                      )}
-                    </div>
-                  }
+                  value={agent.tunnelAddress}
+                  mono
+                  copyable
                 />
               )}
             </DetailSection>
 
-            {/* System Status - real-time via SSE */}
-            {!isConnected ? (
-              <div className="flex items-center justify-center py-8">
-                <Loader2 className="size-6 animate-spin text-muted-foreground" />
-                <span className="ml-2 text-sm text-muted-foreground">
-                  {t('admin.forwardAgents.detail.establishingConnection')}
-                </span>
-              </div>
-            ) : systemStatus ? (
-              <SystemStatusSection status={systemStatus} t={t} />
-            ) : (
-              <div className="flex items-center justify-center py-8 text-sm text-muted-foreground">
-                {t('admin.forwardAgents.detail.noSystemStatusData')}
-              </div>
-            )}
-
-            {/* Configuration Info */}
+            {/* Configuration - only if has config */}
             {(agent.allowedPortRange ||
               (agent.blockedProtocols && agent.blockedProtocols.length > 0) ||
               agent.muteNotification) && (
               <DetailSection title={t('admin.forwardAgents.detail.configInfo')}>
                 {agent.allowedPortRange && (
                   <DetailRow
-                    icon={<Shield className="size-4" />}
+                    icon={<Shield className="size-3.5" />}
                     label={t('admin.forwardAgents.detail.allowedPortRange')}
-                    value={<span className="font-mono text-xs">{agent.allowedPortRange}</span>}
+                    value={agent.allowedPortRange}
+                    mono
                   />
                 )}
                 {agent.blockedProtocols && agent.blockedProtocols.length > 0 && (
-                  <div className="px-3 py-2.5">
-                    <div className="flex items-start gap-3">
-                      <Ban className="size-4 text-muted-foreground shrink-0 mt-0.5" />
-                      <div className="flex-1 min-w-0">
-                        <div className="text-xs text-muted-foreground mb-1">
-                          {t('admin.forwardAgents.detail.blockedProtocols')}
-                        </div>
-                        <div className="flex flex-wrap gap-1.5">
-                          {agent.blockedProtocols.map((protocol) => (
-                            <Badge key={protocol} variant="secondary" className="text-xs">
-                              {BLOCKED_PROTOCOL_LABELS[protocol] || protocol}
-                            </Badge>
-                          ))}
-                        </div>
-                      </div>
+                  <div className="px-3 py-2.5 space-y-2">
+                    <span className="flex items-center gap-2 text-sm text-muted-foreground">
+                      <Ban className="size-3.5 text-muted-foreground/60" />
+                      {t('admin.forwardAgents.detail.blockedProtocols')}
+                    </span>
+                    <div className="space-y-1.5 pl-5.5">
+                      {getProtocolGroups(t).map((group) => {
+                        const blockedInGroup = group.protocols.filter((p) =>
+                          agent.blockedProtocols?.includes(p.value)
+                        );
+                        if (blockedInGroup.length === 0) return null;
+                        return (
+                          <div key={group.label} className="flex flex-wrap items-center gap-1">
+                            <span className="text-[11px] text-muted-foreground/70 mr-0.5">
+                              {group.label}:
+                            </span>
+                            {blockedInGroup.map((protocol) => (
+                              <span
+                                key={protocol.value}
+                                className="px-1.5 py-0.5 rounded bg-destructive/10 text-destructive text-[10px] font-medium"
+                              >
+                                {protocol.label}
+                              </span>
+                            ))}
+                          </div>
+                        );
+                      })}
                     </div>
                   </div>
                 )}
                 {agent.muteNotification && (
                   <DetailRow
-                    icon={<BellOff className="size-4" />}
+                    icon={<BellOff className="size-3.5" />}
                     label={t('admin.forwardAgents.detail.notification')}
                     value={
-                      <span className="text-warning">
-                        {t('admin.forwardAgents.detail.muted')}
-                      </span>
+                      <span className="text-warning text-xs">{t('admin.forwardAgents.detail.muted')}</span>
                     }
                   />
                 )}
               </DetailSection>
             )}
 
-            {/* Version Info */}
-            {(agent.agentVersion || systemStatus?.agentVersion) && (
-              <DetailSection title={t('admin.forwardAgents.detail.versionInfo')}>
-                <DetailRow
-                  icon={<ArrowUpCircle className="size-4" />}
-                  label={t('admin.forwardAgents.detail.agentVersion')}
-                  value={
-                    <span className={cn('font-mono text-xs', agent.hasUpdate ? 'text-warning' : '')}>
-                      v{agent.agentVersion || systemStatus?.agentVersion}
-                      {(systemStatus?.platform || systemStatus?.arch) && (
-                        <span className="text-muted-foreground ml-2">
-                          ({systemStatus?.platform}/{systemStatus?.arch})
-                        </span>
-                      )}
-                      {agent.hasUpdate && (
-                        <span className="text-warning ml-2 font-normal">
-                          ({t('admin.forwardAgents.detail.updatableLabel')})
-                        </span>
-                      )}
-                    </span>
-                  }
-                />
-              </DetailSection>
-            )}
-
-            {/* Remark */}
+            {/* Remark - if exists */}
             {agent.remark && (
               <DetailSection title={t('admin.forwardAgents.detail.remark')}>
                 <div className="px-3 py-2.5">
-                  <div className="flex items-start gap-3">
-                    <FileText className="size-4 text-muted-foreground shrink-0 mt-0.5" />
-                    <div className="text-sm text-muted-foreground whitespace-pre-wrap">
-                      {agent.remark}
-                    </div>
-                  </div>
+                  <p className="text-sm text-muted-foreground whitespace-pre-wrap line-clamp-3">
+                    {agent.remark}
+                  </p>
                 </div>
               </DetailSection>
             )}
 
-            {/* Timestamps */}
+            {/* Meta info - compact row */}
             <DetailSection title={t('admin.forwardAgents.detail.timeInfo')}>
-              <DetailRow
-                icon={<Calendar className="size-4" />}
-                label={t('admin.forwardAgents.detail.createdAt')}
-                value={formatDate(agent.createdAt)}
-              />
-              <DetailRow
-                icon={<Calendar className="size-4" />}
-                label={t('admin.forwardAgents.detail.updatedAt')}
-                value={formatDate(agent.updatedAt)}
-              />
-              <DetailRow
-                icon={<Activity className="size-4" />}
-                label={t('admin.forwardAgents.detail.lastOnline')}
-                value={agent.lastSeenAt ? formatDate(agent.lastSeenAt) : '-'}
-              />
+              <div className="px-3 py-2.5 grid grid-cols-2 gap-x-4 gap-y-2 text-xs">
+                <div>
+                  <span className="text-muted-foreground">{t('admin.forwardAgents.detail.createdAt')}</span>
+                  <p className="text-foreground">{formatDateTime(agent.createdAt)}</p>
+                </div>
+                <div>
+                  <span className="text-muted-foreground">{t('admin.forwardAgents.detail.updatedAt')}</span>
+                  <p className="text-foreground">{formatDateTime(agent.updatedAt)}</p>
+                </div>
+                <div className="col-span-2">
+                  <span className="text-muted-foreground">{t('admin.forwardAgents.detail.lastOnline')}</span>
+                  <p className="text-foreground">{agent.lastSeenAt ? formatDateTime(agent.lastSeenAt) : '-'}</p>
+                </div>
+              </div>
             </DetailSection>
           </SheetBody>
 
+          {/* Footer Actions - Compact button group */}
           <SheetFooter>
             <div className="flex gap-2">
+              {/* Update button - shown when update available */}
+              {onTriggerUpdate && canUpdate && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (!isUpdating) {
+                      onTriggerUpdate(agent);
+                    }
+                  }}
+                  disabled={isUpdating}
+                  className={cn(
+                    'flex-1 flex items-center justify-center gap-1.5',
+                    'h-11 rounded-lg',
+                    'bg-warning text-warning-foreground',
+                    'text-sm font-medium',
+                    'active:opacity-80 transition-opacity',
+                    'disabled:opacity-50'
+                  )}
+                >
+                  {isUpdating ? (
+                    <Loader2 className="size-4 animate-spin" />
+                  ) : (
+                    <Download className="size-4" />
+                  )}
+                  {isUpdating
+                    ? t('admin.forwardAgents.detail.updating')
+                    : t('admin.forwardAgents.detail.triggerUpdate')}
+                </button>
+              )}
+
               <button
                 type="button"
                 onClick={() => {
@@ -670,16 +715,17 @@ export const ForwardAgentDetailSheet = ({
                   onOpenChange(false);
                 }}
                 className={cn(
-                  'flex-1 flex items-center justify-center gap-2',
-                  'h-11 rounded-xl',
+                  'flex-1 flex items-center justify-center gap-1.5',
+                  'h-11 rounded-lg',
                   'bg-primary text-primary-foreground',
                   'text-sm font-medium',
-                  'active:scale-[0.97] transition-transform'
+                  'active:opacity-80 transition-opacity'
                 )}
               >
                 <Edit className="size-4" />
                 {t('common.actions.edit')}
               </button>
+
               <button
                 type="button"
                 onClick={() => {
@@ -691,13 +737,14 @@ export const ForwardAgentDetailSheet = ({
                   onOpenChange(false);
                 }}
                 className={cn(
-                  'flex-1 flex items-center justify-center gap-2',
-                  'h-11 rounded-xl',
+                  'flex-1 flex items-center justify-center gap-1.5',
+                  'h-11 rounded-lg',
                   'text-sm font-medium',
-                  'active:scale-[0.97] transition-transform',
+                  'border',
+                  'active:opacity-80 transition-opacity',
                   agent.status === 'enabled'
-                    ? 'bg-warning/10 text-warning'
-                    : 'bg-success/10 text-success'
+                    ? 'border-warning/50 bg-warning/10 text-warning'
+                    : 'border-success/50 bg-success/10 text-success'
                 )}
               >
                 {agent.status === 'enabled' ? (
@@ -712,14 +759,15 @@ export const ForwardAgentDetailSheet = ({
                   </>
                 )}
               </button>
+
               <button
                 type="button"
                 onClick={() => setActionSheetOpen(true)}
                 className={cn(
-                  'size-11 rounded-xl shrink-0',
+                  'size-11 rounded-lg shrink-0',
                   'flex items-center justify-center',
-                  'bg-muted text-foreground',
-                  'active:scale-[0.97] transition-transform'
+                  'bg-muted text-muted-foreground',
+                  'active:opacity-80 transition-opacity'
                 )}
               >
                 <MoreHorizontal className="size-5" />

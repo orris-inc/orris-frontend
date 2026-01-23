@@ -1,12 +1,30 @@
 /**
  * Edit Resource Group Sheet Component
  * Mobile-optimized bottom sheet for editing resource group information
+ *
+ * Design: Tailwind Application UI style
+ * - Collapsible form sections
+ * - Read-only info section with description lists
+ * - Form field labels with hints
+ * - Large touch targets (min 44px)
  */
 
 import { useState, useEffect, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
+import {
+  FolderEdit,
+  Layers,
+  FileText,
+  Info,
+  Hash,
+  CreditCard,
+  Calendar,
+  ChevronDown,
+  Loader2,
+  Copy,
+  Check,
+} from 'lucide-react';
 import { formatDate } from '@/shared/utils/date-utils';
-import { FolderEdit, Layers, FileText } from 'lucide-react';
 import {
   Sheet,
   SheetContent,
@@ -17,12 +35,10 @@ import {
   SheetFooter,
   type EditSheetProps,
 } from '@/components/common/sheet';
-import { Button } from '@/components/common/Button';
-import { Separator } from '@/components/common/Separator';
-import { TruncatedId } from '@/components/admin';
 import { MobileFormInput } from '@/components/common/mobile-form';
+import { cn } from '@/lib/utils';
 import type { ResourceGroup, UpdateResourceGroupRequest } from '@/api/resource/types';
-import type { SubscriptionPlan } from '@/api/subscription/types';
+import type { SubscriptionPlan, PlanType } from '@/api/subscription/types';
 
 interface EditResourceGroupSheetProps extends EditSheetProps<ResourceGroup, UpdateResourceGroupRequest> {
   plansMap: Record<string, SubscriptionPlan>;
@@ -31,6 +47,163 @@ interface EditResourceGroupSheetProps extends EditSheetProps<ResourceGroup, Upda
 interface FormErrors {
   name?: string;
 }
+
+// ============================================================================
+// Constants
+// ============================================================================
+
+const PLAN_TYPE_COLORS: Record<PlanType, string> = {
+  node: 'bg-primary/10 text-primary',
+  forward: 'bg-success/10 text-success',
+  hybrid: 'bg-info/10 text-info',
+};
+
+const PLAN_TYPE_LABELS: Record<PlanType, string> = {
+  node: 'resourceGroups.planTypes.node',
+  forward: 'resourceGroups.planTypes.forward',
+  hybrid: 'resourceGroups.planTypes.hybrid',
+};
+
+// ============================================================================
+// Helper Components
+// ============================================================================
+
+/**
+ * Collapsible Form Section - Tailwind Application UI style
+ */
+interface FormSectionProps {
+  title: string;
+  icon: React.ElementType;
+  isOpen: boolean;
+  onToggle: () => void;
+  badge?: string | null;
+  children: React.ReactNode;
+}
+
+const FormSection: React.FC<FormSectionProps> = ({
+  title,
+  icon: Icon,
+  isOpen,
+  onToggle,
+  badge,
+  children,
+}) => (
+  <div className="overflow-hidden rounded-lg bg-card border border-border">
+    <button
+      type="button"
+      onClick={onToggle}
+      className="w-full flex items-center justify-between px-4 py-3 text-left active:bg-muted/50 transition-colors min-h-[52px]"
+    >
+      <div className="flex items-center gap-3">
+        <div
+          className={cn(
+            'size-8 rounded-lg flex items-center justify-center transition-colors',
+            isOpen ? 'bg-primary/10 text-primary' : 'bg-muted text-muted-foreground'
+          )}
+        >
+          <Icon className="size-4" strokeWidth={2} />
+        </div>
+        <div className="flex items-center gap-2">
+          <span className="text-sm font-medium">{title}</span>
+          {badge && (
+            <span className="px-1.5 py-0.5 rounded bg-muted text-muted-foreground text-[10px] font-medium">
+              {badge}
+            </span>
+          )}
+        </div>
+      </div>
+      <ChevronDown
+        className={cn(
+          'size-4 text-muted-foreground transition-transform duration-200',
+          isOpen && 'rotate-180'
+        )}
+      />
+    </button>
+    <div
+      className={cn(
+        'overflow-hidden transition-all duration-200',
+        isOpen ? 'max-h-[1000px] opacity-100' : 'max-h-0 opacity-0'
+      )}
+    >
+      <div className="px-4 pb-4 pt-2 border-t border-border">{children}</div>
+    </div>
+  </div>
+);
+
+/**
+ * Form Field Label - compact style with hint
+ */
+interface FormFieldLabelProps {
+  label: string;
+  required?: boolean;
+  hint?: string;
+}
+
+const FormFieldLabel: React.FC<FormFieldLabelProps> = ({ label, required, hint }) => (
+  <div className="space-y-0.5">
+    <label className="text-sm font-medium text-foreground">
+      {label}
+      {required && <span className="text-destructive ml-0.5">*</span>}
+    </label>
+    {hint && <p className="text-[11px] text-muted-foreground leading-tight">{hint}</p>}
+  </div>
+);
+
+/**
+ * Read-only Info Row - compact inline style with optional copy
+ */
+const InfoRow = ({
+  icon,
+  label,
+  value,
+  mono = false,
+  copyable = false,
+}: {
+  icon?: React.ReactNode;
+  label: string;
+  value: React.ReactNode;
+  mono?: boolean;
+  copyable?: boolean;
+}) => {
+  const [copied, setCopied] = useState(false);
+
+  const handleCopy = () => {
+    if (typeof value === 'string') {
+      navigator.clipboard.writeText(value);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    }
+  };
+
+  return (
+    <div className="flex items-center justify-between gap-3 px-3 py-2.5 min-h-[44px]">
+      <dt className="flex items-center gap-2 text-sm text-muted-foreground shrink-0">
+        {icon && <span className="text-muted-foreground/60">{icon}</span>}
+        {label}
+      </dt>
+      <dd className="flex items-center gap-1.5 text-sm text-foreground min-w-0">
+        <span className={cn('truncate', mono && 'font-mono text-xs')}>{value}</span>
+        {copyable && typeof value === 'string' && (
+          <button
+            type="button"
+            onClick={handleCopy}
+            className="shrink-0 p-1 -mr-1 rounded hover:bg-muted transition-colors touch-target"
+          >
+            {copied ? (
+              <Check className="size-3.5 text-success" />
+            ) : (
+              <Copy className="size-3.5 text-muted-foreground/50" />
+            )}
+          </button>
+        )}
+      </dd>
+    </div>
+  );
+};
+
+// ============================================================================
+// Main Component
+// ============================================================================
 
 export const EditResourceGroupSheet: React.FC<EditResourceGroupSheetProps> = ({
   open,
@@ -45,6 +218,7 @@ export const EditResourceGroupSheet: React.FC<EditResourceGroupSheetProps> = ({
   const [errors, setErrors] = useState<FormErrors>({});
   const [touched, setTouched] = useState<Record<string, boolean>>({});
   const [loading, setLoading] = useState(false);
+  const [openSections, setOpenSections] = useState<Set<string>>(new Set(['info', 'edit']));
 
   // Initialize form when resourceGroup changes
   useEffect(() => {
@@ -53,22 +227,29 @@ export const EditResourceGroupSheet: React.FC<EditResourceGroupSheetProps> = ({
       setDescription(resourceGroup.description || '');
       setErrors({});
       setTouched({});
+      setOpenSections(new Set(['info', 'edit']));
     }
   }, [resourceGroup]);
 
   // Validation functions
-  const validateName = useCallback((value: string): string | undefined => {
-    if (!value.trim()) return t('resourceGroups.nameRequired');
-    if (value.trim().length > 100) return t('resourceGroups.nameTooLong');
-    return undefined;
-  }, [t]);
+  const validateName = useCallback(
+    (value: string): string | undefined => {
+      if (!value.trim()) return t('resourceGroups.nameRequired');
+      if (value.trim().length > 100) return t('resourceGroups.nameTooLong');
+      return undefined;
+    },
+    [t]
+  );
 
-  const handleBlur = useCallback((field: 'name') => {
-    setTouched((prev) => ({ ...prev, [field]: true }));
-    const validators = { name: validateName };
-    const values = { name };
-    setErrors((prev) => ({ ...prev, [field]: validators[field](values[field]) }));
-  }, [name, validateName]);
+  const handleBlur = useCallback(
+    (field: 'name') => {
+      setTouched((prev) => ({ ...prev, [field]: true }));
+      const validators = { name: validateName };
+      const values = { name };
+      setErrors((prev) => ({ ...prev, [field]: validators[field](values[field]) }));
+    },
+    [name, validateName]
+  );
 
   const validate = useCallback((): boolean => {
     const newErrors = {
@@ -78,11 +259,14 @@ export const EditResourceGroupSheet: React.FC<EditResourceGroupSheetProps> = ({
     return !newErrors.name;
   }, [name, validateName]);
 
-  const handleOpenChange = useCallback((o: boolean) => {
-    if (!loading) {
-      onOpenChange(o);
-    }
-  }, [loading, onOpenChange]);
+  const handleOpenChange = useCallback(
+    (o: boolean) => {
+      if (!loading) {
+        onOpenChange(o);
+      }
+    },
+    [loading, onOpenChange]
+  );
 
   const handleSubmit = useCallback(async () => {
     if (!resourceGroup || !validate()) return;
@@ -100,15 +284,31 @@ export const EditResourceGroupSheet: React.FC<EditResourceGroupSheetProps> = ({
     }
   }, [resourceGroup, name, description, validate, onSubmit, onOpenChange]);
 
+  const toggleSection = (sectionId: string) => {
+    setOpenSections((prev) => {
+      const next = new Set(prev);
+      if (next.has(sectionId)) {
+        next.delete(sectionId);
+      } else {
+        next.add(sectionId);
+      }
+      return next;
+    });
+  };
+
   // Check for changes
-  const hasChanges = resourceGroup && (
-    name !== resourceGroup.name ||
-    description !== (resourceGroup.description || '')
-  );
+  const hasChanges =
+    resourceGroup &&
+    (name !== resourceGroup.name || description !== (resourceGroup.description || ''));
 
   if (!resourceGroup) return null;
 
   const plan = plansMap[resourceGroup.planId];
+  const planType = plan?.planType;
+  const typeColorClass = planType
+    ? PLAN_TYPE_COLORS[planType]
+    : 'bg-muted text-muted-foreground';
+  const typeLabelKey = planType ? PLAN_TYPE_LABELS[planType] : '';
 
   return (
     <Sheet open={open} onOpenChange={handleOpenChange}>
@@ -125,95 +325,155 @@ export const EditResourceGroupSheet: React.FC<EditResourceGroupSheetProps> = ({
           </SheetDescription>
         </SheetHeader>
 
-        <SheetBody className="space-y-6 py-4">
-          {/* Read-only Info */}
-          <div className="space-y-3">
-            <h4 className="text-sm font-medium text-muted-foreground px-1">{t('resourceGroups.editSheet.basicInfo')}</h4>
-            <div className="rounded-xl border bg-muted/30 p-4 space-y-3">
-              <div className="flex items-center justify-between">
-                <span className="text-sm text-muted-foreground">SID</span>
-                <TruncatedId id={resourceGroup.sid} />
-              </div>
-              <Separator />
-              <div className="flex items-center justify-between">
-                <span className="text-sm text-muted-foreground">{t('resourceGroups.editSheet.associatedPlan')}</span>
-                <span className="text-sm font-medium">
-                  {plan?.name || t('resourceGroups.planPrefix', { id: resourceGroup.planId })}
-                </span>
-              </div>
-              <Separator />
-              <div className="flex items-center justify-between">
-                <span className="text-sm text-muted-foreground">{t('resourceGroups.editSheet.createdAt')}</span>
-                <span className="text-sm">
-                  {formatDate(resourceGroup.createdAt)}
-                </span>
-              </div>
-            </div>
-          </div>
-
-          {/* Editable Fields */}
-          <div className="space-y-4">
-            <h4 className="text-sm font-medium text-muted-foreground px-1">{t('resourceGroups.editSheet.editableInfo')}</h4>
-
-            {/* Name */}
-            <div className="space-y-1.5">
-              <label htmlFor="edit-rg-name" className="text-sm font-medium px-1">
-                {t('resourceGroups.name')} <span className="text-destructive">*</span>
-              </label>
-              <MobileFormInput
-                id="edit-rg-name"
-                value={name}
-                onChange={(v) => {
-                  setName(v);
-                  if (touched.name) setErrors((prev) => ({ ...prev, name: validateName(v) }));
-                }}
-                onBlur={() => handleBlur('name')}
-                placeholder={t('resourceGroups.namePlaceholder')}
-                icon={<Layers className="size-5" />}
-                error={touched.name ? errors.name : undefined}
-                disabled={loading}
-              />
-            </div>
-
-            {/* Description */}
-            <div className="space-y-1.5">
-              <label htmlFor="edit-rg-description" className="text-sm font-medium px-1">
-                {t('resourceGroups.description')}
-              </label>
-              <div className="relative">
-                <div className="absolute left-4 top-4 text-muted-foreground">
-                  <FileText className="size-5" />
+        <SheetBody className="py-4 space-y-3">
+          {/* Read-only Info Section */}
+          <FormSection
+            title={t('resourceGroups.editSheet.basicInfo')}
+            icon={Info}
+            isOpen={openSections.has('info')}
+            onToggle={() => toggleSection('info')}
+          >
+            <div className="overflow-hidden rounded-lg bg-muted/30 border border-border/50">
+              <dl className="divide-y divide-border/50">
+                <InfoRow
+                  icon={<Hash className="size-3.5" />}
+                  label="SID"
+                  value={resourceGroup.sid}
+                  mono
+                  copyable
+                />
+                <div className="px-3 py-2.5 min-h-[44px]">
+                  <dt className="flex items-center gap-2 text-sm text-muted-foreground mb-1.5">
+                    <CreditCard className="size-3.5 text-muted-foreground/60" />
+                    {t('resourceGroups.editSheet.associatedPlan')}
+                  </dt>
+                  <dd className="flex items-center gap-2">
+                    <span className="text-sm font-medium">
+                      {plan?.name || t('resourceGroups.planPrefix', { id: resourceGroup.planId })}
+                    </span>
+                    {plan?.slug && (
+                      <span className="font-mono text-xs text-muted-foreground">{plan.slug}</span>
+                    )}
+                    {planType && (
+                      <span className={cn('text-[10px] px-1.5 py-0.5 rounded font-medium', typeColorClass)}>
+                        {t(typeLabelKey)}
+                      </span>
+                    )}
+                  </dd>
                 </div>
-                <textarea
-                  id="edit-rg-description"
-                  value={description}
-                  onChange={(e) => setDescription(e.target.value)}
-                  placeholder={t('resourceGroups.descriptionPlaceholder')}
-                  rows={3}
+                <InfoRow
+                  icon={<Calendar className="size-3.5" />}
+                  label={t('resourceGroups.editSheet.createdAt')}
+                  value={formatDate(resourceGroup.createdAt)}
+                />
+              </dl>
+            </div>
+            <p className="text-[11px] text-muted-foreground mt-2 px-1">
+              {t('resourceGroups.editSheet.readOnlyHint')}
+            </p>
+          </FormSection>
+
+          {/* Editable Fields Section */}
+          <FormSection
+            title={t('resourceGroups.editSheet.editableInfo')}
+            icon={Layers}
+            isOpen={openSections.has('edit')}
+            onToggle={() => toggleSection('edit')}
+          >
+            <div className="space-y-4">
+              {/* Name */}
+              <div className="space-y-1.5">
+                <FormFieldLabel
+                  label={t('resourceGroups.name')}
+                  required
+                  hint={t('resourceGroups.nameHint')}
+                />
+                <MobileFormInput
+                  id="edit-rg-name"
+                  value={name}
+                  onChange={(v) => {
+                    setName(v);
+                    if (touched.name) setErrors((prev) => ({ ...prev, name: validateName(v) }));
+                  }}
+                  onBlur={() => handleBlur('name')}
+                  placeholder={t('resourceGroups.namePlaceholder')}
+                  icon={<Layers className="size-5" />}
+                  error={touched.name ? errors.name : undefined}
                   disabled={loading}
-                  className="w-full min-h-[100px] py-3 pl-12 pr-4 text-base rounded-xl border bg-background placeholder:text-muted-foreground/60 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary disabled:opacity-50 disabled:cursor-not-allowed resize-none"
                 />
               </div>
+
+              {/* Description */}
+              <div className="space-y-1.5">
+                <FormFieldLabel
+                  label={t('resourceGroups.description')}
+                  hint={t('resourceGroups.descriptionHint')}
+                />
+                <div className="relative">
+                  <div className="absolute left-4 top-3.5 text-muted-foreground">
+                    <FileText className="size-5" />
+                  </div>
+                  <textarea
+                    id="edit-rg-description"
+                    value={description}
+                    onChange={(e) => setDescription(e.target.value)}
+                    placeholder={t('resourceGroups.descriptionPlaceholder')}
+                    rows={3}
+                    disabled={loading}
+                    className={cn(
+                      'w-full min-h-[88px] py-3 pl-12 pr-4 text-base rounded-lg',
+                      'border bg-background',
+                      'placeholder:text-muted-foreground/60',
+                      'focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary',
+                      'disabled:opacity-50 disabled:cursor-not-allowed resize-none'
+                    )}
+                  />
+                </div>
+              </div>
             </div>
-          </div>
+          </FormSection>
         </SheetBody>
 
         <SheetFooter>
-          <Button
-            onClick={handleSubmit}
-            disabled={loading || !hasChanges}
-            className="w-full min-h-[48px] text-base"
-          >
-            {loading ? t('resourceGroups.saving') : t('resourceGroups.saveChanges')}
-          </Button>
-          <Button
-            variant="ghost"
-            onClick={() => onOpenChange(false)}
-            disabled={loading}
-            className="w-full min-h-[44px]"
-          >
-            {t('resourceGroups.cancel')}
-          </Button>
+          <div className="flex gap-2 w-full">
+            <button
+              type="button"
+              onClick={() => onOpenChange(false)}
+              disabled={loading}
+              className={cn(
+                'flex-1 flex items-center justify-center',
+                'h-11 rounded-lg',
+                'border border-border bg-background text-foreground',
+                'text-sm font-medium',
+                'active:opacity-80 transition-opacity',
+                'disabled:opacity-50'
+              )}
+            >
+              {t('common.actions.cancel')}
+            </button>
+            <button
+              type="button"
+              onClick={handleSubmit}
+              disabled={loading || !hasChanges}
+              className={cn(
+                'flex-1 flex items-center justify-center gap-2',
+                'h-11 rounded-lg',
+                'bg-primary text-primary-foreground',
+                'text-sm font-medium',
+                'active:opacity-80 transition-opacity',
+                'disabled:opacity-50'
+              )}
+            >
+              {loading ? (
+                <>
+                  <Loader2 className="size-4 animate-spin" />
+                  {t('resourceGroups.saving')}
+                </>
+              ) : (
+                t('resourceGroups.saveChanges')
+              )}
+            </button>
+          </div>
         </SheetFooter>
       </SheetContent>
     </Sheet>

@@ -24,7 +24,7 @@ interface AdminTableProps {
 
 export const AdminTable = ({ children, className }: AdminTableProps) => {
   return (
-    <div className="@container overflow-x-auto bg-card rounded-xl">
+    <div className="@container overflow-x-auto rounded-lg border border-border">
       <table className={cn('w-full text-sm border-separate border-spacing-0', className)}>
         {children}
       </table>
@@ -35,8 +35,7 @@ export const AdminTable = ({ children, className }: AdminTableProps) => {
 export const AdminTableHeader = ({ children, className }: AdminTableProps) => {
   return (
     <thead className={cn(
-      'bg-muted/50',
-      'border-b-2 border-border/60',
+      'bg-muted',
       className
     )}>
       {children}
@@ -64,8 +63,8 @@ export const AdminTableRow = ({ children, className, onClick, selected }: AdminT
     <tr
       onClick={onClick}
       className={cn(
-        'group transition-all duration-200',
-        'hover:bg-accent/50',
+        'group transition-colors duration-200',
+        'hover:bg-muted/50',
         onClick && 'cursor-pointer',
         selected && 'bg-primary/5',
         className
@@ -198,8 +197,7 @@ export const AdminTablePagination = ({
   return (
     <div className={cn(
       'flex items-center justify-between px-5 py-4',
-      'border-t border-border/60',
-      'bg-muted/30'
+      'border-t border-border'
     )}>
       {/* Left: Page size selector */}
       <div className="flex items-center gap-2.5 text-sm text-muted-foreground">
@@ -243,10 +241,9 @@ export const AdminTablePagination = ({
             className={cn(
               'flex items-center justify-center size-11 @sm:size-9 rounded-lg touch-target',
               'text-muted-foreground',
-              'hover:bg-accent',
-              'hover:shadow-sm active:scale-95',
-              'disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:shadow-none',
-              'transition-all duration-200'
+              'hover:bg-muted',
+              'disabled:opacity-40 disabled:cursor-not-allowed',
+              'transition-colors duration-200'
             )}
           >
             <ChevronLeft className="size-5 @sm:size-4.5" strokeWidth={2} />
@@ -271,10 +268,10 @@ export const AdminTablePagination = ({
                   disabled={loading}
                   className={cn(
                     'flex items-center justify-center min-w-[44px] @sm:min-w-[36px] h-11 @sm:h-9 px-3 @sm:px-2.5 rounded-lg text-sm touch-target',
-                    'transition-all duration-200',
+                    'transition-colors duration-200',
                     pageNum === page
-                      ? 'bg-primary text-primary-foreground shadow-md shadow-primary/30 scale-105'
-                      : 'text-muted-foreground hover:bg-accent hover:shadow-sm active:scale-95'
+                      ? 'bg-primary text-primary-foreground'
+                      : 'text-muted-foreground hover:bg-muted'
                   )}
                 >
                   {pageNum}
@@ -291,10 +288,9 @@ export const AdminTablePagination = ({
             className={cn(
               'flex items-center justify-center size-11 @sm:size-9 rounded-lg touch-target',
               'text-muted-foreground',
-              'hover:bg-accent',
-              'hover:shadow-sm active:scale-95',
-              'disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:shadow-none',
-              'transition-all duration-200'
+              'hover:bg-muted',
+              'disabled:opacity-40 disabled:cursor-not-allowed',
+              'transition-colors duration-200'
             )}
           >
             <ChevronRight className="size-5 @sm:size-4.5" strokeWidth={2} />
@@ -355,10 +351,9 @@ export const AdminBadge = ({
       onClick={onClick}
       className={cn(
         'inline-flex items-center font-medium rounded-full',
-        'shadow-sm',
         size === 'sm' ? 'px-2.5 py-1 text-xs' : 'px-3 py-1.5 text-sm',
         badgeVariants[variant],
-        onClick && 'cursor-pointer hover:scale-105 hover:shadow-md active:scale-100 transition-all duration-200',
+        onClick && 'cursor-pointer hover:opacity-80 transition-opacity duration-200',
         className
       )}
     >

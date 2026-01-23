@@ -68,10 +68,10 @@ const SortableItemInner = memo(function SortableItemInner({
       style={style}
       className={cn(
         'select-none',
-        // Dim other items when dragging
-        isDraggingAny && !isBeingDragged && 'opacity-50 scale-[0.98]',
-        // Transition for smooth dim effect
-        'transition-all duration-200 ease-out'
+        // Tailwind Application UI style: subtle opacity change for other items
+        isDraggingAny && !isBeingDragged && 'opacity-60',
+        // Smooth transition
+        'transition-opacity duration-150 ease-out'
       )}
       {...attributes}
       {...listeners}
@@ -93,15 +93,13 @@ const DragOverlayContent = memo(function DragOverlayContent({
   return (
     <div
       className={cn(
-        // Elevated appearance
-        'shadow-2xl shadow-black/20',
-        // Slight scale up
-        'scale-[1.03]',
-        // Rounded corners with ring
-        'ring-2 ring-primary/30 rounded-xl',
-        // Smooth rotation hint
-        'rotate-[1deg]',
-        // Background
+        // Tailwind Application UI style: clean elevation
+        'shadow-lg shadow-black/10',
+        // Subtle scale
+        'scale-[1.02]',
+        // Clean border instead of ring
+        'rounded-lg border border-border',
+        // Solid background
         'bg-card'
       )}
     >
@@ -163,8 +161,8 @@ export function DraggableMobileList<TData>({
 
   const handleDragStart = useCallback((event: DragStartEvent) => {
     setActiveId(event.active.id);
-    // Strong initial vibration
-    vibrate([50, 30, 20]);
+    // Single short vibration on drag start
+    vibrate(10);
   }, [vibrate]);
 
   const handleDragEnd = useCallback((event: DragEndEvent) => {
@@ -176,20 +174,16 @@ export function DraggableMobileList<TData>({
       const newIndex = itemIds.indexOf(String(over.id));
 
       if (oldIndex !== -1 && newIndex !== -1) {
-        // Success vibration
-        vibrate([30, 20, 30]);
+        // Light success vibration
+        vibrate(10);
         onDragEnd(String(active.id), String(over.id), oldIndex, newIndex);
       }
-    } else {
-      // Cancel vibration (short)
-      vibrate(20);
     }
   }, [itemIds, onDragEnd, vibrate]);
 
   const handleDragCancel = useCallback(() => {
     setActiveId(null);
-    vibrate(20);
-  }, [vibrate]);
+  }, []);
 
   const isDraggingAny = activeId !== null;
 
@@ -232,8 +226,8 @@ export function DraggableMobileList<TData>({
       {/* Drag Overlay - follows finger smoothly */}
       <DragOverlay
         dropAnimation={{
-          duration: 200,
-          easing: 'cubic-bezier(0.18, 0.67, 0.6, 1.22)',
+          duration: 150,
+          easing: 'cubic-bezier(0.25, 0.1, 0.25, 1)',
         }}
       >
         {activeItem ? (

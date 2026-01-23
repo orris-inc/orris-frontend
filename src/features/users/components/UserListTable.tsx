@@ -7,7 +7,7 @@
 import { useMemo, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Edit, Trash2, CreditCard, MoreHorizontal, KeyRound } from 'lucide-react';
-import { DataTable, AdminBadge, TruncatedId, TableHoverCardProvider, type ColumnDef, type ResponsiveColumnMeta } from '@/components/admin';
+import { DataTable, AdminBadge, TableHoverCardProvider, TableHoverCardList, DateTimeCell, type ColumnDef, type ResponsiveColumnMeta } from '@/components/admin';
 import { useBreakpoint } from '@/hooks/useBreakpoint';
 import { UserMobileList } from './UserMobileList';
 import {
@@ -22,7 +22,6 @@ import {
   ContextMenuItem,
   ContextMenuSeparator,
 } from '@/components/common/ContextMenu';
-import { formatDate } from '@/shared/utils/date-utils';
 import { ACTIVE_STATUS_CONFIG, ROLE_CONFIG } from '@/shared/constants/status-config';
 import type { UserResponse } from '@/api/user';
 
@@ -112,32 +111,34 @@ export const UserListTable: React.FC<UserListTableProps> = ({
 
   const columns = useMemo<ColumnDef<UserResponse>[]>(() => [
     {
-      accessorKey: 'id',
-      header: 'ID',
-      size: 120,
-      meta: { priority: 4 } as ResponsiveColumnMeta,
-      cell: ({ row }) => <TruncatedId id={row.original.id} />,
-    },
-    {
       accessorKey: 'email',
-      header: t('tableColumns.email'),
-      meta: { priority: 1 } as ResponsiveColumnMeta,
-      cell: ({ row }) => (
-        <span className="text-foreground">
-          {row.original.email}
-        </span>
-      ),
-    },
-    {
-      accessorKey: 'name',
-      header: t('tableColumns.name'),
-      size: 140,
-      meta: { priority: 2 } as ResponsiveColumnMeta,
-      cell: ({ row }) => (
-        <span className="font-medium text-foreground">
-          {row.original.name || '-'}
-        </span>
-      ),
+      header: t('tableColumns.user'),
+      size: 220,
+      meta: { priority: 1, sticky: 'left' } as ResponsiveColumnMeta,
+      cell: ({ row }) => {
+        const user = row.original;
+        const hoverItems = [
+          { label: 'ID', value: user.id },
+          { label: t('tableColumns.email'), value: user.email },
+          ...(user.name ? [{ label: t('tableColumns.name'), value: user.name }] : []),
+        ];
+        return (
+          <TableHoverCardList
+            columnKey="email"
+            items={hoverItems}
+            contentClassName="w-72"
+          >
+            <div className="flex flex-col gap-0.5 cursor-default">
+              <span className="font-semibold text-foreground whitespace-nowrap truncate">
+                {user.name || user.email}
+              </span>
+              <code className="font-mono text-[11px] text-muted-foreground bg-muted/50 px-1 py-0.5 rounded w-fit truncate max-w-[180px]">
+                {user.email}
+              </code>
+            </div>
+          </TableHoverCardList>
+        );
+      },
     },
     {
       accessorKey: 'role',
@@ -170,20 +171,16 @@ export const UserListTable: React.FC<UserListTableProps> = ({
     {
       accessorKey: 'createdAt',
       header: t('tableColumns.createdAt'),
-      size: 140,
+      size: 100,
       meta: { priority: 4 } as ResponsiveColumnMeta,
-      cell: ({ row }) => (
-        <span className="text-sm text-muted-foreground">
-          {formatDate(row.original.createdAt)}
-        </span>
-      ),
+      cell: ({ row }) => <DateTimeCell value={row.original.createdAt} format="date" />,
     },
     {
       id: 'actions',
       header: t('tableColumns.actions'),
       size: 56,
       enableSorting: false,
-      meta: { priority: 1 } as ResponsiveColumnMeta,
+      meta: { priority: 1, sticky: 'right' } as ResponsiveColumnMeta,
       cell: ({ row }) => (
         <DropdownMenu>
           <DropdownMenuTrigger asChild>

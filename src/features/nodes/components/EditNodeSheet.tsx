@@ -30,9 +30,7 @@ import {
   SheetFooter,
   type EditSheetProps,
 } from '@/components/common/sheet';
-import { Button } from '@/components/common/Button';
 import { Badge } from '@/components/common/Badge';
-import { Separator } from '@/components/common/Separator';
 import { Switch, SwitchThumb } from '@/components/common/Switch';
 import { Checkbox } from '@/components/common/Checkbox';
 import { MobileFormInput, MobileSelect, type MobileSelectOption } from '@/components/common/mobile-form';
@@ -165,7 +163,7 @@ const arePluginOptsEqual = (
   return keys1.every(key => opts1[key] === opts2[key]);
 };
 
-// Mobile Collapsible Section
+// Mobile Collapsible Section - Tailwind Application UI style
 interface MobileSectionProps {
   title: string;
   icon: React.ElementType;
@@ -183,25 +181,25 @@ const MobileSection: React.FC<MobileSectionProps> = ({
   onToggle,
   children,
 }) => (
-  <div className="border border-border rounded-xl overflow-hidden bg-card">
+  <div className="overflow-hidden rounded-lg bg-card border border-border">
     <button
       type="button"
       onClick={onToggle}
-      className="w-full flex items-center justify-between p-4 text-left active:bg-accent/30 transition-colors"
+      className="w-full flex items-center justify-between px-4 py-3 text-left active:bg-muted/50 transition-colors min-h-[52px]"
     >
       <div className="flex items-center gap-3">
         <div className={cn(
-          'p-2 rounded-lg transition-colors',
+          'size-8 rounded-lg flex items-center justify-center transition-colors',
           isOpen ? 'bg-primary/10 text-primary' : 'bg-muted text-muted-foreground'
         )}>
-          <Icon className="size-4" strokeWidth={1.5} />
+          <Icon className="size-4" strokeWidth={2} />
         </div>
         <div className="flex items-center gap-2">
           <span className="text-sm font-medium">{title}</span>
           {badge && (
-            <Badge variant="secondary" className="text-[10px] px-1.5 py-0">
+            <span className="px-1.5 py-0.5 rounded bg-muted text-muted-foreground text-[10px] font-medium">
               {badge}
-            </Badge>
+            </span>
           )}
         </div>
       </div>
@@ -214,15 +212,14 @@ const MobileSection: React.FC<MobileSectionProps> = ({
       'overflow-hidden transition-all duration-200',
       isOpen ? 'max-h-[2000px] opacity-100' : 'max-h-0 opacity-0'
     )}>
-      <div className="px-4 pb-4">
-        <Separator className="mb-4" />
+      <div className="px-4 pb-4 pt-2 border-t border-border">
         {children}
       </div>
     </div>
   </div>
 );
 
-// Form Field Label with optional hint
+// Form Field Label - compact style
 interface FormFieldLabelProps {
   label: string;
   hint?: string;
@@ -234,10 +231,10 @@ const FormFieldLabel: React.FC<FormFieldLabelProps> = ({
   hint,
   showHint = true,
 }) => (
-  <div className="space-y-0.5 px-1">
-    <label className="text-sm font-medium">{label}</label>
+  <div className="space-y-0.5">
+    <label className="text-sm font-medium text-foreground">{label}</label>
     {hint && showHint && (
-      <p className="text-xs text-muted-foreground">{hint}</p>
+      <p className="text-[11px] text-muted-foreground leading-tight">{hint}</p>
     )}
   </div>
 );
@@ -609,12 +606,7 @@ export const EditNodeSheet: React.FC<EditNodeSheetProps> = ({
     <Sheet open={open} onOpenChange={handleClose}>
       <SheetContent>
         <SheetHeader>
-          <SheetTitle className="flex items-center gap-2">
-            <div className="size-10 rounded-full bg-primary/10 flex items-center justify-center">
-              <Server className="size-5 text-primary" />
-            </div>
-            <span>{t('admin.nodes.form.editNode')}</span>
-          </SheetTitle>
+          <SheetTitle>{t('admin.nodes.form.editNode')}</SheetTitle>
           <SheetDescription>
             {t('admin.nodes.form.editNodeDesc', { name: node.name })}
           </SheetDescription>
@@ -1381,21 +1373,38 @@ export const EditNodeSheet: React.FC<EditNodeSheetProps> = ({
         </SheetBody>
 
         <SheetFooter>
-          <Button
-            onClick={handleSubmit}
-            disabled={loading || !hasChanges}
-            className="w-full min-h-[52px] text-base"
-          >
-            {loading ? t('admin.nodes.form.saving') : t('common.actions.save')}
-          </Button>
-          <Button
-            variant="ghost"
-            onClick={() => handleClose(false)}
-            disabled={loading}
-            className="w-full min-h-[44px]"
-          >
-            {t('common.actions.cancel')}
-          </Button>
+          <div className="flex gap-2 w-full">
+            <button
+              type="button"
+              onClick={() => handleClose(false)}
+              disabled={loading}
+              className={cn(
+                'flex-1 flex items-center justify-center',
+                'h-11 rounded-lg',
+                'border border-border bg-background text-foreground',
+                'text-sm font-medium',
+                'active:opacity-80 transition-opacity',
+                'disabled:opacity-50'
+              )}
+            >
+              {t('common.actions.cancel')}
+            </button>
+            <button
+              type="button"
+              onClick={handleSubmit}
+              disabled={loading || !hasChanges}
+              className={cn(
+                'flex-1 flex items-center justify-center',
+                'h-11 rounded-lg',
+                'bg-primary text-primary-foreground',
+                'text-sm font-medium',
+                'active:opacity-80 transition-opacity',
+                'disabled:opacity-50'
+              )}
+            >
+              {loading ? t('admin.nodes.form.saving') : t('common.actions.save')}
+            </button>
+          </div>
         </SheetFooter>
       </SheetContent>
     </Sheet>

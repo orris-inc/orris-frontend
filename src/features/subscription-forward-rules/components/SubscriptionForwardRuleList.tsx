@@ -452,7 +452,7 @@ export const SubscriptionForwardRuleList: React.FC<SubscriptionForwardRuleListPr
         id: 'actions',
         header: t('userForwardRules.columns.actions'),
         size: 100,
-        meta: { priority: 1 } as ResponsiveColumnMeta,
+        meta: { priority: 1, sticky: 'right' } as ResponsiveColumnMeta,
         enableSorting: false,
         cell: ({ row }) => {
           const rule = row.original;

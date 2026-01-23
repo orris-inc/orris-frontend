@@ -1,12 +1,18 @@
 /**
  * NodeDetailSheet - Mobile node details with actions
  *
+ * Design: Tailwind Application UI style
+ * - Stacked layout with description lists
+ * - Card sections with dividers
+ * - Hero header with status indicator
+ * - Stats cards for system metrics
+ *
  * Features:
  * - Full node details in a bottom sheet
  * - System status metrics (CPU, Memory, Network)
+ * - Real-time status via SSE
  * - Primary actions in footer
  * - ActionSheet for secondary actions
- * - iOS-style design
  */
 
 import { useState } from 'react';
@@ -15,22 +21,19 @@ import {
   Server,
   Hash,
   Globe,
-  Activity,
-  Calendar,
   Edit,
   MoreHorizontal,
   Power,
   PowerOff,
   Trash2,
-  Gauge,
-  HardDrive,
   Network,
   ArrowUpCircle,
   Tag,
   Clock,
   Wifi,
   WifiOff,
-  Loader2,
+  Copy,
+  Check,
 } from 'lucide-react';
 import { useNodeDetailEvents } from '../hooks/useNodeEvents';
 import {
@@ -43,10 +46,8 @@ import {
   SheetFooter,
 } from '@/components/common/sheet/Sheet';
 import { ActionSheet } from '@/components/common/sheet/ActionSheet';
-import { AdminBadge } from '@/components/admin';
-import { Badge } from '@/components/common/Badge';
 import { cn } from '@/lib/utils';
-import { formatDate } from '@/shared/utils/date-utils';
+import { formatDateTime } from '@/shared/utils/date-utils';
 import type { Node, NodeStatus, NodeProtocol, NodeSystemStatus } from '@/api/node';
 import type { ResourceGroup } from '@/api/resource/types';
 
@@ -72,11 +73,11 @@ export interface NodeDetailSheetProps {
 // Status config - labels will be translated at render time
 const STATUS_CONFIG: Record<
   NodeStatus,
-  { labelKey: string; variant: 'success' | 'default' | 'warning' }
+  { labelKey: string }
 > = {
-  active: { labelKey: 'admin.nodes.statusLabel.active', variant: 'success' },
-  inactive: { labelKey: 'admin.nodes.statusLabel.inactive', variant: 'default' },
-  maintenance: { labelKey: 'admin.nodes.statusLabel.maintenance', variant: 'warning' },
+  active: { labelKey: 'admin.nodes.statusLabel.active' },
+  inactive: { labelKey: 'admin.nodes.statusLabel.inactive' },
+  maintenance: { labelKey: 'admin.nodes.statusLabel.maintenance' },
 };
 
 const PROTOCOL_CONFIG: Record<NodeProtocol, { label: string; color: string }> = {
@@ -91,17 +92,6 @@ const PROTOCOL_CONFIG: Record<NodeProtocol, { label: string; color: string }> = 
 // ============================================================================
 // Helper Functions
 // ============================================================================
-
-/**
- * Format bytes to human readable string
- */
-const formatBytes = (bytes: number): string => {
-  if (!bytes || bytes <= 0) return '0 B';
-  const units = ['B', 'KB', 'MB', 'GB', 'TB'];
-  const i = Math.floor(Math.log(bytes) / Math.log(1024));
-  const value = bytes / Math.pow(1024, i);
-  return `${value < 10 ? value.toFixed(2) : value.toFixed(1)} ${units[i]}`;
-};
 
 /**
  * Format bytes rate to human readable (per second)
@@ -134,203 +124,272 @@ const formatUptime = (
   return t('admin.nodes.detail.uptimeFormat.mins', { mins });
 };
 
+/**
+ * Get color based on percentage threshold
+ */
+const getProgressColor = (
+  percent: number,
+  thresholds: { warning: number; danger: number }
+): 'success' | 'warning' | 'destructive' => {
+  if (percent >= thresholds.danger) return 'destructive';
+  if (percent >= thresholds.warning) return 'warning';
+  return 'success';
+};
+
 // ============================================================================
-// Helper Components
+// Helper Components - Compact Mobile Layout
 // ============================================================================
 
+/**
+ * Section container - minimal spacing
+ */
 const DetailSection = ({
   title,
   children,
+  className,
 }: {
   title: string;
   children: React.ReactNode;
+  className?: string;
 }) => (
-  <div className="space-y-2">
-    <h4 className="text-xs font-medium text-muted-foreground uppercase tracking-wider px-1">
+  <div className={cn('', className)}>
+    <h3 className="text-[11px] font-medium text-muted-foreground uppercase tracking-wide mb-2 px-1">
       {title}
-    </h4>
-    <div className="rounded-xl bg-muted/30 border border-border/50 divide-y divide-border/30">
-      {children}
+    </h3>
+    <div className="overflow-hidden rounded-lg bg-card border border-border">
+      <dl className="divide-y divide-border">{children}</dl>
     </div>
   </div>
 );
 
+/**
+ * Compact row - inline label and value
+ */
 const DetailRow = ({
   icon,
   label,
   value,
+  mono = false,
+  copyable = false,
 }: {
-  icon: React.ReactNode;
+  icon?: React.ReactNode;
   label: string;
   value: React.ReactNode;
-}) => (
-  <div className="flex items-center gap-3 px-3 py-2.5">
-    <div className="text-muted-foreground">{icon}</div>
-    <div className="flex-1 min-w-0">
-      <div className="text-xs text-muted-foreground">{label}</div>
-      <div className="text-sm font-medium">{value}</div>
-    </div>
-  </div>
-);
-
-/**
- * Online Status Indicator with SSE connection status
- * Uses span elements to be valid inside p tags
- */
-const OnlineIndicator = ({
-  isOnline,
-  isConnected,
-  nodeStatus,
-  t,
-}: {
-  isOnline: boolean;
-  isConnected: boolean;
-  nodeStatus: string;
-  t: (key: string, options?: Record<string, unknown>) => string;
+  mono?: boolean;
+  copyable?: boolean;
 }) => {
-  return (
-    <span className="inline-flex items-center gap-2">
-      {/* SSE Connection Status */}
-      <span className="text-muted-foreground">
-        {isConnected ? (
-          <Wifi className="size-3.5 text-success" />
-        ) : (
-          <WifiOff className="size-3.5" />
-        )}
-      </span>
+  const [copied, setCopied] = useState(false);
 
-      {/* Online Status */}
-      {isOnline ? (
-        <span className="inline-flex items-center gap-1.5 text-success">
-          <span className="relative inline-flex h-2 w-2">
-            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-success opacity-75 motion-reduce:hidden"></span>
-            <span className="relative inline-flex rounded-full h-2 w-2 bg-success"></span>
-          </span>
-          <span className="text-sm font-medium">{t('admin.nodes.detail.online')}</span>
+  const handleCopy = () => {
+    if (typeof value === 'string') {
+      navigator.clipboard.writeText(value);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    }
+  };
+
+  return (
+    <div className="flex items-center justify-between gap-3 px-3 py-2.5 min-h-[44px]">
+      <dt className="flex items-center gap-2 text-sm text-muted-foreground shrink-0">
+        {icon && <span className="text-muted-foreground/60">{icon}</span>}
+        {label}
+      </dt>
+      <dd className="flex items-center gap-1.5 text-sm text-foreground min-w-0">
+        <span className={cn('truncate', mono && 'font-mono text-xs')}>
+          {value}
         </span>
-      ) : nodeStatus === 'active' || isConnected ? (
-        <span className="inline-flex items-center gap-1.5 text-muted-foreground">
-          <span className="inline-block h-2 w-2 rounded-full bg-muted-foreground/30"></span>
-          <span className="text-sm">{isConnected ? t('admin.nodes.detail.waitingStatus') : t('admin.nodes.detail.connecting')}</span>
-        </span>
-      ) : (
-        <span className="inline-flex items-center gap-1.5 text-muted-foreground">
-          <span className="inline-block h-2 w-2 rounded-full bg-muted-foreground/30"></span>
-          <span className="text-sm">{t('admin.nodes.detail.offline')}</span>
-        </span>
-      )}
-    </span>
+        {copyable && typeof value === 'string' && (
+          <button
+            type="button"
+            onClick={handleCopy}
+            className="shrink-0 p-1 -mr-1 rounded hover:bg-muted transition-colors touch-target"
+          >
+            {copied ? (
+              <Check className="size-3.5 text-success" />
+            ) : (
+              <Copy className="size-3.5 text-muted-foreground/50" />
+            )}
+          </button>
+        )}
+      </dd>
+    </div>
   );
 };
 
 /**
- * System Status Display - uses real-time SSE status if available
+ * Inline stat item - ultra compact
+ */
+const StatItem = ({
+  label,
+  value,
+  subValue,
+  progress,
+  color = 'primary',
+}: {
+  label: string;
+  value: string;
+  subValue?: string;
+  progress?: number;
+  color?: 'primary' | 'success' | 'warning' | 'destructive' | 'info';
+}) => {
+  const colorClasses = {
+    primary: 'text-primary bg-primary',
+    success: 'text-success bg-success',
+    warning: 'text-warning bg-warning',
+    destructive: 'text-destructive bg-destructive',
+    info: 'text-info bg-info',
+  };
+
+  return (
+    <div className="flex-1 min-w-0">
+      <div className="flex items-baseline justify-between gap-1 mb-1">
+        <span className="text-[11px] text-muted-foreground truncate">{label}</span>
+        <span className={cn('text-sm font-semibold tabular-nums', colorClasses[color].split(' ')[0])}>
+          {value}
+        </span>
+      </div>
+      {progress !== undefined && (
+        <div className="h-1 bg-muted rounded-full overflow-hidden">
+          <div
+            className={cn('h-full rounded-full transition-all', colorClasses[color].split(' ')[1])}
+            style={{ width: `${Math.min(progress, 100)}%` }}
+          />
+        </div>
+      )}
+      {subValue && (
+        <p className="text-[10px] text-muted-foreground mt-0.5 truncate">{subValue}</p>
+      )}
+    </div>
+  );
+};
+
+/**
+ * System Status Display - Compact single card with connection info
  */
 const SystemStatusSection = ({
   status,
+  isConnected,
+  agentVersion,
+  hasUpdate,
+  platform,
+  arch,
   t,
 }: {
-  status: NodeSystemStatus;
+  status: NodeSystemStatus | null;
+  isConnected: boolean;
+  agentVersion?: string;
+  hasUpdate?: boolean;
+  platform?: string;
+  arch?: string;
   t: (key: string, options?: Record<string, unknown>) => string;
 }) => {
-  if (!status) return null;
+  const cpuColor = status ? getProgressColor(status.cpuPercent, { warning: 60, danger: 80 }) : 'primary';
+  const memColor = status ? getProgressColor(status.memoryPercent, { warning: 60, danger: 80 }) : 'primary';
+  const diskColor = status?.diskPercent !== undefined
+    ? getProgressColor(status.diskPercent, { warning: 75, danger: 90 })
+    : 'primary';
 
   return (
-    <DetailSection title={t('admin.nodes.detail.nodeStatus')}>
-      {/* CPU */}
-      <div className="px-3 py-2.5">
-        <div className="flex items-center gap-3">
-          <Gauge className="size-4 text-muted-foreground" />
-          <div className="flex-1">
-            <div className="flex items-center justify-between mb-1">
-              <span className="text-xs text-muted-foreground">{t('admin.nodes.detail.cpu')}</span>
-              <span className="text-xs font-medium tabular-nums">
-                {Math.round(status.cpuPercent)}%
-              </span>
-            </div>
-            <div className="h-1.5 bg-muted/30 rounded-full overflow-hidden">
-              <div
-                className={cn(
-                  'h-full rounded-full transition-all',
-                  status.cpuPercent > 80
-                    ? 'bg-destructive'
-                    : status.cpuPercent > 60
-                      ? 'bg-warning'
-                      : 'bg-success'
-                )}
-                style={{ width: `${Math.min(status.cpuPercent, 100)}%` }}
-              />
-            </div>
-          </div>
-        </div>
-      </div>
+    <div>
+      <h3 className="text-[11px] font-medium text-muted-foreground uppercase tracking-wide mb-2 px-1">
+        {t('admin.nodes.detail.systemStatus')}
+      </h3>
 
-      {/* Memory */}
-      <div className="px-3 py-2.5">
-        <div className="flex items-center gap-3">
-          <HardDrive className="size-4 text-muted-foreground" />
-          <div className="flex-1">
-            <div className="flex items-center justify-between mb-1">
-              <span className="text-xs text-muted-foreground">{t('admin.nodes.detail.memory')}</span>
-              <span className="text-xs font-medium tabular-nums">
-                {Math.round(status.memoryPercent)}% ({formatBytes(status.memoryUsed)} / {formatBytes(status.memoryTotal)})
-              </span>
-            </div>
-            <div className="h-1.5 bg-muted/30 rounded-full overflow-hidden">
-              <div
-                className={cn(
-                  'h-full rounded-full transition-all',
-                  status.memoryPercent > 80
-                    ? 'bg-destructive'
-                    : status.memoryPercent > 60
-                      ? 'bg-warning'
-                      : 'bg-info'
-                )}
-                style={{ width: `${Math.min(status.memoryPercent, 100)}%` }}
-              />
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Network */}
-      <div className="px-3 py-2.5">
-        <div className="flex items-center gap-3">
-          <Network className="size-4 text-muted-foreground" />
-          <div className="flex-1">
-            <div className="text-xs text-muted-foreground mb-1">{t('admin.nodes.detail.networkTraffic')}</div>
-            <div className="flex items-center gap-3 text-xs font-mono">
-              <span className="text-success">↓ {formatBytesRate(status.networkRxRate)}/s</span>
-              <span className="text-info">↑ {formatBytesRate(status.networkTxRate)}/s</span>
-            </div>
-            <div className="text-[10px] text-muted-foreground mt-0.5">
-              {t('admin.monitor.total')}: {formatBytes(status.networkRxBytes)} / {formatBytes(status.networkTxBytes)}
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Uptime and connections */}
-      <DetailRow
-        icon={<Clock className="size-4" />}
-        label={t('admin.nodes.detail.uptime')}
-        value={
-          <span className="flex items-center gap-3 text-sm">
-            <span>{formatUptime(status.uptimeSeconds, t)}</span>
-            <span className="text-muted-foreground">·</span>
-            <span className="text-muted-foreground">
-              {t('admin.monitor.connections')}: {(status.tcpConnections || 0) + (status.udpConnections || 0)}
-            </span>
-            {status.loadAvg1 !== undefined && (
-              <>
-                <span className="text-muted-foreground">·</span>
-                <span className="text-muted-foreground">{t('admin.nodes.detail.load')}: {status.loadAvg1.toFixed(2)}</span>
-              </>
+      <div className="overflow-hidden rounded-lg bg-card border border-border divide-y divide-border">
+        {/* Connection & Version row */}
+        <div className="px-3 py-2.5 flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            {isConnected ? (
+              <Wifi className="size-3.5 text-success" />
+            ) : (
+              <WifiOff className="size-3.5 text-muted-foreground" />
             )}
-          </span>
-        }
-      />
-    </DetailSection>
+            <span className={cn('text-xs font-medium', isConnected ? 'text-success' : 'text-muted-foreground')}>
+              {isConnected ? 'SSE Connected' : 'SSE Disconnected'}
+            </span>
+          </div>
+          {agentVersion && (
+            <div className="flex items-center gap-1.5">
+              <span className="text-xs text-muted-foreground font-mono">v{agentVersion}</span>
+              {platform && arch && (
+                <span className="text-[10px] text-muted-foreground/70">{platform}/{arch}</span>
+              )}
+              {hasUpdate && (
+                <span className="inline-flex items-center gap-0.5 px-1 py-0.5 rounded bg-warning/10 text-warning text-[10px] font-medium">
+                  <ArrowUpCircle className="size-2.5" />
+                  {t('admin.nodes.updatable')}
+                </span>
+              )}
+            </div>
+          )}
+        </div>
+
+        {status ? (
+          <>
+            {/* Resource usage row */}
+            <div className="p-3 grid grid-cols-3 gap-3">
+              <StatItem
+                label={t('admin.nodes.detail.cpu')}
+                value={`${Math.round(status.cpuPercent)}%`}
+                progress={status.cpuPercent}
+                color={cpuColor}
+              />
+              <StatItem
+                label={t('admin.nodes.detail.memory')}
+                value={`${Math.round(status.memoryPercent)}%`}
+                progress={status.memoryPercent}
+                color={memColor}
+              />
+              {status.diskPercent !== undefined ? (
+                <StatItem
+                  label={t('admin.nodes.detail.disk')}
+                  value={`${Math.round(status.diskPercent)}%`}
+                  progress={status.diskPercent}
+                  color={diskColor}
+                />
+              ) : (
+                <StatItem
+                  label={t('admin.nodes.detail.uptime')}
+                  value={formatUptime(status.uptimeSeconds, t)}
+                  color="primary"
+                />
+              )}
+            </div>
+
+            {/* Network row */}
+            <div className="px-3 py-2.5 flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <Network className="size-4 text-muted-foreground/60" />
+                <div className="flex items-center gap-3 text-sm tabular-nums">
+                  <span className="text-success">↓ {formatBytesRate(status.networkRxRate)}/s</span>
+                  <span className="text-info">↑ {formatBytesRate(status.networkTxRate)}/s</span>
+                </div>
+              </div>
+              <span className="text-xs text-muted-foreground tabular-nums">
+                TCP {status.tcpConnections ?? 0} · UDP {status.udpConnections ?? 0}
+              </span>
+            </div>
+
+            {/* Uptime row - only if disk exists */}
+            {status.diskPercent !== undefined && (
+              <div className="px-3 py-2 flex items-center justify-between text-xs text-muted-foreground">
+                <span className="flex items-center gap-1.5">
+                  <Clock className="size-3" />
+                  {formatUptime(status.uptimeSeconds, t)}
+                </span>
+                {status.loadAvg1 !== undefined && (
+                  <span>Load: {status.loadAvg1.toFixed(2)}</span>
+                )}
+              </div>
+            )}
+          </>
+        ) : (
+          <div className="px-3 py-4 text-center text-xs text-muted-foreground">
+            {t('admin.forwardAgents.detail.noSystemStatusData')}
+          </div>
+        )}
+      </div>
+    </div>
   );
 };
 
@@ -363,8 +422,7 @@ export const NodeDetailSheet = ({
 
   if (!node) return null;
 
-  const statusConfig = STATUS_CONFIG[node.status] || { labelKey: 'admin.nodes.statusLabel.inactive', variant: 'default' as const };
-  const statusLabel = t(statusConfig.labelKey);
+  const statusConfig = STATUS_CONFIG[node.status] || { labelKey: 'admin.nodes.statusLabel.inactive' };
   const protocolConfig = PROTOCOL_CONFIG[node.protocol] || { label: node.protocol, color: 'bg-muted text-muted-foreground' };
 
   // Action Sheet actions
@@ -380,182 +438,160 @@ export const NodeDetailSheet = ({
     },
   ];
 
+  // Get protocol detail string
+  const getProtocolDetail = (): string | null => {
+    if (node.protocol === 'shadowsocks' && node.encryptionMethod) {
+      return node.encryptionMethod;
+    }
+    if (node.protocol === 'trojan' && node.transportProtocol) {
+      return `${node.transportProtocol.toUpperCase()} + TLS`;
+    }
+    if (node.protocol === 'vless' && node.vlessSecurity) {
+      return `${node.vlessTransportType?.toUpperCase() || 'TCP'} + ${node.vlessSecurity.toUpperCase()}`;
+    }
+    if (node.protocol === 'vmess') {
+      return `${node.vmessTransportType?.toUpperCase() || 'TCP'}${node.vmessTls ? ' + TLS' : ''}`;
+    }
+    if (node.protocol === 'hysteria2') {
+      return `QUIC${node.hysteria2CongestionControl ? ` (${node.hysteria2CongestionControl})` : ''}`;
+    }
+    if (node.protocol === 'tuic') {
+      return `QUIC${node.tuicCongestionControl ? ` (${node.tuicCongestionControl})` : ''}`;
+    }
+    return null;
+  };
+
   return (
     <>
       <Sheet open={open} onOpenChange={onOpenChange}>
         <SheetContent showClose>
+          {/* Compact Header - Core status only */}
           <SheetHeader>
             <div className="flex items-center gap-3">
-              <div
-                className={cn(
-                  'size-12 rounded-xl flex items-center justify-center',
-                  'bg-primary/10 text-primary'
-                )}
-              >
-                <Server className="size-6" />
-              </div>
-              <div className="flex-1 min-w-0">
-                <div className="flex items-center gap-2">
-                  <SheetTitle className="truncate">{node.name}</SheetTitle>
-                  <AdminBadge variant={statusConfig.variant} className="text-[10px] px-1.5 py-0 shrink-0">
-                    {statusLabel}
-                  </AdminBadge>
+              {/* Icon with online indicator */}
+              <div className="relative shrink-0">
+                <div className="size-11 rounded-xl flex items-center justify-center bg-primary/10">
+                  <Server className="size-5 text-primary" />
                 </div>
-                <SheetDescription className="flex items-center gap-2">
-                  <OnlineIndicator
-                    isOnline={isOnline || node.isOnline}
-                    isConnected={isConnected}
-                    nodeStatus={node.status}
-                    t={t}
-                  />
-                  {node.hasUpdate && (isOnline || node.isOnline) && (
-                    <span className="inline-flex items-center gap-1 text-warning text-xs">
-                      <ArrowUpCircle className="size-3.5" />
-                      {t('admin.nodes.updatable')}
-                    </span>
+                {/* Online status dot */}
+                <span
+                  className={cn(
+                    'absolute -bottom-0.5 -right-0.5 size-3 rounded-full ring-2 ring-background',
+                    (isOnline || node.isOnline) ? 'bg-success' : 'bg-muted-foreground/30'
                   )}
+                >
+                  {(isOnline || node.isOnline) && (
+                    <span className="absolute inset-0 rounded-full bg-success animate-ping opacity-75 motion-reduce:hidden" />
+                  )}
+                </span>
+              </div>
+
+              {/* Title and config status */}
+              <div className="flex-1 min-w-0">
+                <SheetTitle className="truncate">{node.name}</SheetTitle>
+                <SheetDescription className="flex items-center gap-2 mt-0.5">
+                  <span
+                    className={cn(
+                      'text-xs',
+                      node.status === 'active' ? 'text-success' : 'text-muted-foreground'
+                    )}
+                  >
+                    {t(statusConfig.labelKey)}
+                  </span>
+                  <span className="text-border">·</span>
+                  <span className="text-xs text-muted-foreground">
+                    {(isOnline || node.isOnline)
+                      ? t('admin.nodes.detail.online')
+                      : t('admin.nodes.detail.offline')}
+                  </span>
                 </SheetDescription>
               </div>
             </div>
           </SheetHeader>
 
           <SheetBody className="space-y-4 pb-4">
+            {/* System Status - Connection, Version, Resources */}
+            <SystemStatusSection
+              status={systemStatus ?? null}
+              isConnected={isConnected}
+              agentVersion={node.agentVersion || systemStatus?.agentVersion}
+              hasUpdate={node.hasUpdate}
+              platform={systemStatus?.platform}
+              arch={systemStatus?.arch}
+              t={t}
+            />
+
             {/* Basic Info */}
             <DetailSection title={t('admin.nodes.detail.basicInfo')}>
               <DetailRow
-                icon={<Hash className="size-4" />}
-                label={t('admin.nodes.detail.nodeId')}
-                value={<span className="font-mono text-xs">{node.id}</span>}
+                icon={<Hash className="size-3.5" />}
+                label="ID"
+                value={node.id}
+                mono
+                copyable
               />
               <DetailRow
-                icon={<Server className="size-4" />}
+                icon={<Server className="size-3.5" />}
                 label={t('admin.nodes.detail.serverAddress')}
-                value={
-                  <span className="font-mono text-xs">
-                    {node.serverAddress || systemStatus?.publicIpv4 || '-'}:{node.agentPort}
-                    {node.subscriptionPort && node.subscriptionPort !== node.agentPort && (
-                      <span className="text-primary ml-2">({t('admin.nodes.detail.subscriptionPort')}: {node.subscriptionPort})</span>
-                    )}
-                    {!node.serverAddress && systemStatus?.publicIpv4 && (
-                      <span className="text-muted-foreground ml-2">({t('common.auto')})</span>
-                    )}
-                  </span>
-                }
+                value={`${node.serverAddress || systemStatus?.publicIpv4 || '-'}:${node.agentPort}`}
+                mono
+                copyable={!!(node.serverAddress || systemStatus?.publicIpv4)}
               />
               {/* Public IP addresses from agent report */}
               {(systemStatus?.publicIpv4 || systemStatus?.publicIpv6) && (
                 <DetailRow
-                  icon={<Globe className="size-4" />}
+                  icon={<Globe className="size-3.5" />}
                   label={t('admin.nodes.detail.publicIp')}
-                  value={
-                    <div className="space-y-0.5">
-                      {systemStatus.publicIpv4 && (
-                        <div className="font-mono text-xs">{systemStatus.publicIpv4}</div>
-                      )}
-                      {systemStatus.publicIpv6 && (
-                        <div className="font-mono text-xs text-muted-foreground truncate" title={systemStatus.publicIpv6}>
-                          {systemStatus.publicIpv6}
-                        </div>
-                      )}
-                    </div>
-                  }
-                />
-              )}
-              <DetailRow
-                icon={<Globe className="size-4" />}
-                label={t('common.protocol')}
-                value={
-                  <div className="flex items-center gap-2">
-                    <span className={cn('px-2 py-0.5 text-xs font-medium rounded', protocolConfig.color)}>
-                      {protocolConfig.label}
-                    </span>
-                    {node.protocol === 'shadowsocks' && node.encryptionMethod && (
-                      <span className="font-mono text-xs text-muted-foreground">{node.encryptionMethod}</span>
-                    )}
-                    {node.protocol === 'trojan' && node.transportProtocol && (
-                      <span className="font-mono text-xs text-muted-foreground">
-                        {node.transportProtocol.toUpperCase()} + TLS
-                      </span>
-                    )}
-                    {node.protocol === 'vless' && node.vlessSecurity && (
-                      <span className="font-mono text-xs text-muted-foreground">
-                        {node.vlessTransportType?.toUpperCase() || 'TCP'} + {node.vlessSecurity.toUpperCase()}
-                      </span>
-                    )}
-                    {node.protocol === 'vmess' && (
-                      <span className="font-mono text-xs text-muted-foreground">
-                        {node.vmessTransportType?.toUpperCase() || 'TCP'}
-                        {node.vmessTls && ' + TLS'}
-                      </span>
-                    )}
-                    {node.protocol === 'hysteria2' && (
-                      <span className="font-mono text-xs text-muted-foreground">
-                        QUIC {node.hysteria2CongestionControl && `(${node.hysteria2CongestionControl})`}
-                      </span>
-                    )}
-                    {node.protocol === 'tuic' && (
-                      <span className="font-mono text-xs text-muted-foreground">
-                        QUIC {node.tuicCongestionControl && `(${node.tuicCongestionControl})`}
-                      </span>
-                    )}
-                  </div>
-                }
-              />
-              {node.region && (
-                <DetailRow
-                  icon={<Globe className="size-4" />}
-                  label={t('admin.nodes.detail.region')}
-                  value={node.region}
+                  value={systemStatus.publicIpv4 || systemStatus.publicIpv6 || '-'}
+                  mono
+                  copyable
                 />
               )}
             </DetailSection>
 
-            {/* System Status - real-time via SSE */}
-            {!isConnected ? (
-              <div className="flex items-center justify-center py-8">
-                <Loader2 className="size-6 animate-spin text-muted-foreground" />
-                <span className="ml-2 text-sm text-muted-foreground">{t('admin.nodes.detail.establishingConnection')}</span>
+            {/* Protocol Info */}
+            <DetailSection title={t('common.protocol')}>
+              <div className="px-3 py-2.5 flex items-center justify-between min-h-[44px]">
+                <span className={cn('px-2 py-0.5 text-xs font-medium rounded', protocolConfig.color)}>
+                  {protocolConfig.label}
+                </span>
+                {getProtocolDetail() && (
+                  <span className="text-xs text-muted-foreground font-mono">
+                    {getProtocolDetail()}
+                  </span>
+                )}
               </div>
-            ) : systemStatus ? (
-              <SystemStatusSection status={systemStatus} t={t} />
-            ) : (
-              <div className="flex items-center justify-center py-8 text-sm text-muted-foreground">
-                {t('admin.forwardAgents.detail.noSystemStatusData')}
-              </div>
-            )}
-
-            {/* Version Info */}
-            {(node.agentVersion || node.systemStatus?.agentVersion) && (
-              <DetailSection title={t('admin.nodes.detail.version')}>
+              {node.region && (
                 <DetailRow
-                  icon={<ArrowUpCircle className="size-4" />}
-                  label={t('admin.forwardAgents.detail.agentVersion')}
-                  value={
-                    <span className={cn('font-mono text-xs', node.hasUpdate ? 'text-warning' : '')}>
-                      v{node.agentVersion || node.systemStatus?.agentVersion}
-                      {(node.platform || node.systemStatus?.platform) && (
-                        <span className="text-muted-foreground ml-2">
-                          ({node.platform || node.systemStatus?.platform}/{node.arch || node.systemStatus?.arch})
-                        </span>
-                      )}
-                      {node.hasUpdate && <span className="text-warning ml-2 font-normal">({t('admin.nodes.updatable')})</span>}
-                    </span>
-                  }
+                  icon={<Globe className="size-3.5" />}
+                  label={t('admin.nodes.detail.region')}
+                  value={node.region}
                 />
-              </DetailSection>
-            )}
+              )}
+              {node.subscriptionPort && node.subscriptionPort !== node.agentPort && (
+                <DetailRow
+                  icon={<Network className="size-3.5" />}
+                  label={t('admin.nodes.detail.subscriptionPort')}
+                  value={node.subscriptionPort.toString()}
+                  mono
+                />
+              )}
+            </DetailSection>
 
-            {/* Tags */}
+            {/* Tags - if exists */}
             {node.tags && node.tags.length > 0 && (
               <DetailSection title={t('admin.nodes.detail.tags')}>
                 <div className="px-3 py-2.5">
                   <div className="flex items-start gap-3">
-                    <Tag className="size-4 text-muted-foreground shrink-0 mt-0.5" />
+                    <Tag className="size-3.5 text-muted-foreground/60 shrink-0 mt-0.5" />
                     <div className="flex flex-wrap gap-1.5">
                       {node.tags.map((tag, index) => (
-                        <Badge key={index} variant="secondary" className="text-xs">
+                        <span
+                          key={index}
+                          className="px-2 py-0.5 rounded bg-muted text-muted-foreground text-xs"
+                        >
                           {tag}
-                        </Badge>
+                        </span>
                       ))}
                     </div>
                   </div>
@@ -563,19 +599,22 @@ export const NodeDetailSheet = ({
               </DetailSection>
             )}
 
-            {/* Resource Groups */}
+            {/* Resource Groups - if exists */}
             {node.groupIds && node.groupIds.length > 0 && (
               <DetailSection title={t('admin.resourceGroups.title')}>
                 <div className="px-3 py-2.5">
                   <div className="flex items-start gap-3">
-                    <Server className="size-4 text-muted-foreground shrink-0 mt-0.5" />
+                    <Server className="size-3.5 text-muted-foreground/60 shrink-0 mt-0.5" />
                     <div className="flex flex-wrap gap-1.5">
                       {node.groupIds.map((gid) => {
                         const group = resourceGroupsMap[gid];
                         return (
-                          <Badge key={gid} variant="outline" className="text-xs">
+                          <span
+                            key={gid}
+                            className="px-2 py-0.5 rounded border border-border text-xs"
+                          >
                             {group?.name || gid}
-                          </Badge>
+                          </span>
                         );
                       })}
                     </div>
@@ -584,21 +623,22 @@ export const NodeDetailSheet = ({
               </DetailSection>
             )}
 
-            {/* Timestamps */}
+            {/* Meta info - compact row */}
             <DetailSection title={t('admin.nodes.detail.timeInfo')}>
-              <DetailRow
-                icon={<Calendar className="size-4" />}
-                label={t('admin.nodes.detail.createdAt')}
-                value={formatDate(node.createdAt)}
-              />
-              <DetailRow
-                icon={<Activity className="size-4" />}
-                label={t('admin.nodes.detail.lastOnline')}
-                value={node.lastSeenAt ? formatDate(node.lastSeenAt) : '-'}
-              />
+              <div className="px-3 py-2.5 grid grid-cols-2 gap-x-4 gap-y-2 text-xs">
+                <div>
+                  <span className="text-muted-foreground">{t('admin.nodes.detail.createdAt')}</span>
+                  <p className="text-foreground">{formatDateTime(node.createdAt)}</p>
+                </div>
+                <div>
+                  <span className="text-muted-foreground">{t('admin.nodes.detail.lastOnline')}</span>
+                  <p className="text-foreground">{node.lastSeenAt ? formatDateTime(node.lastSeenAt) : '-'}</p>
+                </div>
+              </div>
             </DetailSection>
           </SheetBody>
 
+          {/* Footer Actions - Compact button group */}
           <SheetFooter>
             <div className="flex gap-2">
               <button
@@ -608,16 +648,17 @@ export const NodeDetailSheet = ({
                   onOpenChange(false);
                 }}
                 className={cn(
-                  'flex-1 flex items-center justify-center gap-2',
-                  'h-11 rounded-xl',
+                  'flex-1 flex items-center justify-center gap-1.5',
+                  'h-11 rounded-lg',
                   'bg-primary text-primary-foreground',
                   'text-sm font-medium',
-                  'active:scale-[0.97] transition-transform'
+                  'active:opacity-80 transition-opacity'
                 )}
               >
                 <Edit className="size-4" />
                 {t('admin.nodes.actions.edit')}
               </button>
+
               <button
                 type="button"
                 onClick={() => {
@@ -629,13 +670,14 @@ export const NodeDetailSheet = ({
                   onOpenChange(false);
                 }}
                 className={cn(
-                  'flex-1 flex items-center justify-center gap-2',
-                  'h-11 rounded-xl',
+                  'flex-1 flex items-center justify-center gap-1.5',
+                  'h-11 rounded-lg',
                   'text-sm font-medium',
-                  'active:scale-[0.97] transition-transform',
+                  'border',
+                  'active:opacity-80 transition-opacity',
                   node.status === 'active'
-                    ? 'bg-warning/10 text-warning'
-                    : 'bg-success/10 text-success'
+                    ? 'border-warning/50 bg-warning/10 text-warning'
+                    : 'border-success/50 bg-success/10 text-success'
                 )}
               >
                 {node.status === 'active' ? (
@@ -650,14 +692,15 @@ export const NodeDetailSheet = ({
                   </>
                 )}
               </button>
+
               <button
                 type="button"
                 onClick={() => setActionSheetOpen(true)}
                 className={cn(
-                  'size-11 rounded-xl shrink-0',
+                  'size-11 rounded-lg shrink-0',
                   'flex items-center justify-center',
-                  'bg-muted text-foreground',
-                  'active:scale-[0.97] transition-transform'
+                  'bg-muted text-muted-foreground',
+                  'active:opacity-80 transition-opacity'
                 )}
               >
                 <MoreHorizontal className="size-5" />

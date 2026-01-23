@@ -6,8 +6,8 @@
 
 import { useMemo, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Edit, Trash2, Key, Eye, Power, PowerOff, MoreHorizontal, Terminal, Copy, Download, Loader2, Package, ArrowUpCircle, Radio, Bell, BellOff } from 'lucide-react';
-import { DataTable, DraggableDataTable, AdminBadge, TruncatedId, SystemStatusCell, TableHoverCardProvider, type ColumnDef, type ResponsiveColumnMeta } from '@/components/admin';
+import { Edit, Trash2, Key, Eye, Power, PowerOff, MoreHorizontal, Terminal, Copy, Download, Loader2, Package, ArrowUpCircle, Radio, Bell, BellOff, Circle, AlertTriangle } from 'lucide-react';
+import { DataTable, DraggableDataTable, SystemStatusCell, TableHoverCardProvider, TableHoverCardList, DateTimeCell, type ColumnDef, type ResponsiveColumnMeta } from '@/components/admin';
 import { useBreakpoint } from '@/hooks/useBreakpoint';
 import { ForwardAgentMobileList } from './ForwardAgentMobileList';
 import { Badge } from '@/components/common/Badge';
@@ -24,9 +24,46 @@ import {
   ContextMenuSeparator,
 } from '@/components/common/ContextMenu';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/common/Tooltip';
-import { CopyableAddress } from '@/components/common/CopyableAddress';
-import type { ForwardAgent } from '@/api/forward';
+import type { ForwardAgent, ForwardStatus } from '@/api/forward';
 import type { ResourceGroup } from '@/api/resource/types';
+
+// Health status configuration - combines online state and admin status
+type HealthStatus = 'running' | 'offline' | 'stopped';
+
+const HEALTH_STATUS_CONFIG: Record<HealthStatus, {
+  labelKey: string;
+  colorClass: string;
+  bgClass: string;
+  icon: React.ElementType;
+  showPulse?: boolean;
+}> = {
+  running: {
+    labelKey: 'common.status.running',
+    colorClass: 'text-success',
+    bgClass: 'bg-success/10',
+    icon: Circle,
+    showPulse: true,
+  },
+  offline: {
+    labelKey: 'common.status.offline',
+    colorClass: 'text-warning',
+    bgClass: 'bg-warning/10',
+    icon: AlertTriangle,
+  },
+  stopped: {
+    labelKey: 'common.status.stopped',
+    colorClass: 'text-muted-foreground',
+    bgClass: 'bg-muted',
+    icon: Circle,
+  },
+};
+
+// Determine health status from agent state
+const getHealthStatus = (agent: { status: ForwardStatus; isOnline?: boolean }): HealthStatus => {
+  if (agent.status === 'disabled') return 'stopped';
+  // enabled status
+  return agent.isOnline ? 'running' : 'offline';
+};
 
 interface ForwardAgentListTableProps {
   forwardAgents: ForwardAgent[];
@@ -197,120 +234,87 @@ export const ForwardAgentListTable: React.FC<ForwardAgentListTableProps> = ({
 
   const columns = useMemo<ColumnDef<ForwardAgent>[]>(() => [
     {
-      accessorKey: 'id',
-      header: 'ID',
-      size: 120,
-      meta: { priority: 4 } as ResponsiveColumnMeta,
-      cell: ({ row }) => <TruncatedId id={row.original.id} />,
-    },
-    {
       accessorKey: 'name',
       header: t('admin.forwardAgents.table.columns.name'),
-      meta: { priority: 1 } as ResponsiveColumnMeta,
-      cell: ({ row }) => (
-        <div className="space-y-1">
-          <div className="font-medium text-slate-900 dark:text-white">{row.original.name}</div>
-          {row.original.remark && (
-            <div className="text-xs text-slate-500 dark:text-slate-400 line-clamp-1">
-              {row.original.remark}
-            </div>
-          )}
-        </div>
-      ),
-    },
-    {
-      accessorKey: 'publicAddress',
-      header: t('admin.forwardAgents.table.columns.address'),
-      size: 180,
-      meta: { priority: 2 } as ResponsiveColumnMeta,
+      size: 220,
+      meta: { priority: 1, sticky: 'left' } as ResponsiveColumnMeta,
       cell: ({ row }) => {
         const agent = row.original;
-        const addressContent = (
-          <CopyableAddress
-            address={agent.publicAddress || '-'}
-            className="font-mono text-sm text-slate-700 dark:text-slate-300"
-          />
+        // Build hover items including ID and address details
+        const hoverItems = [
+          { label: 'ID', value: agent.id },
+          { label: t('admin.forwardAgents.table.columns.address'), value: agent.publicAddress || '-' },
+          ...(agent.tunnelAddress ? [{ label: t('admin.forwardAgents.table.tooltip.tunnelAddress'), value: agent.tunnelAddress }] : []),
+          ...(agent.remark ? [{ label: t('admin.forwardAgents.table.columns.remark'), value: agent.remark }] : []),
+        ];
+        return (
+          <TableHoverCardList
+            columnKey="name"
+            items={hoverItems}
+            contentClassName="w-80"
+          >
+            <div className="flex flex-col gap-0.5 cursor-default">
+              <span className="font-semibold text-foreground whitespace-nowrap truncate">
+                {agent.name}
+              </span>
+              <code className="font-mono text-[11px] text-muted-foreground bg-muted/50 px-1 py-0.5 rounded w-fit">
+                {agent.publicAddress || '-'}
+              </code>
+            </div>
+          </TableHoverCardList>
         );
+      },
+    },
+    {
+      id: 'health',
+      header: t('admin.forwardAgents.table.columns.status'),
+      size: 100,
+      meta: { priority: 1 } as ResponsiveColumnMeta,
+      cell: ({ row }) => {
+        const agent = row.original;
+        const healthStatus = getHealthStatus(agent);
+        const config = HEALTH_STATUS_CONFIG[healthStatus];
+        const StatusIcon = config.icon;
+        const muteButtonClass = 'p-0.5 rounded hover:bg-accent/50 transition-colors cursor-pointer';
 
-        if (agent.tunnelAddress) {
-          return (
+        // Build tooltip content
+        const getTooltipContent = () => {
+          const lines: string[] = [t(config.labelKey)];
+          if (healthStatus === 'offline' && agent.lastSeenAt) {
+            lines.push(`${t('admin.forwardAgents.table.tooltip.lastOnline')}: ${formatDateTime(agent.lastSeenAt)}`);
+          }
+          // Click action hint
+          if (agent.status === 'enabled') {
+            lines.push(t('admin.forwardAgents.table.tooltip.clickToDisable'));
+          } else {
+            lines.push(t('admin.forwardAgents.table.tooltip.clickToEnable'));
+          }
+          return lines;
+        };
+
+        return (
+          <div className="flex items-center gap-2 whitespace-nowrap">
             <Tooltip>
               <TooltipTrigger asChild>
-                <div className="min-w-0 cursor-help">{addressContent}</div>
+                <button
+                  onClick={() => agent.status === 'enabled' ? onDisable(agent) : onEnable(agent)}
+                  className={`inline-flex items-center gap-1.5 px-2 py-1 rounded-md text-xs font-medium cursor-pointer active:scale-95 transition-all ${config.bgClass} ${config.colorClass}`}
+                >
+                  <span className="relative flex">
+                    {config.showPulse && (
+                      <span className={`animate-ping absolute inline-flex size-full rounded-full ${config.colorClass.replace('text-', 'bg-')} opacity-75`}></span>
+                    )}
+                    <StatusIcon className={`relative size-3 ${healthStatus === 'stopped' ? 'fill-current opacity-40' : healthStatus === 'running' ? 'fill-current' : ''}`} strokeWidth={healthStatus === 'stopped' ? 1.5 : 2} />
+                  </span>
+                  {t(config.labelKey)}
+                </button>
               </TooltipTrigger>
-              <TooltipContent>
-                <div className="space-y-1">
-                  <div className="text-xs text-slate-400">{t('admin.forwardAgents.table.tooltip.tunnelAddress')}</div>
-                  <CopyableAddress
-                    address={agent.tunnelAddress}
-                    className="font-mono text-xs"
-                    maxLength={50}
-                  />
-                </div>
+              <TooltipContent side="top" align="start">
+                {getTooltipContent().map((line, i) => (
+                  <div key={i} className={i > 0 ? 'text-xs opacity-80 mt-0.5' : ''}>{line}</div>
+                ))}
               </TooltipContent>
             </Tooltip>
-          );
-        }
-
-        return <div className="min-w-0">{addressContent}</div>;
-      },
-    },
-    {
-      accessorKey: 'status',
-      header: t('admin.forwardAgents.table.columns.status'),
-      size: 72,
-      meta: { priority: 1 } as ResponsiveColumnMeta,
-      cell: ({ row }) => {
-        const agent = row.original;
-        return (
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <span>
-                <AdminBadge
-                  variant={agent.status === 'enabled' ? 'success' : 'default'}
-                  onClick={() => agent.status === 'enabled' ? onDisable(agent) : onEnable(agent)}
-                >
-                  {agent.status === 'enabled' ? t('admin.forwardAgents.table.menu.enable') : t('admin.forwardAgents.table.menu.disable')}
-                </AdminBadge>
-              </span>
-            </TooltipTrigger>
-            <TooltipContent>
-              {agent.status === 'enabled' ? t('admin.forwardAgents.table.tooltip.clickToDisable') : t('admin.forwardAgents.table.tooltip.clickToEnable')}
-            </TooltipContent>
-          </Tooltip>
-        );
-      },
-    },
-    {
-      id: 'availability',
-      header: t('admin.forwardAgents.table.columns.online'),
-      size: 70,
-      meta: { priority: 2 } as ResponsiveColumnMeta,
-      cell: ({ row }) => {
-        const agent = row.original;
-        const muteButtonClass = 'p-0.5 rounded hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors cursor-pointer';
-        return (
-          <div className="flex items-center gap-1.5">
-            {agent.isOnline ? (
-              <Tooltip>
-                <TooltipTrigger>
-                  <span className="relative flex size-2.5">
-                    <span className="animate-ping absolute inline-flex size-full rounded-full bg-green-400 opacity-75"></span>
-                    <span className="relative inline-flex rounded-full size-2.5 bg-green-500"></span>
-                  </span>
-                </TooltipTrigger>
-                <TooltipContent>{t('admin.forwardAgents.table.tooltip.online')}</TooltipContent>
-              </Tooltip>
-            ) : (
-              <Tooltip>
-                <TooltipTrigger>
-                  <span className="size-2.5 rounded-full bg-slate-300 dark:bg-slate-600 block"></span>
-                </TooltipTrigger>
-                <TooltipContent>
-                  {t('admin.forwardAgents.table.tooltip.offline')}{agent.lastSeenAt && ` · ${t('admin.forwardAgents.table.tooltip.lastOnline')}: ${formatDateTime(agent.lastSeenAt)}`}
-                </TooltipContent>
-              </Tooltip>
-            )}
             <Tooltip>
               <TooltipTrigger asChild>
                 <button
@@ -321,9 +325,9 @@ export const ForwardAgentListTable: React.FC<ForwardAgentListTableProps> = ({
                   }}
                 >
                   {agent.muteNotification ? (
-                    <BellOff className="size-3.5 text-slate-400" />
+                    <BellOff className="size-3.5 text-muted-foreground" />
                   ) : (
-                    <Bell className="size-3.5 text-slate-300 dark:text-slate-600" />
+                    <Bell className="size-3.5 text-muted-foreground/30" />
                   )}
                 </button>
               </TooltipTrigger>
@@ -338,7 +342,7 @@ export const ForwardAgentListTable: React.FC<ForwardAgentListTableProps> = ({
     {
       id: 'systemStatus',
       header: t('admin.forwardAgents.table.columns.monitor'),
-      size: 160,
+      size: 175,
       meta: { priority: 3 } as ResponsiveColumnMeta,
       cell: ({ row }) => (
         <SystemStatusCell itemId={row.original.id} status={row.original.systemStatus} />
@@ -347,7 +351,7 @@ export const ForwardAgentListTable: React.FC<ForwardAgentListTableProps> = ({
     {
       id: 'resourceGroup',
       header: t('admin.forwardAgents.table.columns.resourceGroup'),
-      size: 120,
+      size: 100,
       meta: { priority: 3 } as ResponsiveColumnMeta,
       cell: ({ row }) => {
         const agent = row.original;
@@ -375,7 +379,7 @@ export const ForwardAgentListTable: React.FC<ForwardAgentListTableProps> = ({
     {
       id: 'version',
       header: t('admin.forwardAgents.table.columns.version'),
-      size: 100,
+      size: 85,
       meta: { priority: 3 } as ResponsiveColumnMeta,
       cell: ({ row }) => {
         const agent = row.original;
@@ -420,20 +424,16 @@ export const ForwardAgentListTable: React.FC<ForwardAgentListTableProps> = ({
     {
       accessorKey: 'createdAt',
       header: t('admin.forwardAgents.table.columns.createdAt'),
-      size: 140,
+      size: 115,
       meta: { priority: 4 } as ResponsiveColumnMeta,
-      cell: ({ row }) => (
-        <span className="text-slate-500 dark:text-slate-400 text-sm">
-          {formatDateTime(row.original.createdAt)}
-        </span>
-      ),
+      cell: ({ row }) => <DateTimeCell value={row.original.createdAt} />,
     },
     {
       id: 'actions',
       header: t('admin.forwardAgents.table.columns.actions'),
-      size: 140,
+      size: 120,
       enableSorting: false,
-      meta: { priority: 1 } as ResponsiveColumnMeta,
+      meta: { priority: 1, sticky: 'right' } as ResponsiveColumnMeta,
       cell: ({ row }) => {
         const agent = row.original;
         const actionButtonClass = 'inline-flex items-center justify-center size-8 rounded-lg text-muted-foreground hover:text-foreground hover:bg-accent/50 active:scale-95 transition-all duration-150 cursor-pointer';

@@ -1,14 +1,12 @@
 /**
- * ForwardRuleDetailSheet - Mobile forward rule details with actions
+ * ForwardRuleDetailSheet - Mobile forward rule details
  *
- * Features:
- * - Full rule details in a bottom sheet
- * - Forward path visualization
+ * Design: Tailwind Application UI style
+ * - Compact description list layout
+ * - Visual forward path (simplified)
  * - Traffic statistics
- * - Sync status display (for enabled rules)
- * - Primary actions in footer
- * - ActionSheet for secondary actions
- * - iOS-style design
+ * - Sync status display
+ * - Primary actions in footer with ActionSheet for more
  */
 
 import { useState } from 'react';
@@ -16,9 +14,7 @@ import { useTranslation } from 'react-i18next';
 import {
   ArrowRight,
   Bot,
-  Server,
   Globe,
-  Hash,
   FileText,
   Edit,
   Activity,
@@ -90,12 +86,12 @@ export interface ForwardRuleDetailSheetProps {
 // Constants
 // ============================================================================
 
-const RULE_TYPE_CONFIG: Record<ForwardRuleType, { labelKey: string; icon: React.ReactNode; variant: 'info' | 'success' | 'warning' | 'default' }> = {
-  direct: { labelKey: 'admin.forwardRules.ruleType.direct', icon: <Zap className="size-4" />, variant: 'info' },
-  entry: { labelKey: 'admin.forwardRules.ruleType.entry', icon: <Shield className="size-4" />, variant: 'success' },
-  chain: { labelKey: 'admin.forwardRules.ruleType.chain', icon: <Link2 className="size-4" />, variant: 'warning' },
-  direct_chain: { labelKey: 'admin.forwardRules.ruleType.directChain', icon: <Globe className="size-4" />, variant: 'default' },
-  external: { labelKey: 'admin.forwardRules.ruleType.external', icon: <Globe className="size-4" />, variant: 'default' },
+const RULE_TYPE_CONFIG: Record<ForwardRuleType, { labelKey: string; icon: React.ElementType; colorClass: string }> = {
+  direct: { labelKey: 'admin.forwardRules.ruleType.direct', icon: Zap, colorClass: 'bg-info/10 text-info border-info/20' },
+  entry: { labelKey: 'admin.forwardRules.ruleType.entry', icon: Shield, colorClass: 'bg-success/10 text-success border-success/20' },
+  chain: { labelKey: 'admin.forwardRules.ruleType.chain', icon: Link2, colorClass: 'bg-warning/10 text-warning border-warning/20' },
+  direct_chain: { labelKey: 'admin.forwardRules.ruleType.directChain', icon: Globe, colorClass: 'bg-muted text-muted-foreground border-border' },
+  external: { labelKey: 'admin.forwardRules.ruleType.external', icon: Globe, colorClass: 'bg-muted text-muted-foreground border-border' },
 };
 
 const PROTOCOL_LABELS: Record<ForwardProtocol, string> = {
@@ -104,40 +100,33 @@ const PROTOCOL_LABELS: Record<ForwardProtocol, string> = {
   both: 'TCP/UDP',
 };
 
-const IP_VERSION_LABEL_KEYS: Record<IPVersion, string> = {
-  auto: 'admin.forwardRules.detail.ipVersionAuto',
-  ipv4: 'admin.forwardRules.detail.ipVersionIpv4',
-  ipv6: 'admin.forwardRules.detail.ipVersionIpv6',
+const IP_VERSION_LABELS: Record<IPVersion, string> = {
+  auto: 'Auto',
+  ipv4: 'IPv4',
+  ipv6: 'IPv6',
 };
 
-const TUNNEL_TYPE_LABEL_KEYS: Record<TunnelType, string> = {
-  ws: 'admin.forwardRules.detail.tunnelTypeWs',
-  tls: 'admin.forwardRules.detail.tunnelTypeTls',
+const TUNNEL_TYPE_LABELS: Record<TunnelType, string> = {
+  ws: 'WebSocket',
+  tls: 'TLS',
 };
 
-const TARGET_TYPE_LABEL_KEYS: Record<'node' | 'manual', string> = {
-  node: 'admin.forwardRules.detail.targetTypeNode',
-  manual: 'admin.forwardRules.detail.targetTypeManual',
-};
-
-// Sync status config with explicit color classes for Tailwind scanning
 const SYNC_STATUS_CONFIG: Record<RuleSyncStatus, { labelKey: string; icon: React.ElementType; colorClass: string }> = {
   synced: { labelKey: 'admin.forwardRules.syncStatus.synced', icon: CheckCircle2, colorClass: 'text-success' },
   pending: { labelKey: 'admin.forwardRules.syncStatus.pending', icon: CircleDashed, colorClass: 'text-warning' },
-  failed: { labelKey: 'admin.forwardRules.syncStatus.failed', icon: AlertCircle, colorClass: 'text-danger' },
+  failed: { labelKey: 'admin.forwardRules.syncStatus.failed', icon: AlertCircle, colorClass: 'text-destructive' },
 };
 
-// Run status config with explicit color classes for Tailwind scanning
 const RUN_STATUS_CONFIG: Record<RuleRunStatus | 'unknown', { labelKey: string; icon: React.ElementType; colorClass: string }> = {
   running: { labelKey: 'admin.forwardRules.runStatus.running', icon: Play, colorClass: 'text-success' },
   stopped: { labelKey: 'admin.forwardRules.runStatus.stopped', icon: Square, colorClass: 'text-muted-foreground' },
-  error: { labelKey: 'admin.forwardRules.runStatus.error', icon: AlertTriangle, colorClass: 'text-danger' },
+  error: { labelKey: 'admin.forwardRules.runStatus.error', icon: AlertTriangle, colorClass: 'text-destructive' },
   starting: { labelKey: 'admin.forwardRules.runStatus.starting', icon: RotateCw, colorClass: 'text-info' },
   unknown: { labelKey: 'admin.forwardRules.runStatus.unknown', icon: HelpCircle, colorClass: 'text-muted-foreground' },
 };
 
 // ============================================================================
-// Helper Functions
+// Helpers
 // ============================================================================
 
 const formatBytes = (bytes?: number): string => {
@@ -149,109 +138,33 @@ const formatBytes = (bytes?: number): string => {
 };
 
 // ============================================================================
-// Helper Components
+// Sub Components
 // ============================================================================
 
-const DetailSection = ({
-  title,
-  children,
-  noPadding,
-  allowOverflow,
-}: {
-  title: string;
-  children: React.ReactNode;
-  noPadding?: boolean;
-  allowOverflow?: boolean;
-}) => (
-  <div className="space-y-1.5">
-    <h4 className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider px-0.5">
+// Section container
+const Section = ({ title, children }: { title: string; children: React.ReactNode }) => (
+  <div>
+    <h3 className="text-[11px] font-medium text-muted-foreground uppercase tracking-wide mb-1.5 px-0.5">
       {title}
-    </h4>
-    <div className={cn(
-      'rounded-lg bg-muted/20 border border-border/40',
-      !noPadding && 'divide-y divide-border/20',
-      // Allow horizontal scroll while keeping vertical overflow visible for badges/indicators
-      allowOverflow ? 'overflow-x-auto overflow-y-visible' : 'overflow-hidden'
-    )}>
-      {children}
+    </h3>
+    <div className="rounded-lg border border-border bg-card overflow-hidden">
+      <dl className="divide-y divide-border">{children}</dl>
     </div>
   </div>
 );
 
-const DetailRow = ({
-  icon,
-  label,
-  value,
-}: {
-  icon: React.ReactNode;
-  label: string;
-  value: React.ReactNode;
-}) => (
-  <div className="flex items-center gap-2 px-2.5 py-1.5">
-    <div className="text-muted-foreground shrink-0">{icon}</div>
-    <span className="text-[11px] text-muted-foreground shrink-0">{label}</span>
-    <div className="flex-1 min-w-0 text-right">
-      <span className="text-[13px] font-medium">{value}</span>
-    </div>
+// Description list row
+const Row = ({ label, value, mono }: { label: string; value: React.ReactNode; mono?: boolean }) => (
+  <div className="flex items-center justify-between gap-3 px-3 py-2.5 min-h-[44px]">
+    <dt className="text-sm text-muted-foreground shrink-0">{label}</dt>
+    <dd className={cn('text-sm text-foreground text-right min-w-0 truncate', mono && 'font-mono text-xs')}>
+      {value}
+    </dd>
   </div>
 );
 
-// Forward path visualization component - Compact version
-interface PathNodeProps {
-  type: 'entry' | 'relay' | 'exit' | 'target';
-  name: string;
-  address?: string;
-  port?: number;
-  isRunning?: boolean;
-}
-
-const PathNode = ({ type, name, address, port, isRunning }: PathNodeProps) => {
-  const { t } = useTranslation();
-  const config = {
-    entry: { icon: Bot, color: 'text-success', bg: 'bg-success/10', labelKey: 'admin.forwardRules.flowNode.entry' },
-    relay: { icon: Bot, color: 'text-primary', bg: 'bg-primary/10', labelKey: 'admin.forwardRules.flowNode.relay' },
-    exit: { icon: Bot, color: 'text-warning', bg: 'bg-warning/10', labelKey: 'admin.forwardRules.flowNode.exit' },
-    target: { icon: Server, color: 'text-info', bg: 'bg-info/10', labelKey: 'admin.forwardRules.flowNode.target' },
-  };
-
-  const nodeConfig = config[type];
-  const Icon = nodeConfig.icon;
-
-  return (
-    <div className="flex flex-col items-center gap-0.5 min-w-[56px]">
-      {/* Node icon */}
-      <div className="relative">
-        <div className={cn('size-9 rounded-lg flex items-center justify-center', nodeConfig.bg)}>
-          <Icon className={cn('size-4', nodeConfig.color)} />
-        </div>
-        {isRunning && (
-          <span className="absolute -top-0.5 -right-0.5 size-2 rounded-full bg-success ring-2 ring-background" />
-        )}
-      </div>
-      {/* Label + Name */}
-      <span className={cn('text-[9px] font-semibold uppercase', nodeConfig.color)}>
-        {t(nodeConfig.labelKey)}
-      </span>
-      <span className="text-[10px] font-medium text-center truncate max-w-[60px] leading-tight">
-        {name}
-      </span>
-      {(address || port) && (
-        <span className="text-[9px] font-mono text-muted-foreground/70 truncate max-w-[60px]">
-          {port ? `:${port}` : ''}
-        </span>
-      )}
-    </div>
-  );
-};
-
-// Connection arrow between nodes
-const ConnectionArrow = ({ animated }: { animated?: boolean }) => (
-  <div className={cn('px-0.5 pt-3', animated && 'animate-pulse motion-reduce:animate-none')}>
-    <ArrowRight className="size-3 text-muted-foreground/50" />
-  </div>
-);
-
-const ForwardPathVisualization = ({
+// Forward path visualization - simplified horizontal flow
+const ForwardPath = ({
   rule,
   agentsMap,
   nodes,
@@ -262,106 +175,79 @@ const ForwardPathVisualization = ({
   nodes: Node[];
   isRunning?: boolean;
 }) => {
-  const getAgentName = (id?: string) => {
-    if (!id) return '-';
-    return agentsMap[id]?.name || id.slice(0, 10);
-  };
+  const { t } = useTranslation();
 
-  const getAgentAddress = (id?: string) => {
-    if (!id) return undefined;
-    return agentsMap[id]?.publicAddress;
-  };
+  if (rule.ruleType === 'external') return null;
 
+  const getAgentName = (id?: string) => (id ? agentsMap[id]?.name || id.slice(0, 8) : '-');
   const getNodeName = (id?: string) => {
     if (!id) return '-';
     const node = nodes.find((n) => n.id === id);
-    return node?.name || id.slice(0, 10);
+    return node?.name || id.slice(0, 8);
   };
 
-  // Build path nodes (not used for external type)
-  const pathNodes: PathNodeProps[] = [];
+  // Build path nodes
+  const pathNodes: { type: string; name: string; port?: number }[] = [];
 
-  // External type doesn't have path nodes
-  if (rule.ruleType !== 'external') {
-    // Entry node
+  // Entry
+  pathNodes.push({
+    type: t('admin.forwardRules.flowNode.entry'),
+    name: getAgentName(rule.agentId),
+    port: rule.listenPort,
+  });
+
+  // Exit/Chain
+  if (rule.ruleType === 'entry' && rule.exitAgentId) {
     pathNodes.push({
-      type: 'entry',
-      name: getAgentName(rule.agentId),
-      address: getAgentAddress(rule.agentId),
-      port: rule.listenPort,
-      isRunning,
+      type: t('admin.forwardRules.flowNode.exit'),
+      name: getAgentName(rule.exitAgentId),
     });
-
-    // Relay/Exit nodes based on rule type
-    if (rule.ruleType === 'entry' && rule.exitAgentId) {
-      pathNodes.push({
-        type: 'exit',
-        name: getAgentName(rule.exitAgentId),
-        address: getAgentAddress(rule.exitAgentId),
-        isRunning,
-      });
-    }
-
-    if ((rule.ruleType === 'chain' || rule.ruleType === 'direct_chain') && rule.chainAgentIds) {
-      rule.chainAgentIds
-        .filter((id) => id !== rule.agentId)
-        .forEach((id) => {
-          pathNodes.push({
-            type: 'relay',
-            name: getAgentName(id),
-            address: getAgentAddress(id),
-            port: rule.chainPortConfig?.[id],
-            isRunning,
-          });
-        });
-    }
-
-    // Target node
-    if (rule.targetNodeId || rule.targetAddress) {
-      pathNodes.push({
-        type: 'target',
-        name: rule.targetNodeId
-          ? getNodeName(rule.targetNodeId)
-          : rule.targetAddress || '-',
-        address: rule.targetNodeId
-          ? rule.targetNodeServerAddress || rule.targetNodePublicIpv4
-          : rule.targetAddress,
-        port: rule.targetPort,
-      });
-    }
   }
 
-  const nodeCount = pathNodes.length;
-  const needsScroll = nodeCount > 4;
+  if ((rule.ruleType === 'chain' || rule.ruleType === 'direct_chain') && rule.chainAgentIds) {
+    rule.chainAgentIds
+      .filter((id) => id !== rule.agentId)
+      .forEach((id) => {
+        pathNodes.push({
+          type: t('admin.forwardRules.flowNode.relay'),
+          name: getAgentName(id),
+          port: rule.chainPortConfig?.[id],
+        });
+      });
+  }
+
+  // Target
+  if (rule.targetNodeId || rule.targetAddress) {
+    pathNodes.push({
+      type: t('admin.forwardRules.flowNode.target'),
+      name: rule.targetNodeId ? getNodeName(rule.targetNodeId) : rule.targetAddress || '-',
+      port: rule.targetPort,
+    });
+  }
 
   return (
-    <div className={cn('pt-1 pb-2', needsScroll && '-mx-2.5')}>
-      <div className={cn(
-        needsScroll ? 'overflow-x-auto overflow-y-visible scrollbar-hide' : 'overflow-visible'
-      )}>
-        <div
-          className={cn(
-            'flex items-start pt-1',
-            needsScroll ? 'px-2.5' : 'justify-center'
-          )}
-          style={needsScroll ? {
-            minWidth: 'max-content',
-            paddingRight: '1rem',
-          } : undefined}
-        >
-          {pathNodes.map((node, index) => (
-            <div key={index} className="flex items-start shrink-0">
-              <PathNode {...node} />
-              {index < pathNodes.length - 1 && <ConnectionArrow animated={isRunning} />}
+    <div className="px-3 py-3">
+      <div className="flex items-center gap-1 overflow-x-auto pb-1">
+        {pathNodes.map((node, index) => (
+          <div key={index} className="flex items-center shrink-0">
+            <div className="flex flex-col items-center">
+              <span className="text-[9px] text-muted-foreground uppercase mb-0.5">{node.type}</span>
+              <div className="px-2 py-1 rounded bg-muted text-xs font-medium">
+                {node.name}
+                {node.port ? <span className="text-muted-foreground">:{node.port}</span> : null}
+              </div>
             </div>
-          ))}
-        </div>
+            {index < pathNodes.length - 1 && (
+              <ArrowRight className={cn('size-3 mx-1 text-muted-foreground/50', isRunning && 'animate-pulse')} />
+            )}
+          </div>
+        ))}
       </div>
     </div>
   );
 };
 
-// Traffic statistics component - Compact version
+// Traffic statistics
 const TrafficStats = ({ rule }: { rule: ForwardRule }) => {
   const uploadBytes = rule.uploadBytes || 0;
   const downloadBytes = rule.downloadBytes || 0;
@@ -369,30 +255,22 @@ const TrafficStats = ({ rule }: { rule: ForwardRule }) => {
   const uploadPercent = totalBytes > 0 ? (uploadBytes / totalBytes) * 100 : 50;
 
   return (
-    <div className="px-2.5 py-2 space-y-2">
-      {/* Progress bar */}
-      <div className="h-2 bg-muted/40 rounded-full overflow-hidden flex">
-        <div
-          className="h-full bg-success transition-all"
-          style={{ width: `${uploadPercent}%` }}
-        />
-        <div
-          className="h-full bg-info transition-all"
-          style={{ width: `${100 - uploadPercent}%` }}
-        />
+    <div className="px-3 py-3 space-y-2">
+      <div className="h-2 bg-muted rounded-full overflow-hidden flex">
+        <div className="h-full bg-success transition-all" style={{ width: `${uploadPercent}%` }} />
+        <div className="h-full bg-info transition-all" style={{ width: `${100 - uploadPercent}%` }} />
       </div>
-      {/* Stats row */}
-      <div className="flex items-center justify-between text-[11px]">
+      <div className="flex items-center justify-between text-xs">
         <div className="flex items-center gap-1 text-success">
           <Upload className="size-3" />
-          <span className="font-mono font-semibold">{formatBytes(uploadBytes)}</span>
+          <span className="font-mono">{formatBytes(uploadBytes)}</span>
         </div>
         <div className="flex items-center gap-1 text-muted-foreground">
           <Activity className="size-3" />
-          <span className="font-mono font-semibold">{formatBytes(totalBytes)}</span>
+          <span className="font-mono">{formatBytes(totalBytes)}</span>
         </div>
         <div className="flex items-center gap-1 text-info">
-          <span className="font-mono font-semibold">{formatBytes(downloadBytes)}</span>
+          <span className="font-mono">{formatBytes(downloadBytes)}</span>
           <Download className="size-3" />
         </div>
       </div>
@@ -400,98 +278,8 @@ const TrafficStats = ({ rule }: { rule: ForwardRule }) => {
   );
 };
 
-// Helper to get position label key based on position and total agents
-const getPositionLabelKey = (position: number, total: number): string => {
-  if (position === 0) return 'admin.forwardRules.flowNode.entry';
-  if (position === total - 1 && total > 1) return 'admin.forwardRules.flowNode.exit';
-  return 'admin.forwardRules.flowNode.relay';
-};
-
-// Single agent status row component
-const AgentStatusRow = ({
-  agentStatus,
-  position,
-  total,
-}: {
-  agentStatus: import('@/api/forward').AgentRuleSyncStatus;
-  position: number;
-  total: number;
-}) => {
-  const { t } = useTranslation();
-  const syncConfig = SYNC_STATUS_CONFIG[agentStatus.syncStatus];
-  const runConfig = RUN_STATUS_CONFIG[agentStatus.runStatus || 'unknown'];
-  const SyncIcon = syncConfig.icon;
-  const RunIcon = runConfig.icon;
-  const positionLabel = t(getPositionLabelKey(position, total));
-
-  return (
-    <div className="px-2.5 py-2 space-y-1.5">
-      {/* Agent name and position */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <Bot className="size-3.5 text-muted-foreground" />
-          <span className="text-[12px] font-medium truncate max-w-[120px]">
-            {agentStatus.agentName}
-          </span>
-          <AdminBadge variant="default" className="text-[9px] px-1 py-0">
-            {positionLabel}
-          </AdminBadge>
-        </div>
-        {agentStatus.listenPort > 0 && (
-          <span className="text-[10px] font-mono text-muted-foreground">
-            :{agentStatus.listenPort}
-          </span>
-        )}
-      </div>
-      {/* Status row */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-1.5">
-          <SyncIcon
-            className={cn(
-              'size-3',
-              syncConfig.colorClass,
-              agentStatus.syncStatus === 'pending' && 'animate-pulse motion-reduce:animate-none'
-            )}
-          />
-          <span className={cn('text-[10px]', syncConfig.colorClass)}>
-            {t(syncConfig.labelKey)}
-          </span>
-        </div>
-        <div className="flex items-center gap-1.5">
-          <RunIcon
-            className={cn(
-              'size-3',
-              runConfig.colorClass,
-              agentStatus.runStatus === 'starting' && 'animate-spin'
-            )}
-          />
-          <span className={cn('text-[10px]', runConfig.colorClass)}>
-            {t(runConfig.labelKey)}
-          </span>
-          {agentStatus.runStatus === 'running' && (
-            <span className="size-1.5 rounded-full bg-success animate-pulse motion-reduce:animate-none" />
-          )}
-        </div>
-        {agentStatus.connections > 0 && (
-          <div className="flex items-center gap-1 text-muted-foreground">
-            <Activity className="size-3" />
-            <span className="text-[10px] font-mono">{agentStatus.connections}</span>
-          </div>
-        )}
-      </div>
-      {/* Error message if any */}
-      {agentStatus.errorMessage && (
-        <div className="flex items-start gap-1.5 px-1 py-1 bg-danger/10 rounded text-danger">
-          <AlertCircle className="size-3 shrink-0 mt-0.5" />
-          <span className="text-[10px] leading-tight">{agentStatus.errorMessage}</span>
-        </div>
-      )}
-    </div>
-  );
-};
-
-// Sync status component - Per-agent detailed view
-const SyncStatusDisplay = ({
+// Sync status display
+const SyncStatus = ({
   polledStatus,
   rule,
 }: {
@@ -501,11 +289,9 @@ const SyncStatusDisplay = ({
   const { t } = useTranslation();
   const agentStatuses = polledStatus?.agentStatuses;
 
-  // If no detailed statuses available, show fallback
   if (!agentStatuses || agentStatuses.length === 0) {
     const syncStatus = rule.syncStatus;
     const runStatus = rule.runStatus || 'unknown';
-
     if (!syncStatus) return null;
 
     const syncConfig = SYNC_STATUS_CONFIG[syncStatus];
@@ -514,38 +300,62 @@ const SyncStatusDisplay = ({
     const RunIcon = runConfig.icon;
 
     return (
-      <div className="px-2.5 py-2">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-1.5">
-            <SyncIcon className={cn('size-3.5', syncConfig.colorClass)} />
-            <span className={cn('text-[11px] font-medium', syncConfig.colorClass)}>
-              {t(syncConfig.labelKey)}
-            </span>
-          </div>
-          <div className="flex items-center gap-1.5">
-            <RunIcon className={cn('size-3.5', runConfig.colorClass)} />
-            <span className={cn('text-[11px] font-medium', runConfig.colorClass)}>
-              {t(runConfig.labelKey)}
-            </span>
-          </div>
+      <div className="px-3 py-3 flex items-center justify-between">
+        <div className="flex items-center gap-1.5">
+          <SyncIcon className={cn('size-4', syncConfig.colorClass)} />
+          <span className={cn('text-xs font-medium', syncConfig.colorClass)}>{t(syncConfig.labelKey)}</span>
+        </div>
+        <div className="flex items-center gap-1.5">
+          <RunIcon className={cn('size-4', runConfig.colorClass)} />
+          <span className={cn('text-xs font-medium', runConfig.colorClass)}>{t(runConfig.labelKey)}</span>
         </div>
       </div>
     );
   }
 
-  // Sort by position
-  const sortedStatuses = [...agentStatuses].sort((a, b) => a.position - b.position);
-
   return (
-    <div className="divide-y divide-border/20">
-      {sortedStatuses.map((agentStatus) => (
-        <AgentStatusRow
-          key={agentStatus.agentId}
-          agentStatus={agentStatus}
-          position={agentStatus.position}
-          total={sortedStatuses.length}
-        />
-      ))}
+    <div className="divide-y divide-border">
+      {agentStatuses.map((agent) => {
+        const syncConfig = SYNC_STATUS_CONFIG[agent.syncStatus];
+        const runConfig = RUN_STATUS_CONFIG[agent.runStatus || 'unknown'];
+        const SyncIcon = syncConfig.icon;
+        const RunIcon = runConfig.icon;
+
+        return (
+          <div key={agent.agentId} className="px-3 py-2.5">
+            <div className="flex items-center justify-between mb-1">
+              <div className="flex items-center gap-2">
+                <Bot className="size-3.5 text-muted-foreground" />
+                <span className="text-sm font-medium truncate max-w-[120px]">{agent.agentName}</span>
+                {agent.listenPort > 0 && (
+                  <span className="text-xs text-muted-foreground font-mono">:{agent.listenPort}</span>
+                )}
+              </div>
+            </div>
+            <div className="flex items-center gap-4 text-xs">
+              <div className="flex items-center gap-1">
+                <SyncIcon className={cn('size-3', syncConfig.colorClass)} />
+                <span className={syncConfig.colorClass}>{t(syncConfig.labelKey)}</span>
+              </div>
+              <div className="flex items-center gap-1">
+                <RunIcon className={cn('size-3', runConfig.colorClass)} />
+                <span className={runConfig.colorClass}>{t(runConfig.labelKey)}</span>
+              </div>
+              {agent.connections > 0 && (
+                <div className="flex items-center gap-1 text-muted-foreground">
+                  <Activity className="size-3" />
+                  <span className="font-mono">{agent.connections}</span>
+                </div>
+              )}
+            </div>
+            {agent.errorMessage && (
+              <div className="mt-1.5 px-2 py-1 bg-destructive/10 rounded text-xs text-destructive">
+                {agent.errorMessage}
+              </div>
+            )}
+          </div>
+        );
+      })}
     </div>
   );
 };
@@ -575,15 +385,15 @@ export const ForwardRuleDetailSheet = ({
 
   const statusConfig = ENABLED_STATUS_CONFIG[rule.status] || { labelKey: 'common.status.unknown', variant: 'default' as const };
   const ruleTypeConfig = RULE_TYPE_CONFIG[rule.ruleType] || RULE_TYPE_CONFIG.direct;
+  const RuleTypeIcon = ruleTypeConfig.icon;
 
-  // Get entry agent info
   const entryAgent = agentsMap[rule.agentId];
   const entryAddress = entryAgent?.publicAddress
     ? `${entryAgent.publicAddress}:${rule.listenPort}`
     : `:${rule.listenPort}`;
 
-  // Determine target type
-  const targetType = rule.targetNodeId ? 'node' : 'manual';
+  const isRunning = rule.status === 'enabled' && (polledStatus?.overallRunStatus || rule.runStatus) === 'running';
+  const isExternal = rule.ruleType === 'external';
 
   // ActionSheet actions
   const moreActions = [
@@ -620,179 +430,98 @@ export const ForwardRuleDetailSheet = ({
         <SheetContent showClose>
           <SheetHeader>
             <div className="flex items-center gap-3">
-              <div
-                className={cn(
-                  'size-12 rounded-xl flex items-center justify-center',
-                  'bg-primary/10 text-primary'
-                )}
-              >
-                {ruleTypeConfig.icon}
+              <div className="size-11 rounded-xl bg-primary/10 flex items-center justify-center">
+                <RuleTypeIcon className="size-5 text-primary" />
               </div>
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2">
                   <SheetTitle className="truncate">{rule.name}</SheetTitle>
-                  <AdminBadge variant={statusConfig.variant} className="text-[10px] px-1.5 py-0 shrink-0">
+                  <AdminBadge variant={statusConfig.variant} size="sm" className="shrink-0">
                     {t(statusConfig.labelKey)}
                   </AdminBadge>
                 </div>
-                <SheetDescription className="truncate font-mono text-xs">
-                  {rule.id}
-                </SheetDescription>
+                <SheetDescription className="font-mono text-xs truncate">{rule.id}</SheetDescription>
               </div>
             </div>
           </SheetHeader>
 
           <SheetBody className="space-y-3 pb-3">
             {/* Basic Info */}
-            <DetailSection title={t('admin.forwardRules.detail.basicInfo')}>
-              <DetailRow
-                icon={ruleTypeConfig.icon}
+            <Section title={t('admin.forwardRules.detail.basicInfo')}>
+              <Row
                 label={t('admin.forwardRules.detail.ruleType')}
                 value={
-                  <AdminBadge variant={ruleTypeConfig.variant} className="text-xs">
+                  <span className={cn('inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium border', ruleTypeConfig.colorClass)}>
                     {t(ruleTypeConfig.labelKey)}
-                  </AdminBadge>
+                  </span>
                 }
               />
-              {rule.ruleType !== 'external' && (
+              {!isExternal && (
                 <>
-                  <DetailRow
-                    icon={<Activity className="size-4" />}
-                    label={t('admin.forwardRules.detail.protocol')}
-                    value={PROTOCOL_LABELS[rule.protocol]}
-                  />
-                  <DetailRow
-                    icon={<Globe className="size-4" />}
-                    label={t('admin.forwardRules.detail.ipVersion')}
-                    value={t(IP_VERSION_LABEL_KEYS[rule.ipVersion])}
-                  />
+                  <Row label={t('admin.forwardRules.detail.protocol')} value={PROTOCOL_LABELS[rule.protocol]} />
+                  <Row label={t('admin.forwardRules.detail.ipVersion')} value={IP_VERSION_LABELS[rule.ipVersion]} />
                 </>
               )}
               {(rule.ruleType === 'entry' || rule.ruleType === 'chain') && rule.tunnelType && (
-                <DetailRow
-                  icon={<Link2 className="size-4" />}
-                  label={t('admin.forwardRules.detail.tunnelType')}
-                  value={t(TUNNEL_TYPE_LABEL_KEYS[rule.tunnelType])}
-                />
+                <Row label={t('admin.forwardRules.detail.tunnelType')} value={TUNNEL_TYPE_LABELS[rule.tunnelType]} />
               )}
-              <DetailRow
-                icon={<Hash className="size-4" />}
-                label={t('admin.forwardRules.detail.ruleId')}
-                value={<span className="font-mono text-xs">{rule.id}</span>}
-              />
-            </DetailSection>
+            </Section>
 
-            {/* External type: Server Info */}
-            {rule.ruleType === 'external' && (
-              <DetailSection title={t('admin.forwardRules.detail.serverInfo')}>
-                <DetailRow
-                  icon={<Globe className="size-4" />}
-                  label={t('admin.forwardRules.detail.serverAddress')}
-                  value={<span className="font-mono text-xs">{rule.serverAddress || '-'}</span>}
-                />
-                <DetailRow
-                  icon={<Zap className="size-4" />}
-                  label={t('admin.forwardRules.detail.listenPort')}
-                  value={rule.listenPort}
-                />
+            {/* External Type: Server Info */}
+            {isExternal && (
+              <Section title={t('admin.forwardRules.detail.serverInfo')}>
+                <Row label={t('admin.forwardRules.detail.serverAddress')} value={rule.serverAddress || '-'} mono />
+                <Row label={t('admin.forwardRules.detail.listenPort')} value={rule.listenPort} mono />
                 {rule.targetNodeId && (
-                  <DetailRow
-                    icon={<Server className="size-4" />}
+                  <Row
                     label={t('admin.forwardRules.detail.targetNode')}
                     value={nodes.find((n) => n.id === rule.targetNodeId)?.name || rule.targetNodeId.slice(0, 10)}
                   />
                 )}
-                {rule.externalSource && (
-                  <DetailRow
-                    icon={<FileText className="size-4" />}
-                    label={t('admin.forwardRules.detail.externalSourceLabel')}
-                    value={rule.externalSource}
-                  />
-                )}
-                {rule.externalRuleId && (
-                  <DetailRow
-                    icon={<Hash className="size-4" />}
-                    label={t('admin.forwardRules.detail.externalRuleIdLabel')}
-                    value={<span className="font-mono text-xs">{rule.externalRuleId}</span>}
-                  />
-                )}
-              </DetailSection>
+              </Section>
             )}
 
-            {/* Listen Info - hidden for external type */}
-            {rule.ruleType !== 'external' && (
-              <DetailSection title={t('admin.forwardRules.detail.listenInfo')}>
-                <DetailRow
-                  icon={<Bot className="size-4" />}
+            {/* Listen/Target Info */}
+            {!isExternal && (
+              <Section title={t('admin.forwardRules.detail.connectionInfo')}>
+                <Row
                   label={t('admin.forwardRules.detail.entryAgent')}
                   value={entryAgent?.name || rule.agentId.slice(0, 10)}
                 />
-                <DetailRow
-                  icon={<Globe className="size-4" />}
-                  label={t('admin.forwardRules.detail.listenPort')}
-                  value={rule.listenPort}
-                />
-                <DetailRow
-                  icon={<Server className="size-4" />}
-                  label={t('admin.forwardRules.detail.entryAddress')}
-                  value={<span className="font-mono text-xs">{entryAddress}</span>}
-                />
-              </DetailSection>
-            )}
-
-            {/* Target Info - hidden for external type */}
-            {rule.ruleType !== 'external' && (
-              <DetailSection title={t('admin.forwardRules.detail.targetInfo')}>
-                <DetailRow
-                  icon={<Server className="size-4" />}
-                  label={t('admin.forwardRules.detail.targetType')}
-                  value={t(TARGET_TYPE_LABEL_KEYS[targetType])}
-                />
+                <Row label={t('admin.forwardRules.detail.listenAddress')} value={entryAddress} mono />
                 {rule.targetNodeId ? (
-                  <DetailRow
-                    icon={<Server className="size-4" />}
+                  <Row
                     label={t('admin.forwardRules.detail.targetNode')}
                     value={nodes.find((n) => n.id === rule.targetNodeId)?.name || rule.targetNodeId.slice(0, 10)}
                   />
                 ) : (
-                  <DetailRow
-                    icon={<Globe className="size-4" />}
+                  <Row
                     label={t('admin.forwardRules.detail.targetAddress')}
-                    value={
-                      <span className="font-mono text-xs">
-                        {rule.targetAddress}:{rule.targetPort}
-                      </span>
-                    }
+                    value={`${rule.targetAddress}:${rule.targetPort}`}
+                    mono
                   />
                 )}
-              </DetailSection>
+              </Section>
             )}
 
-            {/* Forward Path Visualization - hidden for external type */}
-            {rule.ruleType !== 'external' && (
-              <DetailSection title={t('admin.forwardRules.detail.forwardPathTitle')} allowOverflow>
-                <ForwardPathVisualization
-                  rule={rule}
-                  agentsMap={agentsMap}
-                  nodes={nodes}
-                  isRunning={rule.status === 'enabled' && (polledStatus?.overallRunStatus || rule.runStatus) === 'running'}
-                />
-              </DetailSection>
+            {/* Forward Path */}
+            {!isExternal && (
+              <Section title={t('admin.forwardRules.detail.forwardPathTitle')}>
+                <ForwardPath rule={rule} agentsMap={agentsMap} nodes={nodes} isRunning={isRunning} />
+              </Section>
             )}
 
-            {/* Traffic Statistics - different for external type */}
-            <DetailSection title={t('admin.forwardRules.detail.trafficStats')}>
+            {/* Traffic */}
+            <Section title={t('admin.forwardRules.detail.trafficStats')}>
               <TrafficStats rule={rule} />
-              {/* Traffic multiplier - hidden for external type */}
-              {rule.ruleType !== 'external' && (
-                <DetailRow
-                  icon={<Activity className="size-4" />}
+              {!isExternal && (
+                <Row
                   label={t('admin.forwardRules.detail.trafficMultiplier')}
                   value={
-                    <span className="flex items-center gap-2">
+                    <span className="flex items-center gap-1.5">
                       <span className="font-mono">{rule.effectiveTrafficMultiplier?.toFixed(1) || '1.0'}x</span>
                       {rule.isAutoMultiplier && (
-                        <AdminBadge variant="default" className="text-[10px] px-1.5 py-0">
+                        <AdminBadge variant="outline" size="sm">
                           {t('admin.forwardRules.detail.multiplierAuto')}
                         </AdminBadge>
                       )}
@@ -800,27 +529,25 @@ export const ForwardRuleDetailSheet = ({
                   }
                 />
               )}
-            </DetailSection>
+            </Section>
 
-            {/* Sync Status (only for enabled rules, hidden for external type) */}
-            {rule.status === 'enabled' && rule.ruleType !== 'external' && (
-              <DetailSection title={t('admin.forwardRules.detail.syncStatus')} noPadding>
-                <SyncStatusDisplay polledStatus={polledStatus} rule={rule} />
-              </DetailSection>
+            {/* Sync Status */}
+            {rule.status === 'enabled' && !isExternal && (
+              <Section title={t('admin.forwardRules.detail.syncStatus')}>
+                <SyncStatus polledStatus={polledStatus} rule={rule} />
+              </Section>
             )}
 
             {/* Remark */}
             {rule.remark && (
-              <DetailSection title={t('admin.forwardRules.detail.remark')}>
+              <Section title={t('admin.forwardRules.detail.remark')}>
                 <div className="px-3 py-2.5">
-                  <div className="flex items-start gap-3">
+                  <div className="flex items-start gap-2">
                     <FileText className="size-4 text-muted-foreground shrink-0 mt-0.5" />
-                    <p className="text-sm text-muted-foreground leading-relaxed">
-                      {rule.remark}
-                    </p>
+                    <p className="text-sm text-muted-foreground">{rule.remark}</p>
                   </div>
                 </div>
-              </DetailSection>
+              </Section>
             )}
           </SheetBody>
 
@@ -828,15 +555,13 @@ export const ForwardRuleDetailSheet = ({
             <div className="flex gap-2">
               <button
                 type="button"
-                onClick={() => {
-                  onEdit(rule);
-                }}
+                onClick={() => onEdit(rule)}
                 className={cn(
                   'flex-1 flex items-center justify-center gap-2',
                   'h-11 rounded-xl',
                   'bg-primary text-primary-foreground',
                   'text-sm font-medium',
-                  'active:scale-[0.97] transition-transform'
+                  'active:scale-[0.98] transition-transform'
                 )}
               >
                 <Edit className="size-4" />
@@ -855,15 +580,11 @@ export const ForwardRuleDetailSheet = ({
                   'h-11 rounded-xl',
                   'bg-muted text-foreground',
                   'text-sm font-medium',
-                  'active:scale-[0.97] transition-transform',
+                  'active:scale-[0.98] transition-transform',
                   'disabled:opacity-50 disabled:cursor-not-allowed'
                 )}
               >
-                {isProbingThis ? (
-                  <Loader2 className="size-4 animate-spin" />
-                ) : (
-                  <Activity className="size-4" />
-                )}
+                {isProbingThis ? <Loader2 className="size-4 animate-spin" /> : <Activity className="size-4" />}
                 {isProbingThis ? t('admin.forwardRules.form.probing') : t('admin.forwardRules.form.probe')}
               </button>
               <button
@@ -873,7 +594,7 @@ export const ForwardRuleDetailSheet = ({
                   'size-11 rounded-xl shrink-0',
                   'flex items-center justify-center',
                   'bg-muted text-foreground',
-                  'active:scale-[0.97] transition-transform'
+                  'active:scale-[0.98] transition-transform'
                 )}
               >
                 <MoreHorizontal className="size-5" />
@@ -883,7 +604,6 @@ export const ForwardRuleDetailSheet = ({
         </SheetContent>
       </Sheet>
 
-      {/* More Actions ActionSheet */}
       <ActionSheet
         open={actionSheetOpen}
         onOpenChange={setActionSheetOpen}

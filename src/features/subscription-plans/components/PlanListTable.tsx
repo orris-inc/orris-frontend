@@ -195,8 +195,8 @@ export const PlanListTable: React.FC<PlanListTableProps> = ({
     {
       accessorKey: 'name',
       header: t('admin.plans.table.planName'),
-      // No size - auto fill remaining space in table-fixed layout
-      meta: { priority: 1 } as ResponsiveColumnMeta,
+      size: 200,
+      meta: { priority: 1, sticky: 'left' } as ResponsiveColumnMeta,
       cell: ({ row }) => {
         const plan = row.original;
         const planType = plan.planType as PlanType | undefined;
@@ -329,7 +329,7 @@ export const PlanListTable: React.FC<PlanListTableProps> = ({
       header: '',
       size: 48,
       enableSorting: false,
-      meta: { priority: 1 } as ResponsiveColumnMeta,
+      meta: { priority: 1, sticky: 'right' } as ResponsiveColumnMeta,
       cell: ({ row }) => (
         <DropdownMenu>
           <DropdownMenuTrigger asChild>

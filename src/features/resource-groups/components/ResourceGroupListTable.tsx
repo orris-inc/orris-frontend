@@ -5,10 +5,9 @@
  */
 
 import { useMemo, useCallback } from 'react';
-import { formatDate } from '@/shared/utils/date-utils';
 import { useTranslation } from 'react-i18next';
 import { Edit, Power, MoreHorizontal, Trash2, Eye } from 'lucide-react';
-import { DataTable, AdminBadge, TableHoverCardProvider, type ColumnDef, type ResponsiveColumnMeta } from '@/components/admin';
+import { DataTable, AdminBadge, TableHoverCardProvider, TableHoverCardList, DateTimeCell, type ColumnDef, type ResponsiveColumnMeta } from '@/components/admin';
 import { useBreakpoint } from '@/hooks/useBreakpoint';
 import { ResourceGroupMobileList } from './ResourceGroupMobileList';
 import {
@@ -121,32 +120,33 @@ export const ResourceGroupListTable: React.FC<ResourceGroupListTableProps> = ({
 
   const columns = useMemo<ColumnDef<ResourceGroup>[]>(() => [
     {
-      accessorKey: 'sid',
-      header: 'SID',
-      size: 120,
-      meta: { priority: 3 } as ResponsiveColumnMeta,
-      cell: ({ row }) => (
-        <span className="font-mono text-xs text-slate-500 dark:text-slate-500">
-          {row.original.sid}
-        </span>
-      ),
-    },
-    {
       accessorKey: 'name',
       header: t('tableColumns.name'),
-      meta: { priority: 1 } as ResponsiveColumnMeta,
-      cell: ({ row }) => (
-        <div className="space-y-1">
-          <div className="text-[15px] text-slate-900 dark:text-white leading-tight">
-            {row.original.name}
-          </div>
-          {row.original.description && (
-            <div className="text-xs text-slate-400 dark:text-slate-500 leading-tight line-clamp-1">
-              {row.original.description}
+      size: 200,
+      meta: { priority: 1, sticky: 'left' } as ResponsiveColumnMeta,
+      cell: ({ row }) => {
+        const group = row.original;
+        const hoverItems = [
+          { label: 'SID', value: group.sid },
+          ...(group.description ? [{ label: t('tableColumns.description'), value: group.description }] : []),
+        ];
+        return (
+          <TableHoverCardList
+            columnKey="name"
+            items={hoverItems}
+            contentClassName="w-72"
+          >
+            <div className="flex flex-col gap-0.5 cursor-default">
+              <span className="font-semibold text-foreground whitespace-nowrap truncate">
+                {group.name}
+              </span>
+              <code className="font-mono text-[11px] text-muted-foreground bg-muted/50 px-1 py-0.5 rounded w-fit">
+                {group.sid}
+              </code>
             </div>
-          )}
-        </div>
-      ),
+          </TableHoverCardList>
+        );
+      },
     },
     {
       accessorKey: 'planId',
@@ -191,18 +191,14 @@ export const ResourceGroupListTable: React.FC<ResourceGroupListTableProps> = ({
       header: t('tableColumns.createdAt'),
       size: 100,
       meta: { priority: 3 } as ResponsiveColumnMeta,
-      cell: ({ row }) => (
-        <span className="text-sm text-slate-600 dark:text-slate-400">
-          {formatDate(row.original.createdAt)}
-        </span>
-      ),
+      cell: ({ row }) => <DateTimeCell value={row.original.createdAt} format="date" />,
     },
     {
       id: 'actions',
       header: t('tableColumns.actions'),
       size: 56,
       enableSorting: false,
-      meta: { priority: 1 } as ResponsiveColumnMeta,
+      meta: { priority: 1, sticky: 'right' } as ResponsiveColumnMeta,
       cell: ({ row }) => {
         const resourceGroup = row.original;
         return (

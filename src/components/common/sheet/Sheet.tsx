@@ -203,12 +203,17 @@ SheetContent.displayName = 'SheetContent';
 // Sheet Header
 // ============================================================================
 
+/**
+ * Sheet Header - Fixed at top
+ *
+ * Use for title and description that should always be visible
+ */
 export const SheetHeader = ({
   className,
   ...props
 }: React.HTMLAttributes<HTMLDivElement>) => (
   <div
-    className={cn('flex flex-col space-y-1.5 px-6 pb-4', className)}
+    className={cn('flex-shrink-0 flex flex-col space-y-1.5 px-6 pb-4', className)}
     {...props}
   />
 );

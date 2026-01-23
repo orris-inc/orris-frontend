@@ -38,7 +38,9 @@ import { DeleteForwardAgentSheet } from '@/features/forward-agents/components/De
 import { ForwardAgentDetailDialog } from '@/features/forward-agents/components/ForwardAgentDetailDialog';
 import { InstallScriptDialog } from '@/features/forward-agents/components/InstallScriptDialog';
 import { AgentBatchUpdateDialog } from '@/features/forward-agents/components/AgentBatchUpdateDialog';
+import { AgentBatchUpdateSheet } from '@/features/forward-agents/components/AgentBatchUpdateSheet';
 import { BroadcastURLDialog } from '@/features/forward-agents/components/BroadcastURLDialog';
+import { BroadcastURLSheet } from '@/features/forward-agents/components/BroadcastURLSheet';
 import { useForwardAgentsPage, useTriggerAgentUpdate, useBroadcastAPIURL, useNotifyAgentAPIURL } from '@/features/forward-agents/hooks/useForwardAgents';
 import { getAgentVersion } from '@/api/forward';
 import type { AgentVersionInfo, ForwardAgent, UpdateForwardAgentRequest, CreateForwardAgentRequest, ForwardStatus } from '@/api/forward';
@@ -111,6 +113,7 @@ export const ForwardAgentsPage = () => {
   const [dragSortEnabled, setDragSortEnabled] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [agentToDelete, setAgentToDelete] = useState<ForwardAgent | null>(null);
+  const [updatingAgentId, setUpdatingAgentId] = useState<string | number | null>(null);
 
   // Calculate agent statistics
   const stats = useMemo(() => {
@@ -226,6 +229,18 @@ export const ForwardAgentsPage = () => {
     }
   }, [updateAgent, triggerUpdateMutation]);
 
+  // Direct trigger update for detail sheet (no confirmation dialog)
+  const handleTriggerUpdate = useCallback(async (agent: ForwardAgent) => {
+    setUpdatingAgentId(agent.id);
+    try {
+      await triggerUpdateMutation.mutateAsync(agent.id);
+    } catch {
+      // Error handled by mutation
+    } finally {
+      setUpdatingAgentId(null);
+    }
+  }, [triggerUpdateMutation]);
+
   const handleBroadcastURL = useCallback(async (newUrl: string, reason?: string) => {
     return await broadcastURLMutation.mutateAsync({ newUrl, reason });
   }, [broadcastURLMutation]);
@@ -326,40 +341,42 @@ export const ForwardAgentsPage = () => {
   return (
     <AdminLayout>
       <div className="space-y-6">
-        {/* Page Header with metadata and actions */}
-        <PageHeader
-          title={t('admin.forwardAgents.title')}
-          icon={Cpu}
-          metadata={[
-            { icon: Cpu, text: `${stats.total} ${t('admin.forwardAgents.agentsUnit')}` },
-            { icon: CheckCircle2, text: `${stats.enabled} ${t('common.status.enabled')}` },
-            { icon: Activity, text: `${stats.online} ${t('common.status.online')}` },
-            ...(stats.updatable > 0 ? [{ icon: ArrowUpCircle, text: `${stats.updatable} ${t('admin.forwardAgents.updatable')}` }] : []),
-          ]}
-          action={
-            <div className="flex items-center gap-2">
-              {stats.online > 0 && (
-                <Button variant="outline" size="sm" onClick={() => setBroadcastURLDialogOpen(true)}>
-                  <Radio className="size-4 mr-2" />
-                  {t('admin.forwardAgents.actions.broadcast')}
+        {/* Page Header with metadata and actions - desktop only */}
+        {!isMobile && (
+          <PageHeader
+            title={t('admin.forwardAgents.title')}
+            icon={Cpu}
+            metadata={[
+              { icon: Cpu, text: `${stats.total} ${t('admin.forwardAgents.agentsUnit')}` },
+              { icon: CheckCircle2, text: `${stats.enabled} ${t('common.status.enabled')}` },
+              { icon: Activity, text: `${stats.online} ${t('common.status.online')}` },
+              ...(stats.updatable > 0 ? [{ icon: ArrowUpCircle, text: `${stats.updatable} ${t('admin.forwardAgents.updatable')}` }] : []),
+            ]}
+            action={
+              <div className="flex items-center gap-2">
+                {stats.online > 0 && (
+                  <Button variant="outline" size="sm" onClick={() => setBroadcastURLDialogOpen(true)}>
+                    <Radio className="size-4 mr-2" />
+                    {t('admin.forwardAgents.actions.broadcast')}
+                  </Button>
+                )}
+                {stats.updatable > 0 && (
+                  <Button variant="outline" size="sm" onClick={() => setBatchUpdateDialogOpen(true)}>
+                    <ArrowUpCircle className="size-4 mr-2" />
+                    {t('admin.forwardAgents.actions.update')}
+                  </Button>
+                )}
+                <Button variant="ghost" size="icon" onClick={handleRefresh}>
+                  <RefreshCw key={refreshKey} className="size-4" />
                 </Button>
-              )}
-              {stats.updatable > 0 && (
-                <Button variant="outline" size="sm" onClick={() => setBatchUpdateDialogOpen(true)}>
-                  <ArrowUpCircle className="size-4 mr-2" />
-                  {t('admin.forwardAgents.actions.update')}
+                <Button onClick={() => { setCopyAgentData(undefined); setCreateDialogOpen(true); }}>
+                  <Plus className="size-4 mr-2" />
+                  {t('admin.forwardAgents.actions.create')}
                 </Button>
-              )}
-              <Button variant="ghost" size="icon" onClick={handleRefresh}>
-                <RefreshCw key={refreshKey} className="size-4" />
-              </Button>
-              <Button onClick={() => { setCopyAgentData(undefined); setCreateDialogOpen(true); }}>
-                <Plus className="size-4 mr-2" />
-                {t('admin.forwardAgents.actions.create')}
-              </Button>
-            </div>
-          }
-        />
+              </div>
+            }
+          />
+        )}
 
         {/* Filters row - desktop only */}
         {!isMobile && (
@@ -429,7 +446,7 @@ export const ForwardAgentsPage = () => {
           </div>
         )}
 
-        {/* Mobile: MobileForwardAgentManagement handles its own layout */}
+        {/* Mobile: MobileForwardAgentManagement with action buttons */}
         {isMobile ? (
           <MobileForwardAgentManagement
             forwardAgents={forwardAgents}
@@ -447,11 +464,14 @@ export const ForwardAgentsPage = () => {
             onDelete={handleDelete}
             onToggleStatus={handleToggleStatus}
             onPageChange={handlePageChange}
-            enableDragSort={dragSortEnabled}
-            onDragSortChange={setDragSortEnabled}
             onDragEnd={handleDragEnd}
             onRegenerateToken={handleTokenRegenerate}
             onGetInstallScript={handleInstallScript}
+            onTriggerUpdate={handleTriggerUpdate}
+            onBatchUpdate={stats.updatable > 0 ? () => setBatchUpdateDialogOpen(true) : undefined}
+            isUpdating={updatingAgentId !== null}
+            isBatchUpdating={isBatchUpdating}
+            onBroadcast={stats.online > 0 ? () => setBroadcastURLDialogOpen(true) : undefined}
           />
         ) : (
           <ForwardAgentListTable
@@ -585,37 +605,63 @@ export const ForwardAgentsPage = () => {
         loading={triggerUpdateMutation.isPending}
       />
 
-      {/* Batch Update Dialog */}
-      <AgentBatchUpdateDialog
-        open={batchUpdateDialogOpen}
-        onClose={() => {
-          setBatchUpdateDialogOpen(false);
-          setBatchUpdateResult(null);
-        }}
-        agents={forwardAgents}
-        onBatchUpdate={(updateAll) => handleBatchUpdate({ updateAll })}
-        isUpdating={isBatchUpdating}
-        result={batchUpdateResult}
-      />
+      {/* Batch Update Dialog/Sheet */}
+      {isMobile ? (
+        <AgentBatchUpdateSheet
+          open={batchUpdateDialogOpen}
+          onOpenChange={(open) => {
+            setBatchUpdateDialogOpen(open);
+            if (!open) setBatchUpdateResult(null);
+          }}
+          agents={forwardAgents}
+          onBatchUpdate={(updateAll) => handleBatchUpdate({ updateAll })}
+          isUpdating={isBatchUpdating}
+          result={batchUpdateResult}
+        />
+      ) : (
+        <AgentBatchUpdateDialog
+          open={batchUpdateDialogOpen}
+          onClose={() => {
+            setBatchUpdateDialogOpen(false);
+            setBatchUpdateResult(null);
+          }}
+          agents={forwardAgents}
+          onBatchUpdate={(updateAll) => handleBatchUpdate({ updateAll })}
+          isUpdating={isBatchUpdating}
+          result={batchUpdateResult}
+        />
+      )}
 
-      {/* Broadcast URL Dialog */}
-      <BroadcastURLDialog
-        open={broadcastURLDialogOpen || broadcastTargetAgent !== null}
-        onClose={() => {
-          setBroadcastURLDialogOpen(false);
-          setBroadcastTargetAgent(null);
-        }}
-        onBroadcast={handleBroadcastURL}
-        isBroadcasting={broadcastURLMutation.isPending}
-        onlineCount={stats.online}
-        targetAgent={broadcastTargetAgent ? {
-          id: String(broadcastTargetAgent.id),
-          name: broadcastTargetAgent.name,
-          isOnline: !!broadcastTargetAgent.systemStatus,
-        } : null}
-        onNotifySingle={handleNotifyAgentURL}
-        isNotifying={notifyAgentURLMutation.isPending}
-      />
+      {/* Broadcast URL Dialog/Sheet */}
+      {isMobile ? (
+        <BroadcastURLSheet
+          open={broadcastURLDialogOpen}
+          onOpenChange={(open) => {
+            setBroadcastURLDialogOpen(open);
+          }}
+          onBroadcast={handleBroadcastURL}
+          isBroadcasting={broadcastURLMutation.isPending}
+          onlineCount={stats.online}
+        />
+      ) : (
+        <BroadcastURLDialog
+          open={broadcastURLDialogOpen || broadcastTargetAgent !== null}
+          onClose={() => {
+            setBroadcastURLDialogOpen(false);
+            setBroadcastTargetAgent(null);
+          }}
+          onBroadcast={handleBroadcastURL}
+          isBroadcasting={broadcastURLMutation.isPending}
+          onlineCount={stats.online}
+          targetAgent={broadcastTargetAgent ? {
+            id: String(broadcastTargetAgent.id),
+            name: broadcastTargetAgent.name,
+            isOnline: !!broadcastTargetAgent.systemStatus,
+          } : null}
+          onNotifySingle={handleNotifyAgentURL}
+          isNotifying={notifyAgentURLMutation.isPending}
+        />
+      )}
 
       {/* Delete Forward Agent Confirmation Sheet (Mobile only) */}
       <DeleteForwardAgentSheet

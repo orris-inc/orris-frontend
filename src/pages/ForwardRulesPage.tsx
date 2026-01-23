@@ -60,11 +60,6 @@ const ForwardRuleDetailDialog = lazy(() =>
     default: m.ForwardRuleDetailDialog,
   }))
 );
-const ForwardRuleDetailSheet = lazy(() =>
-  import('@/features/forward-rules/components/ForwardRuleDetailSheet').then((m) => ({
-    default: m.ForwardRuleDetailSheet,
-  }))
-);
 const ProbeResultDialog = lazy(() =>
   import('@/features/forward-rules/components/ProbeResultDialog').then((m) => ({
     default: m.ProbeResultDialog,
@@ -232,7 +227,7 @@ export const ForwardRulesPage = () => {
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
   const [ruleToDelete, setRuleToDelete] = useState<ForwardRule | null>(null);
   const [resetTrafficConfirmOpen, setResetTrafficConfirmOpen] = useState(false);
-  const [ruleToResetTraffic, setRuleToResetTrafficRule] = useState<ForwardRule | null>(null);
+  const [ruleToResetTraffic, setRuleToResetTraffic] = useState<ForwardRule | null>(null);
   const [copyRuleData, setCopyRuleData] = useState<(Partial<CreateForwardRuleRequest> & { targetType?: 'manual' | 'node' }) | undefined>(undefined);
   const [refreshKey, setRefreshKey] = useState(0);
   const [dragSortEnabled, setDragSortEnabled] = useState(false);
@@ -314,7 +309,7 @@ export const ForwardRulesPage = () => {
   };
 
   const handleResetTraffic = (rule: ForwardRule) => {
-    setRuleToResetTrafficRule(rule);
+    setRuleToResetTraffic(rule);
     setResetTrafficConfirmOpen(true);
   };
 
@@ -322,7 +317,7 @@ export const ForwardRulesPage = () => {
     if (ruleToResetTraffic) {
       await resetTraffic(ruleToResetTraffic.id);
       setResetTrafficConfirmOpen(false);
-      setRuleToResetTrafficRule(null);
+      setRuleToResetTraffic(null);
     }
   };
 
@@ -442,6 +437,7 @@ export const ForwardRulesPage = () => {
   const hasActiveFilters = !!(filters.protocol || filters.status || filters.name || (filters.orderBy && !isDefaultSort));
 
   // Mobile view - uses MobileForwardRuleManagement with its own header/stats
+  // Detail sheet is now integrated inside MobileForwardRuleManagement
   if (isMobile) {
     return (
       <AdminLayout>
@@ -449,9 +445,10 @@ export const ForwardRulesPage = () => {
           <MobileForwardRuleManagement
             rules={forwardRules}
             agentsMap={agentsMap}
+            nodes={nodes}
             polledStatusMap={polledStatusMap}
             pollingRuleIds={pollingRuleIds}
-            loading={isLoading || isFetching}
+            loading={isLoading || isFetching || isReordering}
             refreshing={isFetching}
             page={pagination.page}
             pageSize={pagination.pageSize}
@@ -465,10 +462,10 @@ export const ForwardRulesPage = () => {
             onCopy={handleCopy}
             onToggleStatus={handleToggleStatus}
             onDelete={handleDelete}
+            onProbe={handleProbe}
             onPageChange={handlePageChange}
-            onViewDetail={handleViewDetail}
             onDragEnd={handleDragEnd}
-            isReordering={isReordering}
+            probingRuleId={probingRuleId ?? undefined}
           />
         </div>
 
@@ -519,38 +516,6 @@ export const ForwardRulesPage = () => {
               entity={ruleToDelete}
               onConfirm={handleDeleteConfirmSheet}
               agentsMap={agentsMap}
-            />
-          </Suspense>
-        )}
-
-        {/* Forward Rule Detail Sheet (Mobile) */}
-        {detailDialogOpen && (
-          <Suspense fallback={null}>
-            <ForwardRuleDetailSheet
-              open={detailDialogOpen}
-              onOpenChange={(open) => {
-                setDetailDialogOpen(open);
-                if (!open) setSelectedRule(null);
-              }}
-              rule={selectedRule}
-              agentsMap={agentsMap}
-              nodes={nodes}
-              polledStatus={selectedRule ? polledStatusMap[selectedRule.id] : null}
-              onEdit={(rule) => {
-                setDetailDialogOpen(false);
-                handleEdit(rule);
-              }}
-              onProbe={handleProbe}
-              onCopy={(rule) => {
-                setDetailDialogOpen(false);
-                handleCopy(rule);
-              }}
-              onToggleStatus={handleToggleStatus}
-              onDelete={(rule) => {
-                setDetailDialogOpen(false);
-                handleDelete(rule);
-              }}
-              isProbingThis={probingRuleId === selectedRule?.id}
             />
           </Suspense>
         )}

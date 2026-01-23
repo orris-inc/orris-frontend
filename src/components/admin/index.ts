@@ -46,3 +46,4 @@ export { LazyTrafficTrendChart, LazyExtendedMetricsPanel } from './LazyCharts';
 export { SystemStatusHoverProvider, useSystemStatusHover, useIsItemHovered } from './SystemStatusHoverContext';
 export { SystemStatusCell, type SystemStatusData } from './SystemStatusCell';
 export { TableHoverCardProvider, TableRowProvider, useTableRowId, TableHoverCard, TableHoverCardList, TableHoverCardDesc } from './TableHoverCard';
+export { DateTimeCell } from './DateTimeCell';

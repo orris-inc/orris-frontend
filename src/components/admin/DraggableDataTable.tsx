@@ -145,7 +145,7 @@ const SortableRowInner = memo(function SortableRowInner<TData>({
       style={style}
       className={cn(
         // Hover effect controlled by parent [data-dragging=false]
-        'group-data-[dragging=false]:hover:bg-accent/50',
+        'group-data-[dragging=false]:hover:bg-muted/50',
         isDragging && 'shadow-lg bg-card opacity-90'
       )}
       {...attributes}
@@ -153,7 +153,7 @@ const SortableRowInner = memo(function SortableRowInner<TData>({
       <td className="w-10 px-2 py-3.5 align-middle">
         <button
           type="button"
-          className="flex items-center justify-center size-8 rounded-md text-muted-foreground group-data-[dragging=false]:hover:text-foreground group-data-[dragging=false]:hover:bg-accent/50 cursor-grab active:cursor-grabbing touch-none"
+          className="flex items-center justify-center size-8 rounded-md text-muted-foreground group-data-[dragging=false]:hover:text-foreground group-data-[dragging=false]:hover:bg-muted/50 cursor-grab active:cursor-grabbing touch-none"
           {...listeners}
         >
           <GripVertical className="size-4" strokeWidth={1.5} />
@@ -171,7 +171,7 @@ const SortableRowInner = memo(function SortableRowInner<TData>({
           <td
             key={cell.id}
             className={cn(
-              'px-4 py-3.5 text-foreground align-middle',
+              'px-3 py-3 text-foreground align-middle',
               // Sticky cell styles
               (isLeftSticky || isRightSticky) && 'sticky z-10 bg-card',
               isLeftSticky && stickyConfig?.canScrollLeft && 'shadow-[2px_0_8px_-2px_rgba(0,0,0,0.1)]',
@@ -226,7 +226,7 @@ const StaticRow = memo(function StaticRow<TData>({
   stickyConfig,
 }: StaticRowProps<TData>) {
   const rowContent = (
-    <tr className="hover:bg-accent/50">
+    <tr className="hover:bg-muted/50">
       {row.getVisibleCells().map((cell) => {
         const meta = cell.column.columnDef.meta as ResponsiveColumnMeta | undefined;
         const colId = cell.column.id;
@@ -239,7 +239,7 @@ const StaticRow = memo(function StaticRow<TData>({
           <td
             key={cell.id}
             className={cn(
-              'px-4 py-3.5 text-foreground align-middle',
+              'px-3 py-3 text-foreground align-middle',
               // Sticky cell styles
               (isLeftSticky || isRightSticky) && 'sticky z-10 bg-card',
               isLeftSticky && stickyConfig?.canScrollLeft && 'shadow-[2px_0_8px_-2px_rgba(0,0,0,0.1)]',
@@ -465,21 +465,19 @@ export function DraggableDataTable<TData>({
 
   const tableContent = (
     <div className="relative">
-      <div ref={tableContainerRef} className="overflow-x-auto bg-card rounded-xl">
-        <table className="w-full table-fixed text-sm border-separate border-spacing-0">
+      <div ref={tableContainerRef} className="overflow-x-auto rounded-lg border border-border">
+        <table className="min-w-full text-sm border-separate border-spacing-0">
           <thead className="sticky top-0 z-10">
             {table.getHeaderGroups().map((headerGroup) => (
-              <tr key={headerGroup.id} className="bg-muted/50">
+              <tr key={headerGroup.id} className="bg-muted">
                 {enableDragSort && (
-                  <th className="w-10 px-2 py-3.5 font-medium text-sm text-muted-foreground whitespace-nowrap text-left border-b-2 border-border/60 first:rounded-tl-xl">
+                  <th className="w-10 px-2 py-3.5 font-medium text-sm text-muted-foreground whitespace-nowrap text-left">
                     <span className="sr-only">{t('common.table.sort')}</span>
                   </th>
                 )}
-                {headerGroup.headers.map((header, index) => {
+                {headerGroup.headers.map((header) => {
                   const canSort = header.column.getCanSort();
                   const sorted = header.column.getIsSorted();
-                  const isFirst = !enableDragSort && index === 0;
-                  const isLast = index === headerGroup.headers.length - 1;
                   const meta = header.column.columnDef.meta as ResponsiveColumnMeta | undefined;
                   const colId = header.column.id;
                   const isLeftSticky = meta?.sticky === 'left';
@@ -496,13 +494,11 @@ export function DraggableDataTable<TData>({
                         ...(isRightSticky && rightOffset !== undefined ? { right: rightOffset } : {}),
                       }}
                       className={cn(
-                        'px-4 py-3.5 font-medium text-sm text-muted-foreground',
-                        'whitespace-nowrap text-left border-b-2 border-border/60',
-                        isFirst && 'rounded-tl-xl',
-                        isLast && 'rounded-tr-xl',
+                        'px-3 py-3 font-medium text-sm text-muted-foreground',
+                        'whitespace-nowrap text-left',
                         canSort && 'cursor-pointer select-none hover:text-foreground hover:bg-muted/80',
                         // Sticky header styles
-                        (isLeftSticky || isRightSticky) && 'sticky z-20 bg-muted/50',
+                        (isLeftSticky || isRightSticky) && 'sticky z-20 bg-muted',
                         isLeftSticky && scrollState.canScrollLeft && 'shadow-[2px_0_8px_-2px_rgba(0,0,0,0.15)]',
                         isRightSticky && scrollState.canScrollRight && 'shadow-[-2px_0_8px_-2px_rgba(0,0,0,0.15)]'
                       )}

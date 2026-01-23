@@ -18,7 +18,6 @@ import {
   ChevronRight,
   Check,
   Loader2,
-  Sparkles,
   Globe,
   Radio,
   Layers,
@@ -30,13 +29,11 @@ import {
   SheetContent,
   SheetHeader,
   SheetTitle,
+  SheetDescription,
   SheetBody,
   SheetFooter,
   type CreateSheetProps,
 } from '@/components/common/sheet';
-import { Button } from '@/components/common/Button';
-import { Badge } from '@/components/common/Badge';
-import { Separator } from '@/components/common/Separator';
 import { MobileFormInput, MobileSelect, type MobileSelectOption } from '@/components/common/mobile-form';
 import { useResourceGroups } from '@/features/resource-groups/hooks/useResourceGroups';
 import { useSubscriptionPlans } from '@/features/subscription-plans/hooks/useSubscriptionPlans';
@@ -226,83 +223,15 @@ const STEPS: StepConfig[] = [
   { id: 'route', titleKey: 'admin.nodes.form.section.routeConfig', icon: Route },
 ];
 
-// Progress Indicator Component
-interface ProgressIndicatorProps {
-  steps: StepConfig[];
-  completedSteps: Set<string>;
-  currentStep: string;
-  t: (key: string) => string;
-}
-
-const ProgressIndicator: React.FC<ProgressIndicatorProps> = ({
-  steps,
-  completedSteps,
-  currentStep,
-  t,
-}) => {
-  const progress = (completedSteps.size / steps.filter(s => s.required).length) * 100;
-
-  return (
-    <div className="px-1 py-2">
-      {/* Progress bar */}
-      <div className="h-1 bg-muted rounded-full overflow-hidden">
-        <div
-          className="h-full bg-primary rounded-full transition-all duration-500 ease-out"
-          style={{ width: `${Math.min(progress, 100)}%` }}
-        />
-      </div>
-      {/* Step indicators */}
-      <div className="flex justify-between mt-2">
-        {steps.slice(0, 3).map((step) => {
-          const isCompleted = completedSteps.has(step.id);
-          const isCurrent = currentStep === step.id;
-          const Icon = step.icon;
-
-          return (
-            <div key={step.id} className="flex items-center gap-1.5">
-              <div
-                className={cn(
-                  'size-6 rounded-full flex items-center justify-center transition-all duration-200',
-                  isCompleted
-                    ? 'bg-primary text-primary-foreground'
-                    : isCurrent
-                      ? 'bg-primary/20 text-primary'
-                      : 'bg-muted text-muted-foreground'
-                )}
-              >
-                {isCompleted ? (
-                  <Check className="size-3.5" strokeWidth={2.5} />
-                ) : (
-                  <Icon className="size-3" strokeWidth={1.5} />
-                )}
-              </div>
-              <span
-                className={cn(
-                  'text-[11px] font-medium',
-                  isCompleted || isCurrent ? 'text-foreground' : 'text-muted-foreground'
-                )}
-              >
-                {t(step.titleKey)}
-              </span>
-            </div>
-          );
-        })}
-      </div>
-    </div>
-  );
-};
-
-// Collapsible Section with step styling
+// Collapsible Section - Tailwind Application UI style
 interface StepSectionProps {
   step: StepConfig;
   title: string;
   badge?: string | null;
   isOpen: boolean;
-  isCompleted: boolean;
+  isCompleted?: boolean;
   onToggle: () => void;
   children: React.ReactNode;
-  requiredLabel: string;
-  completedLabel: string;
 }
 
 const StepSection: React.FC<StepSectionProps> = ({
@@ -310,89 +239,58 @@ const StepSection: React.FC<StepSectionProps> = ({
   title,
   badge,
   isOpen,
-  isCompleted,
   onToggle,
   children,
-  requiredLabel,
-  completedLabel,
 }) => {
   const Icon = step.icon;
 
   return (
-    <div
-      className={cn(
-        'border rounded-2xl overflow-hidden transition-all duration-200',
-        isOpen ? 'border-primary/30 bg-card shadow-sm' : 'border-border bg-card/50'
-      )}
-    >
+    <div className="overflow-hidden rounded-lg bg-card border border-border">
       <button
         type="button"
         onClick={onToggle}
-        className={cn(
-          'w-full flex items-center justify-between p-4 text-left transition-colors',
-          'active:bg-accent/30 cursor-pointer'
-        )}
+        className="w-full flex items-center justify-between px-4 py-3 text-left active:bg-muted/50 transition-colors min-h-[52px]"
       >
         <div className="flex items-center gap-3">
           <div
             className={cn(
-              'size-10 rounded-xl flex items-center justify-center transition-all duration-200',
-              isCompleted
-                ? 'bg-primary text-primary-foreground'
-                : isOpen
-                  ? 'bg-primary/10 text-primary'
-                  : 'bg-muted text-muted-foreground'
+              'size-8 rounded-lg flex items-center justify-center transition-colors',
+              isOpen ? 'bg-primary/10 text-primary' : 'bg-muted text-muted-foreground'
             )}
           >
-            {isCompleted ? (
-              <Check className="size-5" strokeWidth={2} />
-            ) : (
-              <Icon className="size-5" strokeWidth={1.5} />
-            )}
+            <Icon className="size-4" strokeWidth={2} />
           </div>
-          <div>
-            <div className="flex items-center gap-2">
-              <span className="text-sm font-semibold">{title}</span>
-              {step.required && !isCompleted && (
-                <span className="text-[10px] text-primary font-medium">{requiredLabel}</span>
-              )}
-              {badge && (
-                <Badge variant="secondary" className="text-[10px] px-1.5 py-0">
-                  {badge}
-                </Badge>
-              )}
-            </div>
-            {isCompleted && (
-              <span className="text-xs text-success">{completedLabel}</span>
+          <div className="flex items-center gap-2">
+            <span className="text-sm font-medium">{title}</span>
+            {badge && (
+              <span className="px-1.5 py-0.5 rounded bg-muted text-muted-foreground text-[10px] font-medium">
+                {badge}
+              </span>
             )}
           </div>
         </div>
         <ChevronDown
           className={cn(
-            'size-5 text-muted-foreground transition-transform duration-200',
+            'size-4 text-muted-foreground transition-transform duration-200',
             isOpen && 'rotate-180'
           )}
         />
       </button>
-
       <div
         className={cn(
-          'grid transition-all duration-300 ease-out',
-          isOpen ? 'grid-rows-[1fr] opacity-100' : 'grid-rows-[0fr] opacity-0'
+          'overflow-hidden transition-all duration-200',
+          isOpen ? 'max-h-[2000px] opacity-100' : 'max-h-0 opacity-0'
         )}
       >
-        <div className="overflow-hidden">
-          <div className="px-4 pb-4">
-            <Separator className="mb-4" />
-            {children}
-          </div>
+        <div className="px-4 pb-4 pt-2 border-t border-border">
+          {children}
         </div>
       </div>
     </div>
   );
 };
 
-// Form Field Label
+// Form Field Label - compact style
 interface FormFieldLabelProps {
   label: string;
   required?: boolean;
@@ -406,18 +304,18 @@ const FormFieldLabel: React.FC<FormFieldLabelProps> = ({
   hint,
   showHint = true,
 }) => (
-  <div className="space-y-0.5 px-1">
-    <label className="text-sm font-medium flex items-center gap-1">
+  <div className="space-y-0.5">
+    <label className="text-sm font-medium text-foreground">
       {label}
-      {required && <span className="text-destructive">*</span>}
+      {required && <span className="text-destructive ml-0.5">*</span>}
     </label>
     {hint && showHint && (
-      <p className="text-xs text-muted-foreground">{hint}</p>
+      <p className="text-[11px] text-muted-foreground leading-tight">{hint}</p>
     )}
   </div>
 );
 
-// Protocol Selection - Compact Pill Style
+// Protocol Selection - Compact card style
 interface ProtocolCardProps {
   protocol: NodeProtocol;
   selected: boolean;
@@ -434,17 +332,17 @@ const ProtocolCard: React.FC<ProtocolCardProps> = ({ protocol, selected, onSelec
       type="button"
       onClick={onSelect}
       className={cn(
-        'flex items-center gap-2 px-2.5 py-2 rounded-xl border transition-all duration-150',
-        'min-h-[48px]', // Touch target
+        'flex items-center gap-2.5 px-3 py-2.5 rounded-lg border transition-all',
+        'min-h-[52px]', // Touch target
         selected
-          ? 'border-primary bg-primary/5'
-          : 'border-border bg-card active:bg-accent/30'
+          ? 'border-primary bg-primary/5 ring-1 ring-primary/20'
+          : 'border-border bg-card active:bg-muted/50'
       )}
     >
       {/* Icon */}
       <div
         className={cn(
-          'size-8 rounded-lg flex items-center justify-center flex-shrink-0 transition-colors duration-150',
+          'size-9 rounded-lg flex items-center justify-center shrink-0 transition-colors',
           selected ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground'
         )}
       >
@@ -454,20 +352,20 @@ const ProtocolCard: React.FC<ProtocolCardProps> = ({ protocol, selected, onSelec
       {/* Text */}
       <div className="flex-1 text-left min-w-0">
         <p className={cn(
-          'text-xs font-medium truncate',
+          'text-sm font-medium truncate',
           selected ? 'text-foreground' : 'text-muted-foreground'
         )}>
           {config.name}
         </p>
-        <p className="text-[10px] text-muted-foreground truncate">
+        <p className="text-[10px] text-muted-foreground truncate leading-tight">
           {t(config.descKey)}
         </p>
       </div>
 
       {/* Selection indicator */}
       {selected && (
-        <div className="size-4 rounded-full bg-primary flex items-center justify-center flex-shrink-0">
-          <Check className="size-2.5 text-primary-foreground" strokeWidth={3} />
+        <div className="size-5 rounded-full bg-primary flex items-center justify-center shrink-0">
+          <Check className="size-3 text-primary-foreground" strokeWidth={3} />
         </div>
       )}
     </button>
@@ -482,18 +380,18 @@ interface QuickChipsProps {
 }
 
 const QuickChips: React.FC<QuickChipsProps> = ({ options, selected, onSelect }) => (
-  <div className="flex flex-wrap gap-2">
+  <div className="flex flex-wrap gap-1.5">
     {options.map((option) => (
       <button
         key={option}
         type="button"
         onClick={() => onSelect(option)}
         className={cn(
-          'px-3 py-1.5 rounded-full text-xs font-medium transition-all duration-150',
-          'min-h-[32px]', // Touch target
+          'px-2.5 py-1.5 rounded-md text-xs font-medium transition-colors',
+          'min-h-[32px]',
           selected === option
             ? 'bg-primary text-primary-foreground'
-            : 'bg-muted text-muted-foreground active:bg-muted/80'
+            : 'bg-muted text-muted-foreground active:bg-muted/70'
         )}
       >
         {option}
@@ -510,18 +408,18 @@ interface PortPresetsProps {
 }
 
 const PortPresets: React.FC<PortPresetsProps> = ({ currentPort, onSelect, presets }) => (
-  <div className="flex gap-2">
+  <div className="flex gap-1.5">
     {presets.map(({ port, label }) => (
       <button
         key={port}
         type="button"
         onClick={() => onSelect(port)}
         className={cn(
-          'flex-1 px-2 py-1.5 rounded-lg text-xs font-medium transition-all duration-150',
-          'min-h-[32px]',
+          'flex-1 px-2 py-1.5 rounded-md text-xs font-medium transition-colors',
+          'min-h-[36px]',
           currentPort === port
             ? 'bg-primary/10 text-primary border border-primary/30'
-            : 'bg-muted text-muted-foreground active:bg-muted/80'
+            : 'bg-muted text-muted-foreground active:bg-muted/70 border border-transparent'
         )}
       >
         {label}
@@ -592,11 +490,6 @@ export const CreateNodeSheet: React.FC<CreateNodeSheetProps> = ({
 
     return completed;
   }, [formData, pluginOptsString]);
-
-  // Current active section
-  const currentStep = useMemo(() => {
-    return Array.from(openSections)[0] || 'basic';
-  }, [openSections]);
 
   useEffect(() => {
     if (open && initialData) {
@@ -947,32 +840,13 @@ export const CreateNodeSheet: React.FC<CreateNodeSheetProps> = ({
     <Sheet open={open} onOpenChange={(o) => !loading && onOpenChange(o)}>
       <SheetContent>
         <SheetHeader>
-          <SheetTitle className="flex items-center gap-3">
-            <div className="size-12 rounded-2xl bg-gradient-to-br from-primary/20 to-primary/5 flex items-center justify-center">
-              {initialData ? (
-                <Sparkles className="size-6 text-primary" />
-              ) : (
-                <Server className="size-6 text-primary" />
-              )}
-            </div>
-            <div>
-              <span className="text-lg">{initialData ? t('admin.nodes.form.copyNode') : t('admin.nodes.form.createNode')}</span>
-              <p className="text-xs text-muted-foreground font-normal mt-0.5">
-                {t('admin.nodes.form.description')}
-              </p>
-            </div>
+          <SheetTitle>
+            {initialData ? t('admin.nodes.form.copyNode') : t('admin.nodes.form.createNode')}
           </SheetTitle>
+          <SheetDescription>
+            {t('admin.nodes.form.description')}
+          </SheetDescription>
         </SheetHeader>
-
-        {/* Progress Indicator */}
-        <div className="px-6 pt-2">
-          <ProgressIndicator
-            steps={STEPS}
-            completedSteps={completedSteps}
-            currentStep={currentStep}
-            t={t}
-          />
-        </div>
 
         <SheetBody className="py-4 space-y-3">
           {/* Step 1: Basic Info */}
@@ -982,8 +856,6 @@ export const CreateNodeSheet: React.FC<CreateNodeSheetProps> = ({
             isOpen={openSections.has('basic')}
             isCompleted={completedSteps.has('basic')}
             onToggle={() => toggleSection('basic')}
-            requiredLabel={t('admin.nodes.form.required')}
-            completedLabel={t('admin.nodes.form.completed')}
           >
             <div className="space-y-5">
               {/* Node Name */}
@@ -1161,16 +1033,21 @@ export const CreateNodeSheet: React.FC<CreateNodeSheetProps> = ({
               )}
 
               {/* Next button */}
-              <Button
-                variant="ghost"
-                size="sm"
+              <button
+                type="button"
                 onClick={() => goToNextSection('basic')}
                 disabled={!completedSteps.has('basic')}
-                className="w-full mt-2"
+                className={cn(
+                  'w-full flex items-center justify-center gap-1',
+                  'h-9 mt-3 rounded-lg',
+                  'text-sm font-medium text-muted-foreground',
+                  'hover:bg-muted active:bg-muted/70 transition-colors',
+                  'disabled:opacity-50 disabled:pointer-events-none'
+                )}
               >
                 {t('admin.nodes.form.nextStepNetwork')}
-                <ChevronRight className="size-4 ml-1" />
-              </Button>
+                <ChevronRight className="size-4" />
+              </button>
             </div>
           </StepSection>
 
@@ -1181,8 +1058,6 @@ export const CreateNodeSheet: React.FC<CreateNodeSheetProps> = ({
             isOpen={openSections.has('network')}
             isCompleted={completedSteps.has('network')}
             onToggle={() => toggleSection('network')}
-            requiredLabel={t('admin.nodes.form.required')}
-            completedLabel={t('admin.nodes.form.completed')}
           >
             <div className="space-y-5">
               {/* Server Address */}
@@ -1240,15 +1115,19 @@ export const CreateNodeSheet: React.FC<CreateNodeSheetProps> = ({
               </div>
 
               {/* Next button */}
-              <Button
-                variant="ghost"
-                size="sm"
+              <button
+                type="button"
                 onClick={() => goToNextSection('network')}
-                className="w-full mt-2"
+                className={cn(
+                  'w-full flex items-center justify-center gap-1',
+                  'h-9 mt-3 rounded-lg',
+                  'text-sm font-medium text-muted-foreground',
+                  'hover:bg-muted active:bg-muted/70 transition-colors'
+                )}
               >
                 {t('admin.nodes.form.nextStepProtocol')}
-                <ChevronRight className="size-4 ml-1" />
-              </Button>
+                <ChevronRight className="size-4" />
+              </button>
             </div>
           </StepSection>
 
@@ -1260,8 +1139,6 @@ export const CreateNodeSheet: React.FC<CreateNodeSheetProps> = ({
             isOpen={openSections.has('protocol')}
             isCompleted={completedSteps.has('protocol')}
             onToggle={() => toggleSection('protocol')}
-            requiredLabel={t('admin.nodes.form.required')}
-            completedLabel={t('admin.nodes.form.completed')}
           >
             <div className="space-y-4">
               {isShadowsocks && (
@@ -1683,8 +1560,6 @@ export const CreateNodeSheet: React.FC<CreateNodeSheetProps> = ({
             isOpen={openSections.has('other')}
             isCompleted={completedSteps.has('other')}
             onToggle={() => toggleSection('other')}
-            requiredLabel={t('admin.nodes.form.required')}
-            completedLabel={t('admin.nodes.form.completed')}
           >
             <div className="space-y-4">
               {/* Region Quick Select */}
@@ -1747,8 +1622,6 @@ export const CreateNodeSheet: React.FC<CreateNodeSheetProps> = ({
             isOpen={openSections.has('route')}
             isCompleted={completedSteps.has('route')}
             onToggle={() => toggleSection('route')}
-            requiredLabel={t('admin.nodes.form.required')}
-            completedLabel={t('admin.nodes.form.completed')}
           >
             <RouteConfigEditor
               value={formData.route}
@@ -1760,31 +1633,45 @@ export const CreateNodeSheet: React.FC<CreateNodeSheetProps> = ({
         </SheetBody>
 
         <SheetFooter>
-          <Button
-            onClick={handleSubmit}
-            disabled={loading || !isFormValid}
-            className="w-full min-h-[52px] text-base gap-2"
-          >
-            {loading ? (
-              <>
-                <Loader2 className="size-5 animate-spin" />
-                {t('admin.nodes.form.creating')}
-              </>
-            ) : (
-              <>
-                <Check className="size-5" />
-                {initialData ? t('admin.nodes.form.createCopy') : t('admin.nodes.form.createNode')}
-              </>
-            )}
-          </Button>
-          <Button
-            variant="ghost"
-            onClick={handleClose}
-            disabled={loading}
-            className="w-full min-h-[44px]"
-          >
-            {t('common.actions.cancel')}
-          </Button>
+          <div className="flex gap-2 w-full">
+            <button
+              type="button"
+              onClick={handleClose}
+              disabled={loading}
+              className={cn(
+                'flex-1 flex items-center justify-center',
+                'h-11 rounded-lg',
+                'border border-border bg-background text-foreground',
+                'text-sm font-medium',
+                'active:opacity-80 transition-opacity',
+                'disabled:opacity-50'
+              )}
+            >
+              {t('common.actions.cancel')}
+            </button>
+            <button
+              type="button"
+              onClick={handleSubmit}
+              disabled={loading || !isFormValid}
+              className={cn(
+                'flex-1 flex items-center justify-center gap-2',
+                'h-11 rounded-lg',
+                'bg-primary text-primary-foreground',
+                'text-sm font-medium',
+                'active:opacity-80 transition-opacity',
+                'disabled:opacity-50'
+              )}
+            >
+              {loading ? (
+                <>
+                  <Loader2 className="size-4 animate-spin" />
+                  {t('admin.nodes.form.creating')}
+                </>
+              ) : (
+                initialData ? t('admin.nodes.form.createCopy') : t('admin.nodes.form.createNode')
+              )}
+            </button>
+          </div>
         </SheetFooter>
       </SheetContent>
     </Sheet>

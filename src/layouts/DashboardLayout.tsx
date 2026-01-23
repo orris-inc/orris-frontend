@@ -62,7 +62,7 @@ export const DashboardLayout = ({ children }: DashboardLayoutProps) => {
 
   return (
     <TooltipProvider delayDuration={0}>
-    <div className="flex min-h-viewport flex-col bg-background overflow-x-hidden">
+    <div className="flex min-h-viewport flex-col bg-background">
       {/* iOS-style Navigation Bar */}
       <header
         className={cn(

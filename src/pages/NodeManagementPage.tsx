@@ -302,8 +302,6 @@ export const NodeManagementPage = () => {
             onActivate={handleActivate}
             onDeactivate={handleDeactivate}
             onPageChange={handlePageChange}
-            enableDragSort={dragSortEnabled}
-            onDragSortChange={setDragSortEnabled}
             onDragEnd={handleDragEnd}
           />
         </div>

@@ -32,6 +32,7 @@ import { ThemeToggle } from '@/components/common/ThemeToggle';
 import { LanguageSwitcher } from '@/components/common/LanguageSwitcher';
 import { getNavItems } from '@/config/navigation';
 import { cn } from '@/lib/utils';
+import { mobileFixedHeaderStyles } from '@/lib/ui-styles';
 
 interface AdminLayoutProps {
   children: React.ReactNode;
@@ -92,7 +93,7 @@ export const AdminLayout = ({ children }: AdminLayoutProps) => {
 
   return (
     <TooltipProvider delayDuration={0}>
-      <div className="min-h-viewport bg-background overflow-x-hidden">
+      <div className="min-h-viewport bg-background">
         {/* Mobile drawer - iOS 26 Liquid Glass Design */}
         <MobileDrawer
           open={mobileDrawerOpen}
@@ -203,24 +204,8 @@ export const AdminLayout = ({ children }: AdminLayoutProps) => {
           )}
         >
           {/* Navigation Bar - CSS-first responsive */}
-          <header
-            className={cn(
-              'sticky top-0 z-30 border-b border-border',
-              // Mobile: light blur with safe area
-              'bg-background/95 backdrop-blur-sm pt-[env(safe-area-inset-top)]',
-              // Desktop: solid background without blur
-              'md:bg-background md:pt-0 md:backdrop-blur-none'
-            )}
-          >
-            <div
-              className={cn(
-                'flex items-center',
-                // Mobile: iOS standard nav bar height 44px
-                'h-11 px-2',
-                // Desktop: 56px height with more padding
-                'md:h-14 md:px-4 md:gap-4 lg:px-6'
-              )}
-            >
+          <header className={mobileFixedHeaderStyles.header}>
+            <div className={mobileFixedHeaderStyles.headerInner}>
               {/* Left section - menu button (mobile only) */}
               <div className="w-11 flex-shrink-0 md:hidden">
                 <button
@@ -286,7 +271,7 @@ export const AdminLayout = ({ children }: AdminLayoutProps) => {
 
           {/* Page content - CSS-first responsive padding */}
           <main
-            className="flex-1 overflow-x-hidden p-3 md:p-4 lg:p-6"
+            className={mobileFixedHeaderStyles.mainSmall}
             data-view-transition="content"
           >
             <div className="mx-auto max-w-7xl min-w-0">

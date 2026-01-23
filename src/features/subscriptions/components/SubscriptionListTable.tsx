@@ -7,7 +7,7 @@
 import { useMemo, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { CheckCircle, X, MoreHorizontal, Play, XCircle, RefreshCw, Eye, Copy, Trash2, Pause, PlayCircle, RefreshCcw } from 'lucide-react';
-import { DataTable, AdminBadge, TruncatedId, TableHoverCardProvider, type ColumnDef, type ResponsiveColumnMeta } from '@/components/admin';
+import { DataTable, AdminBadge, TableHoverCardProvider, TableHoverCardList, DateTimeCell, type ColumnDef, type ResponsiveColumnMeta } from '@/components/admin';
 import { useBreakpoint } from '@/hooks/useBreakpoint';
 import { SubscriptionMobileList } from './SubscriptionMobileList';
 import { Skeleton } from '@/components/common/Skeleton';
@@ -24,7 +24,6 @@ import {
   ContextMenuItem,
   ContextMenuSeparator,
 } from '@/components/common/ContextMenu';
-import { formatDate } from '@/shared/utils/date-utils';
 import { SUBSCRIPTION_STATUS_CONFIG } from '@/shared/constants/status-config';
 import type { Subscription } from '@/api/subscription/types';
 import type { UserResponse } from '@/api/user/types';
@@ -77,21 +76,15 @@ export const SubscriptionListTable: React.FC<SubscriptionListTableProps> = ({
 
   const columns = useMemo<ColumnDef<Subscription>[]>(() => [
     {
-      accessorKey: 'id',
-      header: t('tableColumns.subscriptionId'),
-      size: 120,
-      meta: { priority: 4 } as ResponsiveColumnMeta,
-      cell: ({ row }) => <TruncatedId id={row.original.id} />,
-    },
-    {
       id: 'user',
       header: t('tableColumns.user'),
-      size: 160,
-      meta: { priority: 1 } as ResponsiveColumnMeta,
+      size: 200,
+      meta: { priority: 1, sticky: 'left' } as ResponsiveColumnMeta,
       cell: ({ row }) => {
+        const subscription = row.original;
         // userId is number, but usersMap key is string (user.id)
         // Convert userId to string for lookup
-        const user = usersMap[String(row.original.userId)];
+        const user = usersMap[String(subscription.userId)];
         const isUserLoading = usersLoading || (!user && Object.keys(usersMap).length === 0);
 
         if (isUserLoading) {
@@ -103,15 +96,27 @@ export const SubscriptionListTable: React.FC<SubscriptionListTableProps> = ({
           );
         }
 
+        const hoverItems = [
+          { label: t('tableColumns.subscriptionId'), value: subscription.id },
+          { label: t('tableColumns.userId'), value: String(subscription.userId) },
+          ...(user?.email ? [{ label: t('tableColumns.email'), value: user.email }] : []),
+        ];
+
         return (
-          <div className="space-y-1">
-            <div className="font-medium text-slate-900 dark:text-white">
-              {user?.name || user?.email || `User #${row.original.userId}`}
+          <TableHoverCardList
+            columnKey="user"
+            items={hoverItems}
+            contentClassName="w-72"
+          >
+            <div className="flex flex-col gap-0.5 cursor-default">
+              <span className="font-semibold text-foreground whitespace-nowrap truncate">
+                {user?.name || user?.email || `User #${subscription.userId}`}
+              </span>
+              <code className="font-mono text-[11px] text-muted-foreground bg-muted/50 px-1 py-0.5 rounded w-fit">
+                {subscription.id}
+              </code>
             </div>
-            <div className="text-xs text-slate-500 dark:text-slate-400">
-              {user?.email || `ID: ${row.original.userId}`}
-            </div>
-          </div>
+          </TableHoverCardList>
         );
       },
     },
@@ -159,22 +164,14 @@ export const SubscriptionListTable: React.FC<SubscriptionListTableProps> = ({
       header: t('tableColumns.startDate'),
       size: 100,
       meta: { priority: 2 } as ResponsiveColumnMeta,
-      cell: ({ row }) => (
-        <span className="text-slate-700 dark:text-slate-300 text-sm">
-          {formatDate(row.original.startDate)}
-        </span>
-      ),
+      cell: ({ row }) => <DateTimeCell value={row.original.startDate} format="date" />,
     },
     {
       accessorKey: 'endDate',
       header: t('tableColumns.endDate'),
       size: 100,
       meta: { priority: 2 } as ResponsiveColumnMeta,
-      cell: ({ row }) => (
-        <span className="text-slate-700 dark:text-slate-300 text-sm">
-          {row.original.endDate ? formatDate(row.original.endDate) : '-'}
-        </span>
-      ),
+      cell: ({ row }) => <DateTimeCell value={row.original.endDate} format="date" />,
     },
     {
       accessorKey: 'autoRenew',
@@ -194,17 +191,13 @@ export const SubscriptionListTable: React.FC<SubscriptionListTableProps> = ({
       header: t('tableColumns.createdAt'),
       size: 100,
       meta: { priority: 4 } as ResponsiveColumnMeta,
-      cell: ({ row }) => (
-        <span className="text-slate-500 dark:text-slate-400 text-sm">
-          {formatDate(row.original.createdAt)}
-        </span>
-      ),
+      cell: ({ row }) => <DateTimeCell value={row.original.createdAt} format="date" />,
     },
     {
       id: 'actions',
       header: t('tableColumns.actions'),
       size: 120,
-      meta: { priority: 1 } as ResponsiveColumnMeta,
+      meta: { priority: 1, sticky: 'right' } as ResponsiveColumnMeta,
       cell: ({ row }) => {
         const subscription = row.original;
         const status = subscription.status;

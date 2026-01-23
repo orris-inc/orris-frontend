@@ -5,6 +5,10 @@ on:
     tags:
       - 'v*'
 
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
 env:
   REGISTRY: ghcr.io
   IMAGE_NAME: ${{ github.repository }}
@@ -19,7 +23,109 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Generate changelog
+        id: changelog
+        run: |
+          # Get previous tag
+          PREV_TAG=$(git describe --tags --abbrev=0 HEAD^ 2>/dev/null || echo "")
+          CURRENT_TAG=${GITHUB_REF_NAME}
+
+          echo "## What's Changed in ${CURRENT_TAG}" > changelog.md
+          echo "" >> changelog.md
+
+          if [ -n "$PREV_TAG" ]; then
+            echo "Changes since ${PREV_TAG}" >> changelog.md
+          fi
+          echo "" >> changelog.md
+
+          # Temporary files for grouping
+          FEAT_FILE=$(mktemp)
+          FIX_FILE=$(mktemp)
+          OTHER_FILE=$(mktemp)
+
+          # Get commit range
+          if [ -z "$PREV_TAG" ]; then
+            RANGE="HEAD"
+          else
+            RANGE="${PREV_TAG}..${CURRENT_TAG}"
+          fi
+
+          # Process each commit with full details
+          git log ${RANGE} --reverse --format="COMMIT_START%n%H%n%s%n%an%n%ad%n%b%nCOMMIT_END" --date=short | \
+          while IFS= read -r line; do
+            if [[ "$line" == "COMMIT_START" ]]; then
+              read -r hash
+              read -r subject
+              read -r author
+              read -r date
+              body=""
+              while IFS= read -r bodyline && [[ "$bodyline" != "COMMIT_END" ]]; do
+                if [[ -n "$bodyline" ]]; then
+                  body="${body}${bodyline}\n"
+                fi
+              done
+
+              SHORT_HASH="${hash:0:7}"
+
+              # Build commit entry
+              ENTRY="#### ${subject}\n"
+              ENTRY="${ENTRY}- **Commit**: \`${SHORT_HASH}\`\n"
+              ENTRY="${ENTRY}- **Author**: ${author}\n"
+              ENTRY="${ENTRY}- **Date**: ${date}\n"
+              if [[ -n "$body" ]]; then
+                ENTRY="${ENTRY}\n<details>\n<summary>Details</summary>\n\n\`\`\`\n${body}\`\`\`\n</details>\n"
+              fi
+              ENTRY="${ENTRY}\n---\n"
+
+              # Categorize by commit type
+              if [[ "$subject" =~ ^feat ]]; then
+                echo -e "$ENTRY" >> "$FEAT_FILE"
+              elif [[ "$subject" =~ ^fix ]]; then
+                echo -e "$ENTRY" >> "$FIX_FILE"
+              else
+                echo -e "$ENTRY" >> "$OTHER_FILE"
+              fi
+            fi
+          done
+
+          # Write features
+          if [ -s "$FEAT_FILE" ]; then
+            echo "### ✨ Features" >> changelog.md
+            echo "" >> changelog.md
+            cat "$FEAT_FILE" >> changelog.md
+            echo "" >> changelog.md
+          fi
+
+          # Write fixes
+          if [ -s "$FIX_FILE" ]; then
+            echo "### 🐛 Bug Fixes" >> changelog.md
+            echo "" >> changelog.md
+            cat "$FIX_FILE" >> changelog.md
+            echo "" >> changelog.md
+          fi
+
+          # Write others
+          if [ -s "$OTHER_FILE" ]; then
+            echo "### 📝 Other Changes" >> changelog.md
+            echo "" >> changelog.md
+            cat "$OTHER_FILE" >> changelog.md
+            echo "" >> changelog.md
+          fi
+
+          # Cleanup temp files
+          rm -f "$FEAT_FILE" "$FIX_FILE" "$OTHER_FILE"
+
+          # Add comparison link
+          if [ -n "$PREV_TAG" ]; then
+            echo "" >> changelog.md
+            echo "**Full Changelog**: https://github.com/${{ github.repository }}/compare/${PREV_TAG}...${CURRENT_TAG}" >> changelog.md
+          fi
+
+          cat changelog.md
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
@@ -66,4 +172,4 @@ jobs:
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
-          generate_release_notes: true
+          body_path: changelog.md

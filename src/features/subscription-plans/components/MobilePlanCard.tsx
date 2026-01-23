@@ -1,28 +1,24 @@
 /**
- * MobilePlanCard - iOS-style plan card with swipe actions
+ * MobilePlanCard - Tailwind Application UI style list item
  *
- * Redesigned for better mobile UX:
- * - Compact layout showing key info at a glance
- * - Swipe left to reveal actions (Edit, Duplicate, Toggle, Delete)
- * - Tap to open details sheet
- * - Clear visual hierarchy
+ * Design principles:
+ * - Clean stacked list item (used with divide-y parent)
+ * - Two-line layout: name + price | type + visibility + metadata
+ * - Status badge on the right
+ * - Tap to open detail sheet
  */
 
 import { useTranslation } from 'react-i18next';
 import {
-  Edit,
-  Copy,
-  Power,
-  Trash2,
   Globe,
   Lock,
   Zap,
   ArrowLeftRight,
   Layers,
 } from 'lucide-react';
-import { MobileSwipeCard, type SwipeAction } from '@/components/mobile';
 import { AdminBadge } from '@/components/admin';
 import { cn } from '@/lib/utils';
+import { mobileListItemStyles } from '@/lib/ui-styles';
 import { ACTIVE_STATUS_CONFIG, PLAN_TYPE_CONFIG } from '@/shared/constants/status-config';
 import type { SubscriptionPlan, PlanStatus, PlanType } from '@/api/subscription/types';
 
@@ -33,10 +29,6 @@ import type { SubscriptionPlan, PlanStatus, PlanType } from '@/api/subscription/
 export interface MobilePlanCardProps {
   plan: SubscriptionPlan;
   onCardPress: (plan: SubscriptionPlan) => void;
-  onEdit: (plan: SubscriptionPlan) => void;
-  onDuplicate: (plan: SubscriptionPlan) => void;
-  onToggleStatus: (plan: SubscriptionPlan) => void;
-  onDelete: (plan: SubscriptionPlan) => void;
 }
 
 // ============================================================================
@@ -79,83 +71,50 @@ const getPricingCount = (plan: SubscriptionPlan): number => {
 export const MobilePlanCard = ({
   plan,
   onCardPress,
-  onEdit,
-  onDuplicate,
-  onToggleStatus,
-  onDelete,
 }: MobilePlanCardProps) => {
   const { t } = useTranslation();
   const status = plan.status as PlanStatus | undefined;
-  const statusConfig = status ? ACTIVE_STATUS_CONFIG[status] : { labelKey: 'common.status.unknown', variant: 'default' as const };
+  const statusConfig = status
+    ? ACTIVE_STATUS_CONFIG[status]
+    : { labelKey: 'common.status.unknown', variant: 'default' as const };
   const planType = plan.planType as PlanType | undefined;
-  const typeConfig = planType ? PLAN_TYPE_CONFIG[planType] : { labelKey: 'common.planType.node', variant: 'info' as const };
+  const typeConfig = planType
+    ? PLAN_TYPE_CONFIG[planType]
+    : { labelKey: 'common.planType.node', variant: 'info' as const };
   const pricingCount = getPricingCount(plan);
 
-  // Swipe actions
-  const swipeActions: SwipeAction[] = [
-    {
-      key: 'edit',
-      icon: <Edit className="size-5" />,
-      label: t('common.actions.edit'),
-      bgColor: 'bg-primary',
-      onClick: () => onEdit(plan),
-    },
-    {
-      key: 'duplicate',
-      icon: <Copy className="size-5" />,
-      label: t('common.actions.copy'),
-      bgColor: 'bg-info',
-      onClick: () => onDuplicate(plan),
-    },
-    {
-      key: 'toggle',
-      icon: <Power className="size-5" />,
-      label: plan.status === 'active' ? t('common.actions.disable') : t('common.status.active'),
-      bgColor: plan.status === 'active' ? 'bg-warning' : 'bg-success',
-      onClick: () => onToggleStatus(plan),
-    },
-    {
-      key: 'delete',
-      icon: <Trash2 className="size-5" />,
-      label: t('common.actions.delete'),
-      bgColor: 'bg-destructive',
-      onClick: () => onDelete(plan),
-    },
-  ];
-
   return (
-    <MobileSwipeCard actions={swipeActions}>
-      <div
-        onClick={() => onCardPress(plan)}
-        className="px-4 py-3 min-h-[72px] cursor-pointer active:bg-muted/30 transition-colors"
-      >
-        {/* Row 1: Name + Price + Status */}
-        <div className="flex items-center justify-between gap-2 mb-1">
-          <div className="flex items-center gap-2 min-w-0 flex-1">
-            <span className="font-medium text-foreground truncate">
-              {plan.name}
-            </span>
-            <span className="font-mono text-sm font-medium text-primary shrink-0">
-              {getPriceDisplay(plan)}
-            </span>
-          </div>
-          <AdminBadge
-            variant={statusConfig.variant}
-            className="text-[10px] px-1.5 py-0 shrink-0"
-          >
-            {t(statusConfig.labelKey)}
-          </AdminBadge>
+    <div
+      role="button"
+      tabIndex={0}
+      onClick={() => onCardPress(plan)}
+      onKeyDown={(e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          onCardPress(plan);
+        }
+      }}
+      className={mobileListItemStyles}
+    >
+      {/* Main content */}
+      <div className="flex-1 min-w-0">
+        {/* Row 1: Name + Price */}
+        <div className="flex items-center gap-2 mb-1">
+          <span className="text-sm font-medium text-foreground truncate">
+            {plan.name}
+          </span>
+          <span className="font-mono text-sm font-medium text-primary shrink-0">
+            {getPriceDisplay(plan)}
+          </span>
         </div>
 
         {/* Row 2: Type + Visibility + Trial + Pricing Count */}
         <div className="flex items-center gap-2 text-xs text-muted-foreground">
           {/* Plan Type */}
-          <div className="flex items-center gap-1">
+          <span className="flex items-center gap-1">
             {planType && PLAN_TYPE_ICONS[planType]}
-            <AdminBadge variant={typeConfig.variant} className="text-[10px] px-1.5 py-0">
-              {t(typeConfig.labelKey)}
-            </AdminBadge>
-          </div>
+            <span>{t(typeConfig.labelKey)}</span>
+          </span>
 
           <span className="text-border">·</span>
 
@@ -195,14 +154,14 @@ export const MobilePlanCard = ({
         </div>
       </div>
 
-      {/* Swipe hint indicator */}
-      <div className="absolute right-2 top-1/2 -translate-y-1/2 opacity-20 pointer-events-none">
-        <div className="flex gap-0.5">
-          <div className="w-0.5 h-4 rounded-full bg-foreground" />
-          <div className="w-0.5 h-4 rounded-full bg-foreground" />
-        </div>
-      </div>
-    </MobileSwipeCard>
+      {/* Right side: Status */}
+      <AdminBadge
+        variant={statusConfig.variant}
+        className="text-[10px] px-1.5 py-0 shrink-0"
+      >
+        {t(statusConfig.labelKey)}
+      </AdminBadge>
+    </div>
   );
 };
 

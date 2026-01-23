@@ -103,3 +103,104 @@ export function getBadgeClass(variant: keyof typeof badgeVariants = 'default', c
 export function getAlertClass(variant: keyof typeof alertVariants = 'default', className?: string) {
     return cn(alertStyles, alertVariants[variant], className);
 }
+
+/**
+ * Mobile Fixed Header 样式
+ * 移动端使用 fixed 定位确保 header 固定，桌面端使用 sticky
+ *
+ * Usage:
+ * - header: mobileFixedHeaderStyles.header
+ * - main: mobileFixedHeaderStyles.main (with appropriate height variant)
+ */
+/**
+ * Mobile List Item 样式
+ * 遵循 Tailwind Application UI 移动端最佳实践:
+ * - pointer-coarse: 触摸设备更大的触摸目标
+ * - focus-visible: 键盘焦点样式
+ * - active: 按下状态反馈
+ */
+export const mobileListItemStyles = cn(
+    // Base layout
+    'w-full flex items-center gap-3 p-4 text-left',
+    // Touch target: larger padding on touch devices (min 44px height)
+    'pointer-coarse:py-4',
+    // Interactive states with refined colors
+    'hover:bg-accent/50 active:bg-accent',
+    // Keyboard focus (only visible on keyboard navigation)
+    'focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-primary focus-visible:bg-accent/30',
+    // Smooth transitions
+    'transition-colors duration-150'
+);
+
+/**
+ * Mobile List Container 样式
+ * Tailwind Application UI 风格的列表容器
+ */
+export const mobileListContainerStyles = cn(
+    'rounded-xl border border-border',
+    'bg-card',
+    'overflow-hidden',
+    'divide-y divide-border'
+);
+
+/**
+ * Mobile Section Title 样式
+ * 用于列表上方的小标题
+ */
+export const mobileSectionTitleStyles = cn(
+    'text-xs font-medium text-muted-foreground uppercase tracking-wide',
+    'px-1 py-2'
+);
+
+export const mobileFixedHeaderStyles = {
+    /**
+     * Header 样式
+     * - 移动端: fixed 定位 + 玻璃效果 + safe-area
+     * - 桌面端: sticky 定位 + 普通背景
+     */
+    header: cn(
+        'z-30 border-b border-border',
+        // Mobile: fixed positioning for reliable header pinning
+        'fixed top-0 left-0 right-0 md:sticky md:left-auto md:right-auto',
+        // Mobile: glass effect with safe area
+        'bg-background/95 backdrop-blur-sm pt-[env(safe-area-inset-top)]',
+        // Desktop: solid background without blur
+        'md:bg-background md:pt-0 md:backdrop-blur-none'
+    ),
+
+    /**
+     * Header 内部容器样式
+     * - 移动端: 44px 高度 (iOS 标准)
+     * - 桌面端: 56px 高度
+     */
+    headerInner: cn(
+        'flex items-center',
+        // Mobile: iOS standard nav bar height 44px
+        'h-11 px-2',
+        // Desktop: 56px height with more padding
+        'md:h-14 md:px-4 md:gap-4 lg:px-6'
+    ),
+
+    /**
+     * Main 内容区域样式 - 小间距版本 (p-3)
+     * 移动端需要 padding-top 补偿 fixed header 高度
+     */
+    mainSmall: cn(
+        'flex-1 overflow-x-hidden',
+        // Mobile: pt = header(44px/2.75rem) + safe-area + base-padding(0.75rem)
+        'p-3 pt-[calc(2.75rem+env(safe-area-inset-top)+0.75rem)]',
+        // Desktop: normal padding
+        'md:p-4 md:pt-4 lg:p-6 lg:pt-6'
+    ),
+
+    /**
+     * Main 内容区域样式 - 中等间距版本 (p-4)
+     */
+    mainMedium: cn(
+        'flex-1 overflow-x-hidden pb-safe',
+        // Mobile: pt = header(44px/2.75rem) + safe-area + base-padding(1rem)
+        'py-4 pt-[calc(2.75rem+env(safe-area-inset-top)+1rem)]',
+        // Desktop: normal padding
+        'md:pt-4 sm:py-6'
+    ),
+};

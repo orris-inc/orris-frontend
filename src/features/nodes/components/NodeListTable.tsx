@@ -14,8 +14,7 @@ import {
   Power,
   PowerOff,
   MoreHorizontal,
-  CheckCircle2,
-  XCircle,
+  Circle,
   AlertTriangle,
   Wrench,
   Terminal,
@@ -28,7 +27,7 @@ import {
   Bell,
   BellOff,
 } from 'lucide-react';
-import { DataTable, DraggableDataTable, TruncatedId, SystemStatusCell, TableHoverCardProvider, TableHoverCardList, type ColumnDef, type ResponsiveColumnMeta } from '@/components/admin';
+import { DataTable, DraggableDataTable, SystemStatusCell, TableHoverCardProvider, TableHoverCardList, DateTimeCell, type ColumnDef, type ResponsiveColumnMeta } from '@/components/admin';
 import { useBreakpoint } from '@/hooks/useBreakpoint';
 import { NodeMobileList } from './NodeMobileList';
 import {
@@ -72,11 +71,50 @@ interface NodeListTableProps {
   onDragEnd?: (activeId: string, overId: string, oldIndex: number, newIndex: number) => void;
 }
 
-// Status configuration with semantic colors (labels are translation keys)
-const STATUS_CONFIG: Record<NodeStatus, { labelKey: string; colorClass: string; icon: React.ElementType }> = {
-  active: { labelKey: 'common.status.active', colorClass: 'text-success hover:text-success', icon: CheckCircle2 },
-  inactive: { labelKey: 'common.status.inactive', colorClass: 'text-muted-foreground/50 hover:text-muted-foreground', icon: XCircle },
-  maintenance: { labelKey: 'common.status.maintenance', colorClass: 'text-warning hover:text-warning', icon: Wrench },
+// Health status configuration - combines online state and admin status
+// Running: active + online, Offline: active + offline, Stopped: inactive, Maintenance: maintenance
+type HealthStatus = 'running' | 'offline' | 'stopped' | 'maintenance';
+
+const HEALTH_STATUS_CONFIG: Record<HealthStatus, {
+  labelKey: string;
+  colorClass: string;
+  bgClass: string;
+  icon: React.ElementType;
+  showPulse?: boolean;
+}> = {
+  running: {
+    labelKey: 'common.status.running',
+    colorClass: 'text-success',
+    bgClass: 'bg-success/10',
+    icon: Circle,
+    showPulse: true,
+  },
+  offline: {
+    labelKey: 'common.status.offline',
+    colorClass: 'text-warning',
+    bgClass: 'bg-warning/10',
+    icon: AlertTriangle,
+  },
+  stopped: {
+    labelKey: 'common.status.stopped',
+    colorClass: 'text-muted-foreground',
+    bgClass: 'bg-muted',
+    icon: Circle,
+  },
+  maintenance: {
+    labelKey: 'common.status.maintenance',
+    colorClass: 'text-orange-500',
+    bgClass: 'bg-orange-500/10',
+    icon: Wrench,
+  },
+};
+
+// Determine health status from node state
+const getHealthStatus = (node: { status: NodeStatus; isOnline?: boolean }): HealthStatus => {
+  if (node.status === 'maintenance') return 'maintenance';
+  if (node.status === 'inactive') return 'stopped';
+  // active status
+  return node.isOnline ? 'running' : 'offline';
 };
 
 // Protocol configuration with semantic styling
@@ -201,150 +239,116 @@ export const NodeListTable: React.FC<NodeListTableProps> = ({
 
   const columns = useMemo<ColumnDef<Node>[]>(() => [
     {
-      accessorKey: 'id',
-      header: 'ID',
-      size: 100,
-      meta: { priority: 4 } as ResponsiveColumnMeta, // Optional column >= 1280px
-      cell: ({ row }) => (
-        <div className="pr-4">
-          <TruncatedId id={row.original.id} startChars={6} endChars={4} />
-        </div>
-      ),
-    },
-    {
       accessorKey: 'name',
       header: t('admin.nodes.table.node'),
-      size: 200,
+      size: 220,
       meta: { priority: 1, sticky: 'left' } as ResponsiveColumnMeta, // Core column, always visible, sticky left
       cell: ({ row }) => {
         const node = row.original;
+        const protocolConfig = PROTOCOL_CONFIG[node.protocol] || { label: node.protocol, color: 'bg-muted text-muted-foreground' };
         const hasSubscriptionPort = node.subscriptionPort && node.subscriptionPort !== node.agentPort;
+
+        // Build hover items including ID and config details
+        const configLabel = node.protocol === 'shadowsocks'
+          ? node.encryptionMethod || '-'
+          : `${node.transportProtocol?.toUpperCase() || 'TCP'}+TLS`;
         const hoverItems = [
+          { label: 'ID', value: node.id },
+          { label: t('admin.nodes.tooltip.protocol'), value: `${protocolConfig.label} / ${configLabel}` },
+          ...(node.protocol === 'shadowsocks' && node.plugin ? [{ label: 'Plugin', value: node.plugin }] : []),
+          ...(node.protocol !== 'shadowsocks' && node.sni ? [{ label: 'SNI', value: node.sni }] : []),
+          ...(node.protocol !== 'shadowsocks' && node.host ? [{ label: 'Host', value: node.host }] : []),
+          ...(node.protocol !== 'shadowsocks' && node.path ? [{ label: 'Path', value: node.path }] : []),
           { label: t('admin.nodes.tooltip.agentPort'), value: node.agentPort },
           ...(hasSubscriptionPort ? [{ label: t('admin.nodes.tooltip.subscriptionPort'), value: node.subscriptionPort }] : []),
           ...(node.systemStatus?.publicIpv4 ? [{ label: 'IPv4', value: node.systemStatus.publicIpv4 }] : []),
           ...(node.systemStatus?.publicIpv6 ? [{ label: 'IPv6', value: node.systemStatus.publicIpv6 }] : []),
         ];
         return (
-          <div className="flex flex-col gap-0.5">
-            <span className="font-semibold text-foreground whitespace-nowrap">
-              {node.name}
-            </span>
-            <div className="flex items-center gap-1.5 text-xs text-muted-foreground whitespace-nowrap">
-              <TableHoverCardList
-                columnKey="name"
-                items={hoverItems}
-                contentClassName="w-64"
-              >
-                <code className="font-mono text-[11px] bg-muted/50 px-1 py-0.5 rounded cursor-default">
-                  {node.serverAddress}:{node.agentPort}
-                  {hasSubscriptionPort && <span className="text-primary">/{node.subscriptionPort}</span>}
-                </code>
-              </TableHoverCardList>
-              {node.region && (
-                <span className="text-muted-foreground/60">• {node.region}</span>
-              )}
-            </div>
-          </div>
-        );
-      },
-    },
-    {
-      id: 'config',
-      header: t('admin.nodes.table.config'),
-      size: 140,
-      meta: {
-        priority: 3,
-        headerTooltip: t('admin.nodes.tooltip.configDescription'),
-      } as ResponsiveColumnMeta,
-      cell: ({ row }) => {
-        const node = row.original;
-        const protocolConfig = PROTOCOL_CONFIG[node.protocol] || { label: node.protocol, color: 'bg-muted text-muted-foreground' };
-
-        if (node.protocol === 'shadowsocks') {
-          return (
-            <div className="flex flex-col gap-1">
-              <div className="flex items-center gap-1.5">
-                <span className={`px-1.5 py-0.5 text-[10px] font-semibold rounded ${protocolConfig.color}`}>
-                  {protocolConfig.label}
-                </span>
-                <code className="text-[11px] font-mono text-muted-foreground bg-muted/30 px-1 py-0.5 rounded">
-                  {node.encryptionMethod || '-'}
-                </code>
-              </div>
-              {node.plugin && (
-                <span className="text-[11px] text-muted-foreground/70">
-                  + {node.plugin}
-                </span>
-              )}
-            </div>
-          );
-        }
-        // Trojan displays transport protocol and TLS configuration
-        const transport = node.transportProtocol?.toUpperCase() || 'TCP';
-        const configItems = [
-          { label: t('admin.nodes.tooltip.transportProtocol'), value: transport },
-          ...(node.sni ? [{ label: 'SNI', value: node.sni }] : []),
-          ...(node.host ? [{ label: 'Host', value: node.host }] : []),
-          ...(node.path ? [{ label: 'Path', value: node.path }] : []),
-        ];
-        return (
           <TableHoverCardList
-            columnKey="config"
-            items={configItems}
+            columnKey="name"
+            items={hoverItems}
+            contentClassName="w-72"
             footer={node.allowInsecure && (
               <span className="text-amber-500 text-xs">{t('admin.nodes.tooltip.allowInsecure')}</span>
             )}
           >
-            <div className="flex flex-col gap-1 cursor-default">
-              <div className="flex items-center gap-1.5">
-                <span className={`px-1.5 py-0.5 text-[10px] font-semibold rounded ${protocolConfig.color}`}>
+            <div className="flex flex-col gap-0.5 cursor-default">
+              <div className="flex items-center gap-1.5 whitespace-nowrap">
+                <span className={`px-1.5 py-0.5 text-[10px] font-semibold rounded shrink-0 ${protocolConfig.color}`}>
                   {protocolConfig.label}
                 </span>
-                <code className="text-[11px] font-mono text-muted-foreground bg-muted/30 px-1 py-0.5 rounded">
-                  {transport} + TLS
-                </code>
-              </div>
-              {node.sni && (
-                <span className="text-[11px] text-muted-foreground/70 truncate max-w-[120px]">
-                  SNI: {node.sni}
+                <span className="font-semibold text-foreground truncate">
+                  {node.name}
                 </span>
-              )}
+              </div>
+              <div className="flex items-center gap-1.5 text-xs text-muted-foreground whitespace-nowrap">
+                <code className="font-mono text-[11px] bg-muted/50 px-1 py-0.5 rounded">
+                  {node.serverAddress}:{node.agentPort}
+                  {hasSubscriptionPort && <span className="text-primary">/{node.subscriptionPort}</span>}
+                </code>
+                {node.region && (
+                  <span className="text-muted-foreground/60">• {node.region}</span>
+                )}
+              </div>
             </div>
           </TableHoverCardList>
         );
       },
     },
     {
-      id: 'availability',
-      header: t('admin.nodes.table.online'),
-      size: 70,
-      meta: { priority: 2 } as ResponsiveColumnMeta, // Important column >= 640px
+      id: 'health',
+      header: t('admin.nodes.table.status'),
+      size: 100,
+      meta: { priority: 1 } as ResponsiveColumnMeta,
       cell: ({ row }) => {
         const node = row.original;
+        const healthStatus = getHealthStatus(node);
+        const config = HEALTH_STATUS_CONFIG[healthStatus];
+        const StatusIcon = config.icon;
         const muteButtonClass = 'p-0.5 rounded hover:bg-accent/50 transition-colors cursor-pointer';
+
+        // Build tooltip content
+        const getTooltipContent = () => {
+          const lines: string[] = [t(config.labelKey)];
+          if (healthStatus === 'offline' && node.lastSeenAt) {
+            lines.push(`${t('admin.nodes.tooltip.lastOnline')}: ${formatDateTime(node.lastSeenAt)}`);
+          }
+          if (node.status === 'maintenance' && node.maintenanceReason) {
+            lines.push(`${t('admin.nodes.tooltip.maintenanceReason')}: ${node.maintenanceReason}`);
+          }
+          // Click action hint
+          if (node.status === 'active') {
+            lines.push(t('admin.nodes.actions.clickToDeactivate'));
+          } else if (node.status !== 'maintenance') {
+            lines.push(t('admin.nodes.actions.clickToActivate'));
+          }
+          return lines;
+        };
+
         return (
-          <div className="flex items-center gap-1.5">
-            {node.isOnline ? (
-              <Tooltip>
-                <TooltipTrigger>
-                  <span className="relative flex size-2.5">
-                    <span className="animate-ping absolute inline-flex size-full rounded-full bg-success opacity-75"></span>
-                    <span className="relative inline-flex rounded-full size-2.5 bg-success"></span>
+          <div className="flex items-center gap-2 whitespace-nowrap">
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <button
+                  onClick={() => node.status === 'active' ? onDeactivate(node) : onActivate(node)}
+                  className={`inline-flex items-center gap-1.5 px-2 py-1 rounded-md text-xs font-medium cursor-pointer active:scale-95 transition-all ${config.bgClass} ${config.colorClass}`}
+                >
+                  <span className="relative flex">
+                    {config.showPulse && (
+                      <span className={`animate-ping absolute inline-flex size-full rounded-full ${config.colorClass.replace('text-', 'bg-')} opacity-75`}></span>
+                    )}
+                    <StatusIcon className={`relative size-3 ${healthStatus === 'stopped' ? 'fill-current opacity-40' : healthStatus === 'running' ? 'fill-current' : ''}`} strokeWidth={healthStatus === 'stopped' ? 1.5 : 2} />
                   </span>
-                </TooltipTrigger>
-                <TooltipContent>{t('admin.nodes.tooltip.onlineStatus')}</TooltipContent>
-              </Tooltip>
-            ) : (
-              <Tooltip>
-                <TooltipTrigger>
-                  <span className="size-2.5 rounded-full bg-muted-foreground/30 block"></span>
-                </TooltipTrigger>
-                <TooltipContent>
-                  {t('admin.nodes.tooltip.offlineStatus')}{node.lastSeenAt && ` · ${t('admin.nodes.tooltip.lastOnline')}: ${formatDateTime(node.lastSeenAt)}`}
-                </TooltipContent>
-              </Tooltip>
-            )}
+                  {t(config.labelKey)}
+                </button>
+              </TooltipTrigger>
+              <TooltipContent side="top" align="start">
+                {getTooltipContent().map((line, i) => (
+                  <div key={i} className={i > 0 ? 'text-xs opacity-80 mt-0.5' : ''}>{line}</div>
+                ))}
+              </TooltipContent>
+            </Tooltip>
             <Tooltip>
               <TooltipTrigger asChild>
                 <button
@@ -372,7 +376,7 @@ export const NodeListTable: React.FC<NodeListTableProps> = ({
     {
       id: 'monitor',
       header: t('admin.nodes.table.monitor'),
-      size: 180,
+      size: 160,
       meta: {
         priority: 3,
         headerTooltip: t('admin.nodes.tooltip.monitorDescription'),
@@ -383,65 +387,34 @@ export const NodeListTable: React.FC<NodeListTableProps> = ({
       },
     },
     {
-      accessorKey: 'status',
-      header: t('admin.nodes.table.status'),
-      size: 50,
-      meta: { priority: 1 } as ResponsiveColumnMeta, // Core column, always visible
-      cell: ({ row }) => {
-        const node = row.original;
-        const statusConfig = STATUS_CONFIG[node.status] || { labelKey: 'common.status.unknown', colorClass: 'text-muted-foreground', icon: AlertTriangle };
-        const StatusIcon = statusConfig.icon;
-
-        return (
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <button
-                onClick={() => node.status === 'active' ? onDeactivate(node) : onActivate(node)}
-                className={`cursor-pointer active:scale-90 transition-all duration-150 ${statusConfig.colorClass}`}
-              >
-                <StatusIcon className="size-4" strokeWidth={1.5} />
-              </button>
-            </TooltipTrigger>
-            <TooltipContent side="top" align="center">
-              {t(statusConfig.labelKey)} · {node.status === 'active' ? t('admin.nodes.actions.clickToDeactivate') : t('admin.nodes.actions.clickToActivate')}
-              {node.status === 'maintenance' && node.maintenanceReason && (
-                <div className="mt-1 text-xs opacity-80">{t('admin.nodes.tooltip.maintenanceReason')}: {node.maintenanceReason}</div>
-              )}
-            </TooltipContent>
-          </Tooltip>
-        );
-      },
-    },
-    {
       id: 'tags',
       header: t('admin.nodes.table.tags'),
-      size: 100,
+      size: 80,
       meta: { priority: 3 } as ResponsiveColumnMeta, // Secondary column >= 1024px
       cell: ({ row }) => {
         const node = row.original;
         if (!node.tags || node.tags.length === 0) {
           return <span className="text-xs text-muted-foreground/50">-</span>;
         }
+        // Show first tag + count if more
+        const firstTag = node.tags[0];
+        const moreCount = node.tags.length - 1;
         return (
-          <div className="flex flex-wrap gap-1">
-            {node.tags.slice(0, 2).map((tag: string, index: number) => (
-              <Badge key={index} variant="secondary" className="text-[10px] px-1.5 py-0 font-medium">
-                {tag}
-              </Badge>
-            ))}
-            {node.tags.length > 2 && (
-              <Tooltip>
-                <TooltipTrigger>
-                  <Badge variant="outline" className="text-[10px] px-1.5 py-0">
-                    +{node.tags.length - 2}
-                  </Badge>
-                </TooltipTrigger>
-                <TooltipContent>
-                  {node.tags.slice(2).join(', ')}
-                </TooltipContent>
-              </Tooltip>
-            )}
-          </div>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <div className="flex items-center gap-1 whitespace-nowrap cursor-default">
+                <Badge variant="secondary" className="text-[10px] px-1.5 py-0 font-medium truncate max-w-[60px]">
+                  {firstTag}
+                </Badge>
+                {moreCount > 0 && (
+                  <span className="text-[10px] text-muted-foreground">+{moreCount}</span>
+                )}
+              </div>
+            </TooltipTrigger>
+            <TooltipContent>
+              {node.tags.join(', ')}
+            </TooltipContent>
+          </Tooltip>
         );
       },
     },
@@ -561,13 +534,9 @@ export const NodeListTable: React.FC<NodeListTableProps> = ({
     {
       accessorKey: 'createdAt',
       header: t('admin.nodes.table.createdAt'),
-      size: 90,
+      size: 115,
       meta: { priority: 4 } as ResponsiveColumnMeta, // Optional column >= 1280px
-      cell: ({ row }) => (
-        <span className="text-xs text-muted-foreground">
-          {formatDateTime(row.original.createdAt)}
-        </span>
-      ),
+      cell: ({ row }) => <DateTimeCell value={row.original.createdAt} />,
     },
     {
       id: 'actions',

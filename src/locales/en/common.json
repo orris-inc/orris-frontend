@@ -546,7 +546,16 @@
       "basicInfo": "Basic Information",
       "associatedPlan": "Associated Plan",
       "createdAt": "Created At",
-      "editableInfo": "Editable Information"
+      "editableInfo": "Editable Information",
+      "readOnlyHint": "These fields cannot be modified after creation"
+    },
+    "nameHint": "A display name to identify the resource group",
+    "descriptionHint": "Optional description for the resource group",
+    "selectedPlanInfo": "Selected: {{name}} ({{slug}})",
+    "planTypes": {
+      "node": "Node",
+      "forward": "Forward",
+      "hybrid": "Hybrid"
     }
   },
   "nodeList": {
@@ -1206,6 +1215,8 @@
       },
       "columns": {
         "ruleName": "Rule Name",
+        "ruleType": "Rule Type",
+        "protocol": "Protocol",
         "path": "Path",
         "resourceGroup": "Resource Group",
         "resourceGroups": "Resource Groups",
@@ -1219,7 +1230,9 @@
         "download": "Download",
         "multiplier": "Traffic Multiplier",
         "auto": "Auto",
-        "custom": "Custom"
+        "custom": "Custom",
+        "external": "External",
+        "externalHint": "Traffic is tracked by the external system"
       },
       "status": {
         "starting": "Starting",
@@ -1287,7 +1300,9 @@
         "targetInfo": "Target Info",
         "targetType": "Target Type",
         "targetAddress": "Target Address",
-        "remark": "Remark"
+        "remark": "Remark",
+        "connectionInfo": "Connection Info",
+        "listenAddress": "Listen Address"
       },
       "syncStatus": {
         "synced": "Synced",
@@ -1311,6 +1326,7 @@
         "enableRule": "Enable Rule",
         "deleteRule": "Delete Rule",
         "createRule": "Create Rule",
+        "createRuleDesc": "Configure a new port forwarding rule",
         "copyRule": "Copy Rule",
         "editRule": "Edit Rule",
         "basicInfo": "Basic Information",
@@ -2689,6 +2705,7 @@
   },
   "tableColumns": {
     "subscriptionId": "Subscription ID",
+    "userId": "User ID",
     "user": "User",
     "plan": "Plan",
     "status": "Status",
@@ -2700,7 +2717,9 @@
     "operations": "Operations",
     "email": "Email",
     "name": "Name",
-    "role": "Role"
+    "role": "Role",
+    "description": "Description",
+    "remark": "Remark"
   },
   "labels": {
     "userId": "User ID",

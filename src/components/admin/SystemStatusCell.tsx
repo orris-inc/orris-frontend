@@ -197,20 +197,20 @@ export const SystemStatusCell = memo(({ itemId: _itemId, status }: SystemStatusC
       align="start"
       side="bottom"
     >
-      <div className="inline-flex items-center gap-2.5">
+      <div className="inline-flex items-center gap-2 whitespace-nowrap">
         {/* System mini bars */}
-        <div className="flex items-center gap-1.5">
+        <div className="flex items-center gap-1">
           <MiniBar label="C" percent={cpuPercent} />
           <MiniBar label="M" percent={memoryPercent} />
           <MiniBar label="D" percent={diskPercent} />
         </div>
         {/* Network rates */}
         <div className="w-px h-4 bg-border shrink-0" />
-        <div className="flex flex-col gap-0 min-w-[60px] shrink-0">
-          <span className="text-[10px] font-mono text-success leading-tight whitespace-nowrap">
+        <div className="flex flex-col gap-0 min-w-[52px] shrink-0">
+          <span className="text-[10px] font-mono text-success leading-tight">
             ↓{formatBitRate(status.networkRxRate, true)}
           </span>
-          <span className="text-[10px] font-mono text-info leading-tight whitespace-nowrap">
+          <span className="text-[10px] font-mono text-info leading-tight">
             ↑{formatBitRate(status.networkTxRate, true)}
           </span>
         </div>

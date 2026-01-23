@@ -1,11 +1,11 @@
 /**
  * Create Forward Agent Sheet Component
- * Mobile-optimized bottom sheet for creating forward agents
+ * Mobile-optimized bottom sheet - Tailwind Application UI style
  */
 
 import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Cpu, Loader2, Check } from 'lucide-react';
+import { Loader2 } from 'lucide-react';
 import {
   Sheet,
   SheetContent,
@@ -156,11 +156,8 @@ export const CreateForwardAgentSheet: React.FC<CreateForwardAgentSheetProps> = (
     <Sheet open={open} onOpenChange={(o) => !loading && onOpenChange(o)}>
       <SheetContent>
         <SheetHeader>
-          <SheetTitle className="flex items-center gap-2">
-            <div className="size-10 rounded-full bg-primary/10 flex items-center justify-center">
-              <Cpu className="size-5 text-primary" />
-            </div>
-            <span>{initialData ? t('admin.forwardAgents.create.copyTitle') : t('admin.forwardAgents.create.title')}</span>
+          <SheetTitle>
+            {initialData ? t('admin.forwardAgents.create.copyTitle') : t('admin.forwardAgents.create.title')}
           </SheetTitle>
           <SheetDescription>
             {t('admin.forwardAgents.create.description')}
@@ -170,7 +167,7 @@ export const CreateForwardAgentSheet: React.FC<CreateForwardAgentSheetProps> = (
         <SheetBody className="space-y-4 py-4">
           {/* Node Name */}
           <div className="space-y-1.5">
-            <label className="text-sm font-medium px-1">
+            <label className="text-sm font-medium">
               {t('admin.forwardAgents.create.labels.nodeName')} <span className="text-destructive">*</span>
             </label>
             <MobileFormInput
@@ -178,55 +175,54 @@ export const CreateForwardAgentSheet: React.FC<CreateForwardAgentSheetProps> = (
               value={formData.name}
               onChange={(value) => handleChange('name', value)}
               error={errors.name}
-              icon={<Cpu className="size-5" />}
             />
           </div>
 
           {/* Public Address */}
           <div className="space-y-1.5">
-            <label className="text-sm font-medium px-1">{t('admin.forwardAgents.create.labels.publicAddress')}</label>
+            <label className="text-sm font-medium">{t('admin.forwardAgents.create.labels.publicAddress')}</label>
             <MobileFormInput
               placeholder={t('admin.forwardAgents.create.placeholders.publicAddress')}
               value={formData.publicAddress || ''}
               onChange={(value) => handleChange('publicAddress', value)}
               className="font-mono"
             />
-            <p className="text-xs text-muted-foreground px-1">
+            <p className="text-xs text-muted-foreground">
               {t('admin.forwardAgents.create.hints.publicAddress')}
             </p>
           </div>
 
           {/* Tunnel Address */}
           <div className="space-y-1.5">
-            <label className="text-sm font-medium px-1">{t('admin.forwardAgents.create.labels.tunnelAddress')}</label>
+            <label className="text-sm font-medium">{t('admin.forwardAgents.create.labels.tunnelAddress')}</label>
             <MobileFormInput
               placeholder={t('admin.forwardAgents.create.placeholders.tunnelAddress')}
               value={formData.tunnelAddress || ''}
               onChange={(value) => handleChange('tunnelAddress', value)}
               className="font-mono"
             />
-            <p className="text-xs text-muted-foreground px-1">
+            <p className="text-xs text-muted-foreground">
               {t('admin.forwardAgents.create.hints.tunnelAddress')}
             </p>
           </div>
 
           {/* Allowed Port Range */}
           <div className="space-y-1.5">
-            <label className="text-sm font-medium px-1">{t('admin.forwardAgents.create.labels.portLimit')}</label>
+            <label className="text-sm font-medium">{t('admin.forwardAgents.create.labels.portLimit')}</label>
             <MobileFormInput
               placeholder={t('admin.forwardAgents.create.placeholders.portLimit')}
               value={formData.allowedPortRange || ''}
               onChange={(value) => handleChange('allowedPortRange', value)}
               className="font-mono"
             />
-            <p className="text-xs text-muted-foreground px-1">
+            <p className="text-xs text-muted-foreground">
               {t('admin.forwardAgents.create.hints.portLimit')}
             </p>
           </div>
 
           {/* Sort Order */}
           <div className="space-y-1.5">
-            <label className="text-sm font-medium px-1">{t('admin.forwardAgents.create.labels.sortOrder')}</label>
+            <label className="text-sm font-medium">{t('admin.forwardAgents.create.labels.sortOrder')}</label>
             <MobileFormInput
               type="number"
               inputMode="numeric"
@@ -235,18 +231,18 @@ export const CreateForwardAgentSheet: React.FC<CreateForwardAgentSheetProps> = (
               onChange={(value) => handleChange('sortOrder', value ? parseInt(value, 10) : undefined)}
               className="font-mono"
             />
-            <p className="text-xs text-muted-foreground px-1">
+            <p className="text-xs text-muted-foreground">
               {t('admin.forwardAgents.create.hints.sortOrder')}
             </p>
           </div>
 
           {/* Blocked Protocols */}
           <div className="space-y-2">
-            <label className="text-sm font-medium px-1">{t('admin.forwardAgents.create.labels.blockedProtocols')}</label>
+            <label className="text-sm font-medium">{t('admin.forwardAgents.create.labels.blockedProtocols')}</label>
             <div className="space-y-3">
               {PROTOCOL_GROUPS.map((group) => (
                 <div key={group.labelKey}>
-                  <p className="text-xs text-muted-foreground mb-2 px-1">{t(group.labelKey)}</p>
+                  <p className="text-xs text-muted-foreground mb-2">{t(group.labelKey)}</p>
                   <div className="flex flex-wrap gap-2">
                     {group.protocols.map((protocol) => {
                       const isSelected = formData.blockedProtocols?.includes(protocol.value) || false;
@@ -270,14 +266,14 @@ export const CreateForwardAgentSheet: React.FC<CreateForwardAgentSheetProps> = (
                 </div>
               ))}
             </div>
-            <p className="text-xs text-muted-foreground px-1">
+            <p className="text-xs text-muted-foreground">
               {t('admin.forwardAgents.create.hints.blockedProtocols')}
             </p>
           </div>
 
           {/* Remark */}
           <div className="space-y-1.5">
-            <label className="text-sm font-medium px-1">{t('admin.forwardAgents.create.labels.remark')}</label>
+            <label className="text-sm font-medium">{t('admin.forwardAgents.create.labels.remark')}</label>
             <MobileFormInput
               placeholder={t('admin.forwardAgents.create.placeholders.remark')}
               value={formData.remark || ''}
@@ -287,31 +283,30 @@ export const CreateForwardAgentSheet: React.FC<CreateForwardAgentSheetProps> = (
         </SheetBody>
 
         <SheetFooter>
-          <Button
-            onClick={handleSubmit}
-            disabled={loading || !isFormValid}
-            className="w-full min-h-[52px] text-base gap-2"
-          >
-            {loading ? (
-              <>
-                <Loader2 className="size-5 animate-spin" />
-                {t('admin.forwardAgents.create.creating')}
-              </>
-            ) : (
-              <>
-                <Check className="size-5" />
-                {t('common.create')}
-              </>
-            )}
-          </Button>
-          <Button
-            variant="ghost"
-            onClick={handleClose}
-            disabled={loading}
-            className="w-full min-h-[44px]"
-          >
-            {t('common.cancel')}
-          </Button>
+          <div className="flex gap-3 w-full">
+            <Button
+              variant="outline"
+              onClick={handleClose}
+              disabled={loading}
+              className="flex-1 min-h-[44px]"
+            >
+              {t('common.cancel')}
+            </Button>
+            <Button
+              onClick={handleSubmit}
+              disabled={loading || !isFormValid}
+              className="flex-1 min-h-[44px]"
+            >
+              {loading ? (
+                <>
+                  <Loader2 className="size-4 mr-2 animate-spin" />
+                  {t('admin.forwardAgents.create.creating')}
+                </>
+              ) : (
+                t('common.create')
+              )}
+            </Button>
+          </div>
         </SheetFooter>
       </SheetContent>
     </Sheet>
