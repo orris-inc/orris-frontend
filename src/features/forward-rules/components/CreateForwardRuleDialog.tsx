@@ -2,6 +2,11 @@
  * Create Forward Rule Dialog Component
  * Supports four rule types: direct, entry, chain (WS chain forwarding), direct_chain (direct chain forwarding)
  * Supports target types: manual address input or node selection (dynamic resolution)
+ *
+ * Redesigned with Tailwind Application UI stacked form layout
+ * - Compact sections with subtle dividers
+ * - Collapsible advanced options
+ * - Responsive grid layout (6-column base)
  */
 
 import { useState, useEffect, useMemo } from "react";
@@ -25,16 +30,15 @@ import {
   SelectValue,
 } from "@/components/common/Select";
 import { RadioGroup, RadioGroupItem } from "@/components/common/RadioGroup";
-import {
-  Accordion,
-  AccordionItem,
-  AccordionTrigger,
-  AccordionContent,
-} from "@/components/common/Accordion";
 import { Badge } from "@/components/common/Badge";
 import { Checkbox } from "@/components/common/Checkbox";
 import { ScrollArea } from "@/components/common/ScrollArea";
-import { Info, FolderTree } from "lucide-react";
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "@/components/common/Collapsible";
+import { Info, FolderTree, ChevronDown } from "lucide-react";
 import { SortableChainAgentList } from "./SortableChainAgentList";
 import type {
   CreateForwardRuleRequest,
@@ -69,15 +73,11 @@ interface CreateForwardRuleDialogProps {
 
 /**
  * Check if a port is within the allowed port range
- * @param port - Port number to check
- * @param allowedPortRange - Allowed port range string (e.g., "80,443,8000-9000")
- * @returns true if port is allowed, false otherwise
  */
 const isPortInAllowedRange = (
   port: number,
   allowedPortRange: string | undefined,
 ): boolean => {
-  // If no restriction, all ports are allowed
   if (!allowedPortRange || allowedPortRange.trim() === "") {
     return true;
   }
@@ -85,13 +85,11 @@ const isPortInAllowedRange = (
   const parts = allowedPortRange.split(",").map((p) => p.trim());
   for (const part of parts) {
     if (part.includes("-")) {
-      // Range format: "8000-9000"
       const [start, end] = part.split("-").map((n) => parseInt(n.trim(), 10));
       if (!isNaN(start) && !isNaN(end) && port >= start && port <= end) {
         return true;
       }
     } else {
-      // Single port: "80"
       const singlePort = parseInt(part, 10);
       if (!isNaN(singlePort) && port === singlePort) {
         return true;
@@ -110,9 +108,78 @@ const RULE_TYPE_KEYS: Record<ForwardRuleType, string> = {
   external: "external",
 };
 
-export const CreateForwardRuleDialog: React.FC<
-  CreateForwardRuleDialogProps
-> = ({ open, onClose, onSubmit, agents, nodes = [], initialData, resourceGroups = [], plansMap = {} }) => {
+/**
+ * Form Section Component - Tailwind Application UI style
+ * Clean, minimal section with lightweight divider
+ */
+const FormSection = ({
+  title,
+  description,
+  children,
+  className = "",
+}: {
+  title: string;
+  description?: string;
+  children: React.ReactNode;
+  className?: string;
+}) => (
+  <fieldset className={className}>
+    <legend className="sr-only">{title}</legend>
+    <div className="flex items-center gap-3 mb-4">
+      <h3 className="text-sm font-semibold text-foreground whitespace-nowrap">
+        {title}
+      </h3>
+      <div className="h-px flex-1 bg-border" aria-hidden="true" />
+    </div>
+    {description && (
+      <p className="text-xs text-muted-foreground -mt-2 mb-4">{description}</p>
+    )}
+    {children}
+  </fieldset>
+);
+
+/**
+ * Form Field Component with consistent styling
+ * Uses grid span classes for responsive layout
+ */
+const FormField = ({
+  label,
+  required,
+  error,
+  hint,
+  children,
+  className = "",
+}: {
+  label: React.ReactNode;
+  required?: boolean;
+  error?: string;
+  hint?: React.ReactNode;
+  children: React.ReactNode;
+  className?: string;
+}) => (
+  <div className={`flex flex-col gap-1.5 ${className}`}>
+    <Label className="text-sm font-medium text-foreground">
+      {label}
+      {required && <span className="text-destructive ml-0.5">*</span>}
+    </Label>
+    {children}
+    {error && <p className="text-xs text-destructive">{error}</p>}
+    {hint && !error && (
+      <p className="text-xs text-muted-foreground">{hint}</p>
+    )}
+  </div>
+);
+
+export const CreateForwardRuleDialog: React.FC<CreateForwardRuleDialogProps> = ({
+  open,
+  onClose,
+  onSubmit,
+  agents,
+  nodes = [],
+  initialData,
+  resourceGroups = [],
+  plansMap = {},
+}) => {
   const { t } = useTranslation();
   const [formData, setFormData] = useState({
     agentId: "",
@@ -134,20 +201,18 @@ export const CreateForwardRuleDialog: React.FC<
     ipVersion: "auto" as IPVersion,
     remark: "",
     groupSids: [] as string[],
-    // External rule fields
     serverAddress: "",
     externalSource: "",
     externalRuleId: "",
   });
   const [targetType, setTargetType] = useState<TargetType>("manual");
-
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [advancedOpen, setAdvancedOpen] = useState(false);
 
   // Reset form or use initial data when dialog opens
   useEffect(() => {
     if (open) {
       if (initialData) {
-        // Copy mode: pre-populate form with initial data
         setFormData({
           agentId: initialData.agentId || "",
           ruleType: initialData.ruleType || "direct",
@@ -168,18 +233,21 @@ export const CreateForwardRuleDialog: React.FC<
           ipVersion: initialData.ipVersion || "auto",
           remark: initialData.remark || "",
           groupSids: initialData.groupSids || [],
-          // External rule fields
-          serverAddress: (initialData as Record<string, unknown>).serverAddress as string || "",
-          externalSource: (initialData as Record<string, unknown>).externalSource as string || "",
-          externalRuleId: (initialData as Record<string, unknown>).externalRuleId as string || "",
+          serverAddress:
+            (initialData as Record<string, unknown>).serverAddress as string ||
+            "",
+          externalSource:
+            (initialData as Record<string, unknown>).externalSource as string ||
+            "",
+          externalRuleId:
+            (initialData as Record<string, unknown>).externalRuleId as string ||
+            "",
         });
-        // Set target type based on initial data
         setTargetType(
           initialData.targetType ||
             (initialData.targetNodeId ? "node" : "manual"),
         );
       } else {
-        // Create mode: reset to default values
         setFormData({
           agentId: "",
           ruleType: "direct",
@@ -200,7 +268,6 @@ export const CreateForwardRuleDialog: React.FC<
           ipVersion: "auto",
           remark: "",
           groupSids: [],
-          // External rule fields
           serverAddress: "",
           externalSource: "",
           externalRuleId: "",
@@ -222,14 +289,12 @@ export const CreateForwardRuleDialog: React.FC<
     setFormData((prev) => {
       const newData = { ...prev, [field]: value };
 
-      // If modifying entry agent, automatically remove it from chain node list
       if (field === "agentId" && typeof value === "string") {
         const currentChainIds = prev.chainAgentIds || [];
         if (currentChainIds.includes(value)) {
           newData.chainAgentIds = currentChainIds.filter(
             (id: string) => id !== value,
           );
-          // Also remove port configuration for this node
           if (prev.chainPortConfig[value]) {
             const newPortConfig = { ...prev.chainPortConfig };
             delete newPortConfig[value];
@@ -241,13 +306,11 @@ export const CreateForwardRuleDialog: React.FC<
       return newData;
     });
 
-    // Clear all validation errors, re-validate on next submit
     if (Object.keys(errors).length > 0) {
       setErrors({});
     }
   };
 
-  // Handle chain node port configuration change
   const handleChainPortChange = (agentId: string, port: number) => {
     setFormData((prev) => ({
       ...prev,
@@ -261,67 +324,80 @@ export const CreateForwardRuleDialog: React.FC<
   const validate = () => {
     const newErrors: Record<string, string> = {};
 
-    // External type has different validation requirements
     if (formData.ruleType === "external") {
       if (!formData.name.trim()) {
-        newErrors.name = t('admin.forwardRules.validation.ruleNameRequired');
+        newErrors.name = t("admin.forwardRules.validation.ruleNameRequired");
       }
       if (!formData.serverAddress.trim()) {
-        newErrors.serverAddress = t('admin.forwardRules.validation.serverAddressRequired');
+        newErrors.serverAddress = t(
+          "admin.forwardRules.validation.serverAddressRequired",
+        );
       }
-      if (!formData.listenPort || formData.listenPort < 1 || formData.listenPort > 65535) {
-        newErrors.listenPort = t('admin.forwardRules.validation.listenPortRange');
+      if (
+        !formData.listenPort ||
+        formData.listenPort < 1 ||
+        formData.listenPort > 65535
+      ) {
+        newErrors.listenPort = t(
+          "admin.forwardRules.validation.listenPortRange",
+        );
       }
       setErrors(newErrors);
       return Object.keys(newErrors).length === 0;
     }
 
-    // Non-external types require agentId
     if (!formData.agentId) {
-      newErrors.agentId = t('admin.forwardRules.validation.selectForwardAgent');
+      newErrors.agentId = t("admin.forwardRules.validation.selectForwardAgent");
     }
 
     if (!formData.name.trim()) {
-      newErrors.name = t('admin.forwardRules.validation.ruleNameRequired');
+      newErrors.name = t("admin.forwardRules.validation.ruleNameRequired");
     }
 
     if (!formData.protocol) {
-      newErrors.protocol = t('admin.forwardRules.validation.protocolRequired');
+      newErrors.protocol = t("admin.forwardRules.validation.protocolRequired");
     }
 
-    // Get selected agent for port range validation
     const selectedAgent = agents.find((a) => a.id === formData.agentId);
 
-    // Validate different fields based on rule type
-    // Note: listenPort is optional (0 or empty = auto-assign from agent's allowed range)
     if (formData.ruleType === "direct") {
       if (
         formData.listenPort &&
         (formData.listenPort < 1 || formData.listenPort > 65535)
       ) {
-        newErrors.listenPort = t('admin.forwardRules.validation.listenPortRange');
+        newErrors.listenPort = t(
+          "admin.forwardRules.validation.listenPortRange",
+        );
       } else if (
         formData.listenPort &&
         selectedAgent?.allowedPortRange &&
         !isPortInAllowedRange(formData.listenPort, selectedAgent.allowedPortRange)
       ) {
-        newErrors.listenPort = t('admin.forwardRules.validation.portNotInRange', { port: formData.listenPort, range: selectedAgent.allowedPortRange });
+        newErrors.listenPort = t(
+          "admin.forwardRules.validation.portNotInRange",
+          { port: formData.listenPort, range: selectedAgent.allowedPortRange },
+        );
       }
-      // Target validation: manual input or node selection
       if (targetType === "manual") {
         if (!formData.targetAddress.trim()) {
-          newErrors.targetAddress = t('admin.forwardRules.validation.targetAddressRequired');
+          newErrors.targetAddress = t(
+            "admin.forwardRules.validation.targetAddressRequired",
+          );
         }
         if (
           !formData.targetPort ||
           formData.targetPort < 1 ||
           formData.targetPort > 65535
         ) {
-          newErrors.targetPort = t('admin.forwardRules.validation.targetPortRange');
+          newErrors.targetPort = t(
+            "admin.forwardRules.validation.targetPortRange",
+          );
         }
       } else if (targetType === "node") {
         if (!formData.targetNodeId) {
-          newErrors.targetNodeId = t('admin.forwardRules.validation.selectTargetNode');
+          newErrors.targetNodeId = t(
+            "admin.forwardRules.validation.selectTargetNode",
+          );
         }
       }
     } else if (formData.ruleType === "entry") {
@@ -329,32 +405,44 @@ export const CreateForwardRuleDialog: React.FC<
         formData.listenPort &&
         (formData.listenPort < 1 || formData.listenPort > 65535)
       ) {
-        newErrors.listenPort = t('admin.forwardRules.validation.listenPortRange');
+        newErrors.listenPort = t(
+          "admin.forwardRules.validation.listenPortRange",
+        );
       } else if (
         formData.listenPort &&
         selectedAgent?.allowedPortRange &&
         !isPortInAllowedRange(formData.listenPort, selectedAgent.allowedPortRange)
       ) {
-        newErrors.listenPort = t('admin.forwardRules.validation.portNotInRange', { port: formData.listenPort, range: selectedAgent.allowedPortRange });
+        newErrors.listenPort = t(
+          "admin.forwardRules.validation.portNotInRange",
+          { port: formData.listenPort, range: selectedAgent.allowedPortRange },
+        );
       }
       if (!formData.exitAgentId) {
-        newErrors.exitAgentId = t('admin.forwardRules.validation.selectExitNode');
+        newErrors.exitAgentId = t(
+          "admin.forwardRules.validation.selectExitNode",
+        );
       }
-      // entry type also needs target validation
       if (targetType === "manual") {
         if (!formData.targetAddress.trim()) {
-          newErrors.targetAddress = t('admin.forwardRules.validation.targetAddressRequired');
+          newErrors.targetAddress = t(
+            "admin.forwardRules.validation.targetAddressRequired",
+          );
         }
         if (
           !formData.targetPort ||
           formData.targetPort < 1 ||
           formData.targetPort > 65535
         ) {
-          newErrors.targetPort = t('admin.forwardRules.validation.targetPortRange');
+          newErrors.targetPort = t(
+            "admin.forwardRules.validation.targetPortRange",
+          );
         }
       } else if (targetType === "node") {
         if (!formData.targetNodeId) {
-          newErrors.targetNodeId = t('admin.forwardRules.validation.selectTargetNode');
+          newErrors.targetNodeId = t(
+            "admin.forwardRules.validation.selectTargetNode",
+          );
         }
       }
     } else if (formData.ruleType === "chain") {
@@ -362,25 +450,30 @@ export const CreateForwardRuleDialog: React.FC<
         formData.listenPort &&
         (formData.listenPort < 1 || formData.listenPort > 65535)
       ) {
-        newErrors.listenPort = t('admin.forwardRules.validation.listenPortRange');
+        newErrors.listenPort = t(
+          "admin.forwardRules.validation.listenPortRange",
+        );
       } else if (
         formData.listenPort &&
         selectedAgent?.allowedPortRange &&
         !isPortInAllowedRange(formData.listenPort, selectedAgent.allowedPortRange)
       ) {
-        newErrors.listenPort = t('admin.forwardRules.validation.portNotInRange', { port: formData.listenPort, range: selectedAgent.allowedPortRange });
+        newErrors.listenPort = t(
+          "admin.forwardRules.validation.portNotInRange",
+          { port: formData.listenPort, range: selectedAgent.allowedPortRange },
+        );
       }
       if (!formData.chainAgentIds || formData.chainAgentIds.length === 0) {
-        newErrors.chainAgentIds = t('admin.forwardRules.validation.selectAtLeastOneNode');
+        newErrors.chainAgentIds = t(
+          "admin.forwardRules.validation.selectAtLeastOneNode",
+        );
       }
-      // Validate port config for hybrid chain (when tunnelHops is set)
       if (
         formData.tunnelHops !== undefined &&
         formData.tunnelHops >= 0 &&
         formData.tunnelHops < formData.chainAgentIds.length
       ) {
         const missingPorts: string[] = [];
-        // Only validate ports for nodes after tunnelHops
         for (
           let i = formData.tunnelHops;
           i < formData.chainAgentIds.length;
@@ -395,24 +488,32 @@ export const CreateForwardRuleDialog: React.FC<
           }
         }
         if (missingPorts.length > 0) {
-          newErrors.chainPortConfig = t('admin.forwardRules.validation.configurePortsForNodes', { nodes: missingPorts.join(", ") });
+          newErrors.chainPortConfig = t(
+            "admin.forwardRules.validation.configurePortsForNodes",
+            { nodes: missingPorts.join(", ") },
+          );
         }
       }
-      // chain type also needs target validation
       if (targetType === "manual") {
         if (!formData.targetAddress.trim()) {
-          newErrors.targetAddress = t('admin.forwardRules.validation.targetAddressRequired');
+          newErrors.targetAddress = t(
+            "admin.forwardRules.validation.targetAddressRequired",
+          );
         }
         if (
           !formData.targetPort ||
           formData.targetPort < 1 ||
           formData.targetPort > 65535
         ) {
-          newErrors.targetPort = t('admin.forwardRules.validation.targetPortRange');
+          newErrors.targetPort = t(
+            "admin.forwardRules.validation.targetPortRange",
+          );
         }
       } else if (targetType === "node") {
         if (!formData.targetNodeId) {
-          newErrors.targetNodeId = t('admin.forwardRules.validation.selectTargetNode');
+          newErrors.targetNodeId = t(
+            "admin.forwardRules.validation.selectTargetNode",
+          );
         }
       }
     } else if (formData.ruleType === "direct_chain") {
@@ -420,18 +521,24 @@ export const CreateForwardRuleDialog: React.FC<
         formData.listenPort &&
         (formData.listenPort < 1 || formData.listenPort > 65535)
       ) {
-        newErrors.listenPort = t('admin.forwardRules.validation.listenPortRange');
+        newErrors.listenPort = t(
+          "admin.forwardRules.validation.listenPortRange",
+        );
       } else if (
         formData.listenPort &&
         selectedAgent?.allowedPortRange &&
         !isPortInAllowedRange(formData.listenPort, selectedAgent.allowedPortRange)
       ) {
-        newErrors.listenPort = t('admin.forwardRules.validation.portNotInRange', { port: formData.listenPort, range: selectedAgent.allowedPortRange });
+        newErrors.listenPort = t(
+          "admin.forwardRules.validation.portNotInRange",
+          { port: formData.listenPort, range: selectedAgent.allowedPortRange },
+        );
       }
       if (!formData.chainAgentIds || formData.chainAgentIds.length === 0) {
-        newErrors.chainAgentIds = t('admin.forwardRules.validation.selectAtLeastOneNode');
+        newErrors.chainAgentIds = t(
+          "admin.forwardRules.validation.selectAtLeastOneNode",
+        );
       }
-      // Validate that each chain node has a port configured
       const missingPorts: string[] = [];
       for (const agentId of formData.chainAgentIds) {
         const port = formData.chainPortConfig[agentId];
@@ -443,26 +550,36 @@ export const CreateForwardRuleDialog: React.FC<
       }
       if (missingPorts.length > 0) {
         if (missingPorts.length === formData.chainAgentIds.length) {
-          newErrors.chainPortConfig = t('admin.forwardRules.validation.configureValidPorts');
+          newErrors.chainPortConfig = t(
+            "admin.forwardRules.validation.configureValidPorts",
+          );
         } else {
-          newErrors.chainPortConfig = t('admin.forwardRules.validation.configurePortsForNodes', { nodes: missingPorts.join(", ") });
+          newErrors.chainPortConfig = t(
+            "admin.forwardRules.validation.configurePortsForNodes",
+            { nodes: missingPorts.join(", ") },
+          );
         }
       }
-      // direct_chain type also needs target validation
       if (targetType === "manual") {
         if (!formData.targetAddress.trim()) {
-          newErrors.targetAddress = t('admin.forwardRules.validation.targetAddressRequired');
+          newErrors.targetAddress = t(
+            "admin.forwardRules.validation.targetAddressRequired",
+          );
         }
         if (
           !formData.targetPort ||
           formData.targetPort < 1 ||
           formData.targetPort > 65535
         ) {
-          newErrors.targetPort = t('admin.forwardRules.validation.targetPortRange');
+          newErrors.targetPort = t(
+            "admin.forwardRules.validation.targetPortRange",
+          );
         }
       } else if (targetType === "node") {
         if (!formData.targetNodeId) {
-          newErrors.targetNodeId = t('admin.forwardRules.validation.selectTargetNode');
+          newErrors.targetNodeId = t(
+            "admin.forwardRules.validation.selectTargetNode",
+          );
         }
       }
     }
@@ -473,7 +590,6 @@ export const CreateForwardRuleDialog: React.FC<
 
   const handleSubmit = () => {
     if (validate()) {
-      // External type has different submit data structure
       if (formData.ruleType === "external") {
         const submitData = {
           ruleType: formData.ruleType,
@@ -481,11 +597,18 @@ export const CreateForwardRuleDialog: React.FC<
           serverAddress: formData.serverAddress.trim(),
           listenPort: formData.listenPort,
           ...(formData.targetNodeId && { targetNodeId: formData.targetNodeId }),
-          ...(formData.externalSource?.trim() && { externalSource: formData.externalSource.trim() }),
-          ...(formData.externalRuleId?.trim() && { externalRuleId: formData.externalRuleId.trim() }),
-          ...(formData.sortOrder !== undefined && formData.sortOrder !== null && formData.sortOrder >= 0 && { sortOrder: formData.sortOrder }),
+          ...(formData.externalSource?.trim() && {
+            externalSource: formData.externalSource.trim(),
+          }),
+          ...(formData.externalRuleId?.trim() && {
+            externalRuleId: formData.externalRuleId.trim(),
+          }),
+          ...(formData.sortOrder !== undefined &&
+            formData.sortOrder !== null &&
+            formData.sortOrder >= 0 && { sortOrder: formData.sortOrder }),
           ...(formData.remark?.trim() && { remark: formData.remark.trim() }),
-          ...(formData.groupSids && formData.groupSids.length > 0 && { groupSids: formData.groupSids }),
+          ...(formData.groupSids &&
+            formData.groupSids.length > 0 && { groupSids: formData.groupSids }),
         } as unknown as CreateForwardRuleRequest;
 
         onSubmit(submitData);
@@ -501,10 +624,8 @@ export const CreateForwardRuleDialog: React.FC<
         ipVersion: formData.ipVersion,
       };
 
-      // Add corresponding fields based on rule type
       if (formData.ruleType === "direct") {
         submitData.listenPort = formData.listenPort;
-        // Target: manual input or node selection
         if (targetType === "manual") {
           submitData.targetAddress = formData.targetAddress.trim();
           submitData.targetPort = formData.targetPort;
@@ -515,7 +636,6 @@ export const CreateForwardRuleDialog: React.FC<
         submitData.listenPort = formData.listenPort;
         submitData.exitAgentId = formData.exitAgentId;
         submitData.tunnelType = formData.tunnelType;
-        // entry type also needs target configuration
         if (targetType === "manual") {
           submitData.targetAddress = formData.targetAddress.trim();
           submitData.targetPort = formData.targetPort;
@@ -526,14 +646,12 @@ export const CreateForwardRuleDialog: React.FC<
         submitData.listenPort = formData.listenPort;
         submitData.chainAgentIds = formData.chainAgentIds;
         submitData.tunnelType = formData.tunnelType;
-        // Add tunnelHops and chainPortConfig if specified (hybrid chain)
         if (
           formData.tunnelHops !== undefined &&
           formData.tunnelHops !== null &&
           formData.tunnelHops >= 0
         ) {
           submitData.tunnelHops = formData.tunnelHops;
-          // Include port config for nodes after tunnelHops
           if (
             formData.tunnelHops < formData.chainAgentIds.length &&
             Object.keys(formData.chainPortConfig).length > 0
@@ -541,7 +659,6 @@ export const CreateForwardRuleDialog: React.FC<
             submitData.chainPortConfig = formData.chainPortConfig;
           }
         }
-        // chain type also needs target configuration
         if (targetType === "manual") {
           submitData.targetAddress = formData.targetAddress.trim();
           submitData.targetPort = formData.targetPort;
@@ -552,7 +669,6 @@ export const CreateForwardRuleDialog: React.FC<
         submitData.listenPort = formData.listenPort;
         submitData.chainAgentIds = formData.chainAgentIds;
         submitData.chainPortConfig = formData.chainPortConfig;
-        // direct_chain type also needs target configuration
         if (targetType === "manual") {
           submitData.targetAddress = formData.targetAddress.trim();
           submitData.targetPort = formData.targetPort;
@@ -594,9 +710,7 @@ export const CreateForwardRuleDialog: React.FC<
     }
   };
 
-  // Check if form is valid
   const isFormValid = () => {
-    // External type has different validation
     if (formData.ruleType === "external") {
       return (
         formData.name.trim() !== "" &&
@@ -609,7 +723,6 @@ export const CreateForwardRuleDialog: React.FC<
     if (!formData.agentId || !formData.name.trim() || !formData.protocol)
       return false;
 
-    // Note: listenPort is optional (0 or empty = auto-assign from agent's allowed range)
     if (formData.ruleType === "direct") {
       if (targetType === "manual") {
         return formData.targetAddress.trim() !== "" && formData.targetPort > 0;
@@ -618,7 +731,6 @@ export const CreateForwardRuleDialog: React.FC<
       }
     } else if (formData.ruleType === "entry") {
       if (formData.exitAgentId === "") return false;
-      // entry type also requires target validation
       if (targetType === "manual") {
         return formData.targetAddress.trim() !== "" && formData.targetPort > 0;
       } else {
@@ -626,13 +738,11 @@ export const CreateForwardRuleDialog: React.FC<
       }
     } else if (formData.ruleType === "chain") {
       if (formData.chainAgentIds.length === 0) return false;
-      // Validate port config for hybrid chain (when tunnelHops is set)
       if (
         formData.tunnelHops !== undefined &&
         formData.tunnelHops >= 0 &&
         formData.tunnelHops < formData.chainAgentIds.length
       ) {
-        // Check that all nodes after tunnelHops have valid port config
         for (
           let i = formData.tunnelHops;
           i < formData.chainAgentIds.length;
@@ -643,7 +753,6 @@ export const CreateForwardRuleDialog: React.FC<
           if (!port || port <= 0 || port > 65535) return false;
         }
       }
-      // chain type also needs to validate target
       if (targetType === "manual") {
         return formData.targetAddress.trim() !== "" && formData.targetPort > 0;
       } else {
@@ -651,13 +760,11 @@ export const CreateForwardRuleDialog: React.FC<
       }
     } else if (formData.ruleType === "direct_chain") {
       if (formData.chainAgentIds.length === 0) return false;
-      // Validate that each chain node has a valid port configured
       const allPortsValid = formData.chainAgentIds.every((id) => {
         const port = formData.chainPortConfig[id];
         return port && port > 0 && port <= 65535;
       });
       if (!allPortsValid) return false;
-      // direct_chain type also needs to validate target
       if (targetType === "manual") {
         return formData.targetAddress.trim() !== "" && formData.targetPort > 0;
       } else {
@@ -667,12 +774,10 @@ export const CreateForwardRuleDialog: React.FC<
     return false;
   };
 
-  // Get available node list (status is active, but always include currently selected node for copy mode)
   const availableNodes = nodes.filter(
     (n) => n.status === "active" || n.id === formData.targetNodeId,
   );
 
-  // Get available agents (status is enabled, but always include currently selected agents for copy mode)
   const availableAgentsForSelect = agents.filter(
     (a) =>
       a.status === "enabled" ||
@@ -681,26 +786,25 @@ export const CreateForwardRuleDialog: React.FC<
       formData.chainAgentIds.includes(a.id),
   );
 
-  // Get available exit agents (exclude currently selected node)
   const availableExitAgents = availableAgentsForSelect.filter(
     (a) => a.id !== formData.agentId,
   );
 
-  // Get available chain agents (exclude currently selected entry node)
   const availableChainAgents = availableAgentsForSelect.filter(
     (a) => a.id !== formData.agentId,
   );
 
-  // Get available resource groups (only node/hybrid plan groups can bind forward rules)
   const availableResourceGroups = useMemo(() => {
     return resourceGroups.filter((group) => {
       const plan = plansMap[group.planId];
-      // Only active groups with node or hybrid plan type can bind forward rules
-      return group.status === "active" && plan && (plan.planType === "node" || plan.planType === "hybrid");
+      return (
+        group.status === "active" &&
+        plan &&
+        (plan.planType === "node" || plan.planType === "hybrid")
+      );
     });
   }, [resourceGroups, plansMap]);
 
-  // Handle resource group selection toggle
   const handleGroupToggle = (groupSid: string) => {
     setFormData((prev) => {
       const currentGroups = prev.groupSids || [];
@@ -714,198 +818,219 @@ export const CreateForwardRuleDialog: React.FC<
     });
   };
 
+  const selectedAgent = agents.find((a) => a.id === formData.agentId);
+  const selectedExitAgent = agents.find((a) => a.id === formData.exitAgentId);
+
   return (
     <Dialog open={open} onOpenChange={(isOpen) => !isOpen && handleClose()}>
-      <DialogContent className="@container sm:max-w-[650px] flex flex-col max-h-[90vh]">
-        <DialogHeader className="flex-shrink-0">
-          <DialogTitle>
-            {initialData ? t('admin.forwardRules.form.copyRule') : t('admin.forwardRules.form.createRule')}
+      <DialogContent className="sm:max-w-2xl flex flex-col max-h-[90vh] p-0">
+        <DialogHeader className="flex-shrink-0 px-5 pt-5 pb-4 border-b border-border sm:px-6">
+          <DialogTitle className="text-lg font-semibold">
+            {initialData
+              ? t("admin.forwardRules.form.copyRule")
+              : t("admin.forwardRules.form.createRule")}
           </DialogTitle>
         </DialogHeader>
 
-        <div className="flex-1 min-h-0 overflow-y-auto -mx-6 px-6">
-          <Accordion
-            type="multiple"
-            defaultValue={["basic", "forward"]}
-            className="space-y-2"
-          >
-            {/* Basic Information */}
-            <AccordionItem value="basic" className="border rounded-lg px-4">
-              <AccordionTrigger className="hover:no-underline py-3">
-                <span className="text-sm font-medium">{t('admin.forwardRules.form.basicInfo')}</span>
-              </AccordionTrigger>
-              <AccordionContent>
-                <div className="grid grid-cols-1 @sm:grid-cols-2 gap-4 pb-4">
-                  {/* Forward Agent - hidden for external type */}
-                  {formData.ruleType !== "external" && (
-                    <div className="flex flex-col gap-2">
-                      <Label htmlFor="agentId">
-                        {t('admin.forwardRules.form.forwardAgent')} <span className="text-destructive">*</span>
-                      </Label>
-                      <Select
-                        value={formData.agentId}
-                        onValueChange={(value) => handleChange("agentId", value)}
-                      >
-                        <SelectTrigger
-                          id="agentId"
-                          className={errors.agentId ? "border-destructive" : ""}
-                        >
-                          <SelectValue placeholder={t('admin.forwardRules.form.selectForwardAgent')} />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {availableAgentsForSelect.map((agent) => (
-                            <SelectItem key={agent.id} value={agent.id}>
-                              <span className="flex items-center gap-2">
-                                {agent.name}
-                                {agent.allowedPortRange && (
-                                  <Badge
-                                    variant="outline"
-                                    className="text-[10px] px-1.5 py-0 border-amber-300 text-amber-600 dark:border-amber-700 dark:text-amber-400"
-                                  >
-                                    {agent.allowedPortRange}
-                                  </Badge>
-                                )}
-                              </span>
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                      {errors.agentId && (
-                        <p className="text-xs text-destructive">
-                          {errors.agentId}
-                        </p>
-                      )}
-                      {formData.agentId &&
-                        (() => {
-                          const selectedAgent = agents.find(
-                            (a) => a.id === formData.agentId,
-                          );
-                          return selectedAgent?.allowedPortRange ? (
-                            <div className="flex items-center gap-1.5 text-xs text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800 rounded-md px-2.5 py-1.5">
-                              <Info className="size-3.5 shrink-0" />
-                              <span>
-                                {t('admin.forwardRules.form.portRestriction', { range: selectedAgent.allowedPortRange })}
-                              </span>
-                            </div>
-                          ) : null;
-                        })()}
-                    </div>
-                  )}
+        <div className="flex-1 min-h-0 overflow-y-auto px-5 py-5 sm:px-6">
+          <div className="space-y-6">
+            {/* Section 1: Basic Information */}
+            <FormSection title={t("admin.forwardRules.form.basicInfo")}>
+              <div className="grid grid-cols-6 gap-x-4 gap-y-4">
+                {/* Rule Name - 4 cols on desktop */}
+                <FormField
+                  label={t("admin.forwardRules.form.ruleName")}
+                  required
+                  error={errors.name}
+                  className="col-span-6 sm:col-span-4"
+                >
+                  <Input
+                    value={formData.name}
+                    onChange={(e) => handleChange("name", e.target.value)}
+                    error={!!errors.name}
+                    placeholder={t(
+                      "admin.forwardRules.form.ruleNamePlaceholder",
+                    )}
+                  />
+                </FormField>
 
-                  {/* Rule Type */}
-                  <div className="flex flex-col gap-2">
-                    <Label htmlFor="ruleType">
-                      {t('admin.forwardRules.form.ruleType')} <span className="text-destructive">*</span>
-                    </Label>
+                {/* Rule Type - 2 cols on desktop */}
+                <FormField
+                  label={t("admin.forwardRules.form.ruleType")}
+                  required
+                  className="col-span-6 sm:col-span-2"
+                >
+                  <Select
+                    value={formData.ruleType}
+                    onValueChange={(value) =>
+                      handleChange("ruleType", value as ForwardRuleType)
+                    }
+                  >
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {(Object.keys(RULE_TYPE_KEYS) as ForwardRuleType[]).map(
+                        (type) => (
+                          <SelectItem key={type} value={type}>
+                            {t(
+                              `admin.forwardRules.ruleTypeInfo.${RULE_TYPE_KEYS[type]}.label`,
+                            )}
+                          </SelectItem>
+                        ),
+                      )}
+                    </SelectContent>
+                  </Select>
+                </FormField>
+
+                {/* Rule Type Description - full width */}
+                <p className="col-span-6 text-xs text-muted-foreground -mt-2">
+                  {t(
+                    `admin.forwardRules.ruleTypeInfo.${RULE_TYPE_KEYS[formData.ruleType]}.description`,
+                  )}
+                </p>
+              </div>
+            </FormSection>
+
+            {/* Section 2: Forward Agent & Protocol (hidden for external) */}
+            {formData.ruleType !== "external" && (
+              <FormSection title={t("admin.forwardRules.form.forwardAgent")}>
+                <div className="grid grid-cols-6 gap-x-4 gap-y-4">
+                  {/* Forward Agent - 3 cols */}
+                  <FormField
+                    label={t("admin.forwardRules.form.forwardAgent")}
+                    required
+                    error={errors.agentId}
+                    className="col-span-6 sm:col-span-3"
+                  >
                     <Select
-                      value={formData.ruleType}
-                      onValueChange={(value) =>
-                        handleChange("ruleType", value as ForwardRuleType)
-                      }
+                      value={formData.agentId}
+                      onValueChange={(value) => handleChange("agentId", value)}
                     >
-                      <SelectTrigger id="ruleType">
-                        <SelectValue />
+                      <SelectTrigger
+                        className={errors.agentId ? "border-destructive" : ""}
+                      >
+                        <SelectValue
+                          placeholder={t(
+                            "admin.forwardRules.form.selectForwardAgent",
+                          )}
+                        />
                       </SelectTrigger>
                       <SelectContent>
-                        {(Object.keys(RULE_TYPE_KEYS) as ForwardRuleType[]).map((type) => (
-                          <SelectItem key={type} value={type}>
-                            {t(`admin.forwardRules.ruleTypeInfo.${RULE_TYPE_KEYS[type]}.label`)}
+                        {availableAgentsForSelect.map((agent) => (
+                          <SelectItem key={agent.id} value={agent.id}>
+                            <span className="flex items-center gap-2">
+                              {agent.name}
+                              {agent.allowedPortRange && (
+                                <Badge
+                                  variant="outline"
+                                  className="text-[10px] px-1.5 py-0 border-amber-300 text-amber-600 dark:border-amber-700 dark:text-amber-400"
+                                >
+                                  {agent.allowedPortRange}
+                                </Badge>
+                              )}
+                            </span>
                           </SelectItem>
                         ))}
                       </SelectContent>
                     </Select>
-                    <p className="text-xs text-muted-foreground">
-                      {t(`admin.forwardRules.ruleTypeInfo.${RULE_TYPE_KEYS[formData.ruleType]}.description`)}
-                    </p>
-                  </div>
+                  </FormField>
 
-                  {/* Rule Name */}
-                  <div className="flex flex-col gap-2 @sm:col-span-2">
-                    <Label htmlFor="name">
-                      {t('admin.forwardRules.form.ruleName')} <span className="text-destructive">*</span>
-                    </Label>
+                  {/* Listen Port - 1.5 cols */}
+                  <FormField
+                    label={t("admin.forwardRules.form.listenPort")}
+                    error={errors.listenPort}
+                    className="col-span-3 sm:col-span-2"
+                  >
                     <Input
-                      id="name"
-                      value={formData.name}
-                      onChange={(e) => handleChange("name", e.target.value)}
-                      error={!!errors.name}
-                      placeholder={t('admin.forwardRules.form.ruleNamePlaceholder')}
+                      type="number"
+                      min={0}
+                      max={65535}
+                      value={formData.listenPort || ""}
+                      onChange={(e) =>
+                        handleChange(
+                          "listenPort",
+                          parseInt(e.target.value, 10) || 0,
+                        )
+                      }
+                      error={!!errors.listenPort}
+                      placeholder={t(
+                        "admin.forwardRules.form.listenPortPlaceholderShort",
+                      )}
                     />
-                    {errors.name && (
-                      <p className="text-xs text-destructive">{errors.name}</p>
-                    )}
-                  </div>
+                  </FormField>
 
-                  {/* Protocol Type - hidden for external type */}
-                  {formData.ruleType !== "external" && (
-                    <div className="flex flex-col gap-2">
-                      <Label htmlFor="protocol">
-                        {t('admin.forwardRules.form.protocolType')} <span className="text-destructive">*</span>
-                      </Label>
-                      <Select
-                        value={formData.protocol}
-                        onValueChange={(value) =>
-                          handleChange("protocol", value as ForwardProtocol)
-                        }
-                      >
-                        <SelectTrigger id="protocol">
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="tcp">TCP</SelectItem>
-                          <SelectItem value="udp">UDP</SelectItem>
-                          <SelectItem value="both">TCP/UDP</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-                  )}
+                  {/* Protocol - 1.5 cols */}
+                  <FormField
+                    label={t("admin.forwardRules.form.protocolType")}
+                    required
+                    className="col-span-3 sm:col-span-1"
+                  >
+                    <Select
+                      value={formData.protocol}
+                      onValueChange={(value) =>
+                        handleChange("protocol", value as ForwardProtocol)
+                      }
+                    >
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="tcp">TCP</SelectItem>
+                        <SelectItem value="udp">UDP</SelectItem>
+                        <SelectItem value="both">TCP/UDP</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </FormField>
 
-                  {/* IP Version - hidden for external type */}
-                  {formData.ruleType !== "external" && (
-                    <div className="flex flex-col gap-2">
-                      <Label htmlFor="ipVersion">{t('admin.forwardRules.form.ipVersion')}</Label>
-                      <Select
-                        value={formData.ipVersion}
-                        onValueChange={(value) =>
-                          handleChange("ipVersion", value as IPVersion)
-                        }
-                      >
-                        <SelectTrigger id="ipVersion">
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="auto">{t('admin.forwardRules.form.ipVersionAuto')}</SelectItem>
-                          <SelectItem value="ipv4">IPv4</SelectItem>
-                          <SelectItem value="ipv6">IPv6</SelectItem>
-                        </SelectContent>
-                      </Select>
-                      <p className="text-xs text-muted-foreground">
-                        {t('admin.forwardRules.form.ipVersionHint')}
-                      </p>
+                  {/* Port Range Warning */}
+                  {selectedAgent?.allowedPortRange && (
+                    <div className="col-span-6 flex items-center gap-1.5 text-xs text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800 rounded-md px-2.5 py-1.5 -mt-2">
+                      <Info className="size-3.5 shrink-0" />
+                      <span>
+                        {t("admin.forwardRules.form.portRestriction", {
+                          range: selectedAgent.allowedPortRange,
+                        })}
+                      </span>
                     </div>
                   )}
                 </div>
-              </AccordionContent>
-            </AccordionItem>
+              </FormSection>
+            )}
 
-            {/* Forwarding Configuration - Show different fields based on rule type */}
-            <AccordionItem value="forward" className="border rounded-lg px-4">
-              <AccordionTrigger className="hover:no-underline py-3">
-                <span className="text-sm font-medium">{t('admin.forwardRules.form.forwardConfig')}</span>
-              </AccordionTrigger>
-              <AccordionContent>
-                <div className="grid grid-cols-1 @sm:grid-cols-2 gap-4 pb-4">
-                  {/* direct, entry, chain and direct_chain types: Listen Port */}
-                  {(formData.ruleType === "direct" ||
-                    formData.ruleType === "entry" ||
-                    formData.ruleType === "chain" ||
-                    formData.ruleType === "direct_chain") && (
-                    <div className="flex flex-col gap-2">
-                      <Label htmlFor="listenPort">{t('admin.forwardRules.form.listenPort')}</Label>
+            {/* Section 3: Forwarding Configuration (type-specific) */}
+            <FormSection title={t("admin.forwardRules.form.forwardConfig")}>
+              <div className="grid grid-cols-6 gap-x-4 gap-y-4">
+                {/* External type fields */}
+                {formData.ruleType === "external" && (
+                  <>
+                    <FormField
+                      label={t("admin.forwardRules.form.serverAddress")}
+                      required
+                      error={errors.serverAddress}
+                      className="col-span-6 sm:col-span-4"
+                    >
                       <Input
-                        id="listenPort"
+                        value={formData.serverAddress}
+                        onChange={(e) =>
+                          handleChange("serverAddress", e.target.value)
+                        }
+                        error={!!errors.serverAddress}
+                        placeholder={t(
+                          "admin.forwardRules.form.serverAddressPlaceholder",
+                        )}
+                      />
+                    </FormField>
+
+                    <FormField
+                      label={t("admin.forwardRules.form.listenPort")}
+                      required
+                      error={errors.listenPort}
+                      className="col-span-6 sm:col-span-2"
+                    >
+                      <Input
                         type="number"
-                        min={0}
+                        min={1}
                         max={65535}
                         value={formData.listenPort || ""}
                         onChange={(e) =>
@@ -915,121 +1040,65 @@ export const CreateForwardRuleDialog: React.FC<
                           )
                         }
                         error={!!errors.listenPort}
-                        placeholder={t('admin.forwardRules.form.listenPortAutoHint')}
+                        placeholder="1-65535"
                       />
-                      {errors.listenPort && (
-                        <p className="text-xs text-destructive">
-                          {errors.listenPort}
-                        </p>
-                      )}
-                    </div>
-                  )}
+                    </FormField>
 
-                  {/* External type: Server Address */}
-                  {formData.ruleType === "external" && (
-                    <>
-                      <div className="flex flex-col gap-2">
-                        <Label htmlFor="serverAddress">
-                          {t('admin.forwardRules.form.serverAddress')} <span className="text-destructive">*</span>
-                        </Label>
-                        <Input
-                          id="serverAddress"
-                          value={formData.serverAddress}
-                          onChange={(e) => handleChange("serverAddress", e.target.value)}
-                          error={!!errors.serverAddress}
-                          placeholder={t('admin.forwardRules.form.serverAddressPlaceholder')}
-                        />
-                        {errors.serverAddress && (
-                          <p className="text-xs text-destructive">
-                            {errors.serverAddress}
-                          </p>
+                    <FormField
+                      label={t("admin.forwardRules.form.targetNode")}
+                      hint={t("admin.forwardRules.form.targetNodeHint")}
+                      className="col-span-6 sm:col-span-3"
+                    >
+                      <Select
+                        value={formData.targetNodeId}
+                        onValueChange={(value) =>
+                          handleChange("targetNodeId", value)
+                        }
+                      >
+                        <SelectTrigger>
+                          <SelectValue
+                            placeholder={t(
+                              "admin.forwardRules.form.selectTargetNodeOptional",
+                            )}
+                          />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {availableNodes.map((node) => (
+                            <SelectItem key={node.id} value={node.id}>
+                              {node.name} ({node.serverAddress})
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </FormField>
+
+                    <FormField
+                      label={t("admin.forwardRules.form.externalSource")}
+                      hint={t("admin.forwardRules.form.externalSourceHint")}
+                      className="col-span-6 sm:col-span-3"
+                    >
+                      <Input
+                        value={formData.externalSource}
+                        onChange={(e) =>
+                          handleChange("externalSource", e.target.value)
+                        }
+                        placeholder={t(
+                          "admin.forwardRules.form.externalSourcePlaceholder",
                         )}
-                      </div>
+                      />
+                    </FormField>
+                  </>
+                )}
 
-                      <div className="flex flex-col gap-2">
-                        <Label htmlFor="listenPort">
-                          {t('admin.forwardRules.form.listenPort')} <span className="text-destructive">*</span>
-                        </Label>
-                        <Input
-                          id="listenPort"
-                          type="number"
-                          min={1}
-                          max={65535}
-                          value={formData.listenPort || ""}
-                          onChange={(e) =>
-                            handleChange(
-                              "listenPort",
-                              parseInt(e.target.value, 10) || 0,
-                            )
-                          }
-                          error={!!errors.listenPort}
-                          placeholder="1-65535"
-                        />
-                        {errors.listenPort && (
-                          <p className="text-xs text-destructive">
-                            {errors.listenPort}
-                          </p>
-                        )}
-                      </div>
-
-                      <div className="flex flex-col gap-2">
-                        <Label htmlFor="externalTargetNodeId">{t('admin.forwardRules.form.targetNode')}</Label>
-                        <Select
-                          value={formData.targetNodeId}
-                          onValueChange={(value) =>
-                            handleChange("targetNodeId", value)
-                          }
-                        >
-                          <SelectTrigger id="externalTargetNodeId">
-                            <SelectValue placeholder={t('admin.forwardRules.form.selectTargetNodeOptional')} />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {availableNodes.map((node) => (
-                              <SelectItem key={node.id} value={node.id}>
-                                {node.name} ({node.serverAddress})
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                        <p className="text-xs text-muted-foreground">
-                          {t('admin.forwardRules.form.targetNodeHint')}
-                        </p>
-                      </div>
-
-                      <div className="flex flex-col gap-2">
-                        <Label htmlFor="externalSource">{t('admin.forwardRules.form.externalSource')}</Label>
-                        <Input
-                          id="externalSource"
-                          value={formData.externalSource}
-                          onChange={(e) => handleChange("externalSource", e.target.value)}
-                          placeholder={t('admin.forwardRules.form.externalSourcePlaceholder')}
-                        />
-                        <p className="text-xs text-muted-foreground">
-                          {t('admin.forwardRules.form.externalSourceHint')}
-                        </p>
-                      </div>
-
-                      <div className="flex flex-col gap-2">
-                        <Label htmlFor="externalRuleId">{t('admin.forwardRules.form.externalRuleId')}</Label>
-                        <Input
-                          id="externalRuleId"
-                          value={formData.externalRuleId}
-                          onChange={(e) => handleChange("externalRuleId", e.target.value)}
-                          placeholder={t('admin.forwardRules.form.externalRuleIdPlaceholder')}
-                        />
-                        <p className="text-xs text-muted-foreground">
-                          {t('admin.forwardRules.form.externalRuleIdHint')}
-                        </p>
-                      </div>
-                    </>
-                  )}
-
-                  {/* entry type: Exit Agent */}
-                  {formData.ruleType === "entry" && (
-                    <div className="flex flex-col gap-2">
-                      <Label htmlFor="exitAgentId">
-                        {t('admin.forwardRules.form.exitNode')} <span className="text-destructive">*</span>
-                      </Label>
+                {/* Entry type: Exit Agent + Tunnel Type */}
+                {formData.ruleType === "entry" && (
+                  <>
+                    <FormField
+                      label={t("admin.forwardRules.form.exitNode")}
+                      required
+                      error={errors.exitAgentId}
+                      className="col-span-6 sm:col-span-4"
+                    >
                       <Select
                         value={formData.exitAgentId}
                         onValueChange={(value) =>
@@ -1037,12 +1106,15 @@ export const CreateForwardRuleDialog: React.FC<
                         }
                       >
                         <SelectTrigger
-                          id="exitAgentId"
                           className={
                             errors.exitAgentId ? "border-destructive" : ""
                           }
                         >
-                          <SelectValue placeholder={t('admin.forwardRules.form.selectExitNode')} />
+                          <SelectValue
+                            placeholder={t(
+                              "admin.forwardRules.form.selectExitNode",
+                            )}
+                          />
                         </SelectTrigger>
                         <SelectContent>
                           {availableExitAgents.map((agent) => (
@@ -1062,40 +1134,19 @@ export const CreateForwardRuleDialog: React.FC<
                           ))}
                         </SelectContent>
                       </Select>
-                      {errors.exitAgentId && (
-                        <p className="text-xs text-destructive">
-                          {errors.exitAgentId}
-                        </p>
-                      )}
-                      {formData.exitAgentId &&
-                        (() => {
-                          const selectedAgent = agents.find(
-                            (a) => a.id === formData.exitAgentId,
-                          );
-                          return selectedAgent?.allowedPortRange ? (
-                            <div className="flex items-center gap-1.5 text-xs text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800 rounded-md px-2.5 py-1.5">
-                              <Info className="size-3.5 shrink-0" />
-                              <span>
-                                {t('admin.forwardRules.form.portRestriction', { range: selectedAgent.allowedPortRange })}
-                              </span>
-                            </div>
-                          ) : null;
-                        })()}
-                    </div>
-                  )}
+                    </FormField>
 
-                  {/* Tunnel Type - entry and chain types */}
-                  {(formData.ruleType === "entry" ||
-                    formData.ruleType === "chain") && (
-                    <div className="flex flex-col gap-2">
-                      <Label htmlFor="tunnelType">{t('admin.forwardRules.form.tunnelType')}</Label>
+                    <FormField
+                      label={t("admin.forwardRules.form.tunnelType")}
+                      className="col-span-6 sm:col-span-2"
+                    >
                       <Select
                         value={formData.tunnelType}
                         onValueChange={(value) =>
                           handleChange("tunnelType", value as TunnelType)
                         }
                       >
-                        <SelectTrigger id="tunnelType">
+                        <SelectTrigger>
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
@@ -1103,20 +1154,50 @@ export const CreateForwardRuleDialog: React.FC<
                           <SelectItem value="tls">TLS</SelectItem>
                         </SelectContent>
                       </Select>
-                      <p className="text-xs text-muted-foreground">
-                        {formData.tunnelType === "ws"
-                          ? t('admin.forwardRules.form.tunnelTypeWsHint')
-                          : t('admin.forwardRules.form.tunnelTypeTlsHint')}
-                      </p>
-                    </div>
-                  )}
+                    </FormField>
 
-                  {/* Tunnel Hops - chain type only */}
-                  {formData.ruleType === "chain" && (
-                    <div className="flex flex-col gap-2">
-                      <Label htmlFor="tunnelHops">{t('admin.forwardRules.form.tunnelHops')}</Label>
+                    {selectedExitAgent?.allowedPortRange && (
+                      <div className="col-span-6 flex items-center gap-1.5 text-xs text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800 rounded-md px-2.5 py-1.5 -mt-2">
+                        <Info className="size-3.5 shrink-0" />
+                        <span>
+                          {t("admin.forwardRules.form.portRestriction", {
+                            range: selectedExitAgent.allowedPortRange,
+                          })}
+                        </span>
+                      </div>
+                    )}
+                  </>
+                )}
+
+                {/* Chain type: Tunnel settings + Intermediate Nodes */}
+                {formData.ruleType === "chain" && (
+                  <>
+                    <FormField
+                      label={t("admin.forwardRules.form.tunnelType")}
+                      className="col-span-3 sm:col-span-2"
+                    >
+                      <Select
+                        value={formData.tunnelType}
+                        onValueChange={(value) =>
+                          handleChange("tunnelType", value as TunnelType)
+                        }
+                      >
+                        <SelectTrigger>
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="ws">WebSocket</SelectItem>
+                          <SelectItem value="tls">TLS</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </FormField>
+
+                    <FormField
+                      label={t("admin.forwardRules.form.tunnelHops")}
+                      hint={t("admin.forwardRules.form.tunnelHopsHint")}
+                      className="col-span-3 sm:col-span-2"
+                    >
                       <Input
-                        id="tunnelHops"
                         type="number"
                         min={0}
                         value={formData.tunnelHops ?? ""}
@@ -1127,25 +1208,22 @@ export const CreateForwardRuleDialog: React.FC<
                               : parseInt(e.target.value, 10);
                           handleChange("tunnelHops", value);
                         }}
-                        placeholder={t('admin.forwardRules.form.tunnelHopsPlaceholder')}
+                        placeholder={t(
+                          "admin.forwardRules.form.tunnelHopsPlaceholder",
+                        )}
                       />
-                      <p className="text-xs text-muted-foreground">
-                        {t('admin.forwardRules.form.tunnelHopsHint')}
-                      </p>
-                    </div>
-                  )}
+                    </FormField>
 
-                  {/* chain type: Intermediate Nodes List */}
-                  {formData.ruleType === "chain" && (
-                    <div className="flex flex-col gap-2 @sm:col-span-2">
-                      <Label>
-                        {t('admin.forwardRules.form.chainNodes')} <span className="text-destructive">*</span>
-                      </Label>
+                    <FormField
+                      label={t("admin.forwardRules.form.chainNodes")}
+                      required
+                      error={errors.chainAgentIds || errors.chainPortConfig}
+                      className="col-span-6"
+                    >
                       <SortableChainAgentList
                         agents={availableChainAgents}
                         selectedIds={formData.chainAgentIds}
                         onSelectionChange={(ids) => {
-                          // Synchronously update chainPortConfig when tunnelHops is set
                           if (
                             formData.tunnelHops !== undefined &&
                             formData.tunnelHops >= 0
@@ -1180,236 +1258,253 @@ export const CreateForwardRuleDialog: React.FC<
                         }
                         idPrefix="chain-agent"
                       />
-                      {errors.chainAgentIds && (
-                        <p className="text-xs text-destructive">
-                          {errors.chainAgentIds}
-                        </p>
-                      )}
-                      {errors.chainPortConfig && (
-                        <p className="text-xs text-destructive">
-                          {errors.chainPortConfig}
-                        </p>
-                      )}
-                    </div>
-                  )}
+                    </FormField>
+                  </>
+                )}
 
-                  {/* direct_chain type: Intermediate Nodes List (with port configuration) */}
-                  {formData.ruleType === "direct_chain" && (
-                    <div className="flex flex-col gap-2 @sm:col-span-2">
-                      <Label>
-                        {t('admin.forwardRules.form.chainNodesWithPort')}{" "}
-                        <span className="text-destructive">*</span>
+                {/* direct_chain type: Intermediate Nodes with port */}
+                {formData.ruleType === "direct_chain" && (
+                  <FormField
+                    label={t("admin.forwardRules.form.chainNodesWithPort")}
+                    required
+                    error={errors.chainAgentIds || errors.chainPortConfig}
+                    className="col-span-6"
+                  >
+                    <SortableChainAgentList
+                      agents={availableChainAgents}
+                      selectedIds={formData.chainAgentIds}
+                      onSelectionChange={(ids) => {
+                        const newPortConfig = { ...formData.chainPortConfig };
+                        Object.keys(newPortConfig).forEach((id) => {
+                          if (!ids.includes(id)) {
+                            delete newPortConfig[id];
+                          }
+                        });
+                        setFormData((prev) => ({
+                          ...prev,
+                          chainAgentIds: ids,
+                          chainPortConfig: newPortConfig,
+                        }));
+                      }}
+                      showPortConfig
+                      portConfig={formData.chainPortConfig}
+                      onPortConfigChange={handleChainPortChange}
+                      hasError={
+                        !!errors.chainAgentIds || !!errors.chainPortConfig
+                      }
+                      idPrefix="direct-chain-agent"
+                    />
+                  </FormField>
+                )}
+
+                {/* Target Configuration - for non-external types */}
+                {(formData.ruleType === "direct" ||
+                  formData.ruleType === "entry" ||
+                  formData.ruleType === "chain" ||
+                  formData.ruleType === "direct_chain") && (
+                  <>
+                    {/* Target Type Radio */}
+                    <div className="col-span-6">
+                      <Label className="text-sm font-medium text-foreground mb-3 block">
+                        {t("admin.forwardRules.form.targetType")}
+                        <span className="text-destructive ml-0.5">*</span>
                       </Label>
-                      <SortableChainAgentList
-                        agents={availableChainAgents}
-                        selectedIds={formData.chainAgentIds}
-                        onSelectionChange={(ids) => {
-                          // Synchronously update chainPortConfig, remove deselected nodes
-                          const newPortConfig = { ...formData.chainPortConfig };
-                          Object.keys(newPortConfig).forEach((id) => {
-                            if (!ids.includes(id)) {
-                              delete newPortConfig[id];
-                            }
-                          });
-                          setFormData((prev) => ({
-                            ...prev,
-                            chainAgentIds: ids,
-                            chainPortConfig: newPortConfig,
-                          }));
+                      <RadioGroup
+                        value={targetType}
+                        onValueChange={(value) => {
+                          setTargetType(value as TargetType);
+                          if (value === "manual") {
+                            handleChange("targetNodeId", "");
+                          } else {
+                            handleChange("targetAddress", "");
+                            handleChange("targetPort", 0);
+                          }
                         }}
-                        showPortConfig
-                        portConfig={formData.chainPortConfig}
-                        onPortConfigChange={handleChainPortChange}
-                        hasError={
-                          !!errors.chainAgentIds || !!errors.chainPortConfig
-                        }
-                        idPrefix="direct-chain-agent"
-                      />
-                      {errors.chainAgentIds && (
-                        <p className="text-xs text-destructive">
-                          {errors.chainAgentIds}
-                        </p>
-                      )}
-                      {errors.chainPortConfig && (
-                        <p className="text-xs text-destructive">
-                          {errors.chainPortConfig}
-                        </p>
-                      )}
-                    </div>
-                  )}
-
-                  {/* direct, entry, chain and direct_chain types: Target Configuration */}
-                  {(formData.ruleType === "direct" ||
-                    formData.ruleType === "entry" ||
-                    formData.ruleType === "chain" ||
-                    formData.ruleType === "direct_chain") && (
-                    <>
-                      {/* Target Type Selection */}
-                      <div className="flex flex-col gap-2 @sm:col-span-2">
-                        <Label>
-                          {t('admin.forwardRules.form.targetType')} <span className="text-destructive">*</span>
-                        </Label>
-                        <RadioGroup
-                          value={targetType}
-                          onValueChange={(value) => {
-                            setTargetType(value as TargetType);
-                            // Clear related fields when switching
-                            if (value === "manual") {
-                              handleChange("targetNodeId", "");
-                            } else {
-                              handleChange("targetAddress", "");
-                              handleChange("targetPort", 0);
-                            }
-                          }}
-                          className="flex gap-4"
-                        >
-                          <div className="flex items-center space-x-2">
-                            <RadioGroupItem value="manual" id="target-manual" />
-                            <Label
-                              htmlFor="target-manual"
-                              className="font-normal cursor-pointer"
-                            >
-                              {t('admin.forwardRules.form.targetTypeManual')}
-                            </Label>
-                          </div>
-                          <div className="flex items-center space-x-2">
-                            <RadioGroupItem value="node" id="target-node" />
-                            <Label
-                              htmlFor="target-node"
-                              className="font-normal cursor-pointer"
-                            >
-                              {t('admin.forwardRules.form.targetTypeNode')}
-                            </Label>
-                          </div>
-                        </RadioGroup>
-                      </div>
-
-                      {/* Manual Target Address Input */}
-                      {targetType === "manual" && (
-                        <>
-                          <div className="flex flex-col gap-2">
-                            <Label htmlFor="targetAddress">
-                              {t('admin.forwardRules.form.targetAddress')}{" "}
-                              <span className="text-destructive">*</span>
-                            </Label>
-                            <Input
-                              id="targetAddress"
-                              placeholder={t('admin.forwardRules.form.targetAddressPlaceholder')}
-                              value={formData.targetAddress}
-                              onChange={(e) =>
-                                handleChange("targetAddress", e.target.value)
-                              }
-                              error={!!errors.targetAddress}
-                            />
-                            {errors.targetAddress && (
-                              <p className="text-xs text-destructive">
-                                {errors.targetAddress}
-                              </p>
-                            )}
-                          </div>
-
-                          <div className="flex flex-col gap-2">
-                            <Label htmlFor="targetPort">
-                              {t('admin.forwardRules.form.targetPort')}{" "}
-                              <span className="text-destructive">*</span>
-                            </Label>
-                            <Input
-                              id="targetPort"
-                              type="number"
-                              min={1}
-                              max={65535}
-                              value={formData.targetPort || ""}
-                              onChange={(e) =>
-                                handleChange(
-                                  "targetPort",
-                                  parseInt(e.target.value, 10) || 0,
-                                )
-                              }
-                              error={!!errors.targetPort}
-                              placeholder="1-65535"
-                            />
-                            {errors.targetPort && (
-                              <p className="text-xs text-destructive">
-                                {errors.targetPort}
-                              </p>
-                            )}
-                          </div>
-                        </>
-                      )}
-
-                      {/* Select Target Node */}
-                      {targetType === "node" && (
-                        <div className="flex flex-col gap-2 @sm:col-span-2">
-                          <Label htmlFor="targetNodeId">
-                            {t('admin.forwardRules.form.targetNode')} <span className="text-destructive">*</span>
+                        className="flex gap-6"
+                      >
+                        <div className="flex items-center space-x-2">
+                          <RadioGroupItem value="manual" id="target-manual" />
+                          <Label
+                            htmlFor="target-manual"
+                            className="font-normal cursor-pointer"
+                          >
+                            {t("admin.forwardRules.form.targetTypeManual")}
                           </Label>
-                          <Select
-                            value={formData.targetNodeId}
-                            onValueChange={(value) =>
-                              handleChange("targetNodeId", value)
+                        </div>
+                        <div className="flex items-center space-x-2">
+                          <RadioGroupItem value="node" id="target-node" />
+                          <Label
+                            htmlFor="target-node"
+                            className="font-normal cursor-pointer"
+                          >
+                            {t("admin.forwardRules.form.targetTypeNode")}
+                          </Label>
+                        </div>
+                      </RadioGroup>
+                    </div>
+
+                    {/* Manual Target */}
+                    {targetType === "manual" && (
+                      <>
+                        <FormField
+                          label={t("admin.forwardRules.form.targetAddress")}
+                          required
+                          error={errors.targetAddress}
+                          className="col-span-6 sm:col-span-4"
+                        >
+                          <Input
+                            placeholder={t(
+                              "admin.forwardRules.form.targetAddressPlaceholder",
+                            )}
+                            value={formData.targetAddress}
+                            onChange={(e) =>
+                              handleChange("targetAddress", e.target.value)
+                            }
+                            error={!!errors.targetAddress}
+                          />
+                        </FormField>
+
+                        <FormField
+                          label={t("admin.forwardRules.form.targetPort")}
+                          required
+                          error={errors.targetPort}
+                          className="col-span-6 sm:col-span-2"
+                        >
+                          <Input
+                            type="number"
+                            min={1}
+                            max={65535}
+                            value={formData.targetPort || ""}
+                            onChange={(e) =>
+                              handleChange(
+                                "targetPort",
+                                parseInt(e.target.value, 10) || 0,
+                              )
+                            }
+                            error={!!errors.targetPort}
+                            placeholder="1-65535"
+                          />
+                        </FormField>
+                      </>
+                    )}
+
+                    {/* Node Target */}
+                    {targetType === "node" && (
+                      <FormField
+                        label={t("admin.forwardRules.form.targetNode")}
+                        required
+                        error={errors.targetNodeId}
+                        hint={t(
+                          "admin.forwardRules.form.targetNodeDynamicHint",
+                        )}
+                        className="col-span-6"
+                      >
+                        <Select
+                          value={formData.targetNodeId}
+                          onValueChange={(value) =>
+                            handleChange("targetNodeId", value)
+                          }
+                        >
+                          <SelectTrigger
+                            className={
+                              errors.targetNodeId ? "border-destructive" : ""
                             }
                           >
-                            <SelectTrigger
-                              id="targetNodeId"
-                              className={
-                                errors.targetNodeId ? "border-destructive" : ""
-                              }
-                            >
-                              <SelectValue placeholder={t('admin.forwardRules.form.selectTargetNode')} />
-                            </SelectTrigger>
-                            <SelectContent>
-                              {availableNodes.map((node) => (
-                                <SelectItem key={node.id} value={node.id}>
-                                  {node.name} ({node.serverAddress})
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
-                          <p className="text-xs text-muted-foreground">
-                            {t('admin.forwardRules.form.targetNodeDynamicHint')}
-                          </p>
-                          {errors.targetNodeId && (
-                            <p className="text-xs text-destructive">
-                              {errors.targetNodeId}
-                            </p>
-                          )}
-                        </div>
-                      )}
-                    </>
-                  )}
-                </div>
-              </AccordionContent>
-            </AccordionItem>
+                            <SelectValue
+                              placeholder={t(
+                                "admin.forwardRules.form.selectTargetNode",
+                              )}
+                            />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {availableNodes.map((node) => (
+                              <SelectItem key={node.id} value={node.id}>
+                                {node.name} ({node.serverAddress})
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </FormField>
+                    )}
+                  </>
+                )}
+              </div>
+            </FormSection>
 
-            {/* Advanced Options */}
-            <AccordionItem value="advanced" className="border rounded-lg px-4">
-              <AccordionTrigger className="hover:no-underline py-3">
-                <span className="text-sm font-medium">{t('admin.forwardRules.form.advancedOptions')}</span>
-              </AccordionTrigger>
-              <AccordionContent>
-                <div className="grid grid-cols-1 @sm:grid-cols-2 gap-4 pb-4">
-                  {/* Bind IP - hidden for external type */}
+            {/* Section 4: Advanced Options (Collapsible) */}
+            <Collapsible open={advancedOpen} onOpenChange={setAdvancedOpen}>
+              <CollapsibleTrigger asChild>
+                <button
+                  type="button"
+                  className="flex items-center gap-3 w-full text-left group"
+                >
+                  <span className="text-sm font-semibold text-foreground whitespace-nowrap">
+                    {t("admin.forwardRules.form.advancedOptions")}
+                  </span>
+                  <div className="h-px flex-1 bg-border" aria-hidden="true" />
+                  <ChevronDown
+                    className={`size-4 text-muted-foreground transition-transform duration-200 ${
+                      advancedOpen ? "rotate-180" : ""
+                    }`}
+                  />
+                </button>
+              </CollapsibleTrigger>
+              <CollapsibleContent className="pt-4">
+                <div className="grid grid-cols-6 gap-x-4 gap-y-4">
+                  {/* IP Version */}
                   {formData.ruleType !== "external" && (
-                    <div className="flex flex-col gap-2">
-                      <Label htmlFor="bindIp">{t('admin.forwardRules.form.bindIp')}</Label>
+                    <FormField
+                      label={t("admin.forwardRules.form.ipVersion")}
+                      hint={t("admin.forwardRules.form.ipVersionHint")}
+                      className="col-span-6 sm:col-span-2"
+                    >
+                      <Select
+                        value={formData.ipVersion}
+                        onValueChange={(value) =>
+                          handleChange("ipVersion", value as IPVersion)
+                        }
+                      >
+                        <SelectTrigger>
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="auto">
+                            {t("admin.forwardRules.form.ipVersionAuto")}
+                          </SelectItem>
+                          <SelectItem value="ipv4">IPv4</SelectItem>
+                          <SelectItem value="ipv6">IPv6</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </FormField>
+                  )}
+
+                  {/* Bind IP */}
+                  {formData.ruleType !== "external" && (
+                    <FormField
+                      label={t("admin.forwardRules.form.bindIp")}
+                      hint={t("admin.forwardRules.form.bindIpHint")}
+                      className="col-span-6 sm:col-span-2"
+                    >
                       <Input
-                        id="bindIp"
                         value={formData.bindIp}
-                        onChange={(e) => handleChange("bindIp", e.target.value)}
-                        placeholder={t('admin.forwardRules.form.bindIpPlaceholder')}
+                        onChange={(e) =>
+                          handleChange("bindIp", e.target.value)
+                        }
+                        placeholder={t(
+                          "admin.forwardRules.form.bindIpPlaceholder",
+                        )}
                       />
-                      <p className="text-xs text-muted-foreground">
-                        {t('admin.forwardRules.form.bindIpHint')}
-                      </p>
-                    </div>
+                    </FormField>
                   )}
 
-                  {/* Traffic Multiplier - hidden for external type */}
+                  {/* Traffic Multiplier */}
                   {formData.ruleType !== "external" && (
-                    <div className="flex flex-col gap-2">
-                      <Label htmlFor="trafficMultiplier">{t('admin.forwardRules.form.trafficMultiplier')}</Label>
+                    <FormField
+                      label={t("admin.forwardRules.form.trafficMultiplier")}
+                      hint={t("admin.forwardRules.form.trafficMultiplierHint")}
+                      className="col-span-3 sm:col-span-1"
+                    >
                       <Input
-                        id="trafficMultiplier"
                         type="number"
                         min={0}
                         max={1000000}
@@ -1422,18 +1517,18 @@ export const CreateForwardRuleDialog: React.FC<
                               : parseFloat(e.target.value);
                           handleChange("trafficMultiplier", value);
                         }}
-                        placeholder={t('admin.forwardRules.form.trafficMultiplierAutoHint')}
+                        placeholder="1.0"
                       />
-                      <p className="text-xs text-muted-foreground">
-                        {t('admin.forwardRules.form.trafficMultiplierHint')}
-                      </p>
-                    </div>
+                    </FormField>
                   )}
 
-                  <div className="flex flex-col gap-2">
-                    <Label htmlFor="sortOrder">{t('admin.forwardRules.form.sortOrder')}</Label>
+                  {/* Sort Order */}
+                  <FormField
+                    label={t("admin.forwardRules.form.sortOrder")}
+                    hint={t("admin.forwardRules.form.sortOrderHint")}
+                    className="col-span-3 sm:col-span-1"
+                  >
                     <Input
-                      id="sortOrder"
                       type="number"
                       min={0}
                       value={formData.sortOrder ?? ""}
@@ -1444,56 +1539,90 @@ export const CreateForwardRuleDialog: React.FC<
                             : parseInt(e.target.value, 10);
                         handleChange("sortOrder", value);
                       }}
-                      placeholder={t('admin.forwardRules.form.sortOrderPlaceholder')}
+                      placeholder="0"
                     />
-                    <p className="text-xs text-muted-foreground">
-                      {t('admin.forwardRules.form.sortOrderHint')}
-                    </p>
-                  </div>
+                  </FormField>
 
-                  <div className="flex flex-col gap-1.5 @sm:col-span-2">
-                    <Label htmlFor="remark">{t('admin.forwardRules.form.remark')}</Label>
+                  {/* External Rule ID (for external type) */}
+                  {formData.ruleType === "external" && (
+                    <FormField
+                      label={t("admin.forwardRules.form.externalRuleId")}
+                      hint={t("admin.forwardRules.form.externalRuleIdHint")}
+                      className="col-span-6 sm:col-span-3"
+                    >
+                      <Input
+                        value={formData.externalRuleId}
+                        onChange={(e) =>
+                          handleChange("externalRuleId", e.target.value)
+                        }
+                        placeholder={t(
+                          "admin.forwardRules.form.externalRuleIdPlaceholder",
+                        )}
+                      />
+                    </FormField>
+                  )}
+
+                  {/* Remark */}
+                  <FormField
+                    label={t("admin.forwardRules.form.remark")}
+                    className="col-span-6"
+                  >
                     <Textarea
-                      id="remark"
-                      rows={3}
+                      rows={2}
                       value={formData.remark}
                       onChange={(e) => handleChange("remark", e.target.value)}
-                      placeholder={t('admin.forwardRules.form.remarkPlaceholder')}
+                      placeholder={t(
+                        "admin.forwardRules.form.remarkPlaceholder",
+                      )}
                       className="resize-none"
                     />
-                  </div>
+                  </FormField>
 
                   {/* Resource Groups Selection */}
                   {availableResourceGroups.length > 0 && (
-                    <div className="flex flex-col gap-2 @sm:col-span-2">
-                      <Label className="flex items-center gap-1.5">
-                        <FolderTree className="size-4" />
-                        {t('admin.forwardRules.form.bindResourceGroups')}
-                      </Label>
-                      <p className="text-xs text-muted-foreground">
-                        {t('admin.forwardRules.form.bindResourceGroupsHint')}
-                      </p>
+                    <FormField
+                      label={
+                        <span className="flex items-center gap-1.5">
+                          <FolderTree className="size-4" />
+                          {t("admin.forwardRules.form.bindResourceGroups")}
+                        </span>
+                      }
+                      hint={
+                        formData.groupSids && formData.groupSids.length > 0
+                          ? t("admin.forwardRules.form.selectedGroupsCount", {
+                              count: formData.groupSids.length,
+                            })
+                          : t("admin.forwardRules.form.bindResourceGroupsHint")
+                      }
+                      className="col-span-6"
+                    >
                       <div className="border rounded-lg overflow-hidden">
-                        <ScrollArea className="h-[120px]">
-                          <div className="divide-y">
+                        <ScrollArea className="h-[100px]">
+                          <div className="divide-y divide-border">
                             {availableResourceGroups.map((group) => {
                               const plan = plansMap[group.planId];
-                              const isSelected = formData.groupSids?.includes(group.sid) ?? false;
+                              const isSelected =
+                                formData.groupSids?.includes(group.sid) ??
+                                false;
                               return (
                                 <label
                                   key={group.sid}
                                   className={`flex items-center gap-3 px-3 py-2 cursor-pointer transition-colors ${
                                     isSelected
-                                      ? "bg-primary/10"
+                                      ? "bg-primary/5"
                                       : "hover:bg-muted/50"
                                   }`}
                                 >
                                   <Checkbox
                                     checked={isSelected}
-                                    onCheckedChange={() => handleGroupToggle(group.sid)}
+                                    onCheckedChange={() =>
+                                      handleGroupToggle(group.sid)
+                                    }
                                   />
                                   <div className="flex-1 min-w-0">
-                                    <p className="text-sm font-medium truncate">{group.name}</p>
+                                    <p className="text-sm font-medium truncate">
+                                      {group.name}
+                                    </p>
                                     {plan && (
                                       <p className="text-xs text-muted-foreground truncate">
                                         {plan.name}
@@ -1501,8 +1630,17 @@ export const CreateForwardRuleDialog: React.FC<
                                     )}
                                   </div>
                                   {plan && (
-                                    <Badge variant="outline" className="text-[10px] flex-shrink-0">
-                                      {plan.planType === "node" ? t('admin.forwardRules.form.planTypeNode') : t('admin.forwardRules.form.planTypeHybrid')}
+                                    <Badge
+                                      variant="outline"
+                                      className="text-[10px] flex-shrink-0"
+                                    >
+                                      {plan.planType === "node"
+                                        ? t(
+                                            "admin.forwardRules.form.planTypeNode",
+                                          )
+                                        : t(
+                                            "admin.forwardRules.form.planTypeHybrid",
+                                          )}
                                     </Badge>
                                   )}
                                 </label>
@@ -1511,26 +1649,23 @@ export const CreateForwardRuleDialog: React.FC<
                           </div>
                         </ScrollArea>
                       </div>
-                      {formData.groupSids && formData.groupSids.length > 0 && (
-                        <p className="text-xs text-muted-foreground">
-                          {t('admin.forwardRules.form.selectedGroupsCount', { count: formData.groupSids.length })}
-                        </p>
-                      )}
-                    </div>
+                    </FormField>
                   )}
                 </div>
-              </AccordionContent>
-            </AccordionItem>
-          </Accordion>
+              </CollapsibleContent>
+            </Collapsible>
+          </div>
         </div>
 
-        <DialogFooter className="flex-shrink-0 mt-6 gap-3">
-          <Button variant="outline" onClick={handleClose}>
-            {t('common.actions.cancel')}
-          </Button>
-          <Button onClick={handleSubmit} disabled={!isFormValid()}>
-            {t('common.actions.create')}
-          </Button>
+        <DialogFooter className="flex-shrink-0 px-5 py-4 border-t border-border bg-muted/30 sm:px-6">
+          <div className="flex gap-3 justify-end w-full">
+            <Button variant="outline" onClick={handleClose}>
+              {t("common.actions.cancel")}
+            </Button>
+            <Button onClick={handleSubmit} disabled={!isFormValid()}>
+              {t("common.actions.create")}
+            </Button>
+          </div>
         </DialogFooter>
       </DialogContent>
     </Dialog>

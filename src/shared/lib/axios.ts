@@ -83,11 +83,6 @@ const REFRESH_COOLDOWN = 5000; // Do not repeat refresh within 5 seconds
  */
 apiClient.interceptors.request.use(
   (config: InternalAxiosRequestConfig) => {
-    // Debug: log passkey requests to verify case conversion
-    if (config.url?.includes('passkey')) {
-      console.log('[Axios] Passkey request:', config.url);
-      console.log('[Axios] Passkey request data:', JSON.stringify(config.data, null, 2));
-    }
     return config;
   },
   (error) => {
@@ -168,19 +163,15 @@ apiClient.interceptors.response.use(
     return response;
   },
   async (error: AxiosError) => {
-    // Debug: log passkey errors with full response
-    if (error.config?.url?.includes('passkey')) {
-      console.error('[Axios] Passkey error status:', error.response?.status);
-      console.error('[Axios] Passkey error data:', JSON.stringify(error.response?.data, null, 2));
-    }
     const originalRequest = error.config as InternalAxiosRequestConfig & { _retry?: boolean };
 
     // 401 error and not retried yet
     if (error.response?.status === 401 && !originalRequest._retry) {
-      // Skip refresh for auth endpoints - their 401 means authentication failed, not token expired
-      // /auth/me 401 means user is not logged in, should not trigger refresh
-      const authEndpoints = ['/auth/login', '/auth/register', '/auth/refresh', '/auth/me'];
-      if (authEndpoints.some(ep => originalRequest.url?.includes(ep))) {
+      // Skip refresh for auth mutation endpoints only
+      // These endpoints' 401 means authentication failed (wrong password, etc.), not token expired
+      // Note: /auth/me is NOT excluded - its 401 should trigger token refresh
+      const authMutationEndpoints = ['/auth/login', '/auth/register', '/auth/refresh'];
+      if (authMutationEndpoints.some(ep => originalRequest.url?.includes(ep))) {
         return Promise.reject(error);
       }
 

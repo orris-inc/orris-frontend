@@ -26,8 +26,19 @@ export const buttonSizes = {
 
 /**
  * Input 样式
+ * - h-11: 44px touch target for mobile
+ * - text-base: 16px prevents iOS auto-zoom on focus
+ * - focus-visible: only show focus ring on keyboard navigation
+ * - ring-inset: prevents ring from being clipped by overflow containers
  */
-export const inputStyles = 'flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50';
+export const inputStyles = 'flex h-11 w-full rounded-md border border-input bg-background px-3 py-2 text-base file:border-0 file:bg-transparent file:text-base file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:border-ring focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-inset disabled:cursor-not-allowed disabled:opacity-50';
+
+/**
+ * Select Trigger 样式
+ * - ring-inset: prevents ring from being clipped by overflow containers
+ * - data-[state=open]: visual feedback when dropdown is open
+ */
+export const selectTriggerStyles = 'flex h-11 w-full items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-base placeholder:text-muted-foreground focus:outline-none focus-visible:border-ring focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-inset data-[state=open]:border-ring data-[state=open]:ring-2 data-[state=open]:ring-ring data-[state=open]:ring-inset disabled:cursor-not-allowed disabled:opacity-50 [&>span]:line-clamp-1';
 
 /**
  * Label 样式
@@ -68,8 +79,11 @@ export const alertDescriptionStyles = 'text-sm [&_p]:leading-relaxed';
 
 /**
  * Textarea 样式
+ * - text-base: 16px prevents iOS auto-zoom on focus
+ * - focus-visible: only show focus ring on keyboard navigation
+ * - ring-inset: prevents ring from being clipped by overflow containers
  */
-export const textareaStyles = 'flex min-h-[80px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50';
+export const textareaStyles = 'flex min-h-[80px] w-full rounded-md border border-input bg-background px-3 py-2 text-base placeholder:text-muted-foreground focus-visible:outline-none focus-visible:border-ring focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-inset disabled:cursor-not-allowed disabled:opacity-50';
 
 /**
  * Table 样式
