@@ -3,9 +3,11 @@
  * System configuration page for administrators
  *
  * Layout: Horizontal tab navigation + Content panel (Tailwind Application UI style)
+ * Mobile-first responsive design with icon-only tabs on mobile
  */
 
 import { AdminLayout } from '@/layouts/AdminLayout';
+import { PageHeader } from '@/components/admin';
 import { usePageTitle } from '@/shared/hooks';
 import { Settings, KeyRound, Mail, MessageCircle, Wrench } from 'lucide-react';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/common/Tabs';
@@ -27,6 +29,12 @@ import {
 } from '@/features/settings';
 import { useTranslation } from 'react-i18next';
 import type { LucideIcon } from 'lucide-react';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '@/components/common/Tooltip';
 
 /**
  * Tab item configuration
@@ -48,12 +56,12 @@ const TAB_ITEMS: TabItem[] = [
 ];
 
 /**
- * Empty state component
+ * Empty state component with mobile-optimized padding
  */
 const EmptyState = ({ message }: { message: string }) => (
-  <div className="bg-card rounded-lg ring-1 ring-border p-8 text-center text-muted-foreground">
+  <div className="bg-card rounded-lg ring-1 ring-border p-6 md:p-8 text-center text-muted-foreground">
     <Wrench className="size-8 mx-auto mb-2 opacity-50" />
-    <p>{message}</p>
+    <p className="text-sm md:text-base">{message}</p>
   </div>
 );
 
@@ -104,40 +112,47 @@ export const AdminSettingsPage = () => {
 
   return (
     <AdminLayout>
-      <div className="flex flex-col min-h-0">
-        {/* Page Header */}
-        <header className="shrink-0 py-4 sm:py-6">
-          <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-foreground tracking-tight">
-            {t('admin.settings.title')}
-          </h1>
-          <p className="text-xs sm:text-sm text-muted-foreground mt-1">
-            {t('admin.settings.description')}
-          </p>
-        </header>
+      <div className="flex flex-col min-h-0 space-y-6">
+        {/* Page Header - Using PageHeader component */}
+        <PageHeader
+          title={t('admin.settings.title')}
+          description={t('admin.settings.description')}
+          icon={Settings}
+        />
 
         {/* Tabs Navigation + Content */}
         <Tabs defaultValue="system" className="flex-1">
-          {/* Tab List - Underline style */}
-          <div className="border-b border-border mb-6">
-            <TabsList className="h-auto p-0 bg-transparent rounded-none gap-0">
-              {TAB_ITEMS.map((item) => {
-                const Icon = item.icon;
-                return (
-                  <TabsTrigger
-                    key={item.id}
-                    value={item.id}
-                    className="relative h-10 px-4 rounded-none bg-transparent shadow-none data-[state=active]:shadow-none data-[state=active]:bg-transparent text-muted-foreground data-[state=active]:text-foreground after:absolute after:inset-x-0 after:bottom-0 after:h-0.5 after:bg-transparent data-[state=active]:after:bg-primary"
-                  >
-                    <Icon className="size-4 mr-2" />
-                    <span className="hidden sm:inline">{t(item.labelKey)}</span>
-                  </TabsTrigger>
-                );
-              })}
-            </TabsList>
+          {/* Tab List - Underline style, icon-only on mobile with tooltip */}
+          <div className="border-b border-border mb-4 md:mb-6">
+            <TooltipProvider delayDuration={300}>
+              <TabsList className="h-auto p-0 bg-transparent rounded-none gap-0 w-full md:w-auto justify-start">
+                {TAB_ITEMS.map((item) => {
+                  const Icon = item.icon;
+                  const label = t(item.labelKey);
+                  return (
+                    <Tooltip key={item.id}>
+                      <TooltipTrigger asChild>
+                        <TabsTrigger
+                          value={item.id}
+                          className="relative min-h-11 md:h-10 px-3 md:px-4 rounded-none bg-transparent shadow-none data-[state=active]:shadow-none data-[state=active]:bg-transparent text-muted-foreground data-[state=active]:text-foreground after:absolute after:inset-x-0 after:bottom-0 after:h-0.5 after:bg-transparent data-[state=active]:after:bg-primary touch-target"
+                        >
+                          <Icon className="size-5 md:size-4 md:mr-2" />
+                          <span className="hidden md:inline">{label}</span>
+                        </TabsTrigger>
+                      </TooltipTrigger>
+                      {/* Only show tooltip on mobile (md:hidden via CSS) */}
+                      <TooltipContent className="md:hidden">
+                        {label}
+                      </TooltipContent>
+                    </Tooltip>
+                  );
+                })}
+              </TabsList>
+            </TooltipProvider>
           </div>
 
-          {/* Tab Content */}
-          <div className="pb-6">
+          {/* Tab Content - Mobile-optimized spacing */}
+          <div className="pb-4 md:pb-6">
             <div className="max-w-3xl">
               {/* System Settings */}
               <TabsContent value="system">

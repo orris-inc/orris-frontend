@@ -36,7 +36,7 @@ import { useUsersPage } from '@/features/users/hooks/useUsers';
 import { adminCreateSubscription } from '@/api/subscription';
 import type { UserResponse, UpdateUserRequest, CreateUserRequest } from '@/api/user';
 import type { AdminCreateSubscriptionRequest } from '@/api/subscription/types';
-import type { PageHeaderMeta } from '@/components/admin/PageHeader';
+import type { PageHeaderMeta, PageHeaderBadge } from '@/components/admin/PageHeader';
 
 export const UserManagementPage = () => {
   const { t } = useTranslation();
@@ -82,10 +82,15 @@ export const UserManagementPage = () => {
     return { total, active, pending, inactive, suspended, admins };
   }, [users, pagination.total]);
 
+  // Badge for total count
+  const headerBadge = useMemo((): PageHeaderBadge => ({
+    label: `${stats.total} ${t('admin.users.usersLabel')}`,
+    variant: 'default',
+  }), [stats.total, t]);
+
   // Build metadata items for PageHeader
   const headerMetadata = useMemo((): PageHeaderMeta[] => {
     const items: PageHeaderMeta[] = [
-      { icon: Users, text: `${stats.total} ${t('admin.users.usersLabel')}` },
       { icon: CheckCircle2, text: `${stats.active} ${t('common.status.active')}` },
     ];
 
@@ -268,10 +273,11 @@ export const UserManagementPage = () => {
   return (
     <AdminLayout>
       <div className="space-y-6">
-        {/* Page Header with metadata stats */}
+        {/* Page Header with badge and metadata stats */}
         <PageHeader
           title={t('admin.users.title')}
           icon={Users}
+          badge={headerBadge}
           metadata={headerMetadata}
           action={
             <div className="flex items-center gap-2">

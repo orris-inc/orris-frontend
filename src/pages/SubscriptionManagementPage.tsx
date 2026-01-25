@@ -289,13 +289,13 @@ export const SubscriptionManagementPage: React.FC = () => {
   return (
     <AdminLayout>
       <div className="space-y-6">
-        {/* Page Header with stats metadata */}
+        {/* Page Header with badge and stats metadata */}
         <PageHeader
           title={t('admin.subscriptions.pageTitle')}
           icon={Receipt}
+          badge={{ label: `${stats.total} ${t('admin.subscriptions.label')}`, variant: 'default' }}
           metadata={
             [
-              { icon: Receipt, text: `${stats.total} ${t('admin.subscriptions.label')}` },
               { icon: CheckCircle2, text: `${stats.active} ${t('common.status.active')}` },
               stats.trialing > 0 && {
                 icon: Sparkles,

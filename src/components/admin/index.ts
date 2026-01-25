@@ -5,15 +5,17 @@
 
 export { AdminPageLayout } from './AdminPageLayout';
 export { AdminCard, AdminCardHeader, AdminCardContent, type AdminCardProps } from './AdminCard';
-export { PageHeader, type PageHeaderProps, type PageHeaderMeta, type PageHeaderTab, type PageHeaderBreadcrumb } from './PageHeader';
+export { PageHeader, type PageHeaderProps, type PageHeaderMeta, type PageHeaderTab, type PageHeaderBreadcrumb, type PageHeaderBadge, type PageHeaderBadgeVariant } from './PageHeader';
 export { SectionHeading, type SectionHeadingProps } from './SectionHeading';
 export { DescriptionList, type DescriptionListProps, type DescriptionListItem } from './DescriptionList';
-export { StackedList, type StackedListProps, type StackedListItem } from './StackedList';
+export { StackedList, type StackedListProps, type StackedListItem, type StackedListItemRender } from './StackedList';
 export { FilterSection, type FilterSectionProps } from './FilterSection';
+export { FilterToolbar, FilterChip, ResetFiltersButton, type FilterToolbarProps, type QuickFilterItem, type FilterChipProps, type ResetFiltersButtonProps } from './FilterToolbar';
+export { Skeleton, TableSkeleton, StatsSkeleton, ListSkeleton, CardSkeleton, PageHeaderSkeleton, type SkeletonProps, type TableSkeletonProps, type StatsSkeletonProps, type ListSkeletonProps, type CardSkeletonProps, type PageHeaderSkeletonProps } from './Skeleton';
 export { ContentSection, type ContentSectionProps } from './ContentSection';
 export { EmptyState, type EmptyStateProps, type EmptySuggestion } from './EmptyState';
 export { AdminButton } from './AdminButton';
-export { AdminStatsCard } from './AdminStatsCard';
+export { AdminStatsCard, type AdminStatsCardProps, type StatsChangeType } from './AdminStatsCard';
 export { PageStatsCard, type PageStatsCardProps } from './PageStatsCard';
 export { AdminFilterCard, FilterRow } from './AdminFilterCard';
 export {

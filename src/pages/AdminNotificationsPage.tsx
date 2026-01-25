@@ -3,9 +3,11 @@
  * Notification settings page for administrators
  *
  * Contains: Telegram binding and notification preferences
+ * Mobile-first responsive design
  */
 
 import { AdminLayout } from "@/layouts/AdminLayout";
+import { PageHeader } from "@/components/admin";
 import { usePageTitle } from "@/shared/hooks";
 import { Bell } from "lucide-react";
 import { AdminTelegramBindingCard } from "@/features/telegram";
@@ -20,29 +22,16 @@ export const AdminNotificationsPage = () => {
 
   return (
     <AdminLayout>
-      <div className="flex flex-col min-h-0">
-        {/* Page Header */}
-        <header className="shrink-0 py-4 sm:py-6">
-          <div className="flex items-center gap-3">
-            <div className="p-2 sm:p-2.5 rounded-xl bg-primary/10 ring-1 ring-primary/20">
-              <Bell
-                className="size-5 sm:size-6 text-primary"
-                strokeWidth={1.5}
-              />
-            </div>
-            <div>
-              <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-foreground tracking-tight">
-                {t("notifications.title")}
-              </h1>
-              <p className="text-xs sm:text-sm text-muted-foreground mt-0.5">
-                {t("notifications.subtitle")}
-              </p>
-            </div>
-          </div>
-        </header>
+      <div className="flex flex-col min-h-0 space-y-4 md:space-y-6">
+        {/* Page Header - Using PageHeader component */}
+        <PageHeader
+          title={t("notifications.title")}
+          description={t("notifications.subtitle")}
+          icon={Bell}
+        />
 
-        {/* Content Area */}
-        <div className="flex-1 pb-6">
+        {/* Content Area - Mobile-optimized padding */}
+        <div className="flex-1 pb-4 md:pb-6">
           <div className="max-w-2xl">
             <AdminTelegramBindingCard />
           </div>

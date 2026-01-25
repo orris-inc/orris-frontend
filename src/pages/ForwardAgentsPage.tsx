@@ -341,13 +341,13 @@ export const ForwardAgentsPage = () => {
   return (
     <AdminLayout>
       <div className="space-y-6">
-        {/* Page Header with metadata and actions - desktop only */}
+        {/* Page Header with badge and metadata - desktop only */}
         {!isMobile && (
           <PageHeader
             title={t('admin.forwardAgents.title')}
             icon={Cpu}
+            badge={{ label: `${stats.total} ${t('admin.forwardAgents.agentsUnit')}`, variant: 'default' }}
             metadata={[
-              { icon: Cpu, text: `${stats.total} ${t('admin.forwardAgents.agentsUnit')}` },
               { icon: CheckCircle2, text: `${stats.enabled} ${t('common.status.enabled')}` },
               { icon: Activity, text: `${stats.online} ${t('common.status.online')}` },
               ...(stats.updatable > 0 ? [{ icon: ArrowUpCircle, text: `${stats.updatable} ${t('admin.forwardAgents.updatable')}` }] : []),

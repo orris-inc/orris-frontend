@@ -19,10 +19,12 @@ import {
   type DateRangePreset,
 } from '@/features/admin-traffic';
 import {
+  PageHeader,
   DateRangeSelector,
   LazyTrafficTrendChart,
   TrafficRankingList,
   NodeTrafficStats,
+  ListSkeleton,
 } from '@/components/admin';
 import {
   Users,
@@ -472,33 +474,29 @@ export const NewAdminDashboardPage = () => {
     <AdminLayout>
       <div className="py-4 lg:py-6 space-y-4 sm:space-y-6 pb-safe">
         {/* ================================================================== */}
-        {/* Page Header */}
+        {/* Page Header - Using PageHeader component */}
         {/* ================================================================== */}
-        <header className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-          <div>
-            <h1 className="text-2xl lg:text-3xl font-bold text-foreground tracking-tight">
-              {t('admin.dashboard.title')}
-            </h1>
-            <p className="text-sm text-muted-foreground mt-1">
-              {t('admin.dashboard.welcomeBack', { name: user.displayName || user.email?.split('@')[0] })}
-            </p>
-          </div>
-          <DateRangeSelector
-            value={dateRangePreset}
-            onChange={setDateRangePreset}
-          />
-        </header>
+        <PageHeader
+          title={t('admin.dashboard.title')}
+          description={t('admin.dashboard.welcomeBack', { name: user.displayName || user.email?.split('@')[0] })}
+          action={
+            <DateRangeSelector
+              value={dateRangePreset}
+              onChange={setDateRangePreset}
+            />
+          }
+        />
 
         {/* ================================================================== */}
-        {/* Statistics Overview - Unified compact grid */}
+        {/* Statistics Overview - Tailwind UI Stats pattern */}
+        {/* Mobile: 2 cols, Tablet: 3 cols, Desktop: 6 cols */}
         {/* ================================================================== */}
         <section>
-          <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-6 gap-3">
-            {/* All stats in unified grid */}
+          <dl className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-6">
             {[...primaryStats, ...secondaryStats].map((stat) => (
               <BentoStatCard key={stat.title} {...stat} />
             ))}
-          </div>
+          </dl>
         </section>
 
         {/* ================================================================== */}
@@ -560,20 +558,7 @@ export const NewAdminDashboardPage = () => {
               />
               <div className="bg-card rounded-xl p-4 border border-border">
                 {loading ? (
-                  <div className="space-y-3">
-                    {[1, 2, 3].map((i) => (
-                      <div
-                        key={i}
-                        className="flex items-center gap-3 py-2"
-                      >
-                        <div className="size-8 bg-muted rounded-lg animate-pulse" />
-                        <div className="flex-1">
-                          <div className="h-4 w-20 bg-muted rounded animate-pulse" />
-                        </div>
-                        <div className="h-6 w-14 bg-muted rounded-full animate-pulse" />
-                      </div>
-                    ))}
-                  </div>
+                  <ListSkeleton count={3} showAvatar={false} showActions={true} />
                 ) : (
                   <div>
                     {systemStatuses.map((status) => (

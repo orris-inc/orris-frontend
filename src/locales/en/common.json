@@ -989,7 +989,8 @@
         "viewDetails": "View Details",
         "clickToExpand": "Click to expand",
         "clickToCollapse": "Click to collapse",
-        "apiUrl": "API URL"
+        "apiUrl": "API URL",
+        "recommended": "Recommended"
       },
       "route": {
         "title": "Route Configuration",
@@ -1758,7 +1759,8 @@
         "viewDetails": "View Details",
         "clickToExpand": "Click to expand",
         "clickToCollapse": "Click to collapse",
-        "serverUrl": "Server URL"
+        "serverUrl": "Server URL",
+        "recommended": "Recommended"
       },
       "emptyState": "No forward agent data"
     },

@@ -210,12 +210,12 @@ export const SubscriptionPlansManagementPage = () => {
   return (
     <AdminLayout>
       <div className="space-y-6">
-        {/* Page header with stats and actions */}
+        {/* Page header with badge and stats */}
         <PageHeader
           title={t('admin.plans.pageTitle')}
           icon={CreditCard}
+          badge={{ label: `${planStats.total} ${t('admin.plans.plans')}`, variant: 'default' }}
           metadata={[
-            { icon: CreditCard, text: `${planStats.total} ${t('admin.plans.plans')}` },
             { icon: CheckCircle2, text: `${planStats.active} ${t('common.status.active')}` },
             { icon: Globe, text: `${planStats.publicPlans} ${t('admin.plans.public')}` },
             { icon: Lock, text: `${planStats.privatePlans} ${t('admin.plans.private')}` },

@@ -239,12 +239,12 @@ export const ResourceGroupManagementPage = () => {
   return (
     <AdminLayout>
       <div className="space-y-6">
-        {/* Page Header with metadata and actions */}
+        {/* Page Header with badge and metadata */}
         <PageHeader
           title={t('admin.resourceGroups.title')}
           icon={Boxes}
+          badge={{ label: `${stats.total} ${t('admin.resourceGroups.groupsUnit')}`, variant: 'default' }}
           metadata={[
-            { icon: Boxes, text: `${stats.total} ${t('admin.resourceGroups.groupsUnit')}` },
             { icon: CheckCircle2, text: `${stats.active} ${t('common.status.active')}` },
             { icon: Link2, text: `${stats.withPlans} ${t('admin.resourceGroups.withPlans')}` },
             ...(stats.lastUpdated ? [{ icon: Clock, text: formatRelativeTime(stats.lastUpdated) }] : []),

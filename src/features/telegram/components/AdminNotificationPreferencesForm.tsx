@@ -2,6 +2,7 @@
  * Admin Notification Preferences Form
  * Form for editing admin Telegram notification preferences
  * Grouped by notification category with icons for better UX
+ * Mobile-first responsive design with proper touch targets
  */
 
 import { useForm, Controller } from "react-hook-form";
@@ -70,17 +71,17 @@ const PreferenceItem = ({
   description,
   children,
 }: PreferenceItemProps) => (
-  <div className="flex items-center gap-3 py-2.5 group cursor-pointer hover:bg-accent/50 -mx-2 px-2 rounded-lg transition-colors duration-150">
+  <div className="flex items-center gap-3 min-h-11 py-2 md:py-2.5 group cursor-pointer hover:bg-accent/50 -mx-2 px-2 rounded-lg transition-colors duration-150">
     <div className={`p-1.5 rounded-lg ${iconBg} shrink-0`}>{icon}</div>
     <div className="flex-1 min-w-0">
       <div className="text-sm font-medium text-foreground">{label}</div>
       {description && (
-        <div className="text-xs text-muted-foreground mt-0.5">
+        <div className="text-xs text-muted-foreground mt-0.5 hidden sm:block">
           {description}
         </div>
       )}
     </div>
-    {children}
+    <div className="shrink-0">{children}</div>
   </div>
 );
 
@@ -423,14 +424,14 @@ export const AdminNotificationPreferencesForm = ({
         )}
       </Section>
 
-      {/* Save button */}
+      {/* Save button - Mobile-optimized touch target */}
       {isDirty && (
         <div className="pt-2">
           <Button
             type="submit"
             size="sm"
             disabled={isSubmitting}
-            className="w-full"
+            className="w-full min-h-11"
           >
             {isSubmitting && <Loader2 className="mr-2 size-4 animate-spin" />}
             {t("telegramAdmin.preferences.saveChanges")}

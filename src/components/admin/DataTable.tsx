@@ -448,16 +448,29 @@ export function DataTable<TData>({
 
   return (
     <div className="flex flex-col @container">
-      {/* Table Container - supports container queries for responsive column sizing */}
-      <div
-        ref={tableContainerRef}
-        className={cn(
-          'overflow-x-auto border border-border rounded-lg',
-          shouldVirtualize && 'overflow-y-auto'
-        )}
-        style={shouldVirtualize ? { maxHeight } : undefined}
-      >
-        <table
+      {/* Table Container with scroll indicators */}
+      <div className="relative">
+        {/* Left scroll fade indicator */}
+        <div
+          className={cn(
+            'pointer-events-none absolute inset-y-0 left-0 z-10 w-8',
+            'bg-gradient-to-r from-background to-transparent',
+            'rounded-l-lg opacity-0 transition-opacity duration-200',
+            scrollState.canScrollLeft && 'opacity-100'
+          )}
+          aria-hidden="true"
+        />
+
+        {/* Table scroll container */}
+        <div
+          ref={tableContainerRef}
+          className={cn(
+            'overflow-x-auto border border-border rounded-lg',
+            shouldVirtualize && 'overflow-y-auto'
+          )}
+          style={shouldVirtualize ? { maxHeight } : undefined}
+        >
+          <table
           className="min-w-full divide-y divide-border"
           role="grid"
           aria-label={ariaLabel}
@@ -563,6 +576,18 @@ export function DataTable<TData>({
           </thead>
           <tbody className="bg-card divide-y divide-border">{renderTableBody()}</tbody>
         </table>
+        </div>
+
+        {/* Right scroll fade indicator */}
+        <div
+          className={cn(
+            'pointer-events-none absolute inset-y-0 right-0 z-10 w-8',
+            'bg-gradient-to-l from-background to-transparent',
+            'rounded-r-lg opacity-0 transition-opacity duration-200',
+            scrollState.canScrollRight && 'opacity-100'
+          )}
+          aria-hidden="true"
+        />
       </div>
 
       {/* Pagination */}

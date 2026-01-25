@@ -307,12 +307,12 @@ export const NodeManagementPage = () => {
         </div>
       ) : (
         <div className="space-y-6">
-          {/* Page Header - Tailwind UI Application UI style */}
+          {/* Page Header - Tailwind UI Application UI style with badge */}
           <PageHeader
             title={t('nav.nodeAgent')}
             icon={Server}
+            badge={{ label: `${stats.total} ${t('admin.nodes.nodesUnit')}`, variant: 'default' }}
             metadata={[
-              { icon: Server, text: `${stats.total} ${t('admin.nodes.nodesUnit')}` },
               { icon: Activity, text: `${stats.online} ${t('common.status.online')}` },
               { icon: CheckCircle2, text: `${stats.active} ${t('common.status.active')}` },
             ]}

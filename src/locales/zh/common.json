@@ -989,7 +989,8 @@
         "viewDetails": "查看详情",
         "clickToExpand": "点击展开",
         "clickToCollapse": "点击收起",
-        "apiUrl": "API 地址"
+        "apiUrl": "API 地址",
+        "recommended": "推荐"
       },
       "route": {
         "title": "路由配置",
@@ -1758,7 +1759,8 @@
         "viewDetails": "查看详情",
         "clickToExpand": "点击展开",
         "clickToCollapse": "点击收起",
-        "serverUrl": "服务器地址"
+        "serverUrl": "服务器地址",
+        "recommended": "推荐"
       },
       "emptyState": "暂无转发Agent数据"
     },

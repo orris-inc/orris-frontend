@@ -2,6 +2,7 @@
  * Admin Verify Code Section
  * Displays verification code and binding instructions for admin
  * Uses Radix UI Tooltip for copy feedback
+ * Mobile-first responsive design with proper touch targets
  */
 
 import { Copy, Check, ExternalLink } from "lucide-react";
@@ -55,7 +56,7 @@ export const AdminVerifyCodeSection = ({
   const botUsername = botLink?.replace("https://t.me/", "@") || "@OrrisBot";
 
   return (
-    <div className="space-y-3">
+    <div className="space-y-3 pt-3 md:pt-4">
       {/* Instructions */}
       <p className="text-sm text-muted-foreground">
         {t("telegramAdmin.verifyCode.instruction1")}
@@ -75,7 +76,7 @@ export const AdminVerifyCodeSection = ({
         {t("telegramAdmin.verifyCode.instruction2")}
       </p>
 
-      {/* Command with verify code */}
+      {/* Command with verify code - Mobile-optimized touch target */}
       <TooltipProvider>
         <Tooltip open={copied ? true : undefined} delayDuration={0}>
           <TooltipTrigger asChild>
@@ -83,18 +84,18 @@ export const AdminVerifyCodeSection = ({
               type="button"
               onClick={handleCopy}
               className={cn(
-                "w-full group relative flex items-center justify-center gap-2",
-                "px-4 py-3 rounded-lg border transition-all duration-200",
-                "cursor-pointer select-none",
+                "w-full group relative flex items-center justify-center gap-1.5 sm:gap-2",
+                "px-3 sm:px-4 py-3 min-h-12 rounded-lg border transition-all duration-200",
+                "cursor-pointer select-none active:scale-[0.98]",
                 copied
                   ? "bg-success/5 border-success/30"
                   : "bg-muted/50 border-transparent hover:bg-muted hover:border-border"
               )}
             >
-              <span className="font-mono text-base text-muted-foreground">
+              <span className="font-mono text-sm sm:text-base text-muted-foreground">
                 /adminbind
               </span>
-              <span className="font-mono text-lg tracking-[0.2em] font-medium text-foreground">
+              <span className="font-mono text-base sm:text-lg tracking-[0.15em] sm:tracking-[0.2em] font-medium text-foreground">
                 {verifyCode}
               </span>
               <span
@@ -106,9 +107,9 @@ export const AdminVerifyCodeSection = ({
                 )}
               >
                 {copied ? (
-                  <Check className="size-4" />
+                  <Check className="size-5 sm:size-4" />
                 ) : (
-                  <Copy className="size-4" />
+                  <Copy className="size-5 sm:size-4" />
                 )}
               </span>
             </button>
