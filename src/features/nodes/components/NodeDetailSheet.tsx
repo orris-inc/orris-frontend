@@ -501,8 +501,8 @@ export const NodeDetailSheet = ({
                   <span className="text-border">·</span>
                   <span className="text-xs text-muted-foreground">
                     {(isOnline || node.isOnline)
-                      ? t('admin.nodes.detail.online')
-                      : t('admin.nodes.detail.offline')}
+                      ? t('common.status.online')
+                      : t('common.status.offline')}
                   </span>
                 </SheetDescription>
               </div>
@@ -522,7 +522,7 @@ export const NodeDetailSheet = ({
             />
 
             {/* Basic Info */}
-            <DetailSection title={t('admin.nodes.detail.basicInfo')}>
+            <DetailSection title={t('common.sections.basicInfo')}>
               <DetailRow
                 icon={<Hash className="size-3.5" />}
                 label={t('common.labels.id')}
@@ -627,7 +627,7 @@ export const NodeDetailSheet = ({
             <DetailSection title={t('admin.nodes.detail.timeInfo')}>
               <div className="px-3 py-2.5 grid grid-cols-2 gap-x-4 gap-y-2 text-xs">
                 <div>
-                  <span className="text-muted-foreground">{t('admin.nodes.detail.createdAt')}</span>
+                  <span className="text-muted-foreground">{t('common.fields.createdAt')}</span>
                   <p className="text-foreground">{formatDateTime(node.createdAt)}</p>
                 </div>
                 <div>
@@ -656,7 +656,7 @@ export const NodeDetailSheet = ({
                 )}
               >
                 <Edit className="size-4" />
-                {t('admin.nodes.actions.edit')}
+                {t('common.actions.edit')}
               </button>
 
               <button

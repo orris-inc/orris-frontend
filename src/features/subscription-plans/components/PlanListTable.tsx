@@ -147,7 +147,7 @@ export const PlanListTable: React.FC<PlanListTableProps> = ({
       <ContextMenuSeparator />
       <ContextMenuItem onClick={() => onToggleStatus(plan)}>
         <Power className="mr-2 size-4" />
-        {plan.status === 'active' ? t('admin.plans.table.deactivate') : t('admin.plans.table.activate')}
+        {plan.status === 'active' ? t('common.actions.deactivate') : t('common.actions.activate')}
       </ContextMenuItem>
       {onDelete && (
         <ContextMenuItem onClick={() => onDelete(plan)} className="text-destructive">
@@ -180,7 +180,7 @@ export const PlanListTable: React.FC<PlanListTableProps> = ({
       <DropdownMenuSeparator />
       <DropdownMenuItem onClick={() => onToggleStatus(plan)}>
         <Power className="mr-2 size-4" />
-        {plan.status === 'active' ? t('admin.plans.table.deactivate') : t('admin.plans.table.activate')}
+        {plan.status === 'active' ? t('common.actions.deactivate') : t('common.actions.activate')}
       </DropdownMenuItem>
       {onDelete && (
         <DropdownMenuItem onClick={() => onDelete(plan)} className="text-destructive">
@@ -276,7 +276,7 @@ export const PlanListTable: React.FC<PlanListTableProps> = ({
     },
     {
       id: 'status',
-      header: t('admin.plans.table.status'),
+      header: t('common.status.label'),
       size: 120,
       meta: { priority: 1 } as ResponsiveColumnMeta,
       cell: ({ row }) => {
@@ -307,7 +307,7 @@ export const PlanListTable: React.FC<PlanListTableProps> = ({
         const parts: string[] = [];
 
         if (trialDays && trialDays > 0) {
-          parts.push(`${trialDays}${t('admin.plans.table.days')}`);
+          parts.push(`${trialDays}${t('common.days')}`);
         }
         if (sortOrder && sortOrder > 0) {
           parts.push(`#${sortOrder}`);

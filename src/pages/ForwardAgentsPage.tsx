@@ -188,7 +188,7 @@ export const ForwardAgentsPage = () => {
 
   const handleCopy = (agent: ForwardAgent) => {
     const copyData: Partial<CreateForwardAgentRequest> = {
-      name: `${agent.name} - ${t('admin.forwardAgents.copySuffix')}`,
+      name: `${agent.name} - ${t('common.actions.copy')}`,
       remark: agent.remark,
     };
     setCopyAgentData(copyData);
@@ -371,7 +371,7 @@ export const ForwardAgentsPage = () => {
                 </Button>
                 <Button onClick={() => { setCopyAgentData(undefined); setCreateDialogOpen(true); }}>
                   <Plus className="size-4 mr-2" />
-                  {t('admin.forwardAgents.actions.create')}
+                  {t('common.actions.create')}
                 </Button>
               </div>
             }
@@ -384,12 +384,12 @@ export const ForwardAgentsPage = () => {
             {/* Status filter */}
             <Select value={filters.status || '_all_'} onValueChange={handleStatusChange}>
               <SelectTrigger className="w-[120px]">
-                <SelectValue placeholder={t('admin.forwardAgents.filters.status')} />
+                <SelectValue placeholder={t('common.status.label')} />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="_all_">{t('admin.forwardAgents.filters.all')}</SelectItem>
-                <SelectItem value="enabled">{t('admin.forwardAgents.filters.enabled')}</SelectItem>
-                <SelectItem value="disabled">{t('admin.forwardAgents.filters.disabled')}</SelectItem>
+                <SelectItem value="enabled">{t('common.status.enabled')}</SelectItem>
+                <SelectItem value="disabled">{t('common.status.disabled')}</SelectItem>
               </SelectContent>
             </Select>
 
@@ -407,7 +407,7 @@ export const ForwardAgentsPage = () => {
             {/* Sort filter */}
             <Select value={getSortValue()} onValueChange={handleSortChange}>
               <SelectTrigger className="w-[140px]">
-                <SelectValue placeholder={t('admin.forwardAgents.filters.sort')} />
+                <SelectValue placeholder={t('common.table.sort')} />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="_default_">{t('admin.forwardAgents.filters.default')}</SelectItem>

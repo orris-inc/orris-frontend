@@ -96,7 +96,7 @@ export const MonitorOverviewCards = memo(({ overview }: MonitorOverviewCardsProp
       iconColor: overview.avgMemory >= 80 ? 'text-destructive' : overview.avgMemory >= 60 ? 'text-warning' : 'text-success',
     },
     {
-      title: t('admin.monitor.download'),
+      title: t('common.actions.download'),
       value: formatBitRate(overview.totalNetworkRxRate),
       subtitle: `${t('admin.monitor.usedPrefix')} ${formatBytes(overview.totalNetworkRxBytes)}`,
       icon: <ArrowDown className="size-3.5" strokeWidth={1.5} />,
@@ -104,7 +104,7 @@ export const MonitorOverviewCards = memo(({ overview }: MonitorOverviewCardsProp
       iconColor: 'text-success',
     },
     {
-      title: t('admin.monitor.upload'),
+      title: t('common.actions.upload'),
       value: formatBitRate(overview.totalNetworkTxRate),
       subtitle: `${t('admin.monitor.usedPrefix')} ${formatBytes(overview.totalNetworkTxBytes)}`,
       icon: <ArrowUp className="size-3.5" strokeWidth={1.5} />,

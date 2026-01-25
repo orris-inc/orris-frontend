@@ -39,7 +39,7 @@ export const BatchToggleStatusDialog: React.FC<BatchToggleStatusDialogProps> = (
   const [hasTriggered, setHasTriggered] = useState(false);
 
   const isEnabling = targetStatus === 'enabled';
-  const actionText = isEnabling ? t('admin.forwardRules.batch.enable') : t('admin.forwardRules.batch.disable');
+  const actionText = isEnabling ? t('common.actions.enable') : t('common.actions.disable');
   const StatusIcon = isEnabling ? Power : PowerOff;
 
   const handleConfirm = async () => {
@@ -114,7 +114,7 @@ export const BatchToggleStatusDialog: React.FC<BatchToggleStatusDialogProps> = (
                 <p className="text-lg font-semibold text-red-700 dark:text-red-300">
                   {failedCount}
                 </p>
-                <p className="text-xs text-red-600 dark:text-red-400">{t('admin.forwardRules.batch.failed')}</p>
+                <p className="text-xs text-red-600 dark:text-red-400">{t('common.status.failed')}</p>
               </div>
             </div>
 
@@ -145,7 +145,7 @@ export const BatchToggleStatusDialog: React.FC<BatchToggleStatusDialogProps> = (
           {!showResult ? (
             <>
               <Button variant="outline" onClick={handleClose} disabled={isProcessing}>
-                {t('admin.forwardRules.batch.cancel')}
+                {t('common.actions.cancel')}
               </Button>
               <Button
                 variant={isEnabling ? 'default' : 'secondary'}
@@ -155,7 +155,7 @@ export const BatchToggleStatusDialog: React.FC<BatchToggleStatusDialogProps> = (
                 {isProcessing ? (
                   <>
                     <Loader2 className="size-4 mr-2 animate-spin" />
-                    {t('admin.forwardRules.batch.processing')}
+                    {t('common.processing')}
                   </>
                 ) : (
                   <>
@@ -166,7 +166,7 @@ export const BatchToggleStatusDialog: React.FC<BatchToggleStatusDialogProps> = (
               </Button>
             </>
           ) : (
-            <Button onClick={handleClose}>{t('admin.forwardRules.batch.close')}</Button>
+            <Button onClick={handleClose}>{t('common.actions.close')}</Button>
           )}
         </DialogFooter>
       </DialogContent>

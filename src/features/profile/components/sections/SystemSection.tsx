@@ -105,7 +105,7 @@ export const SystemSection = () => {
               }}
             >
               <RefreshCw className="size-4" />
-              {t('profile.system.clearCacheButton')}
+              {t('common.actions.clear')}
             </button>
           </div>
         </div>

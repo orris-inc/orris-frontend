@@ -78,7 +78,7 @@ export const DeleteResourceGroupSheet: React.FC<DeleteResourceGroupSheetProps> =
               {/* Resource Group Info */}
               <div className="rounded-lg bg-background p-4 space-y-2">
                 <div className="flex justify-between items-center">
-                  <span className="text-sm text-muted-foreground">{t('resourceGroups.name')}</span>
+                  <span className="text-sm text-muted-foreground">{t('common.fields.name')}</span>
                   <span className="font-medium">{resourceGroup.name}</span>
                 </div>
                 <div className="flex justify-between items-center">
@@ -116,7 +116,7 @@ export const DeleteResourceGroupSheet: React.FC<DeleteResourceGroupSheetProps> =
               disabled={loading}
               className="w-full min-h-[44px]"
             >
-              {t('resourceGroups.cancel')}
+              {t('common.actions.cancel')}
             </Button>
           </SheetFooter>
         </SheetContent>

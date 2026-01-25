@@ -253,7 +253,7 @@ export const RouteRulesList: React.FC<RouteRulesListProps> = ({
                       className="h-7 w-7 text-destructive hover:text-destructive"
                       onClick={() => handleRemoveRule(index)}
                       disabled={disabled}
-                      title={t('common.delete')}
+                      title={t('common.actions.delete')}
                     >
                       <Trash2 className="h-4 w-4" />
                     </Button>

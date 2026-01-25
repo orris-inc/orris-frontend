@@ -1,7 +1,6 @@
 {
   "app": {
     "name": "Orris",
-    "loading": "加载中...",
     "serverVersion": "服务端",
     "clientVersion": "客户端"
   },
@@ -54,7 +53,7 @@
     "copyAddress": "复制地址",
     "copied": "已复制",
     "token": {
-      "defaultDescription": "Token已生成，请妥善保存。此Token仅显示一次，丢失后需要重新生成。",
+      "defaultDescription": "Token 仅显示一次，请妥善保存",
       "copied": "Token已复制到剪贴板",
       "copyFirst": "请先复制Token后再关闭此对话框",
       "copy": "复制Token",
@@ -129,17 +128,17 @@
       "justStarted": "刚刚启动"
     },
     "validation": {
-      "required": "此字段为必填项",
-      "email": "请输入有效的邮箱地址",
-      "minLength": "至少需要 {{min}} 个字符",
-      "maxLength": "最多允许 {{max}} 个字符",
-      "min": "最小值为 {{min}}",
-      "max": "最大值为 {{max}}",
+      "required": "必填",
+      "email": "邮箱格式无效",
+      "minLength": "至少 {{min}} 个字符",
+      "maxLength": "最多 {{max}} 个字符",
+      "min": "最小 {{min}}",
+      "max": "最大 {{max}}",
       "pattern": "格式无效",
-      "url": "请输入有效的 URL",
-      "number": "必须是数字",
-      "integer": "必须是整数",
-      "positive": "必须是正数"
+      "url": "URL 格式无效",
+      "number": "需为数字",
+      "integer": "需为整数",
+      "positive": "需为正数"
     },
     "messages": {
       "confirmDelete": "确定要删除此项吗？",
@@ -157,11 +156,11 @@
     },
     "placeholders": {
       "search": "搜索...",
-      "select": "请选择",
-      "selectOption": "选择选项...",
-      "enter": "请输入",
-      "email": "请输入邮箱地址",
-      "password": "请输入密码"
+      "select": "选择",
+      "selectOption": "选择...",
+      "enter": "输入",
+      "email": "输入邮箱",
+      "password": "输入密码"
     },
     "pagination": {
       "page": "页",
@@ -194,27 +193,39 @@
     "protocol": "协议",
     "auto": "自动",
     "moreActions": "更多操作",
-    "cancel": "取消",
-    "close": "关闭",
-    "copy": "复制",
-    "create": "创建",
     "days": "天",
-    "delete": "删除",
     "detail": "详情",
-    "loading": "加载中...",
     "nextStep": "下一步",
     "none": "无",
     "open": "打开",
     "optional": "可选",
     "readOnly": "只读",
     "recommended": "推荐",
-    "save": "保存",
     "unlimited": "无限制",
-    "time": {
-      "now": "刚刚",
-      "minutesAgo": "{{count}} 分钟前",
-      "hoursAgo": "{{count}} 小时前",
-      "daysAgo": "{{count}} 天前"
+    "fields": {
+      "name": "名称",
+      "description": "描述",
+      "remark": "备注",
+      "status": "状态",
+      "sortOrder": "排序",
+      "createdAt": "创建时间",
+      "updatedAt": "更新时间",
+      "protocol": "协议",
+      "version": "版本"
+    },
+    "loading": {
+      "creating": "创建中...",
+      "saving": "保存中...",
+      "deleting": "删除中...",
+      "updating": "更新中...",
+      "loading": "加载中...",
+      "syncing": "同步中..."
+    },
+    "sections": {
+      "basicInfo": "基本信息",
+      "editableInfo": "可编辑信息",
+      "networkConfig": "网络配置",
+      "advancedOptions": "高级选项"
     }
   },
   "nav": {
@@ -257,7 +268,7 @@
     "searchPlaceholder": "搜索节点名称...",
     "totalNodes": "共 {{count}} 个节点",
     "noAgents": "暂无可用的转发Agent",
-    "noAgentsHint": "请联系管理员或升级您的订阅计划",
+    "noAgentsHint": "联系管理员或升级套餐",
     "available": "可用",
     "unavailable": "不可用",
     "resourceGroup": "资源组"
@@ -265,7 +276,7 @@
   "auth": {
     "login": {
       "title": "登录",
-      "subtitle": "登录您的账号继续使用",
+      "subtitle": "欢迎回来",
       "email": "邮箱",
       "emailPlaceholder": "name@example.com",
       "password": "密码",
@@ -289,8 +300,7 @@
     },
     "register": {
       "title": "创建账号",
-      "subtitle": "加入 Orris，开始您的旅程",
-      "name": "姓名",
+      "subtitle": "加入 Orris，开启新旅程",
       "email": "邮箱",
       "password": "密码",
       "confirmPassword": "确认密码",
@@ -303,7 +313,7 @@
       "continueWithGoogle": "使用 Google 注册",
       "continueWithGithub": "使用 GitHub 注册",
       "togglePasswordVisibility": "切换密码显示",
-      "passwordHint": "密码至少需要 8 个字符，且包含至少一个大写字母",
+      "passwordHint": "8 位以上，含大写字母",
       "passwordStrength": "密码强度",
       "strengthWeak": "弱",
       "strengthFair": "中",
@@ -319,7 +329,6 @@
     },
     "validation": {
       "emailRequired": "请输入邮箱地址",
-      "emailInvalid": "请输入有效的邮箱地址",
       "passwordRequired": "请输入密码",
       "passwordMinLength": "密码至少需要8个字符",
       "passwordUppercase": "密码必须至少包含一个大写字母",
@@ -334,7 +343,7 @@
     },
     "forgotPassword": {
       "title": "重置密码",
-      "subtitle": "输入您的邮箱以接收密码重置链接",
+      "subtitle": "输入邮箱获取重置链接",
       "email": "邮箱",
       "submit": "发送重置链接",
       "sending": "发送中...",
@@ -343,7 +352,7 @@
     },
     "resetPassword": {
       "title": "设置新密码",
-      "subtitle": "请在下方输入您的新密码",
+      "subtitle": "创建新密码",
       "password": "新密码",
       "confirmPassword": "确认新密码",
       "submit": "重置密码",
@@ -352,47 +361,47 @@
       "successMessage": "密码重置成功，请使用新密码登录",
       "backToLogin": "返回登录",
       "invalidLink": "无效的重置链接",
-      "invalidLinkDesc": "该密码重置链接无效或已过期，请重新申请。",
+      "invalidLinkDesc": "链接无效或已过期",
       "requestNew": "重新申请"
     },
     "verifyEmail": {
-      "title": "验证您的邮箱",
-      "subtitle": "我们已向您的邮箱发送了一封验证邮件",
+      "title": "邮箱验证",
+      "subtitle": "请查收验证邮件",
       "checking": "验证中...",
       "success": "邮箱验证成功！",
       "resend": "重新发送验证邮件",
       "resending": "发送中...",
-      "resendSuccess": "验证邮件已重新发送，请查收您的邮箱",
+      "resendSuccess": "验证邮件已发送，请查收",
       "emailSentTo": "验证邮件已发送至：",
-      "resendPrompt": "没有收到邮件？请输入您的邮箱地址重新发送：",
+      "resendPrompt": "未收到？输入邮箱重新发送",
       "emailAddress": "邮箱地址",
-      "spamNotice": "请注意检查垃圾邮件文件夹。验证链接将在 24 小时后失效。",
+      "spamNotice": "未收到？检查垃圾邮件",
       "alreadyVerified": "已经验证过了？",
       "backToLogin": "返回登录",
       "steps": {
-        "title": "请按照以下步骤完成验证：",
-        "step1": "打开您的邮箱收件箱",
+        "title": "验证步骤：",
+        "step1": "打开邮箱收件箱",
         "step2": "找到来自 Orris 的验证邮件",
         "step3": "点击邮件中的验证链接"
       }
     },
     "emailSent": {
       "title": "邮件已发送",
-      "description": "我们已经向您的邮箱发送了密码重置链接，请查收邮件并按照指引重置密码。",
-      "spamNotice": "如果您没有收到邮件，请检查垃圾邮件文件夹或稍后重试。"
+      "description": "重置链接已发送，请查收邮件",
+      "spamNotice": "未收到？检查垃圾邮件文件夹"
     },
     "emailVerification": {
       "missingToken": "验证链接无效，缺少验证令牌",
-      "verifying": "正在验证您的邮箱...",
-      "verifyingDesc": "请稍候，我们正在确认您的邮箱地址",
+      "verifying": "验证中...",
+      "verifyingDesc": "正在确认邮箱地址",
       "successTitle": "邮箱验证成功！",
-      "successDesc": "您的邮箱已成功验证，现在可以登录您的账号了",
+      "successDesc": "邮箱验证成功，请登录",
       "goToLogin": "前往登录",
       "alreadyVerifiedTitle": "邮箱已验证",
-      "alreadyVerifiedDesc": "您的邮箱之前已经验证过了，可以直接登录",
+      "alreadyVerifiedDesc": "邮箱已验证，请直接登录",
       "failedTitle": "验证失败",
       "invalidLink": "验证链接已失效或无效",
-      "failedDesc": "验证链接可能已过期或无效，请尝试重新发送验证邮件",
+      "failedDesc": "链接已过期，请重新发送验证邮件",
       "resendEmail": "重新发送验证邮件",
       "backToLogin": "返回登录"
     },
@@ -404,15 +413,15 @@
     },
     "unauthorized": {
       "title": "访问被拒绝",
-      "description": "您没有权限访问此页面。如果您认为这是错误的，请联系管理员。",
+      "description": "无权访问，请联系管理员",
       "goBack": "返回",
       "goToDashboard": "前往仪表盘"
     },
     "passkey": {
       "errors": {
-        "notSupported": "您的浏览器不支持通行密钥",
+        "notSupported": "浏览器不支持通行密钥",
         "notAllowed": "验证已取消或超时",
-        "securityError": "安全要求未满足，请确保使用 HTTPS",
+        "securityError": "安全要求未满足，需使用 HTTPS",
         "aborted": "验证已取消",
         "invalidState": "此通行密钥已注册",
         "unknown": "发生意外错误，请重试"
@@ -425,41 +434,27 @@
     "planPrefix": "计划 #{{id}}",
     "noData": "暂无资源组",
     "unit": "个",
-    "copiedToClipboard": "已复制到剪贴板",
-    "name": "名称",
-    "namePlaceholder": "请输入资源组名称",
+    "namePlaceholder": "资源组名称",
     "nameRequired": "名称不能为空",
     "nameTooLong": "名称不能超过100个字符",
-    "description": "描述",
-    "descriptionPlaceholder": "请输入资源组描述（可选）",
+    "descriptionPlaceholder": "资源组描述",
     "selectPlan": "选择计划",
     "selectPlanRequired": "请选择关联计划",
     "createTitle": "创建资源组",
-    "createDescription": "创建新的资源组并关联到订阅计划",
+    "createDescription": "创建资源组并关联套餐",
     "createResourceGroup": "创建资源组",
-    "creating": "创建中...",
-    "cancel": "取消",
-    "create": "创建",
     "editTitle": "编辑资源组",
     "editDescription": "修改资源组设置",
-    "save": "保存",
-    "saving": "保存中...",
     "saveChanges": "保存更改",
     "deleteTitle": "删除资源组",
     "deleteDescription": "此操作无法撤销",
     "deleteConfirm": "确定要删除此资源组吗？",
     "deleteWarning": "所有成员绑定将被移除",
-    "deleteFailWarning": "此操作无法撤销。请确认您要删除此资源组。",
+    "deleteFailWarning": "此操作无法撤销",
     "confirmDelete": "确认删除",
-    "deleting": "删除中...",
     "deleteConfirmTitle": "确认删除",
-    "deleteConfirmDescription": "确定要删除此资源组吗？此操作无法撤销。",
+    "deleteConfirmDescription": "确定删除？此操作无法撤销",
     "status": {
-      "active": "启用",
-      "inactive": "禁用",
-      "enabled": "启用",
-      "disabled": "禁用",
-      "stopped": "已停止",
       "activated": "已启用",
       "deactivated": "已禁用"
     },
@@ -472,20 +467,15 @@
     "sections": {
       "identificationInfo": "标识信息",
       "associatedPlan": "关联计划",
-      "description": "描述",
       "timeInfo": "时间信息",
       "resourceStats": "资源统计",
       "memberStats": "成员统计"
     },
     "labels": {
       "planId": "计划ID",
-      "groupDescription": "描述",
-      "createdAt": "创建时间",
-      "updatedAt": "更新时间",
       "associatedNodes": "关联节点",
       "forwardAgents": "转发Agent",
       "forwardRules": "转发规则",
-      "name": "名称",
       "nodeCount": "节点数量",
       "forwardAgentCount": "转发Agent数量",
       "forwardRuleCount": "转发规则数量"
@@ -496,18 +486,13 @@
       "node": "此资源组属于节点计划，可绑定节点和转发规则。"
     },
     "actions": {
-      "selectAll": "全选",
-      "deselectAll": "取消全选",
-      "selectedCount": "已选 {{count}} 项",
       "remove": "移除",
       "addNode": "添加节点",
       "addForwardAgent": "添加转发Agent",
       "addForwardRule": "添加转发规则",
-      "edit": "编辑",
       "enableGroup": "启用资源组",
       "disableGroup": "禁用资源组",
-      "deleteGroup": "删除资源组",
-      "moreActions": "更多操作"
+      "deleteGroup": "删除资源组"
     },
     "empty": {
       "noNodes": "此资源组暂无节点",
@@ -541,16 +526,12 @@
         "associated": "已关联",
         "available": "可添加"
       },
-      "cancel": "取消",
       "adding": "添加中...",
       "confirmAdd": "添加 {{count}} 项"
     },
     "editSheet": {
       "description": "修改资源组「{{name}}」的信息",
-      "basicInfo": "基本信息",
       "associatedPlan": "关联计划",
-      "createdAt": "创建时间",
-      "editableInfo": "可编辑信息",
       "readOnlyHint": "以上信息创建后不可修改"
     },
     "nameHint": "用于识别资源组的显示名称",
@@ -558,13 +539,12 @@
     "selectedPlanInfo": "已选择: {{name}} ({{slug}})",
     "planTypes": {
       "node": "节点",
-      "forward": "转发",
-      "hybrid": "混合"
+      "forward": "转发"
     }
   },
   "nodeList": {
     "noNodes": "暂无节点",
-    "createFirstNode": "点击上方「新增节点」按钮创建您的第一个节点",
+    "createFirstNode": "点击「新增节点」创建第一个节点",
     "details": "详情",
     "installScript": "安装脚本",
     "regenerateToken": "重新生成 Token",
@@ -578,7 +558,6 @@
     "columns": {
       "nodeName": "节点名称",
       "address": "地址",
-      "protocol": "协议",
       "onlineStatus": "在线状态"
     }
   },
@@ -605,22 +584,21 @@
     "quickAccess": {
       "title": "快速访问",
       "users": "用户管理",
-      "usersDesc": "管理所有用户账户和权限",
+      "usersDesc": "账户与权限",
       "subscriptions": "订阅管理",
-      "subscriptionsDesc": "查看和管理用户订阅",
+      "subscriptionsDesc": "用户订阅",
       "nodes": "节点管理",
-      "nodesDesc": "监控和配置服务器节点",
+      "nodesDesc": "服务器节点",
       "nodeAgent": "节点Agent",
-      "nodeAgentDesc": "监控和配置服务器节点",
+      "nodeAgentDesc": "服务器节点",
       "liveMonitor": "实时监控",
-      "liveMonitorDesc": "查看系统实时状态",
+      "liveMonitorDesc": "系统状态",
       "forwardRules": "转发规则",
-      "forwardRulesDesc": "管理端口转发规则",
+      "forwardRulesDesc": "端口转发",
       "resourceGroups": "资源组",
-      "resourceGroupsDesc": "管理资源组分配"
+      "resourceGroupsDesc": "资源分配"
     },
     "moreManagement": {
-      "title": "更多管理",
       "forwardRules": "转发规则",
       "forwardAgent": "转发Agent",
       "externalForwardRules": "外部转发规则",
@@ -636,8 +614,6 @@
       "settings": "设置"
     },
     "dateRange": {
-      "today": "今天",
-      "yesterday": "昨天",
       "last7days": "最近 7 天",
       "last30days": "最近 30 天",
       "thisMonth": "本月"
@@ -645,8 +621,6 @@
     "traffic": {
       "trend": "流量趋势",
       "trendDesc": "上传与下载流量统计",
-      "upload": "上传",
-      "download": "下载",
       "total": "总计",
       "ranking": "流量排行榜",
       "userRanking": "用户排行",
@@ -655,20 +629,16 @@
       "noSubscriptionData": "暂无订阅流量数据",
       "nodeStats": "节点流量统计",
       "noNodeData": "暂无节点流量数据",
-      "totalNodes": "共 {{count}} 个节点",
-      "prevPage": "上一页",
-      "nextPage": "下一页"
+      "totalNodes": "共 {{count}} 个节点"
     },
     "nodes": {
       "title": "节点管理",
-      "description": "管理代理节点",
-      "confirmDelete": "确认删除节点 \"{{name}}\" ({{address}}:{{port}}) 吗？此操作不可恢复。",
-      "copy": "副本",
+      "description": "代理节点",
+      "confirmDelete": "删除节点 \"{{name}}\" ({{address}}:{{port}})？无法恢复。",
       "nodesUnit": "节点",
       "updatable": "可更新",
       "userNodes": "用户节点",
       "showUserNodes": "显示用户创建的节点",
-      "sort": "排序",
       "enableDragSort": "开启拖拽排序",
       "disableDragSort": "关闭拖拽排序",
       "broadcastTooltip": "向 {{count}} 个在线节点下发新API地址",
@@ -682,14 +652,12 @@
         "name": "节点名称",
         "address": "服务器地址",
         "port": "端口",
-        "status": "状态",
         "region": "区域",
         "traffic": "流量",
         "users": "用户数"
       },
       "actions": {
         "viewDetail": "查看详情",
-        "edit": "编辑",
         "installScript": "安装脚本",
         "copyNode": "复制节点",
         "generateToken": "生成 Token",
@@ -705,38 +673,26 @@
         "subscriptionPort": "订阅端口",
         "transportProtocol": "传输协议",
         "allowInsecure": "允许不安全连接",
-        "onlineStatus": "在线",
-        "offlineStatus": "离线",
         "lastOnline": "最后在线",
-        "clickToUnmute": "点击取消静音",
-        "clickToMute": "点击静音通知",
-        "versionInfo": "版本",
-        "newVersionAvailable": "有新版本可用",
+        "clickToUnmute": "取消静音",
+        "clickToMute": "静音通知",
+        "newVersionAvailable": "有新版本",
         "unknownResourceGroup": "未知资源组",
         "maintenanceReason": "原因",
-        "configDescription": "节点的协议配置，包括加密方式、传输协议等",
-        "monitorDescription": "节点的实时系统状态，包括 CPU、内存、网络等信息"
-      },
-      "statusLabel": {
-        "active": "激活",
-        "inactive": "未激活",
-        "maintenance": "维护中"
+        "configDescription": "协议配置：加密方式、传输协议等",
+        "monitorDescription": "系统状态：CPU、内存、网络等"
       },
       "deleteSheet": {
         "title": "删除节点",
-        "description": "此操作无法撤销，节点将被永久删除。",
-        "confirmQuestion": "确定要删除这个节点吗？",
-        "warningText": "所有关联的数据和配置将被永久删除，此操作无法恢复。",
-        "deleting": "删除中...",
+        "description": "删除后无法恢复",
+        "confirmQuestion": "确定删除节点？",
+        "warningText": "关联的数据和配置将被永久删除",
         "confirmButton": "删除节点",
         "confirmTitle": "最终确认",
-        "confirmDesc": "这是您最后一次取消的机会。确定要继续吗？"
+        "confirmDesc": "最后取消机会，确定继续？"
       },
       "stats": {
-        "total": "总节点数",
-        "active": "已激活",
-        "inactive": "未激活",
-        "maintenance": "维护中"
+        "total": "总节点数"
       },
       "detail": {
         "nodeOnline": "节点在线",
@@ -747,8 +703,6 @@
         "nodeStatus": "节点状态",
         "realtimeConnected": "实时连接已建立",
         "connectingRealtime": "正在连接...",
-        "online": "在线",
-        "offline": "离线",
         "uptime": "运行",
         "uptimeFormat": {
           "daysHours": "{{days}}天{{hours}}时",
@@ -770,10 +724,7 @@
         "networkTraffic": "网络流量",
         "publicIp": "公网 IP",
         "extendedMetrics": "扩展指标",
-        "basicInfo": "基本信息",
         "nodeId": "节点ID",
-        "version": "版本",
-        "sortOrder": "排序顺序",
         "notificationStatus": "通知状态",
         "muted": "已静音",
         "normalNotification": "正常通知",
@@ -799,8 +750,6 @@
         "routeConfig": "路由配置",
         "maintenanceInfo": "维护信息",
         "timeInfo": "时间信息",
-        "createdAt": "创建时间",
-        "updatedAt": "更新时间",
         "lastOnline": "最后在线",
         "noResourceGroups": "暂无可用资源组",
         "noRouteRules": "未配置路由规则"
@@ -814,13 +763,11 @@
         "allUpToDate": "所有节点已是最新版本",
         "willUpdateNodes": "以下节点将被更新：",
         "succeeded": "成功",
-        "failed": "失败",
         "skipped": "跳过",
         "truncatedHint": "结果已截断，请查看节点详情获取完整状态。",
         "updateTriggered": "已触发以下节点更新：",
         "updateFailed": "以下节点更新触发失败：",
         "updateSkipped": "以下节点更新已跳过：",
-        "updating": "更新中...",
         "updateCount": "更新 {{count}} 个节点"
       },
       "broadcast": {
@@ -832,8 +779,6 @@
         "notifyAllDesc": "向所有在线节点发送新的 API 地址",
         "targetNode": "目标节点",
         "onlineNodeCount": "在线节点数",
-        "online": "在线",
-        "offline": "离线",
         "nodeOffline": "节点当前离线",
         "noOnlineNodes": "没有在线节点",
         "newApiUrl": "新 API 地址",
@@ -842,7 +787,6 @@
         "changeReasonPlaceholder": "例如：服务器迁移至新数据中心",
         "nodeAutoUpdateHint": "节点将自动更新配置并重新连接到新地址",
         "enterNewUrl": "请输入新的 API 地址",
-        "invalidUrl": "请输入有效的 URL 地址",
         "dangerWarningTitle": "危险操作警告",
         "dangerWarningDescSingle": "此操作将立即影响目标节点的连接",
         "dangerWarningDescAll": "此操作将立即影响所有 {{count}} 个在线节点的连接",
@@ -877,16 +821,13 @@
         "configured": "已配置",
         "config": "配置",
         "section": {
-          "basicInfo": "基本信息",
-          "networkConfig": "网络配置",
           "otherSettings": "其他设置",
           "routeConfig": "路由配置"
         },
         "nodeName": "节点名称",
         "nodeNamePlaceholder": "例如：香港节点 01",
-        "nodeNameHint": "为节点设置一个描述性名称",
+        "nodeNameHint": "设置描述性名称",
         "nodeId": "节点 ID",
-        "createdAt": "创建时间",
         "protocolType": "协议类型",
         "protocolCannotChange": "创建后无法更改协议类型",
         "protocolDesc": {
@@ -899,20 +840,20 @@
         },
         "encryptionMethod": "加密方式",
         "transportProtocol": "传输协议",
-        "transportProtocolHint": "选择传输层协议",
+        "transportProtocolHint": "传输层协议",
         "securityType": "安全类型",
-        "securityTypeHint": "选择安全模式",
+        "securityTypeHint": "安全模式",
         "congestionControl": "拥塞控制",
-        "congestionControlHint": "选择拥塞控制算法",
+        "congestionControlHint": "拥塞控制算法",
         "udpRelayMode": "UDP 中继模式",
-        "udpRelayModeHint": "选择 UDP 中继模式",
+        "udpRelayModeHint": "UDP 中继模式",
         "serverAddress": "服务器地址",
         "serverAddressPlaceholder": "例如：example.com 或 1.2.3.4",
-        "serverAddressHint": "留空则从代理自动获取",
+        "serverAddressHint": "留空自动获取",
         "agentPort": "代理端口",
         "subscriptionPort": "订阅端口",
         "subscriptionPortPlaceholder": "留空则与代理端口相同",
-        "subscriptionPortHint": "用于订阅的端口，默认与代理端口相同",
+        "subscriptionPortHint": "默认与代理端口相同",
         "sameAsAgentPort": "与代理端口相同",
         "plugin": "插件",
         "pluginHint": "例如：obfs-local, v2ray-plugin",
@@ -934,7 +875,6 @@
         "publicKeyPlaceholder": "输入公钥",
         "shortIdHint": "Reality 短 ID",
         "shortIdPlaceholder": "输入短 ID",
-        "optional": "可选",
         "alterIdHint": "VMess alterId，现代配置通常为 0",
         "enableTlsHint": "启用 TLS 加密",
         "enableTls": "启用 TLS",
@@ -944,7 +884,6 @@
         "obfsTypeHint": "例如：salamander",
         "obfsPassword": "混淆密码",
         "obfsPasswordHint": "混淆密码",
-        "passwordPlaceholder": "输入密码",
         "upBandwidth": "上传带宽 (Mbps)",
         "downBandwidth": "下载带宽 (Mbps)",
         "alpnHint": "ALPN 协议，例如 h3",
@@ -955,33 +894,27 @@
         "region": "地区",
         "regionPlaceholder": "例如：香港",
         "regionHint": "节点的地理位置",
-        "sortOrder": "排序顺序",
-        "sortOrderHint": "较小的值在列表中排在前面",
+        "sortOrderHint": "值越小越靠前",
         "tags": "标签",
         "tagsPlaceholder": "高级, 游戏, 流媒体",
-        "tagsHint": "用逗号分隔的标签，用于分类",
+        "tagsHint": "逗号分隔",
         "resourceGroup": "资源组",
-        "resourceGroupHint": "将节点关联到资源组",
-        "resourceGroupSelectHint": "选择一个或多个资源组",
+        "resourceGroupHint": "关联到资源组",
+        "resourceGroupSelectHint": "选择资源组",
         "selectResourceGroup": "选择资源组",
         "noResourceGroup": "无资源组",
         "requiredFieldsNote": "必填项",
         "muteNotification": "静音通知",
-        "muteNotificationHint": "静音后，此节点不会发送告警通知",
+        "muteNotificationHint": "静音后不发送告警",
         "muted": "已静音",
         "unmuted": "未静音",
-        "completed": "已完成",
         "nextStepNetwork": "下一步：网络配置",
         "nextStepProtocol": "下一步：协议设置",
         "commonPorts": "常用端口",
         "ssDefault": "SS 默认 (8388)",
         "httpsDefault": "HTTPS (443)",
         "httpsAlt": "HTTPS 备用 (8443)",
-        "creating": "创建中...",
-        "saving": "保存中...",
         "editNodeDesc": "正在编辑节点 \"{{name}}\"",
-        "vmessSecurityRecommended": "推荐",
-        "congestionControlRecommended": "推荐",
         "randomFingerprint": "随机",
         "tlsVerify": "TLS 验证",
         "fields": {
@@ -1021,11 +954,6 @@
           "bandwidth": "100",
           "alpn": "h3"
         },
-        "status": {
-          "active": "激活",
-          "inactive": "未激活",
-          "maintenance": "维护中"
-        },
         "validation": {
           "nameRequired": "节点名称为必填项",
           "portRange": "端口必须在 1 到 65535 之间",
@@ -1036,35 +964,26 @@
       "table": {
         "node": "节点",
         "config": "配置",
-        "online": "在线",
         "monitor": "监控",
-        "status": "状态",
         "tags": "标签",
-        "version": "版本",
         "platform": "平台",
         "resourceGroup": "资源组",
         "owner": "创建者",
-        "createdAt": "创建时间",
-        "actions": "操作",
         "tooltip": {
           "lastOnline": "最后在线"
         },
         "menu": {
           "installScript": "获取安装脚本",
           "copyNode": "复制节点",
-          "generateToken": "生成 Token",
-          "activate": "激活",
-          "deactivate": "停用",
-          "delete": "删除"
+          "generateToken": "生成 Token"
         }
       },
       "installScript": {
         "title": "安装脚本",
-        "description": "在目标服务器上运行安装命令以完成部署",
-        "descriptionWithNode": "节点 \"{{name}}\" 的安装脚本，在目标服务器上运行以完成部署",
+        "description": "在目标服务器运行以下命令",
+        "descriptionWithNode": "节点 \"{{name}}\" 的安装脚本",
         "installCommand": "安装命令",
-        "recommended": "推荐",
-        "installCommandHint": "在目标服务器上以 root 权限运行此命令，将自动下载并安装节点代理",
+        "installCommandHint": "以 root 权限运行",
         "uninstallCommand": "卸载命令",
         "scriptUrl": "脚本地址",
         "viewDetails": "查看详情",
@@ -1079,12 +998,12 @@
         "disableConfig": "禁用路由配置",
         "modeVisual": "可视化",
         "defaultOutbound": "默认出站",
-        "defaultOutboundHint": "不匹配任何规则的流量将使用此出站",
+        "defaultOutboundHint": "未匹配规则时使用",
         "rulesTitle": "路由规则",
         "addRule": "添加规则",
         "moveUp": "上移",
         "moveDown": "下移",
-        "rulesOrderHint": "规则按从上到下的顺序匹配，第一个匹配的规则生效。",
+        "rulesOrderHint": "自上而下匹配，首条命中生效",
         "json": {
           "mustBeObject": "配置必须是 JSON 对象",
           "invalidFinal": "'final' 字段必须是 'proxy'、'direct'、'block' 或有效的节点引用",
@@ -1135,7 +1054,6 @@
           "source": "源端口"
         },
         "protocol": {
-          "label": "协议",
           "hint": "每行一个协议，例如 http、tls、quic"
         },
         "network": {
@@ -1160,7 +1078,6 @@
           "privateIp": "私有 IP",
           "port": "端口",
           "sourcePort": "源端口",
-          "protocol": "协议",
           "network": "网络",
           "ruleSet": "规则集"
         }
@@ -1191,12 +1108,7 @@
           "description": "外部来源的转发规则，直接指定服务器地址"
         }
       },
-      "filters": {
-        "protocol": "协议",
-        "status": "状态"
-      },
       "searchRules": "搜索规则",
-      "sort": "排序",
       "sortOptions": {
         "default": "默认",
         "createdDesc": "创建 ↓",
@@ -1218,7 +1130,6 @@
       "confirmDeleteDesc": "确认删除转发规则 \"{{name}}\" 吗？此操作不可恢复。",
       "confirmResetTraffic": "确认重置流量",
       "confirmResetTrafficDesc": "确认重置规则 \"{{name}}\" 的流量统计吗？",
-      "copySuffix": "副本",
       "noData": "暂无转发规则数据",
       "mode": "模式",
       "tunnel": "隧道",
@@ -1257,28 +1168,21 @@
       "columns": {
         "ruleName": "规则名",
         "ruleType": "规则类型",
-        "protocol": "协议",
         "path": "链路",
         "resourceGroup": "资源组",
         "resourceGroups": "资源组",
         "traffic": "流量",
-        "syncStatus": "同步状态",
-        "status": "状态",
-        "actions": "操作"
+        "syncStatus": "同步状态"
       },
       "traffic": {
         "total": "总计",
-        "upload": "上传",
-        "download": "下载",
         "multiplier": "流量倍率",
-        "auto": "自动",
         "custom": "自定义",
         "external": "外部",
         "externalHint": "流量由外部系统统计"
       },
       "status": {
         "starting": "启动中",
-        "syncing": "正在同步...",
         "syncLabel": "同步",
         "runLabel": "运行",
         "agents": "节点",
@@ -1295,8 +1199,6 @@
         "clickToEnable": "点击启用"
       },
       "detail": {
-        "statusEnabled": "已启用",
-        "statusDisabled": "已禁用",
         "basicInfo": "基本信息",
         "serverInfo": "服务器信息",
         "serverAddress": "服务器地址",
@@ -1306,18 +1208,14 @@
         "externalRuleIdLabel": "外部规则ID",
         "configOverview": "配置概览",
         "ruleType": "规则类型",
-        "sortOrder": "排序顺序",
         "createdTime": "创建时间",
         "resourceGroups": "资源组",
         "trafficStats": "流量统计",
-        "upload": "上传",
-        "download": "下载",
         "total": "总计",
         "forwardPath": "转发路径",
         "forwardPathTitle": "转发路径",
         "nodesCount": "{{count}} 个节点",
         "trafficMultiplier": "流量倍率",
-        "multiplierAuto": "自动",
         "syncStatus": "同步状态",
         "sync": "同步",
         "run": "运行",
@@ -1325,14 +1223,12 @@
         "noSyncStatus": "暂无同步状态",
         "createdAt": "创建于 {{time}}",
         "updatedAt": "更新于 {{time}}",
-        "ipVersionAuto": "自动",
         "ipVersionIpv4": "IPv4",
         "ipVersionIpv6": "IPv6",
         "tunnelTypeWs": "WebSocket",
         "tunnelTypeTls": "TLS",
         "targetTypeNode": "节点",
         "targetTypeManual": "手动配置",
-        "protocol": "协议",
         "ipVersion": "IP版本",
         "tunnelType": "隧道类型",
         "ruleId": "规则ID",
@@ -1342,37 +1238,24 @@
         "targetInfo": "目标信息",
         "targetType": "目标类型",
         "targetAddress": "目标地址",
-        "remark": "备注",
         "connectionInfo": "连接信息",
         "listenAddress": "监听地址"
       },
-      "syncStatus": {
-        "synced": "已同步",
-        "pending": "同步中",
-        "failed": "同步失败"
-      },
       "runStatus": {
-        "running": "运行中",
-        "stopped": "已停止",
-        "error": "错误",
-        "starting": "启动中",
-        "unknown": "未知"
+        "starting": "启动中"
       },
       "form": {
-        "editButton": "编辑",
         "probe": "拨测",
         "probing": "拨测中...",
-        "moreActions": "更多操作",
         "copyRuleAction": "复制规则",
         "disableRule": "禁用规则",
         "enableRule": "启用规则",
         "deleteRule": "删除规则",
         "createRule": "创建规则",
-        "createRuleDesc": "配置新的端口转发规则",
+        "createRuleDesc": "配置端口转发规则",
         "copyRule": "复制规则",
         "editRule": "编辑规则",
-        "basicInfo": "基本信息",
-        "basicInfoDescription": "配置规则的基本属性和协议设置",
+        "basicInfoDescription": "基本属性和协议",
         "forwardAgent": "转发节点",
         "selectForwardAgent": "选择转发节点",
         "portRestriction": "端口限制：{{range}}",
@@ -1381,25 +1264,23 @@
         "ruleNamePlaceholder": "请输入规则名称",
         "protocolType": "协议类型",
         "ipVersion": "IP版本",
-        "ipVersionAuto": "自动",
-        "ipVersionHint": "选择连接使用的IP版本",
+        "ipVersionHint": "选择 IP 版本",
         "forwardConfig": "转发配置",
-        "forwardConfigDescription": "设置监听端口、目标地址和转发路径",
+        "forwardConfigDescription": "监听端口、目标和路径",
         "listenPort": "监听端口",
-        "listenPortPlaceholderShort": "自动",
         "listenPortAutoHint": "留空自动分配",
         "serverAddress": "服务器地址",
         "serverAddressPlaceholder": "请输入服务器地址",
         "targetNode": "目标节点",
         "selectTargetNode": "选择目标节点",
         "selectTargetNodeOptional": "选择目标节点（可选）",
-        "targetNodeHint": "绑定规则到特定节点用于展示",
+        "targetNodeHint": "绑定到特定节点",
         "externalSource": "外部来源",
         "externalSourcePlaceholder": "例如：panel-name",
-        "externalSourceHint": "可选，用于标识此外部规则的来源",
+        "externalSourceHint": "标识外部规则来源",
         "externalRuleId": "外部规则ID",
         "externalRuleIdPlaceholder": "例如：original-rule-id",
-        "externalRuleIdHint": "可选，外部来源的原始规则ID",
+        "externalRuleIdHint": "外部原始规则 ID",
         "exitNode": "出口节点",
         "selectExitNode": "选择出口节点",
         "tunnelType": "隧道类型",
@@ -1407,7 +1288,7 @@
         "tunnelTypeTlsHint": "TLS：直接加密连接",
         "tunnelHops": "隧道跳数",
         "tunnelHopsPlaceholder": "留空使用全隧道模式",
-        "tunnelHopsHint": "使用隧道模式的节点数（0=从第一个节点开始直连）",
+        "tunnelHopsHint": "隧道节点数，0=全直连",
         "chainNodes": "链路节点",
         "chainNodesWithPort": "链路节点（含端口配置）",
         "hybridChainHint": "前{{count}}个节点使用隧道，其余使用直连",
@@ -1417,49 +1298,42 @@
         "targetAddress": "目标地址",
         "targetAddressPlaceholder": "IP或域名",
         "targetPort": "目标端口",
-        "targetNodeDynamicHint": "节点地址将在运行时动态解析",
-        "advancedOptions": "高级选项",
-        "advancedOptionsDescription": "可选的流量倍率、排序和备注设置",
+        "targetNodeDynamicHint": "运行时动态解析",
+        "advancedOptionsDescription": "流量倍率、排序和备注",
         "bindIp": "绑定IP",
         "bindIpPlaceholder": "例如：0.0.0.0",
-        "bindIpHint": "绑定到特定IP，留空绑定所有接口",
+        "bindIpHint": "留空绑定所有接口",
         "trafficMultiplier": "流量倍率",
         "trafficMultiplierAutoHint": "留空使用自动倍率",
         "trafficMultiplierHint": "流量将按此值倍率计费",
         "trafficMultiplierNotModify": "留空保持当前值",
         "trafficMultiplierCurrent": "当前：{{value}}x（{{type}}）",
-        "trafficMultiplierUpdateHint": "留空保持当前值，输入0重置为自动",
+        "trafficMultiplierUpdateHint": "留空保持现值，0=自动",
         "multiplierAuto": "自动",
         "multiplierCustom": "自定义",
-        "sortOrder": "排序顺序",
         "sortOrderPlaceholder": "例如：100",
         "sortOrderHint": "数值越小排序越靠前",
         "sortSmallFirst": "数值越小越靠前",
-        "remark": "备注",
         "remarkPlaceholder": "可选，关于此规则的备注",
         "bindResourceGroups": "绑定资源组",
         "bindResourceGroupsEdit": "绑定资源组",
-        "bindResourceGroupsHint": "选择可以使用此规则的资源组",
+        "bindResourceGroupsHint": "选择可用资源组",
         "selectedGroupsCount": "已选择 {{count}} 个资源组",
         "planTypeNode": "节点",
-        "planTypeHybrid": "混合",
         "basicInfoReadonly": "基本信息（只读）",
         "ruleId": "规则ID",
         "createdTime": "创建时间",
-        "editableInfo": "可编辑信息",
         "entryAgent": "入口节点",
         "selectEntryAgent": "选择入口节点",
         "exitAgent": "出口节点",
         "selectExitAgent": "选择出口节点",
         "copyRuleShort": "复制规则",
-        "creating": "创建中...",
         "createCopy": "创建副本",
-        "configured": "已配置",
-        "saving": "保存中..."
+        "configured": "已配置"
       },
       "batch": {
         "createTitle": "批量创建规则",
-        "createDescription": "通过粘贴JSON配置创建多个转发规则",
+        "createDescription": "粘贴 JSON 批量创建",
         "createComplete": "批量创建完成",
         "loadTemplate": "加载模板",
         "copyTemplate": "复制模板",
@@ -1468,21 +1342,16 @@
         "moreErrors": "...还有 {{count}} 个错误",
         "jsonValid": "JSON有效，{{count}} 条规则准备创建",
         "succeeded": "成功",
-        "failed": "失败",
         "createFailed": "创建失败：",
         "createSuccess": "创建成功：",
         "ruleIndex": "规则 #{{index}}",
         "moreRules": "...还有 {{count}} 条规则",
-        "cancel": "取消",
-        "creating": "创建中...",
         "createRulesCount": "创建 {{count}} 条规则",
-        "close": "关闭",
         "deleteTitle": "批量删除规则",
         "deleteDescription": "确认批量删除操作",
         "deleteComplete": "批量删除完成",
         "deleteConfirm": "确定要删除选中的 {{count}} 条规则吗？",
-        "deleteWarning": "此操作不可恢复，请谨慎确认。",
-        "deleting": "删除中...",
+        "deleteWarning": "此操作不可恢复",
         "deleteRulesCount": "删除 {{count}} 条规则",
         "deleteFailed": "删除失败：",
         "updateTitle": "批量更新规则",
@@ -1491,12 +1360,9 @@
         "selectFieldsToUpdate": "选择要更新的字段",
         "enterNewValues": "输入新值",
         "updateSummary": "将更新 {{count}} 条规则的 {{fields}}",
-        "updating": "更新中...",
         "updateRulesCount": "更新 {{count}} 条规则",
         "updateFailed": "更新失败：",
         "fieldName": "规则名称",
-        "fieldRemark": "备注",
-        "fieldSortOrder": "排序顺序",
         "fieldEntryAgent": "入口节点",
         "fieldExitAgent": "出口节点",
         "namePlaceholder": "输入新名称",
@@ -1506,28 +1372,22 @@
         "selectExitAgent": "选择出口节点",
         "selected": "已选择",
         "rules": "条规则",
-        "enableRules": "启用",
         "enableTooltip": "启用选中规则",
-        "disableRules": "禁用",
         "disableTooltip": "禁用选中规则",
         "update": "更新",
         "updateTooltip": "更新选中规则",
-        "delete": "删除",
         "deleteTooltip": "删除选中规则",
         "enableSelectedRules": "启用选中规则",
         "disableSelectedRules": "禁用选中规则",
         "batchUpdate": "批量更新",
         "deleteSelectedRules": "删除选中规则",
         "cancelSelection": "取消选择",
-        "enable": "启用",
-        "disable": "禁用",
-        "processing": "处理中...",
         "toggleTitle": "{{action}}规则",
         "toggleDescription": "确认批量{{action}}操作",
         "toggleComplete": "批量{{action}}完成",
         "toggleConfirm": "确定要{{action}}选中的 {{count}} 条规则吗？",
-        "toggleEnableHint": "启用后规则将立即开始转发流量",
-        "toggleDisableHint": "禁用后规则将停止转发流量",
+        "toggleEnableHint": "启用后立即生效",
+        "toggleDisableHint": "禁用后立即停止",
         "toggleFailed": "{{action}}失败：",
         "toggleCount": "{{action}} {{count}} 条规则",
         "validation": {
@@ -1545,20 +1405,21 @@
         }
       },
       "validation": {
-        "ruleNameRequired": "请输入规则名称",
-        "serverAddressRequired": "请输入服务器地址",
+        "ruleNameRequired": "规则名称必填",
+        "serverAddressRequired": "服务器地址必填",
         "listenPortRange": "监听端口必须在1-65535之间",
         "portNotInRange": "端口 {{port}} 不在允许范围内。允许范围：{{range}}",
-        "selectForwardAgent": "请选择转发节点",
-        "protocolRequired": "请选择协议",
-        "targetAddressRequired": "请输入目标地址",
+        "portNotInRangeSimple": "端口不在允许范围内",
+        "selectForwardAgent": "选择转发节点",
+        "protocolRequired": "选择协议",
+        "targetAddressRequired": "目标地址必填",
         "targetPortRange": "目标端口必须在1-65535之间",
-        "selectTargetNode": "请选择目标节点",
-        "selectExitNode": "请选择出口节点",
-        "selectAtLeastOneNode": "请至少选择一个链路节点",
-        "configurePortsForNodes": "请为以下节点配置端口：{{nodes}}",
-        "configureValidPorts": "请为所有链路节点配置有效端口",
-        "configureValidPortsForDirectNodes": "请为直连节点配置有效端口"
+        "selectTargetNode": "选择目标节点",
+        "selectExitNode": "选择出口节点",
+        "selectAtLeastOneNode": "至少选择一个链路节点",
+        "configurePortsForNodes": "为以下节点配置端口：{{nodes}}",
+        "configureValidPorts": "为所有链路节点配置有效端口",
+        "configureValidPortsForDirectNodes": "为直连节点配置有效端口"
       },
       "probe": {
         "title": "拨测结果",
@@ -1568,46 +1429,38 @@
         "probing": "正在测试连接...",
         "success": "连接成功",
         "failed": "连接失败",
-        "copyAddress": "复制地址",
         "latencyDetails": "延迟详情",
-        "offline": "离线",
-        "failedShort": "失败",
-        "retryHint": "点击拨测按钮测试连接",
-        "close": "关闭"
+        "retryHint": "点击拨测按钮测试连接"
       },
       "sheet": {
         "deleteRule": "删除规则",
-        "deleteConfirmDesc": "此操作不可撤销，请确认。",
-        "deleteWarningTitle": "警告",
-        "deleteWarningDesc": "删除此规则将立即停止所有流量转发，活动连接将被终止。",
-        "autoAssign": "自动分配",
+        "deleteConfirmDesc": "删除后无法恢复",
+        "deleteWarningDesc": "流量转发将立即停止，活动连接将断开",
         "forwardAgent": "转发节点",
         "trafficUsed": "已用流量",
-        "deleting": "删除中...",
         "confirmDeleteButton": "删除规则",
-        "cancel": "取消",
         "confirmDeleteTitle": "确认删除",
-        "confirmDeleteDesc": "确定要永久删除此规则吗？",
-        "save": "保存更改",
-        "saving": "保存中..."
+        "confirmDeleteDesc": "确定永久删除规则？"
       }
     },
     "forwardAgents": {
       "title": "转发Agent管理",
       "description": "管理转发代理",
+      "create": {
+        "description": "配置转发Agent的基本信息和网络设置"
+      },
       "agentsUnit": "个节点",
       "updatable": "个可更新",
-      "confirmDelete": "确认删除转发Agent \"{{name}}\" 吗？此操作不可恢复。",
+      "confirmDelete": "删除 \"{{name}}\"？无法恢复。",
       "token": "转发Agent Token",
-      "copySuffix": "副本",
       "version": {
         "upToDate": "{{name}} 已是最新版本 (v{{version}})",
         "fetchFailed": "获取版本信息失败"
       },
       "update": {
         "confirmTitle": "确认更新",
-        "confirmMessage": "确定要将 \"{{name}}\" 从 v{{currentVersion}} 更新到 v{{latestVersion}} 吗？更新过程中 Agent 会短暂离线。",
-        "confirmDefault": "确定要更新 Agent 吗？",
+        "confirmMessage": "将 \"{{name}}\" 从 v{{currentVersion}} 更新到 v{{latestVersion}}，期间 Agent 会短暂离线",
+        "confirmDefault": "确定更新 Agent？",
         "confirmButton": "确认更新"
       },
       "broadcast": {
@@ -1616,29 +1469,27 @@
         "notifyAllDesc": "向所有在线转发Agent下发新的API地址",
         "targetNode": "目标节点",
         "onlineNodeCount": "当前在线节点数",
-        "online": "在线",
-        "offline": "离线",
         "nodeOffline": "节点当前不在线",
         "noOnlineAgents": "当前没有在线的转发Agent",
         "newApiUrl": "新API地址",
         "newApiUrlPlaceholder": "https://new-api.example.com",
         "changeReason": "变更原因（可选）",
         "changeReasonPlaceholder": "例如：服务器迁移到新数据中心",
-        "agentAutoUpdateHint": "转发Agent收到通知后会自动更新配置并重连到新地址",
+        "agentAutoUpdateHint": "Agent 自动更新并重连",
         "dangerWarningTitle": "高危操作警告",
         "dangerWarningTargetNode": "目标节点",
         "dangerWarningAllNodes": "所有 {{count}} 个在线节点",
         "dangerWarningDesc": "此操作将立即影响{{target}}的连接",
         "impactTitle": "操作影响：",
-        "impact1": "节点将断开当前连接并尝试重连到新地址",
-        "impact2": "重连期间转发服务将暂时中断",
-        "impact3": "如果新地址无法访问，节点可能无法恢复连接",
+        "impact1": "节点断开并重连到新地址",
+        "impact2": "重连期间服务暂时中断",
+        "impact3": "新地址无法访问时可能无法恢复",
         "newAddress": "新地址",
         "reason": "原因",
-        "confirmInputNodeNamePrefix": "请输入节点名称 ",
-        "confirmInputNodeNameSuffix": " 以确认",
-        "confirmInputNodeCountPrefix": "请输入在线节点数 ",
-        "confirmInputNodeCountSuffix": " 以确认",
+        "confirmInputNodeNamePrefix": "输入节点名称 ",
+        "confirmInputNodeNameSuffix": " 确认",
+        "confirmInputNodeCountPrefix": "输入在线节点数 ",
+        "confirmInputNodeCountSuffix": " 确认",
         "inputMismatch": "输入内容不匹配",
         "backToEdit": "返回修改",
         "notifying": "下发中...",
@@ -1657,28 +1508,22 @@
       },
       "batchUpdateDialog": {
         "title": "批量更新转发Agent",
-        "description": "更新所有有可用更新的转发Agent",
+        "description": "更新所有可更新的 Agent",
         "taskSubmitted": "更新任务已提交",
         "updatableCount": "可更新的Agent",
         "allUpToDate": "所有Agent均已是最新版本",
         "willUpdateAgents": "以下Agent将被更新：",
         "succeeded": "成功",
-        "failed": "失败",
         "skipped": "跳过",
-        "truncatedNotice": "由于Agent数量较多，部分结果已被截断",
+        "truncatedNotice": "部分结果已截断",
         "updateTriggered": "已触发更新：",
         "updateFailed": "更新失败：",
         "updateSkipped": "已跳过：",
-        "updating": "更新中...",
         "updateButton": "更新 {{count}} 个Agent"
       },
       "filters": {
-        "status": "状态",
         "all": "全部",
-        "enabled": "启用",
-        "disabled": "禁用",
         "searchAgent": "搜索节点",
-        "sort": "排序",
         "default": "默认",
         "createdDesc": "创建 ↓",
         "createdAsc": "创建 ↑",
@@ -1693,25 +1538,16 @@
       "actions": {
         "broadcast": "下发",
         "update": "更新",
-        "refresh": "刷新",
-        "refreshList": "刷新列表",
-        "create": "新增"
+        "refreshList": "刷新列表"
       },
       "table": {
         "columns": {
-          "name": "名称",
           "address": "地址",
-          "status": "状态",
-          "online": "在线",
           "monitor": "监控",
-          "resourceGroup": "资源组",
-          "version": "版本",
-          "createdAt": "创建时间",
-          "actions": "操作"
+          "resourceGroup": "资源组"
         },
         "menu": {
           "viewDetail": "查看详情",
-          "edit": "编辑",
           "getInstallScript": "获取安装脚本",
           "installScript": "安装脚本",
           "copyNode": "复制节点",
@@ -1719,22 +1555,16 @@
           "checkUpdate": "检查更新",
           "checking": "检查中...",
           "broadcastUrl": "下发地址",
-          "broadcastURL": "下发地址",
-          "enable": "启用",
-          "disable": "禁用",
-          "delete": "删除"
+          "broadcastURL": "下发地址"
         },
         "tooltip": {
           "tunnelAddress": "隧道地址",
           "clickToDisable": "点击禁用",
           "clickToEnable": "点击启用",
-          "online": "在线",
-          "offline": "离线",
           "lastOnline": "最后在线",
           "clickToMute": "点击静音通知",
           "clickToUnmute": "点击取消静音",
           "unknownResourceGroup": "未知资源组",
-          "version": "版本",
           "newVersionAvailable": "有新版本可用"
         },
         "empty": "暂无转发Agent数据"
@@ -1748,28 +1578,24 @@
       "form": {
         "nodeName": "节点名称",
         "nodeNameRequired": "必填项",
+        "nodeNameHint": "用于识别Agent的显示名称",
         "nodeNamePlaceholder": "例如：主转发Agent",
         "publicAddress": "公网地址",
         "publicAddressPlaceholder": "例如：example.com 或 1.2.3.4",
-        "publicAddressHint": "可选，留空时由 Agent 自动检测",
+        "publicAddressHint": "留空自动检测",
         "tunnelAddress": "隧道地址",
         "tunnelAddressPlaceholder": "例如：10.0.0.1 或 internal.example.com",
-        "tunnelAddressHint": "可选，用于中继/出口节点的内网连接",
+        "tunnelAddressHint": "中继节点内网连接",
         "portLimit": "端口限制",
         "portLimitPlaceholder": "例如：80,443,8000-9000",
-        "portLimitHint": "可选，留空表示允许所有端口",
-        "sortOrder": "排序顺序",
+        "portLimitHint": "留空允许所有端口",
         "sortOrderPlaceholder": "例如：100",
-        "sortOrderHint": "可选，数值越小排序越靠前",
+        "sortOrderHint": "数值越小越靠前",
         "blockedProtocols": "阻止协议",
-        "blockedProtocolsHint": "可选，点击选择需要阻止的协议类型",
+        "blockedProtocolsHint": "选择阻止的协议",
         "protocolGroupProxy": "代理协议",
         "protocolGroupApp": "应用协议",
-        "remark": "备注",
-        "remarkPlaceholder": "可选：添加备注说明",
-        "remarkHint": "可选",
-        "creating": "创建中...",
-        "create": "创建"
+        "remarkPlaceholder": "备注说明"
       },
       "detail": {
         "badge": "转发Agent",
@@ -1780,8 +1606,6 @@
         "nodeStatus": "节点状态",
         "realtimeConnected": "实时连接已建立",
         "connectingRealtime": "正在连接...",
-        "online": "在线",
-        "offline": "离线",
         "uptime": "运行",
         "versionManagement": "版本管理",
         "current": "当前:",
@@ -1803,7 +1627,6 @@
         "tunnelPorts": "隧道端口",
         "publicIp": "公网 IP",
         "extendedMetrics": "扩展指标",
-        "basicInfo": "基本信息",
         "agentId": "节点ID",
         "agentName": "节点名称",
         "publicAddress": "公网地址",
@@ -1816,11 +1639,7 @@
         "blockedProtocols": "阻止协议",
         "proxyProtocols": "代理协议",
         "appProtocols": "应用协议",
-        "none": "无",
-        "remark": "备注",
         "timeInfo": "时间信息",
-        "createdAt": "创建时间",
-        "updatedAt": "更新时间",
         "lastOnline": "最后在线",
         "tokenNotice": "Token说明",
         "tokenNotice1": "Token仅在创建节点或重新生成时完整显示一次",
@@ -1836,7 +1655,6 @@
           "mins": "{{mins}}分"
         },
         "updatable": "可更新",
-        "auto": "自动",
         "noSystemStatusData": "暂无系统状态数据",
         "configInfo": "配置信息",
         "allowedPortRange": "允许端口范围",
@@ -1847,7 +1665,6 @@
         "regenerateToken": "重新生成 Token",
         "getInstallScript": "获取安装脚本",
         "deleteAgent": "删除 Agent",
-        "moreActions": "更多操作",
         "monitor": "监控",
         "cumulative": "累计",
         "tunnel": "隧道",
@@ -1858,20 +1675,13 @@
       },
       "edit": {
         "title": "编辑转发Agent",
-        "sections": {
-          "basicInfo": "基本信息",
-          "editableInfo": "可编辑信息"
-        },
         "labels": {
           "agentId": "节点 ID",
-          "createdAt": "创建时间",
           "nodeName": "节点名称",
           "publicAddress": "公网地址",
           "tunnelAddress": "隧道地址",
           "portLimit": "端口限制",
-          "sortOrder": "排序顺序",
           "blockedProtocols": "阻止协议",
-          "remark": "备注",
           "resourceGroup": "资源组",
           "muteNotification": "静音通知"
         },
@@ -1901,19 +1711,13 @@
       "create": {
         "title": "新增转发Agent",
         "copyTitle": "复制转发Agent",
-        "description": "创建新的转发Agent节点来管理您的代理服务",
-        "sections": {
-          "network": "网络配置",
-          "advanced": "高级选项"
-        },
+        "description": "添加转发Agent节点",
         "labels": {
           "nodeName": "节点名称",
           "publicAddress": "公网地址",
           "tunnelAddress": "隧道地址",
           "portLimit": "端口限制",
-          "sortOrder": "排序顺序",
-          "blockedProtocols": "阻止协议",
-          "remark": "备注"
+          "blockedProtocols": "阻止协议"
         },
         "placeholders": {
           "nodeName": "例如：主转发Agent",
@@ -1932,8 +1736,7 @@
         },
         "validation": {
           "nameRequired": "节点名称不能为空"
-        },
-        "creating": "创建中..."
+        }
       },
       "delete": {
         "title": "删除转发Agent",
@@ -1941,22 +1744,15 @@
         "confirmTitle": "确认删除？",
         "confirmMessage": "删除此转发Agent将移除所有相关配置，且无法恢复。",
         "noPublicAddress": "无公网地址",
-        "enabled": "已启用",
-        "disabled": "已禁用",
-        "online": "在线",
-        "offline": "离线",
-        "deleting": "删除中...",
-        "confirmButton": "删除",
         "finalConfirmTitle": "最终确认",
-        "finalConfirmDescription": "请确认您要永久删除此转发Agent。"
+        "finalConfirmDescription": "确认永久删除此 Agent"
       },
       "installScript": {
         "title": "安装脚本",
-        "description": "使用以下命令在您的服务器上安装转发Agent",
-        "descriptionWithName": "使用以下命令在您的服务器上安装转发Agent \"{{name}}\"",
+        "description": "在服务器上运行以下命令",
+        "descriptionWithName": "在服务器上运行以下命令安装 \"{{name}}\"",
         "installCommand": "安装命令",
-        "recommended": "推荐",
-        "installCommandHint": "在服务器上运行此命令以安装和配置转发Agent",
+        "installCommandHint": "以 root 权限运行",
         "uninstallCommand": "卸载命令",
         "scriptUrl": "脚本地址",
         "viewDetails": "查看详情",
@@ -1973,16 +1769,12 @@
       "confirmDelete": "确认删除用户 \"{{name}}\" ({{email}}) 吗？此操作不可恢复。",
       "assignSuccess": "成功为用户 {{name}} 分配订阅",
       "assignFailed": "分配订阅失败",
-      "statusPending": "待验证",
-      "statusInactive": "停用",
-      "statusSuspended": "封禁",
-      "roleAdmin": "管理员",
       "refreshList": "刷新列表",
       "createUser": "新增用户",
       "assignSubscription": "分配订阅",
       "noData": "暂无用户数据",
       "form": {
-        "createDescription": "填写以下信息创建新用户账户，用户将收到包含初始密码的通知",
+        "createDescription": "创建新用户账户",
         "accountInfo": "账户信息",
         "securitySettings": "安全设置",
         "email": "邮箱地址",
@@ -2004,7 +1796,6 @@
         "passwordLength": "8-72 个字符",
         "containsLetter": "包含字母",
         "containsNumber": "包含数字",
-        "creating": "创建中...",
         "createUser": "创建用户"
       },
       "resetPassword": {
@@ -2028,22 +1819,15 @@
       },
       "actions": {
         "assignSubscription": "分配订阅",
-        "edit": "编辑",
         "resetPassword": "重置密码",
-        "delete": "删除",
-        "details": "查看详情",
-        "cancel": "取消"
+        "details": "查看详情"
       },
       "fields": {
         "email": "邮箱",
         "emailShort": "邮箱",
-        "name": "姓名",
-        "nameShort": "姓名",
         "namePlaceholder": "请输入用户名",
         "namePlaceholderShort": "用户名",
         "nameLengthHint": "2-100 个字符",
-        "passwordPlaceholder": "请输入密码",
-        "status": "状态",
         "role": "角色",
         "createdAt": "创建时间"
       },
@@ -2051,47 +1835,30 @@
         "title": "创建用户",
         "description": "填写信息以创建新用户账户",
         "passwordValid": "有效",
-        "passwordSecurityHint": "初始密码应通过安全渠道告知用户，建议用户首次登录后修改密码。",
-        "creating": "创建中...",
+        "passwordSecurityHint": "请通过安全渠道告知用户初始密码",
         "createUser": "创建用户"
       },
       "delete": {
         "title": "删除用户",
         "description": "此操作不可撤销",
         "confirmQuestion": "确定要删除此用户吗？",
-        "warningMessage": "用户的所有数据将被永久删除，包括订阅和相关记录。",
+        "warningMessage": "所有数据将被永久删除",
         "username": "用户名",
-        "deleting": "删除中...",
         "confirmDelete": "删除用户",
         "confirmDeleteQuestion": "确认删除此用户？",
-        "cannotRecover": "此操作不可撤销，用户的所有数据将被永久删除。"
+        "cannotRecover": "此操作不可撤销"
       },
       "edit": {
         "title": "编辑用户",
         "description": "正在编辑用户 {{name}}",
-        "basicInfo": "基本信息",
         "userId": "用户 ID",
-        "createdAt": "创建时间",
-        "editableInfo": "可编辑信息",
-        "saveChanges": "保存更改",
-        "save": "保存"
-      },
-      "status": {
-        "active": "激活",
-        "inactive": "停用",
-        "pending": "待验证",
-        "suspended": "封禁"
-      },
-      "role": {
-        "user": "用户",
-        "admin": "管理员"
+        "saveChanges": "保存更改"
       },
       "validation": {
         "emailInvalid": "邮箱格式不正确",
         "nameLengthError": "姓名长度必须在 2-100 个字符之间"
       },
       "table": {
-        "name": "姓名",
         "email": "邮箱"
       }
     },
@@ -2117,11 +1884,10 @@
       "cycleOptions": "种周期",
       "createPlan": "创建计划",
       "duplicatePlan": "复制订阅计划",
-      "createDescription": "填写以下信息创建新的订阅计划",
-      "duplicateDescription": "基于「{{name}}」创建新的订阅计划",
-      "copySuffix": "副本",
+      "createDescription": "创建新订阅计划",
+      "duplicateDescription": "基于「{{name}}」创建",
       "confirmDeleteTitle": "确认删除",
-      "confirmDeleteDescription": "确认删除计划 \"{{name}}\" 吗？此操作不可恢复。注意：只有无活跃订阅的计划才能删除。",
+      "confirmDeleteDescription": "确认删除「{{name}}」？无活跃订阅的计划才能删除",
       "deleteSuccess": "计划已删除",
       "deleteError": "删除计划失败，可能存在活跃订阅",
       "ruleType": {
@@ -2136,25 +1902,18 @@
         "type": "类型",
         "price": "价格",
         "billingCycle": "计费周期",
-        "status": "状态",
         "public": "公开",
         "trialDays": "试用天数",
-        "sortOrder": "排序",
         "extras": "其他",
-        "days": "天",
         "publicPlan": "公开计划",
         "privatePlan": "私有计划",
         "noPlans": "暂无订阅计划",
         "allPricingOptions": "所有定价选项：",
         "multipleCycles": "{{count}} 种周期",
-        "daysCount": "{{count}}天",
         "duplicatePlan": "复制计划",
-        "viewSubscribers": "查看订阅用户",
-        "activate": "激活",
-        "deactivate": "停用"
+        "viewSubscribers": "查看订阅用户"
       },
       "form": {
-        "basicInfo": "基本信息",
         "planName": "计划名称",
         "slug": "Slug (URL标识)",
         "slugHint": "仅小写字母、数字和连字符",
@@ -2179,18 +1938,14 @@
         "trafficLimitGB": "流量上限 (GB)",
         "allowedRuleTypes": "允许的规则类型",
         "noSelectionAllowAll": "不选择表示允许所有类型",
-        "description": "描述",
         "descriptionPlaceholder": "订阅计划的描述信息",
         "generalConfig": "通用配置",
         "trialDays": "试用天数",
-        "sortOrder": "排序顺序",
         "sortOrderHint": "数字越小越靠前",
         "isPublic": "公开显示此计划",
-        "creating": "创建中...",
         "createCopy": "创建副本",
         "editPlan": "编辑计划",
         "editDescription": "修改计划「{{name}}」的设置",
-        "saving": "保存中...",
         "saveChanges": "保存更改",
         "otherConfig": "其他配置",
         "slugPlaceholder": "url-slug"
@@ -2202,12 +1957,10 @@
         "trialPeriod": "试用期",
         "planId": "计划 ID",
         "billingCycles": "计费周期",
-        "description": "描述",
         "slug": "Slug",
         "cycle": "周期",
         "public": "公开",
-        "trial": "试用",
-        "sortOrder": "排序"
+        "trial": "试用"
       },
       "actions": {
         "activatePlan": "激活计划",
@@ -2227,7 +1980,6 @@
       "emptyState": "暂无资源组",
       "detail": {
         "plan": "计划",
-        "description": "描述",
         "created": "创建时间"
       }
     },
@@ -2242,7 +1994,6 @@
       "groupCount": "个资源组",
       "columns": {
         "name": "规则名称",
-        "protocol": "协议",
         "serverAddress": "服务器地址",
         "externalSource": "外部来源",
         "externalRuleId": "外部规则ID",
@@ -2253,12 +2004,9 @@
         "nodeInfo": "节点信息",
         "nodeName": "节点名称",
         "nodeServerAddress": "节点服务地址",
-        "status": "状态",
-        "resourceGroups": "资源组",
-        "actions": "操作"
+        "resourceGroups": "资源组"
       },
       "filters": {
-        "status": "状态",
         "externalSource": "搜索外部来源..."
       },
       "actions": {
@@ -2295,8 +2043,7 @@
         "nodeRoutingHint": "可选择指定节点进行直接路由，不选择则自动分配。",
         "resourceGroups": "资源组绑定",
         "resourceGroupsHint": "选择要绑定的资源组，规则将分发给这些资源组下的订阅",
-        "noResourceGroups": "暂无可用资源组",
-        "creating": "创建中..."
+        "noResourceGroups": "暂无可用资源组"
       },
       "editDialog": {
         "title": "编辑外部转发规则",
@@ -2308,18 +2055,17 @@
         "currentNodeInfo": "当前节点信息",
         "resourceGroups": "资源组绑定",
         "resourceGroupsHint": "修改此规则绑定的资源组，清空将解除所有绑定",
-        "readOnlyInfo": "只读信息（无法修改）",
-        "saving": "保存中..."
+        "readOnlyInfo": "只读信息（无法修改）"
       },
       "noResourceGroups": "暂无可用资源组"
     },
     "monitor": {
       "systemMonitor": "系统监控",
-      "entityDetails": "实体详情",
-      "waitingData": "等待数据",
-      "waitingEntityData": "正在等待实体数据...",
+      "entityDetails": "详情",
+      "waitingData": "加载中",
+      "waitingEntityData": "加载中...",
       "noEntityData": "暂无数据",
-      "noEntityUnderFilter": "当前筛选条件下没有实体",
+      "noEntityUnderFilter": "无匹配实体",
       "onlineCount": "{{online}}/{{total}} 在线",
       "cpu": "CPU",
       "memory": "内存",
@@ -2327,8 +2073,6 @@
       "network": "网络",
       "load": "负载",
       "uptime": "运行",
-      "download": "下载",
-      "upload": "上传",
       "total": "累计",
       "connections": "连接",
       "activeRules": "活跃规则",
@@ -2336,9 +2080,9 @@
       "performanceMonitor": "性能监控",
       "entitiesCount": "{{count}} 实体",
       "add": "添加",
-      "noOnlineEntities": "暂无在线实体",
-      "waitingAgentOnline": "等待 Agent 上线...",
-      "clickAddToSelectEntities": "点击「添加」选择实体",
+      "noOnlineEntities": "无在线实体",
+      "waitingAgentOnline": "等待上线...",
+      "clickAddToSelectEntities": "点击添加",
       "entityStatus": "实体状态",
       "searchAgent": "按名称搜索...",
       "noMatchingEntities": "没有匹配的实体",
@@ -2358,8 +2102,6 @@
       "minutesAgo": "{{count}}分钟前",
       "hoursAgo": "{{count}}小时前",
       "detail": {
-        "online": "在线",
-        "offline": "离线",
         "nodeAgentOffline": "Node Agent 离线",
         "forwardAgentOffline": "转发 Agent 离线",
         "lastOnline": "最后在线",
@@ -2406,7 +2148,6 @@
         "tcpTimeWait": "TCP TIME_WAIT",
         "processStats": "进程统计",
         "totalProcesses": "总进程数",
-        "running": "运行中",
         "blocked": "阻塞",
         "fileDescriptors": "文件描述符",
         "contextSwitches": "上下文切换",
@@ -2425,7 +2166,6 @@
         "memShort": "M",
         "diskShort": "D",
         "uptimeLabel": "运行时间",
-        "version": "版本",
         "publicIp": "公网 IP",
         "traffic": "流量",
         "cores": "核心",
@@ -2444,8 +2184,6 @@
       },
       "metrics": {
         "memory": "内存",
-        "download": "下载",
-        "upload": "上传",
         "cpuDetails": "CPU 详情",
         "cores": "核心数",
         "coresUnit": "核",
@@ -2476,7 +2214,6 @@
         "tcpTimeWait": "TCP TIME_WAIT",
         "processStats": "进程统计",
         "totalCount": "总数",
-        "running": "运行中",
         "blocked": "阻塞",
         "contextSwitch": "上下文切换",
         "contextSwitches": "上下文切换",
@@ -2496,8 +2233,6 @@
     "settings": {
       "title": "系统设置",
       "description": "管理系统配置",
-      "enabled": "启用",
-      "disabled": "禁用",
       "unableToLoadConfig": "无法加载配置",
       "saveChanges": "保存更改",
       "readOnly": "只读",
@@ -2514,7 +2249,7 @@
       },
       "system": {
         "title": "核心配置",
-        "description": "API 地址、订阅地址等核心系统配置",
+        "description": "API、订阅等核心配置",
         "apiBaseUrl": "API 地址",
         "apiBaseUrlDesc": "后端 API 服务地址",
         "subscriptionBaseUrl": "订阅地址",
@@ -2534,10 +2269,10 @@
         "googleDesc": "使用 Google 账号登录",
         "githubDesc": "使用 GitHub 账号登录",
         "clientId": "Client ID",
-        "clientIdDesc": "OAuth 应用程序客户端标识符",
+        "clientIdDesc": "应用客户端标识符",
         "clientIdPlaceholder": "输入 OAuth Client ID",
         "clientSecret": "Client Secret",
-        "clientSecretDesc": "OAuth 应用程序客户端密钥（请妥善保管）",
+        "clientSecretDesc": "应用客户端密钥",
         "clientSecretPlaceholder": "输入 OAuth Client Secret",
         "redirectUrl": "回调地址",
         "redirectUrlDesc": "OAuth 认证流程的回调地址",
@@ -2550,16 +2285,16 @@
         "smtpHost": "SMTP 服务器",
         "smtpHostDesc": "SMTP 服务器地址",
         "smtpPort": "SMTP 端口",
-        "smtpPortDesc": "SMTP 服务器端口（通常为 25、465 或 587）",
+        "smtpPortDesc": "通常为 25、465 或 587",
         "smtpUser": "SMTP 用户名",
         "smtpUserDesc": "SMTP 认证用户名",
         "smtpPassword": "SMTP 密码",
         "smtpPasswordDesc": "SMTP 认证密码",
         "smtpPasswordPlaceholder": "输入 SMTP 密码",
         "fromAddress": "发件人地址",
-        "fromAddressDesc": "邮件发送时显示的发件人邮箱",
+        "fromAddressDesc": "发件人邮箱",
         "fromName": "发件人名称",
-        "fromNameDesc": "邮件发送时显示的发件人名称",
+        "fromNameDesc": "发件人名称",
         "testConnection": "发送测试邮件",
         "testEmailPlaceholder": "输入接收测试邮件的邮箱",
         "testSuccess": "测试邮件发送成功",
@@ -2572,17 +2307,16 @@
         "title": "Telegram 设置",
         "description": "配置机器人 Token 和 Webhook",
         "enable": "启用 Telegram 通知",
-        "enableDesc": "开启后管理员可以绑定 Telegram 接收通知",
+        "enableDesc": "开启后可绑定 Telegram 接收通知",
         "botToken": "Bot Token",
-        "botTokenDesc": "从 @BotFather 获取的机器人令牌",
+        "botTokenDesc": "从 @BotFather 获取",
         "webhookUrl": "Webhook URL",
-        "webhookUrlDesc": "接收 Telegram 更新的 Webhook 地址",
+        "webhookUrlDesc": "接收更新的地址",
         "webhookSecret": "Webhook Secret",
-        "webhookSecretDesc": "用于验证 Webhook 请求的密钥",
+        "webhookSecretDesc": "验证请求的密钥",
         "currentMode": "当前模式",
         "testConnection": "测试连接",
-        "saveChanges": "保存更改",
-        "invalidUrl": "请输入有效的 URL"
+        "saveChanges": "保存更改"
       }
     }
   },
@@ -2590,7 +2324,6 @@
     "label": "订阅",
     "details": "订阅详情",
     "link": "订阅链接",
-    "user": "用户",
     "userInfo": "用户信息",
     "plan": "计划",
     "planInfo": "计划信息",
@@ -2603,9 +2336,7 @@
     "idLabel": "订阅 ID:",
     "startDate": "开始日期",
     "endDate": "结束日期",
-    "unlimited": "无限期",
     "currentPeriod": "当前周期",
-    "createdAt": "创建时间",
     "autoRenewal": "自动续费",
     "manualRenewal": "手动续费",
     "noRenewal": "不续费",
@@ -2617,7 +2348,6 @@
     "uuid": "UUID",
     "noPlan": "未关联计划",
     "unknownPlan": "未知计划",
-    "activate": "激活",
     "activateSubscription": "激活订阅",
     "cancel": "取消订阅",
     "renew": "续费",
@@ -2647,7 +2377,6 @@
     "createNew": "创建新订阅",
     "duplicateInfo": "将为用户创建一个新订阅，新订阅立即生效，会生成新的订阅链接。",
     "sameUserAssignment": "新订阅将分配给相同用户",
-    "creating": "创建中...",
     "create": "创建订阅",
     "operations": "订阅操作",
     "noData": "暂无订阅数据",
@@ -2681,8 +2410,6 @@
       "textList": "文本列表",
       "qrCode": "二维码"
     },
-    "copy": "复制",
-    "copied": "已复制",
     "copyLink": "复制链接"
   },
   "userSubscription": {
@@ -2693,7 +2420,6 @@
     "overview": "概览",
     "forward": "转发",
     "nodes": "节点",
-    "days": "天",
     "day": "天",
     "remainingValidity": "剩余有效期",
     "periodProgress": "周期进度",
@@ -2708,24 +2434,19 @@
     "used": "已使用",
     "totalQuota": "总配额",
     "trafficDetails": "流量详情",
-    "upload": "上传",
-    "download": "下载",
     "total": "总计",
     "subscriptionLink": "订阅链接",
     "selectFormatAndCopy": "选择格式并复制到客户端",
     "resetLink": "重置链接",
     "resetting": "重置中...",
-    "reset": "重置",
     "confirmResetLink": "确定要重置订阅链接吗？重置后旧链接将失效。",
     "trafficTrend": "流量趋势",
     "uploadDownloadStats": "上传与下载流量统计",
     "noTrafficData": "暂无流量数据",
-    "today": "今天",
-    "yesterday": "昨天",
     "sevenDays": "7 天",
     "thirtyDays": "30 天",
     "noAvailableNodes": "暂无可用节点",
-    "noAvailableNodesDesc": "您的订阅没有可用的转发 Agent。",
+    "noAvailableNodesDesc": "订阅无可用转发 Agent",
     "availableNodesCount": "{{count}} 个可用节点",
     "nodeAvailable": "可用",
     "nodeUnavailable": "不可用"
@@ -2737,7 +2458,6 @@
     "traffic": "流量",
     "types": "类型",
     "ruleTypes": {
-      "portForward": "端口转发",
       "socks5Proxy": "SOCKS5",
       "httpProxy": "HTTP",
       "relayTunnel": "中继",
@@ -2764,7 +2484,6 @@
     "perLifetime": "次（终身）"
   },
   "planType": {
-    "node": "节点订阅",
     "forward": "端口转发",
     "hybrid": "混合订阅"
   },
@@ -2772,16 +2491,9 @@
     "all": "全部"
   },
   "subscriptionStatus": {
-    "inactive": "未激活",
     "pendingPayment": "待支付",
     "trialing": "试用中",
-    "active": "激活",
     "pastDue": "逾期",
-    "suspended": "暂停",
-    "cancelled": "取消",
-    "expired": "过期",
-    "activated": "激活",
-    "notActivated": "未激活",
     "notExpired": "未过期"
   },
   "messages": {
@@ -2802,8 +2514,6 @@
     "subscriptionUsageResetFailed": "重置用量失败",
     "subscriptionDeleted": "订阅已删除",
     "subscriptionDeleteFailed": "删除订阅失败",
-    "copiedToClipboard": "已复制到剪贴板",
-    "processing": "处理中...",
     "confirmCancel": "确认取消",
     "clearFilters": "清除筛选",
     "deleteIrreversible": "此操作不可恢复，请确认是否继续",
@@ -2824,20 +2534,13 @@
   "tableColumns": {
     "subscriptionId": "订阅ID",
     "userId": "用户ID",
-    "user": "用户",
     "plan": "计划",
-    "status": "状态",
     "startDate": "开始日期",
     "endDate": "结束日期",
     "autoRenew": "自动续费",
-    "createdAt": "创建时间",
-    "actions": "操作",
     "operations": "操作",
     "email": "邮箱",
-    "name": "姓名",
-    "role": "角色",
-    "description": "描述",
-    "remark": "备注"
+    "role": "角色"
   },
   "labels": {
     "userId": "用户 ID",
@@ -2848,23 +2551,20 @@
     "accountStatus": {
       "title": "账户状态",
       "accountId": "账户 ID",
-      "role": "角色",
-      "status": "状态"
+      "role": "角色"
     },
     "traffic": {
       "title": "流量使用",
       "monthlyUsage": "本月用量统计",
-      "percentUsed": "% 已使用",
-      "upload": "上传",
-      "download": "下载"
+      "percentUsed": "% 已使用"
     },
     "quickLinks": {
       "title": "快速访问",
-      "profileDesc": "管理您的个人信息和偏好",
-      "subscriptionDesc": "查看和管理您的订阅计划",
-      "nodeDesc": "管理您的节点配置",
-      "pricingDesc": "浏览可用的订阅套餐",
-      "comingSoon": "待实现"
+      "profileDesc": "个人信息与偏好",
+      "subscriptionDesc": "订阅计划",
+      "nodeDesc": "节点配置",
+      "pricingDesc": "订阅套餐",
+      "comingSoon": "敬请期待"
     },
     "subscriptions": {
       "showActiveOnly": "只看激活订阅",
@@ -2881,28 +2581,21 @@
       "basicInfo": "基本信息",
       "email": "邮箱",
       "role": "角色",
-      "status": "状态",
       "userId": "用户 ID",
       "timeInfo": "时间信息",
       "registrationTime": "注册时间",
       "lastUpdated": "最后更新",
-      "edit": "编辑",
       "subscription": "订阅",
-      "moreActions": "更多操作",
       "resetPassword": "重置密码",
-      "deleteUser": "删除用户",
-      "roleUser": "用户",
-      "roleAdmin": "管理员"
+      "deleteUser": "删除用户"
     },
     "dashboard": {
       "title": "仪表盘",
       "welcome": "欢迎，{{name}}",
       "overview": "概览",
-      "defaultUser": "用户",
       "mySubscriptions": "我的订阅",
       "viewAllPlans": "查看全部套餐",
-      "welcomeMessage": "管理您的订阅和查看使用情况。",
-      "loading": "加载中...",
+      "welcomeMessage": "管理订阅与使用情况",
       "errorLoadUser": "无法加载用户信息",
       "greeting": {
         "morning": "早上好",
@@ -2910,12 +2603,10 @@
         "evening": "晚上好"
       },
       "stats": {
-        "totalTraffic": "总流量使用",
-        "upload": "上传",
-        "download": "下载"
+        "totalTraffic": "总流量使用"
       },
       "status": {
-        "noSubscription": "开始您的第一个订阅，解锁优质线路服务",
+        "noSubscription": "订阅即可解锁优质线路",
         "expiringSoon": "「{{plan}}」将在 {{days}} 天后到期，记得续费",
         "highUsage": "本月流量已使用 {{percent}}%，考虑升级套餐？",
         "allGood": "{{count}} 个订阅运行正常",
@@ -2923,20 +2614,11 @@
       },
       "empty": {
         "title": "暂无订阅",
-        "description": "开始您的第一个订阅，解锁优质线路服务",
+        "description": "订阅即可解锁优质线路",
         "viewPlans": "浏览套餐"
       },
       "subscription": {
-        "status": {
-          "active": "激活",
-          "expired": "过期",
-          "cancelled": "取消",
-          "pending": "待处理",
-          "renewed": "续费"
-        },
-        "unknownPlan": "未知计划",
-        "daysRemaining": "剩余 {{count}} 天",
-        "daysRemaining_other": "剩余 {{count}} 天"
+        "unknownPlan": "未知计划"
       },
       "quickActions": {
         "upgrade": "升级订阅",
@@ -2952,94 +2634,94 @@
   },
   "landing": {
     "nav": {
-      "features": "特性",
-      "howItWorks": "工作原理",
-      "pricing": "定价",
+      "features": "功能",
+      "howItWorks": "指南",
+      "pricing": "价格",
       "signIn": "登录",
-      "getStarted": "开始使用",
+      "getStarted": "开始",
       "openMenu": "打开菜单",
       "closeMenu": "关闭菜单"
     },
     "hero": {
-      "badge": "专为优质线路共享而设计",
-      "title": "一站式平台",
-      "titleHighlight": "转发与订阅管理",
-      "subtitle": "Orris 将节点管理、流量转发和订阅分发统一在一个平台上。一次配置，轻松共享。",
+      "badge": "节点管理，重新想象",
+      "title": "配置一次",
+      "titleHighlight": "畅享无忧",
+      "subtitle": "节点、转发、订阅，化繁为简。你专注业务，Orris 处理其余。",
       "getStartedFree": "免费开始",
-      "learnMore": "了解更多",
+      "learnMore": "进一步了解",
       "stats": {
         "forwardingModes": "种转发模式",
-        "uptimeSla": "可用性 SLA",
-        "alwaysOn": "全天候服务"
+        "uptimeSla": "高可用",
+        "alwaysOn": "不间断"
       }
     },
     "features": {
-      "title": "核心特性",
-      "subtitle": "为拥有优质线路、IX 对等和高质量路由的运营商打造",
+      "title": "强大功能",
+      "subtitle": "每一项，都为效率而生",
       "dashboard": {
-        "title": "一体化控制台",
-        "description": "节点、转发规则和订阅——在一个界面中统一管理。"
+        "title": "全局掌控",
+        "description": "节点、用户、收入，一个界面，尽收眼底。"
       },
       "forwarding": {
-        "title": "多样化转发",
-        "description": "多种协议支持和灵活的链式转发，适应各种网络场景。"
+        "title": "随心转发",
+        "description": "直连、链式、多跳，场景不同，方案随变。"
       },
       "resourceGroups": {
-        "title": "模块化资源组",
-        "description": "将资源与套餐解耦，实现细粒度的访问控制和配额分配。"
+        "title": "灵活编组",
+        "description": "资源自由组合，套餐随意搭配。"
       },
       "subscriptions": {
-        "title": "可扩展订阅",
-        "description": "从个人使用到团队共享——订阅模式随需求成长。"
+        "title": "订阅无忧",
+        "description": "创建、统计、提醒，全程自动。"
       },
       "relay": {
-        "title": "中转优先设计",
-        "description": "专为中转和共享打造，最大化您的优质线路投资回报。"
+        "title": "快人一步",
+        "description": "智能路由，让连接更快更稳。"
       }
     },
     "howItWorks": {
-      "title": "工作原理",
-      "subtitle": "从配置到用户接入，只需四个简单步骤",
+      "title": "即刻开始",
+      "subtitle": "四步，从零到上线",
       "step1": {
         "number": "01",
         "title": "添加节点",
-        "description": "导入您的优质节点——支持多种协议和部署方式。"
+        "description": "导入服务器，主流协议全支持。"
       },
       "step2": {
         "number": "02",
-        "title": "定义转发规则",
-        "description": "设置路由策略和链式转发，优化网络流量走向。"
+        "title": "配置转发",
+        "description": "设定规则，系统智能优化路径。"
       },
       "step3": {
         "number": "03",
-        "title": "创建订阅套餐",
-        "description": "将资源组打包成套餐，设置自定义配额和访问级别。"
+        "title": "创建套餐",
+        "description": "定价、流量、时长，一键打包。"
       },
       "step4": {
         "number": "04",
-        "title": "分享并上线",
-        "description": "用户通过链接订阅并即时连接——无需客户端配置。"
+        "title": "分享上线",
+        "description": "生成链接，用户即订即用。"
       }
     },
     "cta": {
-      "title": "准备好简化您的工作流程了吗？",
-      "subtitle": "加入 Orris，在一个平台上管理您的整个转发和订阅系统",
+      "title": "就是现在",
+      "subtitle": "开启更简单的管理方式",
       "getStartedFree": "免费开始",
-      "alreadyMember": "已经是会员？立即登录"
+      "alreadyMember": "已有账户？登录"
     },
     "footer": {
-      "copyright": "© {{year}} Orris. 保留所有权利。"
+      "copyright": "© {{year}} Orris"
     }
   },
   "pricing": {
     "title": "选择套餐",
     "subtitle": "灵活的定价方案，满足不同需求",
     "publicTitle": "简洁透明的定价",
-    "publicSubtitle": "无论您的业务规模如何，我们都能为您提供合适的方案。",
+    "publicSubtitle": "不论规模大小，总有适合的方案。",
     "noPlans": "暂无可用套餐。",
     "contactUs": "联系我们",
     "getStarted": "立即开始",
-    "footerNote": "所有计划均支持随时升级或降级，如有疑问请联系客服。",
+    "footerNote": "支持随时升降级，有疑问联系客服。",
     "hero": {
       "available": "共 {{count}} 个套餐可供选择",
       "noPlans": "暂无可用套餐"
@@ -3050,7 +2732,7 @@
     "features": {
       "instant": {
         "title": "即时激活",
-        "desc": "订阅后即可立即使用"
+        "desc": "订阅即可使用"
       },
       "flexible": {
         "title": "灵活计划",
@@ -3068,8 +2750,8 @@
       "nodes": "{{count}} 个节点",
       "apiRate": "每分钟 {{count}} 次 API 请求",
       "trialDays": "{{count}} 天免费试用",
-      "featuredDesc": "非常适合成长中的团队和企业。",
-      "defaultDesc": "包含入门所需的一切。"
+      "featuredDesc": "适合成长中的团队。",
+      "defaultDesc": "入门必备。"
     },
     "quickActions": {
       "viewSubscriptions": "查看订阅",
@@ -3088,7 +2770,6 @@
       "projects": "{{count}} 个项目",
       "nodes": "{{count}} 个节点",
       "apiRate": "{{count}} 次/分钟 API",
-      "recommended": "推荐",
       "priceTbd": "价格待定",
       "freeTrial": "免费试用 {{days}} 天",
       "selectPlan": "选择计划"
@@ -3106,7 +2787,7 @@
       "maxUsersDesc": "团队成员数量上限",
       "maxProjects": "最多 {{count}} 个项目",
       "maxProjectsDesc": "可创建的项目数量",
-      "note": "订阅后可随时取消或更换套餐。如有疑问，请联系客服。",
+      "note": "可随时取消或更换套餐，有疑问联系客服。",
       "startTrial": "开始免费试用",
       "subscribeNow": "立即订阅"
     }
@@ -3120,7 +2801,7 @@
     },
     "avatar": {
       "title": "个人头像",
-      "description": "点击上传新头像，支持 JPG、PNG 和 WebP 格式，文件大小不超过 2MB",
+      "description": "点击上传，支持 JPG/PNG/WebP，最大 2MB",
       "fileSizeError": "文件大小超过 2MB 限制",
       "fileTypeError": "仅支持 JPG、PNG 和 WebP 格式",
       "changeAvatar": "更换头像",
@@ -3129,15 +2810,14 @@
     },
     "avatarCrop": {
       "title": "裁剪头像",
-      "description": "拖动调整裁剪区域，使用滑块缩放图片",
+      "description": "拖动调整区域，滑块缩放",
       "zoom": "缩放"
     },
     "basicInfo": {
-      "title": "基本信息",
       "username": "用户名",
-      "usernameHint": "这是您的公开显示名称",
+      "usernameHint": "公开显示名称",
       "email": "邮箱",
-      "emailHint": "用于登录和接收通知",
+      "emailHint": "用于登录和通知",
       "accountStatus": "账户状态",
       "emailChangeReminder": "修改邮箱地址需要重新验证",
       "saveChanges": "保存更改"
@@ -3154,23 +2834,23 @@
         "strong": "强"
       },
       "logoutAllDevices": "登出所有设备",
-      "logoutAllDevicesDesc": "登出所有设备将使所有活动会话失效",
+      "logoutAllDevicesDesc": "使所有活动会话失效",
       "securityTip": "安全提醒",
-      "securityTipDesc": "请勿与任何人分享您的密码。为每个账户使用唯一的密码。",
+      "securityTipDesc": "请勿分享密码，为每个账户使用唯一密码",
       "submit": "修改密码"
     },
     "security": {
       "changePasswordTitle": "修改密码",
-      "changePasswordDesc": "定期更改密码有助于保护您的账户安全",
+      "changePasswordDesc": "定期更改密码保护账户安全",
       "passkey": {
         "title": "通行密钥",
-        "desc": "使用指纹、面容或屏幕锁定快速安全地登录",
+        "desc": "使用指纹、面容或屏幕锁定登录",
         "add": "添加通行密钥",
         "addTitle": "添加通行密钥",
-        "addDesc": "使用设备内置的验证器注册新的通行密钥",
+        "addDesc": "使用设备验证器注册",
         "deviceName": "通行密钥名称",
         "deviceNamePlaceholder": "例如：MacBook Pro",
-        "deviceNameHint": "为通行密钥取一个名称，方便日后识别（可选）",
+        "deviceNameHint": "方便日后识别",
         "registering": "正在注册...",
         "empty": "尚未注册通行密钥",
         "addedOn": "添加于 {{date}}",
@@ -3181,15 +2861,14 @@
         "transportBle": "蓝牙",
         "transportHybrid": "跨设备",
         "transportNfc": "NFC",
-        "transportUnknown": "未知",
         "deleteConfirmTitle": "删除通行密钥",
-        "deleteConfirmDesc": "确定要删除「{{name}}」吗？删除后将无法使用此通行密钥登录。",
+        "deleteConfirmDesc": "确定删除「{{name}}」？删除后无法使用此密钥登录",
         "notSupportedTitle": "浏览器不支持",
-        "notSupportedDesc": "您的浏览器不支持通行密钥，请使用 Chrome、Safari、Edge 或 Firefox 等现代浏览器。",
+        "notSupportedDesc": "请使用 Chrome、Safari、Edge 或 Firefox",
         "errors": {
-          "notSupported": "您的浏览器不支持通行密钥",
+          "notSupported": "浏览器不支持通行密钥",
           "notAllowed": "注册已取消或超时",
-          "securityError": "安全要求未满足，请确保使用 HTTPS",
+          "securityError": "安全要求未满足，需使用 HTTPS",
           "aborted": "注册已取消",
           "alreadyRegistered": "此验证器已注册",
           "unknown": "发生意外错误，请重试",
@@ -3214,58 +2893,55 @@
     },
     "notifications": {
       "title": "通知设置",
-      "description": "管理您接收通知的方式",
+      "description": "通知偏好",
       "emailNotifications": "邮件通知",
-      "emailNotificationsDesc": "选择您希望通过邮件接收的通知类型",
+      "emailNotificationsDesc": "通知类型",
       "marketingEmails": "营销邮件",
-      "marketingEmailsDesc": "接收产品更新和优惠信息",
+      "marketingEmailsDesc": "更新与优惠",
       "securityAlerts": "安全提醒",
-      "securityAlertsDesc": "账户安全相关的重要通知",
+      "securityAlertsDesc": "账户安全通知",
       "productUpdates": "产品更新",
-      "productUpdatesDesc": "新功能和改进通知",
+      "productUpdatesDesc": "新功能通知",
       "pushNotifications": "推送通知",
-      "pushNotificationsDesc": "浏览器推送通知",
-      "comingSoon": "推送通知功能即将上线"
+      "pushNotificationsDesc": "浏览器推送",
+      "comingSoon": "即将上线"
     },
     "appearance": {
       "title": "外观设置",
-      "description": "自定义应用的显示方式",
+      "description": "显示偏好",
       "theme": "主题",
-      "themeDesc": "选择您喜欢的主题模式",
+      "themeDesc": "主题模式",
       "themeLight": "浅色",
       "themeDark": "深色",
       "themeSystem": "跟随系统",
-      "language": "语言",
-      "languageDesc": "选择应用显示语言"
+      "languageDesc": "显示语言"
     },
     "system": {
       "infoTitle": "系统信息",
-      "infoDesc": "查看当前系统版本和运行状态",
+      "infoDesc": "版本与运行状态",
       "serverVersion": "服务端版本",
-      "serverVersionDesc": "后端 API 服务版本",
+      "serverVersionDesc": "后端 API 版本",
       "clientVersion": "客户端版本",
       "clientVersionDesc": "前端应用版本",
       "cacheTitle": "缓存管理",
-      "cacheDesc": "管理本地存储和缓存数据",
+      "cacheDesc": "本地缓存",
       "clearCache": "清除缓存",
-      "clearCacheDesc": "清除本地存储的缓存数据",
-      "clearCacheButton": "清除",
+      "clearCacheDesc": "清除本地缓存",
       "advancedTitle": "高级设置",
-      "advancedDesc": "系统高级配置选项",
-      "comingSoon": "更多高级设置即将上线"
+      "advancedDesc": "高级配置",
+      "comingSoon": "即将上线"
     },
     "tip": "提示：修改邮箱地址需要重新验证。如需更改密码，请访问账户设置页面。"
   },
   "notifications": {
     "title": "通知设置",
-    "subtitle": "管理您的通知偏好和 Telegram 绑定",
+    "subtitle": "通知偏好与 Telegram 绑定",
     "hero": {
       "bound": "启用 {{count}} 种通知类型",
       "unbound": "绑定 Telegram 以接收通知",
       "notConfigured": "通知服务未配置"
     },
     "stats": {
-      "active": "启用",
       "channels": "通知渠道",
       "channelUnit": "个"
     },
@@ -3276,10 +2952,10 @@
       "title": "通知渠道"
     },
     "quickActions": {
-      "viewDashboard": "查看仪表盘",
-      "viewDashboardDesc": "查看订阅使用情况和状态",
+      "viewDashboard": "仪表盘",
+      "viewDashboardDesc": "订阅用量与状态",
       "viewSettings": "账户设置",
-      "viewSettingsDesc": "管理您的账户偏好设置"
+      "viewSettingsDesc": "账户偏好"
     },
     "telegram": {
       "label": "Telegram",
@@ -3309,8 +2985,6 @@
       "bound": "已绑定",
       "unbound": "未绑定",
       "notConfigured": "未配置",
-      "enabled": "启用",
-      "disabled": "禁用",
       "items": "{{count}} 项通知"
     },
     "expiring": {
@@ -3396,10 +3070,10 @@
   },
   "userNodes": {
     "title": "我的节点",
-    "subtitle": "管理您的代理节点",
+    "subtitle": "管理代理节点",
     "noSubscription": {
       "title": "暂无可用的转发服务",
-      "description": "您当前没有包含端口转发功能的订阅计划。购买订阅后即可使用端口转发服务。",
+      "description": "购买订阅后即可使用端口转发",
       "viewPlans": "查看订阅计划"
     },
     "totalNodes": "共 {{count}} 个节点",
@@ -3408,29 +3082,25 @@
     "myNodes": "我的节点",
     "stats": {
       "quota": "节点配额",
-      "online": "在线",
-      "offline": "离线",
       "nodes": "个",
       "summary": "共 {{total}} 个节点，{{online}} 个在线",
       "noNodes": "创建第一个节点开始使用"
     },
     "quickActions": {
       "viewAgents": "查看转发代理",
-      "viewAgentsDesc": "查看可用于节点的转发代理",
+      "viewAgentsDesc": "查看可用转发代理",
       "upgradePlan": "升级套餐",
-      "upgradePlanDesc": "提升节点配额，解锁更多功能"
+      "upgradePlanDesc": "提升配额，解锁更多功能"
     },
     "installScript": {
       "title": "安装命令",
-      "description": "安装命令，在目标服务器上执行即可完成部署",
-      "descriptionWithNode": "节点「{{name}}」的安装命令，在目标服务器上执行即可完成部署",
+      "description": "在目标服务器执行以下命令",
+      "descriptionWithNode": "在服务器执行以下命令安装「{{name}}」",
       "noData": "暂无安装脚本数据",
       "installCommand": "安装命令",
-      "recommended": "推荐",
-      "installHint": "在目标服务器上以 root 权限执行此命令，将自动下载并安装节点",
+      "installHint": "以 root 权限运行",
       "uninstallCommand": "卸载命令",
       "scriptUrl": "脚本地址",
-      "open": "打开",
       "viewDetails": "查看详细信息",
       "clickToExpand": "点击展开",
       "clickToCollapse": "点击收起",
@@ -3439,13 +3109,11 @@
     },
     "create": {
       "title": "创建节点",
-      "description": "填写以下信息创建新节点。创建成功后将显示节点 Token，请妥善保管。",
-      "basicInfo": "基本信息",
+      "description": "创建成功后将显示 Token，请妥善保管",
       "nodeName": "节点名称",
       "serverAddress": "服务器地址",
       "agentPort": "Agent 端口",
       "subscriptionPort": "订阅端口",
-      "protocol": "协议类型",
       "transportProtocol": "传输协议",
       "tlsSni": "TLS SNI",
       "tlsFingerprint": "TLS 指纹",
@@ -3455,7 +3123,6 @@
       "allowInsecure": "允许不安全的 TLS 连接",
       "congestionControl": "拥塞控制",
       "notSpecified": "不指定",
-      "creating": "创建中...",
       "placeholders": {
         "nodeName": "例如：香港节点-01",
         "serverAddress": "留空则自动检测",
@@ -3469,10 +3136,9 @@
         "obfsPassword": "混淆密码"
       },
       "hints": {
-        "serverAddress": "可选，留空将从 Agent 公网 IP 自动检测",
+        "serverAddress": "留空自动检测",
         "pluginOpts": "格式：key1=value1;key2=value2 或 JSON",
         "vlessFlow": "可选，用于 XTLS 流控",
-        "optional": "可选",
         "alterId": "通常为 0",
         "recommendBbr": "推荐使用 BBR",
         "obfsType": "可选，混淆类型",
@@ -3522,18 +3188,12 @@
     },
     "detail": {
       "title": "节点详情",
-      "basicInfo": "基本信息",
       "nodeName": "节点名称：",
       "serverAddress": "服务器地址：",
       "agentPort": "Agent 端口：",
       "subscriptionPort": "订阅端口：",
       "protocol": "协议：",
       "status": "状态：",
-      "statusLabels": {
-        "active": "活跃",
-        "inactive": "停用",
-        "maintenance": "维护中"
-      },
       "onlineStatus": "在线状态",
       "currentStatus": "当前状态：",
       "lastOnline": "最后在线：",
@@ -3552,13 +3212,9 @@
       "encryptionType": "加密方式：",
       "alterId": "Alter ID：",
       "tls": "TLS：",
-      "tlsEnabled": "启用",
-      "tlsDisabled": "禁用",
       "congestionControl": "拥塞控制：",
       "obfsType": "Obfs 类型：",
       "bandwidthLimit": "带宽限制：",
-      "upload": "上行",
-      "download": "下行",
       "udpRelayMode": "UDP 中继模式：",
       "alpn": "ALPN：",
       "disableSni": "禁用 SNI：",
@@ -3570,9 +3226,6 @@
       "title": "编辑节点",
       "description": "修改节点配置。部分字段在创建后无法更改。",
       "readOnlyInfo": "只读信息",
-      "editableInfo": "可编辑信息",
-      "protocol": "协议",
-      "status": "状态",
       "encryptionMethod": "加密方法",
       "transportProtocol": "传输协议",
       "nodeName": "节点名称",
@@ -3582,7 +3235,6 @@
       "agentPort": "Agent 端口",
       "subscriptionPort": "订阅端口",
       "subscriptionPortPlaceholder": "留空则使用 Agent 端口",
-      "saving": "保存中...",
       "validation": {
         "nameRequired": "请输入节点名称",
         "validPort": "请输入有效的端口号"
@@ -3591,16 +3243,14 @@
   },
   "userForwardRules": {
     "pageTitle": "转发规则",
-    "pageDescription": "管理您的端口转发规则",
+    "pageDescription": "管理端口转发规则",
     "totalRules": "共 {{count}} 条规则",
     "addRuleShort": "添加",
     "columns": {
       "ruleName": "规则名",
       "entry": "入口",
       "exit": "出口",
-      "usedTraffic": "已用流量",
-      "status": "状态",
-      "actions": "操作"
+      "usedTraffic": "已用流量"
     },
     "tooltip": {
       "viaForwardAgent": "经由转发 Agent",
@@ -3612,7 +3262,6 @@
       "nodesCount": "{{count}} 个节点"
     },
     "menu": {
-      "edit": "编辑",
       "enableRule": "启用规则",
       "disableRule": "禁用规则",
       "deleteRule": "删除规则"
@@ -3622,8 +3271,6 @@
       "download": "下载:"
     },
     "status": {
-      "enabled": "启用",
-      "disabled": "禁用",
       "clickToDisable": "点击禁用",
       "clickToEnable": "点击启用"
     },
@@ -3638,7 +3285,7 @@
     },
     "limitReached": {
       "title": "规则数量已达上限",
-      "description": "您的订阅套餐最多允许创建 {{count}} 条转发规则。"
+      "description": "订阅套餐最多 {{count}} 条转发规则"
     },
     "noSubscription": {
       "title": "暂无有效订阅",
@@ -3648,9 +3295,8 @@
     "form": {
       "basicInfo": "基本信息",
       "ruleName": "规则名称",
-      "ruleNamePlaceholder": "为您的规则起个名字",
+      "ruleNamePlaceholder": "输入规则名称",
       "forwardAgent": "转发 Agent",
-      "loading": "加载中...",
       "selectAgent": "选择 Agent",
       "noAgentsAvailable": "暂无可用 Agent",
       "ruleType": "规则类型",
@@ -3658,14 +3304,11 @@
       "selectExitNode": "选择出口节点",
       "relayNode": "中继节点",
       "relayNodeWithPort": "中继节点（含端口）",
-      "remark": "备注",
-      "remarkPlaceholder": "添加备注信息（可选）",
+      "remarkPlaceholder": "备注信息",
       "forwardConfig": "转发配置",
       "listenPort": "监听端口",
-      "listenPortPlaceholder": "留空则自动分配",
-      "listenPortPlaceholderShort": "自动",
-      "listenPortHint": "留空则由系统自动分配",
-      "protocol": "协议",
+      "listenPortPlaceholder": "留空自动分配",
+      "listenPortHint": "留空自动分配",
       "targetType": "目标类型",
       "manualAddress": "手动输入地址",
       "selectNodeDynamic": "选择节点（动态解析）",
@@ -3674,26 +3317,19 @@
       "targetPort": "目标端口",
       "targetNode": "目标节点",
       "selectTargetNode": "选择目标节点",
-      "targetNodeHint": "目标地址将从所选节点动态解析",
+      "targetNodeHint": "从所选节点动态解析地址",
       "noNodesAvailable": "暂无可用节点",
       "noNodesEmpty": "暂无节点",
       "ipVersion": "IP 版本",
-      "ipVersionAuto": "自动",
-      "sortOrder": "排序顺序",
-      "sortOrderPlaceholder": "留空则默认为 0",
-      "sortOrderHint": "值越小排序越靠前",
-      "cancel": "取消",
-      "creating": "创建中...",
-      "create": "创建",
+      "sortOrderPlaceholder": "留空默认 0",
+      "sortOrderHint": "值越小越靠前",
       "editRuleTitle": "编辑规则",
-      "saving": "保存中...",
-      "save": "保存",
       "forwardOrderAdjustable": "转发顺序（可拖拽调整）",
       "portPlaceholder": "端口",
       "adjustOrderHint": "，可拖拽调整顺序",
       "selectedNodesCount": "已选 {{count}} 个节点",
       "readonlyInfo": {
-        "title": "不可修改的信息",
+        "title": "只读信息",
         "forwardAgent": "转发 Agent：",
         "ruleType": "规则类型：",
         "listenPort": "监听端口：",
@@ -3724,17 +3360,14 @@
     "protocolConfig": "协议配置",
     "columns": {
       "name": "规则名",
-      "protocol": "协议",
       "serverAddress": "服务器地址",
       "externalSource": "来源",
       "externalRuleId": "外部ID",
-      "node": "节点",
-      "status": "状态",
-      "actions": "操作"
+      "node": "节点"
     },
     "form": {
       "name": "规则名称",
-      "namePlaceholder": "为您的规则起个名字",
+      "namePlaceholder": "输入规则名称",
       "serverAddress": "服务器地址",
       "serverAddressPlaceholder": "例如: example.com 或 192.168.1.1",
       "listenPort": "监听端口",
@@ -3743,11 +3376,9 @@
       "externalSourcePlaceholder": "例如: subscription-provider",
       "externalRuleId": "外部规则ID",
       "externalRuleIdPlaceholder": "来源系统的规则标识（可选）",
-      "remark": "备注",
-      "remarkPlaceholder": "添加备注信息（可选）",
-      "sortOrder": "排序顺序",
-      "sortOrderPlaceholder": "留空则默认为 0",
-      "sortOrderHint": "值越小排序越靠前",
+      "remarkPlaceholder": "备注信息",
+      "sortOrderPlaceholder": "留空默认 0",
+      "sortOrderHint": "值越小越靠前",
       "encryptionMethod": "加密方式",
       "selectEncryptionMethod": "选择加密方式",
       "password": "密码",
@@ -3781,8 +3412,7 @@
       "serverConfig": "服务器配置",
       "protocolConfig": "协议配置",
       "nodeRouting": "节点路由",
-      "nodeRoutingHint": "可选择指定节点进行直接路由，不选择则自动分配。",
-      "creating": "创建中..."
+      "nodeRoutingHint": "可选择指定节点进行直接路由，不选择则自动分配。"
     },
     "editDialog": {
       "title": "编辑外部规则",
@@ -3791,8 +3421,7 @@
       "protocolConfig": "协议配置",
       "nodeRouting": "节点路由",
       "nodeRoutingHint": "修改此规则的节点，不选择则自动分配。",
-      "readOnlyInfo": "不可修改的信息",
-      "saving": "保存中..."
+      "readOnlyInfo": "不可修改的信息"
     },
     "menu": {
       "enableRule": "启用规则",
@@ -3812,24 +3441,17 @@
     "table": {
       "columns": {
         "type": "类型",
-        "name": "名称",
-        "status": "状态",
         "memory": "内存",
         "disk": "磁盘",
         "network": "网络",
         "uptime": "运行时间",
         "publicIp": "公网 IP"
-      },
-      "status": {
-        "online": "在线",
-        "offline": "离线"
-      },
-      "empty": "暂无数据"
+      }
     }
   },
   "errors": {
     "account": {
-      "notActive": "您的账号尚未激活，请查收验证邮件",
+      "notActive": "账号未激活，请查收验证邮件",
       "locked": "账号已被锁定，请联系客服",
       "disabled": "账号已被禁用，请联系客服"
     },
@@ -3870,36 +3492,36 @@
       "insufficient": "权限不足"
     },
     "network": {
-      "error": "网络连接失败，请检查网络设置",
-      "timeout": "请求超时，请重试",
-      "serverError": "服务器错误，请稍后重试",
-      "internalError": "服务器内部错误，请稍后重试",
-      "unavailable": "服务暂不可用，请稍后重试",
-      "badGateway": "网关错误，请稍后重试"
+      "error": "网络连接失败",
+      "timeout": "请求超时",
+      "serverError": "服务器错误",
+      "internalError": "服务器内部错误",
+      "unavailable": "服务暂不可用",
+      "badGateway": "网关错误"
     },
     "request": {
-      "badRequest": "请求参数错误",
-      "invalid": "无效的请求",
-      "validationError": "数据验证失败",
-      "invalidInput": "输入数据无效",
-      "missingFields": "缺少必填字段"
+      "badRequest": "参数错误",
+      "invalid": "无效请求",
+      "validationError": "验证失败",
+      "invalidInput": "输入无效",
+      "missingFields": "缺少必填项"
     },
     "resource": {
       "notFound": "请求的资源不存在",
       "pageNotFound": "页面不存在"
     },
     "general": {
-      "unknown": "操作失败，请稍后重试",
-      "somethingWrong": "出现了一些问题，请稍后重试",
-      "operationFailed": "操作失败，请重试",
-      "default": "操作失败，请稍后重试"
+      "unknown": "操作失败",
+      "somethingWrong": "出现问题",
+      "operationFailed": "操作失败",
+      "default": "操作失败"
     },
     "http": {
       "401": "认证失败，请重新登录",
-      "403": "没有权限访问此资源",
-      "404": "请求的资源不存在",
-      "500": "服务器错误，请稍后重试",
-      "503": "服务暂不可用，请稍后重试"
+      "403": "无权限访问",
+      "404": "资源不存在",
+      "500": "服务器错误",
+      "503": "服务暂不可用"
     }
   },
   "subscriptionPlans": {
@@ -3917,17 +3539,16 @@
     "editPlan": "编辑计划",
     "editPlanDescription": "修改此订阅计划的设置",
     "planId": "计划 ID",
-    "pricingOptionsOptional": "定价选项（可选）",
+    "pricingOptionsOptional": "定价选项",
     "noPricingConfigured": "未配置定价选项",
     "billingCycleExists": "该计费周期已存在",
     "currency": "货币",
     "pricingHint": "建议为付费计划至少配置一个价格大于 0 的定价选项",
     "deletePlan": "删除计划",
-    "deleteConfirmHint": "此操作无法撤销，请谨慎确认。",
+    "deleteConfirmHint": "删除后无法恢复",
     "confirmDeletePlan": "确定要删除此计划吗？",
     "visibility": "可见性",
     "priceRange": "价格范围",
-    "deleting": "删除中...",
     "confirmDelete": "确认删除",
     "confirmDeleteTitle": "确认删除计划",
     "duplicateBillingCycles": "发现重复的计费周期",

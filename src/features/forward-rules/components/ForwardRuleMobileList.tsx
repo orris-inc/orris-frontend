@@ -441,7 +441,7 @@ export const ForwardRuleMobileList: React.FC<ForwardRuleMobileListProps> = ({
     return (
       <div
         className="flex items-center gap-1"
-        title={`${isPolling ? `${t('admin.forwardRules.status.syncing')} / ` : ''}${t('admin.forwardRules.status.syncLabel')}: ${t(syncConfig.labelKey)} / ${t('admin.forwardRules.status.runLabel')}: ${t(runConfig.labelKey)}`}
+        title={`${isPolling ? `${t('common.loading.syncing')} / ` : ''}${t('admin.forwardRules.status.syncLabel')}: ${t(syncConfig.labelKey)} / ${t('admin.forwardRules.status.runLabel')}: ${t(runConfig.labelKey)}`}
       >
         {isPolling && <Loader2 className="size-3 animate-spin text-blue-400" />}
         <SyncIcon className={`size-3.5 ${syncConfig.className}`} />
@@ -660,7 +660,7 @@ export const ForwardRuleMobileList: React.FC<ForwardRuleMobileListProps> = ({
                   <span className="text-[10px] text-muted-foreground uppercase tracking-wide w-6 flex-shrink-0">{t('admin.forwardRules.columns.traffic')}</span>
                   <div
                     className="flex items-center gap-2 flex-1"
-                    title={`${t('admin.forwardRules.traffic.upload')}: ${formatBytesGB(uploadBytes)} / ${t('admin.forwardRules.traffic.download')}: ${formatBytesGB(downloadBytes)} / ${t('admin.forwardRules.traffic.multiplier')}: ${rule.effectiveTrafficMultiplier?.toFixed(2) || '1.00'}x`}
+                    title={`${t('common.actions.upload')}: ${formatBytesGB(uploadBytes)} / ${t('common.actions.download')}: ${formatBytesGB(downloadBytes)} / ${t('admin.forwardRules.traffic.multiplier')}: ${rule.effectiveTrafficMultiplier?.toFixed(2) || '1.00'}x`}
                   >
                     <span className="text-xs font-medium text-foreground tabular-nums">
                       {formatBytesGB(totalBytes)}
@@ -710,7 +710,7 @@ export const ForwardRuleMobileList: React.FC<ForwardRuleMobileListProps> = ({
                 {/* Remark - Inline */}
                 {rule.remark && (
                   <div className="flex items-start gap-2">
-                    <span className="text-[10px] text-slate-400 dark:text-slate-500 uppercase tracking-wide w-6 pt-0.5 flex-shrink-0">{t('admin.forwardAgents.form.remark')}</span>
+                    <span className="text-[10px] text-slate-400 dark:text-slate-500 uppercase tracking-wide w-6 pt-0.5 flex-shrink-0">{t('common.fields.remark')}</span>
                     <span className="text-xs text-slate-600 dark:text-slate-300 flex-1">{rule.remark}</span>
                   </div>
                 )}

@@ -372,7 +372,7 @@ export const CreateUserForwardRuleDialog: React.FC<CreateUserForwardRuleDialogPr
                   disabled={isCreating || isLoadingAgents}
                 >
                   <SelectTrigger id="agentId" className={errors.agentId ? 'border-destructive' : ''}>
-                    <SelectValue placeholder={isLoadingAgents ? t('userForwardRules.form.loading') : t('userForwardRules.form.selectAgent')} />
+                    <SelectValue placeholder={isLoadingAgents ? t('common.table.loading') : t('userForwardRules.form.selectAgent')} />
                   </SelectTrigger>
                   <SelectContent>
                     {forwardAgents
@@ -549,7 +549,7 @@ export const CreateUserForwardRuleDialog: React.FC<CreateUserForwardRuleDialogPr
 
               {/* Remark */}
               <div className="flex flex-col gap-2">
-                <Label htmlFor="remark">{t('userForwardRules.form.remark')}</Label>
+                <Label htmlFor="remark">{t('common.fields.remark')}</Label>
                 <Textarea
                   id="remark"
                   value={formData.remark}
@@ -592,7 +592,7 @@ export const CreateUserForwardRuleDialog: React.FC<CreateUserForwardRuleDialogPr
 
               {/* Protocol type */}
               <div className="flex flex-col gap-2">
-                <Label htmlFor="protocol">{t('userForwardRules.form.protocol')}</Label>
+                <Label htmlFor="protocol">{t('common.protocol')}</Label>
                 <Select
                   value={formData.protocol}
                   onValueChange={(value) => handleChange('protocol', value)}
@@ -700,7 +700,7 @@ export const CreateUserForwardRuleDialog: React.FC<CreateUserForwardRuleDialogPr
                     disabled={isCreating || isLoadingNodes}
                   >
                     <SelectTrigger id="targetNodeId" className={errors.targetNodeId ? 'border-destructive' : ''}>
-                      <SelectValue placeholder={isLoadingNodes ? t('userForwardRules.form.loading') : t('userForwardRules.form.selectTargetNode')} />
+                      <SelectValue placeholder={isLoadingNodes ? t('common.table.loading') : t('userForwardRules.form.selectTargetNode')} />
                     </SelectTrigger>
                     <SelectContent>
                       {availableNodes.map((node) => (
@@ -745,7 +745,7 @@ export const CreateUserForwardRuleDialog: React.FC<CreateUserForwardRuleDialogPr
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="auto">{t('userForwardRules.form.ipVersionAuto')}</SelectItem>
+                    <SelectItem value="auto">{t('common.auto')}</SelectItem>
                     <SelectItem value="ipv4">IPv4</SelectItem>
                     <SelectItem value="ipv6">IPv6</SelectItem>
                   </SelectContent>
@@ -754,7 +754,7 @@ export const CreateUserForwardRuleDialog: React.FC<CreateUserForwardRuleDialogPr
 
               {/* Sort order */}
               <div className="flex flex-col gap-2">
-                <Label htmlFor="sortOrder">{t('userForwardRules.form.sortOrder')}</Label>
+                <Label htmlFor="sortOrder">{t('common.fields.sortOrder')}</Label>
                 <Input
                   id="sortOrder"
                   type="number"
@@ -775,10 +775,10 @@ export const CreateUserForwardRuleDialog: React.FC<CreateUserForwardRuleDialogPr
 
         <DialogFooter className="flex-shrink-0 gap-3">
           <Button variant="outline" onClick={handleClose} disabled={isCreating}>
-            {t('userForwardRules.form.cancel')}
+            {t('common.actions.cancel')}
           </Button>
           <Button onClick={handleSubmit} disabled={!isFormValid() || isCreating}>
-            {isCreating ? t('userForwardRules.form.creating') : t('userForwardRules.form.create')}
+            {isCreating ? t('common.loading.creating') : t('common.actions.create')}
           </Button>
         </DialogFooter>
       </DialogContent>

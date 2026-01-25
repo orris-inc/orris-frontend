@@ -204,7 +204,7 @@ export const UserDetailSheet = ({
               />
               <DetailRow
                 icon={<UserCheck className="size-4" />}
-                label={t('user.detail.status')}
+                label={t('common.status.label')}
                 value={
                   <AdminBadge variant={statusConfig.variant} className="text-xs">
                     {t(statusConfig.labelKey)}
@@ -250,7 +250,7 @@ export const UserDetailSheet = ({
                 )}
               >
                 <Edit className="size-4" />
-                {t('user.detail.edit')}
+                {t('common.actions.edit')}
               </button>
               <button
                 type="button"
@@ -291,7 +291,7 @@ export const UserDetailSheet = ({
         open={actionSheetOpen}
         onOpenChange={setActionSheetOpen}
         actions={moreActions}
-        title={t('user.detail.moreActions')}
+        title={t('common.moreActions')}
       />
     </>
   );

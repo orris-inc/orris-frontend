@@ -217,17 +217,17 @@ export const NodeMobileList: React.FC<NodeMobileListProps> = ({
             {node.status === 'active' ? (
               <DropdownMenuItem onClick={() => onDeactivate(node)}>
                 <PowerOff className="mr-2 size-4" />
-                {t('admin.nodes.table.menu.deactivate')}
+                {t('common.actions.deactivate')}
               </DropdownMenuItem>
             ) : (
               <DropdownMenuItem onClick={() => onActivate(node)}>
                 <Power className="mr-2 size-4" />
-                {t('admin.nodes.table.menu.activate')}
+                {t('common.actions.activate')}
               </DropdownMenuItem>
             )}
             <DropdownMenuItem onClick={() => onDelete(node)} className="text-red-600 dark:text-red-400">
               <Trash2 className="mr-2 size-4" />
-              {t('admin.nodes.table.menu.delete')}
+              {t('common.actions.delete')}
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenuPortal>
@@ -456,7 +456,7 @@ export const NodeMobileList: React.FC<NodeMobileListProps> = ({
                 {/* Version */}
                 {(node.agentVersion || node.systemStatus?.agentVersion) && (
                   <div className="flex items-center gap-2">
-                    <span className="text-[10px] text-muted-foreground uppercase tracking-wide w-8 flex-shrink-0">{t('admin.forwardAgents.table.columns.version')}</span>
+                    <span className="text-[10px] text-muted-foreground uppercase tracking-wide w-8 flex-shrink-0">{t('common.fields.version')}</span>
                     <div className="flex items-center gap-1.5">
                       {node.hasUpdate && (
                         <ArrowUpCircle className="size-3.5 text-warning" strokeWidth={1.5} />
@@ -509,7 +509,7 @@ export const NodeMobileList: React.FC<NodeMobileListProps> = ({
 
                 {/* Owner */}
                 <div className="flex items-center gap-2">
-                  <span className="text-[10px] text-muted-foreground uppercase tracking-wide w-8 flex-shrink-0">{t('admin.forwardAgents.table.columns.createdAt')}</span>
+                  <span className="text-[10px] text-muted-foreground uppercase tracking-wide w-8 flex-shrink-0">{t('common.fields.createdAt')}</span>
                   {node.owner ? (
                     <div className="flex items-center gap-1 text-xs text-muted-foreground">
                       <User className="size-3 text-muted-foreground/60" strokeWidth={1.5} />

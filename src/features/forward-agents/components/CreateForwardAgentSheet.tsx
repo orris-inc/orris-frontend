@@ -269,7 +269,7 @@ export const CreateForwardAgentSheet: React.FC<CreateForwardAgentSheetProps> =
           <SheetBody className="space-y-4 py-4">
             {/* ===== Section 1: Basic Info ===== */}
             <SectionDivider
-              label={t("admin.forwardAgents.edit.sections.basicInfo")}
+              label={t("common.sections.basicInfo")}
             />
 
             <FormField
@@ -286,7 +286,7 @@ export const CreateForwardAgentSheet: React.FC<CreateForwardAgentSheetProps> =
 
             {/* ===== Section 2: Network Configuration ===== */}
             <SectionDivider
-              label={t("admin.forwardAgents.create.sections.network")}
+              label={t("common.sections.networkConfig")}
             />
 
             <div className="grid grid-cols-2 gap-3">
@@ -333,7 +333,7 @@ export const CreateForwardAgentSheet: React.FC<CreateForwardAgentSheetProps> =
 
             {/* ===== Section 3: Advanced Options (Collapsible) ===== */}
             <CollapsibleTrigger
-              label={t("admin.forwardAgents.create.sections.advanced")}
+              label={t("common.sections.advancedOptions")}
               isOpen={showAdvanced}
               onClick={() => setShowAdvanced(!showAdvanced)}
             />
@@ -341,7 +341,7 @@ export const CreateForwardAgentSheet: React.FC<CreateForwardAgentSheetProps> =
             {showAdvanced && (
               <div className="space-y-4 pt-1">
                 <FormField
-                  label={t("admin.forwardAgents.form.sortOrder")}
+                  label={t("common.fields.sortOrder")}
                   hint={t("admin.forwardAgents.form.sortOrderHint")}
                 >
                   <MobileFormInput
@@ -409,7 +409,7 @@ export const CreateForwardAgentSheet: React.FC<CreateForwardAgentSheetProps> =
                 </FormField>
 
                 {/* Remark */}
-                <FormField label={t("admin.forwardAgents.form.remark")}>
+                <FormField label={t("common.fields.remark")}>
                   <MobileFormInput
                     placeholder={t(
                       "admin.forwardAgents.form.remarkPlaceholder"
@@ -440,10 +440,10 @@ export const CreateForwardAgentSheet: React.FC<CreateForwardAgentSheetProps> =
                 {loading ? (
                   <>
                     <Loader2 className="size-4 mr-2 animate-spin" />
-                    {t("admin.forwardAgents.form.creating")}
+                    {t("common.loading.creating")}
                   </>
                 ) : (
-                  t("admin.forwardAgents.form.create")
+                  t("common.actions.create")
                 )}
               </Button>
             </div>

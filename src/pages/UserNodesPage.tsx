@@ -286,7 +286,7 @@ export const UserNodesPage = () => {
               {/* Online Nodes */}
               <BentoStatCard
                 icon={Wifi}
-                label={t('userNodes.stats.online')}
+                label={t('common.status.online')}
                 value={isPageLoading ? '-' : nodeStats.online}
                 unit={t('userNodes.stats.nodes')}
                 variant="success"
@@ -295,7 +295,7 @@ export const UserNodesPage = () => {
               {/* Offline Nodes */}
               <BentoStatCard
                 icon={WifiOff}
-                label={t('userNodes.stats.offline')}
+                label={t('common.status.offline')}
                 value={isPageLoading ? '-' : nodeStats.offline}
                 unit={t('userNodes.stats.nodes')}
                 variant="muted"

@@ -1325,7 +1325,7 @@ export const CreateNodeSheet: React.FC<CreateNodeSheetProps> = ({
                         </div>
                       </div>
                       <div className="space-y-1.5">
-                        <FormFieldLabel label={t('admin.nodes.form.fields.spiderX')} hint={t('admin.nodes.form.optional')} />
+                        <FormFieldLabel label={t('admin.nodes.form.fields.spiderX')} hint={t('common.optional')} />
                         <MobileFormInput
                           placeholder="/"
                           value={formData.vlessRealitySpiderX || ''}
@@ -1458,7 +1458,7 @@ export const CreateNodeSheet: React.FC<CreateNodeSheetProps> = ({
                     <div className="space-y-1.5">
                       <FormFieldLabel label={t('admin.nodes.form.obfsPassword')} />
                       <MobileFormInput
-                        placeholder={t('admin.nodes.form.passwordPlaceholder')}
+                        placeholder={t('common.placeholders.password')}
                         value={formData.hysteria2ObfsPassword || ''}
                         onChange={(value) => handleChange('hysteria2ObfsPassword', value)}
                         className="font-mono"
@@ -1579,7 +1579,7 @@ export const CreateNodeSheet: React.FC<CreateNodeSheetProps> = ({
 
               <div className="grid grid-cols-2 gap-3">
                 <div className="space-y-1.5">
-                  <FormFieldLabel label={t('admin.nodes.form.sortOrder')} hint={t('admin.nodes.form.sortOrderHint')} />
+                  <FormFieldLabel label={t('common.fields.sortOrder')} hint={t('admin.nodes.form.sortOrderHint')} />
                   <MobileFormInput
                     type="number"
                     inputMode="numeric"
@@ -1665,7 +1665,7 @@ export const CreateNodeSheet: React.FC<CreateNodeSheetProps> = ({
               {loading ? (
                 <>
                   <Loader2 className="size-4 animate-spin" />
-                  {t('admin.nodes.form.creating')}
+                  {t('common.loading.creating')}
                 </>
               ) : (
                 initialData ? t('admin.nodes.form.createCopy') : t('admin.nodes.form.createNode')

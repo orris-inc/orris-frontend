@@ -161,7 +161,7 @@ export const NodeListTable: React.FC<NodeListTableProps> = ({
       </ContextMenuItem>
       <ContextMenuItem onClick={() => onEdit(node)}>
         <Edit className="mr-2 size-4" />
-        {t('admin.nodes.actions.edit')}
+        {t('common.actions.edit')}
       </ContextMenuItem>
       <ContextMenuItem onClick={() => onGetInstallScript(node)}>
         <Terminal className="mr-2 size-4" />
@@ -298,7 +298,7 @@ export const NodeListTable: React.FC<NodeListTableProps> = ({
     },
     {
       id: 'health',
-      header: t('admin.nodes.table.status'),
+      header: t('common.status.label'),
       size: 100,
       meta: { priority: 1 } as ResponsiveColumnMeta,
       cell: ({ row }) => {
@@ -420,7 +420,7 @@ export const NodeListTable: React.FC<NodeListTableProps> = ({
     },
     {
       id: 'version',
-      header: t('admin.nodes.table.version'),
+      header: t('common.fields.version'),
       size: 90,
       meta: { priority: 3 } as ResponsiveColumnMeta,
       cell: ({ row }) => {
@@ -435,7 +435,7 @@ export const NodeListTable: React.FC<NodeListTableProps> = ({
         }
 
         const versionItems = [
-          { label: t('admin.nodes.tooltip.versionInfo'), value: `v${version}` },
+          { label: t('common.fields.version'), value: `v${version}` },
           ...(platform && arch ? [{ label: t('admin.nodes.table.platform'), value: `${platform}/${arch}` }] : []),
         ];
 
@@ -509,7 +509,7 @@ export const NodeListTable: React.FC<NodeListTableProps> = ({
         const node = row.original;
         if (node.owner) {
           const ownerItems = [
-            ...(node.owner.name ? [{ label: t('admin.users.table.name'), value: node.owner.name }] : []),
+            ...(node.owner.name ? [{ label: t('common.fields.name'), value: node.owner.name }] : []),
             { label: t('admin.users.table.email'), value: node.owner.email },
           ];
           return (
@@ -533,14 +533,14 @@ export const NodeListTable: React.FC<NodeListTableProps> = ({
     },
     {
       accessorKey: 'createdAt',
-      header: t('admin.nodes.table.createdAt'),
+      header: t('common.fields.createdAt'),
       size: 115,
       meta: { priority: 4 } as ResponsiveColumnMeta, // Optional column >= 1280px
       cell: ({ row }) => <DateTimeCell value={row.original.createdAt} />,
     },
     {
       id: 'actions',
-      header: t('admin.nodes.table.actions'),
+      header: t('common.table.actions'),
       size: 160,
       meta: { priority: 1, sticky: 'right' } as ResponsiveColumnMeta, // Core column, always visible, sticky right
       enableSorting: false,
@@ -563,7 +563,7 @@ export const NodeListTable: React.FC<NodeListTableProps> = ({
                   <Edit className="size-4" strokeWidth={1.5} />
                 </button>
               </TooltipTrigger>
-              <TooltipContent>{t('admin.nodes.actions.edit')}</TooltipContent>
+              <TooltipContent>{t('common.actions.edit')}</TooltipContent>
             </Tooltip>
             <Tooltip>
               <TooltipTrigger asChild>

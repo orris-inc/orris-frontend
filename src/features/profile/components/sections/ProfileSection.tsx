@@ -37,7 +37,7 @@ export const ProfileSection = () => {
       {/* Basic info form section */}
       <div className="flex flex-col space-y-1.5 p-5 sm:p-6 border-b">
         <h3 className={`${cardTitleStyles} text-lg`}>
-          {t('profile.basicInfo.title')}
+          {t('common.sections.basicInfo')}
         </h3>
       </div>
       <div className="p-5 sm:p-6">

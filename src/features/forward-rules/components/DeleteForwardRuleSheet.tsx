@@ -90,7 +90,7 @@ export const DeleteForwardRuleSheet: React.FC<DeleteForwardRuleSheetProps> = ({
             <div className="flex items-start gap-3">
               <AlertTriangle className="size-5 text-destructive flex-shrink-0 mt-0.5" />
               <div className="space-y-1">
-                <p className="font-medium text-destructive">{t('admin.forwardRules.sheet.deleteWarningTitle')}</p>
+                <p className="font-medium text-destructive">{t('common.status.warning')}</p>
                 <p className="text-sm text-muted-foreground">
                   {t('admin.forwardRules.sheet.deleteWarningDesc')}
                 </p>
@@ -107,7 +107,7 @@ export const DeleteForwardRuleSheet: React.FC<DeleteForwardRuleSheetProps> = ({
                 <div className="flex-1 min-w-0">
                   <p className="font-medium truncate">{rule.name}</p>
                   <p className="text-xs text-muted-foreground font-mono">
-                    {rule.listenPort ? `:${rule.listenPort}` : t('admin.forwardRules.sheet.autoAssign')} → {rule.targetAddress || rule.targetNodeId}:{rule.targetPort}
+                    {rule.listenPort ? `:${rule.listenPort}` : t('common.auto')} → {rule.targetAddress || rule.targetNodeId}:{rule.targetPort}
                   </p>
                 </div>
               </div>
@@ -136,7 +136,7 @@ export const DeleteForwardRuleSheet: React.FC<DeleteForwardRuleSheetProps> = ({
                 {rule.runStatus === 'running' && (
                   <Badge variant="default" className="text-xs">
                     <Activity className="size-3 mr-1" />
-                    {t('admin.forwardRules.runStatus.running')}
+                    {t('common.status.running')}
                   </Badge>
                 )}
               </div>
@@ -171,7 +171,7 @@ export const DeleteForwardRuleSheet: React.FC<DeleteForwardRuleSheetProps> = ({
             {loading ? (
               <>
                 <Loader2 className="mr-2 size-5 animate-spin" />
-                {t('admin.forwardRules.sheet.deleting')}
+                {t('common.loading.deleting')}
               </>
             ) : (
               t('admin.forwardRules.sheet.confirmDeleteButton')
@@ -183,7 +183,7 @@ export const DeleteForwardRuleSheet: React.FC<DeleteForwardRuleSheetProps> = ({
             disabled={loading}
             className="w-full min-h-[44px]"
           >
-            {t('admin.forwardRules.sheet.cancel')}
+            {t('common.actions.cancel')}
           </Button>
         </SheetFooter>
       </SheetContent>

@@ -49,7 +49,7 @@ export const VerificationPendingPage = () => {
 
   // Zod schema with i18n validation messages
   const resendSchema = z.object({
-    email: z.string().email(t('auth.validation.emailInvalid')),
+    email: z.string().email(t('common.validation.email')),
   });
 
   const {

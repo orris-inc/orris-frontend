@@ -271,7 +271,7 @@ export const EditSubscriptionForwardRuleDialog: React.FC<EditSubscriptionForward
           <div className="space-y-6 py-4">
             {/* Basic info */}
             <div>
-              <h3 className="text-sm font-medium text-muted-foreground mb-3">{t('admin.forwardRules.form.basicInfo')}</h3>
+              <h3 className="text-sm font-medium text-muted-foreground mb-3">{t('common.sections.basicInfo')}</h3>
               <Separator className="mb-4" />
               <div className="space-y-4">
                 {/* Rule name */}
@@ -297,7 +297,7 @@ export const EditSubscriptionForwardRuleDialog: React.FC<EditSubscriptionForward
 
                 {/* Remark */}
                 <div className="flex flex-col gap-2">
-                  <Label htmlFor="edit-sub-remark">{t('admin.forwardRules.form.remark')}</Label>
+                  <Label htmlFor="edit-sub-remark">{t('common.fields.remark')}</Label>
                   <Textarea
                     id="edit-sub-remark"
                     value={formData.remark}
@@ -317,7 +317,7 @@ export const EditSubscriptionForwardRuleDialog: React.FC<EditSubscriptionForward
               <div className="grid grid-cols-1 @md:grid-cols-2 gap-4">
                 {/* Protocol type */}
                 <div className="flex flex-col gap-2">
-                  <Label htmlFor="edit-sub-protocol">{t('admin.forwardRules.form.protocolType')}</Label>
+                  <Label htmlFor="edit-sub-protocol">{t('common.protocol')}</Label>
                   <Select
                     value={formData.protocol}
                     onValueChange={(value) => handleChange('protocol', value)}
@@ -346,7 +346,7 @@ export const EditSubscriptionForwardRuleDialog: React.FC<EditSubscriptionForward
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="auto">{t('admin.forwardRules.form.ipVersionAuto')}</SelectItem>
+                      <SelectItem value="auto">{t('common.auto')}</SelectItem>
                       <SelectItem value="ipv4">IPv4</SelectItem>
                       <SelectItem value="ipv6">IPv6</SelectItem>
                     </SelectContent>
@@ -449,7 +449,7 @@ export const EditSubscriptionForwardRuleDialog: React.FC<EditSubscriptionForward
                         id="edit-sub-targetNodeId"
                         className={errors.targetNodeId ? 'border-destructive' : ''}
                       >
-                        <SelectValue placeholder={isLoadingNodes ? t('app.loading') : t('admin.forwardRules.form.selectTargetNode')} />
+                        <SelectValue placeholder={isLoadingNodes ? t('common.table.loading') : t('admin.forwardRules.form.selectTargetNode')} />
                       </SelectTrigger>
                       <SelectContent>
                         {availableNodes.map((node) => (
@@ -545,7 +545,7 @@ export const EditSubscriptionForwardRuleDialog: React.FC<EditSubscriptionForward
             {t('common.actions.cancel')}
           </Button>
           <Button onClick={handleSubmit} disabled={!isFormValid() || !hasChanges || isUpdating}>
-            {isUpdating ? t('admin.forwardRules.form.saving') : t('common.actions.save')}
+            {isUpdating ? t('common.loading.saving') : t('common.actions.save')}
           </Button>
         </DialogFooter>
       </DialogContent>

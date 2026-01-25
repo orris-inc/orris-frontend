@@ -87,7 +87,7 @@ export const UserMobileList: React.FC<UserMobileListProps> = ({
             </DropdownMenuItem>
             <DropdownMenuItem onClick={() => onEdit(user)}>
               <Edit className="mr-2 size-4" />
-              {t('admin.users.actions.edit')}
+              {t('common.actions.edit')}
             </DropdownMenuItem>
             <DropdownMenuItem onClick={() => onResetPassword(user)}>
               <KeyRound className="mr-2 size-4" />
@@ -96,7 +96,7 @@ export const UserMobileList: React.FC<UserMobileListProps> = ({
             <DropdownMenuSeparator />
             <DropdownMenuItem onClick={() => onDelete(user)} className="text-red-600 dark:text-red-400">
               <Trash2 className="mr-2 size-4" />
-              {t('admin.users.actions.delete')}
+              {t('common.actions.delete')}
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenuPortal>
@@ -168,7 +168,7 @@ export const UserMobileList: React.FC<UserMobileListProps> = ({
                         <Edit className="size-3.5 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300" />
                       </button>
                     </TooltipTrigger>
-                    <TooltipContent>{t('admin.users.actions.edit')}</TooltipContent>
+                    <TooltipContent>{t('common.actions.edit')}</TooltipContent>
                   </Tooltip>
                   <Tooltip>
                     <TooltipTrigger asChild>
@@ -208,7 +208,7 @@ export const UserMobileList: React.FC<UserMobileListProps> = ({
 
                 {/* Name */}
                 <div className="flex items-center gap-2">
-                  <span className="text-[10px] text-slate-400 dark:text-slate-500 uppercase tracking-wide w-10 flex-shrink-0">{t('admin.users.fields.nameShort')}</span>
+                  <span className="text-[10px] text-slate-400 dark:text-slate-500 uppercase tracking-wide w-10 flex-shrink-0">{t('common.fields.name')}</span>
                   <span className="text-xs text-slate-600 dark:text-slate-300">{user.name || '-'}</span>
                 </div>
 

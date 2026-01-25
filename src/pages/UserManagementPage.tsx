@@ -90,16 +90,16 @@ export const UserManagementPage = () => {
     ];
 
     if (stats.pending > 0) {
-      items.push({ icon: Clock, text: `${stats.pending} ${t('admin.users.statusPending')}` });
+      items.push({ icon: Clock, text: `${stats.pending} ${t('common.status.pending')}` });
     }
 
-    items.push({ icon: XCircle, text: `${stats.inactive} ${t('admin.users.statusInactive')}` });
+    items.push({ icon: XCircle, text: `${stats.inactive} ${t('common.status.inactive')}` });
 
     if (stats.suspended > 0) {
-      items.push({ icon: UserX, text: `${stats.suspended} ${t('admin.users.statusSuspended')}` });
+      items.push({ icon: UserX, text: `${stats.suspended} ${t('common.status.suspended')}` });
     }
 
-    items.push({ icon: Shield, text: `${stats.admins} ${t('admin.users.roleAdmin')}` });
+    items.push({ icon: Shield, text: `${stats.admins} ${t('common.role.admin')}` });
 
     return items;
   }, [stats, t]);

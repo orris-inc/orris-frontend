@@ -76,10 +76,10 @@ export const DeleteResourceGroupDialog: React.FC<DeleteResourceGroupDialogProps>
 
         <DialogFooter>
           <Button variant="outline" onClick={handleClose} disabled={loading}>
-            {t('resourceGroups.cancel')}
+            {t('common.actions.cancel')}
           </Button>
           <Button variant="destructive" onClick={handleConfirm} disabled={loading}>
-            {loading ? t('resourceGroups.deleting') : t('resourceGroups.confirmDelete')}
+            {loading ? t('common.loading.deleting') : t('resourceGroups.confirmDelete')}
           </Button>
         </DialogFooter>
       </DialogContent>

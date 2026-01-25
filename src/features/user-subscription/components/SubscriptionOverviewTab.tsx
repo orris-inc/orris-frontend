@@ -52,7 +52,7 @@ const getStatusConfig = (status: string) => {
   switch (status) {
     case "active":
       return {
-        labelKey: "subscriptionStatus.active",
+        labelKey: "common.status.active",
         variant: "success" as const,
         color: "text-emerald-600 dark:text-emerald-400",
         bgColor: "bg-emerald-500/10",
@@ -60,7 +60,7 @@ const getStatusConfig = (status: string) => {
       };
     case "expired":
       return {
-        labelKey: "subscriptionStatus.expired",
+        labelKey: "common.status.expired",
         variant: "destructive" as const,
         color: "text-destructive",
         bgColor: "bg-destructive/10",
@@ -68,7 +68,7 @@ const getStatusConfig = (status: string) => {
       };
     case "cancelled":
       return {
-        labelKey: "subscriptionStatus.cancelled",
+        labelKey: "common.status.cancelled",
         variant: "outline" as const,
         color: "text-muted-foreground",
         bgColor: "bg-muted",
@@ -308,7 +308,7 @@ export const SubscriptionOverviewTab: React.FC<
             <span className={cn("text-xl font-bold tabular-nums", statusConfig.color)}>
               {daysRemaining !== null ? daysRemaining : "-"}
             </span>
-            <span className="text-[10px] text-muted-foreground">{t("userSubscription.days")}</span>
+            <span className="text-[10px] text-muted-foreground">{t("common.days")}</span>
           </div>
         </div>
 
@@ -384,7 +384,7 @@ export const SubscriptionOverviewTab: React.FC<
                   {daysRemaining !== null ? daysRemaining : "-"}
                 </span>
                 <span className="text-sm text-muted-foreground font-medium">
-                  {t("userSubscription.days")}
+                  {t("common.days")}
                 </span>
               </div>
               <p className="text-xs text-muted-foreground mt-0.5">{t("userSubscription.remainingValidity")}</p>
@@ -448,7 +448,7 @@ export const SubscriptionOverviewTab: React.FC<
             <div className="flex items-center justify-between py-1 @sm:py-1.5">
               <span className="text-[10px] @sm:text-xs text-muted-foreground">{t("userSubscription.cycleDays")}</span>
               <span className="text-[10px] @sm:text-xs font-medium tabular-nums">
-                {totalDays !== null ? `${totalDays} ${t("userSubscription.days")}` : "-"}
+                {totalDays !== null ? `${totalDays} ${t("common.days")}` : "-"}
               </span>
             </div>
           </div>
@@ -523,7 +523,7 @@ export const SubscriptionOverviewTab: React.FC<
           <div className="p-2 @sm:p-3 rounded-lg bg-chart-upload/5 ring-1 ring-chart-upload/10">
             <div className="flex items-center gap-1 mb-1">
               <Upload className="size-3 @sm:size-4 text-chart-upload" />
-              <span className="text-[10px] @sm:text-xs text-muted-foreground">{t("userSubscription.upload")}</span>
+              <span className="text-[10px] @sm:text-xs text-muted-foreground">{t("common.actions.upload")}</span>
             </div>
             <p className="text-sm @sm:text-base font-semibold tabular-nums">
               {formatTraffic(trafficUsage.upload).value}
@@ -537,7 +537,7 @@ export const SubscriptionOverviewTab: React.FC<
           <div className="p-2 @sm:p-3 rounded-lg bg-chart-download/5 ring-1 ring-chart-download/10">
             <div className="flex items-center gap-1 mb-1">
               <Download className="size-3 @sm:size-4 text-chart-download" />
-              <span className="text-[10px] @sm:text-xs text-muted-foreground">{t("userSubscription.download")}</span>
+              <span className="text-[10px] @sm:text-xs text-muted-foreground">{t("common.actions.download")}</span>
             </div>
             <p className="text-sm @sm:text-base font-semibold tabular-nums">
               {formatTraffic(trafficUsage.download).value}
@@ -608,7 +608,7 @@ export const SubscriptionOverviewTab: React.FC<
                 <>
                   <RefreshCw className="size-3" />
                   <span className="hidden @sm:inline">{t("userSubscription.resetLink")}</span>
-                  <span className="@sm:hidden">{t("userSubscription.reset")}</span>
+                  <span className="@sm:hidden">{t("common.actions.reset")}</span>
                 </>
               )}
             </button>

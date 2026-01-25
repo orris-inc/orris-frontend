@@ -26,11 +26,11 @@ export interface DatePresetOption {
  * Note: label is i18n translation key, use t(label) to get translated text
  */
 export const DATE_PRESETS: DatePresetOption[] = [
-  { value: 'today', label: 'admin.dateRange.today' },
-  { value: 'yesterday', label: 'admin.dateRange.yesterday' },
+  { value: 'today', label: 'common.time.today' },
+  { value: 'yesterday', label: 'common.time.yesterday' },
   { value: 'last7days', label: 'admin.dateRange.last7days' },
   { value: 'last30days', label: 'admin.dateRange.last30days' },
-  { value: 'thisMonth', label: 'admin.dateRange.thisMonth' },
+  { value: 'thisMonth', label: 'common.time.thisMonth' },
 ];
 
 /**

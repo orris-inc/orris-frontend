@@ -245,7 +245,7 @@ const CustomTooltip = ({
           <div className="flex items-center gap-2.5">
             <div className="size-3 rounded-full bg-chart-upload ring-2 ring-chart-upload/20" />
             <span className="text-sm font-medium text-muted-foreground">
-              {t("userSubscription.upload")}
+              {t("common.actions.upload")}
             </span>
           </div>
           <div className="flex items-center gap-1.5">
@@ -261,7 +261,7 @@ const CustomTooltip = ({
           <div className="flex items-center gap-2.5">
             <div className="size-3 rounded-full bg-chart-download ring-2 ring-chart-download/20" />
             <span className="text-sm font-medium text-muted-foreground">
-              {t("userSubscription.download")}
+              {t("common.actions.download")}
             </span>
           </div>
           <div className="flex items-center gap-1.5">
@@ -305,7 +305,7 @@ const ChartLegend = ({
     <div className="flex items-center gap-1.5 @sm:gap-2 px-2 @sm:px-3 py-1.5 rounded-lg bg-chart-upload/10 ring-1 ring-chart-upload/20">
       <div className="size-2 @sm:size-2.5 rounded-full bg-chart-upload" />
       <span className="text-[10px] @sm:text-xs text-muted-foreground">
-        {t("userSubscription.upload")}
+        {t("common.actions.upload")}
       </span>
       <span className="text-[10px] @sm:text-xs font-bold text-chart-upload tabular-nums">
         {formatTrafficBytes(totalUpload)}
@@ -314,7 +314,7 @@ const ChartLegend = ({
     <div className="flex items-center gap-1.5 @sm:gap-2 px-2 @sm:px-3 py-1.5 rounded-lg bg-chart-download/10 ring-1 ring-chart-download/20">
       <div className="size-2 @sm:size-2.5 rounded-full bg-chart-download" />
       <span className="text-[10px] @sm:text-xs text-muted-foreground">
-        {t("userSubscription.download")}
+        {t("common.actions.download")}
       </span>
       <span className="text-[10px] @sm:text-xs font-bold text-chart-download tabular-nums">
         {formatTrafficBytes(totalDownload)}
@@ -567,7 +567,7 @@ export const SubscriptionTrafficChart: React.FC<
                 <Area
                   type="monotone"
                   dataKey="download"
-                  name={t("userSubscription.download")}
+                  name={t("common.actions.download")}
                   stroke="var(--color-chart-download)"
                   strokeWidth={2.5}
                   fill="url(#subscriptionDownloadGradient)"
@@ -583,7 +583,7 @@ export const SubscriptionTrafficChart: React.FC<
                 <Area
                   type="monotone"
                   dataKey="upload"
-                  name={t("userSubscription.upload")}
+                  name={t("common.actions.upload")}
                   stroke="var(--color-chart-upload)"
                   strokeWidth={2.5}
                   fill="url(#subscriptionUploadGradient)"

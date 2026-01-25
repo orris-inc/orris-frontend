@@ -230,7 +230,7 @@ export const ResourceGroupMobileList: React.FC<ResourceGroupMobileListProps> = (
                 {/* Description */}
                 {resourceGroup.description && (
                   <div className="flex items-start gap-2">
-                    <span className="text-[10px] text-slate-400 dark:text-slate-500 uppercase tracking-wide w-10 pt-0.5 flex-shrink-0">{t('admin.resourceGroups.detail.description')}</span>
+                    <span className="text-[10px] text-slate-400 dark:text-slate-500 uppercase tracking-wide w-10 pt-0.5 flex-shrink-0">{t('common.fields.description')}</span>
                     <span className="text-xs text-slate-600 dark:text-slate-300 flex-1">{resourceGroup.description}</span>
                   </div>
                 )}

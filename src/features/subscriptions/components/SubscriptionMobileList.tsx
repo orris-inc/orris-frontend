@@ -128,7 +128,7 @@ export const SubscriptionMobileList: React.FC<SubscriptionMobileListProps> = ({
         {canActivate && onActivate && (
           <ContextMenuItem onClick={() => onActivate(subscription)}>
             <Play className="mr-2 size-4" />
-            {t('subscription.activate')}
+            {t('common.actions.activate')}
           </ContextMenuItem>
         )}
         {canUnsuspend && onUnsuspend && (
@@ -220,7 +220,7 @@ export const SubscriptionMobileList: React.FC<SubscriptionMobileListProps> = ({
             {canActivate && onActivate && (
               <DropdownMenuItem onClick={() => onActivate(subscription)}>
                 <Play className="mr-2 size-4" />
-                {t('subscription.activate')}
+                {t('common.actions.activate')}
               </DropdownMenuItem>
             )}
             {canRenew && onRenew && (
@@ -332,7 +332,7 @@ export const SubscriptionMobileList: React.FC<SubscriptionMobileListProps> = ({
                           <Play className="size-3.5 text-green-500 hover:text-green-600" />
                         </button>
                       </TooltipTrigger>
-                      <TooltipContent>{t('subscription.activate')}</TooltipContent>
+                      <TooltipContent>{t('common.actions.activate')}</TooltipContent>
                     </Tooltip>
                   )}
                   {onViewDetail && (
@@ -369,7 +369,7 @@ export const SubscriptionMobileList: React.FC<SubscriptionMobileListProps> = ({
 
                 {/* User info */}
                 <div className="flex items-center gap-2">
-                  <span className="text-[10px] text-slate-400 dark:text-slate-500 uppercase tracking-wide w-12 flex-shrink-0">{t('tableColumns.user')}</span>
+                  <span className="text-[10px] text-slate-400 dark:text-slate-500 uppercase tracking-wide w-12 flex-shrink-0">{t('common.role.user')}</span>
                   {isUserLoading ? (
                     <Skeleton className="h-4 w-32" />
                   ) : (
@@ -390,7 +390,7 @@ export const SubscriptionMobileList: React.FC<SubscriptionMobileListProps> = ({
                 <div className="flex items-center gap-2">
                   <span className="text-[10px] text-slate-400 dark:text-slate-500 uppercase tracking-wide w-12 flex-shrink-0">{t('subscription.dateInfo')}</span>
                   <span className="text-xs text-slate-600 dark:text-slate-300">
-                    {formatDate(subscription.startDate)} ~ {subscription.endDate ? formatDate(subscription.endDate) : t('subscription.unlimited')}
+                    {formatDate(subscription.startDate)} ~ {subscription.endDate ? formatDate(subscription.endDate) : t('common.unlimited')}
                   </span>
                 </div>
 
@@ -412,7 +412,7 @@ export const SubscriptionMobileList: React.FC<SubscriptionMobileListProps> = ({
 
                 {/* Created at */}
                 <div className="flex items-center gap-2">
-                  <span className="text-[10px] text-slate-400 dark:text-slate-500 uppercase tracking-wide w-12 flex-shrink-0">{t('subscription.createdAt')}</span>
+                  <span className="text-[10px] text-slate-400 dark:text-slate-500 uppercase tracking-wide w-12 flex-shrink-0">{t('common.fields.createdAt')}</span>
                   <span className="text-xs text-slate-500">{formatDate(subscription.createdAt)}</span>
                 </div>
               </div>

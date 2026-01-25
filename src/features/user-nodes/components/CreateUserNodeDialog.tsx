@@ -459,7 +459,7 @@ export const CreateUserNodeDialog: React.FC<CreateUserNodeDialogProps> = ({
         <div className="space-y-6 py-4">
           {/* Basic info */}
           <div className="space-y-4">
-            <h3 className="text-sm font-semibold">{t('userNodes.create.basicInfo')}</h3>
+            <h3 className="text-sm font-semibold">{t('common.sections.basicInfo')}</h3>
             <Separator />
 
             <div className="space-y-4">
@@ -526,7 +526,7 @@ export const CreateUserNodeDialog: React.FC<CreateUserNodeDialogProps> = ({
 
                 <div className="flex flex-col gap-2">
                   <Label htmlFor="protocol">
-                    {t('userNodes.create.protocol')} <span className="text-destructive">*</span>
+                    {t('common.protocol')} <span className="text-destructive">*</span>
                   </Label>
                   <Select
                     value={formData.protocol}
@@ -858,7 +858,7 @@ export const CreateUserNodeDialog: React.FC<CreateUserNodeDialogProps> = ({
                         placeholder="/"
                         disabled={loading}
                       />
-                      <p className="text-xs text-muted-foreground">{t('userNodes.create.hints.optional')}</p>
+                      <p className="text-xs text-muted-foreground">{t('common.optional')}</p>
                     </div>
                   </>
                 )}
@@ -1092,7 +1092,7 @@ export const CreateUserNodeDialog: React.FC<CreateUserNodeDialogProps> = ({
                       placeholder="100"
                       disabled={loading}
                     />
-                    <p className="text-xs text-muted-foreground">{t('userNodes.create.hints.optional')}</p>
+                    <p className="text-xs text-muted-foreground">{t('common.optional')}</p>
                   </div>
 
                   <div className="flex flex-col gap-2">
@@ -1106,7 +1106,7 @@ export const CreateUserNodeDialog: React.FC<CreateUserNodeDialogProps> = ({
                       placeholder="100"
                       disabled={loading}
                     />
-                    <p className="text-xs text-muted-foreground">{t('userNodes.create.hints.optional')}</p>
+                    <p className="text-xs text-muted-foreground">{t('common.optional')}</p>
                   </div>
                 </div>
 

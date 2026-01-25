@@ -73,7 +73,7 @@ const PROTOCOL_OPTIONS: MobileSelectOption[] = [
 ];
 
 const IP_VERSION_OPTIONS_KEYS = [
-  { value: 'auto', labelKey: 'admin.forwardRules.form.ipVersionAuto' },
+  { value: 'auto', labelKey: 'common.auto' },
   { value: 'ipv4', label: 'IPv4' },
   { value: 'ipv6', label: 'IPv6' },
 ];
@@ -542,7 +542,7 @@ export const CreateForwardRuleSheet: React.FC<CreateForwardRuleSheetProps> = ({
 
         <SheetBody className="space-y-4 py-4">
           {/* ===== Section 1: Basic Info ===== */}
-          <SectionDivider label={t('admin.forwardRules.form.basicInfo')} />
+          <SectionDivider label={t('common.sections.basicInfo')} />
 
           <FormField label={t('admin.forwardRules.form.ruleName')} required error={errors.name}>
             <MobileFormInput
@@ -561,7 +561,7 @@ export const CreateForwardRuleSheet: React.FC<CreateForwardRuleSheetProps> = ({
               />
             </FormField>
 
-            <FormField label={t('admin.forwardRules.form.protocolType')} required>
+            <FormField label={t('common.protocol')} required>
               <MobileSelect
                 value={formData.protocol}
                 onChange={(value) => handleChange('protocol', value)}
@@ -591,13 +591,13 @@ export const CreateForwardRuleSheet: React.FC<CreateForwardRuleSheetProps> = ({
             <FormField
               label={t('admin.forwardRules.form.listenPort')}
               error={errors.listenPort}
-              hint={t('admin.forwardRules.form.listenPortPlaceholderShort')}
+              hint={t('common.auto')}
               className="col-span-2 sm:col-span-1"
             >
               <MobileFormInput
                 type="number"
                 inputMode="numeric"
-                placeholder={t('admin.forwardRules.form.listenPortPlaceholderShort')}
+                placeholder={t('common.auto')}
                 value={formData.listenPort ? String(formData.listenPort) : ''}
                 onChange={(value) => handleChange('listenPort', parseInt(value, 10) || 0)}
                 className="font-mono"
@@ -778,7 +778,7 @@ export const CreateForwardRuleSheet: React.FC<CreateForwardRuleSheetProps> = ({
 
           {/* ===== Section 5: Advanced Options (Collapsible) ===== */}
           <CollapsibleTrigger
-            label={t('admin.forwardRules.form.advancedOptions')}
+            label={t('common.sections.advancedOptions')}
             isOpen={showAdvanced}
             onClick={() => setShowAdvanced(!showAdvanced)}
           />
@@ -816,7 +816,7 @@ export const CreateForwardRuleSheet: React.FC<CreateForwardRuleSheetProps> = ({
                   />
                 </FormField>
 
-                <FormField label={t('admin.forwardRules.form.sortOrder')}>
+                <FormField label={t('common.fields.sortOrder')}>
                   <MobileFormInput
                     type="number"
                     inputMode="numeric"
@@ -828,7 +828,7 @@ export const CreateForwardRuleSheet: React.FC<CreateForwardRuleSheetProps> = ({
                 </FormField>
               </div>
 
-              <FormField label={t('admin.forwardRules.form.remark')}>
+              <FormField label={t('common.fields.remark')}>
                 <MobileFormInput
                   placeholder={t('admin.forwardRules.form.remarkPlaceholder')}
                   value={formData.remark}
@@ -862,7 +862,7 @@ export const CreateForwardRuleSheet: React.FC<CreateForwardRuleSheetProps> = ({
                             <Badge variant="outline" className="text-[10px] flex-shrink-0">
                               {plan.planType === 'node'
                                 ? t('admin.forwardRules.form.planTypeNode')
-                                : t('admin.forwardRules.form.planTypeHybrid')}
+                                : t('common.planType.hybrid')}
                             </Badge>
                           )}
                         </label>
@@ -893,7 +893,7 @@ export const CreateForwardRuleSheet: React.FC<CreateForwardRuleSheetProps> = ({
               {loading ? (
                 <>
                   <Loader2 className="size-4 mr-2 animate-spin" />
-                  {t('admin.forwardRules.form.creating')}
+                  {t('common.loading.creating')}
                 </>
               ) : initialData ? (
                 t('admin.forwardRules.form.createCopy')

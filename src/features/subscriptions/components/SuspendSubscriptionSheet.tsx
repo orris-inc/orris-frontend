@@ -113,7 +113,7 @@ export const SuspendSubscriptionSheet: React.FC<SuspendSubscriptionSheetProps> =
             {loading ? (
               <>
                 <Loader2 className="mr-2 size-4 animate-spin" />
-                {t('messages.processing')}
+                {t('common.processing')}
               </>
             ) : (
               t('subscription.suspend')

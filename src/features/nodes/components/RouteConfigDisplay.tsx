@@ -85,7 +85,7 @@ const getRuleConditions = (rule: RouteRule, t: (key: string, options?: Record<st
     conditions.push(`${t('admin.nodes.route.display.sourcePort')}: ${rule.sourcePort.length}`);
   }
   if (rule.protocol?.length) {
-    conditions.push(`${t('admin.nodes.route.display.protocol')}: ${rule.protocol.join(', ')}`);
+    conditions.push(`${t('common.protocol')}: ${rule.protocol.join(', ')}`);
   }
   if (rule.network?.length) {
     conditions.push(`${t('admin.nodes.route.display.network')}: ${rule.network.join(', ')}`);

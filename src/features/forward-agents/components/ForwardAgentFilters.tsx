@@ -65,12 +65,12 @@ export const ForwardAgentFiltersComponent: React.FC<ForwardAgentFiltersProps> = 
       <div className="w-[72px] @sm:w-28">
         <Select value={filters.status || '_all_'} onValueChange={handleStatusChange}>
           <SelectTrigger className="text-xs @sm:text-sm">
-            <SelectValue placeholder={t('admin.forwardAgents.filters.status')} />
+            <SelectValue placeholder={t('common.status.label')} />
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="_all_">{t('admin.forwardAgents.filters.all')}</SelectItem>
-            <SelectItem value="enabled">{t('admin.forwardAgents.filters.enabled')}</SelectItem>
-            <SelectItem value="disabled">{t('admin.forwardAgents.filters.disabled')}</SelectItem>
+            <SelectItem value="enabled">{t('common.status.enabled')}</SelectItem>
+            <SelectItem value="disabled">{t('common.status.disabled')}</SelectItem>
           </SelectContent>
         </Select>
       </div>
@@ -86,7 +86,7 @@ export const ForwardAgentFiltersComponent: React.FC<ForwardAgentFiltersProps> = 
       <div className="w-[88px] @sm:w-32">
         <Select value={getSortValue()} onValueChange={handleSortChange}>
           <SelectTrigger className="text-xs @sm:text-sm">
-            <SelectValue placeholder={t('admin.forwardAgents.filters.sort')} />
+            <SelectValue placeholder={t('common.table.sort')} />
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="_default_">{t('admin.forwardAgents.filters.default')}</SelectItem>

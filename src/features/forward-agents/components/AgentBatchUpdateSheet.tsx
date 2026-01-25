@@ -166,7 +166,7 @@ export const AgentBatchUpdateSheet = ({
                     {result.failed.length}
                   </p>
                   <p className="text-[10px] text-destructive/80">
-                    {t('admin.forwardAgents.batchUpdateDialog.failed')}
+                    {t('common.status.failed')}
                   </p>
                 </div>
                 <div className="p-3 rounded-lg bg-warning/10 text-center">
@@ -264,7 +264,7 @@ export const AgentBatchUpdateSheet = ({
                   'active:opacity-80 transition-opacity'
                 )}
               >
-                {t('common.cancel')}
+                {t('common.actions.cancel')}
               </button>
               <button
                 type="button"
@@ -282,7 +282,7 @@ export const AgentBatchUpdateSheet = ({
                 {isUpdating ? (
                   <>
                     <Loader2 className="size-4 animate-spin" />
-                    {t('admin.forwardAgents.batchUpdateDialog.updating')}
+                    {t('common.loading.updating')}
                   </>
                 ) : (
                   <>
@@ -303,7 +303,7 @@ export const AgentBatchUpdateSheet = ({
                 'active:opacity-80 transition-opacity'
               )}
             >
-              {t('common.close')}
+              {t('common.actions.close')}
             </button>
           )}
         </SheetFooter>

@@ -59,12 +59,12 @@ const StatusBadge = ({ enabled }: { enabled: boolean }) => {
   return enabled ? (
     <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-success/10 text-success ring-1 ring-success/20">
       <span className="size-1.5 rounded-full bg-success" />
-      {t('admin.settings.enabled')}
+      {t('common.status.enabled')}
     </span>
   ) : (
     <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-muted text-muted-foreground">
       <span className="size-1.5 rounded-full bg-muted-foreground" />
-      {t('admin.settings.disabled')}
+      {t('common.status.disabled')}
     </span>
   );
 };

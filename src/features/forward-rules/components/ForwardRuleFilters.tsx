@@ -85,7 +85,7 @@ export const ForwardRuleFilters: React.FC<ForwardRuleFiltersProps> = ({ filters,
 
         <Select value={filters.protocol || '_all_'} onValueChange={handleProtocolChange}>
           <SelectTrigger className="w-full @sm:w-28">
-            <SelectValue placeholder={t('admin.forwardRules.filters.protocol')} />
+            <SelectValue placeholder={t('common.protocol')} />
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="_all_">{t('filter.all')}</SelectItem>
@@ -97,7 +97,7 @@ export const ForwardRuleFilters: React.FC<ForwardRuleFiltersProps> = ({ filters,
 
         <Select value={filters.status || '_all_'} onValueChange={handleStatusChange}>
           <SelectTrigger className="w-full @sm:w-28">
-            <SelectValue placeholder={t('admin.forwardRules.filters.status')} />
+            <SelectValue placeholder={t('common.status.label')} />
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="_all_">{t('filter.all')}</SelectItem>
@@ -108,7 +108,7 @@ export const ForwardRuleFilters: React.FC<ForwardRuleFiltersProps> = ({ filters,
 
         <Select value={getSortValue()} onValueChange={handleSortChange}>
           <SelectTrigger className="w-full @sm:w-32">
-            <SelectValue placeholder={t('admin.forwardRules.sort')} />
+            <SelectValue placeholder={t('common.table.sort')} />
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="sort_order_asc">{t('admin.forwardRules.sortOptions.default')}</SelectItem>

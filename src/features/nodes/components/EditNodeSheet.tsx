@@ -295,13 +295,13 @@ export const EditNodeSheet: React.FC<EditNodeSheetProps> = ({
   const vmessSecurityOptions: MobileSelectOption[] = useMemo(() =>
     VMESS_SECURITY_VALUES.map((value) => ({
       value,
-      label: value === 'auto' ? `Auto (${t('admin.nodes.form.vmessSecurityRecommended')})` : value === 'none' ? t('admin.nodes.form.disableTls') : value.toUpperCase(),
+      label: value === 'auto' ? `Auto (${t('common.recommended')})` : value === 'none' ? t('admin.nodes.form.disableTls') : value.toUpperCase(),
     })), [t]);
 
   const congestionControlOptions: MobileSelectOption[] = useMemo(() =>
     CONGESTION_CONTROL_VALUES.map((value) => ({
       value,
-      label: value === 'bbr' ? `BBR (${t('admin.nodes.form.congestionControlRecommended')})` : value.replace('_', ' ').toUpperCase(),
+      label: value === 'bbr' ? `BBR (${t('common.recommended')})` : value.replace('_', ' ').toUpperCase(),
     })), [t]);
 
   const udpRelayModeOptions: MobileSelectOption[] = useMemo(() =>
@@ -615,7 +615,7 @@ export const EditNodeSheet: React.FC<EditNodeSheetProps> = ({
         <SheetBody className="py-4 space-y-3">
           {/* Basic Info Section */}
           <MobileSection
-            title={t('admin.nodes.form.section.basicInfo')}
+            title={t('common.sections.basicInfo')}
             icon={Server}
             isOpen={openSections.has('basic')}
             onToggle={() => toggleSection('basic')}
@@ -645,7 +645,7 @@ export const EditNodeSheet: React.FC<EditNodeSheetProps> = ({
               </div>
 
               <div className="space-y-1.5">
-                <FormFieldLabel label={t('admin.nodes.fields.status')} />
+                <FormFieldLabel label={t('common.status.label')} />
                 <MobileSelect
                   value={formData.status || 'inactive'}
                   onChange={(value) => handleChange('status', value)}
@@ -765,7 +765,7 @@ export const EditNodeSheet: React.FC<EditNodeSheetProps> = ({
 
           {/* Network Section */}
           <MobileSection
-            title={t('admin.nodes.form.section.networkConfig')}
+            title={t('common.sections.networkConfig')}
             icon={Network}
             isOpen={openSections.has('network')}
             onToggle={() => toggleSection('network')}
@@ -1005,7 +1005,7 @@ export const EditNodeSheet: React.FC<EditNodeSheetProps> = ({
                         </div>
                       </div>
                       <div className="space-y-1.5">
-                        <FormFieldLabel label={t('admin.nodes.form.fields.spiderX')} hint={t('admin.nodes.form.optional')} />
+                        <FormFieldLabel label={t('admin.nodes.form.fields.spiderX')} hint={t('common.optional')} />
                         <MobileFormInput
                           placeholder="/"
                           value={formData.vlessRealitySpiderX || ''}
@@ -1138,7 +1138,7 @@ export const EditNodeSheet: React.FC<EditNodeSheetProps> = ({
                     <div className="space-y-1.5">
                       <FormFieldLabel label={t('admin.nodes.form.obfsPassword')} />
                       <MobileFormInput
-                        placeholder={t('admin.nodes.form.passwordPlaceholder')}
+                        placeholder={t('common.placeholders.password')}
                         value={formData.hysteria2ObfsPassword || ''}
                         onChange={(value) => handleChange('hysteria2ObfsPassword', value)}
                         className="font-mono"
@@ -1250,7 +1250,7 @@ export const EditNodeSheet: React.FC<EditNodeSheetProps> = ({
                 </div>
 
                 <div className="space-y-1.5">
-                  <FormFieldLabel label={t('admin.nodes.form.sortOrder')} />
+                  <FormFieldLabel label={t('common.fields.sortOrder')} />
                   <MobileFormInput
                     type="number"
                     value={String(formData.sortOrder ?? 0)}
@@ -1300,7 +1300,7 @@ export const EditNodeSheet: React.FC<EditNodeSheetProps> = ({
                 {/* Group selection list */}
                 <div className="border rounded-xl max-h-[150px] overflow-y-auto bg-background">
                   {isLoadingGroups || isLoadingPlans ? (
-                    <div className="p-3 text-center text-sm text-muted-foreground">{t('app.loading')}</div>
+                    <div className="p-3 text-center text-sm text-muted-foreground">{t('common.table.loading')}</div>
                   ) : filteredResourceGroups.length === 0 ? (
                     <div className="p-3 text-center text-sm text-muted-foreground">{t('admin.nodes.detail.noResourceGroups')}</div>
                   ) : (
@@ -1325,7 +1325,7 @@ export const EditNodeSheet: React.FC<EditNodeSheetProps> = ({
                             <div className="flex items-center gap-2">
                               <span className="font-medium text-sm">{group.name}</span>
                               <Badge variant={group.status === 'active' ? 'default' : 'secondary'} className="text-[10px]">
-                                {group.status === 'active' ? t('admin.nodes.form.status.active') : t('admin.nodes.form.status.inactive')}
+                                {group.status === 'active' ? t('common.status.active') : t('common.status.inactive')}
                               </Badge>
                             </div>
                             {group.description && <p className="text-xs text-muted-foreground truncate">{group.description}</p>}
@@ -1402,7 +1402,7 @@ export const EditNodeSheet: React.FC<EditNodeSheetProps> = ({
                 'disabled:opacity-50'
               )}
             >
-              {loading ? t('admin.nodes.form.saving') : t('common.actions.save')}
+              {loading ? t('common.loading.saving') : t('common.actions.save')}
             </button>
           </div>
         </SheetFooter>

@@ -174,7 +174,7 @@ export const ResetPasswordDialog: React.FC<ResetPasswordDialogProps> = ({
               disabled={isLoading}
               className={getButtonClass('outline', 'default')}
             >
-              {t('admin.users.actions.cancel')}
+              {t('common.actions.cancel')}
             </button>
             <button
               onClick={handleSubmit}

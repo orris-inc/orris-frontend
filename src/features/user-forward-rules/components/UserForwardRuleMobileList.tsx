@@ -388,7 +388,7 @@ export const UserForwardRuleMobileList: React.FC<UserForwardRuleMobileListProps>
         <DropdownMenuContent align="end" className="w-48" collisionPadding={16}>
           <DropdownMenuItem onClick={() => onEdit(rule)} className="min-h-[44px]">
             <Edit className="mr-2 size-4" />
-            {t('userForwardRules.menu.edit')}
+            {t('common.actions.edit')}
           </DropdownMenuItem>
           <DropdownMenuSeparator />
           {rule.status === 'enabled' ? (

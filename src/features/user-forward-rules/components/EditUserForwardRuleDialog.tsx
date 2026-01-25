@@ -287,7 +287,7 @@ export const EditUserForwardRuleDialog: React.FC<EditUserForwardRuleDialogProps>
 
               {/* Remark */}
               <div className="flex flex-col gap-2">
-                <Label htmlFor="remark">{t('userForwardRules.form.remark')}</Label>
+                <Label htmlFor="remark">{t('common.fields.remark')}</Label>
                 <Textarea
                   id="remark"
                   value={formData.remark}
@@ -307,7 +307,7 @@ export const EditUserForwardRuleDialog: React.FC<EditUserForwardRuleDialogProps>
             <div className="grid grid-cols-1 @md:grid-cols-2 gap-4">
               {/* Protocol type */}
               <div className="flex flex-col gap-2">
-                <Label htmlFor="protocol">{t('userForwardRules.form.protocol')}</Label>
+                <Label htmlFor="protocol">{t('common.protocol')}</Label>
                 <Select
                   value={formData.protocol}
                   onValueChange={(value) => handleChange('protocol', value)}
@@ -336,7 +336,7 @@ export const EditUserForwardRuleDialog: React.FC<EditUserForwardRuleDialogProps>
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="auto">{t('userForwardRules.form.ipVersionAuto')}</SelectItem>
+                    <SelectItem value="auto">{t('common.auto')}</SelectItem>
                     <SelectItem value="ipv4">IPv4</SelectItem>
                     <SelectItem value="ipv6">IPv6</SelectItem>
                   </SelectContent>
@@ -434,7 +434,7 @@ export const EditUserForwardRuleDialog: React.FC<EditUserForwardRuleDialogProps>
                     disabled={isUpdating || isLoadingNodes}
                   >
                     <SelectTrigger id="targetNodeId" className={errors.targetNodeId ? 'border-destructive' : ''}>
-                      <SelectValue placeholder={isLoadingNodes ? t('userForwardRules.form.loading') : t('userForwardRules.form.selectTargetNode')} />
+                      <SelectValue placeholder={isLoadingNodes ? t('common.table.loading') : t('userForwardRules.form.selectTargetNode')} />
                     </SelectTrigger>
                     <SelectContent>
                       {availableNodes.map((node) => (
@@ -523,10 +523,10 @@ export const EditUserForwardRuleDialog: React.FC<EditUserForwardRuleDialogProps>
 
         <DialogFooter className="flex-shrink-0 gap-3">
           <Button variant="outline" onClick={handleClose} disabled={isUpdating}>
-            {t('userForwardRules.form.cancel')}
+            {t('common.actions.cancel')}
           </Button>
           <Button onClick={handleSubmit} disabled={!isFormValid() || !hasChanges || isUpdating}>
-            {isUpdating ? t('userForwardRules.form.saving') : t('userForwardRules.form.save')}
+            {isUpdating ? t('common.loading.saving') : t('common.actions.save')}
           </Button>
         </DialogFooter>
       </DialogContent>

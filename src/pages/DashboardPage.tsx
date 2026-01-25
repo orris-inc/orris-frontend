@@ -183,7 +183,7 @@ export const DashboardPage = () => {
   }
 
   const subscriptions = dashboardData?.subscriptions ?? [];
-  const displayName = user.displayName || user.email?.split('@')[0] || t('user.dashboard.defaultUser');
+  const displayName = user.displayName || user.email?.split('@')[0] || t('common.role.user');
 
   return (
     <DashboardLayout>
@@ -196,7 +196,7 @@ export const DashboardPage = () => {
           statusVariant={statusMessage?.variant}
           icon={Sparkles}
           isLoading={isLoading}
-          loadingMessage={t('user.dashboard.loading')}
+          loadingMessage={t('common.table.loading')}
         />
 
         {/* Stats Grid */}
@@ -212,7 +212,7 @@ export const DashboardPage = () => {
             />
             <BentoStatCard
               icon={ArrowUpRight}
-              label={t('user.dashboard.stats.upload')}
+              label={t('common.actions.upload')}
               value={stats.upload.value}
               unit={stats.upload.unit}
               variant="custom"
@@ -221,7 +221,7 @@ export const DashboardPage = () => {
             />
             <BentoStatCard
               icon={ArrowDownRight}
-              label={t('user.dashboard.stats.download')}
+              label={t('common.actions.download')}
               value={stats.download.value}
               unit={stats.download.unit}
               variant="custom"
@@ -256,7 +256,7 @@ export const DashboardPage = () => {
           {isLoading && (
             <div className="flex items-center justify-center py-12 bg-card rounded-xl border">
               <Loader2 className="size-5 animate-spin mr-2 text-muted-foreground" />
-              <span className="text-sm text-muted-foreground">{t('user.dashboard.loading')}</span>
+              <span className="text-sm text-muted-foreground">{t('common.table.loading')}</span>
             </div>
           )}
 

@@ -157,13 +157,13 @@ export const EditUserNodeDialog: React.FC<EditUserNodeDialogProps> = ({
             <Separator />
             <div className="grid grid-cols-2 gap-4 text-sm">
               <div>
-                <span className="text-muted-foreground">{t('userNodes.edit.protocol')}</span>
+                <span className="text-muted-foreground">{t('common.protocol')}</span>
                 <Badge variant="outline" className="ml-2">
                   {PROTOCOL_NAMES[node.protocol] || node.protocol}
                 </Badge>
               </div>
               <div>
-                <span className="text-muted-foreground">{t('userNodes.edit.status')}</span>
+                <span className="text-muted-foreground">{t('common.status.label')}</span>
                 <Badge
                   variant={node.status === 'active' ? 'default' : 'secondary'}
                   className="ml-2"
@@ -188,7 +188,7 @@ export const EditUserNodeDialog: React.FC<EditUserNodeDialogProps> = ({
 
           {/* Editable fields */}
           <div className="space-y-4">
-            <h3 className="text-sm font-semibold">{t('userNodes.edit.editableInfo')}</h3>
+            <h3 className="text-sm font-semibold">{t('common.sections.editableInfo')}</h3>
             <Separator />
 
             <div className="space-y-4">

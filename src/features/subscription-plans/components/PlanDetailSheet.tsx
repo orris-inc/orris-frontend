@@ -291,7 +291,7 @@ export const PlanDetailSheet = ({
 
             {/* Description */}
             {plan.description && (
-              <DetailSection title={t('admin.plans.detail.description')}>
+              <DetailSection title={t('common.fields.description')}>
                 <div className="px-3 py-2.5">
                   <div className="flex items-start gap-3">
                     <FileText className="size-4 text-muted-foreground shrink-0 mt-0.5" />

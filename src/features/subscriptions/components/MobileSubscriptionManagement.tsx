@@ -97,13 +97,13 @@ export const MobileSubscriptionManagement = ({
 
     return [
       { value: 'all', label: t('filter.all'), count: total },
-      { value: 'active', label: t('subscriptionStatus.active'), count: active },
+      { value: 'active', label: t('common.status.active'), count: active },
       { value: 'trialing', label: t('subscriptionStatus.trialing'), count: trialing },
       { value: 'pending_payment', label: t('subscriptionStatus.pendingPayment'), count: pendingPayment },
       { value: 'past_due', label: t('subscriptionStatus.pastDue'), count: pastDue },
-      { value: 'suspended', label: t('subscriptionStatus.suspended'), count: suspended },
-      { value: 'expired', label: t('subscriptionStatus.expired'), count: expired },
-      { value: 'cancelled', label: t('subscriptionStatus.cancelled'), count: cancelled },
+      { value: 'suspended', label: t('common.status.suspended'), count: suspended },
+      { value: 'expired', label: t('common.status.expired'), count: expired },
+      { value: 'cancelled', label: t('common.status.cancelled'), count: cancelled },
     ];
   }, [subscriptions, total, t]);
 

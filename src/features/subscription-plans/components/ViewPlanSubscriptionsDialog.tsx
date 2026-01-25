@@ -165,7 +165,7 @@ export const ViewPlanSubscriptionsDialog: React.FC<ViewPlanSubscriptionsDialogPr
                 <Loader2 className="size-10 animate-spin text-indigo-500" strokeWidth={2} />
                 <div className="absolute inset-0 rounded-full bg-indigo-500/20 blur-xl animate-pulse motion-reduce:animate-none" />
               </div>
-              <p className="mt-4 text-sm text-slate-500 dark:text-slate-400">{t('app.loading')}</p>
+              <p className="mt-4 text-sm text-slate-500 dark:text-slate-400">{t('common.table.loading')}</p>
             </div>
           ) : filteredSubscriptions.length === 0 ? (
             <div className="flex flex-col items-center justify-center h-full py-16">

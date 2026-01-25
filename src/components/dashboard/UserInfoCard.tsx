@@ -13,7 +13,7 @@ interface UserInfoCardProps {
 
 export const UserInfoCard = ({ user }: UserInfoCardProps) => {
   const { t } = useTranslation();
-  const displayName = user.displayName || user.email?.split('@')[0] || t('user.dashboard.defaultUser');
+  const displayName = user.displayName || user.email?.split('@')[0] || t('common.role.user');
   const avatarText = user.initials || user.displayName?.charAt(0).toUpperCase() || user.email?.charAt(0).toUpperCase();
 
   return (

@@ -176,14 +176,14 @@ export const TrafficHeroCard = ({
       <div className="flex justify-between mt-3 text-sm">
         <span className="flex items-center gap-1.5 text-muted-foreground">
           <ArrowUp className="size-4 text-chart-upload" />
-          <span>{t('dashboard.traffic.upload')}</span>
+          <span>{t('common.actions.upload')}</span>
           <span className="font-semibold text-foreground tabular-nums">
             {uploadFormatted.value} {uploadFormatted.unit}
           </span>
         </span>
         <span className="flex items-center gap-1.5 text-muted-foreground">
           <ArrowDown className="size-4 text-chart-download" />
-          <span>{t('dashboard.traffic.download')}</span>
+          <span>{t('common.actions.download')}</span>
           <span className="font-semibold text-foreground tabular-nums">
             {downloadFormatted.value} {downloadFormatted.unit}
           </span>

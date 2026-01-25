@@ -598,7 +598,7 @@ export const EditPlanSheet: React.FC<EditPlanSheetProps> = ({
               )}
             />
             <div className="space-y-1">
-              <label className="text-xs text-muted-foreground">{t('admin.plans.form.sortOrder')}</label>
+              <label className="text-xs text-muted-foreground">{t('common.fields.sortOrder')}</label>
               <input
                 type="number"
                 value={formData.sortOrder || 0}
@@ -621,7 +621,7 @@ export const EditPlanSheet: React.FC<EditPlanSheetProps> = ({
             {loading ? (
               <>
                 <Loader2 className="mr-2 size-4 animate-spin" />
-                {t('admin.plans.form.saving')}
+                {t('common.loading.saving')}
               </>
             ) : (
               t('admin.plans.form.saveChanges')

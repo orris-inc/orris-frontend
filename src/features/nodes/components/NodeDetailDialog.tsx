@@ -188,12 +188,12 @@ export const NodeDetailDialog: React.FC<NodeDetailDialogProps> = ({
                         <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
                         <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-green-500"></span>
                       </span>
-                      <span className="text-sm font-medium text-green-600">{t('admin.nodes.detail.online')}</span>
+                      <span className="text-sm font-medium text-green-600">{t('common.status.online')}</span>
                     </>
                   ) : (
                     <>
                       <span className="h-2.5 w-2.5 rounded-full bg-slate-300"></span>
-                      <span className="text-sm font-medium text-slate-500">{t('admin.nodes.detail.offline')}</span>
+                      <span className="text-sm font-medium text-slate-500">{t('common.status.offline')}</span>
                     </>
                   )}
                 </div>
@@ -423,7 +423,7 @@ export const NodeDetailDialog: React.FC<NodeDetailDialogProps> = ({
 
           {/* Basic Info */}
           <div className="@container">
-            <h3 className="text-sm font-semibold mb-3">{t('admin.nodes.detail.basicInfo')}</h3>
+            <h3 className="text-sm font-semibold mb-3">{t('common.sections.basicInfo')}</h3>
             <Separator className="mb-4" />
             <div className="grid grid-cols-1 @md:grid-cols-2 gap-4">
               <div className="space-y-1">
@@ -432,12 +432,12 @@ export const NodeDetailDialog: React.FC<NodeDetailDialogProps> = ({
               </div>
 
               <div className="space-y-1">
-                <p className="text-sm text-muted-foreground">{t('admin.nodes.detail.version')}</p>
+                <p className="text-sm text-muted-foreground">{t('common.fields.version')}</p>
                 <p className="text-sm">{node.version}</p>
               </div>
 
               <div className="space-y-1">
-                <p className="text-sm text-muted-foreground">{t('admin.nodes.detail.sortOrder')}</p>
+                <p className="text-sm text-muted-foreground">{t('common.fields.sortOrder')}</p>
                 <p className="text-sm">{node.sortOrder ?? 0}</p>
               </div>
 
@@ -612,12 +612,12 @@ export const NodeDetailDialog: React.FC<NodeDetailDialogProps> = ({
             <Separator className="mb-4" />
             <div className="grid grid-cols-1 @md:grid-cols-2 gap-4">
               <div className="space-y-1">
-                <p className="text-sm text-muted-foreground">{t('admin.nodes.detail.createdAt')}</p>
+                <p className="text-sm text-muted-foreground">{t('common.fields.createdAt')}</p>
                 <p className="text-xs">{formatDateTime(node.createdAt)}</p>
               </div>
 
               <div className="space-y-1">
-                <p className="text-sm text-muted-foreground">{t('admin.nodes.detail.updatedAt')}</p>
+                <p className="text-sm text-muted-foreground">{t('common.fields.updatedAt')}</p>
                 <p className="text-xs">{formatDateTime(node.updatedAt)}</p>
               </div>
 

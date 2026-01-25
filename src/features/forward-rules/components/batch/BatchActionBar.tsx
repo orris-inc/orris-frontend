@@ -63,7 +63,7 @@ export const BatchActionBar: React.FC<BatchActionBarProps> = ({
               ) : (
                 <Power className="size-3.5 text-green-500" />
               )}
-              <span className="hidden @lg:inline text-green-600 dark:text-green-400">{t('admin.forwardRules.batch.enableRules')}</span>
+              <span className="hidden @lg:inline text-green-600 dark:text-green-400">{t('common.actions.enable')}</span>
             </Button>
           </TooltipTrigger>
           <TooltipContent>{t('admin.forwardRules.batch.enableTooltip')}</TooltipContent>
@@ -83,7 +83,7 @@ export const BatchActionBar: React.FC<BatchActionBarProps> = ({
               ) : (
                 <PowerOff className="size-3.5 text-orange-500" />
               )}
-              <span className="hidden @lg:inline text-orange-600 dark:text-orange-400">{t('admin.forwardRules.batch.disableRules')}</span>
+              <span className="hidden @lg:inline text-orange-600 dark:text-orange-400">{t('common.actions.disable')}</span>
             </Button>
           </TooltipTrigger>
           <TooltipContent>{t('admin.forwardRules.batch.disableTooltip')}</TooltipContent>
@@ -125,7 +125,7 @@ export const BatchActionBar: React.FC<BatchActionBarProps> = ({
               ) : (
                 <Trash2 className="size-3.5 text-destructive" />
               )}
-              <span className="hidden @lg:inline text-destructive">{t('admin.forwardRules.batch.delete')}</span>
+              <span className="hidden @lg:inline text-destructive">{t('common.actions.delete')}</span>
             </Button>
           </TooltipTrigger>
           <TooltipContent>{t('admin.forwardRules.batch.deleteTooltip')}</TooltipContent>
@@ -143,7 +143,7 @@ export const BatchActionBar: React.FC<BatchActionBarProps> = ({
             className="h-8 px-2.5 gap-1.5"
           >
             <X className="size-3.5" />
-            <span className="hidden @sm:inline">{t('admin.forwardRules.batch.cancel')}</span>
+            <span className="hidden @sm:inline">{t('common.actions.cancel')}</span>
           </Button>
         </TooltipTrigger>
         <TooltipContent>{t('admin.forwardRules.batch.cancelSelection')}</TooltipContent>

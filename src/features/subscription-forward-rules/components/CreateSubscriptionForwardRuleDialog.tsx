@@ -344,7 +344,7 @@ export const CreateSubscriptionForwardRuleDialog: React.FC<
           <div className="space-y-6 py-4">
             {/* Basic info */}
             <div>
-              <h3 className="text-sm font-medium text-muted-foreground mb-3">{t('admin.forwardRules.form.basicInfo')}</h3>
+              <h3 className="text-sm font-medium text-muted-foreground mb-3">{t('common.sections.basicInfo')}</h3>
               <Separator className="mb-4" />
               <div className="space-y-4">
                 {/* Rule name */}
@@ -382,7 +382,7 @@ export const CreateSubscriptionForwardRuleDialog: React.FC<
                       id="sub-agentId"
                       className={errors.agentId ? 'border-destructive' : ''}
                     >
-                      <SelectValue placeholder={isLoadingAgents ? t('app.loading') : t('admin.forwardRules.form.selectForwardAgent')} />
+                      <SelectValue placeholder={isLoadingAgents ? t('common.table.loading') : t('admin.forwardRules.form.selectForwardAgent')} />
                     </SelectTrigger>
                     <SelectContent>
                       {forwardAgents
@@ -569,7 +569,7 @@ export const CreateSubscriptionForwardRuleDialog: React.FC<
 
                 {/* Remark */}
                 <div className="flex flex-col gap-2">
-                  <Label htmlFor="sub-remark">{t('admin.forwardRules.form.remark')}</Label>
+                  <Label htmlFor="sub-remark">{t('common.fields.remark')}</Label>
                   <Textarea
                     id="sub-remark"
                     value={formData.remark}
@@ -610,7 +610,7 @@ export const CreateSubscriptionForwardRuleDialog: React.FC<
 
                 {/* Protocol type */}
                 <div className="flex flex-col gap-2">
-                  <Label htmlFor="sub-protocol">{t('admin.forwardRules.form.protocolType')}</Label>
+                  <Label htmlFor="sub-protocol">{t('common.protocol')}</Label>
                   <Select
                     value={formData.protocol}
                     onValueChange={(value) => handleChange('protocol', value)}
@@ -723,7 +723,7 @@ export const CreateSubscriptionForwardRuleDialog: React.FC<
                         id="sub-targetNodeId"
                         className={errors.targetNodeId ? 'border-destructive' : ''}
                       >
-                        <SelectValue placeholder={isLoadingNodes ? t('app.loading') : t('admin.forwardRules.form.selectTargetNode')} />
+                        <SelectValue placeholder={isLoadingNodes ? t('common.table.loading') : t('admin.forwardRules.form.selectTargetNode')} />
                       </SelectTrigger>
                       <SelectContent>
                         {availableNodes.map((node) => (
@@ -768,7 +768,7 @@ export const CreateSubscriptionForwardRuleDialog: React.FC<
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="auto">{t('admin.forwardRules.form.ipVersionAuto')}</SelectItem>
+                      <SelectItem value="auto">{t('common.auto')}</SelectItem>
                       <SelectItem value="ipv4">IPv4</SelectItem>
                       <SelectItem value="ipv6">IPv6</SelectItem>
                     </SelectContent>
@@ -777,7 +777,7 @@ export const CreateSubscriptionForwardRuleDialog: React.FC<
 
                 {/* Sort order */}
                 <div className="flex flex-col gap-2">
-                  <Label htmlFor="sub-sortOrder">{t('admin.forwardRules.form.sortOrder')}</Label>
+                  <Label htmlFor="sub-sortOrder">{t('common.fields.sortOrder')}</Label>
                   <Input
                     id="sub-sortOrder"
                     type="number"
@@ -799,7 +799,7 @@ export const CreateSubscriptionForwardRuleDialog: React.FC<
             {t('common.actions.cancel')}
           </Button>
           <Button onClick={handleSubmit} disabled={!isFormValid() || isCreating}>
-            {isCreating ? t('admin.forwardRules.form.creating') : t('common.actions.create')}
+            {isCreating ? t('common.loading.creating') : t('common.actions.create')}
           </Button>
         </DialogFooter>
       </DialogContent>

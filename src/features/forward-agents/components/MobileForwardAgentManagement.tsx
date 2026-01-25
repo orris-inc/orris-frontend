@@ -216,7 +216,7 @@ export const MobileForwardAgentManagement = ({
         onRefresh={onRefresh}
         refreshing={refreshing}
         onCreate={onCreate}
-        createLabel={t('admin.forwardAgents.actions.create')}
+        createLabel={t('common.actions.create')}
         extraActions={extraActions}
       />
 
@@ -227,9 +227,9 @@ export const MobileForwardAgentManagement = ({
         hasFilter={hasFilter}
         emptyIcon={Router}
         emptyTitle={t('admin.forwardAgents.table.empty')}
-        emptyDescription={t('admin.forwardAgents.form.create')}
+        emptyDescription={t('common.actions.create')}
         emptyAction={{
-          label: t('admin.forwardAgents.actions.create'),
+          label: t('common.actions.create'),
           onClick: onCreate,
           icon: Plus,
         }}

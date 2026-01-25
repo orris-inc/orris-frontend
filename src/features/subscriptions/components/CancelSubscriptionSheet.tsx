@@ -137,7 +137,7 @@ export const CancelSubscriptionSheet: React.FC<CancelSubscriptionSheetProps> = (
             {loading ? (
               <>
                 <Loader2 className="mr-2 size-4 animate-spin" />
-                {t('messages.processing')}
+                {t('common.processing')}
               </>
             ) : (
               t('messages.confirmCancel')

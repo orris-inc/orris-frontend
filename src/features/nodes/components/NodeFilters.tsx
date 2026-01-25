@@ -44,7 +44,7 @@ export const NodeFilters: React.FC<NodeFiltersComponentProps> = ({ filters, onCh
       <div className="w-36">
         <Select value={filters.status || '_all_'} onValueChange={handleStatusChange}>
           <SelectTrigger>
-            <SelectValue placeholder={t('admin.forwardRules.filters.status')} />
+            <SelectValue placeholder={t('common.status.label')} />
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="_all_">{t('filter.all')}</SelectItem>

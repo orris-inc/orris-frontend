@@ -34,15 +34,15 @@ const formatTraffic = (bytes: number): { value: string; unit: string } => {
 const getStatusConfig = (status: string, t: TFunction) => {
   switch (status) {
     case 'active':
-      return { label: t('user.dashboard.subscription.status.active'), variant: 'success' as const };
+      return { label: t('common.status.active'), variant: 'success' as const };
     case 'expired':
-      return { label: t('user.dashboard.subscription.status.expired'), variant: 'destructive' as const };
+      return { label: t('common.status.expired'), variant: 'destructive' as const };
     case 'cancelled':
-      return { label: t('user.dashboard.subscription.status.cancelled'), variant: 'outline' as const };
+      return { label: t('common.status.cancelled'), variant: 'outline' as const };
     case 'pending':
-      return { label: t('user.dashboard.subscription.status.pending'), variant: 'secondary' as const };
+      return { label: t('common.status.pending'), variant: 'secondary' as const };
     case 'renewed':
-      return { label: t('user.dashboard.subscription.status.renewed'), variant: 'success' as const };
+      return { label: t('common.status.renewed'), variant: 'success' as const };
     default:
       return { label: status, variant: 'secondary' as const };
   }
@@ -129,7 +129,7 @@ export const SubscriptionEntryCard = ({ subscription, className }: SubscriptionE
             {isActive && daysRemaining !== null && (
               <span className="text-xs text-muted-foreground flex items-center gap-1 mt-0.5">
                 <Clock className="size-3" />
-                {t('user.dashboard.subscription.daysRemaining', { count: daysRemaining })}
+                {t('common.time.days', { count: daysRemaining })}
               </span>
             )}
           </div>

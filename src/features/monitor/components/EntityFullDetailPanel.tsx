@@ -212,7 +212,7 @@ export const EntityFullDetailPanel = memo(({ entity, className, onClose }: Entit
           <div className="flex items-center gap-2 shrink-0">
             <Badge variant="default" className="bg-success text-success-foreground">
               <Wifi className="size-3 mr-1" />
-              {t('admin.monitor.detail.online')}
+              {t('common.status.online')}
             </Badge>
             {onClose && (
               <Button variant="ghost" size="sm" onClick={onClose} className="h-7 w-7 p-0">
@@ -491,7 +491,7 @@ export const EntityFullDetailPanel = memo(({ entity, className, onClose }: Entit
           {expandedSections.processes && (
             <div className="pl-5 space-y-1 pb-2">
               <MetricRow label={t('admin.monitor.detail.totalProcesses')} value={status.processesTotal} />
-              <MetricRow label={t('admin.monitor.detail.running')} value={status.processesRunning} />
+              <MetricRow label={t('common.status.running')} value={status.processesRunning} />
               <MetricRow label={t('admin.monitor.detail.blocked')} value={status.processesBlocked} />
 
               <div className="h-px bg-border/50 my-2" />

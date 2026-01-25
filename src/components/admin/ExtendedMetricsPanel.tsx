@@ -445,7 +445,7 @@ export const ExtendedMetricsPanel = ({
                   <p className="text-sm font-medium">{formatNumber(data.processesTotal)}</p>
                 </div>
                 <div className="bg-muted/30 rounded-md p-2 text-center">
-                  <p className="text-[10px] text-muted-foreground">{t('admin.monitor.metrics.running')}</p>
+                  <p className="text-[10px] text-muted-foreground">{t('common.status.running')}</p>
                   <p className="text-sm font-medium text-green-600">
                     {formatNumber(data.processesRunning)}
                   </p>

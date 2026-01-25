@@ -162,7 +162,7 @@ export const CreatePlanDialog: React.FC<CreatePlanDialogProps> = ({
       const planLimits = parsePlanLimits(initialPlan.limits);
 
       setFormData({
-        name: `${initialPlan.name} (${t('admin.plans.copySuffix')})`,
+        name: `${initialPlan.name} (${t('common.actions.copy')})`,
         slug: `${initialPlan.slug}-copy`,
         planType: initialPlan.planType || 'node',
         description: initialPlan.description || '',
@@ -303,7 +303,7 @@ export const CreatePlanDialog: React.FC<CreatePlanDialogProps> = ({
         <div className="space-y-6 py-4">
           {/* Basic Information */}
           <div className="space-y-4">
-            <h3 className="text-sm font-semibold">{t('admin.plans.form.basicInfo')}</h3>
+            <h3 className="text-sm font-semibold">{t('common.sections.basicInfo')}</h3>
             <Separator />
             <div className="grid grid-cols-1 gap-4 @sm:grid-cols-2">
               <div className="flex flex-col gap-2">
@@ -583,7 +583,7 @@ export const CreatePlanDialog: React.FC<CreatePlanDialogProps> = ({
 
           {/* Description */}
           <div className="space-y-4">
-            <h3 className="text-sm font-semibold">{t('admin.plans.form.description')}</h3>
+            <h3 className="text-sm font-semibold">{t('common.fields.description')}</h3>
             <Separator />
             <div className="flex flex-col gap-2">
               <Textarea
@@ -615,7 +615,7 @@ export const CreatePlanDialog: React.FC<CreatePlanDialogProps> = ({
               </div>
 
               <div className="flex flex-col gap-2">
-                <Label htmlFor="sortOrder">{t('admin.plans.form.sortOrder')}</Label>
+                <Label htmlFor="sortOrder">{t('common.fields.sortOrder')}</Label>
                 <Input
                   id="sortOrder"
                   type="number"
@@ -647,7 +647,7 @@ export const CreatePlanDialog: React.FC<CreatePlanDialogProps> = ({
             {t('common.actions.cancel')}
           </Button>
           <Button onClick={handleSubmit} disabled={loading || !formData.name || !formData.slug}>
-            {loading ? t('admin.plans.form.creating') : (isDuplicateMode ? t('admin.plans.form.createCopy') : t('common.actions.create'))}
+            {loading ? t('common.loading.creating') : (isDuplicateMode ? t('admin.plans.form.createCopy') : t('common.actions.create'))}
           </Button>
         </DialogFooter>
       </DialogContent>

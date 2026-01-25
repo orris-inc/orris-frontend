@@ -265,7 +265,7 @@ export const EditPlanDialog: React.FC<EditPlanDialogProps> = ({
 
           {/* Editable Fields */}
           <div className="space-y-4">
-            <h3 className="text-sm font-semibold">{t('admin.forwardRules.form.editableInfo')}</h3>
+            <h3 className="text-sm font-semibold">{t('common.sections.editableInfo')}</h3>
             <Separator />
             <div className="grid grid-cols-1 gap-4 @sm:grid-cols-2">
               {/* Pricing Options */}
@@ -498,7 +498,7 @@ export const EditPlanDialog: React.FC<EditPlanDialogProps> = ({
 
           {/* Description */}
           <div className="space-y-4">
-            <h3 className="text-sm font-semibold">{t('admin.plans.form.description')}</h3>
+            <h3 className="text-sm font-semibold">{t('common.fields.description')}</h3>
             <Separator />
             <div className="flex flex-col gap-2">
               <Textarea
@@ -518,7 +518,7 @@ export const EditPlanDialog: React.FC<EditPlanDialogProps> = ({
             <Separator />
             <div className="grid grid-cols-1 gap-4 @sm:grid-cols-2">
               <div className="flex flex-col gap-2">
-                <Label htmlFor="sortOrder">{t('admin.plans.form.sortOrder')}</Label>
+                <Label htmlFor="sortOrder">{t('common.fields.sortOrder')}</Label>
                 <Input
                   id="sortOrder"
                   type="number"
@@ -550,7 +550,7 @@ export const EditPlanDialog: React.FC<EditPlanDialogProps> = ({
             {t('common.actions.cancel')}
           </Button>
           <Button onClick={handleSubmit} disabled={loading}>
-            {loading ? t('admin.forwardRules.form.saving') : t('common.actions.save')}
+            {loading ? t('common.loading.saving') : t('common.actions.save')}
           </Button>
         </DialogFooter>
       </DialogContent>

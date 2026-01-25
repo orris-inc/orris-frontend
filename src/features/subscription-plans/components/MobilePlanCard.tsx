@@ -140,7 +140,7 @@ export const MobilePlanCard = ({
           {plan.trialDays != null && plan.trialDays > 0 && (
             <>
               <span className="text-border">·</span>
-              <span>{t('admin.plans.table.daysCount', { count: plan.trialDays })}</span>
+              <span>{t('common.time.days_other', { count: plan.trialDays })}</span>
             </>
           )}
 

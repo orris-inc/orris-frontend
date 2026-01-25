@@ -208,7 +208,7 @@ export const EditForwardAgentDialog: React.FC<EditForwardAgentDialogProps> = ({
             {/* Basic info (read-only) */}
             <div>
               <h3 className="text-sm font-medium text-muted-foreground mb-3">
-                {t("admin.forwardAgents.edit.sections.basicInfo")}
+                {t("common.sections.basicInfo")}
               </h3>
               <Separator className="mb-4" />
               <div className="grid grid-cols-1 @md:grid-cols-2 gap-4">
@@ -218,7 +218,7 @@ export const EditForwardAgentDialog: React.FC<EditForwardAgentDialogProps> = ({
                 </div>
 
                 <div className="flex flex-col gap-2">
-                  <Label htmlFor="createdAt">{t("admin.forwardAgents.edit.labels.createdAt")}</Label>
+                  <Label htmlFor="createdAt">{t("common.fields.createdAt")}</Label>
                   <Input
                     id="createdAt"
                     value={formatDateTime(agent.createdAt)}
@@ -231,7 +231,7 @@ export const EditForwardAgentDialog: React.FC<EditForwardAgentDialogProps> = ({
             {/* Editable fields */}
             <div>
               <h3 className="text-sm font-medium text-muted-foreground mb-3">
-                {t("admin.forwardAgents.edit.sections.editableInfo")}
+                {t("common.sections.editableInfo")}
               </h3>
               <Separator className="mb-4" />
               <div className="grid grid-cols-1 gap-4">
@@ -299,7 +299,7 @@ export const EditForwardAgentDialog: React.FC<EditForwardAgentDialogProps> = ({
 
                 {/* Sort order */}
                 <div className="flex flex-col gap-2">
-                  <Label htmlFor="sortOrder">{t("admin.forwardAgents.edit.labels.sortOrder")}</Label>
+                  <Label htmlFor="sortOrder">{t("common.fields.sortOrder")}</Label>
                   <Input
                     id="sortOrder"
                     type="number"
@@ -360,7 +360,7 @@ export const EditForwardAgentDialog: React.FC<EditForwardAgentDialogProps> = ({
 
                 {/* Remark */}
                 <div className="flex flex-col gap-2">
-                  <Label htmlFor="remark">{t("admin.forwardAgents.edit.labels.remark")}</Label>
+                  <Label htmlFor="remark">{t("common.fields.remark")}</Label>
                   <Textarea
                     id="remark"
                     rows={3}
@@ -385,7 +385,7 @@ export const EditForwardAgentDialog: React.FC<EditForwardAgentDialogProps> = ({
                     <SelectTrigger id="groupSid">
                       <SelectValue
                         placeholder={
-                          isLoadingGroups ? t("common.loading") : t("admin.forwardAgents.edit.placeholders.selectResourceGroup")
+                          isLoadingGroups ? t("common.loading.loading") : t("admin.forwardAgents.edit.placeholders.selectResourceGroup")
                         }
                       />
                     </SelectTrigger>
@@ -431,10 +431,10 @@ export const EditForwardAgentDialog: React.FC<EditForwardAgentDialogProps> = ({
 
         <DialogFooter className="flex-shrink-0">
           <Button variant="outline" onClick={onClose}>
-            {t("common.cancel")}
+            {t("common.actions.cancel")}
           </Button>
           <Button onClick={handleSubmit} disabled={!hasChanges}>
-            {t("common.save")}
+            {t("common.actions.save")}
           </Button>
         </DialogFooter>
       </DialogContent>

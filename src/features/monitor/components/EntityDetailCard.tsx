@@ -231,7 +231,7 @@ export const EntityDetailCard = memo(({ entity, compact = false }: EntityDetailC
                 variant={isOnline ? 'default' : 'secondary'}
                 className={`shrink-0 text-[10px] @sm:text-xs ${isOnline ? 'bg-success text-success-foreground' : ''}`}
               >
-                {isOnline ? t('admin.monitor.detail.online') : t('admin.monitor.detail.offline')}
+                {isOnline ? t('common.status.online') : t('common.status.offline')}
               </Badge>
             </div>
 
@@ -313,7 +313,7 @@ export const EntityDetailCard = memo(({ entity, compact = false }: EntityDetailC
               variant={isOnline ? 'default' : 'secondary'}
               className={`shrink-0 text-[10px] ${isOnline ? 'bg-success text-success-foreground' : ''}`}
             >
-              {isOnline ? t('admin.monitor.detail.online') : t('admin.monitor.detail.offline')}
+              {isOnline ? t('common.status.online') : t('common.status.offline')}
             </Badge>
           </div>
         </div>
@@ -331,14 +331,14 @@ export const EntityDetailCard = memo(({ entity, compact = false }: EntityDetailC
           <div className="flex items-center gap-3 px-1">
             <div className="flex items-center gap-1.5 flex-1 min-w-0">
               <ArrowDown className="size-3 text-success shrink-0" />
-              <span className="text-[10px] text-muted-foreground">{t('admin.monitor.download')}</span>
+              <span className="text-[10px] text-muted-foreground">{t('common.actions.download')}</span>
               <span className="text-[11px] font-semibold text-success tabular-nums">{formatBitRate(status.networkRxRate ?? 0)}</span>
               <span className="text-[9px] text-muted-foreground/70 truncate">({formatBytes(status.networkRxBytes ?? 0)})</span>
             </div>
             <div className="w-px h-3 bg-border" />
             <div className="flex items-center gap-1.5 flex-1 min-w-0">
               <ArrowUp className="size-3 text-info shrink-0" />
-              <span className="text-[10px] text-muted-foreground">{t('admin.monitor.upload')}</span>
+              <span className="text-[10px] text-muted-foreground">{t('common.actions.upload')}</span>
               <span className="text-[11px] font-semibold text-info tabular-nums">{formatBitRate(status.networkTxRate ?? 0)}</span>
               <span className="text-[9px] text-muted-foreground/70 truncate">({formatBytes(status.networkTxBytes ?? 0)})</span>
             </div>
@@ -378,7 +378,7 @@ export const EntityDetailCard = memo(({ entity, compact = false }: EntityDetailC
             {(status as NodeSystemStatus).agentVersion && (
               <CompactStat
                 icon={<Server className="size-3" />}
-                label={t('admin.monitor.detail.version')}
+                label={t('common.fields.version')}
                 value={(status as NodeSystemStatus).agentVersion ?? '-'}
               />
             )}

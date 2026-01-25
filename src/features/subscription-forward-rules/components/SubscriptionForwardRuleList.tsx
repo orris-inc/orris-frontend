@@ -199,7 +199,7 @@ export const SubscriptionForwardRuleList: React.FC<SubscriptionForwardRuleListPr
       <>
         <ContextMenuItem onClick={() => onEdit(rule)}>
           <Edit className="mr-2 size-4" />
-          {t('userForwardRules.menu.edit')}
+          {t('common.actions.edit')}
         </ContextMenuItem>
         <ContextMenuSeparator />
         {rule.status === 'enabled' ? (
@@ -425,7 +425,7 @@ export const SubscriptionForwardRuleList: React.FC<SubscriptionForwardRuleListPr
       },
       {
         accessorKey: 'status',
-        header: t('userForwardRules.columns.status'),
+        header: t('common.status.label'),
         size: 88,
         meta: { priority: 1 } as ResponsiveColumnMeta,
         cell: ({ row }) => {
@@ -439,7 +439,7 @@ export const SubscriptionForwardRuleList: React.FC<SubscriptionForwardRuleListPr
                     className="text-xs cursor-pointer"
                     onClick={() => onToggleStatus(rule)}
                   >
-                    {rule.status === 'enabled' ? t('userForwardRules.status.enabled') : t('userForwardRules.status.disabled')}
+                    {rule.status === 'enabled' ? t('common.status.enabled') : t('common.status.disabled')}
                   </Badge>
                 </span>
               </TooltipTrigger>
@@ -450,7 +450,7 @@ export const SubscriptionForwardRuleList: React.FC<SubscriptionForwardRuleListPr
       },
       {
         id: 'actions',
-        header: t('userForwardRules.columns.actions'),
+        header: t('common.table.actions'),
         size: 100,
         meta: { priority: 1, sticky: 'right' } as ResponsiveColumnMeta,
         enableSorting: false,
@@ -467,7 +467,7 @@ export const SubscriptionForwardRuleList: React.FC<SubscriptionForwardRuleListPr
                     <Edit className="size-4" />
                   </button>
                 </TooltipTrigger>
-                <TooltipContent>{t('userForwardRules.menu.edit')}</TooltipContent>
+                <TooltipContent>{t('common.actions.edit')}</TooltipContent>
               </Tooltip>
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>

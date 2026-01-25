@@ -296,14 +296,14 @@ export const SubscriptionManagementPage: React.FC = () => {
           metadata={
             [
               { icon: Receipt, text: `${stats.total} ${t('admin.subscriptions.label')}` },
-              { icon: CheckCircle2, text: `${stats.active} ${t('subscriptionStatus.active')}` },
+              { icon: CheckCircle2, text: `${stats.active} ${t('common.status.active')}` },
               stats.trialing > 0 && {
                 icon: Sparkles,
                 text: `${stats.trialing} ${t('subscriptionStatus.trialing')}`,
               },
               stats.suspended > 0 && {
                 icon: Pause,
-                text: `${stats.suspended} ${t('subscriptionStatus.suspended')}`,
+                text: `${stats.suspended} ${t('common.status.suspended')}`,
               },
             ].filter(Boolean) as { icon: typeof Receipt; text: string }[]
           }

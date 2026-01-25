@@ -81,7 +81,7 @@ const EntityCard = memo(({ entity }: { entity: EntityStatus }) => {
                   variant={entity.isOnline ? 'default' : 'secondary'}
                   className="text-[10px] px-1.5 py-0 h-4 shrink-0"
                 >
-                  {entity.isOnline ? t('admin.monitor.detail.online') : t('admin.monitor.detail.offline')}
+                  {entity.isOnline ? t('common.status.online') : t('common.status.offline')}
                 </Badge>
               </div>
               {entity.isOnline && status && (

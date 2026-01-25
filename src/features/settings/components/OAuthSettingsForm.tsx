@@ -96,12 +96,12 @@ const StatusBadge = ({ enabled }: { enabled: boolean }) => {
   return enabled ? (
     <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-success/10 text-success ring-1 ring-success/20">
       <CheckCircle2 className="size-3" />
-      {t('admin.settings.enabled')}
+      {t('common.status.enabled')}
     </span>
   ) : (
     <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-muted text-muted-foreground">
       <XCircle className="size-3" />
-      {t('admin.settings.disabled')}
+      {t('common.status.disabled')}
     </span>
   );
 };

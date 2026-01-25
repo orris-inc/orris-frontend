@@ -20,10 +20,10 @@ import {
   ChevronRight,
   Menu,
   X,
+  Github,
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { getButtonClass } from '@/lib/ui-styles';
 import { ThemeToggle } from '@/components/common/ThemeToggle';
 import { LanguageSwitcher } from '@/components/common/LanguageSwitcher';
 import { useVersionInfo } from '@/hooks';
@@ -155,7 +155,7 @@ export const LandingPage = () => {
   return (
     <div className="min-h-viewport bg-background">
       {/* Navigation */}
-      <header className="fixed top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-sm border-b border-border/50">
+      <header className="border-b border-border/50">
         <nav className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-14">
             {/* Logo */}
@@ -205,7 +205,9 @@ export const LandingPage = () => {
                   'inline-flex items-center justify-center h-9 px-4 rounded-full',
                   'text-sm font-medium',
                   'bg-foreground text-background',
-                  'hover:bg-foreground/90 transition-colors'
+                  'hover:bg-foreground/90 active:bg-foreground/80',
+                  'focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring',
+                  'transition-colors'
                 )}
               >
                 {t('landing.nav.getStarted')}
@@ -224,7 +226,12 @@ export const LandingPage = () => {
               </Link>
               <button
                 onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-                className="inline-flex h-9 w-9 items-center justify-center rounded-md hover:bg-accent transition-colors -mr-2"
+                className={cn(
+                  'inline-flex h-10 w-10 items-center justify-center rounded-md -mr-2',
+                  'hover:bg-accent active:bg-accent/80',
+                  'focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring',
+                  'transition-colors'
+                )}
                 aria-label={mobileMenuOpen ? t('landing.nav.closeMenu') : t('landing.nav.openMenu')}
                 aria-expanded={mobileMenuOpen}
               >
@@ -270,10 +277,12 @@ export const LandingPage = () => {
                   to="/register"
                   onClick={() => setMobileMenuOpen(false)}
                   className={cn(
-                    'inline-flex items-center justify-center w-full h-10 rounded-full',
-                    'text-sm font-medium',
+                    'inline-flex items-center justify-center w-full h-12 rounded-full',
+                    'text-base font-medium',
                     'bg-foreground text-background',
-                    'hover:bg-foreground/90 transition-colors'
+                    'hover:bg-foreground/90 active:bg-foreground/80',
+                    'focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring',
+                    'transition-colors'
                   )}
                 >
                   {t('landing.nav.getStarted')}
@@ -285,25 +294,25 @@ export const LandingPage = () => {
       </header>
 
       {/* Hero Section */}
-      <section className="relative pt-24 pb-20 px-4 overflow-hidden">
-        {/* Background decoration */}
+      <section className="relative min-h-[calc(100dvh-3.5rem)] flex flex-col justify-center px-4 py-8 sm:py-12 overflow-hidden">
+        {/* Background decoration - responsive sizes */}
         <div className="absolute inset-0 -z-10">
           <motion.div
             initial={{ opacity: 0, scale: 0.8 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 1, ease: 'easeOut' }}
-            className="absolute top-1/4 left-1/4 size-96 bg-primary/10 dark:bg-primary/20 rounded-full blur-3xl"
+            className="absolute top-1/4 left-1/4 size-48 sm:size-64 lg:size-96 bg-primary/10 dark:bg-primary/20 rounded-full blur-3xl"
           />
           <motion.div
             initial={{ opacity: 0, scale: 0.8 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 1, delay: 0.2, ease: 'easeOut' }}
-            className="absolute bottom-1/4 right-1/4 size-96 bg-accent/10 dark:bg-accent/15 rounded-full blur-3xl"
+            className="absolute bottom-1/4 right-1/4 size-48 sm:size-64 lg:size-96 bg-accent/10 dark:bg-accent/15 rounded-full blur-3xl"
           />
         </div>
 
         <motion.div
-          className="max-w-5xl mx-auto text-center"
+          className="max-w-5xl mx-auto text-center w-full"
           initial="initial"
           animate="animate"
           variants={staggerContainer}
@@ -312,17 +321,17 @@ export const LandingPage = () => {
           <motion.div
             variants={fadeInUp}
             transition={{ duration: 0.5 }}
-            className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 text-primary text-sm font-medium mb-8"
+            className="inline-flex items-center gap-2 px-3 py-1.5 sm:px-4 sm:py-2 rounded-full bg-primary/10 text-primary text-xs sm:text-sm font-medium mb-4 sm:mb-6 lg:mb-8"
           >
-            <Shield className="size-4" />
+            <Shield className="size-3.5 sm:size-4" />
             {t('landing.hero.badge')}
           </motion.div>
 
-          {/* Main heading */}
+          {/* Main heading - fluid typography */}
           <motion.h1
             variants={fadeInUp}
             transition={{ duration: 0.5 }}
-            className="text-fluid-3xl md:text-5xl lg:text-6xl font-bold tracking-tight mb-6"
+            className="text-fluid-3xl sm:text-fluid-4xl lg:text-fluid-5xl font-bold tracking-tight mb-4 sm:mb-6"
           >
             {t('landing.hero.title')}
             <br />
@@ -333,27 +342,41 @@ export const LandingPage = () => {
           <motion.p
             variants={fadeInUp}
             transition={{ duration: 0.5 }}
-            className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto mb-10"
+            className="text-fluid-base sm:text-fluid-lg text-muted-foreground max-w-2xl mx-auto mb-6 sm:mb-8 lg:mb-10 px-2"
           >
             {t('landing.hero.subtitle')}
           </motion.p>
 
-          {/* CTA buttons */}
+          {/* CTA buttons - Mobile: stacked full-width, Desktop: inline */}
           <motion.div
             variants={fadeInUp}
             transition={{ duration: 0.5 }}
-            className="flex flex-col sm:flex-row items-center justify-center gap-4"
+            className="flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-4 px-4 sm:px-0"
           >
             <Link
               to="/register"
-              className={cn(getButtonClass('default', 'lg'), 'gap-2 px-8')}
+              className={cn(
+                'inline-flex items-center justify-center gap-2 rounded-full font-medium',
+                'h-12 sm:h-11 px-8 w-full sm:w-auto text-base sm:text-sm',
+                'bg-primary text-primary-foreground',
+                'hover:bg-primary/90 active:bg-primary/80',
+                'focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring',
+                'transition-colors'
+              )}
             >
               {t('landing.hero.getStartedFree')}
               <ArrowRight className="size-4" />
             </Link>
             <a
               href="#features"
-              className={cn(getButtonClass('outline', 'lg'), 'gap-2 px-8')}
+              className={cn(
+                'inline-flex items-center justify-center gap-2 rounded-full font-medium',
+                'h-12 sm:h-11 px-8 w-full sm:w-auto text-base sm:text-sm',
+                'border border-input bg-background',
+                'hover:bg-accent hover:text-accent-foreground active:bg-accent/80',
+                'focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring',
+                'transition-colors'
+              )}
             >
               {t('landing.hero.learnMore')}
               <ChevronRight className="size-4" />
@@ -364,23 +387,17 @@ export const LandingPage = () => {
           <motion.div
             variants={fadeInUp}
             transition={{ duration: 0.5 }}
-            className="grid grid-cols-3 gap-8 mt-16 max-w-xl mx-auto"
+            className="grid grid-cols-3 gap-4 sm:gap-6 lg:gap-8 mt-10 sm:mt-12 lg:mt-16 max-w-xl mx-auto"
           >
             {[
               { value: '5+', labelKey: 'landing.hero.stats.forwardingModes' },
               { value: '99.9%', labelKey: 'landing.hero.stats.uptimeSla' },
               { value: '24/7', labelKey: 'landing.hero.stats.alwaysOn' },
             ].map((stat, index) => (
-              <motion.div
-                key={index}
-                className="text-center"
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5, delay: 0.6 + index * 0.1 }}
-              >
-                <div className="text-3xl font-bold text-primary">{stat.value}</div>
-                <div className="text-sm text-muted-foreground mt-1">{t(stat.labelKey)}</div>
-              </motion.div>
+              <div key={index} className="text-center">
+                <div className="text-xl sm:text-2xl lg:text-3xl font-bold text-primary">{stat.value}</div>
+                <div className="text-xs sm:text-sm text-muted-foreground mt-1">{t(stat.labelKey)}</div>
+              </div>
             ))}
           </motion.div>
         </motion.div>
@@ -578,25 +595,35 @@ export const LandingPage = () => {
               <motion.div
                 variants={fadeInUp}
                 transition={{ duration: 0.5 }}
-                className="flex flex-col sm:flex-row items-center justify-center gap-4"
+                className="flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-4 w-full sm:w-auto px-4 sm:px-0"
               >
-                <motion.a
-                  href="/register"
-                  className="inline-flex items-center justify-center gap-2 h-12 px-8 rounded-xl bg-white dark:bg-background text-primary font-medium"
-                  whileHover={{ opacity: 0.9 }}
-                  transition={{ duration: 0.2 }}
+                <Link
+                  to="/register"
+                  className={cn(
+                    'inline-flex items-center justify-center gap-2 rounded-full font-medium',
+                    'w-full sm:w-auto h-12 sm:h-11 px-8 text-base sm:text-sm',
+                    'bg-white dark:bg-background text-primary',
+                    'hover:bg-white/90 dark:hover:bg-background/90 active:bg-white/80 dark:active:bg-background/80',
+                    'focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white',
+                    'transition-colors'
+                  )}
                 >
                   {t('landing.cta.getStartedFree')}
                   <ArrowRight className="size-4" />
-                </motion.a>
-                <motion.a
-                  href="/login"
-                  className="inline-flex items-center justify-center gap-2 h-12 px-8 rounded-xl border border-white/30 text-white font-medium"
-                  whileHover={{ backgroundColor: 'rgba(255, 255, 255, 0.1)' }}
-                  transition={{ duration: 0.2 }}
+                </Link>
+                <Link
+                  to="/login"
+                  className={cn(
+                    'inline-flex items-center justify-center gap-2 rounded-full font-medium',
+                    'w-full sm:w-auto h-12 sm:h-11 px-8 text-base sm:text-sm',
+                    'border border-white/30 text-white',
+                    'hover:bg-white/10 active:bg-white/20',
+                    'focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white',
+                    'transition-colors'
+                  )}
                 >
                   {t('landing.cta.alreadyMember')}
-                </motion.a>
+                </Link>
               </motion.div>
             </motion.div>
           </motion.div>
@@ -607,14 +634,27 @@ export const LandingPage = () => {
       <footer className="py-12 px-4 border-t border-border">
         <div className="max-w-6xl mx-auto">
           <div className="flex flex-col md:flex-row items-center justify-between gap-6">
-            <div className="flex items-center gap-2">
-              <div className="size-8 rounded-lg bg-primary flex items-center justify-center">
-                <Globe className="size-5 text-primary-foreground" />
+            {/* Logo + GitHub */}
+            <div className="flex items-center gap-4">
+              <div className="flex items-center gap-2">
+                <div className="size-8 rounded-lg bg-primary flex items-center justify-center">
+                  <Globe className="size-5 text-primary-foreground" />
+                </div>
+                <span className="text-lg font-semibold">Orris</span>
               </div>
-              <span className="text-lg font-semibold">Orris</span>
+              <a
+                href="https://github.com/orris-inc/orris"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-muted-foreground hover:text-foreground transition-colors"
+                aria-label="GitHub"
+              >
+                <Github className="size-5" />
+              </a>
             </div>
 
-            <div className="flex items-center gap-6 text-sm text-muted-foreground">
+            {/* Navigation */}
+            <div className="flex items-center justify-center gap-6 text-sm text-muted-foreground">
               <motion.a
                 href="#features"
                 whileHover={{ color: 'var(--color-foreground)' }}
@@ -638,7 +678,8 @@ export const LandingPage = () => {
               </motion.a>
             </div>
 
-            <div className="flex items-center gap-3 text-sm text-muted-foreground">
+            {/* Copyright + Version */}
+            <div className="flex items-center justify-end gap-3 text-sm text-muted-foreground">
               <span>{t('landing.footer.copyright', { year: new Date().getFullYear() })}</span>
               {(serverVersion || clientVersion) && (
                 <span className="text-muted-foreground/50 text-xs font-mono">

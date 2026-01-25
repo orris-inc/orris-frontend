@@ -189,12 +189,12 @@ export const AddMembersDialog: React.FC<AddMembersDialogProps> = ({
                   onCheckedChange={handleSelectAll}
                 />
                 <span className="text-sm text-muted-foreground">
-                  {selectedIds.size === availableItems.length ? t('resourceGroups.actions.deselectAll') : t('resourceGroups.actions.selectAll')}
+                  {selectedIds.size === availableItems.length ? t('common.actions.deselectAll') : t('common.actions.selectAll')}
                 </span>
               </div>
               {selectedIds.size > 0 && (
                 <Badge variant="secondary">
-                  {t('resourceGroups.actions.selectedCount', { count: selectedIds.size })}
+                  {t('common.selected', { count: selectedIds.size })}
                 </Badge>
               )}
             </div>
@@ -243,7 +243,7 @@ export const AddMembersDialog: React.FC<AddMembersDialogProps> = ({
                           </p>
                         </div>
                         <Badge variant={isActive ? 'default' : 'secondary'} className="flex-shrink-0">
-                          {isActive ? (type === 'nodes' ? t('resourceGroups.status.active') : t('resourceGroups.status.enabled')) : (type === 'nodes' ? t('resourceGroups.status.inactive') : t('resourceGroups.status.stopped'))}
+                          {isActive ? (type === 'nodes' ? t('common.status.active') : t('common.status.enabled')) : (type === 'nodes' ? t('common.status.inactive') : t('common.status.stopped'))}
                         </Badge>
                       </label>
                     );
@@ -258,7 +258,7 @@ export const AddMembersDialog: React.FC<AddMembersDialogProps> = ({
 
         <DialogFooter>
           <Button variant="outline" onClick={handleClose} disabled={isSubmitting}>
-            {t('resourceGroups.addMembers.cancel')}
+            {t('common.actions.cancel')}
           </Button>
           <Button
             onClick={handleSubmit}

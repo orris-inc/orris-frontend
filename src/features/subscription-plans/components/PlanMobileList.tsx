@@ -322,7 +322,7 @@ export const PlanMobileList: React.FC<PlanMobileListProps> = ({
                 {/* Sort order */}
                 {plan.sortOrder !== undefined && plan.sortOrder !== null && (
                   <div className="flex items-center gap-2">
-                    <span className="text-[10px] text-slate-400 dark:text-slate-500 uppercase tracking-wide w-12 flex-shrink-0">{t('admin.plans.detail.sortOrder')}</span>
+                    <span className="text-[10px] text-slate-400 dark:text-slate-500 uppercase tracking-wide w-12 flex-shrink-0">{t('common.table.sort')}</span>
                     <span className="text-xs font-mono text-slate-600 dark:text-slate-300">{plan.sortOrder}</span>
                   </div>
                 )}
@@ -330,7 +330,7 @@ export const PlanMobileList: React.FC<PlanMobileListProps> = ({
                 {/* Description */}
                 {plan.description && (
                   <div className="flex items-start gap-2">
-                    <span className="text-[10px] text-slate-400 dark:text-slate-500 uppercase tracking-wide w-12 pt-0.5 flex-shrink-0">{t('admin.plans.detail.description')}</span>
+                    <span className="text-[10px] text-slate-400 dark:text-slate-500 uppercase tracking-wide w-12 pt-0.5 flex-shrink-0">{t('common.fields.description')}</span>
                     <span className="text-xs text-slate-600 dark:text-slate-300 flex-1 line-clamp-2">{plan.description}</span>
                   </div>
                 )}

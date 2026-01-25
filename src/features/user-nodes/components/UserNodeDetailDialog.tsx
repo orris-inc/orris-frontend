@@ -68,7 +68,7 @@ export const UserNodeDetailDialog: React.FC<UserNodeDetailDialogProps> = ({
           <div className="space-y-4">
             <h3 className="text-sm font-semibold flex items-center gap-2">
               <Globe className="h-4 w-4" />
-              {t('userNodes.detail.basicInfo')}
+              {t('common.sections.basicInfo')}
             </h3>
             <Separator />
             <div className="grid grid-cols-2 gap-4 text-sm">
@@ -257,7 +257,7 @@ export const UserNodeDetailDialog: React.FC<UserNodeDetailDialogProps> = ({
                   </div>
                   <div>
                     <span className="text-muted-foreground">{t('userNodes.detail.tls')}</span>
-                    <span className="ml-2">{node.vmessTls ? t('userNodes.detail.tlsEnabled') : t('userNodes.detail.tlsDisabled')}</span>
+                    <span className="ml-2">{node.vmessTls ? t('common.status.enabled') : t('common.status.disabled')}</span>
                   </div>
                   {node.vmessSni && (
                     <div>
@@ -309,7 +309,7 @@ export const UserNodeDetailDialog: React.FC<UserNodeDetailDialogProps> = ({
                     <div className="col-span-2">
                       <span className="text-muted-foreground">{t('userNodes.detail.bandwidthLimit')}</span>
                       <span className="ml-2">
-                        {t('userNodes.detail.upload')} {node.hysteria2UpMbps || '-'} Mbps / {t('userNodes.detail.download')} {node.hysteria2DownMbps || '-'} Mbps
+                        {t('common.actions.upload')} {node.hysteria2UpMbps || '-'} Mbps / {t('common.actions.download')} {node.hysteria2DownMbps || '-'} Mbps
                       </span>
                     </div>
                   )}

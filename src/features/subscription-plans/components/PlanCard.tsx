@@ -60,7 +60,7 @@ function PlanCard({
                 "px-3 py-1 rounded-full font-medium shadow-sm",
               )}
             >
-              {t("pricing.card.recommended")}
+              {t("common.recommended")}
             </span>
           </div>
         )}

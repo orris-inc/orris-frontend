@@ -211,7 +211,7 @@ export const NodeManagementPage = () => {
 
   const handleCopy = (node: Node) => {
     const copyData: Partial<CreateNodeRequest> = {
-      name: `${node.name} - ${t('admin.nodes.copy')}`,
+      name: `${node.name} - ${t('common.actions.copy')}`,
       protocol: node.protocol,
       serverAddress: node.serverAddress,
       agentPort: node.agentPort,
@@ -368,7 +368,7 @@ export const NodeManagementPage = () => {
               <Switch checked={dragSortEnabled} onCheckedChange={setDragSortEnabled} disabled={isReordering}>
                 <SwitchThumb />
               </Switch>
-              <span className="text-muted-foreground">{t('admin.nodes.sort')}</span>
+              <span className="text-muted-foreground">{t('common.table.sort')}</span>
             </label>
           </div>
 

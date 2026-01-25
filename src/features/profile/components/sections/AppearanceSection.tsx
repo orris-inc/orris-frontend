@@ -91,7 +91,7 @@ export const AppearanceSection = () => {
       <div className="rounded-xl bg-card border overflow-hidden">
         <div className="flex flex-col space-y-1.5 p-5 sm:p-6 border-b">
           <h3 className={`${cardTitleStyles} text-lg`}>
-            {t('profile.appearance.language')}
+            {t('common.language.label')}
           </h3>
           <p className={`${cardDescriptionStyles} text-sm`}>
             {t('profile.appearance.languageDesc')}
@@ -101,7 +101,7 @@ export const AppearanceSection = () => {
           <Select.Root value={currentLanguage} onValueChange={handleLanguageChange}>
             <Select.Trigger
               className="inline-flex items-center justify-between w-full sm:w-64 rounded-xl bg-background border px-4 py-3 text-sm font-medium hover:bg-accent/50 focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 touch-target"
-              aria-label={t('profile.appearance.language')}
+              aria-label={t('common.language.label')}
             >
               <Select.Value>
                 {SUPPORTED_LANGUAGES[currentLanguage]?.nativeName || currentLanguage}

@@ -190,7 +190,7 @@ export const ProbeResultDialog: React.FC<ProbeResultDialogProps> = ({
                           setTimeout(() => setCopiedAddress(false), 2000);
                         }}
                         className="p-1 hover:bg-muted rounded transition-colors flex-shrink-0"
-                        title={t('admin.forwardRules.probe.copyAddress')}
+                        title={t('common.copyAddress')}
                       >
                         {copiedAddress ? (
                           <Check className="size-3 text-green-500" />
@@ -282,7 +282,7 @@ export const ProbeResultDialog: React.FC<ProbeResultDialogProps> = ({
                               </span>
                               {!hop.online && (
                                 <Badge variant="outline" className="text-yellow-600 text-[10px] px-1 py-0 flex-shrink-0">
-                                  {t('admin.forwardRules.probe.offline')}
+                                  {t('common.status.offline')}
                                 </Badge>
                               )}
                             </span>
@@ -290,7 +290,7 @@ export const ProbeResultDialog: React.FC<ProbeResultDialogProps> = ({
                               variant={hop.success ? 'outline' : 'destructive'}
                               className="font-mono text-[10px] px-1.5 py-0 flex-shrink-0"
                             >
-                              {hop.success ? `${hop.latencyMs}ms` : hop.error ?? t('admin.forwardRules.probe.failedShort')}
+                              {hop.success ? `${hop.latencyMs}ms` : hop.error ?? t('common.status.failed')}
                             </Badge>
                           </div>
                         );
@@ -306,7 +306,7 @@ export const ProbeResultDialog: React.FC<ProbeResultDialogProps> = ({
 
         <DialogFooter className="flex-shrink-0 pt-2">
           <Button variant="outline" size="sm" onClick={() => onOpenChange(false)} className="w-full @sm:w-auto">
-            {t('admin.forwardRules.probe.close')}
+            {t('common.actions.close')}
           </Button>
         </DialogFooter>
       </DialogContent>

@@ -154,7 +154,7 @@ export const EditForwardAgentSheet: React.FC<EditForwardAgentSheetProps> = ({
     <Sheet open={open} onOpenChange={(o) => !loading && onOpenChange(o)}>
       <SheetContent>
         <SheetHeader>
-          <SheetTitle>{t('admin.forwardAgents.table.menu.edit')}</SheetTitle>
+          <SheetTitle>{t('common.actions.edit')}</SheetTitle>
           <SheetDescription>{agent.name}</SheetDescription>
         </SheetHeader>
 
@@ -209,7 +209,7 @@ export const EditForwardAgentSheet: React.FC<EditForwardAgentSheetProps> = ({
 
           {/* Sort Order */}
           <div className="space-y-1.5">
-            <label className="text-sm font-medium">{t('admin.forwardAgents.form.sortOrder')}</label>
+            <label className="text-sm font-medium">{t('common.fields.sortOrder')}</label>
             <MobileFormInput
               type="number"
               inputMode="numeric"
@@ -276,7 +276,7 @@ export const EditForwardAgentSheet: React.FC<EditForwardAgentSheetProps> = ({
 
           {/* Remark */}
           <div className="space-y-1.5">
-            <label className="text-sm font-medium">{t('admin.forwardAgents.form.remark')}</label>
+            <label className="text-sm font-medium">{t('common.fields.remark')}</label>
             <MobileFormInput
               placeholder={t('admin.forwardAgents.form.remarkPlaceholder')}
               value={formData.remark || ''}
@@ -292,13 +292,13 @@ export const EditForwardAgentSheet: React.FC<EditForwardAgentSheetProps> = ({
               onChange={(value) => handleChange('groupSid', value === '__none__' ? '' : value)}
               disabled={isLoadingGroups}
               options={[
-                { value: '__none__', label: t('admin.forwardAgents.detail.none') },
+                { value: '__none__', label: t('common.none') },
                 ...resourceGroups.map((group) => ({
                   value: group.sid,
                   label: group.name,
                 })),
               ]}
-              placeholder={isLoadingGroups ? t('app.loading') : t('common.placeholders.select')}
+              placeholder={isLoadingGroups ? t('common.table.loading') : t('common.placeholders.select')}
             />
           </div>
 

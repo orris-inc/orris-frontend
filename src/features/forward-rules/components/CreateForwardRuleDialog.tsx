@@ -835,7 +835,7 @@ export const CreateForwardRuleDialog: React.FC<CreateForwardRuleDialogProps> = (
         <div className="flex-1 min-h-0 overflow-y-auto px-5 py-5 sm:px-6">
           <div className="space-y-6">
             {/* Section 1: Basic Information */}
-            <FormSection title={t("admin.forwardRules.form.basicInfo")}>
+            <FormSection title={t("common.sections.basicInfo")}>
               <div className="grid grid-cols-6 gap-x-4 gap-y-4">
                 {/* Rule Name - 4 cols on desktop */}
                 <FormField
@@ -955,14 +955,14 @@ export const CreateForwardRuleDialog: React.FC<CreateForwardRuleDialogProps> = (
                       }
                       error={!!errors.listenPort}
                       placeholder={t(
-                        "admin.forwardRules.form.listenPortPlaceholderShort",
+                        "common.auto",
                       )}
                     />
                   </FormField>
 
                   {/* Protocol - 1.5 cols */}
                   <FormField
-                    label={t("admin.forwardRules.form.protocolType")}
+                    label={t("common.protocol")}
                     required
                     className="col-span-3 sm:col-span-1"
                   >
@@ -1439,7 +1439,7 @@ export const CreateForwardRuleDialog: React.FC<CreateForwardRuleDialogProps> = (
                   className="flex items-center gap-3 w-full text-left group"
                 >
                   <span className="text-sm font-semibold text-foreground whitespace-nowrap">
-                    {t("admin.forwardRules.form.advancedOptions")}
+                    {t("common.sections.advancedOptions")}
                   </span>
                   <div className="h-px flex-1 bg-border" aria-hidden="true" />
                   <ChevronDown
@@ -1469,7 +1469,7 @@ export const CreateForwardRuleDialog: React.FC<CreateForwardRuleDialogProps> = (
                         </SelectTrigger>
                         <SelectContent>
                           <SelectItem value="auto">
-                            {t("admin.forwardRules.form.ipVersionAuto")}
+                            {t("common.auto")}
                           </SelectItem>
                           <SelectItem value="ipv4">IPv4</SelectItem>
                           <SelectItem value="ipv6">IPv6</SelectItem>
@@ -1524,7 +1524,7 @@ export const CreateForwardRuleDialog: React.FC<CreateForwardRuleDialogProps> = (
 
                   {/* Sort Order */}
                   <FormField
-                    label={t("admin.forwardRules.form.sortOrder")}
+                    label={t("common.fields.sortOrder")}
                     hint={t("admin.forwardRules.form.sortOrderHint")}
                     className="col-span-3 sm:col-span-1"
                   >
@@ -1564,7 +1564,7 @@ export const CreateForwardRuleDialog: React.FC<CreateForwardRuleDialogProps> = (
 
                   {/* Remark */}
                   <FormField
-                    label={t("admin.forwardRules.form.remark")}
+                    label={t("common.fields.remark")}
                     className="col-span-6"
                   >
                     <Textarea
@@ -1639,7 +1639,7 @@ export const CreateForwardRuleDialog: React.FC<CreateForwardRuleDialogProps> = (
                                             "admin.forwardRules.form.planTypeNode",
                                           )
                                         : t(
-                                            "admin.forwardRules.form.planTypeHybrid",
+                                            "common.planType.hybrid",
                                           )}
                                     </Badge>
                                   )}

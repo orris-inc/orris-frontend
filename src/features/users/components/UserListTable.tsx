@@ -112,7 +112,7 @@ export const UserListTable: React.FC<UserListTableProps> = ({
   const columns = useMemo<ColumnDef<UserResponse>[]>(() => [
     {
       accessorKey: 'email',
-      header: t('tableColumns.user'),
+      header: t('common.role.user'),
       size: 220,
       meta: { priority: 1, sticky: 'left' } as ResponsiveColumnMeta,
       cell: ({ row }) => {
@@ -120,7 +120,7 @@ export const UserListTable: React.FC<UserListTableProps> = ({
         const hoverItems = [
           { label: 'ID', value: user.id },
           { label: t('tableColumns.email'), value: user.email },
-          ...(user.name ? [{ label: t('tableColumns.name'), value: user.name }] : []),
+          ...(user.name ? [{ label: t('common.fields.name'), value: user.name }] : []),
         ];
         return (
           <TableHoverCardList
@@ -156,7 +156,7 @@ export const UserListTable: React.FC<UserListTableProps> = ({
     },
     {
       accessorKey: 'status',
-      header: t('tableColumns.status'),
+      header: t('common.status.label'),
       size: 72,
       meta: { priority: 1 } as ResponsiveColumnMeta,
       cell: ({ row }) => {
@@ -170,14 +170,14 @@ export const UserListTable: React.FC<UserListTableProps> = ({
     },
     {
       accessorKey: 'createdAt',
-      header: t('tableColumns.createdAt'),
+      header: t('common.fields.createdAt'),
       size: 100,
       meta: { priority: 4 } as ResponsiveColumnMeta,
       cell: ({ row }) => <DateTimeCell value={row.original.createdAt} format="date" />,
     },
     {
       id: 'actions',
-      header: t('tableColumns.actions'),
+      header: t('common.table.actions'),
       size: 56,
       enableSorting: false,
       meta: { priority: 1, sticky: 'right' } as ResponsiveColumnMeta,

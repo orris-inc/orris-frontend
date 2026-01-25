@@ -112,7 +112,7 @@ export const EditResourceGroupDialog: React.FC<EditResourceGroupDialogProps> = (
 
           <div className="flex flex-col gap-2">
             <Label htmlFor="name">
-              {t('resourceGroups.name')} <span className="text-destructive">*</span>
+              {t('common.fields.name')} <span className="text-destructive">*</span>
             </Label>
             <Input
               id="name"
@@ -124,7 +124,7 @@ export const EditResourceGroupDialog: React.FC<EditResourceGroupDialogProps> = (
           </div>
 
           <div className="flex flex-col gap-2">
-            <Label htmlFor="description">{t('resourceGroups.description')}</Label>
+            <Label htmlFor="description">{t('common.fields.description')}</Label>
             <Textarea
               id="description"
               placeholder={t('resourceGroups.descriptionPlaceholder')}
@@ -138,10 +138,10 @@ export const EditResourceGroupDialog: React.FC<EditResourceGroupDialogProps> = (
 
         <DialogFooter>
           <Button variant="outline" onClick={handleClose} disabled={loading}>
-            {t('resourceGroups.cancel')}
+            {t('common.actions.cancel')}
           </Button>
           <Button onClick={handleSubmit} disabled={loading || !isValid}>
-            {loading ? t('resourceGroups.saving') : t('resourceGroups.save')}
+            {loading ? t('common.loading.saving') : t('common.actions.save')}
           </Button>
         </DialogFooter>
       </DialogContent>

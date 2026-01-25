@@ -181,7 +181,7 @@ export const EntityCompactCard = memo(({ entity }: EntityCompactCardProps) => {
         ) : (
           /* Offline placeholder */
           <div className="py-4 text-center">
-            <p className="text-[10px] text-muted-foreground">{t('admin.monitor.detail.offline')}</p>
+            <p className="text-[10px] text-muted-foreground">{t('common.status.offline')}</p>
           </div>
         )}
       </div>

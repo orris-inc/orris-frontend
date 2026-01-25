@@ -130,7 +130,7 @@ export const ForwardAgentListTable: React.FC<ForwardAgentListTableProps> = ({
       </ContextMenuItem>
       <ContextMenuItem onClick={() => onEdit(agent)}>
         <Edit className="mr-2 size-4" />
-        {t('admin.forwardAgents.table.menu.edit')}
+        {t('common.actions.edit')}
       </ContextMenuItem>
       <ContextMenuItem onClick={() => onGetInstallScript(agent)}>
         <Terminal className="mr-2 size-4" />
@@ -168,17 +168,17 @@ export const ForwardAgentListTable: React.FC<ForwardAgentListTableProps> = ({
       {agent.status === 'enabled' ? (
         <ContextMenuItem onClick={() => onDisable(agent)}>
           <PowerOff className="mr-2 size-4" />
-          {t('admin.forwardAgents.table.menu.disable')}
+          {t('common.actions.disable')}
         </ContextMenuItem>
       ) : (
         <ContextMenuItem onClick={() => onEnable(agent)}>
           <Power className="mr-2 size-4" />
-          {t('admin.forwardAgents.table.menu.enable')}
+          {t('common.actions.enable')}
         </ContextMenuItem>
       )}
       <ContextMenuItem onClick={() => onDelete(agent)} className="text-red-600 dark:text-red-400">
         <Trash2 className="mr-2 size-4" />
-        {t('admin.forwardAgents.table.menu.delete')}
+        {t('common.actions.delete')}
       </ContextMenuItem>
     </>
   ), [t, onViewDetail, onEdit, onGetInstallScript, onCopy, onRegenerateToken, onCheckUpdate, onBroadcastURL, checkingAgentId, onEnable, onDisable, onDelete]);
@@ -217,17 +217,17 @@ export const ForwardAgentListTable: React.FC<ForwardAgentListTableProps> = ({
       {agent.status === 'enabled' ? (
         <DropdownMenuItem onClick={() => onDisable(agent)}>
           <PowerOff className="mr-2 size-4" />
-          {t('admin.forwardAgents.table.menu.disable')}
+          {t('common.actions.disable')}
         </DropdownMenuItem>
       ) : (
         <DropdownMenuItem onClick={() => onEnable(agent)}>
           <Power className="mr-2 size-4" />
-          {t('admin.forwardAgents.table.menu.enable')}
+          {t('common.actions.enable')}
         </DropdownMenuItem>
       )}
       <DropdownMenuItem onClick={() => onDelete(agent)} className="text-red-600 dark:text-red-400">
         <Trash2 className="mr-2 size-4" />
-        {t('admin.forwardAgents.table.menu.delete')}
+        {t('common.actions.delete')}
       </DropdownMenuItem>
     </>
   ), [t, onCopy, onRegenerateToken, onCheckUpdate, onBroadcastURL, checkingAgentId, onEnable, onDisable, onDelete]);
@@ -235,7 +235,7 @@ export const ForwardAgentListTable: React.FC<ForwardAgentListTableProps> = ({
   const columns = useMemo<ColumnDef<ForwardAgent>[]>(() => [
     {
       accessorKey: 'name',
-      header: t('admin.forwardAgents.table.columns.name'),
+      header: t('common.fields.name'),
       size: 220,
       meta: { priority: 1, sticky: 'left' } as ResponsiveColumnMeta,
       cell: ({ row }) => {
@@ -245,7 +245,7 @@ export const ForwardAgentListTable: React.FC<ForwardAgentListTableProps> = ({
           { label: 'ID', value: agent.id },
           { label: t('admin.forwardAgents.table.columns.address'), value: agent.publicAddress || '-' },
           ...(agent.tunnelAddress ? [{ label: t('admin.forwardAgents.table.tooltip.tunnelAddress'), value: agent.tunnelAddress }] : []),
-          ...(agent.remark ? [{ label: t('admin.forwardAgents.table.columns.remark'), value: agent.remark }] : []),
+          ...(agent.remark ? [{ label: t('common.fields.remark'), value: agent.remark }] : []),
         ];
         return (
           <TableHoverCardList
@@ -267,7 +267,7 @@ export const ForwardAgentListTable: React.FC<ForwardAgentListTableProps> = ({
     },
     {
       id: 'health',
-      header: t('admin.forwardAgents.table.columns.status'),
+      header: t('common.status.label'),
       size: 100,
       meta: { priority: 1 } as ResponsiveColumnMeta,
       cell: ({ row }) => {
@@ -378,7 +378,7 @@ export const ForwardAgentListTable: React.FC<ForwardAgentListTableProps> = ({
     },
     {
       id: 'version',
-      header: t('admin.forwardAgents.table.columns.version'),
+      header: t('common.fields.version'),
       size: 85,
       meta: { priority: 3 } as ResponsiveColumnMeta,
       cell: ({ row }) => {
@@ -408,7 +408,7 @@ export const ForwardAgentListTable: React.FC<ForwardAgentListTableProps> = ({
             </TooltipTrigger>
             <TooltipContent>
               <div className="space-y-1">
-                <div className="text-xs">{t('admin.forwardAgents.table.tooltip.version')}: v{version}</div>
+                <div className="text-xs">{t('common.fields.version')}: v{version}</div>
                 {platform && arch && (
                   <div className="text-xs text-slate-400">{platform}/{arch}</div>
                 )}
@@ -423,14 +423,14 @@ export const ForwardAgentListTable: React.FC<ForwardAgentListTableProps> = ({
     },
     {
       accessorKey: 'createdAt',
-      header: t('admin.forwardAgents.table.columns.createdAt'),
+      header: t('common.fields.createdAt'),
       size: 115,
       meta: { priority: 4 } as ResponsiveColumnMeta,
       cell: ({ row }) => <DateTimeCell value={row.original.createdAt} />,
     },
     {
       id: 'actions',
-      header: t('admin.forwardAgents.table.columns.actions'),
+      header: t('common.table.actions'),
       size: 120,
       enableSorting: false,
       meta: { priority: 1, sticky: 'right' } as ResponsiveColumnMeta,
@@ -453,7 +453,7 @@ export const ForwardAgentListTable: React.FC<ForwardAgentListTableProps> = ({
                   <Edit className="size-4" strokeWidth={1.5} />
                 </button>
               </TooltipTrigger>
-              <TooltipContent>{t('admin.forwardAgents.table.menu.edit')}</TooltipContent>
+              <TooltipContent>{t('common.actions.edit')}</TooltipContent>
             </Tooltip>
             <Tooltip>
               <TooltipTrigger asChild>

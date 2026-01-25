@@ -10,7 +10,7 @@ import { z } from 'zod';
 import { Link as RouterLink, useNavigate, useLocation } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Loader2, Check, Fingerprint } from 'lucide-react';
+import { Loader2, Check, Fingerprint, Github } from 'lucide-react';
 import * as Checkbox from '@radix-ui/react-checkbox';
 import { useAuth } from '@/features/auth/hooks/useAuth';
 import { usePasskey } from '@/features/auth/hooks/usePasskey';
@@ -148,7 +148,7 @@ export const LoginPage = () => {
 
   // Zod schema
   const loginSchema = z.object({
-    email: z.string().email(t('auth.validation.emailInvalid')),
+    email: z.string().email(t('common.validation.email')),
     password: z.string().min(8, t('auth.validation.passwordMinLength')),
     rememberMe: z.boolean().catch(false),
   });
@@ -393,13 +393,22 @@ export const LoginPage = () => {
         </main>
 
         {/* Footer */}
-        {(serverVersion || clientVersion) && (
-          <footer className="p-4 text-center">
-            <p className="text-xs text-muted-foreground/50 font-mono">
+        <footer className="p-4 flex items-center justify-center gap-3">
+          <a
+            href="https://github.com/orris-inc/orris"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-muted-foreground/50 hover:text-muted-foreground transition-colors"
+            aria-label="GitHub"
+          >
+            <Github className="size-4" />
+          </a>
+          {(serverVersion || clientVersion) && (
+            <span className="text-xs text-muted-foreground/50 font-mono">
               {[serverVersion, clientVersion].filter(Boolean).join(' · ')}
-            </p>
-          </footer>
-        )}
+            </span>
+          )}
+        </footer>
       </div>
     </div>
   );

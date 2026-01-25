@@ -328,7 +328,7 @@ export const EditResourceGroupSheet: React.FC<EditResourceGroupSheetProps> = ({
         <SheetBody className="py-4 space-y-3">
           {/* Read-only Info Section */}
           <FormSection
-            title={t('resourceGroups.editSheet.basicInfo')}
+            title={t('common.sections.basicInfo')}
             icon={Info}
             isOpen={openSections.has('info')}
             onToggle={() => toggleSection('info')}
@@ -363,7 +363,7 @@ export const EditResourceGroupSheet: React.FC<EditResourceGroupSheetProps> = ({
                 </div>
                 <InfoRow
                   icon={<Calendar className="size-3.5" />}
-                  label={t('resourceGroups.editSheet.createdAt')}
+                  label={t('common.fields.createdAt')}
                   value={formatDate(resourceGroup.createdAt)}
                 />
               </dl>
@@ -375,7 +375,7 @@ export const EditResourceGroupSheet: React.FC<EditResourceGroupSheetProps> = ({
 
           {/* Editable Fields Section */}
           <FormSection
-            title={t('resourceGroups.editSheet.editableInfo')}
+            title={t('common.sections.editableInfo')}
             icon={Layers}
             isOpen={openSections.has('edit')}
             onToggle={() => toggleSection('edit')}
@@ -384,7 +384,7 @@ export const EditResourceGroupSheet: React.FC<EditResourceGroupSheetProps> = ({
               {/* Name */}
               <div className="space-y-1.5">
                 <FormFieldLabel
-                  label={t('resourceGroups.name')}
+                  label={t('common.fields.name')}
                   required
                   hint={t('resourceGroups.nameHint')}
                 />
@@ -406,7 +406,7 @@ export const EditResourceGroupSheet: React.FC<EditResourceGroupSheetProps> = ({
               {/* Description */}
               <div className="space-y-1.5">
                 <FormFieldLabel
-                  label={t('resourceGroups.description')}
+                  label={t('common.fields.description')}
                   hint={t('resourceGroups.descriptionHint')}
                 />
                 <div className="relative">
@@ -467,7 +467,7 @@ export const EditResourceGroupSheet: React.FC<EditResourceGroupSheetProps> = ({
               {loading ? (
                 <>
                   <Loader2 className="size-4 animate-spin" />
-                  {t('resourceGroups.saving')}
+                  {t('common.loading.saving')}
                 </>
               ) : (
                 t('resourceGroups.saveChanges')

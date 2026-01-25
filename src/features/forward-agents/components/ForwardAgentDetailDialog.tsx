@@ -563,7 +563,7 @@ export const ForwardAgentDetailDialog: React.FC<
 
             {/* Basic Info - Description List Pattern */}
             <div>
-              <h3 className="text-sm font-semibold mb-3">{t("admin.forwardAgents.detail.basicInfo")}</h3>
+              <h3 className="text-sm font-semibold mb-3">{t("common.sections.basicInfo")}</h3>
               <Separator className="mb-4" />
               <dl className="grid grid-cols-1 @sm:grid-cols-[minmax(120px,1fr)_2fr] gap-x-4 text-sm">
                 {/* Agent ID */}
@@ -647,7 +647,7 @@ export const ForwardAgentDetailDialog: React.FC<
                       })}
                     </div>
                   ) : (
-                    <span className="text-muted-foreground">{t("admin.forwardAgents.detail.none")}</span>
+                    <span className="text-muted-foreground">{t("common.none")}</span>
                   )}
                 </dd>
 
@@ -655,7 +655,7 @@ export const ForwardAgentDetailDialog: React.FC<
                 {agent.remark && (
                   <>
                     <dt className="py-2 text-muted-foreground @sm:border-t @sm:border-border">
-                      {t("admin.forwardAgents.detail.remark")}
+                      {t("common.fields.remark")}
                     </dt>
                     <dd className="pb-2 @sm:py-2 text-foreground @sm:border-t @sm:border-border">
                       {agent.remark}
@@ -672,7 +672,7 @@ export const ForwardAgentDetailDialog: React.FC<
               <dl className="grid grid-cols-1 @sm:grid-cols-[minmax(120px,1fr)_2fr] gap-x-4 text-sm">
                 {/* Created At */}
                 <dt className="py-2 text-muted-foreground @sm:border-t @sm:border-border first:border-t-0">
-                  {t("admin.forwardAgents.detail.createdAt")}
+                  {t("common.fields.createdAt")}
                 </dt>
                 <dd className="pb-2 @sm:py-2 text-foreground tabular-nums @sm:border-t @sm:border-border @sm:[&:nth-child(2)]:border-t-0">
                   {formatDateTime(agent.createdAt)}
@@ -680,7 +680,7 @@ export const ForwardAgentDetailDialog: React.FC<
 
                 {/* Updated At */}
                 <dt className="py-2 text-muted-foreground @sm:border-t @sm:border-border">
-                  {t("admin.forwardAgents.detail.updatedAt")}
+                  {t("common.fields.updatedAt")}
                 </dt>
                 <dd className="pb-2 @sm:py-2 text-foreground tabular-nums @sm:border-t @sm:border-border">
                   {agent.updatedAt ? formatDateTime(agent.updatedAt) : '-'}

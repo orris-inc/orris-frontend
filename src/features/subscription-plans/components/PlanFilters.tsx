@@ -31,7 +31,7 @@ export const PlanFilters: React.FC<PlanFiltersProps> = ({
       <div className="grid grid-cols-1 gap-4 @sm:grid-cols-3">
         {/* Status filter */}
         <div className="space-y-2">
-          <Label.Root className="text-sm font-medium">{t('admin.forwardRules.filters.status')}</Label.Root>
+          <Label.Root className="text-sm font-medium">{t('common.status.label')}</Label.Root>
           <Select.Root
             value={filters.status || 'all'}
             onValueChange={(value) => onChange({ status: value !== 'all' ? value as PlanStatus : undefined })}

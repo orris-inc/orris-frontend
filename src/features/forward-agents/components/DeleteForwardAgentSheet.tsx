@@ -99,7 +99,7 @@ export const DeleteForwardAgentSheet: React.FC<DeleteForwardAgentSheetProps> = (
                   variant={agent.status === 'enabled' ? 'default' : 'secondary'}
                   className="text-xs"
                 >
-                  {agent.status === 'enabled' ? t('admin.forwardAgents.delete.enabled') : t('admin.forwardAgents.delete.disabled')}
+                  {agent.status === 'enabled' ? t('common.status.enabled') : t('common.status.disabled')}
                 </Badge>
 
                 {/* Online Status */}
@@ -108,7 +108,7 @@ export const DeleteForwardAgentSheet: React.FC<DeleteForwardAgentSheetProps> = (
                   className="text-xs"
                 >
                   <Activity className="size-3 mr-1" />
-                  {agent.systemStatus ? t('admin.forwardAgents.delete.online') : t('admin.forwardAgents.delete.offline')}
+                  {agent.systemStatus ? t('common.status.online') : t('common.status.offline')}
                 </Badge>
 
                 {/* Version */}
@@ -139,10 +139,10 @@ export const DeleteForwardAgentSheet: React.FC<DeleteForwardAgentSheetProps> = (
             {loading ? (
               <>
                 <Loader2 className="mr-2 size-5 animate-spin" />
-                {t('admin.forwardAgents.delete.deleting')}
+                {t('common.loading.deleting')}
               </>
             ) : (
-              t('admin.forwardAgents.delete.confirmButton')
+              t('common.actions.delete')
             )}
           </Button>
           <Button
@@ -151,7 +151,7 @@ export const DeleteForwardAgentSheet: React.FC<DeleteForwardAgentSheetProps> = (
             disabled={loading}
             className="w-full min-h-[44px]"
           >
-            {t('common.cancel')}
+            {t('common.actions.cancel')}
           </Button>
         </SheetFooter>
       </SheetContent>
@@ -163,7 +163,7 @@ export const DeleteForwardAgentSheet: React.FC<DeleteForwardAgentSheetProps> = (
       variant="destructive"
       title={t('admin.forwardAgents.delete.finalConfirmTitle')}
       description={t('admin.forwardAgents.delete.finalConfirmDescription')}
-      confirmText={t('admin.forwardAgents.delete.confirmButton')}
+      confirmText={t('common.actions.delete')}
       onConfirm={handleConfirm}
     />
   </>

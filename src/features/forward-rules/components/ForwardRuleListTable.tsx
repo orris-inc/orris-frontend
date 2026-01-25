@@ -601,9 +601,9 @@ export const ForwardRuleListTable: React.FC<ForwardRuleListTableProps> = ({
         const hoverItems = [
           { label: 'ID', value: rule.id },
           { label: t('admin.forwardRules.columns.ruleType'), value: t(ruleTypeConfig.labelKey) },
-          { label: t('admin.forwardRules.columns.protocol'), value: protocolConfig.label },
+          { label: t('common.protocol'), value: protocolConfig.label },
           ...(tunnelTypeConfig ? [{ label: t('admin.forwardRules.tunnel'), value: tunnelTypeConfig.label }] : []),
-          ...(rule.remark ? [{ label: t('tableColumns.remark'), value: rule.remark }] : []),
+          ...(rule.remark ? [{ label: t('common.fields.remark'), value: rule.remark }] : []),
         ];
 
         return (
@@ -730,9 +730,9 @@ export const ForwardRuleListTable: React.FC<ForwardRuleListTableProps> = ({
             columnKey="traffic"
             items={[
               { label: t('admin.forwardRules.traffic.total'), value: formatBytesGB(totalBytes) },
-              { label: t('admin.forwardRules.traffic.upload'), value: formatBytesGB(uploadBytes) },
-              { label: t('admin.forwardRules.traffic.download'), value: formatBytesGB(downloadBytes) },
-              { label: t('admin.forwardRules.traffic.multiplier'), value: `${multiplier?.toFixed(2) || '1.00'}x (${isAuto ? t('admin.forwardRules.traffic.auto') : t('admin.forwardRules.traffic.custom')})` },
+              { label: t('common.actions.upload'), value: formatBytesGB(uploadBytes) },
+              { label: t('common.actions.download'), value: formatBytesGB(downloadBytes) },
+              { label: t('admin.forwardRules.traffic.multiplier'), value: `${multiplier?.toFixed(2) || '1.00'}x (${isAuto ? t('common.auto') : t('admin.forwardRules.traffic.custom')})` },
             ]}
             title={t('admin.forwardRules.columns.traffic')}
             contentClassName="w-48"
@@ -749,7 +749,7 @@ export const ForwardRuleListTable: React.FC<ForwardRuleListTableProps> = ({
     },
     {
       id: 'health',
-      header: t('admin.forwardRules.columns.status'),
+      header: t('common.status.label'),
       size: 100,
       meta: { priority: 1 } as ResponsiveColumnMeta,
       cell: ({ row }) => {
@@ -801,7 +801,7 @@ export const ForwardRuleListTable: React.FC<ForwardRuleListTableProps> = ({
         // Determine overall health status
         const getHealthConfig = () => {
           if (isPolling && !polledStatus && !rule.syncStatus) {
-            return { labelKey: 'admin.forwardRules.status.syncing', colorClass: 'text-blue-500', bgClass: 'bg-blue-500/10', showPulse: true };
+            return { labelKey: 'common.status.syncing', colorClass: 'text-blue-500', bgClass: 'bg-blue-500/10', showPulse: true };
           }
           if (!syncStatus) {
             return { labelKey: 'common.status.enabled', colorClass: 'text-success', bgClass: 'bg-success/10', showPulse: false };
@@ -810,7 +810,7 @@ export const ForwardRuleListTable: React.FC<ForwardRuleListTableProps> = ({
             return { labelKey: 'common.status.syncFailed', colorClass: 'text-destructive', bgClass: 'bg-destructive/10', showPulse: false };
           }
           if (syncStatus === 'pending') {
-            return { labelKey: 'admin.forwardRules.status.syncing', colorClass: 'text-warning', bgClass: 'bg-warning/10', showPulse: true };
+            return { labelKey: 'common.status.syncing', colorClass: 'text-warning', bgClass: 'bg-warning/10', showPulse: true };
           }
           // synced
           if (runStatus === 'running') {
@@ -879,7 +879,7 @@ export const ForwardRuleListTable: React.FC<ForwardRuleListTableProps> = ({
     },
     {
       id: 'actions',
-      header: t('admin.forwardRules.columns.actions'),
+      header: t('common.table.actions'),
       size: 120,
       meta: { priority: 1, sticky: 'right' } as ResponsiveColumnMeta,
       enableSorting: false,

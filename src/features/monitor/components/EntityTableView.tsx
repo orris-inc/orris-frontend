@@ -118,7 +118,7 @@ export const EntityTableView = memo(({
       },
     }),
     columnHelper.accessor('name', {
-      header: t('monitor.table.columns.name'),
+      header: t('common.fields.name'),
       size: 180,
       cell: ({ row }) => (
         <div className="min-w-0">
@@ -134,7 +134,7 @@ export const EntityTableView = memo(({
       ),
     }),
     columnHelper.accessor('isOnline', {
-      header: t('monitor.table.columns.status'),
+      header: t('common.status.label'),
       size: 70,
       cell: ({ row }) => (
         <Badge
@@ -144,7 +144,7 @@ export const EntityTableView = memo(({
             row.original.isOnline ? 'bg-success text-success-foreground' : ''
           )}
         >
-          {row.original.isOnline ? t('monitor.table.status.online') : t('monitor.table.status.offline')}
+          {row.original.isOnline ? t('common.status.online') : t('common.status.offline')}
         </Badge>
       ),
     }),
@@ -364,7 +364,7 @@ export const EntityTableView = memo(({
             {rows.length === 0 ? (
               <tr>
                 <td colSpan={columns.length} className="py-12 text-center">
-                  <p className="text-sm text-muted-foreground">{t('monitor.table.empty')}</p>
+                  <p className="text-sm text-muted-foreground">{t('common.table.noData')}</p>
                 </td>
               </tr>
             ) : (
@@ -403,7 +403,7 @@ export const EntityTableView = memo(({
           {rows.length === 0 ? (
             <tr>
               <td colSpan={columns.length} className="py-12 text-center">
-                <p className="text-sm text-muted-foreground">{t('monitor.table.empty')}</p>
+                <p className="text-sm text-muted-foreground">{t('common.table.noData')}</p>
               </td>
             </tr>
           ) : (

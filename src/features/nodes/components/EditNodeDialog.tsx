@@ -619,7 +619,7 @@ export const EditNodeDialog: React.FC<EditNodeDialogProps> = ({
             <AccordionItem value="basic" className="border rounded-md px-3 mb-2">
               <AccordionTrigger className="py-3 hover:no-underline">
                 <div className="flex items-center gap-2">
-                  <span className="text-sm font-medium">{t('admin.nodes.form.section.basicInfo')}</span>
+                  <span className="text-sm font-medium">{t('common.sections.basicInfo')}</span>
                 </div>
               </AccordionTrigger>
               <AccordionContent className="@container">
@@ -632,7 +632,7 @@ export const EditNodeDialog: React.FC<EditNodeDialogProps> = ({
 
                   {/* Created At (readonly) */}
                   <div className="flex flex-col gap-2">
-                    <Label htmlFor="createdAt">{t('admin.nodes.form.createdAt')}</Label>
+                    <Label htmlFor="createdAt">{t('common.fields.createdAt')}</Label>
                     <Input
                       id="createdAt"
                       value={formatDateTime(node.createdAt)}
@@ -667,7 +667,7 @@ export const EditNodeDialog: React.FC<EditNodeDialogProps> = ({
 
                   {/* Status */}
                   <div className="flex flex-col gap-2">
-                    <Label htmlFor="status">{t('admin.nodes.fields.status')}</Label>
+                    <Label htmlFor="status">{t('common.status.label')}</Label>
                     <Select
                       value={formData.status || 'inactive'}
                       onValueChange={(value) => handleChange('status', value)}
@@ -676,9 +676,9 @@ export const EditNodeDialog: React.FC<EditNodeDialogProps> = ({
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="active">{t('admin.nodes.form.status.active')}</SelectItem>
-                        <SelectItem value="inactive">{t('admin.nodes.form.status.inactive')}</SelectItem>
-                        <SelectItem value="maintenance">{t('admin.nodes.form.status.maintenance')}</SelectItem>
+                        <SelectItem value="active">{t('common.status.active')}</SelectItem>
+                        <SelectItem value="inactive">{t('common.status.inactive')}</SelectItem>
+                        <SelectItem value="maintenance">{t('common.status.maintenance')}</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
@@ -885,7 +885,7 @@ export const EditNodeDialog: React.FC<EditNodeDialogProps> = ({
             <AccordionItem value="network" className="border rounded-md px-3 mb-2">
               <AccordionTrigger className="py-3 hover:no-underline">
                 <div className="flex items-center gap-2">
-                  <span className="text-sm font-medium">{t('admin.nodes.form.section.networkConfig')}</span>
+                  <span className="text-sm font-medium">{t('common.sections.networkConfig')}</span>
                 </div>
               </AccordionTrigger>
               <AccordionContent className="@container">
@@ -1002,7 +1002,7 @@ export const EditNodeDialog: React.FC<EditNodeDialogProps> = ({
                           value={formData.sni || ''}
                           onChange={(e) => handleChange('sni', e.target.value)}
                         />
-                        <p className="text-xs text-muted-foreground">{t('admin.nodes.form.optional')}</p>
+                        <p className="text-xs text-muted-foreground">{t('common.optional')}</p>
                       </div>
 
                       <div className="flex flex-col gap-2">
@@ -1033,7 +1033,7 @@ export const EditNodeDialog: React.FC<EditNodeDialogProps> = ({
                               value={formData.host || ''}
                               onChange={(e) => handleChange('host', e.target.value)}
                             />
-                            <p className="text-xs text-muted-foreground">{t('admin.nodes.form.optional')}</p>
+                            <p className="text-xs text-muted-foreground">{t('common.optional')}</p>
                           </div>
 
                           <div className="flex flex-col gap-2">
@@ -1044,7 +1044,7 @@ export const EditNodeDialog: React.FC<EditNodeDialogProps> = ({
                               value={formData.path || ''}
                               onChange={(e) => handleChange('path', e.target.value)}
                             />
-                            <p className="text-xs text-muted-foreground">{t('admin.nodes.form.optional')}</p>
+                            <p className="text-xs text-muted-foreground">{t('common.optional')}</p>
                           </div>
                         </>
                       )}
@@ -1059,7 +1059,7 @@ export const EditNodeDialog: React.FC<EditNodeDialogProps> = ({
                             value={formData.host || ''}
                             onChange={(e) => handleChange('host', e.target.value)}
                           />
-                          <p className="text-xs text-muted-foreground">{t('admin.nodes.form.optional')}</p>
+                          <p className="text-xs text-muted-foreground">{t('common.optional')}</p>
                         </div>
                       )}
                     </>
@@ -1076,7 +1076,7 @@ export const EditNodeDialog: React.FC<EditNodeDialogProps> = ({
                           value={formData.vlessSni || ''}
                           onChange={(e) => handleChange('vlessSni', e.target.value)}
                         />
-                        <p className="text-xs text-muted-foreground">{t('admin.nodes.form.optional')}</p>
+                        <p className="text-xs text-muted-foreground">{t('common.optional')}</p>
                       </div>
 
                       <div className="flex flex-col gap-2">
@@ -1103,7 +1103,7 @@ export const EditNodeDialog: React.FC<EditNodeDialogProps> = ({
                           value={formData.vlessFlow || ''}
                           onChange={(e) => handleChange('vlessFlow', e.target.value)}
                         />
-                        <p className="text-xs text-muted-foreground">{t('admin.nodes.form.optional')}</p>
+                        <p className="text-xs text-muted-foreground">{t('common.optional')}</p>
                       </div>
 
                       <div className="flex flex-col gap-2">
@@ -1335,7 +1335,7 @@ export const EditNodeDialog: React.FC<EditNodeDialogProps> = ({
                         <Label htmlFor="hysteria2ObfsPassword">{t('admin.nodes.form.obfsPassword')}</Label>
                         <Input
                           id="hysteria2ObfsPassword"
-                          placeholder={t('admin.nodes.form.passwordPlaceholder')}
+                          placeholder={t('common.placeholders.password')}
                           value={formData.hysteria2ObfsPassword || ''}
                           onChange={(e) => handleChange('hysteria2ObfsPassword', e.target.value)}
                         />
@@ -1467,7 +1467,7 @@ export const EditNodeDialog: React.FC<EditNodeDialogProps> = ({
 
                   {/* Sort Order */}
                   <div className="flex flex-col gap-2">
-                    <Label htmlFor="sortOrder">{t('admin.nodes.form.sortOrder')}</Label>
+                    <Label htmlFor="sortOrder">{t('common.fields.sortOrder')}</Label>
                     <Input
                       id="sortOrder"
                       type="number"
@@ -1526,7 +1526,7 @@ export const EditNodeDialog: React.FC<EditNodeDialogProps> = ({
                     {/* Group selection list */}
                     <div className="border rounded-lg max-h-[120px] overflow-y-auto">
                       {isLoadingGroups || isLoadingPlans ? (
-                        <div className="p-3 text-center text-sm text-muted-foreground">{t('app.loading')}</div>
+                        <div className="p-3 text-center text-sm text-muted-foreground">{t('common.table.loading')}</div>
                       ) : filteredResourceGroups.length === 0 ? (
                         <div className="p-3 text-center text-sm text-muted-foreground">{t('admin.nodes.detail.noResourceGroups')}</div>
                       ) : (
@@ -1551,7 +1551,7 @@ export const EditNodeDialog: React.FC<EditNodeDialogProps> = ({
                                 <div className="flex items-center gap-2">
                                   <span className="font-medium text-sm">{group.name}</span>
                                   <Badge variant={group.status === 'active' ? 'default' : 'secondary'} className="text-[10px]">
-                                    {group.status === 'active' ? t('admin.nodes.form.status.active') : t('admin.nodes.form.status.inactive')}
+                                    {group.status === 'active' ? t('common.status.active') : t('common.status.inactive')}
                                   </Badge>
                                 </div>
                                 {group.description && <p className="text-xs text-muted-foreground truncate">{group.description}</p>}

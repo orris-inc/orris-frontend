@@ -270,7 +270,7 @@ export const ResourceGroupDetailDialog: React.FC<ResourceGroupDetailDialogProps>
             <DialogTitle className="flex items-center gap-2">
               {resourceGroup.name}
               <AdminBadge variant={resourceGroup.status === 'active' ? 'success' : 'default'}>
-                {resourceGroup.status === 'active' ? t('resourceGroups.status.active') : t('resourceGroups.status.inactive')}
+                {resourceGroup.status === 'active' ? t('common.status.active') : t('common.status.inactive')}
               </AdminBadge>
             </DialogTitle>
             <DialogDescription>
@@ -308,7 +308,7 @@ export const ResourceGroupDetailDialog: React.FC<ResourceGroupDetailDialogProps>
                   label={t('common.labels.sid')}
                   value={<code className="text-xs font-mono">{resourceGroup.sid}</code>}
                   copyable={resourceGroup.sid}
-                  copySuccessMessage={t('resourceGroups.copiedToClipboard')}
+                  copySuccessMessage={t('common.messages.copySuccess')}
                 />
               </div>
 
@@ -353,10 +353,10 @@ export const ResourceGroupDetailDialog: React.FC<ResourceGroupDetailDialogProps>
                 <>
                   <Separator />
                   <div>
-                    <h4 className="text-sm font-medium text-slate-900 dark:text-white mb-2">{t('resourceGroups.sections.description')}</h4>
+                    <h4 className="text-sm font-medium text-slate-900 dark:text-white mb-2">{t('common.fields.description')}</h4>
                     <DetailItem
                       icon={<FileText className="size-4" />}
-                      label={t('resourceGroups.labels.groupDescription')}
+                      label={t('common.fields.description')}
                       value={resourceGroup.description}
                     />
                   </div>
@@ -370,12 +370,12 @@ export const ResourceGroupDetailDialog: React.FC<ResourceGroupDetailDialogProps>
                 <h4 className="text-sm font-medium text-slate-900 dark:text-white mb-2">{t('resourceGroups.sections.timeInfo')}</h4>
                 <DetailItem
                   icon={<Clock className="size-4" />}
-                  label={t('resourceGroups.labels.createdAt')}
+                  label={t('common.fields.createdAt')}
                   value={formatDateTime(resourceGroup.createdAt)}
                 />
                 <DetailItem
                   icon={<Clock className="size-4" />}
-                  label={t('resourceGroups.labels.updatedAt')}
+                  label={t('common.fields.updatedAt')}
                   value={formatDateTime(resourceGroup.updatedAt)}
                 />
               </div>
@@ -428,7 +428,7 @@ export const ResourceGroupDetailDialog: React.FC<ResourceGroupDetailDialogProps>
                           onCheckedChange={handleToggleAllNodes}
                         />
                         <span className="text-sm text-muted-foreground">
-                          {selectedNodeIds.size > 0 ? t('resourceGroups.actions.selectedCount', { count: selectedNodeIds.size }) : t('resourceGroups.actions.selectAll')}
+                          {selectedNodeIds.size > 0 ? t('common.selected', { count: selectedNodeIds.size }) : t('common.actions.selectAll')}
                         </span>
                       </>
                     )}
@@ -500,7 +500,7 @@ export const ResourceGroupDetailDialog: React.FC<ResourceGroupDetailDialogProps>
                           <p className="text-xs text-muted-foreground font-mono truncate">{node.id}</p>
                         </div>
                         <Badge variant={node.status === 'active' ? 'default' : 'secondary'}>
-                          {node.status === 'active' ? t('resourceGroups.status.active') : t('resourceGroups.status.inactive')}
+                          {node.status === 'active' ? t('common.status.active') : t('common.status.inactive')}
                         </Badge>
                       </label>
                     ))}
@@ -526,7 +526,7 @@ export const ResourceGroupDetailDialog: React.FC<ResourceGroupDetailDialogProps>
                           onCheckedChange={handleToggleAllAgents}
                         />
                         <span className="text-sm text-muted-foreground">
-                          {selectedAgentIds.size > 0 ? t('resourceGroups.actions.selectedCount', { count: selectedAgentIds.size }) : t('resourceGroups.actions.selectAll')}
+                          {selectedAgentIds.size > 0 ? t('common.selected', { count: selectedAgentIds.size }) : t('common.actions.selectAll')}
                         </span>
                       </>
                     )}
@@ -598,7 +598,7 @@ export const ResourceGroupDetailDialog: React.FC<ResourceGroupDetailDialogProps>
                           <p className="text-xs text-muted-foreground font-mono truncate">{agent.id}</p>
                         </div>
                         <Badge variant={agent.status === 'enabled' ? 'default' : 'secondary'}>
-                          {agent.status === 'enabled' ? t('resourceGroups.status.enabled') : t('resourceGroups.status.disabled')}
+                          {agent.status === 'enabled' ? t('common.status.enabled') : t('common.status.disabled')}
                         </Badge>
                       </label>
                     ))}
@@ -624,7 +624,7 @@ export const ResourceGroupDetailDialog: React.FC<ResourceGroupDetailDialogProps>
                           onCheckedChange={handleToggleAllRules}
                         />
                         <span className="text-sm text-muted-foreground">
-                          {selectedRuleIds.size > 0 ? t('resourceGroups.actions.selectedCount', { count: selectedRuleIds.size }) : t('resourceGroups.actions.selectAll')}
+                          {selectedRuleIds.size > 0 ? t('common.selected', { count: selectedRuleIds.size }) : t('common.actions.selectAll')}
                         </span>
                       </>
                     )}
@@ -698,7 +698,7 @@ export const ResourceGroupDetailDialog: React.FC<ResourceGroupDetailDialogProps>
                           </p>
                         </div>
                         <Badge variant={rule.status === 'enabled' ? 'default' : 'secondary'}>
-                          {rule.status === 'enabled' ? t('resourceGroups.status.enabled') : t('resourceGroups.status.stopped')}
+                          {rule.status === 'enabled' ? t('common.status.enabled') : t('common.status.stopped')}
                         </Badge>
                       </label>
                     ))}

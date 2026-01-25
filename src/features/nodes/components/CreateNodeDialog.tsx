@@ -706,7 +706,7 @@ export const CreateNodeDialog: React.FC<CreateNodeDialogProps> = ({
           <div className="space-y-3">
             {/* Basic Info Section */}
             <CollapsibleSection
-              config={{ id: 'basic', title: t('admin.nodes.form.section.basicInfo'), icon: Server, required: true }}
+              config={{ id: 'basic', title: t('common.sections.basicInfo'), icon: Server, required: true }}
               isOpen={openSections.has('basic')}
               onToggle={() => toggleSection('basic')}
               requiredLabel={t('admin.nodes.form.required')}
@@ -964,7 +964,7 @@ export const CreateNodeDialog: React.FC<CreateNodeDialogProps> = ({
 
             {/* Network Section */}
             <CollapsibleSection
-              config={{ id: 'network', title: t('admin.nodes.form.section.networkConfig'), icon: Network, required: true }}
+              config={{ id: 'network', title: t('common.sections.networkConfig'), icon: Network, required: true }}
               isOpen={openSections.has('network')}
               onToggle={() => toggleSection('network')}
               requiredLabel={t('admin.nodes.form.required')}
@@ -1253,7 +1253,7 @@ export const CreateNodeDialog: React.FC<CreateNodeDialogProps> = ({
                           </FormField>
                         </div>
 
-                        <FormField label={t('admin.nodes.form.fields.realitySpiderX')} hint={t('admin.nodes.form.optional')}>
+                        <FormField label={t('admin.nodes.form.fields.realitySpiderX')} hint={t('common.optional')}>
                           <Input
                             id="vlessRealitySpiderX"
                             placeholder="/"
@@ -1427,7 +1427,7 @@ export const CreateNodeDialog: React.FC<CreateNodeDialogProps> = ({
                       <FormField label={t('admin.nodes.form.obfsPassword')} hint={t('admin.nodes.form.obfsPasswordHint')}>
                         <Input
                           id="hysteria2ObfsPassword"
-                          placeholder={t('admin.nodes.form.passwordPlaceholder')}
+                          placeholder={t('common.placeholders.password')}
                           value={formData.hysteria2ObfsPassword || ''}
                           onChange={(e) => handleChange('hysteria2ObfsPassword', e.target.value)}
                           className="h-10 font-mono"
@@ -1436,7 +1436,7 @@ export const CreateNodeDialog: React.FC<CreateNodeDialogProps> = ({
                     </div>
 
                     <div className="grid grid-cols-2 gap-4">
-                      <FormField label={t('admin.nodes.form.upBandwidth')} hint={t('admin.nodes.form.optional')}>
+                      <FormField label={t('admin.nodes.form.upBandwidth')} hint={t('common.optional')}>
                         <Input
                           id="hysteria2UpMbps"
                           type="number"
@@ -1448,7 +1448,7 @@ export const CreateNodeDialog: React.FC<CreateNodeDialogProps> = ({
                         />
                       </FormField>
 
-                      <FormField label={t('admin.nodes.form.downBandwidth')} hint={t('admin.nodes.form.optional')}>
+                      <FormField label={t('admin.nodes.form.downBandwidth')} hint={t('common.optional')}>
                         <Input
                           id="hysteria2DownMbps"
                           type="number"
@@ -1572,7 +1572,7 @@ export const CreateNodeDialog: React.FC<CreateNodeDialogProps> = ({
                     />
                   </FormField>
 
-                  <FormField label={t('admin.nodes.form.sortOrder')} hint={t('admin.nodes.form.sortOrderHint')}>
+                  <FormField label={t('common.fields.sortOrder')} hint={t('admin.nodes.form.sortOrderHint')}>
                     <Input
                       id="sortOrder"
                       type="number"

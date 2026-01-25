@@ -486,7 +486,7 @@ export const RouteRuleEditor: React.FC<RouteRuleEditorProps> = ({
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor={`${idPrefix}-protocol`}>{t('admin.nodes.route.protocol.label')}</Label>
+                <Label htmlFor={`${idPrefix}-protocol`}>{t('common.protocol')}</Label>
                 <Textarea
                   id={`${idPrefix}-protocol`}
                   value={formatArrayDisplay(rule.protocol)}

@@ -139,12 +139,12 @@ const CopyButton: React.FC<{ text: string; variant?: 'default' | 'pill' }> = ({
         {copied ? (
           <>
             <Check className="size-3.5" />
-            {t('subscriptionLink.copied')}
+            {t('common.copied')}
           </>
         ) : (
           <>
             <Copy className="size-3.5" />
-            {t('subscriptionLink.copy')}
+            {t('common.actions.copy')}
           </>
         )}
       </button>
@@ -161,7 +161,7 @@ const CopyButton: React.FC<{ text: string; variant?: 'default' | 'pill' }> = ({
           ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400'
           : 'hover:bg-muted text-muted-foreground hover:text-foreground'
       )}
-      title={copied ? t('subscriptionLink.copied') : t('subscriptionLink.copyLink')}
+      title={copied ? t('common.copied') : t('subscriptionLink.copyLink')}
     >
       {copied ? <Check className="size-4" /> : <Copy className="size-4" />}
     </button>

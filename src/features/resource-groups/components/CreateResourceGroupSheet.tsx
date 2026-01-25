@@ -378,7 +378,7 @@ export const CreateResourceGroupSheet: React.FC<CreateResourceGroupSheetProps> =
               {/* Name Field */}
               <div className="space-y-1.5">
                 <FormFieldLabel
-                  label={t('resourceGroups.name')}
+                  label={t('common.fields.name')}
                   required
                   hint={t('resourceGroups.nameHint')}
                 />
@@ -400,7 +400,7 @@ export const CreateResourceGroupSheet: React.FC<CreateResourceGroupSheetProps> =
               {/* Description Field */}
               <div className="space-y-1.5">
                 <FormFieldLabel
-                  label={t('resourceGroups.description')}
+                  label={t('common.fields.description')}
                   hint={t('resourceGroups.descriptionHint')}
                 />
                 <div className="relative">
@@ -521,7 +521,7 @@ export const CreateResourceGroupSheet: React.FC<CreateResourceGroupSheetProps> =
               {loading ? (
                 <>
                   <Loader2 className="size-4 animate-spin" />
-                  {t('resourceGroups.creating')}
+                  {t('common.loading.creating')}
                 </>
               ) : (
                 t('resourceGroups.createResourceGroup')

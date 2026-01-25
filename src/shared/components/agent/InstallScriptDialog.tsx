@@ -62,7 +62,7 @@ const CopyButton = ({
       ) : (
         <>
           <Copy className="size-3.5 mr-1" />
-          {t('common.copy')}
+          {t('common.actions.copy')}
         </>
       )}
     </Button>
@@ -255,7 +255,7 @@ export const InstallScriptDialog: React.FC<InstallScriptDialogProps> = ({
 
         <DialogFooter className="flex-shrink-0">
           <Button variant="outline" onClick={handleClose}>
-            {t('common.close')}
+            {t('common.actions.close')}
           </Button>
         </DialogFooter>
       </DialogContent>

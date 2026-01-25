@@ -50,16 +50,16 @@ export const EditUserSheet: React.FC<EditUserSheetProps> = ({
 
   // Build status options with translations
   const statusOptions: MobileSelectOption[] = useMemo(() => [
-    { value: 'active', label: t('admin.users.status.active'), color: 'bg-success' },
-    { value: 'inactive', label: t('admin.users.status.inactive'), color: 'bg-muted-foreground' },
-    { value: 'pending', label: t('admin.users.status.pending'), color: 'bg-warning' },
-    { value: 'suspended', label: t('admin.users.status.suspended'), color: 'bg-destructive' },
+    { value: 'active', label: t('common.status.active'), color: 'bg-success' },
+    { value: 'inactive', label: t('common.status.inactive'), color: 'bg-muted-foreground' },
+    { value: 'pending', label: t('common.status.pending'), color: 'bg-warning' },
+    { value: 'suspended', label: t('common.status.suspended'), color: 'bg-destructive' },
   ], [t]);
 
   // Build role options with translations
   const roleOptions: MobileSelectOption[] = useMemo(() => [
-    { value: 'user', label: t('admin.users.role.user') },
-    { value: 'admin', label: t('admin.users.role.admin') },
+    { value: 'user', label: t('common.role.user') },
+    { value: 'admin', label: t('common.role.admin') },
   ], [t]);
 
   // Initialize form when user changes
@@ -150,7 +150,7 @@ export const EditUserSheet: React.FC<EditUserSheetProps> = ({
         <SheetBody className="space-y-5 py-3">
           {/* Read-only Info */}
           <div className="space-y-3">
-            <h4 className="text-sm font-medium text-muted-foreground px-1">{t('admin.users.edit.basicInfo')}</h4>
+            <h4 className="text-sm font-medium text-muted-foreground px-1">{t('common.sections.basicInfo')}</h4>
             <div className="rounded-xl border bg-muted/30 p-4 space-y-3">
               <div className="flex items-center justify-between">
                 <span className="text-sm text-muted-foreground">{t('admin.users.edit.userId')}</span>
@@ -158,7 +158,7 @@ export const EditUserSheet: React.FC<EditUserSheetProps> = ({
               </div>
               <Separator />
               <div className="flex items-center justify-between">
-                <span className="text-sm text-muted-foreground">{t('admin.users.edit.createdAt')}</span>
+                <span className="text-sm text-muted-foreground">{t('common.fields.createdAt')}</span>
                 <span className="text-sm">{formatDate(user.createdAt)}</span>
               </div>
             </div>
@@ -166,7 +166,7 @@ export const EditUserSheet: React.FC<EditUserSheetProps> = ({
 
           {/* Editable Fields */}
           <div className="space-y-4">
-            <h4 className="text-sm font-medium text-muted-foreground px-1">{t('admin.users.edit.editableInfo')}</h4>
+            <h4 className="text-sm font-medium text-muted-foreground px-1">{t('common.sections.editableInfo')}</h4>
 
             {/* Email */}
             <div className="space-y-1.5">
@@ -187,7 +187,7 @@ export const EditUserSheet: React.FC<EditUserSheetProps> = ({
 
             {/* Name */}
             <div className="space-y-1.5">
-              <label htmlFor="edit-name" className="text-sm font-medium px-1">{t('admin.users.fields.name')}</label>
+              <label htmlFor="edit-name" className="text-sm font-medium px-1">{t('common.fields.name')}</label>
               <MobileFormInput
                 id="edit-name"
                 value={name}
@@ -209,7 +209,7 @@ export const EditUserSheet: React.FC<EditUserSheetProps> = ({
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-1.5">
                 <label className="text-sm font-medium px-1 flex items-center gap-2">
-                  {t('admin.users.fields.status')}
+                  {t('common.status.label')}
                   {currentStatusColor && (
                     <span className={`size-2 rounded-full ${currentStatusColor}`} />
                   )}
@@ -248,7 +248,7 @@ export const EditUserSheet: React.FC<EditUserSheetProps> = ({
             onClick={() => onOpenChange(false)}
             className="w-full min-h-[44px]"
           >
-            {t('admin.users.actions.cancel')}
+            {t('common.actions.cancel')}
           </Button>
         </SheetFooter>
       </SheetContent>

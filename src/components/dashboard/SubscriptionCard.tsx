@@ -48,15 +48,15 @@ const formatTraffic = (bytes: number): { value: string; unit: string } => {
 const getStatusConfig = (status: string, t: (key: string) => string) => {
   switch (status) {
     case 'active':
-      return { label: t('user.dashboard.subscription.status.active'), variant: 'success' as const };
+      return { label: t('common.status.active'), variant: 'success' as const };
     case 'expired':
-      return { label: t('user.dashboard.subscription.status.expired'), variant: 'destructive' as const };
+      return { label: t('common.status.expired'), variant: 'destructive' as const };
     case 'cancelled':
-      return { label: t('user.dashboard.subscription.status.cancelled'), variant: 'outline' as const };
+      return { label: t('common.status.cancelled'), variant: 'outline' as const };
     case 'pending':
-      return { label: t('user.dashboard.subscription.status.pending'), variant: 'secondary' as const };
+      return { label: t('common.status.pending'), variant: 'secondary' as const };
     case 'renewed':
-      return { label: t('user.dashboard.subscription.status.renewed'), variant: 'success' as const };
+      return { label: t('common.status.renewed'), variant: 'success' as const };
     default:
       return { label: status, variant: 'secondary' as const };
   }
@@ -279,7 +279,7 @@ export const SubscriptionCard = ({ subscriptions, isLoading, error }: Subscripti
                     {isActive ? (
                       <>
                         <Clock className="size-3" />
-                        <span>{t('user.dashboard.subscription.daysRemaining', { count: daysRemaining ?? 0 })}</span>
+                        <span>{t('common.time.days', { count: daysRemaining ?? 0 })}</span>
                         <span className="mx-1">·</span>
                         <Calendar className="size-3" />
                         <span>{formatDate(subscription.currentPeriodEnd)} {t('userSubscription.expires')}</span>

@@ -137,11 +137,11 @@ const StatusHoverContent = memo(({ status }: { status: SystemStatusData }) => {
       {/* Network stats */}
       <div className="space-y-1.5 pt-2 border-t border-border">
         <div className="flex items-center justify-between">
-          <span className="text-muted-foreground">{t('admin.monitor.download')}</span>
+          <span className="text-muted-foreground">{t('common.actions.download')}</span>
           <span className="font-mono text-success">{formatBitRate(status.networkRxRate)}</span>
         </div>
         <div className="flex items-center justify-between">
-          <span className="text-muted-foreground">{t('admin.monitor.upload')}</span>
+          <span className="text-muted-foreground">{t('common.actions.upload')}</span>
           <span className="font-mono text-info">{formatBitRate(status.networkTxRate)}</span>
         </div>
         <div className="flex items-center justify-between">

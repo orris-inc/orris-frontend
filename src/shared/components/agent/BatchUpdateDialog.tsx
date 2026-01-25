@@ -296,7 +296,7 @@ export function BatchUpdateDialog<T extends BatchUpdateEntity>({
           {!showResult ? (
             <>
               <Button variant="outline" onClick={handleClose}>
-                {t('common.cancel')}
+                {t('common.actions.cancel')}
               </Button>
               <Button
                 onClick={handleUpdate}
@@ -322,7 +322,7 @@ export function BatchUpdateDialog<T extends BatchUpdateEntity>({
               </Button>
             </>
           ) : (
-            <Button onClick={handleClose}>{t('common.close')}</Button>
+            <Button onClick={handleClose}>{t('common.actions.close')}</Button>
           )}
         </DialogFooter>
       </DialogContent>

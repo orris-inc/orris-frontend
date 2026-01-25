@@ -73,7 +73,7 @@ const PROTOCOL_OPTIONS: MobileSelectOption[] = [
 ];
 
 const IP_VERSION_OPTIONS_KEYS = [
-  { value: 'auto', labelKey: 'admin.forwardRules.form.ipVersionAuto' },
+  { value: 'auto', labelKey: 'common.auto' },
   { value: 'ipv4', label: 'IPv4' },
   { value: 'ipv6', label: 'IPv6' },
 ];
@@ -568,7 +568,7 @@ export const EditForwardRuleSheet: React.FC<EditForwardRuleSheetProps> = ({
                   />
                 </FormField>
 
-                <FormField label={t('admin.forwardRules.form.sortOrder')}>
+                <FormField label={t('common.fields.sortOrder')}>
                   <MobileFormInput
                     type="number"
                     inputMode="numeric"
@@ -682,7 +682,7 @@ export const EditForwardRuleSheet: React.FC<EditForwardRuleSheetProps> = ({
               )}
 
               <div className="grid grid-cols-2 gap-3">
-                <FormField label={t('admin.forwardRules.form.protocolType')}>
+                <FormField label={t('common.protocol')}>
                   <MobileSelect
                     value={formData.protocol || 'tcp'}
                     onChange={(value) => handleChange('protocol', value as ForwardProtocol)}
@@ -771,7 +771,7 @@ export const EditForwardRuleSheet: React.FC<EditForwardRuleSheetProps> = ({
             onClick={() => setShowAdvanced(!showAdvanced)}
             className="w-full flex items-center justify-between py-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
           >
-            <span>{t('admin.forwardRules.form.advancedOptions')}</span>
+            <span>{t('common.sections.advancedOptions')}</span>
             {showAdvanced ? <ChevronUp className="size-4" /> : <ChevronDown className="size-4" />}
           </button>
 
@@ -793,14 +793,14 @@ export const EditForwardRuleSheet: React.FC<EditForwardRuleSheetProps> = ({
                       <MobileFormInput
                         type="number"
                         inputMode="decimal"
-                        placeholder={t('admin.forwardRules.traffic.auto')}
+                        placeholder={t('common.auto')}
                         value={formData.trafficMultiplier !== undefined ? String(formData.trafficMultiplier) : ''}
                         onChange={(value) => handleChange('trafficMultiplier', value ? parseFloat(value) : undefined)}
                         className="font-mono"
                       />
                     </FormField>
 
-                    <FormField label={t('admin.forwardRules.form.sortOrder')}>
+                    <FormField label={t('common.fields.sortOrder')}>
                       <MobileFormInput
                         type="number"
                         inputMode="numeric"
@@ -813,7 +813,7 @@ export const EditForwardRuleSheet: React.FC<EditForwardRuleSheetProps> = ({
                 </>
               )}
 
-              <FormField label={t('admin.forwardRules.form.remark')}>
+              <FormField label={t('common.fields.remark')}>
                 <MobileFormInput
                   placeholder={t('admin.forwardRules.form.remarkPlaceholder')}
                   value={formData.remark || ''}
@@ -861,10 +861,10 @@ export const EditForwardRuleSheet: React.FC<EditForwardRuleSheetProps> = ({
               {loading ? (
                 <>
                   <Loader2 className="size-4 mr-2 animate-spin" />
-                  {t('admin.forwardRules.sheet.saving')}
+                  {t('common.loading.saving')}
                 </>
               ) : (
-                t('admin.forwardRules.sheet.save')
+                t('common.actions.save')
               )}
             </Button>
           </div>

@@ -141,7 +141,7 @@ export const DeletePlanSheet: React.FC<DeletePlanSheetProps> = ({
                   </div>
                 </div>
                 <div className="flex items-center justify-between">
-                  <span className="text-sm text-muted-foreground">{t('admin.plans.table.status')}</span>
+                  <span className="text-sm text-muted-foreground">{t('common.status.label')}</span>
                   <span
                     className={cn(
                       'inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium',

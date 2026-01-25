@@ -119,7 +119,7 @@ const MobileStatusHeader = memo(({ overview, isConnected }: { overview: MonitorO
         <span className="text-sm font-bold tabular-nums text-success">
           {formatBitRate(overview.totalNetworkRxRate, true)}
         </span>
-        <span className="text-[9px] text-muted-foreground">{t('admin.monitor.metrics.download')}</span>
+        <span className="text-[9px] text-muted-foreground">{t('common.actions.download')}</span>
         <span className="text-[8px] text-muted-foreground/60 tabular-nums">
           {formatBytes(overview.totalNetworkRxBytes)}
         </span>
@@ -131,7 +131,7 @@ const MobileStatusHeader = memo(({ overview, isConnected }: { overview: MonitorO
         <span className="text-sm font-bold tabular-nums text-primary">
           {formatBitRate(overview.totalNetworkTxRate, true)}
         </span>
-        <span className="text-[9px] text-muted-foreground">{t('admin.monitor.metrics.upload')}</span>
+        <span className="text-[9px] text-muted-foreground">{t('common.actions.upload')}</span>
         <span className="text-[8px] text-muted-foreground/60 tabular-nums">
           {formatBytes(overview.totalNetworkTxBytes)}
         </span>

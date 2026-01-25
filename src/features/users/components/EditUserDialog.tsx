@@ -38,16 +38,16 @@ export const EditUserDialog: React.FC<EditUserDialogProps> = ({
 
   // Build status options with translations
   const statusOptions = useMemo(() => [
-    { value: 'active' as UserStatus, label: t('admin.users.status.active') },
-    { value: 'inactive' as UserStatus, label: t('admin.users.status.inactive') },
-    { value: 'pending' as UserStatus, label: t('admin.users.status.pending') },
-    { value: 'suspended' as UserStatus, label: t('admin.users.status.suspended') },
+    { value: 'active' as UserStatus, label: t('common.status.active') },
+    { value: 'inactive' as UserStatus, label: t('common.status.inactive') },
+    { value: 'pending' as UserStatus, label: t('common.status.pending') },
+    { value: 'suspended' as UserStatus, label: t('common.status.suspended') },
   ], [t]);
 
   // Build role options with translations
   const roleOptions = useMemo(() => [
-    { value: 'user' as UserRole, label: t('admin.users.role.user') },
-    { value: 'admin' as UserRole, label: t('admin.users.role.admin') },
+    { value: 'user' as UserRole, label: t('common.role.user') },
+    { value: 'admin' as UserRole, label: t('common.role.admin') },
   ], [t]);
 
   useEffect(() => {
@@ -128,7 +128,7 @@ export const EditUserDialog: React.FC<EditUserDialogProps> = ({
             {/* Read-only basic info */}
             <div className="space-y-4">
               <div className="flex items-center justify-between">
-                <h4 className="text-sm font-medium text-muted-foreground">{t('admin.users.edit.basicInfo')}</h4>
+                <h4 className="text-sm font-medium text-muted-foreground">{t('common.sections.basicInfo')}</h4>
               </div>
               <Separator.Root className="shrink-0 bg-border h-[1px] w-full" />
               <div className="grid gap-4">
@@ -139,7 +139,7 @@ export const EditUserDialog: React.FC<EditUserDialogProps> = ({
                   </div>
                 </div>
                 <div className="grid gap-2">
-                  <LabelPrimitive.Root className={labelStyles}>{t('admin.users.edit.createdAt')}</LabelPrimitive.Root>
+                  <LabelPrimitive.Root className={labelStyles}>{t('common.fields.createdAt')}</LabelPrimitive.Root>
                   <input
                     value={formatDateTime(user.createdAt)}
                     disabled
@@ -152,7 +152,7 @@ export const EditUserDialog: React.FC<EditUserDialogProps> = ({
             {/* Editable fields */}
             <div className="space-y-4">
               <div className="flex items-center justify-between">
-                <h4 className="text-sm font-medium text-muted-foreground">{t('admin.users.edit.editableInfo')}</h4>
+                <h4 className="text-sm font-medium text-muted-foreground">{t('common.sections.editableInfo')}</h4>
               </div>
               <Separator.Root className="shrink-0 bg-border h-[1px] w-full" />
               <div className="grid gap-4">
@@ -173,7 +173,7 @@ export const EditUserDialog: React.FC<EditUserDialogProps> = ({
 
                 <div className="grid gap-2">
                   <LabelPrimitive.Root htmlFor="name" className={labelStyles}>
-                    {t('admin.users.fields.nameShort')}
+                    {t('common.fields.name')}
                   </LabelPrimitive.Root>
                   <input
                     id="name"
@@ -190,7 +190,7 @@ export const EditUserDialog: React.FC<EditUserDialogProps> = ({
 
                 <div className="grid grid-cols-1 gap-4 @sm:grid-cols-2">
                   <div className="grid gap-2">
-                    <LabelPrimitive.Root className={labelStyles}>{t('admin.users.fields.status')}</LabelPrimitive.Root>
+                    <LabelPrimitive.Root className={labelStyles}>{t('common.status.label')}</LabelPrimitive.Root>
                     <SimpleSelect
                       value={status}
                       onValueChange={(value) => setStatus(value as UserStatus)}
@@ -216,14 +216,14 @@ export const EditUserDialog: React.FC<EditUserDialogProps> = ({
               onClick={onClose}
               className={getButtonClass('outline', 'default')}
             >
-              {t('admin.users.actions.cancel')}
+              {t('common.actions.cancel')}
             </button>
             <button
               onClick={handleSubmit}
               disabled={!hasChanges}
               className={getButtonClass('default', 'default')}
             >
-              {t('admin.users.edit.save')}
+              {t('common.actions.save')}
             </button>
           </div>
         </Dialog.Content>

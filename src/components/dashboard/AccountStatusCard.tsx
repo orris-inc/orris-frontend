@@ -35,7 +35,7 @@ export const AccountStatusCard = ({ user }: AccountStatusCardProps) => {
 
           {/* Status */}
           <div className="flex items-center justify-between">
-            <span className="text-sm text-muted-foreground">{t('dashboard.accountStatus.status')}</span>
+            <span className="text-sm text-muted-foreground">{t('common.status.label')}</span>
             <span className={getBadgeClass(user.status === 'active' ? 'success' : 'secondary')}>
               {user.status === 'active' ? t('common.status.active') : user.status === 'inactive' ? t('common.status.inactive') : user.status}
             </span>

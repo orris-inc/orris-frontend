@@ -453,7 +453,7 @@ export const ForwardAgentDetailSheet = ({
       ? [
           {
             label: isUpdating
-              ? t('admin.forwardAgents.detail.updating')
+              ? t('common.loading.updating')
               : t('admin.forwardAgents.detail.triggerUpdate'),
             icon: isUpdating ? (
               <Loader2 className="size-5 animate-spin" />
@@ -542,8 +542,8 @@ export const ForwardAgentDetailSheet = ({
                   <span className="text-border">·</span>
                   <span className="text-xs text-muted-foreground">
                     {(isOnline || agent.isOnline)
-                      ? t('admin.forwardAgents.detail.online')
-                      : t('admin.forwardAgents.detail.offline')}
+                      ? t('common.status.online')
+                      : t('common.status.offline')}
                   </span>
                 </SheetDescription>
               </div>
@@ -563,7 +563,7 @@ export const ForwardAgentDetailSheet = ({
             />
 
             {/* Basic Info */}
-            <DetailSection title={t('admin.forwardAgents.detail.basicInfo')}>
+            <DetailSection title={t('common.sections.basicInfo')}>
               <DetailRow
                 icon={<Hash className="size-3.5" />}
                 label={t('common.labels.id')}
@@ -647,7 +647,7 @@ export const ForwardAgentDetailSheet = ({
 
             {/* Remark - if exists */}
             {agent.remark && (
-              <DetailSection title={t('admin.forwardAgents.detail.remark')}>
+              <DetailSection title={t('common.fields.remark')}>
                 <div className="px-3 py-2.5">
                   <p className="text-sm text-muted-foreground whitespace-pre-wrap line-clamp-3">
                     {agent.remark}
@@ -660,11 +660,11 @@ export const ForwardAgentDetailSheet = ({
             <DetailSection title={t('admin.forwardAgents.detail.timeInfo')}>
               <div className="px-3 py-2.5 grid grid-cols-2 gap-x-4 gap-y-2 text-xs">
                 <div>
-                  <span className="text-muted-foreground">{t('admin.forwardAgents.detail.createdAt')}</span>
+                  <span className="text-muted-foreground">{t('common.fields.createdAt')}</span>
                   <p className="text-foreground">{formatDateTime(agent.createdAt)}</p>
                 </div>
                 <div>
-                  <span className="text-muted-foreground">{t('admin.forwardAgents.detail.updatedAt')}</span>
+                  <span className="text-muted-foreground">{t('common.fields.updatedAt')}</span>
                   <p className="text-foreground">{formatDateTime(agent.updatedAt)}</p>
                 </div>
                 <div className="col-span-2">
@@ -703,7 +703,7 @@ export const ForwardAgentDetailSheet = ({
                     <Download className="size-4" />
                   )}
                   {isUpdating
-                    ? t('admin.forwardAgents.detail.updating')
+                    ? t('common.loading.updating')
                     : t('admin.forwardAgents.detail.triggerUpdate')}
                 </button>
               )}
@@ -782,7 +782,7 @@ export const ForwardAgentDetailSheet = ({
         open={actionSheetOpen}
         onOpenChange={setActionSheetOpen}
         actions={moreActions}
-        title={t('admin.forwardAgents.detail.moreActions')}
+        title={t('common.moreActions')}
       />
     </>
   );

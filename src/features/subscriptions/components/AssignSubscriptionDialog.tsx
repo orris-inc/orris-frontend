@@ -179,7 +179,7 @@ export const AssignSubscriptionDialog: React.FC<AssignSubscriptionDialogProps> =
               </Dialog.Title>
               {user && (
                 <p className="text-sm text-muted-foreground mt-1">
-                  {t('subscription.user')}: {user.name} ({user.email})
+                  {t('common.role.user')}: {user.name} ({user.email})
                 </p>
               )}
             </div>

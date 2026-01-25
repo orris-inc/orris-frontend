@@ -1,7 +1,6 @@
 {
   "app": {
     "name": "Orris",
-    "loading": "Loading...",
     "serverVersion": "Server",
     "clientVersion": "Client"
   },
@@ -54,9 +53,9 @@
     "copyAddress": "Copy address",
     "copied": "Copied",
     "token": {
-      "defaultDescription": "Token generated. Please save it securely. This token will only be shown once. You will need to regenerate it if lost.",
+      "defaultDescription": "Token shown once only. Save it securely.",
       "copied": "Token copied to clipboard",
-      "copyFirst": "Please copy the token before closing this dialog",
+      "copyFirst": "Copy token before closing",
       "copy": "Copy Token",
       "copyAgain": "Copy Again"
     },
@@ -129,39 +128,39 @@
       "justStarted": "Just started"
     },
     "validation": {
-      "required": "This field is required",
-      "email": "Please enter a valid email address",
-      "minLength": "Must be at least {{min}} characters",
-      "maxLength": "Must be at most {{max}} characters",
-      "min": "Must be at least {{min}}",
-      "max": "Must be at most {{max}}",
+      "required": "Required",
+      "email": "Invalid email",
+      "minLength": "Min {{min}} characters",
+      "maxLength": "Max {{max}} characters",
+      "min": "Min {{min}}",
+      "max": "Max {{max}}",
       "pattern": "Invalid format",
-      "url": "Please enter a valid URL",
+      "url": "Invalid URL",
       "number": "Must be a number",
       "integer": "Must be an integer",
-      "positive": "Must be a positive number"
+      "positive": "Must be positive"
     },
     "messages": {
-      "confirmDelete": "Are you sure you want to delete this item?",
-      "deleteSuccess": "Deleted successfully",
-      "createSuccess": "Created successfully",
-      "updateSuccess": "Updated successfully",
-      "saveSuccess": "Saved successfully",
-      "copySuccess": "Copied to clipboard",
+      "confirmDelete": "Delete this item?",
+      "deleteSuccess": "Deleted",
+      "createSuccess": "Created",
+      "updateSuccess": "Updated",
+      "saveSuccess": "Saved",
+      "copySuccess": "Copied",
       "operationFailed": "Operation failed",
-      "networkError": "Network error, please try again",
-      "unknownError": "An unknown error occurred",
-      "noData": "No data available",
-      "noResults": "No results found",
-      "loadingFailed": "Failed to load data"
+      "networkError": "Network error",
+      "unknownError": "Unknown error",
+      "noData": "No data",
+      "noResults": "No results",
+      "loadingFailed": "Failed to load"
     },
     "placeholders": {
       "search": "Search...",
-      "select": "Please select",
-      "selectOption": "Select an option...",
-      "enter": "Please enter",
-      "email": "Enter email address",
-      "password": "Enter password"
+      "select": "Select",
+      "selectOption": "Select...",
+      "enter": "Enter",
+      "email": "Email",
+      "password": "Password"
     },
     "pagination": {
       "page": "Page",
@@ -194,27 +193,39 @@
     "protocol": "Protocol",
     "auto": "Auto",
     "moreActions": "More Actions",
-    "cancel": "Cancel",
-    "close": "Close",
-    "copy": "Copy",
-    "create": "Create",
     "days": "days",
-    "delete": "Delete",
     "detail": "Detail",
-    "loading": "Loading...",
     "nextStep": "Next Step",
     "none": "None",
     "open": "Open",
     "optional": "Optional",
     "readOnly": "Read Only",
     "recommended": "Recommended",
-    "save": "Save",
     "unlimited": "Unlimited",
-    "time": {
-      "now": "Just now",
-      "minutesAgo": "{{count}} min ago",
-      "hoursAgo": "{{count}} hr ago",
-      "daysAgo": "{{count}} days ago"
+    "fields": {
+      "name": "Name",
+      "description": "Description",
+      "remark": "Remark",
+      "status": "Status",
+      "sortOrder": "Sort Order",
+      "createdAt": "Created At",
+      "updatedAt": "Updated At",
+      "protocol": "Protocol",
+      "version": "Version"
+    },
+    "loading": {
+      "creating": "Creating...",
+      "saving": "Saving...",
+      "deleting": "Deleting...",
+      "updating": "Updating...",
+      "loading": "Loading...",
+      "syncing": "Syncing..."
+    },
+    "sections": {
+      "basicInfo": "Basic Information",
+      "editableInfo": "Editable Information",
+      "networkConfig": "Network Configuration",
+      "advancedOptions": "Advanced Options"
     }
   },
   "nav": {
@@ -257,7 +268,7 @@
     "searchPlaceholder": "Search node name...",
     "totalNodes": "{{count}} nodes in total",
     "noAgents": "No forward agents available",
-    "noAgentsHint": "Please contact the administrator or upgrade your subscription plan",
+    "noAgentsHint": "Contact admin or upgrade plan",
     "available": "Available",
     "unavailable": "Unavailable",
     "resourceGroup": "Resource Group"
@@ -265,7 +276,7 @@
   "auth": {
     "login": {
       "title": "Sign In",
-      "subtitle": "Sign in to continue to your account",
+      "subtitle": "Welcome back",
       "email": "Email",
       "emailPlaceholder": "name@example.com",
       "password": "Password",
@@ -290,7 +301,6 @@
     "register": {
       "title": "Create Account",
       "subtitle": "Join Orris and start your journey",
-      "name": "Name",
       "email": "Email",
       "password": "Password",
       "confirmPassword": "Confirm Password",
@@ -303,7 +313,7 @@
       "continueWithGoogle": "Sign up with Google",
       "continueWithGithub": "Sign up with GitHub",
       "togglePasswordVisibility": "Toggle password visibility",
-      "passwordHint": "Password must be at least 8 characters with one uppercase letter",
+      "passwordHint": "8+ characters with uppercase",
       "passwordStrength": "Password strength",
       "strengthWeak": "Weak",
       "strengthFair": "Fair",
@@ -319,7 +329,6 @@
     },
     "validation": {
       "emailRequired": "Email is required",
-      "emailInvalid": "Please enter a valid email address",
       "passwordRequired": "Password is required",
       "passwordMinLength": "Password must be at least 8 characters",
       "passwordUppercase": "Password must contain at least one uppercase letter",
@@ -334,7 +343,7 @@
     },
     "forgotPassword": {
       "title": "Reset Password",
-      "subtitle": "Enter your email to receive a password reset link",
+      "subtitle": "Enter email for reset link",
       "email": "Email",
       "submit": "Send Reset Link",
       "sending": "Sending...",
@@ -343,7 +352,7 @@
     },
     "resetPassword": {
       "title": "Set New Password",
-      "subtitle": "Enter your new password below",
+      "subtitle": "Create your new password",
       "password": "New Password",
       "confirmPassword": "Confirm New Password",
       "submit": "Reset Password",
@@ -352,25 +361,25 @@
       "successMessage": "Password reset successfully. Please sign in with your new password.",
       "backToLogin": "Back to sign in",
       "invalidLink": "Invalid Reset Link",
-      "invalidLinkDesc": "This password reset link is invalid or has expired. Please request a new one.",
+      "invalidLinkDesc": "Link invalid or expired.",
       "requestNew": "Request New Link"
     },
     "verifyEmail": {
       "title": "Verify Your Email",
-      "subtitle": "We've sent a verification email to your inbox",
+      "subtitle": "Check your email",
       "checking": "Verifying...",
       "success": "Email verified successfully!",
       "resend": "Resend verification email",
       "resending": "Sending...",
       "resendSuccess": "Verification email sent!",
       "emailSentTo": "Verification email sent to:",
-      "resendPrompt": "Didn't receive the email? Enter your email address to resend:",
+      "resendPrompt": "Not received? Enter email to resend",
       "emailAddress": "Email Address",
-      "spamNotice": "Please check your spam folder. The verification link expires in 24 hours.",
+      "spamNotice": "Not found? Check spam folder.",
       "alreadyVerified": "Already verified?",
       "backToLogin": "Back to sign in",
       "steps": {
-        "title": "Please follow these steps to verify:",
+        "title": "Verification steps:",
         "step1": "Open your email inbox",
         "step2": "Find the email from Orris",
         "step3": "Click the verification link in the email"
@@ -378,21 +387,21 @@
     },
     "emailSent": {
       "title": "Email Sent",
-      "description": "We've sent a password reset link to your email. Please check your inbox and follow the instructions.",
-      "spamNotice": "If you don't see the email, please check your spam folder or try again later."
+      "description": "Reset link sent. Check your inbox.",
+      "spamNotice": "Not found? Check spam folder."
     },
     "emailVerification": {
       "missingToken": "Invalid verification link: missing token",
       "verifying": "Verifying your email...",
-      "verifyingDesc": "Please wait while we confirm your email address",
+      "verifyingDesc": "Confirming your email address",
       "successTitle": "Email Verified!",
-      "successDesc": "Your email has been verified successfully. You can now sign in to your account.",
+      "successDesc": "Email verified. Please sign in.",
       "goToLogin": "Go to Sign In",
       "alreadyVerifiedTitle": "Email Already Verified",
-      "alreadyVerifiedDesc": "Your email was already verified. You can sign in directly.",
+      "alreadyVerifiedDesc": "Already verified. Sign in directly.",
       "failedTitle": "Verification Failed",
       "invalidLink": "The verification link is invalid or expired",
-      "failedDesc": "The verification link may have expired or is invalid. Please try resending the verification email.",
+      "failedDesc": "Link expired. Please resend verification email.",
       "resendEmail": "Resend Verification Email",
       "backToLogin": "Back to Sign In"
     },
@@ -404,7 +413,7 @@
     },
     "unauthorized": {
       "title": "Access Denied",
-      "description": "You do not have permission to access this page. Please contact your administrator if you believe this is an error.",
+      "description": "No access. Contact administrator.",
       "goBack": "Go Back",
       "goToDashboard": "Go to Dashboard"
     },
@@ -412,7 +421,7 @@
       "errors": {
         "notSupported": "Your browser does not support passkeys",
         "notAllowed": "Authentication was cancelled or timed out",
-        "securityError": "Security requirements not met. Make sure you're using HTTPS.",
+        "securityError": "Security requirements not met. Use HTTPS.",
         "aborted": "Authentication was cancelled",
         "invalidState": "This passkey is already registered",
         "unknown": "An unexpected error occurred. Please try again."
@@ -425,41 +434,27 @@
     "planPrefix": "Plan #{{id}}",
     "noData": "No resource groups",
     "unit": "items",
-    "copiedToClipboard": "Copied to clipboard",
-    "name": "Name",
     "namePlaceholder": "Enter resource group name",
     "nameRequired": "Name is required",
     "nameTooLong": "Name cannot exceed 100 characters",
-    "description": "Description",
     "descriptionPlaceholder": "Enter resource group description (optional)",
     "selectPlan": "Select plan",
-    "selectPlanRequired": "Please select a plan",
+    "selectPlanRequired": "Plan is required",
     "createTitle": "Create Resource Group",
-    "createDescription": "Create a new resource group and associate it with a subscription plan",
+    "createDescription": "Create resource group and link to plan",
     "createResourceGroup": "Create Resource Group",
-    "creating": "Creating...",
-    "cancel": "Cancel",
-    "create": "Create",
     "editTitle": "Edit Resource Group",
     "editDescription": "Modify resource group settings",
-    "save": "Save",
-    "saving": "Saving...",
     "saveChanges": "Save Changes",
     "deleteTitle": "Delete Resource Group",
     "deleteDescription": "This action cannot be undone",
     "deleteConfirm": "Are you sure you want to delete this resource group?",
     "deleteWarning": "All member bindings will be removed",
-    "deleteFailWarning": "This action cannot be undone. Please confirm you want to delete this resource group.",
+    "deleteFailWarning": "This action cannot be undone.",
     "confirmDelete": "Confirm Delete",
-    "deleting": "Deleting...",
     "deleteConfirmTitle": "Confirm Deletion",
-    "deleteConfirmDescription": "Are you sure you want to delete this resource group? This action cannot be undone.",
+    "deleteConfirmDescription": "Delete? This cannot be undone.",
     "status": {
-      "active": "Active",
-      "inactive": "Inactive",
-      "enabled": "Enabled",
-      "disabled": "Disabled",
-      "stopped": "Stopped",
       "activated": "Activated",
       "deactivated": "Deactivated"
     },
@@ -472,20 +467,15 @@
     "sections": {
       "identificationInfo": "Identification",
       "associatedPlan": "Associated Plan",
-      "description": "Description",
       "timeInfo": "Time Information",
       "resourceStats": "Resource Statistics",
       "memberStats": "Member Statistics"
     },
     "labels": {
       "planId": "Plan ID",
-      "groupDescription": "Description",
-      "createdAt": "Created At",
-      "updatedAt": "Updated At",
       "associatedNodes": "Associated Nodes",
       "forwardAgents": "Forward Agents",
       "forwardRules": "Forward Rules",
-      "name": "Name",
       "nodeCount": "Node Count",
       "forwardAgentCount": "Forward Agent Count",
       "forwardRuleCount": "Forward Rule Count"
@@ -496,18 +486,13 @@
       "node": "This resource group belongs to a Node plan and can bind Nodes and Forward Rules."
     },
     "actions": {
-      "selectAll": "Select All",
-      "deselectAll": "Deselect All",
-      "selectedCount": "{{count}} selected",
       "remove": "Remove",
       "addNode": "Add Node",
       "addForwardAgent": "Add Forward Agent",
       "addForwardRule": "Add Forward Rule",
-      "edit": "Edit",
       "enableGroup": "Enable Group",
       "disableGroup": "Disable Group",
-      "deleteGroup": "Delete Group",
-      "moreActions": "More Actions"
+      "deleteGroup": "Delete Group"
     },
     "empty": {
       "noNodes": "No nodes in this resource group",
@@ -541,16 +526,12 @@
         "associated": "Associated",
         "available": "Available"
       },
-      "cancel": "Cancel",
       "adding": "Adding...",
       "confirmAdd": "Add {{count}} items"
     },
     "editSheet": {
       "description": "Modify information for resource group \"{{name}}\"",
-      "basicInfo": "Basic Information",
       "associatedPlan": "Associated Plan",
-      "createdAt": "Created At",
-      "editableInfo": "Editable Information",
       "readOnlyHint": "These fields cannot be modified after creation"
     },
     "nameHint": "A display name to identify the resource group",
@@ -558,8 +539,7 @@
     "selectedPlanInfo": "Selected: {{name}} ({{slug}})",
     "planTypes": {
       "node": "Node",
-      "forward": "Forward",
-      "hybrid": "Hybrid"
+      "forward": "Forward"
     }
   },
   "nodeList": {
@@ -578,7 +558,6 @@
     "columns": {
       "nodeName": "Node Name",
       "address": "Address",
-      "protocol": "Protocol",
       "onlineStatus": "Online Status"
     }
   },
@@ -620,7 +599,6 @@
       "resourceGroupsDesc": "Manage resource group allocation"
     },
     "moreManagement": {
-      "title": "More",
       "forwardRules": "Forward Rules",
       "forwardAgent": "Forward Agent",
       "externalForwardRules": "External Forward Rules",
@@ -636,8 +614,6 @@
       "settings": "Settings"
     },
     "dateRange": {
-      "today": "Today",
-      "yesterday": "Yesterday",
       "last7days": "Last 7 Days",
       "last30days": "Last 30 Days",
       "thisMonth": "This Month"
@@ -645,8 +621,6 @@
     "traffic": {
       "trend": "Traffic Trend",
       "trendDesc": "Upload and download traffic statistics",
-      "upload": "Upload",
-      "download": "Download",
       "total": "Total",
       "ranking": "Traffic Ranking",
       "userRanking": "User Ranking",
@@ -655,20 +629,16 @@
       "noSubscriptionData": "No subscription traffic data",
       "nodeStats": "Node Traffic Statistics",
       "noNodeData": "No node traffic data",
-      "totalNodes": "{{count}} nodes in total",
-      "prevPage": "Previous",
-      "nextPage": "Next"
+      "totalNodes": "{{count}} nodes in total"
     },
     "nodes": {
       "title": "Node Management",
       "description": "Manage proxy nodes",
-      "confirmDelete": "Are you sure you want to delete node \"{{name}}\" ({{address}}:{{port}})? This action cannot be undone.",
-      "copy": "Copy",
+      "confirmDelete": "Delete node \"{{name}}\" ({{address}}:{{port}})? Cannot be undone.",
       "nodesUnit": "nodes",
       "updatable": "Updatable",
       "userNodes": "User Nodes",
-      "showUserNodes": "Show nodes created by users",
-      "sort": "Sort",
+      "showUserNodes": "Show user-created nodes",
       "enableDragSort": "Enable drag to sort",
       "disableDragSort": "Disable drag to sort",
       "broadcastTooltip": "Broadcast new API URL to {{count}} online nodes",
@@ -682,14 +652,12 @@
         "name": "Node Name",
         "address": "Server Address",
         "port": "Port",
-        "status": "Status",
         "region": "Region",
         "traffic": "Traffic",
         "users": "Users"
       },
       "actions": {
         "viewDetail": "View Details",
-        "edit": "Edit",
         "installScript": "Install Script",
         "copyNode": "Copy Node",
         "generateToken": "Generate Token",
@@ -705,38 +673,26 @@
         "subscriptionPort": "Subscription Port",
         "transportProtocol": "Transport Protocol",
         "allowInsecure": "Allow insecure connection",
-        "onlineStatus": "Online",
-        "offlineStatus": "Offline",
         "lastOnline": "Last online",
         "clickToUnmute": "Click to unmute",
         "clickToMute": "Click to mute notifications",
-        "versionInfo": "Version",
         "newVersionAvailable": "New version available",
         "unknownResourceGroup": "Unknown resource group",
         "maintenanceReason": "Reason",
-        "configDescription": "Node protocol configuration including encryption method, transport protocol, etc.",
-        "monitorDescription": "Real-time system status including CPU, memory, network, etc."
-      },
-      "statusLabel": {
-        "active": "Active",
-        "inactive": "Inactive",
-        "maintenance": "Maintenance"
+        "configDescription": "Protocol, encryption, transport settings",
+        "monitorDescription": "CPU, memory, network in real-time"
       },
       "deleteSheet": {
         "title": "Delete Node",
-        "description": "This action cannot be undone. The node will be permanently removed.",
-        "confirmQuestion": "Are you sure you want to delete this node?",
-        "warningText": "All associated data and configurations will be permanently deleted. This action cannot be reversed.",
-        "deleting": "Deleting...",
+        "description": "Cannot be undone. Node will be permanently removed.",
+        "confirmQuestion": "Delete this node?",
+        "warningText": "All data and configurations will be permanently deleted.",
         "confirmButton": "Delete Node",
         "confirmTitle": "Final Confirmation",
-        "confirmDesc": "This is your last chance to cancel. Are you sure you want to proceed?"
+        "confirmDesc": "Last chance to cancel. Proceed?"
       },
       "stats": {
-        "total": "Total Nodes",
-        "active": "Active",
-        "inactive": "Inactive",
-        "maintenance": "Maintenance"
+        "total": "Total Nodes"
       },
       "detail": {
         "nodeOnline": "Node Online",
@@ -747,8 +703,6 @@
         "nodeStatus": "Node Status",
         "realtimeConnected": "Realtime connection established",
         "connectingRealtime": "Connecting...",
-        "online": "Online",
-        "offline": "Offline",
         "uptime": "Uptime",
         "uptimeFormat": {
           "daysHours": "{{days}}d {{hours}}h",
@@ -770,10 +724,7 @@
         "networkTraffic": "Network Traffic",
         "publicIp": "Public IP",
         "extendedMetrics": "Extended Metrics",
-        "basicInfo": "Basic Information",
         "nodeId": "Node ID",
-        "version": "Version",
-        "sortOrder": "Sort Order",
         "notificationStatus": "Notification Status",
         "muted": "Muted",
         "normalNotification": "Normal",
@@ -799,8 +750,6 @@
         "routeConfig": "Route Config",
         "maintenanceInfo": "Maintenance Info",
         "timeInfo": "Time Info",
-        "createdAt": "Created At",
-        "updatedAt": "Updated At",
         "lastOnline": "Last Online",
         "noResourceGroups": "No resource groups available",
         "noRouteRules": "No routing rules configured"
@@ -808,19 +757,17 @@
       "emptyState": "No nodes",
       "batchUpdate": {
         "title": "Batch Update Nodes",
-        "description": "Trigger updates for all nodes with available updates",
+        "description": "Trigger updates for nodes with new versions",
         "taskSubmitted": "Update tasks have been submitted",
         "updatableCount": "Updatable Nodes",
         "allUpToDate": "All nodes are up to date",
         "willUpdateNodes": "The following nodes will be updated:",
         "succeeded": "Succeeded",
-        "failed": "Failed",
         "skipped": "Skipped",
-        "truncatedHint": "Results have been truncated. Check node details for full status.",
+        "truncatedHint": "Results truncated. Check node details for full status.",
         "updateTriggered": "Update triggered for these nodes:",
         "updateFailed": "Failed to trigger update for these nodes:",
         "updateSkipped": "Update skipped for these nodes:",
-        "updating": "Updating...",
         "updateCount": "Update {{count}} Nodes"
       },
       "broadcast": {
@@ -832,8 +779,6 @@
         "notifyAllDesc": "Notify all online nodes with new API URL",
         "targetNode": "Target Node",
         "onlineNodeCount": "Online Node Count",
-        "online": "Online",
-        "offline": "Offline",
         "nodeOffline": "Node is currently offline",
         "noOnlineNodes": "No online nodes",
         "newApiUrl": "New API URL",
@@ -841,8 +786,7 @@
         "changeReason": "Change Reason (Optional)",
         "changeReasonPlaceholder": "e.g., Server migrated to new data center",
         "nodeAutoUpdateHint": "Node will automatically update configuration and reconnect to new URL",
-        "enterNewUrl": "Please enter a new API URL",
-        "invalidUrl": "Please enter a valid URL",
+        "enterNewUrl": "New API URL is required",
         "dangerWarningTitle": "Dangerous Action Warning",
         "dangerWarningDescSingle": "This action will immediately affect the target node's connection",
         "dangerWarningDescAll": "This action will immediately affect all {{count}} online nodes' connections",
@@ -877,16 +821,13 @@
         "configured": "Configured",
         "config": "Settings",
         "section": {
-          "basicInfo": "Basic Information",
-          "networkConfig": "Network Configuration",
           "otherSettings": "Other Settings",
           "routeConfig": "Route Configuration"
         },
         "nodeName": "Node Name",
         "nodeNamePlaceholder": "e.g., Hong Kong Node 01",
-        "nodeNameHint": "A descriptive name for the node",
+        "nodeNameHint": "Descriptive name for identification",
         "nodeId": "Node ID",
-        "createdAt": "Created At",
         "protocolType": "Protocol Type",
         "protocolCannotChange": "Protocol type cannot be changed after creation",
         "protocolDesc": {
@@ -899,13 +840,13 @@
         },
         "encryptionMethod": "Encryption Method",
         "transportProtocol": "Transport Protocol",
-        "transportProtocolHint": "Select the transport layer protocol",
+        "transportProtocolHint": "Transport layer protocol",
         "securityType": "Security Type",
-        "securityTypeHint": "Select the security mode",
+        "securityTypeHint": "Security mode",
         "congestionControl": "Congestion Control",
-        "congestionControlHint": "Select congestion control algorithm",
+        "congestionControlHint": "Congestion control algorithm",
         "udpRelayMode": "UDP Relay Mode",
-        "udpRelayModeHint": "Select UDP relay mode",
+        "udpRelayModeHint": "UDP relay mode",
         "serverAddress": "Server Address",
         "serverAddressPlaceholder": "e.g., example.com or 1.2.3.4",
         "serverAddressHint": "Leave empty to auto-detect from agent",
@@ -934,7 +875,6 @@
         "publicKeyPlaceholder": "Enter public key",
         "shortIdHint": "Reality short ID",
         "shortIdPlaceholder": "Enter short ID",
-        "optional": "Optional",
         "alterIdHint": "VMess alterId, usually 0 for modern configs",
         "enableTlsHint": "Enable TLS encryption",
         "enableTls": "Enable TLS",
@@ -944,7 +884,6 @@
         "obfsTypeHint": "e.g., salamander",
         "obfsPassword": "Obfuscation Password",
         "obfsPasswordHint": "Password for obfuscation",
-        "passwordPlaceholder": "Enter password",
         "upBandwidth": "Upload Bandwidth (Mbps)",
         "downBandwidth": "Download Bandwidth (Mbps)",
         "alpnHint": "ALPN protocol, e.g., h3",
@@ -955,7 +894,6 @@
         "region": "Region",
         "regionPlaceholder": "e.g., Hong Kong",
         "regionHint": "Geographic location of the node",
-        "sortOrder": "Sort Order",
         "sortOrderHint": "Lower values appear first in lists",
         "tags": "Tags",
         "tagsPlaceholder": "premium, gaming, streaming",
@@ -970,18 +908,13 @@
         "muteNotificationHint": "When muted, no alerts will be sent for this node",
         "muted": "Muted",
         "unmuted": "Not Muted",
-        "completed": "Completed",
         "nextStepNetwork": "Next: Network Config",
         "nextStepProtocol": "Next: Protocol Settings",
         "commonPorts": "Common Ports",
         "ssDefault": "SS Default (8388)",
         "httpsDefault": "HTTPS (443)",
         "httpsAlt": "HTTPS Alt (8443)",
-        "creating": "Creating...",
-        "saving": "Saving...",
         "editNodeDesc": "Editing node \"{{name}}\"",
-        "vmessSecurityRecommended": "Recommended",
-        "congestionControlRecommended": "Recommended",
         "randomFingerprint": "Random",
         "tlsVerify": "TLS Verification",
         "fields": {
@@ -1021,11 +954,6 @@
           "bandwidth": "100",
           "alpn": "h3"
         },
-        "status": {
-          "active": "Active",
-          "inactive": "Inactive",
-          "maintenance": "Maintenance"
-        },
         "validation": {
           "nameRequired": "Node name is required",
           "portRange": "Port must be between 1 and 65535",
@@ -1036,35 +964,26 @@
       "table": {
         "node": "Node",
         "config": "Config",
-        "online": "Online",
         "monitor": "Monitor",
-        "status": "Status",
         "tags": "Tags",
-        "version": "Version",
         "platform": "Platform",
         "resourceGroup": "Resource Group",
         "owner": "Owner",
-        "createdAt": "Created At",
-        "actions": "Actions",
         "tooltip": {
           "lastOnline": "Last online"
         },
         "menu": {
           "installScript": "Get Install Script",
           "copyNode": "Copy Node",
-          "generateToken": "Generate Token",
-          "activate": "Activate",
-          "deactivate": "Deactivate",
-          "delete": "Delete"
+          "generateToken": "Generate Token"
         }
       },
       "installScript": {
         "title": "Install Script",
-        "description": "Run the install command on the target server to complete deployment",
+        "description": "Run command on target server",
         "descriptionWithNode": "Install script for node \"{{name}}\", run on the target server to complete deployment",
         "installCommand": "Install Command",
-        "recommended": "Recommended",
-        "installCommandHint": "Run this command with root privileges on the target server to automatically download and install the node agent",
+        "installCommandHint": "Run with root privileges",
         "uninstallCommand": "Uninstall Command",
         "scriptUrl": "Script URL",
         "viewDetails": "View Details",
@@ -1135,7 +1054,6 @@
           "source": "Source Port"
         },
         "protocol": {
-          "label": "Protocol",
           "hint": "One protocol per line, e.g., http, tls, quic"
         },
         "network": {
@@ -1160,7 +1078,6 @@
           "privateIp": "Private IP",
           "port": "Port",
           "sourcePort": "Source Port",
-          "protocol": "Protocol",
           "network": "Network",
           "ruleSet": "Rule Set"
         }
@@ -1191,12 +1108,7 @@
           "description": "External forwarding rule with direct server address"
         }
       },
-      "filters": {
-        "protocol": "Protocol",
-        "status": "Status"
-      },
       "searchRules": "Search rules",
-      "sort": "Sort",
       "sortOptions": {
         "default": "Default",
         "createdDesc": "Created Desc",
@@ -1218,7 +1130,6 @@
       "confirmDeleteDesc": "Are you sure you want to delete forward rule \"{{name}}\"? This action cannot be undone.",
       "confirmResetTraffic": "Confirm Reset Traffic",
       "confirmResetTrafficDesc": "Are you sure you want to reset traffic statistics for rule \"{{name}}\"?",
-      "copySuffix": "Copy",
       "noData": "No forward rules data",
       "mode": " Mode",
       "tunnel": " Tunnel",
@@ -1257,28 +1168,21 @@
       "columns": {
         "ruleName": "Rule Name",
         "ruleType": "Rule Type",
-        "protocol": "Protocol",
         "path": "Path",
         "resourceGroup": "Resource Group",
         "resourceGroups": "Resource Groups",
         "traffic": "Traffic",
-        "syncStatus": "Sync Status",
-        "status": "Status",
-        "actions": "Actions"
+        "syncStatus": "Sync Status"
       },
       "traffic": {
         "total": "Total",
-        "upload": "Upload",
-        "download": "Download",
-        "multiplier": "Traffic Multiplier",
-        "auto": "Auto",
+        "multiplier": "Multiplier",
         "custom": "Custom",
         "external": "External",
         "externalHint": "Traffic is tracked by the external system"
       },
       "status": {
         "starting": "Starting",
-        "syncing": "Syncing...",
         "syncLabel": "Sync",
         "runLabel": "Run",
         "agents": "Agents",
@@ -1295,8 +1199,6 @@
         "clickToEnable": "Click to enable"
       },
       "detail": {
-        "statusEnabled": "Enabled",
-        "statusDisabled": "Disabled",
         "basicInfo": "Basic Info",
         "serverInfo": "Server Info",
         "serverAddress": "Server Address",
@@ -1306,18 +1208,14 @@
         "externalRuleIdLabel": "External Rule ID",
         "configOverview": "Config Overview",
         "ruleType": "Rule Type",
-        "sortOrder": "Sort Order",
         "createdTime": "Created Time",
         "resourceGroups": "Resource Groups",
         "trafficStats": "Traffic Stats",
-        "upload": "Upload",
-        "download": "Download",
         "total": "Total",
         "forwardPath": "Forward Path",
         "forwardPathTitle": "Forward Path",
         "nodesCount": "{{count}} nodes",
-        "trafficMultiplier": "Traffic Multiplier",
-        "multiplierAuto": "Auto",
+        "trafficMultiplier": "Multiplier",
         "syncStatus": "Sync Status",
         "sync": "Sync",
         "run": "Run",
@@ -1325,14 +1223,12 @@
         "noSyncStatus": "No sync status available",
         "createdAt": "Created {{time}}",
         "updatedAt": "Updated {{time}}",
-        "ipVersionAuto": "Auto",
         "ipVersionIpv4": "IPv4",
         "ipVersionIpv6": "IPv6",
         "tunnelTypeWs": "WebSocket",
         "tunnelTypeTls": "TLS",
         "targetTypeNode": "Node",
         "targetTypeManual": "Manual Config",
-        "protocol": "Protocol",
         "ipVersion": "IP Version",
         "tunnelType": "Tunnel Type",
         "ruleId": "Rule ID",
@@ -1342,37 +1238,24 @@
         "targetInfo": "Target Info",
         "targetType": "Target Type",
         "targetAddress": "Target Address",
-        "remark": "Remark",
         "connectionInfo": "Connection Info",
         "listenAddress": "Listen Address"
       },
-      "syncStatus": {
-        "synced": "Synced",
-        "pending": "Pending",
-        "failed": "Failed"
-      },
       "runStatus": {
-        "running": "Running",
-        "stopped": "Stopped",
-        "error": "Error",
-        "starting": "Starting",
-        "unknown": "Unknown"
+        "starting": "Starting"
       },
       "form": {
-        "editButton": "Edit",
         "probe": "Probe",
         "probing": "Probing...",
-        "moreActions": "More Actions",
         "copyRuleAction": "Copy Rule",
         "disableRule": "Disable Rule",
         "enableRule": "Enable Rule",
         "deleteRule": "Delete Rule",
         "createRule": "Create Rule",
-        "createRuleDesc": "Configure a new port forwarding rule",
+        "createRuleDesc": "Configure port forwarding rule",
         "copyRule": "Copy Rule",
         "editRule": "Edit Rule",
-        "basicInfo": "Basic Information",
-        "basicInfoDescription": "Configure rule properties and protocol settings",
+        "basicInfoDescription": "Properties and protocol",
         "forwardAgent": "Forward Agent",
         "selectForwardAgent": "Select forward agent",
         "portRestriction": "Port restriction: {{range}}",
@@ -1381,25 +1264,23 @@
         "ruleNamePlaceholder": "Enter rule name",
         "protocolType": "Protocol Type",
         "ipVersion": "IP Version",
-        "ipVersionAuto": "Auto",
-        "ipVersionHint": "Select which IP version to use for connections",
+        "ipVersionHint": "Select IP version",
         "forwardConfig": "Forwarding Configuration",
-        "forwardConfigDescription": "Set listen port, target address, and forwarding path",
+        "forwardConfigDescription": "Listen port, target, and path",
         "listenPort": "Listen Port",
-        "listenPortPlaceholderShort": "Auto",
         "listenPortAutoHint": "Leave empty to auto-assign",
         "serverAddress": "Server Address",
         "serverAddressPlaceholder": "Enter server address",
         "targetNode": "Target Node",
         "selectTargetNode": "Select target node",
         "selectTargetNodeOptional": "Select target node (optional)",
-        "targetNodeHint": "Bind rule to a specific node for display purposes",
+        "targetNodeHint": "Bind to specific node",
         "externalSource": "External Source",
         "externalSourcePlaceholder": "e.g., panel-name",
-        "externalSourceHint": "Optional, used to identify the source of this external rule",
+        "externalSourceHint": "Identify external rule source",
         "externalRuleId": "External Rule ID",
         "externalRuleIdPlaceholder": "e.g., original-rule-id",
-        "externalRuleIdHint": "Optional, the original rule ID from external source",
+        "externalRuleIdHint": "External original rule ID",
         "exitNode": "Exit Node",
         "selectExitNode": "Select exit node",
         "tunnelType": "Tunnel Type",
@@ -1407,7 +1288,7 @@
         "tunnelTypeTlsHint": "TLS: Direct encrypted connection",
         "tunnelHops": "Tunnel Hops",
         "tunnelHopsPlaceholder": "Leave empty for full tunnel",
-        "tunnelHopsHint": "Number of nodes using tunnel mode (0 = start direct mode from first node)",
+        "tunnelHopsHint": "Tunnel node count, 0=all direct",
         "chainNodes": "Chain Nodes",
         "chainNodesWithPort": "Chain Nodes (with port config)",
         "hybridChainHint": "First {{count}} nodes use tunnel, rest use direct connection",
@@ -1417,49 +1298,42 @@
         "targetAddress": "Target Address",
         "targetAddressPlaceholder": "IP or domain name",
         "targetPort": "Target Port",
-        "targetNodeDynamicHint": "Node address will be dynamically resolved at runtime",
-        "advancedOptions": "Advanced Options",
-        "advancedOptionsDescription": "Optional traffic multiplier, sorting, and remark settings",
+        "targetNodeDynamicHint": "Resolved at runtime",
+        "advancedOptionsDescription": "Multiplier, sorting, and remark",
         "bindIp": "Bind IP",
         "bindIpPlaceholder": "e.g., 0.0.0.0",
-        "bindIpHint": "Bind to specific IP, leave empty to bind all interfaces",
-        "trafficMultiplier": "Traffic Multiplier",
+        "bindIpHint": "Empty binds all interfaces",
+        "trafficMultiplier": "Multiplier",
         "trafficMultiplierAutoHint": "Leave empty to use auto multiplier",
         "trafficMultiplierHint": "Traffic will be multiplied by this value for billing",
         "trafficMultiplierNotModify": "Leave empty to keep current",
         "trafficMultiplierCurrent": "Current: {{value}}x ({{type}})",
-        "trafficMultiplierUpdateHint": "Leave empty to keep current value, enter 0 to reset to auto",
+        "trafficMultiplierUpdateHint": "Empty keeps current, 0=auto",
         "multiplierAuto": "auto",
         "multiplierCustom": "custom",
-        "sortOrder": "Sort Order",
         "sortOrderPlaceholder": "e.g., 100",
         "sortOrderHint": "Lower values appear first in the list",
         "sortSmallFirst": "Smaller values appear first",
-        "remark": "Remark",
         "remarkPlaceholder": "Optional notes about this rule",
         "bindResourceGroups": "Bind Resource Groups",
         "bindResourceGroupsEdit": "Bind Resource Groups",
-        "bindResourceGroupsHint": "Select which resource groups can use this rule",
+        "bindResourceGroupsHint": "Select available groups",
         "selectedGroupsCount": "{{count}} groups selected",
         "planTypeNode": "Node",
-        "planTypeHybrid": "Hybrid",
         "basicInfoReadonly": "Basic Information (Read-only)",
         "ruleId": "Rule ID",
         "createdTime": "Created Time",
-        "editableInfo": "Editable Information",
         "entryAgent": "Entry Agent",
         "selectEntryAgent": "Select entry agent",
         "exitAgent": "Exit Agent",
         "selectExitAgent": "Select exit agent",
         "copyRuleShort": "Copy Rule",
-        "creating": "Creating...",
         "createCopy": "Create Copy",
-        "configured": "Configured",
-        "saving": "Saving..."
+        "configured": "Configured"
       },
       "batch": {
         "createTitle": "Batch Create Rules",
-        "createDescription": "Create multiple forwarding rules by pasting JSON configuration",
+        "createDescription": "Paste JSON to batch create",
         "createComplete": "Batch creation completed",
         "loadTemplate": "Load Template",
         "copyTemplate": "Copy Template",
@@ -1468,21 +1342,16 @@
         "moreErrors": "...and {{count}} more errors",
         "jsonValid": "Valid JSON, {{count}} rules ready to create",
         "succeeded": "Succeeded",
-        "failed": "Failed",
         "createFailed": "Failed to create:",
         "createSuccess": "Successfully created:",
         "ruleIndex": "Rule #{{index}}",
         "moreRules": "...and {{count}} more rules",
-        "cancel": "Cancel",
-        "creating": "Creating...",
         "createRulesCount": "Create {{count}} Rules",
-        "close": "Close",
         "deleteTitle": "Batch Delete Rules",
         "deleteDescription": "Confirm batch delete operation",
         "deleteComplete": "Batch deletion completed",
         "deleteConfirm": "Are you sure you want to delete {{count}} selected rules?",
-        "deleteWarning": "This action cannot be undone. Please confirm carefully.",
-        "deleting": "Deleting...",
+        "deleteWarning": "This action cannot be undone",
         "deleteRulesCount": "Delete {{count}} Rules",
         "deleteFailed": "Failed to delete:",
         "updateTitle": "Batch Update Rules",
@@ -1491,12 +1360,9 @@
         "selectFieldsToUpdate": "Select fields to update",
         "enterNewValues": "Enter new values",
         "updateSummary": "Will update {{fields}} for {{count}} rules",
-        "updating": "Updating...",
         "updateRulesCount": "Update {{count}} Rules",
         "updateFailed": "Failed to update:",
         "fieldName": "Rule Name",
-        "fieldRemark": "Remark",
-        "fieldSortOrder": "Sort Order",
         "fieldEntryAgent": "Entry Agent",
         "fieldExitAgent": "Exit Agent",
         "namePlaceholder": "Enter new name",
@@ -1506,28 +1372,22 @@
         "selectExitAgent": "Select exit agent",
         "selected": "Selected",
         "rules": "rules",
-        "enableRules": "Enable",
         "enableTooltip": "Enable selected rules",
-        "disableRules": "Disable",
         "disableTooltip": "Disable selected rules",
         "update": "Update",
         "updateTooltip": "Update selected rules",
-        "delete": "Delete",
         "deleteTooltip": "Delete selected rules",
         "enableSelectedRules": "Enable Selected Rules",
         "disableSelectedRules": "Disable Selected Rules",
         "batchUpdate": "Batch Update",
         "deleteSelectedRules": "Delete Selected Rules",
         "cancelSelection": "Cancel Selection",
-        "enable": "Enable",
-        "disable": "Disable",
-        "processing": "Processing...",
         "toggleTitle": "{{action}} Rules",
         "toggleDescription": "Confirm batch {{action}} operation",
         "toggleComplete": "Batch {{action}} completed",
         "toggleConfirm": "Are you sure you want to {{action}} {{count}} selected rule(s)?",
-        "toggleEnableHint": "Enabled rules will start forwarding traffic immediately",
-        "toggleDisableHint": "Disabled rules will stop forwarding traffic",
+        "toggleEnableHint": "Takes effect immediately",
+        "toggleDisableHint": "Stops immediately",
         "toggleFailed": "Failed to {{action}}:",
         "toggleCount": "{{action}} {{count}} Rule(s)",
         "validation": {
@@ -1550,16 +1410,16 @@
         "listenPortRange": "Listen port must be between 1-65535",
         "portNotInRange": "Port {{port}} is not allowed. Allowed range: {{range}}",
         "portNotInRangeSimple": "Port is not in the allowed range",
-        "selectForwardAgent": "Please select a forward agent",
-        "protocolRequired": "Please select a protocol",
+        "selectForwardAgent": "Forward agent is required",
+        "protocolRequired": "Protocol is required",
         "targetAddressRequired": "Target address is required",
         "targetPortRange": "Target port must be between 1-65535",
-        "selectTargetNode": "Please select a target node",
-        "selectExitNode": "Please select an exit node",
-        "selectAtLeastOneNode": "Please select at least one chain node",
-        "configurePortsForNodes": "Please configure ports for nodes: {{nodes}}",
-        "configureValidPorts": "Please configure valid ports for all chain nodes",
-        "configureValidPortsForDirectNodes": "Please configure valid ports for direct connection nodes"
+        "selectTargetNode": "Target node is required",
+        "selectExitNode": "Select an exit node",
+        "selectAtLeastOneNode": "Select at least one chain node",
+        "configurePortsForNodes": "Configure ports for nodes: {{nodes}}",
+        "configureValidPorts": "Configure valid ports for all chain nodes",
+        "configureValidPortsForDirectNodes": "Configure valid ports for direct connection nodes"
       },
       "probe": {
         "title": "Probe Result",
@@ -1569,38 +1429,30 @@
         "probing": "Probing connection...",
         "success": "Connection successful",
         "failed": "Connection failed",
-        "copyAddress": "Copy address",
         "latencyDetails": "Latency Details",
-        "offline": "Offline",
-        "failedShort": "Failed",
-        "retryHint": "Click probe button to test connection",
-        "close": "Close"
+        "retryHint": "Click probe button to test connection"
       },
       "sheet": {
         "deleteRule": "Delete Rule",
         "deleteConfirmDesc": "This action cannot be undone. Please confirm.",
-        "deleteWarningTitle": "Warning",
         "deleteWarningDesc": "Deleting this rule will stop all traffic forwarding immediately. Active connections will be terminated.",
-        "autoAssign": "Auto",
         "forwardAgent": "Forward Agent",
         "trafficUsed": "Traffic Used",
-        "deleting": "Deleting...",
         "confirmDeleteButton": "Delete Rule",
-        "cancel": "Cancel",
         "confirmDeleteTitle": "Confirm Delete",
-        "confirmDeleteDesc": "Are you sure you want to permanently delete this rule?",
-        "save": "Save Changes",
-        "saving": "Saving..."
+        "confirmDeleteDesc": "Are you sure you want to permanently delete this rule?"
       }
     },
     "forwardAgents": {
       "title": "Forward Agents",
       "description": "Manage forward agents",
+      "create": {
+        "description": "Configure basic info and network settings for the Forward Agent"
+      },
       "agentsUnit": "agents",
       "updatable": "updatable",
       "confirmDelete": "Are you sure you want to delete Forward Agent \"{{name}}\"? This action cannot be undone.",
       "token": "Forward Agent Token",
-      "copySuffix": "Copy",
       "version": {
         "upToDate": "{{name}} is already up to date (v{{version}})",
         "fetchFailed": "Failed to fetch version info"
@@ -1617,15 +1469,13 @@
         "notifyAllDesc": "Notify all online Forward Agents with new API URL",
         "targetNode": "Target Node",
         "onlineNodeCount": "Online Node Count",
-        "online": "Online",
-        "offline": "Offline",
         "nodeOffline": "Node is currently offline",
         "noOnlineAgents": "No online Forward Agents",
         "newApiUrl": "New API URL",
         "newApiUrlPlaceholder": "https://new-api.example.com",
         "changeReason": "Change Reason (Optional)",
         "changeReasonPlaceholder": "e.g., Server migrated to new data center",
-        "agentAutoUpdateHint": "Forward Agent will automatically update configuration and reconnect to new URL",
+        "agentAutoUpdateHint": "Agent auto-updates and reconnects",
         "dangerWarningTitle": "Dangerous Action Warning",
         "dangerWarningTargetNode": "target node's",
         "dangerWarningAllNodes": "all {{count}} online nodes'",
@@ -1658,28 +1508,22 @@
       },
       "batchUpdateDialog": {
         "title": "Batch Update Forward Agents",
-        "description": "Update all Forward Agents that have available updates",
+        "description": "Update all updatable agents",
         "taskSubmitted": "Update task has been submitted",
         "updatableCount": "Updatable Agents",
         "allUpToDate": "All agents are already up to date",
         "willUpdateAgents": "Following agents will be updated:",
         "succeeded": "Succeeded",
-        "failed": "Failed",
         "skipped": "Skipped",
         "truncatedNotice": "Some results are truncated due to large number of agents",
         "updateTriggered": "Update triggered for:",
         "updateFailed": "Failed to update:",
         "updateSkipped": "Skipped:",
-        "updating": "Updating...",
         "updateButton": "Update {{count}} Agents"
       },
       "filters": {
-        "status": "Status",
         "all": "All",
-        "enabled": "Enabled",
-        "disabled": "Disabled",
         "searchAgent": "Search agent",
-        "sort": "Sort",
         "default": "Default",
         "createdDesc": "Created DESC",
         "createdAsc": "Created ASC",
@@ -1694,25 +1538,16 @@
       "actions": {
         "broadcast": "Broadcast",
         "update": "Update",
-        "refresh": "Refresh",
-        "refreshList": "Refresh list",
-        "create": "Create"
+        "refreshList": "Refresh list"
       },
       "table": {
         "columns": {
-          "name": "Name",
           "address": "Address",
-          "status": "Status",
-          "online": "Online",
           "monitor": "Monitor",
-          "resourceGroup": "Resource Group",
-          "version": "Version",
-          "createdAt": "Created At",
-          "actions": "Actions"
+          "resourceGroup": "Resource Group"
         },
         "menu": {
           "viewDetail": "View Details",
-          "edit": "Edit",
           "getInstallScript": "Get Install Script",
           "installScript": "Install Script",
           "copyNode": "Copy Node",
@@ -1720,22 +1555,16 @@
           "checkUpdate": "Check Update",
           "checking": "Checking...",
           "broadcastUrl": "Broadcast URL",
-          "broadcastURL": "Broadcast URL",
-          "enable": "Enable",
-          "disable": "Disable",
-          "delete": "Delete"
+          "broadcastURL": "Broadcast URL"
         },
         "tooltip": {
           "tunnelAddress": "Tunnel Address",
           "clickToDisable": "Click to disable",
           "clickToEnable": "Click to enable",
-          "online": "Online",
-          "offline": "Offline",
           "lastOnline": "Last online",
           "clickToMute": "Click to mute notifications",
           "clickToUnmute": "Click to unmute",
           "unknownResourceGroup": "Unknown resource group",
-          "version": "Version",
           "newVersionAvailable": "New version available"
         },
         "empty": "No forward agent data"
@@ -1749,28 +1578,24 @@
       "form": {
         "nodeName": "Node Name",
         "nodeNameRequired": "required",
+        "nodeNameHint": "Display name to identify the Agent",
         "nodeNamePlaceholder": "e.g., Main Forward Agent",
         "publicAddress": "Public Address",
         "publicAddressPlaceholder": "e.g., example.com or 1.2.3.4",
-        "publicAddressHint": "Optional, auto-detected by Agent if empty",
+        "publicAddressHint": "Auto-detected if empty",
         "tunnelAddress": "Tunnel Address",
         "tunnelAddressPlaceholder": "e.g., 10.0.0.1 or internal.example.com",
-        "tunnelAddressHint": "Optional, for relay/exit node internal connection",
+        "tunnelAddressHint": "For relay node internal connection",
         "portLimit": "Port Limit",
         "portLimitPlaceholder": "e.g., 80,443,8000-9000",
-        "portLimitHint": "Optional, empty allows all ports",
-        "sortOrder": "Sort Order",
+        "portLimitHint": "Empty allows all ports",
         "sortOrderPlaceholder": "e.g., 100",
-        "sortOrderHint": "Optional, lower values appear first",
+        "sortOrderHint": "Lower values appear first",
         "blockedProtocols": "Blocked Protocols",
-        "blockedProtocolsHint": "Optional, click to select protocols to block",
+        "blockedProtocolsHint": "Select protocols to block",
         "protocolGroupProxy": "Proxy Protocols",
         "protocolGroupApp": "Application Protocols",
-        "remark": "Remark",
-        "remarkPlaceholder": "Optional: add a remark",
-        "remarkHint": "Optional",
-        "creating": "Creating...",
-        "create": "Create"
+        "remarkPlaceholder": "Optional: add a remark"
       },
       "detail": {
         "badge": "Forward Agent",
@@ -1781,8 +1606,6 @@
         "nodeStatus": "Node Status",
         "realtimeConnected": "Realtime connection established",
         "connectingRealtime": "Connecting...",
-        "online": "Online",
-        "offline": "Offline",
         "uptime": "Uptime",
         "versionManagement": "Version Management",
         "current": "Current:",
@@ -1804,7 +1627,6 @@
         "tunnelPorts": "Tunnel Ports",
         "publicIp": "Public IP",
         "extendedMetrics": "Extended Metrics",
-        "basicInfo": "Basic Information",
         "agentId": "Agent ID",
         "agentName": "Agent Name",
         "publicAddress": "Public Address",
@@ -1817,15 +1639,11 @@
         "blockedProtocols": "Blocked Protocols",
         "proxyProtocols": "Proxy Protocols",
         "appProtocols": "Application Protocols",
-        "none": "None",
-        "remark": "Remark",
         "timeInfo": "Time Information",
-        "createdAt": "Created At",
-        "updatedAt": "Updated At",
         "lastOnline": "Last Online",
         "tokenNotice": "Token Notice",
         "tokenNotice1": "Token is only displayed once when creating or regenerating",
-        "tokenNotice2": "Please save the token securely, regeneration is required if lost",
+        "tokenNotice2": "Save token securely, regeneration required if lost",
         "tokenNotice3": "Old token becomes invalid immediately after regeneration",
         "systemStatus": "System Status",
         "network": "Network",
@@ -1837,7 +1655,6 @@
           "mins": "{{mins}}m"
         },
         "updatable": "Updatable",
-        "auto": "Auto",
         "noSystemStatusData": "No system status data",
         "configInfo": "Configuration",
         "allowedPortRange": "Allowed Port Range",
@@ -1848,7 +1665,6 @@
         "regenerateToken": "Regenerate Token",
         "getInstallScript": "Get Install Script",
         "deleteAgent": "Delete Agent",
-        "moreActions": "More Actions",
         "monitor": "Monitor",
         "cumulative": "Total",
         "tunnel": "Tunnel",
@@ -1859,20 +1675,13 @@
       },
       "edit": {
         "title": "Edit Forward Agent",
-        "sections": {
-          "basicInfo": "Basic Information",
-          "editableInfo": "Editable Information"
-        },
         "labels": {
           "agentId": "Agent ID",
-          "createdAt": "Created At",
           "nodeName": "Node Name",
           "publicAddress": "Public Address",
           "tunnelAddress": "Tunnel Address",
           "portLimit": "Port Limit",
-          "sortOrder": "Sort Order",
           "blockedProtocols": "Blocked Protocols",
-          "remark": "Remark",
           "resourceGroup": "Resource Group",
           "muteNotification": "Mute Notification"
         },
@@ -1903,18 +1712,12 @@
         "title": "Create Forward Agent",
         "copyTitle": "Copy Forward Agent",
         "description": "Create a new Forward Agent node to manage your proxy services",
-        "sections": {
-          "network": "Network Configuration",
-          "advanced": "Advanced Options"
-        },
         "labels": {
           "nodeName": "Node Name",
           "publicAddress": "Public Address",
           "tunnelAddress": "Tunnel Address",
           "portLimit": "Port Limit",
-          "sortOrder": "Sort Order",
-          "blockedProtocols": "Blocked Protocols",
-          "remark": "Remark"
+          "blockedProtocols": "Blocked Protocols"
         },
         "placeholders": {
           "nodeName": "e.g., Main Forward Agent",
@@ -1933,8 +1736,7 @@
         },
         "validation": {
           "nameRequired": "Node name is required"
-        },
-        "creating": "Creating..."
+        }
       },
       "delete": {
         "title": "Delete Forward Agent",
@@ -1942,22 +1744,15 @@
         "confirmTitle": "Are you sure?",
         "confirmMessage": "Deleting this Forward Agent will remove all associated configurations and cannot be recovered.",
         "noPublicAddress": "No public address",
-        "enabled": "Enabled",
-        "disabled": "Disabled",
-        "online": "Online",
-        "offline": "Offline",
-        "deleting": "Deleting...",
-        "confirmButton": "Delete",
         "finalConfirmTitle": "Final Confirmation",
-        "finalConfirmDescription": "Please confirm that you want to permanently delete this Forward Agent."
+        "finalConfirmDescription": "Confirm permanent deletion"
       },
       "installScript": {
         "title": "Install Script",
-        "description": "Use the command below to install Forward Agent on your server",
-        "descriptionWithName": "Use the command below to install Forward Agent \"{{name}}\" on your server",
+        "description": "Run command below on server",
+        "descriptionWithName": "Run command to install \"{{name}}\"",
         "installCommand": "Install Command",
-        "recommended": "Recommended",
-        "installCommandHint": "Run this command on your server to install and configure the Forward Agent",
+        "installCommandHint": "Run with root privileges",
         "uninstallCommand": "Uninstall Command",
         "scriptUrl": "Script URL",
         "viewDetails": "View Details",
@@ -1974,16 +1769,12 @@
       "confirmDelete": "Are you sure you want to delete user \"{{name}}\" ({{email}})? This action cannot be undone.",
       "assignSuccess": "Successfully assigned subscription to user {{name}}",
       "assignFailed": "Failed to assign subscription",
-      "statusPending": "Pending",
-      "statusInactive": "Inactive",
-      "statusSuspended": "Suspended",
-      "roleAdmin": "Admin",
       "refreshList": "Refresh list",
       "createUser": "Add User",
       "assignSubscription": "Assign Subscription",
       "noData": "No user data",
       "form": {
-        "createDescription": "Fill in the information below to create a new user account. The user will receive a notification with the initial password.",
+        "createDescription": "Create new user account",
         "accountInfo": "Account Information",
         "securitySettings": "Security Settings",
         "email": "Email Address",
@@ -2005,7 +1796,6 @@
         "passwordLength": "8-72 characters",
         "containsLetter": "Contains letter",
         "containsNumber": "Contains number",
-        "creating": "Creating...",
         "createUser": "Create User"
       },
       "resetPassword": {
@@ -2015,12 +1805,12 @@
         "newPasswordPlaceholder": "Enter new password",
         "confirmPassword": "Confirm Password",
         "confirmPlaceholder": "Re-enter new password",
-        "passwordRequired": "Please enter a new password",
+        "passwordRequired": "Password is required",
         "passwordMinLength": "Password must be at least {{min}} characters",
         "passwordMaxLength": "Password cannot exceed {{max}} characters",
         "passwordNeedsLetter": "Password must contain a letter",
         "passwordNeedsNumber": "Password must contain a number",
-        "confirmRequired": "Please confirm the new password",
+        "confirmRequired": "Confirm password is required",
         "passwordMismatch": "Passwords do not match",
         "passwordMatch": "Passwords match",
         "passwordHint": "{{min}}-{{max}} characters, must contain letters and numbers",
@@ -2029,22 +1819,15 @@
       },
       "actions": {
         "assignSubscription": "Assign Subscription",
-        "edit": "Edit",
         "resetPassword": "Reset Password",
-        "delete": "Delete",
-        "details": "View Details",
-        "cancel": "Cancel"
+        "details": "View Details"
       },
       "fields": {
         "email": "Email",
         "emailShort": "Email",
-        "name": "Name",
-        "nameShort": "Name",
         "namePlaceholder": "Enter username",
         "namePlaceholderShort": "Username",
         "nameLengthHint": "2-100 characters",
-        "passwordPlaceholder": "Enter password",
-        "status": "Status",
         "role": "Role",
         "createdAt": "Created"
       },
@@ -2052,47 +1835,30 @@
         "title": "Create User",
         "description": "Fill in the information to create a new user account",
         "passwordValid": "Valid",
-        "passwordSecurityHint": "The initial password should be communicated to the user securely. It is recommended that the user change their password after first login.",
-        "creating": "Creating...",
+        "passwordSecurityHint": "Share password securely with user",
         "createUser": "Create User"
       },
       "delete": {
         "title": "Delete User",
         "description": "This action cannot be undone",
         "confirmQuestion": "Are you sure you want to delete this user?",
-        "warningMessage": "All user data will be permanently deleted, including subscriptions and related records.",
+        "warningMessage": "All data will be permanently deleted",
         "username": "Username",
-        "deleting": "Deleting...",
         "confirmDelete": "Delete User",
         "confirmDeleteQuestion": "Confirm delete this user?",
-        "cannotRecover": "This action cannot be undone. All user data will be permanently deleted."
+        "cannotRecover": "This action cannot be undone"
       },
       "edit": {
         "title": "Edit User",
         "description": "Editing user {{name}}",
-        "basicInfo": "Basic Information",
         "userId": "User ID",
-        "createdAt": "Created At",
-        "editableInfo": "Editable Information",
-        "saveChanges": "Save Changes",
-        "save": "Save"
-      },
-      "status": {
-        "active": "Active",
-        "inactive": "Inactive",
-        "pending": "Pending",
-        "suspended": "Suspended"
-      },
-      "role": {
-        "user": "User",
-        "admin": "Admin"
+        "saveChanges": "Save Changes"
       },
       "validation": {
         "emailInvalid": "Invalid email format",
         "nameLengthError": "Name must be 2-100 characters"
       },
       "table": {
-        "name": "Name",
         "email": "Email"
       }
     },
@@ -2118,11 +1884,10 @@
       "cycleOptions": "cycles",
       "createPlan": "Create Plan",
       "duplicatePlan": "Duplicate Plan",
-      "createDescription": "Fill in the information below to create a new subscription plan",
-      "duplicateDescription": "Create a new plan based on \"{{name}}\"",
-      "copySuffix": "Copy",
+      "createDescription": "Create new subscription plan",
+      "duplicateDescription": "Based on \"{{name}}\"",
       "confirmDeleteTitle": "Confirm Delete",
-      "confirmDeleteDescription": "Are you sure you want to delete plan \"{{name}}\"? This action cannot be undone. Note: Only plans without active subscriptions can be deleted.",
+      "confirmDeleteDescription": "Delete \"{{name}}\"? Only plans without active subscriptions can be deleted",
       "deleteSuccess": "Plan deleted",
       "deleteError": "Failed to delete plan, there may be active subscriptions",
       "ruleType": {
@@ -2137,25 +1902,18 @@
         "type": "Type",
         "price": "Price",
         "billingCycle": "Billing Cycle",
-        "status": "Status",
         "public": "Public",
         "trialDays": "Trial Days",
-        "sortOrder": "Sort",
         "extras": "Extras",
-        "days": "days",
         "publicPlan": "Public Plan",
         "privatePlan": "Private Plan",
         "noPlans": "No subscription plans",
         "allPricingOptions": "All pricing options:",
         "multipleCycles": "{{count}} cycles",
-        "daysCount": "{{count}} days",
         "duplicatePlan": "Duplicate Plan",
-        "viewSubscribers": "View Subscribers",
-        "activate": "Activate",
-        "deactivate": "Deactivate"
+        "viewSubscribers": "View Subscribers"
       },
       "form": {
-        "basicInfo": "Basic Information",
         "planName": "Plan Name",
         "slug": "Slug (URL Identifier)",
         "slugHint": "Lowercase letters, numbers, and hyphens only",
@@ -2180,18 +1938,14 @@
         "trafficLimitGB": "Traffic Limit (GB)",
         "allowedRuleTypes": "Allowed Rule Types",
         "noSelectionAllowAll": "No selection allows all types",
-        "description": "Description",
         "descriptionPlaceholder": "Description of the subscription plan",
         "generalConfig": "General Configuration",
         "trialDays": "Trial Days",
-        "sortOrder": "Sort Order",
         "sortOrderHint": "Lower numbers appear first",
         "isPublic": "Show this plan publicly",
-        "creating": "Creating...",
         "createCopy": "Create Copy",
         "editPlan": "Edit Plan",
         "editDescription": "Modify settings for plan \"{{name}}\"",
-        "saving": "Saving...",
         "saveChanges": "Save Changes",
         "otherConfig": "Other Configuration",
         "slugPlaceholder": "url-slug"
@@ -2203,12 +1957,10 @@
         "trialPeriod": "Trial Period",
         "planId": "Plan ID",
         "billingCycles": "Billing Cycles",
-        "description": "Description",
         "slug": "Slug",
         "cycle": "Cycle",
         "public": "Public",
-        "trial": "Trial",
-        "sortOrder": "Sort"
+        "trial": "Trial"
       },
       "actions": {
         "activatePlan": "Activate Plan",
@@ -2222,11 +1974,12 @@
     "resourceGroups": {
       "title": "Resource Groups",
       "description": "Manage resource groups",
+      "groupsUnit": "groups",
+      "withPlans": "with plans",
       "lastUpdated": "Last updated",
       "emptyState": "No resource groups",
       "detail": {
         "plan": "Plan",
-        "description": "Description",
         "created": "Created"
       }
     },
@@ -2241,7 +1994,6 @@
       "groupCount": "groups",
       "columns": {
         "name": "Rule Name",
-        "protocol": "Protocol",
         "serverAddress": "Server Address",
         "externalSource": "External Source",
         "externalRuleId": "External Rule ID",
@@ -2252,12 +2004,9 @@
         "nodeInfo": "Node Info",
         "nodeName": "Node Name",
         "nodeServerAddress": "Node Server Address",
-        "status": "Status",
-        "resourceGroups": "Resource Groups",
-        "actions": "Actions"
+        "resourceGroups": "Resource Groups"
       },
       "filters": {
-        "status": "Status",
         "externalSource": "Search external source..."
       },
       "actions": {
@@ -2294,8 +2043,7 @@
         "nodeRoutingHint": "Optionally specify a node for direct routing. If not selected, the rule will be auto-assigned.",
         "resourceGroups": "Resource Groups",
         "resourceGroupsHint": "Select resource groups to bind. Rules will be distributed to subscriptions under these groups.",
-        "noResourceGroups": "No resource groups available",
-        "creating": "Creating..."
+        "noResourceGroups": "No resource groups available"
       },
       "editDialog": {
         "title": "Edit External Forward Rule",
@@ -2307,8 +2055,7 @@
         "currentNodeInfo": "Current Node Info",
         "resourceGroups": "Resource Groups",
         "resourceGroupsHint": "Modify resource groups bound to this rule. Clearing all will unbind all groups.",
-        "readOnlyInfo": "Read-only Info (cannot be modified)",
-        "saving": "Saving..."
+        "readOnlyInfo": "Read-only Info (cannot be modified)"
       },
       "noResourceGroups": "No resource groups available"
     },
@@ -2326,8 +2073,6 @@
       "network": "Network",
       "load": "Load",
       "uptime": "Uptime",
-      "download": "Download",
-      "upload": "Upload",
       "total": "Total",
       "connections": "Connections",
       "activeRules": "Active Rules",
@@ -2357,8 +2102,6 @@
       "minutesAgo": "{{count}}m ago",
       "hoursAgo": "{{count}}h ago",
       "detail": {
-        "online": "Online",
-        "offline": "Offline",
         "nodeAgentOffline": "Node Agent Offline",
         "forwardAgentOffline": "Forward Agent Offline",
         "lastOnline": "Last online",
@@ -2405,7 +2148,6 @@
         "tcpTimeWait": "TCP TIME_WAIT",
         "processStats": "Process Statistics",
         "totalProcesses": "Total Processes",
-        "running": "Running",
         "blocked": "Blocked",
         "fileDescriptors": "File Descriptors",
         "contextSwitches": "Context Switches",
@@ -2424,7 +2166,6 @@
         "memShort": "M",
         "diskShort": "D",
         "uptimeLabel": "Uptime",
-        "version": "Version",
         "publicIp": "Public IP",
         "traffic": "Traffic",
         "cores": "cores",
@@ -2443,8 +2184,6 @@
       },
       "metrics": {
         "memory": "Memory",
-        "download": "Download",
-        "upload": "Upload",
         "cpuDetails": "CPU Details",
         "cores": "Cores",
         "coresUnit": "cores",
@@ -2475,7 +2214,6 @@
         "tcpTimeWait": "TCP TIME_WAIT",
         "processStats": "Process Statistics",
         "totalCount": "Total",
-        "running": "Running",
         "blocked": "Blocked",
         "contextSwitch": "Context Switch",
         "contextSwitches": "Context Switches",
@@ -2495,8 +2233,6 @@
     "settings": {
       "title": "System Settings",
       "description": "Manage system configuration",
-      "enabled": "Enabled",
-      "disabled": "Disabled",
       "unableToLoadConfig": "Unable to load configuration",
       "saveChanges": "Save Changes",
       "readOnly": "Read-only",
@@ -2513,7 +2249,7 @@
       },
       "system": {
         "title": "Core Configuration",
-        "description": "API URL, subscription URL and core system settings",
+        "description": "API, subscription, and core settings",
         "apiBaseUrl": "API Base URL",
         "apiBaseUrlDesc": "Backend API service address",
         "subscriptionBaseUrl": "Subscription Base URL",
@@ -2533,10 +2269,10 @@
         "googleDesc": "Sign in with Google account",
         "githubDesc": "Sign in with GitHub account",
         "clientId": "Client ID",
-        "clientIdDesc": "OAuth application client identifier",
+        "clientIdDesc": "Application client identifier",
         "clientIdPlaceholder": "Enter OAuth Client ID",
         "clientSecret": "Client Secret",
-        "clientSecretDesc": "OAuth application client secret (keep this confidential)",
+        "clientSecretDesc": "Application client secret",
         "clientSecretPlaceholder": "Enter OAuth Client Secret",
         "redirectUrl": "Redirect URL",
         "redirectUrlDesc": "Callback URL for OAuth authentication flow",
@@ -2549,16 +2285,16 @@
         "smtpHost": "SMTP Server",
         "smtpHostDesc": "SMTP server address",
         "smtpPort": "SMTP Port",
-        "smtpPortDesc": "SMTP server port (usually 25, 465, or 587)",
+        "smtpPortDesc": "Usually 25, 465, or 587",
         "smtpUser": "SMTP Username",
         "smtpUserDesc": "SMTP authentication username",
         "smtpPassword": "SMTP Password",
         "smtpPasswordDesc": "SMTP authentication password",
         "smtpPasswordPlaceholder": "Enter SMTP password",
         "fromAddress": "From Address",
-        "fromAddressDesc": "Sender email address displayed in emails",
+        "fromAddressDesc": "Sender email",
         "fromName": "From Name",
-        "fromNameDesc": "Sender name displayed in emails",
+        "fromNameDesc": "Sender name",
         "testConnection": "Send Test Email",
         "testEmailPlaceholder": "Enter email to receive test",
         "testSuccess": "Test email sent successfully",
@@ -2571,30 +2307,16 @@
         "title": "Telegram Settings",
         "description": "Configure Bot Token and Webhook",
         "enable": "Enable Telegram Notifications",
-        "enableDesc": "Once enabled, administrators can bind Telegram to receive notifications",
+        "enableDesc": "Enable to bind Telegram for notifications",
         "botToken": "Bot Token",
-        "botTokenDesc": "Bot token obtained from @BotFather",
+        "botTokenDesc": "From @BotFather",
         "webhookUrl": "Webhook URL",
-        "webhookUrlDesc": "Webhook address to receive Telegram updates",
+        "webhookUrlDesc": "Address to receive updates",
         "webhookSecret": "Webhook Secret",
-        "webhookSecretDesc": "Secret key for verifying Webhook requests",
+        "webhookSecretDesc": "Key for verifying requests",
         "currentMode": "Current Mode",
         "testConnection": "Test Connection",
-        "saveChanges": "Save Changes",
-        "invalidUrl": "Please enter a valid URL"
-      }
-    },
-    "resourceGroups": {
-      "title": "Resource Groups",
-      "description": "Manage resource groups",
-      "groupsUnit": "groups",
-      "withPlans": "with plans",
-      "lastUpdated": "Last updated",
-      "emptyState": "No resource groups",
-      "detail": {
-        "plan": "Plan",
-        "description": "Description",
-        "created": "Created"
+        "saveChanges": "Save Changes"
       }
     }
   },
@@ -2602,7 +2324,6 @@
     "label": "Subscription",
     "details": "Subscription Details",
     "link": "Subscription Link",
-    "user": "User",
     "userInfo": "User Information",
     "plan": "Plan",
     "planInfo": "Plan Information",
@@ -2615,9 +2336,7 @@
     "idLabel": "Subscription ID:",
     "startDate": "Start Date",
     "endDate": "End Date",
-    "unlimited": "Unlimited",
     "currentPeriod": "Current Period",
-    "createdAt": "Created At",
     "autoRenewal": "Auto Renewal",
     "manualRenewal": "Manual Renewal",
     "noRenewal": "No Renewal",
@@ -2629,7 +2348,6 @@
     "uuid": "UUID",
     "noPlan": "No plan associated",
     "unknownPlan": "Unknown Plan",
-    "activate": "Activate",
     "activateSubscription": "Activate Subscription",
     "cancel": "Cancel Subscription",
     "renew": "Renew",
@@ -2637,51 +2355,50 @@
     "suspend": "Suspend",
     "unsuspend": "Resume",
     "resetUsage": "Reset Usage",
-    "confirmSuspend": "Are you sure you want to suspend",
-    "confirmSuspendSuffix": "? Please provide a reason.",
+    "confirmSuspend": "Suspend",
+    "confirmSuspendSuffix": "? Provide a reason.",
     "suspendWarning": "Suspended subscriptions cannot be used until resumed.",
     "suspendReason": "Reason",
-    "suspendReasonPlaceholder": "Enter reason",
+    "suspendReasonPlaceholder": "Reason",
     "delete": "Delete Subscription",
     "duplicate": "Duplicate Subscription",
     "viewDetails": "View Details",
-    "confirmCancel": "Are you sure you want to cancel subscription",
-    "confirmCancelSuffix": "? Please provide a cancellation reason.",
-    "cancelWarning": "After cancellation, users will not be able to continue using the subscription's services. Please confirm if you want to cancel this subscription.",
-    "immediateCancelOption": "Cancel immediately (otherwise cancel at the end of current period)",
+    "confirmCancel": "Cancel subscription",
+    "confirmCancelSuffix": "? Provide a reason.",
+    "cancelWarning": "Cancelled subscriptions cannot be used. Confirm?",
+    "immediateCancelOption": "Cancel immediately (otherwise at period end)",
     "immediateCancel": "Cancel Immediately",
-    "cancelAtEndPeriod": "Otherwise it will be cancelled at the end of the current period",
+    "cancelAtEndPeriod": "Cancel at period end",
     "targetUser": "Target User",
     "billingCycle": "Billing Cycle",
     "optionsAvailable": "options available",
     "noPriceSet": "No price set",
     "baseOn": "Based on subscription",
     "createNew": "Create new subscription",
-    "duplicateInfo": "A new subscription will be created for the user and will take effect immediately, generating a new subscription link.",
-    "sameUserAssignment": "New subscription will be assigned to the same user",
-    "creating": "Creating...",
+    "duplicateInfo": "Creates a new subscription that takes effect immediately with a new link.",
+    "sameUserAssignment": "Assigned to the same user",
     "create": "Create Subscription",
     "operations": "Subscription Operations",
     "noData": "No subscription data",
     "noSubscriptions": "No Subscriptions",
-    "noSubscriptionRecords": "There are no subscription records currently",
-    "noMatchingSubscription": "No matching subscriptions found",
-    "tryAdjustSearch": "Try adjusting search criteria or clear filters",
-    "selectPlanFirst": "Please select a plan first",
+    "noSubscriptionRecords": "No subscription records",
+    "noMatchingSubscription": "No matching subscriptions",
+    "tryAdjustSearch": "Adjust search or clear filters",
+    "selectPlanFirst": "Select a plan first",
     "assignToUser": "Assign Subscription to User",
-    "assignInfo": "Admin-assigned subscriptions take effect immediately, and users will get permissions for the corresponding plan.",
+    "assignInfo": "Admin-assigned subscriptions take effect immediately.",
     "assigning": "Assigning...",
-    "confirmAssign": "Confirm Assign",
+    "confirmAssign": "Assign",
     "noPricing": "No pricing",
     "assignSubscription": "Assign Subscription",
-    "assignSubscriptionDesc": "Assign a subscription plan to user {{user}}",
-    "loadingPlans": "Loading plans...",
+    "assignSubscriptionDesc": "Assign plan to {{user}}",
+    "loadingPlans": "Loading...",
     "subscriptionPlan": "Subscription Plan",
-    "selectPlan": "Select a plan",
+    "selectPlan": "Select plan",
     "autoRenew": "Auto Renew",
-    "autoRenewDesc": "Automatically renew after expiration",
+    "autoRenewDesc": "Auto-renew when expired",
     "price": "Price",
-    "assignSubscriptionInfo": "Admin-assigned subscriptions take effect immediately, and users will get permissions for the corresponding plan."
+    "assignSubscriptionInfo": "Admin-assigned subscriptions take effect immediately."
   },
   "subscriptionLink": {
     "nodeMode": {
@@ -2693,8 +2410,6 @@
       "textList": "Text list",
       "qrCode": "QR code"
     },
-    "copy": "Copy",
-    "copied": "Copied",
     "copyLink": "Copy link"
   },
   "userSubscription": {
@@ -2705,7 +2420,6 @@
     "overview": "Overview",
     "forward": "Forward",
     "nodes": "Nodes",
-    "days": "days",
     "day": "day",
     "remainingValidity": "Remaining validity",
     "periodProgress": "Period progress",
@@ -2720,20 +2434,15 @@
     "used": "Used",
     "totalQuota": "Total quota",
     "trafficDetails": "Traffic Details",
-    "upload": "Upload",
-    "download": "Download",
     "total": "Total",
     "subscriptionLink": "Subscription Link",
     "selectFormatAndCopy": "Select format and copy to client",
     "resetLink": "Reset Link",
     "resetting": "Resetting...",
-    "reset": "Reset",
     "confirmResetLink": "Are you sure you want to reset the subscription link? The old link will become invalid after reset.",
     "trafficTrend": "Traffic Trend",
     "uploadDownloadStats": "Upload and download traffic statistics",
     "noTrafficData": "No traffic data",
-    "today": "Today",
-    "yesterday": "Yesterday",
     "sevenDays": "7 Days",
     "thirtyDays": "30 Days",
     "noAvailableNodes": "No Available Nodes",
@@ -2749,7 +2458,6 @@
     "traffic": "Traffic",
     "types": "Types",
     "ruleTypes": {
-      "portForward": "Port Forward",
       "socks5Proxy": "SOCKS5",
       "httpProxy": "HTTP",
       "relayTunnel": "Relay",
@@ -2776,7 +2484,6 @@
     "perLifetime": "one-time (lifetime)"
   },
   "planType": {
-    "node": "Node Subscription",
     "forward": "Port Forwarding",
     "hybrid": "Hybrid Subscription"
   },
@@ -2784,16 +2491,9 @@
     "all": "All"
   },
   "subscriptionStatus": {
-    "inactive": "Inactive",
     "pendingPayment": "Pending Payment",
     "trialing": "Trialing",
-    "active": "Active",
     "pastDue": "Past Due",
-    "suspended": "Suspended",
-    "cancelled": "Cancelled",
-    "expired": "Expired",
-    "activated": "Active",
-    "notActivated": "Inactive",
     "notExpired": "Not Expired"
   },
   "messages": {
@@ -2814,12 +2514,10 @@
     "subscriptionUsageResetFailed": "Failed to reset usage",
     "subscriptionDeleted": "Subscription deleted",
     "subscriptionDeleteFailed": "Failed to delete subscription",
-    "copiedToClipboard": "Copied to clipboard",
-    "processing": "Processing...",
     "confirmCancel": "Confirm Cancel",
     "clearFilters": "Clear Filters",
-    "deleteIrreversible": "This action cannot be undone. Please confirm to continue.",
-    "confirmDeleteSubscription": "Confirm delete the following subscription?",
+    "deleteIrreversible": "This cannot be undone.",
+    "confirmDeleteSubscription": "Delete this subscription?",
     "deleteSubscriptionWarning": "Once deleted, the subscription will be permanently removed and users will no longer be able to use it."
   },
   "placeholders": {
@@ -2836,20 +2534,13 @@
   "tableColumns": {
     "subscriptionId": "Subscription ID",
     "userId": "User ID",
-    "user": "User",
     "plan": "Plan",
-    "status": "Status",
     "startDate": "Start Date",
     "endDate": "End Date",
     "autoRenew": "Auto Renewal",
-    "createdAt": "Created At",
-    "actions": "Actions",
     "operations": "Operations",
     "email": "Email",
-    "name": "Name",
-    "role": "Role",
-    "description": "Description",
-    "remark": "Remark"
+    "role": "Role"
   },
   "labels": {
     "userId": "User ID",
@@ -2860,22 +2551,19 @@
     "accountStatus": {
       "title": "Account Status",
       "accountId": "Account ID",
-      "role": "Role",
-      "status": "Status"
+      "role": "Role"
     },
     "traffic": {
       "title": "Traffic Usage",
       "monthlyUsage": "Monthly usage statistics",
-      "percentUsed": "% used",
-      "upload": "Upload",
-      "download": "Download"
+      "percentUsed": "% used"
     },
     "quickLinks": {
       "title": "Quick Access",
-      "profileDesc": "Manage your personal information and preferences",
-      "subscriptionDesc": "View and manage your subscriptions",
-      "nodeDesc": "Manage your node configurations",
-      "pricingDesc": "Browse available subscription plans",
+      "profileDesc": "Personal info and preferences",
+      "subscriptionDesc": "View and manage subscriptions",
+      "nodeDesc": "Configure nodes",
+      "pricingDesc": "Browse plans",
       "comingSoon": "Coming Soon"
     },
     "subscriptions": {
@@ -2893,68 +2581,50 @@
       "basicInfo": "Basic Info",
       "email": "Email",
       "role": "Role",
-      "status": "Status",
       "userId": "User ID",
       "timeInfo": "Time Info",
       "registrationTime": "Registration Time",
       "lastUpdated": "Last Updated",
-      "edit": "Edit",
       "subscription": "Subscription",
-      "moreActions": "More Actions",
       "resetPassword": "Reset Password",
-      "deleteUser": "Delete User",
-      "roleUser": "User",
-      "roleAdmin": "Admin"
+      "deleteUser": "Delete User"
     },
     "dashboard": {
       "title": "Dashboard",
       "welcome": "Welcome, {{name}}",
       "overview": "Overview",
-      "defaultUser": "User",
       "mySubscriptions": "My Subscriptions",
       "viewAllPlans": "View All Plans",
-      "welcomeMessage": "Manage your subscriptions and view usage.",
-      "loading": "Loading...",
-      "errorLoadUser": "Unable to load user information",
+      "welcomeMessage": "Manage subscriptions and view usage.",
+      "errorLoadUser": "Failed to load user info",
       "greeting": {
         "morning": "Good morning",
         "afternoon": "Good afternoon",
         "evening": "Good evening"
       },
       "stats": {
-        "totalTraffic": "Total Traffic",
-        "upload": "Upload",
-        "download": "Download"
+        "totalTraffic": "Total Traffic"
       },
       "status": {
-        "noSubscription": "Start your first subscription to unlock premium services",
-        "expiringSoon": "\"{{plan}}\" expires in {{days}} days, remember to renew",
-        "highUsage": "You've used {{percent}}% of your traffic, consider upgrading?",
-        "allGood": "{{count}} subscription running smoothly",
-        "allGood_other": "{{count}} subscriptions running smoothly"
+        "noSubscription": "Subscribe to unlock premium services",
+        "expiringSoon": "\"{{plan}}\" expires in {{days}} days",
+        "highUsage": "{{percent}}% traffic used, consider upgrading",
+        "allGood": "{{count}} subscription running",
+        "allGood_other": "{{count}} subscriptions running"
       },
       "empty": {
         "title": "No Subscriptions",
-        "description": "Start your first subscription to unlock premium services",
+        "description": "Subscribe to unlock premium services",
         "viewPlans": "Browse Plans"
       },
       "subscription": {
-        "status": {
-          "active": "Active",
-          "expired": "Expired",
-          "cancelled": "Cancelled",
-          "pending": "Pending",
-          "renewed": "Renewed"
-        },
-        "unknownPlan": "Unknown Plan",
-        "daysRemaining": "{{count}} day",
-        "daysRemaining_other": "{{count}} days"
+        "unknownPlan": "Unknown Plan"
       },
       "quickActions": {
         "upgrade": "Upgrade",
-        "upgradeDesc": "Get more bandwidth and features",
+        "upgradeDesc": "More bandwidth and features",
         "viewPlans": "View Plans",
-        "viewPlansDesc": "Compare all options"
+        "viewPlansDesc": "Compare options"
       }
     },
     "profile": {
@@ -2965,7 +2635,7 @@
   "landing": {
     "nav": {
       "features": "Features",
-      "howItWorks": "How It Works",
+      "howItWorks": "Guide",
       "pricing": "Pricing",
       "signIn": "Sign In",
       "getStarted": "Get Started",
@@ -2973,87 +2643,87 @@
       "closeMenu": "Close menu"
     },
     "hero": {
-      "badge": "Designed for Premium Transit Sharing",
-      "title": "One Platform for",
-      "titleHighlight": "Forwarding & Subscriptions",
-      "subtitle": "Orris unifies node management, traffic forwarding, and subscription delivery in one streamlined platform. Configure once, share effortlessly.",
+      "badge": "Node management, reimagined",
+      "title": "Set up once.",
+      "titleHighlight": "Run forever.",
+      "subtitle": "Nodes, forwarding, subscriptions—simplified. You focus on business. Orris handles the rest.",
       "getStartedFree": "Get Started Free",
-      "learnMore": "Learn More",
+      "learnMore": "Learn more",
       "stats": {
         "forwardingModes": "Forwarding Modes",
-        "uptimeSla": "Uptime SLA",
-        "alwaysOn": "Always-On Service"
+        "uptimeSla": "High Availability",
+        "alwaysOn": "Always On"
       }
     },
     "features": {
-      "title": "Features",
-      "subtitle": "Built for operators with premium transit, IX peering, and quality routes",
+      "title": "Powerful features",
+      "subtitle": "Every one, built for efficiency",
       "dashboard": {
-        "title": "All-in-One Dashboard",
-        "description": "Nodes, forwarding rules, and subscriptions—all managed from a single interface."
+        "title": "Total control",
+        "description": "Nodes, users, revenue. One view. Everything at a glance."
       },
       "forwarding": {
-        "title": "Versatile Forwarding",
-        "description": "Multiple protocols and flexible link chaining to adapt to any network scenario."
+        "title": "Forward your way",
+        "description": "Direct, chained, multi-hop. Different needs, flexible solutions."
       },
       "resourceGroups": {
-        "title": "Modular Resource Groups",
-        "description": "Decouple resources from plans for fine-grained access control and quota allocation."
+        "title": "Group freely",
+        "description": "Combine resources. Build plans. Your way."
       },
       "subscriptions": {
-        "title": "Scalable Subscriptions",
-        "description": "From personal use to team sharing—subscription models that grow with your needs."
+        "title": "Subscriptions, simplified",
+        "description": "Create, track, remind. Fully automated."
       },
       "relay": {
-        "title": "Relay-First Design",
-        "description": "Purpose-built for transit and sharing, maximizing your premium route investments."
+        "title": "Blazing fast",
+        "description": "Smart routing. Faster, more reliable connections."
       }
     },
     "howItWorks": {
-      "title": "How It Works",
-      "subtitle": "From setup to subscriber access in four straightforward steps",
+      "title": "Get started",
+      "subtitle": "Four steps. Zero to live.",
       "step1": {
         "number": "01",
-        "title": "Add Your Nodes",
-        "description": "Import your premium nodes—supports multiple protocols and deployment options."
+        "title": "Add nodes",
+        "description": "Import servers. All major protocols supported."
       },
       "step2": {
         "number": "02",
-        "title": "Define Forwarding Rules",
-        "description": "Set up routing policies and chain links to optimize traffic flow across your network."
+        "title": "Set rules",
+        "description": "Configure forwarding. Smart path optimization."
       },
       "step3": {
         "number": "03",
-        "title": "Build Subscription Plans",
-        "description": "Bundle resource groups into plans with custom quotas and access levels."
+        "title": "Create plans",
+        "description": "Price, quota, duration. Bundle in one click."
       },
       "step4": {
         "number": "04",
-        "title": "Share & Go Live",
-        "description": "Users subscribe via link and connect instantly—zero client-side setup required."
+        "title": "Go live",
+        "description": "Share links. Users subscribe instantly."
       }
     },
     "cta": {
-      "title": "Ready to Simplify Your Workflow?",
-      "subtitle": "Join Orris and manage your entire forwarding and subscription stack from one place",
+      "title": "Start now",
+      "subtitle": "A simpler way to manage awaits",
       "getStartedFree": "Get Started Free",
-      "alreadyMember": "Already a Member? Sign In"
+      "alreadyMember": "Have an account? Sign In"
     },
     "footer": {
-      "copyright": "© {{year}} Orris. All rights reserved."
+      "copyright": "© {{year}} Orris"
     }
   },
   "pricing": {
     "title": "Choose a Plan",
-    "subtitle": "Flexible pricing plans to meet different needs",
+    "subtitle": "Plans for every need",
     "publicTitle": "Simple pricing, for everyone.",
-    "publicSubtitle": "Whatever the size of your business, we have a plan that fits your needs.",
-    "noPlans": "No plans available at the moment.",
+    "publicSubtitle": "Find the plan that fits.",
+    "noPlans": "No plans available",
     "contactUs": "Contact us",
     "getStarted": "Get started",
-    "footerNote": "All plans support upgrade or downgrade at any time. Contact support if you have any questions.",
+    "footerNote": "Upgrade or downgrade anytime. Questions? Contact support.",
     "hero": {
-      "available": "{{count}} plans available for you",
+      "available": "{{count}} plans available",
       "noPlans": "No plans available at the moment"
     },
     "plans": {
@@ -3062,7 +2732,7 @@
     "features": {
       "instant": {
         "title": "Instant Activation",
-        "desc": "Start using immediately after subscription"
+        "desc": "Use immediately after subscribing"
       },
       "flexible": {
         "title": "Flexible Plans",
@@ -3070,7 +2740,7 @@
       },
       "support": {
         "title": "24/7 Support",
-        "desc": "Get help whenever you need"
+        "desc": "Help when you need it"
       },
       "oneUser": "1 user account",
       "users": "Up to {{count}} user accounts",
@@ -3080,14 +2750,14 @@
       "nodes": "{{count}} nodes",
       "apiRate": "{{count}} API requests/min",
       "trialDays": "{{count}}-day free trial",
-      "featuredDesc": "Perfect for growing teams and businesses.",
-      "defaultDesc": "Everything you need to get started."
+      "featuredDesc": "For growing teams and businesses.",
+      "defaultDesc": "Everything to get started."
     },
     "quickActions": {
       "viewSubscriptions": "View Subscriptions",
-      "viewSubscriptionsDesc": "Check your current subscription status",
+      "viewSubscriptionsDesc": "Check subscription status",
       "setupNotifications": "Setup Notifications",
-      "setupNotificationsDesc": "Get notified about subscription updates"
+      "setupNotificationsDesc": "Get subscription alerts"
     },
     "perWeek": "/week",
     "perMonth": "/month",
@@ -3100,14 +2770,13 @@
       "projects": "{{count}} projects",
       "nodes": "{{count}} nodes",
       "apiRate": "{{count}} API requests/min",
-      "recommended": "Recommended",
       "priceTbd": "Price TBD",
       "freeTrial": "{{days}}-day free trial",
       "selectPlan": "Select Plan"
     },
     "confirm": {
       "title": "Confirm Subscription",
-      "paymentComingSoon": "Payment feature coming soon! This is just a preview of subscription details.",
+      "paymentComingSoon": "Payment coming soon. Preview only.",
       "paymentComingSoonShort": "Payment feature coming soon!",
       "priceDetails": "Price Details",
       "subscriptionFee": "Subscription Fee",
@@ -3118,7 +2787,7 @@
       "maxUsersDesc": "Maximum team members",
       "maxProjects": "Up to {{count}} projects",
       "maxProjectsDesc": "Number of projects allowed",
-      "note": "You can cancel or change plans anytime. Contact support if you have questions.",
+      "note": "Cancel or change anytime. Need help? Contact support.",
       "startTrial": "Start Free Trial",
       "subscribeNow": "Subscribe Now"
     }
@@ -3132,7 +2801,7 @@
     },
     "avatar": {
       "title": "Profile Avatar",
-      "description": "Click to upload a new avatar. Supports JPG, PNG and WebP formats, max 2MB.",
+      "description": "Click to upload. JPG/PNG/WebP, max 2MB",
       "fileSizeError": "File size exceeds 2MB limit",
       "fileTypeError": "Only JPG, PNG and WebP formats are supported",
       "changeAvatar": "Change Avatar",
@@ -3141,15 +2810,14 @@
     },
     "avatarCrop": {
       "title": "Crop Avatar",
-      "description": "Drag to adjust the crop area, use the slider to zoom in or out",
+      "description": "Drag to adjust, slider to zoom",
       "zoom": "Zoom"
     },
     "basicInfo": {
-      "title": "Basic Information",
       "username": "Username",
-      "usernameHint": "This is your public display name",
+      "usernameHint": "Public display name",
       "email": "Email",
-      "emailHint": "Used for login and receiving notifications",
+      "emailHint": "For login and notifications",
       "accountStatus": "Account Status",
       "emailChangeReminder": "Changing your email address requires re-verification",
       "saveChanges": "Save Changes"
@@ -3166,23 +2834,23 @@
         "strong": "Strong"
       },
       "logoutAllDevices": "Log out from all devices",
-      "logoutAllDevicesDesc": "Signing out from all devices will invalidate all active sessions",
+      "logoutAllDevicesDesc": "Invalidates all active sessions",
       "securityTip": "Security Reminder",
-      "securityTipDesc": "Never share your password with anyone. Use a unique password for each account.",
+      "securityTipDesc": "Never share password. Use unique password per account.",
       "submit": "Change Password"
     },
     "security": {
       "changePasswordTitle": "Change Password",
-      "changePasswordDesc": "Regularly changing your password helps keep your account secure",
+      "changePasswordDesc": "Regular changes help keep account secure",
       "passkey": {
         "title": "Passkeys",
-        "desc": "Sign in quickly and securely using your fingerprint, face, or screen lock",
+        "desc": "Sign in using fingerprint, face, or screen lock",
         "add": "Add Passkey",
         "addTitle": "Add Passkey",
-        "addDesc": "Register a new passkey using your device's built-in authenticator",
+        "addDesc": "Use device authenticator to register",
         "deviceName": "Passkey Name",
         "deviceNamePlaceholder": "e.g., MacBook Pro",
-        "deviceNameHint": "Give your passkey a name to help you identify it later (optional)",
+        "deviceNameHint": "For identification (optional)",
         "registering": "Registering...",
         "empty": "No passkeys registered yet",
         "addedOn": "Added on {{date}}",
@@ -3193,15 +2861,14 @@
         "transportBle": "Bluetooth",
         "transportHybrid": "Cross-device",
         "transportNfc": "NFC",
-        "transportUnknown": "Unknown",
         "deleteConfirmTitle": "Delete Passkey",
-        "deleteConfirmDesc": "Are you sure you want to delete \"{{name}}\"? You will no longer be able to use this passkey to sign in.",
+        "deleteConfirmDesc": "Delete \"{{name}}\"? Cannot use this passkey after deletion",
         "notSupportedTitle": "Browser Not Supported",
-        "notSupportedDesc": "Your browser does not support passkeys. Please use a modern browser like Chrome, Safari, Edge, or Firefox.",
+        "notSupportedDesc": "Use Chrome, Safari, Edge, or Firefox",
         "errors": {
           "notSupported": "Your browser does not support passkeys",
           "notAllowed": "Registration was cancelled or timed out",
-          "securityError": "Security requirements not met. Make sure you're using HTTPS.",
+          "securityError": "Security requirements not met. Use HTTPS.",
           "aborted": "Registration was cancelled",
           "alreadyRegistered": "This authenticator is already registered",
           "unknown": "An unexpected error occurred. Please try again.",
@@ -3226,13 +2893,13 @@
     },
     "notifications": {
       "title": "Notifications",
-      "description": "Manage how you receive notifications",
+      "description": "Manage notifications",
       "emailNotifications": "Email Notifications",
-      "emailNotificationsDesc": "Choose what types of emails you receive",
+      "emailNotificationsDesc": "Choose email notification types",
       "marketingEmails": "Marketing Emails",
-      "marketingEmailsDesc": "Receive product updates and offers",
+      "marketingEmailsDesc": "Product updates and offers",
       "securityAlerts": "Security Alerts",
-      "securityAlertsDesc": "Important security notifications",
+      "securityAlertsDesc": "Important security notices",
       "productUpdates": "Product Updates",
       "productUpdatesDesc": "New features and improvements",
       "pushNotifications": "Push Notifications",
@@ -3241,13 +2908,12 @@
     },
     "appearance": {
       "title": "Appearance",
-      "description": "Customize how the app looks",
+      "description": "Customize display",
       "theme": "Theme",
-      "themeDesc": "Select your preferred theme",
+      "themeDesc": "Select theme mode",
       "themeLight": "Light",
       "themeDark": "Dark",
       "themeSystem": "System",
-      "language": "Language",
       "languageDesc": "Select your preferred language"
     },
     "system": {
@@ -3261,7 +2927,6 @@
       "cacheDesc": "Manage local storage and cached data",
       "clearCache": "Clear Cache",
       "clearCacheDesc": "Clear locally stored cache data",
-      "clearCacheButton": "Clear",
       "advancedTitle": "Advanced Settings",
       "advancedDesc": "Advanced system configuration options",
       "comingSoon": "More advanced settings coming soon"
@@ -3277,7 +2942,6 @@
       "notConfigured": "Notification service is not configured"
     },
     "stats": {
-      "active": "Active",
       "channels": "Channels",
       "channelUnit": "channel"
     },
@@ -3321,8 +2985,6 @@
       "bound": "Bound",
       "unbound": "Unbound",
       "notConfigured": "Not Configured",
-      "enabled": "Enabled",
-      "disabled": "Disabled",
       "items": "{{count}} notifications"
     },
     "expiring": {
@@ -3411,7 +3073,7 @@
     "subtitle": "Manage your proxy nodes",
     "noSubscription": {
       "title": "No forwarding service available",
-      "description": "You don't have a subscription plan that includes port forwarding. Purchase a subscription to use the port forwarding service.",
+      "description": "Purchase subscription to use port forwarding",
       "viewPlans": "View Subscription Plans"
     },
     "totalNodes": "{{count}} nodes in total",
@@ -3420,29 +3082,25 @@
     "myNodes": "My Nodes",
     "stats": {
       "quota": "Node Quota",
-      "online": "Online",
-      "offline": "Offline",
       "nodes": "nodes",
       "summary": "{{total}} nodes total, {{online}} online",
       "noNodes": "Create your first node to get started"
     },
     "quickActions": {
       "viewAgents": "View Forward Agents",
-      "viewAgentsDesc": "Check available forward agents for your nodes",
+      "viewAgentsDesc": "Check available forward agents",
       "upgradePlan": "Upgrade Plan",
-      "upgradePlanDesc": "Increase your node quota and unlock more features"
+      "upgradePlanDesc": "Increase quota and unlock features"
     },
     "installScript": {
       "title": "Install Command",
-      "description": "Run the install command on the target server to complete deployment",
-      "descriptionWithNode": "Install command for node \"{{name}}\", run on the target server to complete deployment",
+      "description": "Run command on target server",
+      "descriptionWithNode": "Run on server to install \"{{name}}\"",
       "noData": "No install script data available",
       "installCommand": "Install Command",
-      "recommended": "Recommended",
-      "installHint": "Run this command with root privileges on the target server to automatically download and install the node",
+      "installHint": "Run with root privileges",
       "uninstallCommand": "Uninstall Command",
       "scriptUrl": "Script URL",
-      "open": "Open",
       "viewDetails": "View Details",
       "clickToExpand": "Click to expand",
       "clickToCollapse": "Click to collapse",
@@ -3451,13 +3109,11 @@
     },
     "create": {
       "title": "Create Node",
-      "description": "Fill in the information below to create a new node. The node Token will be displayed after creation. Please keep it safe.",
-      "basicInfo": "Basic Information",
+      "description": "Token shown after creation. Keep it safe.",
       "nodeName": "Node Name",
       "serverAddress": "Server Address",
       "agentPort": "Agent Port",
       "subscriptionPort": "Subscription Port",
-      "protocol": "Protocol",
       "transportProtocol": "Transport Protocol",
       "tlsSni": "TLS SNI",
       "tlsFingerprint": "TLS Fingerprint",
@@ -3467,7 +3123,6 @@
       "allowInsecure": "Allow insecure TLS connection",
       "congestionControl": "Congestion Control",
       "notSpecified": "Not specified",
-      "creating": "Creating...",
       "placeholders": {
         "nodeName": "e.g., Hong Kong Node-01",
         "serverAddress": "Leave empty to auto-detect",
@@ -3481,10 +3136,9 @@
         "obfsPassword": "Obfuscation password"
       },
       "hints": {
-        "serverAddress": "Optional, will auto-detect from Agent public IP if empty",
+        "serverAddress": "Auto-detected if empty",
         "pluginOpts": "Format: key1=value1;key2=value2 or JSON",
         "vlessFlow": "Optional, for XTLS flow control",
-        "optional": "Optional",
         "alterId": "Usually 0",
         "recommendBbr": "BBR recommended",
         "obfsType": "Optional, obfuscation type",
@@ -3534,18 +3188,12 @@
     },
     "detail": {
       "title": "Node Details",
-      "basicInfo": "Basic Information",
       "nodeName": "Node Name:",
       "serverAddress": "Server Address:",
       "agentPort": "Agent Port:",
       "subscriptionPort": "Subscription Port:",
       "protocol": "Protocol:",
       "status": "Status:",
-      "statusLabels": {
-        "active": "Active",
-        "inactive": "Inactive",
-        "maintenance": "Maintenance"
-      },
       "onlineStatus": "Online Status",
       "currentStatus": "Current Status:",
       "lastOnline": "Last Online:",
@@ -3564,13 +3212,9 @@
       "encryptionType": "Encryption Type:",
       "alterId": "Alter ID:",
       "tls": "TLS:",
-      "tlsEnabled": "Enabled",
-      "tlsDisabled": "Disabled",
       "congestionControl": "Congestion Control:",
       "obfsType": "Obfs Type:",
       "bandwidthLimit": "Bandwidth Limit:",
-      "upload": "Upload",
-      "download": "Download",
       "udpRelayMode": "UDP Relay Mode:",
       "alpn": "ALPN:",
       "disableSni": "Disable SNI:",
@@ -3582,9 +3226,6 @@
       "title": "Edit Node",
       "description": "Modify node configuration. Some fields cannot be changed after creation.",
       "readOnlyInfo": "Read-only Information",
-      "editableInfo": "Editable Information",
-      "protocol": "Protocol",
-      "status": "Status",
       "encryptionMethod": "Encryption Method",
       "transportProtocol": "Transport Protocol",
       "nodeName": "Node Name",
@@ -3594,7 +3235,6 @@
       "agentPort": "Agent Port",
       "subscriptionPort": "Subscription Port",
       "subscriptionPortPlaceholder": "Leave empty to use Agent port",
-      "saving": "Saving...",
       "validation": {
         "nameRequired": "Please enter node name",
         "validPort": "Please enter a valid port number"
@@ -3603,16 +3243,14 @@
   },
   "userForwardRules": {
     "pageTitle": "Forward Rules",
-    "pageDescription": "Manage your port forwarding rules",
+    "pageDescription": "Manage port forwarding rules",
     "totalRules": "{{count}} rules total",
     "addRuleShort": "Add",
     "columns": {
       "ruleName": "Rule Name",
       "entry": "Entry",
       "exit": "Exit",
-      "usedTraffic": "Used Traffic",
-      "status": "Status",
-      "actions": "Actions"
+      "usedTraffic": "Used Traffic"
     },
     "tooltip": {
       "viaForwardAgent": "Via Forward Agent",
@@ -3624,7 +3262,6 @@
       "nodesCount": "{{count}} nodes"
     },
     "menu": {
-      "edit": "Edit",
       "enableRule": "Enable Rule",
       "disableRule": "Disable Rule",
       "deleteRule": "Delete Rule"
@@ -3634,8 +3271,6 @@
       "download": "Download:"
     },
     "status": {
-      "enabled": "Enabled",
-      "disabled": "Disabled",
       "clickToDisable": "Click to disable",
       "clickToEnable": "Click to enable"
     },
@@ -3646,23 +3281,22 @@
     "addRule": "Add Rule",
     "confirmDelete": {
       "title": "Confirm Delete",
-      "description": "Are you sure you want to delete forward rule \"{{name}}\"? This action cannot be undone."
+      "description": "Delete forward rule \"{{name}}\"? This cannot be undone."
     },
     "limitReached": {
       "title": "Rule Limit Reached",
-      "description": "You have reached the maximum of {{count}} forward rules allowed by your subscription plan."
+      "description": "Maximum {{count}} rules reached for current plan."
     },
     "noSubscription": {
       "title": "No Active Subscription",
-      "description": "You need an active subscription to create forward rules.",
+      "description": "Active subscription required to create rules.",
       "viewPlans": "View Plans"
     },
     "form": {
       "basicInfo": "Basic Info",
       "ruleName": "Rule Name",
-      "ruleNamePlaceholder": "Give your rule a name",
+      "ruleNamePlaceholder": "Enter rule name",
       "forwardAgent": "Forward Agent",
-      "loading": "Loading...",
       "selectAgent": "Select Agent",
       "noAgentsAvailable": "No agents available",
       "ruleType": "Rule Type",
@@ -3670,14 +3304,11 @@
       "selectExitNode": "Select Exit Node",
       "relayNode": "Relay Nodes",
       "relayNodeWithPort": "Relay Nodes (with Port)",
-      "remark": "Remark",
-      "remarkPlaceholder": "Add remark (optional)",
+      "remarkPlaceholder": "Add remark",
       "forwardConfig": "Forward Config",
       "listenPort": "Listen Port",
-      "listenPortPlaceholder": "Leave empty for auto-assign",
-      "listenPortPlaceholderShort": "Auto",
-      "listenPortHint": "Leave empty for system auto-assignment",
-      "protocol": "Protocol",
+      "listenPortPlaceholder": "Auto-assign if empty",
+      "listenPortHint": "Auto-assigned if empty",
       "targetType": "Target Type",
       "manualAddress": "Manual Address",
       "selectNodeDynamic": "Select Node (Dynamic)",
@@ -3686,20 +3317,13 @@
       "targetPort": "Target Port",
       "targetNode": "Target Node",
       "selectTargetNode": "Select Target Node",
-      "targetNodeHint": "The target address will be dynamically resolved from the selected node",
+      "targetNodeHint": "Address resolved from selected node",
       "noNodesAvailable": "No available nodes",
       "noNodesEmpty": "No nodes available",
       "ipVersion": "IP Version",
-      "ipVersionAuto": "Auto",
-      "sortOrder": "Sort Order",
-      "sortOrderPlaceholder": "Leave empty for default 0",
+      "sortOrderPlaceholder": "Default: 0",
       "sortOrderHint": "Lower value means higher priority",
-      "cancel": "Cancel",
-      "creating": "Creating...",
-      "create": "Create",
       "editRuleTitle": "Edit Rule",
-      "saving": "Saving...",
-      "save": "Save",
       "forwardOrderAdjustable": "Forward order (drag to adjust)",
       "portPlaceholder": "Port",
       "adjustOrderHint": ", drag to adjust order",
@@ -3714,16 +3338,16 @@
         "relayNodes": "Relay Nodes: "
       },
       "validation": {
-        "selectAgent": "Please select a forward agent",
+        "selectAgent": "Select a forward agent",
         "ruleNameRequired": "Rule name is required",
         "portRange": "Port must be between 1-65535",
-        "selectExitNode": "Please select an exit node",
-        "selectChainNode": "Please select at least one relay node",
-        "chainPortRequired": "Please configure port for each relay node",
+        "selectExitNode": "Select an exit node",
+        "selectChainNode": "Select at least one relay node",
+        "chainPortRequired": "Configure port for each relay node",
         "chainPortMissing": "Missing port for nodes: {{nodes}}",
         "targetAddressRequired": "Target address is required",
         "targetPortRequired": "Target port is required",
-        "targetNodeRequired": "Please select a target node"
+        "targetNodeRequired": "Select a target node"
       }
     }
   },
@@ -3736,13 +3360,10 @@
     "protocolConfig": "Protocol Config",
     "columns": {
       "name": "Rule Name",
-      "protocol": "Protocol",
       "serverAddress": "Server Address",
       "externalSource": "Source",
       "externalRuleId": "External ID",
-      "node": "Node",
-      "status": "Status",
-      "actions": "Actions"
+      "node": "Node"
     },
     "form": {
       "name": "Rule Name",
@@ -3755,10 +3376,8 @@
       "externalSourcePlaceholder": "e.g., subscription-provider",
       "externalRuleId": "External Rule ID",
       "externalRuleIdPlaceholder": "Source system rule identifier (optional)",
-      "remark": "Remark",
-      "remarkPlaceholder": "Add remark (optional)",
-      "sortOrder": "Sort Order",
-      "sortOrderPlaceholder": "Leave empty for default 0",
+      "remarkPlaceholder": "Add remark",
+      "sortOrderPlaceholder": "Default: 0",
       "sortOrderHint": "Lower value means higher priority",
       "encryptionMethod": "Encryption Method",
       "selectEncryptionMethod": "Select encryption method",
@@ -3793,8 +3412,7 @@
       "serverConfig": "Server Config",
       "protocolConfig": "Protocol Config",
       "nodeRouting": "Node Routing",
-      "nodeRoutingHint": "Optionally specify a node for direct routing. If not selected, the rule will be auto-assigned.",
-      "creating": "Creating..."
+      "nodeRoutingHint": "Optionally specify a node for direct routing. If not selected, the rule will be auto-assigned."
     },
     "editDialog": {
       "title": "Edit External Rule",
@@ -3803,8 +3421,7 @@
       "protocolConfig": "Protocol Config",
       "nodeRouting": "Node Routing",
       "nodeRoutingHint": "Change the node for this rule. If not selected, the rule will be auto-assigned.",
-      "readOnlyInfo": "Read-only Info",
-      "saving": "Saving..."
+      "readOnlyInfo": "Read-only Info"
     },
     "menu": {
       "enableRule": "Enable Rule",
@@ -3824,26 +3441,19 @@
     "table": {
       "columns": {
         "type": "Type",
-        "name": "Name",
-        "status": "Status",
         "memory": "Memory",
         "disk": "Disk",
         "network": "Network",
         "uptime": "Uptime",
         "publicIp": "Public IP"
-      },
-      "status": {
-        "online": "Online",
-        "offline": "Offline"
-      },
-      "empty": "No data"
+      }
     }
   },
   "errors": {
     "account": {
-      "notActive": "Your account is not active. Please check your email for verification.",
-      "locked": "Your account has been locked. Please contact support.",
-      "disabled": "Your account has been disabled. Please contact support."
+      "notActive": "Account not active. Check email for verification.",
+      "locked": "Account locked. Contact support.",
+      "disabled": "Account disabled. Contact support."
     },
     "login": {
       "invalidCredentials": "Invalid email or password",
@@ -3852,66 +3462,66 @@
       "userNotFound": "User not found"
     },
     "register": {
-      "emailExists": "This email is already registered",
-      "userExists": "User already exists"
+      "emailExists": "Email already registered",
+      "userExists": "User exists"
     },
     "token": {
-      "invalid": "Verification link is invalid or expired",
-      "expired": "Verification link has expired. Please request a new one.",
-      "notFound": "Verification link is invalid"
+      "invalid": "Invalid or expired link",
+      "expired": "Link expired. Request a new one.",
+      "notFound": "Invalid link"
     },
     "email": {
-      "alreadyVerified": "This email has already been verified",
-      "notVerified": "Email has not been verified",
-      "verificationFailed": "Verification failed. Please try again."
+      "alreadyVerified": "Email already verified",
+      "notVerified": "Email not verified",
+      "verificationFailed": "Verification failed"
     },
     "password": {
-      "resetFailed": "Password reset failed. Please try again.",
-      "invalidResetToken": "Reset link is invalid or expired",
-      "resetTokenExpired": "Reset link has expired. Please request a new one."
+      "resetFailed": "Reset failed",
+      "invalidResetToken": "Invalid or expired reset link",
+      "resetTokenExpired": "Link expired. Request a new one."
     },
     "oauth": {
-      "failed": "OAuth login failed. Please try again.",
-      "providerError": "OAuth provider error. Please try again later.",
+      "failed": "OAuth login failed",
+      "providerError": "OAuth provider error",
       "invalidCode": "Invalid OAuth code"
     },
     "permission": {
-      "unauthorized": "Unauthorized. Please log in first.",
-      "forbidden": "You do not have permission to access this resource.",
+      "unauthorized": "Sign in required",
+      "forbidden": "No permission",
       "accessDenied": "Access denied",
       "insufficient": "Insufficient permissions"
     },
     "network": {
-      "error": "Network connection failed. Please check your network settings.",
-      "timeout": "Request timed out. Please try again.",
-      "serverError": "Server error. Please try again later.",
-      "internalError": "Internal server error. Please try again later.",
-      "unavailable": "Service temporarily unavailable. Please try again later.",
-      "badGateway": "Gateway error. Please try again later."
+      "error": "Network error",
+      "timeout": "Request timed out",
+      "serverError": "Server error",
+      "internalError": "Internal server error",
+      "unavailable": "Service unavailable",
+      "badGateway": "Gateway error"
     },
     "request": {
-      "badRequest": "Invalid request parameters",
+      "badRequest": "Invalid request",
       "invalid": "Invalid request",
-      "validationError": "Data validation failed",
-      "invalidInput": "Invalid input data",
+      "validationError": "Validation failed",
+      "invalidInput": "Invalid input",
       "missingFields": "Missing required fields"
     },
     "resource": {
-      "notFound": "Requested resource not found",
+      "notFound": "Not found",
       "pageNotFound": "Page not found"
     },
     "general": {
-      "unknown": "Operation failed. Please try again later.",
-      "somethingWrong": "Something went wrong. Please try again later.",
-      "operationFailed": "Operation failed. Please try again.",
-      "default": "Operation failed. Please try again later."
+      "unknown": "Operation failed",
+      "somethingWrong": "Something went wrong",
+      "operationFailed": "Operation failed",
+      "default": "Operation failed"
     },
     "http": {
-      "401": "Authentication failed. Please log in again.",
-      "403": "You do not have permission to access this resource.",
-      "404": "Requested resource not found",
-      "500": "Server error. Please try again later.",
-      "503": "Service temporarily unavailable. Please try again later."
+      "401": "Sign in required",
+      "403": "No permission",
+      "404": "Not found",
+      "500": "Server error",
+      "503": "Service unavailable"
     }
   },
   "subscriptionPlans": {
@@ -3935,11 +3545,10 @@
     "currency": "Currency",
     "pricingHint": "At least one pricing option with a price > 0 is recommended for paid plans",
     "deletePlan": "Delete Plan",
-    "deleteConfirmHint": "This action cannot be undone. Please confirm carefully.",
+    "deleteConfirmHint": "This cannot be undone.",
     "confirmDeletePlan": "Are you sure you want to delete this plan?",
     "visibility": "Visibility",
     "priceRange": "Price Range",
-    "deleting": "Deleting...",
     "confirmDelete": "Confirm Delete",
     "confirmDeleteTitle": "Confirm Delete Plan",
     "duplicateBillingCycles": "Duplicate billing cycles found",

@@ -54,8 +54,8 @@ interface ForwardRuleDetailDialogProps {
 
 // Status configuration
 const STATUS_CONFIG = {
-  enabled: { labelKey: 'admin.forwardRules.detail.statusEnabled', color: 'text-emerald-500', bg: 'bg-emerald-500/10', ring: 'ring-emerald-500/20' },
-  disabled: { labelKey: 'admin.forwardRules.detail.statusDisabled', color: 'text-slate-400', bg: 'bg-slate-500/10', ring: 'ring-slate-500/20' },
+  enabled: { labelKey: 'common.status.enabled', color: 'text-emerald-500', bg: 'bg-emerald-500/10', ring: 'ring-emerald-500/20' },
+  disabled: { labelKey: 'common.status.disabled', color: 'text-slate-400', bg: 'bg-slate-500/10', ring: 'ring-slate-500/20' },
 };
 
 // Rule type configuration
@@ -69,23 +69,23 @@ const RULE_TYPE_CONFIG: Record<string, { labelKey: string; icon: React.ElementTy
 
 // Protocol labels
 const PROTOCOL_LABELS: Record<string, string> = { tcp: 'TCP', udp: 'UDP', both: 'TCP/UDP' };
-const IP_VERSION_LABEL_KEYS: Record<string, string> = { auto: 'admin.forwardRules.detail.ipVersionAuto', ipv4: 'admin.forwardRules.detail.ipVersionIpv4', ipv6: 'admin.forwardRules.detail.ipVersionIpv6' };
+const IP_VERSION_LABEL_KEYS: Record<string, string> = { auto: 'common.auto', ipv4: 'admin.forwardRules.detail.ipVersionIpv4', ipv6: 'admin.forwardRules.detail.ipVersionIpv6' };
 const TUNNEL_TYPE_LABEL_KEYS: Record<string, string> = { ws: 'admin.forwardRules.detail.tunnelTypeWs', tls: 'admin.forwardRules.detail.tunnelTypeTls' };
 
 // Sync status config
 const SYNC_STATUS_CONFIG: Record<RuleSyncStatus, { labelKey: string; icon: React.ElementType; color: string }> = {
-  synced: { labelKey: 'admin.forwardRules.syncStatus.synced', icon: CheckCircle2, color: 'text-emerald-500' },
-  pending: { labelKey: 'admin.forwardRules.syncStatus.pending', icon: CircleDashed, color: 'text-amber-500' },
-  failed: { labelKey: 'admin.forwardRules.syncStatus.failed', icon: AlertCircle, color: 'text-red-500' },
+  synced: { labelKey: 'common.status.synced', icon: CheckCircle2, color: 'text-emerald-500' },
+  pending: { labelKey: 'common.status.pending', icon: CircleDashed, color: 'text-amber-500' },
+  failed: { labelKey: 'common.status.failed', icon: AlertCircle, color: 'text-red-500' },
 };
 
 // Run status config
 const RUN_STATUS_CONFIG: Record<RuleRunStatus | 'unknown', { labelKey: string; icon: React.ElementType; color: string }> = {
-  running: { labelKey: 'admin.forwardRules.runStatus.running', icon: Play, color: 'text-emerald-500' },
-  stopped: { labelKey: 'admin.forwardRules.runStatus.stopped', icon: Square, color: 'text-slate-400' },
-  error: { labelKey: 'admin.forwardRules.runStatus.error', icon: AlertTriangle, color: 'text-red-500' },
+  running: { labelKey: 'common.status.running', icon: Play, color: 'text-emerald-500' },
+  stopped: { labelKey: 'common.status.stopped', icon: Square, color: 'text-slate-400' },
+  error: { labelKey: 'common.status.error', icon: AlertTriangle, color: 'text-red-500' },
   starting: { labelKey: 'admin.forwardRules.runStatus.starting', icon: RotateCw, color: 'text-blue-500' },
-  unknown: { labelKey: 'admin.forwardRules.runStatus.unknown', icon: HelpCircle, color: 'text-slate-400' },
+  unknown: { labelKey: 'common.status.unknown', icon: HelpCircle, color: 'text-slate-400' },
 };
 
 // Format helpers
@@ -242,12 +242,12 @@ const TrafficBar: React.FC<{
         <div className="flex items-center gap-4">
           <div className="flex items-center gap-1.5">
             <Upload className="size-3.5 text-emerald-500" />
-            <span className="text-muted-foreground">{t('admin.forwardRules.detail.upload')}</span>
+            <span className="text-muted-foreground">{t('common.actions.upload')}</span>
             <span className="font-semibold tabular-nums">{formatBytes(upload)}</span>
           </div>
           <div className="flex items-center gap-1.5">
             <Download className="size-3.5 text-blue-500" />
-            <span className="text-muted-foreground">{t('admin.forwardRules.detail.download')}</span>
+            <span className="text-muted-foreground">{t('common.actions.download')}</span>
             <span className="font-semibold tabular-nums">{formatBytes(download)}</span>
           </div>
         </div>
@@ -521,7 +521,7 @@ export const ForwardRuleDetailDialog: React.FC<ForwardRuleDetailDialogProps> = (
                   />
                   <StatCard
                     icon={Activity}
-                    label={t('admin.forwardRules.detail.sortOrder')}
+                    label={t('common.fields.sortOrder')}
                     value={rule.sortOrder ?? 0}
                     color="text-amber-500"
                   />
@@ -550,7 +550,7 @@ export const ForwardRuleDetailDialog: React.FC<ForwardRuleDetailDialogProps> = (
                     icon={Activity}
                     label={t('admin.forwardRules.detail.trafficMultiplier')}
                     value={`${rule.effectiveTrafficMultiplier?.toFixed(1) || '1.0'}x`}
-                    subValue={rule.isAutoMultiplier ? t('admin.forwardRules.traffic.auto') : t('admin.forwardRules.traffic.custom')}
+                    subValue={rule.isAutoMultiplier ? t('common.auto') : t('admin.forwardRules.traffic.custom')}
                     color="text-amber-500"
                   />
                   <StatCard

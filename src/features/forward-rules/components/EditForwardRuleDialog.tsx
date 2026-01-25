@@ -610,7 +610,7 @@ export const EditForwardRuleDialog: React.FC<EditForwardRuleDialogProps> = ({
             {/* Editable Fields */}
             <AccordionItem value="editable" className="border rounded-lg px-4">
               <AccordionTrigger className="hover:no-underline py-3">
-                <span className="text-sm font-medium">{t('admin.forwardRules.form.editableInfo')}</span>
+                <span className="text-sm font-medium">{t('common.sections.editableInfo')}</span>
               </AccordionTrigger>
               <AccordionContent>
                 <div className="grid grid-cols-1 @sm:grid-cols-2 gap-4 pb-4">
@@ -968,7 +968,7 @@ export const EditForwardRuleDialog: React.FC<EditForwardRuleDialogProps> = ({
                   {/* Protocol Type - hidden for external type */}
                   {rule.ruleType !== "external" && (
                     <div className="flex flex-col gap-2">
-                      <Label htmlFor="protocol">{t('admin.forwardRules.form.protocolType')}</Label>
+                      <Label htmlFor="protocol">{t('common.protocol')}</Label>
                       <Select
                         value={formData.protocol || "tcp"}
                         onValueChange={(value) =>
@@ -1001,7 +1001,7 @@ export const EditForwardRuleDialog: React.FC<EditForwardRuleDialogProps> = ({
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="auto">{t('admin.forwardRules.form.ipVersionAuto')}</SelectItem>
+                          <SelectItem value="auto">{t('common.auto')}</SelectItem>
                           <SelectItem value="ipv4">IPv4</SelectItem>
                           <SelectItem value="ipv6">IPv6</SelectItem>
                         </SelectContent>
@@ -1224,7 +1224,7 @@ export const EditForwardRuleDialog: React.FC<EditForwardRuleDialogProps> = ({
 
                   {/* Sort Order */}
                   <div className="flex flex-col gap-2">
-                    <Label htmlFor="sortOrder">{t('admin.forwardRules.form.sortOrder')}</Label>
+                    <Label htmlFor="sortOrder">{t('common.fields.sortOrder')}</Label>
                     <Input
                       id="sortOrder"
                       type="number"
@@ -1243,7 +1243,7 @@ export const EditForwardRuleDialog: React.FC<EditForwardRuleDialogProps> = ({
 
                   {/* Remark */}
                   <div className="flex flex-col gap-1.5 @sm:col-span-2">
-                    <Label htmlFor="remark">{t('admin.forwardRules.form.remark')}</Label>
+                    <Label htmlFor="remark">{t('common.fields.remark')}</Label>
                     <Textarea
                       id="remark"
                       rows={3}
@@ -1292,7 +1292,7 @@ export const EditForwardRuleDialog: React.FC<EditForwardRuleDialogProps> = ({
                                   </div>
                                   {plan && (
                                     <Badge variant="outline" className="text-[10px] flex-shrink-0">
-                                      {plan.planType === "node" ? t('admin.forwardRules.form.planTypeNode') : t('admin.forwardRules.form.planTypeHybrid')}
+                                      {plan.planType === "node" ? t('admin.forwardRules.form.planTypeNode') : t('common.planType.hybrid')}
                                     </Badge>
                                   )}
                                 </label>

@@ -92,7 +92,7 @@ export const BatchDeleteDialog: React.FC<BatchDeleteDialogProps> = ({
                 <p className="text-lg font-semibold text-red-700 dark:text-red-300">
                   {failedCount}
                 </p>
-                <p className="text-xs text-red-600 dark:text-red-400">{t('admin.forwardRules.batch.failed')}</p>
+                <p className="text-xs text-red-600 dark:text-red-400">{t('common.status.failed')}</p>
               </div>
             </div>
 
@@ -121,7 +121,7 @@ export const BatchDeleteDialog: React.FC<BatchDeleteDialogProps> = ({
           {!showResult ? (
             <>
               <Button variant="outline" onClick={handleClose} disabled={isDeleting}>
-                {t('admin.forwardRules.batch.cancel')}
+                {t('common.actions.cancel')}
               </Button>
               <Button
                 variant="destructive"
@@ -131,7 +131,7 @@ export const BatchDeleteDialog: React.FC<BatchDeleteDialogProps> = ({
                 {isDeleting ? (
                   <>
                     <Loader2 className="size-4 mr-2 animate-spin" />
-                    {t('admin.forwardRules.batch.deleting')}
+                    {t('common.loading.deleting')}
                   </>
                 ) : (
                   <>
@@ -142,7 +142,7 @@ export const BatchDeleteDialog: React.FC<BatchDeleteDialogProps> = ({
               </Button>
             </>
           ) : (
-            <Button onClick={handleClose}>{t('admin.forwardRules.batch.close')}</Button>
+            <Button onClick={handleClose}>{t('common.actions.close')}</Button>
           )}
         </DialogFooter>
       </DialogContent>

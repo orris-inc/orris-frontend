@@ -124,14 +124,14 @@ export const SubscriptionDetailDialog: React.FC<SubscriptionDetailDialogProps> =
             <h4 className="text-sm font-medium text-foreground mb-2">{t('subscription.userInfo')}</h4>
             <DetailItem
               icon={<User className="size-4" />}
-              label={t('subscription.user')}
+              label={t('common.role.user')}
               value={user ? (
                 <div>
                   <div>{user.name || t('userInfo.noNameSet')}</div>
                   <div className="text-xs text-muted-foreground">{user.email}</div>
                 </div>
-              ) : `${t('subscription.user')} ID: ${subscription.userId}`}
-              successMessage={t('messages.copiedToClipboard')}
+              ) : `${t('common.role.user')} ID: ${subscription.userId}`}
+              successMessage={t('common.messages.copySuccess')}
             />
           </div>
 
@@ -153,7 +153,7 @@ export const SubscriptionDetailDialog: React.FC<SubscriptionDetailDialogProps> =
                       </AdminBadge>
                     </div>
                   }
-                  successMessage={t('messages.copiedToClipboard')}
+                  successMessage={t('common.messages.copySuccess')}
                 />
                 <DetailItem
                   icon={<Clock className="size-4" />}
@@ -164,13 +164,13 @@ export const SubscriptionDetailDialog: React.FC<SubscriptionDetailDialogProps> =
                         {subscription.plan.pricings.map((pricing) => (
                           <div key={pricing.billingCycle} className="text-sm">
                             {pricing.billingCycle}: {pricing.price} {pricing.currency}
-                            {!pricing.isActive && <span className="text-xs text-muted-foreground ml-1">({t('subscriptionStatus.inactive')})</span>}
+                            {!pricing.isActive && <span className="text-xs text-muted-foreground ml-1">({t('common.status.inactive')})</span>}
                           </div>
                         ))}
                       </div>
                     ) : '-'
                   }
-                  successMessage={t('messages.copiedToClipboard')}
+                  successMessage={t('common.messages.copySuccess')}
                 />
               </>
             ) : (
@@ -187,25 +187,25 @@ export const SubscriptionDetailDialog: React.FC<SubscriptionDetailDialogProps> =
               icon={<Calendar className="size-4" />}
               label={t('subscription.startDate')}
               value={formatDate(subscription.startDate)}
-              successMessage={t('messages.copiedToClipboard')}
+              successMessage={t('common.messages.copySuccess')}
             />
             <DetailItem
               icon={<Calendar className="size-4" />}
               label={t('subscription.endDate')}
               value={subscription.endDate ? formatDate(subscription.endDate) : '-'}
-              successMessage={t('messages.copiedToClipboard')}
+              successMessage={t('common.messages.copySuccess')}
             />
             <DetailItem
               icon={<Clock className="size-4" />}
               label={t('subscription.currentPeriod')}
               value={`${formatDate(subscription.currentPeriodStart)} ~ ${formatDate(subscription.currentPeriodEnd)}`}
-              successMessage={t('messages.copiedToClipboard')}
+              successMessage={t('common.messages.copySuccess')}
             />
             <DetailItem
               icon={<Clock className="size-4" />}
-              label={t('subscription.createdAt')}
+              label={t('common.fields.createdAt')}
               value={formatDate(subscription.createdAt)}
-              successMessage={t('messages.copiedToClipboard')}
+              successMessage={t('common.messages.copySuccess')}
             />
           </div>
 
@@ -218,26 +218,26 @@ export const SubscriptionDetailDialog: React.FC<SubscriptionDetailDialogProps> =
               icon={subscription.autoRenew ? <CheckCircle className="size-4 text-emerald-500" /> : <XCircle className="size-4 text-muted-foreground" />}
               label={t('subscription.autoRenewal')}
               value={subscription.autoRenew ? t('common.status.enabled') : t('common.status.disabled')}
-              successMessage={t('messages.copiedToClipboard')}
+              successMessage={t('common.messages.copySuccess')}
             />
             <DetailItem
               icon={subscription.isActive ? <CheckCircle className="size-4 text-emerald-500" /> : <XCircle className="size-4 text-red-500" />}
               label={t('subscription.isActive')}
               value={subscription.isActive ? t('common.yes') : t('common.no')}
-              successMessage={t('messages.copiedToClipboard')}
+              successMessage={t('common.messages.copySuccess')}
             />
             <DetailItem
               icon={subscription.isExpired ? <XCircle className="size-4 text-red-500" /> : <CheckCircle className="size-4 text-emerald-500" />}
               label={t('subscription.isExpired')}
-              value={subscription.isExpired ? t('subscriptionStatus.expired') : t('subscriptionStatus.notExpired')}
-              successMessage={t('messages.copiedToClipboard')}
+              value={subscription.isExpired ? t('common.status.expired') : t('subscriptionStatus.notExpired')}
+              successMessage={t('common.messages.copySuccess')}
             />
             {subscription.cancelledAt && (
               <DetailItem
                 icon={<XCircle className="size-4 text-red-500" />}
                 label={t('subscription.cancelledAt')}
                 value={formatDate(subscription.cancelledAt)}
-                successMessage={t('messages.copiedToClipboard')}
+                successMessage={t('common.messages.copySuccess')}
               />
             )}
             {subscription.cancelReason && (
@@ -245,7 +245,7 @@ export const SubscriptionDetailDialog: React.FC<SubscriptionDetailDialogProps> =
                 icon={<XCircle className="size-4 text-red-500" />}
                 label={t('subscription.cancelReason')}
                 value={subscription.cancelReason}
-                successMessage={t('messages.copiedToClipboard')}
+                successMessage={t('common.messages.copySuccess')}
               />
             )}
           </div>
@@ -259,7 +259,7 @@ export const SubscriptionDetailDialog: React.FC<SubscriptionDetailDialogProps> =
               icon={<LinkIcon className="size-4" />}
               label={t('subscription.uuid')}
               value={<TruncatedId id={subscription.uuid} fullWidth />}
-              successMessage={t('messages.copiedToClipboard')}
+              successMessage={t('common.messages.copySuccess')}
             />
           </div>
           </div>

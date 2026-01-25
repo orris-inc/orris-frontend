@@ -325,13 +325,13 @@ export const ResourceGroupDetailSheet = ({
               />
               <DetailRow
                 icon={<Layers className="size-3.5" />}
-                label={t('resourceGroups.labels.name')}
+                label={t('common.fields.name')}
                 value={group.name}
               />
               {group.description && (
                 <DetailRow
                   icon={<FileText className="size-3.5" />}
-                  label={t('resourceGroups.sections.description')}
+                  label={t('common.fields.description')}
                   value={group.description}
                 />
               )}
@@ -436,11 +436,11 @@ export const ResourceGroupDetailSheet = ({
             <DetailSection title={t('resourceGroups.sections.timeInfo')}>
               <div className="px-3 py-2.5 grid grid-cols-2 gap-x-4 gap-y-2 text-xs">
                 <div>
-                  <span className="text-muted-foreground">{t('resourceGroups.labels.createdAt')}</span>
+                  <span className="text-muted-foreground">{t('common.fields.createdAt')}</span>
                   <p className="text-foreground font-medium">{formatDate(group.createdAt)}</p>
                 </div>
                 <div>
-                  <span className="text-muted-foreground">{t('resourceGroups.labels.updatedAt')}</span>
+                  <span className="text-muted-foreground">{t('common.fields.updatedAt')}</span>
                   <p className="text-foreground font-medium">{formatDate(group.updatedAt)}</p>
                 </div>
               </div>
@@ -465,7 +465,7 @@ export const ResourceGroupDetailSheet = ({
                 )}
               >
                 <Edit className="size-4" />
-                {t('resourceGroups.actions.edit')}
+                {t('common.actions.edit')}
               </button>
 
               <button
@@ -524,7 +524,7 @@ export const ResourceGroupDetailSheet = ({
         open={actionSheetOpen}
         onOpenChange={setActionSheetOpen}
         actions={moreActions}
-        title={t('resourceGroups.actions.moreActions')}
+        title={t('common.moreActions')}
       />
     </>
   );

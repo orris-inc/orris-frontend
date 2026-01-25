@@ -86,7 +86,7 @@ export const DeleteUserSheet: React.FC<DeleteUserSheetProps> = ({
                   <span className="font-medium text-sm">{user.email}</span>
                 </div>
                 <div className="flex justify-between items-center">
-                  <span className="text-sm text-muted-foreground">{t('admin.users.fields.status')}</span>
+                  <span className="text-sm text-muted-foreground">{t('common.status.label')}</span>
                   <span className="font-medium">{t(`admin.users.status.${user.status}`)}</span>
                 </div>
               </div>
@@ -104,7 +104,7 @@ export const DeleteUserSheet: React.FC<DeleteUserSheetProps> = ({
               {loading ? (
                 <>
                   <Loader2 className="mr-2 size-5 animate-spin" />
-                  {t('admin.users.delete.deleting')}
+                  {t('common.loading.deleting')}
                 </>
               ) : (
                 t('admin.users.delete.confirmDelete')
@@ -116,7 +116,7 @@ export const DeleteUserSheet: React.FC<DeleteUserSheetProps> = ({
               disabled={loading}
               className="w-full min-h-[44px]"
             >
-              {t('admin.users.actions.cancel')}
+              {t('common.actions.cancel')}
             </Button>
           </SheetFooter>
         </SheetContent>

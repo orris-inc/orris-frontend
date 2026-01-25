@@ -277,7 +277,7 @@ export const BatchCreateDialog: React.FC<BatchCreateDialogProps> = ({
                 <p className="text-lg font-semibold text-red-700 dark:text-red-300">
                   {failedCount}
                 </p>
-                <p className="text-xs text-red-600 dark:text-red-400">{t('admin.forwardRules.batch.failed')}</p>
+                <p className="text-xs text-red-600 dark:text-red-400">{t('common.status.failed')}</p>
               </div>
             </div>
 
@@ -332,7 +332,7 @@ export const BatchCreateDialog: React.FC<BatchCreateDialogProps> = ({
           {!showResult ? (
             <>
               <Button variant="outline" onClick={handleClose} disabled={isCreating}>
-                {t('admin.forwardRules.batch.cancel')}
+                {t('common.actions.cancel')}
               </Button>
               <Button
                 onClick={handleConfirm}
@@ -341,7 +341,7 @@ export const BatchCreateDialog: React.FC<BatchCreateDialogProps> = ({
                 {isCreating ? (
                   <>
                     <Loader2 className="size-4 mr-2 animate-spin" />
-                    {t('admin.forwardRules.batch.creating')}
+                    {t('common.loading.creating')}
                   </>
                 ) : (
                   <>
@@ -352,7 +352,7 @@ export const BatchCreateDialog: React.FC<BatchCreateDialogProps> = ({
               </Button>
             </>
           ) : (
-            <Button onClick={handleClose}>{t('admin.forwardRules.batch.close')}</Button>
+            <Button onClick={handleClose}>{t('common.actions.close')}</Button>
           )}
         </DialogFooter>
       </DialogContent>

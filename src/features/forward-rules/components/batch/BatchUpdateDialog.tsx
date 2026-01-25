@@ -55,8 +55,8 @@ interface FieldConfig {
 
 const FIELD_CONFIGS: FieldConfig[] = [
   { key: 'name', labelKey: 'admin.forwardRules.batch.fieldName', type: 'text', placeholderKey: 'admin.forwardRules.batch.namePlaceholder' },
-  { key: 'remark', labelKey: 'admin.forwardRules.batch.fieldRemark', type: 'text', placeholderKey: 'admin.forwardRules.batch.remarkPlaceholder' },
-  { key: 'sortOrder', labelKey: 'admin.forwardRules.batch.fieldSortOrder', type: 'number', placeholderKey: 'admin.forwardRules.batch.sortOrderPlaceholder' },
+  { key: 'remark', labelKey: 'common.fields.remark', type: 'text', placeholderKey: 'admin.forwardRules.batch.remarkPlaceholder' },
+  { key: 'sortOrder', labelKey: 'common.fields.sortOrder', type: 'number', placeholderKey: 'admin.forwardRules.batch.sortOrderPlaceholder' },
   { key: 'agentId', labelKey: 'admin.forwardRules.batch.fieldEntryAgent', type: 'select', placeholderKey: 'admin.forwardRules.batch.selectEntryAgent' },
   { key: 'exitAgentId', labelKey: 'admin.forwardRules.batch.fieldExitAgent', type: 'select', placeholderKey: 'admin.forwardRules.batch.selectExitAgent' },
 ];
@@ -305,7 +305,7 @@ export const BatchUpdateDialog: React.FC<BatchUpdateDialogProps> = ({
                 <p className="text-lg font-semibold text-red-700 dark:text-red-300">
                   {failedCount}
                 </p>
-                <p className="text-xs text-red-600 dark:text-red-400">{t('admin.forwardRules.batch.failed')}</p>
+                <p className="text-xs text-red-600 dark:text-red-400">{t('common.status.failed')}</p>
               </div>
             </div>
 
@@ -334,7 +334,7 @@ export const BatchUpdateDialog: React.FC<BatchUpdateDialogProps> = ({
           {!showResult ? (
             <>
               <Button variant="outline" onClick={handleClose} disabled={isUpdating}>
-                {t('admin.forwardRules.batch.cancel')}
+                {t('common.actions.cancel')}
               </Button>
               <Button
                 onClick={handleConfirm}
@@ -343,7 +343,7 @@ export const BatchUpdateDialog: React.FC<BatchUpdateDialogProps> = ({
                 {isUpdating ? (
                   <>
                     <Loader2 className="size-4 mr-2 animate-spin" />
-                    {t('admin.forwardRules.batch.updating')}
+                    {t('common.loading.updating')}
                   </>
                 ) : (
                   <>
@@ -354,7 +354,7 @@ export const BatchUpdateDialog: React.FC<BatchUpdateDialogProps> = ({
               </Button>
             </>
           ) : (
-            <Button onClick={handleClose}>{t('admin.forwardRules.batch.close')}</Button>
+            <Button onClick={handleClose}>{t('common.actions.close')}</Button>
           )}
         </DialogFooter>
       </DialogContent>

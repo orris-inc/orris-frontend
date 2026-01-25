@@ -90,7 +90,7 @@ export const BroadcastNodeURLDialog: React.FC<BroadcastNodeURLDialogProps> = ({
     try {
       new URL(newUrl.trim());
     } catch {
-      setError(t('admin.nodes.broadcast.invalidUrl'));
+      setError(t('common.validation.url'));
       return;
     }
 
@@ -178,12 +178,12 @@ export const BroadcastNodeURLDialog: React.FC<BroadcastNodeURLDialogProps> = ({
                     {targetNode?.isOnline ? (
                       <span className="flex items-center gap-1 text-xs text-green-600">
                         <span className="size-2 rounded-full bg-green-500" />
-                        {t('admin.nodes.broadcast.online')}
+                        {t('common.status.online')}
                       </span>
                     ) : (
                       <span className="flex items-center gap-1 text-xs text-muted-foreground">
                         <span className="size-2 rounded-full bg-muted-foreground/30" />
-                        {t('admin.nodes.broadcast.offline')}
+                        {t('common.status.offline')}
                       </span>
                     )}
                   </div>
@@ -406,7 +406,7 @@ export const BroadcastNodeURLDialog: React.FC<BroadcastNodeURLDialogProps> = ({
             // Step 1: Input form buttons
             <>
               <Button variant="outline" onClick={handleClose}>
-                {t('common.cancel')}
+                {t('common.actions.cancel')}
               </Button>
               <Button
                 onClick={handleProceedToConfirm}
@@ -453,7 +453,7 @@ export const BroadcastNodeURLDialog: React.FC<BroadcastNodeURLDialogProps> = ({
             </>
           ) : (
             // Step 3: Result
-            <Button onClick={handleClose}>{t('common.close')}</Button>
+            <Button onClick={handleClose}>{t('common.actions.close')}</Button>
           )}
         </DialogFooter>
       </DialogContent>

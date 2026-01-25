@@ -107,7 +107,7 @@ export const UserNodeInstallScriptDialog: React.FC<UserNodeInstallScriptDialogPr
         <div className="flex-1 min-h-0 overflow-y-auto -mx-6 px-6">
         {isLoading ? (
           <div className="py-8 text-center text-muted-foreground">
-            {t('app.loading')}
+            {t('common.table.loading')}
           </div>
         ) : !installScriptData ? (
           <div className="py-8 text-center text-muted-foreground">
@@ -121,7 +121,7 @@ export const UserNodeInstallScriptDialog: React.FC<UserNodeInstallScriptDialogPr
                 <div className="flex items-center justify-between mb-2">
                   <h4 className="text-sm font-medium flex items-center gap-2">
                     {t('userNodes.installScript.installCommand')}
-                    <span className="text-xs px-1.5 py-0.5 rounded bg-primary/10 text-primary">{t('userNodes.installScript.recommended')}</span>
+                    <span className="text-xs px-1.5 py-0.5 rounded bg-primary/10 text-primary">{t('common.recommended')}</span>
                   </h4>
                   <Button
                     variant="ghost"
@@ -216,7 +216,7 @@ export const UserNodeInstallScriptDialog: React.FC<UserNodeInstallScriptDialogPr
                       className="h-7 px-2"
                     >
                       <Download className="size-3.5 mr-1" />
-                      {t('userNodes.installScript.open')}
+                      {t('common.open')}
                     </Button>
                   </div>
                 </div>

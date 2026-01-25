@@ -423,7 +423,7 @@ export const ForwardAgentMobileList: React.FC<ForwardAgentMobileListProps> = ({
             {/* Remark */}
             {agent.remark && (
               <div className="flex items-start gap-2">
-                <span className="text-[10px] text-slate-400 dark:text-slate-500 uppercase tracking-wide w-8 pt-0.5 flex-shrink-0">{t('admin.forwardAgents.detail.remark')}</span>
+                <span className="text-[10px] text-slate-400 dark:text-slate-500 uppercase tracking-wide w-8 pt-0.5 flex-shrink-0">{t('common.fields.remark')}</span>
                 <span className="text-xs text-slate-600 dark:text-slate-300 flex-1">{agent.remark}</span>
               </div>
             )}

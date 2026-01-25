@@ -9,7 +9,7 @@ import { z } from 'zod';
 import { Link as RouterLink, useNavigate } from 'react-router';
 import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Loader2, Fingerprint } from 'lucide-react';
+import { Loader2, Fingerprint, Github } from 'lucide-react';
 import * as Progress from '@radix-ui/react-progress';
 import { useAuth } from '@/features/auth/hooks/useAuth';
 import { usePasskeySignup } from '@/features/auth/hooks/usePasskeySignup';
@@ -90,7 +90,7 @@ export const RegisterPage = () => {
       name: z.string()
         .min(2, t('auth.validation.nameMinLength'))
         .max(100, t('auth.validation.nameMaxLength')),
-      email: z.string().email(t('auth.validation.emailInvalid')),
+      email: z.string().email(t('common.validation.email')),
       password: z
         .string()
         .min(8, t('auth.validation.passwordMinLength'))
@@ -107,7 +107,7 @@ export const RegisterPage = () => {
     name: z.string()
       .min(2, t('auth.validation.nameMinLength'))
       .max(100, t('auth.validation.nameMaxLength')),
-    email: z.string().email(t('auth.validation.emailInvalid')),
+    email: z.string().email(t('common.validation.email')),
   });
 
   // Redirect to Dashboard if already logged in
@@ -250,7 +250,7 @@ export const RegisterPage = () => {
                 ) : (
                   <form onSubmit={handlePasskeySubmit(onPasskeySubmit)} className="space-y-4">
                     <FormField
-                      label={t('auth.register.name')}
+                      label={t('common.fields.name')}
                       type="text"
                       autoComplete="name"
                       autoFocus
@@ -311,7 +311,7 @@ export const RegisterPage = () => {
             {/* Registration form */}
             <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
               <FormField
-                label={t('auth.register.name')}
+                label={t('common.fields.name')}
                 type="text"
                 autoComplete="name"
                 error={errors.name?.message || authError?.fieldErrors?.name}
@@ -393,6 +393,19 @@ export const RegisterPage = () => {
               </RouterLink>
             </div>
           </div>
+        </div>
+
+        {/* Footer */}
+        <div className="mt-6 flex justify-center">
+          <a
+            href="https://github.com/orris-inc/orris"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-muted-foreground/50 hover:text-muted-foreground transition-colors"
+            aria-label="GitHub"
+          >
+            <Github className="size-4" />
+          </a>
         </div>
       </div>
     </div>

@@ -142,7 +142,7 @@ export const NotificationsPage = () => {
                 )}
               </div>
               <span className="text-xs sm:text-sm text-muted-foreground">
-                {t('notifications.stats.active')}
+                {t('common.status.active')}
               </span>
             </div>
             <div className="flex items-baseline gap-1">
@@ -212,8 +212,8 @@ export const NotificationsPage = () => {
                   )}
                 >
                   {notificationStats.hasExpiringNotify
-                    ? t('notifications.status.enabled')
-                    : t('notifications.status.disabled')}
+                    ? t('common.status.enabled')
+                    : t('common.status.disabled')}
                 </span>
                 {notificationStats.hasExpiringNotify && (
                   <span className="text-xs text-muted-foreground">
@@ -267,8 +267,8 @@ export const NotificationsPage = () => {
                   )}
                 >
                   {notificationStats.hasTrafficNotify
-                    ? t('notifications.status.enabled')
-                    : t('notifications.status.disabled')}
+                    ? t('common.status.enabled')
+                    : t('common.status.disabled')}
                 </span>
                 {notificationStats.hasTrafficNotify && (
                   <span className="text-xs text-muted-foreground">

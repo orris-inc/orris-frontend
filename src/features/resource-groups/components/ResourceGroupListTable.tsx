@@ -121,14 +121,14 @@ export const ResourceGroupListTable: React.FC<ResourceGroupListTableProps> = ({
   const columns = useMemo<ColumnDef<ResourceGroup>[]>(() => [
     {
       accessorKey: 'name',
-      header: t('tableColumns.name'),
+      header: t('common.fields.name'),
       size: 200,
       meta: { priority: 1, sticky: 'left' } as ResponsiveColumnMeta,
       cell: ({ row }) => {
         const group = row.original;
         const hoverItems = [
           { label: 'SID', value: group.sid },
-          ...(group.description ? [{ label: t('tableColumns.description'), value: group.description }] : []),
+          ...(group.description ? [{ label: t('common.fields.description'), value: group.description }] : []),
         ];
         return (
           <TableHoverCardList
@@ -173,7 +173,7 @@ export const ResourceGroupListTable: React.FC<ResourceGroupListTableProps> = ({
     },
     {
       accessorKey: 'status',
-      header: t('tableColumns.status'),
+      header: t('common.status.label'),
       size: 72,
       meta: { priority: 1 } as ResponsiveColumnMeta,
       cell: ({ row }) => {
@@ -188,14 +188,14 @@ export const ResourceGroupListTable: React.FC<ResourceGroupListTableProps> = ({
     },
     {
       accessorKey: 'createdAt',
-      header: t('tableColumns.createdAt'),
+      header: t('common.fields.createdAt'),
       size: 100,
       meta: { priority: 3 } as ResponsiveColumnMeta,
       cell: ({ row }) => <DateTimeCell value={row.original.createdAt} format="date" />,
     },
     {
       id: 'actions',
-      header: t('tableColumns.actions'),
+      header: t('common.table.actions'),
       size: 56,
       enableSorting: false,
       meta: { priority: 1, sticky: 'right' } as ResponsiveColumnMeta,

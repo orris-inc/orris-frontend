@@ -362,7 +362,7 @@ export const ForwardRulesPage = () => {
       exitAgentId: rule.exitAgentId,
       chainAgentIds: filteredChainAgentIds,
       chainPortConfig: filteredChainPortConfig,
-      name: `${rule.name} - ${t('admin.forwardRules.copySuffix')}`,
+      name: `${rule.name} - ${t('common.actions.copy')}`,
       listenPort: rule.listenPort,
       targetAddress: rule.targetAddress,
       targetPort: rule.targetPort,
@@ -598,7 +598,7 @@ export const ForwardRulesPage = () => {
           {/* Protocol filter */}
           <Select value={filters.protocol || '_all_'} onValueChange={handleProtocolChange}>
             <SelectTrigger className="w-24">
-              <SelectValue placeholder={t('admin.forwardRules.filters.protocol')} />
+              <SelectValue placeholder={t('common.protocol')} />
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="_all_">{t('filter.all')}</SelectItem>

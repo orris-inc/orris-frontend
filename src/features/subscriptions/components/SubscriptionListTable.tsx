@@ -77,7 +77,7 @@ export const SubscriptionListTable: React.FC<SubscriptionListTableProps> = ({
   const columns = useMemo<ColumnDef<Subscription>[]>(() => [
     {
       id: 'user',
-      header: t('tableColumns.user'),
+      header: t('common.role.user'),
       size: 200,
       meta: { priority: 1, sticky: 'left' } as ResponsiveColumnMeta,
       cell: ({ row }) => {
@@ -147,7 +147,7 @@ export const SubscriptionListTable: React.FC<SubscriptionListTableProps> = ({
     },
     {
       accessorKey: 'status',
-      header: t('tableColumns.status'),
+      header: t('common.status.label'),
       size: 72,
       meta: { priority: 1 } as ResponsiveColumnMeta,
       cell: ({ row }) => {
@@ -188,14 +188,14 @@ export const SubscriptionListTable: React.FC<SubscriptionListTableProps> = ({
     },
     {
       accessorKey: 'createdAt',
-      header: t('tableColumns.createdAt'),
+      header: t('common.fields.createdAt'),
       size: 100,
       meta: { priority: 4 } as ResponsiveColumnMeta,
       cell: ({ row }) => <DateTimeCell value={row.original.createdAt} format="date" />,
     },
     {
       id: 'actions',
-      header: t('tableColumns.actions'),
+      header: t('common.table.actions'),
       size: 120,
       meta: { priority: 1, sticky: 'right' } as ResponsiveColumnMeta,
       cell: ({ row }) => {
@@ -227,7 +227,7 @@ export const SubscriptionListTable: React.FC<SubscriptionListTableProps> = ({
                 onClick={() => onActivate(subscription)}
               >
                 <Play className="size-4" />
-                <span className="ml-1">{t('subscription.activate')}</span>
+                <span className="ml-1">{t('common.actions.activate')}</span>
               </Button>
             )}
             {canUnsuspend && onUnsuspend && (
@@ -344,7 +344,7 @@ export const SubscriptionListTable: React.FC<SubscriptionListTableProps> = ({
         {canActivate && onActivate && (
           <ContextMenuItem onClick={() => onActivate(subscription)}>
             <Play className="mr-2 size-4" />
-            {t('subscription.activate')}
+            {t('common.actions.activate')}
           </ContextMenuItem>
         )}
         {canUnsuspend && onUnsuspend && (

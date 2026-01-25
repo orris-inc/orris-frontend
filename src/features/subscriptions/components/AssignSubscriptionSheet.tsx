@@ -305,7 +305,7 @@ export const AssignSubscriptionSheet: React.FC<AssignSubscriptionSheetProps> = (
             disabled={submitting}
             className="w-full min-h-[44px]"
           >
-            {t('common.cancel')}
+            {t('common.actions.cancel')}
           </Button>
         </SheetFooter>
       </SheetContent>

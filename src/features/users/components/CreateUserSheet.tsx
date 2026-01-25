@@ -195,7 +195,7 @@ export const CreateUserSheet: React.FC<CreateUserSheetProps> = ({
             </div>
             <div className="space-y-1">
               <label htmlFor="mobile-name" className="text-xs font-medium">
-                {t('admin.users.fields.name')} <span className="text-destructive">*</span>
+                {t('common.fields.name')} <span className="text-destructive">*</span>
               </label>
               <MobileFormInput
                 id="mobile-name"
@@ -229,7 +229,7 @@ export const CreateUserSheet: React.FC<CreateUserSheetProps> = ({
                 if (touched.password) setErrors((prev) => ({ ...prev, password: validatePassword(v) }));
               }}
               onBlur={() => handleBlur('password')}
-              placeholder={t('admin.users.fields.passwordPlaceholder')}
+              placeholder={t('common.placeholders.password')}
               error={touched.password ? errors.password : undefined}
               disabled={loading}
               showPassword={showPassword}
@@ -283,7 +283,7 @@ export const CreateUserSheet: React.FC<CreateUserSheetProps> = ({
             disabled={loading || !isFormValid}
             className="w-full min-h-[48px]"
           >
-            {loading ? t('admin.users.create.creating') : t('admin.users.create.createUser')}
+            {loading ? t('common.loading.creating') : t('admin.users.create.createUser')}
           </Button>
           <Button
             variant="ghost"
@@ -291,7 +291,7 @@ export const CreateUserSheet: React.FC<CreateUserSheetProps> = ({
             disabled={loading}
             className="w-full min-h-[44px]"
           >
-            {t('admin.users.actions.cancel')}
+            {t('common.actions.cancel')}
           </Button>
         </SheetFooter>
       </SheetContent>

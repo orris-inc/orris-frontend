@@ -395,7 +395,7 @@ export const CreateUserDialog: React.FC<CreateUserDialogProps> = ({
             {t('common.actions.cancel')}
           </Button>
           <Button onClick={handleSubmit} disabled={loading || !isFormValid}>
-            {loading ? t('admin.users.form.creating') : t('admin.users.form.createUser')}
+            {loading ? t('common.loading.creating') : t('admin.users.form.createUser')}
           </Button>
         </DialogFooter>
       </DialogContent>

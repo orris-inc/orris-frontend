@@ -206,7 +206,7 @@ const Pagination = ({
           disabled={page <= 1}
           className="px-4 py-2.5 @md:px-3 @md:py-1.5 text-sm rounded-lg border border-border disabled:opacity-50 disabled:cursor-not-allowed hover:bg-accent transition-colors touch-target min-h-[44px] @md:min-h-0"
         >
-          {t('admin.traffic.prevPage')}
+          {t('common.actions.previous')}
         </button>
         <span className="text-xs @md:text-sm text-muted-foreground px-1">
           {page} / {totalPages}
@@ -216,7 +216,7 @@ const Pagination = ({
           disabled={page >= totalPages}
           className="px-4 py-2.5 @md:px-3 @md:py-1.5 text-sm rounded-lg border border-border disabled:opacity-50 disabled:cursor-not-allowed hover:bg-accent transition-colors touch-target min-h-[44px] @md:min-h-0"
         >
-          {t('admin.traffic.nextPage')}
+          {t('common.actions.next')}
         </button>
       </div>
     </div>

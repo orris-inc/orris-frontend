@@ -355,12 +355,12 @@ export const MobileEntityDetailSheet = memo(({
                 {isOnline ? (
                   <>
                     <Wifi className="size-3 mr-1" />
-                    {t('admin.monitor.detail.online')}
+                    {t('common.status.online')}
                   </>
                 ) : (
                   <>
                     <WifiOff className="size-3 mr-1" />
-                    {t('admin.monitor.detail.offline')}
+                    {t('common.status.offline')}
                   </>
                 )}
               </Badge>
@@ -413,8 +413,8 @@ export const MobileEntityDetailSheet = memo(({
                 txBytes={status.networkTxBytes ?? 0}
                 labels={{
                   title: t('admin.monitor.detail.networkTraffic'),
-                  download: t('admin.monitor.download'),
-                  upload: t('admin.monitor.upload'),
+                  download: t('common.actions.download'),
+                  upload: t('common.actions.upload'),
                   total: t('admin.monitor.total'),
                 }}
               />
@@ -610,7 +610,7 @@ export const MobileEntityDetailSheet = memo(({
                     <span className="tabular-nums text-foreground">{status.processesTotal ?? '-'}</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-muted-foreground">{t('admin.monitor.detail.running')}</span>
+                    <span className="text-muted-foreground">{t('common.status.running')}</span>
                     <span className="tabular-nums text-foreground">{status.processesRunning ?? '-'}</span>
                   </div>
                   <div className="flex justify-between">

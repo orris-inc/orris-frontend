@@ -113,7 +113,7 @@ const CustomTooltip = ({ active, payload, label, t }: TooltipProps<number, strin
         <div className="flex items-center justify-between gap-4">
           <div className="flex items-center gap-2.5">
             <div className="size-3 rounded-full bg-chart-upload ring-2 ring-chart-upload/20" />
-            <span className="text-sm font-medium text-muted-foreground">{t('admin.traffic.upload')}</span>
+            <span className="text-sm font-medium text-muted-foreground">{t('common.actions.upload')}</span>
           </div>
           <div className="flex items-center gap-1.5">
             <ArrowUp className="size-3.5 text-chart-upload" strokeWidth={2} />
@@ -127,7 +127,7 @@ const CustomTooltip = ({ active, payload, label, t }: TooltipProps<number, strin
         <div className="flex items-center justify-between gap-4">
           <div className="flex items-center gap-2.5">
             <div className="size-3 rounded-full bg-chart-download ring-2 ring-chart-download/20" />
-            <span className="text-sm font-medium text-muted-foreground">{t('admin.traffic.download')}</span>
+            <span className="text-sm font-medium text-muted-foreground">{t('common.actions.download')}</span>
           </div>
           <div className="flex items-center gap-1.5">
             <ArrowDown className="size-3.5 text-chart-download" strokeWidth={2} />
@@ -159,7 +159,7 @@ const ChartLegend = ({ totalUpload, totalDownload, t }: { totalUpload: number; t
         <div className="size-2.5 @sm:size-3 rounded-full bg-chart-upload ring-2 ring-chart-upload/20" />
         <ArrowUp className="size-3.5 @sm:size-4 text-chart-upload" strokeWidth={2} />
       </div>
-      <span className="text-xs @sm:text-sm font-medium text-muted-foreground">{t('admin.traffic.upload')}</span>
+      <span className="text-xs @sm:text-sm font-medium text-muted-foreground">{t('common.actions.upload')}</span>
       <span className="text-xs @sm:text-sm font-bold text-chart-upload tabular-nums">
         {formatTrafficBytes(totalUpload)}
       </span>
@@ -169,7 +169,7 @@ const ChartLegend = ({ totalUpload, totalDownload, t }: { totalUpload: number; t
         <div className="size-2.5 @sm:size-3 rounded-full bg-chart-download ring-2 ring-chart-download/20" />
         <ArrowDown className="size-3.5 @sm:size-4 text-chart-download" strokeWidth={2} />
       </div>
-      <span className="text-xs @sm:text-sm font-medium text-muted-foreground">{t('admin.traffic.download')}</span>
+      <span className="text-xs @sm:text-sm font-medium text-muted-foreground">{t('common.actions.download')}</span>
       <span className="text-xs @sm:text-sm font-bold text-chart-download tabular-nums">
         {formatTrafficBytes(totalDownload)}
       </span>
@@ -303,7 +303,7 @@ export const TrafficTrendChart = ({ data, granularity, loading, headerAction, ov
               <Area
                 type="monotone"
                 dataKey="download"
-                name={t('admin.traffic.download')}
+                name={t('common.actions.download')}
                 stroke="var(--color-chart-download)"
                 strokeWidth={2.5}
                 fill="url(#downloadGradient)"
@@ -319,7 +319,7 @@ export const TrafficTrendChart = ({ data, granularity, loading, headerAction, ov
               <Area
                 type="monotone"
                 dataKey="upload"
-                name={t('admin.traffic.upload')}
+                name={t('common.actions.upload')}
                 stroke="var(--color-chart-upload)"
                 strokeWidth={2.5}
                 fill="url(#uploadGradient)"

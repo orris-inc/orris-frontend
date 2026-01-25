@@ -168,7 +168,7 @@ export const CreatePlanSheet: React.FC<CreatePlanSheetProps> = ({
     if (open && initialPlan) {
       const planLimits = parsePlanLimits(initialPlan.limits);
       setFormData({
-        name: `${initialPlan.name} (${t('admin.plans.copySuffix')})`,
+        name: `${initialPlan.name} (${t('common.actions.copy')})`,
         slug: `${initialPlan.slug}-copy`,
         planType: initialPlan.planType || 'node',
         description: initialPlan.description || '',
@@ -327,7 +327,7 @@ export const CreatePlanSheet: React.FC<CreatePlanSheetProps> = ({
         <SheetBody className="space-y-4 py-3">
           {/* Basic Information - 2 column grid */}
           <div className="space-y-3">
-            <h4 className="text-xs font-medium text-muted-foreground uppercase tracking-wider">{t('admin.plans.form.basicInfo')}</h4>
+            <h4 className="text-xs font-medium text-muted-foreground uppercase tracking-wider">{t('common.sections.basicInfo')}</h4>
 
             <div className="grid grid-cols-2 gap-2">
               <div className="space-y-1">
@@ -730,7 +730,7 @@ export const CreatePlanSheet: React.FC<CreatePlanSheetProps> = ({
                 />
               </div>
               <div className="space-y-1">
-                <label className="text-xs text-muted-foreground">{t('admin.plans.form.sortOrder')}</label>
+                <label className="text-xs text-muted-foreground">{t('common.fields.sortOrder')}</label>
                 <input
                   type="number"
                   value={formData.sortOrder || 0}
@@ -754,7 +754,7 @@ export const CreatePlanSheet: React.FC<CreatePlanSheetProps> = ({
             {loading ? (
               <>
                 <Loader2 className="mr-2 size-4 animate-spin" />
-                {t('admin.plans.form.creating')}
+                {t('common.loading.creating')}
               </>
             ) : isDuplicateMode ? (
               t('admin.plans.form.createCopy')

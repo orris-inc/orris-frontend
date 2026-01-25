@@ -321,7 +321,7 @@ export const MobileAdminDashboard = ({
 
       {/* More Management */}
       <section className="px-3 mb-4">
-        <MobileGroupedList title={t('admin.moreManagement.title')}>
+        <MobileGroupedList title={t('common.actions.more')}>
           {moreManagementItems.map((item, index) => (
             <MobileListItem
               key={item.path}

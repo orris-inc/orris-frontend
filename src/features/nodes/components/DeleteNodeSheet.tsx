@@ -113,7 +113,7 @@ export const DeleteNodeSheet: React.FC<DeleteNodeSheetProps> = ({
                     className="text-xs"
                   >
                     <Activity className="size-3 mr-1" />
-                    {node.isOnline ? t('admin.nodes.tooltip.onlineStatus') : t('admin.nodes.tooltip.offlineStatus')}
+                    {node.isOnline ? t('common.status.online') : t('common.status.offline')}
                   </Badge>
 
                   {/* Region */}
@@ -153,7 +153,7 @@ export const DeleteNodeSheet: React.FC<DeleteNodeSheetProps> = ({
               {loading ? (
                 <>
                   <Loader2 className="mr-2 size-5 animate-spin" />
-                  {t('admin.nodes.deleteSheet.deleting')}
+                  {t('common.loading.deleting')}
                 </>
               ) : (
                 t('admin.nodes.deleteSheet.confirmButton')
@@ -165,7 +165,7 @@ export const DeleteNodeSheet: React.FC<DeleteNodeSheetProps> = ({
               disabled={loading}
               className="w-full min-h-[44px]"
             >
-              {t('common.cancel')}
+              {t('common.actions.cancel')}
             </Button>
           </SheetFooter>
         </SheetContent>

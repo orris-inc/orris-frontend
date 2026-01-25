@@ -112,17 +112,17 @@ const TUNNEL_TYPE_LABELS: Record<TunnelType, string> = {
 };
 
 const SYNC_STATUS_CONFIG: Record<RuleSyncStatus, { labelKey: string; icon: React.ElementType; colorClass: string }> = {
-  synced: { labelKey: 'admin.forwardRules.syncStatus.synced', icon: CheckCircle2, colorClass: 'text-success' },
-  pending: { labelKey: 'admin.forwardRules.syncStatus.pending', icon: CircleDashed, colorClass: 'text-warning' },
-  failed: { labelKey: 'admin.forwardRules.syncStatus.failed', icon: AlertCircle, colorClass: 'text-destructive' },
+  synced: { labelKey: 'common.status.synced', icon: CheckCircle2, colorClass: 'text-success' },
+  pending: { labelKey: 'common.status.pending', icon: CircleDashed, colorClass: 'text-warning' },
+  failed: { labelKey: 'common.status.failed', icon: AlertCircle, colorClass: 'text-destructive' },
 };
 
 const RUN_STATUS_CONFIG: Record<RuleRunStatus | 'unknown', { labelKey: string; icon: React.ElementType; colorClass: string }> = {
-  running: { labelKey: 'admin.forwardRules.runStatus.running', icon: Play, colorClass: 'text-success' },
-  stopped: { labelKey: 'admin.forwardRules.runStatus.stopped', icon: Square, colorClass: 'text-muted-foreground' },
-  error: { labelKey: 'admin.forwardRules.runStatus.error', icon: AlertTriangle, colorClass: 'text-destructive' },
+  running: { labelKey: 'common.status.running', icon: Play, colorClass: 'text-success' },
+  stopped: { labelKey: 'common.status.stopped', icon: Square, colorClass: 'text-muted-foreground' },
+  error: { labelKey: 'common.status.error', icon: AlertTriangle, colorClass: 'text-destructive' },
   starting: { labelKey: 'admin.forwardRules.runStatus.starting', icon: RotateCw, colorClass: 'text-info' },
-  unknown: { labelKey: 'admin.forwardRules.runStatus.unknown', icon: HelpCircle, colorClass: 'text-muted-foreground' },
+  unknown: { labelKey: 'common.status.unknown', icon: HelpCircle, colorClass: 'text-muted-foreground' },
 };
 
 // ============================================================================
@@ -458,7 +458,7 @@ export const ForwardRuleDetailSheet = ({
               />
               {!isExternal && (
                 <>
-                  <Row label={t('admin.forwardRules.detail.protocol')} value={PROTOCOL_LABELS[rule.protocol]} />
+                  <Row label={t('common.protocol')} value={PROTOCOL_LABELS[rule.protocol]} />
                   <Row label={t('admin.forwardRules.detail.ipVersion')} value={IP_VERSION_LABELS[rule.ipVersion]} />
                 </>
               )}
@@ -522,7 +522,7 @@ export const ForwardRuleDetailSheet = ({
                       <span className="font-mono">{rule.effectiveTrafficMultiplier?.toFixed(1) || '1.0'}x</span>
                       {rule.isAutoMultiplier && (
                         <AdminBadge variant="outline" size="sm">
-                          {t('admin.forwardRules.detail.multiplierAuto')}
+                          {t('common.auto')}
                         </AdminBadge>
                       )}
                     </span>
@@ -540,7 +540,7 @@ export const ForwardRuleDetailSheet = ({
 
             {/* Remark */}
             {rule.remark && (
-              <Section title={t('admin.forwardRules.detail.remark')}>
+              <Section title={t('common.fields.remark')}>
                 <div className="px-3 py-2.5">
                   <div className="flex items-start gap-2">
                     <FileText className="size-4 text-muted-foreground shrink-0 mt-0.5" />
@@ -565,7 +565,7 @@ export const ForwardRuleDetailSheet = ({
                 )}
               >
                 <Edit className="size-4" />
-                {t('admin.forwardRules.form.editButton')}
+                {t('common.actions.edit')}
               </button>
               <button
                 type="button"
@@ -608,7 +608,7 @@ export const ForwardRuleDetailSheet = ({
         open={actionSheetOpen}
         onOpenChange={setActionSheetOpen}
         actions={moreActions}
-        title={t('admin.forwardRules.form.moreActions')}
+        title={t('common.moreActions')}
       />
     </>
   );

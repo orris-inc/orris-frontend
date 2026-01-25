@@ -179,12 +179,12 @@ export const BroadcastURLDialog: React.FC<BroadcastURLDialogProps> = ({
                     {targetAgent?.isOnline ? (
                       <span className="flex items-center gap-1 text-xs text-green-600">
                         <span className="size-2 rounded-full bg-green-500" />
-                        {t('admin.forwardAgents.broadcast.online')}
+                        {t('common.status.online')}
                       </span>
                     ) : (
                       <span className="flex items-center gap-1 text-xs text-muted-foreground">
                         <span className="size-2 rounded-full bg-muted-foreground/30" />
-                        {t('admin.forwardAgents.broadcast.offline')}
+                        {t('common.status.offline')}
                       </span>
                     )}
                   </div>

@@ -30,14 +30,14 @@ interface DeleteSubscriptionSheetProps extends DeleteSheetProps<Subscription> {
 
 // Status configuration with translation keys (synced with SDK 2025-01-14)
 const STATUS_CONFIG: Record<SubscriptionStatus, { labelKey: string; color: string }> = {
-  inactive: { labelKey: 'subscriptionStatus.inactive', color: 'bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400' },
+  inactive: { labelKey: 'common.status.inactive', color: 'bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400' },
   pending_payment: { labelKey: 'subscriptionStatus.pendingPayment', color: 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400' },
   trialing: { labelKey: 'subscriptionStatus.trialing', color: 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400' },
-  active: { labelKey: 'subscriptionStatus.active', color: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400' },
+  active: { labelKey: 'common.status.active', color: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400' },
   past_due: { labelKey: 'subscriptionStatus.pastDue', color: 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400' },
-  suspended: { labelKey: 'subscriptionStatus.suspended', color: 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400' },
-  cancelled: { labelKey: 'subscriptionStatus.cancelled', color: 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400' },
-  expired: { labelKey: 'subscriptionStatus.expired', color: 'bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400' },
+  suspended: { labelKey: 'common.status.suspended', color: 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400' },
+  cancelled: { labelKey: 'common.status.cancelled', color: 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400' },
+  expired: { labelKey: 'common.status.expired', color: 'bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400' },
 };
 
 export const DeleteSubscriptionSheet: React.FC<DeleteSubscriptionSheetProps> = ({
@@ -101,13 +101,13 @@ export const DeleteSubscriptionSheet: React.FC<DeleteSubscriptionSheetProps> = (
                 <TruncatedId id={subscription.id} />
               </div>
               <div className="flex items-center justify-between">
-                <span className="text-xs text-muted-foreground">{t('tableColumns.status')}</span>
+                <span className="text-xs text-muted-foreground">{t('common.status.label')}</span>
                 <span className={cn('px-1.5 py-0.5 rounded text-xs font-medium', statusConfig.color)}>
                   {t(statusConfig.labelKey)}
                 </span>
               </div>
               <div className="flex items-center justify-between">
-                <span className="text-xs text-muted-foreground">{t('tableColumns.user')}</span>
+                <span className="text-xs text-muted-foreground">{t('common.role.user')}</span>
                 <div className="flex items-center gap-1.5 text-sm">
                   <User className="size-3.5 text-muted-foreground" />
                   <span className="truncate max-w-[150px]">
@@ -125,7 +125,7 @@ export const DeleteSubscriptionSheet: React.FC<DeleteSubscriptionSheetProps> = (
                 </div>
               )}
               <div className="flex items-center justify-between">
-                <span className="text-xs text-muted-foreground">{t('tableColumns.createdAt')}</span>
+                <span className="text-xs text-muted-foreground">{t('common.fields.createdAt')}</span>
                 <div className="flex items-center gap-1.5 text-sm">
                   <Calendar className="size-3.5 text-muted-foreground" />
                   <span>{formatDate(subscription.createdAt)}</span>

@@ -86,7 +86,7 @@ function getTransportLabel(transports: string[], t: (key: string) => string): st
   if (transports.includes('nfc')) {
     return t('profile.security.passkey.transportNfc');
   }
-  return t('profile.security.passkey.transportUnknown');
+  return t('common.status.unknown');
 }
 
 /**
