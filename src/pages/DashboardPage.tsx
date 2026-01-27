@@ -14,12 +14,16 @@ import {
   ArrowDownRight,
   Sparkles,
   ChevronRight,
+  ChevronDown,
+  AlertTriangle,
+  Clock,
+  History,
 } from 'lucide-react';
 import { DashboardLayout } from '@/layouts/DashboardLayout';
 import { useAuthStore } from '@/features/auth/stores/auth-store';
 import { usePageTitle } from '@/shared/hooks';
 import { getDashboard } from '@/api/user';
-import type { DashboardResponse } from '@/api/user/types';
+import type { DashboardResponse, DashboardSubscription } from '@/api/user/types';
 import { SubscriptionEntryCard } from '@/components/dashboard/SubscriptionEntryCard';
 import { getButtonClass } from '@/lib/ui-styles';
 import { cn } from '@/lib/utils';
@@ -31,6 +35,45 @@ import {
   EmptyState,
   QuickActionLink,
 } from '@/components/common/bento';
+
+/**
+ * Subscription status groups for display
+ */
+type SubscriptionGroup = 'active' | 'attention' | 'history';
+
+/**
+ * Categorize subscription by status
+ */
+const getSubscriptionGroup = (status: string): SubscriptionGroup => {
+  // Active subscriptions: currently usable
+  if (['active', 'trialing', 'past_due'].includes(status)) {
+    return 'active';
+  }
+  // Attention needed: requires user action
+  if (['pending_payment', 'suspended'].includes(status)) {
+    return 'attention';
+  }
+  // History: ended subscriptions
+  return 'history';
+};
+
+/**
+ * Group subscriptions by status category
+ */
+const groupSubscriptions = (subscriptions: DashboardSubscription[]) => {
+  const groups: Record<SubscriptionGroup, DashboardSubscription[]> = {
+    active: [],
+    attention: [],
+    history: [],
+  };
+
+  subscriptions.forEach((sub) => {
+    const group = getSubscriptionGroup(sub.status);
+    groups[group].push(sub);
+  });
+
+  return groups;
+};
 
 /**
  * Format bytes to readable traffic units
@@ -166,6 +209,15 @@ export const DashboardPage = () => {
     };
   }, [dashboardData]);
 
+  // Group subscriptions by status category
+  const groupedSubscriptions = useMemo(() => {
+    if (!dashboardData) return null;
+    return groupSubscriptions(dashboardData.subscriptions);
+  }, [dashboardData]);
+
+  // Track collapsed state for history section
+  const [isHistoryExpanded, setIsHistoryExpanded] = useState(false);
+
   const statusMessage = useMemo(() => {
     if (!dashboardData) return null;
     return getStatusMessage(t, dashboardData.subscriptions);
@@ -281,12 +333,92 @@ export const DashboardPage = () => {
             />
           )}
 
-          {/* Subscription Cards Grid */}
-          {!isLoading && subscriptions.length > 0 && (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">
-              {subscriptions.map((subscription) => (
-                <SubscriptionEntryCard key={subscription.id} subscription={subscription} />
-              ))}
+          {/* Grouped Subscription Cards */}
+          {!isLoading && subscriptions.length > 0 && groupedSubscriptions && (
+            <div className="space-y-6">
+              {/* Active Subscriptions - Always visible */}
+              {groupedSubscriptions.active.length > 0 && (
+                <div className="space-y-3">
+                  <div className="flex items-center gap-2 text-sm font-medium text-foreground">
+                    <Activity className="size-4 text-success" />
+                    <span>{t('user.dashboard.groups.active')}</span>
+                    <span className="text-muted-foreground">({groupedSubscriptions.active.length})</span>
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">
+                    {groupedSubscriptions.active.map((subscription) => (
+                      <SubscriptionEntryCard key={subscription.id} subscription={subscription} />
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Attention Needed - With warning style */}
+              {groupedSubscriptions.attention.length > 0 && (
+                <div className="space-y-3">
+                  <div className="flex items-center gap-2 text-sm font-medium text-warning">
+                    <AlertTriangle className="size-4" />
+                    <span>{t('user.dashboard.groups.attention')}</span>
+                    <span className="opacity-70">({groupedSubscriptions.attention.length})</span>
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">
+                    {groupedSubscriptions.attention.map((subscription) => (
+                      <SubscriptionEntryCard key={subscription.id} subscription={subscription} />
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* History - Collapsible */}
+              {groupedSubscriptions.history.length > 0 && (
+                <div className="space-y-3">
+                  <button
+                    onClick={() => setIsHistoryExpanded(!isHistoryExpanded)}
+                    className={cn(
+                      'flex items-center gap-2 text-sm font-medium text-muted-foreground',
+                      'hover:text-foreground transition-colors touch-target w-full justify-start'
+                    )}
+                  >
+                    <History className="size-4" />
+                    <span>{t('user.dashboard.groups.history')}</span>
+                    <span className="opacity-70">({groupedSubscriptions.history.length})</span>
+                    <ChevronDown
+                      className={cn(
+                        'size-4 ml-auto transition-transform duration-200',
+                        isHistoryExpanded && 'rotate-180'
+                      )}
+                    />
+                  </button>
+                  {isHistoryExpanded && (
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">
+                      {groupedSubscriptions.history.map((subscription) => (
+                        <SubscriptionEntryCard key={subscription.id} subscription={subscription} />
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* No active subscriptions but has history */}
+              {groupedSubscriptions.active.length === 0 &&
+                groupedSubscriptions.attention.length === 0 &&
+                groupedSubscriptions.history.length > 0 && (
+                  <div className="p-4 bg-muted/50 rounded-xl border border-dashed text-center">
+                    <Clock className="size-8 mx-auto mb-2 text-muted-foreground" />
+                    <p className="text-sm text-muted-foreground">
+                      {t('user.dashboard.groups.noActiveHint')}
+                    </p>
+                    <ViewTransitionLink
+                      to="/dashboard/pricing"
+                      className={cn(
+                        getButtonClass('default', 'sm'),
+                        'mt-3 inline-flex items-center gap-2'
+                      )}
+                    >
+                      <Sparkles className="size-4" />
+                      {t('user.dashboard.empty.viewPlans')}
+                    </ViewTransitionLink>
+                  </div>
+                )}
             </div>
           )}
         </section>

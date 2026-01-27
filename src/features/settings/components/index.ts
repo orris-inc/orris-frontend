@@ -23,3 +23,4 @@ export {
 } from './SystemSettingsForm';
 export { OAuthSettingsForm, OAuthSettingsFormSkeleton } from './OAuthSettingsForm';
 export { EmailSettingsForm, EmailSettingsFormSkeleton } from './EmailSettingsForm';
+export { USDTSettingsForm, USDTSettingsFormSkeleton } from './USDTSettingsForm';

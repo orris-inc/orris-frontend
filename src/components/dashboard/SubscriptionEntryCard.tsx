@@ -35,14 +35,20 @@ const getStatusConfig = (status: string, t: TFunction) => {
   switch (status) {
     case 'active':
       return { label: t('common.status.active'), variant: 'success' as const };
+    case 'trialing':
+      return { label: t('subscriptionStatus.trialing'), variant: 'info' as const };
+    case 'past_due':
+      return { label: t('subscriptionStatus.pastDue'), variant: 'warning' as const };
+    case 'pending_payment':
+      return { label: t('subscriptionStatus.pendingPayment'), variant: 'warning' as const };
+    case 'suspended':
+      return { label: t('common.status.suspended'), variant: 'destructive' as const };
     case 'expired':
       return { label: t('common.status.expired'), variant: 'destructive' as const };
     case 'cancelled':
       return { label: t('common.status.cancelled'), variant: 'outline' as const };
-    case 'pending':
-      return { label: t('common.status.pending'), variant: 'secondary' as const };
-    case 'renewed':
-      return { label: t('common.status.renewed'), variant: 'success' as const };
+    case 'inactive':
+      return { label: t('common.status.inactive'), variant: 'secondary' as const };
     default:
       return { label: status, variant: 'secondary' as const };
   }
@@ -71,6 +77,26 @@ const getProgressColor = (percent: number) => {
 };
 
 /**
+ * Get card border style based on status
+ */
+const getCardBorderStyle = (status: string, isActive: boolean) => {
+  switch (status) {
+    case 'active':
+    case 'trialing':
+      return 'border-success/20 hover:border-success/40';
+    case 'past_due':
+    case 'pending_payment':
+      return 'border-warning/30 hover:border-warning/50';
+    case 'suspended':
+      return 'border-destructive/30 hover:border-destructive/50';
+    default:
+      return isActive
+        ? 'border-success/20 hover:border-success/40'
+        : 'border-border hover:border-border/80';
+  }
+};
+
+/**
  * Subscription entry card - displays subscription summary and navigates to detail page
  */
 export const SubscriptionEntryCard = ({ subscription, className }: SubscriptionEntryCardProps) => {
@@ -90,6 +116,8 @@ export const SubscriptionEntryCard = ({ subscription, className }: SubscriptionE
     navigate(`/dashboard/subscriptions/${subscription.id}`);
   };
 
+  const borderStyle = getCardBorderStyle(subscription.status, isActive);
+
   return (
     <div
       onClick={handleClick}
@@ -97,9 +125,7 @@ export const SubscriptionEntryCard = ({ subscription, className }: SubscriptionE
         'relative p-4 sm:p-5 rounded-xl cursor-pointer touch-target',
         'transition-all duration-200 group',
         'bg-card border hover:shadow-md',
-        isActive
-          ? 'border-success/20 hover:border-success/40'
-          : 'border-border hover:border-border/80',
+        borderStyle,
         'active:scale-[0.98]',
         className
       )}
@@ -110,15 +136,25 @@ export const SubscriptionEntryCard = ({ subscription, className }: SubscriptionE
           <div
             className={cn(
               'p-2 rounded-lg shrink-0',
-              isActive
+              subscription.status === 'active' || subscription.status === 'trialing'
                 ? 'bg-success/10 ring-1 ring-success/20'
-                : 'bg-muted ring-1 ring-border'
+                : subscription.status === 'past_due' || subscription.status === 'pending_payment'
+                  ? 'bg-warning/10 ring-1 ring-warning/20'
+                  : subscription.status === 'suspended'
+                    ? 'bg-destructive/10 ring-1 ring-destructive/20'
+                    : 'bg-muted ring-1 ring-border'
             )}
           >
             <Activity
               className={cn(
                 'size-4',
-                isActive ? 'text-success' : 'text-muted-foreground'
+                subscription.status === 'active' || subscription.status === 'trialing'
+                  ? 'text-success'
+                  : subscription.status === 'past_due' || subscription.status === 'pending_payment'
+                    ? 'text-warning'
+                    : subscription.status === 'suspended'
+                      ? 'text-destructive'
+                      : 'text-muted-foreground'
               )}
             />
           </div>

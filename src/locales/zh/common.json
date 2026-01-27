@@ -2242,7 +2242,8 @@
         "system": "系统",
         "oauth": "OAuth",
         "email": "邮件",
-        "telegram": "Telegram"
+        "telegram": "Telegram",
+        "usdt": "USDT"
       },
       "source": {
         "database": "数据库",
@@ -2319,6 +2320,29 @@
         "currentMode": "当前模式",
         "testConnection": "测试连接",
         "saveChanges": "保存更改"
+      },
+      "usdt": {
+        "title": "USDT 支付设置",
+        "description": "配置 USDT 加密货币支付",
+        "enable": "启用 USDT 支付",
+        "enableDesc": "开启后用户可使用 USDT 支付",
+        "polReceivingAddresses": "Polygon 收款地址",
+        "polReceivingAddressesDesc": "Polygon 链上的 USDT 收款钱包地址（每行一个，最多 10 个）",
+        "trcReceivingAddresses": "Tron 收款地址",
+        "trcReceivingAddressesDesc": "Tron 链上的 USDT (TRC20) 收款钱包地址（每行一个，最多 10 个）",
+        "polygonscanApiKey": "PolygonScan API Key",
+        "polygonscanApiKeyDesc": "用于查询 Polygon 链上交易确认",
+        "trongridApiKey": "TronGrid API Key",
+        "trongridApiKeyDesc": "用于查询 Tron 链上交易确认",
+        "apiKeyPlaceholder": "输入 API Key",
+        "paymentTtlMinutes": "支付超时时间（分钟）",
+        "paymentTtlMinutesDesc": "用户完成支付的有效时间",
+        "polConfirmations": "Polygon 确认数",
+        "polConfirmationsDesc": "Polygon 链交易所需的区块确认数",
+        "trcConfirmations": "Tron 确认数",
+        "trcConfirmationsDesc": "Tron 链交易所需的区块确认数",
+        "updateSuccess": "USDT 配置已更新",
+        "updateError": "更新 USDT 配置失败"
       }
     }
   },
@@ -2447,6 +2471,8 @@
     "noTrafficData": "暂无流量数据",
     "sevenDays": "7 天",
     "thirtyDays": "30 天",
+    "today": "今天",
+    "yesterday": "昨天",
     "noAvailableNodes": "暂无可用节点",
     "noAvailableNodesDesc": "订阅无可用转发 Agent",
     "availableNodesCount": "{{count}} 个可用节点",
@@ -2618,6 +2644,12 @@
         "title": "暂无订阅",
         "description": "订阅即可解锁优质线路",
         "viewPlans": "浏览套餐"
+      },
+      "groups": {
+        "active": "活跃订阅",
+        "attention": "需要关注",
+        "history": "历史订阅",
+        "noActiveHint": "暂无活跃订阅，浏览套餐开启新订阅"
       },
       "subscription": {
         "unknownPlan": "未知计划"
@@ -2791,7 +2823,40 @@
       "maxProjectsDesc": "可创建的项目数量",
       "note": "可随时取消或更换套餐，有疑问联系客服。",
       "startTrial": "开始免费试用",
-      "subscribeNow": "立即订阅"
+      "subscribeNow": "立即订阅",
+      "selectPaymentMethod": "选择支付方式",
+      "payNow": "立即支付",
+      "back": "返回",
+      "processing": "处理中...",
+      "paymentMethods": {
+        "stripe": "银行卡",
+        "stripeDesc": "信用卡/借记卡支付",
+        "alipay": "支付宝",
+        "alipayDesc": "支付宝扫码或跳转支付",
+        "wechat": "微信支付",
+        "wechatDesc": "微信扫码支付",
+        "usdtPol": "USDT (Polygon)",
+        "usdtPolDesc": "低手续费，快速确认",
+        "usdtTrc": "USDT (Tron)",
+        "usdtTrcDesc": "广泛支持，稳定可靠"
+      },
+      "usdt": {
+        "title": "USDT 支付说明",
+        "warning": "请务必转账精确金额，否则可能无法自动确认",
+        "network": "网络",
+        "receivingAddress": "收款地址",
+        "amount": "转账金额",
+        "exchangeRate": "参考汇率",
+        "expiresIn": "有效期",
+        "copyAddress": "复制地址",
+        "copyAmount": "复制金额",
+        "scanQrCode": "扫描二维码获取收款地址",
+        "completed": "我已完成转账",
+        "expired": "支付已过期，请重新发起支付"
+      },
+      "payment": {
+        "error": "支付创建失败，请重试"
+      }
     }
   },
   "profile": {

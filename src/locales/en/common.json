@@ -2242,7 +2242,8 @@
         "system": "System",
         "oauth": "OAuth",
         "email": "Email",
-        "telegram": "Telegram"
+        "telegram": "Telegram",
+        "usdt": "USDT"
       },
       "source": {
         "database": "Database",
@@ -2319,6 +2320,29 @@
         "currentMode": "Current Mode",
         "testConnection": "Test Connection",
         "saveChanges": "Save Changes"
+      },
+      "usdt": {
+        "title": "USDT Payment Settings",
+        "description": "Configure USDT cryptocurrency payments",
+        "enable": "Enable USDT Payments",
+        "enableDesc": "Allow users to pay with USDT",
+        "polReceivingAddresses": "Polygon Receiving Addresses",
+        "polReceivingAddressesDesc": "USDT receiving wallet addresses on Polygon chain (one per line, max 10)",
+        "trcReceivingAddresses": "Tron Receiving Addresses",
+        "trcReceivingAddressesDesc": "USDT (TRC20) receiving wallet addresses on Tron chain (one per line, max 10)",
+        "polygonscanApiKey": "PolygonScan API Key",
+        "polygonscanApiKeyDesc": "For querying Polygon transaction confirmations",
+        "trongridApiKey": "TronGrid API Key",
+        "trongridApiKeyDesc": "For querying Tron transaction confirmations",
+        "apiKeyPlaceholder": "Enter API Key",
+        "paymentTtlMinutes": "Payment Timeout (minutes)",
+        "paymentTtlMinutesDesc": "Time limit for completing payment",
+        "polConfirmations": "Polygon Confirmations",
+        "polConfirmationsDesc": "Block confirmations required for Polygon",
+        "trcConfirmations": "Tron Confirmations",
+        "trcConfirmationsDesc": "Block confirmations required for Tron",
+        "updateSuccess": "USDT configuration updated",
+        "updateError": "Failed to update USDT configuration"
       }
     }
   },
@@ -2447,6 +2471,8 @@
     "noTrafficData": "No traffic data",
     "sevenDays": "7 Days",
     "thirtyDays": "30 Days",
+    "today": "Today",
+    "yesterday": "Yesterday",
     "noAvailableNodes": "No Available Nodes",
     "noAvailableNodesDesc": "There are no available forward agents for your subscription.",
     "availableNodesCount": "{{count}} available nodes",
@@ -2618,6 +2644,12 @@
         "title": "No Subscriptions",
         "description": "Subscribe to unlock premium services",
         "viewPlans": "Browse Plans"
+      },
+      "groups": {
+        "active": "Active",
+        "attention": "Needs Attention",
+        "history": "History",
+        "noActiveHint": "No active subscriptions, browse plans to get started"
       },
       "subscription": {
         "unknownPlan": "Unknown Plan"
@@ -2791,7 +2823,40 @@
       "maxProjectsDesc": "Number of projects allowed",
       "note": "Cancel or change anytime. Need help? Contact support.",
       "startTrial": "Start Free Trial",
-      "subscribeNow": "Subscribe Now"
+      "subscribeNow": "Subscribe Now",
+      "selectPaymentMethod": "Select Payment Method",
+      "payNow": "Pay Now",
+      "back": "Back",
+      "processing": "Processing...",
+      "paymentMethods": {
+        "stripe": "Card",
+        "stripeDesc": "Credit/Debit card payment",
+        "alipay": "Alipay",
+        "alipayDesc": "Scan or redirect to Alipay",
+        "wechat": "WeChat Pay",
+        "wechatDesc": "Scan with WeChat",
+        "usdtPol": "USDT (Polygon)",
+        "usdtPolDesc": "Low fees, fast confirmation",
+        "usdtTrc": "USDT (Tron)",
+        "usdtTrcDesc": "Widely supported, reliable"
+      },
+      "usdt": {
+        "title": "USDT Payment Instructions",
+        "warning": "Please transfer the exact amount, otherwise auto-confirmation may fail",
+        "network": "Network",
+        "receivingAddress": "Receiving Address",
+        "amount": "Amount",
+        "exchangeRate": "Exchange Rate",
+        "expiresIn": "Expires In",
+        "copyAddress": "Copy Address",
+        "copyAmount": "Copy Amount",
+        "scanQrCode": "Scan QR code to get receiving address",
+        "completed": "I have completed the transfer",
+        "expired": "Payment expired, please try again"
+      },
+      "payment": {
+        "error": "Payment creation failed, please try again"
+      }
     }
   },
   "profile": {

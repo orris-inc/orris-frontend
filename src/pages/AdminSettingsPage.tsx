@@ -9,7 +9,7 @@
 import { AdminLayout } from '@/layouts/AdminLayout';
 import { PageHeader } from '@/components/admin';
 import { usePageTitle } from '@/shared/hooks';
-import { Settings, KeyRound, Mail, MessageCircle, Wrench } from 'lucide-react';
+import { Settings, KeyRound, Mail, MessageCircle, Wrench, Coins } from 'lucide-react';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/common/Tabs';
 import { useTelegramSettings } from '@/features/telegram/hooks/useTelegramSettings';
 import {
@@ -20,12 +20,15 @@ import {
   useSystemSettings,
   useOAuthSettings,
   useEmailSettings,
+  useUSDTSettings,
   SystemSettingsForm,
   SystemSettingsFormSkeleton,
   OAuthSettingsForm,
   OAuthSettingsFormSkeleton,
   EmailSettingsForm,
   EmailSettingsFormSkeleton,
+  USDTSettingsForm,
+  USDTSettingsFormSkeleton,
 } from '@/features/settings';
 import { useTranslation } from 'react-i18next';
 import type { LucideIcon } from 'lucide-react';
@@ -53,6 +56,7 @@ const TAB_ITEMS: TabItem[] = [
   { id: 'oauth', labelKey: 'admin.settings.nav.oauth', icon: KeyRound },
   { id: 'email', labelKey: 'admin.settings.nav.email', icon: Mail },
   { id: 'telegram', labelKey: 'admin.settings.nav.telegram', icon: MessageCircle },
+  { id: 'usdt', labelKey: 'admin.settings.nav.usdt', icon: Coins },
 ];
 
 /**
@@ -109,6 +113,14 @@ export const AdminSettingsPage = () => {
     isTesting: isTelegramTesting,
     testResult: telegramTestResult,
   } = useTelegramSettings();
+
+  // USDT settings
+  const {
+    settings: usdtSettings,
+    isLoading: isUSDTLoading,
+    update: updateUSDT,
+    isUpdating: isUSDTUpdating,
+  } = useUSDTSettings();
 
   return (
     <AdminLayout>
@@ -216,6 +228,21 @@ export const AdminSettingsPage = () => {
                     isSubmitting={isTelegramUpdating}
                     isTesting={isTelegramTesting}
                     testResult={telegramTestResult}
+                  />
+                )}
+              </TabsContent>
+
+              {/* USDT Settings */}
+              <TabsContent value="usdt">
+                {isUSDTLoading ? (
+                  <USDTSettingsFormSkeleton />
+                ) : !usdtSettings ? (
+                  <EmptyState message={t('admin.settings.unableToLoadConfig')} />
+                ) : (
+                  <USDTSettingsForm
+                    settings={usdtSettings}
+                    onSubmit={updateUSDT}
+                    isSubmitting={isUSDTUpdating}
                   />
                 )}
               </TabsContent>
