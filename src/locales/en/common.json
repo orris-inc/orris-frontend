@@ -2688,6 +2688,7 @@
 	    "nav": {
 	      "features": "Features",
 	      "faq": "FAQ",
+	      "howItWorks": "How it works",
 	      "pricing": "Pricing",
 	      "signIn": "Sign In",
       "getStarted": "Get Started",
@@ -2695,40 +2696,51 @@
       "closeMenu": "Close menu"
     },
 	    "hero": {
-	      "title": "All-in-one subscriptions, nodes, and forwarding—ready to run",
-	      "subtitle": "Sign in, manage plans, run nodes and forwarding, and track traffic—all in one place.",
+	      "badge": "Subscriptions and forwarding, made simple",
+	      "title": "Manage subscriptions, nodes, and forwarding",
+	      "titleHighlight": "All in one console",
+	      "subtitle": "Sign-in, payments, plans, traffic, nodes, forwarding, and notifications—together in one place.",
 	      "getStarted": "Get Started",
-	      "exploreFeatures": "Explore Features"
+	      "exploreFeatures": "Explore Features",
+	      "stats": {
+	        "forwardingModes": "Rule types",
+	        "nodeProtocols": "Protocols",
+	        "tokenScopes": "Token scopes"
+	      }
 	    },
     "features": {
       "title": "What You Can Do",
+      "dashboard": {
+        "title": "Dashboard overview",
+        "description": "See subscription status and traffic usage at a glance, with changes surfaced quickly."
+      },
       "passkey": {
         "title": "Passwordless sign-in (Passkeys)",
-        "description": "Check device/browser support, register once, and sign in faster with fewer failed logins."
+        "description": "Sign up and sign in without passwords, with support checks and device management."
       },
 	      "subscriptions": {
 	        "title": "Subscriptions & plans",
-	        "description": "Manage subscriptions and plans, issue access tokens, and track traffic with clear records and summaries."
+	        "description": "Manage subscriptions and plans, generate subscription links and scoped access tokens, and review clear traffic stats."
 	      },
       "payments": {
         "title": "Multiple payment methods",
-        "description": "Pay with Stripe, Alipay, WeChat Pay, or USDT (Polygon/Tron)."
+        "description": "Pay with Stripe, Alipay, WeChat Pay, or USDT (Polygon/Tron), with a clear, trackable flow."
       },
 	      "nodes": {
 	        "title": "Node management",
-	        "description": "Create and operate nodes with status controls, install/uninstall commands, and version updates."
+	        "description": "Create and configure nodes across major protocols, get install/uninstall commands, and monitor status and updates."
 	      },
 	      "forwarding": {
 	        "title": "Forward agents & rules",
-	        "description": "Configure forward agents and rules with toggles, ordering, and bulk edits."
+	        "description": "Manage forward agents and rules for direct and multi-hop chains, with toggles, ordering, and bulk edits."
 	      },
 	      "realtime": {
 	        "title": "Real-time updates",
-	        "description": "See node and agent status changes in real time, with key events surfaced promptly."
+	        "description": "See node and agent changes in real time, with key events surfaced promptly."
 	      },
 	      "notifications": {
 	        "title": "Announcements & in-app notifications",
-	        "description": "Stay informed with announcements and in-app notifications."
+	        "description": "Stay informed with announcements and in-app notifications, with optional Telegram alerts."
 	      }
 	    },
 	    "faq": {
@@ -2748,7 +2760,7 @@
 	    },
     "cta": {
       "title": "Start building your subscription + forwarding setup today",
-      "subtitle": "Smoother sign-in, clearer subscription/traffic management, and reliable node/forwarding operations.",
+      "subtitle": "Smoother sign-in, clearer subscription and traffic visibility, and more controllable operations.",
       "createAccount": "Create an Account",
       "contactSupport": "Contact Support"
     },

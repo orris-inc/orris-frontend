@@ -98,9 +98,9 @@ const BrandPanel = () => {
           {/* Stats */}
           <div className="flex items-center gap-8 mt-10 pt-8 border-t border-white/20">
             {[
-              { value: '5+', labelKey: 'landing.hero.stats.forwardingModes' },
-              { value: '99.9%', labelKey: 'landing.hero.stats.uptimeSla' },
-              { value: '24/7', labelKey: 'landing.hero.stats.alwaysOn' },
+              { value: '5', labelKey: 'landing.hero.stats.forwardingModes' },
+              { value: '6', labelKey: 'landing.hero.stats.nodeProtocols' },
+              { value: '3', labelKey: 'landing.hero.stats.tokenScopes' },
             ].map((stat, index) => (
               <div key={index}>
                 <div className="text-2xl font-bold text-white">{stat.value}</div>

@@ -21,6 +21,14 @@ interface FormFieldProps extends Omit<InputHTMLAttributes<HTMLInputElement>, 'ty
   leftIcon?: ReactNode;
   /** Toggle password visibility button text (for accessibility) */
   togglePasswordLabel?: string;
+  /** Optional class for the field container */
+  containerClassName?: string;
+  /** Optional class for the label */
+  labelClassName?: string;
+  /** Optional class for error message */
+  errorClassName?: string;
+  /** Optional class for hint text */
+  hintClassName?: string;
 }
 
 /**
@@ -35,6 +43,10 @@ export const FormField = forwardRef<HTMLInputElement, FormFieldProps>(
       hint,
       leftIcon,
       togglePasswordLabel = 'Toggle password visibility',
+      containerClassName,
+      labelClassName,
+      errorClassName,
+      hintClassName,
       className,
       id,
       ...props
@@ -47,11 +59,11 @@ export const FormField = forwardRef<HTMLInputElement, FormFieldProps>(
     const fieldId = id || props.name;
 
     return (
-      <div className="space-y-2">
+      <div className={cn('space-y-2', containerClassName)}>
         {/* Label */}
         <LabelPrimitive.Root
           htmlFor={fieldId}
-          className="text-sm font-medium text-foreground"
+          className={cn('text-sm font-medium text-foreground', labelClassName)}
         >
           {label}
         </LabelPrimitive.Root>
@@ -119,14 +131,21 @@ export const FormField = forwardRef<HTMLInputElement, FormFieldProps>(
 
         {/* Error message */}
         {error && (
-          <p id={`${fieldId}-error`} className="text-sm text-destructive" role="alert">
+          <p
+            id={`${fieldId}-error`}
+            className={cn('text-sm text-destructive', errorClassName)}
+            role="alert"
+          >
             {error}
           </p>
         )}
 
         {/* Hint text */}
         {hint && !error && (
-          <p id={`${fieldId}-hint`} className="text-sm text-muted-foreground">
+          <p
+            id={`${fieldId}-hint`}
+            className={cn('text-sm text-muted-foreground', hintClassName)}
+          >
             {hint}
           </p>
         )}

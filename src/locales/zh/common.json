@@ -2688,6 +2688,7 @@
   "nav": {
     "features": "功能",
     "faq": "常见问题",
+    "howItWorks": "工作原理",
     "pricing": "价格",
     "signIn": "登录",
       "getStarted": "立即开始",
@@ -2695,40 +2696,51 @@
       "closeMenu": "关闭菜单"
     },
 	    "hero": {
+	      "badge": "订阅与转发，一套搞定",
 	      "title": "一站式管理订阅、节点与转发",
-	      "subtitle": "登录、支付、节点、转发、流量与通知，一套系统打通，开箱即用。",
+	      "titleHighlight": "从登录到交付，一屏掌控",
+	      "subtitle": "登录与支付、订阅与流量、节点与转发、通知与提醒——在同一个控制台完成。",
 	      "getStarted": "立即开始",
-	      "exploreFeatures": "查看支持的能力"
+	      "exploreFeatures": "查看支持的能力",
+	      "stats": {
+	        "forwardingModes": "规则类型",
+	        "nodeProtocols": "协议支持",
+	        "tokenScopes": "令牌权限"
+	      }
 	    },
     "features": {
       "title": "你能做什么",
+      "dashboard": {
+        "title": "仪表盘总览",
+        "description": "订阅状态与流量用量一目了然，变化及时可见。"
+      },
       "passkey": {
         "title": "无密码登录（Passkey）",
-        "description": "支持浏览器与设备能力检测；一键注册与登录，减少忘记密码和短信/邮箱成本。"
+        "description": "支持无密码注册与登录，减少记忆负担；设备支持情况可检测，已绑定设备可管理。"
       },
 	      "subscriptions": {
 	        "title": "订阅与套餐",
-	        "description": "订阅管理与套餐切换，访问令牌一键生成/刷新/吊销；流量明细与汇总清晰可查。"
+	        "description": "订阅管理与套餐切换；订阅链接与访问令牌可生成、刷新、吊销；流量明细与统计清晰可查。"
 	      },
       "payments": {
         "title": "多种支付方式",
-        "description": "支持 Stripe、支付宝、微信支付，以及 USDT（Polygon/Tron）转账支付。"
+        "description": "支持 Stripe、支付宝、微信支付与 USDT（Polygon/Tron），支付流程清晰可追踪。"
       },
 	      "nodes": {
 	        "title": "节点管理",
-	        "description": "节点创建与状态管理，提供安装/卸载命令与版本更新，让运维更省心。"
+	        "description": "节点创建与配置，支持多协议；安装/卸载命令一键生成，状态与更新提示及时可见。"
 	      },
 	      "forwarding": {
 	        "title": "转发代理与规则",
-	        "description": "灵活配置转发代理与规则，支持启停、排序与批量调整。"
+	        "description": "统一管理转发代理与规则，支持直连与多跳；启停、排序与批量调整更顺手。"
 	      },
 	      "realtime": {
 	        "title": "实时状态",
-	        "description": "节点与转发代理状态实时更新，关键事件及时可见。"
+	        "description": "节点与代理状态实时更新，关键变化及时可见。"
 	      },
 	      "notifications": {
 	        "title": "公告与站内通知",
-	        "description": "系统公告与站内通知，第一时间获取重要更新。"
+	        "description": "系统公告与站内通知及时送达；可选绑定 Telegram，按到期与流量阈值提醒。"
 	      }
 	    },
   "faq": {
@@ -2748,7 +2760,7 @@
 	    },
     "cta": {
       "title": "现在就开始搭建你的订阅与转发体系",
-      "subtitle": "更顺畅的登录体验，更清晰的订阅与流量管理，更稳定的节点与转发能力。",
+      "subtitle": "更顺畅的登录体验，更清晰的订阅与流量视图，更可控的节点与转发管理。",
       "createAccount": "创建账号",
       "contactSupport": "联系支持"
     },

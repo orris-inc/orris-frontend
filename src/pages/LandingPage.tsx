@@ -368,6 +368,7 @@ export const LandingPage = () => {
             className="text-fluid-2xl sm:text-fluid-3xl lg:text-fluid-4xl font-bold tracking-tight mb-4 sm:mb-6"
           >
             {t('landing.hero.title')}
+            <span className="block text-primary">{t('landing.hero.titleHighlight')}</span>
           </motion.h1>
 
           {/* Subheading */}
