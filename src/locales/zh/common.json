@@ -65,6 +65,8 @@
       "label": "状态",
       "enabled": "启用",
       "disabled": "禁用",
+      "enabledShort": "开",
+      "disabledShort": "关",
       "online": "在线",
       "offline": "离线",
       "active": "激活",
@@ -2633,6 +2635,22 @@
       "stats": {
         "totalTraffic": "总流量使用"
       },
+      "currentPlan": {
+        "title": "当前套餐",
+        "expires": "到期日",
+        "remaining": "剩余",
+        "manage": "管理订阅"
+      },
+      "usageTrend": {
+        "title": "用量趋势",
+        "subtitle": "近期用量概览",
+        "note": "当前订阅按天汇总",
+        "ranges": {
+          "7d": "7天",
+          "30d": "30天",
+          "90d": "90天"
+        }
+      },
       "status": {
         "noSubscription": "订阅即可解锁优质线路",
         "expiringSoon": "「{{plan}}」将在 {{days}} 天后到期，记得续费",
@@ -2667,81 +2685,72 @@
     }
   },
   "landing": {
-    "nav": {
-      "features": "功能",
-      "howItWorks": "指南",
-      "pricing": "价格",
-      "signIn": "登录",
-      "getStarted": "开始",
+  "nav": {
+    "features": "功能",
+    "faq": "常见问题",
+    "pricing": "价格",
+    "signIn": "登录",
+      "getStarted": "立即开始",
       "openMenu": "打开菜单",
       "closeMenu": "关闭菜单"
     },
-    "hero": {
-      "badge": "节点管理，重新想象",
-      "title": "配置一次",
-      "titleHighlight": "畅享无忧",
-      "subtitle": "节点、转发、订阅，化繁为简。你专注业务，Orris 处理其余。",
-      "getStartedFree": "免费开始",
-      "learnMore": "进一步了解",
-      "stats": {
-        "forwardingModes": "种转发模式",
-        "uptimeSla": "高可用",
-        "alwaysOn": "不间断"
-      }
-    },
+	    "hero": {
+	      "title": "一站式管理订阅、节点与转发",
+	      "subtitle": "登录、支付、节点、转发、流量与通知，一套系统打通，开箱即用。",
+	      "getStarted": "立即开始",
+	      "exploreFeatures": "查看支持的能力"
+	    },
     "features": {
-      "title": "强大功能",
-      "subtitle": "每一项，都为效率而生",
-      "dashboard": {
-        "title": "全局掌控",
-        "description": "节点、用户、收入，一个界面，尽收眼底。"
+      "title": "你能做什么",
+      "passkey": {
+        "title": "无密码登录（Passkey）",
+        "description": "支持浏览器与设备能力检测；一键注册与登录，减少忘记密码和短信/邮箱成本。"
       },
-      "forwarding": {
-        "title": "随心转发",
-        "description": "直连、链式、多跳，场景不同，方案随变。"
+	      "subscriptions": {
+	        "title": "订阅与套餐",
+	        "description": "订阅管理与套餐切换，访问令牌一键生成/刷新/吊销；流量明细与汇总清晰可查。"
+	      },
+      "payments": {
+        "title": "多种支付方式",
+        "description": "支持 Stripe、支付宝、微信支付，以及 USDT（Polygon/Tron）转账支付。"
       },
-      "resourceGroups": {
-        "title": "灵活编组",
-        "description": "资源自由组合，套餐随意搭配。"
+	      "nodes": {
+	        "title": "节点管理",
+	        "description": "节点创建与状态管理，提供安装/卸载命令与版本更新，让运维更省心。"
+	      },
+	      "forwarding": {
+	        "title": "转发代理与规则",
+	        "description": "灵活配置转发代理与规则，支持启停、排序与批量调整。"
+	      },
+	      "realtime": {
+	        "title": "实时状态",
+	        "description": "节点与转发代理状态实时更新，关键事件及时可见。"
+	      },
+	      "notifications": {
+	        "title": "公告与站内通知",
+	        "description": "系统公告与站内通知，第一时间获取重要更新。"
+	      }
+	    },
+  "faq": {
+    "title": "常见问题",
+    "q1": {
+      "question": "我可以只用 Passkey，不用密码吗？",
+        "answer": "可以，支持无密码注册与登录（设备/浏览器需支持）。"
       },
-      "subscriptions": {
-        "title": "订阅无忧",
-        "description": "创建、统计、提醒，全程自动。"
-      },
-      "relay": {
-        "title": "快人一步",
-        "description": "智能路由，让连接更快更稳。"
-      }
-    },
-    "howItWorks": {
-      "title": "即刻开始",
-      "subtitle": "四步，从零到上线",
-      "step1": {
-        "number": "01",
-        "title": "添加节点",
-        "description": "导入服务器，主流协议全支持。"
-      },
-      "step2": {
-        "number": "02",
-        "title": "配置转发",
-        "description": "设定规则，系统智能优化路径。"
-      },
-      "step3": {
-        "number": "03",
-        "title": "创建套餐",
-        "description": "定价、流量、时长，一键打包。"
-      },
-      "step4": {
-        "number": "04",
-        "title": "分享上线",
-        "description": "生成链接，用户即订即用。"
-      }
-    },
+	      "q2": {
+	        "question": "支付后如何生效？",
+	        "answer": "完成支付后订阅会自动生效，你可以获取访问令牌，并随时查看流量使用情况。"
+	      },
+	      "q3": {
+	        "question": "我能实时看到节点/代理状态吗？",
+	        "answer": "可以，节点与代理的状态变化会实时更新展示。"
+	      }
+	    },
     "cta": {
-      "title": "就是现在",
-      "subtitle": "开启更简单的管理方式",
-      "getStartedFree": "免费开始",
-      "alreadyMember": "已有账户？登录"
+      "title": "现在就开始搭建你的订阅与转发体系",
+      "subtitle": "更顺畅的登录体验，更清晰的订阅与流量管理，更稳定的节点与转发能力。",
+      "createAccount": "创建账号",
+      "contactSupport": "联系支持"
     },
     "footer": {
       "copyright": "© {{year}} Orris"
@@ -3083,9 +3092,14 @@
     },
     "binding": {
       "title": "Telegram 通知",
+      "boundTitle": "Telegram 已绑定",
+      "unboundTitle": "等待绑定",
+      "unboundDesc": "按照以下步骤完成 Telegram 绑定",
       "notEnabled": "Telegram 通知功能未启用",
       "bound": "已绑定",
-      "notifications": "已启用 {{count}} 项通知",
+      "unbound": "未绑定",
+      "account": "绑定账户",
+      "notifications": "通知",
       "unbindTitle": "解绑 Telegram",
       "unbindDesc": "确定要解绑 Telegram 吗？解绑后将无法再接收通知。",
       "unbind": "解绑"

@@ -331,9 +331,6 @@ export const BatchCreateDialog: React.FC<BatchCreateDialogProps> = ({
         <DialogFooter>
           {!showResult ? (
             <>
-              <Button variant="outline" onClick={handleClose} disabled={isCreating}>
-                {t('common.actions.cancel')}
-              </Button>
               <Button
                 onClick={handleConfirm}
                 disabled={isCreating || !validation.valid}
@@ -349,6 +346,9 @@ export const BatchCreateDialog: React.FC<BatchCreateDialogProps> = ({
                     {t('admin.forwardRules.batch.createRulesCount', { count: validation.rules.length || 0 })}
                   </>
                 )}
+              </Button>
+              <Button variant="outline" onClick={handleClose} disabled={isCreating}>
+                {t('common.actions.cancel')}
               </Button>
             </>
           ) : (

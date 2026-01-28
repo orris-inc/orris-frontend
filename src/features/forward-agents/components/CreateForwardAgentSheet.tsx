@@ -425,14 +425,6 @@ export const CreateForwardAgentSheet: React.FC<CreateForwardAgentSheetProps> =
           <SheetFooter>
             <div className="flex gap-3 w-full">
               <Button
-                variant="outline"
-                onClick={handleClose}
-                disabled={loading}
-                className="flex-1 min-h-[52px]"
-              >
-                {t("common.actions.cancel")}
-              </Button>
-              <Button
                 onClick={handleSubmit}
                 disabled={loading || !isFormValid}
                 className="flex-1 min-h-[52px]"
@@ -445,6 +437,14 @@ export const CreateForwardAgentSheet: React.FC<CreateForwardAgentSheetProps> =
                 ) : (
                   t("common.actions.create")
                 )}
+              </Button>
+              <Button
+                variant="outline"
+                onClick={handleClose}
+                disabled={loading}
+                className="flex-1 min-h-[52px]"
+              >
+                {t("common.actions.cancel")}
               </Button>
             </div>
           </SheetFooter>

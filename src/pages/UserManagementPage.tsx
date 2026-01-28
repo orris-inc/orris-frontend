@@ -281,6 +281,10 @@ export const UserManagementPage = () => {
           metadata={headerMetadata}
           action={
             <div className="flex items-center gap-2">
+              <Button onClick={() => setCreateDialogOpen(true)}>
+                <Plus className="size-4 mr-2" />
+                {t('admin.users.createUser')}
+              </Button>
               <Button
                 variant="ghost"
                 size="icon"
@@ -291,10 +295,6 @@ export const UserManagementPage = () => {
                   key={refreshKey}
                   className="size-4 animate-spin-once"
                 />
-              </Button>
-              <Button onClick={() => setCreateDialogOpen(true)}>
-                <Plus className="size-4 mr-2" />
-                {t('admin.users.createUser')}
               </Button>
             </div>
           }

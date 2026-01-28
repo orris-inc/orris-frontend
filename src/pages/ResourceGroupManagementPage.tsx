@@ -251,6 +251,10 @@ export const ResourceGroupManagementPage = () => {
           ]}
           action={
             <div className="flex items-center gap-2">
+              <Button onClick={() => setCreateDialogOpen(true)}>
+                <Plus className="size-4 mr-2" />
+                {t('common.actions.create')}
+              </Button>
               <Tooltip>
                 <TooltipTrigger asChild>
                   <Button variant="ghost" size="icon" onClick={handleRefresh}>
@@ -259,10 +263,6 @@ export const ResourceGroupManagementPage = () => {
                 </TooltipTrigger>
                 <TooltipContent>{t('admin.common.refreshList')}</TooltipContent>
               </Tooltip>
-              <Button onClick={() => setCreateDialogOpen(true)}>
-                <Plus className="size-4 mr-2" />
-                {t('common.actions.create')}
-              </Button>
             </div>
           }
         />

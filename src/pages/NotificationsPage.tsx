@@ -19,7 +19,6 @@ import { TelegramBindingCard, useTelegramBinding } from '@/features/telegram';
 import { cn } from '@/lib/utils';
 import { usePageTitle } from '@/shared/hooks';
 import {
-  PageHeroSection,
   BentoStatCard,
   SectionHeader,
   QuickActionLink,
@@ -57,15 +56,16 @@ export const NotificationsPage = () => {
   }, [isPageLoading, isBound, isNotConfigured, notificationStats.activeCount, t]);
 
   return (
-    <DashboardLayout>
+    <DashboardLayout
+      pageTitle={t('notifications.title')}
+      pageDescription={
+        <div className="space-y-1">
+          <div>{t('notifications.subtitle')}</div>
+          {heroStatusMessage && <div>{heroStatusMessage}</div>}
+        </div>
+      }
+    >
       <div className="space-y-6 pb-safe">
-        {/* Hero Section */}
-        <PageHeroSection
-          title={t('notifications.title')}
-          subtitle={t('notifications.subtitle')}
-          statusMessage={heroStatusMessage}
-          icon={Bell}
-        />
 
         {/* Stats Grid */}
         <section className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">

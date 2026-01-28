@@ -643,11 +643,11 @@ export const CreatePlanDialog: React.FC<CreatePlanDialogProps> = ({
         </div>
 
         <DialogFooter className="flex-shrink-0">
-          <Button variant="outline" onClick={handleClose} disabled={loading}>
-            {t('common.actions.cancel')}
-          </Button>
           <Button onClick={handleSubmit} disabled={loading || !formData.name || !formData.slug}>
             {loading ? t('common.loading.creating') : (isDuplicateMode ? t('admin.plans.form.createCopy') : t('common.actions.create'))}
+          </Button>
+          <Button variant="outline" onClick={handleClose} disabled={loading}>
+            {t('common.actions.cancel')}
           </Button>
         </DialogFooter>
       </DialogContent>

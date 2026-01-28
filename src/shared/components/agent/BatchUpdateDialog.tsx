@@ -295,9 +295,6 @@ export function BatchUpdateDialog<T extends BatchUpdateEntity>({
         <DialogFooter>
           {!showResult ? (
             <>
-              <Button variant="outline" onClick={handleClose}>
-                {t('common.actions.cancel')}
-              </Button>
               <Button
                 onClick={handleUpdate}
                 disabled={updateCount === 0 || isUpdating}
@@ -319,6 +316,9 @@ export function BatchUpdateDialog<T extends BatchUpdateEntity>({
                     })}
                   </>
                 )}
+              </Button>
+              <Button variant="outline" onClick={handleClose}>
+                {t('common.actions.cancel')}
               </Button>
             </>
           ) : (

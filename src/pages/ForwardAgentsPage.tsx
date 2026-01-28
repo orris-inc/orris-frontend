@@ -352,30 +352,30 @@ export const ForwardAgentsPage = () => {
               { icon: Activity, text: `${stats.online} ${t('common.status.online')}` },
               ...(stats.updatable > 0 ? [{ icon: ArrowUpCircle, text: `${stats.updatable} ${t('admin.forwardAgents.updatable')}` }] : []),
             ]}
-            action={
-              <div className="flex items-center gap-2">
-                {stats.online > 0 && (
-                  <Button variant="outline" size="sm" onClick={() => setBroadcastURLDialogOpen(true)}>
-                    <Radio className="size-4 mr-2" />
-                    {t('admin.forwardAgents.actions.broadcast')}
-                  </Button>
-                )}
-                {stats.updatable > 0 && (
-                  <Button variant="outline" size="sm" onClick={() => setBatchUpdateDialogOpen(true)}>
-                    <ArrowUpCircle className="size-4 mr-2" />
-                    {t('admin.forwardAgents.actions.update')}
-                  </Button>
-                )}
-                <Button variant="ghost" size="icon" onClick={handleRefresh}>
-                  <RefreshCw key={refreshKey} className="size-4" />
+          action={
+            <div className="flex items-center gap-2">
+              <Button onClick={() => { setCopyAgentData(undefined); setCreateDialogOpen(true); }}>
+                <Plus className="size-4 mr-2" />
+                {t('common.actions.create')}
+              </Button>
+              {stats.online > 0 && (
+                <Button variant="outline" size="sm" onClick={() => setBroadcastURLDialogOpen(true)}>
+                  <Radio className="size-4 mr-2" />
+                  {t('admin.forwardAgents.actions.broadcast')}
                 </Button>
-                <Button onClick={() => { setCopyAgentData(undefined); setCreateDialogOpen(true); }}>
-                  <Plus className="size-4 mr-2" />
-                  {t('common.actions.create')}
+              )}
+              {stats.updatable > 0 && (
+                <Button variant="outline" size="sm" onClick={() => setBatchUpdateDialogOpen(true)}>
+                  <ArrowUpCircle className="size-4 mr-2" />
+                  {t('admin.forwardAgents.actions.update')}
                 </Button>
-              </div>
-            }
-          />
+              )}
+              <Button variant="ghost" size="icon" onClick={handleRefresh}>
+                <RefreshCw key={refreshKey} className="size-4" />
+              </Button>
+            </div>
+          }
+        />
         )}
 
         {/* Filters row - desktop only */}
@@ -417,18 +417,6 @@ export const ForwardAgentsPage = () => {
               </SelectContent>
             </Select>
 
-            {/* Reset filters button */}
-            {hasActiveFilters && (
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={handleResetFilters}
-              >
-                <FilterX className="size-4 mr-2" />
-                {t('admin.forwardAgents.filters.resetFilters')}
-              </Button>
-            )}
-
             {/* Divider */}
             <div className="h-6 w-px bg-border" />
 
@@ -443,6 +431,18 @@ export const ForwardAgentsPage = () => {
               </Switch>
               <span className="text-muted-foreground">{t('admin.forwardAgents.dragSort.label')}</span>
             </label>
+
+            {/* Reset filters button */}
+            {hasActiveFilters && (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={handleResetFilters}
+              >
+                <FilterX className="size-4 mr-2" />
+                {t('admin.forwardAgents.filters.resetFilters')}
+              </Button>
+            )}
           </div>
         )}
 

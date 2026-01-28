@@ -1315,11 +1315,11 @@ export const EditForwardRuleDialog: React.FC<EditForwardRuleDialogProps> = ({
         </div>
 
         <DialogFooter className="flex-shrink-0 mt-6 gap-3">
-          <Button variant="outline" onClick={onClose}>
-            {t('common.actions.cancel')}
-          </Button>
           <Button onClick={handleSubmit} disabled={!hasChanges}>
             {t('common.actions.save')}
+          </Button>
+          <Button variant="outline" onClick={onClose}>
+            {t('common.actions.cancel')}
           </Button>
         </DialogFooter>
       </DialogContent>

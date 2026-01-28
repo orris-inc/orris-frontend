@@ -795,11 +795,11 @@ export const CreateSubscriptionForwardRuleDialog: React.FC<
         </div>
 
         <DialogFooter className="flex-shrink-0 gap-3">
-          <Button variant="outline" onClick={handleClose} disabled={isCreating}>
-            {t('common.actions.cancel')}
-          </Button>
           <Button onClick={handleSubmit} disabled={!isFormValid() || isCreating}>
             {isCreating ? t('common.loading.creating') : t('common.actions.create')}
+          </Button>
+          <Button variant="outline" onClick={handleClose} disabled={isCreating}>
+            {t('common.actions.cancel')}
           </Button>
         </DialogFooter>
       </DialogContent>

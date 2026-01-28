@@ -333,9 +333,6 @@ export const BatchUpdateDialog: React.FC<BatchUpdateDialogProps> = ({
         <DialogFooter>
           {!showResult ? (
             <>
-              <Button variant="outline" onClick={handleClose} disabled={isUpdating}>
-                {t('common.actions.cancel')}
-              </Button>
               <Button
                 onClick={handleConfirm}
                 disabled={isUpdating || !canSubmit}
@@ -351,6 +348,9 @@ export const BatchUpdateDialog: React.FC<BatchUpdateDialogProps> = ({
                     {t('admin.forwardRules.batch.updateRulesCount', { count: selectedIds.length })}
                   </>
                 )}
+              </Button>
+              <Button variant="outline" onClick={handleClose} disabled={isUpdating}>
+                {t('common.actions.cancel')}
               </Button>
             </>
           ) : (

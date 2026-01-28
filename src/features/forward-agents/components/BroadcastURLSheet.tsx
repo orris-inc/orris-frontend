@@ -263,9 +263,6 @@ export const BroadcastURLSheet: React.FC<BroadcastURLSheetProps> = ({
         <SheetFooter>
           {step === 'input' && (
             <div className="flex gap-3 w-full">
-              <Button variant="outline" onClick={handleClose} className="flex-1 min-h-[44px]">
-                {t('common.actions.cancel')}
-              </Button>
               <Button
                 onClick={handleProceedToConfirm}
                 disabled={!isTargetAvailable}
@@ -273,14 +270,14 @@ export const BroadcastURLSheet: React.FC<BroadcastURLSheetProps> = ({
               >
                 {t('common.actions.next')}
               </Button>
+              <Button variant="outline" onClick={handleClose} className="flex-1 min-h-[44px]">
+                {t('common.actions.cancel')}
+              </Button>
             </div>
           )}
 
           {step === 'confirm' && (
             <div className="flex gap-3 w-full">
-              <Button variant="outline" onClick={handleBack} className="flex-1 min-h-[44px]">
-                {t('admin.forwardAgents.broadcast.backToEdit')}
-              </Button>
               <Button
                 variant="destructive"
                 onClick={handleConfirmedSubmit}
@@ -295,6 +292,9 @@ export const BroadcastURLSheet: React.FC<BroadcastURLSheetProps> = ({
                 ) : (
                   t('admin.forwardAgents.broadcast.confirmNotify')
                 )}
+              </Button>
+              <Button variant="outline" onClick={handleBack} className="flex-1 min-h-[44px]">
+                {t('admin.forwardAgents.broadcast.backToEdit')}
               </Button>
             </div>
           )}

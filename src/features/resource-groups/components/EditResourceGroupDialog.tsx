@@ -137,11 +137,11 @@ export const EditResourceGroupDialog: React.FC<EditResourceGroupDialogProps> = (
         </div>
 
         <DialogFooter>
-          <Button variant="outline" onClick={handleClose} disabled={loading}>
-            {t('common.actions.cancel')}
-          </Button>
           <Button onClick={handleSubmit} disabled={loading || !isValid}>
             {loading ? t('common.loading.saving') : t('common.actions.save')}
+          </Button>
+          <Button variant="outline" onClick={handleClose} disabled={loading}>
+            {t('common.actions.cancel')}
           </Button>
         </DialogFooter>
       </DialogContent>

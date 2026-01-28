@@ -154,11 +154,11 @@ export const CreateResourceGroupDialog: React.FC<CreateResourceGroupDialogProps>
         </div>
 
         <DialogFooter>
-          <Button variant="outline" onClick={handleClose} disabled={loading}>
-            {t('common.actions.cancel')}
-          </Button>
           <Button onClick={handleSubmit} disabled={loading || !isValid}>
             {loading ? t('common.loading.creating') : t('common.actions.create')}
+          </Button>
+          <Button variant="outline" onClick={handleClose} disabled={loading}>
+            {t('common.actions.cancel')}
           </Button>
         </DialogFooter>
       </DialogContent>

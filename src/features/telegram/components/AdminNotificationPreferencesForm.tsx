@@ -1,8 +1,12 @@
 /**
  * Admin Notification Preferences Form
  * Form for editing admin Telegram notification preferences
- * Grouped by notification category with icons for better UX
- * Mobile-first responsive design with proper touch targets
+ *
+ * Tailwind Application UI design pattern:
+ * - Stacked list with dividers
+ * - Toggle switches with labels and descriptions
+ * - Grouped by notification category
+ * - Mobile-first responsive design with proper touch targets
  */
 
 import { useForm, Controller } from "react-hook-form";
@@ -33,6 +37,7 @@ import type {
   AdminTelegramBindingResponse,
   UpdateAdminPreferencesRequest,
 } from "@/api/admin";
+import { cn } from "@/lib/utils";
 
 const preferencesSchema = z.object({
   notifyNodeOffline: z.boolean(),
@@ -56,35 +61,9 @@ interface AdminNotificationPreferencesFormProps {
   isSubmitting: boolean;
 }
 
-interface PreferenceItemProps {
-  icon: React.ReactNode;
-  iconBg: string;
-  label: string;
-  description?: string;
-  children: React.ReactNode;
-}
-
-const PreferenceItem = ({
-  icon,
-  iconBg,
-  label,
-  description,
-  children,
-}: PreferenceItemProps) => (
-  <div className="flex items-center gap-3 min-h-11 py-2 md:py-2.5 group cursor-pointer hover:bg-accent/50 -mx-2 px-2 rounded-lg transition-colors duration-150">
-    <div className={`p-1.5 rounded-lg ${iconBg} shrink-0`}>{icon}</div>
-    <div className="flex-1 min-w-0">
-      <div className="text-sm font-medium text-foreground">{label}</div>
-      {description && (
-        <div className="text-xs text-muted-foreground mt-0.5 hidden sm:block">
-          {description}
-        </div>
-      )}
-    </div>
-    <div className="shrink-0">{children}</div>
-  </div>
-);
-
+/**
+ * Section component for grouping preferences
+ */
 interface SectionProps {
   title: string;
   children: React.ReactNode;
@@ -92,10 +71,80 @@ interface SectionProps {
 
 const Section = ({ title, children }: SectionProps) => (
   <div className="space-y-1">
-    <div className="text-xs font-medium text-muted-foreground uppercase tracking-wider px-2 pb-1">
+    <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3">
       {title}
+    </h4>
+    <div className="divide-y divide-border rounded-lg border border-border bg-background overflow-hidden">
+      {children}
     </div>
-    <div className="space-y-0.5">{children}</div>
+  </div>
+);
+
+/**
+ * Preference toggle item with icon, label, description and switch
+ */
+interface PreferenceToggleProps {
+  icon: React.ReactNode;
+  iconBg: string;
+  label: string;
+  description?: string;
+  children: React.ReactNode;
+}
+
+const PreferenceToggle = ({
+  icon,
+  iconBg,
+  label,
+  description,
+  children,
+}: PreferenceToggleProps) => (
+  <div className="flex items-center justify-between gap-3 p-3 sm:p-4">
+    <div className="flex items-center gap-3 min-w-0">
+      <div className={cn("shrink-0 p-2 rounded-lg", iconBg)}>{icon}</div>
+      <div className="min-w-0">
+        <div className="text-sm font-medium text-foreground">{label}</div>
+        {description && (
+          <div className="text-xs text-muted-foreground mt-0.5 line-clamp-2">
+            {description}
+          </div>
+        )}
+      </div>
+    </div>
+    <div className="shrink-0">{children}</div>
+  </div>
+);
+
+/**
+ * Sub-setting item for threshold/interval configuration
+ * Mobile-first: stacked layout on mobile, horizontal on sm+
+ */
+interface SubSettingProps {
+  icon: React.ReactNode;
+  label: string;
+  description?: string;
+  children: React.ReactNode;
+}
+
+const SubSetting = ({ icon, label, description, children }: SubSettingProps) => (
+  <div className="p-3 sm:p-4 bg-muted/30">
+    {/* Mobile: stacked layout, sm+: horizontal */}
+    <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between sm:gap-3">
+      <div className="flex items-center gap-2 sm:gap-3 min-w-0">
+        <div className="shrink-0 p-1.5 rounded-md bg-background text-muted-foreground">
+          {icon}
+        </div>
+        <div className="min-w-0">
+          <div className="text-sm font-medium text-foreground">{label}</div>
+          {description && (
+            <div className="text-xs text-muted-foreground mt-0.5 hidden sm:block">
+              {description}
+            </div>
+          )}
+        </div>
+      </div>
+      {/* Mobile: full width control area aligned to left with indent */}
+      <div className="pl-8 sm:pl-0 sm:shrink-0">{children}</div>
+    </div>
   </div>
 );
 
@@ -154,10 +203,10 @@ export const AdminNotificationPreferencesForm = ({
   ];
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-      {/* System Alerts */}
+    <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+      {/* System Alerts Section */}
       <Section title={t("telegramAdmin.preferences.systemAlerts")}>
-        <PreferenceItem
+        <PreferenceToggle
           icon={<Server className="size-4 text-destructive" />}
           iconBg="bg-destructive/10"
           label={t("telegramAdmin.preferences.nodeOffline")}
@@ -172,9 +221,9 @@ export const AdminNotificationPreferencesForm = ({
               </Switch>
             )}
           />
-        </PreferenceItem>
+        </PreferenceToggle>
 
-        <PreferenceItem
+        <PreferenceToggle
           icon={<Network className="size-4 text-warning" />}
           iconBg="bg-warning/10"
           label={t("telegramAdmin.preferences.agentOffline")}
@@ -189,14 +238,13 @@ export const AdminNotificationPreferencesForm = ({
               </Switch>
             )}
           />
-        </PreferenceItem>
+        </PreferenceToggle>
 
         {/* Offline settings - only show when node or agent offline is enabled */}
         {showOfflineSettings && (
           <>
-            <PreferenceItem
-              icon={<Clock className="size-4 text-muted-foreground" />}
-              iconBg="bg-muted"
+            <SubSetting
+              icon={<Clock className="size-3.5" />}
               label={t("telegramAdmin.preferences.offlineThreshold")}
               description={t("telegramAdmin.preferences.offlineThresholdDesc")}
             >
@@ -209,7 +257,7 @@ export const AdminNotificationPreferencesForm = ({
                       type="number"
                       min={3}
                       max={30}
-                      className="w-14 h-7 text-center text-xs px-1"
+                      className="w-16 sm:w-14 h-10 sm:h-8 text-center text-base sm:text-sm px-1"
                       {...field}
                       onChange={(e) =>
                         field.onChange(parseInt(e.target.value, 10) || 3)
@@ -221,11 +269,10 @@ export const AdminNotificationPreferencesForm = ({
                   {t("telegramAdmin.preferences.minutes")}
                 </span>
               </div>
-            </PreferenceItem>
+            </SubSetting>
 
-            <PreferenceItem
-              icon={<Clock className="size-4 text-muted-foreground" />}
-              iconBg="bg-muted"
+            <SubSetting
+              icon={<Clock className="size-3.5" />}
               label={t("telegramAdmin.preferences.checkInterval")}
               description={t("telegramAdmin.preferences.checkIntervalDesc")}
             >
@@ -238,7 +285,7 @@ export const AdminNotificationPreferencesForm = ({
                       type="number"
                       min={1}
                       max={30}
-                      className="w-14 h-7 text-center text-xs px-1"
+                      className="w-16 sm:w-14 h-10 sm:h-8 text-center text-base sm:text-sm px-1"
                       {...field}
                       onChange={(e) =>
                         field.onChange(parseInt(e.target.value, 10) || 5)
@@ -250,14 +297,14 @@ export const AdminNotificationPreferencesForm = ({
                   {t("telegramAdmin.preferences.minutes")}
                 </span>
               </div>
-            </PreferenceItem>
+            </SubSetting>
           </>
         )}
       </Section>
 
-      {/* Business Events */}
+      {/* Business Events Section */}
       <Section title={t("telegramAdmin.preferences.businessEvents")}>
-        <PreferenceItem
+        <PreferenceToggle
           icon={<UserPlus className="size-4 text-info" />}
           iconBg="bg-info/10"
           label={t("telegramAdmin.preferences.newUser")}
@@ -272,9 +319,9 @@ export const AdminNotificationPreferencesForm = ({
               </Switch>
             )}
           />
-        </PreferenceItem>
+        </PreferenceToggle>
 
-        <PreferenceItem
+        <PreferenceToggle
           icon={<CreditCard className="size-4 text-success" />}
           iconBg="bg-success/10"
           label={t("telegramAdmin.preferences.paymentSuccess")}
@@ -289,12 +336,12 @@ export const AdminNotificationPreferencesForm = ({
               </Switch>
             )}
           />
-        </PreferenceItem>
+        </PreferenceToggle>
       </Section>
 
-      {/* Reports */}
+      {/* Reports Section */}
       <Section title={t("telegramAdmin.preferences.reports")}>
-        <PreferenceItem
+        <PreferenceToggle
           icon={<BarChart3 className="size-4 text-primary" />}
           iconBg="bg-primary/10"
           label={t("telegramAdmin.preferences.dailySummary")}
@@ -309,13 +356,12 @@ export const AdminNotificationPreferencesForm = ({
               </Switch>
             )}
           />
-        </PreferenceItem>
+        </PreferenceToggle>
 
         {/* Daily summary time - only show when enabled */}
         {notifyDailySummary && (
-          <PreferenceItem
-            icon={<Clock className="size-4 text-muted-foreground" />}
-            iconBg="bg-muted"
+          <SubSetting
+            icon={<Clock className="size-3.5" />}
             label={t("telegramAdmin.preferences.sendTime")}
             description={t("telegramAdmin.preferences.dailySendTimeDesc")}
           >
@@ -327,7 +373,7 @@ export const AdminNotificationPreferencesForm = ({
                   value={(field.value ?? 0).toString()}
                   onValueChange={(v) => field.onChange(parseInt(v, 10))}
                 >
-                  <SelectTrigger className="w-20 h-7 text-xs">
+                  <SelectTrigger className="min-w-[5.5rem] h-10 sm:h-8 text-base sm:text-sm">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
@@ -340,10 +386,10 @@ export const AdminNotificationPreferencesForm = ({
                 </Select>
               )}
             />
-          </PreferenceItem>
+          </SubSetting>
         )}
 
-        <PreferenceItem
+        <PreferenceToggle
           icon={<Calendar className="size-4 text-primary" />}
           iconBg="bg-primary/10"
           label={t("telegramAdmin.preferences.weeklySummary")}
@@ -358,14 +404,13 @@ export const AdminNotificationPreferencesForm = ({
               </Switch>
             )}
           />
-        </PreferenceItem>
+        </PreferenceToggle>
 
         {/* Weekly summary settings - only show when enabled */}
         {notifyWeeklySummary && (
           <>
-            <PreferenceItem
-              icon={<Calendar className="size-4 text-muted-foreground" />}
-              iconBg="bg-muted"
+            <SubSetting
+              icon={<Calendar className="size-3.5" />}
               label={t("telegramAdmin.preferences.sendWeekday")}
               description={t("telegramAdmin.preferences.weeklySendWeekdayDesc")}
             >
@@ -377,7 +422,7 @@ export const AdminNotificationPreferencesForm = ({
                     value={(field.value ?? 0).toString()}
                     onValueChange={(v) => field.onChange(parseInt(v, 10))}
                   >
-                    <SelectTrigger className="w-16 h-7 text-xs">
+                    <SelectTrigger className="min-w-[5.5rem] h-10 sm:h-8 text-base sm:text-sm">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
@@ -390,11 +435,10 @@ export const AdminNotificationPreferencesForm = ({
                   </Select>
                 )}
               />
-            </PreferenceItem>
+            </SubSetting>
 
-            <PreferenceItem
-              icon={<Clock className="size-4 text-muted-foreground" />}
-              iconBg="bg-muted"
+            <SubSetting
+              icon={<Clock className="size-3.5" />}
               label={t("telegramAdmin.preferences.sendTime")}
               description={t("telegramAdmin.preferences.weeklySendTimeDesc")}
             >
@@ -406,7 +450,7 @@ export const AdminNotificationPreferencesForm = ({
                     value={(field.value ?? 0).toString()}
                     onValueChange={(v) => field.onChange(parseInt(v, 10))}
                   >
-                    <SelectTrigger className="w-20 h-7 text-xs">
+                    <SelectTrigger className="min-w-[5.5rem] h-10 sm:h-8 text-base sm:text-sm">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
@@ -419,17 +463,16 @@ export const AdminNotificationPreferencesForm = ({
                   </Select>
                 )}
               />
-            </PreferenceItem>
+            </SubSetting>
           </>
         )}
       </Section>
 
-      {/* Save button - Mobile-optimized touch target */}
+      {/* Save button - Sticky on mobile for easy access */}
       {isDirty && (
-        <div className="pt-2">
+        <div className="sticky bottom-4 sm:static">
           <Button
             type="submit"
-            size="sm"
             disabled={isSubmitting}
             className="w-full min-h-11"
           >

@@ -9,7 +9,7 @@ import { useTranslation } from 'react-i18next';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { Mail, Loader2, Info, CircleCheck, TriangleAlert } from 'lucide-react';
+import { ArrowLeft, Mail, Loader2, Info, CircleCheck, TriangleAlert } from 'lucide-react';
 import * as LabelPrimitive from '@radix-ui/react-label';
 import { handleApiError, apiClient } from '@/shared/lib/axios';
 import type { APIResponse } from '@/shared/types/api.types';
@@ -184,9 +184,12 @@ export const VerificationPendingPage = () => {
               {t('auth.verifyEmail.alreadyVerified')}{' '}
               <RouterLink
                 to="/login"
-                className="text-primary underline-offset-4 hover:underline"
+                className="inline-flex items-center gap-1.5 text-sm text-primary underline-offset-4 hover:underline"
+                aria-label={t('auth.verifyEmail.backToLogin')}
               >
-                {t('auth.verifyEmail.backToLogin')}
+                <ArrowLeft className="size-4" />
+                <span className="hidden sm:inline">{t('auth.verifyEmail.backToLogin')}</span>
+                <span className="sr-only sm:hidden">{t('auth.verifyEmail.backToLogin')}</span>
               </RouterLink>
             </div>
           </div>

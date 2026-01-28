@@ -1376,21 +1376,6 @@ export const EditNodeSheet: React.FC<EditNodeSheetProps> = ({
           <div className="flex gap-2 w-full">
             <button
               type="button"
-              onClick={() => handleClose(false)}
-              disabled={loading}
-              className={cn(
-                'flex-1 flex items-center justify-center',
-                'h-11 rounded-lg',
-                'border border-border bg-background text-foreground',
-                'text-sm font-medium',
-                'active:opacity-80 transition-opacity',
-                'disabled:opacity-50'
-              )}
-            >
-              {t('common.actions.cancel')}
-            </button>
-            <button
-              type="button"
               onClick={handleSubmit}
               disabled={loading || !hasChanges}
               className={cn(
@@ -1403,6 +1388,21 @@ export const EditNodeSheet: React.FC<EditNodeSheetProps> = ({
               )}
             >
               {loading ? t('common.loading.saving') : t('common.actions.save')}
+            </button>
+            <button
+              type="button"
+              onClick={() => handleClose(false)}
+              disabled={loading}
+              className={cn(
+                'flex-1 flex items-center justify-center',
+                'h-11 rounded-lg',
+                'border border-border bg-background text-foreground',
+                'text-sm font-medium',
+                'active:opacity-80 transition-opacity',
+                'disabled:opacity-50'
+              )}
+            >
+              {t('common.actions.cancel')}
             </button>
           </div>
         </SheetFooter>

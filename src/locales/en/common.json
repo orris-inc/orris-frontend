@@ -65,6 +65,8 @@
       "label": "Status",
       "enabled": "Enabled",
       "disabled": "Disabled",
+      "enabledShort": "On",
+      "disabledShort": "Off",
       "online": "Online",
       "offline": "Offline",
       "active": "Active",
@@ -2633,6 +2635,22 @@
       "stats": {
         "totalTraffic": "Total Traffic"
       },
+      "currentPlan": {
+        "title": "Current plan",
+        "expires": "Expires on",
+        "remaining": "Remaining",
+        "manage": "Manage"
+      },
+      "usageTrend": {
+        "title": "Usage trend",
+        "subtitle": "Recent activity overview",
+        "note": "Daily totals for the current subscription",
+        "ranges": {
+          "7d": "7D",
+          "30d": "30D",
+          "90d": "90D"
+        }
+      },
       "status": {
         "noSubscription": "Subscribe to unlock premium services",
         "expiringSoon": "\"{{plan}}\" expires in {{days}} days",
@@ -2666,82 +2684,73 @@
       "settings": "Settings"
     }
   },
-  "landing": {
-    "nav": {
-      "features": "Features",
-      "howItWorks": "Guide",
-      "pricing": "Pricing",
-      "signIn": "Sign In",
+	  "landing": {
+	    "nav": {
+	      "features": "Features",
+	      "faq": "FAQ",
+	      "pricing": "Pricing",
+	      "signIn": "Sign In",
       "getStarted": "Get Started",
       "openMenu": "Open menu",
       "closeMenu": "Close menu"
     },
-    "hero": {
-      "badge": "Node management, reimagined",
-      "title": "Set up once.",
-      "titleHighlight": "Run forever.",
-      "subtitle": "Nodes, forwarding, subscriptions—simplified. You focus on business. Orris handles the rest.",
-      "getStartedFree": "Get Started Free",
-      "learnMore": "Learn more",
-      "stats": {
-        "forwardingModes": "Forwarding Modes",
-        "uptimeSla": "High Availability",
-        "alwaysOn": "Always On"
-      }
-    },
+	    "hero": {
+	      "title": "All-in-one subscriptions, nodes, and forwarding—ready to run",
+	      "subtitle": "Sign in, manage plans, run nodes and forwarding, and track traffic—all in one place.",
+	      "getStarted": "Get Started",
+	      "exploreFeatures": "Explore Features"
+	    },
     "features": {
-      "title": "Powerful features",
-      "subtitle": "Every one, built for efficiency",
-      "dashboard": {
-        "title": "Total control",
-        "description": "Nodes, users, revenue. One view. Everything at a glance."
+      "title": "What You Can Do",
+      "passkey": {
+        "title": "Passwordless sign-in (Passkeys)",
+        "description": "Check device/browser support, register once, and sign in faster with fewer failed logins."
       },
-      "forwarding": {
-        "title": "Forward your way",
-        "description": "Direct, chained, multi-hop. Different needs, flexible solutions."
+	      "subscriptions": {
+	        "title": "Subscriptions & plans",
+	        "description": "Manage subscriptions and plans, issue access tokens, and track traffic with clear records and summaries."
+	      },
+      "payments": {
+        "title": "Multiple payment methods",
+        "description": "Pay with Stripe, Alipay, WeChat Pay, or USDT (Polygon/Tron)."
       },
-      "resourceGroups": {
-        "title": "Group freely",
-        "description": "Combine resources. Build plans. Your way."
+	      "nodes": {
+	        "title": "Node management",
+	        "description": "Create and operate nodes with status controls, install/uninstall commands, and version updates."
+	      },
+	      "forwarding": {
+	        "title": "Forward agents & rules",
+	        "description": "Configure forward agents and rules with toggles, ordering, and bulk edits."
+	      },
+	      "realtime": {
+	        "title": "Real-time updates",
+	        "description": "See node and agent status changes in real time, with key events surfaced promptly."
+	      },
+	      "notifications": {
+	        "title": "Announcements & in-app notifications",
+	        "description": "Stay informed with announcements and in-app notifications."
+	      }
+	    },
+	    "faq": {
+	      "title": "FAQ",
+	      "q1": {
+	        "question": "Can I use Passkeys without a password?",
+        "answer": "Yes—passwordless signup/sign-in is supported (device/browser support required)."
       },
-      "subscriptions": {
-        "title": "Subscriptions, simplified",
-        "description": "Create, track, remind. Fully automated."
-      },
-      "relay": {
-        "title": "Blazing fast",
-        "description": "Smart routing. Faster, more reliable connections."
-      }
-    },
-    "howItWorks": {
-      "title": "Get started",
-      "subtitle": "Four steps. Zero to live.",
-      "step1": {
-        "number": "01",
-        "title": "Add nodes",
-        "description": "Import servers. All major protocols supported."
-      },
-      "step2": {
-        "number": "02",
-        "title": "Set rules",
-        "description": "Configure forwarding. Smart path optimization."
-      },
-      "step3": {
-        "number": "03",
-        "title": "Create plans",
-        "description": "Price, quota, duration. Bundle in one click."
-      },
-      "step4": {
-        "number": "04",
-        "title": "Go live",
-        "description": "Share links. Users subscribe instantly."
-      }
-    },
+	      "q2": {
+	        "question": "When does my subscription activate?",
+	        "answer": "After payment, your subscription activates automatically. You'll get access tokens and can monitor traffic usage in stats."
+	      },
+	      "q3": {
+	        "question": "Can I see node/agent status in real time?",
+	        "answer": "Yes—node and agent status changes update in real time."
+	      }
+	    },
     "cta": {
-      "title": "Start now",
-      "subtitle": "A simpler way to manage awaits",
-      "getStartedFree": "Get Started Free",
-      "alreadyMember": "Have an account? Sign In"
+      "title": "Start building your subscription + forwarding setup today",
+      "subtitle": "Smoother sign-in, clearer subscription/traffic management, and reliable node/forwarding operations.",
+      "createAccount": "Create an Account",
+      "contactSupport": "Contact Support"
     },
     "footer": {
       "copyright": "© {{year}} Orris"
@@ -3083,9 +3092,14 @@
     },
     "binding": {
       "title": "Telegram Notification",
+      "boundTitle": "Telegram Connected",
+      "unboundTitle": "Pending Connection",
+      "unboundDesc": "Follow the steps below to connect Telegram",
       "notEnabled": "Telegram notification feature is not enabled",
-      "bound": "Bound",
-      "notifications": "{{count}} notifications enabled",
+      "bound": "Connected",
+      "unbound": "Not Connected",
+      "account": "Account",
+      "notifications": "Notifications",
       "unbindTitle": "Unbind Telegram",
       "unbindDesc": "Are you sure you want to unbind Telegram? You will no longer receive notifications.",
       "unbind": "Unbind"

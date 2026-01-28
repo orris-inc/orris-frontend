@@ -25,6 +25,46 @@ import type {
   UpdateUSDTSettingsRequest,
 } from '@/api/setting';
 
+// Polygon address: 0x + 40 hex characters (EVM compatible)
+const POLYGON_ADDRESS_REGEX = /^0x[a-fA-F0-9]{40}$/;
+
+// Tron address: T + 33 base58 characters (no 0, O, I, l)
+const TRON_ADDRESS_REGEX = /^T[1-9A-HJ-NP-Za-km-z]{33}$/;
+
+// Maximum addresses per network (matches backend limit)
+const MAX_ADDRESSES_PER_NETWORK = 10;
+
+/**
+ * Validate wallet addresses from multi-line text
+ * Returns null if valid, or error message if invalid
+ */
+const validateAddresses = (
+  text: string | undefined,
+  regex: RegExp,
+  networkName: string
+): string | null => {
+  if (!text) return null;
+  const lines = text.split('\n').map((l) => l.trim()).filter((l) => l.length > 0);
+  if (lines.length === 0) return null;
+
+  // Check max address limit
+  if (lines.length > MAX_ADDRESSES_PER_NETWORK) {
+    return `Maximum ${MAX_ADDRESSES_PER_NETWORK} addresses allowed, got ${lines.length}`;
+  }
+
+  const invalidAddresses: string[] = [];
+  for (const addr of lines) {
+    if (!regex.test(addr)) {
+      invalidAddresses.push(addr.length > 20 ? `${addr.slice(0, 10)}...${addr.slice(-6)}` : addr);
+    }
+  }
+
+  if (invalidAddresses.length > 0) {
+    return `Invalid ${networkName} address format: ${invalidAddresses.join(', ')}`;
+  }
+  return null;
+};
+
 /**
  * Status badge component
  */
@@ -46,8 +86,24 @@ const StatusBadge = ({ enabled }: { enabled: boolean }) => {
 
 const usdtSettingsSchema = z.object({
   enabled: z.boolean(),
-  polReceivingAddresses: z.string().optional(), // Multi-line text, one address per line
-  trcReceivingAddresses: z.string().optional(), // Multi-line text, one address per line
+  polReceivingAddresses: z
+    .string()
+    .optional()
+    .superRefine((val, ctx) => {
+      const error = validateAddresses(val, POLYGON_ADDRESS_REGEX, 'Polygon');
+      if (error) {
+        ctx.addIssue({ code: z.ZodIssueCode.custom, message: error });
+      }
+    }),
+  trcReceivingAddresses: z
+    .string()
+    .optional()
+    .superRefine((val, ctx) => {
+      const error = validateAddresses(val, TRON_ADDRESS_REGEX, 'Tron');
+      if (error) {
+        ctx.addIssue({ code: z.ZodIssueCode.custom, message: error });
+      }
+    }),
   polygonscanApiKey: z.string().optional(),
   trongridApiKey: z.string().optional(),
   paymentTtlMinutes: z.number().int().min(1).max(1440).optional(),
@@ -78,7 +134,7 @@ export const USDTSettingsForm = ({
     handleSubmit,
     reset,
     watch,
-    formState: { isDirty },
+    formState: { isDirty, errors },
   } = useForm<USDTSettingsFormData>({
     resolver: zodResolver(usdtSettingsSchema),
     defaultValues: {
@@ -198,14 +254,19 @@ export const USDTSettingsForm = ({
             name="polReceivingAddresses"
             control={control}
             render={({ field }) => (
-              <textarea
-                value={field.value || ''}
-                onChange={field.onChange}
-                placeholder="0x..."
-                className="flex min-h-[80px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm font-mono ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-                disabled={!enabled}
-                rows={3}
-              />
+              <div className="space-y-1.5">
+                <textarea
+                  value={field.value || ''}
+                  onChange={field.onChange}
+                  placeholder="0x..."
+                  className="flex min-h-[80px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm font-mono ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                  disabled={!enabled}
+                  rows={3}
+                />
+                {errors.polReceivingAddresses && (
+                  <p className="text-xs text-destructive">{errors.polReceivingAddresses.message}</p>
+                )}
+              </div>
             )}
           />
         </FormField>
@@ -221,14 +282,19 @@ export const USDTSettingsForm = ({
             name="trcReceivingAddresses"
             control={control}
             render={({ field }) => (
-              <textarea
-                value={field.value || ''}
-                onChange={field.onChange}
-                placeholder="T..."
-                className="flex min-h-[80px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm font-mono ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-                disabled={!enabled}
-                rows={3}
-              />
+              <div className="space-y-1.5">
+                <textarea
+                  value={field.value || ''}
+                  onChange={field.onChange}
+                  placeholder="T..."
+                  className="flex min-h-[80px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm font-mono ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                  disabled={!enabled}
+                  rows={3}
+                />
+                {errors.trcReceivingAddresses && (
+                  <p className="text-xs text-destructive">{errors.trcReceivingAddresses.message}</p>
+                )}
+              </div>
             )}
           />
         </FormField>

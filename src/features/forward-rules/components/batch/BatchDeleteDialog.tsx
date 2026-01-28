@@ -120,9 +120,6 @@ export const BatchDeleteDialog: React.FC<BatchDeleteDialogProps> = ({
         <DialogFooter>
           {!showResult ? (
             <>
-              <Button variant="outline" onClick={handleClose} disabled={isDeleting}>
-                {t('common.actions.cancel')}
-              </Button>
               <Button
                 variant="destructive"
                 onClick={handleConfirm}
@@ -139,6 +136,9 @@ export const BatchDeleteDialog: React.FC<BatchDeleteDialogProps> = ({
                     {t('admin.forwardRules.batch.deleteRulesCount', { count: selectedCount })}
                   </>
                 )}
+              </Button>
+              <Button variant="outline" onClick={handleClose} disabled={isDeleting}>
+                {t('common.actions.cancel')}
               </Button>
             </>
           ) : (

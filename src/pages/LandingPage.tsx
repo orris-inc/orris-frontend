@@ -8,19 +8,21 @@ import { motion } from 'framer-motion';
 import { useRef, useState, useEffect, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
-  Network,
   Server,
-  Layers,
   Users,
-  Zap,
   ArrowRight,
   GitBranch,
-  Shield,
   Globe,
   ChevronRight,
   Menu,
   X,
   Github,
+  Fingerprint,
+  CreditCard,
+  Bell,
+  Activity,
+  ChevronDown,
+  HelpCircle,
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -42,36 +44,18 @@ const staggerContainer = {
   },
 };
 
-
 interface Feature {
   icon: LucideIcon;
   titleKey: string;
   descriptionKey: string;
 }
 
-interface Step {
-  stepKey: string;
-  titleKey: string;
-  descriptionKey: string;
-  icon: LucideIcon;
-}
-
 // Feature icons mapping - titles and descriptions are loaded via i18n
 const featureConfigs: Feature[] = [
   {
-    icon: Network,
-    titleKey: 'landing.features.dashboard.title',
-    descriptionKey: 'landing.features.dashboard.description',
-  },
-  {
-    icon: GitBranch,
-    titleKey: 'landing.features.forwarding.title',
-    descriptionKey: 'landing.features.forwarding.description',
-  },
-  {
-    icon: Layers,
-    titleKey: 'landing.features.resourceGroups.title',
-    descriptionKey: 'landing.features.resourceGroups.description',
+    icon: Fingerprint,
+    titleKey: 'landing.features.passkey.title',
+    descriptionKey: 'landing.features.passkey.description',
   },
   {
     icon: Users,
@@ -79,37 +63,45 @@ const featureConfigs: Feature[] = [
     descriptionKey: 'landing.features.subscriptions.description',
   },
   {
-    icon: Zap,
-    titleKey: 'landing.features.relay.title',
-    descriptionKey: 'landing.features.relay.description',
+    icon: CreditCard,
+    titleKey: 'landing.features.payments.title',
+    descriptionKey: 'landing.features.payments.description',
+  },
+  {
+    icon: Server,
+    titleKey: 'landing.features.nodes.title',
+    descriptionKey: 'landing.features.nodes.description',
+  },
+  {
+    icon: GitBranch,
+    titleKey: 'landing.features.forwarding.title',
+    descriptionKey: 'landing.features.forwarding.description',
+  },
+  {
+    icon: Activity,
+    titleKey: 'landing.features.realtime.title',
+    descriptionKey: 'landing.features.realtime.description',
+  },
+  {
+    icon: Bell,
+    titleKey: 'landing.features.notifications.title',
+    descriptionKey: 'landing.features.notifications.description',
   },
 ];
 
-// Step icons mapping - content is loaded via i18n
-const stepConfigs: Step[] = [
+// FAQ items
+const faqConfigs = [
   {
-    stepKey: 'landing.howItWorks.step1.number',
-    titleKey: 'landing.howItWorks.step1.title',
-    descriptionKey: 'landing.howItWorks.step1.description',
-    icon: Server,
+    questionKey: 'landing.faq.q1.question',
+    answerKey: 'landing.faq.q1.answer',
   },
   {
-    stepKey: 'landing.howItWorks.step2.number',
-    titleKey: 'landing.howItWorks.step2.title',
-    descriptionKey: 'landing.howItWorks.step2.description',
-    icon: GitBranch,
+    questionKey: 'landing.faq.q2.question',
+    answerKey: 'landing.faq.q2.answer',
   },
   {
-    stepKey: 'landing.howItWorks.step3.number',
-    titleKey: 'landing.howItWorks.step3.title',
-    descriptionKey: 'landing.howItWorks.step3.description',
-    icon: Layers,
-  },
-  {
-    stepKey: 'landing.howItWorks.step4.number',
-    titleKey: 'landing.howItWorks.step4.title',
-    descriptionKey: 'landing.howItWorks.step4.description',
-    icon: Users,
+    questionKey: 'landing.faq.q3.question',
+    answerKey: 'landing.faq.q3.answer',
   },
 ];
 
@@ -119,9 +111,50 @@ const animatedSections = new Set<string>();
 // Navigation links for landing page - labels are i18n keys
 const navLinkConfigs = [
   { href: '#features', labelKey: 'landing.nav.features' },
-  { href: '#how-it-works', labelKey: 'landing.nav.howItWorks' },
+  { href: '#faq', labelKey: 'landing.nav.faq' },
   { href: '/pricing', labelKey: 'landing.nav.pricing', isRoute: true },
 ];
+
+// FAQ Item component
+const FAQItem = ({
+  questionKey,
+  answerKey,
+}: {
+  questionKey: string;
+  answerKey: string;
+}) => {
+  const { t } = useTranslation();
+  const [isOpen, setIsOpen] = useState(false);
+
+  return (
+    <div className="border-b border-border last:border-b-0">
+      <button
+        onClick={() => setIsOpen(!isOpen)}
+        className={cn(
+          'flex w-full items-center justify-between py-4 text-left',
+          'hover:text-primary transition-colors',
+          'focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring'
+        )}
+      >
+        <span className="font-medium pr-4">{t(questionKey)}</span>
+        <ChevronDown
+          className={cn(
+            'size-5 shrink-0 text-muted-foreground transition-transform',
+            isOpen && 'rotate-180'
+          )}
+        />
+      </button>
+      <motion.div
+        initial={false}
+        animate={{ height: isOpen ? 'auto' : 0 }}
+        transition={{ duration: 0.2 }}
+        className="overflow-hidden"
+      >
+        <p className="pb-4 text-muted-foreground">{t(answerKey)}</p>
+      </motion.div>
+    </div>
+  );
+};
 
 export const LandingPage = () => {
   const { t } = useTranslation();
@@ -132,13 +165,16 @@ export const LandingPage = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const { serverVersion, clientVersion } = useVersionInfo();
 
-  const handleFeaturesIntersect = useCallback((entries: IntersectionObserverEntry[]) => {
-    const entry = entries[0];
-    if (entry.isIntersecting && !animatedSections.has('features')) {
-      animatedSections.add('features');
-      setFeaturesVisible(true);
-    }
-  }, []);
+  const handleFeaturesIntersect = useCallback(
+    (entries: IntersectionObserverEntry[]) => {
+      const entry = entries[0];
+      if (entry.isIntersecting && !animatedSections.has('features')) {
+        animatedSections.add('features');
+        setFeaturesVisible(true);
+      }
+    },
+    []
+  );
 
   useEffect(() => {
     const element = featuresRef.current;
@@ -232,10 +268,18 @@ export const LandingPage = () => {
                   'focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring',
                   'transition-colors'
                 )}
-                aria-label={mobileMenuOpen ? t('landing.nav.closeMenu') : t('landing.nav.openMenu')}
+                aria-label={
+                  mobileMenuOpen
+                    ? t('landing.nav.closeMenu')
+                    : t('landing.nav.openMenu')
+                }
                 aria-expanded={mobileMenuOpen}
               >
-                {mobileMenuOpen ? <X className="size-5" /> : <Menu className="size-5" />}
+                {mobileMenuOpen ? (
+                  <X className="size-5" />
+                ) : (
+                  <Menu className="size-5" />
+                )}
               </button>
             </div>
           </div>
@@ -250,7 +294,7 @@ export const LandingPage = () => {
               className="md:hidden py-4 border-t border-border/50"
             >
               <nav className="flex flex-col gap-1">
-                {navLinkConfigs.map((link) => (
+                {navLinkConfigs.map((link) =>
                   link.isRoute ? (
                     <Link
                       key={link.href}
@@ -270,7 +314,7 @@ export const LandingPage = () => {
                       {t(link.labelKey)}
                     </a>
                   )
-                ))}
+                )}
               </nav>
               <div className="mt-4 pt-4 border-t border-border/50 px-3">
                 <Link
@@ -312,30 +356,18 @@ export const LandingPage = () => {
         </div>
 
         <motion.div
-          className="max-w-5xl mx-auto text-center w-full"
+          className="max-w-4xl mx-auto text-center w-full"
           initial="initial"
           animate="animate"
           variants={staggerContainer}
         >
-          {/* Badge */}
-          <motion.div
-            variants={fadeInUp}
-            transition={{ duration: 0.5 }}
-            className="inline-flex items-center gap-2 px-3 py-1.5 sm:px-4 sm:py-2 rounded-full bg-primary/10 text-primary text-xs sm:text-sm font-medium mb-4 sm:mb-6 lg:mb-8"
-          >
-            <Shield className="size-3.5 sm:size-4" />
-            {t('landing.hero.badge')}
-          </motion.div>
-
           {/* Main heading - fluid typography */}
           <motion.h1
             variants={fadeInUp}
             transition={{ duration: 0.5 }}
-            className="text-fluid-3xl sm:text-fluid-4xl lg:text-fluid-5xl font-bold tracking-tight mb-4 sm:mb-6"
+            className="text-fluid-2xl sm:text-fluid-3xl lg:text-fluid-4xl font-bold tracking-tight mb-4 sm:mb-6"
           >
             {t('landing.hero.title')}
-            <br />
-            <span className="text-primary">{t('landing.hero.titleHighlight')}</span>
           </motion.h1>
 
           {/* Subheading */}
@@ -364,7 +396,7 @@ export const LandingPage = () => {
                 'transition-colors'
               )}
             >
-              {t('landing.hero.getStartedFree')}
+              {t('landing.hero.getStarted')}
               <ArrowRight className="size-4" />
             </Link>
             <a
@@ -378,27 +410,9 @@ export const LandingPage = () => {
                 'transition-colors'
               )}
             >
-              {t('landing.hero.learnMore')}
+              {t('landing.hero.exploreFeatures')}
               <ChevronRight className="size-4" />
             </a>
-          </motion.div>
-
-          {/* Stats */}
-          <motion.div
-            variants={fadeInUp}
-            transition={{ duration: 0.5 }}
-            className="grid grid-cols-3 gap-4 sm:gap-6 lg:gap-8 mt-10 sm:mt-12 lg:mt-16 max-w-xl mx-auto"
-          >
-            {[
-              { value: '5+', labelKey: 'landing.hero.stats.forwardingModes' },
-              { value: '99.9%', labelKey: 'landing.hero.stats.uptimeSla' },
-              { value: '24/7', labelKey: 'landing.hero.stats.alwaysOn' },
-            ].map((stat, index) => (
-              <div key={index} className="text-center">
-                <div className="text-xl sm:text-2xl lg:text-3xl font-bold text-primary">{stat.value}</div>
-                <div className="text-xs sm:text-sm text-muted-foreground mt-1">{t(stat.labelKey)}</div>
-              </div>
-            ))}
           </motion.div>
         </motion.div>
       </section>
@@ -426,12 +440,6 @@ export const LandingPage = () => {
             >
               {t('landing.features.title')}
             </motion.h2>
-            <motion.p
-              variants={fadeInUp}
-              className="text-muted-foreground text-fluid-lg max-w-2xl mx-auto"
-            >
-              {t('landing.features.subtitle')}
-            </motion.p>
           </div>
 
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -457,89 +465,54 @@ export const LandingPage = () => {
                 <div className="size-12 rounded-xl bg-primary/10 flex items-center justify-center mb-4">
                   <feature.icon className="size-6 text-primary" />
                 </div>
-                <h3 className="text-xl font-semibold mb-2">{t(feature.titleKey)}</h3>
-                <p className="text-muted-foreground">{t(feature.descriptionKey)}</p>
+                <h3 className="text-xl font-semibold mb-2">
+                  {t(feature.titleKey)}
+                </h3>
+                <p className="text-muted-foreground">
+                  {t(feature.descriptionKey)}
+                </p>
               </motion.div>
             ))}
           </div>
         </motion.div>
       </section>
 
-      {/* How it Works Section */}
-      <section id="how-it-works" className="py-20 px-4">
-        <div className="max-w-6xl mx-auto">
+      {/* FAQ Section */}
+      <section id="faq" className="py-20 px-4 bg-muted/30 dark:bg-muted/10">
+        <div className="max-w-3xl mx-auto">
           <motion.div
-            className="text-center mb-16"
             initial="initial"
             whileInView="animate"
             viewport={{ once: true, margin: '-100px' }}
             variants={staggerContainer}
           >
-            <motion.h2
+            <motion.div
               variants={fadeInUp}
               transition={{ duration: 0.5 }}
-              className="text-fluid-2xl font-bold mb-4"
+              className="text-center mb-12"
             >
-              {t('landing.howItWorks.title')}
-            </motion.h2>
-            <motion.p
+              <div className="inline-flex items-center justify-center size-16 rounded-2xl bg-primary/10 mb-6">
+                <HelpCircle className="size-8 text-primary" />
+              </div>
+              <h2 className="text-fluid-2xl font-bold">
+                {t('landing.faq.title')}
+              </h2>
+            </motion.div>
+
+            <motion.div
               variants={fadeInUp}
               transition={{ duration: 0.5 }}
-              className="text-muted-foreground text-fluid-lg max-w-2xl mx-auto"
+              className="bg-card border border-border rounded-2xl p-6"
             >
-              {t('landing.howItWorks.subtitle')}
-            </motion.p>
+              {faqConfigs.map((faq, index) => (
+                <FAQItem
+                  key={index}
+                  questionKey={faq.questionKey}
+                  answerKey={faq.answerKey}
+                />
+              ))}
+            </motion.div>
           </motion.div>
-
-          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
-            {stepConfigs.map((step, index) => (
-              <motion.div
-                key={index}
-                className="relative"
-                initial={{ opacity: 0, y: 30 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true, margin: '-50px' }}
-                transition={{ duration: 0.5, delay: index * 0.15 }}
-              >
-                {/* Connector line */}
-                {index < stepConfigs.length - 1 && (
-                  <motion.div
-                    className="hidden lg:block absolute top-12 left-1/2 w-full h-px bg-border"
-                    initial={{ scaleX: 0 }}
-                    whileInView={{ scaleX: 1 }}
-                    viewport={{ once: true }}
-                    transition={{ duration: 0.4, delay: index * 0.15 + 0.3 }}
-                    style={{ originX: 0 }}
-                  />
-                )}
-
-                <motion.div
-                  className="relative p-6 rounded-2xl bg-card border border-border text-center"
-                  whileHover={{ y: -4, transition: { duration: 0.2 } }}
-                >
-                  {/* Step number */}
-                  <motion.div
-                    className="absolute -top-4 left-1/2 -translate-x-1/2 px-3 py-1 rounded-full bg-primary text-primary-foreground text-sm font-medium"
-                    initial={{ scale: 0 }}
-                    whileInView={{ scale: 1 }}
-                    viewport={{ once: true }}
-                    transition={{ type: 'spring', stiffness: 300, delay: index * 0.15 + 0.2 }}
-                  >
-                    {t(step.stepKey)}
-                  </motion.div>
-
-                  <div className="size-16 rounded-2xl bg-muted flex items-center justify-center mx-auto mt-4 mb-4">
-                    <step.icon className="size-8 text-primary" />
-                  </div>
-
-                  <h3 className="text-lg font-semibold mb-2">{t(step.titleKey)}</h3>
-                  <p className="text-sm text-muted-foreground">
-                    {t(step.descriptionKey)}
-                  </p>
-                </motion.div>
-              </motion.div>
-            ))}
-          </div>
         </div>
       </section>
 
@@ -581,14 +554,14 @@ export const LandingPage = () => {
               <motion.h2
                 variants={fadeInUp}
                 transition={{ duration: 0.5 }}
-                className="text-fluid-2xl font-bold mb-4"
+                className="text-fluid-xl sm:text-fluid-2xl font-bold mb-4"
               >
                 {t('landing.cta.title')}
               </motion.h2>
               <motion.p
                 variants={fadeInUp}
                 transition={{ duration: 0.5 }}
-                className="text-primary-foreground/80 text-fluid-lg max-w-xl mx-auto mb-8"
+                className="text-primary-foreground/80 text-fluid-base sm:text-fluid-lg max-w-xl mx-auto mb-8"
               >
                 {t('landing.cta.subtitle')}
               </motion.p>
@@ -608,11 +581,11 @@ export const LandingPage = () => {
                     'transition-colors'
                   )}
                 >
-                  {t('landing.cta.getStartedFree')}
+                  {t('landing.cta.createAccount')}
                   <ArrowRight className="size-4" />
                 </Link>
-                <Link
-                  to="/login"
+                <a
+                  href="mailto:support@orris.io"
                   className={cn(
                     'inline-flex items-center justify-center gap-2 rounded-full font-medium',
                     'w-full sm:w-auto h-12 sm:h-11 px-8 text-base sm:text-sm',
@@ -622,8 +595,8 @@ export const LandingPage = () => {
                     'transition-colors'
                   )}
                 >
-                  {t('landing.cta.alreadyMember')}
-                </Link>
+                  {t('landing.cta.contactSupport')}
+                </a>
               </motion.div>
             </motion.div>
           </motion.div>
@@ -663,24 +636,27 @@ export const LandingPage = () => {
                 {t('landing.nav.features')}
               </motion.a>
               <motion.a
-                href="#how-it-works"
+                href="#faq"
                 whileHover={{ color: 'var(--color-foreground)' }}
                 transition={{ duration: 0.2 }}
               >
-                {t('landing.nav.howItWorks')}
+                {t('landing.nav.faq')}
               </motion.a>
-              <motion.a
-                href="/pricing"
-                whileHover={{ color: 'var(--color-foreground)' }}
-                transition={{ duration: 0.2 }}
+              <Link
+                to="/pricing"
+                className="hover:text-foreground transition-colors"
               >
                 {t('landing.nav.pricing')}
-              </motion.a>
+              </Link>
             </div>
 
             {/* Copyright + Version */}
             <div className="flex items-center justify-end gap-3 text-sm text-muted-foreground">
-              <span>{t('landing.footer.copyright', { year: new Date().getFullYear() })}</span>
+              <span>
+                {t('landing.footer.copyright', {
+                  year: new Date().getFullYear(),
+                })}
+              </span>
               {(serverVersion || clientVersion) && (
                 <span className="text-muted-foreground/50 text-xs font-mono">
                   {[serverVersion, clientVersion].filter(Boolean).join(' · ')}

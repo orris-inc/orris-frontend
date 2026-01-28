@@ -535,14 +535,6 @@ export const CreateForwardAgentDialog: React.FC<
             </p>
             <div className="flex items-center gap-2">
               <Button
-                variant="outline"
-                onClick={handleClose}
-                disabled={isSubmitting}
-                className="h-9 px-4"
-              >
-                {t("common.actions.cancel")}
-              </Button>
-              <Button
                 onClick={handleSubmit}
                 disabled={!isFormValid || isSubmitting}
                 className="h-9 px-6"
@@ -550,6 +542,14 @@ export const CreateForwardAgentDialog: React.FC<
                 {isSubmitting
                   ? t("common.loading.creating")
                   : t("common.actions.create")}
+              </Button>
+              <Button
+                variant="outline"
+                onClick={handleClose}
+                disabled={isSubmitting}
+                className="h-9 px-4"
+              >
+                {t("common.actions.cancel")}
               </Button>
             </div>
           </div>

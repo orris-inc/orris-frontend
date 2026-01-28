@@ -78,10 +78,11 @@ export const EnhancedBreadcrumbs = () => {
     // Check if in admin path
     const isAdminPath = location.pathname.startsWith('/admin');
     const homePath = isAdminPath ? '/admin' : '/dashboard';
+    const homeLabel = isAdminPath ? t('nav.adminDashboard') : t('nav.dashboard');
 
     // Add home page
     items.push({
-      label: t('nav.home'),
+      label: homeLabel,
       path: homePath,
       isActive: location.pathname === homePath,
     });

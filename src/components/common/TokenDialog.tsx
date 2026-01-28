@@ -94,7 +94,10 @@ export const TokenDialog: React.FC<TokenDialogProps> = ({
             </p>
           )}
         </div>
-        <DialogFooter className="flex-col-reverse sm:flex-row gap-2">
+        <DialogFooter className="gap-2">
+          <Button onClick={handleCopy} className="w-full sm:w-auto">
+            {hasCopied ? t('common.token.copyAgain') : t('common.token.copy')}
+          </Button>
           <Button
             variant="outline"
             onClick={handleClose}
@@ -102,9 +105,6 @@ export const TokenDialog: React.FC<TokenDialogProps> = ({
             className="w-full sm:w-auto"
           >
             {t('common.actions.close')}
-          </Button>
-          <Button onClick={handleCopy} className="w-full sm:w-auto">
-            {hasCopied ? t('common.token.copyAgain') : t('common.token.copy')}
           </Button>
         </DialogFooter>
       </DialogContent>

@@ -28,7 +28,10 @@ export const ProfileSettingsPage = () => {
 
   if (!user) {
     return (
-      <DashboardLayout>
+      <DashboardLayout
+        pageTitle={t('profile.title')}
+        pageDescription={t('profile.tip')}
+      >
         <div className="container max-w-5xl px-4 py-6 sm:px-6 sm:py-8">
           <p className="text-lg text-muted-foreground">{t('profile.pleaseLogin')}</p>
         </div>
@@ -37,7 +40,10 @@ export const ProfileSettingsPage = () => {
   }
 
   return (
-    <DashboardLayout>
+    <DashboardLayout
+      pageTitle={t('profile.title')}
+      pageDescription={t('profile.tip')}
+    >
       <ProfileLayout>
         {(activeSection) => {
           const SectionComponent = sectionComponents[activeSection];

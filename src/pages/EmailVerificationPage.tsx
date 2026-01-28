@@ -6,7 +6,7 @@
 import { useEffect, useState } from 'react';
 import { useSearchParams, useNavigate } from 'react-router';
 import { useTranslation } from 'react-i18next';
-import { Loader2, CircleCheck, CircleAlert, Info } from 'lucide-react';
+import { ArrowLeft, Loader2, CircleCheck, CircleAlert, Info } from 'lucide-react';
 import { verifyEmail } from '@/api/auth';
 import { handleApiError } from '@/shared/lib/axios';
 import {
@@ -164,7 +164,11 @@ export const EmailVerificationPage = () => {
                   onClick={handleGoToLogin}
                   className={cn(getButtonClass('outline', 'lg'), "w-full")}
                 >
-                  {t('auth.emailVerification.backToLogin')}
+                  <span className="inline-flex items-center justify-center gap-2">
+                    <ArrowLeft className="size-4" />
+                    <span className="hidden sm:inline">{t('auth.emailVerification.backToLogin')}</span>
+                    <span className="sr-only sm:hidden">{t('auth.emailVerification.backToLogin')}</span>
+                  </span>
                 </button>
               </div>
             </div>

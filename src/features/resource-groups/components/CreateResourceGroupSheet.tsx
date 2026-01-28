@@ -492,21 +492,6 @@ export const CreateResourceGroupSheet: React.FC<CreateResourceGroupSheetProps> =
           <div className="flex gap-2 w-full">
             <button
               type="button"
-              onClick={() => handleOpenChange(false)}
-              disabled={loading}
-              className={cn(
-                'flex-1 flex items-center justify-center',
-                'h-11 rounded-lg',
-                'border border-border bg-background text-foreground',
-                'text-sm font-medium',
-                'active:opacity-80 transition-opacity',
-                'disabled:opacity-50'
-              )}
-            >
-              {t('common.actions.cancel')}
-            </button>
-            <button
-              type="button"
               onClick={handleSubmit}
               disabled={loading || !isFormValid}
               className={cn(
@@ -526,6 +511,21 @@ export const CreateResourceGroupSheet: React.FC<CreateResourceGroupSheetProps> =
               ) : (
                 t('resourceGroups.createResourceGroup')
               )}
+            </button>
+            <button
+              type="button"
+              onClick={() => handleOpenChange(false)}
+              disabled={loading}
+              className={cn(
+                'flex-1 flex items-center justify-center',
+                'h-11 rounded-lg',
+                'border border-border bg-background text-foreground',
+                'text-sm font-medium',
+                'active:opacity-80 transition-opacity',
+                'disabled:opacity-50'
+              )}
+            >
+              {t('common.actions.cancel')}
             </button>
           </div>
         </SheetFooter>

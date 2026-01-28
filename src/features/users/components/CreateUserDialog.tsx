@@ -391,11 +391,11 @@ export const CreateUserDialog: React.FC<CreateUserDialogProps> = ({
         </div>
 
         <DialogFooter>
-          <Button variant="outline" onClick={handleClose} disabled={loading}>
-            {t('common.actions.cancel')}
-          </Button>
           <Button onClick={handleSubmit} disabled={loading || !isFormValid}>
             {loading ? t('common.loading.creating') : t('admin.users.form.createUser')}
+          </Button>
+          <Button variant="outline" onClick={handleClose} disabled={loading}>
+            {t('common.actions.cancel')}
           </Button>
         </DialogFooter>
       </DialogContent>

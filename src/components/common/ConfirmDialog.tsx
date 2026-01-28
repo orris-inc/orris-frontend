@@ -69,7 +69,6 @@ export const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
           {description && <AlertDialogDescription>{description}</AlertDialogDescription>}
         </AlertDialogHeader>
         <AlertDialogFooter>
-          <AlertDialogCancel disabled={isLoading}>{resolvedCancelText}</AlertDialogCancel>
           <AlertDialogAction
             onClick={handleConfirm}
             disabled={isLoading}
@@ -77,6 +76,7 @@ export const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
           >
             {isLoading ? t('common.processing') : resolvedConfirmText}
           </AlertDialogAction>
+          <AlertDialogCancel disabled={isLoading}>{resolvedCancelText}</AlertDialogCancel>
         </AlertDialogFooter>
       </AlertDialogContent>
     </AlertDialog>

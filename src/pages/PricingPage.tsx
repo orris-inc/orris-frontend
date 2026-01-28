@@ -19,7 +19,6 @@ import { SubscriptionConfirmDialog } from '@/features/subscription-plans/compone
 import { usePublicPlans } from '@/features/subscription-plans/hooks/usePublicPlans';
 import { DashboardLayout } from '@/layouts/DashboardLayout';
 import {
-  PageHeroSection,
   SectionHeader,
   QuickActionLink,
 } from '@/components/common/bento';
@@ -50,15 +49,16 @@ export const PricingPage = () => {
   }, [isLoading, planStats.totalPlans, t]);
 
   return (
-    <DashboardLayout>
+    <DashboardLayout
+      pageTitle={t('pricing.title')}
+      pageDescription={
+        <div className="space-y-1">
+          <div>{t('pricing.subtitle')}</div>
+          {heroStatusMessage && <div>{heroStatusMessage}</div>}
+        </div>
+      }
+    >
       <div className="space-y-6 pb-safe">
-        {/* Hero Section */}
-        <PageHeroSection
-          title={t('pricing.title')}
-          subtitle={t('pricing.subtitle')}
-          statusMessage={heroStatusMessage}
-          icon={Sparkles}
-        />
 
         {/* Features Highlight */}
         <section className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">

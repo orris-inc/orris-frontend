@@ -256,18 +256,6 @@ export const AgentBatchUpdateSheet = ({
             <div className="flex gap-2">
               <button
                 type="button"
-                onClick={handleClose}
-                className={cn(
-                  'flex-1 h-11 rounded-lg',
-                  'text-sm font-medium',
-                  'border border-border bg-background',
-                  'active:opacity-80 transition-opacity'
-                )}
-              >
-                {t('common.actions.cancel')}
-              </button>
-              <button
-                type="button"
                 onClick={handleUpdate}
                 disabled={updateCount === 0 || isUpdating}
                 className={cn(
@@ -290,6 +278,18 @@ export const AgentBatchUpdateSheet = ({
                     {t('admin.forwardAgents.batchUpdateDialog.updateButton', { count: updateCount })}
                   </>
                 )}
+              </button>
+              <button
+                type="button"
+                onClick={handleClose}
+                className={cn(
+                  'flex-1 h-11 rounded-lg',
+                  'text-sm font-medium',
+                  'border border-border bg-background',
+                  'active:opacity-80 transition-opacity'
+                )}
+              >
+                {t('common.actions.cancel')}
               </button>
             </div>
           ) : (

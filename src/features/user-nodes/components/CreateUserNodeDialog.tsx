@@ -1266,11 +1266,11 @@ export const CreateUserNodeDialog: React.FC<CreateUserNodeDialogProps> = ({
         </div>
 
         <DialogFooter className="flex-shrink-0">
-          <Button variant="outline" onClick={handleClose} disabled={loading}>
-            {t('common.actions.cancel')}
-          </Button>
           <Button onClick={handleSubmit} disabled={loading || !formData.name || !formData.agentPort}>
             {loading ? t('userNodes.create.creating') : t('common.actions.create')}
+          </Button>
+          <Button variant="outline" onClick={handleClose} disabled={loading}>
+            {t('common.actions.cancel')}
           </Button>
         </DialogFooter>
       </DialogContent>

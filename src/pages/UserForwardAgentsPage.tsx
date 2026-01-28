@@ -33,23 +33,22 @@ export const UserForwardAgentsPage = () => {
   };
 
   return (
-    <DashboardLayout>
+    <DashboardLayout
+      pageTitle={t('userForwardAgents.title')}
+      pageDescription={t('userForwardAgents.description')}
+      pageActions={
+        <Input
+          placeholder={t('userForwardAgents.searchPlaceholder')}
+          value={searchName}
+          onChange={(e) => handleSearchChange(e.target.value)}
+          className="w-full sm:w-72 h-9 text-sm"
+        />
+      }
+    >
       <div className="space-y-4 sm:space-y-6 pb-safe">
-        {/* Page title */}
+        {/* Search summary */}
         <div>
-          <h1 className="text-xl sm:text-2xl font-semibold text-foreground">{t('userForwardAgents.title')}</h1>
-          <p className="text-sm sm:text-base text-muted-foreground">{t('userForwardAgents.description')}</p>
-        </div>
-
-        {/* Search bar */}
-        <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4">
-          <Input
-            placeholder={t('userForwardAgents.searchPlaceholder')}
-            value={searchName}
-            onChange={(e) => handleSearchChange(e.target.value)}
-            className="w-full sm:max-w-xs"
-          />
-          <p className="text-sm text-muted-foreground">
+          <p className="text-xs text-muted-foreground">
             {t('userForwardAgents.totalNodes', { count: pagination.total })}
           </p>
         </div>
@@ -77,21 +76,21 @@ export const UserForwardAgentsPage = () => {
         {pagination.totalPages > 1 && (
           <div className="flex items-center justify-center gap-3">
             <button
-              onClick={() => setPage(p => Math.max(1, p - 1))}
-              disabled={page === 1}
-              className="px-4 py-2 text-sm border border-border rounded-lg disabled:opacity-50 touch-target transition-colors hover:bg-muted/50 active:bg-muted"
-            >
-              {t('common.pagination.previous')}
-            </button>
-            <span className="text-sm text-muted-foreground min-w-[60px] text-center">
-              {page} / {pagination.totalPages}
-            </span>
-            <button
               onClick={() => setPage(p => Math.min(pagination.totalPages, p + 1))}
               disabled={page === pagination.totalPages}
               className="px-4 py-2 text-sm border border-border rounded-lg disabled:opacity-50 touch-target transition-colors hover:bg-muted/50 active:bg-muted"
             >
               {t('common.pagination.next')}
+            </button>
+            <span className="text-sm text-muted-foreground min-w-[60px] text-center">
+              {page} / {pagination.totalPages}
+            </span>
+            <button
+              onClick={() => setPage(p => Math.max(1, p - 1))}
+              disabled={page === 1}
+              className="px-4 py-2 text-sm border border-border rounded-lg disabled:opacity-50 touch-target transition-colors hover:bg-muted/50 active:bg-muted"
+            >
+              {t('common.pagination.previous')}
             </button>
           </div>
         )}

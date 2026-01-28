@@ -34,16 +34,6 @@ export const ProfileLayout = ({ children }: ProfileLayoutProps) => {
 
   return (
     <div className="space-y-6 pb-safe">
-      {/* Page header */}
-      <div>
-        <h1 className="text-2xl font-semibold text-foreground">
-          {t('profile.title')}
-        </h1>
-        <p className="mt-1 text-sm text-muted-foreground">
-          {t('profile.tip')}
-        </p>
-      </div>
-
       {/* Mobile dropdown navigation */}
       <div className="lg:hidden">
         <Select.Root value={activeSection} onValueChange={(value) => setActiveSection(value as ProfileSection)}>

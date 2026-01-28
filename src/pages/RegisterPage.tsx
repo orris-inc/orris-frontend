@@ -274,16 +274,6 @@ export const RegisterPage = () => {
 
                     <div className="flex gap-3">
                       <button
-                        type="button"
-                        onClick={() => {
-                          setShowPasskeyForm(false);
-                          clearPasskeyError();
-                        }}
-                        className={cn(getButtonClass('outline', 'lg'), 'flex-1')}
-                      >
-                        {t('common.actions.cancel')}
-                      </button>
-                      <button
                         type="submit"
                         disabled={isPasskeyLoading}
                         className={cn(getButtonClass('default', 'lg'), 'flex-1')}
@@ -299,6 +289,16 @@ export const RegisterPage = () => {
                             {t('auth.register.createPasskey')}
                           </>
                         )}
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setShowPasskeyForm(false);
+                          clearPasskeyError();
+                        }}
+                        className={cn(getButtonClass('outline', 'lg'), 'flex-1')}
+                      >
+                        {t('common.actions.cancel')}
                       </button>
                     </div>
                   </form>

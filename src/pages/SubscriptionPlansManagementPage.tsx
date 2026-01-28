@@ -222,14 +222,6 @@ export const SubscriptionPlansManagementPage = () => {
           ]}
           action={
             <div className="flex items-center gap-2">
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button variant="ghost" size="icon" onClick={handleRefresh}>
-                    <RefreshCw key={refreshKey} className="size-4" />
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent>{t('admin.plans.refreshList')}</TooltipContent>
-              </Tooltip>
               <Button
                 onClick={() => {
                   setDuplicatePlan(null);
@@ -239,6 +231,14 @@ export const SubscriptionPlansManagementPage = () => {
                 <Plus className="size-4 mr-2" />
                 {t('admin.plans.createPlan')}
               </Button>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button variant="ghost" size="icon" onClick={handleRefresh}>
+                    <RefreshCw key={refreshKey} className="size-4" />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>{t('admin.plans.refreshList')}</TooltipContent>
+              </Tooltip>
             </div>
           }
         />

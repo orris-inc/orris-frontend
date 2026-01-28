@@ -94,10 +94,12 @@ export const ForgotPasswordPage = () => {
 
               <RouterLink
                 to="/login"
-                className="inline-flex items-center justify-center gap-2 text-sm text-primary underline-offset-4 hover:underline"
+                className="inline-flex items-center justify-center gap-1.5 text-sm text-primary underline-offset-4 hover:underline"
+                aria-label={t('auth.forgotPassword.backToLogin')}
               >
                 <ArrowLeft className="size-4" />
-                {t('auth.forgotPassword.backToLogin')}
+                <span className="hidden sm:inline">{t('auth.forgotPassword.backToLogin')}</span>
+                <span className="sr-only sm:hidden">{t('auth.forgotPassword.backToLogin')}</span>
               </RouterLink>
             </div>
           </div>
@@ -151,10 +153,12 @@ export const ForgotPasswordPage = () => {
             <div className="text-center">
               <RouterLink
                 to="/login"
-                className="inline-flex items-center gap-2 text-sm text-primary underline-offset-4 hover:underline"
+                className="inline-flex items-center gap-1.5 text-sm text-primary underline-offset-4 hover:underline"
+                aria-label={t('auth.forgotPassword.backToLogin')}
               >
                 <ArrowLeft className="size-4" />
-                {t('auth.forgotPassword.backToLogin')}
+                <span className="hidden sm:inline">{t('auth.forgotPassword.backToLogin')}</span>
+                <span className="sr-only sm:hidden">{t('auth.forgotPassword.backToLogin')}</span>
               </RouterLink>
             </div>
           </div>

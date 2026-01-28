@@ -541,11 +541,11 @@ export const EditSubscriptionForwardRuleDialog: React.FC<EditSubscriptionForward
         </div>
 
         <DialogFooter className="flex-shrink-0 gap-3">
-          <Button variant="outline" onClick={handleClose} disabled={isUpdating}>
-            {t('common.actions.cancel')}
-          </Button>
           <Button onClick={handleSubmit} disabled={!isFormValid() || !hasChanges || isUpdating}>
             {isUpdating ? t('common.loading.saving') : t('common.actions.save')}
+          </Button>
+          <Button variant="outline" onClick={handleClose} disabled={isUpdating}>
+            {t('common.actions.cancel')}
           </Button>
         </DialogFooter>
       </DialogContent>

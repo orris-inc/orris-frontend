@@ -8,7 +8,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { Link as RouterLink, useSearchParams, useNavigate } from 'react-router';
 import { useState, useMemo } from 'react';
-import { Eye, EyeOff, Loader2, CircleAlert } from 'lucide-react';
+import { ArrowLeft, Eye, EyeOff, Loader2, CircleAlert } from 'lucide-react';
 import * as LabelPrimitive from '@radix-ui/react-label';
 import { useTranslation } from 'react-i18next';
 import * as authApi from '@/api/auth';
@@ -205,9 +205,12 @@ export const ResetPasswordPage = () => {
             <div className="text-center text-sm text-muted-foreground">
               <RouterLink
                 to="/login"
-                className="text-primary underline-offset-4 hover:underline"
+                className="inline-flex items-center gap-1.5 text-sm text-primary underline-offset-4 hover:underline"
+                aria-label={t('auth.resetPassword.backToLogin')}
               >
-                {t('auth.resetPassword.backToLogin')}
+                <ArrowLeft className="size-4" />
+                <span className="hidden sm:inline">{t('auth.resetPassword.backToLogin')}</span>
+                <span className="sr-only sm:hidden">{t('auth.resetPassword.backToLogin')}</span>
               </RouterLink>
             </div>
           </div>

@@ -257,9 +257,6 @@ export const AddMembersDialog: React.FC<AddMembersDialogProps> = ({
         <Separator />
 
         <DialogFooter>
-          <Button variant="outline" onClick={handleClose} disabled={isSubmitting}>
-            {t('common.actions.cancel')}
-          </Button>
           <Button
             onClick={handleSubmit}
             disabled={selectedIds.size === 0 || isSubmitting}
@@ -275,6 +272,9 @@ export const AddMembersDialog: React.FC<AddMembersDialogProps> = ({
                 {t('resourceGroups.addMembers.confirmAdd', { count: selectedIds.size })}
               </>
             )}
+          </Button>
+          <Button variant="outline" onClick={handleClose} disabled={isSubmitting}>
+            {t('common.actions.cancel')}
           </Button>
         </DialogFooter>
       </DialogContent>

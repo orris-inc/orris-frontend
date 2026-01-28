@@ -322,14 +322,6 @@ export const EditForwardAgentSheet: React.FC<EditForwardAgentSheetProps> = ({
         <SheetFooter>
           <div className="flex gap-3 w-full">
             <Button
-              variant="outline"
-              onClick={handleClose}
-              disabled={loading}
-              className="flex-1 min-h-[44px]"
-            >
-              {t('common.actions.cancel')}
-            </Button>
-            <Button
               onClick={handleSubmit}
               disabled={loading}
               className="flex-1 min-h-[44px]"
@@ -342,6 +334,14 @@ export const EditForwardAgentSheet: React.FC<EditForwardAgentSheetProps> = ({
               ) : (
                 t('common.actions.save')
               )}
+            </Button>
+            <Button
+              variant="outline"
+              onClick={handleClose}
+              disabled={loading}
+              className="flex-1 min-h-[44px]"
+            >
+              {t('common.actions.cancel')}
             </Button>
           </div>
         </SheetFooter>

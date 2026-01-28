@@ -160,12 +160,7 @@ function PasskeyItem({ passkey, isDeleting, onDelete }: PasskeyItemProps) {
             <AlertDialog.Description className="text-sm text-muted-foreground">
               {t('profile.security.passkey.deleteConfirmDesc', { name: passkey.deviceName })}
             </AlertDialog.Description>
-            <div className="flex flex-col-reverse sm:flex-row sm:justify-end sm:space-x-2">
-              <AlertDialog.Cancel asChild>
-                <button type="button" className={`${buttonSecondaryStyles} mt-2 sm:mt-0`}>
-                  {t('common.actions.cancel')}
-                </button>
-              </AlertDialog.Cancel>
+            <div className="flex flex-col sm:flex-row sm:justify-end gap-2">
               <AlertDialog.Action asChild>
                 <button
                   type="button"
@@ -175,6 +170,11 @@ function PasskeyItem({ passkey, isDeleting, onDelete }: PasskeyItemProps) {
                   {t('common.actions.delete')}
                 </button>
               </AlertDialog.Action>
+              <AlertDialog.Cancel asChild>
+                <button type="button" className={buttonSecondaryStyles}>
+                  {t('common.actions.cancel')}
+                </button>
+              </AlertDialog.Cancel>
             </div>
           </AlertDialog.Content>
         </AlertDialog.Portal>

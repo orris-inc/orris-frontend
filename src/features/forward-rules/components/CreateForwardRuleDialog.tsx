@@ -1659,11 +1659,11 @@ export const CreateForwardRuleDialog: React.FC<CreateForwardRuleDialogProps> = (
 
         <DialogFooter className="flex-shrink-0 px-5 py-4 border-t border-border bg-muted/30 sm:px-6">
           <div className="flex gap-3 justify-end w-full">
-            <Button variant="outline" onClick={handleClose}>
-              {t("common.actions.cancel")}
-            </Button>
             <Button onClick={handleSubmit} disabled={!isFormValid()}>
               {t("common.actions.create")}
+            </Button>
+            <Button variant="outline" onClick={handleClose}>
+              {t("common.actions.cancel")}
             </Button>
           </div>
         </DialogFooter>

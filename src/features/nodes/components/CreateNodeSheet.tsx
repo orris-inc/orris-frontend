@@ -1636,21 +1636,6 @@ export const CreateNodeSheet: React.FC<CreateNodeSheetProps> = ({
           <div className="flex gap-2 w-full">
             <button
               type="button"
-              onClick={handleClose}
-              disabled={loading}
-              className={cn(
-                'flex-1 flex items-center justify-center',
-                'h-11 rounded-lg',
-                'border border-border bg-background text-foreground',
-                'text-sm font-medium',
-                'active:opacity-80 transition-opacity',
-                'disabled:opacity-50'
-              )}
-            >
-              {t('common.actions.cancel')}
-            </button>
-            <button
-              type="button"
               onClick={handleSubmit}
               disabled={loading || !isFormValid}
               className={cn(
@@ -1670,6 +1655,21 @@ export const CreateNodeSheet: React.FC<CreateNodeSheetProps> = ({
               ) : (
                 initialData ? t('admin.nodes.form.createCopy') : t('admin.nodes.form.createNode')
               )}
+            </button>
+            <button
+              type="button"
+              onClick={handleClose}
+              disabled={loading}
+              className={cn(
+                'flex-1 flex items-center justify-center',
+                'h-11 rounded-lg',
+                'border border-border bg-background text-foreground',
+                'text-sm font-medium',
+                'active:opacity-80 transition-opacity',
+                'disabled:opacity-50'
+              )}
+            >
+              {t('common.actions.cancel')}
             </button>
           </div>
         </SheetFooter>

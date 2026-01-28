@@ -318,6 +318,15 @@ export const NodeManagementPage = () => {
             ]}
             action={
               <div className="flex items-center gap-2">
+                <Button
+                  onClick={() => {
+                    setCopyNodeData(undefined);
+                    setCreateDialogOpen(true);
+                  }}
+                >
+                  <Plus className="size-4 mr-2" />
+                  {t('admin.nodes.addNode')}
+                </Button>
                 {/* Batch actions */}
                 {stats.online > 0 && (
                   <Button variant="outline" size="sm" onClick={() => setBroadcastURLDialogOpen(true)}>
@@ -342,15 +351,6 @@ export const NodeManagementPage = () => {
                     className="size-4 animate-spin-once"
                   />
                   <span className="sr-only">{t('common.actions.refresh')}</span>
-                </Button>
-                <Button
-                  onClick={() => {
-                    setCopyNodeData(undefined);
-                    setCreateDialogOpen(true);
-                  }}
-                >
-                  <Plus className="size-4 mr-2" />
-                  {t('admin.nodes.addNode')}
                 </Button>
               </div>
             }

@@ -94,15 +94,15 @@ export const CancelSubscriptionDialog: React.FC<CancelSubscriptionDialogProps> =
         </div>
 
         <DialogFooter>
-          <Button variant="outline" onClick={handleClose} disabled={loading}>
-            {t('common.actions.back')}
-          </Button>
           <Button
             variant="destructive"
             onClick={handleSubmit}
             disabled={loading || !reason.trim()}
           >
             {loading ? t('common.processing') : t('messages.confirmCancel')}
+          </Button>
+          <Button variant="outline" onClick={handleClose} disabled={loading}>
+            {t('common.actions.back')}
           </Button>
         </DialogFooter>
       </DialogContent>

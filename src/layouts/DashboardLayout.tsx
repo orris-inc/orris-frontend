@@ -30,9 +30,19 @@ const MobileDrawer = lazy(() =>
 
 interface DashboardLayoutProps {
   children: React.ReactNode;
+  pageTitle?: string;
+  pageDescription?: React.ReactNode;
+  pageActions?: React.ReactNode;
+  inlineActionsOnMobile?: boolean;
 }
 
-export const DashboardLayout = ({ children }: DashboardLayoutProps) => {
+export const DashboardLayout = ({
+  children,
+  pageTitle,
+  pageDescription,
+  pageActions,
+  inlineActionsOnMobile = false,
+}: DashboardLayoutProps) => {
   const navigate = useNavigate();
   const { user } = useAuthStore();
   const { logout } = useAuth();
@@ -66,47 +76,22 @@ export const DashboardLayout = ({ children }: DashboardLayoutProps) => {
       {/* iOS-style Navigation Bar */}
       <header
         className={cn(
-          'z-40 w-full border-b',
-          // Mobile: fixed positioning for reliable header pinning (CSS-based, no JS hydration delay)
-          // Desktop: sticky is fine since no overflow issues
-          'fixed top-0 left-0 right-0 md:sticky md:left-auto md:right-auto',
-          // iOS glass background for mobile, standard background for desktop
-          'glass-elevated border-border/50 pt-[env(safe-area-inset-top)]',
-          'md:pt-0 md:border-border md:bg-background/95 md:backdrop-blur md:supports-[backdrop-filter]:bg-background/60'
+          'z-40 w-full border-b border-border/60 bg-background',
+          // Standard sticky header across breakpoints
+          'sticky top-0',
+          // Safe-area padding for mobile
+          'pt-[env(safe-area-inset-top)]'
         )}
       >
         <div
           className={cn(
             'mx-auto flex items-center',
-            // Mobile: iOS standard height 44px
-            'h-11 px-2',
-            // Desktop: 56px height with container
-            'md:max-w-6xl md:h-14 md:px-4 lg:px-6'
+            'h-16 w-full',
+            'px-4 sm:px-6 lg:px-8',
+            'max-w-7xl'
           )}
         >
-          {/* ===== Mobile Layout ===== */}
-          {/* Left section - menu button (mobile only) */}
-          <div className="w-11 flex-shrink-0 md:hidden">
-            {shouldShowNavigation && (
-              <button
-                className={cn(
-                  'flex items-center justify-center',
-                  'size-11',
-                  'rounded-full',
-                  'text-primary',
-                  'active:bg-foreground/5',
-                  'transition-colors motion-reduce:transition-none'
-                )}
-                onClick={() => setMobileDrawerOpen(true)}
-                aria-label="Open menu"
-              >
-                <Menu className="size-[22px]" strokeWidth={2} />
-              </button>
-            )}
-          </div>
-
-          {/* Center section - brand logo (mobile: centered, desktop: left-aligned) */}
-          <div className="flex-1 flex justify-center md:flex-none md:mr-4">
+          <div className="flex items-center gap-2">
             <ViewTransitionLink to="/" className="flex items-center gap-2">
               <div className="size-8 rounded-lg bg-primary flex items-center justify-center">
                 <Globe className="size-5 text-primary-foreground" />
@@ -115,47 +100,71 @@ export const DashboardLayout = ({ children }: DashboardLayoutProps) => {
             </ViewTransitionLink>
           </div>
 
-          {/* Right section - user menu (mobile only) */}
-          <div className="w-11 flex-shrink-0 flex justify-end md:hidden">
+          {/* Desktop navigation links */}
+          {shouldShowNavigation && (
+            <div className="hidden md:ml-8 md:block">
+              <DesktopNav navigationItems={visibleNavigationItems} />
+            </div>
+          )}
+
+          {/* Right section - actions */}
+          <div className="ml-auto flex items-center gap-2 md:gap-4">
+            {/* Mobile actions */}
+            <div className="flex items-center gap-1 md:hidden">
+              {shouldShowNavigation && (
+                <button
+                  className={cn(
+                    'flex items-center justify-center',
+                    'size-10',
+                    'rounded-full',
+                    'text-primary',
+                    'hover:bg-foreground/5',
+                    'active:bg-foreground/10',
+                    'transition-colors motion-reduce:transition-none'
+                  )}
+                  onClick={() => setMobileDrawerOpen(true)}
+                  aria-label="Open menu"
+                >
+                  <Menu className="size-[22px]" strokeWidth={2} />
+                </button>
+              )}
             <UserMenu
               user={user}
               showAdminSwitch={userRole === 'admin'}
+              onHomeClick={() => navigate('/')}
               onProfileClick={() => navigate('/dashboard/profile')}
               onNotificationsClick={() => navigate('/dashboard/notifications')}
               onAdminClick={handleGoToAdmin}
               onLogout={handleLogout}
             />
-          </div>
-
-          {/* ===== Desktop Layout ===== */}
-          {/* Desktop navigation links */}
-          <div className="hidden md:block">
-            {shouldShowNavigation && (
-              <DesktopNav navigationItems={visibleNavigationItems} />
-            )}
-          </div>
-
-          {/* Spacer */}
-          <div className="hidden md:block md:flex-1" />
-
-          {/* Theme toggle, language switcher and user menu (desktop) */}
-          <div className="hidden md:flex md:items-center md:gap-3">
-            <LanguageSwitcher />
-            <ThemeToggle />
-
-            <div className="text-right">
-              <p className="text-sm font-medium leading-none">{user?.displayName}</p>
-              <p className="text-xs text-muted-foreground">{user?.email}</p>
             </div>
 
-            <UserMenu
-              user={user}
-              showAdminSwitch={userRole === 'admin'}
-              onProfileClick={() => navigate('/dashboard/profile')}
-              onNotificationsClick={() => navigate('/dashboard/notifications')}
-              onAdminClick={handleGoToAdmin}
-              onLogout={handleLogout}
-            />
+            {/* Desktop actions */}
+            <div className="hidden md:flex md:items-center md:gap-4">
+              <div className="flex items-center gap-2">
+                <LanguageSwitcher />
+                <ThemeToggle />
+              </div>
+
+              <div className="h-6 w-px bg-border/60" />
+
+              <div className="flex items-center gap-3">
+                <div className="text-left">
+                  <p className="text-sm font-medium leading-none">{user?.displayName}</p>
+                  <p className="text-xs text-muted-foreground">{user?.email}</p>
+                </div>
+
+              <UserMenu
+                user={user}
+                showAdminSwitch={userRole === 'admin'}
+                onHomeClick={() => navigate('/')}
+                onProfileClick={() => navigate('/dashboard/profile')}
+                onNotificationsClick={() => navigate('/dashboard/notifications')}
+                onAdminClick={handleGoToAdmin}
+                onLogout={handleLogout}
+              />
+              </div>
+            </div>
           </div>
         </div>
       </header>
@@ -182,15 +191,51 @@ export const DashboardLayout = ({ children }: DashboardLayoutProps) => {
       <main
         className={cn(
           "flex-1 overflow-x-hidden pb-safe",
-          // Mobile: add top padding to account for fixed header (44px + safe-area)
-          // CSS-based responsive padding, no JS dependency
-          "py-4 pt-[calc(2.75rem+env(safe-area-inset-top)+1rem)] md:pt-4 sm:py-6"
+          // Standard page spacing
+          "py-6"
         )}
         data-view-transition="content"
       >
-        <div className="mx-auto px-4 sm:px-6 max-w-6xl w-full">
+        <div className="mx-auto px-4 sm:px-6 lg:px-8 max-w-7xl w-full">
           {/* Enhanced breadcrumb navigation - only show for admin side (not in DashboardLayout unless configured) */}
           {shouldShowBreadcrumbs && <EnhancedBreadcrumbs />}
+
+          {(pageTitle || pageDescription || pageActions) && (
+            <div className="mb-5 border-b border-border/60 pb-3">
+              <div
+                className={cn(
+                  inlineActionsOnMobile
+                    ? 'flex items-center justify-between gap-3'
+                    : 'sm:flex sm:items-end sm:justify-between'
+                )}
+              >
+                <div className="space-y-1 min-w-0">
+                  {pageTitle && (
+                    <h1 className="text-xl sm:text-2xl font-semibold text-foreground">
+                      {pageTitle}
+                    </h1>
+                  )}
+                  {pageDescription && (
+                    <div className="text-xs text-muted-foreground leading-snug space-y-1 max-w-2xl">
+                      {pageDescription}
+                    </div>
+                  )}
+                </div>
+                {pageActions && (
+                  <div
+                    className={cn(
+                      inlineActionsOnMobile
+                        ? 'flex items-center justify-end gap-2'
+                        : 'mt-3 flex flex-wrap items-center gap-2 sm:mt-0 sm:ml-4',
+                      '[&>a]:min-w-[96px] [&>button]:min-w-[96px] [&>a]:justify-center [&>button]:justify-center'
+                    )}
+                  >
+                    {pageActions}
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
 
           {/* Page content */}
           <div className="min-w-0">

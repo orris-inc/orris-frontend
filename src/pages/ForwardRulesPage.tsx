@@ -552,6 +552,15 @@ export const ForwardRulesPage = () => {
           ]}
           action={
             <div className="flex items-center gap-2">
+              <Button
+                onClick={() => {
+                  setCopyRuleData(undefined);
+                  setCreateDialogOpen(true);
+                }}
+              >
+                <Plus className="size-4 mr-2" />
+                {t('admin.forwardRules.add')}
+              </Button>
               <Tooltip>
                 <TooltipTrigger asChild>
                   <Button
@@ -579,15 +588,6 @@ export const ForwardRulesPage = () => {
                 </TooltipTrigger>
                 <TooltipContent>{t('admin.forwardRules.refreshList')}</TooltipContent>
               </Tooltip>
-              <Button
-                onClick={() => {
-                  setCopyRuleData(undefined);
-                  setCreateDialogOpen(true);
-                }}
-              >
-                <Plus className="size-4 mr-2" />
-                {t('admin.forwardRules.add')}
-              </Button>
             </div>
           }
         />
@@ -637,22 +637,6 @@ export const ForwardRulesPage = () => {
                 </SelectContent>
               </Select>
 
-              {/* Reset filters button */}
-              {hasActiveFilters && (
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      onClick={handleResetFilters}
-                    >
-                      <FilterX className="size-4" />
-                    </Button>
-                  </TooltipTrigger>
-                  <TooltipContent>{t('admin.forwardRules.resetFilters')}</TooltipContent>
-                </Tooltip>
-              )}
-
               {/* Vertical divider */}
               <div className="h-6 w-px bg-border" />
 
@@ -696,6 +680,22 @@ export const ForwardRulesPage = () => {
                   {dragSortEnabled ? t('admin.forwardRules.disableDragSort') : t('admin.forwardRules.enableDragSort')}
                 </TooltipContent>
               </Tooltip>
+
+              {/* Reset filters button */}
+              {hasActiveFilters && (
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={handleResetFilters}
+                    >
+                      <FilterX className="size-4" />
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>{t('admin.forwardRules.resetFilters')}</TooltipContent>
+                </Tooltip>
+              )}
             </>
           }
         />

@@ -416,9 +416,6 @@ export const BroadcastURLDialog: React.FC<BroadcastURLDialogProps> = ({
           {!showResult && !showConfirm ? (
             // Step 1: Input form buttons
             <>
-              <Button variant="outline" onClick={handleClose}>
-                {t('common.actions.cancel')}
-              </Button>
               <Button
                 onClick={handleProceedToConfirm}
                 disabled={!isTargetAvailable}
@@ -435,14 +432,13 @@ export const BroadcastURLDialog: React.FC<BroadcastURLDialogProps> = ({
                   </>
                 )}
               </Button>
+              <Button variant="outline" onClick={handleClose}>
+                {t('common.actions.cancel')}
+              </Button>
             </>
           ) : showConfirm && !showResult ? (
             // Step 2: Confirmation buttons
             <>
-              <Button variant="outline" onClick={handleBackToInput}>
-                <ArrowLeft className="size-4 mr-2" />
-                {t('admin.forwardAgents.broadcast.backToEdit')}
-              </Button>
               <Button
                 variant="destructive"
                 onClick={handleConfirmedSubmit}
@@ -460,6 +456,10 @@ export const BroadcastURLDialog: React.FC<BroadcastURLDialogProps> = ({
                     {t('admin.forwardAgents.broadcast.confirmNotify')}
                   </>
                 )}
+              </Button>
+              <Button variant="outline" onClick={handleBackToInput}>
+                <ArrowLeft className="size-4 mr-2" />
+                {t('admin.forwardAgents.broadcast.backToEdit')}
               </Button>
             </>
           ) : (

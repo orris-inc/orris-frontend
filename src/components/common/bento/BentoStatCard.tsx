@@ -1,7 +1,9 @@
 /**
  * Bento Stat Card Component
  * Reusable statistics card for Bento Grid layout
- * Supports both large (span-2) and small card variants
+ *
+ * Mobile-first: compact padding/font on mobile, larger on sm+
+ * Supports large (col-span-2) and small card variants
  */
 
 import type { ReactNode } from 'react';
@@ -67,6 +69,7 @@ const variantStyles: Record<Exclude<ColorVariant, 'custom'>, { bg: string; ring:
 /**
  * Stat card for displaying metrics in Bento Grid layout
  * Large cards span 2 columns and have bigger padding/font
+ * Mobile: compact p-3, sm+: p-4/p-5
  */
 export const BentoStatCard = ({
   icon: Icon,
@@ -87,16 +90,17 @@ export const BentoStatCard = ({
     return (
       <div
         className={cn(
-          '@container p-4 @sm:p-5 rounded-xl bg-card border',
-          large && 'col-span-2',
+          // Mobile: compact, sm+: larger padding
+          'p-3 sm:p-4 rounded-xl bg-card border',
+          large && 'col-span-2 sm:p-5',
           className
         )}
       >
-        <div className={cn('flex items-center mb-3', large ? 'gap-3' : 'gap-2')}>
-          <Skeleton className={cn('rounded-lg', large ? 'size-9' : 'size-7')} />
-          <Skeleton className="h-4 w-16" />
+        <div className={cn('flex items-center mb-2 sm:mb-3', large ? 'gap-2 sm:gap-3' : 'gap-2')}>
+          <Skeleton className={cn('rounded-lg', large ? 'size-7 sm:size-9' : 'size-6 sm:size-7')} />
+          <Skeleton className="h-3 sm:h-4 w-12 sm:w-16" />
         </div>
-        <Skeleton className={cn('w-20 mb-1', large ? 'h-8' : 'h-6')} />
+        <Skeleton className={cn('w-16 sm:w-20 mb-1', large ? 'h-6 sm:h-8' : 'h-5 sm:h-6')} />
         {children && <Skeleton className="h-2 w-full mt-2" />}
       </div>
     );
@@ -105,45 +109,60 @@ export const BentoStatCard = ({
   return (
     <div
       className={cn(
-        '@container p-4 @sm:p-5 rounded-xl bg-card border',
+        // Mobile: compact p-3, sm+: p-4, large cards get p-5 on sm+
+        'p-3 sm:p-4 rounded-xl bg-card border',
         'transition-shadow hover:shadow-md',
-        large && 'col-span-2',
+        large && 'col-span-2 sm:p-5',
         className
       )}
     >
       {/* Header with icon */}
-      <div className={cn('flex items-center mb-3', large ? 'gap-3' : 'gap-2')}>
+      <div className={cn('flex items-center mb-2 sm:mb-3', large ? 'gap-2 sm:gap-3' : 'gap-2')}>
         <div
           className={cn(
             'rounded-lg ring-1',
-            large ? 'p-2' : 'p-1.5',
+            // Mobile: smaller icon container
+            large ? 'p-1.5 sm:p-2' : 'p-1 sm:p-1.5',
             styles ? cn(styles.bg, styles.ring) : iconBgClass
           )}
         >
           <Icon
             className={cn(
-              large ? 'size-4 @sm:size-5' : 'size-4',
+              // Mobile: smaller icons
+              large ? 'size-3.5 sm:size-4 lg:size-5' : 'size-3 sm:size-4',
               styles ? styles.text : iconColorClass
             )}
           />
         </div>
-        <span className={cn('text-muted-foreground', large ? 'text-sm' : 'text-xs @sm:text-sm')}>
+        <span
+          className={cn(
+            'text-muted-foreground',
+            // Mobile: text-xs, sm+: text-sm
+            large ? 'text-xs sm:text-sm' : 'text-[10px] sm:text-xs lg:text-sm'
+          )}
+        >
           {label}
         </span>
       </div>
 
       {/* Value */}
-      <div className="flex items-baseline gap-1">
+      <div className="flex items-baseline gap-0.5 sm:gap-1">
         <span
           className={cn(
             'font-semibold tabular-nums text-foreground',
-            large ? 'text-2xl @sm:text-3xl font-bold' : 'text-xl @sm:text-2xl'
+            // Mobile: smaller fonts
+            large ? 'text-xl sm:text-2xl lg:text-3xl font-bold' : 'text-lg sm:text-xl lg:text-2xl'
           )}
         >
           {value}
         </span>
         {unit && (
-          <span className={cn('text-muted-foreground', large ? 'text-lg' : 'text-sm')}>
+          <span
+            className={cn(
+              'text-muted-foreground',
+              large ? 'text-sm sm:text-base lg:text-lg' : 'text-xs sm:text-sm'
+            )}
+          >
             {unit}
           </span>
         )}

@@ -10,6 +10,7 @@ import * as DropdownMenuPrimitive from '@radix-ui/react-dropdown-menu';
 import * as AvatarPrimitive from '@radix-ui/react-avatar';
 import {
   User as UserIcon,
+  Home,
   Bell,
   Shield,
   LogOut,
@@ -27,6 +28,7 @@ interface UserMenuProps {
   showAdminSwitch?: boolean;
   showUserSwitch?: boolean;
   onProfileClick: () => void;
+  onHomeClick?: () => void;
   onNotificationsClick?: () => void;
   onAdminClick?: () => void;
   onUserClick?: () => void;
@@ -38,6 +40,7 @@ export const UserMenu = ({
   showAdminSwitch = false,
   showUserSwitch = false,
   onProfileClick,
+  onHomeClick,
   onNotificationsClick,
   onAdminClick,
   onUserClick,
@@ -127,6 +130,16 @@ export const UserMenu = ({
                 label={t('nav.notifications')}
                 onClick={onNotificationsClick}
               />
+            )}
+            {onHomeClick && (
+              <>
+                <DropdownMenuPrimitive.Separator className="my-1 h-px bg-border/50" />
+                <MenuItem
+                  icon={Home}
+                  label={t('nav.home')}
+                  onClick={onHomeClick}
+                />
+              </>
             )}
 
             {/* Admin/User Switch */}

@@ -57,12 +57,12 @@ export const navigationConfig: readonly NavigationItem[] = [
   // ==================== User Routes ====================
   {
     id: 'dashboard',
-    labelKey: 'nav.home',
+    labelKey: 'nav.dashboard',
     path: '/dashboard',
     icon: LayoutDashboard,
     roles: ['user', 'admin'],
     showInNav: true,
-    showInBreadcrumb: false, // Not shown in breadcrumb, replaced by "Home"
+    showInBreadcrumb: false, // Not shown in breadcrumb, replaced by "Dashboard"
     order: 1,
   },
   {

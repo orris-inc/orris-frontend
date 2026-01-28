@@ -1638,11 +1638,11 @@ export const CreateNodeDialog: React.FC<CreateNodeDialogProps> = ({
               <span className="text-destructive">*</span> {t('admin.nodes.form.requiredFieldsNote')}
             </p>
             <div className="flex items-center gap-2">
-              <Button variant="outline" onClick={handleClose} className="h-9 px-4">
-                {t('common.actions.cancel')}
-              </Button>
               <Button onClick={handleSubmit} disabled={!isFormValid} className="h-9 px-6">
                 {initialData ? t('admin.nodes.form.createCopy') : t('admin.nodes.form.createNode')}
+              </Button>
+              <Button variant="outline" onClick={handleClose} className="h-9 px-4">
+                {t('common.actions.cancel')}
               </Button>
             </div>
           </div>

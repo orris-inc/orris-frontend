@@ -222,13 +222,22 @@ export const UserForwardRulesPage = () => {
   };
 
   return (
-    <DashboardLayout>
+    <DashboardLayout
+      pageTitle={t('userForwardRules.pageTitle')}
+      pageDescription={t('userForwardRules.pageDescription')}
+      pageActions={
+        <Button
+          onClick={handleCreateClick}
+          disabled={isAtLimit || isUsageLoading}
+          className="gap-2 h-9 px-3 touch-manipulation"
+        >
+          <Plus className="h-4 w-4" />
+          <span className="hidden sm:inline">{t('userForwardRules.addRule')}</span>
+          <span className="sm:hidden">{t('userForwardRules.addRuleShort')}</span>
+        </Button>
+      }
+    >
       <div className="space-y-4 sm:space-y-6 pb-safe">
-        {/* Page header */}
-        <div className="space-y-1">
-          <h1 className="text-xl sm:text-2xl font-semibold text-foreground">{t('userForwardRules.pageTitle')}</h1>
-          <p className="text-sm sm:text-base text-muted-foreground hidden sm:block">{t('userForwardRules.pageDescription')}</p>
-        </div>
 
         {/* No subscription prompt */}
         {hasNoSubscription && (
@@ -270,19 +279,9 @@ export const UserForwardRulesPage = () => {
 
             {/* Action bar */}
             <div className="flex items-center justify-between gap-4">
-              <p className="text-xs sm:text-sm text-muted-foreground">
+              <p className="text-xs text-muted-foreground">
                 {t('userForwardRules.totalRules', { count: pagination.total })}
               </p>
-
-              <Button
-                onClick={handleCreateClick}
-                disabled={isAtLimit || isUsageLoading}
-                className="gap-2 min-h-[44px] touch-manipulation"
-              >
-                <Plus className="h-4 w-4" />
-                <span className="hidden sm:inline">{t('userForwardRules.addRule')}</span>
-                <span className="sm:hidden">{t('userForwardRules.addRuleShort')}</span>
-              </Button>
             </div>
 
             {/* Batch action bar - show above table when items selected (desktop only) */}

@@ -1,19 +1,22 @@
 /**
  * Subscription Entry Card Component
  * Displays subscription summary with click-to-navigate functionality
+ *
+ * Uses ViewTransitionLink for proper keyboard navigation and accessibility
  */
 
-import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Calendar, ChevronRight, Clock, Activity } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { getBadgeClass } from '@/lib/ui-styles';
+import { ViewTransitionLink } from '@/components/common/ViewTransitionLink';
 import type { DashboardSubscription } from '@/api/user/types';
 import type { TFunction } from 'i18next';
 
 interface SubscriptionEntryCardProps {
   subscription: DashboardSubscription;
   className?: string;
+  compact?: boolean;
 }
 
 /**
@@ -98,9 +101,14 @@ const getCardBorderStyle = (status: string, isActive: boolean) => {
 
 /**
  * Subscription entry card - displays subscription summary and navigates to detail page
+ * Uses ViewTransitionLink for proper keyboard navigation and accessibility (card-as-link pattern)
+ * Mobile-first: compact padding on mobile, larger on sm+
  */
-export const SubscriptionEntryCard = ({ subscription, className }: SubscriptionEntryCardProps) => {
-  const navigate = useNavigate();
+export const SubscriptionEntryCard = ({
+  subscription,
+  className,
+  compact = false,
+}: SubscriptionEntryCardProps) => {
   const { t } = useTranslation();
   const statusConfig = getStatusConfig(subscription.status, t);
   const isActive = subscription.isActive;
@@ -112,30 +120,35 @@ export const SubscriptionEntryCard = ({ subscription, className }: SubscriptionE
   const usedFormatted = formatTraffic(subscription.usage.total);
   const limitFormatted = formatTraffic(trafficLimit);
 
-  const handleClick = () => {
-    navigate(`/dashboard/subscriptions/${subscription.id}`);
-  };
-
   const borderStyle = getCardBorderStyle(subscription.status, isActive);
 
   return (
-    <div
-      onClick={handleClick}
+    <ViewTransitionLink
+      to={`/dashboard/subscriptions/${subscription.id}`}
       className={cn(
-        'relative p-4 sm:p-5 rounded-xl cursor-pointer touch-target',
+        // Mobile: compact p-2 when compact, otherwise p-3; sm+: p-3/p-4
+        compact ? 'relative block p-2 sm:p-3 lg:p-4 rounded-xl touch-target' : 'relative block p-3 sm:p-4 lg:p-5 rounded-xl touch-target',
         'transition-all duration-200 group',
         'bg-card border hover:shadow-md',
         borderStyle,
         'active:scale-[0.98]',
+        // Focus visible for keyboard navigation
+        'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2',
         className
       )}
     >
       {/* Header: Plan name + Status badge */}
-      <div className="flex items-start justify-between gap-3 mb-3">
-        <div className="flex items-center gap-3 min-w-0">
+      <div
+        className={cn(
+          'flex items-start justify-between gap-2 sm:gap-3',
+          compact ? 'mb-1.5 sm:mb-2' : 'mb-2 sm:mb-3'
+        )}
+      >
+        <div className="flex items-center gap-2 sm:gap-3 min-w-0">
           <div
             className={cn(
-              'p-2 rounded-lg shrink-0',
+              // Mobile: smaller icon container
+              'p-1.5 sm:p-2 rounded-lg shrink-0',
               subscription.status === 'active' || subscription.status === 'trialing'
                 ? 'bg-success/10 ring-1 ring-success/20'
                 : subscription.status === 'past_due' || subscription.status === 'pending_payment'
@@ -147,7 +160,8 @@ export const SubscriptionEntryCard = ({ subscription, className }: SubscriptionE
           >
             <Activity
               className={cn(
-                'size-4',
+                // Mobile: smaller icon
+                'size-3.5 sm:size-4',
                 subscription.status === 'active' || subscription.status === 'trialing'
                   ? 'text-success'
                   : subscription.status === 'past_due' || subscription.status === 'pending_payment'
@@ -159,34 +173,36 @@ export const SubscriptionEntryCard = ({ subscription, className }: SubscriptionE
             />
           </div>
           <div className="min-w-0">
-            <h3 className="font-semibold text-foreground truncate">
+            {/* Mobile: smaller font */}
+            <h3 className={cn('font-semibold text-foreground truncate', compact ? 'text-xs sm:text-sm' : 'text-sm sm:text-base')}>
               {subscription.plan?.name || t('user.dashboard.subscription.unknownPlan')}
             </h3>
             {isActive && daysRemaining !== null && (
-              <span className="text-xs text-muted-foreground flex items-center gap-1 mt-0.5">
-                <Clock className="size-3" />
+              <span className="text-[10px] sm:text-xs text-muted-foreground flex items-center gap-1 mt-0.5">
+                <Clock className="size-2.5 sm:size-3" />
                 {t('common.time.days', { count: daysRemaining })}
               </span>
             )}
           </div>
         </div>
-        <span className={cn(getBadgeClass(statusConfig.variant), 'text-xs shrink-0')}>
+        {/* Mobile: smaller badge */}
+        <span className={cn(getBadgeClass(statusConfig.variant), 'text-[10px] sm:text-xs shrink-0')}>
           {statusConfig.label}
         </span>
       </div>
 
       {/* Traffic Usage Section */}
       {isActive && trafficLimit > 0 && (
-        <div className="mb-3">
-          <div className="flex items-center justify-between mb-1.5">
-            <span className="text-xs text-muted-foreground">
+        <div className={cn(compact ? 'hidden sm:block mb-2' : 'mb-2 sm:mb-3')}>
+          <div className="flex items-center justify-between mb-1 sm:mb-1.5">
+            <span className="text-[10px] sm:text-xs text-muted-foreground">
               {t('user.dashboard.stats.totalTraffic')}
             </span>
-            <span className="text-xs tabular-nums text-muted-foreground">
+            <span className="text-[10px] sm:text-xs tabular-nums text-muted-foreground">
               {usagePercent.toFixed(0)}%
             </span>
           </div>
-          <div className="h-2 rounded-full bg-muted overflow-hidden">
+          <div className="h-1.5 sm:h-2 rounded-full bg-muted overflow-hidden">
             <div
               className={cn(
                 'h-full rounded-full transition-all duration-300',
@@ -195,11 +211,11 @@ export const SubscriptionEntryCard = ({ subscription, className }: SubscriptionE
               style={{ width: `${Math.min(usagePercent, 100)}%` }}
             />
           </div>
-          <div className="flex items-center justify-between mt-1.5">
-            <span className="text-sm font-medium tabular-nums text-foreground">
+          <div className="flex items-center justify-between mt-1 sm:mt-1.5">
+            <span className="text-xs sm:text-sm font-medium tabular-nums text-foreground">
               {usedFormatted.value} <span className="text-muted-foreground">{usedFormatted.unit}</span>
             </span>
-            <span className="text-xs tabular-nums text-muted-foreground">
+            <span className="text-[10px] sm:text-xs tabular-nums text-muted-foreground">
               / {limitFormatted.value} {limitFormatted.unit}
             </span>
           </div>
@@ -207,13 +223,13 @@ export const SubscriptionEntryCard = ({ subscription, className }: SubscriptionE
       )}
 
       {/* Footer: Expiry date + Navigate arrow */}
-      <div className="flex items-center justify-between pt-2 border-t border-border/50">
-        <span className="flex items-center gap-1.5 text-xs text-muted-foreground">
-          <Calendar className="size-3.5" />
+      <div className={cn('flex items-center justify-between border-t border-border/50', compact ? 'pt-1.5' : 'pt-2')}>
+        <span className="flex items-center gap-1 sm:gap-1.5 text-[10px] sm:text-xs text-muted-foreground">
+          <Calendar className="size-3 sm:size-3.5" />
           {formatDate(subscription.currentPeriodEnd)}
         </span>
-        <ChevronRight className="size-4 text-muted-foreground group-hover:text-primary transition-colors" />
+        <ChevronRight className="size-3.5 sm:size-4 text-muted-foreground group-hover:text-primary transition-colors" />
       </div>
-    </div>
+    </ViewTransitionLink>
   );
 };

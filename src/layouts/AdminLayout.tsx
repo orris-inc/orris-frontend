@@ -261,6 +261,7 @@ export const AdminLayout = ({ children }: AdminLayoutProps) => {
                 <UserMenu
                   user={user}
                   showUserSwitch
+                  onHomeClick={() => navigate('/')}
                   onProfileClick={() => navigate('/admin/profile')}
                   onUserClick={() => navigate('/dashboard')}
                   onLogout={handleLogout}

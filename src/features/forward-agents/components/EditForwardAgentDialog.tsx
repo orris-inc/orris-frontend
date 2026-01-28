@@ -430,11 +430,11 @@ export const EditForwardAgentDialog: React.FC<EditForwardAgentDialogProps> = ({
         </div>
 
         <DialogFooter className="flex-shrink-0">
-          <Button variant="outline" onClick={onClose}>
-            {t("common.actions.cancel")}
-          </Button>
           <Button onClick={handleSubmit} disabled={!hasChanges}>
             {t("common.actions.save")}
+          </Button>
+          <Button variant="outline" onClick={onClose}>
+            {t("common.actions.cancel")}
           </Button>
         </DialogFooter>
       </DialogContent>

@@ -144,9 +144,6 @@ export const BatchToggleStatusDialog: React.FC<BatchToggleStatusDialogProps> = (
         <DialogFooter>
           {!showResult ? (
             <>
-              <Button variant="outline" onClick={handleClose} disabled={isProcessing}>
-                {t('common.actions.cancel')}
-              </Button>
               <Button
                 variant={isEnabling ? 'default' : 'secondary'}
                 onClick={handleConfirm}
@@ -163,6 +160,9 @@ export const BatchToggleStatusDialog: React.FC<BatchToggleStatusDialogProps> = (
                     {t('admin.forwardRules.batch.toggleCount', { action: actionText, count: selectedCount })}
                   </>
                 )}
+              </Button>
+              <Button variant="outline" onClick={handleClose} disabled={isProcessing}>
+                {t('common.actions.cancel')}
               </Button>
             </>
           ) : (

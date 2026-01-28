@@ -278,26 +278,26 @@ export const SubscriptionConfirmDialog: React.FC<SubscriptionConfirmDialogProps>
       case 'select_plan':
         return (
           <>
-            <Button variant="outline" onClick={onClose} className="flex-1 sm:flex-none">
-              {t('common.actions.cancel')}
-            </Button>
             <Button onClick={handleProceedToPayment} className="flex-1 sm:flex-none">
               {plan.trialDays ? t('pricing.confirm.startTrial') : t('pricing.confirm.subscribeNow')}
+            </Button>
+            <Button variant="outline" onClick={onClose} className="flex-1 sm:flex-none">
+              {t('common.actions.cancel')}
             </Button>
           </>
         );
       case 'select_payment':
         return (
           <>
-            <Button variant="outline" onClick={handleBack} className="flex-1 sm:flex-none">
-              {t('pricing.confirm.back')}
-            </Button>
             <Button
               onClick={handleConfirmPayment}
               disabled={!selectedPaymentMethod}
               className="flex-1 sm:flex-none"
             >
               {t('pricing.confirm.payNow')}
+            </Button>
+            <Button variant="outline" onClick={handleBack} className="flex-1 sm:flex-none">
+              {t('pricing.confirm.back')}
             </Button>
           </>
         );
@@ -408,7 +408,7 @@ export const SubscriptionConfirmDialog: React.FC<SubscriptionConfirmDialogProps>
               'pb-[calc(0.75rem+env(safe-area-inset-bottom))]',
               'sm:pb-3 sm:px-6 sm:py-4',
               // Layout
-              'flex-col-reverse sm:flex-row sm:justify-end'
+              'flex-col sm:flex-row sm:justify-end'
             )}>
               {renderFooter()}
             </div>

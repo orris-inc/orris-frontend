@@ -37,7 +37,6 @@ import { DashboardLayout } from '@/layouts/DashboardLayout';
 import { cn } from '@/lib/utils';
 import { usePageTitle } from '@/shared/hooks';
 import {
-  PageHeroSection,
   BentoStatCard,
   SectionHeader,
   EmptyState,
@@ -193,15 +192,28 @@ export const UserNodesPage = () => {
   };
 
   return (
-    <DashboardLayout>
+    <DashboardLayout
+      pageTitle={t('userNodes.title')}
+      pageDescription={
+        <div className="space-y-1">
+          <div>{t('userNodes.subtitle')}</div>
+          {heroStatusMessage && <div>{heroStatusMessage}</div>}
+        </div>
+      }
+      pageActions={
+        <Button
+          onClick={handleCreateClick}
+          size="sm"
+          className="gap-1.5 touch-target h-9 px-3"
+          disabled={nodeStats.isAtLimit}
+        >
+          <Plus className="size-4" />
+          <span className="hidden sm:inline">{t('userNodes.addNode')}</span>
+          <span className="sm:hidden">{t('common.actions.create')}</span>
+        </Button>
+      }
+    >
       <div className="space-y-6 pb-safe">
-        {/* Hero Section */}
-        <PageHeroSection
-          title={t('userNodes.title')}
-          subtitle={t('userNodes.subtitle')}
-          statusMessage={heroStatusMessage}
-          icon={Server}
-        />
 
         {/* No subscription prompt */}
         {hasNoSubscription && (
@@ -308,18 +320,6 @@ export const UserNodesPage = () => {
                 icon={Server}
                 title={t('userNodes.myNodes')}
                 count={!isPageLoading ? nodeStats.total : undefined}
-                action={
-                  <Button
-                    onClick={handleCreateClick}
-                    size="sm"
-                    className="gap-1.5 touch-target"
-                    disabled={nodeStats.isAtLimit}
-                  >
-                    <Plus className="size-4" />
-                    <span className="hidden sm:inline">{t('userNodes.addNode')}</span>
-                    <span className="sm:hidden">{t('common.actions.create')}</span>
-                  </Button>
-                }
               />
 
               <UserNodeList
