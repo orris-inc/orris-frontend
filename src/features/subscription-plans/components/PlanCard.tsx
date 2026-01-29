@@ -26,17 +26,8 @@ function PlanCard({
 
   // Build features list from plan data
   const features: string[] = [];
-  if (plan.maxUsers > 0) {
-    features.push(t("pricing.card.maxUsers", { count: plan.maxUsers }));
-  }
-  if (plan.maxProjects > 0) {
-    features.push(t("pricing.card.projects", { count: plan.maxProjects }));
-  }
   if (plan.nodeLimit && plan.nodeLimit > 0) {
     features.push(t("pricing.card.nodes", { count: plan.nodeLimit }));
-  }
-  if (plan.apiRateLimit > 0) {
-    features.push(t("pricing.card.apiRate", { count: plan.apiRateLimit }));
   }
 
   return (

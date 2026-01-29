@@ -23,9 +23,15 @@ import { CancelSubscriptionDialog } from '@/features/subscriptions/components/Ca
 import { CancelSubscriptionSheet } from '@/features/subscriptions/components/CancelSubscriptionSheet';
 import { SuspendSubscriptionSheet } from '@/features/subscriptions/components/SuspendSubscriptionSheet';
 import { DeleteSubscriptionSheet } from '@/features/subscriptions/components/DeleteSubscriptionSheet';
+import { RenewSubscriptionDialog } from '@/features/subscriptions/components/RenewSubscriptionDialog';
+import { RenewSubscriptionSheet } from '@/features/subscriptions/components/RenewSubscriptionSheet';
+import { ChangePlanDialog } from '@/features/subscriptions/components/ChangePlanDialog';
+import { ChangePlanSheet } from '@/features/subscriptions/components/ChangePlanSheet';
 import { MobileSubscriptionManagement } from '@/features/subscriptions/components/MobileSubscriptionManagement';
+import { SubscriptionFilters } from '@/features/subscriptions/components/SubscriptionFilters';
 import { adminCreateSubscription, adminUpdateSubscriptionStatus, adminDeleteSubscription } from '@/api/subscription';
-import { suspendSubscription, unsuspendSubscription, resetSubscriptionUsage } from '@/api/admin';
+import { suspendSubscription, unsuspendSubscription, resetSubscriptionUsage, renewSubscription, changeSubscriptionPlan } from '@/api/admin';
+import type { ChangePlanRequest, RenewSubscriptionRequest } from '@/api/admin/types';
 import type { Subscription } from '@/api/subscription/types';
 
 export const SubscriptionManagementPage: React.FC = () => {
@@ -42,8 +48,10 @@ export const SubscriptionManagementPage: React.FC = () => {
     refetch,
     usersMap,
     isUsersLoading,
+    filters,
     handlePageChange,
     handlePageSizeChange,
+    handleFiltersChange,
   } = useSubscriptionsPage();
 
   const { showSuccess, showError } = useNotificationStore();
@@ -56,6 +64,10 @@ export const SubscriptionManagementPage: React.FC = () => {
   const [selectedSubscription, setSelectedSubscription] = useState<Subscription | null>(null);
   const [subscriptionToDelete, setSubscriptionToDelete] = useState<Subscription | null>(null);
   const [subscriptionToSuspend, setSubscriptionToSuspend] = useState<Subscription | null>(null);
+  const [renewDialogOpen, setRenewDialogOpen] = useState(false);
+  const [changePlanDialogOpen, setChangePlanDialogOpen] = useState(false);
+  const [subscriptionToRenew, setSubscriptionToRenew] = useState<Subscription | null>(null);
+  const [subscriptionToChangePlan, setSubscriptionToChangePlan] = useState<Subscription | null>(null);
   const [refreshKey, setRefreshKey] = useState(0);
 
   // Calculate subscription statistics (synced with SDK 2025-01-14)
@@ -131,13 +143,39 @@ export const SubscriptionManagementPage: React.FC = () => {
     }
   };
 
-  const handleRenew = async (subscription: Subscription) => {
+  const handleRenewClick = (subscription: Subscription) => {
+    setSubscriptionToRenew(subscription);
+    setRenewDialogOpen(true);
+  };
+
+  const handleRenewConfirm = async (billingCycle?: RenewSubscriptionRequest['billingCycle']) => {
+    if (!subscriptionToRenew) return;
     try {
-      await adminUpdateSubscriptionStatus(subscription.id, { status: 'renewed' });
+      await renewSubscription(subscriptionToRenew.id, billingCycle ? { billingCycle } : undefined);
       showSuccess(t('messages.subscriptionRenewed'));
+      setRenewDialogOpen(false);
+      setSubscriptionToRenew(null);
       refetch();
     } catch {
       showError(t('messages.subscriptionRenewFailed'));
+    }
+  };
+
+  const handleChangePlanClick = (subscription: Subscription) => {
+    setSubscriptionToChangePlan(subscription);
+    setChangePlanDialogOpen(true);
+  };
+
+  const handleChangePlanConfirm = async (data: ChangePlanRequest) => {
+    if (!subscriptionToChangePlan) return;
+    try {
+      await changeSubscriptionPlan(subscriptionToChangePlan.id, data);
+      showSuccess(t('messages.subscriptionPlanChanged'));
+      setChangePlanDialogOpen(false);
+      setSubscriptionToChangePlan(null);
+      refetch();
+    } catch {
+      showError(t('messages.subscriptionPlanChangeFailed'));
     }
   };
 
@@ -215,15 +253,18 @@ export const SubscriptionManagementPage: React.FC = () => {
             page={pagination.page}
             pageSize={pagination.pageSize}
             total={pagination.total}
+            filters={filters}
+            onFiltersChange={handleFiltersChange}
             onRefresh={handleRefresh}
             onViewDetail={handleViewDetail}
             onActivate={handleActivate}
             onCancel={handleCancelClick}
-            onRenew={handleRenew}
+            onRenew={handleRenewClick}
             onSuspend={handleSuspendClick}
             onUnsuspend={handleUnsuspend}
             onResetUsage={handleResetUsage}
             onDelete={handleDeleteClick}
+            onChangePlan={handleChangePlanClick}
             onPageChange={handlePageChange}
           />
         </div>
@@ -281,6 +322,32 @@ export const SubscriptionManagementPage: React.FC = () => {
           user={subscriptionToDelete ? usersMap[subscriptionToDelete.userId] : undefined}
           onConfirm={handleDeleteConfirm}
         />
+
+        {/* Renew Subscription Sheet */}
+        <RenewSubscriptionSheet
+          open={renewDialogOpen}
+          onOpenChange={(open) => {
+            if (!open) {
+              setRenewDialogOpen(false);
+              setSubscriptionToRenew(null);
+            }
+          }}
+          subscription={subscriptionToRenew}
+          onConfirm={handleRenewConfirm}
+        />
+
+        {/* Change Plan Sheet */}
+        <ChangePlanSheet
+          open={changePlanDialogOpen}
+          onOpenChange={(open) => {
+            if (!open) {
+              setChangePlanDialogOpen(false);
+              setSubscriptionToChangePlan(null);
+            }
+          }}
+          subscription={subscriptionToChangePlan}
+          onConfirm={handleChangePlanConfirm}
+        />
       </AdminLayout>
     );
   }
@@ -324,6 +391,12 @@ export const SubscriptionManagementPage: React.FC = () => {
           }
         />
 
+        {/* Unified Filters */}
+        <SubscriptionFilters
+          filters={filters}
+          onFiltersChange={handleFiltersChange}
+        />
+
         {/* Subscription List Table */}
         <SubscriptionListTable
           subscriptions={subscriptions}
@@ -339,11 +412,12 @@ export const SubscriptionManagementPage: React.FC = () => {
           onDuplicate={handleDuplicate}
           onActivate={handleActivate}
           onCancel={handleCancelClick}
-          onRenew={handleRenew}
+          onRenew={handleRenewClick}
           onSuspend={handleSuspendClick}
           onUnsuspend={handleUnsuspend}
           onResetUsage={handleResetUsage}
           onDelete={handleDeleteClick}
+          onChangePlan={handleChangePlanClick}
         />
       </div>
 
@@ -405,6 +479,28 @@ export const SubscriptionManagementPage: React.FC = () => {
         cancelText={t('common.actions.cancel')}
         variant="destructive"
         onConfirm={handleDesktopDeleteConfirm}
+      />
+
+      {/* Renew Subscription Dialog */}
+      <RenewSubscriptionDialog
+        open={renewDialogOpen}
+        subscription={subscriptionToRenew}
+        onClose={() => {
+          setRenewDialogOpen(false);
+          setSubscriptionToRenew(null);
+        }}
+        onConfirm={handleRenewConfirm}
+      />
+
+      {/* Change Plan Dialog */}
+      <ChangePlanDialog
+        open={changePlanDialogOpen}
+        subscription={subscriptionToChangePlan}
+        onClose={() => {
+          setChangePlanDialogOpen(false);
+          setSubscriptionToChangePlan(null);
+        }}
+        onConfirm={handleChangePlanConfirm}
       />
     </AdminLayout>
   );

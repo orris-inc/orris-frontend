@@ -128,7 +128,8 @@ export function MobileListToolbar<T extends string = string>({
             placeholder={searchPlaceholder}
             className={cn(
               'w-full h-10 pl-9 pr-9',
-              'text-sm text-foreground placeholder:text-muted-foreground',
+              // Use text-base (16px) to prevent iOS auto-zoom on focus
+              'text-base sm:text-sm text-foreground placeholder:text-muted-foreground',
               'bg-background border border-input rounded-lg',
               'transition-shadow duration-150',
               'focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-1',

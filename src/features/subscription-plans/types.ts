@@ -15,5 +15,6 @@ export type {
 export interface SubscriptionPlanFilters {
   status?: 'active' | 'inactive';
   isPublic?: boolean;
+  planType?: 'node' | 'forward' | 'hybrid';
   search?: string;
 }

@@ -246,9 +246,9 @@ export const navigationConfig: readonly NavigationItem[] = [
     groupId: 'system',
   },
   {
-    id: 'admin-notifications',
-    labelKey: 'nav.notificationSettings',
-    path: '/admin/notifications',
+    id: 'admin-announcements',
+    labelKey: 'nav.announcements',
+    path: '/admin/announcements',
     icon: Bell,
     roles: ['admin'],
     showInNav: true,

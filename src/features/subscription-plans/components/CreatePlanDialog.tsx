@@ -110,9 +110,6 @@ const getDefaultFormData = (): CreatePlanFormData => ({
   description: '',
   isPublic: true,
   trialDays: 0,
-  maxUsers: undefined,
-  maxProjects: undefined,
-  apiRateLimit: undefined,
   sortOrder: 0,
   pricings: [getDefaultPricing()],
   planLimits: {},
@@ -168,9 +165,6 @@ export const CreatePlanDialog: React.FC<CreatePlanDialogProps> = ({
         description: initialPlan.description || '',
         isPublic: initialPlan.isPublic,
         trialDays: initialPlan.trialDays || 0,
-        maxUsers: initialPlan.maxUsers || undefined,
-        maxProjects: initialPlan.maxProjects || undefined,
-        apiRateLimit: initialPlan.apiRateLimit || undefined,
         sortOrder: initialPlan.sortOrder || 0,
         pricings: initialPlan.pricings && initialPlan.pricings.length > 0
           ? initialPlan.pricings.map(p => ({
@@ -263,9 +257,6 @@ export const CreatePlanDialog: React.FC<CreatePlanDialogProps> = ({
         limits,
         isPublic: formData.isPublic,
         trialDays: formData.trialDays,
-        maxUsers: formData.maxUsers,
-        maxProjects: formData.maxProjects,
-        apiRateLimit: formData.apiRateLimit,
         sortOrder: formData.sortOrder,
         pricings: formData.pricings,
       };

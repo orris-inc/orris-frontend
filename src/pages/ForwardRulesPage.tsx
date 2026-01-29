@@ -9,20 +9,15 @@ import {
   ArrowLeftRight,
   Plus,
   RefreshCw,
-  Users,
   CheckCircle2,
   Activity,
-  GripVertical,
-  FilterX,
   FileJson,
 } from 'lucide-react';
 import type { RowSelectionState } from '@tanstack/react-table';
-import { Switch, SwitchThumb } from '@/components/common/Switch';
 import { ForwardRuleListTable } from '@/features/forward-rules/components/ForwardRuleListTable';
 import { MobileForwardRuleManagement } from '@/features/forward-rules/components/MobileForwardRuleManagement';
-import { FilterToolbar } from '@/components/admin/FilterToolbar';
+import { ForwardRuleFilters } from '@/features/forward-rules/components/ForwardRuleFilters';
 import { Button } from '@/components/common/Button';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/common/Select';
 import { ConfirmDialog } from '@/components/common/ConfirmDialog';
 import { useForwardRulesPage, useRuleStatusPolling } from '@/features/forward-rules/hooks/useForwardRules';
 import { useBatchForwardRules } from '@/features/forward-rules/hooks/useBatchForwardRules';
@@ -92,7 +87,7 @@ import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/common/Too
 import { PageHeader } from '@/components/admin';
 import { usePageTitle } from '@/shared/hooks';
 import { useBreakpoint } from '@/hooks/useBreakpoint';
-import type { ForwardRule, CreateForwardRuleRequest, UpdateForwardRuleRequest, RuleProbeResponse, ForwardRuleType, ForwardProtocol, ForwardStatus, IPVersion } from '@/api/forward';
+import type { ForwardRule, CreateForwardRuleRequest, UpdateForwardRuleRequest, RuleProbeResponse, ForwardRuleType, ForwardProtocol, IPVersion } from '@/api/forward';
 import type { SubscriptionPlan } from '@/api/subscription/types';
 
 export const ForwardRulesPage = () => {
@@ -398,31 +393,7 @@ export const ForwardRulesPage = () => {
   };
 
   // Helper functions for filters
-  const handleProtocolChange = (value: string): void => {
-    handleFiltersChange({ protocol: value === '_all_' ? undefined : (value as ForwardProtocol) });
-  };
-
-  const handleStatusChange = (value: string): void => {
-    handleFiltersChange({ status: value === '_all_' ? undefined : (value as ForwardStatus) });
-  };
-
-  const handleSearchChange = (value: string): void => {
-    handleFiltersChange({ name: value || undefined });
-  };
-
-  const handleSortChange = (value: string): void => {
-    const lastUnderscoreIndex = value.lastIndexOf('_');
-    const orderBy = value.substring(0, lastUnderscoreIndex);
-    const order = value.substring(lastUnderscoreIndex + 1) as 'asc' | 'desc';
-    handleFiltersChange({ orderBy, order });
-  };
-
-  const getSortValue = (): string => {
-    if (!filters.orderBy) return 'sort_order_asc';
-    return `${filters.orderBy}_${filters.order || 'desc'}`;
-  };
-
-  const handleResetFilters = (): void => {
+  const handleClearFilters = (): void => {
     handleFiltersChange({
       protocol: undefined,
       status: undefined,
@@ -452,6 +423,12 @@ export const ForwardRulesPage = () => {
             page={pagination.page}
             pageSize={pagination.pageSize}
             total={pagination.total}
+            filters={filters}
+            hasFilters={hasActiveFilters}
+            onFiltersChange={handleFiltersChange}
+            onClearFilters={handleClearFilters}
+            includeUserRules={includeUserRules}
+            onIncludeUserRulesChange={handleIncludeUserRulesChange}
             onRefresh={handleRefresh}
             onCreate={() => {
               setCopyRuleData(undefined);
@@ -593,111 +570,16 @@ export const ForwardRulesPage = () => {
         />
 
         {/* Filters row */}
-        <FilterToolbar
-          searchValue={filters.name || ''}
-          onSearchChange={handleSearchChange}
-          searchPlaceholder={t('admin.forwardRules.searchRules')}
-          filters={
-            <>
-              {/* Protocol filter */}
-              <Select value={filters.protocol || '_all_'} onValueChange={handleProtocolChange}>
-                <SelectTrigger className="w-24">
-                  <SelectValue placeholder={t('common.protocol')} />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="_all_">{t('filter.all')}</SelectItem>
-                  <SelectItem value="tcp">TCP</SelectItem>
-                  <SelectItem value="udp">UDP</SelectItem>
-                  <SelectItem value="both">Both</SelectItem>
-                </SelectContent>
-              </Select>
-
-              {/* Status filter */}
-              <Select value={filters.status || '_all_'} onValueChange={handleStatusChange}>
-                <SelectTrigger className="w-24">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="_all_">{t('filter.all')}</SelectItem>
-                  <SelectItem value="enabled">{t('common.status.enabled')}</SelectItem>
-                  <SelectItem value="disabled">{t('common.status.disabled')}</SelectItem>
-                </SelectContent>
-              </Select>
-
-              {/* Sort filter */}
-              <Select value={getSortValue()} onValueChange={handleSortChange}>
-                <SelectTrigger className="w-32">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="sort_order_asc">{t('admin.forwardRules.sortOptions.default')}</SelectItem>
-                  <SelectItem value="created_at_desc">{t('admin.forwardRules.sortOptions.createdDesc')}</SelectItem>
-                  <SelectItem value="created_at_asc">{t('admin.forwardRules.sortOptions.createdAsc')}</SelectItem>
-                  <SelectItem value="updated_at_desc">{t('admin.forwardRules.sortOptions.updatedDesc')}</SelectItem>
-                </SelectContent>
-              </Select>
-
-              {/* Vertical divider */}
-              <div className="h-6 w-px bg-border" />
-
-              {/* User rules toggle */}
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <label className="flex items-center gap-2 text-sm cursor-pointer">
-                    <Switch
-                      checked={includeUserRules}
-                      onCheckedChange={handleIncludeUserRulesChange}
-                    >
-                      <SwitchThumb />
-                    </Switch>
-                    <span className="text-muted-foreground flex items-center gap-1.5">
-                      <Users className="size-4" />
-                      {t('admin.forwardRules.userRules')}
-                    </span>
-                  </label>
-                </TooltipTrigger>
-                <TooltipContent>{t('admin.forwardRules.showUserRules')}</TooltipContent>
-              </Tooltip>
-
-              {/* Drag sort toggle */}
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <label className="flex items-center gap-2 text-sm cursor-pointer">
-                    <Switch
-                      checked={dragSortEnabled}
-                      onCheckedChange={setDragSortEnabled}
-                      disabled={isReordering}
-                    >
-                      <SwitchThumb />
-                    </Switch>
-                    <span className="text-muted-foreground flex items-center gap-1.5">
-                      <GripVertical className={dragSortEnabled ? 'size-4 text-primary' : 'size-4'} />
-                      {t('admin.forwardRules.dragSort')}
-                    </span>
-                  </label>
-                </TooltipTrigger>
-                <TooltipContent>
-                  {dragSortEnabled ? t('admin.forwardRules.disableDragSort') : t('admin.forwardRules.enableDragSort')}
-                </TooltipContent>
-              </Tooltip>
-
-              {/* Reset filters button */}
-              {hasActiveFilters && (
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      onClick={handleResetFilters}
-                    >
-                      <FilterX className="size-4" />
-                    </Button>
-                  </TooltipTrigger>
-                  <TooltipContent>{t('admin.forwardRules.resetFilters')}</TooltipContent>
-                </Tooltip>
-              )}
-            </>
-          }
+        <ForwardRuleFilters
+          filters={filters}
+          onFiltersChange={handleFiltersChange}
+          hasFilters={hasActiveFilters}
+          onClearFilters={handleClearFilters}
+          includeUserRules={includeUserRules}
+          onIncludeUserRulesChange={handleIncludeUserRulesChange}
+          dragSortEnabled={dragSortEnabled}
+          onDragSortChange={setDragSortEnabled}
+          isReordering={isReordering}
         />
 
         {/* Batch Action Bar */}

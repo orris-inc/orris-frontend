@@ -8,7 +8,7 @@
  * - 响应式设计：移动端自动收起侧边栏
  */
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { ViewTransitionLink } from '@/components/common/ViewTransitionLink';
@@ -17,11 +17,17 @@ import {
   ChevronLeft,
   ChevronRight,
   ArrowLeftRight,
+  Search,
 } from 'lucide-react';
 import { TooltipProvider } from '@/components/common/Tooltip';
 import { AdminSidebarNav, AdminSidebarFooter } from '@/components/navigation/AdminSidebarNav';
 import { MobileDrawer } from '@/components/navigation/MobileDrawer';
 import { UserMenu } from '@/components/navigation/UserMenu';
+import {
+  CommandPalette,
+  useCommandPaletteKeyboard,
+} from '@/components/navigation/CommandPalette';
+import { NotificationCenter } from '@/components/navigation/NotificationCenter';
 import { useCurrentPageTitle, useVersionInfo } from '@/hooks';
 
 import { useAuthStore } from '@/features/auth/stores/auth-store';
@@ -33,6 +39,7 @@ import { LanguageSwitcher } from '@/components/common/LanguageSwitcher';
 import { getNavItems } from '@/config/navigation';
 import { cn } from '@/lib/utils';
 import { mobileFixedHeaderStyles } from '@/lib/ui-styles';
+import type { Notification } from '@/components/navigation/NotificationCenter';
 
 interface AdminLayoutProps {
   children: React.ReactNode;
@@ -48,6 +55,7 @@ export const AdminLayout = ({ children }: AdminLayoutProps) => {
   const { serverVersion, clientVersion } = useVersionInfo();
 
   const [mobileDrawerOpen, setMobileDrawerOpen] = useState(false);
+  const [commandPaletteOpen, setCommandPaletteOpen] = useState(false);
   const [collapsed, setCollapsed] = useState(() => {
     const saved = localStorage.getItem('admin-sidebar-collapsed');
     return saved === 'true';
@@ -64,6 +72,26 @@ export const AdminLayout = ({ children }: AdminLayoutProps) => {
   const handleLogout = async () => {
     await logout();
   };
+
+  // Command palette keyboard shortcut
+  const handleOpenCommandPalette = useCallback(() => {
+    setCommandPaletteOpen(true);
+  }, []);
+  useCommandPaletteKeyboard(handleOpenCommandPalette);
+
+  // TODO: Replace with real notifications from API
+  // This is placeholder data for UI demonstration
+  const [notifications, setNotifications] = useState<Notification[]>([]);
+
+  const handleMarkAsRead = useCallback((id: string) => {
+    setNotifications((prev) =>
+      prev.map((n) => (n.id === id ? { ...n, read: true } : n))
+    );
+  }, []);
+
+  const handleMarkAllAsRead = useCallback(() => {
+    setNotifications((prev) => prev.map((n) => ({ ...n, read: true })));
+  }, []);
 
   // Switch to user view link component
   const SwitchToUserViewLink = ({ collapsed = false }: { collapsed?: boolean }) => (
@@ -249,11 +277,41 @@ export const AdminLayout = ({ children }: AdminLayoutProps) => {
                   // Mobile: fixed width for symmetry
                   'w-11 flex-shrink-0 flex justify-end',
                   // Desktop: expand to fit content
-                  'md:w-auto md:items-center md:gap-3'
+                  'md:w-auto md:items-center md:gap-2'
                 )}
               >
-                {/* Desktop: show language switcher and theme toggle */}
-                <div className="hidden md:flex md:items-center md:gap-3">
+                {/* Desktop: Search button with ⌘K hint */}
+                <button
+                  type="button"
+                  onClick={() => setCommandPaletteOpen(true)}
+                  className={cn(
+                    'hidden md:flex items-center gap-2',
+                    'h-9 px-3 rounded-md',
+                    'bg-muted/50 hover:bg-muted',
+                    'text-sm text-muted-foreground',
+                    'transition-colors motion-reduce:transition-none',
+                    'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring'
+                  )}
+                  aria-label={t('commandPalette.trigger')}
+                >
+                  <Search className="size-4" />
+                  <span className="hidden lg:inline">{t('common.actions.search')}</span>
+                  <kbd className="hidden lg:inline-flex items-center gap-0.5 px-1.5 py-0.5 text-[10px] font-medium bg-background rounded border border-border">
+                    ⌘K
+                  </kbd>
+                </button>
+
+                {/* Notification center */}
+                <div className="hidden md:block">
+                  <NotificationCenter
+                    notifications={notifications}
+                    onMarkAsRead={handleMarkAsRead}
+                    onMarkAllAsRead={handleMarkAllAsRead}
+                  />
+                </div>
+
+                {/* Desktop: Language switcher and theme toggle */}
+                <div className="hidden md:flex md:items-center md:gap-2">
                   <LanguageSwitcher />
                   <ThemeToggle />
                 </div>
@@ -261,7 +319,6 @@ export const AdminLayout = ({ children }: AdminLayoutProps) => {
                 <UserMenu
                   user={user}
                   showUserSwitch
-                  onHomeClick={() => navigate('/')}
                   onProfileClick={() => navigate('/admin/profile')}
                   onUserClick={() => navigate('/dashboard')}
                   onLogout={handleLogout}
@@ -269,6 +326,13 @@ export const AdminLayout = ({ children }: AdminLayoutProps) => {
               </div>
             </div>
           </header>
+
+          {/* Command Palette */}
+          <CommandPalette
+            open={commandPaletteOpen}
+            onOpenChange={setCommandPaletteOpen}
+            navigationItems={adminNavItems}
+          />
 
           {/* Page content - CSS-first responsive padding */}
           <main

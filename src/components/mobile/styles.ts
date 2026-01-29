@@ -128,8 +128,8 @@ export const MOBILE_LIST_STYLES = {
 export const MOBILE_SEARCH_STYLES = {
   /** Search container */
   container: 'flex items-center gap-2 h-11 min-h-[44px] px-3 bg-foreground/5 rounded-xl border border-border/50 focus-within:border-primary/50 focus-within:ring-1 focus-within:ring-primary/30 transition-colors',
-  /** Search input */
-  input: 'flex-1 min-w-0 bg-transparent text-sm text-foreground placeholder:text-muted-foreground focus:outline-none',
+  /** Search input - use text-base (16px) to prevent iOS auto-zoom */
+  input: 'flex-1 min-w-0 bg-transparent text-base sm:text-sm text-foreground placeholder:text-muted-foreground focus:outline-none',
   /** Search icon */
   icon: 'size-4 text-muted-foreground shrink-0',
   /** Clear button */

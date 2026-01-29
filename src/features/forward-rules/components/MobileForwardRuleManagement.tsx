@@ -3,6 +3,7 @@
  *
  * Design principles:
  * - Unified toolbar with search + filters
+ * - Server-side filtering with MobileForwardRuleFiltersSheet
  * - Stacked list with divide-y instead of separate cards
  * - Clean header with result count
  * - Minimal visual decoration
@@ -10,20 +11,24 @@
  * - Tap card to open detail sheet
  */
 
-import { useMemo } from 'react';
+import { useState, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Plus, ArrowLeftRight } from 'lucide-react';
-import { useMobileListFilter, useMobileDetailSheet } from '@/hooks';
+import { useMobileDetailSheet } from '@/hooks';
 import {
   MobilePagination,
   MobileListToolbar,
   MobileListContainer,
-  type FilterPillOption,
 } from '@/components/mobile';
 import { MobileForwardRuleCard } from './MobileForwardRuleCard';
 import { ForwardRuleDetailSheet } from './ForwardRuleDetailSheet';
+import {
+  MobileForwardRuleFiltersSheet,
+  MobileFilterButton,
+} from './MobileForwardRuleFiltersSheet';
 import type { ForwardRule, ForwardAgent, RuleOverallStatusResponse } from '@/api/forward';
 import type { Node } from '@/api/node';
+import type { ForwardRuleFilters } from '../hooks/useForwardRules';
 
 // ============================================================================
 // Types
@@ -40,6 +45,14 @@ export interface MobileForwardRuleManagementProps {
   page: number;
   pageSize: number;
   total: number;
+  /** Server-side filters */
+  filters: ForwardRuleFilters;
+  hasFilters: boolean;
+  onFiltersChange: (filters: Partial<ForwardRuleFilters>) => void;
+  onClearFilters: () => void;
+  /** Include user rules toggle */
+  includeUserRules?: boolean;
+  onIncludeUserRulesChange?: (include: boolean) => void;
   onRefresh: () => void;
   onCreate: () => void;
   onEdit: (rule: ForwardRule) => void;
@@ -52,8 +65,6 @@ export interface MobileForwardRuleManagementProps {
   onDragEnd?: (activeId: string, overId: string, oldIndex: number, newIndex: number) => void;
   probingRuleId?: string;
 }
-
-type StatusFilter = 'all' | 'enabled' | 'disabled' | 'direct' | 'entry' | 'chain' | 'direct_chain';
 
 // ============================================================================
 // Main Component
@@ -70,6 +81,12 @@ export const MobileForwardRuleManagement = ({
   page,
   pageSize,
   total,
+  filters,
+  hasFilters,
+  onFiltersChange,
+  onClearFilters,
+  includeUserRules = false,
+  onIncludeUserRulesChange,
   onRefresh,
   onCreate,
   onEdit,
@@ -83,29 +100,11 @@ export const MobileForwardRuleManagement = ({
 }: MobileForwardRuleManagementProps) => {
   const { t } = useTranslation();
 
-  // Use shared filter hook
-  const {
-    searchQuery,
-    setSearchQuery,
-    statusFilter,
-    setStatusFilter,
-    filteredItems: filteredRules,
-    clearFilters,
-    hasFilter,
-  } = useMobileListFilter<ForwardRule, StatusFilter>({
-    items: rules,
-    defaultFilter: 'all',
-    searchFields: ['name', 'remark', 'id'],
-    filterFn: (rule, filter) => {
-      if (filter === 'enabled') return rule.status === 'enabled';
-      if (filter === 'disabled') return rule.status === 'disabled';
-      if (filter === 'direct') return rule.ruleType === 'direct';
-      if (filter === 'entry') return rule.ruleType === 'entry';
-      if (filter === 'chain') return rule.ruleType === 'chain';
-      if (filter === 'direct_chain') return rule.ruleType === 'direct_chain';
-      return true;
-    },
-  });
+  // Filter sheet state
+  const [filterSheetOpen, setFilterSheetOpen] = useState(false);
+
+  // Local search for quick client-side filtering
+  const [searchQuery, setSearchQuery] = useState('');
 
   // Use shared detail sheet hook
   const {
@@ -115,47 +114,50 @@ export const MobileForwardRuleManagement = ({
     setOpen: setDetailSheetOpen,
   } = useMobileDetailSheet<ForwardRule>();
 
-  // Build filter options with counts
-  const filterOptions = useMemo<FilterPillOption<StatusFilter>[]>(() => {
-    const enabled = rules.filter((r) => r.status === 'enabled').length;
-    const disabled = rules.filter((r) => r.status === 'disabled').length;
-    const direct = rules.filter((r) => r.ruleType === 'direct').length;
-    const entry = rules.filter((r) => r.ruleType === 'entry').length;
-    const chain = rules.filter((r) => r.ruleType === 'chain').length;
-    const directChain = rules.filter((r) => r.ruleType === 'direct_chain').length;
+  // Client-side search filtering (quick find within current page)
+  const filteredRules = useMemo(() => {
+    if (!searchQuery.trim()) return rules;
+    const query = searchQuery.toLowerCase();
+    return rules.filter(
+      (rule) =>
+        rule.name.toLowerCase().includes(query) ||
+        rule.remark?.toLowerCase().includes(query) ||
+        rule.id.toLowerCase().includes(query)
+    );
+  }, [rules, searchQuery]);
 
-    return [
-      { value: 'all', label: t('filter.all'), count: total },
-      { value: 'enabled', label: t('common.status.enabled'), count: enabled },
-      { value: 'disabled', label: t('common.status.disabled'), count: disabled },
-      { value: 'direct', label: t('admin.forwardRules.ruleType.direct'), count: direct },
-      { value: 'entry', label: t('admin.forwardRules.ruleType.entry'), count: entry },
-      { value: 'chain', label: t('admin.forwardRules.ruleType.chain'), count: chain },
-      { value: 'direct_chain', label: t('admin.forwardRules.ruleType.directChain'), count: directChain },
-    ];
-  }, [rules, total, t]);
+  // Check if we have local search filter active
+  const hasLocalFilter = searchQuery.trim().length > 0;
+
+  // Clear local search
+  const clearLocalSearch = () => {
+    setSearchQuery('');
+  };
 
   return (
     <div className="space-y-3">
-      {/* Unified Toolbar: Search + Filters + Actions */}
+      {/* Unified Toolbar: Search + Filter Button + Actions */}
       <MobileListToolbar
         searchValue={searchQuery}
         onSearchChange={setSearchQuery}
         searchPlaceholder={t('common.placeholders.search')}
-        filterOptions={filterOptions}
-        filterValue={statusFilter}
-        onFilterChange={setStatusFilter}
         onRefresh={onRefresh}
         refreshing={refreshing}
         onCreate={onCreate}
         createLabel={t('admin.forwardRules.add')}
+        extraActions={
+          <MobileFilterButton
+            hasFilters={hasFilters}
+            onClick={() => setFilterSheetOpen(true)}
+          />
+        }
       />
 
       {/* Rule List - long press to drag sort (only when no filter active) */}
       <MobileListContainer
         items={filteredRules}
         loading={loading}
-        hasFilter={hasFilter}
+        hasFilter={hasLocalFilter || hasFilters}
         emptyIcon={ArrowLeftRight}
         emptyTitle={t('admin.forwardRules.noData')}
         emptyDescription={t('admin.forwardRules.add')}
@@ -166,7 +168,10 @@ export const MobileForwardRuleManagement = ({
         }}
         filterEmptyTitle={t('common.messages.noResults')}
         filterEmptyDescription={t('subscription.tryAdjustSearch')}
-        onClearFilters={clearFilters}
+        onClearFilters={() => {
+          clearLocalSearch();
+          onClearFilters();
+        }}
         skeletonCount={5}
         skeletonMetadataCount={2}
         getItemId={(rule) => rule.id}
@@ -207,6 +212,18 @@ export const MobileForwardRuleManagement = ({
         onToggleStatus={onToggleStatus}
         onDelete={onDelete}
         isProbingThis={selectedRule?.id === probingRuleId}
+      />
+
+      {/* Filter Sheet */}
+      <MobileForwardRuleFiltersSheet
+        open={filterSheetOpen}
+        onOpenChange={setFilterSheetOpen}
+        filters={filters}
+        onFiltersChange={onFiltersChange}
+        hasFilters={hasFilters}
+        onClearFilters={onClearFilters}
+        includeUserRules={includeUserRules}
+        onIncludeUserRulesChange={onIncludeUserRulesChange}
       />
     </div>
   );

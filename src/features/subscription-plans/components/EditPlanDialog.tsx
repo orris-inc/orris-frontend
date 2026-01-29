@@ -121,9 +121,6 @@ export const EditPlanDialog: React.FC<EditPlanDialogProps> = ({
       setFormData({
         description: plan.description,
         isPublic: plan.isPublic,
-        maxUsers: plan.maxUsers,
-        maxProjects: plan.maxProjects,
-        apiRateLimit: plan.apiRateLimit,
         sortOrder: plan.sortOrder,
         pricings: (plan.pricings || []).map(p => ({
           billingCycle: p.billingCycle,
@@ -208,9 +205,6 @@ export const EditPlanDialog: React.FC<EditPlanDialogProps> = ({
         description: formData.description,
         limits,
         isPublic: formData.isPublic,
-        maxUsers: formData.maxUsers,
-        maxProjects: formData.maxProjects,
-        apiRateLimit: formData.apiRateLimit,
         sortOrder: formData.sortOrder,
         pricings: formData.pricings,
       };

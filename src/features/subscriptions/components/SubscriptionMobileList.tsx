@@ -19,6 +19,7 @@ import {
   X,
   User,
   Calendar,
+  ArrowRightLeft,
 } from 'lucide-react';
 import {
   Accordion,
@@ -63,6 +64,7 @@ interface SubscriptionMobileListProps {
   onUnsuspend?: (subscription: Subscription) => void;
   onResetUsage?: (subscription: Subscription) => void;
   onDelete?: (subscription: Subscription) => void;
+  onChangePlan?: (subscription: Subscription) => void;
 }
 
 
@@ -96,6 +98,7 @@ export const SubscriptionMobileList: React.FC<SubscriptionMobileListProps> = ({
   onUnsuspend,
   onResetUsage,
   onDelete,
+  onChangePlan,
 }) => {
   const { t } = useTranslation();
 
@@ -107,8 +110,9 @@ export const SubscriptionMobileList: React.FC<SubscriptionMobileListProps> = ({
     const canCancel = status === 'active' || status === 'trialing' || status === 'past_due';
     const canSuspend = status === 'active';
     const canResetUsage = status === 'active' || status === 'suspended';
-    const canRenew = status === 'expired';
+    const canRenew = status === 'active' || status === 'past_due' || status === 'expired';
     const canDelete = status === 'cancelled' || status === 'expired';
+    const canChangePlan = status === 'active';
 
     return (
       <>
@@ -124,7 +128,13 @@ export const SubscriptionMobileList: React.FC<SubscriptionMobileListProps> = ({
             {t('subscription.duplicate')}
           </ContextMenuItem>
         )}
-        {(onViewDetail || onDuplicate) && (canActivate || canUnsuspend || canRenew || canCancel || canSuspend) && <ContextMenuSeparator />}
+        {(onViewDetail || onDuplicate) && (canActivate || canUnsuspend || canRenew || canCancel || canSuspend || canChangePlan) && <ContextMenuSeparator />}
+        {canChangePlan && onChangePlan && (
+          <ContextMenuItem onClick={() => onChangePlan(subscription)}>
+            <ArrowRightLeft className="mr-2 size-4" />
+            {t('subscription.changePlan')}
+          </ContextMenuItem>
+        )}
         {canActivate && onActivate && (
           <ContextMenuItem onClick={() => onActivate(subscription)}>
             <Play className="mr-2 size-4" />
@@ -189,8 +199,9 @@ export const SubscriptionMobileList: React.FC<SubscriptionMobileListProps> = ({
     const canActivate = status === 'inactive' || status === 'pending_payment' || status === 'suspended';
     const canCancel = status === 'active' || status === 'trialing' || status === 'past_due';
     const canResetUsage = status === 'active' || status === 'suspended';
-    const canRenew = status === 'expired';
+    const canRenew = status === 'active' || status === 'past_due' || status === 'expired';
     const canDelete = status === 'cancelled' || status === 'expired';
+    const canChangePlan = status === 'active';
 
     return (
       <DropdownMenu>
@@ -216,7 +227,13 @@ export const SubscriptionMobileList: React.FC<SubscriptionMobileListProps> = ({
                 {t('subscription.duplicate')}
               </DropdownMenuItem>
             )}
-            {(onViewDetail || onDuplicate) && (canActivate || canRenew || canResetUsage || canCancel) && <DropdownMenuSeparator />}
+            {(onViewDetail || onDuplicate) && (canActivate || canRenew || canResetUsage || canCancel || canChangePlan) && <DropdownMenuSeparator />}
+            {canChangePlan && onChangePlan && (
+              <DropdownMenuItem onClick={() => onChangePlan(subscription)}>
+                <ArrowRightLeft className="mr-2 size-4" />
+                {t('subscription.changePlan')}
+              </DropdownMenuItem>
+            )}
             {canActivate && onActivate && (
               <DropdownMenuItem onClick={() => onActivate(subscription)}>
                 <Play className="mr-2 size-4" />

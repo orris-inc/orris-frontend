@@ -3,24 +3,29 @@
  *
  * Design principles:
  * - Unified toolbar with search + filters
+ * - Server-side filtering with MobilePlanFiltersSheet
  * - Stacked list with divide-y instead of separate cards
  * - Clean header with result count
  * - Minimal visual decoration
  */
 
-import { useMemo } from 'react';
+import { useState, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Plus, Package } from 'lucide-react';
 import {
   MobilePagination,
   MobileListToolbar,
   MobileListContainer,
-  type FilterPillOption,
 } from '@/components/mobile';
-import { useMobileListFilter, useMobileDetailSheet } from '@/hooks';
+import { useMobileDetailSheet } from '@/hooks';
 import { MobilePlanCard } from './MobilePlanCard';
 import { PlanDetailSheet } from './PlanDetailSheet';
+import {
+  MobilePlanFiltersSheet,
+  MobileFilterButton,
+} from './MobilePlanFiltersSheet';
 import type { SubscriptionPlan } from '@/api/subscription/types';
+import type { SubscriptionPlanFilters } from '../types';
 
 // ============================================================================
 // Types
@@ -33,6 +38,10 @@ export interface MobilePlanManagementProps {
   page: number;
   pageSize: number;
   total: number;
+  filters: SubscriptionPlanFilters;
+  hasFilters: boolean;
+  onFiltersChange: (filters: Partial<SubscriptionPlanFilters>) => void;
+  onClearFilters: () => void;
   onRefresh: () => void;
   onCreate: () => void;
   onEdit: (plan: SubscriptionPlan) => void;
@@ -42,27 +51,6 @@ export interface MobilePlanManagementProps {
   onDelete: (plan: SubscriptionPlan) => void;
   onPageChange: (page: number) => void;
 }
-
-type StatusFilter = 'all' | 'active' | 'inactive' | 'public' | 'private';
-
-// ============================================================================
-// Filter function
-// ============================================================================
-
-const planFilterFn = (plan: SubscriptionPlan, filter: StatusFilter): boolean => {
-  switch (filter) {
-    case 'active':
-      return plan.status === 'active';
-    case 'inactive':
-      return plan.status === 'inactive';
-    case 'public':
-      return plan.isPublic;
-    case 'private':
-      return !plan.isPublic;
-    default:
-      return true;
-  }
-};
 
 // ============================================================================
 // Main Component
@@ -75,6 +63,10 @@ export const MobilePlanManagement = ({
   page,
   pageSize,
   total,
+  filters,
+  hasFilters,
+  onFiltersChange,
+  onClearFilters,
   onRefresh,
   onCreate,
   onEdit,
@@ -86,21 +78,11 @@ export const MobilePlanManagement = ({
 }: MobilePlanManagementProps) => {
   const { t } = useTranslation();
 
-  // Filter hook
-  const {
-    searchQuery,
-    setSearchQuery,
-    statusFilter,
-    setStatusFilter,
-    filteredItems: filteredPlans,
-    clearFilters,
-    hasFilter,
-  } = useMobileListFilter<SubscriptionPlan, StatusFilter>({
-    items: plans,
-    defaultFilter: 'all',
-    searchFields: ['name', 'slug', 'description'],
-    filterFn: planFilterFn,
-  });
+  // Filter sheet state
+  const [filterSheetOpen, setFilterSheetOpen] = useState(false);
+
+  // Local search for quick client-side filtering
+  const [searchQuery, setSearchQuery] = useState('');
 
   // Detail sheet hook
   const {
@@ -110,50 +92,60 @@ export const MobilePlanManagement = ({
     setOpen: setDetailSheetOpen,
   } = useMobileDetailSheet<SubscriptionPlan>();
 
-  // Build filter options with counts
-  const filterOptions = useMemo<FilterPillOption<StatusFilter>[]>(() => {
-    const active = plans.filter((p) => p.status === 'active').length;
-    const inactive = plans.filter((p) => p.status === 'inactive').length;
-    const publicPlans = plans.filter((p) => p.isPublic).length;
-    const privatePlans = plans.filter((p) => !p.isPublic).length;
+  // Client-side search filtering (quick find within current page)
+  const filteredPlans = useMemo(() => {
+    if (!searchQuery.trim()) return plans;
+    const query = searchQuery.toLowerCase();
+    return plans.filter(
+      (plan) =>
+        plan.name.toLowerCase().includes(query) ||
+        plan.slug.toLowerCase().includes(query) ||
+        plan.description?.toLowerCase().includes(query)
+    );
+  }, [plans, searchQuery]);
 
-    return [
-      { value: 'all', label: t('filter.all'), count: total },
-      { value: 'active', label: t('common.status.active'), count: active },
-      { value: 'inactive', label: t('common.status.inactive'), count: inactive },
-      { value: 'public', label: t('admin.plans.public'), count: publicPlans },
-      { value: 'private', label: t('admin.plans.private'), count: privatePlans },
-    ];
-  }, [plans, total, t]);
+  // Check if we have local search filter active
+  const hasLocalFilter = searchQuery.trim().length > 0;
+
+  // Clear local search
+  const clearLocalSearch = () => {
+    setSearchQuery('');
+  };
 
   return (
     <div className="space-y-3">
-      {/* Unified Toolbar: Search + Filters + Actions */}
+      {/* Unified Toolbar: Search + Filter Button + Actions */}
       <MobileListToolbar
         searchValue={searchQuery}
         onSearchChange={setSearchQuery}
         searchPlaceholder={t('common.placeholders.search')}
-        filterOptions={filterOptions}
-        filterValue={statusFilter}
-        onFilterChange={setStatusFilter}
         onRefresh={onRefresh}
         refreshing={refreshing}
         onCreate={onCreate}
         createLabel={t('admin.plans.createPlan')}
+        extraActions={
+          <MobileFilterButton
+            hasFilters={hasFilters}
+            onClick={() => setFilterSheetOpen(true)}
+          />
+        }
       />
 
       {/* Plan List */}
       <MobileListContainer
         items={filteredPlans}
         loading={loading}
-        hasFilter={hasFilter}
+        hasFilter={hasLocalFilter || hasFilters}
         emptyIcon={Package}
         emptyTitle={t('admin.plans.table.noPlans')}
         emptyDescription={t('admin.plans.createPlan')}
         emptyAction={{ label: t('admin.plans.createPlan'), onClick: onCreate, icon: Plus }}
         filterEmptyTitle={t('common.messages.noResults')}
         filterEmptyDescription={t('subscription.tryAdjustSearch')}
-        onClearFilters={clearFilters}
+        onClearFilters={() => {
+          clearLocalSearch();
+          onClearFilters();
+        }}
         skeletonCount={5}
         skeletonMetadataCount={2}
         skeletonShowBadge={true}
@@ -186,6 +178,16 @@ export const MobilePlanManagement = ({
         onToggleStatus={onToggleStatus}
         onViewSubscriptions={onViewSubscriptions}
         onDelete={onDelete}
+      />
+
+      {/* Filter Sheet */}
+      <MobilePlanFiltersSheet
+        open={filterSheetOpen}
+        onOpenChange={setFilterSheetOpen}
+        filters={filters}
+        onFiltersChange={onFiltersChange}
+        hasFilters={hasFilters}
+        onClearFilters={onClearFilters}
       />
     </div>
   );

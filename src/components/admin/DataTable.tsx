@@ -18,7 +18,7 @@ import {
   type OnChangeFn,
 } from '@tanstack/react-table';
 import { useVirtualizer } from '@tanstack/react-virtual';
-import { Loader2, ChevronUp, ChevronDown, ChevronsUpDown } from 'lucide-react';
+import { Loader2, ChevronUp, ChevronDown, ChevronsUpDown, HelpCircle, type LucideIcon } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { AdminTablePagination } from './AdminTable';
 import { useBreakpoint, type BreakpointKey } from '@/hooks/useBreakpoint';
@@ -34,7 +34,8 @@ import {
   HoverCardTrigger,
 } from '@/components/common/HoverCard';
 import { TableRowProvider } from './TableHoverCard';
-import { HelpCircle } from 'lucide-react';
+import { Checkbox } from '@/components/common/Checkbox';
+import { Button } from '@/components/common/Button';
 
 // ============ Type Definitions ============
 
@@ -65,6 +66,20 @@ export interface ResponsiveColumnMeta {
   headerTooltip?: React.ReactNode;
 }
 
+/**
+ * Enhanced empty state configuration
+ */
+export interface EmptyStateConfig {
+  /** Custom icon component */
+  icon?: LucideIcon;
+  /** Custom message (overrides emptyMessage prop) */
+  message?: string;
+  /** Action button text */
+  actionLabel?: string;
+  /** Action button handler */
+  onAction?: () => void;
+}
+
 interface DataTableProps<TData> {
   columns: ColumnDef<TData, unknown>[];
   data: TData[];
@@ -78,14 +93,18 @@ interface DataTableProps<TData> {
   // Sorting
   sorting?: SortingState;
   onSortingChange?: OnChangeFn<SortingState>;
-  // Row selection
+  // Row selection - enables checkbox column when provided
   rowSelection?: RowSelectionState;
   onRowSelectionChange?: OnChangeFn<RowSelectionState>;
   getRowId?: (row: TData) => string;
+  /** Enable row selection with checkbox column */
+  enableRowSelection?: boolean;
   // Row click
   onRowClick?: (row: TData) => void;
   // Empty state
   emptyMessage?: string;
+  /** Enhanced empty state with action button */
+  emptyState?: EmptyStateConfig;
   // Context menu
   contextMenuContent?: (row: TData) => React.ReactNode;
   enableContextMenu?: boolean;
@@ -95,6 +114,10 @@ interface DataTableProps<TData> {
   virtualizeThreshold?: number; // Default: 50
   estimatedRowHeight?: number; // Default: 52
   maxHeight?: number | string; // Default: 600
+  /** Show skeleton loading on first load instead of spinner */
+  enableSkeletonLoading?: boolean;
+  /** Number of skeleton rows to show */
+  skeletonRowCount?: number;
 }
 
 // ============ Breakpoint Priority ============
@@ -154,6 +177,56 @@ const shouldShowColumn = (
   return currentIndex >= requiredIndex;
 };
 
+// ============ Skeleton Row Component ============
+
+const SkeletonRow = ({ colCount }: { colCount: number }) => (
+  <tr className="animate-pulse">
+    {Array.from({ length: colCount }).map((_, i) => (
+      <td key={i} className="px-3 py-3">
+        <div className="h-4 bg-muted rounded w-full max-w-[120px]" />
+      </td>
+    ))}
+  </tr>
+);
+
+// ============ Selection Column Definition ============
+
+function createSelectionColumn<TData>(): ColumnDef<TData, unknown> {
+  return {
+    id: 'select',
+    size: 48,
+    meta: {
+      priority: 1,
+      align: 'center',
+    } as ResponsiveColumnMeta,
+    header: ({ table }) => (
+      <Checkbox
+        checked={
+          table.getIsAllPageRowsSelected()
+            ? true
+            : table.getIsSomePageRowsSelected()
+              ? 'indeterminate'
+              : false
+        }
+        onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
+        aria-label="Select all"
+        className="translate-y-[2px]"
+      />
+    ),
+    cell: ({ row }) => (
+      <Checkbox
+        checked={row.getIsSelected()}
+        onCheckedChange={(value) => row.toggleSelected(!!value)}
+        aria-label="Select row"
+        className="translate-y-[2px]"
+        onClick={(e) => e.stopPropagation()}
+      />
+    ),
+    enableSorting: false,
+    enableHiding: false,
+  };
+}
+
 // ============ DataTable Component ============
 
 export function DataTable<TData>({
@@ -170,14 +243,18 @@ export function DataTable<TData>({
   rowSelection,
   onRowSelectionChange,
   getRowId,
+  enableRowSelection = false,
   onRowClick,
   emptyMessage,
+  emptyState,
   contextMenuContent,
   enableContextMenu = false,
   ariaLabel,
   virtualizeThreshold = 50,
   estimatedRowHeight = 52,
   maxHeight = 600,
+  enableSkeletonLoading = false,
+  skeletonRowCount = 5,
 }: DataTableProps<TData>) {
   const { t } = useTranslation();
   // Responsive breakpoint
@@ -190,13 +267,21 @@ export function DataTable<TData>({
   const sorting = externalSorting ?? internalSorting;
   const setSorting = onSortingChange ?? setInternalSorting;
 
+  // Add selection column if enabled
+  const columnsWithSelection = useMemo(() => {
+    if (enableRowSelection && onRowSelectionChange) {
+      return [createSelectionColumn<TData>(), ...columns];
+    }
+    return columns;
+  }, [columns, enableRowSelection, onRowSelectionChange]);
+
   // Filter visible columns based on current breakpoint
   const visibleColumns = useMemo(() => {
-    return columns.filter((col) => {
+    return columnsWithSelection.filter((col) => {
       const meta = col.meta as ResponsiveColumnMeta | undefined;
       return shouldShowColumn(meta, currentBreakpoint);
     });
-  }, [columns, currentBreakpoint]);
+  }, [columnsWithSelection, currentBreakpoint]);
 
   const table = useReactTable({
     data,
@@ -359,6 +444,14 @@ export function DataTable<TData>({
 
   // Render table body content
   const renderTableBody = () => {
+    // Skeleton loading for first load
+    if (loading && data.length === 0 && enableSkeletonLoading) {
+      return Array.from({ length: skeletonRowCount }).map((_, i) => (
+        <SkeletonRow key={`skeleton-${i}`} colCount={colCount} />
+      ));
+    }
+
+    // Spinner loading (default behavior)
     if (loading && data.length === 0) {
       return (
         <tr>
@@ -377,29 +470,47 @@ export function DataTable<TData>({
       );
     }
 
+    // Enhanced empty state
     if (rows.length === 0) {
+      const EmptyIcon = emptyState?.icon;
+      const displayMessage = emptyState?.message || emptyMessage || t('common.table.noData');
+
       return (
         <tr>
           <td colSpan={colCount} className="px-4 py-16 text-center">
             <div className="flex flex-col items-center gap-3">
               <div className="size-12 rounded-full bg-muted/80 flex items-center justify-center">
-                <svg
-                  className="size-6 text-muted-foreground"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                  strokeWidth={1.5}
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"
-                  />
-                </svg>
+                {EmptyIcon ? (
+                  <EmptyIcon className="size-6 text-muted-foreground" strokeWidth={1.5} />
+                ) : (
+                  <svg
+                    className="size-6 text-muted-foreground"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                    strokeWidth={1.5}
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"
+                    />
+                  </svg>
+                )}
               </div>
               <p className="text-muted-foreground text-sm">
-                {emptyMessage ?? t('common.table.noData')}
+                {displayMessage}
               </p>
+              {emptyState?.actionLabel && emptyState?.onAction && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={emptyState.onAction}
+                  className="mt-2"
+                >
+                  {emptyState.actionLabel}
+                </Button>
+              )}
             </div>
           </td>
         </tr>
@@ -610,3 +721,6 @@ export function DataTable<TData>({
 
 // ============ Export types for external use ============
 export type { ColumnDef, SortingState, RowSelectionState, OnChangeFn };
+
+// ============ Helper: Create selection column for external use ============
+export { createSelectionColumn };

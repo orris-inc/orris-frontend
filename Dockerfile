@@ -9,15 +9,18 @@ ARG COMMIT_HASH=dev
 ENV APP_VERSION=${APP_VERSION}
 ENV COMMIT_HASH=${COMMIT_HASH}
 
+# Enable corepack for pnpm
+RUN corepack enable && corepack prepare pnpm@latest --activate
+
 WORKDIR /app
 
-# Install dependencies (layer cached when package*.json unchanged)
-COPY package.json package-lock.json ./
-RUN npm ci
+# Install dependencies (layer cached when package.json/pnpm-lock.yaml unchanged)
+COPY package.json pnpm-lock.yaml ./
+RUN pnpm install --frozen-lockfile
 
 # Copy source code and build
 COPY . .
-RUN npm run build
+RUN pnpm run build
 
 # Stage 2: Production with Nginx
 FROM nginx:alpine

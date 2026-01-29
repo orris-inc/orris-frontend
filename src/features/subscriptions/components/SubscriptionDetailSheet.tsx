@@ -29,6 +29,7 @@ import {
   Trash2,
   RotateCw,
   RefreshCcw,
+  ArrowRightLeft,
 } from 'lucide-react';
 import {
   Sheet,
@@ -65,6 +66,7 @@ interface SubscriptionDetailSheetProps {
   onUnsuspend?: (subscription: Subscription) => void;
   onResetUsage?: (subscription: Subscription) => void;
   onDelete?: (subscription: Subscription) => void;
+  onChangePlan?: (subscription: Subscription) => void;
 }
 
 // Status configuration using CSS variables (synced with SDK 2025-01-14)
@@ -124,9 +126,12 @@ const canSuspend = (subscription: Subscription): boolean => {
 
 /**
  * Check if subscription can be renewed
+ * Allowed statuses: active (extend before expiration), past_due, expired
+ * Not allowed: suspended (must unsuspend first), cancelled, inactive, pending_payment, trialing
+ * Note: Lifetime subscriptions cannot be renewed (checked in UI component)
  */
 const canRenew = (subscription: Subscription): boolean => {
-  return subscription.status === 'expired';
+  return subscription.status === 'active' || subscription.status === 'past_due' || subscription.status === 'expired';
 };
 
 /**
@@ -135,6 +140,14 @@ const canRenew = (subscription: Subscription): boolean => {
  */
 const canResetUsage = (subscription: Subscription): boolean => {
   return subscription.status === 'active' || subscription.status === 'suspended';
+};
+
+/**
+ * Check if subscription plan can be changed
+ * Only active subscriptions can change plans
+ */
+const canChangePlan = (subscription: Subscription): boolean => {
+  return subscription.status === 'active';
 };
 
 // ============================================================================
@@ -222,6 +235,7 @@ export const SubscriptionDetailSheet: React.FC<SubscriptionDetailSheetProps> = (
   onUnsuspend,
   onResetUsage,
   onDelete,
+  onChangePlan,
 }) => {
   const { t } = useTranslation();
   const [actionSheetOpen, setActionSheetOpen] = useState(false);
@@ -253,6 +267,17 @@ export const SubscriptionDetailSheet: React.FC<SubscriptionDetailSheetProps> = (
       icon: <PlayCircle className="size-5" />,
       onPress: async () => {
         onUnsuspend(subscription);
+        onOpenChange(false);
+      },
+    });
+  }
+
+  if (canChangePlan(subscription) && onChangePlan) {
+    moreActions.push({
+      label: t('subscription.changePlan'),
+      icon: <ArrowRightLeft className="size-5" />,
+      onPress: async () => {
+        onChangePlan(subscription);
         onOpenChange(false);
       },
     });

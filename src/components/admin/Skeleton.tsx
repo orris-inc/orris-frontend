@@ -3,10 +3,14 @@
  * Unified loading states for admin pages
  *
  * Includes:
+ * - Skeleton: Base skeleton component
  * - TableSkeleton: For data tables
  * - StatsSkeleton: For stats cards grid
  * - ListSkeleton: For stacked lists
  * - CardSkeleton: Generic card loading
+ * - PageHeaderSkeleton: For page headers
+ * - ContentSkeleton: For content areas
+ * - PageSkeleton: Full page loading skeleton
  */
 
 import { cn } from '@/lib/utils';
@@ -288,6 +292,97 @@ export const PageHeaderSkeleton = ({
           ))}
         </div>
       )}
+    </div>
+  );
+};
+
+/**
+ * Content Skeleton
+ * Loading state for generic content area
+ */
+export interface ContentSkeletonProps {
+  /** Variant: 'table', 'list', 'cards', 'mixed' */
+  variant?: 'table' | 'list' | 'cards' | 'mixed';
+  /** Number of items */
+  count?: number;
+  /** Additional class names */
+  className?: string;
+}
+
+export const ContentSkeleton = ({
+  variant = 'table',
+  count = 5,
+  className,
+}: ContentSkeletonProps) => {
+  switch (variant) {
+    case 'table':
+      return <TableSkeleton rows={count} className={className} />;
+    case 'list':
+      return <ListSkeleton count={count} className={className} />;
+    case 'cards':
+      return (
+        <div className={cn('grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3', className)}>
+          {Array.from({ length: count }).map((_, i) => (
+            <CardSkeleton key={`card-${i}`} />
+          ))}
+        </div>
+      );
+    case 'mixed':
+    default:
+      return (
+        <div className={cn('space-y-6', className)}>
+          <StatsSkeleton count={4} />
+          <TableSkeleton rows={count} />
+        </div>
+      );
+  }
+};
+
+/**
+ * Page Skeleton
+ * Full page loading skeleton with header and content
+ */
+export interface PageSkeletonProps {
+  /** Show page header skeleton */
+  showHeader?: boolean;
+  /** Show toolbar/filter area skeleton */
+  showToolbar?: boolean;
+  /** Content variant */
+  contentVariant?: ContentSkeletonProps['variant'];
+  /** Number of content items */
+  contentCount?: number;
+  /** Additional class names */
+  className?: string;
+}
+
+export const PageSkeleton = ({
+  showHeader = true,
+  showToolbar = true,
+  contentVariant = 'table',
+  contentCount = 5,
+  className,
+}: PageSkeletonProps) => {
+  return (
+    <div className={cn('space-y-6', className)}>
+      {/* Page header */}
+      {showHeader && <PageHeaderSkeleton />}
+
+      {/* Toolbar / Filter area */}
+      {showToolbar && (
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          {/* Search input skeleton */}
+          <div className={cn(pulseClass, 'h-11 w-full sm:w-64 rounded-md')} />
+          {/* Filter pills */}
+          <div className="flex gap-2">
+            <div className={cn(pulseClass, 'h-8 w-20 rounded-full')} />
+            <div className={cn(pulseClass, 'h-8 w-24 rounded-full')} />
+            <div className={cn(pulseClass, 'h-8 w-16 rounded-full')} />
+          </div>
+        </div>
+      )}
+
+      {/* Content area */}
+      <ContentSkeleton variant={contentVariant} count={contentCount} />
     </div>
   );
 };

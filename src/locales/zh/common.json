@@ -59,6 +59,7 @@
       "copy": "复制Token",
       "copyAgain": "再次复制"
     },
+    "openUserMenu": "打开用户菜单",
     "yes": "是",
     "no": "否",
     "status": {
@@ -231,6 +232,7 @@
     }
   },
   "nav": {
+    "menu": "菜单",
     "home": "首页",
     "dashboard": "仪表盘",
     "admin": "管理控制台",
@@ -255,7 +257,7 @@
     "externalForwardRules": "外部转发规则",
     "resourceGroups": "资源组管理",
     "systemSettings": "系统设置",
-    "notificationSettings": "通知设置",
+    "announcements": "公告管理",
     "groups": {
       "overview": "概览",
       "business": "业务管理",
@@ -607,14 +609,6 @@
       "resourceGroups": "资源组管理",
       "systemSettings": "系统设置"
     },
-    "systemStatus": {
-      "title": "系统状态",
-      "nodeOnlineRate": "节点在线率",
-      "activeNodes": "活跃节点",
-      "activeUsers": "活跃用户",
-      "count": "{{count}} 个",
-      "settings": "设置"
-    },
     "dateRange": {
       "last7days": "最近 7 天",
       "last30days": "最近 30 天",
@@ -638,6 +632,7 @@
       "description": "代理节点",
       "confirmDelete": "删除节点 \"{{name}}\" ({{address}}:{{port}})？无法恢复。",
       "nodesUnit": "节点",
+      "searchPlaceholder": "搜索名称、地址或区域...",
       "updatable": "可更新",
       "userNodes": "用户节点",
       "showUserNodes": "显示用户创建的节点",
@@ -1112,6 +1107,7 @@
         }
       },
       "searchRules": "搜索规则",
+      "sortLabel": "排序方式",
       "sortOptions": {
         "default": "默认",
         "createdDesc": "创建 ↓",
@@ -1770,6 +1766,7 @@
       "title": "用户管理",
       "description": "管理用户",
       "usersLabel": "用户",
+      "searchPlaceholder": "搜索姓名或邮箱...",
       "confirmDelete": "确认删除用户 \"{{name}}\" ({{email}}) 吗？此操作不可恢复。",
       "assignSuccess": "成功为用户 {{name}} 分配订阅",
       "assignFailed": "分配订阅失败",
@@ -2426,7 +2423,28 @@
     "autoRenew": "自动续费",
     "autoRenewDesc": "到期后自动续订",
     "price": "价格",
-    "assignSubscriptionInfo": "管理员分配的订阅将立即生效，用户将获得对应计划的权限。"
+    "assignSubscriptionInfo": "管理员分配的订阅将立即生效，用户将获得对应计划的权限。",
+    "changePlan": "更改计划",
+    "changePlanTitle": "更改订阅计划",
+    "changePlanDesc": "为订阅 {{id}} 选择新的计划",
+    "currentPlan": "当前计划",
+    "newPlan": "新计划",
+    "changeType": "变更类型",
+    "upgrade": "升级",
+    "downgrade": "降级",
+    "effectiveDate": "生效时间",
+    "effectiveImmediate": "立即生效",
+    "effectivePeriodEnd": "当前周期结束后生效",
+    "changePlanWarning": "更改计划后，订阅的权限和配额将相应调整。",
+    "renewTitle": "续订订阅",
+    "renewDesc": "续订订阅 {{id}}",
+    "renewBillingCycle": "续订周期",
+    "renewInfo": "续订将从当前日期开始新的计费周期。",
+    "confirmRenew": "确认续订",
+    "confirmChangePlan": "确认更改",
+    "selectNewPlan": "请选择新计划",
+    "noOtherPlans": "暂无其他可用计划",
+    "lifetimeCannotRenew": "终身订阅无法续订"
   },
   "subscriptionLink": {
     "nodeMode": {
@@ -2518,7 +2536,33 @@
     "hybrid": "混合订阅"
   },
   "filter": {
-    "all": "全部"
+    "all": "全部",
+    "selectPlan": "选择套餐",
+    "allPlans": "全部套餐",
+    "billingCycle": "计费周期",
+    "allCycles": "全部周期",
+    "expiringSoon": "即将到期",
+    "allExpiry": "全部",
+    "expireIn7Days": "7天内到期",
+    "expireIn14Days": "14天内到期",
+    "expireIn30Days": "30天内到期",
+    "expireIn90Days": "90天内到期",
+    "sortBy": "排序",
+    "defaultSort": "默认排序",
+    "sortByCreatedAt": "创建时间",
+    "sortByEndDate": "到期时间",
+    "sortByStartDate": "开始时间",
+    "sortAscending": "升序",
+    "sortDescending": "降序",
+    "clearAdvanced": "清除筛选",
+    "planType": "计划类型",
+    "allTypes": "全部类型",
+    "visibility": "可见性",
+    "allVisibility": "全部",
+    "onlineStatus": "连接状态",
+    "role": "角色",
+    "allRoles": "全部角色",
+    "sortByUpdatedAt": "更新时间"
   },
   "subscriptionStatus": {
     "pendingPayment": "待支付",
@@ -2544,6 +2588,8 @@
     "subscriptionUsageResetFailed": "重置用量失败",
     "subscriptionDeleted": "订阅已删除",
     "subscriptionDeleteFailed": "删除订阅失败",
+    "subscriptionPlanChanged": "订阅计划已更改",
+    "subscriptionPlanChangeFailed": "更改订阅计划失败",
     "confirmCancel": "确认取消",
     "clearFilters": "清除筛选",
     "deleteIrreversible": "此操作不可恢复，请确认是否继续",
@@ -2677,6 +2723,20 @@
         "upgradeDesc": "获取更多流量和功能",
         "viewPlans": "查看套餐",
         "viewPlansDesc": "对比所有方案"
+      },
+      "hero": {
+        "trafficUsage": "流量使用",
+        "expiresIn": "剩余时间",
+        "of": "/",
+        "activeSubscriptions": "活跃订阅",
+        "subscriptionsRunning": "运行正常",
+        "totalTraffic": "总流量",
+        "thisMonth": "本月使用",
+        "nearestExpiry": "最近到期"
+      },
+      "announcements": {
+        "title": "公告",
+        "empty": "暂无公告"
       }
     },
     "profile": {
@@ -3652,5 +3712,143 @@
     "noAvailableNodes": "无可用节点",
     "readOnlyInfo": "只读信息",
     "systemAssigned": "系统分配"
+  },
+  "commandPalette": {
+    "title": "命令面板",
+    "trigger": "搜索命令",
+    "placeholder": "搜索命令、页面...",
+    "results": "搜索结果",
+    "noResults": "未找到结果",
+    "groups": {
+      "recent": "最近使用",
+      "quickActions": "快捷操作",
+      "navigation": "导航"
+    },
+    "actions": {
+      "viewAnnouncements": "查看公告",
+      "systemSettings": "系统设置",
+      "myProfile": "我的资料"
+    },
+    "hints": {
+      "navigate": "导航",
+      "select": "选择",
+      "close": "关闭"
+    }
+  },
+  "notificationCenter": {
+    "title": "通知",
+    "empty": "暂无通知",
+    "emptyFiltered": "当前筛选条件下暂无通知",
+    "unread": "未读",
+    "unreadCount": "{{count}} 条未读通知",
+    "noUnread": "没有未读通知",
+    "markAsRead": "标记已读",
+    "markAllAsRead": "全部标记已读",
+    "viewAll": "查看全部通知",
+    "delete": "删除通知",
+    "filters": {
+      "all": "全部",
+      "unread": "未读",
+      "system": "系统"
+    }
+  },
+  "activityFeed": {
+    "empty": "暂无活动",
+    "viewMore": "查看更多",
+    "types": {
+      "comment": "评论了",
+      "status": "更改了状态",
+      "assignment": "分配了",
+      "tag": "添加了标签",
+      "system": "系统更新",
+      "create": "创建了",
+      "update": "更新了",
+      "delete": "删除了"
+    }
+  },
+  "errorState": {
+    "title": "出错了",
+    "description": "发生了意外错误，请重试。",
+    "retry": "重试",
+    "showDetails": "显示详情",
+    "hideDetails": "隐藏详情"
+  },
+  "announcements": {
+    "pageTitle": "公告管理",
+    "pageDescription": "管理系统公告和用户通知",
+    "label": "条公告",
+    "noData": "暂无公告",
+    "status": {
+      "draft": "草稿",
+      "published": "已发布",
+      "archived": "已归档"
+    },
+    "type": {
+      "label": "类型",
+      "system": "系统公告",
+      "maintenance": "维护通知",
+      "feature": "功能更新",
+      "promotion": "促销活动"
+    },
+    "fields": {
+      "title": "标题",
+      "content": "内容",
+      "priority": "优先级",
+      "viewCount": "浏览次数",
+      "views": "次浏览",
+      "scheduledAt": "定时发布",
+      "expiresAt": "过期时间"
+    },
+    "actions": {
+      "publish": "发布",
+      "archive": "归档"
+    },
+    "create": {
+      "title": "创建公告",
+      "description": "创建一条新的公告",
+      "button": "新建公告"
+    },
+    "edit": {
+      "title": "编辑公告",
+      "description": "编辑公告：{{title}}"
+    },
+    "delete": {
+      "title": "删除公告",
+      "description": "确定要删除「{{title}}」吗？此操作无法撤销。"
+    },
+    "form": {
+      "titlePlaceholder": "请输入公告标题",
+      "contentPlaceholder": "请输入公告内容（支持 Markdown）",
+      "contentHint": "支持 Markdown 格式",
+      "priorityHint": "优先级越高的公告越靠前显示",
+      "schedule": "定时设置",
+      "scheduledAtHint": "留空则立即发布",
+      "expiresAtHint": "留空则永不过期"
+    },
+    "filters": {
+      "description": "按状态和类型筛选公告"
+    },
+    "search": {
+      "placeholder": "搜索公告..."
+    },
+    "empty": {
+      "title": "暂无公告",
+      "description": "创建第一条公告开始使用",
+      "filterTitle": "无匹配的公告",
+      "filterDescription": "请尝试调整筛选条件"
+    },
+    "messages": {
+      "createSuccess": "公告创建成功",
+      "updateSuccess": "公告更新成功",
+      "statusUpdateSuccess": "公告状态已更新",
+      "deleteSuccess": "公告删除成功",
+      "createFailed": "创建公告失败",
+      "updateFailed": "更新公告失败",
+      "publishFailed": "发布公告失败",
+      "archiveFailed": "归档公告失败",
+      "deleteFailed": "删除公告失败"
+    },
+    "sortByPriority": "优先级",
+    "sortByScheduled": "定时发布"
   }
 }

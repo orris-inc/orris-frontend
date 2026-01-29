@@ -165,6 +165,9 @@ export const useUsersPage = () => {
 
   const usersQuery = useUsers({ page, pageSize, filters });
 
+  // Check if any filters are active
+  const hasFilters = Boolean(filters.status || filters.role);
+
   const handlePageChange = (newPage: number) => {
     setPage(newPage);
   };
@@ -179,15 +182,22 @@ export const useUsersPage = () => {
     setPage(1);
   };
 
+  const clearFilters = () => {
+    setFilters({});
+    setPage(1);
+  };
+
   return {
     ...usersQuery,
     page,
     pageSize,
     filters,
+    hasFilters,
     selectedUser,
     setSelectedUser,
     handlePageChange,
     handlePageSizeChange,
     handleFiltersChange,
+    clearFilters,
   };
 };

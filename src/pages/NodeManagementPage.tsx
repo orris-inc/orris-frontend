@@ -14,9 +14,10 @@ import {
   CheckCircle2,
   Radio,
 } from 'lucide-react';
-import { Switch, SwitchThumb } from '@/components/common/Switch';
 import { Button } from '@/components/common/Button';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/common/Tooltip';
 import { NodeListTable } from '@/features/nodes/components/NodeListTable';
+import { NodeFilters } from '@/features/nodes/components/NodeFilters';
 import { CreateNodeSheet } from '@/features/nodes/components/CreateNodeSheet';
 import { EditNodeSheet } from '@/features/nodes/components/EditNodeSheet';
 import { DeleteNodeSheet } from '@/features/nodes/components/DeleteNodeSheet';
@@ -96,6 +97,10 @@ export const NodeManagementPage = () => {
     setBatchUpdateResult,
     handlePageChange,
     handlePageSizeChange,
+    extendedFilters,
+    hasFilters,
+    handleExtendedFiltersChange,
+    clearFilters,
     includeUserNodes,
     handleIncludeUserNodesChange,
     handleReorder,
@@ -132,13 +137,15 @@ export const NodeManagementPage = () => {
     }));
   }, [nodes]);
 
+  // Calculate stats from all nodes (before filtering)
   const stats = useMemo(() => {
     const total = pagination.total;
     const online = nodes.filter((n) => n.isOnline).length;
+    const offline = nodes.filter((n) => !n.isOnline).length;
     const active = nodes.filter((n) => n.status === 'active').length;
     const inactive = nodes.filter((n) => n.status === 'inactive').length;
     const updatable = nodes.filter((n) => n.hasUpdate && n.isOnline).length;
-    return { total, online, active, inactive, updatable };
+    return { total, online, offline, active, inactive, updatable };
   }, [nodes, pagination.total]);
 
   const [editDialogOpen, setEditDialogOpen] = useState(false);
@@ -340,37 +347,30 @@ export const NodeManagementPage = () => {
                     {t('admin.nodes.update')}
                   </Button>
                 )}
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  onClick={handleRefresh}
-                  className="size-9"
-                >
-                  <RefreshCw
-                    key={refreshKey}
-                    className="size-4 animate-spin-once"
-                  />
-                  <span className="sr-only">{t('common.actions.refresh')}</span>
-                </Button>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button variant="ghost" size="icon" onClick={handleRefresh}>
+                      <RefreshCw key={refreshKey} className="size-4" />
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>{t('common.actions.refresh')}</TooltipContent>
+                </Tooltip>
               </div>
             }
           />
 
-          {/* Filter toggles */}
-          <div className="flex items-center gap-6">
-            <label className="flex items-center gap-2 text-sm cursor-pointer">
-              <Switch checked={includeUserNodes} onCheckedChange={handleIncludeUserNodesChange}>
-                <SwitchThumb />
-              </Switch>
-              <span className="text-muted-foreground">{t('admin.nodes.userNodes')}</span>
-            </label>
-            <label className="flex items-center gap-2 text-sm cursor-pointer">
-              <Switch checked={dragSortEnabled} onCheckedChange={setDragSortEnabled} disabled={isReordering}>
-                <SwitchThumb />
-              </Switch>
-              <span className="text-muted-foreground">{t('common.table.sort')}</span>
-            </label>
-          </div>
+          {/* Filters */}
+          <NodeFilters
+            filters={extendedFilters}
+            onFiltersChange={handleExtendedFiltersChange}
+            hasFilters={hasFilters}
+            onClearFilters={clearFilters}
+            includeUserNodes={includeUserNodes}
+            onIncludeUserNodesChange={handleIncludeUserNodesChange}
+            dragSortEnabled={dragSortEnabled}
+            onDragSortEnabledChange={setDragSortEnabled}
+            dragSortDisabled={isReordering}
+          />
 
           {/* Node List - table has its own border/rounded styling */}
           <NodeListTable

@@ -404,14 +404,14 @@ export const RealtimeMetricsChart = memo(({
   }, [mode]);
 
   return (
-    <div className="bg-card rounded-lg border border-border overflow-hidden">
+    <div className="@container bg-card rounded-lg border border-border overflow-hidden">
       {/* Compact Header */}
       <div className="p-3">
         {/* Single row: Title + Metric tabs + Entity selector */}
-        <div className="flex items-center justify-between gap-3 mb-2">
+        <div className="flex flex-col @md:flex-row @md:items-center @md:justify-between gap-2 @md:gap-3 mb-2">
           {/* Left: Compact title */}
           <div className="flex items-center gap-2">
-            <BarChart3 className="size-4 text-primary" />
+            <BarChart3 className="size-4 text-primary shrink-0" />
             <span className="text-sm font-medium text-foreground">{t('admin.monitor.performanceMonitor')}</span>
             {selectedEntityIds.length > 0 && (
               <Badge variant="secondary" className="text-[10px] h-5">
@@ -421,7 +421,7 @@ export const RealtimeMetricsChart = memo(({
           </div>
 
           {/* Right: Metric tabs - compact pills */}
-          <div className="@container flex items-center p-0.5 rounded-md bg-muted/60 border border-border/50">
+          <div className="flex items-center p-0.5 rounded-md bg-muted/60 border border-border/50 self-start @md:self-auto">
             {(Object.keys(METRIC_CONFIG) as ChartMode[]).map((key) => {
               const config = METRIC_CONFIG[key];
               const Icon = config.icon;
@@ -445,8 +445,8 @@ export const RealtimeMetricsChart = memo(({
           </div>
         </div>
 
-        {/* Entity selector row - more compact */}
-        <div className="flex items-center gap-1.5 overflow-x-auto scrollbar-none">
+        {/* Entity selector row - scrollable on mobile */}
+        <div className="flex items-center gap-1.5 overflow-x-auto pb-1 -mb-1 scrollbar-none">
           <Popover open={selectorOpen} onOpenChange={setSelectorOpen}>
             <PopoverTrigger asChild>
               <Button
@@ -558,21 +558,21 @@ export const RealtimeMetricsChart = memo(({
             </PopoverContent>
           </Popover>
 
-          {/* Selected entity chips - compact */}
+          {/* Selected entity chips - compact with shrink-0 for stable layout */}
           {selectedEntities.map((entity) => (
             <div
               key={entity.id}
-              className="group flex items-center gap-1.5 h-7 pl-2 pr-1 rounded-md bg-muted/50 border border-border/50 hover:border-border transition-colors"
+              className="group flex items-center gap-1.5 h-7 pl-2 pr-1 rounded-md bg-muted/50 border border-border/50 hover:border-border transition-colors shrink-0"
             >
               <div
-                className="size-2 rounded-full"
+                className="size-2 rounded-full shrink-0"
                 style={{ backgroundColor: entity.colors.stroke }}
               />
-              <span className="text-xs font-medium text-foreground max-w-[80px] truncate">
+              <span className="text-xs font-medium text-foreground max-w-[60px] @sm:max-w-[80px] truncate">
                 {entity.name || entity.id.slice(0, 6)}
               </span>
               {entity.currentValue && (
-                <span className="text-[10px] text-muted-foreground tabular-nums">
+                <span className="text-[10px] text-muted-foreground tabular-nums shrink-0">
                   {mode === 'network'
                     ? formatBitRate(entity.currentValue.networkRxRate)
                     : `${(entity.currentValue[mode as 'cpu' | 'memory' | 'disk'] ?? 0).toFixed(0)}%`}
@@ -580,7 +580,7 @@ export const RealtimeMetricsChart = memo(({
               )}
               <button
                 onClick={() => removeEntity(entity.id)}
-                className="p-0.5 rounded hover:bg-destructive/10 text-muted-foreground hover:text-destructive transition-colors cursor-pointer"
+                className="p-0.5 rounded hover:bg-destructive/10 text-muted-foreground hover:text-destructive transition-colors cursor-pointer shrink-0"
               >
                 <X className="size-3" />
               </button>
@@ -589,15 +589,15 @@ export const RealtimeMetricsChart = memo(({
         </div>
       </div>
 
-      {/* Chart area - reduced height */}
-      <div className="px-3 pb-3 h-[260px]">
+      {/* Chart area - responsive height */}
+      <div className="px-3 pb-3 h-[200px] @md:h-[260px]">
         {selectedEntityIds.length === 0 ? (
           /* Empty state - Compact */
-          <div className="h-full flex items-center justify-center">
-            <div className="text-center">
-              <BarChart3 className="size-10 text-muted-foreground/20 mx-auto mb-2" />
-              <p className="text-sm text-muted-foreground mb-1">{t('admin.monitor.clickAddToSelectEntities')}</p>
-              <div className="flex items-center justify-center gap-3 text-[10px] text-muted-foreground/60">
+          <div className="h-full flex items-center justify-center bg-muted/20 rounded-lg border border-dashed border-border/60">
+            <div className="text-center px-4">
+              <BarChart3 className="size-8 @md:size-10 text-muted-foreground/30 mx-auto mb-2" />
+              <p className="text-xs @md:text-sm text-muted-foreground mb-2">{t('admin.monitor.clickAddToSelectEntities')}</p>
+              <div className="flex flex-wrap items-center justify-center gap-2 @md:gap-3 text-[10px] text-muted-foreground/60">
                 <span className="flex items-center gap-1">
                   <Activity className="size-3" />{t('admin.monitor.cpu')}
                 </span>
@@ -615,7 +615,7 @@ export const RealtimeMetricsChart = memo(({
           </div>
         ) : chartData.length === 0 ? (
           /* Loading state - Compact */
-          <div className="h-full flex items-center justify-center">
+          <div className="h-full flex items-center justify-center bg-muted/20 rounded-lg border border-dashed border-border/60">
             <div className="text-center">
               <div className="flex gap-1 items-end justify-center mb-2">
                 <div className="w-1.5 h-3 bg-primary/40 rounded-full animate-pulse motion-reduce:animate-none" />

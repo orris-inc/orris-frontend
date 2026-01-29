@@ -1,8 +1,12 @@
 /**
  * User Menu Component
  *
- * Compact dropdown menu for user profile actions.
- * Optimized for information density while maintaining usability.
+ * Dropdown menu for user profile actions following Tailwind Application UI patterns.
+ * Features:
+ * - User info header with avatar
+ * - Grouped menu sections with dividers
+ * - Keyboard navigation with focus states
+ * - Support for admin/user view switching
  */
 
 import { useTranslation } from 'react-i18next';
@@ -10,13 +14,14 @@ import * as DropdownMenuPrimitive from '@radix-ui/react-dropdown-menu';
 import * as AvatarPrimitive from '@radix-ui/react-avatar';
 import {
   User as UserIcon,
-  Home,
-  Bell,
-  Shield,
+  ArrowLeftRight,
   LogOut,
-  ChevronRight,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+
+// ============================================================================
+// Types
+// ============================================================================
 
 interface UserMenuProps {
   user: {
@@ -28,20 +33,79 @@ interface UserMenuProps {
   showAdminSwitch?: boolean;
   showUserSwitch?: boolean;
   onProfileClick: () => void;
-  onHomeClick?: () => void;
-  onNotificationsClick?: () => void;
   onAdminClick?: () => void;
   onUserClick?: () => void;
   onLogout: () => void;
 }
+
+// ============================================================================
+// Subcomponents
+// ============================================================================
+
+interface MenuItemProps {
+  icon: React.ComponentType<{ className?: string }>;
+  label: string;
+  description?: string;
+  onClick: () => void;
+  variant?: 'default' | 'danger';
+}
+
+const MenuItem = ({
+  icon: Icon,
+  label,
+  description,
+  onClick,
+  variant = 'default',
+}: MenuItemProps) => (
+  <DropdownMenuPrimitive.Item
+    className={cn(
+      'group flex w-full items-center gap-3 rounded-lg px-3 py-2',
+      'cursor-default select-none outline-none',
+      'text-sm',
+      // Default state
+      variant === 'default' && [
+        'text-foreground',
+        'data-[highlighted]:bg-accent data-[highlighted]:text-accent-foreground',
+      ],
+      // Danger variant
+      variant === 'danger' && [
+        'text-destructive',
+        'data-[highlighted]:bg-destructive/10 data-[highlighted]:text-destructive',
+      ]
+    )}
+    onSelect={onClick}
+  >
+    <Icon
+      className={cn(
+        'size-4 shrink-0',
+        variant === 'default' && 'text-muted-foreground group-data-[highlighted]:text-foreground',
+        variant === 'danger' && 'text-destructive'
+      )}
+    />
+    <div className="flex-1 min-w-0">
+      <span className="block truncate">{label}</span>
+      {description && (
+        <span className="block truncate text-xs text-muted-foreground">
+          {description}
+        </span>
+      )}
+    </div>
+  </DropdownMenuPrimitive.Item>
+);
+
+const MenuDivider = () => (
+  <DropdownMenuPrimitive.Separator className="my-1 h-px bg-border" />
+);
+
+// ============================================================================
+// UserMenu Component
+// ============================================================================
 
 export const UserMenu = ({
   user,
   showAdminSwitch = false,
   showUserSwitch = false,
   onProfileClick,
-  onHomeClick,
-  onNotificationsClick,
   onAdminClick,
   onUserClick,
   onLogout,
@@ -49,20 +113,23 @@ export const UserMenu = ({
   const { t } = useTranslation();
   const initials = user?.initials || user?.displayName?.charAt(0).toUpperCase() || '?';
 
+  const hasViewSwitch = (showAdminSwitch && onAdminClick) || (showUserSwitch && onUserClick);
+
   return (
     <DropdownMenuPrimitive.Root modal={false}>
       <DropdownMenuPrimitive.Trigger asChild>
         <button
+          type="button"
           className={cn(
             'relative flex items-center justify-center',
             'size-9 rounded-full',
-            'ring-offset-background transition-all duration-150',
-            'hover:ring-2 hover:ring-primary/20',
-            'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring'
+            'ring-offset-background',
+            'transition-opacity hover:opacity-80',
+            'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2'
           )}
-          aria-label="Open user menu"
+          aria-label={t('common.openUserMenu')}
         >
-          <AvatarPrimitive.Root className="size-8 overflow-hidden rounded-full">
+          <AvatarPrimitive.Root className="size-8 overflow-hidden rounded-full ring-1 ring-border">
             {user?.avatarUrl && (
               <AvatarPrimitive.Image
                 src={user.avatarUrl}
@@ -71,7 +138,11 @@ export const UserMenu = ({
               />
             )}
             <AvatarPrimitive.Fallback
-              className="flex size-full items-center justify-center rounded-full bg-primary text-primary-foreground text-xs font-semibold"
+              className={cn(
+                'flex size-full items-center justify-center',
+                'bg-muted text-muted-foreground',
+                'text-xs font-medium'
+              )}
             >
               {initials}
             </AvatarPrimitive.Fallback>
@@ -82,94 +153,86 @@ export const UserMenu = ({
       <DropdownMenuPrimitive.Portal>
         <DropdownMenuPrimitive.Content
           className={cn(
-            'z-50 min-w-[180px] overflow-hidden rounded-lg border bg-popover shadow-md',
+            'z-50 w-56 overflow-hidden rounded-xl',
+            'bg-popover text-popover-foreground',
+            'border border-border shadow-lg',
+            // Animation
             'data-[state=open]:animate-in data-[state=closed]:animate-out',
             'data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0',
             'data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95',
-            'data-[side=bottom]:slide-in-from-top-1'
+            'data-[side=bottom]:slide-in-from-top-2',
+            'data-[side=top]:slide-in-from-bottom-2'
           )}
           align="end"
-          sideOffset={4}
+          sideOffset={8}
         >
-          {/* Compact User Header */}
-          <div className="flex items-center gap-2.5 px-3 py-2.5 border-b border-border/50">
-            <AvatarPrimitive.Root className="size-8 shrink-0 overflow-hidden rounded-full">
-              {user?.avatarUrl && (
-                <AvatarPrimitive.Image
-                  src={user.avatarUrl}
-                  alt={user?.displayName || 'User avatar'}
-                  className="size-full object-cover"
-                />
-              )}
-              <AvatarPrimitive.Fallback
-                className="flex size-full items-center justify-center rounded-full bg-primary text-primary-foreground text-xs font-semibold"
-              >
-                {initials}
-              </AvatarPrimitive.Fallback>
-            </AvatarPrimitive.Root>
-            <div className="min-w-0 flex-1">
-              <p className="text-sm font-medium text-foreground truncate leading-tight">
-                {user?.displayName || 'User'}
-              </p>
-              <p className="text-[11px] text-muted-foreground truncate leading-tight">
-                {user?.email}
-              </p>
+          {/* User Info Header */}
+          <div className="px-3 py-3 border-b border-border">
+            <div className="flex items-center gap-3">
+              <AvatarPrimitive.Root className="size-10 shrink-0 overflow-hidden rounded-full ring-1 ring-border">
+                {user?.avatarUrl && (
+                  <AvatarPrimitive.Image
+                    src={user.avatarUrl}
+                    alt={user?.displayName || 'User avatar'}
+                    className="size-full object-cover"
+                  />
+                )}
+                <AvatarPrimitive.Fallback
+                  className={cn(
+                    'flex size-full items-center justify-center',
+                    'bg-muted text-muted-foreground',
+                    'text-sm font-medium'
+                  )}
+                >
+                  {initials}
+                </AvatarPrimitive.Fallback>
+              </AvatarPrimitive.Root>
+              <div className="min-w-0 flex-1">
+                <p className="text-sm font-semibold text-foreground truncate">
+                  {user?.displayName || 'User'}
+                </p>
+                <p className="text-xs text-muted-foreground truncate">
+                  {user?.email}
+                </p>
+              </div>
             </div>
           </div>
 
-          {/* Menu Items */}
-          <div className="py-1">
+          {/* Profile Section */}
+          <div className="p-1">
             <MenuItem
               icon={UserIcon}
               label={t('nav.profile')}
               onClick={onProfileClick}
             />
-            {onNotificationsClick && (
-              <MenuItem
-                icon={Bell}
-                label={t('nav.notifications')}
-                onClick={onNotificationsClick}
-              />
-            )}
-            {onHomeClick && (
-              <>
-                <DropdownMenuPrimitive.Separator className="my-1 h-px bg-border/50" />
-                <MenuItem
-                  icon={Home}
-                  label={t('nav.home')}
-                  onClick={onHomeClick}
-                />
-              </>
-            )}
+          </div>
 
-            {/* Admin/User Switch */}
-            {(showAdminSwitch && onAdminClick) && (
-              <>
-                <DropdownMenuPrimitive.Separator className="my-1 h-px bg-border/50" />
-                <MenuItem
-                  icon={Shield}
-                  label={t('nav.switchToAdmin')}
-                  onClick={onAdminClick}
-                  variant="primary"
-                  showArrow
-                />
-              </>
-            )}
-            {(showUserSwitch && onUserClick) && (
-              <>
-                <DropdownMenuPrimitive.Separator className="my-1 h-px bg-border/50" />
-                <MenuItem
-                  icon={Shield}
-                  label={t('nav.switchToUser')}
-                  onClick={onUserClick}
-                  variant="primary"
-                  showArrow
-                />
-              </>
-            )}
+          {/* View Switch Section */}
+          {hasViewSwitch && (
+            <>
+              <MenuDivider />
+              <div className="p-1">
+                {showAdminSwitch && onAdminClick && (
+                  <MenuItem
+                    icon={ArrowLeftRight}
+                    label={t('nav.switchToAdmin')}
+                    onClick={onAdminClick}
+                  />
+                )}
+                {showUserSwitch && onUserClick && (
+                  <MenuItem
+                    icon={ArrowLeftRight}
+                    label={t('nav.switchToUser')}
+                    onClick={onUserClick}
+                  />
+                )}
+              </div>
+            </>
+          )}
 
-            {/* Logout */}
-            <DropdownMenuPrimitive.Separator className="my-1 h-px bg-border/50" />
+          {/* Logout Section */}
+          <MenuDivider />
+          <div className="p-1">
             <MenuItem
               icon={LogOut}
               label={t('nav.logout')}
@@ -183,44 +246,4 @@ export const UserMenu = ({
   );
 };
 
-/**
- * Compact Menu Item
- */
-interface MenuItemProps {
-  icon: React.ComponentType<{ className?: string }>;
-  label: string;
-  onClick: () => void;
-  variant?: 'default' | 'primary' | 'danger';
-  showArrow?: boolean;
-}
-
-const MenuItem = ({
-  icon: Icon,
-  label,
-  onClick,
-  variant = 'default',
-  showArrow = false,
-}: MenuItemProps) => (
-  <DropdownMenuPrimitive.Item
-    className={cn(
-      'flex items-center gap-2 px-3 py-1.5 mx-1 rounded-md',
-      'cursor-pointer select-none outline-none',
-      'transition-colors duration-100',
-      variant === 'default' && 'text-foreground hover:bg-accent focus:bg-accent',
-      variant === 'primary' && 'text-primary hover:bg-primary/10 focus:bg-primary/10',
-      variant === 'danger' && 'text-destructive hover:bg-destructive/10 focus:bg-destructive/10'
-    )}
-    onSelect={onClick}
-  >
-    <Icon
-      className={cn(
-        'size-4 shrink-0',
-        variant === 'default' && 'text-muted-foreground',
-        variant === 'primary' && 'text-primary',
-        variant === 'danger' && 'text-destructive'
-      )}
-    />
-    <span className="flex-1 text-[13px]">{label}</span>
-    {showArrow && <ChevronRight className="size-3.5 text-muted-foreground" />}
-  </DropdownMenuPrimitive.Item>
-);
+export type { UserMenuProps };

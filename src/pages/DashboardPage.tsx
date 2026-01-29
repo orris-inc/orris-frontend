@@ -1,10 +1,15 @@
 /**
  * Dashboard Main Page - User Overview
- * Modern Bento Grid layout with usage stats and subscription management
+ * Modern Bento Grid layout with Hero stats and subscription management
+ *
+ * Hero Section adapts based on subscription count:
+ * - Single subscription: Traffic usage (with progress) + Expiry time
+ * - Multiple subscriptions: Active count + Nearest expiry + Total traffic
  */
 
 import { useEffect, useState, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
+import { useQuery } from '@tanstack/react-query';
 import {
   CircleAlert,
   CreditCard,
@@ -16,15 +21,22 @@ import {
   AlertTriangle,
   Clock,
   History,
+  Bell,
+  Megaphone,
+  Wrench,
+  Gift,
+  Info,
 } from 'lucide-react';
 import { DashboardLayout } from '@/layouts/DashboardLayout';
 import { useAuthStore } from '@/features/auth/stores/auth-store';
 import { usePageTitle } from '@/shared/hooks';
 import { getDashboard } from '@/api/user';
-import { getTrafficStats } from '@/api/subscription';
+import { listPublicAnnouncements } from '@/api/notification';
+import type { Announcement, AnnouncementType } from '@/api/notification/types';
+import { queryKeys } from '@/shared/lib/query-client';
 import type { DashboardResponse, DashboardSubscription } from '@/api/user/types';
-import { SubscriptionEntryCard } from '@/components/dashboard/SubscriptionEntryCard';
-import { getBadgeClass, getButtonClass } from '@/lib/ui-styles';
+import { SubscriptionEntryCard, HeroStatsSection } from '@/components/dashboard';
+import { getButtonClass } from '@/lib/ui-styles';
 import { cn } from '@/lib/utils';
 import { ViewTransitionLink } from '@/components/common/ViewTransitionLink';
 import {
@@ -32,7 +44,6 @@ import {
   EmptyState,
   QuickActionLink,
 } from '@/components/common/bento';
-import { formatDate } from '@/shared/utils/date-utils';
 
 /**
  * Subscription status groups for display
@@ -73,18 +84,6 @@ const groupSubscriptions = (subscriptions: DashboardSubscription[]) => {
   return groups;
 };
 
-/**
- * Format bytes to readable traffic units
- */
-const formatTraffic = (bytes: number): { value: string; unit: string } => {
-  if (bytes === 0) return { value: '0', unit: 'B' };
-  const units = ['B', 'KB', 'MB', 'GB', 'TB'] as const;
-  const k = 1024;
-  const i = Math.min(Math.floor(Math.log(bytes) / Math.log(k)), units.length - 1);
-  const value = (bytes / Math.pow(k, i)).toFixed(1);
-  return { value, unit: units[i] };
-};
-
 /** Status message type for dynamic welcome message */
 type StatusType = 'noSubscription' | 'expiringSoon' | 'highUsage' | 'allGood';
 
@@ -98,6 +97,42 @@ const statusVariantStyles: Record<StatusMessage['variant'], string> = {
   warning: 'text-warning',
   info: 'text-muted-foreground',
   success: 'text-success',
+};
+
+/**
+ * Get icon for announcement type
+ */
+const getAnnouncementIcon = (type: AnnouncementType) => {
+  switch (type) {
+    case 'system':
+      return Info;
+    case 'maintenance':
+      return Wrench;
+    case 'feature':
+      return Sparkles;
+    case 'promotion':
+      return Gift;
+    default:
+      return Megaphone;
+  }
+};
+
+/**
+ * Get style for announcement type
+ */
+const getAnnouncementTypeStyle = (type: AnnouncementType) => {
+  switch (type) {
+    case 'system':
+      return 'text-blue-500';
+    case 'maintenance':
+      return 'text-amber-500';
+    case 'feature':
+      return 'text-emerald-500';
+    case 'promotion':
+      return 'text-purple-500';
+    default:
+      return 'text-muted-foreground';
+  }
 };
 
 /**
@@ -166,89 +201,6 @@ const getStatusMessage = (
   };
 };
 
-/**
- * Trend range helper
- */
-const getTrendDays = (range: '7d' | '30d' | '90d') => (range === '7d' ? 7 : range === '30d' ? 30 : 90);
-
-/**
- * Build day keys for a date range
- */
-const buildDayKeys = (from: Date, days: number) =>
-  Array.from({ length: days }, (_, index) => {
-    const d = new Date(from);
-    d.setDate(from.getDate() + index);
-    return d.toISOString().slice(0, 10);
-  });
-
-/**
- * Build trend bars from traffic stats records
- */
-const buildTrendBars = (
-  records: { total: number; period: string }[],
-  range: '7d' | '30d' | '90d'
-) => {
-  const days = getTrendDays(range);
-  const to = new Date();
-  const from = new Date();
-  from.setDate(to.getDate() - (days - 1));
-  from.setHours(0, 0, 0, 0);
-
-  const dayKeys = buildDayKeys(from, days);
-  const totalsByDay = dayKeys.reduce<Record<string, number>>((acc, key) => {
-    acc[key] = 0;
-    return acc;
-  }, {});
-
-  records.forEach((record) => {
-    const date = new Date(record.period);
-    if (Number.isNaN(date.getTime())) return;
-    const key = date.toISOString().slice(0, 10);
-    if (key in totalsByDay) {
-      totalsByDay[key] += record.total;
-    }
-  });
-
-  const dailyTotals = dayKeys.map((key) => totalsByDay[key]);
-  const bucketCount = range === '7d' ? 7 : range === '30d' ? 12 : 18;
-  const bucketSize = Math.ceil(dailyTotals.length / bucketCount);
-  const buckets = Array.from({ length: bucketCount }, (_, index) => {
-    const start = index * bucketSize;
-    const end = Math.min(dailyTotals.length, start + bucketSize);
-    const slice = dailyTotals.slice(start, end);
-    return slice.reduce((sum, value) => sum + value, 0);
-  });
-
-  const maxValue = Math.max(...buckets, 1);
-  return buckets.map((value) => Math.max(6, Math.round((value / maxValue) * 100)));
-};
-
-/**
- * Get status badge for subscription
- */
-const getStatusBadge = (status: string, t: ReturnType<typeof useTranslation>['t']) => {
-  switch (status) {
-    case 'active':
-      return { label: t('common.status.active'), variant: 'success' as const };
-    case 'trialing':
-      return { label: t('subscriptionStatus.trialing'), variant: 'info' as const };
-    case 'past_due':
-      return { label: t('subscriptionStatus.pastDue'), variant: 'warning' as const };
-    case 'pending_payment':
-      return { label: t('subscriptionStatus.pendingPayment'), variant: 'warning' as const };
-    case 'suspended':
-      return { label: t('common.status.suspended'), variant: 'destructive' as const };
-    case 'expired':
-      return { label: t('common.status.expired'), variant: 'destructive' as const };
-    case 'cancelled':
-      return { label: t('common.status.cancelled'), variant: 'outline' as const };
-    case 'inactive':
-      return { label: t('common.status.inactive'), variant: 'secondary' as const };
-    default:
-      return { label: status, variant: 'secondary' as const };
-  }
-};
-
 export const DashboardPage = () => {
   const { t } = useTranslation();
   usePageTitle(t('user.dashboard.title'));
@@ -273,6 +225,14 @@ export const DashboardPage = () => {
     fetchData();
   }, []);
 
+  // Fetch public announcements
+  const { data: announcementsData, isLoading: isAnnouncementsLoading } = useQuery({
+    queryKey: queryKeys.announcements.public({ page: 1, pageSize: 5 }),
+    queryFn: () => listPublicAnnouncements({ page: 1, pageSize: 5 }),
+  });
+
+  const announcements = announcementsData?.items ?? [];
+
   // Group subscriptions by status category
   const groupedSubscriptions = useMemo(() => {
     if (!dashboardData) return null;
@@ -281,15 +241,18 @@ export const DashboardPage = () => {
 
   // Track collapsed state for history section
   const [isHistoryExpanded, setIsHistoryExpanded] = useState(false);
-  const [trendRange, setTrendRange] = useState<'7d' | '30d' | '90d'>('30d');
 
   const statusMessage = useMemo(() => {
     if (!dashboardData) return null;
     return getStatusMessage(t, dashboardData.subscriptions);
   }, [dashboardData, t]);
 
-  const [trendLoading, setTrendLoading] = useState(false);
-  const [trendBars, setTrendBars] = useState<number[]>([]);
+  const subscriptions = dashboardData?.subscriptions ?? [];
+  const activeSubscriptions = useMemo(
+    () => subscriptions.filter((subscription) => subscription.isActive),
+    [subscriptions]
+  );
+  const totalUsage = dashboardData?.totalUsage ?? { upload: 0, download: 0, total: 0 };
 
   if (!user) {
     return (
@@ -301,58 +264,6 @@ export const DashboardPage = () => {
       </DashboardLayout>
     );
   }
-
-  const subscriptions = dashboardData?.subscriptions ?? [];
-  const activeSubscriptions = subscriptions.filter((subscription) => subscription.isActive);
-  const primarySubscription = activeSubscriptions[0];
-  const primaryStatus = primarySubscription
-    ? getStatusBadge(primarySubscription.status, t)
-    : null;
-  const remainingDays =
-    primarySubscription && primarySubscription.currentPeriodEnd
-      ? getDaysUntilExpiry(primarySubscription.currentPeriodEnd)
-      : null;
-  const trafficLimit =
-    (primarySubscription?.plan?.limits as { trafficLimit?: number } | undefined)?.trafficLimit ?? 0;
-  const hasTrafficLimit = trafficLimit > 0;
-  const usage = primarySubscription?.usage?.total ?? 0;
-  const usagePercent = hasTrafficLimit ? Math.min(100, Math.round((usage / trafficLimit) * 100)) : 0;
-  const usageUsed = formatTraffic(usage);
-  const usageCap = formatTraffic(trafficLimit);
-
-  useEffect(() => {
-    const fetchTrend = async () => {
-      if (!primarySubscription) {
-        setTrendBars([]);
-        return;
-      }
-      setTrendLoading(true);
-      try {
-        const days = getTrendDays(trendRange);
-        const to = new Date();
-        const from = new Date();
-        from.setDate(to.getDate() - (days - 1));
-        from.setHours(0, 0, 0, 0);
-
-        const data = await getTrafficStats(primarySubscription.id, {
-          from: from.toISOString(),
-          to: to.toISOString(),
-          granularity: 'day',
-          page: 1,
-          pageSize: 1000,
-        });
-
-        const bars = buildTrendBars(data.records, trendRange);
-        setTrendBars(bars);
-      } catch {
-        setTrendBars([]);
-      } finally {
-        setTrendLoading(false);
-      }
-    };
-
-    fetchTrend();
-  }, [primarySubscription?.id, trendRange]);
 
   return (
     <DashboardLayout
@@ -386,6 +297,13 @@ export const DashboardPage = () => {
       }
     >
       <div className="space-y-6 pb-safe">
+        {/* Hero Stats Section - Full width, adaptive display */}
+        <HeroStatsSection
+          subscriptions={subscriptions}
+          totalUsage={totalUsage}
+          isLoading={isLoading}
+        />
+
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
           <main className="lg:col-span-8 space-y-6">
             {/* Subscriptions Section */}
@@ -573,154 +491,59 @@ export const DashboardPage = () => {
           </main>
 
           <aside className="lg:col-span-4 space-y-6">
-            {/* Current Plan Card */}
-            {primarySubscription && primaryStatus && (
-              <section className="rounded-lg border bg-card p-4 sm:p-6 shadow-sm">
-                <div className="flex items-start justify-between gap-3">
-                  <div className="min-w-0">
-                    <p className="text-xs text-muted-foreground">
-                      {t('user.dashboard.currentPlan.title')}
-                    </p>
-                    <h3 className="mt-1 text-base font-semibold text-foreground truncate">
-                      {primarySubscription.plan?.name ||
-                        t('user.dashboard.subscription.unknownPlan')}
-                    </h3>
-                  </div>
-                  <span
-                    className={cn(
-                      getBadgeClass(primaryStatus.variant),
-                      'text-[10px] sm:text-xs shrink-0'
-                    )}
-                  >
-                    {primaryStatus.label}
-                  </span>
-                </div>
-                <div className="mt-3 space-y-2 text-xs text-muted-foreground">
-                  <div className="flex items-center justify-between">
-                    <span>{t('user.dashboard.currentPlan.expires')}</span>
-                    <span className="text-foreground">
-                      {formatDate(primarySubscription.currentPeriodEnd)}
-                    </span>
-                  </div>
-                  {remainingDays !== null && remainingDays > 0 && (
-                    <div className="flex items-center justify-between">
-                      <span>{t('user.dashboard.currentPlan.remaining')}</span>
-                      <span className="text-foreground tabular-nums">
-                        {t('common.time.days', { count: remainingDays })}
-                      </span>
-                    </div>
-                  )}
-                </div>
-                <ViewTransitionLink
-                  to={`/dashboard/subscriptions/${primarySubscription.id}`}
-                  className={cn(
-                    getButtonClass('secondary', 'sm'),
-                    'mt-4 w-full inline-flex items-center justify-center gap-2'
-                  )}
-                >
-                  {t('user.dashboard.currentPlan.manage')}
-                  <ChevronRight className="size-4" />
-                </ViewTransitionLink>
-              </section>
-            )}
+            {/* Announcements Card */}
+            <section className="rounded-lg border bg-card p-4 sm:p-6 shadow-sm">
+              <div className="flex items-center gap-2 mb-3">
+                <Bell className="size-4 text-muted-foreground" />
+                <h3 className="text-sm font-medium text-foreground">
+                  {t('user.dashboard.announcements.title')}
+                </h3>
+              </div>
 
-            {/* Usage Progress Card */}
-            {primarySubscription && (
-              <section className="rounded-lg border bg-card p-4 sm:p-6 shadow-sm">
-                <div className="flex items-center justify-between">
-                  <h3 className="text-sm font-medium text-foreground">
-                    {t('dashboard.traffic.title')}
-                  </h3>
-                  <span className="text-xs text-muted-foreground">
-                    {hasTrafficLimit
-                      ? `${usagePercent}${t('dashboard.traffic.percentUsed')}`
-                      : t('common.unlimited')}
-                  </span>
+              {/* Loading State */}
+              {isAnnouncementsLoading && (
+                <div className="flex items-center justify-center py-6">
+                  <Loader2 className="size-4 animate-spin text-muted-foreground" />
                 </div>
-                {hasTrafficLimit && (
-                  <div className="mt-3 h-2 rounded-full bg-muted">
-                    <div
-                      className="h-2 rounded-full bg-primary transition-all"
-                      style={{ width: `${usagePercent}%` }}
-                    />
-                  </div>
-                )}
-                <div className="mt-2 text-xs text-muted-foreground">
-                  {usageUsed.value}
-                  {usageUsed.unit}
-                  {hasTrafficLimit && (
-                    <>
-                      {' '}
-                      / {usageCap.value}
-                      {usageCap.unit}
-                    </>
-                  )}
-                </div>
-                <p className="mt-2 text-xs text-muted-foreground">
-                  {t('dashboard.traffic.monthlyUsage')}
-                </p>
-              </section>
-            )}
+              )}
 
-            {/* Usage Trend Card */}
-            {primarySubscription && (
-              <section className="rounded-lg border bg-card p-4 sm:p-6 shadow-sm">
-                <div className="flex items-start justify-between gap-3">
-                  <div>
-                    <h3 className="text-sm font-medium text-foreground">
-                      {t('user.dashboard.usageTrend.title')}
-                    </h3>
-                    <p className="text-xs text-muted-foreground">
-                      {t('user.dashboard.usageTrend.subtitle')}
-                    </p>
-                  </div>
-                  <div className="flex items-center gap-1 rounded-full bg-muted p-1">
-                    {(['7d', '30d', '90d'] as const).map((range) => (
-                      <button
-                        key={range}
-                        type="button"
-                        onClick={() => setTrendRange(range)}
-                        aria-pressed={trendRange === range}
-                        className={cn(
-                          'px-2 py-1 text-[10px] font-medium rounded-full transition-colors',
-                          trendRange === range
-                            ? 'bg-background text-foreground shadow-sm'
-                            : 'text-muted-foreground hover:text-foreground'
-                        )}
+              {/* Empty State */}
+              {!isAnnouncementsLoading && announcements.length === 0 && (
+                <div className="py-6 text-center">
+                  <p className="text-sm text-muted-foreground">
+                    {t('user.dashboard.announcements.empty')}
+                  </p>
+                </div>
+              )}
+
+              {/* Announcements List */}
+              {!isAnnouncementsLoading && announcements.length > 0 && (
+                <div className="space-y-3">
+                  {announcements.map((announcement: Announcement) => {
+                    const Icon = getAnnouncementIcon(announcement.type);
+                    const typeStyle = getAnnouncementTypeStyle(announcement.type);
+                    return (
+                      <div
+                        key={announcement.id}
+                        className="group flex gap-3 p-3 -mx-3 rounded-lg hover:bg-muted/50 transition-colors cursor-pointer"
                       >
-                        {t(`user.dashboard.usageTrend.ranges.${range}`)}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-                <div className="mt-4 h-24">
-                  {trendLoading ? (
-                    <div className="h-full rounded-md bg-muted/60 animate-pulse" />
-                  ) : trendBars.length > 0 ? (
-                    <div className="flex items-end gap-1.5 h-full">
-                      {trendBars.map((value, index) => (
-                        <div
-                          key={`${trendRange}-${index}`}
-                          className="flex-1 rounded-sm bg-muted/60 overflow-hidden"
-                        >
-                          <div
-                            className="w-full rounded-sm bg-primary/70 transition-all"
-                            style={{ height: `${value}%` }}
-                          />
+                        <div className={cn('shrink-0 mt-0.5', typeStyle)}>
+                          <Icon className="size-4" />
                         </div>
-                      ))}
-                    </div>
-                  ) : (
-                    <div className="h-full flex items-center justify-center text-xs text-muted-foreground">
-                      {t('common.messages.noData')}
-                    </div>
-                  )}
+                        <div className="min-w-0 flex-1">
+                          <p className="text-sm font-medium text-foreground line-clamp-1 group-hover:text-primary transition-colors">
+                            {announcement.title}
+                          </p>
+                          <p className="text-xs text-muted-foreground mt-0.5">
+                            {new Date(announcement.createdAt).toLocaleDateString()}
+                          </p>
+                        </div>
+                      </div>
+                    );
+                  })}
                 </div>
-                <p className="mt-2 text-xs text-muted-foreground">
-                  {t('user.dashboard.usageTrend.note')}
-                </p>
-              </section>
-            )}
+              )}
+            </section>
 
             {/* Quick Actions - Mobile-first full width */}
             {!isLoading && subscriptions.length > 0 && (

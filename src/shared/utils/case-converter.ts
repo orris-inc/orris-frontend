@@ -1,49 +1,35 @@
 /**
- * Case converter utilities for SSE events
- * Uses camel-case library (same as axios-case-converter)
- * SSE events bypass axios, so they need manual case conversion
+ * Case converter utilities for SSE data
+ * Converts snake_case objects to camelCase
  */
-
-import { camelCase } from 'camel-case';
 
 /**
- * Check if a key should be preserved (not transformed)
- * Matches the preservedKeys logic in axios.ts
- * Preserves ID keys that start with fa_, fr_, node_, user_ prefixes and are longer than 10 chars
+ * Convert a snake_case string to camelCase
  */
-function shouldPreserveKey(key: string): boolean {
-  return /^(fa|fr|node|user)_/.test(key) && key.length > 10;
+function snakeToCamel(str: string): string {
+  return str.replace(/_([a-z])/g, (_, letter) => letter.toUpperCase());
 }
 
 /**
- * Convert snake_case keys to camelCase recursively
- * Uses the same camel-case library as axios-case-converter
+ * Recursively convert all keys in an object from snake_case to camelCase
  */
-function convertKeysRecursive(obj: unknown): unknown {
+export function convertSnakeToCamel<T>(obj: unknown): T {
   if (obj === null || obj === undefined) {
-    return obj;
+    return obj as T;
   }
 
   if (Array.isArray(obj)) {
-    return obj.map(convertKeysRecursive);
+    return obj.map((item) => convertSnakeToCamel(item)) as T;
   }
 
   if (typeof obj === 'object') {
-    const result: Record<string, unknown> = {};
-    for (const [key, value] of Object.entries(obj as Record<string, unknown>)) {
-      const newKey = shouldPreserveKey(key) ? key : camelCase(key);
-      result[newKey] = convertKeysRecursive(value);
+    const converted: Record<string, unknown> = {};
+    for (const [key, value] of Object.entries(obj)) {
+      const camelKey = snakeToCamel(key);
+      converted[camelKey] = convertSnakeToCamel(value);
     }
-    return result;
+    return converted as T;
   }
 
-  return obj;
-}
-
-/**
- * Convert snake_case object to camelCase with preserved ID keys
- * Wrapper function with pre-configured options matching axios client
- */
-export function convertSnakeToCamel<T>(data: unknown): T {
-  return convertKeysRecursive(data) as T;
+  return obj as T;
 }

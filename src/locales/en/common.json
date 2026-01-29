@@ -59,6 +59,7 @@
       "copy": "Copy Token",
       "copyAgain": "Copy Again"
     },
+    "openUserMenu": "Open user menu",
     "yes": "Yes",
     "no": "No",
     "status": {
@@ -231,6 +232,7 @@
     }
   },
   "nav": {
+    "menu": "Menu",
     "home": "Home",
     "dashboard": "Dashboard",
     "admin": "Admin Console",
@@ -255,7 +257,7 @@
     "externalForwardRules": "External Forward Rules",
     "resourceGroups": "Resource Groups",
     "systemSettings": "System Settings",
-    "notificationSettings": "Notification Settings",
+    "announcements": "Announcements",
     "groups": {
       "overview": "Overview",
       "business": "Business",
@@ -607,14 +609,6 @@
       "resourceGroups": "Resource Groups",
       "systemSettings": "System Settings"
     },
-    "systemStatus": {
-      "title": "System Status",
-      "nodeOnlineRate": "Node Online Rate",
-      "activeNodes": "Active Nodes",
-      "activeUsers": "Active Users",
-      "count": "{{count}}",
-      "settings": "Settings"
-    },
     "dateRange": {
       "last7days": "Last 7 Days",
       "last30days": "Last 30 Days",
@@ -638,6 +632,7 @@
       "description": "Manage proxy nodes",
       "confirmDelete": "Delete node \"{{name}}\" ({{address}}:{{port}})? Cannot be undone.",
       "nodesUnit": "nodes",
+      "searchPlaceholder": "Search by name, address or region...",
       "updatable": "Updatable",
       "userNodes": "User Nodes",
       "showUserNodes": "Show user-created nodes",
@@ -1112,6 +1107,7 @@
         }
       },
       "searchRules": "Search rules",
+      "sortLabel": "Sort By",
       "sortOptions": {
         "default": "Default",
         "createdDesc": "Created Desc",
@@ -1770,6 +1766,7 @@
       "title": "User Management",
       "description": "Manage users",
       "usersLabel": "Users",
+      "searchPlaceholder": "Search by name or email...",
       "confirmDelete": "Are you sure you want to delete user \"{{name}}\" ({{email}})? This action cannot be undone.",
       "assignSuccess": "Successfully assigned subscription to user {{name}}",
       "assignFailed": "Failed to assign subscription",
@@ -2426,7 +2423,28 @@
     "autoRenew": "Auto Renew",
     "autoRenewDesc": "Auto-renew when expired",
     "price": "Price",
-    "assignSubscriptionInfo": "Admin-assigned subscriptions take effect immediately."
+    "assignSubscriptionInfo": "Admin-assigned subscriptions take effect immediately.",
+    "changePlan": "Change Plan",
+    "changePlanTitle": "Change Subscription Plan",
+    "changePlanDesc": "Select a new plan for subscription {{id}}",
+    "currentPlan": "Current Plan",
+    "newPlan": "New Plan",
+    "changeType": "Change Type",
+    "upgrade": "Upgrade",
+    "downgrade": "Downgrade",
+    "effectiveDate": "Effective Date",
+    "effectiveImmediate": "Immediate",
+    "effectivePeriodEnd": "At Period End",
+    "changePlanWarning": "After changing the plan, the subscription's permissions and quotas will be adjusted accordingly.",
+    "renewTitle": "Renew Subscription",
+    "renewDesc": "Renew subscription {{id}}",
+    "renewBillingCycle": "Renewal Cycle",
+    "renewInfo": "Renewal will start a new billing cycle from the current date.",
+    "confirmRenew": "Confirm Renewal",
+    "confirmChangePlan": "Confirm Change",
+    "selectNewPlan": "Select a new plan",
+    "noOtherPlans": "No other plans available",
+    "lifetimeCannotRenew": "Lifetime subscriptions cannot be renewed"
   },
   "subscriptionLink": {
     "nodeMode": {
@@ -2518,7 +2536,33 @@
     "hybrid": "Hybrid Subscription"
   },
   "filter": {
-    "all": "All"
+    "all": "All",
+    "selectPlan": "Select Plan",
+    "allPlans": "All Plans",
+    "billingCycle": "Billing Cycle",
+    "allCycles": "All Cycles",
+    "expiringSoon": "Expiring Soon",
+    "allExpiry": "All",
+    "expireIn7Days": "Expires in 7 days",
+    "expireIn14Days": "Expires in 14 days",
+    "expireIn30Days": "Expires in 30 days",
+    "expireIn90Days": "Expires in 90 days",
+    "sortBy": "Sort By",
+    "defaultSort": "Default",
+    "sortByCreatedAt": "Created Time",
+    "sortByEndDate": "Expiry Date",
+    "sortByStartDate": "Start Date",
+    "sortAscending": "Ascending",
+    "sortDescending": "Descending",
+    "clearAdvanced": "Clear Filters",
+    "planType": "Plan Type",
+    "allTypes": "All Types",
+    "visibility": "Visibility",
+    "allVisibility": "All",
+    "onlineStatus": "Online Status",
+    "role": "Role",
+    "allRoles": "All Roles",
+    "sortByUpdatedAt": "Updated"
   },
   "subscriptionStatus": {
     "pendingPayment": "Pending Payment",
@@ -2544,6 +2588,8 @@
     "subscriptionUsageResetFailed": "Failed to reset usage",
     "subscriptionDeleted": "Subscription deleted",
     "subscriptionDeleteFailed": "Failed to delete subscription",
+    "subscriptionPlanChanged": "Subscription plan changed successfully",
+    "subscriptionPlanChangeFailed": "Failed to change subscription plan",
     "confirmCancel": "Confirm Cancel",
     "clearFilters": "Clear Filters",
     "deleteIrreversible": "This cannot be undone.",
@@ -2677,6 +2723,20 @@
         "upgradeDesc": "More bandwidth and features",
         "viewPlans": "View Plans",
         "viewPlansDesc": "Compare options"
+      },
+      "hero": {
+        "trafficUsage": "Traffic Usage",
+        "expiresIn": "Expires In",
+        "of": "of",
+        "activeSubscriptions": "Active Subscriptions",
+        "subscriptionsRunning": "Running normally",
+        "totalTraffic": "Total Traffic",
+        "thisMonth": "This month",
+        "nearestExpiry": "Nearest expiry"
+      },
+      "announcements": {
+        "title": "Announcements",
+        "empty": "No announcements"
       }
     },
     "profile": {
@@ -3652,5 +3712,143 @@
     "noAvailableNodes": "No available nodes",
     "readOnlyInfo": "Read-only Information",
     "systemAssigned": "System Assigned"
+  },
+  "commandPalette": {
+    "title": "Command Palette",
+    "trigger": "Search commands",
+    "placeholder": "Search commands, pages...",
+    "results": "Search results",
+    "noResults": "No results found",
+    "groups": {
+      "recent": "Recent",
+      "quickActions": "Quick Actions",
+      "navigation": "Navigation"
+    },
+    "actions": {
+      "viewAnnouncements": "View Announcements",
+      "systemSettings": "System Settings",
+      "myProfile": "My Profile"
+    },
+    "hints": {
+      "navigate": "Navigate",
+      "select": "Select",
+      "close": "Close"
+    }
+  },
+  "notificationCenter": {
+    "title": "Notifications",
+    "empty": "No notifications",
+    "emptyFiltered": "No notifications in this filter",
+    "unread": "Unread",
+    "unreadCount": "{{count}} unread notifications",
+    "noUnread": "No unread notifications",
+    "markAsRead": "Mark as read",
+    "markAllAsRead": "Mark all as read",
+    "viewAll": "View all notifications",
+    "delete": "Delete notification",
+    "filters": {
+      "all": "All",
+      "unread": "Unread",
+      "system": "System"
+    }
+  },
+  "activityFeed": {
+    "empty": "No activity yet",
+    "viewMore": "View more",
+    "types": {
+      "comment": "commented",
+      "status": "changed status",
+      "assignment": "assigned",
+      "tag": "added tag",
+      "system": "system update",
+      "create": "created",
+      "update": "updated",
+      "delete": "deleted"
+    }
+  },
+  "errorState": {
+    "title": "Something went wrong",
+    "description": "An unexpected error occurred. Please try again.",
+    "retry": "Try again",
+    "showDetails": "Show details",
+    "hideDetails": "Hide details"
+  },
+  "announcements": {
+    "pageTitle": "Announcements",
+    "pageDescription": "Manage announcements and notifications for users",
+    "label": "announcements",
+    "noData": "No announcements found",
+    "status": {
+      "draft": "Draft",
+      "published": "Published",
+      "archived": "Archived"
+    },
+    "type": {
+      "label": "Type",
+      "system": "System",
+      "maintenance": "Maintenance",
+      "feature": "Feature",
+      "promotion": "Promotion"
+    },
+    "fields": {
+      "title": "Title",
+      "content": "Content",
+      "priority": "Priority",
+      "viewCount": "Views",
+      "views": "views",
+      "scheduledAt": "Scheduled At",
+      "expiresAt": "Expires At"
+    },
+    "actions": {
+      "publish": "Publish",
+      "archive": "Archive"
+    },
+    "create": {
+      "title": "Create Announcement",
+      "description": "Create a new announcement for users",
+      "button": "New Announcement"
+    },
+    "edit": {
+      "title": "Edit Announcement",
+      "description": "Edit announcement: {{title}}"
+    },
+    "delete": {
+      "title": "Delete Announcement",
+      "description": "Are you sure you want to delete \"{{title}}\"? This action cannot be undone."
+    },
+    "form": {
+      "titlePlaceholder": "Enter announcement title",
+      "contentPlaceholder": "Enter announcement content (supports Markdown)",
+      "contentHint": "Supports Markdown formatting",
+      "priorityHint": "Higher priority announcements will be shown first",
+      "schedule": "Schedule Settings",
+      "scheduledAtHint": "Leave empty to publish immediately",
+      "expiresAtHint": "Leave empty for no expiration"
+    },
+    "filters": {
+      "description": "Filter announcements by status and type"
+    },
+    "search": {
+      "placeholder": "Search announcements..."
+    },
+    "empty": {
+      "title": "No announcements",
+      "description": "Create your first announcement to get started",
+      "filterTitle": "No matching announcements",
+      "filterDescription": "Try adjusting your filters"
+    },
+    "messages": {
+      "createSuccess": "Announcement created successfully",
+      "updateSuccess": "Announcement updated successfully",
+      "statusUpdateSuccess": "Announcement status updated",
+      "deleteSuccess": "Announcement deleted successfully",
+      "createFailed": "Failed to create announcement",
+      "updateFailed": "Failed to update announcement",
+      "publishFailed": "Failed to publish announcement",
+      "archiveFailed": "Failed to archive announcement",
+      "deleteFailed": "Failed to delete announcement"
+    },
+    "sortByPriority": "Priority",
+    "sortByScheduled": "Scheduled"
   }
 }

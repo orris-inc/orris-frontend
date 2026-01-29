@@ -1,32 +1,35 @@
 /**
  * Desktop Navigation Component
  *
- * Standard top navigation for desktop.
- * Focuses on clear active state and simple hover transitions.
+ * Tailwind Application UI standard navigation following Catalyst patterns:
+ * - Pill-style active states with subtle background
+ * - Clear hover states for inactive items
+ * - Consistent spacing and typography
  */
 
 import { Link as RouterLink, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { cn } from '@/lib/utils';
+import { cn, isPathActive } from '@/lib/utils';
 
 import type { NavigationItem } from '../../types/navigation.types';
 
 interface DesktopNavProps {
   navigationItems: NavigationItem[];
+  className?: string;
 }
 
-export const DesktopNav = ({ navigationItems }: DesktopNavProps) => {
+export const DesktopNav = ({ navigationItems, className }: DesktopNavProps) => {
   const location = useLocation();
   const { t } = useTranslation();
 
   return (
     <nav
-      className="hidden md:flex items-center gap-5 ml-8"
+      className={cn('flex items-center gap-1', className)}
       role="navigation"
       aria-label="Main navigation"
     >
       {navigationItems.map((item) => {
-        const isActive = location.pathname === item.path;
+        const isActive = isPathActive(location.pathname, item.path);
 
         return (
           <RouterLink
@@ -34,16 +37,16 @@ export const DesktopNav = ({ navigationItems }: DesktopNavProps) => {
             to={item.path}
             aria-current={isActive ? 'page' : undefined}
             className={cn(
-              'group inline-flex items-center text-[13px] font-medium tracking-wide',
-              'pb-2 border-b-2',
+              'relative px-3 py-2 rounded-lg',
+              'text-sm font-medium',
+              'transition-colors duration-150',
+              'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
               isActive
-                ? 'text-foreground border-primary'
-                : 'text-muted-foreground border-transparent hover:text-foreground hover:border-muted-foreground/30',
-              'transition-colors'
+                ? 'bg-accent text-foreground'
+                : 'text-muted-foreground hover:text-foreground hover:bg-accent/50'
             )}
           >
-            {/* Label */}
-            <span>{t(item.labelKey)}</span>
+            {t(item.labelKey)}
           </RouterLink>
         );
       })}

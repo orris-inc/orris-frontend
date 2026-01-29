@@ -39,9 +39,14 @@ import type {
 } from '@/api/subscription/types';
 import type { UserResponse } from '@/api/user/types';
 
-interface SubscriptionFilters {
+export interface SubscriptionFilters {
   status?: SubscriptionStatus;
   userId?: string;
+  planId?: string;
+  billingCycle?: 'weekly' | 'monthly' | 'quarterly' | 'semi_annual' | 'yearly' | 'lifetime';
+  expiresBefore?: string;
+  sortBy?: 'id' | 'sid' | 'user_id' | 'plan_id' | 'status' | 'billing_cycle' | 'start_date' | 'end_date' | 'created_at' | 'updated_at';
+  sortOrder?: 'asc' | 'desc';
 }
 
 interface UseSubscriptionsOptions {
@@ -58,13 +63,18 @@ export const useSubscriptions = (options: UseSubscriptionsOptions = {}) => {
   const { showSuccess, showError } = useNotificationStore();
 
   // Build query parameters
-  // TODO: AdminListSubscriptionsParams.userId type needs to be updated to string
-  const params: AdminListSubscriptionsParams = {
+  // Note: Backend supports extended params (planId, billingCycle, etc.) but types.ts not yet updated
+  const params = {
     page,
     pageSize,
     status: filters.status,
-    userId: filters.userId as unknown as number,
-  };
+    userId: filters.userId ? Number(filters.userId) : undefined,
+    planId: filters.planId ? Number(filters.planId) : undefined,
+    billingCycle: filters.billingCycle,
+    expiresBefore: filters.expiresBefore,
+    sortBy: filters.sortBy,
+    sortOrder: filters.sortOrder,
+  } as AdminListSubscriptionsParams;
 
   // Query subscription list
   const {
@@ -272,7 +282,7 @@ export const useSubscriptionTokens = (subscriptionId: string | null, params?: Li
 export const useSubscriptionsPage = () => {
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(20);
-  const [filters, setFilters] = useState<SubscriptionFilters>({});
+  const [filters, setFilters] = useState<SubscriptionFilters>({ status: 'active' });
   const [selectedSubscription, setSelectedSubscription] =
     useState<Subscription | null>(null);
   const queryClient = useQueryClient();
@@ -324,12 +334,17 @@ export const useSubscriptionsPage = () => {
       if (targetPage < 1 || targetPage > totalPages || targetPage === page)
         return;
 
-      const params: AdminListSubscriptionsParams = {
+      const params = {
         page: targetPage,
         pageSize,
         status: filters.status,
-        userId: filters.userId as unknown as number,
-      };
+        userId: filters.userId ? Number(filters.userId) : undefined,
+        planId: filters.planId ? Number(filters.planId) : undefined,
+        billingCycle: filters.billingCycle,
+        expiresBefore: filters.expiresBefore,
+        sortBy: filters.sortBy,
+        sortOrder: filters.sortOrder,
+      } as AdminListSubscriptionsParams;
 
       queryClient.prefetchQuery({
         queryKey: queryKeys.subscriptions.list(params),

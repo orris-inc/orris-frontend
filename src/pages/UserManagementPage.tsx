@@ -18,10 +18,12 @@ import {
 import { AdminLayout } from '@/layouts/AdminLayout';
 import { PageHeader } from '@/components/admin';
 import { Button } from '@/components/common/Button';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/common/Tooltip';
 import { usePageTitle } from '@/shared/hooks';
 import { useBreakpoint } from '@/hooks/useBreakpoint';
 import { useNotificationStore } from '@/shared/stores/notification-store';
 import { UserListTable } from '@/features/users/components/UserListTable';
+import { UserFilters } from '@/features/users/components/UserFilters';
 import { MobileUserManagement } from '@/features/users/components/MobileUserManagement';
 import { EditUserDialog } from '@/features/users/components/EditUserDialog';
 import { CreateUserDialog } from '@/features/users/components/CreateUserDialog';
@@ -49,6 +51,8 @@ export const UserManagementPage = () => {
     pagination,
     page,
     pageSize,
+    filters,
+    hasFilters,
     isLoading,
     isFetching,
     refetch,
@@ -59,6 +63,8 @@ export const UserManagementPage = () => {
     isResettingPassword,
     handlePageChange,
     handlePageSizeChange,
+    handleFiltersChange,
+    clearFilters,
   } = useUsersPage();
 
   const { showSuccess, showError } = useNotificationStore();
@@ -285,19 +291,24 @@ export const UserManagementPage = () => {
                 <Plus className="size-4 mr-2" />
                 {t('admin.users.createUser')}
               </Button>
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={handleRefresh}
-                aria-label={t('common.actions.refresh')}
-              >
-                <RefreshCw
-                  key={refreshKey}
-                  className="size-4 animate-spin-once"
-                />
-              </Button>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button variant="ghost" size="icon" onClick={handleRefresh}>
+                    <RefreshCw key={refreshKey} className="size-4" />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>{t('common.actions.refresh')}</TooltipContent>
+              </Tooltip>
             </div>
           }
+        />
+
+        {/* Filters */}
+        <UserFilters
+          filters={filters}
+          onFiltersChange={handleFiltersChange}
+          hasFilters={hasFilters}
+          onClearFilters={clearFilters}
         />
 
         {/* User List Table */}

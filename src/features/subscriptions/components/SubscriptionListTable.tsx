@@ -6,7 +6,7 @@
 
 import { useMemo, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
-import { CheckCircle, X, MoreHorizontal, Play, XCircle, RefreshCw, Eye, Copy, Trash2, Pause, PlayCircle, RefreshCcw } from 'lucide-react';
+import { CheckCircle, X, MoreHorizontal, Play, XCircle, RefreshCw, Eye, Copy, Trash2, Pause, PlayCircle, RefreshCcw, ArrowRightLeft } from 'lucide-react';
 import { DataTable, AdminBadge, TableHoverCardProvider, TableHoverCardList, DateTimeCell, type ColumnDef, type ResponsiveColumnMeta } from '@/components/admin';
 import { useBreakpoint } from '@/hooks/useBreakpoint';
 import { SubscriptionMobileList } from './SubscriptionMobileList';
@@ -47,6 +47,7 @@ interface SubscriptionListTableProps {
   onUnsuspend?: (subscription: Subscription) => void;
   onResetUsage?: (subscription: Subscription) => void;
   onDelete?: (subscription: Subscription) => void;
+  onChangePlan?: (subscription: Subscription) => void;
 }
 
 
@@ -69,6 +70,7 @@ export const SubscriptionListTable: React.FC<SubscriptionListTableProps> = ({
   onUnsuspend,
   onResetUsage,
   onDelete,
+  onChangePlan,
 }) => {
   const { t } = useTranslation();
   // Detect mobile screen
@@ -212,10 +214,12 @@ export const SubscriptionListTable: React.FC<SubscriptionListTableProps> = ({
         const canSuspend = status === 'active';
         // Reset usage: can reset if in active or suspended status
         const canResetUsage = status === 'active' || status === 'suspended';
-        // Renew: can renew if in expired status
-        const canRenew = status === 'expired';
+        // Renew: can renew if active, past_due, or expired (not suspended, cancelled, inactive, pending_payment, trialing)
+        const canRenew = status === 'active' || status === 'past_due' || status === 'expired';
         // Delete: can delete if cancelled or expired
         const canDelete = status === 'cancelled' || status === 'expired';
+        // Change plan: can change if active or trialing
+        const canChangePlan = status === 'active';
 
         return (
           <div className="flex items-center gap-1">
@@ -262,7 +266,13 @@ export const SubscriptionListTable: React.FC<SubscriptionListTableProps> = ({
                       {t('subscription.duplicate')}
                     </DropdownMenuItem>
                   )}
-                  {(onViewDetail || onDuplicate) && (canRenew || canCancel || canSuspend) && <DropdownMenuSeparator />}
+                  {(onViewDetail || onDuplicate) && (canRenew || canCancel || canSuspend || canChangePlan) && <DropdownMenuSeparator />}
+                  {canChangePlan && onChangePlan && (
+                    <DropdownMenuItem onClick={() => onChangePlan(subscription)}>
+                      <ArrowRightLeft className="mr-2 size-4" />
+                      {t('subscription.changePlan')}
+                    </DropdownMenuItem>
+                  )}
                   {canRenew && onRenew && (
                     <DropdownMenuItem onClick={() => onRenew(subscription)}>
                       <RefreshCw className="mr-2 size-4" />
@@ -313,7 +323,7 @@ export const SubscriptionListTable: React.FC<SubscriptionListTableProps> = ({
         );
       },
     },
-  ], [t, usersMap, usersLoading, onViewDetail, onDuplicate, onActivate, onCancel, onRenew, onSuspend, onUnsuspend, onResetUsage, onDelete]);
+  ], [t, usersMap, usersLoading, onViewDetail, onDuplicate, onActivate, onCancel, onRenew, onSuspend, onUnsuspend, onResetUsage, onDelete, onChangePlan]);
 
   // Context menu content renderer
   const renderContextMenuContent = useCallback((subscription: Subscription) => {
@@ -323,8 +333,9 @@ export const SubscriptionListTable: React.FC<SubscriptionListTableProps> = ({
     const canCancel = status === 'active' || status === 'trialing' || status === 'past_due';
     const canSuspend = status === 'active';
     const canResetUsage = status === 'active' || status === 'suspended';
-    const canRenew = status === 'expired';
+    const canRenew = status === 'active' || status === 'past_due' || status === 'expired';
     const canDelete = status === 'cancelled' || status === 'expired';
+    const canChangePlan = status === 'active';
 
     return (
       <>
@@ -340,7 +351,13 @@ export const SubscriptionListTable: React.FC<SubscriptionListTableProps> = ({
             {t('subscription.duplicate')}
           </ContextMenuItem>
         )}
-        {(onViewDetail || onDuplicate) && (canActivate || canUnsuspend || canRenew || canCancel || canSuspend) && <ContextMenuSeparator />}
+        {(onViewDetail || onDuplicate) && (canActivate || canUnsuspend || canRenew || canCancel || canSuspend || canChangePlan) && <ContextMenuSeparator />}
+        {canChangePlan && onChangePlan && (
+          <ContextMenuItem onClick={() => onChangePlan(subscription)}>
+            <ArrowRightLeft className="mr-2 size-4" />
+            {t('subscription.changePlan')}
+          </ContextMenuItem>
+        )}
         {canActivate && onActivate && (
           <ContextMenuItem onClick={() => onActivate(subscription)}>
             <Play className="mr-2 size-4" />
@@ -397,7 +414,7 @@ export const SubscriptionListTable: React.FC<SubscriptionListTableProps> = ({
         )}
       </>
     );
-  }, [t, onViewDetail, onDuplicate, onActivate, onUnsuspend, onCancel, onSuspend, onResetUsage, onRenew, onDelete]);
+  }, [t, onViewDetail, onDuplicate, onActivate, onUnsuspend, onCancel, onSuspend, onResetUsage, onRenew, onDelete, onChangePlan]);
 
   // Render mobile card list on small screens
   if (isMobile) {
@@ -416,6 +433,7 @@ export const SubscriptionListTable: React.FC<SubscriptionListTableProps> = ({
         onUnsuspend={onUnsuspend}
         onResetUsage={onResetUsage}
         onDelete={onDelete}
+        onChangePlan={onChangePlan}
       />
     );
   }

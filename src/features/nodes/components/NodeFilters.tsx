@@ -1,75 +1,189 @@
 /**
- * 节点筛选器组件
- * 支持：状态、搜索
+ * Node Filters Component
+ * Desktop filtering toolbar for node management
+ * Design pattern follows PlanFilters component
  */
 
-import { FilterX } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
-import { Input } from '@/components/common/Input';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/common/Select';
+import { X } from 'lucide-react';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/common/Select';
+import { Switch, SwitchThumb } from '@/components/common/Switch';
 import { Button } from '@/components/common/Button';
-import type { NodeStatus } from '@/api/node';
+import { cn } from '@/lib/utils';
+import type { NodeStatus, NodeProtocol } from '@/api/node';
+import type { NodeFiltersExtended } from '../hooks/useNodes';
 
-// Frontend filter type
-interface NodeFiltersType {
-  status?: NodeStatus;
-  search?: string;
+// ============================================================================
+// Types
+// ============================================================================
+
+export interface NodeFiltersProps {
+  filters: NodeFiltersExtended;
+  onFiltersChange: (filters: Partial<NodeFiltersExtended>) => void;
+  hasFilters: boolean;
+  onClearFilters: () => void;
+  /** Include user-created nodes toggle */
+  includeUserNodes: boolean;
+  onIncludeUserNodesChange: (include: boolean) => void;
+  /** Drag sort toggle */
+  dragSortEnabled: boolean;
+  onDragSortEnabledChange: (enabled: boolean) => void;
+  /** Disable drag sort toggle (e.g., during reordering) */
+  dragSortDisabled?: boolean;
+  className?: string;
 }
 
-interface NodeFiltersComponentProps {
-  filters: NodeFiltersType;
-  onChange: (filters: Partial<NodeFiltersType>) => void;
-}
+// Protocol options
+const PROTOCOL_OPTIONS: { value: NodeProtocol; label: string }[] = [
+  { value: 'shadowsocks', label: 'Shadowsocks' },
+  { value: 'vmess', label: 'VMess' },
+  { value: 'vless', label: 'VLESS' },
+  { value: 'trojan', label: 'Trojan' },
+  { value: 'hysteria2', label: 'Hysteria2' },
+  { value: 'tuic', label: 'TUIC' },
+];
 
-export const NodeFilters: React.FC<NodeFiltersComponentProps> = ({ filters, onChange }) => {
+// ============================================================================
+// Main Component
+// ============================================================================
+
+export const NodeFilters = ({
+  filters,
+  onFiltersChange,
+  hasFilters,
+  onClearFilters,
+  includeUserNodes,
+  onIncludeUserNodesChange,
+  dragSortEnabled,
+  onDragSortEnabledChange,
+  dragSortDisabled,
+  className,
+}: NodeFiltersProps) => {
   const { t } = useTranslation();
 
-  const handleStatusChange = (value: string): void => {
-    onChange({ status: value === '_all_' ? undefined : (value as NodeStatus) });
-  };
-
-  const handleSearchChange = (value: string): void => {
-    onChange({ search: value });
-  };
-
-  const handleReset = (): void => {
-    onChange({
-      status: undefined,
-      search: '',
+  // Handle status change
+  const handleStatusChange = (value: string) => {
+    onFiltersChange({
+      status: value === 'all' ? undefined : (value as NodeStatus),
     });
   };
 
+  // Handle protocol change
+  const handleProtocolChange = (value: string) => {
+    onFiltersChange({
+      protocol: value === 'all' ? undefined : (value as NodeProtocol),
+    });
+  };
+
+  // Handle online status change
+  const handleOnlineStatusChange = (value: string) => {
+    if (value === 'all') {
+      onFiltersChange({ isOnline: undefined });
+    } else {
+      onFiltersChange({ isOnline: value === 'online' });
+    }
+  };
+
+  // Get current online status value for select
+  const onlineStatusValue = filters.isOnline === undefined
+    ? 'all'
+    : filters.isOnline
+      ? 'online'
+      : 'offline';
+
   return (
-    <div className="flex items-center gap-4">
-      <div className="w-36">
-        <Select value={filters.status || '_all_'} onValueChange={handleStatusChange}>
-          <SelectTrigger>
-            <SelectValue placeholder={t('common.status.label')} />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="_all_">{t('filter.all')}</SelectItem>
-            <SelectItem value="active">{t('common.status.active')}</SelectItem>
-            <SelectItem value="inactive">{t('common.status.inactive')}</SelectItem>
-            <SelectItem value="maintenance">{t('common.status.maintenance')}</SelectItem>
-          </SelectContent>
-        </Select>
-      </div>
-
-      <div className="flex-1 max-w-xs">
-        <Input
-          placeholder={t('common.placeholders.search')}
-          value={filters.search || ''}
-          onChange={(e) => handleSearchChange(e.target.value)}
-        />
-      </div>
-
-      <Button
-        variant="outline"
-        onClick={handleReset}
+    <div className={cn('flex flex-wrap items-center gap-3', className)}>
+      {/* Status filter */}
+      <Select
+        value={filters.status ?? 'all'}
+        onValueChange={handleStatusChange}
       >
-        <FilterX className="mr-2 h-4 w-4" />
-        {t('common.actions.reset')}
-      </Button>
+        <SelectTrigger className="w-[120px] h-9">
+          <SelectValue placeholder={t('common.status.label')} />
+        </SelectTrigger>
+        <SelectContent>
+          <SelectItem value="all">{t('filter.all')}</SelectItem>
+          <SelectItem value="active">{t('common.status.active')}</SelectItem>
+          <SelectItem value="inactive">{t('common.status.inactive')}</SelectItem>
+        </SelectContent>
+      </Select>
+
+      {/* Protocol filter */}
+      <Select
+        value={filters.protocol ?? 'all'}
+        onValueChange={handleProtocolChange}
+      >
+        <SelectTrigger className="w-[140px] h-9">
+          <SelectValue placeholder={t('common.protocol')} />
+        </SelectTrigger>
+        <SelectContent>
+          <SelectItem value="all">{t('filter.allTypes')}</SelectItem>
+          {PROTOCOL_OPTIONS.map((option) => (
+            <SelectItem key={option.value} value={option.value}>
+              {option.label}
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
+
+      {/* Online status filter */}
+      <Select
+        value={onlineStatusValue}
+        onValueChange={handleOnlineStatusChange}
+      >
+        <SelectTrigger className="w-[130px] h-9">
+          <SelectValue placeholder={t('filter.onlineStatus')} />
+        </SelectTrigger>
+        <SelectContent>
+          <SelectItem value="all">{t('filter.all')}</SelectItem>
+          <SelectItem value="online">{t('common.status.online')}</SelectItem>
+          <SelectItem value="offline">{t('common.status.offline')}</SelectItem>
+        </SelectContent>
+      </Select>
+
+      {/* Divider */}
+      <div className="h-6 w-px bg-border" />
+
+      {/* Include user nodes toggle */}
+      <label className="flex items-center gap-2 text-sm cursor-pointer">
+        <Switch checked={includeUserNodes} onCheckedChange={onIncludeUserNodesChange}>
+          <SwitchThumb />
+        </Switch>
+        <span className="text-muted-foreground">{t('admin.nodes.userNodes')}</span>
+      </label>
+
+      {/* Drag sort toggle */}
+      <label className="flex items-center gap-2 text-sm cursor-pointer">
+        <Switch
+          checked={dragSortEnabled}
+          onCheckedChange={onDragSortEnabledChange}
+          disabled={dragSortDisabled}
+        >
+          <SwitchThumb />
+        </Switch>
+        <span className="text-muted-foreground">{t('common.table.sort')}</span>
+      </label>
+
+      {/* Clear filters button */}
+      {hasFilters && (
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={onClearFilters}
+          className="text-muted-foreground h-9"
+        >
+          <X className="size-4 mr-1" />
+          {t('filter.clearAdvanced')}
+        </Button>
+      )}
     </div>
   );
 };
+
+NodeFilters.displayName = 'NodeFilters';

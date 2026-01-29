@@ -42,6 +42,7 @@ export const useSubscriptionPlans = (options: UseSubscriptionPlansOptions = {}) 
     pageSize,
     status: filters.status,
     isPublic: filters.isPublic,
+    planType: filters.planType,
   };
 
   // Query subscription plan list
@@ -201,6 +202,19 @@ export const useSubscriptionPlansPage = () => {
     setPage(1);
   };
 
+  // Check if any filter is active
+  const hasFilters = !!(
+    filters.status ||
+    filters.isPublic !== undefined ||
+    filters.planType
+  );
+
+  // Clear all filters
+  const clearFilters = () => {
+    setFilters({});
+    setPage(1);
+  };
+
   return {
     ...plansQuery,
     page,
@@ -211,5 +225,7 @@ export const useSubscriptionPlansPage = () => {
     handlePageChange,
     handlePageSizeChange,
     handleFiltersChange,
+    hasFilters,
+    clearFilters,
   };
 };

@@ -128,9 +128,9 @@ const AdminSettingsPage = lazy(() =>
     default: m.AdminSettingsPage,
   }))
 );
-const AdminNotificationsPage = lazy(() =>
-  import('@/pages/AdminNotificationsPage').then((m) => ({
-    default: m.AdminNotificationsPage,
+const AdminAnnouncementsPage = lazy(() =>
+  import('@/pages/AdminAnnouncementsPage').then((m) => ({
+    default: m.AdminAnnouncementsPage,
   }))
 );
 const AdminProfilePage = lazy(() =>
@@ -368,13 +368,13 @@ export const router = createBrowserRouter([
     ),
   },
 
-  // Notification settings (admin)
+  // Announcements management (admin)
   {
-    path: '/admin/notifications',
+    path: '/admin/announcements',
     element: (
       <AdminRoute>
         <SuspenseWrapper>
-          <AdminNotificationsPage />
+          <AdminAnnouncementsPage />
         </SuspenseWrapper>
       </AdminRoute>
     ),

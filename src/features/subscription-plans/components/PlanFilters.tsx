@@ -1,100 +1,145 @@
 /**
- * 订阅计划筛选组件 - Radix UI 实现
+ * Plan Filters Component
+ * Desktop filtering toolbar for subscription plans
  */
 
-import * as Select from '@radix-ui/react-select';
-import * as Checkbox from '@radix-ui/react-checkbox';
-import * as Label from '@radix-ui/react-label';
-import { Check, ChevronDown } from 'lucide-react';
+import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
-import type { PlanStatus } from '@/api/subscription/types';
+import { X } from 'lucide-react';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/common/Select';
+import { Button } from '@/components/common/Button';
+import { cn } from '@/lib/utils';
+import type { PlanStatus, PlanType } from '@/api/subscription/types';
 import type { SubscriptionPlanFilters } from '../types';
 
-interface PlanFiltersProps {
+// ============================================================================
+// Types
+// ============================================================================
+
+export interface PlanFiltersProps {
   filters: SubscriptionPlanFilters;
-  onChange: (filters: Partial<SubscriptionPlanFilters>) => void;
+  onFiltersChange: (filters: Partial<SubscriptionPlanFilters>) => void;
+  hasFilters: boolean;
+  onClearFilters: () => void;
+  className?: string;
 }
 
-export const PlanFilters: React.FC<PlanFiltersProps> = ({
+// Plan type options
+const PLAN_TYPE_OPTIONS: { value: PlanType; label: string }[] = [
+  { value: 'node', label: 'common.planType.node' },
+  { value: 'forward', label: 'common.planType.forward' },
+  { value: 'hybrid', label: 'common.planType.hybrid' },
+];
+
+// ============================================================================
+// Main Component
+// ============================================================================
+
+export const PlanFilters = ({
   filters,
-  onChange,
-}) => {
+  onFiltersChange,
+  hasFilters,
+  onClearFilters,
+  className,
+}: PlanFiltersProps) => {
   const { t } = useTranslation();
 
-  const STATUSES: { value: PlanStatus; label: string }[] = [
-    { value: 'active', label: t('common.status.active') },
-    { value: 'inactive', label: t('common.status.inactive') },
-  ];
+  // Handle status change
+  const handleStatusChange = (value: string) => {
+    onFiltersChange({
+      status: value === 'all' ? undefined : (value as PlanStatus),
+    });
+  };
+
+  // Handle visibility change
+  const handleVisibilityChange = (value: string) => {
+    if (value === 'all') {
+      onFiltersChange({ isPublic: undefined });
+    } else {
+      onFiltersChange({ isPublic: value === 'public' });
+    }
+  };
+
+  // Handle plan type change
+  const handlePlanTypeChange = (value: string) => {
+    onFiltersChange({
+      planType: value === 'all' ? undefined : (value as PlanType),
+    });
+  };
+
+  // Get current visibility value for select
+  const visibilityValue = useMemo(() => {
+    if (filters.isPublic === undefined) return 'all';
+    return filters.isPublic ? 'public' : 'private';
+  }, [filters.isPublic]);
 
   return (
-    <div className="@container">
-      <div className="grid grid-cols-1 gap-4 @sm:grid-cols-3">
-        {/* Status filter */}
-        <div className="space-y-2">
-          <Label.Root className="text-sm font-medium">{t('common.status.label')}</Label.Root>
-          <Select.Root
-            value={filters.status || 'all'}
-            onValueChange={(value) => onChange({ status: value !== 'all' ? value as PlanStatus : undefined })}
-          >
-            <Select.Trigger className="flex h-9 w-full items-center justify-between rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-ring disabled:cursor-not-allowed disabled:opacity-50">
-              <Select.Value placeholder={t('filter.all')} />
-              <Select.Icon>
-                <ChevronDown className="size-4 opacity-50" />
-              </Select.Icon>
-            </Select.Trigger>
-            <Select.Portal>
-              <Select.Content className="relative z-50 min-w-[8rem] overflow-hidden rounded-md border bg-popover text-popover-foreground shadow-md animate-in fade-in-80">
-                <Select.Viewport className="p-1">
-                  <Select.Item value="all" className="relative flex w-full cursor-default select-none items-center rounded-sm py-1.5 pl-2 pr-8 text-sm outline-none focus:bg-accent focus:text-accent-foreground data-[disabled]:pointer-events-none data-[disabled]:opacity-50">
-                    <Select.ItemText>{t('filter.all')}</Select.ItemText>
-                    <Select.ItemIndicator className="absolute right-2 flex items-center justify-center">
-                      <Check className="size-4" />
-                    </Select.ItemIndicator>
-                  </Select.Item>
-                  {STATUSES.map((option) => (
-                    <Select.Item key={option.value} value={option.value} className="relative flex w-full cursor-default select-none items-center rounded-sm py-1.5 pl-2 pr-8 text-sm outline-none focus:bg-accent focus:text-accent-foreground data-[disabled]:pointer-events-none data-[disabled]:opacity-50">
-                      <Select.ItemText>{option.label}</Select.ItemText>
-                      <Select.ItemIndicator className="absolute right-2 flex items-center justify-center">
-                        <Check className="size-4" />
-                      </Select.ItemIndicator>
-                    </Select.Item>
-                  ))}
-                </Select.Viewport>
-              </Select.Content>
-            </Select.Portal>
-          </Select.Root>
-        </div>
+    <div className={cn('flex flex-wrap items-center gap-3', className)}>
+      {/* Status filter */}
+      <Select
+        value={filters.status ?? 'all'}
+        onValueChange={handleStatusChange}
+      >
+        <SelectTrigger className="w-[120px] h-9">
+          <SelectValue placeholder={t('common.status.label')} />
+        </SelectTrigger>
+        <SelectContent>
+          <SelectItem value="all">{t('filter.all')}</SelectItem>
+          <SelectItem value="active">{t('common.status.active')}</SelectItem>
+          <SelectItem value="inactive">{t('common.status.inactive')}</SelectItem>
+        </SelectContent>
+      </Select>
 
-        {/* Search by name */}
-        <div className="space-y-2">
-          <Label.Root className="text-sm font-medium">{t('common.actions.search')}</Label.Root>
-          <input
-            className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
-            placeholder={t('common.placeholders.search')}
-            value={filters.search || ''}
-            onChange={(e) => onChange({ search: e.target.value })}
-          />
-        </div>
+      {/* Visibility filter */}
+      <Select value={visibilityValue} onValueChange={handleVisibilityChange}>
+        <SelectTrigger className="w-[120px] h-9">
+          <SelectValue placeholder={t('filter.visibility')} />
+        </SelectTrigger>
+        <SelectContent>
+          <SelectItem value="all">{t('filter.allVisibility')}</SelectItem>
+          <SelectItem value="public">{t('admin.plans.public')}</SelectItem>
+          <SelectItem value="private">{t('admin.plans.private')}</SelectItem>
+        </SelectContent>
+      </Select>
 
-        {/* Public plans only */}
-        <div className="flex items-end space-y-2">
-          <div className="flex items-center gap-2">
-            <Checkbox.Root
-              id="isPublic"
-              checked={filters.isPublic ?? false}
-              onCheckedChange={(checked) => onChange({ isPublic: checked ? true : undefined })}
-              className="peer size-4 shrink-0 rounded-sm border border-primary shadow focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 data-[state=checked]:bg-primary data-[state=checked]:text-primary-foreground"
-            >
-              <Checkbox.Indicator className="flex items-center justify-center text-current">
-                <Check className="size-4" />
-              </Checkbox.Indicator>
-            </Checkbox.Root>
-            <Label.Root htmlFor="isPublic" className="cursor-pointer text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
-              {t('admin.plans.public')}
-            </Label.Root>
-          </div>
-        </div>
-      </div>
+      {/* Plan type filter */}
+      <Select
+        value={filters.planType ?? 'all'}
+        onValueChange={handlePlanTypeChange}
+      >
+        <SelectTrigger className="w-[140px] h-9">
+          <SelectValue placeholder={t('filter.planType')} />
+        </SelectTrigger>
+        <SelectContent>
+          <SelectItem value="all">{t('filter.allTypes')}</SelectItem>
+          {PLAN_TYPE_OPTIONS.map((option) => (
+            <SelectItem key={option.value} value={option.value}>
+              {t(option.label)}
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
+
+      {/* Clear filters button */}
+      {hasFilters && (
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={onClearFilters}
+          className="text-muted-foreground h-9"
+        >
+          <X className="size-4 mr-1" />
+          {t('filter.clearAdvanced')}
+        </Button>
+      )}
     </div>
   );
 };
+
+PlanFilters.displayName = 'PlanFilters';

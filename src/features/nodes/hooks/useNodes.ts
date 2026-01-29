@@ -45,6 +45,13 @@ interface NodeFilters {
   search?: string;
 }
 
+// Extended filter types for UI (includes local filtering options)
+export interface NodeFiltersExtended {
+  status?: NodeStatus;
+  protocol?: Node['protocol'];
+  isOnline?: boolean;
+}
+
 interface UseNodesOptions {
   page?: number;
   pageSize?: number;
@@ -338,6 +345,7 @@ export const useNodesPage = () => {
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(20);
   const [filters, setFilters] = useState<NodeFilters>({});
+  const [extendedFilters, setExtendedFilters] = useState<NodeFiltersExtended>({});
   const [includeUserNodes, setIncludeUserNodes] = useState(false);
   const [sortBy, setSortBy] = useState<string | undefined>(undefined);
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc' | undefined>(undefined);
@@ -351,6 +359,28 @@ export const useNodesPage = () => {
   // Subscribe to real-time node events via SSE
   useNodeEvents({ enabled: true });
 
+  // Check if any extended filters are active
+  const hasFilters = Boolean(
+    extendedFilters.status || extendedFilters.protocol || extendedFilters.isOnline !== undefined
+  );
+
+  // Apply local filtering for extended filters
+  const filteredNodes = nodesQuery.nodes.filter((node) => {
+    // Status filter
+    if (extendedFilters.status && node.status !== extendedFilters.status) {
+      return false;
+    }
+    // Protocol filter
+    if (extendedFilters.protocol && node.protocol !== extendedFilters.protocol) {
+      return false;
+    }
+    // Online status filter
+    if (extendedFilters.isOnline !== undefined && node.isOnline !== extendedFilters.isOnline) {
+      return false;
+    }
+    return true;
+  });
+
   const handlePageChange = (newPage: number) => {
     setPage(newPage);
   };
@@ -363,6 +393,14 @@ export const useNodesPage = () => {
   const handleFiltersChange = (newFilters: Partial<NodeFilters>) => {
     setFilters((prev) => ({ ...prev, ...newFilters }));
     setPage(1);
+  };
+
+  const handleExtendedFiltersChange = (newFilters: Partial<NodeFiltersExtended>) => {
+    setExtendedFilters((prev) => ({ ...prev, ...newFilters }));
+  };
+
+  const clearFilters = () => {
+    setExtendedFilters({});
   };
 
   const handleGenerateToken = async (id: string) => {
@@ -400,9 +438,13 @@ export const useNodesPage = () => {
 
   return {
     ...nodesQuery,
+    // Override nodes with filtered results
+    nodes: filteredNodes,
     page,
     pageSize,
     filters,
+    extendedFilters,
+    hasFilters,
     includeUserNodes,
     sortBy,
     sortOrder,
@@ -417,6 +459,8 @@ export const useNodesPage = () => {
     handlePageChange,
     handlePageSizeChange,
     handleFiltersChange,
+    handleExtendedFiltersChange,
+    clearFilters,
     handleIncludeUserNodesChange,
     handleSortChange,
     handleGenerateToken,

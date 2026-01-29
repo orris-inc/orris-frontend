@@ -22,6 +22,7 @@ import { usePageTitle } from '@/shared/hooks';
 import { useBreakpoint } from '@/hooks/useBreakpoint';
 import { useNotificationStore } from '@/shared/stores/notification-store';
 import { PlanListTable } from '@/features/subscription-plans/components/PlanListTable';
+import { PlanFilters } from '@/features/subscription-plans/components/PlanFilters';
 import { MobilePlanManagement } from '@/features/subscription-plans/components/MobilePlanManagement';
 import { CreatePlanDialog } from '@/features/subscription-plans/components/CreatePlanDialog';
 import { EditPlanDialog } from '@/features/subscription-plans/components/EditPlanDialog';
@@ -45,11 +46,15 @@ export const SubscriptionPlansManagementPage = () => {
     pagination,
     isLoading,
     isFetching,
+    filters,
+    hasFilters,
     createPlan,
     updatePlan,
     togglePlanStatus,
     handlePageChange,
     handlePageSizeChange,
+    handleFiltersChange,
+    clearFilters,
     refetch,
   } = useSubscriptionPlansPage();
 
@@ -149,6 +154,10 @@ export const SubscriptionPlansManagementPage = () => {
             page={pagination.page}
             pageSize={pagination.pageSize}
             total={pagination.total}
+            filters={filters}
+            hasFilters={hasFilters}
+            onFiltersChange={handleFiltersChange}
+            onClearFilters={clearFilters}
             onRefresh={handleRefresh}
             onCreate={() => {
               setDuplicatePlan(null);
@@ -241,6 +250,14 @@ export const SubscriptionPlansManagementPage = () => {
               </Tooltip>
             </div>
           }
+        />
+
+        {/* Filters */}
+        <PlanFilters
+          filters={filters}
+          onFiltersChange={handleFiltersChange}
+          hasFilters={hasFilters}
+          onClearFilters={clearFilters}
         />
 
         {/* Plan List */}

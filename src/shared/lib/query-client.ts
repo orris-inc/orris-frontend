@@ -107,4 +107,14 @@ export const queryKeys = {
     details: () => [...queryKeys.resourceGroups.all, 'detail'] as const,
     detail: (id: number | string) => [...queryKeys.resourceGroups.details(), id] as const,
   },
+
+  // Announcements
+  announcements: {
+    all: ['announcements'] as const,
+    lists: () => [...queryKeys.announcements.all, 'list'] as const,
+    list: (params: object) => [...queryKeys.announcements.lists(), params] as const,
+    details: () => [...queryKeys.announcements.all, 'detail'] as const,
+    detail: (id: number | string) => [...queryKeys.announcements.details(), id] as const,
+    public: (params?: object) => [...queryKeys.announcements.all, 'public', params] as const,
+  },
 };

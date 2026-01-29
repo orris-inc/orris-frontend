@@ -183,30 +183,6 @@ export const SubscriptionConfirmDialog: React.FC<SubscriptionConfirmDialogProps>
         </Alert>
       )}
 
-      {/* Usage limits */}
-      {(plan.maxUsers || plan.maxProjects) && (
-        <>
-          <Separator />
-          <div>
-            <h3 className="text-sm font-semibold mb-3">{t('pricing.confirm.limits')}</h3>
-            <ul className="space-y-2">
-              {plan.maxUsers && (
-                <li className="text-sm">
-                  <div className="font-medium">{t('pricing.confirm.maxUsers', { count: plan.maxUsers })}</div>
-                  <div className="text-muted-foreground text-xs">{t('pricing.confirm.maxUsersDesc')}</div>
-                </li>
-              )}
-              {plan.maxProjects && (
-                <li className="text-sm">
-                  <div className="font-medium">{t('pricing.confirm.maxProjects', { count: plan.maxProjects })}</div>
-                  <div className="text-muted-foreground text-xs">{t('pricing.confirm.maxProjectsDesc')}</div>
-                </li>
-              )}
-            </ul>
-          </div>
-        </>
-      )}
-
       <Separator />
 
       {/* Note */}

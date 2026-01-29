@@ -54,29 +54,12 @@ const PricingCard: React.FC<PricingCardProps> = ({
 
   // Build features list using i18n
   const features: string[] = [];
-  if (plan.maxUsers > 0) {
-    features.push(
-      plan.maxUsers === 1
-        ? t('pricing.features.oneUser')
-        : t('pricing.features.users', { count: plan.maxUsers })
-    );
-  }
-  if (plan.maxProjects > 0) {
-    features.push(
-      plan.maxProjects === 1
-        ? t('pricing.features.oneProject')
-        : t('pricing.features.projects', { count: plan.maxProjects })
-    );
-  }
   if (plan.nodeLimit && plan.nodeLimit > 0) {
     features.push(
       plan.nodeLimit === 1
         ? t('pricing.features.oneNode')
         : t('pricing.features.nodes', { count: plan.nodeLimit })
     );
-  }
-  if (plan.apiRateLimit > 0) {
-    features.push(t('pricing.features.apiRate', { count: plan.apiRateLimit }));
   }
   if (plan.trialDays > 0) {
     features.push(t('pricing.features.trialDays', { count: plan.trialDays }));

@@ -3,17 +3,19 @@
  *
  * Professional sidebar navigation following Tailwind UI Vertical Navigation style.
  * Features:
- * - Clean grouped navigation with uppercase group titles
+ * - Clean grouped navigation with uppercase group titles + divider lines
  * - Minimal styling without glass card effects
- * - Smooth width transition on collapse
+ * - Smooth width transition on collapse with text fade animation
  * - Tooltip hints when collapsed
- * - Active state with muted background and optional left indicator
- * - Touch-friendly targets (min 40px)
+ * - Active state with muted background and left indicator
+ * - Hover state with subtle arrow indicator
+ * - Touch-friendly targets (min 44px)
  * - Respects reduced-motion preferences
  */
 
 import { Link as RouterLink, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import { ChevronRight } from 'lucide-react';
 import {
   Tooltip,
   TooltipTrigger,
@@ -41,18 +43,38 @@ export const AdminSidebarNav = ({
 
   return (
     <nav
-      className={cn('space-y-4', collapsed ? 'px-1.5' : 'px-3')}
+      className={cn(
+        'space-y-4',
+        'transition-[padding] duration-200 motion-reduce:transition-none',
+        collapsed ? 'px-1.5' : 'px-3'
+      )}
       role="navigation"
       aria-label="Admin navigation"
     >
-      {Array.from(groupedItems.entries()).map(([group, groupItems]) => (
+      {Array.from(groupedItems.entries()).map(([group, groupItems], groupIndex) => (
         <div key={group.id} className="space-y-1">
-          {/* Group label - hidden when collapsed */}
-          {!collapsed && (
-            <h3 className="px-3 py-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-              {t(group.labelKey)}
-            </h3>
-          )}
+          {/* Group header with label + divider line */}
+          <div
+            className={cn(
+              'flex items-center gap-2 mb-2',
+              'transition-opacity duration-200 motion-reduce:transition-none',
+              collapsed ? 'justify-center px-1' : 'px-3'
+            )}
+          >
+            {!collapsed ? (
+              <>
+                <span className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground whitespace-nowrap">
+                  {t(group.labelKey)}
+                </span>
+                <div className="flex-1 h-px bg-border" aria-hidden="true" />
+              </>
+            ) : (
+              // Show thin divider when collapsed (except first group)
+              groupIndex > 0 && (
+                <div className="w-6 h-px bg-border" aria-hidden="true" />
+              )
+            )}
+          </div>
 
           {/* Navigation items */}
           <div className="space-y-0.5">
@@ -93,13 +115,13 @@ const NavItem = ({ item, collapsed, isActive, onItemClick, t }: NavItemProps) =>
         // Base styles - Tailwind UI Vertical Navigation style
         'group relative flex items-center rounded-md',
         'text-sm font-medium',
-        // Touch target
-        'min-h-[40px]',
+        // Touch target - 44px minimum
+        'min-h-[44px]',
         // Transition
         'transition-colors duration-150',
         'motion-reduce:transition-none',
         // Layout based on collapsed state
-        collapsed ? 'justify-center p-2' : 'gap-x-3 px-3 py-2',
+        collapsed ? 'justify-center p-2' : 'gap-x-3 px-3 py-2.5',
         // Active state with muted background
         isActive
           ? 'bg-muted text-foreground'
@@ -122,12 +144,38 @@ const NavItem = ({ item, collapsed, isActive, onItemClick, t }: NavItemProps) =>
         <Icon
           className={cn(
             'size-5 shrink-0',
+            'transition-colors duration-150',
+            'motion-reduce:transition-none',
             isActive ? 'text-foreground' : 'text-muted-foreground group-hover:text-foreground'
           )}
           aria-hidden="true"
         />
       )}
-      {!collapsed && <span className="truncate">{t(item.labelKey)}</span>}
+      {!collapsed && (
+        <>
+          <span
+            className={cn(
+              'flex-1 truncate',
+              'transition-opacity duration-200',
+              'motion-reduce:transition-none'
+            )}
+          >
+            {t(item.labelKey)}
+          </span>
+          {/* Hover arrow indicator */}
+          <ChevronRight
+            className={cn(
+              'size-4 shrink-0',
+              'transition-all duration-150',
+              'motion-reduce:transition-none',
+              'opacity-0 -translate-x-1',
+              'group-hover:opacity-50 group-hover:translate-x-0',
+              isActive && 'opacity-0'
+            )}
+            aria-hidden="true"
+          />
+        </>
+      )}
     </RouterLink>
   );
 
