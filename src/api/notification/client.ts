@@ -126,6 +126,15 @@ export async function listPublicAnnouncements(
   return response.data.data;
 }
 
+/**
+ * Mark all announcements as read for the current user
+ * POST /announcements/read-all
+ * Added 2026-01-29: Updates user's announcements_read_at timestamp
+ */
+export async function markAnnouncementsAsRead(): Promise<void> {
+  await apiClient.post<APIResponse<null>>('/announcements/read-all');
+}
+
 // ============================================================================
 // Notification APIs
 // ============================================================================

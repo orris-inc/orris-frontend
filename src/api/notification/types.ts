@@ -11,6 +11,7 @@
 /**
  * Announcement entity
  * Updated 2026-01-29: Changed id from number to string (SID format: ann_xxx)
+ * Updated 2026-01-29: Added isRead field for tracking user read status
  */
 export interface Announcement {
   id: string; // Updated: Now uses SID format (ann_xxx)
@@ -25,6 +26,7 @@ export interface Announcement {
   viewCount: number;
   createdAt: string;
   updatedAt: string;
+  isRead?: boolean; // Added 2026-01-29: User read status (only returned for authenticated users)
 }
 
 /**

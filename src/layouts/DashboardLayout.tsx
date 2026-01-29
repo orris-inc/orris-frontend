@@ -9,9 +9,9 @@
  * - Clean spacing and consistent styling
  */
 
-import { useState, lazy, Suspense } from 'react';
+import { useState, lazy, Suspense, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import { ViewTransitionLink } from '@/components/common/ViewTransitionLink';
 import {
@@ -41,7 +41,7 @@ import { getNavItems } from '@/config/navigation';
 import { usePermissions } from '@/features/auth/hooks/usePermissions';
 import { useVersionInfo } from '@/hooks';
 import { cn } from '@/lib/utils';
-import { listPublicAnnouncements } from '@/api/notification';
+import { listPublicAnnouncements, markAnnouncementsAsRead } from '@/api/notification';
 import { queryKeys } from '@/shared/lib/query-client';
 import { formatRelativeTime } from '@/shared/utils/date-utils';
 import type { Announcement, AnnouncementType } from '@/api/notification/types';
@@ -58,6 +58,9 @@ function AnnouncementBell({ className }: AnnouncementBellProps) {
   const { t } = useTranslation();
   const [open, setOpen] = useState(false);
   const [selectedId, setSelectedId] = useState<string | null>(null);
+  const { isAuthenticated } = useAuthStore();
+  const queryClient = useQueryClient();
+  const hasMarkedAsRead = useRef(false);
 
   const { data: announcementsData, isLoading } = useQuery({
     queryKey: queryKeys.announcements.public({ page: 1, pageSize: 10 }),
@@ -65,14 +68,32 @@ function AnnouncementBell({ className }: AnnouncementBellProps) {
   });
 
   const announcements = announcementsData?.items ?? [];
-  const count = announcements.length;
+  const unreadCount = announcements.filter((a) => !a.isRead).length;
   const selectedAnnouncement = selectedId
     ? announcements.find((a) => a.id === selectedId)
     : null;
 
+  // Reset the mark-as-read flag when announcements change
+  useEffect(() => {
+    hasMarkedAsRead.current = false;
+  }, [announcementsData]);
+
+  // Mark as read mutation
+  const markReadMutation = useMutation({
+    mutationFn: markAnnouncementsAsRead,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.announcements.public() });
+    },
+  });
+
   const handleOpenChange = (newOpen: boolean) => {
     setOpen(newOpen);
     if (!newOpen) setSelectedId(null);
+    // When opening popover, mark all as read (if authenticated and has unread)
+    if (newOpen && isAuthenticated && unreadCount > 0 && !hasMarkedAsRead.current) {
+      hasMarkedAsRead.current = true;
+      markReadMutation.mutate();
+    }
   };
 
   return (
@@ -92,7 +113,7 @@ function AnnouncementBell({ className }: AnnouncementBellProps) {
           aria-label={t('user.dashboard.announcements.title')}
         >
           <Bell className="size-5" />
-          {count > 0 && (
+          {unreadCount > 0 && (
             <span
               className={cn(
                 'absolute -top-0.5 -right-0.5',
@@ -103,7 +124,7 @@ function AnnouncementBell({ className }: AnnouncementBellProps) {
                 'ring-2 ring-background'
               )}
             >
-              {count > 99 ? '99+' : count}
+              {unreadCount > 99 ? '99+' : unreadCount}
             </span>
           )}
         </button>
@@ -128,9 +149,9 @@ function AnnouncementBell({ className }: AnnouncementBellProps) {
               <span className="text-sm font-semibold text-foreground">
                 {t('user.dashboard.announcements.title')}
               </span>
-              {count > 0 && (
+              {unreadCount > 0 && (
                 <span className="inline-flex items-center justify-center min-w-[20px] h-5 px-1.5 text-[11px] font-semibold text-primary-foreground bg-primary rounded-full">
-                  {count}
+                  {unreadCount}
                 </span>
               )}
             </div>
@@ -159,7 +180,7 @@ function AnnouncementBell({ className }: AnnouncementBellProps) {
               </div>
             )}
 
-            {!isLoading && count === 0 && (
+            {!isLoading && announcements.length === 0 && (
               <div className="flex flex-col items-center justify-center py-12 px-4">
                 <div className="size-12 rounded-full bg-muted flex items-center justify-center mb-3">
                   <Bell className="size-6 text-muted-foreground" />
@@ -182,7 +203,7 @@ function AnnouncementBell({ className }: AnnouncementBellProps) {
               />
             )}
 
-            {!isLoading && count > 0 && !selectedAnnouncement && (
+            {!isLoading && announcements.length > 0 && !selectedAnnouncement && (
               <div className="divide-y divide-border">
                 {announcements.map((item) => (
                   <NotificationItem
@@ -196,7 +217,7 @@ function AnnouncementBell({ className }: AnnouncementBellProps) {
           </div>
 
           {/* Footer */}
-          {!isLoading && count > 0 && !selectedAnnouncement && (
+          {!isLoading && announcements.length > 0 && !selectedAnnouncement && (
             <div className="border-t border-border px-4 py-2.5">
               <button
                 type="button"
@@ -228,31 +249,43 @@ interface NotificationItemProps {
 }
 
 function NotificationItem({ announcement, onClick }: NotificationItemProps) {
-  const Icon = getAnnouncementIcon(announcement.type);
   const { bgColor, textColor } = getAnnouncementColors(announcement.type);
+  const isUnread = !announcement.isRead;
+  const IconComponent = ANNOUNCEMENT_ICONS[announcement.type] ?? Megaphone;
 
   return (
     <button
       type="button"
       onClick={onClick}
       className={cn(
-        'w-full flex items-start gap-3 p-4 text-left',
+        'relative w-full flex items-start gap-3 p-4 text-left',
         'transition-colors duration-150',
         'hover:bg-accent/50',
-        'focus:outline-none focus:bg-accent/50'
+        'focus:outline-none focus:bg-accent/50',
+        isUnread && 'bg-accent/30'
       )}
     >
+      {/* Unread indicator */}
+      {isUnread && (
+        <div className="absolute left-1 top-1/2 -translate-y-1/2 w-1 h-4 bg-primary rounded-full" />
+      )}
+
       <div
         className={cn(
           'shrink-0 size-10 rounded-full flex items-center justify-center',
           bgColor
         )}
       >
-        <Icon className={cn('size-5', textColor)} />
+        <IconComponent className={cn('size-5', textColor)} />
       </div>
 
       <div className="flex-1 min-w-0">
-        <p className="text-sm font-medium text-foreground line-clamp-1">
+        <p
+          className={cn(
+            'text-sm text-foreground line-clamp-1',
+            isUnread ? 'font-semibold' : 'font-medium'
+          )}
+        >
           {announcement.title}
         </p>
         <p className="text-sm text-muted-foreground line-clamp-2 mt-0.5">
@@ -289,8 +322,8 @@ interface NotificationDetailProps {
 
 function NotificationDetail({ announcement, onBack }: NotificationDetailProps) {
   const { t } = useTranslation();
-  const Icon = getAnnouncementIcon(announcement.type);
   const { bgColor, textColor } = getAnnouncementColors(announcement.type);
+  const IconComponent = ANNOUNCEMENT_ICONS[announcement.type] ?? Megaphone;
 
   return (
     <div className="p-4">
@@ -313,7 +346,7 @@ function NotificationDetail({ announcement, onBack }: NotificationDetailProps) {
             bgColor
           )}
         >
-          <Icon className={cn('size-6', textColor)} />
+          <IconComponent className={cn('size-6', textColor)} />
         </div>
         <div className="flex-1 min-w-0">
           <h3 className="text-base font-semibold text-foreground">
@@ -355,15 +388,13 @@ function NotificationDetail({ announcement, onBack }: NotificationDetailProps) {
 // Helper Functions
 // ============================================================================
 
-function getAnnouncementIcon(type: AnnouncementType) {
-  const icons: Record<AnnouncementType, typeof Info> = {
-    system: Info,
-    maintenance: Wrench,
-    feature: Sparkles,
-    promotion: Gift,
-  };
-  return icons[type] || Megaphone;
-}
+// Static icon map to avoid creating components during render
+const ANNOUNCEMENT_ICONS: Record<AnnouncementType, typeof Info> = {
+  system: Info,
+  maintenance: Wrench,
+  feature: Sparkles,
+  promotion: Gift,
+};
 
 function getAnnouncementColors(type: AnnouncementType): {
   bgColor: string;

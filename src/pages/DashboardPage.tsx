@@ -247,7 +247,10 @@ export const DashboardPage = () => {
     return getStatusMessage(t, dashboardData.subscriptions);
   }, [dashboardData, t]);
 
-  const subscriptions = dashboardData?.subscriptions ?? [];
+  const subscriptions = useMemo(
+    () => dashboardData?.subscriptions ?? [],
+    [dashboardData?.subscriptions]
+  );
   const activeSubscriptions = useMemo(
     () => subscriptions.filter((subscription) => subscription.isActive),
     [subscriptions]
@@ -522,16 +525,29 @@ export const DashboardPage = () => {
                   {announcements.map((announcement: Announcement) => {
                     const Icon = getAnnouncementIcon(announcement.type);
                     const typeStyle = getAnnouncementTypeStyle(announcement.type);
+                    const isUnread = !announcement.isRead;
                     return (
                       <div
                         key={announcement.id}
-                        className="group flex gap-3 p-3 -mx-3 rounded-lg hover:bg-muted/50 transition-colors cursor-pointer"
+                        className={cn(
+                          'group relative flex gap-3 p-3 -mx-3 rounded-lg hover:bg-muted/50 transition-colors cursor-pointer',
+                          isUnread && 'bg-muted/30'
+                        )}
                       >
+                        {/* Unread indicator */}
+                        {isUnread && (
+                          <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-4 bg-primary rounded-full" />
+                        )}
                         <div className={cn('shrink-0 mt-0.5', typeStyle)}>
                           <Icon className="size-4" />
                         </div>
                         <div className="min-w-0 flex-1">
-                          <p className="text-sm font-medium text-foreground line-clamp-1 group-hover:text-primary transition-colors">
+                          <p
+                            className={cn(
+                              'text-sm text-foreground line-clamp-1 group-hover:text-primary transition-colors',
+                              isUnread ? 'font-semibold' : 'font-medium'
+                            )}
+                          >
                             {announcement.title}
                           </p>
                           <p className="text-xs text-muted-foreground mt-0.5">
