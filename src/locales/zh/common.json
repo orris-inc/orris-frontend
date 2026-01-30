@@ -53,9 +53,9 @@
     "copyAddress": "复制地址",
     "copied": "已复制",
     "token": {
-      "defaultDescription": "Token 仅显示一次，请妥善保存",
+      "defaultDescription": "您可以稍后在详情页面获取此 Token",
       "copied": "Token已复制到剪贴板",
-      "copyFirst": "请先复制Token后再关闭此对话框",
+      "copyHint": "建议现在复制 Token，或稍后在详情页获取",
       "copy": "复制Token",
       "copyAgain": "再次复制"
     },

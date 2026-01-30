@@ -64,6 +64,7 @@ const RULE_TYPE_OPTIONS_KEYS = [
   { value: 'entry', labelKey: 'admin.forwardRules.ruleTypeInfo.entry.label' },
   { value: 'chain', labelKey: 'admin.forwardRules.ruleTypeInfo.chain.label' },
   { value: 'direct_chain', labelKey: 'admin.forwardRules.ruleTypeInfo.directChain.label' },
+  { value: 'external', labelKey: 'admin.forwardRules.ruleTypeInfo.external.label' },
 ];
 
 const PROTOCOL_OPTIONS: MobileSelectOption[] = [
@@ -232,6 +233,10 @@ export const CreateForwardRuleSheet: React.FC<CreateForwardRuleSheetProps> = ({
     ipVersion: 'auto' as IPVersion,
     remark: '',
     groupSids: [] as string[],
+    // External rule fields
+    serverAddress: '',
+    externalSource: '',
+    externalRuleId: '',
   });
   const [targetType, setTargetType] = useState<TargetType>('manual');
   const [showAdvanced, setShowAdvanced] = useState(false);
@@ -262,6 +267,9 @@ export const CreateForwardRuleSheet: React.FC<CreateForwardRuleSheetProps> = ({
           ipVersion: initialData.ipVersion || 'auto',
           remark: initialData.remark || '',
           groupSids: initialData.groupSids || [],
+          serverAddress: (initialData as Record<string, unknown>).serverAddress as string || '',
+          externalSource: (initialData as Record<string, unknown>).externalSource as string || '',
+          externalRuleId: (initialData as Record<string, unknown>).externalRuleId as string || '',
         });
         setTargetType(initialData.targetType || (initialData.targetNodeId ? 'node' : 'manual'));
         setShowAdvanced(!!(initialData.bindIp || initialData.remark || initialData.trafficMultiplier));
@@ -286,6 +294,9 @@ export const CreateForwardRuleSheet: React.FC<CreateForwardRuleSheetProps> = ({
           ipVersion: 'auto',
           remark: '',
           groupSids: [],
+          serverAddress: '',
+          externalSource: '',
+          externalRuleId: '',
         });
         setTargetType('manual');
         setShowAdvanced(false);
@@ -414,6 +425,19 @@ export const CreateForwardRuleSheet: React.FC<CreateForwardRuleSheetProps> = ({
   const validate = () => {
     const newErrors: Record<string, string> = {};
 
+    // External rule has different validation
+    if (formData.ruleType === 'external') {
+      if (!formData.name.trim()) newErrors.name = t('admin.forwardRules.validation.ruleNameRequired');
+      if (!formData.serverAddress.trim()) {
+        newErrors.serverAddress = t('admin.forwardRules.validation.serverAddressRequired');
+      }
+      if (!formData.listenPort || formData.listenPort < 1 || formData.listenPort > 65535) {
+        newErrors.listenPort = t('admin.forwardRules.validation.listenPortRange');
+      }
+      setErrors(newErrors);
+      return Object.keys(newErrors).length === 0;
+    }
+
     if (!formData.agentId) newErrors.agentId = t('admin.forwardRules.validation.selectForwardAgent');
     if (!formData.name.trim()) newErrors.name = t('admin.forwardRules.validation.ruleNameRequired');
     if (!formData.protocol) newErrors.protocol = t('admin.forwardRules.validation.protocolRequired');
@@ -465,6 +489,26 @@ export const CreateForwardRuleSheet: React.FC<CreateForwardRuleSheetProps> = ({
 
     setLoading(true);
     try {
+      // Handle external rule type separately
+      if (formData.ruleType === 'external') {
+        const submitData = {
+          ruleType: formData.ruleType,
+          name: formData.name.trim(),
+          serverAddress: formData.serverAddress.trim(),
+          listenPort: formData.listenPort,
+          ...(formData.targetNodeId && { targetNodeId: formData.targetNodeId }),
+          ...(formData.externalSource?.trim() && { externalSource: formData.externalSource.trim() }),
+          ...(formData.externalRuleId?.trim() && { externalRuleId: formData.externalRuleId.trim() }),
+          ...(formData.sortOrder !== undefined && formData.sortOrder >= 0 && { sortOrder: formData.sortOrder }),
+          ...(formData.remark?.trim() && { remark: formData.remark.trim() }),
+          ...(formData.groupSids.length > 0 && { groupSids: formData.groupSids }),
+        } as unknown as CreateForwardRuleRequest;
+
+        await onSubmit(submitData);
+        onOpenChange(false);
+        return;
+      }
+
       const submitData: CreateForwardRuleRequest = {
         agentId: formData.agentId,
         ruleType: formData.ruleType,
@@ -517,18 +561,21 @@ export const CreateForwardRuleSheet: React.FC<CreateForwardRuleSheetProps> = ({
   };
 
   const isFormValid =
-    formData.agentId &&
-    formData.name.trim() &&
-    formData.protocol &&
-    (targetType === 'manual'
-      ? formData.targetAddress.trim() && formData.targetPort > 0
-      : !!formData.targetNodeId) &&
-    (formData.ruleType !== 'entry' || formData.exitAgentId) &&
-    ((formData.ruleType !== 'chain' && formData.ruleType !== 'direct_chain') || formData.chainAgentIds.length > 0);
+    formData.ruleType === 'external'
+      ? formData.name.trim() && formData.serverAddress.trim() && formData.listenPort > 0 && formData.listenPort <= 65535
+      : formData.agentId &&
+        formData.name.trim() &&
+        formData.protocol &&
+        (targetType === 'manual'
+          ? formData.targetAddress.trim() && formData.targetPort > 0
+          : !!formData.targetNodeId) &&
+        (formData.ruleType !== 'entry' || formData.exitAgentId) &&
+        ((formData.ruleType !== 'chain' && formData.ruleType !== 'direct_chain') || formData.chainAgentIds.length > 0);
 
   const needsChainConfig = formData.ruleType === 'chain' || formData.ruleType === 'direct_chain';
   const needsExitAgent = formData.ruleType === 'entry';
   const needsTunnelConfig = formData.ruleType === 'entry' || formData.ruleType === 'chain';
+  const isExternal = formData.ruleType === 'external';
 
   return (
     <Sheet open={open} onOpenChange={handleClose}>
@@ -553,7 +600,7 @@ export const CreateForwardRuleSheet: React.FC<CreateForwardRuleSheetProps> = ({
           </FormField>
 
           <div className="grid grid-cols-2 gap-3">
-            <FormField label={t('admin.forwardRules.form.ruleType')} required>
+            <FormField label={t('admin.forwardRules.form.ruleType')} required className={isExternal ? 'col-span-2' : ''}>
               <MobileSelect
                 value={formData.ruleType}
                 onChange={(value) => handleChange('ruleType', value)}
@@ -561,62 +608,128 @@ export const CreateForwardRuleSheet: React.FC<CreateForwardRuleSheetProps> = ({
               />
             </FormField>
 
-            <FormField label={t('common.protocol')} required>
-              <MobileSelect
-                value={formData.protocol}
-                onChange={(value) => handleChange('protocol', value)}
-                options={PROTOCOL_OPTIONS}
-              />
-            </FormField>
+            {!isExternal && (
+              <FormField label={t('common.protocol')} required>
+                <MobileSelect
+                  value={formData.protocol}
+                  onChange={(value) => handleChange('protocol', value)}
+                  options={PROTOCOL_OPTIONS}
+                />
+              </FormField>
+            )}
           </div>
 
-          {/* ===== Section 2: Agent Config ===== */}
-          <SectionDivider label={t('admin.forwardRules.form.forwardAgent')} />
+          {/* ===== External Rule Config ===== */}
+          {isExternal && (
+            <>
+              <SectionDivider label={t('admin.forwardRules.form.forwardConfig')} />
 
-          <div className="grid grid-cols-2 gap-3">
-            <FormField
-              label={t('admin.forwardRules.form.forwardAgent')}
-              required
-              error={errors.agentId}
-              className="col-span-2 sm:col-span-1"
-            >
-              <MobileSelect
-                value={formData.agentId}
-                onChange={(value) => handleChange('agentId', value)}
-                options={agentOptions}
-                placeholder={t('admin.forwardRules.form.selectForwardAgent')}
-              />
-            </FormField>
+              <FormField
+                label={t('admin.forwardRules.form.serverAddress')}
+                required
+                error={errors.serverAddress}
+              >
+                <MobileFormInput
+                  placeholder={t('admin.forwardRules.form.serverAddressPlaceholder')}
+                  value={formData.serverAddress}
+                  onChange={(value) => handleChange('serverAddress', value)}
+                  className="font-mono"
+                />
+              </FormField>
 
-            <FormField
-              label={t('admin.forwardRules.form.listenPort')}
-              error={errors.listenPort}
-              hint={t('common.auto')}
-              className="col-span-2 sm:col-span-1"
-            >
-              <MobileFormInput
-                type="number"
-                inputMode="numeric"
-                placeholder={t('common.auto')}
-                value={formData.listenPort ? String(formData.listenPort) : ''}
-                onChange={(value) => handleChange('listenPort', parseInt(value, 10) || 0)}
-                className="font-mono"
-              />
-            </FormField>
-          </div>
+              <div className="grid grid-cols-2 gap-3">
+                <FormField
+                  label={t('admin.forwardRules.form.listenPort')}
+                  required
+                  error={errors.listenPort}
+                >
+                  <MobileFormInput
+                    type="number"
+                    inputMode="numeric"
+                    placeholder="1-65535"
+                    value={formData.listenPort ? String(formData.listenPort) : ''}
+                    onChange={(value) => handleChange('listenPort', parseInt(value, 10) || 0)}
+                    className="font-mono"
+                  />
+                </FormField>
 
-          {/* Port Range Warning */}
-          {selectedAgent?.allowedPortRange && (
-            <div className="flex items-center gap-2 px-3 py-2 rounded-xl bg-warning/10 ring-1 ring-warning/20">
-              <Info className="size-4 text-warning flex-shrink-0" />
-              <p className="text-xs text-warning">
-                {t('admin.forwardRules.form.portRestriction', { range: selectedAgent.allowedPortRange })}
-              </p>
-            </div>
+                <FormField
+                  label={t('admin.forwardRules.form.externalSource')}
+                  hint={t('common.optional')}
+                >
+                  <MobileFormInput
+                    placeholder={t('admin.forwardRules.form.externalSourcePlaceholder')}
+                    value={formData.externalSource}
+                    onChange={(value) => handleChange('externalSource', value)}
+                  />
+                </FormField>
+              </div>
+
+              <FormField
+                label={t('admin.forwardRules.form.targetNode')}
+                hint={t('admin.forwardRules.form.targetNodeHint')}
+              >
+                <MobileSelect
+                  value={formData.targetNodeId}
+                  onChange={(value) => handleChange('targetNodeId', value)}
+                  options={nodeOptions}
+                  placeholder={t('admin.forwardRules.form.selectTargetNodeOptional')}
+                />
+              </FormField>
+            </>
+          )}
+
+          {/* ===== Section 2: Agent Config (hidden for external) ===== */}
+          {!isExternal && <SectionDivider label={t('admin.forwardRules.form.forwardAgent')} />}
+
+          {!isExternal && (
+            <>
+              <div className="grid grid-cols-2 gap-3">
+                <FormField
+                  label={t('admin.forwardRules.form.forwardAgent')}
+                  required
+                  error={errors.agentId}
+                  className="col-span-2 sm:col-span-1"
+                >
+                  <MobileSelect
+                    value={formData.agentId}
+                    onChange={(value) => handleChange('agentId', value)}
+                    options={agentOptions}
+                    placeholder={t('admin.forwardRules.form.selectForwardAgent')}
+                  />
+                </FormField>
+
+                <FormField
+                  label={t('admin.forwardRules.form.listenPort')}
+                  error={errors.listenPort}
+                  hint={t('common.auto')}
+                  className="col-span-2 sm:col-span-1"
+                >
+                  <MobileFormInput
+                    type="number"
+                    inputMode="numeric"
+                    placeholder={t('common.auto')}
+                    value={formData.listenPort ? String(formData.listenPort) : ''}
+                    onChange={(value) => handleChange('listenPort', parseInt(value, 10) || 0)}
+                    className="font-mono"
+                  />
+                </FormField>
+              </div>
+
+              {/* Port Range Warning */}
+              {selectedAgent?.allowedPortRange && (
+                <div className="flex items-center gap-2 px-3 py-2 rounded-xl bg-warning/10 ring-1 ring-warning/20">
+                  <Info className="size-4 text-warning flex-shrink-0" />
+                  <p className="text-xs text-warning">
+                    {t('admin.forwardRules.form.portRestriction', { range: selectedAgent.allowedPortRange })}
+                  </p>
+                </div>
+              )}
+            </>
           )}
 
           {/* ===== Section 3: Rule Type Specific Config ===== */}
-          {(needsExitAgent || needsTunnelConfig || needsChainConfig) && (
+          {!isExternal && (needsExitAgent || needsTunnelConfig || needsChainConfig) && (
             <>
               <SectionDivider label={t('admin.forwardRules.form.forwardConfig')} />
 
@@ -714,66 +827,70 @@ export const CreateForwardRuleSheet: React.FC<CreateForwardRuleSheetProps> = ({
             </>
           )}
 
-          {/* ===== Section 4: Target Config ===== */}
-          <SectionDivider label={t('admin.forwardRules.form.targetType')} />
+          {/* ===== Section 4: Target Config (hidden for external) ===== */}
+          {!isExternal && (
+            <>
+              <SectionDivider label={t('admin.forwardRules.form.targetType')} />
 
-          <FormField label={t('admin.forwardRules.form.targetType')} required>
-            <MobileSelect
-              value={targetType}
-              onChange={(value) => {
-                setTargetType(value as TargetType);
-                if (value === 'manual') {
-                  handleChange('targetNodeId', '');
-                } else {
-                  handleChange('targetAddress', '');
-                  handleChange('targetPort', 0);
-                }
-              }}
-              options={TARGET_TYPE_OPTIONS}
-            />
-          </FormField>
-
-          {targetType === 'manual' ? (
-            <div className="grid grid-cols-3 gap-3">
-              <FormField
-                label={t('admin.forwardRules.form.targetAddress')}
-                required
-                error={errors.targetAddress}
-                className="col-span-2"
-              >
-                <MobileFormInput
-                  placeholder={t('admin.forwardRules.form.targetAddressPlaceholder')}
-                  value={formData.targetAddress}
-                  onChange={(value) => handleChange('targetAddress', value)}
-                  className="font-mono"
+              <FormField label={t('admin.forwardRules.form.targetType')} required>
+                <MobileSelect
+                  value={targetType}
+                  onChange={(value) => {
+                    setTargetType(value as TargetType);
+                    if (value === 'manual') {
+                      handleChange('targetNodeId', '');
+                    } else {
+                      handleChange('targetAddress', '');
+                      handleChange('targetPort', 0);
+                    }
+                  }}
+                  options={TARGET_TYPE_OPTIONS}
                 />
               </FormField>
 
-              <FormField label={t('admin.forwardRules.form.targetPort')} required error={errors.targetPort}>
-                <MobileFormInput
-                  type="number"
-                  inputMode="numeric"
-                  placeholder="Port"
-                  value={formData.targetPort ? String(formData.targetPort) : ''}
-                  onChange={(value) => handleChange('targetPort', parseInt(value, 10) || 0)}
-                  className="font-mono"
-                />
-              </FormField>
-            </div>
-          ) : (
-            <FormField
-              label={t('admin.forwardRules.form.targetNode')}
-              required
-              error={errors.targetNodeId}
-              hint={t('admin.forwardRules.form.targetNodeDynamicHint')}
-            >
-              <MobileSelect
-                value={formData.targetNodeId}
-                onChange={(value) => handleChange('targetNodeId', value)}
-                options={nodeOptions}
-                placeholder={t('admin.forwardRules.form.selectTargetNode')}
-              />
-            </FormField>
+              {targetType === 'manual' ? (
+                <div className="grid grid-cols-3 gap-3">
+                  <FormField
+                    label={t('admin.forwardRules.form.targetAddress')}
+                    required
+                    error={errors.targetAddress}
+                    className="col-span-2"
+                  >
+                    <MobileFormInput
+                      placeholder={t('admin.forwardRules.form.targetAddressPlaceholder')}
+                      value={formData.targetAddress}
+                      onChange={(value) => handleChange('targetAddress', value)}
+                      className="font-mono"
+                    />
+                  </FormField>
+
+                  <FormField label={t('admin.forwardRules.form.targetPort')} required error={errors.targetPort}>
+                    <MobileFormInput
+                      type="number"
+                      inputMode="numeric"
+                      placeholder="Port"
+                      value={formData.targetPort ? String(formData.targetPort) : ''}
+                      onChange={(value) => handleChange('targetPort', parseInt(value, 10) || 0)}
+                      className="font-mono"
+                    />
+                  </FormField>
+                </div>
+              ) : (
+                <FormField
+                  label={t('admin.forwardRules.form.targetNode')}
+                  required
+                  error={errors.targetNodeId}
+                  hint={t('admin.forwardRules.form.targetNodeDynamicHint')}
+                >
+                  <MobileSelect
+                    value={formData.targetNodeId}
+                    onChange={(value) => handleChange('targetNodeId', value)}
+                    options={nodeOptions}
+                    placeholder={t('admin.forwardRules.form.selectTargetNode')}
+                  />
+                </FormField>
+              )}
+            </>
           )}
 
           {/* ===== Section 5: Advanced Options (Collapsible) ===== */}
@@ -785,48 +902,78 @@ export const CreateForwardRuleSheet: React.FC<CreateForwardRuleSheetProps> = ({
 
           {showAdvanced && (
             <div className="space-y-4 pt-1">
-              <div className="grid grid-cols-2 gap-3">
-                <FormField label={t('admin.forwardRules.form.ipVersion')}>
-                  <MobileSelect
-                    value={formData.ipVersion}
-                    onChange={(value) => handleChange('ipVersion', value)}
-                    options={IP_VERSION_OPTIONS}
-                  />
-                </FormField>
+              {/* Non-external rules: IP version, bind IP, traffic multiplier */}
+              {!isExternal && (
+                <>
+                  <div className="grid grid-cols-2 gap-3">
+                    <FormField label={t('admin.forwardRules.form.ipVersion')}>
+                      <MobileSelect
+                        value={formData.ipVersion}
+                        onChange={(value) => handleChange('ipVersion', value)}
+                        options={IP_VERSION_OPTIONS}
+                      />
+                    </FormField>
 
-                <FormField label={t('admin.forwardRules.form.bindIp')} hint={t('admin.forwardRules.form.bindIpHint')}>
-                  <MobileFormInput
-                    placeholder={t('admin.forwardRules.form.bindIpPlaceholder')}
-                    value={formData.bindIp}
-                    onChange={(value) => handleChange('bindIp', value)}
-                    className="font-mono"
-                  />
-                </FormField>
-              </div>
+                    <FormField label={t('admin.forwardRules.form.bindIp')} hint={t('admin.forwardRules.form.bindIpHint')}>
+                      <MobileFormInput
+                        placeholder={t('admin.forwardRules.form.bindIpPlaceholder')}
+                        value={formData.bindIp}
+                        onChange={(value) => handleChange('bindIp', value)}
+                        className="font-mono"
+                      />
+                    </FormField>
+                  </div>
 
-              <div className="grid grid-cols-2 gap-3">
-                <FormField label={t('admin.forwardRules.form.trafficMultiplier')}>
-                  <MobileFormInput
-                    type="number"
-                    inputMode="decimal"
-                    placeholder="1.0"
-                    value={formData.trafficMultiplier !== undefined ? String(formData.trafficMultiplier) : ''}
-                    onChange={(value) => handleChange('trafficMultiplier', value ? parseFloat(value) : undefined)}
-                    className="font-mono"
-                  />
-                </FormField>
+                  <div className="grid grid-cols-2 gap-3">
+                    <FormField label={t('admin.forwardRules.form.trafficMultiplier')}>
+                      <MobileFormInput
+                        type="number"
+                        inputMode="decimal"
+                        placeholder="1.0"
+                        value={formData.trafficMultiplier !== undefined ? String(formData.trafficMultiplier) : ''}
+                        onChange={(value) => handleChange('trafficMultiplier', value ? parseFloat(value) : undefined)}
+                        className="font-mono"
+                      />
+                    </FormField>
 
-                <FormField label={t('common.fields.sortOrder')}>
-                  <MobileFormInput
-                    type="number"
-                    inputMode="numeric"
-                    placeholder="0"
-                    value={formData.sortOrder !== undefined ? String(formData.sortOrder) : ''}
-                    onChange={(value) => handleChange('sortOrder', value ? parseInt(value, 10) : undefined)}
-                    className="font-mono"
-                  />
-                </FormField>
-              </div>
+                    <FormField label={t('common.fields.sortOrder')}>
+                      <MobileFormInput
+                        type="number"
+                        inputMode="numeric"
+                        placeholder="0"
+                        value={formData.sortOrder !== undefined ? String(formData.sortOrder) : ''}
+                        onChange={(value) => handleChange('sortOrder', value ? parseInt(value, 10) : undefined)}
+                        className="font-mono"
+                      />
+                    </FormField>
+                  </div>
+                </>
+              )}
+
+              {/* External rules: external rule ID, sort order */}
+              {isExternal && (
+                <div className="grid grid-cols-2 gap-3">
+                  <FormField label={t('admin.forwardRules.form.externalRuleId')} hint={t('admin.forwardRules.form.externalRuleIdHint')}>
+                    <MobileFormInput
+                      placeholder={t('admin.forwardRules.form.externalRuleIdPlaceholder')}
+                      value={formData.externalRuleId}
+                      onChange={(value) => handleChange('externalRuleId', value)}
+                      className="font-mono"
+                    />
+                  </FormField>
+
+                  <FormField label={t('common.fields.sortOrder')}>
+                    <MobileFormInput
+                      type="number"
+                      inputMode="numeric"
+                      placeholder="0"
+                      value={formData.sortOrder !== undefined ? String(formData.sortOrder) : ''}
+                      onChange={(value) => handleChange('sortOrder', value ? parseInt(value, 10) : undefined)}
+                      className="font-mono"
+                    />
+                  </FormField>
+                </div>
+              )}
 
               <FormField label={t('common.fields.remark')}>
                 <MobileFormInput

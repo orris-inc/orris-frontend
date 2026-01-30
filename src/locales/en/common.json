@@ -53,9 +53,9 @@
     "copyAddress": "Copy address",
     "copied": "Copied",
     "token": {
-      "defaultDescription": "Token shown once only. Save it securely.",
+      "defaultDescription": "You can retrieve this token later from the detail page.",
       "copied": "Token copied to clipboard",
-      "copyFirst": "Copy token before closing",
+      "copyHint": "Copy the token now for convenience, or retrieve it later.",
       "copy": "Copy Token",
       "copyAgain": "Copy Again"
     },

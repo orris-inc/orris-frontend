@@ -352,6 +352,9 @@ export const batchUpdateForwardRules = async (
  * Create forward agent (Admin only)
  * POST /forward-agents
  * @returns Agent with token (token is only returned on creation)
+ *
+ * Note: The token does NOT need to be copied immediately. You can retrieve it
+ * later via `getForwardAgentToken()` or `getInstallCommand()`.
  */
 export const createForwardAgent = async (
   data: CreateForwardAgentRequest

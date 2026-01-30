@@ -1,6 +1,8 @@
 /**
  * Token dialog component
- * Displays generated token and requires user to copy before closing
+ * Displays generated token with copy functionality
+ *
+ * Note: Token can be retrieved later via API, so copying is recommended but not required.
  */
 
 import { useState, useEffect } from 'react';
@@ -49,10 +51,8 @@ export const TokenDialog: React.FC<TokenDialogProps> = ({
   };
 
   const handleClose = () => {
-    if (hasCopied) {
-      setHasCopied(false);
-      onClose();
-    }
+    setHasCopied(false);
+    onClose();
   };
 
   if (!token) return null;
@@ -61,18 +61,8 @@ export const TokenDialog: React.FC<TokenDialogProps> = ({
   const displayDescription = description ?? t('common.token.defaultDescription');
 
   return (
-    <Dialog
-      open={open}
-      onOpenChange={(isOpen) => {
-        if (!isOpen && hasCopied) {
-          handleClose();
-        }
-      }}
-    >
-      <DialogContent
-        className="sm:max-w-md"
-        onPointerDownOutside={(e) => e.preventDefault()}
-      >
+    <Dialog open={open} onOpenChange={(isOpen) => !isOpen && handleClose()}>
+      <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle>{displayTitle}</DialogTitle>
           <DialogDescription>{displayDescription}</DialogDescription>
@@ -89,8 +79,8 @@ export const TokenDialog: React.FC<TokenDialogProps> = ({
               {t('common.token.copied')}
             </p>
           ) : (
-            <p className="text-sm text-amber-600 dark:text-amber-400">
-              {t('common.token.copyFirst')}
+            <p className="text-sm text-muted-foreground">
+              {t('common.token.copyHint')}
             </p>
           )}
         </div>
@@ -101,7 +91,6 @@ export const TokenDialog: React.FC<TokenDialogProps> = ({
           <Button
             variant="outline"
             onClick={handleClose}
-            disabled={!hasCopied}
             className="w-full sm:w-auto"
           >
             {t('common.actions.close')}

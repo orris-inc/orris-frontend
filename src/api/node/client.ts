@@ -56,6 +56,9 @@ import type {
  * Create a new node
  * POST /nodes
  * @requires Admin role
+ *
+ * Note: The token does NOT need to be copied immediately. You can generate it
+ * later via `generateNodeToken()` or `getNodeInstallScript()`.
  */
 export async function createNode(data: CreateNodeRequest): Promise<Node> {
   const response = await apiClient.post<APIResponse<Node>>('/nodes', data);

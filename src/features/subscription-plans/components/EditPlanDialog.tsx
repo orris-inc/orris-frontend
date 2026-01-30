@@ -204,6 +204,7 @@ export const EditPlanDialog: React.FC<EditPlanDialogProps> = ({
       const submitData: UpdatePlanRequest = {
         description: formData.description,
         limits,
+        nodeLimit: formData.planLimits.nodeLimit,
         isPublic: formData.isPublic,
         sortOrder: formData.sortOrder,
         pricings: formData.pricings,

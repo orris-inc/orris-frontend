@@ -207,6 +207,7 @@ export const EditPlanSheet: React.FC<EditPlanSheetProps> = ({
       const submitData: UpdatePlanRequest = {
         description: formData.description,
         limits,
+        nodeLimit: formData.planLimits.nodeLimit,
         isPublic: formData.isPublic,
         sortOrder: formData.sortOrder,
         pricings: formData.pricings,
