@@ -211,13 +211,13 @@ export const AnnouncementListTable: React.FC<AnnouncementListTableProps> = ({
               <DropdownMenuPortal>
                 <DropdownMenuContent align="end" collisionPadding={16}>
                   {onViewDetail && (
-                    <DropdownMenuItem onClick={() => onViewDetail(announcement)}>
+                    <DropdownMenuItem onSelect={() => onViewDetail(announcement)}>
                       <Eye className="mr-2 size-4" />
                       {t('common.actions.view')}
                     </DropdownMenuItem>
                   )}
                   {canEdit && onEdit && (
-                    <DropdownMenuItem onClick={() => onEdit(announcement)}>
+                    <DropdownMenuItem onSelect={() => onEdit(announcement)}>
                       <Pencil className="mr-2 size-4" />
                       {t('common.actions.edit')}
                     </DropdownMenuItem>

@@ -140,29 +140,29 @@ export const PlanMobileList: React.FC<PlanMobileListProps> = ({
         </DropdownMenuTrigger>
         <DropdownMenuPortal>
           <DropdownMenuContent align="end" collisionPadding={16}>
-            <DropdownMenuItem onClick={() => onEdit(plan)}>
+            <DropdownMenuItem onSelect={() => onEdit(plan)}>
               <Edit className="mr-2 size-4" />
               {t('common.actions.edit')}
             </DropdownMenuItem>
             {onDuplicate && (
-              <DropdownMenuItem onClick={() => onDuplicate(plan)}>
+              <DropdownMenuItem onSelect={() => onDuplicate(plan)}>
                 <Copy className="mr-2 size-4" />
                 {t('admin.plans.actions.duplicate')}
               </DropdownMenuItem>
             )}
             {onViewSubscriptions && (
-              <DropdownMenuItem onClick={() => onViewSubscriptions(plan)}>
+              <DropdownMenuItem onSelect={() => onViewSubscriptions(plan)}>
                 <Users className="mr-2 size-4" />
                 {t('admin.plans.actions.viewSubscriptions')}
               </DropdownMenuItem>
             )}
             <DropdownMenuSeparator />
-            <DropdownMenuItem onClick={() => onToggleStatus(plan)}>
+            <DropdownMenuItem onSelect={() => onToggleStatus(plan)}>
               <Power className="mr-2 size-4" />
               {plan.status === 'active' ? t('common.actions.deactivate') : t('common.actions.activate')}
             </DropdownMenuItem>
             {onDelete && (
-              <DropdownMenuItem onClick={() => onDelete(plan)} className="text-red-600 dark:text-red-400">
+              <DropdownMenuItem onSelect={() => onDelete(plan)} className="text-red-600 dark:text-red-400">
                 <Trash2 className="mr-2 size-4" />
                 {t('common.actions.delete')}
               </DropdownMenuItem>

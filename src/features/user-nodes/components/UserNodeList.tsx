@@ -288,11 +288,11 @@ export const UserNodeList: React.FC<UserNodeListProps> = ({
                     </DropdownMenuTrigger>
                     <DropdownMenuPortal>
                       <DropdownMenuContent align="start" collisionPadding={16}>
-                        <DropdownMenuItem onClick={() => onViewDetail(node)}>
+                        <DropdownMenuItem onSelect={() => onViewDetail(node)}>
                           <Eye className="mr-2 size-4" />
                           {t('nodeList.details')}
                         </DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => handleTokenClick(node)}>
+                        <DropdownMenuItem onSelect={() => handleTokenClick(node)}>
                           <Key className="mr-2 size-4" />
                           {t('nodeList.regenerateToken')}
                         </DropdownMenuItem>

@@ -4,7 +4,7 @@
  * Updated: 2026-01-06 - Added auto-reconnect with exponential backoff
  */
 
-import { useEffect, useRef, useCallback, useState } from 'react';
+import { useEffect, useRef, useCallback, useState, startTransition } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { queryKeys } from '@/shared/lib/query-client';
 import { subscribeNodeEvents } from '@/api/node';
@@ -65,6 +65,8 @@ export function useNodeEvents(options: UseNodeEventsOptions = {}): UseNodeEvents
   queryClientRef.current = queryClient;
 
   // Update node in all list caches - stable reference
+  // Uses startTransition to mark SSE updates as low priority,
+  // preventing them from interrupting user interactions (e.g., hover states)
   const updateNodeInCache = useCallback(
     (nodeId: string, updater: (node: Node) => Node) => {
       const qc = queryClientRef.current;
@@ -84,9 +86,12 @@ export function useNodeEvents(options: UseNodeEventsOptions = {}): UseNodeEvents
         );
 
         if (hasChange) {
-          qc.setQueryData<ListResponse<Node>>(queryKey, {
-            ...data,
-            items: updatedItems,
+          // Wrap in startTransition to avoid interrupting user interactions
+          startTransition(() => {
+            qc.setQueryData<ListResponse<Node>>(queryKey, {
+              ...data,
+              items: updatedItems,
+            });
           });
         }
       });

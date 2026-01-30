@@ -525,27 +525,27 @@ export const ForwardRuleListTable: React.FC<ForwardRuleListTableProps> = ({
   // Forward rule dropdown menu content
   const renderDropdownMenuActions = useCallback((rule: ForwardRule) => (
     <>
-      <DropdownMenuItem onClick={() => onCopy(rule)}>
+      <DropdownMenuItem onSelect={() => onCopy(rule)}>
         <Files className="mr-2 size-4" />
         {t('admin.forwardRules.actions.copyRule')}
       </DropdownMenuItem>
-      <DropdownMenuItem onClick={() => onResetTraffic(rule)}>
+      <DropdownMenuItem onSelect={() => onResetTraffic(rule)}>
         <RotateCcw className="mr-2 size-4" />
         {t('admin.forwardRules.actions.resetTraffic')}
       </DropdownMenuItem>
       <DropdownMenuSeparator />
       {rule.status === 'enabled' ? (
-        <DropdownMenuItem onClick={() => onDisable(rule)}>
+        <DropdownMenuItem onSelect={() => onDisable(rule)}>
           <PowerOff className="mr-2 size-4" />
           {t('common.actions.disable')}
         </DropdownMenuItem>
       ) : (
-        <DropdownMenuItem onClick={() => onEnable(rule)}>
+        <DropdownMenuItem onSelect={() => onEnable(rule)}>
           <Power className="mr-2 size-4" />
           {t('common.actions.enable')}
         </DropdownMenuItem>
       )}
-      <DropdownMenuItem onClick={() => onDelete(rule)} className="text-red-600 dark:text-red-400">
+      <DropdownMenuItem onSelect={() => onDelete(rule)} className="text-red-600 dark:text-red-400">
         <Trash2 className="mr-2 size-4" />
         {t('common.actions.delete')}
       </DropdownMenuItem>

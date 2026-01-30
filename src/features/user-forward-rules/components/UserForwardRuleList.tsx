@@ -224,18 +224,18 @@ export const UserForwardRuleList: React.FC<UserForwardRuleListProps> = ({
   const renderDropdownMenuActions = useCallback((rule: ForwardRule) => (
     <>
       {rule.status === 'enabled' ? (
-        <DropdownMenuItem onClick={() => onToggleStatus(rule)}>
+        <DropdownMenuItem onSelect={() => onToggleStatus(rule)}>
           <PowerOff className="mr-2 size-4" />
           {t('userForwardRules.menu.disableRule')}
         </DropdownMenuItem>
       ) : (
-        <DropdownMenuItem onClick={() => onToggleStatus(rule)}>
+        <DropdownMenuItem onSelect={() => onToggleStatus(rule)}>
           <Power className="mr-2 size-4" />
           {t('userForwardRules.menu.enableRule')}
         </DropdownMenuItem>
       )}
       <DropdownMenuSeparator />
-      <DropdownMenuItem onClick={() => handleDeleteClick(rule)} className="text-destructive focus:text-destructive">
+      <DropdownMenuItem onSelect={() => handleDeleteClick(rule)} className="text-destructive focus:text-destructive">
         <Trash2 className="mr-2 size-4" />
         {t('userForwardRules.menu.deleteRule')}
       </DropdownMenuItem>

@@ -153,8 +153,10 @@ export const LoginPage = () => {
     rememberMe: z.boolean().catch(false),
   });
 
-  const state = location.state as { message?: string } | null;
-  const successMessage = state?.message;
+  const state = location.state as { message?: string; registrationSuccess?: boolean } | null;
+  const successMessage = state?.registrationSuccess
+    ? t('auth.login.registrationSuccess')
+    : state?.message;
 
   // Redirect if authenticated
   useEffect(() => {

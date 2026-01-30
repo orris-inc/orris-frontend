@@ -4,7 +4,7 @@
  * Switches to mobile card list on small screens
  */
 
-import { useMemo, useCallback } from 'react';
+import { useMemo, useCallback, useState, useDeferredValue } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   Edit,
@@ -151,6 +151,10 @@ export const NodeListTable: React.FC<NodeListTableProps> = ({
   const { t } = useTranslation();
   // Detect mobile screen
   const { isMobile } = useBreakpoint();
+  // Track which dropdown is open to prevent SSE updates from closing it
+  const [openDropdownId, setOpenDropdownId] = useState<string | null>(null);
+  // Defer nodes updates to prevent SSE from interrupting user interactions (hover, dropdown)
+  const deferredNodes = useDeferredValue(nodes);
 
   // Node context menu content
   const renderContextMenuActions = useCallback((node: Node) => (
@@ -204,33 +208,33 @@ export const NodeListTable: React.FC<NodeListTableProps> = ({
   // Node dropdown menu content
   const renderDropdownMenuActions = useCallback((node: Node) => (
     <>
-      <DropdownMenuItem onClick={() => onCopy(node)}>
+      <DropdownMenuItem onSelect={() => onCopy(node)}>
         <Copy className="mr-2 size-4" />
         {t('admin.nodes.actions.copyNode')}
       </DropdownMenuItem>
-      <DropdownMenuItem onClick={() => onGenerateToken(node)}>
+      <DropdownMenuItem onSelect={() => onGenerateToken(node)}>
         <Key className="mr-2 size-4" />
         {t('admin.nodes.actions.generateToken')}
       </DropdownMenuItem>
       {node.isOnline && onNotifyURL && (
-        <DropdownMenuItem onClick={() => onNotifyURL(node)}>
+        <DropdownMenuItem onSelect={() => onNotifyURL(node)}>
           <Radio className="mr-2 size-4" />
           {t('admin.nodes.actions.broadcastUrl')}
         </DropdownMenuItem>
       )}
       <DropdownMenuSeparator />
       {node.status === 'active' ? (
-        <DropdownMenuItem onClick={() => onDeactivate(node)}>
+        <DropdownMenuItem onSelect={() => onDeactivate(node)}>
           <PowerOff className="mr-2 size-4" />
           {t('admin.nodes.actions.deactivate')}
         </DropdownMenuItem>
       ) : (
-        <DropdownMenuItem onClick={() => onActivate(node)}>
+        <DropdownMenuItem onSelect={() => onActivate(node)}>
           <Power className="mr-2 size-4" />
           {t('admin.nodes.actions.activate')}
         </DropdownMenuItem>
       )}
-      <DropdownMenuItem onClick={() => onDelete(node)} className="text-destructive">
+      <DropdownMenuItem onSelect={() => onDelete(node)} className="text-destructive">
         <Trash2 className="mr-2 size-4" />
         {t('admin.nodes.actions.delete')}
       </DropdownMenuItem>
@@ -583,7 +587,10 @@ export const NodeListTable: React.FC<NodeListTableProps> = ({
                 <TooltipContent>{t('admin.nodes.actions.broadcastUrl')}</TooltipContent>
               </Tooltip>
             )}
-            <DropdownMenu>
+            <DropdownMenu
+              open={openDropdownId === node.id}
+              onOpenChange={(open) => setOpenDropdownId(open ? node.id : null)}
+            >
               <DropdownMenuTrigger asChild>
                 <button className={actionButtonClass}>
                   <MoreHorizontal className="size-4" strokeWidth={1.5} />
@@ -599,13 +606,13 @@ export const NodeListTable: React.FC<NodeListTableProps> = ({
         );
       },
     },
-  ], [t, onEdit, onActivate, onDeactivate, onGetInstallScript, onViewDetail, onNotifyURL, onToggleMute, renderDropdownMenuActions, resourceGroupsMap]);
+  ], [t, onEdit, onActivate, onDeactivate, onGetInstallScript, onViewDetail, onNotifyURL, onToggleMute, renderDropdownMenuActions, resourceGroupsMap, openDropdownId]);
 
   // Render mobile card list on small screens
   if (isMobile) {
     return (
       <NodeMobileList
-        nodes={nodes}
+        nodes={deferredNodes}
         loading={loading}
         resourceGroupsMap={resourceGroupsMap}
         onEdit={onEdit}
@@ -629,7 +636,7 @@ export const NodeListTable: React.FC<NodeListTableProps> = ({
       <TableHoverCardProvider>
         <DraggableDataTable
           columns={columns}
-          data={nodes}
+          data={deferredNodes}
           loading={loading}
           page={page}
           pageSize={pageSize}
@@ -651,7 +658,7 @@ export const NodeListTable: React.FC<NodeListTableProps> = ({
     <TableHoverCardProvider>
       <DataTable
         columns={columns}
-        data={nodes}
+        data={deferredNodes}
         loading={loading}
         page={page}
         pageSize={pageSize}

@@ -86,15 +86,15 @@ export const UserListTable: React.FC<UserListTableProps> = ({
   // User dropdown menu content
   const renderDropdownMenuActions = useCallback((user: UserResponse) => (
     <>
-      <DropdownMenuItem onClick={() => onAssignSubscription(user)}>
+      <DropdownMenuItem onSelect={() => onAssignSubscription(user)}>
         <CreditCard className="mr-2 size-4" />
         {t('admin.users.assignSubscription')}
       </DropdownMenuItem>
-      <DropdownMenuItem onClick={() => onEdit(user)}>
+      <DropdownMenuItem onSelect={() => onEdit(user)}>
         <Edit className="mr-2 size-4" />
         {t('common.actions.edit')}
       </DropdownMenuItem>
-      <DropdownMenuItem onClick={() => onResetPassword(user)}>
+      <DropdownMenuItem onSelect={() => onResetPassword(user)}>
         <KeyRound className="mr-2 size-4" />
         {t('user.detail.resetPassword')}
       </DropdownMenuItem>

@@ -9,7 +9,7 @@
 import { AdminLayout } from '@/layouts/AdminLayout';
 import { PageHeader } from '@/components/admin';
 import { usePageTitle } from '@/shared/hooks';
-import { Settings, KeyRound, Mail, MessageCircle, Wrench, Coins } from 'lucide-react';
+import { Settings, KeyRound, Mail, MessageCircle, Wrench, Coins, Rss } from 'lucide-react';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/common/Tabs';
 import { useTelegramSettings } from '@/features/telegram/hooks/useTelegramSettings';
 import {
@@ -21,6 +21,7 @@ import {
   useOAuthSettings,
   useEmailSettings,
   useUSDTSettings,
+  useSubscriptionSettings,
   SystemSettingsForm,
   SystemSettingsFormSkeleton,
   OAuthSettingsForm,
@@ -29,6 +30,8 @@ import {
   EmailSettingsFormSkeleton,
   USDTSettingsForm,
   USDTSettingsFormSkeleton,
+  SubscriptionSettingsForm,
+  SubscriptionSettingsFormSkeleton,
 } from '@/features/settings';
 import { useTranslation } from 'react-i18next';
 import type { LucideIcon } from 'lucide-react';
@@ -57,6 +60,7 @@ const TAB_ITEMS: TabItem[] = [
   { id: 'email', labelKey: 'admin.settings.nav.email', icon: Mail },
   { id: 'telegram', labelKey: 'admin.settings.nav.telegram', icon: MessageCircle },
   { id: 'usdt', labelKey: 'admin.settings.nav.usdt', icon: Coins },
+  { id: 'subscription', labelKey: 'admin.settings.nav.subscription', icon: Rss },
 ];
 
 /**
@@ -121,6 +125,14 @@ export const AdminSettingsPage = () => {
     update: updateUSDT,
     isUpdating: isUSDTUpdating,
   } = useUSDTSettings();
+
+  // Subscription settings
+  const {
+    settings: subscriptionSettings,
+    isLoading: isSubscriptionLoading,
+    update: updateSubscription,
+    isUpdating: isSubscriptionUpdating,
+  } = useSubscriptionSettings();
 
   return (
     <AdminLayout>
@@ -243,6 +255,21 @@ export const AdminSettingsPage = () => {
                     settings={usdtSettings}
                     onSubmit={updateUSDT}
                     isSubmitting={isUSDTUpdating}
+                  />
+                )}
+              </TabsContent>
+
+              {/* Subscription Settings */}
+              <TabsContent value="subscription">
+                {isSubscriptionLoading ? (
+                  <SubscriptionSettingsFormSkeleton />
+                ) : !subscriptionSettings ? (
+                  <EmptyState message={t('admin.settings.unableToLoadConfig')} />
+                ) : (
+                  <SubscriptionSettingsForm
+                    settings={subscriptionSettings}
+                    onSubmit={updateSubscription}
+                    isSubmitting={isSubscriptionUpdating}
                   />
                 )}
               </TabsContent>

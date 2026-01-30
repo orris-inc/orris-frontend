@@ -300,7 +300,8 @@
       "continueWithGithub": "Continue with GitHub",
       "togglePasswordVisibility": "Toggle password visibility",
       "goToVerification": "Go to verification",
-      "success": "Signed in successfully!"
+      "success": "Signed in successfully!",
+      "registrationSuccess": "Account created successfully! You can now sign in."
     },
     "register": {
       "title": "Create Account",
@@ -2245,7 +2246,8 @@
         "oauth": "OAuth",
         "email": "Email",
         "telegram": "Telegram",
-        "usdt": "USDT"
+        "usdt": "USDT",
+        "subscription": "Subscription"
       },
       "source": {
         "database": "Database",
@@ -2345,6 +2347,14 @@
         "trcConfirmationsDesc": "Block confirmations required for Tron",
         "updateSuccess": "USDT configuration updated",
         "updateError": "Failed to update USDT configuration"
+      },
+      "subscription": {
+        "title": "Subscription Settings",
+        "description": "Configure subscription output display options",
+        "showInfoNodes": "Show Info Nodes",
+        "showInfoNodesDesc": "Display expiration date and traffic usage at the top of node list in subscription output",
+        "updateSuccess": "Subscription configuration updated",
+        "updateError": "Failed to update subscription configuration"
       }
     }
   },

@@ -216,38 +216,38 @@ export const SubscriptionMobileList: React.FC<SubscriptionMobileListProps> = ({
         <DropdownMenuPortal>
           <DropdownMenuContent align="end" collisionPadding={16}>
             {onViewDetail && (
-              <DropdownMenuItem onClick={() => onViewDetail(subscription)}>
+              <DropdownMenuItem onSelect={() => onViewDetail(subscription)}>
                 <Eye className="mr-2 size-4" />
                 {t('subscription.viewDetails')}
               </DropdownMenuItem>
             )}
             {onDuplicate && (
-              <DropdownMenuItem onClick={() => onDuplicate(subscription)}>
+              <DropdownMenuItem onSelect={() => onDuplicate(subscription)}>
                 <Copy className="mr-2 size-4" />
                 {t('subscription.duplicate')}
               </DropdownMenuItem>
             )}
             {(onViewDetail || onDuplicate) && (canActivate || canRenew || canResetUsage || canCancel || canChangePlan) && <DropdownMenuSeparator />}
             {canChangePlan && onChangePlan && (
-              <DropdownMenuItem onClick={() => onChangePlan(subscription)}>
+              <DropdownMenuItem onSelect={() => onChangePlan(subscription)}>
                 <ArrowRightLeft className="mr-2 size-4" />
                 {t('subscription.changePlan')}
               </DropdownMenuItem>
             )}
             {canActivate && onActivate && (
-              <DropdownMenuItem onClick={() => onActivate(subscription)}>
+              <DropdownMenuItem onSelect={() => onActivate(subscription)}>
                 <Play className="mr-2 size-4" />
                 {t('common.actions.activate')}
               </DropdownMenuItem>
             )}
             {canRenew && onRenew && (
-              <DropdownMenuItem onClick={() => onRenew(subscription)}>
+              <DropdownMenuItem onSelect={() => onRenew(subscription)}>
                 <RefreshCw className="mr-2 size-4" />
                 {t('subscription.renewSubscription')}
               </DropdownMenuItem>
             )}
             {canResetUsage && onResetUsage && (
-              <DropdownMenuItem onClick={() => onResetUsage(subscription)}>
+              <DropdownMenuItem onSelect={() => onResetUsage(subscription)}>
                 <RefreshCcw className="mr-2 size-4" />
                 {t('subscription.resetUsage')}
               </DropdownMenuItem>

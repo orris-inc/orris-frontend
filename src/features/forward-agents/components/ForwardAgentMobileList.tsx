@@ -123,23 +123,23 @@ export const ForwardAgentMobileList: React.FC<ForwardAgentMobileListProps> = ({
         </DropdownMenuTrigger>
         <DropdownMenuPortal>
           <DropdownMenuContent align="end" collisionPadding={16}>
-            <DropdownMenuItem onClick={() => onViewDetail(agent)}>
+            <DropdownMenuItem onSelect={() => onViewDetail(agent)}>
               <Eye className="mr-2 size-4" />
               {t('common.actions.viewDetail')}
             </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => onEdit(agent)}>
+            <DropdownMenuItem onSelect={() => onEdit(agent)}>
               <Edit className="mr-2 size-4" />
               {t('common.actions.edit')}
             </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => onGetInstallScript(agent)}>
+            <DropdownMenuItem onSelect={() => onGetInstallScript(agent)}>
               <Terminal className="mr-2 size-4" />
               {t('admin.forwardAgents.table.menu.installScript')}
             </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => onCopy(agent)}>
+            <DropdownMenuItem onSelect={() => onCopy(agent)}>
               <Copy className="mr-2 size-4" />
               {t('admin.forwardAgents.table.menu.copyNode')}
             </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => onRegenerateToken(agent)}>
+            <DropdownMenuItem onSelect={() => onRegenerateToken(agent)}>
               <Key className="mr-2 size-4" />
               {t('admin.forwardAgents.table.menu.regenerateToken')}
             </DropdownMenuItem>
@@ -157,24 +157,24 @@ export const ForwardAgentMobileList: React.FC<ForwardAgentMobileListProps> = ({
               </DropdownMenuItem>
             )}
             {onBroadcastURL && (
-              <DropdownMenuItem onClick={() => onBroadcastURL(agent)}>
+              <DropdownMenuItem onSelect={() => onBroadcastURL(agent)}>
                 <Radio className="mr-2 size-4" />
                 {t('admin.forwardAgents.table.menu.broadcastURL')}
               </DropdownMenuItem>
             )}
             <DropdownMenuSeparator />
             {agent.status === 'enabled' ? (
-              <DropdownMenuItem onClick={() => onDisable(agent)}>
+              <DropdownMenuItem onSelect={() => onDisable(agent)}>
                 <PowerOff className="mr-2 size-4" />
                 {t('common.actions.disable')}
               </DropdownMenuItem>
             ) : (
-              <DropdownMenuItem onClick={() => onEnable(agent)}>
+              <DropdownMenuItem onSelect={() => onEnable(agent)}>
                 <Power className="mr-2 size-4" />
                 {t('common.actions.enable')}
               </DropdownMenuItem>
             )}
-            <DropdownMenuItem onClick={() => onDelete(agent)} className="text-red-600 dark:text-red-400">
+            <DropdownMenuItem onSelect={() => onDelete(agent)} className="text-red-600 dark:text-red-400">
               <Trash2 className="mr-2 size-4" />
               {t('common.actions.delete')}
             </DropdownMenuItem>

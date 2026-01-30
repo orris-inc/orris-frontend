@@ -467,11 +467,11 @@ export const ForwardRuleMobileList: React.FC<ForwardRuleMobileListProps> = ({
         </DropdownMenuTrigger>
         <DropdownMenuPortal>
           <DropdownMenuContent align="end" collisionPadding={16}>
-            <DropdownMenuItem onClick={() => onViewDetail(rule)}>
+            <DropdownMenuItem onSelect={() => onViewDetail(rule)}>
               <Eye className="mr-2 size-4" />
               {t('admin.forwardRules.actions.viewDetail')}
             </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => onEdit(rule)}>
+            <DropdownMenuItem onSelect={() => onEdit(rule)}>
               <Edit className="mr-2 size-4" />
               {t('common.actions.edit')}
             </DropdownMenuItem>
@@ -486,27 +486,27 @@ export const ForwardRuleMobileList: React.FC<ForwardRuleMobileListProps> = ({
               )}
               {isProbing ? t('admin.forwardRules.actions.probing') : t('admin.forwardRules.actions.probe')}
             </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => onCopy(rule)}>
+            <DropdownMenuItem onSelect={() => onCopy(rule)}>
               <Files className="mr-2 size-4" />
               {t('admin.forwardRules.actions.copyRule')}
             </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => onResetTraffic(rule)}>
+            <DropdownMenuItem onSelect={() => onResetTraffic(rule)}>
               <RotateCcw className="mr-2 size-4" />
               {t('admin.forwardRules.actions.resetTraffic')}
             </DropdownMenuItem>
             <DropdownMenuSeparator />
             {rule.status === 'enabled' ? (
-              <DropdownMenuItem onClick={() => onDisable(rule)}>
+              <DropdownMenuItem onSelect={() => onDisable(rule)}>
                 <PowerOff className="mr-2 size-4" />
                 {t('common.actions.disable')}
               </DropdownMenuItem>
             ) : (
-              <DropdownMenuItem onClick={() => onEnable(rule)}>
+              <DropdownMenuItem onSelect={() => onEnable(rule)}>
                 <Power className="mr-2 size-4" />
                 {t('common.actions.enable')}
               </DropdownMenuItem>
             )}
-            <DropdownMenuItem onClick={() => onDelete(rule)} className="text-red-600 dark:text-red-400">
+            <DropdownMenuItem onSelect={() => onDelete(rule)} className="text-red-600 dark:text-red-400">
               <Trash2 className="mr-2 size-4" />
               {t('common.actions.delete')}
             </DropdownMenuItem>

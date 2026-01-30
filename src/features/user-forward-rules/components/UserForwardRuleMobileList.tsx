@@ -386,18 +386,18 @@ export const UserForwardRuleMobileList: React.FC<UserForwardRuleMobileListProps>
       </DropdownMenuTrigger>
       <DropdownMenuPortal>
         <DropdownMenuContent align="end" className="w-48" collisionPadding={16}>
-          <DropdownMenuItem onClick={() => onEdit(rule)} className="min-h-[44px]">
+          <DropdownMenuItem onSelect={() => onEdit(rule)} className="min-h-[44px]">
             <Edit className="mr-2 size-4" />
             {t('common.actions.edit')}
           </DropdownMenuItem>
           <DropdownMenuSeparator />
           {rule.status === 'enabled' ? (
-            <DropdownMenuItem onClick={() => onToggleStatus(rule)} className="min-h-[44px]">
+            <DropdownMenuItem onSelect={() => onToggleStatus(rule)} className="min-h-[44px]">
               <PowerOff className="mr-2 size-4" />
               {t('userForwardRules.menu.disableRule')}
             </DropdownMenuItem>
           ) : (
-            <DropdownMenuItem onClick={() => onToggleStatus(rule)} className="min-h-[44px]">
+            <DropdownMenuItem onSelect={() => onToggleStatus(rule)} className="min-h-[44px]">
               <Power className="mr-2 size-4" />
               {t('userForwardRules.menu.enableRule')}
             </DropdownMenuItem>

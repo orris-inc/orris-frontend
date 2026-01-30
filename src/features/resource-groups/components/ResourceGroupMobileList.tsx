@@ -87,17 +87,17 @@ export const ResourceGroupMobileList: React.FC<ResourceGroupMobileListProps> = (
         <DropdownMenuPortal>
           <DropdownMenuContent align="end" collisionPadding={16}>
             {onViewDetail && (
-              <DropdownMenuItem onClick={() => onViewDetail(resourceGroup)}>
+              <DropdownMenuItem onSelect={() => onViewDetail(resourceGroup)}>
                 <Eye className="mr-2 size-4" />
                 {t('common.actions.viewDetail')}
               </DropdownMenuItem>
             )}
-            <DropdownMenuItem onClick={() => onEdit(resourceGroup)}>
+            <DropdownMenuItem onSelect={() => onEdit(resourceGroup)}>
               <Edit className="mr-2 size-4" />
               {t('common.actions.edit')}
             </DropdownMenuItem>
             <DropdownMenuSeparator />
-            <DropdownMenuItem onClick={() => onToggleStatus(resourceGroup)}>
+            <DropdownMenuItem onSelect={() => onToggleStatus(resourceGroup)}>
               <Power className="mr-2 size-4" />
               {resourceGroup.status === 'active' ? t('common.actions.deactivate') : t('common.actions.activate')}
             </DropdownMenuItem>

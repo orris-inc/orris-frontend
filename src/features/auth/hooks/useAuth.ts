@@ -149,12 +149,19 @@ export const useAuth = () => {
       clearErrors();
 
       try {
-        await authApi.register(data);
+        const response = await authApi.register(data);
 
-        // After successful registration, redirect to verification pending page
-        navigate('/verification-pending', {
-          state: { email: data.email },
-        });
+        if (response.requiresEmailVerification) {
+          // SMTP is configured, redirect to verification pending page
+          navigate('/verification-pending', {
+            state: { email: data.email },
+          });
+        } else {
+          // SMTP is not configured, redirect to login page
+          navigate('/login', {
+            state: { registrationSuccess: true },
+          });
+        }
       } catch (err) {
         const structured = extractAuthError(err);
         setError(structured.message);

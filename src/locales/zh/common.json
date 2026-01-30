@@ -300,7 +300,8 @@
       "continueWithGithub": "使用 GitHub 登录",
       "togglePasswordVisibility": "切换密码显示",
       "goToVerification": "前往验证",
-      "success": "登录成功！"
+      "success": "登录成功！",
+      "registrationSuccess": "注册成功！您现在可以登录了。"
     },
     "register": {
       "title": "创建账号",
@@ -2245,7 +2246,8 @@
         "oauth": "OAuth",
         "email": "邮件",
         "telegram": "Telegram",
-        "usdt": "USDT"
+        "usdt": "USDT",
+        "subscription": "订阅"
       },
       "source": {
         "database": "数据库",
@@ -2345,6 +2347,14 @@
         "trcConfirmationsDesc": "Tron 链交易所需的区块确认数",
         "updateSuccess": "USDT 配置已更新",
         "updateError": "更新 USDT 配置失败"
+      },
+      "subscription": {
+        "title": "订阅设置",
+        "description": "配置订阅输出显示选项",
+        "showInfoNodes": "显示信息节点",
+        "showInfoNodesDesc": "在订阅输出的节点列表顶部显示到期时间和流量使用情况",
+        "updateSuccess": "订阅配置已更新",
+        "updateError": "更新订阅配置失败"
       }
     }
   },

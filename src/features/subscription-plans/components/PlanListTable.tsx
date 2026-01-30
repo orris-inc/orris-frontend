@@ -161,29 +161,29 @@ export const PlanListTable: React.FC<PlanListTableProps> = ({
   // Subscription plan dropdown menu content
   const renderDropdownMenuActions = useCallback((plan: SubscriptionPlan) => (
     <>
-      <DropdownMenuItem onClick={() => onEdit(plan)}>
+      <DropdownMenuItem onSelect={() => onEdit(plan)}>
         <Edit className="mr-2 size-4" />
         {t('common.actions.edit')}
       </DropdownMenuItem>
       {onDuplicate && (
-        <DropdownMenuItem onClick={() => onDuplicate(plan)}>
+        <DropdownMenuItem onSelect={() => onDuplicate(plan)}>
           <Copy className="mr-2 size-4" />
           {t('admin.plans.table.duplicatePlan')}
         </DropdownMenuItem>
       )}
       {onViewSubscriptions && (
-        <DropdownMenuItem onClick={() => onViewSubscriptions(plan)}>
+        <DropdownMenuItem onSelect={() => onViewSubscriptions(plan)}>
           <Users className="mr-2 size-4" />
           {t('admin.plans.table.viewSubscribers')}
         </DropdownMenuItem>
       )}
       <DropdownMenuSeparator />
-      <DropdownMenuItem onClick={() => onToggleStatus(plan)}>
+      <DropdownMenuItem onSelect={() => onToggleStatus(plan)}>
         <Power className="mr-2 size-4" />
         {plan.status === 'active' ? t('common.actions.deactivate') : t('common.actions.activate')}
       </DropdownMenuItem>
       {onDelete && (
-        <DropdownMenuItem onClick={() => onDelete(plan)} className="text-destructive">
+        <DropdownMenuItem onSelect={() => onDelete(plan)} className="text-destructive">
           <Trash2 className="mr-2 size-4" />
           {t('common.actions.delete')}
         </DropdownMenuItem>

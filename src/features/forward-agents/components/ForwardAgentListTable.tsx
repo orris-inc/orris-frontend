@@ -4,7 +4,7 @@
  * Switches to mobile card list on small screens
  */
 
-import { useMemo, useCallback } from 'react';
+import { useMemo, useCallback, useState, useDeferredValue } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Edit, Trash2, Key, Eye, Power, PowerOff, MoreHorizontal, Terminal, Copy, Download, Loader2, Package, ArrowUpCircle, Radio, Bell, BellOff, Circle, AlertTriangle } from 'lucide-react';
 import { DataTable, DraggableDataTable, SystemStatusCell, TableHoverCardProvider, TableHoverCardList, DateTimeCell, type ColumnDef, type ResponsiveColumnMeta } from '@/components/admin';
@@ -120,6 +120,10 @@ export const ForwardAgentListTable: React.FC<ForwardAgentListTableProps> = ({
   const { t } = useTranslation();
   // Detect mobile screen
   const { isMobile } = useBreakpoint();
+  // Track which dropdown is open to prevent SSE updates from closing it
+  const [openDropdownId, setOpenDropdownId] = useState<string | null>(null);
+  // Defer agents updates to prevent SSE from interrupting user interactions (hover, dropdown)
+  const deferredAgents = useDeferredValue(forwardAgents);
 
   // Forward agent context menu content
   const renderContextMenuActions = useCallback((agent: ForwardAgent) => (
@@ -186,11 +190,11 @@ export const ForwardAgentListTable: React.FC<ForwardAgentListTableProps> = ({
   // Forward agent dropdown menu content
   const renderDropdownMenuActions = useCallback((agent: ForwardAgent) => (
     <>
-      <DropdownMenuItem onClick={() => onCopy(agent)}>
+      <DropdownMenuItem onSelect={() => onCopy(agent)}>
         <Copy className="mr-2 size-4" />
         {t('admin.forwardAgents.table.menu.copyNode')}
       </DropdownMenuItem>
-      <DropdownMenuItem onClick={() => onRegenerateToken(agent)}>
+      <DropdownMenuItem onSelect={() => onRegenerateToken(agent)}>
         <Key className="mr-2 size-4" />
         {t('admin.forwardAgents.table.menu.regenerateToken')}
       </DropdownMenuItem>
@@ -208,24 +212,24 @@ export const ForwardAgentListTable: React.FC<ForwardAgentListTableProps> = ({
         </DropdownMenuItem>
       )}
       {onBroadcastURL && (
-        <DropdownMenuItem onClick={() => onBroadcastURL(agent)}>
+        <DropdownMenuItem onSelect={() => onBroadcastURL(agent)}>
           <Radio className="mr-2 size-4" />
           {t('admin.forwardAgents.table.menu.broadcastUrl')}
         </DropdownMenuItem>
       )}
       <DropdownMenuSeparator />
       {agent.status === 'enabled' ? (
-        <DropdownMenuItem onClick={() => onDisable(agent)}>
+        <DropdownMenuItem onSelect={() => onDisable(agent)}>
           <PowerOff className="mr-2 size-4" />
           {t('common.actions.disable')}
         </DropdownMenuItem>
       ) : (
-        <DropdownMenuItem onClick={() => onEnable(agent)}>
+        <DropdownMenuItem onSelect={() => onEnable(agent)}>
           <Power className="mr-2 size-4" />
           {t('common.actions.enable')}
         </DropdownMenuItem>
       )}
-      <DropdownMenuItem onClick={() => onDelete(agent)} className="text-red-600 dark:text-red-400">
+      <DropdownMenuItem onSelect={() => onDelete(agent)} className="text-red-600 dark:text-red-400">
         <Trash2 className="mr-2 size-4" />
         {t('common.actions.delete')}
       </DropdownMenuItem>
@@ -473,7 +477,10 @@ export const ForwardAgentListTable: React.FC<ForwardAgentListTableProps> = ({
                 <TooltipContent>{t('admin.forwardAgents.table.menu.broadcastUrl')}</TooltipContent>
               </Tooltip>
             )}
-            <DropdownMenu>
+            <DropdownMenu
+              open={openDropdownId === agent.id}
+              onOpenChange={(open) => setOpenDropdownId(open ? agent.id : null)}
+            >
               <DropdownMenuTrigger asChild>
                 <button className={actionButtonClass}>
                   <MoreHorizontal className="size-4" strokeWidth={1.5} />
@@ -489,13 +496,13 @@ export const ForwardAgentListTable: React.FC<ForwardAgentListTableProps> = ({
         );
       },
     },
-  ], [t, onEdit, onDisable, onEnable, onGetInstallScript, onViewDetail, onBroadcastURL, onToggleMute, renderDropdownMenuActions, resourceGroupsMap]);
+  ], [t, onEdit, onDisable, onEnable, onGetInstallScript, onViewDetail, onBroadcastURL, onToggleMute, renderDropdownMenuActions, resourceGroupsMap, openDropdownId]);
 
   // Render mobile card list on small screens
   if (isMobile) {
     return (
       <ForwardAgentMobileList
-        forwardAgents={forwardAgents}
+        forwardAgents={deferredAgents}
         loading={loading}
         resourceGroupsMap={resourceGroupsMap}
         onEdit={onEdit}
@@ -522,7 +529,7 @@ export const ForwardAgentListTable: React.FC<ForwardAgentListTableProps> = ({
       <TableHoverCardProvider>
         <DraggableDataTable
           columns={columns}
-          data={forwardAgents}
+          data={deferredAgents}
           loading={loading}
           page={page}
           pageSize={pageSize}
@@ -544,7 +551,7 @@ export const ForwardAgentListTable: React.FC<ForwardAgentListTableProps> = ({
     <TableHoverCardProvider>
       <DataTable
         columns={columns}
-        data={forwardAgents}
+        data={deferredAgents}
         loading={loading}
         page={page}
         pageSize={pageSize}

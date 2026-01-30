@@ -385,15 +385,15 @@ export const MonitorMobileView = memo(({
           </DropdownMenuTrigger>
           <DropdownMenuPortal>
             <DropdownMenuContent align="end" className="w-32" collisionPadding={16}>
-              <DropdownMenuItem onClick={() => setStatusFilter('all')} className="cursor-pointer">
+              <DropdownMenuItem onSelect={() => setStatusFilter('all')} className="cursor-pointer">
                 <Check className={cn('size-4 mr-2', statusFilter === 'all' ? 'opacity-100' : 'opacity-0')} />
                 {t('filter.all')}
               </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => setStatusFilter('online')} className="cursor-pointer">
+              <DropdownMenuItem onSelect={() => setStatusFilter('online')} className="cursor-pointer">
                 <Check className={cn('size-4 mr-2', statusFilter === 'online' ? 'opacity-100' : 'opacity-0')} />
                 {t('common.status.online')} ({onlineCount})
               </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => setStatusFilter('offline')} className="cursor-pointer">
+              <DropdownMenuItem onSelect={() => setStatusFilter('offline')} className="cursor-pointer">
                 <Check className={cn('size-4 mr-2', statusFilter === 'offline' ? 'opacity-100' : 'opacity-0')} />
                 {t('common.status.offline')} ({entities.length - onlineCount})
               </DropdownMenuItem>

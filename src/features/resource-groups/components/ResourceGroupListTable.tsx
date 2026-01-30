@@ -93,17 +93,17 @@ export const ResourceGroupListTable: React.FC<ResourceGroupListTableProps> = ({
   const renderDropdownMenuActions = useCallback((resourceGroup: ResourceGroup) => (
     <>
       {onViewDetail && (
-        <DropdownMenuItem onClick={() => onViewDetail(resourceGroup)}>
+        <DropdownMenuItem onSelect={() => onViewDetail(resourceGroup)}>
           <Eye className="mr-2 size-4" />
           {t('subscription.viewDetails')}
         </DropdownMenuItem>
       )}
-      <DropdownMenuItem onClick={() => onEdit(resourceGroup)}>
+      <DropdownMenuItem onSelect={() => onEdit(resourceGroup)}>
         <Edit className="mr-2 size-4" />
         {t('common.actions.edit')}
       </DropdownMenuItem>
       <DropdownMenuSeparator />
-      <DropdownMenuItem onClick={() => onToggleStatus(resourceGroup)}>
+      <DropdownMenuItem onSelect={() => onToggleStatus(resourceGroup)}>
         <Power className="mr-2 size-4" />
         {resourceGroup.status === 'active' ? t('common.actions.disable') : t('common.actions.enable')}
       </DropdownMenuItem>

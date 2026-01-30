@@ -193,39 +193,39 @@ export const NodeMobileList: React.FC<NodeMobileListProps> = ({
         </DropdownMenuTrigger>
         <DropdownMenuPortal>
           <DropdownMenuContent align="end" collisionPadding={16}>
-            <DropdownMenuItem onClick={() => onViewDetail(node)}>
+            <DropdownMenuItem onSelect={() => onViewDetail(node)}>
               <Eye className="mr-2 size-4" />
               {t('common.actions.viewDetail')}
             </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => onEdit(node)}>
+            <DropdownMenuItem onSelect={() => onEdit(node)}>
               <Edit className="mr-2 size-4" />
               {t('common.actions.edit')}
             </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => onGetInstallScript(node)}>
+            <DropdownMenuItem onSelect={() => onGetInstallScript(node)}>
               <Terminal className="mr-2 size-4" />
               {t('admin.nodes.table.menu.installScript')}
             </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => onCopy(node)}>
+            <DropdownMenuItem onSelect={() => onCopy(node)}>
               <Copy className="mr-2 size-4" />
               {t('admin.nodes.table.menu.copyNode')}
             </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => onGenerateToken(node)}>
+            <DropdownMenuItem onSelect={() => onGenerateToken(node)}>
               <Key className="mr-2 size-4" />
               {t('admin.nodes.table.menu.generateToken')}
             </DropdownMenuItem>
             <DropdownMenuSeparator />
             {node.status === 'active' ? (
-              <DropdownMenuItem onClick={() => onDeactivate(node)}>
+              <DropdownMenuItem onSelect={() => onDeactivate(node)}>
                 <PowerOff className="mr-2 size-4" />
                 {t('common.actions.deactivate')}
               </DropdownMenuItem>
             ) : (
-              <DropdownMenuItem onClick={() => onActivate(node)}>
+              <DropdownMenuItem onSelect={() => onActivate(node)}>
                 <Power className="mr-2 size-4" />
                 {t('common.actions.activate')}
               </DropdownMenuItem>
             )}
-            <DropdownMenuItem onClick={() => onDelete(node)} className="text-red-600 dark:text-red-400">
+            <DropdownMenuItem onSelect={() => onDelete(node)} className="text-red-600 dark:text-red-400">
               <Trash2 className="mr-2 size-4" />
               {t('common.actions.delete')}
             </DropdownMenuItem>

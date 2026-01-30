@@ -81,20 +81,20 @@ export const UserMobileList: React.FC<UserMobileListProps> = ({
         </DropdownMenuTrigger>
         <DropdownMenuPortal>
           <DropdownMenuContent align="end" collisionPadding={16}>
-            <DropdownMenuItem onClick={() => onAssignSubscription(user)}>
+            <DropdownMenuItem onSelect={() => onAssignSubscription(user)}>
               <CreditCard className="mr-2 size-4" />
               {t('admin.users.actions.assignSubscription')}
             </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => onEdit(user)}>
+            <DropdownMenuItem onSelect={() => onEdit(user)}>
               <Edit className="mr-2 size-4" />
               {t('common.actions.edit')}
             </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => onResetPassword(user)}>
+            <DropdownMenuItem onSelect={() => onResetPassword(user)}>
               <KeyRound className="mr-2 size-4" />
               {t('admin.users.actions.resetPassword')}
             </DropdownMenuItem>
             <DropdownMenuSeparator />
-            <DropdownMenuItem onClick={() => onDelete(user)} className="text-red-600 dark:text-red-400">
+            <DropdownMenuItem onSelect={() => onDelete(user)} className="text-red-600 dark:text-red-400">
               <Trash2 className="mr-2 size-4" />
               {t('common.actions.delete')}
             </DropdownMenuItem>
