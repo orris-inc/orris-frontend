@@ -93,9 +93,9 @@ export const FormField = forwardRef<HTMLInputElement, FormFieldProps>(
               // Typography
               'text-base sm:text-sm text-foreground placeholder:text-muted-foreground/60',
               // Shape & background
-              'rounded-lg bg-background',
+              'rounded-xl bg-background',
               // Ring border (Tailwind UI style)
-              'border-0 ring-1 ring-inset ring-input shadow-sm',
+              'border-0 ring-1 ring-inset ring-border',
               // Focus state
               'focus:outline-none focus:ring-2 focus:ring-inset focus:ring-primary',
               // Error state
@@ -116,7 +116,7 @@ export const FormField = forwardRef<HTMLInputElement, FormFieldProps>(
             <button
               type="button"
               onClick={() => setShowPassword(!showPassword)}
-              className="absolute right-1 top-1/2 -translate-y-1/2 flex items-center justify-center size-9 rounded-md text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
+              className="absolute right-1 top-1/2 -translate-y-1/2 flex items-center justify-center size-9 rounded-lg text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
               aria-label={togglePasswordLabel}
               tabIndex={-1}
             >

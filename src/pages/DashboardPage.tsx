@@ -260,7 +260,7 @@ export const DashboardPage = () => {
   if (!user) {
     return (
       <DashboardLayout>
-        <div className="flex items-center gap-3 p-4 bg-destructive/10 border border-destructive/20 rounded-lg text-destructive">
+        <div className="flex items-center gap-3 p-4 bg-destructive/10 ring-1 ring-destructive/20 rounded-xl text-destructive">
           <CircleAlert className="size-5" />
           <span>{t('user.dashboard.errorLoadUser')}</span>
         </div>
@@ -355,7 +355,7 @@ export const DashboardPage = () => {
 
               {/* Loading State */}
               {isLoading && (
-                <div className="flex items-center justify-center py-12 bg-card rounded-xl border">
+                <div className="flex items-center justify-center py-12 bg-card rounded-xl ring-1 ring-border">
                   <Loader2 className="size-5 animate-spin mr-2 text-muted-foreground" />
                   <span className="text-sm text-muted-foreground">{t('common.table.loading')}</span>
                 </div>
@@ -495,7 +495,7 @@ export const DashboardPage = () => {
 
           <aside className="lg:col-span-4 space-y-6">
             {/* Announcements Card */}
-            <section className="rounded-lg border bg-card p-4 sm:p-6 shadow-sm">
+            <section className="rounded-xl ring-1 ring-border bg-card p-4 sm:p-6">
               <div className="flex items-center gap-2 mb-3">
                 <Bell className="size-4 text-muted-foreground" />
                 <h3 className="text-sm font-medium text-foreground">

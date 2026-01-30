@@ -60,7 +60,7 @@ export const NotificationsSection = () => {
   return (
     <div className="space-y-4 sm:space-y-6">
       {/* Email notifications section */}
-      <div className="rounded-xl bg-card border overflow-hidden">
+      <div className="rounded-xl bg-card ring-1 ring-border overflow-hidden">
         <div className="flex flex-col space-y-1.5 p-5 sm:p-6 border-b">
           <h3 className={`${cardTitleStyles} text-lg`}>
             {t('profile.notifications.emailNotifications')}
@@ -95,7 +95,7 @@ export const NotificationsSection = () => {
       </div>
 
       {/* Push notifications section */}
-      <div className="rounded-xl bg-card border overflow-hidden">
+      <div className="rounded-xl bg-card ring-1 ring-border overflow-hidden">
         <div className="flex flex-col space-y-1.5 p-5 sm:p-6 border-b">
           <h3 className={`${cardTitleStyles} text-lg`}>
             {t('profile.notifications.pushNotifications')}
@@ -106,7 +106,7 @@ export const NotificationsSection = () => {
         </div>
         <div className="p-5 sm:p-6">
           {/* Coming soon notice */}
-          <div className="relative w-full rounded-xl bg-muted/50 border p-4 [&>svg~*]:pl-7 [&>svg+div]:translate-y-[-3px] [&>svg]:absolute [&>svg]:left-4 [&>svg]:top-4 [&>svg]:text-muted-foreground">
+          <div className="relative w-full rounded-xl bg-muted/50 ring-1 ring-border p-4 [&>svg~*]:pl-7 [&>svg+div]:translate-y-[-3px] [&>svg]:absolute [&>svg]:left-4 [&>svg]:top-4 [&>svg]:text-muted-foreground">
             <Info className="size-4" />
             <div className={`${alertDescriptionStyles} text-sm`}>
               {t('profile.notifications.comingSoon')}

@@ -607,7 +607,7 @@ export const CreateForwardRuleSheet: React.FC<CreateForwardRuleSheetProps> = ({
 
           {/* Port Range Warning */}
           {selectedAgent?.allowedPortRange && (
-            <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-warning/10 border border-warning/20">
+            <div className="flex items-center gap-2 px-3 py-2 rounded-xl bg-warning/10 ring-1 ring-warning/20">
               <Info className="size-4 text-warning flex-shrink-0" />
               <p className="text-xs text-warning">
                 {t('admin.forwardRules.form.portRestriction', { range: selectedAgent.allowedPortRange })}
@@ -839,7 +839,7 @@ export const CreateForwardRuleSheet: React.FC<CreateForwardRuleSheetProps> = ({
               {/* Resource Groups */}
               {availableResourceGroups.length > 0 && (
                 <FormField label={t('admin.forwardRules.form.bindResourceGroups')}>
-                  <div className="border rounded-xl overflow-hidden divide-y divide-border">
+                  <div className="ring-1 ring-border rounded-xl overflow-hidden divide-y divide-border">
                     {availableResourceGroups.map((group) => {
                       const plan = plansMap[group.planId];
                       const isSelected = formData.groupSids.includes(group.sid);
@@ -847,8 +847,8 @@ export const CreateForwardRuleSheet: React.FC<CreateForwardRuleSheetProps> = ({
                         <label
                           key={group.sid}
                           className={cn(
-                            'flex items-center gap-3 px-3 py-3 cursor-pointer min-h-[52px] transition-colors',
-                            isSelected ? 'bg-primary/5' : 'active:bg-muted/50'
+                            'flex items-center gap-3 px-3 py-3 cursor-pointer min-h-[52px] transition-colors active:bg-muted/50',
+                            isSelected && 'bg-primary/5'
                           )}
                         >
                           <Checkbox checked={isSelected} onCheckedChange={() => handleGroupToggle(group.sid)} />
@@ -880,7 +880,7 @@ export const CreateForwardRuleSheet: React.FC<CreateForwardRuleSheetProps> = ({
             <Button
               onClick={handleSubmit}
               disabled={loading || !isFormValid}
-              className="flex-1 min-h-[52px]"
+              className="flex-1 min-h-[52px] active:scale-[0.98]"
             >
               {loading ? (
                 <>
@@ -897,7 +897,7 @@ export const CreateForwardRuleSheet: React.FC<CreateForwardRuleSheetProps> = ({
               variant="outline"
               onClick={() => onOpenChange(false)}
               disabled={loading}
-              className="flex-1 min-h-[52px]"
+              className="flex-1 min-h-[52px] active:scale-[0.98]"
             >
               {t('common.actions.cancel')}
             </Button>

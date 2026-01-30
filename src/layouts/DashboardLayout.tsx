@@ -9,7 +9,7 @@
  * - Clean spacing and consistent styling
  */
 
-import { useState, lazy, Suspense, useEffect, useRef } from 'react';
+import { useState, lazy, Suspense } from 'react';
 import { useNavigate } from 'react-router';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
@@ -41,7 +41,11 @@ import { getNavItems } from '@/config/navigation';
 import { usePermissions } from '@/features/auth/hooks/usePermissions';
 import { useVersionInfo } from '@/hooks';
 import { cn } from '@/lib/utils';
-import { listPublicAnnouncements, markAnnouncementsAsRead } from '@/api/notification';
+import {
+  listPublicAnnouncements,
+  markAnnouncementAsRead,
+  getAnnouncementUnreadCount,
+} from '@/api/notification';
 import { queryKeys } from '@/shared/lib/query-client';
 import { formatRelativeTime } from '@/shared/utils/date-utils';
 import type { Announcement, AnnouncementType } from '@/api/notification/types';
@@ -60,28 +64,35 @@ function AnnouncementBell({ className }: AnnouncementBellProps) {
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const { isAuthenticated } = useAuthStore();
   const queryClient = useQueryClient();
-  const hasMarkedAsRead = useRef(false);
 
+  // Lightweight query for unread count only (always enabled)
+  const { data: unreadData } = useQuery({
+    queryKey: queryKeys.announcements.unreadCount(),
+    queryFn: getAnnouncementUnreadCount,
+    enabled: isAuthenticated,
+    staleTime: 30 * 1000, // 30 seconds
+  });
+
+  const unreadCount = unreadData?.count ?? 0;
+
+  // Full list query - only fetch when popover is open
   const { data: announcementsData, isLoading } = useQuery({
     queryKey: queryKeys.announcements.public({ page: 1, pageSize: 10 }),
     queryFn: () => listPublicAnnouncements({ page: 1, pageSize: 10 }),
+    enabled: open, // Lazy load when popover opens
   });
 
   const announcements = announcementsData?.items ?? [];
-  const unreadCount = announcements.filter((a) => !a.isRead).length;
   const selectedAnnouncement = selectedId
     ? announcements.find((a) => a.id === selectedId)
     : null;
 
-  // Reset the mark-as-read flag when announcements change
-  useEffect(() => {
-    hasMarkedAsRead.current = false;
-  }, [announcementsData]);
-
-  // Mark as read mutation
+  // Mark single announcement as read mutation
   const markReadMutation = useMutation({
-    mutationFn: markAnnouncementsAsRead,
+    mutationFn: markAnnouncementAsRead,
     onSuccess: () => {
+      // Invalidate both unread count and public list
+      queryClient.invalidateQueries({ queryKey: queryKeys.announcements.unreadCount() });
       queryClient.invalidateQueries({ queryKey: queryKeys.announcements.public() });
     },
   });
@@ -89,10 +100,14 @@ function AnnouncementBell({ className }: AnnouncementBellProps) {
   const handleOpenChange = (newOpen: boolean) => {
     setOpen(newOpen);
     if (!newOpen) setSelectedId(null);
-    // When opening popover, mark all as read (if authenticated and has unread)
-    if (newOpen && isAuthenticated && unreadCount > 0 && !hasMarkedAsRead.current) {
-      hasMarkedAsRead.current = true;
-      markReadMutation.mutate();
+  };
+
+  // Handle clicking on an announcement item
+  const handleAnnouncementClick = (announcement: Announcement) => {
+    setSelectedId(announcement.id);
+    // Mark as read if unread
+    if (!announcement.isRead && isAuthenticated) {
+      markReadMutation.mutate(announcement.id);
     }
   };
 
@@ -209,7 +224,7 @@ function AnnouncementBell({ className }: AnnouncementBellProps) {
                   <NotificationItem
                     key={item.id}
                     announcement={item}
-                    onClick={() => setSelectedId(item.id)}
+                    onClick={() => handleAnnouncementClick(item)}
                   />
                 ))}
               </div>

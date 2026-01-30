@@ -26,7 +26,7 @@ const OverviewCard = memo(({
   iconBg,
   iconColor,
 }: OverviewCardProps) => (
-  <div className="group relative overflow-hidden bg-card rounded-lg p-2.5 border border-border/80 hover:border-border transition-colors">
+  <div className="group relative overflow-hidden bg-card rounded-xl p-2.5 ring-1 ring-border/80 hover:ring-border transition-colors">
     <div className="flex items-center gap-2">
       <div className={`${iconBg} p-1.5 rounded-md shrink-0`}>
         <div className={iconColor}>{icon}</div>

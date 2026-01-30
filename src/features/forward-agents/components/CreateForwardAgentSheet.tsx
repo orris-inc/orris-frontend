@@ -392,10 +392,10 @@ export const CreateForwardAgentSheet: React.FC<CreateForwardAgentSheetProps> =
                                   )
                                 }
                                 className={cn(
-                                  "px-3 py-2 text-sm rounded-lg border transition-colors min-h-[44px]",
+                                  "px-3 py-2 text-sm rounded-lg transition-all min-h-[44px] active:scale-[0.98]",
                                   isSelected
-                                    ? "bg-destructive/10 border-destructive/50 text-destructive"
-                                    : "bg-muted/50 border-border text-muted-foreground active:bg-muted"
+                                    ? "bg-destructive/10 ring-1 ring-destructive/50 text-destructive"
+                                    : "bg-muted/50 ring-1 ring-border text-muted-foreground active:bg-muted"
                                 )}
                               >
                                 {protocol.label}

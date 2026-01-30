@@ -43,7 +43,7 @@ export const AppearanceSection = () => {
   return (
     <div className="space-y-4 sm:space-y-6">
       {/* Theme section */}
-      <div className="rounded-xl bg-card border overflow-hidden">
+      <div className="rounded-xl bg-card ring-1 ring-border overflow-hidden">
         <div className="flex flex-col space-y-1.5 p-5 sm:p-6 border-b">
           <h3 className={`${cardTitleStyles} text-lg`}>
             {t('profile.appearance.theme')}
@@ -65,7 +65,7 @@ export const AppearanceSection = () => {
                 <RadioGroup.Item
                   key={option.value}
                   value={option.value}
-                  className={`relative flex flex-col items-center gap-2 rounded-xl border-2 p-4 cursor-pointer transition-colors touch-target ${
+                  className={`relative flex flex-col items-center gap-2 rounded-xl border-2 p-4 cursor-pointer transition-colors touch-target active:scale-[0.98] ${
                     isSelected
                       ? 'border-primary bg-primary/5'
                       : 'border-border hover:border-primary/50 hover:bg-accent/50'
@@ -88,7 +88,7 @@ export const AppearanceSection = () => {
       </div>
 
       {/* Language section */}
-      <div className="rounded-xl bg-card border overflow-hidden">
+      <div className="rounded-xl bg-card ring-1 ring-border overflow-hidden">
         <div className="flex flex-col space-y-1.5 p-5 sm:p-6 border-b">
           <h3 className={`${cardTitleStyles} text-lg`}>
             {t('common.language.label')}
@@ -100,7 +100,7 @@ export const AppearanceSection = () => {
         <div className="p-5 sm:p-6">
           <Select.Root value={currentLanguage} onValueChange={handleLanguageChange}>
             <Select.Trigger
-              className="inline-flex items-center justify-between w-full sm:w-64 rounded-xl bg-background border px-4 py-3 text-sm font-medium hover:bg-accent/50 focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 touch-target"
+              className="inline-flex items-center justify-between w-full sm:w-64 rounded-xl bg-background ring-1 ring-border px-4 py-3 text-sm font-medium hover:bg-accent/50 focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 touch-target active:scale-[0.98]"
               aria-label={t('common.language.label')}
             >
               <Select.Value>
@@ -112,7 +112,7 @@ export const AppearanceSection = () => {
             </Select.Trigger>
             <Select.Portal>
               <Select.Content
-                className="overflow-hidden rounded-xl bg-popover border shadow-lg z-50 min-w-[200px] animate-in fade-in-0 zoom-in-95"
+                className="overflow-hidden rounded-xl bg-popover ring-1 ring-border shadow-lg z-50 min-w-[200px] animate-in fade-in-0 zoom-in-95"
                 position="popper"
                 sideOffset={4}
               >

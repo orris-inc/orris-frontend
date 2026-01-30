@@ -17,7 +17,7 @@ export const ProfileSection = () => {
   if (!user) return null;
 
   return (
-    <div className="rounded-xl bg-card border overflow-hidden">
+    <div className="rounded-xl bg-card ring-1 ring-border overflow-hidden">
       {/* Avatar upload section */}
       <div className="flex flex-col space-y-1.5 p-5 sm:p-6 border-b">
         <h3 className={`${cardTitleStyles} text-lg`}>

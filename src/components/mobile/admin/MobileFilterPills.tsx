@@ -60,7 +60,7 @@ export function MobileFilterPills<T extends string = string>({
             className={cn(
               'inline-flex items-center gap-1.5 shrink-0',
               'px-3 py-1.5 rounded-full text-sm font-medium',
-              'transition-colors whitespace-nowrap',
+              'transition-colors whitespace-nowrap active:scale-[0.98]',
               isActive
                 ? 'bg-foreground text-background'
                 : 'bg-muted/50 text-muted-foreground hover:bg-muted'

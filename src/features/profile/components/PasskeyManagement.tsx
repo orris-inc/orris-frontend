@@ -115,7 +115,7 @@ function PasskeyItem({ passkey, isDeleting, onDelete }: PasskeyItemProps) {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
   return (
-    <div className="flex items-center justify-between p-4 border rounded-lg bg-background">
+    <div className="flex items-center justify-between p-4 ring-1 ring-border rounded-xl bg-background">
       <div className="flex items-start gap-3">
         {getTransportIcon(passkey.transports)}
         <div className="space-y-1">
@@ -153,7 +153,7 @@ function PasskeyItem({ passkey, isDeleting, onDelete }: PasskeyItemProps) {
         </AlertDialog.Trigger>
         <AlertDialog.Portal>
           <AlertDialog.Overlay className="fixed inset-0 z-50 bg-black/80 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0" />
-          <AlertDialog.Content className="fixed left-[50%] top-[50%] z-50 grid w-full max-w-lg translate-x-[-50%] translate-y-[-50%] gap-4 border bg-background p-6 shadow-lg duration-200 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[state=closed]:slide-out-to-left-1/2 data-[state=closed]:slide-out-to-top-[48%] data-[state=open]:slide-in-from-left-1/2 data-[state=open]:slide-in-from-top-[48%] sm:rounded-lg">
+          <AlertDialog.Content className="fixed left-[50%] top-[50%] z-50 grid w-full max-w-lg translate-x-[-50%] translate-y-[-50%] gap-4 ring-1 ring-border bg-background p-6 shadow-lg duration-200 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[state=closed]:slide-out-to-left-1/2 data-[state=closed]:slide-out-to-top-[48%] data-[state=open]:slide-in-from-left-1/2 data-[state=open]:slide-in-from-top-[48%] sm:rounded-xl">
             <AlertDialog.Title className="text-lg font-semibold">
               {t('profile.security.passkey.deleteConfirmTitle')}
             </AlertDialog.Title>
@@ -212,7 +212,7 @@ function AddPasskeyDialog({ open, onOpenChange, onAdd, isRegistering }: AddPassk
     <Dialog.Root open={open} onOpenChange={onOpenChange}>
       <Dialog.Portal>
         <Dialog.Overlay className="fixed inset-0 z-50 bg-black/80 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0" />
-        <Dialog.Content className="fixed left-[50%] top-[50%] z-50 grid w-full max-w-lg translate-x-[-50%] translate-y-[-50%] gap-4 border bg-background p-6 shadow-lg duration-200 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[state=closed]:slide-out-to-left-1/2 data-[state=closed]:slide-out-to-top-[48%] data-[state=open]:slide-in-from-left-1/2 data-[state=open]:slide-in-from-top-[48%] sm:rounded-lg">
+        <Dialog.Content className="fixed left-[50%] top-[50%] z-50 grid w-full max-w-lg translate-x-[-50%] translate-y-[-50%] gap-4 ring-1 ring-border bg-background p-6 shadow-lg duration-200 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[state=closed]:slide-out-to-left-1/2 data-[state=closed]:slide-out-to-top-[48%] data-[state=open]:slide-in-from-left-1/2 data-[state=open]:slide-in-from-top-[48%] sm:rounded-xl">
           <Dialog.Title className="text-lg font-semibold leading-none tracking-tight">
             {t('profile.security.passkey.addTitle')}
           </Dialog.Title>
@@ -308,7 +308,7 @@ export function PasskeyManagement() {
       </div>
 
       {/* Content card */}
-      <div className="rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm">
+      <div className="rounded-xl ring-1 ring-border bg-card">
         <div className="p-6 space-y-4">
           {/* Browser not supported warning */}
           {!isSupported && (
@@ -350,7 +350,7 @@ export function PasskeyManagement() {
               <button
                 type="button"
                 onClick={() => setShowAddDialog(true)}
-                className={buttonPrimaryStyles}
+                className={`${buttonPrimaryStyles} active:scale-[0.98]`}
               >
                 <Plus className="mr-2 size-4" />
                 {t('profile.security.passkey.add')}
@@ -375,7 +375,7 @@ export function PasskeyManagement() {
                 <button
                   type="button"
                   onClick={() => setShowAddDialog(true)}
-                  className={`${buttonSecondaryStyles} w-full border-dashed`}
+                  className={`${buttonSecondaryStyles} w-full border-dashed active:scale-[0.98]`}
                 >
                   <Plus className="mr-2 size-4" />
                   {t('profile.security.passkey.add')}

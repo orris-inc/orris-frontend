@@ -175,8 +175,8 @@ export const MobileForwardAgentManagement = ({
           className={cn(
             'h-10 px-3 rounded-lg shrink-0',
             'flex items-center justify-center gap-1.5',
-            'bg-warning/10 text-warning border border-warning/30',
-            'hover:bg-warning/20 transition-colors',
+            'bg-warning/10 text-warning ring-1 ring-warning/30',
+            'hover:bg-warning/20 active:scale-[0.98] transition-all',
             'disabled:opacity-50'
           )}
           title={t('admin.forwardAgents.actions.batchUpdate')}
@@ -192,8 +192,8 @@ export const MobileForwardAgentManagement = ({
           className={cn(
             'size-10 rounded-lg shrink-0',
             'flex items-center justify-center',
-            'border border-input bg-background',
-            'hover:bg-muted transition-colors'
+            'ring-1 ring-input bg-background',
+            'hover:bg-muted active:scale-[0.98] transition-all'
           )}
           title={t('admin.forwardAgents.actions.broadcast')}
         >

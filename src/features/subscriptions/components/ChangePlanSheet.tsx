@@ -119,7 +119,7 @@ export const ChangePlanSheet: React.FC<ChangePlanSheetProps> = ({
 
         <SheetBody className="py-4 space-y-4 overflow-y-auto">
           {/* Current Plan Info */}
-          <div className="rounded-lg border bg-muted/30 p-3">
+          <div className="rounded-xl ring-1 ring-border bg-muted/30 p-3">
             <div className="text-xs text-muted-foreground mb-1">{t('subscription.currentPlan')}</div>
             <div className="font-medium">{subscription.plan?.name || t('subscription.unknownPlan')}</div>
           </div>
@@ -130,7 +130,7 @@ export const ChangePlanSheet: React.FC<ChangePlanSheetProps> = ({
             {plansLoading ? (
               <Skeleton className="h-10 w-full" />
             ) : availablePlans.length === 0 ? (
-              <div className="text-sm text-muted-foreground p-3 border rounded-lg">
+              <div className="text-sm text-muted-foreground p-3 rounded-xl ring-1 ring-border">
                 {t('subscription.noOtherPlans')}
               </div>
             ) : (
@@ -195,13 +195,13 @@ export const ChangePlanSheet: React.FC<ChangePlanSheetProps> = ({
               onValueChange={(value) => setEffectiveDate(value as 'immediate' | 'period_end')}
               className="space-y-2"
             >
-              <div className="flex items-start space-x-2 p-3 rounded-lg border bg-muted/30">
+              <div className="flex items-start space-x-2 p-3 rounded-xl ring-1 ring-border bg-muted/30">
                 <RadioGroupItem value="immediate" id="immediate-mobile" className="mt-0.5" />
                 <Label htmlFor="immediate-mobile" className="cursor-pointer text-sm">
                   {t('subscription.effectiveImmediate')}
                 </Label>
               </div>
-              <div className="flex items-start space-x-2 p-3 rounded-lg border bg-muted/30">
+              <div className="flex items-start space-x-2 p-3 rounded-xl ring-1 ring-border bg-muted/30">
                 <RadioGroupItem value="period_end" id="period_end-mobile" className="mt-0.5" />
                 <Label htmlFor="period_end-mobile" className="cursor-pointer text-sm">
                   {t('subscription.effectivePeriodEnd')}
@@ -211,7 +211,7 @@ export const ChangePlanSheet: React.FC<ChangePlanSheetProps> = ({
           </div>
 
           {/* Warning Info */}
-          <div className="rounded-lg border border-blue-200 bg-blue-50 dark:border-blue-900 dark:bg-blue-950/30 p-3">
+          <div className="rounded-xl border border-blue-200 bg-blue-50 dark:border-blue-900 dark:bg-blue-950/30 p-3">
             <div className="flex items-start gap-2">
               <Info className="size-4 text-blue-600 dark:text-blue-500 mt-0.5 shrink-0" />
               <p className="text-xs text-blue-700 dark:text-blue-400">

@@ -104,7 +104,7 @@ const getPriceRange = (
 const MobileCardSkeleton: React.FC = () => (
   <div className="space-y-3">
     {[1, 2, 3].map((i) => (
-      <div key={i} className="border rounded-lg p-4 space-y-3">
+      <div key={i} className="rounded-xl ring-1 ring-border p-4 space-y-3">
         <div className="flex items-center justify-between">
           <Skeleton className="h-5 w-32" />
           <Skeleton className="h-5 w-16" />
@@ -197,7 +197,7 @@ export const PlanMobileList: React.FC<PlanMobileListProps> = ({
           <AccordionItem
             key={plan.id}
             value={plan.id}
-            className="border rounded-lg bg-white dark:bg-slate-800 overflow-hidden"
+            className="rounded-xl ring-1 ring-border bg-white dark:bg-slate-800 overflow-hidden"
           >
             {/* Card Header - Always visible */}
             <div className="px-3 py-2">
@@ -310,14 +310,6 @@ export const PlanMobileList: React.FC<PlanMobileListProps> = ({
                     {plan.isPublic ? t('common.yes') : t('common.no')}
                   </AdminBadge>
                 </div>
-
-                {/* Trial days */}
-                {plan.trialDays && plan.trialDays > 0 && (
-                  <div className="flex items-center gap-2">
-                    <span className="text-[10px] text-slate-400 dark:text-slate-500 uppercase tracking-wide w-12 flex-shrink-0">{t('admin.plans.detail.trial')}</span>
-                    <span className="text-xs text-slate-600 dark:text-slate-300">{plan.trialDays} {t('common.days')}</span>
-                  </div>
-                )}
 
                 {/* Sort order */}
                 {plan.sortOrder !== undefined && plan.sortOrder !== null && (

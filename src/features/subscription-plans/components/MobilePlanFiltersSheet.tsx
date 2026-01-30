@@ -62,10 +62,10 @@ export const MobileFilterButton = ({ hasFilters, onClick }: MobileFilterButtonPr
       type="button"
       onClick={onClick}
       className={cn(
-        'size-10 rounded-lg shrink-0',
+        'size-10 rounded-xl shrink-0',
         'flex items-center justify-center',
-        'border border-input bg-background',
-        'hover:bg-muted active:bg-muted/80',
+        'ring-1 ring-border bg-background',
+        'hover:bg-muted active:bg-muted/80 active:scale-[0.98]',
         'transition-colors relative',
         'pointer-coarse:size-11'
       )}

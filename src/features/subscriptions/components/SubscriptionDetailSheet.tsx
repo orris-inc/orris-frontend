@@ -457,7 +457,7 @@ export const SubscriptionDetailSheet: React.FC<SubscriptionDetailSheetProps> = (
             {/* Status Info */}
             <DetailSection title={t('subscription.statusInfo')}>
               <div className="grid grid-cols-3 gap-2 px-3 py-2.5">
-                <div className="text-center p-2 rounded-lg bg-muted/30">
+                <div className="text-center p-2 rounded-xl bg-muted/30">
                   {subscription.autoRenew ? (
                     <RefreshCw className="size-4 text-success mx-auto" />
                   ) : (
@@ -465,7 +465,7 @@ export const SubscriptionDetailSheet: React.FC<SubscriptionDetailSheetProps> = (
                   )}
                   <div className="text-xs mt-1">{subscription.autoRenew ? t('subscription.autoRenewal') : t('subscription.noRenewal')}</div>
                 </div>
-                <div className="text-center p-2 rounded-lg bg-muted/30">
+                <div className="text-center p-2 rounded-xl bg-muted/30">
                   {subscription.isActive ? (
                     <CheckCircle className="size-4 text-success mx-auto" />
                   ) : (
@@ -473,7 +473,7 @@ export const SubscriptionDetailSheet: React.FC<SubscriptionDetailSheetProps> = (
                   )}
                   <div className="text-xs mt-1">{subscription.isActive ? t('common.status.active') : t('common.status.inactive')}</div>
                 </div>
-                <div className="text-center p-2 rounded-lg bg-muted/30">
+                <div className="text-center p-2 rounded-xl bg-muted/30">
                   {subscription.isExpired ? (
                     <XCircle className="size-4 text-destructive mx-auto" />
                   ) : (

@@ -313,7 +313,7 @@ export const SubscriptionOverviewTab: React.FC<
         </div>
 
         {/* Traffic - compact */}
-        <div className="p-2 rounded-xl bg-card border">
+        <div className="p-2 rounded-xl bg-card ring-1 ring-border">
           <div className="flex items-center gap-1 mb-0.5">
             <TrendingUp className="size-3 text-chart-download" />
             <span className="text-[10px] text-muted-foreground">{t("userSubscription.traffic")}</span>
@@ -328,7 +328,7 @@ export const SubscriptionOverviewTab: React.FC<
         </div>
 
         {/* Period - compact */}
-        <div className="p-2 rounded-xl bg-card border">
+        <div className="p-2 rounded-xl bg-card ring-1 ring-border">
           <div className="flex items-center gap-1 mb-0.5">
             <Clock className="size-3 text-primary" />
             <span className="text-[10px] text-muted-foreground">{t("userSubscription.expires")}</span>
@@ -416,7 +416,7 @@ export const SubscriptionOverviewTab: React.FC<
         </div>
 
         {/* Plan Info Card */}
-        <div className="@lg:col-span-1 p-3 @sm:p-4 rounded-xl bg-card border">
+        <div className="@lg:col-span-1 p-3 @sm:p-4 rounded-xl bg-card ring-1 ring-border">
           <div className="flex items-center gap-2 @sm:gap-2.5 mb-2 @sm:mb-3">
             <div className="p-1.5 @sm:p-2 rounded-lg bg-primary/10 ring-1 ring-primary/20">
               <Zap className="size-3.5 @sm:size-4 text-primary" />
@@ -455,7 +455,7 @@ export const SubscriptionOverviewTab: React.FC<
         </div>
 
         {/* Traffic Overview Card */}
-        <div className="@lg:col-span-1 p-3 @sm:p-4 rounded-xl bg-card border">
+        <div className="@lg:col-span-1 p-3 @sm:p-4 rounded-xl bg-card ring-1 ring-border">
           <div className="flex items-center gap-2 @sm:gap-2.5 mb-2">
             <div className="p-1.5 @sm:p-2 rounded-lg bg-chart-download/10 ring-1 ring-chart-download/20">
               <TrendingUp className="size-3.5 @sm:size-4 text-chart-download" />
@@ -509,7 +509,7 @@ export const SubscriptionOverviewTab: React.FC<
       </div>
 
       {/* Traffic Details Card */}
-      <div className="p-3 @sm:p-4 rounded-xl bg-card border">
+      <div className="p-3 @sm:p-4 rounded-xl bg-card ring-1 ring-border">
         <div className="flex items-center gap-2 @sm:gap-2.5 mb-2 @sm:mb-3">
           <div className="p-1 @sm:p-1.5 rounded-md bg-primary/10 ring-1 ring-primary/20">
             <Gauge className="size-3 @sm:size-3.5 text-primary" />
@@ -578,7 +578,7 @@ export const SubscriptionOverviewTab: React.FC<
 
       {/* Subscription Link */}
       {subscription.isActive && subscription.subscribeUrl && (
-        <div className="p-3 @sm:p-4 rounded-xl bg-card border transition-all duration-200 hover:shadow-sm">
+        <div className="p-3 @sm:p-4 rounded-xl bg-card ring-1 ring-border transition-all duration-200">
           <div className="flex items-center justify-between gap-2 mb-2 @sm:mb-3">
             <div className="flex items-center gap-2 @sm:gap-2.5">
               <div className="p-1.5 @sm:p-2 rounded-lg bg-primary/10 ring-1 ring-primary/20">
@@ -596,7 +596,7 @@ export const SubscriptionOverviewTab: React.FC<
               disabled={isResettingLink}
               className={cn(
                 getButtonClass("outline", "sm", "h-7 @sm:h-8 text-[10px] @sm:text-xs gap-1 @sm:gap-1.5 px-2 @sm:px-3 min-h-[44px] @sm:min-h-0"),
-                "transition-all duration-200 hover:bg-destructive/10 hover:text-destructive hover:border-destructive/20"
+                "transition-all duration-200 hover:bg-destructive/10 hover:text-destructive hover:border-destructive/20 active:scale-[0.98]"
               )}
             >
               {isResettingLink ? (

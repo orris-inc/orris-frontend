@@ -69,7 +69,7 @@ const DetailSection = ({
     <h4 className="text-xs font-medium text-muted-foreground uppercase tracking-wider px-1">
       {title}
     </h4>
-    <div className="rounded-xl bg-muted/30 border border-border/50 divide-y divide-border/30">
+    <div className="rounded-xl bg-muted/30 ring-1 ring-border/50 divide-y divide-border/30">
       {children}
     </div>
   </div>
@@ -246,7 +246,7 @@ export const UserDetailSheet = ({
                   'h-11 rounded-xl',
                   'bg-primary text-primary-foreground',
                   'text-sm font-medium',
-                  'active:scale-[0.97] transition-transform'
+                  'active:scale-[0.98] transition-transform'
                 )}
               >
                 <Edit className="size-4" />
@@ -263,7 +263,7 @@ export const UserDetailSheet = ({
                   'h-11 rounded-xl',
                   'bg-muted text-foreground',
                   'text-sm font-medium',
-                  'active:scale-[0.97] transition-transform'
+                  'active:scale-[0.98] transition-transform'
                 )}
               >
                 <CreditCard className="size-4" />
@@ -276,7 +276,7 @@ export const UserDetailSheet = ({
                   'size-11 rounded-xl shrink-0',
                   'flex items-center justify-center',
                   'bg-muted text-foreground',
-                  'active:scale-[0.97] transition-transform'
+                  'active:scale-[0.98] transition-transform'
                 )}
               >
                 <MoreHorizontal className="size-5" />

@@ -485,7 +485,7 @@ export const EditSubscriptionForwardRuleDialog: React.FC<EditSubscriptionForward
             </div>
 
             {/* Read-only info */}
-            <div className="p-3 rounded-lg bg-muted/50">
+            <div className="p-3 rounded-xl bg-muted/50">
               <p className="text-xs text-muted-foreground mb-2">{t('subscriptionForwardRules.readOnlyInfo')}</p>
               <div className="grid grid-cols-2 gap-2 text-sm">
                 <div>

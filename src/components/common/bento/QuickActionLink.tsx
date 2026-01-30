@@ -32,25 +32,25 @@ const variantStyles: Record<ColorVariant, { bg: string; ring: string; text: stri
     bg: 'bg-primary/10',
     ring: 'ring-primary/20',
     text: 'text-primary',
-    hover: 'hover:border-primary/30',
+    hover: 'hover:ring-primary/30',
   },
   success: {
     bg: 'bg-success/10',
     ring: 'ring-success/20',
     text: 'text-success',
-    hover: 'hover:border-success/30',
+    hover: 'hover:ring-success/30',
   },
   warning: {
     bg: 'bg-warning/10',
     ring: 'ring-warning/20',
     text: 'text-warning',
-    hover: 'hover:border-warning/30',
+    hover: 'hover:ring-warning/30',
   },
   destructive: {
     bg: 'bg-destructive/10',
     ring: 'ring-destructive/20',
     text: 'text-destructive',
-    hover: 'hover:border-destructive/30',
+    hover: 'hover:ring-destructive/30',
   },
 };
 
@@ -74,8 +74,8 @@ export const QuickActionLink = ({
       className={cn(
         // Mobile: compact p-3, sm+: p-4
         'flex items-center gap-2 sm:gap-3 p-3 sm:p-4 rounded-xl touch-target',
-        'bg-card border hover:shadow-sm',
-        'transition-all duration-200 group',
+        'bg-card ring-1 ring-border hover:shadow-sm',
+        'transition-all duration-200 group active:scale-[0.98]',
         // Focus visible for keyboard navigation
         'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2',
         styles.hover,

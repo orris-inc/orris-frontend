@@ -404,7 +404,7 @@ export const RealtimeMetricsChart = memo(({
   }, [mode]);
 
   return (
-    <div className="@container bg-card rounded-lg border border-border overflow-hidden">
+    <div className="@container bg-card rounded-xl ring-1 ring-border overflow-hidden">
       {/* Compact Header */}
       <div className="p-3">
         {/* Single row: Title + Metric tabs + Entity selector */}

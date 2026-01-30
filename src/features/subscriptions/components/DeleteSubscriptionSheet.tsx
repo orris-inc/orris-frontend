@@ -83,7 +83,7 @@ export const DeleteSubscriptionSheet: React.FC<DeleteSubscriptionSheetProps> = (
 
         <SheetBody className="py-4">
           {/* Warning Card */}
-          <div className="rounded-lg border border-destructive/20 bg-destructive/5 p-4 space-y-4">
+          <div className="rounded-xl border border-destructive/20 bg-destructive/5 p-4 space-y-4">
             <div className="flex items-start gap-3">
               <AlertTriangle className="size-5 text-destructive flex-shrink-0 mt-0.5" />
               <div className="space-y-1">
@@ -95,7 +95,7 @@ export const DeleteSubscriptionSheet: React.FC<DeleteSubscriptionSheetProps> = (
             </div>
 
             {/* Subscription Info */}
-            <div className="rounded-lg bg-background p-3 space-y-2">
+            <div className="rounded-xl bg-background p-3 space-y-2">
               <div className="flex items-center justify-between">
                 <span className="text-xs text-muted-foreground">{t('tableColumns.subscriptionId')}</span>
                 <TruncatedId id={subscription.id} />

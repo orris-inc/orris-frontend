@@ -108,7 +108,7 @@ export const AnnouncementListTable: React.FC<AnnouncementListTableProps> = ({
 
           return (
             <div className="flex items-start gap-3">
-              <div className="p-1.5 rounded-lg bg-muted shrink-0">
+              <div className="p-1.5 rounded-xl bg-muted shrink-0">
                 <TypeIcon className="size-4 text-muted-foreground" />
               </div>
               <div className="flex flex-col gap-0.5 min-w-0">

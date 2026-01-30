@@ -42,7 +42,7 @@ export const TelegramBindingCard = () => {
   // Loading state
   if (isLoading) {
     return (
-      <div className="rounded-xl border bg-card p-5">
+      <div className="rounded-xl ring-1 ring-border bg-card p-5">
         <div className="flex items-center gap-3 mb-4">
           <Skeleton className="size-10 rounded-lg" />
           <div className="space-y-1.5">
@@ -58,7 +58,7 @@ export const TelegramBindingCard = () => {
   // Feature not configured
   if (isNotConfigured) {
     return (
-      <div className="rounded-xl border bg-card p-5">
+      <div className="rounded-xl ring-1 ring-border bg-card p-5">
         <div className="flex items-center gap-3 text-muted-foreground">
           <div className="p-2 rounded-lg bg-muted">
             <Send className="size-5" />
@@ -74,7 +74,7 @@ export const TelegramBindingCard = () => {
 
   return (
     <>
-      <div className="rounded-xl border bg-card p-5 space-y-5">
+      <div className="rounded-xl ring-1 ring-border bg-card p-5 space-y-5">
         {/* Header */}
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">

@@ -86,7 +86,7 @@ export const DeleteForwardRuleSheet: React.FC<DeleteForwardRuleSheetProps> = ({
 
         <SheetBody className="py-6">
           {/* Warning Card */}
-          <div className="rounded-xl border border-destructive/20 bg-destructive/5 p-4 space-y-4">
+          <div className="rounded-xl ring-1 ring-destructive/20 bg-destructive/5 p-4 space-y-4">
             <div className="flex items-start gap-3">
               <AlertTriangle className="size-5 text-destructive flex-shrink-0 mt-0.5" />
               <div className="space-y-1">
@@ -98,10 +98,10 @@ export const DeleteForwardRuleSheet: React.FC<DeleteForwardRuleSheetProps> = ({
             </div>
 
             {/* Rule Info */}
-            <div className="rounded-lg bg-background p-4 space-y-3">
+            <div className="rounded-xl bg-background p-4 space-y-3">
               {/* Rule Name */}
               <div className="flex items-center gap-3">
-                <div className="size-8 rounded-lg bg-muted flex items-center justify-center">
+                <div className="size-8 rounded-xl bg-muted flex items-center justify-center">
                   <ArrowLeftRight className="size-4 text-muted-foreground" />
                 </div>
                 <div className="flex-1 min-w-0">
@@ -166,7 +166,7 @@ export const DeleteForwardRuleSheet: React.FC<DeleteForwardRuleSheetProps> = ({
             variant="destructive"
             onClick={() => setConfirmOpen(true)}
             disabled={loading}
-            className="w-full min-h-[52px] text-base"
+            className="w-full min-h-[52px] text-base active:scale-[0.98]"
           >
             {loading ? (
               <>
@@ -181,7 +181,7 @@ export const DeleteForwardRuleSheet: React.FC<DeleteForwardRuleSheetProps> = ({
             variant="ghost"
             onClick={() => onOpenChange(false)}
             disabled={loading}
-            className="w-full min-h-[44px]"
+            className="w-full min-h-[44px] active:scale-[0.98]"
           >
             {t('common.actions.cancel')}
           </Button>

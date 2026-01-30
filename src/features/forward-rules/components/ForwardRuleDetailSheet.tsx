@@ -147,7 +147,7 @@ const Section = ({ title, children }: { title: string; children: React.ReactNode
     <h3 className="text-[11px] font-medium text-muted-foreground uppercase tracking-wide mb-1.5 px-0.5">
       {title}
     </h3>
-    <div className="rounded-lg border border-border bg-card overflow-hidden">
+    <div className="rounded-xl ring-1 ring-border bg-card overflow-hidden">
       <dl className="divide-y divide-border">{children}</dl>
     </div>
   </div>
@@ -349,7 +349,7 @@ const SyncStatus = ({
               )}
             </div>
             {agent.errorMessage && (
-              <div className="mt-1.5 px-2 py-1 bg-destructive/10 rounded text-xs text-destructive">
+              <div className="mt-1.5 px-2 py-1 bg-destructive/10 rounded-xl text-xs text-destructive">
                 {agent.errorMessage}
               </div>
             )}

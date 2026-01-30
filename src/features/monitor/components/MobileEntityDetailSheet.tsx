@@ -166,7 +166,7 @@ const CollapsibleSection = memo(({
     <div className="glass rounded-2xl overflow-hidden">
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="w-full flex items-center gap-3 p-4 min-h-[52px] cursor-pointer touch-manipulation"
+        className="w-full flex items-center gap-3 p-4 min-h-[52px] cursor-pointer touch-manipulation active:scale-[0.98]"
       >
         <div className="p-1.5 rounded-lg bg-muted/50">
           {icon}

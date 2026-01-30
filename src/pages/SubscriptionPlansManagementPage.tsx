@@ -1,20 +1,22 @@
 /**
  * Subscription Plans Management Page (Admin)
- * Tailwind UI Application UI style layout
+ * Tailwind Application UI style
+ * Mobile-first responsive design
  */
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   CreditCard,
   Plus,
   RefreshCw,
   CheckCircle2,
+  XCircle,
   Globe,
   Lock,
 } from 'lucide-react';
 import { AdminLayout } from '@/layouts/AdminLayout';
-import { PageHeader } from '@/components/admin';
+import { PageHeader, type PageHeaderMeta, type PageHeaderBadge } from '@/components/admin';
 import { Button } from '@/components/common/Button';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/common/Tooltip';
 import { ConfirmDialog } from '@/components/common/ConfirmDialog';
@@ -35,12 +37,24 @@ import { useSubscriptionPlansPage } from '@/features/subscription-plans/hooks/us
 import { deletePlan } from '@/api/subscription';
 import type { SubscriptionPlan, CreatePlanRequest, UpdatePlanRequest } from '@/api/subscription/types';
 
-export const SubscriptionPlansManagementPage = () => {
+// ============================================================================
+// Types
+// ============================================================================
+
+type DialogType = 'create' | 'edit' | 'delete' | 'viewSubscriptions' | null;
+
+// ============================================================================
+// Main Component
+// ============================================================================
+
+export function SubscriptionPlansManagementPage() {
   const { t } = useTranslation();
   usePageTitle(t('admin.plans.pageTitle'));
 
   const { isMobile } = useBreakpoint();
+  const { showSuccess, showError } = useNotificationStore();
 
+  // Plan data and operations
   const {
     plans,
     pagination,
@@ -58,95 +72,127 @@ export const SubscriptionPlansManagementPage = () => {
     refetch,
   } = useSubscriptionPlansPage();
 
-  const { showSuccess, showError } = useNotificationStore();
-
-  const [createDialogOpen, setCreateDialogOpen] = useState(false);
-  const [editDialogOpen, setEditDialogOpen] = useState(false);
-  const [subscriptionsDialogOpen, setSubscriptionsDialogOpen] = useState(false);
-  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  // Dialog state management
+  const [activeDialog, setActiveDialog] = useState<DialogType>(null);
   const [selectedPlan, setSelectedPlan] = useState<SubscriptionPlan | null>(null);
   const [duplicatePlan, setDuplicatePlan] = useState<SubscriptionPlan | null>(null);
-  const [planToDelete, setPlanToDelete] = useState<SubscriptionPlan | null>(null);
   const [refreshKey, setRefreshKey] = useState(0);
 
-  // Calculate plan statistics
-  const planStats = useMemo(() => {
-    const total = pagination.total;
+  // Calculate statistics from current page data
+  const stats = useMemo(() => {
     const active = plans.filter((p) => p.status === 'active').length;
     const inactive = plans.filter((p) => p.status === 'inactive').length;
     const publicPlans = plans.filter((p) => p.isPublic).length;
     const privatePlans = plans.filter((p) => !p.isPublic).length;
-    return { total, active, inactive, publicPlans, privatePlans };
+    return { total: pagination.total, active, inactive, publicPlans, privatePlans };
   }, [plans, pagination.total]);
 
-  const handleRefresh = () => {
+  // Page header badge
+  const headerBadge = useMemo(
+    (): PageHeaderBadge => ({
+      label: `${stats.total} ${t('admin.plans.plans')}`,
+      variant: 'default',
+    }),
+    [stats.total, t]
+  );
+
+  // Page header metadata
+  const headerMetadata = useMemo((): PageHeaderMeta[] => [
+    { icon: CheckCircle2, text: `${stats.active} ${t('common.status.active')}` },
+    { icon: XCircle, text: `${stats.inactive} ${t('common.status.inactive')}` },
+    { icon: Globe, text: `${stats.publicPlans} ${t('admin.plans.public')}` },
+    { icon: Lock, text: `${stats.privatePlans} ${t('admin.plans.private')}` },
+  ], [stats, t]);
+
+  // Dialog handlers
+  const openDialog = useCallback((type: DialogType, plan?: SubscriptionPlan) => {
+    setSelectedPlan(plan ?? null);
+    setActiveDialog(type);
+  }, []);
+
+  const closeDialog = useCallback(() => {
+    setActiveDialog(null);
+    setSelectedPlan(null);
+    setDuplicatePlan(null);
+  }, []);
+
+  // Action handlers
+  const handleRefresh = useCallback(() => {
     setRefreshKey((k) => k + 1);
     refetch();
-  };
+  }, [refetch]);
 
-  const handleEdit = (plan: SubscriptionPlan) => {
-    setSelectedPlan(plan);
-    setEditDialogOpen(true);
-  };
+  const handleCreate = useCallback(() => {
+    setDuplicatePlan(null);
+    openDialog('create');
+  }, [openDialog]);
 
-  const handleDuplicate = (plan: SubscriptionPlan) => {
+  const handleEdit = useCallback(
+    (plan: SubscriptionPlan) => openDialog('edit', plan),
+    [openDialog]
+  );
+
+  const handleDuplicate = useCallback((plan: SubscriptionPlan) => {
     setDuplicatePlan(plan);
-    setCreateDialogOpen(true);
-  };
+    openDialog('create');
+  }, [openDialog]);
 
-  const handleToggleStatus = async (plan: SubscriptionPlan) => {
-    await togglePlanStatus(plan);
-  };
+  const handleToggleStatus = useCallback(
+    async (plan: SubscriptionPlan) => {
+      await togglePlanStatus(plan);
+    },
+    [togglePlanStatus]
+  );
 
-  const handleViewSubscriptions = (plan: SubscriptionPlan) => {
-    setSelectedPlan(plan);
-    setSubscriptionsDialogOpen(true);
-  };
+  const handleViewSubscriptions = useCallback(
+    (plan: SubscriptionPlan) => openDialog('viewSubscriptions', plan),
+    [openDialog]
+  );
 
-  const handleCreateSubmit = async (data: CreatePlanRequest) => {
-    try {
+  const handleDeleteClick = useCallback(
+    (plan: SubscriptionPlan) => openDialog('delete', plan),
+    [openDialog]
+  );
+
+  // Form submission handlers
+  const handleCreateSubmit = useCallback(
+    async (data: CreatePlanRequest) => {
       await createPlan(data);
-      setCreateDialogOpen(false);
-      setDuplicatePlan(null);
-    } catch {
-      // Error already handled in hook
-    }
-  };
+      closeDialog();
+    },
+    [createPlan, closeDialog]
+  );
 
-  const handleUpdateSubmit = async (id: string, data: UpdatePlanRequest) => {
-    try {
+  const handleUpdateSubmit = useCallback(
+    async (id: string, data: UpdatePlanRequest) => {
       await updatePlan(id, data);
-      setEditDialogOpen(false);
-      setSelectedPlan(null);
-    } catch {
-      // Error already handled in hook
-    }
-  };
+      closeDialog();
+    },
+    [updatePlan, closeDialog]
+  );
 
-  const handleDeleteClick = (plan: SubscriptionPlan) => {
-    setPlanToDelete(plan);
-    setDeleteDialogOpen(true);
-  };
+  const handleDeleteConfirm = useCallback(
+    async (plan?: SubscriptionPlan) => {
+      const targetPlan = plan ?? selectedPlan;
+      if (!targetPlan) return;
 
-  const handleDeleteConfirm = async (plan?: SubscriptionPlan) => {
-    const targetPlan = plan || planToDelete;
-    if (!targetPlan) return;
-    try {
-      await deletePlan(targetPlan.id);
-      showSuccess(t('admin.plans.deleteSuccess'));
-      setDeleteDialogOpen(false);
-      setPlanToDelete(null);
-      refetch();
-    } catch {
-      showError(t('admin.plans.deleteError'));
-    }
-  };
+      try {
+        await deletePlan(targetPlan.id);
+        showSuccess(t('admin.plans.deleteSuccess'));
+        closeDialog();
+        refetch();
+      } catch {
+        showError(t('admin.plans.deleteError'));
+      }
+    },
+    [selectedPlan, showSuccess, showError, closeDialog, refetch, t]
+  );
 
   // Mobile layout
   if (isMobile) {
     return (
       <AdminLayout>
-        <div className="py-3">
+        <div className="py-3 pb-safe">
           <MobilePlanManagement
             plans={plans}
             loading={isLoading}
@@ -159,10 +205,7 @@ export const SubscriptionPlansManagementPage = () => {
             onFiltersChange={handleFiltersChange}
             onClearFilters={clearFilters}
             onRefresh={handleRefresh}
-            onCreate={() => {
-              setDuplicatePlan(null);
-              setCreateDialogOpen(true);
-            }}
+            onCreate={handleCreate}
             onEdit={handleEdit}
             onDuplicate={handleDuplicate}
             onToggleStatus={handleToggleStatus}
@@ -174,41 +217,29 @@ export const SubscriptionPlansManagementPage = () => {
 
         {/* Mobile Sheets */}
         <CreatePlanSheet
-          open={createDialogOpen}
-          onOpenChange={(open) => {
-            setCreateDialogOpen(open);
-            if (!open) setDuplicatePlan(null);
-          }}
+          open={activeDialog === 'create'}
+          onOpenChange={(open) => !open && closeDialog()}
           onSubmit={handleCreateSubmit}
           initialPlan={duplicatePlan}
         />
 
         <EditPlanSheet
-          open={editDialogOpen}
-          onOpenChange={(open) => {
-            setEditDialogOpen(open);
-            if (!open) setSelectedPlan(null);
-          }}
+          open={activeDialog === 'edit'}
+          onOpenChange={(open) => !open && closeDialog()}
           entity={selectedPlan}
           onSubmit={handleUpdateSubmit}
         />
 
         <ViewPlanSubscriptionsSheet
-          open={subscriptionsDialogOpen}
-          onOpenChange={(open) => {
-            setSubscriptionsDialogOpen(open);
-            if (!open) setSelectedPlan(null);
-          }}
+          open={activeDialog === 'viewSubscriptions'}
+          onOpenChange={(open) => !open && closeDialog()}
           plan={selectedPlan}
         />
 
         <DeletePlanSheet
-          open={deleteDialogOpen}
-          onOpenChange={(open) => {
-            setDeleteDialogOpen(open);
-            if (!open) setPlanToDelete(null);
-          }}
-          entity={planToDelete}
+          open={activeDialog === 'delete'}
+          onOpenChange={(open) => !open && closeDialog()}
+          entity={selectedPlan}
           onConfirm={handleDeleteConfirm}
         />
       </AdminLayout>
@@ -218,26 +249,17 @@ export const SubscriptionPlansManagementPage = () => {
   // Desktop layout
   return (
     <AdminLayout>
-      <div className="space-y-6">
-        {/* Page header with badge and stats */}
+      <div className="space-y-6 py-4 pb-safe lg:py-6">
+        {/* Page Header */}
         <PageHeader
           title={t('admin.plans.pageTitle')}
           icon={CreditCard}
-          badge={{ label: `${planStats.total} ${t('admin.plans.plans')}`, variant: 'default' }}
-          metadata={[
-            { icon: CheckCircle2, text: `${planStats.active} ${t('common.status.active')}` },
-            { icon: Globe, text: `${planStats.publicPlans} ${t('admin.plans.public')}` },
-            { icon: Lock, text: `${planStats.privatePlans} ${t('admin.plans.private')}` },
-          ]}
+          badge={headerBadge}
+          metadata={headerMetadata}
           action={
             <div className="flex items-center gap-2">
-              <Button
-                onClick={() => {
-                  setDuplicatePlan(null);
-                  setCreateDialogOpen(true);
-                }}
-              >
-                <Plus className="size-4 mr-2" />
+              <Button onClick={handleCreate}>
+                <Plus className="mr-2 size-4" />
                 {t('admin.plans.createPlan')}
               </Button>
               <Tooltip>
@@ -260,7 +282,7 @@ export const SubscriptionPlansManagementPage = () => {
           onClearFilters={clearFilters}
         />
 
-        {/* Plan List */}
+        {/* Plan Table */}
         <PlanListTable
           plans={plans}
           loading={isLoading || isFetching}
@@ -279,39 +301,30 @@ export const SubscriptionPlansManagementPage = () => {
 
       {/* Desktop Dialogs */}
       <CreatePlanDialog
-        open={createDialogOpen}
+        open={activeDialog === 'create'}
         initialPlan={duplicatePlan}
-        onClose={() => {
-          setCreateDialogOpen(false);
-          setDuplicatePlan(null);
-        }}
+        onClose={closeDialog}
         onSubmit={handleCreateSubmit}
       />
 
       <EditPlanDialog
-        open={editDialogOpen}
+        open={activeDialog === 'edit'}
         plan={selectedPlan}
-        onClose={() => {
-          setEditDialogOpen(false);
-          setSelectedPlan(null);
-        }}
+        onClose={closeDialog}
         onSubmit={handleUpdateSubmit}
       />
 
       <ViewPlanSubscriptionsDialog
-        open={subscriptionsDialogOpen}
+        open={activeDialog === 'viewSubscriptions'}
         plan={selectedPlan}
-        onClose={() => {
-          setSubscriptionsDialogOpen(false);
-          setSelectedPlan(null);
-        }}
+        onClose={closeDialog}
       />
 
       <ConfirmDialog
-        open={deleteDialogOpen}
-        onOpenChange={setDeleteDialogOpen}
+        open={activeDialog === 'delete'}
+        onOpenChange={(open) => !open && closeDialog()}
         title={t('admin.plans.confirmDeleteTitle')}
-        description={planToDelete ? t('admin.plans.confirmDeleteDescription', { name: planToDelete.name }) : ''}
+        description={selectedPlan ? t('admin.plans.confirmDeleteDescription', { name: selectedPlan.name }) : ''}
         confirmText={t('common.actions.delete')}
         cancelText={t('common.actions.cancel')}
         variant="destructive"
@@ -319,4 +332,4 @@ export const SubscriptionPlansManagementPage = () => {
       />
     </AdminLayout>
   );
-};
+}

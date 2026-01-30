@@ -470,7 +470,7 @@ export const EditUserForwardRuleDialog: React.FC<EditUserForwardRuleDialogProps>
           </div>
 
           {/* Readonly info */}
-          <div className="p-3 rounded-lg bg-muted/50">
+          <div className="p-3 rounded-xl bg-muted/50">
             <p className="text-xs text-muted-foreground mb-2">{t('userForwardRules.form.readonlyInfo.title')}</p>
             <div className="grid grid-cols-2 gap-2 text-sm">
               <div>

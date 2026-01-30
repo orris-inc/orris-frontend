@@ -130,7 +130,7 @@ export function MobileListToolbar<T extends string = string>({
               'w-full h-10 pl-9 pr-9',
               // Use text-base (16px) to prevent iOS auto-zoom on focus
               'text-base sm:text-sm text-foreground placeholder:text-muted-foreground',
-              'bg-background border border-input rounded-lg',
+              'bg-background border border-input rounded-xl',
               'transition-shadow duration-150',
               'focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-1',
               // Touch optimization
@@ -163,10 +163,10 @@ export function MobileListToolbar<T extends string = string>({
             onClick={onRefresh}
             disabled={refreshing}
             className={cn(
-              'size-10 rounded-lg shrink-0',
+              'size-10 rounded-xl shrink-0',
               'flex items-center justify-center',
               'border border-input bg-background',
-              'hover:bg-muted active:bg-muted/80',
+              'hover:bg-muted active:bg-muted/80 active:scale-[0.98]',
               'transition-colors disabled:opacity-50',
               // Touch optimization
               'pointer-coarse:size-11'
@@ -187,10 +187,10 @@ export function MobileListToolbar<T extends string = string>({
             type="button"
             onClick={onCreate}
             className={cn(
-              'size-10 rounded-lg shrink-0',
+              'size-10 rounded-xl shrink-0',
               'flex items-center justify-center',
               'bg-primary text-primary-foreground',
-              'hover:bg-primary/90 active:bg-primary/80',
+              'hover:bg-primary/90 active:bg-primary/80 active:scale-[0.98]',
               'transition-colors',
               // Touch optimization
               'pointer-coarse:size-11'
@@ -228,7 +228,7 @@ export function MobileListToolbar<T extends string = string>({
                   'inline-flex items-center gap-1.5 shrink-0',
                   'px-3 py-1.5 rounded-full text-sm font-medium',
                   'whitespace-nowrap',
-                  'transition-all duration-150',
+                  'transition-all duration-150 active:scale-[0.98]',
                   // Touch optimization
                   'pointer-coarse:py-2',
                   isActive

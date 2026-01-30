@@ -156,7 +156,7 @@ const MobileEntityRow = memo(({ entity, onClick }: { entity: EntityStatus; onCli
       onClick={onClick}
       className={cn(
         'flex items-center gap-2 p-2.5 rounded-xl transition-colors touch-manipulation cursor-pointer',
-        'active:bg-accent/70',
+        'active:bg-accent/70 active:scale-[0.98]',
         isOnline ? 'bg-card' : 'bg-muted/30 opacity-60'
       )}
     >
@@ -260,7 +260,7 @@ const MobileEventLog = memo(({ events, isExpanded, onToggle }: {
       {/* Header */}
       <button
         onClick={onToggle}
-        className="w-full flex items-center justify-between p-3 cursor-pointer touch-manipulation"
+        className="w-full flex items-center justify-between p-3 cursor-pointer touch-manipulation active:scale-[0.98]"
       >
         <div className="flex items-center gap-2">
           <span className="text-sm font-medium text-foreground">{t('admin.monitor.eventLog')}</span>
@@ -339,7 +339,7 @@ export const MonitorMobileView = memo(({
           <button
             onClick={() => setEntityFilter('all')}
             className={cn(
-              'px-3 py-1.5 rounded-full text-xs font-medium transition-colors touch-manipulation min-h-[32px]',
+              'px-3 py-1.5 rounded-full text-xs font-medium transition-colors touch-manipulation min-h-[32px] active:scale-[0.98]',
               entityFilter === 'all'
                 ? 'bg-primary text-primary-foreground'
                 : 'bg-muted/60 text-muted-foreground'
@@ -350,7 +350,7 @@ export const MonitorMobileView = memo(({
           <button
             onClick={() => setEntityFilter('node')}
             className={cn(
-              'px-3 py-1.5 rounded-full text-xs font-medium transition-colors touch-manipulation min-h-[32px] flex items-center gap-1',
+              'px-3 py-1.5 rounded-full text-xs font-medium transition-colors touch-manipulation min-h-[32px] flex items-center gap-1 active:scale-[0.98]',
               entityFilter === 'node'
                 ? 'bg-info text-info-foreground'
                 : 'bg-muted/60 text-muted-foreground'
@@ -362,7 +362,7 @@ export const MonitorMobileView = memo(({
           <button
             onClick={() => setEntityFilter('agent')}
             className={cn(
-              'px-3 py-1.5 rounded-full text-xs font-medium transition-colors touch-manipulation min-h-[32px] flex items-center gap-1',
+              'px-3 py-1.5 rounded-full text-xs font-medium transition-colors touch-manipulation min-h-[32px] flex items-center gap-1 active:scale-[0.98]',
               entityFilter === 'agent'
                 ? 'bg-violet-500 text-white'
                 : 'bg-muted/60 text-muted-foreground'

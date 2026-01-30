@@ -66,7 +66,7 @@ export const DeleteNodeSheet: React.FC<DeleteNodeSheetProps> = ({
 
           <SheetBody className="py-4">
             {/* Warning Card */}
-            <div className="rounded-xl border border-destructive/20 bg-destructive/5 p-4 space-y-4">
+            <div className="rounded-xl ring-1 ring-destructive/20 bg-destructive/5 p-4 space-y-4">
               <div className="flex items-start gap-3">
                 <AlertTriangle className="size-5 text-destructive flex-shrink-0 mt-0.5" />
                 <div className="space-y-1">
@@ -78,7 +78,7 @@ export const DeleteNodeSheet: React.FC<DeleteNodeSheetProps> = ({
               </div>
 
               {/* Node Info */}
-              <div className="rounded-lg bg-background p-4 space-y-3">
+              <div className="rounded-xl bg-background p-4 space-y-3">
                 {/* Node Name */}
                 <div className="flex items-center gap-3">
                   <div className="size-8 rounded-lg bg-muted flex items-center justify-center">

@@ -570,7 +570,10 @@
     "dashboard": {
       "title": "Dashboard",
       "welcomeBack": "Welcome back, {{name}}",
-      "unableToLoadUser": "Unable to load user information"
+      "unableToLoadUser": "Unable to load user information",
+      "platformStats": "Platform Statistics",
+      "trafficStats": "Traffic Statistics",
+      "trafficAnalytics": "Traffic Analytics"
     },
     "common": {
       "refreshList": "Refresh list"
@@ -2864,9 +2867,15 @@
       "oneNode": "1 node",
       "nodes": "{{count}} nodes",
       "apiRate": "{{count}} API requests/min",
-      "trialDays": "{{count}}-day free trial",
+      "traffic": "{{value}} traffic",
+      "unlimitedTraffic": "Unlimited traffic",
       "featuredDesc": "For growing teams and businesses.",
       "defaultDesc": "Everything to get started."
+    },
+    "planType": {
+      "node": "Node",
+      "forward": "Forward",
+      "hybrid": "Hybrid"
     },
     "quickActions": {
       "viewSubscriptions": "View Subscriptions",

@@ -84,11 +84,11 @@ export const VerifyCodeSection = ({
               onClick={handleCopy}
               className={cn(
                 "w-full group relative flex items-center justify-center gap-2",
-                "px-4 py-3 rounded-lg border transition-all duration-200",
+                "px-4 py-3 rounded-xl ring-1 transition-all duration-200 active:scale-[0.98]",
                 "cursor-pointer select-none",
                 copied
-                  ? "bg-success/5 border-success/30"
-                  : "bg-muted/50 border-transparent hover:bg-muted hover:border-border"
+                  ? "bg-success/5 ring-success/30"
+                  : "bg-muted/50 ring-transparent hover:bg-muted hover:ring-border"
               )}
             >
               <span className="font-mono text-base text-muted-foreground">

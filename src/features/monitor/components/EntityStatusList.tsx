@@ -53,12 +53,12 @@ const EntityCard = memo(({ entity }: { entity: EntityStatus }) => {
 
   return (
     <Collapsible open={isExpanded} onOpenChange={setIsExpanded}>
-      <div className={`border border-border rounded-lg overflow-hidden transition-all ${
+      <div className={`ring-1 ring-border rounded-xl overflow-hidden transition-all ${
         entity.isOnline ? 'bg-card' : 'bg-muted/30'
       }`}>
         {/* Header */}
         <CollapsibleTrigger asChild>
-          <button className="w-full p-3 flex items-center gap-3 hover:bg-accent/50 transition-colors cursor-pointer">
+          <button className="w-full p-3 flex items-center gap-3 hover:bg-accent/50 transition-colors cursor-pointer active:scale-[0.98]">
             {/* Icon */}
             <div className={`p-2 rounded-lg shrink-0 ${
               entity.isOnline
@@ -193,7 +193,7 @@ export const EntityStatusList = memo(({ entities }: EntityStatusListProps) => {
   }), [filteredEntities]);
 
   return (
-    <div className="bg-card backdrop-blur-xl rounded-xl border border-border shadow-sm h-full flex flex-col">
+    <div className="bg-card backdrop-blur-xl rounded-xl ring-1 ring-border h-full flex flex-col">
       {/* Header */}
       <div className="p-4 border-b border-border shrink-0">
         <div className="flex items-center justify-between mb-3">

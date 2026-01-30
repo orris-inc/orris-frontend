@@ -94,7 +94,7 @@ export const MobilePlanCard = ({
           onCardPress(plan);
         }
       }}
-      className={mobileListItemStyles}
+      className={cn(mobileListItemStyles, 'active:scale-[0.98] transition-transform')}
     >
       {/* Main content */}
       <div className="flex-1 min-w-0">
@@ -135,14 +135,6 @@ export const MobilePlanCard = ({
               </>
             )}
           </span>
-
-          {/* Trial Days */}
-          {plan.trialDays != null && plan.trialDays > 0 && (
-            <>
-              <span className="text-border">·</span>
-              <span>{t('common.time.days_other', { count: plan.trialDays })}</span>
-            </>
-          )}
 
           {/* Pricing Count */}
           {pricingCount > 1 && (

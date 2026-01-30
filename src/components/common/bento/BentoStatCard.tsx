@@ -91,7 +91,7 @@ export const BentoStatCard = ({
       <div
         className={cn(
           // Mobile: compact, sm+: larger padding
-          'p-3 sm:p-4 rounded-xl bg-card border',
+          'p-3 sm:p-4 rounded-xl bg-card ring-1 ring-border',
           large && 'col-span-2 sm:p-5',
           className
         )}
@@ -110,7 +110,7 @@ export const BentoStatCard = ({
     <div
       className={cn(
         // Mobile: compact p-3, sm+: p-4, large cards get p-5 on sm+
-        'p-3 sm:p-4 rounded-xl bg-card border',
+        'p-3 sm:p-4 rounded-xl bg-card ring-1 ring-border',
         'transition-shadow hover:shadow-md',
         large && 'col-span-2 sm:p-5',
         className

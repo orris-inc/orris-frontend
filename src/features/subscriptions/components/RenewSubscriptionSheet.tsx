@@ -101,14 +101,14 @@ export const RenewSubscriptionSheet: React.FC<RenewSubscriptionSheetProps> = ({
 
         <SheetBody className="py-4 space-y-4">
           {/* Plan Info */}
-          <div className="rounded-lg border bg-muted/30 p-3">
+          <div className="rounded-xl ring-1 ring-border bg-muted/30 p-3">
             <div className="text-xs text-muted-foreground mb-1">{t('subscription.currentPlan')}</div>
             <div className="font-medium">{subscription.plan?.name || t('subscription.unknownPlan')}</div>
           </div>
 
           {/* Lifetime subscription warning */}
           {isLifetime ? (
-            <div className="rounded-lg border border-yellow-200 bg-yellow-50 dark:border-yellow-900 dark:bg-yellow-950/30 p-3">
+            <div className="rounded-xl border border-yellow-200 bg-yellow-50 dark:border-yellow-900 dark:bg-yellow-950/30 p-3">
               <div className="flex items-start gap-2">
                 <Info className="size-4 text-yellow-600 dark:text-yellow-500 mt-0.5 shrink-0" />
                 <p className="text-sm text-yellow-700 dark:text-yellow-400">
@@ -146,7 +146,7 @@ export const RenewSubscriptionSheet: React.FC<RenewSubscriptionSheetProps> = ({
               )}
 
               {/* Info */}
-              <div className="rounded-lg border border-blue-200 bg-blue-50 dark:border-blue-900 dark:bg-blue-950/30 p-3">
+              <div className="rounded-xl border border-blue-200 bg-blue-50 dark:border-blue-900 dark:bg-blue-950/30 p-3">
                 <div className="flex items-start gap-2">
                   <Info className="size-4 text-blue-600 dark:text-blue-500 mt-0.5 shrink-0" />
                   <p className="text-xs text-blue-700 dark:text-blue-400">

@@ -268,7 +268,7 @@ const ChainNodesDisplayMobile: React.FC<{
 const MobileCardSkeleton: React.FC = () => (
   <div className="space-y-3">
     {[1, 2, 3].map((i) => (
-      <div key={i} className="glass rounded-2xl p-4 space-y-3 animate-pulse motion-reduce:animate-none">
+      <div key={i} className="glass rounded-xl p-4 space-y-3 animate-pulse motion-reduce:animate-none">
         <div className="flex items-center justify-between">
           <Skeleton className="h-5 w-32" />
           <Skeleton className="h-5 w-16" />
@@ -378,7 +378,7 @@ export const UserForwardRuleMobileList: React.FC<UserForwardRuleMobileListProps>
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <button
-          className="glass-interactive rounded-full p-2 min-h-[44px] min-w-[44px] flex items-center justify-center touch-manipulation"
+          className="glass-interactive rounded-full p-2 min-h-[44px] min-w-[44px] flex items-center justify-center touch-manipulation active:scale-[0.98]"
           onClick={(e) => e.stopPropagation()}
         >
           <MoreHorizontal className="size-5 text-muted-foreground" />
@@ -420,7 +420,7 @@ export const UserForwardRuleMobileList: React.FC<UserForwardRuleMobileListProps>
 
   if (rules.length === 0) {
     return (
-      <div className="glass rounded-2xl py-16 px-4 text-center">
+      <div className="glass rounded-xl py-16 px-4 text-center">
         <p className="text-muted-foreground">{t('userForwardRules.empty')}</p>
       </div>
     );
@@ -458,7 +458,7 @@ export const UserForwardRuleMobileList: React.FC<UserForwardRuleMobileListProps>
         key={rule.id}
         value={rule.id}
         className={cn(
-          'glass rounded-2xl overflow-hidden border-0 mb-2 transition-all duration-200',
+          'glass rounded-xl overflow-hidden border-0 mb-2 transition-all duration-200 active:scale-[0.98]',
           isSelectMode && isSelected && 'ring-2 ring-primary ring-offset-2 ring-offset-background'
         )}
       >
@@ -530,7 +530,7 @@ export const UserForwardRuleMobileList: React.FC<UserForwardRuleMobileListProps>
               <div className="flex items-center gap-0.5 flex-shrink-0">
                 <button
                   onClick={() => onEdit(rule)}
-                  className="glass-interactive rounded-full p-2 min-h-[40px] min-w-[40px] flex items-center justify-center touch-manipulation"
+                  className="glass-interactive rounded-full p-2 min-h-[40px] min-w-[40px] flex items-center justify-center touch-manipulation active:scale-[0.98]"
                   title={t('common.actions.edit')}
                 >
                   <Edit className="size-4 text-muted-foreground" />
@@ -649,7 +649,7 @@ export const UserForwardRuleMobileList: React.FC<UserForwardRuleMobileListProps>
         <div className="pt-4 pb-safe">
           <button
             onClick={() => onPageChange(page + 1)}
-            className="glass-interactive w-full rounded-2xl py-4 text-sm font-medium text-foreground min-h-[44px] touch-manipulation"
+            className="glass-interactive w-full rounded-xl py-4 text-sm font-medium text-foreground min-h-[44px] touch-manipulation active:scale-[0.98]"
           >
             {t('userForwardRules.loadMore')} ({page * pageSize} / {total})
           </button>

@@ -523,7 +523,7 @@ export const EditForwardRuleSheet: React.FC<EditForwardRuleSheetProps> = ({
 
         <SheetBody className="space-y-4 py-4">
           {/* Read-only Info */}
-          <div className="rounded-lg border border-border bg-muted/30 px-3 divide-y divide-border">
+          <div className="rounded-xl ring-1 ring-border bg-muted/30 px-3 divide-y divide-border">
             <InfoRow label={t('common.labels.id')} value={<span className="font-mono text-xs truncate max-w-[200px]">{rule.id}</span>} />
             <InfoRow
               label={t('admin.forwardRules.form.ruleType')}
@@ -602,7 +602,7 @@ export const EditForwardRuleSheet: React.FC<EditForwardRuleSheetProps> = ({
               </FormField>
 
               {selectedAgent?.allowedPortRange && (
-                <div className="px-3 py-2 rounded-lg bg-warning/10 border border-warning/20">
+                <div className="px-3 py-2 rounded-xl bg-warning/10 ring-1 ring-warning/20">
                   <p className="text-xs text-warning">
                     {t('admin.forwardRules.form.portRestriction', { range: selectedAgent.allowedPortRange })}
                   </p>
@@ -825,7 +825,7 @@ export const EditForwardRuleSheet: React.FC<EditForwardRuleSheetProps> = ({
               {availableResourceGroups.length > 0 && (
                 <FormField label={t('admin.forwardRules.form.bindResourceGroupsEdit')}>
                   <p className="text-xs text-muted-foreground mb-2">{t('admin.forwardRules.form.bindResourceGroupsHint')}</p>
-                  <div className="border rounded-lg overflow-hidden divide-y divide-border">
+                  <div className="ring-1 ring-border rounded-xl overflow-hidden divide-y divide-border">
                     {availableResourceGroups.map((group) => {
                       const plan = plansMap[group.planId];
                       const isSelected = formData.groupSids?.includes(group.sid) ?? false;
@@ -833,7 +833,7 @@ export const EditForwardRuleSheet: React.FC<EditForwardRuleSheetProps> = ({
                         <label
                           key={group.sid}
                           className={cn(
-                            'flex items-center gap-3 px-3 py-2.5 cursor-pointer min-h-[44px]',
+                            'flex items-center gap-3 px-3 py-2.5 cursor-pointer min-h-[44px] transition-colors active:bg-muted/50',
                             isSelected && 'bg-primary/5'
                           )}
                         >
@@ -854,7 +854,7 @@ export const EditForwardRuleSheet: React.FC<EditForwardRuleSheetProps> = ({
 
         <SheetFooter>
           <div className="flex gap-3 w-full">
-            <Button onClick={handleSubmit} disabled={loading} className="flex-1 min-h-[44px]">
+            <Button onClick={handleSubmit} disabled={loading} className="flex-1 min-h-[44px] active:scale-[0.98]">
               {loading ? (
                 <>
                   <Loader2 className="size-4 mr-2 animate-spin" />
@@ -864,7 +864,7 @@ export const EditForwardRuleSheet: React.FC<EditForwardRuleSheetProps> = ({
                 t('common.actions.save')
               )}
             </Button>
-            <Button variant="outline" onClick={handleClose} disabled={loading} className="flex-1 min-h-[44px]">
+            <Button variant="outline" onClick={handleClose} disabled={loading} className="flex-1 min-h-[44px] active:scale-[0.98]">
               {t('common.actions.cancel')}
             </Button>
           </div>

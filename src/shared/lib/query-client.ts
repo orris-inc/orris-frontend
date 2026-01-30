@@ -116,5 +116,6 @@ export const queryKeys = {
     details: () => [...queryKeys.announcements.all, 'detail'] as const,
     detail: (id: number | string) => [...queryKeys.announcements.details(), id] as const,
     public: (params?: object) => [...queryKeys.announcements.all, 'public', params] as const,
+    unreadCount: () => [...queryKeys.announcements.all, 'unreadCount'] as const,
   },
 };

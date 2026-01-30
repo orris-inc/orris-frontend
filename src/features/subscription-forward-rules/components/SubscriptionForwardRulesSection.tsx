@@ -111,7 +111,7 @@ export const SubscriptionForwardRulesSection: React.FC<SubscriptionForwardRulesS
   if (hasNoForwardSupport) {
     return (
       <div className="flex flex-col items-center justify-center py-12 px-4">
-        <div className="p-4 rounded-full bg-muted mb-4">
+        <div className="p-4 rounded-xl bg-muted mb-4">
           <AlertCircle className="h-8 w-8 text-muted-foreground" />
         </div>
         <h3 className="text-lg font-medium mb-2">{t('userForwardRules.noSubscription.title')}</h3>
@@ -129,7 +129,7 @@ export const SubscriptionForwardRulesSection: React.FC<SubscriptionForwardRulesS
 
       {/* Rule limit reached warning - compact on mobile */}
       {isAtLimit && (
-        <div className="flex items-start @sm:items-center gap-2 @sm:gap-3 p-2.5 @sm:p-3 bg-amber-500/10 border border-amber-500/20 rounded-lg">
+        <div className="flex items-start @sm:items-center gap-2 @sm:gap-3 p-2.5 @sm:p-3 bg-amber-500/10 ring-1 ring-amber-500/20 rounded-xl">
           <AlertCircle className="h-4 w-4 @sm:h-5 @sm:w-5 text-amber-500 shrink-0 mt-0.5 @sm:mt-0" />
           <div>
             <p className="text-xs @sm:text-sm font-medium text-amber-600 dark:text-amber-400">{t('userForwardRules.limitReached.title')}</p>
@@ -147,7 +147,7 @@ export const SubscriptionForwardRulesSection: React.FC<SubscriptionForwardRulesS
           onClick={handleCreateClick}
           disabled={isAtLimit || isUsageLoading}
           size="sm"
-          className="gap-1.5 h-8 @sm:h-9 text-xs @sm:text-sm"
+          className="gap-1.5 h-8 @sm:h-9 text-xs @sm:text-sm active:scale-[0.98]"
         >
           <Plus className="h-3.5 w-3.5 @sm:h-4 @sm:w-4" />
           <span className="hidden @sm:inline">{t('userForwardRules.addRule')}</span>

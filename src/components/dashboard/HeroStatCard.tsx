@@ -93,7 +93,7 @@ export const HeroStatCard = ({
     <div
       className={cn(
         // Base card styles
-        'rounded-xl border bg-card/80 backdrop-blur-sm',
+        'rounded-xl ring-1 ring-border bg-card/80 backdrop-blur-sm',
         // Mobile: compact padding p-3; sm+: p-4
         'p-3 sm:p-4',
         // Full width variant for single-row items

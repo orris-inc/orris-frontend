@@ -15,7 +15,7 @@ export const SystemSection = () => {
   return (
     <div className="space-y-4 sm:space-y-6">
       {/* System info section */}
-      <div className="rounded-xl bg-card border overflow-hidden">
+      <div className="rounded-xl bg-card ring-1 ring-border overflow-hidden">
         <div className="flex flex-col space-y-1.5 p-5 sm:p-6 border-b">
           <h3 className={`${cardTitleStyles} text-lg`}>
             {t('profile.system.infoTitle')}
@@ -29,7 +29,7 @@ export const SystemSection = () => {
             {/* Server version */}
             <div className="flex items-center justify-between py-2">
               <div className="flex items-center gap-3">
-                <div className="flex size-10 items-center justify-center rounded-lg bg-primary/10">
+                <div className="flex size-10 items-center justify-center rounded-xl bg-primary/10">
                   <Server className="size-5 text-primary" />
                 </div>
                 <div>
@@ -49,7 +49,7 @@ export const SystemSection = () => {
             {/* Client version */}
             <div className="flex items-center justify-between py-2">
               <div className="flex items-center gap-3">
-                <div className="flex size-10 items-center justify-center rounded-lg bg-primary/10">
+                <div className="flex size-10 items-center justify-center rounded-xl bg-primary/10">
                   <HardDrive className="size-5 text-primary" />
                 </div>
                 <div>
@@ -70,7 +70,7 @@ export const SystemSection = () => {
       </div>
 
       {/* Cache management section */}
-      <div className="rounded-xl bg-card border overflow-hidden">
+      <div className="rounded-xl bg-card ring-1 ring-border overflow-hidden">
         <div className="flex flex-col space-y-1.5 p-5 sm:p-6 border-b">
           <h3 className={`${cardTitleStyles} text-lg`}>
             {t('profile.system.cacheTitle')}
@@ -82,7 +82,7 @@ export const SystemSection = () => {
         <div className="p-5 sm:p-6">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <div className="flex size-10 items-center justify-center rounded-lg bg-muted">
+              <div className="flex size-10 items-center justify-center rounded-xl bg-muted">
                 <Database className="size-5 text-muted-foreground" />
               </div>
               <div>
@@ -96,7 +96,7 @@ export const SystemSection = () => {
             </div>
             <button
               type="button"
-              className="inline-flex items-center gap-2 rounded-lg bg-muted px-4 py-2 text-sm font-medium text-foreground hover:bg-muted/80 transition-colors"
+              className="inline-flex items-center gap-2 rounded-xl bg-muted px-4 py-2 text-sm font-medium text-foreground hover:bg-muted/80 transition-colors active:scale-[0.98]"
               onClick={() => {
                 // Clear local storage cache
                 localStorage.clear();
@@ -112,7 +112,7 @@ export const SystemSection = () => {
       </div>
 
       {/* Advanced settings placeholder */}
-      <div className="rounded-xl bg-card border overflow-hidden">
+      <div className="rounded-xl bg-card ring-1 ring-border overflow-hidden">
         <div className="flex flex-col space-y-1.5 p-5 sm:p-6 border-b">
           <h3 className={`${cardTitleStyles} text-lg`}>
             {t('profile.system.advancedTitle')}

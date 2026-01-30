@@ -71,7 +71,7 @@ export const AnnouncementDetailDialog: React.FC<AnnouncementDetailDialogProps> =
       <DialogContent className="sm:max-w-2xl flex flex-col max-h-[90vh]">
         <DialogHeader className="flex-shrink-0">
           <DialogTitle className="flex items-center gap-3">
-            <div className="p-2 rounded-lg bg-muted">
+            <div className="p-2 rounded-xl bg-muted">
               <TypeIcon className="size-5 text-muted-foreground" />
             </div>
             <span className="truncate">{announcement.title}</span>
@@ -104,7 +104,7 @@ export const AnnouncementDetailDialog: React.FC<AnnouncementDetailDialogProps> =
               <div
                 className={cn(
                   'prose prose-sm dark:prose-invert max-w-none',
-                  'p-4 rounded-lg bg-muted/50 border border-border'
+                  'p-4 rounded-xl bg-muted/50 ring-1 ring-border'
                 )}
               >
                 {announcement.contentHtml ? (

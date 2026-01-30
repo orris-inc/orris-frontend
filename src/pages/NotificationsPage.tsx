@@ -70,7 +70,7 @@ export const NotificationsPage = () => {
         {/* Stats Grid */}
         <section className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
           {/* Telegram Status Card - Custom layout */}
-          <div className="col-span-2 p-4 sm:p-5 rounded-xl bg-card border transition-shadow hover:shadow-md">
+          <div className="col-span-2 p-4 sm:p-5 rounded-xl bg-card ring-1 ring-border transition-shadow hover:shadow-md">
             <div className="flex items-center gap-3 mb-3">
               <div
                 className={cn(
@@ -125,7 +125,7 @@ export const NotificationsPage = () => {
           </div>
 
           {/* Active Notifications - Custom with dynamic icon */}
-          <div className="p-4 sm:p-5 rounded-xl bg-card border transition-shadow hover:shadow-md">
+          <div className="p-4 sm:p-5 rounded-xl bg-card ring-1 ring-border transition-shadow hover:shadow-md">
             <div className="flex items-center gap-2 mb-3">
               <div
                 className={cn(
@@ -173,8 +173,8 @@ export const NotificationsPage = () => {
               className={cn(
                 'p-4 sm:p-5 rounded-xl cursor-default',
                 'transition-all duration-200',
-                'bg-card border',
-                notificationStats.hasExpiringNotify ? 'border-warning/20' : 'border-border'
+                'bg-card ring-1',
+                notificationStats.hasExpiringNotify ? 'ring-warning/20' : 'ring-border'
               )}
             >
               <div className="flex items-start justify-between gap-3 mb-3">
@@ -228,8 +228,8 @@ export const NotificationsPage = () => {
               className={cn(
                 'p-4 sm:p-5 rounded-xl cursor-default',
                 'transition-all duration-200',
-                'bg-card border',
-                notificationStats.hasTrafficNotify ? 'border-primary/20' : 'border-border'
+                'bg-card ring-1',
+                notificationStats.hasTrafficNotify ? 'ring-primary/20' : 'ring-border'
               )}
             >
               <div className="flex items-start justify-between gap-3 mb-3">

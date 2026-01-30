@@ -14,7 +14,6 @@ import {
   Package,
   Globe,
   Lock,
-  Calendar,
   Hash,
   FileText,
   Edit,
@@ -260,13 +259,6 @@ export const PlanDetailSheet = ({
                   </span>
                 }
               />
-              {plan.trialDays != null && plan.trialDays > 0 && (
-                <DetailRow
-                  icon={<Calendar className="size-4" />}
-                  label={t('admin.plans.detail.trialPeriod')}
-                  value={`${plan.trialDays} ${t('common.days')}`}
-                />
-              )}
               <DetailRow
                 icon={<Hash className="size-4" />}
                 label={t('admin.plans.detail.planId')}

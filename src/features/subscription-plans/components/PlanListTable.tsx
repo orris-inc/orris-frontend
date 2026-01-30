@@ -303,23 +303,15 @@ export const PlanListTable: React.FC<PlanListTableProps> = ({
       size: 100,
       meta: { priority: 3 } as ResponsiveColumnMeta,
       cell: ({ row }) => {
-        const { trialDays, sortOrder } = row.original;
-        const parts: string[] = [];
+        const { sortOrder } = row.original;
 
-        if (trialDays && trialDays > 0) {
-          parts.push(`${trialDays}${t('common.days')}`);
-        }
-        if (sortOrder && sortOrder > 0) {
-          parts.push(`#${sortOrder}`);
-        }
-
-        if (parts.length === 0) {
+        if (!sortOrder || sortOrder === 0) {
           return <span className="text-muted-foreground">—</span>;
         }
 
         return (
           <span className="text-muted-foreground tabular-nums">
-            {parts.join(' · ')}
+            #{sortOrder}
           </span>
         );
       },

@@ -72,7 +72,7 @@ interface SubscriptionMobileListProps {
 const MobileCardSkeleton: React.FC = () => (
   <div className="space-y-3">
     {[1, 2, 3].map((i) => (
-      <div key={i} className="border rounded-lg p-4 space-y-3">
+      <div key={i} className="rounded-xl ring-1 ring-border p-4 space-y-3">
         <div className="flex items-center justify-between">
           <Skeleton className="h-5 w-32" />
           <Skeleton className="h-5 w-16" />
@@ -207,7 +207,7 @@ export const SubscriptionMobileList: React.FC<SubscriptionMobileListProps> = ({
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <button
-            className="p-1.5 rounded-md hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
+            className="p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 active:scale-[0.98] transition-all"
             onClick={(e) => e.stopPropagation()}
           >
             <MoreHorizontal className="size-4 text-slate-500" />
@@ -306,7 +306,7 @@ export const SubscriptionMobileList: React.FC<SubscriptionMobileListProps> = ({
             <ContextMenuTrigger asChild>
               <AccordionItem
                 value={subscription.id}
-                className="border rounded-lg bg-white dark:bg-slate-800 overflow-hidden"
+                className="rounded-xl ring-1 ring-border bg-white dark:bg-slate-800 overflow-hidden"
               >
             {/* Card Header - Always visible */}
             <div className="px-3 py-2">
@@ -344,7 +344,7 @@ export const SubscriptionMobileList: React.FC<SubscriptionMobileListProps> = ({
                       <TooltipTrigger asChild>
                         <button
                           onClick={() => onActivate(subscription)}
-                          className="p-1.5 rounded hover:bg-green-50 dark:hover:bg-green-900/20 transition-colors"
+                          className="p-1.5 rounded-lg hover:bg-green-50 dark:hover:bg-green-900/20 active:scale-[0.98] transition-all"
                         >
                           <Play className="size-3.5 text-green-500 hover:text-green-600" />
                         </button>
@@ -357,7 +357,7 @@ export const SubscriptionMobileList: React.FC<SubscriptionMobileListProps> = ({
                       <TooltipTrigger asChild>
                         <button
                           onClick={() => onViewDetail(subscription)}
-                          className="p-1.5 rounded hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
+                          className="p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 active:scale-[0.98] transition-all"
                         >
                           <Eye className="size-3.5 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300" />
                         </button>

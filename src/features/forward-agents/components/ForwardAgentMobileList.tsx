@@ -75,7 +75,7 @@ import { formatDateTime } from '@/shared/utils/date-utils';
 const MobileCardSkeleton: React.FC = () => (
   <div className="space-y-3">
     {[1, 2, 3].map((i) => (
-      <div key={i} className="border rounded-lg p-4 space-y-3">
+      <div key={i} className="ring-1 ring-border rounded-xl p-4 space-y-3">
         <div className="flex items-center justify-between">
           <Skeleton className="h-5 w-32" />
           <Skeleton className="h-5 w-16" />
@@ -115,7 +115,7 @@ export const ForwardAgentMobileList: React.FC<ForwardAgentMobileListProps> = ({
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <button
-            className="p-1.5 rounded-md hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
+            className="p-1.5 rounded-md hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors active:scale-[0.98]"
             onClick={(e) => e.stopPropagation()}
           >
             <MoreHorizontal className="size-4 text-slate-500" />
@@ -204,7 +204,7 @@ export const ForwardAgentMobileList: React.FC<ForwardAgentMobileListProps> = ({
       <AccordionItem
         key={agent.id}
         value={String(agent.id)}
-        className="border rounded-lg bg-white dark:bg-slate-800 overflow-hidden"
+        className="ring-1 ring-border rounded-xl bg-white dark:bg-slate-800 overflow-hidden"
       >
         {/* Card Header - Always visible */}
         <div className="px-3 py-2">
@@ -265,7 +265,7 @@ export const ForwardAgentMobileList: React.FC<ForwardAgentMobileListProps> = ({
                 <TooltipTrigger asChild>
                   <button
                     onClick={() => onToggleMute?.(agent)}
-                    className="p-1.5 rounded hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
+                    className="p-1.5 rounded hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors active:scale-[0.98]"
                   >
                     {agent.muteNotification ? (
                       <BellOff className="size-3.5 text-slate-400" />
@@ -280,7 +280,7 @@ export const ForwardAgentMobileList: React.FC<ForwardAgentMobileListProps> = ({
                 <TooltipTrigger asChild>
                   <button
                     onClick={() => onEdit(agent)}
-                    className="p-1.5 rounded hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
+                    className="p-1.5 rounded hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors active:scale-[0.98]"
                   >
                     <Edit className="size-3.5 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300" />
                   </button>
@@ -291,7 +291,7 @@ export const ForwardAgentMobileList: React.FC<ForwardAgentMobileListProps> = ({
                 <TooltipTrigger asChild>
                   <button
                     onClick={() => onGetInstallScript(agent)}
-                    className="p-1.5 rounded hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
+                    className="p-1.5 rounded hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors active:scale-[0.98]"
                   >
                     <Terminal className="size-3.5 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300" />
                   </button>
@@ -302,7 +302,7 @@ export const ForwardAgentMobileList: React.FC<ForwardAgentMobileListProps> = ({
                 <TooltipTrigger asChild>
                   <button
                     onClick={() => agent.status === 'enabled' ? onDisable(agent) : onEnable(agent)}
-                    className={`p-1.5 rounded transition-colors ${
+                    className={`p-1.5 rounded transition-colors active:scale-[0.98] ${
                       agent.status === 'enabled'
                         ? 'hover:bg-red-50 dark:hover:bg-red-900/20'
                         : 'hover:bg-green-50 dark:hover:bg-green-900/20'

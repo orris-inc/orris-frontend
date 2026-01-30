@@ -3,7 +3,7 @@
  * Modern Bento Grid layout for subscription plans
  */
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useCallback, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   Sparkles,
@@ -13,8 +13,9 @@ import {
   Headphones,
 } from 'lucide-react';
 
-import type { SubscriptionPlan } from '@/api/subscription/types';
+import type { SubscriptionPlan, BillingCycle } from '@/api/subscription/types';
 import { PlanCardList } from '@/features/subscription-plans/components/PlanCardList';
+import { BillingCycleToggle } from '@/features/subscription-plans/components/BillingCycleToggle';
 import { SubscriptionConfirmDialog } from '@/features/subscription-plans/components/SubscriptionConfirmDialog';
 import { usePublicPlans } from '@/features/subscription-plans/hooks/usePublicPlans';
 import { DashboardLayout } from '@/layouts/DashboardLayout';
@@ -27,19 +28,43 @@ export const PricingPage = () => {
   const { t } = useTranslation();
   const [selectedPlan, setSelectedPlan] = useState<SubscriptionPlan | null>(null);
   const [confirmDialogOpen, setConfirmDialogOpen] = useState(false);
+  const [selectedCycle, setSelectedCycle] = useState<BillingCycle>('monthly');
   const { publicPlans, isLoading } = usePublicPlans();
+
+  // Get available billing cycles from all plans
+  const availableCycles = useMemo(() => {
+    const cycles = new Set<BillingCycle>();
+    publicPlans.forEach((plan) => {
+      plan.pricings?.forEach((pricing) => {
+        if (pricing.isActive) {
+          cycles.add(pricing.billingCycle);
+        }
+      });
+    });
+    return Array.from(cycles);
+  }, [publicPlans]);
+
+  // Set default cycle to first available if current is not available
+  useEffect(() => {
+    if (availableCycles.length > 0 && !availableCycles.includes(selectedCycle)) {
+      setSelectedCycle(availableCycles[0]);
+    }
+  }, [availableCycles, selectedCycle]);
 
   const planStats = useMemo(() => {
     return {
       totalPlans: publicPlans.length,
-      hasTrialPlans: publicPlans.some((p) => p.trialDays > 0),
     };
   }, [publicPlans]);
 
-  const handleSelectPlan = (plan: SubscriptionPlan) => {
+  const handleSelectPlan = useCallback((plan: SubscriptionPlan) => {
     setSelectedPlan(plan);
     setConfirmDialogOpen(true);
-  };
+  }, []);
+
+  const handleCycleChange = useCallback((cycle: BillingCycle) => {
+    setSelectedCycle(cycle);
+  }, []);
 
   const heroStatusMessage = useMemo(() => {
     if (isLoading) return undefined;
@@ -62,7 +87,7 @@ export const PricingPage = () => {
 
         {/* Features Highlight */}
         <section className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
-          <div className="flex items-center gap-3 p-4 rounded-xl bg-card border">
+          <div className="flex items-center gap-3 p-4 rounded-xl bg-card ring-1 ring-border">
             <div className="p-2 rounded-lg bg-success/10 ring-1 ring-success/20 shrink-0">
               <Zap className="size-4 text-success" />
             </div>
@@ -76,7 +101,7 @@ export const PricingPage = () => {
             </div>
           </div>
 
-          <div className="flex items-center gap-3 p-4 rounded-xl bg-card border">
+          <div className="flex items-center gap-3 p-4 rounded-xl bg-card ring-1 ring-border">
             <div className="p-2 rounded-lg bg-primary/10 ring-1 ring-primary/20 shrink-0">
               <Shield className="size-4 text-primary" />
             </div>
@@ -90,7 +115,7 @@ export const PricingPage = () => {
             </div>
           </div>
 
-          <div className="flex items-center gap-3 p-4 rounded-xl bg-card border">
+          <div className="flex items-center gap-3 p-4 rounded-xl bg-card ring-1 ring-border">
             <div className="p-2 rounded-lg bg-warning/10 ring-1 ring-warning/20 shrink-0">
               <Headphones className="size-4 text-warning" />
             </div>
@@ -107,22 +132,34 @@ export const PricingPage = () => {
 
         {/* Plans Section */}
         <section>
-          <SectionHeader
-            icon={CreditCard}
-            title={t('pricing.plans.title')}
-            count={!isLoading && planStats.totalPlans > 0 ? planStats.totalPlans : undefined}
-          />
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4">
+            <SectionHeader
+              icon={CreditCard}
+              title={t('pricing.plans.title')}
+              count={!isLoading && planStats.totalPlans > 0 ? planStats.totalPlans : undefined}
+            />
+
+            {/* Billing Cycle Toggle */}
+            {!isLoading && availableCycles.length > 1 && (
+              <BillingCycleToggle
+                availableCycles={availableCycles}
+                selectedCycle={selectedCycle}
+                onCycleChange={handleCycleChange}
+              />
+            )}
+          </div>
 
           <PlanCardList
             plans={publicPlans}
             loading={isLoading}
+            selectedCycle={selectedCycle}
             onSelectPlan={handleSelectPlan}
           />
         </section>
 
         {/* Footer Note */}
         {!isLoading && planStats.totalPlans > 0 && (
-          <section className="p-4 rounded-xl bg-muted/50 border border-border/50">
+          <section className="p-4 rounded-xl bg-muted/50 ring-1 ring-border/50">
             <p className="text-sm text-muted-foreground text-center">
               {t('pricing.footerNote')}
             </p>

@@ -570,7 +570,10 @@
     "dashboard": {
       "title": "控制台",
       "welcomeBack": "欢迎回来，{{name}}",
-      "unableToLoadUser": "无法加载用户信息"
+      "unableToLoadUser": "无法加载用户信息",
+      "platformStats": "平台统计",
+      "trafficStats": "流量统计",
+      "trafficAnalytics": "流量分析"
     },
     "common": {
       "refreshList": "刷新列表"
@@ -2864,9 +2867,15 @@
       "oneNode": "1 个节点",
       "nodes": "{{count}} 个节点",
       "apiRate": "每分钟 {{count}} 次 API 请求",
-      "trialDays": "{{count}} 天免费试用",
+      "traffic": "{{value}} 流量",
+      "unlimitedTraffic": "不限流量",
       "featuredDesc": "适合成长中的团队。",
       "defaultDesc": "入门必备。"
+    },
+    "planType": {
+      "node": "节点",
+      "forward": "转发",
+      "hybrid": "混合"
     },
     "quickActions": {
       "viewSubscriptions": "查看订阅",

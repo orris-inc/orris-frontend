@@ -1,6 +1,7 @@
 /**
  * Forward Rules Management Page (Admin)
- * Tailwind UI Application UI style layout
+ * Tailwind Application UI style
+ * Mobile-first responsive design
  */
 
 import { useState, useMemo, useCallback, lazy, Suspense } from 'react';
@@ -12,16 +13,35 @@ import {
   CheckCircle2,
   Activity,
   FileJson,
+  XCircle,
 } from 'lucide-react';
 import type { RowSelectionState } from '@tanstack/react-table';
+import { AdminLayout } from '@/layouts/AdminLayout';
+import { PageHeader, type PageHeaderMeta, type PageHeaderBadge } from '@/components/admin';
+import { Button } from '@/components/common/Button';
+import { ConfirmDialog } from '@/components/common/ConfirmDialog';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/common/Tooltip';
+import { usePageTitle } from '@/shared/hooks';
+import { useBreakpoint } from '@/hooks/useBreakpoint';
 import { ForwardRuleListTable } from '@/features/forward-rules/components/ForwardRuleListTable';
 import { MobileForwardRuleManagement } from '@/features/forward-rules/components/MobileForwardRuleManagement';
 import { ForwardRuleFilters } from '@/features/forward-rules/components/ForwardRuleFilters';
-import { Button } from '@/components/common/Button';
-import { ConfirmDialog } from '@/components/common/ConfirmDialog';
+import { BatchActionBar } from '@/features/forward-rules/components/batch';
 import { useForwardRulesPage, useRuleStatusPolling } from '@/features/forward-rules/hooks/useForwardRules';
 import { useBatchForwardRules } from '@/features/forward-rules/hooks/useBatchForwardRules';
-import { BatchActionBar } from '@/features/forward-rules/components/batch';
+import { useNodes } from '@/features/nodes/hooks/useNodes';
+import { useResourceGroups } from '@/features/resource-groups/hooks/useResourceGroups';
+import { useSubscriptionPlans } from '@/features/subscription-plans/hooks/useSubscriptionPlans';
+import type {
+  ForwardRule,
+  CreateForwardRuleRequest,
+  UpdateForwardRuleRequest,
+  RuleProbeResponse,
+  ForwardRuleType,
+  ForwardProtocol,
+  IPVersion,
+} from '@/api/forward';
+import type { SubscriptionPlan } from '@/api/subscription/types';
 
 // Lazy load dialog/sheet components
 const CreateForwardRuleDialog = lazy(() =>
@@ -79,21 +99,38 @@ const BatchUpdateDialog = lazy(() =>
     default: m.BatchUpdateDialog,
   }))
 );
-import { useNodes } from '@/features/nodes/hooks/useNodes';
-import { useResourceGroups } from '@/features/resource-groups/hooks/useResourceGroups';
-import { useSubscriptionPlans } from '@/features/subscription-plans/hooks/useSubscriptionPlans';
-import { AdminLayout } from '@/layouts/AdminLayout';
-import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/common/Tooltip';
-import { PageHeader } from '@/components/admin';
-import { usePageTitle } from '@/shared/hooks';
-import { useBreakpoint } from '@/hooks/useBreakpoint';
-import type { ForwardRule, CreateForwardRuleRequest, UpdateForwardRuleRequest, RuleProbeResponse, ForwardRuleType, ForwardProtocol, IPVersion } from '@/api/forward';
-import type { SubscriptionPlan } from '@/api/subscription/types';
 
-export const ForwardRulesPage = () => {
+// ============================================================================
+// Types
+// ============================================================================
+
+type DialogType =
+  | 'create'
+  | 'edit'
+  | 'detail'
+  | 'delete'
+  | 'probe'
+  | 'resetTraffic'
+  | 'batchCreate'
+  | 'batchDelete'
+  | 'batchEnable'
+  | 'batchDisable'
+  | 'batchUpdate'
+  | null;
+
+type CopyRuleData = Partial<CreateForwardRuleRequest> & { targetType?: 'manual' | 'node' };
+
+// ============================================================================
+// Main Component
+// ============================================================================
+
+export function ForwardRulesPage() {
   const { t } = useTranslation();
   usePageTitle(t('admin.forwardRules.title'));
 
+  const { isMobile } = useBreakpoint();
+
+  // Forward rules data and operations
   const {
     forwardRules,
     pagination,
@@ -119,10 +156,8 @@ export const ForwardRulesPage = () => {
   } = useForwardRulesPage();
 
   const { nodes } = useNodes({ pageSize: 100 });
-  // Convert agentsMap to array for dialog components
   const forwardAgents = useMemo(() => Object.values(agentsMap), [agentsMap]);
   const { polledStatusMap, pollingRuleIds, startPolling } = useRuleStatusPolling();
-  const { isMobile } = useBreakpoint();
 
   // Batch operations
   const {
@@ -143,9 +178,10 @@ export const ForwardRulesPage = () => {
     isUpdating: isBatchUpdating,
   } = useBatchForwardRules({ isAdmin: true });
 
-  // Get resource groups and plans for rule binding
+  // Resource groups and plans
   const { resourceGroups, isLoading: isLoadingResourceGroups } = useResourceGroups({ pageSize: 100 });
   const { plans, isLoading: isLoadingPlans } = useSubscriptionPlans({ pageSize: 100 });
+
   const plansMap = useMemo(() => {
     const map: Record<string, SubscriptionPlan> = {};
     plans.forEach((plan) => {
@@ -155,16 +191,14 @@ export const ForwardRulesPage = () => {
   }, [plans]);
 
   const resourceGroupsMap = useMemo(() => {
-    const map: Record<string, typeof resourceGroups[0]> = {};
+    const map: Record<string, (typeof resourceGroups)[0]> = {};
     resourceGroups.forEach((group) => {
       map[group.sid] = group;
     });
     return map;
   }, [resourceGroups]);
 
-  // Filter resource groups to only show node/hybrid type plans (exclude forward type)
   const filteredResourceGroups = useMemo(() => {
-    // Return empty array while loading to prevent showing unfiltered data
     if (isLoadingResourceGroups || isLoadingPlans) return [];
     if (!plans.length) return resourceGroups;
     const planTypeMap = new Map(plans.map((plan) => [plan.id, plan.planType]));
@@ -174,226 +208,272 @@ export const ForwardRulesPage = () => {
     });
   }, [resourceGroups, plans, isLoadingResourceGroups, isLoadingPlans]);
 
-  // Calculate statistics for metadata display
+  // Dialog state management
+  const [activeDialog, setActiveDialog] = useState<DialogType>(null);
+  const [selectedRule, setSelectedRule] = useState<ForwardRule | null>(null);
+  const [copyRuleData, setCopyRuleData] = useState<CopyRuleData | undefined>(undefined);
+  const [probeResult, setProbeResult] = useState<RuleProbeResponse | null>(null);
+  const [probingRuleId, setProbingRuleId] = useState<string | null>(null);
+  const [dragSortEnabled, setDragSortEnabled] = useState(false);
+  const [refreshKey, setRefreshKey] = useState(0);
+
+  // Calculate statistics
   const stats = useMemo(() => {
-    const total = pagination.total;
     const enabled = forwardRules.filter((r) => r.status === 'enabled').length;
+    const disabled = forwardRules.filter((r) => r.status === 'disabled').length;
     const running = forwardRules.filter((r) => r.runStatus === 'running').length;
-    return { total, enabled, running };
+    return { total: pagination.total, enabled, disabled, running };
   }, [forwardRules, pagination.total]);
 
-  // Convert Set<string> to Record<string, boolean> for table row selection
+  // Page header badge
+  const headerBadge = useMemo(
+    (): PageHeaderBadge => ({
+      label: `${stats.total} ${t('admin.forwardRules.rulesUnit')}`,
+      variant: 'default',
+    }),
+    [stats.total, t]
+  );
+
+  // Page header metadata
+  const headerMetadata = useMemo((): PageHeaderMeta[] => {
+    const items: PageHeaderMeta[] = [
+      { icon: CheckCircle2, text: `${stats.enabled} ${t('common.status.enabled')}` },
+    ];
+
+    if (stats.disabled > 0) {
+      items.push({ icon: XCircle, text: `${stats.disabled} ${t('common.status.disabled')}` });
+    }
+
+    if (stats.running > 0) {
+      items.push({ icon: Activity, text: `${stats.running} ${t('common.status.running')}` });
+    }
+
+    return items;
+  }, [stats, t]);
+
+  // Row selection for batch operations
   const rowSelection: RowSelectionState = useMemo(() => {
     const selection: RowSelectionState = {};
-    selectedIds.forEach(id => {
+    selectedIds.forEach((id) => {
       selection[id] = true;
     });
     return selection;
   }, [selectedIds]);
 
-  // Handle row selection change from table
-  const handleRowSelectionChange = useCallback((updaterOrValue: RowSelectionState | ((old: RowSelectionState) => RowSelectionState)) => {
-    const newSelection = typeof updaterOrValue === 'function'
-      ? updaterOrValue(rowSelection)
-      : updaterOrValue;
+  const handleRowSelectionChange = useCallback(
+    (updaterOrValue: RowSelectionState | ((old: RowSelectionState) => RowSelectionState)) => {
+      const newSelection = typeof updaterOrValue === 'function' ? updaterOrValue(rowSelection) : updaterOrValue;
+      const newIds = Object.keys(newSelection).filter((id) => newSelection[id]);
+      clearSelection();
+      if (newIds.length > 0) {
+        toggleSelectAll(newIds);
+      }
+    },
+    [rowSelection, clearSelection, toggleSelectAll]
+  );
 
-    const newIds = Object.keys(newSelection).filter(id => newSelection[id]);
-    clearSelection();
-    if (newIds.length > 0) {
-      toggleSelectAll(newIds);
-    }
-  }, [rowSelection, clearSelection, toggleSelectAll]);
+  // Dialog handlers
+  const openDialog = useCallback((type: DialogType, rule?: ForwardRule) => {
+    setSelectedRule(rule ?? null);
+    setActiveDialog(type);
+  }, []);
 
-  // Wrap handlePageChange to clear selection when page changes
-  const handlePageChangeWithClear = useCallback((page: number) => {
-    clearSelection();
-    handlePageChange(page);
-  }, [clearSelection, handlePageChange]);
+  const closeDialog = useCallback(() => {
+    setActiveDialog(null);
+    setSelectedRule(null);
+    setCopyRuleData(undefined);
+    setProbeResult(null);
+  }, []);
 
-  const [createDialogOpen, setCreateDialogOpen] = useState(false);
-  const [editDialogOpen, setEditDialogOpen] = useState(false);
-  const [detailDialogOpen, setDetailDialogOpen] = useState(false);
-  const [selectedRule, setSelectedRule] = useState<ForwardRule | null>(null);
-  const [probeDialogOpen, setProbeDialogOpen] = useState(false);
-  const [probeResult, setProbeResult] = useState<RuleProbeResponse | null>(null);
-  const [probingRuleId, setProbingRuleId] = useState<string | null>(null);
-  const [probingRule, setProbingRule] = useState<ForwardRule | null>(null);
-  const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
-  const [ruleToDelete, setRuleToDelete] = useState<ForwardRule | null>(null);
-  const [resetTrafficConfirmOpen, setResetTrafficConfirmOpen] = useState(false);
-  const [ruleToResetTraffic, setRuleToResetTraffic] = useState<ForwardRule | null>(null);
-  const [copyRuleData, setCopyRuleData] = useState<(Partial<CreateForwardRuleRequest> & { targetType?: 'manual' | 'node' }) | undefined>(undefined);
-  const [refreshKey, setRefreshKey] = useState(0);
-  const [dragSortEnabled, setDragSortEnabled] = useState(false);
-
-  // Batch dialog states
-  const [batchCreateOpen, setBatchCreateOpen] = useState(false);
-  const [batchDeleteOpen, setBatchDeleteOpen] = useState(false);
-  const [batchEnableOpen, setBatchEnableOpen] = useState(false);
-  const [batchDisableOpen, setBatchDisableOpen] = useState(false);
-  const [batchUpdateOpen, setBatchUpdateOpen] = useState(false);
-
-  const handleRefresh = () => {
+  // Action handlers
+  const handleRefresh = useCallback(() => {
     setRefreshKey((k) => k + 1);
     refetch();
-  };
+  }, [refetch]);
 
-  const handleDragEnd = async (_activeId: string, _overId: string, oldIndex: number, newIndex: number) => {
-    if (oldIndex === newIndex) return;
+  const handleCreate = useCallback(() => {
+    setCopyRuleData(undefined);
+    openDialog('create');
+  }, [openDialog]);
 
-    // Reorder rules and calculate new sortOrder values
-    const ruleOrders: { ruleId: string; sortOrder: number }[] = [];
-    const reorderedRules = [...forwardRules];
-    const [movedRule] = reorderedRules.splice(oldIndex, 1);
-    reorderedRules.splice(newIndex, 0, movedRule);
+  const handleEdit = useCallback(
+    (rule: ForwardRule) => openDialog('edit', rule),
+    [openDialog]
+  );
 
-    reorderedRules.forEach((rule, index) => {
-      const newSortOrder = index + 1;
-      if (rule.sortOrder !== newSortOrder) {
-        ruleOrders.push({ ruleId: rule.id, sortOrder: newSortOrder });
-      }
-    });
+  const handleViewDetail = useCallback(
+    (rule: ForwardRule) => openDialog('detail', rule),
+    [openDialog]
+  );
 
-    if (ruleOrders.length > 0) {
-      await handleReorder(ruleOrders);
-    }
-  };
+  const handleDeleteClick = useCallback(
+    (rule: ForwardRule) => openDialog('delete', rule),
+    [openDialog]
+  );
 
-  const handleEdit = (rule: ForwardRule) => {
-    setSelectedRule(rule);
-    setEditDialogOpen(true);
-  };
+  const handleResetTrafficClick = useCallback(
+    (rule: ForwardRule) => openDialog('resetTraffic', rule),
+    [openDialog]
+  );
 
-  const handleDelete = (rule: ForwardRule) => {
-    setRuleToDelete(rule);
-    setDeleteConfirmOpen(true);
-  };
+  const handleCopy = useCallback(
+    (rule: ForwardRule) => {
+      const filteredChainAgentIds = rule.chainAgentIds?.filter((id) => id !== rule.agentId);
+      let filteredChainPortConfig: Record<string, number> | undefined;
 
-  // For mobile Sheet (receives entity from callback)
-  const handleDeleteConfirmSheet = async (rule: ForwardRule) => {
-    await deleteForwardRule(rule.id);
-    setRuleToDelete(null);
-  };
-
-  // For desktop Dialog (uses ruleToDelete state)
-  const handleDeleteConfirmDialog = async () => {
-    if (ruleToDelete) {
-      await deleteForwardRule(ruleToDelete.id);
-      setDeleteConfirmOpen(false);
-      setRuleToDelete(null);
-    }
-  };
-
-  const handleEnable = async (rule: ForwardRule) => {
-    await enableForwardRule(rule.id);
-    startPolling(rule.id);
-  };
-
-  const handleDisable = async (rule: ForwardRule) => {
-    await disableForwardRule(rule.id);
-  };
-
-  // Toggle status handler for mobile swipe card
-  const handleToggleStatus = async (rule: ForwardRule) => {
-    if (rule.status === 'enabled') {
-      await handleDisable(rule);
-    } else {
-      await handleEnable(rule);
-    }
-  };
-
-  const handleResetTraffic = (rule: ForwardRule) => {
-    setRuleToResetTraffic(rule);
-    setResetTrafficConfirmOpen(true);
-  };
-
-  const handleResetTrafficConfirm = async () => {
-    if (ruleToResetTraffic) {
-      await resetTraffic(ruleToResetTraffic.id);
-      setResetTrafficConfirmOpen(false);
-      setRuleToResetTraffic(null);
-    }
-  };
-
-  const handleViewDetail = (rule: ForwardRule) => {
-    setSelectedRule(rule);
-    setDetailDialogOpen(true);
-  };
-
-  const handleProbe = async (rule: ForwardRule) => {
-    setProbingRuleId(rule.id);
-    setProbingRule(rule);
-    setProbeResult(null);
-    setProbeDialogOpen(true);
-    try {
-      const result = await probeRule(rule.id);
-      setProbeResult(result);
-    } catch {
-      // Error already handled in hook
-    } finally {
-      setProbingRuleId(null);
-    }
-  };
-
-  const handleCopy = (rule: ForwardRule) => {
-    const filteredChainAgentIds = rule.chainAgentIds
-      ? rule.chainAgentIds.filter((id) => id !== rule.agentId)
-      : undefined;
-
-    let filteredChainPortConfig: Record<string, number> | undefined;
-    if (rule.chainPortConfig && filteredChainAgentIds) {
-      filteredChainPortConfig = {};
-      for (const id of filteredChainAgentIds) {
-        if (rule.chainPortConfig[id] !== undefined) {
-          filteredChainPortConfig[id] = rule.chainPortConfig[id];
+      if (rule.chainPortConfig && filteredChainAgentIds) {
+        filteredChainPortConfig = {};
+        for (const id of filteredChainAgentIds) {
+          if (rule.chainPortConfig[id] !== undefined) {
+            filteredChainPortConfig[id] = rule.chainPortConfig[id];
+          }
         }
       }
-    }
 
-    const copyData: Partial<CreateForwardRuleRequest> & { targetType?: 'manual' | 'node' } = {
-      agentId: rule.agentId,
-      ruleType: rule.ruleType as ForwardRuleType,
-      exitAgentId: rule.exitAgentId,
-      chainAgentIds: filteredChainAgentIds,
-      chainPortConfig: filteredChainPortConfig,
-      name: `${rule.name} - ${t('common.actions.copy')}`,
-      listenPort: rule.listenPort,
-      targetAddress: rule.targetAddress,
-      targetPort: rule.targetPort,
-      targetNodeId: rule.targetNodeId,
-      bindIp: rule.bindIp,
-      trafficMultiplier: rule.trafficMultiplier,
-      sortOrder: rule.sortOrder,
-      protocol: rule.protocol as ForwardProtocol,
-      ipVersion: rule.ipVersion as IPVersion,
-      remark: rule.remark,
-      targetType: rule.targetNodeId ? 'node' : 'manual',
-    };
-    setCopyRuleData(copyData);
-    setCreateDialogOpen(true);
-  };
+      const data: CopyRuleData = {
+        agentId: rule.agentId,
+        ruleType: rule.ruleType as ForwardRuleType,
+        exitAgentId: rule.exitAgentId,
+        chainAgentIds: filteredChainAgentIds,
+        chainPortConfig: filteredChainPortConfig,
+        name: `${rule.name} - ${t('common.actions.copy')}`,
+        listenPort: rule.listenPort,
+        targetAddress: rule.targetAddress,
+        targetPort: rule.targetPort,
+        targetNodeId: rule.targetNodeId,
+        bindIp: rule.bindIp,
+        trafficMultiplier: rule.trafficMultiplier,
+        sortOrder: rule.sortOrder,
+        protocol: rule.protocol as ForwardProtocol,
+        ipVersion: rule.ipVersion as IPVersion,
+        remark: rule.remark,
+        targetType: rule.targetNodeId ? 'node' : 'manual',
+      };
+      setCopyRuleData(data);
+      openDialog('create');
+    },
+    [openDialog, t]
+  );
 
-  const handleCreateSubmit = async (data: CreateForwardRuleRequest) => {
-    await createForwardRule(data);
-    setCreateDialogOpen(false);
-    setCopyRuleData(undefined);
-  };
+  const handleEnable = useCallback(
+    async (rule: ForwardRule) => {
+      await enableForwardRule(rule.id);
+      startPolling(rule.id);
+    },
+    [enableForwardRule, startPolling]
+  );
 
-  const handleUpdateSubmit = async (id: string, data: UpdateForwardRuleRequest) => {
-    await updateForwardRule(id, data);
-    setEditDialogOpen(false);
-    setSelectedRule(null);
-  };
+  const handleDisable = useCallback(
+    async (rule: ForwardRule) => {
+      await disableForwardRule(rule.id);
+    },
+    [disableForwardRule]
+  );
 
-  // Wrapper for EditForwardRuleDialog (desktop) which uses legacy interface
-  const handleUpdateSubmitLegacy = (id: number | string, data: UpdateForwardRuleRequest) => {
-    updateForwardRule(id, data);
-    setEditDialogOpen(false);
-    setSelectedRule(null);
-  };
+  const handleToggleStatus = useCallback(
+    async (rule: ForwardRule) => {
+      if (rule.status === 'enabled') {
+        await handleDisable(rule);
+      } else {
+        await handleEnable(rule);
+      }
+    },
+    [handleEnable, handleDisable]
+  );
 
-  // Helper functions for filters
-  const handleClearFilters = (): void => {
+  const handleProbe = useCallback(
+    async (rule: ForwardRule) => {
+      setProbingRuleId(rule.id);
+      setProbeResult(null);
+      openDialog('probe', rule);
+      try {
+        const result = await probeRule(rule.id);
+        setProbeResult(result);
+      } catch {
+        // Error handled in hook
+      } finally {
+        setProbingRuleId(null);
+      }
+    },
+    [openDialog, probeRule]
+  );
+
+  // Form submission handlers
+  const handleCreateSubmit = useCallback(
+    async (data: CreateForwardRuleRequest) => {
+      await createForwardRule(data);
+      closeDialog();
+    },
+    [createForwardRule, closeDialog]
+  );
+
+  const handleUpdateSubmit = useCallback(
+    async (id: string, data: UpdateForwardRuleRequest) => {
+      await updateForwardRule(id, data);
+      closeDialog();
+    },
+    [updateForwardRule, closeDialog]
+  );
+
+  const handleUpdateSubmitLegacy = useCallback(
+    (id: number | string, data: UpdateForwardRuleRequest) => {
+      updateForwardRule(id, data);
+      closeDialog();
+    },
+    [updateForwardRule, closeDialog]
+  );
+
+  const handleDeleteConfirm = useCallback(
+    async (rule?: ForwardRule) => {
+      const target = rule ?? selectedRule;
+      if (!target) return;
+      await deleteForwardRule(target.id);
+      closeDialog();
+    },
+    [selectedRule, deleteForwardRule, closeDialog]
+  );
+
+  const handleResetTrafficConfirm = useCallback(async () => {
+    if (!selectedRule) return;
+    await resetTraffic(selectedRule.id);
+    closeDialog();
+  }, [selectedRule, resetTraffic, closeDialog]);
+
+  // Drag and drop handler
+  const handleDragEnd = useCallback(
+    async (_activeId: string, _overId: string, oldIndex: number, newIndex: number) => {
+      if (oldIndex === newIndex) return;
+
+      const reorderedRules = [...forwardRules];
+      const [movedRule] = reorderedRules.splice(oldIndex, 1);
+      reorderedRules.splice(newIndex, 0, movedRule);
+
+      const ruleOrders: { ruleId: string; sortOrder: number }[] = [];
+      reorderedRules.forEach((rule, index) => {
+        const newSortOrder = index + 1;
+        if (rule.sortOrder !== newSortOrder) {
+          ruleOrders.push({ ruleId: rule.id, sortOrder: newSortOrder });
+        }
+      });
+
+      if (ruleOrders.length > 0) {
+        await handleReorder(ruleOrders);
+      }
+    },
+    [forwardRules, handleReorder]
+  );
+
+  // Page change with selection clear
+  const handlePageChangeWithClear = useCallback(
+    (page: number) => {
+      clearSelection();
+      handlePageChange(page);
+    },
+    [clearSelection, handlePageChange]
+  );
+
+  // Filter helpers
+  const handleClearFilters = useCallback(() => {
     handleFiltersChange({
       protocol: undefined,
       status: undefined,
@@ -401,24 +481,24 @@ export const ForwardRulesPage = () => {
       orderBy: 'sort_order',
       order: 'asc',
     });
-  };
+  }, [handleFiltersChange]);
 
   const isDefaultSort = filters.orderBy === 'sort_order' && filters.order === 'asc';
   const hasActiveFilters = !!(filters.protocol || filters.status || filters.name || (filters.orderBy && !isDefaultSort));
+  const isTableLoading = isLoading || isFetching || isReordering;
 
-  // Mobile view - uses MobileForwardRuleManagement with its own header/stats
-  // Detail sheet is now integrated inside MobileForwardRuleManagement
+  // Mobile layout
   if (isMobile) {
     return (
       <AdminLayout>
-        <div className="py-3">
+        <div className="py-3 pb-safe">
           <MobileForwardRuleManagement
             rules={forwardRules}
             agentsMap={agentsMap}
             nodes={nodes}
             polledStatusMap={polledStatusMap}
             pollingRuleIds={pollingRuleIds}
-            loading={isLoading || isFetching || isReordering}
+            loading={isTableLoading}
             refreshing={isFetching}
             page={pagination.page}
             pageSize={pagination.pageSize}
@@ -430,14 +510,11 @@ export const ForwardRulesPage = () => {
             includeUserRules={includeUserRules}
             onIncludeUserRulesChange={handleIncludeUserRulesChange}
             onRefresh={handleRefresh}
-            onCreate={() => {
-              setCopyRuleData(undefined);
-              setCreateDialogOpen(true);
-            }}
+            onCreate={handleCreate}
             onEdit={handleEdit}
             onCopy={handleCopy}
             onToggleStatus={handleToggleStatus}
-            onDelete={handleDelete}
+            onDelete={handleDeleteClick}
             onProbe={handleProbe}
             onPageChange={handlePageChange}
             onDragEnd={handleDragEnd}
@@ -445,15 +522,12 @@ export const ForwardRulesPage = () => {
           />
         </div>
 
-        {/* Create Forward Rule Sheet */}
-        {createDialogOpen && (
+        {/* Mobile Sheets */}
+        {activeDialog === 'create' && (
           <Suspense fallback={null}>
             <CreateForwardRuleSheet
-              open={createDialogOpen}
-              onOpenChange={(open) => {
-                setCreateDialogOpen(open);
-                if (!open) setCopyRuleData(undefined);
-              }}
+              open
+              onOpenChange={(open) => !open && closeDialog()}
               onSubmit={handleCreateSubmit}
               agents={forwardAgents}
               nodes={nodes}
@@ -464,15 +538,11 @@ export const ForwardRulesPage = () => {
           </Suspense>
         )}
 
-        {/* Edit Forward Rule Sheet */}
-        {editDialogOpen && (
+        {activeDialog === 'edit' && (
           <Suspense fallback={null}>
             <EditForwardRuleSheet
-              open={editDialogOpen}
-              onOpenChange={(open) => {
-                setEditDialogOpen(open);
-                if (!open) setSelectedRule(null);
-              }}
+              open
+              onOpenChange={(open) => !open && closeDialog()}
               entity={selectedRule}
               onSubmit={handleUpdateSubmit}
               nodes={nodes}
@@ -483,26 +553,24 @@ export const ForwardRulesPage = () => {
           </Suspense>
         )}
 
-        {/* Delete Forward Rule Sheet */}
-        {deleteConfirmOpen && (
+        {activeDialog === 'delete' && (
           <Suspense fallback={null}>
             <DeleteForwardRuleSheet
-              open={deleteConfirmOpen}
-              onOpenChange={setDeleteConfirmOpen}
-              entity={ruleToDelete}
-              onConfirm={handleDeleteConfirmSheet}
+              open
+              onOpenChange={(open) => !open && closeDialog()}
+              entity={selectedRule}
+              onConfirm={handleDeleteConfirm}
               agentsMap={agentsMap}
             />
           </Suspense>
         )}
 
-        {/* Probe Result Dialog */}
-        {probeDialogOpen && (
+        {activeDialog === 'probe' && (
           <Suspense fallback={null}>
             <ProbeResultDialog
-              open={probeDialogOpen}
-              onOpenChange={setProbeDialogOpen}
-              rule={probingRule}
+              open
+              onOpenChange={(open) => !open && closeDialog()}
+              rule={selectedRule}
               probeResult={probeResult}
               isProbing={probingRuleId !== null}
               agents={forwardAgents}
@@ -514,37 +582,25 @@ export const ForwardRulesPage = () => {
     );
   }
 
-  // Desktop view - Tailwind UI Application UI style layout
+  // Desktop layout
   return (
     <AdminLayout>
-      <div className="space-y-6">
-        {/* Page Header with badge */}
+      <div className="space-y-6 py-4 pb-safe lg:py-6">
+        {/* Page Header */}
         <PageHeader
           title={t('admin.forwardRules.title')}
           icon={ArrowLeftRight}
-          badge={{ label: `${stats.total} ${t('admin.forwardRules.rulesUnit')}`, variant: 'default' }}
-          metadata={[
-            { icon: CheckCircle2, text: `${stats.enabled} ${t('common.status.enabled')}` },
-            ...(stats.running > 0 ? [{ icon: Activity, text: `${stats.running} ${t('common.status.running')}` }] : []),
-          ]}
+          badge={headerBadge}
+          metadata={headerMetadata}
           action={
             <div className="flex items-center gap-2">
-              <Button
-                onClick={() => {
-                  setCopyRuleData(undefined);
-                  setCreateDialogOpen(true);
-                }}
-              >
-                <Plus className="size-4 mr-2" />
+              <Button onClick={handleCreate}>
+                <Plus className="mr-2 size-4" />
                 {t('admin.forwardRules.add')}
               </Button>
               <Tooltip>
                 <TooltipTrigger asChild>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={() => setBatchCreateOpen(true)}
-                  >
+                  <Button variant="ghost" size="icon" onClick={() => openDialog('batchCreate')}>
                     <FileJson className="size-4" />
                   </Button>
                 </TooltipTrigger>
@@ -552,15 +608,8 @@ export const ForwardRulesPage = () => {
               </Tooltip>
               <Tooltip>
                 <TooltipTrigger asChild>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={handleRefresh}
-                  >
-                    <RefreshCw
-                      key={refreshKey}
-                      className="size-4 animate-spin-once"
-                    />
+                  <Button variant="ghost" size="icon" onClick={handleRefresh}>
+                    <RefreshCw key={refreshKey} className="size-4" />
                   </Button>
                 </TooltipTrigger>
                 <TooltipContent>{t('admin.forwardRules.refreshList')}</TooltipContent>
@@ -569,7 +618,7 @@ export const ForwardRulesPage = () => {
           }
         />
 
-        {/* Filters row */}
+        {/* Filters */}
         <ForwardRuleFilters
           filters={filters}
           onFiltersChange={handleFiltersChange}
@@ -586,10 +635,10 @@ export const ForwardRulesPage = () => {
         {selectedCount > 0 && (
           <BatchActionBar
             selectedCount={selectedCount}
-            onBatchDelete={() => setBatchDeleteOpen(true)}
-            onBatchEnable={() => setBatchEnableOpen(true)}
-            onBatchDisable={() => setBatchDisableOpen(true)}
-            onBatchUpdate={() => setBatchUpdateOpen(true)}
+            onBatchDelete={() => openDialog('batchDelete')}
+            onBatchEnable={() => openDialog('batchEnable')}
+            onBatchDisable={() => openDialog('batchDisable')}
+            onBatchUpdate={() => openDialog('batchUpdate')}
             onClearSelection={clearSelection}
             isDeleting={isBatchDeleting}
             isTogglingStatus={isBatchEnabling || isBatchDisabling}
@@ -597,7 +646,7 @@ export const ForwardRulesPage = () => {
           />
         )}
 
-        {/* Forward Rules Table - no wrapper needed, tables have their own border/rounded styling */}
+        {/* Rules Table */}
         <ForwardRuleListTable
           rules={forwardRules}
           agentsMap={agentsMap}
@@ -605,17 +654,17 @@ export const ForwardRulesPage = () => {
           nodes={nodes}
           polledStatusMap={polledStatusMap}
           pollingRuleIds={pollingRuleIds}
-          loading={isLoading || isFetching || isReordering}
+          loading={isTableLoading}
           page={pagination.page}
           pageSize={pagination.pageSize}
           total={pagination.total}
           onPageChange={handlePageChangeWithClear}
           onPageSizeChange={handlePageSizeChange}
           onEdit={handleEdit}
-          onDelete={handleDelete}
+          onDelete={handleDeleteClick}
           onEnable={handleEnable}
           onDisable={handleDisable}
-          onResetTraffic={handleResetTraffic}
+          onResetTraffic={handleResetTrafficClick}
           onViewDetail={handleViewDetail}
           onProbe={handleProbe}
           onCopy={handleCopy}
@@ -624,19 +673,16 @@ export const ForwardRulesPage = () => {
           onDragEnd={handleDragEnd}
           rowSelection={rowSelection}
           onRowSelectionChange={handleRowSelectionChange}
-          enableSelection={true}
+          enableSelection
         />
       </div>
 
-      {/* Create Forward Rule Dialog */}
-      {createDialogOpen && (
+      {/* Desktop Dialogs */}
+      {activeDialog === 'create' && (
         <Suspense fallback={null}>
           <CreateForwardRuleDialog
-            open={createDialogOpen}
-            onClose={() => {
-              setCreateDialogOpen(false);
-              setCopyRuleData(undefined);
-            }}
+            open
+            onClose={closeDialog}
             onSubmit={handleCreateSubmit}
             agents={forwardAgents}
             nodes={nodes}
@@ -647,16 +693,12 @@ export const ForwardRulesPage = () => {
         </Suspense>
       )}
 
-      {/* Edit Forward Rule Dialog */}
-      {editDialogOpen && (
+      {activeDialog === 'edit' && (
         <Suspense fallback={null}>
           <EditForwardRuleDialog
-            open={editDialogOpen}
+            open
             rule={selectedRule}
-            onClose={() => {
-              setEditDialogOpen(false);
-              setSelectedRule(null);
-            }}
+            onClose={closeDialog}
             onSubmit={handleUpdateSubmitLegacy}
             nodes={nodes}
             agents={forwardAgents}
@@ -666,16 +708,12 @@ export const ForwardRulesPage = () => {
         </Suspense>
       )}
 
-      {/* Forward Rule Detail Dialog */}
-      {detailDialogOpen && (
+      {activeDialog === 'detail' && (
         <Suspense fallback={null}>
           <ForwardRuleDetailDialog
-            open={detailDialogOpen}
+            open
             rule={selectedRule}
-            onClose={() => {
-              setDetailDialogOpen(false);
-              setSelectedRule(null);
-            }}
+            onClose={closeDialog}
             agents={forwardAgents}
             nodes={nodes}
             resourceGroups={resourceGroups}
@@ -683,13 +721,12 @@ export const ForwardRulesPage = () => {
         </Suspense>
       )}
 
-      {/* Probe Result Dialog */}
-      {probeDialogOpen && (
+      {activeDialog === 'probe' && (
         <Suspense fallback={null}>
           <ProbeResultDialog
-            open={probeDialogOpen}
-            onOpenChange={setProbeDialogOpen}
-            rule={probingRule}
+            open
+            onOpenChange={(open) => !open && closeDialog()}
+            rule={selectedRule}
             probeResult={probeResult}
             isProbing={probingRuleId !== null}
             agents={forwardAgents}
@@ -698,47 +735,44 @@ export const ForwardRulesPage = () => {
         </Suspense>
       )}
 
-      {/* Delete Confirm Dialog */}
       <ConfirmDialog
-        open={deleteConfirmOpen}
-        onOpenChange={setDeleteConfirmOpen}
+        open={activeDialog === 'delete'}
+        onOpenChange={(open) => !open && closeDialog()}
         title={t('admin.forwardRules.confirmDelete')}
-        description={ruleToDelete ? t('admin.forwardRules.confirmDeleteDesc', { name: ruleToDelete.name }) : ''}
+        description={selectedRule ? t('admin.forwardRules.confirmDeleteDesc', { name: selectedRule.name }) : ''}
         confirmText={t('common.actions.delete')}
         cancelText={t('common.actions.cancel')}
         variant="destructive"
-        onConfirm={handleDeleteConfirmDialog}
+        onConfirm={() => handleDeleteConfirm()}
       />
 
-      {/* Reset Traffic Confirm Dialog */}
       <ConfirmDialog
-        open={resetTrafficConfirmOpen}
-        onOpenChange={setResetTrafficConfirmOpen}
+        open={activeDialog === 'resetTraffic'}
+        onOpenChange={(open) => !open && closeDialog()}
         title={t('admin.forwardRules.confirmResetTraffic')}
-        description={ruleToResetTraffic ? t('admin.forwardRules.confirmResetTrafficDesc', { name: ruleToResetTraffic.name }) : ''}
+        description={selectedRule ? t('admin.forwardRules.confirmResetTrafficDesc', { name: selectedRule.name }) : ''}
         confirmText={t('common.actions.reset')}
         cancelText={t('common.actions.cancel')}
         onConfirm={handleResetTrafficConfirm}
       />
 
-      {/* Batch Create Dialog */}
-      {batchCreateOpen && (
+      {/* Batch Dialogs */}
+      {activeDialog === 'batchCreate' && (
         <Suspense fallback={null}>
           <BatchCreateDialog
-            open={batchCreateOpen}
-            onOpenChange={setBatchCreateOpen}
+            open
+            onOpenChange={(open) => !open && closeDialog()}
             onConfirm={batchCreate}
             isCreating={isBatchCreating}
           />
         </Suspense>
       )}
 
-      {/* Batch Delete Dialog */}
-      {batchDeleteOpen && (
+      {activeDialog === 'batchDelete' && (
         <Suspense fallback={null}>
           <BatchDeleteDialog
-            open={batchDeleteOpen}
-            onOpenChange={setBatchDeleteOpen}
+            open
+            onOpenChange={(open) => !open && closeDialog()}
             selectedCount={selectedCount}
             onConfirm={batchDelete}
             isDeleting={isBatchDeleting}
@@ -746,12 +780,11 @@ export const ForwardRulesPage = () => {
         </Suspense>
       )}
 
-      {/* Batch Enable Dialog */}
-      {batchEnableOpen && (
+      {activeDialog === 'batchEnable' && (
         <Suspense fallback={null}>
           <BatchToggleStatusDialog
-            open={batchEnableOpen}
-            onOpenChange={setBatchEnableOpen}
+            open
+            onOpenChange={(open) => !open && closeDialog()}
             selectedCount={selectedCount}
             targetStatus="enabled"
             onConfirm={batchEnable}
@@ -760,12 +793,11 @@ export const ForwardRulesPage = () => {
         </Suspense>
       )}
 
-      {/* Batch Disable Dialog */}
-      {batchDisableOpen && (
+      {activeDialog === 'batchDisable' && (
         <Suspense fallback={null}>
           <BatchToggleStatusDialog
-            open={batchDisableOpen}
-            onOpenChange={setBatchDisableOpen}
+            open
+            onOpenChange={(open) => !open && closeDialog()}
             selectedCount={selectedCount}
             targetStatus="disabled"
             onConfirm={batchDisable}
@@ -774,12 +806,11 @@ export const ForwardRulesPage = () => {
         </Suspense>
       )}
 
-      {/* Batch Update Dialog */}
-      {batchUpdateOpen && (
+      {activeDialog === 'batchUpdate' && (
         <Suspense fallback={null}>
           <BatchUpdateDialog
-            open={batchUpdateOpen}
-            onOpenChange={setBatchUpdateOpen}
+            open
+            onOpenChange={(open) => !open && closeDialog()}
             selectedIds={selectedIdsArray}
             onConfirm={batchUpdate}
             isUpdating={isBatchUpdating}
@@ -789,4 +820,4 @@ export const ForwardRulesPage = () => {
       )}
     </AdminLayout>
   );
-};
+}

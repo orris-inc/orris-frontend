@@ -72,24 +72,24 @@ export const PaymentMethodSelector: React.FC<PaymentMethodSelectorProps> = ({
             type="button"
             onClick={() => onMethodChange(method.id)}
             className={cn(
-              'relative w-full flex items-center gap-3 p-3 sm:p-4 rounded-lg border text-left transition-all',
+              'relative w-full flex items-center gap-3 p-3 sm:p-4 rounded-xl text-left transition-all',
               // Touch target
               'min-h-[56px]',
               // Hover & focus states
-              'hover:border-primary/50 hover:bg-accent/30',
+              'hover:ring-primary/50 hover:bg-accent/30',
               'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2',
               // Active state
-              'active:bg-accent/50',
+              'active:scale-[0.98]',
               // Selected state
               isSelected
-                ? 'border-primary bg-primary/5 ring-1 ring-primary'
-                : 'border-border bg-card'
+                ? 'bg-primary/5 ring-2 ring-primary'
+                : 'ring-1 ring-border bg-card'
             )}
           >
             {/* Icon */}
             <div
               className={cn(
-                'flex items-center justify-center h-10 w-10 rounded-lg shrink-0',
+                'flex items-center justify-center h-10 w-10 rounded-xl shrink-0',
                 isSelected ? 'bg-primary/10 text-primary' : 'bg-muted text-muted-foreground'
               )}
             >

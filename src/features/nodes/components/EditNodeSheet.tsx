@@ -181,11 +181,11 @@ const MobileSection: React.FC<MobileSectionProps> = ({
   onToggle,
   children,
 }) => (
-  <div className="overflow-hidden rounded-lg bg-card border border-border">
+  <div className="overflow-hidden rounded-xl bg-card ring-1 ring-border">
     <button
       type="button"
       onClick={onToggle}
-      className="w-full flex items-center justify-between px-4 py-3 text-left active:bg-muted/50 transition-colors min-h-[52px]"
+      className="w-full flex items-center justify-between px-4 py-3 text-left active:bg-muted/50 active:scale-[0.99] transition-all min-h-[52px]"
     >
       <div className="flex items-center gap-3">
         <div className={cn(
@@ -1298,7 +1298,7 @@ export const EditNodeSheet: React.FC<EditNodeSheetProps> = ({
                 )}
 
                 {/* Group selection list */}
-                <div className="border rounded-xl max-h-[150px] overflow-y-auto bg-background">
+                <div className="ring-1 ring-border rounded-xl max-h-[150px] overflow-y-auto bg-background">
                   {isLoadingGroups || isLoadingPlans ? (
                     <div className="p-3 text-center text-sm text-muted-foreground">{t('common.table.loading')}</div>
                   ) : filteredResourceGroups.length === 0 ? (
@@ -1339,7 +1339,7 @@ export const EditNodeSheet: React.FC<EditNodeSheetProps> = ({
 
               <div className="space-y-1.5">
                 <FormFieldLabel label={t('admin.nodes.form.muteNotification')} hint={t('admin.nodes.form.muteNotificationHint')} />
-                <div className="flex items-center gap-3 min-h-[52px] px-4 rounded-xl border bg-background">
+                <div className="flex items-center gap-3 min-h-[52px] px-4 rounded-xl ring-1 ring-border bg-background">
                   <Switch
                     checked={formData.muteNotification ?? false}
                     onCheckedChange={(checked) => handleChange('muteNotification', checked)}
@@ -1380,10 +1380,10 @@ export const EditNodeSheet: React.FC<EditNodeSheetProps> = ({
               disabled={loading || !hasChanges}
               className={cn(
                 'flex-1 flex items-center justify-center',
-                'h-11 rounded-lg',
+                'h-11 rounded-xl',
                 'bg-primary text-primary-foreground',
                 'text-sm font-medium',
-                'active:opacity-80 transition-opacity',
+                'active:scale-[0.98] active:opacity-80 transition-all',
                 'disabled:opacity-50'
               )}
             >
@@ -1395,10 +1395,10 @@ export const EditNodeSheet: React.FC<EditNodeSheetProps> = ({
               disabled={loading}
               className={cn(
                 'flex-1 flex items-center justify-center',
-                'h-11 rounded-lg',
-                'border border-border bg-background text-foreground',
+                'h-11 rounded-xl',
+                'ring-1 ring-border bg-background text-foreground',
                 'text-sm font-medium',
-                'active:opacity-80 transition-opacity',
+                'active:scale-[0.98] active:opacity-80 transition-all',
                 'disabled:opacity-50'
               )}
             >

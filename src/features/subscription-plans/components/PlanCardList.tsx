@@ -6,12 +6,14 @@
 import { Loader2 } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { PlanCard } from "./PlanCard";
-import type { SubscriptionPlan } from "@/api/subscription/types";
+import type { SubscriptionPlan, BillingCycle } from "@/api/subscription/types";
 
 interface PlanCardListProps {
   plans: SubscriptionPlan[];
   loading?: boolean;
   recommendedPlanId?: string;
+  /** Selected billing cycle for filtering */
+  selectedCycle?: BillingCycle;
   onSelectPlan?: (plan: SubscriptionPlan) => void;
 }
 
@@ -19,9 +21,17 @@ export function PlanCardList({
   plans,
   loading = false,
   recommendedPlanId,
+  selectedCycle,
   onSelectPlan,
 }: PlanCardListProps) {
   const { t } = useTranslation();
+
+  // Filter plans that have pricing for the selected cycle
+  const filteredPlans = selectedCycle
+    ? plans.filter((plan) =>
+        plan.pricings?.some((p) => p.billingCycle === selectedCycle && p.isActive)
+      )
+    : plans;
 
   if (loading) {
     return (
@@ -33,10 +43,10 @@ export function PlanCardList({
     );
   }
 
-  if (!plans || plans.length === 0) {
+  if (!filteredPlans || filteredPlans.length === 0) {
     return (
       <div className="@container">
-        <div className="flex flex-col items-center justify-center py-12 @sm:py-16 px-4 glass-elevated rounded-2xl">
+        <div className="flex flex-col items-center justify-center py-12 @sm:py-16 px-4 glass-elevated rounded-xl">
           <p className="text-muted-foreground text-center">{t("pricing.noPlans")}</p>
         </div>
       </div>
@@ -46,11 +56,12 @@ export function PlanCardList({
   return (
     <div className="@container">
       <div className="grid grid-cols-1 @sm:grid-cols-2 @lg:grid-cols-3 gap-3 @sm:gap-4 @lg:gap-5">
-        {plans.map((plan) => (
+        {filteredPlans.map((plan) => (
           <PlanCard
             key={plan.id}
             plan={plan}
             recommended={plan.id === recommendedPlanId}
+            selectedCycle={selectedCycle}
             onSelect={onSelectPlan}
           />
         ))}

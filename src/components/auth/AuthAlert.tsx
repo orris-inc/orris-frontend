@@ -57,7 +57,7 @@ export const AuthAlert = ({
     <div
       role="alert"
       className={cn(
-        'flex items-start gap-3 p-4 rounded-lg',
+        'flex items-start gap-3 p-4 rounded-xl',
         config.containerClass,
         className
       )}

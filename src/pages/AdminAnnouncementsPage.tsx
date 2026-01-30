@@ -113,7 +113,7 @@ export const AdminAnnouncementsPage: React.FC = () => {
   // Publish
   const handlePublish = async (announcement: Announcement) => {
     try {
-      await updateStatus(announcement.id, { status: 'published', sendNotification: true });
+      await updateStatus(announcement.id, { status: 'published' });
     } catch (error) {
       showError(t('announcements.messages.publishFailed'));
     }

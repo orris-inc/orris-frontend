@@ -81,7 +81,7 @@ export const MobileGroupedList = ({
         className={cn(
           'rounded-xl overflow-hidden',
           'bg-card/60 backdrop-blur-sm',
-          'shadow-sm shadow-black/5'
+          'ring-1 ring-border'
         )}
       >
         {children}

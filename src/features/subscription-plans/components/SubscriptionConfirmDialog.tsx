@@ -174,15 +174,6 @@ export const SubscriptionConfirmDialog: React.FC<SubscriptionConfirmDialogProps>
         )}
       </div>
 
-      {/* Trial period */}
-      {plan.trialDays && plan.trialDays > 0 && (
-        <Alert variant="success">
-          <AlertDescription>
-            {t('pricing.confirm.trialNotice', { days: plan.trialDays })}
-          </AlertDescription>
-        </Alert>
-      )}
-
       <Separator />
 
       {/* Note */}
@@ -196,7 +187,7 @@ export const SubscriptionConfirmDialog: React.FC<SubscriptionConfirmDialogProps>
   const renderPaymentContent = () => (
     <>
       {/* Plan summary */}
-      <div className="flex items-center justify-between p-3 rounded-lg bg-muted/50">
+      <div className="flex items-center justify-between p-3 rounded-xl bg-muted/50">
         <div className="min-w-0 flex-1">
           <p className="font-medium truncate">{plan.name}</p>
           <p className="text-sm text-muted-foreground">
@@ -255,7 +246,7 @@ export const SubscriptionConfirmDialog: React.FC<SubscriptionConfirmDialogProps>
         return (
           <>
             <Button onClick={handleProceedToPayment} className="flex-1 sm:flex-none">
-              {plan.trialDays ? t('pricing.confirm.startTrial') : t('pricing.confirm.subscribeNow')}
+              {t('pricing.confirm.subscribeNow')}
             </Button>
             <Button variant="outline" onClick={onClose} className="flex-1 sm:flex-none">
               {t('common.actions.cancel')}
@@ -327,7 +318,7 @@ export const SubscriptionConfirmDialog: React.FC<SubscriptionConfirmDialogProps>
             // Desktop: centered modal
             'sm:inset-auto sm:left-1/2 sm:top-1/2 sm:-translate-x-1/2 sm:-translate-y-1/2',
             'sm:max-w-lg sm:w-[calc(100%-2rem)] sm:max-h-[calc(100vh-4rem)]',
-            'sm:rounded-lg sm:border sm:shadow-lg',
+            'sm:rounded-xl sm:ring-1 sm:ring-border sm:shadow-lg',
             // Animation
             'duration-200',
             'data-[state=open]:animate-in data-[state=closed]:animate-out',

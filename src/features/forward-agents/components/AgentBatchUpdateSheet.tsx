@@ -98,7 +98,7 @@ export const AgentBatchUpdateSheet = ({
             // Confirmation view
             <>
               {/* Updatable count */}
-              <div className="rounded-lg bg-card border border-border p-4">
+              <div className="rounded-xl bg-card ring-1 ring-border p-4">
                 <div className="flex items-center justify-between">
                   <span className="text-sm text-muted-foreground">
                     {t('admin.forwardAgents.batchUpdateDialog.updatableCount')}
@@ -117,14 +117,14 @@ export const AgentBatchUpdateSheet = ({
               </div>
 
               {updateCount === 0 ? (
-                <div className="flex items-center gap-2 p-3 rounded-lg bg-success/10">
+                <div className="flex items-center gap-2 p-3 rounded-xl bg-success/10">
                   <CheckCircle2 className="size-4 text-success" />
                   <span className="text-sm text-success">
                     {t('admin.forwardAgents.batchUpdateDialog.allUpToDate')}
                   </span>
                 </div>
               ) : (
-                <div className="rounded-lg bg-card border border-border overflow-hidden">
+                <div className="rounded-xl bg-card ring-1 ring-border overflow-hidden">
                   <div className="px-3 py-2 border-b border-border bg-muted/30">
                     <p className="text-xs font-medium text-muted-foreground">
                       {t('admin.forwardAgents.batchUpdateDialog.willUpdateAgents')}
@@ -151,7 +151,7 @@ export const AgentBatchUpdateSheet = ({
             <>
               {/* Stats grid */}
               <div className="grid grid-cols-3 gap-2">
-                <div className="p-3 rounded-lg bg-success/10 text-center">
+                <div className="p-3 rounded-xl bg-success/10 text-center">
                   <CheckCircle2 className="size-5 text-success mx-auto mb-1" />
                   <p className="text-lg font-semibold text-success">
                     {result.succeeded.length}
@@ -160,7 +160,7 @@ export const AgentBatchUpdateSheet = ({
                     {t('admin.forwardAgents.batchUpdateDialog.succeeded')}
                   </p>
                 </div>
-                <div className="p-3 rounded-lg bg-destructive/10 text-center">
+                <div className="p-3 rounded-xl bg-destructive/10 text-center">
                   <XCircle className="size-5 text-destructive mx-auto mb-1" />
                   <p className="text-lg font-semibold text-destructive">
                     {result.failed.length}
@@ -169,7 +169,7 @@ export const AgentBatchUpdateSheet = ({
                     {t('common.status.failed')}
                   </p>
                 </div>
-                <div className="p-3 rounded-lg bg-warning/10 text-center">
+                <div className="p-3 rounded-xl bg-warning/10 text-center">
                   <AlertTriangle className="size-5 text-warning mx-auto mb-1" />
                   <p className="text-lg font-semibold text-warning">
                     {result.skipped.length}
@@ -182,7 +182,7 @@ export const AgentBatchUpdateSheet = ({
 
               {/* Succeeded list */}
               {result.succeeded.length > 0 && (
-                <div className="rounded-lg bg-card border border-border overflow-hidden">
+                <div className="rounded-xl bg-card ring-1 ring-border overflow-hidden">
                   <div className="px-3 py-2 border-b border-border bg-success/5">
                     <p className="text-xs font-medium text-success">
                       {t('admin.forwardAgents.batchUpdateDialog.updateTriggered')}
@@ -206,7 +206,7 @@ export const AgentBatchUpdateSheet = ({
 
               {/* Failed list */}
               {result.failed.length > 0 && (
-                <div className="rounded-lg bg-card border border-border overflow-hidden">
+                <div className="rounded-xl bg-card ring-1 ring-border overflow-hidden">
                   <div className="px-3 py-2 border-b border-border bg-destructive/5">
                     <p className="text-xs font-medium text-destructive">
                       {t('admin.forwardAgents.batchUpdateDialog.updateFailed')}
@@ -228,7 +228,7 @@ export const AgentBatchUpdateSheet = ({
 
               {/* Skipped list */}
               {result.skipped.length > 0 && (
-                <div className="rounded-lg bg-card border border-border overflow-hidden">
+                <div className="rounded-xl bg-card ring-1 ring-border overflow-hidden">
                   <div className="px-3 py-2 border-b border-border bg-warning/5">
                     <p className="text-xs font-medium text-warning">
                       {t('admin.forwardAgents.batchUpdateDialog.updateSkipped')}
@@ -264,7 +264,7 @@ export const AgentBatchUpdateSheet = ({
                   'bg-warning text-warning-foreground',
                   'text-sm font-medium',
                   'disabled:opacity-50',
-                  'active:opacity-80 transition-opacity'
+                  'active:opacity-80 active:scale-[0.98] transition-all'
                 )}
               >
                 {isUpdating ? (
@@ -285,8 +285,8 @@ export const AgentBatchUpdateSheet = ({
                 className={cn(
                   'flex-1 h-11 rounded-lg',
                   'text-sm font-medium',
-                  'border border-border bg-background',
-                  'active:opacity-80 transition-opacity'
+                  'ring-1 ring-border bg-background',
+                  'active:opacity-80 active:scale-[0.98] transition-all'
                 )}
               >
                 {t('common.actions.cancel')}
@@ -300,7 +300,7 @@ export const AgentBatchUpdateSheet = ({
                 'w-full h-11 rounded-lg',
                 'bg-primary text-primary-foreground',
                 'text-sm font-medium',
-                'active:opacity-80 transition-opacity'
+                'active:opacity-80 active:scale-[0.98] transition-all'
               )}
             >
               {t('common.actions.close')}

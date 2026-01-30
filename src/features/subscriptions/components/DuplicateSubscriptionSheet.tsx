@@ -191,7 +191,7 @@ export const DuplicateSubscriptionSheet: React.FC<DuplicateSubscriptionSheetProp
               {/* Target User */}
               <div className="space-y-1.5">
                 <label className="text-xs font-medium">{t('subscription.targetUser')}</label>
-                <div className="rounded-lg border bg-muted/30 p-3">
+                <div className="rounded-xl ring-1 ring-border bg-muted/30 p-3">
                   <div className="flex items-center gap-2">
                     <User className="size-4 text-muted-foreground" />
                     {user ? (
@@ -239,7 +239,7 @@ export const DuplicateSubscriptionSheet: React.FC<DuplicateSubscriptionSheetProp
               </div>
 
               {/* Auto Renew */}
-              <div className="flex items-center gap-2 p-3 rounded-lg border bg-muted/30">
+              <div className="flex items-center gap-2 p-3 rounded-xl ring-1 ring-border bg-muted/30">
                 <Checkbox
                   id="auto_renew"
                   checked={formData.autoRenew}
@@ -254,7 +254,7 @@ export const DuplicateSubscriptionSheet: React.FC<DuplicateSubscriptionSheetProp
 
               {/* Plan Details */}
               {selectedPlan && (
-                <div className="rounded-lg border p-3 space-y-2">
+                <div className="rounded-xl ring-1 ring-border p-3 space-y-2">
                   <div className="flex items-center gap-2 text-sm font-medium">
                     <CreditCard className="size-4 text-muted-foreground" />
                     {t('subscription.planDetails')}
@@ -274,7 +274,7 @@ export const DuplicateSubscriptionSheet: React.FC<DuplicateSubscriptionSheetProp
               )}
 
               {/* Info Alert */}
-              <div className="rounded-lg border border-blue-200 bg-blue-50 dark:border-blue-900 dark:bg-blue-950/30 p-3">
+              <div className="rounded-xl border border-blue-200 bg-blue-50 dark:border-blue-900 dark:bg-blue-950/30 p-3">
                 <div className="flex items-start gap-2">
                   <Info className="size-4 text-blue-500 mt-0.5 shrink-0" />
                   <p className="text-xs text-blue-700 dark:text-blue-400">

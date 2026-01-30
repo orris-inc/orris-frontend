@@ -1,9 +1,10 @@
 /**
  * User Management Page (Admin)
- * Tailwind UI Application UI style interface
+ * Tailwind Application UI style
+ * Mobile-first responsive design
  */
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   Users,
@@ -16,7 +17,7 @@ import {
   UserX,
 } from 'lucide-react';
 import { AdminLayout } from '@/layouts/AdminLayout';
-import { PageHeader } from '@/components/admin';
+import { PageHeader, type PageHeaderMeta, type PageHeaderBadge } from '@/components/admin';
 import { Button } from '@/components/common/Button';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/common/Tooltip';
 import { usePageTitle } from '@/shared/hooks';
@@ -38,14 +39,25 @@ import { useUsersPage } from '@/features/users/hooks/useUsers';
 import { adminCreateSubscription } from '@/api/subscription';
 import type { UserResponse, UpdateUserRequest, CreateUserRequest } from '@/api/user';
 import type { AdminCreateSubscriptionRequest } from '@/api/subscription/types';
-import type { PageHeaderMeta, PageHeaderBadge } from '@/components/admin/PageHeader';
 
-export const UserManagementPage = () => {
+// ============================================================================
+// Types
+// ============================================================================
+
+type DialogType = 'create' | 'edit' | 'delete' | 'assignSubscription' | 'resetPassword' | null;
+
+// ============================================================================
+// Main Component
+// ============================================================================
+
+export function UserManagementPage() {
   const { t } = useTranslation();
   usePageTitle(t('admin.users.title'));
 
   const { isMobile } = useBreakpoint();
+  const { showSuccess, showError } = useNotificationStore();
 
+  // User data and operations
   const {
     users,
     pagination,
@@ -67,34 +79,31 @@ export const UserManagementPage = () => {
     clearFilters,
   } = useUsersPage();
 
-  const { showSuccess, showError } = useNotificationStore();
-
-  const [editDialogOpen, setEditDialogOpen] = useState(false);
-  const [createDialogOpen, setCreateDialogOpen] = useState(false);
-  const [assignSubscriptionDialogOpen, setAssignSubscriptionDialogOpen] = useState(false);
-  const [resetPasswordDialogOpen, setResetPasswordDialogOpen] = useState(false);
-  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  // Dialog state management
+  const [activeDialog, setActiveDialog] = useState<DialogType>(null);
   const [selectedUser, setSelectedUser] = useState<UserResponse | null>(null);
   const [refreshKey, setRefreshKey] = useState(0);
 
-  // Calculate user statistics
+  // Calculate statistics from current page data
   const stats = useMemo(() => {
-    const total = pagination.total;
     const active = users.filter((u) => u.status === 'active').length;
     const pending = users.filter((u) => u.status === 'pending').length;
     const inactive = users.filter((u) => u.status === 'inactive').length;
     const suspended = users.filter((u) => u.status === 'suspended').length;
     const admins = users.filter((u) => u.role === 'admin').length;
-    return { total, active, pending, inactive, suspended, admins };
+    return { total: pagination.total, active, pending, inactive, suspended, admins };
   }, [users, pagination.total]);
 
-  // Badge for total count
-  const headerBadge = useMemo((): PageHeaderBadge => ({
-    label: `${stats.total} ${t('admin.users.usersLabel')}`,
-    variant: 'default',
-  }), [stats.total, t]);
+  // Page header badge
+  const headerBadge = useMemo(
+    (): PageHeaderBadge => ({
+      label: `${stats.total} ${t('admin.users.usersLabel')}`,
+      variant: 'default',
+    }),
+    [stats.total, t]
+  );
 
-  // Build metadata items for PageHeader
+  // Page header metadata
   const headerMetadata = useMemo((): PageHeaderMeta[] => {
     const items: PageHeaderMeta[] = [
       { icon: CheckCircle2, text: `${stats.active} ${t('common.status.active')}` },
@@ -115,171 +124,167 @@ export const UserManagementPage = () => {
     return items;
   }, [stats, t]);
 
-  const handleRefresh = () => {
+  // Dialog handlers
+  const openDialog = useCallback((type: DialogType, user?: UserResponse) => {
+    setSelectedUser(user ?? null);
+    setActiveDialog(type);
+  }, []);
+
+  const closeDialog = useCallback(() => {
+    setActiveDialog(null);
+    setSelectedUser(null);
+  }, []);
+
+  // Action handlers
+  const handleRefresh = useCallback(() => {
     setRefreshKey((k) => k + 1);
     refetch();
-  };
+  }, [refetch]);
 
-  const handleEdit = (user: UserResponse) => {
-    setSelectedUser(user);
-    setEditDialogOpen(true);
-  };
+  const handleEdit = useCallback(
+    (user: UserResponse) => openDialog('edit', user),
+    [openDialog]
+  );
 
-  const handleDelete = (user: UserResponse) => {
-    if (isMobile) {
-      setSelectedUser(user);
-      setDeleteDialogOpen(true);
-    } else {
-      if (window.confirm(t('admin.users.confirmDelete', { name: user.name, email: user.email }))) {
+  const handleDelete = useCallback(
+    (user: UserResponse) => {
+      if (isMobile) {
+        openDialog('delete', user);
+      } else if (window.confirm(t('admin.users.confirmDelete', { name: user.name, email: user.email }))) {
         deleteUser(user.id);
       }
-    }
-  };
+    },
+    [isMobile, openDialog, deleteUser, t]
+  );
 
-  const handleDeleteConfirm = async (user: UserResponse) => {
-    await deleteUser(user.id);
-  };
+  const handleAssignSubscription = useCallback(
+    (user: UserResponse) => openDialog('assignSubscription', user),
+    [openDialog]
+  );
 
-  const handleCreateSubmit = async (data: CreateUserRequest) => {
-    try {
+  const handleResetPassword = useCallback(
+    (user: UserResponse) => openDialog('resetPassword', user),
+    [openDialog]
+  );
+
+  // Form submission handlers
+  const handleCreateSubmit = useCallback(
+    async (data: CreateUserRequest) => {
       await createUser(data);
-      setCreateDialogOpen(false);
-    } catch {
-      // Error already handled in hook
-    }
-  };
+      closeDialog();
+    },
+    [createUser, closeDialog]
+  );
 
-  const handleUpdateSubmit = async (id: string, data: UpdateUserRequest) => {
-    try {
+  const handleUpdateSubmit = useCallback(
+    async (id: string, data: UpdateUserRequest) => {
       await updateUser(id, data);
-      setEditDialogOpen(false);
-      setSelectedUser(null);
-    } catch {
-      // Error already handled in hook
-    }
-  };
+      closeDialog();
+    },
+    [updateUser, closeDialog]
+  );
 
-  const handleAssignSubscription = (user: UserResponse) => {
-    setSelectedUser(user);
-    setAssignSubscriptionDialogOpen(true);
-  };
+  const handleDeleteConfirm = useCallback(
+    async (user: UserResponse) => {
+      await deleteUser(user.id);
+      closeDialog();
+    },
+    [deleteUser, closeDialog]
+  );
 
-  const handleResetPassword = (user: UserResponse) => {
-    setSelectedUser(user);
-    setResetPasswordDialogOpen(true);
-  };
-
-  const handleResetPasswordSubmit = async (id: string, password: string) => {
-    try {
+  const handleResetPasswordSubmit = useCallback(
+    async (id: string, password: string) => {
       await resetPassword(id, { password });
-      setResetPasswordDialogOpen(false);
-      setSelectedUser(null);
-    } catch {
-      // Error already handled in hook
-    }
-  };
+      closeDialog();
+    },
+    [resetPassword, closeDialog]
+  );
 
-  const handleAssignSubscriptionSubmit = async (data: AdminCreateSubscriptionRequest) => {
-    try {
-      await adminCreateSubscription(data);
-      showSuccess(t('admin.users.assignSuccess', { name: selectedUser?.name }));
-      setAssignSubscriptionDialogOpen(false);
-      setSelectedUser(null);
-    } catch (error: unknown) {
-      const message = error instanceof Error
-        ? error.message
-        : (error as { response?: { data?: { message?: string } } })?.response?.data?.message || t('admin.users.assignFailed');
-      showError(message);
-      throw error;
-    }
-  };
+  const handleAssignSubscriptionSubmit = useCallback(
+    async (data: AdminCreateSubscriptionRequest) => {
+      try {
+        await adminCreateSubscription(data);
+        showSuccess(t('admin.users.assignSuccess', { name: selectedUser?.name }));
+        closeDialog();
+      } catch (error: unknown) {
+        const message =
+          error instanceof Error
+            ? error.message
+            : (error as { response?: { data?: { message?: string } } })?.response?.data?.message ||
+              t('admin.users.assignFailed');
+        showError(message);
+        throw error;
+      }
+    },
+    [selectedUser, showSuccess, showError, closeDialog, t]
+  );
 
-  // Mobile layout - uses AdminLayout but with mobile-optimized content
+  // Mobile layout
   if (isMobile) {
     return (
       <AdminLayout>
-        <div className="py-3">
+        <div className="py-3 pb-safe">
           <MobileUserManagement
-          users={users}
-          loading={isLoading}
-          refreshing={isFetching}
-          page={page}
-          pageSize={pageSize}
-          total={pagination.total}
-          onRefresh={handleRefresh}
-          onCreate={() => setCreateDialogOpen(true)}
-          onEdit={handleEdit}
-          onDelete={handleDelete}
-          onAssignSubscription={handleAssignSubscription}
-          onResetPassword={handleResetPassword}
-          onPageChange={handlePageChange}
+            users={users}
+            loading={isLoading}
+            refreshing={isFetching}
+            page={page}
+            pageSize={pageSize}
+            total={pagination.total}
+            onRefresh={handleRefresh}
+            onCreate={() => openDialog('create')}
+            onEdit={handleEdit}
+            onDelete={handleDelete}
+            onAssignSubscription={handleAssignSubscription}
+            onResetPassword={handleResetPassword}
+            onPageChange={handlePageChange}
           />
         </div>
 
-        {/* Mobile Dialogs/Sheets */}
+        {/* Mobile Sheets */}
         <CreateUserSheet
-          open={createDialogOpen}
-          onOpenChange={setCreateDialogOpen}
+          open={activeDialog === 'create'}
+          onOpenChange={(open) => !open && closeDialog()}
           onSubmit={handleCreateSubmit}
         />
 
         <EditUserSheet
-          open={editDialogOpen}
-          onOpenChange={(open) => {
-            if (!open) {
-              setEditDialogOpen(false);
-              setSelectedUser(null);
-            }
-          }}
+          open={activeDialog === 'edit'}
+          onOpenChange={(open) => !open && closeDialog()}
           entity={selectedUser}
           onSubmit={handleUpdateSubmit}
         />
 
         <AssignSubscriptionSheet
-          open={assignSubscriptionDialogOpen}
-          onOpenChange={(open) => {
-            if (!open) {
-              setAssignSubscriptionDialogOpen(false);
-              setSelectedUser(null);
-            }
-          }}
+          open={activeDialog === 'assignSubscription'}
+          onOpenChange={(open) => !open && closeDialog()}
           user={selectedUser}
           onSubmit={handleAssignSubscriptionSubmit}
         />
 
         <ResetPasswordSheet
-          open={resetPasswordDialogOpen}
-          onOpenChange={(open) => {
-            if (!open) {
-              setResetPasswordDialogOpen(false);
-              setSelectedUser(null);
-            }
-          }}
+          open={activeDialog === 'resetPassword'}
+          onOpenChange={(open) => !open && closeDialog()}
           user={selectedUser}
           isLoading={isResettingPassword}
           onSubmit={handleResetPasswordSubmit}
         />
 
         <DeleteUserSheet
-          open={deleteDialogOpen}
+          open={activeDialog === 'delete'}
           entity={selectedUser}
-          onOpenChange={(open) => {
-            if (!open) {
-              setDeleteDialogOpen(false);
-              setSelectedUser(null);
-            }
-          }}
+          onOpenChange={(open) => !open && closeDialog()}
           onConfirm={handleDeleteConfirm}
         />
       </AdminLayout>
     );
   }
 
-  // Desktop layout - Tailwind UI Application UI style
+  // Desktop layout
   return (
     <AdminLayout>
-      <div className="space-y-6">
-        {/* Page Header with badge and metadata stats */}
+      <div className="space-y-6 py-4 pb-safe lg:py-6">
+        {/* Page Header */}
         <PageHeader
           title={t('admin.users.title')}
           icon={Users}
@@ -287,8 +292,8 @@ export const UserManagementPage = () => {
           metadata={headerMetadata}
           action={
             <div className="flex items-center gap-2">
-              <Button onClick={() => setCreateDialogOpen(true)}>
-                <Plus className="size-4 mr-2" />
+              <Button onClick={() => openDialog('create')}>
+                <Plus className="mr-2 size-4" />
                 {t('admin.users.createUser')}
               </Button>
               <Tooltip>
@@ -311,7 +316,7 @@ export const UserManagementPage = () => {
           onClearFilters={clearFilters}
         />
 
-        {/* User List Table */}
+        {/* User Table */}
         <UserListTable
           users={users}
           loading={isLoading || isFetching}
@@ -329,41 +334,32 @@ export const UserManagementPage = () => {
 
       {/* Desktop Dialogs */}
       <CreateUserDialog
-        open={createDialogOpen}
-        onClose={() => setCreateDialogOpen(false)}
+        open={activeDialog === 'create'}
+        onClose={closeDialog}
         onSubmit={handleCreateSubmit}
       />
 
       <EditUserDialog
-        open={editDialogOpen}
+        open={activeDialog === 'edit'}
         user={selectedUser}
-        onClose={() => {
-          setEditDialogOpen(false);
-          setSelectedUser(null);
-        }}
+        onClose={closeDialog}
         onSubmit={handleUpdateSubmit}
       />
 
       <AssignSubscriptionDialog
-        open={assignSubscriptionDialogOpen}
+        open={activeDialog === 'assignSubscription'}
         user={selectedUser}
-        onClose={() => {
-          setAssignSubscriptionDialogOpen(false);
-          setSelectedUser(null);
-        }}
+        onClose={closeDialog}
         onSubmit={handleAssignSubscriptionSubmit}
       />
 
       <ResetPasswordDialog
-        open={resetPasswordDialogOpen}
+        open={activeDialog === 'resetPassword'}
         user={selectedUser}
         isLoading={isResettingPassword}
-        onClose={() => {
-          setResetPasswordDialogOpen(false);
-          setSelectedUser(null);
-        }}
+        onClose={closeDialog}
         onSubmit={handleResetPasswordSubmit}
       />
     </AdminLayout>
   );
-};
+}

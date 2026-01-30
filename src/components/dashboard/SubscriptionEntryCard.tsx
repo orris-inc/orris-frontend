@@ -80,22 +80,22 @@ const getProgressColor = (percent: number) => {
 };
 
 /**
- * Get card border style based on status
+ * Get card ring style based on status
  */
-const getCardBorderStyle = (status: string, isActive: boolean) => {
+const getCardRingStyle = (status: string, isActive: boolean) => {
   switch (status) {
     case 'active':
     case 'trialing':
-      return 'border-success/20 hover:border-success/40';
+      return 'ring-success/20 hover:ring-success/40';
     case 'past_due':
     case 'pending_payment':
-      return 'border-warning/30 hover:border-warning/50';
+      return 'ring-warning/30 hover:ring-warning/50';
     case 'suspended':
-      return 'border-destructive/30 hover:border-destructive/50';
+      return 'ring-destructive/30 hover:ring-destructive/50';
     default:
       return isActive
-        ? 'border-success/20 hover:border-success/40'
-        : 'border-border hover:border-border/80';
+        ? 'ring-success/20 hover:ring-success/40'
+        : 'ring-border hover:ring-border/80';
   }
 };
 
@@ -120,7 +120,7 @@ export const SubscriptionEntryCard = ({
   const usedFormatted = formatTraffic(subscription.usage.total);
   const limitFormatted = formatTraffic(trafficLimit);
 
-  const borderStyle = getCardBorderStyle(subscription.status, isActive);
+  const ringStyle = getCardRingStyle(subscription.status, isActive);
 
   return (
     <ViewTransitionLink
@@ -129,8 +129,8 @@ export const SubscriptionEntryCard = ({
         // Mobile: compact p-2 when compact, otherwise p-3; sm+: p-3/p-4
         compact ? 'relative block p-2 sm:p-3 lg:p-4 rounded-xl touch-target' : 'relative block p-3 sm:p-4 lg:p-5 rounded-xl touch-target',
         'transition-all duration-200 group',
-        'bg-card border hover:shadow-md',
-        borderStyle,
+        'bg-card ring-1 hover:shadow-md',
+        ringStyle,
         'active:scale-[0.98]',
         // Focus visible for keyboard navigation
         'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2',

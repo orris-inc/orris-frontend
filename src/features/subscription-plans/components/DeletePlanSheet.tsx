@@ -108,7 +108,7 @@ export const DeletePlanSheet: React.FC<DeletePlanSheetProps> = ({
               </div>
 
               {/* Plan Info */}
-              <div className="rounded-lg bg-background p-4 space-y-3">
+              <div className="rounded-xl bg-background p-4 space-y-3">
                 <div className="flex items-center justify-between">
                   <span className="text-sm text-muted-foreground">{t('admin.plans.form.planName')}</span>
                   <span className="font-medium">{plan.name}</span>
@@ -166,7 +166,7 @@ export const DeletePlanSheet: React.FC<DeletePlanSheetProps> = ({
               variant="destructive"
               onClick={() => setConfirmOpen(true)}
               disabled={loading}
-              className="w-full min-h-[48px] text-base"
+              className="w-full min-h-[48px] text-base active:scale-[0.98]"
             >
               {loading ? (
                 <>
@@ -181,7 +181,7 @@ export const DeletePlanSheet: React.FC<DeletePlanSheetProps> = ({
               variant="ghost"
               onClick={() => onOpenChange(false)}
               disabled={loading}
-              className="w-full min-h-[44px]"
+              className="w-full min-h-[44px] active:scale-[0.98]"
             >
               {t('common.actions.cancel')}
             </Button>

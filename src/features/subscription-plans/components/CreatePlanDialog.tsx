@@ -88,7 +88,7 @@ const FORWARD_RULE_TYPE_VALUES: ForwardRuleTypeOption[] = ['direct', 'entry', 'c
 const PLAN_TYPE_VALUES: PlanType[] = ['node', 'forward'];
 
 // Extend CreatePlanRequest to support plan limits
-interface CreatePlanFormData extends Omit<CreatePlanRequest, 'limits' | 'pricings'> {
+interface CreatePlanFormData extends Omit<CreatePlanRequest, 'limits' | 'pricings' | 'nodeLimit'> {
   pricings: PricingOptionInput[];
   // Plan limits
   planLimits: PlanLimits;
@@ -109,7 +109,6 @@ const getDefaultFormData = (): CreatePlanFormData => ({
   planType: 'node',
   description: '',
   isPublic: true,
-  trialDays: 0,
   sortOrder: 0,
   pricings: [getDefaultPricing()],
   planLimits: {},
@@ -164,7 +163,6 @@ export const CreatePlanDialog: React.FC<CreatePlanDialogProps> = ({
         planType: initialPlan.planType || 'node',
         description: initialPlan.description || '',
         isPublic: initialPlan.isPublic,
-        trialDays: initialPlan.trialDays || 0,
         sortOrder: initialPlan.sortOrder || 0,
         pricings: initialPlan.pricings && initialPlan.pricings.length > 0
           ? initialPlan.pricings.map(p => ({
@@ -180,7 +178,7 @@ export const CreatePlanDialog: React.FC<CreatePlanDialogProps> = ({
       // Create mode: reset to default values
       setFormData(getDefaultFormData());
     }
-  }, [open, initialPlan]);
+  }, [open, initialPlan, t]);
 
   const handleChange = (field: keyof CreatePlanFormData, value: unknown) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
@@ -255,8 +253,8 @@ export const CreatePlanDialog: React.FC<CreatePlanDialogProps> = ({
         description: formData.description,
         planType: formData.planType,
         limits,
+        nodeLimit: formData.planLimits.nodeLimit,
         isPublic: formData.isPublic,
-        trialDays: formData.trialDays,
         sortOrder: formData.sortOrder,
         pricings: formData.pricings,
       };
@@ -593,18 +591,6 @@ export const CreatePlanDialog: React.FC<CreatePlanDialogProps> = ({
             <h3 className="text-sm font-semibold">{t('admin.plans.form.generalConfig')}</h3>
             <Separator />
             <div className="grid grid-cols-1 gap-4 @sm:grid-cols-2">
-              <div className="flex flex-col gap-2">
-                <Label htmlFor="trialDays">{t('admin.plans.form.trialDays')}</Label>
-                <Input
-                  id="trialDays"
-                  type="number"
-                  min="0"
-                  value={formData.trialDays || 0}
-                  onChange={(e) => handleChange('trialDays', e.target.value === '' ? undefined : Number(e.target.value))}
-                  disabled={loading}
-                />
-              </div>
-
               <div className="flex flex-col gap-2">
                 <Label htmlFor="sortOrder">{t('common.fields.sortOrder')}</Label>
                 <Input

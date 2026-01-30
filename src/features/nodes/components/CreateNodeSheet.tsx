@@ -245,11 +245,11 @@ const StepSection: React.FC<StepSectionProps> = ({
   const Icon = step.icon;
 
   return (
-    <div className="overflow-hidden rounded-lg bg-card border border-border">
+    <div className="overflow-hidden rounded-xl bg-card ring-1 ring-border">
       <button
         type="button"
         onClick={onToggle}
-        className="w-full flex items-center justify-between px-4 py-3 text-left active:bg-muted/50 transition-colors min-h-[52px]"
+        className="w-full flex items-center justify-between px-4 py-3 text-left active:bg-muted/50 active:scale-[0.99] transition-all min-h-[52px]"
       >
         <div className="flex items-center gap-3">
           <div
@@ -332,11 +332,11 @@ const ProtocolCard: React.FC<ProtocolCardProps> = ({ protocol, selected, onSelec
       type="button"
       onClick={onSelect}
       className={cn(
-        'flex items-center gap-2.5 px-3 py-2.5 rounded-lg border transition-all',
+        'flex items-center gap-2.5 px-3 py-2.5 rounded-xl transition-all',
         'min-h-[52px]', // Touch target
         selected
-          ? 'border-primary bg-primary/5 ring-1 ring-primary/20'
-          : 'border-border bg-card active:bg-muted/50'
+          ? 'ring-1 ring-primary bg-primary/5'
+          : 'ring-1 ring-border bg-card active:bg-muted/50 active:scale-[0.98]'
       )}
     >
       {/* Icon */}
@@ -387,11 +387,11 @@ const QuickChips: React.FC<QuickChipsProps> = ({ options, selected, onSelect }) 
         type="button"
         onClick={() => onSelect(option)}
         className={cn(
-          'px-2.5 py-1.5 rounded-md text-xs font-medium transition-colors',
+          'px-2.5 py-1.5 rounded-lg text-xs font-medium transition-all',
           'min-h-[32px]',
           selected === option
             ? 'bg-primary text-primary-foreground'
-            : 'bg-muted text-muted-foreground active:bg-muted/70'
+            : 'bg-muted text-muted-foreground active:bg-muted/70 active:scale-[0.98]'
         )}
       >
         {option}
@@ -415,11 +415,11 @@ const PortPresets: React.FC<PortPresetsProps> = ({ currentPort, onSelect, preset
         type="button"
         onClick={() => onSelect(port)}
         className={cn(
-          'flex-1 px-2 py-1.5 rounded-md text-xs font-medium transition-colors',
+          'flex-1 px-2 py-1.5 rounded-lg text-xs font-medium transition-all',
           'min-h-[36px]',
           currentPort === port
-            ? 'bg-primary/10 text-primary border border-primary/30'
-            : 'bg-muted text-muted-foreground active:bg-muted/70 border border-transparent'
+            ? 'bg-primary/10 text-primary ring-1 ring-primary/30'
+            : 'bg-muted text-muted-foreground active:bg-muted/70 active:scale-[0.98] ring-1 ring-transparent'
         )}
       >
         {label}
@@ -1039,9 +1039,9 @@ export const CreateNodeSheet: React.FC<CreateNodeSheetProps> = ({
                 disabled={!completedSteps.has('basic')}
                 className={cn(
                   'w-full flex items-center justify-center gap-1',
-                  'h-9 mt-3 rounded-lg',
+                  'h-9 mt-3 rounded-xl',
                   'text-sm font-medium text-muted-foreground',
-                  'hover:bg-muted active:bg-muted/70 transition-colors',
+                  'hover:bg-muted active:bg-muted/70 active:scale-[0.98] transition-all',
                   'disabled:opacity-50 disabled:pointer-events-none'
                 )}
               >
@@ -1120,9 +1120,9 @@ export const CreateNodeSheet: React.FC<CreateNodeSheetProps> = ({
                 onClick={() => goToNextSection('network')}
                 className={cn(
                   'w-full flex items-center justify-center gap-1',
-                  'h-9 mt-3 rounded-lg',
+                  'h-9 mt-3 rounded-xl',
                   'text-sm font-medium text-muted-foreground',
-                  'hover:bg-muted active:bg-muted/70 transition-colors'
+                  'hover:bg-muted active:bg-muted/70 active:scale-[0.98] transition-all'
                 )}
               >
                 {t('admin.nodes.form.nextStepProtocol')}
@@ -1640,10 +1640,10 @@ export const CreateNodeSheet: React.FC<CreateNodeSheetProps> = ({
               disabled={loading || !isFormValid}
               className={cn(
                 'flex-1 flex items-center justify-center gap-2',
-                'h-11 rounded-lg',
+                'h-11 rounded-xl',
                 'bg-primary text-primary-foreground',
                 'text-sm font-medium',
-                'active:opacity-80 transition-opacity',
+                'active:scale-[0.98] active:opacity-80 transition-all',
                 'disabled:opacity-50'
               )}
             >
@@ -1662,10 +1662,10 @@ export const CreateNodeSheet: React.FC<CreateNodeSheetProps> = ({
               disabled={loading}
               className={cn(
                 'flex-1 flex items-center justify-center',
-                'h-11 rounded-lg',
-                'border border-border bg-background text-foreground',
+                'h-11 rounded-xl',
+                'ring-1 ring-border bg-background text-foreground',
                 'text-sm font-medium',
-                'active:opacity-80 transition-opacity',
+                'active:scale-[0.98] active:opacity-80 transition-all',
                 'disabled:opacity-50'
               )}
             >

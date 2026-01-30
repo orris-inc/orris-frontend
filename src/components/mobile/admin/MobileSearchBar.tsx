@@ -69,7 +69,7 @@ export const MobileSearchBar = ({
           'focus:outline-none disabled:cursor-not-allowed',
           isOutline && [
             'w-full h-10 pl-9 pr-9',
-            'bg-background border border-input rounded-lg',
+            'bg-background border border-input rounded-xl',
             'focus:ring-2 focus:ring-ring focus:ring-offset-1',
           ]
         )}

@@ -91,7 +91,7 @@ export const MonitorPage = () => {
     <AdminLayout>
       <div className="py-3 space-y-3">
         {/* High-Density Status Bar - All metrics inline */}
-        <header className="bg-card rounded-lg border border-border px-3 py-2">
+        <header className="bg-card rounded-xl ring-1 ring-border px-3 py-2">
           <div className="flex items-center justify-between gap-4 flex-wrap">
             {/* Left: Title + Connection + Entity counts */}
             <div className="flex items-center gap-4">
@@ -251,7 +251,7 @@ export const MonitorPage = () => {
                   </div>
                 )
               ) : (
-                <div className="flex flex-col items-center justify-center py-12 bg-card rounded-lg border border-border">
+                <div className="flex flex-col items-center justify-center py-12 bg-card rounded-xl ring-1 ring-border">
                   <div className="size-16 rounded-full bg-muted/30 flex items-center justify-center mb-4">
                     <Activity className="size-8 text-muted-foreground/50" />
                   </div>

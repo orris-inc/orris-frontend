@@ -79,7 +79,7 @@ export const UserSortableChainAgentList: React.FC<UserSortableChainAgentListProp
   return (
     <div className="space-y-3">
       {/* Available node list */}
-      <div className={`border rounded-md ${hasError ? 'border-destructive' : 'border-input'}`}>
+      <div className={`rounded-xl ${hasError ? 'ring-1 ring-destructive' : 'ring-1 ring-border'}`}>
         <ScrollArea className="h-[120px] p-3">
           {agents.length === 0 ? (
             <p className="text-sm text-muted-foreground">{t('userForwardRules.form.noNodesEmpty')}</p>
@@ -121,8 +121,8 @@ export const UserSortableChainAgentList: React.FC<UserSortableChainAgentListProp
 
       {/* Selected node sorting area */}
       {selectedAgents.length > 0 && (
-        <div className="border rounded-md border-input">
-          <div className="px-3 py-2 bg-muted/50 border-b border-input">
+        <div className="rounded-xl ring-1 ring-border">
+          <div className="px-3 py-2 bg-muted/50 border-b border-border rounded-t-xl">
             <p className="text-xs font-medium text-muted-foreground">
               {t('userForwardRules.form.forwardOrderAdjustable')}
             </p>
@@ -159,7 +159,7 @@ export const UserSortableChainAgentList: React.FC<UserSortableChainAgentListProp
                     type="button"
                     variant="ghost"
                     size="sm"
-                    className="h-7 w-7 p-0"
+                    className="h-7 w-7 p-0 active:scale-[0.98]"
                     onClick={() => handleMoveUp(index)}
                     disabled={index === 0}
                   >
@@ -169,7 +169,7 @@ export const UserSortableChainAgentList: React.FC<UserSortableChainAgentListProp
                     type="button"
                     variant="ghost"
                     size="sm"
-                    className="h-7 w-7 p-0"
+                    className="h-7 w-7 p-0 active:scale-[0.98]"
                     onClick={() => handleMoveDown(index)}
                     disabled={index === selectedAgents.length - 1}
                   >

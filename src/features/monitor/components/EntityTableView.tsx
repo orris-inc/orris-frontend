@@ -355,7 +355,7 @@ export const EntityTableView = memo(({
     return (
       <div
         ref={tableContainerRef}
-        className="overflow-auto bg-card rounded-xl border border-border"
+        className="overflow-auto bg-card rounded-xl ring-1 ring-border"
         style={{ maxHeight }}
       >
         <table className="w-full text-sm border-separate border-spacing-0">
@@ -396,7 +396,7 @@ export const EntityTableView = memo(({
 
   // Non-virtualized table (for small datasets)
   return (
-    <div className="overflow-x-auto bg-card rounded-xl border border-border">
+    <div className="overflow-x-auto bg-card rounded-xl ring-1 ring-border">
       <table className="w-full text-sm border-separate border-spacing-0">
         {renderHeader()}
         <tbody className="divide-y divide-border/40">

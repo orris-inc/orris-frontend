@@ -100,7 +100,7 @@ export const MobileActionButton = ({
         'transition-all duration-150',
         'touch-manipulation',
         // Active feedback
-        'active:scale-[0.97]',
+        'active:scale-[0.98]',
         // Focus
         'focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2',
         // Size styles

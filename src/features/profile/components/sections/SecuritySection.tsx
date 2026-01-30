@@ -14,7 +14,7 @@ export const SecuritySection = () => {
   return (
     <div className="space-y-4 sm:space-y-6">
       {/* Change password section */}
-      <div className="rounded-xl bg-card border overflow-hidden">
+      <div className="rounded-xl bg-card ring-1 ring-border overflow-hidden">
         <div className="flex flex-col space-y-1.5 p-5 sm:p-6 border-b">
           <h3 className={`${cardTitleStyles} text-lg`}>
             {t('profile.security.changePasswordTitle')}
@@ -29,14 +29,14 @@ export const SecuritySection = () => {
       </div>
 
       {/* Passkey management section */}
-      <div className="rounded-xl bg-card border overflow-hidden">
+      <div className="rounded-xl bg-card ring-1 ring-border overflow-hidden">
         <div className="p-5 sm:p-6">
           <PasskeyManagement />
         </div>
       </div>
 
       {/* OAuth binding section */}
-      <div className="rounded-xl bg-card border overflow-hidden">
+      <div className="rounded-xl bg-card ring-1 ring-border overflow-hidden">
         <div className="flex flex-col space-y-1.5 p-5 sm:p-6 border-b">
           <h3 className={`${cardTitleStyles} text-lg`}>
             {t('profile.security.oauthBindingTitle')}
@@ -53,7 +53,7 @@ export const SecuritySection = () => {
       </div>
 
       {/* Danger zone section */}
-      <div className="rounded-xl bg-card border border-destructive/50 overflow-hidden">
+      <div className="rounded-xl bg-card ring-1 ring-destructive/50 overflow-hidden">
         <div className="flex flex-col space-y-1.5 p-5 sm:p-6 border-b border-destructive/30 bg-destructive/5">
           <h3 className={`${cardTitleStyles} text-lg text-destructive`}>
             {t('profile.security.dangerZoneTitle')}

@@ -74,7 +74,7 @@ export const SuspendSubscriptionSheet: React.FC<SuspendSubscriptionSheetProps> =
 
         <SheetBody className="py-4 space-y-4">
           {/* Warning */}
-          <div className="rounded-lg border border-yellow-200 bg-yellow-50 dark:border-yellow-900 dark:bg-yellow-950/30 p-3">
+          <div className="rounded-xl border border-yellow-200 bg-yellow-50 dark:border-yellow-900 dark:bg-yellow-950/30 p-3">
             <div className="flex items-start gap-2">
               <AlertTriangle className="size-4 text-yellow-600 dark:text-yellow-500 mt-0.5 shrink-0" />
               <p className="text-xs text-yellow-700 dark:text-yellow-400">
@@ -95,7 +95,7 @@ export const SuspendSubscriptionSheet: React.FC<SuspendSubscriptionSheetProps> =
               disabled={loading}
               rows={3}
               className={cn(
-                'w-full px-3 py-2 rounded-lg border bg-background text-sm resize-none',
+                'w-full px-3 py-2 rounded-xl border bg-background text-sm resize-none',
                 'focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary',
                 'placeholder:text-muted-foreground/60'
               )}

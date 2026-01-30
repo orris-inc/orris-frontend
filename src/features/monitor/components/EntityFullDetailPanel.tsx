@@ -55,7 +55,7 @@ const SectionHeader = memo(({
 }) => (
   <button
     onClick={onToggle}
-    className="w-full flex items-center gap-2 py-2 px-1 text-xs font-semibold text-foreground hover:bg-muted/50 rounded-md transition-colors cursor-pointer"
+    className="w-full flex items-center gap-2 py-2 px-1 text-xs font-semibold text-foreground hover:bg-muted/50 rounded-md transition-colors cursor-pointer active:scale-[0.98]"
   >
     {icon}
     <span className="flex-1 text-left">{title}</span>
@@ -172,7 +172,7 @@ export const EntityFullDetailPanel = memo(({ entity, className, onClose }: Entit
 
   if (!isOnline || !status) {
     return (
-      <div className={cn('rounded-xl border bg-card p-6 text-center', className)}>
+      <div className={cn('rounded-xl ring-1 ring-border bg-card p-6 text-center', className)}>
         <WifiOff className="size-12 text-muted-foreground/30 mx-auto mb-3" />
         <h3 className="text-sm font-semibold text-foreground mb-1">
           {entity.name || entity.id}
@@ -190,7 +190,7 @@ export const EntityFullDetailPanel = memo(({ entity, className, onClose }: Entit
   }
 
   return (
-    <div className={cn('rounded-xl border bg-card overflow-hidden', className)}>
+    <div className={cn('rounded-xl ring-1 ring-border bg-card overflow-hidden', className)}>
       {/* Header */}
       <div className="p-3 border-b border-border/50 bg-muted/30">
         <div className="flex items-center gap-3">

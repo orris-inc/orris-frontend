@@ -1,6 +1,7 @@
 /**
  * Forward Agents Management Page (Admin)
- * Tailwind UI Application UI style layout
+ * Tailwind Application UI style
+ * Mobile-first responsive design
  */
 
 import { useState, useMemo, useCallback } from 'react';
@@ -15,15 +16,17 @@ import {
   Radio,
   Search,
   FilterX,
+  XCircle,
 } from 'lucide-react';
-import { Switch, SwitchThumb } from '@/components/common/Switch';
 import { AdminLayout } from '@/layouts/AdminLayout';
-import { PageHeader } from '@/components/admin';
+import { PageHeader, type PageHeaderMeta, type PageHeaderBadge } from '@/components/admin';
 import { Button } from '@/components/common/Button';
 import { Input } from '@/components/common/Input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/common/Select';
+import { Switch, SwitchThumb } from '@/components/common/Switch';
 import { TokenDialog } from '@/components/common/TokenDialog';
 import { ConfirmDialog } from '@/components/common/ConfirmDialog';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/common/Tooltip';
 import { usePageTitle } from '@/shared/hooks';
 import { useBreakpoint } from '@/hooks/useBreakpoint';
 import { useNotificationStore } from '@/shared/stores/notification-store';
@@ -41,16 +44,50 @@ import { AgentBatchUpdateDialog } from '@/features/forward-agents/components/Age
 import { AgentBatchUpdateSheet } from '@/features/forward-agents/components/AgentBatchUpdateSheet';
 import { BroadcastURLDialog } from '@/features/forward-agents/components/BroadcastURLDialog';
 import { BroadcastURLSheet } from '@/features/forward-agents/components/BroadcastURLSheet';
-import { useForwardAgentsPage, useTriggerAgentUpdate, useBroadcastAPIURL, useNotifyAgentAPIURL } from '@/features/forward-agents/hooks/useForwardAgents';
+import {
+  useForwardAgentsPage,
+  useTriggerAgentUpdate,
+  useBroadcastAPIURL,
+  useNotifyAgentAPIURL,
+} from '@/features/forward-agents/hooks/useForwardAgents';
 import { getAgentVersion } from '@/api/forward';
-import type { AgentVersionInfo, ForwardAgent, UpdateForwardAgentRequest, CreateForwardAgentRequest, ForwardStatus } from '@/api/forward';
+import type {
+  AgentVersionInfo,
+  ForwardAgent,
+  UpdateForwardAgentRequest,
+  CreateForwardAgentRequest,
+  ForwardStatus,
+} from '@/api/forward';
 
-export const ForwardAgentsPage = () => {
+// ============================================================================
+// Types
+// ============================================================================
+
+type DialogType =
+  | 'create'
+  | 'edit'
+  | 'detail'
+  | 'delete'
+  | 'token'
+  | 'installScript'
+  | 'batchUpdate'
+  | 'broadcast'
+  | 'notifyURL'
+  | 'updateConfirm'
+  | null;
+
+// ============================================================================
+// Main Component
+// ============================================================================
+
+export function ForwardAgentsPage() {
   const { t } = useTranslation();
   usePageTitle(t('admin.forwardAgents.title'));
 
   const { isMobile } = useBreakpoint();
+  const { showError, showInfo } = useNotificationStore();
 
+  // Forward agent data and operations
   const {
     forwardAgents,
     pagination,
@@ -82,372 +119,339 @@ export const ForwardAgentsPage = () => {
   } = useForwardAgentsPage();
 
   const { resourceGroups } = useResourceGroups({ pageSize: 100 });
+  const triggerUpdateMutation = useTriggerAgentUpdate();
+  const broadcastURLMutation = useBroadcastAPIURL();
+  const notifyAgentURLMutation = useNotifyAgentAPIURL();
+
+  // Dialog state management
+  const [activeDialog, setActiveDialog] = useState<DialogType>(null);
+  const [selectedAgent, setSelectedAgent] = useState<ForwardAgent | null>(null);
+  const [copyAgentData, setCopyAgentData] = useState<Partial<CreateForwardAgentRequest> | undefined>(undefined);
+  const [versionInfo, setVersionInfo] = useState<AgentVersionInfo | null>(null);
+  const [checkingAgentId, setCheckingAgentId] = useState<string | number | null>(null);
+  const [updatingAgentId, setUpdatingAgentId] = useState<string | number | null>(null);
+  const [dragSortEnabled, setDragSortEnabled] = useState(false);
+  const [refreshKey, setRefreshKey] = useState(0);
+
+  // Computed values
   const resourceGroupsMap = useMemo(() => {
-    const map: Record<string, typeof resourceGroups[0]> = {};
+    const map: Record<string, (typeof resourceGroups)[0]> = {};
     resourceGroups.forEach((group) => {
       map[group.sid] = group;
     });
     return map;
   }, [resourceGroups]);
 
-  const { showError, showInfo } = useNotificationStore();
-  const triggerUpdateMutation = useTriggerAgentUpdate();
-  const broadcastURLMutation = useBroadcastAPIURL();
-  const notifyAgentURLMutation = useNotifyAgentAPIURL();
-
-  const [editDialogOpen, setEditDialogOpen] = useState(false);
-  const [createDialogOpen, setCreateDialogOpen] = useState(false);
-  const [detailDialogOpen, setDetailDialogOpen] = useState(false);
-  const [installScriptDialogOpen, setInstallScriptDialogOpen] = useState(false);
-  const [selectedAgent, setSelectedAgent] = useState<ForwardAgent | null>(null);
-  const [tokenDialogOpen, setTokenDialogOpen] = useState(false);
-  const [copyAgentData, setCopyAgentData] = useState<Partial<CreateForwardAgentRequest> | undefined>(undefined);
-  const [batchUpdateDialogOpen, setBatchUpdateDialogOpen] = useState(false);
-  const [broadcastURLDialogOpen, setBroadcastURLDialogOpen] = useState(false);
-  const [broadcastTargetAgent, setBroadcastTargetAgent] = useState<ForwardAgent | null>(null);
-  const [updateConfirmOpen, setUpdateConfirmOpen] = useState(false);
-  const [versionInfo, setVersionInfo] = useState<AgentVersionInfo | null>(null);
-  const [updateAgent, setUpdateAgent] = useState<ForwardAgent | null>(null);
-  const [checkingAgentId, setCheckingAgentId] = useState<string | number | null>(null);
-  const [refreshKey, setRefreshKey] = useState(0);
-  const [dragSortEnabled, setDragSortEnabled] = useState(false);
-  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
-  const [agentToDelete, setAgentToDelete] = useState<ForwardAgent | null>(null);
-  const [updatingAgentId, setUpdatingAgentId] = useState<string | number | null>(null);
-
-  // Calculate agent statistics
+  // Calculate statistics
   const stats = useMemo(() => {
-    const total = pagination.total;
     const enabled = forwardAgents.filter((a) => a.status === 'enabled').length;
     const disabled = forwardAgents.filter((a) => a.status === 'disabled').length;
     const online = forwardAgents.filter((a) => a.systemStatus).length;
     const updatable = forwardAgents.filter((a) => a.hasUpdate && a.status === 'enabled' && a.systemStatus).length;
-    return { total, enabled, disabled, online, updatable };
+    return { total: pagination.total, enabled, disabled, online, updatable };
   }, [forwardAgents, pagination.total]);
 
-  const handleRefresh = () => {
-    setRefreshKey((k) => k + 1);
-    refetch();
-  };
+  // Page header badge
+  const headerBadge = useMemo(
+    (): PageHeaderBadge => ({
+      label: `${stats.total} ${t('admin.forwardAgents.agentsUnit')}`,
+      variant: 'default',
+    }),
+    [stats.total, t]
+  );
 
-  const handleEdit = (agent: ForwardAgent) => {
-    setSelectedAgent(agent);
-    setEditDialogOpen(true);
-  };
+  // Page header metadata
+  const headerMetadata = useMemo((): PageHeaderMeta[] => {
+    const items: PageHeaderMeta[] = [
+      { icon: CheckCircle2, text: `${stats.enabled} ${t('common.status.enabled')}` },
+      { icon: Activity, text: `${stats.online} ${t('common.status.online')}` },
+    ];
 
-  const handleDelete = async (agent: ForwardAgent) => {
-    if (isMobile) {
-      setAgentToDelete(agent);
-      setDeleteDialogOpen(true);
-    } else {
-      if (window.confirm(t('admin.forwardAgents.confirmDelete', { name: agent.name }))) {
-        await deleteForwardAgent(agent.id);
-      }
+    if (stats.disabled > 0) {
+      items.push({ icon: XCircle, text: `${stats.disabled} ${t('common.status.disabled')}` });
     }
-  };
 
-  const handleDeleteConfirm = async (agent: ForwardAgent) => {
-    await deleteForwardAgent(agent.id);
-  };
-
-  const handleEnable = async (agent: ForwardAgent) => {
-    await enableForwardAgent(agent.id);
-  };
-
-  const handleDisable = async (agent: ForwardAgent) => {
-    await disableForwardAgent(agent.id);
-  };
-
-  const handleToggleStatus = async (agent: ForwardAgent) => {
-    if (agent.status === 'enabled') {
-      await disableForwardAgent(agent.id);
-    } else {
-      await enableForwardAgent(agent.id);
+    if (stats.updatable > 0) {
+      items.push({ icon: ArrowUpCircle, text: `${stats.updatable} ${t('admin.forwardAgents.updatable')}` });
     }
-  };
 
-  const handleTokenRegenerate = async (agent: ForwardAgent) => {
-    const token = await handleRegenerateToken(agent.id);
-    if (token) {
-      setTokenDialogOpen(true);
-    }
-  };
+    return items;
+  }, [stats, t]);
 
-  const handleViewDetail = (agent: ForwardAgent) => {
-    setSelectedAgent(agent);
-    setDetailDialogOpen(true);
-  };
-
-  const handleInstallScript = async (agent: ForwardAgent) => {
-    setSelectedAgent(agent);
-    const command = await handleGetInstallCommand(agent.id);
-    if (command) {
-      setInstallScriptDialogOpen(true);
-    }
-  };
-
-  const handleCopy = (agent: ForwardAgent) => {
-    const copyData: Partial<CreateForwardAgentRequest> = {
-      name: `${agent.name} - ${t('common.actions.copy')}`,
-      remark: agent.remark,
-    };
-    setCopyAgentData(copyData);
-    setCreateDialogOpen(true);
-  };
-
-  const handleCheckUpdate = useCallback(async (agent: ForwardAgent) => {
-    setCheckingAgentId(agent.id);
-    try {
-      const [info] = await Promise.all([
-        getAgentVersion(agent.id),
-        new Promise(resolve => setTimeout(resolve, 500)),
-      ]);
-      setVersionInfo(info);
-      setUpdateAgent(agent);
-
-      if (info.hasUpdate) {
-        setUpdateConfirmOpen(true);
-      } else {
-        showInfo(t('admin.forwardAgents.version.upToDate', { name: agent.name, version: info.currentVersion }));
-      }
-    } catch {
-      showError(t('admin.forwardAgents.version.fetchFailed'));
-    } finally {
-      setCheckingAgentId(null);
-    }
-  }, [showInfo, showError, t]);
-
-  const handleConfirmUpdate = useCallback(async () => {
-    if (!updateAgent) return;
-    try {
-      await triggerUpdateMutation.mutateAsync(updateAgent.id);
-      setUpdateConfirmOpen(false);
-      setUpdateAgent(null);
-      setVersionInfo(null);
-    } catch {
-      // Error handled by mutation
-    }
-  }, [updateAgent, triggerUpdateMutation]);
-
-  // Direct trigger update for detail sheet (no confirmation dialog)
-  const handleTriggerUpdate = useCallback(async (agent: ForwardAgent) => {
-    setUpdatingAgentId(agent.id);
-    try {
-      await triggerUpdateMutation.mutateAsync(agent.id);
-    } catch {
-      // Error handled by mutation
-    } finally {
-      setUpdatingAgentId(null);
-    }
-  }, [triggerUpdateMutation]);
-
-  const handleBroadcastURL = useCallback(async (newUrl: string, reason?: string) => {
-    return await broadcastURLMutation.mutateAsync({ newUrl, reason });
-  }, [broadcastURLMutation]);
-
-  const handleNotifyAgentURL = useCallback(async (agentId: string, newUrl: string, reason?: string) => {
-    return await notifyAgentURLMutation.mutateAsync({ agentId, data: { newUrl, reason } });
-  }, [notifyAgentURLMutation]);
-
-  const handleBroadcastToAgent = useCallback((agent: ForwardAgent) => {
-    setBroadcastTargetAgent(agent);
+  // Dialog handlers
+  const openDialog = useCallback((type: DialogType, agent?: ForwardAgent) => {
+    setSelectedAgent(agent ?? null);
+    setActiveDialog(type);
   }, []);
 
-  const handleDragEnd = async (_activeId: string, _overId: string, oldIndex: number, newIndex: number) => {
-    if (oldIndex === newIndex) return;
+  const closeDialog = useCallback(() => {
+    setActiveDialog(null);
+    setSelectedAgent(null);
+    setCopyAgentData(undefined);
+    setVersionInfo(null);
+  }, []);
 
-    // Calculate new sortOrder values for affected agents
-    const updates: { id: string | number; sortOrder: number }[] = [];
+  // Action handlers
+  const handleRefresh = useCallback(() => {
+    setRefreshKey((k) => k + 1);
+    refetch();
+  }, [refetch]);
 
-    // Create a copy of agents array and reorder
-    const reorderedAgents = [...forwardAgents];
-    const [movedAgent] = reorderedAgents.splice(oldIndex, 1);
-    reorderedAgents.splice(newIndex, 0, movedAgent);
+  const handleCreate = useCallback(() => {
+    setCopyAgentData(undefined);
+    openDialog('create');
+  }, [openDialog]);
 
-    // Update sortOrder for all affected agents (use index as sortOrder)
-    reorderedAgents.forEach((agent, index) => {
-      const newSortOrder = index + 1;
-      if (agent.sortOrder !== newSortOrder) {
-        updates.push({ id: agent.id, sortOrder: newSortOrder });
+  const handleEdit = useCallback(
+    (agent: ForwardAgent) => openDialog('edit', agent),
+    [openDialog]
+  );
+
+  const handleViewDetail = useCallback(
+    (agent: ForwardAgent) => openDialog('detail', agent),
+    [openDialog]
+  );
+
+  const handleDeleteClick = useCallback(
+    (agent: ForwardAgent) => {
+      if (isMobile) {
+        openDialog('delete', agent);
+      } else if (window.confirm(t('admin.forwardAgents.confirmDelete', { name: agent.name }))) {
+        deleteForwardAgent(agent.id);
       }
-    });
+    },
+    [isMobile, openDialog, deleteForwardAgent, t]
+  );
 
-    if (updates.length > 0) {
-      await handleReorder(updates);
-    }
-  };
+  const handleCopy = useCallback(
+    (agent: ForwardAgent) => {
+      const data: Partial<CreateForwardAgentRequest> = {
+        name: `${agent.name} - ${t('common.actions.copy')}`,
+        remark: agent.remark,
+      };
+      setCopyAgentData(data);
+      openDialog('create');
+    },
+    [openDialog, t]
+  );
 
-  const handleCreateSubmit = async (data: CreateForwardAgentRequest) => {
+  const handleEnable = useCallback(
+    async (agent: ForwardAgent) => {
+      await enableForwardAgent(agent.id);
+    },
+    [enableForwardAgent]
+  );
+
+  const handleDisable = useCallback(
+    async (agent: ForwardAgent) => {
+      await disableForwardAgent(agent.id);
+    },
+    [disableForwardAgent]
+  );
+
+  const handleToggleStatus = useCallback(
+    async (agent: ForwardAgent) => {
+      if (agent.status === 'enabled') {
+        await disableForwardAgent(agent.id);
+      } else {
+        await enableForwardAgent(agent.id);
+      }
+    },
+    [enableForwardAgent, disableForwardAgent]
+  );
+
+  const handleToggleMute = useCallback(
+    (agent: ForwardAgent) => {
+      toggleMuteNotification(agent.id, !agent.muteNotification);
+    },
+    [toggleMuteNotification]
+  );
+
+  const handleTokenRegenerate = useCallback(
+    async (agent: ForwardAgent) => {
+      const token = await handleRegenerateToken(agent.id);
+      if (token) {
+        openDialog('token');
+      }
+    },
+    [handleRegenerateToken, openDialog]
+  );
+
+  const handleInstallScript = useCallback(
+    async (agent: ForwardAgent) => {
+      setSelectedAgent(agent);
+      const command = await handleGetInstallCommand(agent.id);
+      if (command) {
+        openDialog('installScript', agent);
+      }
+    },
+    [handleGetInstallCommand, openDialog]
+  );
+
+  const handleCheckUpdate = useCallback(
+    async (agent: ForwardAgent) => {
+      setCheckingAgentId(agent.id);
+      try {
+        const [info] = await Promise.all([
+          getAgentVersion(agent.id),
+          new Promise((resolve) => setTimeout(resolve, 500)),
+        ]);
+        setVersionInfo(info);
+
+        if (info.hasUpdate) {
+          openDialog('updateConfirm', agent);
+        } else {
+          showInfo(t('admin.forwardAgents.version.upToDate', { name: agent.name, version: info.currentVersion }));
+        }
+      } catch {
+        showError(t('admin.forwardAgents.version.fetchFailed'));
+      } finally {
+        setCheckingAgentId(null);
+      }
+    },
+    [openDialog, showInfo, showError, t]
+  );
+
+  const handleConfirmUpdate = useCallback(async () => {
+    if (!selectedAgent) return;
     try {
+      await triggerUpdateMutation.mutateAsync(selectedAgent.id);
+      closeDialog();
+    } catch {
+      // Error handled by mutation
+    }
+  }, [selectedAgent, triggerUpdateMutation, closeDialog]);
+
+  const handleTriggerUpdate = useCallback(
+    async (agent: ForwardAgent) => {
+      setUpdatingAgentId(agent.id);
+      try {
+        await triggerUpdateMutation.mutateAsync(agent.id);
+      } catch {
+        // Error handled by mutation
+      } finally {
+        setUpdatingAgentId(null);
+      }
+    },
+    [triggerUpdateMutation]
+  );
+
+  const handleBroadcastToAgent = useCallback(
+    (agent: ForwardAgent) => openDialog('notifyURL', agent),
+    [openDialog]
+  );
+
+  const handleBroadcastURL = useCallback(
+    async (newUrl: string, reason?: string) => {
+      return await broadcastURLMutation.mutateAsync({ newUrl, reason });
+    },
+    [broadcastURLMutation]
+  );
+
+  const handleNotifyAgentURL = useCallback(
+    async (agentId: string, newUrl: string, reason?: string) => {
+      return await notifyAgentURLMutation.mutateAsync({ agentId, data: { newUrl, reason } });
+    },
+    [notifyAgentURLMutation]
+  );
+
+  // Form submission handlers
+  const handleCreateSubmit = useCallback(
+    async (data: CreateForwardAgentRequest) => {
       const result = await createForwardAgent(data);
-      setCreateDialogOpen(false);
+      closeDialog();
       setGeneratedToken({ token: result.token });
-      setTokenDialogOpen(true);
-    } catch {
-      // Error already handled in hook
-    }
-  };
+      openDialog('token');
+    },
+    [createForwardAgent, closeDialog, setGeneratedToken, openDialog]
+  );
 
-  const handleUpdateSubmit = async (id: number | string, data: UpdateForwardAgentRequest) => {
-    try {
+  const handleUpdateSubmit = useCallback(
+    async (id: number | string, data: UpdateForwardAgentRequest) => {
       await updateForwardAgent(id, data);
-      setEditDialogOpen(false);
-      setSelectedAgent(null);
-    } catch {
-      // Error already handled in hook
-    }
-  };
+      closeDialog();
+    },
+    [updateForwardAgent, closeDialog]
+  );
 
-  const handleToggleMute = (agent: ForwardAgent) => {
-    toggleMuteNotification(agent.id, !agent.muteNotification);
-  };
+  const handleDeleteConfirm = useCallback(
+    async (agent: ForwardAgent) => {
+      await deleteForwardAgent(agent.id);
+      closeDialog();
+    },
+    [deleteForwardAgent, closeDialog]
+  );
 
-  // Helper functions for filters
-  const handleStatusChange = (value: string): void => {
-    handleFiltersChange({ status: value === '_all_' ? undefined : (value as ForwardStatus) });
-  };
+  // Drag and drop handler
+  const handleDragEnd = useCallback(
+    async (_activeId: string, _overId: string, oldIndex: number, newIndex: number) => {
+      if (oldIndex === newIndex) return;
 
-  const handleSearchChange = (value: string): void => {
-    handleFiltersChange({ name: value || undefined });
-  };
+      const reorderedAgents = [...forwardAgents];
+      const [movedAgent] = reorderedAgents.splice(oldIndex, 1);
+      reorderedAgents.splice(newIndex, 0, movedAgent);
 
-  const handleSortChange = (value: string): void => {
-    if (value === '_default_') {
-      handleFiltersChange({ sortBy: undefined, sortOrder: undefined });
-    } else {
-      const lastUnderscoreIndex = value.lastIndexOf('_');
-      const sortBy = value.substring(0, lastUnderscoreIndex);
-      const sortOrder = value.substring(lastUnderscoreIndex + 1) as 'asc' | 'desc';
-      handleFiltersChange({ sortBy, sortOrder });
-    }
-  };
+      const updates: { id: string | number; sortOrder: number }[] = [];
+      reorderedAgents.forEach((agent, index) => {
+        const newSortOrder = index + 1;
+        if (agent.sortOrder !== newSortOrder) {
+          updates.push({ id: agent.id, sortOrder: newSortOrder });
+        }
+      });
+
+      if (updates.length > 0) {
+        await handleReorder(updates);
+      }
+    },
+    [forwardAgents, handleReorder]
+  );
+
+  // Filter handlers
+  const handleStatusChange = useCallback(
+    (value: string) => {
+      handleFiltersChange({ status: value === '_all_' ? undefined : (value as ForwardStatus) });
+    },
+    [handleFiltersChange]
+  );
+
+  const handleSearchChange = useCallback(
+    (value: string) => {
+      handleFiltersChange({ name: value || undefined });
+    },
+    [handleFiltersChange]
+  );
+
+  const handleSortChange = useCallback(
+    (value: string) => {
+      if (value === '_default_') {
+        handleFiltersChange({ sortBy: undefined, sortOrder: undefined });
+      } else {
+        const lastUnderscoreIndex = value.lastIndexOf('_');
+        const sortBy = value.substring(0, lastUnderscoreIndex);
+        const sortOrder = value.substring(lastUnderscoreIndex + 1) as 'asc' | 'desc';
+        handleFiltersChange({ sortBy, sortOrder });
+      }
+    },
+    [handleFiltersChange]
+  );
+
+  const handleResetFilters = useCallback(() => {
+    handleFiltersChange({ status: undefined, name: undefined, sortBy: undefined, sortOrder: undefined });
+  }, [handleFiltersChange]);
 
   const getSortValue = (): string => {
     if (!filters.sortBy) return '_default_';
     return `${filters.sortBy}_${filters.sortOrder || 'desc'}`;
   };
 
-  const handleResetFilters = (): void => {
-    handleFiltersChange({
-      status: undefined,
-      name: undefined,
-      sortBy: undefined,
-      sortOrder: undefined,
-    });
-  };
-
   const hasActiveFilters = filters.status !== undefined || filters.name !== undefined || filters.sortBy !== undefined;
+  const isTableLoading = isLoading || isFetching || isReordering;
 
-  return (
-    <AdminLayout>
-      <div className="space-y-6">
-        {/* Page Header with badge and metadata - desktop only */}
-        {!isMobile && (
-          <PageHeader
-            title={t('admin.forwardAgents.title')}
-            icon={Cpu}
-            badge={{ label: `${stats.total} ${t('admin.forwardAgents.agentsUnit')}`, variant: 'default' }}
-            metadata={[
-              { icon: CheckCircle2, text: `${stats.enabled} ${t('common.status.enabled')}` },
-              { icon: Activity, text: `${stats.online} ${t('common.status.online')}` },
-              ...(stats.updatable > 0 ? [{ icon: ArrowUpCircle, text: `${stats.updatable} ${t('admin.forwardAgents.updatable')}` }] : []),
-            ]}
-          action={
-            <div className="flex items-center gap-2">
-              <Button onClick={() => { setCopyAgentData(undefined); setCreateDialogOpen(true); }}>
-                <Plus className="size-4 mr-2" />
-                {t('common.actions.create')}
-              </Button>
-              {stats.online > 0 && (
-                <Button variant="outline" size="sm" onClick={() => setBroadcastURLDialogOpen(true)}>
-                  <Radio className="size-4 mr-2" />
-                  {t('admin.forwardAgents.actions.broadcast')}
-                </Button>
-              )}
-              {stats.updatable > 0 && (
-                <Button variant="outline" size="sm" onClick={() => setBatchUpdateDialogOpen(true)}>
-                  <ArrowUpCircle className="size-4 mr-2" />
-                  {t('admin.forwardAgents.actions.update')}
-                </Button>
-              )}
-              <Button variant="ghost" size="icon" onClick={handleRefresh}>
-                <RefreshCw key={refreshKey} className="size-4" />
-              </Button>
-            </div>
-          }
-        />
-        )}
-
-        {/* Filters row - desktop only */}
-        {!isMobile && (
-          <div className="flex flex-wrap items-center gap-3">
-            {/* Status filter */}
-            <Select value={filters.status || '_all_'} onValueChange={handleStatusChange}>
-              <SelectTrigger className="w-[120px]">
-                <SelectValue placeholder={t('common.status.label')} />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="_all_">{t('admin.forwardAgents.filters.all')}</SelectItem>
-                <SelectItem value="enabled">{t('common.status.enabled')}</SelectItem>
-                <SelectItem value="disabled">{t('common.status.disabled')}</SelectItem>
-              </SelectContent>
-            </Select>
-
-            {/* Search input */}
-            <div className="relative w-[200px]">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
-              <Input
-                placeholder={t('admin.forwardAgents.filters.searchAgent')}
-                value={filters.name || ''}
-                onChange={(e) => handleSearchChange(e.target.value)}
-                className="pl-9"
-              />
-            </div>
-
-            {/* Sort filter */}
-            <Select value={getSortValue()} onValueChange={handleSortChange}>
-              <SelectTrigger className="w-[140px]">
-                <SelectValue placeholder={t('common.table.sort')} />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="_default_">{t('admin.forwardAgents.filters.default')}</SelectItem>
-                <SelectItem value="created_at_desc">{t('admin.forwardAgents.filters.createdDesc')}</SelectItem>
-                <SelectItem value="created_at_asc">{t('admin.forwardAgents.filters.createdAsc')}</SelectItem>
-                <SelectItem value="updated_at_desc">{t('admin.forwardAgents.filters.updatedDesc')}</SelectItem>
-              </SelectContent>
-            </Select>
-
-            {/* Divider */}
-            <div className="h-6 w-px bg-border" />
-
-            {/* Drag sort toggle */}
-            <label className="flex items-center gap-2 text-sm">
-              <Switch
-                checked={dragSortEnabled}
-                onCheckedChange={setDragSortEnabled}
-                disabled={isReordering}
-              >
-                <SwitchThumb />
-              </Switch>
-              <span className="text-muted-foreground">{t('admin.forwardAgents.dragSort.label')}</span>
-            </label>
-
-            {/* Reset filters button */}
-            {hasActiveFilters && (
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={handleResetFilters}
-              >
-                <FilterX className="size-4 mr-2" />
-                {t('admin.forwardAgents.filters.resetFilters')}
-              </Button>
-            )}
-          </div>
-        )}
-
-        {/* Mobile: MobileForwardAgentManagement with action buttons */}
-        {isMobile ? (
+  // Mobile layout
+  if (isMobile) {
+    return (
+      <AdminLayout>
+        <div className="py-3 pb-safe">
           <MobileForwardAgentManagement
             forwardAgents={forwardAgents}
             loading={isLoading}
@@ -456,145 +460,257 @@ export const ForwardAgentsPage = () => {
             pageSize={pagination.pageSize}
             total={pagination.total}
             onRefresh={handleRefresh}
-            onCreate={() => {
-              setCopyAgentData(undefined);
-              setCreateDialogOpen(true);
-            }}
+            onCreate={handleCreate}
             onEdit={handleEdit}
-            onDelete={handleDelete}
+            onDelete={handleDeleteClick}
             onToggleStatus={handleToggleStatus}
             onPageChange={handlePageChange}
             onDragEnd={handleDragEnd}
             onRegenerateToken={handleTokenRegenerate}
             onGetInstallScript={handleInstallScript}
             onTriggerUpdate={handleTriggerUpdate}
-            onBatchUpdate={stats.updatable > 0 ? () => setBatchUpdateDialogOpen(true) : undefined}
+            onBatchUpdate={stats.updatable > 0 ? () => openDialog('batchUpdate') : undefined}
             isUpdating={updatingAgentId !== null}
             isBatchUpdating={isBatchUpdating}
-            onBroadcast={stats.online > 0 ? () => setBroadcastURLDialogOpen(true) : undefined}
+            onBroadcast={stats.online > 0 ? () => openDialog('broadcast') : undefined}
           />
-        ) : (
-          <ForwardAgentListTable
-            forwardAgents={forwardAgents}
-            loading={isLoading || isFetching || isReordering}
-            page={pagination.page}
-            pageSize={pagination.pageSize}
-            total={pagination.total}
-            resourceGroupsMap={resourceGroupsMap}
-            onPageChange={handlePageChange}
-            onPageSizeChange={handlePageSizeChange}
-            onEdit={handleEdit}
-            onDelete={handleDelete}
-            onEnable={handleEnable}
-            onDisable={handleDisable}
-            onRegenerateToken={handleTokenRegenerate}
-            onGetInstallScript={handleInstallScript}
-            onViewDetail={handleViewDetail}
-            onCopy={handleCopy}
-            onCheckUpdate={handleCheckUpdate}
-            onBroadcastURL={handleBroadcastToAgent}
-            onToggleMute={handleToggleMute}
-            checkingAgentId={checkingAgentId}
-            enableDragSort={dragSortEnabled}
-            onDragEnd={handleDragEnd}
-          />
-        )}
-      </div>
+        </div>
 
-      {/* Create Forward Agent Dialog/Sheet */}
-      {isMobile ? (
+        {/* Mobile Sheets */}
         <CreateForwardAgentSheet
-          open={createDialogOpen}
-          onOpenChange={(open) => {
-            setCreateDialogOpen(open);
-            if (!open) setCopyAgentData(undefined);
-          }}
+          open={activeDialog === 'create'}
+          onOpenChange={(open) => !open && closeDialog()}
           onSubmit={handleCreateSubmit}
           initialData={copyAgentData}
         />
-      ) : (
-        <CreateForwardAgentDialog
-          open={createDialogOpen}
-          onClose={() => {
-            setCreateDialogOpen(false);
-            setCopyAgentData(undefined);
-          }}
-          onSubmit={handleCreateSubmit}
-          initialData={copyAgentData}
-        />
-      )}
 
-      {/* Edit Forward Agent Dialog/Sheet */}
-      {isMobile ? (
         <EditForwardAgentSheet
-          open={editDialogOpen}
-          onOpenChange={(open) => {
-            setEditDialogOpen(open);
-            if (!open) setSelectedAgent(null);
-          }}
+          open={activeDialog === 'edit'}
+          onOpenChange={(open) => !open && closeDialog()}
           entity={selectedAgent}
           onSubmit={handleUpdateSubmit}
         />
-      ) : (
-        <EditForwardAgentDialog
-          open={editDialogOpen}
-          agent={selectedAgent}
-          onClose={() => {
-            setEditDialogOpen(false);
-            setSelectedAgent(null);
-          }}
-          onSubmit={handleUpdateSubmit}
-        />
-      )}
 
-      {/* Forward Agent Detail Dialog */}
-      <ForwardAgentDetailDialog
-        open={detailDialogOpen}
-        agent={selectedAgent}
-        onClose={() => {
-          setDetailDialogOpen(false);
-          setSelectedAgent(null);
-        }}
+        <DeleteForwardAgentSheet
+          open={activeDialog === 'delete'}
+          onOpenChange={(open) => !open && closeDialog()}
+          entity={selectedAgent}
+          onConfirm={handleDeleteConfirm}
+        />
+
+        <AgentBatchUpdateSheet
+          open={activeDialog === 'batchUpdate'}
+          onOpenChange={(open) => {
+            if (!open) {
+              closeDialog();
+              setBatchUpdateResult(null);
+            }
+          }}
+          agents={forwardAgents}
+          onBatchUpdate={(updateAll) => handleBatchUpdate({ updateAll })}
+          isUpdating={isBatchUpdating}
+          result={batchUpdateResult}
+        />
+
+        <BroadcastURLSheet
+          open={activeDialog === 'broadcast'}
+          onOpenChange={(open) => !open && closeDialog()}
+          onBroadcast={handleBroadcastURL}
+          isBroadcasting={broadcastURLMutation.isPending}
+          onlineCount={stats.online}
+        />
+
+        <TokenDialog
+          open={activeDialog === 'token'}
+          token={generatedToken?.token ?? null}
+          title={t('admin.forwardAgents.token')}
+          onClose={() => {
+            closeDialog();
+            setGeneratedToken(null);
+          }}
+        />
+
+        <InstallScriptDialog
+          open={activeDialog === 'installScript'}
+          installCommandData={installCommandData}
+          agentName={selectedAgent?.name}
+          onClose={() => {
+            closeDialog();
+            setInstallCommandData(null);
+          }}
+        />
+      </AdminLayout>
+    );
+  }
+
+  // Desktop layout
+  return (
+    <AdminLayout>
+      <div className="space-y-6 py-4 pb-safe lg:py-6">
+        {/* Page Header */}
+        <PageHeader
+          title={t('admin.forwardAgents.title')}
+          icon={Cpu}
+          badge={headerBadge}
+          metadata={headerMetadata}
+          action={
+            <div className="flex items-center gap-2">
+              <Button onClick={handleCreate}>
+                <Plus className="mr-2 size-4" />
+                {t('common.actions.create')}
+              </Button>
+              {stats.online > 0 && (
+                <Button variant="outline" size="sm" onClick={() => openDialog('broadcast')}>
+                  <Radio className="mr-2 size-4" />
+                  {t('admin.forwardAgents.actions.broadcast')}
+                </Button>
+              )}
+              {stats.updatable > 0 && (
+                <Button variant="outline" size="sm" onClick={() => openDialog('batchUpdate')}>
+                  <ArrowUpCircle className="mr-2 size-4" />
+                  {t('admin.forwardAgents.actions.update')}
+                </Button>
+              )}
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button variant="ghost" size="icon" onClick={handleRefresh}>
+                    <RefreshCw key={refreshKey} className="size-4" />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>{t('common.actions.refresh')}</TooltipContent>
+              </Tooltip>
+            </div>
+          }
+        />
+
+        {/* Filters */}
+        <div className="flex flex-wrap items-center gap-3">
+          <Select value={filters.status || '_all_'} onValueChange={handleStatusChange}>
+            <SelectTrigger className="w-[120px]">
+              <SelectValue placeholder={t('common.status.label')} />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="_all_">{t('admin.forwardAgents.filters.all')}</SelectItem>
+              <SelectItem value="enabled">{t('common.status.enabled')}</SelectItem>
+              <SelectItem value="disabled">{t('common.status.disabled')}</SelectItem>
+            </SelectContent>
+          </Select>
+
+          <div className="relative w-[200px]">
+            <Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+            <Input
+              placeholder={t('admin.forwardAgents.filters.searchAgent')}
+              value={filters.name || ''}
+              onChange={(e) => handleSearchChange(e.target.value)}
+              className="pl-9"
+            />
+          </div>
+
+          <Select value={getSortValue()} onValueChange={handleSortChange}>
+            <SelectTrigger className="w-[140px]">
+              <SelectValue placeholder={t('common.table.sort')} />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="_default_">{t('admin.forwardAgents.filters.default')}</SelectItem>
+              <SelectItem value="created_at_desc">{t('admin.forwardAgents.filters.createdDesc')}</SelectItem>
+              <SelectItem value="created_at_asc">{t('admin.forwardAgents.filters.createdAsc')}</SelectItem>
+              <SelectItem value="updated_at_desc">{t('admin.forwardAgents.filters.updatedDesc')}</SelectItem>
+            </SelectContent>
+          </Select>
+
+          <div className="h-6 w-px bg-border" />
+
+          <label className="flex items-center gap-2 text-sm">
+            <Switch checked={dragSortEnabled} onCheckedChange={setDragSortEnabled} disabled={isReordering}>
+              <SwitchThumb />
+            </Switch>
+            <span className="text-muted-foreground">{t('admin.forwardAgents.dragSort.label')}</span>
+          </label>
+
+          {hasActiveFilters && (
+            <Button variant="ghost" size="sm" onClick={handleResetFilters}>
+              <FilterX className="mr-2 size-4" />
+              {t('admin.forwardAgents.filters.resetFilters')}
+            </Button>
+          )}
+        </div>
+
+        {/* Agent Table */}
+        <ForwardAgentListTable
+          forwardAgents={forwardAgents}
+          loading={isTableLoading}
+          page={pagination.page}
+          pageSize={pagination.pageSize}
+          total={pagination.total}
+          resourceGroupsMap={resourceGroupsMap}
+          onPageChange={handlePageChange}
+          onPageSizeChange={handlePageSizeChange}
+          onEdit={handleEdit}
+          onDelete={handleDeleteClick}
+          onEnable={handleEnable}
+          onDisable={handleDisable}
+          onRegenerateToken={handleTokenRegenerate}
+          onGetInstallScript={handleInstallScript}
+          onViewDetail={handleViewDetail}
+          onCopy={handleCopy}
+          onCheckUpdate={handleCheckUpdate}
+          onBroadcastURL={handleBroadcastToAgent}
+          onToggleMute={handleToggleMute}
+          checkingAgentId={checkingAgentId}
+          enableDragSort={dragSortEnabled}
+          onDragEnd={handleDragEnd}
+        />
+      </div>
+
+      {/* Desktop Dialogs */}
+      <CreateForwardAgentDialog
+        open={activeDialog === 'create'}
+        onClose={closeDialog}
+        onSubmit={handleCreateSubmit}
+        initialData={copyAgentData}
       />
 
-      {/* Token Display Dialog */}
+      <EditForwardAgentDialog
+        open={activeDialog === 'edit'}
+        agent={selectedAgent}
+        onClose={closeDialog}
+        onSubmit={handleUpdateSubmit}
+      />
+
+      <ForwardAgentDetailDialog
+        open={activeDialog === 'detail'}
+        agent={selectedAgent}
+        onClose={closeDialog}
+      />
+
       <TokenDialog
-        open={tokenDialogOpen}
+        open={activeDialog === 'token'}
         token={generatedToken?.token ?? null}
         title={t('admin.forwardAgents.token')}
         onClose={() => {
-          setTokenDialogOpen(false);
+          closeDialog();
           setGeneratedToken(null);
         }}
       />
 
-      {/* Install Script Dialog */}
       <InstallScriptDialog
-        open={installScriptDialogOpen}
+        open={activeDialog === 'installScript'}
         installCommandData={installCommandData}
         agentName={selectedAgent?.name}
         onClose={() => {
-          setInstallScriptDialogOpen(false);
+          closeDialog();
           setInstallCommandData(null);
-          setSelectedAgent(null);
         }}
       />
 
-      {/* Version Update Confirm Dialog */}
       <ConfirmDialog
-        open={updateConfirmOpen}
-        onOpenChange={(open) => {
-          if (!open) {
-            setUpdateConfirmOpen(false);
-            setUpdateAgent(null);
-            setVersionInfo(null);
-          }
-        }}
+        open={activeDialog === 'updateConfirm'}
+        onOpenChange={(open) => !open && closeDialog()}
         title={t('admin.forwardAgents.update.confirmTitle')}
         description={
-          versionInfo && updateAgent
+          versionInfo && selectedAgent
             ? t('admin.forwardAgents.update.confirmMessage', {
-                name: updateAgent.name,
+                name: selectedAgent.name,
                 currentVersion: versionInfo.currentVersion,
                 latestVersion: versionInfo.latestVersion,
               })
@@ -605,74 +721,32 @@ export const ForwardAgentsPage = () => {
         loading={triggerUpdateMutation.isPending}
       />
 
-      {/* Batch Update Dialog/Sheet */}
-      {isMobile ? (
-        <AgentBatchUpdateSheet
-          open={batchUpdateDialogOpen}
-          onOpenChange={(open) => {
-            setBatchUpdateDialogOpen(open);
-            if (!open) setBatchUpdateResult(null);
-          }}
-          agents={forwardAgents}
-          onBatchUpdate={(updateAll) => handleBatchUpdate({ updateAll })}
-          isUpdating={isBatchUpdating}
-          result={batchUpdateResult}
-        />
-      ) : (
-        <AgentBatchUpdateDialog
-          open={batchUpdateDialogOpen}
-          onClose={() => {
-            setBatchUpdateDialogOpen(false);
-            setBatchUpdateResult(null);
-          }}
-          agents={forwardAgents}
-          onBatchUpdate={(updateAll) => handleBatchUpdate({ updateAll })}
-          isUpdating={isBatchUpdating}
-          result={batchUpdateResult}
-        />
-      )}
-
-      {/* Broadcast URL Dialog/Sheet */}
-      {isMobile ? (
-        <BroadcastURLSheet
-          open={broadcastURLDialogOpen}
-          onOpenChange={(open) => {
-            setBroadcastURLDialogOpen(open);
-          }}
-          onBroadcast={handleBroadcastURL}
-          isBroadcasting={broadcastURLMutation.isPending}
-          onlineCount={stats.online}
-        />
-      ) : (
-        <BroadcastURLDialog
-          open={broadcastURLDialogOpen || broadcastTargetAgent !== null}
-          onClose={() => {
-            setBroadcastURLDialogOpen(false);
-            setBroadcastTargetAgent(null);
-          }}
-          onBroadcast={handleBroadcastURL}
-          isBroadcasting={broadcastURLMutation.isPending}
-          onlineCount={stats.online}
-          targetAgent={broadcastTargetAgent ? {
-            id: String(broadcastTargetAgent.id),
-            name: broadcastTargetAgent.name,
-            isOnline: !!broadcastTargetAgent.systemStatus,
-          } : null}
-          onNotifySingle={handleNotifyAgentURL}
-          isNotifying={notifyAgentURLMutation.isPending}
-        />
-      )}
-
-      {/* Delete Forward Agent Confirmation Sheet (Mobile only) */}
-      <DeleteForwardAgentSheet
-        open={deleteDialogOpen}
-        onOpenChange={(open) => {
-          setDeleteDialogOpen(open);
-          if (!open) setAgentToDelete(null);
+      <AgentBatchUpdateDialog
+        open={activeDialog === 'batchUpdate'}
+        onClose={() => {
+          closeDialog();
+          setBatchUpdateResult(null);
         }}
-        entity={agentToDelete}
-        onConfirm={handleDeleteConfirm}
+        agents={forwardAgents}
+        onBatchUpdate={(updateAll) => handleBatchUpdate({ updateAll })}
+        isUpdating={isBatchUpdating}
+        result={batchUpdateResult}
+      />
+
+      <BroadcastURLDialog
+        open={activeDialog === 'broadcast' || activeDialog === 'notifyURL'}
+        onClose={closeDialog}
+        onBroadcast={handleBroadcastURL}
+        isBroadcasting={broadcastURLMutation.isPending}
+        onlineCount={stats.online}
+        targetAgent={
+          activeDialog === 'notifyURL' && selectedAgent
+            ? { id: String(selectedAgent.id), name: selectedAgent.name, isOnline: !!selectedAgent.systemStatus }
+            : null
+        }
+        onNotifySingle={handleNotifyAgentURL}
+        isNotifying={notifyAgentURLMutation.isPending}
       />
     </AdminLayout>
   );
-};
+}

@@ -152,8 +152,8 @@ export const ViewPlanSubscriptionsSheet: React.FC<ViewPlanSubscriptionsSheetProp
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className={cn(
-                  'w-full h-10 pl-9 pr-3 rounded-lg text-sm',
-                  'bg-muted/50 border',
+                  'w-full h-10 pl-9 pr-3 rounded-xl text-sm',
+                  'bg-muted/50 ring-1 ring-border',
                   'placeholder:text-muted-foreground/60',
                   'focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary'
                 )}
@@ -198,7 +198,7 @@ export const ViewPlanSubscriptionsSheet: React.FC<ViewPlanSubscriptionsSheetProp
                   return (
                     <div
                       key={subscription.id}
-                      className="rounded-lg border p-3 bg-background"
+                      className="rounded-xl ring-1 ring-border p-3 bg-background"
                     >
                       <div className="flex items-start gap-3">
                         {/* Avatar */}

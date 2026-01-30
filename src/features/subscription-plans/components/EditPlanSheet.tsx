@@ -92,7 +92,7 @@ interface UpdatePlanFormData extends Omit<UpdatePlanRequest, 'limits'> {
 
 // Compact input styles for number inputs in grids
 const compactInputStyles = cn(
-  'w-full h-10 px-3 text-sm rounded-lg border bg-background',
+  'w-full h-10 px-3 text-sm rounded-xl ring-1 ring-border bg-background',
   'placeholder:text-muted-foreground/60',
   'focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary'
 );
@@ -246,7 +246,7 @@ export const EditPlanSheet: React.FC<EditPlanSheetProps> = ({
 
         <SheetBody className="space-y-4 py-3">
           {/* Read-only Information - Compact */}
-          <div className="rounded-lg border bg-muted/30 p-3 space-y-2">
+          <div className="rounded-xl ring-1 ring-border bg-muted/30 p-3 space-y-2">
             <div className="grid grid-cols-2 gap-2 text-sm">
               <div className="flex items-center justify-between">
                 <span className="text-xs text-muted-foreground">ID</span>
@@ -303,7 +303,7 @@ export const EditPlanSheet: React.FC<EditPlanSheetProps> = ({
             </div>
 
             {formData.pricings.length === 0 ? (
-              <div className="rounded-lg border border-destructive/20 bg-destructive/5 p-3">
+              <div className="rounded-xl ring-1 ring-destructive/20 bg-destructive/5 p-3">
                 <div className="flex items-center gap-2 text-destructive text-xs">
                   <AlertCircle className="size-3.5" />
                   <span>{t('admin.plans.form.pricingRequired')}</span>
@@ -312,7 +312,7 @@ export const EditPlanSheet: React.FC<EditPlanSheetProps> = ({
             ) : (
               <div className="space-y-2">
                 {formData.pricings.map((pricing, index) => (
-                  <div key={index} className="rounded-lg border p-3 space-y-2">
+                  <div key={index} className="rounded-xl ring-1 ring-border p-3 space-y-2">
                     <div className="flex items-center justify-between">
                       <span className="text-xs text-muted-foreground">{t('admin.plans.form.pricingNumber', { number: index + 1 })}</span>
                       <Button
@@ -336,10 +336,11 @@ export const EditPlanSheet: React.FC<EditPlanSheetProps> = ({
                         }}
                         disabled={loading}
                         className={cn(
-                          'w-full h-10 px-3 rounded-lg text-sm text-left',
+                          'w-full h-10 px-3 rounded-xl text-sm text-left',
                           'flex items-center justify-between',
-                          'border bg-background',
+                          'ring-1 ring-border bg-background',
                           'focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary',
+                          'active:scale-[0.98]',
                           loading && 'opacity-50 cursor-not-allowed'
                         )}
                       >
@@ -370,10 +371,11 @@ export const EditPlanSheet: React.FC<EditPlanSheetProps> = ({
                         }}
                         disabled={loading}
                         className={cn(
-                          'w-full h-10 px-3 rounded-lg text-sm text-left',
+                          'w-full h-10 px-3 rounded-xl text-sm text-left',
                           'flex items-center justify-between',
-                          'border bg-background',
+                          'ring-1 ring-border bg-background',
                           'focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary',
+                          'active:scale-[0.98]',
                           loading && 'opacity-50 cursor-not-allowed'
                         )}
                       >
@@ -586,7 +588,7 @@ export const EditPlanSheet: React.FC<EditPlanSheetProps> = ({
               disabled={loading}
               rows={2}
               className={cn(
-                'w-full px-3 py-2 rounded-lg border bg-background text-sm resize-none',
+                'w-full px-3 py-2 rounded-xl ring-1 ring-border bg-background text-sm resize-none',
                 'focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary',
                 'placeholder:text-muted-foreground/60'
               )}

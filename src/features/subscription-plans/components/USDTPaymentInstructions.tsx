@@ -88,7 +88,7 @@ export const USDTPaymentInstructions: React.FC<USDTPaymentInstructionsProps> = (
       </Alert>
 
       {/* Payment details */}
-      <div className="space-y-4 rounded-lg border border-border bg-muted/30 p-4">
+      <div className="space-y-4 rounded-xl ring-1 ring-border bg-muted/30 p-4">
         {/* Network */}
         <div className="flex items-center justify-between">
           <span className="text-sm text-muted-foreground">
@@ -120,9 +120,9 @@ export const USDTPaymentInstructions: React.FC<USDTPaymentInstructionsProps> = (
             </Button>
           </div>
           {/* QR Code and Address */}
-          <div className="flex flex-col sm:flex-row items-center gap-4 p-4 rounded-md bg-background border border-border">
+          <div className="flex flex-col sm:flex-row items-center gap-4 p-4 rounded-xl bg-background ring-1 ring-border">
             {/* QR Code */}
-            <div className="shrink-0 p-2 bg-white rounded-lg">
+            <div className="shrink-0 p-2 bg-white rounded-xl">
               <QRCodeSVG
                 value={receivingAddress}
                 size={120}
@@ -164,7 +164,7 @@ export const USDTPaymentInstructions: React.FC<USDTPaymentInstructionsProps> = (
               </span>
             </Button>
           </div>
-          <div className="flex items-center gap-2 p-3 rounded-md bg-background border border-border">
+          <div className="flex items-center gap-2 p-3 rounded-xl bg-background ring-1 ring-border">
             <span className="text-xl sm:text-2xl font-bold font-mono">
               {displayAmount}
             </span>

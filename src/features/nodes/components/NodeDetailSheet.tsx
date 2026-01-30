@@ -156,7 +156,7 @@ const DetailSection = ({
     <h3 className="text-[11px] font-medium text-muted-foreground uppercase tracking-wide mb-2 px-1">
       {title}
     </h3>
-    <div className="overflow-hidden rounded-lg bg-card border border-border">
+    <div className="overflow-hidden rounded-xl bg-card ring-1 ring-border">
       <dl className="divide-y divide-border">{children}</dl>
     </div>
   </div>
@@ -295,7 +295,7 @@ const SystemStatusSection = ({
         {t('admin.nodes.detail.systemStatus')}
       </h3>
 
-      <div className="overflow-hidden rounded-lg bg-card border border-border divide-y divide-border">
+      <div className="overflow-hidden rounded-xl bg-card ring-1 ring-border divide-y divide-border">
         {/* Connection & Version row */}
         <div className="px-3 py-2.5 flex items-center justify-between">
           <div className="flex items-center gap-2">
@@ -649,10 +649,10 @@ export const NodeDetailSheet = ({
                 }}
                 className={cn(
                   'flex-1 flex items-center justify-center gap-1.5',
-                  'h-11 rounded-lg',
+                  'h-11 rounded-xl',
                   'bg-primary text-primary-foreground',
                   'text-sm font-medium',
-                  'active:opacity-80 transition-opacity'
+                  'active:scale-[0.98] active:opacity-80 transition-all'
                 )}
               >
                 <Edit className="size-4" />
@@ -671,10 +671,10 @@ export const NodeDetailSheet = ({
                 }}
                 className={cn(
                   'flex-1 flex items-center justify-center gap-1.5',
-                  'h-11 rounded-lg',
+                  'h-11 rounded-xl',
                   'text-sm font-medium',
                   'border',
-                  'active:opacity-80 transition-opacity',
+                  'active:scale-[0.98] active:opacity-80 transition-all',
                   node.status === 'active'
                     ? 'border-warning/50 bg-warning/10 text-warning'
                     : 'border-success/50 bg-success/10 text-success'
@@ -697,10 +697,10 @@ export const NodeDetailSheet = ({
                 type="button"
                 onClick={() => setActionSheetOpen(true)}
                 className={cn(
-                  'size-11 rounded-lg shrink-0',
+                  'size-11 rounded-xl shrink-0',
                   'flex items-center justify-center',
                   'bg-muted text-muted-foreground',
-                  'active:opacity-80 transition-opacity'
+                  'active:scale-[0.98] active:opacity-80 transition-all'
                 )}
               >
                 <MoreHorizontal className="size-5" />

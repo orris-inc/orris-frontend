@@ -54,19 +54,29 @@ const PricingCard: React.FC<PricingCardProps> = ({
 
   // Build features list using i18n
   const features: string[] = [];
+
+  // Add description as a feature if exists
+  if (plan.description) {
+    features.push(plan.description);
+  }
+
+  // Traffic limit from limits
+  const trafficLimit = plan.limits?.trafficLimit as number | undefined;
+  if (trafficLimit && trafficLimit > 0) {
+    const gb = trafficLimit / (1024 * 1024 * 1024);
+    const trafficDisplay = gb >= 1024 ? `${(gb / 1024).toFixed(0)} TB` : `${gb.toFixed(0)} GB`;
+    features.push(t('pricing.features.traffic', { value: trafficDisplay }));
+  } else if (plan.planType === 'node' || plan.planType === 'hybrid') {
+    features.push(t('pricing.features.unlimitedTraffic'));
+  }
+
+  // Node limit
   if (plan.nodeLimit && plan.nodeLimit > 0) {
     features.push(
       plan.nodeLimit === 1
         ? t('pricing.features.oneNode')
         : t('pricing.features.nodes', { count: plan.nodeLimit })
     );
-  }
-  if (plan.trialDays > 0) {
-    features.push(t('pricing.features.trialDays', { count: plan.trialDays }));
-  }
-  // Add description as a feature if exists
-  if (plan.description) {
-    features.unshift(plan.description);
   }
 
   return (
@@ -137,7 +147,7 @@ const PricingCard: React.FC<PricingCardProps> = ({
       <button
         onClick={() => onSelect(plan)}
         className={cn(
-          'mt-6 inline-flex items-center justify-center rounded-full py-2.5 px-4 text-sm font-semibold transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2',
+          'mt-6 inline-flex items-center justify-center rounded-full py-2.5 px-4 text-sm font-semibold transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 active:scale-[0.98]',
           featured
             ? 'bg-white text-primary hover:bg-white/90 focus-visible:ring-white'
             : 'bg-slate-900 text-white hover:bg-slate-800 dark:bg-white dark:text-slate-900 dark:hover:bg-slate-100 focus-visible:ring-slate-900'
@@ -255,7 +265,7 @@ export const PublicPricingPage = () => {
                   'inline-flex items-center justify-center h-9 px-4 rounded-full',
                   'text-sm font-medium',
                   'bg-foreground text-background',
-                  'hover:bg-foreground/90 transition-colors'
+                  'hover:bg-foreground/90 transition-all active:scale-[0.98]'
                 )}
               >
                 {t('landing.nav.getStarted')}
@@ -317,7 +327,7 @@ export const PublicPricingPage = () => {
                     'inline-flex items-center justify-center w-full h-10 rounded-full',
                     'text-sm font-medium',
                     'bg-foreground text-background',
-                    'hover:bg-foreground/90 transition-colors'
+                    'hover:bg-foreground/90 transition-all active:scale-[0.98]'
                   )}
                 >
                   {t('landing.nav.getStarted')}

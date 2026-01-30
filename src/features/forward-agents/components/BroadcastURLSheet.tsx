@@ -112,7 +112,7 @@ export const BroadcastURLSheet: React.FC<BroadcastURLSheetProps> = ({
           {step === 'input' && (
             <div className="space-y-4">
               {/* Online count info */}
-              <div className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
+              <div className="flex items-center justify-between p-3 bg-muted/50 rounded-xl">
                 <span className="text-sm text-muted-foreground">
                   {t('admin.forwardAgents.broadcast.onlineNodeCount')}
                 </span>
@@ -120,7 +120,7 @@ export const BroadcastURLSheet: React.FC<BroadcastURLSheetProps> = ({
               </div>
 
               {!isTargetAvailable ? (
-                <div className="flex items-center gap-2 p-3 bg-warning/10 rounded-lg">
+                <div className="flex items-center gap-2 p-3 bg-warning/10 rounded-xl">
                   <AlertTriangle className="size-4 text-warning" />
                   <span className="text-sm text-warning">
                     {t('admin.forwardAgents.broadcast.noOnlineAgents')}
@@ -158,7 +158,7 @@ export const BroadcastURLSheet: React.FC<BroadcastURLSheetProps> = ({
                   </div>
 
                   {/* Hint */}
-                  <div className="flex items-start gap-2 p-3 bg-primary/5 rounded-lg">
+                  <div className="flex items-start gap-2 p-3 bg-primary/5 rounded-xl">
                     <Radio className="size-4 text-primary mt-0.5 shrink-0" />
                     <span className="text-xs text-muted-foreground">
                       {t('admin.forwardAgents.broadcast.agentAutoUpdateHint')}
@@ -173,7 +173,7 @@ export const BroadcastURLSheet: React.FC<BroadcastURLSheetProps> = ({
           {step === 'confirm' && (
             <div className="space-y-4">
               {/* Warning */}
-              <div className="p-4 bg-warning/10 border border-warning/20 rounded-lg">
+              <div className="p-4 bg-warning/10 ring-1 ring-warning/20 rounded-xl">
                 <div className="flex items-start gap-3">
                   <AlertTriangle className="size-5 text-warning mt-0.5 shrink-0" />
                   <div>
@@ -190,7 +190,7 @@ export const BroadcastURLSheet: React.FC<BroadcastURLSheetProps> = ({
               </div>
 
               {/* Summary */}
-              <div className="rounded-lg border divide-y">
+              <div className="rounded-xl ring-1 ring-border divide-y">
                 <div className="flex items-center justify-between px-4 py-3">
                   <span className="text-sm text-muted-foreground">{t('admin.forwardAgents.broadcast.newAddress')}</span>
                   <span className="font-mono text-sm truncate max-w-[180px]" title={newUrl}>
@@ -236,12 +236,12 @@ export const BroadcastURLSheet: React.FC<BroadcastURLSheetProps> = ({
           {step === 'result' && result && (
             <div className="space-y-4">
               <div className="grid grid-cols-2 gap-3">
-                <div className="p-4 bg-success/10 rounded-lg text-center">
+                <div className="p-4 bg-success/10 rounded-xl text-center">
                   <CheckCircle2 className="size-6 text-success mx-auto mb-2" />
                   <p className="text-2xl font-semibold text-success">{result.agentsNotified}</p>
                   <p className="text-sm text-success/80">{t('admin.forwardAgents.broadcast.notified')}</p>
                 </div>
-                <div className="p-4 bg-primary/10 rounded-lg text-center">
+                <div className="p-4 bg-primary/10 rounded-xl text-center">
                   <Radio className="size-6 text-primary mx-auto mb-2" />
                   <p className="text-2xl font-semibold text-primary">{result.agentsOnline}</p>
                   <p className="text-sm text-primary/80">{t('admin.forwardAgents.broadcast.onlineNodes')}</p>
@@ -249,7 +249,7 @@ export const BroadcastURLSheet: React.FC<BroadcastURLSheetProps> = ({
               </div>
 
               {result.agentsNotified > 0 && (
-                <div className="flex items-center gap-2 p-3 bg-success/10 rounded-lg">
+                <div className="flex items-center gap-2 p-3 bg-success/10 rounded-xl">
                   <CheckCircle2 className="size-4 text-success shrink-0" />
                   <span className="text-sm text-success">
                     {t('admin.forwardAgents.broadcast.notifySuccessSummary', { count: result.agentsNotified })}

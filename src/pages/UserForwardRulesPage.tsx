@@ -266,7 +266,7 @@ export const UserForwardRulesPage = () => {
 
             {/* Rule limit reached warning */}
             {isAtLimit && (
-              <div className="glass rounded-2xl flex items-start sm:items-center gap-3 p-3 sm:p-4 bg-amber-500/10 border border-amber-500/20">
+              <div className="glass rounded-xl flex items-start sm:items-center gap-3 p-3 sm:p-4 bg-amber-500/10 ring-1 ring-amber-500/20">
                 <AlertCircle className="h-5 w-5 text-amber-500 shrink-0 mt-0.5 sm:mt-0" />
                 <div className="flex-1 min-w-0">
                   <p className="font-medium text-amber-600 dark:text-amber-400 text-sm sm:text-base">{t('userForwardRules.limitReached.title')}</p>

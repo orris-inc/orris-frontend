@@ -137,7 +137,7 @@ export const UserNodeList: React.FC<UserNodeListProps> = ({
       <div className="@container">
         <div className="grid grid-cols-1 @md:grid-cols-2 gap-3 @sm:gap-4">
           {[1, 2, 3].map((i) => (
-            <div key={i} className="p-4 @sm:p-5 rounded-xl bg-card border">
+            <div key={i} className="p-4 @sm:p-5 rounded-xl bg-card ring-1 ring-border">
               <div className="flex items-start gap-3 mb-3">
                 <Skeleton className="size-10 rounded-lg shrink-0" />
                 <div className="flex-1 min-w-0 space-y-2">
@@ -160,7 +160,7 @@ export const UserNodeList: React.FC<UserNodeListProps> = ({
   if (nodes.length === 0) {
     return (
       <div className="@container">
-        <div className="flex flex-col items-center justify-center py-12 @sm:py-16 px-4 rounded-2xl bg-card border">
+        <div className="flex flex-col items-center justify-center py-12 @sm:py-16 px-4 rounded-xl bg-card ring-1 ring-border">
           <div className="size-16 @sm:size-20 rounded-full bg-muted/50 flex items-center justify-center mb-4">
             <Server className="size-8 @sm:size-10 text-muted-foreground/50" />
           </div>
@@ -186,10 +186,10 @@ export const UserNodeList: React.FC<UserNodeListProps> = ({
               className={cn(
                 'relative p-4 @sm:p-5 rounded-xl cursor-pointer touch-target',
                 'transition-all duration-200 group',
-                'bg-card border hover:shadow-md',
+                'bg-card ring-1 hover:shadow-md',
                 node.isOnline
-                  ? 'border-success/20 hover:border-success/40'
-                  : 'border-border hover:border-border/80',
+                  ? 'ring-success/20 hover:ring-success/40'
+                  : 'ring-border hover:ring-border/80',
                 'active:scale-[0.98]'
               )}
             >

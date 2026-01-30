@@ -108,7 +108,7 @@ export const UserSubscriptionDetailPage = () => {
       >
         <div className="space-y-4 md:space-y-6 animate-in fade-in duration-300 pb-safe">
           {/* Error message - glass card */}
-          <div className="flex flex-col items-center justify-center py-12 md:py-16 px-4 glass-elevated rounded-2xl">
+          <div className="flex flex-col items-center justify-center py-12 md:py-16 px-4 glass-elevated rounded-xl">
             <div className="p-4 rounded-2xl bg-destructive/10 mb-5 md:mb-6 ring-1 ring-destructive/20 animate-spring-in">
               <AlertCircle className="size-8 md:size-10 text-destructive" />
             </div>

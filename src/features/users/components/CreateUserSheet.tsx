@@ -267,7 +267,7 @@ export const CreateUserSheet: React.FC<CreateUserSheetProps> = ({
           </div>
 
           {/* Info hint */}
-          <div className="rounded-lg border bg-muted/30 p-3">
+          <div className="rounded-xl ring-1 ring-border bg-muted/30 p-3">
             <div className="flex items-start gap-2">
               <Lock className="size-4 text-muted-foreground mt-0.5 flex-shrink-0" />
               <p className="text-xs text-muted-foreground">

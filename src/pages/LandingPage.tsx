@@ -241,7 +241,7 @@ export const LandingPage = () => {
                   'inline-flex items-center justify-center h-9 px-4 rounded-full',
                   'text-sm font-medium',
                   'bg-foreground text-background',
-                  'hover:bg-foreground/90 active:bg-foreground/80',
+                  'hover:bg-foreground/90 active:bg-foreground/80 active:scale-[0.98]',
                   'focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring',
                   'transition-colors'
                 )}
@@ -324,7 +324,7 @@ export const LandingPage = () => {
                     'inline-flex items-center justify-center w-full h-12 rounded-full',
                     'text-base font-medium',
                     'bg-foreground text-background',
-                    'hover:bg-foreground/90 active:bg-foreground/80',
+                    'hover:bg-foreground/90 active:bg-foreground/80 active:scale-[0.98]',
                     'focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring',
                     'transition-colors'
                   )}
@@ -392,7 +392,7 @@ export const LandingPage = () => {
                 'inline-flex items-center justify-center gap-2 rounded-full font-medium',
                 'h-12 sm:h-11 px-8 w-full sm:w-auto text-base sm:text-sm',
                 'bg-primary text-primary-foreground',
-                'hover:bg-primary/90 active:bg-primary/80',
+                'hover:bg-primary/90 active:bg-primary/80 active:scale-[0.98]',
                 'focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring',
                 'transition-colors'
               )}
@@ -405,8 +405,8 @@ export const LandingPage = () => {
               className={cn(
                 'inline-flex items-center justify-center gap-2 rounded-full font-medium',
                 'h-12 sm:h-11 px-8 w-full sm:w-auto text-base sm:text-sm',
-                'border border-input bg-background',
-                'hover:bg-accent hover:text-accent-foreground active:bg-accent/80',
+                'ring-1 ring-border bg-background',
+                'hover:bg-accent hover:text-accent-foreground active:bg-accent/80 active:scale-[0.98]',
                 'focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring',
                 'transition-colors'
               )}
@@ -461,7 +461,7 @@ export const LandingPage = () => {
                   boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)',
                   transition: { duration: 0.2 },
                 }}
-                className="p-6 rounded-2xl bg-card border border-border cursor-pointer"
+                className="p-6 rounded-2xl bg-card ring-1 ring-border cursor-pointer active:scale-[0.98]"
               >
                 <div className="size-12 rounded-xl bg-primary/10 flex items-center justify-center mb-4">
                   <feature.icon className="size-6 text-primary" />
@@ -503,7 +503,7 @@ export const LandingPage = () => {
             <motion.div
               variants={fadeInUp}
               transition={{ duration: 0.5 }}
-              className="bg-card border border-border rounded-2xl p-6"
+              className="bg-card ring-1 ring-border rounded-2xl p-6"
             >
               {faqConfigs.map((faq, index) => (
                 <FAQItem
@@ -577,7 +577,7 @@ export const LandingPage = () => {
                     'inline-flex items-center justify-center gap-2 rounded-full font-medium',
                     'w-full sm:w-auto h-12 sm:h-11 px-8 text-base sm:text-sm',
                     'bg-white dark:bg-background text-primary',
-                    'hover:bg-white/90 dark:hover:bg-background/90 active:bg-white/80 dark:active:bg-background/80',
+                    'hover:bg-white/90 dark:hover:bg-background/90 active:bg-white/80 dark:active:bg-background/80 active:scale-[0.98]',
                     'focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white',
                     'transition-colors'
                   )}
@@ -590,8 +590,8 @@ export const LandingPage = () => {
                   className={cn(
                     'inline-flex items-center justify-center gap-2 rounded-full font-medium',
                     'w-full sm:w-auto h-12 sm:h-11 px-8 text-base sm:text-sm',
-                    'border border-white/30 text-white',
-                    'hover:bg-white/10 active:bg-white/20',
+                    'ring-1 ring-white/30 text-white',
+                    'hover:bg-white/10 active:bg-white/20 active:scale-[0.98]',
                     'focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white',
                     'transition-colors'
                   )}

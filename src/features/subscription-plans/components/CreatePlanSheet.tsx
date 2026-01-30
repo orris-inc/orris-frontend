@@ -94,7 +94,7 @@ const FORWARD_RULE_TYPES: ForwardRuleTypeOption[] = ['direct', 'entry', 'chain',
 // Plan type options (hybrid is not yet implemented)
 const PLAN_TYPES: PlanType[] = ['node', 'forward'];
 
-interface CreatePlanFormData extends Omit<CreatePlanRequest, 'limits' | 'pricings'> {
+interface CreatePlanFormData extends Omit<CreatePlanRequest, 'limits' | 'pricings' | 'nodeLimit'> {
   pricings: PricingOptionInput[];
   planLimits: PlanLimits;
 }
@@ -112,7 +112,6 @@ const getDefaultFormData = (): CreatePlanFormData => ({
   planType: 'node',
   description: '',
   isPublic: true,
-  trialDays: 0,
   sortOrder: 0,
   pricings: [getDefaultPricing()],
   planLimits: {},
@@ -120,7 +119,7 @@ const getDefaultFormData = (): CreatePlanFormData => ({
 
 // Compact input styles for number inputs in grids
 const compactInputStyles = cn(
-  'w-full h-10 px-3 text-sm rounded-lg border bg-background',
+  'w-full h-10 px-3 text-sm rounded-xl ring-1 ring-border bg-background',
   'placeholder:text-muted-foreground/60',
   'focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary'
 );
@@ -170,7 +169,6 @@ export const CreatePlanSheet: React.FC<CreatePlanSheetProps> = ({
         planType: initialPlan.planType || 'node',
         description: initialPlan.description || '',
         isPublic: initialPlan.isPublic,
-        trialDays: initialPlan.trialDays || 0,
         sortOrder: initialPlan.sortOrder || 0,
         pricings:
           initialPlan.pricings && initialPlan.pricings.length > 0
@@ -187,7 +185,7 @@ export const CreatePlanSheet: React.FC<CreatePlanSheetProps> = ({
       setFormData(getDefaultFormData());
     }
     setErrors({});
-  }, [open, initialPlan]);
+  }, [open, initialPlan, t]);
 
   const handleChange = useCallback((field: keyof CreatePlanFormData, value: unknown) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
@@ -263,8 +261,8 @@ export const CreatePlanSheet: React.FC<CreatePlanSheetProps> = ({
         description: formData.description,
         planType: formData.planType,
         limits,
+        nodeLimit: formData.planLimits.nodeLimit,
         isPublic: formData.isPublic,
-        trialDays: formData.trialDays,
         sortOrder: formData.sortOrder,
         pricings: formData.pricings,
       };
@@ -363,10 +361,11 @@ export const CreatePlanSheet: React.FC<CreatePlanSheetProps> = ({
                   onClick={() => !loading && setPlanTypeSheetOpen(true)}
                   disabled={loading}
                   className={cn(
-                    'w-full h-11 px-3 rounded-lg text-sm text-left',
+                    'w-full h-11 px-3 rounded-xl text-sm text-left',
                     'flex items-center justify-between',
-                    'border bg-background',
+                    'ring-1 ring-border bg-background',
                     'focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary',
+                    'active:scale-[0.98]',
                     loading && 'opacity-50 cursor-not-allowed'
                   )}
                 >
@@ -383,7 +382,7 @@ export const CreatePlanSheet: React.FC<CreatePlanSheetProps> = ({
                 />
               </div>
               <div className="flex items-end pb-0.5">
-                <div className="flex items-center gap-2 h-11 px-3 rounded-lg border bg-muted/30 w-full">
+                <div className="flex items-center gap-2 h-11 px-3 rounded-xl ring-1 ring-border bg-muted/30 w-full">
                   <Checkbox
                     id="plan-public"
                     checked={formData.isPublic}
@@ -418,7 +417,7 @@ export const CreatePlanSheet: React.FC<CreatePlanSheetProps> = ({
             </div>
 
             {formData.pricings.length === 0 ? (
-              <div className="rounded-lg border border-destructive/20 bg-destructive/5 p-3">
+              <div className="rounded-xl ring-1 ring-destructive/20 bg-destructive/5 p-3">
                 <div className="flex items-center gap-2 text-destructive text-xs">
                   <AlertCircle className="size-3.5" />
                   <span>{t('admin.plans.form.pricingRequired')}</span>
@@ -427,7 +426,7 @@ export const CreatePlanSheet: React.FC<CreatePlanSheetProps> = ({
             ) : (
               <div className="space-y-2">
                 {formData.pricings.map((pricing, index) => (
-                  <div key={index} className="rounded-lg border p-3 space-y-2">
+                  <div key={index} className="rounded-xl ring-1 ring-border p-3 space-y-2">
                     <div className="flex items-center justify-between">
                       <span className="text-xs text-muted-foreground">{t('admin.plans.form.pricingNumber', { number: index + 1 })}</span>
                       <Button
@@ -451,10 +450,11 @@ export const CreatePlanSheet: React.FC<CreatePlanSheetProps> = ({
                         }}
                         disabled={loading}
                         className={cn(
-                          'w-full h-10 px-3 rounded-lg text-sm text-left',
+                          'w-full h-10 px-3 rounded-xl text-sm text-left',
                           'flex items-center justify-between',
-                          'border bg-background',
+                          'ring-1 ring-border bg-background',
                           'focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary',
+                          'active:scale-[0.98]',
                           loading && 'opacity-50 cursor-not-allowed'
                         )}
                       >
@@ -485,10 +485,11 @@ export const CreatePlanSheet: React.FC<CreatePlanSheetProps> = ({
                         }}
                         disabled={loading}
                         className={cn(
-                          'w-full h-10 px-3 rounded-lg text-sm text-left',
+                          'w-full h-10 px-3 rounded-xl text-sm text-left',
                           'flex items-center justify-between',
-                          'border bg-background',
+                          'ring-1 ring-border bg-background',
                           'focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary',
+                          'active:scale-[0.98]',
                           loading && 'opacity-50 cursor-not-allowed'
                         )}
                       >
@@ -701,37 +702,22 @@ export const CreatePlanSheet: React.FC<CreatePlanSheetProps> = ({
               disabled={loading}
               rows={2}
               className={cn(
-                'w-full px-3 py-2 rounded-lg border bg-background text-sm resize-none',
+                'w-full px-3 py-2 rounded-xl ring-1 ring-border bg-background text-sm resize-none',
                 'focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary',
                 'placeholder:text-muted-foreground/60'
               )}
             />
-            <div className="grid grid-cols-2 gap-2">
-              <div className="space-y-1">
-                <label className="text-xs text-muted-foreground">{t('admin.plans.form.trialDays')}</label>
-                <input
-                  type="number"
-                  min="0"
-                  value={formData.trialDays || 0}
-                  onChange={(e) =>
-                    handleChange('trialDays', e.target.value === '' ? 0 : Number(e.target.value))
-                  }
-                  disabled={loading}
-                  className={compactInputStyles}
-                />
-              </div>
-              <div className="space-y-1">
-                <label className="text-xs text-muted-foreground">{t('common.fields.sortOrder')}</label>
-                <input
-                  type="number"
-                  value={formData.sortOrder || 0}
-                  onChange={(e) =>
-                    handleChange('sortOrder', e.target.value === '' ? 0 : Number(e.target.value))
-                  }
-                  disabled={loading}
-                  className={compactInputStyles}
-                />
-              </div>
+            <div className="space-y-1">
+              <label className="text-xs text-muted-foreground">{t('common.fields.sortOrder')}</label>
+              <input
+                type="number"
+                value={formData.sortOrder || 0}
+                onChange={(e) =>
+                  handleChange('sortOrder', e.target.value === '' ? 0 : Number(e.target.value))
+                }
+                disabled={loading}
+                className={compactInputStyles}
+              />
             </div>
           </div>
         </SheetBody>

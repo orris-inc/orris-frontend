@@ -151,7 +151,7 @@ export const EditUserSheet: React.FC<EditUserSheetProps> = ({
           {/* Read-only Info */}
           <div className="space-y-3">
             <h4 className="text-sm font-medium text-muted-foreground px-1">{t('common.sections.basicInfo')}</h4>
-            <div className="rounded-xl border bg-muted/30 p-4 space-y-3">
+            <div className="rounded-xl ring-1 ring-border bg-muted/30 p-4 space-y-3">
               <div className="flex items-center justify-between">
                 <span className="text-sm text-muted-foreground">{t('admin.users.edit.userId')}</span>
                 <TruncatedId id={user.id} />

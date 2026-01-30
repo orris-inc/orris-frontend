@@ -1,13 +1,14 @@
 /**
  * Subscription Management Page (Admin)
- * Tailwind UI Application UI style with PageHeader and AdminCard
+ * Tailwind Application UI style
+ * Mobile-first responsive design
  */
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Receipt, RefreshCw, CheckCircle2, Pause, Sparkles } from 'lucide-react';
+import { Receipt, RefreshCw, CheckCircle2, Pause, Sparkles, XCircle } from 'lucide-react';
 import { AdminLayout } from '@/layouts/AdminLayout';
-import { PageHeader } from '@/components/admin';
+import { PageHeader, type PageHeaderMeta, type PageHeaderBadge } from '@/components/admin';
 import { Button } from '@/components/common/Button';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/common/Tooltip';
 import { ConfirmDialog } from '@/components/common/ConfirmDialog';
@@ -29,17 +30,47 @@ import { ChangePlanDialog } from '@/features/subscriptions/components/ChangePlan
 import { ChangePlanSheet } from '@/features/subscriptions/components/ChangePlanSheet';
 import { MobileSubscriptionManagement } from '@/features/subscriptions/components/MobileSubscriptionManagement';
 import { SubscriptionFilters } from '@/features/subscriptions/components/SubscriptionFilters';
-import { adminCreateSubscription, adminUpdateSubscriptionStatus, adminDeleteSubscription } from '@/api/subscription';
-import { suspendSubscription, unsuspendSubscription, resetSubscriptionUsage, renewSubscription, changeSubscriptionPlan } from '@/api/admin';
+import {
+  adminCreateSubscription,
+  adminUpdateSubscriptionStatus,
+  adminDeleteSubscription,
+} from '@/api/subscription';
+import {
+  suspendSubscription,
+  unsuspendSubscription,
+  resetSubscriptionUsage,
+  renewSubscription,
+  changeSubscriptionPlan,
+} from '@/api/admin';
 import type { ChangePlanRequest, RenewSubscriptionRequest } from '@/api/admin/types';
 import type { Subscription } from '@/api/subscription/types';
 
-export const SubscriptionManagementPage: React.FC = () => {
+// ============================================================================
+// Types
+// ============================================================================
+
+type DialogType =
+  | 'detail'
+  | 'duplicate'
+  | 'cancel'
+  | 'delete'
+  | 'suspend'
+  | 'renew'
+  | 'changePlan'
+  | null;
+
+// ============================================================================
+// Main Component
+// ============================================================================
+
+export function SubscriptionManagementPage() {
   const { t } = useTranslation();
   usePageTitle(t('admin.subscriptions.pageTitle'));
 
   const { isMobile } = useBreakpoint();
+  const { showSuccess, showError } = useNotificationStore();
 
+  // Subscription data and operations
   const {
     subscriptions,
     pagination,
@@ -54,197 +85,245 @@ export const SubscriptionManagementPage: React.FC = () => {
     handleFiltersChange,
   } = useSubscriptionsPage();
 
-  const { showSuccess, showError } = useNotificationStore();
-
-  const [detailDialogOpen, setDetailDialogOpen] = useState(false);
-  const [duplicateDialogOpen, setDuplicateDialogOpen] = useState(false);
-  const [cancelDialogOpen, setCancelDialogOpen] = useState(false);
-  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
-  const [suspendDialogOpen, setSuspendDialogOpen] = useState(false);
+  // Dialog state management
+  const [activeDialog, setActiveDialog] = useState<DialogType>(null);
   const [selectedSubscription, setSelectedSubscription] = useState<Subscription | null>(null);
-  const [subscriptionToDelete, setSubscriptionToDelete] = useState<Subscription | null>(null);
-  const [subscriptionToSuspend, setSubscriptionToSuspend] = useState<Subscription | null>(null);
-  const [renewDialogOpen, setRenewDialogOpen] = useState(false);
-  const [changePlanDialogOpen, setChangePlanDialogOpen] = useState(false);
-  const [subscriptionToRenew, setSubscriptionToRenew] = useState<Subscription | null>(null);
-  const [subscriptionToChangePlan, setSubscriptionToChangePlan] = useState<Subscription | null>(null);
   const [refreshKey, setRefreshKey] = useState(0);
 
-  // Calculate subscription statistics (synced with SDK 2025-01-14)
+  // Calculate statistics from current page data
   const stats = useMemo(() => {
-    const total = pagination.total;
     const active = subscriptions.filter((s) => s.status === 'active').length;
     const trialing = subscriptions.filter((s) => s.status === 'trialing').length;
-    const inactive = subscriptions.filter((s) => s.status === 'inactive').length;
-    const pendingPayment = subscriptions.filter((s) => s.status === 'pending_payment').length;
-    const pastDue = subscriptions.filter((s) => s.status === 'past_due').length;
     const suspended = subscriptions.filter((s) => s.status === 'suspended').length;
     const cancelled = subscriptions.filter((s) => s.status === 'cancelled').length;
-    const expired = subscriptions.filter((s) => s.status === 'expired').length;
-    return { total, active, trialing, inactive, pendingPayment, pastDue, suspended, cancelled, expired };
+    return { total: pagination.total, active, trialing, suspended, cancelled };
   }, [subscriptions, pagination.total]);
 
-  const handleRefresh = () => {
+  // Page header badge
+  const headerBadge = useMemo(
+    (): PageHeaderBadge => ({
+      label: `${stats.total} ${t('admin.subscriptions.label')}`,
+      variant: 'default',
+    }),
+    [stats.total, t]
+  );
+
+  // Page header metadata
+  const headerMetadata = useMemo((): PageHeaderMeta[] => {
+    const items: PageHeaderMeta[] = [
+      { icon: CheckCircle2, text: `${stats.active} ${t('common.status.active')}` },
+    ];
+
+    if (stats.trialing > 0) {
+      items.push({ icon: Sparkles, text: `${stats.trialing} ${t('subscriptionStatus.trialing')}` });
+    }
+
+    if (stats.suspended > 0) {
+      items.push({ icon: Pause, text: `${stats.suspended} ${t('common.status.suspended')}` });
+    }
+
+    if (stats.cancelled > 0) {
+      items.push({ icon: XCircle, text: `${stats.cancelled} ${t('subscriptionStatus.cancelled')}` });
+    }
+
+    return items;
+  }, [stats, t]);
+
+  // Dialog handlers
+  const openDialog = useCallback((type: DialogType, subscription?: Subscription) => {
+    setSelectedSubscription(subscription ?? null);
+    setActiveDialog(type);
+  }, []);
+
+  const closeDialog = useCallback(() => {
+    setActiveDialog(null);
+    setSelectedSubscription(null);
+  }, []);
+
+  // Action handlers
+  const handleRefresh = useCallback(() => {
     setRefreshKey((k) => k + 1);
     refetch();
-  };
+  }, [refetch]);
 
-  const handleViewDetail = (subscription: Subscription) => {
-    setSelectedSubscription(subscription);
-    setDetailDialogOpen(true);
-  };
+  const handleViewDetail = useCallback(
+    (subscription: Subscription) => openDialog('detail', subscription),
+    [openDialog]
+  );
 
-  const handleDuplicate = (subscription: Subscription) => {
-    setSelectedSubscription(subscription);
-    setDuplicateDialogOpen(true);
-  };
+  const handleDuplicate = useCallback(
+    (subscription: Subscription) => openDialog('duplicate', subscription),
+    [openDialog]
+  );
 
-  const handleDuplicateSubmit = async (data: Parameters<typeof adminCreateSubscription>[0]) => {
-    try {
-      await adminCreateSubscription(data);
-      showSuccess(t('messages.subscriptionCreateSuccess'));
-      setDuplicateDialogOpen(false);
-      setSelectedSubscription(null);
-      refetch();
-    } catch {
-      showError(t('messages.subscriptionCreateFailed'));
-    }
-  };
+  const handleCancelClick = useCallback(
+    (subscription: Subscription) => openDialog('cancel', subscription),
+    [openDialog]
+  );
 
-  const handleActivate = async (subscription: Subscription) => {
-    try {
-      await adminUpdateSubscriptionStatus(subscription.id, { status: 'active' });
-      showSuccess(t('messages.subscriptionActivated'));
-      refetch();
-    } catch {
-      showError(t('messages.subscriptionActivateFailed'));
-    }
-  };
+  const handleSuspendClick = useCallback(
+    (subscription: Subscription) => openDialog('suspend', subscription),
+    [openDialog]
+  );
 
-  const handleCancelClick = (subscription: Subscription) => {
-    setSelectedSubscription(subscription);
-    setCancelDialogOpen(true);
-  };
+  const handleDeleteClick = useCallback(
+    (subscription: Subscription) => openDialog('delete', subscription),
+    [openDialog]
+  );
 
-  const handleCancelConfirm = async (reason: string, immediate: boolean) => {
-    if (!selectedSubscription) return;
-    try {
-      await adminUpdateSubscriptionStatus(selectedSubscription.id, {
-        status: 'cancelled',
-        reason,
-        immediate,
-      });
-      showSuccess(t('messages.subscriptionCancelled'));
-      setCancelDialogOpen(false);
-      setSelectedSubscription(null);
-      refetch();
-    } catch {
-      showError(t('messages.subscriptionCancelFailed'));
-    }
-  };
+  const handleRenewClick = useCallback(
+    (subscription: Subscription) => openDialog('renew', subscription),
+    [openDialog]
+  );
 
-  const handleRenewClick = (subscription: Subscription) => {
-    setSubscriptionToRenew(subscription);
-    setRenewDialogOpen(true);
-  };
+  const handleChangePlanClick = useCallback(
+    (subscription: Subscription) => openDialog('changePlan', subscription),
+    [openDialog]
+  );
 
-  const handleRenewConfirm = async (billingCycle?: RenewSubscriptionRequest['billingCycle']) => {
-    if (!subscriptionToRenew) return;
-    try {
-      await renewSubscription(subscriptionToRenew.id, billingCycle ? { billingCycle } : undefined);
-      showSuccess(t('messages.subscriptionRenewed'));
-      setRenewDialogOpen(false);
-      setSubscriptionToRenew(null);
-      refetch();
-    } catch {
-      showError(t('messages.subscriptionRenewFailed'));
-    }
-  };
+  // Direct action handlers (no dialog needed)
+  const handleActivate = useCallback(
+    async (subscription: Subscription) => {
+      try {
+        await adminUpdateSubscriptionStatus(subscription.id, { status: 'active' });
+        showSuccess(t('messages.subscriptionActivated'));
+        refetch();
+      } catch {
+        showError(t('messages.subscriptionActivateFailed'));
+      }
+    },
+    [showSuccess, showError, refetch, t]
+  );
 
-  const handleChangePlanClick = (subscription: Subscription) => {
-    setSubscriptionToChangePlan(subscription);
-    setChangePlanDialogOpen(true);
-  };
+  const handleUnsuspend = useCallback(
+    async (subscription: Subscription) => {
+      try {
+        await unsuspendSubscription(subscription.id);
+        showSuccess(t('messages.subscriptionUnsuspended'));
+        refetch();
+      } catch {
+        showError(t('messages.subscriptionUnsuspendFailed'));
+      }
+    },
+    [showSuccess, showError, refetch, t]
+  );
 
-  const handleChangePlanConfirm = async (data: ChangePlanRequest) => {
-    if (!subscriptionToChangePlan) return;
-    try {
-      await changeSubscriptionPlan(subscriptionToChangePlan.id, data);
-      showSuccess(t('messages.subscriptionPlanChanged'));
-      setChangePlanDialogOpen(false);
-      setSubscriptionToChangePlan(null);
-      refetch();
-    } catch {
-      showError(t('messages.subscriptionPlanChangeFailed'));
-    }
-  };
+  const handleResetUsage = useCallback(
+    async (subscription: Subscription) => {
+      try {
+        await resetSubscriptionUsage(subscription.id);
+        showSuccess(t('messages.subscriptionUsageReset'));
+        refetch();
+      } catch {
+        showError(t('messages.subscriptionUsageResetFailed'));
+      }
+    },
+    [showSuccess, showError, refetch, t]
+  );
 
-  const handleSuspendClick = (subscription: Subscription) => {
-    setSubscriptionToSuspend(subscription);
-    setSuspendDialogOpen(true);
-  };
+  // Form submission handlers
+  const handleDuplicateSubmit = useCallback(
+    async (data: Parameters<typeof adminCreateSubscription>[0]) => {
+      try {
+        await adminCreateSubscription(data);
+        showSuccess(t('messages.subscriptionCreateSuccess'));
+        closeDialog();
+        refetch();
+      } catch {
+        showError(t('messages.subscriptionCreateFailed'));
+      }
+    },
+    [showSuccess, showError, closeDialog, refetch, t]
+  );
 
-  const handleSuspendConfirm = async (reason: string) => {
-    if (!subscriptionToSuspend) return;
-    try {
-      await suspendSubscription(subscriptionToSuspend.id, { reason });
-      showSuccess(t('messages.subscriptionSuspended'));
-      setSuspendDialogOpen(false);
-      setSubscriptionToSuspend(null);
-      refetch();
-    } catch {
-      showError(t('messages.subscriptionSuspendFailed'));
-    }
-  };
+  const handleCancelConfirm = useCallback(
+    async (reason: string, immediate: boolean) => {
+      if (!selectedSubscription) return;
+      try {
+        await adminUpdateSubscriptionStatus(selectedSubscription.id, {
+          status: 'cancelled',
+          reason,
+          immediate,
+        });
+        showSuccess(t('messages.subscriptionCancelled'));
+        closeDialog();
+        refetch();
+      } catch {
+        showError(t('messages.subscriptionCancelFailed'));
+      }
+    },
+    [selectedSubscription, showSuccess, showError, closeDialog, refetch, t]
+  );
 
-  const handleUnsuspend = async (subscription: Subscription) => {
-    try {
-      await unsuspendSubscription(subscription.id);
-      showSuccess(t('messages.subscriptionUnsuspended'));
-      refetch();
-    } catch {
-      showError(t('messages.subscriptionUnsuspendFailed'));
-    }
-  };
+  const handleSuspendConfirm = useCallback(
+    async (reason: string) => {
+      if (!selectedSubscription) return;
+      try {
+        await suspendSubscription(selectedSubscription.id, { reason });
+        showSuccess(t('messages.subscriptionSuspended'));
+        closeDialog();
+        refetch();
+      } catch {
+        showError(t('messages.subscriptionSuspendFailed'));
+      }
+    },
+    [selectedSubscription, showSuccess, showError, closeDialog, refetch, t]
+  );
 
-  const handleResetUsage = async (subscription: Subscription) => {
-    try {
-      await resetSubscriptionUsage(subscription.id);
-      showSuccess(t('messages.subscriptionUsageReset'));
-      refetch();
-    } catch {
-      showError(t('messages.subscriptionUsageResetFailed'));
-    }
-  };
+  const handleDeleteConfirm = useCallback(
+    async (subscription?: Subscription) => {
+      const target = subscription ?? selectedSubscription;
+      if (!target) return;
+      try {
+        await adminDeleteSubscription(target.id);
+        showSuccess(t('messages.subscriptionDeleted'));
+        closeDialog();
+        refetch();
+      } catch {
+        showError(t('messages.subscriptionDeleteFailed'));
+      }
+    },
+    [selectedSubscription, showSuccess, showError, closeDialog, refetch, t]
+  );
 
-  const handleDeleteClick = (subscription: Subscription) => {
-    setSubscriptionToDelete(subscription);
-    setDeleteDialogOpen(true);
-  };
+  const handleRenewConfirm = useCallback(
+    async (billingCycle?: RenewSubscriptionRequest['billingCycle']) => {
+      if (!selectedSubscription) return;
+      try {
+        await renewSubscription(selectedSubscription.id, billingCycle ? { billingCycle } : undefined);
+        showSuccess(t('messages.subscriptionRenewed'));
+        closeDialog();
+        refetch();
+      } catch {
+        showError(t('messages.subscriptionRenewFailed'));
+      }
+    },
+    [selectedSubscription, showSuccess, showError, closeDialog, refetch, t]
+  );
 
-  const handleDeleteConfirm = async (subscription: Subscription) => {
-    try {
-      await adminDeleteSubscription(subscription.id);
-      showSuccess(t('messages.subscriptionDeleted'));
-      setDeleteDialogOpen(false);
-      setSubscriptionToDelete(null);
-      refetch();
-    } catch {
-      showError(t('messages.subscriptionDeleteFailed'));
-    }
-  };
+  const handleChangePlanConfirm = useCallback(
+    async (data: ChangePlanRequest) => {
+      if (!selectedSubscription) return;
+      try {
+        await changeSubscriptionPlan(selectedSubscription.id, data);
+        showSuccess(t('messages.subscriptionPlanChanged'));
+        closeDialog();
+        refetch();
+      } catch {
+        showError(t('messages.subscriptionPlanChangeFailed'));
+      }
+    },
+    [selectedSubscription, showSuccess, showError, closeDialog, refetch, t]
+  );
 
-  // Wrapper for desktop ConfirmDialog which doesn't pass entity
-  const handleDesktopDeleteConfirm = async () => {
-    if (!subscriptionToDelete) return;
-    await handleDeleteConfirm(subscriptionToDelete);
-  };
+  // Get user for selected subscription
+  const selectedUser = selectedSubscription ? usersMap[selectedSubscription.userId] : undefined;
 
-  // Mobile view - uses MobileSubscriptionManagement with built-in detail sheet
+  // Mobile layout
   if (isMobile) {
     return (
       <AdminLayout>
-        <div className="py-3">
+        <div className="py-3 pb-safe">
           <MobileSubscriptionManagement
             subscriptions={subscriptions}
             usersMap={usersMap}
@@ -269,120 +348,69 @@ export const SubscriptionManagementPage: React.FC = () => {
           />
         </div>
 
-        {/* Duplicate Subscription Sheet */}
+        {/* Mobile Sheets */}
         <DuplicateSubscriptionSheet
-          open={duplicateDialogOpen}
-          onOpenChange={(open) => {
-            if (!open) {
-              setDuplicateDialogOpen(false);
-              setSelectedSubscription(null);
-            }
-          }}
+          open={activeDialog === 'duplicate'}
+          onOpenChange={(open) => !open && closeDialog()}
           subscription={selectedSubscription}
-          user={selectedSubscription ? usersMap[selectedSubscription.userId] : undefined}
+          user={selectedUser}
           onSubmit={handleDuplicateSubmit}
         />
 
-        {/* Cancel Subscription Sheet */}
         <CancelSubscriptionSheet
-          open={cancelDialogOpen}
-          onOpenChange={(open) => {
-            if (!open) {
-              setCancelDialogOpen(false);
-              setSelectedSubscription(null);
-            }
-          }}
+          open={activeDialog === 'cancel'}
+          onOpenChange={(open) => !open && closeDialog()}
           subscription={selectedSubscription}
           onConfirm={handleCancelConfirm}
         />
 
-        {/* Suspend Subscription Sheet */}
         <SuspendSubscriptionSheet
-          open={suspendDialogOpen}
-          onOpenChange={(open) => {
-            if (!open) {
-              setSuspendDialogOpen(false);
-              setSubscriptionToSuspend(null);
-            }
-          }}
-          subscription={subscriptionToSuspend}
+          open={activeDialog === 'suspend'}
+          onOpenChange={(open) => !open && closeDialog()}
+          subscription={selectedSubscription}
           onConfirm={handleSuspendConfirm}
         />
 
-        {/* Delete Subscription Sheet */}
         <DeleteSubscriptionSheet
-          open={deleteDialogOpen}
-          onOpenChange={(open) => {
-            if (!open) {
-              setDeleteDialogOpen(false);
-              setSubscriptionToDelete(null);
-            }
-          }}
-          entity={subscriptionToDelete}
-          user={subscriptionToDelete ? usersMap[subscriptionToDelete.userId] : undefined}
+          open={activeDialog === 'delete'}
+          onOpenChange={(open) => !open && closeDialog()}
+          entity={selectedSubscription}
+          user={selectedUser}
           onConfirm={handleDeleteConfirm}
         />
 
-        {/* Renew Subscription Sheet */}
         <RenewSubscriptionSheet
-          open={renewDialogOpen}
-          onOpenChange={(open) => {
-            if (!open) {
-              setRenewDialogOpen(false);
-              setSubscriptionToRenew(null);
-            }
-          }}
-          subscription={subscriptionToRenew}
+          open={activeDialog === 'renew'}
+          onOpenChange={(open) => !open && closeDialog()}
+          subscription={selectedSubscription}
           onConfirm={handleRenewConfirm}
         />
 
-        {/* Change Plan Sheet */}
         <ChangePlanSheet
-          open={changePlanDialogOpen}
-          onOpenChange={(open) => {
-            if (!open) {
-              setChangePlanDialogOpen(false);
-              setSubscriptionToChangePlan(null);
-            }
-          }}
-          subscription={subscriptionToChangePlan}
+          open={activeDialog === 'changePlan'}
+          onOpenChange={(open) => !open && closeDialog()}
+          subscription={selectedSubscription}
           onConfirm={handleChangePlanConfirm}
         />
       </AdminLayout>
     );
   }
 
-  // Desktop view - Tailwind UI Application UI style
+  // Desktop layout
   return (
     <AdminLayout>
-      <div className="space-y-6">
-        {/* Page Header with badge and stats metadata */}
+      <div className="space-y-6 py-4 pb-safe lg:py-6">
+        {/* Page Header */}
         <PageHeader
           title={t('admin.subscriptions.pageTitle')}
           icon={Receipt}
-          badge={{ label: `${stats.total} ${t('admin.subscriptions.label')}`, variant: 'default' }}
-          metadata={
-            [
-              { icon: CheckCircle2, text: `${stats.active} ${t('common.status.active')}` },
-              stats.trialing > 0 && {
-                icon: Sparkles,
-                text: `${stats.trialing} ${t('subscriptionStatus.trialing')}`,
-              },
-              stats.suspended > 0 && {
-                icon: Pause,
-                text: `${stats.suspended} ${t('common.status.suspended')}`,
-              },
-            ].filter(Boolean) as { icon: typeof Receipt; text: string }[]
-          }
+          badge={headerBadge}
+          metadata={headerMetadata}
           action={
             <Tooltip>
               <TooltipTrigger asChild>
                 <Button variant="ghost" size="icon" onClick={handleRefresh}>
-                  <RefreshCw
-                    key={refreshKey}
-                    className="size-4 animate-spin-once"
-                    strokeWidth={1.5}
-                  />
+                  <RefreshCw key={refreshKey} className="size-4" strokeWidth={1.5} />
                   <span className="sr-only">{t('common.actions.refresh')}</span>
                 </Button>
               </TooltipTrigger>
@@ -391,13 +419,10 @@ export const SubscriptionManagementPage: React.FC = () => {
           }
         />
 
-        {/* Unified Filters */}
-        <SubscriptionFilters
-          filters={filters}
-          onFiltersChange={handleFiltersChange}
-        />
+        {/* Filters */}
+        <SubscriptionFilters filters={filters} onFiltersChange={handleFiltersChange} />
 
-        {/* Subscription List Table */}
+        {/* Subscription Table */}
         <SubscriptionListTable
           subscriptions={subscriptions}
           usersMap={usersMap}
@@ -421,87 +446,60 @@ export const SubscriptionManagementPage: React.FC = () => {
         />
       </div>
 
-      {/* Dialogs */}
-      {/* Subscription Detail Dialog */}
+      {/* Desktop Dialogs */}
       <SubscriptionDetailDialog
-        open={detailDialogOpen}
+        open={activeDialog === 'detail'}
         subscription={selectedSubscription}
-        user={selectedSubscription ? usersMap[selectedSubscription.userId] : undefined}
-        onClose={() => {
-          setDetailDialogOpen(false);
-          setSelectedSubscription(null);
-        }}
+        user={selectedUser}
+        onClose={closeDialog}
       />
 
-      {/* Duplicate Subscription Dialog */}
       <DuplicateSubscriptionDialog
-        open={duplicateDialogOpen}
+        open={activeDialog === 'duplicate'}
         subscription={selectedSubscription}
-        user={selectedSubscription ? usersMap[selectedSubscription.userId] : undefined}
-        onClose={() => {
-          setDuplicateDialogOpen(false);
-          setSelectedSubscription(null);
-        }}
+        user={selectedUser}
+        onClose={closeDialog}
         onSubmit={handleDuplicateSubmit}
       />
 
-      {/* Cancel Subscription Dialog */}
       <CancelSubscriptionDialog
-        open={cancelDialogOpen}
+        open={activeDialog === 'cancel'}
         subscription={selectedSubscription}
-        onClose={() => {
-          setCancelDialogOpen(false);
-          setSelectedSubscription(null);
-        }}
+        onClose={closeDialog}
         onConfirm={handleCancelConfirm}
       />
 
-      {/* Suspend Subscription Sheet (Desktop) */}
       <SuspendSubscriptionSheet
-        open={suspendDialogOpen}
-        onOpenChange={(open) => {
-          if (!open) {
-            setSuspendDialogOpen(false);
-            setSubscriptionToSuspend(null);
-          }
-        }}
-        subscription={subscriptionToSuspend}
+        open={activeDialog === 'suspend'}
+        onOpenChange={(open) => !open && closeDialog()}
+        subscription={selectedSubscription}
         onConfirm={handleSuspendConfirm}
       />
 
-      {/* Delete Subscription Confirm Dialog */}
+      <RenewSubscriptionDialog
+        open={activeDialog === 'renew'}
+        subscription={selectedSubscription}
+        onClose={closeDialog}
+        onConfirm={handleRenewConfirm}
+      />
+
+      <ChangePlanDialog
+        open={activeDialog === 'changePlan'}
+        subscription={selectedSubscription}
+        onClose={closeDialog}
+        onConfirm={handleChangePlanConfirm}
+      />
+
       <ConfirmDialog
-        open={deleteDialogOpen}
-        onOpenChange={setDeleteDialogOpen}
+        open={activeDialog === 'delete'}
+        onOpenChange={(open) => !open && closeDialog()}
         title={t('admin.subscriptions.confirmDeleteTitle')}
         description={t('common.messages.confirmDelete')}
         confirmText={t('common.actions.delete')}
         cancelText={t('common.actions.cancel')}
         variant="destructive"
-        onConfirm={handleDesktopDeleteConfirm}
-      />
-
-      {/* Renew Subscription Dialog */}
-      <RenewSubscriptionDialog
-        open={renewDialogOpen}
-        subscription={subscriptionToRenew}
-        onClose={() => {
-          setRenewDialogOpen(false);
-          setSubscriptionToRenew(null);
-        }}
-        onConfirm={handleRenewConfirm}
-      />
-
-      {/* Change Plan Dialog */}
-      <ChangePlanDialog
-        open={changePlanDialogOpen}
-        subscription={subscriptionToChangePlan}
-        onClose={() => {
-          setChangePlanDialogOpen(false);
-          setSubscriptionToChangePlan(null);
-        }}
-        onConfirm={handleChangePlanConfirm}
+        onConfirm={() => handleDeleteConfirm()}
       />
     </AdminLayout>
   );
-};
+}

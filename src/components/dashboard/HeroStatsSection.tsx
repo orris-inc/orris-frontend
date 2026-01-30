@@ -109,7 +109,7 @@ const HeroStatsSkeleton = ({ className }: { className?: string }) => (
     {[1, 2].map((i) => (
       <div
         key={i}
-        className="rounded-xl border bg-card/80 p-3 sm:p-4 animate-pulse"
+        className="rounded-xl ring-1 ring-border bg-card/80 p-3 sm:p-4 animate-pulse"
       >
         <div className="flex items-center gap-2 mb-2">
           <div className="hidden sm:block size-7 rounded-lg bg-muted" />
@@ -158,7 +158,7 @@ export const HeroStatsSection = ({
       <section
         className={cn(
           // Hero gradient background
-          'rounded-xl border bg-gradient-to-br from-primary/5 via-transparent to-transparent',
+          'rounded-xl ring-1 ring-border bg-gradient-to-br from-primary/5 via-transparent to-transparent',
           'p-3 sm:p-4',
           className
         )}
@@ -206,7 +206,7 @@ export const HeroStatsSection = ({
     <section
       className={cn(
         // Hero gradient background
-        'rounded-xl border bg-gradient-to-br from-primary/5 via-transparent to-transparent',
+        'rounded-xl ring-1 ring-border bg-gradient-to-br from-primary/5 via-transparent to-transparent',
         'p-3 sm:p-4',
         className
       )}
@@ -234,7 +234,7 @@ export const HeroStatsSection = ({
         {stats.nearestExpiry && nearestDays !== null && (
           <div
             className={cn(
-              'col-span-2 rounded-xl border bg-card/80 backdrop-blur-sm',
+              'col-span-2 rounded-xl ring-1 ring-border bg-card/80 backdrop-blur-sm',
               'p-3 sm:p-4',
               'flex items-center gap-3'
             )}

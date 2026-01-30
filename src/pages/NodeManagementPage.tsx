@@ -1,9 +1,10 @@
 /**
  * Node Management Page (Admin)
- * Tailwind UI Application UI style
+ * Tailwind Application UI style
+ * Mobile-first responsive design
  */
 
-import { useState, useMemo, lazy, Suspense } from 'react';
+import { useState, useMemo, useCallback, lazy, Suspense } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   Server,
@@ -13,9 +14,14 @@ import {
   Activity,
   CheckCircle2,
   Radio,
+  XCircle,
 } from 'lucide-react';
+import { AdminLayout } from '@/layouts/AdminLayout';
+import { PageHeader, type PageHeaderMeta, type PageHeaderBadge } from '@/components/admin';
 import { Button } from '@/components/common/Button';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/common/Tooltip';
+import { usePageTitle } from '@/shared/hooks';
+import { useBreakpoint } from '@/hooks/useBreakpoint';
 import { NodeListTable } from '@/features/nodes/components/NodeListTable';
 import { NodeFilters } from '@/features/nodes/components/NodeFilters';
 import { CreateNodeSheet } from '@/features/nodes/components/CreateNodeSheet';
@@ -25,55 +31,58 @@ import { MobileNodeManagement } from '@/features/nodes/components/MobileNodeMana
 import { useNodesPage, useBroadcastNodeAPIURL, useNotifyNodeAPIURL } from '@/features/nodes/hooks/useNodes';
 import { useResourceGroups } from '@/features/resource-groups/hooks/useResourceGroups';
 import { useSubscriptionPlans } from '@/features/subscription-plans/hooks/useSubscriptionPlans';
-import { AdminLayout } from '@/layouts/AdminLayout';
-import { PageHeader } from '@/components/admin';
-import { usePageTitle } from '@/shared/hooks';
-import { useBreakpoint } from '@/hooks/useBreakpoint';
 import type { Node, UpdateNodeRequest, CreateNodeRequest } from '@/api/node';
 
 // Lazy load dialog components
 const CreateNodeDialog = lazy(() =>
-  import('@/features/nodes/components/CreateNodeDialog').then((m) => ({
-    default: m.CreateNodeDialog,
-  }))
+  import('@/features/nodes/components/CreateNodeDialog').then((m) => ({ default: m.CreateNodeDialog }))
 );
 const EditNodeDialog = lazy(() =>
-  import('@/features/nodes/components/EditNodeDialog').then((m) => ({
-    default: m.EditNodeDialog,
-  }))
+  import('@/features/nodes/components/EditNodeDialog').then((m) => ({ default: m.EditNodeDialog }))
 );
 const NodeDetailDialog = lazy(() =>
-  import('@/features/nodes/components/NodeDetailDialog').then((m) => ({
-    default: m.NodeDetailDialog,
-  }))
+  import('@/features/nodes/components/NodeDetailDialog').then((m) => ({ default: m.NodeDetailDialog }))
 );
 const NodeInstallScriptDialog = lazy(() =>
-  import('@/features/nodes/components/NodeInstallScriptDialog').then((m) => ({
-    default: m.NodeInstallScriptDialog,
-  }))
+  import('@/features/nodes/components/NodeInstallScriptDialog').then((m) => ({ default: m.NodeInstallScriptDialog }))
 );
 const BatchUpdateDialog = lazy(() =>
-  import('@/features/nodes/components/BatchUpdateDialog').then((m) => ({
-    default: m.BatchUpdateDialog,
-  }))
+  import('@/features/nodes/components/BatchUpdateDialog').then((m) => ({ default: m.BatchUpdateDialog }))
 );
 const BroadcastNodeURLDialog = lazy(() =>
-  import('@/features/nodes/components/BroadcastNodeURLDialog').then((m) => ({
-    default: m.BroadcastNodeURLDialog,
-  }))
+  import('@/features/nodes/components/BroadcastNodeURLDialog').then((m) => ({ default: m.BroadcastNodeURLDialog }))
 );
 const TokenDialog = lazy(() =>
-  import('@/components/common/TokenDialog').then((m) => ({
-    default: m.TokenDialog,
-  }))
+  import('@/components/common/TokenDialog').then((m) => ({ default: m.TokenDialog }))
 );
 
-export const NodeManagementPage = () => {
+// ============================================================================
+// Types
+// ============================================================================
+
+type DialogType =
+  | 'create'
+  | 'edit'
+  | 'detail'
+  | 'delete'
+  | 'token'
+  | 'installScript'
+  | 'batchUpdate'
+  | 'broadcast'
+  | 'notifyURL'
+  | null;
+
+// ============================================================================
+// Main Component
+// ============================================================================
+
+export function NodeManagementPage() {
   const { t } = useTranslation();
   usePageTitle(t('nav.nodeAgent'));
 
   const { isMobile } = useBreakpoint();
 
+  // Node data and operations
   const {
     nodes,
     pagination,
@@ -112,7 +121,15 @@ export const NodeManagementPage = () => {
   const { resourceGroups, isLoading: isResourceGroupsLoading } = useResourceGroups({ pageSize: 100 });
   const { plans, isLoading: isPlansLoading } = useSubscriptionPlans({ pageSize: 100 });
 
-  // Filter out forward type plans, only show node/hybrid types
+  // Dialog state management
+  const [activeDialog, setActiveDialog] = useState<DialogType>(null);
+  const [selectedNode, setSelectedNode] = useState<Node | null>(null);
+  const [copyNodeData, setCopyNodeData] = useState<Partial<CreateNodeRequest> | undefined>(undefined);
+  const [installScriptNodeName, setInstallScriptNodeName] = useState('');
+  const [dragSortEnabled, setDragSortEnabled] = useState(false);
+  const [refreshKey, setRefreshKey] = useState(0);
+
+  // Filter resource groups for node/hybrid plans only
   const filteredResourceGroups = useMemo(() => {
     if (!plans.length) return resourceGroups;
     const planTypeMap = new Map(plans.map((plan) => [plan.id, plan.planType]));
@@ -123,396 +140,418 @@ export const NodeManagementPage = () => {
   }, [resourceGroups, plans]);
 
   const resourceGroupsMap = useMemo(() => {
-    const map: Record<string, typeof filteredResourceGroups[0]> = {};
+    const map: Record<string, (typeof filteredResourceGroups)[0]> = {};
     filteredResourceGroups.forEach((group) => {
       map[group.sid] = group;
     });
     return map;
   }, [filteredResourceGroups]);
 
-  const nodesForOutbound = useMemo(() => {
-    return nodes.map((node) => ({
-      id: node.id,
-      name: node.name,
-    }));
-  }, [nodes]);
+  const nodesForOutbound = useMemo(
+    () => nodes.map((node) => ({ id: node.id, name: node.name })),
+    [nodes]
+  );
 
-  // Calculate stats from all nodes (before filtering)
+  // Calculate statistics
   const stats = useMemo(() => {
-    const total = pagination.total;
     const online = nodes.filter((n) => n.isOnline).length;
     const offline = nodes.filter((n) => !n.isOnline).length;
     const active = nodes.filter((n) => n.status === 'active').length;
-    const inactive = nodes.filter((n) => n.status === 'inactive').length;
     const updatable = nodes.filter((n) => n.hasUpdate && n.isOnline).length;
-    return { total, online, offline, active, inactive, updatable };
+    return { total: pagination.total, online, offline, active, updatable };
   }, [nodes, pagination.total]);
 
-  const [editDialogOpen, setEditDialogOpen] = useState(false);
-  const [createDialogOpen, setCreateDialogOpen] = useState(false);
-  const [detailDialogOpen, setDetailDialogOpen] = useState(false);
-  const [selectedNode, setSelectedNode] = useState<Node | null>(null);
-  const [tokenDialogOpen, setTokenDialogOpen] = useState(false);
-  const [installScriptDialogOpen, setInstallScriptDialogOpen] = useState(false);
-  const [installScriptNodeName, setInstallScriptNodeName] = useState<string>('');
-  const [copyNodeData, setCopyNodeData] = useState<Partial<CreateNodeRequest> | undefined>(undefined);
-  const [refreshKey, setRefreshKey] = useState(0);
-  const [batchUpdateDialogOpen, setBatchUpdateDialogOpen] = useState(false);
-  const [broadcastURLDialogOpen, setBroadcastURLDialogOpen] = useState(false);
-  const [notifyURLNode, setNotifyURLNode] = useState<Node | null>(null);
-  const [dragSortEnabled, setDragSortEnabled] = useState(false);
-  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
-  const [nodeToDelete, setNodeToDelete] = useState<Node | null>(null);
+  // Page header badge
+  const headerBadge = useMemo(
+    (): PageHeaderBadge => ({
+      label: `${stats.total} ${t('admin.nodes.nodesUnit')}`,
+      variant: 'default',
+    }),
+    [stats.total, t]
+  );
 
-  const handleEdit = (node: Node) => {
-    setSelectedNode(node);
-    setEditDialogOpen(true);
-  };
+  // Page header metadata
+  const headerMetadata = useMemo((): PageHeaderMeta[] => {
+    const items: PageHeaderMeta[] = [
+      { icon: Activity, text: `${stats.online} ${t('common.status.online')}` },
+      { icon: CheckCircle2, text: `${stats.active} ${t('common.status.active')}` },
+    ];
 
-  const handleDelete = async (node: Node) => {
-    if (isMobile) {
-      setNodeToDelete(node);
-      setDeleteDialogOpen(true);
-    } else {
-      if (window.confirm(t('admin.nodes.confirmDelete', { name: node.name, address: node.serverAddress, port: node.agentPort }))) {
-        await deleteNode(node.id);
-      }
+    if (stats.offline > 0) {
+      items.push({ icon: XCircle, text: `${stats.offline} ${t('common.status.offline')}` });
     }
-  };
 
-  const handleDeleteConfirm = async (node: Node) => {
-    await deleteNode(node.id);
-  };
+    return items;
+  }, [stats, t]);
 
-  const handleActivate = async (node: Node) => {
-    await updateNodeStatus(node.id, 'active');
-  };
+  // Dialog handlers
+  const openDialog = useCallback((type: DialogType, node?: Node) => {
+    setSelectedNode(node ?? null);
+    setActiveDialog(type);
+  }, []);
 
-  const handleDeactivate = async (node: Node) => {
-    await updateNodeStatus(node.id, 'inactive');
-  };
+  const closeDialog = useCallback(() => {
+    setActiveDialog(null);
+    setSelectedNode(null);
+    setCopyNodeData(undefined);
+    setInstallScriptNodeName('');
+  }, []);
 
-  const handleTokenGenerate = async (node: Node) => {
-    const token = await handleGenerateToken(node.id);
-    if (token) {
-      setTokenDialogOpen(true);
-    }
-  };
-
-  const handleInstallScript = async (node: Node) => {
-    setInstallScriptNodeName(node.name);
-    const data = await handleGetInstallScript(node.id);
-    if (data) {
-      setInstallScriptDialogOpen(true);
-    }
-  };
-
-  const handleViewDetail = (node: Node) => {
-    setSelectedNode(node);
-    setDetailDialogOpen(true);
-  };
-
-  const handleNotifyURL = (node: Node) => {
-    setNotifyURLNode(node);
-  };
-
-  const handleCopy = (node: Node) => {
-    const copyData: Partial<CreateNodeRequest> = {
-      name: `${node.name} - ${t('common.actions.copy')}`,
-      protocol: node.protocol,
-      serverAddress: node.serverAddress,
-      agentPort: node.agentPort,
-      subscriptionPort: node.subscriptionPort,
-      encryptionMethod: node.encryptionMethod,
-      region: node.region,
-      sortOrder: node.sortOrder,
-      tags: node.tags,
-      plugin: node.plugin,
-      pluginOpts: node.pluginOpts,
-      transportProtocol: node.transportProtocol,
-      host: node.host,
-      path: node.path,
-      sni: node.sni,
-      allowInsecure: node.allowInsecure,
-    };
-    setCopyNodeData(copyData);
-    setCreateDialogOpen(true);
-  };
-
-  const handleRefresh = () => {
+  // Action handlers
+  const handleRefresh = useCallback(() => {
     setRefreshKey((k) => k + 1);
     refetch();
-  };
+  }, [refetch]);
 
-  const handleCreateSubmit = async (data: CreateNodeRequest) => {
-    try {
-      await createNode(data);
-      setCreateDialogOpen(false);
-    } catch {
-      // Error already handled in hook
-    }
-  };
+  const handleCreate = useCallback(() => {
+    setCopyNodeData(undefined);
+    openDialog('create');
+  }, [openDialog]);
 
-  const handleUpdateSubmit = async (id: string, data: UpdateNodeRequest) => {
-    await updateNode(id, data);
-    // State cleanup is handled by onOpenChange callback
-  };
+  const handleEdit = useCallback(
+    (node: Node) => openDialog('edit', node),
+    [openDialog]
+  );
 
-  const handleToggleMute = (node: Node) => {
-    toggleMuteNotification(node.id, !node.muteNotification);
-  };
+  const handleViewDetail = useCallback(
+    (node: Node) => openDialog('detail', node),
+    [openDialog]
+  );
 
-  const handleDragEnd = async (_activeId: string, _overId: string, oldIndex: number, newIndex: number) => {
-    if (oldIndex === newIndex) return;
-
-    // Calculate new sortOrder values for affected nodes
-    const updates: { id: string; sortOrder: number }[] = [];
-
-    // Create a copy of nodes array and reorder
-    const reorderedNodes = [...nodes];
-    const [movedNode] = reorderedNodes.splice(oldIndex, 1);
-    reorderedNodes.splice(newIndex, 0, movedNode);
-
-    // Update sortOrder for all affected nodes (use index as sortOrder)
-    reorderedNodes.forEach((node, index) => {
-      const newSortOrder = index + 1;
-      if (node.sortOrder !== newSortOrder) {
-        updates.push({ id: node.id, sortOrder: newSortOrder });
+  const handleDeleteClick = useCallback(
+    (node: Node) => {
+      if (isMobile) {
+        openDialog('delete', node);
+      } else if (window.confirm(t('admin.nodes.confirmDelete', { name: node.name, address: node.serverAddress, port: node.agentPort }))) {
+        deleteNode(node.id);
       }
-    });
+    },
+    [isMobile, openDialog, deleteNode, t]
+  );
 
-    if (updates.length > 0) {
-      await handleReorder(updates);
-    }
-  };
+  const handleCopy = useCallback(
+    (node: Node) => {
+      const data: Partial<CreateNodeRequest> = {
+        name: `${node.name} - ${t('common.actions.copy')}`,
+        protocol: node.protocol,
+        serverAddress: node.serverAddress,
+        agentPort: node.agentPort,
+        subscriptionPort: node.subscriptionPort,
+        encryptionMethod: node.encryptionMethod,
+        region: node.region,
+        sortOrder: node.sortOrder,
+        tags: node.tags,
+        plugin: node.plugin,
+        pluginOpts: node.pluginOpts,
+        transportProtocol: node.transportProtocol,
+        host: node.host,
+        path: node.path,
+        sni: node.sni,
+        allowInsecure: node.allowInsecure,
+      };
+      setCopyNodeData(data);
+      openDialog('create');
+    },
+    [openDialog, t]
+  );
 
-  return (
-    <AdminLayout>
-      {/* Mobile View */}
-      {isMobile ? (
-        <div className="py-3">
+  const handleActivate = useCallback(
+    async (node: Node) => {
+      await updateNodeStatus(node.id, 'active');
+    },
+    [updateNodeStatus]
+  );
+
+  const handleDeactivate = useCallback(
+    async (node: Node) => {
+      await updateNodeStatus(node.id, 'inactive');
+    },
+    [updateNodeStatus]
+  );
+
+  const handleToggleMute = useCallback(
+    (node: Node) => {
+      toggleMuteNotification(node.id, !node.muteNotification);
+    },
+    [toggleMuteNotification]
+  );
+
+  const handleTokenGenerate = useCallback(
+    async (node: Node) => {
+      const token = await handleGenerateToken(node.id);
+      if (token) {
+        openDialog('token');
+      }
+    },
+    [handleGenerateToken, openDialog]
+  );
+
+  const handleInstallScript = useCallback(
+    async (node: Node) => {
+      setInstallScriptNodeName(node.name);
+      const data = await handleGetInstallScript(node.id);
+      if (data) {
+        openDialog('installScript');
+      }
+    },
+    [handleGetInstallScript, openDialog]
+  );
+
+  const handleNotifyURL = useCallback(
+    (node: Node) => openDialog('notifyURL', node),
+    [openDialog]
+  );
+
+  // Form submission handlers
+  const handleCreateSubmit = useCallback(
+    async (data: CreateNodeRequest) => {
+      await createNode(data);
+      closeDialog();
+    },
+    [createNode, closeDialog]
+  );
+
+  const handleUpdateSubmit = useCallback(
+    async (id: string, data: UpdateNodeRequest) => {
+      await updateNode(id, data);
+      closeDialog();
+    },
+    [updateNode, closeDialog]
+  );
+
+  const handleDeleteConfirm = useCallback(
+    async (node: Node) => {
+      await deleteNode(node.id);
+      closeDialog();
+    },
+    [deleteNode, closeDialog]
+  );
+
+  // Drag and drop handler
+  const handleDragEnd = useCallback(
+    async (_activeId: string, _overId: string, oldIndex: number, newIndex: number) => {
+      if (oldIndex === newIndex) return;
+
+      const reorderedNodes = [...nodes];
+      const [movedNode] = reorderedNodes.splice(oldIndex, 1);
+      reorderedNodes.splice(newIndex, 0, movedNode);
+
+      const updates: { id: string; sortOrder: number }[] = [];
+      reorderedNodes.forEach((node, index) => {
+        const newSortOrder = index + 1;
+        if (node.sortOrder !== newSortOrder) {
+          updates.push({ id: node.id, sortOrder: newSortOrder });
+        }
+      });
+
+      if (updates.length > 0) {
+        await handleReorder(updates);
+      }
+    },
+    [nodes, handleReorder]
+  );
+
+  const isLoading = isFetching || isReordering || isResourceGroupsLoading || isPlansLoading;
+
+  // Mobile layout
+  if (isMobile) {
+    return (
+      <AdminLayout>
+        <div className="py-3 pb-safe">
           <MobileNodeManagement
             nodes={nodes}
             resourceGroupsMap={resourceGroupsMap}
-            loading={isFetching || isReordering || isResourceGroupsLoading || isPlansLoading}
+            loading={isLoading}
             refreshing={isFetching}
             page={pagination.page}
             pageSize={pagination.pageSize}
             total={pagination.total}
             onRefresh={handleRefresh}
-            onCreate={() => {
-              setCopyNodeData(undefined);
-              setCreateDialogOpen(true);
-            }}
+            onCreate={handleCreate}
             onEdit={handleEdit}
-            onDelete={handleDelete}
+            onDelete={handleDeleteClick}
             onActivate={handleActivate}
             onDeactivate={handleDeactivate}
             onPageChange={handlePageChange}
             onDragEnd={handleDragEnd}
           />
         </div>
-      ) : (
-        <div className="space-y-6">
-          {/* Page Header - Tailwind UI Application UI style with badge */}
-          <PageHeader
-            title={t('nav.nodeAgent')}
-            icon={Server}
-            badge={{ label: `${stats.total} ${t('admin.nodes.nodesUnit')}`, variant: 'default' }}
-            metadata={[
-              { icon: Activity, text: `${stats.online} ${t('common.status.online')}` },
-              { icon: CheckCircle2, text: `${stats.active} ${t('common.status.active')}` },
-            ]}
-            action={
-              <div className="flex items-center gap-2">
-                <Button
-                  onClick={() => {
-                    setCopyNodeData(undefined);
-                    setCreateDialogOpen(true);
-                  }}
-                >
-                  <Plus className="size-4 mr-2" />
-                  {t('admin.nodes.addNode')}
-                </Button>
-                {/* Batch actions */}
-                {stats.online > 0 && (
-                  <Button variant="outline" size="sm" onClick={() => setBroadcastURLDialogOpen(true)}>
-                    <Radio className="size-4 mr-2" />
-                    {t('admin.nodes.broadcast.label')}
-                  </Button>
-                )}
-                {stats.updatable > 0 && (
-                  <Button variant="outline" size="sm" onClick={() => setBatchUpdateDialogOpen(true)}>
-                    <ArrowUpCircle className="size-4 mr-2" />
-                    {t('admin.nodes.update')}
-                  </Button>
-                )}
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <Button variant="ghost" size="icon" onClick={handleRefresh}>
-                      <RefreshCw key={refreshKey} className="size-4" />
-                    </Button>
-                  </TooltipTrigger>
-                  <TooltipContent>{t('common.actions.refresh')}</TooltipContent>
-                </Tooltip>
-              </div>
-            }
-          />
 
-          {/* Filters */}
-          <NodeFilters
-            filters={extendedFilters}
-            onFiltersChange={handleExtendedFiltersChange}
-            hasFilters={hasFilters}
-            onClearFilters={clearFilters}
-            includeUserNodes={includeUserNodes}
-            onIncludeUserNodesChange={handleIncludeUserNodesChange}
-            dragSortEnabled={dragSortEnabled}
-            onDragSortEnabledChange={setDragSortEnabled}
-            dragSortDisabled={isReordering}
-          />
-
-          {/* Node List - table has its own border/rounded styling */}
-          <NodeListTable
-            nodes={nodes}
-            loading={isFetching || isReordering || isResourceGroupsLoading || isPlansLoading}
-            page={pagination.page}
-            pageSize={pagination.pageSize}
-            total={pagination.total}
-            resourceGroupsMap={resourceGroupsMap}
-            onPageChange={handlePageChange}
-            onPageSizeChange={handlePageSizeChange}
-            onEdit={handleEdit}
-            onDelete={handleDelete}
-            onActivate={handleActivate}
-            onDeactivate={handleDeactivate}
-            onGenerateToken={handleTokenGenerate}
-            onGetInstallScript={handleInstallScript}
-            onViewDetail={handleViewDetail}
-            onCopy={handleCopy}
-            onNotifyURL={handleNotifyURL}
-            onToggleMute={handleToggleMute}
-            enableDragSort={dragSortEnabled}
-            onDragEnd={handleDragEnd}
-          />
-        </div>
-      )}
-
-      {/* Create Node Dialog/Sheet */}
-      {isMobile ? (
+        {/* Mobile Sheets */}
         <CreateNodeSheet
-          open={createDialogOpen}
-          onOpenChange={(open) => {
-            if (!open) {
-              setCreateDialogOpen(false);
-              setCopyNodeData(undefined);
-            }
-          }}
+          open={activeDialog === 'create'}
+          onOpenChange={(open) => !open && closeDialog()}
           onSubmit={handleCreateSubmit}
           initialData={copyNodeData}
           nodes={nodesForOutbound}
         />
-      ) : (
-        createDialogOpen && (
-          <Suspense fallback={null}>
-            <CreateNodeDialog
-              open={createDialogOpen}
-              onClose={() => {
-                setCreateDialogOpen(false);
-                setCopyNodeData(undefined);
-              }}
-              onSubmit={handleCreateSubmit}
-              initialData={copyNodeData}
-              nodes={nodesForOutbound}
-            />
-          </Suspense>
-        )
-      )}
 
-      {/* Edit Node Dialog/Sheet */}
-      {isMobile ? (
         <EditNodeSheet
-          open={editDialogOpen}
-          onOpenChange={(open) => {
-            if (!open) {
-              setEditDialogOpen(false);
-              setSelectedNode(null);
-            }
-          }}
+          open={activeDialog === 'edit'}
+          onOpenChange={(open) => !open && closeDialog()}
           entity={selectedNode}
           onSubmit={handleUpdateSubmit}
           nodes={nodesForOutbound}
         />
-      ) : (
-        editDialogOpen && (
-          <Suspense fallback={null}>
-            <EditNodeDialog
-              open={editDialogOpen}
-              node={selectedNode}
-              onClose={() => {
-                setEditDialogOpen(false);
-                setSelectedNode(null);
-              }}
-              onSubmit={handleUpdateSubmit}
-              nodes={nodesForOutbound}
-            />
-          </Suspense>
-        )
-      )}
 
-      {/* Node Detail Dialog */}
-      {detailDialogOpen && (
+        <DeleteNodeSheet
+          open={activeDialog === 'delete'}
+          onOpenChange={(open) => !open && closeDialog()}
+          entity={selectedNode}
+          onConfirm={handleDeleteConfirm}
+        />
+      </AdminLayout>
+    );
+  }
+
+  // Desktop layout
+  return (
+    <AdminLayout>
+      <div className="space-y-6 py-4 pb-safe lg:py-6">
+        {/* Page Header */}
+        <PageHeader
+          title={t('nav.nodeAgent')}
+          icon={Server}
+          badge={headerBadge}
+          metadata={headerMetadata}
+          action={
+            <div className="flex items-center gap-2">
+              <Button onClick={handleCreate}>
+                <Plus className="mr-2 size-4" />
+                {t('admin.nodes.addNode')}
+              </Button>
+              {stats.online > 0 && (
+                <Button variant="outline" size="sm" onClick={() => openDialog('broadcast')}>
+                  <Radio className="mr-2 size-4" />
+                  {t('admin.nodes.broadcast.label')}
+                </Button>
+              )}
+              {stats.updatable > 0 && (
+                <Button variant="outline" size="sm" onClick={() => openDialog('batchUpdate')}>
+                  <ArrowUpCircle className="mr-2 size-4" />
+                  {t('admin.nodes.update')}
+                </Button>
+              )}
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button variant="ghost" size="icon" onClick={handleRefresh}>
+                    <RefreshCw key={refreshKey} className="size-4" />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>{t('common.actions.refresh')}</TooltipContent>
+              </Tooltip>
+            </div>
+          }
+        />
+
+        {/* Filters */}
+        <NodeFilters
+          filters={extendedFilters}
+          onFiltersChange={handleExtendedFiltersChange}
+          hasFilters={hasFilters}
+          onClearFilters={clearFilters}
+          includeUserNodes={includeUserNodes}
+          onIncludeUserNodesChange={handleIncludeUserNodesChange}
+          dragSortEnabled={dragSortEnabled}
+          onDragSortEnabledChange={setDragSortEnabled}
+          dragSortDisabled={isReordering}
+        />
+
+        {/* Node Table */}
+        <NodeListTable
+          nodes={nodes}
+          loading={isLoading}
+          page={pagination.page}
+          pageSize={pagination.pageSize}
+          total={pagination.total}
+          resourceGroupsMap={resourceGroupsMap}
+          onPageChange={handlePageChange}
+          onPageSizeChange={handlePageSizeChange}
+          onEdit={handleEdit}
+          onDelete={handleDeleteClick}
+          onActivate={handleActivate}
+          onDeactivate={handleDeactivate}
+          onGenerateToken={handleTokenGenerate}
+          onGetInstallScript={handleInstallScript}
+          onViewDetail={handleViewDetail}
+          onCopy={handleCopy}
+          onNotifyURL={handleNotifyURL}
+          onToggleMute={handleToggleMute}
+          enableDragSort={dragSortEnabled}
+          onDragEnd={handleDragEnd}
+        />
+      </div>
+
+      {/* Desktop Dialogs */}
+      {activeDialog === 'create' && (
         <Suspense fallback={null}>
-          <NodeDetailDialog
-            open={detailDialogOpen}
-            node={selectedNode}
-            onClose={() => {
-              setDetailDialogOpen(false);
-              setSelectedNode(null);
-            }}
+          <CreateNodeDialog
+            open
+            onClose={closeDialog}
+            onSubmit={handleCreateSubmit}
+            initialData={copyNodeData}
             nodes={nodesForOutbound}
           />
         </Suspense>
       )}
 
-      {/* Token Dialog */}
-      {tokenDialogOpen && (
+      {activeDialog === 'edit' && (
+        <Suspense fallback={null}>
+          <EditNodeDialog
+            open
+            node={selectedNode}
+            onClose={closeDialog}
+            onSubmit={handleUpdateSubmit}
+            nodes={nodesForOutbound}
+          />
+        </Suspense>
+      )}
+
+      {activeDialog === 'detail' && (
+        <Suspense fallback={null}>
+          <NodeDetailDialog
+            open
+            node={selectedNode}
+            onClose={closeDialog}
+            nodes={nodesForOutbound}
+          />
+        </Suspense>
+      )}
+
+      {activeDialog === 'token' && (
         <Suspense fallback={null}>
           <TokenDialog
-            open={tokenDialogOpen}
+            open
             token={generatedToken?.token ?? null}
             title={t('admin.nodes.nodeToken')}
             onClose={() => {
-              setTokenDialogOpen(false);
+              closeDialog();
               setGeneratedToken(null);
             }}
           />
         </Suspense>
       )}
 
-      {/* Install Script Dialog */}
-      {installScriptDialogOpen && (
+      {activeDialog === 'installScript' && (
         <Suspense fallback={null}>
           <NodeInstallScriptDialog
-            open={installScriptDialogOpen}
+            open
             installScriptData={installScriptData}
             nodeName={installScriptNodeName}
             onClose={() => {
-              setInstallScriptDialogOpen(false);
+              closeDialog();
               setInstallScriptData(null);
-              setInstallScriptNodeName('');
             }}
           />
         </Suspense>
       )}
 
-      {/* Batch Update Dialog */}
-      {batchUpdateDialogOpen && (
+      {activeDialog === 'batchUpdate' && (
         <Suspense fallback={null}>
           <BatchUpdateDialog
-            open={batchUpdateDialogOpen}
+            open
             onClose={() => {
-              setBatchUpdateDialogOpen(false);
+              closeDialog();
               setBatchUpdateResult(null);
             }}
             nodes={nodes}
@@ -523,23 +562,19 @@ export const NodeManagementPage = () => {
         </Suspense>
       )}
 
-      {/* Broadcast URL Dialog */}
-      {(broadcastURLDialogOpen || notifyURLNode !== null) && (
+      {(activeDialog === 'broadcast' || activeDialog === 'notifyURL') && (
         <Suspense fallback={null}>
           <BroadcastNodeURLDialog
-            open={broadcastURLDialogOpen || notifyURLNode !== null}
-            onClose={() => {
-              setBroadcastURLDialogOpen(false);
-              setNotifyURLNode(null);
-            }}
+            open
+            onClose={closeDialog}
             onBroadcast={(newUrl, reason) => broadcastURLMutation.mutateAsync({ newUrl, reason })}
             isBroadcasting={broadcastURLMutation.isPending}
             onlineCount={stats.online}
-            targetNode={notifyURLNode ? {
-              id: notifyURLNode.id,
-              name: notifyURLNode.name,
-              isOnline: notifyURLNode.isOnline,
-            } : null}
+            targetNode={
+              activeDialog === 'notifyURL' && selectedNode
+                ? { id: selectedNode.id, name: selectedNode.name, isOnline: selectedNode.isOnline }
+                : null
+            }
             onNotifySingle={(nodeId, newUrl, reason) =>
               notifyURLMutation.mutateAsync({ nodeId, data: { newUrl, reason } })
             }
@@ -547,19 +582,6 @@ export const NodeManagementPage = () => {
           />
         </Suspense>
       )}
-
-      {/* Delete Node Confirmation Sheet (Mobile only) */}
-      <DeleteNodeSheet
-        open={deleteDialogOpen}
-        onOpenChange={(open) => {
-          if (!open) {
-            setDeleteDialogOpen(false);
-            setNodeToDelete(null);
-          }
-        }}
-        entity={nodeToDelete}
-        onConfirm={handleDeleteConfirm}
-      />
     </AdminLayout>
   );
-};
+}

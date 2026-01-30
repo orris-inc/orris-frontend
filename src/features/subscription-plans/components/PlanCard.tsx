@@ -4,31 +4,66 @@
  * Uses container queries for responsive design
  */
 
-import { Check } from "lucide-react";
+import { Check, Zap, ArrowLeftRight, Layers } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { cn } from "@/lib/utils";
 import { getButtonClass, getBadgeClass } from "@/lib/ui-styles";
 import { PlanPricingSelector } from "./PlanPricingSelector";
-import type { SubscriptionPlan } from "@/api/subscription/types";
+import type { SubscriptionPlan, BillingCycle, PlanType } from "@/api/subscription/types";
+
+// Plan type icons
+const PLAN_TYPE_ICONS: Record<PlanType, React.ReactNode> = {
+  node: <Zap className="size-3" />,
+  forward: <ArrowLeftRight className="size-3" />,
+  hybrid: <Layers className="size-3" />,
+};
+
+// Format traffic limit for display
+const formatTrafficLimit = (bytes: number): string => {
+  const gb = bytes / (1024 * 1024 * 1024);
+  if (gb >= 1024) {
+    return `${(gb / 1024).toFixed(0)} TB`;
+  }
+  return `${gb.toFixed(0)} GB`;
+};
 
 interface PlanCardProps {
   plan: SubscriptionPlan;
   recommended?: boolean;
+  /** Selected billing cycle for filtering display */
+  selectedCycle?: BillingCycle;
   onSelect?: (plan: SubscriptionPlan) => void;
 }
 
 function PlanCard({
   plan,
   recommended = false,
+  selectedCycle,
   onSelect,
 }: PlanCardProps) {
   const { t } = useTranslation();
 
   // Build features list from plan data
   const features: string[] = [];
+
+  // Traffic limit from limits
+  const trafficLimit = plan.limits?.trafficLimit as number | undefined;
+  if (trafficLimit && trafficLimit > 0) {
+    features.push(t("pricing.features.traffic", { value: formatTrafficLimit(trafficLimit) }));
+  } else if (trafficLimit === 0 || trafficLimit === undefined) {
+    // Only show unlimited traffic if plan type is node or hybrid
+    if (plan.planType === 'node' || plan.planType === 'hybrid') {
+      features.push(t("pricing.features.unlimitedTraffic"));
+    }
+  }
+
+  // Node limit
   if (plan.nodeLimit && plan.nodeLimit > 0) {
     features.push(t("pricing.card.nodes", { count: plan.nodeLimit }));
   }
+
+  // Get default billing cycle for PricingSelector
+  const defaultBillingCycle = selectedCycle || plan.pricings?.[0]?.billingCycle;
 
   return (
     <div className="@container h-full">
@@ -36,7 +71,7 @@ function PlanCard({
         className={cn(
           "relative flex flex-col h-full p-4 @sm:p-5 rounded-xl",
           // Base: glass effect, @md container: solid card
-          "glass-elevated @md:bg-card @md:border @md:shadow-none @md:backdrop-blur-none",
+          "glass-elevated @md:bg-card @md:ring-1 @md:ring-border @md:shadow-none @md:backdrop-blur-none",
           "transition-all duration-normal ease-smooth",
           "hover:shadow-md active:scale-[0.98]",
           recommended && "border-primary ring-1 ring-primary/20",
@@ -57,17 +92,30 @@ function PlanCard({
         )}
 
         <div className={cn("flex flex-col flex-1", recommended && "pt-2")}>
-          {/* Plan name */}
-          <h3 className="text-lg @sm:text-xl font-semibold text-foreground mb-2">
-            {plan.name}
-          </h3>
+          {/* Plan name and type badge */}
+          <div className="flex items-center gap-2 mb-2">
+            <h3 className="text-lg @sm:text-xl font-semibold text-foreground">
+              {plan.name}
+            </h3>
+            {plan.planType && (
+              <span
+                className={getBadgeClass(
+                  "outline",
+                  "text-[10px] px-1.5 py-0.5 flex items-center gap-1",
+                )}
+              >
+                {PLAN_TYPE_ICONS[plan.planType]}
+                <span>{t(`pricing.planType.${plan.planType}`)}</span>
+              </span>
+            )}
+          </div>
 
           {/* Pricing selector */}
           <div className="mb-3 @sm:mb-4">
             {plan.pricings && plan.pricings.length > 0 ? (
               <PlanPricingSelector
                 pricings={plan.pricings}
-                defaultBillingCycle={plan.pricings[0]?.billingCycle}
+                defaultBillingCycle={defaultBillingCycle}
               />
             ) : (
               <div className="text-muted-foreground">
@@ -98,15 +146,6 @@ function PlanCard({
                 </li>
               ))}
             </ul>
-          )}
-
-          {/* Trial badge */}
-          {plan.trialDays > 0 && (
-            <div className="mb-3 @sm:mb-4">
-              <span className={getBadgeClass("secondary", "text-xs font-medium")}>
-                {t("pricing.card.freeTrial", { days: plan.trialDays })}
-              </span>
-            </div>
           )}
 
           {/* Select button - min-h-11 ensures 44px touch target */}

@@ -225,8 +225,8 @@ const CustomTooltip = ({
       className={cn(
         "bg-card",
         "backdrop-blur-xl",
-        "border border-border",
-        "rounded-xl shadow-xl",
+        "ring-1 ring-border",
+        "rounded-xl",
         "p-4 min-w-[200px]",
       )}
     >
@@ -349,7 +349,7 @@ const TimeRangeSelector = ({
           key={option.value}
           onClick={() => onChange(option.value)}
           className={cn(
-            "px-2 @sm:px-2.5 py-1.5 @sm:py-1.5 min-h-[44px] @sm:min-h-0 text-[10px] @sm:text-xs font-medium rounded-md transition-colors",
+            "px-2 @sm:px-2.5 py-1.5 @sm:py-1.5 min-h-[44px] @sm:min-h-0 text-[10px] @sm:text-xs font-medium rounded-md transition-colors active:scale-[0.98]",
             value === option.value
               ? "bg-background text-foreground shadow-sm"
               : "text-muted-foreground hover:text-foreground",
@@ -366,7 +366,7 @@ const TimeRangeSelector = ({
  * Loading skeleton
  */
 const ChartSkeleton = () => (
-  <div className="@container p-4 rounded-xl bg-card border">
+  <div className="@container p-4 rounded-xl bg-card ring-1 ring-border">
     <div className="flex flex-col @sm:flex-row @sm:items-center justify-between gap-3 @sm:gap-4 mb-4 @sm:mb-6">
       <Skeleton className="h-10 w-32" />
       <Skeleton className="h-8 w-24" />
@@ -459,7 +459,7 @@ export const SubscriptionTrafficChart: React.FC<
   }
 
   return (
-    <div className="@container p-3 @sm:p-4 rounded-xl bg-card border">
+    <div className="@container p-3 @sm:p-4 rounded-xl bg-card ring-1 ring-border">
       {/* Header - compact on mobile */}
       <div className="flex items-center justify-between gap-2 mb-3 @sm:mb-4">
         <div className="flex items-center gap-2 @sm:gap-3 shrink-0">

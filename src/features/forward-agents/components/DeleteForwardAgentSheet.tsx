@@ -78,7 +78,7 @@ export const DeleteForwardAgentSheet: React.FC<DeleteForwardAgentSheetProps> = (
             </div>
 
             {/* Agent Info */}
-            <div className="rounded-lg bg-background p-4 space-y-3">
+            <div className="rounded-xl bg-background p-4 space-y-3">
               {/* Agent Name */}
               <div className="flex items-center gap-3">
                 <div className="size-8 rounded-lg bg-muted flex items-center justify-center">

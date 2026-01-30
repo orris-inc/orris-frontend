@@ -117,7 +117,7 @@ export const UserNodeInstallScriptDialog: React.FC<UserNodeInstallScriptDialogPr
           <div className="space-y-4">
             {/* Install command (main) */}
             {installScriptData.installCommand && (
-              <div className="border border-primary/20 rounded-lg p-4 bg-primary/5">
+              <div className="ring-1 ring-primary/20 rounded-xl p-4 bg-primary/5">
                 <div className="flex items-center justify-between mb-2">
                   <h4 className="text-sm font-medium flex items-center gap-2">
                     {t('userNodes.installScript.installCommand')}

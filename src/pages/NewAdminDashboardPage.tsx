@@ -1,7 +1,7 @@
 /**
- * Admin Dashboard - Modern Bento Grid Design
- * Uses real API data with traffic analytics
- * Desktop-first responsive design with Bento Grid layout
+ * Admin Dashboard Page
+ * Tailwind Application UI style with real API data
+ * Mobile-first responsive design
  */
 
 import { useState } from 'react';
@@ -28,11 +28,11 @@ import {
 import {
   Users,
   CreditCard,
-  ArrowUpRight,
-  ArrowUp,
-  ArrowDown,
   Server,
   Activity,
+  ArrowUp,
+  ArrowDown,
+  ChevronRight,
   type LucideIcon,
 } from 'lucide-react';
 import { formatTrafficBytes } from '@/api/admin';
@@ -42,47 +42,39 @@ import { cn } from '@/lib/utils';
 // Types
 // ============================================================================
 
-interface BentoStatCardProps {
+interface StatCardProps {
   title: string;
-  value: string;
+  value: string | number;
   icon: LucideIcon;
   iconBg: string;
   iconColor: string;
   loading?: boolean;
-  className?: string;
-  /** Optional click handler for navigation */
   onClick?: () => void;
 }
 
-
 // ============================================================================
-// Bento Stat Card Component
+// Stat Card Component - Following Tailwind UI Stats Pattern
 // ============================================================================
 
-const BentoStatCard = ({
+function StatCard({
   title,
   value,
   icon: Icon,
   iconBg,
   iconColor,
   loading,
-  className,
   onClick,
-}: BentoStatCardProps) => {
+}: StatCardProps) {
   if (loading) {
     return (
-      <div
-        className={cn(
-          '@container rounded-xl bg-card border border-border p-3 @[140px]:p-4',
-          'transition-shadow hover:shadow-md',
-          className
-        )}
-      >
-        <div className="flex items-center gap-2.5 @[140px]:gap-3">
-          <div className="rounded-lg bg-muted animate-pulse size-9 @[140px]:size-10 shrink-0" />
-          <div className="flex-1 min-w-0 space-y-1.5">
-            <div className="h-3 w-10 bg-muted rounded animate-pulse" />
-            <div className="h-5 w-14 bg-muted rounded animate-pulse" />
+      <div className="overflow-hidden rounded-xl bg-card px-4 py-5 ring-1 ring-border sm:p-6">
+        <div className="animate-pulse">
+          <div className="flex items-center gap-3">
+            <div className="size-10 rounded-lg bg-muted" />
+            <div className="flex-1 space-y-2">
+              <div className="h-3 w-16 rounded bg-muted" />
+              <div className="h-6 w-12 rounded bg-muted" />
+            </div>
           </div>
         </div>
       </div>
@@ -90,62 +82,48 @@ const BentoStatCard = ({
   }
 
   const content = (
-    <div className="flex items-center gap-2.5 @[140px]:gap-3">
-      {/* Icon */}
-      <div
-        className={cn(
-          'rounded-lg ring-1 ring-inset p-2 @[140px]:p-2.5 shrink-0',
-          iconBg,
-          iconBg.includes('/') ? 'ring-current/20' : 'ring-border'
-        )}
-      >
-        <Icon className={cn('size-4 @[140px]:size-5', iconColor)} strokeWidth={1.5} />
+    <div className="flex items-center gap-3">
+      <div className={cn('rounded-lg p-2.5 ring-1 ring-inset ring-border/50', iconBg)}>
+        <Icon className={cn('size-5', iconColor)} strokeWidth={1.5} />
       </div>
-
-      {/* Content */}
-      <div className="flex-1 min-w-0">
-        <p className="text-[11px] @[140px]:text-xs text-muted-foreground font-medium">
-          {title}
-        </p>
-        <p className="text-base @[140px]:text-lg font-semibold tabular-nums text-foreground tracking-tight">
+      <div className="min-w-0 flex-1">
+        <dt className="truncate text-sm font-medium text-muted-foreground">{title}</dt>
+        <dd className="mt-0.5 text-xl font-semibold tracking-tight text-foreground tabular-nums sm:text-2xl">
           {value}
-        </p>
+        </dd>
       </div>
-
-      {/* Arrow indicator for clickable cards */}
       {onClick && (
-        <ArrowUpRight className="size-4 text-muted-foreground/50 group-hover:text-primary transition-colors shrink-0" />
+        <ChevronRight
+          className="size-5 shrink-0 text-muted-foreground/40 transition-colors group-hover:text-primary"
+          strokeWidth={1.5}
+        />
       )}
     </div>
   );
 
-  const baseClasses = cn(
-    '@container rounded-xl bg-card border border-border p-3 @[140px]:p-4',
-    'transition-all duration-200 hover:shadow-md hover:border-border/80',
-    onClick && 'cursor-pointer group hover:border-primary/30',
-    className
+  const baseClassName = cn(
+    'overflow-hidden rounded-xl bg-card px-4 py-5 ring-1 ring-border sm:p-6',
+    'transition-all duration-200',
+    'active:scale-[0.98]',
+    onClick && 'cursor-pointer group hover:ring-primary/30 hover:shadow-md'
   );
 
   if (onClick) {
     return (
-      <button
-        type="button"
-        onClick={onClick}
-        className={cn(baseClasses, 'w-full text-left')}
-      >
+      <button type="button" onClick={onClick} className={cn(baseClassName, 'w-full text-left')}>
         {content}
       </button>
     );
   }
 
-  return <div className={baseClasses}>{content}</div>;
-};
+  return <div className={baseClassName}>{content}</div>;
+}
 
 // ============================================================================
 // Main Page Component
 // ============================================================================
 
-export const NewAdminDashboardPage = () => {
+export function NewAdminDashboardPage() {
   const { t } = useTranslation();
   usePageTitle(t('admin.dashboard.title'));
 
@@ -184,17 +162,15 @@ export const NewAdminDashboardPage = () => {
   if (!user) {
     return (
       <AdminLayout>
-        <div className="p-4 rounded-lg border border-destructive/30 bg-destructive/10">
-          <p className="text-sm text-destructive">
-            {t('admin.dashboard.unableToLoadUser')}
-          </p>
+        <div className="rounded-xl border border-destructive/30 bg-destructive/10 p-4">
+          <p className="text-sm text-destructive">{t('admin.dashboard.unableToLoadUser')}</p>
         </div>
       </AdminLayout>
     );
   }
 
-  // All stat cards - uniform layout with navigation
-  const allStats = [
+  // Statistics configuration
+  const platformStats: StatCardProps[] = [
     {
       title: t('admin.stats.totalUsers'),
       value: stats.totalUsers.toLocaleString(),
@@ -231,6 +207,9 @@ export const NewAdminDashboardPage = () => {
       loading,
       onClick: () => navigate('/admin/monitor'),
     },
+  ];
+
+  const trafficStats: StatCardProps[] = [
     {
       title: t('admin.stats.totalUpload'),
       value: trafficOverview ? formatTrafficBytes(trafficOverview.totalUpload) : '-',
@@ -251,38 +230,47 @@ export const NewAdminDashboardPage = () => {
 
   return (
     <AdminLayout>
-      <div className="py-4 lg:py-6 space-y-4 sm:space-y-6 pb-safe">
-        {/* ================================================================== */}
-        {/* Page Header - Using PageHeader component */}
-        {/* ================================================================== */}
+      <div className="space-y-6 py-4 pb-safe lg:py-6">
+        {/* Page Header */}
         <PageHeader
           title={t('admin.dashboard.title')}
-          description={t('admin.dashboard.welcomeBack', { name: user.displayName || user.email?.split('@')[0] })}
-          action={
-            <DateRangeSelector
-              value={dateRangePreset}
-              onChange={setDateRangePreset}
-            />
-          }
+          description={t('admin.dashboard.welcomeBack', {
+            name: user.displayName || user.email?.split('@')[0],
+          })}
+          action={<DateRangeSelector value={dateRangePreset} onChange={setDateRangePreset} />}
         />
 
-        {/* ================================================================== */}
-        {/* Statistics Overview - Tailwind UI Stats pattern */}
-        {/* Mobile: 2 cols, Tablet: 3 cols, Desktop: 6 cols */}
-        {/* ================================================================== */}
-        <section>
-          <dl className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-6">
-            {allStats.map((stat) => (
-              <BentoStatCard key={stat.title} {...stat} />
+        {/* Platform Statistics - Tailwind UI Stats Grid */}
+        <section aria-labelledby="platform-stats-heading">
+          <h2 id="platform-stats-heading" className="sr-only">
+            {t('admin.dashboard.platformStats')}
+          </h2>
+          <dl className="grid grid-cols-2 gap-4 lg:grid-cols-4">
+            {platformStats.map((stat) => (
+              <StatCard key={stat.title} {...stat} />
             ))}
           </dl>
         </section>
 
-        {/* ================================================================== */}
+        {/* Traffic Statistics */}
+        <section aria-labelledby="traffic-stats-heading">
+          <h2 id="traffic-stats-heading" className="sr-only">
+            {t('admin.dashboard.trafficStats')}
+          </h2>
+          <dl className="grid grid-cols-2 gap-4">
+            {trafficStats.map((stat) => (
+              <StatCard key={stat.title} {...stat} />
+            ))}
+          </dl>
+        </section>
+
         {/* Traffic Analytics Section */}
-        {/* ================================================================== */}
-        <section className="space-y-4">
-          {/* Traffic trend chart - full width */}
+        <section className="space-y-4" aria-labelledby="traffic-analytics-heading">
+          <h2 id="traffic-analytics-heading" className="sr-only">
+            {t('admin.dashboard.trafficAnalytics')}
+          </h2>
+
+          {/* Traffic Trend Chart */}
           <LazyTrafficTrendChart
             data={trafficTrend?.points ?? []}
             granularity={granularity}
@@ -290,8 +278,8 @@ export const NewAdminDashboardPage = () => {
             overview={trafficOverview ?? undefined}
           />
 
-          {/* Traffic ranking and node stats - 1:1 layout */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+          {/* Traffic Ranking and Node Stats */}
+          <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
             <TrafficRankingList
               userRanking={userRanking}
               subscriptionRanking={subscriptionRanking}
@@ -308,4 +296,4 @@ export const NewAdminDashboardPage = () => {
       </div>
     </AdminLayout>
   );
-};
+}

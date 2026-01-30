@@ -108,7 +108,7 @@ export const AvatarUpload = ({ avatar, name }: AvatarUploadProps) => {
       <button
         onClick={() => inputRef.current?.click()}
         disabled={true}
-        className="glass-interactive inline-flex items-center justify-center rounded-xl text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 border border-border/50 bg-background hover:bg-accent hover:text-accent-foreground h-11 @sm:h-10 px-4 py-2 mb-2 gap-2 touch-target"
+        className="glass-interactive inline-flex items-center justify-center rounded-xl text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 ring-1 ring-border/50 bg-background hover:bg-accent hover:text-accent-foreground h-11 @sm:h-10 px-4 py-2 mb-2 gap-2 touch-target active:scale-[0.98]"
       >
         <Camera className="h-4 w-4" />
         {t('profile.avatar.changeAvatar')}

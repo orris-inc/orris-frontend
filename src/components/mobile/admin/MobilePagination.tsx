@@ -43,7 +43,7 @@ export const MobilePagination = ({
           'transition-all',
           page <= 1
             ? 'opacity-40'
-            : 'active:scale-[0.95] active:bg-muted'
+            : 'active:scale-[0.98] active:bg-muted'
         )}
       >
         <ChevronLeft className="size-5" />
@@ -66,7 +66,7 @@ export const MobilePagination = ({
           'transition-all',
           page >= totalPages
             ? 'opacity-40'
-            : 'active:scale-[0.95] active:bg-muted'
+            : 'active:scale-[0.98] active:bg-muted'
         )}
       >
         <ChevronRight className="size-5" />

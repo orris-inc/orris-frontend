@@ -33,7 +33,7 @@ export const SubscriptionForwardUsageCard: React.FC<SubscriptionForwardUsageCard
   const { t } = useTranslation();
   if (isLoading) {
     return (
-      <div className="@container p-5 rounded-xl bg-card border">
+      <div className="@container p-5 rounded-xl bg-card ring-1 ring-border">
         <div className="space-y-4">
           <Skeleton className="h-5 w-24" />
           <div className="grid grid-cols-1 @md:grid-cols-3 gap-4">
@@ -58,7 +58,7 @@ export const SubscriptionForwardUsageCard: React.FC<SubscriptionForwardUsageCard
   const trafficLimit = usage.trafficLimit > 0 ? formatTraffic(usage.trafficLimit) : null;
 
   return (
-    <div className="@container p-3 @sm:p-4 rounded-xl bg-card border">
+    <div className="@container p-3 @sm:p-4 rounded-xl bg-card ring-1 ring-border">
       <div className="space-y-2 @sm:space-y-3">
         {/* Header - hidden on small containers */}
         <h3 className="text-sm font-medium text-foreground hidden @sm:block">{t('forwardUsage.forwardQuota')}</h3>

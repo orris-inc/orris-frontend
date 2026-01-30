@@ -62,8 +62,8 @@ export const MobileEmptyState = ({
           onClick={action.onClick}
           className={cn(
             'inline-flex items-center gap-2',
-            'px-4 py-2 rounded-lg text-sm font-medium',
-            'transition-colors',
+            'px-4 py-2 rounded-xl text-sm font-medium',
+            'transition-colors active:scale-[0.98]',
             action.variant === 'secondary'
               ? 'bg-muted text-foreground hover:bg-muted/80'
               : 'bg-primary text-primary-foreground hover:bg-primary/90'

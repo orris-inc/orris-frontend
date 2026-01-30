@@ -38,7 +38,7 @@ export const ProfileLayout = ({ children }: ProfileLayoutProps) => {
       <div className="lg:hidden">
         <Select.Root value={activeSection} onValueChange={(value) => setActiveSection(value as ProfileSection)}>
           <Select.Trigger
-            className="inline-flex items-center justify-between w-full rounded-xl bg-card border px-4 py-3 text-sm font-medium hover:bg-accent/50 focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 touch-target"
+            className="inline-flex items-center justify-between w-full rounded-xl bg-card ring-1 ring-border px-4 py-3 text-sm font-medium hover:bg-accent/50 focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 touch-target active:scale-[0.98]"
             aria-label={t('profile.nav.selectSection')}
           >
             <span className="flex items-center gap-3">
@@ -60,7 +60,7 @@ export const ProfileLayout = ({ children }: ProfileLayoutProps) => {
           </Select.Trigger>
           <Select.Portal>
             <Select.Content
-              className="overflow-hidden rounded-xl bg-popover border shadow-lg z-50 min-w-[220px] animate-in fade-in-0 zoom-in-95"
+              className="overflow-hidden rounded-xl bg-popover ring-1 ring-border shadow-lg z-50 min-w-[220px] animate-in fade-in-0 zoom-in-95"
               position="popper"
               sideOffset={4}
             >
@@ -99,7 +99,7 @@ export const ProfileLayout = ({ children }: ProfileLayoutProps) => {
                 <button
                   key={item.id}
                   onClick={() => setActiveSection(item.id)}
-                  className={`w-full flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-colors ${
+                  className={`w-full flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-colors active:scale-[0.98] ${
                     isActive
                       ? 'bg-primary/10 text-primary'
                       : 'text-muted-foreground hover:text-foreground hover:bg-accent/50'

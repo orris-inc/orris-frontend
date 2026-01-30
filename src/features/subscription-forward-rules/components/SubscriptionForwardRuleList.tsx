@@ -462,7 +462,7 @@ export const SubscriptionForwardRuleList: React.FC<SubscriptionForwardRuleListPr
                 <TooltipTrigger asChild>
                   <button
                     onClick={() => onEdit(rule)}
-                    className="inline-flex items-center justify-center size-8 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted transition-all duration-200"
+                    className="inline-flex items-center justify-center size-8 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted transition-all duration-200 active:scale-[0.98]"
                   >
                     <Edit className="size-4" />
                   </button>
@@ -471,7 +471,7 @@ export const SubscriptionForwardRuleList: React.FC<SubscriptionForwardRuleListPr
               </Tooltip>
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <button className="inline-flex items-center justify-center size-8 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted transition-all duration-200">
+                  <button className="inline-flex items-center justify-center size-8 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted transition-all duration-200 active:scale-[0.98]">
                     <MoreHorizontal className="size-4" />
                   </button>
                 </DropdownMenuTrigger>

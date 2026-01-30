@@ -56,7 +56,7 @@ export const SubscriptionNodeList: React.FC<SubscriptionNodeListProps> = ({
   if (error) {
     return (
       <div className="flex flex-col items-center justify-center py-12 px-4">
-        <div className="p-4 rounded-full bg-destructive/10 mb-4">
+        <div className="p-4 rounded-xl bg-destructive/10 mb-4">
           <AlertCircle className="h-8 w-8 text-destructive" />
         </div>
         <h3 className="text-lg font-medium mb-2">{t('userSubscription.loadingFailed')}</h3>
@@ -69,7 +69,7 @@ export const SubscriptionNodeList: React.FC<SubscriptionNodeListProps> = ({
   if (agents.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center py-12 px-4">
-        <div className="p-4 rounded-full bg-muted mb-4">
+        <div className="p-4 rounded-xl bg-muted mb-4">
           <Server className="h-8 w-8 text-muted-foreground" />
         </div>
         <h3 className="text-lg font-medium mb-2">{t('userSubscription.noAvailableNodes')}</h3>
@@ -91,9 +91,9 @@ export const SubscriptionNodeList: React.FC<SubscriptionNodeListProps> = ({
           <div
             key={agent.id}
             className={cn(
-              'p-2.5 @sm:p-3 rounded-xl border transition-all',
+              'p-2.5 @sm:p-3 rounded-xl ring-1 ring-border transition-all',
               agent.status === 'enabled'
-                ? 'bg-card hover:shadow-md'
+                ? 'bg-card'
                 : 'bg-muted/30 opacity-60'
             )}
           >

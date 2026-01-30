@@ -365,7 +365,7 @@ const FlowPathDisplayMobile: React.FC<{
 const MobileCardSkeleton: React.FC = () => (
   <div className="space-y-3">
     {[1, 2, 3].map((i) => (
-      <div key={i} className="border rounded-lg p-4 space-y-3">
+      <div key={i} className="ring-1 ring-border rounded-xl p-4 space-y-3">
         <div className="flex items-center justify-between">
           <Skeleton className="h-5 w-32" />
           <Skeleton className="h-5 w-16" />
@@ -547,7 +547,7 @@ export const ForwardRuleMobileList: React.FC<ForwardRuleMobileListProps> = ({
       <AccordionItem
             key={rule.id}
             value={rule.id}
-            className="border rounded-lg bg-white dark:bg-slate-800 overflow-hidden"
+            className="ring-1 ring-border rounded-xl bg-white dark:bg-slate-800 overflow-hidden"
           >
             {/* Card Header - Always visible */}
             <div className="px-3 py-2.5">

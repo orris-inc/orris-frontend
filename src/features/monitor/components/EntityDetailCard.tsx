@@ -149,10 +149,10 @@ export const EntityDetailCard = memo(({ entity, compact = false }: EntityDetailC
     return (
       <div className="@container">
         <div className={`
-          relative overflow-hidden rounded-xl border shadow-sm transition-all duration-200
+          relative overflow-hidden rounded-xl ring-1 transition-all duration-200 active:scale-[0.98]
           ${isOnline
-            ? 'bg-card border-border hover:shadow-md hover:border-primary/30'
-            : 'bg-muted/30 border-border/50'
+            ? 'bg-card ring-border hover:ring-primary/30'
+            : 'bg-muted/30 ring-border/50'
           }
         `}>
           {/* Gradient accent for online entities */}
@@ -262,10 +262,10 @@ export const EntityDetailCard = memo(({ entity, compact = false }: EntityDetailC
   return (
     <div className="@container">
       <div className={`
-        relative overflow-hidden rounded-xl border shadow-sm transition-all duration-200 cursor-pointer
+        relative overflow-hidden rounded-xl ring-1 transition-all duration-200 cursor-pointer active:scale-[0.98]
         ${isOnline
-          ? 'bg-card border-border hover:shadow-md hover:border-primary/30'
-          : 'bg-muted/30 border-border/50'
+          ? 'bg-card ring-border hover:ring-primary/30'
+          : 'bg-muted/30 ring-border/50'
         }
       `}>
         {/* Gradient accent for online entities */}
