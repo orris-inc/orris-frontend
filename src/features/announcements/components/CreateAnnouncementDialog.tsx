@@ -15,7 +15,7 @@ import {
 } from '@/components/common/Dialog';
 import { Button } from '@/components/common/Button';
 import { Input } from '@/components/common/Input';
-import { Textarea } from '@/components/common/Textarea';
+import { RichTextEditor } from '@/components/common/RichTextEditor';
 import { Label } from '@/components/common/Label';
 import {
   Select,
@@ -187,13 +187,12 @@ export const CreateAnnouncementDialog: React.FC<CreateAnnouncementDialogProps> =
                 <Label htmlFor="content">
                   {t('announcements.fields.content')} <span className="text-destructive">*</span>
                 </Label>
-                <Textarea
-                  id="content"
-                  rows={6}
+                <RichTextEditor
                   value={formData.content}
-                  onChange={(e) => handleChange('content', e.target.value)}
+                  onChange={(html) => handleChange('content', html)}
                   placeholder={t('announcements.form.contentPlaceholder')}
                   disabled={loading}
+                  minHeight="150px"
                 />
                 <p className="text-xs text-muted-foreground">
                   {t('announcements.form.contentHint')}

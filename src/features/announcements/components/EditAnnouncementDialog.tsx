@@ -15,21 +15,10 @@ import {
 } from '@/components/common/Dialog';
 import { Button } from '@/components/common/Button';
 import { Input } from '@/components/common/Input';
-import { Textarea } from '@/components/common/Textarea';
+import { RichTextEditor } from '@/components/common/RichTextEditor';
 import { Label } from '@/components/common/Label';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/common/Select';
 import { Separator } from '@/components/common/Separator';
-import type {
-  Announcement,
-  UpdateAnnouncementRequest,
-  AnnouncementType,
-} from '@/api/notification/types';
+import type { Announcement, UpdateAnnouncementRequest } from '@/api/notification/types';
 
 // ============================================================================
 // Types
@@ -45,19 +34,9 @@ interface EditAnnouncementDialogProps {
 interface FormData {
   title: string;
   content: string;
-  type: AnnouncementType;
   priority: number;
-  scheduledAt: string;
   expiresAt: string;
 }
-
-// Type options
-const TYPE_OPTIONS: { value: AnnouncementType; label: string }[] = [
-  { value: 'system', label: 'announcements.type.system' },
-  { value: 'maintenance', label: 'announcements.type.maintenance' },
-  { value: 'feature', label: 'announcements.type.feature' },
-  { value: 'promotion', label: 'announcements.type.promotion' },
-];
 
 // Helper: format date for datetime-local input
 const formatDateForInput = (dateStr: string | undefined): string => {
@@ -85,9 +64,7 @@ export const EditAnnouncementDialog: React.FC<EditAnnouncementDialogProps> = ({
   const [formData, setFormData] = useState<FormData>({
     title: '',
     content: '',
-    type: 'system',
     priority: 0,
-    scheduledAt: '',
     expiresAt: '',
   });
   const [loading, setLoading] = useState(false);
@@ -98,9 +75,7 @@ export const EditAnnouncementDialog: React.FC<EditAnnouncementDialogProps> = ({
       setFormData({
         title: announcement.title,
         content: announcement.content,
-        type: announcement.type,
         priority: announcement.priority,
-        scheduledAt: formatDateForInput(announcement.scheduledAt),
         expiresAt: formatDateForInput(announcement.expiresAt),
       });
     }
@@ -120,9 +95,7 @@ export const EditAnnouncementDialog: React.FC<EditAnnouncementDialogProps> = ({
       const submitData: UpdateAnnouncementRequest = {
         title: formData.title.trim(),
         content: formData.content.trim(),
-        type: formData.type,
         priority: formData.priority,
-        scheduledAt: formData.scheduledAt || undefined,
         expiresAt: formData.expiresAt || undefined,
       };
       await onSubmit(announcement.id, submitData);
@@ -170,54 +143,31 @@ export const EditAnnouncementDialog: React.FC<EditAnnouncementDialogProps> = ({
                 />
               </div>
 
-              <div className="grid grid-cols-1 gap-4 @sm:grid-cols-2">
-                <div className="flex flex-col gap-2">
-                  <Label htmlFor="type">{t('announcements.type.label')}</Label>
-                  <Select
-                    value={formData.type}
-                    onValueChange={(value) => handleChange('type', value as AnnouncementType)}
-                    disabled={loading}
-                  >
-                    <SelectTrigger id="type">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {TYPE_OPTIONS.map((option) => (
-                        <SelectItem key={option.value} value={option.value}>
-                          {t(option.label)}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                <div className="flex flex-col gap-2">
-                  <Label htmlFor="priority">{t('announcements.fields.priority')}</Label>
-                  <Input
-                    id="priority"
-                    type="number"
-                    min="0"
-                    value={formData.priority}
-                    onChange={(e) => handleChange('priority', Number(e.target.value))}
-                    disabled={loading}
-                  />
-                  <p className="text-xs text-muted-foreground">
-                    {t('announcements.form.priorityHint')}
-                  </p>
-                </div>
+              <div className="flex flex-col gap-2">
+                <Label htmlFor="priority">{t('announcements.fields.priority')}</Label>
+                <Input
+                  id="priority"
+                  type="number"
+                  min="0"
+                  value={formData.priority}
+                  onChange={(e) => handleChange('priority', Number(e.target.value))}
+                  disabled={loading}
+                />
+                <p className="text-xs text-muted-foreground">
+                  {t('announcements.form.priorityHint')}
+                </p>
               </div>
 
               <div className="flex flex-col gap-2">
                 <Label htmlFor="content">
                   {t('announcements.fields.content')} <span className="text-destructive">*</span>
                 </Label>
-                <Textarea
-                  id="content"
-                  rows={6}
+                <RichTextEditor
                   value={formData.content}
-                  onChange={(e) => handleChange('content', e.target.value)}
+                  onChange={(html) => handleChange('content', html)}
                   placeholder={t('announcements.form.contentPlaceholder')}
                   disabled={loading}
+                  minHeight="150px"
                 />
                 <p className="text-xs text-muted-foreground">
                   {t('announcements.form.contentHint')}
@@ -230,34 +180,18 @@ export const EditAnnouncementDialog: React.FC<EditAnnouncementDialogProps> = ({
               <h3 className="text-sm font-semibold">{t('announcements.form.schedule')}</h3>
               <Separator />
 
-              <div className="grid grid-cols-1 gap-4 @sm:grid-cols-2">
-                <div className="flex flex-col gap-2">
-                  <Label htmlFor="scheduledAt">{t('announcements.fields.scheduledAt')}</Label>
-                  <Input
-                    id="scheduledAt"
-                    type="datetime-local"
-                    value={formData.scheduledAt}
-                    onChange={(e) => handleChange('scheduledAt', e.target.value)}
-                    disabled={loading}
-                  />
-                  <p className="text-xs text-muted-foreground">
-                    {t('announcements.form.scheduledAtHint')}
-                  </p>
-                </div>
-
-                <div className="flex flex-col gap-2">
-                  <Label htmlFor="expiresAt">{t('announcements.fields.expiresAt')}</Label>
-                  <Input
-                    id="expiresAt"
-                    type="datetime-local"
-                    value={formData.expiresAt}
-                    onChange={(e) => handleChange('expiresAt', e.target.value)}
-                    disabled={loading}
-                  />
-                  <p className="text-xs text-muted-foreground">
-                    {t('announcements.form.expiresAtHint')}
-                  </p>
-                </div>
+              <div className="flex flex-col gap-2">
+                <Label htmlFor="expiresAt">{t('announcements.fields.expiresAt')}</Label>
+                <Input
+                  id="expiresAt"
+                  type="datetime-local"
+                  value={formData.expiresAt}
+                  onChange={(e) => handleChange('expiresAt', e.target.value)}
+                  disabled={loading}
+                />
+                <p className="text-xs text-muted-foreground">
+                  {t('announcements.form.expiresAtHint')}
+                </p>
               </div>
             </div>
           </div>

@@ -55,13 +55,12 @@ export interface CreateAnnouncementRequest {
 /**
  * Update announcement request
  * PUT /announcements/:id
+ * Updated 2026-01-30: Removed type, scheduledAt (not updatable after creation)
  */
 export interface UpdateAnnouncementRequest {
   title?: string;
   content?: string;
-  type?: AnnouncementType;
   priority?: number;
-  scheduledAt?: string;
   expiresAt?: string;
 }
 
@@ -96,18 +95,17 @@ export interface ListPublicAnnouncementsParams {
 
 /**
  * Notification entity
+ * Updated 2026-01-30: Removed userId, archivedAt, updatedAt; Added contentHtml
  */
 export interface Notification {
   id: number;
-  userId: number;
   type: string;
   title: string;
   content: string;
+  contentHtml?: string;
   relatedId?: number;
   readStatus: NotificationReadStatus;
-  archivedAt?: string;
   createdAt: string;
-  updatedAt: string;
 }
 
 /**
@@ -166,6 +164,7 @@ export interface NotificationTemplate {
 /**
  * Create template request
  * POST /notification-templates
+ * Updated 2026-01-30: Removed enabled (new templates are enabled by default)
  */
 export interface CreateTemplateRequest {
   templateType: string;
@@ -173,7 +172,6 @@ export interface CreateTemplateRequest {
   title: string;
   content: string;
   variables?: string[];
-  enabled?: boolean;
 }
 
 /**
@@ -197,8 +195,10 @@ export interface RenderTemplateRequest {
 
 /**
  * Render template response
+ * Updated 2026-01-30: Added contentHtml
  */
 export interface RenderTemplateResponse {
   title: string;
   content: string;
+  contentHtml?: string;
 }
