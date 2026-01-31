@@ -94,7 +94,7 @@ export const AdminAnnouncementsPage: React.FC = () => {
     try {
       await createAnnouncement(data);
       setCreateDialogOpen(false);
-    } catch (error) {
+    } catch {
       showError(t('announcements.messages.createFailed'));
     }
   };
@@ -105,7 +105,7 @@ export const AdminAnnouncementsPage: React.FC = () => {
       await updateAnnouncement(id, data);
       setEditDialogOpen(false);
       setSelectedAnnouncement(null);
-    } catch (error) {
+    } catch {
       showError(t('announcements.messages.updateFailed'));
     }
   };
@@ -114,7 +114,7 @@ export const AdminAnnouncementsPage: React.FC = () => {
   const handlePublish = async (announcement: Announcement) => {
     try {
       await updateStatus(announcement.id, { status: 'published' });
-    } catch (error) {
+    } catch {
       showError(t('announcements.messages.publishFailed'));
     }
   };
@@ -123,7 +123,7 @@ export const AdminAnnouncementsPage: React.FC = () => {
   const handleArchive = async (announcement: Announcement) => {
     try {
       await updateStatus(announcement.id, { status: 'archived' });
-    } catch (error) {
+    } catch {
       showError(t('announcements.messages.archiveFailed'));
     }
   };
@@ -140,7 +140,7 @@ export const AdminAnnouncementsPage: React.FC = () => {
       await deleteAnnouncement(selectedAnnouncement.id);
       setDeleteDialogOpen(false);
       setSelectedAnnouncement(null);
-    } catch (error) {
+    } catch {
       showError(t('announcements.messages.deleteFailed'));
     }
   };

@@ -14,13 +14,6 @@ export { FilterToolbar, FilterChip, ResetFiltersButton, type FilterToolbarProps,
 export {
   SelectFilter,
   SelectFiltersGroup,
-  createStatusFilterConfig,
-  createRoleFilterConfig,
-  NODE_STATUS_OPTIONS,
-  NODE_PROTOCOL_OPTIONS,
-  ONLINE_STATUS_OPTIONS,
-  USER_STATUS_OPTIONS,
-  USER_ROLE_OPTIONS,
   type FilterOption,
   type FilterConfig,
   type FilterValues,
@@ -28,14 +21,25 @@ export {
   type SelectFiltersGroupProps,
 } from './SelectFilters';
 export {
+  createStatusFilterConfig,
+  createRoleFilterConfig,
+  NODE_STATUS_OPTIONS,
+  NODE_PROTOCOL_OPTIONS,
+  ONLINE_STATUS_OPTIONS,
+  USER_STATUS_OPTIONS,
+  USER_ROLE_OPTIONS,
+} from './filter-presets';
+export {
   MobileFiltersSheet,
   MobileFilterButton,
-  useFiltersSheet,
   type MobileFiltersSheetProps,
   type MobileFilterButtonProps,
+} from './MobileFiltersSheet';
+export {
+  useFiltersSheet,
   type UseFiltersSheetOptions,
   type UseFiltersSheetReturn,
-} from './MobileFiltersSheet';
+} from './useFiltersSheet';
 export { Skeleton, TableSkeleton, StatsSkeleton, ListSkeleton, CardSkeleton, PageHeaderSkeleton, ContentSkeleton, PageSkeleton, type SkeletonProps, type TableSkeletonProps, type StatsSkeletonProps, type ListSkeletonProps, type CardSkeletonProps, type PageHeaderSkeletonProps, type ContentSkeletonProps, type PageSkeletonProps } from './Skeleton';
 export { ContentSection, type ContentSectionProps } from './ContentSection';
 export { EmptyState, type EmptyStateProps, type EmptySuggestion } from './EmptyState';
@@ -67,7 +71,8 @@ export { NodeTrafficStats } from './NodeTrafficStats';
 export { TrafficOverviewCards } from './TrafficOverviewCards';
 export { TrafficTrendChart } from './TrafficTrendChart';
 export { TrafficRankingList } from './TrafficRankingList';
-export { ExtendedMetricsPanel, hasExtendedMetrics, type ExtendedMetricsData } from './ExtendedMetricsPanel';
+export { ExtendedMetricsPanel, type ExtendedMetricsData } from './ExtendedMetricsPanel';
+export { hasExtendedMetrics } from './extended-metrics-utils';
 // Lazy-loaded chart components (for better code splitting)
 export { LazyTrafficTrendChart, LazyExtendedMetricsPanel } from './LazyCharts';
 // SystemStatusHoverContext is deprecated - use TableHoverCardProvider instead
@@ -76,4 +81,5 @@ export { SystemStatusHoverProvider, useSystemStatusHover, useIsItemHovered } fro
 export { SystemStatusCell, type SystemStatusData } from './SystemStatusCell';
 export { TableHoverCardProvider, TableRowProvider, useTableRowId, TableHoverCard, TableHoverCardList, TableHoverCardDesc } from './TableHoverCard';
 export { DateTimeCell } from './DateTimeCell';
-export { BulkActionBar, useBulkSelection, createExportAction, createDeleteAction, type BulkAction, type BulkActionBarProps, type UseBulkSelectionReturn } from './BulkActionBar';
+export { BulkActionBar, type BulkAction, type BulkActionBarProps } from './BulkActionBar';
+export { useBulkSelection, createExportAction, createDeleteAction, type UseBulkSelectionReturn } from './bulk-action-utils';

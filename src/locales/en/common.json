@@ -780,12 +780,14 @@
         "allUpToDate": "All nodes are up to date",
         "willUpdateNodes": "The following nodes will be updated:",
         "succeeded": "Succeeded",
+        "failed": "Failed",
         "skipped": "Skipped",
         "truncatedHint": "Results truncated. Check node details for full status.",
         "updateTriggered": "Update triggered for these nodes:",
         "updateFailed": "Failed to trigger update for these nodes:",
         "updateSkipped": "Update skipped for these nodes:",
-        "updateCount": "Update {{count}} Nodes"
+        "updateCount": "Update {{count}} Nodes",
+        "updating": "Updating..."
       },
       "broadcast": {
         "label": "Broadcast",
@@ -1534,12 +1536,14 @@
         "allUpToDate": "All agents are already up to date",
         "willUpdateAgents": "Following agents will be updated:",
         "succeeded": "Succeeded",
+        "failed": "Failed",
         "skipped": "Skipped",
         "truncatedNotice": "Some results are truncated due to large number of agents",
         "updateTriggered": "Update triggered for:",
         "updateFailed": "Failed to update:",
         "updateSkipped": "Skipped:",
-        "updateButton": "Update {{count}} Agents"
+        "updateButton": "Update {{count}} Agents",
+        "updating": "Updating..."
       },
       "filters": {
         "all": "All",

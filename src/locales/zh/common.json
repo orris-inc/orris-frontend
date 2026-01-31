@@ -780,12 +780,14 @@
         "allUpToDate": "所有节点已是最新版本",
         "willUpdateNodes": "以下节点将被更新：",
         "succeeded": "成功",
+        "failed": "失败",
         "skipped": "跳过",
         "truncatedHint": "结果已截断，请查看节点详情获取完整状态。",
         "updateTriggered": "已触发以下节点更新：",
         "updateFailed": "以下节点更新触发失败：",
         "updateSkipped": "以下节点更新已跳过：",
-        "updateCount": "更新 {{count}} 个节点"
+        "updateCount": "更新 {{count}} 个节点",
+        "updating": "更新中..."
       },
       "broadcast": {
         "label": "广播",
@@ -1534,12 +1536,14 @@
         "allUpToDate": "所有Agent均已是最新版本",
         "willUpdateAgents": "以下Agent将被更新：",
         "succeeded": "成功",
+        "failed": "失败",
         "skipped": "跳过",
         "truncatedNotice": "部分结果已截断",
         "updateTriggered": "已触发更新：",
         "updateFailed": "更新失败：",
         "updateSkipped": "已跳过：",
-        "updateButton": "更新 {{count}} 个Agent"
+        "updateButton": "更新 {{count}} 个Agent",
+        "updating": "更新中..."
       },
       "filters": {
         "all": "全部",

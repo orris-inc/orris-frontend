@@ -177,63 +177,21 @@ const SectionHeader = ({ icon, title, iconColor = 'text-muted-foreground' }: Sec
   </div>
 );
 
-// Check if section has data
-const hasCpuDetails = (data: ExtendedMetricsData) =>
-  data.cpuCores !== undefined || data.cpuModelName !== undefined || data.cpuMhz !== undefined;
+// Import utility functions from separate file
+import {
+  hasCpuDetails,
+  hasSwapData,
+  hasDiskIoData,
+  hasPsiData,
+  hasNetworkExtended,
+  hasSocketData,
+  hasProcessData,
+  hasSystemInfo,
+  hasVmStats,
+  hasContextSwitches,
+  hasExtendedMetrics,
+} from './extended-metrics-utils';
 
-const hasSwapData = (data: ExtendedMetricsData) =>
-  data.swapTotal !== undefined || data.swapUsed !== undefined || data.swapPercent !== undefined;
-
-const hasDiskIoData = (data: ExtendedMetricsData) =>
-  data.diskReadBytes !== undefined ||
-  data.diskWriteBytes !== undefined ||
-  data.diskReadRate !== undefined ||
-  data.diskIops !== undefined;
-
-const hasPsiData = (data: ExtendedMetricsData) =>
-  data.psiCpuSome !== undefined ||
-  data.psiMemorySome !== undefined ||
-  data.psiIoSome !== undefined;
-
-const hasNetworkExtended = (data: ExtendedMetricsData) =>
-  data.networkRxPackets !== undefined ||
-  data.networkRxErrors !== undefined ||
-  data.networkRxDropped !== undefined;
-
-const hasSocketData = (data: ExtendedMetricsData) =>
-  data.socketsUsed !== undefined || data.socketsTcpInUse !== undefined;
-
-const hasProcessData = (data: ExtendedMetricsData) =>
-  data.processesTotal !== undefined || data.processesRunning !== undefined;
-
-const hasSystemInfo = (data: ExtendedMetricsData) =>
-  data.kernelVersion !== undefined ||
-  data.hostname !== undefined ||
-  data.fileNrAllocated !== undefined ||
-  data.entropyAvailable !== undefined;
-
-const hasVmStats = (data: ExtendedMetricsData) =>
-  data.vmPageIn !== undefined || data.vmSwapIn !== undefined || data.vmOomKill !== undefined;
-
-const hasContextSwitches = (data: ExtendedMetricsData) =>
-  data.contextSwitches !== undefined || data.interrupts !== undefined;
-
-// Check if there's any extended metrics data
-export const hasExtendedMetrics = (data?: ExtendedMetricsData): boolean => {
-  if (!data) return false;
-  return (
-    hasCpuDetails(data) ||
-    hasSwapData(data) ||
-    hasDiskIoData(data) ||
-    hasPsiData(data) ||
-    hasNetworkExtended(data) ||
-    hasSocketData(data) ||
-    hasProcessData(data) ||
-    hasSystemInfo(data) ||
-    hasVmStats(data) ||
-    hasContextSwitches(data)
-  );
-};
 
 /**
  * Extended Metrics Panel
