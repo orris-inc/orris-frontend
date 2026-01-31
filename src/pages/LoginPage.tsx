@@ -56,7 +56,7 @@ const BrandPanel = ({
           <img
             src={logoUrl}
             alt={appName || 'Logo'}
-            className="h-16 w-auto mb-6 brightness-0 invert"
+            className="h-16 w-auto mb-6"
           />
         )}
         <h1 className="text-4xl xl:text-5xl font-bold text-white tracking-tight text-center">

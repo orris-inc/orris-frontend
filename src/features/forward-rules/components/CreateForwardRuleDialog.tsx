@@ -342,6 +342,11 @@ export const CreateForwardRuleDialog: React.FC<CreateForwardRuleDialogProps> = (
           "admin.forwardRules.validation.listenPortRange",
         );
       }
+      if (!formData.targetNodeId) {
+        newErrors.targetNodeId = t(
+          "admin.forwardRules.validation.selectTargetNode",
+        );
+      }
       setErrors(newErrors);
       return Object.keys(newErrors).length === 0;
     }
@@ -596,7 +601,7 @@ export const CreateForwardRuleDialog: React.FC<CreateForwardRuleDialogProps> = (
           name: formData.name.trim(),
           serverAddress: formData.serverAddress.trim(),
           listenPort: formData.listenPort,
-          ...(formData.targetNodeId && { targetNodeId: formData.targetNodeId }),
+          targetNodeId: formData.targetNodeId,
           ...(formData.externalSource?.trim() && {
             externalSource: formData.externalSource.trim(),
           }),
@@ -716,7 +721,8 @@ export const CreateForwardRuleDialog: React.FC<CreateForwardRuleDialogProps> = (
         formData.name.trim() !== "" &&
         formData.serverAddress.trim() !== "" &&
         formData.listenPort > 0 &&
-        formData.listenPort <= 65535
+        formData.listenPort <= 65535 &&
+        !!formData.targetNodeId
       );
     }
 
@@ -1046,7 +1052,9 @@ export const CreateForwardRuleDialog: React.FC<CreateForwardRuleDialogProps> = (
 
                     <FormField
                       label={t("admin.forwardRules.form.targetNode")}
-                      hint={t("admin.forwardRules.form.targetNodeHint")}
+                      required
+                      error={errors.targetNodeId}
+                      hint={t("admin.forwardRules.form.externalTargetNodeHint")}
                       className="col-span-6 sm:col-span-3"
                     >
                       <Select
@@ -1055,10 +1063,14 @@ export const CreateForwardRuleDialog: React.FC<CreateForwardRuleDialogProps> = (
                           handleChange("targetNodeId", value)
                         }
                       >
-                        <SelectTrigger>
+                        <SelectTrigger
+                          className={
+                            errors.targetNodeId ? "border-destructive" : ""
+                          }
+                        >
                           <SelectValue
                             placeholder={t(
-                              "admin.forwardRules.form.selectTargetNodeOptional",
+                              "admin.forwardRules.form.selectTargetNode",
                             )}
                           />
                         </SelectTrigger>

@@ -434,6 +434,9 @@ export const CreateForwardRuleSheet: React.FC<CreateForwardRuleSheetProps> = ({
       if (!formData.listenPort || formData.listenPort < 1 || formData.listenPort > 65535) {
         newErrors.listenPort = t('admin.forwardRules.validation.listenPortRange');
       }
+      if (!formData.targetNodeId) {
+        newErrors.targetNodeId = t('admin.forwardRules.validation.selectTargetNode');
+      }
       setErrors(newErrors);
       return Object.keys(newErrors).length === 0;
     }
@@ -496,7 +499,7 @@ export const CreateForwardRuleSheet: React.FC<CreateForwardRuleSheetProps> = ({
           name: formData.name.trim(),
           serverAddress: formData.serverAddress.trim(),
           listenPort: formData.listenPort,
-          ...(formData.targetNodeId && { targetNodeId: formData.targetNodeId }),
+          targetNodeId: formData.targetNodeId,
           ...(formData.externalSource?.trim() && { externalSource: formData.externalSource.trim() }),
           ...(formData.externalRuleId?.trim() && { externalRuleId: formData.externalRuleId.trim() }),
           ...(formData.sortOrder !== undefined && formData.sortOrder >= 0 && { sortOrder: formData.sortOrder }),
@@ -562,7 +565,7 @@ export const CreateForwardRuleSheet: React.FC<CreateForwardRuleSheetProps> = ({
 
   const isFormValid =
     formData.ruleType === 'external'
-      ? formData.name.trim() && formData.serverAddress.trim() && formData.listenPort > 0 && formData.listenPort <= 65535
+      ? formData.name.trim() && formData.serverAddress.trim() && formData.listenPort > 0 && formData.listenPort <= 65535 && !!formData.targetNodeId
       : formData.agentId &&
         formData.name.trim() &&
         formData.protocol &&
@@ -667,13 +670,15 @@ export const CreateForwardRuleSheet: React.FC<CreateForwardRuleSheetProps> = ({
 
               <FormField
                 label={t('admin.forwardRules.form.targetNode')}
-                hint={t('admin.forwardRules.form.targetNodeHint')}
+                required
+                error={errors.targetNodeId}
+                hint={t('admin.forwardRules.form.externalTargetNodeHint')}
               >
                 <MobileSelect
                   value={formData.targetNodeId}
                   onChange={(value) => handleChange('targetNodeId', value)}
                   options={nodeOptions}
-                  placeholder={t('admin.forwardRules.form.selectTargetNodeOptional')}
+                  placeholder={t('admin.forwardRules.form.selectTargetNode')}
                 />
               </FormField>
             </>

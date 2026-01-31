@@ -48,9 +48,11 @@ const JSON_TEMPLATE = `{
   ]
 }`;
 
-// Required fields for validation
-const REQUIRED_FIELDS = ['agentId', 'ruleType', 'name', 'protocol'];
-const VALID_RULE_TYPES = ['direct', 'entry', 'chain', 'direct_chain'];
+// Required fields for validation (common fields)
+const REQUIRED_FIELDS_COMMON = ['ruleType', 'name'];
+// Required fields for non-external rules
+const REQUIRED_FIELDS_STANDARD = ['agentId', 'protocol'];
+const VALID_RULE_TYPES = ['direct', 'entry', 'chain', 'direct_chain', 'external'];
 const VALID_PROTOCOLS = ['tcp', 'udp', 'both'];
 
 interface ValidationResult {
@@ -93,11 +95,21 @@ function validateJsonInput(jsonStr: string, t: TFunction): ValidationResult {
   for (let i = 0; i < obj.rules.length; i++) {
     const rule = obj.rules[i] as Record<string, unknown>;
     const ruleIndex = i + 1;
+    const isExternal = rule.ruleType === 'external';
 
-    // Check required fields
-    for (const field of REQUIRED_FIELDS) {
+    // Check common required fields
+    for (const field of REQUIRED_FIELDS_COMMON) {
       if (!rule[field]) {
         errors.push(t('admin.forwardRules.batch.validation.missingField', { index: ruleIndex, field }));
+      }
+    }
+
+    // Check standard required fields (only for non-external rules)
+    if (!isExternal) {
+      for (const field of REQUIRED_FIELDS_STANDARD) {
+        if (!rule[field]) {
+          errors.push(t('admin.forwardRules.batch.validation.missingField', { index: ruleIndex, field }));
+        }
       }
     }
 
@@ -106,16 +118,29 @@ function validateJsonInput(jsonStr: string, t: TFunction): ValidationResult {
       errors.push(t('admin.forwardRules.batch.validation.invalidRuleType', { index: ruleIndex, types: VALID_RULE_TYPES.join(', ') }));
     }
 
-    // Validate protocol
-    if (rule.protocol && !VALID_PROTOCOLS.includes(rule.protocol as string)) {
+    // Validate protocol (only for non-external rules)
+    if (!isExternal && rule.protocol && !VALID_PROTOCOLS.includes(rule.protocol as string)) {
       errors.push(t('admin.forwardRules.batch.validation.invalidProtocol', { index: ruleIndex, protocols: VALID_PROTOCOLS.join(', ') }));
     }
 
-    // Validate target (must have targetAddress+targetPort or targetNodeId)
-    const hasManualTarget = rule.targetAddress && rule.targetPort;
-    const hasNodeTarget = rule.targetNodeId;
-    if (!hasManualTarget && !hasNodeTarget) {
-      errors.push(t('admin.forwardRules.batch.validation.missingTarget', { index: ruleIndex }));
+    // External rule specific validation
+    if (isExternal) {
+      if (!rule.serverAddress) {
+        errors.push(t('admin.forwardRules.batch.validation.missingField', { index: ruleIndex, field: 'serverAddress' }));
+      }
+      if (!rule.listenPort) {
+        errors.push(t('admin.forwardRules.batch.validation.missingField', { index: ruleIndex, field: 'listenPort' }));
+      }
+      if (!rule.targetNodeId) {
+        errors.push(t('admin.forwardRules.batch.validation.missingField', { index: ruleIndex, field: 'targetNodeId' }));
+      }
+    } else {
+      // Non-external: validate target (must have targetAddress+targetPort or targetNodeId)
+      const hasManualTarget = rule.targetAddress && rule.targetPort;
+      const hasNodeTarget = rule.targetNodeId;
+      if (!hasManualTarget && !hasNodeTarget) {
+        errors.push(t('admin.forwardRules.batch.validation.missingTarget', { index: ruleIndex }));
+      }
     }
 
     // Validate entry type specific fields
