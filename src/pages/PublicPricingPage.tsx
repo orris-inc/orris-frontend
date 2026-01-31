@@ -13,6 +13,7 @@ import { ThemeToggle } from '@/components/common/ThemeToggle';
 import { LanguageSwitcher } from '@/components/common/LanguageSwitcher';
 import { useAuthStore } from '@/features/auth/stores/auth-store';
 import { usePublicPlans } from '@/features/subscription-plans/hooks/usePublicPlans';
+import { usePublicBranding } from '@/features/settings';
 import type { SubscriptionPlan, BillingCycle } from '@/api/subscription/types';
 
 // Format price
@@ -184,6 +185,7 @@ export const PublicPricingPage = () => {
   const navigate = useNavigate();
   const { isAuthenticated, isLoading: authLoading } = useAuthStore();
   const { publicPlans, isLoading: plansLoading } = usePublicPlans();
+  const { appName, logoUrl, isLoading: isBrandingLoading } = usePublicBranding();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   // Navigation links for public pages
@@ -225,10 +227,23 @@ export const PublicPricingPage = () => {
           <div className="flex items-center justify-between h-14">
             {/* Logo */}
             <Link to="/" className="flex items-center gap-2">
-              <div className="size-8 rounded-lg bg-primary flex items-center justify-center">
-                <Globe className="size-5 text-primary-foreground" />
-              </div>
-              <span className="text-lg font-semibold">Orris</span>
+              {isBrandingLoading ? (
+                <>
+                  <div className="size-8 rounded-lg bg-muted animate-pulse" />
+                  <div className="h-5 w-16 bg-muted animate-pulse rounded" />
+                </>
+              ) : (
+                <>
+                  {logoUrl ? (
+                    <img src={logoUrl} alt={appName || 'Logo'} className="h-8 w-auto" />
+                  ) : (
+                    <div className="size-8 rounded-lg bg-primary flex items-center justify-center">
+                      <Globe className="size-5 text-primary-foreground" />
+                    </div>
+                  )}
+                  <span className="text-lg font-semibold">{appName || 'Orris'}</span>
+                </>
+              )}
             </Link>
 
             {/* Desktop Navigation Links */}
@@ -398,10 +413,23 @@ export const PublicPricingPage = () => {
         <div className="max-w-6xl mx-auto">
           <div className="flex flex-col md:flex-row items-center justify-between gap-6">
             <div className="flex items-center gap-2">
-              <div className="size-8 rounded-lg bg-primary flex items-center justify-center">
-                <Globe className="size-5 text-primary-foreground" />
-              </div>
-              <span className="text-lg font-semibold">Orris</span>
+              {isBrandingLoading ? (
+                <>
+                  <div className="size-8 rounded-lg bg-muted animate-pulse" />
+                  <div className="h-5 w-16 bg-muted animate-pulse rounded" />
+                </>
+              ) : (
+                <>
+                  {logoUrl ? (
+                    <img src={logoUrl} alt={appName || 'Logo'} className="h-8 w-auto" />
+                  ) : (
+                    <div className="size-8 rounded-lg bg-primary flex items-center justify-center">
+                      <Globe className="size-5 text-primary-foreground" />
+                    </div>
+                  )}
+                  <span className="text-lg font-semibold">{appName || 'Orris'}</span>
+                </>
+              )}
             </div>
 
             <div className="flex items-center gap-6 text-sm text-muted-foreground">

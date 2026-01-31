@@ -337,6 +337,9 @@
       "passwordRequired": "Password is required",
       "passwordMinLength": "Password must be at least 8 characters",
       "passwordUppercase": "Password must contain at least one uppercase letter",
+      "passwordLowercase": "Password must contain at least one lowercase letter",
+      "passwordNumber": "Password must contain at least one number",
+      "passwordSpecial": "Password must contain at least one special character",
       "passwordMismatch": "Passwords do not match",
       "nameRequired": "Name is required",
       "nameMinLength": "Name must be at least 2 characters",
@@ -431,6 +434,19 @@
         "invalidState": "This passkey is already registered",
         "unknown": "An unexpected error occurred. Please try again."
       }
+    },
+    "maintenance": {
+      "title": "System Maintenance",
+      "defaultMessage": "The system is under maintenance. Please try again later.",
+      "backToLogin": "Back to Login"
+    },
+    "registration": {
+      "disabled": "Registration is currently disabled",
+      "disabledHint": "Please contact administrator for an account",
+      "agreeTerms": "By registering, you agree to our",
+      "termsOfService": "Terms of Service",
+      "privacyPolicy": "Privacy Policy",
+      "and": "and"
     }
   },
   "resourceGroups": {
@@ -1908,7 +1924,6 @@
         "price": "Price",
         "billingCycle": "Billing Cycle",
         "public": "Public",
-        "trialDays": "Trial Days",
         "extras": "Extras",
         "publicPlan": "Public Plan",
         "privatePlan": "Private Plan",
@@ -1945,7 +1960,6 @@
         "noSelectionAllowAll": "No selection allows all types",
         "descriptionPlaceholder": "Description of the subscription plan",
         "generalConfig": "General Configuration",
-        "trialDays": "Trial Days",
         "sortOrderHint": "Lower numbers appear first",
         "isPublic": "Show this plan publicly",
         "createCopy": "Create Copy",
@@ -2243,11 +2257,15 @@
       "readOnly": "Read-only",
       "nav": {
         "system": "System",
+        "branding": "Branding",
+        "security": "Security",
+        "registration": "Registration",
         "oauth": "OAuth",
         "email": "Email",
         "telegram": "Telegram",
         "usdt": "USDT",
-        "subscription": "Subscription"
+        "subscription": "Subscription",
+        "legal": "Legal"
       },
       "source": {
         "database": "Database",
@@ -2355,6 +2373,75 @@
         "showInfoNodesDesc": "Display expiration date and traffic usage at the top of node list in subscription output",
         "updateSuccess": "Subscription configuration updated",
         "updateError": "Failed to update subscription configuration"
+      },
+      "branding": {
+        "title": "Branding Settings",
+        "description": "Configure app name, logo, and favicon",
+        "appName": "App Name",
+        "appNameDesc": "Name displayed in page title and navigation",
+        "appNamePlaceholder": "Enter app name",
+        "logo": "Logo",
+        "logoDesc": "App logo, recommended size 200x50 pixels",
+        "uploadLogo": "Upload Logo",
+        "favicon": "Favicon",
+        "faviconDesc": "Browser tab icon, ICO or PNG format recommended",
+        "uploadFavicon": "Upload Favicon",
+        "updateSuccess": "Branding configuration updated",
+        "updateError": "Failed to update branding configuration",
+        "uploadSuccess": "Image uploaded successfully",
+        "uploadError": "Failed to upload image"
+      },
+      "security": {
+        "title": "Security Settings",
+        "description": "Configure password policy and login protection",
+        "passwordPolicy": "Password Policy",
+        "passwordPolicyDesc": "Set password complexity requirements",
+        "minLength": "Minimum Length",
+        "minLengthDesc": "Minimum password characters (8-32)",
+        "requireUppercase": "Require Uppercase",
+        "requireUppercaseDesc": "Password must contain at least one uppercase letter",
+        "requireLowercase": "Require Lowercase",
+        "requireLowercaseDesc": "Password must contain at least one lowercase letter",
+        "requireNumber": "Require Number",
+        "requireNumberDesc": "Password must contain at least one number",
+        "requireSpecial": "Require Special Character",
+        "requireSpecialDesc": "Password must contain at least one special character",
+        "passwordExpiry": "Password Expiry",
+        "passwordExpiryDesc": "Password validity period (0 means never expires)",
+        "days": "days",
+        "sessionSettings": "Session Settings",
+        "sessionSettingsDesc": "Configure user session timeout",
+        "sessionTimeout": "Session Timeout",
+        "sessionTimeoutDesc": "Auto logout time after user inactivity",
+        "minutes": "minutes",
+        "loginProtection": "Login Protection",
+        "loginProtectionDesc": "Configure login failure lockout policy",
+        "maxLoginAttempts": "Max Login Attempts",
+        "maxLoginAttemptsDesc": "Account will be locked after reaching this limit",
+        "lockoutDuration": "Lockout Duration",
+        "lockoutDurationDesc": "Wait time after account is locked",
+        "updateSuccess": "Security configuration updated",
+        "updateError": "Failed to update security configuration"
+      },
+      "registration": {
+        "title": "Registration Settings",
+        "description": "Configure user registration options",
+        "enabled": "Open Registration",
+        "enabledDesc": "Allow new users to create accounts via registration page",
+        "emailVerification": "Email Verification",
+        "emailVerificationDesc": "Require users to verify email address after registration",
+        "updateSuccess": "Registration configuration updated",
+        "updateError": "Failed to update registration configuration"
+      },
+      "legal": {
+        "title": "Legal Settings",
+        "description": "Configure terms of service and privacy policy links",
+        "termsOfService": "Terms of Service URL",
+        "termsOfServiceDesc": "Link to the terms of service page",
+        "privacyPolicy": "Privacy Policy URL",
+        "privacyPolicyDesc": "Link to the privacy policy page",
+        "updateSuccess": "Legal settings updated",
+        "updateError": "Failed to update legal settings"
       }
     }
   },

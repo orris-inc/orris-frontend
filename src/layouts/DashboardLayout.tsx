@@ -49,6 +49,7 @@ import {
 import { queryKeys } from '@/shared/lib/query-client';
 import { formatRelativeTime } from '@/shared/utils/date-utils';
 import type { Announcement, AnnouncementType } from '@/api/notification/types';
+import { usePublicBranding } from '@/features/settings';
 
 // ============================================================================
 // Announcement Bell Component
@@ -470,6 +471,7 @@ export const DashboardLayout = ({
   const { logout } = useAuth();
   const { filterNavigationByPermission, userRole } = usePermissions();
   const { serverVersion, clientVersion } = useVersionInfo();
+  const { appName, logoUrl, isLoading: isBrandingLoading } = usePublicBranding();
 
   const [mobileDrawerOpen, setMobileDrawerOpen] = useState(false);
 
@@ -505,12 +507,25 @@ export const DashboardLayout = ({
               to="/"
               className="flex items-center gap-2.5 shrink-0"
             >
-              <div className="size-8 rounded-lg bg-primary flex items-center justify-center">
-                <Globe className="size-5 text-primary-foreground" />
-              </div>
-              <span className="text-lg font-semibold text-foreground hidden sm:block">
-                Orris
-              </span>
+              {isBrandingLoading ? (
+                <>
+                  <div className="size-8 rounded-lg bg-muted animate-pulse" />
+                  <div className="h-5 w-16 bg-muted animate-pulse rounded hidden sm:block" />
+                </>
+              ) : (
+                <>
+                  {logoUrl ? (
+                    <img src={logoUrl} alt={appName || 'Logo'} className="h-8 w-auto" />
+                  ) : (
+                    <div className="size-8 rounded-lg bg-primary flex items-center justify-center">
+                      <Globe className="size-5 text-primary-foreground" />
+                    </div>
+                  )}
+                  <span className="text-lg font-semibold text-foreground hidden sm:block">
+                    {appName || 'Orris'}
+                  </span>
+                </>
+              )}
             </ViewTransitionLink>
 
             {/* Desktop Navigation */}

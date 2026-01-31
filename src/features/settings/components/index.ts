@@ -28,3 +28,19 @@ export {
   SubscriptionSettingsForm,
   SubscriptionSettingsFormSkeleton,
 } from './SubscriptionSettingsForm';
+export {
+  BrandingSettingsForm,
+  BrandingSettingsFormSkeleton,
+} from './BrandingSettingsForm';
+export {
+  SecuritySettingsForm,
+  SecuritySettingsFormSkeleton,
+} from './SecuritySettingsForm';
+export {
+  RegistrationSettingsForm,
+  RegistrationSettingsFormSkeleton,
+} from './RegistrationSettingsForm';
+export {
+  LegalSettingsForm,
+  LegalSettingsFormSkeleton,
+} from './LegalSettingsForm';

@@ -7,9 +7,9 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { Link as RouterLink, useNavigate } from 'react-router-dom';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Loader2, Fingerprint, Github, Check } from 'lucide-react';
+import { Loader2, Fingerprint, Github, Check, UserX } from 'lucide-react';
 import * as Progress from '@radix-ui/react-progress';
 import { useAuth } from '@/features/auth/hooks/useAuth';
 import { usePasskeySignup } from '@/features/auth/hooks/usePasskeySignup';
@@ -20,6 +20,12 @@ import { LanguageSwitcher } from '@/components/common/LanguageSwitcher';
 import { ThemeToggle } from '@/components/common/ThemeToggle';
 import { GoogleIcon, GitHubIcon } from '@/components/common/SocialIcons';
 import { FormField, AuthAlert } from '@/components/auth';
+import {
+  usePublicRegistration,
+  usePublicLegal,
+  usePasswordPolicy,
+  usePublicBranding,
+} from '@/features/settings';
 
 // Register form data type
 type RegisterFormData = {
@@ -162,23 +168,61 @@ export const RegisterPage = () => {
   const [passwordStrength, setPasswordStrength] = useState(0);
   const [showPasskeyForm, setShowPasskeyForm] = useState(false);
 
-  // Zod schema with i18n validation messages
-  const registerSchema = z
-    .object({
-      name: z.string()
-        .min(2, t('auth.validation.nameMinLength'))
-        .max(100, t('auth.validation.nameMaxLength')),
-      email: z.string().email(t('common.validation.email')),
-      password: z
-        .string()
-        .min(8, t('auth.validation.passwordMinLength'))
-        .regex(/[A-Z]/, t('auth.validation.passwordUppercase')),
-      confirmPassword: z.string(),
-    })
-    .refine((data) => data.password === data.confirmPassword, {
-      message: t('auth.validation.passwordMismatch'),
-      path: ['confirmPassword'],
-    });
+  // Public settings hooks
+  const {
+    registrationEnabled,
+    isLoading: isRegistrationLoading,
+  } = usePublicRegistration();
+  const {
+    termsOfServiceUrl,
+    privacyPolicyUrl,
+    isLoading: isLegalLoading,
+  } = usePublicLegal();
+  const {
+    minLength: policyMinLength,
+    requireUppercase,
+    requireLowercase,
+    requireNumber,
+    requireSpecial,
+    specialCharacters,
+    rules: passwordRules,
+    isLoading: isPolicyLoading,
+  } = usePasswordPolicy();
+  const { appName, logoUrl, isLoading: isBrandingLoading } = usePublicBranding();
+
+  // Build dynamic Zod schema based on password policy
+  const registerSchema = useMemo(() => {
+    let passwordSchema = z.string().min(policyMinLength, t('auth.validation.passwordMinLength'));
+
+    if (requireUppercase) {
+      passwordSchema = passwordSchema.regex(/[A-Z]/, t('auth.validation.passwordUppercase'));
+    }
+    if (requireLowercase) {
+      passwordSchema = passwordSchema.regex(/[a-z]/, t('auth.validation.passwordLowercase'));
+    }
+    if (requireNumber) {
+      passwordSchema = passwordSchema.regex(/[0-9]/, t('auth.validation.passwordNumber'));
+    }
+    if (requireSpecial) {
+      const escapedChars = specialCharacters.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+      const specialRegex = new RegExp(`[${escapedChars}]`);
+      passwordSchema = passwordSchema.regex(specialRegex, t('auth.validation.passwordSpecial'));
+    }
+
+    return z
+      .object({
+        name: z.string()
+          .min(2, t('auth.validation.nameMinLength'))
+          .max(100, t('auth.validation.nameMaxLength')),
+        email: z.string().email(t('common.validation.email')),
+        password: passwordSchema,
+        confirmPassword: z.string(),
+      })
+      .refine((data) => data.password === data.confirmPassword, {
+        message: t('auth.validation.passwordMismatch'),
+        path: ['confirmPassword'],
+      });
+  }, [t, policyMinLength, requireUppercase, requireLowercase, requireNumber, requireSpecial, specialCharacters]);
 
   // Passkey form schema (only name and email)
   const passkeySchema = z.object({
@@ -281,8 +325,17 @@ export const RegisterPage = () => {
         {/* Top bar */}
         <header className="flex items-center justify-between p-4 lg:p-6 [@media(max-height:982px)]:p-3">
           {/* Mobile logo */}
-          <RouterLink to="/" className="lg:hidden">
-            <span className="text-xl font-bold text-foreground">Orris</span>
+          <RouterLink to="/" className="lg:hidden flex items-center gap-2">
+            {isBrandingLoading ? (
+              <div className="h-6 w-20 bg-muted animate-pulse rounded" />
+            ) : (
+              <>
+                {logoUrl && (
+                  <img src={logoUrl} alt={appName || 'Logo'} className="h-8 w-auto" />
+                )}
+                <span className="text-xl font-bold text-foreground">{appName || 'Orris'}</span>
+              </>
+            )}
           </RouterLink>
           <div className="hidden lg:block" />
 
@@ -297,6 +350,37 @@ export const RegisterPage = () => {
         <main className="flex-1 min-h-0 overflow-y-auto">
           <div className="flex min-h-full items-start justify-center p-6 lg:p-8 lg:items-center [@media(max-height:982px)]:p-4">
             <div className="w-full max-w-sm">
+              {/* Loading state */}
+              {(isRegistrationLoading || isLegalLoading || isPolicyLoading) && (
+                <div className="flex items-center justify-center py-12">
+                  <Loader2 className="size-8 animate-spin text-primary" />
+                </div>
+              )}
+
+              {/* Registration disabled message */}
+              {!isRegistrationLoading && !registrationEnabled && (
+                <div className="text-center py-8">
+                  <div className="mx-auto mb-6 flex size-16 items-center justify-center rounded-full bg-muted">
+                    <UserX className="size-8 text-muted-foreground" />
+                  </div>
+                  <h2 className="text-fluid-xl font-bold text-foreground tracking-tight mb-3">
+                    {t('auth.registration.disabled')}
+                  </h2>
+                  <p className="text-fluid-sm text-muted-foreground mb-6">
+                    {t('auth.registration.disabledHint')}
+                  </p>
+                  <RouterLink
+                    to="/login"
+                    className="inline-flex h-11 items-center justify-center rounded-xl bg-primary px-6 text-sm font-semibold text-primary-foreground ring-1 ring-primary/20 transition-all hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
+                  >
+                    {t('auth.register.signIn')}
+                  </RouterLink>
+                </div>
+              )}
+
+              {/* Registration form (only shown when enabled) */}
+              {!isRegistrationLoading && !isLegalLoading && !isPolicyLoading && registrationEnabled && (
+                <>
               {/* Header */}
               <div className="text-center mb-8 [@media(max-height:982px)]:mb-5">
                 <h2 className="text-fluid-xl font-bold text-foreground tracking-tight [@media(max-height:982px)]:text-2xl">
@@ -449,10 +533,12 @@ export const RegisterPage = () => {
                     onChange: (e) => handlePasswordChange(e.target.value),
                   })}
                 />
-                  {!errors.password && !authError?.fieldErrors?.password && !password && (
-                    <p className="text-xs text-muted-foreground">
-                      {t('auth.register.passwordHint')}
-                    </p>
+                  {!errors.password && !authError?.fieldErrors?.password && !password && passwordRules.length > 0 && (
+                    <ul className="text-xs text-muted-foreground space-y-0.5">
+                      {passwordRules.map((rule, index) => (
+                        <li key={index}>{rule.message}</li>
+                      ))}
+                    </ul>
                   )}
                   {password && (
                     <div className="grid gap-1 [@media(max-height:982px)]:hidden">
@@ -485,6 +571,36 @@ export const RegisterPage = () => {
                   {...register('confirmPassword')}
                 />
 
+                {/* Legal agreement text */}
+                {(termsOfServiceUrl || privacyPolicyUrl) && (
+                  <p className="text-xs text-muted-foreground text-center leading-relaxed">
+                    {t('auth.registration.agreeTerms')}{' '}
+                    {termsOfServiceUrl && (
+                      <a
+                        href={termsOfServiceUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="font-medium text-primary hover:text-primary/80 transition-colors underline-offset-4 hover:underline"
+                      >
+                        {t('auth.registration.termsOfService')}
+                      </a>
+                    )}
+                    {termsOfServiceUrl && privacyPolicyUrl && (
+                      <span> {t('auth.registration.and')} </span>
+                    )}
+                    {privacyPolicyUrl && (
+                      <a
+                        href={privacyPolicyUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="font-medium text-primary hover:text-primary/80 transition-colors underline-offset-4 hover:underline"
+                      >
+                        {t('auth.registration.privacyPolicy')}
+                      </a>
+                    )}
+                  </p>
+                )}
+
                 <button
                   type="submit"
                   disabled={isLoading}
@@ -505,6 +621,8 @@ export const RegisterPage = () => {
                   {t('auth.register.signInNow')}
                 </RouterLink>
               </p>
+                </>
+              )}
             </div>
           </div>
         </main>

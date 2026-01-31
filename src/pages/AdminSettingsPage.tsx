@@ -9,7 +9,19 @@
 import { AdminLayout } from '@/layouts/AdminLayout';
 import { PageHeader } from '@/components/admin';
 import { usePageTitle } from '@/shared/hooks';
-import { Settings, KeyRound, Mail, MessageCircle, Wrench, Coins, Rss } from 'lucide-react';
+import {
+  Settings,
+  KeyRound,
+  Mail,
+  MessageCircle,
+  Wrench,
+  Coins,
+  Rss,
+  Palette,
+  Shield,
+  UserPlus,
+  Scale,
+} from 'lucide-react';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/common/Tabs';
 import { useTelegramSettings } from '@/features/telegram/hooks/useTelegramSettings';
 import {
@@ -22,6 +34,10 @@ import {
   useEmailSettings,
   useUSDTSettings,
   useSubscriptionSettings,
+  useBrandingSettings,
+  useSecuritySettings,
+  useRegistrationSettings,
+  useLegalSettings,
   SystemSettingsForm,
   SystemSettingsFormSkeleton,
   OAuthSettingsForm,
@@ -32,6 +48,14 @@ import {
   USDTSettingsFormSkeleton,
   SubscriptionSettingsForm,
   SubscriptionSettingsFormSkeleton,
+  BrandingSettingsForm,
+  BrandingSettingsFormSkeleton,
+  SecuritySettingsForm,
+  SecuritySettingsFormSkeleton,
+  RegistrationSettingsForm,
+  RegistrationSettingsFormSkeleton,
+  LegalSettingsForm,
+  LegalSettingsFormSkeleton,
 } from '@/features/settings';
 import { useTranslation } from 'react-i18next';
 import type { LucideIcon } from 'lucide-react';
@@ -56,11 +80,15 @@ interface TabItem {
  */
 const TAB_ITEMS: TabItem[] = [
   { id: 'system', labelKey: 'admin.settings.nav.system', icon: Settings },
+  { id: 'branding', labelKey: 'admin.settings.nav.branding', icon: Palette },
+  { id: 'security', labelKey: 'admin.settings.nav.security', icon: Shield },
+  { id: 'registration', labelKey: 'admin.settings.nav.registration', icon: UserPlus },
   { id: 'oauth', labelKey: 'admin.settings.nav.oauth', icon: KeyRound },
   { id: 'email', labelKey: 'admin.settings.nav.email', icon: Mail },
   { id: 'telegram', labelKey: 'admin.settings.nav.telegram', icon: MessageCircle },
   { id: 'usdt', labelKey: 'admin.settings.nav.usdt', icon: Coins },
   { id: 'subscription', labelKey: 'admin.settings.nav.subscription', icon: Rss },
+  { id: 'legal', labelKey: 'admin.settings.nav.legal', icon: Scale },
 ];
 
 /**
@@ -133,6 +161,40 @@ export const AdminSettingsPage = () => {
     update: updateSubscription,
     isUpdating: isSubscriptionUpdating,
   } = useSubscriptionSettings();
+
+  // Branding settings
+  const {
+    settings: brandingSettings,
+    isLoading: isBrandingLoading,
+    update: updateBranding,
+    isUpdating: isBrandingUpdating,
+    upload: uploadBrandingImage,
+    isUploading: isBrandingUploading,
+  } = useBrandingSettings();
+
+  // Security settings
+  const {
+    settings: securitySettings,
+    isLoading: isSecurityLoading,
+    update: updateSecurity,
+    isUpdating: isSecurityUpdating,
+  } = useSecuritySettings();
+
+  // Registration settings
+  const {
+    settings: registrationSettings,
+    isLoading: isRegistrationLoading,
+    update: updateRegistration,
+    isUpdating: isRegistrationUpdating,
+  } = useRegistrationSettings();
+
+  // Legal settings
+  const {
+    settings: legalSettings,
+    isLoading: isLegalLoading,
+    update: updateLegal,
+    isUpdating: isLegalUpdating,
+  } = useLegalSettings();
 
   return (
     <AdminLayout>
@@ -270,6 +332,68 @@ export const AdminSettingsPage = () => {
                     settings={subscriptionSettings}
                     onSubmit={updateSubscription}
                     isSubmitting={isSubscriptionUpdating}
+                  />
+                )}
+              </TabsContent>
+
+              {/* Branding Settings */}
+              <TabsContent value="branding">
+                {isBrandingLoading ? (
+                  <BrandingSettingsFormSkeleton />
+                ) : !brandingSettings ? (
+                  <EmptyState message={t('admin.settings.unableToLoadConfig')} />
+                ) : (
+                  <BrandingSettingsForm
+                    settings={brandingSettings}
+                    onSubmit={updateBranding}
+                    onUpload={uploadBrandingImage}
+                    isSubmitting={isBrandingUpdating}
+                    isUploading={isBrandingUploading}
+                  />
+                )}
+              </TabsContent>
+
+              {/* Security Settings */}
+              <TabsContent value="security">
+                {isSecurityLoading ? (
+                  <SecuritySettingsFormSkeleton />
+                ) : !securitySettings ? (
+                  <EmptyState message={t('admin.settings.unableToLoadConfig')} />
+                ) : (
+                  <SecuritySettingsForm
+                    settings={securitySettings}
+                    onSubmit={updateSecurity}
+                    isSubmitting={isSecurityUpdating}
+                  />
+                )}
+              </TabsContent>
+
+              {/* Registration Settings */}
+              <TabsContent value="registration">
+                {isRegistrationLoading ? (
+                  <RegistrationSettingsFormSkeleton />
+                ) : !registrationSettings ? (
+                  <EmptyState message={t('admin.settings.unableToLoadConfig')} />
+                ) : (
+                  <RegistrationSettingsForm
+                    settings={registrationSettings}
+                    onSubmit={updateRegistration}
+                    isSubmitting={isRegistrationUpdating}
+                  />
+                )}
+              </TabsContent>
+
+              {/* Legal Settings */}
+              <TabsContent value="legal">
+                {isLegalLoading ? (
+                  <LegalSettingsFormSkeleton />
+                ) : !legalSettings ? (
+                  <EmptyState message={t('admin.settings.unableToLoadConfig')} />
+                ) : (
+                  <LegalSettingsForm
+                    settings={legalSettings}
+                    onSubmit={updateLegal}
+                    isSubmitting={isLegalUpdating}
                   />
                 )}
               </TabsContent>

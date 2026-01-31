@@ -10,7 +10,7 @@ import { z } from 'zod';
 import { Link as RouterLink, useNavigate, useLocation } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Loader2, Check, Fingerprint, Github } from 'lucide-react';
+import { Loader2, Check, Fingerprint } from 'lucide-react';
 import * as Checkbox from '@radix-ui/react-checkbox';
 import { useAuth } from '@/features/auth/hooks/useAuth';
 import { usePasskey } from '@/features/auth/hooks/usePasskey';
@@ -21,6 +21,7 @@ import { LanguageSwitcher } from '@/components/common/LanguageSwitcher';
 import { ThemeToggle } from '@/components/common/ThemeToggle';
 import { GoogleIcon, GitHubIcon } from '@/components/common/SocialIcons';
 import { FormField, AuthAlert } from '@/components/auth';
+import { usePublicBranding } from '@/features/settings';
 
 // ============ Types ============
 type LoginFormData = {
@@ -30,25 +31,15 @@ type LoginFormData = {
 };
 
 // ============ Brand Panel ============
-// Uses landing page translations for consistency
-const BrandPanel = () => {
+// Simplified branding display
+const BrandPanel = ({
+  logoUrl,
+  appName,
+}: {
+  logoUrl: string | null;
+  appName: string | null;
+}) => {
   const { t } = useTranslation();
-
-  // Feature list using landing page feature keys
-  const features = [
-    {
-      titleKey: 'landing.features.dashboard.title',
-      descriptionKey: 'landing.features.dashboard.description',
-    },
-    {
-      titleKey: 'landing.features.forwarding.title',
-      descriptionKey: 'landing.features.forwarding.description',
-    },
-    {
-      titleKey: 'landing.features.subscriptions.title',
-      descriptionKey: 'landing.features.subscriptions.description',
-    },
-  ];
 
   return (
     <div className="hidden lg:flex lg:flex-1 relative overflow-hidden bg-gradient-to-br from-primary via-primary/90 to-primary/80">
@@ -59,56 +50,21 @@ const BrandPanel = () => {
       <div className="absolute top-20 left-20 size-32 rounded-full bg-white/10 blur-3xl" />
       <div className="absolute bottom-32 right-16 size-48 rounded-full bg-white/10 blur-3xl" />
 
-      {/* Content */}
-      <div className="relative z-10 flex flex-col justify-center px-12 xl:px-16">
-        <div className="max-w-lg">
-          {/* Badge */}
-          <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/20 text-white/90 text-sm font-medium mb-6">
-            {t('landing.hero.badge')}
-          </div>
-
-          {/* Logo & Title */}
-          <h1 className="text-4xl xl:text-5xl font-bold text-white tracking-tight mb-2">
-            {t('landing.hero.title')}
-          </h1>
-          <h2 className="text-4xl xl:text-5xl font-bold text-white/90 tracking-tight mb-6">
-            {t('landing.hero.titleHighlight')}
-          </h2>
-
-          {/* Subtitle */}
-          <p className="text-lg xl:text-xl text-white/80 leading-relaxed mb-10">
-            {t('landing.hero.subtitle')}
-          </p>
-
-          {/* Features list */}
-          <ul className="space-y-4">
-            {features.map((feature, index) => (
-              <li key={index} className="flex items-start gap-3">
-                <div className="flex items-center justify-center size-6 rounded-full bg-white/20 mt-0.5 shrink-0">
-                  <Check className="size-3.5 text-white" strokeWidth={3} />
-                </div>
-                <div>
-                  <p className="font-medium text-white">{t(feature.titleKey)}</p>
-                  <p className="text-sm text-white/70 mt-0.5">{t(feature.descriptionKey)}</p>
-                </div>
-              </li>
-            ))}
-          </ul>
-
-          {/* Stats */}
-          <div className="flex items-center gap-8 mt-10 pt-8 border-t border-white/20">
-            {[
-              { value: '5', labelKey: 'landing.hero.stats.forwardingModes' },
-              { value: '6', labelKey: 'landing.hero.stats.nodeProtocols' },
-              { value: '3', labelKey: 'landing.hero.stats.tokenScopes' },
-            ].map((stat, index) => (
-              <div key={index}>
-                <div className="text-2xl font-bold text-white">{stat.value}</div>
-                <div className="text-sm text-white/70">{t(stat.labelKey)}</div>
-              </div>
-            ))}
-          </div>
-        </div>
+      {/* Content - Centered branding */}
+      <div className="relative z-10 flex flex-col items-center justify-center w-full px-12">
+        {logoUrl && (
+          <img
+            src={logoUrl}
+            alt={appName || 'Logo'}
+            className="h-16 w-auto mb-6 brightness-0 invert"
+          />
+        )}
+        <h1 className="text-4xl xl:text-5xl font-bold text-white tracking-tight text-center">
+          {appName || 'Orris'}
+        </h1>
+        <p className="mt-4 text-lg text-white/80 text-center max-w-md">
+          {t('landing.hero.subtitle')}
+        </p>
       </div>
     </div>
   );
@@ -116,7 +72,7 @@ const BrandPanel = () => {
 
 // ============ Divider ============
 const OrDivider = ({ text }: { text: string }) => (
-  <div className="relative my-6">
+  <div className="relative my-5">
     <div className="absolute inset-0 flex items-center">
       <div className="w-full border-t border-border" />
     </div>
@@ -144,12 +100,13 @@ export const LoginPage = () => {
   } = usePasskey();
   const { showSuccess } = useNotificationStore();
   const { serverVersion, clientVersion } = useVersionInfo();
+  const { appName, logoUrl, isLoading: isBrandingLoading } = usePublicBranding();
   const [userEmail, setUserEmail] = useState('');
 
-  // Zod schema
+  // Zod schema - only basic validation, real validation done by backend
   const loginSchema = z.object({
     email: z.string().email(t('common.validation.email')),
-    password: z.string().min(8, t('auth.validation.passwordMinLength')),
+    password: z.string().min(1, t('auth.validation.passwordRequired')),
     rememberMe: z.boolean().catch(false),
   });
 
@@ -203,17 +160,25 @@ export const LoginPage = () => {
   return (
     <div className="min-h-viewport w-full flex">
       {/* Left: Brand Panel (desktop only) */}
-      <BrandPanel />
+      <BrandPanel logoUrl={logoUrl} appName={appName} />
 
       {/* Right: Form Panel */}
       <div className="flex-1 flex flex-col bg-background">
         {/* Top bar */}
         <header className="flex items-center justify-between p-4 lg:p-6">
-          {/* Mobile logo */}
-          <RouterLink to="/" className="lg:hidden">
-            <span className="text-xl font-bold text-foreground">Orris</span>
+          {/* Logo - top left (industry standard) */}
+          <RouterLink to="/" className="flex items-center gap-2 transition-opacity hover:opacity-80">
+            {isBrandingLoading ? (
+              <div className="h-6 w-20 bg-muted animate-pulse rounded" />
+            ) : (
+              <>
+                {logoUrl && (
+                  <img src={logoUrl} alt={appName || 'Logo'} className="h-8 w-auto" />
+                )}
+                <span className="text-lg font-semibold text-foreground">{appName || 'Orris'}</span>
+              </>
+            )}
           </RouterLink>
-          <div className="hidden lg:block" />
 
           {/* Controls */}
           <div className="flex items-center gap-2">
@@ -226,14 +191,9 @@ export const LoginPage = () => {
         <main className="flex-1 flex items-center justify-center p-6 lg:p-8">
           <div className="w-full max-w-sm">
             {/* Header */}
-            <div className="text-center mb-8">
-              <h2 className="text-fluid-xl font-bold text-foreground tracking-tight">
-                {t('auth.login.title', 'Welcome back')}
-              </h2>
-              <p className="mt-2 text-fluid-sm text-muted-foreground">
-                {t('auth.login.subtitle')}
-              </p>
-            </div>
+            <h2 className="text-center text-xl font-semibold text-foreground mb-6">
+              {t('auth.login.title', 'Welcome back')}
+            </h2>
 
             {/* Alerts */}
             {successMessage && (
@@ -262,8 +222,8 @@ export const LoginPage = () => {
               </AuthAlert>
             )}
 
-            {/* OAuth buttons first (social proof) */}
-            <div className="space-y-3">
+            {/* Quick login options (OAuth + Passkey) */}
+            <div className="space-y-2.5">
               <button
                 type="button"
                 onClick={() => handleOAuthLogin('google')}
@@ -282,12 +242,7 @@ export const LoginPage = () => {
                 <GitHubIcon className="size-5" />
                 {t('auth.login.continueWithGithub')}
               </button>
-            </div>
-
-            {/* Passkey login (only shown when WebAuthn is supported) */}
-            {isPasskeySupported && (
-              <>
-                <OrDivider text={t('auth.login.orUsePasskey')} />
+              {isPasskeySupported && (
                 <button
                   type="button"
                   onClick={() => {
@@ -309,23 +264,24 @@ export const LoginPage = () => {
                     </>
                   )}
                 </button>
-                {passkeyError && (
-                  <AuthAlert variant="error" className="mt-3">
-                    {passkeyError}
-                  </AuthAlert>
-                )}
-              </>
+              )}
+            </div>
+
+            {/* Passkey error */}
+            {passkeyError && (
+              <AuthAlert variant="error" className="mt-3">
+                {passkeyError}
+              </AuthAlert>
             )}
 
             <OrDivider text={t('auth.login.orContinueWith')} />
 
             {/* Login form */}
-            <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+            <form onSubmit={handleSubmit(onSubmit)} className="space-y-3">
               <FormField
                 label={t('auth.login.email')}
                 type="email"
                 autoComplete="email"
-                autoFocus
                 error={errors.email?.message || authError?.fieldErrors?.email}
                 {...register('email')}
               />
@@ -382,7 +338,7 @@ export const LoginPage = () => {
             </form>
 
             {/* Sign up link */}
-            <p className="mt-6 text-center text-sm text-muted-foreground">
+            <p className="mt-5 text-center text-sm text-muted-foreground">
               {t('auth.login.noAccount')}{' '}
               <RouterLink
                 to="/register"
@@ -403,7 +359,7 @@ export const LoginPage = () => {
             className="text-muted-foreground/50 hover:text-muted-foreground transition-colors"
             aria-label="GitHub"
           >
-            <Github className="size-4" />
+            <GitHubIcon className="size-4" />
           </a>
           {(serverVersion || clientVersion) && (
             <span className="text-xs text-muted-foreground/50 font-mono">

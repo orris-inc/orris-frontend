@@ -337,6 +337,9 @@
       "passwordRequired": "请输入密码",
       "passwordMinLength": "密码至少需要8个字符",
       "passwordUppercase": "密码必须至少包含一个大写字母",
+      "passwordLowercase": "密码必须至少包含一个小写字母",
+      "passwordNumber": "密码必须至少包含一个数字",
+      "passwordSpecial": "密码必须至少包含一个特殊字符",
       "passwordMismatch": "两次输入的密码不一致",
       "nameRequired": "请输入姓名",
       "nameMinLength": "姓名至少需要2个字符",
@@ -431,6 +434,19 @@
         "invalidState": "此通行密钥已注册",
         "unknown": "发生意外错误，请重试"
       }
+    },
+    "maintenance": {
+      "title": "系统维护中",
+      "defaultMessage": "系统正在进行维护，请稍后再试",
+      "backToLogin": "返回登录"
+    },
+    "registration": {
+      "disabled": "当前不开放注册",
+      "disabledHint": "请联系管理员获取账号",
+      "agreeTerms": "点击注册即表示您同意我们的",
+      "termsOfService": "服务条款",
+      "privacyPolicy": "隐私政策",
+      "and": "和"
     }
   },
   "resourceGroups": {
@@ -1908,7 +1924,6 @@
         "price": "价格",
         "billingCycle": "计费周期",
         "public": "公开",
-        "trialDays": "试用天数",
         "extras": "其他",
         "publicPlan": "公开计划",
         "privatePlan": "私有计划",
@@ -1945,7 +1960,6 @@
         "noSelectionAllowAll": "不选择表示允许所有类型",
         "descriptionPlaceholder": "订阅计划的描述信息",
         "generalConfig": "通用配置",
-        "trialDays": "试用天数",
         "sortOrderHint": "数字越小越靠前",
         "isPublic": "公开显示此计划",
         "createCopy": "创建副本",
@@ -2243,11 +2257,15 @@
       "readOnly": "只读",
       "nav": {
         "system": "系统",
+        "branding": "品牌",
+        "security": "安全",
+        "registration": "注册",
         "oauth": "OAuth",
         "email": "邮件",
         "telegram": "Telegram",
         "usdt": "USDT",
-        "subscription": "订阅"
+        "subscription": "订阅",
+        "legal": "法律"
       },
       "source": {
         "database": "数据库",
@@ -2355,6 +2373,75 @@
         "showInfoNodesDesc": "在订阅输出的节点列表顶部显示到期时间和流量使用情况",
         "updateSuccess": "订阅配置已更新",
         "updateError": "更新订阅配置失败"
+      },
+      "branding": {
+        "title": "品牌设置",
+        "description": "配置应用名称、Logo 和 Favicon",
+        "appName": "应用名称",
+        "appNameDesc": "显示在页面标题和导航栏中的名称",
+        "appNamePlaceholder": "输入应用名称",
+        "logo": "Logo",
+        "logoDesc": "应用 Logo，建议尺寸 200x50 像素",
+        "uploadLogo": "上传 Logo",
+        "favicon": "Favicon",
+        "faviconDesc": "浏览器标签页图标，建议使用 ICO 或 PNG 格式",
+        "uploadFavicon": "上传 Favicon",
+        "updateSuccess": "品牌配置已更新",
+        "updateError": "更新品牌配置失败",
+        "uploadSuccess": "图片上传成功",
+        "uploadError": "图片上传失败"
+      },
+      "security": {
+        "title": "安全设置",
+        "description": "配置密码策略和登录保护",
+        "passwordPolicy": "密码策略",
+        "passwordPolicyDesc": "设置密码复杂度要求",
+        "minLength": "最小长度",
+        "minLengthDesc": "密码最小字符数（8-32）",
+        "requireUppercase": "要求大写字母",
+        "requireUppercaseDesc": "密码必须包含至少一个大写字母",
+        "requireLowercase": "要求小写字母",
+        "requireLowercaseDesc": "密码必须包含至少一个小写字母",
+        "requireNumber": "要求数字",
+        "requireNumberDesc": "密码必须包含至少一个数字",
+        "requireSpecial": "要求特殊字符",
+        "requireSpecialDesc": "密码必须包含至少一个特殊字符",
+        "passwordExpiry": "密码过期时间",
+        "passwordExpiryDesc": "密码有效期（0 表示永不过期）",
+        "days": "天",
+        "sessionSettings": "会话设置",
+        "sessionSettingsDesc": "配置用户会话超时",
+        "sessionTimeout": "会话超时",
+        "sessionTimeoutDesc": "用户无操作后自动登出的时间",
+        "minutes": "分钟",
+        "loginProtection": "登录保护",
+        "loginProtectionDesc": "配置登录失败锁定策略",
+        "maxLoginAttempts": "最大登录尝试次数",
+        "maxLoginAttemptsDesc": "达到次数后账户将被锁定",
+        "lockoutDuration": "锁定时长",
+        "lockoutDurationDesc": "账户锁定后的等待时间",
+        "updateSuccess": "安全配置已更新",
+        "updateError": "更新安全配置失败"
+      },
+      "registration": {
+        "title": "注册设置",
+        "description": "配置用户注册选项",
+        "enabled": "开放注册",
+        "enabledDesc": "允许新用户通过注册页面创建账户",
+        "emailVerification": "邮箱验证",
+        "emailVerificationDesc": "注册后要求用户验证邮箱地址",
+        "updateSuccess": "注册配置已更新",
+        "updateError": "更新注册配置失败"
+      },
+      "legal": {
+        "title": "法律设置",
+        "description": "配置服务条款和隐私政策链接",
+        "termsOfService": "服务条款 URL",
+        "termsOfServiceDesc": "服务条款页面的链接地址",
+        "privacyPolicy": "隐私政策 URL",
+        "privacyPolicyDesc": "隐私政策页面的链接地址",
+        "updateSuccess": "法律设置已更新",
+        "updateError": "更新法律设置失败"
       }
     }
   },
