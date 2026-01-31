@@ -41,6 +41,7 @@ import {
   HoverCardTrigger,
 } from '@/components/common/HoverCard';
 import { cn } from '@/lib/utils';
+import { TableRowContext } from './table-hover-card-context';
 
 // ============ Hover State Store ============
 
@@ -75,7 +76,7 @@ const TableHoverCardContext = createContext<HoverStore | null>(null);
  */
 export function TableHoverCardProvider({ children }: { children: ReactNode }) {
   const storeRef = useRef<HoverStore | null>(null);
-  if (!storeRef.current) {
+  if (storeRef.current == null) {
     storeRef.current = createHoverStore();
   }
   return (
@@ -98,13 +99,6 @@ function useHoverStoreApi() {
 
 // ============ Row Context ============
 
-interface TableRowContextValue {
-  /** Unique identifier for the current row */
-  rowId: string;
-}
-
-const TableRowContext = createContext<TableRowContextValue | null>(null);
-
 /**
  * Provider for table row context.
  * DataTable should wrap each row with this to provide rowId.
@@ -125,10 +119,10 @@ export function TableRowProvider({
 }
 
 /**
- * Hook to get current row ID from context.
+ * Internal hook to get current row ID from context.
  * Returns null if not inside a TableRowProvider.
  */
-export function useTableRowId(): string | null {
+function useTableRowIdInternal(): string | null {
   const ctx = useContext(TableRowContext);
   return ctx?.rowId ?? null;
 }
@@ -187,7 +181,7 @@ export function TableHoverCard({
   const closeTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // Get rowId from context
-  const rowId = useTableRowId();
+  const rowId = useTableRowIdInternal();
 
   // Generate stable hoverKey: explicit > rowId-columnKey > columnKey > null
   const hoverKey = useMemo(() => {

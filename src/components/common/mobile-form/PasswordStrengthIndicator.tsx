@@ -7,15 +7,8 @@
 import { Check, X } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { cn } from '@/lib/utils';
-
-export interface PasswordRule {
-  /** Unique key for the rule */
-  key: string;
-  /** Display label */
-  label: string;
-  /** Test function to check if rule passes */
-  test: (password: string) => boolean;
-}
+import type { PasswordRule } from './password-strength-utils';
+export type { PasswordRule } from './password-strength-utils';
 
 export interface PasswordStrengthIndicatorProps {
   /** Current password value */
@@ -29,33 +22,6 @@ export interface PasswordStrengthIndicatorProps {
   /** Override for strength valid text (uses translation by default) */
   strengthValidText?: string;
 }
-
-/** Create default password rules with translations */
-export const getDefaultPasswordRules = (
-  t: (key: string) => string
-): PasswordRule[] => [
-  {
-    key: 'length',
-    label: t('auth.passwordRules.length'),
-    test: (p: string) => p.length >= 8 && p.length <= 72,
-  },
-  {
-    key: 'letter',
-    label: t('auth.passwordRules.letter'),
-    test: (p: string) => /[a-zA-Z]/.test(p),
-  },
-  {
-    key: 'number',
-    label: t('auth.passwordRules.number'),
-    test: (p: string) => /\d/.test(p),
-  },
-];
-
-/** Hook for getting default password rules with translations */
-export const useDefaultPasswordRules = (): PasswordRule[] => {
-  const { t } = useTranslation();
-  return getDefaultPasswordRules(t);
-};
 
 export const PasswordStrengthIndicator: React.FC<PasswordStrengthIndicatorProps> = ({
   password,

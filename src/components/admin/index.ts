@@ -77,9 +77,11 @@ export { hasExtendedMetrics } from './extended-metrics-utils';
 export { LazyTrafficTrendChart, LazyExtendedMetricsPanel } from './LazyCharts';
 // SystemStatusHoverContext is deprecated - use TableHoverCardProvider instead
 // Keeping exports for backward compatibility during migration
-export { SystemStatusHoverProvider, useSystemStatusHover, useIsItemHovered } from './SystemStatusHoverContext';
+export { SystemStatusHoverProvider } from './SystemStatusHoverContext';
+export { useSystemStatusHover, useIsItemHovered } from './system-status-hover-hooks';
 export { SystemStatusCell, type SystemStatusData } from './SystemStatusCell';
-export { TableHoverCardProvider, TableRowProvider, useTableRowId, TableHoverCard, TableHoverCardList, TableHoverCardDesc } from './TableHoverCard';
+export { TableHoverCardProvider, TableRowProvider, TableHoverCard, TableHoverCardList, TableHoverCardDesc } from './TableHoverCard';
+export { useTableRowId } from './table-hover-card-hooks';
 export { DateTimeCell } from './DateTimeCell';
 export { BulkActionBar, type BulkAction, type BulkActionBarProps } from './BulkActionBar';
 export { useBulkSelection, createExportAction, createDeleteAction, type UseBulkSelectionReturn } from './bulk-action-utils';

@@ -34,7 +34,6 @@ import {
   HoverCardTrigger,
 } from '@/components/common/HoverCard';
 import { TableRowProvider } from './TableHoverCard';
-import { Checkbox } from '@/components/common/Checkbox';
 import { Button } from '@/components/common/Button';
 
 // ============ Type Definitions ============
@@ -191,41 +190,6 @@ const SkeletonRow = ({ colCount }: { colCount: number }) => (
 
 // ============ Selection Column Definition ============
 
-function createSelectionColumn<TData>(): ColumnDef<TData, unknown> {
-  return {
-    id: 'select',
-    size: 48,
-    meta: {
-      priority: 1,
-      align: 'center',
-    } as ResponsiveColumnMeta,
-    header: ({ table }) => (
-      <Checkbox
-        checked={
-          table.getIsAllPageRowsSelected()
-            ? true
-            : table.getIsSomePageRowsSelected()
-              ? 'indeterminate'
-              : false
-        }
-        onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
-        aria-label="Select all"
-        className="translate-y-[2px]"
-      />
-    ),
-    cell: ({ row }) => (
-      <Checkbox
-        checked={row.getIsSelected()}
-        onCheckedChange={(value) => row.toggleSelected(!!value)}
-        aria-label="Select row"
-        className="translate-y-[2px]"
-        onClick={(e) => e.stopPropagation()}
-      />
-    ),
-    enableSorting: false,
-    enableHiding: false,
-  };
-}
 
 // ============ DataTable Component ============
 
@@ -721,6 +685,3 @@ export function DataTable<TData>({
 
 // ============ Export types for external use ============
 export type { ColumnDef, SortingState, RowSelectionState, OnChangeFn };
-
-// ============ Helper: Create selection column for external use ============
-export { createSelectionColumn };

@@ -9,7 +9,9 @@ export { MobileSelect, type MobileSelectProps, type MobileSelectOption } from '.
 export {
   PasswordStrengthIndicator,
   type PasswordStrengthIndicatorProps,
+} from './PasswordStrengthIndicator';
+export {
   type PasswordRule,
   getDefaultPasswordRules,
   useDefaultPasswordRules,
-} from './PasswordStrengthIndicator';
+} from './password-strength-utils';

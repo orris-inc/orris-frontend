@@ -4,7 +4,7 @@
  */
 
 import { Component, type ReactNode, type ErrorInfo } from 'react';
-import { AlertTriangle, RefreshCw } from 'lucide-react';
+import { DefaultErrorFallback } from './DefaultErrorFallback';
 
 interface ErrorBoundaryProps {
   children: ReactNode;
@@ -15,38 +15,6 @@ interface ErrorBoundaryProps {
 interface ErrorBoundaryState {
   hasError: boolean;
   error: Error | null;
-}
-
-/**
- * Default error fallback UI
- */
-function DefaultErrorFallback({
-  error,
-  onReset,
-}: {
-  error: Error | null;
-  onReset: () => void;
-}) {
-  return (
-    <div className="flex flex-col items-center justify-center min-h-[200px] p-6 text-center">
-      <div className="p-3 rounded-full bg-destructive/10 mb-4">
-        <AlertTriangle className="size-8 text-destructive" />
-      </div>
-      <h2 className="text-lg font-semibold text-foreground mb-2">
-        Something went wrong
-      </h2>
-      <p className="text-sm text-muted-foreground mb-4 max-w-md">
-        {error?.message || 'An unexpected error occurred'}
-      </p>
-      <button
-        onClick={onReset}
-        className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-primary text-primary-foreground text-sm font-medium hover:bg-primary/90 transition-colors"
-      >
-        <RefreshCw className="size-4" />
-        Try again
-      </button>
-    </div>
-  );
 }
 
 /**
@@ -91,20 +59,4 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
 
     return this.props.children;
   }
-}
-
-/**
- * Higher-order component to wrap a component with error boundary
- */
-export function withErrorBoundary<P extends object>(
-  WrappedComponent: React.ComponentType<P>,
-  fallback?: ReactNode
-) {
-  return function WithErrorBoundaryWrapper(props: P) {
-    return (
-      <ErrorBoundary fallback={fallback}>
-        <WrappedComponent {...props} />
-      </ErrorBoundary>
-    );
-  };
 }
