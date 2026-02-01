@@ -30,6 +30,7 @@ import {
   useRef,
   useEffect,
   useMemo,
+  useState,
   type ReactNode,
   type ComponentPropsWithoutRef,
 } from 'react';
@@ -75,12 +76,11 @@ const TableHoverCardContext = createContext<HoverStore | null>(null);
  * Wrap your DataTable with this to enable stable hover behavior during data refreshes.
  */
 export function TableHoverCardProvider({ children }: { children: ReactNode }) {
-  const storeRef = useRef<HoverStore | null>(null);
-  if (storeRef.current == null) {
-    storeRef.current = createHoverStore();
-  }
+  // Use useState with initializer function for lazy store creation
+  // This avoids accessing ref.current during render which React Compiler disallows
+  const [store] = useState(() => createHoverStore());
   return (
-    <TableHoverCardContext.Provider value={storeRef.current}>
+    <TableHoverCardContext.Provider value={store}>
       {children}
     </TableHoverCardContext.Provider>
   );
