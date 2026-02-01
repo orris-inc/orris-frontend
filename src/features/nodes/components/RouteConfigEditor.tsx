@@ -22,7 +22,7 @@ import { RouteRulesList } from './RouteRulesList';
 import {
   getOutboundLabel,
   type OutboundNodeOption,
-} from './RouteRuleEditor';
+} from '../utils/route-rule-utils';
 import type { RouteConfig, OutboundType } from '@/api/node';
 
 interface RouteConfigEditorProps {

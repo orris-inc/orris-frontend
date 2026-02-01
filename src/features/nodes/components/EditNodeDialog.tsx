@@ -46,7 +46,7 @@ import type {
 import { useResourceGroups } from '@/features/resource-groups/hooks/useResourceGroups';
 import { useSubscriptionPlans } from '@/features/subscription-plans/hooks/useSubscriptionPlans';
 import { RouteConfigEditor } from './RouteConfigEditor';
-import type { OutboundNodeOption } from './RouteRuleEditor';
+import type { OutboundNodeOption } from '../utils/route-rule-utils';
 
 interface EditNodeDialogProps {
   open: boolean;

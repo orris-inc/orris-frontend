@@ -9,7 +9,7 @@ import { Card } from '@/components/common/Card';
 import {
   isNodeOutbound,
   type OutboundNodeOption,
-} from './RouteRuleEditor';
+} from '../utils/route-rule-utils';
 import type { RouteConfig, RouteRule, OutboundType } from '@/api/node';
 
 interface RouteConfigDisplayProps {

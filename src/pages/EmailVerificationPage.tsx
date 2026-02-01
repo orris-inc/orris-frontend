@@ -56,7 +56,7 @@ export const EmailVerificationPage = () => {
     };
 
     verify();
-  }, [token]);
+  }, [token, t]);
 
   const handleResendEmail = async () => {
     // Since we don't store user email here, redirect to verification-pending page

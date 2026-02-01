@@ -35,6 +35,7 @@ import {
 } from '@/components/common/HoverCard';
 import { TableRowProvider } from './TableHoverCard';
 import { Button } from '@/components/common/Button';
+import { createSelectionColumn } from './data-table-utils';
 
 // ============ Type Definitions ============
 

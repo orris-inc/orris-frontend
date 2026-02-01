@@ -15,11 +15,11 @@ import {
 import { Button } from '@/components/common/Button';
 import { Card } from '@/components/common/Card';
 import { Badge } from '@/components/common/Badge';
+import { RouteRuleEditor } from './RouteRuleEditor';
 import {
-  RouteRuleEditor,
   isNodeOutbound,
   type OutboundNodeOption,
-} from './RouteRuleEditor';
+} from '../utils/route-rule-utils';
 import type { RouteRule, OutboundType } from '@/api/node';
 
 interface RouteRulesListProps {

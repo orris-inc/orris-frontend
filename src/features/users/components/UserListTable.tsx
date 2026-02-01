@@ -81,7 +81,7 @@ export const UserListTable: React.FC<UserListTableProps> = ({
         {t('common.actions.delete')}
       </ContextMenuItem>
     </>
-  ), [onAssignSubscription, onEdit, onResetPassword, onDelete]);
+  ), [t, onAssignSubscription, onEdit, onResetPassword, onDelete]);
 
   // User dropdown menu content
   const renderDropdownMenuActions = useCallback((user: UserResponse) => (
@@ -107,7 +107,7 @@ export const UserListTable: React.FC<UserListTableProps> = ({
         {t('common.actions.delete')}
       </DropdownMenuItem>
     </>
-  ), [onAssignSubscription, onEdit, onResetPassword, onDelete]);
+  ), [t, onAssignSubscription, onEdit, onResetPassword, onDelete]);
 
   const columns = useMemo<ColumnDef<UserResponse>[]>(() => [
     {

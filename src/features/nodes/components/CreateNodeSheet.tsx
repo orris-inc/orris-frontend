@@ -39,7 +39,7 @@ import { useResourceGroups } from '@/features/resource-groups/hooks/useResourceG
 import { useSubscriptionPlans } from '@/features/subscription-plans/hooks/useSubscriptionPlans';
 import { RouteConfigEditor } from './RouteConfigEditor';
 import { cn } from '@/lib/utils';
-import type { OutboundNodeOption } from './RouteRuleEditor';
+import type { OutboundNodeOption } from '../utils/route-rule-utils';
 import type {
   CreateNodeRequest,
   TransportProtocol,

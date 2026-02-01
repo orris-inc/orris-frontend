@@ -23,10 +23,8 @@ import { TooltipProvider } from '@/components/common/Tooltip';
 import { AdminSidebarNav, AdminSidebarFooter } from '@/components/navigation/AdminSidebarNav';
 import { MobileDrawer } from '@/components/navigation/MobileDrawer';
 import { UserMenu } from '@/components/navigation/UserMenu';
-import {
-  CommandPalette,
-  useCommandPaletteKeyboard,
-} from '@/components/navigation/CommandPalette';
+import { CommandPalette } from '@/components/navigation/CommandPalette';
+import { useCommandPaletteKeyboard } from '@/hooks/useCommandPaletteKeyboard';
 import { NotificationCenter } from '@/components/navigation/NotificationCenter';
 import { useCurrentPageTitle, useVersionInfo } from '@/hooks';
 

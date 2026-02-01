@@ -22,7 +22,7 @@ import { Cpu, MemoryStick, HardDrive, ShieldCheck, ShieldAlert, Globe, Activity,
 import type { Node, NodeVersionInfo } from '@/api/node';
 import { getNodeVersion, triggerNodeUpdate } from '@/api/node';
 import { RouteConfigDisplay } from './RouteConfigDisplay';
-import type { OutboundNodeOption } from './RouteRuleEditor';
+import type { OutboundNodeOption } from '../utils/route-rule-utils';
 import { formatBitRate, formatBytes, formatUptime } from '@/shared/utils/format-utils';
 import { useNodeDetailEvents } from '../hooks/useNodeEvents';
 
