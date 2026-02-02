@@ -36,12 +36,14 @@ import { Checkbox } from "@/components/common/Checkbox";
 import { ScrollArea } from "@/components/common/ScrollArea";
 import { Info, FolderTree } from "lucide-react";
 import { SortableChainAgentList } from "./SortableChainAgentList";
+import { ExitAgentList } from "./ExitAgentList";
 import type {
   ForwardRule,
   UpdateForwardRuleRequest,
   IPVersion,
   ForwardAgent,
   TunnelType,
+  ExitAgent,
 } from "@/api/forward";
 import type { Node } from "@/api/node";
 import type { ResourceGroup } from "@/api/resource/types";
@@ -49,6 +51,7 @@ import type { SubscriptionPlan } from "@/api/subscription/types";
 
 type ForwardProtocol = "tcp" | "udp" | "both";
 type TargetType = "manual" | "node";
+type ExitMode = "single" | "multi";
 
 /**
  * Check if a port is within the allowed port range
@@ -126,6 +129,7 @@ export const EditForwardRuleDialog: React.FC<EditForwardRuleDialogProps> = ({
       tunnelType?: TunnelType;
       tunnelHops?: number;
       groupSids?: string[];
+      exitAgents?: ExitAgent[];
       // External rule fields
       serverAddress?: string;
       externalSource?: string;
@@ -134,6 +138,7 @@ export const EditForwardRuleDialog: React.FC<EditForwardRuleDialogProps> = ({
   >({});
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [targetType, setTargetType] = useState<TargetType>("manual");
+  const [exitMode, setExitMode] = useState<ExitMode>("single");
 
   useEffect(() => {
     if (rule) {
@@ -159,6 +164,7 @@ export const EditForwardRuleDialog: React.FC<EditForwardRuleDialogProps> = ({
         remark: rule.remark,
         agentId: rule.agentId,
         exitAgentId: rule.exitAgentId,
+        exitAgents: rule.exitAgents || [],
         chainAgentIds,
         chainPortConfig,
         trafficMultiplier: rule.trafficMultiplier,
@@ -173,6 +179,8 @@ export const EditForwardRuleDialog: React.FC<EditForwardRuleDialogProps> = ({
       });
       // Determine target type based on rule data
       setTargetType(rule.targetNodeId ? "node" : "manual");
+      // Determine exit mode based on rule data
+      setExitMode(rule.exitAgents && rule.exitAgents.length > 0 ? "multi" : "single");
       setErrors({});
     }
   }, [rule]);
@@ -438,12 +446,36 @@ export const EditForwardRuleDialog: React.FC<EditForwardRuleDialogProps> = ({
       // Handle agent configuration
       if (formData.agentId !== rule.agentId) updates.agentId = formData.agentId;
 
-      // entry type: exit agent
-      if (
-        rule.ruleType === "entry" &&
-        formData.exitAgentId !== rule.exitAgentId
-      ) {
-        updates.exitAgentId = formData.exitAgentId;
+      // entry type: exit agent(s)
+      if (rule.ruleType === "entry") {
+        if (exitMode === "single") {
+          // Single mode: check exitAgentId changes
+          if (formData.exitAgentId !== rule.exitAgentId) {
+            updates.exitAgentId = formData.exitAgentId;
+          }
+          // If switching from multi to single, clear exitAgents
+          if (rule.exitAgents && rule.exitAgents.length > 0) {
+            updates.exitAgents = [];
+          }
+        } else {
+          // Multi mode: check exitAgents changes
+          const currentAgents = formData.exitAgents || [];
+          const originalAgents = rule.exitAgents || [];
+          const hasExitAgentsChange =
+            currentAgents.length !== originalAgents.length ||
+            currentAgents.some((ea, i) =>
+              !originalAgents[i] ||
+              ea.agentId !== originalAgents[i].agentId ||
+              ea.weight !== originalAgents[i].weight
+            );
+          if (hasExitAgentsChange) {
+            updates.exitAgents = currentAgents;
+          }
+          // If switching from single to multi, clear exitAgentId
+          if (rule.exitAgentId) {
+            updates.exitAgentId = undefined;
+          }
+        }
       }
 
       // entry and chain types: tunnel type
@@ -765,8 +797,44 @@ export const EditForwardRuleDialog: React.FC<EditForwardRuleDialogProps> = ({
                   </div>
                   )}
 
-                  {/* entry type: Exit Agent */}
+                  {/* entry type: Exit Agent Mode Selection */}
                   {rule.ruleType === "entry" && (
+                    <div className="flex flex-col gap-2 @sm:col-span-2">
+                      <Label>{t('admin.forwardRules.form.exitAgent')}</Label>
+                      <RadioGroup
+                        value={exitMode}
+                        onValueChange={(value) => {
+                          setExitMode(value as ExitMode);
+                          // Clear the other mode's data when switching
+                          if (value === "single") {
+                            setFormData((prev) => ({ ...prev, exitAgents: [] }));
+                          } else {
+                            handleChange("exitAgentId", "");
+                          }
+                        }}
+                        className="flex gap-4"
+                      >
+                        <div className="flex items-center space-x-2">
+                          <RadioGroupItem value="single" id="edit-exit-single" />
+                          <Label htmlFor="edit-exit-single" className="font-normal cursor-pointer">
+                            {t('admin.forwardRules.exitAgents.singleMode')}
+                          </Label>
+                        </div>
+                        <div className="flex items-center space-x-2">
+                          <RadioGroupItem value="multi" id="edit-exit-multi" />
+                          <Label htmlFor="edit-exit-multi" className="font-normal cursor-pointer">
+                            {t('admin.forwardRules.exitAgents.multiMode')}
+                          </Label>
+                        </div>
+                      </RadioGroup>
+                      <p className="text-xs text-muted-foreground">
+                        {t('admin.forwardRules.exitAgents.modeHint')}
+                      </p>
+                    </div>
+                  )}
+
+                  {/* entry type: Single Exit Agent */}
+                  {rule.ruleType === "entry" && exitMode === "single" && (
                     <div className="flex flex-col gap-2">
                       <Label htmlFor="exitAgentId">{t('admin.forwardRules.form.exitAgent')}</Label>
                       <Select
@@ -810,6 +878,21 @@ export const EditForwardRuleDialog: React.FC<EditForwardRuleDialogProps> = ({
                             </div>
                           ) : null;
                         })()}
+                    </div>
+                  )}
+
+                  {/* entry type: Multi Exit Agents (Load Balancing) */}
+                  {rule.ruleType === "entry" && exitMode === "multi" && (
+                    <div className="flex flex-col gap-2 @sm:col-span-2">
+                      <Label>{t('admin.forwardRules.exitAgents.loadBalancing')}</Label>
+                      <ExitAgentList
+                        agents={availableExitAgents}
+                        exitAgents={formData.exitAgents || []}
+                        onChange={(exitAgents) =>
+                          setFormData((prev) => ({ ...prev, exitAgents }))
+                        }
+                        idPrefix="edit-exit-agent"
+                      />
                     </div>
                   )}
 

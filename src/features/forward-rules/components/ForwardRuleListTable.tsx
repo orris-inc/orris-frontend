@@ -259,6 +259,7 @@ interface RelayAgentInfo {
   name: string;
   address?: string;
   tunnelAddress?: string;
+  weight?: number;
 }
 
 interface CollapsedRelaysProps {
@@ -325,6 +326,89 @@ const CollapsedRelays: React.FC<CollapsedRelaysWithTranslationProps> = ({ count,
   );
 };
 
+// Load balanced exit agents display component
+interface LoadBalancedExitNodesProps {
+  agents: RelayAgentInfo[];
+  t: (key: string) => string;
+}
+
+const LoadBalancedExitItem: React.FC<{ agent: RelayAgentInfo; t: (key: string) => string }> = ({ agent, t }) => {
+  return (
+    <div className="flex items-start gap-2 text-sm py-1.5">
+      <div className="flex-1 min-w-0">
+        <div className="flex items-center justify-between gap-2">
+          <div className="flex items-center gap-1.5 min-w-0">
+            <Bot className="size-3 text-orange-500 flex-shrink-0" />
+            <span className="truncate font-medium text-foreground">{agent.name}</span>
+          </div>
+          {agent.weight !== undefined && (
+            <span className="text-xs text-muted-foreground shrink-0 tabular-nums">
+              {agent.weight}%
+            </span>
+          )}
+        </div>
+        {agent.address && (
+          <div className="mt-0.5 pl-4">
+            <CopyableAddressRow label={t('admin.forwardRules.addressType.public')} address={agent.address} showTooltip={false} />
+          </div>
+        )}
+        {agent.tunnelAddress && (
+          <div className="mt-0.5 pl-4">
+            <CopyableAddressRow label={t('admin.forwardRules.addressType.tunnel')} address={agent.tunnelAddress} showTooltip={false} />
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};
+
+const LoadBalancedExitNodes: React.FC<LoadBalancedExitNodesProps> = ({ agents, t }) => {
+  const firstAgent = agents[0];
+  const nodeConfig = FLOW_NODE_CONFIG.exit;
+  const IconComponent = nodeConfig.icon;
+  const hasMultiple = agents.length > 1;
+
+  // Calculate total weight for percentage display
+  const totalWeight = agents.reduce((sum, a) => sum + (a.weight || 100), 0);
+  const agentsWithPercent = agents.map(a => ({
+    ...a,
+    weight: totalWeight > 0 ? Math.round(((a.weight || 100) / totalWeight) * 100) : 100,
+  }));
+
+  return (
+    <Popover>
+      <PopoverTrigger asChild>
+        <button className={`flex items-center gap-1 px-1.5 py-0.5 rounded-md ${nodeConfig.bgColor} border ${nodeConfig.borderColor} cursor-pointer hover:opacity-80 transition-opacity min-w-0`}>
+          <IconComponent className={`size-3 flex-shrink-0 ${nodeConfig.color}`} />
+          <span className="text-xs font-medium text-foreground truncate max-w-[80px]">{firstAgent.name}</span>
+          {hasMultiple && (
+            <span className="flex items-center gap-0.5 px-1 py-0 text-[9px] font-semibold rounded bg-orange-200 dark:bg-orange-800/50 text-orange-700 dark:text-orange-300">
+              LB {agents.length}
+            </span>
+          )}
+        </button>
+      </PopoverTrigger>
+      <PopoverContent className="w-72 p-3" align="start">
+        <div className="space-y-2">
+          <div className="flex items-center justify-between">
+            <h4 className="text-xs font-semibold text-muted-foreground">{t('admin.forwardRules.flowNode.exit')}</h4>
+            {hasMultiple && (
+              <span className="text-[10px] px-1.5 py-0.5 rounded bg-orange-100 dark:bg-orange-900/30 text-orange-600 dark:text-orange-400 font-medium">
+                {t('admin.forwardRules.exitAgents.loadBalancing')}
+              </span>
+            )}
+          </div>
+          <div className="divide-y divide-border">
+            {agentsWithPercent.map((agent) => (
+              <LoadBalancedExitItem key={agent.id} agent={agent} t={t} />
+            ))}
+          </div>
+        </div>
+      </PopoverContent>
+    </Popover>
+  );
+};
+
 // Full path display component - shows entry -> relays -> target in horizontal flow
 interface FlowPathDisplayProps {
   rule: ForwardRule;
@@ -365,24 +449,36 @@ const FlowPathDisplay: React.FC<FlowPathDisplayProps> = ({ rule, agentsMap, node
 
   const target = getTargetDisplay();
 
-  // Build relay chain
-  const relayAgents: RelayAgentInfo[] = [];
-
-  // For entry type, exit agent is the relay
-  if (rule.ruleType === 'entry' && rule.exitAgentId) {
-    const exitAgent = agentsMap[rule.exitAgentId];
-    relayAgents.push({
-      id: rule.exitAgentId,
-      name: exitAgent?.name || `ID: ${rule.exitAgentId.slice(0, 8)}`,
-      address: exitAgent?.publicAddress,
-      tunnelAddress: exitAgent?.tunnelAddress,
-    });
+  // Build exit agents for entry type (load balancing - parallel relationship)
+  const exitAgentsList: RelayAgentInfo[] = [];
+  if (rule.ruleType === 'entry') {
+    if (rule.exitAgents && rule.exitAgents.length > 0) {
+      rule.exitAgents.forEach((ea) => {
+        const exitAgent = agentsMap[ea.agentId];
+        exitAgentsList.push({
+          id: ea.agentId,
+          name: exitAgent?.name || `ID: ${ea.agentId.slice(0, 8)}`,
+          address: exitAgent?.publicAddress,
+          tunnelAddress: exitAgent?.tunnelAddress,
+          weight: ea.weight,
+        });
+      });
+    } else if (rule.exitAgentId) {
+      const exitAgent = agentsMap[rule.exitAgentId];
+      exitAgentsList.push({
+        id: rule.exitAgentId,
+        name: exitAgent?.name || `ID: ${rule.exitAgentId.slice(0, 8)}`,
+        address: exitAgent?.publicAddress,
+        tunnelAddress: exitAgent?.tunnelAddress,
+      });
+    }
   }
 
-  // For chain types, add chain agents (excluding entry agent to avoid duplication)
+  // Build relay chain for chain types (serial relationship)
+  const relayAgents: RelayAgentInfo[] = [];
   if ((rule.ruleType === 'chain' || rule.ruleType === 'direct_chain') && rule.chainAgentIds?.length) {
     rule.chainAgentIds
-      .filter((id) => id !== rule.agentId) // Filter out entry agent
+      .filter((id) => id !== rule.agentId)
       .forEach((id) => {
         const agent = agentsMap[id];
         relayAgents.push({
@@ -394,8 +490,9 @@ const FlowPathDisplay: React.FC<FlowPathDisplayProps> = ({ rule, agentsMap, node
       });
   }
 
-  // Determine what to show for relay section
-  const showRelays = relayAgents.length > 0;
+  // Determine display mode
+  const hasExitAgents = exitAgentsList.length > 0;
+  const hasRelays = relayAgents.length > 0;
   const firstRelay = relayAgents[0];
   const remainingRelays = relayAgents.slice(1);
 
@@ -404,14 +501,22 @@ const FlowPathDisplay: React.FC<FlowPathDisplayProps> = ({ rule, agentsMap, node
       {/* Entry node */}
       <FlowNode type="entry" name={entryName} address={entryAddress} tunnelAddress={entryTunnelAddress} isFirst t={t} />
 
-      {/* Arrow to relay or target */}
-      <FlowArrow color={showRelays ? 'purple' : 'blue'} />
+      {/* Arrow to exit/relay or target */}
+      <FlowArrow color={hasExitAgents ? 'green' : hasRelays ? 'purple' : 'blue'} />
 
-      {/* Relay nodes */}
-      {showRelays && (
+      {/* Exit agents for entry type (load balancing - displayed as single node with LB indicator) */}
+      {hasExitAgents && (
+        <>
+          <LoadBalancedExitNodes agents={exitAgentsList} t={t} />
+          <FlowArrow color="blue" />
+        </>
+      )}
+
+      {/* Relay nodes for chain types (serial chain) */}
+      {hasRelays && (
         <>
           <FlowNode
-            type={rule.ruleType === 'entry' ? 'exit' : 'relay'}
+            type="relay"
             name={firstRelay.name}
             address={firstRelay.address}
             tunnelAddress={firstRelay.tunnelAddress}

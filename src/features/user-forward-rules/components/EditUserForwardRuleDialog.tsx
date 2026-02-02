@@ -26,18 +26,23 @@ import {
 } from '@/components/common/Select';
 import { Separator } from '@/components/common/Separator';
 import { RadioGroup, RadioGroupItem } from '@/components/common/RadioGroup';
-import { AlertCircle, HardDrive } from 'lucide-react';
+import { AlertCircle, HardDrive, Server } from 'lucide-react';
 import type {
   ForwardRule,
   UpdateForwardRuleRequest,
   ForwardProtocol,
   IPVersion,
+  ExitAgent,
 } from '@/api/forward';
 import { useUserForwardAgents } from '../hooks/useUserForwardAgents';
 import { useUserNodes } from '@/features/user-nodes/hooks/useUserNodes';
+import { UserExitAgentList } from './UserExitAgentList';
 
 // Target type for forward rule
 type TargetType = 'manual' | 'node';
+
+// Exit agent mode (single or multi for load balancing)
+type ExitMode = 'single' | 'multi';
 
 interface EditUserForwardRuleDialogProps {
   open: boolean;
@@ -74,6 +79,8 @@ export const EditUserForwardRuleDialog: React.FC<EditUserForwardRuleDialogProps>
     targetAddress: '',
     targetPort: '',
     targetNodeId: '',
+    exitAgentId: '',
+    exitAgents: [] as ExitAgent[],
     protocol: 'tcp' as ForwardProtocol,
     ipVersion: 'auto' as IPVersion,
     remark: '',
@@ -84,6 +91,11 @@ export const EditUserForwardRuleDialog: React.FC<EditUserForwardRuleDialogProps>
   // Original target type from rule (for detecting changes)
   const [originalTargetType, setOriginalTargetType] = useState<TargetType>('manual');
 
+  // Exit mode: single or multi for load balancing
+  const [exitMode, setExitMode] = useState<ExitMode>('single');
+  // Original exit mode from rule (for detecting changes)
+  const [originalExitMode, setOriginalExitMode] = useState<ExitMode>('single');
+
   const [errors, setErrors] = useState<Record<string, string>>({});
 
   // Populate form when dialog opens or rule changes
@@ -91,17 +103,23 @@ export const EditUserForwardRuleDialog: React.FC<EditUserForwardRuleDialogProps>
     if (open && rule) {
       // Determine target type based on whether targetNodeId is set
       const ruleTargetType: TargetType = rule.targetNodeId ? 'node' : 'manual';
+      // Determine exit mode based on whether exitAgents is set
+      const ruleExitMode: ExitMode = rule.exitAgents && rule.exitAgents.length > 0 ? 'multi' : 'single';
       setFormData({
         name: rule.name,
         targetAddress: rule.targetAddress || '',
         targetPort: rule.targetPort?.toString() || '',
         targetNodeId: rule.targetNodeId || '',
+        exitAgentId: rule.exitAgentId || '',
+        exitAgents: rule.exitAgents || [],
         protocol: rule.protocol,
         ipVersion: rule.ipVersion,
         remark: rule.remark || '',
       });
       setTargetType(ruleTargetType);
       setOriginalTargetType(ruleTargetType);
+      setExitMode(ruleExitMode);
+      setOriginalExitMode(ruleExitMode);
       setErrors({});
     }
   }, [open, rule]);
@@ -146,6 +164,19 @@ export const EditUserForwardRuleDialog: React.FC<EditUserForwardRuleDialogProps>
       }
     }
 
+    // Validate exit agent for entry type
+    if (rule?.ruleType === 'entry') {
+      if (exitMode === 'single') {
+        if (!formData.exitAgentId) {
+          newErrors.exitAgentId = t('userForwardRules.form.validation.selectExitNode');
+        }
+      } else {
+        if (!formData.exitAgents || formData.exitAgents.length === 0) {
+          newErrors.exitAgents = t('userForwardRules.form.validation.selectExitNode');
+        }
+      }
+    }
+
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -156,6 +187,9 @@ export const EditUserForwardRuleDialog: React.FC<EditUserForwardRuleDialogProps>
 
     // Check if target type changed
     const targetTypeChanged = targetType !== originalTargetType;
+
+    // Check if exit mode changed
+    const exitModeChanged = exitMode !== originalExitMode;
 
     // Check basic field changes
     const basicChanges =
@@ -174,8 +208,27 @@ export const EditUserForwardRuleDialog: React.FC<EditUserForwardRuleDialogProps>
       targetChanges = formData.targetNodeId !== (rule.targetNodeId || '');
     }
 
-    return basicChanges || targetTypeChanged || targetChanges;
-  }, [formData, rule, targetType, originalTargetType]);
+    // Check exit agent changes for entry type
+    let exitAgentChanges = false;
+    if (rule.ruleType === 'entry') {
+      if (exitMode === 'single') {
+        exitAgentChanges = formData.exitAgentId !== (rule.exitAgentId || '');
+      } else {
+        // Compare exitAgents arrays
+        const originalExitAgents = rule.exitAgents || [];
+        if (formData.exitAgents.length !== originalExitAgents.length) {
+          exitAgentChanges = true;
+        } else {
+          exitAgentChanges = formData.exitAgents.some((ea, idx) => {
+            const orig = originalExitAgents[idx];
+            return !orig || ea.agentId !== orig.agentId || ea.weight !== orig.weight;
+          });
+        }
+      }
+    }
+
+    return basicChanges || targetTypeChanged || targetChanges || exitModeChanged || exitAgentChanges;
+  }, [formData, rule, targetType, originalTargetType, exitMode, originalExitMode]);
 
   const handleSubmit = () => {
     if (!validate() || !rule) {
@@ -218,6 +271,37 @@ export const EditUserForwardRuleDialog: React.FC<EditUserForwardRuleDialogProps>
       }
     }
 
+    // Handle exit agent changes for entry type
+    if (rule.ruleType === 'entry') {
+      if (exitMode === 'single') {
+        // Switching to single mode or updating exitAgentId
+        if (exitMode !== originalExitMode) {
+          // Clear exitAgents when switching to single mode
+          updates.exitAgents = [];
+        }
+        if (formData.exitAgentId !== (rule.exitAgentId || '')) {
+          updates.exitAgentId = formData.exitAgentId;
+        }
+      } else {
+        // Switching to multi mode or updating exitAgents
+        if (exitMode !== originalExitMode) {
+          // Clear exitAgentId when switching to multi mode
+          updates.exitAgentId = '';
+        }
+        // Check if exitAgents changed
+        const originalExitAgents = rule.exitAgents || [];
+        const exitAgentsChanged =
+          formData.exitAgents.length !== originalExitAgents.length ||
+          formData.exitAgents.some((ea, idx) => {
+            const orig = originalExitAgents[idx];
+            return !orig || ea.agentId !== orig.agentId || ea.weight !== orig.weight;
+          });
+        if (exitAgentsChanged) {
+          updates.exitAgents = formData.exitAgents;
+        }
+      }
+    }
+
     // If any changes, submit update
     if (Object.keys(updates).length > 0) {
       onSubmit(rule.id, updates);
@@ -228,22 +312,33 @@ export const EditUserForwardRuleDialog: React.FC<EditUserForwardRuleDialogProps>
     if (!formData.name.trim()) return false;
 
     if (targetType === 'manual') {
-      return (
-        formData.targetAddress.trim() &&
-        formData.targetPort &&
-        parseInt(formData.targetPort) >= 1 &&
-        parseInt(formData.targetPort) <= 65535
-      );
+      if (!formData.targetAddress.trim() || !formData.targetPort) return false;
+      const port = parseInt(formData.targetPort);
+      if (isNaN(port) || port < 1 || port > 65535) return false;
     } else if (targetType === 'node') {
-      return !!formData.targetNodeId;
+      if (!formData.targetNodeId) return false;
     }
 
-    return false;
+    // Validate exit agent for entry type
+    if (rule?.ruleType === 'entry') {
+      if (exitMode === 'single') {
+        if (!formData.exitAgentId) return false;
+      } else {
+        if (!formData.exitAgents || formData.exitAgents.length === 0) return false;
+      }
+    }
+
+    return true;
   };
 
   // Get available nodes (status is active, but always include currently selected node)
   const availableNodes = userNodes.filter(
     (n) => n.status === 'active' || n.id === formData.targetNodeId
+  );
+
+  // Get available exit agents (excluding currently selected entry agent)
+  const availableExitAgents = forwardAgents.filter(
+    (a) => a.id !== rule?.agentId && a.status === 'enabled'
   );
 
   if (!rule) {
@@ -342,6 +437,110 @@ export const EditUserForwardRuleDialog: React.FC<EditUserForwardRuleDialogProps>
                   </SelectContent>
                 </Select>
               </div>
+
+              {/* entry type: exit agent selection */}
+              {rule.ruleType === 'entry' && (
+                <>
+                  {/* Exit Mode Selection */}
+                  <div className="flex flex-col gap-2 @md:col-span-2">
+                    <Label>
+                      {t('userForwardRules.form.exitNode')} <span className="text-destructive">*</span>
+                    </Label>
+                    <RadioGroup
+                      value={exitMode}
+                      onValueChange={(value) => {
+                        setExitMode(value as ExitMode);
+                        // Clear the other mode's data when switching
+                        if (value === 'single') {
+                          setFormData((prev) => ({ ...prev, exitAgents: [] }));
+                        } else {
+                          handleChange('exitAgentId', '');
+                        }
+                      }}
+                      className="flex gap-6"
+                      disabled={isUpdating}
+                    >
+                      <div className="flex items-center space-x-2">
+                        <RadioGroupItem value="single" id="edit-exit-single" />
+                        <Label htmlFor="edit-exit-single" className="font-normal cursor-pointer">
+                          {t('admin.forwardRules.exitAgents.singleMode')}
+                        </Label>
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <RadioGroupItem value="multi" id="edit-exit-multi" />
+                        <Label htmlFor="edit-exit-multi" className="font-normal cursor-pointer">
+                          {t('admin.forwardRules.exitAgents.multiMode')}
+                        </Label>
+                      </div>
+                    </RadioGroup>
+                    <p className="text-xs text-muted-foreground">
+                      {t('admin.forwardRules.exitAgents.modeHint')}
+                    </p>
+                  </div>
+
+                  {/* Single Exit Agent Mode */}
+                  {exitMode === 'single' && (
+                    <div className="flex flex-col gap-2 @md:col-span-2">
+                      <Label htmlFor="exitAgentId">
+                        {t('userForwardRules.form.exitNode')} <span className="text-destructive">*</span>
+                      </Label>
+                      <Select
+                        value={formData.exitAgentId}
+                        onValueChange={(value) => handleChange('exitAgentId', value)}
+                        disabled={isUpdating}
+                      >
+                        <SelectTrigger id="exitAgentId" className={errors.exitAgentId ? 'border-destructive' : ''}>
+                          <SelectValue placeholder={t('userForwardRules.form.selectExitNode')} />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {availableExitAgents.map((agent) => (
+                            <SelectItem key={agent.id} value={agent.id}>
+                              <div className="flex items-center gap-2">
+                                <Server className="h-4 w-4 text-muted-foreground" />
+                                <span>{agent.name}</span>
+                                {agent.groupName && (
+                                  <span className="text-xs text-muted-foreground">({agent.groupName})</span>
+                                )}
+                              </div>
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      {errors.exitAgentId && (
+                        <p className="text-xs text-destructive flex items-center gap-1">
+                          <AlertCircle className="h-3 w-3" />
+                          {errors.exitAgentId}
+                        </p>
+                      )}
+                    </div>
+                  )}
+
+                  {/* Multi Exit Agent Mode (Load Balancing) */}
+                  {exitMode === 'multi' && (
+                    <div className="flex flex-col gap-2 @md:col-span-2">
+                      <Label>
+                        {t('admin.forwardRules.exitAgents.loadBalancing')} <span className="text-destructive">*</span>
+                      </Label>
+                      <UserExitAgentList
+                        agents={availableExitAgents}
+                        exitAgents={formData.exitAgents}
+                        onChange={(exitAgents) =>
+                          setFormData((prev) => ({ ...prev, exitAgents }))
+                        }
+                        hasError={!!errors.exitAgents}
+                        idPrefix="edit-exit-agent"
+                        disabled={isUpdating}
+                      />
+                      {errors.exitAgents && (
+                        <p className="text-xs text-destructive flex items-center gap-1">
+                          <AlertCircle className="h-3 w-3" />
+                          {errors.exitAgents}
+                        </p>
+                      )}
+                    </div>
+                  )}
+                </>
+              )}
 
               {/* Target type selection */}
               <div className="flex flex-col gap-2 @md:col-span-2">
@@ -485,13 +684,6 @@ export const EditUserForwardRuleDialog: React.FC<EditUserForwardRuleDialogProps>
                 <span className="text-muted-foreground">{t('userForwardRules.form.readonlyInfo.listenPort')}</span>
                 <span className="font-mono">{rule.listenPort || t('userForwardRules.form.readonlyInfo.systemAssigned')}</span>
               </div>
-              {/* entry type shows exit node */}
-              {rule.ruleType === 'entry' && rule.exitAgentId && (
-                <div>
-                  <span className="text-muted-foreground">{t('userForwardRules.form.readonlyInfo.exitNode')}</span>
-                  <span>{forwardAgents.find(a => a.id === rule.exitAgentId)?.name || rule.exitAgentId}</span>
-                </div>
-              )}
             </div>
             {/* chain/direct_chain type shows relay nodes */}
             {(rule.ruleType === 'chain' || rule.ruleType === 'direct_chain') && rule.chainAgentIds && rule.chainAgentIds.length > 0 && (

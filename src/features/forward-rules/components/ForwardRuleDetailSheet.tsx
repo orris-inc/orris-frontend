@@ -47,6 +47,7 @@ import {
   SheetFooter,
 } from '@/components/common/sheet/Sheet';
 import { ActionSheet } from '@/components/common/sheet/ActionSheet';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/common/Popover';
 import { AdminBadge } from '@/components/admin';
 import { cn } from '@/lib/utils';
 import { ENABLED_STATUS_CONFIG } from '@/shared/constants/status-config';
@@ -187,7 +188,7 @@ const ForwardPath = ({
   };
 
   // Build path nodes
-  const pathNodes: { type: string; name: string; port?: number }[] = [];
+  const pathNodes: { type: string; name: string; port?: number; badge?: string; isExit?: boolean }[] = [];
 
   // Entry
   pathNodes.push({
@@ -196,12 +197,27 @@ const ForwardPath = ({
     port: rule.listenPort,
   });
 
-  // Exit/Chain
-  if (rule.ruleType === 'entry' && rule.exitAgentId) {
-    pathNodes.push({
-      type: t('admin.forwardRules.flowNode.exit'),
-      name: getAgentName(rule.exitAgentId),
-    });
+  // Exit/Chain - support load balancing
+  const hasLoadBalancing = rule.ruleType === 'entry' && rule.exitAgents && rule.exitAgents.length > 1;
+
+  if (rule.ruleType === 'entry') {
+    if (rule.exitAgents && rule.exitAgents.length > 0) {
+      // Load balancing: multiple exit agents
+      const firstExitAgent = rule.exitAgents[0];
+      const exitCount = rule.exitAgents.length;
+      pathNodes.push({
+        type: t('admin.forwardRules.flowNode.exit'),
+        name: getAgentName(firstExitAgent.agentId),
+        badge: exitCount > 1 ? `LB ${exitCount}` : undefined,
+        isExit: true,
+      });
+    } else if (rule.exitAgentId) {
+      // Single exit agent (legacy)
+      pathNodes.push({
+        type: t('admin.forwardRules.flowNode.exit'),
+        name: getAgentName(rule.exitAgentId),
+      });
+    }
   }
 
   if ((rule.ruleType === 'chain' || rule.ruleType === 'direct_chain') && rule.chainAgentIds) {
@@ -225,23 +241,82 @@ const ForwardPath = ({
     });
   }
 
+  // Build exit agents info for load balancing popover
+  const exitAgentsInfo = rule.exitAgents?.map(ea => ({
+    id: ea.agentId,
+    name: getAgentName(ea.agentId),
+    weight: ea.weight,
+  })) || [];
+  const totalWeight = exitAgentsInfo.reduce((sum, a) => sum + a.weight, 0);
+  const exitAgentsWithPercent = exitAgentsInfo.map(a => ({
+    ...a,
+    percent: totalWeight > 0 ? Math.round((a.weight / totalWeight) * 100) : 100,
+  }));
+
   return (
     <div className="px-3 py-3">
       <div className="flex items-center gap-1 overflow-x-auto pb-1">
-        {pathNodes.map((node, index) => (
-          <div key={index} className="flex items-center shrink-0">
+        {pathNodes.map((node, index) => {
+          const isExitWithLB = node.isExit && hasLoadBalancing;
+
+          const nodeContent = (
             <div className="flex flex-col items-center">
               <span className="text-[9px] text-muted-foreground uppercase mb-0.5">{node.type}</span>
-              <div className="px-2 py-1 rounded bg-muted text-xs font-medium">
+              <div className={cn(
+                "px-2 py-1 rounded bg-muted text-xs font-medium flex items-center gap-1",
+                isExitWithLB && "cursor-pointer hover:bg-muted/80 transition-colors"
+              )}>
                 {node.name}
                 {node.port ? <span className="text-muted-foreground">:{node.port}</span> : null}
+                {node.badge && (
+                  <span className="px-1 py-0 text-[9px] font-semibold rounded bg-orange-100 dark:bg-orange-900/30 text-orange-600 dark:text-orange-400">
+                    {node.badge}
+                  </span>
+                )}
               </div>
             </div>
-            {index < pathNodes.length - 1 && (
-              <ArrowRight className={cn('size-3 mx-1 text-muted-foreground/50', isRunning && 'animate-pulse')} />
-            )}
-          </div>
-        ))}
+          );
+
+          return (
+            <div key={index} className="flex items-center shrink-0">
+              {isExitWithLB ? (
+                <Popover>
+                  <PopoverTrigger asChild>
+                    {nodeContent}
+                  </PopoverTrigger>
+                  <PopoverContent className="w-56 p-3" align="center">
+                    <div className="space-y-2">
+                      <div className="flex items-center justify-between">
+                        <h4 className="text-xs font-semibold text-muted-foreground">{t('admin.forwardRules.flowNode.exit')}</h4>
+                        <span className="text-[10px] px-1.5 py-0.5 rounded bg-orange-100 dark:bg-orange-900/30 text-orange-600 dark:text-orange-400 font-medium">
+                          {t('admin.forwardRules.exitAgents.loadBalancing')}
+                        </span>
+                      </div>
+                      <div className="space-y-1.5">
+                        {exitAgentsWithPercent.map((agent, idx) => (
+                          <div key={agent.id} className="flex items-center justify-between gap-2 p-1.5 rounded bg-muted/50">
+                            <div className="flex items-center gap-1.5 min-w-0">
+                              <span className="flex-shrink-0 w-4 h-4 rounded-full bg-orange-100 dark:bg-orange-900/30 text-[9px] font-bold text-orange-600 dark:text-orange-400 flex items-center justify-center">
+                                {idx + 1}
+                              </span>
+                              <span className="text-xs font-medium truncate">{agent.name}</span>
+                            </div>
+                            <span className="text-[10px] text-muted-foreground font-mono shrink-0">{agent.percent}%</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </PopoverContent>
+                </Popover>
+              ) : (
+                nodeContent
+              )}
+              {index < pathNodes.length - 1 && (
+                <ArrowRight className={cn('size-3 mx-1 text-muted-foreground/50', isRunning && 'animate-pulse')} />
+              )}
+            </div>
+          );
+        })}
       </div>
     </div>
   );

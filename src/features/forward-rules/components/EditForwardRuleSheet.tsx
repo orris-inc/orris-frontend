@@ -26,7 +26,10 @@ import { Button } from '@/components/common/Button';
 import { Checkbox } from '@/components/common/Checkbox';
 import { Badge } from '@/components/common/Badge';
 import { MobileFormInput, MobileSelect, type MobileSelectOption } from '@/components/common/mobile-form';
+import { RadioGroup, RadioGroupItem } from '@/components/common/RadioGroup';
+import { Label } from '@/components/common/Label';
 import { SortableChainAgentList } from './SortableChainAgentList';
+import { ExitAgentList } from './ExitAgentList';
 import { cn } from '@/lib/utils';
 import { formatDateTime } from '@/shared/utils/date-utils';
 import type {
@@ -35,6 +38,7 @@ import type {
   ForwardAgent,
   IPVersion,
   TunnelType,
+  ExitAgent,
 } from '@/api/forward';
 import type { Node } from '@/api/node';
 import type { ResourceGroup } from '@/api/resource/types';
@@ -46,6 +50,7 @@ import type { SubscriptionPlan } from '@/api/subscription/types';
 
 type ForwardProtocol = 'tcp' | 'udp' | 'both';
 type TargetType = 'manual' | 'node';
+type ExitMode = 'single' | 'multi';
 
 interface EditForwardRuleSheetProps extends EditSheetProps<ForwardRule, UpdateForwardRuleRequest> {
   nodes?: Node[];
@@ -176,9 +181,11 @@ export const EditForwardRuleSheet: React.FC<EditForwardRuleSheetProps> = ({
       serverAddress?: string;
       externalSource?: string;
       externalRuleId?: string;
+      exitAgents?: ExitAgent[];
     }
   >({});
   const [targetType, setTargetType] = useState<TargetType>('manual');
+  const [exitMode, setExitMode] = useState<ExitMode>('single');
   const [showAdvanced, setShowAdvanced] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(false);
@@ -189,6 +196,7 @@ export const EditForwardRuleSheet: React.FC<EditForwardRuleSheetProps> = ({
       const chainAgentIds = (rule.chainAgentIds || []).filter((id) => id !== rule.agentId);
       const chainPortConfig = { ...(rule.chainPortConfig || {}) };
       if (chainPortConfig[rule.agentId]) delete chainPortConfig[rule.agentId];
+      const initExitAgents = rule.exitAgents || [];
 
       setFormData({
         name: rule.name,
@@ -202,6 +210,7 @@ export const EditForwardRuleSheet: React.FC<EditForwardRuleSheetProps> = ({
         remark: rule.remark,
         agentId: rule.agentId,
         exitAgentId: rule.exitAgentId,
+        exitAgents: initExitAgents,
         chainAgentIds,
         chainPortConfig,
         trafficMultiplier: rule.trafficMultiplier,
@@ -214,6 +223,7 @@ export const EditForwardRuleSheet: React.FC<EditForwardRuleSheetProps> = ({
         externalRuleId: rule.externalRuleId,
       });
       setTargetType(rule.targetNodeId ? 'node' : 'manual');
+      setExitMode(initExitAgents.length > 0 ? 'multi' : 'single');
       setShowAdvanced(!!(rule.bindIp || rule.remark));
       setErrors({});
     }
@@ -438,8 +448,36 @@ export const EditForwardRuleSheet: React.FC<EditForwardRuleSheetProps> = ({
       if (formData.bindIp !== rule.bindIp) updates.bindIp = formData.bindIp;
       if (formData.agentId !== rule.agentId) updates.agentId = formData.agentId;
 
-      if (rule.ruleType === 'entry' && formData.exitAgentId !== rule.exitAgentId) {
-        updates.exitAgentId = formData.exitAgentId;
+      if (rule.ruleType === 'entry') {
+        if (exitMode === 'single') {
+          // Switching to single mode or updating exitAgentId
+          const originalExitAgents = rule.exitAgents || [];
+          if (originalExitAgents.length > 0) {
+            // Clear exitAgents when switching to single mode
+            updates.exitAgents = [];
+          }
+          if (formData.exitAgentId !== rule.exitAgentId) {
+            updates.exitAgentId = formData.exitAgentId;
+          }
+        } else {
+          // Switching to multi mode or updating exitAgents
+          if (rule.exitAgentId) {
+            // Clear exitAgentId when switching to multi mode
+            updates.exitAgentId = '';
+          }
+          // Check if exitAgents changed
+          const currentExitAgents = formData.exitAgents || [];
+          const originalExitAgents = rule.exitAgents || [];
+          const exitAgentsChanged =
+            currentExitAgents.length !== originalExitAgents.length ||
+            currentExitAgents.some((ea, idx) => {
+              const orig = originalExitAgents[idx];
+              return !orig || ea.agentId !== orig.agentId || ea.weight !== orig.weight;
+            });
+          if (exitAgentsChanged) {
+            updates.exitAgents = currentExitAgents;
+          }
+        }
       }
 
       if ((rule.ruleType === 'entry' || rule.ruleType === 'chain') && formData.tunnelType !== rule.tunnelType) {
@@ -610,13 +648,62 @@ export const EditForwardRuleSheet: React.FC<EditForwardRuleSheetProps> = ({
               )}
 
               {needsExitAgent && (
-                <FormField label={t('admin.forwardRules.form.exitAgent')}>
-                  <MobileSelect
-                    value={formData.exitAgentId || ''}
-                    onChange={(value) => handleChange('exitAgentId', value)}
-                    options={exitAgentOptions}
-                  />
-                </FormField>
+                <>
+                  {/* Exit Mode Selection */}
+                  <FormField label={t('admin.forwardRules.form.exitNode')}>
+                    <RadioGroup
+                      value={exitMode}
+                      onValueChange={(value) => {
+                        setExitMode(value as ExitMode);
+                        if (value === 'single') {
+                          setFormData((prev) => ({ ...prev, exitAgents: [] }));
+                        } else {
+                          handleChange('exitAgentId', '');
+                        }
+                      }}
+                      className="flex gap-4"
+                    >
+                      <div className="flex items-center space-x-2">
+                        <RadioGroupItem value="single" id="edit-sheet-exit-single" />
+                        <Label htmlFor="edit-sheet-exit-single" className="font-normal cursor-pointer text-sm">
+                          {t('admin.forwardRules.exitAgents.singleMode')}
+                        </Label>
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <RadioGroupItem value="multi" id="edit-sheet-exit-multi" />
+                        <Label htmlFor="edit-sheet-exit-multi" className="font-normal cursor-pointer text-sm">
+                          {t('admin.forwardRules.exitAgents.multiMode')}
+                        </Label>
+                      </div>
+                    </RadioGroup>
+                  </FormField>
+
+                  {/* Single Exit Agent Mode */}
+                  {exitMode === 'single' && (
+                    <FormField label={t('admin.forwardRules.form.exitAgent')}>
+                      <MobileSelect
+                        value={formData.exitAgentId || ''}
+                        onChange={(value) => handleChange('exitAgentId', value)}
+                        options={exitAgentOptions}
+                      />
+                    </FormField>
+                  )}
+
+                  {/* Multi Exit Agent Mode (Load Balancing) */}
+                  {exitMode === 'multi' && (
+                    <FormField label={t('admin.forwardRules.exitAgents.loadBalancing')}>
+                      <ExitAgentList
+                        agents={availableExitAgents}
+                        exitAgents={formData.exitAgents || []}
+                        onChange={(exitAgents) =>
+                          setFormData((prev) => ({ ...prev, exitAgents }))
+                        }
+                        hasError={false}
+                        idPrefix="edit-sheet-exit-agent"
+                      />
+                    </FormField>
+                  )}
+                </>
               )}
 
               {needsTunnelConfig && (

@@ -14,6 +14,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/common/Dialog';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/common/Popover';
 import { TruncatedId } from '@/components/admin';
 import {
   Loader2,
@@ -128,6 +129,14 @@ const StatCard: React.FC<{
   </div>
 );
 
+// Exit agent info for load balancing display
+interface ExitAgentInfo {
+  id: string;
+  name: string;
+  address?: string;
+  weight: number;
+}
+
 // Compact Flow Path Component - Linear style with flex layout
 const FlowPath: React.FC<{
   nodes: Array<{
@@ -135,8 +144,10 @@ const FlowPath: React.FC<{
     name: string;
     address?: string;
     port?: number;
+    badge?: string;
   }>;
-}> = ({ nodes }) => {
+  exitAgents?: ExitAgentInfo[];
+}> = ({ nodes, exitAgents }) => {
   const { t } = useTranslation();
   const config = {
     entry: { icon: Bot, color: 'text-emerald-500', bg: 'bg-emerald-500', bgLight: 'bg-emerald-500/10', borderColor: 'border-emerald-500', labelKey: 'admin.forwardRules.flowNode.entry' },
@@ -154,6 +165,16 @@ const FlowPath: React.FC<{
     return port ? `${displayAddr}:${port}` : displayAddr;
   };
 
+  // Calculate weight percentages for exit agents
+  const totalWeight = exitAgents?.reduce((sum, a) => sum + a.weight, 0) || 0;
+  const exitAgentsWithPercent = exitAgents?.map(a => ({
+    ...a,
+    percent: totalWeight > 0 ? Math.round((a.weight / totalWeight) * 100) : 100,
+  }));
+
+  // Check if this is a load balancing exit node
+  const hasLoadBalancing = exitAgents && exitAgents.length > 1;
+
   return (
     <div className="flex items-center gap-3 py-2 overflow-x-auto">
       {nodes.map((node, index) => {
@@ -164,35 +185,84 @@ const FlowPath: React.FC<{
           : (node.port ? `:${node.port}` : '');
         const displayAddress = formatAddress(node.address, node.port);
         const isLast = index === nodes.length - 1;
+        const isExitWithLB = node.type === 'exit' && hasLoadBalancing;
 
-        return (
-          <div key={index} className="flex items-center gap-3 flex-shrink-0">
-            {/* Node */}
-            <div
-              className="flex flex-col items-center gap-1 group cursor-default"
-              title={fullAddress ? `${node.name}\n${fullAddress}` : node.name}
-            >
-              {/* Node circle with badge */}
-              <div className="relative">
-                <div className={`size-9 rounded-full ${nodeConfig.bgLight} border-2 ${nodeConfig.borderColor}/40 flex items-center justify-center transition-all duration-200 group-hover:scale-105 group-hover:border-opacity-70`}>
-                  <Icon className={`size-4 ${nodeConfig.color}`} />
-                </div>
-                {/* Type label badge */}
-                <span className={`absolute -top-1.5 left-1/2 -translate-x-1/2 px-1.5 py-0.5 text-[9px] font-semibold rounded-full ${nodeConfig.bg} text-white shadow-sm whitespace-nowrap`}>
-                  {t(nodeConfig.labelKey)}
-                </span>
+        // Node content (reusable for both with and without Popover)
+        const nodeContent = (
+          <div
+            className={`flex flex-col items-center gap-1 group ${isExitWithLB ? 'cursor-pointer' : 'cursor-default'}`}
+            title={!isExitWithLB && fullAddress ? `${node.name}\n${fullAddress}` : undefined}
+          >
+            {/* Node circle with badge */}
+            <div className="relative">
+              <div className={`size-9 rounded-full ${nodeConfig.bgLight} border-2 ${nodeConfig.borderColor}/40 flex items-center justify-center transition-all duration-200 group-hover:scale-105 group-hover:border-opacity-70`}>
+                <Icon className={`size-4 ${nodeConfig.color}`} />
               </div>
+              {/* Type label badge */}
+              <span className={`absolute -top-1.5 left-1/2 -translate-x-1/2 px-1.5 py-0.5 text-[9px] font-semibold rounded-full ${nodeConfig.bg} text-white shadow-sm whitespace-nowrap`}>
+                {t(nodeConfig.labelKey)}
+              </span>
+            </div>
 
-              {/* Node info */}
-              <div className="flex flex-col items-center min-w-[60px] max-w-[100px]">
-                <span className="text-[11px] font-medium text-center truncate w-full leading-tight">{node.name}</span>
-                {displayAddress && (
-                  <span className="text-[10px] text-muted-foreground font-mono truncate w-full text-center" title={fullAddress}>
-                    {displayAddress}
+            {/* Node info */}
+            <div className="flex flex-col items-center min-w-[60px] max-w-[100px]">
+              <div className="flex items-center gap-1">
+                <span className="text-[11px] font-medium text-center truncate leading-tight">{node.name}</span>
+                {node.badge && (
+                  <span className="px-1 py-0 text-[9px] font-semibold rounded bg-orange-100 dark:bg-orange-900/30 text-orange-600 dark:text-orange-400 shrink-0">
+                    {node.badge}
                   </span>
                 )}
               </div>
+              {displayAddress && (
+                <span className="text-[10px] text-muted-foreground font-mono truncate w-full text-center" title={fullAddress}>
+                  {displayAddress}
+                </span>
+              )}
             </div>
+          </div>
+        );
+
+        return (
+          <div key={index} className="flex items-center gap-3 flex-shrink-0">
+            {/* Node - wrap with Popover if exit with load balancing */}
+            {isExitWithLB ? (
+              <Popover>
+                <PopoverTrigger asChild>
+                  {nodeContent}
+                </PopoverTrigger>
+                <PopoverContent className="w-64 p-3" align="center">
+                  <div className="space-y-2">
+                    <div className="flex items-center justify-between">
+                      <h4 className="text-xs font-semibold text-muted-foreground">{t('admin.forwardRules.flowNode.exit')}</h4>
+                      <span className="text-[10px] px-1.5 py-0.5 rounded bg-orange-100 dark:bg-orange-900/30 text-orange-600 dark:text-orange-400 font-medium">
+                        {t('admin.forwardRules.exitAgents.loadBalancing')}
+                      </span>
+                    </div>
+                    <div className="space-y-1.5">
+                      {exitAgentsWithPercent?.map((agent, idx) => (
+                        <div key={agent.id} className="flex items-center justify-between gap-2 p-2 rounded-lg bg-slate-50 dark:bg-slate-800/50">
+                          <div className="flex items-center gap-2 min-w-0">
+                            <span className="flex-shrink-0 w-5 h-5 rounded-full bg-orange-100 dark:bg-orange-900/30 text-[10px] font-bold text-orange-600 dark:text-orange-400 flex items-center justify-center">
+                              {idx + 1}
+                            </span>
+                            <div className="min-w-0">
+                              <div className="text-sm font-medium truncate">{agent.name}</div>
+                              {agent.address && (
+                                <div className="text-[10px] text-muted-foreground font-mono truncate">{agent.address}</div>
+                              )}
+                            </div>
+                          </div>
+                          <span className="text-xs text-muted-foreground font-mono shrink-0">{agent.percent}%</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </PopoverContent>
+              </Popover>
+            ) : (
+              nodeContent
+            )}
 
             {/* Arrow connector */}
             {!isLast && (
@@ -352,7 +422,7 @@ export const ForwardRuleDetailDialog: React.FC<ForwardRuleDetailDialogProps> = (
   const totalBytes = (rule.uploadBytes || 0) + (rule.downloadBytes || 0);
 
   // Build flow path nodes (not used for external type)
-  const flowNodes: Array<{ type: 'entry' | 'relay' | 'exit' | 'target'; name: string; address?: string; port?: number }> = [];
+  const flowNodes: Array<{ type: 'entry' | 'relay' | 'exit' | 'target'; name: string; address?: string; port?: number; badge?: string }> = [];
 
   // External type doesn't have flow path
   if (rule.ruleType !== 'external') {
@@ -364,13 +434,26 @@ export const ForwardRuleDetailDialog: React.FC<ForwardRuleDetailDialogProps> = (
       port: rule.listenPort,
     });
 
-    // Exit/Relay nodes
-    if (rule.ruleType === 'entry' && rule.exitAgentId) {
-      flowNodes.push({
-        type: 'exit',
-        name: getAgentName(rule.exitAgentId),
-        address: getAgentAddress(rule.exitAgentId),
-      });
+    // Exit/Relay nodes - support load balancing
+    if (rule.ruleType === 'entry') {
+      if (rule.exitAgents && rule.exitAgents.length > 0) {
+        // Load balancing: multiple exit agents
+        const firstExitAgent = rule.exitAgents[0];
+        const exitCount = rule.exitAgents.length;
+        flowNodes.push({
+          type: 'exit',
+          name: getAgentName(firstExitAgent.agentId),
+          address: getAgentAddress(firstExitAgent.agentId),
+          badge: exitCount > 1 ? `LB ${exitCount}` : undefined,
+        });
+      } else if (rule.exitAgentId) {
+        // Single exit agent (legacy)
+        flowNodes.push({
+          type: 'exit',
+          name: getAgentName(rule.exitAgentId),
+          address: getAgentAddress(rule.exitAgentId),
+        });
+      }
     }
 
     if ((rule.ruleType === 'chain' || rule.ruleType === 'direct_chain') && rule.chainAgentIds) {
@@ -396,6 +479,14 @@ export const ForwardRuleDetailDialog: React.FC<ForwardRuleDetailDialogProps> = (
       });
     }
   }
+
+  // Build exit agents info for load balancing popover
+  const exitAgentsInfo: ExitAgentInfo[] = rule.exitAgents?.map(ea => ({
+    id: ea.agentId,
+    name: getAgentName(ea.agentId),
+    address: getAgentAddress(ea.agentId),
+    weight: ea.weight,
+  })) || [];
 
   return (
     <Dialog open={open} onOpenChange={(isOpen) => !isOpen && onClose()}>
@@ -452,7 +543,7 @@ export const ForwardRuleDetailDialog: React.FC<ForwardRuleDetailDialogProps> = (
                   <span className="text-xs text-muted-foreground ml-auto">{t('admin.forwardRules.detail.nodesCount', { count: flowNodes.length })}</span>
                 </div>
                 <div className="p-3 rounded-xl bg-slate-50 dark:bg-slate-800/30 border border-slate-200/50 dark:border-slate-700/30">
-                  <FlowPath nodes={flowNodes} />
+                  <FlowPath nodes={flowNodes} exitAgents={exitAgentsInfo} />
                 </div>
               </section>
             )}

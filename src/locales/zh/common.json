@@ -1186,6 +1186,21 @@
         "selectedCount": "已选择 {{count}} 个节点",
         "selectedCountWithHint": "已选择 {{count}} 个节点（拖拽排序）"
       },
+      "exitAgents": {
+        "loadBalancing": "负载均衡配置",
+        "totalWeight": "总权重: {{weight}}",
+        "addAgent": "添加出口节点",
+        "noAgents": "无可用出口节点",
+        "hint": "已配置 {{count}} 个出口节点，流量按权重比例分配",
+        "emptyHint": "请添加至少一个出口节点",
+        "weightLabel": "权重",
+        "singleMode": "单出口模式",
+        "multiMode": "多出口负载均衡",
+        "modeHint": "多出口模式支持多个出口节点按权重分配流量",
+        "moveUp": "上移",
+        "moveDown": "下移",
+        "remove": "移除"
+      },
       "columns": {
         "ruleName": "规则名",
         "ruleType": "规则类型",

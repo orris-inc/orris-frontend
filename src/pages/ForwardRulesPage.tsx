@@ -334,6 +334,7 @@ export function ForwardRulesPage() {
         agentId: rule.agentId,
         ruleType: rule.ruleType as ForwardRuleType,
         exitAgentId: rule.exitAgentId,
+        exitAgents: rule.exitAgents,
         chainAgentIds: filteredChainAgentIds,
         chainPortConfig: filteredChainPortConfig,
         name: `${rule.name} - ${t('common.actions.copy')}`,

@@ -27,7 +27,10 @@ import { Button } from '@/components/common/Button';
 import { Checkbox } from '@/components/common/Checkbox';
 import { Badge } from '@/components/common/Badge';
 import { MobileFormInput, MobileSelect, type MobileSelectOption } from '@/components/common/mobile-form';
+import { RadioGroup, RadioGroupItem } from '@/components/common/RadioGroup';
+import { Label } from '@/components/common/Label';
 import { SortableChainAgentList } from './SortableChainAgentList';
+import { ExitAgentList } from './ExitAgentList';
 import { cn } from '@/lib/utils';
 import type {
   CreateForwardRuleRequest,
@@ -36,6 +39,7 @@ import type {
   ForwardProtocol,
   IPVersion,
   TunnelType,
+  ExitAgent,
 } from '@/api/forward';
 import type { Node } from '@/api/node';
 import type { ResourceGroup } from '@/api/resource/types';
@@ -46,6 +50,7 @@ import type { SubscriptionPlan } from '@/api/subscription/types';
 // ============================================================================
 
 type TargetType = 'manual' | 'node';
+type ExitMode = 'single' | 'multi';
 
 interface CreateForwardRuleSheetProps extends CreateSheetProps<CreateForwardRuleRequest> {
   agents: ForwardAgent[];
@@ -217,6 +222,7 @@ export const CreateForwardRuleSheet: React.FC<CreateForwardRuleSheetProps> = ({
     agentId: '',
     ruleType: 'direct' as ForwardRuleType,
     exitAgentId: '',
+    exitAgents: [] as ExitAgent[],
     chainAgentIds: [] as string[],
     chainPortConfig: {} as Record<string, number>,
     tunnelType: 'ws' as TunnelType,
@@ -239,6 +245,7 @@ export const CreateForwardRuleSheet: React.FC<CreateForwardRuleSheetProps> = ({
     externalRuleId: '',
   });
   const [targetType, setTargetType] = useState<TargetType>('manual');
+  const [exitMode, setExitMode] = useState<ExitMode>('single');
   const [showAdvanced, setShowAdvanced] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(false);
@@ -247,10 +254,12 @@ export const CreateForwardRuleSheet: React.FC<CreateForwardRuleSheetProps> = ({
   useEffect(() => {
     if (open) {
       if (initialData) {
+        const initExitAgents = initialData.exitAgents || [];
         setFormData({
           agentId: initialData.agentId || '',
           ruleType: initialData.ruleType || 'direct',
           exitAgentId: initialData.exitAgentId || '',
+          exitAgents: initExitAgents,
           chainAgentIds: initialData.chainAgentIds || [],
           chainPortConfig: initialData.chainPortConfig || {},
           tunnelType: initialData.tunnelType || 'ws',
@@ -272,12 +281,14 @@ export const CreateForwardRuleSheet: React.FC<CreateForwardRuleSheetProps> = ({
           externalRuleId: (initialData as Record<string, unknown>).externalRuleId as string || '',
         });
         setTargetType(initialData.targetType || (initialData.targetNodeId ? 'node' : 'manual'));
+        setExitMode(initExitAgents.length > 0 ? 'multi' : 'single');
         setShowAdvanced(!!(initialData.bindIp || initialData.remark || initialData.trafficMultiplier));
       } else {
         setFormData({
           agentId: '',
           ruleType: 'direct',
           exitAgentId: '',
+          exitAgents: [],
           chainAgentIds: [],
           chainPortConfig: {},
           tunnelType: 'ws',
@@ -299,6 +310,7 @@ export const CreateForwardRuleSheet: React.FC<CreateForwardRuleSheetProps> = ({
           externalRuleId: '',
         });
         setTargetType('manual');
+        setExitMode('single');
         setShowAdvanced(false);
       }
       setErrors({});
@@ -465,8 +477,16 @@ export const CreateForwardRuleSheet: React.FC<CreateForwardRuleSheetProps> = ({
       if (!formData.targetNodeId) newErrors.targetNodeId = t('admin.forwardRules.validation.selectTargetNode');
     }
 
-    if (formData.ruleType === 'entry' && !formData.exitAgentId) {
-      newErrors.exitAgentId = t('admin.forwardRules.validation.selectExitNode');
+    if (formData.ruleType === 'entry') {
+      if (exitMode === 'single') {
+        if (!formData.exitAgentId) {
+          newErrors.exitAgentId = t('admin.forwardRules.validation.selectExitNode');
+        }
+      } else {
+        if (!formData.exitAgents || formData.exitAgents.length === 0) {
+          newErrors.exitAgents = t('admin.forwardRules.validation.selectExitNode');
+        }
+      }
     }
 
     if ((formData.ruleType === 'chain' || formData.ruleType === 'direct_chain') && formData.chainAgentIds.length === 0) {
@@ -523,7 +543,11 @@ export const CreateForwardRuleSheet: React.FC<CreateForwardRuleSheetProps> = ({
       if (formData.listenPort) submitData.listenPort = formData.listenPort;
 
       if (formData.ruleType === 'entry') {
-        submitData.exitAgentId = formData.exitAgentId;
+        if (exitMode === 'single') {
+          submitData.exitAgentId = formData.exitAgentId;
+        } else {
+          submitData.exitAgents = formData.exitAgents;
+        }
         submitData.tunnelType = formData.tunnelType;
       } else if (formData.ruleType === 'chain') {
         submitData.chainAgentIds = formData.chainAgentIds;
@@ -572,7 +596,7 @@ export const CreateForwardRuleSheet: React.FC<CreateForwardRuleSheetProps> = ({
         (targetType === 'manual'
           ? formData.targetAddress.trim() && formData.targetPort > 0
           : !!formData.targetNodeId) &&
-        (formData.ruleType !== 'entry' || formData.exitAgentId) &&
+        (formData.ruleType !== 'entry' || (exitMode === 'single' ? formData.exitAgentId : formData.exitAgents.length > 0)) &&
         ((formData.ruleType !== 'chain' && formData.ruleType !== 'direct_chain') || formData.chainAgentIds.length > 0);
 
   const needsChainConfig = formData.ruleType === 'chain' || formData.ruleType === 'direct_chain';
@@ -740,29 +764,92 @@ export const CreateForwardRuleSheet: React.FC<CreateForwardRuleSheetProps> = ({
 
               {/* Entry type: Exit Agent */}
               {needsExitAgent && (
-                <div className="grid grid-cols-2 gap-3">
-                  <FormField
-                    label={t('admin.forwardRules.form.exitNode')}
-                    required
-                    error={errors.exitAgentId}
-                    className="col-span-2 sm:col-span-1"
-                  >
-                    <MobileSelect
-                      value={formData.exitAgentId}
-                      onChange={(value) => handleChange('exitAgentId', value)}
-                      options={exitAgentOptions}
-                      placeholder={t('admin.forwardRules.form.selectExitNode')}
-                    />
+                <>
+                  {/* Exit Mode Selection */}
+                  <FormField label={t('admin.forwardRules.form.exitNode')} required>
+                    <RadioGroup
+                      value={exitMode}
+                      onValueChange={(value) => {
+                        setExitMode(value as ExitMode);
+                        if (value === 'single') {
+                          setFormData((prev) => ({ ...prev, exitAgents: [] }));
+                        } else {
+                          handleChange('exitAgentId', '');
+                        }
+                      }}
+                      className="flex gap-4"
+                    >
+                      <div className="flex items-center space-x-2">
+                        <RadioGroupItem value="single" id="sheet-exit-single" />
+                        <Label htmlFor="sheet-exit-single" className="font-normal cursor-pointer text-sm">
+                          {t('admin.forwardRules.exitAgents.singleMode')}
+                        </Label>
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <RadioGroupItem value="multi" id="sheet-exit-multi" />
+                        <Label htmlFor="sheet-exit-multi" className="font-normal cursor-pointer text-sm">
+                          {t('admin.forwardRules.exitAgents.multiMode')}
+                        </Label>
+                      </div>
+                    </RadioGroup>
                   </FormField>
 
-                  <FormField label={t('admin.forwardRules.form.tunnelType')} className="col-span-2 sm:col-span-1">
-                    <MobileSelect
-                      value={formData.tunnelType}
-                      onChange={(value) => handleChange('tunnelType', value)}
-                      options={TUNNEL_TYPE_OPTIONS}
-                    />
-                  </FormField>
-                </div>
+                  {/* Single Exit Agent Mode */}
+                  {exitMode === 'single' && (
+                    <div className="grid grid-cols-2 gap-3">
+                      <FormField
+                        label={t('admin.forwardRules.form.exitNode')}
+                        required
+                        error={errors.exitAgentId}
+                        className="col-span-2 sm:col-span-1"
+                      >
+                        <MobileSelect
+                          value={formData.exitAgentId}
+                          onChange={(value) => handleChange('exitAgentId', value)}
+                          options={exitAgentOptions}
+                          placeholder={t('admin.forwardRules.form.selectExitNode')}
+                        />
+                      </FormField>
+
+                      <FormField label={t('admin.forwardRules.form.tunnelType')} className="col-span-2 sm:col-span-1">
+                        <MobileSelect
+                          value={formData.tunnelType}
+                          onChange={(value) => handleChange('tunnelType', value)}
+                          options={TUNNEL_TYPE_OPTIONS}
+                        />
+                      </FormField>
+                    </div>
+                  )}
+
+                  {/* Multi Exit Agent Mode (Load Balancing) */}
+                  {exitMode === 'multi' && (
+                    <>
+                      <FormField
+                        label={t('admin.forwardRules.exitAgents.loadBalancing')}
+                        required
+                        error={errors.exitAgents}
+                      >
+                        <ExitAgentList
+                          agents={availableExitAgents}
+                          exitAgents={formData.exitAgents}
+                          onChange={(exitAgents) =>
+                            setFormData((prev) => ({ ...prev, exitAgents }))
+                          }
+                          hasError={!!errors.exitAgents}
+                          idPrefix="sheet-exit-agent"
+                        />
+                      </FormField>
+
+                      <FormField label={t('admin.forwardRules.form.tunnelType')}>
+                        <MobileSelect
+                          value={formData.tunnelType}
+                          onChange={(value) => handleChange('tunnelType', value)}
+                          options={TUNNEL_TYPE_OPTIONS}
+                        />
+                      </FormField>
+                    </>
+                  )}
+                </>
               )}
 
               {/* Chain type: Tunnel settings */}

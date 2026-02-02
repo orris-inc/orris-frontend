@@ -232,31 +232,110 @@ export const ProbeResultDialog: React.FC<ProbeResultDialogProps> = ({
                     {/* entry type: entry → exit → target */}
                     {probeResult.ruleType === 'entry' && (
                       <>
-                        {probeResult.tunnelLatencyMs !== undefined && (
-                          <div className="flex items-center text-xs py-1 px-2 rounded bg-muted/30">
-                            <span className="text-muted-foreground flex-1 min-w-0 flex items-center gap-1">
-                              <ArrowRight className="size-3 flex-shrink-0" />
-                              <span className="truncate">
-                                {entryAgentName} → {exitAgentName}
-                              </span>
-                            </span>
-                            <Badge variant="outline" className="font-mono text-[10px] px-1.5 py-0 flex-shrink-0">
-                              {probeResult.tunnelLatencyMs}ms
-                            </Badge>
-                          </div>
-                        )}
-                        {probeResult.targetLatencyMs !== undefined && (
-                          <div className="flex items-center text-xs py-1 px-2 rounded bg-muted/30">
-                            <span className="text-muted-foreground flex-1 min-w-0 flex items-center gap-1">
-                              <ArrowRight className="size-3 flex-shrink-0" />
-                              <span className="truncate">
-                                {exitAgentName} → {targetDisplay}
-                              </span>
-                            </span>
-                            <Badge variant="outline" className="font-mono text-[10px] px-1.5 py-0 flex-shrink-0">
-                              {probeResult.targetLatencyMs}ms
-                            </Badge>
-                          </div>
+                        {/* Multi-exit agent results */}
+                        {probeResult.exitAgentResults && probeResult.exitAgentResults.length > 0 ? (
+                          probeResult.exitAgentResults.map((exitResult, index) => {
+                            const exitName = getAgentName(exitResult.agentId);
+                            return (
+                              <div key={exitResult.agentId} className="space-y-1">
+                                {/* Tunnel latency */}
+                                <div className={`flex items-center text-xs py-1 px-2 rounded ${
+                                  !exitResult.success ? 'bg-red-50 dark:bg-red-900/20' : 'bg-muted/30'
+                                }`}>
+                                  <span className="text-muted-foreground flex-1 min-w-0 flex items-center gap-1">
+                                    <ArrowRight className="size-3 flex-shrink-0" />
+                                    <span className="truncate">
+                                      {entryAgentName} → {exitName}
+                                    </span>
+                                    {!exitResult.online && (
+                                      <Badge variant="outline" className="text-yellow-600 text-[10px] px-1 py-0 flex-shrink-0">
+                                        {t('common.status.offline')}
+                                      </Badge>
+                                    )}
+                                    {probeResult.exitAgentResults!.length > 1 && (
+                                      <Badge variant="secondary" className="text-[9px] px-1 py-0 flex-shrink-0">
+                                        #{index + 1}
+                                      </Badge>
+                                    )}
+                                  </span>
+                                  <Badge
+                                    variant={exitResult.success ? 'outline' : 'destructive'}
+                                    className="font-mono text-[10px] px-1.5 py-0 flex-shrink-0"
+                                  >
+                                    {exitResult.success && exitResult.tunnelLatencyMs !== undefined
+                                      ? `${exitResult.tunnelLatencyMs}ms`
+                                      : exitResult.error ?? t('common.status.failed')}
+                                  </Badge>
+                                </div>
+                                {/* Tunnel details (min/max/loss) */}
+                                {exitResult.success && (exitResult.tunnelMinLatencyMs !== undefined || exitResult.tunnelPacketLoss !== undefined) && (
+                                  <div className="flex items-center gap-2 text-[10px] text-muted-foreground pl-6">
+                                    {exitResult.tunnelMinLatencyMs !== undefined && exitResult.tunnelMaxLatencyMs !== undefined && (
+                                      <span>RTT: {exitResult.tunnelMinLatencyMs}-{exitResult.tunnelMaxLatencyMs}ms</span>
+                                    )}
+                                    {exitResult.tunnelPacketLoss !== undefined && exitResult.tunnelPacketLoss > 0 && (
+                                      <span className="text-amber-600">Loss: {exitResult.tunnelPacketLoss.toFixed(1)}%</span>
+                                    )}
+                                  </div>
+                                )}
+                                {/* Target latency */}
+                                {exitResult.success && exitResult.targetLatencyMs !== undefined && (
+                                  <div className="flex items-center text-xs py-1 px-2 rounded bg-muted/30">
+                                    <span className="text-muted-foreground flex-1 min-w-0 flex items-center gap-1">
+                                      <ArrowRight className="size-3 flex-shrink-0" />
+                                      <span className="truncate">
+                                        {exitName} → {targetDisplay}
+                                      </span>
+                                    </span>
+                                    <Badge variant="outline" className="font-mono text-[10px] px-1.5 py-0 flex-shrink-0">
+                                      {exitResult.targetLatencyMs}ms
+                                    </Badge>
+                                  </div>
+                                )}
+                              </div>
+                            );
+                          })
+                        ) : (
+                          <>
+                            {/* Single exit agent (legacy) */}
+                            {probeResult.tunnelLatencyMs !== undefined && (
+                              <div className="flex items-center text-xs py-1 px-2 rounded bg-muted/30">
+                                <span className="text-muted-foreground flex-1 min-w-0 flex items-center gap-1">
+                                  <ArrowRight className="size-3 flex-shrink-0" />
+                                  <span className="truncate">
+                                    {entryAgentName} → {exitAgentName}
+                                  </span>
+                                </span>
+                                <Badge variant="outline" className="font-mono text-[10px] px-1.5 py-0 flex-shrink-0">
+                                  {probeResult.tunnelLatencyMs}ms
+                                </Badge>
+                              </div>
+                            )}
+                            {/* Tunnel details for single exit */}
+                            {(probeResult.tunnelMinLatencyMs !== undefined || probeResult.tunnelPacketLoss !== undefined) && (
+                              <div className="flex items-center gap-2 text-[10px] text-muted-foreground pl-6">
+                                {probeResult.tunnelMinLatencyMs !== undefined && probeResult.tunnelMaxLatencyMs !== undefined && (
+                                  <span>RTT: {probeResult.tunnelMinLatencyMs}-{probeResult.tunnelMaxLatencyMs}ms</span>
+                                )}
+                                {probeResult.tunnelPacketLoss !== undefined && probeResult.tunnelPacketLoss > 0 && (
+                                  <span className="text-amber-600">Loss: {probeResult.tunnelPacketLoss.toFixed(1)}%</span>
+                                )}
+                              </div>
+                            )}
+                            {probeResult.targetLatencyMs !== undefined && (
+                              <div className="flex items-center text-xs py-1 px-2 rounded bg-muted/30">
+                                <span className="text-muted-foreground flex-1 min-w-0 flex items-center gap-1">
+                                  <ArrowRight className="size-3 flex-shrink-0" />
+                                  <span className="truncate">
+                                    {exitAgentName} → {targetDisplay}
+                                  </span>
+                                </span>
+                                <Badge variant="outline" className="font-mono text-[10px] px-1.5 py-0 flex-shrink-0">
+                                  {probeResult.targetLatencyMs}ms
+                                </Badge>
+                              </div>
+                            )}
+                          </>
                         )}
                       </>
                     )}

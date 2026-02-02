@@ -33,13 +33,18 @@ import type {
   ForwardProtocol,
   ForwardRuleType,
   IPVersion,
+  ExitAgent,
 } from '@/api/forward';
 import { useUserForwardAgents } from '../hooks/useUserForwardAgents';
 import { useUserNodes } from '@/features/user-nodes/hooks/useUserNodes';
 import { UserSortableChainAgentList } from './UserSortableChainAgentList';
+import { UserExitAgentList } from './UserExitAgentList';
 
 // Target type for forward rule
 type TargetType = 'manual' | 'node';
+
+// Exit agent mode (single or multi for load balancing)
+type ExitMode = 'single' | 'multi';
 
 interface CreateUserForwardRuleDialogProps {
   open: boolean;
@@ -72,6 +77,7 @@ export const CreateUserForwardRuleDialog: React.FC<CreateUserForwardRuleDialogPr
     ruleType: 'direct' as ForwardRuleType,
     agentId: '',
     exitAgentId: '',
+    exitAgents: [] as ExitAgent[],
     chainAgentIds: [] as string[],
     chainPortConfig: {} as Record<string, number>,
     name: '',
@@ -88,6 +94,9 @@ export const CreateUserForwardRuleDialog: React.FC<CreateUserForwardRuleDialogPr
   // Target type: manual address input or node selection
   const [targetType, setTargetType] = useState<TargetType>('manual');
 
+  // Exit mode: single or multi for load balancing
+  const [exitMode, setExitMode] = useState<ExitMode>('single');
+
   const [errors, setErrors] = useState<Record<string, string>>({});
 
   // Reset form when dialog opens
@@ -99,6 +108,7 @@ export const CreateUserForwardRuleDialog: React.FC<CreateUserForwardRuleDialogPr
         ruleType: defaultRuleType,
         agentId: '',
         exitAgentId: '',
+        exitAgents: [],
         chainAgentIds: [],
         chainPortConfig: {},
         name: '',
@@ -112,6 +122,7 @@ export const CreateUserForwardRuleDialog: React.FC<CreateUserForwardRuleDialogPr
         remark: '',
       });
       setTargetType('manual');
+      setExitMode('single');
       setErrors({});
     }
   }, [open, allowedTypes]);
@@ -190,8 +201,15 @@ export const CreateUserForwardRuleDialog: React.FC<CreateUserForwardRuleDialogPr
 
     // Validate different fields based on rule type
     if (formData.ruleType === 'entry') {
-      if (!formData.exitAgentId) {
-        newErrors.exitAgentId = t('userForwardRules.form.validation.selectExitNode');
+      // Validate exit agent based on mode
+      if (exitMode === 'single') {
+        if (!formData.exitAgentId) {
+          newErrors.exitAgentId = t('userForwardRules.form.validation.selectExitNode');
+        }
+      } else {
+        if (!formData.exitAgents || formData.exitAgents.length === 0) {
+          newErrors.exitAgents = t('userForwardRules.form.validation.selectExitNode');
+        }
       }
     } else if (formData.ruleType === 'chain') {
       if (!formData.chainAgentIds || formData.chainAgentIds.length === 0) {
@@ -271,7 +289,12 @@ export const CreateUserForwardRuleDialog: React.FC<CreateUserForwardRuleDialogPr
 
     // Add corresponding fields based on rule type
     if (formData.ruleType === 'entry') {
-      data.exitAgentId = formData.exitAgentId;
+      // Submit exitAgentId or exitAgents based on mode
+      if (exitMode === 'single') {
+        data.exitAgentId = formData.exitAgentId;
+      } else {
+        data.exitAgents = formData.exitAgents;
+      }
     } else if (formData.ruleType === 'chain') {
       data.chainAgentIds = formData.chainAgentIds;
     } else if (formData.ruleType === 'direct_chain') {
@@ -297,7 +320,12 @@ export const CreateUserForwardRuleDialog: React.FC<CreateUserForwardRuleDialogPr
 
     // Validate based on rule type
     if (formData.ruleType === 'entry') {
-      if (!formData.exitAgentId) return false;
+      // Validate exit agent based on mode
+      if (exitMode === 'single') {
+        if (!formData.exitAgentId) return false;
+      } else {
+        if (!formData.exitAgents || formData.exitAgents.length === 0) return false;
+      }
     } else if (formData.ruleType === 'chain') {
       if (!formData.chainAgentIds || formData.chainAgentIds.length === 0) return false;
     } else if (formData.ruleType === 'direct_chain') {
@@ -446,39 +474,106 @@ export const CreateUserForwardRuleDialog: React.FC<CreateUserForwardRuleDialogPr
 
               {/* entry type: exit agent selection */}
               {formData.ruleType === 'entry' && (
-                <div className="flex flex-col gap-2">
-                  <Label htmlFor="exitAgentId">
-                    {t('userForwardRules.form.exitNode')} <span className="text-destructive">*</span>
-                  </Label>
-                  <Select
-                    value={formData.exitAgentId}
-                    onValueChange={(value) => handleChange('exitAgentId', value)}
-                    disabled={isCreating || isLoadingAgents}
-                  >
-                    <SelectTrigger id="exitAgentId" className={errors.exitAgentId ? 'border-destructive' : ''}>
-                      <SelectValue placeholder={t('userForwardRules.form.selectExitNode')} />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {availableExitAgents.map((agent) => (
-                        <SelectItem key={agent.id} value={agent.id}>
-                          <div className="flex items-center gap-2">
-                            <Server className="h-4 w-4 text-muted-foreground" />
-                            <span>{agent.name}</span>
-                            {agent.groupName && (
-                              <span className="text-xs text-muted-foreground">({agent.groupName})</span>
-                            )}
-                          </div>
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                  {errors.exitAgentId && (
-                    <p className="text-xs text-destructive flex items-center gap-1">
-                      <AlertCircle className="h-3 w-3" />
-                      {errors.exitAgentId}
+                <>
+                  {/* Exit Mode Selection */}
+                  <div className="flex flex-col gap-2">
+                    <Label>
+                      {t('userForwardRules.form.exitNode')} <span className="text-destructive">*</span>
+                    </Label>
+                    <RadioGroup
+                      value={exitMode}
+                      onValueChange={(value) => {
+                        setExitMode(value as ExitMode);
+                        // Clear the other mode's data when switching
+                        if (value === 'single') {
+                          setFormData((prev) => ({ ...prev, exitAgents: [] }));
+                        } else {
+                          handleChange('exitAgentId', '');
+                        }
+                      }}
+                      className="flex gap-6"
+                      disabled={isCreating}
+                    >
+                      <div className="flex items-center space-x-2">
+                        <RadioGroupItem value="single" id="exit-single" />
+                        <Label htmlFor="exit-single" className="font-normal cursor-pointer">
+                          {t('admin.forwardRules.exitAgents.singleMode')}
+                        </Label>
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <RadioGroupItem value="multi" id="exit-multi" />
+                        <Label htmlFor="exit-multi" className="font-normal cursor-pointer">
+                          {t('admin.forwardRules.exitAgents.multiMode')}
+                        </Label>
+                      </div>
+                    </RadioGroup>
+                    <p className="text-xs text-muted-foreground">
+                      {t('admin.forwardRules.exitAgents.modeHint')}
                     </p>
+                  </div>
+
+                  {/* Single Exit Agent Mode */}
+                  {exitMode === 'single' && (
+                    <div className="flex flex-col gap-2">
+                      <Label htmlFor="exitAgentId">
+                        {t('userForwardRules.form.exitNode')} <span className="text-destructive">*</span>
+                      </Label>
+                      <Select
+                        value={formData.exitAgentId}
+                        onValueChange={(value) => handleChange('exitAgentId', value)}
+                        disabled={isCreating || isLoadingAgents}
+                      >
+                        <SelectTrigger id="exitAgentId" className={errors.exitAgentId ? 'border-destructive' : ''}>
+                          <SelectValue placeholder={t('userForwardRules.form.selectExitNode')} />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {availableExitAgents.map((agent) => (
+                            <SelectItem key={agent.id} value={agent.id}>
+                              <div className="flex items-center gap-2">
+                                <Server className="h-4 w-4 text-muted-foreground" />
+                                <span>{agent.name}</span>
+                                {agent.groupName && (
+                                  <span className="text-xs text-muted-foreground">({agent.groupName})</span>
+                                )}
+                              </div>
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      {errors.exitAgentId && (
+                        <p className="text-xs text-destructive flex items-center gap-1">
+                          <AlertCircle className="h-3 w-3" />
+                          {errors.exitAgentId}
+                        </p>
+                      )}
+                    </div>
                   )}
-                </div>
+
+                  {/* Multi Exit Agent Mode (Load Balancing) */}
+                  {exitMode === 'multi' && (
+                    <div className="flex flex-col gap-2">
+                      <Label>
+                        {t('admin.forwardRules.exitAgents.loadBalancing')} <span className="text-destructive">*</span>
+                      </Label>
+                      <UserExitAgentList
+                        agents={availableExitAgents}
+                        exitAgents={formData.exitAgents}
+                        onChange={(exitAgents) =>
+                          setFormData((prev) => ({ ...prev, exitAgents }))
+                        }
+                        hasError={!!errors.exitAgents}
+                        idPrefix="create-exit-agent"
+                        disabled={isCreating}
+                      />
+                      {errors.exitAgents && (
+                        <p className="text-xs text-destructive flex items-center gap-1">
+                          <AlertCircle className="h-3 w-3" />
+                          {errors.exitAgents}
+                        </p>
+                      )}
+                    </div>
+                  )}
+                </>
               )}
 
               {/* chain type: intermediate node list */}

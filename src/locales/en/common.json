@@ -1186,6 +1186,21 @@
         "selectedCount": "{{count}} agent(s) selected",
         "selectedCountWithHint": "{{count}} agent(s) selected (drag to sort)"
       },
+      "exitAgents": {
+        "loadBalancing": "Load Balancing Configuration",
+        "totalWeight": "Total Weight: {{weight}}",
+        "addAgent": "Add Exit Agent",
+        "noAgents": "No available exit agents",
+        "hint": "{{count}} exit agent(s) configured, traffic distributed by weight",
+        "emptyHint": "Please add at least one exit agent",
+        "weightLabel": "Weight",
+        "singleMode": "Single Exit Mode",
+        "multiMode": "Multi-Exit Load Balancing",
+        "modeHint": "Multi-exit mode supports distributing traffic across multiple exit agents by weight",
+        "moveUp": "Move Up",
+        "moveDown": "Move Down",
+        "remove": "Remove"
+      },
       "columns": {
         "ruleName": "Rule Name",
         "ruleType": "Rule Type",

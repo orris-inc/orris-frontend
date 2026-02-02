@@ -362,21 +362,87 @@ export const UserForwardRuleList: React.FC<UserForwardRuleListProps> = ({
             }
           };
 
-          // entry type: show exit agent -> target
-          if (rule.ruleType === 'entry' && rule.exitAgentId) {
-            const exitAgent = agentsMap[rule.exitAgentId];
-            const exitName = exitAgent?.name || `ID: ${rule.exitAgentId.slice(0, 8)}...`;
+          // entry type: show exit agent(s) -> target
+          if (rule.ruleType === 'entry') {
             const target = getTargetDisplay();
             const targetAddress = target?.address || '-';
-            return (
-              <div className="space-y-0.5 min-w-0">
-                <div className="flex items-center gap-1.5 text-sm">
-                  <ExitTypeIcon type="agent" className="text-purple-500 flex-shrink-0" />
-                  <span className="truncate">{exitName}</span>
+
+            // Check if using multiple exit agents (load balancing)
+            if (rule.exitAgents && rule.exitAgents.length > 0) {
+              const exitAgentCount = rule.exitAgents.length;
+              const firstExitAgent = agentsMap[rule.exitAgents[0].agentId];
+              const firstName = firstExitAgent?.name || `ID: ${rule.exitAgents[0].agentId.slice(0, 8)}...`;
+
+              if (exitAgentCount === 1) {
+                return (
+                  <div className="space-y-0.5 min-w-0">
+                    <div className="flex items-center gap-1.5 text-sm">
+                      <ExitTypeIcon type="agent" className="text-purple-500 flex-shrink-0" />
+                      <span className="truncate">{firstName}</span>
+                    </div>
+                    <CopyableAddress address={targetAddress} className="text-muted-foreground pl-5" />
+                  </div>
+                );
+              }
+
+              // Multiple exit agents with popover
+              return (
+                <div className="space-y-0.5 min-w-0">
+                  <div className="flex items-center gap-1.5 text-sm">
+                    <ExitTypeIcon type="agent" className="text-purple-500 flex-shrink-0" />
+                    <span className="truncate">{firstName}</span>
+                    <Popover>
+                      <PopoverTrigger asChild>
+                        <button className="flex-shrink-0 px-1.5 py-0.5 text-xs font-medium rounded bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300 hover:bg-purple-200 dark:hover:bg-purple-900/50 transition-colors">
+                          +{exitAgentCount - 1}
+                        </button>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-64" align="start">
+                        <div className="space-y-3">
+                          <div className="flex items-center justify-between">
+                            <h4 className="text-sm font-semibold">{t('admin.forwardRules.exitAgents.loadBalancing')}</h4>
+                            <Badge variant="outline" className="text-xs">
+                              {t('userForwardRules.popover.nodesCount', { count: exitAgentCount })}
+                            </Badge>
+                          </div>
+                          <div className="space-y-2">
+                            {rule.exitAgents.map((ea, index) => {
+                              const agent = agentsMap[ea.agentId];
+                              const agentName = agent?.name || `ID: ${ea.agentId.slice(0, 8)}...`;
+                              return (
+                                <div key={ea.agentId} className="flex items-center gap-2">
+                                  <div className="flex-shrink-0 w-6 h-6 rounded-full bg-purple-100 dark:bg-purple-900/30 flex items-center justify-center text-xs font-medium text-purple-700 dark:text-purple-300">
+                                    {index + 1}
+                                  </div>
+                                  <div className="flex-1 min-w-0 text-sm truncate">{agentName}</div>
+                                  <span className="text-xs text-muted-foreground">{ea.weight}%</span>
+                                </div>
+                              );
+                            })}
+                          </div>
+                        </div>
+                      </PopoverContent>
+                    </Popover>
+                  </div>
+                  <CopyableAddress address={targetAddress} className="text-muted-foreground pl-5" />
                 </div>
-                <CopyableAddress address={targetAddress} className="text-muted-foreground pl-5" />
-              </div>
-            );
+              );
+            }
+
+            // Single exit agent (legacy or single mode)
+            if (rule.exitAgentId) {
+              const exitAgent = agentsMap[rule.exitAgentId];
+              const exitName = exitAgent?.name || `ID: ${rule.exitAgentId.slice(0, 8)}...`;
+              return (
+                <div className="space-y-0.5 min-w-0">
+                  <div className="flex items-center gap-1.5 text-sm">
+                    <ExitTypeIcon type="agent" className="text-purple-500 flex-shrink-0" />
+                    <span className="truncate">{exitName}</span>
+                  </div>
+                  <CopyableAddress address={targetAddress} className="text-muted-foreground pl-5" />
+                </div>
+              );
+            }
           }
 
           // chain and direct_chain types: show chain nodes info -> target

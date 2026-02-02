@@ -220,3 +220,14 @@ export const mobileFixedHeaderStyles = {
         'md:pt-4 sm:py-6'
     ),
 };
+
+/**
+ * Port Range Badge 样式
+ * 用于显示 allowedPortRange 的警告色标签
+ * 使用 amber 语义色表示限制/警告
+ */
+export const portRangeBadgeStyles = cn(
+    'text-[10px] px-1.5 py-0 shrink-0',
+    'border-amber-500/50 text-amber-600',
+    'dark:border-amber-500/30 dark:text-amber-500'
+);

@@ -40,6 +40,7 @@ import {
 } from "@/components/common/Collapsible";
 import { Info, FolderTree, ChevronDown } from "lucide-react";
 import { SortableChainAgentList } from "./SortableChainAgentList";
+import { ExitAgentList } from "./ExitAgentList";
 import type {
   CreateForwardRuleRequest,
   ForwardAgent,
@@ -47,6 +48,7 @@ import type {
   ForwardProtocol,
   IPVersion,
   TunnelType,
+  ExitAgent,
 } from "@/api/forward";
 import type { Node } from "@/api/node";
 import type { ResourceGroup } from "@/api/resource/types";
@@ -54,6 +56,9 @@ import type { SubscriptionPlan } from "@/api/subscription/types";
 
 // Target type
 type TargetType = "manual" | "node";
+
+// Exit agent mode (single or multi for load balancing)
+type ExitMode = "single" | "multi";
 
 interface CreateForwardRuleDialogProps {
   open: boolean;
@@ -185,6 +190,7 @@ export const CreateForwardRuleDialog: React.FC<CreateForwardRuleDialogProps> = (
     agentId: "",
     ruleType: "direct" as ForwardRuleType,
     exitAgentId: "",
+    exitAgents: [] as ExitAgent[],
     chainAgentIds: [] as string[],
     chainPortConfig: {} as Record<string, number>,
     tunnelType: "ws" as TunnelType,
@@ -206,6 +212,7 @@ export const CreateForwardRuleDialog: React.FC<CreateForwardRuleDialogProps> = (
     externalRuleId: "",
   });
   const [targetType, setTargetType] = useState<TargetType>("manual");
+  const [exitMode, setExitMode] = useState<ExitMode>("single");
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [advancedOpen, setAdvancedOpen] = useState(false);
 
@@ -217,6 +224,7 @@ export const CreateForwardRuleDialog: React.FC<CreateForwardRuleDialogProps> = (
           agentId: initialData.agentId || "",
           ruleType: initialData.ruleType || "direct",
           exitAgentId: initialData.exitAgentId || "",
+          exitAgents: initialData.exitAgents || [],
           chainAgentIds: initialData.chainAgentIds || [],
           chainPortConfig: initialData.chainPortConfig || {},
           tunnelType: initialData.tunnelType || "ws",
@@ -247,11 +255,14 @@ export const CreateForwardRuleDialog: React.FC<CreateForwardRuleDialogProps> = (
           initialData.targetType ||
             (initialData.targetNodeId ? "node" : "manual"),
         );
+        // Set exit mode based on initial data
+        setExitMode(initialData.exitAgents && initialData.exitAgents.length > 0 ? "multi" : "single");
       } else {
         setFormData({
           agentId: "",
           ruleType: "direct",
           exitAgentId: "",
+          exitAgents: [],
           chainAgentIds: [],
           chainPortConfig: {},
           tunnelType: "ws",
@@ -273,6 +284,7 @@ export const CreateForwardRuleDialog: React.FC<CreateForwardRuleDialogProps> = (
           externalRuleId: "",
         });
         setTargetType("manual");
+        setExitMode("single");
       }
       setErrors({});
     }
@@ -423,10 +435,19 @@ export const CreateForwardRuleDialog: React.FC<CreateForwardRuleDialogProps> = (
           { port: formData.listenPort, range: selectedAgent.allowedPortRange },
         );
       }
-      if (!formData.exitAgentId) {
-        newErrors.exitAgentId = t(
-          "admin.forwardRules.validation.selectExitNode",
-        );
+      // Validate exit agent based on mode
+      if (exitMode === "single") {
+        if (!formData.exitAgentId) {
+          newErrors.exitAgentId = t(
+            "admin.forwardRules.validation.selectExitNode",
+          );
+        }
+      } else {
+        if (!formData.exitAgents || formData.exitAgents.length === 0) {
+          newErrors.exitAgents = t(
+            "admin.forwardRules.validation.selectExitNode",
+          );
+        }
       }
       if (targetType === "manual") {
         if (!formData.targetAddress.trim()) {
@@ -639,7 +660,12 @@ export const CreateForwardRuleDialog: React.FC<CreateForwardRuleDialogProps> = (
         }
       } else if (formData.ruleType === "entry") {
         submitData.listenPort = formData.listenPort;
-        submitData.exitAgentId = formData.exitAgentId;
+        // Submit exitAgentId or exitAgents based on mode
+        if (exitMode === "single") {
+          submitData.exitAgentId = formData.exitAgentId;
+        } else {
+          submitData.exitAgents = formData.exitAgents;
+        }
         submitData.tunnelType = formData.tunnelType;
         if (targetType === "manual") {
           submitData.targetAddress = formData.targetAddress.trim();
@@ -736,7 +762,12 @@ export const CreateForwardRuleDialog: React.FC<CreateForwardRuleDialogProps> = (
         return !!formData.targetNodeId;
       }
     } else if (formData.ruleType === "entry") {
-      if (formData.exitAgentId === "") return false;
+      // Validate exit agent based on mode
+      if (exitMode === "single") {
+        if (formData.exitAgentId === "") return false;
+      } else {
+        if (!formData.exitAgents || formData.exitAgents.length === 0) return false;
+      }
       if (targetType === "manual") {
         return formData.targetAddress.trim() !== "" && formData.targetPort > 0;
       } else {
@@ -829,7 +860,7 @@ export const CreateForwardRuleDialog: React.FC<CreateForwardRuleDialogProps> = (
 
   return (
     <Dialog open={open} onOpenChange={(isOpen) => !isOpen && handleClose()}>
-      <DialogContent className="sm:max-w-2xl flex flex-col max-h-[90vh] p-0">
+      <DialogContent className="@container sm:max-w-2xl flex flex-col max-h-[90vh] p-0">
         <DialogHeader className="flex-shrink-0 px-5 pt-5 pb-4 border-b border-border sm:px-6">
           <DialogTitle className="text-lg font-semibold">
             {initialData
@@ -1102,55 +1133,121 @@ export const CreateForwardRuleDialog: React.FC<CreateForwardRuleDialogProps> = (
                   </>
                 )}
 
-                {/* Entry type: Exit Agent + Tunnel Type */}
+                {/* Entry type: Exit Agent Mode + Exit Agent(s) + Tunnel Type */}
                 {formData.ruleType === "entry" && (
                   <>
-                    <FormField
-                      label={t("admin.forwardRules.form.exitNode")}
-                      required
-                      error={errors.exitAgentId}
-                      className="col-span-6 sm:col-span-4"
-                    >
-                      <Select
-                        value={formData.exitAgentId}
-                        onValueChange={(value) =>
-                          handleChange("exitAgentId", value)
-                        }
+                    {/* Exit Mode Selection */}
+                    <div className="col-span-6">
+                      <Label className="text-sm font-medium text-foreground mb-3 block">
+                        {t("admin.forwardRules.form.exitNode")}
+                        <span className="text-destructive ml-0.5">*</span>
+                      </Label>
+                      <RadioGroup
+                        value={exitMode}
+                        onValueChange={(value) => {
+                          setExitMode(value as ExitMode);
+                          // Clear the other mode's data when switching
+                          if (value === "single") {
+                            setFormData((prev) => ({ ...prev, exitAgents: [] }));
+                          } else {
+                            handleChange("exitAgentId", "");
+                          }
+                        }}
+                        className="flex gap-6"
                       >
-                        <SelectTrigger
-                          className={
-                            errors.exitAgentId ? "border-destructive" : ""
+                        <div className="flex items-center space-x-2">
+                          <RadioGroupItem value="single" id="exit-single" />
+                          <Label
+                            htmlFor="exit-single"
+                            className="font-normal cursor-pointer"
+                          >
+                            {t("admin.forwardRules.exitAgents.singleMode")}
+                          </Label>
+                        </div>
+                        <div className="flex items-center space-x-2">
+                          <RadioGroupItem value="multi" id="exit-multi" />
+                          <Label
+                            htmlFor="exit-multi"
+                            className="font-normal cursor-pointer"
+                          >
+                            {t("admin.forwardRules.exitAgents.multiMode")}
+                          </Label>
+                        </div>
+                      </RadioGroup>
+                      <p className="text-xs text-muted-foreground mt-1">
+                        {t("admin.forwardRules.exitAgents.modeHint")}
+                      </p>
+                    </div>
+
+                    {/* Single Exit Agent Mode */}
+                    {exitMode === "single" && (
+                      <FormField
+                        label={t("admin.forwardRules.form.exitNode")}
+                        required
+                        error={errors.exitAgentId}
+                        className="col-span-6 sm:col-span-4"
+                      >
+                        <Select
+                          value={formData.exitAgentId}
+                          onValueChange={(value) =>
+                            handleChange("exitAgentId", value)
                           }
                         >
-                          <SelectValue
-                            placeholder={t(
-                              "admin.forwardRules.form.selectExitNode",
-                            )}
-                          />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {availableExitAgents.map((agent) => (
-                            <SelectItem key={agent.id} value={agent.id}>
-                              <span className="flex items-center gap-2">
-                                {agent.name}
-                                {agent.allowedPortRange && (
-                                  <Badge
-                                    variant="outline"
-                                    className="text-[10px] px-1.5 py-0 border-amber-300 text-amber-600 dark:border-amber-700 dark:text-amber-400"
-                                  >
-                                    {agent.allowedPortRange}
-                                  </Badge>
-                                )}
-                              </span>
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </FormField>
+                          <SelectTrigger
+                            className={
+                              errors.exitAgentId ? "border-destructive" : ""
+                            }
+                          >
+                            <SelectValue
+                              placeholder={t(
+                                "admin.forwardRules.form.selectExitNode",
+                              )}
+                            />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {availableExitAgents.map((agent) => (
+                              <SelectItem key={agent.id} value={agent.id}>
+                                <span className="flex items-center gap-2">
+                                  {agent.name}
+                                  {agent.allowedPortRange && (
+                                    <Badge
+                                      variant="outline"
+                                      className="text-[10px] px-1.5 py-0 border-amber-300 text-amber-600 dark:border-amber-700 dark:text-amber-400"
+                                    >
+                                      {agent.allowedPortRange}
+                                    </Badge>
+                                  )}
+                                </span>
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </FormField>
+                    )}
+
+                    {/* Multi Exit Agent Mode (Load Balancing) */}
+                    {exitMode === "multi" && (
+                      <FormField
+                        label={t("admin.forwardRules.exitAgents.loadBalancing")}
+                        required
+                        error={errors.exitAgents}
+                        className="col-span-6"
+                      >
+                        <ExitAgentList
+                          agents={availableExitAgents}
+                          exitAgents={formData.exitAgents}
+                          onChange={(exitAgents) =>
+                            setFormData((prev) => ({ ...prev, exitAgents }))
+                          }
+                          hasError={!!errors.exitAgents}
+                          idPrefix="create-exit-agent"
+                        />
+                      </FormField>
+                    )}
 
                     <FormField
                       label={t("admin.forwardRules.form.tunnelType")}
-                      className="col-span-6 sm:col-span-2"
+                      className={exitMode === "single" ? "col-span-6 sm:col-span-2" : "col-span-6 sm:col-span-3"}
                     >
                       <Select
                         value={formData.tunnelType}
@@ -1168,7 +1265,7 @@ export const CreateForwardRuleDialog: React.FC<CreateForwardRuleDialogProps> = (
                       </Select>
                     </FormField>
 
-                    {selectedExitAgent?.allowedPortRange && (
+                    {exitMode === "single" && selectedExitAgent?.allowedPortRange && (
                       <div className="col-span-6 flex items-center gap-1.5 text-xs text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800 rounded-md px-2.5 py-1.5 -mt-2">
                         <Info className="size-3.5 shrink-0" />
                         <span>

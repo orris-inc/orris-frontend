@@ -350,21 +350,73 @@ export const SubscriptionForwardRuleList: React.FC<SubscriptionForwardRuleListPr
             }
           };
 
-          // entry type: show exit agent -> target
-          if (rule.ruleType === 'entry' && rule.exitAgentId) {
-            const exitAgent = agentsMap[rule.exitAgentId];
-            const exitName = exitAgent?.name || `ID: ${rule.exitAgentId.slice(0, 8)}...`;
-            const target = getTargetDisplay();
-            const targetAddress = target?.address || '-';
-            return (
-              <div className="space-y-0.5 min-w-0">
-                <div className="flex items-center gap-1.5 text-sm">
-                  <ExitTypeIcon type="agent" className="text-purple-500 flex-shrink-0" />
-                  <span className="truncate">{exitName}</span>
+          // entry type: show exit agent(s) -> target
+          if (rule.ruleType === 'entry') {
+            // Multi-exit mode (load balancing)
+            if (rule.exitAgents && rule.exitAgents.length > 0) {
+              const target = getTargetDisplay();
+              const targetAddress = target?.address || '-';
+              // Display first exit agent name + count badge
+              const firstExitAgent = agentsMap[rule.exitAgents[0].agentId];
+              const firstExitName = firstExitAgent?.name || `ID: ${rule.exitAgents[0].agentId.slice(0, 8)}...`;
+              const exitCount = rule.exitAgents.length;
+              return (
+                <div className="space-y-0.5 min-w-0">
+                  <div className="flex items-center gap-1.5 text-sm">
+                    <ExitTypeIcon type="agent" className="text-purple-500 flex-shrink-0" />
+                    <span className="truncate">{firstExitName}</span>
+                    {exitCount > 1 && (
+                      <Popover>
+                        <PopoverTrigger asChild>
+                          <button className="flex-shrink-0 px-1.5 py-0.5 text-xs font-medium rounded bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300 hover:bg-purple-200 dark:hover:bg-purple-900/50 transition-colors">
+                            +{exitCount - 1}
+                          </button>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-64" align="start">
+                          <div className="space-y-2">
+                            <h4 className="text-sm font-semibold">{t('admin.forwardRules.exitAgents.loadBalancing')}</h4>
+                            <div className="space-y-1">
+                              {rule.exitAgents.map((ea, index) => {
+                                const agent = agentsMap[ea.agentId];
+                                const agentName = agent?.name || `ID: ${ea.agentId.slice(0, 8)}...`;
+                                return (
+                                  <div key={ea.agentId} className="flex items-center justify-between text-sm">
+                                    <span className="flex items-center gap-1.5">
+                                      <span className="text-muted-foreground">{index + 1}.</span>
+                                      <span className="truncate">{agentName}</span>
+                                    </span>
+                                    <span className="text-xs text-muted-foreground font-mono">
+                                      {ea.weight}
+                                    </span>
+                                  </div>
+                                );
+                              })}
+                            </div>
+                          </div>
+                        </PopoverContent>
+                      </Popover>
+                    )}
+                  </div>
+                  <CopyableAddress address={targetAddress} className="text-muted-foreground pl-5" />
                 </div>
-                <CopyableAddress address={targetAddress} className="text-muted-foreground pl-5" />
-              </div>
-            );
+              );
+            }
+            // Single exit mode
+            if (rule.exitAgentId) {
+              const exitAgent = agentsMap[rule.exitAgentId];
+              const exitName = exitAgent?.name || `ID: ${rule.exitAgentId.slice(0, 8)}...`;
+              const target = getTargetDisplay();
+              const targetAddress = target?.address || '-';
+              return (
+                <div className="space-y-0.5 min-w-0">
+                  <div className="flex items-center gap-1.5 text-sm">
+                    <ExitTypeIcon type="agent" className="text-purple-500 flex-shrink-0" />
+                    <span className="truncate">{exitName}</span>
+                  </div>
+                  <CopyableAddress address={targetAddress} className="text-muted-foreground pl-5" />
+                </div>
+              );
+            }
           }
 
           // chain and direct_chain types: show chain nodes info -> target
