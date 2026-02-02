@@ -5,6 +5,9 @@
  * Last updated: 2026-02-02
  *
  * Recent changes:
+ * - 2026-02-02: Added LoadBalanceStrategy type (failover, weighted) for entry rules with multiple exit agents
+ * - 2026-02-02: Updated ExitAgent weight to allow 0 (backup agent, only used when all other agents unavailable)
+ * - 2026-02-02: Added loadBalanceStrategy field to ForwardRule, CreateForwardRuleRequest, UpdateForwardRuleRequest
  * - 2026-02-02: Added ExitAgent type for entry rule load balancing (weight-based multiple exit agents)
  * - 2026-02-02: Added exitAgents field to ForwardRule, CreateForwardRuleRequest, UpdateForwardRuleRequest
  * - 2026-02-02: Added ExitAgentProbeResult for per-exit-agent probe results
@@ -77,6 +80,14 @@ export type IPVersion = 'auto' | 'ipv4' | 'ipv6';
 export type TunnelType = 'ws' | 'tls';
 
 /**
+ * Load balance strategy for entry rules with multiple exit agents
+ * - failover: Priority-based failover. Uses highest weight agent first, switches on failure. Weight=0 means backup (only used when all others unavailable)
+ * - weighted: Distributes traffic based on weight ratios
+ * Added: 2026-02-02
+ */
+export type LoadBalanceStrategy = 'failover' | 'weighted';
+
+/**
  * Blocked protocol type for traffic filtering
  * These protocols can be blocked at the forward agent level
  * Added: 2026-01-05
@@ -95,11 +106,12 @@ export type BlockedProtocol =
  * Exit agent with weight for load balancing
  * Used for entry rules with multiple exit agents
  * Added: 2026-02-02
+ * Updated: 2026-02-02 - Weight now allows 0 (backup agent)
  */
 export interface ExitAgent {
   /** Stripe-style prefixed agent ID (e.g., "fa_xK9mP2vL3nQ") */
   agentId: string;
-  /** Weight for load balancing (1-100) */
+  /** Weight for load balancing (0-100). 0=backup (only used when all other agents unavailable), 1-100=normal weight */
   weight: number;
 }
 
@@ -107,6 +119,7 @@ export interface ExitAgent {
  * Forward rule entity
  * ID format: "fr_xK9mP2vL3nQ" (Stripe-style prefixed ID)
  * Note: ws_listen_port field has been removed (exit type deprecated).
+ * Updated: 2026-02-02 - Added loadBalanceStrategy for multi-exit rules
  * Updated: 2026-02-02 - Added exitAgents for entry rule load balancing
  * Updated: 2026-01-08 - Added groupSids for resource group binding (admin only)
  * Updated: 2026-01-07 - Added subscriptionId for subscription-bound rules
@@ -120,6 +133,7 @@ export interface ForwardRule {
   ruleType: ForwardRuleType;
   exitAgentId?: string; // for entry type (Stripe-style prefixed ID, mutually exclusive with exitAgents)
   exitAgents?: ExitAgent[]; // for entry type with load balancing (mutually exclusive with exitAgentId) (Added: 2026-02-02)
+  loadBalanceStrategy?: LoadBalanceStrategy; // for entry type with multiple exit agents: failover (default), weighted (Added: 2026-02-02)
   chainAgentIds?: string[]; // for chain and direct_chain types (ordered list of Stripe-style agent IDs)
   chainPortConfig?: Record<string, number>; // for direct_chain type (agent ID -> listen port)
   name: string;
@@ -200,6 +214,7 @@ export interface ForwardRule {
  * Note: Exit rule type has been removed. Entry rules now include target information
  * that is passed to the exit agent.
  *
+ * Updated: 2026-02-02 - Added loadBalanceStrategy for entry rules with multiple exit agents
  * Updated: 2026-02-02 - Added exitAgents for load balancing (mutually exclusive with exitAgentId)
  * Updated: 2026-01-31 - targetNodeId is now required for external rules (backend validation enforced)
  */
@@ -208,6 +223,7 @@ export interface CreateForwardRuleRequest {
   ruleType: ForwardRuleType;
   exitAgentId?: string; // for entry type (Stripe-style prefixed ID, mutually exclusive with exitAgents)
   exitAgents?: ExitAgent[]; // for entry type with load balancing (mutually exclusive with exitAgentId) (Added: 2026-02-02)
+  loadBalanceStrategy?: LoadBalanceStrategy; // for entry type with multiple exit agents: failover (default), weighted (Added: 2026-02-02)
   chainAgentIds?: string[]; // required for chain and direct_chain types (ordered list of intermediate agents)
   chainPortConfig?: Record<string, number>; // required for direct_chain type (agent ID -> listen port)
   tunnelType?: TunnelType; // tunnel type: ws or tls (default: ws) (Added: 2025-12-24)
@@ -233,6 +249,7 @@ export interface CreateForwardRuleRequest {
 /**
  * Update forward rule request
  * Note: All agent IDs should use Stripe-style prefixed format (e.g., "fa_xK9mP2vL3nQ")
+ * Updated: 2026-02-02 - Added loadBalanceStrategy for entry rules with multiple exit agents
  * Updated: 2026-02-02 - Added exitAgents for load balancing (mutually exclusive with exitAgentId)
  * Updated: 2026-01-08 - Added groupSids for resource group binding
  */
@@ -241,6 +258,7 @@ export interface UpdateForwardRuleRequest {
   agentId?: string; // Stripe-style prefixed ID (e.g., "fa_xK9mP2vL3nQ") - update entry agent
   exitAgentId?: string; // Stripe-style prefixed ID - update exit agent (for entry type rules only, mutually exclusive with exitAgents)
   exitAgents?: ExitAgent[]; // update exit agents for load balancing (mutually exclusive with exitAgentId) (Added: 2026-02-02)
+  loadBalanceStrategy?: LoadBalanceStrategy; // update load balance strategy: failover, weighted (Added: 2026-02-02)
   chainAgentIds?: string[]; // Stripe-style prefixed IDs - update chain agents (for chain and direct_chain type rules)
   chainPortConfig?: Record<string, number>; // update chain port config (for direct_chain type rules)
   tunnelHops?: number; // number of hops using tunnel for hybrid chain (undefined=no change, 0=all direct) (Added: 2025-12-26)

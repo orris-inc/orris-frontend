@@ -3,7 +3,7 @@
  * Redesigned with improved UI/UX - clean visual hierarchy, icons, and better form layout
  */
 
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   Dialog,
@@ -24,8 +24,6 @@ import {
 } from '@/components/common/Select';
 import { Badge } from '@/components/common/Badge';
 import { Separator } from '@/components/common/Separator';
-import { useResourceGroups } from '@/features/resource-groups/hooks/useResourceGroups';
-import { useSubscriptionPlans } from '@/features/subscription-plans/hooks/useSubscriptionPlans';
 import { RouteConfigEditor } from './RouteConfigEditor';
 import type { OutboundNodeOption } from '../utils/route-rule-utils';
 import type {
@@ -320,27 +318,6 @@ export const CreateNodeDialog: React.FC<CreateNodeDialogProps> = ({
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [pluginOptsString, setPluginOptsString] = useState<string>('');
   const [openSections, setOpenSections] = useState<Set<string>>(new Set(['basic', 'network']));
-
-  // Fetch resource groups list
-  const { resourceGroups, isLoading: isLoadingGroups } = useResourceGroups({
-    pageSize: 100,
-    filters: { status: 'active' },
-    enabled: open,
-  });
-
-  const { plans, isLoading: isLoadingPlans } = useSubscriptionPlans({
-    pageSize: 100,
-    enabled: open,
-  });
-
-  const filteredResourceGroups = useMemo(() => {
-    if (!plans.length) return resourceGroups;
-    const planTypeMap = new Map(plans.map((plan) => [plan.id, plan.planType]));
-    return resourceGroups.filter((group) => {
-      const planType = planTypeMap.get(group.planId);
-      return planType === 'node' || planType === 'hybrid';
-    });
-  }, [resourceGroups, plans]);
 
   // Update form data when initialData changes
   useEffect(() => {
@@ -1591,22 +1568,6 @@ export const CreateNodeDialog: React.FC<CreateNodeDialogProps> = ({
                     onChange={(e) => handleChange('tagsInput', e.target.value)}
                     className="h-10"
                   />
-                </FormField>
-
-                <FormField label={t('admin.resourceGroups.title')} hint={t('admin.nodes.form.resourceGroupHint')}>
-                  <Select value="__none__" disabled={isLoadingGroups || isLoadingPlans}>
-                    <SelectTrigger className="h-10">
-                      <SelectValue placeholder={isLoadingGroups || isLoadingPlans ? t('common.status.loading') : t('admin.nodes.form.selectResourceGroup')} />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="__none__">{t('admin.nodes.form.noResourceGroup')}</SelectItem>
-                      {filteredResourceGroups.map((group) => (
-                        <SelectItem key={group.sid} value={group.sid}>
-                          {group.name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
                 </FormField>
               </div>
             </CollapsibleSection>

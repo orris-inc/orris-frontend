@@ -3,7 +3,7 @@
  */
 
 import type { ReactNode } from "react";
-import type { ExitAgent } from "@/api/forward";
+import type { ExitAgent, LoadBalanceStrategy } from "@/api/forward";
 
 /**
  * Base agent interface - minimum required fields
@@ -46,4 +46,6 @@ export interface ExitAgentListProps<T extends BaseAgent> {
   idPrefix?: string;
   /** Whether the component is disabled */
   disabled?: boolean;
+  /** Load balance strategy - affects display (failover: priority, weighted: percentage) */
+  loadBalanceStrategy?: LoadBalanceStrategy;
 }

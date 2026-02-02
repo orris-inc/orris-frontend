@@ -44,6 +44,7 @@ import type {
   ForwardAgent,
   TunnelType,
   ExitAgent,
+  LoadBalanceStrategy,
 } from "@/api/forward";
 import type { Node } from "@/api/node";
 import type { ResourceGroup } from "@/api/resource/types";
@@ -130,6 +131,7 @@ export const EditForwardRuleDialog: React.FC<EditForwardRuleDialogProps> = ({
       tunnelHops?: number;
       groupSids?: string[];
       exitAgents?: ExitAgent[];
+      loadBalanceStrategy?: LoadBalanceStrategy;
       // External rule fields
       serverAddress?: string;
       externalSource?: string;
@@ -165,6 +167,7 @@ export const EditForwardRuleDialog: React.FC<EditForwardRuleDialogProps> = ({
         agentId: rule.agentId,
         exitAgentId: rule.exitAgentId,
         exitAgents: rule.exitAgents || [],
+        loadBalanceStrategy: rule.loadBalanceStrategy || "failover",
         chainAgentIds,
         chainPortConfig,
         trafficMultiplier: rule.trafficMultiplier,
@@ -453,9 +456,10 @@ export const EditForwardRuleDialog: React.FC<EditForwardRuleDialogProps> = ({
           if (formData.exitAgentId !== rule.exitAgentId) {
             updates.exitAgentId = formData.exitAgentId;
           }
-          // If switching from multi to single, clear exitAgents
+          // If switching from multi to single, clear exitAgents and loadBalanceStrategy
           if (rule.exitAgents && rule.exitAgents.length > 0) {
             updates.exitAgents = [];
+            updates.loadBalanceStrategy = undefined;
           }
         } else {
           // Multi mode: check exitAgents changes
@@ -470,6 +474,10 @@ export const EditForwardRuleDialog: React.FC<EditForwardRuleDialogProps> = ({
             );
           if (hasExitAgentsChange) {
             updates.exitAgents = currentAgents;
+          }
+          // Check loadBalanceStrategy changes
+          if (formData.loadBalanceStrategy !== rule.loadBalanceStrategy) {
+            updates.loadBalanceStrategy = formData.loadBalanceStrategy;
           }
           // If switching from single to multi, clear exitAgentId
           if (rule.exitAgentId) {
@@ -883,17 +891,50 @@ export const EditForwardRuleDialog: React.FC<EditForwardRuleDialogProps> = ({
 
                   {/* entry type: Multi Exit Agents (Load Balancing) */}
                   {rule.ruleType === "entry" && exitMode === "multi" && (
-                    <div className="flex flex-col gap-2 @sm:col-span-2">
-                      <Label>{t('admin.forwardRules.exitAgents.loadBalancing')}</Label>
-                      <ExitAgentList
-                        agents={availableExitAgents}
-                        exitAgents={formData.exitAgents || []}
-                        onChange={(exitAgents) =>
-                          setFormData((prev) => ({ ...prev, exitAgents }))
-                        }
-                        idPrefix="edit-exit-agent"
-                      />
-                    </div>
+                    <>
+                      <div className="flex flex-col gap-2 @sm:col-span-2">
+                        <Label>{t('admin.forwardRules.exitAgents.loadBalancing')}</Label>
+                        <ExitAgentList
+                          agents={availableExitAgents}
+                          exitAgents={formData.exitAgents || []}
+                          onChange={(exitAgents) =>
+                            setFormData((prev) => ({ ...prev, exitAgents }))
+                          }
+                          idPrefix="edit-exit-agent"
+                          loadBalanceStrategy={formData.loadBalanceStrategy}
+                        />
+                      </div>
+
+                      <div className="flex flex-col gap-2">
+                        <Label htmlFor="loadBalanceStrategy">{t('admin.forwardRules.exitAgents.strategy')}</Label>
+                        <Select
+                          value={formData.loadBalanceStrategy || "failover"}
+                          onValueChange={(value) =>
+                            setFormData((prev) => ({
+                              ...prev,
+                              loadBalanceStrategy: value as LoadBalanceStrategy,
+                            }))
+                          }
+                        >
+                          <SelectTrigger id="loadBalanceStrategy">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="failover">
+                              {t('admin.forwardRules.exitAgents.strategyFailover')}
+                            </SelectItem>
+                            <SelectItem value="weighted">
+                              {t('admin.forwardRules.exitAgents.strategyWeighted')}
+                            </SelectItem>
+                          </SelectContent>
+                        </Select>
+                        <p className="text-xs text-muted-foreground">
+                          {formData.loadBalanceStrategy === "failover"
+                            ? t('admin.forwardRules.exitAgents.strategyFailoverHint')
+                            : t('admin.forwardRules.exitAgents.strategyWeightedHint')}
+                        </p>
+                      </div>
+                    </>
                   )}
 
                   {/* Tunnel Type - entry and chain types */}

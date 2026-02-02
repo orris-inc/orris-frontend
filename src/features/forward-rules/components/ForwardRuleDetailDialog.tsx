@@ -137,6 +137,12 @@ interface ExitAgentInfo {
   weight: number;
 }
 
+// Load balance strategy labels
+const LOAD_BALANCE_STRATEGY_LABEL_KEYS: Record<string, string> = {
+  failover: 'admin.forwardRules.exitAgents.strategyFailover',
+  weighted: 'admin.forwardRules.exitAgents.strategyWeighted',
+};
+
 // Compact Flow Path Component - Linear style with flex layout
 const FlowPath: React.FC<{
   nodes: Array<{
@@ -147,7 +153,8 @@ const FlowPath: React.FC<{
     badge?: string;
   }>;
   exitAgents?: ExitAgentInfo[];
-}> = ({ nodes, exitAgents }) => {
+  loadBalanceStrategy?: string;
+}> = ({ nodes, exitAgents, loadBalanceStrategy }) => {
   const { t } = useTranslation();
   const config = {
     entry: { icon: Bot, color: 'text-emerald-500', bg: 'bg-emerald-500', bgLight: 'bg-emerald-500/10', borderColor: 'border-emerald-500', labelKey: 'admin.forwardRules.flowNode.entry' },
@@ -236,26 +243,44 @@ const FlowPath: React.FC<{
                     <div className="flex items-center justify-between">
                       <h4 className="text-xs font-semibold text-muted-foreground">{t('admin.forwardRules.flowNode.exit')}</h4>
                       <span className="text-[10px] px-1.5 py-0.5 rounded bg-orange-100 dark:bg-orange-900/30 text-orange-600 dark:text-orange-400 font-medium">
-                        {t('admin.forwardRules.exitAgents.loadBalancing')}
+                        {loadBalanceStrategy
+                          ? t(LOAD_BALANCE_STRATEGY_LABEL_KEYS[loadBalanceStrategy] || LOAD_BALANCE_STRATEGY_LABEL_KEYS.failover)
+                          : t('admin.forwardRules.exitAgents.loadBalancing')}
                       </span>
                     </div>
                     <div className="space-y-1.5">
-                      {exitAgentsWithPercent?.map((agent, idx) => (
-                        <div key={agent.id} className="flex items-center justify-between gap-2 p-2 rounded-lg bg-slate-50 dark:bg-slate-800/50">
-                          <div className="flex items-center gap-2 min-w-0">
-                            <span className="flex-shrink-0 w-5 h-5 rounded-full bg-orange-100 dark:bg-orange-900/30 text-[10px] font-bold text-orange-600 dark:text-orange-400 flex items-center justify-center">
-                              {idx + 1}
-                            </span>
-                            <div className="min-w-0">
-                              <div className="text-sm font-medium truncate">{agent.name}</div>
-                              {agent.address && (
-                                <div className="text-[10px] text-muted-foreground font-mono truncate">{agent.address}</div>
-                              )}
+                      {exitAgentsWithPercent?.map((agent, idx) => {
+                        const isBackup = agent.weight === 0;
+                        return (
+                          <div key={agent.id} className={`flex items-center justify-between gap-2 p-2 rounded-lg ${isBackup ? 'bg-amber-50 dark:bg-amber-950/30' : 'bg-slate-50 dark:bg-slate-800/50'}`}>
+                            <div className="flex items-center gap-2 min-w-0">
+                              <span className="flex-shrink-0 w-5 h-5 rounded-full bg-orange-100 dark:bg-orange-900/30 text-[10px] font-bold text-orange-600 dark:text-orange-400 flex items-center justify-center">
+                                {idx + 1}
+                              </span>
+                              <div className="min-w-0">
+                                <div className="text-sm font-medium truncate flex items-center gap-1">
+                                  {agent.name}
+                                  {isBackup && (
+                                    <span className="text-[9px] px-1 py-0 rounded bg-amber-200 dark:bg-amber-800 text-amber-700 dark:text-amber-300">
+                                      {t('admin.forwardRules.exitAgents.backup')}
+                                    </span>
+                                  )}
+                                </div>
+                                {agent.address && (
+                                  <div className="text-[10px] text-muted-foreground font-mono truncate">{agent.address}</div>
+                                )}
+                              </div>
                             </div>
+                            <span className={`text-xs font-mono shrink-0 ${isBackup ? 'text-amber-600 dark:text-amber-400' : 'text-muted-foreground'}`}>
+                              {isBackup
+                                ? t('admin.forwardRules.exitAgents.backupShort')
+                                : loadBalanceStrategy === 'weighted'
+                                  ? `${agent.percent}%`
+                                  : `P${idx + 1}`}
+                            </span>
                           </div>
-                          <span className="text-xs text-muted-foreground font-mono shrink-0">{agent.percent}%</span>
-                        </div>
-                      ))}
+                        );
+                      })}
                     </div>
                   </div>
                 </PopoverContent>
@@ -543,7 +568,7 @@ export const ForwardRuleDetailDialog: React.FC<ForwardRuleDetailDialogProps> = (
                   <span className="text-xs text-muted-foreground ml-auto">{t('admin.forwardRules.detail.nodesCount', { count: flowNodes.length })}</span>
                 </div>
                 <div className="p-3 rounded-xl bg-slate-50 dark:bg-slate-800/30 border border-slate-200/50 dark:border-slate-700/30">
-                  <FlowPath nodes={flowNodes} exitAgents={exitAgentsInfo} />
+                  <FlowPath nodes={flowNodes} exitAgents={exitAgentsInfo} loadBalanceStrategy={rule.loadBalanceStrategy} />
                 </div>
               </section>
             )}

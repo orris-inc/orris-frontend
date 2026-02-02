@@ -37,6 +37,7 @@ export function ExitAgentList<T extends BaseAgent>({
   hasError = false,
   idPrefix = "exit-agent",
   disabled = false,
+  loadBalanceStrategy = "failover",
 }: ExitAgentListProps<T>) {
   const { t } = useTranslation();
 
@@ -56,11 +57,11 @@ export function ExitAgentList<T extends BaseAgent>({
     onChange(exitAgents.filter((ea) => ea.agentId !== agentId));
   };
 
-  // Update weight
+  // Update weight (0 = backup agent, only used when all other agents unavailable)
   const handleWeightChange = (agentId: string, weight: number) => {
     onChange(
       exitAgents.map((ea) =>
-        ea.agentId === agentId ? { ...ea, weight: Math.max(1, Math.min(100, weight)) } : ea
+        ea.agentId === agentId ? { ...ea, weight: Math.max(0, Math.min(100, weight)) } : ea
       )
     );
   };
@@ -108,11 +109,17 @@ export function ExitAgentList<T extends BaseAgent>({
                 const agent = getAgent(ea.agentId);
                 const percentage = totalWeight > 0 ? ((ea.weight / totalWeight) * 100).toFixed(1) : '0';
                 const details = agent && renderAgentDetails ? renderAgentDetails(agent) : undefined;
+                const isBackup = ea.weight === 0;
+                const isWeighted = loadBalanceStrategy === "weighted";
 
                 return (
                   <div
                     key={ea.agentId}
-                    className="flex flex-col gap-2 p-2 rounded bg-muted/30 hover:bg-muted/50 transition-colors @[360px]:flex-row @[360px]:items-center"
+                    className={`flex flex-col gap-2 p-2 rounded transition-colors @[360px]:flex-row @[360px]:items-center ${
+                      isBackup
+                        ? "bg-amber-50/50 dark:bg-amber-950/20 hover:bg-amber-50 dark:hover:bg-amber-950/30"
+                        : "bg-muted/30 hover:bg-muted/50"
+                    }`}
                   >
                     {/* Left section: drag handle, index, name */}
                     <div className="flex items-center gap-2 flex-1 min-w-0">
@@ -125,6 +132,14 @@ export function ExitAgentList<T extends BaseAgent>({
                       </Badge>
                       <span className="text-sm flex-1 min-w-0 flex items-center gap-1.5 flex-wrap">
                         <span className="truncate">{agent?.name || ea.agentId}</span>
+                        {isBackup && (
+                          <Badge
+                            variant="outline"
+                            className="text-[10px] px-1.5 py-0 border-amber-300 text-amber-600 dark:border-amber-700 dark:text-amber-400"
+                          >
+                            {t('admin.forwardRules.exitAgents.backup')}
+                          </Badge>
+                        )}
                         {details?.badge}
                         {details?.secondaryText && (
                           <span className="text-xs text-muted-foreground shrink-0">
@@ -139,7 +154,7 @@ export function ExitAgentList<T extends BaseAgent>({
                       <Input
                         id={`${idPrefix}-weight-${ea.agentId}`}
                         type="number"
-                        min={1}
+                        min={0}
                         max={100}
                         className="w-16 h-9 text-sm text-center"
                         value={ea.weight}
@@ -151,8 +166,12 @@ export function ExitAgentList<T extends BaseAgent>({
                         }}
                         disabled={disabled}
                       />
-                      <span className="text-xs text-muted-foreground w-12 text-right">
-                        {percentage}%
+                      <span className={`text-xs w-12 text-right ${isBackup ? "text-amber-600 dark:text-amber-400" : "text-muted-foreground"}`}>
+                        {isBackup
+                          ? t('admin.forwardRules.exitAgents.backupShort')
+                          : isWeighted
+                            ? `${percentage}%`
+                            : `P${index + 1}`}
                       </span>
                       {/* Desktop: inline buttons */}
                       <div className="hidden @[480px]:flex gap-0.5 flex-shrink-0">
@@ -274,7 +293,9 @@ export function ExitAgentList<T extends BaseAgent>({
       {/* Hint */}
       <p className="text-xs text-muted-foreground">
         {exitAgents.length > 0
-          ? t('admin.forwardRules.exitAgents.hint', { count: exitAgents.length })
+          ? loadBalanceStrategy === "weighted"
+            ? t('admin.forwardRules.exitAgents.hintWeighted', { count: exitAgents.length })
+            : t('admin.forwardRules.exitAgents.hintFailover', { count: exitAgents.length })
           : t('admin.forwardRules.exitAgents.emptyHint')}
       </p>
     </div>

@@ -1192,6 +1192,8 @@
         "addAgent": "Add Exit Agent",
         "noAgents": "No available exit agents",
         "hint": "{{count}} exit agent(s) configured, traffic distributed by weight",
+        "hintWeighted": "{{count}} exit agent(s) configured, traffic distributed by weight ratio",
+        "hintFailover": "{{count}} exit agent(s) configured, failover by priority order",
         "emptyHint": "Please add at least one exit agent",
         "weightLabel": "Weight",
         "singleMode": "Single Exit Mode",
@@ -1199,7 +1201,14 @@
         "modeHint": "Multi-exit mode supports distributing traffic across multiple exit agents by weight",
         "moveUp": "Move Up",
         "moveDown": "Move Down",
-        "remove": "Remove"
+        "remove": "Remove",
+        "backup": "Backup",
+        "backupShort": "BKP",
+        "strategy": "Strategy",
+        "strategyFailover": "Failover",
+        "strategyWeighted": "Weighted",
+        "strategyFailoverHint": "Use highest weight agent first, failover on failure. Weight=0 means backup only",
+        "strategyWeightedHint": "Distribute traffic across agents by weight ratio"
       },
       "columns": {
         "ruleName": "Rule Name",

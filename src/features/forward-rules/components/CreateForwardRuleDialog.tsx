@@ -49,6 +49,7 @@ import type {
   IPVersion,
   TunnelType,
   ExitAgent,
+  LoadBalanceStrategy,
 } from "@/api/forward";
 import type { Node } from "@/api/node";
 import type { ResourceGroup } from "@/api/resource/types";
@@ -191,6 +192,7 @@ export const CreateForwardRuleDialog: React.FC<CreateForwardRuleDialogProps> = (
     ruleType: "direct" as ForwardRuleType,
     exitAgentId: "",
     exitAgents: [] as ExitAgent[],
+    loadBalanceStrategy: "failover" as LoadBalanceStrategy,
     chainAgentIds: [] as string[],
     chainPortConfig: {} as Record<string, number>,
     tunnelType: "ws" as TunnelType,
@@ -225,6 +227,7 @@ export const CreateForwardRuleDialog: React.FC<CreateForwardRuleDialogProps> = (
           ruleType: initialData.ruleType || "direct",
           exitAgentId: initialData.exitAgentId || "",
           exitAgents: initialData.exitAgents || [],
+          loadBalanceStrategy: initialData.loadBalanceStrategy || "failover",
           chainAgentIds: initialData.chainAgentIds || [],
           chainPortConfig: initialData.chainPortConfig || {},
           tunnelType: initialData.tunnelType || "ws",
@@ -263,6 +266,7 @@ export const CreateForwardRuleDialog: React.FC<CreateForwardRuleDialogProps> = (
           ruleType: "direct",
           exitAgentId: "",
           exitAgents: [],
+          loadBalanceStrategy: "failover",
           chainAgentIds: [],
           chainPortConfig: {},
           tunnelType: "ws",
@@ -665,6 +669,8 @@ export const CreateForwardRuleDialog: React.FC<CreateForwardRuleDialogProps> = (
           submitData.exitAgentId = formData.exitAgentId;
         } else {
           submitData.exitAgents = formData.exitAgents;
+          // Only include loadBalanceStrategy when using multi-exit mode
+          submitData.loadBalanceStrategy = formData.loadBalanceStrategy;
         }
         submitData.tunnelType = formData.tunnelType;
         if (targetType === "manual") {
@@ -1227,22 +1233,57 @@ export const CreateForwardRuleDialog: React.FC<CreateForwardRuleDialogProps> = (
 
                     {/* Multi Exit Agent Mode (Load Balancing) */}
                     {exitMode === "multi" && (
-                      <FormField
-                        label={t("admin.forwardRules.exitAgents.loadBalancing")}
-                        required
-                        error={errors.exitAgents}
-                        className="col-span-6"
-                      >
-                        <ExitAgentList
-                          agents={availableExitAgents}
-                          exitAgents={formData.exitAgents}
-                          onChange={(exitAgents) =>
-                            setFormData((prev) => ({ ...prev, exitAgents }))
+                      <>
+                        <FormField
+                          label={t("admin.forwardRules.exitAgents.loadBalancing")}
+                          required
+                          error={errors.exitAgents}
+                          className="col-span-6 sm:col-span-4"
+                        >
+                          <ExitAgentList
+                            agents={availableExitAgents}
+                            exitAgents={formData.exitAgents}
+                            onChange={(exitAgents) =>
+                              setFormData((prev) => ({ ...prev, exitAgents }))
+                            }
+                            hasError={!!errors.exitAgents}
+                            idPrefix="create-exit-agent"
+                            loadBalanceStrategy={formData.loadBalanceStrategy}
+                          />
+                        </FormField>
+
+                        <FormField
+                          label={t("admin.forwardRules.exitAgents.strategy")}
+                          hint={
+                            formData.loadBalanceStrategy === "failover"
+                              ? t("admin.forwardRules.exitAgents.strategyFailoverHint")
+                              : t("admin.forwardRules.exitAgents.strategyWeightedHint")
                           }
-                          hasError={!!errors.exitAgents}
-                          idPrefix="create-exit-agent"
-                        />
-                      </FormField>
+                          className="col-span-6 sm:col-span-2"
+                        >
+                          <Select
+                            value={formData.loadBalanceStrategy}
+                            onValueChange={(value) =>
+                              setFormData((prev) => ({
+                                ...prev,
+                                loadBalanceStrategy: value as LoadBalanceStrategy,
+                              }))
+                            }
+                          >
+                            <SelectTrigger>
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="failover">
+                                {t("admin.forwardRules.exitAgents.strategyFailover")}
+                              </SelectItem>
+                              <SelectItem value="weighted">
+                                {t("admin.forwardRules.exitAgents.strategyWeighted")}
+                              </SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </FormField>
+                      </>
                     )}
 
                     <FormField
