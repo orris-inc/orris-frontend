@@ -697,7 +697,9 @@
         "unknownResourceGroup": "Unknown resource group",
         "maintenanceReason": "Reason",
         "configDescription": "Protocol, encryption, transport settings",
-        "monitorDescription": "CPU, memory, network in real-time"
+        "monitorDescription": "CPU, memory, network in real-time",
+        "expiresAt": "Expires at",
+        "renewalAmount": "Renewal amount"
       },
       "deleteSheet": {
         "title": "Delete Node",
@@ -769,7 +771,11 @@
         "timeInfo": "Time Info",
         "lastOnline": "Last Online",
         "noResourceGroups": "No resource groups available",
-        "noRouteRules": "No routing rules configured"
+        "noRouteRules": "No routing rules configured",
+        "expirationInfo": "Expiration",
+        "expiresAt": "Expires at",
+        "renewalAmount": "Renewal amount",
+        "neverExpires": "Never expires"
       },
       "emptyState": "No nodes",
       "batchUpdate": {
@@ -1003,6 +1009,7 @@
       "installScript": {
         "title": "Install Script",
         "description": "Run command on target server",
+        "descriptionWithName": "Install script for node \"{{name}}\", run on target server to complete deployment",
         "descriptionWithNode": "Install script for node \"{{name}}\", run on the target server to complete deployment",
         "installCommand": "Install Command",
         "installCommandHint": "Run with root privileges",
@@ -1616,7 +1623,9 @@
           "clickToMute": "Click to mute notifications",
           "clickToUnmute": "Click to unmute",
           "unknownResourceGroup": "Unknown resource group",
-          "newVersionAvailable": "New version available"
+          "newVersionAvailable": "New version available",
+          "expiresAt": "Expires at",
+          "renewalAmount": "Renewal amount"
         },
         "empty": "No forward agent data"
       },
@@ -1699,6 +1708,10 @@
         "appProtocols": "Application Protocols",
         "timeInfo": "Time Information",
         "lastOnline": "Last Online",
+        "expirationInfo": "Expiration",
+        "expiresAt": "Expires at",
+        "renewalAmount": "Renewal amount",
+        "neverExpires": "Never expires",
         "tokenNotice": "Token Notice",
         "tokenNotice1": "Token is only displayed once when creating or regenerating",
         "tokenNotice2": "Save token securely, regeneration required if lost",

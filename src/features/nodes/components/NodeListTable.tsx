@@ -321,6 +321,15 @@ export const NodeListTable: React.FC<NodeListTableProps> = ({
           if (node.status === 'maintenance' && node.maintenanceReason) {
             lines.push(`${t('admin.nodes.tooltip.maintenanceReason')}: ${node.maintenanceReason}`);
           }
+          // Expiration info
+          if (node.isExpired) {
+            lines.push(t('common.status.expired'));
+          } else if (node.expiresAt) {
+            lines.push(`${t('admin.nodes.tooltip.expiresAt')}: ${formatDateTime(node.expiresAt)}`);
+          }
+          if (node.renewalAmount) {
+            lines.push(`${t('admin.nodes.tooltip.renewalAmount')}: ¥${node.renewalAmount}`);
+          }
           // Click action hint
           if (node.status === 'active') {
             lines.push(t('admin.nodes.actions.clickToDeactivate'));
@@ -353,6 +362,11 @@ export const NodeListTable: React.FC<NodeListTableProps> = ({
                 ))}
               </TooltipContent>
             </Tooltip>
+            {node.isExpired && (
+              <Badge variant="destructive" className="text-[10px] px-1.5 py-0">
+                {t('common.status.expired')}
+              </Badge>
+            )}
             <Tooltip>
               <TooltipTrigger asChild>
                 <button
@@ -473,13 +487,13 @@ export const NodeListTable: React.FC<NodeListTableProps> = ({
       meta: { priority: 3 } as ResponsiveColumnMeta,
       cell: ({ row }) => {
         const node = row.original;
-        const groupIds = node.groupIds || [];
-        if (groupIds.length === 0) {
+        const groupSids = node.groupSids || [];
+        if (groupSids.length === 0) {
           return <span className="text-xs text-muted-foreground/50">-</span>;
         }
-        const firstGroup = resourceGroupsMap[groupIds[0]];
-        const remainingCount = groupIds.length - 1;
-        const allGroupItems = groupIds.map((gid) => {
+        const firstGroup = resourceGroupsMap[groupSids[0]];
+        const remainingCount = groupSids.length - 1;
+        const allGroupItems = groupSids.map((gid) => {
           const g = resourceGroupsMap[gid];
           return { label: g?.name || t('admin.nodes.tooltip.unknownResourceGroup'), value: gid };
         });
@@ -492,7 +506,7 @@ export const NodeListTable: React.FC<NodeListTableProps> = ({
           >
             <div className="flex items-center gap-1 cursor-default">
               <Badge variant="outline" className="text-[10px] truncate max-w-[80px]">
-                {firstGroup?.name || groupIds[0]}
+                {firstGroup?.name || groupSids[0]}
               </Badge>
               {remainingCount > 0 && (
                 <Badge variant="secondary" className="text-[10px] px-1.5">

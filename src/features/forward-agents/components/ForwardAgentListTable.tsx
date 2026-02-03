@@ -287,6 +287,15 @@ export const ForwardAgentListTable: React.FC<ForwardAgentListTableProps> = ({
           if (healthStatus === 'offline' && agent.lastSeenAt) {
             lines.push(`${t('admin.forwardAgents.table.tooltip.lastOnline')}: ${formatDateTime(agent.lastSeenAt)}`);
           }
+          // Expiration info
+          if (agent.isExpired) {
+            lines.push(t('common.status.expired'));
+          } else if (agent.expiresAt) {
+            lines.push(`${t('admin.forwardAgents.table.tooltip.expiresAt')}: ${formatDateTime(agent.expiresAt)}`);
+          }
+          if (agent.renewalAmount) {
+            lines.push(`${t('admin.forwardAgents.table.tooltip.renewalAmount')}: ¥${agent.renewalAmount}`);
+          }
           // Click action hint
           if (agent.status === 'enabled') {
             lines.push(t('admin.forwardAgents.table.tooltip.clickToDisable'));
@@ -319,6 +328,11 @@ export const ForwardAgentListTable: React.FC<ForwardAgentListTableProps> = ({
                 ))}
               </TooltipContent>
             </Tooltip>
+            {agent.isExpired && (
+              <Badge variant="destructive" className="text-[10px] px-1.5 py-0">
+                {t('common.status.expired')}
+              </Badge>
+            )}
             <Tooltip>
               <TooltipTrigger asChild>
                 <button

@@ -246,6 +246,11 @@ export const ForwardAgentMobileList: React.FC<ForwardAgentMobileListProps> = ({
                     )}
                   </Tooltip>
                 )}
+                {agent.isExpired && (
+                  <AdminBadge variant="danger" className="text-[10px] px-1.5 py-0 flex-shrink-0">
+                    {t('common.status.expired')}
+                  </AdminBadge>
+                )}
               </div>
 
               {/* Address info */}

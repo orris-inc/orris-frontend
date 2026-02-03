@@ -220,7 +220,7 @@ export const EditNodeDialog: React.FC<EditNodeDialogProps> = ({
         // Route configuration
         route: node.route,
         // Resource groups
-        groupSids: node.groupIds ?? [],
+        groupSids: node.groupSids ?? [],
         // Notification setting
         muteNotification: node.muteNotification,
         // VLESS fields
@@ -529,7 +529,7 @@ export const EditNodeDialog: React.FC<EditNodeDialogProps> = ({
     }
 
     // Resource group association - only send if changed
-    const originalGroupSids = node.groupIds ?? [];
+    const originalGroupSids = node.groupSids ?? [];
     const newGroupSids = formData.groupSids ?? [];
     const groupSidsChanged = JSON.stringify([...newGroupSids].sort()) !== JSON.stringify([...originalGroupSids].sort());
     if (groupSidsChanged) {

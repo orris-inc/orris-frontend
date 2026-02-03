@@ -339,7 +339,7 @@ export const EditNodeSheet: React.FC<EditNodeSheetProps> = ({
         sni: node.sni,
         allowInsecure: node.allowInsecure,
         route: node.route,
-        groupSids: node.groupIds ?? [],
+        groupSids: node.groupSids ?? [],
         muteNotification: node.muteNotification,
         // VLESS fields
         vlessTransportType: node.vlessTransportType,
@@ -531,7 +531,7 @@ export const EditNodeSheet: React.FC<EditNodeSheetProps> = ({
     }
 
     // Resource group association - only send if changed
-    const originalGroupSids = node.groupIds ?? [];
+    const originalGroupSids = node.groupSids ?? [];
     const newGroupSids = formData.groupSids ?? [];
     const groupSidsChanged = JSON.stringify([...newGroupSids].sort()) !== JSON.stringify([...originalGroupSids].sort());
     if (groupSidsChanged) {

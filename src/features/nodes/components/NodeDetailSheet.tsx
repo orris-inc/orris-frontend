@@ -600,13 +600,13 @@ export const NodeDetailSheet = ({
             )}
 
             {/* Resource Groups - if exists */}
-            {node.groupIds && node.groupIds.length > 0 && (
+            {node.groupSids && node.groupSids.length > 0 && (
               <DetailSection title={t('admin.resourceGroups.title')}>
                 <div className="px-3 py-2.5">
                   <div className="flex items-start gap-3">
                     <Server className="size-3.5 text-muted-foreground/60 shrink-0 mt-0.5" />
                     <div className="flex flex-wrap gap-1.5">
-                      {node.groupIds.map((gid) => {
+                      {node.groupSids.map((gid) => {
                         const group = resourceGroupsMap[gid];
                         return (
                           <span
@@ -619,6 +619,27 @@ export const NodeDetailSheet = ({
                       })}
                     </div>
                   </div>
+                </div>
+              </DetailSection>
+            )}
+
+            {/* Expiration info - if has expiration data */}
+            {(node.expiresAt || node.renewalAmount) && (
+              <DetailSection title={t('admin.nodes.detail.expirationInfo')}>
+                <div className="px-3 py-2.5 grid grid-cols-2 gap-x-4 gap-y-2 text-xs">
+                  <div>
+                    <span className="text-muted-foreground">{t('admin.nodes.detail.expiresAt')}</span>
+                    <p className={cn('text-foreground', node.isExpired && 'text-destructive font-medium')}>
+                      {node.expiresAt ? formatDateTime(node.expiresAt) : t('admin.nodes.detail.neverExpires')}
+                      {node.isExpired && ` (${t('common.status.expired')})`}
+                    </p>
+                  </div>
+                  {node.renewalAmount && (
+                    <div>
+                      <span className="text-muted-foreground">{t('admin.nodes.detail.renewalAmount')}</span>
+                      <p className="text-foreground">¥{node.renewalAmount}</p>
+                    </div>
+                  )}
                 </div>
               </DetailSection>
             )}

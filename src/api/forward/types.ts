@@ -5,6 +5,8 @@
  * Last updated: 2026-02-03
  *
  * Recent changes:
+ * - 2026-02-03: Added expiresAt, renewalAmount, isExpired fields to ForwardAgent for agent expiration tracking
+ * - 2026-02-03: Added expiresAt, renewalAmount fields to UpdateForwardAgentRequest for expiration management
  * - 2026-02-03: Changed groupSid to groupSids (array) for multi-group support on ForwardAgent, CreateForwardAgentRequest, UpdateForwardAgentRequest
  * - 2026-02-03: Changed UserForwardAgent groupId/groupName to groups array with UserGroupInfo type
  * - 2026-02-03: Added UserGroupInfo type for user-facing group information
@@ -351,6 +353,7 @@ export interface ReorderForwardRulesRequest {
  * Forward agent entity
  * ID format: "fa_xK9mP2vL3nQ" (Stripe-style prefixed ID)
  * An agent can participate in multiple rules with different roles (entry/relay/exit) simultaneously.
+ * Updated: 2026-02-03 - Added expiresAt, renewalAmount, isExpired fields for agent expiration tracking
  * Updated: 2026-02-03 - Changed groupId to groupSids (array) for multi-group support
  * Updated: 2026-01-06 - Added muteNotification, isOnline, lastSeenAt fields
  * Updated: 2026-01-05 - Added sortOrder field for custom ordering
@@ -382,6 +385,12 @@ export interface ForwardAgent {
   isOnline: boolean;
   /** Last time the agent reported status (Added: 2026-01-06) */
   lastSeenAt?: string;
+  /** Expiration time in ISO8601 format (null = never expires) (Added: 2026-02-03) */
+  expiresAt?: string;
+  /** Renewal amount for display (Added: 2026-02-03) */
+  renewalAmount?: number;
+  /** True if agent has expired (Added: 2026-02-03) */
+  isExpired: boolean;
   createdAt: string;
   updatedAt: string;
   systemStatus?: AgentSystemStatus; // Real-time system metrics (optional, from cache)
@@ -591,6 +600,7 @@ export interface CreateForwardAgentRequest {
 
 /**
  * Update forward agent request
+ * Updated: 2026-02-03 - Added expiresAt, renewalAmount fields for expiration management
  * Updated: 2026-02-03 - Changed groupSid to groupSids (array) for multi-group association
  * Updated: 2026-01-06 - Added muteNotification field
  * Updated: 2026-01-05 - Added sortOrder field for custom ordering
@@ -611,6 +621,10 @@ export interface UpdateForwardAgentRequest {
   blockedProtocols?: BlockedProtocol[];
   /** Mute online/offline notifications for this agent (Added: 2026-01-06) */
   muteNotification?: boolean;
+  /** Expiration time in ISO8601 format (empty string to clear, omit to keep unchanged) (Added: 2026-02-03) */
+  expiresAt?: string;
+  /** Renewal amount (0 to clear, omit to keep unchanged) (Added: 2026-02-03) */
+  renewalAmount?: number;
 }
 
 /**

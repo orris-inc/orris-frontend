@@ -273,6 +273,11 @@ export const NodeMobileList: React.FC<NodeMobileListProps> = ({
                   {t(statusConfig.labelKey)}
                 </AdminBadge>
                 <OnlineIndicator isOnline={node.isOnline} lastSeenAt={node.lastSeenAt} t={t} />
+                {node.isExpired && (
+                  <AdminBadge variant="danger" className="text-[10px] px-1.5 py-0 flex-shrink-0">
+                    {t('common.status.expired')}
+                  </AdminBadge>
+                )}
               </div>
 
                   {/* Address and region info */}
@@ -491,11 +496,11 @@ export const NodeMobileList: React.FC<NodeMobileListProps> = ({
                 )}
 
                 {/* Resource groups */}
-                {node.groupIds && node.groupIds.length > 0 && (
+                {node.groupSids && node.groupSids.length > 0 && (
                   <div className="flex items-start gap-2">
                     <span className="text-[10px] text-muted-foreground uppercase tracking-wide w-8 pt-0.5 flex-shrink-0">{t('admin.nodes.table.resourceGroup')}</span>
                     <div className="flex flex-wrap gap-1">
-                      {node.groupIds.map((gid) => {
+                      {node.groupSids.map((gid) => {
                         const group = resourceGroupsMap[gid];
                         return (
                           <Badge key={gid} variant="outline" className="text-[10px] px-1.5 py-0">

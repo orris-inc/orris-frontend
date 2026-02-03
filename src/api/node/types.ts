@@ -11,6 +11,9 @@
  * - Node: "node_xK9mP2vL3nQ" (prefix: node_)
  *
  * Recent changes:
+ * - 2026-02-03: Added expiresAt, renewalAmount, isExpired fields to Node for node expiration tracking
+ * - 2026-02-03: Added expiresAt, renewalAmount fields to UpdateNodeRequest for expiration management
+ * - 2026-02-03: Changed groupIds JSON field name to groupSids in Node
  * - 2026-02-03: Added groupSids field to CreateNodeRequest for resource group association on creation
  * - 2026-01-31: Added vlessRealityPrivateKey to CreateNodeRequest, UpdateNodeRequest (auto-generated if empty for Reality security)
  * - 2026-01-30: Removed customFields from Node, CreateNodeRequest (unused field removed from backend)
@@ -163,6 +166,8 @@ export interface NodeOwner {
 /**
  * Node entity
  * ID format: "node_xK9mP2vL3nQ" (Stripe-style prefixed ID)
+ * Updated: 2026-02-03 - Added expiresAt, renewalAmount, isExpired fields for node expiration tracking
+ * Updated: 2026-02-03 - Changed groupIds JSON field name to groupSids
  * Updated: 2026-01-09 - Added VLESS, VMess, Hysteria2, TUIC protocol-specific fields
  * Updated: 2026-01-06 - Added muteNotification field for notification control
  * Updated: 2025-12-31 - Added agentVersion, platform, arch, hasUpdate fields for version management display
@@ -279,6 +284,12 @@ export interface Node {
   isOnline: boolean;
   /** Last time the node agent reported status */
   lastSeenAt?: string;
+  /** Expiration time in ISO8601 format (null = never expires) (Added: 2026-02-03) */
+  expiresAt?: string;
+  /** Renewal amount for display (Added: 2026-02-03) */
+  renewalAmount?: number;
+  /** True if node has expired (Added: 2026-02-03) */
+  isExpired: boolean;
   /** Agent software version, extracted from systemStatus for easy table display (Added: 2025-12-31) */
   agentVersion?: string;
   /** OS platform (linux, darwin, windows), extracted from systemStatus for easy table display (Added: 2025-12-31) */
@@ -287,8 +298,8 @@ export interface Node {
   arch?: string;
   /** True if a newer agent version is available (Added: 2025-12-31) */
   hasUpdate: boolean;
-  /** Resource group SIDs this node belongs to (e.g., ["rg_xK9mP2vL3nQ", "rg_yL0nQ3wM4oR"]) */
-  groupIds?: string[];
+  /** Resource group SIDs this node belongs to (e.g., ["rg_xK9mP2vL3nQ", "rg_yL0nQ3wM4oR"]) (Updated: 2026-02-03 - changed JSON field from group_ids to group_sids) */
+  groupSids?: string[];
   version: number;
   createdAt: string;
   updatedAt: string;
@@ -589,6 +600,7 @@ export interface CreateNodeRequest {
 /**
  * Update node request
  * PUT /nodes/:id
+ * Updated: 2026-02-03 - Added expiresAt, renewalAmount fields for expiration management
  * Updated: 2026-01-31 - Added vlessRealityPrivateKey (auto-generated if empty for Reality security)
  * Updated: 2026-01-09 - Added VLESS, VMess, Hysteria2, TUIC protocol-specific fields
  * Updated: 2026-01-06 - Added muteNotification field
@@ -614,6 +626,10 @@ export interface UpdateNodeRequest {
   muteNotification?: boolean;
   /** Resource group SIDs to associate with (empty array to remove all) (Updated: 2026-01-20) */
   groupSids?: string[];
+  /** Expiration time in ISO8601 format (empty string to clear, omit to keep unchanged) (Added: 2026-02-03) */
+  expiresAt?: string;
+  /** Renewal amount (0 to clear, omit to keep unchanged) (Added: 2026-02-03) */
+  renewalAmount?: number;
   /** Transport protocol for Trojan (tcp, ws, grpc) */
   transportProtocol?: TransportProtocol;
   /** WebSocket host header or gRPC service name */
