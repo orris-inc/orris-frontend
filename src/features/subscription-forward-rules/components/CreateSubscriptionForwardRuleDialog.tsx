@@ -92,7 +92,7 @@ export const CreateSubscriptionForwardRuleDialog: React.FC<
     targetPort: '',
     targetNodeId: '',
     sortOrder: '',
-    protocol: 'tcp' as ForwardProtocol,
+    protocol: 'both' as ForwardProtocol,
     ipVersion: 'auto' as IPVersion,
     remark: '',
   });
@@ -125,7 +125,7 @@ export const CreateSubscriptionForwardRuleDialog: React.FC<
         targetPort: '',
         targetNodeId: '',
         sortOrder: '',
-        protocol: 'tcp',
+        protocol: 'both',
         ipVersion: 'auto',
         remark: '',
       });
@@ -422,9 +422,9 @@ export const CreateSubscriptionForwardRuleDialog: React.FC<
                             <div className="flex items-center gap-2">
                               <Server className="h-4 w-4 text-muted-foreground" />
                               <span>{agent.name}</span>
-                              {agent.groupName && (
+                              {agent.groups && agent.groups.length > 0 && (
                                 <span className="text-xs text-muted-foreground">
-                                  ({agent.groupName})
+                                  ({agent.groups.map((g) => g.name).join(', ')})
                                 </span>
                               )}
                             </div>
@@ -552,9 +552,9 @@ export const CreateSubscriptionForwardRuleDialog: React.FC<
                                 <div className="flex items-center gap-2">
                                   <Server className="h-4 w-4 text-muted-foreground" />
                                   <span>{agent.name}</span>
-                                  {agent.groupName && (
+                                  {agent.groups && agent.groups.length > 0 && (
                                     <span className="text-xs text-muted-foreground">
-                                      ({agent.groupName})
+                                      ({agent.groups.map((g) => g.name).join(', ')})
                                     </span>
                                   )}
                                 </div>

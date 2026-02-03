@@ -198,7 +198,8 @@ export const ForwardAgentMobileList: React.FC<ForwardAgentMobileListProps> = ({
 
   // Render a single agent card
   const renderAgentCard = (agent: ForwardAgent) => {
-    const group = agent.groupId ? resourceGroupsMap[agent.groupId] : null;
+    const firstGroupSid = agent.groupSids?.[0];
+    const group = firstGroupSid ? resourceGroupsMap[firstGroupSid] : null;
 
     return (
       <AccordionItem
@@ -388,11 +389,12 @@ export const ForwardAgentMobileList: React.FC<ForwardAgentMobileListProps> = ({
             )}
 
             {/* Resource group */}
-            {agent.groupId && (
+            {agent.groupSids && agent.groupSids.length > 0 && (
               <div className="flex items-center gap-2">
                 <span className="text-[10px] text-slate-400 dark:text-slate-500 uppercase tracking-wide w-8 flex-shrink-0">{t('admin.forwardAgents.detail.resource')}</span>
                 <Badge variant="outline" className="text-[10px] px-1.5 py-0">
-                  {group?.name || agent.groupId}
+                  {group?.name || firstGroupSid}
+                  {agent.groupSids.length > 1 && ` +${agent.groupSids.length - 1}`}
                 </Badge>
               </div>
             )}

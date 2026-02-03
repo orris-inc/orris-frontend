@@ -29,7 +29,11 @@ import {
   Settings,
   ChevronDown,
   AlertCircle,
+  FolderTree,
 } from "lucide-react";
+import { Checkbox } from "@/components/common/Checkbox";
+import { ScrollArea } from "@/components/common/ScrollArea";
+import { useResourceGroups } from "@/features/resource-groups/hooks/useResourceGroups";
 import type {
   CreateForwardAgentRequest,
   BlockedProtocol,
@@ -76,6 +80,7 @@ const getDefaultFormData = (): CreateForwardAgentRequest => ({
   allowedPortRange: "",
   sortOrder: undefined,
   blockedProtocols: [],
+  groupSids: [],
 });
 
 // Section configuration
@@ -148,7 +153,7 @@ const CollapsibleSection: React.FC<CollapsibleSectionProps> = ({
 
 // Form Field Component - Following CreateNodeDialog pattern
 interface FormFieldProps {
-  label: string;
+  label: React.ReactNode;
   required?: boolean;
   error?: string;
   hint?: string;
@@ -190,6 +195,13 @@ export const CreateForwardAgentDialog: React.FC<
   const [openSections, setOpenSections] = useState<Set<string>>(
     new Set(["basic", "network"])
   );
+
+  // Get resource groups for selection
+  const { resourceGroups } = useResourceGroups({
+    pageSize: 100,
+    filters: { status: "active" },
+    enabled: open,
+  });
 
   // Update form data when initialData changes
   useEffect(() => {
@@ -250,6 +262,19 @@ export const CreateForwardAgentDialog: React.FC<
     setFormData((prev) => ({ ...prev, blockedProtocols: updated }));
   };
 
+  const handleGroupToggle = (groupSid: string) => {
+    setFormData((prev) => {
+      const currentGroups = prev.groupSids || [];
+      const isSelected = currentGroups.includes(groupSid);
+      return {
+        ...prev,
+        groupSids: isSelected
+          ? currentGroups.filter((sid) => sid !== groupSid)
+          : [...currentGroups, groupSid],
+      };
+    });
+  };
+
   const toggleSection = (sectionId: string) => {
     setOpenSections((prev) => {
       const next = new Set(prev);
@@ -304,6 +329,10 @@ export const CreateForwardAgentDialog: React.FC<
         submitData.blockedProtocols = formData.blockedProtocols;
       }
 
+      if (formData.groupSids && formData.groupSids.length > 0) {
+        submitData.groupSids = formData.groupSids;
+      }
+
       setIsSubmitting(true);
       try {
         await onSubmit(submitData);
@@ -323,7 +352,8 @@ export const CreateForwardAgentDialog: React.FC<
   const hasAdvancedSettings = Boolean(
     formData.sortOrder !== undefined ||
       formData.remark?.trim() ||
-      (formData.blockedProtocols && formData.blockedProtocols.length > 0)
+      (formData.blockedProtocols && formData.blockedProtocols.length > 0) ||
+      (formData.groupSids && formData.groupSids.length > 0)
   );
 
   return (
@@ -508,6 +538,49 @@ export const CreateForwardAgentDialog: React.FC<
                     ))}
                   </div>
                 </FormField>
+
+                {/* Resource Groups */}
+                {resourceGroups.length > 0 && (
+                  <FormField
+                    label={
+                      <span className="flex items-center gap-1.5">
+                        <FolderTree className="size-4" />
+                        {t("admin.forwardAgents.form.bindResourceGroups")}
+                      </span>
+                    }
+                    hint={
+                      formData.groupSids && formData.groupSids.length > 0
+                        ? t("admin.forwardAgents.form.selectedGroupsCount", { count: formData.groupSids.length })
+                        : t("admin.forwardAgents.form.bindResourceGroupsHint")
+                    }
+                  >
+                    <div className="border rounded-lg overflow-hidden">
+                      <ScrollArea className="h-[120px]">
+                        <div className="divide-y divide-border">
+                          {resourceGroups.map((group) => {
+                            const isSelected = formData.groupSids?.includes(group.sid) ?? false;
+                            return (
+                              <label
+                                key={group.sid}
+                                className={`flex items-center gap-3 px-3 py-2.5 cursor-pointer transition-colors ${
+                                  isSelected ? 'bg-primary/5' : 'hover:bg-muted/50'
+                                }`}
+                              >
+                                <Checkbox
+                                  checked={isSelected}
+                                  onCheckedChange={() => handleGroupToggle(group.sid)}
+                                />
+                                <span className="text-sm font-medium truncate flex-1">
+                                  {group.name}
+                                </span>
+                              </label>
+                            );
+                          })}
+                        </div>
+                      </ScrollArea>
+                    </div>
+                  </FormField>
+                )}
 
                 {/* Remark */}
                 <FormField label={t("common.fields.remark")}>

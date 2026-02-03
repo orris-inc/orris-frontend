@@ -11,7 +11,8 @@
 
 import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
-import { Loader2, ChevronDown } from "lucide-react";
+import { Loader2, ChevronDown, FolderTree, Check } from "lucide-react";
+import { useResourceGroups } from "@/features/resource-groups/hooks/useResourceGroups";
 import {
   Sheet,
   SheetContent,
@@ -67,6 +68,7 @@ const getDefaultFormData = (): CreateForwardAgentRequest => ({
   allowedPortRange: "",
   sortOrder: undefined,
   blockedProtocols: [],
+  groupSids: [],
 });
 
 /**
@@ -123,7 +125,7 @@ const FormField = ({
   className,
   children,
 }: {
-  label: string;
+  label: React.ReactNode;
   required?: boolean;
   hint?: string;
   error?: string;
@@ -151,6 +153,13 @@ export const CreateForwardAgentSheet: React.FC<CreateForwardAgentSheetProps> =
     const [errors, setErrors] = useState<Record<string, string>>({});
     const [loading, setLoading] = useState(false);
     const [showAdvanced, setShowAdvanced] = useState(false);
+
+    // Get resource groups for selection
+    const { resourceGroups } = useResourceGroups({
+      pageSize: 100,
+      filters: { status: "active" },
+      enabled: open,
+    });
 
     useEffect(() => {
       if (open && initialData) {
@@ -204,6 +213,19 @@ export const CreateForwardAgentSheet: React.FC<CreateForwardAgentSheetProps> =
       setFormData((prev) => ({ ...prev, blockedProtocols: updated }));
     };
 
+    const handleGroupToggle = (groupSid: string) => {
+      setFormData((prev) => {
+        const currentGroups = prev.groupSids || [];
+        const isSelected = currentGroups.includes(groupSid);
+        return {
+          ...prev,
+          groupSids: isSelected
+            ? currentGroups.filter((sid) => sid !== groupSid)
+            : [...currentGroups, groupSid],
+        };
+      });
+    };
+
     const validate = () => {
       const newErrors: Record<string, string> = {};
       if (!formData.name.trim()) {
@@ -239,6 +261,9 @@ export const CreateForwardAgentSheet: React.FC<CreateForwardAgentSheetProps> =
         }
         if (formData.blockedProtocols && formData.blockedProtocols.length > 0) {
           submitData.blockedProtocols = formData.blockedProtocols;
+        }
+        if (formData.groupSids && formData.groupSids.length > 0) {
+          submitData.groupSids = formData.groupSids;
         }
 
         await onSubmit(submitData);
@@ -407,6 +432,52 @@ export const CreateForwardAgentSheet: React.FC<CreateForwardAgentSheetProps> =
                     ))}
                   </div>
                 </FormField>
+
+                {/* Resource Groups */}
+                {resourceGroups.length > 0 && (
+                  <FormField
+                    label={
+                      <span className="flex items-center gap-1.5">
+                        <FolderTree className="size-4" />
+                        {t("admin.forwardAgents.form.bindResourceGroups")}
+                      </span>
+                    }
+                    hint={
+                      formData.groupSids && formData.groupSids.length > 0
+                        ? t("admin.forwardAgents.form.selectedGroupsCount", { count: formData.groupSids.length })
+                        : t("admin.forwardAgents.form.bindResourceGroupsHint")
+                    }
+                  >
+                    <div className="border rounded-lg overflow-hidden divide-y divide-border">
+                      {resourceGroups.map((group) => {
+                        const isSelected = formData.groupSids?.includes(group.sid) ?? false;
+                        return (
+                          <button
+                            key={group.sid}
+                            type="button"
+                            onClick={() => handleGroupToggle(group.sid)}
+                            className={cn(
+                              "flex items-center gap-3 px-3 py-3 w-full text-left transition-colors min-h-[48px]",
+                              isSelected ? "bg-primary/5" : "active:bg-muted/50"
+                            )}
+                          >
+                            <div className={cn(
+                              "size-5 rounded border flex items-center justify-center shrink-0 transition-colors",
+                              isSelected
+                                ? "bg-primary border-primary text-primary-foreground"
+                                : "border-border"
+                            )}>
+                              {isSelected && <Check className="size-3.5" />}
+                            </div>
+                            <span className="text-sm font-medium truncate flex-1">
+                              {group.name}
+                            </span>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </FormField>
+                )}
 
                 {/* Remark */}
                 <FormField label={t("common.fields.remark")}>

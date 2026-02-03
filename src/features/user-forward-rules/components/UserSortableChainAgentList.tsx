@@ -100,9 +100,9 @@ export const UserSortableChainAgentList: React.FC<UserSortableChainAgentListProp
                       className="text-sm font-normal cursor-pointer flex-1"
                     >
                       {agent.name}
-                      {agent.groupName && (
+                      {agent.groups && agent.groups.length > 0 && (
                         <span className="text-xs text-muted-foreground ml-2">
-                          ({agent.groupName})
+                          ({agent.groups.map((g) => g.name).join(', ')})
                         </span>
                       )}
                     </Label>

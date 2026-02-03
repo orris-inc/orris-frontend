@@ -37,7 +37,7 @@ export type AnnouncementType = 'system' | 'maintenance' | 'feature' | 'promotion
 /**
  * Announcement status
  */
-export type AnnouncementStatus = 'draft' | 'published' | 'archived';
+export type AnnouncementStatus = 'draft' | 'published' | 'archived' | 'expired';
 
 /**
  * Create announcement request

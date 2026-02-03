@@ -21,8 +21,8 @@ export const adminAgentRenderer: AgentRenderer<ForwardAgent> = (agent) => ({
 });
 
 /**
- * User agent renderer - displays groupName
+ * User agent renderer - displays group names
  */
 export const userAgentRenderer: AgentRenderer<UserForwardAgent> = (agent) => ({
-  secondaryText: agent.groupName,
+  secondaryText: agent.groups?.map((g) => g.name).join(', '),
 });

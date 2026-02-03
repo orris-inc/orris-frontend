@@ -5,7 +5,7 @@
 
 import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Loader2 } from 'lucide-react';
+import { Loader2, Check } from 'lucide-react';
 import {
   Sheet,
   SheetContent,
@@ -18,7 +18,7 @@ import {
 } from '@/components/common/sheet';
 import { Button } from '@/components/common/Button';
 import { Switch, SwitchThumb } from '@/components/common/Switch';
-import { MobileFormInput, MobileSelect } from '@/components/common/mobile-form';
+import { MobileFormInput } from '@/components/common/mobile-form';
 import { useResourceGroups } from '@/features/resource-groups/hooks/useResourceGroups';
 import { cn } from '@/lib/utils';
 import type { ForwardAgent, UpdateForwardAgentRequest, BlockedProtocol } from '@/api/forward';
@@ -50,7 +50,7 @@ export const EditForwardAgentSheet: React.FC<EditForwardAgentSheetProps> = ({
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(false);
 
-  const { resourceGroups, isLoading: isLoadingGroups } = useResourceGroups({
+  const { resourceGroups } = useResourceGroups({
     pageSize: 100,
     filters: { status: 'active' },
     enabled: open,
@@ -66,6 +66,7 @@ export const EditForwardAgentSheet: React.FC<EditForwardAgentSheetProps> = ({
         allowedPortRange: agent.allowedPortRange,
         sortOrder: agent.sortOrder,
         blockedProtocols: agent.blockedProtocols || [],
+        groupSids: agent.groupSids || [],
         muteNotification: agent.muteNotification,
       });
       setErrors({});
@@ -95,6 +96,19 @@ export const EditForwardAgentSheet: React.FC<EditForwardAgentSheetProps> = ({
       ? [...current, protocol]
       : current.filter((p) => p !== protocol);
     setFormData((prev) => ({ ...prev, blockedProtocols: updated }));
+  };
+
+  const handleGroupToggle = (groupSid: string) => {
+    setFormData((prev) => {
+      const currentGroups = prev.groupSids || [];
+      const isSelected = currentGroups.includes(groupSid);
+      return {
+        ...prev,
+        groupSids: isSelected
+          ? currentGroups.filter((sid) => sid !== groupSid)
+          : [...currentGroups, groupSid],
+      };
+    });
   };
 
   const validate = () => {
@@ -131,8 +145,15 @@ export const EditForwardAgentSheet: React.FC<EditForwardAgentSheetProps> = ({
         updates.blockedProtocols = newProtocols;
       }
 
-      if (formData.groupSid !== undefined) {
-        updates.groupSid = formData.groupSid;
+      // Compare resource groups arrays
+      const currentGroups = agent.groupSids || [];
+      const newGroups = formData.groupSids || [];
+      const groupsChanged =
+        currentGroups.length !== newGroups.length ||
+        currentGroups.some((g) => !newGroups.includes(g)) ||
+        newGroups.some((g) => !currentGroups.includes(g));
+      if (groupsChanged) {
+        updates.groupSids = newGroups;
       }
 
       if (formData.muteNotification !== agent.muteNotification) {
@@ -284,23 +305,45 @@ export const EditForwardAgentSheet: React.FC<EditForwardAgentSheetProps> = ({
             />
           </div>
 
-          {/* Resource Group */}
-          <div className="space-y-1.5">
-            <label className="text-sm font-medium">{t('admin.forwardAgents.table.columns.resourceGroup')}</label>
-            <MobileSelect
-              value={formData.groupSid ?? '__none__'}
-              onChange={(value) => handleChange('groupSid', value === '__none__' ? '' : value)}
-              disabled={isLoadingGroups}
-              options={[
-                { value: '__none__', label: t('common.none') },
-                ...resourceGroups.map((group) => ({
-                  value: group.sid,
-                  label: group.name,
-                })),
-              ]}
-              placeholder={isLoadingGroups ? t('common.table.loading') : t('common.placeholders.select')}
-            />
-          </div>
+          {/* Resource Groups */}
+          {resourceGroups.length > 0 && (
+            <div className="space-y-1.5">
+              <label className="text-sm font-medium">{t('admin.forwardAgents.form.bindResourceGroups')}</label>
+              <div className="border rounded-lg overflow-hidden divide-y divide-border">
+                {resourceGroups.map((group) => {
+                  const isSelected = formData.groupSids?.includes(group.sid) ?? false;
+                  return (
+                    <button
+                      key={group.sid}
+                      type="button"
+                      onClick={() => handleGroupToggle(group.sid)}
+                      className={cn(
+                        "flex items-center gap-3 px-3 py-3 w-full text-left transition-colors min-h-[48px]",
+                        isSelected ? "bg-primary/5" : "active:bg-muted/50"
+                      )}
+                    >
+                      <div className={cn(
+                        "size-5 rounded border flex items-center justify-center shrink-0 transition-colors",
+                        isSelected
+                          ? "bg-primary border-primary text-primary-foreground"
+                          : "border-border"
+                      )}>
+                        {isSelected && <Check className="size-3.5" />}
+                      </div>
+                      <span className="text-sm font-medium truncate flex-1">
+                        {group.name}
+                      </span>
+                    </button>
+                  );
+                })}
+              </div>
+              <p className="text-xs text-muted-foreground">
+                {formData.groupSids && formData.groupSids.length > 0
+                  ? t("admin.forwardAgents.form.selectedGroupsCount", { count: formData.groupSids.length })
+                  : t("admin.forwardAgents.form.bindResourceGroupsHint")}
+              </p>
+            </div>
+          )}
 
           {/* Mute Notification */}
           <div className="space-y-1.5">

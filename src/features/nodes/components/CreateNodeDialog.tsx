@@ -3,7 +3,7 @@
  * Redesigned with improved UI/UX - clean visual hierarchy, icons, and better form layout
  */
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   Dialog,
@@ -50,7 +50,11 @@ import {
   Layers,
   Gauge,
   Workflow,
+  FolderTree,
 } from 'lucide-react';
+import { Checkbox } from '@/components/common/Checkbox';
+import { ScrollArea } from '@/components/common/ScrollArea';
+import { useResourceGroups } from '@/features/resource-groups/hooks/useResourceGroups';
 
 interface CreateNodeDialogProps {
   open: boolean;
@@ -109,6 +113,7 @@ const getDefaultFormData = (): CreateNodeRequest & { tagsInput: string } => ({
   sortOrder: 0,
   tags: [],
   tagsInput: '',
+  groupSids: [],
   plugin: undefined,
   pluginOpts: undefined,
   transportProtocol: 'tcp',
@@ -229,7 +234,7 @@ const CollapsibleSection: React.FC<CollapsibleSectionProps> = ({
 
 // Form Field Component for consistent styling
 interface FormFieldProps {
-  label: string;
+  label: React.ReactNode;
   required?: boolean;
   error?: string;
   hint?: string;
@@ -318,9 +323,22 @@ export const CreateNodeDialog: React.FC<CreateNodeDialogProps> = ({
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [pluginOptsString, setPluginOptsString] = useState<string>('');
   const [openSections, setOpenSections] = useState<Set<string>>(new Set(['basic', 'network']));
+  // Track previous state for form reset - React recommended pattern for derived state
+  const [prevOpenState, setPrevOpenState] = useState<{ open: boolean; initialDataKey?: string } | null>(null);
 
-  // Update form data when initialData changes
-  useEffect(() => {
+  // Get resource groups for selection
+  const { resourceGroups } = useResourceGroups({
+    pageSize: 100,
+    filters: { status: 'active' },
+    enabled: open,
+  });
+
+  // Sync form data when dialog opens or initialData changes
+  // See: https://react.dev/learn/you-might-not-need-an-effect#adjusting-some-state-when-a-prop-changes
+  const initialDataKey = initialData ? initialData.name : undefined;
+  const currentState = { open, initialDataKey };
+  if (prevOpenState?.open !== currentState.open || prevOpenState?.initialDataKey !== currentState.initialDataKey) {
+    setPrevOpenState(currentState);
     if (open && initialData) {
       const tagsInput = initialData.tags?.join(', ') ?? '';
       setFormData({
@@ -343,7 +361,7 @@ export const CreateNodeDialog: React.FC<CreateNodeDialogProps> = ({
       setPluginOptsString('');
       setOpenSections(new Set(['basic', 'network']));
     }
-  }, [open, initialData]);
+  }
 
   const handleClose = () => {
     setFormData(getDefaultFormData());
@@ -377,6 +395,19 @@ export const CreateNodeDialog: React.FC<CreateNodeDialogProps> = ({
         next.add(sectionId);
       }
       return next;
+    });
+  };
+
+  const handleGroupToggle = (groupSid: string) => {
+    setFormData((prev) => {
+      const currentGroups = prev.groupSids || [];
+      const isSelected = currentGroups.includes(groupSid);
+      return {
+        ...prev,
+        groupSids: isSelected
+          ? currentGroups.filter((sid) => sid !== groupSid)
+          : [...currentGroups, groupSid],
+      };
     });
   };
 
@@ -618,6 +649,10 @@ export const CreateNodeDialog: React.FC<CreateNodeDialogProps> = ({
         submitData.route = formData.route;
       }
 
+      if (formData.groupSids && formData.groupSids.length > 0) {
+        submitData.groupSids = formData.groupSids;
+      }
+
       onSubmit(submitData);
       handleClose();
     }
@@ -654,7 +689,7 @@ export const CreateNodeDialog: React.FC<CreateNodeDialogProps> = ({
   };
   const hasProtocolSettings = getHasProtocolSettings();
 
-  const hasOtherSettings = Boolean(formData.region || formData.tagsInput || formData.sortOrder);
+  const hasOtherSettings = Boolean(formData.region || formData.tagsInput || formData.sortOrder || (formData.groupSids && formData.groupSids.length > 0));
 
   return (
     <Dialog open={open} onOpenChange={(open) => !open && handleClose()}>
@@ -1569,6 +1604,49 @@ export const CreateNodeDialog: React.FC<CreateNodeDialogProps> = ({
                     className="h-10"
                   />
                 </FormField>
+
+                {/* Resource Groups */}
+                {resourceGroups.length > 0 && (
+                  <FormField
+                    label={
+                      <span className="flex items-center gap-1.5">
+                        <FolderTree className="size-4" />
+                        {t('admin.nodes.form.bindResourceGroups')}
+                      </span>
+                    }
+                    hint={
+                      formData.groupSids && formData.groupSids.length > 0
+                        ? t('admin.nodes.form.selectedGroupsCount', { count: formData.groupSids.length })
+                        : t('admin.nodes.form.bindResourceGroupsHint')
+                    }
+                  >
+                    <div className="border rounded-lg overflow-hidden">
+                      <ScrollArea className="h-[120px]">
+                        <div className="divide-y divide-border">
+                          {resourceGroups.map((group) => {
+                            const isSelected = formData.groupSids?.includes(group.sid) ?? false;
+                            return (
+                              <label
+                                key={group.sid}
+                                className={`flex items-center gap-3 px-3 py-2.5 cursor-pointer transition-colors ${
+                                  isSelected ? 'bg-primary/5' : 'hover:bg-muted/50'
+                                }`}
+                              >
+                                <Checkbox
+                                  checked={isSelected}
+                                  onCheckedChange={() => handleGroupToggle(group.sid)}
+                                />
+                                <span className="text-sm font-medium truncate flex-1">
+                                  {group.name}
+                                </span>
+                              </label>
+                            );
+                          })}
+                        </div>
+                      </ScrollArea>
+                    </div>
+                  </FormField>
+                )}
               </div>
             </CollapsibleSection>
 

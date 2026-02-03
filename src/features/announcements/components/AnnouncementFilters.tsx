@@ -38,6 +38,7 @@ const STATUS_OPTIONS: { value: AnnouncementStatus; label: string }[] = [
   { value: 'draft', label: 'announcements.status.draft' },
   { value: 'published', label: 'announcements.status.published' },
   { value: 'archived', label: 'announcements.status.archived' },
+  { value: 'expired', label: 'announcements.status.expired' },
 ];
 
 // Type options

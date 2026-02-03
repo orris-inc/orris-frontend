@@ -2,7 +2,7 @@
  * Edit Forward Agent Dialog Component
  */
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { formatDateTime } from '@/shared/utils/date-utils';
 import {
@@ -17,13 +17,8 @@ import { Input } from "@/components/common/Input";
 import { Textarea } from "@/components/common/Textarea";
 import { Label } from "@/components/common/Label";
 import { Separator } from "@/components/common/Separator";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/common/Select";
+import { Checkbox } from "@/components/common/Checkbox";
+import { ScrollArea } from "@/components/common/ScrollArea";
 import { Switch, SwitchThumb } from "@/components/common/Switch";
 import { cn } from "@/lib/utils";
 import type {
@@ -73,15 +68,19 @@ export const EditForwardAgentDialog: React.FC<EditForwardAgentDialogProps> = ({
   const { t } = useTranslation();
   const [formData, setFormData] = useState<UpdateForwardAgentRequest>({});
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [prevAgentId, setPrevAgentId] = useState<string | undefined>(undefined);
 
   // Get resource group list
-  const { resourceGroups, isLoading: isLoadingGroups } = useResourceGroups({
+  const { resourceGroups } = useResourceGroups({
     pageSize: 100,
     filters: { status: "active" },
     enabled: open,
   });
 
-  useEffect(() => {
+  // Sync form data when agent changes - React recommended pattern for derived state
+  // See: https://react.dev/learn/you-might-not-need-an-effect#adjusting-some-state-when-a-prop-changes
+  if (agent?.id !== prevAgentId) {
+    setPrevAgentId(agent?.id);
     if (agent) {
       setFormData({
         name: agent.name,
@@ -91,11 +90,12 @@ export const EditForwardAgentDialog: React.FC<EditForwardAgentDialogProps> = ({
         allowedPortRange: agent.allowedPortRange,
         sortOrder: agent.sortOrder,
         blockedProtocols: agent.blockedProtocols || [],
+        groupSids: agent.groupSids || [],
         muteNotification: agent.muteNotification,
       });
       setErrors({});
     }
-  }, [agent]);
+  }
 
   const handleChange = (
     field: keyof UpdateForwardAgentRequest,
@@ -128,6 +128,19 @@ export const EditForwardAgentDialog: React.FC<EditForwardAgentDialogProps> = ({
       ? [...current, protocol]
       : current.filter((p) => p !== protocol);
     setFormData((prev) => ({ ...prev, blockedProtocols: updated }));
+  };
+
+  const handleGroupToggle = (groupSid: string) => {
+    setFormData((prev) => {
+      const currentGroups = prev.groupSids || [];
+      const isSelected = currentGroups.includes(groupSid);
+      return {
+        ...prev,
+        groupSids: isSelected
+          ? currentGroups.filter((sid) => sid !== groupSid)
+          : [...currentGroups, groupSid],
+      };
+    });
   };
 
   const validate = () => {
@@ -168,9 +181,15 @@ export const EditForwardAgentDialog: React.FC<EditForwardAgentDialogProps> = ({
         updates.blockedProtocols = newProtocols;
       }
 
-      // Resource group association
-      if (formData.groupSid !== undefined) {
-        updates.groupSid = formData.groupSid;
+      // Compare resource groups arrays
+      const currentGroups = agent.groupSids || [];
+      const newGroups = formData.groupSids || [];
+      const groupsChanged =
+        currentGroups.length !== newGroups.length ||
+        currentGroups.some((g) => !newGroups.includes(g)) ||
+        newGroups.some((g) => !currentGroups.includes(g));
+      if (groupsChanged) {
+        updates.groupSids = newGroups;
       }
 
       // Mute notification setting
@@ -369,39 +388,43 @@ export const EditForwardAgentDialog: React.FC<EditForwardAgentDialogProps> = ({
                   />
                 </div>
 
-                {/* Resource group */}
-                <div className="flex flex-col gap-2">
-                  <Label htmlFor="groupSid">{t("admin.forwardAgents.edit.labels.resourceGroup")}</Label>
-                  <Select
-                    value={formData.groupSid ?? "__none__"}
-                    onValueChange={(value) =>
-                      handleChange(
-                        "groupSid",
-                        value === "__none__" ? "" : value,
-                      )
-                    }
-                    disabled={isLoadingGroups}
-                  >
-                    <SelectTrigger id="groupSid">
-                      <SelectValue
-                        placeholder={
-                          isLoadingGroups ? t("common.loading.loading") : t("admin.forwardAgents.edit.placeholders.selectResourceGroup")
-                        }
-                      />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="__none__">{t("admin.forwardAgents.edit.noResourceGroup")}</SelectItem>
-                      {resourceGroups.map((group) => (
-                        <SelectItem key={group.sid} value={group.sid}>
-                          {group.name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                  <p className="text-xs text-muted-foreground">
-                    {t("admin.forwardAgents.edit.hints.resourceGroup")}
-                  </p>
-                </div>
+                {/* Resource groups */}
+                {resourceGroups.length > 0 && (
+                  <div className="flex flex-col gap-2">
+                    <Label>{t("admin.forwardAgents.form.bindResourceGroups")}</Label>
+                    <div className="border rounded-lg overflow-hidden">
+                      <ScrollArea className="h-[120px]">
+                        <div className="divide-y divide-border">
+                          {resourceGroups.map((group) => {
+                            const isSelected = formData.groupSids?.includes(group.sid) ?? false;
+                            return (
+                              <label
+                                key={group.sid}
+                                className={cn(
+                                  "flex items-center gap-3 px-3 py-2.5 cursor-pointer transition-colors",
+                                  isSelected ? 'bg-primary/5' : 'hover:bg-muted/50'
+                                )}
+                              >
+                                <Checkbox
+                                  checked={isSelected}
+                                  onCheckedChange={() => handleGroupToggle(group.sid)}
+                                />
+                                <span className="text-sm font-medium truncate flex-1">
+                                  {group.name}
+                                </span>
+                              </label>
+                            );
+                          })}
+                        </div>
+                      </ScrollArea>
+                    </div>
+                    <p className="text-xs text-muted-foreground">
+                      {formData.groupSids && formData.groupSids.length > 0
+                        ? t("admin.forwardAgents.form.selectedGroupsCount", { count: formData.groupSids.length })
+                        : t("admin.forwardAgents.form.bindResourceGroupsHint")}
+                    </p>
+                  </div>
+                )}
 
                 {/* Mute notification */}
                 <div className="flex flex-col gap-2">

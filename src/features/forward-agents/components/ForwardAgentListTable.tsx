@@ -359,21 +359,31 @@ export const ForwardAgentListTable: React.FC<ForwardAgentListTableProps> = ({
       meta: { priority: 3 } as ResponsiveColumnMeta,
       cell: ({ row }) => {
         const agent = row.original;
-        if (!agent.groupId) {
+        if (!agent.groupSids || agent.groupSids.length === 0) {
           return <span className="text-xs text-slate-400">-</span>;
         }
-        const group = resourceGroupsMap[agent.groupId];
+        const firstGroupSid = agent.groupSids[0];
+        const firstGroup = resourceGroupsMap[firstGroupSid];
+        const hasMore = agent.groupSids.length > 1;
         return (
           <Tooltip>
             <TooltipTrigger>
               <Badge variant="outline" className="text-xs truncate max-w-[100px]">
-                {group?.name || agent.groupId}
+                {firstGroup?.name || firstGroupSid}
+                {hasMore && ` +${agent.groupSids.length - 1}`}
               </Badge>
             </TooltipTrigger>
             <TooltipContent>
               <div className="space-y-1">
-                <div>{group?.name || t('admin.forwardAgents.table.tooltip.unknownResourceGroup')}</div>
-                <div className="text-xs text-slate-400 font-mono">{agent.groupId}</div>
+                {agent.groupSids.map((sid) => {
+                  const group = resourceGroupsMap[sid];
+                  return (
+                    <div key={sid}>
+                      <span>{group?.name || t('admin.forwardAgents.table.tooltip.unknownResourceGroup')}</span>
+                      <span className="text-xs text-slate-400 font-mono ml-2">({sid})</span>
+                    </div>
+                  );
+                })}
               </div>
             </TooltipContent>
           </Tooltip>

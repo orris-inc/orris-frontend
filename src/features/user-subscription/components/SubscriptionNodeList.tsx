@@ -116,11 +116,11 @@ export const SubscriptionNodeList: React.FC<SubscriptionNodeListProps> = ({
               {agent.publicAddress && (
                 <span className="truncate font-mono">{agent.publicAddress}</span>
               )}
-              {agent.publicAddress && agent.groupName && (
+              {agent.publicAddress && agent.groups && agent.groups.length > 0 && (
                 <span className="text-border">|</span>
               )}
-              {agent.groupName && (
-                <span className="truncate">{agent.groupName}</span>
+              {agent.groups && agent.groups.length > 0 && (
+                <span className="truncate">{agent.groups.map((g) => g.name).join(', ')}</span>
               )}
             </div>
           </div>

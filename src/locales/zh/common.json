@@ -922,6 +922,9 @@
         "resourceGroupSelectHint": "选择资源组",
         "selectResourceGroup": "选择资源组",
         "noResourceGroup": "无资源组",
+        "bindResourceGroups": "绑定资源组",
+        "bindResourceGroupsHint": "选择要绑定的资源组",
+        "selectedGroupsCount": "已选择 {{count}} 个资源组",
         "requiredFieldsNote": "必填项",
         "muteNotification": "静音通知",
         "muteNotificationHint": "静音后不发送告警",
@@ -1643,7 +1646,14 @@
         "blockedProtocolsHint": "选择阻止的协议",
         "protocolGroupProxy": "代理协议",
         "protocolGroupApp": "应用协议",
-        "remarkPlaceholder": "备注说明"
+        "remarkPlaceholder": "备注说明",
+        "resourceGroup": "资源组",
+        "resourceGroupHint": "关联到资源组",
+        "selectResourceGroup": "选择资源组",
+        "noResourceGroup": "不关联资源组",
+        "bindResourceGroups": "绑定资源组",
+        "bindResourceGroupsHint": "选择要绑定的资源组",
+        "selectedGroupsCount": "已选择 {{count}} 个资源组"
       },
       "detail": {
         "badge": "转发Agent",
@@ -3917,7 +3927,8 @@
     "status": {
       "draft": "草稿",
       "published": "已发布",
-      "archived": "已归档"
+      "archived": "已归档",
+      "expired": "已过期"
     },
     "type": {
       "label": "类型",

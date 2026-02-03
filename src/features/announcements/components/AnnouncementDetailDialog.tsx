@@ -31,6 +31,7 @@ const STATUS_VARIANT_MAP: Record<AnnouncementStatus, 'default' | 'success' | 'wa
   draft: 'default',
   published: 'success',
   archived: 'warning',
+  expired: 'warning',
 };
 
 // Type icon mapping

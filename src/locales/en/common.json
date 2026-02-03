@@ -922,6 +922,9 @@
         "resourceGroupSelectHint": "Select one or more resource groups",
         "selectResourceGroup": "Select resource group",
         "noResourceGroup": "No resource group",
+        "bindResourceGroups": "Bind Resource Groups",
+        "bindResourceGroupsHint": "Select resource groups to bind",
+        "selectedGroupsCount": "{{count}} groups selected",
         "requiredFieldsNote": "Required fields",
         "muteNotification": "Mute Notifications",
         "muteNotificationHint": "When muted, no alerts will be sent for this node",
@@ -1643,7 +1646,14 @@
         "blockedProtocolsHint": "Select protocols to block",
         "protocolGroupProxy": "Proxy Protocols",
         "protocolGroupApp": "Application Protocols",
-        "remarkPlaceholder": "Optional: add a remark"
+        "remarkPlaceholder": "Optional: add a remark",
+        "resourceGroup": "Resource Group",
+        "resourceGroupHint": "Associate with a resource group",
+        "selectResourceGroup": "Select resource group",
+        "noResourceGroup": "No resource group",
+        "bindResourceGroups": "Bind Resource Groups",
+        "bindResourceGroupsHint": "Select resource groups to bind",
+        "selectedGroupsCount": "{{count}} groups selected"
       },
       "detail": {
         "badge": "Forward Agent",
@@ -3917,7 +3927,8 @@
     "status": {
       "draft": "Draft",
       "published": "Published",
-      "archived": "Archived"
+      "archived": "Archived",
+      "expired": "Expired"
     },
     "type": {
       "label": "Type",
