@@ -327,8 +327,8 @@ export const NodeListTable: React.FC<NodeListTableProps> = ({
           } else if (node.expiresAt) {
             lines.push(`${t('admin.nodes.tooltip.expiresAt')}: ${formatDateTime(node.expiresAt)}`);
           }
-          if (node.renewalAmount) {
-            lines.push(`${t('admin.nodes.tooltip.renewalAmount')}: ¥${node.renewalAmount}`);
+          if (node.costLabel) {
+            lines.push(`${t('common.fields.costLabel')}: ${node.costLabel}`);
           }
           // Click action hint
           if (node.status === 'active') {

@@ -656,26 +656,22 @@ export const ForwardAgentDetailSheet = ({
               </DetailSection>
             )}
 
-            {/* Expiration info - if has expiration data */}
-            {(agent.expiresAt || agent.renewalAmount) && (
-              <DetailSection title={t('admin.forwardAgents.detail.expirationInfo')}>
-                <div className="px-3 py-2.5 grid grid-cols-2 gap-x-4 gap-y-2 text-xs">
-                  <div>
-                    <span className="text-muted-foreground">{t('admin.forwardAgents.detail.expiresAt')}</span>
-                    <p className={cn('text-foreground', agent.isExpired && 'text-destructive font-medium')}>
-                      {agent.expiresAt ? formatDateTime(agent.expiresAt) : t('admin.forwardAgents.detail.neverExpires')}
-                      {agent.isExpired && ` (${t('common.status.expired')})`}
-                    </p>
-                  </div>
-                  {agent.renewalAmount && (
-                    <div>
-                      <span className="text-muted-foreground">{t('admin.forwardAgents.detail.renewalAmount')}</span>
-                      <p className="text-foreground">¥{agent.renewalAmount}</p>
-                    </div>
-                  )}
+            {/* Expiration info */}
+            <DetailSection title={t('admin.forwardAgents.detail.expirationInfo')}>
+              <div className="px-3 py-2.5 grid grid-cols-2 gap-x-4 gap-y-2 text-xs">
+                <div>
+                  <span className="text-muted-foreground">{t('admin.forwardAgents.detail.expiresAt')}</span>
+                  <p className={cn('text-foreground', agent.isExpired && 'text-destructive font-medium')}>
+                    {agent.expiresAt ? formatDateTime(agent.expiresAt) : t('admin.forwardAgents.detail.neverExpires')}
+                    {agent.isExpired && ` (${t('common.status.expired')})`}
+                  </p>
                 </div>
-              </DetailSection>
-            )}
+                <div className="col-span-2">
+                  <span className="text-muted-foreground">{t('common.fields.costLabel')}</span>
+                  <p className="text-foreground">{agent.costLabel || '-'}</p>
+                </div>
+              </div>
+            </DetailSection>
 
             {/* Meta info - compact row */}
             <DetailSection title={t('admin.forwardAgents.detail.timeInfo')}>

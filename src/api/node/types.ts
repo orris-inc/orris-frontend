@@ -11,8 +11,9 @@
  * - Node: "node_xK9mP2vL3nQ" (prefix: node_)
  *
  * Recent changes:
- * - 2026-02-03: Added expiresAt, renewalAmount, isExpired fields to Node for node expiration tracking
- * - 2026-02-03: Added expiresAt, renewalAmount fields to UpdateNodeRequest for expiration management
+ * - 2026-02-03: Changed renewalAmount/renewalPeriod to costLabel for simplified cost display
+ * - 2026-02-03: Added expiresAt, costLabel, isExpired fields to Node for node expiration tracking
+ * - 2026-02-03: Added expiresAt, costLabel fields to UpdateNodeRequest for expiration management
  * - 2026-02-03: Changed groupIds JSON field name to groupSids in Node
  * - 2026-02-03: Added groupSids field to CreateNodeRequest for resource group association on creation
  * - 2026-01-31: Added vlessRealityPrivateKey to CreateNodeRequest, UpdateNodeRequest (auto-generated if empty for Reality security)
@@ -286,8 +287,8 @@ export interface Node {
   lastSeenAt?: string;
   /** Expiration time in ISO8601 format (null = never expires) (Added: 2026-02-03) */
   expiresAt?: string;
-  /** Renewal amount for display (Added: 2026-02-03) */
-  renewalAmount?: number;
+  /** Cost label for display (e.g., "35$/m", "35¥/y") (Updated: 2026-02-03 - replaced renewalAmount/renewalPeriod) */
+  costLabel?: string;
   /** True if node has expired (Added: 2026-02-03) */
   isExpired: boolean;
   /** Agent software version, extracted from systemStatus for easy table display (Added: 2025-12-31) */
@@ -628,8 +629,8 @@ export interface UpdateNodeRequest {
   groupSids?: string[];
   /** Expiration time in ISO8601 format (empty string to clear, omit to keep unchanged) (Added: 2026-02-03) */
   expiresAt?: string;
-  /** Renewal amount (0 to clear, omit to keep unchanged) (Added: 2026-02-03) */
-  renewalAmount?: number;
+  /** Cost label for display (empty string to clear, omit to keep unchanged) (Updated: 2026-02-03 - replaced renewalAmount/renewalPeriod) */
+  costLabel?: string;
   /** Transport protocol for Trojan (tcp, ws, grpc) */
   transportProtocol?: TransportProtocol;
   /** WebSocket host header or gRPC service name */

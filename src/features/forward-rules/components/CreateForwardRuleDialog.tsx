@@ -1302,6 +1302,8 @@ export const CreateForwardRuleDialog: React.FC<CreateForwardRuleDialogProps> = (
                         <SelectContent>
                           <SelectItem value="ws">WebSocket</SelectItem>
                           <SelectItem value="tls">TLS</SelectItem>
+                          <SelectItem value="ws_smux">WebSocket + SMUX</SelectItem>
+                          <SelectItem value="tls_smux">TLS + SMUX</SelectItem>
                         </SelectContent>
                       </Select>
                     </FormField>
@@ -1338,6 +1340,8 @@ export const CreateForwardRuleDialog: React.FC<CreateForwardRuleDialogProps> = (
                         <SelectContent>
                           <SelectItem value="ws">WebSocket</SelectItem>
                           <SelectItem value="tls">TLS</SelectItem>
+                          <SelectItem value="ws_smux">WebSocket + SMUX</SelectItem>
+                          <SelectItem value="tls_smux">TLS + SMUX</SelectItem>
                         </SelectContent>
                       </Select>
                     </FormField>

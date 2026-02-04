@@ -214,7 +214,33 @@
       "createdAt": "创建时间",
       "updatedAt": "更新时间",
       "protocol": "协议",
-      "version": "版本"
+      "version": "版本",
+      "expiresAt": "过期时间",
+      "costLabel": "成本标签",
+      "neverExpires": "永不过期",
+      "clearExpiration": "清除过期时间"
+    },
+    "costLabel": {
+      "placeholder": "例如：35$/m, 100¥/y",
+      "hint": "可选，用于展示成本信息"
+    },
+    "expiration": {
+      "preset": {
+        "1month": "1个月",
+        "3months": "3个月",
+        "6months": "6个月",
+        "1year": "1年"
+      }
+    },
+    "renewalPeriod": {
+      "month": "月",
+      "quarter": "季度",
+      "halfYear": "半年",
+      "year": "年",
+      "perMonth": "/月",
+      "perQuarter": "/季度",
+      "perHalfYear": "/半年",
+      "perYear": "/年"
     },
     "loading": {
       "creating": "创建中...",
@@ -775,6 +801,7 @@
         "expirationInfo": "有效期",
         "expiresAt": "过期时间",
         "renewalAmount": "续费金额",
+        "renewalPeriod": "续费周期",
         "neverExpires": "永不过期"
       },
       "emptyState": "暂无节点",
@@ -936,6 +963,11 @@
         "muteNotificationHint": "静音后不发送告警",
         "muted": "已静音",
         "unmuted": "未静音",
+        "expiresAtHint": "可选，留空表示永不过期",
+        "renewalAmountPlaceholder": "例如：100",
+        "renewalAmountHint": "可选，用于展示续费金额",
+        "renewalPeriodPlaceholder": "例如：1",
+        "renewalPeriodHint": "可选，续费周期（月），最大120个月",
         "nextStepNetwork": "下一步：网络配置",
         "nextStepProtocol": "下一步：协议设置",
         "commonPorts": "常用端口",
@@ -1282,6 +1314,8 @@
         "ipVersionIpv6": "IPv6",
         "tunnelTypeWs": "WebSocket",
         "tunnelTypeTls": "TLS",
+        "tunnelTypeWsSmux": "WebSocket + SMUX",
+        "tunnelTypeTlsSmux": "TLS + SMUX",
         "targetTypeNode": "节点",
         "targetTypeManual": "手动配置",
         "ipVersion": "IP版本",
@@ -1711,6 +1745,7 @@
         "expirationInfo": "有效期",
         "expiresAt": "过期时间",
         "renewalAmount": "续费金额",
+        "renewalPeriod": "续费周期",
         "neverExpires": "永不过期",
         "tokenNotice": "Token说明",
         "tokenNotice1": "Token仅在创建节点或重新生成时完整显示一次",
@@ -1754,14 +1789,19 @@
           "portLimit": "端口限制",
           "blockedProtocols": "阻止协议",
           "resourceGroup": "资源组",
-          "muteNotification": "静音通知"
+          "muteNotification": "静音通知",
+          "expiresAt": "过期时间",
+          "renewalAmount": "续费金额",
+          "renewalPeriod": "续费周期"
         },
         "placeholders": {
           "publicAddress": "例如：example.com 或 1.2.3.4",
           "tunnelAddress": "例如：10.0.0.1 或 internal.example.com",
           "portLimit": "例如：80,443,8000-9000",
           "sortOrder": "例如：100",
-          "selectResourceGroup": "选择资源组"
+          "selectResourceGroup": "选择资源组",
+          "renewalAmount": "例如：100",
+          "renewalPeriod": "例如：1"
         },
         "hints": {
           "publicAddress": "可选，留空时由 Agent 自动检测",
@@ -1770,7 +1810,10 @@
           "sortOrder": "可选，数值越小排序越靠前",
           "blockedProtocols": "可选，点击选择需要阻止的协议类型",
           "resourceGroup": "可选，将节点分配到资源组",
-          "muteNotification": "启用后，该节点将不会发送任何通知"
+          "muteNotification": "启用后，该节点将不会发送任何通知",
+          "expiresAt": "可选，留空表示永不过期",
+          "renewalAmount": "可选，用于展示续费金额",
+          "renewalPeriod": "可选，续费周期（月），最大120个月"
         },
         "validation": {
           "nameRequired": "节点名称不能为空"
@@ -3350,6 +3393,11 @@
       "newUserDesc": "有新用户注册时发送通知",
       "paymentSuccess": "支付成功",
       "paymentSuccessDesc": "支付成功时发送通知",
+      "resourceExpiring": "资源即将过期",
+      "resourceExpiringDesc": "节点或转发代理即将过期时发送通知",
+      "expiringDays": "提前天数",
+      "expiringDaysDesc": "过期前几天开始提醒",
+      "days": "天",
       "reports": "报表",
       "dailySummary": "每日摘要",
       "dailySummaryDesc": "接收每日数据摘要报告",

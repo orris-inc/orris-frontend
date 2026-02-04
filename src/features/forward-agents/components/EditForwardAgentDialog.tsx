@@ -20,6 +20,7 @@ import { Separator } from "@/components/common/Separator";
 import { Checkbox } from "@/components/common/Checkbox";
 import { ScrollArea } from "@/components/common/ScrollArea";
 import { Switch, SwitchThumb } from "@/components/common/Switch";
+import { ExpirationDatePicker } from "@/components/common/ExpirationDatePicker";
 import { cn } from "@/lib/utils";
 import type {
   ForwardAgent,
@@ -92,6 +93,8 @@ export const EditForwardAgentDialog: React.FC<EditForwardAgentDialogProps> = ({
         blockedProtocols: agent.blockedProtocols || [],
         groupSids: agent.groupSids || [],
         muteNotification: agent.muteNotification,
+        expiresAt: agent.expiresAt,
+        costLabel: agent.costLabel,
       });
       setErrors({});
     }
@@ -120,6 +123,10 @@ export const EditForwardAgentDialog: React.FC<EditForwardAgentDialogProps> = ({
         handleChange("sortOrder", num);
       }
     }
+  };
+
+  const handleCostLabelChange = (value: string) => {
+    handleChange("costLabel", value || undefined);
   };
 
   const handleProtocolToggle = (protocol: BlockedProtocol, checked: boolean) => {
@@ -195,6 +202,16 @@ export const EditForwardAgentDialog: React.FC<EditForwardAgentDialogProps> = ({
       // Mute notification setting
       if (formData.muteNotification !== agent.muteNotification) {
         updates.muteNotification = formData.muteNotification;
+      }
+
+      // Expiration time - empty string to clear, undefined to keep unchanged
+      if (formData.expiresAt !== agent.expiresAt) {
+        updates.expiresAt = formData.expiresAt || ""; // Empty string to clear
+      }
+
+      // Cost label - empty string to clear, undefined to keep unchanged
+      if (formData.costLabel !== agent.costLabel) {
+        updates.costLabel = formData.costLabel || ""; // Empty string to clear
       }
 
       // If any changes, submit update
@@ -445,6 +462,35 @@ export const EditForwardAgentDialog: React.FC<EditForwardAgentDialogProps> = ({
                   </div>
                   <p className="text-xs text-muted-foreground">
                     {t("admin.forwardAgents.edit.hints.muteNotification")}
+                  </p>
+                </div>
+
+                {/* Expiration time */}
+                <div className="flex flex-col gap-2">
+                  <Label htmlFor="expiresAt">{t("admin.forwardAgents.edit.labels.expiresAt")}</Label>
+                  <ExpirationDatePicker
+                    value={formData.expiresAt}
+                    onChange={(value) => handleChange("expiresAt", value ?? "")}
+                    emptyValue=""
+                    id="expiresAt"
+                  />
+                  <p className="text-xs text-muted-foreground">
+                    {t("admin.forwardAgents.edit.hints.expiresAt")}
+                  </p>
+                </div>
+
+                {/* Cost label */}
+                <div className="flex flex-col gap-2">
+                  <Label htmlFor="costLabel">{t("common.fields.costLabel")}</Label>
+                  <Input
+                    id="costLabel"
+                    type="text"
+                    value={formData.costLabel ?? ""}
+                    onChange={(e) => handleCostLabelChange(e.target.value)}
+                    placeholder={t("common.costLabel.placeholder")}
+                  />
+                  <p className="text-xs text-muted-foreground">
+                    {t("common.costLabel.hint")}
                   </p>
                 </div>
               </div>

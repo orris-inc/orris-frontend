@@ -204,6 +204,43 @@ export function useForwardAgentEvents(options: UseForwardAgentEventsOptions = {}
 }
 
 /**
+ * Check if two AgentSystemStatus objects are equal (shallow comparison of key fields)
+ * Only compares fields that affect UI rendering to avoid unnecessary re-renders
+ */
+function isAgentStatusEqual(a: AgentSystemStatus | null, b: AgentSystemStatus | null): boolean {
+  if (a === b) return true;
+  if (!a || !b) return false;
+
+  // Compare key numeric fields with tolerance for floating point
+  const numericFields = [
+    'cpuPercent', 'memoryPercent', 'diskPercent',
+    'networkRxRate', 'networkTxRate',
+    'tcpConnections', 'udpConnections', 'uptimeSeconds',
+  ] as const;
+
+  for (const field of numericFields) {
+    const aVal = a[field];
+    const bVal = b[field];
+    if (aVal !== bVal) {
+      // Allow small differences for percentages (less than 0.5%)
+      if (typeof aVal === 'number' && typeof bVal === 'number') {
+        if (Math.abs(aVal - bVal) > 0.5) return false;
+      } else {
+        return false;
+      }
+    }
+  }
+
+  // Compare string fields
+  const stringFields = ['agentVersion', 'platform', 'arch', 'publicIpv4', 'publicIpv6'] as const;
+  for (const field of stringFields) {
+    if (a[field] !== b[field]) return false;
+  }
+
+  return true;
+}
+
+/**
  * Hook for detail dialog to subscribe to a single agent's real-time events
  * Returns the latest status and handles SSE subscription lifecycle
  */
@@ -214,9 +251,10 @@ export function useForwardAgentDetailEvents(options: UseForwardAgentDetailEvents
   const [isOnline, setIsOnline] = useState(false);
   const [connectionState, setConnectionState] = useState<SSEConnectionState>('disconnected');
 
-  // Use ref for callback to maintain stable reference
+  // Use refs for stable references and avoiding unnecessary re-renders
   const onStatusUpdateRef = useRef(onStatusUpdate);
   onStatusUpdateRef.current = onStatusUpdate;
+  const statusRef = useRef<AgentSystemStatus | null>(null);
 
   // Handle incoming SSE events for this specific agent
   const handleEvent = useCallback(
@@ -233,14 +271,19 @@ export function useForwardAgentDetailEvents(options: UseForwardAgentDetailEvents
         case 'agent:offline':
           setIsOnline(false);
           setStatus(null);
+          statusRef.current = null;
           break;
 
         case 'agent:status':
           if (event.data) {
             const convertedStatus = convertSnakeToCamel<AgentSystemStatus>(event.data);
-            setStatus(convertedStatus);
+            // Only update state if status actually changed
+            if (!isAgentStatusEqual(statusRef.current, convertedStatus)) {
+              statusRef.current = convertedStatus;
+              setStatus(convertedStatus);
+              onStatusUpdateRef.current?.(convertedStatus);
+            }
             setIsOnline(true);
-            onStatusUpdateRef.current?.(convertedStatus);
           }
           break;
 
@@ -249,9 +292,13 @@ export function useForwardAgentDetailEvents(options: UseForwardAgentDetailEvents
           const agentData = batchEvent.agents[agentId!];
           if (agentData?.status) {
             const convertedStatus = convertSnakeToCamel<AgentSystemStatus>(agentData.status);
-            setStatus(convertedStatus);
+            // Only update state if status actually changed
+            if (!isAgentStatusEqual(statusRef.current, convertedStatus)) {
+              statusRef.current = convertedStatus;
+              setStatus(convertedStatus);
+              onStatusUpdateRef.current?.(convertedStatus);
+            }
             setIsOnline(true);
-            onStatusUpdateRef.current?.(convertedStatus);
           }
           break;
         }
@@ -272,6 +319,7 @@ export function useForwardAgentDetailEvents(options: UseForwardAgentDetailEvents
         controllerRef.current.close();
         controllerRef.current = null;
       }
+      statusRef.current = null;
       setStatus(null);
       setIsOnline(false);
       setConnectionState('disconnected');

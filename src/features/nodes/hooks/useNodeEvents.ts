@@ -206,6 +206,43 @@ export function useNodeEvents(options: UseNodeEventsOptions = {}): UseNodeEvents
 }
 
 /**
+ * Check if two NodeSystemStatus objects are equal (shallow comparison of key fields)
+ * Only compares fields that affect UI rendering to avoid unnecessary re-renders
+ */
+function isStatusEqual(a: NodeSystemStatus | null, b: NodeSystemStatus | null): boolean {
+  if (a === b) return true;
+  if (!a || !b) return false;
+
+  // Compare key numeric fields with tolerance for floating point
+  const numericFields = [
+    'cpuPercent', 'memoryPercent', 'diskPercent',
+    'networkRxRate', 'networkTxRate',
+    'tcpConnections', 'udpConnections', 'uptimeSeconds',
+  ] as const;
+
+  for (const field of numericFields) {
+    const aVal = a[field];
+    const bVal = b[field];
+    if (aVal !== bVal) {
+      // Allow small differences for percentages (less than 0.5%)
+      if (typeof aVal === 'number' && typeof bVal === 'number') {
+        if (Math.abs(aVal - bVal) > 0.5) return false;
+      } else {
+        return false;
+      }
+    }
+  }
+
+  // Compare string fields
+  const stringFields = ['agentVersion', 'platform', 'arch', 'publicIpv4', 'publicIpv6'] as const;
+  for (const field of stringFields) {
+    if (a[field] !== b[field]) return false;
+  }
+
+  return true;
+}
+
+/**
  * Hook for detail dialog to subscribe to a single node's real-time events
  * Returns the latest status and handles SSE subscription lifecycle
  */
@@ -216,9 +253,10 @@ export function useNodeDetailEvents(options: UseNodeDetailEventsOptions): UseNod
   const [isOnline, setIsOnline] = useState(false);
   const [connectionState, setConnectionState] = useState<SSEConnectionState>('disconnected');
 
-  // Use ref for callback to maintain stable reference
+  // Use refs for stable references and avoiding unnecessary re-renders
   const onStatusUpdateRef = useRef(onStatusUpdate);
   onStatusUpdateRef.current = onStatusUpdate;
+  const statusRef = useRef<NodeSystemStatus | null>(null);
 
   // Handle incoming SSE events for this specific node
   const handleEvent = useCallback(
@@ -235,14 +273,19 @@ export function useNodeDetailEvents(options: UseNodeDetailEventsOptions): UseNod
         case 'node:offline':
           setIsOnline(false);
           setStatus(null);
+          statusRef.current = null;
           break;
 
         case 'node:status':
           if (event.data) {
             const convertedStatus = convertSnakeToCamel<NodeSystemStatus>(event.data);
-            setStatus(convertedStatus);
+            // Only update state if status actually changed
+            if (!isStatusEqual(statusRef.current, convertedStatus)) {
+              statusRef.current = convertedStatus;
+              setStatus(convertedStatus);
+              onStatusUpdateRef.current?.(convertedStatus);
+            }
             setIsOnline(true);
-            onStatusUpdateRef.current?.(convertedStatus);
           }
           break;
 
@@ -251,9 +294,13 @@ export function useNodeDetailEvents(options: UseNodeDetailEventsOptions): UseNod
           const nodeData = batchEvent.agents[nodeId!];
           if (nodeData?.status) {
             const convertedStatus = convertSnakeToCamel<NodeSystemStatus>(nodeData.status);
-            setStatus(convertedStatus);
+            // Only update state if status actually changed
+            if (!isStatusEqual(statusRef.current, convertedStatus)) {
+              statusRef.current = convertedStatus;
+              setStatus(convertedStatus);
+              onStatusUpdateRef.current?.(convertedStatus);
+            }
             setIsOnline(true);
-            onStatusUpdateRef.current?.(convertedStatus);
           }
           break;
         }
@@ -274,6 +321,7 @@ export function useNodeDetailEvents(options: UseNodeDetailEventsOptions): UseNod
         controllerRef.current.close();
         controllerRef.current = null;
       }
+      statusRef.current = null;
       setStatus(null);
       setIsOnline(false);
       setConnectionState('disconnected');

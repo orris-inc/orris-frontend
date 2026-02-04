@@ -22,6 +22,7 @@ import {
   BarChart3,
   Calendar,
   Clock,
+  Timer,
 } from "lucide-react";
 import { Switch, SwitchThumb } from "@/components/common/Switch";
 import { Input } from "@/components/common/Input";
@@ -44,6 +45,8 @@ const preferencesSchema = z.object({
   notifyAgentOffline: z.boolean(),
   notifyNewUser: z.boolean(),
   notifyPaymentSuccess: z.boolean(),
+  notifyResourceExpiring: z.boolean(),
+  resourceExpiringDays: z.number().min(1).max(30),
   notifyDailySummary: z.boolean(),
   notifyWeeklySummary: z.boolean(),
   offlineThresholdMinutes: z.number().min(3).max(30),
@@ -169,6 +172,8 @@ export const AdminNotificationPreferencesForm = ({
       notifyAgentOffline: binding.notifyAgentOffline,
       notifyNewUser: binding.notifyNewUser,
       notifyPaymentSuccess: binding.notifyPaymentSuccess,
+      notifyResourceExpiring: binding.notifyResourceExpiring,
+      resourceExpiringDays: binding.resourceExpiringDays,
       notifyDailySummary: binding.notifyDailySummary,
       notifyWeeklySummary: binding.notifyWeeklySummary,
       offlineThresholdMinutes: binding.offlineThresholdMinutes,
@@ -181,6 +186,7 @@ export const AdminNotificationPreferencesForm = ({
 
   const notifyNodeOffline = watch("notifyNodeOffline");
   const notifyAgentOffline = watch("notifyAgentOffline");
+  const notifyResourceExpiring = watch("notifyResourceExpiring");
   const notifyDailySummary = watch("notifyDailySummary");
   const notifyWeeklySummary = watch("notifyWeeklySummary");
   const showOfflineSettings = notifyNodeOffline || notifyAgentOffline;
@@ -337,6 +343,54 @@ export const AdminNotificationPreferencesForm = ({
             )}
           />
         </PreferenceToggle>
+
+        <PreferenceToggle
+          icon={<Timer className="size-4 text-warning" />}
+          iconBg="bg-warning/10"
+          label={t("telegramAdmin.preferences.resourceExpiring")}
+          description={t("telegramAdmin.preferences.resourceExpiringDesc")}
+        >
+          <Controller
+            name="notifyResourceExpiring"
+            control={control}
+            render={({ field }) => (
+              <Switch checked={field.value} onCheckedChange={field.onChange}>
+                <SwitchThumb />
+              </Switch>
+            )}
+          />
+        </PreferenceToggle>
+
+        {/* Resource expiring days - only show when enabled */}
+        {notifyResourceExpiring && (
+          <SubSetting
+            icon={<Clock className="size-3.5" />}
+            label={t("telegramAdmin.preferences.expiringDays")}
+            description={t("telegramAdmin.preferences.expiringDaysDesc")}
+          >
+            <div className="flex items-center gap-1.5">
+              <Controller
+                name="resourceExpiringDays"
+                control={control}
+                render={({ field }) => (
+                  <Input
+                    type="number"
+                    min={1}
+                    max={30}
+                    className="w-16 sm:w-14 h-10 sm:h-8 text-center text-base sm:text-sm px-1"
+                    {...field}
+                    onChange={(e) =>
+                      field.onChange(parseInt(e.target.value, 10) || 7)
+                    }
+                  />
+                )}
+              />
+              <span className="text-xs text-muted-foreground">
+                {t("telegramAdmin.preferences.days")}
+              </span>
+            </div>
+          </SubSetting>
+        )}
       </Section>
 
       {/* Reports Section */}

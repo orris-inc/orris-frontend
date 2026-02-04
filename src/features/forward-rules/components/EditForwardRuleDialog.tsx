@@ -953,10 +953,12 @@ export const EditForwardRuleDialog: React.FC<EditForwardRuleDialogProps> = ({
                         <SelectContent>
                           <SelectItem value="ws">WebSocket</SelectItem>
                           <SelectItem value="tls">TLS</SelectItem>
+                          <SelectItem value="ws_smux">WebSocket + SMUX</SelectItem>
+                          <SelectItem value="tls_smux">TLS + SMUX</SelectItem>
                         </SelectContent>
                       </Select>
                       <p className="text-xs text-muted-foreground">
-                        {formData.tunnelType === "tls"
+                        {(formData.tunnelType === "tls" || formData.tunnelType === "tls_smux")
                           ? t('admin.forwardRules.form.tunnelTypeTlsHint')
                           : t('admin.forwardRules.form.tunnelTypeWsHint')}
                       </p>

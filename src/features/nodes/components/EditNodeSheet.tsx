@@ -34,6 +34,7 @@ import { Badge } from '@/components/common/Badge';
 import { Switch, SwitchThumb } from '@/components/common/Switch';
 import { Checkbox } from '@/components/common/Checkbox';
 import { MobileFormInput, MobileSelect, type MobileSelectOption } from '@/components/common/mobile-form';
+import { ExpirationDatePicker } from '@/components/common/ExpirationDatePicker';
 import { useResourceGroups } from '@/features/resource-groups/hooks/useResourceGroups';
 import { useSubscriptionPlans } from '@/features/subscription-plans/hooks/useSubscriptionPlans';
 import { RouteConfigEditor } from './RouteConfigEditor';
@@ -341,6 +342,8 @@ export const EditNodeSheet: React.FC<EditNodeSheetProps> = ({
         route: node.route,
         groupSids: node.groupSids ?? [],
         muteNotification: node.muteNotification,
+        expiresAt: node.expiresAt,
+        costLabel: node.costLabel,
         // VLESS fields
         vlessTransportType: node.vlessTransportType,
         vlessFlow: node.vlessFlow,
@@ -432,6 +435,10 @@ export const EditNodeSheet: React.FC<EditNodeSheetProps> = ({
 
   const handleRouteChange = (route: RouteConfig | undefined) => {
     setFormData((prev) => ({ ...prev, route }));
+  };
+
+  const handleCostLabelChange = (value: string) => {
+    handleChange("costLabel", value || undefined);
   };
 
   const toggleSection = (sectionId: string) => {
@@ -554,6 +561,16 @@ export const EditNodeSheet: React.FC<EditNodeSheetProps> = ({
 
     if (formData.muteNotification !== node.muteNotification) {
       updates.muteNotification = formData.muteNotification;
+    }
+
+    // Expiration time
+    if (formData.expiresAt !== node.expiresAt) {
+      updates.expiresAt = formData.expiresAt || "";
+    }
+
+    // Cost label
+    if (formData.costLabel !== node.costLabel) {
+      updates.costLabel = formData.costLabel || "";
     }
 
     if (Object.keys(newErrors).length > 0) {
@@ -1350,6 +1367,28 @@ export const EditNodeSheet: React.FC<EditNodeSheetProps> = ({
                     {formData.muteNotification ? t('admin.nodes.form.muted') : t('admin.nodes.form.unmuted')}
                   </span>
                 </div>
+              </div>
+
+              {/* Expiration time */}
+              <div className="space-y-1.5">
+                <FormFieldLabel label={t('common.fields.expiresAt')} hint={t('admin.nodes.form.expiresAtHint')} />
+                <ExpirationDatePicker
+                  value={formData.expiresAt}
+                  onChange={(value) => handleChange("expiresAt", value ?? "")}
+                  emptyValue=""
+                  id="expiresAt"
+                  mobile
+                />
+              </div>
+
+              {/* Cost label */}
+              <div className="space-y-1.5">
+                <FormFieldLabel label={t('common.fields.costLabel')} hint={t('common.costLabel.hint')} />
+                <MobileFormInput
+                  value={formData.costLabel ?? ""}
+                  onChange={(value) => handleCostLabelChange(value)}
+                  placeholder={t('common.costLabel.placeholder')}
+                />
               </div>
             </div>
           </MobileSection>

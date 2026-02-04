@@ -87,6 +87,8 @@ const IP_VERSION_OPTIONS_KEYS = [
 const TUNNEL_TYPE_OPTIONS: MobileSelectOption[] = [
   { value: 'ws', label: 'WebSocket' },
   { value: 'tls', label: 'TLS' },
+  { value: 'ws_smux', label: 'WebSocket + SMUX' },
+  { value: 'tls_smux', label: 'TLS + SMUX' },
 ];
 
 const TARGET_TYPE_OPTIONS_KEYS = [

@@ -5,8 +5,9 @@
  * Last updated: 2026-02-03
  *
  * Recent changes:
- * - 2026-02-03: Added expiresAt, renewalAmount, isExpired fields to ForwardAgent for agent expiration tracking
- * - 2026-02-03: Added expiresAt, renewalAmount fields to UpdateForwardAgentRequest for expiration management
+ * - 2026-02-03: Changed renewalAmount/renewalPeriod to costLabel for simplified cost display
+ * - 2026-02-03: Added expiresAt, costLabel, isExpired fields to ForwardAgent for agent expiration tracking
+ * - 2026-02-03: Added expiresAt, costLabel fields to UpdateForwardAgentRequest for expiration management
  * - 2026-02-03: Changed groupSid to groupSids (array) for multi-group support on ForwardAgent, CreateForwardAgentRequest, UpdateForwardAgentRequest
  * - 2026-02-03: Changed UserForwardAgent groupId/groupName to groups array with UserGroupInfo type
  * - 2026-02-03: Added UserGroupInfo type for user-facing group information
@@ -80,9 +81,14 @@ export type IPVersion = 'auto' | 'ipv4' | 'ipv6';
 
 /**
  * Tunnel type for forwarding traffic
+ * - ws: WebSocket tunnel
+ * - tls: TLS tunnel
+ * - ws_smux: WebSocket tunnel with SMUX multiplexing
+ * - tls_smux: TLS tunnel with SMUX multiplexing
  * Added: 2025-12-24
+ * Updated: 2026-02-03 - Added SMUX support
  */
-export type TunnelType = 'ws' | 'tls';
+export type TunnelType = 'ws' | 'tls' | 'ws_smux' | 'tls_smux';
 
 /**
  * Load balance strategy for entry rules with multiple exit agents
@@ -387,8 +393,8 @@ export interface ForwardAgent {
   lastSeenAt?: string;
   /** Expiration time in ISO8601 format (null = never expires) (Added: 2026-02-03) */
   expiresAt?: string;
-  /** Renewal amount for display (Added: 2026-02-03) */
-  renewalAmount?: number;
+  /** Cost label for display (e.g., "35$/m", "35¥/y") (Updated: 2026-02-03 - replaced renewalAmount/renewalPeriod) */
+  costLabel?: string;
   /** True if agent has expired (Added: 2026-02-03) */
   isExpired: boolean;
   createdAt: string;
@@ -623,8 +629,8 @@ export interface UpdateForwardAgentRequest {
   muteNotification?: boolean;
   /** Expiration time in ISO8601 format (empty string to clear, omit to keep unchanged) (Added: 2026-02-03) */
   expiresAt?: string;
-  /** Renewal amount (0 to clear, omit to keep unchanged) (Added: 2026-02-03) */
-  renewalAmount?: number;
+  /** Cost label for display (empty string to clear, omit to keep unchanged) (Updated: 2026-02-03 - replaced renewalAmount/renewalPeriod) */
+  costLabel?: string;
 }
 
 /**

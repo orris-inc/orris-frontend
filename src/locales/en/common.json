@@ -214,7 +214,33 @@
       "createdAt": "Created At",
       "updatedAt": "Updated At",
       "protocol": "Protocol",
-      "version": "Version"
+      "version": "Version",
+      "expiresAt": "Expires At",
+      "costLabel": "Cost Label",
+      "neverExpires": "Never expires",
+      "clearExpiration": "Clear expiration"
+    },
+    "costLabel": {
+      "placeholder": "e.g., 35$/m, 100¥/y",
+      "hint": "Optional, for displaying cost information"
+    },
+    "expiration": {
+      "preset": {
+        "1month": "1 Month",
+        "3months": "3 Months",
+        "6months": "6 Months",
+        "1year": "1 Year"
+      }
+    },
+    "renewalPeriod": {
+      "month": "Month",
+      "quarter": "Quarter",
+      "halfYear": "Half Year",
+      "year": "Year",
+      "perMonth": "/month",
+      "perQuarter": "/quarter",
+      "perHalfYear": "/half year",
+      "perYear": "/year"
     },
     "loading": {
       "creating": "Creating...",
@@ -775,6 +801,7 @@
         "expirationInfo": "Expiration",
         "expiresAt": "Expires at",
         "renewalAmount": "Renewal amount",
+        "renewalPeriod": "Renewal period",
         "neverExpires": "Never expires"
       },
       "emptyState": "No nodes",
@@ -936,6 +963,11 @@
         "muteNotificationHint": "When muted, no alerts will be sent for this node",
         "muted": "Muted",
         "unmuted": "Not Muted",
+        "expiresAtHint": "Optional, leave empty for no expiration",
+        "renewalAmountPlaceholder": "e.g., 100",
+        "renewalAmountHint": "Optional, for displaying renewal amount",
+        "renewalPeriodPlaceholder": "e.g., 1",
+        "renewalPeriodHint": "Optional, renewal period in months (max 120)",
         "nextStepNetwork": "Next: Network Config",
         "nextStepProtocol": "Next: Protocol Settings",
         "commonPorts": "Common Ports",
@@ -1282,6 +1314,8 @@
         "ipVersionIpv6": "IPv6",
         "tunnelTypeWs": "WebSocket",
         "tunnelTypeTls": "TLS",
+        "tunnelTypeWsSmux": "WebSocket + SMUX",
+        "tunnelTypeTlsSmux": "TLS + SMUX",
         "targetTypeNode": "Node",
         "targetTypeManual": "Manual Config",
         "ipVersion": "IP Version",
@@ -1711,6 +1745,7 @@
         "expirationInfo": "Expiration",
         "expiresAt": "Expires at",
         "renewalAmount": "Renewal amount",
+        "renewalPeriod": "Renewal period",
         "neverExpires": "Never expires",
         "tokenNotice": "Token Notice",
         "tokenNotice1": "Token is only displayed once when creating or regenerating",
@@ -1754,14 +1789,19 @@
           "portLimit": "Port Limit",
           "blockedProtocols": "Blocked Protocols",
           "resourceGroup": "Resource Group",
-          "muteNotification": "Mute Notification"
+          "muteNotification": "Mute Notification",
+          "expiresAt": "Expires At",
+          "renewalAmount": "Renewal Amount",
+          "renewalPeriod": "Renewal Period"
         },
         "placeholders": {
           "publicAddress": "e.g., example.com or 1.2.3.4",
           "tunnelAddress": "e.g., 10.0.0.1 or internal.example.com",
           "portLimit": "e.g., 80,443,8000-9000",
           "sortOrder": "e.g., 100",
-          "selectResourceGroup": "Select resource group"
+          "selectResourceGroup": "Select resource group",
+          "renewalAmount": "e.g., 100",
+          "renewalPeriod": "e.g., 1"
         },
         "hints": {
           "publicAddress": "Optional, auto-detected by Agent if empty",
@@ -1770,7 +1810,10 @@
           "sortOrder": "Optional, lower values appear first",
           "blockedProtocols": "Optional, click to select protocols to block",
           "resourceGroup": "Optional, assign agent to a resource group",
-          "muteNotification": "When enabled, no notifications will be sent for this agent"
+          "muteNotification": "When enabled, no notifications will be sent for this agent",
+          "expiresAt": "Optional, leave empty for no expiration",
+          "renewalAmount": "Optional, for displaying renewal amount",
+          "renewalPeriod": "Optional, renewal period in months (max 120)"
         },
         "validation": {
           "nameRequired": "Node name is required"
@@ -3350,6 +3393,11 @@
       "newUserDesc": "Notify when new user registers",
       "paymentSuccess": "Payment Success",
       "paymentSuccessDesc": "Notify when payment is successful",
+      "resourceExpiring": "Resource Expiring",
+      "resourceExpiringDesc": "Notify when nodes or forward agents are about to expire",
+      "expiringDays": "Days Before",
+      "expiringDaysDesc": "Days before expiration to start notifying",
+      "days": "days",
       "reports": "Reports",
       "dailySummary": "Daily Summary",
       "dailySummaryDesc": "Receive daily summary report",

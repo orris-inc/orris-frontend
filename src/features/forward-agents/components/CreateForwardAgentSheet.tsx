@@ -25,6 +25,7 @@ import {
 } from "@/components/common/sheet";
 import { Button } from "@/components/common/Button";
 import { MobileFormInput } from "@/components/common/mobile-form";
+import { ExpirationDatePicker } from "@/components/common/ExpirationDatePicker";
 import { cn } from "@/lib/utils";
 import type {
   CreateForwardAgentRequest,
@@ -55,12 +56,22 @@ const PROTOCOL_GROUPS: {
   },
 ];
 
-interface CreateForwardAgentSheetProps
-  extends CreateSheetProps<CreateForwardAgentRequest> {
-  initialData?: Partial<CreateForwardAgentRequest>;
+// Extended form data type to include expiration fields
+interface CreateForwardAgentFormData extends CreateForwardAgentRequest {
+  expiresAt?: string;
+  costLabel?: string;
 }
 
-const getDefaultFormData = (): CreateForwardAgentRequest => ({
+// Extended request type for submission with expiration fields
+type CreateForwardAgentRequestWithExpiration = CreateForwardAgentFormData;
+
+interface CreateForwardAgentSheetProps
+  extends Omit<CreateSheetProps<CreateForwardAgentRequest>, 'onSubmit'> {
+  initialData?: Partial<CreateForwardAgentFormData>;
+  onSubmit: (data: CreateForwardAgentRequestWithExpiration) => Promise<void>;
+}
+
+const getDefaultFormData = (): CreateForwardAgentFormData => ({
   name: "",
   publicAddress: "",
   tunnelAddress: "",
@@ -69,6 +80,8 @@ const getDefaultFormData = (): CreateForwardAgentRequest => ({
   sortOrder: undefined,
   blockedProtocols: [],
   groupSids: [],
+  expiresAt: undefined,
+  costLabel: undefined,
 });
 
 /**
@@ -149,7 +162,7 @@ export const CreateForwardAgentSheet: React.FC<CreateForwardAgentSheetProps> =
   ({ open, onOpenChange, onSubmit, initialData }) => {
     const { t } = useTranslation();
     const [formData, setFormData] =
-      useState<CreateForwardAgentRequest>(getDefaultFormData());
+      useState<CreateForwardAgentFormData>(getDefaultFormData());
     const [errors, setErrors] = useState<Record<string, string>>({});
     const [loading, setLoading] = useState(false);
     const [showAdvanced, setShowAdvanced] = useState(false);
@@ -170,7 +183,9 @@ export const CreateForwardAgentSheet: React.FC<CreateForwardAgentSheetProps> =
             initialData.sortOrder !== undefined ||
             initialData.remark ||
             (initialData.blockedProtocols &&
-              initialData.blockedProtocols.length > 0)
+              initialData.blockedProtocols.length > 0) ||
+            initialData.expiresAt ||
+            initialData.costLabel !== undefined
           )
         );
       } else if (open && !initialData) {
@@ -189,7 +204,7 @@ export const CreateForwardAgentSheet: React.FC<CreateForwardAgentSheetProps> =
     };
 
     const handleChange = (
-      field: keyof CreateForwardAgentRequest,
+      field: keyof CreateForwardAgentFormData,
       value: string | number | undefined
     ) => {
       setFormData((prev) => ({ ...prev, [field]: value }));
@@ -200,6 +215,10 @@ export const CreateForwardAgentSheet: React.FC<CreateForwardAgentSheetProps> =
           return newErrors;
         });
       }
+    };
+
+    const handleCostLabelChange = (value: string) => {
+      handleChange("costLabel", value || undefined);
     };
 
     const handleProtocolToggle = (
@@ -240,7 +259,7 @@ export const CreateForwardAgentSheet: React.FC<CreateForwardAgentSheetProps> =
 
       setLoading(true);
       try {
-        const submitData: CreateForwardAgentRequest = {
+        const submitData: CreateForwardAgentRequestWithExpiration = {
           name: formData.name.trim(),
         };
 
@@ -264,6 +283,14 @@ export const CreateForwardAgentSheet: React.FC<CreateForwardAgentSheetProps> =
         }
         if (formData.groupSids && formData.groupSids.length > 0) {
           submitData.groupSids = formData.groupSids;
+        }
+
+        // Include expiration fields
+        if (formData.expiresAt) {
+          submitData.expiresAt = formData.expiresAt;
+        }
+        if (formData.costLabel) {
+          submitData.costLabel = formData.costLabel;
         }
 
         await onSubmit(submitData);
@@ -478,6 +505,31 @@ export const CreateForwardAgentSheet: React.FC<CreateForwardAgentSheetProps> =
                     </div>
                   </FormField>
                 )}
+
+                {/* Expiration time */}
+                <FormField
+                  label={t("admin.forwardAgents.edit.labels.expiresAt")}
+                  hint={t("admin.forwardAgents.edit.hints.expiresAt")}
+                >
+                  <ExpirationDatePicker
+                    value={formData.expiresAt}
+                    onChange={(value) => handleChange("expiresAt", value)}
+                    id="expiresAt"
+                    mobile
+                  />
+                </FormField>
+
+                {/* Cost label */}
+                <FormField
+                  label={t("common.fields.costLabel")}
+                  hint={t("common.costLabel.hint")}
+                >
+                  <MobileFormInput
+                    placeholder={t("common.costLabel.placeholder")}
+                    value={formData.costLabel ?? ""}
+                    onChange={(value) => handleCostLabelChange(value)}
+                  />
+                </FormField>
 
                 {/* Remark */}
                 <FormField label={t("common.fields.remark")}>

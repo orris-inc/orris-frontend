@@ -31,6 +31,7 @@ import {
 import { Badge } from '@/components/common/Badge';
 import { Switch, SwitchThumb } from '@/components/common/Switch';
 import { Checkbox } from '@/components/common/Checkbox';
+import { ExpirationDatePicker } from '@/components/common/ExpirationDatePicker';
 import { Layers, X } from 'lucide-react';
 import type {
   Node,
@@ -262,6 +263,9 @@ export const EditNodeDialog: React.FC<EditNodeDialogProps> = ({
         tuicSni: node.tuicSni,
         tuicAllowInsecure: node.tuicAllowInsecure,
         tuicDisableSni: node.tuicDisableSni,
+        // Expiration fields
+        expiresAt: node.expiresAt,
+        costLabel: node.costLabel,
       });
       setPluginOptsStr(pluginOptsToString(node.pluginOpts));
       setErrors({});
@@ -314,6 +318,10 @@ export const EditNodeDialog: React.FC<EditNodeDialogProps> = ({
 
   const handleRouteChange = (route: RouteConfig | undefined) => {
     setFormData((prev) => ({ ...prev, route }));
+  };
+
+  const handleCostLabelChange = (value: string) => {
+    handleChange("costLabel", value || undefined);
   };
 
   const handleSubmit = () => {
@@ -556,6 +564,16 @@ export const EditNodeDialog: React.FC<EditNodeDialogProps> = ({
     // Mute notification setting
     if (formData.muteNotification !== node.muteNotification) {
       updates.muteNotification = formData.muteNotification;
+    }
+
+    // Expiration time - empty string to clear, undefined to keep unchanged
+    if (formData.expiresAt !== node.expiresAt) {
+      updates.expiresAt = formData.expiresAt || ""; // Empty string to clear
+    }
+
+    // Cost label - empty string to clear, undefined to keep unchanged
+    if (formData.costLabel !== node.costLabel) {
+      updates.costLabel = formData.costLabel || ""; // Empty string to clear
     }
 
     // If there are validation errors, display and prevent submission
@@ -1580,6 +1598,35 @@ export const EditNodeDialog: React.FC<EditNodeDialogProps> = ({
                     </div>
                     <p className="text-xs text-muted-foreground">
                       {t('admin.nodes.form.muteNotificationHint')}
+                    </p>
+                  </div>
+
+                  {/* Expiration time */}
+                  <div className="flex flex-col gap-2">
+                    <Label htmlFor="expiresAt">{t('common.fields.expiresAt')}</Label>
+                    <ExpirationDatePicker
+                      value={formData.expiresAt}
+                      onChange={(value) => handleChange("expiresAt", value ?? "")}
+                      emptyValue=""
+                      id="expiresAt"
+                    />
+                    <p className="text-xs text-muted-foreground">
+                      {t('admin.nodes.form.expiresAtHint')}
+                    </p>
+                  </div>
+
+                  {/* Cost label */}
+                  <div className="flex flex-col gap-2">
+                    <Label htmlFor="costLabel">{t('common.fields.costLabel')}</Label>
+                    <Input
+                      id="costLabel"
+                      type="text"
+                      value={formData.costLabel ?? ""}
+                      onChange={(e) => handleCostLabelChange(e.target.value)}
+                      placeholder={t('common.costLabel.placeholder')}
+                    />
+                    <p className="text-xs text-muted-foreground">
+                      {t('common.costLabel.hint')}
                     </p>
                   </div>
                 </div>

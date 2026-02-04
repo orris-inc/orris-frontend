@@ -71,7 +71,7 @@ const RULE_TYPE_CONFIG: Record<string, { labelKey: string; icon: React.ElementTy
 // Protocol labels
 const PROTOCOL_LABELS: Record<string, string> = { tcp: 'TCP', udp: 'UDP', both: 'TCP/UDP' };
 const IP_VERSION_LABEL_KEYS: Record<string, string> = { auto: 'common.auto', ipv4: 'admin.forwardRules.detail.ipVersionIpv4', ipv6: 'admin.forwardRules.detail.ipVersionIpv6' };
-const TUNNEL_TYPE_LABEL_KEYS: Record<string, string> = { ws: 'admin.forwardRules.detail.tunnelTypeWs', tls: 'admin.forwardRules.detail.tunnelTypeTls' };
+const TUNNEL_TYPE_LABEL_KEYS: Record<string, string> = { ws: 'admin.forwardRules.detail.tunnelTypeWs', tls: 'admin.forwardRules.detail.tunnelTypeTls', ws_smux: 'admin.forwardRules.detail.tunnelTypeWsSmux', tls_smux: 'admin.forwardRules.detail.tunnelTypeTlsSmux' };
 
 // Sync status config
 const SYNC_STATUS_CONFIG: Record<RuleSyncStatus, { labelKey: string; icon: React.ElementType; color: string }> = {

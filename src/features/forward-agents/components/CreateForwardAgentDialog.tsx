@@ -33,6 +33,7 @@ import {
 } from "lucide-react";
 import { Checkbox } from "@/components/common/Checkbox";
 import { ScrollArea } from "@/components/common/ScrollArea";
+import { ExpirationDatePicker } from "@/components/common/ExpirationDatePicker";
 import { useResourceGroups } from "@/features/resource-groups/hooks/useResourceGroups";
 import type {
   CreateForwardAgentRequest,
@@ -63,16 +64,25 @@ const PROTOCOL_GROUPS: {
   },
 ];
 
+// Extended form data type to include expiration fields
+interface CreateForwardAgentFormData extends CreateForwardAgentRequest {
+  expiresAt?: string;
+  costLabel?: string;
+}
+
+// Extended request type for submission with expiration fields (same as form data)
+type CreateForwardAgentRequestWithExpiration = CreateForwardAgentFormData;
+
 interface CreateForwardAgentDialogProps {
   open: boolean;
   onClose: () => void;
-  onSubmit: (data: CreateForwardAgentRequest) => Promise<void>;
+  onSubmit: (data: CreateForwardAgentRequestWithExpiration) => Promise<void>;
   /** Initial data for pre-populating the form when copying a node */
-  initialData?: Partial<CreateForwardAgentRequest>;
+  initialData?: Partial<CreateForwardAgentFormData>;
 }
 
 // Default form data
-const getDefaultFormData = (): CreateForwardAgentRequest => ({
+const getDefaultFormData = (): CreateForwardAgentFormData => ({
   name: "",
   publicAddress: "",
   tunnelAddress: "",
@@ -81,6 +91,8 @@ const getDefaultFormData = (): CreateForwardAgentRequest => ({
   sortOrder: undefined,
   blockedProtocols: [],
   groupSids: [],
+  expiresAt: undefined,
+  costLabel: undefined,
 });
 
 // Section configuration
@@ -189,7 +201,7 @@ export const CreateForwardAgentDialog: React.FC<
 > = ({ open, onClose, onSubmit, initialData }) => {
   const { t } = useTranslation();
   const [formData, setFormData] =
-    useState<CreateForwardAgentRequest>(getDefaultFormData());
+    useState<CreateForwardAgentFormData>(getDefaultFormData());
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [openSections, setOpenSections] = useState<Set<string>>(
@@ -226,7 +238,7 @@ export const CreateForwardAgentDialog: React.FC<
   };
 
   const handleChange = (
-    field: keyof CreateForwardAgentRequest,
+    field: keyof CreateForwardAgentFormData,
     value: string | number | undefined
   ) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
@@ -249,6 +261,10 @@ export const CreateForwardAgentDialog: React.FC<
         handleChange("sortOrder", num);
       }
     }
+  };
+
+  const handleCostLabelChange = (value: string) => {
+    handleChange("costLabel", value || undefined);
   };
 
   const handleProtocolToggle = (
@@ -301,7 +317,7 @@ export const CreateForwardAgentDialog: React.FC<
   const handleSubmit = async () => {
     if (validate()) {
       // Clean up undefined and empty strings
-      const submitData: CreateForwardAgentRequest = {
+      const submitData: CreateForwardAgentRequestWithExpiration = {
         name: formData.name.trim(),
       };
 
@@ -333,6 +349,15 @@ export const CreateForwardAgentDialog: React.FC<
         submitData.groupSids = formData.groupSids;
       }
 
+      // Include expiration fields
+      if (formData.expiresAt) {
+        submitData.expiresAt = formData.expiresAt;
+      }
+
+      if (formData.costLabel) {
+        submitData.costLabel = formData.costLabel;
+      }
+
       setIsSubmitting(true);
       try {
         await onSubmit(submitData);
@@ -353,7 +378,9 @@ export const CreateForwardAgentDialog: React.FC<
     formData.sortOrder !== undefined ||
       formData.remark?.trim() ||
       (formData.blockedProtocols && formData.blockedProtocols.length > 0) ||
-      (formData.groupSids && formData.groupSids.length > 0)
+      (formData.groupSids && formData.groupSids.length > 0) ||
+      formData.expiresAt ||
+      formData.costLabel !== undefined
   );
 
   return (
@@ -581,6 +608,33 @@ export const CreateForwardAgentDialog: React.FC<
                     </div>
                   </FormField>
                 )}
+
+                {/* Expiration time */}
+                <FormField
+                  label={t("admin.forwardAgents.edit.labels.expiresAt")}
+                  hint={t("admin.forwardAgents.edit.hints.expiresAt")}
+                >
+                  <ExpirationDatePicker
+                    value={formData.expiresAt}
+                    onChange={(value) => handleChange("expiresAt", value)}
+                    id="expiresAt"
+                  />
+                </FormField>
+
+                {/* Cost label */}
+                <FormField
+                  label={t("common.fields.costLabel")}
+                  hint={t("common.costLabel.hint")}
+                >
+                  <Input
+                    id="costLabel"
+                    type="text"
+                    value={formData.costLabel ?? ""}
+                    onChange={(e) => handleCostLabelChange(e.target.value)}
+                    placeholder={t("common.costLabel.placeholder")}
+                    className="h-10"
+                  />
+                </FormField>
 
                 {/* Remark */}
                 <FormField label={t("common.fields.remark")}>

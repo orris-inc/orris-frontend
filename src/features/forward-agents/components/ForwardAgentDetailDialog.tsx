@@ -665,6 +665,30 @@ export const ForwardAgentDetailDialog: React.FC<
               </dl>
             </div>
 
+            {/* Expiration Info - Description List Pattern */}
+            <div>
+              <h3 className="text-sm font-semibold mb-3">{t("admin.forwardAgents.detail.expirationInfo")}</h3>
+              <Separator className="mb-4" />
+              <dl className="grid grid-cols-1 @sm:grid-cols-[minmax(120px,1fr)_2fr] gap-x-4 text-sm">
+                {/* Expires At */}
+                <dt className="py-2 text-muted-foreground @sm:border-t @sm:border-border first:border-t-0">
+                  {t("admin.forwardAgents.detail.expiresAt")}
+                </dt>
+                <dd className={`pb-2 @sm:py-2 tabular-nums @sm:border-t @sm:border-border @sm:[&:nth-child(2)]:border-t-0 ${agent.isExpired ? 'text-destructive font-medium' : 'text-foreground'}`}>
+                  {agent.expiresAt ? formatDateTime(agent.expiresAt) : t("admin.forwardAgents.detail.neverExpires")}
+                  {agent.isExpired && ` (${t("common.status.expired")})`}
+                </dd>
+
+                {/* Cost Label */}
+                <dt className="py-2 text-muted-foreground @sm:border-t @sm:border-border">
+                  {t("common.fields.costLabel")}
+                </dt>
+                <dd className="pb-2 @sm:py-2 text-foreground @sm:border-t @sm:border-border">
+                  {agent.costLabel || '-'}
+                </dd>
+              </dl>
+            </div>
+
             {/* Time Info - Description List Pattern */}
             <div>
               <h3 className="text-sm font-semibold mb-3">{t("admin.forwardAgents.detail.timeInfo")}</h3>

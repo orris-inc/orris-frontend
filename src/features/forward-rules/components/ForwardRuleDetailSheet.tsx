@@ -110,6 +110,8 @@ const IP_VERSION_LABELS: Record<IPVersion, string> = {
 const TUNNEL_TYPE_LABELS: Record<TunnelType, string> = {
   ws: 'WebSocket',
   tls: 'TLS',
+  ws_smux: 'WebSocket + SMUX',
+  tls_smux: 'TLS + SMUX',
 };
 
 const SYNC_STATUS_CONFIG: Record<RuleSyncStatus, { labelKey: string; icon: React.ElementType; colorClass: string }> = {

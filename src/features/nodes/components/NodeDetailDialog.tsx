@@ -606,6 +606,26 @@ export const NodeDetailDialog: React.FC<NodeDetailDialogProps> = ({
             </div>
           )}
 
+          {/* Expiration Info */}
+          <div className="@container">
+            <h3 className="text-sm font-semibold mb-3">{t('admin.nodes.detail.expirationInfo')}</h3>
+            <Separator className="mb-4" />
+            <div className="grid grid-cols-1 @md:grid-cols-2 gap-4">
+              <div className="space-y-1">
+                <p className="text-sm text-muted-foreground">{t('admin.nodes.detail.expiresAt')}</p>
+                <p className={`text-sm ${node.isExpired ? 'text-destructive font-medium' : ''}`}>
+                  {node.expiresAt ? formatDateTime(node.expiresAt) : t('admin.nodes.detail.neverExpires')}
+                  {node.isExpired && ` (${t('common.status.expired')})`}
+                </p>
+              </div>
+
+              <div className="space-y-1">
+                <p className="text-sm text-muted-foreground">{t('common.fields.costLabel')}</p>
+                <p className="text-sm">{node.costLabel || '-'}</p>
+              </div>
+            </div>
+          </div>
+
           {/* Time Info */}
           <div className="@container">
             <h3 className="text-sm font-semibold mb-3">{t('admin.nodes.detail.timeInfo')}</h3>

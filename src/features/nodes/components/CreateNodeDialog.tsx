@@ -54,6 +54,7 @@ import {
 } from 'lucide-react';
 import { Checkbox } from '@/components/common/Checkbox';
 import { ScrollArea } from '@/components/common/ScrollArea';
+import { ExpirationDatePicker } from '@/components/common/ExpirationDatePicker';
 import { useResourceGroups } from '@/features/resource-groups/hooks/useResourceGroups';
 
 interface CreateNodeDialogProps {
@@ -102,7 +103,7 @@ const TUIC_UDP_RELAY_MODES: TUICUDPRelayMode[] = ['native', 'quic'];
 const TLS_FINGERPRINT_OPTIONS = ['chrome', 'firefox', 'safari', 'edge', 'random'] as const;
 
 // Default form data
-const getDefaultFormData = (): CreateNodeRequest & { tagsInput: string } => ({
+const getDefaultFormData = (): CreateNodeRequest & { tagsInput: string; expiresAt?: string; costLabel?: string } => ({
   name: '',
   protocol: 'shadowsocks',
   serverAddress: '',
@@ -161,6 +162,9 @@ const getDefaultFormData = (): CreateNodeRequest & { tagsInput: string } => ({
   tuicSni: '',
   tuicAllowInsecure: false,
   tuicDisableSni: false,
+  // Expiration fields
+  expiresAt: undefined,
+  costLabel: undefined,
 });
 
 // Section configuration
@@ -319,7 +323,7 @@ export const CreateNodeDialog: React.FC<CreateNodeDialogProps> = ({
   nodes = [],
 }) => {
   const { t } = useTranslation();
-  const [formData, setFormData] = useState<CreateNodeRequest & { tagsInput: string }>(getDefaultFormData());
+  const [formData, setFormData] = useState<CreateNodeRequest & { tagsInput: string; expiresAt?: string; costLabel?: string }>(getDefaultFormData());
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [pluginOptsString, setPluginOptsString] = useState<string>('');
   const [openSections, setOpenSections] = useState<Set<string>>(new Set(['basic', 'network']));
@@ -371,7 +375,7 @@ export const CreateNodeDialog: React.FC<CreateNodeDialogProps> = ({
     onClose();
   };
 
-  const handleChange = (field: keyof CreateNodeRequest | 'tagsInput', value: string | number | boolean | undefined) => {
+  const handleChange = (field: keyof CreateNodeRequest | 'tagsInput' | 'expiresAt' | 'costLabel', value: string | number | boolean | undefined) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
     if (errors[field]) {
       setErrors((prev) => {
@@ -384,6 +388,10 @@ export const CreateNodeDialog: React.FC<CreateNodeDialogProps> = ({
 
   const handleRouteChange = (route: RouteConfig | undefined) => {
     setFormData((prev) => ({ ...prev, route }));
+  };
+
+  const handleCostLabelChange = (value: string) => {
+    handleChange("costLabel", value || undefined);
   };
 
   const toggleSection = (sectionId: string) => {
@@ -653,7 +661,16 @@ export const CreateNodeDialog: React.FC<CreateNodeDialogProps> = ({
         submitData.groupSids = formData.groupSids;
       }
 
-      onSubmit(submitData);
+      // Expiration fields - cast to extended type
+      const extendedSubmitData = submitData as CreateNodeRequest & { expiresAt?: string; costLabel?: string };
+      if (formData.expiresAt) {
+        extendedSubmitData.expiresAt = formData.expiresAt;
+      }
+      if (formData.costLabel) {
+        extendedSubmitData.costLabel = formData.costLabel;
+      }
+
+      onSubmit(extendedSubmitData);
       handleClose();
     }
   };
@@ -689,7 +706,7 @@ export const CreateNodeDialog: React.FC<CreateNodeDialogProps> = ({
   };
   const hasProtocolSettings = getHasProtocolSettings();
 
-  const hasOtherSettings = Boolean(formData.region || formData.tagsInput || formData.sortOrder || (formData.groupSids && formData.groupSids.length > 0));
+  const hasOtherSettings = Boolean(formData.region || formData.tagsInput || formData.sortOrder || (formData.groupSids && formData.groupSids.length > 0) || formData.expiresAt || formData.costLabel);
 
   return (
     <Dialog open={open} onOpenChange={(open) => !open && handleClose()}>
@@ -1647,6 +1664,27 @@ export const CreateNodeDialog: React.FC<CreateNodeDialogProps> = ({
                     </div>
                   </FormField>
                 )}
+
+                {/* Expiration time */}
+                <FormField label={t('common.fields.expiresAt')} hint={t('admin.nodes.form.expiresAtHint')}>
+                  <ExpirationDatePicker
+                    value={formData.expiresAt}
+                    onChange={(value) => handleChange("expiresAt", value)}
+                    id="expiresAt"
+                  />
+                </FormField>
+
+                {/* Cost label */}
+                <FormField label={t('common.fields.costLabel')} hint={t('common.costLabel.hint')}>
+                  <Input
+                    id="costLabel"
+                    type="text"
+                    value={formData.costLabel ?? ""}
+                    onChange={(e) => handleCostLabelChange(e.target.value)}
+                    placeholder={t('common.costLabel.placeholder')}
+                    className="h-10"
+                  />
+                </FormField>
               </div>
             </CollapsibleSection>
 

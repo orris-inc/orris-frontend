@@ -623,26 +623,22 @@ export const NodeDetailSheet = ({
               </DetailSection>
             )}
 
-            {/* Expiration info - if has expiration data */}
-            {(node.expiresAt || node.renewalAmount) && (
-              <DetailSection title={t('admin.nodes.detail.expirationInfo')}>
-                <div className="px-3 py-2.5 grid grid-cols-2 gap-x-4 gap-y-2 text-xs">
-                  <div>
-                    <span className="text-muted-foreground">{t('admin.nodes.detail.expiresAt')}</span>
-                    <p className={cn('text-foreground', node.isExpired && 'text-destructive font-medium')}>
-                      {node.expiresAt ? formatDateTime(node.expiresAt) : t('admin.nodes.detail.neverExpires')}
-                      {node.isExpired && ` (${t('common.status.expired')})`}
-                    </p>
-                  </div>
-                  {node.renewalAmount && (
-                    <div>
-                      <span className="text-muted-foreground">{t('admin.nodes.detail.renewalAmount')}</span>
-                      <p className="text-foreground">¥{node.renewalAmount}</p>
-                    </div>
-                  )}
+            {/* Expiration info */}
+            <DetailSection title={t('admin.nodes.detail.expirationInfo')}>
+              <div className="px-3 py-2.5 grid grid-cols-2 gap-x-4 gap-y-2 text-xs">
+                <div>
+                  <span className="text-muted-foreground">{t('admin.nodes.detail.expiresAt')}</span>
+                  <p className={cn('text-foreground', node.isExpired && 'text-destructive font-medium')}>
+                    {node.expiresAt ? formatDateTime(node.expiresAt) : t('admin.nodes.detail.neverExpires')}
+                    {node.isExpired && ` (${t('common.status.expired')})`}
+                  </p>
                 </div>
-              </DetailSection>
-            )}
+                <div className="col-span-2">
+                  <span className="text-muted-foreground">{t('common.fields.costLabel')}</span>
+                  <p className="text-foreground">{node.costLabel || '-'}</p>
+                </div>
+              </div>
+            </DetailSection>
 
             {/* Meta info - compact row */}
             <DetailSection title={t('admin.nodes.detail.timeInfo')}>

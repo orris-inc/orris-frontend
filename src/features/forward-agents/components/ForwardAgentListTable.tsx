@@ -293,8 +293,8 @@ export const ForwardAgentListTable: React.FC<ForwardAgentListTableProps> = ({
           } else if (agent.expiresAt) {
             lines.push(`${t('admin.forwardAgents.table.tooltip.expiresAt')}: ${formatDateTime(agent.expiresAt)}`);
           }
-          if (agent.renewalAmount) {
-            lines.push(`${t('admin.forwardAgents.table.tooltip.renewalAmount')}: ¥${agent.renewalAmount}`);
+          if (agent.costLabel) {
+            lines.push(`${t('common.fields.costLabel')}: ${agent.costLabel}`);
           }
           // Click action hint
           if (agent.status === 'enabled') {

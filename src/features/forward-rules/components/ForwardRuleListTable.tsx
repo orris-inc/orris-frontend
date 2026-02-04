@@ -115,6 +115,16 @@ const TUNNEL_TYPE_CONFIG: Record<string, { label: string; color: string; bgColor
     color: 'text-emerald-600 dark:text-emerald-400',
     bgColor: 'bg-emerald-50 dark:bg-emerald-900/20',
   },
+  ws_smux: {
+    label: 'WS+MUX',
+    color: 'text-violet-600 dark:text-violet-400',
+    bgColor: 'bg-violet-50 dark:bg-violet-900/20',
+  },
+  tls_smux: {
+    label: 'TLS+MUX',
+    color: 'text-fuchsia-600 dark:text-fuchsia-400',
+    bgColor: 'bg-fuchsia-50 dark:bg-fuchsia-900/20',
+  },
 };
 
 // Sync status display config
