@@ -8,8 +8,6 @@ import { useTranslation } from 'react-i18next';
 import { Loader2, Info, X, Copy } from 'lucide-react';
 import * as Dialog from '@radix-ui/react-dialog';
 import * as LabelPrimitive from '@radix-ui/react-label';
-import * as Checkbox from '@radix-ui/react-checkbox';
-import { Check } from 'lucide-react';
 import { SimpleSelect } from '@/lib/SimpleSelect';
 import { useSubscriptionPlans } from '@/features/subscription-plans/hooks/useSubscriptionPlans';
 import { getButtonClass, labelStyles, alertStyles, alertDescriptionStyles } from '@/lib/ui-styles';
@@ -240,25 +238,7 @@ export const DuplicateSubscriptionDialog: React.FC<DuplicateSubscriptionDialogPr
                 />
               </div>
 
-              {/* Auto-renewal */}
-              <div className="flex items-center space-x-2">
-                <Checkbox.Root
-                  id="auto_renew"
-                  checked={formData.autoRenew}
-                  onCheckedChange={(checked) => setFormData({ ...formData, autoRenew: checked === true })}
-                  className="peer h-4 w-4 shrink-0 rounded-sm border border-primary ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 data-[state=checked]:bg-primary data-[state=checked]:text-primary-foreground"
-                >
-                  <Checkbox.Indicator className="flex items-center justify-center text-current">
-                    <Check className="h-3 w-3" />
-                  </Checkbox.Indicator>
-                </Checkbox.Root>
-                <LabelPrimitive.Root
-                  htmlFor="auto_renew"
-                  className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer"
-                >
-                  {t('subscription.autoRenewal')}
-                </LabelPrimitive.Root>
-              </div>
+              {/* Auto-renewal checkbox hidden - feature not complete */}
 
               {/* Plan details */}
               {selectedPlan && (

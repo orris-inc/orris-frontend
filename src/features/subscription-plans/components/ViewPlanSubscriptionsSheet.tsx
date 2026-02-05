@@ -11,8 +11,6 @@ import {
   Search,
   CheckCircle,
   Calendar,
-  RefreshCw,
-  X,
 } from 'lucide-react';
 import {
   Sheet,
@@ -230,17 +228,7 @@ export const ViewPlanSubscriptionsSheet: React.FC<ViewPlanSubscriptionsSheetProp
                               <Calendar className="size-3" />
                               {formatDate(subscription.startDate)}
                             </span>
-                            {subscription.autoRenew ? (
-                              <span className="flex items-center gap-1 text-emerald-600 dark:text-emerald-400">
-                                <RefreshCw className="size-3" />
-                                {t('subscription.autoRenewal')}
-                              </span>
-                            ) : (
-                              <span className="flex items-center gap-1 text-muted-foreground/60">
-                                <X className="size-3" />
-                                {t('subscription.noRenewal')}
-                              </span>
-                            )}
+                            {/* Auto-renew status hidden - feature not complete */}
                           </div>
                         </div>
                       </div>

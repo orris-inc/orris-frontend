@@ -54,7 +54,7 @@ const TRANSPORT_LABELS: Record<string, string> = {
   grpc: 'gRPC',
 };
 
-import { formatDateTime } from '@/shared/utils/date-utils';
+import { formatDateTime, isNeverExpiresDate } from '@/shared/utils/date-utils';
 
 
 // Get progress color based on value
@@ -614,7 +614,7 @@ export const NodeDetailDialog: React.FC<NodeDetailDialogProps> = ({
               <div className="space-y-1">
                 <p className="text-sm text-muted-foreground">{t('admin.nodes.detail.expiresAt')}</p>
                 <p className={`text-sm ${node.isExpired ? 'text-destructive font-medium' : ''}`}>
-                  {node.expiresAt ? formatDateTime(node.expiresAt) : t('admin.nodes.detail.neverExpires')}
+                  {node.expiresAt && !isNeverExpiresDate(node.expiresAt) ? formatDateTime(node.expiresAt) : t('admin.nodes.detail.neverExpires')}
                   {node.isExpired && ` (${t('common.status.expired')})`}
                 </p>
               </div>

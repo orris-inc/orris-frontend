@@ -5,7 +5,7 @@
 
 import { useState, useEffect, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
-import { CreditCard, Loader2, Info, Package, Calendar, RefreshCw } from 'lucide-react';
+import { CreditCard, Loader2, Info, Package, Calendar } from 'lucide-react';
 import {
   Sheet,
   SheetContent,
@@ -18,11 +18,9 @@ import {
 } from '@/components/common/sheet';
 import { Button } from '@/components/common/Button';
 import { MobileSelect, type MobileSelectOption } from '@/components/common/mobile-form';
-import { Checkbox } from '@/components/common/Checkbox';
 import { Label } from '@/components/common/Label';
 import { Alert, AlertDescription } from '@/components/common/Alert';
 import { useSubscriptionPlans } from '@/features/subscription-plans/hooks/useSubscriptionPlans';
-import { cn } from '@/lib/utils';
 import type { BillingCycle, PricingOption, SubscriptionPlan, AdminCreateSubscriptionRequest } from '@/api/subscription/types';
 import type { UserListItem } from '@/features/users/types/users.types';
 
@@ -222,27 +220,7 @@ export const AssignSubscriptionSheet: React.FC<AssignSubscriptionSheetProps> = (
                 />
               </div>
 
-              {/* Auto Renew */}
-              <div
-                className={cn(
-                  'flex items-center gap-4 p-4 rounded-xl border bg-muted/30',
-                  'active:bg-muted/50 transition-colors cursor-pointer'
-                )}
-                onClick={() => setFormData({ ...formData, autoRenew: !formData.autoRenew })}
-              >
-                <div className="size-10 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
-                  <RefreshCw className="size-5 text-primary" />
-                </div>
-                <div className="flex-1 min-w-0">
-                  <p className="font-medium">{t('subscription.autoRenew')}</p>
-                  <p className="text-sm text-muted-foreground">{t('subscription.autoRenewDesc')}</p>
-                </div>
-                <Checkbox
-                  checked={formData.autoRenew}
-                  onCheckedChange={(checked) => setFormData({ ...formData, autoRenew: checked === true })}
-                  className="size-6"
-                />
-              </div>
+              {/* Auto Renew toggle hidden - feature not complete */}
 
               {/* Plan Details */}
               {selectedPlan && (

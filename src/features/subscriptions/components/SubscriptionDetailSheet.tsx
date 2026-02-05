@@ -20,7 +20,6 @@ import {
   User,
   XCircle,
   Receipt,
-  RefreshCw,
   Eye,
   MoreHorizontal,
   Play,
@@ -44,7 +43,7 @@ import { ActionSheet } from '@/components/common/sheet/ActionSheet';
 import { Separator } from '@/components/common/Separator';
 import { TruncatedId } from '@/components/admin';
 import { SubscriptionLinkSelector } from '@/components/subscription';
-import { formatDate } from '@/shared/utils/date-utils';
+import { formatDate, isNeverExpiresDate } from '@/shared/utils/date-utils';
 import { useNotificationStore } from '@/shared/stores/notification-store';
 import { cn } from '@/lib/utils';
 import type { Subscription, SubscriptionStatus, PlanType } from '@/api/subscription/types';
@@ -444,7 +443,7 @@ export const SubscriptionDetailSheet: React.FC<SubscriptionDetailSheetProps> = (
                     <Calendar className="size-3.5" />
                     <span className="text-xs">{t('subscription.endDate')}</span>
                   </div>
-                  <div className="text-sm">{subscription.endDate ? formatDate(subscription.endDate) : '-'}</div>
+                  <div className="text-sm">{subscription.endDate && !isNeverExpiresDate(subscription.endDate) ? formatDate(subscription.endDate) : t('common.fields.neverExpires')}</div>
                 </div>
               </div>
               <DetailRow
@@ -456,15 +455,8 @@ export const SubscriptionDetailSheet: React.FC<SubscriptionDetailSheetProps> = (
 
             {/* Status Info */}
             <DetailSection title={t('subscription.statusInfo')}>
-              <div className="grid grid-cols-3 gap-2 px-3 py-2.5">
-                <div className="text-center p-2 rounded-xl bg-muted/30">
-                  {subscription.autoRenew ? (
-                    <RefreshCw className="size-4 text-success mx-auto" />
-                  ) : (
-                    <XCircle className="size-4 text-muted-foreground mx-auto" />
-                  )}
-                  <div className="text-xs mt-1">{subscription.autoRenew ? t('subscription.autoRenewal') : t('subscription.noRenewal')}</div>
-                </div>
+              <div className="grid grid-cols-2 gap-2 px-3 py-2.5">
+                {/* Auto-renew card hidden - feature not complete */}
                 <div className="text-center p-2 rounded-xl bg-muted/30">
                   {subscription.isActive ? (
                     <CheckCircle className="size-4 text-success mx-auto" />

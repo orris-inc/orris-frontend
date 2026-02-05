@@ -17,8 +17,6 @@ import {
   type BaseSheetProps,
 } from '@/components/common/sheet';
 import { Button } from '@/components/common/Button';
-import { Checkbox } from '@/components/common/Checkbox';
-import { Label } from '@/components/common/Label';
 import { MobileSelect, type MobileSelectOption } from '@/components/common/mobile-form';
 import { TruncatedId } from '@/components/admin';
 import { useSubscriptionPlans } from '@/features/subscription-plans/hooks/useSubscriptionPlans';
@@ -238,19 +236,7 @@ export const DuplicateSubscriptionSheet: React.FC<DuplicateSubscriptionSheetProp
                 />
               </div>
 
-              {/* Auto Renew */}
-              <div className="flex items-center gap-2 p-3 rounded-xl ring-1 ring-border bg-muted/30">
-                <Checkbox
-                  id="auto_renew"
-                  checked={formData.autoRenew}
-                  onCheckedChange={(checked) => setFormData({ ...formData, autoRenew: checked === true })}
-                  disabled={submitting}
-                />
-                <Label htmlFor="auto_renew" className="cursor-pointer text-sm flex items-center gap-1.5">
-                  <RefreshCw className="size-3.5 text-muted-foreground" />
-                  {t('subscription.autoRenewal')}
-                </Label>
-              </div>
+              {/* Auto Renew checkbox hidden - feature not complete */}
 
               {/* Plan Details */}
               {selectedPlan && (

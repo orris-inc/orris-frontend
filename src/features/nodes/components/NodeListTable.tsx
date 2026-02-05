@@ -128,7 +128,7 @@ const PROTOCOL_CONFIG: Record<string, { label: string; color: string }> = {
 };
 
 
-import { formatDateTime } from '@/shared/utils/date-utils';
+import { formatDateTime, isNeverExpiresDate } from '@/shared/utils/date-utils';
 
 export const NodeListTable: React.FC<NodeListTableProps> = ({
   nodes,
@@ -331,7 +331,7 @@ export const NodeListTable: React.FC<NodeListTableProps> = ({
           // Expiration info
           if (node.isExpired) {
             lines.push(t('common.status.expired'));
-          } else if (node.expiresAt) {
+          } else if (node.expiresAt && !isNeverExpiresDate(node.expiresAt)) {
             lines.push(`${t('admin.nodes.tooltip.expiresAt')}: ${formatDateTime(node.expiresAt)}`);
           }
           if (node.costLabel) {

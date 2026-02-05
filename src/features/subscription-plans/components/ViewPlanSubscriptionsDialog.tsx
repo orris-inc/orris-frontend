@@ -5,7 +5,7 @@
 
 import { useState, useEffect, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Loader2, Users, Search, CheckCircle, X, Calendar, RefreshCw } from 'lucide-react';
+import { Loader2, Users, Search, CheckCircle, Calendar } from 'lucide-react';
 import {
   Dialog,
   DialogContent,
@@ -16,7 +16,7 @@ import { ScrollArea } from '@/components/common/ScrollArea';
 import { Separator } from '@/components/common/Separator';
 import { AdminBadge } from '@/components/admin';
 import { cn } from '@/lib/utils';
-import { formatDate } from '@/shared/utils/date-utils';
+import { formatDate, isNeverExpiresDate } from '@/shared/utils/date-utils';
 import { SUBSCRIPTION_STATUS_CONFIG } from '@/shared/constants/status-config';
 import { adminListSubscriptions } from '@/api/subscription';
 import { listUsers } from '@/api/user';
@@ -235,27 +235,14 @@ export const ViewPlanSubscriptionsDialog: React.FC<ViewPlanSubscriptionsDialogPr
                           <span className="flex items-center gap-1">
                             <Calendar className="size-3.5" strokeWidth={2} />
                             {formatDate(subscription.startDate)}
-                            {subscription.endDate && (
+                            {subscription.endDate && !isNeverExpiresDate(subscription.endDate) && (
                               <span className="text-slate-400"> → {formatDate(subscription.endDate)}</span>
                             )}
                           </span>
                         </div>
                       </div>
 
-                      {/* Renewal status */}
-                      <div className="shrink-0">
-                        {subscription.autoRenew ? (
-                          <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-emerald-50 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400">
-                            <RefreshCw className="size-3.5" strokeWidth={2} />
-                            <span className="text-xs font-medium">{t('subscription.autoRenewal')}</span>
-                          </div>
-                        ) : (
-                          <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-400 dark:text-slate-500">
-                            <X className="size-3.5" strokeWidth={2} />
-                            <span className="text-xs font-medium">{t('subscription.noRenewal')}</span>
-                          </div>
-                        )}
-                      </div>
+                      {/* Renewal status hidden - feature not complete */}
                     </div>
                   </div>
                 );

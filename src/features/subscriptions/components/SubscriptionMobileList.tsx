@@ -15,8 +15,6 @@ import {
   Eye,
   Copy,
   Trash2,
-  CheckCircle,
-  X,
   User,
   Calendar,
   ArrowRightLeft,
@@ -45,7 +43,7 @@ import {
 } from '@/components/common/ContextMenu';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/common/Tooltip';
 import { Skeleton } from '@/components/common/Skeleton';
-import { formatDate } from '@/shared/utils/date-utils';
+import { formatDate, isNeverExpiresDate } from '@/shared/utils/date-utils';
 import { SUBSCRIPTION_STATUS_CONFIG } from '@/shared/constants/status-config';
 import type { Subscription } from '@/api/subscription/types';
 import type { UserResponse } from '@/api/user/types';
@@ -407,25 +405,11 @@ export const SubscriptionMobileList: React.FC<SubscriptionMobileListProps> = ({
                 <div className="flex items-center gap-2">
                   <span className="text-[10px] text-slate-400 dark:text-slate-500 uppercase tracking-wide w-12 flex-shrink-0">{t('subscription.dateInfo')}</span>
                   <span className="text-xs text-slate-600 dark:text-slate-300">
-                    {formatDate(subscription.startDate)} ~ {subscription.endDate ? formatDate(subscription.endDate) : t('common.unlimited')}
+                    {formatDate(subscription.startDate)} ~ {subscription.endDate && !isNeverExpiresDate(subscription.endDate) ? formatDate(subscription.endDate) : t('common.fields.neverExpires')}
                   </span>
                 </div>
 
-                {/* Auto renew */}
-                <div className="flex items-center gap-2">
-                  <span className="text-[10px] text-slate-400 dark:text-slate-500 uppercase tracking-wide w-12 flex-shrink-0">{t('subscription.renew')}</span>
-                  {subscription.autoRenew ? (
-                    <span className="flex items-center gap-1 text-xs text-green-600 dark:text-green-400">
-                      <CheckCircle className="size-3" />
-                      {t('subscription.autoRenewal')}
-                    </span>
-                  ) : (
-                    <span className="flex items-center gap-1 text-xs text-slate-400 dark:text-slate-500">
-                      <X className="size-3" />
-                      {t('subscription.manualRenewal')}
-                    </span>
-                  )}
-                </div>
+                {/* Auto renew row hidden - feature not complete */}
 
                 {/* Created at */}
                 <div className="flex items-center gap-2">

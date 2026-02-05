@@ -9,7 +9,7 @@
  */
 
 import { memo } from 'react';
-import { formatDate, formatDateTime } from '@/shared/utils/date-utils';
+import { formatDate, formatDateTime, isNeverExpiresDate } from '@/shared/utils/date-utils';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/common/Tooltip';
 import { cn } from '@/lib/utils';
 
@@ -24,6 +24,8 @@ interface DateTimeCellProps {
   showTooltip?: boolean;
   /** Placeholder when value is empty */
   placeholder?: string;
+  /** Text to display for "never expires" dates (year >= 9999). If not provided, shows the actual date. */
+  neverExpiresText?: string;
 }
 
 /**
@@ -38,9 +40,15 @@ export const DateTimeCell = memo(({
   className,
   showTooltip = false,
   placeholder = '-',
+  neverExpiresText,
 }: DateTimeCellProps) => {
   if (!value) {
     return <span className={cn('text-muted-foreground/50 text-sm', className)}>{placeholder}</span>;
+  }
+
+  // Handle "never expires" dates (year >= 9999)
+  if (neverExpiresText && isNeverExpiresDate(value)) {
+    return <span className={cn('text-muted-foreground text-sm whitespace-nowrap', className)}>{neverExpiresText}</span>;
   }
 
   const formattedValue = format === 'date' ? formatDate(value) : formatDateTime(value);

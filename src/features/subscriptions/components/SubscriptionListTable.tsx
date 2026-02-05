@@ -6,7 +6,7 @@
 
 import { useMemo, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
-import { CheckCircle, X, MoreHorizontal, Play, XCircle, RefreshCw, Eye, Copy, Trash2, Pause, PlayCircle, RefreshCcw, ArrowRightLeft } from 'lucide-react';
+import { MoreHorizontal, Play, XCircle, RefreshCw, Eye, Copy, Trash2, Pause, PlayCircle, RefreshCcw, ArrowRightLeft } from 'lucide-react';
 import { DataTable, AdminBadge, TableHoverCardProvider, TableHoverCardList, DateTimeCell, type ColumnDef, type ResponsiveColumnMeta } from '@/components/admin';
 import { useBreakpoint } from '@/hooks/useBreakpoint';
 import { SubscriptionMobileList } from './SubscriptionMobileList';
@@ -173,21 +173,22 @@ export const SubscriptionListTable: React.FC<SubscriptionListTableProps> = ({
       header: t('tableColumns.endDate'),
       size: 100,
       meta: { priority: 2 } as ResponsiveColumnMeta,
-      cell: ({ row }) => <DateTimeCell value={row.original.endDate} format="date" />,
+      cell: ({ row }) => <DateTimeCell value={row.original.endDate} format="date" neverExpiresText={t('common.fields.neverExpires')} />,
     },
-    {
-      accessorKey: 'autoRenew',
-      header: t('tableColumns.autoRenew'),
-      size: 80,
-      meta: { priority: 3 } as ResponsiveColumnMeta,
-      cell: ({ row }) => (
-        row.original.autoRenew ? (
-          <CheckCircle className="size-4 text-emerald-600 dark:text-emerald-400" strokeWidth={1.5} />
-        ) : (
-          <X className="size-4 text-slate-400 dark:text-slate-500" strokeWidth={1.5} />
-        )
-      ),
-    },
+    // Auto-renew column hidden - feature not complete
+    // {
+    //   accessorKey: 'autoRenew',
+    //   header: t('tableColumns.autoRenew'),
+    //   size: 80,
+    //   meta: { priority: 3 } as ResponsiveColumnMeta,
+    //   cell: ({ row }) => (
+    //     row.original.autoRenew ? (
+    //       <CheckCircle className="size-4 text-emerald-600 dark:text-emerald-400" strokeWidth={1.5} />
+    //     ) : (
+    //       <X className="size-4 text-slate-400 dark:text-slate-500" strokeWidth={1.5} />
+    //     )
+    //   ),
+    // },
     {
       accessorKey: 'createdAt',
       header: t('common.fields.createdAt'),

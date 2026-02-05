@@ -48,7 +48,7 @@ import {
 } from '@/components/common/sheet/Sheet';
 import { ActionSheet } from '@/components/common/sheet/ActionSheet';
 import { cn } from '@/lib/utils';
-import { formatDateTime } from '@/shared/utils/date-utils';
+import { formatDateTime, isNeverExpiresDate } from '@/shared/utils/date-utils';
 import type { Node, NodeStatus, NodeProtocol, NodeSystemStatus } from '@/api/node';
 import type { ResourceGroup } from '@/api/resource/types';
 
@@ -636,7 +636,7 @@ export const NodeDetailSheet = ({
                 <div>
                   <span className="text-muted-foreground">{t('admin.nodes.detail.expiresAt')}</span>
                   <p className={cn('text-foreground', node.isExpired && 'text-destructive font-medium')}>
-                    {node.expiresAt ? formatDateTime(node.expiresAt) : t('admin.nodes.detail.neverExpires')}
+                    {node.expiresAt && !isNeverExpiresDate(node.expiresAt) ? formatDateTime(node.expiresAt) : t('admin.nodes.detail.neverExpires')}
                     {node.isExpired && ` (${t('common.status.expired')})`}
                   </p>
                 </div>

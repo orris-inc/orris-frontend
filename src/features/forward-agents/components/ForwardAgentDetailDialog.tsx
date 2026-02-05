@@ -57,7 +57,7 @@ interface ForwardAgentDetailDialogProps {
   onClose: () => void;
 }
 
-import { formatDateTime } from '@/shared/utils/date-utils';
+import { formatDateTime, isNeverExpiresDate } from '@/shared/utils/date-utils';
 
 // Get progress color based on value
 const getProgressColor = (value: number): string => {
@@ -675,7 +675,7 @@ export const ForwardAgentDetailDialog: React.FC<
                   {t("admin.forwardAgents.detail.expiresAt")}
                 </dt>
                 <dd className={`pb-2 @sm:py-2 tabular-nums @sm:border-t @sm:border-border @sm:[&:nth-child(2)]:border-t-0 ${agent.isExpired ? 'text-destructive font-medium' : 'text-foreground'}`}>
-                  {agent.expiresAt ? formatDateTime(agent.expiresAt) : t("admin.forwardAgents.detail.neverExpires")}
+                  {agent.expiresAt && !isNeverExpiresDate(agent.expiresAt) ? formatDateTime(agent.expiresAt) : t("admin.forwardAgents.detail.neverExpires")}
                   {agent.isExpired && ` (${t("common.status.expired")})`}
                 </dd>
 

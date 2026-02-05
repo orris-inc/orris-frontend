@@ -54,7 +54,7 @@ import {
 } from '@/components/common/sheet/Sheet';
 import { ActionSheet } from '@/components/common/sheet/ActionSheet';
 import { cn } from '@/lib/utils';
-import { formatDateTime } from '@/shared/utils/date-utils';
+import { formatDateTime, isNeverExpiresDate } from '@/shared/utils/date-utils';
 import { ENABLED_STATUS_CONFIG_SHORT } from '@/shared/constants/status-config';
 import type { ForwardAgent, AgentSystemStatus, BlockedProtocol } from '@/api/forward';
 
@@ -669,7 +669,7 @@ export const ForwardAgentDetailSheet = ({
                 <div>
                   <span className="text-muted-foreground">{t('admin.forwardAgents.detail.expiresAt')}</span>
                   <p className={cn('text-foreground', agent.isExpired && 'text-destructive font-medium')}>
-                    {agent.expiresAt ? formatDateTime(agent.expiresAt) : t('admin.forwardAgents.detail.neverExpires')}
+                    {agent.expiresAt && !isNeverExpiresDate(agent.expiresAt) ? formatDateTime(agent.expiresAt) : t('admin.forwardAgents.detail.neverExpires')}
                     {agent.isExpired && ` (${t('common.status.expired')})`}
                   </p>
                 </div>

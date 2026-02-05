@@ -10,6 +10,25 @@
 import i18n from '@/lib/i18n';
 
 /**
+ * Check if a date represents "never expires" (e.g., 9999-12-31 or 10000-01-01)
+ * Backend uses these dates to indicate no expiration
+ */
+export const isNeverExpiresDate = (dateString: string | number | Date | null | undefined): boolean => {
+  if (!dateString) return false;
+
+  try {
+    const date = dateString instanceof Date ? dateString : new Date(dateString);
+    if (isNaN(date.getTime())) return false;
+
+    const year = date.getFullYear();
+    // Check for years >= 9999 which indicate "never expires"
+    return year >= 9999;
+  } catch {
+    return false;
+  }
+};
+
+/**
  * Format a date value to YYYY/MM/DD format
  */
 const formatDateParts = (date: Date): string => {

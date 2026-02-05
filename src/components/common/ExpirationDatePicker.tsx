@@ -37,10 +37,21 @@ const PRESET_OPTIONS = [
 ] as const;
 
 /**
+ * Check if a date represents "never expires" (e.g., 9999-12-31 or 10000-01-01)
+ */
+const isNeverExpiresDate = (isoString: string): boolean => {
+  const date = new Date(isoString);
+  return date.getFullYear() >= 9999;
+};
+
+/**
  * Format ISO string to datetime-local input format (YYYY-MM-DDTHH:mm)
+ * Returns empty string for "never expires" dates (year >= 9999)
  */
 const formatDateForInput = (isoString?: string): string => {
   if (!isoString) return "";
+  // Treat "never expires" dates as empty (no expiration set)
+  if (isNeverExpiresDate(isoString)) return "";
   const date = new Date(isoString);
   const year = date.getFullYear();
   const month = String(date.getMonth() + 1).padStart(2, "0");

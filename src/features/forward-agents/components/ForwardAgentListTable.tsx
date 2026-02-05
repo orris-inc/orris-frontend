@@ -91,7 +91,7 @@ interface ForwardAgentListTableProps {
   onDragEnd?: (activeId: string, overId: string, oldIndex: number, newIndex: number) => void;
 }
 
-import { formatDateTime } from '@/shared/utils/date-utils';
+import { formatDateTime, isNeverExpiresDate } from '@/shared/utils/date-utils';
 
 export const ForwardAgentListTable: React.FC<ForwardAgentListTableProps> = ({
   forwardAgents,
@@ -290,7 +290,7 @@ export const ForwardAgentListTable: React.FC<ForwardAgentListTableProps> = ({
           // Expiration info
           if (agent.isExpired) {
             lines.push(t('common.status.expired'));
-          } else if (agent.expiresAt) {
+          } else if (agent.expiresAt && !isNeverExpiresDate(agent.expiresAt)) {
             lines.push(`${t('admin.forwardAgents.table.tooltip.expiresAt')}: ${formatDateTime(agent.expiresAt)}`);
           }
           if (agent.costLabel) {

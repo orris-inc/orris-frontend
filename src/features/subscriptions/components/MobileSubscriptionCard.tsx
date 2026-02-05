@@ -13,12 +13,11 @@ import {
   CreditCard,
   User as UserIcon,
   Calendar,
-  RotateCw,
 } from 'lucide-react';
 import { AdminBadge } from '@/components/admin';
 import { cn } from '@/lib/utils';
 import { mobileListItemStyles } from '@/lib/ui-styles';
-import { formatDate } from '@/shared/utils/date-utils';
+import { formatDate, isNeverExpiresDate } from '@/shared/utils/date-utils';
 import { SUBSCRIPTION_STATUS_CONFIG } from '@/shared/constants/status-config';
 import type { Subscription } from '@/api/subscription/types';
 import type { UserResponse } from '@/api/user';
@@ -90,18 +89,10 @@ export const MobileSubscriptionCard = ({
             )}
           >
             <Calendar className="size-3" />
-            <span className="tabular-nums">{formatDate(subscription.endDate)}</span>
+            <span className="tabular-nums">{subscription.endDate && !isNeverExpiresDate(subscription.endDate) ? formatDate(subscription.endDate) : t('common.fields.neverExpires')}</span>
           </div>
 
-          {subscription.autoRenew && (
-            <>
-              <span className="text-border">·</span>
-              <span className="text-success flex items-center gap-0.5">
-                <RotateCw className="size-3" />
-                <span>{t('subscription.autoRenewal')}</span>
-              </span>
-            </>
-          )}
+          {/* Auto-renew display hidden - feature not complete */}
         </div>
       </div>
 

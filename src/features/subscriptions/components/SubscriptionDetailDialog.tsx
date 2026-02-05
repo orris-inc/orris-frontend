@@ -25,7 +25,7 @@ import { Button } from '@/components/common/Button';
 import { Separator } from '@/components/common/Separator';
 import { AdminBadge, TruncatedId } from '@/components/admin';
 import { SubscriptionLinkSelector } from '@/components/subscription';
-import { formatDate } from '@/shared/utils/date-utils';
+import { formatDate, isNeverExpiresDate } from '@/shared/utils/date-utils';
 import { useNotificationStore } from '@/shared/stores/notification-store';
 import { SUBSCRIPTION_STATUS_CONFIG, PLAN_TYPE_CONFIG } from '@/shared/constants/status-config';
 import type { Subscription } from '@/api/subscription/types';
@@ -192,7 +192,7 @@ export const SubscriptionDetailDialog: React.FC<SubscriptionDetailDialogProps> =
             <DetailItem
               icon={<Calendar className="size-4" />}
               label={t('subscription.endDate')}
-              value={subscription.endDate ? formatDate(subscription.endDate) : '-'}
+              value={subscription.endDate && !isNeverExpiresDate(subscription.endDate) ? formatDate(subscription.endDate) : t('common.fields.neverExpires')}
               successMessage={t('common.messages.copySuccess')}
             />
             <DetailItem
@@ -214,12 +214,7 @@ export const SubscriptionDetailDialog: React.FC<SubscriptionDetailDialogProps> =
           {/* Status info */}
           <div>
             <h4 className="text-sm font-medium text-foreground mb-2">{t('subscription.statusInfo')}</h4>
-            <DetailItem
-              icon={subscription.autoRenew ? <CheckCircle className="size-4 text-emerald-500" /> : <XCircle className="size-4 text-muted-foreground" />}
-              label={t('subscription.autoRenewal')}
-              value={subscription.autoRenew ? t('common.status.enabled') : t('common.status.disabled')}
-              successMessage={t('common.messages.copySuccess')}
-            />
+            {/* Auto-renew item hidden - feature not complete */}
             <DetailItem
               icon={subscription.isActive ? <CheckCircle className="size-4 text-emerald-500" /> : <XCircle className="size-4 text-red-500" />}
               label={t('subscription.isActive')}
