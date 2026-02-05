@@ -15,7 +15,7 @@
  * - ActionSheet for secondary actions
  */
 
-import { useState } from 'react';
+import { useState, memo } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   Server,
@@ -42,6 +42,7 @@ import {
   Loader2,
 } from 'lucide-react';
 import { useForwardAgentDetailEvents } from '../hooks/useForwardAgentEvents';
+import { useCopyToClipboard } from '@/shared/hooks/useCopyToClipboard';
 import {
   Sheet,
   SheetContent,
@@ -145,7 +146,7 @@ const formatUptime = (
 /**
  * Section container - minimal spacing
  */
-const DetailSection = ({
+const DetailSection = memo(({
   title,
   children,
   className,
@@ -162,12 +163,14 @@ const DetailSection = ({
       <dl className="divide-y divide-border">{children}</dl>
     </div>
   </div>
-);
+));
+
+DetailSection.displayName = 'DetailSection';
 
 /**
  * Compact row - inline label and value
  */
-const DetailRow = ({
+const DetailRow = memo(({
   icon,
   label,
   value,
@@ -180,13 +183,11 @@ const DetailRow = ({
   mono?: boolean;
   copyable?: boolean;
 }) => {
-  const [copied, setCopied] = useState(false);
+  const { copied, copyToClipboard } = useCopyToClipboard();
 
   const handleCopy = () => {
     if (typeof value === 'string') {
-      navigator.clipboard.writeText(value);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
+      copyToClipboard(value);
     }
   };
 
@@ -216,12 +217,14 @@ const DetailRow = ({
       </dd>
     </div>
   );
-};
+});
+
+DetailRow.displayName = 'DetailRow';
 
 /**
  * Inline stat item - ultra compact
  */
-const StatItem = ({
+const StatItem = memo(({
   label,
   value,
   subValue,
@@ -263,7 +266,9 @@ const StatItem = ({
       )}
     </div>
   );
-};
+});
+
+StatItem.displayName = 'StatItem';
 
 /**
  * Get color based on percentage threshold
@@ -280,7 +285,7 @@ const getProgressColor = (
 /**
  * System Status Display - Compact single card with connection info
  */
-const SystemStatusSection = ({
+const SystemStatusSection = memo(({
   status,
   isConnected,
   agentVersion,
@@ -405,7 +410,9 @@ const SystemStatusSection = ({
       </div>
     </div>
   );
-};
+});
+
+SystemStatusSection.displayName = 'SystemStatusSection';
 
 // ============================================================================
 // Main Component

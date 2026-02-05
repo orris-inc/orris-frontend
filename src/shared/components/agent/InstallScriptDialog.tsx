@@ -3,10 +3,11 @@
  * Reusable dialog for displaying agent/node install scripts
  */
 
-import { useState, useCallback } from 'react';
+import { useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Copy, Check, Terminal, Download } from 'lucide-react';
 import { safeWindowOpen } from '@/shared/utils/url-utils';
+import { useCopyToClipboard } from '@/shared/hooks/useCopyToClipboard';
 import {
   Dialog,
   DialogContent,
@@ -101,21 +102,32 @@ export const InstallScriptDialog: React.FC<InstallScriptDialogProps> = ({
   i18nNamespace,
 }) => {
   const { t } = useTranslation();
-  const [copiedFields, setCopiedFields] = useState<Record<string, boolean>>({});
+  const installCopy = useCopyToClipboard();
+  const uninstallCopy = useCopyToClipboard();
+  const scriptUrlCopy = useCopyToClipboard();
+  const apiUrlCopy = useCopyToClipboard();
+  const tokenCopy = useCopyToClipboard();
 
   const handleCopy = useCallback((field: string, value: string | undefined) => {
     if (!value) return;
-    navigator.clipboard.writeText(value);
-    setCopiedFields((prev) => ({ ...prev, [field]: true }));
-    setTimeout(() => {
-      setCopiedFields((prev) => ({ ...prev, [field]: false }));
-    }, 2000);
-  }, []);
+    const copyMap = {
+      install: installCopy,
+      uninstall: uninstallCopy,
+      scriptUrl: scriptUrlCopy,
+      apiUrl: apiUrlCopy,
+      token: tokenCopy,
+    };
+    copyMap[field as keyof typeof copyMap]?.copyToClipboard(value);
+  }, [installCopy, uninstallCopy, scriptUrlCopy, apiUrlCopy, tokenCopy]);
 
   const handleClose = useCallback(() => {
-    setCopiedFields({});
+    installCopy.reset();
+    uninstallCopy.reset();
+    scriptUrlCopy.reset();
+    apiUrlCopy.reset();
+    tokenCopy.reset();
     onClose();
-  }, [onClose]);
+  }, [installCopy, uninstallCopy, scriptUrlCopy, apiUrlCopy, tokenCopy, onClose]);
 
   if (!data) return null;
 
@@ -151,7 +163,7 @@ export const InstallScriptDialog: React.FC<InstallScriptDialogProps> = ({
                     </span>
                   </h4>
                   <CopyButton
-                    copied={copiedFields.install ?? false}
+                    copied={installCopy.copied}
                     onCopy={() => handleCopy('install', data.installCommand)}
                   />
                 </div>
@@ -170,7 +182,7 @@ export const InstallScriptDialog: React.FC<InstallScriptDialogProps> = ({
                     {t(`${i18nNamespace}.uninstallCommand`)}
                   </h4>
                   <CopyButton
-                    copied={copiedFields.uninstall ?? false}
+                    copied={uninstallCopy.copied}
                     onCopy={() => handleCopy('uninstall', data.uninstallCommand)}
                   />
                 </div>
@@ -187,7 +199,7 @@ export const InstallScriptDialog: React.FC<InstallScriptDialogProps> = ({
                   </h4>
                   <div className="flex gap-1">
                     <CopyButton
-                      copied={copiedFields.scriptUrl ?? false}
+                      copied={scriptUrlCopy.copied}
                       onCopy={() => handleCopy('scriptUrl', data.scriptUrl)}
                     />
                     <Button
@@ -227,7 +239,7 @@ export const InstallScriptDialog: React.FC<InstallScriptDialogProps> = ({
                         {t(`${i18nNamespace}.apiUrl`, { defaultValue: t(`${i18nNamespace}.serverUrl`, { defaultValue: 'API URL' }) })}
                       </h5>
                       <CopyButton
-                        copied={copiedFields.apiUrl ?? false}
+                        copied={apiUrlCopy.copied}
                         onCopy={() => handleCopy('apiUrl', data.apiUrl)}
                       />
                     </div>
@@ -241,7 +253,7 @@ export const InstallScriptDialog: React.FC<InstallScriptDialogProps> = ({
                     <div className="flex items-center justify-between mb-2">
                       <h5 className="text-sm font-medium">Token</h5>
                       <CopyButton
-                        copied={copiedFields.token ?? false}
+                        copied={tokenCopy.copied}
                         onCopy={() => handleCopy('token', data.token)}
                       />
                     </div>

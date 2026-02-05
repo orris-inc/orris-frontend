@@ -13,6 +13,7 @@ import {
   Wifi,
   WifiOff,
   Sparkles,
+  Terminal,
 } from 'lucide-react';
 import { Link } from 'react-router';
 
@@ -32,6 +33,7 @@ import {
   useUserNodesPage,
   useUserNodeUsage,
   useUserNodeInstallScript,
+  useUserBatchInstallScript,
 } from '@/features/user-nodes/hooks/useUserNodes';
 import { DashboardLayout } from '@/layouts/DashboardLayout';
 import { cn } from '@/lib/utils';
@@ -65,6 +67,10 @@ const UserNodeInstallScriptDialog = lazy(() =>
   import('@/features/user-nodes/components/UserNodeInstallScriptDialog').then((m) => ({
     default: m.UserNodeInstallScriptDialog,
   }))
+);
+
+const BatchInstallScriptDialog = lazy(() =>
+  import('@/shared/components/agent').then((m) => ({ default: m.BatchInstallScriptDialog }))
 );
 
 export const UserNodesPage = () => {
@@ -102,6 +108,14 @@ export const UserNodesPage = () => {
   const [installScriptDialogOpen, setInstallScriptDialogOpen] = useState(false);
   const [installScriptNode, setInstallScriptNode] = useState<UserNode | null>(null);
   const [currentToken, setCurrentToken] = useState<string | null>(null);
+  const [batchInstallDialogOpen, setBatchInstallDialogOpen] = useState(false);
+
+  const {
+    getBatchInstallScript,
+    isLoading: isBatchInstallLoading,
+    data: batchInstallData,
+    reset: resetBatchInstall,
+  } = useUserBatchInstallScript();
 
   const {
     installScript,
@@ -153,6 +167,15 @@ export const UserNodesPage = () => {
     setInstallScriptDialogOpen(true);
   };
 
+  const handleBatchInstallScript = async () => {
+    const nodeIds = nodes.map((n) => n.id);
+    if (nodeIds.length === 0) return;
+    const data = await getBatchInstallScript(nodeIds);
+    if (data) {
+      setBatchInstallDialogOpen(true);
+    }
+  };
+
   const handleDeleteClick = async (node: UserNode) => {
     try {
       await deleteNode(node.id);
@@ -201,16 +224,30 @@ export const UserNodesPage = () => {
         </div>
       }
       pageActions={
-        <Button
-          onClick={handleCreateClick}
-          size="sm"
-          className="gap-1.5 touch-target h-9 px-3"
-          disabled={nodeStats.isAtLimit}
-        >
-          <Plus className="size-4" />
-          <span className="hidden sm:inline">{t('userNodes.addNode')}</span>
-          <span className="sm:hidden">{t('common.actions.create')}</span>
-        </Button>
+        <div className="flex items-center gap-2">
+          {nodeStats.total > 1 && (
+            <Button
+              onClick={handleBatchInstallScript}
+              size="sm"
+              variant="outline"
+              className="gap-1.5 touch-target h-9 px-3"
+              disabled={isBatchInstallLoading}
+            >
+              <Terminal className="size-4" />
+              <span className="hidden sm:inline">{t('userNodes.installScript.batchTitle')}</span>
+            </Button>
+          )}
+          <Button
+            onClick={handleCreateClick}
+            size="sm"
+            className="gap-1.5 touch-target h-9 px-3"
+            disabled={nodeStats.isAtLimit}
+          >
+            <Plus className="size-4" />
+            <span className="hidden sm:inline">{t('userNodes.addNode')}</span>
+            <span className="sm:hidden">{t('common.actions.create')}</span>
+          </Button>
+        </div>
       }
     >
       <div className="space-y-6 pb-safe">
@@ -421,6 +458,22 @@ export const UserNodesPage = () => {
             onClose={() => {
               setInstallScriptDialogOpen(false);
               setInstallScriptNode(null);
+            }}
+          />
+        </Suspense>
+      )}
+
+      {/* Batch install script dialog */}
+      {batchInstallDialogOpen && (
+        <Suspense fallback={null}>
+          <BatchInstallScriptDialog
+            open={batchInstallDialogOpen}
+            data={batchInstallData}
+            nodeCount={nodeStats.total}
+            i18nNamespace="userNodes.installScript"
+            onClose={() => {
+              setBatchInstallDialogOpen(false);
+              resetBatchInstall();
             }}
           />
         </Suspense>

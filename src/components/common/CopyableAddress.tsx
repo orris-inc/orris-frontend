@@ -2,11 +2,12 @@
  * CopyableAddress Component
  * Displays an address with truncation and copy functionality
  */
-import { useState, useCallback } from 'react';
+import { useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Copy, Check } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/common/Tooltip';
 import { cn } from '@/lib/utils';
+import { useCopyToClipboard } from '@/shared/hooks';
 
 export interface CopyableAddressProps {
   /** The address to display */
@@ -35,18 +36,16 @@ export const CopyableAddress: React.FC<CopyableAddressProps> = ({
   copyTitle,
 }) => {
   const { t } = useTranslation();
-  const [copied, setCopied] = useState(false);
+  const { copied, copyToClipboard } = useCopyToClipboard();
 
   const resolvedCopyTitle = copyTitle ?? t('common.copyAddress');
 
   const handleCopy = useCallback((e: React.MouseEvent) => {
     e.stopPropagation();
     if (address && address !== '-') {
-      navigator.clipboard.writeText(address);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
+      copyToClipboard(address);
     }
-  }, [address]);
+  }, [address, copyToClipboard]);
 
   if (!address || address === '-') {
     return <span className={cn('text-muted-foreground', className)}>-</span>;

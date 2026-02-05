@@ -27,7 +27,7 @@ import {
   Bell,
   BellOff,
 } from 'lucide-react';
-import { DataTable, DraggableDataTable, SystemStatusCell, TableHoverCardProvider, TableHoverCardList, DateTimeCell, type ColumnDef, type ResponsiveColumnMeta } from '@/components/admin';
+import { DataTable, DraggableDataTable, SystemStatusCell, TableHoverCardProvider, TableHoverCardList, DateTimeCell, type ColumnDef, type ResponsiveColumnMeta, type RowSelectionState, type OnChangeFn } from '@/components/admin';
 import { useBreakpoint } from '@/hooks/useBreakpoint';
 import { NodeMobileList } from './NodeMobileList';
 import {
@@ -69,6 +69,10 @@ interface NodeListTableProps {
   // Drag and drop sorting
   enableDragSort?: boolean;
   onDragEnd?: (activeId: string, overId: string, oldIndex: number, newIndex: number) => void;
+  // Row selection for batch operations
+  enableRowSelection?: boolean;
+  rowSelection?: RowSelectionState;
+  onRowSelectionChange?: OnChangeFn<RowSelectionState>;
 }
 
 // Health status configuration - combines online state and admin status
@@ -147,6 +151,9 @@ export const NodeListTable: React.FC<NodeListTableProps> = ({
   onToggleMute,
   enableDragSort = false,
   onDragEnd,
+  enableRowSelection = false,
+  rowSelection,
+  onRowSelectionChange,
 }) => {
   const { t } = useTranslation();
   // Detect mobile screen
@@ -683,6 +690,9 @@ export const NodeListTable: React.FC<NodeListTableProps> = ({
         getRowId={(row) => String(row.id)}
         enableContextMenu={true}
         contextMenuContent={renderContextMenuActions}
+        enableRowSelection={enableRowSelection}
+        rowSelection={rowSelection}
+        onRowSelectionChange={onRowSelectionChange}
       />
     </TableHoverCardProvider>
   );

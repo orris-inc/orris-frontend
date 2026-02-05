@@ -8,6 +8,8 @@ export {
   type InstallScriptData,
 } from './InstallScriptDialog';
 
+export { BatchInstallScriptDialog } from './BatchInstallScriptDialog';
+
 export {
   BatchUpdateDialog,
   type BatchUpdateEntity,

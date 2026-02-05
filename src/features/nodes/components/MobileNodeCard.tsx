@@ -8,6 +8,7 @@
  * - Tap to open detail sheet
  */
 
+import { memo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Activity, ArrowUpCircle, Network } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -61,7 +62,7 @@ const PROTOCOL_LABELS: Record<NodeProtocol, string> = {
 /**
  * Online status indicator - compact dot with optional label
  */
-const OnlineIndicator = ({
+const OnlineIndicator = memo(({
   isOnline,
   showLabel = true,
   t,
@@ -95,12 +96,14 @@ const OnlineIndicator = ({
       )}
     </span>
   );
-};
+});
+
+OnlineIndicator.displayName = 'OnlineIndicator';
 
 /**
  * Status badge
  */
-const StatusBadge = ({
+const StatusBadge = memo(({
   status,
   t,
 }: {
@@ -122,13 +125,15 @@ const StatusBadge = ({
       {t(config.labelKey)}
     </span>
   );
-};
+});
+
+StatusBadge.displayName = 'StatusBadge';
 
 // ============================================================================
 // Main Component
 // ============================================================================
 
-export const MobileNodeCard = ({
+export const MobileNodeCard = memo(({
   node,
   onCardPress,
 }: MobileNodeCardProps) => {
@@ -197,6 +202,6 @@ export const MobileNodeCard = ({
       <StatusBadge status={node.status} t={t} />
     </div>
   );
-};
+});
 
 MobileNodeCard.displayName = 'MobileNodeCard';

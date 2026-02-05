@@ -2,7 +2,7 @@
  * Edit node dialog component
  */
 
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { formatDateTime } from '@/shared/utils/date-utils';
 import {
@@ -48,6 +48,25 @@ import { useResourceGroups } from '@/features/resource-groups/hooks/useResourceG
 import { useSubscriptionPlans } from '@/features/subscription-plans/hooks/useSubscriptionPlans';
 import { RouteConfigEditor } from './RouteConfigEditor';
 import type { OutboundNodeOption } from '../utils/route-rule-utils';
+import { pluginOptsToString, stringToPluginOpts, arePluginOptsEqual } from '../utils/plugin-utils';
+import {
+  SS_ENCRYPTION_METHODS,
+  TRANSPORT_PROTOCOLS,
+  VLESS_TRANSPORT_PROTOCOLS,
+  VLESS_SECURITY_TYPES,
+  VMESS_SECURITY_TYPES,
+  VMESS_TRANSPORT_PROTOCOLS,
+  CONGESTION_CONTROL_TYPES,
+  TUIC_UDP_RELAY_MODES,
+} from '@/shared/constants/protocol-options';
+import {
+  ShadowsocksConfigForm,
+  TrojanConfigForm,
+  VlessConfigForm,
+  VmessConfigForm,
+  Hysteria2ConfigForm,
+  TuicConfigForm,
+} from './protocol-forms';
 
 interface EditNodeDialogProps {
   open: boolean;
@@ -63,40 +82,6 @@ interface FormData extends Omit<UpdateNodeRequest, 'groupSids'> {
   groupSids: string[];
 }
 
-// Shadowsocks encryption methods
-const SS_ENCRYPTION_METHODS = [
-  'aes-128-gcm',
-  'aes-256-gcm',
-  'chacha20-ietf-poly1305',
-  'xchacha20-ietf-poly1305',
-  '2022-blake3-aes-128-gcm',
-  '2022-blake3-aes-256-gcm',
-  '2022-blake3-chacha20-poly1305',
-] as const;
-
-// Trojan transport protocols
-const TRANSPORT_PROTOCOLS: TransportProtocol[] = ['tcp', 'ws', 'grpc'];
-
-// VLESS transport protocols
-const VLESS_TRANSPORT_PROTOCOLS: TransportProtocol[] = ['tcp', 'ws', 'grpc', 'h2'];
-
-// VLESS security types
-const VLESS_SECURITY_OPTIONS: VLESSSecurity[] = ['none', 'tls', 'reality'];
-
-// VMess security types
-const VMESS_SECURITY_OPTIONS: VMessSecurity[] = ['auto', 'aes-128-gcm', 'chacha20-poly1305', 'none', 'zero'];
-
-// VMess transport protocols
-const VMESS_TRANSPORT_PROTOCOLS: TransportProtocol[] = ['tcp', 'ws', 'grpc', 'http', 'quic'];
-
-// Congestion control algorithms
-const CONGESTION_CONTROL_OPTIONS: CongestionControl[] = ['cubic', 'bbr', 'new_reno'];
-
-// TUIC UDP relay modes
-const TUIC_UDP_RELAY_MODES: TUICUDPRelayMode[] = ['native', 'quic'];
-
-// TLS fingerprint options
-const TLS_FINGERPRINT_OPTIONS = ['chrome', 'firefox', 'safari', 'edge', 'random'] as const;
 
 // Protocol display names
 const PROTOCOL_NAMES: Record<NodeProtocol, string> = {
@@ -108,59 +93,6 @@ const PROTOCOL_NAMES: Record<NodeProtocol, string> = {
   tuic: 'TUIC',
 };
 
-// Helper function: convert pluginOpts object to string
-const pluginOptsToString = (opts?: Record<string, string>): string => {
-  if (!opts || Object.keys(opts).length === 0) return '';
-  return Object.entries(opts)
-    .map(([key, value]) => `${key}=${value}`)
-    .join(';');
-};
-
-// Helper function: parse string to pluginOpts object
-const stringToPluginOpts = (str: string): Record<string, string> | undefined => {
-  const trimmed = str.trim();
-  if (!trimmed) return undefined;
-
-  const opts: Record<string, string> = {};
-  const pairs = trimmed.split(';');
-
-  for (const pair of pairs) {
-    const trimmedPair = pair.trim();
-    if (!trimmedPair) continue;
-
-    const [key, ...valueParts] = trimmedPair.split('=');
-    const trimmedKey = key?.trim();
-    const value = valueParts.join('=').trim(); // Support '=' in values
-
-    if (trimmedKey && value) {
-      opts[trimmedKey] = value;
-    }
-  }
-
-  return Object.keys(opts).length > 0 ? opts : undefined;
-};
-
-// Helper function: deep comparison of two pluginOpts objects
-const arePluginOptsEqual = (
-  opts1?: Record<string, string>,
-  opts2?: Record<string, string>
-): boolean => {
-  // Both are empty
-  if ((!opts1 || Object.keys(opts1).length === 0) &&
-      (!opts2 || Object.keys(opts2).length === 0)) {
-    return true;
-  }
-
-  // One is empty, one is not
-  if (!opts1 || !opts2) return false;
-
-  const keys1 = Object.keys(opts1);
-  const keys2 = Object.keys(opts2);
-
-  if (keys1.length !== keys2.length) return false;
-
-  return keys1.every(key => opts1[key] === opts2[key]);
-};
 
 
 export const EditNodeDialog: React.FC<EditNodeDialogProps> = ({
@@ -279,50 +211,52 @@ export const EditNodeDialog: React.FC<EditNodeDialogProps> = ({
   const isHysteria2 = node?.protocol === 'hysteria2';
   const isTuic = node?.protocol === 'tuic';
 
-  // Trojan transport fields
-  const showWsFields = isTrojan && formData.transportProtocol === 'ws';
-  const showGrpcFields = isTrojan && formData.transportProtocol === 'grpc';
-
-  // VLESS transport fields
-  const showVlessWsFields = isVless && (formData.vlessTransportType === 'ws' || formData.vlessTransportType === 'h2');
-  const showVlessGrpcFields = isVless && formData.vlessTransportType === 'grpc';
-  const showVlessRealityFields = isVless && formData.vlessSecurity === 'reality';
-
-  // VMess transport fields
-  const showVmessWsFields = isVmess && (formData.vmessTransportType === 'ws' || formData.vmessTransportType === 'http');
-  const showVmessGrpcFields = isVmess && formData.vmessTransportType === 'grpc';
-
-  const handleChange = (field: keyof UpdateNodeRequest | 'tagsInput', value: string | number | boolean | undefined) => {
+  const handleChange = useCallback((field: keyof UpdateNodeRequest | 'tagsInput', value: string | number | boolean | undefined) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
-    if (errors[field]) {
-      setErrors((prev) => {
-        const newErrors = { ...prev };
-        delete newErrors[field];
-        return newErrors;
-      });
-    }
-  };
+    setErrors((prev) => {
+      if (!prev[field]) return prev;
+      const newErrors = { ...prev };
+      delete newErrors[field];
+      return newErrors;
+    });
+  }, []);
 
-  const handlePluginOptsChange = (value: string) => {
+  // Adapter for protocol config forms that expect (field: string, value: any)
+  const handleFieldChange = useCallback((field: string, value: any) => {
+    setFormData((prev) => ({ ...prev, [field]: value }));
+    setErrors((prev) => {
+      if (!prev[field]) return prev;
+      const newErrors = { ...prev };
+      delete newErrors[field];
+      return newErrors;
+    });
+  }, []);
+
+  const handlePluginOptsChange = useCallback((value: string) => {
     setPluginOptsStr(value);
     const parsedOpts = stringToPluginOpts(value);
     setFormData((prev) => ({ ...prev, pluginOpts: parsedOpts }));
-    if (errors.pluginOpts) {
-      setErrors((prev) => {
-        const newErrors = { ...prev };
-        delete newErrors.pluginOpts;
-        return newErrors;
-      });
-    }
-  };
+    setErrors((prev) => {
+      if (!prev.pluginOpts) return prev;
+      const newErrors = { ...prev };
+      delete newErrors.pluginOpts;
+      return newErrors;
+    });
+  }, []);
 
-  const handleRouteChange = (route: RouteConfig | undefined) => {
+  const handleRouteChange = useCallback((route: RouteConfig | undefined) => {
     setFormData((prev) => ({ ...prev, route }));
-  };
+  }, []);
 
-  const handleCostLabelChange = (value: string) => {
-    handleChange("costLabel", value || undefined);
-  };
+  const handleCostLabelChange = useCallback((value: string) => {
+    setFormData((prev) => ({ ...prev, costLabel: value || undefined }));
+    setErrors((prev) => {
+      if (!prev.costLabel) return prev;
+      const newErrors = { ...prev };
+      delete newErrors.costLabel;
+      return newErrors;
+    });
+  }, []);
 
   const handleSubmit = () => {
     if (!node) return;
@@ -777,7 +711,7 @@ export const EditNodeDialog: React.FC<EditNodeDialogProps> = ({
                             <SelectValue />
                           </SelectTrigger>
                           <SelectContent>
-                            {VLESS_SECURITY_OPTIONS.map((security) => (
+                            {VLESS_SECURITY_TYPES.map((security) => (
                               <SelectItem key={security} value={security}>
                                 {security.toUpperCase()}
                               </SelectItem>
@@ -820,7 +754,7 @@ export const EditNodeDialog: React.FC<EditNodeDialogProps> = ({
                             <SelectValue />
                           </SelectTrigger>
                           <SelectContent>
-                            {VMESS_SECURITY_OPTIONS.map((security) => (
+                            {VMESS_SECURITY_TYPES.map((security) => (
                               <SelectItem key={security} value={security}>
                                 {security}
                               </SelectItem>
@@ -843,7 +777,7 @@ export const EditNodeDialog: React.FC<EditNodeDialogProps> = ({
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
-                          {CONGESTION_CONTROL_OPTIONS.map((cc) => (
+                          {CONGESTION_CONTROL_TYPES.map((cc) => (
                             <SelectItem key={cc} value={cc}>
                               {cc.toUpperCase().replace('_', ' ')}
                             </SelectItem>
@@ -866,7 +800,7 @@ export const EditNodeDialog: React.FC<EditNodeDialogProps> = ({
                             <SelectValue />
                           </SelectTrigger>
                           <SelectContent>
-                            {CONGESTION_CONTROL_OPTIONS.map((cc) => (
+                            {CONGESTION_CONTROL_TYPES.map((cc) => (
                               <SelectItem key={cc} value={cc}>
                                 {cc.toUpperCase().replace('_', ' ')}
                               </SelectItem>
@@ -976,489 +910,105 @@ export const EditNodeDialog: React.FC<EditNodeDialogProps> = ({
                 <div className="grid grid-cols-1 @md:grid-cols-2 gap-4">
                   {/* Shadowsocks Plugin */}
                   {isShadowsocks && (
-                    <>
-                      <div className="flex flex-col gap-2">
-                        <Label htmlFor="plugin">{t('admin.nodes.form.plugin')}</Label>
-                        <Input
-                          id="plugin"
-                          placeholder={t('admin.nodes.form.placeholders.plugin')}
-                          value={formData.plugin || ''}
-                          onChange={(e) => handleChange('plugin', e.target.value)}
-                        />
-                        <p className="text-xs text-muted-foreground">
-                          {t('admin.nodes.form.pluginHint')}
-                        </p>
-                      </div>
-
-                      <div className="flex flex-col gap-2 @md:col-span-2">
-                        <Label htmlFor="pluginOpts">{t('admin.nodes.form.pluginOptions')}</Label>
-                        <Input
-                          id="pluginOpts"
-                          placeholder={t('admin.nodes.form.placeholders.pluginOpts')}
-                          value={pluginOptsStr}
-                          onChange={(e) => handlePluginOptsChange(e.target.value)}
-                          error={!!errors.pluginOpts}
-                        />
-                        {errors.pluginOpts && (
-                          <p className="text-xs text-destructive">{errors.pluginOpts}</p>
-                        )}
-                        <p className="text-xs text-muted-foreground">
-                          {t('admin.nodes.form.pluginOptionsHint')}
-                        </p>
-                      </div>
-                    </>
+                    <div className="@md:col-span-2">
+                      <ShadowsocksConfigForm
+                        plugin={formData.plugin}
+                        pluginOptsString={pluginOptsStr}
+                        onPluginChange={(value) => handleChange('plugin', value)}
+                        onPluginOptsChange={handlePluginOptsChange}
+                        errors={errors}
+                      />
+                    </div>
                   )}
 
                   {/* Trojan Config */}
                   {isTrojan && (
-                    <>
-                      <div className="flex flex-col gap-2">
-                        <Label htmlFor="sni">{t('admin.nodes.form.fields.sni')}</Label>
-                        <Input
-                          id="sni"
-                          placeholder={t('admin.nodes.form.placeholders.sni')}
-                          value={formData.sni || ''}
-                          onChange={(e) => handleChange('sni', e.target.value)}
-                        />
-                        <p className="text-xs text-muted-foreground">{t('common.optional')}</p>
-                      </div>
-
-                      <div className="flex flex-col gap-2">
-                        <Label htmlFor="allowInsecure">{t('admin.nodes.form.tlsSecurity')}</Label>
-                        <Select
-                          value={formData.allowInsecure ? 'true' : 'false'}
-                          onValueChange={(value) => handleChange('allowInsecure', value === 'true')}
-                        >
-                          <SelectTrigger id="allowInsecure">
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="false">{t('admin.nodes.form.verifyCert')}</SelectItem>
-                            <SelectItem value="true">{t('admin.nodes.form.skipVerify')}</SelectItem>
-                          </SelectContent>
-                        </Select>
-                        <p className="text-xs text-muted-foreground">{t('admin.nodes.form.tlsSecurityHint')}</p>
-                      </div>
-
-                      {/* WebSocket Config */}
-                      {showWsFields && (
-                        <>
-                          <div className="flex flex-col gap-2">
-                            <Label htmlFor="host">{t('admin.nodes.form.fields.host')}</Label>
-                            <Input
-                              id="host"
-                              placeholder={t('admin.nodes.form.placeholders.wsHost')}
-                              value={formData.host || ''}
-                              onChange={(e) => handleChange('host', e.target.value)}
-                            />
-                            <p className="text-xs text-muted-foreground">{t('common.optional')}</p>
-                          </div>
-
-                          <div className="flex flex-col gap-2">
-                            <Label htmlFor="path">{t('admin.nodes.form.fields.path')}</Label>
-                            <Input
-                              id="path"
-                              placeholder={t('admin.nodes.form.placeholders.path')}
-                              value={formData.path || ''}
-                              onChange={(e) => handleChange('path', e.target.value)}
-                            />
-                            <p className="text-xs text-muted-foreground">{t('common.optional')}</p>
-                          </div>
-                        </>
-                      )}
-
-                      {/* gRPC Config */}
-                      {showGrpcFields && (
-                        <div className="flex flex-col gap-2">
-                          <Label htmlFor="grpcHost">{t('admin.nodes.form.fields.serviceName')}</Label>
-                          <Input
-                            id="grpcHost"
-                            placeholder={t('admin.nodes.form.placeholders.grpcServiceName')}
-                            value={formData.host || ''}
-                            onChange={(e) => handleChange('host', e.target.value)}
-                          />
-                          <p className="text-xs text-muted-foreground">{t('common.optional')}</p>
-                        </div>
-                      )}
-                    </>
+                    <div className="@md:col-span-2">
+                      <TrojanConfigForm
+                        sni={formData.sni}
+                        allowInsecure={formData.allowInsecure}
+                        transportProtocol={formData.transportProtocol}
+                        host={formData.host}
+                        path={formData.path}
+                        onFieldChange={handleFieldChange}
+                        errors={errors}
+                      />
+                    </div>
                   )}
 
                   {/* VLESS Config */}
                   {isVless && (
-                    <>
-                      <div className="flex flex-col gap-2">
-                        <Label htmlFor="vlessSni">{t('admin.nodes.form.fields.sni')}</Label>
-                        <Input
-                          id="vlessSni"
-                          placeholder={t('admin.nodes.form.placeholders.sni')}
-                          value={formData.vlessSni || ''}
-                          onChange={(e) => handleChange('vlessSni', e.target.value)}
-                        />
-                        <p className="text-xs text-muted-foreground">{t('common.optional')}</p>
-                      </div>
-
-                      <div className="flex flex-col gap-2">
-                        <Label htmlFor="vlessAllowInsecure">{t('admin.nodes.form.tlsSecurity')}</Label>
-                        <Select
-                          value={formData.vlessAllowInsecure ? 'true' : 'false'}
-                          onValueChange={(value) => handleChange('vlessAllowInsecure', value === 'true')}
-                        >
-                          <SelectTrigger id="vlessAllowInsecure">
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="false">{t('admin.nodes.form.verifyCert')}</SelectItem>
-                            <SelectItem value="true">{t('admin.nodes.form.skipVerify')}</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
-
-                      <div className="flex flex-col gap-2">
-                        <Label htmlFor="vlessFlow">{t('admin.nodes.form.fields.flow')}</Label>
-                        <Input
-                          id="vlessFlow"
-                          placeholder={t('admin.nodes.form.placeholders.vlessFlow')}
-                          value={formData.vlessFlow || ''}
-                          onChange={(e) => handleChange('vlessFlow', e.target.value)}
-                        />
-                        <p className="text-xs text-muted-foreground">{t('common.optional')}</p>
-                      </div>
-
-                      <div className="flex flex-col gap-2">
-                        <Label htmlFor="vlessFingerprint">{t('admin.nodes.form.fields.fingerprint')}</Label>
-                        <Select
-                          value={formData.vlessFingerprint || ''}
-                          onValueChange={(value) => handleChange('vlessFingerprint', value)}
-                        >
-                          <SelectTrigger id="vlessFingerprint">
-                            <SelectValue placeholder={t('admin.nodes.form.selectFingerprint')} />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {TLS_FINGERPRINT_OPTIONS.map((fp) => (
-                              <SelectItem key={fp} value={fp}>
-                                {fp}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                      </div>
-
-                      {showVlessWsFields && (
-                        <>
-                          <div className="flex flex-col gap-2">
-                            <Label htmlFor="vlessHost">{t('admin.nodes.form.fields.host')}</Label>
-                            <Input
-                              id="vlessHost"
-                              placeholder={t('admin.nodes.form.placeholders.wsH2Host')}
-                              value={formData.vlessHost || ''}
-                              onChange={(e) => handleChange('vlessHost', e.target.value)}
-                            />
-                          </div>
-
-                          <div className="flex flex-col gap-2">
-                            <Label htmlFor="vlessPath">{t('admin.nodes.form.fields.path')}</Label>
-                            <Input
-                              id="vlessPath"
-                              placeholder={t('admin.nodes.form.placeholders.path')}
-                              value={formData.vlessPath || ''}
-                              onChange={(e) => handleChange('vlessPath', e.target.value)}
-                            />
-                          </div>
-                        </>
-                      )}
-
-                      {showVlessGrpcFields && (
-                        <div className="flex flex-col gap-2">
-                          <Label htmlFor="vlessServiceName">{t('admin.nodes.form.fields.serviceName')}</Label>
-                          <Input
-                            id="vlessServiceName"
-                            placeholder={t('admin.nodes.form.placeholders.grpcServiceName')}
-                            value={formData.vlessServiceName || ''}
-                            onChange={(e) => handleChange('vlessServiceName', e.target.value)}
-                          />
-                        </div>
-                      )}
-
-                      {showVlessRealityFields && (
-                        <>
-                          <div className="flex flex-col gap-2">
-                            <Label htmlFor="vlessRealityPublicKey">{t('admin.nodes.form.fields.realityPublicKey')}</Label>
-                            <Input
-                              id="vlessRealityPublicKey"
-                              placeholder={t('admin.nodes.form.publicKeyPlaceholder')}
-                              value={formData.vlessRealityPublicKey || ''}
-                              onChange={(e) => handleChange('vlessRealityPublicKey', e.target.value)}
-                            />
-                          </div>
-
-                          <div className="flex flex-col gap-2">
-                            <Label htmlFor="vlessRealityShortId">{t('admin.nodes.form.fields.realityShortId')}</Label>
-                            <Input
-                              id="vlessRealityShortId"
-                              placeholder={t('admin.nodes.form.shortIdPlaceholder')}
-                              value={formData.vlessRealityShortId || ''}
-                              onChange={(e) => handleChange('vlessRealityShortId', e.target.value)}
-                            />
-                          </div>
-
-                          <div className="flex flex-col gap-2 @md:col-span-2">
-                            <Label htmlFor="vlessRealitySpiderX">{t('admin.nodes.form.fields.realitySpiderX')}</Label>
-                            <Input
-                              id="vlessRealitySpiderX"
-                              placeholder="/"
-                              value={formData.vlessRealitySpiderX || ''}
-                              onChange={(e) => handleChange('vlessRealitySpiderX', e.target.value)}
-                            />
-                          </div>
-                        </>
-                      )}
-                    </>
+                    <div className="@md:col-span-2">
+                      <VlessConfigForm
+                        transportType={formData.vlessTransportType}
+                        security={formData.vlessSecurity}
+                        sni={formData.vlessSni}
+                        allowInsecure={formData.vlessAllowInsecure}
+                        flow={formData.vlessFlow}
+                        fingerprint={formData.vlessFingerprint}
+                        host={formData.vlessHost}
+                        path={formData.vlessPath}
+                        serviceName={formData.vlessServiceName}
+                        realityPublicKey={formData.vlessRealityPublicKey}
+                        realityShortId={formData.vlessRealityShortId}
+                        realitySpiderX={formData.vlessRealitySpiderX}
+                        onFieldChange={handleFieldChange}
+                        errors={errors}
+                      />
+                    </div>
                   )}
 
                   {/* VMess Config */}
                   {isVmess && (
-                    <>
-                      <div className="flex flex-col gap-2">
-                        <Label htmlFor="vmessAlterId">{t('admin.nodes.form.fields.alterId')}</Label>
-                        <Input
-                          id="vmessAlterId"
-                          type="number"
-                          min={0}
-                          value={formData.vmessAlterId ?? 0}
-                          onChange={(e) => handleChange('vmessAlterId', parseInt(e.target.value, 10) || 0)}
-                        />
-                        <p className="text-xs text-muted-foreground">{t('admin.nodes.form.alterIdHint')}</p>
-                      </div>
-
-                      <div className="flex flex-col gap-2">
-                        <Label htmlFor="vmessTls">{t('admin.nodes.form.fields.tls')}</Label>
-                        <Select
-                          value={formData.vmessTls ? 'true' : 'false'}
-                          onValueChange={(value) => handleChange('vmessTls', value === 'true')}
-                        >
-                          <SelectTrigger id="vmessTls">
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="true">{t('admin.nodes.form.enableTls')}</SelectItem>
-                            <SelectItem value="false">{t('admin.nodes.form.disableTls')}</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
-
-                      <div className="flex flex-col gap-2">
-                        <Label htmlFor="vmessSni">{t('admin.nodes.form.fields.sni')}</Label>
-                        <Input
-                          id="vmessSni"
-                          placeholder={t('admin.nodes.form.placeholders.sni')}
-                          value={formData.vmessSni || ''}
-                          onChange={(e) => handleChange('vmessSni', e.target.value)}
-                        />
-                      </div>
-
-                      <div className="flex flex-col gap-2">
-                        <Label htmlFor="vmessAllowInsecure">{t('admin.nodes.form.tlsSecurity')}</Label>
-                        <Select
-                          value={formData.vmessAllowInsecure ? 'true' : 'false'}
-                          onValueChange={(value) => handleChange('vmessAllowInsecure', value === 'true')}
-                        >
-                          <SelectTrigger id="vmessAllowInsecure">
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="false">{t('admin.nodes.form.verifyCert')}</SelectItem>
-                            <SelectItem value="true">{t('admin.nodes.form.skipVerify')}</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
-
-                      {showVmessWsFields && (
-                        <>
-                          <div className="flex flex-col gap-2">
-                            <Label htmlFor="vmessHost">{t('admin.nodes.form.fields.host')}</Label>
-                            <Input
-                              id="vmessHost"
-                              placeholder={t('admin.nodes.form.placeholders.wsHttpHost')}
-                              value={formData.vmessHost || ''}
-                              onChange={(e) => handleChange('vmessHost', e.target.value)}
-                            />
-                          </div>
-
-                          <div className="flex flex-col gap-2">
-                            <Label htmlFor="vmessPath">{t('admin.nodes.form.fields.path')}</Label>
-                            <Input
-                              id="vmessPath"
-                              placeholder={t('admin.nodes.form.placeholders.path')}
-                              value={formData.vmessPath || ''}
-                              onChange={(e) => handleChange('vmessPath', e.target.value)}
-                            />
-                          </div>
-                        </>
-                      )}
-
-                      {showVmessGrpcFields && (
-                        <div className="flex flex-col gap-2">
-                          <Label htmlFor="vmessServiceName">{t('admin.nodes.form.fields.serviceName')}</Label>
-                          <Input
-                            id="vmessServiceName"
-                            placeholder={t('admin.nodes.form.placeholders.grpcServiceName')}
-                            value={formData.vmessServiceName || ''}
-                            onChange={(e) => handleChange('vmessServiceName', e.target.value)}
-                          />
-                        </div>
-                      )}
-                    </>
+                    <div className="@md:col-span-2">
+                      <VmessConfigForm
+                        transportType={formData.vmessTransportType}
+                        security={formData.vmessSecurity}
+                        alterId={formData.vmessAlterId}
+                        tls={formData.vmessTls}
+                        sni={formData.vmessSni}
+                        allowInsecure={formData.vmessAllowInsecure}
+                        host={formData.vmessHost}
+                        path={formData.vmessPath}
+                        serviceName={formData.vmessServiceName}
+                        onFieldChange={handleFieldChange}
+                        errors={errors}
+                      />
+                    </div>
                   )}
 
                   {/* Hysteria2 Config */}
                   {isHysteria2 && (
-                    <>
-                      <div className="flex flex-col gap-2">
-                        <Label htmlFor="hysteria2Sni">{t('admin.nodes.form.fields.sni')}</Label>
-                        <Input
-                          id="hysteria2Sni"
-                          placeholder={t('admin.nodes.form.placeholders.sni')}
-                          value={formData.hysteria2Sni || ''}
-                          onChange={(e) => handleChange('hysteria2Sni', e.target.value)}
-                        />
-                      </div>
-
-                      <div className="flex flex-col gap-2">
-                        <Label htmlFor="hysteria2AllowInsecure">{t('admin.nodes.form.tlsSecurity')}</Label>
-                        <Select
-                          value={formData.hysteria2AllowInsecure ? 'true' : 'false'}
-                          onValueChange={(value) => handleChange('hysteria2AllowInsecure', value === 'true')}
-                        >
-                          <SelectTrigger id="hysteria2AllowInsecure">
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="false">{t('admin.nodes.form.verifyCert')}</SelectItem>
-                            <SelectItem value="true">{t('admin.nodes.form.skipVerify')}</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
-
-                      <div className="flex flex-col gap-2">
-                        <Label htmlFor="hysteria2Obfs">{t('admin.nodes.form.obfsType')}</Label>
-                        <Input
-                          id="hysteria2Obfs"
-                          placeholder={t('admin.nodes.form.placeholders.hysteria2Obfs')}
-                          value={formData.hysteria2Obfs || ''}
-                          onChange={(e) => handleChange('hysteria2Obfs', e.target.value)}
-                        />
-                      </div>
-
-                      <div className="flex flex-col gap-2">
-                        <Label htmlFor="hysteria2ObfsPassword">{t('admin.nodes.form.obfsPassword')}</Label>
-                        <Input
-                          id="hysteria2ObfsPassword"
-                          placeholder={t('common.placeholders.password')}
-                          value={formData.hysteria2ObfsPassword || ''}
-                          onChange={(e) => handleChange('hysteria2ObfsPassword', e.target.value)}
-                        />
-                      </div>
-
-                      <div className="flex flex-col gap-2">
-                        <Label htmlFor="hysteria2UpMbps">{t('admin.nodes.form.upBandwidth')}</Label>
-                        <Input
-                          id="hysteria2UpMbps"
-                          type="number"
-                          min={0}
-                          placeholder={t('admin.nodes.form.placeholders.bandwidth')}
-                          value={formData.hysteria2UpMbps ?? ''}
-                          onChange={(e) => handleChange('hysteria2UpMbps', e.target.value ? parseInt(e.target.value, 10) : undefined)}
-                        />
-                      </div>
-
-                      <div className="flex flex-col gap-2">
-                        <Label htmlFor="hysteria2DownMbps">{t('admin.nodes.form.downBandwidth')}</Label>
-                        <Input
-                          id="hysteria2DownMbps"
-                          type="number"
-                          min={0}
-                          placeholder={t('admin.nodes.form.placeholders.bandwidth')}
-                          value={formData.hysteria2DownMbps ?? ''}
-                          onChange={(e) => handleChange('hysteria2DownMbps', e.target.value ? parseInt(e.target.value, 10) : undefined)}
-                        />
-                      </div>
-
-                      <div className="flex flex-col gap-2 @md:col-span-2">
-                        <Label htmlFor="hysteria2Fingerprint">{t('admin.nodes.form.fields.fingerprint')}</Label>
-                        <Select
-                          value={formData.hysteria2Fingerprint || ''}
-                          onValueChange={(value) => handleChange('hysteria2Fingerprint', value)}
-                        >
-                          <SelectTrigger id="hysteria2Fingerprint">
-                            <SelectValue placeholder={t('admin.nodes.form.selectFingerprint')} />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {TLS_FINGERPRINT_OPTIONS.map((fp) => (
-                              <SelectItem key={fp} value={fp}>
-                                {fp}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                      </div>
-                    </>
+                    <div className="@md:col-span-2">
+                      <Hysteria2ConfigForm
+                        congestionControl={formData.hysteria2CongestionControl}
+                        sni={formData.hysteria2Sni}
+                        allowInsecure={formData.hysteria2AllowInsecure}
+                        obfs={formData.hysteria2Obfs}
+                        obfsPassword={formData.hysteria2ObfsPassword}
+                        upMbps={formData.hysteria2UpMbps}
+                        downMbps={formData.hysteria2DownMbps}
+                        fingerprint={formData.hysteria2Fingerprint}
+                        onFieldChange={handleFieldChange}
+                        errors={errors}
+                      />
+                    </div>
                   )}
 
                   {/* TUIC Config */}
                   {isTuic && (
-                    <>
-                      <div className="flex flex-col gap-2">
-                        <Label htmlFor="tuicSni">{t('admin.nodes.form.fields.sni')}</Label>
-                        <Input
-                          id="tuicSni"
-                          placeholder={t('admin.nodes.form.placeholders.sni')}
-                          value={formData.tuicSni || ''}
-                          onChange={(e) => handleChange('tuicSni', e.target.value)}
-                        />
-                      </div>
-
-                      <div className="flex flex-col gap-2">
-                        <Label htmlFor="tuicAllowInsecure">{t('admin.nodes.form.tlsSecurity')}</Label>
-                        <Select
-                          value={formData.tuicAllowInsecure ? 'true' : 'false'}
-                          onValueChange={(value) => handleChange('tuicAllowInsecure', value === 'true')}
-                        >
-                          <SelectTrigger id="tuicAllowInsecure">
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="false">{t('admin.nodes.form.verifyCert')}</SelectItem>
-                            <SelectItem value="true">{t('admin.nodes.form.skipVerify')}</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
-
-                      <div className="flex flex-col gap-2">
-                        <Label htmlFor="tuicAlpn">{t('admin.nodes.form.fields.alpn')}</Label>
-                        <Input
-                          id="tuicAlpn"
-                          placeholder={t('admin.nodes.form.placeholders.alpn')}
-                          value={formData.tuicAlpn || ''}
-                          onChange={(e) => handleChange('tuicAlpn', e.target.value)}
-                        />
-                      </div>
-
-                      <div className="flex flex-col gap-2">
-                        <Label htmlFor="tuicDisableSni">{t('admin.nodes.form.disableSni')}</Label>
-                        <Select
-                          value={formData.tuicDisableSni ? 'true' : 'false'}
-                          onValueChange={(value) => handleChange('tuicDisableSni', value === 'true')}
-                        >
-                          <SelectTrigger id="tuicDisableSni">
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="false">{t('admin.nodes.form.notDisabled')}</SelectItem>
-                            <SelectItem value="true">{t('admin.nodes.form.disableSniOption')}</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
-                    </>
+                    <div className="@md:col-span-2">
+                      <TuicConfigForm
+                        congestionControl={formData.tuicCongestionControl}
+                        udpRelayMode={formData.tuicUdpRelayMode}
+                        sni={formData.tuicSni}
+                        allowInsecure={formData.tuicAllowInsecure}
+                        alpn={formData.tuicAlpn}
+                        disableSni={formData.tuicDisableSni}
+                        onFieldChange={handleFieldChange}
+                        errors={errors}
+                      />
+                    </div>
                   )}
                 </div>
               </AccordionContent>

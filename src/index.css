@@ -699,6 +699,43 @@
   box-shadow: 0 2px 8px light-dark(rgba(0, 0, 0, 0.04), rgba(0, 0, 0, 0.2));
 }
 
+/* ========== Landing Page Hero Effects ========== */
+@utility hero-gradient {
+  background:
+    radial-gradient(ellipse 80% 50% at 50% -20%, oklch(from var(--color-primary) l c h / 0.15), transparent),
+    radial-gradient(ellipse 60% 40% at 80% 50%, oklch(from var(--color-accent) l c h / 0.1), transparent),
+    radial-gradient(ellipse 50% 50% at 20% 80%, oklch(from var(--color-primary) l c h / 0.08), transparent);
+}
+
+@utility hero-grid {
+  background-image:
+    linear-gradient(to right, oklch(from var(--color-border) l c h / 0.3) 1px, transparent 1px),
+    linear-gradient(to bottom, oklch(from var(--color-border) l c h / 0.3) 1px, transparent 1px);
+  background-size: 4rem 4rem;
+  mask-image: radial-gradient(ellipse 80% 60% at 50% 40%, black 20%, transparent 70%);
+  -webkit-mask-image: radial-gradient(ellipse 80% 60% at 50% 40%, black 20%, transparent 70%);
+}
+
+@utility text-gradient-primary {
+  background: linear-gradient(135deg, var(--color-primary) 0%, oklch(from var(--color-primary) calc(l + 0.1) c h) 50%, var(--color-accent) 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+@utility glow-primary {
+  box-shadow:
+    0 0 20px oklch(from var(--color-primary) l c h / 0.3),
+    0 0 40px oklch(from var(--color-primary) l c h / 0.2),
+    0 0 60px oklch(from var(--color-primary) l c h / 0.1);
+}
+
+@utility glow-primary-sm {
+  box-shadow:
+    0 0 10px oklch(from var(--color-primary) l c h / 0.2),
+    0 0 20px oklch(from var(--color-primary) l c h / 0.1);
+}
+
 /* ========== Spring Animations ========== */
 @utility animate-spring-in {
   animation: spring-in var(--duration-normal) var(--ease-bounce) forwards;

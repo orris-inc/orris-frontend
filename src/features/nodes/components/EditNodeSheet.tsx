@@ -3,7 +3,7 @@
  * Mobile-optimized bottom sheet for editing nodes
  */
 
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   Server,
@@ -51,6 +51,17 @@ import type {
   CongestionControl,
   TUICUDPRelayMode,
 } from '@/api/node';
+import {
+  SS_ENCRYPTION_METHODS,
+  TRANSPORT_PROTOCOLS,
+  VLESS_TRANSPORT_PROTOCOLS,
+  VMESS_TRANSPORT_PROTOCOLS,
+  VLESS_SECURITY_TYPES,
+  VMESS_SECURITY_TYPES,
+  CONGESTION_CONTROL_TYPES,
+  TUIC_UDP_RELAY_MODES,
+  TLS_FINGERPRINT_TYPES,
+} from '@/shared/constants/protocol-options';
 
 interface EditNodeSheetProps extends EditSheetProps<Node, UpdateNodeRequest> {
   nodes?: OutboundNodeOption[];
@@ -61,20 +72,6 @@ interface FormData extends Omit<UpdateNodeRequest, 'groupSids'> {
   groupSids: string[];
 }
 
-// Shadowsocks encryption methods
-const SS_ENCRYPTION_METHODS = [
-  'aes-128-gcm',
-  'aes-256-gcm',
-  'chacha20-ietf-poly1305',
-  'xchacha20-ietf-poly1305',
-  '2022-blake3-aes-128-gcm',
-  '2022-blake3-aes-256-gcm',
-  '2022-blake3-chacha20-poly1305',
-] as const;
-
-// Trojan transport protocols
-const TRANSPORT_PROTOCOLS: TransportProtocol[] = ['tcp', 'ws', 'grpc'];
-
 // Status options for MobileSelect - labels will be translated in component
 const STATUS_OPTIONS_VALUES = ['active', 'inactive', 'maintenance'] as const;
 const STATUS_COLORS: Record<string, string> = {
@@ -82,29 +79,6 @@ const STATUS_COLORS: Record<string, string> = {
   inactive: 'bg-gray-400',
   maintenance: 'bg-amber-500',
 };
-
-// TLS security options are created dynamically in component with translations
-
-// VLESS transport protocols
-const VLESS_TRANSPORT_PROTOCOLS: TransportProtocol[] = ['tcp', 'ws', 'grpc', 'h2'];
-
-// VLESS security types - labels will be translated in component
-const VLESS_SECURITY_VALUES: VLESSSecurity[] = ['tls', 'reality', 'none'];
-
-// VMess transport protocols
-const VMESS_TRANSPORT_PROTOCOLS: TransportProtocol[] = ['tcp', 'ws', 'grpc', 'http', 'quic'];
-
-// VMess security types - labels will be translated in component
-const VMESS_SECURITY_VALUES: VMessSecurity[] = ['auto', 'aes-128-gcm', 'chacha20-poly1305', 'none', 'zero'];
-
-// Congestion control algorithms - labels will be translated in component
-const CONGESTION_CONTROL_VALUES: CongestionControl[] = ['bbr', 'cubic', 'new_reno'];
-
-// TUIC UDP relay modes
-const TUIC_UDP_RELAY_VALUES: TUICUDPRelayMode[] = ['native', 'quic'];
-
-// TLS fingerprint options - labels will be translated in component
-const TLS_FINGERPRINT_VALUES = ['chrome', 'firefox', 'safari', 'edge', 'random'] as const;
 
 // Protocol configuration for display
 const PROTOCOL_CONFIG: Record<NodeProtocol, { name: string; icon: React.ElementType }> = {
@@ -288,32 +262,32 @@ export const EditNodeSheet: React.FC<EditNodeSheetProps> = ({
   ], [t]);
 
   const vlessSecurityOptions: MobileSelectOption[] = useMemo(() =>
-    VLESS_SECURITY_VALUES.map((value) => ({
+    VLESS_SECURITY_TYPES.map((value) => ({
       value,
       label: value === 'none' ? t('admin.nodes.form.disableTls') : value.toUpperCase(),
     })), [t]);
 
   const vmessSecurityOptions: MobileSelectOption[] = useMemo(() =>
-    VMESS_SECURITY_VALUES.map((value) => ({
+    VMESS_SECURITY_TYPES.map((value) => ({
       value,
       label: value === 'auto' ? `Auto (${t('common.recommended')})` : value === 'none' ? t('admin.nodes.form.disableTls') : value.toUpperCase(),
     })), [t]);
 
   const congestionControlOptions: MobileSelectOption[] = useMemo(() =>
-    CONGESTION_CONTROL_VALUES.map((value) => ({
+    CONGESTION_CONTROL_TYPES.map((value) => ({
       value,
       label: value === 'bbr' ? `BBR (${t('common.recommended')})` : value.replace('_', ' ').toUpperCase(),
     })), [t]);
 
   const udpRelayModeOptions: MobileSelectOption[] = useMemo(() =>
-    TUIC_UDP_RELAY_VALUES.map((value) => ({
+    TUIC_UDP_RELAY_MODES.map((value) => ({
       value,
       label: value.toUpperCase(),
     })), []);
 
   const fingerprintOptions: MobileSelectOption[] = useMemo(() => [
     { value: '__none__', label: t('admin.nodes.form.disableTls') },
-    ...TLS_FINGERPRINT_VALUES.map((value) => ({
+    ...TLS_FINGERPRINT_TYPES.map((value) => ({
       value,
       label: value === 'random' ? t('admin.nodes.form.randomFingerprint') : value.charAt(0).toUpperCase() + value.slice(1),
     })),
@@ -390,11 +364,11 @@ export const EditNodeSheet: React.FC<EditNodeSheetProps> = ({
     }
   }, [node]);
 
-  const handleClose = (o: boolean) => {
+  const handleClose = useCallback((o: boolean) => {
     if (!loading) {
       onOpenChange(o);
     }
-  };
+  }, [loading, onOpenChange]);
 
   const isShadowsocks = node?.protocol === 'shadowsocks';
   const isTrojan = node?.protocol === 'trojan';
@@ -416,32 +390,37 @@ export const EditNodeSheet: React.FC<EditNodeSheetProps> = ({
   const showVmessWsFields = isVmess && (formData.vmessTransportType === 'ws' || formData.vmessTransportType === 'http');
   const showVmessGrpcFields = isVmess && formData.vmessTransportType === 'grpc';
 
-  const handleChange = (field: keyof UpdateNodeRequest | 'tagsInput', value: string | number | boolean | undefined) => {
+  const handleChange = useCallback((field: keyof UpdateNodeRequest | 'tagsInput', value: string | number | boolean | undefined) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
-    if (errors[field]) {
-      setErrors((prev) => {
-        const newErrors = { ...prev };
-        delete newErrors[field];
-        return newErrors;
-      });
-    }
-  };
+    setErrors((prev) => {
+      if (!prev[field]) return prev;
+      const newErrors = { ...prev };
+      delete newErrors[field];
+      return newErrors;
+    });
+  }, []);
 
-  const handlePluginOptsChange = (value: string) => {
+  const handlePluginOptsChange = useCallback((value: string) => {
     setPluginOptsStr(value);
     const parsedOpts = stringToPluginOpts(value);
     setFormData((prev) => ({ ...prev, pluginOpts: parsedOpts }));
-  };
+  }, []);
 
-  const handleRouteChange = (route: RouteConfig | undefined) => {
+  const handleRouteChange = useCallback((route: RouteConfig | undefined) => {
     setFormData((prev) => ({ ...prev, route }));
-  };
+  }, []);
 
-  const handleCostLabelChange = (value: string) => {
-    handleChange("costLabel", value || undefined);
-  };
+  const handleCostLabelChange = useCallback((value: string) => {
+    setFormData((prev) => ({ ...prev, costLabel: value || undefined }));
+    setErrors((prev) => {
+      if (!prev.costLabel) return prev;
+      const newErrors = { ...prev };
+      delete newErrors.costLabel;
+      return newErrors;
+    });
+  }, []);
 
-  const toggleSection = (sectionId: string) => {
+  const toggleSection = useCallback((sectionId: string) => {
     setOpenSections((prev) => {
       const next = new Set(prev);
       if (next.has(sectionId)) {
@@ -451,7 +430,7 @@ export const EditNodeSheet: React.FC<EditNodeSheetProps> = ({
       }
       return next;
     });
-  };
+  }, []);
 
   const handleSubmit = async () => {
     if (!node) return;

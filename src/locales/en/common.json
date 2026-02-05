@@ -702,6 +702,7 @@
       "actions": {
         "viewDetail": "View Details",
         "installScript": "Install Script",
+        "batchInstallScript": "Batch Install Script",
         "copyNode": "Copy Node",
         "generateToken": "Generate Token",
         "broadcastUrl": "Broadcast URL",
@@ -1051,7 +1052,14 @@
         "clickToExpand": "Click to expand",
         "clickToCollapse": "Click to collapse",
         "apiUrl": "API URL",
-        "recommended": "Recommended"
+        "recommended": "Recommended",
+        "noData": "No data available",
+        "batchTitle": "Batch Install Script",
+        "batchDescription": "The following command will install {{count}} nodes on one server",
+        "batchDescriptionGeneric": "The following command will batch install multiple nodes",
+        "batchInstallCommand": "Batch Install Command",
+        "batchInstallHint": "Run with root privileges, will install all selected nodes sequentially",
+        "includedNodes": "Included Nodes"
       },
       "route": {
         "title": "Route Configuration",
@@ -2960,7 +2968,27 @@
 	      "stats": {
 	        "forwardingModes": "Rule types",
 	        "nodeProtocols": "Protocols",
-	        "tokenScopes": "Token scopes"
+	        "tokenScopes": "Token scopes",
+	        "realtime": "Real-time"
+	      }
+	    },
+	    "stats": {
+	      "title": "Platform at a Glance",
+	      "ruleTypes": {
+	        "value": "5+",
+	        "label": "Rule Types"
+	      },
+	      "protocols": {
+	        "value": "10+",
+	        "label": "Protocols"
+	      },
+	      "tokenScopes": {
+	        "value": "8",
+	        "label": "Token Scopes"
+	      },
+	      "realtime": {
+	        "value": "24/7",
+	        "label": "Real-time"
 	      }
 	    },
     "features": {
@@ -3464,7 +3492,14 @@
       "clickToExpand": "Click to expand",
       "clickToCollapse": "Click to collapse",
       "apiUrl": "API URL",
-      "token": "Token"
+      "token": "Token",
+      "recommended": "Recommended",
+      "batchTitle": "Batch Install Script",
+      "batchDescription": "The following command will install {{count}} nodes on one server",
+      "batchDescriptionGeneric": "The following command will batch install multiple nodes",
+      "batchInstallCommand": "Batch Install Command",
+      "batchInstallHint": "Run with root privileges, will install all selected nodes sequentially",
+      "includedNodes": "Included Nodes"
     },
     "create": {
       "title": "Create Node",

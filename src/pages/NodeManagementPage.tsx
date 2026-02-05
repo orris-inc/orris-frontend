@@ -15,6 +15,7 @@ import {
   CheckCircle2,
   Radio,
   XCircle,
+  Terminal,
 } from 'lucide-react';
 import { AdminLayout } from '@/layouts/AdminLayout';
 import { PageHeader, type PageHeaderMeta, type PageHeaderBadge } from '@/components/admin';
@@ -32,6 +33,7 @@ import { useNodesPage, useBroadcastNodeAPIURL, useNotifyNodeAPIURL } from '@/fea
 import { useResourceGroups } from '@/features/resource-groups/hooks/useResourceGroups';
 import { useSubscriptionPlans } from '@/features/subscription-plans/hooks/useSubscriptionPlans';
 import type { Node, UpdateNodeRequest, CreateNodeRequest } from '@/api/node';
+import type { RowSelectionState } from '@/components/admin';
 
 // Lazy load dialog components
 const CreateNodeDialog = lazy(() =>
@@ -55,6 +57,9 @@ const BroadcastNodeURLDialog = lazy(() =>
 const TokenDialog = lazy(() =>
   import('@/components/common/TokenDialog').then((m) => ({ default: m.TokenDialog }))
 );
+const BatchInstallScriptDialog = lazy(() =>
+  import('@/shared/components/agent').then((m) => ({ default: m.BatchInstallScriptDialog }))
+);
 
 // ============================================================================
 // Types
@@ -67,6 +72,7 @@ type DialogType =
   | 'delete'
   | 'token'
   | 'installScript'
+  | 'batchInstallScript'
   | 'batchUpdate'
   | 'broadcast'
   | 'notifyURL'
@@ -89,6 +95,7 @@ export function NodeManagementPage() {
     isFetching,
     isBatchUpdating,
     isReordering,
+    isGettingBatchInstallScript,
     refetch,
     createNode,
     updateNode,
@@ -101,6 +108,9 @@ export function NodeManagementPage() {
     handleGetInstallScript,
     installScriptData,
     setInstallScriptData,
+    handleGetBatchInstallScript,
+    batchInstallScriptData,
+    setBatchInstallScriptData,
     handleBatchUpdate,
     batchUpdateResult,
     setBatchUpdateResult,
@@ -128,6 +138,11 @@ export function NodeManagementPage() {
   const [installScriptNodeName, setInstallScriptNodeName] = useState('');
   const [dragSortEnabled, setDragSortEnabled] = useState(false);
   const [refreshKey, setRefreshKey] = useState(0);
+
+  // Row selection for batch operations
+  const [rowSelection, setRowSelection] = useState<RowSelectionState>({});
+  const selectedNodeIds = useMemo(() => Object.keys(rowSelection).filter((key) => rowSelection[key]), [rowSelection]);
+  const selectedCount = selectedNodeIds.length;
 
   // Filter resource groups for node/hybrid plans only
   const filteredResourceGroups = useMemo(() => {
@@ -297,6 +312,14 @@ export function NodeManagementPage() {
     [handleGetInstallScript, openDialog]
   );
 
+  const handleBatchInstallScriptClick = useCallback(async () => {
+    if (selectedNodeIds.length === 0) return;
+    const data = await handleGetBatchInstallScript(selectedNodeIds);
+    if (data) {
+      openDialog('batchInstallScript');
+    }
+  }, [selectedNodeIds, handleGetBatchInstallScript, openDialog]);
+
   const handleNotifyURL = useCallback(
     (node: Node) => openDialog('notifyURL', node),
     [openDialog]
@@ -416,6 +439,17 @@ export function NodeManagementPage() {
           metadata={headerMetadata}
           action={
             <div className="flex items-center gap-2">
+              {selectedCount > 0 && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handleBatchInstallScriptClick}
+                  disabled={isGettingBatchInstallScript}
+                >
+                  <Terminal className="mr-2 size-4" />
+                  {t('admin.nodes.table.actions.batchInstallScript')} ({selectedCount})
+                </Button>
+              )}
               <Button onClick={handleCreate}>
                 <Plus className="mr-2 size-4" />
                 {t('admin.nodes.addNode')}
@@ -479,6 +513,9 @@ export function NodeManagementPage() {
           onToggleMute={handleToggleMute}
           enableDragSort={dragSortEnabled}
           onDragEnd={handleDragEnd}
+          enableRowSelection={!dragSortEnabled}
+          rowSelection={rowSelection}
+          onRowSelectionChange={setRowSelection}
         />
       </div>
 
@@ -541,6 +578,22 @@ export function NodeManagementPage() {
             onClose={() => {
               closeDialog();
               setInstallScriptData(null);
+            }}
+          />
+        </Suspense>
+      )}
+
+      {activeDialog === 'batchInstallScript' && (
+        <Suspense fallback={null}>
+          <BatchInstallScriptDialog
+            open
+            data={batchInstallScriptData}
+            nodeCount={selectedCount}
+            i18nNamespace="admin.nodes.installScript"
+            onClose={() => {
+              closeDialog();
+              setBatchInstallScriptData(null);
+              setRowSelection({});
             }}
           />
         </Suspense>

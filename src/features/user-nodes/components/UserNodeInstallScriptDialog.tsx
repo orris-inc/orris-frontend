@@ -3,10 +3,10 @@
  * Displays install script and one-click install command
  */
 
-import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Copy, Check, Terminal, Download } from 'lucide-react';
 import { safeWindowOpen } from '@/shared/utils/url-utils';
+import { useCopyToClipboard } from '@/shared/hooks/useCopyToClipboard';
 import {
   Dialog,
   DialogContent,
@@ -34,58 +34,18 @@ export const UserNodeInstallScriptDialog: React.FC<UserNodeInstallScriptDialogPr
   onClose,
 }) => {
   const { t } = useTranslation();
-  const [copiedInstall, setCopiedInstall] = useState(false);
-  const [copiedUninstall, setCopiedUninstall] = useState(false);
-  const [copiedScriptUrl, setCopiedScriptUrl] = useState(false);
-  const [copiedApiUrl, setCopiedApiUrl] = useState(false);
-  const [copiedToken, setCopiedToken] = useState(false);
-
-  const handleCopyInstall = () => {
-    if (installScriptData?.installCommand) {
-      navigator.clipboard.writeText(installScriptData.installCommand);
-      setCopiedInstall(true);
-      setTimeout(() => setCopiedInstall(false), 2000);
-    }
-  };
-
-  const handleCopyUninstall = () => {
-    if (installScriptData?.uninstallCommand) {
-      navigator.clipboard.writeText(installScriptData.uninstallCommand);
-      setCopiedUninstall(true);
-      setTimeout(() => setCopiedUninstall(false), 2000);
-    }
-  };
-
-  const handleCopyScriptUrl = () => {
-    if (installScriptData?.scriptUrl) {
-      navigator.clipboard.writeText(installScriptData.scriptUrl);
-      setCopiedScriptUrl(true);
-      setTimeout(() => setCopiedScriptUrl(false), 2000);
-    }
-  };
-
-  const handleCopyApiUrl = () => {
-    if (installScriptData?.apiUrl) {
-      navigator.clipboard.writeText(installScriptData.apiUrl);
-      setCopiedApiUrl(true);
-      setTimeout(() => setCopiedApiUrl(false), 2000);
-    }
-  };
-
-  const handleCopyToken = () => {
-    if (installScriptData?.token) {
-      navigator.clipboard.writeText(installScriptData.token);
-      setCopiedToken(true);
-      setTimeout(() => setCopiedToken(false), 2000);
-    }
-  };
+  const installCopy = useCopyToClipboard();
+  const uninstallCopy = useCopyToClipboard();
+  const scriptUrlCopy = useCopyToClipboard();
+  const apiUrlCopy = useCopyToClipboard();
+  const tokenCopy = useCopyToClipboard();
 
   const handleClose = () => {
-    setCopiedInstall(false);
-    setCopiedUninstall(false);
-    setCopiedScriptUrl(false);
-    setCopiedApiUrl(false);
-    setCopiedToken(false);
+    installCopy.reset();
+    uninstallCopy.reset();
+    scriptUrlCopy.reset();
+    apiUrlCopy.reset();
+    tokenCopy.reset();
     onClose();
   };
 
@@ -126,10 +86,10 @@ export const UserNodeInstallScriptDialog: React.FC<UserNodeInstallScriptDialogPr
                   <Button
                     variant="ghost"
                     size="sm"
-                    onClick={handleCopyInstall}
+                    onClick={() => installScriptData?.installCommand && installCopy.copyToClipboard(installScriptData.installCommand)}
                     className="h-7 px-2"
                   >
-                    {copiedInstall ? (
+                    {installCopy.copied ? (
                       <>
                         <Check className="size-3.5 mr-1 text-green-500" />
                         {t('common.copied')}
@@ -161,10 +121,10 @@ export const UserNodeInstallScriptDialog: React.FC<UserNodeInstallScriptDialogPr
                   <Button
                     variant="ghost"
                     size="sm"
-                    onClick={handleCopyUninstall}
+                    onClick={() => installScriptData?.uninstallCommand && uninstallCopy.copyToClipboard(installScriptData.uninstallCommand)}
                     className="h-7 px-2"
                   >
-                    {copiedUninstall ? (
+                    {uninstallCopy.copied ? (
                       <>
                         <Check className="size-3.5 mr-1 text-green-500" />
                         {t('common.copied')}
@@ -194,10 +154,10 @@ export const UserNodeInstallScriptDialog: React.FC<UserNodeInstallScriptDialogPr
                     <Button
                       variant="ghost"
                       size="sm"
-                      onClick={handleCopyScriptUrl}
+                      onClick={() => installScriptData?.scriptUrl && scriptUrlCopy.copyToClipboard(installScriptData.scriptUrl)}
                       className="h-7 px-2"
                     >
-                      {copiedScriptUrl ? (
+                      {scriptUrlCopy.copied ? (
                         <>
                           <Check className="size-3.5 mr-1 text-green-500" />
                           {t('common.copied')}
@@ -242,10 +202,10 @@ export const UserNodeInstallScriptDialog: React.FC<UserNodeInstallScriptDialogPr
                       <Button
                         variant="ghost"
                         size="sm"
-                        onClick={handleCopyApiUrl}
+                        onClick={() => installScriptData?.apiUrl && apiUrlCopy.copyToClipboard(installScriptData.apiUrl)}
                         className="h-7 px-2"
                       >
-                        {copiedApiUrl ? (
+                        {apiUrlCopy.copied ? (
                           <>
                             <Check className="size-3.5 mr-1 text-green-500" />
                             {t('common.copied')}
@@ -272,10 +232,10 @@ export const UserNodeInstallScriptDialog: React.FC<UserNodeInstallScriptDialogPr
                       <Button
                         variant="ghost"
                         size="sm"
-                        onClick={handleCopyToken}
+                        onClick={() => installScriptData?.token && tokenCopy.copyToClipboard(installScriptData.token)}
                         className="h-7 px-2"
                       >
-                        {copiedToken ? (
+                        {tokenCopy.copied ? (
                           <>
                             <Check className="size-3.5 mr-1 text-green-500" />
                             {t('common.copied')}

@@ -8,6 +8,7 @@
  * - Tap to open detail sheet
  */
 
+import { memo } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   Activity,
@@ -34,7 +35,7 @@ export interface MobileForwardAgentCardProps {
 /**
  * Online status indicator - compact dot with optional label
  */
-const OnlineIndicator = ({
+const OnlineIndicator = memo(({
   isOnline,
   showLabel = true,
   t,
@@ -64,12 +65,14 @@ const OnlineIndicator = ({
       )}
     </span>
   );
-};
+});
+
+OnlineIndicator.displayName = 'OnlineIndicator';
 
 /**
  * Status badge - enabled/disabled indicator
  */
-const StatusBadge = ({
+const StatusBadge = memo(({
   status,
   t,
 }: {
@@ -90,13 +93,15 @@ const StatusBadge = ({
       {isEnabled ? t('common.status.enabled') : t('common.status.disabled')}
     </span>
   );
-};
+});
+
+StatusBadge.displayName = 'StatusBadge';
 
 // ============================================================================
 // Main Component
 // ============================================================================
 
-export const MobileForwardAgentCard = ({
+export const MobileForwardAgentCard = memo(({
   agent,
   onCardPress,
 }: MobileForwardAgentCardProps) => {
@@ -160,6 +165,6 @@ export const MobileForwardAgentCard = ({
       <StatusBadge status={agent.status} t={t} />
     </div>
   );
-};
+});
 
 MobileForwardAgentCard.displayName = 'MobileForwardAgentCard';

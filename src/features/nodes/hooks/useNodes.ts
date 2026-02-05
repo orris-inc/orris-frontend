@@ -18,6 +18,7 @@ import {
   updateNodeStatus,
   generateNodeToken,
   getNodeInstallScript,
+  getBatchInstallScript,
   batchTriggerNodeUpdate,
   broadcastNodeAPIURLChange,
   notifyNodeAPIURLChange,
@@ -31,6 +32,8 @@ import type {
   GenerateNodeTokenResponse,
   GenerateNodeInstallScriptResponse,
   GetNodeInstallScriptParams,
+  BatchInstallScriptRequest,
+  BatchInstallScriptResponse,
   BatchUpdateRequest,
   BatchUpdateResponse,
   BroadcastNodeAPIURLChangedRequest,
@@ -181,6 +184,14 @@ export const useNodes = (options: UseNodesOptions = {}) => {
     },
   });
 
+  // Get batch installation script
+  const batchInstallScriptMutation = useMutation({
+    mutationFn: (data: BatchInstallScriptRequest) => getBatchInstallScript(data),
+    onError: (error) => {
+      showError(handleApiError(error));
+    },
+  });
+
   // Batch update nodes
   const batchUpdateMutation = useMutation({
     mutationFn: (data: BatchUpdateRequest) => batchTriggerNodeUpdate(data),
@@ -307,6 +318,8 @@ export const useNodes = (options: UseNodesOptions = {}) => {
     generateToken: (id: string) => tokenMutation.mutateAsync(id),
     getInstallScript: (id: string, params?: GetNodeInstallScriptParams) =>
       installScriptMutation.mutateAsync({ id, params }),
+    getBatchInstallScript: (data: BatchInstallScriptRequest) =>
+      batchInstallScriptMutation.mutateAsync(data),
     batchUpdateNodes: (data: BatchUpdateRequest) => batchUpdateMutation.mutateAsync(data),
     reorderNodes: (updates: { id: string; sortOrder: number }[]) =>
       reorderMutation.mutateAsync(updates),
@@ -320,6 +333,7 @@ export const useNodes = (options: UseNodesOptions = {}) => {
     isChangingStatus: statusMutation.isPending,
     isGeneratingToken: tokenMutation.isPending,
     isGettingInstallScript: installScriptMutation.isPending,
+    isGettingBatchInstallScript: batchInstallScriptMutation.isPending,
     isBatchUpdating: batchUpdateMutation.isPending,
     isReordering: reorderMutation.isPending,
   };
@@ -352,6 +366,7 @@ export const useNodesPage = () => {
   const [selectedNode, setSelectedNode] = useState<Node | null>(null);
   const [generatedToken, setGeneratedToken] = useState<GenerateNodeTokenResponse | null>(null);
   const [installScriptData, setInstallScriptData] = useState<GenerateNodeInstallScriptResponse | null>(null);
+  const [batchInstallScriptData, setBatchInstallScriptData] = useState<BatchInstallScriptResponse | null>(null);
   const [batchUpdateResult, setBatchUpdateResult] = useState<BatchUpdateResponse | null>(null);
 
   const nodesQuery = useNodes({ page, pageSize, filters, includeUserNodes, sortBy, sortOrder });
@@ -415,6 +430,12 @@ export const useNodesPage = () => {
     return data;
   };
 
+  const handleGetBatchInstallScript = async (nodeIds: string[]) => {
+    const data = await nodesQuery.getBatchInstallScript({ nodeIds });
+    setBatchInstallScriptData(data);
+    return data;
+  };
+
   const handleIncludeUserNodesChange = (include: boolean) => {
     setIncludeUserNodes(include);
     setPage(1);
@@ -451,10 +472,12 @@ export const useNodesPage = () => {
     selectedNode,
     generatedToken,
     installScriptData,
+    batchInstallScriptData,
     batchUpdateResult,
     setSelectedNode,
     setGeneratedToken,
     setInstallScriptData,
+    setBatchInstallScriptData,
     setBatchUpdateResult,
     handlePageChange,
     handlePageSizeChange,
@@ -465,6 +488,7 @@ export const useNodesPage = () => {
     handleSortChange,
     handleGenerateToken,
     handleGetInstallScript,
+    handleGetBatchInstallScript,
     handleBatchUpdate,
     handleReorder,
   };

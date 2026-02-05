@@ -8,7 +8,7 @@
  * - iOS-style design
  */
 
-import { useState } from 'react';
+import { useState, memo } from 'react';
 import { formatDateTime } from '@/shared/utils/date-utils';
 import { useTranslation } from 'react-i18next';
 import {
@@ -58,7 +58,7 @@ export interface UserDetailSheetProps {
 // Helper Components
 // ============================================================================
 
-const DetailSection = ({
+const DetailSection = memo(({
   title,
   children,
 }: {
@@ -73,9 +73,11 @@ const DetailSection = ({
       {children}
     </div>
   </div>
-);
+));
 
-const DetailRow = ({
+DetailSection.displayName = 'DetailSection';
+
+const DetailRow = memo(({
   icon,
   label,
   value,
@@ -91,9 +93,11 @@ const DetailRow = ({
       <div className="text-sm font-medium">{value}</div>
     </div>
   </div>
-);
+));
 
-const UserAvatar = ({ name, email, role }: { name?: string; email: string; role?: string }) => {
+DetailRow.displayName = 'DetailRow';
+
+const UserAvatar = memo(({ name, email, role }: { name?: string; email: string; role?: string }) => {
   const initial = (name || email).charAt(0).toUpperCase();
   const isAdmin = role === 'admin';
 
@@ -115,7 +119,9 @@ const UserAvatar = ({ name, email, role }: { name?: string; email: string; role?
       )}
     </div>
   );
-};
+});
+
+UserAvatar.displayName = 'UserAvatar';
 
 // ============================================================================
 // Main Component

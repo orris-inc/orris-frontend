@@ -1,6 +1,6 @@
 /**
  * Landing Page - Orris Introduction
- * Modern, minimalist design with tech aesthetics
+ * Tailwind Marketing UI style with bold gradients, bento grid, glass effects
  */
 
 import { Link } from 'react-router';
@@ -23,6 +23,10 @@ import {
   Activity,
   ChevronDown,
   HelpCircle,
+  Zap,
+  Shield,
+  Clock,
+  Layers,
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -45,48 +49,94 @@ const staggerContainer = {
   },
 };
 
+// Feature card variants for bento grid
 interface Feature {
   icon: LucideIcon;
   titleKey: string;
   descriptionKey: string;
+  className: string; // Tailwind classes for grid placement
 }
 
-// Feature icons mapping - titles and descriptions are loaded via i18n
+// Bento Grid Layout (4-column on lg):
+// ┌─────────────┬─────────────┐
+// │  passkey    │subscriptions│
+// │  (2x2)      ├─────────────┤
+// │             │  payments   │
+// ├──────┬──────┼──────┬──────┤
+// │nodes │forward│realtime│notif│
+// └──────┴──────┴──────┴──────┘
 const featureConfigs: Feature[] = [
   {
     icon: Fingerprint,
     titleKey: 'landing.features.passkey.title',
     descriptionKey: 'landing.features.passkey.description',
+    className: 'md:col-span-1 lg:col-span-2 lg:row-span-2', // Featured large card
   },
   {
     icon: Users,
     titleKey: 'landing.features.subscriptions.title',
     descriptionKey: 'landing.features.subscriptions.description',
+    className: 'md:col-span-1 lg:col-span-2',
   },
   {
     icon: CreditCard,
     titleKey: 'landing.features.payments.title',
     descriptionKey: 'landing.features.payments.description',
+    className: 'md:col-span-1 lg:col-span-2',
   },
   {
     icon: Server,
     titleKey: 'landing.features.nodes.title',
     descriptionKey: 'landing.features.nodes.description',
+    className: 'md:col-span-1 lg:col-span-1',
   },
   {
     icon: GitBranch,
     titleKey: 'landing.features.forwarding.title',
     descriptionKey: 'landing.features.forwarding.description',
+    className: 'md:col-span-1 lg:col-span-1',
   },
   {
     icon: Activity,
     titleKey: 'landing.features.realtime.title',
     descriptionKey: 'landing.features.realtime.description',
+    className: 'md:col-span-1 lg:col-span-1',
   },
   {
     icon: Bell,
     titleKey: 'landing.features.notifications.title',
     descriptionKey: 'landing.features.notifications.description',
+    className: 'md:col-span-1 lg:col-span-1',
+  },
+];
+
+// Stats configuration
+interface StatConfig {
+  icon: LucideIcon;
+  valueKey: string;
+  labelKey: string;
+}
+
+const statsConfigs: StatConfig[] = [
+  {
+    icon: Layers,
+    valueKey: 'landing.stats.ruleTypes.value',
+    labelKey: 'landing.stats.ruleTypes.label',
+  },
+  {
+    icon: Shield,
+    valueKey: 'landing.stats.protocols.value',
+    labelKey: 'landing.stats.protocols.label',
+  },
+  {
+    icon: Zap,
+    valueKey: 'landing.stats.tokenScopes.value',
+    labelKey: 'landing.stats.tokenScopes.label',
+  },
+  {
+    icon: Clock,
+    valueKey: 'landing.stats.realtime.value',
+    labelKey: 'landing.stats.realtime.label',
   },
 ];
 
@@ -109,12 +159,82 @@ const faqConfigs = [
 // Track animation state outside component to survive StrictMode remounts
 const animatedSections = new Set<string>();
 
-// Navigation links for landing page - labels are i18n keys
+// Navigation links for landing page
 const navLinkConfigs = [
   { href: '#features', labelKey: 'landing.nav.features' },
   { href: '#faq', labelKey: 'landing.nav.faq' },
   { href: '/pricing', labelKey: 'landing.nav.pricing', isRoute: true },
 ];
+
+// Feature Card Component for Bento Grid
+const FeatureCard = ({
+  feature,
+  index,
+}: {
+  feature: Feature;
+  index: number;
+}) => {
+  const { t } = useTranslation();
+  const Icon = feature.icon;
+  const isLarge = feature.className.includes('row-span-2');
+
+  return (
+    <motion.div
+      variants={{
+        initial: { opacity: 0, scale: 0.95, y: 20 },
+        animate: {
+          opacity: 1,
+          scale: 1,
+          y: 0,
+          transition: { duration: 0.4, delay: index * 0.08, ease: 'easeOut' },
+        },
+      }}
+      whileHover={{
+        y: -4,
+        transition: { duration: 0.2 },
+      }}
+      className={cn(
+        feature.className,
+        'group relative p-6 rounded-2xl bg-card overflow-hidden',
+        'ring-1 ring-border hover:ring-primary/50',
+        'cursor-pointer active:scale-[0.98]',
+        'transition-[box-shadow,ring-color] duration-300',
+        'hover:shadow-lg hover:shadow-primary/5',
+        isLarge && 'flex flex-col'
+      )}
+    >
+      {/* Gradient border effect on hover */}
+      <div
+        className={cn(
+          'absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300',
+          'bg-gradient-to-br from-primary/10 via-transparent to-accent/10'
+        )}
+      />
+
+      <div className={cn('relative z-10', isLarge && 'flex-1 flex flex-col')}>
+        {/* Icon with gradient background */}
+        <div
+          className={cn(
+            'rounded-xl mb-4',
+            isLarge ? 'size-14' : 'size-12',
+            'bg-gradient-to-br from-primary/20 to-primary/5',
+            'flex items-center justify-center',
+            'group-hover:from-primary/30 group-hover:to-primary/10 transition-colors duration-300'
+          )}
+        >
+          <Icon className={cn(isLarge ? 'size-7' : 'size-6', 'text-primary')} />
+        </div>
+
+        <h3 className={cn('font-semibold mb-2', isLarge ? 'text-2xl' : 'text-xl')}>
+          {t(feature.titleKey)}
+        </h3>
+        <p className={cn('text-muted-foreground', isLarge && 'text-base')}>
+          {t(feature.descriptionKey)}
+        </p>
+      </div>
+    </motion.div>
+  );
+};
 
 // FAQ Item component
 const FAQItem = ({
@@ -128,32 +248,72 @@ const FAQItem = ({
   const [isOpen, setIsOpen] = useState(false);
 
   return (
-    <div className="border-b border-border last:border-b-0">
+    <div
+      className={cn(
+        'border-b border-border/50 last:border-b-0',
+        'transition-colors duration-200',
+        isOpen && 'bg-muted/30'
+      )}
+    >
       <button
         onClick={() => setIsOpen(!isOpen)}
         className={cn(
-          'flex w-full items-center justify-between py-4 text-left',
+          'flex w-full items-center justify-between py-5 px-4 text-left',
           'hover:text-primary transition-colors',
           'focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring'
         )}
       >
         <span className="font-medium pr-4">{t(questionKey)}</span>
-        <ChevronDown
-          className={cn(
-            'size-5 shrink-0 text-muted-foreground transition-transform',
-            isOpen && 'rotate-180'
-          )}
-        />
+        <motion.div
+          animate={{ rotate: isOpen ? 180 : 0 }}
+          transition={{ duration: 0.3, ease: [0.4, 0, 0.2, 1] }}
+        >
+          <ChevronDown className="size-5 shrink-0 text-muted-foreground" />
+        </motion.div>
       </button>
       <motion.div
         initial={false}
-        animate={{ height: isOpen ? 'auto' : 0 }}
-        transition={{ duration: 0.2 }}
+        animate={{
+          height: isOpen ? 'auto' : 0,
+          opacity: isOpen ? 1 : 0,
+        }}
+        transition={{ duration: 0.3, ease: [0.4, 0, 0.2, 1] }}
         className="overflow-hidden"
       >
-        <p className="pb-4 text-muted-foreground">{t(answerKey)}</p>
+        <p className="pb-5 px-4 text-muted-foreground">{t(answerKey)}</p>
       </motion.div>
     </div>
+  );
+};
+
+// Stat Card Component
+const StatCard = ({ stat, index }: { stat: StatConfig; index: number }) => {
+  const { t } = useTranslation();
+  const Icon = stat.icon;
+
+  return (
+    <motion.div
+      variants={{
+        initial: { opacity: 0, y: 20 },
+        animate: {
+          opacity: 1,
+          y: 0,
+          transition: { duration: 0.4, delay: index * 0.1 },
+        },
+      }}
+      className={cn(
+        'glass-elevated rounded-2xl p-6 text-center',
+        'hover:shadow-lg transition-shadow duration-300'
+      )}
+    >
+      <div className="inline-flex items-center justify-center size-12 rounded-xl bg-primary/10 mb-4">
+        <Icon className="size-6 text-primary" />
+      </div>
+      <div className="text-fluid-2xl font-bold text-primary mb-1">
+        {t(stat.valueKey)}
+      </div>
+      <div className="text-sm text-muted-foreground">{t(stat.labelKey)}</div>
+    </motion.div>
   );
 };
 
@@ -164,6 +324,7 @@ export const LandingPage = () => {
     animatedSections.has('features')
   );
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [isScrolled, setIsScrolled] = useState(false);
   const { serverVersion, clientVersion } = useVersionInfo();
   const { appName, logoUrl, isLoading: isBrandingLoading } = usePublicBranding();
 
@@ -190,10 +351,26 @@ export const LandingPage = () => {
     return () => observer.disconnect();
   }, [handleFeaturesIntersect]);
 
+  // Scroll listener for header glass effect
+  useEffect(() => {
+    const handleScroll = () => {
+      setIsScrolled(window.scrollY > 10);
+    };
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
   return (
     <div className="min-h-viewport bg-background">
-      {/* Navigation */}
-      <header className="border-b border-border/50">
+      {/* Navigation with glass effect */}
+      <header
+        className={cn(
+          'sticky top-0 z-50 transition-all duration-300',
+          isScrolled
+            ? 'glass shadow-sm'
+            : 'border-b border-border/50 bg-background/80 backdrop-blur-sm'
+        )}
+      >
         <nav className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-14">
             {/* Logo */}
@@ -206,13 +383,19 @@ export const LandingPage = () => {
               ) : (
                 <>
                   {logoUrl ? (
-                    <img src={logoUrl} alt={appName || 'Logo'} className="h-8 w-auto" />
+                    <img
+                      src={logoUrl}
+                      alt={appName || 'Logo'}
+                      className="h-8 w-auto"
+                    />
                   ) : (
                     <div className="size-8 rounded-lg bg-primary flex items-center justify-center">
                       <Globe className="size-5 text-primary-foreground" />
                     </div>
                   )}
-                  <span className="text-lg font-semibold">{appName || 'Orris'}</span>
+                  <span className="text-lg font-semibold">
+                    {appName || 'Orris'}
+                  </span>
                 </>
               )}
             </Link>
@@ -255,10 +438,12 @@ export const LandingPage = () => {
                 className={cn(
                   'inline-flex items-center justify-center h-9 px-4 rounded-full',
                   'text-sm font-medium',
-                  'bg-foreground text-background',
-                  'hover:bg-foreground/90 active:bg-foreground/80 active:scale-[0.98]',
+                  'bg-gradient-to-r from-primary to-primary/80',
+                  'text-primary-foreground',
+                  'hover:opacity-90 active:opacity-80 active:scale-[0.98]',
                   'focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring',
-                  'transition-colors'
+                  'transition-all duration-200',
+                  'shadow-md shadow-primary/20'
                 )}
               >
                 {t('landing.nav.getStarted')}
@@ -299,7 +484,7 @@ export const LandingPage = () => {
             </div>
           </div>
 
-          {/* Mobile Navigation Menu - Dropdown style */}
+          {/* Mobile Navigation Menu */}
           {mobileMenuOpen && (
             <motion.div
               initial={{ opacity: 0, y: -10 }}
@@ -338,10 +523,12 @@ export const LandingPage = () => {
                   className={cn(
                     'inline-flex items-center justify-center w-full h-12 rounded-full',
                     'text-base font-medium',
-                    'bg-foreground text-background',
-                    'hover:bg-foreground/90 active:bg-foreground/80 active:scale-[0.98]',
+                    'bg-gradient-to-r from-primary to-primary/80',
+                    'text-primary-foreground',
+                    'hover:opacity-90 active:opacity-80 active:scale-[0.98]',
                     'focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring',
-                    'transition-colors'
+                    'transition-all duration-200',
+                    'shadow-md shadow-primary/20'
                   )}
                 >
                   {t('landing.nav.getStarted')}
@@ -353,22 +540,34 @@ export const LandingPage = () => {
       </header>
 
       {/* Hero Section */}
-      <section className="relative min-h-[calc(100dvh-3.5rem)] flex flex-col justify-center px-4 py-8 sm:py-12 overflow-hidden">
-        {/* Background decoration - responsive sizes */}
-        <div className="absolute inset-0 -z-10">
-          <motion.div
-            initial={{ opacity: 0, scale: 0.8 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 1, ease: 'easeOut' }}
-            className="absolute top-1/4 left-1/4 size-48 sm:size-64 lg:size-96 bg-primary/10 dark:bg-primary/20 rounded-full blur-3xl"
-          />
-          <motion.div
-            initial={{ opacity: 0, scale: 0.8 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 1, delay: 0.2, ease: 'easeOut' }}
-            className="absolute bottom-1/4 right-1/4 size-48 sm:size-64 lg:size-96 bg-accent/10 dark:bg-accent/15 rounded-full blur-3xl"
-          />
-        </div>
+      <section className="relative min-h-[calc(100dvh-3.5rem)] flex flex-col justify-center px-4 py-12 sm:py-16 overflow-hidden">
+        {/* Hero gradient background */}
+        <div className="absolute inset-0 -z-10 hero-gradient" />
+
+        {/* Grid pattern overlay */}
+        <div className="absolute inset-0 -z-10 hero-grid" />
+
+        {/* Animated glow orbs */}
+        <motion.div
+          initial={{ opacity: 0, scale: 0.5 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 1.5, ease: 'easeOut' }}
+          className="absolute top-1/4 left-1/4 size-64 sm:size-80 lg:size-96 rounded-full blur-3xl -z-10"
+          style={{
+            background:
+              'radial-gradient(circle, oklch(from var(--color-primary) l c h / 0.15) 0%, transparent 70%)',
+          }}
+        />
+        <motion.div
+          initial={{ opacity: 0, scale: 0.5 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 1.5, delay: 0.3, ease: 'easeOut' }}
+          className="absolute bottom-1/3 right-1/4 size-48 sm:size-64 lg:size-80 rounded-full blur-3xl -z-10"
+          style={{
+            background:
+              'radial-gradient(circle, oklch(from var(--color-accent) l c h / 0.12) 0%, transparent 70%)',
+          }}
+        />
 
         <motion.div
           className="max-w-4xl mx-auto text-center w-full"
@@ -376,54 +575,61 @@ export const LandingPage = () => {
           animate="animate"
           variants={staggerContainer}
         >
-          {/* Main heading - fluid typography */}
+          {/* Main heading with gradient text */}
           <motion.h1
             variants={fadeInUp}
-            transition={{ duration: 0.5 }}
+            transition={{ duration: 0.6 }}
             className="text-fluid-2xl sm:text-fluid-3xl lg:text-fluid-4xl font-bold tracking-tight mb-4 sm:mb-6"
           >
             {t('landing.hero.title')}
-            <span className="block text-primary">{t('landing.hero.titleHighlight')}</span>
+            <span className="block text-gradient-primary">
+              {t('landing.hero.titleHighlight')}
+            </span>
           </motion.h1>
 
           {/* Subheading */}
           <motion.p
             variants={fadeInUp}
-            transition={{ duration: 0.5 }}
-            className="text-fluid-base sm:text-fluid-lg text-muted-foreground max-w-2xl mx-auto mb-6 sm:mb-8 lg:mb-10 px-2"
+            transition={{ duration: 0.6 }}
+            className="text-fluid-base sm:text-fluid-lg text-muted-foreground max-w-2xl mx-auto mb-8 sm:mb-10 lg:mb-12 px-2"
           >
             {t('landing.hero.subtitle')}
           </motion.p>
 
-          {/* CTA buttons - Mobile: stacked full-width, Desktop: inline */}
+          {/* CTA buttons */}
           <motion.div
             variants={fadeInUp}
-            transition={{ duration: 0.5 }}
+            transition={{ duration: 0.6 }}
             className="flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-4 px-4 sm:px-0"
           >
+            {/* Primary button with gradient */}
             <Link
               to="/register"
               className={cn(
                 'inline-flex items-center justify-center gap-2 rounded-full font-medium',
                 'h-12 sm:h-11 px-8 w-full sm:w-auto text-base sm:text-sm',
-                'bg-primary text-primary-foreground',
-                'hover:bg-primary/90 active:bg-primary/80 active:scale-[0.98]',
+                'bg-gradient-to-r from-primary via-primary to-primary/80',
+                'text-primary-foreground',
+                'hover:opacity-90 active:opacity-80 active:scale-[0.98]',
                 'focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring',
-                'transition-colors'
+                'transition-all duration-200',
+                'shadow-lg shadow-primary/25',
+                'glow-primary-sm'
               )}
             >
               {t('landing.hero.getStarted')}
               <ArrowRight className="size-4" />
             </Link>
+            {/* Secondary button with glass effect */}
             <a
               href="#features"
               className={cn(
                 'inline-flex items-center justify-center gap-2 rounded-full font-medium',
                 'h-12 sm:h-11 px-8 w-full sm:w-auto text-base sm:text-sm',
-                'ring-1 ring-border bg-background',
-                'hover:bg-accent hover:text-accent-foreground active:bg-accent/80 active:scale-[0.98]',
+                'glass-interactive',
+                'hover:bg-accent/50 active:scale-[0.98]',
                 'focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring',
-                'transition-colors'
+                'transition-all duration-200'
               )}
             >
               {t('landing.hero.exploreFeatures')}
@@ -433,7 +639,7 @@ export const LandingPage = () => {
         </motion.div>
       </section>
 
-      {/* Features Section */}
+      {/* Features Section - Bento Grid */}
       <section id="features" className="py-20 px-4 bg-muted/30 dark:bg-muted/10">
         <motion.div
           ref={featuresRef}
@@ -458,36 +664,34 @@ export const LandingPage = () => {
             </motion.h2>
           </div>
 
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {/* Bento Grid: 4-column on lg, 2-column on md, 1-column on mobile */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 lg:auto-rows-[minmax(200px,auto)] gap-4 lg:gap-5">
             {featureConfigs.map((feature, index) => (
-              <motion.div
-                key={index}
-                variants={{
-                  initial: { opacity: 0, scale: 0.9 },
-                  animate: {
-                    opacity: 1,
-                    scale: 1,
-                    transition: { duration: 0.4, ease: 'easeOut' },
-                  },
-                }}
-                whileHover={{
-                  y: -4,
-                  borderColor: 'oklch(from var(--color-primary) l c h / 0.5)',
-                  boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)',
-                  transition: { duration: 0.2 },
-                }}
-                className="p-6 rounded-2xl bg-card ring-1 ring-border cursor-pointer active:scale-[0.98]"
-              >
-                <div className="size-12 rounded-xl bg-primary/10 flex items-center justify-center mb-4">
-                  <feature.icon className="size-6 text-primary" />
-                </div>
-                <h3 className="text-xl font-semibold mb-2">
-                  {t(feature.titleKey)}
-                </h3>
-                <p className="text-muted-foreground">
-                  {t(feature.descriptionKey)}
-                </p>
-              </motion.div>
+              <FeatureCard key={index} feature={feature} index={index} />
+            ))}
+          </div>
+        </motion.div>
+      </section>
+
+      {/* Stats Section */}
+      <section className="py-20 px-4">
+        <motion.div
+          className="max-w-4xl mx-auto"
+          initial="initial"
+          whileInView="animate"
+          viewport={{ once: true, margin: '-100px' }}
+          variants={staggerContainer}
+        >
+          <motion.h2
+            variants={fadeInUp}
+            className="text-fluid-2xl font-bold text-center mb-12"
+          >
+            {t('landing.stats.title')}
+          </motion.h2>
+
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6">
+            {statsConfigs.map((stat, index) => (
+              <StatCard key={index} stat={stat} index={index} />
             ))}
           </div>
         </motion.div>
@@ -518,7 +722,7 @@ export const LandingPage = () => {
             <motion.div
               variants={fadeInUp}
               transition={{ duration: 0.5 }}
-              className="bg-card ring-1 ring-border rounded-2xl p-6"
+              className="glass-elevated rounded-3xl overflow-hidden"
             >
               {faqConfigs.map((faq, index) => (
                 <FAQItem
@@ -536,29 +740,51 @@ export const LandingPage = () => {
       <section className="py-20 px-4">
         <div className="max-w-4xl mx-auto">
           <motion.div
-            className="relative p-12 md:p-16 rounded-3xl bg-primary text-primary-foreground overflow-hidden"
+            className="relative p-12 md:p-16 rounded-3xl overflow-hidden"
             initial={{ opacity: 0, y: 40 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, margin: '-100px' }}
             transition={{ duration: 0.6, ease: 'easeOut' }}
+            style={{
+              background:
+                'linear-gradient(135deg, oklch(0.2 0.02 260) 0%, oklch(from var(--color-primary) calc(l - 0.2) c h / 0.9) 50%, oklch(0.2 0.02 260) 100%)',
+            }}
           >
-            {/* Background decoration */}
-            <div className="absolute inset-0 -z-0">
-              <motion.div
-                className="absolute top-0 right-0 size-64 bg-white/10 rounded-full blur-3xl"
-                initial={{ opacity: 0, scale: 0.5 }}
-                whileInView={{ opacity: 1, scale: 1 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.8, delay: 0.2 }}
-              />
-              <motion.div
-                className="absolute bottom-0 left-0 size-64 bg-white/5 rounded-full blur-3xl"
-                initial={{ opacity: 0, scale: 0.5 }}
-                whileInView={{ opacity: 1, scale: 1 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.8, delay: 0.3 }}
-              />
-            </div>
+            {/* Grid pattern overlay */}
+            <div
+              className="absolute inset-0 opacity-20"
+              style={{
+                backgroundImage: `linear-gradient(to right, rgba(255,255,255,0.1) 1px, transparent 1px),
+                                 linear-gradient(to bottom, rgba(255,255,255,0.1) 1px, transparent 1px)`,
+                backgroundSize: '3rem 3rem',
+                maskImage:
+                  'radial-gradient(ellipse 80% 80% at 50% 50%, black 30%, transparent 70%)',
+              }}
+            />
+
+            {/* Animated glow orbs */}
+            <motion.div
+              className="absolute top-0 right-0 size-64 rounded-full blur-3xl"
+              style={{
+                background:
+                  'radial-gradient(circle, rgba(255,255,255,0.15) 0%, transparent 60%)',
+              }}
+              initial={{ opacity: 0, scale: 0.5 }}
+              whileInView={{ opacity: 1, scale: 1 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.8, delay: 0.2 }}
+            />
+            <motion.div
+              className="absolute bottom-0 left-0 size-48 rounded-full blur-3xl"
+              style={{
+                background:
+                  'radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 60%)',
+              }}
+              initial={{ opacity: 0, scale: 0.5 }}
+              whileInView={{ opacity: 1, scale: 1 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.8, delay: 0.3 }}
+            />
 
             <motion.div
               className="relative z-10 text-center"
@@ -570,14 +796,14 @@ export const LandingPage = () => {
               <motion.h2
                 variants={fadeInUp}
                 transition={{ duration: 0.5 }}
-                className="text-fluid-xl sm:text-fluid-2xl font-bold mb-4"
+                className="text-fluid-xl sm:text-fluid-2xl font-bold mb-4 text-white"
               >
                 {t('landing.cta.title')}
               </motion.h2>
               <motion.p
                 variants={fadeInUp}
                 transition={{ duration: 0.5 }}
-                className="text-primary-foreground/80 text-fluid-base sm:text-fluid-lg max-w-xl mx-auto mb-8"
+                className="text-white/80 text-fluid-base sm:text-fluid-lg max-w-xl mx-auto mb-8"
               >
                 {t('landing.cta.subtitle')}
               </motion.p>
@@ -591,10 +817,11 @@ export const LandingPage = () => {
                   className={cn(
                     'inline-flex items-center justify-center gap-2 rounded-full font-medium',
                     'w-full sm:w-auto h-12 sm:h-11 px-8 text-base sm:text-sm',
-                    'bg-white dark:bg-background text-primary',
-                    'hover:bg-white/90 dark:hover:bg-background/90 active:bg-white/80 dark:active:bg-background/80 active:scale-[0.98]',
+                    'bg-white text-primary',
+                    'hover:bg-white/90 active:bg-white/80 active:scale-[0.98]',
                     'focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white',
-                    'transition-colors'
+                    'transition-all duration-200',
+                    'shadow-lg'
                   )}
                 >
                   {t('landing.cta.createAccount')}
@@ -608,7 +835,7 @@ export const LandingPage = () => {
                     'ring-1 ring-white/30 text-white',
                     'hover:bg-white/10 active:bg-white/20 active:scale-[0.98]',
                     'focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white',
-                    'transition-colors'
+                    'transition-all duration-200'
                   )}
                 >
                   {t('landing.cta.contactSupport')}
@@ -634,13 +861,19 @@ export const LandingPage = () => {
                 ) : (
                   <>
                     {logoUrl ? (
-                      <img src={logoUrl} alt={appName || 'Logo'} className="h-8 w-auto" />
+                      <img
+                        src={logoUrl}
+                        alt={appName || 'Logo'}
+                        className="h-8 w-auto"
+                      />
                     ) : (
                       <div className="size-8 rounded-lg bg-primary flex items-center justify-center">
                         <Globe className="size-5 text-primary-foreground" />
                       </div>
                     )}
-                    <span className="text-lg font-semibold">{appName || 'Orris'}</span>
+                    <span className="text-lg font-semibold">
+                      {appName || 'Orris'}
+                    </span>
                   </>
                 )}
               </div>

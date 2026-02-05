@@ -8,7 +8,7 @@
  * - iOS-style design
  */
 
-import { useState } from 'react';
+import { useState, memo } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   Package,
@@ -70,7 +70,7 @@ const PLAN_TYPE_ICONS: Record<PlanType, React.ReactNode> = {
 // Helper Components
 // ============================================================================
 
-const DetailSection = ({
+const DetailSection = memo(({
   title,
   children,
 }: {
@@ -85,9 +85,11 @@ const DetailSection = ({
       {children}
     </div>
   </div>
-);
+));
 
-const DetailRow = ({
+DetailSection.displayName = 'DetailSection';
+
+const DetailRow = memo(({
   icon,
   label,
   value,
@@ -103,9 +105,11 @@ const DetailRow = ({
       <div className="text-sm font-medium">{value}</div>
     </div>
   </div>
-);
+));
 
-const PricingItem = ({
+DetailRow.displayName = 'DetailRow';
+
+const PricingItem = memo(({
   cycle,
   price,
   currency,
@@ -142,7 +146,9 @@ const PricingItem = ({
       </AdminBadge>
     </div>
   );
-};
+});
+
+PricingItem.displayName = 'PricingItem';
 
 // ============================================================================
 // Main Component

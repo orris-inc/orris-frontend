@@ -3,7 +3,7 @@
  * Redesigned with improved UI/UX - clean visual hierarchy, icons, and better form layout
  */
 
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   Dialog,
@@ -36,6 +36,14 @@ import type {
   CongestionControl,
   TUICUDPRelayMode,
 } from '@/api/node';
+import {
+  ShadowsocksConfigForm,
+  TrojanConfigForm,
+  VlessConfigForm,
+  VmessConfigForm,
+  Hysteria2ConfigForm,
+  TuicConfigForm,
+} from './protocol-forms';
 import {
   Server,
   Network,
@@ -98,9 +106,6 @@ const CONGESTION_CONTROL_OPTIONS: CongestionControl[] = ['cubic', 'bbr', 'new_re
 
 // TUIC UDP relay modes
 const TUIC_UDP_RELAY_MODES: TUICUDPRelayMode[] = ['native', 'quic'];
-
-// TLS fingerprint options
-const TLS_FINGERPRINT_OPTIONS = ['chrome', 'firefox', 'safari', 'edge', 'random'] as const;
 
 // Default form data
 const getDefaultFormData = (): CreateNodeRequest & { tagsInput: string; expiresAt?: string; costLabel?: string } => ({
@@ -367,34 +372,39 @@ export const CreateNodeDialog: React.FC<CreateNodeDialogProps> = ({
     }
   }
 
-  const handleClose = () => {
+  const handleClose = useCallback(() => {
     setFormData(getDefaultFormData());
     setErrors({});
     setPluginOptsString('');
     setOpenSections(new Set(['basic', 'network']));
     onClose();
-  };
+  }, [onClose]);
 
-  const handleChange = (field: keyof CreateNodeRequest | 'tagsInput' | 'expiresAt' | 'costLabel', value: string | number | boolean | undefined) => {
+  const handleChange = useCallback((field: string, value: any) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
-    if (errors[field]) {
-      setErrors((prev) => {
-        const newErrors = { ...prev };
-        delete newErrors[field];
-        return newErrors;
-      });
-    }
-  };
+    setErrors((prev) => {
+      if (!prev[field]) return prev;
+      const newErrors = { ...prev };
+      delete newErrors[field];
+      return newErrors;
+    });
+  }, []);
 
-  const handleRouteChange = (route: RouteConfig | undefined) => {
+  const handleRouteChange = useCallback((route: RouteConfig | undefined) => {
     setFormData((prev) => ({ ...prev, route }));
-  };
+  }, []);
 
-  const handleCostLabelChange = (value: string) => {
-    handleChange("costLabel", value || undefined);
-  };
+  const handleCostLabelChange = useCallback((value: string) => {
+    setFormData((prev) => ({ ...prev, costLabel: value || undefined }));
+    setErrors((prev) => {
+      if (!prev.costLabel) return prev;
+      const newErrors = { ...prev };
+      delete newErrors.costLabel;
+      return newErrors;
+    });
+  }, []);
 
-  const toggleSection = (sectionId: string) => {
+  const toggleSection = useCallback((sectionId: string) => {
     setOpenSections((prev) => {
       const next = new Set(prev);
       if (next.has(sectionId)) {
@@ -404,9 +414,9 @@ export const CreateNodeDialog: React.FC<CreateNodeDialogProps> = ({
       }
       return next;
     });
-  };
+  }, []);
 
-  const handleGroupToggle = (groupSid: string) => {
+  const handleGroupToggle = useCallback((groupSid: string) => {
     setFormData((prev) => {
       const currentGroups = prev.groupSids || [];
       const isSelected = currentGroups.includes(groupSid);
@@ -417,7 +427,7 @@ export const CreateNodeDialog: React.FC<CreateNodeDialogProps> = ({
           : [...currentGroups, groupSid],
       };
     });
-  };
+  }, []);
 
   const isShadowsocks = formData.protocol === 'shadowsocks';
   const isTrojan = formData.protocol === 'trojan';
@@ -1052,531 +1062,92 @@ export const CreateNodeDialog: React.FC<CreateNodeDialogProps> = ({
             >
               <div className="space-y-4">
                 {isShadowsocks && (
-                  <>
-                    <FormField label={t('admin.nodes.form.plugin')} hint={t('admin.nodes.form.pluginHint')}>
-                      <Input
-                        id="plugin"
-                        placeholder="obfs-local"
-                        value={formData.plugin || ''}
-                        onChange={(e) => handleChange('plugin', e.target.value)}
-                        className="h-10 font-mono"
-                      />
-                    </FormField>
-
-                    <FormField label={t('admin.nodes.form.pluginOptions')} hint={t('admin.nodes.form.pluginOptionsHint')}>
-                      <Input
-                        id="pluginOpts"
-                        placeholder="obfs=http;obfs-host=www.bing.com"
-                        value={pluginOptsString}
-                        onChange={(e) => setPluginOptsString(e.target.value)}
-                        className="h-10 font-mono"
-                      />
-                    </FormField>
-                  </>
+                  <ShadowsocksConfigForm
+                    plugin={formData.plugin}
+                    pluginOptsString={pluginOptsString}
+                    onPluginChange={(value) => handleChange('plugin', value)}
+                    onPluginOptsChange={(value) => setPluginOptsString(value)}
+                    errors={errors}
+                  />
                 )}
 
                 {isTrojan && (
-                  <>
-                    <div className="grid grid-cols-2 gap-4">
-                      <FormField label={t('admin.nodes.form.fields.sni')} hint={t('admin.nodes.form.sniHint')}>
-                        <Input
-                          id="sni"
-                          placeholder="example.com"
-                          value={formData.sni || ''}
-                          onChange={(e) => handleChange('sni', e.target.value)}
-                          className="h-10 font-mono"
-                        />
-                      </FormField>
-
-                      <FormField label={t('admin.nodes.form.tlsSecurity')} hint={t('admin.nodes.form.tlsSecurityHint')}>
-                        <Select
-                          value={formData.allowInsecure ? 'true' : 'false'}
-                          onValueChange={(value) => handleChange('allowInsecure', value === 'true')}
-                        >
-                          <SelectTrigger className="h-10">
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="false">
-                              <div className="flex items-center gap-2">
-                                <Shield className="size-3.5 text-success" />
-                                {t('admin.nodes.form.verifyCert')}
-                              </div>
-                            </SelectItem>
-                            <SelectItem value="true">
-                              <div className="flex items-center gap-2">
-                                <AlertCircle className="size-3.5 text-warning" />
-                                {t('admin.nodes.form.skipVerify')}
-                              </div>
-                            </SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </FormField>
-                    </div>
-
-                    {showWsFields && (
-                      <div className="grid grid-cols-2 gap-4">
-                        <FormField label={t('admin.nodes.form.fields.host')} hint={t('admin.nodes.form.hints.wsHostHeader')}>
-                          <Input
-                            id="host"
-                            placeholder="example.com"
-                            value={formData.host || ''}
-                            onChange={(e) => handleChange('host', e.target.value)}
-                            className="h-10 font-mono"
-                          />
-                        </FormField>
-
-                        <FormField label={t('admin.nodes.form.fields.path')} hint={t('admin.nodes.form.wsPathHint')}>
-                          <Input
-                            id="path"
-                            placeholder="/ws"
-                            value={formData.path || ''}
-                            onChange={(e) => handleChange('path', e.target.value)}
-                            className="h-10 font-mono"
-                          />
-                        </FormField>
-                      </div>
-                    )}
-
-                    {showGrpcFields && (
-                      <FormField label={t('admin.nodes.form.fields.serviceName')} hint={t('admin.nodes.form.grpcServiceNameHint')}>
-                        <Input
-                          id="grpcHost"
-                          placeholder="grpc-service"
-                          value={formData.host || ''}
-                          onChange={(e) => handleChange('host', e.target.value)}
-                          className="h-10 font-mono"
-                        />
-                      </FormField>
-                    )}
-                  </>
+                  <TrojanConfigForm
+                    sni={formData.sni}
+                    allowInsecure={formData.allowInsecure}
+                    transportProtocol={formData.transportProtocol}
+                    host={formData.host}
+                    path={formData.path}
+                    onFieldChange={handleChange}
+                    errors={errors}
+                  />
                 )}
 
                 {/* VLESS Protocol Settings */}
                 {isVless && (
-                  <>
-                    <div className="grid grid-cols-2 gap-4">
-                      <FormField label={t('admin.nodes.form.fields.sni')} hint={t('admin.nodes.form.sniHint')}>
-                        <Input
-                          id="vlessSni"
-                          placeholder="example.com"
-                          value={formData.vlessSni || ''}
-                          onChange={(e) => handleChange('vlessSni', e.target.value)}
-                          className="h-10 font-mono"
-                        />
-                      </FormField>
-
-                      <FormField label={t('admin.nodes.form.tlsSecurity')} hint={t('admin.nodes.form.tlsSecurityHint')}>
-                        <Select
-                          value={formData.vlessAllowInsecure ? 'true' : 'false'}
-                          onValueChange={(value) => handleChange('vlessAllowInsecure', value === 'true')}
-                        >
-                          <SelectTrigger className="h-10">
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="false">
-                              <div className="flex items-center gap-2">
-                                <Shield className="size-3.5 text-success" />
-                                {t('admin.nodes.form.verifyCert')}
-                              </div>
-                            </SelectItem>
-                            <SelectItem value="true">
-                              <div className="flex items-center gap-2">
-                                <AlertCircle className="size-3.5 text-warning" />
-                                {t('admin.nodes.form.skipVerify')}
-                              </div>
-                            </SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </FormField>
-                    </div>
-
-                    <div className="grid grid-cols-2 gap-4">
-                      <FormField label={t('admin.nodes.form.fields.flow')} hint={t('admin.nodes.form.flowHint')}>
-                        <Input
-                          id="vlessFlow"
-                          placeholder="xtls-rprx-vision"
-                          value={formData.vlessFlow || ''}
-                          onChange={(e) => handleChange('vlessFlow', e.target.value)}
-                          className="h-10 font-mono"
-                        />
-                      </FormField>
-
-                      <FormField label={t('admin.nodes.form.fields.fingerprint')} hint={t('admin.nodes.form.fingerprintHint')}>
-                        <Select
-                          value={formData.vlessFingerprint || ''}
-                          onValueChange={(value) => handleChange('vlessFingerprint', value)}
-                        >
-                          <SelectTrigger className="h-10">
-                            <SelectValue placeholder={t('admin.nodes.form.selectFingerprint')} />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {TLS_FINGERPRINT_OPTIONS.map((fp) => (
-                              <SelectItem key={fp} value={fp}>
-                                {fp}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                      </FormField>
-                    </div>
-
-                    {showVlessWsFields && (
-                      <div className="grid grid-cols-2 gap-4">
-                        <FormField label={t('admin.nodes.form.fields.host')} hint={t('admin.nodes.form.hints.wsH2Host')}>
-                          <Input
-                            id="vlessHost"
-                            placeholder="example.com"
-                            value={formData.vlessHost || ''}
-                            onChange={(e) => handleChange('vlessHost', e.target.value)}
-                            className="h-10 font-mono"
-                          />
-                        </FormField>
-
-                        <FormField label={t('admin.nodes.form.fields.path')} hint={t('admin.nodes.form.wsH2PathHint')}>
-                          <Input
-                            id="vlessPath"
-                            placeholder="/ws"
-                            value={formData.vlessPath || ''}
-                            onChange={(e) => handleChange('vlessPath', e.target.value)}
-                            className="h-10 font-mono"
-                          />
-                        </FormField>
-                      </div>
-                    )}
-
-                    {showVlessGrpcFields && (
-                      <FormField label={t('admin.nodes.form.fields.serviceName')} hint={t('admin.nodes.form.grpcServiceNameHint')}>
-                        <Input
-                          id="vlessServiceName"
-                          placeholder="grpc-service"
-                          value={formData.vlessServiceName || ''}
-                          onChange={(e) => handleChange('vlessServiceName', e.target.value)}
-                          className="h-10 font-mono"
-                        />
-                      </FormField>
-                    )}
-
-                    {showVlessRealityFields && (
-                      <>
-                        <div className="grid grid-cols-2 gap-4">
-                          <FormField label={t('admin.nodes.form.fields.realityPublicKey')} hint={t('admin.nodes.form.realityPublicKeyHint')}>
-                            <Input
-                              id="vlessRealityPublicKey"
-                              placeholder={t('admin.nodes.form.publicKeyPlaceholder')}
-                              value={formData.vlessRealityPublicKey || ''}
-                              onChange={(e) => handleChange('vlessRealityPublicKey', e.target.value)}
-                              className="h-10 font-mono"
-                            />
-                          </FormField>
-
-                          <FormField label={t('admin.nodes.form.fields.realityShortId')} hint={t('admin.nodes.form.shortIdHint')}>
-                            <Input
-                              id="vlessRealityShortId"
-                              placeholder={t('admin.nodes.form.shortIdPlaceholder')}
-                              value={formData.vlessRealityShortId || ''}
-                              onChange={(e) => handleChange('vlessRealityShortId', e.target.value)}
-                              className="h-10 font-mono"
-                            />
-                          </FormField>
-                        </div>
-
-                        <FormField label={t('admin.nodes.form.fields.realitySpiderX')} hint={t('common.optional')}>
-                          <Input
-                            id="vlessRealitySpiderX"
-                            placeholder="/"
-                            value={formData.vlessRealitySpiderX || ''}
-                            onChange={(e) => handleChange('vlessRealitySpiderX', e.target.value)}
-                            className="h-10 font-mono"
-                          />
-                        </FormField>
-                      </>
-                    )}
-                  </>
+                  <VlessConfigForm
+                    transportType={formData.vlessTransportType}
+                    security={formData.vlessSecurity}
+                    sni={formData.vlessSni}
+                    allowInsecure={formData.vlessAllowInsecure}
+                    flow={formData.vlessFlow}
+                    fingerprint={formData.vlessFingerprint}
+                    host={formData.vlessHost}
+                    path={formData.vlessPath}
+                    serviceName={formData.vlessServiceName}
+                    realityPublicKey={formData.vlessRealityPublicKey}
+                    realityShortId={formData.vlessRealityShortId}
+                    realitySpiderX={formData.vlessRealitySpiderX}
+                    onFieldChange={handleChange}
+                    errors={errors}
+                  />
                 )}
 
                 {/* VMess Protocol Settings */}
                 {isVmess && (
-                  <>
-                    <div className="grid grid-cols-2 gap-4">
-                      <FormField label={t('admin.nodes.form.fields.alterId')} hint={t('admin.nodes.form.alterIdHint')}>
-                        <Input
-                          id="vmessAlterId"
-                          type="number"
-                          min={0}
-                          value={formData.vmessAlterId ?? 0}
-                          onChange={(e) => handleChange('vmessAlterId', parseInt(e.target.value, 10) || 0)}
-                          className="h-10 font-mono"
-                        />
-                      </FormField>
-
-                      <FormField label={t('admin.nodes.form.fields.tls')} hint={t('admin.nodes.form.enableTlsHint')}>
-                        <Select
-                          value={formData.vmessTls ? 'true' : 'false'}
-                          onValueChange={(value) => handleChange('vmessTls', value === 'true')}
-                        >
-                          <SelectTrigger className="h-10">
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="true">{t('admin.nodes.form.enableTls')}</SelectItem>
-                            <SelectItem value="false">{t('admin.nodes.form.disableTls')}</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </FormField>
-                    </div>
-
-                    <div className="grid grid-cols-2 gap-4">
-                      <FormField label={t('admin.nodes.form.fields.sni')} hint={t('admin.nodes.form.sniHint')}>
-                        <Input
-                          id="vmessSni"
-                          placeholder="example.com"
-                          value={formData.vmessSni || ''}
-                          onChange={(e) => handleChange('vmessSni', e.target.value)}
-                          className="h-10 font-mono"
-                        />
-                      </FormField>
-
-                      <FormField label={t('admin.nodes.form.tlsSecurity')} hint={t('admin.nodes.form.tlsSecurityHint')}>
-                        <Select
-                          value={formData.vmessAllowInsecure ? 'true' : 'false'}
-                          onValueChange={(value) => handleChange('vmessAllowInsecure', value === 'true')}
-                        >
-                          <SelectTrigger className="h-10">
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="false">
-                              <div className="flex items-center gap-2">
-                                <Shield className="size-3.5 text-success" />
-                                {t('admin.nodes.form.verifyCert')}
-                              </div>
-                            </SelectItem>
-                            <SelectItem value="true">
-                              <div className="flex items-center gap-2">
-                                <AlertCircle className="size-3.5 text-warning" />
-                                {t('admin.nodes.form.skipVerify')}
-                              </div>
-                            </SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </FormField>
-                    </div>
-
-                    {showVmessWsFields && (
-                      <div className="grid grid-cols-2 gap-4">
-                        <FormField label={t('admin.nodes.form.fields.host')} hint={t('admin.nodes.form.hints.wsHttpHost')}>
-                          <Input
-                            id="vmessHost"
-                            placeholder="example.com"
-                            value={formData.vmessHost || ''}
-                            onChange={(e) => handleChange('vmessHost', e.target.value)}
-                            className="h-10 font-mono"
-                          />
-                        </FormField>
-
-                        <FormField label={t('admin.nodes.form.fields.path')} hint={t('admin.nodes.form.wsHttpPathHint')}>
-                          <Input
-                            id="vmessPath"
-                            placeholder="/ws"
-                            value={formData.vmessPath || ''}
-                            onChange={(e) => handleChange('vmessPath', e.target.value)}
-                            className="h-10 font-mono"
-                          />
-                        </FormField>
-                      </div>
-                    )}
-
-                    {showVmessGrpcFields && (
-                      <FormField label={t('admin.nodes.form.fields.serviceName')} hint={t('admin.nodes.form.grpcServiceNameHint')}>
-                        <Input
-                          id="vmessServiceName"
-                          placeholder="grpc-service"
-                          value={formData.vmessServiceName || ''}
-                          onChange={(e) => handleChange('vmessServiceName', e.target.value)}
-                          className="h-10 font-mono"
-                        />
-                      </FormField>
-                    )}
-                  </>
+                  <VmessConfigForm
+                    transportType={formData.vmessTransportType}
+                    security={formData.vmessSecurity}
+                    alterId={formData.vmessAlterId}
+                    tls={formData.vmessTls}
+                    sni={formData.vmessSni}
+                    allowInsecure={formData.vmessAllowInsecure}
+                    host={formData.vmessHost}
+                    path={formData.vmessPath}
+                    serviceName={formData.vmessServiceName}
+                    onFieldChange={handleChange}
+                    errors={errors}
+                  />
                 )}
 
                 {/* Hysteria2 Protocol Settings */}
                 {isHysteria2 && (
-                  <>
-                    <div className="grid grid-cols-2 gap-4">
-                      <FormField label={t('admin.nodes.form.fields.sni')} hint={t('admin.nodes.form.sniHint')}>
-                        <Input
-                          id="hysteria2Sni"
-                          placeholder="example.com"
-                          value={formData.hysteria2Sni || ''}
-                          onChange={(e) => handleChange('hysteria2Sni', e.target.value)}
-                          className="h-10 font-mono"
-                        />
-                      </FormField>
-
-                      <FormField label={t('admin.nodes.form.tlsSecurity')} hint={t('admin.nodes.form.tlsSecurityHint')}>
-                        <Select
-                          value={formData.hysteria2AllowInsecure ? 'true' : 'false'}
-                          onValueChange={(value) => handleChange('hysteria2AllowInsecure', value === 'true')}
-                        >
-                          <SelectTrigger className="h-10">
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="false">
-                              <div className="flex items-center gap-2">
-                                <Shield className="size-3.5 text-success" />
-                                {t('admin.nodes.form.verifyCert')}
-                              </div>
-                            </SelectItem>
-                            <SelectItem value="true">
-                              <div className="flex items-center gap-2">
-                                <AlertCircle className="size-3.5 text-warning" />
-                                {t('admin.nodes.form.skipVerify')}
-                              </div>
-                            </SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </FormField>
-                    </div>
-
-                    <div className="grid grid-cols-2 gap-4">
-                      <FormField label={t('admin.nodes.form.obfsType')} hint={t('admin.nodes.form.obfsTypeHint')}>
-                        <Input
-                          id="hysteria2Obfs"
-                          placeholder="salamander"
-                          value={formData.hysteria2Obfs || ''}
-                          onChange={(e) => handleChange('hysteria2Obfs', e.target.value)}
-                          className="h-10 font-mono"
-                        />
-                      </FormField>
-
-                      <FormField label={t('admin.nodes.form.obfsPassword')} hint={t('admin.nodes.form.obfsPasswordHint')}>
-                        <Input
-                          id="hysteria2ObfsPassword"
-                          placeholder={t('common.placeholders.password')}
-                          value={formData.hysteria2ObfsPassword || ''}
-                          onChange={(e) => handleChange('hysteria2ObfsPassword', e.target.value)}
-                          className="h-10 font-mono"
-                        />
-                      </FormField>
-                    </div>
-
-                    <div className="grid grid-cols-2 gap-4">
-                      <FormField label={t('admin.nodes.form.upBandwidth')} hint={t('common.optional')}>
-                        <Input
-                          id="hysteria2UpMbps"
-                          type="number"
-                          min={0}
-                          placeholder="100"
-                          value={formData.hysteria2UpMbps ?? ''}
-                          onChange={(e) => handleChange('hysteria2UpMbps', e.target.value ? parseInt(e.target.value, 10) : undefined)}
-                          className="h-10 font-mono"
-                        />
-                      </FormField>
-
-                      <FormField label={t('admin.nodes.form.downBandwidth')} hint={t('common.optional')}>
-                        <Input
-                          id="hysteria2DownMbps"
-                          type="number"
-                          min={0}
-                          placeholder="100"
-                          value={formData.hysteria2DownMbps ?? ''}
-                          onChange={(e) => handleChange('hysteria2DownMbps', e.target.value ? parseInt(e.target.value, 10) : undefined)}
-                          className="h-10 font-mono"
-                        />
-                      </FormField>
-                    </div>
-
-                    <FormField label={t('admin.nodes.form.fields.fingerprint')} hint={t('admin.nodes.form.fingerprintHint')}>
-                      <Select
-                        value={formData.hysteria2Fingerprint || ''}
-                        onValueChange={(value) => handleChange('hysteria2Fingerprint', value)}
-                      >
-                        <SelectTrigger className="h-10">
-                          <SelectValue placeholder={t('admin.nodes.form.selectFingerprint')} />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {TLS_FINGERPRINT_OPTIONS.map((fp) => (
-                            <SelectItem key={fp} value={fp}>
-                              {fp}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </FormField>
-                  </>
+                  <Hysteria2ConfigForm
+                    congestionControl={formData.hysteria2CongestionControl}
+                    sni={formData.hysteria2Sni}
+                    allowInsecure={formData.hysteria2AllowInsecure}
+                    obfs={formData.hysteria2Obfs}
+                    obfsPassword={formData.hysteria2ObfsPassword}
+                    upMbps={formData.hysteria2UpMbps}
+                    downMbps={formData.hysteria2DownMbps}
+                    fingerprint={formData.hysteria2Fingerprint}
+                    onFieldChange={handleChange}
+                    errors={errors}
+                  />
                 )}
 
                 {/* TUIC Protocol Settings */}
                 {isTuic && (
-                  <>
-                    <div className="grid grid-cols-2 gap-4">
-                      <FormField label={t('admin.nodes.form.fields.sni')} hint={t('admin.nodes.form.sniHint')}>
-                        <Input
-                          id="tuicSni"
-                          placeholder="example.com"
-                          value={formData.tuicSni || ''}
-                          onChange={(e) => handleChange('tuicSni', e.target.value)}
-                          className="h-10 font-mono"
-                        />
-                      </FormField>
-
-                      <FormField label={t('admin.nodes.form.tlsSecurity')} hint={t('admin.nodes.form.tlsSecurityHint')}>
-                        <Select
-                          value={formData.tuicAllowInsecure ? 'true' : 'false'}
-                          onValueChange={(value) => handleChange('tuicAllowInsecure', value === 'true')}
-                        >
-                          <SelectTrigger className="h-10">
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="false">
-                              <div className="flex items-center gap-2">
-                                <Shield className="size-3.5 text-success" />
-                                {t('admin.nodes.form.verifyCert')}
-                              </div>
-                            </SelectItem>
-                            <SelectItem value="true">
-                              <div className="flex items-center gap-2">
-                                <AlertCircle className="size-3.5 text-warning" />
-                                {t('admin.nodes.form.skipVerify')}
-                              </div>
-                            </SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </FormField>
-                    </div>
-
-                    <div className="grid grid-cols-2 gap-4">
-                      <FormField label={t('admin.nodes.form.fields.alpn')} hint={t('admin.nodes.form.alpnHint')}>
-                        <Input
-                          id="tuicAlpn"
-                          placeholder="h3"
-                          value={formData.tuicAlpn || ''}
-                          onChange={(e) => handleChange('tuicAlpn', e.target.value)}
-                          className="h-10 font-mono"
-                        />
-                      </FormField>
-
-                      <FormField label={t('admin.nodes.form.disableSni')} hint={t('admin.nodes.form.disableSniHint')}>
-                        <Select
-                          value={formData.tuicDisableSni ? 'true' : 'false'}
-                          onValueChange={(value) => handleChange('tuicDisableSni', value === 'true')}
-                        >
-                          <SelectTrigger className="h-10">
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="false">{t('admin.nodes.form.notDisabled')}</SelectItem>
-                            <SelectItem value="true">{t('admin.nodes.form.disableSniOption')}</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </FormField>
-                    </div>
-                  </>
+                  <TuicConfigForm
+                    congestionControl={formData.tuicCongestionControl}
+                    udpRelayMode={formData.tuicUdpRelayMode}
+                    sni={formData.tuicSni}
+                    allowInsecure={formData.tuicAllowInsecure}
+                    alpn={formData.tuicAlpn}
+                    disableSni={formData.tuicDisableSni}
+                    onFieldChange={handleChange}
+                    errors={errors}
+                  />
                 )}
               </div>
             </CollapsibleSection>

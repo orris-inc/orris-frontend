@@ -702,6 +702,7 @@
       "actions": {
         "viewDetail": "查看详情",
         "installScript": "安装脚本",
+        "batchInstallScript": "批量安装脚本",
         "copyNode": "复制节点",
         "generateToken": "生成 Token",
         "broadcastUrl": "下发地址",
@@ -1051,7 +1052,14 @@
         "clickToExpand": "点击展开",
         "clickToCollapse": "点击收起",
         "apiUrl": "API 地址",
-        "recommended": "推荐"
+        "recommended": "推荐",
+        "noData": "暂无数据",
+        "batchTitle": "批量安装脚本",
+        "batchDescription": "以下命令将在一台服务器上安装 {{count}} 个节点",
+        "batchDescriptionGeneric": "以下命令将批量安装多个节点",
+        "batchInstallCommand": "批量安装命令",
+        "batchInstallHint": "以 root 权限运行，将依次安装所有选中的节点",
+        "includedNodes": "包含的节点"
       },
       "route": {
         "title": "路由配置",
@@ -2960,7 +2968,27 @@
 	      "stats": {
 	        "forwardingModes": "规则类型",
 	        "nodeProtocols": "协议支持",
-	        "tokenScopes": "令牌权限"
+	        "tokenScopes": "令牌权限",
+	        "realtime": "实时"
+	      }
+	    },
+	    "stats": {
+	      "title": "平台一览",
+	      "ruleTypes": {
+	        "value": "5+",
+	        "label": "规则类型"
+	      },
+	      "protocols": {
+	        "value": "10+",
+	        "label": "协议支持"
+	      },
+	      "tokenScopes": {
+	        "value": "8",
+	        "label": "令牌权限"
+	      },
+	      "realtime": {
+	        "value": "24/7",
+	        "label": "实时监控"
 	      }
 	    },
     "features": {
@@ -3464,7 +3492,14 @@
       "clickToExpand": "点击展开",
       "clickToCollapse": "点击收起",
       "apiUrl": "API 地址",
-      "token": "Token"
+      "token": "Token",
+      "recommended": "推荐",
+      "batchTitle": "批量安装脚本",
+      "batchDescription": "以下命令将在一台服务器上安装 {{count}} 个节点",
+      "batchDescriptionGeneric": "以下命令将批量安装多个节点",
+      "batchInstallCommand": "批量安装命令",
+      "batchInstallHint": "以 root 权限运行，将依次安装所有选中的节点",
+      "includedNodes": "包含的节点"
     },
     "create": {
       "title": "创建节点",

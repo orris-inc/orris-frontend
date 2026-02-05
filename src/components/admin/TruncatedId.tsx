@@ -3,7 +3,7 @@
  * Display Stripe-style IDs with truncation, tooltip and copy functionality
  */
 
-import { useState, useCallback } from 'react';
+import { useCallback } from 'react';
 import { Copy, Check } from 'lucide-react';
 import {
   Tooltip,
@@ -12,6 +12,7 @@ import {
   TooltipProvider,
 } from '@/components/common/Tooltip';
 import { cn } from '@/lib/utils';
+import { useCopyToClipboard } from '@/shared/hooks';
 
 interface TruncatedIdProps {
   /** The full ID to display */
@@ -41,7 +42,7 @@ export const TruncatedId: React.FC<TruncatedIdProps> = ({
   fullWidth = false,
   className,
 }) => {
-  const [copied, setCopied] = useState(false);
+  const { copied, copyToClipboard } = useCopyToClipboard();
 
   // Truncate ID if it's longer than startChars + endChars + 3 (for ...)
   const minLength = startChars + endChars + 3;
@@ -50,16 +51,10 @@ export const TruncatedId: React.FC<TruncatedIdProps> = ({
     ? `${id.slice(0, startChars)}...${id.slice(-endChars)}`
     : id;
 
-  const handleCopy = useCallback(async (e: React.MouseEvent) => {
+  const handleCopy = useCallback((e: React.MouseEvent) => {
     e.stopPropagation();
-    try {
-      await navigator.clipboard.writeText(id);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
-    } catch {
-      // Silently fail if clipboard access is denied
-    }
-  }, [id]);
+    copyToClipboard(id);
+  }, [id, copyToClipboard]);
 
   const content = (
     <span

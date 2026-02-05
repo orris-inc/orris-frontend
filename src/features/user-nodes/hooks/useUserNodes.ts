@@ -17,6 +17,7 @@ import {
   regenerateUserNodeToken,
   getUserNodeUsage,
   getUserNodeInstallScript,
+  getUserBatchInstallScript,
   type UserNode,
   type CreateUserNodeRequest,
   type CreateUserNodeResponse,
@@ -26,6 +27,8 @@ import {
   type UserNodeUsage,
   type UserNodeInstallScriptResponse,
   type GetUserNodeInstallScriptParams,
+  type BatchInstallScriptRequest,
+  type BatchInstallScriptResponse,
 } from '@/api/node';
 
 // Export types for external use
@@ -35,6 +38,7 @@ export type {
   RegenerateUserNodeTokenResponse,
   UserNodeUsage,
   UserNodeInstallScriptResponse,
+  BatchInstallScriptResponse,
 };
 
 // Cache time: 2 minutes for user nodes data
@@ -269,5 +273,27 @@ export const useUserNodeInstallScript = (
     isLoading,
     error: error ? handleApiError(error) : null,
     refetch,
+  };
+};
+
+/**
+ * User node batch install script mutation
+ * POST /user/nodes/batch-install-script
+ */
+export const useUserBatchInstallScript = () => {
+  const { showError } = useNotificationStore();
+
+  const mutation = useMutation({
+    mutationFn: (data: BatchInstallScriptRequest) => getUserBatchInstallScript(data),
+    onError: (error) => {
+      showError(handleApiError(error));
+    },
+  });
+
+  return {
+    getBatchInstallScript: (nodeIds: string[]) => mutation.mutateAsync({ nodeIds }),
+    isLoading: mutation.isPending,
+    data: mutation.data ?? null,
+    reset: mutation.reset,
   };
 };

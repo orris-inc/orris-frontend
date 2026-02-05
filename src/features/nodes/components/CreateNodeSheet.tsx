@@ -4,7 +4,7 @@
  * Redesigned with improved UX: progress indicator, step sections, micro-interactions
  */
 
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   Server,
@@ -42,83 +42,30 @@ import { cn } from '@/lib/utils';
 import type { OutboundNodeOption } from '../utils/route-rule-utils';
 import type {
   CreateNodeRequest,
-  TransportProtocol,
   RouteConfig,
   NodeProtocol,
+  TransportProtocol,
   VLESSSecurity,
   VMessSecurity,
   CongestionControl,
   TUICUDPRelayMode,
 } from '@/api/node';
+import {
+  SS_ENCRYPTION_OPTIONS,
+  TRANSPORT_PROTOCOLS,
+  VLESS_TRANSPORT_PROTOCOLS,
+  VLESS_SECURITY_OPTIONS,
+  VMESS_TRANSPORT_PROTOCOLS,
+  VMESS_SECURITY_OPTIONS,
+  CONGESTION_CONTROL_OPTIONS,
+  TUIC_UDP_RELAY_OPTIONS,
+  TLS_FINGERPRINT_OPTIONS,
+} from '@/shared/constants/protocol-options';
 
 interface CreateNodeSheetProps extends CreateSheetProps<CreateNodeRequest> {
   initialData?: Partial<CreateNodeRequest>;
   nodes?: OutboundNodeOption[];
 }
-
-// Shadowsocks encryption methods with recommended badge
-interface EncryptionMethodOption {
-  value: string;
-  label: string;
-  recommended?: boolean;
-}
-
-const SS_ENCRYPTION_METHODS: EncryptionMethodOption[] = [
-  { value: 'aes-256-gcm', label: 'aes-256-gcm', recommended: true },
-  { value: 'chacha20-ietf-poly1305', label: 'chacha20-ietf-poly1305', recommended: true },
-  { value: 'aes-128-gcm', label: 'aes-128-gcm' },
-  { value: 'xchacha20-ietf-poly1305', label: 'xchacha20-ietf-poly1305' },
-  { value: '2022-blake3-aes-128-gcm', label: '2022-blake3-aes-128-gcm' },
-  { value: '2022-blake3-aes-256-gcm', label: '2022-blake3-aes-256-gcm' },
-  { value: '2022-blake3-chacha20-poly1305', label: '2022-blake3-chacha20-poly1305' },
-];
-
-// Trojan transport protocols
-const TRANSPORT_PROTOCOLS: TransportProtocol[] = ['tcp', 'ws', 'grpc'];
-
-// VLESS transport protocols
-const VLESS_TRANSPORT_PROTOCOLS: TransportProtocol[] = ['tcp', 'ws', 'grpc', 'h2'];
-
-// VLESS security types
-const VLESS_SECURITY_OPTIONS: { value: VLESSSecurity; label: string }[] = [
-  { value: 'tls', label: 'TLS' },
-  { value: 'reality', label: 'Reality' },
-  { value: 'none', label: 'None' },
-];
-
-// VMess transport protocols
-const VMESS_TRANSPORT_PROTOCOLS: TransportProtocol[] = ['tcp', 'ws', 'grpc', 'http', 'quic'];
-
-// VMess security types
-const VMESS_SECURITY_OPTIONS: { value: VMessSecurity; label: string }[] = [
-  { value: 'auto', label: 'Auto (Recommended)' },
-  { value: 'aes-128-gcm', label: 'AES-128-GCM' },
-  { value: 'chacha20-poly1305', label: 'ChaCha20-Poly1305' },
-  { value: 'none', label: 'None' },
-  { value: 'zero', label: 'Zero' },
-];
-
-// Congestion control algorithms
-const CONGESTION_CONTROL_OPTIONS: { value: CongestionControl; label: string }[] = [
-  { value: 'bbr', label: 'BBR (Recommended)' },
-  { value: 'cubic', label: 'Cubic' },
-  { value: 'new_reno', label: 'New Reno' },
-];
-
-// TUIC UDP relay modes
-const TUIC_UDP_RELAY_MODES: { value: TUICUDPRelayMode; label: string }[] = [
-  { value: 'native', label: 'Native' },
-  { value: 'quic', label: 'QUIC' },
-];
-
-// TLS fingerprint options
-const TLS_FINGERPRINT_OPTIONS: MobileSelectOption[] = [
-  { value: 'chrome', label: 'Chrome' },
-  { value: 'firefox', label: 'Firefox' },
-  { value: 'safari', label: 'Safari' },
-  { value: 'edge', label: 'Edge' },
-  { value: 'random', label: 'Random' },
-];
 
 // Protocol configuration - descriptions need translation at render time
 const PROTOCOL_CONFIG: Record<NodeProtocol, { name: string; descKey: string; icon: React.ElementType }> = {
@@ -515,7 +462,7 @@ export const CreateNodeSheet: React.FC<CreateNodeSheetProps> = ({
     }
   }, [open, initialData]);
 
-  const handleClose = () => {
+  const handleClose = useCallback(() => {
     if (!loading) {
       setFormData(getDefaultFormData());
       setErrors({});
@@ -523,24 +470,23 @@ export const CreateNodeSheet: React.FC<CreateNodeSheetProps> = ({
       setOpenSections(new Set(['basic']));
       onOpenChange(false);
     }
-  };
+  }, [loading, onOpenChange]);
 
-  const handleChange = (field: keyof CreateNodeRequest | 'tagsInput', value: string | number | boolean | undefined) => {
+  const handleChange = useCallback((field: keyof CreateNodeRequest | 'tagsInput', value: string | number | boolean | undefined) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
-    if (errors[field]) {
-      setErrors((prev) => {
-        const newErrors = { ...prev };
-        delete newErrors[field];
-        return newErrors;
-      });
-    }
-  };
+    setErrors((prev) => {
+      if (!prev[field]) return prev;
+      const newErrors = { ...prev };
+      delete newErrors[field];
+      return newErrors;
+    });
+  }, []);
 
-  const handleRouteChange = (route: RouteConfig | undefined) => {
+  const handleRouteChange = useCallback((route: RouteConfig | undefined) => {
     setFormData((prev) => ({ ...prev, route }));
-  };
+  }, []);
 
-  const toggleSection = (sectionId: string) => {
+  const toggleSection = useCallback((sectionId: string) => {
     setOpenSections((prev) => {
       const next = new Set<string>();
       if (!prev.has(sectionId)) {
@@ -548,14 +494,20 @@ export const CreateNodeSheet: React.FC<CreateNodeSheetProps> = ({
       }
       return next;
     });
-  };
+  }, []);
 
-  const goToNextSection = (currentId: string) => {
+  const goToNextSection = useCallback((currentId: string) => {
     const currentIndex = STEPS.findIndex(s => s.id === currentId);
     if (currentIndex < STEPS.length - 1) {
-      toggleSection(STEPS[currentIndex + 1].id);
+      setOpenSections((prev) => {
+        const next = new Set<string>();
+        if (!prev.has(STEPS[currentIndex + 1].id)) {
+          next.add(STEPS[currentIndex + 1].id);
+        }
+        return next;
+      });
     }
-  };
+  }, []);
 
   const isShadowsocks = formData.protocol === 'shadowsocks';
   const isTrojan = formData.protocol === 'trojan';
@@ -920,7 +872,7 @@ export const CreateNodeSheet: React.FC<CreateNodeSheetProps> = ({
                   <MobileSelect
                     value={formData.encryptionMethod || ''}
                     onChange={(value) => handleChange('encryptionMethod', value)}
-                    options={SS_ENCRYPTION_METHODS.map((m) => ({
+                    options={SS_ENCRYPTION_OPTIONS.map((m) => ({
                       value: m.value,
                       label: m.recommended ? `${m.label} (${t('common.recommended')})` : m.label,
                     }))}
@@ -1026,7 +978,7 @@ export const CreateNodeSheet: React.FC<CreateNodeSheetProps> = ({
                     <MobileSelect
                       value={formData.tuicUdpRelayMode || 'native'}
                       onChange={(value) => handleChange('tuicUdpRelayMode', value as TUICUDPRelayMode)}
-                      options={TUIC_UDP_RELAY_MODES}
+                      options={TUIC_UDP_RELAY_OPTIONS}
                     />
                   </div>
                 </div>
