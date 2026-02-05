@@ -159,7 +159,7 @@ export const PlanMobileList: React.FC<PlanMobileListProps> = ({
             <DropdownMenuSeparator />
             <DropdownMenuItem onSelect={() => onToggleStatus(plan)}>
               <Power className="mr-2 size-4" />
-              {plan.status === 'active' ? t('common.actions.deactivate') : t('common.actions.activate')}
+              {plan.status === 'active' ? t('common.actions.disable') : t('common.actions.enable')}
             </DropdownMenuItem>
             {onDelete && (
               <DropdownMenuItem onSelect={() => onDelete(plan)} className="text-red-600 dark:text-red-400">
@@ -256,7 +256,7 @@ export const PlanMobileList: React.FC<PlanMobileListProps> = ({
                         }`} />
                       </button>
                     </TooltipTrigger>
-                    <TooltipContent>{plan.status === 'active' ? t('common.actions.deactivate') : t('common.actions.activate')}</TooltipContent>
+                    <TooltipContent>{plan.status === 'active' ? t('common.actions.disable') : t('common.actions.enable')}</TooltipContent>
                   </Tooltip>
                   {renderDropdownMenu(plan)}
                 </div>

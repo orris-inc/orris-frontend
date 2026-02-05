@@ -1321,7 +1321,7 @@ export const EditNodeSheet: React.FC<EditNodeSheetProps> = ({
                             <div className="flex items-center gap-2">
                               <span className="font-medium text-sm">{group.name}</span>
                               <Badge variant={group.status === 'active' ? 'default' : 'secondary'} className="text-[10px]">
-                                {group.status === 'active' ? t('common.status.active') : t('common.status.inactive')}
+                                {group.status === 'active' ? t('common.status.enabled') : t('common.status.disabled')}
                               </Badge>
                             </div>
                             {group.description && <p className="text-xs text-muted-foreground truncate">{group.description}</p>}

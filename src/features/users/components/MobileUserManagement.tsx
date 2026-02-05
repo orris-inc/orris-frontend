@@ -106,9 +106,9 @@ export const MobileUserManagement = ({
 
     return [
       { value: 'all', label: t('filter.all'), count: total },
-      { value: 'active', label: t('common.status.active'), count: active },
+      { value: 'active', label: t('common.status.enabled'), count: active },
       { value: 'pending', label: t('common.status.pending'), count: pending },
-      { value: 'inactive', label: t('common.status.inactive'), count: inactive },
+      { value: 'inactive', label: t('common.status.disabled'), count: inactive },
       { value: 'suspended', label: t('common.status.suspended'), count: suspended },
     ];
   }, [users, total, t]);

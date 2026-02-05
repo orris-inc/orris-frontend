@@ -189,7 +189,7 @@ export function NodeManagementPage() {
   const headerMetadata = useMemo((): PageHeaderMeta[] => {
     const items: PageHeaderMeta[] = [
       { icon: Activity, text: `${stats.online} ${t('common.status.online')}` },
-      { icon: CheckCircle2, text: `${stats.active} ${t('common.status.active')}` },
+      { icon: CheckCircle2, text: `${stats.active} ${t('common.status.enabled')}` },
     ];
 
     if (stats.offline > 0) {

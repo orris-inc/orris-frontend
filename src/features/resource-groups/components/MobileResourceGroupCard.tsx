@@ -9,7 +9,6 @@
  */
 
 import { useTranslation } from 'react-i18next';
-import { CreditCard, Users } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { mobileListItemStyles } from '@/lib/ui-styles';
 import type { ResourceGroup, ResourceGroupStatus } from '@/api/resource/types';
@@ -23,7 +22,6 @@ export interface MobileResourceGroupCardProps {
   group: ResourceGroup;
   planName?: string;
   planType?: PlanType;
-  memberCount?: number;
   onCardPress: (group: ResourceGroup) => void;
 }
 
@@ -42,18 +40,21 @@ const STATUS_CONFIG: Record<ResourceGroupStatus, { labelKey: string; className: 
   },
 };
 
-const PLAN_TYPE_CONFIG: Record<PlanType, { labelKey: string; className: string }> = {
+const PLAN_TYPE_CONFIG: Record<PlanType, { labelKey: string; shortLabel: string; className: string }> = {
   node: {
     labelKey: 'resourceGroups.planTypes.node',
-    className: 'text-primary',
+    shortLabel: 'N',
+    className: 'bg-primary/10 text-primary',
   },
   forward: {
     labelKey: 'resourceGroups.planTypes.forward',
-    className: 'text-success',
+    shortLabel: 'F',
+    className: 'bg-success/10 text-success',
   },
   hybrid: {
     labelKey: 'resourceGroups.planTypes.hybrid',
-    className: 'text-info',
+    shortLabel: 'H',
+    className: 'bg-info/10 text-info',
   },
 };
 
@@ -96,7 +97,6 @@ export const MobileResourceGroupCard = ({
   group,
   planName,
   planType,
-  memberCount = 0,
   onCardPress,
 }: MobileResourceGroupCardProps) => {
   const { t } = useTranslation();
@@ -116,40 +116,35 @@ export const MobileResourceGroupCard = ({
       }}
       className={mobileListItemStyles}
     >
-      {/* Main content */}
+      {/* Left: Identity + metadata */}
       <div className="flex-1 min-w-0">
-        {/* Row 1: Name */}
+        {/* Row 1: Plan type badge + Name */}
         <div className="flex items-center gap-2 mb-1">
+          {planTypeConfig && (
+            <span
+              className={cn(
+                'inline-flex items-center justify-center',
+                'size-5 rounded text-[10px] font-bold shrink-0',
+                planTypeConfig.className
+              )}
+            >
+              {planTypeConfig.shortLabel}
+            </span>
+          )}
           <span className="text-sm font-medium text-foreground truncate">
             {group.name}
           </span>
         </div>
 
-        {/* Row 2: Plan + Plan type + Member count */}
-        <div className="flex items-center gap-2 text-xs text-muted-foreground">
-          <CreditCard className="size-3 shrink-0" />
-          <span className={cn('truncate max-w-[120px]', !planName && 'italic')}>
+        {/* Row 2: Plan name */}
+        <div className="text-xs text-muted-foreground">
+          <span className={cn('truncate', !planName && 'italic')}>
             {planName || t('subscription.noPlan')}
-          </span>
-
-          {planTypeConfig && (
-            <>
-              <span className="text-border">·</span>
-              <span className={cn('shrink-0', planTypeConfig.className)}>
-                {t(planTypeConfig.labelKey)}
-              </span>
-            </>
-          )}
-
-          <span className="text-border">·</span>
-          <span className="flex items-center gap-1 shrink-0">
-            <Users className="size-3" />
-            <span className="tabular-nums">{memberCount}</span>
           </span>
         </div>
       </div>
 
-      {/* Right side: Status */}
+      {/* Right: Status */}
       <StatusBadge status={group.status} t={t} />
     </div>
   );

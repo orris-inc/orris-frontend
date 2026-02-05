@@ -98,8 +98,8 @@ export function SubscriptionPlansManagementPage() {
 
   // Page header metadata
   const headerMetadata = useMemo((): PageHeaderMeta[] => [
-    { icon: CheckCircle2, text: `${stats.active} ${t('common.status.active')}` },
-    { icon: XCircle, text: `${stats.inactive} ${t('common.status.inactive')}` },
+    { icon: CheckCircle2, text: `${stats.active} ${t('common.status.enabled')}` },
+    { icon: XCircle, text: `${stats.inactive} ${t('common.status.disabled')}` },
     { icon: Globe, text: `${stats.publicPlans} ${t('admin.plans.public')}` },
     { icon: Lock, text: `${stats.privatePlans} ${t('admin.plans.private')}` },
   ], [stats, t]);

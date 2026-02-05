@@ -40,8 +40,8 @@ export const createRoleFilterConfig = (
 
 /** Node status options */
 export const NODE_STATUS_OPTIONS: FilterOption[] = [
-  { value: 'active', label: 'common.status.active' },
-  { value: 'inactive', label: 'common.status.inactive' },
+  { value: 'active', label: 'common.status.enabled' },
+  { value: 'inactive', label: 'common.status.disabled' },
   { value: 'maintenance', label: 'common.status.maintenance' },
 ];
 
@@ -63,8 +63,8 @@ export const ONLINE_STATUS_OPTIONS: FilterOption[] = [
 
 /** User status options */
 export const USER_STATUS_OPTIONS: FilterOption[] = [
-  { value: 'active', label: 'common.status.active' },
-  { value: 'inactive', label: 'common.status.inactive' },
+  { value: 'active', label: 'common.status.enabled' },
+  { value: 'inactive', label: 'common.status.disabled' },
   { value: 'pending', label: 'common.status.pending' },
   { value: 'suspended', label: 'common.status.suspended' },
 ];

@@ -109,8 +109,8 @@ export const NodeFilters = ({
         </SelectTrigger>
         <SelectContent>
           <SelectItem value="all">{t('filter.all')}</SelectItem>
-          <SelectItem value="active">{t('common.status.active')}</SelectItem>
-          <SelectItem value="inactive">{t('common.status.inactive')}</SelectItem>
+          <SelectItem value="active">{t('common.status.enabled')}</SelectItem>
+          <SelectItem value="inactive">{t('common.status.disabled')}</SelectItem>
         </SelectContent>
       </Select>
 

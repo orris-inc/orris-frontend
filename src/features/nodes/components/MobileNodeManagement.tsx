@@ -129,8 +129,8 @@ export const MobileNodeManagement = ({
       { value: 'all', label: t('filter.all'), count: total },
       { value: 'online', label: t('common.status.online'), count: online },
       { value: 'offline', label: t('common.status.offline'), count: offline },
-      { value: 'active', label: t('common.status.active'), count: active },
-      { value: 'inactive', label: t('common.status.inactive'), count: inactive },
+      { value: 'active', label: t('common.status.enabled'), count: active },
+      { value: 'inactive', label: t('common.status.disabled'), count: inactive },
       { value: 'maintenance', label: t('common.status.maintenance'), count: maintenance },
     ];
   }, [nodes, total, t]);

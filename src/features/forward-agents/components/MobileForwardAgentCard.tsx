@@ -17,6 +17,7 @@ import {
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { mobileListItemStyles } from '@/lib/ui-styles';
+import { ENABLED_STATUS_CONFIG } from '@/shared/constants/status-config';
 import type { ForwardAgent } from '@/api/forward';
 
 // ============================================================================
@@ -79,18 +80,22 @@ const StatusBadge = memo(({
   status: string;
   t: (key: string) => string;
 }) => {
-  const isEnabled = status === 'enabled';
+  const config = ENABLED_STATUS_CONFIG[status] || {
+    labelKey: 'common.status.unknown',
+    variant: 'default' as const,
+  };
+  const colorClass = status === 'enabled'
+    ? 'bg-success/10 text-success'
+    : 'bg-muted text-muted-foreground';
 
   return (
     <span
       className={cn(
         'inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium',
-        isEnabled
-          ? 'bg-success/10 text-success'
-          : 'bg-muted text-muted-foreground'
+        colorClass
       )}
     >
-      {isEnabled ? t('common.status.enabled') : t('common.status.disabled')}
+      {t(config.labelKey)}
     </span>
   );
 });

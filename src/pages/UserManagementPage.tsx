@@ -106,14 +106,14 @@ export function UserManagementPage() {
   // Page header metadata
   const headerMetadata = useMemo((): PageHeaderMeta[] => {
     const items: PageHeaderMeta[] = [
-      { icon: CheckCircle2, text: `${stats.active} ${t('common.status.active')}` },
+      { icon: CheckCircle2, text: `${stats.active} ${t('common.status.enabled')}` },
     ];
 
     if (stats.pending > 0) {
       items.push({ icon: Clock, text: `${stats.pending} ${t('common.status.pending')}` });
     }
 
-    items.push({ icon: XCircle, text: `${stats.inactive} ${t('common.status.inactive')}` });
+    items.push({ icon: XCircle, text: `${stats.inactive} ${t('common.status.disabled')}` });
 
     if (stats.suspended > 0) {
       items.push({ icon: UserX, text: `${stats.suspended} ${t('common.status.suspended')}` });

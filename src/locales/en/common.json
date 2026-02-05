@@ -40,8 +40,6 @@
       "continue": "Continue",
       "apply": "Apply",
       "clear": "Clear",
-      "activate": "Activate",
-      "deactivate": "Deactivate",
       "viewDetail": "View Detail"
     },
     "labels": {
@@ -70,8 +68,6 @@
       "disabledShort": "Off",
       "online": "Online",
       "offline": "Offline",
-      "active": "Active",
-      "inactive": "Inactive",
       "pending": "Pending",
       "suspended": "Suspended",
       "deleted": "Deleted",
@@ -502,8 +498,8 @@
     "deleteConfirmTitle": "Confirm Deletion",
     "deleteConfirmDescription": "Delete? This cannot be undone.",
     "status": {
-      "activated": "Activated",
-      "deactivated": "Deactivated"
+      "activated": "Enabled",
+      "deactivated": "Disabled"
     },
     "tabs": {
       "basicInfo": "Basic Info",
@@ -629,7 +625,9 @@
       "totalUpload": "Total Upload",
       "totalDownload": "Total Download",
       "totalTraffic": "Total Traffic",
-      "activeUsers": "Active Users"
+      "activeUsers": "Active Users",
+      "activeSubscriptions": "Active Subs",
+      "totalForwardRules": "Forward Rules"
     },
     "quickAccess": {
       "title": "Quick Access",
@@ -706,11 +704,9 @@
         "copyNode": "Copy Node",
         "generateToken": "Generate Token",
         "broadcastUrl": "Broadcast URL",
-        "deactivate": "Deactivate Node",
-        "activate": "Activate Node",
         "delete": "Delete Node",
-        "clickToDeactivate": "Click to deactivate",
-        "clickToActivate": "Click to activate"
+        "clickToDeactivate": "Click to disable",
+        "clickToActivate": "Click to enable"
       },
       "tooltip": {
         "agentPort": "Agent Port",
@@ -2048,7 +2044,7 @@
         "billingCyclePlaceholder": "Billing Cycle",
         "pricePlaceholder": "Price",
         "currencyPlaceholder": "Currency",
-        "activatePricing": "Activate this pricing",
+        "activatePricing": "Enable this pricing",
         "nodeLimits": "Node Limits",
         "trafficLimit": "Monthly Traffic Limit (GB)",
         "deviceLimit": "Device Limit",
@@ -2085,8 +2081,8 @@
         "trial": "Trial"
       },
       "actions": {
-        "activatePlan": "Activate Plan",
-        "deactivatePlan": "Deactivate Plan",
+        "activatePlan": "Enable Plan",
+        "deactivatePlan": "Disable Plan",
         "deletePlan": "Delete Plan",
         "duplicate": "Duplicate",
         "viewSubscriptions": "View Subscriptions"
@@ -2568,7 +2564,7 @@
     "autoRenewal": "Auto Renewal",
     "manualRenewal": "Manual Renewal",
     "noRenewal": "No Renewal",
-    "isActive": "Is Active",
+    "isActive": "Is Enabled",
     "isExpired": "Is Expired",
     "cancelledAt": "Cancelled At",
     "cancelReason": "Cancellation Reason",
@@ -2576,7 +2572,7 @@
     "uuid": "UUID",
     "noPlan": "No plan associated",
     "unknownPlan": "Unknown Plan",
-    "activateSubscription": "Activate Subscription",
+    "activateSubscription": "Enable Subscription",
     "cancel": "Cancel Subscription",
     "renew": "Renew",
     "renewSubscription": "Renew Subscription",
@@ -2709,11 +2705,11 @@
     "traffic": "Traffic",
     "types": "Types",
     "ruleTypes": {
-      "socks5Proxy": "SOCKS5",
-      "httpProxy": "HTTP",
-      "relayTunnel": "Relay",
-      "nodeProxy": "Node",
-      "chain": "Chain"
+      "direct": "Direct",
+      "entry": "Entry",
+      "chain": "Chain",
+      "direct_chain": "Direct Chain",
+      "external": "External"
     }
   },
   "fields": {
@@ -2765,7 +2761,12 @@
     "onlineStatus": "Online Status",
     "role": "Role",
     "allRoles": "All Roles",
-    "sortByUpdatedAt": "Updated"
+    "sortByUpdatedAt": "Updated",
+    "dateRange": {
+      "label": "Date Range",
+      "last90days": "Last 90 Days",
+      "custom": "Custom"
+    }
   },
   "subscriptionStatus": {
     "pendingPayment": "Pending Payment",
@@ -2776,8 +2777,8 @@
   "messages": {
     "subscriptionCreateSuccess": "Subscription created successfully",
     "subscriptionCreateFailed": "Failed to create subscription",
-    "subscriptionActivated": "Subscription activated",
-    "subscriptionActivateFailed": "Failed to activate subscription",
+    "subscriptionActivated": "Subscription enabled",
+    "subscriptionActivateFailed": "Failed to enable subscription",
     "subscriptionCancelled": "Subscription cancelled",
     "subscriptionCancelFailed": "Failed to cancel subscription",
     "subscriptionRenewed": "Subscription renewed",
@@ -2846,7 +2847,7 @@
       "comingSoon": "Coming Soon"
     },
     "subscriptions": {
-      "showActiveOnly": "Show active only",
+      "showActiveOnly": "Show enabled only",
       "showAll": "Show all ({{count}})"
     }
   },
@@ -3452,7 +3453,10 @@
       "instruction2": " to complete binding:",
       "copied": "Copied!",
       "clickToCopy": "Click to copy",
-      "codeExpiry": "Code expires in 10 minutes"
+      "codeExpiry": "Code expires in 10 minutes",
+      "codeExpiryAt": "Code expires at {{time}}",
+      "oneClickBind": "Bind Telegram",
+      "orManualBind": "or bind manually"
     }
   },
   "userNodes": {

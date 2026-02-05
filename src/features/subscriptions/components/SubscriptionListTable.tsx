@@ -232,7 +232,7 @@ export const SubscriptionListTable: React.FC<SubscriptionListTableProps> = ({
                 onClick={() => onActivate(subscription)}
               >
                 <Play className="size-4" />
-                <span className="ml-1">{t('common.actions.activate')}</span>
+                <span className="ml-1">{t('common.actions.enable')}</span>
               </Button>
             )}
             {canUnsuspend && onUnsuspend && (
@@ -362,7 +362,7 @@ export const SubscriptionListTable: React.FC<SubscriptionListTableProps> = ({
         {canActivate && onActivate && (
           <ContextMenuItem onClick={() => onActivate(subscription)}>
             <Play className="mr-2 size-4" />
-            {t('common.actions.activate')}
+            {t('common.actions.enable')}
           </ContextMenuItem>
         )}
         {canUnsuspend && onUnsuspend && (

@@ -33,11 +33,11 @@ const STATUS_CONFIG: Record<
   { labelKey: string; className: string }
 > = {
   active: {
-    labelKey: 'common.status.active',
+    labelKey: 'common.status.enabled',
     className: 'bg-success/10 text-success',
   },
   inactive: {
-    labelKey: 'common.status.inactive',
+    labelKey: 'common.status.disabled',
     className: 'bg-muted text-muted-foreground',
   },
   maintenance: {

@@ -243,7 +243,7 @@ export const AddMembersDialog: React.FC<AddMembersDialogProps> = ({
                           </p>
                         </div>
                         <Badge variant={isActive ? 'default' : 'secondary'} className="flex-shrink-0">
-                          {isActive ? (type === 'nodes' ? t('common.status.active') : t('common.status.enabled')) : (type === 'nodes' ? t('common.status.inactive') : t('common.status.stopped'))}
+                          {isActive ? (type === 'nodes' ? t('common.status.enabled') : t('common.status.enabled')) : (type === 'nodes' ? t('common.status.disabled') : t('common.status.stopped'))}
                         </Badge>
                       </label>
                     );

@@ -38,8 +38,8 @@ export const EditUserDialog: React.FC<EditUserDialogProps> = ({
 
   // Build status options with translations
   const statusOptions = useMemo(() => [
-    { value: 'active' as UserStatus, label: t('common.status.active') },
-    { value: 'inactive' as UserStatus, label: t('common.status.inactive') },
+    { value: 'active' as UserStatus, label: t('common.status.enabled') },
+    { value: 'inactive' as UserStatus, label: t('common.status.disabled') },
     { value: 'pending' as UserStatus, label: t('common.status.pending') },
     { value: 'suspended' as UserStatus, label: t('common.status.suspended') },
   ], [t]);

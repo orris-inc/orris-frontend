@@ -75,6 +75,8 @@ export const AdminTelegramBindingCard = () => {
     binding,
     verifyCode,
     botLink,
+    deepBindLink,
+    expiresAt,
     unbind,
     updatePreferences,
     isUnbinding,
@@ -129,7 +131,7 @@ export const AdminTelegramBindingCard = () => {
                   </h3>
                   {isBound && (
                     <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-success/10 text-success ring-1 ring-inset ring-success/20">
-                      {t("common.status.active")}
+                      {t("common.status.enabled")}
                     </span>
                   )}
                 </div>
@@ -176,6 +178,8 @@ export const AdminTelegramBindingCard = () => {
               <AdminVerifyCodeSection
                 verifyCode={verifyCode}
                 botLink={botLink}
+                deepBindLink={deepBindLink}
+                expiresAt={expiresAt}
               />
             )
           )}

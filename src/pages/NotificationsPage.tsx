@@ -142,7 +142,7 @@ export const NotificationsPage = () => {
                 )}
               </div>
               <span className="text-xs sm:text-sm text-muted-foreground">
-                {t('common.status.active')}
+                {t('common.status.enabled')}
               </span>
             </div>
             <div className="flex items-baseline gap-1">

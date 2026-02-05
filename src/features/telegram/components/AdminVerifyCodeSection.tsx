@@ -5,7 +5,7 @@
  * Mobile-first responsive design with proper touch targets
  */
 
-import { Copy, Check, ExternalLink } from "lucide-react";
+import { Copy, Check, ExternalLink, Send } from "lucide-react";
 import { useState, useCallback } from "react";
 import { useTranslation } from "react-i18next";
 import {
@@ -15,10 +15,13 @@ import {
   TooltipProvider,
 } from "@/components/common/Tooltip";
 import { cn } from "@/lib/utils";
+import { formatTime } from "@/shared/utils/date-utils";
 
 interface AdminVerifyCodeSectionProps {
   verifyCode: string;
   botLink?: string;
+  deepBindLink?: string;
+  expiresAt?: string;
 }
 
 /**
@@ -27,6 +30,8 @@ interface AdminVerifyCodeSectionProps {
 export const AdminVerifyCodeSection = ({
   verifyCode,
   botLink,
+  deepBindLink,
+  expiresAt,
 }: AdminVerifyCodeSectionProps) => {
   const { t } = useTranslation();
   const [copied, setCopied] = useState(false);
@@ -57,24 +62,52 @@ export const AdminVerifyCodeSection = ({
 
   return (
     <div className="space-y-3 pt-3 md:pt-4">
-      {/* Instructions */}
-      <p className="text-sm text-muted-foreground">
-        {t("telegramAdmin.verifyCode.instruction1")}
-        {botLink ? (
+      {/* One-click deep link binding */}
+      {deepBindLink ? (
+        <>
           <a
-            href={botLink}
+            href={deepBindLink}
             target="_blank"
             rel="noopener noreferrer"
-            className="text-[brand-telegram] hover:underline inline-flex items-center gap-0.5"
+            className={cn(
+              "w-full flex items-center justify-center gap-2",
+              "px-4 py-3 min-h-12 rounded-lg",
+              "bg-brand-telegram text-white font-medium text-sm sm:text-base",
+              "hover:bg-brand-telegram/90 active:scale-[0.98]",
+              "transition-all duration-200"
+            )}
           >
-            {botUsername}
-            <ExternalLink className="size-3" />
+            <Send className="size-4" />
+            {t("telegramAdmin.verifyCode.oneClickBind")}
+            <ExternalLink className="size-3.5" />
           </a>
-        ) : (
-          <span className="text-[brand-telegram]">{botUsername}</span>
-        )}
-        {t("telegramAdmin.verifyCode.instruction2")}
-      </p>
+
+          <div className="flex items-center gap-3 text-xs text-muted-foreground">
+            <div className="h-px flex-1 bg-border" />
+            <span>{t("telegramAdmin.verifyCode.orManualBind")}</span>
+            <div className="h-px flex-1 bg-border" />
+          </div>
+        </>
+      ) : (
+        /* Instructions - shown only when deep link is not available */
+        <p className="text-sm text-muted-foreground">
+          {t("telegramAdmin.verifyCode.instruction1")}
+          {botLink ? (
+            <a
+              href={botLink}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-[brand-telegram] hover:underline inline-flex items-center gap-0.5"
+            >
+              {botUsername}
+              <ExternalLink className="size-3" />
+            </a>
+          ) : (
+            <span className="text-[brand-telegram]">{botUsername}</span>
+          )}
+          {t("telegramAdmin.verifyCode.instruction2")}
+        </p>
+      )}
 
       {/* Command with verify code - Mobile-optimized touch target */}
       <TooltipProvider>
@@ -123,7 +156,9 @@ export const AdminVerifyCodeSection = ({
       </TooltipProvider>
 
       <p className="text-xs text-muted-foreground text-center">
-        {t("telegramAdmin.verifyCode.codeExpiry")}
+        {expiresAt
+          ? t("telegramAdmin.verifyCode.codeExpiryAt", { time: formatTime(expiresAt) })
+          : t("telegramAdmin.verifyCode.codeExpiry")}
       </p>
     </div>
   );

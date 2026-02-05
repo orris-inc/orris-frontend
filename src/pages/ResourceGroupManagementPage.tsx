@@ -245,7 +245,7 @@ export const ResourceGroupManagementPage = () => {
           icon={Boxes}
           badge={{ label: `${stats.total} ${t('admin.resourceGroups.groupsUnit')}`, variant: 'default' }}
           metadata={[
-            { icon: CheckCircle2, text: `${stats.active} ${t('common.status.active')}` },
+            { icon: CheckCircle2, text: `${stats.active} ${t('common.status.enabled')}` },
             { icon: Link2, text: `${stats.withPlans} ${t('admin.resourceGroups.withPlans')}` },
             ...(stats.lastUpdated ? [{ icon: Clock, text: formatRelativeTime(stats.lastUpdated) }] : []),
           ]}

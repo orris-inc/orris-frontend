@@ -76,9 +76,9 @@ const STATUS_CONFIG: Record<
   NodeStatus,
   { labelKey: string }
 > = {
-  active: { labelKey: 'admin.nodes.statusLabel.active' },
-  inactive: { labelKey: 'admin.nodes.statusLabel.inactive' },
-  maintenance: { labelKey: 'admin.nodes.statusLabel.maintenance' },
+  active: { labelKey: 'common.status.enabled' },
+  inactive: { labelKey: 'common.status.disabled' },
+  maintenance: { labelKey: 'common.status.maintenance' },
 };
 
 const PROTOCOL_CONFIG: Record<NodeProtocol, { label: string; color: string }> = {
@@ -707,12 +707,12 @@ export const NodeDetailSheet = ({
                 {node.status === 'active' ? (
                   <>
                     <PowerOff className="size-4" />
-                    {t('admin.nodes.actions.deactivate')}
+                    {t('common.actions.disable')}
                   </>
                 ) : (
                   <>
                     <Power className="size-4" />
-                    {t('admin.nodes.actions.activate')}
+                    {t('common.actions.enable')}
                   </>
                 )}
               </button>

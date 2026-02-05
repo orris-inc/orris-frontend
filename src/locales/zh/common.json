@@ -40,8 +40,6 @@
       "continue": "继续",
       "apply": "应用",
       "clear": "清空",
-      "activate": "激活",
-      "deactivate": "停用",
       "viewDetail": "查看详情"
     },
     "labels": {
@@ -70,8 +68,6 @@
       "disabledShort": "关",
       "online": "在线",
       "offline": "离线",
-      "active": "激活",
-      "inactive": "未激活",
       "pending": "待处理",
       "suspended": "暂停",
       "deleted": "已删除",
@@ -629,7 +625,9 @@
       "totalUpload": "总上传",
       "totalDownload": "总下载",
       "totalTraffic": "总流量",
-      "activeUsers": "活跃用户"
+      "activeUsers": "活跃用户",
+      "activeSubscriptions": "活跃订阅",
+      "totalForwardRules": "转发规则"
     },
     "quickAccess": {
       "title": "快速访问",
@@ -706,11 +704,9 @@
         "copyNode": "复制节点",
         "generateToken": "生成 Token",
         "broadcastUrl": "下发地址",
-        "deactivate": "停用节点",
-        "activate": "激活节点",
         "delete": "删除节点",
-        "clickToDeactivate": "点击停用",
-        "clickToActivate": "点击激活"
+        "clickToDeactivate": "点击禁用",
+        "clickToActivate": "点击启用"
       },
       "tooltip": {
         "agentPort": "代理端口",
@@ -2048,7 +2044,7 @@
         "billingCyclePlaceholder": "计费周期",
         "pricePlaceholder": "价格（元）",
         "currencyPlaceholder": "货币",
-        "activatePricing": "激活此定价",
+        "activatePricing": "启用此定价",
         "nodeLimits": "节点限制配置",
         "trafficLimit": "月流量上限 (GB)",
         "deviceLimit": "设备数量上限",
@@ -2085,8 +2081,8 @@
         "trial": "试用"
       },
       "actions": {
-        "activatePlan": "激活计划",
-        "deactivatePlan": "停用计划",
+        "activatePlan": "启用计划",
+        "deactivatePlan": "禁用计划",
         "deletePlan": "删除计划",
         "duplicate": "复制",
         "viewSubscriptions": "查看订阅"
@@ -2568,7 +2564,7 @@
     "autoRenewal": "自动续费",
     "manualRenewal": "手动续费",
     "noRenewal": "不续费",
-    "isActive": "是否激活",
+    "isActive": "是否启用",
     "isExpired": "是否过期",
     "cancelledAt": "取消时间",
     "cancelReason": "取消原因",
@@ -2576,7 +2572,7 @@
     "uuid": "UUID",
     "noPlan": "未关联计划",
     "unknownPlan": "未知计划",
-    "activateSubscription": "激活订阅",
+    "activateSubscription": "启用订阅",
     "cancel": "取消订阅",
     "renew": "续费",
     "renewSubscription": "续费订阅",
@@ -2709,11 +2705,11 @@
     "traffic": "流量",
     "types": "类型",
     "ruleTypes": {
-      "socks5Proxy": "SOCKS5",
-      "httpProxy": "HTTP",
-      "relayTunnel": "中继",
-      "nodeProxy": "节点",
-      "chain": "链式"
+      "direct": "直连",
+      "entry": "入口",
+      "chain": "链式",
+      "direct_chain": "直连链",
+      "external": "外部"
     }
   },
   "fields": {
@@ -2765,7 +2761,12 @@
     "onlineStatus": "连接状态",
     "role": "角色",
     "allRoles": "全部角色",
-    "sortByUpdatedAt": "更新时间"
+    "sortByUpdatedAt": "更新时间",
+    "dateRange": {
+      "label": "时间筛选",
+      "last90days": "最近 90 天",
+      "custom": "自定义"
+    }
   },
   "subscriptionStatus": {
     "pendingPayment": "待支付",
@@ -2776,8 +2777,8 @@
   "messages": {
     "subscriptionCreateSuccess": "订阅创建成功",
     "subscriptionCreateFailed": "创建订阅失败",
-    "subscriptionActivated": "订阅已激活",
-    "subscriptionActivateFailed": "激活订阅失败",
+    "subscriptionActivated": "订阅已启用",
+    "subscriptionActivateFailed": "启用订阅失败",
     "subscriptionCancelled": "订阅已取消",
     "subscriptionCancelFailed": "取消订阅失败",
     "subscriptionRenewed": "订阅已续费",
@@ -2846,7 +2847,7 @@
       "comingSoon": "敬请期待"
     },
     "subscriptions": {
-      "showActiveOnly": "只看激活订阅",
+      "showActiveOnly": "只看已启用订阅",
       "showAll": "显示全部 ({{count}})"
     }
   },
@@ -3069,7 +3070,7 @@
     },
     "features": {
       "instant": {
-        "title": "即时激活",
+        "title": "即时启用",
         "desc": "订阅即可使用"
       },
       "flexible": {
@@ -3452,7 +3453,10 @@
       "instruction2": " 发送以下命令完成绑定：",
       "copied": "已复制！",
       "clickToCopy": "点击复制",
-      "codeExpiry": "验证码有效期 10 分钟"
+      "codeExpiry": "验证码有效期 10 分钟",
+      "codeExpiryAt": "验证码有效期至 {{time}}",
+      "oneClickBind": "一键绑定 Telegram",
+      "orManualBind": "或手动绑定"
     }
   },
   "userNodes": {

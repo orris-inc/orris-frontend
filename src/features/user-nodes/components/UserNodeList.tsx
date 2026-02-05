@@ -85,8 +85,8 @@ const STATUS_VARIANTS: Record<string, 'default' | 'secondary' | 'destructive' | 
 };
 
 const STATUS_LABEL_KEYS: Record<string, string> = {
-  active: 'common.status.active',
-  inactive: 'common.status.inactive',
+  active: 'common.status.enabled',
+  inactive: 'common.status.disabled',
   maintenance: 'common.status.maintenance',
 };
 

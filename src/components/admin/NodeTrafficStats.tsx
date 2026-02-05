@@ -24,7 +24,7 @@ interface NodeTrafficStatsProps {
 /**
  * Get status colors based on node status
  */
-const getStatusColors = (status: string) => {
+export const getStatusColors = (status: string) => {
   const statusLower = status.toLowerCase();
   if (statusLower === 'active' || statusLower === 'online') {
     return {

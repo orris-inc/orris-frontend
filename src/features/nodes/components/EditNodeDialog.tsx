@@ -628,8 +628,8 @@ export const EditNodeDialog: React.FC<EditNodeDialogProps> = ({
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="active">{t('common.status.active')}</SelectItem>
-                        <SelectItem value="inactive">{t('common.status.inactive')}</SelectItem>
+                        <SelectItem value="active">{t('common.status.enabled')}</SelectItem>
+                        <SelectItem value="inactive">{t('common.status.disabled')}</SelectItem>
                         <SelectItem value="maintenance">{t('common.status.maintenance')}</SelectItem>
                       </SelectContent>
                     </Select>
@@ -1119,7 +1119,7 @@ export const EditNodeDialog: React.FC<EditNodeDialogProps> = ({
                                 <div className="flex items-center gap-2">
                                   <span className="font-medium text-sm">{group.name}</span>
                                   <Badge variant={group.status === 'active' ? 'default' : 'secondary'} className="text-[10px]">
-                                    {group.status === 'active' ? t('common.status.active') : t('common.status.inactive')}
+                                    {group.status === 'active' ? t('common.status.enabled') : t('common.status.disabled')}
                                   </Badge>
                                 </div>
                                 {group.description && <p className="text-xs text-muted-foreground truncate">{group.description}</p>}

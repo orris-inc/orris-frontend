@@ -9,10 +9,11 @@
  */
 
 import { useTranslation } from 'react-i18next';
-import { Activity, Loader2 } from 'lucide-react';
+import { ArrowUpRight, ArrowDownLeft, Loader2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { mobileListItemStyles } from '@/lib/ui-styles';
-import { ENABLED_STATUS_CONFIG_SHORT } from '@/shared/constants/status-config';
+import { ENABLED_STATUS_CONFIG } from '@/shared/constants/status-config';
+import { formatBytesCompact } from '@/shared/utils/format-utils';
 import type { ForwardRule, ForwardAgent, RuleOverallStatusResponse } from '@/api/forward';
 
 // ============================================================================
@@ -88,7 +89,7 @@ const StatusBadge = ({
   status: 'enabled' | 'disabled';
   t: (key: string) => string;
 }) => {
-  const config = ENABLED_STATUS_CONFIG_SHORT[status] || {
+  const config = ENABLED_STATUS_CONFIG[status] || {
     labelKey: 'common.status.unknown',
     variant: 'default' as const,
   };
@@ -115,7 +116,6 @@ const StatusBadge = ({
 
 export const MobileForwardRuleCard = ({
   rule,
-  agentsMap = {},
   polledStatus,
   isPolling = false,
   onCardPress,
@@ -127,12 +127,6 @@ export const MobileForwardRuleCard = ({
     className: 'bg-muted text-muted-foreground',
   };
   const protocolLabel = PROTOCOL_LABELS[rule.protocol] || rule.protocol;
-
-  // Get entry agent for display
-  const entryAgent = agentsMap[rule.agentId];
-  const entryAddress = entryAgent?.publicAddress
-    ? `${entryAgent.publicAddress}:${rule.listenPort}`
-    : `:${rule.listenPort}`;
 
   // Determine run status
   const getRunStatus = () => {
@@ -156,9 +150,8 @@ export const MobileForwardRuleCard = ({
       }}
       className={mobileListItemStyles}
     >
-      {/* Main content */}
+      {/* Left: Identity + metadata */}
       <div className="flex-1 min-w-0">
-        {/* Row 1: Rule type badge + Name + Run status */}
         <div className="flex items-center gap-2 mb-1">
           <span
             className={cn(
@@ -174,18 +167,35 @@ export const MobileForwardRuleCard = ({
           </span>
           <RunStatusIndicator status={runStatus} isPolling={isPolling} />
         </div>
-
-        {/* Row 2: Protocol + Address */}
-        <div className="flex items-center gap-2 text-xs text-muted-foreground">
-          <Activity className="size-3 shrink-0" />
-          <span className="shrink-0">{protocolLabel}</span>
+        <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+          <span>{t(ruleTypeConfig.labelKey)}</span>
           <span className="text-border">·</span>
-          <span className="font-mono truncate">{entryAddress}</span>
+          <span>{protocolLabel}</span>
         </div>
       </div>
 
-      {/* Right side: Status */}
-      <StatusBadge status={rule.status} t={t} />
+      {/* Right: Status + Traffic pills */}
+      <div className="flex flex-col items-end gap-1.5 shrink-0">
+        <StatusBadge status={rule.status} t={t} />
+        {(rule.uploadBytes > 0 || rule.downloadBytes > 0) && (
+          <span className="inline-flex items-center gap-2 px-2 py-0.5 rounded-full bg-muted/50 text-[11px] font-mono tabular-nums">
+            <span className={cn(
+              'inline-flex items-center gap-0.5',
+              rule.uploadBytes > 0 ? 'text-success' : 'text-muted-foreground/50'
+            )}>
+              <ArrowUpRight className="size-3" />
+              {rule.uploadBytes > 0 ? formatBytesCompact(rule.uploadBytes) : '0B'}
+            </span>
+            <span className={cn(
+              'inline-flex items-center gap-0.5',
+              rule.downloadBytes > 0 ? 'text-info' : 'text-muted-foreground/50'
+            )}>
+              <ArrowDownLeft className="size-3" />
+              {rule.downloadBytes > 0 ? formatBytesCompact(rule.downloadBytes) : '0B'}
+            </span>
+          </span>
+        )}
+      </div>
     </div>
   );
 };

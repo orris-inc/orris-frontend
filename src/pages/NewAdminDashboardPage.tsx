@@ -9,22 +9,25 @@ import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router';
 import { AdminLayout } from '@/layouts/AdminLayout';
 import { useAuthStore } from '@/features/auth/stores/auth-store';
+import { useBreakpoint } from '@/hooks/useBreakpoint';
+import { MobileDashboard } from '@/features/dashboard/components/MobileDashboard';
 import { usePageTitle } from '@/shared/hooks';
 import {
   useAdminTrafficStats,
   useNodeTrafficStats,
   useDashboardStats,
-  getDateRangeFromPreset,
   detectGranularity,
-  type DateRangePreset,
 } from '@/features/admin-traffic';
 import {
   PageHeader,
-  DateRangeSelector,
+  DateRangeFilter,
+  toDateRange,
+  getInitialDateRange,
   LazyTrafficTrendChart,
   TrafficRankingList,
   NodeTrafficStats,
 } from '@/components/admin';
+import type { DateRangeValue } from '@/components/admin';
 import {
   Users,
   CreditCard,
@@ -129,14 +132,15 @@ export function NewAdminDashboardPage() {
 
   const { user } = useAuthStore();
   const navigate = useNavigate();
+  const { isMobile } = useBreakpoint();
   const { stats, loading } = useDashboardStats();
 
   // Traffic analytics state
-  const [dateRangePreset, setDateRangePreset] = useState<DateRangePreset>('last7days');
+  const [dateRangeValue, setDateRangeValue] = useState<DateRangeValue>(() => getInitialDateRange('last7days'));
   const [nodeTrafficPage, setNodeTrafficPage] = useState(1);
 
-  // Get date range from preset
-  const dateRange = getDateRangeFromPreset(dateRangePreset);
+  // Convert to traffic hooks format
+  const dateRange = toDateRange(dateRangeValue);
   const granularity = detectGranularity(dateRange);
 
   // Fetch traffic statistics
@@ -165,6 +169,31 @@ export function NewAdminDashboardPage() {
         <div className="rounded-xl border border-destructive/30 bg-destructive/10 p-4">
           <p className="text-sm text-destructive">{t('admin.dashboard.unableToLoadUser')}</p>
         </div>
+      </AdminLayout>
+    );
+  }
+
+  // Mobile dashboard
+  if (isMobile) {
+    return (
+      <AdminLayout>
+        <MobileDashboard
+          user={user}
+          stats={stats}
+          loading={loading}
+          dateRangeValue={dateRangeValue}
+          onDateRangeChange={setDateRangeValue}
+          trafficOverview={trafficOverview}
+          trafficTrend={trafficTrend}
+          userRanking={userRanking}
+          subscriptionRanking={subscriptionRanking}
+          isTrafficLoading={isTrafficLoading}
+          granularity={granularity}
+          nodeTrafficItems={nodeTrafficItems}
+          nodeTrafficPagination={nodeTrafficPagination}
+          isNodeTrafficLoading={isNodeTrafficLoading}
+          onNodeTrafficPageChange={setNodeTrafficPage}
+        />
       </AdminLayout>
     );
   }
@@ -237,7 +266,7 @@ export function NewAdminDashboardPage() {
           description={t('admin.dashboard.welcomeBack', {
             name: user.displayName || user.email?.split('@')[0],
           })}
-          action={<DateRangeSelector value={dateRangePreset} onChange={setDateRangePreset} />}
+          action={<DateRangeFilter value={dateRangeValue} onChange={setDateRangeValue} />}
         />
 
         {/* Platform Statistics - Tailwind UI Stats Grid */}

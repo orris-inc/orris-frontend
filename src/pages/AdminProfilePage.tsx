@@ -1,15 +1,14 @@
 /**
  * Admin profile settings page
  * Different navigation items from user dashboard:
- * - Profile, Security, Appearance (shared)
+ * - Profile, Security, Notifications, Appearance (shared)
  * - System settings (admin only)
- * - No notifications (user only)
  */
 
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import * as Select from '@radix-ui/react-select';
-import { User, Shield, Palette, Settings, Check, ChevronDown } from 'lucide-react';
+import { User, Shield, Palette, Settings, Bell, Check, ChevronDown } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import { useAuthStore } from '@/features/auth/stores/auth-store';
 import { usePageTitle } from '@/shared/hooks';
@@ -18,8 +17,9 @@ import { ProfileSection } from '@/features/profile/components/sections/ProfileSe
 import { SecuritySection } from '@/features/profile/components/sections/SecuritySection';
 import { AppearanceSection } from '@/features/profile/components/sections/AppearanceSection';
 import { SystemSection } from '@/features/profile/components/sections/SystemSection';
+import { AdminNotificationsSection } from '@/features/profile/components/sections/AdminNotificationsSection';
 
-type AdminProfileSectionType = 'profile' | 'security' | 'appearance' | 'system';
+type AdminProfileSectionType = 'profile' | 'security' | 'notifications' | 'appearance' | 'system';
 
 interface NavItem {
   id: AdminProfileSectionType;
@@ -30,6 +30,7 @@ interface NavItem {
 const navItems: NavItem[] = [
   { id: 'profile', icon: User, labelKey: 'profile.nav.profile' },
   { id: 'security', icon: Shield, labelKey: 'profile.nav.security' },
+  { id: 'notifications', icon: Bell, labelKey: 'profile.nav.notifications' },
   { id: 'appearance', icon: Palette, labelKey: 'profile.nav.appearance' },
   { id: 'system', icon: Settings, labelKey: 'profile.nav.system' },
 ];
@@ -37,6 +38,7 @@ const navItems: NavItem[] = [
 const sectionComponents: Record<AdminProfileSectionType, React.ComponentType> = {
   profile: ProfileSection,
   security: SecuritySection,
+  notifications: AdminNotificationsSection,
   appearance: AppearanceSection,
   system: SystemSection,
 };

@@ -31,12 +31,12 @@ const PLAN_TYPE_LABEL_KEYS: Record<string, string> = {
 
 const STATUS_CONFIG: Record<string, { labelKey: string; color: string; icon: React.ReactNode }> = {
   active: {
-    labelKey: 'common.status.active',
+    labelKey: 'common.status.enabled',
     color: 'text-emerald-600 bg-emerald-100 dark:bg-emerald-900/30',
     icon: <CheckCircle2 className="size-3.5" />,
   },
   inactive: {
-    labelKey: 'common.status.inactive',
+    labelKey: 'common.status.disabled',
     color: 'text-gray-600 bg-gray-100 dark:bg-gray-800',
     icon: <XCircle className="size-3.5" />,
   },

@@ -164,7 +164,7 @@ export const SubscriptionDetailDialog: React.FC<SubscriptionDetailDialogProps> =
                         {subscription.plan.pricings.map((pricing) => (
                           <div key={pricing.billingCycle} className="text-sm">
                             {pricing.billingCycle}: {pricing.price} {pricing.currency}
-                            {!pricing.isActive && <span className="text-xs text-muted-foreground ml-1">({t('common.status.inactive')})</span>}
+                            {!pricing.isActive && <span className="text-xs text-muted-foreground ml-1">({t('common.status.disabled')})</span>}
                           </div>
                         ))}
                       </div>

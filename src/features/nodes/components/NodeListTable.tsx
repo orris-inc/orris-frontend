@@ -197,12 +197,12 @@ export const NodeListTable: React.FC<NodeListTableProps> = ({
       {node.status === 'active' ? (
         <ContextMenuItem onClick={() => onDeactivate(node)}>
           <PowerOff className="mr-2 size-4" />
-          {t('admin.nodes.actions.deactivate')}
+          {t('common.actions.disable')}
         </ContextMenuItem>
       ) : (
         <ContextMenuItem onClick={() => onActivate(node)}>
           <Power className="mr-2 size-4" />
-          {t('admin.nodes.actions.activate')}
+          {t('common.actions.enable')}
         </ContextMenuItem>
       )}
       <ContextMenuItem onClick={() => onDelete(node)} className="text-destructive">
@@ -233,12 +233,12 @@ export const NodeListTable: React.FC<NodeListTableProps> = ({
       {node.status === 'active' ? (
         <DropdownMenuItem onSelect={() => onDeactivate(node)}>
           <PowerOff className="mr-2 size-4" />
-          {t('admin.nodes.actions.deactivate')}
+          {t('common.actions.disable')}
         </DropdownMenuItem>
       ) : (
         <DropdownMenuItem onSelect={() => onActivate(node)}>
           <Power className="mr-2 size-4" />
-          {t('admin.nodes.actions.activate')}
+          {t('common.actions.enable')}
         </DropdownMenuItem>
       )}
       <DropdownMenuItem onSelect={() => onDelete(node)} className="text-destructive">

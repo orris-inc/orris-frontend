@@ -99,7 +99,7 @@ export const ResourceGroupMobileList: React.FC<ResourceGroupMobileListProps> = (
             <DropdownMenuSeparator />
             <DropdownMenuItem onSelect={() => onToggleStatus(resourceGroup)}>
               <Power className="mr-2 size-4" />
-              {resourceGroup.status === 'active' ? t('common.actions.deactivate') : t('common.actions.activate')}
+              {resourceGroup.status === 'active' ? t('common.actions.disable') : t('common.actions.enable')}
             </DropdownMenuItem>
             <DropdownMenuSeparator />
             <DropdownMenuItem
@@ -191,7 +191,7 @@ export const ResourceGroupMobileList: React.FC<ResourceGroupMobileListProps> = (
                         }`} />
                       </button>
                     </TooltipTrigger>
-                    <TooltipContent>{resourceGroup.status === 'active' ? t('common.actions.deactivate') : t('common.actions.activate')}</TooltipContent>
+                    <TooltipContent>{resourceGroup.status === 'active' ? t('common.actions.disable') : t('common.actions.enable')}</TooltipContent>
                   </Tooltip>
                   {renderDropdownMenu(resourceGroup)}
                 </div>

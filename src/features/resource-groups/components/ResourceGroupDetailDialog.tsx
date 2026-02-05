@@ -270,7 +270,7 @@ export const ResourceGroupDetailDialog: React.FC<ResourceGroupDetailDialogProps>
             <DialogTitle className="flex items-center gap-2">
               {resourceGroup.name}
               <AdminBadge variant={resourceGroup.status === 'active' ? 'success' : 'default'}>
-                {resourceGroup.status === 'active' ? t('common.status.active') : t('common.status.inactive')}
+                {resourceGroup.status === 'active' ? t('common.status.enabled') : t('common.status.disabled')}
               </AdminBadge>
             </DialogTitle>
             <DialogDescription>
@@ -500,7 +500,7 @@ export const ResourceGroupDetailDialog: React.FC<ResourceGroupDetailDialogProps>
                           <p className="text-xs text-muted-foreground font-mono truncate">{node.id}</p>
                         </div>
                         <Badge variant={node.status === 'active' ? 'default' : 'secondary'}>
-                          {node.status === 'active' ? t('common.status.active') : t('common.status.inactive')}
+                          {node.status === 'active' ? t('common.status.enabled') : t('common.status.disabled')}
                         </Badge>
                       </label>
                     ))}

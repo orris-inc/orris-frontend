@@ -41,14 +41,14 @@ export interface MobileSubscriptionFiltersSheetProps {
 
 // Status options (8 statuses)
 const STATUS_OPTIONS: { value: SubscriptionStatus; label: string }[] = [
-  { value: 'active', label: 'common.status.active' },
+  { value: 'active', label: 'common.status.enabled' },
   { value: 'trialing', label: 'subscriptionStatus.trialing' },
   { value: 'pending_payment', label: 'subscriptionStatus.pendingPayment' },
   { value: 'past_due', label: 'subscriptionStatus.pastDue' },
   { value: 'suspended', label: 'common.status.suspended' },
   { value: 'cancelled', label: 'common.status.cancelled' },
   { value: 'expired', label: 'common.status.expired' },
-  { value: 'inactive', label: 'common.status.inactive' },
+  { value: 'inactive', label: 'common.status.disabled' },
 ];
 
 // Billing cycle options

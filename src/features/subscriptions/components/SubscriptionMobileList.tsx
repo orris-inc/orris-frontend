@@ -136,7 +136,7 @@ export const SubscriptionMobileList: React.FC<SubscriptionMobileListProps> = ({
         {canActivate && onActivate && (
           <ContextMenuItem onClick={() => onActivate(subscription)}>
             <Play className="mr-2 size-4" />
-            {t('common.actions.activate')}
+            {t('common.actions.enable')}
           </ContextMenuItem>
         )}
         {canUnsuspend && onUnsuspend && (
@@ -235,7 +235,7 @@ export const SubscriptionMobileList: React.FC<SubscriptionMobileListProps> = ({
             {canActivate && onActivate && (
               <DropdownMenuItem onSelect={() => onActivate(subscription)}>
                 <Play className="mr-2 size-4" />
-                {t('common.actions.activate')}
+                {t('common.actions.enable')}
               </DropdownMenuItem>
             )}
             {canRenew && onRenew && (
@@ -347,7 +347,7 @@ export const SubscriptionMobileList: React.FC<SubscriptionMobileListProps> = ({
                           <Play className="size-3.5 text-green-500 hover:text-green-600" />
                         </button>
                       </TooltipTrigger>
-                      <TooltipContent>{t('common.actions.activate')}</TooltipContent>
+                      <TooltipContent>{t('common.actions.enable')}</TooltipContent>
                     </Tooltip>
                   )}
                   {onViewDetail && (

@@ -70,10 +70,10 @@ interface SubscriptionDetailSheetProps {
 
 // Status configuration using CSS variables (synced with SDK 2025-01-14)
 const STATUS_CONFIG: Record<SubscriptionStatus, { labelKey: string; color: string }> = {
-  inactive: { labelKey: 'common.status.inactive', color: 'bg-muted text-muted-foreground' },
+  inactive: { labelKey: 'common.status.disabled', color: 'bg-muted text-muted-foreground' },
   pending_payment: { labelKey: 'subscriptionStatus.pendingPayment', color: 'bg-warning/10 text-warning' },
   trialing: { labelKey: 'subscriptionStatus.trialing', color: 'bg-info/10 text-info' },
-  active: { labelKey: 'common.status.active', color: 'bg-success/10 text-success' },
+  active: { labelKey: 'common.status.enabled', color: 'bg-success/10 text-success' },
   past_due: { labelKey: 'subscriptionStatus.pastDue', color: 'bg-warning/10 text-warning' },
   suspended: { labelKey: 'common.status.suspended', color: 'bg-destructive/10 text-destructive' },
   cancelled: { labelKey: 'common.status.cancelled', color: 'bg-destructive/10 text-destructive' },
@@ -415,7 +415,7 @@ export const SubscriptionDetailSheet: React.FC<SubscriptionDetailSheetProps> = (
                           {subscription.plan.pricings.slice(0, 3).map((pricing) => (
                             <div key={pricing.billingCycle} className="text-xs">
                               {pricing.billingCycle}: ¥{(pricing.price / 100).toFixed(2)}
-                              {!pricing.isActive && <span className="text-muted-foreground ml-1">({t('common.status.inactive')})</span>}
+                              {!pricing.isActive && <span className="text-muted-foreground ml-1">({t('common.status.disabled')})</span>}
                             </div>
                           ))}
                         </div>
@@ -463,7 +463,7 @@ export const SubscriptionDetailSheet: React.FC<SubscriptionDetailSheetProps> = (
                   ) : (
                     <XCircle className="size-4 text-destructive mx-auto" />
                   )}
-                  <div className="text-xs mt-1">{subscription.isActive ? t('common.status.active') : t('common.status.inactive')}</div>
+                  <div className="text-xs mt-1">{subscription.isActive ? t('common.status.enabled') : t('common.status.disabled')}</div>
                 </div>
                 <div className="text-center p-2 rounded-xl bg-muted/30">
                   {subscription.isExpired ? (

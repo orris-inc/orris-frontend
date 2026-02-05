@@ -111,7 +111,7 @@ export function SubscriptionManagementPage() {
   // Page header metadata
   const headerMetadata = useMemo((): PageHeaderMeta[] => {
     const items: PageHeaderMeta[] = [
-      { icon: CheckCircle2, text: `${stats.active} ${t('common.status.active')}` },
+      { icon: CheckCircle2, text: `${stats.active} ${t('common.status.enabled')}` },
     ];
 
     if (stats.trialing > 0) {

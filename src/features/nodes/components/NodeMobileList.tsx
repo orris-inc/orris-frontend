@@ -69,8 +69,8 @@ interface NodeMobileListProps {
 
 // Status configuration with semantic colors
 const STATUS_CONFIG: Record<NodeStatus, { labelKey: string; variant: 'success' | 'default' | 'warning'; icon: React.ElementType }> = {
-  active: { labelKey: 'common.status.active', variant: 'success', icon: CheckCircle2 },
-  inactive: { labelKey: 'common.status.inactive', variant: 'default', icon: XCircle },
+  active: { labelKey: 'common.status.enabled', variant: 'success', icon: CheckCircle2 },
+  inactive: { labelKey: 'common.status.disabled', variant: 'default', icon: XCircle },
   maintenance: { labelKey: 'common.status.maintenance', variant: 'warning', icon: Wrench },
 };
 
@@ -217,12 +217,12 @@ export const NodeMobileList: React.FC<NodeMobileListProps> = ({
             {node.status === 'active' ? (
               <DropdownMenuItem onSelect={() => onDeactivate(node)}>
                 <PowerOff className="mr-2 size-4" />
-                {t('common.actions.deactivate')}
+                {t('common.actions.disable')}
               </DropdownMenuItem>
             ) : (
               <DropdownMenuItem onSelect={() => onActivate(node)}>
                 <Power className="mr-2 size-4" />
-                {t('common.actions.activate')}
+                {t('common.actions.enable')}
               </DropdownMenuItem>
             )}
             <DropdownMenuItem onSelect={() => onDelete(node)} className="text-red-600 dark:text-red-400">
@@ -377,7 +377,7 @@ export const NodeMobileList: React.FC<NodeMobileListProps> = ({
                         )}
                       </button>
                     </TooltipTrigger>
-                    <TooltipContent>{node.status === 'active' ? t('common.actions.disable') : t('common.status.active')}</TooltipContent>
+                    <TooltipContent>{node.status === 'active' ? t('common.actions.disable') : t('common.status.enabled')}</TooltipContent>
                   </Tooltip>
                   {renderDropdownMenu(node)}
                 </div>

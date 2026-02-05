@@ -43,7 +43,7 @@ const formatTraffic = (bytes: number): { value: string; unit: string } => {
   return { value, unit: units[i] };
 };
 
-import { formatDate } from '@/shared/utils/date-utils';
+import { formatDate, isNeverExpiresDate } from '@/shared/utils/date-utils';
 
 /**
  * Get subscription status display configuration
@@ -52,7 +52,7 @@ const getStatusConfig = (status: string) => {
   switch (status) {
     case "active":
       return {
-        labelKey: "common.status.active",
+        labelKey: "common.status.enabled",
         variant: "success" as const,
         color: "text-emerald-600 dark:text-emerald-400",
         bgColor: "bg-emerald-500/10",
@@ -230,8 +230,9 @@ export const SubscriptionOverviewTab: React.FC<
 > = ({ subscription, onResetLink, isResettingLink }) => {
   const { t } = useTranslation();
   const statusConfig = getStatusConfig(subscription.status);
-  const daysRemaining = getDaysRemaining(subscription.currentPeriodEnd);
-  const totalDays = getTotalDays(
+  const neverExpires = isNeverExpiresDate(subscription.currentPeriodEnd);
+  const daysRemaining = neverExpires ? null : getDaysRemaining(subscription.currentPeriodEnd);
+  const totalDays = neverExpires ? null : getTotalDays(
     subscription.currentPeriodStart,
     subscription.currentPeriodEnd
   );
@@ -304,12 +305,18 @@ export const SubscriptionOverviewTab: React.FC<
           )}
         >
           <span className={cn(getBadgeClass(statusConfig.variant), "text-[10px] px-1.5 py-0 mb-1 inline-block")}>{t(statusConfig.labelKey)}</span>
-          <div className="flex items-baseline gap-0.5">
-            <span className={cn("text-xl font-bold tabular-nums", statusConfig.color)}>
-              {daysRemaining !== null ? daysRemaining : "-"}
+          {neverExpires ? (
+            <span className={cn("text-sm font-bold", statusConfig.color)}>
+              {t("common.fields.neverExpires")}
             </span>
-            <span className="text-[10px] text-muted-foreground">{t("common.days")}</span>
-          </div>
+          ) : (
+            <div className="flex items-baseline gap-0.5">
+              <span className={cn("text-xl font-bold tabular-nums", statusConfig.color)}>
+                {daysRemaining !== null ? daysRemaining : "-"}
+              </span>
+              <span className="text-[10px] text-muted-foreground">{t("common.days")}</span>
+            </div>
+          )}
         </div>
 
         {/* Traffic - compact */}
@@ -333,7 +340,9 @@ export const SubscriptionOverviewTab: React.FC<
             <Clock className="size-3 text-primary" />
             <span className="text-[10px] text-muted-foreground">{t("userSubscription.expires")}</span>
           </div>
-          <p className="text-xs font-medium tabular-nums leading-tight">{formatDate(subscription.currentPeriodEnd)}</p>
+          <p className="text-xs font-medium tabular-nums leading-tight">
+            {neverExpires ? t("common.fields.neverExpires") : formatDate(subscription.currentPeriodEnd)}
+          </p>
         </div>
       </div>
 
@@ -374,20 +383,31 @@ export const SubscriptionOverviewTab: React.FC<
 
             {/* Main Value */}
             <div className="flex-1 flex flex-col justify-center">
-              <div className="flex items-baseline gap-1.5">
-                <span
-                  className={cn(
-                    "text-3xl @sm:text-4xl font-bold tabular-nums tracking-tight",
-                    statusConfig.color
-                  )}
-                >
-                  {daysRemaining !== null ? daysRemaining : "-"}
-                </span>
-                <span className="text-sm text-muted-foreground font-medium">
-                  {t("common.days")}
-                </span>
-              </div>
-              <p className="text-xs text-muted-foreground mt-0.5">{t("userSubscription.remainingValidity")}</p>
+              {neverExpires ? (
+                <>
+                  <span className={cn("text-xl @sm:text-2xl font-bold tracking-tight", statusConfig.color)}>
+                    {t("common.fields.neverExpires")}
+                  </span>
+                  <p className="text-xs text-muted-foreground mt-0.5">{t("userSubscription.remainingValidity")}</p>
+                </>
+              ) : (
+                <>
+                  <div className="flex items-baseline gap-1.5">
+                    <span
+                      className={cn(
+                        "text-3xl @sm:text-4xl font-bold tabular-nums tracking-tight",
+                        statusConfig.color
+                      )}
+                    >
+                      {daysRemaining !== null ? daysRemaining : "-"}
+                    </span>
+                    <span className="text-sm text-muted-foreground font-medium">
+                      {t("common.days")}
+                    </span>
+                  </div>
+                  <p className="text-xs text-muted-foreground mt-0.5">{t("userSubscription.remainingValidity")}</p>
+                </>
+              )}
             </div>
 
             {/* Period Progress */}
@@ -441,14 +461,14 @@ export const SubscriptionOverviewTab: React.FC<
             <div className="flex items-center justify-between py-1 @sm:py-1.5 border-b border-border/50">
               <span className="text-[10px] @sm:text-xs text-muted-foreground">{t("subscription.endDate")}</span>
               <span className="text-[10px] @sm:text-xs font-medium tabular-nums">
-                {formatDate(subscription.currentPeriodEnd)}
+                {neverExpires ? t("common.fields.neverExpires") : formatDate(subscription.currentPeriodEnd)}
               </span>
             </div>
             {/* Total Days */}
             <div className="flex items-center justify-between py-1 @sm:py-1.5">
               <span className="text-[10px] @sm:text-xs text-muted-foreground">{t("userSubscription.cycleDays")}</span>
               <span className="text-[10px] @sm:text-xs font-medium tabular-nums">
-                {totalDays !== null ? `${totalDays} ${t("common.days")}` : "-"}
+                {neverExpires ? t("common.fields.neverExpires") : totalDays !== null ? `${totalDays} ${t("common.days")}` : "-"}
               </span>
             </div>
           </div>

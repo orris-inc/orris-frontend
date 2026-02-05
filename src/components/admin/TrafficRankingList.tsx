@@ -20,7 +20,7 @@ interface TrafficRankingListProps {
 /**
  * Get ranking badge color based on rank position
  */
-const getRankingColors = (rank: number) => {
+export const getRankingColors = (rank: number) => {
   switch (rank) {
     case 1:
       return {

@@ -55,7 +55,7 @@ import {
 import { ActionSheet } from '@/components/common/sheet/ActionSheet';
 import { cn } from '@/lib/utils';
 import { formatDateTime, isNeverExpiresDate } from '@/shared/utils/date-utils';
-import { ENABLED_STATUS_CONFIG_SHORT } from '@/shared/constants/status-config';
+import { ENABLED_STATUS_CONFIG } from '@/shared/constants/status-config';
 import type { ForwardAgent, AgentSystemStatus, BlockedProtocol } from '@/api/forward';
 
 // ============================================================================
@@ -445,7 +445,7 @@ export const ForwardAgentDetailSheet = ({
 
   if (!agent) return null;
 
-  const statusConfig = ENABLED_STATUS_CONFIG_SHORT[agent.status] || {
+  const statusConfig = ENABLED_STATUS_CONFIG[agent.status] || {
     labelKey: 'common.status.unknown',
     variant: 'default' as const,
   };

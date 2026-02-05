@@ -1,16 +1,16 @@
 /**
- * ResourceGroupDetailSheet - Mobile resource group details with actions
+ * ResourceGroupDetailSheet - Mobile resource group details with member management
  *
  * Design: Tailwind Application UI style
  * - Stacked layout with description lists
  * - Card sections with dividers
  * - Hero header with status indicator
- * - Stats cards for member counts
+ * - Interactive member lists with add/remove actions
  *
  * Features:
  * - Full resource group details in a bottom sheet
  * - Associated plan information
- * - Member statistics (nodes, forward agents, forward rules)
+ * - Member management (nodes, forward agents, forward rules)
  * - Primary actions in footer
  * - ActionSheet for secondary actions
  */
@@ -33,6 +33,7 @@ import {
   Loader2,
   Copy,
   Check,
+  Plus,
 } from 'lucide-react';
 import {
   Sheet,
@@ -50,7 +51,9 @@ import {
   useGroupNodes,
   useGroupForwardAgents,
   useGroupForwardRules,
+  useGroupMemberManagement,
 } from '../hooks/useResourceGroups';
+import { AddMembersDialog } from './AddMembersDialog';
 import type { ResourceGroup, ResourceGroupStatus } from '@/api/resource/types';
 import type { SubscriptionPlan, PlanType } from '@/api/subscription/types';
 
@@ -167,39 +170,154 @@ const DetailRow = ({
 };
 
 /**
- * Statistics card for member counts - compact inline style
+ * Member section - header with count + add button, member list, empty state
  */
-const StatCard = ({
-  icon,
-  label,
-  value,
-  isLoading,
-  colorClass,
-  unit,
-}: {
+interface MemberItem {
+  id: string;
+  name: string;
+  status: string;
+}
+
+interface MemberSectionProps<T extends MemberItem> {
   icon: React.ReactNode;
   label: string;
-  value: number;
+  total: number;
   isLoading: boolean;
   colorClass: string;
-  unit: string;
-}) => (
-  <div className="flex items-center gap-3 px-3 py-2.5 min-h-[44px]">
-    <div className={cn('size-8 rounded-lg flex items-center justify-center shrink-0', colorClass)}>
-      {icon}
-    </div>
-    <div className="flex-1 min-w-0">
-      <div className="text-xs text-muted-foreground">{label}</div>
-      <div className="text-sm font-medium tabular-nums">
+  iconColorClass: string;
+  items: T[];
+  onAdd: () => void;
+  onRemove: (id: string) => void;
+  isRemoving: boolean;
+  emptyText: string;
+  addText: string;
+  renderSubline?: (item: T) => string;
+  statusBadge: (status: string) => { label: string; active: boolean };
+}
+
+const MemberSection = <T extends MemberItem>({
+  icon,
+  label,
+  total,
+  isLoading,
+  colorClass,
+  iconColorClass,
+  items,
+  onAdd,
+  onRemove,
+  isRemoving,
+  emptyText,
+  addText,
+  renderSubline,
+  statusBadge,
+}: MemberSectionProps<T>) => {
+  const [removingId, setRemovingId] = useState<string | null>(null);
+
+  const handleRemove = async (id: string) => {
+    setRemovingId(id);
+    try {
+      await onRemove(id);
+    } finally {
+      setRemovingId(null);
+    }
+  };
+
+  return (
+    <div>
+      {/* Header */}
+      <div className="flex items-center justify-between mb-2 px-1">
+        <div className="flex items-center gap-2">
+          <div className={cn('size-6 rounded-md flex items-center justify-center shrink-0', colorClass)}>
+            {icon}
+          </div>
+          <span className="text-[11px] font-medium text-muted-foreground uppercase tracking-wide">
+            {label}
+          </span>
+          {!isLoading && (
+            <span className="text-[11px] text-muted-foreground/60 tabular-nums">
+              ({total})
+            </span>
+          )}
+        </div>
+        <button
+          type="button"
+          onClick={onAdd}
+          className={cn(
+            'flex items-center gap-1 px-2.5 py-1 rounded-md',
+            'text-xs font-medium',
+            iconColorClass,
+            colorClass,
+            'active:opacity-80 transition-opacity',
+            'min-h-[32px]'
+          )}
+        >
+          <Plus className="size-3.5" />
+          {addText}
+        </button>
+      </div>
+
+      {/* Content */}
+      <div className="overflow-hidden rounded-lg bg-card border border-border">
         {isLoading ? (
-          <Loader2 className="size-4 animate-spin" />
+          <div className="flex items-center justify-center py-6">
+            <Loader2 className="size-5 animate-spin text-muted-foreground" />
+          </div>
+        ) : items.length === 0 ? (
+          <div className="flex flex-col items-center justify-center py-6 text-muted-foreground">
+            <div className={cn('size-10 rounded-xl flex items-center justify-center mb-2', colorClass)}>
+              {icon}
+            </div>
+            <p className="text-xs">{emptyText}</p>
+          </div>
         ) : (
-          `${value} ${unit}`
+          <div className="divide-y divide-border">
+            {items.map((item) => {
+              const badge = statusBadge(item.status);
+              return (
+                <div key={item.id} className="flex items-center gap-3 px-3 py-2.5 min-h-[44px]">
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2">
+                      <span className="text-sm font-medium truncate">{item.name}</span>
+                      <span className={cn(
+                        'shrink-0 text-[10px] px-1.5 py-0.5 rounded font-medium',
+                        badge.active
+                          ? 'bg-success/10 text-success'
+                          : 'bg-muted text-muted-foreground'
+                      )}>
+                        {badge.label}
+                      </span>
+                    </div>
+                    <p className="text-xs text-muted-foreground font-mono truncate mt-0.5">
+                      {renderSubline ? renderSubline(item) : item.id}
+                    </p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => handleRemove(item.id)}
+                    disabled={isRemoving}
+                    className={cn(
+                      'shrink-0 p-2 -mr-1 rounded-md',
+                      'text-muted-foreground/50 hover:text-destructive hover:bg-destructive/10',
+                      'active:opacity-80 transition-colors',
+                      'disabled:opacity-50',
+                      'min-h-[36px] min-w-[36px] flex items-center justify-center'
+                    )}
+                  >
+                    {removingId === item.id ? (
+                      <Loader2 className="size-4 animate-spin" />
+                    ) : (
+                      <Trash2 className="size-4" />
+                    )}
+                  </button>
+                </div>
+              );
+            })}
+          </div>
         )}
       </div>
     </div>
-  </div>
-);
+  );
+};
 
 // ============================================================================
 // Main Component
@@ -216,25 +334,44 @@ export const ResourceGroupDetailSheet = ({
 }: ResourceGroupDetailSheetProps) => {
   const { t } = useTranslation();
   const [actionSheetOpen, setActionSheetOpen] = useState(false);
+  const [addNodesOpen, setAddNodesOpen] = useState(false);
+  const [addAgentsOpen, setAddAgentsOpen] = useState(false);
+  const [addRulesOpen, setAddRulesOpen] = useState(false);
 
-  // Fetch member counts
-  const { pagination: nodesPagination, isLoading: isLoadingNodes } = useGroupNodes({
+  // Fetch member lists
+  const { nodes, pagination: nodesPagination, isLoading: isLoadingNodes, refetch: refetchNodes } = useGroupNodes({
     groupId: open && group ? group.sid : null,
-    pageSize: 1,
+    pageSize: 50,
     enabled: open && !!group,
   });
 
-  const { pagination: agentsPagination, isLoading: isLoadingAgents } = useGroupForwardAgents({
+  const { forwardAgents, pagination: agentsPagination, isLoading: isLoadingAgents, refetch: refetchAgents } = useGroupForwardAgents({
     groupId: open && group ? group.sid : null,
-    pageSize: 1,
+    pageSize: 50,
     enabled: open && !!group,
   });
 
-  const { pagination: rulesPagination, isLoading: isLoadingRules } = useGroupForwardRules({
+  const { forwardRules, pagination: rulesPagination, isLoading: isLoadingRules, refetch: refetchRules } = useGroupForwardRules({
     groupId: open && group ? group.sid : null,
-    pageSize: 1,
+    pageSize: 50,
     enabled: open && !!group,
   });
+
+  // Member management
+  const {
+    addNodes,
+    removeNodes,
+    addAgents,
+    removeAgents,
+    addRules,
+    removeRules,
+    isAddingNodes,
+    isRemovingNodes,
+    isAddingAgents,
+    isRemovingAgents,
+    isAddingRules,
+    isRemovingRules,
+  } = useGroupMemberManagement(group?.sid ?? null);
 
   if (!group) return null;
 
@@ -249,6 +386,41 @@ export const ResourceGroupDetailSheet = ({
   const canBindNodes = planType !== 'forward';
   const canBindAgents = planType === 'forward';
   const canBindRules = planType !== 'forward';
+
+  // Add member handlers
+  const handleAddNodes = async (nodeIds: string[]) => {
+    await addNodes(nodeIds);
+    setAddNodesOpen(false);
+    refetchNodes();
+  };
+
+  const handleAddAgents = async (agentIds: string[]) => {
+    await addAgents(agentIds);
+    setAddAgentsOpen(false);
+    refetchAgents();
+  };
+
+  const handleAddRules = async (ruleIds: string[]) => {
+    await addRules(ruleIds);
+    setAddRulesOpen(false);
+    refetchRules();
+  };
+
+  // Remove member handlers
+  const handleRemoveNode = async (id: string) => {
+    await removeNodes([id]);
+    refetchNodes();
+  };
+
+  const handleRemoveAgent = async (id: string) => {
+    await removeAgents([id]);
+    refetchAgents();
+  };
+
+  const handleRemoveRule = async (id: string) => {
+    await removeRules([id]);
+    refetchRules();
+  };
 
   // Action Sheet actions
   const moreActions = [
@@ -277,6 +449,11 @@ export const ResourceGroupDetailSheet = ({
       variant: 'destructive' as const,
     },
   ];
+
+  // Determine which member sections to render
+  const showNodes = canBindNodes || !planType;
+  const showAgents = canBindAgents || !planType;
+  const showRules = canBindRules || !planType;
 
   return (
     <>
@@ -369,68 +546,74 @@ export const ResourceGroupDetailSheet = ({
               )}
             </DetailSection>
 
-            {/* Member Statistics */}
-            <DetailSection title={t('resourceGroups.sections.memberStats')}>
-              {canBindNodes && (
-                <StatCard
-                  icon={<Server className="size-4 text-primary" />}
-                  label={t('resourceGroups.labels.nodeCount')}
-                  value={nodesPagination.total}
-                  isLoading={isLoadingNodes}
-                  colorClass="bg-primary/10"
-                  unit={t('resourceGroups.unit')}
-                />
-              )}
-              {canBindAgents && (
-                <StatCard
-                  icon={<Cpu className="size-4 text-success" />}
-                  label={t('resourceGroups.labels.forwardAgentCount')}
-                  value={agentsPagination.total}
-                  isLoading={isLoadingAgents}
-                  colorClass="bg-success/10"
-                  unit={t('resourceGroups.unit')}
-                />
-              )}
-              {canBindRules && (
-                <StatCard
-                  icon={<ArrowRightLeft className="size-4 text-warning" />}
-                  label={t('resourceGroups.labels.forwardRuleCount')}
-                  value={rulesPagination.total}
-                  isLoading={isLoadingRules}
-                  colorClass="bg-warning/10"
-                  unit={t('resourceGroups.unit')}
-                />
-              )}
-              {/* Show all stats if plan type is unknown */}
-              {!planType && (
-                <>
-                  <StatCard
-                    icon={<Server className="size-4 text-primary" />}
-                    label={t('resourceGroups.labels.nodeCount')}
-                    value={nodesPagination.total}
-                    isLoading={isLoadingNodes}
-                    colorClass="bg-primary/10"
-                    unit={t('resourceGroups.unit')}
-                  />
-                  <StatCard
-                    icon={<Cpu className="size-4 text-success" />}
-                    label={t('resourceGroups.labels.forwardAgentCount')}
-                    value={agentsPagination.total}
-                    isLoading={isLoadingAgents}
-                    colorClass="bg-success/10"
-                    unit={t('resourceGroups.unit')}
-                  />
-                  <StatCard
-                    icon={<ArrowRightLeft className="size-4 text-warning" />}
-                    label={t('resourceGroups.labels.forwardRuleCount')}
-                    value={rulesPagination.total}
-                    isLoading={isLoadingRules}
-                    colorClass="bg-warning/10"
-                    unit={t('resourceGroups.unit')}
-                  />
-                </>
-              )}
-            </DetailSection>
+            {/* Members */}
+            {showNodes && (
+              <MemberSection
+                icon={<Server className="size-3.5 text-primary" />}
+                label={t('resourceGroups.labels.nodeCount')}
+                total={nodesPagination.total}
+                isLoading={isLoadingNodes}
+                colorClass="bg-primary/10"
+                iconColorClass="text-primary"
+                items={nodes}
+                onAdd={() => setAddNodesOpen(true)}
+                onRemove={handleRemoveNode}
+                isRemoving={isRemovingNodes}
+                emptyText={t('resourceGroups.empty.noNodes')}
+                addText={t('resourceGroups.actions.addNode')}
+                statusBadge={(status) => ({
+                  label: status === 'active' ? t('common.status.enabled') : t('common.status.disabled'),
+                  active: status === 'active',
+                })}
+              />
+            )}
+
+            {showAgents && (
+              <MemberSection
+                icon={<Cpu className="size-3.5 text-success" />}
+                label={t('resourceGroups.labels.forwardAgentCount')}
+                total={agentsPagination.total}
+                isLoading={isLoadingAgents}
+                colorClass="bg-success/10"
+                iconColorClass="text-success"
+                items={forwardAgents}
+                onAdd={() => setAddAgentsOpen(true)}
+                onRemove={handleRemoveAgent}
+                isRemoving={isRemovingAgents}
+                emptyText={t('resourceGroups.empty.noAgents')}
+                addText={t('resourceGroups.actions.addForwardAgent')}
+                statusBadge={(status) => ({
+                  label: status === 'enabled' ? t('common.status.enabled') : t('common.status.disabled'),
+                  active: status === 'enabled',
+                })}
+              />
+            )}
+
+            {showRules && (
+              <MemberSection
+                icon={<ArrowRightLeft className="size-3.5 text-warning" />}
+                label={t('resourceGroups.labels.forwardRuleCount')}
+                total={rulesPagination.total}
+                isLoading={isLoadingRules}
+                colorClass="bg-warning/10"
+                iconColorClass="text-warning"
+                items={forwardRules}
+                onAdd={() => setAddRulesOpen(true)}
+                onRemove={handleRemoveRule}
+                isRemoving={isRemovingRules}
+                emptyText={t('resourceGroups.empty.noRules')}
+                addText={t('resourceGroups.actions.addForwardRule')}
+                renderSubline={(item) =>
+                  item.protocol && item.listenPort
+                    ? `${item.protocol.toUpperCase()}:${item.listenPort} · ${item.id}`
+                    : item.id
+                }
+                statusBadge={(status) => ({
+                  label: status === 'enabled' ? t('common.status.enabled') : t('common.status.stopped'),
+                  active: status === 'enabled',
+                })}
+              />
+            )}
 
             {/* Timestamps - compact row */}
             <DetailSection title={t('resourceGroups.sections.timeInfo')}>
@@ -526,6 +709,43 @@ export const ResourceGroupDetailSheet = ({
         actions={moreActions}
         title={t('common.moreActions')}
       />
+
+      {/* Add members dialogs */}
+      {showNodes && (
+        <AddMembersDialog
+          open={addNodesOpen}
+          type="nodes"
+          groupName={group.name}
+          existingMemberIds={nodes.map((n) => n.id)}
+          onClose={() => setAddNodesOpen(false)}
+          onSubmit={handleAddNodes}
+          isSubmitting={isAddingNodes}
+        />
+      )}
+
+      {showAgents && (
+        <AddMembersDialog
+          open={addAgentsOpen}
+          type="agents"
+          groupName={group.name}
+          existingMemberIds={forwardAgents.map((a) => a.id)}
+          onClose={() => setAddAgentsOpen(false)}
+          onSubmit={handleAddAgents}
+          isSubmitting={isAddingAgents}
+        />
+      )}
+
+      {showRules && (
+        <AddMembersDialog
+          open={addRulesOpen}
+          type="rules"
+          groupName={group.name}
+          existingMemberIds={forwardRules.map((r) => r.id)}
+          onClose={() => setAddRulesOpen(false)}
+          onSubmit={handleAddRules}
+          isSubmitting={isAddingRules}
+        />
+      )}
     </>
   );
 };

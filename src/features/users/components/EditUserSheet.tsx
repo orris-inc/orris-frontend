@@ -50,8 +50,8 @@ export const EditUserSheet: React.FC<EditUserSheetProps> = ({
 
   // Build status options with translations
   const statusOptions: MobileSelectOption[] = useMemo(() => [
-    { value: 'active', label: t('common.status.active'), color: 'bg-success' },
-    { value: 'inactive', label: t('common.status.inactive'), color: 'bg-muted-foreground' },
+    { value: 'active', label: t('common.status.enabled'), color: 'bg-success' },
+    { value: 'inactive', label: t('common.status.disabled'), color: 'bg-muted-foreground' },
     { value: 'pending', label: t('common.status.pending'), color: 'bg-warning' },
     { value: 'suspended', label: t('common.status.suspended'), color: 'bg-destructive' },
   ], [t]);

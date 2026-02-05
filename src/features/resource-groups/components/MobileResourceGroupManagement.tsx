@@ -31,8 +31,6 @@ import type { SubscriptionPlan } from '@/api/subscription/types';
 export interface MobileResourceGroupManagementProps {
   resourceGroups: ResourceGroup[];
   plansMap?: Record<string, SubscriptionPlan>;
-  /** Member count map by group SID */
-  memberCountMap?: Record<string, number>;
   loading?: boolean;
   refreshing?: boolean;
   page: number;
@@ -55,7 +53,6 @@ type StatusFilter = 'all' | ResourceGroupStatus;
 export const MobileResourceGroupManagement = ({
   resourceGroups,
   plansMap = {},
-  memberCountMap = {},
   loading = false,
   refreshing = false,
   page,
@@ -143,7 +140,6 @@ export const MobileResourceGroupManagement = ({
             group={group}
             planName={group.planId ? plansMap[group.planId]?.name : undefined}
             planType={group.planId ? plansMap[group.planId]?.planType : undefined}
-            memberCount={memberCountMap[group.sid] ?? 0}
             onCardPress={openSheet}
           />
         )}

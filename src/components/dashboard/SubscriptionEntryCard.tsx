@@ -37,7 +37,7 @@ const formatTraffic = (bytes: number): { value: string; unit: string } => {
 const getStatusConfig = (status: string, t: TFunction) => {
   switch (status) {
     case 'active':
-      return { label: t('common.status.active'), variant: 'success' as const };
+      return { label: t('common.status.enabled'), variant: 'success' as const };
     case 'trialing':
       return { label: t('subscriptionStatus.trialing'), variant: 'info' as const };
     case 'past_due':
@@ -51,7 +51,7 @@ const getStatusConfig = (status: string, t: TFunction) => {
     case 'cancelled':
       return { label: t('common.status.cancelled'), variant: 'outline' as const };
     case 'inactive':
-      return { label: t('common.status.inactive'), variant: 'secondary' as const };
+      return { label: t('common.status.disabled'), variant: 'secondary' as const };
     default:
       return { label: status, variant: 'secondary' as const };
   }
@@ -68,7 +68,7 @@ const getDaysRemaining = (endDate?: string): number | null => {
   return diff > 0 ? diff : 0;
 };
 
-import { formatDate } from '@/shared/utils/date-utils';
+import { formatDate, isNeverExpiresDate } from '@/shared/utils/date-utils';
 
 /**
  * Get progress bar color based on usage percentage
@@ -115,7 +115,8 @@ export const SubscriptionEntryCard = ({
   const limits = subscription.plan?.limits as { trafficLimit?: number } | undefined;
   const trafficLimit = limits?.trafficLimit ?? 0;
   const usagePercent = trafficLimit > 0 ? (subscription.usage.total / trafficLimit) * 100 : 0;
-  const daysRemaining = getDaysRemaining(subscription.currentPeriodEnd);
+  const neverExpires = isNeverExpiresDate(subscription.currentPeriodEnd);
+  const daysRemaining = neverExpires ? null : getDaysRemaining(subscription.currentPeriodEnd);
 
   const usedFormatted = formatTraffic(subscription.usage.total);
   const limitFormatted = formatTraffic(trafficLimit);
@@ -177,10 +178,10 @@ export const SubscriptionEntryCard = ({
             <h3 className={cn('font-semibold text-foreground truncate', compact ? 'text-xs sm:text-sm' : 'text-sm sm:text-base')}>
               {subscription.plan?.name || t('user.dashboard.subscription.unknownPlan')}
             </h3>
-            {isActive && daysRemaining !== null && (
+            {isActive && (neverExpires || daysRemaining !== null) && (
               <span className="text-[10px] sm:text-xs text-muted-foreground flex items-center gap-1 mt-0.5">
                 <Clock className="size-2.5 sm:size-3" />
-                {t('common.time.days', { count: daysRemaining })}
+                {neverExpires ? t('common.fields.neverExpires') : t('common.time.days', { count: daysRemaining ?? 0 })}
               </span>
             )}
           </div>
@@ -226,7 +227,7 @@ export const SubscriptionEntryCard = ({
       <div className={cn('flex items-center justify-between border-t border-border/50', compact ? 'pt-1.5' : 'pt-2')}>
         <span className="flex items-center gap-1 sm:gap-1.5 text-[10px] sm:text-xs text-muted-foreground">
           <Calendar className="size-3 sm:size-3.5" />
-          {formatDate(subscription.currentPeriodEnd)}
+          {neverExpires ? t('common.fields.neverExpires') : formatDate(subscription.currentPeriodEnd)}
         </span>
         <ChevronRight className="size-3.5 sm:size-4 text-muted-foreground group-hover:text-primary transition-colors" />
       </div>

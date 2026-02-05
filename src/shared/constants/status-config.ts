@@ -42,8 +42,8 @@ export const ENABLED_STATUS_CONFIG_SHORT: Record<string, StatusConfig> = {
 // Active/Inactive Status (User, Node, ResourceGroup)
 // ============================================================================
 export const ACTIVE_STATUS_CONFIG: Record<string, StatusConfig> = {
-  active: { labelKey: 'common.status.active', variant: 'success' },
-  inactive: { labelKey: 'common.status.inactive', variant: 'default' },
+  active: { labelKey: 'common.status.enabled', variant: 'success' },
+  inactive: { labelKey: 'common.status.disabled', variant: 'default' },
   pending: { labelKey: 'common.status.pending', variant: 'warning' },
   suspended: { labelKey: 'common.status.suspended', variant: 'danger' },
   deleted: { labelKey: 'common.status.deleted', variant: 'danger' },
@@ -55,10 +55,10 @@ export const ACTIVE_STATUS_CONFIG: Record<string, StatusConfig> = {
 // Updated: 2025-01-14 - Synced with backend status.go (8 statuses)
 // ============================================================================
 export const SUBSCRIPTION_STATUS_CONFIG: Record<string, StatusConfig> = {
-  inactive: { labelKey: 'common.status.inactive', variant: 'default' },
+  inactive: { labelKey: 'common.status.disabled', variant: 'default' },
   pending_payment: { labelKey: 'subscriptionStatus.pendingPayment', variant: 'warning' },
   trialing: { labelKey: 'subscriptionStatus.trialing', variant: 'info' },
-  active: { labelKey: 'common.status.active', variant: 'success' },
+  active: { labelKey: 'common.status.enabled', variant: 'success' },
   past_due: { labelKey: 'subscriptionStatus.pastDue', variant: 'warning' },
   suspended: { labelKey: 'common.status.suspended', variant: 'danger' },
   cancelled: { labelKey: 'common.status.cancelled', variant: 'danger' },
