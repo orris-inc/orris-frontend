@@ -81,6 +81,8 @@ export const useTelegramBinding = () => {
     binding: bindingStatus?.binding,
     verifyCode: bindingStatus?.verifyCode,
     botLink: bindingStatus?.botLink,
+    deepBindLink: bindingStatus?.deepBindLink,
+    expiresAt: bindingStatus?.expiresAt,
     refetch,
     unbind: unbindMutation.mutateAsync,
     updatePreferences: updatePreferencesMutation.mutateAsync,

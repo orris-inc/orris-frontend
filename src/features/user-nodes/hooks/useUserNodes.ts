@@ -6,6 +6,7 @@
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useNotificationStore } from '@/shared/stores/notification-store';
 import { handleApiError } from '@/shared/lib/axios';
 import {
@@ -74,6 +75,7 @@ export const useUserNodes = (options: UseUserNodesOptions = {}) => {
   const { page = 1, pageSize = 20, filters = {}, enabled = true } = options;
   const queryClient = useQueryClient();
   const { showSuccess, showError } = useNotificationStore();
+  const { t } = useTranslation();
 
   // Build query params
   const params: ListUserNodesParams = {
@@ -101,7 +103,7 @@ export const useUserNodes = (options: UseUserNodesOptions = {}) => {
   const createMutation = useMutation({
     mutationFn: createUserNode,
     onSuccess: () => {
-      showSuccess('节点创建成功');
+      showSuccess(t('messages.nodeCreateSuccess'));
       queryClient.invalidateQueries({ queryKey: userNodesQueryKeys.lists() });
     },
     onError: (error) => {
@@ -114,7 +116,7 @@ export const useUserNodes = (options: UseUserNodesOptions = {}) => {
     mutationFn: ({ id, data }: { id: string; data: UpdateUserNodeRequest }) =>
       updateUserNode(id, data),
     onSuccess: () => {
-      showSuccess('节点更新成功');
+      showSuccess(t('messages.nodeUpdateSuccess'));
       queryClient.invalidateQueries({ queryKey: userNodesQueryKeys.lists() });
     },
     onError: (error) => {
@@ -126,7 +128,7 @@ export const useUserNodes = (options: UseUserNodesOptions = {}) => {
   const deleteMutation = useMutation({
     mutationFn: deleteUserNode,
     onSuccess: () => {
-      showSuccess('节点删除成功');
+      showSuccess(t('messages.nodeDeleteSuccess'));
       queryClient.invalidateQueries({ queryKey: userNodesQueryKeys.lists() });
     },
     onError: (error) => {
@@ -138,7 +140,7 @@ export const useUserNodes = (options: UseUserNodesOptions = {}) => {
   const regenerateTokenMutation = useMutation({
     mutationFn: regenerateUserNodeToken,
     onSuccess: () => {
-      showSuccess('Token 已重新生成');
+      showSuccess(t('messages.tokenRegenerated'));
     },
     onError: (error) => {
       showError(handleApiError(error));

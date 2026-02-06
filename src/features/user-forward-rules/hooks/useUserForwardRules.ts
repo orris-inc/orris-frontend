@@ -6,6 +6,7 @@
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useState, useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useNotificationStore } from '@/shared/stores/notification-store';
 import { handleApiError } from '@/shared/lib/axios';
 import {
@@ -62,6 +63,7 @@ export const useUserForwardRules = (options: UseUserForwardRulesOptions = {}) =>
   const { page = 1, pageSize = 20, filters = {}, enabled = true } = options;
   const queryClient = useQueryClient();
   const { showSuccess, showError } = useNotificationStore();
+  const { t } = useTranslation();
 
   // Build query params
   const params: ListForwardRulesParams = {
@@ -90,7 +92,7 @@ export const useUserForwardRules = (options: UseUserForwardRulesOptions = {}) =>
   const createMutation = useMutation({
     mutationFn: createUserForwardRule,
     onSuccess: () => {
-      showSuccess('转发规则创建成功');
+      showSuccess(t('messages.forwardRuleCreateSuccess'));
       queryClient.invalidateQueries({ queryKey: userForwardRulesQueryKeys.lists() });
       queryClient.invalidateQueries({ queryKey: userForwardRulesQueryKeys.usage() });
     },
@@ -104,7 +106,7 @@ export const useUserForwardRules = (options: UseUserForwardRulesOptions = {}) =>
     mutationFn: ({ id, data }: { id: string; data: UpdateForwardRuleRequest }) =>
       updateUserForwardRule(id, data),
     onSuccess: () => {
-      showSuccess('转发规则更新成功');
+      showSuccess(t('messages.forwardRuleUpdateSuccess'));
       queryClient.invalidateQueries({ queryKey: userForwardRulesQueryKeys.lists() });
     },
     onError: (error) => {
@@ -116,7 +118,7 @@ export const useUserForwardRules = (options: UseUserForwardRulesOptions = {}) =>
   const deleteMutation = useMutation({
     mutationFn: deleteUserForwardRule,
     onSuccess: () => {
-      showSuccess('转发规则删除成功');
+      showSuccess(t('messages.forwardRuleDeleteSuccess'));
       queryClient.invalidateQueries({ queryKey: userForwardRulesQueryKeys.lists() });
       queryClient.invalidateQueries({ queryKey: userForwardRulesQueryKeys.usage() });
     },
@@ -129,7 +131,7 @@ export const useUserForwardRules = (options: UseUserForwardRulesOptions = {}) =>
   const enableMutation = useMutation({
     mutationFn: enableUserForwardRule,
     onSuccess: () => {
-      showSuccess('转发规则已启用');
+      showSuccess(t('messages.forwardRuleEnabled'));
       queryClient.invalidateQueries({ queryKey: userForwardRulesQueryKeys.lists() });
     },
     onError: (error) => {
@@ -141,7 +143,7 @@ export const useUserForwardRules = (options: UseUserForwardRulesOptions = {}) =>
   const disableMutation = useMutation({
     mutationFn: disableUserForwardRule,
     onSuccess: () => {
-      showSuccess('转发规则已禁用');
+      showSuccess(t('messages.forwardRuleDisabled'));
       queryClient.invalidateQueries({ queryKey: userForwardRulesQueryKeys.lists() });
     },
     onError: (error) => {

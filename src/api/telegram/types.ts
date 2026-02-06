@@ -44,8 +44,12 @@ export interface BindingStatusResponse {
   binding?: TelegramBinding;
   /** Verification code for binding (only present if isBound is false) */
   verifyCode?: string;
-  /** Telegram bot link (e.g., https://t.me/botname) - Added 2025-01-06 */
+  /** Telegram bot link (e.g., https://t.me/botname) */
   botLink?: string;
+  /** Deep link for one-click binding (e.g., https://t.me/botname?start=bind_CODE) */
+  deepBindLink?: string;
+  /** Verification code expiration time (ISO 8601) */
+  expiresAt?: string;
 }
 
 /**

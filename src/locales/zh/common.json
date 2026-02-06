@@ -251,6 +251,13 @@
       "editableInfo": "可编辑信息",
       "networkConfig": "网络配置",
       "advancedOptions": "高级选项"
+    },
+    "operations": {
+      "delete": "删除",
+      "create": "创建",
+      "enable": "启用",
+      "disable": "禁用",
+      "update": "更新"
     }
   },
   "nav": {
@@ -1541,7 +1548,34 @@
       "title": "转发Agent管理",
       "description": "管理转发代理",
       "create": {
-        "description": "配置转发Agent的基本信息和网络设置"
+        "title": "新增转发Agent",
+        "copyTitle": "复制转发Agent",
+        "description": "添加转发Agent节点",
+        "labels": {
+          "nodeName": "节点名称",
+          "publicAddress": "公网地址",
+          "tunnelAddress": "隧道地址",
+          "portLimit": "端口限制",
+          "blockedProtocols": "阻止协议"
+        },
+        "placeholders": {
+          "nodeName": "例如：主转发Agent",
+          "publicAddress": "例如：example.com 或 1.2.3.4",
+          "tunnelAddress": "例如：10.0.0.1 或 internal.example.com",
+          "portLimit": "例如：80,443,8000-9000",
+          "sortOrder": "例如：100",
+          "remark": "可选：添加备注说明"
+        },
+        "hints": {
+          "publicAddress": "可选，留空时由 Agent 自动检测",
+          "tunnelAddress": "可选，用于中继/出口节点的内网连接",
+          "portLimit": "可选，留空表示允许所有端口",
+          "sortOrder": "可选，数值越小排序越靠前",
+          "blockedProtocols": "可选，点击选择需要阻止的协议类型"
+        },
+        "validation": {
+          "nameRequired": "节点名称不能为空"
+        }
       },
       "agentsUnit": "个节点",
       "updatable": "个可更新",
@@ -1825,36 +1859,6 @@
         "noResourceGroup": "无资源组",
         "muted": "已静音",
         "unmuted": "未静音"
-      },
-      "create": {
-        "title": "新增转发Agent",
-        "copyTitle": "复制转发Agent",
-        "description": "添加转发Agent节点",
-        "labels": {
-          "nodeName": "节点名称",
-          "publicAddress": "公网地址",
-          "tunnelAddress": "隧道地址",
-          "portLimit": "端口限制",
-          "blockedProtocols": "阻止协议"
-        },
-        "placeholders": {
-          "nodeName": "例如：主转发Agent",
-          "publicAddress": "例如：example.com 或 1.2.3.4",
-          "tunnelAddress": "例如：10.0.0.1 或 internal.example.com",
-          "portLimit": "例如：80,443,8000-9000",
-          "sortOrder": "例如：100",
-          "remark": "可选：添加备注说明"
-        },
-        "hints": {
-          "publicAddress": "可选，留空时由 Agent 自动检测",
-          "tunnelAddress": "可选，用于中继/出口节点的内网连接",
-          "portLimit": "可选，留空表示允许所有端口",
-          "sortOrder": "可选，数值越小排序越靠前",
-          "blockedProtocols": "可选，点击选择需要阻止的协议类型"
-        },
-        "validation": {
-          "nameRequired": "节点名称不能为空"
-        }
       },
       "delete": {
         "title": "删除转发Agent",
@@ -2798,7 +2802,44 @@
     "clearFilters": "清除筛选",
     "deleteIrreversible": "此操作不可恢复，请确认是否继续",
     "confirmDeleteSubscription": "确认删除以下订阅？",
-    "deleteSubscriptionWarning": "删除后，该订阅将被永久移除，用户将无法再使用此订阅。"
+    "deleteSubscriptionWarning": "删除后，该订阅将被永久移除，用户将无法再使用此订阅。",
+    "forwardAgentCreateSuccess": "转发Agent创建成功",
+    "forwardAgentUpdateSuccess": "转发Agent信息更新成功",
+    "forwardAgentDeleteSuccess": "转发Agent删除成功",
+    "forwardAgentEnabled": "转发Agent已启用",
+    "forwardAgentDisabled": "转发Agent已禁用",
+    "tokenRegenerated": "Token重新生成成功",
+    "updateCommandSent": "更新命令已发送，目标版本: {{version}}",
+    "batchUpdateTriggered": "已触发 {{count}} 个{{entity}}更新",
+    "apiURLBroadcasted": "已通知 {{count}} 个{{entity}}更新API地址",
+    "apiURLNotified": "已通知{{entity}}更新API地址",
+    "entityNotOnline": "{{entity}}未在线，无法通知",
+    "forwardRuleCreateSuccess": "转发规则创建成功",
+    "forwardRuleUpdateSuccess": "转发规则更新成功",
+    "forwardRuleDeleteSuccess": "转发规则删除成功",
+    "forwardRuleEnabled": "转发规则已启用",
+    "forwardRuleDisabled": "转发规则已禁用",
+    "trafficReset": "流量统计已重置",
+    "ruleReorderSuccess": "规则顺序已更新",
+    "nodeCreateSuccess": "节点创建成功",
+    "nodeUpdateSuccess": "节点信息更新成功",
+    "nodeDeleteSuccess": "节点删除成功",
+    "nodeActivated": "节点已激活",
+    "nodeDeactivated": "节点已停用",
+    "nodeMaintenance": "节点已设为维护",
+    "nodeTokenGenerated": "Token 生成成功",
+    "profileUpdateSuccess": "个人资料已更新",
+    "profileNoUser": "用户信息不存在",
+    "passwordChangeSuccess": "密码已修改成功",
+    "avatarUpdateSuccess": "头像已更新",
+    "subscriptionPlanCreateSuccess": "订阅计划创建成功",
+    "subscriptionPlanUpdateSuccess": "订阅计划更新成功",
+    "subscriptionPlanActivated": "订阅计划已激活",
+    "subscriptionPlanDeactivated": "订阅计划已停用",
+    "oauthLoginFailed": "OAuth登录失败，请重试",
+    "batchOperationSuccess": "成功{{operation}} {{count}} 条规则",
+    "batchOperationFailed": "{{operation}}失败：{{count}} 条规则",
+    "batchOperationPartial": "成功{{operation}} {{succeeded}} 条规则，{{failed}} 条失败"
   },
   "placeholders": {
     "searchSubscription": "搜索用户、计划...",
@@ -2949,49 +2990,49 @@
     }
   },
   "landing": {
-  "nav": {
-    "features": "功能",
-    "faq": "常见问题",
-    "howItWorks": "工作原理",
-    "pricing": "价格",
-    "signIn": "登录",
+    "nav": {
+      "features": "功能",
+      "faq": "常见问题",
+      "howItWorks": "工作原理",
+      "pricing": "价格",
+      "signIn": "登录",
       "getStarted": "立即开始",
       "openMenu": "打开菜单",
       "closeMenu": "关闭菜单"
     },
-	    "hero": {
-	      "badge": "订阅与转发，一套搞定",
-	      "title": "一站式管理订阅、节点与转发",
-	      "titleHighlight": "从登录到交付，一屏掌控",
-	      "subtitle": "登录与支付、订阅与流量、节点与转发、通知与提醒——在同一个控制台完成。",
-	      "getStarted": "立即开始",
-	      "exploreFeatures": "查看支持的能力",
-	      "stats": {
-	        "forwardingModes": "规则类型",
-	        "nodeProtocols": "协议支持",
-	        "tokenScopes": "令牌权限",
-	        "realtime": "实时"
-	      }
-	    },
-	    "stats": {
-	      "title": "平台一览",
-	      "ruleTypes": {
-	        "value": "5+",
-	        "label": "规则类型"
-	      },
-	      "protocols": {
-	        "value": "10+",
-	        "label": "协议支持"
-	      },
-	      "tokenScopes": {
-	        "value": "8",
-	        "label": "令牌权限"
-	      },
-	      "realtime": {
-	        "value": "24/7",
-	        "label": "实时监控"
-	      }
-	    },
+    "hero": {
+      "badge": "订阅与转发，一套搞定",
+      "title": "一站式管理订阅、节点与转发",
+      "titleHighlight": "从登录到交付，一屏掌控",
+      "subtitle": "登录与支付、订阅与流量、节点与转发、通知与提醒——在同一个控制台完成。",
+      "getStarted": "立即开始",
+      "exploreFeatures": "查看支持的能力",
+      "stats": {
+        "forwardingModes": "规则类型",
+        "nodeProtocols": "协议支持",
+        "tokenScopes": "令牌权限",
+        "realtime": "实时"
+      }
+    },
+    "stats": {
+      "title": "平台一览",
+      "ruleTypes": {
+        "value": "5+",
+        "label": "规则类型"
+      },
+      "protocols": {
+        "value": "10+",
+        "label": "协议支持"
+      },
+      "tokenScopes": {
+        "value": "8",
+        "label": "令牌权限"
+      },
+      "realtime": {
+        "value": "24/7",
+        "label": "实时监控"
+      }
+    },
     "features": {
       "title": "你能做什么",
       "dashboard": {
@@ -3002,46 +3043,46 @@
         "title": "无密码登录（Passkey）",
         "description": "支持无密码注册与登录，减少记忆负担；设备支持情况可检测，已绑定设备可管理。"
       },
-	      "subscriptions": {
-	        "title": "订阅与套餐",
-	        "description": "订阅管理与套餐切换；订阅链接与访问令牌可生成、刷新、吊销；流量明细与统计清晰可查。"
-	      },
+      "subscriptions": {
+        "title": "订阅与套餐",
+        "description": "订阅管理与套餐切换；订阅链接与访问令牌可生成、刷新、吊销；流量明细与统计清晰可查。"
+      },
       "payments": {
         "title": "多种支付方式",
         "description": "支持 Stripe、支付宝、微信支付与 USDT（Polygon/Tron），支付流程清晰可追踪。"
       },
-	      "nodes": {
-	        "title": "节点管理",
-	        "description": "节点创建与配置，支持多协议；安装/卸载命令一键生成，状态与更新提示及时可见。"
-	      },
-	      "forwarding": {
-	        "title": "转发代理与规则",
-	        "description": "统一管理转发代理与规则，支持直连与多跳；启停、排序与批量调整更顺手。"
-	      },
-	      "realtime": {
-	        "title": "实时状态",
-	        "description": "节点与代理状态实时更新，关键变化及时可见。"
-	      },
-	      "notifications": {
-	        "title": "公告与站内通知",
-	        "description": "系统公告与站内通知及时送达；可选绑定 Telegram，按到期与流量阈值提醒。"
-	      }
-	    },
-  "faq": {
-    "title": "常见问题",
-    "q1": {
-      "question": "我可以只用 Passkey，不用密码吗？",
+      "nodes": {
+        "title": "节点管理",
+        "description": "节点创建与配置，支持多协议；安装/卸载命令一键生成，状态与更新提示及时可见。"
+      },
+      "forwarding": {
+        "title": "转发代理与规则",
+        "description": "统一管理转发代理与规则，支持直连与多跳；启停、排序与批量调整更顺手。"
+      },
+      "realtime": {
+        "title": "实时状态",
+        "description": "节点与代理状态实时更新，关键变化及时可见。"
+      },
+      "notifications": {
+        "title": "公告与站内通知",
+        "description": "系统公告与站内通知及时送达；可选绑定 Telegram，按到期与流量阈值提醒。"
+      }
+    },
+    "faq": {
+      "title": "常见问题",
+      "q1": {
+        "question": "我可以只用 Passkey，不用密码吗？",
         "answer": "可以，支持无密码注册与登录（设备/浏览器需支持）。"
       },
-	      "q2": {
-	        "question": "支付后如何生效？",
-	        "answer": "完成支付后订阅会自动生效，你可以获取访问令牌，并随时查看流量使用情况。"
-	      },
-	      "q3": {
-	        "question": "我能实时看到节点/代理状态吗？",
-	        "answer": "可以，节点与代理的状态变化会实时更新展示。"
-	      }
-	    },
+      "q2": {
+        "question": "支付后如何生效？",
+        "answer": "完成支付后订阅会自动生效，你可以获取访问令牌，并随时查看流量使用情况。"
+      },
+      "q3": {
+        "question": "我能实时看到节点/代理状态吗？",
+        "answer": "可以，节点与代理的状态变化会实时更新展示。"
+      }
+    },
     "cta": {
       "title": "现在就开始搭建你的订阅与转发体系",
       "subtitle": "更顺畅的登录体验，更清晰的订阅与流量视图，更可控的节点与转发管理。",
@@ -3309,7 +3350,20 @@
       "advancedDesc": "高级配置",
       "comingSoon": "即将上线"
     },
-    "tip": "提示：修改邮箱地址需要重新验证。如需更改密码，请访问账户设置页面。"
+    "tip": "提示：修改邮箱地址需要重新验证。如需更改密码，请访问账户设置页面。",
+    "validation": {
+      "usernameTooShort": "用户名至少需要2个字符",
+      "usernameTooLong": "用户名最多100个字符",
+      "invalidEmail": "请输入有效的邮箱地址",
+      "currentPasswordRequired": "请输入当前密码",
+      "newPasswordTooShort": "新密码至少需要8个字符",
+      "newPasswordTooLong": "新密码不能超过72个字符",
+      "passwordNeedsLetter": "密码必须包含至少一个字母",
+      "passwordNeedsNumber": "密码必须包含至少一个数字",
+      "confirmPasswordRequired": "请确认新密码",
+      "passwordMismatch": "两次输入的密码不一致",
+      "newPasswordSameAsOld": "新密码不能与旧密码相同"
+    }
   },
   "notifications": {
     "title": "通知设置",
@@ -3356,7 +3410,10 @@
         "trafficTitle": "流量告警通知",
         "above": "超过",
         "percentAlert": "% 时告警"
-      }
+      },
+      "oneClickBind": "一键绑定 Telegram",
+      "orManualBind": "或手动绑定",
+      "codeExpiryAt": "验证码有效期至 {{time}}"
     },
     "status": {
       "title": "通知状态",
@@ -3846,6 +3903,15 @@
         "uptime": "运行时间",
         "publicIp": "公网 IP"
       }
+    },
+    "events": {
+      "nodeAgent": "Node Agent",
+      "forwardAgent": "转发 Agent",
+      "online": "{{entity}} {{name}} 上线",
+      "offline": "{{entity}} {{name}} 离线",
+      "statusUpdate": "{{entity}} {{name}} 状态更新",
+      "configUpdated": "{{entity}} {{name}} 配置已更新",
+      "unknownEvent": "{{entity}} {{name}} 事件"
     }
   },
   "errors": {

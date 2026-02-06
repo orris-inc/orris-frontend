@@ -5,6 +5,7 @@
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useNotificationStore } from '@/shared/stores/notification-store';
 import { handleApiError } from '@/shared/lib/axios';
 import { useForwardAgentEvents } from './useForwardAgentEvents';
@@ -66,6 +67,7 @@ export const useForwardAgents = (options: UseForwardAgentsOptions = {}) => {
   const { page = 1, pageSize = 20, filters = {}, enabled = true } = options;
   const queryClient = useQueryClient();
   const { showSuccess, showError } = useNotificationStore();
+  const { t } = useTranslation();
 
   const params: ListForwardAgentsParams = {
     page,
@@ -91,7 +93,7 @@ export const useForwardAgents = (options: UseForwardAgentsOptions = {}) => {
   const createMutation = useMutation({
     mutationFn: createForwardAgent,
     onSuccess: () => {
-      showSuccess('转发Agent创建成功');
+      showSuccess(t('messages.forwardAgentCreateSuccess'));
       queryClient.invalidateQueries({ queryKey: forwardAgentsQueryKeys.lists() });
     },
     onError: (error) => {
@@ -103,7 +105,7 @@ export const useForwardAgents = (options: UseForwardAgentsOptions = {}) => {
     mutationFn: ({ id, data }: { id: number | string; data: UpdateForwardAgentRequest }) =>
       updateForwardAgent(id, data),
     onSuccess: () => {
-      showSuccess('转发Agent信息更新成功');
+      showSuccess(t('messages.forwardAgentUpdateSuccess'));
       queryClient.invalidateQueries({ queryKey: forwardAgentsQueryKeys.lists() });
     },
     onError: (error) => {
@@ -114,7 +116,7 @@ export const useForwardAgents = (options: UseForwardAgentsOptions = {}) => {
   const deleteMutation = useMutation({
     mutationFn: deleteForwardAgent,
     onSuccess: () => {
-      showSuccess('转发Agent删除成功');
+      showSuccess(t('messages.forwardAgentDeleteSuccess'));
       queryClient.invalidateQueries({ queryKey: forwardAgentsQueryKeys.lists() });
     },
     onError: (error) => {
@@ -141,7 +143,7 @@ export const useForwardAgents = (options: UseForwardAgentsOptions = {}) => {
       return { previousData };
     },
     onSuccess: () => {
-      showSuccess('转发Agent已启用');
+      showSuccess(t('messages.forwardAgentEnabled'));
     },
     onError: (error, _id, context) => {
       if (context?.previousData) {
@@ -170,7 +172,7 @@ export const useForwardAgents = (options: UseForwardAgentsOptions = {}) => {
       return { previousData };
     },
     onSuccess: () => {
-      showSuccess('转发Agent已禁用');
+      showSuccess(t('messages.forwardAgentDisabled'));
     },
     onError: (error, _id, context) => {
       if (context?.previousData) {
@@ -183,7 +185,7 @@ export const useForwardAgents = (options: UseForwardAgentsOptions = {}) => {
   const regenerateTokenMutation = useMutation({
     mutationFn: regenerateForwardAgentToken,
     onSuccess: () => {
-      showSuccess('Token重新生成成功');
+      showSuccess(t('messages.tokenRegenerated'));
       queryClient.invalidateQueries({ queryKey: forwardAgentsQueryKeys.lists() });
     },
     onError: (error) => {
@@ -196,7 +198,7 @@ export const useForwardAgents = (options: UseForwardAgentsOptions = {}) => {
     mutationFn: (data: AgentBatchUpdateRequest) => batchTriggerAgentUpdate(data),
     onSuccess: (result) => {
       if (result.succeeded.length > 0) {
-        showSuccess(`已触发 ${result.succeeded.length} 个转发Agent更新`);
+        showSuccess(t('messages.batchUpdateTriggered', { count: result.succeeded.length, entity: t('monitor.events.forwardAgent') }));
       }
       queryClient.invalidateQueries({ queryKey: forwardAgentsQueryKeys.lists() });
     },
@@ -463,11 +465,12 @@ export const useAgentVersion = (id: number | string | null, enabled: boolean = t
 // Trigger agent update mutation
 export const useTriggerAgentUpdate = () => {
   const { showSuccess, showError } = useNotificationStore();
+  const { t } = useTranslation();
 
   return useMutation({
     mutationFn: triggerAgentUpdate,
     onSuccess: (data) => {
-      showSuccess(`更新命令已发送，目标版本: ${data.targetVersion}`);
+      showSuccess(t('messages.updateCommandSent', { version: data.targetVersion }));
     },
     onError: (error) => {
       showError(handleApiError(error));
@@ -478,12 +481,13 @@ export const useTriggerAgentUpdate = () => {
 // Broadcast API URL change to all connected agents
 export const useBroadcastAPIURL = () => {
   const { showSuccess, showError } = useNotificationStore();
+  const { t } = useTranslation();
 
   return useMutation({
     mutationFn: (data: BroadcastAPIURLChangedRequest) => broadcastAPIURLChange(data),
     onSuccess: (result: BroadcastAPIURLChangedResponse) => {
       if (result.agentsNotified > 0) {
-        showSuccess(`已通知 ${result.agentsNotified} 个转发Agent更新API地址`);
+        showSuccess(t('messages.apiURLBroadcasted', { count: result.agentsNotified, entity: t('monitor.events.forwardAgent') }));
       }
     },
     onError: (error) => {
@@ -495,13 +499,14 @@ export const useBroadcastAPIURL = () => {
 // Notify single agent of API URL change
 export const useNotifyAgentAPIURL = () => {
   const { showSuccess, showError } = useNotificationStore();
+  const { t } = useTranslation();
 
   return useMutation({
     mutationFn: ({ agentId, data }: { agentId: string; data: NotifyAgentAPIURLChangedRequest }) =>
       notifyAgentAPIURLChange(agentId, data),
     onSuccess: (result: NotifyAgentAPIURLChangedResponse) => {
       if (result.notified) {
-        showSuccess('已通知转发Agent更新API地址');
+        showSuccess(t('messages.apiURLNotified', { entity: t('monitor.events.forwardAgent') }));
       }
     },
     onError: (error) => {

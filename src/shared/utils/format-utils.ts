@@ -91,7 +91,7 @@ export function formatBytesGB(bytes: number | undefined): string {
 export function formatTrafficUsage(used: number | undefined, total: number | undefined): string {
   const usedStr = formatBytes(used);
   if (!total || total <= 0) {
-    return `${usedStr} / 无限制`;
+    return `${usedStr} / ${i18n.t('common.unlimited')}`;
   }
   return `${usedStr} / ${formatBytes(total)}`;
 }

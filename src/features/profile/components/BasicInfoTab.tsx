@@ -1,3 +1,4 @@
+import { useMemo } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Mail, Loader2 } from 'lucide-react';
@@ -5,7 +6,7 @@ import * as LabelPrimitive from '@radix-ui/react-label';
 import { useTranslation } from 'react-i18next';
 import { useProfile } from '../hooks/useProfile';
 import {
-  updateProfileSchema,
+  createUpdateProfileSchema,
   type UpdateProfileFormData,
 } from '../types/profile.types';
 import type { UserDisplayInfo } from '@/api/auth';
@@ -20,6 +21,7 @@ interface BasicInfoTabProps {
 export const BasicInfoTab = ({ user }: BasicInfoTabProps) => {
   const { t } = useTranslation();
   const { updateProfile, isLoading } = useProfile();
+  const updateProfileSchema = useMemo(() => createUpdateProfileSchema(t), [t]);
 
   const {
     register,

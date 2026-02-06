@@ -5,6 +5,7 @@
  */
 
 import { useState, useCallback, useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useNotificationStore } from '@/shared/stores/notification-store';
 import { handleApiError } from '@/shared/lib/axios';
@@ -77,6 +78,7 @@ export const useBatchForwardRules = (options: UseBatchForwardRulesOptions = {}) 
   const { isAdmin = false } = options;
   const queryClient = useQueryClient();
   const { showSuccess, showError } = useNotificationStore();
+  const { t } = useTranslation();
 
   // Selection state
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
@@ -142,14 +144,14 @@ export const useBatchForwardRules = (options: UseBatchForwardRulesOptions = {}) 
       const failedCount = result.failed?.length ?? 0;
 
       if (failedCount === 0) {
-        return `成功${operation} ${succeededCount} 条规则`;
+        return t('messages.batchOperationSuccess', { operation, count: succeededCount });
       } else if (succeededCount === 0) {
-        return `${operation}失败：${failedCount} 条规则`;
+        return t('messages.batchOperationFailed', { operation, count: failedCount });
       } else {
-        return `成功${operation} ${succeededCount} 条规则，${failedCount} 条失败`;
+        return t('messages.batchOperationPartial', { operation, succeeded: succeededCount, failed: failedCount });
       }
     },
-    []
+    [t]
   );
 
   // Batch delete mutation
@@ -166,7 +168,7 @@ export const useBatchForwardRules = (options: UseBatchForwardRulesOptions = {}) 
       }
     },
     onSuccess: (result) => {
-      const message = formatResultMessage(result, '删除');
+      const message = formatResultMessage(result, t('common.operations.delete'));
       if (result.failed?.length) {
         showError(message);
       } else {
@@ -194,7 +196,7 @@ export const useBatchForwardRules = (options: UseBatchForwardRulesOptions = {}) 
       }
     },
     onSuccess: (result) => {
-      const message = formatResultMessage(result, '启用');
+      const message = formatResultMessage(result, t('common.operations.enable'));
       if (result.failed?.length) {
         showError(message);
       } else {
@@ -222,7 +224,7 @@ export const useBatchForwardRules = (options: UseBatchForwardRulesOptions = {}) 
       }
     },
     onSuccess: (result) => {
-      const message = formatResultMessage(result, '禁用');
+      const message = formatResultMessage(result, t('common.operations.disable'));
       if (result.failed?.length) {
         showError(message);
       } else {
@@ -249,7 +251,7 @@ export const useBatchForwardRules = (options: UseBatchForwardRulesOptions = {}) 
       }
     },
     onSuccess: (result) => {
-      const message = formatResultMessage(result, '更新');
+      const message = formatResultMessage(result, t('common.operations.update'));
       if (result.failed?.length) {
         showError(message);
       } else {
@@ -280,13 +282,14 @@ export const useBatchForwardRules = (options: UseBatchForwardRulesOptions = {}) 
     onSuccess: (result) => {
       const succeededCount = result.succeeded.length;
       const failedCount = result.failed?.length ?? 0;
+      const operation = t('common.operations.create');
       let message: string;
       if (failedCount === 0) {
-        message = `成功创建 ${succeededCount} 条规则`;
+        message = t('messages.batchOperationSuccess', { operation, count: succeededCount });
       } else if (succeededCount === 0) {
-        message = `创建失败：${failedCount} 条规则`;
+        message = t('messages.batchOperationFailed', { operation, count: failedCount });
       } else {
-        message = `成功创建 ${succeededCount} 条规则，${failedCount} 条失败`;
+        message = t('messages.batchOperationPartial', { operation, succeeded: succeededCount, failed: failedCount });
       }
       if (failedCount > 0) {
         showError(message);

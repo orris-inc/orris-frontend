@@ -5,6 +5,7 @@
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { queryKeys } from '@/shared/lib/query-client';
 import { useNotificationStore } from '@/shared/stores/notification-store';
 import { handleApiError } from '@/shared/lib/axios';
@@ -35,6 +36,7 @@ export const useSubscriptionPlans = (options: UseSubscriptionPlansOptions = {}) 
   const { page = 1, pageSize = 20, filters = {}, enabled = true } = options;
   const queryClient = useQueryClient();
   const { showSuccess, showError } = useNotificationStore();
+  const { t } = useTranslation();
 
   // Build query parameters
   const params: ListPlansParams = {
@@ -62,7 +64,7 @@ export const useSubscriptionPlans = (options: UseSubscriptionPlansOptions = {}) 
   const createMutation = useMutation({
     mutationFn: createPlan,
     onSuccess: () => {
-      showSuccess('订阅计划创建成功');
+      showSuccess(t('messages.subscriptionPlanCreateSuccess'));
       queryClient.invalidateQueries({ queryKey: queryKeys.subscriptionPlans.lists() });
     },
     onError: (error) => {
@@ -75,7 +77,7 @@ export const useSubscriptionPlans = (options: UseSubscriptionPlansOptions = {}) 
     mutationFn: ({ id, data }: { id: string; data: UpdatePlanRequest }) =>
       updatePlan(id, data),
     onSuccess: () => {
-      showSuccess('订阅计划更新成功');
+      showSuccess(t('messages.subscriptionPlanUpdateSuccess'));
       queryClient.invalidateQueries({ queryKey: queryKeys.subscriptionPlans.lists() });
     },
     onError: (error) => {
@@ -103,7 +105,7 @@ export const useSubscriptionPlans = (options: UseSubscriptionPlansOptions = {}) 
       return { previousData };
     },
     onSuccess: (_, { status }) => {
-      showSuccess(`订阅计划已${status === 'active' ? '激活' : '停用'}`);
+      showSuccess(status === 'active' ? t('messages.subscriptionPlanActivated') : t('messages.subscriptionPlanDeactivated'));
       // Still invalidate public plans as they may have different caching
       queryClient.invalidateQueries({ queryKey: queryKeys.subscriptionPlans.public() });
     },

@@ -1,4 +1,5 @@
 import { useState, useCallback } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useAuthStore } from '@/features/auth/stores/auth-store';
 import { useNotificationStore } from '@/shared/stores/notification-store';
 import { extractErrorMessage } from '@/shared/utils/error-messages';
@@ -16,6 +17,7 @@ export const useProfile = () => {
   const { user, setUser } = useAuthStore();
   const { showSuccess, showError } = useNotificationStore();
   const [isLoading, setIsLoading] = useState(false);
+  const { t } = useTranslation();
 
   /**
    * Update profile
@@ -23,7 +25,7 @@ export const useProfile = () => {
   const updateProfile = useCallback(
     async (data: UpdateProfileRequest) => {
       if (!user) {
-        showError('用户信息不存在');
+        showError(t('messages.profileNoUser'));
         return;
       }
 
@@ -37,7 +39,7 @@ export const useProfile = () => {
           ...data,
         });
 
-        showSuccess('个人资料已更新');
+        showSuccess(t('messages.profileUpdateSuccess'));
       } catch (error) {
         const errorMsg = extractErrorMessage(error);
         showError(errorMsg);
@@ -46,7 +48,7 @@ export const useProfile = () => {
         setIsLoading(false);
       }
     },
-    [user, setUser, showSuccess, showError]
+    [user, setUser, showSuccess, showError, t]
   );
 
   /**
@@ -57,7 +59,7 @@ export const useProfile = () => {
       setIsLoading(true);
       try {
         await apiChangePassword(data);
-        showSuccess('密码已修改成功');
+        showSuccess(t('messages.passwordChangeSuccess'));
       } catch (error) {
         const errorMsg = extractErrorMessage(error);
         showError(errorMsg);
@@ -66,7 +68,7 @@ export const useProfile = () => {
         setIsLoading(false);
       }
     },
-    [showSuccess, showError]
+    [showSuccess, showError, t]
   );
 
   /**
@@ -76,7 +78,7 @@ export const useProfile = () => {
     async (_file: File) => {
       void _file; // Will be used when avatar upload is implemented
       if (!user) {
-        showError('用户信息不存在');
+        showError(t('messages.profileNoUser'));
         return;
       }
 
@@ -85,7 +87,7 @@ export const useProfile = () => {
         // TODO: Avatar upload not implemented yet
         // const { avatar_url } = await uploadAvatarApi(file);
         // setUser({ ...user, avatar: avatar_url });
-        showSuccess('头像已更新');
+        showSuccess(t('messages.avatarUpdateSuccess'));
         return '';
       } catch (error) {
         const errorMsg = extractErrorMessage(error);
@@ -95,7 +97,7 @@ export const useProfile = () => {
         setIsLoading(false);
       }
     },
-    [user, showSuccess, showError]
+    [user, showSuccess, showError, t]
   );
 
   return {

@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Eye, EyeOff, Smartphone, Loader2, AlertTriangle } from 'lucide-react';
@@ -8,7 +8,7 @@ import { Checkbox } from '@/components/common/Checkbox';
 import { useProfile } from '../hooks/useProfile';
 import { inputStyles, labelStyles, getAlertClass } from '@/lib/ui-styles';
 import {
-  changePasswordSchema,
+  createChangePasswordSchema,
   type ChangePasswordFormData,
 } from '../types/profile.types';
 
@@ -57,6 +57,7 @@ export const ChangePasswordForm = () => {
   const [newPasswordStrength, setNewPasswordStrength] = useState(0);
 
   const { changePassword, isLoading } = useProfile();
+  const changePasswordSchema = useMemo(() => createChangePasswordSchema(t), [t]);
 
   const {
     register,

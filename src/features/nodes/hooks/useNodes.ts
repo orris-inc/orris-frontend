@@ -5,6 +5,7 @@
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { queryKeys } from '@/shared/lib/query-client';
 import { useNodeEvents } from './useNodeEvents';
 import { useNotificationStore } from '@/shared/stores/notification-store';
@@ -72,6 +73,7 @@ export const useNodes = (options: UseNodesOptions = {}) => {
   const { page = 1, pageSize = 20, filters = {}, enabled = true, includeUserNodes, sortBy, sortOrder } = options;
   const queryClient = useQueryClient();
   const { showSuccess, showError } = useNotificationStore();
+  const { t } = useTranslation();
 
   // Build query parameters
   const params: ListNodesParams = {
@@ -100,7 +102,7 @@ export const useNodes = (options: UseNodesOptions = {}) => {
   const createMutation = useMutation({
     mutationFn: createNode,
     onSuccess: () => {
-      showSuccess('节点创建成功');
+      showSuccess(t('messages.nodeCreateSuccess'));
       queryClient.invalidateQueries({ queryKey: queryKeys.nodes.lists() });
     },
     onError: (error) => {
@@ -113,7 +115,7 @@ export const useNodes = (options: UseNodesOptions = {}) => {
     mutationFn: ({ id, data }: { id: string; data: UpdateNodeRequest }) =>
       updateNode(id, data),
     onSuccess: () => {
-      showSuccess('节点信息更新成功');
+      showSuccess(t('messages.nodeUpdateSuccess'));
       queryClient.invalidateQueries({ queryKey: queryKeys.nodes.lists() });
     },
     onError: (error) => {
@@ -125,7 +127,7 @@ export const useNodes = (options: UseNodesOptions = {}) => {
   const deleteMutation = useMutation({
     mutationFn: (id: string) => deleteNode(id),
     onSuccess: () => {
-      showSuccess('节点删除成功');
+      showSuccess(t('messages.nodeDeleteSuccess'));
       queryClient.invalidateQueries({ queryKey: queryKeys.nodes.lists() });
     },
     onError: (error) => {
@@ -153,8 +155,12 @@ export const useNodes = (options: UseNodesOptions = {}) => {
       return { previousData };
     },
     onSuccess: (_, { status }) => {
-      const statusText = status === 'active' ? '激活' : status === 'inactive' ? '停用' : '维护';
-      showSuccess(`节点已${statusText}`);
+      const statusMessages: Record<string, string> = {
+        active: t('messages.nodeActivated'),
+        inactive: t('messages.nodeDeactivated'),
+        maintenance: t('messages.nodeMaintenance'),
+      };
+      showSuccess(statusMessages[status]);
     },
     onError: (error, _variables, context) => {
       if (context?.previousData) {
@@ -168,7 +174,7 @@ export const useNodes = (options: UseNodesOptions = {}) => {
   const tokenMutation = useMutation({
     mutationFn: (id: string) => generateNodeToken(id),
     onSuccess: () => {
-      showSuccess('Token 生成成功');
+      showSuccess(t('messages.nodeTokenGenerated'));
     },
     onError: (error) => {
       showError(handleApiError(error));
@@ -197,7 +203,7 @@ export const useNodes = (options: UseNodesOptions = {}) => {
     mutationFn: (data: BatchUpdateRequest) => batchTriggerNodeUpdate(data),
     onSuccess: (result) => {
       if (result.succeeded.length > 0) {
-        showSuccess(`已触发 ${result.succeeded.length} 个节点更新`);
+        showSuccess(t('messages.batchUpdateTriggered', { count: result.succeeded.length, entity: t('monitor.events.nodeAgent') }));
       }
       queryClient.invalidateQueries({ queryKey: queryKeys.nodes.lists() });
     },
@@ -497,12 +503,13 @@ export const useNodesPage = () => {
 // Broadcast API URL change to all connected nodes
 export const useBroadcastNodeAPIURL = () => {
   const { showSuccess, showError } = useNotificationStore();
+  const { t } = useTranslation();
 
   return useMutation({
     mutationFn: (data: BroadcastNodeAPIURLChangedRequest) => broadcastNodeAPIURLChange(data),
     onSuccess: (result: BroadcastNodeAPIURLChangedResponse) => {
       if (result.nodesNotified > 0) {
-        showSuccess(`已通知 ${result.nodesNotified} 个节点更新API地址`);
+        showSuccess(t('messages.apiURLBroadcasted', { count: result.nodesNotified, entity: t('monitor.events.nodeAgent') }));
       }
     },
     onError: (error) => {
@@ -514,15 +521,16 @@ export const useBroadcastNodeAPIURL = () => {
 // Notify a single node of API URL change
 export const useNotifyNodeAPIURL = () => {
   const { showSuccess, showError } = useNotificationStore();
+  const { t } = useTranslation();
 
   return useMutation({
     mutationFn: ({ nodeId, data }: { nodeId: string; data: NotifyNodeAPIURLChangedRequest }) =>
       notifyNodeAPIURLChange(nodeId, data),
     onSuccess: (result: NotifyNodeAPIURLChangedResponse) => {
       if (result.notified) {
-        showSuccess('已通知节点更新API地址');
+        showSuccess(t('messages.apiURLNotified', { entity: t('monitor.events.nodeAgent') }));
       } else {
-        showError('节点未在线，无法通知');
+        showError(t('messages.entityNotOnline', { entity: t('monitor.events.nodeAgent') }));
       }
     },
     onError: (error) => {

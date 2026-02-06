@@ -10,6 +10,7 @@
  */
 
 import { useEffect, useRef, useCallback, useState, useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
 import { subscribeNodeEvents } from '@/api/node';
 import { subscribeForwardAgentEvents } from '@/api/forward';
 import { convertSnakeToCamel } from '@/shared/utils/case-converter';
@@ -122,6 +123,7 @@ interface UseMonitorDataOptions {
 
 export function useMonitorData(options: UseMonitorDataOptions = {}) {
   const { enabled = true } = options;
+  const { t } = useTranslation();
   const nodeCleanupRef = useRef<(() => void) | null>(null);
   const agentCleanupRef = useRef<(() => void) | null>(null);
 
@@ -174,26 +176,26 @@ export function useMonitorData(options: UseMonitorDataOptions = {}) {
 
   // Generate event message
   const getEventMessage = useCallback((type: 'node' | 'agent', eventType: string, name?: string): string => {
-    const entityName = type === 'node' ? 'Node Agent' : '转发 Agent';
+    const entity = type === 'node' ? t('monitor.events.nodeAgent') : t('monitor.events.forwardAgent');
     const displayName = name || 'Unknown';
 
     switch (eventType) {
       case 'node:online':
       case 'agent:online':
-        return `${entityName} ${displayName} 上线`;
+        return t('monitor.events.online', { entity, name: displayName });
       case 'node:offline':
       case 'agent:offline':
-        return `${entityName} ${displayName} 离线`;
+        return t('monitor.events.offline', { entity, name: displayName });
       case 'node:status':
       case 'agent:status':
-        return `${entityName} ${displayName} 状态更新`;
+        return t('monitor.events.statusUpdate', { entity, name: displayName });
       case 'node:updated':
       case 'agent:updated':
-        return `${entityName} ${displayName} 配置已更新`;
+        return t('monitor.events.configUpdated', { entity, name: displayName });
       default:
-        return `${entityName} ${displayName} 事件`;
+        return t('monitor.events.unknownEvent', { entity, name: displayName });
     }
-  }, []);
+  }, [t]);
 
   // Handle node events (ref-based, no re-render)
   const handleNodeEvent = useCallback((event: NodeEvent) => {

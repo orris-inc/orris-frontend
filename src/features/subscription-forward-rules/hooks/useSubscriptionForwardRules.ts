@@ -6,6 +6,7 @@
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useState, useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useNotificationStore } from '@/shared/stores/notification-store';
 import { handleApiError } from '@/shared/lib/axios';
 import {
@@ -67,6 +68,7 @@ export const useSubscriptionForwardRules = (options: UseSubscriptionForwardRules
   const { subscriptionId, page = 1, pageSize = 20, filters = {}, enabled = true } = options;
   const queryClient = useQueryClient();
   const { showSuccess, showError } = useNotificationStore();
+  const { t } = useTranslation();
 
   // Build query params
   const params: ListSubscriptionForwardRulesParams = {
@@ -90,7 +92,7 @@ export const useSubscriptionForwardRules = (options: UseSubscriptionForwardRules
     mutationFn: (request: CreateSubscriptionForwardRuleRequest) =>
       createSubscriptionForwardRule(subscriptionId, request),
     onSuccess: () => {
-      showSuccess('转发规则创建成功');
+      showSuccess(t('messages.forwardRuleCreateSuccess'));
       queryClient.invalidateQueries({
         queryKey: subscriptionForwardRulesQueryKeys.lists(),
       });
@@ -108,7 +110,7 @@ export const useSubscriptionForwardRules = (options: UseSubscriptionForwardRules
     mutationFn: ({ ruleId, data }: { ruleId: string; data: UpdateSubscriptionForwardRuleRequest }) =>
       updateSubscriptionForwardRule(subscriptionId, ruleId, data),
     onSuccess: () => {
-      showSuccess('转发规则更新成功');
+      showSuccess(t('messages.forwardRuleUpdateSuccess'));
       queryClient.invalidateQueries({
         queryKey: subscriptionForwardRulesQueryKeys.lists(),
       });
@@ -122,7 +124,7 @@ export const useSubscriptionForwardRules = (options: UseSubscriptionForwardRules
   const deleteMutation = useMutation({
     mutationFn: (ruleId: string) => deleteSubscriptionForwardRule(subscriptionId, ruleId),
     onSuccess: () => {
-      showSuccess('转发规则删除成功');
+      showSuccess(t('messages.forwardRuleDeleteSuccess'));
       queryClient.invalidateQueries({
         queryKey: subscriptionForwardRulesQueryKeys.lists(),
       });
@@ -139,7 +141,7 @@ export const useSubscriptionForwardRules = (options: UseSubscriptionForwardRules
   const enableMutation = useMutation({
     mutationFn: (ruleId: string) => enableSubscriptionForwardRule(subscriptionId, ruleId),
     onSuccess: () => {
-      showSuccess('转发规则已启用');
+      showSuccess(t('messages.forwardRuleEnabled'));
       queryClient.invalidateQueries({
         queryKey: subscriptionForwardRulesQueryKeys.lists(),
       });
@@ -153,7 +155,7 @@ export const useSubscriptionForwardRules = (options: UseSubscriptionForwardRules
   const disableMutation = useMutation({
     mutationFn: (ruleId: string) => disableSubscriptionForwardRule(subscriptionId, ruleId),
     onSuccess: () => {
-      showSuccess('转发规则已禁用');
+      showSuccess(t('messages.forwardRuleDisabled'));
       queryClient.invalidateQueries({
         queryKey: subscriptionForwardRulesQueryKeys.lists(),
       });
@@ -168,7 +170,7 @@ export const useSubscriptionForwardRules = (options: UseSubscriptionForwardRules
     mutationFn: (ruleOrders: Array<{ ruleId: string; sortOrder: number }>) =>
       reorderSubscriptionForwardRules(subscriptionId, { ruleOrders }),
     onSuccess: () => {
-      showSuccess('规则顺序已更新');
+      showSuccess(t('messages.ruleReorderSuccess'));
       queryClient.invalidateQueries({
         queryKey: subscriptionForwardRulesQueryKeys.lists(),
       });

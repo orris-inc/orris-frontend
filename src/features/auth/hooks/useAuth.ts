@@ -3,6 +3,7 @@
  */
 
 import { useState, useCallback } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useNavigate, useLocation } from 'react-router';
 import { useAuthStore } from '../stores/auth-store';
 import * as authApi from '@/api/auth';
@@ -38,6 +39,7 @@ const isSafeRedirectUrl = (url: string): boolean => {
  * Hook for using authentication features
  */
 export const useAuth = () => {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const location = useLocation();
   const { user, isAuthenticated, login: storeLogin } = useAuthStore();
@@ -130,14 +132,14 @@ export const useAuth = () => {
         window.location.href = redirectUrl;
       } catch (err) {
         const structured = extractAuthError(err);
-        setError(structured.message || 'OAuth登录失败，请重试');
+        setError(structured.message || t('messages.oauthLoginFailed'));
         setAuthError(structured);
         throw err;
       } finally {
         setIsLoading(false);
       }
     },
-    [storeLogin, getRedirectUrl, clearErrors]
+    [storeLogin, getRedirectUrl, clearErrors, t]
   );
 
   /**

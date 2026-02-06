@@ -251,6 +251,13 @@
       "editableInfo": "Editable Information",
       "networkConfig": "Network Configuration",
       "advancedOptions": "Advanced Options"
+    },
+    "operations": {
+      "delete": "delete",
+      "create": "create",
+      "enable": "enable",
+      "disable": "disable",
+      "update": "update"
     }
   },
   "nav": {
@@ -1541,7 +1548,34 @@
       "title": "Forward Agents",
       "description": "Manage forward agents",
       "create": {
-        "description": "Configure basic info and network settings for the Forward Agent"
+        "title": "Create Forward Agent",
+        "copyTitle": "Copy Forward Agent",
+        "description": "Create a new Forward Agent node to manage your proxy services",
+        "labels": {
+          "nodeName": "Node Name",
+          "publicAddress": "Public Address",
+          "tunnelAddress": "Tunnel Address",
+          "portLimit": "Port Limit",
+          "blockedProtocols": "Blocked Protocols"
+        },
+        "placeholders": {
+          "nodeName": "e.g., Main Forward Agent",
+          "publicAddress": "e.g., example.com or 1.2.3.4",
+          "tunnelAddress": "e.g., 10.0.0.1 or internal.example.com",
+          "portLimit": "e.g., 80,443,8000-9000",
+          "sortOrder": "e.g., 100",
+          "remark": "Optional: add a remark"
+        },
+        "hints": {
+          "publicAddress": "Optional, auto-detected by Agent if empty",
+          "tunnelAddress": "Optional, for relay/exit node internal connection",
+          "portLimit": "Optional, empty allows all ports",
+          "sortOrder": "Optional, lower values appear first",
+          "blockedProtocols": "Optional, click to select protocols to block"
+        },
+        "validation": {
+          "nameRequired": "Node name is required"
+        }
       },
       "agentsUnit": "agents",
       "updatable": "updatable",
@@ -1825,36 +1859,6 @@
         "noResourceGroup": "No resource group",
         "muted": "Muted",
         "unmuted": "Not muted"
-      },
-      "create": {
-        "title": "Create Forward Agent",
-        "copyTitle": "Copy Forward Agent",
-        "description": "Create a new Forward Agent node to manage your proxy services",
-        "labels": {
-          "nodeName": "Node Name",
-          "publicAddress": "Public Address",
-          "tunnelAddress": "Tunnel Address",
-          "portLimit": "Port Limit",
-          "blockedProtocols": "Blocked Protocols"
-        },
-        "placeholders": {
-          "nodeName": "e.g., Main Forward Agent",
-          "publicAddress": "e.g., example.com or 1.2.3.4",
-          "tunnelAddress": "e.g., 10.0.0.1 or internal.example.com",
-          "portLimit": "e.g., 80,443,8000-9000",
-          "sortOrder": "e.g., 100",
-          "remark": "Optional: add a remark"
-        },
-        "hints": {
-          "publicAddress": "Optional, auto-detected by Agent if empty",
-          "tunnelAddress": "Optional, for relay/exit node internal connection",
-          "portLimit": "Optional, empty allows all ports",
-          "sortOrder": "Optional, lower values appear first",
-          "blockedProtocols": "Optional, click to select protocols to block"
-        },
-        "validation": {
-          "nameRequired": "Node name is required"
-        }
       },
       "delete": {
         "title": "Delete Forward Agent",
@@ -2798,7 +2802,44 @@
     "clearFilters": "Clear Filters",
     "deleteIrreversible": "This cannot be undone.",
     "confirmDeleteSubscription": "Delete this subscription?",
-    "deleteSubscriptionWarning": "Once deleted, the subscription will be permanently removed and users will no longer be able to use it."
+    "deleteSubscriptionWarning": "Once deleted, the subscription will be permanently removed and users will no longer be able to use it.",
+    "forwardAgentCreateSuccess": "Forward agent created successfully",
+    "forwardAgentUpdateSuccess": "Forward agent updated successfully",
+    "forwardAgentDeleteSuccess": "Forward agent deleted successfully",
+    "forwardAgentEnabled": "Forward agent enabled",
+    "forwardAgentDisabled": "Forward agent disabled",
+    "tokenRegenerated": "Token regenerated successfully",
+    "updateCommandSent": "Update command sent, target version: {{version}}",
+    "batchUpdateTriggered": "Triggered update for {{count}} {{entity}}(s)",
+    "apiURLBroadcasted": "Notified {{count}} {{entity}}(s) of API URL change",
+    "apiURLNotified": "Notified {{entity}} of API URL change",
+    "entityNotOnline": "{{entity}} is not online, cannot notify",
+    "forwardRuleCreateSuccess": "Forward rule created successfully",
+    "forwardRuleUpdateSuccess": "Forward rule updated successfully",
+    "forwardRuleDeleteSuccess": "Forward rule deleted successfully",
+    "forwardRuleEnabled": "Forward rule enabled",
+    "forwardRuleDisabled": "Forward rule disabled",
+    "trafficReset": "Traffic statistics reset",
+    "ruleReorderSuccess": "Rule order updated",
+    "nodeCreateSuccess": "Node created successfully",
+    "nodeUpdateSuccess": "Node updated successfully",
+    "nodeDeleteSuccess": "Node deleted successfully",
+    "nodeActivated": "Node activated",
+    "nodeDeactivated": "Node deactivated",
+    "nodeMaintenance": "Node set to maintenance",
+    "nodeTokenGenerated": "Token generated successfully",
+    "profileUpdateSuccess": "Profile updated",
+    "profileNoUser": "User info not found",
+    "passwordChangeSuccess": "Password changed successfully",
+    "avatarUpdateSuccess": "Avatar updated",
+    "subscriptionPlanCreateSuccess": "Subscription plan created successfully",
+    "subscriptionPlanUpdateSuccess": "Subscription plan updated successfully",
+    "subscriptionPlanActivated": "Subscription plan activated",
+    "subscriptionPlanDeactivated": "Subscription plan deactivated",
+    "oauthLoginFailed": "OAuth login failed, please try again",
+    "batchOperationSuccess": "Successfully {{operation}} {{count}} rules",
+    "batchOperationFailed": "Failed to {{operation}} {{count}} rules",
+    "batchOperationPartial": "Successfully {{operation}} {{succeeded}} rules, {{failed}} failed"
   },
   "placeholders": {
     "searchSubscription": "Search users, plans...",
@@ -2948,50 +2989,50 @@
       "settings": "Settings"
     }
   },
-	  "landing": {
-	    "nav": {
-	      "features": "Features",
-	      "faq": "FAQ",
-	      "howItWorks": "How it works",
-	      "pricing": "Pricing",
-	      "signIn": "Sign In",
+  "landing": {
+    "nav": {
+      "features": "Features",
+      "faq": "FAQ",
+      "howItWorks": "How it works",
+      "pricing": "Pricing",
+      "signIn": "Sign In",
       "getStarted": "Get Started",
       "openMenu": "Open menu",
       "closeMenu": "Close menu"
     },
-	    "hero": {
-	      "badge": "Subscriptions and forwarding, made simple",
-	      "title": "Manage subscriptions, nodes, and forwarding",
-	      "titleHighlight": "All in one console",
-	      "subtitle": "Sign-in, payments, plans, traffic, nodes, forwarding, and notifications—together in one place.",
-	      "getStarted": "Get Started",
-	      "exploreFeatures": "Explore Features",
-	      "stats": {
-	        "forwardingModes": "Rule types",
-	        "nodeProtocols": "Protocols",
-	        "tokenScopes": "Token scopes",
-	        "realtime": "Real-time"
-	      }
-	    },
-	    "stats": {
-	      "title": "Platform at a Glance",
-	      "ruleTypes": {
-	        "value": "5+",
-	        "label": "Rule Types"
-	      },
-	      "protocols": {
-	        "value": "10+",
-	        "label": "Protocols"
-	      },
-	      "tokenScopes": {
-	        "value": "8",
-	        "label": "Token Scopes"
-	      },
-	      "realtime": {
-	        "value": "24/7",
-	        "label": "Real-time"
-	      }
-	    },
+    "hero": {
+      "badge": "Subscriptions and forwarding, made simple",
+      "title": "Manage subscriptions, nodes, and forwarding",
+      "titleHighlight": "All in one console",
+      "subtitle": "Sign-in, payments, plans, traffic, nodes, forwarding, and notifications—together in one place.",
+      "getStarted": "Get Started",
+      "exploreFeatures": "Explore Features",
+      "stats": {
+        "forwardingModes": "Rule types",
+        "nodeProtocols": "Protocols",
+        "tokenScopes": "Token scopes",
+        "realtime": "Real-time"
+      }
+    },
+    "stats": {
+      "title": "Platform at a Glance",
+      "ruleTypes": {
+        "value": "5+",
+        "label": "Rule Types"
+      },
+      "protocols": {
+        "value": "10+",
+        "label": "Protocols"
+      },
+      "tokenScopes": {
+        "value": "8",
+        "label": "Token Scopes"
+      },
+      "realtime": {
+        "value": "24/7",
+        "label": "Real-time"
+      }
+    },
     "features": {
       "title": "What You Can Do",
       "dashboard": {
@@ -3002,46 +3043,46 @@
         "title": "Passwordless sign-in (Passkeys)",
         "description": "Sign up and sign in without passwords, with support checks and device management."
       },
-	      "subscriptions": {
-	        "title": "Subscriptions & plans",
-	        "description": "Manage subscriptions and plans, generate subscription links and scoped access tokens, and review clear traffic stats."
-	      },
+      "subscriptions": {
+        "title": "Subscriptions & plans",
+        "description": "Manage subscriptions and plans, generate subscription links and scoped access tokens, and review clear traffic stats."
+      },
       "payments": {
         "title": "Multiple payment methods",
         "description": "Pay with Stripe, Alipay, WeChat Pay, or USDT (Polygon/Tron), with a clear, trackable flow."
       },
-	      "nodes": {
-	        "title": "Node management",
-	        "description": "Create and configure nodes across major protocols, get install/uninstall commands, and monitor status and updates."
-	      },
-	      "forwarding": {
-	        "title": "Forward agents & rules",
-	        "description": "Manage forward agents and rules for direct and multi-hop chains, with toggles, ordering, and bulk edits."
-	      },
-	      "realtime": {
-	        "title": "Real-time updates",
-	        "description": "See node and agent changes in real time, with key events surfaced promptly."
-	      },
-	      "notifications": {
-	        "title": "Announcements & in-app notifications",
-	        "description": "Stay informed with announcements and in-app notifications, with optional Telegram alerts."
-	      }
-	    },
-	    "faq": {
-	      "title": "FAQ",
-	      "q1": {
-	        "question": "Can I use Passkeys without a password?",
+      "nodes": {
+        "title": "Node management",
+        "description": "Create and configure nodes across major protocols, get install/uninstall commands, and monitor status and updates."
+      },
+      "forwarding": {
+        "title": "Forward agents & rules",
+        "description": "Manage forward agents and rules for direct and multi-hop chains, with toggles, ordering, and bulk edits."
+      },
+      "realtime": {
+        "title": "Real-time updates",
+        "description": "See node and agent changes in real time, with key events surfaced promptly."
+      },
+      "notifications": {
+        "title": "Announcements & in-app notifications",
+        "description": "Stay informed with announcements and in-app notifications, with optional Telegram alerts."
+      }
+    },
+    "faq": {
+      "title": "FAQ",
+      "q1": {
+        "question": "Can I use Passkeys without a password?",
         "answer": "Yes—passwordless signup/sign-in is supported (device/browser support required)."
       },
-	      "q2": {
-	        "question": "When does my subscription activate?",
-	        "answer": "After payment, your subscription activates automatically. You'll get access tokens and can monitor traffic usage in stats."
-	      },
-	      "q3": {
-	        "question": "Can I see node/agent status in real time?",
-	        "answer": "Yes—node and agent status changes update in real time."
-	      }
-	    },
+      "q2": {
+        "question": "When does my subscription activate?",
+        "answer": "After payment, your subscription activates automatically. You'll get access tokens and can monitor traffic usage in stats."
+      },
+      "q3": {
+        "question": "Can I see node/agent status in real time?",
+        "answer": "Yes—node and agent status changes update in real time."
+      }
+    },
     "cta": {
       "title": "Start building your subscription + forwarding setup today",
       "subtitle": "Smoother sign-in, clearer subscription and traffic visibility, and more controllable operations.",
@@ -3309,7 +3350,20 @@
       "advancedDesc": "Advanced system configuration options",
       "comingSoon": "More advanced settings coming soon"
     },
-    "tip": "Tip: Changing your email address requires re-verification. To change your password, please visit the account settings page."
+    "tip": "Tip: Changing your email address requires re-verification. To change your password, please visit the account settings page.",
+    "validation": {
+      "usernameTooShort": "Username must be at least 2 characters",
+      "usernameTooLong": "Username must be at most 100 characters",
+      "invalidEmail": "Please enter a valid email address",
+      "currentPasswordRequired": "Please enter your current password",
+      "newPasswordTooShort": "New password must be at least 8 characters",
+      "newPasswordTooLong": "New password must not exceed 72 characters",
+      "passwordNeedsLetter": "Password must contain at least one letter",
+      "passwordNeedsNumber": "Password must contain at least one number",
+      "confirmPasswordRequired": "Please confirm your new password",
+      "passwordMismatch": "Passwords do not match",
+      "newPasswordSameAsOld": "New password cannot be the same as the old password"
+    }
   },
   "notifications": {
     "title": "Notification Settings",
@@ -3356,7 +3410,10 @@
         "trafficTitle": "Traffic Alert",
         "above": "Alert when exceeding",
         "percentAlert": "%"
-      }
+      },
+      "oneClickBind": "Bind Telegram",
+      "orManualBind": "or bind manually",
+      "codeExpiryAt": "Code expires at {{time}}"
     },
     "status": {
       "title": "Notification Status",
@@ -3846,6 +3903,15 @@
         "uptime": "Uptime",
         "publicIp": "Public IP"
       }
+    },
+    "events": {
+      "nodeAgent": "Node Agent",
+      "forwardAgent": "Forward Agent",
+      "online": "{{entity}} {{name}} online",
+      "offline": "{{entity}} {{name}} offline",
+      "statusUpdate": "{{entity}} {{name}} status update",
+      "configUpdated": "{{entity}} {{name}} config updated",
+      "unknownEvent": "{{entity}} {{name}} event"
     }
   },
   "errors": {

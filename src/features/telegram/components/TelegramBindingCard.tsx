@@ -26,6 +26,8 @@ export const TelegramBindingCard = () => {
     binding,
     verifyCode,
     botLink,
+    deepBindLink,
+    expiresAt,
     unbind,
     updatePreferences,
     isUnbinding,
@@ -122,7 +124,7 @@ export const TelegramBindingCard = () => {
             isSubmitting={isUpdating}
           />
         ) : (
-          verifyCode && <VerifyCodeSection verifyCode={verifyCode} botLink={botLink} />
+          verifyCode && <VerifyCodeSection verifyCode={verifyCode} botLink={botLink} deepBindLink={deepBindLink} expiresAt={expiresAt} />
         )}
       </div>
 
