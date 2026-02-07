@@ -20,15 +20,10 @@ import {
 import { Button } from '@/components/common/Button';
 import { MobileFormInput, MobilePasswordInput } from '@/components/common/mobile-form';
 import { cn } from '@/lib/utils';
+import { useCreateUserForm } from '../hooks/useCreateUserForm';
 import type { CreateUserRequest } from '@/api/user';
 
 type CreateUserSheetProps = CreateSheetProps<CreateUserRequest>;
-
-interface FormErrors {
-  email?: string;
-  name?: string;
-  password?: string;
-}
 
 // Compact input styles matching other create sheets
 // Use text-base (16px) to prevent iOS Safari viewport zoom on focus
@@ -40,113 +35,29 @@ export const CreateUserSheet: React.FC<CreateUserSheetProps> = ({
   onSubmit,
 }) => {
   const { t } = useTranslation();
-  const [email, setEmail] = useState('');
-  const [name, setName] = useState('');
-  const [password, setPassword] = useState('');
-  const [showPassword, setShowPassword] = useState(false);
-  const [errors, setErrors] = useState<FormErrors>({});
-  const [touched, setTouched] = useState<Record<string, boolean>>({});
   const [loading, setLoading] = useState(false);
 
-  // Validation functions
-  const validateEmail = useCallback((value: string): string | undefined => {
-    if (!value.trim()) return t('admin.users.form.emailRequired');
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) return t('admin.users.form.emailInvalid');
-    return undefined;
-  }, [t]);
-
-  const validateName = useCallback((value: string): string | undefined => {
-    if (!value.trim()) return t('admin.users.form.nameRequired');
-    if (value.trim().length < 2 || value.trim().length > 100) return t('admin.users.validation.nameLengthError');
-    return undefined;
-  }, [t]);
-
-  const validatePassword = useCallback((value: string): string | undefined => {
-    const trimmed = value.trim();
-    if (!trimmed) return t('admin.users.form.passwordRequired');
-    if (trimmed.length < 8) return t('admin.users.form.passwordMinLength');
-    if (trimmed.length > 72) return t('admin.users.form.passwordMaxLength');
-    if (!/[a-zA-Z]/.test(trimmed)) return t('admin.users.form.passwordNeedsLetter');
-    if (!/\d/.test(trimmed)) return t('admin.users.form.passwordNeedsNumber');
-    return undefined;
-  }, [t]);
-
-  // Handle blur for inline validation
-  const handleBlur = useCallback((field: keyof FormErrors) => {
-    setTouched((prev) => ({ ...prev, [field]: true }));
-    const validators = { email: validateEmail, name: validateName, password: validatePassword };
-    const values = { email, name, password };
-    setErrors((prev) => ({ ...prev, [field]: validators[field](values[field]) }));
-  }, [email, name, password, validateEmail, validateName, validatePassword]);
-
-  // Validate all fields
-  const validateAll = useCallback((): boolean => {
-    const newErrors: FormErrors = {
-      email: validateEmail(email),
-      name: validateName(name),
-      password: validatePassword(password),
-    };
-    setErrors(newErrors);
-    setTouched({ email: true, name: true, password: true });
-    return !newErrors.email && !newErrors.name && !newErrors.password;
-  }, [email, name, password, validateEmail, validateName, validatePassword]);
-
-  // Reset form
-  const resetForm = useCallback(() => {
-    setEmail('');
-    setName('');
-    setPassword('');
-    setShowPassword(false);
-    setErrors({});
-    setTouched({});
-  }, []);
+  const form = useCreateUserForm({ open });
 
   const handleClose = useCallback(() => {
     if (!loading) {
-      resetForm();
+      form.reset();
       onOpenChange(false);
     }
-  }, [loading, resetForm, onOpenChange]);
+  }, [loading, form, onOpenChange]);
 
   const handleSubmit = useCallback(async () => {
-    if (!validateAll()) return;
+    if (!form.validate()) return;
 
     setLoading(true);
     try {
-      await onSubmit({
-        email: email.trim(),
-        name: name.trim(),
-        password: password.trim(),
-      });
-      resetForm();
+      await onSubmit(form.buildSubmitData());
+      form.reset();
       onOpenChange(false);
     } finally {
       setLoading(false);
     }
-  }, [validateAll, email, name, password, onSubmit, resetForm, onOpenChange]);
-
-  // Form validity check
-  const trimmedPassword = password.trim();
-  const isFormValid =
-    email.trim() &&
-    name.trim() &&
-    trimmedPassword.length >= 8 &&
-    trimmedPassword.length <= 72 &&
-    /[a-zA-Z]/.test(trimmedPassword) &&
-    /\d/.test(trimmedPassword);
-
-  // Password strength indicator
-  const getPasswordStrength = () => {
-    if (!trimmedPassword) return null;
-    const checks = [
-      trimmedPassword.length >= 8 && trimmedPassword.length <= 72,
-      /[a-zA-Z]/.test(trimmedPassword),
-      /\d/.test(trimmedPassword),
-    ];
-    const passed = checks.filter(Boolean).length;
-    return { passed, total: checks.length };
-  };
-  const strength = getPasswordStrength();
+  }, [form, onSubmit, onOpenChange]);
 
   return (
     <Sheet open={open} onOpenChange={(isOpen) => !isOpen && handleClose()}>
@@ -178,15 +89,12 @@ export const CreateUserSheet: React.FC<CreateUserSheetProps> = ({
               <MobileFormInput
                 id="mobile-email"
                 type="email"
-                value={email}
-                onChange={(v) => {
-                  setEmail(v);
-                  if (touched.email) setErrors((prev) => ({ ...prev, email: validateEmail(v) }));
-                }}
-                onBlur={() => handleBlur('email')}
+                value={form.email}
+                onChange={form.handleEmailChange}
+                onBlur={() => form.handleBlur('email')}
                 placeholder="user@example.com"
                 icon={<Mail className="size-4" />}
-                error={touched.email ? errors.email : undefined}
+                error={form.touched.email ? form.errors.email : undefined}
                 disabled={loading}
                 autoComplete="email"
                 className={compactInputStyles}
@@ -199,15 +107,12 @@ export const CreateUserSheet: React.FC<CreateUserSheetProps> = ({
               </label>
               <MobileFormInput
                 id="mobile-name"
-                value={name}
-                onChange={(v) => {
-                  setName(v);
-                  if (touched.name) setErrors((prev) => ({ ...prev, name: validateName(v) }));
-                }}
-                onBlur={() => handleBlur('name')}
+                value={form.name}
+                onChange={form.handleNameChange}
+                onBlur={() => form.handleBlur('name')}
                 placeholder={t('admin.users.fields.namePlaceholderShort')}
                 icon={<User className="size-4" />}
-                error={touched.name ? errors.name : undefined}
+                error={form.touched.name ? form.errors.name : undefined}
                 disabled={loading}
                 autoComplete="name"
                 className={compactInputStyles}
@@ -223,32 +128,29 @@ export const CreateUserSheet: React.FC<CreateUserSheetProps> = ({
             </label>
             <MobilePasswordInput
               id="mobile-password"
-              value={password}
-              onChange={(v) => {
-                setPassword(v);
-                if (touched.password) setErrors((prev) => ({ ...prev, password: validatePassword(v) }));
-              }}
-              onBlur={() => handleBlur('password')}
+              value={form.password}
+              onChange={form.handlePasswordChange}
+              onBlur={() => form.handleBlur('password')}
               placeholder={t('common.placeholders.password')}
-              error={touched.password ? errors.password : undefined}
+              error={form.touched.password ? form.errors.password : undefined}
               disabled={loading}
-              showPassword={showPassword}
-              onToggleShow={() => setShowPassword((prev) => !prev)}
+              showPassword={form.showPassword}
+              onToggleShow={() => form.setShowPassword((prev) => !prev)}
               className={compactInputStyles}
               containerClassName="space-y-1"
             />
 
             {/* Compact password strength indicator */}
-            {strength && (
+            {form.strengthInfo && (
               <div className="flex items-center gap-2 px-1 pt-1">
                 <div className="flex gap-1 flex-1 max-w-20">
-                  {[...Array(strength.total)].map((_, i) => (
+                  {[...Array(form.strengthInfo.total)].map((_, i) => (
                     <div
                       key={i}
                       className={cn(
                         'h-1 flex-1 rounded-full transition-colors',
-                        i < strength.passed
-                          ? strength.passed === strength.total
+                        i < form.strengthInfo!.passed
+                          ? form.strengthInfo!.passed === form.strengthInfo!.total
                             ? 'bg-emerald-500'
                             : 'bg-yellow-500'
                           : 'bg-muted'
@@ -258,9 +160,9 @@ export const CreateUserSheet: React.FC<CreateUserSheetProps> = ({
                 </div>
                 <span className={cn(
                   'text-xs',
-                  strength.passed === strength.total ? 'text-emerald-600' : 'text-muted-foreground'
+                  form.strengthInfo.passed === form.strengthInfo.total ? 'text-emerald-600' : 'text-muted-foreground'
                 )}>
-                  {strength.passed === strength.total ? t('admin.users.create.passwordValid') : `${strength.passed}/${strength.total}`}
+                  {form.strengthInfo.passed === form.strengthInfo.total ? t('admin.users.create.passwordValid') : `${form.strengthInfo.passed}/${form.strengthInfo.total}`}
                 </span>
               </div>
             )}
@@ -280,7 +182,7 @@ export const CreateUserSheet: React.FC<CreateUserSheetProps> = ({
         <SheetFooter>
           <Button
             onClick={handleSubmit}
-            disabled={loading || !isFormValid}
+            disabled={loading || !form.isFormValid}
             className="w-full min-h-[48px]"
           >
             {loading ? t('common.loading.creating') : t('admin.users.create.createUser')}

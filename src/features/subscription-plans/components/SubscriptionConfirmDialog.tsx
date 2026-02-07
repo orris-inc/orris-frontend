@@ -69,7 +69,7 @@ export const SubscriptionConfirmDialog: React.FC<SubscriptionConfirmDialogProps>
   // Handle step transitions after payment creation
   useEffect(() => {
     if (paymentResponse) {
-      if (isUSDTPaymentMethod(selectedPaymentMethod!)) {
+      if (selectedPaymentMethod && isUSDTPaymentMethod(selectedPaymentMethod)) {
         setStep('usdt_instructions');
       }
       // For traditional payments, redirect happens in useCreatePayment
@@ -351,7 +351,7 @@ export const SubscriptionConfirmDialog: React.FC<SubscriptionConfirmDialogProps>
             <DialogPrimitive.Close asChild>
               <Button variant="ghost" size="icon" className="h-9 w-9 shrink-0">
                 <X className="h-5 w-5" />
-                <span className="sr-only">Close</span>
+                <span className="sr-only">{t('common.actions.close')}</span>
               </Button>
             </DialogPrimitive.Close>
           </div>

@@ -149,7 +149,7 @@ export const ResetPasswordPage = () => {
                   />
                   <button
                     type="button"
-                    className="absolute right-1 top-1/2 -translate-y-1/2 inline-flex items-center justify-center rounded-md hover:bg-accent hover:text-accent-foreground h-8 w-8 transition-colors"
+                    className="absolute right-0.5 top-1/2 -translate-y-1/2 inline-flex items-center justify-center rounded-md hover:bg-accent hover:text-accent-foreground touch-target transition-colors"
                     onClick={() => setShowPassword(!showPassword)}
                     aria-label={t('auth.login.togglePasswordVisibility')}
                     tabIndex={-1}
@@ -179,7 +179,7 @@ export const ResetPasswordPage = () => {
                   />
                   <button
                     type="button"
-                    className="absolute right-1 top-1/2 -translate-y-1/2 inline-flex items-center justify-center rounded-md hover:bg-accent hover:text-accent-foreground h-8 w-8 transition-colors"
+                    className="absolute right-0.5 top-1/2 -translate-y-1/2 inline-flex items-center justify-center rounded-md hover:bg-accent hover:text-accent-foreground touch-target transition-colors"
                     onClick={() => setShowConfirmPassword(!showConfirmPassword)}
                     aria-label={t('auth.login.togglePasswordVisibility')}
                     tabIndex={-1}

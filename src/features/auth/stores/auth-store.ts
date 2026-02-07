@@ -63,6 +63,6 @@ export const useAuthStore = create<AuthState>()(
         set({ isLoading });
       },
     }),
-    { name: 'AuthStore' }
+    { name: 'AuthStore', enabled: import.meta.env.DEV }
   )
 );

@@ -2,7 +2,6 @@
  * Edit User Dialog Component
  */
 
-import { useState, useEffect, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { formatDateTime } from '@/shared/utils/date-utils';
 import * as Dialog from '@radix-ui/react-dialog';
@@ -13,6 +12,7 @@ import { SimpleSelect } from '@/lib/SimpleSelect';
 import { getButtonClass, inputStyles, labelStyles } from '@/lib/ui-styles';
 import { cn } from '@/lib/utils';
 import { TruncatedId } from '@/components/admin';
+import { useEditUserForm } from '../hooks/useEditUserForm';
 import type { UserResponse, UpdateUserRequest } from '@/api/user';
 import type { UserStatus, UserRole } from '../types/users.types';
 
@@ -30,66 +30,13 @@ export const EditUserDialog: React.FC<EditUserDialogProps> = ({
   onSubmit,
 }) => {
   const { t } = useTranslation();
-  const [email, setEmail] = useState('');
-  const [name, setName] = useState('');
-  const [status, setStatus] = useState<UserStatus>('active');
-  const [role, setRole] = useState<UserRole>('user');
-  const [errors, setErrors] = useState<{ email?: string; name?: string }>({});
-
-  // Build status options with translations
-  const statusOptions = useMemo(() => [
-    { value: 'active' as UserStatus, label: t('common.status.enabled') },
-    { value: 'inactive' as UserStatus, label: t('common.status.disabled') },
-    { value: 'pending' as UserStatus, label: t('common.status.pending') },
-    { value: 'suspended' as UserStatus, label: t('common.status.suspended') },
-  ], [t]);
-
-  // Build role options with translations
-  const roleOptions = useMemo(() => [
-    { value: 'user' as UserRole, label: t('common.role.user') },
-    { value: 'admin' as UserRole, label: t('common.role.admin') },
-  ], [t]);
-
-  useEffect(() => {
-    if (user) {
-      setEmail(user.email);
-      setName(user.name || '');
-      setStatus((user.status as UserStatus) || 'active');
-      setRole((user.role as UserRole) || 'user');
-      setErrors({});
-    }
-  }, [user]);
-
-  const validate = () => {
-    const newErrors: { email?: string; name?: string } = {};
-
-    // Email validation (if provided)
-    if (email.trim() && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-      newErrors.email = t('admin.users.validation.emailInvalid');
-    }
-
-    // Name validation (if provided)
-    if (name.trim() && (name.trim().length < 2 || name.trim().length > 100)) {
-      newErrors.name = t('admin.users.validation.nameLengthError');
-    }
-
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
-  };
+  const form = useEditUserForm({ user });
 
   const handleSubmit = () => {
-    if (user && validate()) {
-      // Only submit changed fields
-      const updates: UpdateUserRequest = {};
-      if (email !== user.email) updates.email = email;
-      if (name !== user.name) updates.name = name;
-      if (status !== user.status) updates.status = status as UpdateUserRequest['status'];
-      if (role !== user.role) updates.role = role as UpdateUserRequest['role'];
-
-      // If any changes, submit update
-      if (Object.keys(updates).length > 0) {
-        onSubmit(user.id, updates);
-      }
+    if (!form.validate()) return;
+    const result = form.buildSubmitData();
+    if (result) {
+      onSubmit(result.id, result.data);
     }
   };
 
@@ -98,14 +45,6 @@ export const EditUserDialog: React.FC<EditUserDialogProps> = ({
       onClose();
     }
   };
-
-  // Check for changes
-  const hasChanges = user && (
-    email !== user.email ||
-    name !== user.name ||
-    status !== user.status ||
-    role !== user.role
-  );
 
   if (!user) return null;
 
@@ -120,7 +59,7 @@ export const EditUserDialog: React.FC<EditUserDialogProps> = ({
             </Dialog.Title>
             <Dialog.Close className="rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none data-[state=open]:bg-accent data-[state=open]:text-muted-foreground">
               <X className="h-4 w-4" />
-              <span className="sr-only">Close</span>
+              <span className="sr-only">{t('common.actions.close')}</span>
             </Dialog.Close>
           </div>
 
@@ -162,12 +101,12 @@ export const EditUserDialog: React.FC<EditUserDialogProps> = ({
                   </LabelPrimitive.Root>
                   <input
                     id="email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    className={cn(inputStyles, errors.email && "border-destructive")}
+                    value={form.email}
+                    onChange={(e) => form.handleEmailChange(e.target.value)}
+                    className={cn(inputStyles, form.errors.email && "border-destructive")}
                   />
-                  {errors.email && (
-                    <span className="text-sm text-destructive">{errors.email}</span>
+                  {form.errors.email && (
+                    <span className="text-sm text-destructive">{form.errors.email}</span>
                   )}
                 </div>
 
@@ -177,12 +116,12 @@ export const EditUserDialog: React.FC<EditUserDialogProps> = ({
                   </LabelPrimitive.Root>
                   <input
                     id="name"
-                    value={name}
-                    onChange={(e) => setName(e.target.value)}
-                    className={cn(inputStyles, errors.name && "border-destructive")}
+                    value={form.name}
+                    onChange={(e) => form.handleNameChange(e.target.value)}
+                    className={cn(inputStyles, form.errors.name && "border-destructive")}
                   />
-                  {errors.name ? (
-                    <span className="text-sm text-destructive">{errors.name}</span>
+                  {form.errors.name ? (
+                    <span className="text-sm text-destructive">{form.errors.name}</span>
                   ) : (
                     <span className="text-sm text-muted-foreground">{t('admin.users.fields.nameLengthHint')}</span>
                   )}
@@ -192,18 +131,18 @@ export const EditUserDialog: React.FC<EditUserDialogProps> = ({
                   <div className="grid gap-2">
                     <LabelPrimitive.Root className={labelStyles}>{t('common.status.label')}</LabelPrimitive.Root>
                     <SimpleSelect
-                      value={status}
-                      onValueChange={(value) => setStatus(value as UserStatus)}
-                      options={statusOptions}
+                      value={form.status}
+                      onValueChange={(value) => form.setStatus(value as UserStatus)}
+                      options={form.statusOptions}
                     />
                   </div>
 
                   <div className="grid gap-2">
                     <LabelPrimitive.Root className={labelStyles}>{t('admin.users.fields.role')}</LabelPrimitive.Root>
                     <SimpleSelect
-                      value={role}
-                      onValueChange={(value) => setRole(value as UserRole)}
-                      options={roleOptions}
+                      value={form.role}
+                      onValueChange={(value) => form.setRole(value as UserRole)}
+                      options={form.roleOptions}
                     />
                   </div>
                 </div>
@@ -220,7 +159,7 @@ export const EditUserDialog: React.FC<EditUserDialogProps> = ({
             </button>
             <button
               onClick={handleSubmit}
-              disabled={!hasChanges}
+              disabled={!form.hasChanges}
               className={getButtonClass('default', 'default')}
             >
               {t('common.actions.save')}

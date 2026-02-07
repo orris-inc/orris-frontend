@@ -13,6 +13,13 @@ import { convertSnakeToCamel } from '@/shared/utils/case-converter';
 import type { ForwardAgentEvent, ForwardAgent, AgentSystemStatus, ForwardAgentBatchStatusEvent } from '@/api/forward';
 import type { ListResponse } from '@/shared/types/api.types';
 
+// SSE stream sends both individual and batch events with different structures
+type AgentSSEEvent = ForwardAgentEvent | ForwardAgentBatchStatusEvent;
+
+function isBatchAgentStatusEvent(event: AgentSSEEvent): event is ForwardAgentBatchStatusEvent {
+  return event.type === 'agents:status' && 'agents' in event;
+}
+
 interface UseForwardAgentEventsOptions {
   /** Specific agent IDs to subscribe to (omit for all agents) */
   agentIds?: string[];
@@ -137,7 +144,9 @@ export function useForwardAgentEvents(options: UseForwardAgentEventsOptions = {}
           break;
 
         case 'agents:status': {
-          const batchEvent = event as unknown as ForwardAgentBatchStatusEvent;
+          const sseEvent: AgentSSEEvent = event;
+          if (!isBatchAgentStatusEvent(sseEvent)) break;
+          const batchEvent = sseEvent;
           Object.entries(batchEvent.agents).forEach(([agentId, statusData]) => {
             if (statusData.status) {
               const convertedStatus = convertSnakeToCamel<AgentSystemStatus>(statusData.status);
@@ -288,7 +297,9 @@ export function useForwardAgentDetailEvents(options: UseForwardAgentDetailEvents
           break;
 
         case 'agents:status': {
-          const batchEvent = event as unknown as ForwardAgentBatchStatusEvent;
+          const sseEvent: AgentSSEEvent = event;
+          if (!isBatchAgentStatusEvent(sseEvent)) break;
+          const batchEvent = sseEvent;
           const agentData = batchEvent.agents[agentId!];
           if (agentData?.status) {
             const convertedStatus = convertSnakeToCamel<AgentSystemStatus>(agentData.status);

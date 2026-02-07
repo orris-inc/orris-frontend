@@ -212,7 +212,7 @@ const ActivityItem = ({ activity, isLast }: ActivityItemProps) => {
         {/* Optional action */}
         {activity.action && (
           <div className="mt-2">
-            {activity.action.href ? (
+            {activity.action.href && /^(https?:\/\/|\/(?!\/))/.test(activity.action.href) ? (
               <a
                 href={activity.action.href}
                 className={cn(

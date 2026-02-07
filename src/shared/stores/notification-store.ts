@@ -79,6 +79,6 @@ export const useNotificationStore = create<NotificationState>()(
         set({ open: false });
       },
     }),
-    { name: 'NotificationStore' }
+    { name: 'NotificationStore', enabled: import.meta.env.DEV }
   )
 );

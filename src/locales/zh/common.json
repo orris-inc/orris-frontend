@@ -201,6 +201,17 @@
     "readOnly": "只读",
     "recommended": "推荐",
     "unlimited": "无限制",
+    "network": {
+      "slowConnection": "网络连接较慢",
+      "offlineMessage": "您已离线，部分功能可能不可用。",
+      "connectionRestored": "网络连接已恢复"
+    },
+    "serviceWorker": {
+      "updateAvailable": "有新版本可用",
+      "refreshToUpdate": "刷新以获取最新版本",
+      "later": "稍后",
+      "update": "更新"
+    },
     "fields": {
       "name": "名称",
       "description": "描述",

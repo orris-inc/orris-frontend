@@ -39,6 +39,7 @@ import {
   Shield,
   Globe,
 } from 'lucide-react';
+import { SYNC_STATUS_COLORS, RUN_STATUS_COLORS } from '@/shared/utils/status-colors';
 import { useRuleOverallStatus } from '../hooks/useForwardRules';
 import type { ForwardRule, ForwardAgent, RuleSyncStatus, RuleRunStatus, AgentRuleSyncStatus } from '@/api/forward';
 import type { Node } from '@/api/node';
@@ -75,18 +76,18 @@ const TUNNEL_TYPE_LABEL_KEYS: Record<string, string> = { ws: 'admin.forwardRules
 
 // Sync status config
 const SYNC_STATUS_CONFIG: Record<RuleSyncStatus, { labelKey: string; icon: React.ElementType; color: string }> = {
-  synced: { labelKey: 'common.status.synced', icon: CheckCircle2, color: 'text-emerald-500' },
-  pending: { labelKey: 'common.status.pending', icon: CircleDashed, color: 'text-amber-500' },
-  failed: { labelKey: 'common.status.failed', icon: AlertCircle, color: 'text-red-500' },
+  synced: { labelKey: 'common.status.synced', icon: CheckCircle2, color: SYNC_STATUS_COLORS.synced },
+  pending: { labelKey: 'common.status.pending', icon: CircleDashed, color: SYNC_STATUS_COLORS.pending },
+  failed: { labelKey: 'common.status.failed', icon: AlertCircle, color: SYNC_STATUS_COLORS.failed },
 };
 
 // Run status config
 const RUN_STATUS_CONFIG: Record<RuleRunStatus | 'unknown', { labelKey: string; icon: React.ElementType; color: string }> = {
-  running: { labelKey: 'common.status.running', icon: Play, color: 'text-emerald-500' },
-  stopped: { labelKey: 'common.status.stopped', icon: Square, color: 'text-slate-400' },
-  error: { labelKey: 'common.status.error', icon: AlertTriangle, color: 'text-red-500' },
-  starting: { labelKey: 'admin.forwardRules.runStatus.starting', icon: RotateCw, color: 'text-blue-500' },
-  unknown: { labelKey: 'common.status.unknown', icon: HelpCircle, color: 'text-slate-400' },
+  running: { labelKey: 'common.status.running', icon: Play, color: RUN_STATUS_COLORS.running },
+  stopped: { labelKey: 'common.status.stopped', icon: Square, color: RUN_STATUS_COLORS.stopped },
+  error: { labelKey: 'common.status.error', icon: AlertTriangle, color: RUN_STATUS_COLORS.error },
+  starting: { labelKey: 'admin.forwardRules.runStatus.starting', icon: RotateCw, color: RUN_STATUS_COLORS.starting },
+  unknown: { labelKey: 'common.status.unknown', icon: HelpCircle, color: RUN_STATUS_COLORS.unknown },
 };
 
 // Format helpers
@@ -327,7 +328,7 @@ const TrafficBar: React.FC<{
         />
         {/* Center divider */}
         <div
-          className="absolute top-0 h-full w-0.5 bg-white dark:bg-slate-900 transition-all duration-500"
+          className="absolute top-0 h-full w-0.5 bg-card transition-all duration-500"
           style={{ left: `${uploadPercent}%`, transform: 'translateX(-50%)' }}
         />
       </div>
@@ -515,7 +516,7 @@ export const ForwardRuleDetailDialog: React.FC<ForwardRuleDetailDialogProps> = (
 
   return (
     <Dialog open={open} onOpenChange={(isOpen) => !isOpen && onClose()}>
-      <DialogContent className="@container sm:max-w-[680px] p-0 gap-0 overflow-hidden flex flex-col max-h-[90vh]">
+      <DialogContent className="@container sm:max-w-3xl p-0 gap-0 overflow-hidden flex flex-col max-h-[90vh]">
         {/* Header */}
         <DialogHeader className="flex-shrink-0 p-5 pb-4 border-b border-slate-200 dark:border-slate-700/50 bg-gradient-to-br from-slate-50 to-slate-100/50 dark:from-slate-800/50 dark:to-slate-900/50">
           <div className="flex items-start justify-between gap-4">

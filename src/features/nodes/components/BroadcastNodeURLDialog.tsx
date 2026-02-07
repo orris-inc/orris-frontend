@@ -144,7 +144,7 @@ export const BroadcastNodeURLDialog: React.FC<BroadcastNodeURLDialogProps> = ({
 
   return (
     <Dialog open={open} onOpenChange={(open) => !open && handleClose()}>
-      <DialogContent className="sm:max-w-[480px]">
+      <DialogContent className="sm:max-w-lg">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             {isSingleMode ? (

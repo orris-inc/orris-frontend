@@ -9,10 +9,19 @@
  * - Clean spacing and consistent styling
  */
 
-import { useState, lazy, Suspense } from 'react';
+import { useState, useEffect, lazy, Suspense } from 'react';
 import { useNavigate } from 'react-router';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
+import type DOMPurifyType from 'dompurify';
+
+let _DOMPurify: typeof DOMPurifyType | null = null;
+async function getDOMPurify() {
+  if (!_DOMPurify) {
+    _DOMPurify = (await import('dompurify')).default;
+  }
+  return _DOMPurify;
+}
 import { ViewTransitionLink } from '@/components/common/ViewTransitionLink';
 import {
   Menu,
@@ -340,6 +349,15 @@ function NotificationDetail({ announcement, onBack }: NotificationDetailProps) {
   const { t } = useTranslation();
   const { bgColor, textColor } = getAnnouncementColors(announcement.type);
   const IconComponent = ANNOUNCEMENT_ICONS[announcement.type] ?? Megaphone;
+  const [sanitizedHtml, setSanitizedHtml] = useState('');
+
+  useEffect(() => {
+    if (announcement.contentHtml) {
+      getDOMPurify().then((purify) => {
+        setSanitizedHtml(purify.sanitize(announcement.contentHtml!));
+      });
+    }
+  }, [announcement.contentHtml]);
 
   return (
     <div className="p-4">
@@ -388,10 +406,14 @@ function NotificationDetail({ announcement, onBack }: NotificationDetailProps) {
 
       <div className="text-sm text-foreground/90 leading-relaxed">
         {announcement.contentHtml ? (
-          <div
-            className="prose prose-sm dark:prose-invert max-w-none"
-            dangerouslySetInnerHTML={{ __html: announcement.contentHtml }}
-          />
+          sanitizedHtml ? (
+            <div
+              className="prose prose-sm dark:prose-invert max-w-none"
+              dangerouslySetInnerHTML={{ __html: sanitizedHtml }}
+            />
+          ) : (
+            <div className="h-20 animate-pulse rounded bg-muted" />
+          )
         ) : (
           <p className="whitespace-pre-wrap">{announcement.content}</p>
         )}

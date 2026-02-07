@@ -29,7 +29,6 @@ import type { OutboundNodeOption } from '../utils/route-rule-utils';
 import type {
   CreateNodeRequest,
   TransportProtocol,
-  RouteConfig,
   NodeProtocol,
   VLESSSecurity,
   VMessSecurity,
@@ -64,6 +63,7 @@ import { Checkbox } from '@/components/common/Checkbox';
 import { ScrollArea } from '@/components/common/ScrollArea';
 import { ExpirationDatePicker } from '@/components/common/ExpirationDatePicker';
 import { useResourceGroups } from '@/features/resource-groups/hooks/useResourceGroups';
+import { useCreateNodeForm } from '../hooks/useCreateNodeForm';
 
 interface CreateNodeDialogProps {
   open: boolean;
@@ -106,71 +106,6 @@ const CONGESTION_CONTROL_OPTIONS: CongestionControl[] = ['cubic', 'bbr', 'new_re
 
 // TUIC UDP relay modes
 const TUIC_UDP_RELAY_MODES: TUICUDPRelayMode[] = ['native', 'quic'];
-
-// Default form data
-const getDefaultFormData = (): CreateNodeRequest & { tagsInput: string; expiresAt?: string; costLabel?: string } => ({
-  name: '',
-  protocol: 'shadowsocks',
-  serverAddress: '',
-  agentPort: 8388,
-  subscriptionPort: undefined,
-  encryptionMethod: 'aes-256-gcm',
-  region: '',
-  sortOrder: 0,
-  tags: [],
-  tagsInput: '',
-  groupSids: [],
-  plugin: undefined,
-  pluginOpts: undefined,
-  transportProtocol: 'tcp',
-  host: '',
-  path: '',
-  sni: '',
-  allowInsecure: false,
-  route: undefined,
-  // VLESS fields
-  vlessTransportType: 'tcp',
-  vlessFlow: '',
-  vlessSecurity: 'tls',
-  vlessSni: '',
-  vlessFingerprint: '',
-  vlessAllowInsecure: false,
-  vlessHost: '',
-  vlessPath: '',
-  vlessServiceName: '',
-  vlessRealityPublicKey: '',
-  vlessRealityShortId: '',
-  vlessRealitySpiderX: '',
-  // VMess fields
-  vmessAlterId: 0,
-  vmessSecurity: 'auto',
-  vmessTransportType: 'tcp',
-  vmessHost: '',
-  vmessPath: '',
-  vmessServiceName: '',
-  vmessTls: true,
-  vmessSni: '',
-  vmessAllowInsecure: false,
-  // Hysteria2 fields
-  hysteria2CongestionControl: 'bbr',
-  hysteria2Obfs: '',
-  hysteria2ObfsPassword: '',
-  hysteria2UpMbps: undefined,
-  hysteria2DownMbps: undefined,
-  hysteria2Sni: '',
-  hysteria2AllowInsecure: false,
-  hysteria2Fingerprint: '',
-  // TUIC fields
-  tuicCongestionControl: 'bbr',
-  tuicUdpRelayMode: 'native',
-  tuicAlpn: '',
-  tuicSni: '',
-  tuicAllowInsecure: false,
-  tuicDisableSni: false,
-  // Expiration fields
-  expiresAt: undefined,
-  costLabel: undefined,
-});
 
 // Section configuration
 interface SectionConfig {
@@ -328,12 +263,11 @@ export const CreateNodeDialog: React.FC<CreateNodeDialogProps> = ({
   nodes = [],
 }) => {
   const { t } = useTranslation();
-  const [formData, setFormData] = useState<CreateNodeRequest & { tagsInput: string; expiresAt?: string; costLabel?: string }>(getDefaultFormData());
-  const [errors, setErrors] = useState<Record<string, string>>({});
-  const [pluginOptsString, setPluginOptsString] = useState<string>('');
   const [openSections, setOpenSections] = useState<Set<string>>(new Set(['basic', 'network']));
   // Track previous state for form reset - React recommended pattern for derived state
   const [prevOpenState, setPrevOpenState] = useState<{ open: boolean; initialDataKey?: string } | null>(null);
+
+  const form = useCreateNodeForm();
 
   // Get resource groups for selection
   const { resourceGroups } = useResourceGroups({
@@ -349,60 +283,20 @@ export const CreateNodeDialog: React.FC<CreateNodeDialogProps> = ({
   if (prevOpenState?.open !== currentState.open || prevOpenState?.initialDataKey !== currentState.initialDataKey) {
     setPrevOpenState(currentState);
     if (open && initialData) {
-      const tagsInput = initialData.tags?.join(', ') ?? '';
-      setFormData({
-        ...getDefaultFormData(),
-        ...initialData,
-        tagsInput,
-      });
-      if (initialData.pluginOpts) {
-        const optsStr = Object.entries(initialData.pluginOpts)
-          .map(([key, value]) => `${key}=${value}`)
-          .join(';');
-        setPluginOptsString(optsStr);
-      } else {
-        setPluginOptsString('');
-      }
+      form.initializeForm(initialData);
       // Open all sections when copying
       setOpenSections(new Set(['basic', 'network', 'protocol', 'other', 'route']));
     } else if (open && !initialData) {
-      setFormData(getDefaultFormData());
-      setPluginOptsString('');
+      form.initializeForm();
       setOpenSections(new Set(['basic', 'network']));
     }
   }
 
   const handleClose = useCallback(() => {
-    setFormData(getDefaultFormData());
-    setErrors({});
-    setPluginOptsString('');
+    form.reset();
     setOpenSections(new Set(['basic', 'network']));
     onClose();
-  }, [onClose]);
-
-  const handleChange = useCallback((field: string, value: any) => {
-    setFormData((prev) => ({ ...prev, [field]: value }));
-    setErrors((prev) => {
-      if (!prev[field]) return prev;
-      const newErrors = { ...prev };
-      delete newErrors[field];
-      return newErrors;
-    });
-  }, []);
-
-  const handleRouteChange = useCallback((route: RouteConfig | undefined) => {
-    setFormData((prev) => ({ ...prev, route }));
-  }, []);
-
-  const handleCostLabelChange = useCallback((value: string) => {
-    setFormData((prev) => ({ ...prev, costLabel: value || undefined }));
-    setErrors((prev) => {
-      if (!prev.costLabel) return prev;
-      const newErrors = { ...prev };
-      delete newErrors.costLabel;
-      return newErrors;
-    });
-  }, []);
+  }, [onClose, form]);
 
   const toggleSection = useCallback((sectionId: string) => {
     setOpenSections((prev) => {
@@ -416,311 +310,24 @@ export const CreateNodeDialog: React.FC<CreateNodeDialogProps> = ({
     });
   }, []);
 
-  const handleGroupToggle = useCallback((groupSid: string) => {
-    setFormData((prev) => {
-      const currentGroups = prev.groupSids || [];
-      const isSelected = currentGroups.includes(groupSid);
-      return {
-        ...prev,
-        groupSids: isSelected
-          ? currentGroups.filter((sid) => sid !== groupSid)
-          : [...currentGroups, groupSid],
-      };
-    });
-  }, []);
-
-  const isShadowsocks = formData.protocol === 'shadowsocks';
-  const isTrojan = formData.protocol === 'trojan';
-  const isVless = formData.protocol === 'vless';
-  const isVmess = formData.protocol === 'vmess';
-  const isHysteria2 = formData.protocol === 'hysteria2';
-  const isTuic = formData.protocol === 'tuic';
-
-  // Trojan transport fields
-  const showWsFields = isTrojan && formData.transportProtocol === 'ws';
-  const showGrpcFields = isTrojan && formData.transportProtocol === 'grpc';
-
-  // VLESS transport fields
-  const showVlessWsFields = isVless && (formData.vlessTransportType === 'ws' || formData.vlessTransportType === 'h2');
-  const showVlessGrpcFields = isVless && formData.vlessTransportType === 'grpc';
-  const showVlessRealityFields = isVless && formData.vlessSecurity === 'reality';
-
-  // VMess transport fields
-  const showVmessWsFields = isVmess && (formData.vmessTransportType === 'ws' || formData.vmessTransportType === 'http');
-  const showVmessGrpcFields = isVmess && formData.vmessTransportType === 'grpc';
-
-  const validate = () => {
-    const newErrors: Record<string, string> = {};
-
-    if (!formData.name.trim()) {
-      newErrors.name = t('admin.nodes.form.validation.nameRequired');
-    }
-
-    if (!formData.agentPort || formData.agentPort < 1 || formData.agentPort > 65535) {
-      newErrors.agentPort = t('admin.nodes.form.validation.portRange');
-    }
-
-    if (formData.subscriptionPort !== undefined && (formData.subscriptionPort < 1 || formData.subscriptionPort > 65535)) {
-      newErrors.subscriptionPort = t('admin.nodes.form.validation.portRange');
-    }
-
-    if (!formData.protocol) {
-      newErrors.protocol = t('admin.nodes.form.validation.protocolRequired');
-    }
-
-    if (isShadowsocks && !formData.encryptionMethod) {
-      newErrors.encryptionMethod = t('admin.nodes.form.validation.encryptionRequired');
-    }
-
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
-  };
-
   const handleSubmit = () => {
-    if (validate()) {
-      const submitData: CreateNodeRequest = {
-        name: formData.name.trim(),
-        protocol: formData.protocol,
-        serverAddress: formData.serverAddress?.trim(),
-        agentPort: formData.agentPort,
-        subscriptionPort: formData.subscriptionPort,
-      };
-
-      if (isShadowsocks && formData.encryptionMethod) {
-        submitData.encryptionMethod = formData.encryptionMethod;
-      }
-
-      if (isShadowsocks) {
-        const trimmedPlugin = formData.plugin?.trim();
-        if (trimmedPlugin) {
-          submitData.plugin = trimmedPlugin;
-        }
-
-        const trimmedPluginOpts = pluginOptsString.trim();
-        if (trimmedPluginOpts) {
-          try {
-            const pluginOptsObj: Record<string, string> = {};
-            const pairs = trimmedPluginOpts.split(';');
-            for (const pair of pairs) {
-              const [key, value] = pair.split('=').map(s => s.trim());
-              if (key && value) {
-                pluginOptsObj[key] = value;
-              }
-            }
-            if (Object.keys(pluginOptsObj).length > 0) {
-              submitData.pluginOpts = pluginOptsObj;
-            }
-          } catch {
-            // Plugin options parsing failed, skip
-          }
-        }
-      }
-
-      if (isTrojan) {
-        submitData.transportProtocol = formData.transportProtocol;
-        if (formData.sni?.trim()) {
-          submitData.sni = formData.sni.trim();
-        }
-        if (formData.allowInsecure) {
-          submitData.allowInsecure = formData.allowInsecure;
-        }
-        if (showWsFields) {
-          if (formData.host?.trim()) {
-            submitData.host = formData.host.trim();
-          }
-          if (formData.path?.trim()) {
-            submitData.path = formData.path.trim();
-          }
-        }
-        if (showGrpcFields && formData.host?.trim()) {
-          submitData.host = formData.host.trim();
-        }
-      }
-
-      // VLESS protocol fields
-      if (isVless) {
-        submitData.vlessTransportType = formData.vlessTransportType;
-        submitData.vlessSecurity = formData.vlessSecurity;
-        if (formData.vlessFlow?.trim()) {
-          submitData.vlessFlow = formData.vlessFlow.trim();
-        }
-        if (formData.vlessSni?.trim()) {
-          submitData.vlessSni = formData.vlessSni.trim();
-        }
-        if (formData.vlessFingerprint?.trim()) {
-          submitData.vlessFingerprint = formData.vlessFingerprint.trim();
-        }
-        if (formData.vlessAllowInsecure) {
-          submitData.vlessAllowInsecure = formData.vlessAllowInsecure;
-        }
-        if (showVlessWsFields) {
-          if (formData.vlessHost?.trim()) {
-            submitData.vlessHost = formData.vlessHost.trim();
-          }
-          if (formData.vlessPath?.trim()) {
-            submitData.vlessPath = formData.vlessPath.trim();
-          }
-        }
-        if (showVlessGrpcFields && formData.vlessServiceName?.trim()) {
-          submitData.vlessServiceName = formData.vlessServiceName.trim();
-        }
-        if (showVlessRealityFields) {
-          if (formData.vlessRealityPublicKey?.trim()) {
-            submitData.vlessRealityPublicKey = formData.vlessRealityPublicKey.trim();
-          }
-          if (formData.vlessRealityShortId?.trim()) {
-            submitData.vlessRealityShortId = formData.vlessRealityShortId.trim();
-          }
-          if (formData.vlessRealitySpiderX?.trim()) {
-            submitData.vlessRealitySpiderX = formData.vlessRealitySpiderX.trim();
-          }
-        }
-      }
-
-      // VMess protocol fields
-      if (isVmess) {
-        submitData.vmessTransportType = formData.vmessTransportType;
-        submitData.vmessSecurity = formData.vmessSecurity;
-        submitData.vmessAlterId = formData.vmessAlterId ?? 0;
-        submitData.vmessTls = formData.vmessTls ?? true;
-        if (formData.vmessSni?.trim()) {
-          submitData.vmessSni = formData.vmessSni.trim();
-        }
-        if (formData.vmessAllowInsecure) {
-          submitData.vmessAllowInsecure = formData.vmessAllowInsecure;
-        }
-        if (showVmessWsFields) {
-          if (formData.vmessHost?.trim()) {
-            submitData.vmessHost = formData.vmessHost.trim();
-          }
-          if (formData.vmessPath?.trim()) {
-            submitData.vmessPath = formData.vmessPath.trim();
-          }
-        }
-        if (showVmessGrpcFields && formData.vmessServiceName?.trim()) {
-          submitData.vmessServiceName = formData.vmessServiceName.trim();
-        }
-      }
-
-      // Hysteria2 protocol fields
-      if (isHysteria2) {
-        submitData.hysteria2CongestionControl = formData.hysteria2CongestionControl;
-        if (formData.hysteria2Obfs?.trim()) {
-          submitData.hysteria2Obfs = formData.hysteria2Obfs.trim();
-        }
-        if (formData.hysteria2ObfsPassword?.trim()) {
-          submitData.hysteria2ObfsPassword = formData.hysteria2ObfsPassword.trim();
-        }
-        if (formData.hysteria2UpMbps) {
-          submitData.hysteria2UpMbps = formData.hysteria2UpMbps;
-        }
-        if (formData.hysteria2DownMbps) {
-          submitData.hysteria2DownMbps = formData.hysteria2DownMbps;
-        }
-        if (formData.hysteria2Sni?.trim()) {
-          submitData.hysteria2Sni = formData.hysteria2Sni.trim();
-        }
-        if (formData.hysteria2AllowInsecure) {
-          submitData.hysteria2AllowInsecure = formData.hysteria2AllowInsecure;
-        }
-        if (formData.hysteria2Fingerprint?.trim()) {
-          submitData.hysteria2Fingerprint = formData.hysteria2Fingerprint.trim();
-        }
-      }
-
-      // TUIC protocol fields
-      if (isTuic) {
-        submitData.tuicCongestionControl = formData.tuicCongestionControl;
-        submitData.tuicUdpRelayMode = formData.tuicUdpRelayMode;
-        if (formData.tuicAlpn?.trim()) {
-          submitData.tuicAlpn = formData.tuicAlpn.trim();
-        }
-        if (formData.tuicSni?.trim()) {
-          submitData.tuicSni = formData.tuicSni.trim();
-        }
-        if (formData.tuicAllowInsecure) {
-          submitData.tuicAllowInsecure = formData.tuicAllowInsecure;
-        }
-        if (formData.tuicDisableSni) {
-          submitData.tuicDisableSni = formData.tuicDisableSni;
-        }
-      }
-
-      if (formData.region?.trim()) {
-        submitData.region = formData.region.trim();
-      }
-      if (formData.sortOrder !== undefined) {
-        submitData.sortOrder = formData.sortOrder;
-      }
-
-      if (formData.tagsInput?.trim()) {
-        const tags = formData.tagsInput
-          .split(',')
-          .map((tag) => tag.trim())
-          .filter((tag) => tag.length > 0);
-        if (tags.length > 0) {
-          submitData.tags = tags;
-        }
-      }
-
-      if (formData.route) {
-        submitData.route = formData.route;
-      }
-
-      if (formData.groupSids && formData.groupSids.length > 0) {
-        submitData.groupSids = formData.groupSids;
-      }
-
-      // Expiration fields - cast to extended type
-      const extendedSubmitData = submitData as CreateNodeRequest & { expiresAt?: string; costLabel?: string };
-      if (formData.expiresAt) {
-        extendedSubmitData.expiresAt = formData.expiresAt;
-      }
-      if (formData.costLabel) {
-        extendedSubmitData.costLabel = formData.costLabel;
-      }
-
-      onSubmit(extendedSubmitData);
+    if (form.validate()) {
+      const submitData = form.buildSubmitData();
+      onSubmit(submitData);
       handleClose();
     }
   };
 
-  // Form is valid when required fields are filled
-  // Only Shadowsocks requires encryptionMethod, other protocols have their own required fields
-  const isFormValid = formData.name.trim() &&
-                      formData.protocol &&
-                      formData.agentPort &&
-                      (!isShadowsocks || formData.encryptionMethod);
-
-  // Check if protocol-specific settings have been configured
-  const getHasProtocolSettings = () => {
-    if (isShadowsocks) {
-      return Boolean(formData.plugin || pluginOptsString);
-    }
-    if (isTrojan) {
-      return Boolean(formData.sni || formData.host || formData.path || formData.allowInsecure);
-    }
-    if (isVless) {
-      return Boolean(formData.vlessSni || formData.vlessHost || formData.vlessPath || formData.vlessFlow);
-    }
-    if (isVmess) {
-      return Boolean(formData.vmessSni || formData.vmessHost || formData.vmessPath);
-    }
-    if (isHysteria2) {
-      return Boolean(formData.hysteria2Sni || formData.hysteria2Obfs || formData.hysteria2UpMbps);
-    }
-    if (isTuic) {
-      return Boolean(formData.tuicSni || formData.tuicAlpn);
-    }
-    return false;
-  };
-  const hasProtocolSettings = getHasProtocolSettings();
-
-  const hasOtherSettings = Boolean(formData.region || formData.tagsInput || formData.sortOrder || (formData.groupSids && formData.groupSids.length > 0) || formData.expiresAt || formData.costLabel);
+  const {
+    formData, errors, pluginOptsString,
+    isShadowsocks, isTrojan, isVless, isVmess, isHysteria2, isTuic,
+    handleChange, handleRouteChange, handleCostLabelChange, handleGroupToggle,
+    isFormValid, hasProtocolSettings, hasOtherSettings,
+  } = form;
 
   return (
     <Dialog open={open} onOpenChange={(open) => !open && handleClose()}>
-      <DialogContent className="sm:max-w-[720px] flex flex-col max-h-[90vh] p-0">
+      <DialogContent className="sm:max-w-3xl flex flex-col max-h-[90vh] p-0">
         {/* Header */}
         <DialogHeader className="flex-shrink-0 px-6 pt-6 pb-4">
           <div className="flex items-center gap-3">
@@ -1066,7 +673,7 @@ export const CreateNodeDialog: React.FC<CreateNodeDialogProps> = ({
                     plugin={formData.plugin}
                     pluginOptsString={pluginOptsString}
                     onPluginChange={(value) => handleChange('plugin', value)}
-                    onPluginOptsChange={(value) => setPluginOptsString(value)}
+                    onPluginOptsChange={(value) => form.handlePluginOptsChange(value)}
                     errors={errors}
                   />
                 )}

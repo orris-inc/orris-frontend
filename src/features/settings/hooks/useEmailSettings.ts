@@ -5,8 +5,8 @@
 
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { toast } from 'sonner';
 import { useTranslation } from 'react-i18next';
+import { useNotificationStore } from '@/shared/stores/notification-store';
 import {
   getEmailSettings,
   updateEmailSettings,
@@ -19,6 +19,7 @@ import {
 
 export function useEmailSettings() {
   const { t } = useTranslation();
+  const { showSuccess, showError } = useNotificationStore();
   const queryClient = useQueryClient();
   const [error, setError] = useState<string | null>(null);
   const [testResult, setTestResult] = useState<EmailTestResponse | null>(null);
@@ -36,12 +37,12 @@ export function useEmailSettings() {
     mutationFn: updateEmailSettings,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin', 'settings', 'email'] });
-      toast.success(t('admin.settings.email.updateSuccess'));
+      showSuccess(t('admin.settings.email.updateSuccess'));
       setError(null);
     },
     onError: (err: Error) => {
       setError(err.message);
-      toast.error(t('admin.settings.email.updateError'));
+      showError(t('admin.settings.email.updateError'));
     },
   });
 
@@ -50,14 +51,14 @@ export function useEmailSettings() {
     onSuccess: (result) => {
       setTestResult(result);
       if (result.success) {
-        toast.success(t('admin.settings.email.testSuccess'));
+        showSuccess(t('admin.settings.email.testSuccess'));
       } else {
-        toast.error(result.error || t('admin.settings.email.testFailed'));
+        showError(result.error || t('admin.settings.email.testFailed'));
       }
     },
     onError: (err: Error) => {
       setTestResult({ success: false, error: err.message });
-      toast.error(t('admin.settings.email.testFailed'));
+      showError(t('admin.settings.email.testFailed'));
     },
   });
 

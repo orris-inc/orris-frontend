@@ -4,6 +4,7 @@
  */
 
 import { useTranslation } from 'react-i18next';
+import DOMPurify from 'dompurify';
 import {
   Eye,
   Calendar,
@@ -138,7 +139,7 @@ export const AnnouncementDetailSheet = ({
               )}
             >
               {announcement.contentHtml ? (
-                <div dangerouslySetInnerHTML={{ __html: announcement.contentHtml }} />
+                <div dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(announcement.contentHtml) }} />
               ) : (
                 <p className="whitespace-pre-wrap text-sm">{announcement.content}</p>
               )}

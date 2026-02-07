@@ -9,7 +9,7 @@
  * - Plan selection with visual cards
  */
 
-import { useState, useCallback, useEffect, useMemo } from 'react';
+import { useState, useCallback, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   FolderPlus,
@@ -32,17 +32,13 @@ import {
 } from '@/components/common/sheet';
 import { MobileFormInput, MobileSelect, type MobileSelectOption } from '@/components/common/mobile-form';
 import { cn } from '@/lib/utils';
+import { useCreateResourceGroupForm } from '../hooks/useCreateResourceGroupForm';
 import type { CreateResourceGroupRequest } from '@/api/resource/types';
 import type { SubscriptionPlan, PlanType } from '@/api/subscription/types';
 
 interface CreateResourceGroupSheetProps extends CreateSheetProps<CreateResourceGroupRequest> {
   /** Available subscription plans for selection */
   plans: SubscriptionPlan[];
-}
-
-interface FormErrors {
-  name?: string;
-  planId?: string;
 }
 
 // ============================================================================
@@ -232,13 +228,9 @@ export const CreateResourceGroupSheet: React.FC<CreateResourceGroupSheetProps> =
   plans,
 }) => {
   const { t } = useTranslation();
-  const [name, setName] = useState('');
-  const [planId, setPlanId] = useState('');
-  const [description, setDescription] = useState('');
-  const [errors, setErrors] = useState<FormErrors>({});
-  const [touched, setTouched] = useState<Record<string, boolean>>({});
   const [loading, setLoading] = useState(false);
   const [openSections, setOpenSections] = useState<Set<string>>(new Set(['basic', 'plan']));
+  const form = useCreateResourceGroupForm({ open });
 
   // Build plan options for MobileSelect fallback
   const planOptions: MobileSelectOption[] = useMemo(
@@ -250,89 +242,28 @@ export const CreateResourceGroupSheet: React.FC<CreateResourceGroupSheetProps> =
     [plans]
   );
 
-  // Validation functions
-  const validateName = useCallback(
-    (value: string): string | undefined => {
-      if (!value.trim()) return t('resourceGroups.nameRequired');
-      if (value.trim().length > 100) return t('resourceGroups.nameTooLong');
-      return undefined;
-    },
-    [t]
-  );
-
-  const validatePlanId = useCallback(
-    (value: string): string | undefined => {
-      if (!value) return t('resourceGroups.selectPlanRequired');
-      return undefined;
-    },
-    [t]
-  );
-
-  // Handle blur for inline validation
-  const handleBlur = useCallback(
-    (field: keyof FormErrors) => {
-      setTouched((prev) => ({ ...prev, [field]: true }));
-      const validators = { name: validateName, planId: validatePlanId };
-      const values = { name, planId };
-      setErrors((prev) => ({ ...prev, [field]: validators[field](values[field]) }));
-    },
-    [name, planId, validateName, validatePlanId]
-  );
-
-  // Validate all fields
-  const validateAll = useCallback((): boolean => {
-    const newErrors: FormErrors = {
-      name: validateName(name),
-      planId: validatePlanId(planId),
-    };
-    setErrors(newErrors);
-    setTouched({ name: true, planId: true });
-    return !newErrors.name && !newErrors.planId;
-  }, [name, planId, validateName, validatePlanId]);
-
-  // Reset form
-  const resetForm = useCallback(() => {
-    setName('');
-    setPlanId('');
-    setDescription('');
-    setErrors({});
-    setTouched({});
-    setOpenSections(new Set(['basic', 'plan']));
-  }, []);
-
-  // Reset form when dialog opens
-  useEffect(() => {
-    if (open) {
-      resetForm();
-    }
-  }, [open, resetForm]);
-
   const handleOpenChange = useCallback(
     (open: boolean) => {
       if (!loading && !open) {
-        resetForm();
+        form.reset();
         onOpenChange(false);
       }
     },
-    [loading, resetForm, onOpenChange]
+    [loading, form, onOpenChange]
   );
 
   const handleSubmit = useCallback(async () => {
-    if (!validateAll()) return;
+    if (!form.validate()) return;
 
     setLoading(true);
     try {
-      await onSubmit({
-        name: name.trim(),
-        planId,
-        description: description.trim() || undefined,
-      });
-      resetForm();
+      await onSubmit(form.buildSubmitData());
+      form.reset();
       onOpenChange(false);
     } finally {
       setLoading(false);
     }
-  }, [validateAll, name, planId, description, onSubmit, resetForm, onOpenChange]);
+  }, [form, onSubmit, onOpenChange]);
 
   const toggleSection = (sectionId: string) => {
     setOpenSections((prev) => {
@@ -346,11 +277,8 @@ export const CreateResourceGroupSheet: React.FC<CreateResourceGroupSheetProps> =
     });
   };
 
-  // Form validity check
-  const isFormValid = name.trim() && planId;
-
   // Selected plan info
-  const selectedPlan = plans.find((p) => p.id.toString() === planId);
+  const selectedPlan = plans.find((p) => p.id.toString() === form.planId);
 
   return (
     <Sheet open={open} onOpenChange={(o) => !loading && handleOpenChange(o)}>
@@ -384,15 +312,12 @@ export const CreateResourceGroupSheet: React.FC<CreateResourceGroupSheetProps> =
                 />
                 <MobileFormInput
                   id="mobile-rg-name"
-                  value={name}
-                  onChange={(v) => {
-                    setName(v);
-                    if (touched.name) setErrors((prev) => ({ ...prev, name: validateName(v) }));
-                  }}
-                  onBlur={() => handleBlur('name')}
+                  value={form.name}
+                  onChange={form.handleNameChange}
+                  onBlur={() => form.handleBlur('name')}
                   placeholder={t('resourceGroups.namePlaceholder')}
                   icon={<Layers className="size-5" />}
-                  error={touched.name ? errors.name : undefined}
+                  error={form.touched.name ? form.errors.name : undefined}
                   disabled={loading}
                 />
               </div>
@@ -409,8 +334,8 @@ export const CreateResourceGroupSheet: React.FC<CreateResourceGroupSheetProps> =
                   </div>
                   <textarea
                     id="mobile-rg-description"
-                    value={description}
-                    onChange={(e) => setDescription(e.target.value)}
+                    value={form.description}
+                    onChange={(e) => form.handleDescriptionChange(e.target.value)}
                     placeholder={t('resourceGroups.descriptionPlaceholder')}
                     rows={3}
                     disabled={loading}
@@ -443,16 +368,8 @@ export const CreateResourceGroupSheet: React.FC<CreateResourceGroupSheetProps> =
                     <PlanCard
                       key={plan.id}
                       plan={plan}
-                      selected={planId === plan.id.toString()}
-                      onSelect={() => {
-                        setPlanId(plan.id.toString());
-                        if (touched.planId) {
-                          setErrors((prev) => ({
-                            ...prev,
-                            planId: validatePlanId(plan.id.toString()),
-                          }));
-                        }
-                      }}
+                      selected={form.planId === plan.id.toString()}
+                      onSelect={() => form.handlePlanIdChange(plan.id.toString())}
                       t={t}
                     />
                   ))}
@@ -460,19 +377,15 @@ export const CreateResourceGroupSheet: React.FC<CreateResourceGroupSheetProps> =
               ) : (
                 // Use select for larger lists
                 <MobileSelect
-                  value={planId}
-                  onChange={(v) => {
-                    setPlanId(v);
-                    if (touched.planId)
-                      setErrors((prev) => ({ ...prev, planId: validatePlanId(v) }));
-                  }}
+                  value={form.planId}
+                  onChange={form.handlePlanIdChange}
                   options={planOptions}
                   placeholder={t('resourceGroups.selectPlan')}
                   disabled={loading}
                 />
               )}
-              {touched.planId && errors.planId && (
-                <p className="text-sm text-destructive px-1">{errors.planId}</p>
+              {form.touched.planId && form.errors.planId && (
+                <p className="text-sm text-destructive px-1">{form.errors.planId}</p>
               )}
 
               {/* Selected plan summary */}
@@ -493,7 +406,7 @@ export const CreateResourceGroupSheet: React.FC<CreateResourceGroupSheetProps> =
             <button
               type="button"
               onClick={handleSubmit}
-              disabled={loading || !isFormValid}
+              disabled={loading || !form.isFormValid}
               className={cn(
                 'flex-1 flex items-center justify-center gap-2',
                 'h-11 rounded-lg',

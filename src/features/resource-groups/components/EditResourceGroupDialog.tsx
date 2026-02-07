@@ -2,7 +2,7 @@
  * Edit Resource Group Dialog
  */
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   Dialog,
@@ -16,6 +16,7 @@ import { Button } from '@/components/common/Button';
 import { Input } from '@/components/common/Input';
 import { Textarea } from '@/components/common/Textarea';
 import { Label } from '@/components/common/Label';
+import { useEditResourceGroupForm } from '../hooks/useEditResourceGroupForm';
 import type { ResourceGroup, UpdateResourceGroupRequest } from '@/api/resource/types';
 import type { SubscriptionPlan } from '@/api/subscription/types';
 
@@ -27,11 +28,6 @@ interface EditResourceGroupDialogProps {
   onSubmit: (id: string, data: UpdateResourceGroupRequest) => Promise<void>;
 }
 
-interface FormData {
-  name: string;
-  description: string;
-}
-
 export const EditResourceGroupDialog: React.FC<EditResourceGroupDialogProps> = ({
   open,
   resourceGroup,
@@ -40,38 +36,17 @@ export const EditResourceGroupDialog: React.FC<EditResourceGroupDialogProps> = (
   onSubmit,
 }) => {
   const { t } = useTranslation();
-  const [formData, setFormData] = useState<FormData>({
-    name: '',
-    description: '',
-  });
   const [loading, setLoading] = useState(false);
-
-  // Initialize form data
-  useEffect(() => {
-    if (open && resourceGroup) {
-      setFormData({
-        name: resourceGroup.name,
-        description: resourceGroup.description || '',
-      });
-    }
-  }, [open, resourceGroup]);
-
-  const handleChange = (field: keyof FormData, value: string) => {
-    setFormData((prev) => ({ ...prev, [field]: value }));
-  };
+  const form = useEditResourceGroupForm({ resourceGroup });
 
   const handleSubmit = async () => {
-    if (!resourceGroup || !formData.name) {
-      return;
-    }
+    if (!form.validate()) return;
+    const result = form.buildSubmitData();
+    if (!result) return;
 
     setLoading(true);
     try {
-      const submitData: UpdateResourceGroupRequest = {
-        name: formData.name,
-        description: formData.description || undefined,
-      };
-      await onSubmit(resourceGroup.sid, submitData);
+      await onSubmit(result.sid, result.data);
       onClose();
     } finally {
       setLoading(false);
@@ -85,7 +60,6 @@ export const EditResourceGroupDialog: React.FC<EditResourceGroupDialogProps> = (
   };
 
   const plan = resourceGroup ? plansMap[resourceGroup.planId] : null;
-  const isValid = formData.name.trim() !== '';
 
   return (
     <Dialog open={open} onOpenChange={handleClose}>
@@ -117,8 +91,8 @@ export const EditResourceGroupDialog: React.FC<EditResourceGroupDialogProps> = (
             <Input
               id="name"
               placeholder={t('resourceGroups.namePlaceholder')}
-              value={formData.name}
-              onChange={(e) => handleChange('name', e.target.value)}
+              value={form.name}
+              onChange={(e) => form.handleNameChange(e.target.value)}
               disabled={loading}
             />
           </div>
@@ -129,15 +103,15 @@ export const EditResourceGroupDialog: React.FC<EditResourceGroupDialogProps> = (
               id="description"
               placeholder={t('resourceGroups.descriptionPlaceholder')}
               rows={3}
-              value={formData.description}
-              onChange={(e) => handleChange('description', e.target.value)}
+              value={form.description}
+              onChange={(e) => form.handleDescriptionChange(e.target.value)}
               disabled={loading}
             />
           </div>
         </div>
 
         <DialogFooter>
-          <Button onClick={handleSubmit} disabled={loading || !isValid}>
+          <Button onClick={handleSubmit} disabled={loading || !form.hasChanges}>
             {loading ? t('common.loading.saving') : t('common.actions.save')}
           </Button>
           <Button variant="outline" onClick={handleClose} disabled={loading}>

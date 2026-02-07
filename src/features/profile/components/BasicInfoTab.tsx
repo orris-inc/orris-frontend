@@ -10,6 +10,7 @@ import {
   type UpdateProfileFormData,
 } from '../types/profile.types';
 import type { UserDisplayInfo } from '@/api/auth';
+import { labelStyles } from '@/lib/ui-styles';
 
 interface BasicInfoTabProps {
   user: UserDisplayInfo;
@@ -64,7 +65,7 @@ export const BasicInfoTab = ({ user }: BasicInfoTabProps) => {
         <div className="grid gap-2">
           <LabelPrimitive.Root
             htmlFor="name"
-            className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+            className={labelStyles}
           >
             {t('profile.basicInfo.username')}
           </LabelPrimitive.Root>
@@ -83,7 +84,7 @@ export const BasicInfoTab = ({ user }: BasicInfoTabProps) => {
         <div className="grid gap-2">
           <LabelPrimitive.Root
             htmlFor="email"
-            className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+            className={labelStyles}
           >
             {t('profile.basicInfo.email')}
           </LabelPrimitive.Root>
@@ -104,7 +105,7 @@ export const BasicInfoTab = ({ user }: BasicInfoTabProps) => {
 
         {/* Account status */}
         <div className="grid gap-2">
-          <LabelPrimitive.Root className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
+          <LabelPrimitive.Root className={labelStyles}>
             {t('profile.basicInfo.accountStatus')}
           </LabelPrimitive.Root>
           <div>

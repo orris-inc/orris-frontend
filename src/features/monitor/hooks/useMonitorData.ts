@@ -13,9 +13,22 @@ import { useEffect, useRef, useCallback, useState, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { subscribeNodeEvents } from '@/api/node';
 import { subscribeForwardAgentEvents } from '@/api/forward';
+import { createAutoReconnectSSE, type SSEController } from '@/shared/lib/sse';
 import { convertSnakeToCamel } from '@/shared/utils/case-converter';
 import type { NodeEvent, NodeSystemStatus, NodeBatchStatusEvent } from '@/api/node';
 import type { ForwardAgentEvent, AgentSystemStatus, ForwardAgentBatchStatusEvent } from '@/api/forward';
+
+// SSE streams send both individual and batch events with different structures
+type NodeSSEEvent = NodeEvent | NodeBatchStatusEvent;
+type AgentSSEEvent = ForwardAgentEvent | ForwardAgentBatchStatusEvent;
+
+function isBatchNodeStatusEvent(event: NodeSSEEvent): event is NodeBatchStatusEvent {
+  return event.type === 'nodes:status' && 'agents' in event;
+}
+
+function isBatchAgentStatusEvent(event: AgentSSEEvent): event is ForwardAgentBatchStatusEvent {
+  return event.type === 'agents:status' && 'agents' in event;
+}
 
 // Maximum number of data points to keep for charts
 const MAX_CHART_POINTS = 60;
@@ -124,8 +137,8 @@ interface UseMonitorDataOptions {
 export function useMonitorData(options: UseMonitorDataOptions = {}) {
   const { enabled = true } = options;
   const { t } = useTranslation();
-  const nodeCleanupRef = useRef<(() => void) | null>(null);
-  const agentCleanupRef = useRef<(() => void) | null>(null);
+  const nodeControllerRef = useRef<SSEController | null>(null);
+  const agentControllerRef = useRef<SSEController | null>(null);
 
   // ============ High-frequency data in refs (no React re-renders) ============
   const nodeStatusesRef = useRef<Map<string, EntityStatus>>(new Map());
@@ -143,29 +156,21 @@ export function useMonitorData(options: UseMonitorDataOptions = {}) {
   // SSE connection status
   const [isConnected, setIsConnected] = useState(false);
 
-  // ============ Throttled state sync using requestAnimationFrame ============
+  // ============ Throttled state sync via interval ============
   useEffect(() => {
     if (!enabled) return;
 
-    let rafId: number;
-    let lastSyncTime = 0;
+    let lastSyncedVersion = updateVersionRef.current;
 
-    const syncToState = (timestamp: number) => {
-      // Throttle updates to STATE_UPDATE_INTERVAL
-      if (timestamp - lastSyncTime >= STATE_UPDATE_INTERVAL) {
-        lastSyncTime = timestamp;
-        // Copy refs to state for UI rendering
-        setNodeStatuses(new Map(nodeStatusesRef.current));
-        setAgentStatuses(new Map(agentStatusesRef.current));
-        setEventLog([...eventLogRef.current]);
-      }
-      rafId = requestAnimationFrame(syncToState);
-    };
+    const intervalId = setInterval(() => {
+      if (updateVersionRef.current === lastSyncedVersion) return;
+      lastSyncedVersion = updateVersionRef.current;
+      setNodeStatuses(new Map(nodeStatusesRef.current));
+      setAgentStatuses(new Map(agentStatusesRef.current));
+      setEventLog([...eventLogRef.current]);
+    }, STATE_UPDATE_INTERVAL);
 
-    // Start the animation frame loop
-    rafId = requestAnimationFrame(syncToState);
-
-    return () => cancelAnimationFrame(rafId);
+    return () => clearInterval(intervalId);
   }, [enabled]);
 
   // Add event to log (ref-based, no re-render)
@@ -276,7 +281,9 @@ export function useMonitorData(options: UseMonitorDataOptions = {}) {
         break;
 
       case 'nodes:status': {
-        const batchEvent = event as unknown as NodeBatchStatusEvent;
+        const sseEvent: NodeSSEEvent = event;
+        if (!isBatchNodeStatusEvent(sseEvent)) break;
+        const batchEvent = sseEvent;
         Object.entries(batchEvent.agents).forEach(([nodeId, statusData]) => {
           if (statusData.status) {
             const convertedStatus = convertSnakeToCamel<NodeSystemStatus>(statusData.status);
@@ -390,7 +397,9 @@ export function useMonitorData(options: UseMonitorDataOptions = {}) {
         break;
 
       case 'agents:status': {
-        const batchEvent = event as unknown as ForwardAgentBatchStatusEvent;
+        const sseEvent: AgentSSEEvent = event;
+        if (!isBatchAgentStatusEvent(sseEvent)) break;
+        const batchEvent = sseEvent;
         Object.entries(batchEvent.agents).forEach(([agentId, statusData]) => {
           if (statusData.status) {
             const convertedStatus = convertSnakeToCamel<AgentSystemStatus>(statusData.status);
@@ -505,40 +514,51 @@ export function useMonitorData(options: UseMonitorDataOptions = {}) {
   // Manage SSE subscriptions
   useEffect(() => {
     if (!enabled) {
-      if (nodeCleanupRef.current) {
-        nodeCleanupRef.current();
-        nodeCleanupRef.current = null;
+      if (nodeControllerRef.current) {
+        nodeControllerRef.current.close();
+        nodeControllerRef.current = null;
       }
-      if (agentCleanupRef.current) {
-        agentCleanupRef.current();
-        agentCleanupRef.current = null;
+      if (agentControllerRef.current) {
+        agentControllerRef.current.close();
+        agentControllerRef.current = null;
       }
       setIsConnected(false);
       return;
     }
 
-    // Subscribe to node events
-    nodeCleanupRef.current = subscribeNodeEvents(undefined, {
-      onOpen: () => setIsConnected(true),
-      onEvent: handleNodeEvent,
-      onError: (error) => console.error('Monitor node SSE error:', error),
-      onClose: () => setIsConnected(false),
-    });
+    // Subscribe to node events with auto-reconnect
+    nodeControllerRef.current = createAutoReconnectSSE(
+      subscribeNodeEvents,
+      undefined,
+      {
+        onStateChange: (state) => setIsConnected(state === 'connected'),
+        onEvent: handleNodeEvent,
+        onError: (error) => {
+          if (import.meta.env.DEV) console.error('Monitor node SSE error:', error);
+        },
+      }
+    );
 
-    // Subscribe to forward agent events
-    agentCleanupRef.current = subscribeForwardAgentEvents(undefined, {
-      onEvent: handleAgentEvent,
-      onError: (error) => console.error('Monitor agent SSE error:', error),
-    });
+    // Subscribe to forward agent events with auto-reconnect
+    agentControllerRef.current = createAutoReconnectSSE(
+      subscribeForwardAgentEvents,
+      undefined,
+      {
+        onEvent: handleAgentEvent,
+        onError: (error) => {
+          if (import.meta.env.DEV) console.error('Monitor agent SSE error:', error);
+        },
+      }
+    );
 
     return () => {
-      if (nodeCleanupRef.current) {
-        nodeCleanupRef.current();
-        nodeCleanupRef.current = null;
+      if (nodeControllerRef.current) {
+        nodeControllerRef.current.close();
+        nodeControllerRef.current = null;
       }
-      if (agentCleanupRef.current) {
-        agentCleanupRef.current();
-        agentCleanupRef.current = null;
+      if (agentControllerRef.current) {
+        agentControllerRef.current.close();
+        agentControllerRef.current = null;
       }
     };
   }, [enabled, handleNodeEvent, handleAgentEvent]);

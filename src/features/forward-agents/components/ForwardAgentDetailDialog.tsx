@@ -61,9 +61,9 @@ import { formatDateTime, isNeverExpiresDate } from '@/shared/utils/date-utils';
 
 // Get progress color based on value
 const getProgressColor = (value: number): string => {
-  if (value >= 90) return "bg-red-500";
-  if (value >= 70) return "bg-yellow-500";
-  return "bg-green-500";
+  if (value >= 90) return "bg-destructive";
+  if (value >= 70) return "bg-warning";
+  return "bg-success";
 };
 
 // Protocol groups for display
@@ -142,7 +142,7 @@ export const ForwardAgentDetailDialog: React.FC<
 
   return (
     <Dialog open={open} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="sm:max-w-[700px] flex flex-col max-h-[90vh]">
+      <DialogContent className="sm:max-w-3xl flex flex-col max-h-[90vh]">
         <DialogHeader className="flex-shrink-0">
           <div className="flex items-center justify-between">
             <DialogTitle className="flex items-center gap-3">
@@ -153,18 +153,18 @@ export const ForwardAgentDetailDialog: React.FC<
             </DialogTitle>
             <div className="flex items-center gap-2 mr-6">
               {isOnline ? (
-                <span className="flex items-center gap-1 text-xs text-green-600">
-                  <span className="h-2 w-2 rounded-full bg-green-500"></span>
+                <span className="flex items-center gap-1 text-xs text-success">
+                  <span className="h-2 w-2 rounded-full bg-success"></span>
                   {t("admin.forwardAgents.detail.nodeOnline")}
                 </span>
               ) : agent.status === "enabled" ? (
-                <span className="flex items-center gap-1 text-xs text-slate-400">
-                  <span className="h-2 w-2 rounded-full bg-slate-300"></span>
+                <span className="flex items-center gap-1 text-xs text-muted-foreground">
+                  <span className="h-2 w-2 rounded-full bg-muted-foreground"></span>
                   {isConnected ? t("admin.forwardAgents.detail.waitingStatus") : t("admin.forwardAgents.detail.connecting")}
                 </span>
               ) : (
-                <span className="flex items-center gap-1 text-xs text-slate-400">
-                  <span className="h-2 w-2 rounded-full bg-slate-300"></span>
+                <span className="flex items-center gap-1 text-xs text-muted-foreground">
+                  <span className="h-2 w-2 rounded-full bg-muted-foreground"></span>
                   {t("admin.forwardAgents.detail.nodeOffline")}
                 </span>
               )}
@@ -191,9 +191,9 @@ export const ForwardAgentDetailDialog: React.FC<
                     <TooltipTrigger asChild>
                       <div className="flex items-center gap-1 text-xs text-muted-foreground">
                         {isConnected ? (
-                          <Wifi className="h-3 w-3 text-green-500" />
+                          <Wifi className="h-3 w-3 text-success" />
                         ) : (
-                          <WifiOff className="h-3 w-3 text-slate-400" />
+                          <WifiOff className="h-3 w-3 text-muted-foreground" />
                         )}
                       </div>
                     </TooltipTrigger>
@@ -201,23 +201,23 @@ export const ForwardAgentDetailDialog: React.FC<
                       {isConnected ? t("admin.forwardAgents.detail.realtimeConnected") : t("admin.forwardAgents.detail.connectingRealtime")}
                     </TooltipContent>
                   </Tooltip>
-                  <span className="text-slate-300 dark:text-slate-600">|</span>
+                  <span className="text-border">|</span>
                   {/* Online Status */}
                   <div className="flex items-center gap-2">
                     {isOnline ? (
                       <>
                         <span className="relative flex h-2.5 w-2.5">
-                          <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
-                          <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-green-500"></span>
+                          <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-success opacity-75"></span>
+                          <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-success"></span>
                         </span>
-                        <span className="text-sm font-medium text-green-600">
+                        <span className="text-sm font-medium text-success">
                           {t("common.status.online")}
                         </span>
                       </>
                     ) : (
                       <>
-                        <span className="h-2.5 w-2.5 rounded-full bg-slate-300"></span>
-                        <span className="text-sm font-medium text-slate-500">
+                        <span className="h-2.5 w-2.5 rounded-full bg-muted-foreground"></span>
+                        <span className="text-sm font-medium text-muted-foreground">
                           {t("common.status.offline")}
                         </span>
                       </>
@@ -226,7 +226,7 @@ export const ForwardAgentDetailDialog: React.FC<
                   {runtimeStatus?.uptimeSeconds !== undefined &&
                     runtimeStatus.uptimeSeconds > 0 && (
                       <>
-                        <span className="text-slate-300 dark:text-slate-600">
+                        <span className="text-border">
                           |
                         </span>
                         <div className="flex items-center gap-1.5 text-sm text-muted-foreground">
@@ -239,7 +239,7 @@ export const ForwardAgentDetailDialog: React.FC<
                     )}
                   {runtimeStatus?.agentVersion && (
                     <>
-                      <span className="text-slate-300 dark:text-slate-600">
+                      <span className="text-border">
                         |
                       </span>
                       <span className="text-sm text-muted-foreground font-mono">
@@ -263,7 +263,7 @@ export const ForwardAgentDetailDialog: React.FC<
                         <span className="text-sm font-medium">{t("admin.forwardAgents.detail.versionManagement")}</span>
                       </div>
                       {versionLoading ? (
-                        <Loader2 className="h-4 w-4 animate-spin text-slate-400" />
+                        <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
                       ) : versionInfo ? (
                         <div className="flex items-center gap-3">
                           <div className="text-sm">
@@ -308,7 +308,7 @@ export const ForwardAgentDetailDialog: React.FC<
                           {!versionInfo.hasUpdate && (
                             <Badge
                               variant="outline"
-                              className="text-green-600 border-green-200 dark:border-green-800"
+                              className="text-success border-success/30"
                             >
                               {t("admin.forwardAgents.detail.upToDate")}
                             </Badge>
@@ -325,9 +325,9 @@ export const ForwardAgentDetailDialog: React.FC<
                                   .catch(() => setVersionInfo(null))
                                   .finally(() => setVersionLoading(false));
                               }}
-                              className="p-1.5 rounded-md hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors"
+                              className="p-1.5 rounded-md hover:bg-muted transition-colors"
                             >
-                              <RefreshCw className="h-4 w-4 text-slate-400" />
+                              <RefreshCw className="h-4 w-4 text-muted-foreground" />
                             </button>
                           </TooltipTrigger>
                           <TooltipContent>{t("admin.forwardAgents.detail.refreshVersion")}</TooltipContent>
@@ -461,11 +461,11 @@ export const ForwardAgentDetailDialog: React.FC<
                             </span>
                           </div>
                           <div className="flex items-center gap-4 text-sm">
-                            <span className="text-green-600">
+                            <span className="text-success">
                               ↓{" "}
                               {formatBitRate(runtimeStatus.networkRxRate ?? 0)}
                             </span>
-                            <span className="text-blue-600">
+                            <span className="text-info">
                               ↑{" "}
                               {formatBitRate(runtimeStatus.networkTxRate ?? 0)}
                             </span>

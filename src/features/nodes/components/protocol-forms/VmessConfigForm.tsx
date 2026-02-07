@@ -28,7 +28,7 @@ export interface VmessConfigFormProps {
   host?: string;
   path?: string;
   serviceName?: string;
-  onFieldChange: (field: string, value: any) => void;
+  onFieldChange: (field: string, value: string | number | boolean | undefined) => void;
   errors?: Record<string, string>;
 }
 

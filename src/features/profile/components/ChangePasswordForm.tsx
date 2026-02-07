@@ -6,7 +6,7 @@ import * as LabelPrimitive from '@radix-ui/react-label';
 import { useTranslation } from 'react-i18next';
 import { Checkbox } from '@/components/common/Checkbox';
 import { useProfile } from '../hooks/useProfile';
-import { inputStyles, labelStyles, getAlertClass } from '@/lib/ui-styles';
+import { inputStyles, labelStyles, getButtonClass, getAlertClass } from '@/lib/ui-styles';
 import {
   createChangePasswordSchema,
   type ChangePasswordFormData,
@@ -245,7 +245,7 @@ export const ChangePasswordForm = () => {
       <button
         type="submit"
         disabled={isLoading}
-        className="inline-flex items-center justify-center rounded-xl text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 bg-primary text-primary-foreground hover:bg-primary/90 h-10 px-4 py-2 w-full active:scale-[0.98]"
+        className={getButtonClass('default', 'default', 'w-full')}
       >
         {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
         {t('profile.changePassword.submit')}

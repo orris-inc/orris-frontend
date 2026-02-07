@@ -9,6 +9,7 @@ import { useTranslation } from 'react-i18next';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useNotificationStore } from '@/shared/stores/notification-store';
 import { handleApiError } from '@/shared/lib/axios';
+import { queryKeys } from '@/shared/lib/query-client';
 import {
   // Admin APIs
   batchCreateForwardRules,
@@ -25,12 +26,6 @@ import {
   type BatchUpdateItem,
   type CreateForwardRuleRequest,
 } from '@/api/forward';
-
-// Query Keys - need to invalidate both admin and user forward rules
-const forwardRulesQueryKeys = {
-  all: ['forwardRules'] as const,
-  lists: () => [...forwardRulesQueryKeys.all, 'list'] as const,
-};
 
 const userForwardRulesQueryKeys = {
   all: ['userForwardRules'] as const,
@@ -130,7 +125,7 @@ export const useBatchForwardRules = (options: UseBatchForwardRulesOptions = {}) 
   // Helper to invalidate queries after batch operations
   const invalidateQueries = useCallback(() => {
     if (isAdmin) {
-      queryClient.invalidateQueries({ queryKey: forwardRulesQueryKeys.lists() });
+      queryClient.invalidateQueries({ queryKey: queryKeys.forwardRules.lists() });
     } else {
       queryClient.invalidateQueries({ queryKey: userForwardRulesQueryKeys.lists() });
       queryClient.invalidateQueries({ queryKey: userForwardRulesQueryKeys.usage() });

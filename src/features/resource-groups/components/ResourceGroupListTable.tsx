@@ -204,7 +204,7 @@ export const ResourceGroupListTable: React.FC<ResourceGroupListTableProps> = ({
         return (
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <button className="inline-flex items-center justify-center size-8 rounded-lg text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-700 transition-all duration-200 group">
+              <button className="relative inline-flex items-center justify-center size-8 rounded-lg text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-700 transition-all duration-200 group after:absolute after:inset-[-6px] after:content-['']">
                 <MoreHorizontal className="size-4 group-hover:scale-110 transition-transform" strokeWidth={2} />
               </button>
             </DropdownMenuTrigger>

@@ -5,8 +5,8 @@
 
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { toast } from 'sonner';
 import { useTranslation } from 'react-i18next';
+import { useNotificationStore } from '@/shared/stores/notification-store';
 import {
   getRegistrationSettings,
   updateRegistrationSettings,
@@ -16,6 +16,7 @@ import {
 
 export function useRegistrationSettings() {
   const { t } = useTranslation();
+  const { showSuccess, showError } = useNotificationStore();
   const queryClient = useQueryClient();
   const [error, setError] = useState<string | null>(null);
 
@@ -32,12 +33,12 @@ export function useRegistrationSettings() {
     mutationFn: updateRegistrationSettings,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin', 'settings', 'registration'] });
-      toast.success(t('admin.settings.registration.updateSuccess'));
+      showSuccess(t('admin.settings.registration.updateSuccess'));
       setError(null);
     },
     onError: (err: Error) => {
       setError(err.message);
-      toast.error(t('admin.settings.registration.updateError'));
+      showError(t('admin.settings.registration.updateError'));
     },
   });
 

@@ -115,10 +115,11 @@ export const ForwardAgentMobileList: React.FC<ForwardAgentMobileListProps> = ({
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <button
-            className="p-1.5 rounded-md hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors active:scale-[0.98]"
+            className="p-1.5 rounded-md hover:bg-muted transition-colors active:scale-[0.98]"
             onClick={(e) => e.stopPropagation()}
+            aria-label={t('common.actions.more')}
           >
-            <MoreHorizontal className="size-4 text-slate-500" />
+            <MoreHorizontal className="size-4 text-muted-foreground" />
           </button>
         </DropdownMenuTrigger>
         <DropdownMenuPortal>
@@ -174,7 +175,7 @@ export const ForwardAgentMobileList: React.FC<ForwardAgentMobileListProps> = ({
                 {t('common.actions.enable')}
               </DropdownMenuItem>
             )}
-            <DropdownMenuItem onSelect={() => onDelete(agent)} className="text-red-600 dark:text-red-400">
+            <DropdownMenuItem onSelect={() => onDelete(agent)} className="text-destructive">
               <Trash2 className="mr-2 size-4" />
               {t('common.actions.delete')}
             </DropdownMenuItem>
@@ -190,7 +191,7 @@ export const ForwardAgentMobileList: React.FC<ForwardAgentMobileListProps> = ({
 
   if (forwardAgents.length === 0) {
     return (
-      <div className="text-center py-12 text-slate-500 dark:text-slate-400">
+      <div className="text-center py-12 text-muted-foreground">
         {t('admin.forwardAgents.emptyState')}
       </div>
     );
@@ -205,7 +206,7 @@ export const ForwardAgentMobileList: React.FC<ForwardAgentMobileListProps> = ({
       <AccordionItem
         key={agent.id}
         value={String(agent.id)}
-        className="ring-1 ring-border rounded-xl bg-white dark:bg-slate-800 overflow-hidden"
+        className="ring-1 ring-border rounded-xl bg-card overflow-hidden"
       >
         {/* Card Header - Always visible */}
         <div className="px-3 py-2">
@@ -213,7 +214,7 @@ export const ForwardAgentMobileList: React.FC<ForwardAgentMobileListProps> = ({
             <div className="flex-1 min-w-0">
               {/* Agent name and status */}
               <div className="flex items-center gap-1.5 mb-0.5">
-                <span className="font-medium text-sm text-slate-900 dark:text-white truncate">
+                <span className="font-medium text-sm text-foreground truncate">
                   {agent.name}
                 </span>
                 <AdminBadge
@@ -224,18 +225,18 @@ export const ForwardAgentMobileList: React.FC<ForwardAgentMobileListProps> = ({
                 </AdminBadge>
                 {/* Online status */}
                 {agent.isOnline ? (
-                  <span className="inline-flex items-center gap-1 text-green-600">
+                  <span className="inline-flex items-center gap-1 text-success">
                     <span className="relative flex h-1.5 w-1.5">
-                      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
-                      <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-green-500"></span>
+                      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-success opacity-75"></span>
+                      <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-success"></span>
                     </span>
                     <span className="text-[10px] font-medium">{t('common.status.online')}</span>
                   </span>
                 ) : (
                   <Tooltip>
                     <TooltipTrigger asChild>
-                      <span className="inline-flex items-center gap-1 text-slate-400">
-                        <span className="h-1.5 w-1.5 rounded-full bg-slate-300 dark:bg-slate-600"></span>
+                      <span className="inline-flex items-center gap-1 text-muted-foreground">
+                        <span className="h-1.5 w-1.5 rounded-full bg-muted-foreground"></span>
                         <span className="text-[10px]">{t('common.status.offline')}</span>
                       </span>
                     </TooltipTrigger>
@@ -254,10 +255,10 @@ export const ForwardAgentMobileList: React.FC<ForwardAgentMobileListProps> = ({
               </div>
 
               {/* Address info */}
-              <div className="flex items-center gap-1 text-xs text-slate-500 dark:text-slate-400">
+              <div className="flex items-center gap-1 text-xs text-muted-foreground">
                 <CopyableAddress
                   address={agent.publicAddress || '-'}
-                  className="text-slate-600 dark:text-slate-300"
+                  className="text-foreground/70"
                   maxLength={24}
                   startChars={12}
                   endChars={8}
@@ -271,12 +272,13 @@ export const ForwardAgentMobileList: React.FC<ForwardAgentMobileListProps> = ({
                 <TooltipTrigger asChild>
                   <button
                     onClick={() => onToggleMute?.(agent)}
-                    className="p-1.5 rounded hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors active:scale-[0.98]"
+                    className="p-1.5 rounded hover:bg-muted transition-colors active:scale-[0.98]"
+                    aria-label={agent.muteNotification ? t('admin.forwardAgents.table.tooltip.clickToUnmute') : t('admin.forwardAgents.table.tooltip.clickToMute')}
                   >
                     {agent.muteNotification ? (
-                      <BellOff className="size-3.5 text-slate-400" />
+                      <BellOff className="size-3.5 text-muted-foreground" />
                     ) : (
-                      <Bell className="size-3.5 text-slate-300 dark:text-slate-600" />
+                      <Bell className="size-3.5 text-muted-foreground/50" />
                     )}
                   </button>
                 </TooltipTrigger>
@@ -286,9 +288,10 @@ export const ForwardAgentMobileList: React.FC<ForwardAgentMobileListProps> = ({
                 <TooltipTrigger asChild>
                   <button
                     onClick={() => onEdit(agent)}
-                    className="p-1.5 rounded hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors active:scale-[0.98]"
+                    className="p-1.5 rounded hover:bg-muted transition-colors active:scale-[0.98]"
+                    aria-label={t('common.actions.edit')}
                   >
-                    <Edit className="size-3.5 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300" />
+                    <Edit className="size-3.5 text-muted-foreground hover:text-foreground" />
                   </button>
                 </TooltipTrigger>
                 <TooltipContent>{t('common.actions.edit')}</TooltipContent>
@@ -297,9 +300,10 @@ export const ForwardAgentMobileList: React.FC<ForwardAgentMobileListProps> = ({
                 <TooltipTrigger asChild>
                   <button
                     onClick={() => onGetInstallScript(agent)}
-                    className="p-1.5 rounded hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors active:scale-[0.98]"
+                    className="p-1.5 rounded hover:bg-muted transition-colors active:scale-[0.98]"
+                    aria-label={t('admin.forwardAgents.table.menu.installScript')}
                   >
-                    <Terminal className="size-3.5 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300" />
+                    <Terminal className="size-3.5 text-muted-foreground hover:text-foreground" />
                   </button>
                 </TooltipTrigger>
                 <TooltipContent>{t('admin.forwardAgents.table.menu.installScript')}</TooltipContent>
@@ -310,14 +314,15 @@ export const ForwardAgentMobileList: React.FC<ForwardAgentMobileListProps> = ({
                     onClick={() => agent.status === 'enabled' ? onDisable(agent) : onEnable(agent)}
                     className={`p-1.5 rounded transition-colors active:scale-[0.98] ${
                       agent.status === 'enabled'
-                        ? 'hover:bg-red-50 dark:hover:bg-red-900/20'
-                        : 'hover:bg-green-50 dark:hover:bg-green-900/20'
+                        ? 'hover:bg-destructive/10'
+                        : 'hover:bg-success/10'
                     }`}
+                    aria-label={agent.status === 'enabled' ? t('common.actions.disable') : t('common.actions.enable')}
                   >
                     {agent.status === 'enabled' ? (
-                      <PowerOff className="size-3.5 text-slate-400 hover:text-red-500" />
+                      <PowerOff className="size-3.5 text-muted-foreground hover:text-destructive" />
                     ) : (
-                      <Power className="size-3.5 text-slate-400 hover:text-green-500" />
+                      <Power className="size-3.5 text-muted-foreground hover:text-success" />
                     )}
                   </button>
                 </TooltipTrigger>
@@ -329,17 +334,17 @@ export const ForwardAgentMobileList: React.FC<ForwardAgentMobileListProps> = ({
         </div>
 
         {/* Accordion Trigger */}
-        <AccordionTrigger className="px-3 py-1.5 border-t border-slate-100 dark:border-slate-700 hover:no-underline hover:bg-slate-50 dark:hover:bg-slate-700/50">
-          <span className="text-xs text-slate-400 dark:text-slate-500">{t('common.detail')}</span>
+        <AccordionTrigger className="px-3 py-1.5 border-t border-border hover:no-underline hover:bg-muted/50">
+          <span className="text-xs text-muted-foreground">{t('common.detail')}</span>
         </AccordionTrigger>
 
         {/* Accordion Content - Expanded details */}
         <AccordionContent>
-          <div className="px-3 pb-2 space-y-2 border-t border-slate-100 dark:border-slate-700 pt-2">
+          <div className="px-3 pb-2 space-y-2 border-t border-border pt-2">
             {/* Monitor (System + Network) */}
             {agent.systemStatus && (
               <div className="flex items-start gap-2">
-                <span className="text-[10px] text-slate-400 dark:text-slate-500 uppercase tracking-wide w-8 pt-0.5 flex-shrink-0">{t('admin.forwardAgents.detail.monitor')}</span>
+                <span className="text-[10px] text-muted-foreground uppercase tracking-wide w-8 pt-0.5 flex-shrink-0">{t('admin.forwardAgents.detail.monitor')}</span>
                 <div className="flex flex-col gap-1.5 flex-1">
                   {/* System bars + Network rates in one row */}
                   <div className="flex items-center gap-3">
@@ -360,14 +365,14 @@ export const ForwardAgentMobileList: React.FC<ForwardAgentMobileListProps> = ({
                       }}
                     />
                     {/* Network rates */}
-                    <div className="w-px h-4 bg-slate-200 dark:bg-slate-600" />
+                    <div className="w-px h-4 bg-border" />
                     <div className="flex items-center gap-1.5 text-[10px] font-mono">
-                      <span className="text-green-600 dark:text-green-400">↓{formatBitRate(agent.systemStatus.networkRxRate, true)}</span>
-                      <span className="text-blue-600 dark:text-blue-400">↑{formatBitRate(agent.systemStatus.networkTxRate, true)}</span>
+                      <span className="text-success">↓{formatBitRate(agent.systemStatus.networkRxRate, true)}</span>
+                      <span className="text-info">↑{formatBitRate(agent.systemStatus.networkTxRate, true)}</span>
                     </div>
                   </div>
                   {/* Extended info row */}
-                  <div className="flex items-center gap-2 text-[10px] text-slate-500 dark:text-slate-400">
+                  <div className="flex items-center gap-2 text-[10px] text-muted-foreground">
                     <span className="font-mono">
                       {t('admin.forwardAgents.detail.cumulative')}: ↓{formatBytes(agent.systemStatus.networkRxBytes)} ↑{formatBytes(agent.systemStatus.networkTxBytes)}
                     </span>
@@ -382,10 +387,10 @@ export const ForwardAgentMobileList: React.FC<ForwardAgentMobileListProps> = ({
             {/* Tunnel address */}
             {agent.tunnelAddress && (
               <div className="flex items-center gap-2">
-                <span className="text-[10px] text-slate-400 dark:text-slate-500 uppercase tracking-wide w-8 flex-shrink-0">{t('admin.forwardAgents.detail.tunnel')}</span>
+                <span className="text-[10px] text-muted-foreground uppercase tracking-wide w-8 flex-shrink-0">{t('admin.forwardAgents.detail.tunnel')}</span>
                 <CopyableAddress
                   address={agent.tunnelAddress}
-                  className="text-slate-600 dark:text-slate-300"
+                  className="text-foreground/70"
                   maxLength={24}
                   startChars={12}
                   endChars={8}
@@ -396,7 +401,7 @@ export const ForwardAgentMobileList: React.FC<ForwardAgentMobileListProps> = ({
             {/* Resource group */}
             {agent.groupSids && agent.groupSids.length > 0 && (
               <div className="flex items-center gap-2">
-                <span className="text-[10px] text-slate-400 dark:text-slate-500 uppercase tracking-wide w-8 flex-shrink-0">{t('admin.forwardAgents.detail.resource')}</span>
+                <span className="text-[10px] text-muted-foreground uppercase tracking-wide w-8 flex-shrink-0">{t('admin.forwardAgents.detail.resource')}</span>
                 <Badge variant="outline" className="text-[10px] px-1.5 py-0">
                   {group?.name || firstGroupSid}
                   {agent.groupSids.length > 1 && ` +${agent.groupSids.length - 1}`}
@@ -407,21 +412,21 @@ export const ForwardAgentMobileList: React.FC<ForwardAgentMobileListProps> = ({
             {/* Version */}
             {(agent.agentVersion || agent.systemStatus?.agentVersion) && (
               <div className="flex items-center gap-2">
-                <span className="text-[10px] text-slate-400 dark:text-slate-500 uppercase tracking-wide w-8 flex-shrink-0">{t('admin.forwardAgents.detail.version')}</span>
+                <span className="text-[10px] text-muted-foreground uppercase tracking-wide w-8 flex-shrink-0">{t('admin.forwardAgents.detail.version')}</span>
                 <div className="flex items-center gap-1.5">
                   {agent.hasUpdate && (
-                    <ArrowUpCircle className="size-3.5 text-amber-500" />
+                    <ArrowUpCircle className="size-3.5 text-warning" />
                   )}
-                  <span className={`text-xs font-mono ${agent.hasUpdate ? 'text-amber-600 dark:text-amber-400' : 'text-slate-600 dark:text-slate-300'}`}>
+                  <span className={`text-xs font-mono ${agent.hasUpdate ? 'text-warning' : 'text-foreground/70'}`}>
                     v{agent.agentVersion || agent.systemStatus?.agentVersion}
                     {agent.systemStatus?.platform && agent.systemStatus?.arch && (
-                      <span className="text-slate-400 ml-1">
+                      <span className="text-muted-foreground ml-1">
                         ({agent.systemStatus.platform}/{agent.systemStatus.arch})
                       </span>
                     )}
                   </span>
                   {agent.hasUpdate && (
-                    <span className="text-[10px] text-amber-500">{t('admin.forwardAgents.detail.updateAvailable')}</span>
+                    <span className="text-[10px] text-warning">{t('admin.forwardAgents.detail.updateAvailable')}</span>
                   )}
                 </div>
               </div>
@@ -430,15 +435,15 @@ export const ForwardAgentMobileList: React.FC<ForwardAgentMobileListProps> = ({
             {/* Remark */}
             {agent.remark && (
               <div className="flex items-start gap-2">
-                <span className="text-[10px] text-slate-400 dark:text-slate-500 uppercase tracking-wide w-8 pt-0.5 flex-shrink-0">{t('common.fields.remark')}</span>
-                <span className="text-xs text-slate-600 dark:text-slate-300 flex-1">{agent.remark}</span>
+                <span className="text-[10px] text-muted-foreground uppercase tracking-wide w-8 pt-0.5 flex-shrink-0">{t('common.fields.remark')}</span>
+                <span className="text-xs text-foreground/70 flex-1">{agent.remark}</span>
               </div>
             )}
 
             {/* Created at */}
             <div className="flex items-center gap-2">
-              <span className="text-[10px] text-slate-400 dark:text-slate-500 uppercase tracking-wide w-8 flex-shrink-0">{t('admin.forwardAgents.detail.created')}</span>
-              <span className="text-xs text-slate-500">{formatDateTime(agent.createdAt)}</span>
+              <span className="text-[10px] text-muted-foreground uppercase tracking-wide w-8 flex-shrink-0">{t('admin.forwardAgents.detail.created')}</span>
+              <span className="text-xs text-muted-foreground">{formatDateTime(agent.createdAt)}</span>
             </div>
           </div>
         </AccordionContent>

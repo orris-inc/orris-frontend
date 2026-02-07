@@ -3,7 +3,7 @@
  * Mobile-optimized bottom sheet - Tailwind Application UI style
  */
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Loader2, Check } from 'lucide-react';
 import {
@@ -19,23 +19,14 @@ import {
 import { Button } from '@/components/common/Button';
 import { Switch, SwitchThumb } from '@/components/common/Switch';
 import { MobileFormInput } from '@/components/common/mobile-form';
+import { ExpirationDatePicker } from '@/components/common/ExpirationDatePicker';
 import { useResourceGroups } from '@/features/resource-groups/hooks/useResourceGroups';
 import { cn } from '@/lib/utils';
-import type { ForwardAgent, UpdateForwardAgentRequest, BlockedProtocol } from '@/api/forward';
-
-// Protocol definitions
-const PROXY_PROTOCOLS: { value: BlockedProtocol; label: string }[] = [
-  { value: 'http_connect', label: 'HTTP CONNECT' },
-  { value: 'socks4', label: 'SOCKS4' },
-  { value: 'socks5', label: 'SOCKS5' },
-];
-
-const APP_PROTOCOLS: { value: BlockedProtocol; label: string }[] = [
-  { value: 'http', label: 'HTTP' },
-  { value: 'tls', label: 'TLS' },
-  { value: 'ssh', label: 'SSH' },
-  { value: 'ftp', label: 'FTP' },
-];
+import type { ForwardAgent, UpdateForwardAgentRequest } from '@/api/forward';
+import {
+  useEditForwardAgentForm,
+  PROTOCOL_GROUPS,
+} from '../hooks/useEditForwardAgentForm';
 
 type EditForwardAgentSheetProps = EditSheetProps<ForwardAgent, UpdateForwardAgentRequest>;
 
@@ -46,9 +37,9 @@ export const EditForwardAgentSheet: React.FC<EditForwardAgentSheetProps> = ({
   onSubmit,
 }) => {
   const { t } = useTranslation();
-  const [formData, setFormData] = useState<UpdateForwardAgentRequest>({});
-  const [errors, setErrors] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(false);
+
+  const form = useEditForwardAgentForm({ entity: agent });
 
   const { resourceGroups } = useResourceGroups({
     pageSize: 100,
@@ -56,111 +47,20 @@ export const EditForwardAgentSheet: React.FC<EditForwardAgentSheetProps> = ({
     enabled: open,
   });
 
-  useEffect(() => {
-    if (agent) {
-      setFormData({
-        name: agent.name,
-        publicAddress: agent.publicAddress,
-        tunnelAddress: agent.tunnelAddress,
-        remark: agent.remark,
-        allowedPortRange: agent.allowedPortRange,
-        sortOrder: agent.sortOrder,
-        blockedProtocols: agent.blockedProtocols || [],
-        groupSids: agent.groupSids || [],
-        muteNotification: agent.muteNotification,
-      });
-      setErrors({});
-    }
-  }, [agent]);
-
   const handleClose = () => {
     if (!loading) {
       onOpenChange(false);
     }
   };
 
-  const handleChange = (field: keyof UpdateForwardAgentRequest, value: string | number | boolean | undefined) => {
-    setFormData((prev) => ({ ...prev, [field]: value }));
-    if (errors[field]) {
-      setErrors((prev) => {
-        const newErrors = { ...prev };
-        delete newErrors[field];
-        return newErrors;
-      });
-    }
-  };
-
-  const handleProtocolToggle = (protocol: BlockedProtocol, checked: boolean) => {
-    const current = formData.blockedProtocols || [];
-    const updated = checked
-      ? [...current, protocol]
-      : current.filter((p) => p !== protocol);
-    setFormData((prev) => ({ ...prev, blockedProtocols: updated }));
-  };
-
-  const handleGroupToggle = (groupSid: string) => {
-    setFormData((prev) => {
-      const currentGroups = prev.groupSids || [];
-      const isSelected = currentGroups.includes(groupSid);
-      return {
-        ...prev,
-        groupSids: isSelected
-          ? currentGroups.filter((sid) => sid !== groupSid)
-          : [...currentGroups, groupSid],
-      };
-    });
-  };
-
-  const validate = () => {
-    const newErrors: Record<string, string> = {};
-    if (formData.name !== undefined && !formData.name.trim()) {
-      newErrors.name = t('common.validation.required');
-    }
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
-  };
-
   const handleSubmit = async () => {
-    if (!agent || !validate()) return;
+    if (!agent || !form.validate()) return;
 
     setLoading(true);
     try {
-      const updates: UpdateForwardAgentRequest = {};
+      const updates = form.buildSubmitData();
 
-      if (formData.name !== agent.name) updates.name = formData.name;
-      if (formData.publicAddress !== agent.publicAddress) updates.publicAddress = formData.publicAddress;
-      if (formData.tunnelAddress !== agent.tunnelAddress) updates.tunnelAddress = formData.tunnelAddress;
-      if (formData.remark !== agent.remark) updates.remark = formData.remark;
-      if (formData.allowedPortRange !== agent.allowedPortRange) updates.allowedPortRange = formData.allowedPortRange;
-      if (formData.sortOrder !== agent.sortOrder) updates.sortOrder = formData.sortOrder;
-
-      // Compare blocked protocols
-      const currentProtocols = agent.blockedProtocols || [];
-      const newProtocols = formData.blockedProtocols || [];
-      const protocolsChanged =
-        currentProtocols.length !== newProtocols.length ||
-        currentProtocols.some((p) => !newProtocols.includes(p)) ||
-        newProtocols.some((p) => !currentProtocols.includes(p));
-      if (protocolsChanged) {
-        updates.blockedProtocols = newProtocols;
-      }
-
-      // Compare resource groups arrays
-      const currentGroups = agent.groupSids || [];
-      const newGroups = formData.groupSids || [];
-      const groupsChanged =
-        currentGroups.length !== newGroups.length ||
-        currentGroups.some((g) => !newGroups.includes(g)) ||
-        newGroups.some((g) => !currentGroups.includes(g));
-      if (groupsChanged) {
-        updates.groupSids = newGroups;
-      }
-
-      if (formData.muteNotification !== agent.muteNotification) {
-        updates.muteNotification = formData.muteNotification;
-      }
-
-      if (Object.keys(updates).length > 0) {
+      if (updates && Object.keys(updates).length > 0) {
         await onSubmit(String(agent.id), updates);
       }
       handleClose();
@@ -186,9 +86,9 @@ export const EditForwardAgentSheet: React.FC<EditForwardAgentSheetProps> = ({
               {t('admin.forwardAgents.form.nodeName')} <span className="text-destructive">*</span>
             </label>
             <MobileFormInput
-              value={formData.name || ''}
-              onChange={(value) => handleChange('name', value)}
-              error={errors.name}
+              value={form.formData.name || ''}
+              onChange={(value) => form.handleChange('name', value)}
+              error={form.errors.name}
             />
           </div>
 
@@ -197,8 +97,8 @@ export const EditForwardAgentSheet: React.FC<EditForwardAgentSheetProps> = ({
             <label className="text-sm font-medium">{t('admin.forwardAgents.detail.publicAddress')}</label>
             <MobileFormInput
               placeholder={t('admin.forwardAgents.form.publicAddressPlaceholder')}
-              value={formData.publicAddress || ''}
-              onChange={(value) => handleChange('publicAddress', value)}
+              value={form.formData.publicAddress || ''}
+              onChange={(value) => form.handleChange('publicAddress', value)}
               className="font-mono"
             />
           </div>
@@ -208,8 +108,8 @@ export const EditForwardAgentSheet: React.FC<EditForwardAgentSheetProps> = ({
             <label className="text-sm font-medium">{t('admin.forwardAgents.detail.tunnelAddress')}</label>
             <MobileFormInput
               placeholder="10.0.0.1"
-              value={formData.tunnelAddress || ''}
-              onChange={(value) => handleChange('tunnelAddress', value)}
+              value={form.formData.tunnelAddress || ''}
+              onChange={(value) => form.handleChange('tunnelAddress', value)}
               className="font-mono"
             />
             <p className="text-xs text-muted-foreground">
@@ -222,8 +122,8 @@ export const EditForwardAgentSheet: React.FC<EditForwardAgentSheetProps> = ({
             <label className="text-sm font-medium">{t('admin.forwardAgents.detail.portLimit')}</label>
             <MobileFormInput
               placeholder="80,443,8000-9000"
-              value={formData.allowedPortRange || ''}
-              onChange={(value) => handleChange('allowedPortRange', value)}
+              value={form.formData.allowedPortRange || ''}
+              onChange={(value) => form.handleChange('allowedPortRange', value)}
               className="font-mono"
             />
           </div>
@@ -234,8 +134,8 @@ export const EditForwardAgentSheet: React.FC<EditForwardAgentSheetProps> = ({
             <MobileFormInput
               type="number"
               inputMode="numeric"
-              value={formData.sortOrder !== undefined ? String(formData.sortOrder) : ''}
-              onChange={(value) => handleChange('sortOrder', value ? parseInt(value, 10) : undefined)}
+              value={form.formData.sortOrder !== undefined ? String(form.formData.sortOrder) : ''}
+              onChange={(value) => form.handleSortOrderChange(value)}
               className="font-mono"
             />
           </div>
@@ -244,54 +144,31 @@ export const EditForwardAgentSheet: React.FC<EditForwardAgentSheetProps> = ({
           <div className="space-y-2">
             <label className="text-sm font-medium">{t('admin.forwardAgents.detail.blockedProtocols')}</label>
             <div className="space-y-3">
-              {/* Proxy Protocols */}
-              <div>
-                <p className="text-xs text-muted-foreground mb-2">{t('admin.forwardAgents.form.protocolGroupProxy')}</p>
-                <div className="flex flex-wrap gap-2">
-                  {PROXY_PROTOCOLS.map((protocol) => {
-                    const isSelected = formData.blockedProtocols?.includes(protocol.value) || false;
-                    return (
-                      <button
-                        key={protocol.value}
-                        type="button"
-                        onClick={() => handleProtocolToggle(protocol.value, !isSelected)}
-                        className={cn(
-                          'px-3 py-2 text-sm rounded-lg transition-all min-h-[44px] active:scale-[0.98]',
-                          isSelected
-                            ? 'bg-destructive/10 ring-1 ring-destructive/50 text-destructive'
-                            : 'bg-muted/50 ring-1 ring-border text-muted-foreground active:bg-muted'
-                        )}
-                      >
-                        {protocol.label}
-                      </button>
-                    );
-                  })}
+              {PROTOCOL_GROUPS.map((group) => (
+                <div key={group.labelKey}>
+                  <p className="text-xs text-muted-foreground mb-2">{t(group.labelKey)}</p>
+                  <div className="flex flex-wrap gap-2">
+                    {group.protocols.map((protocol) => {
+                      const isSelected = form.formData.blockedProtocols?.includes(protocol.value) || false;
+                      return (
+                        <button
+                          key={protocol.value}
+                          type="button"
+                          onClick={() => form.handleProtocolToggle(protocol.value, !isSelected)}
+                          className={cn(
+                            'px-3 py-2 text-sm rounded-lg transition-all min-h-[44px] active:scale-[0.98]',
+                            isSelected
+                              ? 'bg-destructive/10 ring-1 ring-destructive/50 text-destructive'
+                              : 'bg-muted/50 ring-1 ring-border text-muted-foreground active:bg-muted'
+                          )}
+                        >
+                          {protocol.label}
+                        </button>
+                      );
+                    })}
+                  </div>
                 </div>
-              </div>
-              {/* App Protocols */}
-              <div>
-                <p className="text-xs text-muted-foreground mb-2">{t('admin.forwardAgents.form.protocolGroupApp')}</p>
-                <div className="flex flex-wrap gap-2">
-                  {APP_PROTOCOLS.map((protocol) => {
-                    const isSelected = formData.blockedProtocols?.includes(protocol.value) || false;
-                    return (
-                      <button
-                        key={protocol.value}
-                        type="button"
-                        onClick={() => handleProtocolToggle(protocol.value, !isSelected)}
-                        className={cn(
-                          'px-3 py-2 text-sm rounded-lg transition-all min-h-[44px] active:scale-[0.98]',
-                          isSelected
-                            ? 'bg-destructive/10 ring-1 ring-destructive/50 text-destructive'
-                            : 'bg-muted/50 ring-1 ring-border text-muted-foreground active:bg-muted'
-                        )}
-                      >
-                        {protocol.label}
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
+              ))}
             </div>
           </div>
 
@@ -300,8 +177,8 @@ export const EditForwardAgentSheet: React.FC<EditForwardAgentSheetProps> = ({
             <label className="text-sm font-medium">{t('common.fields.remark')}</label>
             <MobileFormInput
               placeholder={t('admin.forwardAgents.form.remarkPlaceholder')}
-              value={formData.remark || ''}
-              onChange={(value) => handleChange('remark', value)}
+              value={form.formData.remark || ''}
+              onChange={(value) => form.handleChange('remark', value)}
             />
           </div>
 
@@ -311,12 +188,12 @@ export const EditForwardAgentSheet: React.FC<EditForwardAgentSheetProps> = ({
               <label className="text-sm font-medium">{t('admin.forwardAgents.form.bindResourceGroups')}</label>
               <div className="border rounded-lg overflow-hidden divide-y divide-border">
                 {resourceGroups.map((group) => {
-                  const isSelected = formData.groupSids?.includes(group.sid) ?? false;
+                  const isSelected = form.formData.groupSids?.includes(group.sid) ?? false;
                   return (
                     <button
                       key={group.sid}
                       type="button"
-                      onClick={() => handleGroupToggle(group.sid)}
+                      onClick={() => form.handleGroupToggle(group.sid)}
                       className={cn(
                         "flex items-center gap-3 px-3 py-3 w-full text-left transition-colors min-h-[48px]",
                         isSelected ? "bg-primary/5" : "active:bg-muted/50"
@@ -338,8 +215,8 @@ export const EditForwardAgentSheet: React.FC<EditForwardAgentSheetProps> = ({
                 })}
               </div>
               <p className="text-xs text-muted-foreground">
-                {formData.groupSids && formData.groupSids.length > 0
-                  ? t("admin.forwardAgents.form.selectedGroupsCount", { count: formData.groupSids.length })
+                {form.formData.groupSids && form.formData.groupSids.length > 0
+                  ? t("admin.forwardAgents.form.selectedGroupsCount", { count: form.formData.groupSids.length })
                   : t("admin.forwardAgents.form.bindResourceGroupsHint")}
               </p>
             </div>
@@ -350,15 +227,43 @@ export const EditForwardAgentSheet: React.FC<EditForwardAgentSheetProps> = ({
             <label className="text-sm font-medium">{t('admin.forwardAgents.detail.notificationStatus')}</label>
             <div className="flex items-center justify-between min-h-[52px] px-4 rounded-xl border bg-background">
               <span className="text-sm text-muted-foreground">
-                {formData.muteNotification ? t('admin.forwardAgents.detail.muted') : t('admin.forwardAgents.detail.normalNotification')}
+                {form.formData.muteNotification ? t('admin.forwardAgents.detail.muted') : t('admin.forwardAgents.detail.normalNotification')}
               </span>
               <Switch
-                checked={formData.muteNotification ?? false}
-                onCheckedChange={(checked) => handleChange('muteNotification', checked)}
+                checked={form.formData.muteNotification ?? false}
+                onCheckedChange={(checked) => form.handleChange('muteNotification', checked)}
               >
                 <SwitchThumb />
               </Switch>
             </div>
+          </div>
+
+          {/* Expiration Time */}
+          <div className="space-y-1.5">
+            <label className="text-sm font-medium">{t('admin.forwardAgents.edit.labels.expiresAt')}</label>
+            <ExpirationDatePicker
+              value={form.formData.expiresAt}
+              onChange={(value) => form.handleChange('expiresAt', value ?? '')}
+              emptyValue=""
+              id="expiresAt"
+              mobile
+            />
+            <p className="text-xs text-muted-foreground">
+              {t('admin.forwardAgents.edit.hints.expiresAt')}
+            </p>
+          </div>
+
+          {/* Cost Label */}
+          <div className="space-y-1.5">
+            <label className="text-sm font-medium">{t('common.fields.costLabel')}</label>
+            <MobileFormInput
+              placeholder={t('common.costLabel.placeholder')}
+              value={form.formData.costLabel ?? ''}
+              onChange={(value) => form.handleCostLabelChange(value)}
+            />
+            <p className="text-xs text-muted-foreground">
+              {t('common.costLabel.hint')}
+            </p>
           </div>
         </SheetBody>
 

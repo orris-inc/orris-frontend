@@ -5,9 +5,11 @@
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useState, useMemo, useCallback, useRef, useEffect } from 'react';
+import { concurrentMap } from '@/shared/utils/concurrency-utils';
 import { useTranslation } from 'react-i18next';
 import { useNotificationStore } from '@/shared/stores/notification-store';
 import { handleApiError } from '@/shared/lib/axios';
+import { queryKeys } from '@/shared/lib/query-client';
 import {
   listForwardRules,
   getForwardRule,
@@ -30,15 +32,6 @@ import {
   type RuleOverallStatusResponse,
   type ReorderForwardRulesRequest,
 } from '@/api/forward';
-
-// Query Keys for Forward Rules
-const forwardRulesQueryKeys = {
-  all: ['forwardRules'] as const,
-  lists: () => [...forwardRulesQueryKeys.all, 'list'] as const,
-  list: (params: object) => [...forwardRulesQueryKeys.lists(), params] as const,
-  details: () => [...forwardRulesQueryKeys.all, 'detail'] as const,
-  detail: (id: number | string) => [...forwardRulesQueryKeys.details(), id] as const,
-};
 
 export interface ForwardRuleFilters {
   name?: string;
@@ -83,7 +76,7 @@ export const useForwardRules = (options: UseForwardRulesOptions = {}) => {
     error,
     refetch,
   } = useQuery({
-    queryKey: forwardRulesQueryKeys.list(params),
+    queryKey: queryKeys.forwardRules.list(params),
     queryFn: () => listForwardRules(params),
     enabled,
   });
@@ -93,7 +86,7 @@ export const useForwardRules = (options: UseForwardRulesOptions = {}) => {
     mutationFn: createForwardRule,
     onSuccess: () => {
       showSuccess(t('messages.forwardRuleCreateSuccess'));
-      queryClient.invalidateQueries({ queryKey: forwardRulesQueryKeys.lists() });
+      queryClient.invalidateQueries({ queryKey: queryKeys.forwardRules.lists() });
     },
     onError: (error) => {
       showError(handleApiError(error));
@@ -106,7 +99,7 @@ export const useForwardRules = (options: UseForwardRulesOptions = {}) => {
       updateForwardRule(id, data),
     onSuccess: () => {
       showSuccess(t('messages.forwardRuleUpdateSuccess'));
-      queryClient.invalidateQueries({ queryKey: forwardRulesQueryKeys.lists() });
+      queryClient.invalidateQueries({ queryKey: queryKeys.forwardRules.lists() });
     },
     onError: (error) => {
       showError(handleApiError(error));
@@ -118,7 +111,7 @@ export const useForwardRules = (options: UseForwardRulesOptions = {}) => {
     mutationFn: deleteForwardRule,
     onSuccess: () => {
       showSuccess(t('messages.forwardRuleDeleteSuccess'));
-      queryClient.invalidateQueries({ queryKey: forwardRulesQueryKeys.lists() });
+      queryClient.invalidateQueries({ queryKey: queryKeys.forwardRules.lists() });
     },
     onError: (error) => {
       showError(handleApiError(error));
@@ -129,10 +122,10 @@ export const useForwardRules = (options: UseForwardRulesOptions = {}) => {
   const enableMutation = useMutation({
     mutationFn: enableForwardRule,
     onMutate: async (id) => {
-      await queryClient.cancelQueries({ queryKey: forwardRulesQueryKeys.lists() });
-      const previousData = queryClient.getQueryData(forwardRulesQueryKeys.list(params));
+      await queryClient.cancelQueries({ queryKey: queryKeys.forwardRules.lists() });
+      const previousData = queryClient.getQueryData(queryKeys.forwardRules.list(params));
       queryClient.setQueryData(
-        forwardRulesQueryKeys.list(params),
+        queryKeys.forwardRules.list(params),
         (old: { items: ForwardRule[]; page: number; pageSize: number; total: number; totalPages: number } | undefined) => {
           if (!old) return old;
           const updatedItems = old.items.map((rule) =>
@@ -148,7 +141,7 @@ export const useForwardRules = (options: UseForwardRulesOptions = {}) => {
     },
     onError: (error, _id, context) => {
       if (context?.previousData) {
-        queryClient.setQueryData(forwardRulesQueryKeys.list(params), context.previousData);
+        queryClient.setQueryData(queryKeys.forwardRules.list(params), context.previousData);
       }
       showError(handleApiError(error));
     },
@@ -158,10 +151,10 @@ export const useForwardRules = (options: UseForwardRulesOptions = {}) => {
   const disableMutation = useMutation({
     mutationFn: disableForwardRule,
     onMutate: async (id) => {
-      await queryClient.cancelQueries({ queryKey: forwardRulesQueryKeys.lists() });
-      const previousData = queryClient.getQueryData(forwardRulesQueryKeys.list(params));
+      await queryClient.cancelQueries({ queryKey: queryKeys.forwardRules.lists() });
+      const previousData = queryClient.getQueryData(queryKeys.forwardRules.list(params));
       queryClient.setQueryData(
-        forwardRulesQueryKeys.list(params),
+        queryKeys.forwardRules.list(params),
         (old: { items: ForwardRule[]; page: number; pageSize: number; total: number; totalPages: number } | undefined) => {
           if (!old) return old;
           const updatedItems = old.items.map((rule) =>
@@ -177,7 +170,7 @@ export const useForwardRules = (options: UseForwardRulesOptions = {}) => {
     },
     onError: (error, _id, context) => {
       if (context?.previousData) {
-        queryClient.setQueryData(forwardRulesQueryKeys.list(params), context.previousData);
+        queryClient.setQueryData(queryKeys.forwardRules.list(params), context.previousData);
       }
       showError(handleApiError(error));
     },
@@ -188,7 +181,7 @@ export const useForwardRules = (options: UseForwardRulesOptions = {}) => {
     mutationFn: resetForwardRuleTraffic,
     onSuccess: () => {
       showSuccess(t('messages.trafficReset'));
-      queryClient.invalidateQueries({ queryKey: forwardRulesQueryKeys.lists() });
+      queryClient.invalidateQueries({ queryKey: queryKeys.forwardRules.lists() });
     },
     onError: (error) => {
       showError(handleApiError(error));
@@ -208,12 +201,12 @@ export const useForwardRules = (options: UseForwardRulesOptions = {}) => {
   const reorderMutation = useMutation({
     mutationFn: (data: ReorderForwardRulesRequest) => reorderForwardRules(data),
     onMutate: async (data) => {
-      await queryClient.cancelQueries({ queryKey: forwardRulesQueryKeys.lists() });
+      await queryClient.cancelQueries({ queryKey: queryKeys.forwardRules.lists() });
 
-      const previousData = queryClient.getQueryData(forwardRulesQueryKeys.list(params));
+      const previousData = queryClient.getQueryData(queryKeys.forwardRules.list(params));
 
       queryClient.setQueryData(
-        forwardRulesQueryKeys.list(params),
+        queryKeys.forwardRules.list(params),
         (old: { items: ForwardRule[]; page: number; pageSize: number; total: number; totalPages: number } | undefined) => {
           if (!old) return old;
           const updatedItems = old.items.map((rule) => {
@@ -232,12 +225,12 @@ export const useForwardRules = (options: UseForwardRulesOptions = {}) => {
     },
     onError: (error, _variables, context) => {
       if (context?.previousData) {
-        queryClient.setQueryData(forwardRulesQueryKeys.list(params), context.previousData);
+        queryClient.setQueryData(queryKeys.forwardRules.list(params), context.previousData);
       }
       showError(handleApiError(error));
     },
     onSettled: () => {
-      queryClient.invalidateQueries({ queryKey: forwardRulesQueryKeys.lists() });
+      queryClient.invalidateQueries({ queryKey: queryKeys.forwardRules.lists() });
     },
   });
 
@@ -285,7 +278,7 @@ export const useForwardRules = (options: UseForwardRulesOptions = {}) => {
 // Get single forward rule details
 export const useForwardRule = (id: number | string | null) => {
   const { data, isLoading, error } = useQuery({
-    queryKey: forwardRulesQueryKeys.detail(id!),
+    queryKey: queryKeys.forwardRules.detail(id!),
     queryFn: () => getForwardRule(id!),
     enabled: !!id,
   });
@@ -295,13 +288,6 @@ export const useForwardRule = (id: number | string | null) => {
     isLoading,
     error: error ? handleApiError(error) : null,
   };
-};
-
-// Query Keys for Forward Agents (local)
-const forwardAgentsQueryKeys = {
-  all: ['forwardAgents'] as const,
-  lists: () => [...forwardAgentsQueryKeys.all, 'list'] as const,
-  list: (params: object) => [...forwardAgentsQueryKeys.lists(), params] as const,
 };
 
 // Query Keys for Rule Status
@@ -327,7 +313,7 @@ export const useForwardRulesPage = () => {
   // Get all forward agents to build agentId -> agent mapping
   // Load simultaneously with rules list to avoid showing ID first then name
   const { data: agentsData, isLoading: isAgentsLoading } = useQuery({
-    queryKey: forwardAgentsQueryKeys.list({ pageSize: 100 }),
+    queryKey: queryKeys.forwardAgents.list({ pageSize: 100 }),
     queryFn: () => listForwardAgents({ pageSize: 100 }),
   });
 
@@ -413,11 +399,12 @@ export const useRulesOverallStatusBatch = (ruleIds: string[]) => {
     queryFn: async () => {
       if (uniqueRuleIds.length === 0) return {};
 
-      const results = await Promise.allSettled(
-        uniqueRuleIds.map((ruleId) => getRuleOverallStatus(ruleId))
+      const results = await concurrentMap(
+        uniqueRuleIds,
+        (ruleId) => getRuleOverallStatus(ruleId),
+        5
       );
 
-      // Build ruleId -> status mapping
       const statusMap: Record<string, RuleOverallStatusResponse> = {};
       results.forEach((result, index) => {
         if (result.status === 'fulfilled' && result.value) {
@@ -458,89 +445,88 @@ interface PollingRule {
  * - After 30 seconds or status stabilizes: stop polling
  */
 export const useRuleStatusPolling = () => {
-  const [pollingRules, setPollingRules] = useState<Map<string, PollingRule>>(new Map());
+  const pollingRulesRef = useRef<Map<string, PollingRule>>(new Map());
+  const [pollingRuleIds, setPollingRuleIds] = useState<string[]>([]);
   const [polledStatusMap, setPolledStatusMap] = useState<Record<string, RuleOverallStatusResponse>>({});
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
-  // Start polling for a specific rule
-  const startPolling = useCallback((ruleId: string) => {
-    setPollingRules(prev => {
-      const next = new Map(prev);
-      next.set(ruleId, { ruleId, startTime: Date.now() });
-      return next;
-    });
+  const syncPollingRuleIds = useCallback(() => {
+    setPollingRuleIds(Array.from(pollingRulesRef.current.keys()));
   }, []);
 
-  // Stop polling for a specific rule
+  const startPolling = useCallback((ruleId: string) => {
+    pollingRulesRef.current.set(ruleId, { ruleId, startTime: Date.now() });
+    syncPollingRuleIds();
+  }, [syncPollingRuleIds]);
+
   const stopPolling = useCallback((ruleId: string) => {
-    setPollingRules(prev => {
-      const next = new Map(prev);
-      next.delete(ruleId);
-      return next;
-    });
-    // Also clear the polled status for this rule
+    pollingRulesRef.current.delete(ruleId);
+    syncPollingRuleIds();
     setPolledStatusMap(prev => {
       const next = { ...prev };
       delete next[ruleId];
       return next;
     });
-  }, []);
+  }, [syncPollingRuleIds]);
 
-  // Check if status is stable (synced + running)
   const isStatusStable = useCallback((status: RuleOverallStatusResponse): boolean => {
     return status.overallSyncStatus === 'synced' && status.overallRunStatus === 'running';
   }, []);
 
-  // Polling logic
   useEffect(() => {
-    if (pollingRules.size === 0) {
-      if (intervalRef.current) {
-        clearInterval(intervalRef.current);
-        intervalRef.current = null;
-      }
-      return;
-    }
-
     const poll = async () => {
+      const rules = pollingRulesRef.current;
+      if (rules.size === 0) return;
+
       const now = Date.now();
       const rulesToStop: string[] = [];
 
-      for (const [ruleId, rule] of pollingRules) {
-        // Check timeout
-        if (now - rule.startTime > POLLING_TIMEOUT) {
+      const entries = Array.from(rules.entries());
+      const results = await concurrentMap(
+        entries,
+        async ([ruleId, rule]) => {
+          if (now - rule.startTime > POLLING_TIMEOUT) {
+            return { ruleId, timedOut: true } as const;
+          }
+          try {
+            const status = await getRuleOverallStatus(ruleId);
+            return { ruleId, status, timedOut: false } as const;
+          } catch {
+            return { ruleId, timedOut: false } as const;
+          }
+        },
+        3
+      );
+
+      const statusUpdates: Record<string, RuleOverallStatusResponse> = {};
+      for (const result of results) {
+        if (result.status !== 'fulfilled') continue;
+        const { ruleId, timedOut } = result.value;
+        if (timedOut) {
           rulesToStop.push(ruleId);
           continue;
         }
-
-        try {
-          const status = await getRuleOverallStatus(ruleId);
-          setPolledStatusMap(prev => ({ ...prev, [ruleId]: status }));
-
-          // Check if status is stable
-          if (isStatusStable(status)) {
+        if ('status' in result.value && result.value.status) {
+          statusUpdates[ruleId] = result.value.status;
+          if (isStatusStable(result.value.status)) {
             rulesToStop.push(ruleId);
           }
-        } catch {
-          // Ignore errors, continue polling
         }
       }
 
-      // Stop polling for stable/timeout rules
+      if (Object.keys(statusUpdates).length > 0) {
+        setPolledStatusMap(prev => ({ ...prev, ...statusUpdates }));
+      }
+
       if (rulesToStop.length > 0) {
-        setPollingRules(prev => {
-          const next = new Map(prev);
-          for (const ruleId of rulesToStop) {
-            next.delete(ruleId);
-          }
-          return next;
-        });
+        for (const ruleId of rulesToStop) {
+          pollingRulesRef.current.delete(ruleId);
+        }
+        syncPollingRuleIds();
       }
     };
 
-    // Initial poll
     poll();
-
-    // Set up interval
     intervalRef.current = setInterval(poll, POLLING_INTERVAL);
 
     return () => {
@@ -549,13 +535,13 @@ export const useRuleStatusPolling = () => {
         intervalRef.current = null;
       }
     };
-  }, [pollingRules, isStatusStable]);
+  }, [isStatusStable, syncPollingRuleIds]);
 
   return {
     polledStatusMap,
-    pollingRuleIds: Array.from(pollingRules.keys()),
+    pollingRuleIds,
     startPolling,
     stopPolling,
-    isPolling: (ruleId: string) => pollingRules.has(ruleId),
+    isPolling: (ruleId: string) => pollingRulesRef.current.has(ruleId),
   };
 };

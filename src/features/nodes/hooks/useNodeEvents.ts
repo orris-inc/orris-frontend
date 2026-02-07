@@ -13,6 +13,13 @@ import { convertSnakeToCamel } from '@/shared/utils/case-converter';
 import type { NodeEvent, Node, NodeSystemStatus, NodeBatchStatusEvent } from '@/api/node';
 import type { ListResponse } from '@/shared/types/api.types';
 
+// SSE stream sends both individual and batch events with different structures
+type NodeSSEEvent = NodeEvent | NodeBatchStatusEvent;
+
+function isBatchNodeStatusEvent(event: NodeSSEEvent): event is NodeBatchStatusEvent {
+  return event.type === 'nodes:status' && 'agents' in event;
+}
+
 interface UseNodeEventsOptions {
   /** Specific node IDs to subscribe to (omit for all nodes) */
   nodeIds?: string[];
@@ -138,7 +145,9 @@ export function useNodeEvents(options: UseNodeEventsOptions = {}): UseNodeEvents
           break;
 
         case 'nodes:status': {
-          const batchEvent = event as unknown as NodeBatchStatusEvent;
+          const sseEvent: NodeSSEEvent = event;
+          if (!isBatchNodeStatusEvent(sseEvent)) break;
+          const batchEvent = sseEvent;
           Object.entries(batchEvent.agents).forEach(([nodeId, statusData]) => {
             if (statusData.status) {
               const convertedStatus = convertSnakeToCamel<NodeSystemStatus>(statusData.status);
@@ -290,7 +299,9 @@ export function useNodeDetailEvents(options: UseNodeDetailEventsOptions): UseNod
           break;
 
         case 'nodes:status': {
-          const batchEvent = event as unknown as NodeBatchStatusEvent;
+          const sseEvent: NodeSSEEvent = event;
+          if (!isBatchNodeStatusEvent(sseEvent)) break;
+          const batchEvent = sseEvent;
           const nodeData = batchEvent.agents[nodeId!];
           if (nodeData?.status) {
             const convertedStatus = convertSnakeToCamel<NodeSystemStatus>(nodeData.status);

@@ -9,6 +9,7 @@ import { useTranslation } from 'react-i18next';
 import { ArrowLeft, Loader2, CircleCheck, CircleAlert, Info } from 'lucide-react';
 import { verifyEmail } from '@/api/auth';
 import { handleApiError } from '@/shared/lib/axios';
+import { extractRawErrorMessage } from '@/shared/utils/error-messages';
 import {
   getButtonClass,
   cardStyles,
@@ -46,8 +47,9 @@ export const EmailVerificationPage = () => {
         const errorMsg = handleApiError(err);
         setErrorMessage(errorMsg);
 
-        // Check if already verified
-        if (errorMsg.includes('已验证') || errorMsg.includes('already verified')) {
+        // Check if already verified using raw error message (language-independent)
+        const rawMsg = extractRawErrorMessage(err).toLowerCase();
+        if (rawMsg.includes('already verified')) {
           setStatus('already_verified');
         } else {
           setStatus('error');

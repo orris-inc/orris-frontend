@@ -201,6 +201,17 @@
     "readOnly": "Read Only",
     "recommended": "Recommended",
     "unlimited": "Unlimited",
+    "network": {
+      "slowConnection": "Slow connection",
+      "offlineMessage": "You're offline. Some features may be unavailable.",
+      "connectionRestored": "Connection restored"
+    },
+    "serviceWorker": {
+      "updateAvailable": "Update available",
+      "refreshToUpdate": "Refresh to get the latest version",
+      "later": "Later",
+      "update": "Update"
+    },
     "fields": {
       "name": "Name",
       "description": "Description",

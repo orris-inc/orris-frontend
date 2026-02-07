@@ -4,6 +4,7 @@
  */
 
 import { useTranslation } from 'react-i18next';
+import DOMPurify from 'dompurify';
 import { Eye, Calendar, Clock, Users, FileText, Megaphone, Wrench, Sparkles, Gift } from 'lucide-react';
 import {
   Dialog,
@@ -109,7 +110,7 @@ export const AnnouncementDetailDialog: React.FC<AnnouncementDetailDialogProps> =
                 )}
               >
                 {announcement.contentHtml ? (
-                  <div dangerouslySetInnerHTML={{ __html: announcement.contentHtml }} />
+                  <div dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(announcement.contentHtml) }} />
                 ) : (
                   <p className="whitespace-pre-wrap">{announcement.content}</p>
                 )}

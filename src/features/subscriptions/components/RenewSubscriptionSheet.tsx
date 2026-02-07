@@ -3,7 +3,7 @@
  * Mobile-optimized bottom sheet for renewing expired subscriptions
  */
 
-import { useState, useMemo } from 'react';
+import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { RefreshCw, Info, Loader2 } from 'lucide-react';
 import {
@@ -20,6 +20,7 @@ import { Button } from '@/components/common/Button';
 import { Label } from '@/components/common/Label';
 import { TruncatedId } from '@/components/admin';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/common/Select';
+import { useRenewSubscriptionForm, BILLING_CYCLE_OPTIONS } from '../hooks/useRenewSubscriptionForm';
 import type { Subscription } from '@/api/subscription/types';
 import type { RenewSubscriptionRequest } from '@/api/admin/types';
 
@@ -30,14 +31,6 @@ interface RenewSubscriptionSheetProps extends BaseSheetProps {
   onConfirm: (billingCycle?: RenewableBillingCycle) => Promise<void>;
 }
 
-const BILLING_CYCLE_OPTIONS: { value: RenewableBillingCycle; labelKey: string }[] = [
-  { value: 'weekly', labelKey: 'billingCycle.weekly' },
-  { value: 'monthly', labelKey: 'billingCycle.monthly' },
-  { value: 'quarterly', labelKey: 'billingCycle.quarterly' },
-  { value: 'semi_annual', labelKey: 'billingCycle.semiAnnual' },
-  { value: 'yearly', labelKey: 'billingCycle.yearly' },
-];
-
 export const RenewSubscriptionSheet: React.FC<RenewSubscriptionSheetProps> = ({
   open,
   onOpenChange,
@@ -45,30 +38,21 @@ export const RenewSubscriptionSheet: React.FC<RenewSubscriptionSheetProps> = ({
   onConfirm,
 }) => {
   const { t } = useTranslation();
-  const [selectedCycle, setSelectedCycle] = useState<RenewableBillingCycle | ''>('');
   const [loading, setLoading] = useState(false);
 
-  // Get available billing cycles from the subscription's plan
-  const availableCycles = useMemo(() => {
-    if (!subscription?.plan?.pricings) return [];
-    return subscription.plan.pricings
-      .filter((p) => p.isActive && p.billingCycle !== 'lifetime')
-      .map((p) => p.billingCycle);
-  }, [subscription]);
-
-  // Check if this is a lifetime subscription
-  const isLifetime = useMemo(() => {
-    if (!subscription?.plan?.pricings) return false;
-    return subscription.plan.pricings.some(
-      (p) => p.billingCycle === 'lifetime' && p.isActive
-    );
-  }, [subscription]);
+  const {
+    selectedCycle,
+    setSelectedCycle,
+    availableCycles,
+    isLifetime,
+    reset,
+  } = useRenewSubscriptionForm({ subscription });
 
   const handleSubmit = async () => {
     setLoading(true);
     try {
       await onConfirm(selectedCycle || undefined);
-      setSelectedCycle('');
+      reset();
       onOpenChange(false);
     } finally {
       setLoading(false);
@@ -77,7 +61,7 @@ export const RenewSubscriptionSheet: React.FC<RenewSubscriptionSheetProps> = ({
 
   const handleClose = (open: boolean) => {
     if (!loading && !open) {
-      setSelectedCycle('');
+      reset();
       onOpenChange(false);
     }
   };

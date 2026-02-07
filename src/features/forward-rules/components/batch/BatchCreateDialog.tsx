@@ -209,7 +209,7 @@ export const BatchCreateDialog: React.FC<BatchCreateDialogProps> = ({
 
   return (
     <Dialog open={open} onOpenChange={(open) => !open && handleClose()}>
-      <DialogContent className="sm:max-w-[600px]">
+      <DialogContent className="sm:max-w-2xl">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <FileJson className="size-5 text-blue-500" />

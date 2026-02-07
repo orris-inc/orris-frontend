@@ -3,7 +3,6 @@
  * Mobile-optimized bottom sheet for editing user information
  */
 
-import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { formatDate } from '@/shared/utils/date-utils';
 import { UserPen, Mail, User, Shield, Activity } from 'lucide-react';
@@ -21,6 +20,7 @@ import { Button } from '@/components/common/Button';
 import { Separator } from '@/components/common/Separator';
 import { TruncatedId } from '@/components/admin';
 import { MobileFormInput, MobileSelect, type MobileSelectOption } from '@/components/common/mobile-form';
+import { useEditUserForm } from '../hooks/useEditUserForm';
 import type { UserResponse, UpdateUserRequest } from '@/api/user';
 import type { UserStatus, UserRole } from '../types/users.types';
 
@@ -34,6 +34,14 @@ const STATUS_COLOR_MAP: Record<string, string> = {
   suspended: 'bg-destructive',
 };
 
+// Mobile status options with colors
+const MOBILE_STATUS_COLORS: Record<string, string> = {
+  active: 'bg-success',
+  inactive: 'bg-muted-foreground',
+  pending: 'bg-warning',
+  suspended: 'bg-destructive',
+};
+
 export const EditUserSheet: React.FC<EditUserSheetProps> = ({
   open,
   onOpenChange,
@@ -41,96 +49,28 @@ export const EditUserSheet: React.FC<EditUserSheetProps> = ({
   onSubmit,
 }) => {
   const { t } = useTranslation();
-  const [email, setEmail] = useState('');
-  const [name, setName] = useState('');
-  const [status, setStatus] = useState<UserStatus>('active');
-  const [role, setRole] = useState<UserRole>('user');
-  const [errors, setErrors] = useState<{ email?: string; name?: string }>({});
-  const [touched, setTouched] = useState<Record<string, boolean>>({});
+  const form = useEditUserForm({ user });
 
-  // Build status options with translations
-  const statusOptions: MobileSelectOption[] = useMemo(() => [
-    { value: 'active', label: t('common.status.enabled'), color: 'bg-success' },
-    { value: 'inactive', label: t('common.status.disabled'), color: 'bg-muted-foreground' },
-    { value: 'pending', label: t('common.status.pending'), color: 'bg-warning' },
-    { value: 'suspended', label: t('common.status.suspended'), color: 'bg-destructive' },
-  ], [t]);
+  // Build mobile-specific status options with colors
+  const mobileStatusOptions: MobileSelectOption[] = form.statusOptions.map((opt) => ({
+    ...opt,
+    color: MOBILE_STATUS_COLORS[opt.value],
+  }));
 
-  // Build role options with translations
-  const roleOptions: MobileSelectOption[] = useMemo(() => [
-    { value: 'user', label: t('common.role.user') },
-    { value: 'admin', label: t('common.role.admin') },
-  ], [t]);
+  // Build mobile role options
+  const mobileRoleOptions: MobileSelectOption[] = form.roleOptions;
 
-  // Initialize form when user changes
-  useEffect(() => {
-    if (user) {
-      setEmail(user.email);
-      setName(user.name || '');
-      setStatus((user.status as UserStatus) || 'active');
-      setRole((user.role as UserRole) || 'user');
-      setErrors({});
-      setTouched({});
+  const handleSubmit = () => {
+    if (!form.validate()) return;
+    const result = form.buildSubmitData();
+    if (result) {
+      onSubmit(result.id, result.data);
     }
-  }, [user]);
-
-  // Validation functions
-  const validateEmail = useCallback((value: string): string | undefined => {
-    if (value.trim() && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) {
-      return t('admin.users.validation.emailInvalid');
-    }
-    return undefined;
-  }, [t]);
-
-  const validateName = useCallback((value: string): string | undefined => {
-    if (value.trim() && (value.trim().length < 2 || value.trim().length > 100)) {
-      return t('admin.users.validation.nameLengthError');
-    }
-    return undefined;
-  }, [t]);
-
-  const handleBlur = useCallback((field: 'email' | 'name') => {
-    setTouched((prev) => ({ ...prev, [field]: true }));
-    const validators = { email: validateEmail, name: validateName };
-    const values = { email, name };
-    setErrors((prev) => ({ ...prev, [field]: validators[field](values[field]) }));
-  }, [email, name, validateEmail, validateName]);
-
-  const validate = useCallback((): boolean => {
-    const newErrors = {
-      email: validateEmail(email),
-      name: validateName(name),
-    };
-    setErrors(newErrors);
-    return !newErrors.email && !newErrors.name;
-  }, [email, name, validateEmail, validateName]);
-
-  const handleSubmit = useCallback(() => {
-    if (!user || !validate()) return;
-
-    // Only submit changed fields
-    const updates: UpdateUserRequest = {};
-    if (email !== user.email) updates.email = email;
-    if (name !== user.name) updates.name = name;
-    if (status !== user.status) updates.status = status as UpdateUserRequest['status'];
-    if (role !== user.role) updates.role = role as UpdateUserRequest['role'];
-
-    if (Object.keys(updates).length > 0) {
-      onSubmit(user.id, updates);
-    }
-  }, [user, email, name, status, role, validate, onSubmit]);
-
-  // Check for changes
-  const hasChanges = user && (
-    email !== user.email ||
-    name !== user.name ||
-    status !== user.status ||
-    role !== user.role
-  );
+  };
 
   if (!user) return null;
 
-  const currentStatusColor = STATUS_COLOR_MAP[status];
+  const currentStatusColor = STATUS_COLOR_MAP[form.status];
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
@@ -174,14 +114,11 @@ export const EditUserSheet: React.FC<EditUserSheetProps> = ({
               <MobileFormInput
                 id="edit-email"
                 type="email"
-                value={email}
-                onChange={(v) => {
-                  setEmail(v);
-                  if (touched.email) setErrors((prev) => ({ ...prev, email: validateEmail(v) }));
-                }}
-                onBlur={() => handleBlur('email')}
+                value={form.email}
+                onChange={form.handleEmailChange}
+                onBlur={() => form.handleBlur('email')}
                 icon={<Mail className="size-5" />}
-                error={touched.email ? errors.email : undefined}
+                error={form.touched.email ? form.errors.email : undefined}
               />
             </div>
 
@@ -190,17 +127,14 @@ export const EditUserSheet: React.FC<EditUserSheetProps> = ({
               <label htmlFor="edit-name" className="text-sm font-medium px-1">{t('common.fields.name')}</label>
               <MobileFormInput
                 id="edit-name"
-                value={name}
-                onChange={(v) => {
-                  setName(v);
-                  if (touched.name) setErrors((prev) => ({ ...prev, name: validateName(v) }));
-                }}
-                onBlur={() => handleBlur('name')}
+                value={form.name}
+                onChange={form.handleNameChange}
+                onBlur={() => form.handleBlur('name')}
                 placeholder={t('admin.users.fields.namePlaceholder')}
                 icon={<User className="size-5" />}
-                error={touched.name ? errors.name : undefined}
+                error={form.touched.name ? form.errors.name : undefined}
               />
-              {!touched.name && !errors.name && (
+              {!form.touched.name && !form.errors.name && (
                 <p className="text-xs text-muted-foreground px-1">{t('admin.users.fields.nameLengthHint')}</p>
               )}
             </div>
@@ -215,9 +149,9 @@ export const EditUserSheet: React.FC<EditUserSheetProps> = ({
                   )}
                 </label>
                 <MobileSelect
-                  value={status}
-                  onChange={(v) => setStatus(v as UserStatus)}
-                  options={statusOptions}
+                  value={form.status}
+                  onChange={(v) => form.setStatus(v as UserStatus)}
+                  options={mobileStatusOptions}
                   icon={<Activity className="size-5" />}
                 />
               </div>
@@ -225,9 +159,9 @@ export const EditUserSheet: React.FC<EditUserSheetProps> = ({
               <div className="space-y-1.5">
                 <label className="text-sm font-medium px-1">{t('admin.users.fields.role')}</label>
                 <MobileSelect
-                  value={role}
-                  onChange={(v) => setRole(v as UserRole)}
-                  options={roleOptions}
+                  value={form.role}
+                  onChange={(v) => form.setRole(v as UserRole)}
+                  options={mobileRoleOptions}
                   icon={<Shield className="size-5" />}
                 />
               </div>
@@ -238,7 +172,7 @@ export const EditUserSheet: React.FC<EditUserSheetProps> = ({
         <SheetFooter>
           <Button
             onClick={handleSubmit}
-            disabled={!hasChanges}
+            disabled={!form.hasChanges}
             className="w-full min-h-[48px]"
           >
             {t('admin.users.edit.saveChanges')}

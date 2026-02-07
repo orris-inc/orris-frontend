@@ -9,7 +9,7 @@
  * - Large touch targets (min 44px)
  */
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   FolderEdit,
@@ -37,15 +37,12 @@ import {
 } from '@/components/common/sheet';
 import { MobileFormInput } from '@/components/common/mobile-form';
 import { cn } from '@/lib/utils';
+import { useEditResourceGroupForm } from '../hooks/useEditResourceGroupForm';
 import type { ResourceGroup, UpdateResourceGroupRequest } from '@/api/resource/types';
 import type { SubscriptionPlan, PlanType } from '@/api/subscription/types';
 
 interface EditResourceGroupSheetProps extends EditSheetProps<ResourceGroup, UpdateResourceGroupRequest> {
   plansMap: Record<string, SubscriptionPlan>;
-}
-
-interface FormErrors {
-  name?: string;
 }
 
 // ============================================================================
@@ -213,51 +210,9 @@ export const EditResourceGroupSheet: React.FC<EditResourceGroupSheetProps> = ({
   onSubmit,
 }) => {
   const { t } = useTranslation();
-  const [name, setName] = useState('');
-  const [description, setDescription] = useState('');
-  const [errors, setErrors] = useState<FormErrors>({});
-  const [touched, setTouched] = useState<Record<string, boolean>>({});
   const [loading, setLoading] = useState(false);
   const [openSections, setOpenSections] = useState<Set<string>>(new Set(['info', 'edit']));
-
-  // Initialize form when resourceGroup changes
-  useEffect(() => {
-    if (resourceGroup) {
-      setName(resourceGroup.name);
-      setDescription(resourceGroup.description || '');
-      setErrors({});
-      setTouched({});
-      setOpenSections(new Set(['info', 'edit']));
-    }
-  }, [resourceGroup]);
-
-  // Validation functions
-  const validateName = useCallback(
-    (value: string): string | undefined => {
-      if (!value.trim()) return t('resourceGroups.nameRequired');
-      if (value.trim().length > 100) return t('resourceGroups.nameTooLong');
-      return undefined;
-    },
-    [t]
-  );
-
-  const handleBlur = useCallback(
-    (field: 'name') => {
-      setTouched((prev) => ({ ...prev, [field]: true }));
-      const validators = { name: validateName };
-      const values = { name };
-      setErrors((prev) => ({ ...prev, [field]: validators[field](values[field]) }));
-    },
-    [name, validateName]
-  );
-
-  const validate = useCallback((): boolean => {
-    const newErrors = {
-      name: validateName(name),
-    };
-    setErrors(newErrors);
-    return !newErrors.name;
-  }, [name, validateName]);
+  const form = useEditResourceGroupForm({ resourceGroup });
 
   const handleOpenChange = useCallback(
     (o: boolean) => {
@@ -269,20 +224,18 @@ export const EditResourceGroupSheet: React.FC<EditResourceGroupSheetProps> = ({
   );
 
   const handleSubmit = useCallback(async () => {
-    if (!resourceGroup || !validate()) return;
+    if (!form.validate()) return;
+    const result = form.buildSubmitData();
+    if (!result) return;
 
     setLoading(true);
     try {
-      const submitData: UpdateResourceGroupRequest = {
-        name: name.trim(),
-        description: description.trim() || undefined,
-      };
-      await onSubmit(resourceGroup.sid, submitData);
+      await onSubmit(result.sid, result.data);
       onOpenChange(false);
     } finally {
       setLoading(false);
     }
-  }, [resourceGroup, name, description, validate, onSubmit, onOpenChange]);
+  }, [form, onSubmit, onOpenChange]);
 
   const toggleSection = (sectionId: string) => {
     setOpenSections((prev) => {
@@ -295,11 +248,6 @@ export const EditResourceGroupSheet: React.FC<EditResourceGroupSheetProps> = ({
       return next;
     });
   };
-
-  // Check for changes
-  const hasChanges =
-    resourceGroup &&
-    (name !== resourceGroup.name || description !== (resourceGroup.description || ''));
 
   if (!resourceGroup) return null;
 
@@ -390,15 +338,12 @@ export const EditResourceGroupSheet: React.FC<EditResourceGroupSheetProps> = ({
                 />
                 <MobileFormInput
                   id="edit-rg-name"
-                  value={name}
-                  onChange={(v) => {
-                    setName(v);
-                    if (touched.name) setErrors((prev) => ({ ...prev, name: validateName(v) }));
-                  }}
-                  onBlur={() => handleBlur('name')}
+                  value={form.name}
+                  onChange={form.handleNameChange}
+                  onBlur={() => form.handleBlur('name')}
                   placeholder={t('resourceGroups.namePlaceholder')}
                   icon={<Layers className="size-5" />}
-                  error={touched.name ? errors.name : undefined}
+                  error={form.touched.name ? form.errors.name : undefined}
                   disabled={loading}
                 />
               </div>
@@ -415,8 +360,8 @@ export const EditResourceGroupSheet: React.FC<EditResourceGroupSheetProps> = ({
                   </div>
                   <textarea
                     id="edit-rg-description"
-                    value={description}
-                    onChange={(e) => setDescription(e.target.value)}
+                    value={form.description}
+                    onChange={(e) => form.handleDescriptionChange(e.target.value)}
                     placeholder={t('resourceGroups.descriptionPlaceholder')}
                     rows={3}
                     disabled={loading}
@@ -439,7 +384,7 @@ export const EditResourceGroupSheet: React.FC<EditResourceGroupSheetProps> = ({
             <button
               type="button"
               onClick={handleSubmit}
-              disabled={loading || !hasChanges}
+              disabled={loading || !form.hasChanges}
               className={cn(
                 'flex-1 flex items-center justify-center gap-2',
                 'h-11 rounded-lg',

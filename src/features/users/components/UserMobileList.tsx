@@ -126,7 +126,7 @@ export const UserMobileList: React.FC<UserMobileListProps> = ({
           <AccordionItem
             key={user.id}
             value={user.id}
-            className="border rounded-lg bg-white dark:bg-slate-800 overflow-hidden"
+            className="border rounded-lg bg-card overflow-hidden"
           >
             {/* Card Header - Always visible */}
             <div className="px-3 py-2">

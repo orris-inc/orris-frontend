@@ -42,6 +42,8 @@ export interface BatchUpdateEntity {
  */
 export interface BatchUpdateResultItem {
   id: string;
+  agentId?: string;
+  nodeId?: string;
   targetVersion?: string;
   reason?: string;
 }
@@ -107,13 +109,14 @@ export function BatchUpdateDialog<T extends BatchUpdateEntity>({
   const showResult = hasTriggered && result && !isUpdating;
 
   // Get entity ID from result item
-  const getResultItemId = (item: Record<string, unknown>): string => {
-    return (item[idField] as string) || (item.id as string) || '';
+  const getResultItemId = (item: BatchUpdateResultItem): string => {
+    const fieldId = idField === 'agentId' ? item.agentId : item.nodeId;
+    return fieldId || item.id || '';
   };
 
   return (
     <Dialog open={open} onOpenChange={(isOpen) => !isOpen && handleClose()}>
-      <DialogContent className="sm:max-w-[500px]">
+      <DialogContent className="sm:max-w-lg">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <ArrowUpCircle className="size-5 text-blue-500" />
@@ -141,9 +144,9 @@ export function BatchUpdateDialog<T extends BatchUpdateEntity>({
             </div>
 
             {updateCount === 0 ? (
-              <div className="flex items-center gap-2 p-3 bg-green-50 dark:bg-green-900/20 rounded-lg">
-                <CheckCircle2 className="size-4 text-green-500" />
-                <span className="text-sm text-green-700 dark:text-green-300">
+              <div className="flex items-center gap-2 p-3 bg-success/10 rounded-lg">
+                <CheckCircle2 className="size-4 text-success" />
+                <span className="text-sm text-success">
                   {t(`${i18nNamespace}.allUpToDate`)}
                 </span>
               </div>
@@ -179,39 +182,39 @@ export function BatchUpdateDialog<T extends BatchUpdateEntity>({
           // Result view
           <div className="space-y-4">
             <div className="grid grid-cols-3 gap-3">
-              <div className="p-3 bg-green-50 dark:bg-green-900/20 rounded-lg text-center">
-                <CheckCircle2 className="size-5 text-green-500 mx-auto mb-1" />
-                <p className="text-lg font-semibold text-green-700 dark:text-green-300">
+              <div className="p-3 bg-success/10 rounded-lg text-center">
+                <CheckCircle2 className="size-5 text-success mx-auto mb-1" />
+                <p className="text-lg font-semibold text-success">
                   {result.succeeded.length}
                 </p>
-                <p className="text-xs text-green-600 dark:text-green-400">
+                <p className="text-xs text-success/80">
                   {t(`${i18nNamespace}.succeeded`)}
                 </p>
               </div>
-              <div className="p-3 bg-red-50 dark:bg-red-900/20 rounded-lg text-center">
-                <XCircle className="size-5 text-red-500 mx-auto mb-1" />
-                <p className="text-lg font-semibold text-red-700 dark:text-red-300">
+              <div className="p-3 bg-destructive/10 rounded-lg text-center">
+                <XCircle className="size-5 text-destructive mx-auto mb-1" />
+                <p className="text-lg font-semibold text-destructive">
                   {result.failed.length}
                 </p>
-                <p className="text-xs text-red-600 dark:text-red-400">
+                <p className="text-xs text-destructive/80">
                   {t(`${i18nNamespace}.failed`)}
                 </p>
               </div>
-              <div className="p-3 bg-yellow-50 dark:bg-yellow-900/20 rounded-lg text-center">
-                <AlertTriangle className="size-5 text-yellow-500 mx-auto mb-1" />
-                <p className="text-lg font-semibold text-yellow-700 dark:text-yellow-300">
+              <div className="p-3 bg-warning/10 rounded-lg text-center">
+                <AlertTriangle className="size-5 text-warning mx-auto mb-1" />
+                <p className="text-lg font-semibold text-warning">
                   {result.skipped.length}
                 </p>
-                <p className="text-xs text-yellow-600 dark:text-yellow-400">
+                <p className="text-xs text-warning/80">
                   {t(`${i18nNamespace}.skipped`)}
                 </p>
               </div>
             </div>
 
             {result.truncated && (
-              <div className="flex items-center gap-2 p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
-                <Info className="size-4 text-blue-500 flex-shrink-0" />
-                <span className="text-sm text-blue-700 dark:text-blue-300">
+              <div className="flex items-center gap-2 p-3 bg-info/10 rounded-lg">
+                <Info className="size-4 text-info flex-shrink-0" />
+                <span className="text-sm text-info">
                   {t(`${i18nNamespace}.truncatedNotice`, {
                     defaultValue: t(`${i18nNamespace}.truncatedHint`, {
                       defaultValue: 'Results truncated',
@@ -223,19 +226,19 @@ export function BatchUpdateDialog<T extends BatchUpdateEntity>({
 
             {result.succeeded.length > 0 && (
               <div className="space-y-2">
-                <p className="text-sm font-medium text-green-700 dark:text-green-300">
+                <p className="text-sm font-medium text-success">
                   {t(`${i18nNamespace}.updateTriggered`)}
                 </p>
                 <div className="max-h-[100px] overflow-y-auto space-y-1">
                   {result.succeeded.map((item) => (
                     <div
-                      key={getResultItemId(item as unknown as Record<string, unknown>)}
-                      className="flex items-center justify-between p-2 bg-green-50 dark:bg-green-900/10 rounded text-sm"
+                      key={getResultItemId(item)}
+                      className="flex items-center justify-between p-2 bg-success/10 rounded text-sm"
                     >
                       <span className="font-mono text-xs">
-                        {getResultItemId(item as unknown as Record<string, unknown>)}
+                        {getResultItemId(item)}
                       </span>
-                      <span className="text-xs text-green-600 dark:text-green-400">
+                      <span className="text-xs text-success">
                         → v{item.targetVersion}
                       </span>
                     </div>
@@ -246,19 +249,19 @@ export function BatchUpdateDialog<T extends BatchUpdateEntity>({
 
             {result.failed.length > 0 && (
               <div className="space-y-2">
-                <p className="text-sm font-medium text-red-700 dark:text-red-300">
+                <p className="text-sm font-medium text-destructive">
                   {t(`${i18nNamespace}.updateFailed`)}
                 </p>
                 <div className="max-h-[100px] overflow-y-auto space-y-1">
                   {result.failed.map((item) => (
                     <div
-                      key={getResultItemId(item as unknown as Record<string, unknown>)}
-                      className="flex items-center justify-between p-2 bg-red-50 dark:bg-red-900/10 rounded text-sm"
+                      key={getResultItemId(item)}
+                      className="flex items-center justify-between p-2 bg-destructive/10 rounded text-sm"
                     >
                       <span className="font-mono text-xs">
-                        {getResultItemId(item as unknown as Record<string, unknown>)}
+                        {getResultItemId(item)}
                       </span>
-                      <span className="text-xs text-red-600 dark:text-red-400">
+                      <span className="text-xs text-destructive">
                         {item.reason}
                       </span>
                     </div>
@@ -269,19 +272,19 @@ export function BatchUpdateDialog<T extends BatchUpdateEntity>({
 
             {result.skipped.length > 0 && (
               <div className="space-y-2">
-                <p className="text-sm font-medium text-yellow-700 dark:text-yellow-300">
+                <p className="text-sm font-medium text-warning">
                   {t(`${i18nNamespace}.updateSkipped`)}
                 </p>
                 <div className="max-h-[100px] overflow-y-auto space-y-1">
                   {result.skipped.map((item) => (
                     <div
-                      key={getResultItemId(item as unknown as Record<string, unknown>)}
-                      className="flex items-center justify-between p-2 bg-yellow-50 dark:bg-yellow-900/10 rounded text-sm"
+                      key={getResultItemId(item)}
+                      className="flex items-center justify-between p-2 bg-warning/10 rounded text-sm"
                     >
                       <span className="font-mono text-xs">
-                        {getResultItemId(item as unknown as Record<string, unknown>)}
+                        {getResultItemId(item)}
                       </span>
-                      <span className="text-xs text-yellow-600 dark:text-yellow-400">
+                      <span className="text-xs text-warning">
                         {item.reason}
                       </span>
                     </div>

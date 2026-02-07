@@ -9,7 +9,7 @@
  * - Responsive grid layout (6-column base)
  */
 
-import { useState, useEffect, useMemo } from "react";
+import { useState } from 'react';
 import { useTranslation } from "react-i18next";
 import {
   Dialog,
@@ -41,6 +41,7 @@ import {
 import { Info, FolderTree, ChevronDown } from "lucide-react";
 import { SortableChainAgentList } from "./SortableChainAgentList";
 import { ExitAgentList } from "./ExitAgentList";
+import { useCreateForwardRuleForm } from '../hooks/useCreateForwardRuleForm';
 import type {
   CreateForwardRuleRequest,
   ForwardAgent,
@@ -48,18 +49,10 @@ import type {
   ForwardProtocol,
   IPVersion,
   TunnelType,
-  ExitAgent,
-  LoadBalanceStrategy,
 } from "@/api/forward";
 import type { Node } from "@/api/node";
 import type { ResourceGroup } from "@/api/resource/types";
 import type { SubscriptionPlan } from "@/api/subscription/types";
-
-// Target type
-type TargetType = "manual" | "node";
-
-// Exit agent mode (single or multi for load balancing)
-type ExitMode = "single" | "multi";
 
 interface CreateForwardRuleDialogProps {
   open: boolean;
@@ -76,34 +69,6 @@ interface CreateForwardRuleDialogProps {
   /** Subscription plans map for filtering resource groups by plan type */
   plansMap?: Record<string, SubscriptionPlan>;
 }
-
-/**
- * Check if a port is within the allowed port range
- */
-const isPortInAllowedRange = (
-  port: number,
-  allowedPortRange: string | undefined,
-): boolean => {
-  if (!allowedPortRange || allowedPortRange.trim() === "") {
-    return true;
-  }
-
-  const parts = allowedPortRange.split(",").map((p) => p.trim());
-  for (const part of parts) {
-    if (part.includes("-")) {
-      const [start, end] = part.split("-").map((n) => parseInt(n.trim(), 10));
-      if (!isNaN(start) && !isNaN(end) && port >= start && port <= end) {
-        return true;
-      }
-    } else {
-      const singlePort = parseInt(part, 10);
-      if (!isNaN(singlePort) && port === singlePort) {
-        return true;
-      }
-    }
-  }
-  return false;
-};
 
 // Rule type keys for translation lookup
 const RULE_TYPE_KEYS: Record<ForwardRuleType, string> = {
@@ -187,685 +152,29 @@ export const CreateForwardRuleDialog: React.FC<CreateForwardRuleDialogProps> = (
   plansMap = {},
 }) => {
   const { t } = useTranslation();
-  const [formData, setFormData] = useState({
-    agentId: "",
-    ruleType: "direct" as ForwardRuleType,
-    exitAgentId: "",
-    exitAgents: [] as ExitAgent[],
-    loadBalanceStrategy: "failover" as LoadBalanceStrategy,
-    chainAgentIds: [] as string[],
-    chainPortConfig: {} as Record<string, number>,
-    tunnelType: "ws" as TunnelType,
-    tunnelHops: undefined as number | undefined,
-    name: "",
-    listenPort: 0,
-    targetAddress: "",
-    targetPort: 0,
-    targetNodeId: "",
-    bindIp: "",
-    trafficMultiplier: undefined as number | undefined,
-    sortOrder: undefined as number | undefined,
-    protocol: "both" as ForwardProtocol,
-    ipVersion: "auto" as IPVersion,
-    remark: "",
-    groupSids: [] as string[],
-    serverAddress: "",
-    externalSource: "",
-    externalRuleId: "",
+  const form = useCreateForwardRuleForm({
+    open,
+    agents,
+    nodes,
+    initialData,
+    resourceGroups,
+    plansMap,
   });
-  const [targetType, setTargetType] = useState<TargetType>("manual");
-  const [exitMode, setExitMode] = useState<ExitMode>("single");
-  const [errors, setErrors] = useState<Record<string, string>>({});
+
   const [advancedOpen, setAdvancedOpen] = useState(false);
 
-  // Reset form or use initial data when dialog opens
-  useEffect(() => {
-    if (open) {
-      if (initialData) {
-        setFormData({
-          agentId: initialData.agentId || "",
-          ruleType: initialData.ruleType || "direct",
-          exitAgentId: initialData.exitAgentId || "",
-          exitAgents: initialData.exitAgents || [],
-          loadBalanceStrategy: initialData.loadBalanceStrategy || "failover",
-          chainAgentIds: initialData.chainAgentIds || [],
-          chainPortConfig: initialData.chainPortConfig || {},
-          tunnelType: initialData.tunnelType || "ws",
-          tunnelHops: initialData.tunnelHops,
-          name: initialData.name || "",
-          listenPort: initialData.listenPort || 0,
-          targetAddress: initialData.targetAddress || "",
-          targetPort: initialData.targetPort || 0,
-          targetNodeId: initialData.targetNodeId || "",
-          bindIp: initialData.bindIp || "",
-          trafficMultiplier: initialData.trafficMultiplier,
-          sortOrder: initialData.sortOrder,
-          protocol: initialData.protocol || "both",
-          ipVersion: initialData.ipVersion || "auto",
-          remark: initialData.remark || "",
-          groupSids: initialData.groupSids || [],
-          serverAddress:
-            (initialData as Record<string, unknown>).serverAddress as string ||
-            "",
-          externalSource:
-            (initialData as Record<string, unknown>).externalSource as string ||
-            "",
-          externalRuleId:
-            (initialData as Record<string, unknown>).externalRuleId as string ||
-            "",
-        });
-        setTargetType(
-          initialData.targetType ||
-            (initialData.targetNodeId ? "node" : "manual"),
-        );
-        // Set exit mode based on initial data
-        setExitMode(initialData.exitAgents && initialData.exitAgents.length > 0 ? "multi" : "single");
-      } else {
-        setFormData({
-          agentId: "",
-          ruleType: "direct",
-          exitAgentId: "",
-          exitAgents: [],
-          loadBalanceStrategy: "failover",
-          chainAgentIds: [],
-          chainPortConfig: {},
-          tunnelType: "ws",
-          tunnelHops: undefined,
-          name: "",
-          listenPort: 0,
-          targetAddress: "",
-          targetPort: 0,
-          targetNodeId: "",
-          bindIp: "",
-          trafficMultiplier: undefined,
-          sortOrder: undefined,
-          protocol: "both",
-          ipVersion: "auto",
-          remark: "",
-          groupSids: [],
-          serverAddress: "",
-          externalSource: "",
-          externalRuleId: "",
-        });
-        setTargetType("manual");
-        setExitMode("single");
-      }
-      setErrors({});
-    }
-  }, [open, initialData]);
-
-  const handleClose = () => {
-    onClose();
-  };
-
-  const handleChange = (
-    field: string,
-    value: string | number | string[] | undefined,
-  ) => {
-    setFormData((prev) => {
-      const newData = { ...prev, [field]: value };
-
-      if (field === "agentId" && typeof value === "string") {
-        const currentChainIds = prev.chainAgentIds || [];
-        if (currentChainIds.includes(value)) {
-          newData.chainAgentIds = currentChainIds.filter(
-            (id: string) => id !== value,
-          );
-          if (prev.chainPortConfig[value]) {
-            const newPortConfig = { ...prev.chainPortConfig };
-            delete newPortConfig[value];
-            newData.chainPortConfig = newPortConfig;
-          }
-        }
-      }
-
-      return newData;
-    });
-
-    if (Object.keys(errors).length > 0) {
-      setErrors({});
-    }
-  };
-
-  const handleChainPortChange = (agentId: string, port: number) => {
-    setFormData((prev) => ({
-      ...prev,
-      chainPortConfig: {
-        ...prev.chainPortConfig,
-        [agentId]: port,
-      },
-    }));
-  };
-
-  const validate = () => {
-    const newErrors: Record<string, string> = {};
-
-    if (formData.ruleType === "external") {
-      if (!formData.name.trim()) {
-        newErrors.name = t("admin.forwardRules.validation.ruleNameRequired");
-      }
-      if (!formData.serverAddress.trim()) {
-        newErrors.serverAddress = t(
-          "admin.forwardRules.validation.serverAddressRequired",
-        );
-      }
-      if (
-        !formData.listenPort ||
-        formData.listenPort < 1 ||
-        formData.listenPort > 65535
-      ) {
-        newErrors.listenPort = t(
-          "admin.forwardRules.validation.listenPortRange",
-        );
-      }
-      if (!formData.targetNodeId) {
-        newErrors.targetNodeId = t(
-          "admin.forwardRules.validation.selectTargetNode",
-        );
-      }
-      setErrors(newErrors);
-      return Object.keys(newErrors).length === 0;
-    }
-
-    if (!formData.agentId) {
-      newErrors.agentId = t("admin.forwardRules.validation.selectForwardAgent");
-    }
-
-    if (!formData.name.trim()) {
-      newErrors.name = t("admin.forwardRules.validation.ruleNameRequired");
-    }
-
-    if (!formData.protocol) {
-      newErrors.protocol = t("admin.forwardRules.validation.protocolRequired");
-    }
-
-    const selectedAgent = agents.find((a) => a.id === formData.agentId);
-
-    if (formData.ruleType === "direct") {
-      if (
-        formData.listenPort &&
-        (formData.listenPort < 1 || formData.listenPort > 65535)
-      ) {
-        newErrors.listenPort = t(
-          "admin.forwardRules.validation.listenPortRange",
-        );
-      } else if (
-        formData.listenPort &&
-        selectedAgent?.allowedPortRange &&
-        !isPortInAllowedRange(formData.listenPort, selectedAgent.allowedPortRange)
-      ) {
-        newErrors.listenPort = t(
-          "admin.forwardRules.validation.portNotInRange",
-          { port: formData.listenPort, range: selectedAgent.allowedPortRange },
-        );
-      }
-      if (targetType === "manual") {
-        if (!formData.targetAddress.trim()) {
-          newErrors.targetAddress = t(
-            "admin.forwardRules.validation.targetAddressRequired",
-          );
-        }
-        if (
-          !formData.targetPort ||
-          formData.targetPort < 1 ||
-          formData.targetPort > 65535
-        ) {
-          newErrors.targetPort = t(
-            "admin.forwardRules.validation.targetPortRange",
-          );
-        }
-      } else if (targetType === "node") {
-        if (!formData.targetNodeId) {
-          newErrors.targetNodeId = t(
-            "admin.forwardRules.validation.selectTargetNode",
-          );
-        }
-      }
-    } else if (formData.ruleType === "entry") {
-      if (
-        formData.listenPort &&
-        (formData.listenPort < 1 || formData.listenPort > 65535)
-      ) {
-        newErrors.listenPort = t(
-          "admin.forwardRules.validation.listenPortRange",
-        );
-      } else if (
-        formData.listenPort &&
-        selectedAgent?.allowedPortRange &&
-        !isPortInAllowedRange(formData.listenPort, selectedAgent.allowedPortRange)
-      ) {
-        newErrors.listenPort = t(
-          "admin.forwardRules.validation.portNotInRange",
-          { port: formData.listenPort, range: selectedAgent.allowedPortRange },
-        );
-      }
-      // Validate exit agent based on mode
-      if (exitMode === "single") {
-        if (!formData.exitAgentId) {
-          newErrors.exitAgentId = t(
-            "admin.forwardRules.validation.selectExitNode",
-          );
-        }
-      } else {
-        if (!formData.exitAgents || formData.exitAgents.length === 0) {
-          newErrors.exitAgents = t(
-            "admin.forwardRules.validation.selectExitNode",
-          );
-        }
-      }
-      if (targetType === "manual") {
-        if (!formData.targetAddress.trim()) {
-          newErrors.targetAddress = t(
-            "admin.forwardRules.validation.targetAddressRequired",
-          );
-        }
-        if (
-          !formData.targetPort ||
-          formData.targetPort < 1 ||
-          formData.targetPort > 65535
-        ) {
-          newErrors.targetPort = t(
-            "admin.forwardRules.validation.targetPortRange",
-          );
-        }
-      } else if (targetType === "node") {
-        if (!formData.targetNodeId) {
-          newErrors.targetNodeId = t(
-            "admin.forwardRules.validation.selectTargetNode",
-          );
-        }
-      }
-    } else if (formData.ruleType === "chain") {
-      if (
-        formData.listenPort &&
-        (formData.listenPort < 1 || formData.listenPort > 65535)
-      ) {
-        newErrors.listenPort = t(
-          "admin.forwardRules.validation.listenPortRange",
-        );
-      } else if (
-        formData.listenPort &&
-        selectedAgent?.allowedPortRange &&
-        !isPortInAllowedRange(formData.listenPort, selectedAgent.allowedPortRange)
-      ) {
-        newErrors.listenPort = t(
-          "admin.forwardRules.validation.portNotInRange",
-          { port: formData.listenPort, range: selectedAgent.allowedPortRange },
-        );
-      }
-      if (!formData.chainAgentIds || formData.chainAgentIds.length === 0) {
-        newErrors.chainAgentIds = t(
-          "admin.forwardRules.validation.selectAtLeastOneNode",
-        );
-      }
-      if (
-        formData.tunnelHops !== undefined &&
-        formData.tunnelHops >= 0 &&
-        formData.tunnelHops < formData.chainAgentIds.length
-      ) {
-        const missingPorts: string[] = [];
-        for (
-          let i = formData.tunnelHops;
-          i < formData.chainAgentIds.length;
-          i++
-        ) {
-          const agentId = formData.chainAgentIds[i];
-          const port = formData.chainPortConfig[agentId];
-          if (!port || port < 1 || port > 65535) {
-            const agent = agents.find((a) => a.id === agentId);
-            const agentName = agent ? agent.name : agentId;
-            missingPorts.push(agentName);
-          }
-        }
-        if (missingPorts.length > 0) {
-          newErrors.chainPortConfig = t(
-            "admin.forwardRules.validation.configurePortsForNodes",
-            { nodes: missingPorts.join(", ") },
-          );
-        }
-      }
-      if (targetType === "manual") {
-        if (!formData.targetAddress.trim()) {
-          newErrors.targetAddress = t(
-            "admin.forwardRules.validation.targetAddressRequired",
-          );
-        }
-        if (
-          !formData.targetPort ||
-          formData.targetPort < 1 ||
-          formData.targetPort > 65535
-        ) {
-          newErrors.targetPort = t(
-            "admin.forwardRules.validation.targetPortRange",
-          );
-        }
-      } else if (targetType === "node") {
-        if (!formData.targetNodeId) {
-          newErrors.targetNodeId = t(
-            "admin.forwardRules.validation.selectTargetNode",
-          );
-        }
-      }
-    } else if (formData.ruleType === "direct_chain") {
-      if (
-        formData.listenPort &&
-        (formData.listenPort < 1 || formData.listenPort > 65535)
-      ) {
-        newErrors.listenPort = t(
-          "admin.forwardRules.validation.listenPortRange",
-        );
-      } else if (
-        formData.listenPort &&
-        selectedAgent?.allowedPortRange &&
-        !isPortInAllowedRange(formData.listenPort, selectedAgent.allowedPortRange)
-      ) {
-        newErrors.listenPort = t(
-          "admin.forwardRules.validation.portNotInRange",
-          { port: formData.listenPort, range: selectedAgent.allowedPortRange },
-        );
-      }
-      if (!formData.chainAgentIds || formData.chainAgentIds.length === 0) {
-        newErrors.chainAgentIds = t(
-          "admin.forwardRules.validation.selectAtLeastOneNode",
-        );
-      }
-      const missingPorts: string[] = [];
-      for (const agentId of formData.chainAgentIds) {
-        const port = formData.chainPortConfig[agentId];
-        if (!port || port < 1 || port > 65535) {
-          const agent = agents.find((a) => a.id === agentId);
-          const agentName = agent ? agent.name : agentId;
-          missingPorts.push(agentName);
-        }
-      }
-      if (missingPorts.length > 0) {
-        if (missingPorts.length === formData.chainAgentIds.length) {
-          newErrors.chainPortConfig = t(
-            "admin.forwardRules.validation.configureValidPorts",
-          );
-        } else {
-          newErrors.chainPortConfig = t(
-            "admin.forwardRules.validation.configurePortsForNodes",
-            { nodes: missingPorts.join(", ") },
-          );
-        }
-      }
-      if (targetType === "manual") {
-        if (!formData.targetAddress.trim()) {
-          newErrors.targetAddress = t(
-            "admin.forwardRules.validation.targetAddressRequired",
-          );
-        }
-        if (
-          !formData.targetPort ||
-          formData.targetPort < 1 ||
-          formData.targetPort > 65535
-        ) {
-          newErrors.targetPort = t(
-            "admin.forwardRules.validation.targetPortRange",
-          );
-        }
-      } else if (targetType === "node") {
-        if (!formData.targetNodeId) {
-          newErrors.targetNodeId = t(
-            "admin.forwardRules.validation.selectTargetNode",
-          );
-        }
-      }
-    }
-
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
-  };
+  
+  
 
   const handleSubmit = () => {
-    if (validate()) {
-      if (formData.ruleType === "external") {
-        const submitData = {
-          ruleType: formData.ruleType,
-          name: formData.name.trim(),
-          serverAddress: formData.serverAddress.trim(),
-          listenPort: formData.listenPort,
-          targetNodeId: formData.targetNodeId,
-          ...(formData.externalSource?.trim() && {
-            externalSource: formData.externalSource.trim(),
-          }),
-          ...(formData.externalRuleId?.trim() && {
-            externalRuleId: formData.externalRuleId.trim(),
-          }),
-          ...(formData.sortOrder !== undefined &&
-            formData.sortOrder !== null &&
-            formData.sortOrder >= 0 && { sortOrder: formData.sortOrder }),
-          ...(formData.remark?.trim() && { remark: formData.remark.trim() }),
-          ...(formData.groupSids &&
-            formData.groupSids.length > 0 && { groupSids: formData.groupSids }),
-        } as unknown as CreateForwardRuleRequest;
-
-        onSubmit(submitData);
-        handleClose();
-        return;
-      }
-
-      const submitData: CreateForwardRuleRequest = {
-        agentId: formData.agentId,
-        ruleType: formData.ruleType,
-        name: formData.name.trim(),
-        protocol: formData.protocol,
-        ipVersion: formData.ipVersion,
-      };
-
-      if (formData.ruleType === "direct") {
-        submitData.listenPort = formData.listenPort;
-        if (targetType === "manual") {
-          submitData.targetAddress = formData.targetAddress.trim();
-          submitData.targetPort = formData.targetPort;
-        } else {
-          submitData.targetNodeId = formData.targetNodeId;
-        }
-      } else if (formData.ruleType === "entry") {
-        submitData.listenPort = formData.listenPort;
-        // Submit exitAgentId or exitAgents based on mode
-        if (exitMode === "single") {
-          submitData.exitAgentId = formData.exitAgentId;
-        } else {
-          submitData.exitAgents = formData.exitAgents;
-          // Only include loadBalanceStrategy when using multi-exit mode
-          submitData.loadBalanceStrategy = formData.loadBalanceStrategy;
-        }
-        submitData.tunnelType = formData.tunnelType;
-        if (targetType === "manual") {
-          submitData.targetAddress = formData.targetAddress.trim();
-          submitData.targetPort = formData.targetPort;
-        } else {
-          submitData.targetNodeId = formData.targetNodeId;
-        }
-      } else if (formData.ruleType === "chain") {
-        submitData.listenPort = formData.listenPort;
-        submitData.chainAgentIds = formData.chainAgentIds;
-        submitData.tunnelType = formData.tunnelType;
-        if (
-          formData.tunnelHops !== undefined &&
-          formData.tunnelHops !== null &&
-          formData.tunnelHops >= 0
-        ) {
-          submitData.tunnelHops = formData.tunnelHops;
-          if (
-            formData.tunnelHops < formData.chainAgentIds.length &&
-            Object.keys(formData.chainPortConfig).length > 0
-          ) {
-            submitData.chainPortConfig = formData.chainPortConfig;
-          }
-        }
-        if (targetType === "manual") {
-          submitData.targetAddress = formData.targetAddress.trim();
-          submitData.targetPort = formData.targetPort;
-        } else {
-          submitData.targetNodeId = formData.targetNodeId;
-        }
-      } else if (formData.ruleType === "direct_chain") {
-        submitData.listenPort = formData.listenPort;
-        submitData.chainAgentIds = formData.chainAgentIds;
-        submitData.chainPortConfig = formData.chainPortConfig;
-        if (targetType === "manual") {
-          submitData.targetAddress = formData.targetAddress.trim();
-          submitData.targetPort = formData.targetPort;
-        } else {
-          submitData.targetNodeId = formData.targetNodeId;
-        }
-      }
-
-      if (formData.bindIp?.trim()) {
-        submitData.bindIp = formData.bindIp.trim();
-      }
-
-      if (
-        formData.trafficMultiplier !== undefined &&
-        formData.trafficMultiplier !== null &&
-        formData.trafficMultiplier > 0
-      ) {
-        submitData.trafficMultiplier = formData.trafficMultiplier;
-      }
-
-      if (
-        formData.sortOrder !== undefined &&
-        formData.sortOrder !== null &&
-        formData.sortOrder >= 0
-      ) {
-        submitData.sortOrder = formData.sortOrder;
-      }
-
-      if (formData.remark?.trim()) {
-        submitData.remark = formData.remark.trim();
-      }
-
-      if (formData.groupSids && formData.groupSids.length > 0) {
-        submitData.groupSids = formData.groupSids;
-      }
-
+    if (form.validate()) {
+      const submitData = form.buildSubmitData();
       onSubmit(submitData);
-      handleClose();
     }
   };
-
-  const isFormValid = () => {
-    if (formData.ruleType === "external") {
-      return (
-        formData.name.trim() !== "" &&
-        formData.serverAddress.trim() !== "" &&
-        formData.listenPort > 0 &&
-        formData.listenPort <= 65535 &&
-        !!formData.targetNodeId
-      );
-    }
-
-    if (!formData.agentId || !formData.name.trim() || !formData.protocol)
-      return false;
-
-    if (formData.ruleType === "direct") {
-      if (targetType === "manual") {
-        return formData.targetAddress.trim() !== "" && formData.targetPort > 0;
-      } else {
-        return !!formData.targetNodeId;
-      }
-    } else if (formData.ruleType === "entry") {
-      // Validate exit agent based on mode
-      if (exitMode === "single") {
-        if (formData.exitAgentId === "") return false;
-      } else {
-        if (!formData.exitAgents || formData.exitAgents.length === 0) return false;
-      }
-      if (targetType === "manual") {
-        return formData.targetAddress.trim() !== "" && formData.targetPort > 0;
-      } else {
-        return !!formData.targetNodeId;
-      }
-    } else if (formData.ruleType === "chain") {
-      if (formData.chainAgentIds.length === 0) return false;
-      if (
-        formData.tunnelHops !== undefined &&
-        formData.tunnelHops >= 0 &&
-        formData.tunnelHops < formData.chainAgentIds.length
-      ) {
-        for (
-          let i = formData.tunnelHops;
-          i < formData.chainAgentIds.length;
-          i++
-        ) {
-          const agentId = formData.chainAgentIds[i];
-          const port = formData.chainPortConfig[agentId];
-          if (!port || port <= 0 || port > 65535) return false;
-        }
-      }
-      if (targetType === "manual") {
-        return formData.targetAddress.trim() !== "" && formData.targetPort > 0;
-      } else {
-        return !!formData.targetNodeId;
-      }
-    } else if (formData.ruleType === "direct_chain") {
-      if (formData.chainAgentIds.length === 0) return false;
-      const allPortsValid = formData.chainAgentIds.every((id) => {
-        const port = formData.chainPortConfig[id];
-        return port && port > 0 && port <= 65535;
-      });
-      if (!allPortsValid) return false;
-      if (targetType === "manual") {
-        return formData.targetAddress.trim() !== "" && formData.targetPort > 0;
-      } else {
-        return !!formData.targetNodeId;
-      }
-    }
-    return false;
-  };
-
-  const availableNodes = nodes.filter(
-    (n) => n.status === "active" || n.id === formData.targetNodeId,
-  );
-
-  const availableAgentsForSelect = agents.filter(
-    (a) =>
-      a.status === "enabled" ||
-      a.id === formData.agentId ||
-      a.id === formData.exitAgentId ||
-      formData.chainAgentIds.includes(a.id),
-  );
-
-  const availableExitAgents = availableAgentsForSelect.filter(
-    (a) => a.id !== formData.agentId,
-  );
-
-  const availableChainAgents = availableAgentsForSelect.filter(
-    (a) => a.id !== formData.agentId,
-  );
-
-  const availableResourceGroups = useMemo(() => {
-    return resourceGroups.filter((group) => {
-      const plan = plansMap[group.planId];
-      return (
-        group.status === "active" &&
-        plan &&
-        (plan.planType === "node" || plan.planType === "hybrid")
-      );
-    });
-  }, [resourceGroups, plansMap]);
-
-  const handleGroupToggle = (groupSid: string) => {
-    setFormData((prev) => {
-      const currentGroups = prev.groupSids || [];
-      const isSelected = currentGroups.includes(groupSid);
-      return {
-        ...prev,
-        groupSids: isSelected
-          ? currentGroups.filter((sid) => sid !== groupSid)
-          : [...currentGroups, groupSid],
-      };
-    });
-  };
-
-  const selectedAgent = agents.find((a) => a.id === formData.agentId);
-  const selectedExitAgent = agents.find((a) => a.id === formData.exitAgentId);
 
   return (
-    <Dialog open={open} onOpenChange={(isOpen) => !isOpen && handleClose()}>
+    <Dialog open={open} onOpenChange={(isOpen) => !isOpen && onClose()}>
       <DialogContent className="@container sm:max-w-2xl flex flex-col max-h-[90vh] p-0">
         <DialogHeader className="flex-shrink-0 px-5 pt-5 pb-4 border-b border-border sm:px-6">
           <DialogTitle className="text-lg font-semibold">
@@ -884,13 +193,13 @@ export const CreateForwardRuleDialog: React.FC<CreateForwardRuleDialogProps> = (
                 <FormField
                   label={t("admin.forwardRules.form.ruleName")}
                   required
-                  error={errors.name}
+                  error={form.errors.name}
                   className="col-span-6 sm:col-span-4"
                 >
                   <Input
-                    value={formData.name}
-                    onChange={(e) => handleChange("name", e.target.value)}
-                    error={!!errors.name}
+                    value={form.formData.name}
+                    onChange={(e) => form.handleChange("name", e.target.value)}
+                    error={!!form.errors.name}
                     placeholder={t(
                       "admin.forwardRules.form.ruleNamePlaceholder",
                     )}
@@ -904,9 +213,9 @@ export const CreateForwardRuleDialog: React.FC<CreateForwardRuleDialogProps> = (
                   className="col-span-6 sm:col-span-2"
                 >
                   <Select
-                    value={formData.ruleType}
+                    value={form.formData.ruleType}
                     onValueChange={(value) =>
-                      handleChange("ruleType", value as ForwardRuleType)
+                      form.handleChange("ruleType", value as ForwardRuleType)
                     }
                   >
                     <SelectTrigger>
@@ -929,29 +238,29 @@ export const CreateForwardRuleDialog: React.FC<CreateForwardRuleDialogProps> = (
                 {/* Rule Type Description - full width */}
                 <p className="col-span-6 text-xs text-muted-foreground -mt-2">
                   {t(
-                    `admin.forwardRules.ruleTypeInfo.${RULE_TYPE_KEYS[formData.ruleType]}.description`,
+                    `admin.forwardRules.ruleTypeInfo.${RULE_TYPE_KEYS[form.formData.ruleType]}.description`,
                   )}
                 </p>
               </div>
             </FormSection>
 
             {/* Section 2: Forward Agent & Protocol (hidden for external) */}
-            {formData.ruleType !== "external" && (
+            {form.formData.ruleType !== "external" && (
               <FormSection title={t("admin.forwardRules.form.forwardAgent")}>
                 <div className="grid grid-cols-6 gap-x-4 gap-y-4">
                   {/* Forward Agent - 3 cols */}
                   <FormField
                     label={t("admin.forwardRules.form.forwardAgent")}
                     required
-                    error={errors.agentId}
+                    error={form.errors.agentId}
                     className="col-span-6 sm:col-span-3"
                   >
                     <Select
-                      value={formData.agentId}
-                      onValueChange={(value) => handleChange("agentId", value)}
+                      value={form.formData.agentId}
+                      onValueChange={(value) => form.handleChange("agentId", value)}
                     >
                       <SelectTrigger
-                        className={errors.agentId ? "border-destructive" : ""}
+                        className={form.errors.agentId ? "border-destructive" : ""}
                       >
                         <SelectValue
                           placeholder={t(
@@ -960,7 +269,7 @@ export const CreateForwardRuleDialog: React.FC<CreateForwardRuleDialogProps> = (
                         />
                       </SelectTrigger>
                       <SelectContent>
-                        {availableAgentsForSelect.map((agent) => (
+                        {form.availableAgentsForSelect.map((agent) => (
                           <SelectItem key={agent.id} value={agent.id}>
                             <span className="flex items-center gap-2">
                               {agent.name}
@@ -982,21 +291,21 @@ export const CreateForwardRuleDialog: React.FC<CreateForwardRuleDialogProps> = (
                   {/* Listen Port - 1.5 cols */}
                   <FormField
                     label={t("admin.forwardRules.form.listenPort")}
-                    error={errors.listenPort}
+                    error={form.errors.listenPort}
                     className="col-span-3 sm:col-span-2"
                   >
                     <Input
                       type="number"
                       min={0}
                       max={65535}
-                      value={formData.listenPort || ""}
+                      value={form.formData.listenPort || ""}
                       onChange={(e) =>
-                        handleChange(
+                        form.handleChange(
                           "listenPort",
                           parseInt(e.target.value, 10) || 0,
                         )
                       }
-                      error={!!errors.listenPort}
+                      error={!!form.errors.listenPort}
                       placeholder={t(
                         "common.auto",
                       )}
@@ -1010,9 +319,9 @@ export const CreateForwardRuleDialog: React.FC<CreateForwardRuleDialogProps> = (
                     className="col-span-3 sm:col-span-1"
                   >
                     <Select
-                      value={formData.protocol}
+                      value={form.formData.protocol}
                       onValueChange={(value) =>
-                        handleChange("protocol", value as ForwardProtocol)
+                        form.handleChange("protocol", value as ForwardProtocol)
                       }
                     >
                       <SelectTrigger>
@@ -1027,12 +336,12 @@ export const CreateForwardRuleDialog: React.FC<CreateForwardRuleDialogProps> = (
                   </FormField>
 
                   {/* Port Range Warning */}
-                  {selectedAgent?.allowedPortRange && (
+                  {form.selectedAgent?.allowedPortRange && (
                     <div className="col-span-6 flex items-center gap-1.5 text-xs text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800 rounded-md px-2.5 py-1.5 -mt-2">
                       <Info className="size-3.5 shrink-0" />
                       <span>
                         {t("admin.forwardRules.form.portRestriction", {
-                          range: selectedAgent.allowedPortRange,
+                          range: form.selectedAgent!.allowedPortRange,
                         })}
                       </span>
                     </div>
@@ -1045,20 +354,20 @@ export const CreateForwardRuleDialog: React.FC<CreateForwardRuleDialogProps> = (
             <FormSection title={t("admin.forwardRules.form.forwardConfig")}>
               <div className="grid grid-cols-6 gap-x-4 gap-y-4">
                 {/* External type fields */}
-                {formData.ruleType === "external" && (
+                {form.formData.ruleType === "external" && (
                   <>
                     <FormField
                       label={t("admin.forwardRules.form.serverAddress")}
                       required
-                      error={errors.serverAddress}
+                      error={form.errors.serverAddress}
                       className="col-span-6 sm:col-span-4"
                     >
                       <Input
-                        value={formData.serverAddress}
+                        value={form.formData.serverAddress}
                         onChange={(e) =>
-                          handleChange("serverAddress", e.target.value)
+                          form.handleChange("serverAddress", e.target.value)
                         }
-                        error={!!errors.serverAddress}
+                        error={!!form.errors.serverAddress}
                         placeholder={t(
                           "admin.forwardRules.form.serverAddressPlaceholder",
                         )}
@@ -1068,21 +377,21 @@ export const CreateForwardRuleDialog: React.FC<CreateForwardRuleDialogProps> = (
                     <FormField
                       label={t("admin.forwardRules.form.listenPort")}
                       required
-                      error={errors.listenPort}
+                      error={form.errors.listenPort}
                       className="col-span-6 sm:col-span-2"
                     >
                       <Input
                         type="number"
                         min={1}
                         max={65535}
-                        value={formData.listenPort || ""}
+                        value={form.formData.listenPort || ""}
                         onChange={(e) =>
-                          handleChange(
+                          form.handleChange(
                             "listenPort",
                             parseInt(e.target.value, 10) || 0,
                           )
                         }
-                        error={!!errors.listenPort}
+                        error={!!form.errors.listenPort}
                         placeholder="1-65535"
                       />
                     </FormField>
@@ -1090,19 +399,19 @@ export const CreateForwardRuleDialog: React.FC<CreateForwardRuleDialogProps> = (
                     <FormField
                       label={t("admin.forwardRules.form.targetNode")}
                       required
-                      error={errors.targetNodeId}
+                      error={form.errors.targetNodeId}
                       hint={t("admin.forwardRules.form.externalTargetNodeHint")}
                       className="col-span-6 sm:col-span-3"
                     >
                       <Select
-                        value={formData.targetNodeId}
+                        value={form.formData.targetNodeId}
                         onValueChange={(value) =>
-                          handleChange("targetNodeId", value)
+                          form.handleChange("targetNodeId", value)
                         }
                       >
                         <SelectTrigger
                           className={
-                            errors.targetNodeId ? "border-destructive" : ""
+                            form.errors.targetNodeId ? "border-destructive" : ""
                           }
                         >
                           <SelectValue
@@ -1112,7 +421,7 @@ export const CreateForwardRuleDialog: React.FC<CreateForwardRuleDialogProps> = (
                           />
                         </SelectTrigger>
                         <SelectContent>
-                          {availableNodes.map((node) => (
+                          {form.availableNodes.map((node) => (
                             <SelectItem key={node.id} value={node.id}>
                               {node.name} ({node.serverAddress})
                             </SelectItem>
@@ -1127,9 +436,9 @@ export const CreateForwardRuleDialog: React.FC<CreateForwardRuleDialogProps> = (
                       className="col-span-6 sm:col-span-3"
                     >
                       <Input
-                        value={formData.externalSource}
+                        value={form.formData.externalSource}
                         onChange={(e) =>
-                          handleChange("externalSource", e.target.value)
+                          form.handleChange("externalSource", e.target.value)
                         }
                         placeholder={t(
                           "admin.forwardRules.form.externalSourcePlaceholder",
@@ -1140,7 +449,7 @@ export const CreateForwardRuleDialog: React.FC<CreateForwardRuleDialogProps> = (
                 )}
 
                 {/* Entry type: Exit Agent Mode + Exit Agent(s) + Tunnel Type */}
-                {formData.ruleType === "entry" && (
+                {form.formData.ruleType === "entry" && (
                   <>
                     {/* Exit Mode Selection */}
                     <div className="col-span-6">
@@ -1149,16 +458,8 @@ export const CreateForwardRuleDialog: React.FC<CreateForwardRuleDialogProps> = (
                         <span className="text-destructive ml-0.5">*</span>
                       </Label>
                       <RadioGroup
-                        value={exitMode}
-                        onValueChange={(value) => {
-                          setExitMode(value as ExitMode);
-                          // Clear the other mode's data when switching
-                          if (value === "single") {
-                            setFormData((prev) => ({ ...prev, exitAgents: [] }));
-                          } else {
-                            handleChange("exitAgentId", "");
-                          }
-                        }}
+                        value={form.exitMode}
+                        onValueChange={(value) => form.handleExitModeChange(value as "single" | "multi")}
                         className="flex gap-6"
                       >
                         <div className="flex items-center space-x-2">
@@ -1186,22 +487,22 @@ export const CreateForwardRuleDialog: React.FC<CreateForwardRuleDialogProps> = (
                     </div>
 
                     {/* Single Exit Agent Mode */}
-                    {exitMode === "single" && (
+                    {form.exitMode === "single" && (
                       <FormField
                         label={t("admin.forwardRules.form.exitNode")}
                         required
-                        error={errors.exitAgentId}
+                        error={form.errors.exitAgentId}
                         className="col-span-6 sm:col-span-4"
                       >
                         <Select
-                          value={formData.exitAgentId}
+                          value={form.formData.exitAgentId}
                           onValueChange={(value) =>
-                            handleChange("exitAgentId", value)
+                            form.handleChange("exitAgentId", value)
                           }
                         >
                           <SelectTrigger
                             className={
-                              errors.exitAgentId ? "border-destructive" : ""
+                              form.errors.exitAgentId ? "border-destructive" : ""
                             }
                           >
                             <SelectValue
@@ -1211,7 +512,7 @@ export const CreateForwardRuleDialog: React.FC<CreateForwardRuleDialogProps> = (
                             />
                           </SelectTrigger>
                           <SelectContent>
-                            {availableExitAgents.map((agent) => (
+                            {form.availableExitAgents.map((agent) => (
                               <SelectItem key={agent.id} value={agent.id}>
                                 <span className="flex items-center gap-2">
                                   {agent.name}
@@ -1232,43 +533,36 @@ export const CreateForwardRuleDialog: React.FC<CreateForwardRuleDialogProps> = (
                     )}
 
                     {/* Multi Exit Agent Mode (Load Balancing) */}
-                    {exitMode === "multi" && (
+                    {form.exitMode === "multi" && (
                       <>
                         <FormField
                           label={t("admin.forwardRules.exitAgents.loadBalancing")}
                           required
-                          error={errors.exitAgents}
+                          error={form.errors.exitAgents}
                           className="col-span-6 sm:col-span-4"
                         >
                           <ExitAgentList
-                            agents={availableExitAgents}
-                            exitAgents={formData.exitAgents}
-                            onChange={(exitAgents) =>
-                              setFormData((prev) => ({ ...prev, exitAgents }))
-                            }
-                            hasError={!!errors.exitAgents}
+                            agents={form.availableExitAgents}
+                            exitAgents={form.formData.exitAgents}
+                            onChange={form.handleExitAgentsChange}
+                            hasError={!!form.errors.exitAgents}
                             idPrefix="create-exit-agent"
-                            loadBalanceStrategy={formData.loadBalanceStrategy}
+                            loadBalanceStrategy={form.formData.loadBalanceStrategy}
                           />
                         </FormField>
 
                         <FormField
                           label={t("admin.forwardRules.exitAgents.strategy")}
                           hint={
-                            formData.loadBalanceStrategy === "failover"
+                            form.formData.loadBalanceStrategy === "failover"
                               ? t("admin.forwardRules.exitAgents.strategyFailoverHint")
                               : t("admin.forwardRules.exitAgents.strategyWeightedHint")
                           }
                           className="col-span-6 sm:col-span-2"
                         >
                           <Select
-                            value={formData.loadBalanceStrategy}
-                            onValueChange={(value) =>
-                              setFormData((prev) => ({
-                                ...prev,
-                                loadBalanceStrategy: value as LoadBalanceStrategy,
-                              }))
-                            }
+                            value={form.formData.loadBalanceStrategy}
+                            onValueChange={(value) => form.handleLoadBalanceStrategyChange(value as "failover" | "weighted")}
                           >
                             <SelectTrigger>
                               <SelectValue />
@@ -1288,12 +582,12 @@ export const CreateForwardRuleDialog: React.FC<CreateForwardRuleDialogProps> = (
 
                     <FormField
                       label={t("admin.forwardRules.form.tunnelType")}
-                      className={exitMode === "single" ? "col-span-6 sm:col-span-2" : "col-span-6 sm:col-span-3"}
+                      className={form.exitMode === "single" ? "col-span-6 sm:col-span-2" : "col-span-6 sm:col-span-3"}
                     >
                       <Select
-                        value={formData.tunnelType}
+                        value={form.formData.tunnelType}
                         onValueChange={(value) =>
-                          handleChange("tunnelType", value as TunnelType)
+                          form.handleChange("tunnelType", value as TunnelType)
                         }
                       >
                         <SelectTrigger>
@@ -1308,12 +602,12 @@ export const CreateForwardRuleDialog: React.FC<CreateForwardRuleDialogProps> = (
                       </Select>
                     </FormField>
 
-                    {exitMode === "single" && selectedExitAgent?.allowedPortRange && (
+                    {form.exitMode === "single" && form.selectedExitAgent?.allowedPortRange && (
                       <div className="col-span-6 flex items-center gap-1.5 text-xs text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800 rounded-md px-2.5 py-1.5 -mt-2">
                         <Info className="size-3.5 shrink-0" />
                         <span>
                           {t("admin.forwardRules.form.portRestriction", {
-                            range: selectedExitAgent.allowedPortRange,
+                            range: form.selectedExitAgent!.allowedPortRange,
                           })}
                         </span>
                       </div>
@@ -1322,16 +616,16 @@ export const CreateForwardRuleDialog: React.FC<CreateForwardRuleDialogProps> = (
                 )}
 
                 {/* Chain type: Tunnel settings + Intermediate Nodes */}
-                {formData.ruleType === "chain" && (
+                {form.formData.ruleType === "chain" && (
                   <>
                     <FormField
                       label={t("admin.forwardRules.form.tunnelType")}
                       className="col-span-3 sm:col-span-2"
                     >
                       <Select
-                        value={formData.tunnelType}
+                        value={form.formData.tunnelType}
                         onValueChange={(value) =>
-                          handleChange("tunnelType", value as TunnelType)
+                          form.handleChange("tunnelType", value as TunnelType)
                         }
                       >
                         <SelectTrigger>
@@ -1354,13 +648,13 @@ export const CreateForwardRuleDialog: React.FC<CreateForwardRuleDialogProps> = (
                       <Input
                         type="number"
                         min={0}
-                        value={formData.tunnelHops ?? ""}
+                        value={form.formData.tunnelHops ?? ""}
                         onChange={(e) => {
                           const value =
                             e.target.value === ""
                               ? undefined
                               : parseInt(e.target.value, 10);
-                          handleChange("tunnelHops", value);
+                          form.handleChange("tunnelHops", value);
                         }}
                         placeholder={t(
                           "admin.forwardRules.form.tunnelHopsPlaceholder",
@@ -1371,44 +665,23 @@ export const CreateForwardRuleDialog: React.FC<CreateForwardRuleDialogProps> = (
                     <FormField
                       label={t("admin.forwardRules.form.chainNodes")}
                       required
-                      error={errors.chainAgentIds || errors.chainPortConfig}
+                      error={form.errors.chainAgentIds || form.errors.chainPortConfig}
                       className="col-span-6"
                     >
                       <SortableChainAgentList
-                        agents={availableChainAgents}
-                        selectedIds={formData.chainAgentIds}
-                        onSelectionChange={(ids) => {
-                          if (
-                            formData.tunnelHops !== undefined &&
-                            formData.tunnelHops >= 0
-                          ) {
-                            const newPortConfig = {
-                              ...formData.chainPortConfig,
-                            };
-                            Object.keys(newPortConfig).forEach((id) => {
-                              if (!ids.includes(id)) {
-                                delete newPortConfig[id];
-                              }
-                            });
-                            setFormData((prev) => ({
-                              ...prev,
-                              chainAgentIds: ids,
-                              chainPortConfig: newPortConfig,
-                            }));
-                          } else {
-                            handleChange("chainAgentIds", ids);
-                          }
-                        }}
+                        agents={form.availableChainAgents}
+                        selectedIds={form.formData.chainAgentIds}
+                        onSelectionChange={form.handleChainSelectionChange}
                         showPortConfig={
-                          formData.tunnelHops !== undefined &&
-                          formData.tunnelHops >= 0 &&
-                          formData.tunnelHops < formData.chainAgentIds.length
+                          form.formData.tunnelHops !== undefined &&
+                          form.formData.tunnelHops >= 0 &&
+                          form.formData.tunnelHops < form.formData.chainAgentIds.length
                         }
-                        portConfigStartIndex={formData.tunnelHops ?? 0}
-                        portConfig={formData.chainPortConfig}
-                        onPortConfigChange={handleChainPortChange}
+                        portConfigStartIndex={form.formData.tunnelHops ?? 0}
+                        portConfig={form.formData.chainPortConfig}
+                        onPortConfigChange={form.handleChainPortChange}
                         hasError={
-                          !!errors.chainAgentIds || !!errors.chainPortConfig
+                          !!form.errors.chainAgentIds || !!form.errors.chainPortConfig
                         }
                         idPrefix="chain-agent"
                       />
@@ -1417,34 +690,22 @@ export const CreateForwardRuleDialog: React.FC<CreateForwardRuleDialogProps> = (
                 )}
 
                 {/* direct_chain type: Intermediate Nodes with port */}
-                {formData.ruleType === "direct_chain" && (
+                {form.formData.ruleType === "direct_chain" && (
                   <FormField
                     label={t("admin.forwardRules.form.chainNodesWithPort")}
                     required
-                    error={errors.chainAgentIds || errors.chainPortConfig}
+                    error={form.errors.chainAgentIds || form.errors.chainPortConfig}
                     className="col-span-6"
                   >
                     <SortableChainAgentList
-                      agents={availableChainAgents}
-                      selectedIds={formData.chainAgentIds}
-                      onSelectionChange={(ids) => {
-                        const newPortConfig = { ...formData.chainPortConfig };
-                        Object.keys(newPortConfig).forEach((id) => {
-                          if (!ids.includes(id)) {
-                            delete newPortConfig[id];
-                          }
-                        });
-                        setFormData((prev) => ({
-                          ...prev,
-                          chainAgentIds: ids,
-                          chainPortConfig: newPortConfig,
-                        }));
-                      }}
+                      agents={form.availableChainAgents}
+                      selectedIds={form.formData.chainAgentIds}
+                      onSelectionChange={form.handleChainSelectionChange}
                       showPortConfig
-                      portConfig={formData.chainPortConfig}
-                      onPortConfigChange={handleChainPortChange}
+                      portConfig={form.formData.chainPortConfig}
+                      onPortConfigChange={form.handleChainPortChange}
                       hasError={
-                        !!errors.chainAgentIds || !!errors.chainPortConfig
+                        !!form.errors.chainAgentIds || !!form.errors.chainPortConfig
                       }
                       idPrefix="direct-chain-agent"
                     />
@@ -1452,10 +713,10 @@ export const CreateForwardRuleDialog: React.FC<CreateForwardRuleDialogProps> = (
                 )}
 
                 {/* Target Configuration - for non-external types */}
-                {(formData.ruleType === "direct" ||
-                  formData.ruleType === "entry" ||
-                  formData.ruleType === "chain" ||
-                  formData.ruleType === "direct_chain") && (
+                {(form.formData.ruleType === "direct" ||
+                  form.formData.ruleType === "entry" ||
+                  form.formData.ruleType === "chain" ||
+                  form.formData.ruleType === "direct_chain") && (
                   <>
                     {/* Target Type Radio */}
                     <div className="col-span-6">
@@ -1464,16 +725,8 @@ export const CreateForwardRuleDialog: React.FC<CreateForwardRuleDialogProps> = (
                         <span className="text-destructive ml-0.5">*</span>
                       </Label>
                       <RadioGroup
-                        value={targetType}
-                        onValueChange={(value) => {
-                          setTargetType(value as TargetType);
-                          if (value === "manual") {
-                            handleChange("targetNodeId", "");
-                          } else {
-                            handleChange("targetAddress", "");
-                            handleChange("targetPort", 0);
-                          }
-                        }}
+                        value={form.targetType}
+                        onValueChange={(value) => form.handleTargetTypeChange(value as "manual" | "node")}
                         className="flex gap-6"
                       >
                         <div className="flex items-center space-x-2">
@@ -1498,44 +751,44 @@ export const CreateForwardRuleDialog: React.FC<CreateForwardRuleDialogProps> = (
                     </div>
 
                     {/* Manual Target */}
-                    {targetType === "manual" && (
+                    {form.targetType === "manual" && (
                       <>
                         <FormField
                           label={t("admin.forwardRules.form.targetAddress")}
                           required
-                          error={errors.targetAddress}
+                          error={form.errors.targetAddress}
                           className="col-span-6 sm:col-span-4"
                         >
                           <Input
                             placeholder={t(
                               "admin.forwardRules.form.targetAddressPlaceholder",
                             )}
-                            value={formData.targetAddress}
+                            value={form.formData.targetAddress}
                             onChange={(e) =>
-                              handleChange("targetAddress", e.target.value)
+                              form.handleChange("targetAddress", e.target.value)
                             }
-                            error={!!errors.targetAddress}
+                            error={!!form.errors.targetAddress}
                           />
                         </FormField>
 
                         <FormField
                           label={t("admin.forwardRules.form.targetPort")}
                           required
-                          error={errors.targetPort}
+                          error={form.errors.targetPort}
                           className="col-span-6 sm:col-span-2"
                         >
                           <Input
                             type="number"
                             min={1}
                             max={65535}
-                            value={formData.targetPort || ""}
+                            value={form.formData.targetPort || ""}
                             onChange={(e) =>
-                              handleChange(
+                              form.handleChange(
                                 "targetPort",
                                 parseInt(e.target.value, 10) || 0,
                               )
                             }
-                            error={!!errors.targetPort}
+                            error={!!form.errors.targetPort}
                             placeholder="1-65535"
                           />
                         </FormField>
@@ -1543,25 +796,25 @@ export const CreateForwardRuleDialog: React.FC<CreateForwardRuleDialogProps> = (
                     )}
 
                     {/* Node Target */}
-                    {targetType === "node" && (
+                    {form.targetType === "node" && (
                       <FormField
                         label={t("admin.forwardRules.form.targetNode")}
                         required
-                        error={errors.targetNodeId}
+                        error={form.errors.targetNodeId}
                         hint={t(
                           "admin.forwardRules.form.targetNodeDynamicHint",
                         )}
                         className="col-span-6"
                       >
                         <Select
-                          value={formData.targetNodeId}
+                          value={form.formData.targetNodeId}
                           onValueChange={(value) =>
-                            handleChange("targetNodeId", value)
+                            form.handleChange("targetNodeId", value)
                           }
                         >
                           <SelectTrigger
                             className={
-                              errors.targetNodeId ? "border-destructive" : ""
+                              form.errors.targetNodeId ? "border-destructive" : ""
                             }
                           >
                             <SelectValue
@@ -1571,7 +824,7 @@ export const CreateForwardRuleDialog: React.FC<CreateForwardRuleDialogProps> = (
                             />
                           </SelectTrigger>
                           <SelectContent>
-                            {availableNodes.map((node) => (
+                            {form.availableNodes.map((node) => (
                               <SelectItem key={node.id} value={node.id}>
                                 {node.name} ({node.serverAddress})
                               </SelectItem>
@@ -1606,16 +859,16 @@ export const CreateForwardRuleDialog: React.FC<CreateForwardRuleDialogProps> = (
               <CollapsibleContent className="pt-4">
                 <div className="grid grid-cols-6 gap-x-4 gap-y-4">
                   {/* IP Version */}
-                  {formData.ruleType !== "external" && (
+                  {form.formData.ruleType !== "external" && (
                     <FormField
                       label={t("admin.forwardRules.form.ipVersion")}
                       hint={t("admin.forwardRules.form.ipVersionHint")}
                       className="col-span-6 sm:col-span-2"
                     >
                       <Select
-                        value={formData.ipVersion}
+                        value={form.formData.ipVersion}
                         onValueChange={(value) =>
-                          handleChange("ipVersion", value as IPVersion)
+                          form.handleChange("ipVersion", value as IPVersion)
                         }
                       >
                         <SelectTrigger>
@@ -1633,16 +886,16 @@ export const CreateForwardRuleDialog: React.FC<CreateForwardRuleDialogProps> = (
                   )}
 
                   {/* Bind IP */}
-                  {formData.ruleType !== "external" && (
+                  {form.formData.ruleType !== "external" && (
                     <FormField
                       label={t("admin.forwardRules.form.bindIp")}
                       hint={t("admin.forwardRules.form.bindIpHint")}
                       className="col-span-6 sm:col-span-2"
                     >
                       <Input
-                        value={formData.bindIp}
+                        value={form.formData.bindIp}
                         onChange={(e) =>
-                          handleChange("bindIp", e.target.value)
+                          form.handleChange("bindIp", e.target.value)
                         }
                         placeholder={t(
                           "admin.forwardRules.form.bindIpPlaceholder",
@@ -1652,7 +905,7 @@ export const CreateForwardRuleDialog: React.FC<CreateForwardRuleDialogProps> = (
                   )}
 
                   {/* Traffic Multiplier */}
-                  {formData.ruleType !== "external" && (
+                  {form.formData.ruleType !== "external" && (
                     <FormField
                       label={t("admin.forwardRules.form.trafficMultiplier")}
                       hint={t("admin.forwardRules.form.trafficMultiplierHint")}
@@ -1663,13 +916,13 @@ export const CreateForwardRuleDialog: React.FC<CreateForwardRuleDialogProps> = (
                         min={0}
                         max={1000000}
                         step={0.01}
-                        value={formData.trafficMultiplier ?? ""}
+                        value={form.formData.trafficMultiplier ?? ""}
                         onChange={(e) => {
                           const value =
                             e.target.value === ""
                               ? undefined
                               : parseFloat(e.target.value);
-                          handleChange("trafficMultiplier", value);
+                          form.handleChange("trafficMultiplier", value);
                         }}
                         placeholder="1.0"
                       />
@@ -1685,29 +938,29 @@ export const CreateForwardRuleDialog: React.FC<CreateForwardRuleDialogProps> = (
                     <Input
                       type="number"
                       min={0}
-                      value={formData.sortOrder ?? ""}
+                      value={form.formData.sortOrder ?? ""}
                       onChange={(e) => {
                         const value =
                           e.target.value === ""
                             ? undefined
                             : parseInt(e.target.value, 10);
-                        handleChange("sortOrder", value);
+                        form.handleChange("sortOrder", value);
                       }}
                       placeholder="0"
                     />
                   </FormField>
 
                   {/* External Rule ID (for external type) */}
-                  {formData.ruleType === "external" && (
+                  {form.formData.ruleType === "external" && (
                     <FormField
                       label={t("admin.forwardRules.form.externalRuleId")}
                       hint={t("admin.forwardRules.form.externalRuleIdHint")}
                       className="col-span-6 sm:col-span-3"
                     >
                       <Input
-                        value={formData.externalRuleId}
+                        value={form.formData.externalRuleId}
                         onChange={(e) =>
-                          handleChange("externalRuleId", e.target.value)
+                          form.handleChange("externalRuleId", e.target.value)
                         }
                         placeholder={t(
                           "admin.forwardRules.form.externalRuleIdPlaceholder",
@@ -1723,8 +976,8 @@ export const CreateForwardRuleDialog: React.FC<CreateForwardRuleDialogProps> = (
                   >
                     <Textarea
                       rows={2}
-                      value={formData.remark}
-                      onChange={(e) => handleChange("remark", e.target.value)}
+                      value={form.formData.remark}
+                      onChange={(e) => form.handleChange("remark", e.target.value)}
                       placeholder={t(
                         "admin.forwardRules.form.remarkPlaceholder",
                       )}
@@ -1733,7 +986,7 @@ export const CreateForwardRuleDialog: React.FC<CreateForwardRuleDialogProps> = (
                   </FormField>
 
                   {/* Resource Groups Selection */}
-                  {availableResourceGroups.length > 0 && (
+                  {form.availableResourceGroups.length > 0 && (
                     <FormField
                       label={
                         <span className="flex items-center gap-1.5">
@@ -1742,9 +995,9 @@ export const CreateForwardRuleDialog: React.FC<CreateForwardRuleDialogProps> = (
                         </span>
                       }
                       hint={
-                        formData.groupSids && formData.groupSids.length > 0
+                        form.formData.groupSids && form.formData.groupSids.length > 0
                           ? t("admin.forwardRules.form.selectedGroupsCount", {
-                              count: formData.groupSids.length,
+                              count: form.formData.groupSids.length,
                             })
                           : t("admin.forwardRules.form.bindResourceGroupsHint")
                       }
@@ -1753,10 +1006,10 @@ export const CreateForwardRuleDialog: React.FC<CreateForwardRuleDialogProps> = (
                       <div className="border rounded-lg overflow-hidden">
                         <ScrollArea className="h-[100px]">
                           <div className="divide-y divide-border">
-                            {availableResourceGroups.map((group) => {
+                            {form.availableResourceGroups.map((group) => {
                               const plan = plansMap[group.planId];
                               const isSelected =
-                                formData.groupSids?.includes(group.sid) ??
+                                form.formData.groupSids?.includes(group.sid) ??
                                 false;
                               return (
                                 <label
@@ -1770,7 +1023,7 @@ export const CreateForwardRuleDialog: React.FC<CreateForwardRuleDialogProps> = (
                                   <Checkbox
                                     checked={isSelected}
                                     onCheckedChange={() =>
-                                      handleGroupToggle(group.sid)
+                                      form.handleGroupToggle(group.sid)
                                     }
                                   />
                                   <div className="flex-1 min-w-0">
@@ -1813,10 +1066,10 @@ export const CreateForwardRuleDialog: React.FC<CreateForwardRuleDialogProps> = (
 
         <DialogFooter className="flex-shrink-0 px-5 py-4 border-t border-border bg-muted/30 sm:px-6">
           <div className="flex gap-3 justify-end w-full">
-            <Button onClick={handleSubmit} disabled={!isFormValid()}>
+            <Button onClick={handleSubmit} disabled={!form.isFormValid}>
               {t("common.actions.create")}
             </Button>
-            <Button variant="outline" onClick={handleClose}>
+            <Button variant="outline" onClick={onClose}>
               {t("common.actions.cancel")}
             </Button>
           </div>

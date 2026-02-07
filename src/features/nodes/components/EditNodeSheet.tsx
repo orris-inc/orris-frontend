@@ -3,7 +3,7 @@
  * Mobile-optimized bottom sheet for editing nodes
  */
 
-import { useState, useEffect, useMemo, useCallback } from 'react';
+import { useState, useMemo, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   Server,
@@ -44,7 +44,6 @@ import type {
   Node,
   UpdateNodeRequest,
   TransportProtocol,
-  RouteConfig,
   NodeProtocol,
   VLESSSecurity,
   VMessSecurity,
@@ -62,14 +61,10 @@ import {
   TUIC_UDP_RELAY_MODES,
   TLS_FINGERPRINT_TYPES,
 } from '@/shared/constants/protocol-options';
+import { useEditNodeForm } from '../hooks/useEditNodeForm';
 
 interface EditNodeSheetProps extends EditSheetProps<Node, UpdateNodeRequest> {
   nodes?: OutboundNodeOption[];
-}
-
-interface FormData extends Omit<UpdateNodeRequest, 'groupSids'> {
-  tagsInput: string;
-  groupSids: string[];
 }
 
 // Status options for MobileSelect - labels will be translated in component
@@ -88,54 +83,6 @@ const PROTOCOL_CONFIG: Record<NodeProtocol, { name: string; icon: React.ElementT
   vmess: { name: 'VMess', icon: Layers },
   hysteria2: { name: 'Hysteria2', icon: Gauge },
   tuic: { name: 'TUIC', icon: Workflow },
-};
-
-// Helper function: convert pluginOpts object to string
-const pluginOptsToString = (opts?: Record<string, string>): string => {
-  if (!opts || Object.keys(opts).length === 0) return '';
-  return Object.entries(opts)
-    .map(([key, value]) => `${key}=${value}`)
-    .join(';');
-};
-
-// Helper function: parse string to pluginOpts object
-const stringToPluginOpts = (str: string): Record<string, string> | undefined => {
-  const trimmed = str.trim();
-  if (!trimmed) return undefined;
-
-  const opts: Record<string, string> = {};
-  const pairs = trimmed.split(';');
-
-  for (const pair of pairs) {
-    const trimmedPair = pair.trim();
-    if (!trimmedPair) continue;
-
-    const [key, ...valueParts] = trimmedPair.split('=');
-    const trimmedKey = key?.trim();
-    const value = valueParts.join('=').trim();
-
-    if (trimmedKey && value) {
-      opts[trimmedKey] = value;
-    }
-  }
-
-  return Object.keys(opts).length > 0 ? opts : undefined;
-};
-
-// Helper function: deep comparison of two pluginOpts objects
-const arePluginOptsEqual = (
-  opts1?: Record<string, string>,
-  opts2?: Record<string, string>
-): boolean => {
-  if ((!opts1 || Object.keys(opts1).length === 0) &&
-      (!opts2 || Object.keys(opts2).length === 0)) {
-    return true;
-  }
-  if (!opts1 || !opts2) return false;
-  const keys1 = Object.keys(opts1);
-  const keys2 = Object.keys(opts2);
-  if (keys1.length !== keys2.length) return false;
-  return keys1.every(key => opts1[key] === opts2[key]);
 };
 
 // Mobile Collapsible Section - Tailwind Application UI style
@@ -222,11 +169,23 @@ export const EditNodeSheet: React.FC<EditNodeSheetProps> = ({
   nodes = [],
 }) => {
   const { t } = useTranslation();
-  const [formData, setFormData] = useState<FormData>({ tagsInput: '', groupSids: [] });
-  const [errors, setErrors] = useState<Record<string, string>>({});
-  const [pluginOptsStr, setPluginOptsStr] = useState<string>('');
+  const form = useEditNodeForm();
   const [openSections, setOpenSections] = useState<Set<string>>(new Set(['basic', 'network']));
   const [loading, setLoading] = useState(false);
+  const [prevNode, setPrevNode] = useState<Node | null>(null);
+
+  // Sync form data when node changes
+  if (node && node !== prevNode) {
+    setPrevNode(node);
+    form.initializeForm(node);
+    setOpenSections(new Set(['basic', 'network']));
+  }
+
+  const {
+    formData, errors, pluginOptsStr,
+    handleChange, handlePluginOptsChange, handleRouteChange, handleCostLabelChange,
+    getHasChanges, getHasProtocolSettings,
+  } = form;
 
   const { resourceGroups, isLoading: isLoadingGroups } = useResourceGroups({
     pageSize: 100,
@@ -293,77 +252,6 @@ export const EditNodeSheet: React.FC<EditNodeSheetProps> = ({
     })),
   ], [t]);
 
-  useEffect(() => {
-    if (node) {
-      setFormData({
-        name: node.name,
-        serverAddress: node.serverAddress,
-        agentPort: node.agentPort,
-        subscriptionPort: node.subscriptionPort,
-        encryptionMethod: node.encryptionMethod,
-        region: node.region,
-        status: node.status,
-        sortOrder: node.sortOrder,
-        tags: node.tags,
-        tagsInput: node.tags?.join(', ') ?? '',
-        plugin: node.plugin,
-        pluginOpts: node.pluginOpts,
-        transportProtocol: node.transportProtocol,
-        host: node.host,
-        path: node.path,
-        sni: node.sni,
-        allowInsecure: node.allowInsecure,
-        route: node.route,
-        groupSids: node.groupSids ?? [],
-        muteNotification: node.muteNotification,
-        expiresAt: node.expiresAt,
-        costLabel: node.costLabel,
-        // VLESS fields
-        vlessTransportType: node.vlessTransportType,
-        vlessFlow: node.vlessFlow,
-        vlessSecurity: node.vlessSecurity,
-        vlessSni: node.vlessSni,
-        vlessFingerprint: node.vlessFingerprint,
-        vlessAllowInsecure: node.vlessAllowInsecure,
-        vlessHost: node.vlessHost,
-        vlessPath: node.vlessPath,
-        vlessServiceName: node.vlessServiceName,
-        vlessRealityPublicKey: node.vlessRealityPublicKey,
-        vlessRealityShortId: node.vlessRealityShortId,
-        vlessRealitySpiderX: node.vlessRealitySpiderX,
-        // VMess fields
-        vmessAlterId: node.vmessAlterId,
-        vmessSecurity: node.vmessSecurity,
-        vmessTransportType: node.vmessTransportType,
-        vmessHost: node.vmessHost,
-        vmessPath: node.vmessPath,
-        vmessServiceName: node.vmessServiceName,
-        vmessTls: node.vmessTls,
-        vmessSni: node.vmessSni,
-        vmessAllowInsecure: node.vmessAllowInsecure,
-        // Hysteria2 fields
-        hysteria2CongestionControl: node.hysteria2CongestionControl,
-        hysteria2Obfs: node.hysteria2Obfs,
-        hysteria2ObfsPassword: node.hysteria2ObfsPassword,
-        hysteria2UpMbps: node.hysteria2UpMbps,
-        hysteria2DownMbps: node.hysteria2DownMbps,
-        hysteria2Sni: node.hysteria2Sni,
-        hysteria2AllowInsecure: node.hysteria2AllowInsecure,
-        hysteria2Fingerprint: node.hysteria2Fingerprint,
-        // TUIC fields
-        tuicCongestionControl: node.tuicCongestionControl,
-        tuicUdpRelayMode: node.tuicUdpRelayMode,
-        tuicAlpn: node.tuicAlpn,
-        tuicSni: node.tuicSni,
-        tuicAllowInsecure: node.tuicAllowInsecure,
-        tuicDisableSni: node.tuicDisableSni,
-      });
-      setPluginOptsStr(pluginOptsToString(node.pluginOpts));
-      setErrors({});
-      setOpenSections(new Set(['basic', 'network']));
-    }
-  }, [node]);
-
   const handleClose = useCallback((o: boolean) => {
     if (!loading) {
       onOpenChange(o);
@@ -390,36 +278,6 @@ export const EditNodeSheet: React.FC<EditNodeSheetProps> = ({
   const showVmessWsFields = isVmess && (formData.vmessTransportType === 'ws' || formData.vmessTransportType === 'http');
   const showVmessGrpcFields = isVmess && formData.vmessTransportType === 'grpc';
 
-  const handleChange = useCallback((field: keyof UpdateNodeRequest | 'tagsInput', value: string | number | boolean | undefined) => {
-    setFormData((prev) => ({ ...prev, [field]: value }));
-    setErrors((prev) => {
-      if (!prev[field]) return prev;
-      const newErrors = { ...prev };
-      delete newErrors[field];
-      return newErrors;
-    });
-  }, []);
-
-  const handlePluginOptsChange = useCallback((value: string) => {
-    setPluginOptsStr(value);
-    const parsedOpts = stringToPluginOpts(value);
-    setFormData((prev) => ({ ...prev, pluginOpts: parsedOpts }));
-  }, []);
-
-  const handleRouteChange = useCallback((route: RouteConfig | undefined) => {
-    setFormData((prev) => ({ ...prev, route }));
-  }, []);
-
-  const handleCostLabelChange = useCallback((value: string) => {
-    setFormData((prev) => ({ ...prev, costLabel: value || undefined }));
-    setErrors((prev) => {
-      if (!prev.costLabel) return prev;
-      const newErrors = { ...prev };
-      delete newErrors.costLabel;
-      return newErrors;
-    });
-  }, []);
-
   const toggleSection = useCallback((sectionId: string) => {
     setOpenSections((prev) => {
       const next = new Set(prev);
@@ -434,131 +292,8 @@ export const EditNodeSheet: React.FC<EditNodeSheetProps> = ({
 
   const handleSubmit = async () => {
     if (!node) return;
-
-    const updates: UpdateNodeRequest = {};
-    const newErrors: Record<string, string> = {};
-
-    const hasStringChanged = (newValue: string | undefined, oldValue: string | undefined): boolean => {
-      const normalizedNew = (newValue || '').trim();
-      const normalizedOld = (oldValue || '').trim();
-      return normalizedNew !== normalizedOld;
-    };
-
-    if (formData.name !== undefined && hasStringChanged(formData.name, node.name)) {
-      const trimmedName = formData.name.trim();
-      if (!trimmedName) {
-        newErrors.name = t('admin.nodes.form.validation.nameRequired');
-      } else {
-        updates.name = trimmedName;
-      }
-    }
-
-    if (formData.serverAddress !== undefined && hasStringChanged(formData.serverAddress, node.serverAddress)) {
-      updates.serverAddress = formData.serverAddress.trim();
-    }
-
-    if (formData.agentPort !== node.agentPort && formData.agentPort !== undefined) {
-      if (formData.agentPort < 1 || formData.agentPort > 65535) {
-        newErrors.agentPort = t('admin.nodes.form.validation.portRange');
-      } else {
-        updates.agentPort = formData.agentPort;
-      }
-    }
-
-    if (formData.subscriptionPort !== node.subscriptionPort && formData.subscriptionPort !== undefined) {
-      if (formData.subscriptionPort < 1 || formData.subscriptionPort > 65535) {
-        newErrors.subscriptionPort = t('admin.nodes.form.validation.portRange');
-      } else {
-        updates.subscriptionPort = formData.subscriptionPort;
-      }
-    }
-
-    if (formData.encryptionMethod !== node.encryptionMethod && formData.encryptionMethod !== undefined) {
-      updates.encryptionMethod = formData.encryptionMethod;
-    }
-
-    if (isShadowsocks) {
-      if (formData.plugin !== undefined && hasStringChanged(formData.plugin, node.plugin)) {
-        updates.plugin = formData.plugin.trim() || undefined;
-      }
-      if (!arePluginOptsEqual(formData.pluginOpts, node.pluginOpts)) {
-        updates.pluginOpts = formData.pluginOpts;
-      }
-    }
-
-    if (formData.region !== undefined && hasStringChanged(formData.region, node.region)) {
-      updates.region = formData.region.trim() || undefined;
-    }
-
-    if (formData.status !== node.status && formData.status !== undefined) {
-      updates.status = formData.status;
-    }
-
-    if (formData.sortOrder !== node.sortOrder && formData.sortOrder !== undefined) {
-      updates.sortOrder = formData.sortOrder;
-    }
-
-    if (isTrojan) {
-      if (formData.transportProtocol !== node.transportProtocol && formData.transportProtocol !== undefined) {
-        updates.transportProtocol = formData.transportProtocol;
-      }
-      if (formData.sni !== undefined && hasStringChanged(formData.sni, node.sni)) {
-        updates.sni = formData.sni?.trim() || undefined;
-      }
-      if (formData.host !== undefined && hasStringChanged(formData.host, node.host)) {
-        updates.host = formData.host?.trim() || undefined;
-      }
-      if (formData.path !== undefined && hasStringChanged(formData.path, node.path)) {
-        updates.path = formData.path?.trim() || undefined;
-      }
-      if (formData.allowInsecure !== node.allowInsecure && formData.allowInsecure !== undefined) {
-        updates.allowInsecure = formData.allowInsecure;
-      }
-    }
-
-    // Resource group association - only send if changed
-    const originalGroupSids = node.groupSids ?? [];
-    const newGroupSids = formData.groupSids ?? [];
-    const groupSidsChanged = JSON.stringify([...newGroupSids].sort()) !== JSON.stringify([...originalGroupSids].sort());
-    if (groupSidsChanged) {
-      updates.groupSids = newGroupSids;
-    }
-
-    const newTags = formData.tagsInput
-      ? formData.tagsInput.split(',').map((t) => t.trim()).filter((t) => t.length > 0)
-      : [];
-    const originalTags = node.tags ?? [];
-    const tagsChanged = JSON.stringify(newTags.sort()) !== JSON.stringify([...originalTags].sort());
-    if (tagsChanged) {
-      updates.tags = newTags.length > 0 ? newTags : undefined;
-    }
-
-    const routeChanged = JSON.stringify(formData.route) !== JSON.stringify(node.route);
-    if (routeChanged) {
-      updates.route = formData.route === undefined ? null : formData.route;
-    }
-
-    if (formData.muteNotification !== node.muteNotification) {
-      updates.muteNotification = formData.muteNotification;
-    }
-
-    // Expiration time
-    if (formData.expiresAt !== node.expiresAt) {
-      updates.expiresAt = formData.expiresAt || "";
-    }
-
-    // Cost label
-    if (formData.costLabel !== node.costLabel) {
-      updates.costLabel = formData.costLabel || "";
-    }
-
-    if (Object.keys(newErrors).length > 0) {
-      setErrors(newErrors);
-      return;
-    }
-
-    setErrors({});
-    if (Object.keys(updates).length > 0) {
+    const updates = form.validateAndBuild(node);
+    if (updates) {
       setLoading(true);
       try {
         await onSubmit(node.id, updates);
@@ -569,32 +304,8 @@ export const EditNodeSheet: React.FC<EditNodeSheetProps> = ({
     }
   };
 
-  const hasChanges = node && Object.keys(formData).some(
-    (key) => formData[key as keyof UpdateNodeRequest] !== node[key as keyof Node]
-  );
-
-  const getHasProtocolSettings = () => {
-    if (isShadowsocks) {
-      return Boolean(formData.plugin || pluginOptsStr);
-    }
-    if (isTrojan) {
-      return Boolean(formData.sni || formData.host || formData.path || formData.allowInsecure);
-    }
-    if (isVless) {
-      return Boolean(formData.vlessSni || formData.vlessHost || formData.vlessPath || formData.vlessFlow);
-    }
-    if (isVmess) {
-      return Boolean(formData.vmessSni || formData.vmessHost || formData.vmessPath);
-    }
-    if (isHysteria2) {
-      return Boolean(formData.hysteria2Sni || formData.hysteria2Obfs || formData.hysteria2UpMbps);
-    }
-    if (isTuic) {
-      return Boolean(formData.tuicSni || formData.tuicAlpn);
-    }
-    return false;
-  };
-  const hasProtocolSettings = getHasProtocolSettings();
+  const hasChanges = getHasChanges(node);
+  const hasProtocolSettings = getHasProtocolSettings(node?.protocol);
 
   if (!node) return null;
 
@@ -1279,7 +990,7 @@ export const EditNodeSheet: React.FC<EditNodeSheetProps> = ({
                           {group?.name ?? sid}
                           <button
                             type="button"
-                            onClick={() => setFormData((prev) => ({
+                            onClick={() => form.setFormData((prev) => ({
                               ...prev,
                               groupSids: prev.groupSids.filter((id) => id !== sid),
                             }))}
@@ -1309,7 +1020,7 @@ export const EditNodeSheet: React.FC<EditNodeSheetProps> = ({
                           <Checkbox
                             checked={formData.groupSids.includes(group.sid)}
                             onCheckedChange={(checked) => {
-                              setFormData((prev) => ({
+                              form.setFormData((prev) => ({
                                 ...prev,
                                 groupSids: checked
                                   ? [...prev.groupSids, group.sid]

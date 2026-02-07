@@ -17,6 +17,7 @@ import { Label } from '@/components/common/Label';
 import { Textarea } from '@/components/common/Textarea';
 import { Checkbox } from '@/components/common/Checkbox';
 import { TruncatedId } from '@/components/admin';
+import { useCancelSubscriptionForm } from '../hooks/useCancelSubscriptionForm';
 import type { Subscription } from '@/api/subscription/types';
 
 interface CancelSubscriptionDialogProps {
@@ -33,17 +34,25 @@ export const CancelSubscriptionDialog: React.FC<CancelSubscriptionDialogProps> =
   onConfirm,
 }) => {
   const { t } = useTranslation();
-  const [reason, setReason] = useState('');
-  const [immediate, setImmediate] = useState(false);
   const [loading, setLoading] = useState(false);
 
+  const {
+    reason,
+    setReason,
+    immediate,
+    setImmediate,
+    isFormValid,
+    buildSubmitData,
+    reset,
+  } = useCancelSubscriptionForm();
+
   const handleSubmit = async () => {
-    if (!reason.trim()) return;
+    if (!isFormValid) return;
     setLoading(true);
     try {
-      await onConfirm(reason, immediate);
-      setReason('');
-      setImmediate(false);
+      const data = buildSubmitData();
+      await onConfirm(data.reason, data.immediate);
+      reset();
     } finally {
       setLoading(false);
     }
@@ -51,8 +60,7 @@ export const CancelSubscriptionDialog: React.FC<CancelSubscriptionDialogProps> =
 
   const handleClose = () => {
     if (!loading) {
-      setReason('');
-      setImmediate(false);
+      reset();
       onClose();
     }
   };
@@ -97,7 +105,7 @@ export const CancelSubscriptionDialog: React.FC<CancelSubscriptionDialogProps> =
           <Button
             variant="destructive"
             onClick={handleSubmit}
-            disabled={loading || !reason.trim()}
+            disabled={loading || !isFormValid}
           >
             {loading ? t('common.processing') : t('messages.confirmCancel')}
           </Button>

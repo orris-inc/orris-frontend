@@ -5,8 +5,8 @@
 
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { toast } from 'sonner';
 import { useTranslation } from 'react-i18next';
+import { useNotificationStore } from '@/shared/stores/notification-store';
 import {
   getUSDTSettings,
   updateUSDTSettings,
@@ -16,6 +16,7 @@ import {
 
 export function useUSDTSettings() {
   const { t } = useTranslation();
+  const { showSuccess, showError } = useNotificationStore();
   const queryClient = useQueryClient();
   const [error, setError] = useState<string | null>(null);
 
@@ -32,12 +33,12 @@ export function useUSDTSettings() {
     mutationFn: updateUSDTSettings,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin', 'settings', 'usdt'] });
-      toast.success(t('admin.settings.usdt.updateSuccess'));
+      showSuccess(t('admin.settings.usdt.updateSuccess'));
       setError(null);
     },
     onError: (err: Error) => {
       setError(err.message);
-      toast.error(t('admin.settings.usdt.updateError'));
+      showError(t('admin.settings.usdt.updateError'));
     },
   });
 

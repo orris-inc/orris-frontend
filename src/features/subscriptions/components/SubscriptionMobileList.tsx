@@ -304,7 +304,7 @@ export const SubscriptionMobileList: React.FC<SubscriptionMobileListProps> = ({
             <ContextMenuTrigger asChild>
               <AccordionItem
                 value={subscription.id}
-                className="rounded-xl ring-1 ring-border bg-white dark:bg-slate-800 overflow-hidden"
+                className="rounded-xl ring-1 ring-border bg-card overflow-hidden"
               >
             {/* Card Header - Always visible */}
             <div className="px-3 py-2">

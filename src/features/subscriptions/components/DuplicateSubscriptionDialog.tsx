@@ -3,16 +3,16 @@
  * Create new subscription based on existing subscription
  */
 
-import { useState, useEffect, useMemo } from 'react';
+import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Loader2, Info, X, Copy } from 'lucide-react';
 import * as Dialog from '@radix-ui/react-dialog';
 import * as LabelPrimitive from '@radix-ui/react-label';
 import { SimpleSelect } from '@/lib/SimpleSelect';
-import { useSubscriptionPlans } from '@/features/subscription-plans/hooks/useSubscriptionPlans';
 import { getButtonClass, labelStyles, alertStyles, alertDescriptionStyles } from '@/lib/ui-styles';
 import { TruncatedId } from '@/components/admin';
-import type { BillingCycle, PricingOption, Subscription, SubscriptionPlan, AdminCreateSubscriptionRequest } from '@/api/subscription/types';
+import { useDuplicateSubscriptionForm, formatPrice } from '../hooks/useDuplicateSubscriptionForm';
+import type { BillingCycle, Subscription, AdminCreateSubscriptionRequest } from '@/api/subscription/types';
 import type { UserResponse } from '@/api/user/types';
 
 interface DuplicateSubscriptionDialogProps {
@@ -23,17 +23,6 @@ interface DuplicateSubscriptionDialogProps {
   onSubmit: (data: AdminCreateSubscriptionRequest) => Promise<void>;
 }
 
-// Get available pricing options for the plan
-const getAvailablePricings = (plan: SubscriptionPlan): PricingOption[] => {
-  return plan.pricings?.filter(p => p.isActive) || [];
-};
-
-// Format price display
-const formatPrice = (price: number, currency: string): string => {
-  const symbol = currency === 'CNY' ? '¥' : '$';
-  return `${symbol}${(price / 100).toFixed(2)}`;
-};
-
 export const DuplicateSubscriptionDialog: React.FC<DuplicateSubscriptionDialogProps> = ({
   open,
   subscription,
@@ -42,70 +31,23 @@ export const DuplicateSubscriptionDialog: React.FC<DuplicateSubscriptionDialogPr
   onSubmit,
 }) => {
   const { t } = useTranslation();
-  const { plans, isLoading: plansLoading } = useSubscriptionPlans({ enabled: open });
   const [submitting, setSubmitting] = useState(false);
-  const [formData, setFormData] = useState<AdminCreateSubscriptionRequest>({
-    userId: '',
-    planId: '',
-    billingCycle: 'monthly',
-    autoRenew: true,
-  });
 
-  // Billing cycle display name mapping
-  const BILLING_CYCLE_LABELS: Record<BillingCycle, string> = useMemo(() => ({
-    weekly: t('billingCycle.weekly'),
-    monthly: t('billingCycle.monthly'),
-    quarterly: t('billingCycle.quarterly'),
-    semi_annual: t('billingCycle.semiAnnual'),
-    yearly: t('billingCycle.yearly'),
-    lifetime: t('billingCycle.lifetime'),
-  }), [t]);
-
-  // Get selected plan
-  const selectedPlan = useMemo(() => {
-    return plans.find(p => p.id === formData.planId) || null;
-  }, [plans, formData.planId]);
-
-  // Get available pricing options for selected plan
-  const availablePricings = useMemo(() => {
-    if (!selectedPlan) return [];
-    return getAvailablePricings(selectedPlan);
-  }, [selectedPlan]);
-
-  // Get selected pricing
-  const selectedPricing = useMemo(() => {
-    return availablePricings.find(p => p.billingCycle === formData.billingCycle) || availablePricings[0] || null;
-  }, [availablePricings, formData.billingCycle]);
-
-  // Initialize form (based on original subscription data)
-  useEffect(() => {
-    if (open && subscription) {
-      const defaultPricing = subscription.plan?.pricings?.[0];
-      setFormData({
-        userId: subscription.userId,
-        planId: subscription.plan?.id || '',
-        billingCycle: (defaultPricing?.billingCycle as BillingCycle) || 'monthly',
-        autoRenew: subscription.autoRenew,
-      });
-    }
-  }, [open, subscription]);
-
-  // Automatically set default billing cycle when selected plan changes
-  useEffect(() => {
-    if (selectedPlan && availablePricings.length > 0) {
-      // Use functional update to avoid dependency on formData.billingCycle
-      setFormData(prev => {
-        const currentCycleAvailable = availablePricings.some(p => p.billingCycle === prev.billingCycle);
-        if (!currentCycleAvailable) {
-          return { ...prev, billingCycle: availablePricings[0].billingCycle };
-        }
-        return prev;
-      });
-    }
-  }, [selectedPlan, availablePricings]);
+  const {
+    formData,
+    setFormData,
+    plansLoading,
+    selectedPlan,
+    availablePricings,
+    selectedPricing,
+    planOptions,
+    billingCycleOptions,
+    BILLING_CYCLE_LABELS,
+    isFormValid,
+  } = useDuplicateSubscriptionForm({ subscription, open });
 
   const handleSubmit = async () => {
-    if (!formData.planId) {
+    if (!isFormValid) {
       return;
     }
 
@@ -123,47 +65,6 @@ export const DuplicateSubscriptionDialog: React.FC<DuplicateSubscriptionDialogPr
       onClose();
     }
   };
-
-  // Prepare plan options (show price range)
-  const planOptions = useMemo(() => {
-    return plans
-      .filter(plan => plan.status === 'active')
-      .map(plan => {
-        const pricings = getAvailablePricings(plan);
-        let priceDisplay: string;
-        if (pricings.length > 1) {
-          const prices = pricings.map(p => p.price);
-          const minPrice = Math.min(...prices);
-          const maxPrice = Math.max(...prices);
-          const currency = pricings[0].currency;
-          priceDisplay = minPrice === maxPrice
-            ? formatPrice(minPrice, currency)
-            : `${formatPrice(minPrice, currency)} - ${formatPrice(maxPrice, currency)}`;
-        } else if (pricings.length === 1) {
-          priceDisplay = formatPrice(pricings[0].price, pricings[0].currency);
-        } else {
-          priceDisplay = t('subscription.noPriceSet');
-        }
-        return {
-          value: plan.id.toString(),
-          label: `${plan.name} - ${priceDisplay}`
-        };
-      });
-  }, [plans, t]);
-
-  // Prepare billing cycle options (based on selected plan's available pricing)
-  const billingCycleOptions = useMemo(() => {
-    if (availablePricings.length > 0) {
-      return availablePricings.map(p => ({
-        value: p.billingCycle,
-        label: `${BILLING_CYCLE_LABELS[p.billingCycle]} - ${formatPrice(p.price, p.currency)}`,
-      }));
-    }
-    return Object.entries(BILLING_CYCLE_LABELS).map(([value, label]) => ({
-      value: value as BillingCycle,
-      label,
-    }));
-  }, [availablePricings, BILLING_CYCLE_LABELS]);
 
   if (!subscription) return null;
 
@@ -184,7 +85,7 @@ export const DuplicateSubscriptionDialog: React.FC<DuplicateSubscriptionDialogPr
             </div>
             <Dialog.Close className="rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none">
               <X className="h-4 w-4" />
-              <span className="sr-only">Close</span>
+              <span className="sr-only">{t('common.actions.close')}</span>
             </Dialog.Close>
           </div>
 
@@ -277,7 +178,7 @@ export const DuplicateSubscriptionDialog: React.FC<DuplicateSubscriptionDialogPr
             </button>
             <button
               onClick={handleSubmit}
-              disabled={!formData.planId || submitting}
+              disabled={!isFormValid || submitting}
               className={getButtonClass('default', 'default')}
             >
               {submitting ? (

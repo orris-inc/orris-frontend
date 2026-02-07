@@ -122,7 +122,7 @@ export const NodeDetailDialog: React.FC<NodeDetailDialogProps> = ({
 
   return (
     <Dialog open={open} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="@container sm:max-w-[700px] flex flex-col max-h-[90vh]">
+      <DialogContent className="@container sm:max-w-3xl flex flex-col max-h-[90vh]">
         <DialogHeader className="flex-shrink-0">
           <div className="flex items-center justify-between">
             <DialogTitle className="flex items-center gap-3">

@@ -3,7 +3,7 @@
  * Implemented using wrapped common components
  */
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Plus, Trash2, Copy, AlertCircle } from 'lucide-react';
 import {
@@ -28,47 +28,16 @@ import {
 import { Checkbox } from '@/components/common/Checkbox';
 import { Separator } from '@/components/common/Separator';
 import { Alert, AlertDescription } from '@/components/common/Alert';
-import type { CreatePlanRequest, PricingOptionInput, PlanType, SubscriptionPlan } from '@/api/subscription/types';
-
-// Locally defined types (removed from original SDK)
-type ForwardRuleTypeOption = 'direct' | 'entry' | 'chain' | 'direct_chain';
-
-interface PlanLimits {
-  trafficLimit?: number;
-  deviceLimit?: number;
-  speedLimit?: number;
-  connectionLimit?: number;
-  ruleLimit?: number;
-  ruleTypes?: ForwardRuleTypeOption[];
-  nodeLimit?: number;
-}
-
-// Helper function: convert PlanLimits to API format
-function planLimitsToApiFormat(limits: PlanLimits): Record<string, unknown> {
-  const result: Record<string, unknown> = {};
-  if (limits.trafficLimit !== undefined) result['traffic_limit'] = limits.trafficLimit;
-  if (limits.deviceLimit !== undefined) result['device_limit'] = limits.deviceLimit;
-  if (limits.speedLimit !== undefined) result['speed_limit'] = limits.speedLimit;
-  if (limits.connectionLimit !== undefined) result['connection_limit'] = limits.connectionLimit;
-  if (limits.ruleLimit !== undefined) result['rule_limit'] = limits.ruleLimit;
-  if (limits.ruleTypes !== undefined) result['rule_types'] = limits.ruleTypes;
-  if (limits.nodeLimit !== undefined) result['node_limit'] = limits.nodeLimit;
-  return result;
-}
-
-// Helper function: parse API format limits (axios-case-converter converts response to camelCase)
-function parsePlanLimits(apiLimits: Record<string, unknown> | undefined): PlanLimits {
-  if (!apiLimits) return {};
-  return {
-    trafficLimit: apiLimits.trafficLimit as number | undefined,
-    deviceLimit: apiLimits.deviceLimit as number | undefined,
-    speedLimit: apiLimits.speedLimit as number | undefined,
-    connectionLimit: apiLimits.connectionLimit as number | undefined,
-    ruleLimit: apiLimits.ruleLimit as number | undefined,
-    ruleTypes: apiLimits.ruleTypes as ForwardRuleTypeOption[] | undefined,
-    nodeLimit: apiLimits.nodeLimit as number | undefined,
-  };
-}
+import type { CreatePlanRequest, PlanType, SubscriptionPlan } from '@/api/subscription/types';
+import {
+  useCreatePlanForm,
+  BILLING_CYCLE_VALUES,
+  BILLING_CYCLE_KEYS,
+  FORWARD_RULE_TYPE_VALUES,
+  FORWARD_RULE_TYPE_KEYS,
+  PLAN_TYPE_VALUES,
+  PLAN_TYPE_KEYS,
+} from '../hooks/useCreatePlanForm';
 
 interface CreatePlanDialogProps {
   open: boolean;
@@ -78,67 +47,6 @@ interface CreatePlanDialogProps {
   onSubmit: (data: CreatePlanRequest) => Promise<void>;
 }
 
-// Billing cycle options - labels will be translated in component
-const BILLING_CYCLE_VALUES = ['weekly', 'monthly', 'quarterly', 'semi_annual', 'yearly', 'lifetime'] as const;
-
-// Forward rule type options
-const FORWARD_RULE_TYPE_VALUES: ForwardRuleTypeOption[] = ['direct', 'entry', 'chain', 'direct_chain'];
-
-// Plan type options (hybrid is not yet implemented)
-const PLAN_TYPE_VALUES: PlanType[] = ['node', 'forward'];
-
-// Extend CreatePlanRequest to support plan limits
-interface CreatePlanFormData extends Omit<CreatePlanRequest, 'limits' | 'pricings' | 'nodeLimit'> {
-  pricings: PricingOptionInput[];
-  // Plan limits
-  planLimits: PlanLimits;
-}
-
-// Default pricing option
-const getDefaultPricing = (): PricingOptionInput => ({
-  billingCycle: 'monthly',
-  price: 0,
-  currency: 'CNY',
-  isActive: true,
-});
-
-// Default form data
-const getDefaultFormData = (): CreatePlanFormData => ({
-  name: '',
-  slug: '',
-  planType: 'node',
-  description: '',
-  isPublic: true,
-  sortOrder: 0,
-  pricings: [getDefaultPricing()],
-  planLimits: {},
-});
-
-// Billing cycle translation key mapping
-const BILLING_CYCLE_KEYS: Record<string, string> = {
-  weekly: 'billingCycle.weekly',
-  monthly: 'billingCycle.monthly',
-  quarterly: 'billingCycle.quarterly',
-  semi_annual: 'billingCycle.semiAnnual',
-  yearly: 'billingCycle.yearly',
-  lifetime: 'billingCycle.lifetime',
-};
-
-// Forward rule type translation key mapping
-const FORWARD_RULE_TYPE_KEYS: Record<ForwardRuleTypeOption, string> = {
-  direct: 'admin.plans.ruleType.direct',
-  entry: 'admin.plans.ruleType.entry',
-  chain: 'admin.plans.ruleType.chain',
-  direct_chain: 'admin.plans.ruleType.directChain',
-};
-
-// Plan type translation key mapping
-const PLAN_TYPE_KEYS: Record<PlanType, string> = {
-  node: 'common.planType.node',
-  forward: 'common.planType.forward',
-  hybrid: 'common.planType.hybrid',
-};
-
 export const CreatePlanDialog: React.FC<CreatePlanDialogProps> = ({
   open,
   initialPlan,
@@ -146,122 +54,19 @@ export const CreatePlanDialog: React.FC<CreatePlanDialogProps> = ({
   onSubmit,
 }) => {
   const { t } = useTranslation();
-  const [formData, setFormData] = useState<CreatePlanFormData>(getDefaultFormData());
   const [loading, setLoading] = useState(false);
 
-  // Check if in duplicate mode
-  const isDuplicateMode = !!initialPlan;
-
-  // Initialize form data (pre-fill in duplicate mode)
-  useEffect(() => {
-    if (open && initialPlan) {
-      const planLimits = parsePlanLimits(initialPlan.limits);
-
-      setFormData({
-        name: `${initialPlan.name} (${t('common.actions.copy')})`,
-        slug: `${initialPlan.slug}-copy`,
-        planType: initialPlan.planType || 'node',
-        description: initialPlan.description || '',
-        isPublic: initialPlan.isPublic,
-        sortOrder: initialPlan.sortOrder || 0,
-        pricings: initialPlan.pricings && initialPlan.pricings.length > 0
-          ? initialPlan.pricings.map(p => ({
-              billingCycle: p.billingCycle,
-              price: p.price,
-              currency: p.currency,
-              isActive: p.isActive,
-            }))
-          : [getDefaultPricing()],
-        planLimits,
-      });
-    } else if (open && !initialPlan) {
-      // Create mode: reset to default values
-      setFormData(getDefaultFormData());
-    }
-  }, [open, initialPlan, t]);
-
-  const handleChange = (field: keyof CreatePlanFormData, value: unknown) => {
-    setFormData((prev) => ({ ...prev, [field]: value }));
-  };
-
-  // Handle plan limit changes
-  const handleLimitChange = (field: keyof PlanLimits, value: unknown) => {
-    setFormData((prev) => ({
-      ...prev,
-      planLimits: { ...prev.planLimits, [field]: value },
-    }));
-  };
-
-  // Handle rule type multi-select
-  const handleRuleTypeToggle = (type: ForwardRuleTypeOption) => {
-    setFormData((prev) => {
-      const currentTypes = prev.planLimits.ruleTypes || [];
-      const newTypes = currentTypes.includes(type)
-        ? currentTypes.filter((t) => t !== type)
-        : [...currentTypes, type];
-      return {
-        ...prev,
-        planLimits: { ...prev.planLimits, ruleTypes: newTypes },
-      };
-    });
-  };
-
-  // Multi-pricing related operations
-  const handleAddPricing = () => {
-    const newPricing: PricingOptionInput = {
-      billingCycle: 'monthly',
-      price: 0,
-      currency: 'CNY',
-      isActive: true,
-    };
-    setFormData((prev) => ({
-      ...prev,
-      pricings: [...prev.pricings, newPricing],
-    }));
-  };
-
-  const handleRemovePricing = (index: number) => {
-    setFormData((prev) => ({
-      ...prev,
-      pricings: prev.pricings.filter((_, i) => i !== index),
-    }));
-  };
-
-  const handleUpdatePricing = (index: number, updates: Partial<PricingOptionInput>) => {
-    setFormData((prev) => ({
-      ...prev,
-      pricings: prev.pricings.map((p, i) => (i === index ? { ...p, ...updates } : p)),
-    }));
-  };
+  const form = useCreatePlanForm({ open, initialPlan });
 
   const handleSubmit = async () => {
-    // Validate at least one pricing option
-    if (formData.pricings.length === 0) {
-      return;
-    }
+    if (!form.validate()) return;
+    if (form.formData.pricings.length === 0) return;
 
     setLoading(true);
     try {
-      // Build plan limits
-      const limits = Object.keys(formData.planLimits).length > 0
-        ? planLimitsToApiFormat(formData.planLimits)
-        : undefined;
-
-      const submitData: CreatePlanRequest = {
-        name: formData.name,
-        slug: formData.slug,
-        description: formData.description,
-        planType: formData.planType,
-        limits,
-        nodeLimit: formData.planLimits.nodeLimit,
-        isPublic: formData.isPublic,
-        sortOrder: formData.sortOrder,
-        pricings: formData.pricings,
-      };
-      await onSubmit(submitData);
+      await onSubmit(form.buildSubmitData());
+      form.reset();
       onClose();
-      // Reset form
-      setFormData(getDefaultFormData());
     } finally {
       setLoading(false);
     }
@@ -269,6 +74,7 @@ export const CreatePlanDialog: React.FC<CreatePlanDialogProps> = ({
 
   const handleClose = () => {
     if (!loading) {
+      form.reset();
       onClose();
     }
   };
@@ -278,11 +84,11 @@ export const CreatePlanDialog: React.FC<CreatePlanDialogProps> = ({
       <DialogContent className="@container sm:max-w-3xl flex flex-col max-h-[90vh]">
         <DialogHeader className="flex-shrink-0">
           <DialogTitle className="flex items-center gap-2">
-            {isDuplicateMode && <Copy className="size-5" />}
-            {isDuplicateMode ? t('admin.plans.duplicatePlan') : t('admin.plans.createPlan')}
+            {form.isDuplicateMode && <Copy className="size-5" />}
+            {form.isDuplicateMode ? t('admin.plans.duplicatePlan') : t('admin.plans.createPlan')}
           </DialogTitle>
           <DialogDescription>
-            {isDuplicateMode
+            {form.isDuplicateMode
               ? t('admin.plans.duplicateDescription', { name: initialPlan?.name })
               : t('admin.plans.createDescription')}
           </DialogDescription>
@@ -301,8 +107,8 @@ export const CreatePlanDialog: React.FC<CreatePlanDialogProps> = ({
                 </Label>
                 <Input
                   id="name"
-                  value={formData.name}
-                  onChange={(e) => handleChange('name', e.target.value)}
+                  value={form.formData.name}
+                  onChange={(e) => form.handleChange('name', e.target.value)}
                   disabled={loading}
                 />
               </div>
@@ -313,8 +119,8 @@ export const CreatePlanDialog: React.FC<CreatePlanDialogProps> = ({
                 </Label>
                 <Input
                   id="slug"
-                  value={formData.slug}
-                  onChange={(e) => handleChange('slug', e.target.value)}
+                  value={form.formData.slug}
+                  onChange={(e) => form.handleChange('slug', e.target.value)}
                   disabled={loading}
                 />
                 <p className="text-xs text-muted-foreground">{t('admin.plans.form.slugHint')}</p>
@@ -325,8 +131,8 @@ export const CreatePlanDialog: React.FC<CreatePlanDialogProps> = ({
                   {t('admin.plans.form.planType')} <span className="text-destructive">*</span>
                 </Label>
                 <Select
-                  value={formData.planType}
-                  onValueChange={(value) => handleChange('planType', value as PlanType)}
+                  value={form.formData.planType}
+                  onValueChange={(value) => form.handleChange('planType', value as PlanType)}
                   disabled={loading}
                 >
                   <SelectTrigger id="planType">
@@ -348,13 +154,13 @@ export const CreatePlanDialog: React.FC<CreatePlanDialogProps> = ({
                   <Label>
                     {t('admin.plans.form.pricingOptions')} <span className="text-destructive">*</span>
                   </Label>
-                  <Button variant="outline" size="sm" onClick={handleAddPricing} disabled={loading}>
+                  <Button variant="outline" size="sm" onClick={form.handleAddPricing} disabled={loading}>
                     <Plus className="size-4 mr-1" />
                     {t('admin.plans.form.addPricing')}
                   </Button>
                 </div>
 
-                {formData.pricings.length === 0 ? (
+                {form.formData.pricings.length === 0 ? (
                   <Alert variant="destructive">
                     <AlertCircle className="h-4 w-4" />
                     <AlertDescription>
@@ -363,15 +169,15 @@ export const CreatePlanDialog: React.FC<CreatePlanDialogProps> = ({
                   </Alert>
                 ) : (
                   <div className="space-y-3">
-                    {formData.pricings.map((pricing, index) => (
+                    {form.formData.pricings.map((pricing, index) => (
                       <div key={index} className="rounded-lg border p-4 space-y-3">
                         <div className="flex items-center justify-between">
                           <span className="text-sm font-medium text-muted-foreground">{t('admin.plans.form.pricingNumber', { number: index + 1 })}</span>
                           <Button
                             variant="ghost"
                             size="sm"
-                            onClick={() => handleRemovePricing(index)}
-                            disabled={loading || formData.pricings.length === 1}
+                            onClick={() => form.handleRemovePricing(index)}
+                            disabled={loading || form.formData.pricings.length === 1}
                             className="text-destructive hover:text-destructive/80"
                           >
                             <Trash2 className="size-4" />
@@ -380,7 +186,7 @@ export const CreatePlanDialog: React.FC<CreatePlanDialogProps> = ({
                         <div className="grid grid-cols-3 gap-3">
                           <Select
                             value={pricing.billingCycle}
-                            onValueChange={(value) => handleUpdatePricing(index, { billingCycle: value })}
+                            onValueChange={(value) => form.handleUpdatePricing(index, { billingCycle: value })}
                             disabled={loading}
                           >
                             <SelectTrigger>
@@ -401,13 +207,13 @@ export const CreatePlanDialog: React.FC<CreatePlanDialogProps> = ({
                             min="0"
                             placeholder={t('admin.plans.form.pricePlaceholder')}
                             value={pricing.price / 100 || ''}
-                            onChange={(e) => handleUpdatePricing(index, { price: Math.round(Number(e.target.value) * 100) })}
+                            onChange={(e) => form.handleUpdatePricing(index, { price: Math.round(Number(e.target.value) * 100) })}
                             disabled={loading}
                           />
 
                           <Select
                             value={pricing.currency}
-                            onValueChange={(value) => handleUpdatePricing(index, { currency: value })}
+                            onValueChange={(value) => form.handleUpdatePricing(index, { currency: value })}
                             disabled={loading}
                           >
                             <SelectTrigger>
@@ -423,7 +229,7 @@ export const CreatePlanDialog: React.FC<CreatePlanDialogProps> = ({
                           <Checkbox
                             id={`pricing-active-${index}`}
                             checked={pricing.isActive}
-                            onCheckedChange={(checked) => handleUpdatePricing(index, { isActive: checked as boolean })}
+                            onCheckedChange={(checked) => form.handleUpdatePricing(index, { isActive: checked as boolean })}
                             disabled={loading}
                           />
                           <Label htmlFor={`pricing-active-${index}`} className="cursor-pointer">
@@ -440,7 +246,7 @@ export const CreatePlanDialog: React.FC<CreatePlanDialogProps> = ({
           </div>
 
           {/* Node subscription limit configuration - shown for node and hybrid type plans */}
-          {(formData.planType === 'node' || formData.planType === 'hybrid') && (
+          {(form.formData.planType === 'node' || form.formData.planType === 'hybrid') && (
             <div className="space-y-4">
               <h3 className="text-sm font-semibold">{t('admin.plans.form.nodeLimits')}</h3>
               <Separator />
@@ -453,8 +259,8 @@ export const CreatePlanDialog: React.FC<CreatePlanDialogProps> = ({
                     min="0"
                     step="0.1"
                     placeholder={t('admin.plans.form.unlimitedPlaceholder')}
-                    value={formData.planLimits.trafficLimit ? formData.planLimits.trafficLimit / (1024 * 1024 * 1024) : ''}
-                    onChange={(e) => handleLimitChange('trafficLimit', e.target.value === '' ? undefined : Math.round(Number(e.target.value) * 1024 * 1024 * 1024))}
+                    value={form.formData.planLimits.trafficLimit ? form.formData.planLimits.trafficLimit / (1024 * 1024 * 1024) : ''}
+                    onChange={(e) => form.handleLimitChange('trafficLimit', e.target.value === '' ? undefined : Math.round(Number(e.target.value) * 1024 * 1024 * 1024))}
                     disabled={loading}
                   />
                 </div>
@@ -466,8 +272,8 @@ export const CreatePlanDialog: React.FC<CreatePlanDialogProps> = ({
                     type="number"
                     min="0"
                     placeholder={t('admin.plans.form.unlimitedPlaceholder')}
-                    value={formData.planLimits.deviceLimit || ''}
-                    onChange={(e) => handleLimitChange('deviceLimit', e.target.value === '' ? undefined : Number(e.target.value))}
+                    value={form.formData.planLimits.deviceLimit || ''}
+                    onChange={(e) => form.handleLimitChange('deviceLimit', e.target.value === '' ? undefined : Number(e.target.value))}
                     disabled={loading}
                   />
                 </div>
@@ -479,8 +285,8 @@ export const CreatePlanDialog: React.FC<CreatePlanDialogProps> = ({
                     type="number"
                     min="0"
                     placeholder={t('admin.plans.form.unlimitedPlaceholder')}
-                    value={formData.planLimits.speedLimit || ''}
-                    onChange={(e) => handleLimitChange('speedLimit', e.target.value === '' ? undefined : Number(e.target.value))}
+                    value={form.formData.planLimits.speedLimit || ''}
+                    onChange={(e) => form.handleLimitChange('speedLimit', e.target.value === '' ? undefined : Number(e.target.value))}
                     disabled={loading}
                   />
                 </div>
@@ -492,8 +298,8 @@ export const CreatePlanDialog: React.FC<CreatePlanDialogProps> = ({
                     type="number"
                     min="0"
                     placeholder={t('admin.plans.form.unlimitedPlaceholder')}
-                    value={formData.planLimits.connectionLimit || ''}
-                    onChange={(e) => handleLimitChange('connectionLimit', e.target.value === '' ? undefined : Number(e.target.value))}
+                    value={form.formData.planLimits.connectionLimit || ''}
+                    onChange={(e) => form.handleLimitChange('connectionLimit', e.target.value === '' ? undefined : Number(e.target.value))}
                     disabled={loading}
                   />
                 </div>
@@ -505,8 +311,8 @@ export const CreatePlanDialog: React.FC<CreatePlanDialogProps> = ({
                     type="number"
                     min="0"
                     placeholder={t('admin.plans.form.unlimitedPlaceholder')}
-                    value={formData.planLimits.nodeLimit || ''}
-                    onChange={(e) => handleLimitChange('nodeLimit', e.target.value === '' ? undefined : Number(e.target.value))}
+                    value={form.formData.planLimits.nodeLimit || ''}
+                    onChange={(e) => form.handleLimitChange('nodeLimit', e.target.value === '' ? undefined : Number(e.target.value))}
                     disabled={loading}
                   />
                 </div>
@@ -515,7 +321,7 @@ export const CreatePlanDialog: React.FC<CreatePlanDialogProps> = ({
           )}
 
           {/* Forward limit configuration - shown for forward and hybrid type plans */}
-          {(formData.planType === 'forward' || formData.planType === 'hybrid') && (
+          {(form.formData.planType === 'forward' || form.formData.planType === 'hybrid') && (
             <div className="space-y-4">
               <h3 className="text-sm font-semibold">{t('admin.plans.form.forwardLimits')}</h3>
               <Separator />
@@ -527,8 +333,8 @@ export const CreatePlanDialog: React.FC<CreatePlanDialogProps> = ({
                     type="number"
                     min="0"
                     placeholder={t('admin.plans.form.unlimitedPlaceholder')}
-                    value={formData.planLimits.ruleLimit || ''}
-                    onChange={(e) => handleLimitChange('ruleLimit', e.target.value === '' ? undefined : Number(e.target.value))}
+                    value={form.formData.planLimits.ruleLimit || ''}
+                    onChange={(e) => form.handleLimitChange('ruleLimit', e.target.value === '' ? undefined : Number(e.target.value))}
                     disabled={loading}
                   />
                 </div>
@@ -541,8 +347,8 @@ export const CreatePlanDialog: React.FC<CreatePlanDialogProps> = ({
                     min="0"
                     step="0.1"
                     placeholder={t('admin.plans.form.unlimitedPlaceholder')}
-                    value={formData.planLimits.trafficLimit ? formData.planLimits.trafficLimit / (1024 * 1024 * 1024) : ''}
-                    onChange={(e) => handleLimitChange('trafficLimit', e.target.value === '' ? undefined : Math.round(Number(e.target.value) * 1024 * 1024 * 1024))}
+                    value={form.formData.planLimits.trafficLimit ? form.formData.planLimits.trafficLimit / (1024 * 1024 * 1024) : ''}
+                    onChange={(e) => form.handleLimitChange('trafficLimit', e.target.value === '' ? undefined : Math.round(Number(e.target.value) * 1024 * 1024 * 1024))}
                     disabled={loading}
                   />
                 </div>
@@ -554,8 +360,8 @@ export const CreatePlanDialog: React.FC<CreatePlanDialogProps> = ({
                       <div key={type} className="flex items-center gap-2">
                         <Checkbox
                           id={`rule-type-${type}`}
-                          checked={formData.planLimits.ruleTypes?.includes(type) || false}
-                          onCheckedChange={() => handleRuleTypeToggle(type)}
+                          checked={form.formData.planLimits.ruleTypes?.includes(type) || false}
+                          onCheckedChange={() => form.handleRuleTypeToggle(type)}
                           disabled={loading}
                         />
                         <Label htmlFor={`rule-type-${type}`} className="cursor-pointer">
@@ -579,8 +385,8 @@ export const CreatePlanDialog: React.FC<CreatePlanDialogProps> = ({
                 id="description"
                 rows={3}
                 placeholder={t('admin.plans.form.descriptionPlaceholder')}
-                value={formData.description}
-                onChange={(e) => handleChange('description', e.target.value)}
+                value={form.formData.description}
+                onChange={(e) => form.handleChange('description', e.target.value)}
                 disabled={loading}
               />
             </div>
@@ -596,8 +402,8 @@ export const CreatePlanDialog: React.FC<CreatePlanDialogProps> = ({
                 <Input
                   id="sortOrder"
                   type="number"
-                  value={formData.sortOrder || 0}
-                  onChange={(e) => handleChange('sortOrder', e.target.value === '' ? undefined : Number(e.target.value))}
+                  value={form.formData.sortOrder || 0}
+                  onChange={(e) => form.handleChange('sortOrder', e.target.value === '' ? undefined : Number(e.target.value))}
                   disabled={loading}
                 />
                 <p className="text-xs text-muted-foreground">{t('admin.plans.form.sortOrderHint')}</p>
@@ -606,8 +412,8 @@ export const CreatePlanDialog: React.FC<CreatePlanDialogProps> = ({
               <div className="flex items-center gap-2 @sm:col-span-2">
                 <Checkbox
                   id="isPublic"
-                  checked={formData.isPublic}
-                  onCheckedChange={(checked) => handleChange('isPublic', checked)}
+                  checked={form.formData.isPublic}
+                  onCheckedChange={(checked) => form.handleChange('isPublic', checked)}
                   disabled={loading}
                 />
                 <Label htmlFor="isPublic" className="cursor-pointer font-medium">
@@ -620,8 +426,8 @@ export const CreatePlanDialog: React.FC<CreatePlanDialogProps> = ({
         </div>
 
         <DialogFooter className="flex-shrink-0">
-          <Button onClick={handleSubmit} disabled={loading || !formData.name || !formData.slug}>
-            {loading ? t('common.loading.creating') : (isDuplicateMode ? t('admin.plans.form.createCopy') : t('common.actions.create'))}
+          <Button onClick={handleSubmit} disabled={loading || !form.isFormValid}>
+            {loading ? t('common.loading.creating') : (form.isDuplicateMode ? t('admin.plans.form.createCopy') : t('common.actions.create'))}
           </Button>
           <Button variant="outline" onClick={handleClose} disabled={loading}>
             {t('common.actions.cancel')}

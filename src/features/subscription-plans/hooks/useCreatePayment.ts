@@ -97,19 +97,21 @@ export const useCreatePayment = (): UseCreatePaymentReturn => {
       if (!subscriptionId && typeof subscriptionResult?.token === 'string') {
         const tokenValue = subscriptionResult.token as string;
         if (tokenValue.startsWith('sub')) {
-          console.warn('Using token field as subscriptionId (backend SDK issue)');
+          if (import.meta.env.DEV) console.warn('Using token field as subscriptionId (backend SDK issue)');
           subscriptionId = tokenValue;
         }
       }
 
-      // Fallback: check if result itself has id
-      if (!subscriptionId) {
-        const resultAny = subscriptionResult as unknown as Record<string, unknown>;
-        subscriptionId = resultAny.id as string | undefined;
+      // Fallback: check if result itself has id (backend SDK may return flat object)
+      if (!subscriptionId && 'id' in subscriptionResult) {
+        const idValue = (subscriptionResult as Record<string, unknown>).id;
+        if (typeof idValue === 'string') {
+          subscriptionId = idValue;
+        }
       }
 
       if (!subscriptionId) {
-        console.error('Could not extract subscription ID from response:', subscriptionResult);
+        if (import.meta.env.DEV) console.error('Could not extract subscription ID from response:', subscriptionResult);
         throw new Error('Failed to create subscription: invalid response');
       }
 
@@ -134,13 +136,21 @@ export const useCreatePayment = (): UseCreatePaymentReturn => {
 
       // Step 3: Handle payment flow
       if (!isUSDTPaymentMethod(paymentMethod) && payment.paymentUrl) {
-        // Traditional payment: redirect to payment URL
-        window.location.href = payment.paymentUrl;
+        // Validate payment URL protocol before redirect
+        try {
+          const url = new URL(payment.paymentUrl);
+          if (url.protocol !== 'https:') {
+            throw new Error('Payment URL must use HTTPS protocol');
+          }
+          window.location.href = payment.paymentUrl;
+        } catch {
+          throw new Error('Invalid payment URL received from server');
+        }
       }
       // USDT payment: paymentResponse will be used to display instructions
 
     } catch (err) {
-      console.error('Payment creation failed:', err);
+      if (import.meta.env.DEV) console.error('Payment creation failed:', err);
       const errorMessage = err instanceof Error
         ? err.message
         : t('pricing.confirm.payment.error');

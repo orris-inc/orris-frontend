@@ -12,6 +12,7 @@
  */
 
 import { ReactNode } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Search, X } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Input } from '@/components/common/Input';
@@ -54,7 +55,7 @@ export interface FilterToolbarProps {
 export const FilterToolbar = ({
   searchValue = '',
   onSearchChange,
-  searchPlaceholder = 'Search...',
+  searchPlaceholder,
   filters,
   quickFilters,
   activeQuickFilter,
@@ -63,6 +64,8 @@ export const FilterToolbar = ({
   className,
   showClearButton = true,
 }: FilterToolbarProps) => {
+  const { t } = useTranslation();
+  const placeholder = searchPlaceholder ?? t('common.placeholders.search');
   const hasSearch = onSearchChange !== undefined;
   const hasQuickFilters = quickFilters && quickFilters.length > 0;
   const hasFilters = filters !== undefined;
@@ -85,7 +88,7 @@ export const FilterToolbar = ({
                 type="text"
                 value={searchValue}
                 onChange={(e) => onSearchChange?.(e.target.value)}
-                placeholder={searchPlaceholder}
+                placeholder={placeholder}
                 className="h-10 w-full pl-9 pr-9"
               />
               {showClearButton && searchValue && (
@@ -200,9 +203,11 @@ export interface ResetFiltersButtonProps {
 
 export const ResetFiltersButton = ({
   onClick,
-  label = 'Reset filters',
+  label,
   className,
 }: ResetFiltersButtonProps) => {
+  const { t } = useTranslation();
+  const displayLabel = label ?? t('common.actions.reset');
   return (
     <Button
       variant="ghost"
@@ -211,7 +216,7 @@ export const ResetFiltersButton = ({
       className={cn('text-muted-foreground', className)}
     >
       <X className="mr-2 size-4" />
-      {label}
+      {displayLabel}
     </Button>
   );
 };

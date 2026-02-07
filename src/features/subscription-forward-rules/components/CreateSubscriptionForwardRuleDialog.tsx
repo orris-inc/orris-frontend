@@ -365,7 +365,7 @@ export const CreateSubscriptionForwardRuleDialog: React.FC<
 
   return (
     <Dialog open={open} onOpenChange={handleClose}>
-      <DialogContent className="@container sm:max-w-[600px] flex flex-col max-h-[90vh]">
+      <DialogContent className="@container sm:max-w-2xl flex flex-col max-h-[90vh]">
         <DialogHeader className="flex-shrink-0">
           <DialogTitle>{t('admin.forwardRules.form.createRule')}</DialogTitle>
         </DialogHeader>

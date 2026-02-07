@@ -697,24 +697,24 @@ export const MobileEntityDetailSheet = memo(({
               >
                 <div className="space-y-2 text-sm">
                   <div className="flex justify-between">
-                    <span className="text-muted-foreground">Page In</span>
+                    <span className="text-muted-foreground">{t('admin.monitor.detail.pageIn')}</span>
                     <span className="tabular-nums text-foreground">{formatNumber(status.vmPageIn)}</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-muted-foreground">Page Out</span>
+                    <span className="text-muted-foreground">{t('admin.monitor.detail.pageOut')}</span>
                     <span className="tabular-nums text-foreground">{formatNumber(status.vmPageOut)}</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-muted-foreground">Swap In</span>
+                    <span className="text-muted-foreground">{t('admin.monitor.detail.swapIn')}</span>
                     <span className="tabular-nums text-foreground">{formatNumber(status.vmSwapIn)}</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-muted-foreground">Swap Out</span>
+                    <span className="text-muted-foreground">{t('admin.monitor.detail.swapOut')}</span>
                     <span className="tabular-nums text-foreground">{formatNumber(status.vmSwapOut)}</span>
                   </div>
                   {status.vmOomKill !== undefined && (
                     <div className="flex justify-between">
-                      <span className="text-muted-foreground">OOM Kills</span>
+                      <span className="text-muted-foreground">{t('admin.monitor.detail.oomKills')}</span>
                       <span className={cn(
                         'tabular-nums',
                         status.vmOomKill > 0 ? 'text-destructive' : 'text-foreground'

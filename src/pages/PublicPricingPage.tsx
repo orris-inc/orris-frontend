@@ -299,7 +299,7 @@ export const PublicPricingPage = () => {
               </Link>
               <button
                 onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-                className="inline-flex h-9 w-9 items-center justify-center rounded-md hover:bg-accent transition-colors -mr-2"
+                className="inline-flex items-center justify-center rounded-md hover:bg-accent transition-colors -mr-2 touch-target"
                 aria-label={mobileMenuOpen ? t('landing.nav.closeMenu') : t('landing.nav.openMenu')}
                 aria-expanded={mobileMenuOpen}
               >

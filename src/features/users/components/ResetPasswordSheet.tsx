@@ -3,7 +3,7 @@
  * Mobile-optimized bottom sheet for resetting user password
  */
 
-import { useState, useEffect, useCallback } from 'react';
+import { useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { KeyRound, Check } from 'lucide-react';
 import {
@@ -22,6 +22,7 @@ import {
   PasswordStrengthIndicator,
   useDefaultPasswordRules,
 } from '@/components/common/mobile-form';
+import { useResetPasswordForm } from '../hooks/useResetPasswordForm';
 import type { UserResponse } from '@/api/user';
 
 interface ResetPasswordSheetProps extends BaseSheetProps {
@@ -29,10 +30,6 @@ interface ResetPasswordSheetProps extends BaseSheetProps {
   isLoading?: boolean;
   onSubmit: (id: string, password: string) => void;
 }
-
-// Password validation constants
-const PASSWORD_MIN_LENGTH = 8;
-const PASSWORD_MAX_LENGTH = 72;
 
 export const ResetPasswordSheet: React.FC<ResetPasswordSheetProps> = ({
   open,
@@ -43,74 +40,19 @@ export const ResetPasswordSheet: React.FC<ResetPasswordSheetProps> = ({
 }) => {
   const { t } = useTranslation();
   const passwordRules = useDefaultPasswordRules();
-  const [password, setPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
-  const [showPassword, setShowPassword] = useState(false);
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  const [errors, setErrors] = useState<{ password?: string; confirmPassword?: string }>({});
-  const [touched, setTouched] = useState<Record<string, boolean>>({});
-
-  // Reset form when sheet opens
-  useEffect(() => {
-    if (open) {
-      setPassword('');
-      setConfirmPassword('');
-      setShowPassword(false);
-      setShowConfirmPassword(false);
-      setErrors({});
-      setTouched({});
-    }
-  }, [open]);
-
-  // Validation
-  const validatePassword = useCallback((value: string): string | undefined => {
-    if (!value) return t('admin.users.resetPassword.passwordRequired');
-    if (value.length < PASSWORD_MIN_LENGTH) return t('admin.users.resetPassword.passwordMinLength', { min: PASSWORD_MIN_LENGTH });
-    if (value.length > PASSWORD_MAX_LENGTH) return t('admin.users.resetPassword.passwordMaxLength', { max: PASSWORD_MAX_LENGTH });
-    if (!/[a-zA-Z]/.test(value)) return t('admin.users.resetPassword.passwordNeedsLetter');
-    if (!/\d/.test(value)) return t('admin.users.resetPassword.passwordNeedsNumber');
-    return undefined;
-  }, [t]);
-
-  const validateConfirm = useCallback((value: string): string | undefined => {
-    if (!value) return t('admin.users.resetPassword.confirmRequired');
-    if (value !== password) return t('admin.users.resetPassword.passwordMismatch');
-    return undefined;
-  }, [t, password]);
-
-  const handleBlur = useCallback((field: 'password' | 'confirmPassword') => {
-    setTouched((prev) => ({ ...prev, [field]: true }));
-    if (field === 'password') {
-      setErrors((prev) => ({ ...prev, password: validatePassword(password) }));
-    } else {
-      setErrors((prev) => ({ ...prev, confirmPassword: validateConfirm(confirmPassword) }));
-    }
-  }, [password, confirmPassword, validatePassword, validateConfirm]);
-
-  const validate = useCallback((): boolean => {
-    const newErrors = {
-      password: validatePassword(password),
-      confirmPassword: validateConfirm(confirmPassword),
-    };
-    setErrors(newErrors);
-    setTouched({ password: true, confirmPassword: true });
-    return !newErrors.password && !newErrors.confirmPassword;
-  }, [password, confirmPassword, validatePassword, validateConfirm]);
+  const form = useResetPasswordForm({ open });
 
   const handleSubmit = useCallback(() => {
-    if (user && validate()) {
-      onSubmit(user.id, password);
+    if (user && form.validate()) {
+      onSubmit(user.id, form.password);
     }
-  }, [user, validate, password, onSubmit]);
+  }, [user, form, onSubmit]);
 
   const handleOpenChange = useCallback((open: boolean) => {
     if (!isLoading) {
       onOpenChange(open);
     }
   }, [isLoading, onOpenChange]);
-
-  // Form validity
-  const isFormValid = password && confirmPassword && !validatePassword(password) && password === confirmPassword;
 
   if (!user) return null;
 
@@ -137,32 +79,25 @@ export const ResetPasswordSheet: React.FC<ResetPasswordSheetProps> = ({
             </label>
             <MobilePasswordInput
               id="reset-password"
-              value={password}
-              onChange={(v) => {
-                setPassword(v);
-                if (touched.password) setErrors((prev) => ({ ...prev, password: validatePassword(v) }));
-                // Also update confirm validation if already touched
-                if (touched.confirmPassword && confirmPassword) {
-                  setErrors((prev) => ({ ...prev, confirmPassword: v !== confirmPassword ? t('admin.users.resetPassword.passwordMismatch') : undefined }));
-                }
-              }}
-              onBlur={() => handleBlur('password')}
+              value={form.password}
+              onChange={form.handlePasswordChange}
+              onBlur={() => form.handleBlur('password')}
               placeholder={t('admin.users.resetPassword.newPasswordPlaceholder')}
-              error={touched.password ? errors.password : undefined}
+              error={form.touched.password ? form.errors.password : undefined}
               disabled={isLoading}
-              showPassword={showPassword}
-              onToggleShow={() => setShowPassword((p) => !p)}
+              showPassword={form.showPassword}
+              onToggleShow={() => form.setShowPassword((p) => !p)}
             />
 
             {/* Password Requirements */}
-            {!password && !touched.password && (
+            {!form.password && !form.touched.password && (
               <p className="text-xs text-muted-foreground px-1">
-                {t('admin.users.resetPassword.passwordHint', { min: PASSWORD_MIN_LENGTH, max: PASSWORD_MAX_LENGTH })}
+                {t('admin.users.resetPassword.passwordHint', { min: form.PASSWORD_MIN_LENGTH, max: form.PASSWORD_MAX_LENGTH })}
               </p>
             )}
 
             {/* Password Strength Indicator */}
-            <PasswordStrengthIndicator password={password} rules={passwordRules} />
+            <PasswordStrengthIndicator password={form.password} rules={passwordRules} />
           </div>
 
           {/* Confirm Password */}
@@ -172,21 +107,18 @@ export const ResetPasswordSheet: React.FC<ResetPasswordSheetProps> = ({
             </label>
             <MobilePasswordInput
               id="reset-confirm"
-              value={confirmPassword}
-              onChange={(v) => {
-                setConfirmPassword(v);
-                if (touched.confirmPassword) setErrors((prev) => ({ ...prev, confirmPassword: validateConfirm(v) }));
-              }}
-              onBlur={() => handleBlur('confirmPassword')}
+              value={form.confirmPassword}
+              onChange={form.handleConfirmChange}
+              onBlur={() => form.handleBlur('confirmPassword')}
               placeholder={t('admin.users.resetPassword.confirmPlaceholder')}
-              error={touched.confirmPassword ? errors.confirmPassword : undefined}
+              error={form.touched.confirmPassword ? form.errors.confirmPassword : undefined}
               disabled={isLoading}
-              showPassword={showConfirmPassword}
-              onToggleShow={() => setShowConfirmPassword((p) => !p)}
+              showPassword={form.showConfirmPassword}
+              onToggleShow={() => form.setShowConfirmPassword((p) => !p)}
             />
 
             {/* Match indicator */}
-            {confirmPassword && !errors.confirmPassword && password === confirmPassword && (
+            {form.confirmPassword && !form.errors.confirmPassword && form.password === form.confirmPassword && (
               <div className="flex items-center gap-1.5 text-success text-sm px-1">
                 <Check className="size-4" />
                 <span>{t('admin.users.resetPassword.passwordMatch')}</span>
@@ -198,7 +130,7 @@ export const ResetPasswordSheet: React.FC<ResetPasswordSheetProps> = ({
         <SheetFooter>
           <Button
             onClick={handleSubmit}
-            disabled={isLoading || !isFormValid}
+            disabled={isLoading || !form.isFormValid}
             className="w-full min-h-[48px]"
           >
             {isLoading ? t('admin.users.resetPassword.resetting') : t('admin.users.resetPassword.confirmReset')}

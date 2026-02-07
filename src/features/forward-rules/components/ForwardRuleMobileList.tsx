@@ -50,6 +50,7 @@ import { Skeleton } from '@/components/common/Skeleton';
 import { CopyableAddress } from '@/components/common/CopyableAddress';
 import { formatBytesGB } from '@/shared/utils/format-utils';
 import { ENABLED_STATUS_CONFIG } from '@/shared/constants/status-config';
+import { SYNC_STATUS_COLORS, RUN_STATUS_COLORS } from '@/shared/utils/status-colors';
 import type { ForwardRule, ForwardAgent, RuleOverallStatusResponse, RuleSyncStatus, RuleRunStatus } from '@/api/forward';
 import type { Node } from '@/api/node';
 import type { ResourceGroup } from '@/api/resource';
@@ -144,18 +145,18 @@ const TUNNEL_TYPE_CONFIG: Record<string, { label: string; color: string; bgColor
 
 // Sync status display config
 const SYNC_STATUS_CONFIG: Record<RuleSyncStatus, { labelKey: string; icon: React.ElementType; className: string }> = {
-  synced: { labelKey: 'common.status.synced', icon: CheckCircle2, className: 'text-green-500' },
-  pending: { labelKey: 'common.status.syncing', icon: CircleDashed, className: 'text-yellow-500' },
-  failed: { labelKey: 'common.status.syncFailed', icon: AlertCircle, className: 'text-red-500' },
+  synced: { labelKey: 'common.status.synced', icon: CheckCircle2, className: SYNC_STATUS_COLORS.synced },
+  pending: { labelKey: 'common.status.syncing', icon: CircleDashed, className: SYNC_STATUS_COLORS.pending },
+  failed: { labelKey: 'common.status.syncFailed', icon: AlertCircle, className: SYNC_STATUS_COLORS.failed },
 };
 
 // Run status display config
 const RUN_STATUS_CONFIG: Record<RuleRunStatus | 'unknown', { labelKey: string; icon: React.ElementType; className: string }> = {
-  running: { labelKey: 'common.status.running', icon: Play, className: 'text-green-500' },
-  stopped: { labelKey: 'common.status.stopped', icon: Square, className: 'text-gray-500' },
-  error: { labelKey: 'common.status.error', icon: AlertTriangle, className: 'text-red-500' },
-  starting: { labelKey: 'admin.forwardRules.status.starting', icon: RotateCw, className: 'text-blue-500' },
-  unknown: { labelKey: 'common.status.unknown', icon: CircleDashed, className: 'text-gray-400' },
+  running: { labelKey: 'common.status.running', icon: Play, className: RUN_STATUS_COLORS.running },
+  stopped: { labelKey: 'common.status.stopped', icon: Square, className: RUN_STATUS_COLORS.stopped },
+  error: { labelKey: 'common.status.error', icon: AlertTriangle, className: RUN_STATUS_COLORS.error },
+  starting: { labelKey: 'admin.forwardRules.status.starting', icon: RotateCw, className: RUN_STATUS_COLORS.starting },
+  unknown: { labelKey: 'common.status.unknown', icon: CircleDashed, className: RUN_STATUS_COLORS.unknown },
 };
 
 // Mobile flow node type configuration - consistent with desktop
@@ -471,6 +472,7 @@ export const ForwardRuleMobileList: React.FC<ForwardRuleMobileListProps> = ({
           <button
             className="p-1.5 rounded-md hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors touch-manipulation"
             onClick={(e) => e.stopPropagation()}
+            aria-label={t('common.actions.more')}
           >
             <MoreHorizontal className="size-4 text-slate-500" />
           </button>
@@ -557,7 +559,7 @@ export const ForwardRuleMobileList: React.FC<ForwardRuleMobileListProps> = ({
       <AccordionItem
             key={rule.id}
             value={rule.id}
-            className="ring-1 ring-border rounded-xl bg-white dark:bg-slate-800 overflow-hidden"
+            className="ring-1 ring-border rounded-xl bg-card overflow-hidden"
           >
             {/* Card Header - Always visible */}
             <div className="px-3 py-2.5">
@@ -610,6 +612,7 @@ export const ForwardRuleMobileList: React.FC<ForwardRuleMobileListProps> = ({
                     onClick={() => onEdit(rule)}
                     className="p-1.5 rounded hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors touch-manipulation"
                     title={t('common.actions.edit')}
+                    aria-label={t('common.actions.edit')}
                   >
                     <Edit className="size-3.5 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300" />
                   </button>
@@ -622,6 +625,7 @@ export const ForwardRuleMobileList: React.FC<ForwardRuleMobileListProps> = ({
                         : 'opacity-50 cursor-not-allowed'
                     }`}
                     title={probingRuleId === rule.id ? t('admin.forwardRules.actions.probing') : t('admin.forwardRules.actions.probe')}
+                    aria-label={probingRuleId === rule.id ? t('admin.forwardRules.actions.probing') : t('admin.forwardRules.actions.probe')}
                   >
                     {probingRuleId === rule.id ? (
                       <Loader2 className="size-3.5 text-blue-500 animate-spin" />
@@ -637,6 +641,7 @@ export const ForwardRuleMobileList: React.FC<ForwardRuleMobileListProps> = ({
                         : 'hover:bg-green-50 dark:hover:bg-green-900/20'
                     }`}
                     title={rule.status === 'enabled' ? t('admin.forwardRules.actions.clickToDisable') : t('admin.forwardRules.actions.clickToEnable')}
+                    aria-label={rule.status === 'enabled' ? t('common.actions.disable') : t('common.actions.enable')}
                   >
                     {rule.status === 'enabled' ? (
                       <PowerOff className="size-3.5 text-slate-400 hover:text-red-500" />

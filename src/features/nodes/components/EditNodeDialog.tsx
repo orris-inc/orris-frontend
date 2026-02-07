@@ -2,7 +2,7 @@
  * Edit node dialog component
  */
 
-import { useState, useEffect, useMemo, useCallback } from 'react';
+import { useState, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { formatDateTime } from '@/shared/utils/date-utils';
 import {
@@ -37,7 +37,6 @@ import type {
   Node,
   UpdateNodeRequest,
   TransportProtocol,
-  RouteConfig,
   NodeProtocol,
   VLESSSecurity,
   VMessSecurity,
@@ -48,7 +47,6 @@ import { useResourceGroups } from '@/features/resource-groups/hooks/useResourceG
 import { useSubscriptionPlans } from '@/features/subscription-plans/hooks/useSubscriptionPlans';
 import { RouteConfigEditor } from './RouteConfigEditor';
 import type { OutboundNodeOption } from '../utils/route-rule-utils';
-import { pluginOptsToString, stringToPluginOpts, arePluginOptsEqual } from '../utils/plugin-utils';
 import {
   SS_ENCRYPTION_METHODS,
   TRANSPORT_PROTOCOLS,
@@ -67,6 +65,7 @@ import {
   Hysteria2ConfigForm,
   TuicConfigForm,
 } from './protocol-forms';
+import { useEditNodeForm } from '../hooks/useEditNodeForm';
 
 interface EditNodeDialogProps {
   open: boolean;
@@ -76,12 +75,6 @@ interface EditNodeDialogProps {
   /** Available nodes for route outbound selection */
   nodes?: OutboundNodeOption[];
 }
-
-interface FormData extends Omit<UpdateNodeRequest, 'groupSids'> {
-  tagsInput: string;
-  groupSids: string[];
-}
-
 
 // Protocol display names
 const PROTOCOL_NAMES: Record<NodeProtocol, string> = {
@@ -103,9 +96,20 @@ export const EditNodeDialog: React.FC<EditNodeDialogProps> = ({
   nodes = [],
 }) => {
   const { t } = useTranslation();
-  const [formData, setFormData] = useState<FormData>({ tagsInput: '', groupSids: [] });
-  const [errors, setErrors] = useState<Record<string, string>>({});
-  const [pluginOptsStr, setPluginOptsStr] = useState<string>('');
+  const form = useEditNodeForm();
+  const [prevNode, setPrevNode] = useState<Node | null>(null);
+
+  // Sync form data when node changes
+  if (node && node !== prevNode) {
+    setPrevNode(node);
+    form.initializeForm(node);
+  }
+
+  const {
+    formData, errors, pluginOptsStr,
+    handleChange, handlePluginOptsChange, handleRouteChange, handleCostLabelChange,
+    getHasChanges, getHasProtocolSettings,
+  } = form;
 
   // Fetch resource groups list
   const { resourceGroups, isLoading: isLoadingGroups } = useResourceGroups({
@@ -128,82 +132,6 @@ export const EditNodeDialog: React.FC<EditNodeDialogProps> = ({
     });
   }, [resourceGroups, plans]);
 
-  useEffect(() => {
-    if (node) {
-      setFormData({
-        name: node.name,
-        serverAddress: node.serverAddress,
-        agentPort: node.agentPort,
-        subscriptionPort: node.subscriptionPort,
-        encryptionMethod: node.encryptionMethod,
-        region: node.region,
-        status: node.status,
-        sortOrder: node.sortOrder,
-        tags: node.tags,
-        tagsInput: node.tags?.join(', ') ?? '',
-        // Shadowsocks plugin related fields
-        plugin: node.plugin,
-        pluginOpts: node.pluginOpts,
-        // Trojan related fields
-        transportProtocol: node.transportProtocol,
-        host: node.host,
-        path: node.path,
-        sni: node.sni,
-        allowInsecure: node.allowInsecure,
-        // Route configuration
-        route: node.route,
-        // Resource groups
-        groupSids: node.groupSids ?? [],
-        // Notification setting
-        muteNotification: node.muteNotification,
-        // VLESS fields
-        vlessTransportType: node.vlessTransportType,
-        vlessFlow: node.vlessFlow,
-        vlessSecurity: node.vlessSecurity,
-        vlessSni: node.vlessSni,
-        vlessFingerprint: node.vlessFingerprint,
-        vlessAllowInsecure: node.vlessAllowInsecure,
-        vlessHost: node.vlessHost,
-        vlessPath: node.vlessPath,
-        vlessServiceName: node.vlessServiceName,
-        vlessRealityPublicKey: node.vlessRealityPublicKey,
-        vlessRealityShortId: node.vlessRealityShortId,
-        vlessRealitySpiderX: node.vlessRealitySpiderX,
-        // VMess fields
-        vmessAlterId: node.vmessAlterId,
-        vmessSecurity: node.vmessSecurity,
-        vmessTransportType: node.vmessTransportType,
-        vmessHost: node.vmessHost,
-        vmessPath: node.vmessPath,
-        vmessServiceName: node.vmessServiceName,
-        vmessTls: node.vmessTls,
-        vmessSni: node.vmessSni,
-        vmessAllowInsecure: node.vmessAllowInsecure,
-        // Hysteria2 fields
-        hysteria2CongestionControl: node.hysteria2CongestionControl,
-        hysteria2Obfs: node.hysteria2Obfs,
-        hysteria2ObfsPassword: node.hysteria2ObfsPassword,
-        hysteria2UpMbps: node.hysteria2UpMbps,
-        hysteria2DownMbps: node.hysteria2DownMbps,
-        hysteria2Sni: node.hysteria2Sni,
-        hysteria2AllowInsecure: node.hysteria2AllowInsecure,
-        hysteria2Fingerprint: node.hysteria2Fingerprint,
-        // TUIC fields
-        tuicCongestionControl: node.tuicCongestionControl,
-        tuicUdpRelayMode: node.tuicUdpRelayMode,
-        tuicAlpn: node.tuicAlpn,
-        tuicSni: node.tuicSni,
-        tuicAllowInsecure: node.tuicAllowInsecure,
-        tuicDisableSni: node.tuicDisableSni,
-        // Expiration fields
-        expiresAt: node.expiresAt,
-        costLabel: node.costLabel,
-      });
-      setPluginOptsStr(pluginOptsToString(node.pluginOpts));
-      setErrors({});
-    }
-  }, [node]);
-
   const isShadowsocks = node?.protocol === 'shadowsocks';
   const isTrojan = node?.protocol === 'trojan';
   const isVless = node?.protocol === 'vless';
@@ -211,352 +139,22 @@ export const EditNodeDialog: React.FC<EditNodeDialogProps> = ({
   const isHysteria2 = node?.protocol === 'hysteria2';
   const isTuic = node?.protocol === 'tuic';
 
-  const handleChange = useCallback((field: keyof UpdateNodeRequest | 'tagsInput', value: string | number | boolean | undefined) => {
-    setFormData((prev) => ({ ...prev, [field]: value }));
-    setErrors((prev) => {
-      if (!prev[field]) return prev;
-      const newErrors = { ...prev };
-      delete newErrors[field];
-      return newErrors;
-    });
-  }, []);
-
-  // Adapter for protocol config forms that expect (field: string, value: any)
-  const handleFieldChange = useCallback((field: string, value: any) => {
-    setFormData((prev) => ({ ...prev, [field]: value }));
-    setErrors((prev) => {
-      if (!prev[field]) return prev;
-      const newErrors = { ...prev };
-      delete newErrors[field];
-      return newErrors;
-    });
-  }, []);
-
-  const handlePluginOptsChange = useCallback((value: string) => {
-    setPluginOptsStr(value);
-    const parsedOpts = stringToPluginOpts(value);
-    setFormData((prev) => ({ ...prev, pluginOpts: parsedOpts }));
-    setErrors((prev) => {
-      if (!prev.pluginOpts) return prev;
-      const newErrors = { ...prev };
-      delete newErrors.pluginOpts;
-      return newErrors;
-    });
-  }, []);
-
-  const handleRouteChange = useCallback((route: RouteConfig | undefined) => {
-    setFormData((prev) => ({ ...prev, route }));
-  }, []);
-
-  const handleCostLabelChange = useCallback((value: string) => {
-    setFormData((prev) => ({ ...prev, costLabel: value || undefined }));
-    setErrors((prev) => {
-      if (!prev.costLabel) return prev;
-      const newErrors = { ...prev };
-      delete newErrors.costLabel;
-      return newErrors;
-    });
-  }, []);
-
   const handleSubmit = () => {
     if (!node) return;
-
-    // Build update object to submit
-    const updates: UpdateNodeRequest = {};
-    const newErrors: Record<string, string> = {};
-
-    // Helper function: normalize strings for comparison (compare after trim, treat empty string and undefined as same)
-    const hasStringChanged = (newValue: string | undefined, oldValue: string | undefined): boolean => {
-      const normalizedNew = (newValue || '').trim();
-      const normalizedOld = (oldValue || '').trim();
-      return normalizedNew !== normalizedOld;
-    };
-
-    // Only process changed fields
-    if (formData.name !== undefined && hasStringChanged(formData.name, node.name)) {
-      const trimmedName = formData.name.trim();
-      if (!trimmedName) {
-        newErrors.name = t('admin.nodes.form.validation.nameRequired');
-      } else {
-        updates.name = trimmedName;
-      }
-    }
-
-    if (formData.serverAddress !== undefined && hasStringChanged(formData.serverAddress, node.serverAddress)) {
-      // Backend supports empty server address, allow empty string
-      const trimmedAddress = formData.serverAddress.trim();
-      updates.serverAddress = trimmedAddress;
-    }
-
-    if (formData.agentPort !== node.agentPort && formData.agentPort !== undefined) {
-      if (formData.agentPort < 1 || formData.agentPort > 65535) {
-        newErrors.agentPort = t('admin.nodes.form.validation.portRange');
-      } else {
-        updates.agentPort = formData.agentPort;
-      }
-    }
-
-    if (formData.subscriptionPort !== node.subscriptionPort && formData.subscriptionPort !== undefined) {
-      if (formData.subscriptionPort < 1 || formData.subscriptionPort > 65535) {
-        newErrors.subscriptionPort = t('admin.nodes.form.validation.portRange');
-      } else {
-        updates.subscriptionPort = formData.subscriptionPort;
-      }
-    }
-
-    if (formData.encryptionMethod !== node.encryptionMethod && formData.encryptionMethod !== undefined) {
-      updates.encryptionMethod = formData.encryptionMethod;
-    }
-
-    // Shadowsocks plugin fields
-    if (isShadowsocks) {
-      if (formData.plugin !== undefined && hasStringChanged(formData.plugin, node.plugin)) {
-        updates.plugin = formData.plugin.trim() || undefined;
-      }
-      if (!arePluginOptsEqual(formData.pluginOpts, node.pluginOpts)) {
-        updates.pluginOpts = formData.pluginOpts;
-      }
-    }
-
-    if (formData.region !== undefined && hasStringChanged(formData.region, node.region)) {
-      updates.region = formData.region.trim() || undefined;
-    }
-
-    if (formData.status !== node.status && formData.status !== undefined) {
-      updates.status = formData.status;
-    }
-
-    if (formData.sortOrder !== node.sortOrder && formData.sortOrder !== undefined) {
-      updates.sortOrder = formData.sortOrder;
-    }
-
-    // Trojan related fields
-    if (isTrojan) {
-      if (formData.transportProtocol !== node.transportProtocol && formData.transportProtocol !== undefined) {
-        updates.transportProtocol = formData.transportProtocol;
-      }
-      if (formData.sni !== undefined && hasStringChanged(formData.sni, node.sni)) {
-        updates.sni = formData.sni?.trim() || undefined;
-      }
-      if (formData.host !== undefined && hasStringChanged(formData.host, node.host)) {
-        updates.host = formData.host?.trim() || undefined;
-      }
-      if (formData.path !== undefined && hasStringChanged(formData.path, node.path)) {
-        updates.path = formData.path?.trim() || undefined;
-      }
-      if (formData.allowInsecure !== node.allowInsecure && formData.allowInsecure !== undefined) {
-        updates.allowInsecure = formData.allowInsecure;
-      }
-    }
-
-    // VLESS related fields
-    if (isVless) {
-      if (formData.vlessTransportType !== node.vlessTransportType) {
-        updates.vlessTransportType = formData.vlessTransportType;
-      }
-      if (formData.vlessSecurity !== node.vlessSecurity) {
-        updates.vlessSecurity = formData.vlessSecurity;
-      }
-      if (hasStringChanged(formData.vlessFlow, node.vlessFlow)) {
-        updates.vlessFlow = formData.vlessFlow?.trim() || undefined;
-      }
-      if (hasStringChanged(formData.vlessSni, node.vlessSni)) {
-        updates.vlessSni = formData.vlessSni?.trim() || undefined;
-      }
-      if (hasStringChanged(formData.vlessFingerprint, node.vlessFingerprint)) {
-        updates.vlessFingerprint = formData.vlessFingerprint?.trim() || undefined;
-      }
-      if (formData.vlessAllowInsecure !== node.vlessAllowInsecure) {
-        updates.vlessAllowInsecure = formData.vlessAllowInsecure;
-      }
-      if (hasStringChanged(formData.vlessHost, node.vlessHost)) {
-        updates.vlessHost = formData.vlessHost?.trim() || undefined;
-      }
-      if (hasStringChanged(formData.vlessPath, node.vlessPath)) {
-        updates.vlessPath = formData.vlessPath?.trim() || undefined;
-      }
-      if (hasStringChanged(formData.vlessServiceName, node.vlessServiceName)) {
-        updates.vlessServiceName = formData.vlessServiceName?.trim() || undefined;
-      }
-      if (hasStringChanged(formData.vlessRealityPublicKey, node.vlessRealityPublicKey)) {
-        updates.vlessRealityPublicKey = formData.vlessRealityPublicKey?.trim() || undefined;
-      }
-      if (hasStringChanged(formData.vlessRealityShortId, node.vlessRealityShortId)) {
-        updates.vlessRealityShortId = formData.vlessRealityShortId?.trim() || undefined;
-      }
-      if (hasStringChanged(formData.vlessRealitySpiderX, node.vlessRealitySpiderX)) {
-        updates.vlessRealitySpiderX = formData.vlessRealitySpiderX?.trim() || undefined;
-      }
-    }
-
-    // VMess related fields
-    if (isVmess) {
-      if (formData.vmessTransportType !== node.vmessTransportType) {
-        updates.vmessTransportType = formData.vmessTransportType;
-      }
-      if (formData.vmessSecurity !== node.vmessSecurity) {
-        updates.vmessSecurity = formData.vmessSecurity;
-      }
-      if (formData.vmessAlterId !== node.vmessAlterId) {
-        updates.vmessAlterId = formData.vmessAlterId;
-      }
-      if (formData.vmessTls !== node.vmessTls) {
-        updates.vmessTls = formData.vmessTls;
-      }
-      if (hasStringChanged(formData.vmessSni, node.vmessSni)) {
-        updates.vmessSni = formData.vmessSni?.trim() || undefined;
-      }
-      if (formData.vmessAllowInsecure !== node.vmessAllowInsecure) {
-        updates.vmessAllowInsecure = formData.vmessAllowInsecure;
-      }
-      if (hasStringChanged(formData.vmessHost, node.vmessHost)) {
-        updates.vmessHost = formData.vmessHost?.trim() || undefined;
-      }
-      if (hasStringChanged(formData.vmessPath, node.vmessPath)) {
-        updates.vmessPath = formData.vmessPath?.trim() || undefined;
-      }
-      if (hasStringChanged(formData.vmessServiceName, node.vmessServiceName)) {
-        updates.vmessServiceName = formData.vmessServiceName?.trim() || undefined;
-      }
-    }
-
-    // Hysteria2 related fields
-    if (isHysteria2) {
-      if (formData.hysteria2CongestionControl !== node.hysteria2CongestionControl) {
-        updates.hysteria2CongestionControl = formData.hysteria2CongestionControl;
-      }
-      if (hasStringChanged(formData.hysteria2Obfs, node.hysteria2Obfs)) {
-        updates.hysteria2Obfs = formData.hysteria2Obfs?.trim() || undefined;
-      }
-      if (hasStringChanged(formData.hysteria2ObfsPassword, node.hysteria2ObfsPassword)) {
-        updates.hysteria2ObfsPassword = formData.hysteria2ObfsPassword?.trim() || undefined;
-      }
-      if (formData.hysteria2UpMbps !== node.hysteria2UpMbps) {
-        updates.hysteria2UpMbps = formData.hysteria2UpMbps;
-      }
-      if (formData.hysteria2DownMbps !== node.hysteria2DownMbps) {
-        updates.hysteria2DownMbps = formData.hysteria2DownMbps;
-      }
-      if (hasStringChanged(formData.hysteria2Sni, node.hysteria2Sni)) {
-        updates.hysteria2Sni = formData.hysteria2Sni?.trim() || undefined;
-      }
-      if (formData.hysteria2AllowInsecure !== node.hysteria2AllowInsecure) {
-        updates.hysteria2AllowInsecure = formData.hysteria2AllowInsecure;
-      }
-      if (hasStringChanged(formData.hysteria2Fingerprint, node.hysteria2Fingerprint)) {
-        updates.hysteria2Fingerprint = formData.hysteria2Fingerprint?.trim() || undefined;
-      }
-    }
-
-    // TUIC related fields
-    if (isTuic) {
-      if (formData.tuicCongestionControl !== node.tuicCongestionControl) {
-        updates.tuicCongestionControl = formData.tuicCongestionControl;
-      }
-      if (formData.tuicUdpRelayMode !== node.tuicUdpRelayMode) {
-        updates.tuicUdpRelayMode = formData.tuicUdpRelayMode;
-      }
-      if (hasStringChanged(formData.tuicAlpn, node.tuicAlpn)) {
-        updates.tuicAlpn = formData.tuicAlpn?.trim() || undefined;
-      }
-      if (hasStringChanged(formData.tuicSni, node.tuicSni)) {
-        updates.tuicSni = formData.tuicSni?.trim() || undefined;
-      }
-      if (formData.tuicAllowInsecure !== node.tuicAllowInsecure) {
-        updates.tuicAllowInsecure = formData.tuicAllowInsecure;
-      }
-      if (formData.tuicDisableSni !== node.tuicDisableSni) {
-        updates.tuicDisableSni = formData.tuicDisableSni;
-      }
-    }
-
-    // Resource group association - only send if changed
-    const originalGroupSids = node.groupSids ?? [];
-    const newGroupSids = formData.groupSids ?? [];
-    const groupSidsChanged = JSON.stringify([...newGroupSids].sort()) !== JSON.stringify([...originalGroupSids].sort());
-    if (groupSidsChanged) {
-      updates.groupSids = newGroupSids;
-    }
-
-    // Tags - parse tagsInput and compare with original
-    const newTags = formData.tagsInput
-      ? formData.tagsInput.split(',').map((t) => t.trim()).filter((t) => t.length > 0)
-      : [];
-    const originalTags = node.tags ?? [];
-    const tagsChanged = JSON.stringify(newTags.sort()) !== JSON.stringify([...originalTags].sort());
-    if (tagsChanged) {
-      updates.tags = newTags.length > 0 ? newTags : undefined;
-    }
-
-    // Route configuration - compare JSON to detect changes
-    const routeChanged = JSON.stringify(formData.route) !== JSON.stringify(node.route);
-    if (routeChanged) {
-      // Use null to clear route, undefined means no change
-      updates.route = formData.route === undefined ? null : formData.route;
-    }
-
-    // Mute notification setting
-    if (formData.muteNotification !== node.muteNotification) {
-      updates.muteNotification = formData.muteNotification;
-    }
-
-    // Expiration time - empty string to clear, undefined to keep unchanged
-    if (formData.expiresAt !== node.expiresAt) {
-      updates.expiresAt = formData.expiresAt || ""; // Empty string to clear
-    }
-
-    // Cost label - empty string to clear, undefined to keep unchanged
-    if (formData.costLabel !== node.costLabel) {
-      updates.costLabel = formData.costLabel || ""; // Empty string to clear
-    }
-
-    // If there are validation errors, display and prevent submission
-    if (Object.keys(newErrors).length > 0) {
-      setErrors(newErrors);
-      return;
-    }
-
-    // Clear errors and submit
-    setErrors({});
-    if (Object.keys(updates).length > 0) {
+    const updates = form.validateAndBuild(node);
+    if (updates) {
       onSubmit(node.id, updates);
     }
   };
 
-  // Check if there are changes
-  const hasChanges = node && Object.keys(formData).some(
-    (key) => formData[key as keyof UpdateNodeRequest] !== node[key as keyof Node]
-  );
-
-  // Check if protocol settings are configured
-  const getHasProtocolSettings = () => {
-    if (isShadowsocks) {
-      return Boolean(formData.plugin || pluginOptsStr);
-    }
-    if (isTrojan) {
-      return Boolean(formData.sni || formData.host || formData.path || formData.allowInsecure);
-    }
-    if (isVless) {
-      return Boolean(formData.vlessSni || formData.vlessHost || formData.vlessPath || formData.vlessFlow);
-    }
-    if (isVmess) {
-      return Boolean(formData.vmessSni || formData.vmessHost || formData.vmessPath);
-    }
-    if (isHysteria2) {
-      return Boolean(formData.hysteria2Sni || formData.hysteria2Obfs || formData.hysteria2UpMbps);
-    }
-    if (isTuic) {
-      return Boolean(formData.tuicSni || formData.tuicAlpn);
-    }
-    return false;
-  };
-  const hasProtocolSettings = getHasProtocolSettings();
+  const hasChanges = getHasChanges(node);
+  const hasProtocolSettings = getHasProtocolSettings(node?.protocol);
 
   if (!node) return null;
 
   return (
     <Dialog open={open} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="sm:max-w-[700px] flex flex-col max-h-[90vh]">
+      <DialogContent className="sm:max-w-3xl flex flex-col max-h-[90vh]">
         <DialogHeader className="flex-shrink-0">
           <DialogTitle>{t('admin.nodes.form.editNode')}</DialogTitle>
         </DialogHeader>
@@ -930,7 +528,7 @@ export const EditNodeDialog: React.FC<EditNodeDialogProps> = ({
                         transportProtocol={formData.transportProtocol}
                         host={formData.host}
                         path={formData.path}
-                        onFieldChange={handleFieldChange}
+                        onFieldChange={handleChange}
                         errors={errors}
                       />
                     </div>
@@ -952,7 +550,7 @@ export const EditNodeDialog: React.FC<EditNodeDialogProps> = ({
                         realityPublicKey={formData.vlessRealityPublicKey}
                         realityShortId={formData.vlessRealityShortId}
                         realitySpiderX={formData.vlessRealitySpiderX}
-                        onFieldChange={handleFieldChange}
+                        onFieldChange={handleChange}
                         errors={errors}
                       />
                     </div>
@@ -971,7 +569,7 @@ export const EditNodeDialog: React.FC<EditNodeDialogProps> = ({
                         host={formData.vmessHost}
                         path={formData.vmessPath}
                         serviceName={formData.vmessServiceName}
-                        onFieldChange={handleFieldChange}
+                        onFieldChange={handleChange}
                         errors={errors}
                       />
                     </div>
@@ -989,7 +587,7 @@ export const EditNodeDialog: React.FC<EditNodeDialogProps> = ({
                         upMbps={formData.hysteria2UpMbps}
                         downMbps={formData.hysteria2DownMbps}
                         fingerprint={formData.hysteria2Fingerprint}
-                        onFieldChange={handleFieldChange}
+                        onFieldChange={handleChange}
                         errors={errors}
                       />
                     </div>
@@ -1005,7 +603,7 @@ export const EditNodeDialog: React.FC<EditNodeDialogProps> = ({
                         allowInsecure={formData.tuicAllowInsecure}
                         alpn={formData.tuicAlpn}
                         disableSni={formData.tuicDisableSni}
-                        onFieldChange={handleFieldChange}
+                        onFieldChange={handleChange}
                         errors={errors}
                       />
                     </div>
@@ -1077,7 +675,7 @@ export const EditNodeDialog: React.FC<EditNodeDialogProps> = ({
                               {group?.name ?? sid}
                               <button
                                 type="button"
-                                onClick={() => setFormData((prev) => ({
+                                onClick={() => form.setFormData((prev) => ({
                                   ...prev,
                                   groupSids: prev.groupSids.filter((id) => id !== sid),
                                 }))}
@@ -1107,7 +705,7 @@ export const EditNodeDialog: React.FC<EditNodeDialogProps> = ({
                               <Checkbox
                                 checked={formData.groupSids.includes(group.sid)}
                                 onCheckedChange={(checked) => {
-                                  setFormData((prev) => ({
+                                  form.setFormData((prev) => ({
                                     ...prev,
                                     groupSids: checked
                                       ? [...prev.groupSids, group.sid]

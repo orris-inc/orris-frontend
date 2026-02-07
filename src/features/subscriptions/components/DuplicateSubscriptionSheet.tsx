@@ -3,7 +3,7 @@
  * Mobile-optimized bottom sheet for creating subscription based on existing one
  */
 
-import { useState, useEffect, useMemo } from 'react';
+import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Loader2, Info, Copy, User, CreditCard, RefreshCw } from 'lucide-react';
 import {
@@ -17,10 +17,10 @@ import {
   type BaseSheetProps,
 } from '@/components/common/sheet';
 import { Button } from '@/components/common/Button';
-import { MobileSelect, type MobileSelectOption } from '@/components/common/mobile-form';
+import { MobileSelect } from '@/components/common/mobile-form';
 import { TruncatedId } from '@/components/admin';
-import { useSubscriptionPlans } from '@/features/subscription-plans/hooks/useSubscriptionPlans';
-import type { BillingCycle, PricingOption, Subscription, SubscriptionPlan, AdminCreateSubscriptionRequest } from '@/api/subscription/types';
+import { useDuplicateSubscriptionForm, formatPrice, BILLING_CYCLE_KEYS } from '../hooks/useDuplicateSubscriptionForm';
+import type { BillingCycle, Subscription, AdminCreateSubscriptionRequest } from '@/api/subscription/types';
 import type { UserResponse } from '@/api/user/types';
 
 interface DuplicateSubscriptionSheetProps extends BaseSheetProps {
@@ -28,27 +28,6 @@ interface DuplicateSubscriptionSheetProps extends BaseSheetProps {
   user?: UserResponse;
   onSubmit: (data: AdminCreateSubscriptionRequest) => Promise<void>;
 }
-
-// Billing cycle translation keys
-const BILLING_CYCLE_KEYS: Record<BillingCycle, string> = {
-  weekly: 'billingCycle.weekly',
-  monthly: 'billingCycle.monthly',
-  quarterly: 'billingCycle.quarterly',
-  semi_annual: 'billingCycle.semiAnnual',
-  yearly: 'billingCycle.yearly',
-  lifetime: 'billingCycle.lifetime',
-};
-
-// Get available pricing options for the plan
-const getAvailablePricings = (plan: SubscriptionPlan): PricingOption[] => {
-  return plan.pricings?.filter(p => p.isActive) || [];
-};
-
-// Format price display
-const formatPrice = (price: number, currency: string): string => {
-  const symbol = currency === 'CNY' ? '¥' : '$';
-  return `${symbol}${(price / 100).toFixed(2)}`;
-};
 
 export const DuplicateSubscriptionSheet: React.FC<DuplicateSubscriptionSheetProps> = ({
   open,
@@ -58,59 +37,22 @@ export const DuplicateSubscriptionSheet: React.FC<DuplicateSubscriptionSheetProp
   onSubmit,
 }) => {
   const { t } = useTranslation();
-  const { plans, isLoading: plansLoading } = useSubscriptionPlans({ enabled: open });
   const [submitting, setSubmitting] = useState(false);
-  const [formData, setFormData] = useState<AdminCreateSubscriptionRequest>({
-    userId: '',
-    planId: '',
-    billingCycle: 'monthly',
-    autoRenew: true,
-  });
 
-  // Get selected plan
-  const selectedPlan = useMemo(() => {
-    return plans.find(p => p.id === formData.planId) || null;
-  }, [plans, formData.planId]);
-
-  // Get available pricing options for selected plan
-  const availablePricings = useMemo(() => {
-    if (!selectedPlan) return [];
-    return getAvailablePricings(selectedPlan);
-  }, [selectedPlan]);
-
-  // Get selected pricing
-  const selectedPricing = useMemo(() => {
-    return availablePricings.find(p => p.billingCycle === formData.billingCycle) || availablePricings[0] || null;
-  }, [availablePricings, formData.billingCycle]);
-
-  // Initialize form
-  useEffect(() => {
-    if (open && subscription) {
-      const defaultPricing = subscription.plan?.pricings?.[0];
-      setFormData({
-        userId: subscription.userId,
-        planId: subscription.plan?.id || '',
-        billingCycle: (defaultPricing?.billingCycle as BillingCycle) || 'monthly',
-        autoRenew: subscription.autoRenew,
-      });
-    }
-  }, [open, subscription]);
-
-  // Update billing cycle when plan changes
-  useEffect(() => {
-    if (selectedPlan && availablePricings.length > 0) {
-      setFormData(prev => {
-        const currentCycleAvailable = availablePricings.some(p => p.billingCycle === prev.billingCycle);
-        if (!currentCycleAvailable) {
-          return { ...prev, billingCycle: availablePricings[0].billingCycle };
-        }
-        return prev;
-      });
-    }
-  }, [selectedPlan, availablePricings]);
+  const {
+    formData,
+    setFormData,
+    plansLoading,
+    selectedPlan,
+    availablePricings,
+    selectedPricing,
+    planOptions,
+    billingCycleOptions,
+    isFormValid,
+  } = useDuplicateSubscriptionForm({ subscription, open });
 
   const handleSubmit = async () => {
-    if (!formData.planId) return;
+    if (!isFormValid) return;
 
     setSubmitting(true);
     try {
@@ -120,47 +62,6 @@ export const DuplicateSubscriptionSheet: React.FC<DuplicateSubscriptionSheetProp
       setSubmitting(false);
     }
   };
-
-  // Prepare plan options
-  const planOptions = useMemo((): MobileSelectOption[] => {
-    return plans
-      .filter(plan => plan.status === 'active')
-      .map(plan => {
-        const pricings = getAvailablePricings(plan);
-        let priceDisplay: string;
-        if (pricings.length > 1) {
-          const prices = pricings.map(p => p.price);
-          const minPrice = Math.min(...prices);
-          const maxPrice = Math.max(...prices);
-          const currency = pricings[0].currency;
-          priceDisplay = minPrice === maxPrice
-            ? formatPrice(minPrice, currency)
-            : `${formatPrice(minPrice, currency)} - ${formatPrice(maxPrice, currency)}`;
-        } else if (pricings.length === 1) {
-          priceDisplay = formatPrice(pricings[0].price, pricings[0].currency);
-        } else {
-          priceDisplay = t('subscription.noPriceSet');
-        }
-        return {
-          value: plan.id.toString(),
-          label: `${plan.name} - ${priceDisplay}`,
-        };
-      });
-  }, [plans, t]);
-
-  // Prepare billing cycle options
-  const billingCycleOptions = useMemo((): MobileSelectOption[] => {
-    if (availablePricings.length > 0) {
-      return availablePricings.map(p => ({
-        value: p.billingCycle,
-        label: `${t(BILLING_CYCLE_KEYS[p.billingCycle])} - ${formatPrice(p.price, p.currency)}`,
-      }));
-    }
-    return Object.entries(BILLING_CYCLE_KEYS).map(([value, key]) => ({
-      value: value as BillingCycle,
-      label: t(key),
-    }));
-  }, [availablePricings, t]);
 
   if (!subscription) return null;
 
@@ -275,7 +176,7 @@ export const DuplicateSubscriptionSheet: React.FC<DuplicateSubscriptionSheetProp
         <SheetFooter className="pt-3 pb-1">
           <Button
             onClick={handleSubmit}
-            disabled={!formData.planId || submitting}
+            disabled={!isFormValid || submitting}
             className="w-full min-h-[48px]"
           >
             {submitting ? (

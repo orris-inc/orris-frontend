@@ -5,6 +5,7 @@
  */
 
 import { ReactNode } from 'react';
+import { useTranslation } from 'react-i18next';
 import { LucideIcon, Inbox } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { cn } from '@/lib/utils';
@@ -30,13 +31,15 @@ interface EmptyStateProps {
  */
 export const EmptyState = ({
   icon: Icon = Inbox,
-  title = 'No data',
+  title,
   description,
   action,
   variant = 'action',
   suggestions,
   className,
 }: EmptyStateProps) => {
+  const { t } = useTranslation();
+  const displayTitle = title ?? t('common.messages.noData');
   const isSimple = variant === 'simple';
   const showIconBackground = variant !== 'simple';
 
@@ -59,7 +62,7 @@ export const EmptyState = ({
       </div>
 
       {/* Title */}
-      <h3 className="text-base font-medium text-foreground mb-1">{title}</h3>
+      <h3 className="text-base font-medium text-foreground mb-1">{displayTitle}</h3>
 
       {/* Description - hidden for simple variant */}
       {!isSimple && description && (

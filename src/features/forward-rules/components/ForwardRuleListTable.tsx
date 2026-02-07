@@ -27,6 +27,7 @@ import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/common/Too
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/common/Popover';
 import { CopyableAddressRow } from '@/components/common/CopyableAddress';
 import { formatBytesGB } from '@/shared/utils/format-utils';
+import { SYNC_STATUS_COLORS, RUN_STATUS_COLORS } from '@/shared/utils/status-colors';
 import type { ForwardRule, ForwardAgent, RuleOverallStatusResponse, RuleSyncStatus, RuleRunStatus } from '@/api/forward';
 import type { Node } from '@/api/node';
 import type { ResourceGroup } from '@/api/resource';
@@ -129,18 +130,18 @@ const TUNNEL_TYPE_CONFIG: Record<string, { label: string; color: string; bgColor
 
 // Sync status display config
 const SYNC_STATUS_CONFIG: Record<RuleSyncStatus, { labelKey: string; icon: React.ElementType; className: string }> = {
-  synced: { labelKey: 'common.status.synced', icon: CheckCircle2, className: 'text-green-500' },
-  pending: { labelKey: 'common.status.syncing', icon: CircleDashed, className: 'text-yellow-500' },
-  failed: { labelKey: 'common.status.syncFailed', icon: AlertCircle, className: 'text-red-500' },
+  synced: { labelKey: 'common.status.synced', icon: CheckCircle2, className: SYNC_STATUS_COLORS.synced },
+  pending: { labelKey: 'common.status.syncing', icon: CircleDashed, className: SYNC_STATUS_COLORS.pending },
+  failed: { labelKey: 'common.status.syncFailed', icon: AlertCircle, className: SYNC_STATUS_COLORS.failed },
 };
 
 // Run status display config
 const RUN_STATUS_CONFIG: Record<RuleRunStatus | 'unknown', { labelKey: string; icon: React.ElementType; className: string }> = {
-  running: { labelKey: 'common.status.running', icon: Play, className: 'text-green-500' },
-  stopped: { labelKey: 'common.status.stopped', icon: Square, className: 'text-gray-500' },
-  error: { labelKey: 'common.status.error', icon: AlertTriangle, className: 'text-red-500' },
-  starting: { labelKey: 'admin.forwardRules.status.starting', icon: RotateCw, className: 'text-blue-500' },
-  unknown: { labelKey: 'common.status.unknown', icon: CircleDashed, className: 'text-gray-400' },
+  running: { labelKey: 'common.status.running', icon: Play, className: RUN_STATUS_COLORS.running },
+  stopped: { labelKey: 'common.status.stopped', icon: Square, className: RUN_STATUS_COLORS.stopped },
+  error: { labelKey: 'common.status.error', icon: AlertTriangle, className: RUN_STATUS_COLORS.error },
+  starting: { labelKey: 'admin.forwardRules.status.starting', icon: RotateCw, className: RUN_STATUS_COLORS.starting },
+  unknown: { labelKey: 'common.status.unknown', icon: CircleDashed, className: RUN_STATUS_COLORS.unknown },
 };
 
 // Flow arrow component for chain visualization
@@ -1008,7 +1009,8 @@ export const ForwardRuleListTable: React.FC<ForwardRuleListTableProps> = ({
               <TooltipTrigger asChild>
                 <button
                   onClick={() => onViewDetail(rule)}
-                  className="inline-flex items-center justify-center size-8 rounded-lg text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-700 transition-all duration-200"
+                  className="relative inline-flex items-center justify-center size-8 rounded-lg text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-700 transition-all duration-200 after:absolute after:inset-[-6px] after:content-['']"
+                  aria-label={t('admin.forwardRules.actions.viewDetail')}
                 >
                   <Eye className="size-4" />
                 </button>
@@ -1019,7 +1021,8 @@ export const ForwardRuleListTable: React.FC<ForwardRuleListTableProps> = ({
               <TooltipTrigger asChild>
                 <button
                   onClick={() => onEdit(rule)}
-                  className="inline-flex items-center justify-center size-8 rounded-lg text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-700 transition-all duration-200"
+                  className="relative inline-flex items-center justify-center size-8 rounded-lg text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-700 transition-all duration-200 after:absolute after:inset-[-6px] after:content-['']"
+                  aria-label={t('common.actions.edit')}
                 >
                   <Edit className="size-4" />
                 </button>
@@ -1031,7 +1034,8 @@ export const ForwardRuleListTable: React.FC<ForwardRuleListTableProps> = ({
                 <button
                   onClick={() => canProbe && onProbe(rule)}
                   disabled={!canProbe}
-                  className="inline-flex items-center justify-center size-8 rounded-lg text-slate-500 hover:text-blue-600 dark:text-slate-400 dark:hover:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="relative inline-flex items-center justify-center size-8 rounded-lg text-slate-500 hover:text-blue-600 dark:text-slate-400 dark:hover:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed after:absolute after:inset-[-6px] after:content-['']"
+                  aria-label={isProbing ? t('admin.forwardRules.actions.probing') : t('admin.forwardRules.actions.probe')}
                 >
                   {isProbing ? (
                     <Loader2 className="size-4 animate-spin" />
@@ -1046,7 +1050,10 @@ export const ForwardRuleListTable: React.FC<ForwardRuleListTableProps> = ({
             </Tooltip>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <button className="inline-flex items-center justify-center size-8 rounded-lg text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-700 transition-all duration-200">
+                <button
+                  className="relative inline-flex items-center justify-center size-8 rounded-lg text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-700 transition-all duration-200 after:absolute after:inset-[-6px] after:content-['']"
+                  aria-label={t('common.actions.more')}
+                >
                   <MoreHorizontal className="size-4" />
                 </button>
               </DropdownMenuTrigger>

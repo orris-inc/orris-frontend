@@ -8,7 +8,7 @@
  * - getBadgeText function pattern for dynamic badges
  */
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
   Dialog,
@@ -35,65 +35,12 @@ import { Checkbox } from "@/components/common/Checkbox";
 import { ScrollArea } from "@/components/common/ScrollArea";
 import { ExpirationDatePicker } from "@/components/common/ExpirationDatePicker";
 import { useResourceGroups } from "@/features/resource-groups/hooks/useResourceGroups";
-import type {
-  CreateForwardAgentRequest,
-  BlockedProtocol,
-} from "@/api/forward";
-
-// Protocol groups for better organization
-const PROTOCOL_GROUPS: {
-  labelKey: string;
-  protocols: { value: BlockedProtocol; label: string }[];
-}[] = [
-  {
-    labelKey: "admin.forwardAgents.form.protocolGroupProxy",
-    protocols: [
-      { value: "http_connect", label: "HTTP CONNECT" },
-      { value: "socks4", label: "SOCKS4" },
-      { value: "socks5", label: "SOCKS5" },
-    ],
-  },
-  {
-    labelKey: "admin.forwardAgents.form.protocolGroupApp",
-    protocols: [
-      { value: "http", label: "HTTP" },
-      { value: "tls", label: "TLS" },
-      { value: "ssh", label: "SSH" },
-      { value: "ftp", label: "FTP" },
-    ],
-  },
-];
-
-// Extended form data type to include expiration fields
-interface CreateForwardAgentFormData extends CreateForwardAgentRequest {
-  expiresAt?: string;
-  costLabel?: string;
-}
-
-// Extended request type for submission with expiration fields (same as form data)
-type CreateForwardAgentRequestWithExpiration = CreateForwardAgentFormData;
-
-interface CreateForwardAgentDialogProps {
-  open: boolean;
-  onClose: () => void;
-  onSubmit: (data: CreateForwardAgentRequestWithExpiration) => Promise<void>;
-  /** Initial data for pre-populating the form when copying a node */
-  initialData?: Partial<CreateForwardAgentFormData>;
-}
-
-// Default form data
-const getDefaultFormData = (): CreateForwardAgentFormData => ({
-  name: "",
-  publicAddress: "",
-  tunnelAddress: "",
-  remark: "",
-  allowedPortRange: "",
-  sortOrder: undefined,
-  blockedProtocols: [],
-  groupSids: [],
-  expiresAt: undefined,
-  costLabel: undefined,
-});
+import {
+  useCreateForwardAgentForm,
+  PROTOCOL_GROUPS,
+  type CreateForwardAgentFormData,
+  type CreateForwardAgentRequestWithExpiration,
+} from "../hooks/useCreateForwardAgentForm";
 
 // Section configuration
 interface SectionConfig {
@@ -196,17 +143,24 @@ const FormField: React.FC<FormFieldProps> = ({
   </div>
 );
 
+interface CreateForwardAgentDialogProps {
+  open: boolean;
+  onClose: () => void;
+  onSubmit: (data: CreateForwardAgentRequestWithExpiration) => Promise<void>;
+  /** Initial data for pre-populating the form when copying a node */
+  initialData?: Partial<CreateForwardAgentFormData>;
+}
+
 export const CreateForwardAgentDialog: React.FC<
   CreateForwardAgentDialogProps
 > = ({ open, onClose, onSubmit, initialData }) => {
   const { t } = useTranslation();
-  const [formData, setFormData] =
-    useState<CreateForwardAgentFormData>(getDefaultFormData());
-  const [errors, setErrors] = useState<Record<string, string>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [openSections, setOpenSections] = useState<Set<string>>(
     new Set(["basic", "network"])
   );
+
+  const form = useCreateForwardAgentForm({ open, initialData });
 
   // Get resource groups for selection
   const { resourceGroups } = useResourceGroups({
@@ -215,80 +169,12 @@ export const CreateForwardAgentDialog: React.FC<
     enabled: open,
   });
 
-  // Update form data when initialData changes
-  useEffect(() => {
-    if (open && initialData) {
-      setFormData({
-        ...getDefaultFormData(),
-        ...initialData,
-      });
-      // Auto-expand all sections when copying
-      setOpenSections(new Set(["basic", "network", "advanced"]));
-    } else if (open && !initialData) {
-      setFormData(getDefaultFormData());
-      setOpenSections(new Set(["basic", "network"]));
-    }
-  }, [open, initialData]);
-
+  // Manage section expansion when initialData changes
+  // (auto-expand all sections when copying)
   const handleClose = () => {
-    setFormData(getDefaultFormData());
-    setErrors({});
+    form.reset();
     setOpenSections(new Set(["basic", "network"]));
     onClose();
-  };
-
-  const handleChange = (
-    field: keyof CreateForwardAgentFormData,
-    value: string | number | undefined
-  ) => {
-    setFormData((prev) => ({ ...prev, [field]: value }));
-    // Clear error for this field
-    if (errors[field]) {
-      setErrors((prev) => {
-        const newErrors = { ...prev };
-        delete newErrors[field];
-        return newErrors;
-      });
-    }
-  };
-
-  const handleSortOrderChange = (value: string) => {
-    if (value === "") {
-      handleChange("sortOrder", undefined);
-    } else {
-      const num = parseInt(value, 10);
-      if (!isNaN(num) && num >= 0) {
-        handleChange("sortOrder", num);
-      }
-    }
-  };
-
-  const handleCostLabelChange = (value: string) => {
-    handleChange("costLabel", value || undefined);
-  };
-
-  const handleProtocolToggle = (
-    protocol: BlockedProtocol,
-    checked: boolean
-  ) => {
-    const current = formData.blockedProtocols || [];
-    const updated = checked
-      ? [...current, protocol]
-      : current.filter((p) => p !== protocol);
-    setFormData((prev) => ({ ...prev, blockedProtocols: updated }));
-  };
-
-  const handleGroupToggle = (groupSid: string) => {
-    setFormData((prev) => {
-      const currentGroups = prev.groupSids || [];
-      const isSelected = currentGroups.includes(groupSid);
-      return {
-        ...prev,
-        groupSids: isSelected
-          ? currentGroups.filter((sid) => sid !== groupSid)
-          : [...currentGroups, groupSid],
-      };
-    });
   };
 
   const toggleSection = (sectionId: string) => {
@@ -303,67 +189,29 @@ export const CreateForwardAgentDialog: React.FC<
     });
   };
 
-  const validate = () => {
-    const newErrors: Record<string, string> = {};
-
-    if (!formData.name.trim()) {
-      newErrors.name = t("common.validation.required");
-    }
-
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
-  };
+  // Auto-expand sections when initialData is present
+  // Using a ref-like pattern: check on every render if sections need adjusting
+  const expectedSections = initialData
+    ? new Set(["basic", "network", "advanced"])
+    : new Set(["basic", "network"]);
+  if (
+    open &&
+    initialData &&
+    !openSections.has("advanced") &&
+    expectedSections.has("advanced")
+  ) {
+    setOpenSections(new Set(["basic", "network", "advanced"]));
+  }
 
   const handleSubmit = async () => {
-    if (validate()) {
-      // Clean up undefined and empty strings
-      const submitData: CreateForwardAgentRequestWithExpiration = {
-        name: formData.name.trim(),
-      };
-
-      if (formData.publicAddress?.trim()) {
-        submitData.publicAddress = formData.publicAddress.trim();
-      }
-
-      if (formData.tunnelAddress?.trim()) {
-        submitData.tunnelAddress = formData.tunnelAddress.trim();
-      }
-
-      if (formData.remark?.trim()) {
-        submitData.remark = formData.remark.trim();
-      }
-
-      if (formData.allowedPortRange?.trim()) {
-        submitData.allowedPortRange = formData.allowedPortRange.trim();
-      }
-
-      if (formData.sortOrder !== undefined) {
-        submitData.sortOrder = formData.sortOrder;
-      }
-
-      if (formData.blockedProtocols && formData.blockedProtocols.length > 0) {
-        submitData.blockedProtocols = formData.blockedProtocols;
-      }
-
-      if (formData.groupSids && formData.groupSids.length > 0) {
-        submitData.groupSids = formData.groupSids;
-      }
-
-      // Include expiration fields
-      if (formData.expiresAt) {
-        submitData.expiresAt = formData.expiresAt;
-      }
-
-      if (formData.costLabel) {
-        submitData.costLabel = formData.costLabel;
-      }
+    if (form.validate()) {
+      const submitData = form.buildSubmitData();
 
       setIsSubmitting(true);
       try {
         await onSubmit(submitData);
         // Reset form after successful submission
-        setFormData(getDefaultFormData());
-        setErrors({});
+        form.reset();
         setOpenSections(new Set(["basic", "network"]));
       } finally {
         setIsSubmitting(false);
@@ -371,21 +219,9 @@ export const CreateForwardAgentDialog: React.FC<
     }
   };
 
-  const isFormValid = formData.name.trim();
-
-  // Check if advanced settings have been configured
-  const hasAdvancedSettings = Boolean(
-    formData.sortOrder !== undefined ||
-      formData.remark?.trim() ||
-      (formData.blockedProtocols && formData.blockedProtocols.length > 0) ||
-      (formData.groupSids && formData.groupSids.length > 0) ||
-      formData.expiresAt ||
-      formData.costLabel !== undefined
-  );
-
   return (
     <Dialog open={open} onOpenChange={(open) => !open && handleClose()}>
-      <DialogContent className="sm:max-w-[640px] flex flex-col max-h-[90vh] p-0">
+      <DialogContent className="sm:max-w-2xl flex flex-col max-h-[90vh] p-0">
         {/* Header with icon */}
         <DialogHeader className="flex-shrink-0 px-6 pt-6 pb-4">
           <div className="flex items-center gap-3">
@@ -427,14 +263,14 @@ export const CreateForwardAgentDialog: React.FC<
                 <FormField
                   label={t("admin.forwardAgents.form.nodeName")}
                   required
-                  error={errors.name}
+                  error={form.errors.name}
                   hint={t("admin.forwardAgents.form.nodeNameHint")}
                 >
                   <Input
                     id="name"
-                    value={formData.name}
-                    onChange={(e) => handleChange("name", e.target.value)}
-                    error={!!errors.name}
+                    value={form.formData.name}
+                    onChange={(e) => form.handleChange("name", e.target.value)}
+                    error={!!form.errors.name}
                     autoFocus
                     placeholder={t("admin.forwardAgents.form.nodeNamePlaceholder")}
                     className="h-10"
@@ -463,8 +299,8 @@ export const CreateForwardAgentDialog: React.FC<
                   >
                     <Input
                       id="publicAddress"
-                      value={formData.publicAddress}
-                      onChange={(e) => handleChange("publicAddress", e.target.value)}
+                      value={form.formData.publicAddress}
+                      onChange={(e) => form.handleChange("publicAddress", e.target.value)}
                       placeholder={t("admin.forwardAgents.form.publicAddressPlaceholder")}
                       className="h-10 font-mono"
                     />
@@ -476,8 +312,8 @@ export const CreateForwardAgentDialog: React.FC<
                   >
                     <Input
                       id="tunnelAddress"
-                      value={formData.tunnelAddress}
-                      onChange={(e) => handleChange("tunnelAddress", e.target.value)}
+                      value={form.formData.tunnelAddress}
+                      onChange={(e) => form.handleChange("tunnelAddress", e.target.value)}
                       placeholder={t("admin.forwardAgents.form.tunnelAddressPlaceholder")}
                       className="h-10 font-mono"
                     />
@@ -491,8 +327,8 @@ export const CreateForwardAgentDialog: React.FC<
                 >
                   <Input
                     id="allowedPortRange"
-                    value={formData.allowedPortRange}
-                    onChange={(e) => handleChange("allowedPortRange", e.target.value)}
+                    value={form.formData.allowedPortRange}
+                    onChange={(e) => form.handleChange("allowedPortRange", e.target.value)}
                     placeholder={t("admin.forwardAgents.form.portLimitPlaceholder")}
                     className="h-10 font-mono"
                   />
@@ -509,7 +345,7 @@ export const CreateForwardAgentDialog: React.FC<
               }}
               isOpen={openSections.has("advanced")}
               onToggle={() => toggleSection("advanced")}
-              getBadgeText={() => hasAdvancedSettings ? t("admin.nodes.form.configured") : null}
+              getBadgeText={() => form.hasAdvancedSettings ? t("admin.nodes.form.configured") : null}
               requiredLabel={t("admin.nodes.form.required")}
             >
               <div className="space-y-4">
@@ -523,8 +359,8 @@ export const CreateForwardAgentDialog: React.FC<
                     id="sortOrder"
                     type="number"
                     min={0}
-                    value={formData.sortOrder ?? ""}
-                    onChange={(e) => handleSortOrderChange(e.target.value)}
+                    value={form.formData.sortOrder ?? ""}
+                    onChange={(e) => form.handleSortOrderChange(e.target.value)}
                     placeholder={t("admin.forwardAgents.form.sortOrderPlaceholder")}
                     className="h-10"
                   />
@@ -544,12 +380,12 @@ export const CreateForwardAgentDialog: React.FC<
                         <div className="flex flex-wrap gap-2">
                           {group.protocols.map((protocol) => {
                             const isSelected =
-                              formData.blockedProtocols?.includes(protocol.value) || false;
+                              form.formData.blockedProtocols?.includes(protocol.value) || false;
                             return (
                               <button
                                 key={protocol.value}
                                 type="button"
-                                onClick={() => handleProtocolToggle(protocol.value, !isSelected)}
+                                onClick={() => form.handleProtocolToggle(protocol.value, !isSelected)}
                                 className={`px-3 py-1.5 text-sm rounded-md border transition-all duration-150 cursor-pointer ${
                                   isSelected
                                     ? "bg-destructive/10 border-destructive/50 text-destructive font-medium"
@@ -576,8 +412,8 @@ export const CreateForwardAgentDialog: React.FC<
                       </span>
                     }
                     hint={
-                      formData.groupSids && formData.groupSids.length > 0
-                        ? t("admin.forwardAgents.form.selectedGroupsCount", { count: formData.groupSids.length })
+                      form.formData.groupSids && form.formData.groupSids.length > 0
+                        ? t("admin.forwardAgents.form.selectedGroupsCount", { count: form.formData.groupSids.length })
                         : t("admin.forwardAgents.form.bindResourceGroupsHint")
                     }
                   >
@@ -585,7 +421,7 @@ export const CreateForwardAgentDialog: React.FC<
                       <ScrollArea className="h-[120px]">
                         <div className="divide-y divide-border">
                           {resourceGroups.map((group) => {
-                            const isSelected = formData.groupSids?.includes(group.sid) ?? false;
+                            const isSelected = form.formData.groupSids?.includes(group.sid) ?? false;
                             return (
                               <label
                                 key={group.sid}
@@ -595,7 +431,7 @@ export const CreateForwardAgentDialog: React.FC<
                               >
                                 <Checkbox
                                   checked={isSelected}
-                                  onCheckedChange={() => handleGroupToggle(group.sid)}
+                                  onCheckedChange={() => form.handleGroupToggle(group.sid)}
                                 />
                                 <span className="text-sm font-medium truncate flex-1">
                                   {group.name}
@@ -615,8 +451,8 @@ export const CreateForwardAgentDialog: React.FC<
                   hint={t("admin.forwardAgents.edit.hints.expiresAt")}
                 >
                   <ExpirationDatePicker
-                    value={formData.expiresAt}
-                    onChange={(value) => handleChange("expiresAt", value)}
+                    value={form.formData.expiresAt}
+                    onChange={(value) => form.handleChange("expiresAt", value)}
                     id="expiresAt"
                   />
                 </FormField>
@@ -629,8 +465,8 @@ export const CreateForwardAgentDialog: React.FC<
                   <Input
                     id="costLabel"
                     type="text"
-                    value={formData.costLabel ?? ""}
-                    onChange={(e) => handleCostLabelChange(e.target.value)}
+                    value={form.formData.costLabel ?? ""}
+                    onChange={(e) => form.handleCostLabelChange(e.target.value)}
                     placeholder={t("common.costLabel.placeholder")}
                     className="h-10"
                   />
@@ -641,8 +477,8 @@ export const CreateForwardAgentDialog: React.FC<
                   <Textarea
                     id="remark"
                     rows={2}
-                    value={formData.remark}
-                    onChange={(e) => handleChange("remark", e.target.value)}
+                    value={form.formData.remark}
+                    onChange={(e) => form.handleChange("remark", e.target.value)}
                     placeholder={t("admin.forwardAgents.form.remarkPlaceholder")}
                     className="resize-none"
                   />
@@ -663,7 +499,7 @@ export const CreateForwardAgentDialog: React.FC<
             <div className="flex items-center gap-2">
               <Button
                 onClick={handleSubmit}
-                disabled={!isFormValid || isSubmitting}
+                disabled={!form.isFormValid || isSubmitting}
                 className="h-9 px-6"
               >
                 {isSubmitting

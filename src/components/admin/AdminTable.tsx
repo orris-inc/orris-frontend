@@ -5,6 +5,7 @@
  */
 
 import { ReactNode } from 'react';
+import { useTranslation } from 'react-i18next';
 import { ChevronLeft, ChevronRight, Loader2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import {
@@ -125,7 +126,9 @@ interface TableEmptyProps {
   colSpan?: number;
 }
 
-export const AdminTableEmpty = ({ message = 'No data', colSpan = 1 }: TableEmptyProps) => {
+export const AdminTableEmpty = ({ message, colSpan = 1 }: TableEmptyProps) => {
+  const { t } = useTranslation();
+  const displayMessage = message ?? t('common.messages.noData');
   return (
     <tr>
       <td colSpan={colSpan} className="py-20 text-center">
@@ -137,7 +140,7 @@ export const AdminTableEmpty = ({ message = 'No data', colSpan = 1 }: TableEmpty
               </svg>
             </div>
           </div>
-          <p className="text-muted-foreground text-sm">{message}</p>
+          <p className="text-muted-foreground text-sm">{displayMessage}</p>
         </div>
       </td>
     </tr>
@@ -149,6 +152,7 @@ interface TableLoadingProps {
 }
 
 export const AdminTableLoading = ({ colSpan = 1 }: TableLoadingProps) => {
+  const { t } = useTranslation();
   return (
     <tr>
       <td colSpan={colSpan} className="py-20 text-center">
@@ -157,7 +161,7 @@ export const AdminTableLoading = ({ colSpan = 1 }: TableLoadingProps) => {
             <Loader2 className="size-9 animate-spin text-primary" strokeWidth={2.5} />
             <div className="absolute inset-0 rounded-full bg-primary/20 blur-xl animate-pulse motion-reduce:animate-none" />
           </div>
-          <p className="text-muted-foreground text-sm">Loading...</p>
+          <p className="text-muted-foreground text-sm">{t('common.loading.loading')}</p>
         </div>
       </td>
     </tr>

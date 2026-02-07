@@ -252,7 +252,7 @@ export const ProbeResultDialog: React.FC<ProbeResultDialogProps> = ({
                                         {t('common.status.offline')}
                                       </Badge>
                                     )}
-                                    {probeResult.exitAgentResults!.length > 1 && (
+                                    {probeResult.exitAgentResults && probeResult.exitAgentResults.length > 1 && (
                                       <Badge variant="secondary" className="text-[9px] px-1 py-0 flex-shrink-0">
                                         #{index + 1}
                                       </Badge>

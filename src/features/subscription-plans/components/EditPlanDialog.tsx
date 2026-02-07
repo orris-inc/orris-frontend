@@ -3,7 +3,7 @@
  * Implemented using wrapped common components
  */
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Plus, Trash2, AlertCircle } from 'lucide-react';
 import {
@@ -29,77 +29,20 @@ import {
 import { Checkbox } from '@/components/common/Checkbox';
 import { Separator } from '@/components/common/Separator';
 import { Alert, AlertDescription } from '@/components/common/Alert';
-import type { SubscriptionPlan, UpdatePlanRequest, PricingOptionInput } from '@/api/subscription/types';
-
-// Locally defined types (removed from original SDK)
-type ForwardRuleTypeOption = 'direct' | 'entry' | 'chain' | 'direct_chain';
-
-interface PlanLimits {
-  trafficLimit?: number;
-  deviceLimit?: number;
-  speedLimit?: number;
-  connectionLimit?: number;
-  ruleLimit?: number;
-  ruleTypes?: ForwardRuleTypeOption[];
-  nodeLimit?: number;
-}
-
-// Helper function: convert PlanLimits to API format
-function planLimitsToApiFormat(limits: PlanLimits): Record<string, unknown> {
-  const result: Record<string, unknown> = {};
-  if (limits.trafficLimit !== undefined) result['traffic_limit'] = limits.trafficLimit;
-  if (limits.deviceLimit !== undefined) result['device_limit'] = limits.deviceLimit;
-  if (limits.speedLimit !== undefined) result['speed_limit'] = limits.speedLimit;
-  if (limits.connectionLimit !== undefined) result['connection_limit'] = limits.connectionLimit;
-  if (limits.ruleLimit !== undefined) result['rule_limit'] = limits.ruleLimit;
-  if (limits.ruleTypes !== undefined) result['rule_types'] = limits.ruleTypes;
-  if (limits.nodeLimit !== undefined) result['node_limit'] = limits.nodeLimit;
-  return result;
-}
-
-// Helper function: parse API format limits (axios-case-converter converts response to camelCase)
-function parsePlanLimits(apiLimits: Record<string, unknown> | undefined): PlanLimits {
-  if (!apiLimits) return {};
-  return {
-    trafficLimit: apiLimits.trafficLimit as number | undefined,
-    deviceLimit: apiLimits.deviceLimit as number | undefined,
-    speedLimit: apiLimits.speedLimit as number | undefined,
-    connectionLimit: apiLimits.connectionLimit as number | undefined,
-    ruleLimit: apiLimits.ruleLimit as number | undefined,
-    ruleTypes: apiLimits.ruleTypes as ForwardRuleTypeOption[] | undefined,
-    nodeLimit: apiLimits.nodeLimit as number | undefined,
-  };
-}
+import type { SubscriptionPlan, UpdatePlanRequest } from '@/api/subscription/types';
+import {
+  useEditPlanForm,
+  BILLING_CYCLE_VALUES,
+  BILLING_CYCLE_KEYS,
+  FORWARD_RULE_TYPE_VALUES,
+  FORWARD_RULE_TYPE_KEYS,
+} from '../hooks/useEditPlanForm';
 
 interface EditPlanDialogProps {
   open: boolean;
   plan: SubscriptionPlan | null;
   onClose: () => void;
   onSubmit: (id: string, data: UpdatePlanRequest) => Promise<void>;
-}
-
-const BILLING_CYCLES: { value: string; labelKey: string }[] = [
-  { value: 'weekly', labelKey: 'billingCycle.weekly' },
-  { value: 'monthly', labelKey: 'billingCycle.monthly' },
-  { value: 'quarterly', labelKey: 'billingCycle.quarterly' },
-  { value: 'semi_annual', labelKey: 'billingCycle.semiAnnual' },
-  { value: 'yearly', labelKey: 'billingCycle.yearly' },
-  { value: 'lifetime', labelKey: 'billingCycle.lifetime' },
-];
-
-// Forward rule type options
-const FORWARD_RULE_TYPES: { value: ForwardRuleTypeOption; labelKey: string }[] = [
-  { value: 'direct', labelKey: 'admin.plans.ruleType.direct' },
-  { value: 'entry', labelKey: 'admin.plans.ruleType.entry' },
-  { value: 'chain', labelKey: 'admin.plans.ruleType.chain' },
-  { value: 'direct_chain', labelKey: 'admin.plans.ruleType.directChain' },
-];
-
-// Extend UpdatePlanRequest to support multi-pricing management and plan limits
-interface UpdatePlanFormData extends Omit<UpdatePlanRequest, 'limits'> {
-  pricings: PricingOptionInput[];
-  // Plan limits
-  planLimits: PlanLimits;
 }
 
 export const EditPlanDialog: React.FC<EditPlanDialogProps> = ({
@@ -109,107 +52,17 @@ export const EditPlanDialog: React.FC<EditPlanDialogProps> = ({
   onSubmit,
 }) => {
   const { t } = useTranslation();
-  const [formData, setFormData] = useState<UpdatePlanFormData>({ pricings: [], planLimits: {} });
   const [loading, setLoading] = useState(false);
 
-  // Update form data when plan changes
-  useEffect(() => {
-    if (plan) {
-      // Parse plan limits
-      const planLimits = parsePlanLimits(plan.limits);
-
-      setFormData({
-        description: plan.description,
-        isPublic: plan.isPublic,
-        sortOrder: plan.sortOrder,
-        pricings: (plan.pricings || []).map(p => ({
-          billingCycle: p.billingCycle,
-          price: p.price,
-          currency: p.currency,
-          isActive: p.isActive,
-        })),
-        planLimits,
-      });
-    }
-  }, [plan]);
-
-  const handleChange = (field: keyof UpdatePlanFormData, value: unknown) => {
-    setFormData((prev) => ({ ...prev, [field]: value }));
-  };
-
-  // Handle plan limit changes
-  const handleLimitChange = (field: keyof PlanLimits, value: unknown) => {
-    setFormData((prev) => ({
-      ...prev,
-      planLimits: { ...prev.planLimits, [field]: value },
-    }));
-  };
-
-  // Handle rule type multi-select
-  const handleRuleTypeToggle = (type: ForwardRuleTypeOption) => {
-    setFormData((prev) => {
-      const currentTypes = prev.planLimits.ruleTypes || [];
-      const newTypes = currentTypes.includes(type)
-        ? currentTypes.filter((t) => t !== type)
-        : [...currentTypes, type];
-      return {
-        ...prev,
-        planLimits: { ...prev.planLimits, ruleTypes: newTypes },
-      };
-    });
-  };
-
-  // Multi-pricing related operations
-  const handleAddPricing = () => {
-    const newPricing: PricingOptionInput = {
-      billingCycle: 'monthly',
-      price: 0,
-      currency: 'CNY',
-      isActive: true,
-    };
-    setFormData((prev) => ({
-      ...prev,
-      pricings: [...prev.pricings, newPricing],
-    }));
-  };
-
-  const handleRemovePricing = (index: number) => {
-    setFormData((prev) => ({
-      ...prev,
-      pricings: prev.pricings.filter((_, i) => i !== index),
-    }));
-  };
-
-  const handleUpdatePricing = (index: number, updates: Partial<PricingOptionInput>) => {
-    setFormData((prev) => ({
-      ...prev,
-      pricings: prev.pricings.map((p, i) => (i === index ? { ...p, ...updates } : p)),
-    }));
-  };
+  const form = useEditPlanForm({ plan });
 
   const handleSubmit = async () => {
     if (!plan) return;
-    // Validate at least one pricing option
-    if (formData.pricings.length === 0) {
-      return;
-    }
+    if (form.formData.pricings.length === 0) return;
 
     setLoading(true);
     try {
-      // Build plan limits
-      const limits = Object.keys(formData.planLimits).length > 0
-        ? planLimitsToApiFormat(formData.planLimits)
-        : undefined;
-
-      const submitData: UpdatePlanRequest = {
-        description: formData.description,
-        limits,
-        nodeLimit: formData.planLimits.nodeLimit,
-        isPublic: formData.isPublic,
-        sortOrder: formData.sortOrder,
-        pricings: formData.pricings,
-      };
-      await onSubmit(plan.id, submitData);
+      await onSubmit(plan.id, form.buildSubmitData());
       onClose();
     } finally {
       setLoading(false);
@@ -269,13 +122,13 @@ export const EditPlanDialog: React.FC<EditPlanDialogProps> = ({
                   <Label>
                     {t('admin.plans.form.pricingOptions')} <span className="text-destructive">*</span>
                   </Label>
-                  <Button variant="outline" size="sm" onClick={handleAddPricing} disabled={loading}>
+                  <Button variant="outline" size="sm" onClick={form.handleAddPricing} disabled={loading}>
                     <Plus className="size-4 mr-1" />
                     {t('admin.plans.form.addPricing')}
                   </Button>
                 </div>
 
-                {formData.pricings.length === 0 ? (
+                {form.formData.pricings.length === 0 ? (
                   <Alert variant="destructive">
                     <AlertCircle className="h-4 w-4" />
                     <AlertDescription>
@@ -284,15 +137,15 @@ export const EditPlanDialog: React.FC<EditPlanDialogProps> = ({
                   </Alert>
                 ) : (
                   <div className="space-y-3">
-                    {formData.pricings.map((pricing, index) => (
+                    {form.formData.pricings.map((pricing, index) => (
                       <div key={index} className="rounded-lg border p-4 space-y-3">
                         <div className="flex items-center justify-between">
                           <span className="text-sm font-medium text-muted-foreground">{t('admin.plans.form.pricingNumber', { number: index + 1 })}</span>
                           <Button
                             variant="ghost"
                             size="sm"
-                            onClick={() => handleRemovePricing(index)}
-                            disabled={loading || formData.pricings.length === 1}
+                            onClick={() => form.handleRemovePricing(index)}
+                            disabled={loading || form.formData.pricings.length === 1}
                             className="text-destructive hover:text-destructive/80"
                           >
                             <Trash2 className="size-4" />
@@ -301,16 +154,16 @@ export const EditPlanDialog: React.FC<EditPlanDialogProps> = ({
                         <div className="grid grid-cols-3 gap-3">
                           <Select
                             value={pricing.billingCycle}
-                            onValueChange={(value) => handleUpdatePricing(index, { billingCycle: value })}
+                            onValueChange={(value) => form.handleUpdatePricing(index, { billingCycle: value })}
                             disabled={loading}
                           >
                             <SelectTrigger>
                               <SelectValue placeholder={t('admin.plans.form.billingCyclePlaceholder')} />
                             </SelectTrigger>
                             <SelectContent>
-                              {BILLING_CYCLES.map((opt) => (
-                                <SelectItem key={opt.value} value={opt.value}>
-                                  {t(opt.labelKey)}
+                              {BILLING_CYCLE_VALUES.map((cycle) => (
+                                <SelectItem key={cycle} value={cycle}>
+                                  {t(BILLING_CYCLE_KEYS[cycle])}
                                 </SelectItem>
                               ))}
                             </SelectContent>
@@ -322,13 +175,13 @@ export const EditPlanDialog: React.FC<EditPlanDialogProps> = ({
                             min="0"
                             placeholder={t('admin.plans.form.pricePlaceholder')}
                             value={pricing.price / 100 || ''}
-                            onChange={(e) => handleUpdatePricing(index, { price: Math.round(Number(e.target.value) * 100) })}
+                            onChange={(e) => form.handleUpdatePricing(index, { price: Math.round(Number(e.target.value) * 100) })}
                             disabled={loading}
                           />
 
                           <Select
                             value={pricing.currency}
-                            onValueChange={(value) => handleUpdatePricing(index, { currency: value })}
+                            onValueChange={(value) => form.handleUpdatePricing(index, { currency: value })}
                             disabled={loading}
                           >
                             <SelectTrigger>
@@ -344,7 +197,7 @@ export const EditPlanDialog: React.FC<EditPlanDialogProps> = ({
                           <Checkbox
                             id={`pricing-active-${index}`}
                             checked={pricing.isActive}
-                            onCheckedChange={(checked) => handleUpdatePricing(index, { isActive: checked as boolean })}
+                            onCheckedChange={(checked) => form.handleUpdatePricing(index, { isActive: checked as boolean })}
                             disabled={loading}
                           />
                           <Label htmlFor={`pricing-active-${index}`} className="cursor-pointer">
@@ -374,8 +227,8 @@ export const EditPlanDialog: React.FC<EditPlanDialogProps> = ({
                     min="0"
                     step="0.1"
                     placeholder={t('admin.plans.form.unlimitedPlaceholder')}
-                    value={formData.planLimits.trafficLimit ? formData.planLimits.trafficLimit / (1024 * 1024 * 1024) : ''}
-                    onChange={(e) => handleLimitChange('trafficLimit', e.target.value === '' ? undefined : Math.round(Number(e.target.value) * 1024 * 1024 * 1024))}
+                    value={form.formData.planLimits.trafficLimit ? form.formData.planLimits.trafficLimit / (1024 * 1024 * 1024) : ''}
+                    onChange={(e) => form.handleLimitChange('trafficLimit', e.target.value === '' ? undefined : Math.round(Number(e.target.value) * 1024 * 1024 * 1024))}
                     disabled={loading}
                   />
                 </div>
@@ -387,8 +240,8 @@ export const EditPlanDialog: React.FC<EditPlanDialogProps> = ({
                     type="number"
                     min="0"
                     placeholder={t('admin.plans.form.unlimitedPlaceholder')}
-                    value={formData.planLimits.deviceLimit || ''}
-                    onChange={(e) => handleLimitChange('deviceLimit', e.target.value === '' ? undefined : Number(e.target.value))}
+                    value={form.formData.planLimits.deviceLimit || ''}
+                    onChange={(e) => form.handleLimitChange('deviceLimit', e.target.value === '' ? undefined : Number(e.target.value))}
                     disabled={loading}
                   />
                 </div>
@@ -400,8 +253,8 @@ export const EditPlanDialog: React.FC<EditPlanDialogProps> = ({
                     type="number"
                     min="0"
                     placeholder={t('admin.plans.form.unlimitedPlaceholder')}
-                    value={formData.planLimits.speedLimit || ''}
-                    onChange={(e) => handleLimitChange('speedLimit', e.target.value === '' ? undefined : Number(e.target.value))}
+                    value={form.formData.planLimits.speedLimit || ''}
+                    onChange={(e) => form.handleLimitChange('speedLimit', e.target.value === '' ? undefined : Number(e.target.value))}
                     disabled={loading}
                   />
                 </div>
@@ -413,8 +266,8 @@ export const EditPlanDialog: React.FC<EditPlanDialogProps> = ({
                     type="number"
                     min="0"
                     placeholder={t('admin.plans.form.unlimitedPlaceholder')}
-                    value={formData.planLimits.connectionLimit || ''}
-                    onChange={(e) => handleLimitChange('connectionLimit', e.target.value === '' ? undefined : Number(e.target.value))}
+                    value={form.formData.planLimits.connectionLimit || ''}
+                    onChange={(e) => form.handleLimitChange('connectionLimit', e.target.value === '' ? undefined : Number(e.target.value))}
                     disabled={loading}
                   />
                 </div>
@@ -426,8 +279,8 @@ export const EditPlanDialog: React.FC<EditPlanDialogProps> = ({
                     type="number"
                     min="0"
                     placeholder={t('admin.plans.form.unlimitedPlaceholder')}
-                    value={formData.planLimits.nodeLimit || ''}
-                    onChange={(e) => handleLimitChange('nodeLimit', e.target.value === '' ? undefined : Number(e.target.value))}
+                    value={form.formData.planLimits.nodeLimit || ''}
+                    onChange={(e) => form.handleLimitChange('nodeLimit', e.target.value === '' ? undefined : Number(e.target.value))}
                     disabled={loading}
                   />
                 </div>
@@ -448,8 +301,8 @@ export const EditPlanDialog: React.FC<EditPlanDialogProps> = ({
                     type="number"
                     min="0"
                     placeholder={t('admin.plans.form.unlimitedPlaceholder')}
-                    value={formData.planLimits.ruleLimit || ''}
-                    onChange={(e) => handleLimitChange('ruleLimit', e.target.value === '' ? undefined : Number(e.target.value))}
+                    value={form.formData.planLimits.ruleLimit || ''}
+                    onChange={(e) => form.handleLimitChange('ruleLimit', e.target.value === '' ? undefined : Number(e.target.value))}
                     disabled={loading}
                   />
                 </div>
@@ -462,8 +315,8 @@ export const EditPlanDialog: React.FC<EditPlanDialogProps> = ({
                     min="0"
                     step="0.1"
                     placeholder={t('admin.plans.form.unlimitedPlaceholder')}
-                    value={formData.planLimits.trafficLimit ? formData.planLimits.trafficLimit / (1024 * 1024 * 1024) : ''}
-                    onChange={(e) => handleLimitChange('trafficLimit', e.target.value === '' ? undefined : Math.round(Number(e.target.value) * 1024 * 1024 * 1024))}
+                    value={form.formData.planLimits.trafficLimit ? form.formData.planLimits.trafficLimit / (1024 * 1024 * 1024) : ''}
+                    onChange={(e) => form.handleLimitChange('trafficLimit', e.target.value === '' ? undefined : Math.round(Number(e.target.value) * 1024 * 1024 * 1024))}
                     disabled={loading}
                   />
                 </div>
@@ -471,16 +324,16 @@ export const EditPlanDialog: React.FC<EditPlanDialogProps> = ({
                 <div className="flex flex-col gap-2 @sm:col-span-2">
                   <Label>{t('admin.plans.form.allowedRuleTypes')}</Label>
                   <div className="flex flex-wrap gap-3 pt-1">
-                    {FORWARD_RULE_TYPES.map((type) => (
-                      <div key={type.value} className="flex items-center gap-2">
+                    {FORWARD_RULE_TYPE_VALUES.map((type) => (
+                      <div key={type} className="flex items-center gap-2">
                         <Checkbox
-                          id={`rule-type-${type.value}`}
-                          checked={formData.planLimits.ruleTypes?.includes(type.value) || false}
-                          onCheckedChange={() => handleRuleTypeToggle(type.value)}
+                          id={`rule-type-${type}`}
+                          checked={form.formData.planLimits.ruleTypes?.includes(type) || false}
+                          onCheckedChange={() => form.handleRuleTypeToggle(type)}
                           disabled={loading}
                         />
-                        <Label htmlFor={`rule-type-${type.value}`} className="cursor-pointer">
-                          {t(type.labelKey)}
+                        <Label htmlFor={`rule-type-${type}`} className="cursor-pointer">
+                          {t(FORWARD_RULE_TYPE_KEYS[type])}
                         </Label>
                       </div>
                     ))}
@@ -500,8 +353,8 @@ export const EditPlanDialog: React.FC<EditPlanDialogProps> = ({
                 id="description"
                 rows={3}
                 placeholder={t('admin.plans.form.descriptionPlaceholder')}
-                value={formData.description || ''}
-                onChange={(e) => handleChange('description', e.target.value)}
+                value={form.formData.description || ''}
+                onChange={(e) => form.handleChange('description', e.target.value)}
                 disabled={loading}
               />
             </div>
@@ -517,8 +370,8 @@ export const EditPlanDialog: React.FC<EditPlanDialogProps> = ({
                 <Input
                   id="sortOrder"
                   type="number"
-                  value={formData.sortOrder || 0}
-                  onChange={(e) => handleChange('sortOrder', e.target.value === '' ? undefined : Number(e.target.value))}
+                  value={form.formData.sortOrder || 0}
+                  onChange={(e) => form.handleChange('sortOrder', e.target.value === '' ? undefined : Number(e.target.value))}
                   disabled={loading}
                 />
                 <p className="text-xs text-muted-foreground">{t('admin.plans.form.sortOrderHint')}</p>
@@ -527,8 +380,8 @@ export const EditPlanDialog: React.FC<EditPlanDialogProps> = ({
               <div className="flex items-center gap-2">
                 <Checkbox
                   id="isPublic"
-                  checked={formData.isPublic ?? plan.isPublic}
-                  onCheckedChange={(checked) => handleChange('isPublic', checked)}
+                  checked={form.formData.isPublic ?? plan.isPublic}
+                  onCheckedChange={(checked) => form.handleChange('isPublic', checked)}
                   disabled={loading}
                 />
                 <Label htmlFor="isPublic" className="cursor-pointer font-medium">

@@ -5,8 +5,8 @@
 
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { toast } from 'sonner';
 import { useTranslation } from 'react-i18next';
+import { useNotificationStore } from '@/shared/stores/notification-store';
 import {
   getBrandingSettings,
   updateBrandingSettings,
@@ -18,6 +18,7 @@ import {
 
 export function useBrandingSettings() {
   const { t } = useTranslation();
+  const { showSuccess, showError } = useNotificationStore();
   const queryClient = useQueryClient();
   const [error, setError] = useState<string | null>(null);
 
@@ -34,24 +35,24 @@ export function useBrandingSettings() {
     mutationFn: updateBrandingSettings,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin', 'settings', 'branding'] });
-      toast.success(t('admin.settings.branding.updateSuccess'));
+      showSuccess(t('admin.settings.branding.updateSuccess'));
       setError(null);
     },
     onError: (err: Error) => {
       setError(err.message);
-      toast.error(t('admin.settings.branding.updateError'));
+      showError(t('admin.settings.branding.updateError'));
     },
   });
 
   const uploadMutation = useMutation({
     mutationFn: uploadBrandingImage,
     onSuccess: () => {
-      toast.success(t('admin.settings.branding.uploadSuccess'));
+      showSuccess(t('admin.settings.branding.uploadSuccess'));
       setError(null);
     },
     onError: (err: Error) => {
       setError(err.message);
-      toast.error(t('admin.settings.branding.uploadError'));
+      showError(t('admin.settings.branding.uploadError'));
     },
   });
 

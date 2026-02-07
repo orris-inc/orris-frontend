@@ -2,7 +2,7 @@
  * Create Resource Group Dialog
  */
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   Dialog,
@@ -23,6 +23,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/common/Select';
+import { useCreateResourceGroupForm } from '../hooks/useCreateResourceGroupForm';
 import type { CreateResourceGroupRequest } from '@/api/resource/types';
 import type { SubscriptionPlan } from '@/api/subscription/types';
 
@@ -33,18 +34,6 @@ interface CreateResourceGroupDialogProps {
   onSubmit: (data: CreateResourceGroupRequest) => Promise<void>;
 }
 
-interface FormData {
-  name: string;
-  planId: string;
-  description: string;
-}
-
-const getDefaultFormData = (): FormData => ({
-  name: '',
-  planId: '',
-  description: '',
-});
-
 export const CreateResourceGroupDialog: React.FC<CreateResourceGroupDialogProps> = ({
   open,
   plans,
@@ -52,34 +41,17 @@ export const CreateResourceGroupDialog: React.FC<CreateResourceGroupDialogProps>
   onSubmit,
 }) => {
   const { t } = useTranslation();
-  const [formData, setFormData] = useState<FormData>(getDefaultFormData());
   const [loading, setLoading] = useState(false);
-
-  // Reset form
-  useEffect(() => {
-    if (open) {
-      setFormData(getDefaultFormData());
-    }
-  }, [open]);
-
-  const handleChange = (field: keyof FormData, value: unknown) => {
-    setFormData((prev) => ({ ...prev, [field]: value }));
-  };
+  const form = useCreateResourceGroupForm({ open });
 
   const handleSubmit = async () => {
-    if (!formData.name || !formData.planId) {
-      return;
-    }
+    if (!form.validate()) return;
 
     setLoading(true);
     try {
-      await onSubmit({
-        name: formData.name,
-        planId: formData.planId,
-        description: formData.description || undefined,
-      });
+      await onSubmit(form.buildSubmitData());
       onClose();
-      setFormData(getDefaultFormData());
+      form.reset();
     } finally {
       setLoading(false);
     }
@@ -90,8 +62,6 @@ export const CreateResourceGroupDialog: React.FC<CreateResourceGroupDialogProps>
       onClose();
     }
   };
-
-  const isValid = formData.name.trim() !== '' && formData.planId !== '';
 
   return (
     <Dialog open={open} onOpenChange={handleClose}>
@@ -111,8 +81,8 @@ export const CreateResourceGroupDialog: React.FC<CreateResourceGroupDialogProps>
             <Input
               id="name"
               placeholder={t('resourceGroups.namePlaceholder')}
-              value={formData.name}
-              onChange={(e) => handleChange('name', e.target.value)}
+              value={form.name}
+              onChange={(e) => form.handleNameChange(e.target.value)}
               disabled={loading}
             />
           </div>
@@ -122,8 +92,8 @@ export const CreateResourceGroupDialog: React.FC<CreateResourceGroupDialogProps>
               {t('resourceGroups.associatedPlan')} <span className="text-destructive">*</span>
             </Label>
             <Select
-              value={formData.planId}
-              onValueChange={(value) => handleChange('planId', value)}
+              value={form.planId}
+              onValueChange={form.handlePlanIdChange}
               disabled={loading}
             >
               <SelectTrigger id="planId">
@@ -146,15 +116,15 @@ export const CreateResourceGroupDialog: React.FC<CreateResourceGroupDialogProps>
               id="description"
               placeholder={t('resourceGroups.descriptionPlaceholder')}
               rows={3}
-              value={formData.description}
-              onChange={(e) => handleChange('description', e.target.value)}
+              value={form.description}
+              onChange={(e) => form.handleDescriptionChange(e.target.value)}
               disabled={loading}
             />
           </div>
         </div>
 
         <DialogFooter>
-          <Button onClick={handleSubmit} disabled={loading || !isValid}>
+          <Button onClick={handleSubmit} disabled={loading || !form.isFormValid}>
             {loading ? t('common.loading.creating') : t('common.actions.create')}
           </Button>
           <Button variant="outline" onClick={handleClose} disabled={loading}>

@@ -19,6 +19,7 @@ import { Input } from '@/components/common/Input';
 import { Label } from '@/components/common/Label';
 import { Separator } from '@/components/common/Separator';
 import { cn } from '@/lib/utils';
+import { useCreateUserForm } from '../hooks/useCreateUserForm';
 import type { CreateUserRequest } from '@/api/user';
 
 interface CreateUserDialogProps {
@@ -27,166 +28,35 @@ interface CreateUserDialogProps {
   onSubmit: (data: CreateUserRequest) => Promise<void>;
 }
 
-interface FormErrors {
-  email?: string;
-  name?: string;
-  password?: string;
-}
-
-interface FormTouched {
-  email?: boolean;
-  name?: boolean;
-  password?: boolean;
-}
-
-// Password strength rules (8-72 chars, must contain letter and number)
-const PASSWORD_RULES = [
-  { key: 'length', labelKey: 'admin.users.form.passwordLength', test: (p: string) => p.length >= 8 && p.length <= 72 },
-  { key: 'letter', labelKey: 'admin.users.form.containsLetter', test: (p: string) => /[a-zA-Z]/.test(p) },
-  { key: 'number', labelKey: 'admin.users.form.containsNumber', test: (p: string) => /\d/.test(p) },
-];
-
 export const CreateUserDialog: React.FC<CreateUserDialogProps> = ({
   open,
   onClose,
   onSubmit,
 }) => {
   const { t } = useTranslation();
-  const [email, setEmail] = useState('');
-  const [name, setName] = useState('');
-  const [password, setPassword] = useState('');
-  const [showPassword, setShowPassword] = useState(false);
-  const [errors, setErrors] = useState<FormErrors>({});
-  const [touched, setTouched] = useState<FormTouched>({});
   const [loading, setLoading] = useState(false);
 
-  // Validation functions
-  const validateEmail = useCallback((value: string): string | undefined => {
-    if (!value.trim()) {
-      return t('admin.users.form.emailRequired');
-    }
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) {
-      return t('admin.users.form.emailInvalid');
-    }
-    return undefined;
-  }, [t]);
-
-  const validateName = useCallback((value: string): string | undefined => {
-    if (!value.trim()) {
-      return t('admin.users.form.nameRequired');
-    }
-    if (value.trim().length < 2 || value.trim().length > 100) {
-      return t('admin.users.form.nameLengthError');
-    }
-    return undefined;
-  }, [t]);
-
-  const validatePassword = useCallback((value: string): string | undefined => {
-    const trimmed = value.trim();
-    if (!trimmed) {
-      return t('admin.users.form.passwordRequired');
-    }
-    if (trimmed.length < 8) {
-      return t('admin.users.form.passwordMinLength');
-    }
-    if (trimmed.length > 72) {
-      return t('admin.users.form.passwordMaxLength');
-    }
-    if (!/[a-zA-Z]/.test(trimmed)) {
-      return t('admin.users.form.passwordNeedsLetter');
-    }
-    if (!/\d/.test(trimmed)) {
-      return t('admin.users.form.passwordNeedsNumber');
-    }
-    return undefined;
-  }, [t]);
-
-  // Handle blur events for inline validation
-  const handleBlur = useCallback(
-    (field: keyof FormErrors) => {
-      setTouched((prev) => ({ ...prev, [field]: true }));
-
-      let error: string | undefined;
-      switch (field) {
-        case 'email':
-          error = validateEmail(email);
-          break;
-        case 'name':
-          error = validateName(name);
-          break;
-        case 'password':
-          error = validatePassword(password);
-          break;
-      }
-
-      setErrors((prev) => ({ ...prev, [field]: error }));
-    },
-    [email, name, password, validateEmail, validateName, validatePassword]
-  );
-
-  // Validate all fields
-  const validateAll = useCallback((): boolean => {
-    const newErrors: FormErrors = {
-      email: validateEmail(email),
-      name: validateName(name),
-      password: validatePassword(password),
-    };
-
-    setErrors(newErrors);
-    setTouched({ email: true, name: true, password: true });
-
-    return !newErrors.email && !newErrors.name && !newErrors.password;
-  }, [email, name, password, validateEmail, validateName, validatePassword]);
-
-  // Reset form state
-  const resetForm = useCallback(() => {
-    setEmail('');
-    setName('');
-    setPassword('');
-    setShowPassword(false);
-    setErrors({});
-    setTouched({});
-  }, []);
+  const form = useCreateUserForm({ open });
 
   const handleClose = useCallback(() => {
     if (!loading) {
-      resetForm();
+      form.reset();
       onClose();
     }
-  }, [loading, resetForm, onClose]);
+  }, [loading, form, onClose]);
 
   const handleSubmit = useCallback(async () => {
-    if (!validateAll()) {
-      return;
-    }
+    if (!form.validate()) return;
 
     setLoading(true);
     try {
-      await onSubmit({
-        email: email.trim(),
-        name: name.trim(),
-        password: password.trim(),
-      });
-      resetForm();
+      await onSubmit(form.buildSubmitData());
+      form.reset();
       onClose();
     } finally {
       setLoading(false);
     }
-  }, [validateAll, email, name, password, onSubmit, resetForm, onClose]);
-
-  // Calculate password strength
-  const passwordStrength = PASSWORD_RULES.filter((rule) => rule.test(password));
-  const strengthPercent = (passwordStrength.length / PASSWORD_RULES.length) * 100;
-
-  // Check if form is valid for submit button
-  const trimmedPassword = password.trim();
-  const isFormValid =
-    email.trim() &&
-    name.trim() &&
-    trimmedPassword.length >= 8 &&
-    trimmedPassword.length <= 72 &&
-    /[a-zA-Z]/.test(trimmedPassword) &&
-    /\d/.test(trimmedPassword);
+  }, [form, onSubmit, onClose]);
 
   return (
     <Dialog open={open} onOpenChange={handleClose}>
@@ -219,28 +89,20 @@ export const CreateUserDialog: React.FC<CreateUserDialogProps> = ({
                 <Input
                   id="create-user-email"
                   type="email"
-                  value={email}
-                  onChange={(e) => {
-                    setEmail(e.target.value);
-                    if (touched.email) {
-                      setErrors((prev) => ({
-                        ...prev,
-                        email: validateEmail(e.target.value),
-                      }));
-                    }
-                  }}
-                  onBlur={() => handleBlur('email')}
+                  value={form.email}
+                  onChange={(e) => form.handleEmailChange(e.target.value)}
+                  onBlur={() => form.handleBlur('email')}
                   placeholder="user@example.com"
                   className="pl-10"
-                  error={touched.email && !!errors.email}
+                  error={form.touched.email && !!form.errors.email}
                   disabled={loading}
                   autoComplete="email"
                   autoFocus
                 />
               </div>
-              {touched.email && errors.email && (
+              {form.touched.email && form.errors.email && (
                 <span className="text-sm text-destructive" role="alert">
-                  {errors.email}
+                  {form.errors.email}
                 </span>
               )}
             </div>
@@ -255,27 +117,19 @@ export const CreateUserDialog: React.FC<CreateUserDialogProps> = ({
                 <Input
                   id="create-user-name"
                   type="text"
-                  value={name}
-                  onChange={(e) => {
-                    setName(e.target.value);
-                    if (touched.name) {
-                      setErrors((prev) => ({
-                        ...prev,
-                        name: validateName(e.target.value),
-                      }));
-                    }
-                  }}
-                  onBlur={() => handleBlur('name')}
+                  value={form.name}
+                  onChange={(e) => form.handleNameChange(e.target.value)}
+                  onBlur={() => form.handleBlur('name')}
                   placeholder={t('admin.users.form.namePlaceholder')}
                   className="pl-10"
-                  error={touched.name && !!errors.name}
+                  error={form.touched.name && !!form.errors.name}
                   disabled={loading}
                   autoComplete="name"
                 />
               </div>
-              {touched.name && errors.name ? (
+              {form.touched.name && form.errors.name ? (
                 <span className="text-sm text-destructive" role="alert">
-                  {errors.name}
+                  {form.errors.name}
                 </span>
               ) : (
                 <span className="text-xs text-muted-foreground">
@@ -301,50 +155,42 @@ export const CreateUserDialog: React.FC<CreateUserDialogProps> = ({
                 <Lock className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
                 <Input
                   id="create-user-password"
-                  type={showPassword ? 'text' : 'password'}
-                  value={password}
-                  onChange={(e) => {
-                    setPassword(e.target.value);
-                    if (touched.password) {
-                      setErrors((prev) => ({
-                        ...prev,
-                        password: validatePassword(e.target.value),
-                      }));
-                    }
-                  }}
-                  onBlur={() => handleBlur('password')}
+                  type={form.showPassword ? 'text' : 'password'}
+                  value={form.password}
+                  onChange={(e) => form.handlePasswordChange(e.target.value)}
+                  onBlur={() => form.handleBlur('password')}
                   placeholder={t('admin.users.form.passwordPlaceholder')}
                   className="pl-10 pr-10"
-                  error={touched.password && !!errors.password}
+                  error={form.touched.password && !!form.errors.password}
                   disabled={loading}
                   autoComplete="new-password"
                 />
                 <button
                   type="button"
-                  onClick={() => setShowPassword((prev) => !prev)}
+                  onClick={() => form.setShowPassword((prev) => !prev)}
                   className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
                   tabIndex={-1}
-                  aria-label={showPassword ? 'Hide password' : 'Show password'}
+                  aria-label={form.showPassword ? 'Hide password' : 'Show password'}
                 >
-                  {showPassword ? (
+                  {form.showPassword ? (
                     <EyeOff className="size-4" />
                   ) : (
                     <Eye className="size-4" />
                   )}
                 </button>
               </div>
-              {touched.password && errors.password ? (
+              {form.touched.password && form.errors.password ? (
                 <span className="text-sm text-destructive" role="alert">
-                  {errors.password}
+                  {form.errors.password}
                 </span>
-              ) : !password && (
+              ) : !form.password && (
                 <span className="text-xs text-muted-foreground">
                   {t('admin.users.form.passwordHint')}
                 </span>
               )}
 
               {/* Password Strength Indicator */}
-              {password && (
+              {form.password && (
                 <div className="space-y-2">
                   <div className="flex gap-1">
                     {[0, 1, 2].map((index) => (
@@ -352,10 +198,10 @@ export const CreateUserDialog: React.FC<CreateUserDialogProps> = ({
                         key={index}
                         className={cn(
                           'h-1 flex-1 rounded-full transition-colors',
-                          index < passwordStrength.length
-                            ? strengthPercent === 100
+                          index < form.passwordStrength.length
+                            ? form.strengthPercent === 100
                               ? 'bg-emerald-500'
-                              : strengthPercent >= 66
+                              : form.strengthPercent >= 66
                                 ? 'bg-yellow-500'
                                 : 'bg-destructive'
                             : 'bg-muted'
@@ -364,8 +210,8 @@ export const CreateUserDialog: React.FC<CreateUserDialogProps> = ({
                     ))}
                   </div>
                   <div className="flex flex-wrap gap-x-4 gap-y-1">
-                    {PASSWORD_RULES.map((rule) => {
-                      const passed = rule.test(password);
+                    {form.passwordRules.map((rule) => {
+                      const passed = rule.test(form.password);
                       return (
                         <div
                           key={rule.key}
@@ -391,7 +237,7 @@ export const CreateUserDialog: React.FC<CreateUserDialogProps> = ({
         </div>
 
         <DialogFooter>
-          <Button onClick={handleSubmit} disabled={loading || !isFormValid}>
+          <Button onClick={handleSubmit} disabled={loading || !form.isFormValid}>
             {loading ? t('common.loading.creating') : t('admin.users.form.createUser')}
           </Button>
           <Button variant="outline" onClick={handleClose} disabled={loading}>

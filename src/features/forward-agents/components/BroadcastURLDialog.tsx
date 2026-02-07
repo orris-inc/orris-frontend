@@ -145,7 +145,7 @@ export const BroadcastURLDialog: React.FC<BroadcastURLDialogProps> = ({
 
   return (
     <Dialog open={open} onOpenChange={(open) => !open && handleClose()}>
-      <DialogContent className="sm:max-w-[480px]">
+      <DialogContent className="sm:max-w-lg">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             {isSingleMode ? (
@@ -177,8 +177,8 @@ export const BroadcastURLDialog: React.FC<BroadcastURLDialogProps> = ({
                   <div className="flex items-center gap-2">
                     <span className="text-sm font-medium">{targetAgent?.name}</span>
                     {targetAgent?.isOnline ? (
-                      <span className="flex items-center gap-1 text-xs text-green-600">
-                        <span className="size-2 rounded-full bg-green-500" />
+                      <span className="flex items-center gap-1 text-xs text-success">
+                        <span className="size-2 rounded-full bg-success" />
                         {t('common.status.online')}
                       </span>
                     ) : (
@@ -195,9 +195,9 @@ export const BroadcastURLDialog: React.FC<BroadcastURLDialogProps> = ({
             </div>
 
             {!isTargetAvailable ? (
-              <div className="flex items-center gap-2 p-3 bg-yellow-50 dark:bg-yellow-900/20 rounded-lg">
-                <AlertTriangle className="size-4 text-yellow-500" />
-                <span className="text-sm text-yellow-700 dark:text-yellow-300">
+              <div className="flex items-center gap-2 p-3 bg-warning/10 rounded-lg">
+                <AlertTriangle className="size-4 text-warning" />
+                <span className="text-sm text-warning">
                   {isSingleMode ? t('admin.forwardAgents.broadcast.nodeOffline') : t('admin.forwardAgents.broadcast.noOnlineAgents')}
                 </span>
               </div>
@@ -228,9 +228,9 @@ export const BroadcastURLDialog: React.FC<BroadcastURLDialogProps> = ({
                   />
                 </div>
 
-                <div className="flex items-center gap-2 p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
-                  <AlertTriangle className="size-4 text-blue-500 flex-shrink-0" />
-                  <span className="text-xs text-blue-700 dark:text-blue-300">
+                <div className="flex items-center gap-2 p-3 bg-info/10 rounded-lg">
+                  <AlertTriangle className="size-4 text-info flex-shrink-0" />
+                  <span className="text-xs text-info">
                     {t('admin.forwardAgents.broadcast.agentAutoUpdateHint')}
                   </span>
                 </div>
@@ -351,22 +351,22 @@ export const BroadcastURLDialog: React.FC<BroadcastURLDialogProps> = ({
           // Single agent result
           <div className="space-y-4">
             {singleResult.notified ? (
-              <div className="p-4 bg-green-50 dark:bg-green-900/20 rounded-lg text-center">
-                <CheckCircle2 className="size-8 text-green-500 mx-auto mb-3" />
-                <p className="text-lg font-semibold text-green-700 dark:text-green-300">
+              <div className="p-4 bg-success/10 rounded-lg text-center">
+                <CheckCircle2 className="size-8 text-success mx-auto mb-3" />
+                <p className="text-lg font-semibold text-success">
                   {t('admin.forwardAgents.broadcast.notifySuccess')}
                 </p>
-                <p className="text-sm text-green-600 dark:text-green-400 mt-1">
+                <p className="text-sm text-success/80 mt-1">
                   {t('admin.forwardAgents.broadcast.notifySuccessDesc', { name: targetAgent?.name })}
                 </p>
               </div>
             ) : (
-              <div className="p-4 bg-yellow-50 dark:bg-yellow-900/20 rounded-lg text-center">
-                <AlertTriangle className="size-8 text-yellow-500 mx-auto mb-3" />
-                <p className="text-lg font-semibold text-yellow-700 dark:text-yellow-300">
+              <div className="p-4 bg-warning/10 rounded-lg text-center">
+                <AlertTriangle className="size-8 text-warning mx-auto mb-3" />
+                <p className="text-lg font-semibold text-warning">
                   {t('admin.forwardAgents.broadcast.notifyFailed')}
                 </p>
-                <p className="text-sm text-yellow-600 dark:text-yellow-400 mt-1">
+                <p className="text-sm text-warning/80 mt-1">
                   {t('admin.forwardAgents.broadcast.notifyFailedDesc')}
                 </p>
               </div>
@@ -376,35 +376,35 @@ export const BroadcastURLDialog: React.FC<BroadcastURLDialogProps> = ({
           // Broadcast result
           <div className="space-y-4">
             <div className="grid grid-cols-2 gap-3">
-              <div className="p-4 bg-green-50 dark:bg-green-900/20 rounded-lg text-center">
-                <CheckCircle2 className="size-6 text-green-500 mx-auto mb-2" />
-                <p className="text-2xl font-semibold text-green-700 dark:text-green-300">
+              <div className="p-4 bg-success/10 rounded-lg text-center">
+                <CheckCircle2 className="size-6 text-success mx-auto mb-2" />
+                <p className="text-2xl font-semibold text-success">
                   {broadcastResult.agentsNotified}
                 </p>
-                <p className="text-sm text-green-600 dark:text-green-400">{t('admin.forwardAgents.broadcast.notified')}</p>
+                <p className="text-sm text-success/80">{t('admin.forwardAgents.broadcast.notified')}</p>
               </div>
-              <div className="p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg text-center">
-                <Radio className="size-6 text-blue-500 mx-auto mb-2" />
-                <p className="text-2xl font-semibold text-blue-700 dark:text-blue-300">
+              <div className="p-4 bg-info/10 rounded-lg text-center">
+                <Radio className="size-6 text-info mx-auto mb-2" />
+                <p className="text-2xl font-semibold text-info">
                   {broadcastResult.agentsOnline}
                 </p>
-                <p className="text-sm text-blue-600 dark:text-blue-400">{t('admin.forwardAgents.broadcast.onlineNodes')}</p>
+                <p className="text-sm text-info/80">{t('admin.forwardAgents.broadcast.onlineNodes')}</p>
               </div>
             </div>
 
             {broadcastResult.agentsNotified > 0 && (
-              <div className="flex items-center gap-2 p-3 bg-green-50 dark:bg-green-900/20 rounded-lg">
-                <CheckCircle2 className="size-4 text-green-500 flex-shrink-0" />
-                <span className="text-sm text-green-700 dark:text-green-300">
+              <div className="flex items-center gap-2 p-3 bg-success/10 rounded-lg">
+                <CheckCircle2 className="size-4 text-success flex-shrink-0" />
+                <span className="text-sm text-success">
                   {t('admin.forwardAgents.broadcast.notifySuccessSummary', { count: broadcastResult.agentsNotified })}
                 </span>
               </div>
             )}
 
             {broadcastResult.agentsNotified === 0 && broadcastResult.agentsOnline === 0 && (
-              <div className="flex items-center gap-2 p-3 bg-yellow-50 dark:bg-yellow-900/20 rounded-lg">
-                <AlertTriangle className="size-4 text-yellow-500 flex-shrink-0" />
-                <span className="text-sm text-yellow-700 dark:text-yellow-300">
+              <div className="flex items-center gap-2 p-3 bg-warning/10 rounded-lg">
+                <AlertTriangle className="size-4 text-warning flex-shrink-0" />
+                <span className="text-sm text-warning">
                   {t('admin.forwardAgents.broadcast.noOnlineAgentsToNotify')}
                 </span>
               </div>

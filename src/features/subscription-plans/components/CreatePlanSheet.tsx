@@ -4,7 +4,7 @@
  * Responsive layout: compact on small screens, expanded on larger screens
  */
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   CreditCard,
@@ -37,85 +37,20 @@ import { ChevronDown } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import type {
   CreatePlanRequest,
-  PricingOptionInput,
   PlanType,
   SubscriptionPlan,
 } from '@/api/subscription/types';
-
-// Locally defined types
-type ForwardRuleTypeOption = 'direct' | 'entry' | 'chain' | 'direct_chain';
-
-interface PlanLimits {
-  trafficLimit?: number;
-  deviceLimit?: number;
-  speedLimit?: number;
-  connectionLimit?: number;
-  ruleLimit?: number;
-  ruleTypes?: ForwardRuleTypeOption[];
-  nodeLimit?: number;
-}
-
-// Helper function: convert PlanLimits to API format
-function planLimitsToApiFormat(limits: PlanLimits): Record<string, unknown> {
-  const result: Record<string, unknown> = {};
-  if (limits.trafficLimit !== undefined) result['traffic_limit'] = limits.trafficLimit;
-  if (limits.deviceLimit !== undefined) result['device_limit'] = limits.deviceLimit;
-  if (limits.speedLimit !== undefined) result['speed_limit'] = limits.speedLimit;
-  if (limits.connectionLimit !== undefined) result['connection_limit'] = limits.connectionLimit;
-  if (limits.ruleLimit !== undefined) result['rule_limit'] = limits.ruleLimit;
-  if (limits.ruleTypes !== undefined) result['rule_types'] = limits.ruleTypes;
-  if (limits.nodeLimit !== undefined) result['node_limit'] = limits.nodeLimit;
-  return result;
-}
-
-// Helper function: parse API format limits
-function parsePlanLimits(apiLimits: Record<string, unknown> | undefined): PlanLimits {
-  if (!apiLimits) return {};
-  return {
-    trafficLimit: apiLimits.trafficLimit as number | undefined,
-    deviceLimit: apiLimits.deviceLimit as number | undefined,
-    speedLimit: apiLimits.speedLimit as number | undefined,
-    connectionLimit: apiLimits.connectionLimit as number | undefined,
-    ruleLimit: apiLimits.ruleLimit as number | undefined,
-    ruleTypes: apiLimits.ruleTypes as ForwardRuleTypeOption[] | undefined,
-    nodeLimit: apiLimits.nodeLimit as number | undefined,
-  };
-}
+import {
+  useCreatePlanForm,
+  BILLING_CYCLE_VALUES,
+  FORWARD_RULE_TYPE_VALUES,
+  PLAN_TYPE_VALUES,
+} from '../hooks/useCreatePlanForm';
 
 interface CreatePlanSheetProps extends CreateSheetProps<CreatePlanRequest> {
   /** Initial plan for duplicate mode */
   initialPlan?: SubscriptionPlan | null;
 }
-
-const BILLING_CYCLES = ['weekly', 'monthly', 'quarterly', 'semi_annual', 'yearly', 'lifetime'] as const;
-
-const FORWARD_RULE_TYPES: ForwardRuleTypeOption[] = ['direct', 'entry', 'chain', 'direct_chain'];
-
-// Plan type options (hybrid is not yet implemented)
-const PLAN_TYPES: PlanType[] = ['node', 'forward'];
-
-interface CreatePlanFormData extends Omit<CreatePlanRequest, 'limits' | 'pricings' | 'nodeLimit'> {
-  pricings: PricingOptionInput[];
-  planLimits: PlanLimits;
-}
-
-const getDefaultPricing = (): PricingOptionInput => ({
-  billingCycle: 'monthly',
-  price: 0,
-  currency: 'CNY',
-  isActive: true,
-});
-
-const getDefaultFormData = (): CreatePlanFormData => ({
-  name: '',
-  slug: '',
-  planType: 'node',
-  description: '',
-  isPublic: true,
-  sortOrder: 0,
-  pricings: [getDefaultPricing()],
-  planLimits: {},
-});
 
 // Compact input styles for number inputs in grids
 const compactInputStyles = cn(
@@ -131,9 +66,7 @@ export const CreatePlanSheet: React.FC<CreatePlanSheetProps> = ({
   initialPlan,
 }) => {
   const { t } = useTranslation();
-  const [formData, setFormData] = useState<CreatePlanFormData>(getDefaultFormData());
   const [loading, setLoading] = useState(false);
-  const [errors, setErrors] = useState<{ name?: string; slug?: string }>({});
 
   // SelectSheet states
   const [planTypeSheetOpen, setPlanTypeSheetOpen] = useState(false);
@@ -141,13 +74,15 @@ export const CreatePlanSheet: React.FC<CreatePlanSheetProps> = ({
   const [billingCycleSheetOpen, setBillingCycleSheetOpen] = useState(false);
   const [currencySheetOpen, setCurrencySheetOpen] = useState(false);
 
+  const form = useCreatePlanForm({ open, initialPlan });
+
   // SelectSheet options
-  const planTypeOptions: SelectSheetOption<PlanType>[] = PLAN_TYPES.map((type) => ({
+  const planTypeOptions: SelectSheetOption<PlanType>[] = PLAN_TYPE_VALUES.map((type) => ({
     value: type,
     label: t(`planType.${type}`),
   }));
 
-  const billingCycleOptions: SelectSheetOption<string>[] = BILLING_CYCLES.map((cycle) => ({
+  const billingCycleOptions: SelectSheetOption<string>[] = BILLING_CYCLE_VALUES.map((cycle) => ({
     value: cycle,
     label: t(`billingCycle.${cycle}`),
   }));
@@ -157,135 +92,30 @@ export const CreatePlanSheet: React.FC<CreatePlanSheetProps> = ({
     { value: 'USD', label: 'USD' },
   ];
 
-  const isDuplicateMode = !!initialPlan;
-
-  // Initialize form data
-  useEffect(() => {
-    if (open && initialPlan) {
-      const planLimits = parsePlanLimits(initialPlan.limits);
-      setFormData({
-        name: `${initialPlan.name} (${t('common.actions.copy')})`,
-        slug: `${initialPlan.slug}-copy`,
-        planType: initialPlan.planType || 'node',
-        description: initialPlan.description || '',
-        isPublic: initialPlan.isPublic,
-        sortOrder: initialPlan.sortOrder || 0,
-        pricings:
-          initialPlan.pricings && initialPlan.pricings.length > 0
-            ? initialPlan.pricings.map((p) => ({
-                billingCycle: p.billingCycle,
-                price: p.price,
-                currency: p.currency,
-                isActive: p.isActive,
-              }))
-            : [getDefaultPricing()],
-        planLimits,
-      });
-    } else if (open && !initialPlan) {
-      setFormData(getDefaultFormData());
-    }
-    setErrors({});
-  }, [open, initialPlan, t]);
-
-  const handleChange = useCallback((field: keyof CreatePlanFormData, value: unknown) => {
-    setFormData((prev) => ({ ...prev, [field]: value }));
-    if (field === 'name' || field === 'slug') {
-      setErrors((prev) => ({ ...prev, [field]: undefined }));
-    }
-  }, []);
-
-  const handleLimitChange = useCallback((field: keyof PlanLimits, value: unknown) => {
-    setFormData((prev) => ({
-      ...prev,
-      planLimits: { ...prev.planLimits, [field]: value },
-    }));
-  }, []);
-
-  const handleRuleTypeToggle = useCallback((type: ForwardRuleTypeOption) => {
-    setFormData((prev) => {
-      const currentTypes = prev.planLimits.ruleTypes || [];
-      const newTypes = currentTypes.includes(type)
-        ? currentTypes.filter((t) => t !== type)
-        : [...currentTypes, type];
-      return {
-        ...prev,
-        planLimits: { ...prev.planLimits, ruleTypes: newTypes },
-      };
-    });
-  }, []);
-
-  const handleAddPricing = useCallback(() => {
-    setFormData((prev) => ({
-      ...prev,
-      pricings: [...prev.pricings, getDefaultPricing()],
-    }));
-  }, []);
-
-  const handleRemovePricing = useCallback((index: number) => {
-    setFormData((prev) => ({
-      ...prev,
-      pricings: prev.pricings.filter((_, i) => i !== index),
-    }));
-  }, []);
-
-  const handleUpdatePricing = useCallback((index: number, updates: Partial<PricingOptionInput>) => {
-    setFormData((prev) => ({
-      ...prev,
-      pricings: prev.pricings.map((p, i) => (i === index ? { ...p, ...updates } : p)),
-    }));
-  }, []);
-
-  const validate = useCallback((): boolean => {
-    const newErrors: { name?: string; slug?: string } = {};
-    if (!formData.name.trim()) newErrors.name = t('admin.plans.form.planName') + ' ' + t('common.validation.required');
-    if (!formData.slug.trim()) newErrors.slug = t('admin.plans.form.slug') + ' ' + t('common.validation.required');
-    else if (!/^[a-z0-9-]+$/.test(formData.slug)) newErrors.slug = t('admin.plans.form.slugHint');
-    setErrors(newErrors);
-    return !newErrors.name && !newErrors.slug;
-  }, [formData.name, formData.slug, t]);
-
   const handleSubmit = useCallback(async () => {
-    if (!validate()) return;
-    if (formData.pricings.length === 0) return;
+    if (!form.validate()) return;
+    if (form.formData.pricings.length === 0) return;
 
     setLoading(true);
     try {
-      const limits =
-        Object.keys(formData.planLimits).length > 0
-          ? planLimitsToApiFormat(formData.planLimits)
-          : undefined;
-
-      const submitData: CreatePlanRequest = {
-        name: formData.name,
-        slug: formData.slug,
-        description: formData.description,
-        planType: formData.planType,
-        limits,
-        nodeLimit: formData.planLimits.nodeLimit,
-        isPublic: formData.isPublic,
-        sortOrder: formData.sortOrder,
-        pricings: formData.pricings,
-      };
+      const submitData = form.buildSubmitData();
       await onSubmit(submitData);
-      setFormData(getDefaultFormData());
+      form.reset();
       onOpenChange(false);
     } finally {
       setLoading(false);
     }
-  }, [formData, validate, onSubmit, onOpenChange]);
+  }, [form, onSubmit, onOpenChange]);
 
   const handleClose = useCallback(
     (o: boolean) => {
       if (!loading) {
-        setFormData(getDefaultFormData());
-        setErrors({});
+        form.reset();
         onOpenChange(o);
       }
     },
-    [loading, onOpenChange]
+    [loading, onOpenChange, form]
   );
-
-  const isFormValid = formData.name.trim() && formData.slug.trim() && formData.pricings.length > 0;
 
   return (
     <Sheet open={open} onOpenChange={handleClose}>
@@ -295,19 +125,19 @@ export const CreatePlanSheet: React.FC<CreatePlanSheetProps> = ({
             <div
               className={cn(
                 'size-8 rounded-full flex items-center justify-center',
-                isDuplicateMode ? 'bg-blue-500/10' : 'bg-primary/10'
+                form.isDuplicateMode ? 'bg-blue-500/10' : 'bg-primary/10'
               )}
             >
-              {isDuplicateMode ? (
+              {form.isDuplicateMode ? (
                 <Copy className="size-4 text-blue-500" />
               ) : (
                 <CreditCard className="size-4 text-primary" />
               )}
             </div>
-            <span>{isDuplicateMode ? t('admin.plans.duplicatePlan') : t('admin.plans.createPlan')}</span>
+            <span>{form.isDuplicateMode ? t('admin.plans.duplicatePlan') : t('admin.plans.createPlan')}</span>
           </SheetTitle>
           <SheetDescription className="text-xs">
-            {isDuplicateMode
+            {form.isDuplicateMode
               ? t('admin.plans.duplicateDescription', { name: initialPlan?.name })
               : t('admin.plans.createDescription')}
           </SheetDescription>
@@ -325,11 +155,11 @@ export const CreatePlanSheet: React.FC<CreatePlanSheetProps> = ({
                 </label>
                 <MobileFormInput
                   id="plan-name"
-                  value={formData.name}
-                  onChange={(v) => handleChange('name', v)}
+                  value={form.formData.name}
+                  onChange={(v) => form.handleChange('name', v)}
                   placeholder={t('admin.plans.form.planName')}
                   icon={<Tag className="size-4" />}
-                  error={errors.name}
+                  error={form.errors.name}
                   disabled={loading}
                   className="min-h-[44px] py-2 text-sm rounded-lg"
                   containerClassName="space-y-1"
@@ -341,11 +171,11 @@ export const CreatePlanSheet: React.FC<CreatePlanSheetProps> = ({
                 </label>
                 <MobileFormInput
                   id="plan-slug"
-                  value={formData.slug}
-                  onChange={(v) => handleChange('slug', v)}
+                  value={form.formData.slug}
+                  onChange={(v) => form.handleChange('slug', v)}
                   placeholder={t('admin.plans.form.slugPlaceholder')}
                   icon={<Hash className="size-4" />}
-                  error={errors.slug}
+                  error={form.errors.slug}
                   disabled={loading}
                   className="min-h-[44px] py-2 text-sm rounded-lg"
                   containerClassName="space-y-1"
@@ -369,14 +199,14 @@ export const CreatePlanSheet: React.FC<CreatePlanSheetProps> = ({
                     loading && 'opacity-50 cursor-not-allowed'
                   )}
                 >
-                  <span>{t(`planType.${formData.planType}`)}</span>
+                  <span>{t(`planType.${form.formData.planType}`)}</span>
                   <ChevronDown className="size-4 text-muted-foreground" />
                 </button>
                 <SelectSheet
                   open={planTypeSheetOpen}
                   onOpenChange={setPlanTypeSheetOpen}
-                  value={formData.planType}
-                  onChange={(v) => handleChange('planType', v as PlanType)}
+                  value={form.formData.planType}
+                  onChange={(v) => form.handleChange('planType', v as PlanType)}
                   options={planTypeOptions}
                   title={t('admin.plans.form.planType')}
                 />
@@ -385,8 +215,8 @@ export const CreatePlanSheet: React.FC<CreatePlanSheetProps> = ({
                 <div className="flex items-center gap-2 h-11 px-3 rounded-xl ring-1 ring-border bg-muted/30 w-full">
                   <Checkbox
                     id="plan-public"
-                    checked={formData.isPublic}
-                    onCheckedChange={(checked) => handleChange('isPublic', checked)}
+                    checked={form.formData.isPublic}
+                    onCheckedChange={(checked) => form.handleChange('isPublic', checked)}
                     disabled={loading}
                   />
                   <Label htmlFor="plan-public" className="cursor-pointer text-sm flex items-center gap-1.5">
@@ -407,7 +237,7 @@ export const CreatePlanSheet: React.FC<CreatePlanSheetProps> = ({
               <Button
                 variant="ghost"
                 size="sm"
-                onClick={handleAddPricing}
+                onClick={form.handleAddPricing}
                 disabled={loading}
                 className="h-7 text-xs"
               >
@@ -416,7 +246,7 @@ export const CreatePlanSheet: React.FC<CreatePlanSheetProps> = ({
               </Button>
             </div>
 
-            {formData.pricings.length === 0 ? (
+            {form.formData.pricings.length === 0 ? (
               <div className="rounded-xl ring-1 ring-destructive/20 bg-destructive/5 p-3">
                 <div className="flex items-center gap-2 text-destructive text-xs">
                   <AlertCircle className="size-3.5" />
@@ -425,15 +255,15 @@ export const CreatePlanSheet: React.FC<CreatePlanSheetProps> = ({
               </div>
             ) : (
               <div className="space-y-2">
-                {formData.pricings.map((pricing, index) => (
+                {form.formData.pricings.map((pricing, index) => (
                   <div key={index} className="rounded-xl ring-1 ring-border p-3 space-y-2">
                     <div className="flex items-center justify-between">
                       <span className="text-xs text-muted-foreground">{t('admin.plans.form.pricingNumber', { number: index + 1 })}</span>
                       <Button
                         variant="ghost"
                         size="sm"
-                        onClick={() => handleRemovePricing(index)}
-                        disabled={loading || formData.pricings.length === 1}
+                        onClick={() => form.handleRemovePricing(index)}
+                        disabled={loading || form.formData.pricings.length === 1}
                         className="text-destructive hover:text-destructive/80 h-6 w-6 p-0"
                       >
                         <Trash2 className="size-3.5" />
@@ -468,7 +298,7 @@ export const CreatePlanSheet: React.FC<CreatePlanSheetProps> = ({
                         placeholder={t('admin.plans.form.pricePlaceholder')}
                         value={pricing.price / 100 || ''}
                         onChange={(e) =>
-                          handleUpdatePricing(index, {
+                          form.handleUpdatePricing(index, {
                             price: Math.round(Number(e.target.value) * 100),
                           })
                         }
@@ -502,7 +332,7 @@ export const CreatePlanSheet: React.FC<CreatePlanSheetProps> = ({
                         id={`pricing-active-${index}`}
                         checked={pricing.isActive}
                         onCheckedChange={(checked) =>
-                          handleUpdatePricing(index, { isActive: checked as boolean })
+                          form.handleUpdatePricing(index, { isActive: checked as boolean })
                         }
                         disabled={loading}
                       />
@@ -517,7 +347,7 @@ export const CreatePlanSheet: React.FC<CreatePlanSheetProps> = ({
           </div>
 
           {/* Node Limits - Grid layout */}
-          {(formData.planType === 'node' || formData.planType === 'hybrid') && (
+          {(form.formData.planType === 'node' || form.formData.planType === 'hybrid') && (
             <div className="space-y-2">
               <h4 className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
                 {t('admin.plans.form.nodeLimits')}
@@ -531,12 +361,12 @@ export const CreatePlanSheet: React.FC<CreatePlanSheetProps> = ({
                     step="0.1"
                     placeholder={t('common.unlimited')}
                     value={
-                      formData.planLimits.trafficLimit
-                        ? formData.planLimits.trafficLimit / (1024 * 1024 * 1024)
+                      form.formData.planLimits.trafficLimit
+                        ? form.formData.planLimits.trafficLimit / (1024 * 1024 * 1024)
                         : ''
                     }
                     onChange={(e) =>
-                      handleLimitChange(
+                      form.handleLimitChange(
                         'trafficLimit',
                         e.target.value === ''
                           ? undefined
@@ -553,9 +383,9 @@ export const CreatePlanSheet: React.FC<CreatePlanSheetProps> = ({
                     type="number"
                     min="0"
                     placeholder={t('common.unlimited')}
-                    value={formData.planLimits.deviceLimit || ''}
+                    value={form.formData.planLimits.deviceLimit || ''}
                     onChange={(e) =>
-                      handleLimitChange(
+                      form.handleLimitChange(
                         'deviceLimit',
                         e.target.value === '' ? undefined : Number(e.target.value)
                       )
@@ -570,9 +400,9 @@ export const CreatePlanSheet: React.FC<CreatePlanSheetProps> = ({
                     type="number"
                     min="0"
                     placeholder={t('common.unlimited')}
-                    value={formData.planLimits.speedLimit || ''}
+                    value={form.formData.planLimits.speedLimit || ''}
                     onChange={(e) =>
-                      handleLimitChange(
+                      form.handleLimitChange(
                         'speedLimit',
                         e.target.value === '' ? undefined : Number(e.target.value)
                       )
@@ -587,9 +417,9 @@ export const CreatePlanSheet: React.FC<CreatePlanSheetProps> = ({
                     type="number"
                     min="0"
                     placeholder={t('common.unlimited')}
-                    value={formData.planLimits.connectionLimit || ''}
+                    value={form.formData.planLimits.connectionLimit || ''}
                     onChange={(e) =>
-                      handleLimitChange(
+                      form.handleLimitChange(
                         'connectionLimit',
                         e.target.value === '' ? undefined : Number(e.target.value)
                       )
@@ -604,9 +434,9 @@ export const CreatePlanSheet: React.FC<CreatePlanSheetProps> = ({
                     type="number"
                     min="0"
                     placeholder={t('common.unlimited')}
-                    value={formData.planLimits.nodeLimit || ''}
+                    value={form.formData.planLimits.nodeLimit || ''}
                     onChange={(e) =>
-                      handleLimitChange(
+                      form.handleLimitChange(
                         'nodeLimit',
                         e.target.value === '' ? undefined : Number(e.target.value)
                       )
@@ -620,7 +450,7 @@ export const CreatePlanSheet: React.FC<CreatePlanSheetProps> = ({
           )}
 
           {/* Forward Limits */}
-          {(formData.planType === 'forward' || formData.planType === 'hybrid') && (
+          {(form.formData.planType === 'forward' || form.formData.planType === 'hybrid') && (
             <div className="space-y-2">
               <h4 className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
                 {t('admin.plans.form.forwardLimits')}
@@ -632,9 +462,9 @@ export const CreatePlanSheet: React.FC<CreatePlanSheetProps> = ({
                     type="number"
                     min="0"
                     placeholder={t('common.unlimited')}
-                    value={formData.planLimits.ruleLimit || ''}
+                    value={form.formData.planLimits.ruleLimit || ''}
                     onChange={(e) =>
-                      handleLimitChange(
+                      form.handleLimitChange(
                         'ruleLimit',
                         e.target.value === '' ? undefined : Number(e.target.value)
                       )
@@ -651,12 +481,12 @@ export const CreatePlanSheet: React.FC<CreatePlanSheetProps> = ({
                     step="0.1"
                     placeholder={t('common.unlimited')}
                     value={
-                      formData.planLimits.trafficLimit
-                        ? formData.planLimits.trafficLimit / (1024 * 1024 * 1024)
+                      form.formData.planLimits.trafficLimit
+                        ? form.formData.planLimits.trafficLimit / (1024 * 1024 * 1024)
                         : ''
                     }
                     onChange={(e) =>
-                      handleLimitChange(
+                      form.handleLimitChange(
                         'trafficLimit',
                         e.target.value === ''
                           ? undefined
@@ -671,12 +501,12 @@ export const CreatePlanSheet: React.FC<CreatePlanSheetProps> = ({
               <div className="space-y-1">
                 <label className="text-xs text-muted-foreground">{t('admin.plans.form.allowedRuleTypes')}</label>
                 <div className="flex flex-wrap gap-x-4 gap-y-1">
-                  {FORWARD_RULE_TYPES.map((type) => (
+                  {FORWARD_RULE_TYPE_VALUES.map((type) => (
                     <div key={type} className="flex items-center gap-1.5">
                       <Checkbox
                         id={`rule-type-${type}`}
-                        checked={formData.planLimits.ruleTypes?.includes(type) || false}
-                        onCheckedChange={() => handleRuleTypeToggle(type)}
+                        checked={form.formData.planLimits.ruleTypes?.includes(type) || false}
+                        onCheckedChange={() => form.handleRuleTypeToggle(type)}
                         disabled={loading}
                         className="size-4"
                       />
@@ -697,8 +527,8 @@ export const CreatePlanSheet: React.FC<CreatePlanSheetProps> = ({
             </h4>
             <textarea
               placeholder={t('admin.plans.form.descriptionPlaceholder')}
-              value={formData.description || ''}
-              onChange={(e) => handleChange('description', e.target.value)}
+              value={form.formData.description || ''}
+              onChange={(e) => form.handleChange('description', e.target.value)}
               disabled={loading}
               rows={2}
               className={cn(
@@ -711,9 +541,9 @@ export const CreatePlanSheet: React.FC<CreatePlanSheetProps> = ({
               <label className="text-xs text-muted-foreground">{t('common.fields.sortOrder')}</label>
               <input
                 type="number"
-                value={formData.sortOrder || 0}
+                value={form.formData.sortOrder || 0}
                 onChange={(e) =>
-                  handleChange('sortOrder', e.target.value === '' ? 0 : Number(e.target.value))
+                  form.handleChange('sortOrder', e.target.value === '' ? 0 : Number(e.target.value))
                 }
                 disabled={loading}
                 className={compactInputStyles}
@@ -725,7 +555,7 @@ export const CreatePlanSheet: React.FC<CreatePlanSheetProps> = ({
         <SheetFooter className="pt-3 pb-1">
           <Button
             onClick={handleSubmit}
-            disabled={loading || !isFormValid}
+            disabled={loading || !form.isFormValid}
             className="w-full h-11"
           >
             {loading ? (
@@ -733,7 +563,7 @@ export const CreatePlanSheet: React.FC<CreatePlanSheetProps> = ({
                 <Loader2 className="mr-2 size-4 animate-spin" />
                 {t('common.loading.creating')}
               </>
-            ) : isDuplicateMode ? (
+            ) : form.isDuplicateMode ? (
               t('admin.plans.form.createCopy')
             ) : (
               t('admin.plans.createPlan')
@@ -749,10 +579,10 @@ export const CreatePlanSheet: React.FC<CreatePlanSheetProps> = ({
       <SelectSheet
         open={billingCycleSheetOpen}
         onOpenChange={setBillingCycleSheetOpen}
-        value={activePricingIndex !== null ? formData.pricings[activePricingIndex]?.billingCycle ?? null : null}
+        value={activePricingIndex !== null ? form.formData.pricings[activePricingIndex]?.billingCycle ?? null : null}
         onChange={(v) => {
           if (activePricingIndex !== null) {
-            handleUpdatePricing(activePricingIndex, { billingCycle: v });
+            form.handleUpdatePricing(activePricingIndex, { billingCycle: v });
           }
         }}
         options={billingCycleOptions}
@@ -763,10 +593,10 @@ export const CreatePlanSheet: React.FC<CreatePlanSheetProps> = ({
       <SelectSheet
         open={currencySheetOpen}
         onOpenChange={setCurrencySheetOpen}
-        value={activePricingIndex !== null ? formData.pricings[activePricingIndex]?.currency ?? null : null}
+        value={activePricingIndex !== null ? form.formData.pricings[activePricingIndex]?.currency ?? null : null}
         onChange={(v) => {
           if (activePricingIndex !== null) {
-            handleUpdatePricing(activePricingIndex, { currency: v });
+            form.handleUpdatePricing(activePricingIndex, { currency: v });
           }
         }}
         options={currencyOptions}

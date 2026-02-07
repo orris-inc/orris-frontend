@@ -5,6 +5,7 @@
  */
 
 import { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Wifi, WifiOff, RefreshCw } from 'lucide-react';
 import { useNetworkStatus } from '@/hooks/useNetworkStatus';
 import { cn } from '@/lib/utils';
@@ -23,6 +24,7 @@ export function NetworkStatusIndicator({
   showQuality = false,
   className,
 }: NetworkStatusIndicatorProps) {
+  const { t } = useTranslation();
   const { isOnline, wasOffline, quality } = useNetworkStatus();
   const [showReconnected, setShowReconnected] = useState(false);
 
@@ -52,7 +54,7 @@ export function NetworkStatusIndicator({
       >
         <div className="flex items-center gap-2 rounded-full bg-amber-500/90 px-3 py-1.5 text-xs font-medium text-white shadow-lg backdrop-blur-sm">
           <Wifi className="h-3.5 w-3.5" />
-          <span>Slow connection</span>
+          <span>{t('common.network.slowConnection')}</span>
         </div>
       </div>
     );
@@ -76,7 +78,7 @@ export function NetworkStatusIndicator({
           )}
         >
           <WifiOff className="h-4 w-4" />
-          <span>You're offline. Some features may be unavailable.</span>
+          <span>{t('common.network.offlineMessage')}</span>
         </div>
       )}
 
@@ -90,7 +92,7 @@ export function NetworkStatusIndicator({
           )}
         >
           <Wifi className="h-4 w-4" />
-          <span>Connection restored</span>
+          <span>{t('common.network.connectionRestored')}</span>
         </div>
       )}
     </div>
@@ -110,6 +112,7 @@ export function ServiceWorkerUpdatePrompt({
   onUpdate,
   onDismiss,
 }: ServiceWorkerUpdatePromptProps) {
+  const { t } = useTranslation();
   const [hasUpdate, setHasUpdate] = useState(false);
 
   useEffect(() => {
@@ -167,21 +170,21 @@ export function ServiceWorkerUpdatePrompt({
           <RefreshCw className="h-5 w-5 text-primary" />
         </div>
         <div className="flex-1 min-w-0">
-          <p className="text-sm font-medium">Update available</p>
-          <p className="text-xs text-muted-foreground">Refresh to get the latest version</p>
+          <p className="text-sm font-medium">{t('common.serviceWorker.updateAvailable')}</p>
+          <p className="text-xs text-muted-foreground">{t('common.serviceWorker.refreshToUpdate')}</p>
         </div>
         <div className="flex gap-2">
           <button
             onClick={handleDismiss}
             className="rounded-md px-3 py-1.5 text-xs font-medium text-muted-foreground hover:bg-muted"
           >
-            Later
+            {t('common.serviceWorker.later')}
           </button>
           <button
             onClick={handleUpdate}
             className="rounded-md bg-primary px-3 py-1.5 text-xs font-medium text-primary-foreground hover:bg-primary/90"
           >
-            Update
+            {t('common.serviceWorker.update')}
           </button>
         </div>
       </div>

@@ -52,7 +52,16 @@ function getCachedBranding(): PublicBrandingResponse | null {
   try {
     const cached = localStorage.getItem(BRANDING_CACHE_KEY);
     if (cached) {
-      return JSON.parse(cached) as PublicBrandingResponse;
+      const parsed: unknown = JSON.parse(cached);
+      if (
+        typeof parsed === 'object' &&
+        parsed !== null &&
+        'appName' in parsed &&
+        typeof (parsed as Record<string, unknown>).appName === 'string'
+      ) {
+        return parsed as PublicBrandingResponse;
+      }
+      return null;
     }
   } catch {
     // Ignore parse errors

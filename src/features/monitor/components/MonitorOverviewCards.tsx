@@ -60,7 +60,7 @@ export const MonitorOverviewCards = memo(({ overview }: MonitorOverviewCardsProp
 
   const cards: OverviewCardProps[] = [
     {
-      title: 'Node Agent',
+      title: t('nav.nodeAgent'),
       value: `${overview.onlineNodes}/${overview.totalNodes}`,
       subtitle: overview.totalNodes > 0
         ? `${Math.round((overview.onlineNodes / overview.totalNodes) * 100)}%`
@@ -70,7 +70,7 @@ export const MonitorOverviewCards = memo(({ overview }: MonitorOverviewCardsProp
       iconColor: 'text-info',
     },
     {
-      title: 'Forward Agent',
+      title: t('nav.forwardAgent'),
       value: `${overview.onlineAgents}/${overview.totalAgents}`,
       subtitle: overview.totalAgents > 0
         ? `${Math.round((overview.onlineAgents / overview.totalAgents) * 100)}%`

@@ -134,6 +134,7 @@ export const PlanMobileList: React.FC<PlanMobileListProps> = ({
           <button
             className="p-1.5 rounded-md hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
             onClick={(e) => e.stopPropagation()}
+            aria-label={t('common.actions.more')}
           >
             <MoreHorizontal className="size-4 text-slate-500" />
           </button>
@@ -197,7 +198,7 @@ export const PlanMobileList: React.FC<PlanMobileListProps> = ({
           <AccordionItem
             key={plan.id}
             value={plan.id}
-            className="rounded-xl ring-1 ring-border bg-white dark:bg-slate-800 overflow-hidden"
+            className="rounded-xl ring-1 ring-border bg-card overflow-hidden"
           >
             {/* Card Header - Always visible */}
             <div className="px-3 py-2">
@@ -233,6 +234,7 @@ export const PlanMobileList: React.FC<PlanMobileListProps> = ({
                       <button
                         onClick={() => onEdit(plan)}
                         className="p-1.5 rounded hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
+                        aria-label={t('common.actions.edit')}
                       >
                         <Edit className="size-3.5 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300" />
                       </button>
@@ -248,6 +250,7 @@ export const PlanMobileList: React.FC<PlanMobileListProps> = ({
                             ? 'hover:bg-red-50 dark:hover:bg-red-900/20'
                             : 'hover:bg-green-50 dark:hover:bg-green-900/20'
                         }`}
+                        aria-label={plan.status === 'active' ? t('common.actions.disable') : t('common.actions.enable')}
                       >
                         <Power className={`size-3.5 ${
                           plan.status === 'active'

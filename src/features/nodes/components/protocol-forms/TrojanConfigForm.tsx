@@ -24,7 +24,7 @@ export interface TrojanConfigFormProps {
   transportProtocol?: TransportProtocol;
   host?: string;
   path?: string;
-  onFieldChange: (field: string, value: any) => void;
+  onFieldChange: (field: string, value: string | number | boolean | undefined) => void;
   errors?: Record<string, string>;
 }
 

@@ -80,6 +80,7 @@ export const ResourceGroupMobileList: React.FC<ResourceGroupMobileListProps> = (
           <button
             className="p-1.5 rounded-md hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
             onClick={(e) => e.stopPropagation()}
+            aria-label={t('common.actions.more')}
           >
             <MoreHorizontal className="size-4 text-slate-500" />
           </button>
@@ -138,7 +139,7 @@ export const ResourceGroupMobileList: React.FC<ResourceGroupMobileListProps> = (
           <AccordionItem
             key={resourceGroup.sid}
             value={resourceGroup.sid}
-            className="border rounded-lg bg-white dark:bg-slate-800 overflow-hidden"
+            className="border rounded-lg bg-card overflow-hidden"
           >
             {/* Card Header - Always visible */}
             <div className="px-3 py-2">
@@ -168,6 +169,7 @@ export const ResourceGroupMobileList: React.FC<ResourceGroupMobileListProps> = (
                       <button
                         onClick={() => onEdit(resourceGroup)}
                         className="p-1.5 rounded hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
+                        aria-label={t('common.actions.edit')}
                       >
                         <Edit className="size-3.5 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300" />
                       </button>
@@ -183,6 +185,7 @@ export const ResourceGroupMobileList: React.FC<ResourceGroupMobileListProps> = (
                             ? 'hover:bg-red-50 dark:hover:bg-red-900/20'
                             : 'hover:bg-green-50 dark:hover:bg-green-900/20'
                         }`}
+                        aria-label={resourceGroup.status === 'active' ? t('common.actions.disable') : t('common.actions.enable')}
                       >
                         <Power className={`size-3.5 ${
                           resourceGroup.status === 'active'

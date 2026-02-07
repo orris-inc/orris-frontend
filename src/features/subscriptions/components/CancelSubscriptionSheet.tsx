@@ -21,6 +21,7 @@ import { Checkbox } from '@/components/common/Checkbox';
 import { Label } from '@/components/common/Label';
 import { TruncatedId } from '@/components/admin';
 import { cn } from '@/lib/utils';
+import { useCancelSubscriptionForm } from '../hooks/useCancelSubscriptionForm';
 import type { Subscription } from '@/api/subscription/types';
 
 interface CancelSubscriptionSheetProps extends BaseSheetProps {
@@ -35,17 +36,25 @@ export const CancelSubscriptionSheet: React.FC<CancelSubscriptionSheetProps> = (
   onConfirm,
 }) => {
   const { t } = useTranslation();
-  const [reason, setReason] = useState('');
-  const [immediate, setImmediate] = useState(false);
   const [loading, setLoading] = useState(false);
 
+  const {
+    reason,
+    setReason,
+    immediate,
+    setImmediate,
+    isFormValid,
+    buildSubmitData,
+    reset,
+  } = useCancelSubscriptionForm();
+
   const handleSubmit = async () => {
-    if (!reason.trim()) return;
+    if (!isFormValid) return;
     setLoading(true);
     try {
-      await onConfirm(reason, immediate);
-      setReason('');
-      setImmediate(false);
+      const data = buildSubmitData();
+      await onConfirm(data.reason, data.immediate);
+      reset();
       onOpenChange(false);
     } finally {
       setLoading(false);
@@ -54,8 +63,7 @@ export const CancelSubscriptionSheet: React.FC<CancelSubscriptionSheetProps> = (
 
   const handleClose = (open: boolean) => {
     if (!loading && !open) {
-      setReason('');
-      setImmediate(false);
+      reset();
       onOpenChange(false);
     }
   };
@@ -131,7 +139,7 @@ export const CancelSubscriptionSheet: React.FC<CancelSubscriptionSheetProps> = (
           <Button
             variant="destructive"
             onClick={handleSubmit}
-            disabled={loading || !reason.trim()}
+            disabled={loading || !isFormValid}
             className="w-full min-h-[48px]"
           >
             {loading ? (

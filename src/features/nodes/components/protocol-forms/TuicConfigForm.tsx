@@ -25,7 +25,7 @@ export interface TuicConfigFormProps {
   allowInsecure?: boolean;
   alpn?: string;
   disableSni?: boolean;
-  onFieldChange: (field: string, value: any) => void;
+  onFieldChange: (field: string, value: string | number | boolean | undefined) => void;
   errors?: Record<string, string>;
 }
 

@@ -122,7 +122,7 @@ export const ViewPlanSubscriptionsDialog: React.FC<ViewPlanSubscriptionsDialogPr
         <Separator />
 
         {/* Toolbar */}
-        <div className="px-6 py-4 flex items-center justify-between gap-4 bg-white dark:bg-slate-900">
+        <div className="px-6 py-4 flex items-center justify-between gap-4 bg-card">
           {/* Statistics badges */}
           <div className="flex items-center gap-2">
             <AdminBadge variant="info" size="md">
@@ -203,10 +203,10 @@ export const ViewPlanSubscriptionsDialog: React.FC<ViewPlanSubscriptionsDialogPr
                     key={subscription.id}
                     className={cn(
                       'group relative rounded-xl border p-4',
-                      'bg-white dark:bg-slate-800/50',
-                      'border-slate-200/80 dark:border-slate-700/80',
-                      'hover:border-indigo-200 dark:hover:border-indigo-800/60',
-                      'hover:shadow-md hover:shadow-slate-200/50 dark:hover:shadow-slate-900/50',
+                      'bg-card',
+                      'border-border',
+                      'hover:border-primary/30',
+                      'hover:shadow-md hover:shadow-foreground/5',
                       'transition-all duration-200'
                     )}
                   >
